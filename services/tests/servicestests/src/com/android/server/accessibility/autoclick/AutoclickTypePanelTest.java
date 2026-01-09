@@ -49,6 +49,7 @@ import android.widget.ImageButton;
 import androidx.annotation.NonNull;
 
 import com.android.internal.R;
+import com.android.internal.policy.SystemBarUtils;
 
 import org.junit.Before;
 import org.junit.Ignore;
@@ -312,12 +313,17 @@ public class AutoclickTypePanelTest {
     @Test
     public void moveToNextCorner_positionButton_rotatesThroughAllPositions() {
         // Define all positions in sequence
+        int x = AutoclickTypePanel.PANEL_HORIZONTAL_MARGIN;
+        int yTop = AutoclickTypePanel.PANEL_VERTICAL_MARGIN
+                + mAutoclickTypePanel.getStatusBarHeightForTesting();
+        int yBottom = AutoclickTypePanel.PANEL_VERTICAL_MARGIN + SystemBarUtils.getTaskbarHeight(
+                mTestableContext.getResources());
         int[][] expectedPositions = {
-                {CORNER_BOTTOM_RIGHT, Gravity.END | Gravity.BOTTOM, /*x=*/ 15, /*y=*/ 30},
-                {CORNER_BOTTOM_LEFT, Gravity.START | Gravity.BOTTOM, /*x=*/ 15, /*y=*/ 30},
-                {CORNER_TOP_LEFT, Gravity.START | Gravity.TOP, /*x=*/ 15, /*y=*/ 30},
-                {CORNER_TOP_RIGHT, Gravity.END | Gravity.TOP, /*x=*/ 15, /*y=*/ 30},
-                {CORNER_BOTTOM_RIGHT, Gravity.END | Gravity.BOTTOM, /*x=*/ 15, /*y=*/ 30}
+                {CORNER_BOTTOM_RIGHT, Gravity.END | Gravity.BOTTOM, x, yBottom},
+                {CORNER_BOTTOM_LEFT, Gravity.START | Gravity.BOTTOM, x, yBottom},
+                {CORNER_TOP_LEFT, Gravity.START | Gravity.TOP, x, yTop},
+                {CORNER_TOP_RIGHT, Gravity.END | Gravity.TOP, x, yTop},
+                {CORNER_BOTTOM_RIGHT, Gravity.END | Gravity.BOTTOM, x, yBottom}
         };
 
         // Check initial position
@@ -444,8 +450,10 @@ public class AutoclickTypePanelTest {
         WindowManager.LayoutParams params = panel.getLayoutParamsForTesting();
         assertThat(panel.getCurrentCornerForTesting()).isEqualTo(CORNER_BOTTOM_RIGHT);
         assertThat(params.gravity).isEqualTo(Gravity.END | Gravity.BOTTOM);
-        assertThat(params.x).isEqualTo(15);  // Default edge margin.
-        assertThat(params.y).isEqualTo(30);  // Default bottom offset.
+        assertThat(params.x).isEqualTo(AutoclickTypePanel.PANEL_HORIZONTAL_MARGIN);
+        assertThat(params.y).isEqualTo(
+                AutoclickTypePanel.PANEL_VERTICAL_MARGIN + SystemBarUtils.getTaskbarHeight(
+                        mTestableContext.getResources()));  // Default bottom offset.
     }
 
     @Test
@@ -464,8 +472,11 @@ public class AutoclickTypePanelTest {
         String[] parts = savedPosition.split(POSITION_DELIMITER);
         assertThat(parts).hasLength(4);
         assertThat(Integer.parseInt(parts[0])).isEqualTo(Gravity.START | Gravity.TOP);
-        assertThat(Integer.parseInt(parts[1])).isEqualTo(15);
-        assertThat(Integer.parseInt(parts[2])).isEqualTo(30);
+        assertThat(Integer.parseInt(parts[1])).isEqualTo(
+                AutoclickTypePanel.PANEL_HORIZONTAL_MARGIN);
+        assertThat(Integer.parseInt(parts[2])).isEqualTo(
+                AutoclickTypePanel.PANEL_VERTICAL_MARGIN
+                        + mAutoclickTypePanel.getStatusBarHeightForTesting());
         assertThat(Integer.parseInt(parts[3])).isEqualTo(CORNER_TOP_LEFT);
 
         // Show panel to trigger position restoration.
@@ -474,8 +485,9 @@ public class AutoclickTypePanelTest {
         // Then verify position is restored correctly.
         WindowManager.LayoutParams params = mAutoclickTypePanel.getLayoutParamsForTesting();
         assertThat(params.gravity).isEqualTo(Gravity.START | Gravity.TOP);
-        assertThat(params.x).isEqualTo(15);
-        assertThat(params.y).isEqualTo(30);
+        assertThat(params.x).isEqualTo(AutoclickTypePanel.PANEL_HORIZONTAL_MARGIN);
+        assertThat(params.y).isEqualTo(AutoclickTypePanel.PANEL_VERTICAL_MARGIN
+                + mAutoclickTypePanel.getStatusBarHeightForTesting());
         assertThat(mAutoclickTypePanel.getCurrentCornerForTesting()).isEqualTo(
                 CORNER_TOP_LEFT);
     }
@@ -503,10 +515,11 @@ public class AutoclickTypePanelTest {
         String[] parts = savedPosition.split(POSITION_DELIMITER);
         assertThat(parts).hasLength(4);
         assertThat(Integer.parseInt(parts[0])).isEqualTo(Gravity.START | Gravity.TOP);
-        assertThat(Integer.parseInt(parts[1])).isEqualTo(15);
+        assertThat(Integer.parseInt(parts[1])).isEqualTo(
+                AutoclickTypePanel.PANEL_HORIZONTAL_MARGIN);
         assertThat(Integer.parseInt(parts[2])).isEqualTo(
-                Math.max(30, panelLocation[1] + 10
-                        - mAutoclickTypePanel.getStatusBarHeightForTesting()));
+                panelLocation[1] + AutoclickTypePanel.PANEL_VERTICAL_MARGIN
+                        + mAutoclickTypePanel.getStatusBarHeightForTesting());
         assertThat(Integer.parseInt(parts[3])).isEqualTo(CORNER_BOTTOM_LEFT);
 
         // Show panel to trigger position restoration.
@@ -515,9 +528,10 @@ public class AutoclickTypePanelTest {
         // Then verify dragged position is restored.
         WindowManager.LayoutParams params = mAutoclickTypePanel.getLayoutParamsForTesting();
         assertThat(params.gravity).isEqualTo(Gravity.START | Gravity.TOP);
-        assertThat(params.x).isEqualTo(15); // PANEL_EDGE_MARGIN
-        assertThat(params.y).isEqualTo(Math.max(30,
-                panelLocation[1] + 10 - mAutoclickTypePanel.getStatusBarHeightForTesting()));
+        assertThat(params.x).isEqualTo(AutoclickTypePanel.PANEL_HORIZONTAL_MARGIN);
+        assertThat(params.y).isEqualTo(
+                panelLocation[1] + AutoclickTypePanel.PANEL_VERTICAL_MARGIN
+                        + mAutoclickTypePanel.getStatusBarHeightForTesting());
         assertThat(mAutoclickTypePanel.getCurrentCornerForTesting()).isEqualTo(
                 CORNER_BOTTOM_LEFT);
     }
