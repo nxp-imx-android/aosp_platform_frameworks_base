@@ -4765,6 +4765,16 @@ public class Notification implements Parcelable
     }
 
     /**
+     * Returns the {@link RemoteInputHistoryItem}s provided to
+     * {@link Builder#setRemoteInputHistoryItems(RemoteInputHistoryItem[])}.
+     * @hide
+     */
+    public RemoteInputHistoryItem[] getRemoteInputHistoryItems() {
+        return getParcelableArrayFromBundle(extras, EXTRA_REMOTE_INPUT_HISTORY_ITEMS,
+                RemoteInputHistoryItem.class);
+    }
+
+    /**
      * Returns which type of notifications in a group are responsible for audibly alerting the
      * user.
      */
@@ -7481,8 +7491,7 @@ public class Notification implements Parcelable
         }
 
         private void displayRemoteInputHistory(RemoteViews contentView, StandardTemplateParams p) {
-            RemoteInputHistoryItem[] replyText = getParcelableArrayFromBundle(
-                    mN.extras, EXTRA_REMOTE_INPUT_HISTORY_ITEMS, RemoteInputHistoryItem.class);
+            RemoteInputHistoryItem[] replyText = mN.getRemoteInputHistoryItems();
             if (replyText != null && replyText.length > 0
                     && !TextUtils.isEmpty(replyText[0].getText())
                     && p.maxRemoteInputHistory > 0) {
@@ -11201,9 +11210,7 @@ public class Notification implements Parcelable
             if (mBuilder.mActions.size() > 0) {
                 maxRows--;
             }
-            RemoteInputHistoryItem[] remoteInputHistory = getParcelableArrayFromBundle(
-                    mBuilder.mN.extras, EXTRA_REMOTE_INPUT_HISTORY_ITEMS,
-                    RemoteInputHistoryItem.class);
+            RemoteInputHistoryItem[] remoteInputHistory = mBuilder.mN.getRemoteInputHistoryItems();
             if (remoteInputHistory != null
                     && remoteInputHistory.length > NUMBER_OF_HISTORY_ALLOWED_UNTIL_REDUCTION) {
                 // Let's remove some messages to make room for the remote input history.
