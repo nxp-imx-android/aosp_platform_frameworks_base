@@ -348,6 +348,7 @@ public class VibratorManagerServiceTest {
     }
 
     private VibratorManagerService createSystemReadyService() {
+        LocalServices.removeServiceForTest(VibratorManagerInternal.class);  // Clean up
         VibratorManagerService service = createService();
         // Trigger all Lifecycle events for testing a ready service.
         service.publishLocalServices();
