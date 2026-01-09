@@ -25,6 +25,7 @@ import android.annotation.SystemService;
 import android.annotation.UserHandleAware;
 import android.content.Context;
 import android.os.RemoteException;
+import android.os.Trace;
 import android.util.ArrayMap;
 import com.android.internal.annotations.GuardedBy;
 import java.lang.annotation.Retention;
@@ -264,6 +265,9 @@ public class TaskContinuityManager {
         Objects.requireNonNull(executor);
         Objects.requireNonNull(callback);
 
+        Trace.asyncTraceBegin(
+                Trace.TRACE_TAG_SYSTEM_SERVER, "requestHandoff", callback.hashCode());
+
         try {
             HandoffRequestCallbackHolder callbackHolder =
                     new HandoffRequestCallbackHolder(executor, callback);
@@ -369,9 +373,13 @@ public class TaskContinuityManager {
                 int associationId, int remoteTaskId, @HandoffRequestResultCode int resultCode)
                 throws RemoteException {
             mExecutor.execute(
-                    () ->
-                            mCallback.onHandoffRequestFinished(
-                                    associationId, remoteTaskId, resultCode));
+                    () -> {
+                        mCallback.onHandoffRequestFinished(associationId, remoteTaskId, resultCode);
+                        Trace.asyncTraceEnd(
+                                Trace.TRACE_TAG_SYSTEM_SERVER,
+                                "requestHandoff",
+                                mCallback.hashCode());
+                    });
         }
     }
 
