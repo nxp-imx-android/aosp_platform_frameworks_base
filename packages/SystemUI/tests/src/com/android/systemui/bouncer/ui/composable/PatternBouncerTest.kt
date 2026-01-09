@@ -26,6 +26,7 @@ import androidx.test.filters.LargeTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.bouncer.ui.viewmodel.patternBouncerViewModelFactory
 import com.android.systemui.haptics.msdl.bouncerHapticPlayer
+import com.android.systemui.integration.SystemUiIntegrationTest
 import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.motion.createSysUiComposeMotionTestRule
 import com.android.systemui.testKosmos
@@ -48,6 +49,7 @@ import platform.test.motion.golden.DataPointTypes
 @RunWith(AndroidJUnit4::class)
 @LargeTest
 @MotionTest
+@SystemUiIntegrationTest
 class PatternBouncerTest : SysuiTestCase() {
     private val kosmos = testKosmos()
 

@@ -36,6 +36,7 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.compose.modifiers.resIdToTestTag
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.testScope
+import com.android.systemui.integration.SystemUiIntegrationTest
 import com.android.systemui.motion.createSysUiComposeMotionTestRule
 import com.android.systemui.testKosmos
 import com.android.systemui.volume.dialog.domain.interactor.expandedAudioTileDetailsFeatureInteractor
@@ -75,6 +76,7 @@ import platform.test.motion.compose.runTest
 @RunWith(AndroidJUnit4::class)
 @LargeTest
 @MotionTest
+@SystemUiIntegrationTest
 @Ignore("b/328332487, need to figure out why androidx update causes the test to fail")
 class VolumeSlidersComponentMotionTest : SysuiTestCase() {
     private val kosmos = testKosmos()
