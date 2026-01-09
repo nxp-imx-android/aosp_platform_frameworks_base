@@ -8023,10 +8023,10 @@ package android.hardware.usb {
 
   @RestrictedForEnvironment(environments=android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME, from=android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) public class UsbManager {
     method @RequiresPermission(android.Manifest.permission.MANAGE_USB) public long getCurrentFunctions();
+    method @FlaggedApi("android.hardware.usb.flags.enable_pci_tunnel_control") @RequiresPermission(android.Manifest.permission.MANAGE_USB) public int getPciTunnelingControlAllowedStatus();
     method @NonNull @RequiresPermission(android.Manifest.permission.MANAGE_USB) public java.util.List<android.hardware.usb.UsbPort> getPorts();
     method @FlaggedApi("android.hardware.usb.flags.expose_usb_speed_system_api") @RequiresPermission(android.Manifest.permission.MANAGE_USB) public int getUsbBandwidthMbps();
     method @RequiresPermission(android.Manifest.permission.MANAGE_USB) public void grantPermission(android.hardware.usb.UsbDevice, String);
-    method @FlaggedApi("android.hardware.usb.flags.enable_pci_tunnel_control") @RequiresPermission(android.Manifest.permission.MANAGE_USB) public int isPciTunnelingControlAllowed();
     method @FlaggedApi("android.hardware.usb.flags.enable_pci_tunnel_control") @RequiresPermission(android.Manifest.permission.MANAGE_USB) public boolean isPciTunnelingEnabled();
     method public static boolean isUvcSupportEnabled();
     method @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") @RequiresPermission(android.Manifest.permission.MANAGE_USB) public void registerBc12TypeListener(@NonNull java.util.concurrent.Executor, @NonNull android.hardware.usb.UsbManager.Bc12TypeListener);

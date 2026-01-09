@@ -1416,13 +1416,13 @@ public class UsbService extends IUsbManager.Stub {
 
     @android.annotation.EnforcePermission(android.Manifest.permission.MANAGE_USB)
     @Override
-    public int isPciTunnelingControlAllowed() {
-        isPciTunnelingControlAllowed_enforcePermission();
+    public int getPciTunnelingControlAllowedStatus() {
+        getPciTunnelingControlAllowedStatus_enforcePermission();
 
         final long ident = Binder.clearCallingIdentity();
         try {
             if (mUsb4Manager != null) {
-                return mUsb4Manager.isPciTunnelingControlAllowed();
+                return mUsb4Manager.getPciTunnelingControlAllowedStatus();
             }
 
             return UsbManager.PCI_TUNNEL_CTRL_UNSUPPORTED;
