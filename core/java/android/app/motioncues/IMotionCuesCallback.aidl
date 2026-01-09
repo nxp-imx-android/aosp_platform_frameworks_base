@@ -15,7 +15,7 @@
  */
 package android.app.motioncues;
 
-import android.app.motioncues.MotionCuesData;
+import android.app.motioncues.MotionCuesVisualStyle;
 import android.app.motioncues.MotionCuesSettings;
 
 /**
@@ -47,7 +47,7 @@ oneway interface IMotionCuesCallback {
          * This can be used to change appearance aspects like color or shape
          * after the session has been initialized.
          *
-         * @param motionCuesData An object containing the new visual properties to apply.
+         * @param motionCuesVisualStyle An object containing the new visual properties to apply.
          */
-        void updateMotionCuesData(in MotionCuesData motionCuesData);
+        void updateMotionCuesVisualStyle(in MotionCuesVisualStyle motionCuesVisualStyle);
 }

@@ -195,12 +195,12 @@ public abstract class MotionCuesService extends Service {
      */
     @SystemApi
     @FlaggedApi(Flags.FLAG_ENABLE_MOTION_CUES)
-    public final void updateMotionCuesData(@NonNull MotionCuesData motionCuesData) {
+    public final void updateMotionCuesVisualStyle(@NonNull MotionCuesVisualStyle style) {
         if (mCallback != null) {
             try {
-                mCallback.updateMotionCuesData(motionCuesData);
+                mCallback.updateMotionCuesVisualStyle(style);
             } catch (RemoteException e) {
-                Log.e(TAG, "Failed to call updateMotionCuesData", e);
+                Log.e(TAG, "Failed to call updateMotionCuesVisualStyle", e);
             }
         }
     }

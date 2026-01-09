@@ -16,4 +16,4 @@
 
 package android.app.motioncues;
 
-parcelable MotionCuesData;
+parcelable MotionCuesVisualStyle;

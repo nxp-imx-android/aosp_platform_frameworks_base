@@ -18,7 +18,7 @@ package com.android.systemui.motioncues
 
 import android.annotation.MainThread;
 import android.annotation.SuppressLint
-import android.app.motioncues.MotionCuesData
+import android.app.motioncues.MotionCuesVisualStyle
 import android.app.motioncues.MotionCuesSettings
 import android.content.Context
 import android.content.pm.PackageManager
@@ -144,9 +144,9 @@ class MotionCuesUi(
 
     /** Updates the data used to control the appearance of the motion cues. */
     @MainThread
-    fun updateMotionCuesData(data: MotionCuesData) {
+    fun updateMotionCuesVisualStyle(data: MotionCuesVisualStyle) {
         if (!isStarted) {
-            Log.w(TAG, "Ignoring updateMotionCuesData call before UI is started.")
+            Log.w(TAG, "Ignoring updateMotionCuesVisualStyle call before UI is started.")
             return
         }
         Log.i(TAG, "Updating motion cues data")

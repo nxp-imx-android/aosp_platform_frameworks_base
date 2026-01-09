@@ -34,13 +34,13 @@ import android.os.Parcelable;
  */
 @SystemApi
 @FlaggedApi(Flags.FLAG_ENABLE_MOTION_CUES)
-public final class MotionCuesData implements Parcelable {
+public final class MotionCuesVisualStyle implements Parcelable {
 
     private final @ColorInt int mColor;
     private final @DrawableRes int mShapeRes;
 
     /**
-     * Constructs a new MotionCuesData.
+     * Constructs a new MotionCuesVisualStyle.
      *
      * @param color The color for the cues.
      * @param shapeRes The drawable resource ID for the shape. Must be a valid resource ID.
@@ -49,36 +49,36 @@ public final class MotionCuesData implements Parcelable {
      */
     @SystemApi
     @FlaggedApi(Flags.FLAG_ENABLE_MOTION_CUES)
-    public MotionCuesData(@ColorInt int color, @DrawableRes int shapeRes) {
+    public MotionCuesVisualStyle(@ColorInt int color, @DrawableRes int shapeRes) {
         mColor = color;
         mShapeRes = shapeRes;
     }
 
     /**
-     * Constructs a MotionCuesData instance as a copy of another.
+     * Constructs a MotionCuesVisualStyle instance as a copy of another.
      *
-     * @param original The {@link MotionCuesData} instance to copy values from.
+     * @param original The {@link MotionCuesVisualStyle} instance to copy values from.
      * @hide
      */
     @SystemApi
     @FlaggedApi(Flags.FLAG_ENABLE_MOTION_CUES)
-    public MotionCuesData(@NonNull MotionCuesData original) {
+    public MotionCuesVisualStyle(@NonNull MotionCuesVisualStyle original) {
         mColor = original.mColor;
         mShapeRes = original.mShapeRes;
     }
 
     /**
-     * Constructs a MotionCuesData instance from a Parcel.
+     * Constructs a MotionCuesVisualStyle instance from a Parcel.
      *
      * @param in The Parcel to read the object's data from.
      */
-    private MotionCuesData(Parcel in) {
+    private MotionCuesVisualStyle(Parcel in) {
         mColor = in.readInt();
         mShapeRes = in.readInt();
     }
 
     /**
-     * Gets the color of the bubbles.
+     * Gets the color of the motion cues.
      *
      * @return An integer representing the color.
      * @hide
@@ -91,7 +91,7 @@ public final class MotionCuesData implements Parcelable {
     }
 
     /**
-     * Gets the shape of the bubbles.
+     * Gets the shape of the motion cues.
      *
      * @return A vector drawable resource representing the shape.
      * @hide
@@ -124,16 +124,16 @@ public final class MotionCuesData implements Parcelable {
      */
     @SystemApi
     @FlaggedApi(Flags.FLAG_ENABLE_MOTION_CUES)
-    public static final @NonNull Parcelable.Creator<MotionCuesData> CREATOR =
-            new Parcelable.Creator<MotionCuesData>() {
+    public static final @NonNull Parcelable.Creator<MotionCuesVisualStyle> CREATOR =
+            new Parcelable.Creator<MotionCuesVisualStyle>() {
                 @Override
-                public MotionCuesData createFromParcel(Parcel in) {
-                    return new MotionCuesData(in);
+                public MotionCuesVisualStyle createFromParcel(Parcel in) {
+                    return new MotionCuesVisualStyle(in);
                 }
 
                 @Override
-                public MotionCuesData[] newArray(int size) {
-                    return new MotionCuesData[size];
+                public MotionCuesVisualStyle[] newArray(int size) {
+                    return new MotionCuesVisualStyle[size];
                 }
             };
 }
