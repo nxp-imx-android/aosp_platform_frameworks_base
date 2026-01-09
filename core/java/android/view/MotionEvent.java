@@ -892,7 +892,9 @@ public final class MotionEvent extends InputEvent implements Parcelable {
      * The value is normalized to a range from -1.0 (down) to 1.0 (up).
      * </ul>
      * </p><p>
-     * This axis should be used to scroll views vertically.
+     * This axis should be used to scroll views vertically. Positive values should scroll the
+     * viewport up (i.e. move the content down), while negative ones should scroll the viewport down
+     * (i.e. move the content up).
      * </p>
      *
      * @see #getAxisValue(int, int)
@@ -910,7 +912,9 @@ public final class MotionEvent extends InputEvent implements Parcelable {
      * The value is normalized to a range from -1.0 (left) to 1.0 (right).
      * </ul>
      * </p><p>
-     * This axis should be used to scroll views horizontally.
+     * This axis should be used to scroll views horizontally. Positive values should scroll the
+     * viewport to the right (i.e. move the content to the left), while negative ones should scroll
+     * the viewport to the left (i.e. move the content to the right).
      * </p>
      *
      * @see #getAxisValue(int, int)
