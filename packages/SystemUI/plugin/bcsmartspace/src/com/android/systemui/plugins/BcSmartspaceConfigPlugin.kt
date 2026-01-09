@@ -18,7 +18,4 @@ package com.android.systemui.plugins
 
 // TODO(b/265360975): Evaluate this plugin approach.
 /** Plugin to provide BC smartspace configuration */
-interface BcSmartspaceConfigPlugin {
-    /** Gets if Smartspace should use ViewPager2 */
-    val isViewPager2Enabled: Boolean
-}
+interface BcSmartspaceConfigPlugin {}
