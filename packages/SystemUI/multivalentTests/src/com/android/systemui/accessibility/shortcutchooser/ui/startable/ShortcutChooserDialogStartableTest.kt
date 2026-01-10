@@ -29,12 +29,14 @@ import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.isToggleable
 import androidx.compose.ui.test.junit4.ComposeTestRule
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollToNode
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.accessibility.common.ShortcutChooserDialogConstants
@@ -82,6 +84,8 @@ class ShortcutChooserDialogStartableTest : SysuiTestCase() {
             FakeAccessibilityShortcutsRepository.FAKE_TALKBACK_TARGET_NAME
         const val MAGNIFICATION_TARGET_NAME =
             FakeAccessibilityShortcutsRepository.FAKE_MAGNIFICATION_TARGET_NAME
+        const val UNTRUSTED_SERVICE_TARGET_NAME =
+            FakeAccessibilityShortcutsRepository.FAKE_UNTRUSTED_SERVICE_TARGET_NAME
     }
 
     @get:Rule val composeTestRule = createEmptyComposeRule()
@@ -104,7 +108,12 @@ class ShortcutChooserDialogStartableTest : SysuiTestCase() {
         setOobeCompleted(true)
 
         onTeardown {
-            runOnMainThreadAndWaitForIdleSync { with(kosmos) { viewModel.dismissDialog() } }
+            runOnMainThreadAndWaitForIdleSync {
+                with(kosmos) {
+                    viewModel.dismissDialog()
+                    viewModel.dismissWarningDialog()
+                }
+            }
         }
     }
 
@@ -474,7 +483,7 @@ class ShortcutChooserDialogStartableTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(SystemUIFlags.FLAG_LAUNCH_ACCESSIBILITY_QUICK_ACCESS_DIALOG_PERMISSION)
-    fun createDialog_quickAccess_allShortcutsEnabled() =
+    fun createDialog_quickAccess_allTrustedShortcutsEnabled() =
         kosmos.runTest {
             val shortcutType = UserShortcutType.QUICK_ACCESS
 
@@ -501,6 +510,7 @@ class ShortcutChooserDialogStartableTest : SysuiTestCase() {
                         .getAllAccessibilityTargetsInfo(shortcutType)
                         .map { it.targetName }
                         .toSet()
+                        .minus(setOf(UNTRUSTED_SERVICE_TARGET_NAME))
                 )
         }
 
@@ -534,6 +544,11 @@ class ShortcutChooserDialogStartableTest : SysuiTestCase() {
 
             assertCurrentDialog(DialogType.QUICK_ACCESS)
 
+            // The number of targets caused the dialog to scroll, so we need to scroll down to make
+            // the Done button visible for clicking.
+            composeTestRule
+                .onNodeWithTag("quick_access_dialog")
+                .performScrollToNode(hasTestTag("done_button"))
             composeTestRule.onDoneButton().performClick()
             composeTestRule.waitForIdle()
 
@@ -589,6 +604,41 @@ class ShortcutChooserDialogStartableTest : SysuiTestCase() {
 
             assertThat(fakeRepository.isTargetEnabled(MAGNIFICATION_TARGET_NAME)).isTrue()
             assertCurrentDialog(DialogType.NONE)
+        }
+
+    @Test
+    @EnableFlags(SystemUIFlags.FLAG_LAUNCH_ACCESSIBILITY_QUICK_ACCESS_DIALOG_PERMISSION)
+    fun showWarningDialog_quickAccess_clickUntrustedTarget_showsWarningDialog() =
+        kosmos.runTest {
+            val shortcutType = UserShortcutType.QUICK_ACCESS
+            val targetName = UNTRUSTED_SERVICE_TARGET_NAME
+
+            underTest.start()
+
+            sendIntentInMainThreadWaitForIdle(shortcutType)
+
+            assertCurrentDialog(DialogType.QUICK_ACCESS)
+
+            assertThat(fakeRepository.isTargetAssigned(shortcutType, targetName)).isFalse()
+            assertThat(fakeRepository.isTargetEnabled(targetName)).isFalse()
+            val targetNode = composeTestRule.onNodeWithText("Untrusted Service")
+            targetNode.assertIsOff()
+
+            targetNode.performClick()
+            composeTestRule.waitForIdle()
+
+            composeTestRule.onWarningDialog().assertIsDisplayed()
+            assertThat(fakeRepository.isTargetAssigned(shortcutType, targetName)).isFalse()
+            assertThat(fakeRepository.isTargetEnabled(targetName)).isFalse()
+            targetNode.assertIsOff()
+
+            viewModel.dismissWarningDialog()
+            composeTestRule.waitForIdle()
+
+            composeTestRule.onWarningDialog().assertDoesNotExist()
+            assertThat(fakeRepository.isTargetAssigned(shortcutType, targetName)).isFalse()
+            assertThat(fakeRepository.isTargetEnabled(targetName)).isFalse()
+            targetNode.assertIsOff()
         }
 
     private fun Kosmos.sendIntentInMainThreadWaitForIdle(
@@ -714,6 +764,8 @@ class ShortcutChooserDialogStartableTest : SysuiTestCase() {
         onNodeWithText(
             context.resources.getString(R.string.accessibility_quick_access_dialog_title)
         )
+
+    private fun ComposeTestRule.onWarningDialog() = onNodeWithTag("service_warning_dialog")
 
     private fun SemanticsNodeInteraction.assertDialogVisibility(
         expectedDialogType: DialogType,
