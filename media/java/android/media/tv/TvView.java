@@ -1153,6 +1153,19 @@ public class TvView extends ViewGroup {
         }
 
         /**
+         * This is invoked when the channel of this TvView is changed by the underlying TV input
+         * without any {@link TvView#tune} request.
+         *
+         * @param inputId The ID of the TV input bound to this view.
+         * @param channelUri The URI of a channel.
+         * @param arg An optional bundle containing extra information.
+         *
+         * @hide
+         */
+        public void onChannelRetuned(String inputId, Uri channelUri, @Nullable Bundle arg) {
+        }
+
+        /**
          * This is called when the audio presentation information has been changed.
          *
          * @param inputId The ID of the TV input bound to this view.
@@ -1492,6 +1505,20 @@ public class TvView extends ViewGroup {
             }
             if (mCallback != null) {
                 mCallback.onChannelRetuned(mInputId, channelUri);
+            }
+        }
+
+        @Override
+        public void onChannelRetunedWithExtraInfo(Session session, Uri channelUri, Bundle arg) {
+            if (DEBUG) {
+                Log.d(TAG, "onChannelChangedByTvInput(" + channelUri + ") with extra info");
+            }
+            if (this != mSessionCallback) {
+                Log.w(TAG, "onChannelRetuned - session not created");
+                return;
+            }
+            if (mCallback != null) {
+                mCallback.onChannelRetuned(mInputId, channelUri, arg);
             }
         }
 

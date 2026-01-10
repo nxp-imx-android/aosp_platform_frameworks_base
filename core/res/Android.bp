@@ -211,6 +211,7 @@ android_app {
         "android.multiuser.flags-aconfig",
         "com.android.nfc.module.flags-aconfig",
         "android.service.chooser.flags-aconfig",
+        "com.android.server.flags.services-aconfig",
     ],
 }
 

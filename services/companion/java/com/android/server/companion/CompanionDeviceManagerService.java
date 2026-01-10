@@ -123,6 +123,7 @@ import com.android.server.companion.devicepresence.CompanionAppBinder;
 import com.android.server.companion.devicepresence.DevicePresenceProcessor;
 import com.android.server.companion.devicepresence.ObservableUuid;
 import com.android.server.companion.devicepresence.ObservableUuidStore;
+import com.android.server.companion.devicetrust.RandomKeyProvider;
 import com.android.server.companion.devicetrust.TrustedDevicesManager;
 import com.android.server.companion.devicetrust.TrustedDevicesStore;
 import com.android.server.companion.transport.CompanionTransportManager;
@@ -698,6 +699,13 @@ public class CompanionDeviceManagerService extends SystemService {
             overrideTransportType_enforcePermission();
 
             mTransportManager.overrideTransportType(typeOverride);
+
+            // When using raw channel, enable a random key provider for testing
+            if (typeOverride == 1) {
+                mTrustedDevicesManager.addPskProvider(new RandomKeyProvider());
+            } else {
+                mTrustedDevicesManager.removePskProvider(RandomKeyProvider.NAME);
+            }
         }
 
         @Override

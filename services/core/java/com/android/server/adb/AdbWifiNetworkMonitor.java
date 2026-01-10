@@ -15,11 +15,8 @@
  */
 package com.android.server.adb;
 
-import static com.android.server.adb.AdbMetricsLogger.logAdbConnectionChanged;
 
-import android.content.ContentResolver;
 import android.content.Context;
-import android.debug.AdbProtoEnums;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
@@ -27,14 +24,12 @@ import android.net.NetworkRequest;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Handler;
-import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Slog;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.adb.AdbDebuggingManager.AdbDebuggingHandler;
 
 /**
@@ -47,8 +42,6 @@ public class AdbWifiNetworkMonitor extends ConnectivityManager.NetworkCallback
     private static final String TAG = AdbWifiNetworkMonitor.class.getSimpleName();
 
     private final Context mContext;
-    private final ContentResolver mContentResolver;
-    private final IsTrustedNetworkChecker mIsTrustedNetworkChecker;
     private final Handler mAdbDebuggingHandler;
 
     /**
@@ -62,21 +55,13 @@ public class AdbWifiNetworkMonitor extends ConnectivityManager.NetworkCallback
 
     private boolean mStarted = false;
 
-    @VisibleForTesting
-    interface IsTrustedNetworkChecker {
-        boolean isTrusted(String bssid, String ssid);
-    }
-
     AdbWifiNetworkMonitor(
             @NonNull Context context,
-            @NonNull IsTrustedNetworkChecker isTrustedNetworkChecker,
             @NonNull Handler adbDebuggingHandler) {
         // Flag is required to receive BSSID and SSID info in the callback.
         super(ConnectivityManager.NetworkCallback.FLAG_INCLUDE_LOCATION_INFO);
 
         mContext = context;
-        mContentResolver = mContext.getContentResolver();
-        mIsTrustedNetworkChecker = isTrustedNetworkChecker;
         mAdbDebuggingHandler = adbDebuggingHandler;
         register();
     }
@@ -102,9 +87,13 @@ public class AdbWifiNetworkMonitor extends ConnectivityManager.NetworkCallback
 
     @Override
     public final void unregister() {
-        // This NetworkMonitor must remain registered even when ADB over Wi-Fi is disabled.
-        // This allows it to automatically re-enable ADB over Wi-Fi when the device connects
-        // to a trusted network.
+        if (!mStarted) {
+            return;
+        }
+        ConnectivityManager connectivityManager =
+                mContext.getSystemService(ConnectivityManager.class);
+        connectivityManager.unregisterNetworkCallback(this);
+        mStarted = false;
     }
 
     @Override
@@ -114,15 +103,16 @@ public class AdbWifiNetworkMonitor extends ConnectivityManager.NetworkCallback
             Slog.i(TAG, "Wi-Fi network available");
             processWifiConnection(wifiInfo);
         } else {
-            setAdbWifiState(false, "Wi-Fi network not available. Disabling adb over Wi-Fi.");
+            mAdbDebuggingHandler.sendEmptyMessage(AdbDebuggingHandler.MSG_STOP_TLS_SERVICE);
+            Slog.i(TAG, "Wi-Fi network not available. Stopping adb over Wi-Fi.");
         }
     }
 
     @Override
     public final void onLost(@NonNull Network network) {
-        logAdbConnectionChanged(AdbProtoEnums.ADB_WIFI_AUTO_DISABLED);
         mLastSSID = null;
-        setAdbWifiState(false, "Wi-Fi network lost. Disabling adb over Wi-Fi.");
+        mAdbDebuggingHandler.sendEmptyMessage(AdbDebuggingHandler.MSG_STOP_TLS_SERVICE);
+        Slog.i(TAG, "Wi-Fi network lost. Stopping adb over Wi-Fi.");
     }
 
     private void processWifiConnection(WifiInfo wifiInfo) {
@@ -130,12 +120,12 @@ public class AdbWifiNetworkMonitor extends ConnectivityManager.NetworkCallback
                 || TextUtils.isEmpty(wifiInfo.getBSSID())
                 || TextUtils.isEmpty(wifiInfo.getSSID())
                 || TextUtils.equals(wifiInfo.getSSID(), WifiManager.UNKNOWN_SSID)) {
-            logAdbConnectionChanged(AdbProtoEnums.ADB_WIFI_AUTO_DISABLED);
-            setAdbWifiState(
-                    false,
+            mAdbDebuggingHandler.sendEmptyMessage(AdbDebuggingHandler.MSG_STOP_TLS_SERVICE);
+            Slog.i(
+                    TAG,
                     TextUtils.formatSimple(
                             "Wi-Fi connection info is invalid {networkId=%d, bssid=%s, ssid=%s}."
-                                    + " Disabling adb over Wi-Fi.",
+                                    + " Stopping adb over Wi-Fi.",
                             wifiInfo.getNetworkId(), wifiInfo.getBSSID(), wifiInfo.getSSID()));
             return;
         }
@@ -146,36 +136,12 @@ public class AdbWifiNetworkMonitor extends ConnectivityManager.NetworkCallback
         }
         mLastSSID = wifiInfo.getSSID();
 
-        boolean isTrusted =
-                mIsTrustedNetworkChecker.isTrusted(wifiInfo.getBSSID(), wifiInfo.getSSID());
-        if (isTrusted) {
-            // TODO: use the ADB_WIFI_ENABLED setting to communicate the auto-enable state.
-            mAdbDebuggingHandler.sendEmptyMessage(
-                    AdbDebuggingHandler.DECLARE_NEXT_ADB_WIFI_AUTO_ENABLE);
-            setAdbWifiState(
-                    true,
-                    TextUtils.formatSimple(
-                            "Connected to a trusted Wi-Fi network {bssid=%s, ssid=%s}. Enabling adb"
-                                    + " over Wi-Fi.",
-                            wifiInfo.getBSSID(), wifiInfo.getSSID()));
-
-        } else {
-            setAdbWifiState(
-                    false,
-                    TextUtils.formatSimple(
-                            "Connected to a non-trusted Wi-Fi network {bssid=%s, ssid=%s}."
-                                    + " Disabling adb over Wi-Fi.",
-                            wifiInfo.getBSSID(), wifiInfo.getSSID()));
-        }
-    }
-
-    @VisibleForTesting
-    protected void setAdbWifiState(boolean enabled, String reason) {
-        Slog.i(TAG, reason);
-        logAdbConnectionChanged(
-                enabled
-                        ? AdbProtoEnums.ADB_WIFI_AUTO_ENABLED
-                        : AdbProtoEnums.ADB_WIFI_AUTO_DISABLED);
-        Settings.Global.putInt(mContentResolver, Settings.Global.ADB_WIFI_ENABLED, enabled ? 1 : 0);
+        mAdbDebuggingHandler.sendEmptyMessage(AdbDebuggingHandler.MSG_START_TLS_SERVICE);
+        Slog.i(
+                TAG,
+                TextUtils.formatSimple(
+                        "Connected to a Wi-Fi network {bssid=%s, ssid=%s}. Attempting to start adb"
+                                + " over Wi-Fi.",
+                        wifiInfo.getBSSID(), wifiInfo.getSSID()));
     }
 }

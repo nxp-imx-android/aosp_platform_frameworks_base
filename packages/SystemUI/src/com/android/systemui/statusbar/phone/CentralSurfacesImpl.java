@@ -3054,7 +3054,7 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
                         @Nullable SurfaceControl.Transaction transaction) {
                     if (Flags.notificationShadeBlur()) {
                         mNotificationShadeDepthControllerLazy.get()
-                                .onTransitionAnimationEnd();
+                                .onTransitionAnimationEnd(transaction);
                     } else {
                         mKeyguardViewMediator.setBlursDisabledForAppLaunch(false);
                     }

@@ -126,6 +126,12 @@
     <!-- Title for USB accessory dialog.  Used when the name of the accessory cannot be determined.  [CHAR LIMIT=50] -->
     <string name="title_usb_accessory">USB accessory</string>
 
+    <!-- Prompt for the USB dialog's allow only this time button [CHAR LIMIT=20] -->
+    <string name="usb_device_dialog_allow_only_this_time_button">Only this time</string>
+
+    <!-- Prompt for the USB dialog's cancel button [CHAR LIMIT=20] -->
+    <string name="usb_device_dialog_cancel_button">Cancel</string>
+
     <!-- View button label for USB dialogs.  [CHAR LIMIT=15] -->
     <string name="label_view">View</string>
 
@@ -442,6 +448,8 @@
     <string name="screen_share_disclaimer_app_sharing">When you’re sharing an app, anything shown or played in that app is visible to [APP NAME]. So be careful with things like passwords, payment details, messages, photos and audio &amp; video.</string>
     <!-- Disclaimer text for full screen sharing. [CHAR LIMIT=NONE] -->
     <string name="screen_share_disclaimer_full_screen_sharing">When you’re sharing your entire screen, anything on your screen is visible to [APP NAME]. So be careful with things like passwords, payment details, messages, photos, and audio &amp; video.</string>
+    <!-- Accessibility announcement for the screen share UI [CHAR LIMIT=NONE] -->
+    <string name="screen_share_a11y_announcement">Choose what to share. Select tab, app, or entire screen. Then press share.</string>
     <!-- Content description for the app window screenshot button in the toolbar, when the capture mode is set to "screenshot". [CHAR LIMIT=NONE] -->
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y">Take screenshot of window</string>
     <!-- Content description for the app window screenshot button in the toolbar, when the capture mode is set to "record". [CHAR LIMIT=NONE] -->
@@ -891,7 +899,7 @@
     <string name="accessibility_status_bar_assistant_icon">Assistant</string>
 
     <!-- Accessibility text describing the input method indicator chip in the status bar. [CHAR LIMIT=NONE] -->
-    <string name="accessibility_status_bar_input_method_indicator">Input method</string>
+    <string name="accessibility_status_bar_input_method_indicator">Keyboard</string>
 
     <!-- The overflow indicator shown when a group has more notification inside the group than the visible ones. An example is "+ 3" [CHAR LIMIT=5] -->
     <string name="notification_group_overflow_indicator">+ <xliff:g id="number" example="3">%s</xliff:g></string>

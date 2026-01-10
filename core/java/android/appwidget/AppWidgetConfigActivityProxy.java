@@ -71,29 +71,4 @@ public class AppWidgetConfigActivityProxy extends Activity {
 
         finish();
     }
-
-    @Override
-    public WindowManager getWindowManager() {
-        return new MyWM(super.getWindowManager());
-    }
-
-    /** Wrapper over windowManager with disables adding a window */
-    private static class MyWM extends WindowManagerWrapper {
-
-        MyWM(WindowManager original) {
-            super(original);
-        }
-
-        @Override
-        public void addView(View view, ViewGroup.LayoutParams params) { }
-
-        @Override
-        public void updateViewLayout(View view, ViewGroup.LayoutParams params) { }
-
-        @Override
-        public void removeView(View view) { }
-
-        @Override
-        public void removeViewImmediate(View view) { }
-    }
 }

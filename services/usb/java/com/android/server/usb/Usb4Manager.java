@@ -203,7 +203,8 @@ public class Usb4Manager {
         Slog.d(TAG, "enablePciTunnels: " + enable);
 
         synchronized (mLock) {
-            if (enable && isPciTunnelingControlAllowed() != UsbManager.PCI_TUNNEL_CTRL_SUPPORTED) {
+            int controlAllowedStatus = getPciTunnelingControlAllowedStatus();
+            if (enable && controlAllowedStatus != UsbManager.PCI_TUNNEL_CTRL_SUPPORTED) {
                 Slog.e(TAG, "enablePciTunnels: PCI tunnel control is not allowed");
                 throw new IllegalStateException("PCI tunnel control is not allowed");
             }
@@ -291,7 +292,7 @@ public class Usb4Manager {
      * @return 0 is allowed, non-zero is disallowed. See {@link
      *     UsbManager#PciTunnelControlAllowedStatus}.
      */
-    public int isPciTunnelingControlAllowed() {
+    public int getPciTunnelingControlAllowedStatus() {
         if (!android.hardware.usb.flags.Flags.enablePciTunnelControl()) {
             return UsbManager.PCI_TUNNEL_CTRL_UNSUPPORTED;
         }

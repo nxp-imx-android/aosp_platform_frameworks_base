@@ -210,6 +210,7 @@ public final class DisplayManager {
             VIRTUAL_DISPLAY_FLAG_TOUCH_FEEDBACK_DISABLED,
             VIRTUAL_DISPLAY_FLAG_OWN_FOCUS,
             VIRTUAL_DISPLAY_FLAG_STEAL_TOP_FOCUS_DISABLED,
+            VIRTUAL_DISPLAY_FLAG_ALLOWS_CONTENT_MODE_SWITCH,
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface VirtualDisplayFlag {}
@@ -522,6 +523,24 @@ public final class DisplayManager {
     @SystemApi
     public static final int VIRTUAL_DISPLAY_FLAG_STEAL_TOP_FOCUS_DISABLED = 1 << 16;
 
+    /**
+     * Virtual display flags: Indicates that the display is allowed to switch the content mode
+     * between projected/extended and mirroring. This allows the display to dynamically add or
+     * remove the home and system decorations.
+     *
+     * Note that this flag requires {@link #VIRTUAL_DISPLAY_FLAG_PUBLIC} and
+     * {@link #VIRTUAL_DISPLAY_FLAG_TRUSTED}, and should not be enabled with either
+     * {@link #VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR}, {@link #VIRTUAL_DISPLAY_FLAG_OWN_CONTENT_ONLY},
+     * or {@link #VIRTUAL_DISPLAY_FLAG_SHOULD_SHOW_SYSTEM_DECORATIONS} at the same time; otherwise
+     * it will be ignored.
+     *
+     * @see #createVirtualDisplay
+     * @hide
+     */
+    @FlaggedApi(com.android.server.display.feature.flags.Flags.FLAG_VIRTUAL_SECONDARY_DISPLAYS)
+    @SystemApi
+    public static final int VIRTUAL_DISPLAY_FLAG_ALLOWS_CONTENT_MODE_SWITCH = 1 << 17;
+
     /** @hide */
     @IntDef(prefix = {"MATCH_CONTENT_FRAMERATE_"}, value = {
             MATCH_CONTENT_FRAMERATE_UNKNOWN,
@@ -758,7 +777,6 @@ public final class DisplayManager {
      *
      * @see #registerDisplayListener(Executor, long, DisplayListener)
      */
-    @FlaggedApi(Flags.FLAG_SET_BRIGHTNESS_BY_UNIT)
     public static final long EVENT_TYPE_DISPLAY_BRIGHTNESS = 1L << 5;
 
     /**
@@ -800,7 +818,6 @@ public final class DisplayManager {
      * environment). When this type of used, 0 and 100 map to the current brightness minimum and
      * maximum respectively.
      */
-    @FlaggedApi(Flags.FLAG_SET_BRIGHTNESS_BY_UNIT)
     public static final int BRIGHTNESS_UNIT_PERCENTAGE = 1;
 
     /**
@@ -1694,7 +1711,6 @@ public final class DisplayManager {
      * @param value The brightness value to set
      * @param unit The unit of the brightness value
      */
-    @FlaggedApi(Flags.FLAG_SET_BRIGHTNESS_BY_UNIT)
     @RequiresPermission(Manifest.permission.WRITE_SETTINGS)
     public void setBrightness(int displayId, float value, @BrightnessUnit int unit) {
         mGlobal.setBrightness(displayId, value, unit);
@@ -1723,7 +1739,6 @@ public final class DisplayManager {
      * @param displayId The display of which brightness value to get from.
      * @param unit The unit of the brightness value
      */
-    @FlaggedApi(Flags.FLAG_SET_BRIGHTNESS_BY_UNIT)
     public float getBrightness(int displayId, @BrightnessUnit int unit) {
         return mGlobal.getBrightness(displayId, unit);
     }

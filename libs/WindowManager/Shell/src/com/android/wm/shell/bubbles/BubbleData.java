@@ -38,7 +38,6 @@ import androidx.annotation.Nullable;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.FrameworkStatsLog;
-import com.android.wm.shell.Flags;
 import com.android.wm.shell.R;
 import com.android.wm.shell.bubbles.Bubbles.DismissReason;
 import com.android.wm.shell.bubbles.logging.BubbleLogger;
@@ -1038,8 +1037,7 @@ public class BubbleData {
         // Overflowed app bubbles only show the app icon, if there are multiple bubbles for an app,
         // a user can't distinguish between them. Per UX we only show 1 app bubble in
         // the overflow and it will use the launch intent for the app so remove others.
-        if (Flags.removeAppBubbleOverflowDupes()
-                && overflowedBubble.isApp()) {
+        if (overflowedBubble.isApp()) {
             for (Bubble bubble : mOverflowBubbles) {
                 if (!bubble.isApp()) continue;
                 if (bubble.getPackageName().equals(overflowedBubble.getPackageName())

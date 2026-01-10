@@ -49,7 +49,6 @@ import com.android.systemui.scene.session.ui.composable.SaveableSession
 import com.android.systemui.scene.session.ui.composable.Session
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.scene.shared.model.sceneDataSourceDelegator
-import com.android.systemui.scene.transitionState
 import com.android.systemui.scene.ui.composable.GoneScene
 import com.android.systemui.scene.ui.composable.SceneContainer
 import com.android.systemui.scene.ui.view.sceneJankMonitorFactory
@@ -61,7 +60,7 @@ import com.android.systemui.shade.ui.composable.ShadeHeaderMotionTestKeys
 import com.android.systemui.shade.ui.composable.ShadeScene
 import com.android.systemui.shade.ui.composable.WithStatusIconContext
 import com.android.systemui.shade.ui.viewmodel.shadeSceneContentViewModelFactory
-import com.android.systemui.shade.ui.viewmodel.shadeUserAcionsViewModelFactory
+import com.android.systemui.shade.ui.viewmodel.shadeUserActionsViewModelFactory
 import com.android.systemui.statusbar.notification.stack.ui.view.notificationScrollView
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.notificationsPlaceholderViewModelFactory
 import com.android.systemui.statusbar.phone.ui.tintedIconManagerFactory
@@ -73,7 +72,6 @@ import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import platform.test.motion.compose.ComposeFeatureCaptures.height
 import platform.test.motion.compose.ComposeFeatureCaptures.positionInRoot
 import platform.test.motion.compose.ComposeFeatureCaptures.size
 import platform.test.motion.compose.ComposeRecordingSpec
@@ -127,7 +125,7 @@ class GoneSceneToQuickQuickSettingsSceneTest : SysuiTestCase() {
         ShadeScene(
             shadeSession = shadeSession,
             notificationStackScrollView = { kosmos.notificationScrollView },
-            actionsViewModelFactory = kosmos.shadeUserAcionsViewModelFactory,
+            actionsViewModelFactory = kosmos.shadeUserActionsViewModelFactory,
             contentViewModelFactory = kosmos.shadeSceneContentViewModelFactory,
             notificationsPlaceholderViewModelFactory =
                 kosmos.notificationsPlaceholderViewModelFactory,

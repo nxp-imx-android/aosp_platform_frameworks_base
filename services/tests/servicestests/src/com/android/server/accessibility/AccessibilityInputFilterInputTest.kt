@@ -456,6 +456,7 @@ class AccessibilityInputFilterInputTest {
                 withMotionAction(ACTION_HOVER_EXIT)
             )
         )
+
         // Verify injected ACTION_CANCEL from AccessibilityInputFilter#resetStreamStateForDisplay()
         verifier.assertReceivedMotion(
             allOf(
@@ -464,18 +465,15 @@ class AccessibilityInputFilterInputTest {
             )
         )
 
-        sendTouchEvent(ACTION_MOVE, downTime, SystemClock.uptimeMillis())
-        sendTouchEvent(ACTION_UP, downTime, SystemClock.uptimeMillis())
         // As the original gesture continues, no additional events should be getting sent by the
-        // filter because the HOVER_EXIT above already effectively finished the current gesture and
-        // the DOWN event was never sent to the host.
+        // filter because the HOVER_EXIT and ACTION_CANCEL above already effectively finished
+        // the current gesture.
+        // We set mLastActiveDeviceMotionEvent to null after sending a cancel, so all following
+        // ACTION_MOVE and ACTION_UP should be dropped.
+        sendTouchEvent(ACTION_MOVE, downTime, SystemClock.uptimeMillis())
+        verifier.assertNoEvents()
 
-        // Bug: the down event was swallowed, so the remainder of the gesture should be swallowed
-        // too. However, the MOVE and UP events are currently passed back to the dispatcher.
-        // TODO(b/310014874) - ensure a11y sends consistent input streams to the dispatcher
-        verifier.assertReceivedMotion(allOf(fromTouchScreen, withMotionAction(ACTION_MOVE)))
-        verifier.assertReceivedMotion(allOf(fromTouchScreen, withMotionAction(ACTION_UP)))
-
+        sendTouchEvent(ACTION_UP, downTime, SystemClock.uptimeMillis())
         verifier.assertNoEvents()
     }
 

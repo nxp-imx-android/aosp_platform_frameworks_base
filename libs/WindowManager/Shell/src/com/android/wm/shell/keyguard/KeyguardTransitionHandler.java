@@ -289,7 +289,9 @@ public class KeyguardTransitionHandler
             Log.wtf(TAG, "RemoteException thrown from local IRemoteTransition", e);
             return false;
         }
-        startTransaction.clear();
+        if (!addOneOffHandlerLeashes()) {
+            startTransaction.clear();
+        }
         return true;
     }
 

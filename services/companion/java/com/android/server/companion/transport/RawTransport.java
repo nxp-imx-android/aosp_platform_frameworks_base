@@ -26,6 +26,7 @@ import libcore.io.Streams;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 
 class RawTransport extends Transport {
     private volatile boolean mStopped;
@@ -72,6 +73,16 @@ class RawTransport extends Transport {
         IoUtils.closeQuietly(mRemoteOut);
 
         super.close();
+    }
+
+    @Override
+    public byte[] getSessionKey() {
+        return "CDM_TRANSPORT".getBytes(StandardCharsets.US_ASCII);
+    }
+
+    @Override
+    public String getSessionRole() {
+        return "PARTICIPANT";
     }
 
     @Override

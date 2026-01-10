@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright (C) 2026 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,18 @@
  * limitations under the License.
  */
 
-package com.android.systemui.scene.ui.composable.transitions
+package android.os.multisensory;
 
-import com.android.compose.animation.scene.TransitionBuilder
+import android.os.multisensory.MultisensoryVibrationControlPoint;
 
-fun TransitionBuilder.dreamToShadeTransition(durationScale: Double = 1.0) {
-    toShadeSceneTransition(durationScale = durationScale)
+/**
+* Represents a continuous effect in the Multisensory Design System (MSDS).
+*
+* The effect is a collection of MultisensoryVibrationControlPoints, which define properties of
+* a vibration at different points in time.
+*
+* @hide
+*/
+parcelable MultisensoryContinuousEffect {
+    List<MultisensoryVibrationControlPoint> controlPoints;
 }

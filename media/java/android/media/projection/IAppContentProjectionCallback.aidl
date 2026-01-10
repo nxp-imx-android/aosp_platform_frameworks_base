@@ -33,7 +33,8 @@ oneway interface IAppContentProjectionCallback {
         * @param thumbnailHeight The requested height of the app content thumbnail
         */
        @EnforcePermission(allOf = {"MANAGE_MEDIA_PROJECTION"})
-       void onContentRequest(in RemoteCallback newContentConsumer, int thumbnailWidth, int thumbnailHeight);
+       void onContentRequest(in RemoteCallback newContentConsumer, int thumbnailWidth,
+         int thumbnailHeight, int iconWidth, int iconHeight);
 
        /**
         * Called when the user picked a content to be shared within the requesting app.

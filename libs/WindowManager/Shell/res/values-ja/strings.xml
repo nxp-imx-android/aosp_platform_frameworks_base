@@ -76,8 +76,6 @@
     <string name="bubble_accessibility_action_collapse_menu" msgid="2975310870146231463">"メニューを閉じる"</string>
     <string name="bubble_accessibility_action_move_bar_left" msgid="4803535120353716759">"左に移動"</string>
     <string name="bubble_accessibility_action_move_bar_right" msgid="7686542531917510421">"右に移動"</string>
-    <string name="bubble_accessibility_announce_expand" msgid="5388792092888203776">"<xliff:g id="BUBBLE_TITLE">%1$s</xliff:g>を開きます"</string>
-    <string name="bubble_accessibility_announce_collapse" msgid="3178806224494537097">"<xliff:g id="BUBBLE_TITLE">%1$s</xliff:g>を閉じます"</string>
     <string name="bubbles_app_settings" msgid="3617224938701566416">"<xliff:g id="NOTIFICATION_TITLE">%1$s</xliff:g> の設定"</string>
     <string name="bubble_dismiss_text" msgid="8816558050659478158">"バブルを閉じる"</string>
     <string name="bubble_fullscreen_text" msgid="1006758103218086231">"全画面表示に移動する"</string>
@@ -95,7 +93,6 @@
     <string name="bubble_bar_education_manage_text" msgid="3199732148641842038">"バブルで表示するアプリや会話を管理するには、ここをタップします"</string>
     <string name="notification_bubble_title" msgid="6082910224488253378">"バブル"</string>
     <string name="manage_bubbles_text" msgid="7730624269650594419">"管理"</string>
-    <string name="accessibility_bubble_dismissed" msgid="8367471990421247357">"ふきだしが非表示になっています。"</string>
     <string name="restart_button_description" msgid="4564728020654658478">"タップしてこのアプリを再起動すると、表示が適切になります"</string>
     <string name="user_aspect_ratio_settings_button_hint" msgid="734835849600713016">"このアプリのアスペクト比を [設定] で変更します"</string>
     <string name="user_aspect_ratio_settings_button_description" msgid="4315566801697411684">"アスペクト比を変更"</string>

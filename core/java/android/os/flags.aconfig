@@ -78,7 +78,7 @@ flag {
     is_exported: true
 }
 
-# This flag guards the private space feature, its APIs, and some of the feature implementations. The flag android.multiuser.Flags.enable_private_space_features exclusively guards all the implementations.
+# This flag guards the private space feature, its APIs, and some of the feature implementations.
 flag {
     name: "allow_private_profile"
     is_exported: true
@@ -234,6 +234,13 @@ flag {
      namespace: "system_performance"
      description: "Disables madvise of .art files by default during app start."
      bug: "382110550"
+}
+
+flag {
+    name: "disallow_add_guest"
+    namespace: "security"
+    description: "Introduces the ability to restrict other users from adding a guest."
+    bug: "394218707"
 }
 
 flag {

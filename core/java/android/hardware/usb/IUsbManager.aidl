@@ -246,7 +246,7 @@ interface IUsbManager
 
     /* Check whether PCI tunneling control is supported and allowed. */
     @EnforcePermission("MANAGE_USB")
-    int isPciTunnelingControlAllowed();
+    int getPciTunnelingControlAllowedStatus();
 
     /* Registers Bc12Type event listener */
     @JavaPassthrough(annotation=

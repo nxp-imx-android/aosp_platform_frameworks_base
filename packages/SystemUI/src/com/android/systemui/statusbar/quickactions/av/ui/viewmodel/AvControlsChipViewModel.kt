@@ -39,8 +39,10 @@ import kotlinx.coroutines.flow.map
 /** ViewModel for the VC Privacy Chip */
 class AvControlsChipViewModel
 @AssistedInject
-constructor(@DisplayAware avControlsChipInteractor: AvControlsChipInteractor) :
-    StatusBarPopupChipViewModel, ExclusiveActivatable() {
+constructor(
+    @DisplayAware avControlsChipInteractor: AvControlsChipInteractor,
+    private val popupViewModelFactory: AvControlsPopupViewModel.Factory,
+) : StatusBarPopupChipViewModel, ExclusiveActivatable() {
     companion object {
         val CAMERA_DRAWABLE: Int = com.android.internal.R.drawable.perm_group_camera
         val MICROPHONE_DRAWABLE: Int = com.android.internal.R.drawable.perm_group_microphone
@@ -72,6 +74,7 @@ constructor(@DisplayAware avControlsChipInteractor: AvControlsChipInteractor) :
                     hoverBehavior = HoverBehavior.None,
                     contentDescription =
                         contentDescription(sensorActivityModel = sensorActivityModel),
+                    popupViewModelFactory = popupViewModelFactory,
                 )
         }
     }

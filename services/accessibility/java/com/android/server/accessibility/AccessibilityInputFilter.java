@@ -1154,10 +1154,15 @@ public class AccessibilityInputFilter extends InputFilter implements EventStream
         }
         if (mLastActiveDeviceMotionEvent != null
                 && mLastActiveDeviceMotionEvent.getDisplayId() == displayId
-                && mLastActiveDeviceMotionEvent.isFromSource(InputDevice.SOURCE_TOUCHSCREEN)) {
+                && mLastActiveDeviceMotionEvent.isFromSource(
+                        InputDevice.SOURCE_TOUCHSCREEN)) {
             final MotionEvent cancelEvent = cancelMotion(mLastActiveDeviceMotionEvent);
             super.onInputEvent(cancelEvent, WindowManagerPolicy.FLAG_PASS_TO_USER);
             cancelEvent.recycle();
+            if (Flags.sendA11yActionCancelOnReset()) {
+                mLastActiveDeviceMotionEvent.recycle();
+                mLastActiveDeviceMotionEvent = null;
+            }
         }
     }
     void resetStreamStateForDisplay(int displayId) {
@@ -1353,19 +1358,62 @@ public class AccessibilityInputFilter extends InputFilter implements EventStream
             mHoverSequenceStarted = false;
         }
 
+        /**
+         * Determines if a motion event should be processed by accessibility transformations.
+         *
+         * <p>This method manages two independent states: one for touch gestures and one for hover
+         * gestures. A touch gesture is processed from ACTION_DOWN until ACTION_UP/ACTION_CANCEL.
+         * A hover gesture is processed from ACTION_HOVER_ENTER until it's superseded by a touch
+         * gesture or another event stream reset.
+         */
         @Override
         final public boolean shouldProcessMotionEvent(MotionEvent event) {
-            // Wait for a down touch event to start processing.
-            if (event.isTouchEvent()) {
-                if (mTouchSequenceStarted) {
-                    return true;
+            if (Flags.sendA11yActionCancelOnReset()) {
+                // Allow the cancel event to pass if it is cancelling a sequence.
+                if (event.getActionMasked() == MotionEvent.ACTION_CANCEL) {
+                    if (mTouchSequenceStarted || mHoverSequenceStarted) {
+                        reset();
+                        return true;
+                    }
+                    return false;
                 }
-                mTouchSequenceStarted = event.getActionMasked() == MotionEvent.ACTION_DOWN;
-                return mTouchSequenceStarted;
             }
 
+            if (event.isTouchEvent()) {
+                return shouldProcessTouchEvent(event);
+            }
+
+            if (event.isHoverEvent()) {
+                return shouldProcessHoverEvent(event);
+            }
+
+            return false;
+        }
+
+        private boolean shouldProcessTouchEvent(MotionEvent event) {
+            // Wait for a down touch event to start processing.
+            if (mTouchSequenceStarted) {
+                final int action = event.getActionMasked();
+                if (Flags.sendA11yActionCancelOnReset()
+                        && action == MotionEvent.ACTION_UP) {
+                    reset();
+                }
+                return true;
+            }
+
+            mTouchSequenceStarted = event.getActionMasked() == MotionEvent.ACTION_DOWN;
+            return mTouchSequenceStarted;
+        }
+
+        private boolean shouldProcessHoverEvent(MotionEvent event) {
             // Wait for an enter hover event to start processing.
             if (mHoverSequenceStarted) {
+                final int action = event.getActionMasked();
+                // Reset on gesture completion only if the flag is enabled.
+                if (Flags.sendA11yActionCancelOnReset()
+                        && action == MotionEvent.ACTION_HOVER_EXIT) {
+                    reset();
+                }
                 return true;
             }
             mHoverSequenceStarted = event.getActionMasked() == MotionEvent.ACTION_HOVER_ENTER;

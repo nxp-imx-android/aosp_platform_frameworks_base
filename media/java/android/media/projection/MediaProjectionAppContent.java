@@ -22,6 +22,7 @@ import android.graphics.drawable.Icon;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.text.TextUtils;
+import android.util.Size;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -47,9 +48,9 @@ public final class MediaProjectionAppContent implements Parcelable {
 
     private final int mId;
     @Nullable
-    private final Bitmap mThumbnail;
+    private Bitmap mThumbnail;
     @Nullable
-    private final Icon mIcon;
+    private Icon mIcon;
     @NonNull
     private final CharSequence mTitle;
 
@@ -133,6 +134,31 @@ public final class MediaProjectionAppContent implements Parcelable {
                     return new MediaProjectionAppContent[size];
                 }
             };
+
+    /**
+     * Optimize the resources in memory to fit the requested sizes.
+     * This might modify this instance of {@link MediaProjectionAppContent}
+     *
+     * @hide
+     */
+    public void optimizeResources(Size thumbnailSize, Size iconSize) {
+        if (mIcon != null) {
+            if (iconSize.getWidth() <= 0 && iconSize.getHeight() <= 0) {
+                mIcon = null;
+            } else {
+                mIcon.scaleDownIfNecessary(iconSize.getWidth(), iconSize.getHeight());
+            }
+
+        }
+        if (mThumbnail != null) {
+            if (thumbnailSize.getWidth() <= 0 && thumbnailSize.getHeight() <= 0) {
+                mThumbnail = null;
+            } else {
+                mThumbnail = Icon.scaleDownIfNecessary(mThumbnail, thumbnailSize.getWidth(),
+                        thumbnailSize.getHeight()).asShared();
+            }
+        }
+    }
 
     /**
      * Builder for {@link MediaProjectionAppContent}.

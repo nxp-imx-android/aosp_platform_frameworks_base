@@ -574,6 +574,7 @@
     <protected-broadcast android:name="android.telephony.action.CARRIER_CONFIG_CHANGED" />
     <protected-broadcast android:name="android.telephony.action.DEFAULT_SUBSCRIPTION_CHANGED" />
     <protected-broadcast android:name="android.telephony.action.DEFAULT_SMS_SUBSCRIPTION_CHANGED" />
+    <protected-broadcast android:name="android.telephony.action.2G_DISABLED_BY_CARRIER" />
     <protected-broadcast android:name="android.telephony.action.SECRET_CODE" />
     <protected-broadcast android:name="android.telephony.action.SHOW_VOICEMAIL_NOTIFICATION" />
     <protected-broadcast android:name="android.telephony.action.SUBSCRIPTION_PLANS_CHANGED" />
@@ -9974,6 +9975,15 @@
             android:protectionLevel="signature"
             android:featureFlag="android.service.notification.enable_dnd_sync">
     </permission>
+
+    <!-- Permission needed to ensure that only the system process can bind with the
+         {@link android.service.messaging.MessagePromotionService}.
+         @FlaggedApi(com.android.internal.telephony.flags.Flags.FLAG_MESSAGE_PROMOTION)
+         @hide -->
+    <permission
+        android:name="android.permission.BIND_MESSAGE_PROMOTION_SERVICE"
+        android:protectionLevel="signature"
+        android:featureFlag="com.android.internal.telephony.flags.message_promotion" />
 
     <!-- Attribution for Geofencing service. -->
     <attribution android:tag="GeofencingService" android:label="@string/geofencing_service"/>

@@ -76,8 +76,6 @@
     <string name="bubble_accessibility_action_collapse_menu" msgid="2975310870146231463">"fechar menu"</string>
     <string name="bubble_accessibility_action_move_bar_left" msgid="4803535120353716759">"Mover para a esquerda"</string>
     <string name="bubble_accessibility_action_move_bar_right" msgid="7686542531917510421">"Mover para a direita"</string>
-    <string name="bubble_accessibility_announce_expand" msgid="5388792092888203776">"abrir <xliff:g id="BUBBLE_TITLE">%1$s</xliff:g>"</string>
-    <string name="bubble_accessibility_announce_collapse" msgid="3178806224494537097">"fechar <xliff:g id="BUBBLE_TITLE">%1$s</xliff:g>"</string>
     <string name="bubbles_app_settings" msgid="3617224938701566416">"Configurações de <xliff:g id="NOTIFICATION_TITLE">%1$s</xliff:g>"</string>
     <string name="bubble_dismiss_text" msgid="8816558050659478158">"Dispensar balão"</string>
     <string name="bubble_fullscreen_text" msgid="1006758103218086231">"Mudar para tela cheia"</string>
@@ -95,7 +93,6 @@
     <string name="bubble_bar_education_manage_text" msgid="3199732148641842038">"Toque aqui para gerenciar quais apps e conversas podem aparecer em balões"</string>
     <string name="notification_bubble_title" msgid="6082910224488253378">"Bolha"</string>
     <string name="manage_bubbles_text" msgid="7730624269650594419">"Gerenciar"</string>
-    <string name="accessibility_bubble_dismissed" msgid="8367471990421247357">"Balão dispensado."</string>
     <string name="restart_button_description" msgid="4564728020654658478">"Toque para reiniciar o app e atualizar a visualização"</string>
     <string name="user_aspect_ratio_settings_button_hint" msgid="734835849600713016">"Mude o tamanho da janela deste app nas Configurações"</string>
     <string name="user_aspect_ratio_settings_button_description" msgid="4315566801697411684">"Mudar a proporção"</string>

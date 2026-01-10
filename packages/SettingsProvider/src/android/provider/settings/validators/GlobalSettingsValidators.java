@@ -486,6 +486,23 @@ public class GlobalSettingsValidators {
         VALIDATORS.put(Global.Wearable.GESTURE_PRIMARY_ACTION_USER_PREFERENCE, BOOLEAN_VALIDATOR);
         VALIDATORS.put(Global.Wearable.GESTURE_DISMISS_ACTION_USER_PREFERENCE, BOOLEAN_VALIDATOR);
         VALIDATORS.put(Global.Wearable.GESTURE_HINT_PERIOD_DAYS, ANY_INTEGER_VALIDATOR);
+        VALIDATORS.put(
+                Global.Wearable.GESTURE_CUSTOMIZE_MEDIA_CONTROLS_PRIMARY_ACTION,
+                new InclusiveIntegerRangeValidator(
+                        Global.Wearable.GESTURE_CUSTOMIZE_MEDIA_CONTROLS_PRIMARY_ACTION_PLAY_PAUSE,
+                        Global.Wearable.GESTURE_CUSTOMIZE_MEDIA_CONTROLS_PRIMARY_ACTION_SKIP));
+        VALIDATORS.put(
+                Global.Wearable.GESTURE_CUSTOMIZE_WORKOUT_CONTROLS_PRIMARY_ACTION,
+                new InclusiveIntegerRangeValidator(
+                        Global.Wearable
+                                .GESTURE_CUSTOMIZE_WORKOUT_CONTROLS_PRIMARY_ACTION_WORKOUT_SPECIFIC,
+                        Global.Wearable
+                                .GESTURE_CUSTOMIZE_WORKOUT_CONTROLS_PRIMARY_ACTION_PLAY_PAUSE_ALL_WORKOUTS));
+        VALIDATORS.put(
+                Global.Wearable.GESTURE_CUSTOMIZE_ALARM_PRIMARY_ACTION,
+                new InclusiveIntegerRangeValidator(
+                        Global.Wearable.GESTURE_CUSTOMIZE_ALARM_PRIMARY_ACTION_SNOOZE,
+                        Global.Wearable.GESTURE_CUSTOMIZE_ALARM_PRIMARY_ACTION_DISMISS));
         VALIDATORS.put(Global.GLOBAL_ACTIONS_TIMEOUT_MILLIS, NON_NEGATIVE_INTEGER_VALIDATOR);
         VALIDATORS.put(Global.WATCH_RANGING_SUPPORTED_BY_PRIMARY_DEVICE,
                 new InclusiveIntegerRangeValidator(0, 1));

@@ -140,19 +140,9 @@ public class DisplayManagerFlags {
             Flags::separateTimeouts
     );
 
-    private final FlagState mSetBrightnessByUnit = new FlagState(
-            Flags.FLAG_SET_BRIGHTNESS_BY_UNIT,
-            Flags::setBrightnessByUnit
-    );
-
     private final FlagState mDelayImplicitRrRegistrationUntilRrAccessed = new FlagState(
             Flags.FLAG_DELAY_IMPLICIT_RR_REGISTRATION_UNTIL_RR_ACCESSED,
             Flags::delayImplicitRrRegistrationUntilRrAccessed
-    );
-
-    private final FlagState mHdrBrightnessSetting = new FlagState(
-            Flags.FLAG_HDR_BRIGHTNESS_SETTING,
-            Flags::hdrBrightnessSetting
     );
 
     private final FlagState mEnableDefaultDisplayInTopologySwitch = new FlagState(
@@ -314,10 +304,6 @@ public class DisplayManagerFlags {
         return mDelayImplicitRrRegistrationUntilRrAccessed.isEnabled();
     }
 
-    public boolean isHdrBrightnessSettingEnabled() {
-        return mHdrBrightnessSetting.isEnabled();
-    }
-
     public boolean isDefaultDisplayInTopologySwitchEnabled() {
         return mEnableDefaultDisplayInTopologySwitch.isEnabled();
     }
@@ -368,9 +354,7 @@ public class DisplayManagerFlags {
         pw.println(" " + mRefreshRateEventForForegroundApps);
         pw.println(" " + mCommittedStateSeparateEvent);
         pw.println(" " + mSeparateTimeouts);
-        pw.println(" " + mSetBrightnessByUnit);
         pw.println(" " + mDelayImplicitRrRegistrationUntilRrAccessed);
-        pw.println(" " + mHdrBrightnessSetting);
         pw.println(" " + mEnableDefaultDisplayInTopologySwitch);
         pw.println(" " + mEnsureColorFadeWhenTurningOn);
         pw.println(" " + mIsLoggingForDisplayEventsEnabled);

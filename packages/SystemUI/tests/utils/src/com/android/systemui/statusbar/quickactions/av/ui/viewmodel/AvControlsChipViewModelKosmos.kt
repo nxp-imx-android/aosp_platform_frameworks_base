@@ -20,7 +20,12 @@ import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.statusbar.quickactions.av.domain.interactor.avControlsChipInteractor
 
 private val Kosmos.avControlsChipViewModel: AvControlsChipViewModel by
-    Kosmos.Fixture { AvControlsChipViewModel(avControlsChipInteractor = avControlsChipInteractor) }
+    Kosmos.Fixture {
+        AvControlsChipViewModel(
+            avControlsChipInteractor = avControlsChipInteractor,
+            popupViewModelFactory = avControlsPopupViewModelFactory,
+        )
+    }
 
 val Kosmos.avControlsChipViewModelFactory by
     Kosmos.Fixture {

@@ -29,6 +29,14 @@
       "keywords": ["device"]
     },
     {
+      "name": "WMShellExplicitFlickerTestsBubbles-CollapseBubbleAppViaClickBubbleIconAfterSwitchTest",
+      "keywords": ["device"]
+    },
+    {
+      "name": "WMShellExplicitFlickerTestsBubbles-CollapseBubbleAppViaClickBubbleIconTest",
+      "keywords": ["device"]
+    },
+    {
       "name": "WMShellExplicitFlickerTestsBubbles-CollapseBubbleAppViaTouchOutsideTest",
       "keywords": ["device"]
     },

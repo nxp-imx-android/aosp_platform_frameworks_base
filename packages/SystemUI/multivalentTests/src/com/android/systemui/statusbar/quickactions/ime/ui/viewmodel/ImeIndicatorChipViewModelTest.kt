@@ -95,6 +95,12 @@ class ImeIndicatorChipViewModelTest : SysuiTestCase() {
             assertThat(loadedIcon.resId).isEqualTo(subtypeIcon.resId)
             assertThat(loadedIcon.packageName).isEqualTo(subtypeIcon.packageName)
             assertThat(chip.chipText).isNull()
+            assertThat(chip.contentDescription)
+                .isEqualTo(
+                    ContentDescription.Resource(
+                        R.string.accessibility_status_bar_input_method_indicator
+                    )
+                )
         }
 
     @Test

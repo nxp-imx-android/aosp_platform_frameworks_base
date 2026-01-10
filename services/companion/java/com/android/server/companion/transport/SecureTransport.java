@@ -119,6 +119,16 @@ class SecureTransport extends Transport implements SecureChannel.Callback {
         }
     }
 
+    @Override
+    public byte[] getSessionKey() {
+        return mSecureChannel.getSessionUnique();
+    }
+
+    @Override
+    public String getSessionRole() {
+        return mSecureChannel.getRole();
+    }
+
     @TransportEvent
     private int translateError(Throwable error) {
         // IMPORTANT: Be careful with oversharing error to prevent malicious apps from

@@ -27,7 +27,7 @@ import javax.inject.Inject;
 public class UsbPermissionActivity extends UsbDialogActivity {
 
     private boolean mPermissionGranted = false;
-    private UsbAudioWarningDialogMessage mUsbPermissionMessageHandler;
+    private final UsbAudioWarningDialogMessage mUsbPermissionMessageHandler;
 
     @Inject
     public UsbPermissionActivity(UsbAudioWarningDialogMessage usbAudioWarningDialogMessage) {
@@ -44,24 +44,21 @@ public class UsbPermissionActivity extends UsbDialogActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        final boolean useRecordWarning = mDialogHelper.isUsbDevice()
-                && (mDialogHelper.deviceHasAudioCapture()
-                && !mDialogHelper.packageHasAudioRecordingPermission());
 
         final int titleId = mUsbPermissionMessageHandler.getPromptTitleId();
-        final String title = getString(titleId, mDialogHelper.getAppName(),
-                mDialogHelper.getDeviceDescription());
+        final String title =
+                getString(
+                        titleId, mDialogHelper.getAppName(), mDialogHelper.getDeviceDescription());
         final int messageId = mUsbPermissionMessageHandler.getMessageId();
-        String message = (messageId != Resources.ID_NULL)
-                ? getString(messageId, mDialogHelper.getAppName(),
-                mDialogHelper.getDeviceDescription()) : null;
-        setAlertParams(title, message);
+        final String message =
+                (messageId != Resources.ID_NULL)
+                        ? getString(
+                                messageId,
+                                mDialogHelper.getAppName(),
+                                mDialogHelper.getDeviceDescription())
+                        : null;
 
-        // Only show the "always use" checkbox if there is no USB/Record warning
-        if (!useRecordWarning && mDialogHelper.canBeDefault()) {
-            addAlwaysUseCheckbox();
-        }
-        setupAlert();
+        showDialog(title, message, mDialogHelper.canBeDefault());
     }
 
     @Override

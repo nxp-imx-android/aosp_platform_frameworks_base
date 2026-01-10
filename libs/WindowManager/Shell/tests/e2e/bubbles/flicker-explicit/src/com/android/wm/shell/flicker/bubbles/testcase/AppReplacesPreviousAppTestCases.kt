@@ -51,16 +51,4 @@ interface AppReplacesPreviousAppTestCases : AppAnimateInTestCases, PreviousAppAn
             .isAppWindowOnTop(testApp)
             .forAllEntries()
     }
-
-    /** Verifies the bubbled [testApp] becomes the top window. */
-    @Test
-    fun appWindowBecomesTopWindow() {
-        wmTraceSubject.isAppWindowNotOnTop(testApp).then().isAppWindowOnTop(testApp).forAllEntries()
-    }
-
-    /** Verifies the bubble [testApp] is the top window at the end of transition. */
-    @Test
-    fun appWindowAsTopWindowAtEnd() {
-        wmStateSubjectAtEnd.isAppWindowOnTop(testApp)
-    }
 }

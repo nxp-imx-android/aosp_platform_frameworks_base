@@ -76,8 +76,6 @@
     <string name="bubble_accessibility_action_collapse_menu" msgid="2975310870146231463">"मेन्यू छोटा करें"</string>
     <string name="bubble_accessibility_action_move_bar_left" msgid="4803535120353716759">"बाईं ओर ले जाएं"</string>
     <string name="bubble_accessibility_action_move_bar_right" msgid="7686542531917510421">"दाईं ओर ले जाएं"</string>
-    <string name="bubble_accessibility_announce_expand" msgid="5388792092888203776">"<xliff:g id="BUBBLE_TITLE">%1$s</xliff:g> को बड़ा करें"</string>
-    <string name="bubble_accessibility_announce_collapse" msgid="3178806224494537097">"<xliff:g id="BUBBLE_TITLE">%1$s</xliff:g> को छोटा करें"</string>
     <string name="bubbles_app_settings" msgid="3617224938701566416">"<xliff:g id="NOTIFICATION_TITLE">%1$s</xliff:g> की सेटिंग"</string>
     <string name="bubble_dismiss_text" msgid="8816558050659478158">"बबल को स्क्रीन से हटाएं"</string>
     <string name="bubble_fullscreen_text" msgid="1006758103218086231">"बातचीत को फ़ुलस्क्रीन में खोलें"</string>
@@ -95,7 +93,6 @@
     <string name="bubble_bar_education_manage_text" msgid="3199732148641842038">"किसी ऐप्लिकेशन और बातचीत के लिए बबल की सुविधा को मैनेज करने के लिए यहां टैप करें"</string>
     <string name="notification_bubble_title" msgid="6082910224488253378">"बबल"</string>
     <string name="manage_bubbles_text" msgid="7730624269650594419">"मैनेज करें"</string>
-    <string name="accessibility_bubble_dismissed" msgid="8367471990421247357">"बबल खारिज किया गया."</string>
     <string name="restart_button_description" msgid="4564728020654658478">"बेहतर व्यू पाने के लिए, टैप करके ऐप्लिकेशन को रीस्टार्ट करें"</string>
     <string name="user_aspect_ratio_settings_button_hint" msgid="734835849600713016">"सेटिंग में जाकर इस ऐप्लिकेशन का आसपेक्ट रेशियो (लंबाई-चौड़ाई का अनुपात) बदलें"</string>
     <string name="user_aspect_ratio_settings_button_description" msgid="4315566801697411684">"आसपेक्ट रेशियो (लंबाई-चौड़ाई का अनुपात) बदलें"</string>

@@ -2116,9 +2116,9 @@ public class DevicePolicyManagerTest extends DpmTestBase {
     }
 
     private ActiveAdmin getDeviceOwner() {
-        ComponentName component = dpms.mOwners.getDeviceOwnerComponent();
+        ComponentName component = dpms.mDeviceAdmins.getDeviceOwnerComponent();
         DevicePolicyData policy =
-                dpms.getUserData(dpms.mOwners.getDeviceOwnerUserId());
+                dpms.mDeviceAdmins.getUserData(dpms.mDeviceAdmins.getDeviceOwnerUserId());
         for (ActiveAdmin admin : policy.mAdminList) {
             if (component.equals(admin.info.getComponent())) {
                 return admin;
@@ -5279,12 +5279,14 @@ public class DevicePolicyManagerTest extends DpmTestBase {
         // Security logging
         when(getServices().settings.securityLogGetLoggingEnabledProperty()).thenReturn(true);
         // System update policy
-        dpms.mOwners.setSystemUpdatePolicy(SystemUpdatePolicy.createAutomaticInstallPolicy());
+        dpms.mDeviceAdmins
+                .getOwners()
+                .setSystemUpdatePolicy(SystemUpdatePolicy.createAutomaticInstallPolicy());
         // Make it look as if FRP agent is present.
         when(dpms.mMockInjector.getPersistentDataBlockManagerInternal().getAllowedUid())
                 .thenReturn(12345 /* some UID in user 0 */);
         // Make personal apps look suspended
-        dpms.getUserData(UserHandle.USER_SYSTEM).mAppsSuspended = true;
+        dpms.mDeviceAdmins.getUserData(UserHandle.USER_SYSTEM).mAppsSuspended = true;
         // Screen capture
         dpm.setScreenCaptureDisabled(admin1, true);
 
@@ -5309,7 +5311,7 @@ public class DevicePolicyManagerTest extends DpmTestBase {
         verify(getServices().settings).settingsGlobalPutInt(
                 Settings.Global.WIFI_DEVICE_OWNER_CONFIGS_LOCKDOWN, 0);
         // System update policy should be removed
-        assertThat(dpms.mOwners.getSystemUpdatePolicy()).isNull();
+        assertThat(dpms.mDeviceAdmins.getOwners().getSystemUpdatePolicy()).isNull();
         // FRP agent should be notified
         verify(mContext.spiedContext, times(0)).sendBroadcastAsUser(
                 MockUtils.checkIntentAction(
@@ -6861,7 +6863,7 @@ public class DevicePolicyManagerTest extends DpmTestBase {
         setDeviceOwner();
         initializeDpms();
         assertThat(getMockTransferMetadataManager().metadataFileExists()).isFalse();
-        assertThat(dpms.isDeviceOwner(admin1, UserHandle.USER_SYSTEM)).isTrue();
+        assertThat(dpms.mDeviceAdmins.isDeviceOwner(admin1, UserHandle.USER_SYSTEM)).isTrue();
         assertThat(dpms.isAdminActive(admin1, UserHandle.USER_SYSTEM)).isTrue();
     }
 
@@ -6905,7 +6907,7 @@ public class DevicePolicyManagerTest extends DpmTestBase {
         setupProfileOwner();
         initializeDpms();
         assertThat(getMockTransferMetadataManager().metadataFileExists()).isFalse();
-        assertThat(dpms.isProfileOwner(admin1, CALLER_USER_HANDLE)).isTrue();
+        assertThat(dpms.mDeviceAdmins.isProfileOwner(admin1, CALLER_USER_HANDLE)).isTrue();
         assertThat(dpms.isAdminActive(admin1, CALLER_USER_HANDLE)).isTrue();
     }
 
@@ -9281,11 +9283,11 @@ public class DevicePolicyManagerTest extends DpmTestBase {
     }
 
     private File getDeviceOwnerFile() {
-        return dpms.mOwners.getDeviceOwnerFile();
+        return dpms.mDeviceAdmins.getOwners().getDeviceOwnerFile();
     }
 
     private File getProfileOwnerFile() {
-        return dpms.mOwners.getProfileOwnerFile(CALLER_USER_HANDLE);
+        return dpms.mDeviceAdmins.getOwners().getProfileOwnerFile(CALLER_USER_HANDLE);
     }
 
     private File getProfileOwnerPoliciesFile() {

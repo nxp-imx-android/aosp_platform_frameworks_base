@@ -171,11 +171,11 @@ class DesktopPipTransitionControllerTest(flags: FlagsParameterization) : ShellTe
         runOnTransitStart!!.invoke(Binder())
 
         verify(mockDesktopTasksController)
-            .moveToDisplay(
+            .addMoveToDisplayChanges(
+                wct = eq(wct),
                 task = eq(taskInfo),
                 displayId = eq(newDisplay),
                 bounds = anyOrNull(),
-                transitionHandler = anyOrNull(),
                 enterReason = eq(EnterReason.EXIT_PIP),
                 captionInsets = any(),
             )

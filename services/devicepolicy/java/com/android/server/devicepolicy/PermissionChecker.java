@@ -507,6 +507,8 @@ public class PermissionChecker implements IPermissionChecker {
                 new String[]{MANAGE_DEVICE_POLICY_PROFILES});
         USER_RESTRICTION_PERMISSIONS.put(UserManager.DISALLOW_ADD_USER,
                 new String[]{MANAGE_DEVICE_POLICY_MODIFY_USERS});
+        USER_RESTRICTION_PERMISSIONS.put(UserManager.DISALLOW_ADD_GUEST,
+                new String[]{MANAGE_DEVICE_POLICY_MODIFY_USERS});
         USER_RESTRICTION_PERMISSIONS.put(UserManager.DISALLOW_ADD_WIFI_CONFIG,
                 new String[]{MANAGE_DEVICE_POLICY_WIFI});
         USER_RESTRICTION_PERMISSIONS.put(UserManager.DISALLOW_ADJUST_VOLUME,

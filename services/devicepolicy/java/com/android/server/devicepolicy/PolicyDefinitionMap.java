@@ -235,6 +235,7 @@ public class PolicyDefinitionMap {
         userRestrictionFlags.put(UserManager.DISALLOW_NETWORK_RESET, /* flags= */ 0);
         userRestrictionFlags.put(UserManager.DISALLOW_FACTORY_RESET, /* flags= */ 0);
         userRestrictionFlags.put(UserManager.DISALLOW_ADD_USER, /* flags= */ 0);
+        userRestrictionFlags.put(UserManager.DISALLOW_ADD_GUEST, /*flags= */ 0);
         userRestrictionFlags.put(UserManager.DISALLOW_ADD_MANAGED_PROFILE, /* flags= */ 0);
         userRestrictionFlags.put(UserManager.DISALLOW_ADD_CLONE_PROFILE, /* flags= */ 0);
         userRestrictionFlags.put(UserManager.DISALLOW_ADD_PRIVATE_PROFILE, /* flags= */ 0);

@@ -43,6 +43,7 @@ import com.android.systemui.user.data.repository.fakeUserRepository
 import com.google.common.truth.Truth.assertThat
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.currentTime
 import kotlinx.coroutines.test.runCurrent
@@ -50,6 +51,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.kotlin.inOrder
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 
@@ -100,7 +102,6 @@ class AuthenticationInteractorTest : SysuiTestCase() {
             kosmos.fakeAuthenticationRepository.setAuthenticationMethod(Pin)
 
             assertSucceeded(underTest.authenticate(FakeAuthenticationRepository.DEFAULT_PIN))
-            verify(kosmos.latencyTracker).onActionStart(LatencyTracker.ACTION_LOCKSCREEN_UNLOCK)
         }
 
     @Test
@@ -109,8 +110,6 @@ class AuthenticationInteractorTest : SysuiTestCase() {
             kosmos.fakeAuthenticationRepository.setAuthenticationMethod(Pin)
 
             assertFailed(underTest.authenticate(listOf(9, 8, 7, 6, 5, 4)))
-            verify(kosmos.latencyTracker, never())
-                .onActionStart(LatencyTracker.ACTION_LOCKSCREEN_UNLOCK)
         }
 
     @Test
@@ -156,7 +155,6 @@ class AuthenticationInteractorTest : SysuiTestCase() {
             kosmos.fakeAuthenticationRepository.setAuthenticationMethod(Password)
 
             assertSucceeded(underTest.authenticate("password".toList()))
-            verify(kosmos.latencyTracker).onActionStart(LatencyTracker.ACTION_LOCKSCREEN_UNLOCK)
         }
 
     @Test
@@ -175,7 +173,6 @@ class AuthenticationInteractorTest : SysuiTestCase() {
             kosmos.fakeAuthenticationRepository.setAuthenticationMethod(Pattern)
 
             assertSucceeded(underTest.authenticate(FakeAuthenticationRepository.DEFAULT_PATTERN))
-            verify(kosmos.latencyTracker).onActionStart(LatencyTracker.ACTION_LOCKSCREEN_UNLOCK)
         }
 
     @Test
@@ -193,6 +190,19 @@ class AuthenticationInteractorTest : SysuiTestCase() {
             assertFailed(underTest.authenticate(wrongPattern))
             verify(kosmos.latencyTracker, never())
                 .onActionStart(LatencyTracker.ACTION_LOCKSCREEN_UNLOCK)
+        }
+
+    @Test
+    fun authenticate_whenCancelled_endsLatencyTracking() =
+        testScope.runTest {
+            kosmos.fakeAuthenticationRepository.pauseCredentialChecking()
+            val job = launch { underTest.authenticate(FakeAuthenticationRepository.DEFAULT_PIN) }
+            runCurrent()
+            job.cancel()
+            runCurrent()
+
+            verify(kosmos.latencyTracker)
+                .onActionEnd(LatencyTracker.ACTION_CHECK_CREDENTIAL_UNLOCKED)
         }
 
     @Test
@@ -654,11 +664,31 @@ class AuthenticationInteractorTest : SysuiTestCase() {
         assertThat(underTest.lockoutEndTime).isNull()
         assertThat(kosmos.fakeAuthenticationRepository.lockoutStartedReportCount).isEqualTo(0)
         assertThat(failedAuthenticationAttempts).isEqualTo(0)
+
+        inOrder(kosmos.latencyTracker) {
+            with(kosmos.latencyTracker) {
+                verify(this).onActionStart(LatencyTracker.ACTION_CHECK_CREDENTIAL)
+                verify(this).onActionStart(LatencyTracker.ACTION_CHECK_CREDENTIAL_UNLOCKED)
+                verify(this).onActionEnd(LatencyTracker.ACTION_CHECK_CREDENTIAL)
+                verify(this).onActionEnd(LatencyTracker.ACTION_CHECK_CREDENTIAL_UNLOCKED)
+                verify(this).onActionStart(LatencyTracker.ACTION_LOCKSCREEN_UNLOCK)
+            }
+        }
     }
 
     private fun assertFailed(authenticationResult: AuthenticationResult) {
         assertThat(authenticationResult).isEqualTo(AuthenticationResult.FAILED)
         assertThat(onAuthenticationResult).isFalse()
+
+        inOrder(kosmos.latencyTracker) {
+            with(kosmos.latencyTracker) {
+                verify(this).onActionStart(LatencyTracker.ACTION_CHECK_CREDENTIAL)
+                verify(this).onActionStart(LatencyTracker.ACTION_CHECK_CREDENTIAL_UNLOCKED)
+                verify(this, never()).onActionEnd(LatencyTracker.ACTION_CHECK_CREDENTIAL)
+                verify(this, never()).onActionEnd(LatencyTracker.ACTION_CHECK_CREDENTIAL_UNLOCKED)
+                verify(this, never()).onActionStart(LatencyTracker.ACTION_LOCKSCREEN_UNLOCK)
+            }
+        }
     }
 
     private fun assertSkipped(

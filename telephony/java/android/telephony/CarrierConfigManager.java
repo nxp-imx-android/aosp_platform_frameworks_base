@@ -1379,6 +1379,26 @@ public class CarrierConfigManager {
             "show_signal_strength_in_sim_status_bool";
 
     /**
+     * Flag specifying whether the Group Identifier Level 1 (GID1) is shown in the SIM
+     * Status screen. The default value is false.
+     * This setting is used by the Settings application and its visibility may be controlled by
+     * a feature flag within Settings.
+     * @hide
+     */
+    public static final String KEY_SHOW_GID1_IN_SIM_STATUS_BOOL =
+            "show_gid1_in_sim_status_bool";
+
+    /**
+     * Flag specifying whether the Carrier ID is shown in the SIM
+     * Status screen. The default value is false.
+     * This setting is used by the Settings application and its visibility may be controlled by
+     * a feature flag within Settings.
+     * @hide
+     */
+    public static final String KEY_SHOW_CARRIER_ID_IN_SIM_STATUS_BOOL =
+            "show_carrier_id_in_sim_status_bool";
+
+    /**
      * Flag specifying if we should interpret all signal strength as one bar higher
      * This is a replacement for the former resource config_inflateSignalStrength
      * The default value is false.
@@ -11619,6 +11639,9 @@ public class CarrierConfigManager {
         sDefaults.putStringArray(KEY_CARRIER_VVM_PACKAGE_NAME_STRING_ARRAY, null);
         sDefaults.putBoolean(KEY_SHOW_ICCID_IN_SIM_STATUS_BOOL, false);
         sDefaults.putBoolean(KEY_SHOW_SIGNAL_STRENGTH_IN_SIM_STATUS_BOOL, true);
+        sDefaults.putBoolean(KEY_SHOW_GID1_IN_SIM_STATUS_BOOL, false);
+        sDefaults.putBoolean(KEY_SHOW_CARRIER_ID_IN_SIM_STATUS_BOOL, false);
+
         sDefaults.putBoolean(KEY_INFLATE_SIGNAL_STRENGTH_BOOL, false);
         sDefaults.putBoolean(KEY_CI_ACTION_ON_SYS_UPDATE_BOOL, false);
         sDefaults.putString(KEY_CI_ACTION_ON_SYS_UPDATE_INTENT_STRING, "");

@@ -16,9 +16,25 @@
 
 package com.android.systemui.statusbar.quickactions.popups.ui.viewmodel
 
+import com.android.systemui.statusbar.quickactions.av.ui.viewmodel.AvControlsPopupViewModel
+import com.android.systemui.statusbar.quickactions.media.ui.viewmodel.MediaControlPopupViewModel
+import com.android.systemui.statusbar.quickactions.sharescreen.ui.viewmodel.ShareScreenPrivacyIndicatorPopupViewModel
+
 interface StatusBarPopupViewModel {
     /** A factory for creating a [StatusBarPopupViewModel]. */
-    interface Factory {
+    sealed interface Factory {
         fun create(): StatusBarPopupViewModel
+
+        interface MediaControl : Factory {
+            override fun create(): MediaControlPopupViewModel
+        }
+
+        interface AvControls : Factory {
+            override fun create(): AvControlsPopupViewModel
+        }
+
+        interface ShareScreen : Factory {
+            override fun create(): ShareScreenPrivacyIndicatorPopupViewModel
+        }
     }
 }

@@ -51,7 +51,6 @@ import com.android.wm.shell.shared.TransitionUtil;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
@@ -259,37 +258,39 @@ public class IOriginTransitionsImpl extends IOriginTransitions.Stub {
         /** Launch transition which will be passed directly with an Activity start. */
         private final RemoteTransition mWrappedLaunchTransition;
 
-        /** Templates for Return transitions with placeholder {@link TransitionFilter}. */
-        private final List<RemoteTransition> mReturnTransitionTemplates;
+        /** Return transitions for potential registration via Shell Transitions. */
+        private final List<RemoteTransition> mWrappedReturnTransitions;
 
-        /** Complete Return transitions which are actively registered with Shell Transitions. */
-        private final List<RemoteTransition> mWrappedReturnTransitions = new ArrayList<>();
+        /** Return transitions actually registered with shell (as remotes) */
+        private final List<RemoteTransition> mRegisteredReturnTransitions = new ArrayList<>();
 
         @GuardedBy("mLock")
         private boolean mDestroyed;
+
 
         OriginTransitionRecord(
                 RemoteTransition launchTransition, List<RemoteTransition> returnTransitions)
                 throws RemoteException {
             mWrappedLaunchTransition = wrapLaunch(launchTransition);
-            mReturnTransitionTemplates = returnTransitions;
+            mWrappedReturnTransitions = wrapReturns(returnTransitions);
             linkToDeath();
         }
 
         private boolean onLaunchTransitionStarting(TransitionInfo info) {
             synchronized (mLock) {
-                if (mDestroyed || mReturnTransitionTemplates.isEmpty()) {
+                if (mDestroyed || mWrappedReturnTransitions.isEmpty()) {
                     return false;
                 }
+
                 final TransitionInfoContainer tic = TransitionInfoContainer.extractInfo(info);
-                for (final RemoteTransition t : mReturnTransitionTemplates) {
+                for (final RemoteTransition t : mWrappedReturnTransitions) {
                     if (t.getFilter() == null) {
                         registerDefaultReturnTransition(t, tic);
                     } else {
                         registerReturnTransition(t, tic);
                     }
                 }
-                if (mWrappedReturnTransitions.isEmpty()) {
+                if (mRegisteredReturnTransitions.isEmpty()) {
                     // clean up since we don't have anything that needs holding onto
                     destroy();
                 }
@@ -297,21 +298,27 @@ public class IOriginTransitionsImpl extends IOriginTransitions.Stub {
             return true;
         }
 
+        // obtain a clone of a RemoteTransition object without the filter. The binder will point to
+        // the same remote object.
+        private RemoteTransition cloneRemoteTransitionWithoutFilter(RemoteTransition original) {
+            return new RemoteTransition(original.getRemoteTransition(), original.getDebugName());
+        }
+
         private void registerDefaultReturnTransition(
                 RemoteTransition t, TransitionInfoContainer tic) {
             // a single transition with no filters represents a default case so we
             // construct default filters & register
-
             final TransitionFilter returnFilter =
                     updateTransitionFilterForInfo(
                             createReturnTransitionFilter(/* forTakeover= */ false), tic);
             if (returnFilter != null) {
-                final RemoteTransition returnTransition = wrapReturn(t).setFilter(returnFilter);
+                // register the original remote transition with the new default return filter.
+                t.setFilter(returnFilter);
                 if (DEBUG) {
                     Log.d(TAG, "Registering filter " + returnFilter);
                 }
-                mShellTransitions.registerRemote(returnTransition);
-                mWrappedReturnTransitions.add(returnTransition);
+                mShellTransitions.registerRemote(t);
+                mRegisteredReturnTransitions.add(t);
             } else {
                 Log.w(TAG, "Failed to update default filter");
             }
@@ -323,9 +330,13 @@ public class IOriginTransitionsImpl extends IOriginTransitions.Stub {
                 if (DEBUG) {
                     Log.d(TAG, "Registering filter for takeover " + takeoverFilter);
                 }
-                final RemoteTransition takeoverTransition = wrapReturn(t).setFilter(takeoverFilter);
-                mShellTransitions.registerRemoteForTakeover(takeoverTransition);
-                mWrappedReturnTransitions.add(takeoverTransition);
+                // need to clone the remote transition here to ensure that registration with the
+                // takeover filter doesn't clobber the registration of the default (non-takeover)
+                // transition filter (since filters are now embedded in remotes).
+                final RemoteTransition takeOverTransition =
+                        cloneRemoteTransitionWithoutFilter(t).setFilter(takeoverFilter);
+                mShellTransitions.registerRemoteForTakeover(takeOverTransition);
+                mRegisteredReturnTransitions.add(takeOverTransition);
             } else {
                 Log.w(TAG, "Failed to update default takeover filter");
             }
@@ -342,13 +353,13 @@ public class IOriginTransitionsImpl extends IOriginTransitions.Stub {
             if (DEBUG) {
                 Log.d(TAG, "Registering updated filter " + f);
             }
-            final RemoteTransition returnTransition = wrapReturn(t).setFilter(f);
+            t.setFilter(f);
             if (isFilterForTakeover(f)) {
-                mShellTransitions.registerRemoteForTakeover(returnTransition);
+                mShellTransitions.registerRemoteForTakeover(t);
             } else {
-                mShellTransitions.registerRemote(returnTransition);
+                mShellTransitions.registerRemote(t);
             }
-            mWrappedReturnTransitions.add(returnTransition);
+            mRegisteredReturnTransitions.add(t);
         }
 
         private boolean onReturnTransitionStarting(TransitionInfo info) {
@@ -374,9 +385,10 @@ public class IOriginTransitionsImpl extends IOriginTransitions.Stub {
                 mDestroyed = true;
                 unlinkToDeath();
                 // unregister potentially pending returns
-                for (RemoteTransition rt : mWrappedReturnTransitions) {
+                for (RemoteTransition rt : mRegisteredReturnTransitions) {
                     mShellTransitions.unregisterRemote(rt);
                 }
+                mRegisteredReturnTransitions.clear();
                 mRecords.remove(getToken());
             }
         }
@@ -387,7 +399,7 @@ public class IOriginTransitionsImpl extends IOriginTransitions.Stub {
 
         private void linkToDeath() throws RemoteException {
             linkToDeath(mWrappedLaunchTransition);
-            for (RemoteTransition rt : mReturnTransitionTemplates) {
+            for (RemoteTransition rt : mWrappedReturnTransitions) {
                 linkToDeath(rt);
             }
         }
@@ -398,7 +410,7 @@ public class IOriginTransitionsImpl extends IOriginTransitions.Stub {
 
         private void unlinkToDeath() {
             unlinkToDeath(mWrappedLaunchTransition);
-            for (RemoteTransition rt : mReturnTransitionTemplates) {
+            for (RemoteTransition rt : mWrappedReturnTransitions) {
                 unlinkToDeath(rt);
             }
         }
@@ -446,29 +458,34 @@ public class IOriginTransitionsImpl extends IOriginTransitions.Stub {
             return (RemoteTransitionDelegate) transition.getRemoteTransition();
         }
 
-        private RemoteTransition wrapLaunch(RemoteTransition transitionTemplate) {
+        private RemoteTransition wrapLaunch(RemoteTransition transition) {
             if (DEBUG) {
-                Log.d(TAG, "wrapLaunch wrapping transition: " + transitionTemplate);
+                Log.d(TAG, "wrapLaunch wrapping transition: " + transition);
             }
             return new RemoteTransition(
                     new RemoteTransitionDelegate(
                             mContext.getMainExecutor(),
-                            transitionTemplate.getRemoteTransition(),
+                            transition.getRemoteTransition(),
                             this::onLaunchTransitionStarting),
-                    transitionTemplate.getDebugName());
+                    transition.getDebugName());
         }
 
-        private RemoteTransition wrapReturn(RemoteTransition transitionTemplate) {
+        private List<RemoteTransition> wrapReturns(List<RemoteTransition> transitions) {
             if (DEBUG) {
-                Log.d(TAG, "wrapReturn wrapping: " + transitionTemplate);
+                Log.d(TAG, "wrapReturn wrapping: " + transitions);
             }
-            return new RemoteTransition(
-                    new RemoteTransitionDelegate(
-                                    mContext.getMainExecutor(),
-                                    transitionTemplate.getRemoteTransition(),
-                                    this::onReturnTransitionStarting))
-                    .setDebugName(transitionTemplate.getDebugName())
-                    .setFilter(transitionTemplate.getFilter());
+            ArrayList<RemoteTransition> wrappedTransitions = new ArrayList<>();
+            for (RemoteTransition t : transitions) {
+                wrappedTransitions.add(new RemoteTransition(
+                        new RemoteTransitionDelegate(
+                                mContext.getMainExecutor(),
+                                t.getRemoteTransition(),
+                                this::onReturnTransitionStarting))
+                        .setDebugName(t.getDebugName())
+                        .setFilter(t.getFilter())
+                );
+            }
+            return wrappedTransitions;
         }
 
         /**

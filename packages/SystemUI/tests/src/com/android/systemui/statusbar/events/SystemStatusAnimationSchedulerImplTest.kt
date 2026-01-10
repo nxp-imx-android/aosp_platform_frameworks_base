@@ -779,6 +779,16 @@ class SystemStatusAnimationSchedulerImplTest(flags: FlagsParameterization) : Sys
             )
     }
 
+    @Test
+    fun testStop_unregistersDumpable() = runTest {
+        initializeSystemStatusAnimationScheduler(displayId = Display.DEFAULT_DISPLAY)
+
+        systemStatusAnimationScheduler.stop()
+
+        verify(dumpManager)
+            .unregisterDumpable(SystemStatusAnimationSchedulerImpl::class.java.simpleName)
+    }
+
     private fun TestScope.fastForwardAnimationToState(animationState: SystemEventAnimationState) {
         // this function should only be called directly after posting a status event
         assertEquals(AnimationQueued, systemStatusAnimationScheduler.animationState.value)

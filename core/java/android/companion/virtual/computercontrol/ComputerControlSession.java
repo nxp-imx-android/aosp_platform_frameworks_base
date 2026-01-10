@@ -38,6 +38,7 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.OutcomeReceiver;
 import android.os.RemoteException;
+import android.os.Trace;
 import android.util.Log;
 import android.util.Size;
 import android.view.Display;
@@ -70,10 +71,10 @@ import java.util.function.Consumer;
  *
  * @hide
  */
-public final class ComputerControlSession extends IComputerControlLifecycleCallback.Stub
-        implements AutoCloseable {
+public final class ComputerControlSession implements AutoCloseable {
 
     private static final String TAG = ComputerControlSession.class.getSimpleName();
+    private static final int TRACE_COOKIE_REQUEST_SCREENSHOT = 0;
 
     /** Overall timeout for a screenshot request to complete. */
     private static final int SCREENSHOT_TIMEOUT_MS = 5000;
@@ -210,6 +211,8 @@ public final class ComputerControlSession extends IComputerControlLifecycleCallb
     public @interface Action {
     }
 
+    private final String mTraceTrack = "ComputerControlSession#" + System.identityHashCode(this);
+
     /** Auxiliary thread for any client-side work related to the computer control session. */
     private final HandlerThread mHandlerThread;
     private final Handler mHandler;
@@ -240,6 +243,34 @@ public final class ComputerControlSession extends IComputerControlLifecycleCallb
     private final Runnable mOnClosedRunnable;
 
     private final ComputerControlAccessibilityProxy mAccessibilityProxy;
+
+    private final IComputerControlLifecycleCallback mRemoteLifecycleCallback =
+            new IComputerControlLifecycleCallback.Stub() {
+                @Override
+                public void onActive() {
+                    synchronized (mLifecycle) {
+                        mLifecycle.onActive();
+                    }
+                }
+
+                @Override
+                public void onBlocked(@SessionBlockReason int reason,
+                        @Nullable String blockingPackage) {
+                    synchronized (mLifecycle) {
+                        mLifecycle.onBlocked(reason, blockingPackage);
+                    }
+                }
+
+                @Override
+                public void onClosed(@SessionCloseReason int closeReason) {
+                    releaseResources();
+                    synchronized (mLifecycle) {
+                        mLifecycle.onClosed(closeReason);
+                    }
+                    mOnClosedRunnable.run();
+                    mHandlerThread.quitSafely();
+                }
+            };
 
     /** @hide */
     public ComputerControlSession(int displayId,
@@ -275,7 +306,7 @@ public final class ComputerControlSession extends IComputerControlLifecycleCallb
                 PixelFormat.RGBA_8888, /* maxImages= */ 2);
         mImageReader.setOnImageAvailableListener(reader -> onImageAvailable(), mHandler);
         try {
-            mSession.initialize(/* lifecycleCallback=*/ this, mImageReader.getSurface());
+            mSession.initialize(mRemoteLifecycleCallback, mImageReader.getSurface());
         } catch (RemoteException e) {
             e.rethrowFromSystemServer();
         }
@@ -431,7 +462,8 @@ public final class ComputerControlSession extends IComputerControlLifecycleCallb
             @Nullable CancellationSignal cancellationSignal) {
         Objects.requireNonNull(executor, "Executor must not be null");
         Objects.requireNonNull(receiver, "OutcomeReceiver must not be null");
-        final var callback = new ScreenshotCallbackRecord(executor, receiver, cancellationSignal);
+        final var callback =
+                new ScreenshotCallbackRecord(mTraceTrack, executor, receiver, cancellationSignal);
 
         synchronized (mLifecycle) {
             if (!(mLifecycle.getCurrentState() instanceof LifecycleState.Active)) {
@@ -712,30 +744,6 @@ public final class ComputerControlSession extends IComputerControlLifecycleCallb
         }
     }
 
-    @Override
-    public void onActive() {
-        synchronized (mLifecycle) {
-            mLifecycle.onActive();
-        }
-    }
-
-    @Override
-    public void onBlocked(@SessionBlockReason int reason, @Nullable String blockingPackage) {
-        synchronized (mLifecycle) {
-            mLifecycle.onBlocked(reason, blockingPackage);
-        }
-    }
-
-    @Override
-    public void onClosed(@SessionCloseReason int closeReason) {
-        releaseResources();
-        synchronized (mLifecycle) {
-            mLifecycle.onClosed(closeReason);
-        }
-        mOnClosedRunnable.run();
-        mHandlerThread.quitSafely();
-    }
-
     /**
      * Returns A11y information for all windows on the display associated with the
      * {@link ComputerControlSession}, or an empty list if no information is currently available.
@@ -807,17 +815,26 @@ public final class ComputerControlSession extends IComputerControlLifecycleCallb
     }
 
     /** Record of a single screenshot request callback. */
-    private record ScreenshotCallbackRecord(@CallbackExecutor Executor executor,
-                                            OutcomeReceiver<Image, ScreenshotException> receiver,
-                                            @Nullable CancellationSignal cancellationSignal) {
+    private record ScreenshotCallbackRecord(
+            String traceTrack,
+            @CallbackExecutor Executor executor,
+            OutcomeReceiver<Image, ScreenshotException> receiver,
+            @Nullable CancellationSignal cancellationSignal) {
+        ScreenshotCallbackRecord {
+            Trace.asyncTraceForTrackBegin(traceTrack, "ScreenshotCallbackRecord",
+                    TRACE_COOKIE_REQUEST_SCREENSHOT);
+        }
 
         /** Convenience method used to fire the callback on its executor. */
         void fire(Consumer<OutcomeReceiver<Image, ScreenshotException>> consumer) {
             executor.execute(() -> consumer.accept(receiver));
+            Trace.asyncTraceForTrackEnd(traceTrack, TRACE_COOKIE_REQUEST_SCREENSHOT);
         }
     }
 
     private void onImageAvailable() {
+        mAccessibilityProxy.onImageAvailable();
+
         synchronized (mImageReaderLock) {
             if (mImageReader == null) {
                 return;

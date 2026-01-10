@@ -35,6 +35,8 @@ class FakeAppContentProjectionCallback(context: Context) :
         newContentConsumer: RemoteCallback,
         thumbnailWidth: Int,
         thumbnailHeight: Int,
+        iconWidth: Int,
+        iconHeight: Int,
     ) {
         onContentRequest_enforcePermission()
         onContentRequestCalls.add(Triple(newContentConsumer, thumbnailWidth, thumbnailHeight))

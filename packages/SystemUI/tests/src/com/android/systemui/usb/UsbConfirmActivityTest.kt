@@ -16,6 +16,7 @@
 
 package com.android.systemui.usb
 
+import android.platform.test.annotations.DisableFlags
 import android.testing.TestableLooper
 import android.widget.CheckBox
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -51,6 +52,7 @@ class UsbConfirmActivityTest :
     }
 
     @Test
+    @DisableFlags(android.hardware.usb.flags.Flags.FLAG_ENABLE_PERSISTENT_DEVICE_PERMISSIONS)
     fun testUsbAccessoryDialog() {
         deviceConfiguration(isUsbDevice = false)
 
@@ -83,6 +85,7 @@ class UsbConfirmActivityTest :
     }
 
     @Test
+    @DisableFlags(android.hardware.usb.flags.Flags.FLAG_ENABLE_PERSISTENT_DEVICE_PERMISSIONS)
     fun testUsbDeviceDialogTitleAndMessage() {
         deviceConfiguration(isUsbDevice = true, hasAudioCapture = true)
 
@@ -107,6 +110,7 @@ class UsbConfirmActivityTest :
     }
 
     @Test
+    @DisableFlags(android.hardware.usb.flags.Flags.FLAG_ENABLE_PERSISTENT_DEVICE_PERMISSIONS)
     fun testUsbDeviceDialogTitleAndCheckbox() {
         deviceConfiguration(isUsbDevice = true)
 
@@ -130,6 +134,7 @@ class UsbConfirmActivityTest :
     }
 
     @Test
+    @DisableFlags(android.hardware.usb.flags.Flags.FLAG_ENABLE_PERSISTENT_DEVICE_PERMISSIONS)
     fun testUsbDeviceDialog() {
         deviceConfiguration(
             isUsbDevice = true,

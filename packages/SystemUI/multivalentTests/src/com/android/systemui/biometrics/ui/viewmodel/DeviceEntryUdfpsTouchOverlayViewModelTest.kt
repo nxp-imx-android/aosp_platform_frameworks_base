@@ -44,7 +44,6 @@ import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.securelockdevice.data.repository.fakeSecureLockDeviceRepository
-import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.statusbar.phone.SystemUIDialogManager
 import com.android.systemui.statusbar.phone.mockSystemUIDialogManager
 import com.android.systemui.testKosmos
@@ -265,6 +264,21 @@ class DeviceEntryUdfpsTouchOverlayViewModelTest : SysuiTestCase() {
                 )
             )
             assertThat(shouldHandleTouches).isTrue()
+        }
+
+    @Test
+    @EnableSceneContainer
+    fun transitionFromQuickSettingsToShade_shouldHandleTouchesFalse() =
+        kosmos.runTest {
+            val shouldHandleTouches by collectLastValue(underTest.shouldHandleTouches)
+            kosmos.setSceneTransition(
+                Transition(
+                    Scenes.QuickSettings,
+                    Scenes.Shade,
+                    progress = flowOf(ALLOW_TOUCH_SHADE_EXPANSION_MAX_THRESHOLD - .01f),
+                )
+            )
+            assertThat(shouldHandleTouches).isFalse()
         }
 
     @Test

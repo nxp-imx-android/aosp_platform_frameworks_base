@@ -18,9 +18,12 @@ package com.android.systemui.statusbar.events
 
 import android.content.Context
 import android.view.Display
+import com.android.app.displaylib.PerDisplayRepository
+import com.android.systemui.Flags
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Default
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.LogBufferFactory
 import dagger.Module
@@ -54,13 +57,18 @@ interface StatusBarEventsModule {
             @Default systemEventCoordinator: SystemEventCoordinator,
             chipAnimationController: SystemEventChipAnimationController,
             @Application coroutineScope: CoroutineScope,
+            displaySubcomponentRepo: PerDisplayRepository<SystemUIDisplaySubcomponent>,
         ): SystemStatusAnimationScheduler {
-            return factory.create(
-                systemEventCoordinator,
-                chipAnimationController,
-                Display.DEFAULT_DISPLAY,
-                coroutineScope,
-            )
+            return if (Flags.systemStatusAnimationPerDisplay()) {
+                displaySubcomponentRepo[Display.DEFAULT_DISPLAY]!!.systemStatusAnimationScheduler
+            } else {
+                return factory.create(
+                    systemEventCoordinator,
+                    chipAnimationController,
+                    Display.DEFAULT_DISPLAY,
+                    coroutineScope,
+                )
+            }
         }
 
         @Provides

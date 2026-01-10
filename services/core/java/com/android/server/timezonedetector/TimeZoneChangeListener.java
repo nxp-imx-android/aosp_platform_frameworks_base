@@ -19,7 +19,9 @@ package com.android.server.timezonedetector;
 import android.annotation.CurrentTimeMillisLong;
 import android.annotation.ElapsedRealtimeLong;
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.annotation.UserIdInt;
+import android.app.timezonedetector.TelephonyTimeZoneSuggestion;
 import android.util.IndentingPrintWriter;
 
 import com.android.server.SystemTimeZone.TimeZoneConfidence;
@@ -46,6 +48,7 @@ public interface TimeZoneChangeListener {
         private final @TimeZoneConfidence int mOldConfidence;
         private final @TimeZoneConfidence int mNewConfidence;
         private final String mCause;
+        private final TelephonyTimeZoneSuggestion mTelephonySuggestion;
 
         public TimeZoneChangeEvent(
                 @ElapsedRealtimeLong long elapsedRealtimeMillis,
@@ -56,6 +59,7 @@ public interface TimeZoneChangeListener {
                 @NonNull String newZoneId,
                 @TimeZoneConfidence int oldConfidence,
                 @TimeZoneConfidence int newConfidence,
+                @Nullable TelephonyTimeZoneSuggestion telephonySuggestion,
                 @NonNull String cause) {
             mElapsedRealtimeMillis = elapsedRealtimeMillis;
             mUnixEpochTimeMillis = unixEpochTimeMillis;
@@ -65,6 +69,7 @@ public interface TimeZoneChangeListener {
             mNewZoneId = Objects.requireNonNull(newZoneId);
             mOldConfidence = oldConfidence;
             mNewConfidence = newConfidence;
+            mTelephonySuggestion = telephonySuggestion;
             mCause = Objects.requireNonNull(cause);
         }
 
@@ -105,6 +110,10 @@ public interface TimeZoneChangeListener {
             return mNewConfidence;
         }
 
+        public @Nullable TelephonyTimeZoneSuggestion getTelephonySuggestion() {
+            return mTelephonySuggestion;
+        }
+
         @Override
         public String toString() {
             return "TimeZoneChangeEvent{"
@@ -128,8 +137,9 @@ public interface TimeZoneChangeListener {
                     + mNewConfidence
                     + ", mCause='"
                     + mCause
-                    + '\''
-                    + '}';
+                    + "', mTelephonySuggestion="
+                    + mTelephonySuggestion
+                    + "}";
         }
 
         @Override
@@ -146,7 +156,8 @@ public interface TimeZoneChangeListener {
                         && Objects.equals(mNewZoneId, that.mNewZoneId)
                         && mOldConfidence == that.mOldConfidence
                         && mNewConfidence == that.mNewConfidence
-                        && Objects.equals(mCause, that.mCause);
+                        && Objects.equals(mCause, that.mCause)
+                        && Objects.equals(mTelephonySuggestion, that.mTelephonySuggestion);
             }
             return false;
         }
@@ -162,6 +173,7 @@ public interface TimeZoneChangeListener {
                     mNewZoneId,
                     mOldConfidence,
                     mNewConfidence,
+                    mTelephonySuggestion,
                     mCause);
         }
     }

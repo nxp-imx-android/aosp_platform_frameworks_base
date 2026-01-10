@@ -56,7 +56,7 @@ import com.android.systemui.shade.domain.interactor.shadeModeInteractor
 import com.android.systemui.shade.ui.composable.ShadeScene
 import com.android.systemui.shade.ui.composable.WithStatusIconContext
 import com.android.systemui.shade.ui.viewmodel.shadeSceneContentViewModelFactory
-import com.android.systemui.shade.ui.viewmodel.shadeUserAcionsViewModelFactory
+import com.android.systemui.shade.ui.viewmodel.shadeUserActionsViewModelFactory
 import com.android.systemui.statusbar.notification.stack.ui.view.notificationScrollView
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.notificationsPlaceholderViewModelFactory
 import com.android.systemui.statusbar.phone.ui.tintedIconManagerFactory
@@ -123,7 +123,7 @@ class ShadeSceneToGoneSceneTransitionTest : SysuiTestCase() {
         ShadeScene(
             shadeSession = shadeSession,
             notificationStackScrollView = { kosmos.notificationScrollView },
-            actionsViewModelFactory = kosmos.shadeUserAcionsViewModelFactory,
+            actionsViewModelFactory = kosmos.shadeUserActionsViewModelFactory,
             contentViewModelFactory = kosmos.shadeSceneContentViewModelFactory,
             notificationsPlaceholderViewModelFactory =
                 kosmos.notificationsPlaceholderViewModelFactory,

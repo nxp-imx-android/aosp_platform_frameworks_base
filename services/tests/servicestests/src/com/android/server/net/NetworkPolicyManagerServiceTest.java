@@ -172,6 +172,7 @@ import android.os.SimpleClock;
 import android.os.SystemClock;
 import android.os.UserHandle;
 import android.os.UserManager;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.annotations.RequiresFlagsDisabled;
 import android.platform.test.annotations.RequiresFlagsEnabled;
@@ -2732,6 +2733,107 @@ public class NetworkPolicyManagerServiceTest {
         // Verify the duplicated items in the merged IMSI list won't crash the system.
         final NetworkTemplate result = normalizeTemplate(template, mergedList);
         assertEquals(template, result);
+    }
+
+    @Test
+    public void testSubscriptionPlanExpiration() throws Exception {
+        final long expirationDuration = 500;
+        final SubscriptionPlan plan = buildMonthlyDataPlan(
+                ZonedDateTime.parse("2015-11-01T00:00:00.00Z"), DataUnit.MEGABYTES.toBytes(1800));
+
+        mService.setSubscriptionPlans(TEST_SUB_ID, new SubscriptionPlan[]{plan}, expirationDuration,
+                mServiceContext.getOpPackageName());
+
+        SubscriptionPlan[] plans =
+                mService.getSubscriptionPlans(TEST_SUB_ID, mServiceContext.getOpPackageName());
+        assertNotNull(plans);
+        assertEquals(1, plans.length);
+
+        waitForDelayedMessageOnHandler(expirationDuration + 200);
+
+        plans = mService.getSubscriptionPlans(TEST_SUB_ID, mServiceContext.getOpPackageName());
+        assertNotNull(plans);
+        assertEquals(0, plans.length);
+    }
+
+    @Test
+    @EnableFlags({com.android.internal.telephony.flags.Flags.FLAG_SUBSCRIPTION_PLAN_ENHANCEMENT,
+            com.android.internal.telephony.flags
+                    .Flags.FLAG_SUBSCRIPTION_PLAN_ALLOW_STATUS_AND_END_DATE})
+    public void testSubscriptionPlanExpiration_PersistenceAcrossReboot() throws Exception {
+        final long expirationDuration = TimeUnit.HOURS.toMillis(1);
+
+        final ZonedDateTime start = ZonedDateTime.parse("2025-01-01T00:00:00.00Z");
+        final ZonedDateTime resetTime = ZonedDateTime.parse("2025-01-15T00:00:00.00Z");
+        final int planId = 1001;
+        final int status = SubscriptionPlan.SUBSCRIPTION_STATUS_ACTIVE;
+        final int downlink = 5000;
+        final int uplink = 1000;
+        final int[] types = new int[] {
+                SubscriptionPlan.PLAN_TYPE_CELLULAR,
+                SubscriptionPlan.PLAN_TYPE_PREPAID
+        };
+
+        final SubscriptionPlan plan = SubscriptionPlan.Builder
+                .createRecurringMonthly(start)
+                .setTitle("Persisted Plan")
+                .setSummary("Plan with all fields")
+                .setDataLimit(DataUnit.GIBIBYTES.toBytes(10),
+                        SubscriptionPlan.LIMIT_BEHAVIOR_THROTTLED)
+                .setDataUsage(DataUnit.GIBIBYTES.toBytes(2), System.currentTimeMillis())
+                .setId(planId)
+                .setTypes(types)
+                .setSubscriptionStatus(status)
+                .setDataUsageResetTime(resetTime)
+                .setStreamingAppMaxDownlinkKbps(downlink)
+                .setStreamingAppMaxUplinkKbps(uplink)
+                .build();
+
+        mService.setSubscriptionPlans(TEST_SUB_ID, new SubscriptionPlan[]{plan}, expirationDuration,
+                mServiceContext.getOpPackageName());
+
+        LocalServices.removeServiceForTest(NetworkPolicyManagerInternal.class);
+
+        // Re-create service (Reloads from XML)
+        mService = new NetworkPolicyManagerService(mServiceContext, mActivityManager,
+                mNetworkManager, mIpm, mClock, mPolicyDir, true, mDeps);
+        mService.bindConnectivityManager();
+        mService.systemReady(mService.networkScoreAndNetworkManagementServiceReady());
+
+        SubscriptionPlan[] plans = mService.getSubscriptionPlans(TEST_SUB_ID,
+                mServiceContext.getOpPackageName());
+        assertNotNull("Plan should persist after reboot", plans);
+        assertEquals("Should recover exactly one plan", 1, plans.length);
+
+        SubscriptionPlan restoredPlan = plans[0];
+        assertEquals("Restored plan should strictly match original", plan, restoredPlan);
+    }
+
+    @Test
+    @EnableFlags(com.android.internal.telephony.flags.Flags.FLAG_SUBSCRIPTION_PLAN_ENHANCEMENT)
+    public void testSubscriptionPlanExpiration_ExpiredWhileDeviceOff() throws Exception {
+        final long expirationDuration = TimeUnit.HOURS.toMillis(1);
+        final SubscriptionPlan plan = buildMonthlyDataPlan(
+                ZonedDateTime.parse("2015-11-01T00:00:00.00Z"), DataUnit.MEGABYTES.toBytes(1800));
+
+        mService.setSubscriptionPlans(TEST_SUB_ID, new SubscriptionPlan[]{plan}, expirationDuration,
+                mServiceContext.getOpPackageName());
+
+        incrementCurrentTime(expirationDuration + TimeUnit.HOURS.toMillis(1));
+
+        // Simulate a Reboot
+        // Clean up the LocalService registered by the previous mService instance
+        LocalServices.removeServiceForTest(NetworkPolicyManagerInternal.class);
+
+        // create the new instance
+        mService = new NetworkPolicyManagerService(mServiceContext, mActivityManager,
+                mNetworkManager, mIpm, mClock, mPolicyDir, true, mDeps);
+        mService.bindConnectivityManager();
+        mService.systemReady(mService.networkScoreAndNetworkManagementServiceReady());
+
+        SubscriptionPlan[] plans =
+                mService.getSubscriptionPlans(TEST_SUB_ID, mServiceContext.getOpPackageName());
+        assertNull("Expired plan should not be loaded from XML", plans);
     }
 
     private String formatBlockedStateError(int uid, int rule, boolean metered,

@@ -1401,6 +1401,23 @@ public final class UserManagerTest {
         }
     }
 
+    // Make sure createUser would fail if we have DISALLOW_ADD_GUEST.
+    @MediumTest
+    @Test
+    @RequiresFlagsEnabled(android.os.Flags.FLAG_DISALLOW_ADD_GUEST)
+    public void testCreateUser_disallowAddGuest() throws Exception {
+        final int creatorId = ActivityManager.getCurrentUser();
+        final UserHandle creatorHandle = asHandle(creatorId);
+        mUserManager.setUserRestriction(UserManager.DISALLOW_ADD_GUEST, true, creatorHandle);
+        try {
+            UserInfo createadInfo = createUser("GuestUser", /*flags=*/ UserInfo.FLAG_GUEST);
+            assertThat(createadInfo).isNull();
+        } finally {
+            mUserManager.setUserRestriction(UserManager.DISALLOW_ADD_GUEST, false,
+                    creatorHandle);
+        }
+    }
+
     // Make sure createProfile would fail if we have DISALLOW_ADD_MANAGED_PROFILE.
     @MediumTest
     @Test

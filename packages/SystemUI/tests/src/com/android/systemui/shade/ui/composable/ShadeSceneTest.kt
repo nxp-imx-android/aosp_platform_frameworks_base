@@ -46,7 +46,7 @@ import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.domain.interactor.enableSingleShade
 import com.android.systemui.shade.domain.interactor.enableSplitShade
 import com.android.systemui.shade.ui.viewmodel.shadeSceneContentViewModelFactory
-import com.android.systemui.shade.ui.viewmodel.shadeUserAcionsViewModelFactory
+import com.android.systemui.shade.ui.viewmodel.shadeUserActionsViewModelFactory
 import com.android.systemui.statusbar.notification.stack.ui.view.notificationScrollView
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.notificationsPlaceholderViewModelFactory
 import com.android.systemui.statusbar.phone.ui.tintedIconManagerFactory
@@ -100,7 +100,7 @@ class ShadeSceneTest : SysuiTestCase() {
                     ShadeScene(
                         shadeSession = shadeSession,
                         notificationStackScrollView = { notificationScrollView },
-                        actionsViewModelFactory = shadeUserAcionsViewModelFactory,
+                        actionsViewModelFactory = shadeUserActionsViewModelFactory,
                         contentViewModelFactory = shadeSceneContentViewModelFactory,
                         notificationsPlaceholderViewModelFactory =
                             notificationsPlaceholderViewModelFactory,
@@ -153,7 +153,7 @@ class ShadeSceneTest : SysuiTestCase() {
                 ShadeScene(
                     shadeSession = shadeSession,
                     notificationStackScrollView = { notificationScrollView },
-                    actionsViewModelFactory = shadeUserAcionsViewModelFactory,
+                    actionsViewModelFactory = shadeUserActionsViewModelFactory,
                     contentViewModelFactory = shadeSceneContentViewModelFactory,
                     notificationsPlaceholderViewModelFactory =
                         notificationsPlaceholderViewModelFactory,

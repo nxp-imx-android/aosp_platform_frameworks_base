@@ -112,7 +112,6 @@ class AppHandleViewHolder(
             onCaptionButtonClickListener.onClick(v)
         }
         captionHandle.setOnTouchListener(onCaptionTouchListener)
-        captionHandle.setOnClickListener(onCaptionButtonClickListener)
         if (!shouldAddStatusBarInputLayer) {
             ViewCompat.replaceAccessibilityAction(
                 captionHandle,

@@ -44,6 +44,7 @@ class MediaControlChipViewModel
 constructor(
     @Application private val applicationContext: Context,
     mediaControlChipInteractor: MediaControlChipInteractor,
+    private val popupViewModelFactory: MediaControlPopupViewModel.Factory,
 ) : StatusBarPopupChipViewModel, ExclusiveActivatable() {
     private val hydrator: Hydrator = Hydrator("MediaControlChipViewModel.hydrator")
     /**
@@ -89,6 +90,7 @@ constructor(
             icons = listOf(ChipIcon(icon = defaultIcon)),
             chipText = model.songName.toString(),
             hoverBehavior = createHoverBehavior(model),
+            popupViewModelFactory = popupViewModelFactory,
         )
     }
 

@@ -917,7 +917,8 @@ static jobject Bitmap_createFromParcel(JNIEnv* env, jobject, jobject parcel) {
             kRGBA_F16_SkColorType != colorType &&
             kRGB_565_SkColorType != colorType &&
             kARGB_4444_SkColorType != colorType &&
-            kAlpha_8_SkColorType != colorType) {
+            kAlpha_8_SkColorType != colorType &&
+            kRGBA_1010102_SkColorType != colorType) {
         jniThrowExceptionFmt(env, BadParcelableException,
                              "Bitmap_createFromParcel unknown colortype: %d\n", colorType);
         return NULL;

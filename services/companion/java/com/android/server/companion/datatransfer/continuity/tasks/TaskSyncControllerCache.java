@@ -35,7 +35,6 @@ public class TaskSyncControllerCache extends MultiUserResourceCache<TaskSyncCont
     private final ActivityTaskManagerInternal mActivityTaskManagerInternal;
     private final AppOpsManager mAppOps;
     private final PackageManager mPackageManager;
-    private final RemoteTaskFactory mRemoteTaskFactory;
 
     public TaskSyncControllerCache(
             @NonNull Context context,
@@ -48,7 +47,6 @@ public class TaskSyncControllerCache extends MultiUserResourceCache<TaskSyncCont
                 Objects.requireNonNull(LocalServices.getService(ActivityTaskManagerInternal.class));
         mPackageManager = Objects.requireNonNull(context.getPackageManager());
         mAppOps = Objects.requireNonNull(context.getSystemService(AppOpsManager.class));
-        mRemoteTaskFactory = new RemoteTaskFactory(mContext, mPackageManager);
     }
 
     @Override
@@ -59,16 +57,15 @@ public class TaskSyncControllerCache extends MultiUserResourceCache<TaskSyncCont
                 userId,
                 taskContinuityMessenger,
                 new TaskBroadcaster(
+                        userId,
                         taskContinuityMessenger,
-                        new RunningTaskFetcher(
-                                userId,
-                                mActivityTaskManager,
-                                mActivityTaskManagerInternal,
-                                mAppOps)),
+                        mActivityTaskManager,
+                        mActivityTaskManagerInternal,
+                        mAppOps),
                 new RemoteTaskStore(),
                 new RemoteTaskListenerHolder(),
                 mActivityTaskManager,
                 mActivityTaskManagerInternal,
-                mRemoteTaskFactory);
+                new RemoteTaskFactory(userId, mContext, mPackageManager));
     }
 }

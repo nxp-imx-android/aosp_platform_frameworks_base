@@ -23,18 +23,20 @@ import com.android.systemui.scene.ui.composable.transitions.bouncerToGoneTransit
 import com.android.systemui.scene.ui.composable.transitions.bouncerToLockscreenTransition
 import com.android.systemui.scene.ui.composable.transitions.communalToBouncerTransition
 import com.android.systemui.scene.ui.composable.transitions.communalToGoneTransition
-import com.android.systemui.scene.ui.composable.transitions.communalToShadeTransition
+import com.android.systemui.scene.ui.composable.transitions.communalToSingleShadeTransition
+import com.android.systemui.scene.ui.composable.transitions.communalToSplitShadeTransition
 import com.android.systemui.scene.ui.composable.transitions.dreamToBouncerTransition
 import com.android.systemui.scene.ui.composable.transitions.dreamToCommunalTransition
 import com.android.systemui.scene.ui.composable.transitions.dreamToGoneTransition
 import com.android.systemui.scene.ui.composable.transitions.dreamToNotificationsShadeTransition
 import com.android.systemui.scene.ui.composable.transitions.dreamToQuickSettingsShadeTransition
 import com.android.systemui.scene.ui.composable.transitions.dreamToQuickSettingsTransition
-import com.android.systemui.scene.ui.composable.transitions.dreamToShadeTransition
+import com.android.systemui.scene.ui.composable.transitions.dreamToSingleShadeTransition
+import com.android.systemui.scene.ui.composable.transitions.dreamToSplitShadeTransition
 import com.android.systemui.scene.ui.composable.transitions.fromBouncerPreview
 import com.android.systemui.scene.ui.composable.transitions.fromBouncerTransition
 import com.android.systemui.scene.ui.composable.transitions.goneToQuickSettingsTransition
-import com.android.systemui.scene.ui.composable.transitions.goneToShadeSceneTransition
+import com.android.systemui.scene.ui.composable.transitions.goneToSingleShadeTransition
 import com.android.systemui.scene.ui.composable.transitions.goneToSplitShadeTransition
 import com.android.systemui.scene.ui.composable.transitions.lockscreenToBouncerTransition
 import com.android.systemui.scene.ui.composable.transitions.lockscreenToCommunalSystemTransition
@@ -46,7 +48,7 @@ import com.android.systemui.scene.ui.composable.transitions.lockscreenToNotifica
 import com.android.systemui.scene.ui.composable.transitions.lockscreenToOccludedTransition
 import com.android.systemui.scene.ui.composable.transitions.lockscreenToQuickSettingsOverlayTransition
 import com.android.systemui.scene.ui.composable.transitions.lockscreenToQuickSettingsSceneTransition
-import com.android.systemui.scene.ui.composable.transitions.lockscreenToShadeSceneTransition
+import com.android.systemui.scene.ui.composable.transitions.lockscreenToSingleShadeTransition
 import com.android.systemui.scene.ui.composable.transitions.lockscreenToSplitShadeTransition
 import com.android.systemui.scene.ui.composable.transitions.shadeToAlwaysOnDisplayTransition
 import com.android.systemui.scene.ui.composable.transitions.shadeToQuickSettingsTransition
@@ -90,7 +92,16 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
                 cuj = Cuj.CUJ_NOTIFICATION_SHADE_EXPAND_COLLAPSE,
                 cujTag = TAG_EXPAND,
             ) {
-                dreamToShadeTransition()
+                dreamToSingleShadeTransition()
+            }
+            from(
+                Scenes.Dream,
+                to = Scenes.Shade,
+                cuj = Cuj.CUJ_NOTIFICATION_SHADE_EXPAND_COLLAPSE,
+                key = ToSplitShade,
+                cujTag = TAG_EXPAND,
+            ) {
+                dreamToSplitShadeTransition()
             }
             from(
                 Scenes.Dream,
@@ -106,7 +117,7 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
                 cuj = Cuj.CUJ_NOTIFICATION_SHADE_EXPAND_COLLAPSE,
                 cujTag = TAG_EXPAND,
             ) {
-                goneToShadeSceneTransition()
+                goneToSingleShadeTransition()
             }
             from(
                 Scenes.Gone,
@@ -124,7 +135,7 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
                 cuj = Cuj.CUJ_NOTIFICATION_SHADE_EXPAND_COLLAPSE,
                 cujTag = TAG_EXPAND,
             ) {
-                goneToShadeSceneTransition(durationScale = 0.9)
+                goneToSingleShadeTransition(durationScale = 0.9)
             }
             from(
                 Scenes.Gone,
@@ -157,7 +168,7 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
                 cuj = Cuj.CUJ_NOTIFICATION_SHADE_EXPAND_COLLAPSE,
                 cujTag = TAG_EXPAND,
             ) {
-                lockscreenToShadeSceneTransition(
+                lockscreenToSingleShadeTransition(
                     transitionDistancePx = lockscreenToShadeTransitionDistancePx,
                     seekAnimation = true,
                 )
@@ -181,7 +192,7 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
                 cuj = Cuj.CUJ_NOTIFICATION_SHADE_EXPAND_COLLAPSE,
                 cujTag = TAG_EXPAND,
             ) {
-                lockscreenToShadeSceneTransition(
+                lockscreenToSingleShadeTransition(
                     transitionDistancePx = lockscreenToShadeTransitionDistancePx,
                     durationScale = 0.9,
                 )
@@ -249,7 +260,7 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
                 cuj = Cuj.CUJ_NOTIFICATION_SHADE_EXPAND_COLLAPSE,
                 cujTag = TAG_COLLAPSE,
             ) {
-                reversed { goneToShadeSceneTransition() }
+                reversed { goneToSingleShadeTransition() }
             }
             from(
                 Scenes.Shade,
@@ -267,7 +278,7 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
                 cujTag = TAG_COLLAPSE,
             ) {
                 reversed {
-                    lockscreenToShadeSceneTransition(
+                    lockscreenToSingleShadeTransition(
                         transitionDistancePx = lockscreenToShadeTransitionDistancePx
                     )
                 }
@@ -314,7 +325,16 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
                 cuj = Cuj.CUJ_NOTIFICATION_SHADE_EXPAND_COLLAPSE,
                 cujTag = TAG_EXPAND,
             ) {
-                communalToShadeTransition()
+                communalToSingleShadeTransition()
+            }
+            from(
+                Scenes.Communal,
+                to = Scenes.Shade,
+                key = ToSplitShade,
+                cuj = Cuj.CUJ_NOTIFICATION_SHADE_EXPAND_COLLAPSE,
+                cujTag = TAG_EXPAND,
+            ) {
+                communalToSplitShadeTransition()
             }
 
             // Overlay transitions

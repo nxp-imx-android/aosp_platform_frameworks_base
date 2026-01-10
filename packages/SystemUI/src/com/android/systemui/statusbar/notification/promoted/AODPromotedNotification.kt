@@ -88,6 +88,7 @@ import com.android.systemui.statusbar.notification.promoted.ui.viewmodel.AODProm
 import com.android.systemui.statusbar.notification.row.shared.ImageModel
 import com.android.systemui.statusbar.notification.row.shared.isNullOrEmpty
 import com.android.systemui.statusbar.notification.shared.Metric
+import java.time.Instant
 import kotlin.math.min
 
 @Composable
@@ -649,7 +650,7 @@ private class AODPromotedNotificationViewUpdater(root: View) {
             val hasAppName = !content.appName.isNullOrEmpty() && !hideAppName
 
             val hasHeader = !content.title.isNullOrEmpty() && !hideTitle
-            val hasChronometer = content.time is When.Chronometer
+            val hasChronometer = content.time is When.Chronometer || content.canShowTime
             val hasTextBeforeSubText = hasAppName || hasHeader
             val hasTextBeforeTime = hasAppName || hasSubText || hasHeader
 
@@ -684,7 +685,7 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         collapsed: Boolean,
     ) {
         updateAppName(content, forceHide = collapsed)
-        updateTimeAndChronometer(content, isCallStyle = true)
+        updateTimeAndChronometer(content)
         updateProfileBadge(content, isCallStyle = true)
 
         updateImageView(verificationIcon, content.verificationIcon)
@@ -733,12 +734,21 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         updateTextView(titleView, content.title, color = PrimaryText)
     }
 
-    private fun updateTimeAndChronometer(
-        content: PromotedNotificationContentModel,
-        isCallStyle: Boolean = false,
-    ) {
-        val canShowTime = !richOngoingImprovements() || isCallStyle
-        if (canShowTime) {
+    private val PromotedNotificationContentModel.canShowTime: Boolean
+        get() =
+            when {
+                !richOngoingImprovements() -> true
+                this.style == Style.Call || this.style == Style.CollapsedCall -> true
+                time is When.Time -> {
+                    val timeValue = Instant.ofEpochMilli(time.currentTimeMillis)
+                    val nowValue = Instant.now()
+                    timeValue.isAfter(nowValue)
+                }
+                else -> false
+            }
+
+    private fun updateTimeAndChronometer(content: PromotedNotificationContentModel) {
+        if (content.canShowTime) {
             if (content.time is When.Time) {
                 time?.setTime(content.time.currentTimeMillis)
             }

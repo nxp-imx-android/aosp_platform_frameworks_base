@@ -76,8 +76,6 @@
     <string name="bubble_accessibility_action_collapse_menu" msgid="2975310870146231463">"မီနူးကို လျှော့ပြပါ"</string>
     <string name="bubble_accessibility_action_move_bar_left" msgid="4803535120353716759">"ဘယ်သို့ရွှေ့ရန်"</string>
     <string name="bubble_accessibility_action_move_bar_right" msgid="7686542531917510421">"ညာသို့ရွှေ့ရန်"</string>
-    <string name="bubble_accessibility_announce_expand" msgid="5388792092888203776">"<xliff:g id="BUBBLE_TITLE">%1$s</xliff:g> ကို ချဲ့ရန်"</string>
-    <string name="bubble_accessibility_announce_collapse" msgid="3178806224494537097">"<xliff:g id="BUBBLE_TITLE">%1$s</xliff:g> ကို ချုံ့ရန်"</string>
     <string name="bubbles_app_settings" msgid="3617224938701566416">"<xliff:g id="NOTIFICATION_TITLE">%1$s</xliff:g> ဆက်တင်များ"</string>
     <string name="bubble_dismiss_text" msgid="8816558050659478158">"ပူဖောင်းကွက် ပယ်ရန်"</string>
     <string name="bubble_fullscreen_text" msgid="1006758103218086231">"ဖန်သားပြင်အပြည့်သို့ ရွှေ့ရန်"</string>
@@ -95,7 +93,6 @@
     <string name="bubble_bar_education_manage_text" msgid="3199732148641842038">"ပူဖောင်းကွက်သုံးနိုင်သည့် အက်ပ်နှင့် စကားဝိုင်းများ စီမံရန် ဤနေရာကို တို့ပါ"</string>
     <string name="notification_bubble_title" msgid="6082910224488253378">"ပူဖောင်းဖောက်သံ"</string>
     <string name="manage_bubbles_text" msgid="7730624269650594419">"စီမံရန်"</string>
-    <string name="accessibility_bubble_dismissed" msgid="8367471990421247357">"ပူဖောင်းကွက် ဖယ်လိုက်သည်။"</string>
     <string name="restart_button_description" msgid="4564728020654658478">"ပိုကောင်းသောမြင်ကွင်းအတွက် ဤအက်ပ်ပြန်စရန် တို့ပါ"</string>
     <string name="user_aspect_ratio_settings_button_hint" msgid="734835849600713016">"ဆက်တင်များတွင် ဤအက်ပ်၏အချိုးအစားကို ပြောင်းရန်"</string>
     <string name="user_aspect_ratio_settings_button_description" msgid="4315566801697411684">"အချိုးစား ပြောင်းရန်"</string>

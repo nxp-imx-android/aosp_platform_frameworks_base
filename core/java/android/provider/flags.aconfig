@@ -111,6 +111,7 @@ flag {
     name: "expose_vpn_app_exclusion_settings"
     namespace: "android_settings"
     description: "Allows VpnManager-based apps to launch a Settings screen to select apps excluded from the VPN"
+    is_exported: true
     bug: "459584692"
 }
 

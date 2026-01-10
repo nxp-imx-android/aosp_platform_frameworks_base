@@ -33,18 +33,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.android.systemui.Flags
-import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.shade.ui.ShadeColors
 import com.android.systemui.statusbar.quickactions.av.ui.viewmodel.AvControlsPopupViewModel
 import com.android.systemui.statusbar.quickactions.av.ui.viewmodel.PageType
 
 /** Displays a popup containing the Audio, Video and Privacy controls. */
 @Composable
-fun AvControlsChipPopup(viewModelFactory: AvControlsPopupViewModel.Factory) {
-    check(Flags.desktopAvControlsPopup()){ "Flag desktop_av_controls_popup is not enabled." }
-
-    val viewModel: AvControlsPopupViewModel =
-        rememberViewModel("AvControlsChipPopup.viewModel") { viewModelFactory.create() }
+fun AvControlsChipPopup(viewModel: AvControlsPopupViewModel) {
+    check(Flags.desktopAvControlsPopup()) { "Flag desktop_av_controls_popup is not enabled." }
 
     var screen by remember { mutableStateOf(PageType.MAIN) }
     val setCurrentPage: (PageType) -> Unit = { screen = it }

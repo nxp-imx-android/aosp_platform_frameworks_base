@@ -101,7 +101,8 @@ public class TaskContinuityMessengerTest {
 
         // Send a message to the listener.
         int expectedAssociationId = 1;
-        connectAssociations(List.of(expectedAssociationId));
+        connectAssociations(
+                List.of(expectedAssociationId), CompanionDeviceManager.FLAG_TASK_CONTINUITY);
         listener.onMessageReceived(expectedAssociationId, Proto.toBytes(TEST_MESSAGE));
         TestableLooper.get(this).processAllMessages();
         verify(mMockListener, times(1))
@@ -136,11 +137,12 @@ public class TaskContinuityMessengerTest {
     }
 
     @Test
-    public void testSendMessage_sendsMessageToAssociation() throws RemoteException, IOException {
+    public void testSendMessage_associationSupportsTaskContinuity_sendsMessageToAssociation()
+            throws RemoteException, IOException {
         int associationId = 1;
 
         mTaskContinuityMessenger.addListener(mMockListener);
-        connectAssociations(List.of(associationId));
+        connectAssociations(List.of(associationId), CompanionDeviceManager.FLAG_TASK_CONTINUITY);
         TaskContinuityMessenger.SendMessageResult result =
                 mTaskContinuityMessenger.sendMessage(associationId, TEST_MESSAGE);
         verify(mMockCompanionDeviceManagerService, times(1))
@@ -149,6 +151,24 @@ public class TaskContinuityMessengerTest {
                         eq(Proto.toBytes(TEST_MESSAGE)),
                         aryEq(new int[] {associationId}));
         assertThat(result).isEqualTo(TaskContinuityMessenger.SendMessageResult.SUCCESS);
+    }
+
+    @Test
+    public void testSendMessage_associationDoesNotSupportTaskContinuity_sendsMessageToAssociation()
+            throws RemoteException, IOException {
+        int associationId = 1;
+
+        mTaskContinuityMessenger.addListener(mMockListener);
+        connectAssociations(List.of(associationId), 0);
+        TaskContinuityMessenger.SendMessageResult result =
+                mTaskContinuityMessenger.sendMessage(associationId, TEST_MESSAGE);
+        verify(mMockCompanionDeviceManagerService, never())
+                .sendMessage(
+                        eq(MESSAGE_ONEWAY_TASK_CONTINUITY),
+                        eq(Proto.toBytes(TEST_MESSAGE)),
+                        aryEq(new int[] {associationId}));
+        assertThat(result)
+                .isEqualTo(TaskContinuityMessenger.SendMessageResult.FAILURE_ASSOCIATION_NOT_FOUND);
     }
 
     @Test
@@ -167,7 +187,7 @@ public class TaskContinuityMessengerTest {
                 .isEqualTo(TaskContinuityMessenger.SendMessageResult.FAILURE_ASSOCIATION_NOT_FOUND);
     }
 
-    private void connectAssociations(List<Integer> associationIds) {
+    private void connectAssociations(List<Integer> associationIds, int systemDataSyncFlags) {
         ArgumentCaptor<IOnTransportsChangedListener> listenerCaptor =
                 ArgumentCaptor.forClass(IOnTransportsChangedListener.class);
         try {
@@ -183,6 +203,7 @@ public class TaskContinuityMessengerTest {
                                 id ->
                                         new AssociationInfo.Builder(id, USER_ID, "com.android.test")
                                                 .setDisplayName("name")
+                                                .setSystemDataSyncFlags(systemDataSyncFlags)
                                                 .build())
                         .collect(Collectors.toList());
         when(mMockAssociationProfileManager.isAssociationAvailableForUser(

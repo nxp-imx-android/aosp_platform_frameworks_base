@@ -71,8 +71,6 @@ final class EnforcingAdmin {
     private static final String ATTR_AUTHORITIES_SEPARATOR = ";";
     private static final String ATTR_USER_ID = "user-id";
     private static final String ATTR_IS_ROLE = "is-role";
-    @Deprecated // It is no longer read and will be removed.
-    private static final String ATTR_IS_SYSTEM = "is-system";
 
     // This is needed for DPCs and active admins
     private final ComponentName mComponentName;
@@ -135,29 +133,11 @@ final class EnforcingAdmin {
         } else if (DeviceAdminAuthority.DEVICE_ADMIN_AUTHORITY.equals(authority)) {
             return createDeviceAdminEnforcingAdmin(admin.getComponentName(), userId);
         } else if (authority instanceof RoleAuthority roleAuthority) {
-            if (Flags.tightenAdminInstantiation()) {
-                return createRoleEnforcingAdmin(admin.getPackageName(), userId);
-            } else {
-                return new EnforcingAdmin(
-                        new AdminKey.Package(userId, admin.getPackageName()),
-                        admin.getComponentName(),
-                        true,
-                        new HashSet<>(roleAuthority.getRoles())
-                );
-            }
+            return createRoleEnforcingAdmin(admin.getPackageName(), userId);
         } else if (authority instanceof SystemAuthority systemAuthority) {
             return createSystemEnforcingAdmin(systemAuthority.getSystemEntity());
         }
-        if (Flags.tightenAdminInstantiation()) {
-            throw new IllegalArgumentException("Unknown admin type: " + admin);
-        } else {
-            return new EnforcingAdmin(
-                    new AdminKey.Package(userId, admin.getPackageName()),
-                    admin.getComponentName(),
-                    false, /* isRoleAuthority */
-                    Set.of()  /* authorities */
-            );
-        }
+        throw new IllegalArgumentException("Unknown admin type: " + admin);
     }
 
     static String getRoleAuthorityOf(String roleName) {
@@ -355,9 +335,6 @@ final class EnforcingAdmin {
     void saveToXml(TypedXmlSerializer serializer) throws IOException {
         serializer.attribute(/* namespace= */ null, ATTR_PACKAGE_NAME, mAdminKey.getPackageName());
         serializer.attributeBoolean(/* namespace= */ null, ATTR_IS_ROLE, mIsRoleAuthority);
-        if (!Flags.dontWriteIsSystemAuthority()) {
-            serializer.attributeBoolean(/* namespace= */ null, ATTR_IS_SYSTEM, isSystemAuthority());
-        }
         serializer.attributeInt(/* namespace= */ null, ATTR_USER_ID, mAdminKey.getUserId());
         if (isSystemAuthority()) {
             serializer.attribute(
@@ -420,19 +397,10 @@ final class EnforcingAdmin {
             }
 
             // We've got a freak of an admin that should be impossible to create.
-            if (Flags.tightenAdminInstantiation()) {
-                Slogf.wtf(TAG,
-                        "Invalid EnforcingAdmin, package: %s, component: %s, authorities: %s",
-                        packageName, componentName, authoritiesStr);
-                return null;
-            } else {
-                return new EnforcingAdmin(
-                        new AdminKey.Package(userId, packageName),
-                        componentName,
-                        false, /* isRoleAuthority */
-                        new HashSet<>(Set.of(authorities))
-                );
-            }
+            Slogf.wtf(TAG,
+                    "Invalid EnforcingAdmin, package: %s, component: %s, authorities: %s",
+                    packageName, componentName, authoritiesStr);
+            return null;
         }
     }
 

@@ -79,7 +79,7 @@ constructor(
                                     progress < ALLOW_TOUCH_SHADE_EXPANSION_MAX_THRESHOLD
                                 }
                             } else {
-                                flowOf(true)
+                                flowOf(false)
                             }
                     }
                 }

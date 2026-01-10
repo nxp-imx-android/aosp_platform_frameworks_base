@@ -16,16 +16,21 @@
 
 package com.android.systemui.usb;
 
+import static com.android.internal.hidden_from_bootclasspath.android.hardware.usb.flags.Flags.enablePersistentDevicePermissions;
+
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
 
 import com.android.internal.app.AlertActivity;
 import com.android.internal.app.AlertController;
@@ -36,7 +41,7 @@ abstract class UsbDialogActivity extends AlertActivity
 
     private static final String TAG = UsbDialogActivity.class.getSimpleName();
 
-    UsbDialogHelper mDialogHelper;
+    protected UsbDialogHelper mDialogHelper;
     private CheckBox mAlwaysUse;
     private TextView mClearDefaultHint;
 
@@ -77,7 +82,7 @@ abstract class UsbDialogActivity extends AlertActivity
     }
 
     @Override
-    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+    public void onCheckedChanged(@NonNull CompoundButton buttonView, boolean isChecked) {
         if (mClearDefaultHint == null) return;
 
         if (isChecked) {
@@ -87,7 +92,7 @@ abstract class UsbDialogActivity extends AlertActivity
         }
     }
 
-    void setAlertParams(String title, String message) {
+    private void setAlertParams(String title, String message) {
         final AlertController.AlertParams ap = mAlertParams;
         ap.mTitle = title;
         ap.mMessage = message;
@@ -97,22 +102,90 @@ abstract class UsbDialogActivity extends AlertActivity
         ap.mNegativeButtonListener = this;
     }
 
-    void addAlwaysUseCheckbox() {
-        final AlertController.AlertParams ap = mAlertParams;
-        LayoutInflater inflater = getSystemService(LayoutInflater.class);
-        ap.mView = inflater.inflate(com.android.internal.R.layout.always_use_checkbox, null);
-        mAlwaysUse = ap.mView.findViewById(com.android.internal.R.id.alwaysUse);
+    private View createAlwaysUseCheckboxView() {
+        final View alwaysUseCheckboxView =
+                LayoutInflater.from(this)
+                        .inflate(com.android.internal.R.layout.always_use_checkbox, null);
+        mAlwaysUse = alwaysUseCheckboxView.findViewById(com.android.internal.R.id.alwaysUse);
+
         if (mDialogHelper.isUsbAccessory()) {
-            mAlwaysUse.setText(getString(R.string.always_use_accessory, mDialogHelper.getAppName(),
-                    mDialogHelper.getDeviceDescription()));
+            mAlwaysUse.setText(
+                    getString(
+                            R.string.always_use_accessory,
+                            mDialogHelper.getAppName(),
+                            mDialogHelper.getDeviceDescription()));
         } else {
             // UsbDevice case
-            mAlwaysUse.setText(getString(R.string.always_use_device, mDialogHelper.getAppName(),
-                    mDialogHelper.getDeviceDescription()));
+            mAlwaysUse.setText(
+                    getString(
+                            R.string.always_use_device,
+                            mDialogHelper.getAppName(),
+                            mDialogHelper.getDeviceDescription()));
         }
+
         mAlwaysUse.setOnCheckedChangeListener(this);
-        mClearDefaultHint = ap.mView.findViewById(com.android.internal.R.id.clearDefaultHint);
+        mClearDefaultHint =
+                alwaysUseCheckboxView.findViewById(com.android.internal.R.id.clearDefaultHint);
         mClearDefaultHint.setVisibility(View.GONE);
+
+        return alwaysUseCheckboxView;
+    }
+
+    private View createDialogView(String title, String message) {
+        final View view =
+                LayoutInflater.from(this).inflate(R.layout.usb_device_dialog, /* root= */ null);
+
+        ((TextView) view.findViewById(R.id.usb_device_dialog_title)).setText(title);
+
+        if (message != null) {
+            TextView messageView = view.findViewById(R.id.usb_device_dialog_message);
+            messageView.setText(message);
+            messageView.setVisibility(View.VISIBLE);
+        }
+
+        view.findViewById(R.id.usb_device_dialog_allow_only_this_time_button)
+                .setOnClickListener(v -> onConfirm());
+        view.findViewById(R.id.usb_device_dialog_cancel_button)
+                .setOnClickListener(v -> finish());
+
+        return view;
+    }
+
+    /**
+     * Displays the USB dialog.
+     *
+     * <p>This method determines whether to show the new UI (behind the
+     * {@code enable_persistent_device_permissions} flag) or the legacy UI. It also handles the
+     * logic for showing the "Always use" checkbox.
+     */
+    protected void showDialog(String title, String message, boolean canBeDefault) {
+        // Only show the "always use" checkbox if there is no USB/Record warning
+        final boolean useRecordWarning =
+                mDialogHelper.isUsbDevice()
+                        && mDialogHelper.deviceHasAudioCapture()
+                        && !mDialogHelper.packageHasAudioRecordingPermission();
+        final boolean showAlwaysUseCheckBox = canBeDefault && !useRecordWarning;
+
+        if (enablePersistentDevicePermissions()) {
+            Log.d(TAG, "Show new UsbDialogActivity");
+
+            mAlertParams.mView = createDialogView(title, message);
+            if (showAlwaysUseCheckBox) {
+                final ViewGroup deviceDialogViewGroup =
+                        mAlertParams.mView.findViewById(R.id.usb_device_dialog_always_use_content);
+                deviceDialogViewGroup.addView(createAlwaysUseCheckboxView());
+                deviceDialogViewGroup.setVisibility(View.VISIBLE);
+            }
+        } else {
+            Log.d(TAG, "Show old UsbDialogActivity");
+
+            setAlertParams(title, message);
+            if (showAlwaysUseCheckBox) {
+                mAlertParams.mView = createAlwaysUseCheckboxView();
+            }
+        }
+
+        setupAlert();
     }
 
     boolean isAlwaysUseChecked() {

@@ -20,6 +20,7 @@ import android.graphics.Rect
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
+import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import android.view.Display
 import android.view.SurfaceControl
@@ -27,10 +28,13 @@ import android.window.TransitionInfo
 import android.window.WindowContainerTransaction
 import androidx.test.filters.SmallTest
 import androidx.test.internal.runner.junit4.statement.UiThreadStatement.runOnUiThread
+import com.android.window.flags.Flags
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayLayout
 import com.android.wm.shell.desktopmode.DesktopTasksController
+import com.android.wm.shell.desktopmode.DesktopUserRepositories
+import com.android.wm.shell.desktopmode.data.DesktopRepository
 import com.android.wm.shell.transition.Transitions
 import org.junit.Before
 import org.junit.Test
@@ -61,6 +65,8 @@ class ResizeTaskPositionerTest : ShellTestCase() {
     private val mockWindowContainerTransaction = mock<WindowContainerTransaction>()
     private val mockWindowDecoration = mock<WindowDecorationWrapper>()
     private val mockDesktopTasksController = mock<DesktopTasksController>()
+    private val mockDesktopUserRepositories = mock<DesktopUserRepositories>()
+    private val mockDesktopRepository = mock<DesktopRepository>()
 
     private val mainHandler = Handler(Looper.getMainLooper())
     private lateinit var taskPositioner: ResizeTaskPositioner
@@ -82,6 +88,11 @@ class ResizeTaskPositionerTest : ShellTestCase() {
         whenever(mockTransitions.startTransition(any(), any(), any()))
             .thenReturn(mockTransitionBinder)
 
+        whenever(mockDesktopUserRepositories.getProfile(any())).thenReturn(mockDesktopRepository)
+        whenever(mockDesktopRepository.hasBoundsBeforeSnapOrMaximize(any())).thenReturn(true)
+        whenever(mockDesktopRepository.getBoundsBeforeSnapOrMaximize(TASK_ID))
+            .thenReturn(mock<Rect>())
+
         taskPositioner =
             ResizeTaskPositioner(
                 mockWindowDecoration,
@@ -91,6 +102,7 @@ class ResizeTaskPositionerTest : ShellTestCase() {
                 mockTransitions,
                 mainHandler,
                 mockDesktopTasksController,
+                mockDesktopUserRepositories,
             )
     }
 
@@ -169,6 +181,25 @@ class ResizeTaskPositionerTest : ShellTestCase() {
         )
 
         verifyNoInteractions(mockTaskResizer)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_BOUNDS_RESTORING_ON_DRAG_EXIT)
+    fun testMove_withBoundsRestoration() = runOnUiThread {
+        whenever(mockTaskMover.onMoveUpdate(any(), any(), any(), any()))
+            .thenReturn(mockWindowContainerTransaction)
+
+        taskPositioner.onDragPositioningStart(
+            DragPositioningCallback.CTRL_TYPE_UNDEFINED,
+            0,
+            150f,
+            150f,
+            DragPositioningCallback.INPUT_METHOD_TYPE_UNKNOWN,
+        )
+        taskPositioner.onDragPositioningMove(1, 250f, 250f)
+
+        verify(mockTransitions)
+            .startTransition(eq(android.view.WindowManager.TRANSIT_CHANGE), any(), any())
     }
 
     companion object {

@@ -1056,60 +1056,64 @@ final class TaskDisplayArea extends DisplayArea<WindowContainer> {
                 });
                 return adjacentRootTask[0] != null ? adjacentRootTask[0] : launchRootTask;
             }
-            if (sourceTask != null && mLaunchRootTasks.get(i).contains(
-                    sourceTask.getWindowingMode(), sourceTask.getActivityType())) {
-                // Use the candidate's root task if it needs to preserve leaf tasks during a
-                // relaunch (e.g., Bubble relaunch from desktop).
-                final Task candidateRootTask = candidateTask != null
-                        ? candidateTask.getPreservedRootTaskIfEnabled() : null;
-                if (candidateRootTask != null) {
-                    return candidateRootTask;
-                }
+        }
+
+        // Select the same created-by-organizer root task from the source if possible.
+        final Task candidateLaunchRoot = getCandidateLaunchRootFromOrganizedSource(sourceTask,
+                candidateTask);
+        if (candidateLaunchRoot != null && candidateTask != null) {
+            final Task preservedRootTask = candidateTask.getPreservedRootTaskIfEnabled();
+            if (preservedRootTask != null) {
+                // Reuse the existing root task if it should be preserved.
+                return preservedRootTask;
             }
+        }
+        return candidateLaunchRoot;
+    }
+
+    @Nullable
+    private Task getCandidateLaunchRootFromOrganizedSource(@Nullable Task sourceTask,
+            @Nullable Task candidateTask) {
+        if (sourceTask == null) {
+            return null;
+        }
+
+        // A pinned task relaunching should be handled by its task organizer. Skip fallback
+        // launch target of a pinned task from source task.
+        if (candidateTask != null && candidateTask.getWindowingMode() == WINDOWING_MODE_PINNED) {
+            return null;
         }
 
         // If a task is launching from a created-by-organizer task, it should be launched into the
         // same created-by-organizer task as well. Unless, the candidate task is already positioned
         // in the another adjacent task.
-        if (sourceTask != null && (candidateTask == null
-                // A pinned task relaunching should be handled by its task organizer. Skip fallback
-                // launch target of a pinned task from source task.
-                || candidateTask.getWindowingMode() != WINDOWING_MODE_PINNED)) {
-            final Task taskWithAdjacent = sourceTask.getTaskWithAdjacent();
-            if (taskWithAdjacent != null) {
-                // Has adjacent.
-                if (candidateTask == null) {
-                    return sourceTask.getCreatedByOrganizerTask();
-                }
-                // Check if the candidate is already positioned in the adjacent Task.
-                final Task[] adjacentRootTask = new Task[1];
-                sourceTask.forOtherAdjacentTasks(task -> {
-                    if (candidateTask == task || candidateTask.isDescendantOf(task)) {
-                        adjacentRootTask[0] = task;
-                        return true;
-                    }
-                    return false;
-                });
-                if (adjacentRootTask[0] != null) {
-                    return adjacentRootTask[0];
-                }
-                // Use the candidate's root task instead of the source's if it needs to preserve
-                // leaf tasks during a relaunch (e.g., Bubble relaunch from split-screen).
-                final Task candidateRootTask = candidateTask.getPreservedRootTaskIfEnabled();
-                if (candidateRootTask != null) {
-                    return candidateRootTask;
-                }
+        final Task taskWithAdjacent = sourceTask.getTaskWithAdjacent();
+        if (taskWithAdjacent != null) {
+            // Has adjacent.
+            if (candidateTask == null) {
                 return sourceTask.getCreatedByOrganizerTask();
             }
-            if (com.android.window.flags.Flags.enableBubbleRootTask()) {
-                final Task parentTask = sourceTask.getParent().asTask();
-                if (parentTask != null && parentTask.mCreatedByOrganizer
-                        && parentTask.getTaskDisplayArea() == this) {
-                    return parentTask;
+            // Check if the candidate is already positioned in the adjacent Task.
+            final Task[] adjacentRootTask = new Task[1];
+            sourceTask.forOtherAdjacentTasks(task -> {
+                if (candidateTask == task || candidateTask.isDescendantOf(task)) {
+                    adjacentRootTask[0] = task;
+                    return true;
                 }
+                return false;
+            });
+            if (adjacentRootTask[0] != null) {
+                return adjacentRootTask[0];
+            }
+            return sourceTask.getCreatedByOrganizerTask();
+        }
+        if (com.android.window.flags.Flags.enableBubbleRootTask()) {
+            final Task parentTask = sourceTask.getParent().asTask();
+            if (parentTask != null && parentTask.mCreatedByOrganizer
+                    && parentTask.getTaskDisplayArea() == this) {
+                return parentTask;
             }
         }
-
         return null;
     }
 

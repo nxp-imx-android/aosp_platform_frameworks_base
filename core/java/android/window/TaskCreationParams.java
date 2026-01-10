@@ -78,6 +78,10 @@ public final class TaskCreationParams implements Parcelable {
      * When this is {@code true}, {@link #getWindowingMode()} and most of the
      * {@link #getTaskPropertiesRequest()} are ignored.
      *
+     * Note: the visibility barrier itself is not opaque because it doesn't contain any
+     * content. As a result, if it is above all other opaque siblings, the parent container
+     * will not be opaque either because there is no more visible opaque contents in it.
+     *
      * @hide
      */
     private boolean mVisibilityBarrier = false;
@@ -197,6 +201,10 @@ public final class TaskCreationParams implements Parcelable {
      * to add a child window to it.
      * When this is {@code true}, {@link #getWindowingMode()} and most of the
      * {@link #getTaskPropertiesRequest()} are ignored.
+     *
+     * Note: the visibility barrier itself is not opaque because it doesn't contain any
+     * content. As a result, if it is above all other opaque siblings, the parent container
+     * will not be opaque either because there is no more visible opaque contents in it.
      *
      * @hide
      */
@@ -432,6 +440,10 @@ public final class TaskCreationParams implements Parcelable {
          * When this is {@code true}, {@link #getWindowingMode()} and most of the
          * {@link #getTaskPropertiesRequest()} are ignored.
          *
+         * Note: the visibility barrier itself is not opaque because it doesn't contain any
+         * content. As a result, if it is above all other opaque siblings, the parent container
+         * will not be opaque either because there is no more visible opaque contents in it.
+         *
          * @hide
          */
         @DataClass.Generated.Member
@@ -514,7 +526,7 @@ public final class TaskCreationParams implements Parcelable {
     }
 
     @DataClass.Generated(
-            time = 1767769622257L,
+            time = 1767928981582L,
             codegenVersion = "1.0.23",
             sourceFile = "frameworks/base/core/java/android/window/TaskCreationParams.java",
             inputSignatures = "private @android.annotation.Nullable java.lang.String mName\nprivate  int mDisplayId\nprivate @android.annotation.Nullable android.window.WindowContainerToken mParentContainer\nprivate @android.app.WindowConfiguration.WindowingMode int mWindowingMode\nprivate  boolean mVisibilityBarrier\nprivate @android.annotation.NonNull android.os.IBinder mLaunchCookie\nprivate @android.annotation.NonNull android.window.TaskPropertiesRequest mTaskPropertiesRequest\nclass TaskCreationParams extends java.lang.Object implements [android.os.Parcelable]\nabstract  android.window.TaskCreationParams.Builder setLaunchCookie(android.os.IBinder)\nclass BaseBuilder extends java.lang.Object implements []\n@com.android.internal.util.DataClass(genEqualsHashCode=true, genParcelable=true, genToString=true, genBuilder=true)\nabstract  android.window.TaskCreationParams.Builder setLaunchCookie(android.os.IBinder)\nclass BaseBuilder extends java.lang.Object implements []")

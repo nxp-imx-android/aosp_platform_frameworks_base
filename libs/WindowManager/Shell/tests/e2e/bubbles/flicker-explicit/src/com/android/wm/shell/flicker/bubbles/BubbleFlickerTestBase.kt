@@ -89,6 +89,9 @@ abstract class BubbleFlickerTestBase : BubbleFlickerSubjects {
     /** Indicates whether the device uses gesture navigation bar or not. */
     override val isGesturalNavBar = tapl.navigationModel == NavigationModel.ZERO_BUTTON
 
+    /** Indicates whether the device is a tablet. */
+    override val isTablet = tapl.isTablet
+
     /**
      * The app used in flicker tests to verify with.
      *

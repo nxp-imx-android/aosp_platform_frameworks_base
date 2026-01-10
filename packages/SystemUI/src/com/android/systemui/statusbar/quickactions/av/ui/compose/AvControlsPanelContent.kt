@@ -16,7 +16,6 @@
 
 package com.android.systemui.statusbar.quickactions.av.ui.compose
 
-import android.graphics.drawable.Drawable
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,7 +30,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.ToggleButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,11 +39,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.android.compose.ui.graphics.painter.DrawablePainter
 import com.android.systemui.lifecycle.rememberViewModel
-import com.android.systemui.statusbar.quickactions.av.shared.model.Sensor
-import com.android.systemui.statusbar.quickactions.av.shared.model.SensorAccess
 import com.android.systemui.statusbar.quickactions.av.ui.viewmodel.AvControlsPanelContentViewModel
 import com.android.systemui.statusbar.quickactions.av.ui.viewmodel.ButtonViewModel
 import com.android.systemui.statusbar.quickactions.av.ui.viewmodel.PageType
+import com.android.systemui.statusbar.quickactions.av.ui.viewmodel.SensorAccessSummary
 import com.android.systemui.statusbar.quickactions.av.ui.viewmodel.SensorActivityViewModel
 import kotlinx.coroutines.launch
 
@@ -220,66 +217,33 @@ private fun SensorAccessButton(
         rememberViewModel("SensorAccessButton.viewModel", key = setCurrentPage) {
             viewModelFactory.create(setCurrentPage = setCurrentPage)
         }
-    val sensorAccessList = viewModel.sensorAccessList
-    if (sensorAccessList.isNotEmpty()) {
-        val (leadingContent, headlineContentText, supportingContentText) =
-            remember(sensorAccessList) {
-                Triple(
-                    activeAppsIconComposable(sensorAccessList),
-                    activeAppsHeaderText(sensorAccessList),
-                    activeAppsSupportText(sensorAccessList),
-                )
-            }
+    if (viewModel.showSensorAccessSection) {
         ListItem(
             modifier =
                 modifier
                     .padding(4.dp)
                     .clip(shape = RoundedCornerShape(22.dp))
                     .clickable(onClick = { viewModel.enterDedicatedPage() }),
-            leadingContent = leadingContent,
-            headlineContent = { Text(text = headlineContentText) },
-            supportingContent = { Text(text = supportingContentText) },
+            leadingContent =
+                viewModel.activeAppsIconDrawable?.let {
+                    { Icon(painter = DrawablePainter(drawable = it), contentDescription = null) }
+                },
+            headlineContent = {
+                viewModel.activeAppsSensorSectionSummary?.let { summary ->
+                    Text(
+                        text =
+                            when (summary) {
+                                is SensorAccessSummary.Simple -> summary.text
+                                is SensorAccessSummary.WithCount ->
+                                    "${summary.prefix} ${stringResource(summary.suffixResId, summary.suffixArg)}"
+                            }
+                    )
+                }
+            },
+            supportingContent =
+                viewModel.activeAppsSensorSectionSupportText?.let {
+                    { Text(text = stringResource(it)) }
+                },
         )
     }
-}
-
-private fun activeAppsIconComposable(
-    sensorAccessList: List<SensorAccess>
-): @Composable (() -> Unit)? {
-    // TODO(469044323): Move the logic into the view model to make it testable.
-    require(sensorAccessList.isNotEmpty())
-    val firstIcon: Drawable? = sensorAccessList.first().icon
-    val otherIcon: Drawable? = sensorAccessList.find { it.icon != firstIcon }?.icon
-    // Show icon only if there is one icon.
-    if (otherIcon == null) {
-        return firstIcon?.let {
-            { Icon(painter = DrawablePainter(drawable = it), contentDescription = null) }
-        }
-    }
-    return null
-}
-
-private fun activeAppsHeaderText(sensorAccessList: List<SensorAccess>): String {
-    // TODO(469044323): Move the logic into the view model to make it testable.
-    require(sensorAccessList.isNotEmpty())
-    val apps = sensorAccessList.map { it.appName }.distinct()
-    val firstAppName = apps.first()
-    return when (val tailCount = apps.size - 1) {
-        0 -> firstAppName
-        1 -> "$firstAppName, ${apps[1]}"
-        else -> "$firstAppName +$tailCount more" // TODO(467631255): Use string resources.
-    }
-}
-
-private fun activeAppsSupportText(sensorAccessList: List<SensorAccess>): String {
-    // TODO(469044323): Move the logic into the view model to make it testable.
-    require(sensorAccessList.isNotEmpty())
-    val sensors = sensorAccessList.map { it.sensor }.distinct()
-    if (sensors.size == 1) {
-        return when (sensors.first()) {
-            Sensor.CAMERA -> "Camera in use" // TODO(467631255): Use string resources.
-            Sensor.MICROPHONE -> "Mic in use" // TODO(467631255): Use string resources.
-        }
-    }
-    return "Camera, mic in use" // TODO(467631255): Use string resources.
 }

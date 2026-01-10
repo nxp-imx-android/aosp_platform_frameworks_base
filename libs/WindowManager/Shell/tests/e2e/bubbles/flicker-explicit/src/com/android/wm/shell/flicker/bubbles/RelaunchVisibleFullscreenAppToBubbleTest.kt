@@ -42,8 +42,10 @@ import org.junit.runners.Parameterized.Parameters
  * Test entering bubble for an app that was previously open in fullscreen and visible. Bubble is
  * launched via clicking bubble menu from the task bar.
  *
- * To run this test: `atest
- * WMShellExplicitFlickerTestsBubbles:RelaunchVisibleFullscreenAppToBubbleTest`
+ * To run this test:
+ * ```
+ *     atest WMShellExplicitFlickerTestsBubbles:RelaunchVisibleFullscreenAppToBubbleTest
+ * ```
  *
  * Pre-steps:
  * ```
@@ -103,7 +105,6 @@ class RelaunchVisibleFullscreenAppToBubbleTest(navBar: NavBar) :
     override val traceDataReader
         get() = recordTraceWithTransitionRule.reader
 
-
     /** Verifies that the launcher window becomes visible during the transition. */
     @Test
     fun launcherWindowBecomesVisible() {
@@ -117,10 +118,6 @@ class RelaunchVisibleFullscreenAppToBubbleTest(navBar: NavBar) :
     /** Verifies that the launcher layer becomes visible during the transition. */
     @Test
     fun launcherLayerBecomesVisible() {
-        layersTraceSubject
-            .isInvisible(LAUNCHER)
-            .then()
-            .isVisible(LAUNCHER)
-            .forAllEntries()
+        layersTraceSubject.isInvisible(LAUNCHER).then().isVisible(LAUNCHER).forAllEntries()
     }
 }

@@ -114,7 +114,10 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
     @NonNull
     protected final ProtoLogDataSource mDataSource;
     @Nullable
+    @Deprecated
     private IProtoLogConfigurationService mConfigurationService;
+    @Nullable
+    private ProtoLogConfigurationClient mConfigurationClient;
 
     @NonNull
     private final Object mLogGroupsLock = new Object();
@@ -236,27 +239,42 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
                 mDataSource.register(params);
             }
 
-            if (service != null) {
-                mConfigurationService = service;
-            } else if (mConfigurationService == null) {
-                mConfigurationService = getConfigurationService();
-            }
+            if (android.tracing.Flags.javaNativeProtolog()) {
+                if (mConfigurationClient == null) {
+                    mConfigurationClient = new ProtoLogConfigurationClient(getViewerConfigPath(),
+                            (enabled, groupsToToggle) -> {
+                                final ILogger logger = (message) -> Log.d(LOG_TAG, message);
+                                if (enabled) {
+                                    startLoggingToLogcat(groupsToToggle, logger);
+                                } else {
+                                    stopLoggingToLogcat(groupsToToggle, logger);
+                                }
+                            });
+                }
+                mConfigurationClient.start(groups, async, service);
+            } else {
+                if (service != null) {
+                    mConfigurationService = service;
+                } else if (mConfigurationService == null) {
+                    mConfigurationService = getConfigurationService();
+                }
 
-            if (mConfigurationService != null) {
-                try {
-                    var args = createConfigurationServiceRegisterClientArgs();
-                    args.groups = new String[groups.length];
-                    args.groupsDefaultLogcatStatus = new boolean[groups.length];
+                if (mConfigurationService != null) {
+                    try {
+                        var args = createConfigurationServiceRegisterClientArgs();
+                        args.groups = new String[groups.length];
+                        args.groupsDefaultLogcatStatus = new boolean[groups.length];
 
-                    for (var i = 0; i < groups.length; i++) {
-                        var group = groups[i];
-                        args.groups[i] = group.name();
-                        args.groupsDefaultLogcatStatus[i] = group.isLogToLogcat();
+                        for (var i = 0; i < groups.length; i++) {
+                            var group = groups[i];
+                            args.groups[i] = group.name();
+                            args.groupsDefaultLogcatStatus[i] = group.isLogToLogcat();
+                        }
+
+                        mConfigurationService.registerClient(this, args);
+                    } catch (RemoteException e) {
+                        Log.wtf(LOG_TAG, "Failed to register ProtoLog client", e);
                     }
-
-                    mConfigurationService.registerClient(this, args);
-                } catch (RemoteException e) {
-                    Log.wtf(LOG_TAG, "Failed to register ProtoLog client", e);
                 }
             }
 
@@ -304,6 +322,13 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
     @Override
     public void registerGroups(@NonNull IProtoLogGroup... groups) {
         registerGroupsLocally(groups);
+
+        if (android.tracing.Flags.javaNativeProtolog()) {
+            if (mConfigurationClient != null) {
+                mConfigurationClient.addGroups(groups);
+            }
+            return;
+        }
 
         if (mConfigurationService != null) {
             // Because this will execute with a slight delay it means that we might be in sync with
@@ -372,6 +397,13 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
     }
 
     private void disconnectFromConfigurationServiceAsync() {
+        if (android.tracing.Flags.javaNativeProtolog()) {
+            if (mConfigurationClient != null) {
+                mConfigurationClient.stop();
+            }
+            return;
+        }
+
         Objects.requireNonNull(mConfigurationService,
                 "A null ProtoLog Configuration Service was provided!");
 
@@ -445,6 +477,11 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
 
     @Override
     public void toggleLogcat(boolean enabled, @NonNull String[] groups) {
+        if (android.tracing.Flags.javaNativeProtolog()) {
+            throw new RuntimeException("toggleLogcat should not be called on PerfettoProtoLogImpl"
+                    + " when javaNativeProtolog flag is enabled");
+        }
+
         final ILogger logger = (message) -> Log.d(LOG_TAG, message);
         if (enabled) {
             startLoggingToLogcat(groups, logger);
@@ -619,6 +656,11 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
 
     @Deprecated
     abstract void dumpViewerConfig();
+
+    @Nullable
+    protected String getViewerConfigPath() {
+        return null;
+    }
 
     @NonNull
     abstract String getLogcatMessageString(@NonNull Message message);

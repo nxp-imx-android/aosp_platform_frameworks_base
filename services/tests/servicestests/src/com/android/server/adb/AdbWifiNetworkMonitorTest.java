@@ -20,14 +20,9 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import android.content.ContentResolver;
@@ -58,14 +53,9 @@ import java.nio.charset.StandardCharsets;
 @RunWith(JUnit4.class)
 public final class AdbWifiNetworkMonitorTest {
 
-    private static final int ADB_WIFI_ENABLED = 1;
-    private static final int ADB_WIFI_DISABLED = 0;
-
     @Rule
     public final MockitoRule mocks = MockitoJUnit.rule();
 
-    @Mock
-    private AdbWifiNetworkMonitor.IsTrustedNetworkChecker mIsTrustedNetworkChecker;
     @Mock
     private ConnectivityManager mConnectivityManager;
     @Mock
@@ -85,8 +75,6 @@ public final class AdbWifiNetworkMonitorTest {
     @Captor
     private ArgumentCaptor<Message> mHandlerMessageCaptor;
 
-    private int mAdbWifiEnabledSetting = -1;
-
     @Before
     public void setUp() {
         when(mContext.getSystemServiceName(ConnectivityManager.class))
@@ -96,14 +84,8 @@ public final class AdbWifiNetworkMonitorTest {
         when(mContext.getContentResolver()).thenReturn(mContentResolver);
 
         mAdbWifiNetworkMonitor = Mockito.spy(new AdbWifiNetworkMonitor(mContext,
-                mIsTrustedNetworkChecker, mAdbDebuggingHandler
+                mAdbDebuggingHandler
         ));
-
-        doAnswer(invocation -> {
-            boolean enable = invocation.getArgument(0);
-            mAdbWifiEnabledSetting = enable ? ADB_WIFI_ENABLED : ADB_WIFI_DISABLED;
-            return null; // for void methods
-        }).when(mAdbWifiNetworkMonitor).setAdbWifiState(anyBoolean(), anyString());
 
         mAdbWifiNetworkMonitor.register();
 
@@ -124,13 +106,14 @@ public final class AdbWifiNetworkMonitorTest {
     }
 
     @Test
-    public void onLost_disablesAdbWifi() {
+    public void onLost_stopsAdbWifi() {
         mAdbWifiNetworkMonitor.onLost(mNetwork);
-        assertEquals(ADB_WIFI_DISABLED, mAdbWifiEnabledSetting);
+
+        assertAdbWifiStopped();
     }
 
     @Test
-    public void onCapabilitiesChanged_nullWifiInfo_disablesAdbWifi() {
+    public void onCapabilitiesChanged_nullWifiInfo_stopsAdbWifi() {
         // given
         NetworkCapabilities networkCapabilities = new NetworkCapabilities.Builder()
                 .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
@@ -140,11 +123,11 @@ public final class AdbWifiNetworkMonitorTest {
         mAdbWifiNetworkMonitor.onCapabilitiesChanged(mNetwork, networkCapabilities);
 
         // then
-        assertEquals(ADB_WIFI_DISABLED, mAdbWifiEnabledSetting);
+        assertAdbWifiStopped();
     }
 
     @Test
-    public void onCapabilitiesChanged_invalidNetworkId_disablesAdbWifi() {
+    public void onCapabilitiesChanged_invalidNetworkId_stopsAdbWifi() {
         // given
         WifiInfo wifiInfo = new WifiInfo.Builder()
                 .setNetworkId(-1)
@@ -160,11 +143,11 @@ public final class AdbWifiNetworkMonitorTest {
         mAdbWifiNetworkMonitor.onCapabilitiesChanged(mNetwork, networkCapabilities);
 
         // then
-        assertEquals(ADB_WIFI_DISABLED, mAdbWifiEnabledSetting);
+        assertAdbWifiStopped();
     }
 
     @Test
-    public void onCapabilitiesChanged_nullBssid_disablesAdbWifi() {
+    public void onCapabilitiesChanged_nullBssid_stopsAdbWifi() {
         // given
         WifiInfo wifiInfo = new WifiInfo.Builder()
                 .setNetworkId(1)
@@ -179,11 +162,11 @@ public final class AdbWifiNetworkMonitorTest {
         mAdbWifiNetworkMonitor.onCapabilitiesChanged(mNetwork, networkCapabilities);
 
         // then
-        assertEquals(ADB_WIFI_DISABLED, mAdbWifiEnabledSetting);
+        assertAdbWifiStopped();
     }
 
     @Test
-    public void onCapabilitiesChanged_nullSsid_disablesAdbWifi() {
+    public void onCapabilitiesChanged_nullSsid_stopsAdbWifi() {
         // given
         WifiInfo wifiInfo = new WifiInfo.Builder()
                 .setNetworkId(1)
@@ -198,11 +181,11 @@ public final class AdbWifiNetworkMonitorTest {
         mAdbWifiNetworkMonitor.onCapabilitiesChanged(mNetwork, networkCapabilities);
 
         // then
-        assertEquals(ADB_WIFI_DISABLED, mAdbWifiEnabledSetting);
+        assertAdbWifiStopped();
     }
 
     @Test
-    public void onCapabilitiesChanged_emptyBssid_disablesAdbWifi() {
+    public void onCapabilitiesChanged_emptyBssid_stopsAdbWifi() {
         // given
         WifiInfo wifiInfo = new WifiInfo.Builder()
                 .setNetworkId(1)
@@ -218,11 +201,11 @@ public final class AdbWifiNetworkMonitorTest {
         mAdbWifiNetworkMonitor.onCapabilitiesChanged(mNetwork, networkCapabilities);
 
         // then
-        assertEquals(ADB_WIFI_DISABLED, mAdbWifiEnabledSetting);
+        assertAdbWifiStopped();
     }
 
     @Test
-    public void onCapabilitiesChanged_emptySsid_disablesAdbWifi() {
+    public void onCapabilitiesChanged_emptySsid_stopsAdbWifi() {
         // given
         WifiInfo wifiInfo = new WifiInfo.Builder()
                 .setNetworkId(1)
@@ -238,16 +221,35 @@ public final class AdbWifiNetworkMonitorTest {
         mAdbWifiNetworkMonitor.onCapabilitiesChanged(mNetwork, networkCapabilities);
 
         // then
-        assertEquals(ADB_WIFI_DISABLED, mAdbWifiEnabledSetting);
+        assertAdbWifiStopped();
     }
 
     @Test
-    public void onCapabilitiesChanged_invalidSsid_disablesAdbWifi() {
+    public void onCapabilitiesChanged_invalidSsid_stopsAdbWifi() {
+        // given
+        WifiInfo wifiInfo = Mockito.mock(WifiInfo.class);
+        when(wifiInfo.getNetworkId()).thenReturn(1);
+        when(wifiInfo.getBSSID()).thenReturn("bssid");
+        when(wifiInfo.getSSID()).thenReturn(WifiManager.UNKNOWN_SSID);
+        NetworkCapabilities networkCapabilities = new NetworkCapabilities.Builder()
+                .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+                .setTransportInfo(wifiInfo)
+                .build();
+
+        // when
+        mAdbWifiNetworkMonitor.onCapabilitiesChanged(mNetwork, networkCapabilities);
+
+        // then
+        assertAdbWifiStopped();
+    }
+
+    @Test
+    public void onCapabilitiesChanged_connectedToNetwork_attemptsToStartAdbWifi() {
         // given
         WifiInfo wifiInfo = new WifiInfo.Builder()
                 .setNetworkId(1)
                 .setBssid("bssid")
-                .setSsid(WifiManager.UNKNOWN_SSID.getBytes(StandardCharsets.UTF_8))
+                .setSsid("ssid".getBytes(StandardCharsets.UTF_8))
                 .build();
         NetworkCapabilities networkCapabilities = new NetworkCapabilities.Builder()
                 .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
@@ -258,73 +260,22 @@ public final class AdbWifiNetworkMonitorTest {
         mAdbWifiNetworkMonitor.onCapabilitiesChanged(mNetwork, networkCapabilities);
 
         // then
-        assertEquals(ADB_WIFI_DISABLED, mAdbWifiEnabledSetting);
+        assertAdbWifiStarted();
     }
 
-    @Test
-    public void onCapabilitiesChanged_trustedNetwork_enablesAdbWifi() {
-        // given
-        WifiInfo wifiInfo = new WifiInfo.Builder()
-                .setNetworkId(1)
-                .setBssid("trusted_bssid")
-                .setSsid("trusted_ssid".getBytes(StandardCharsets.UTF_8))
-                .build();
-        NetworkCapabilities networkCapabilities = new NetworkCapabilities.Builder()
-                .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
-                .setTransportInfo(wifiInfo)
-                .build();
-        when(mIsTrustedNetworkChecker.isTrusted("trusted_bssid", "\"trusted_ssid\"")).thenReturn(
-                true);
-
-        // when
-        mAdbWifiNetworkMonitor.onCapabilitiesChanged(mNetwork, networkCapabilities);
-
-        // then
-        verify(mAdbDebuggingHandler, times(1))
-                .sendMessageAtTime(mHandlerMessageCaptor.capture(), anyLong());
-        assertEquals(AdbDebuggingManager.AdbDebuggingHandler.DECLARE_NEXT_ADB_WIFI_AUTO_ENABLE,
-                mHandlerMessageCaptor.getValue().what);
-        assertEquals(ADB_WIFI_ENABLED, mAdbWifiEnabledSetting);
-    }
-
-    @Test
-    public void onCapabilitiesChanged_notTrustedNetwork_disablesAdbWifi() {
-        // given
-        WifiInfo wifiInfo = new WifiInfo.Builder()
-                .setNetworkId(1)
-                .setBssid("untrusted_bssid")
-                .setSsid("untrusted_ssid".getBytes(StandardCharsets.UTF_8))
-                .build();
-        NetworkCapabilities networkCapabilities = new NetworkCapabilities.Builder()
-                .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
-                .setTransportInfo(wifiInfo)
-                .build();
-        when(mIsTrustedNetworkChecker.isTrusted("untrusted_bssid",
-                "\"untrusted_ssid\"")).thenReturn(
-                false);
-
-        // when
-        mAdbWifiNetworkMonitor.onCapabilitiesChanged(mNetwork, networkCapabilities);
-
-        // then
-        verifyNoInteractions(mAdbDebuggingHandler);
-        assertEquals(ADB_WIFI_DISABLED, mAdbWifiEnabledSetting);
-    }
 
     @Test
     public void onCapabilitiesChanged_sameSsidAndBssid_deduplicatesCallback() {
         // given
         WifiInfo wifiInfo = new WifiInfo.Builder()
                 .setNetworkId(1)
-                .setBssid("trusted_bssid")
-                .setSsid("trusted_ssid".getBytes(StandardCharsets.UTF_8))
+                .setBssid("bssid")
+                .setSsid("ssid".getBytes(StandardCharsets.UTF_8))
                 .build();
         NetworkCapabilities networkCapabilities = new NetworkCapabilities.Builder()
                 .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
                 .setTransportInfo(wifiInfo)
                 .build();
-        when(mIsTrustedNetworkChecker.isTrusted("trusted_bssid", "\"trusted_ssid\"")).thenReturn(
-                true);
 
         // when
         mAdbWifiNetworkMonitor.onCapabilitiesChanged(mNetwork, networkCapabilities);
@@ -333,11 +284,7 @@ public final class AdbWifiNetworkMonitorTest {
         mAdbWifiNetworkMonitor.onCapabilitiesChanged(mNetwork, networkCapabilities);
 
         // then
-        verify(mAdbDebuggingHandler, times(1))
-                .sendMessageAtTime(mHandlerMessageCaptor.capture(), anyLong());
-        assertEquals(AdbDebuggingManager.AdbDebuggingHandler.DECLARE_NEXT_ADB_WIFI_AUTO_ENABLE,
-                mHandlerMessageCaptor.getValue().what);
-        verify(mAdbWifiNetworkMonitor, times(1)).setAdbWifiState(anyBoolean(), anyString());
+        assertAdbWifiStarted();
     }
 
     @Test
@@ -345,15 +292,13 @@ public final class AdbWifiNetworkMonitorTest {
         // given
         WifiInfo wifiInfo = new WifiInfo.Builder()
                 .setNetworkId(1)
-                .setBssid("trusted_bssid")
-                .setSsid("trusted_ssid".getBytes(StandardCharsets.UTF_8))
+                .setBssid("bssid")
+                .setSsid("ssid".getBytes(StandardCharsets.UTF_8))
                 .build();
         NetworkCapabilities networkCapabilities = new NetworkCapabilities.Builder()
                 .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
                 .setTransportInfo(wifiInfo)
                 .build();
-        when(mIsTrustedNetworkChecker.isTrusted("trusted_bssid", "\"trusted_ssid\"")).thenReturn(
-                true);
 
         // when
         mAdbWifiNetworkMonitor.onCapabilitiesChanged(mNetwork, networkCapabilities);
@@ -361,7 +306,7 @@ public final class AdbWifiNetworkMonitorTest {
         wifiInfo = new WifiInfo.Builder()
                 .setNetworkId(1)
                 .setBssid("different_bssid")
-                .setSsid("trusted_ssid".getBytes(StandardCharsets.UTF_8))
+                .setSsid("ssid".getBytes(StandardCharsets.UTF_8))
                 .build();
         networkCapabilities = new NetworkCapabilities.Builder()
                 .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
@@ -372,45 +317,48 @@ public final class AdbWifiNetworkMonitorTest {
         mAdbWifiNetworkMonitor.onCapabilitiesChanged(mNetwork, networkCapabilities);
 
         // then
-        verify(mAdbDebuggingHandler, times(1))
-                .sendMessageAtTime(mHandlerMessageCaptor.capture(), anyLong());
-        assertEquals(AdbDebuggingManager.AdbDebuggingHandler.DECLARE_NEXT_ADB_WIFI_AUTO_ENABLE,
-                mHandlerMessageCaptor.getValue().what);
-        verify(mAdbWifiNetworkMonitor, times(1)).setAdbWifiState(anyBoolean(), anyString());
+        assertAdbWifiStarted();
     }
 
     @Test
     public void onLost_resetsLastSsid_allowsReconnect() {
-        // given: A trusted network connects
+        // given
         WifiInfo wifiInfo = new WifiInfo.Builder()
                 .setNetworkId(1)
-                .setBssid("trusted_bssid")
-                .setSsid("trusted_ssid".getBytes(StandardCharsets.UTF_8))
+                .setBssid("bssid")
+                .setSsid("ssid".getBytes(StandardCharsets.UTF_8))
                 .build();
         NetworkCapabilities networkCapabilities = new NetworkCapabilities.Builder()
                 .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
                 .setTransportInfo(wifiInfo)
                 .build();
-        when(mIsTrustedNetworkChecker.isTrusted("trusted_bssid", "\"trusted_ssid\"")).thenReturn(
-                true);
 
         // when
         mAdbWifiNetworkMonitor.onCapabilitiesChanged(mNetwork, networkCapabilities);
 
         // then
-        assertEquals(ADB_WIFI_ENABLED, mAdbWifiEnabledSetting);
+        verify(mAdbDebuggingHandler, times(1))
+                .sendMessageAtTime(mHandlerMessageCaptor.capture(), anyLong());
+        assertEquals(AdbDebuggingManager.AdbDebuggingHandler.MSG_START_TLS_SERVICE,
+                mHandlerMessageCaptor.getValue().what);
 
         // when
         mAdbWifiNetworkMonitor.onLost(mNetwork);
 
         // then
-        assertEquals(ADB_WIFI_DISABLED, mAdbWifiEnabledSetting);
+        verify(mAdbDebuggingHandler, times(2))
+                .sendMessageAtTime(mHandlerMessageCaptor.capture(), anyLong());
+        assertEquals(AdbDebuggingManager.AdbDebuggingHandler.MSG_STOP_TLS_SERVICE,
+                mHandlerMessageCaptor.getValue().what);
 
         // when
         mAdbWifiNetworkMonitor.onCapabilitiesChanged(mNetwork, networkCapabilities);
 
         // then
-        assertEquals(ADB_WIFI_ENABLED, mAdbWifiEnabledSetting);
+        verify(mAdbDebuggingHandler, times(3))
+                .sendMessageAtTime(mHandlerMessageCaptor.capture(), anyLong());
+        assertEquals(AdbDebuggingManager.AdbDebuggingHandler.MSG_START_TLS_SERVICE,
+                mHandlerMessageCaptor.getValue().what);
     }
 
     @Test
@@ -426,14 +374,27 @@ public final class AdbWifiNetworkMonitorTest {
     }
 
     @Test
-    public void unregister_doesNothing() {
-        // given: register() was already called in setUp()
-
+    public void unregister_isIdempotent() {
         // when
+        mAdbWifiNetworkMonitor.unregister();
         mAdbWifiNetworkMonitor.unregister();
 
         // then
-        verify(mConnectivityManager, never()).unregisterNetworkCallback(
+        verify(mConnectivityManager, times(1)).unregisterNetworkCallback(
                 any(ConnectivityManager.NetworkCallback.class));
+    }
+
+    private void assertAdbWifiStopped() {
+        verify(mAdbDebuggingHandler, times(1))
+                .sendMessageAtTime(mHandlerMessageCaptor.capture(), anyLong());
+        assertEquals(AdbDebuggingManager.AdbDebuggingHandler.MSG_STOP_TLS_SERVICE,
+                mHandlerMessageCaptor.getValue().what);
+    }
+
+    private void assertAdbWifiStarted() {
+        verify(mAdbDebuggingHandler, times(1))
+                .sendMessageAtTime(mHandlerMessageCaptor.capture(), anyLong());
+        assertEquals(AdbDebuggingManager.AdbDebuggingHandler.MSG_START_TLS_SERVICE,
+                mHandlerMessageCaptor.getValue().what);
     }
 }

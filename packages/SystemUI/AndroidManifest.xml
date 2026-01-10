@@ -746,6 +746,7 @@
 
         <activity
             android:name=".screencapture.ui.ShareScreenActivity"
+            android:label="@string/screen_share_a11y_announcement"
             android:showForAllUsers="true"
             android:exported="true"
             android:theme="@style/Theme.SystemUI.MediaProjectionAlertDialog"

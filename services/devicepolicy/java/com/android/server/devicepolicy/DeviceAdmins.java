@@ -16,26 +16,39 @@
 
 package com.android.server.devicepolicy;
 
+import static android.app.admin.DevicePolicyManager.AFFILIATED_FULL_USER_PROFILE_OWNER;
 import static android.app.admin.DevicePolicyManager.DEVICE_OWNER;
-import static android.content.pm.PackageManager.PERMISSION_GRANTED;
+import static android.app.admin.DevicePolicyManager.DEVICE_OWNER_TYPE_DEFAULT;
+import static android.app.admin.DevicePolicyManager.DEVICE_OWNER_TYPE_FINANCED;
+import static android.app.admin.DevicePolicyManager.FINANCED_DEVICE_OWNER;
+import static android.app.admin.DevicePolicyManager.MANAGED_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE;
+import static android.app.admin.DevicePolicyManager.MANAGED_PROFILE_OWNER_OF_PERSONAL_OWNED_DEVICE;
+import static android.app.admin.DevicePolicyManager.NOT_A_DPC;
+import static android.app.admin.DevicePolicyManager.PROFILE_OWNER_ON_USER_0;
+import static android.app.admin.DevicePolicyManager.UNAFFILIATED_FULL_USER_PROFILE_OWNER;
 
 import android.Manifest.permission;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.UserIdInt;
 import android.app.admin.DeviceAdminInfo;
+import android.app.admin.DevicePolicyManager.DeviceOwnerType;
+import android.app.admin.DevicePolicyManager.DpcType;
 import android.content.ComponentName;
 import android.content.pm.ActivityInfo;
 import android.content.pm.UserInfo;
 import android.os.Build;
+import android.os.RemoteException;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.util.ArraySet;
 import android.util.IndentingPrintWriter;
+import android.util.Pair;
 import android.util.SparseArray;
 import androidx.annotation.VisibleForTesting;
 import com.android.internal.util.Preconditions;
 import com.android.server.utils.Slogf;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -61,6 +74,7 @@ class DeviceAdmins {
     }
 
     final Injector mInjector;
+    // Stores and loads state on device and profile owners.
     final Owners mOwners;
 
     @VisibleForTesting final SparseArray<DevicePolicyData> mUserData = new SparseArray<>();
@@ -78,6 +92,59 @@ class DeviceAdmins {
         mOwners = owners;
         mUserManager = injector.getUserManager();
         mDelegate = delegate;
+    }
+
+    /**
+     * Return the DPC type of the given caller.
+     */
+    public @DpcType int getDpcType(CallerIdentity caller) {
+        // Check the permissions of DPCs
+        if (isDefaultDeviceOwner(caller)) {
+            return DEVICE_OWNER;
+        }
+        if (isFinancedDeviceOwner(caller)) {
+            return FINANCED_DEVICE_OWNER;
+        }
+        if (isProfileOwner(caller)) {
+            if (isProfileOwnerOfOrganizationOwnedDevice(caller)) {
+                return MANAGED_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE;
+            }
+            if (isManagedProfile(caller.getUserId())) {
+                return MANAGED_PROFILE_OWNER_OF_PERSONAL_OWNED_DEVICE;
+            }
+            if (isProfileOwnerOnUser0(caller)) {
+                return PROFILE_OWNER_ON_USER_0;
+            }
+            if (isUserAffiliatedWithDevice(caller.getUserId())) {
+                return AFFILIATED_FULL_USER_PROFILE_OWNER;
+            }
+            return UNAFFILIATED_FULL_USER_PROFILE_OWNER;
+        }
+        return NOT_A_DPC;
+    }
+
+    /**
+     * Returns the DPC type present on any app in the given user.
+     *
+     * @param userId The id of the user to check.
+     */
+    public @DpcType int getDpcType(@UserIdInt int userId) {
+        if (isDefaultDeviceOwnerUserId(userId)) {
+            return DEVICE_OWNER;
+        }
+        if (isFinancedDeviceOwnerUserId(userId)) {
+            return FINANCED_DEVICE_OWNER;
+        }
+        if (isProfileOwnerOfOrganizationOwnedDevice(userId)) {
+            return MANAGED_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE;
+        }
+        if (userId == 0 && hasProfileOwner(0)) {
+            return PROFILE_OWNER_ON_USER_0;
+        }
+        if (hasProfileOwner(userId)) {
+            return MANAGED_PROFILE_OWNER_OF_PERSONAL_OWNED_DEVICE;
+        }
+        return NOT_A_DPC;
     }
 
     @Nullable
@@ -577,10 +644,16 @@ class DeviceAdmins {
         return mOwners.getProfileOwnerComponent(userId);
     }
 
-    public boolean isProfileOwner(@Nullable ComponentName who, @UserIdInt int userId) {
-        final ComponentName profileOwner =
-                mInjector.binderWithCleanCallingIdentity(() -> getProfileOwnerAsUser(userId));
-        return who != null && who.equals(profileOwner);
+    /**
+     * Returns {@code true} if the provided caller identity is of a device owner.
+     *
+     * @param caller identity of caller.
+     * @return true if {@code identity} is a device owner, false otherwise.
+     */
+    public boolean isDeviceOwner(CallerIdentity caller) {
+        synchronized (mLock.getLockObject()) {
+            return isDeviceOwnerLocked(caller);
+        }
     }
 
     /**
@@ -593,8 +666,145 @@ class DeviceAdmins {
     public boolean isDeviceOwner(@Nullable ComponentName who, @UserIdInt int userId) {
         synchronized (mLock.getLockObject()) {
             return mOwners.hasDeviceOwner()
-                    && mOwners.getDeviceOwnerUserId() == userId
-                    && mOwners.getDeviceOwnerComponent().equals(who);
+                    && getDeviceOwnerUserId() == userId
+                    && getDeviceOwnerComponent().equals(who);
+        }
+    }
+
+    /**
+     * Check if the user is a Device Owner
+     *
+     * @param userId user to check
+     * @return if the user is a Device Owner
+     */
+    public boolean isDeviceOwnerUserId(@UserIdInt int userId) {
+        synchronized (mLock.getLockObject()) {
+            return mOwners.hasDeviceOwner() && mOwners.getDeviceOwnerUserId() == userId;
+        }
+    }
+
+    public boolean isDeviceOwner(ActiveAdmin admin) {
+        return isDeviceOwner(admin.info.getComponent(), admin.getUserHandle().getIdentifier());
+    }
+
+    /**
+     * Returns {@code true} <b>only if</b> the caller is the device owner and the device owner type
+     * is {@link DevicePolicyManager#DEVICE_OWNER_TYPE_DEFAULT}. {@code false} is returned for the
+     * case where the caller is not the device owner, there is no device owner, or the device owner
+     * type is not {@link DevicePolicyManager#DEVICE_OWNER_TYPE_DEFAULT}.
+     */
+    public boolean isDefaultDeviceOwner(CallerIdentity caller) {
+        synchronized (mLock.getLockObject()) {
+            return isDeviceOwnerLocked(caller)
+                    && getDeviceOwnerTypeLocked(mOwners.getDeviceOwnerPackageName())
+                            == DEVICE_OWNER_TYPE_DEFAULT;
+        }
+    }
+
+    public boolean isDefaultDeviceOwnerUserId(int userId) {
+        return mOwners.isDefaultDeviceOwnerUserId(userId);
+    }
+
+    /**
+     * {@code true} is returned <b>only if</b> the caller is the device owner and the device owner
+     * type is {@link DevicePolicyManager#DEVICE_OWNER_TYPE_FINANCED}. {@code false} is returned for
+     * the case where the caller is not the device owner, there is no device owner, or the device
+     * owner type is not {@link DevicePolicyManager#DEVICE_OWNER_TYPE_FINANCED}.
+     */
+    public boolean isFinancedDeviceOwner(CallerIdentity caller) {
+        synchronized (mLock.getLockObject()) {
+            return isDeviceOwnerLocked(caller)
+                    && getDeviceOwnerTypeLocked(mOwners.getDeviceOwnerPackageName())
+                            == DEVICE_OWNER_TYPE_FINANCED;
+        }
+    }
+
+    public boolean isFinancedDeviceOwnerUserId(int userId) {
+        return mOwners.isFinancedDeviceOwnerUserId(userId);
+    }
+
+    private boolean isDeviceOwnerLocked(CallerIdentity caller) {
+        if (!isDeviceOwnerUserId(caller.getUserId())) {
+            return false;
+        }
+
+        if (caller.hasAdminComponent()) {
+            return getDeviceOwnerComponent().equals(caller.getComponentName());
+        } else {
+            return isUidDeviceOwnerLocked(caller.getUid());
+        }
+    }
+
+    /**
+     * Returns {@code true} if the provided caller identity is of a profile owner of an organization
+     * owned device.
+     *
+     * @param caller identity of caller
+     * @return true if {@code identity} is a profile owner of an organization owned device, false
+     *     otherwise.
+     */
+    public boolean isProfileOwnerOfOrganizationOwnedDevice(CallerIdentity caller) {
+        return isProfileOwner(caller)
+                && isProfileOwnerOfOrganizationOwnedDevice(caller.getUserId());
+    }
+
+    /**
+     * Returns {@code true} if the provided caller identity is of a profile owner of an organization
+     * owned device.
+     *
+     * @return true if {@code identity} is a profile owner of an organization owned device, false
+     *     otherwise.
+     */
+    public boolean isProfileOwnerOfOrganizationOwnedDevice(ComponentName who, int userId) {
+        return isProfileOwner(who, userId) && isProfileOwnerOfOrganizationOwnedDevice(userId);
+    }
+
+    public boolean isProfileOwnerOfOrganizationOwnedDevice(@UserIdInt int userId) {
+        return mOwners.isProfileOwnerOfOrganizationOwnedDevice(userId);
+    }
+
+    public boolean isProfileOwner(@Nullable ComponentName who, @UserIdInt int userId) {
+        final ComponentName profileOwner =
+                mInjector.binderWithCleanCallingIdentity(() -> getProfileOwnerAsUser(userId));
+        return who != null && who.equals(profileOwner);
+    }
+
+    boolean isProfileOwnerOnUser0(CallerIdentity caller) {
+        return isProfileOwner(caller) && caller.getUserHandle().isSystem();
+    }
+
+    /**
+     * Returns {@code true} if the provided caller identity is of a profile owner.
+     *
+     * @param caller identity of caller.
+     * @return true if {@code identity} is a profile owner, false otherwise.
+     */
+    public boolean isProfileOwner(CallerIdentity caller) {
+        synchronized (mLock.getLockObject()) {
+            final ComponentName profileOwner =
+                    mInjector.binderWithCleanCallingIdentity(
+                            () -> getProfileOwnerAsUser(caller.getUserId()));
+            // No profile owner.
+            if (profileOwner == null) {
+                return false;
+            }
+            // The admin ComponentName was specified, check it directly.
+            if (caller.hasAdminComponent()) {
+                return profileOwner.equals(caller.getComponentName());
+            } else {
+                return isUidProfileOwnerLocked(caller.getUid());
+            }
+        }
+    }
+
+    private boolean isManagedProfile(@UserIdInt int userHandle) {
+        final UserInfo user = getUserInfo(userHandle);
+        return user != null && user.isManagedProfile();
+    }
+
+    public boolean hasProfileOwner(@UserIdInt int userId) {
+        synchronized (mLock.getLockObject()) {
+            return mOwners.hasProfileOwner(userId);
         }
     }
 
@@ -608,17 +818,83 @@ class DeviceAdmins {
         }
     }
 
-    private boolean isProfileOwnerOfOrganizationOwnedDevice(@UserIdInt int userId) {
-        return mOwners.isProfileOwnerOfOrganizationOwnedDevice(userId);
+    public int getDeviceOwnerUserIdUnchecked() {
+        synchronized (mLock.getLockObject()) {
+            return mOwners.hasDeviceOwner() ? mOwners.getDeviceOwnerUserId() : UserHandle.USER_NULL;
+        }
     }
 
-    private boolean isManagedProfile(@UserIdInt int userHandle) {
-        final UserInfo user = getUserInfo(userHandle);
-        return user != null && user.isManagedProfile();
+    @DeviceOwnerType
+    public int getDeviceOwnerType(String packageName) {
+        synchronized (mLock.getLockObject()) {
+            return mOwners.getDeviceOwnerType(packageName);
+        }
     }
 
-    private int getDeviceOwnerUserIdUnchecked() {
-        return mOwners.hasDeviceOwner() ? mOwners.getDeviceOwnerUserId() : UserHandle.USER_NULL;
+    @DeviceOwnerType
+    private int getDeviceOwnerTypeLocked(String packageName) {
+        return mOwners.getDeviceOwnerType(packageName);
+    }
+
+    public boolean hasDeviceOwner() {
+        synchronized (mLock.getLockObject()) {
+            return mOwners.hasDeviceOwner();
+        }
+    }
+
+    public boolean isDeviceManaged() {
+        return mOwners.isDeviceManaged();
+    }
+
+    public Pair<Integer, ComponentName> getDeviceOwnerUserIdAndComponent() {
+        return mOwners.getDeviceOwnerUserIdAndComponent();
+    }
+
+    public ComponentName getDeviceOwnerComponent() {
+        return mOwners.getDeviceOwnerComponent();
+    }
+
+    public String getDeviceOwnerPackageName() {
+        return mOwners.getDeviceOwnerPackageName();
+    }
+
+    public Set<Integer> getProfileOwnerKeys() {
+        synchronized (mLock.getLockObject()) {
+            return mOwners.getProfileOwnerKeys();
+        }
+    }
+
+    public String getProfileOwnerPackage(int userId) {
+        return mOwners.getProfileOwnerPackage(userId);
+    }
+
+    ComponentName getProfileOwnerComponent(int userId) {
+        return mOwners.getProfileOwnerComponent(userId);
+    }
+
+    public String getProfileOwnerPackageName(int userId) {
+        return mOwners.getProfileOwnerPackage(userId);
+    }
+
+    /** Return device owner or profile owner set on a given user. */
+    @Nullable
+    ComponentName getOwnerComponent(int userId) {
+        synchronized (mLock.getLockObject()) {
+            if (isDeviceOwnerUserId(userId)) {
+                return getDeviceOwnerComponent();
+            }
+            if (mOwners.hasProfileOwner(userId)) {
+                return getProfileOwnerComponent(userId);
+            }
+        }
+        return null;
+    }
+
+    /** Return the package name of owner in a given user. */
+    String getOwnerPackageNameForUser(int userId) {
+        return isDeviceOwnerUserId(userId)
+                ? getDeviceOwnerPackageName()
+                : mOwners.getProfileOwnerPackage(userId);
     }
 
     private UserInfo getUserInfo(@UserIdInt int userId) {
@@ -647,6 +923,10 @@ class DeviceAdmins {
             }
             return policy;
         }
+    }
+
+    public @NonNull DevicePolicyData getUserDataUnchecked(int userHandle) {
+        return mInjector.binderWithCleanCallingIdentity(() -> getUserData(userHandle));
     }
 
     /** Removes the in-memory policy data for the given user. */
@@ -717,5 +997,155 @@ class DeviceAdmins {
 
     private boolean hasPermission(CallerIdentity caller, String permission) {
         return mInjector.hasPermission(permission, caller.getPid(), caller.getUid());
+    }
+
+    // Used by DevicePolicyManagerServiceShellCommand
+    void printAllOwners(PrintWriter pw) {
+        synchronized (mLock.getLockObject()) {
+            if (getDeviceOwnerUserIdUnchecked() != UserHandle.USER_NULL) {
+                pw.printf(
+                        "User %d: admin=%s,DeviceOwner\n",
+                        getDeviceOwnerUserIdUnchecked(),
+                        getDeviceOwnerAdmin().info.getComponent().flattenToShortString());
+            }
+            for (var userId : mOwners.getProfileOwnerKeys()) {
+                pw.printf(
+                        "User %d: admin=%s,",
+                        userId,
+                        getProfileOwnerAdmin(userId).info.getComponent().flattenToShortString());
+                if (isManagedProfile(userId)) {
+                    pw.printf("ManagedProfileOwner(parentUserId=%d)", getProfileParentId(userId));
+                } else {
+                    pw.print("ProfileOwner");
+                }
+                if (isUserAffiliatedWithDevice(userId)) {
+                    pw.print(",Affiliated");
+                }
+                if (mOwners.isProfileOwnerOfOrganizationOwnedDevice(userId)) {
+                    pw.print(",OrganizationOwnedDevice");
+                }
+                pw.println();
+            }
+        }
+    }
+
+    public boolean isUserAffiliatedWithDevice(@UserIdInt int userId) {
+        synchronized (mLock.getLockObject()) {
+            return isUserAffiliatedWithDeviceLocked(userId);
+        }
+    }
+
+    private boolean isUserAffiliatedWithDeviceLocked(@UserIdInt int userId) {
+        if (!mOwners.hasDeviceOwner()) {
+            return false;
+        }
+        if (userId == UserHandle.USER_SYSTEM) {
+            // The system user is always affiliated in a DO device,
+            // even if in headless system user mode.
+            return true;
+        }
+        if (isDeviceOwnerUserId(userId)) {
+            // The user that the DO is installed on is always affiliated with the device.
+            return true;
+        }
+
+        final ComponentName profileOwner = getProfileOwnerAsUser(userId);
+        if (profileOwner == null) {
+            return false;
+        }
+
+        final Set<String> userAffiliationIds = getUserData(userId).mAffiliationIds;
+        final Set<String> deviceAffiliationIds =
+                getUserData(UserHandle.USER_SYSTEM).mAffiliationIds;
+        for (String id : userAffiliationIds) {
+            if (deviceAffiliationIds.contains(id)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean areAllUsersAffiliatedWithDevice() {
+        synchronized (mLock.getLockObject()) {
+            return mInjector.binderWithCleanCallingIdentity(
+                    () -> {
+                        final List<UserInfo> userInfos = mUserManager.getAliveUsers();
+                        for (int i = 0; i < userInfos.size(); i++) {
+                            int userId = userInfos.get(i).id;
+                            if (!isUserAffiliatedWithDevice(userId)) {
+                                Slogf.d(LOG_TAG, "User id " + userId + " not affiliated.");
+                                return false;
+                            }
+                        }
+                        return true;
+                    });
+        }
+    }
+
+    /**
+     * Checks if any of the packages associated with the UID of the app provided is that of the
+     * device owner.
+     *
+     * @param appUid UID of the app to check.
+     * @return {@code true} if any of the packages are the device owner, {@code false} otherwise.
+     */
+    private boolean isUidDeviceOwnerLocked(int appUid) {
+        mLock.ensureLocked();
+        final String deviceOwnerPackageName = getDeviceOwnerComponent().getPackageName();
+        try {
+            String[] pkgs = mInjector.getIPackageManager().getPackagesForUid(appUid);
+            if (pkgs == null) {
+                return false;
+            }
+
+            for (String pkg : pkgs) {
+                if (deviceOwnerPackageName.equals(pkg)) {
+                    return true;
+                }
+            }
+        } catch (RemoteException e) {
+            return false;
+        }
+        return false;
+    }
+
+    /**
+     * Checks if the app uid provided is the profile owner. This method should only be called if no
+     * componentName is available.
+     *
+     * @param appUid UID of the caller.
+     * @return true if the caller is the profile owner
+     */
+    private boolean isUidProfileOwnerLocked(int appUid) {
+        mLock.ensureLocked();
+        final int userId = UserHandle.getUserId(appUid);
+        final ComponentName profileOwnerComponent = getProfileOwnerComponent(userId);
+        if (profileOwnerComponent == null) {
+            return false;
+        }
+        for (ActiveAdmin admin : getUserData(userId).mAdminList) {
+            final ComponentName currentAdminComponent = admin.info.getComponent();
+            if (admin.getUid() == appUid && profileOwnerComponent.equals(currentAdminComponent)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private int getProfileParentId(int userHandle) {
+        return mInjector.binderWithCleanCallingIdentity(
+                () -> {
+                    UserInfo parentUser = mUserManager.getProfileParent(userHandle);
+                    return parentUser != null ? parentUser.id : userHandle;
+                });
+    }
+
+    /**
+     * Returns the {@link Owners} object owned by {@code this}. This should only be used to access
+     * one-off methods on the {@link Owners} object that are not exposed through the APIs of {@code
+     * this}.
+     */
+    Owners getOwners() {
+        return mOwners;
     }
 }

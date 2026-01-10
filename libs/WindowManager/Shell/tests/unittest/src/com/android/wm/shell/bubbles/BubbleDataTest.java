@@ -18,7 +18,6 @@ package com.android.wm.shell.bubbles;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 import static com.android.wm.shell.Flags.FLAG_ENABLE_OPTIONAL_BUBBLE_OVERFLOW;
-import static com.android.wm.shell.Flags.FLAG_REMOVE_APP_BUBBLE_OVERFLOW_DUPES;
 
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
@@ -1597,7 +1596,6 @@ public class BubbleDataTest extends ShellTestCase {
         assertOverflowChangedTo(ImmutableList.of(appBubble));
     }
 
-    @EnableFlags(FLAG_REMOVE_APP_BUBBLE_OVERFLOW_DUPES)
     @Test
     public void testOverflowAppDupes_bothLauncherCategory() {
         mBubbleData.setListener(mListener);
@@ -1639,7 +1637,6 @@ public class BubbleDataTest extends ShellTestCase {
         assertOverflowAdded(appBubble2);
     }
 
-    @EnableFlags(FLAG_REMOVE_APP_BUBBLE_OVERFLOW_DUPES)
     @Test
     public void testOverflowAppDupes_newIsLauncherCategory() {
         mBubbleData.setListener(mListener);
@@ -1672,7 +1669,6 @@ public class BubbleDataTest extends ShellTestCase {
         assertOverflowRemoved(taskBubble);
     }
 
-    @EnableFlags(FLAG_REMOVE_APP_BUBBLE_OVERFLOW_DUPES)
     @Test
     public void testOverflowAppDupes_oldIsLauncherCategory() {
         mBubbleData.setListener(mListener);
@@ -1706,7 +1702,6 @@ public class BubbleDataTest extends ShellTestCase {
         assertOverflowChangedTo(ImmutableList.of(launcherBubble));
     }
 
-    @EnableFlags(FLAG_REMOVE_APP_BUBBLE_OVERFLOW_DUPES)
     @Test
     public void testOverflowAppDupes_neitherIsLauncherCategory() {
         mBubbleData.setListener(mListener);

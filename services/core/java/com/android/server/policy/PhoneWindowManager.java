@@ -250,8 +250,6 @@ import com.android.server.input.InputManagerInternal;
 import com.android.server.inputmethod.InputMethodManagerInternal;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.policy.keyguard.KeyguardServiceDelegate;
-import com.android.server.policy.keyguard.KeyguardServiceDelegate.DrawnListener;
-import com.android.server.policy.keyguard.KeyguardStateMonitor.StateCallback;
 import com.android.server.statusbar.StatusBarManagerInternal;
 import com.android.server.vr.VrManagerInternal;
 import com.android.server.wallpaper.WallpaperManagerInternal;
@@ -507,13 +505,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     volatile boolean mBootAnimationDismissable;
     @VisibleForTesting KeyguardServiceDelegate mKeyguardDelegate;
     private boolean mKeyguardBound;
-    final DrawnListener mKeyguardDrawnCallback = new DrawnListener() {
-        @Override
-        public void onDrawn() {
-            if (DEBUG_WAKEUP) Slog.d(TAG, "mKeyguardDelegate.ShowListener.onDrawn.");
-            mHandler.sendEmptyMessage(MSG_KEYGUARD_DRAWN_COMPLETE);
-        }
-    };
 
     private Supplier<GlobalActions> mGlobalActionsFactory;
     private GlobalActions mGlobalActions;
@@ -2233,7 +2224,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 
         KeyguardServiceDelegate getKeyguardServiceDelegate() {
             return new KeyguardServiceDelegate(mContext,
-                    new StateCallback() {
+                    new KeyguardServiceDelegate.StateCallback() {
                         @Override
                         public void onTrustedChanged() {
                             mWindowManagerFuncs.notifyKeyguardTrustedChanged();
@@ -5673,7 +5664,11 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     final int reason = mDefaultDisplayPolicy.isDisplaySwitching()
                             ? SCREEN_TURNING_ON_REASON_DISPLAY_SWITCH
                             : SCREEN_TURNING_ON_REASON_UNKNOWN;
-                    mKeyguardDelegate.onScreenTurningOn(reason, mKeyguardDrawnCallback);
+                    mKeyguardDelegate.onScreenTurningOn(reason,
+                            /* onDrawn= */ () -> {
+                                if (DEBUG_WAKEUP) Slog.d(TAG, "mKeyguardDelegate.onDrawn.");
+                                mHandler.sendEmptyMessage(MSG_KEYGUARD_DRAWN_COMPLETE);
+                            });
                 } else {
                     if (DEBUG_WAKEUP) Slog.d(TAG,
                             "null mKeyguardDelegate: setting mKeyguardDrawComplete.");

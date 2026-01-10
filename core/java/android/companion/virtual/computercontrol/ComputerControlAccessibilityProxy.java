@@ -41,6 +41,8 @@ final class ComputerControlAccessibilityProxy extends AccessibilityDisplayProxy 
     @Nullable
     @GuardedBy("this")
     private StabilitySignalTracker mStabilitySignalTracker;
+    @GuardedBy("this")
+    private boolean mIsFirstFrameReceived = false;
 
     ComputerControlAccessibilityProxy(int displayId, @NonNull Handler handler) {
         super(displayId, handler::post, getAccessibilityServiceInfos());
@@ -55,6 +57,21 @@ final class ComputerControlAccessibilityProxy extends AccessibilityDisplayProxy 
                 return;
             }
             mStabilitySignalTracker.onAccessibilityEvent();
+        }
+    }
+
+    /**
+     * Called when a frame is available for the display.
+     */
+    void onImageAvailable() {
+        synchronized (this) {
+            if (mIsFirstFrameReceived) {
+                return;
+            }
+            mIsFirstFrameReceived = true;
+            if (mStabilitySignalTracker != null) {
+                mStabilitySignalTracker.onFirstFrameReceived();
+            }
         }
     }
 
@@ -82,7 +99,8 @@ final class ComputerControlAccessibilityProxy extends AccessibilityDisplayProxy 
             }
             mStabilitySignalTracker =
                     new StabilitySignalTracker(timeoutMillis, mHandler,
-                            () -> executor.execute(listener::onSessionStable));
+                            () -> executor.execute(listener::onSessionStable),
+                            mIsFirstFrameReceived);
         }
     }
 
@@ -113,18 +131,31 @@ final class ComputerControlAccessibilityProxy extends AccessibilityDisplayProxy 
 
         private final ComputerControlSession.StabilityListener mStabilityListener;
         private final EventIdleTracker mEventIdleTracker;
+        private boolean mIsFirstFrameReceived;
+        private boolean mIsIdle;
 
         StabilitySignalTracker(long timeoutMillis, Handler handler,
-                ComputerControlSession.StabilityListener listener) {
+                ComputerControlSession.StabilityListener listener, boolean isFirstFrameReceived) {
             mStabilityListener = listener;
             mEventIdleTracker = new EventIdleTracker(handler, timeoutMillis);
+            mIsFirstFrameReceived = isFirstFrameReceived;
+        }
+
+        void onFirstFrameReceived() {
+            if (mIsFirstFrameReceived) {
+                throw new IllegalStateException("First frame was already received!");
+            }
+            mIsFirstFrameReceived = true;
+            checkStability();
         }
 
         void onAccessibilityEvent() {
+            mIsIdle = false;
             mEventIdleTracker.onEvent();
         }
 
         void resetStabilityState() {
+            mIsIdle = false;
             mEventIdleTracker.reset();
             mEventIdleTracker.registerOneShotIdleCallback(this);
         }
@@ -136,9 +167,16 @@ final class ComputerControlAccessibilityProxy extends AccessibilityDisplayProxy 
 
         @Override
         public void onEventIdle() {
-            if (mStabilityListener != null) {
-                mStabilityListener.onSessionStable();
+            mIsIdle = true;
+            checkStability();
+        }
+
+        private void checkStability() {
+            if (!mIsIdle || !mIsFirstFrameReceived) {
+                return;
             }
+            mIsIdle = false;
+            mStabilityListener.onSessionStable();
         }
     }
 

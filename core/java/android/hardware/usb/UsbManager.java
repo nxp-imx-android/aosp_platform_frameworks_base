@@ -2689,9 +2689,9 @@ public class UsbManager {
     @SystemApi
     @RequiresPermission(Manifest.permission.MANAGE_USB)
     @PciTunnelControlAllowedStatus
-    public int isPciTunnelingControlAllowed() {
+    public int getPciTunnelingControlAllowedStatus() {
         try {
-            return mService.isPciTunnelingControlAllowed();
+            return mService.getPciTunnelingControlAllowedStatus();
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

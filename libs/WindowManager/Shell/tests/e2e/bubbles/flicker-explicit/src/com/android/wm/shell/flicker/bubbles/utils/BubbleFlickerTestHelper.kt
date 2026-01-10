@@ -214,6 +214,22 @@ internal object BubbleFlickerTestHelper {
         waitAndAssertBubbleAppInExpandedState(testApp, wmHelper)
     }
 
+    /** Gets the given bubble app icon. */
+    fun getBubbleAppIcon(app: StandardAppHelper): Bubble {
+        val bubbles = Root.get().expandedBubbleStack.bubbles
+        return bubbles.find { bubble -> bubble.containsBubbleApp(app) }
+            ?: error(
+                "Can't find the bubble with packageName=${app.packageName} " +
+                    "appName=${app.appName}. Bubbles are ${bubbles.describeAll()}"
+            )
+    }
+
+    /** Clicks on the given bubble app icon. */
+    fun clickBubbleAppIcon(appToClick: StandardAppHelper) {
+        val bubbleAppIcon = getBubbleAppIcon(appToClick)
+        bubbleAppIcon.click()
+    }
+
     /**
      * Switches from one expanded bubble to another.
      *
@@ -229,14 +245,7 @@ internal object BubbleFlickerTestHelper {
         // Checks the previous app is in expanded state.
         waitAndAssertBubbleAppInExpandedState(appSwitchedFrom, wmHelper)
 
-        val bubbles = Root.get().expandedBubbleStack.bubbles
-        val bubbleAppIcon =
-            bubbles.find { bubble -> bubble.containsBubbleApp(appSwitchTo) }
-                ?: error(
-                    "Can't find the bubble with packageName=${appSwitchTo.packageName} " +
-                        "appName=${appSwitchTo.appName}. Bubbles are ${bubbles.describeAll()}"
-                )
-        bubbleAppIcon.click()
+        clickBubbleAppIcon(appSwitchTo)
 
         waitAndAssertBubbleAppInExpandedState(appSwitchTo, wmHelper)
     }
@@ -341,12 +350,7 @@ internal object BubbleFlickerTestHelper {
 
         when (from) {
             FROM_FLOATING_BUBBLE_ICON -> {
-                val bubbles = Root.get().expandedBubbleStack.bubbles
-                bubbles.find { bubble -> bubble.containsBubbleApp(testApp) }?.dismiss()
-                    ?: error(
-                        "Can't find the bubble with packageName=${testApp.packageName} " +
-                            "appName=${testApp.appName}. Bubbles are ${bubbles.describeAll()}"
-                    )
+                getBubbleAppIcon(testApp).dismiss()
             }
             FROM_BUBBLE_BAR_HANDLE -> {
                 Root.get().expandedBubbleStack.bubbleBarHandle.dragToDismiss()
@@ -557,7 +561,8 @@ internal object BubbleFlickerTestHelper {
         }
     }
 
-    private fun waitAndAssertBubbleAppInCollapseState(
+    /** Waits for the bubble app to be fully collapsed. */
+    fun waitAndAssertBubbleAppInCollapseState(
         testApp: StandardAppHelper,
         wmHelper: WindowManagerStateHelper,
     ) {

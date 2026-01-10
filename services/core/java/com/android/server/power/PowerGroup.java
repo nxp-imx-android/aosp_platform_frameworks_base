@@ -204,14 +204,10 @@ public class PowerGroup {
                 setLastPowerOnTimeLocked(eventTime);
                 setIsPoweringOnLocked(true);
                 mLastWakeTime = eventTime;
-                if (mFeatureFlags.isPolicyReasonInDisplayPowerRequestEnabled()) {
-                    mLastWakeReason = reason;
-                }
+                mLastWakeReason = reason;
             } else if (isInteractive(mWakefulness) && !isInteractive(newWakefulness)) {
                 mLastSleepTime = eventTime;
-                if (mFeatureFlags.isPolicyReasonInDisplayPowerRequestEnabled()) {
-                    mLastSleepReason = reason;
-                }
+                mLastSleepReason = reason;
             }
 
             // Since the group is transitioning to interactive wakefulness, we should reset the
@@ -572,9 +568,7 @@ public class PowerGroup {
             }
         }
 
-        if (mFeatureFlags.isPolicyReasonInDisplayPowerRequestEnabled()) {
-            mDisplayPowerRequest.policyReason = policyReason;
-        }
+        mDisplayPowerRequest.policyReason = policyReason;
         mDisplayPowerRequest.policy = policy;
     }
 

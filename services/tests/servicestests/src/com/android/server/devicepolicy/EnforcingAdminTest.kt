@@ -23,7 +23,6 @@ import android.app.admin.SystemAuthority
 import android.app.admin.flags.Flags
 import android.content.ComponentName
 import android.os.UserHandle
-import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.SetFlagsRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -134,7 +133,6 @@ class EnforcingAdminTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_TIGHTEN_ADMIN_INSTANTIATION)
     fun createEnforcingAdmin_fromParcelable_roleAuthority() {
         whenever(roleManagerLocal.getRolesAndHolders(SYSTEM_USER_ID)) doReturn
                 mapOf(ROLE_NAME to setOf(PACKAGE_NAME))
@@ -152,28 +150,6 @@ class EnforcingAdminTest {
         assertEquals(SYSTEM_USER_ID, enforcingAdmin.userId)
         assertEquals(PACKAGE_NAME, enforcingAdmin.packageName)
         assertTrue(enforcingAdmin.hasAuthority(ROLE_AUTHORITY_PREFIX + ROLE_NAME))
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_TIGHTEN_ADMIN_INSTANTIATION)
-    fun createEnforcingAdmin_fromParcelable_roleAuthority_old() {
-        whenever(roleManagerLocal.getRolesAndHolders(SYSTEM_USER_ID)) doReturn
-                mapOf(ROLE_NAME to setOf(PACKAGE_NAME))
-
-        val parcelableAdmin =
-            android.app.admin.EnforcingAdmin(
-                PACKAGE_NAME,
-                RoleAuthority(setOf(ROLE_NAME)),
-                SYSTEM_USER_HANDLE,
-                COMPONENT_NAME,
-            )
-
-        val enforcingAdmin = EnforcingAdmin.createEnforcingAdmin(parcelableAdmin)
-
-        assertEquals(SYSTEM_USER_ID, enforcingAdmin.userId)
-        assertEquals(PACKAGE_NAME, enforcingAdmin.packageName)
-        assertEquals(COMPONENT_NAME, enforcingAdmin.componentName)
-        assertTrue(enforcingAdmin.hasAuthority(ROLE_NAME))
     }
 
     @Test

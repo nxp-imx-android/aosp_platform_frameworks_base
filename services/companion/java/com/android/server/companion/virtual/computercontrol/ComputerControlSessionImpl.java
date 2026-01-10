@@ -69,6 +69,7 @@ import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.os.Trace;
 import android.os.UserHandle;
 import android.util.ArraySet;
 import android.util.Slog;
@@ -119,6 +120,8 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         implements IBinder.DeathRecipient, AppOpsManager.OnOpChangedListener {
 
     private static final String TAG = "ComputerControlSession";
+    private static final int TRACE_COOKIE_SESSION = 0;
+    private static final int TRACE_COOKIE_WINDOW_DRAW = 1;
 
     private static final long DEFAULT_GLOBAL_SESSION_TIMEOUT_DURATION_MS =
             TimeUnit.MILLISECONDS.convert(360, TimeUnit.MINUTES);
@@ -159,6 +162,9 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     static final int PRODUCT_ID_DPAD = 0xCC01;
     @VisibleForTesting
     static final int PRODUCT_ID_TOUCHSCREEN = 0xCC03;
+
+    private final String mTraceTrack = "ComputerControlSessionImpl#"
+            + System.identityHashCode(this);
 
     private final IBinder mAppToken;
     private final ComputerControlSessionParams mParams;
@@ -229,6 +235,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                 public void onClosed(@ComputerControlSession.SessionCloseReason int reason) {
                     releaseResources();
                     mStatsController.onSessionClosed(reason);
+                    Trace.asyncTraceForTrackEnd(mTraceTrack, TRACE_COOKIE_SESSION);
                 }
             };
 
@@ -289,6 +296,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             AttributionSource attributionSource,
             ComputerControlSessionProcessor.VirtualDeviceFactory virtualDeviceFactory,
             Consumer<ComputerControlSessionImpl> onClosedListener, Executor fgThreadExecutor) {
+        Trace.asyncTraceForTrackBegin(mTraceTrack, "Session", TRACE_COOKIE_SESSION);
         mFgThreadExecutor = fgThreadExecutor;
         mViewConfiguration = viewConfiguration;
         mGlobalSessionTimeoutDurationMs = globalSessionTimeoutDurationMs;
@@ -789,6 +797,10 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             mIsWaitingForWindowDraw = mWindowManagerInternal.requestHardwareRendererOutputEnabled(
                     mVirtualDisplayId, WINDOW_DRAW_TIMEOUT_MS, this::onWindowsDrawnCallback,
                     mScheduler);
+            if (mIsWaitingForWindowDraw) {
+                Trace.asyncTraceForTrackBegin(mTraceTrack, "isWaitingForWindowDraw",
+                        TRACE_COOKIE_WINDOW_DRAW);
+            }
             return mIsWaitingForWindowDraw;
         }
     }
@@ -804,6 +816,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             }
             synchronized (mWindowDrawLock) {
                 mIsWaitingForWindowDraw = false;
+                Trace.asyncTraceForTrackEnd(mTraceTrack, TRACE_COOKIE_WINDOW_DRAW);
             }
         }
     }

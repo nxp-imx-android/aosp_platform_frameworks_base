@@ -103,6 +103,7 @@ public class UserRestrictionsUtils {
             UserManager.DISALLOW_NETWORK_RESET,
             UserManager.DISALLOW_FACTORY_RESET,
             UserManager.DISALLOW_ADD_USER,
+            UserManager.DISALLOW_ADD_GUEST,
             UserManager.DISALLOW_ADD_MANAGED_PROFILE,
             UserManager.DISALLOW_ADD_CLONE_PROFILE,
             UserManager.DISALLOW_ADD_PRIVATE_PROFILE,
@@ -223,7 +224,8 @@ public class UserRestrictionsUtils {
     private static final Set<String> IMMUTABLE_BY_OWNERS = Sets.newArraySet(
             UserManager.DISALLOW_RECORD_AUDIO,
             UserManager.DISALLOW_WALLPAPER,
-            UserManager.DISALLOW_OEM_UNLOCK
+            UserManager.DISALLOW_OEM_UNLOCK,
+            UserManager.DISALLOW_ADD_GUEST
     );
 
     /**

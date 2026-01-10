@@ -33,7 +33,7 @@ constructor(private val interactor: ShareScreenPrivacyIndicatorInteractor) :
 
     /** A factory for creating a [ShareScreenPrivacyIndicatorPopupViewModel]. */
     @AssistedFactory
-    interface Factory : StatusBarPopupViewModel.Factory {
+    interface Factory : StatusBarPopupViewModel.Factory.ShareScreen {
         override fun create(): ShareScreenPrivacyIndicatorPopupViewModel
     }
 }
