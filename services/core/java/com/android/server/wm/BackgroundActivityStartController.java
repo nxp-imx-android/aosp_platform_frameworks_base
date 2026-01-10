@@ -96,6 +96,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringJoiner;
+import java.util.TreeMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -160,6 +161,10 @@ public class BackgroundActivityStartController {
     private final ActivityTaskManagerService mService;
 
     private final ActivityTaskSupervisor mSupervisor;
+
+    // there should never be more than 1 callback per uid under normal circumstances, but e.g.
+    // the system server registers multiple callbacks from different classloaders.
+    private int mCallbackMapSizeLimit = 10;
 
     record StrictModeCallback(IBackgroundActivityLaunchCallback callback,
                               IBinder.DeathRecipient deathRecipient) {}
@@ -511,20 +516,6 @@ public class BackgroundActivityStartController {
                     throw new IllegalStateException("unsupported BackgroundActivityStartMode: "
                             + checkedOptions.getPendingIntentCreatorBackgroundActivityStartMode());
             }
-        }
-
-        private String getDebugPackageName(String packageName, int uid) {
-            if (packageName != null) {
-                return packageName; // use actual package
-            }
-            if (uid == 0) {
-                return "root[debugOnly]";
-            }
-            String name = getService().getPackageManagerInternalLocked().getNameForUid(uid);
-            if (name == null) {
-                name = "uid=" + uid;
-            }
-            return name + "[debugOnly]";
         }
 
         private boolean hasRealCaller() {
@@ -1033,6 +1024,20 @@ public class BackgroundActivityStartController {
         }
     }
 
+    class StrictModeDeathRecipient implements IBinder.DeathRecipient {
+        int mUid;
+        IBinder mCallback;
+
+        StrictModeDeathRecipient(int uid, IBinder callback) {
+            mUid = uid;
+            mCallback = callback;
+        }
+
+        public void binderDied() {
+            removeStrictModeCallback(mUid, mCallback);
+        }
+    }
+
     /**
      * Add strict mode callback for BAL.
      *
@@ -1047,7 +1052,7 @@ public class BackgroundActivityStartController {
         }
         IBackgroundActivityLaunchCallback balCallback =
                 IBackgroundActivityLaunchCallback.Stub.asInterface(callback);
-        IBinder.DeathRecipient deathRecipient = () -> removeStrictModeCallback(uid, callback);
+        StrictModeDeathRecipient deathRecipient = new StrictModeDeathRecipient(uid, callback);
         synchronized (mStrictModeBalCallbacks) {
             ArrayMap<IBinder, StrictModeCallback> callbackMap = mStrictModeBalCallbacks.get(uid);
             if (callbackMap == null) {
@@ -1055,6 +1060,13 @@ public class BackgroundActivityStartController {
                 mStrictModeBalCallbacks.put(uid, callbackMap);
             } else {
                 if (callbackMap.containsKey(callback)) {
+                    return false;
+                }
+                if (callbackMap.size() >= mCallbackMapSizeLimit) {
+                    Slog.wtf(TAG,
+                            "Too many (" + callbackMap.size() + ") callbacks registered for "
+                                    + getDebugPackageName(null, uid)
+                                    + "; " + createPackageCountMap(mStrictModeBalCallbacks));
                     return false;
                 }
             }
@@ -1066,6 +1078,16 @@ public class BackgroundActivityStartController {
             removeStrictModeCallback(uid, callback);
         }
         return true;
+    }
+
+    private Map<String, Integer> createPackageCountMap(
+            SparseArray<ArrayMap<IBinder, StrictModeCallback>> strictModeBalCallbacks) {
+        Map<String, Integer> result = new TreeMap<>();
+        for (int i = strictModeBalCallbacks.size(); i-- > 0; ) {
+            result.put(getDebugPackageName(null, strictModeBalCallbacks.keyAt(i)),
+                    strictModeBalCallbacks.valueAt(i).size());
+        }
+        return result;
     }
 
     /**
@@ -2393,5 +2415,19 @@ public class BackgroundActivityStartController {
     static boolean shouldRestrictActivitySwitch(int uid) {
         return android.security.Flags.asmRestrictionsV2()
                 && CompatChanges.isChangeEnabled(ASM_RESTRICTIONS, uid);
+    }
+
+    private String getDebugPackageName(String packageName, int uid) {
+        if (packageName != null) {
+            return packageName; // use actual package
+        }
+        if (uid == 0) {
+            return "root";
+        }
+        String name = getService().getPackageManagerInternalLocked().getNameForUid(uid);
+        if (name == null) {
+            name = "uid=" + uid;
+        }
+        return name;
     }
 }

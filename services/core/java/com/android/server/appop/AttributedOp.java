@@ -354,7 +354,6 @@ final class AttributedOp {
                 if (mInProgressEvents.isEmpty()) {
                     mInProgressEvents = null;
 
-                    // TODO ntmyren: Also callback for single attribution tag activity changes
                     if (!triggeredByUidStateChange && !parent.isRunning()) {
                         mAppOpsService.scheduleOpActiveChangedIfNeededLocked(parent.op,
                                 parent.uid, parent.packageName, tag, event.getVirtualDeviceId(),
@@ -463,7 +462,6 @@ final class AttributedOp {
                         event.getAttributionFlags(), event.getAttributionChainId());
             }
             // Note: this always sends MODE_ALLOWED, even if the mode is FOREGROUND
-            // TODO ntmyren: figure out how to get the real mode.
             mAppOpsService.scheduleOpStartedIfNeededLocked(parent.op, parent.uid,
                     parent.packageName, tag, event.getVirtualDeviceId(), event.getFlags(),
                     MODE_ALLOWED, START_TYPE_RESUMED, event.getAttributionFlags(),

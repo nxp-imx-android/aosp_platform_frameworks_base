@@ -38,7 +38,6 @@ using ::aidl::android::hardware::contexthub::EndpointId;
 using ::aidl::android::hardware::contexthub::SharedDataRegion;
 using android::contexthub::data_flow::AllocatorRegion;
 using android::contexthub::data_flow::ConsumerPolicyBuilder;
-using android::contexthub::data_flow::createQueueUntyped;
 using android::contexthub::data_flow::DataNotifier;
 using android::contexthub::data_flow::NotificationManager;
 using android::contexthub::data_flow::NotificationPolicy;
@@ -58,25 +57,19 @@ static JavaVM* gVm = nullptr;
 
 class ProducerWrapper {
 public:
-    ProducerWrapper(UntypedProducer&& producer, void* queue, AllocatorRegion allocator,
+    ProducerWrapper(UntypedProducer&& producer, AllocatorRegion allocator,
                     NotificationManager::NotificationDataHandle notificationDataHandle)
           : mProducer(std::move(producer)),
-            mQueue(queue),
             mAllocator(allocator),
             mNotificationDataHandle(notificationDataHandle) {}
 
     ProducerWrapper(ProducerWrapper&& other)
           : mProducer(std::move(other.mProducer)),
-            mQueue(other.mQueue),
             mAllocator(other.mAllocator),
             mNotificationDataHandle(other.mNotificationDataHandle) {}
 
     UntypedProducer& getProducer() {
         return mProducer;
-    }
-
-    void* getQueue() {
-        return mQueue;
     }
 
     AllocatorRegion* getAllocator() {
@@ -104,7 +97,6 @@ public:
 
 private:
     UntypedProducer mProducer;
-    void* mQueue;
     AllocatorRegion mAllocator;
     NotificationManager::NotificationDataHandle mNotificationDataHandle;
     std::optional<DataFlowId> mDataFlowId;
@@ -230,9 +222,7 @@ public:
             if (dataFlowId.has_value()) {
                 mNotificationManager->removeHostProducerDataFlow(dataFlowId.value().id);
             }
-            auto* allocator = wrapper->getAllocator()->allocator;
             mProducers.erase(regionId);
-            allocator->Deallocate(wrapper->getQueue(), queueLayout());
             mRegionManager.unmapHostProducerRegion(regionId);
         }
     }
@@ -303,27 +293,24 @@ static jintArray android_hardware_HubEndpoint_createDataFlowInfo(JNIEnv* env, jo
                     (std::string("Failed to map producer region: ") + alloc.status().str())
                             .c_str());
 
-    constexpr size_t kBlockCapacity = 1024;
-    auto queue = createQueueUntyped(*alloc.value().allocator, kBlockCapacity,
-                                    static_cast<size_t>(elementSize),
-                                    static_cast<size_t>(alignment), /* local = */ false);
-    RETURN_ON_FALSE(queue.ok(), nullptr,
-                    (std::string("Failed to create queue: ") + queue.status().str()).c_str());
-
+    constexpr size_t kBlockCapacityInBytes = 1024;
     RemoteNotifyArgs args = {.fn = [&](pw::ConstByteSpan /*id*/) {}, .id = {}};
 
     size_t minElementSize = static_cast<size_t>(elementSize) * minElementCount;
     size_t maxElementSize = static_cast<size_t>(elementSize) * maxElementCount;
     // The min block count >= 1, and maxBlockCount >= minBlockCount
-    size_t minBlockCount = 1 + (minElementSize - 1) / kBlockCapacity;
-    size_t maxBlockCount = 1 + (maxElementSize - 1) / kBlockCapacity;
+    size_t minBlockCount = 1 + (minElementSize - 1) / kBlockCapacityInBytes;
+    size_t maxBlockCount = 1 + (maxElementSize - 1) / kBlockCapacityInBytes;
     auto producer =
-            UntypedProducer::createRemote(alloc.value(), queue.value(), maxBlockCount,
+            UntypedProducer::createRemote(alloc.value(),
+                                          kBlockCapacityInBytes / static_cast<size_t>(elementSize),
+                                          static_cast<size_t>(elementSize),
+                                          static_cast<size_t>(alignment), maxBlockCount,
                                           minBlockCount, resource->getNotifier(), std::move(args));
     RETURN_ON_FALSE(producer.ok(), nullptr,
                     (std::string("Failed to create producer: ") + producer.status().str()).c_str());
 
-    size_t queueOffset = reinterpret_cast<uintptr_t>(queue.value()) - alloc.value().base;
+    size_t queueOffset = producer->getQueueOffset();
     auto flow = resource->getNotificationManager()->prepareHostProducerDataFlowInfo();
     RETURN_ON_FALSE(flow.ok(), nullptr,
                     (std::string("Failed to prepare host producer data flow: ") +
@@ -343,7 +330,7 @@ static jintArray android_hardware_HubEndpoint_createDataFlowInfo(JNIEnv* env, jo
     env->SetIntArrayRegion(javaArray, 0, out.size(), out.data());
 
     resource->addProducerWrapper(regionId,
-                                 ProducerWrapper(std::move(*producer), queue.value(), alloc.value(),
+                                 ProducerWrapper(std::move(*producer), alloc.value(),
                                                  notificationDataHandle));
 
     return javaArray;

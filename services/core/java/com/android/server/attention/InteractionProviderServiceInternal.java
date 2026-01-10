@@ -16,33 +16,36 @@
 package com.android.server.attention;
 
 import android.annotation.NonNull;
-import android.os.RemoteCallbackList;
+
+import androidx.annotation.Keep;
 
 import com.android.internal.annotations.GuardedBy;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
+@Keep // Used from JNI code.
 public class InteractionProviderServiceInternal extends InteractionProviderInternal {
 
     private final Object mInteractionProvidersLock = new Object();
 
     @GuardedBy("mInteractionProvidersLock")
-    private final RemoteCallbackList<IInteractionProvider> mInteractionProviders =
-            new RemoteCallbackList<>();
+    private final List<InteractionProvider> mInteractionProviders = new ArrayList<>();
 
     @Override
-    public boolean registerInteractionProvider(@NonNull IInteractionProvider provider) {
+    public boolean registerInteractionProvider(@NonNull InteractionProvider provider) {
         Objects.requireNonNull(provider, "provider must not be null");
         synchronized (mInteractionProvidersLock) {
-            return mInteractionProviders.register(provider);
+            return mInteractionProviders.add(provider);
         }
     }
 
     @Override
-    public boolean unregisterInteractionProvider(@NonNull IInteractionProvider provider) {
+    public boolean unregisterInteractionProvider(@NonNull InteractionProvider provider) {
         Objects.requireNonNull(provider, "provider must not be null");
         synchronized (mInteractionProvidersLock) {
-            return mInteractionProviders.unregister(provider);
+            return mInteractionProviders.remove(provider);
         }
     }
 }

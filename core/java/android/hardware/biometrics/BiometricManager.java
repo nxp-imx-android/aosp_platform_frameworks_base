@@ -266,19 +266,20 @@ public class BiometricManager {
     public interface Authenticators {
 
         /**
-         * An {@link IntDef} representing types of sensor security strengths that can be retrieved
-         * via {@link BiometricManager#getBiometricSensorStrengths} by public apps.
+         * An {@link IntDef} representing sensor strength types of {@link #BIOMETRIC_STRONG} or
+         * greater that can be queried by select apps through methods like
+         * {@link BiometricManager#getBiometricSensorStrengths}.
          *
          * @hide
          */
         @FlaggedApi(Flags.FLAG_GET_BIOMETRIC_SENSOR_STRENGTHS)
         @IntDef(value = {
                 BIOMETRIC_STRONG,
-                AUTHENTICATOR_STRENGTH_UNKNOWN
+                LESS_THAN_STRONG
         })
         @Retention(RetentionPolicy.SOURCE)
         @Target(ElementType.TYPE_USE)
-        @interface RedactedTypes {}
+        @interface StrongTypes {}
 
         /**
          * An {@link IntDef} representing valid combinations of authenticator types.
@@ -326,6 +327,20 @@ public class BiometricManager {
         int BIOMETRIC_STRONG = 0x000F;
 
         /**
+         * Any biometric (e.g. fingerprint, iris, or face) on the device that falls short of the
+         * requirements for <strong>Class 3</strong> (formerly <strong>Strong</strong>), as defined
+         * by the Android CDD.
+         *
+         * <p>For example, this includes a biometric that satisfies {@link #BIOMETRIC_WEAK} but
+         * does not reach {@link #BIOMETRIC_STRONG}.
+         *
+         * <p>This constant is intended to be used by public methods like
+         * {@link BiometricManager#getBiometricSensorStrengths} for obscuration.
+         */
+        @FlaggedApi(Flags.FLAG_GET_BIOMETRIC_SENSOR_STRENGTHS)
+        int LESS_THAN_STRONG = 0x0000;
+
+        /**
          * Any biometric (e.g. fingerprint, iris, or face) on the device that meets or exceeds the
          * requirements for <strong>Class 2</strong> (formerly <strong>Weak</strong>), as defined by
          * the Android CDD.
@@ -355,13 +370,6 @@ public class BiometricManager {
          * @hide
          */
         int BIOMETRIC_MIN_STRENGTH = 0x7FFF;
-
-        /**
-         * Represents an unknown/unexposed strength of an authenticator returned from
-         * {@link BiometricManager#getBiometricSensorStrengths}.
-         */
-        @FlaggedApi(Flags.FLAG_GET_BIOMETRIC_SENSOR_STRENGTHS)
-        int AUTHENTICATOR_STRENGTH_UNKNOWN = 0;
 
         /**
          * The non-biometric credential used to secure the device (i.e., PIN, pattern, or password).
@@ -411,7 +419,7 @@ public class BiometricManager {
     }
 
     // LINT.ThenChange(
-    // services/core/java/com/android/server/biometrics/AuthService.java:sensor_strength_switch
+    // /services/core/java/com/android/server/biometrics/AuthService.java:sensor_strength_switch
     // )
 
     /**
@@ -776,7 +784,7 @@ public class BiometricManager {
      * <p>The returned map links each biometric modality available on the device (e.g.,
      * {@link #TYPE_FINGERPRINT} for fingerprint or {@link #TYPE_FACE} for face) to its
      * corresponding sensor strength (e.g., {@link Authenticators#BIOMETRIC_STRONG} for Class-3
-     * or {@link Authenticators#AUTHENTICATOR_STRENGTH_UNKNOWN} for unknown/unexposed cases).
+     * or {@link Authenticators#LESS_THAN_STRONG} for unknown/unexposed cases).
      */
     @FlaggedApi(Flags.FLAG_GET_BIOMETRIC_SENSOR_STRENGTHS)
     @RequiresPermission(allOf = {
@@ -784,12 +792,12 @@ public class BiometricManager {
             ACCESS_BIOMETRIC_SENSOR_STRENGTHS,
     })
     @NonNull
-    public Map<@BiometricManager.BiometricModality Integer, @Authenticators.RedactedTypes Integer>
+    public Map<@BiometricManager.BiometricModality Integer, @Authenticators.StrongTypes Integer>
             getBiometricSensorStrengths() {
         try {
-            final List<RedactedBiometricSensorStrengthInternal> strengthList =
+            final List<StrongSensorStrengthInternal> strengthList =
                     mService.getBiometricSensorStrengths(mContext.getOpPackageName());
-            return convertRedactedBiometricSensorStrengthInternalToMap(strengthList);
+            return convertStrongSensorStrengthInternalToMap(strengthList);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
@@ -1071,11 +1079,11 @@ public class BiometricManager {
         return map;
     }
 
-    private static Map<Integer, @Authenticators.RedactedTypes Integer>
-            convertRedactedBiometricSensorStrengthInternalToMap(
-            List<RedactedBiometricSensorStrengthInternal> list) {
+    private static Map<@BiometricManager.BiometricModality Integer,
+            @Authenticators.StrongTypes Integer> convertStrongSensorStrengthInternalToMap(
+            List<StrongSensorStrengthInternal> list) {
         Map<Integer, Integer> map = new HashMap<>();
-        for (RedactedBiometricSensorStrengthInternal item : list) {
+        for (StrongSensorStrengthInternal item : list) {
             map.put(item.getModality(), item.getStrength());
         }
         return map;

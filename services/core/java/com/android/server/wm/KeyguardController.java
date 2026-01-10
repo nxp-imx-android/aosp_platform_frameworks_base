@@ -308,7 +308,7 @@ class KeyguardController {
         final ArrayList<DisplayContent> changedDisplays = new ArrayList<>();
         for (int i = mRootWindowContainer.getChildCount() - 1; i >= 0; i--) {
             final DisplayContent dc = mRootWindowContainer.getChildAt(i);
-            if (!dc.isRemoving() && !dc.isRemoved()) {
+            if (!dc.isRemoving() && !dc.isRemovedOrInvalid()) {
                 final var state = getDisplayState(dc.mDisplayId);
                 if (state.mKeyguardShowing && !state.mKeyguardGoingAway) {
                     state.mKeyguardGoingAway = true;
@@ -454,7 +454,7 @@ class KeyguardController {
         for (int displayNdx = mRootWindowContainer.getChildCount() - 1;
              displayNdx >= 0; displayNdx--) {
             final DisplayContent display = mRootWindowContainer.getChildAt(displayNdx);
-            if (display.isRemoving() || display.isRemoved()) continue;
+            if (display.isRemoving() || display.isRemovedOrInvalid()) continue;
             final KeyguardDisplayState state = getDisplayState(display.mDisplayId);
             state.updateVisibility(this, display);
             if (state.mRequestDismissKeyguard) {

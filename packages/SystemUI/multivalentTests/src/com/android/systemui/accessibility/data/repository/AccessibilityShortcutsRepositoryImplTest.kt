@@ -575,6 +575,77 @@ class AccessibilityShortcutsRepositoryImplTest : SysuiTestCase() {
             assertThat(getContentObservers()).isEmpty()
         }
 
+    @Test
+    fun isServiceWarningRequired_untrustedService_returnsTrue() =
+        kosmos.runTest {
+            val serviceInfo = getMockAccessibilityServiceInfo("Test Service")
+            whenever(accessibilityManager.getInstalledAccessibilityServiceList())
+                .thenReturn(listOf(serviceInfo))
+            whenever(accessibilityManager.isAccessibilityServiceWarningRequired(serviceInfo))
+                .thenReturn(true)
+            val targetModel =
+                createAccessibilityTargetModel(serviceInfo.componentName.flattenToString())
+
+            assertThat(underTest.isServiceWarningRequired(targetModel)).isTrue()
+        }
+
+    @Test
+    fun isServiceWarningRequired_trustedService_returnsFalse() =
+        kosmos.runTest {
+            val serviceInfo = getMockAccessibilityServiceInfo("Test Service")
+            whenever(accessibilityManager.getInstalledAccessibilityServiceList())
+                .thenReturn(listOf(serviceInfo))
+            whenever(accessibilityManager.isAccessibilityServiceWarningRequired(serviceInfo))
+                .thenReturn(false)
+            val targetModel =
+                createAccessibilityTargetModel(serviceInfo.componentName.flattenToString())
+
+            assertThat(underTest.isServiceWarningRequired(targetModel)).isFalse()
+        }
+
+    @Test
+    fun isServiceWarningRequired_nonServiceTarget_returnsFalse() =
+        kosmos.runTest {
+            val targetModel = createAccessibilityTargetModel(MAGNIFICATION_CONTROLLER_NAME)
+
+            assertThat(underTest.isServiceWarningRequired(targetModel)).isFalse()
+        }
+
+    @Test
+    fun getAccessibilityServiceInfo_serviceTarget_returnsServiceInfo() =
+        kosmos.runTest {
+            val serviceInfo = getMockAccessibilityServiceInfo("Test Service")
+            whenever(accessibilityManager.getInstalledAccessibilityServiceList())
+                .thenReturn(listOf(serviceInfo))
+            val targetModel =
+                createAccessibilityTargetModel(serviceInfo.componentName.flattenToString())
+
+            val result = underTest.getAccessibilityServiceInfo(targetModel)
+
+            assertThat(result).isEqualTo(serviceInfo)
+        }
+
+    @Test
+    fun getAccessibilityServiceInfo_nonServiceTarget_returnsNull() =
+        kosmos.runTest {
+            val targetModel = createAccessibilityTargetModel(MAGNIFICATION_CONTROLLER_NAME)
+
+            val result = underTest.getAccessibilityServiceInfo(targetModel)
+
+            assertThat(result).isNull()
+        }
+
+    private fun createAccessibilityTargetModel(targetName: String) =
+        AccessibilityTargetModel(
+            shortcutType = UserShortcutType.HARDWARE,
+            targetName = targetName,
+            featureName = "Fake Feature",
+            icon = ColorDrawable(Color.RED),
+            isAssigned = false,
+            isToggleable = true,
+            isStateOn = false,
+        )
+
     private fun getMockAccessibilityServiceInfo(featureName: String): AccessibilityServiceInfo {
         val packageName = "com.android.test"
         val className = featureName.replace(" ", "")

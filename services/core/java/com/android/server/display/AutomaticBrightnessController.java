@@ -84,7 +84,8 @@ public class AutomaticBrightnessController {
             AUTO_BRIGHTNESS_MODE_DEFAULT,
             AUTO_BRIGHTNESS_MODE_IDLE,
             AUTO_BRIGHTNESS_MODE_DOZE,
-            AUTO_BRIGHTNESS_MODE_BEDTIME_WEAR
+            AUTO_BRIGHTNESS_MODE_BEDTIME_WEAR,
+            AUTO_BRIGHTNESS_MODE_CHARGING
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface AutomaticBrightnessMode{}
@@ -93,7 +94,8 @@ public class AutomaticBrightnessController {
     public static final int AUTO_BRIGHTNESS_MODE_IDLE = 1;
     public static final int AUTO_BRIGHTNESS_MODE_DOZE = 2;
     public static final int AUTO_BRIGHTNESS_MODE_BEDTIME_WEAR = 3;
-    public static final int AUTO_BRIGHTNESS_MODE_MAX = AUTO_BRIGHTNESS_MODE_DOZE;
+    public static final int AUTO_BRIGHTNESS_MODE_CHARGING = 4;
+    public static final int AUTO_BRIGHTNESS_MODE_MAX = AUTO_BRIGHTNESS_MODE_CHARGING;
 
     // How long the current sensor reading is assumed to be valid beyond the current time.
     // This provides a bit of prediction, as well as ensures that the weight for the last sample is
@@ -1305,7 +1307,8 @@ public class AutomaticBrightnessController {
         return (mDisplayManagerFlags.isNormalBrightnessForDozeParameterEnabled(mContext)
                 ? (!mUseNormalBrightnessForDoze && mDisplayPolicy == POLICY_DOZE)
                         || Display.isDozeState(mDisplayState) : Display.isDozeState(mDisplayState))
-                && getMode() != AUTO_BRIGHTNESS_MODE_DOZE;
+                && getMode() != AUTO_BRIGHTNESS_MODE_DOZE
+                && getMode() != AUTO_BRIGHTNESS_MODE_CHARGING;
     }
 
     private class ShortTermModel {

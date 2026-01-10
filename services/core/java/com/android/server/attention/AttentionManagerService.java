@@ -65,6 +65,7 @@ import android.util.Slog;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.pm.RoSystemFeatures;
 import com.android.internal.util.DumpUtils;
 import com.android.internal.util.FrameworkStatsLog;
 import com.android.internal.util.IndentingPrintWriter;
@@ -193,10 +194,17 @@ public class AttentionManagerService extends SystemService {
     public void onStart() {
         publishBinderService(Context.ATTENTION_SERVICE, new BinderService());
         publishLocalService(AttentionManagerInternal.class, new LocalService());
-        if (com.android.input.flags.Flags.enableAttentionServiceApis()) {
-            publishLocalService(InteractionProviderServiceInternal.class,
+        if (isInteractionProviderServiceEnabled(mContext)) {
+            publishLocalService(InteractionProviderInternal.class,
                     new InteractionProviderServiceInternal());
         }
+    }
+
+    /** Returns {@code true} if interaction provider service is enabled. */
+    public static boolean isInteractionProviderServiceEnabled(Context context) {
+        // Interaction service is not enabled on watch due to lack of use case and to save power.
+        return com.android.input.flags.Flags.enableAttentionServiceApis()
+                &&  !RoSystemFeatures.hasFeatureWatch(context);
     }
 
     /** Returns {@code true} if attention service is configured on this device. */

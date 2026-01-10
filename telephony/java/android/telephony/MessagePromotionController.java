@@ -118,8 +118,15 @@ public final class MessagePromotionController {
         List<ResolveInfo> services = mContext.getPackageManager().queryIntentServices(
                 intent, PackageManager.GET_META_DATA);
 
-        // TODO(b/474505665): Check required system permission on returned services.
-        return !services.isEmpty();
+        for (int i = 0; i < services.size(); i++) {
+            ResolveInfo info = services.get(i);
+            if (info.serviceInfo != null
+                    && android.Manifest.permission.BIND_MESSAGE_PROMOTION_SERVICE.equals(
+                            info.serviceInfo.permission)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

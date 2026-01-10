@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.Delayed;
@@ -41,43 +42,32 @@ import java.util.concurrent.TimeoutException;
 class FakeScheduledExecutorService implements ScheduledExecutorService {
     private long mElapsedMillis = 0;
 
-    // Helper wrapper that manages all the queuing of futures and timeouts. This is implemented by
-    // extending a semaphore because that turns out to be a very useful primative for allowing tests
-    // to wait on a certain number of things to be blocked on a timeout, and in particular we need
-    // to extend Semaphore rather than just including one internally in order to make use of
-    // the protected reducePermits().
-    private static class DelayTracker extends Semaphore {
-        private final DelayQueue<FakeScheduledFuture<?>> mFutureQueue = new DelayQueue<>();
-        private final DelayQueue<FakeScheduledFuture<?>.WaitForTimeout> mTimeoutQueue =
-                new DelayQueue<>();
+    // Helper wrapper that combines queuing of futures with a semaphore. For tracking futures and
+    // future timeouts we mostly just need a DelayQueue, but adding in the semaphore functionality
+    // allows us to implement useful "wait for X things to be in the queue" operations that are
+    // necessary to correctly (and efficiently) implement multi-threaded tests.
+    private static class DelayQueueSemaphore<E extends Delayed> extends Semaphore {
+        private final DelayQueue<E> mQueue = new DelayQueue<E>();
 
-        DelayTracker() {
+        DelayQueueSemaphore() {
             super(0);
         }
 
-        int numFutures() {
-            return mFutureQueue.size();
+        int size() {
+            return mQueue.size();
         }
 
-        boolean contains(FakeScheduledFuture<?> future) {
-            return mFutureQueue.contains(future);
+        boolean contains(E e) {
+            return mQueue.contains(e);
         }
 
-        void put(FakeScheduledFuture<?> future) {
-            mFutureQueue.put(future);
-        }
-
-        void put(FakeScheduledFuture<?>.WaitForTimeout waiter) {
-            mTimeoutQueue.put(waiter);
+        void put(E e) {
+            mQueue.put(e);
             release();
         }
 
-        boolean remove(FakeScheduledFuture<?> future) {
-            return mFutureQueue.remove(future);
-        }
-
-        boolean remove(FakeScheduledFuture<?>.WaitForTimeout waiter) {
-            if (mTimeoutQueue.remove(waiter)) {
+        boolean remove(E e) {
+            if (mQueue.remove(e)) {
                 reducePermits(1);
                 return true;
             } else {
@@ -85,21 +75,18 @@ class FakeScheduledExecutorService implements ScheduledExecutorService {
             }
         }
 
-        List<FakeScheduledFuture<?>> drainFutures() {
-            List<FakeScheduledFuture<?>> drained = new ArrayList<>();
-            mFutureQueue.drainTo(drained);
-            return drained;
-        }
-
-        List<FakeScheduledFuture<?>.WaitForTimeout> drainTimeouts() {
-            List<FakeScheduledFuture<?>.WaitForTimeout> drained = new ArrayList<>();
-            mTimeoutQueue.drainTo(drained);
+        List<E> drain() {
+            List<E> drained = new ArrayList<>();
+            mQueue.drainTo(drained);
             reducePermits(drained.size());
             return drained;
         }
     }
 
-    private final DelayTracker mDelays = new DelayTracker();
+    private final DelayQueueSemaphore<FakeScheduledFuture<?>> mFutureQueue =
+            new DelayQueueSemaphore<>();
+    private final DelayQueueSemaphore<FakeScheduledFuture<?>.WaitForTimeout> mTimeoutQueue =
+            new DelayQueueSemaphore<>();
 
     // The thread that can run fastForwardMillis.
     private final Thread mExecutionThread;
@@ -132,7 +119,19 @@ class FakeScheduledExecutorService implements ScheduledExecutorService {
      * @return The number of tasks currently awaiting execution.
      */
     int numTasks() {
-        return mDelays.numFutures();
+        return mFutureQueue.size();
+    }
+
+    /**
+     * Waits for the number of enqueued tasks to reach a given count.
+     *
+     * <p>This is useful in tests that want to launch a bunch of test threads and then wait for them
+     * all to reach a point where they've queued up all of their tasks.
+     */
+    void waitForNumTasks(int n) {
+        assertExecutionThread();
+        mFutureQueue.acquireUninterruptibly(n);
+        mFutureQueue.release(n);
     }
 
     /**
@@ -143,10 +142,10 @@ class FakeScheduledExecutorService implements ScheduledExecutorService {
      * relative to the current time, you need a way to ensure that all the threads have started
      * their timeout before you fast-forward time, and this method provides that.
      */
-    void waitForNumTimeoutWaiters(int numWaiters) {
+    void waitForNumTimeoutWaiters(int n) {
         assertExecutionThread();
-        mDelays.acquireUninterruptibly(numWaiters);
-        mDelays.release(numWaiters);
+        mTimeoutQueue.acquireUninterruptibly(n);
+        mTimeoutQueue.release(n);
     }
 
     /**
@@ -158,11 +157,11 @@ class FakeScheduledExecutorService implements ScheduledExecutorService {
     int fastForwardMillis(long millis) {
         assertExecutionThread();
         mElapsedMillis += millis;
-        List<FakeScheduledFuture<?>> readyFutures = mDelays.drainFutures();
+        List<FakeScheduledFuture<?>> readyFutures = mFutureQueue.drain();
         for (FakeScheduledFuture<?> future : readyFutures) {
             future.execute();
         }
-        List<FakeScheduledFuture<?>.WaitForTimeout> readyTimeouts = mDelays.drainTimeouts();
+        List<FakeScheduledFuture<?>.WaitForTimeout> readyTimeouts = mTimeoutQueue.drain();
         for (FakeScheduledFuture<?>.WaitForTimeout waiter : readyTimeouts) {
             waiter.signal();
         }
@@ -172,14 +171,14 @@ class FakeScheduledExecutorService implements ScheduledExecutorService {
     @Override
     public ScheduledFuture<?> schedule(Runnable command, long delay, TimeUnit unit) {
         FakeScheduledFuture<?> future = new FakeScheduledFuture<>(command, unit.toMillis(delay));
-        mDelays.put(future);
+        mFutureQueue.put(future);
         return future;
     }
 
     @Override
     public <V> ScheduledFuture<V> schedule(Callable<V> callable, long delay, TimeUnit unit) {
         FakeScheduledFuture<V> future = new FakeScheduledFuture<>(callable, unit.toMillis(delay));
-        mDelays.put(future);
+        mFutureQueue.put(future);
         return future;
     }
 
@@ -244,26 +243,69 @@ class FakeScheduledExecutorService implements ScheduledExecutorService {
     @Override
     public <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks)
             throws InterruptedException {
-        throw new UnsupportedOperationException();
+        assertNotExecutionThread();
+        CountDownLatch mAllComplete = new CountDownLatch(tasks.size());
+        List<Future<T>> futures = new ArrayList<>(tasks.size());
+        for (Callable<T> task : tasks) {
+            Future<T> future =
+                    submit(
+                            () -> {
+                                try {
+                                    return task.call();
+                                } finally {
+                                    mAllComplete.countDown();
+                                }
+                            });
+            futures.add(future);
+        }
+        mAllComplete.await();
+        return futures;
     }
 
     @Override
     public <T> List<Future<T>> invokeAll(
             Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit)
             throws InterruptedException {
-        throw new UnsupportedOperationException();
+        // Ignore the timeout parameters and just use regular invokeAll. Because the fake executor
+        // is designed to only advance time when explicitly told to do so, tasks are treated as if
+        // they run instantaneously. This means that it's not actually possible for tasks to hit
+        // the timeout; as soon as time moves forward they will all get run.
+        return invokeAll(tasks);
     }
 
     @Override
     public <T> T invokeAny(Collection<? extends Callable<T>> tasks)
             throws ExecutionException, InterruptedException {
-        throw new UnsupportedOperationException();
+        assertNotExecutionThread();
+        if (tasks.isEmpty()) {
+            throw new IllegalArgumentException("No tasks provided");
+        }
+        List<Future<T>> futures = new ArrayList<>(tasks.size());
+        for (Callable<T> task : tasks) {
+            futures.add(submit(task));
+        }
+        // Go through every task, looking for one that completed successfully. In a more general
+        // executor you would want to go through them in the order in which they complete but
+        // because all of the tasks will be run at once as soon as time is advanced we can just
+        // go through them in submission order.
+        for (Future<T> future : futures) {
+            try {
+                return future.get();
+            } catch (CancellationException | ExecutionException e) {
+                // Ignore these; we're looking for a successful result.
+                continue;
+            }
+        }
+        // If we get here than all of the tasks were either failed or were cancelled.
+        throw new ExecutionException("All tasks failed or were cancelled", null);
     }
 
     @Override
     public <T> T invokeAny(Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit)
             throws ExecutionException, InterruptedException, TimeoutException {
-        throw new UnsupportedOperationException();
+        // Ignore the timeout parameters and just use regular invokeAny. See the timeout invokeAll
+        // comment for more details as to why timeouts don't do anything.
+        return invokeAny(tasks);
     }
 
     @Override
@@ -276,6 +318,21 @@ class FakeScheduledExecutorService implements ScheduledExecutorService {
         // will be non-null.
         private final Runnable mRunnable;
         private final Callable<V> mCallable;
+        private final long mTimeToExecuteAt;
+
+        private enum State {
+            // The future has not been executed or cancelled.
+            PENDING,
+            // The future has been cancelled without being executed. Note that because of how the
+            // fake executor works it's not possible for a future to be cancelled after it begins
+            // execution and so cancellation always means it was cancelled before it ran.
+            CANCELLED,
+            // The future has been executed. This may or may not have been "successful" in the
+            // sense that if it fails with an exception that still counts as completion.
+            COMPLETED,
+        }
+
+        private State mState = State.PENDING;
 
         // The result of the callable, if this future is for a callable. After execution if the
         // callable threw an exception then mResultException will be non-null; otherwise it returned
@@ -284,10 +341,12 @@ class FakeScheduledExecutorService implements ScheduledExecutorService {
         private V mResult = null;
         private ExecutionException mResultException = null;
 
-        private final long mTimeToExecuteAt;
+        // Latch used to signal completion of the future.
         private final CountDownLatch mCompletionLatch = new CountDownLatch(1);
-        private boolean mCancelled = false;
 
+        // A list of timeout waiters, one for every get() call with a timeout. This list includes
+        // both timeouts that have already expired and those that are still waiting. Entries are
+        // only cleared once the future is completed or cancelled and the entire list is emptied.
         private final List<WaitForTimeout> mTimeouts = new ArrayList<>();
 
         private class WaitForTimeout implements Delayed {
@@ -335,27 +394,44 @@ class FakeScheduledExecutorService implements ScheduledExecutorService {
             mTimeToExecuteAt = mElapsedMillis + delay;
         }
 
+        /** Executes the task if it is still pending. */
         private void execute() {
             try {
-                if (mRunnable != null) {
-                    mRunnable.run();
-                } else {
+                synchronized (mState) {
+                    if (mState != State.PENDING) {
+                        return;
+                    }
                     try {
-                        mResult = mCallable.call();
-                    } catch (Exception e) {
-                        mResultException = new ExecutionException(e);
+                        if (mRunnable != null) {
+                            mRunnable.run();
+                        } else {
+                            try {
+                                mResult = mCallable.call();
+                            } catch (Exception e) {
+                                mResultException = new ExecutionException(e);
+                            }
+                        }
+                    } finally {
+                        mState = State.COMPLETED;
                     }
                 }
             } finally {
-                // Trigger the completion latch and anything waiting on a timeout.
-                synchronized (mTimeouts) {
-                    mCompletionLatch.countDown();
-                    for (WaitForTimeout waiter : mTimeouts) {
-                        mDelays.remove(waiter);
-                        waiter.signal();
-                    }
-                    mTimeouts.clear();
+                signal();
+            }
+        }
+
+        /**
+         * Signals all waiters that the future is no longer pending. This does not distinguish
+         * between cancellation, successful completion, or exceptional completion.
+         */
+        private void signal() {
+            synchronized (mTimeouts) {
+                mCompletionLatch.countDown();
+                for (WaitForTimeout waiter : mTimeouts) {
+                    mTimeoutQueue.remove(waiter);
+                    waiter.signal();
                 }
+                mTimeouts.clear();
             }
         }
 
@@ -374,28 +450,46 @@ class FakeScheduledExecutorService implements ScheduledExecutorService {
 
         @Override
         public boolean cancel(boolean mayInterruptIfRunning) {
-            mCancelled = true;
-            return mDelays.remove(this);
+            // We can never interrupt running tasks and so mayInterruptIfRunning is ignored. If a
+            // task is PENDING then it hasn't started running yet and if it's COMPLETED then it has
+            // already finished.
+            synchronized (mState) {
+                if (mState == State.COMPLETED) {
+                    return false;
+                }
+                mState = State.CANCELLED;
+                mFutureQueue.remove(this);
+            }
+            signal();
+            return true;
         }
 
         @Override
         public boolean isCancelled() {
-            return mCancelled;
+            synchronized (mState) {
+                return mState == State.CANCELLED;
+            }
         }
 
         @Override
         public boolean isDone() {
-            return !mDelays.contains(this);
+            synchronized (mState) {
+                return mState != State.PENDING;
+            }
         }
 
         @Override
         public V get() throws ExecutionException, InterruptedException {
             assertNotExecutionThread();
             mCompletionLatch.await();
-            if (mResultException != null) {
-                throw mResultException;
-            } else {
-                return mResult;
+            synchronized (mState) {
+                if (mState == State.CANCELLED) {
+                    throw new CancellationException();
+                } else if (mResultException != null) {
+                    throw mResultException;
+                } else {
+                    return mResult;
+                }
             }
         }
 
@@ -412,7 +506,7 @@ class FakeScheduledExecutorService implements ScheduledExecutorService {
                 }
                 waiter = new WaitForTimeout(timeout, unit);
                 mTimeouts.add(waiter);
-                mDelays.put(waiter);
+                mTimeoutQueue.put(waiter);
             }
             // Wait for completion or timeout. Do this outside of the synchronized block or else
             // this will deadlock with execute().

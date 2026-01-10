@@ -434,6 +434,7 @@ constructor(
         hasBackAction: Boolean,
         sceneKey: SceneKey,
         aodOrDozing: Boolean,
+        hasAnyEnabledBackHandler: Boolean,
     ) {
         if (windowInsetsController == null) {
             return
@@ -446,6 +447,7 @@ constructor(
             launch {
                 val isNavigationBarVisible =
                     hasBackAction ||
+                        hasAnyEnabledBackHandler ||
                         sceneKey == Scenes.Gone ||
                         sceneKey == Scenes.Communal ||
                         (sceneKey == Scenes.Lockscreen && !aodOrDozing)

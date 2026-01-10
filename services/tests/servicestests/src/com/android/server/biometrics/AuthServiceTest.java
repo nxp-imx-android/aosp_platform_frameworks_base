@@ -53,8 +53,8 @@ import android.hardware.biometrics.IBiometricEnabledOnKeyguardCallback;
 import android.hardware.biometrics.IBiometricService;
 import android.hardware.biometrics.IBiometricServiceReceiver;
 import android.hardware.biometrics.PromptInfo;
-import android.hardware.biometrics.RedactedBiometricSensorStrengthInternal;
 import android.hardware.biometrics.SensorProperties;
+import android.hardware.biometrics.StrongSensorStrengthInternal;
 import android.hardware.biometrics.fingerprint.SensorProps;
 import android.hardware.face.FaceSensorConfigurations;
 import android.hardware.face.FaceSensorProperties;
@@ -622,7 +622,7 @@ public class AuthServiceTest {
 
         mAuthService = new AuthService(mContext, mInjector);
         mAuthService.onStart();
-        final List<RedactedBiometricSensorStrengthInternal> actualSensorStrengths =
+        final List<StrongSensorStrengthInternal> actualSensorStrengths =
                 mAuthService.mImpl.getBiometricSensorStrengths(TEST_OP_PACKAGE_NAME);
 
         assertEquals(2, actualSensorStrengths.size());
@@ -634,8 +634,7 @@ public class AuthServiceTest {
                 actualFingerprintCount);
         long actualFaceCount = actualSensorStrengths.stream()
                 .filter(s -> s.getModality() == BiometricManager.TYPE_FACE)
-                .filter(s -> s.getStrength()
-                        == BiometricManager.Authenticators.AUTHENTICATOR_STRENGTH_UNKNOWN)
+                .filter(s -> s.getStrength() == BiometricManager.Authenticators.LESS_THAN_STRONG)
                 .count();
         assertEquals("Exactly one unknown/unexposed face sensor is expected to be retrieved.", 1,
                 actualFaceCount);

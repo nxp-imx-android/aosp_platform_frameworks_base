@@ -1052,3 +1052,20 @@ filegroup {
         "android/app/admin/metadata/*.java",
     ],
 }
+
+aidl_interface {
+    name: "attentionmanager_native_aidl",
+    srcs: [
+        "android/attention/*.aidl",
+    ],
+    host_supported: true,
+    unstable: true,
+    backend: {
+        java: {
+            enabled: true,
+        },
+        cpp: {
+            enabled: true,
+        },
+    },
+}

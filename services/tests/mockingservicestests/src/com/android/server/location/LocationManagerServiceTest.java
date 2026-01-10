@@ -40,7 +40,6 @@ import android.location.provider.ProviderRequest;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.platform.test.annotations.Presubmit;
-import android.platform.test.flag.junit.SetFlagsRule;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
@@ -60,7 +59,6 @@ import com.google.common.util.concurrent.MoreExecutors;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -81,9 +79,6 @@ public class LocationManagerServiceTest {
 
     private TestInjector mInjector;
     private LocationManagerService mLocationManagerService;
-
-    @Rule
-    public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
     @Spy private FakeAbstractLocationProvider mProviderWithPermission;
     @Spy private FakeAbstractLocationProvider mProviderWithoutPermission;
@@ -183,21 +178,7 @@ public class LocationManagerServiceTest {
     }
 
     @Test
-    public void testSetLocationFudgerCache_withFeatureFlagDisabled_isNotCalled() {
-        mSetFlagsRule.disableFlags(Flags.FLAG_DENSITY_BASED_COARSE_LOCATIONS);
-        LocationProviderManager manager = mock(LocationProviderManager.class);
-        ProxyPopulationDensityProvider provider = mock(ProxyPopulationDensityProvider.class);
-        mLocationManagerService.addLocationProviderManager(manager, /* provider = */ null);
-        LocationFudgerCache cache = new LocationFudgerCache(provider);
-
-        mLocationManagerService.setLocationFudgerCache(cache);
-
-        verify(manager, never()).setLocationFudgerCache(any());
-    }
-
-    @Test
-    public void testSetLocationFudgerCache_withFeatureFlagEnabled_isCalled() {
-        mSetFlagsRule.enableFlags(Flags.FLAG_DENSITY_BASED_COARSE_LOCATIONS);
+    public void testSetLocationFudgerCache_isCalled() {
         LocationProviderManager manager = mock(LocationProviderManager.class);
         ProxyPopulationDensityProvider provider = mock(ProxyPopulationDensityProvider.class);
         mLocationManagerService.addLocationProviderManager(manager, /* provider = */ null);

@@ -81,6 +81,18 @@ flag {
   bug: "459821424"
 }
 
+
+flag {
+  name: "enable_supervision_settings_session_updates"
+  is_exported: false
+  namespace: "supervision"
+  description: "Flag that enables supervision settings session updates"
+  bug: "472342668"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
 flag {
   name: "enable_lock_task_feature_quick_settings"
   is_exported: true

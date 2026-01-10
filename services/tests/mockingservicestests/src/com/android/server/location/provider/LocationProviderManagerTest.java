@@ -1436,24 +1436,8 @@ public class LocationProviderManagerTest {
     }
 
     @Test
-    public void testLocationFudger_withFlagDisabled_cacheIsNotSetAndOldAlgoIsUsed() {
-        mSetFlagsRule.disableFlags(Flags.FLAG_DENSITY_BASED_COARSE_LOCATIONS);
-        createManager("some-name");
-        ProxyPopulationDensityProvider provider = mock(ProxyPopulationDensityProvider.class);
-        LocationFudgerCache cache = new LocationFudgerCache(provider);
-
-        mManager.setLocationFudgerCache(cache);
-
-        Location test = new Location("any-provider");
-        mManager.getPermittedLocation(test, PERMISSION_COARSE);
-
-        verify(provider, never()).getCoarsenedS2Cells(anyDouble(), anyDouble(), anyInt(), any());
-    }
-
-    @Test
-    public void testLocationFudger_withFlagEnabledButNoDefaults_oldAlgoIsUsed()
+    public void testLocationFudger_noDefaults_oldAlgoIsUsed()
             throws RemoteException {
-        mSetFlagsRule.enableFlags(Flags.FLAG_DENSITY_BASED_COARSE_LOCATIONS);
         createManager("some-other-name");
         ProxyPopulationDensityProvider provider = mock(ProxyPopulationDensityProvider.class);
         LocationFudgerCache cache = new LocationFudgerCache(provider);
@@ -1475,9 +1459,8 @@ public class LocationProviderManagerTest {
     }
 
     @Test
-    public void testLocationFudger_withFlagEnabled_cacheIsSetAndNewAlgoIsUsed()
+    public void testLocationFudger_cacheIsSetAndNewAlgoIsUsed()
             throws RemoteException {
-        mSetFlagsRule.enableFlags(Flags.FLAG_DENSITY_BASED_COARSE_LOCATIONS);
         createManager("some-other-name");
         ProxyPopulationDensityProvider provider = mock(ProxyPopulationDensityProvider.class);
         LocationFudgerCache cache = new LocationFudgerCache(provider);

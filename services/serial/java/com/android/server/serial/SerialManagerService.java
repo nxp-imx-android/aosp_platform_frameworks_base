@@ -46,6 +46,7 @@ import android.os.RemoteException;
 import android.os.ResultReceiver;
 import android.os.ServiceManager;
 import android.os.ShellCallback;
+import android.os.Trace;
 import android.os.UserHandle;
 import android.system.OsConstants;
 import android.util.Slog;
@@ -165,8 +166,11 @@ public class SerialManagerService extends ISerialManager.Stub implements
             if (!connectToNativeService()) {
                 return Collections.emptyList();
             }
-            return Collections.unmodifiableList(
+            traceBegin("getSerialPorts", 0);
+            final List<SerialPortInfo> ports = Collections.unmodifiableList(
                     new ArrayList<>(mSerialDeviceFilter.getAvailablePorts().values()));
+            traceEnd(0);
+            return ports;
         }
     }
 
@@ -212,9 +216,11 @@ public class SerialManagerService extends ISerialManager.Stub implements
                 return;
             }
 
+            traceBegin("grantSerialPortAccess", 0);
             final @UserIdInt int userId = UserHandle.getUserId(uid);
             final SerialUserAccessManagerInterface accessManager = getOrCreateAccessManager(userId);
             accessManager.grantAccess(serialPort, uid, token);
+            traceEnd(0);
         }
     }
 
@@ -226,10 +232,12 @@ public class SerialManagerService extends ISerialManager.Stub implements
                 Manifest.permission.MANAGE_SERIAL_PORTS,
                 "The caller doesn't have MANAGE_SERIAL_PORTS permission.");
         synchronized (mLock) {
+            traceBegin("revokeSerialPortAccess", 0);
             // We always allow to revoke access to a port, even if it is unplugged.
             final @UserIdInt int userId = UserHandle.getUserId(uid);
             final SerialUserAccessManagerInterface accessManager = getOrCreateAccessManager(userId);
             accessManager.revokeAccess(serialPort, uid, token);
+            traceEnd(0);
         }
     }
 
@@ -252,6 +260,7 @@ public class SerialManagerService extends ISerialManager.Stub implements
                 deliverErrorToCallback(callback, ErrorCode.ERROR_PORT_NOT_FOUND, portName);
                 return;
             }
+            traceBegin("obtainPortForOpen", 0);
             SerialPortInfo port = mSerialDeviceFilter.getAvailablePorts().get(portName);
             if (port == null && hasSerialPortPermission(mContext, callingPid, callingUid)) {
                 // Allow privileged apps to open ports listed in the config, even if they are not
@@ -264,10 +273,12 @@ public class SerialManagerService extends ISerialManager.Stub implements
                     }
                 }
             }
+            traceEnd(0);
             if (port == null) {
                 deliverErrorToCallback(callback, ErrorCode.ERROR_PORT_NOT_FOUND, portName);
                 return;
             }
+            traceBegin("requestAccessForOpen", 0);
             final SerialPortInfo portToOpen = port;
             final SerialUserAccessManagerInterface accessManager = getOrCreateAccessManager(userId);
             accessManager.requestAccess(portName, callingPid, callingUid, packageName,
@@ -279,6 +290,7 @@ public class SerialManagerService extends ISerialManager.Stub implements
                         }
                         nativeOpen(portToOpen, toOsConstants(flags), exclusive, callback);
                     });
+            traceEnd(0);
         }
     }
 
@@ -298,6 +310,7 @@ public class SerialManagerService extends ISerialManager.Stub implements
      */
     private void nativeOpen(SerialPortInfo port, int flags, boolean exclusive,
             @NonNull ISerialPortResponseCallback callback) {
+        traceBegin("nativeOpenPort", 0);
         try (ParcelFileDescriptor pfd = mNativeService.requestOpen(port.getName(), flags,
                 exclusive)) {
             deliverResultToCallback(callback, port, pfd);
@@ -306,6 +319,8 @@ public class SerialManagerService extends ISerialManager.Stub implements
                     "Error opening serial port " + port.getName() + ": " + e.getMessage());
         } catch (IOException e) {
             Slog.w(TAG, "Error closing the file descriptor", e);
+        } finally {
+            traceEnd(0);
         }
     }
 
@@ -376,17 +391,22 @@ public class SerialManagerService extends ISerialManager.Stub implements
         if (mIsConnectedToNativeService) {
             return true;
         }
+        traceBegin("obtainNativeService", 0);
         mNativeService = mNativeServiceSupplier.get();
+        traceEnd(0);
         if (mNativeService == null) {
             Slog.e(TAG, "Native Serial Service not found");
             return false;
         }
+        traceBegin("createDeviceFilter", 0);
         try {
             mSerialDeviceFilter = new SerialDeviceFilter(mContext, mBlockedPortsInConfig,
                     mNativeService, mLock);
         } catch (RemoteException e) {
             Slog.e(TAG, "Error communicating with native service", e);
             return false;
+        } finally {
+            traceEnd(0);
         }
         mSerialDeviceFilter.setFilteredSerialPortListener(this);
         mIsConnectedToNativeService = true;
@@ -480,6 +500,14 @@ public class SerialManagerService extends ISerialManager.Stub implements
                 == PackageManager.PERMISSION_GRANTED;
     }
 
+    static void traceBegin(String methodName, int cookie) {
+        Trace.asyncTraceForTrackBegin(Trace.TRACE_TAG_SYSTEM_SERVER, TAG, methodName, cookie);
+    }
+
+    static void traceEnd(int cookie) {
+        Trace.asyncTraceForTrackEnd(Trace.TRACE_TAG_SYSTEM_SERVER, TAG, cookie);
+    }
+
     interface SerialUserAccessManagerFactory {
         SerialUserAccessManagerInterface create(Context context, String[] portsInConfig,
                 String dialogComponent);
@@ -496,7 +524,9 @@ public class SerialManagerService extends ISerialManager.Stub implements
         @Override
         public void onStart() {
             if (enableWiredSerialApi()) {
+                traceBegin("createSerialManager", 0);
                 publishBinderService(Context.SERIAL_SERVICE, new SerialManagerService(mContext));
+                traceEnd(0);
             }
         }
     }

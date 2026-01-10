@@ -15,6 +15,8 @@
  */
 package com.android.server.pm;
 
+import static com.android.server.pm.GenericAllowlist.AllowlistStatus;
+
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -655,18 +657,39 @@ public abstract class UserManagerInternal {
      */
     public abstract @Nullable UserActivitiesAllowlist getActivitiesAllowlist(@UserIdInt int userId);
 
-    // TODO(b/414326600): for now it's only using different methods for launched and blocked
-    // activities, but once the allowlist logging mechanism is properly designed, it should pass
-    // some sort of @HsuUiActionResult int result instead
-    // TODO(b/414326600, 412177078): also, it might be better to be a generic "forUserType" method
-    // (to be consistent with isActivityAllowlisted(...) above).
-    /** Logs an activity launched in the headless system user */
+    /**
+     * Logs an activity launched in the headless system user.
+     *
+     *  @deprecated use {@link #logActivityLaunchStatus(ComponentName, int, int)} instead.
+     */
+    @Deprecated
     public abstract void logLaunchedHsuActivity(ComponentName activity);
-    /** Logs an activity blocked in the headless system user */
+
+    /**
+     * Logs an activity blocked in the headless system user.
+     *
+     *  @deprecated use {@link #logActivityLaunchStatus(ComponentName, int, int)} instead.
+     */
+    @Deprecated
     public abstract void logBlockedHsuActivity(ComponentName activity);
 
-    /** Logs a notification shown in the headless system user */
+    /**
+     * Logs the status of trying to launch an activity in the given user.
+     */
+    public abstract void logActivityLaunchStatus(ComponentName activity, @UserIdInt int userId,
+            @AllowlistStatus int status);
+
+    /**
+     * Logs a notification shown in the headless system user.
+     *
+     *  @deprecated use {@link #logNotificationShownStatus(StatusBarNotification, int)} instead.
+     */
+    @Deprecated
     public abstract void logShownHsuNotification(StatusBarNotification sbn);
+
+    /** Logs the status of trying to show a notification in the given user.*/
+    public abstract void logNotificationShownStatus(StatusBarNotification sbn,
+            @UserIdInt int userId, @AllowlistStatus int status);
 
     /**
      * Sets the id of the {@code DeviceOwner}, if any.

@@ -49,6 +49,7 @@ fun QuickAccessDialogContent(
 ) {
     PlatformTheme {
         AlertDialogContent(
+            modifier = Modifier.testTag("quick_access_dialog"),
             icon = {
                 Icon(
                     imageVector = Icons.Default.AccessibilityNew,

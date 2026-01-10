@@ -1740,10 +1740,6 @@ public class ViewConfiguration {
         }
 
         private static Resources getCurrentResources() {
-            if (!android.companion.virtualdevice.flags.Flags
-                    .migrateViewconfigurationConstantsToResources()) {
-                return null;
-            }
             Application application = ActivityThread.currentApplication();
             Context context = application != null ? application.getApplicationContext() : null;
             return context != null ? context.getResources() : null;

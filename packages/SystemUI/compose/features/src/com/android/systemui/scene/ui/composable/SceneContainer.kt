@@ -19,6 +19,7 @@
 package com.android.systemui.scene.ui.composable
 
 import android.os.Build
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.foundation.LocalOverscrollFactory
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
@@ -215,6 +216,10 @@ private fun InternalSceneContainer(
         )
     }
 
+    val hasAnyEnabledBackHandler =
+        LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher?.hasEnabledCallbacks() ==
+            true
+
     val actionableContentKey =
         viewModel.getActionableContentKey(state.currentScene, state.currentOverlays, overlayByKey)
     val userActionsByContentKey: MutableMap<ContentKey, Map<UserAction, UserActionResult>> =
@@ -222,7 +227,12 @@ private fun InternalSceneContainer(
             mutableStateMapOf()
         }
     val aodOrDozing = viewModel.isAodOrDozing
-    LaunchedEffect(actionableContentKey, aodOrDozing, state.currentScene) {
+    LaunchedEffect(
+        actionableContentKey,
+        aodOrDozing,
+        state.currentScene,
+        hasAnyEnabledBackHandler,
+    ) {
         try {
             val actionableContent: ActionableContent =
                 checkNotNull(
@@ -238,6 +248,7 @@ private fun InternalSceneContainer(
                     hasBackAction = userActions.containsKey(Back),
                     sceneKey = state.currentScene,
                     aodOrDozing = aodOrDozing,
+                    hasAnyEnabledBackHandler = hasAnyEnabledBackHandler,
                 )
             }
         } finally {

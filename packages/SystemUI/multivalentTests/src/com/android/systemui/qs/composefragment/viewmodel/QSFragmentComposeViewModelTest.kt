@@ -198,6 +198,9 @@ class QSFragmentComposeViewModelTest : AbstractQSFragmentComposeViewModelTest() 
 
         underTest.squishinessFraction = 1f
         assertThat(squishiness).isWithin(epsilon).of(1f.constrainSquishiness())
+
+        underTest.squishinessFraction = Float.NaN
+        assertThat(squishiness).isWithin(epsilon).of(1f.constrainSquishiness())
     }
 
     @Test

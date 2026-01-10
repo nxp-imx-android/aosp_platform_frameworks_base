@@ -182,6 +182,7 @@ import com.android.wm.shell.freeform.FreeformTaskTransitionObserver;
 import com.android.wm.shell.freeform.FreeformTaskTransitionStarter;
 import com.android.wm.shell.freeform.FreeformTaskTransitionStarterInitializer;
 import com.android.wm.shell.freeform.TaskChangeListener;
+import com.android.wm.shell.fullscreen.FullscreenDisconnectHandler;
 import com.android.wm.shell.keyguard.KeyguardTransitionHandler;
 import com.android.wm.shell.onehanded.OneHandedController;
 import com.android.wm.shell.packageupdate.PackageUpdateController;
@@ -1307,14 +1308,31 @@ public abstract class WMShellModule {
     static Optional<DisplayDisconnectTransitionHandler> provideDisplayDisconnectTransitionHandler(
             ShellInit shellInit, Transitions transitions,
             Optional<SplitScreenController> splitScreenOptional,
-            Optional<DesktopTasksController> desktopTasksController) {
+            Optional<DesktopTasksController> desktopTasksController,
+            Optional<FullscreenDisconnectHandler> fullscreenDisconnectHandler) {
         if (!DesktopExperienceFlags.ENABLE_DISPLAY_DISCONNECT_INTERACTION.isTrue()) {
             return Optional.empty();
         } else {
             return Optional.of(
                     new DisplayDisconnectTransitionHandler(transitions, shellInit,
-                            splitScreenOptional, desktopTasksController)
+                            splitScreenOptional, desktopTasksController,
+                            fullscreenDisconnectHandler)
             );
+        }
+    }
+
+    @WMSingleton
+    @Provides
+    static Optional<FullscreenDisconnectHandler> provideFullscreenDisconnectHandler(
+            ShellTaskOrganizer shellTaskOrganizer,
+            RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer
+    ) {
+        if (!com.android.window.flags.Flags.enableDisplayDisconnectFullscreen()) {
+            return Optional.empty();
+        } else {
+            return Optional.of(
+                    new FullscreenDisconnectHandler(shellTaskOrganizer,
+                            rootTaskDisplayAreaOrganizer));
         }
     }
 

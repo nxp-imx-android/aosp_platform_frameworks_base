@@ -20076,11 +20076,11 @@ package android.hardware.biometrics {
   }
 
   public static interface BiometricManager.Authenticators {
-    field @FlaggedApi("android.hardware.biometrics.get_biometric_sensor_strengths") public static final int AUTHENTICATOR_STRENGTH_UNKNOWN = 0; // 0x0
     field public static final int BIOMETRIC_STRONG = 15; // 0xf
     field public static final int BIOMETRIC_WEAK = 255; // 0xff
     field public static final int DEVICE_CREDENTIAL = 32768; // 0x8000
     field @FlaggedApi("android.hardware.biometrics.identity_check_api") public static final int IDENTITY_CHECK = 65536; // 0x10000
+    field @FlaggedApi("android.hardware.biometrics.get_biometric_sensor_strengths") public static final int LESS_THAN_STRONG = 0; // 0x0
   }
 
   public static class BiometricManager.Strings {
@@ -23231,6 +23231,7 @@ package android.media {
     method public int getChannelCount();
     method @FlaggedApi("android.media.audio.codec_provenance_api") @NonNull public String getCodecProvenance();
     method public int getDualMonoMode();
+    method @FlaggedApi("android.media.audio.partial_flush_for_pcm_offload") public static int getFlushWrittenFramesFromPositionSupport(@NonNull android.media.AudioFormat, @NonNull android.media.AudioAttributes);
     method @NonNull public android.media.AudioFormat getFormat();
     method @NonNull public android.media.metrics.LogSessionId getLogSessionId();
     method public static float getMaxVolume();
@@ -23313,6 +23314,7 @@ package android.media {
     field public static final int ERROR_INVALID_OPERATION = -3; // 0xfffffffd
     field @FlaggedApi("android.media.audio.partial_flush_for_pcm_offload") public static final int FLUSH_FROM_ACCURACY_BEST_EFFORT = 0; // 0x0
     field @FlaggedApi("android.media.audio.partial_flush_for_pcm_offload") public static final int FLUSH_FROM_ACCURACY_EXACT = 1; // 0x1
+    field @FlaggedApi("android.media.audio.partial_flush_for_pcm_offload") public static final int FLUSH_WRITTEN_FRAMES_SUPPORTED = 1; // 0x1
     field public static final int MODE_STATIC = 0; // 0x0
     field public static final int MODE_STREAM = 1; // 0x1
     field public static final int PERFORMANCE_MODE_LOW_LATENCY = 1; // 0x1
