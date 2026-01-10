@@ -76,6 +76,13 @@ flag {
 }
 
 flag {
+    name: "memory_limiter_trigger"
+    namespace: "system_performance"
+    description: "Generate a ProfileManager trigger on over-memory events"
+    bug: "471000543"
+}
+
+flag {
     name: "oomadjuster_cached_app_tiers"
     namespace: "system_performance"
     is_fixed_read_only: true
