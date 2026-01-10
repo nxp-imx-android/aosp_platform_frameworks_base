@@ -26,6 +26,7 @@ import android.window.TransitionRequestInfo
 import android.window.WindowContainerTransaction
 import com.android.internal.protolog.ProtoLog
 import com.android.window.flags.Flags.enableDisplayDisconnectSplitscreen
+import com.android.wm.shell.fullscreen.FullscreenDisconnectHandler
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.splitscreen.SplitScreenController
 import com.android.wm.shell.sysui.ShellInit
@@ -43,6 +44,7 @@ class DisplayDisconnectTransitionHandler(
     shellInit: ShellInit,
     private val splitScreenController: Optional<SplitScreenController>,
     private val desktopTasksController: Optional<DesktopTasksController>,
+    private val fullscreenDisconnectHandler: Optional<FullscreenDisconnectHandler>,
 ) : Transitions.TransitionHandler {
 
     private val pendingTransitions = mutableSetOf<IBinder>()
@@ -121,8 +123,20 @@ class DisplayDisconnectTransitionHandler(
                 desktopTasksController
                     .get()
                     .onDisplayDisconnect(displayChange.displayId, reparentDisplay, transition)
-            wct.merge(desktopWct, true)
-            handled = true
+            if (!desktopWct.isEmpty) {
+                wct.merge(desktopWct, true)
+                handled = true
+            }
+        }
+        if (fullscreenDisconnectHandler.isPresent) {
+            val fullscreenWct =
+                fullscreenDisconnectHandler
+                    .get()
+                    .onDisplayDisconnect(displayChange.displayId, reparentDisplay)
+            if (!fullscreenWct.isEmpty) {
+                wct.merge(fullscreenWct, true)
+                handled = true
+            }
         }
 
         if (handled) {
