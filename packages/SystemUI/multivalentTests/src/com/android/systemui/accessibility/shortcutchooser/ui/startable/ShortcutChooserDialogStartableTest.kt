@@ -248,7 +248,7 @@ class ShortcutChooserDialogStartableTest : SysuiTestCase() {
         }
 
     @Test
-    fun createDialog_topRowKey_twoSelectedTargets_showToggleScreen_andClickToggleableTargetRow_enablesFeatureAndLeavesDialogOpen() =
+    fun createDialog_topRowKey_twoSelectedTargets_showToggleScreen_andClickToggleableTargetRow_enablesFeatureAndClosesDialog() =
         kosmos.runTest {
             setTalkbackAndMagnificationSelected()
 
@@ -264,9 +264,9 @@ class ShortcutChooserDialogStartableTest : SysuiTestCase() {
             composeTestRule.onNodeWithTag(TALKBACK_TARGET_NAME).performClick()
             composeTestRule.waitForIdle()
 
-            // Will toggle Talkback feature on/off and leave the dialog open.
+            // Will toggle Talkback feature on/off and dismiss the dialog.
             assertThat(getEnabledTargetNames()).isEqualTo(setOf(TALKBACK_TARGET_NAME))
-            assertCurrentDialog(DialogType.TOGGLE_TARGETS)
+            assertCurrentDialog(DialogType.NONE)
         }
 
     @Test
@@ -564,7 +564,6 @@ class ShortcutChooserDialogStartableTest : SysuiTestCase() {
             sendIntentInMainThreadWaitForIdle(UserShortcutType.QUICK_ACCESS)
 
             assertCurrentDialog(DialogType.QUICK_ACCESS)
-
             assertThat(fakeRepository.isTargetEnabled(TALKBACK_TARGET_NAME)).isFalse()
             val targetNode = composeTestRule.onNodeWithText("Screen Reader")
             targetNode.assert(isToggleable())
@@ -573,16 +572,24 @@ class ShortcutChooserDialogStartableTest : SysuiTestCase() {
             targetNode.performClick()
             composeTestRule.waitForIdle()
 
+            assertCurrentDialog(DialogType.NONE)
             assertThat(fakeRepository.isTargetEnabled(TALKBACK_TARGET_NAME)).isTrue()
-            targetNode.assertIsOn()
+
+            sendIntentInMainThreadWaitForIdle(UserShortcutType.QUICK_ACCESS)
+
             assertCurrentDialog(DialogType.QUICK_ACCESS)
+            targetNode.assertIsOn()
 
             targetNode.performClick()
             composeTestRule.waitForIdle()
 
+            assertCurrentDialog(DialogType.NONE)
             assertThat(fakeRepository.isTargetEnabled(TALKBACK_TARGET_NAME)).isFalse()
-            targetNode.assertIsOff()
+
+            sendIntentInMainThreadWaitForIdle(UserShortcutType.QUICK_ACCESS)
+
             assertCurrentDialog(DialogType.QUICK_ACCESS)
+            targetNode.assertIsOff()
         }
 
     @Test
