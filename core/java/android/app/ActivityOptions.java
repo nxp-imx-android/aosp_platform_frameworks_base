@@ -2895,6 +2895,8 @@ public class ActivityOptions extends ComponentOptions {
         public static final int TYPE_TILE = 7;
         /** Launched from a Wear OS complication. */
         public static final int TYPE_COMPLICATION = 8;
+        /** Launched from an ongoing live update item. */
+        public static final int TYPE_ONGOING_LIVE_UPDATE = 9;
 
         @IntDef(prefix = { "TYPE_" }, value = {
                 TYPE_LAUNCHER,
@@ -2904,7 +2906,8 @@ public class ActivityOptions extends ComponentOptions {
                 TYPE_DESKTOP_ANIMATION,
                 TYPE_QSS,
                 TYPE_TILE,
-                TYPE_COMPLICATION
+                TYPE_COMPLICATION,
+                TYPE_ONGOING_LIVE_UPDATE,
         })
         @Retention(RetentionPolicy.SOURCE)
         public @interface SourceType {}
