@@ -30,6 +30,8 @@ import android.app.ActivityManager.ProcessState;
 import android.os.Handler;
 import android.os.Message;
 import android.os.Process;
+import android.os.ProfilingServiceHelper;
+import android.os.ProfilingTrigger;
 import android.os.Trace;
 import android.util.Slog;
 
@@ -381,6 +383,30 @@ class MemoryLimiter implements AutoCloseable {
         public void onLimitExceeded(int pid, int uid, int limit, @Nullable String pkg) {
             Slog.i(TAG, formatSimple("limits exceeded: pid=%d uid=%d limit=%s pkg=%s",
                                 pid, uid, limitTypeToString(limit), pkg));
+            if (pkg == null) {
+                // A null package cannot be reported.
+                return;
+            }
+
+            if (!Flags.memoryLimiterTrigger()) {
+                // The feature is disabled locally.
+                return;
+            }
+
+            if (!android.os.profiling.Flags.systemTriggeredProfilingNew()
+                    || !android.os.profiling.anomaly.flags.Flags.anomalyDetectorCore()) {
+                // Profiling is disabled globally.
+                return;
+            }
+
+            try {
+                ProfilingServiceHelper helper = ProfilingServiceHelper.getInstance();
+                helper.onProfilingTriggerOccurred(uid, pkg, ProfilingTrigger.TRIGGER_TYPE_ANOMALY);
+            } catch (IllegalStateException e) {
+                // Log the exception but otherwise discard it.  A failure to generate a profile is
+                // not fatal.
+                Slog.w(TAG, e.getMessage());
+            }
         }
 
         @Override
