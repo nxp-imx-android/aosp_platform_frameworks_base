@@ -41,6 +41,8 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 import androidx.test.platform.app.InstrumentationRegistry;
 
+import com.android.server.am.MemoryLimiter.Configuration;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -81,6 +83,9 @@ public class MemoryLimiterTest {
     // LINT.ThenChange(
     // /services/tests/MemoryLimiterTests/test-app/MemoryLimiterTestApp/AndroidManifest.xml:testapp
     // )
+
+    // The location of data files on the device.
+    private static final String DATA_DIR = "/data/local/tmp/cts/memorylimiter/";
 
     // The UID of the test application.  This can change every time the package is installed but
     // should not change for the duration of the test.
@@ -134,9 +139,17 @@ public class MemoryLimiterTest {
         // The events received by this counter.
         final ArrayList<Event> mEvents = new ArrayList<>();
 
-        // The instance is created with the expected number of events.
+        // The instance is created with the expected number of events.  Do not load any
+        // configuration file.
         EventCounter(int expected) {
-            super();
+            this(expected, null);
+        }
+
+        // The instance is created with the expected number of events.  The supplied configuration
+        // file is parsed.  To simplify life, this method accepts the basename of the
+        // configuration file.  It quietly prepends the path component.
+        EventCounter(int expected, String config) {
+            super((config != null) ? DATA_DIR + config : null);
             mLatch = new CountDownLatch(expected);
         }
 
@@ -391,6 +404,50 @@ public class MemoryLimiterTest {
             // There should be exactly one event in the counter.
             assertThat(counter.eventCount()).isEqualTo(1);
             counter.expect(0, pid, mUid, MemoryLimiter.MEMORY_LIMIT_TYPE, "");
+        }
+    }
+
+    // Compare the two fields of a Configuration to the inputs.
+    private static void testConfig(Configuration cfg, int visible, int notVisible) {
+        assertThat(cfg.visible()).isEqualTo(visible);
+        assertThat(cfg.notVisible()).isEqualTo(notVisible);
+    }
+
+    private static void testConfig(Configuration cfg, Configuration ref) {
+        testConfig(cfg, ref.visible(), ref.notVisible());
+    }
+
+    @RequiresFlagsEnabled(Flags.FLAG_MEMORY_LIMITER_ENABLE)
+    @Test
+    public void testConfigDefaults() throws Exception {
+        // Fetch the default configuration and verify its fields.
+        Configuration cfg = MemoryLimiter.sDefaultConfig;
+        if (Flags.memoryLimiterDefaultAppLimits()) {
+            testConfig(cfg, 50, 25);
+        } else {
+            testConfig(cfg, 100, 100);
+        }
+    }
+
+    @RequiresFlagsEnabled(Flags.FLAG_MEMORY_LIMITER_ENABLE)
+    @Test
+    public void testXmlConfig() throws Exception {
+        Configuration cfg;
+
+        // The default case.
+        cfg = MemoryLimiter.getConfiguration(null);
+        testConfig(cfg, MemoryLimiter.sDefaultConfig);
+
+        // A valid configuration file that specifies the defaults.
+        cfg = MemoryLimiter.getConfiguration(DATA_DIR + "config-default.xml");
+        testConfig(cfg, 40, 30);
+
+        // Parse an invalid XML file.  There must be an error.
+        try {
+            cfg = MemoryLimiter.getConfiguration(DATA_DIR + "config-error.xml");
+            fail("failed to detect XML parse error");
+        } catch (IllegalArgumentException e) {
+            // Success.
         }
     }
 
