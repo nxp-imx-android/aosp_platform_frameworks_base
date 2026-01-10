@@ -27,22 +27,24 @@ import java.util.Objects;
  * This class keeps track of the biometric modality (e.g., {@link BiometricManager#TYPE_FACE} for
  * face or {@link BiometricManager#TYPE_FINGERPRINT} for fingerprint) and its corresponding
  * sensor security strength (e.g., {@link BiometricManager.Authenticators#BIOMETRIC_STRONG} for
- * Class-3 or {@link BiometricManager.Authenticators#AUTHENTICATOR_STRENGTH_UNKNOWN} for
- * unknown/unexposed cases). This is for internal use in
- * {@link com.android.server.biometrics.AuthService}, so it has to be parcelable.
+ * Class-3 or {@link BiometricManager.Authenticators#LESS_THAN_STRONG} for unknown/unexposed
+ * cases).
+ *
+ * <p>This is intended for internal use in {@link com.android.server.biometrics.AuthService}, so
+ * it has to be parcelable.
  *
  * @hide
  */
 @FlaggedApi(Flags.FLAG_GET_BIOMETRIC_SENSOR_STRENGTHS)
-public final class RedactedBiometricSensorStrengthInternal implements Parcelable {
+public final class StrongSensorStrengthInternal implements Parcelable {
     @BiometricManager.BiometricModality
     private final int mModality;
 
-    @BiometricManager.Authenticators.RedactedTypes
+    @BiometricManager.Authenticators.StrongTypes
     private final int mStrength;
 
-    public RedactedBiometricSensorStrengthInternal(@BiometricManager.BiometricModality int modality,
-            @BiometricManager.Authenticators.RedactedTypes int strength) {
+    public StrongSensorStrengthInternal(@BiometricManager.BiometricModality int modality,
+            @BiometricManager.Authenticators.StrongTypes int strength) {
         mModality = modality;
         mStrength = strength;
     }
@@ -64,28 +66,27 @@ public final class RedactedBiometricSensorStrengthInternal implements Parcelable
      *
      * @return The int value representing the sensor security strength, e.g.,
      * {@link BiometricManager.Authenticators#BIOMETRIC_STRONG} for Class-3 or
-     * {@link BiometricManager.Authenticators#AUTHENTICATOR_STRENGTH_UNKNOWN} for unknown/unexposed
-     * cases.
+     * {@link BiometricManager.Authenticators#LESS_THAN_STRONG} for unknown/unexposed cases.
      */
-    @BiometricManager.Authenticators.RedactedTypes
+    @BiometricManager.Authenticators.StrongTypes
     public int getStrength() {
         return mStrength;
     }
 
-    private RedactedBiometricSensorStrengthInternal(Parcel in) {
+    private StrongSensorStrengthInternal(Parcel in) {
         this(in.readInt(), in.readInt());
     }
 
     @NonNull
-    public static final Creator<RedactedBiometricSensorStrengthInternal> CREATOR = new Creator<>() {
+    public static final Creator<StrongSensorStrengthInternal> CREATOR = new Creator<>() {
         @Override
-        public RedactedBiometricSensorStrengthInternal createFromParcel(Parcel in) {
-            return new RedactedBiometricSensorStrengthInternal(in);
+        public StrongSensorStrengthInternal createFromParcel(Parcel in) {
+            return new StrongSensorStrengthInternal(in);
         }
 
         @Override
-        public RedactedBiometricSensorStrengthInternal[] newArray(int size) {
-            return new RedactedBiometricSensorStrengthInternal[size];
+        public StrongSensorStrengthInternal[] newArray(int size) {
+            return new StrongSensorStrengthInternal[size];
         }
     };
 
@@ -120,8 +121,7 @@ public final class RedactedBiometricSensorStrengthInternal implements Parcelable
     public boolean equals(Object obj) {
         if (this == obj) return true;
         if (obj == null || getClass() != obj.getClass()) return false;
-        RedactedBiometricSensorStrengthInternal other =
-                (RedactedBiometricSensorStrengthInternal) obj;
+        StrongSensorStrengthInternal other = (StrongSensorStrengthInternal) obj;
         return mModality == other.mModality && mStrength == other.mStrength;
     }
 }

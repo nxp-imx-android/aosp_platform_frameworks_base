@@ -17,4 +17,4 @@
 package android.hardware.biometrics;
 
 // @hide
-parcelable RedactedBiometricSensorStrengthInternal;
+parcelable StrongSensorStrengthInternal;

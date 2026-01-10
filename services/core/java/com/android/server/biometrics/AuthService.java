@@ -51,9 +51,9 @@ import android.hardware.biometrics.ITestSession;
 import android.hardware.biometrics.ITestSessionCallback;
 import android.hardware.biometrics.IdentityCheckStatus;
 import android.hardware.biometrics.PromptInfo;
-import android.hardware.biometrics.RedactedBiometricSensorStrengthInternal;
 import android.hardware.biometrics.SensorLocationInternal;
 import android.hardware.biometrics.SensorPropertiesInternal;
+import android.hardware.biometrics.StrongSensorStrengthInternal;
 import android.hardware.face.FaceSensorConfigurations;
 import android.hardware.face.FaceSensorProperties;
 import android.hardware.face.FaceSensorPropertiesInternal;
@@ -473,10 +473,10 @@ public class AuthService extends SystemService {
          *
          * <p>Note:  Biometric sensor strengths below Class-3
          * ({@link BiometricManager.Authenticators#BIOMETRIC_STRONG}) are obscured and
-         * returned as {@link BiometricManager.Authenticators#AUTHENTICATOR_STRENGTH_UNKNOWN}.
+         * returned as {@link BiometricManager.Authenticators#LESS_THAN_STRONG}.
          */
         @Override
-        public List<RedactedBiometricSensorStrengthInternal> getBiometricSensorStrengths(
+        public List<StrongSensorStrengthInternal> getBiometricSensorStrengths(
                 String opPackageName) throws RemoteException {
             // Check the `USE_BIOMETRIC` permission at runtime.
             checkPermission();
@@ -495,8 +495,8 @@ public class AuthService extends SystemService {
             final int userId = UserHandle.getCallingUserId();
             List<BiometricEnrollmentStatusInternal> enrollmentStatusList =
                     getEnrollmentStatusListInternal(opPackageName, userId);
-            List<RedactedBiometricSensorStrengthInternal> biometricSensorStrengths =
-                    new ArrayList<>(enrollmentStatusList.size());
+            List<StrongSensorStrengthInternal> biometricSensorStrengths = new ArrayList<>(
+                    enrollmentStatusList.size());
             for (BiometricEnrollmentStatusInternal enrollmentStatus : enrollmentStatusList) {
                 // LINT.IfChange(sensor_strength_switch)
 
@@ -510,15 +510,15 @@ public class AuthService extends SystemService {
                     // Class-3 sensor strength.
                     case Authenticators.BIOMETRIC_STRONG -> Authenticators.BIOMETRIC_STRONG;
                     // Unknown or obscured sensor strengths.
-                    default -> Authenticators.AUTHENTICATOR_STRENGTH_UNKNOWN;
+                    default -> Authenticators.LESS_THAN_STRONG;
                 };
 
                 // LINT.ThenChange()
 
-                // `RedactedBiometricSensorStrengthInternal` is created because AIDL does not
+                // `StrongSensorStrengthInternal` is created because AIDL does not
                 // support directly returning `Map<Integer, Integer>`.
                 biometricSensorStrengths.add(
-                        new RedactedBiometricSensorStrengthInternal(enrollmentStatus.getModality(),
+                        new StrongSensorStrengthInternal(enrollmentStatus.getModality(),
                                 strength));
             }
 
