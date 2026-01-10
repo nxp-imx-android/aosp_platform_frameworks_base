@@ -1590,6 +1590,58 @@ class BubbleStackViewTest {
         assertThat(bubble1.isCleanupDeferred).isFalse()
     }
 
+    @Test
+    fun performAccessibilityAction_move_whenExpanded_setsPositionImmediately() {
+        // GIVEN an expanded bubble stack view with one bubble
+        val bubble = createAndInflateBubble()
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            bubbleStackView.addBubble(bubble)
+            bubbleStackView.setSelectedBubble(bubble)
+            bubbleData.isExpanded = true
+            bubbleStackView.isExpanded = true
+            shellExecutor.flushAll()
+        }
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync()
+        PhysicsAnimatorTestUtils.blockUntilAnimationsEnd(
+            AnimatableScaleMatrix.SCALE_X,
+            AnimatableScaleMatrix.SCALE_Y,
+        )
+        assertThat(bubbleStackView.isExpanded).isTrue()
+        val stackBounds = positioner.getAllowableStackPositionRegion(bubbleStackView.bubbleCount)
+
+        // WHEN the move top left action is performed
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            bubbleStackView.performAccessibilityActionInternal(R.id.action_move_top_left, null)
+        }
+        // THEN the stack moves immediately
+        assertThat(bubbleStackView.stackPosition.x).isEqualTo(stackBounds.left)
+        assertThat(bubbleStackView.stackPosition.y).isEqualTo(stackBounds.top)
+
+        // WHEN the move top right action is performed
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            bubbleStackView.performAccessibilityActionInternal(R.id.action_move_top_right, null)
+        }
+        // THEN the stack moves immediately
+        assertThat(bubbleStackView.stackPosition.x).isEqualTo(stackBounds.right)
+        assertThat(bubbleStackView.stackPosition.y).isEqualTo(stackBounds.top)
+
+        // WHEN the move bottom left action is performed
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            bubbleStackView.performAccessibilityActionInternal(R.id.action_move_bottom_left, null)
+        }
+        // THEN the stack moves immediately
+        assertThat(bubbleStackView.stackPosition.x).isEqualTo(stackBounds.left)
+        assertThat(bubbleStackView.stackPosition.y).isEqualTo(stackBounds.bottom)
+
+        // WHEN the move bottom right action is performed
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            bubbleStackView.performAccessibilityActionInternal(R.id.action_move_bottom_right, null)
+        }
+        // THEN the stack moves immediately
+        assertThat(bubbleStackView.stackPosition.x).isEqualTo(stackBounds.right)
+        assertThat(bubbleStackView.stackPosition.y).isEqualTo(stackBounds.bottom)
+    }
+
     private fun createAndInflateChatBubble(key: String): Bubble {
         val icon = Icon.createWithResource(context.resources, R.drawable.bubble_ic_overflow_button)
         val shortcutInfo = ShortcutInfo.Builder(context, "fakeId").setIcon(icon).build()
