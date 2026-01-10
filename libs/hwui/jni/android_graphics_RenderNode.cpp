@@ -616,6 +616,7 @@ static void android_view_RenderNode_requestPositionUpdates(JNIEnv* env, jobject,
                         info.damageAccumulator
                                 ->computeClipAndTransform(initialClipBounds.toSkRect(), &transform)
                                 .roundOut();
+                clipBounds.intersect(initialClipBounds.toSkIRect());
             } else {
                 info.damageAccumulator->computeCurrentTransform(&transform);
             }
