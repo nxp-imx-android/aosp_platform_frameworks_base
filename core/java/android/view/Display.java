@@ -344,7 +344,7 @@ public final class Display {
     /**
      * Flag: Indicates that the display maintains its own focus and touch mode.
      *
-     * This flag is similar to {@link com.android.internal.R.bool.config_perDisplayFocusEnabled} in
+     * This flag is similar to {@link com.android.internal.R.bool#config_perDisplayFocusEnabled} in
      * behavior, but only applies to the specific display instead of system-wide to all displays.
      *
      * Note: The display must be trusted in order to have its own focus.

@@ -1969,7 +1969,7 @@ public class CarrierConfigManager {
             "apn_settings_default_apn_types_string_array";
 
     /**
-     * Specifies disallowed substrings for the {@link android.provider.Telephony.Carriers.APN}.
+     * Specifies disallowed substrings for the {@link android.provider.Telephony.Carriers#APN}.
      *
      * Note: If the preset APN contains these strings, then adding or editing is not allowed.
      */

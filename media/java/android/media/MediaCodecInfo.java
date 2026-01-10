@@ -5307,7 +5307,7 @@ public final class MediaCodecInfo {
          * Returns the array of layering schemas supported by the encoder.
          * Return empty array if the encoder's layers encoding capability is unknown or not
          * supported.
-         * @see MediaFormat.KEY_TEMPORAL_LAYERING for the meaning of the schema.
+         * @see MediaFormat#KEY_TEMPORAL_LAYERING for the meaning of the schema.
          */
         @FlaggedApi(FLAG_TEMPORAL_LAYER_ENCODING)
         @NonNull

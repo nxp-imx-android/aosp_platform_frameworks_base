@@ -488,7 +488,7 @@ public final class DisplayManager {
     /**
      * Virtual display flags: Indicates that the display maintains its own focus and touch mode.
      *
-     * This flag is similar to {@link com.android.internal.R.bool.config_perDisplayFocusEnabled} in
+     * This flag is similar to {@link com.android.internal.R.bool#config_perDisplayFocusEnabled} in
      * behavior, but only applies to the specific display instead of system-wide to all displays.
      *
      * Note: The display must be trusted in order to have its own focus.
@@ -2002,7 +2002,7 @@ public final class DisplayManager {
 
     /**
      * Sets the refresh rate switching type.
-     * This matches {@link android.provider.Settings.Secure.MATCH_CONTENT_FRAME_RATE}
+     * This matches {@link android.provider.Settings.Secure#MATCH_CONTENT_FRAME_RATE}
      *
      * @hide
      */

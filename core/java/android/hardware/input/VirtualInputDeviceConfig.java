@@ -203,16 +203,16 @@ public abstract class VirtualInputDeviceConfig {
          * <p>The specified display must be trusted or mirror display.</p>
          *
          * <p>If there is no specific display ID to associate with, use
-         * {@link Display.DEFAULT_DISPLAY} or {@link Display.INVALID_DISPLAY}.
-         * Using {@link Display.INVALID_DISPLAY} requires the caller to be have either
+         * {@link Display#DEFAULT_DISPLAY} or {@link Display#INVALID_DISPLAY}.
+         * Using {@link Display#INVALID_DISPLAY} requires the caller to be have either
          * {@link android.Manifest.permission#INJECT_KEY_EVENTS} or
          * {@link android.Manifest.permission#INJECT_EVENTS}
          * </p>
          *
-         * <p>Use {@link Display.DEFAULT_DISPLAY} if the virtual input device should only send
+         * <p>Use {@link Display#DEFAULT_DISPLAY} if the virtual input device should only send
          * events to the primary default display. Events will not be sent to focused windows of the
          * non-primary display, e.g. extended monitor.</p>
-         * <p>Use {@link Display.INVALID_DISPLAY} if there is no display association and
+         * <p>Use {@link Display#INVALID_DISPLAY} if there is no display association and
          * will only send events to the currently focused window of the currently focused display.
          * ONLY allowed for virtual input devices that exclusively sends key events, i.e. keyboard
          * and dpad, and if the caller has either of the aforementioned permissions.</p>

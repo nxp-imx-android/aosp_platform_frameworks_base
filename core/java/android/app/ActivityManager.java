@@ -4609,7 +4609,7 @@ public class ActivityManager {
      * The callback doesn't wait for {@link Activity#reportFullyDrawn} to occur. Retrieve a copy
      * of {@link ApplicationStartInfo} after {@link Activity#reportFullyDrawn} is called (using this
      * callback or {@link getHistoricalProcessStartReasons}) if you need the
-     * {@link ApplicationStartInfo.START_TIMESTAMP_FULLY_DRAWN} timestamp.
+     * {@link ApplicationStartInfo#START_TIMESTAMP_FULLY_DRAWN} timestamp.
      *
      * If the current start record has already been completed (that is, the process is not currently
      * starting), the callback will be invoked immediately on the specified executor with the

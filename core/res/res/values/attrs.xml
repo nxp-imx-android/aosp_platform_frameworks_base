@@ -4654,7 +4654,7 @@
         <!-- Whether this service should share the same AID routing priority as the role
              owner. This package and the role owner must have the same signature, and the
              role owner must opt into this behavior by using the property named by
-             {@link android.nfc.cardemulation.CardEmulation.PROPERTY_ALLOW_SHARED_ROLE_PRIORITY }
+             {@link android.nfc.cardemulation.CardEmulation#PROPERTY_ALLOW_SHARED_ROLE_PRIORITY }
              in the <code>&lt;application&rt;</code> tag. -->
         <attr name="wantsRoleHolderPriority" format="boolean"/>
     </declare-styleable>

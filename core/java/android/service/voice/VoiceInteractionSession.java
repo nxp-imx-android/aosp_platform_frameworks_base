@@ -1852,7 +1852,7 @@ public class VoiceInteractionSession implements KeyEvent.Callback, ComponentCall
      *     <li>
      *         {@link #KEY_FOREGROUND_ACTIVITIES} provides foreground activities of up coming
      *         onHandleAssist/onHandleScreenshot calls earlier. This is only populated if session
-     *         was requested with {@link VoiceInteractionSession.SHOW_WITH_ASSIST} show flag.
+     *         was requested with {@link VoiceInteractionSession#SHOW_WITH_ASSIST} show flag.
      *     </li>
      *     <li>
      *         Starting from Android 14, the system will add {@link #KEY_SHOW_SESSION_ID}, the

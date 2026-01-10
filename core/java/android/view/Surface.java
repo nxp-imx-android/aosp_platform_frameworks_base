@@ -1082,7 +1082,7 @@ public class Surface implements Parcelable {
              * The values should be greater than or equal to 0.
              *
              * If the surface has no preference and any frame rate is acceptable, use the constant
-             * {@link FrameRateParams.IGNORE} in {@link #setFrameRate(FrameRateParams)} instead of
+             * {@link FrameRateParams#IGNORE} in {@link #setFrameRate(FrameRateParams)} instead of
              * building {@link FrameRateParams.Builder}.
              *
              * @see FrameRateParams#getDesiredMinRate()

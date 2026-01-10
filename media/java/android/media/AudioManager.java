@@ -9022,9 +9022,9 @@ public class AudioManager {
      * and recording of 20kHz~ sounds. If platform supports Ultrasound, then the
      * usage will be
      * To start the Ultrasound playback:
-     *     - Create an AudioTrack with {@link AudioAttributes.CONTENT_TYPE_ULTRASOUND}.
+     *     - Create an AudioTrack with {@link AudioAttributes#CONTENT_TYPE_ULTRASOUND}.
      * To start the Ultrasound capture:
-     *     - Create an AudioRecord with {@link MediaRecorder.AudioSource.ULTRASOUND}.
+     *     - Create an AudioRecord with {@link MediaRecorder.AudioSource#ULTRASOUND}.
      *
      * @return whether the ultrasound feature is supported, true when platform supports both
      * Ultrasound playback and capture, false otherwise.
