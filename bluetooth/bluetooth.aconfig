@@ -5,6 +5,14 @@ container: "system"
 # Flags used for module APIs must be in aconfig files under each modules
 
 flag {
+    name: "strict_configuration_in_system_server"
+    is_exported: true
+    namespace: "bluetooth"
+    description: "Enforce system config at boot and enforce tag attribution when enabling Bluetooth"
+    bug: "467963541"
+}
+
+flag {
     name: "grant_permission_via_module_protection_level"
     namespace: "bluetooth"
     description: "Grant permission to Bluetooth using the module protection level instead of relying on a runtime race condition to provide the Bluetooth ROLE by the permission module"
