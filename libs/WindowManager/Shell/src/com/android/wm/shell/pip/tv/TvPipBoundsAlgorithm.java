@@ -66,8 +66,8 @@ public class TvPipBoundsAlgorithm extends PipBoundsAlgorithm {
             @NonNull PipSnapAlgorithm pipSnapAlgorithm,
             @NonNull PipDisplayLayoutState pipDisplayLayoutState,
             @NonNull SizeSpecSource sizeSpecSource) {
-        super(context, tvPipBoundsState, pipSnapAlgorithm,
-                new PipKeepClearAlgorithmInterface() {}, pipDisplayLayoutState, sizeSpecSource);
+        super(context, tvPipBoundsState, pipSnapAlgorithm, new PipKeepClearAlgorithmInterface() {},
+                pipDisplayLayoutState, null, sizeSpecSource);
         this.mTvPipBoundsState = tvPipBoundsState;
         this.mKeepClearAlgorithm = new TvPipKeepClearAlgorithm();
         reloadResources(context);

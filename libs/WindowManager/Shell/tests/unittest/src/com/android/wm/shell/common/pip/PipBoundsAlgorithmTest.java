@@ -65,9 +65,9 @@ public class PipBoundsAlgorithmTest extends ShellTestCase {
     private PipBoundsState mPipBoundsState;
     private SizeSpecSource mSizeSpecSource;
     private PipDisplayLayoutState mPipDisplayLayoutState;
+    @Mock private PipDesktopState mPipDesktopState;
     @Mock private DisplayController mDisplayController;
     @Mock private ShellInit mShellInit;
-
 
     @Before
     public void setUp() throws Exception {
@@ -81,7 +81,7 @@ public class PipBoundsAlgorithmTest extends ShellTestCase {
         mPipBoundsState = new PipBoundsState(mContext, mSizeSpecSource, mPipDisplayLayoutState);
         mPipBoundsAlgorithm = new PipBoundsAlgorithm(mContext, mPipBoundsState,
                 new PipSnapAlgorithm(), new PipKeepClearAlgorithmInterface() {},
-                mPipDisplayLayoutState, mSizeSpecSource);
+                mPipDisplayLayoutState, mPipDesktopState, mSizeSpecSource);
 
         DisplayLayout layout =
                 new DisplayLayout(mDefaultDisplayInfo, mContext.getResources(), true, true);

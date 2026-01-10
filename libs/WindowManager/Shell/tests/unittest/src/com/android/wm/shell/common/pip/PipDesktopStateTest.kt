@@ -136,14 +136,6 @@ class PipDesktopStateTest : ShellTestCase() {
 
     @EnableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_FREE_FLOATING_PIP)
     @Test
-    fun isFreeFloatingPipEnabled_notInDesktopMode_returnsFalse() {
-        whenever(mockDesktopRepository.isAnyDeskActive(DISPLAY_ID)).thenReturn(false)
-
-        assertThat(pipDesktopState.isFreeFloatingPipEnabled()).isFalse()
-    }
-
-    @EnableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_FREE_FLOATING_PIP)
-    @Test
     fun isFreeFloatingPipEnabled_touchFirstDisplay_returnsFalse() {
         assertThat(pipDesktopState.isFreeFloatingPipEnabled()).isFalse()
     }

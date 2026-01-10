@@ -45,6 +45,7 @@ public class PipBoundsAlgorithm implements PipDisplayLayoutState.DisplayIdListen
 
     @NonNull private final PipBoundsState mPipBoundsState;
     @NonNull protected final PipDisplayLayoutState mPipDisplayLayoutState;
+    private final PipDesktopState mPipDesktopState;
     @NonNull protected final SizeSpecSource mSizeSpecSource;
     private final PipSnapAlgorithm mSnapAlgorithm;
     private final PipKeepClearAlgorithmInterface mPipKeepClearAlgorithm;
@@ -58,12 +59,14 @@ public class PipBoundsAlgorithm implements PipDisplayLayoutState.DisplayIdListen
             @NonNull PipSnapAlgorithm pipSnapAlgorithm,
             @NonNull PipKeepClearAlgorithmInterface pipKeepClearAlgorithm,
             @NonNull PipDisplayLayoutState pipDisplayLayoutState,
+            PipDesktopState pipDesktopState,
             @NonNull SizeSpecSource sizeSpecSource) {
         mPipBoundsState = pipBoundsState;
         mSnapAlgorithm = pipSnapAlgorithm;
         mPipKeepClearAlgorithm = pipKeepClearAlgorithm;
         mPipDisplayLayoutState = pipDisplayLayoutState;
         mPipDisplayLayoutState.addDisplayIdListener(this);
+        mPipDesktopState = pipDesktopState;
         mSizeSpecSource = sizeSpecSource;
         reloadResources(context);
         // Initialize the aspect ratio to the default aspect ratio.  Don't do this in reload
@@ -296,6 +299,10 @@ public class PipBoundsAlgorithm implements PipDisplayLayoutState.DisplayIdListen
         final int left = (int) (stackBounds.centerX() - size.getWidth() / 2f);
         final int top = (int) (stackBounds.centerY() - size.getHeight() / 2f);
         stackBounds.set(left, top, left + size.getWidth(), top + size.getHeight());
+        // If PiP is allowed to free-float, don't apply the snap fraction
+        if (mPipDesktopState.isFreeFloatingPipEnabled()) {
+            return;
+        }
         mSnapAlgorithm.applySnapFraction(stackBounds, getMovementBounds(stackBounds), snapFraction);
     }
 
