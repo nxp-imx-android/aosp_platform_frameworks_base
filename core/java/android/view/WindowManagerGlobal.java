@@ -181,6 +181,14 @@ public final class WindowManagerGlobal {
     private final SparseArray<SurfaceControlInputReceiverInfo>
             mSurfaceControlInputReceivers = new SparseArray<>();
 
+    @GuardedBy("mLock")
+    @Nullable
+    private Consumer<List<View>> mViewAnimationDisableRequestsListener;
+
+    @GuardedBy("mLock")
+    private boolean mIsViewAnimationsDisabled;
+    private float mValueAnimatorDurationScaleWithoutOverride = 1.0f;
+
     private WindowManagerGlobal() {
     }
 
@@ -259,7 +267,7 @@ public final class WindowManagerGlobal {
                             new IWindowSessionCallback.Stub() {
                                 @Override
                                 public void onAnimatorScaleChanged(float scale) {
-                                    ValueAnimator.setDurationScale(scale);
+                                    WindowManagerGlobal.getInstance().onAnimatorScaleChanged(scale);
                                 }
                             });
                 } catch (RemoteException e) {
@@ -1144,6 +1152,60 @@ public final class WindowManagerGlobal {
             // If the view has been attached, we should make sure the override type matches the
             // existing one. The window type can't be changed after the view was added.
             return fallbackWindowType == params.type;
+        }
+    }
+
+    /**
+     * Notifies the global window manager that a view root's preference for whether animations
+     * should be disabled has changed.
+     *
+     * Animations will be disabled for the process if, and only if, all view roots for this process
+     * want animations to be disabled. Otherwise, animations will be enabled to the system-global
+     * value.
+     */
+    public void onAnimationDisableRequestChangedForViewRoot() {
+        synchronized (mLock) {
+            if (mViewAnimationDisableRequestsListener != null) {
+                mViewAnimationDisableRequestsListener.accept(getWindowViews());
+                return;
+            }
+
+            mViewAnimationDisableRequestsListener = (views) -> {
+                int numViewsRequestingAnimationsDisabled = 0;
+                for (int i = 0; i < views.size(); i++) {
+                    final var root = views.get(i).getViewRootImpl();
+                    if (root != null && root.isDisablingViewAnimationsRequested()) {
+                        numViewsRequestingAnimationsDisabled++;
+                    }
+                }
+                final boolean shouldDisableAnimations =
+                        numViewsRequestingAnimationsDisabled == views.size();
+                synchronized (mLock) {
+                    if (numViewsRequestingAnimationsDisabled == 0) {
+                        // No views are now requesting animations disabled. Remove the listener.
+                        removeWindowViewsListener(mViewAnimationDisableRequestsListener);
+                        mViewAnimationDisableRequestsListener = null;
+                    }
+                    if (shouldDisableAnimations == mIsViewAnimationsDisabled) {
+                        return;
+                    }
+                    mIsViewAnimationsDisabled = shouldDisableAnimations;
+                    ValueAnimator.setDurationScale(
+                            shouldDisableAnimations ? 0.0f
+                                    : mValueAnimatorDurationScaleWithoutOverride);
+                }
+            };
+
+            addWindowViewsListener(Runnable::run, mViewAnimationDisableRequestsListener);
+        }
+    }
+
+    private void onAnimatorScaleChanged(float scale) {
+        synchronized (mLock) {
+            mValueAnimatorDurationScaleWithoutOverride = scale;
+            if (!mIsViewAnimationsDisabled) {
+                ValueAnimator.setDurationScale(scale);
+            }
         }
     }
 }

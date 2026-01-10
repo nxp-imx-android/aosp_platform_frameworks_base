@@ -1143,6 +1143,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
                 mAttrs.packageName, s.mUid);
         updateGlobalScale();
         updateClientHardwareRendererOutputState(null, mDisplayContent);
+        updateClientRenderingLimitationsState(null, mDisplayContent);
 
         // Make sure we initial all fields before adding to parentWindow, to prevent exception
         // during onDisplayChanged.
@@ -1518,6 +1519,23 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         }
     }
 
+    private void updateClientRenderingLimitationsState(DisplayContent oldDisplay,
+            DisplayContent newDisplay) {
+        final boolean oldState =
+                oldDisplay != null && oldDisplay.areClientRenderingLimitationsEnabled();
+        final boolean newState =
+                newDisplay != null && newDisplay.areClientRenderingLimitationsEnabled();
+        if (oldState == newState) {
+            return;
+        }
+        var transaction = mWmService.mTransactionFactory.get();
+        try {
+            mClient.requestViewAnimationsDisabled(newState);
+        } catch (RemoteException e) {
+        }
+        transaction.apply();
+    }
+
     @Override
     void onDisplayChanged(DisplayContent dc) {
         if (mDisplayContent != null && dc != mDisplayContent) {
@@ -1545,6 +1563,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             }
         }
         updateClientHardwareRendererOutputState(mDisplayContent, dc);
+        updateClientRenderingLimitationsState(mDisplayContent, dc);
         super.onDisplayChanged(dc);
         // Window was not laid out for this display yet, so make sure mLayoutSeq does not match.
         if (dc != null && mInputWindowHandle.getDisplayId() != dc.getDisplayId()) {
