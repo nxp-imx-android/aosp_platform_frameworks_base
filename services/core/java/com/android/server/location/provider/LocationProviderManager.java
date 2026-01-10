@@ -48,7 +48,6 @@ import static com.android.server.location.eventlog.LocationEventLog.EVENT_LOG;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 
-import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.Nullable;
 import android.annotation.SuppressLint;
@@ -1690,12 +1689,7 @@ public class LocationProviderManager extends
     /**
      * Provides the optional {@link LocationFudgerCache} for coarsening based on population density.
      */
-    @FlaggedApi(Flags.FLAG_DENSITY_BASED_COARSE_LOCATIONS)
     public void setLocationFudgerCache(LocationFudgerCache cache) {
-        if (!Flags.densityBasedCoarseLocations()) {
-            return;
-        }
-
         mLocationFudger.setLocationFudgerCache(cache);
     }
 
