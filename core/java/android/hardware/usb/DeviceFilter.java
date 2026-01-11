@@ -42,6 +42,9 @@ import java.util.Objects;
 public class DeviceFilter {
     private static final String TAG = DeviceFilter.class.getSimpleName();
 
+    // Name of tag used for serialization and deserialization.
+    public static final String XML_ROOT_NAME = "usb-device";
+
     // USB Vendor ID (or -1 for unspecified)
     public final int mVendorId;
     // USB Product ID (or -1 for unspecified)
@@ -157,7 +160,7 @@ public class DeviceFilter {
     }
 
     public void write(XmlSerializer serializer) throws IOException {
-        serializer.startTag(null, "usb-device");
+        serializer.startTag(null, XML_ROOT_NAME);
         if (mVendorId != -1) {
             serializer.attribute(null, "vendor-id", Integer.toString(mVendorId));
         }
@@ -185,7 +188,7 @@ public class DeviceFilter {
         if (mInterfaceName != null) {
             serializer.attribute(null, "interface-name", mInterfaceName);
         }
-        serializer.endTag(null, "usb-device");
+        serializer.endTag(null, XML_ROOT_NAME);
     }
 
     private boolean matches(int usbClass, int subclass, int protocol) {

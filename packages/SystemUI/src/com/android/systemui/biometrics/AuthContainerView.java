@@ -57,12 +57,14 @@ import android.widget.LinearLayout;
 import android.window.OnBackInvokedCallback;
 import android.window.OnBackInvokedDispatcher;
 
+import androidx.compose.ui.platform.ComposeView;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
 import com.android.app.animation.Interpolators;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.jank.InteractionJankMonitor;
 import com.android.internal.widget.LockPatternUtils;
+import com.android.systemui.Flags;
 import com.android.systemui.biometrics.AuthController.ScaleFactorProvider;
 import com.android.systemui.biometrics.domain.interactor.PromptSelectorInteractor;
 import com.android.systemui.biometrics.plugins.AuthContextPlugins;
@@ -73,6 +75,7 @@ import com.android.systemui.biometrics.shared.model.PromptKind;
 import com.android.systemui.biometrics.ui.CredentialView;
 import com.android.systemui.biometrics.ui.binder.BiometricViewBinder;
 import com.android.systemui.biometrics.ui.binder.BiometricViewSizeBinder;
+import com.android.systemui.biometrics.ui.binder.CredentialViewBinder;
 import com.android.systemui.biometrics.ui.binder.Spaghetti;
 import com.android.systemui.biometrics.ui.viewmodel.CredentialViewModel;
 import com.android.systemui.biometrics.ui.viewmodel.PromptFallbackViewModel;
@@ -147,7 +150,7 @@ public class AuthContainerView extends LinearLayout
     // TODO(b/287311775): these should be migrated out once ready
     private final @NonNull Provider<PromptSelectorInteractor> mPromptSelectorInteractorProvider;
     // TODO(b/287311775): these should be migrated out of the view
-    private final Provider<CredentialViewModel> mCredentialViewModelProvider;
+    private final CredentialViewModel.Factory mCredentialViewModelFactory;
     private final PromptViewModel mPromptViewModel;
 
     @VisibleForTesting final BiometricCallback mBiometricCallback;
@@ -315,7 +318,7 @@ public class AuthContainerView extends LinearLayout
             @NonNull InteractionJankMonitor jankMonitor,
             @NonNull Provider<PromptSelectorInteractor> promptSelectorInteractorProvider,
             @NonNull PromptViewModel promptViewModel,
-            @NonNull Provider<CredentialViewModel> credentialViewModelProvider,
+            @NonNull CredentialViewModel.Factory credentialViewModelFactory,
             @NonNull @Background DelayableExecutor bgExecutor,
             @NonNull VibratorHelper vibratorHelper,
             @NonNull MSDLPlayer msdlPlayer,
@@ -378,7 +381,7 @@ public class AuthContainerView extends LinearLayout
         mPanelView = mLayout.findViewById(R.id.panel);
         mPanelController = new AuthPanelController(mContext, mPanelView);
         mInteractionJankMonitor = jankMonitor;
-        mCredentialViewModelProvider = credentialViewModelProvider;
+        mCredentialViewModelFactory = credentialViewModelFactory;
 
         showPrompt(promptViewModel, vibratorHelper);
 
@@ -435,27 +438,36 @@ public class AuthContainerView extends LinearLayout
      * @param animatePanel if the credential view needs to own the panel expansion animation
      */
     private void addCredentialView(boolean animatePanel, boolean animateContents) {
-        final LayoutInflater factory = LayoutInflater.from(mContext);
-
-        PromptKind credentialType = Utils.getCredentialType(mLockPatternUtils, mEffectiveUserId);
-        final int layoutResourceId;
-        if (credentialType instanceof PromptKind.Pattern) {
-            layoutResourceId = R.layout.auth_credential_pattern_view;
-        } else if (credentialType instanceof PromptKind.Pin) {
-            layoutResourceId = R.layout.auth_credential_pin_view;
-        } else if (credentialType instanceof PromptKind.Password) {
-            layoutResourceId = R.layout.auth_credential_password_view;
+        if (Flags.largeScreenBp()) {
+            ComposeView credentialView = mLayout.findViewById(R.id.compose_credential_view);
+            mCredentialView = credentialView;
+            CredentialViewBinder.bindCompose(credentialView, mCredentialViewModelFactory,
+                    this, mBiometricCallback);
         } else {
-            throw new IllegalStateException("Unknown credential type: " + credentialType);
+            final LayoutInflater factory = LayoutInflater.from(mContext);
+
+            PromptKind credentialType = Utils.getCredentialType(mLockPatternUtils,
+                    mEffectiveUserId);
+            final int layoutResourceId;
+            if (credentialType instanceof PromptKind.Pattern) {
+                layoutResourceId = R.layout.auth_credential_pattern_view;
+            } else if (credentialType instanceof PromptKind.Pin) {
+                layoutResourceId = R.layout.auth_credential_pin_view;
+            } else if (credentialType instanceof PromptKind.Password) {
+                layoutResourceId = R.layout.auth_credential_password_view;
+            } else {
+                throw new IllegalStateException("Unknown credential type: " + credentialType);
+            }
+            // TODO(b/288175645): Once AuthContainerView is removed, set 0dp in credential view xml
+            //  files with the corresponding left/right or top/bottom constraints being set to
+            //  "parent".
+            final FrameLayout credentialView = mLayout.findViewById(R.id.credential_view);
+            mCredentialView = factory.inflate(layoutResourceId, credentialView, false);
+            final CredentialViewModel vm = mCredentialViewModelFactory.create();
+            ((CredentialView) mCredentialView).init(vm, this, mPanelController, false,
+                    mBiometricCallback, mAuthContextPlugins);
+            credentialView.addView(mCredentialView);
         }
-        // TODO(b/288175645): Once AuthContainerView is removed, set 0dp in credential view xml
-        //  files with the corresponding left/right or top/bottom constraints being set to "parent".
-        final FrameLayout credentialView = mLayout.findViewById(R.id.credential_view);
-        mCredentialView = factory.inflate(layoutResourceId, credentialView, false);
-        final CredentialViewModel vm = mCredentialViewModelProvider.get();
-        ((CredentialView) mCredentialView).init(vm, this, mPanelController, false,
-                mBiometricCallback, mAuthContextPlugins);
-        credentialView.addView(mCredentialView);
     }
 
     /** Removes the credential view from the biometric prompt */

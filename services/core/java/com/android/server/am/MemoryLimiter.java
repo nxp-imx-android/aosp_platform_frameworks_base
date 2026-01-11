@@ -21,12 +21,17 @@ import static android.os.Process.INVALID_UID;
 import static android.os.Process.FIRST_APPLICATION_UID;
 import static android.text.TextUtils.formatSimple;
 
+import static com.android.internal.util.Preconditions.checkArgumentInRange;
+import static com.android.internal.util.Preconditions.checkArgumentNonNegative;
+
 import android.annotation.Nullable;
 import android.app.ActivityManager;
 import android.app.ActivityManager.ProcessState;
 import android.os.Handler;
 import android.os.Message;
 import android.os.Process;
+import android.os.ProfilingServiceHelper;
+import android.os.ProfilingTrigger;
 import android.os.Trace;
 import android.util.Slog;
 
@@ -34,10 +39,21 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.os.BackgroundThread;
 import com.android.internal.util.MemInfoReader;
+import com.android.server.am.memorylimiter.config.MemoryLimiterConfig;
+import com.android.server.am.memorylimiter.config.XmlParser;
 import com.android.tools.r8.keepanno.annotations.UsedByNative;
 
+import org.xmlpull.v1.XmlPullParserException;
+
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.util.Objects;
+
+import javax.xml.datatype.DatatypeConfigurationException;
 
 /**
  * This class monitors the amount of memory used by application processes.  Debug data is
@@ -83,6 +99,40 @@ class MemoryLimiter implements AutoCloseable {
             default -> "unexpected";
         };
     }
+
+    /**
+     * A configuration object.  The object contains the configuration parameters (memory assigned
+     * to the visible and notVisible proc states as well as a string that identifies the source of
+     * the parameters.
+     * Version zero is reserved for the "no limits" case, when default limits are disabled.
+     */
+    record Configuration(String source, int version, int visible, int notVisible) {
+        Configuration {
+            checkArgumentNonNegative(version, "version must be non-negative");
+            checkArgumentInRange(visible, 1, 100, "visible");
+            checkArgumentInRange(notVisible, 1, 100, "notVisible");
+        }
+
+        @Override
+        public String toString() {
+            return formatSimple("(%s, %d, %d, %d)", source, version, visible, notVisible);
+        }
+    }
+
+    /**
+     * The default configuration limits visible processes to 50% and non-visible processes to 25%
+     * of available memory.
+     */
+    @VisibleForTesting
+    static final Configuration sDefaultConfig =
+            Flags.memoryLimiterDefaultAppLimits()
+            ? new Configuration("default", 1, 50, 25)
+            : new Configuration("disabled", 0, 100, 100);
+
+    /**
+     * The location of the option configuration file.
+     */
+    static final String CONFIG_PATH = "/vendor/etc/memory-limiter-config.xml";
 
     /**
      * A controller specializes the behavior of an individual MemoryLimiter.
@@ -201,7 +251,7 @@ class MemoryLimiter implements AutoCloseable {
          * In the constructor, create the native peer and the message queue that will handle all
          * requests directed to the native layer.
          */
-        ControllerEnabled() {
+        ControllerEnabled(@Nullable String configFile) {
             mQueue = new Handler(BackgroundThread.getHandler().getLooper()) {
                     // Toggles to false once the Controller is closed.
                     private boolean mOpen = true;
@@ -255,17 +305,33 @@ class MemoryLimiter implements AutoCloseable {
                     }
                 };
 
-            if (Flags.memoryLimiterDefaultAppLimits()) {
-                MemInfoReader memInfo = new MemInfoReader();
-                memInfo.readMemInfo();
-                long vmem = memInfo.getTotalSize();
-                // Visible apps get 50% of memory.  Others get 25% of memory.
-                mMemoryVisible = vmem / 2;
-                mMemoryNotVisible = vmem / 4;
-                final long meg = 1024 * 1024;
+            MemInfoReader memInfo = new MemInfoReader();
+            memInfo.readMemInfo();
+            long vmem = memInfo.getTotalSize();
+
+            // Note that getConfiguration() accepts a null input.
+            Configuration cfg = getConfiguration(configFile);
+            mMemoryVisible = memLimit(vmem, cfg.visible);
+            mMemoryNotVisible = memLimit(vmem, cfg.notVisible);
+        }
+
+        /**
+         * The no-argument default tries to pick its configuration from the vendor partition.
+         */
+        ControllerEnabled() {
+            this(CONFIG_PATH);
+        }
+
+        // A helper function that returns the correct memory limit given a total memory size and a
+        // percentage.  If the percentage is 100, then MAX_MEMORY is returned.  A non-positive
+        // percentage should not be seen but if it is, the function returns zero.
+        private static long memLimit(long total, int percentage) {
+            if (percentage >= 100) {
+                return MAX_MEMORY;
+            } else if (percentage <= 0) {
+                return 0;
             } else {
-                mMemoryVisible = MAX_MEMORY;
-                mMemoryNotVisible = MAX_MEMORY;
+                return (percentage * total) / 100;
             }
         }
 
@@ -317,6 +383,30 @@ class MemoryLimiter implements AutoCloseable {
         public void onLimitExceeded(int pid, int uid, int limit, @Nullable String pkg) {
             Slog.i(TAG, formatSimple("limits exceeded: pid=%d uid=%d limit=%s pkg=%s",
                                 pid, uid, limitTypeToString(limit), pkg));
+            if (pkg == null) {
+                // A null package cannot be reported.
+                return;
+            }
+
+            if (!Flags.memoryLimiterTrigger()) {
+                // The feature is disabled locally.
+                return;
+            }
+
+            if (!android.os.profiling.Flags.systemTriggeredProfilingNew()
+                    || !android.os.profiling.anomaly.flags.Flags.anomalyDetectorCore()) {
+                // Profiling is disabled globally.
+                return;
+            }
+
+            try {
+                ProfilingServiceHelper helper = ProfilingServiceHelper.getInstance();
+                helper.onProfilingTriggerOccurred(uid, pkg, ProfilingTrigger.TRIGGER_TYPE_ANOMALY);
+            } catch (IllegalStateException e) {
+                // Log the exception but otherwise discard it.  A failure to generate a profile is
+                // not fatal.
+                Slog.w(TAG, e.getMessage());
+            }
         }
 
         @Override
@@ -345,13 +435,56 @@ class MemoryLimiter implements AutoCloseable {
     }
 
     /**
+     * Fetch the configuration.  If the file is null or the file does not exist, return the
+     * default.  Otherwise try to parse the file.  All errors are converted to an
+     * IllegalArgumentException.
+     */
+    @VisibleForTesting
+    static Configuration getConfiguration(@Nullable String file) {
+        if (file == null) {
+            return sDefaultConfig;
+        }
+        try (InputStream str = new BufferedInputStream(new FileInputStream(file))) {
+            MemoryLimiterConfig cfg = XmlParser.read(str);
+            // The following conditionals test that the required fields are present.  The parser
+            // only verifies that the xml is well-formed, not that it conforms to the xsd.
+            if (cfg == null) {
+                throw new IllegalArgumentException("bad config: no MemoryLimiterConfig");
+            } else if (cfg.getVersion() == null) {
+                throw new IllegalArgumentException("bad config: no version attribute");
+            } else if (cfg.getVisible() == null) {
+                throw new IllegalArgumentException("bad config: no Visible attribute");
+            } else if (cfg.getNotVisible() == null) {
+                throw new IllegalArgumentException("bad config: no NotVisible attribute");
+            }
+            // Most values are checked when the Configuration is constructed.  As a special case,
+            // though, the version must be positive if it comes from a configuration file.
+            if (cfg.getVersion().intValue() <= 0) {
+                throw new IllegalArgumentException("bad config: invalid version");
+            }
+            return new Configuration(file, cfg.getVersion().intValue(),
+                    cfg.getVisible().intValue(), cfg.getNotVisible().intValue());
+        } catch (FileNotFoundException e) {
+            // It is not an error if the file does not exist.  Silently return the default.
+            return sDefaultConfig;
+        } catch (IOException e) {
+            Slog.e(TAG, "I/O error: " + e);
+            throw new IllegalArgumentException("bad config: " + file, e);
+        } catch (XmlPullParserException | DatatypeConfigurationException e) {
+            Slog.e(TAG, "XML error: " + e);
+            throw new IllegalArgumentException("bad config: " + file, e);
+        }
+    }
+
+    /**
      * The controller for this processes created from this limiter.
      */
     private final Controller mController;
 
     /**
      * Initialize the native layer and any maps.  This eventually makes a native call and
-     * therefore cannot be invoked before the native libraries are loaded.
+     * therefore cannot be invoked before the native libraries are loaded.  Unit tests call this
+     * directly to supply specialized controllers.
      */
     @VisibleForTesting
     MemoryLimiter(Controller controller) {

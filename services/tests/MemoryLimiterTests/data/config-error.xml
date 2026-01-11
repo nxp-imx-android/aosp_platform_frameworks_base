@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<MemoryLimiterConfig>
+  <version>1</version>
+  <badValue>45</badValue>
+  <notVisible>30</notVisible>
+</MemoryLimiterConfig>
