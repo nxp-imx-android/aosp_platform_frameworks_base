@@ -13032,6 +13032,27 @@ public final class Settings {
         public static final String NEARBY_SHARING_COMPONENT = "nearby_sharing_component";
 
         /**
+         * Current provider of the component that manages the gesture lifecycle while the share
+         * sheet is active.
+         * Default value in @string/config_defaultTapEventServiceComponent.
+         * No VALIDATOR as this setting will not be backed up.
+         * @hide
+         */
+        @Readable
+        public static final String TAP_EVENT_SERVICE_COMPONENT = "tap_event_service_component";
+
+        /**
+         * Current provider of the component that receives the finalized intent after a successful
+         * tap is detected.
+         * Default value in @string/config_defaultTapShareFulfillmentActivityComponent.
+         * No VALIDATOR as this setting will not be backed up.
+         * @hide
+         */
+        @Readable
+        public static final String TAP_SHARE_FULFILLMENT_ACTIVITY_COMPONENT =
+                "tap_share_fulfillment_activity_component";
+
+        /**
          * Nearby Sharing Slice URI for the SliceProvider to
          * read Nearby Sharing scan results and then draw the UI.
          * @hide
