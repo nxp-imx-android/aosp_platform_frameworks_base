@@ -34,6 +34,7 @@ import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.animation.addListener
 import androidx.lifecycle.lifecycleScope
 import com.android.app.tracing.coroutines.launchTraced as launch
+import com.android.systemui.Flags
 import com.android.systemui.biometrics.Utils
 import com.android.systemui.biometrics.domain.interactor.BiometricPromptView
 import com.android.systemui.biometrics.ui.BiometricPromptLayoutState
@@ -96,7 +97,7 @@ object BiometricViewSizeBinder {
         panelView.outlineProvider =
             object : ViewOutlineProvider() {
                 override fun getOutline(view: View, outline: Outline) {
-                    if (currentView == BiometricPromptView.CREDENTIAL) {
+                    if (!Flags.largeScreenBp() && currentView == BiometricPromptView.CREDENTIAL) {
                         outline.setRect(0, 0, view.width, view.height)
                         return
                     }
@@ -216,7 +217,7 @@ object BiometricViewSizeBinder {
                     viewsToHideWhenSmall.forEach { view -> view.showContentOrHide(isSmall) }
 
                     // Handle fullscreen credential
-                    if (isCredential) {
+                    if (!Flags.largeScreenBp() && isCredential) {
                         nextConstraintSet.constrainMaxWidth(R.id.panel, 0)
                         nextConstraintSet.setGuidelineBegin(R.id.leftGuideline, 0)
                         nextConstraintSet.setGuidelineBegin(R.id.topGuideline, 0)
@@ -224,7 +225,7 @@ object BiometricViewSizeBinder {
                     }
 
                     // Handle fallback max width
-                    if (isFallback) {
+                    if (isFallback || (isCredential && Flags.largeScreenBp())) {
                         nextConstraintSet.constrainMaxWidth(
                             R.id.panel,
                             view.resources.getDimensionPixelSize(
@@ -235,7 +236,11 @@ object BiometricViewSizeBinder {
 
                     // Handle current active view
                     nextConstraintSet.setVisibility(
-                        R.id.credential_view,
+                        if (Flags.largeScreenBp()) {
+                            R.id.compose_credential_view
+                        } else {
+                            R.id.credential_view
+                        },
                         if (isCredential) View.VISIBLE else View.GONE,
                     )
                     nextConstraintSet.setVisibility(
