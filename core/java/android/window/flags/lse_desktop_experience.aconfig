@@ -718,6 +718,14 @@ flag {
 }
 
 flag {
+    name: "enable_fullscreen_in_new_task_preference"
+    namespace: "lse_desktop_experience"
+    description: "Enables the ability for an activity to specify if it should be kept fullscreen /n"
+                 "when launching in a new task."
+    bug: "473009156"
+}
+
+flag {
     name: "enable_fullscreen_window_controls"
     namespace: "lse_desktop_experience"
     description: "Enables fullscreen window app header."
