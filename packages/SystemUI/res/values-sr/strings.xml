@@ -46,6 +46,10 @@
     <string name="usb_accessory_confirm_prompt" msgid="5728408382798643421">"Желите ли да отворите апликацију <xliff:g id="APPLICATION">%1$s</xliff:g> да бисте користили уређај <xliff:g id="USB_ACCESSORY">%2$s</xliff:g>?"</string>
     <string name="usb_accessory_uri_prompt" msgid="6756649383432542382">"Инсталиране апликације не функционишу са овим USB помоћним уређајем. Сазнајте више о њему на адреси <xliff:g id="URL">%1$s</xliff:g>"</string>
     <string name="title_usb_accessory" msgid="1236358027511638648">"USB помоћни уређај"</string>
+    <!-- no translation found for usb_device_dialog_allow_only_this_time_button (3653881633944232491) -->
+    <skip />
+    <!-- no translation found for usb_device_dialog_cancel_button (9050554648474787233) -->
+    <skip />
     <string name="label_view" msgid="6815442985276363364">"Прикажи"</string>
     <string name="always_use_device" msgid="210535878779644679">"Увек отварај апликацију <xliff:g id="APPLICATION">%1$s</xliff:g> када је уређај <xliff:g id="USB_DEVICE">%2$s</xliff:g> повезан"</string>
     <string name="always_use_accessory" msgid="1977225429341838444">"Увек отварај апликацију <xliff:g id="APPLICATION">%1$s</xliff:g> када је уређај <xliff:g id="USB_ACCESSORY">%2$s</xliff:g> повезан"</string>
@@ -91,10 +95,8 @@
     <string name="screenshot_failed_to_save_text" msgid="7232739948999195960">"Чување снимка екрана није успело"</string>
     <string name="screenshot_failed_to_capture_text" msgid="7818288545874407451">"Апликација или организација не дозвољавају прављење снимака екрана"</string>
     <string name="screenshot_blocked_by_admin" msgid="5486757604822795797">"ИТ администратор блокира прављење снимака екрана"</string>
-    <!-- no translation found for screenshot_copy_label (3551237076438128722) -->
-    <skip />
-    <!-- no translation found for screenshot_copy_description (2890150686381938858) -->
-    <skip />
+    <string name="screenshot_copy_label" msgid="3551237076438128722">"Копирај"</string>
+    <string name="screenshot_copy_description" msgid="2890150686381938858">"Дугме за копирање снимка екрана у привремену меморију"</string>
     <string name="screenshot_edit_label" msgid="8754981973544133050">"Измени"</string>
     <string name="screenshot_edit_description" msgid="7802378587672433507">"Дугме за измену снимка екрана"</string>
     <string name="screenshot_share_label" msgid="1653061117238861559">"Дели"</string>
@@ -189,6 +191,8 @@
     <string name="screen_share_entire_screen_sharing_title" msgid="9093580141248337998">"Делите цео екран"</string>
     <string name="screen_share_disclaimer_app_sharing" msgid="4191319837838590771">"Када делите апликацију, [APP NAME] види сав садржај који се приказује или пушта у њој. Зато пазите на лозинке, информације о плаћању, поруке, слике, аудио и видео садржај."</string>
     <string name="screen_share_disclaimer_full_screen_sharing" msgid="6445373139864031364">"Када делите цео екран, [APP NAME] види све што је на њему. Зато пазите на лозинке, информације о плаћању, поруке, слике, аудио и видео садржај."</string>
+    <!-- no translation found for screen_share_a11y_announcement (8938007210094494367) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Направи снимак екрана прозора апликације"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Сними прозор апликације"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Направи снимак екрана изабране области"</string>
@@ -390,7 +394,8 @@
     <string name="accessibility_clear_all" msgid="970525598287244592">"Обриши сва обавештења."</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"Обавештења"</string>
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Помоћник"</string>
-    <string name="accessibility_status_bar_input_method_indicator" msgid="4316411266975554038">"Метод уноса"</string>
+    <!-- no translation found for accessibility_status_bar_input_method_indicator (4911669064186093506) -->
+    <skip />
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"и још <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{Унутра је још # обавештење.}one{Унутра је још # обавештење.}few{Унутра су још # обавештења.}other{Унутра је још # обавештења.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"Екран је закључан у хоризонталном положају."</string>
@@ -1795,62 +1800,33 @@
     <string name="location_button_text_use_precise_location" msgid="3499475231656390476">"Користи прецизну локацију"</string>
     <string name="location_button_text_near_precise_location" msgid="3607275724182981412">"У близини прецизне локације"</string>
     <string name="location_button_text_precise_location" msgid="4441259889842542799">"Прецизна локација"</string>
-    <!-- no translation found for privacy_chip_use_string (979159484631969073) -->
-    <skip />
-    <!-- no translation found for privacy_chip_use_string_with_app (6807216002072346877) -->
-    <skip />
-    <!-- no translation found for privacy_chip_camera_and_mic_text (6254449489859255607) -->
-    <skip />
-    <!-- no translation found for av_panel_title (455230832870768515) -->
-    <skip />
-    <!-- no translation found for sensor_activity_header (2145727448786698035) -->
-    <skip />
-    <!-- no translation found for sensor_activity_see_all_access_button (8005330122289549048) -->
-    <skip />
-    <!-- no translation found for sensor_activity_camera_label (4260675418606211259) -->
-    <skip />
-    <!-- no translation found for sensor_activity_microphone_label (4012136402420177411) -->
-    <skip />
-    <!-- no translation found for sensor_activity_manage_access_button (1275701280501357102) -->
-    <skip />
-    <!-- no translation found for sensor_activity_close_app_button (6907314738150753330) -->
-    <skip />
-    <!-- no translation found for sensor_activity_back_button_cd (6894532284650291222) -->
-    <skip />
-    <!-- no translation found for privacy_chip_apps_using_sensor_suffix (527247786536767096) -->
-    <skip />
-    <!-- no translation found for privacy_chip_camera_in_use (5163494654848590528) -->
-    <skip />
-    <!-- no translation found for privacy_chip_mic_in_use (1586091297556363367) -->
-    <skip />
-    <!-- no translation found for privacy_chip_camera_mic_in_use (5179267787210197484) -->
-    <skip />
-    <!-- no translation found for av_camera_portrait_touch_up (5191856296212427203) -->
-    <skip />
-    <!-- no translation found for av_mic_label (5427348054144789879) -->
-    <skip />
-    <!-- no translation found for av_camera_label (7719772172590702343) -->
-    <skip />
-    <!-- no translation found for av_camera_blur_drill_in_title (2250600375798981511) -->
-    <skip />
-    <!-- no translation found for av_camera_blur_off (3170334995799202022) -->
-    <skip />
-    <!-- no translation found for av_camera_blur_light (5666055368940059418) -->
-    <skip />
-    <!-- no translation found for av_camera_blur_full (3276351992811619332) -->
-    <skip />
-    <!-- no translation found for av_camera_improve_lighting (1540549414296669133) -->
-    <skip />
-    <!-- no translation found for av_camera_framing (5108462267843042492) -->
-    <skip />
-    <!-- no translation found for av_studio_mic (2614843492629357766) -->
-    <skip />
-    <!-- no translation found for av_studio_look (621893522645557619) -->
-    <skip />
-    <!-- no translation found for av_studio_look_effects (4105109585851068415) -->
-    <skip />
-    <!-- no translation found for av_blur (405131343487260171) -->
-    <skip />
-    <!-- no translation found for av_live_captions (7819416886586903077) -->
-    <skip />
+    <string name="privacy_chip_use_string" msgid="979159484631969073">"<xliff:g id="SENSOR">%1$s</xliff:g> се користи"</string>
+    <string name="privacy_chip_use_string_with_app" msgid="6807216002072346877">"<xliff:g id="APP">%2$s</xliff:g> користи: <xliff:g id="SENSOR">%1$s</xliff:g>"</string>
+    <string name="privacy_chip_camera_and_mic_text" msgid="6254449489859255607">"Камера и микрофон"</string>
+    <string name="av_panel_title" msgid="455230832870768515">"Приватност"</string>
+    <string name="sensor_activity_header" msgid="2145727448786698035">"Погледајте апликације које активно користе ове дозволе или су их недавно користиле."</string>
+    <string name="sensor_activity_see_all_access_button" msgid="8005330122289549048">"Прикажи сав приступ"</string>
+    <string name="sensor_activity_camera_label" msgid="4260675418606211259">"Камера"</string>
+    <string name="sensor_activity_microphone_label" msgid="4012136402420177411">"Микрофон"</string>
+    <string name="sensor_activity_manage_access_button" msgid="1275701280501357102">"Управљај приступом"</string>
+    <string name="sensor_activity_close_app_button" msgid="6907314738150753330">"Затвори апликацију"</string>
+    <string name="sensor_activity_back_button_cd" msgid="6894532284650291222">"Назад"</string>
+    <string name="privacy_chip_apps_using_sensor_suffix" msgid="527247786536767096">"и још <xliff:g id="COUNT">%1$d</xliff:g>"</string>
+    <string name="privacy_chip_camera_in_use" msgid="5163494654848590528">"Камера се користи"</string>
+    <string name="privacy_chip_mic_in_use" msgid="1586091297556363367">"Микрофон се користи"</string>
+    <string name="privacy_chip_camera_mic_in_use" msgid="5179267787210197484">"Камера и микрофон се користе"</string>
+    <string name="av_camera_portrait_touch_up" msgid="5191856296212427203">"Дотеривање портрета"</string>
+    <string name="av_mic_label" msgid="5427348054144789879">"Микрофон"</string>
+    <string name="av_camera_label" msgid="7719772172590702343">"Камера"</string>
+    <string name="av_camera_blur_drill_in_title" msgid="2250600375798981511">"Замагљивање позадине"</string>
+    <string name="av_camera_blur_off" msgid="3170334995799202022">"Искључено"</string>
+    <string name="av_camera_blur_light" msgid="5666055368940059418">"Благо"</string>
+    <string name="av_camera_blur_full" msgid="3276351992811619332">"Потпуно"</string>
+    <string name="av_camera_improve_lighting" msgid="1540549414296669133">"Побољшано осветљење"</string>
+    <string name="av_camera_framing" msgid="5108462267843042492">"Уоквиривање камере"</string>
+    <string name="av_studio_mic" msgid="2614843492629357766">"Студијски микрофон"</string>
+    <string name="av_studio_look" msgid="621893522645557619">"Студијски изглед"</string>
+    <string name="av_studio_look_effects" msgid="4105109585851068415">"Ефеката: %d"</string>
+    <string name="av_blur" msgid="405131343487260171">"Замагли"</string>
+    <string name="av_live_captions" msgid="7819416886586903077">"Титл уживо"</string>
 </resources>

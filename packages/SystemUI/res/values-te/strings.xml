@@ -46,6 +46,10 @@
     <string name="usb_accessory_confirm_prompt" msgid="5728408382798643421">"<xliff:g id="USB_ACCESSORY">%2$s</xliff:g>ని హ్యాండిల్ చేయడానికి <xliff:g id="APPLICATION">%1$s</xliff:g>ని తెరవాలా?"</string>
     <string name="usb_accessory_uri_prompt" msgid="6756649383432542382">"ఈ USB ఉపకరణంతో ఇన్‌స్టాల్ చేయబడిన యాప్‌లు ఏవీ పని చేయవు. ఈ ఉపకరణం గురించి <xliff:g id="URL">%1$s</xliff:g>లో మరింత తెలుసుకోండి"</string>
     <string name="title_usb_accessory" msgid="1236358027511638648">"USB ఉపకరణం"</string>
+    <!-- no translation found for usb_device_dialog_allow_only_this_time_button (3653881633944232491) -->
+    <skip />
+    <!-- no translation found for usb_device_dialog_cancel_button (9050554648474787233) -->
+    <skip />
     <string name="label_view" msgid="6815442985276363364">"చూడండి"</string>
     <string name="always_use_device" msgid="210535878779644679">"<xliff:g id="USB_DEVICE">%2$s</xliff:g> కనెక్ట్ అయి ఉన్న ఎల్లప్పుడూ <xliff:g id="APPLICATION">%1$s</xliff:g>ని తెరవండి"</string>
     <string name="always_use_accessory" msgid="1977225429341838444">"<xliff:g id="USB_ACCESSORY">%2$s</xliff:g> కనెక్ట్ అయి ఉన్న ఎల్లప్పుడూ <xliff:g id="APPLICATION">%1$s</xliff:g>ని తెరవండి"</string>
@@ -79,7 +83,7 @@
     <string name="screenshot_saving_title" msgid="2298349784913287333">"స్క్రీన్‌షాట్‌ను సేవ్ చేస్తోంది…"</string>
     <string name="screenshot_saving_work_profile_title" msgid="5332829607308450880">"స్క్రీన్‌షాట్‌ను వర్క్ ప్రొఫైల్‌కు సేవ్ చేస్తోంది…"</string>
     <string name="screenshot_saving_private_profile" msgid="8934706048497093297">"స్క్రీన్‌షాట్‌ను ప్రైవేట్ ప్రొఫైల్‌కు సేవ్ చేస్తోంది"</string>
-    <string name="screenshot_saved_title" msgid="8893267638659083153">"స్క్రీన్‌షాట్ సేవ్ చేయబడింది"</string>
+    <string name="screenshot_saved_title" msgid="8893267638659083153">"స్క్రీన్‌షాట్ సేవ్ అయింది"</string>
     <string name="screenshot_failed_title" msgid="3259148215671936891">"స్క్రీన్‌షాట్‌ని సేవ్ చేయడం సాధ్యం కాలేదు"</string>
     <string name="screenshot_save_to" msgid="3294574417295882864">"దీనిలో సేవ్ అవుతుంది"</string>
     <string name="screenshot_select_folder" msgid="4770537414396025502">"ఫోల్డర్‌ను ఎంచుకోండి"</string>
@@ -136,7 +140,7 @@
     <string name="screenrecord_taps_label" msgid="1595690528298857649">"స్క్రీన్‌పై తాకే స్థానాలను చూపండి"</string>
     <string name="screenrecord_stop_label" msgid="72699670052087989">"ఆపివేయండి"</string>
     <string name="screenrecord_share_label" msgid="5025590804030086930">"షేర్ చేయండి"</string>
-    <string name="screenrecord_save_title" msgid="1886652605520893850">"స్క్రీన్ రికార్డింగ్ సేవ్ చేయబడింది"</string>
+    <string name="screenrecord_save_title" msgid="1886652605520893850">"స్క్రీన్ రికార్డింగ్ వీడియో సేవ్ అయింది"</string>
     <string name="screenrecord_save_text" msgid="3008973099800840163">"చూడటానికి ట్యాప్ చేయండి"</string>
     <string name="screenrecord_save_error" msgid="5862648532560118815">"స్క్రీన్ రికార్డింగ్‌ను సేవ్ చేయడంలో ఎర్రర్ ఏర్పడింది"</string>
     <string name="screenrecord_start_error" msgid="2200660692479682368">"స్క్రీన్ రికార్డింగ్ ప్రారంభించడంలో ఎర్రర్ ఏర్పడింది"</string>
@@ -154,10 +158,8 @@
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"సెల్ఫీ కెమెరాను చూపండి"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"టచ్‌లను చూడండి"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"రికార్డ్ చేయడానికి యాప్‌ను ఎంచుకోండి"</string>
-    <!-- no translation found for screen_record_settings (2377267679200139285) -->
-    <skip />
-    <!-- no translation found for screen_record_markup (5583986085046693669) -->
-    <skip />
+    <string name="screen_record_settings" msgid="2377267679200139285">"స్క్రీన్ రికార్డింగ్ సెట్టింగ్‌లు"</string>
+    <string name="screen_record_markup" msgid="5583986085046693669">"మార్కప్"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"వీడియో సేవ్ అయింది"</string>
     <string name="screen_record_video_deleted" msgid="30786214839944540">"వీడియో తొలగించబడింది"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"చర్య రద్దు చేయండి"</string>
@@ -170,8 +172,7 @@
     <string name="screen_record_pause" msgid="1715012292444967776">"పాజ్ చేయండి"</string>
     <string name="screen_record_mute" msgid="8111682249858638168">"మ్యూట్ చేయండి"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"అన్‌మ్యూట్ చేయండి"</string>
-    <!-- no translation found for screen_record_video_preview_elapsed_time_a11y_template (969599623785875798) -->
-    <skip />
+    <string name="screen_record_video_preview_elapsed_time_a11y_template" formatted="false" msgid="969599623785875798">"<xliff:g id="DURATION">%2$s</xliff:g>లో <xliff:g id="ELAPSED_TIME">%1$s</xliff:g>"</string>
     <string name="screen_capture_blocked_by_admin" msgid="1751756953683506644">"మీ IT అడ్మిన్ ద్వారా స్క్రీన్ క్యాప్చర్ బ్లాక్ చేయబడింది"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"ఫుల్-స్క్రీన్ తాలూకు స్క్రీన్‌షాట్ తీయండి"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"ఫుల్ స్క్రీన్‌ను రికార్డ్ చేయండి"</string>
@@ -187,6 +188,8 @@
     <string name="screen_share_entire_screen_sharing_title" msgid="9093580141248337998">"మొత్తం స్క్రీన్‌ను షేర్ చేయండి"</string>
     <string name="screen_share_disclaimer_app_sharing" msgid="4191319837838590771">"మీరు యాప్‌ను షేర్ చేసేటప్పుడు, సంబంధిత యాప్‌లో కనిపించేవి లేదా ప్లే అయ్యేవన్నీ [APP NAME]కు కనిపిస్తాయి. కాబట్టి పాస్‌వర్డ్‌లు, పేమెంట్ వివరాలు, మెసేజ్‌లు, ఫోటోలు, ఆడియో, వీడియో వంటి విషయాల్లో జాగ్రత్త వహించండి."</string>
     <string name="screen_share_disclaimer_full_screen_sharing" msgid="6445373139864031364">"మీ మొత్తం స్క్రీన్‌ను మీరు షేర్ చేసేటప్పుడు, మీ స్క్రీన్‌పై ఉన్నవన్నీ [APP NAME]కు కనిపిస్తాయి. కాబట్టి పాస్‌వర్డ్‌లు, పేమెంట్ వివరాలు, మెసేజ్‌లు, ఫోటోలు, ఆడియో, వీడియో వంటి విషయాల్లో జాగ్రత్త వహించండి."</string>
+    <!-- no translation found for screen_share_a11y_announcement (8938007210094494367) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"విండో స్క్రీన్‌షాట్‌ను తీయండి"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"విండోను రికార్డ్ చేయండి"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"ఎంచుకున్న ఏరియా తాలూకు స్క్రీన్‌షాట్‌ను తీయండి"</string>
@@ -230,7 +233,7 @@
     <string name="issuerecord_channel_description" msgid="6142326363431474632">"సమస్య సేకరణ సెషన్ కోసం కొనసాగుతోన్న నోటిఫికేషన్"</string>
     <string name="issuerecord_ongoing_screen_only" msgid="6248206059935015722">"సమస్యను రికార్డ్ చేస్తోంది"</string>
     <string name="issuerecord_share_label" msgid="3992657993619876199">"షేర్ చేయండి"</string>
-    <string name="issuerecord_save_title" msgid="4161043023696751591">"రికార్డింగ్ సంబంధిత సమస్య సేవ్ చేయబడింది"</string>
+    <string name="issuerecord_save_title" msgid="4161043023696751591">"సమస్య రికార్డింగ్ సేవ్ అయింది"</string>
     <string name="issuerecord_save_text" msgid="1205985304551521495">"చూడటానికి ట్యాప్ చేయండి"</string>
     <string name="issuerecord_save_error" msgid="6913040083446722726">"సమస్య రికార్డింగ్‌ను సేవ్ చేయడంలో ఎర్రర్ ఏర్పడింది"</string>
     <string name="issuerecord_start_error" msgid="3402782952722871190">"సమస్య రికార్డింగ్‌ను ప్రారంభించడంలో ఎర్రర్ ఏర్పడింది"</string>
@@ -388,7 +391,8 @@
     <string name="accessibility_clear_all" msgid="970525598287244592">"అన్ని నోటిఫికేషన్‌లను క్లియర్ చేయండి."</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"నోటిఫికేషన్‌లు"</string>
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Assistant"</string>
-    <string name="accessibility_status_bar_input_method_indicator" msgid="4316411266975554038">"ఇన్‌పుట్ విధానం"</string>
+    <!-- no translation found for accessibility_status_bar_input_method_indicator (4911669064186093506) -->
+    <skip />
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{లోపల మరో # నోటిఫికేషన్ ఉంది.}other{లోపల మరో # నోటిఫికేషన్‌లు ఉన్నాయి.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"స్క్రీన్ ల్యాండ్‌స్కేప్ దృగ్విన్యాసంలో లాక్ చేయబడుతుంది."</string>
@@ -938,8 +942,7 @@
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"న్యూస్ లెటర్‌లు, సిఫార్సు చేసిన మీడియా, మరెన్నో"</string>
     <string name="notification_onboarding_summaries_turn_on" msgid="3831339570984683297">"సెట్టింగ్‌లలో ఆన్ చేయండి"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"మీ సుదీర్ఘ సంభాషణలను ఇప్పుడు సమ్మరైజ్ చేసి, మీకు క్విక్ రీక్యాప్‌లను అందిస్తాయి"</string>
-    <!-- no translation found for notification_onboarding_summaries_message_with_apps (5320980333818238465) -->
-    <skip />
+    <string name="notification_onboarding_summaries_message_with_apps" msgid="5320980333818238465">"మీ డివైజ్, యాప్‌లు ఇప్పుడు మీకు క్విక్ రీక్యాప్‌లను అందించడానికి సుదీర్ఘ సంభాషణలను సారాంశీకరించగలవు"</string>
     <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"నోటిఫికేషన్ ఆర్గనైజర్, తక్కువ ప్రాధాన్యత గల నోటిఫికేషన్‌లను బండిల్ చేసి, మ్యూట్ చేస్తుంది. సెట్టింగ్‌లలో మరిన్ని కేటగిరీలను జోడించండి."</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# నోటిఫికేషన్}other{# నోటిఫికేషన్‌లు}}"</string>
     <string name="notification_bundle_header_joined_description" msgid="4517556837418088139">"<xliff:g id="NAME">%1$s</xliff:g>, <xliff:g id="NUM_NOTIFICATIONS">%2$s</xliff:g>"</string>

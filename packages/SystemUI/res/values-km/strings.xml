@@ -46,6 +46,10 @@
     <string name="usb_accessory_confirm_prompt" msgid="5728408382798643421">"បើក <xliff:g id="APPLICATION">%1$s</xliff:g> ដើម្បីគ្រប់គ្រង <xliff:g id="USB_ACCESSORY">%2$s</xliff:g> មែនទេ?"</string>
     <string name="usb_accessory_uri_prompt" msgid="6756649383432542382">"គ្មាន​កម្មវិធី​បាន​ដំឡើង​ដំណើរការ​ជា​មួយ​ឧបករណ៍​យូអេសប៊ី។ ស្វែងយល់​បន្ថែម​អំពី​ឧបករណ៍​នេះ​នៅ <xliff:g id="URL">%1$s</xliff:g>"</string>
     <string name="title_usb_accessory" msgid="1236358027511638648">"ឧបករណ៍​យូអេសប៊ី"</string>
+    <!-- no translation found for usb_device_dialog_allow_only_this_time_button (3653881633944232491) -->
+    <skip />
+    <!-- no translation found for usb_device_dialog_cancel_button (9050554648474787233) -->
+    <skip />
     <string name="label_view" msgid="6815442985276363364">"មើល"</string>
     <string name="always_use_device" msgid="210535878779644679">"បើក <xliff:g id="APPLICATION">%1$s</xliff:g> ជានិច្ចនៅពេលដែល <xliff:g id="USB_DEVICE">%2$s</xliff:g> ត្រូវបានភ្ជាប់"</string>
     <string name="always_use_accessory" msgid="1977225429341838444">"បើក <xliff:g id="APPLICATION">%1$s</xliff:g> ជានិច្ចនៅពេលដែល <xliff:g id="USB_ACCESSORY">%2$s</xliff:g> ត្រូវបានភ្ជាប់"</string>
@@ -91,10 +95,8 @@
     <string name="screenshot_failed_to_save_text" msgid="7232739948999195960">"មិនអាច​រក្សាទុករូបថត​អេក្រង់បានទេ"</string>
     <string name="screenshot_failed_to_capture_text" msgid="7818288545874407451">"ការថត​រូបអេក្រង់​មិនត្រូវ​បាន​អនុញ្ញាត​ដោយ​កម្មវិធី​នេះ ឬ​ស្ថាប័ន​របស់អ្នក"</string>
     <string name="screenshot_blocked_by_admin" msgid="5486757604822795797">"ការថតអេក្រង់ត្រូវបានទប់ស្កាត់ដោយអ្នកគ្រប់គ្រង​ផ្នែកព័ត៌មានវិទ្យារបស់អ្នក"</string>
-    <!-- no translation found for screenshot_copy_label (3551237076438128722) -->
-    <skip />
-    <!-- no translation found for screenshot_copy_description (2890150686381938858) -->
-    <skip />
+    <string name="screenshot_copy_label" msgid="3551237076438128722">"ចម្លង"</string>
+    <string name="screenshot_copy_description" msgid="2890150686381938858">"ប៊ូតុងចម្លងរូបថត​អេក្រង់ទៅឃ្លីបបត"</string>
     <string name="screenshot_edit_label" msgid="8754981973544133050">"កែ"</string>
     <string name="screenshot_edit_description" msgid="7802378587672433507">"ប៊ូតុងកែរូបថត​អេក្រង់"</string>
     <string name="screenshot_share_label" msgid="1653061117238861559">"ចែករំលែក"</string>
@@ -189,6 +191,8 @@
     <string name="screen_share_entire_screen_sharing_title" msgid="9093580141248337998">"បង្ហាញអេក្រង់​ទាំង​មូល"</string>
     <string name="screen_share_disclaimer_app_sharing" msgid="4191319837838590771">"ពេលអ្នកបង្ហាញកម្មវិធីណាមួយ [APP NAME] មើលឃើញអ្វីៗដែលបង្ហាញ ឬចាក់លើកម្មវិធីនោះ។ ដូច្នេះ សូមប្រុងប្រយ័ត្នចំពោះអ្វីៗ ដូចជាពាក្យសម្ងាត់ ព័ត៌មានទូទាត់ប្រាក់ សារ រូបថត ព្រមទាំងសំឡេង និងវីដេអូ។"</string>
     <string name="screen_share_disclaimer_full_screen_sharing" msgid="6445373139864031364">"ពេលអ្នកបង្ហាញអេក្រង់ទាំងមូលរបស់អ្នក [APP NAME] មើលឃើញអ្វីៗនៅលើអេក្រង់របស់អ្នក។ ដូច្នេះ សូមប្រុងប្រយ័ត្នចំពោះអ្វីៗ ដូចជាពាក្យសម្ងាត់ ព័ត៌មានទូទាត់ប្រាក់ សារ រូបថត ព្រមទាំងសំឡេង និងវីដេអូ។"</string>
+    <!-- no translation found for screen_share_a11y_announcement (8938007210094494367) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"ថតរូបអេក្រង់វិនដូ"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"ថត​វិនដូ"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"ថតរូបអេក្រង់នៃតំបន់ដែលបានជ្រើសរើស"</string>
@@ -390,7 +394,8 @@
     <string name="accessibility_clear_all" msgid="970525598287244592">"សម្អាត​ការ​ជូន​ដំណឹង​ទាំងអស់។"</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"ការ​ជូនដំណឹង"</string>
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"ជំនួយការ"</string>
-    <string name="accessibility_status_bar_input_method_indicator" msgid="4316411266975554038">"វិធីបញ្ចូល"</string>
+    <!-- no translation found for accessibility_status_bar_input_method_indicator (4911669064186093506) -->
+    <skip />
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{មានការជូនដំណឹង # ទៀតនៅខាងក្នុង។}other{មាន​ការ​ជូនដំណឹង # ទៀត​នៅ​ខាង​ក្នុង។}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"អេក្រង់​ជាប់​សោ​ក្នុង​ទិស​ផ្ដេក។"</string>

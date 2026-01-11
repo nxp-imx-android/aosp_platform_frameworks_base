@@ -46,6 +46,10 @@
     <string name="usb_accessory_confirm_prompt" msgid="5728408382798643421">"¿Abrir <xliff:g id="APPLICATION">%1$s</xliff:g> para usar <xliff:g id="USB_ACCESSORY">%2$s</xliff:g>?"</string>
     <string name="usb_accessory_uri_prompt" msgid="6756649383432542382">"Ninguna aplicación instalada funciona con este accesorio USB. Más información: <xliff:g id="URL">%1$s</xliff:g>"</string>
     <string name="title_usb_accessory" msgid="1236358027511638648">"Accesorio USB"</string>
+    <!-- no translation found for usb_device_dialog_allow_only_this_time_button (3653881633944232491) -->
+    <skip />
+    <!-- no translation found for usb_device_dialog_cancel_button (9050554648474787233) -->
+    <skip />
     <string name="label_view" msgid="6815442985276363364">"Ver"</string>
     <string name="always_use_device" msgid="210535878779644679">"Abrir siempre <xliff:g id="APPLICATION">%1$s</xliff:g> al conectar <xliff:g id="USB_DEVICE">%2$s</xliff:g>"</string>
     <string name="always_use_accessory" msgid="1977225429341838444">"Abrir siempre <xliff:g id="APPLICATION">%1$s</xliff:g> al conectar <xliff:g id="USB_ACCESSORY">%2$s</xliff:g>"</string>
@@ -91,10 +95,8 @@
     <string name="screenshot_failed_to_save_text" msgid="7232739948999195960">"No se puede guardar la captura de pantalla"</string>
     <string name="screenshot_failed_to_capture_text" msgid="7818288545874407451">"La aplicación o tu organización no permiten realizar capturas de pantalla"</string>
     <string name="screenshot_blocked_by_admin" msgid="5486757604822795797">"Tu administrador de TI ha bloqueado las capturas de pantalla"</string>
-    <!-- no translation found for screenshot_copy_label (3551237076438128722) -->
-    <skip />
-    <!-- no translation found for screenshot_copy_description (2890150686381938858) -->
-    <skip />
+    <string name="screenshot_copy_label" msgid="3551237076438128722">"Copiar"</string>
+    <string name="screenshot_copy_description" msgid="2890150686381938858">"Botón para copiar la captura de pantalla en el portapapeles"</string>
     <string name="screenshot_edit_label" msgid="8754981973544133050">"Editar"</string>
     <string name="screenshot_edit_description" msgid="7802378587672433507">"Botón Editar captura de pantalla"</string>
     <string name="screenshot_share_label" msgid="1653061117238861559">"Compartir"</string>
@@ -189,6 +191,8 @@
     <string name="screen_share_entire_screen_sharing_title" msgid="9093580141248337998">"Compartir toda la pantalla"</string>
     <string name="screen_share_disclaimer_app_sharing" msgid="4191319837838590771">"Cuando compartes una aplicación, [APP NAME] puede ver todo lo que se muestra o reproduce en ella. Debes tener cuidado con elementos como contraseñas, detalles de pagos, mensajes, fotos, audios y vídeos."</string>
     <string name="screen_share_disclaimer_full_screen_sharing" msgid="6445373139864031364">"Cuando compartes toda tu pantalla, [APP NAME] puede ver todo lo que hay en ella. Debes tener cuidado con elementos como contraseñas, detalles de pagos, mensajes, fotos, audios y vídeos."</string>
+    <!-- no translation found for screen_share_a11y_announcement (8938007210094494367) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Hacer captura de pantalla de la ventana"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Grabar ventana"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Hacer captura de pantalla del área seleccionada"</string>
@@ -390,7 +394,8 @@
     <string name="accessibility_clear_all" msgid="970525598287244592">"Borrar todas las notificaciones"</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"Notificaciones"</string>
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Asistente"</string>
-    <string name="accessibility_status_bar_input_method_indicator" msgid="4316411266975554038">"Método de introducción de texto"</string>
+    <!-- no translation found for accessibility_status_bar_input_method_indicator (4911669064186093506) -->
+    <skip />
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"<xliff:g id="NUMBER">%s</xliff:g> más"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{# notificación más en el grupo.}many{# notificaciones más en el grupo.}other{# notificaciones más en el grupo.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"La pantalla está bloqueada en modo horizontal."</string>

@@ -46,6 +46,10 @@
     <string name="usb_accessory_confirm_prompt" msgid="5728408382798643421">"<xliff:g id="USB_ACCESSORY">%2$s</xliff:g>ஐக் கையாள, <xliff:g id="APPLICATION">%1$s</xliff:g> பயன்பாட்டைத் திறக்கவா?"</string>
     <string name="usb_accessory_uri_prompt" msgid="6756649383432542382">"நிறுவிய ஆப்ஸ் எதுவும், USB துணைக்கருவியுடன் இயங்காது. <xliff:g id="URL">%1$s</xliff:g> இல் துணைக்கருவி குறித்து மேலும் அறிக"</string>
     <string name="title_usb_accessory" msgid="1236358027511638648">"USB துணைக்கருவி"</string>
+    <!-- no translation found for usb_device_dialog_allow_only_this_time_button (3653881633944232491) -->
+    <skip />
+    <!-- no translation found for usb_device_dialog_cancel_button (9050554648474787233) -->
+    <skip />
     <string name="label_view" msgid="6815442985276363364">"காட்சி"</string>
     <string name="always_use_device" msgid="210535878779644679">"<xliff:g id="USB_DEVICE">%2$s</xliff:g> இணைக்கப்பட்டிருக்கையில், <xliff:g id="APPLICATION">%1$s</xliff:g>ஐ எப்போதும் திற"</string>
     <string name="always_use_accessory" msgid="1977225429341838444">"<xliff:g id="USB_ACCESSORY">%2$s</xliff:g> இணைக்கப்பட்டிருக்கையில், <xliff:g id="APPLICATION">%1$s</xliff:g>ஐ எப்போதும் திற"</string>
@@ -91,10 +95,8 @@
     <string name="screenshot_failed_to_save_text" msgid="7232739948999195960">"ஸ்கிரீன்ஷாட்டைச் சேமிக்க முடியவில்லை"</string>
     <string name="screenshot_failed_to_capture_text" msgid="7818288545874407451">"ஸ்கிரீன் ஷாட்டுகளை எடுப்பதை, ஆப்ஸ் அல்லது உங்கள் நிறுவனம் அனுமதிக்கவில்லை"</string>
     <string name="screenshot_blocked_by_admin" msgid="5486757604822795797">"ஸ்கிரீன்ஷாட்கள் எடுப்பதை உங்கள் IT நிர்வாகி தடைசெய்துள்ளார்"</string>
-    <!-- no translation found for screenshot_copy_label (3551237076438128722) -->
-    <skip />
-    <!-- no translation found for screenshot_copy_description (2890150686381938858) -->
-    <skip />
+    <string name="screenshot_copy_label" msgid="3551237076438128722">"நகலெடு"</string>
+    <string name="screenshot_copy_description" msgid="2890150686381938858">"ஸ்கிரீன்ஷாட்டைக் கிளிப்போர்டுக்கு நகலெடுக்கும் பட்டன்"</string>
     <string name="screenshot_edit_label" msgid="8754981973544133050">"திருத்து"</string>
     <string name="screenshot_edit_description" msgid="7802378587672433507">"ஸ்கிரீன்ஷாட்டை எடிட் செய்வதற்கான பட்டன்"</string>
     <string name="screenshot_share_label" msgid="1653061117238861559">"பகிர்"</string>
@@ -189,6 +191,8 @@
     <string name="screen_share_entire_screen_sharing_title" msgid="9093580141248337998">"முழுத் திரையையும் பகிருங்கள்"</string>
     <string name="screen_share_disclaimer_app_sharing" msgid="4191319837838590771">"ஆப்ஸைப் பகிரும்போது, அந்த ஆப்ஸில் காட்டப்படும்/பிளே செய்யப்படும் அனைத்தும் [APP NAME] ஆப்ஸிற்குக் காட்டப்படும். கடவுச்சொற்கள், பேமெண்ட் விவரங்கள், மெசேஜ்கள், படங்கள், ஆடியோ, வீடியோ போன்றவை குறித்துக் கவனமாக இருங்கள்."</string>
     <string name="screen_share_disclaimer_full_screen_sharing" msgid="6445373139864031364">"உங்கள் முழுத்திரையையும் பகிரும்போது, திரையில் உள்ள அனைத்தும் [APP NAME] ஆப்ஸிற்குக் காட்டப்படும். கடவுச்சொற்கள், பேமெண்ட் விவரங்கள், மெசேஜ்கள், படங்கள், ஆடியோ, வீடியோ போன்றவை குறித்துக் கவனமாக இருங்கள்."</string>
+    <!-- no translation found for screen_share_a11y_announcement (8938007210094494367) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"சாளரத்தை ஸ்கிரீன்ஷாட் எடுக்கும்"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"சாளரத்தை ரெக்கார்டு செய்யும்"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"தேர்ந்தெடுக்கப்பட்ட பகுதியை ஸ்கிரீன்ஷாட் எடுக்கும்"</string>
@@ -390,7 +394,8 @@
     <string name="accessibility_clear_all" msgid="970525598287244592">"எல்லா அறிவிப்புகளையும் அழி."</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"அறிவிப்புகள்"</string>
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Assistant"</string>
-    <string name="accessibility_status_bar_input_method_indicator" msgid="4316411266975554038">"உள்ளீட்டு முறை"</string>
+    <!-- no translation found for accessibility_status_bar_input_method_indicator (4911669064186093506) -->
+    <skip />
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{குழுவில் மேலும் # அறிவிப்பு உள்ளது.}other{குழுவில் மேலும் # அறிவிப்புகள் உள்ளன.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"நிலத்தோற்ற திசையமைப்பில் திரைப் பூட்டப்பட்டுள்ளது."</string>

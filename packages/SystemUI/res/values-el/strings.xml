@@ -46,6 +46,10 @@
     <string name="usb_accessory_confirm_prompt" msgid="5728408382798643421">"Να ανοίγει η εφαρμογή <xliff:g id="APPLICATION">%1$s</xliff:g> για τη διαχείριση του αξεσουάρ <xliff:g id="USB_ACCESSORY">%2$s</xliff:g>;"</string>
     <string name="usb_accessory_uri_prompt" msgid="6756649383432542382">"Δεν έχετε εφαρμογή που να συνεργάζεται με το αξεσουάρ USB. Για περισσότερα: <xliff:g id="URL">%1$s</xliff:g>"</string>
     <string name="title_usb_accessory" msgid="1236358027511638648">"Αξεσουάρ USB"</string>
+    <!-- no translation found for usb_device_dialog_allow_only_this_time_button (3653881633944232491) -->
+    <skip />
+    <!-- no translation found for usb_device_dialog_cancel_button (9050554648474787233) -->
+    <skip />
     <string name="label_view" msgid="6815442985276363364">"Προβολή"</string>
     <string name="always_use_device" msgid="210535878779644679">"Να ανοίγει πάντα η εφ. <xliff:g id="APPLICATION">%1$s</xliff:g> όταν είναι συνδεδεμένo το <xliff:g id="USB_DEVICE">%2$s</xliff:g>"</string>
     <string name="always_use_accessory" msgid="1977225429341838444">"Να ανοίγει πάντα η εφ. <xliff:g id="APPLICATION">%1$s</xliff:g> όταν είναι συνδεδεμένο το <xliff:g id="USB_ACCESSORY">%2$s</xliff:g>"</string>
@@ -91,10 +95,8 @@
     <string name="screenshot_failed_to_save_text" msgid="7232739948999195960">"Δεν είναι δυνατή η αποθήκευση στιγμιότυπου οθόνης."</string>
     <string name="screenshot_failed_to_capture_text" msgid="7818288545874407451">"Η λήψη στιγμιότυπων οθόνης δεν επιτρέπεται από την εφαρμογή ή τον οργανισμό σας"</string>
     <string name="screenshot_blocked_by_admin" msgid="5486757604822795797">"Η λήψη στιγμιότυπων οθόνης έχει αποκλειστεί από τον διαχειριστή IT."</string>
-    <!-- no translation found for screenshot_copy_label (3551237076438128722) -->
-    <skip />
-    <!-- no translation found for screenshot_copy_description (2890150686381938858) -->
-    <skip />
+    <string name="screenshot_copy_label" msgid="3551237076438128722">"Αντιγραφή"</string>
+    <string name="screenshot_copy_description" msgid="2890150686381938858">"Κουμπί αντιγραφής στιγμιότυπου οθόνης στο πρόχειρο"</string>
     <string name="screenshot_edit_label" msgid="8754981973544133050">"Επεξεργασία"</string>
     <string name="screenshot_edit_description" msgid="7802378587672433507">"Κουμπί επεξεργασίας στιγμιότυπου οθόνης"</string>
     <string name="screenshot_share_label" msgid="1653061117238861559">"Κοινή χρήση"</string>
@@ -189,6 +191,8 @@
     <string name="screen_share_entire_screen_sharing_title" msgid="9093580141248337998">"Κοινή χρήση ολόκληρης της οθόνης"</string>
     <string name="screen_share_disclaimer_app_sharing" msgid="4191319837838590771">"Όταν μοιράζεστε μια εφαρμογή, όλο το περιεχόμενο που εμφανίζεται ή αναπαράγεται στην εφαρμογή είναι ορατό στην εφαρμογή [APP NAME]. Επομένως, να είστε προσεκτικοί με τους κωδικούς πρόσβασης, τα στοιχεία πληρωμής, τα μηνύματα, τις φωτογραφίες, τον ήχο και το βίντεο."</string>
     <string name="screen_share_disclaimer_full_screen_sharing" msgid="6445373139864031364">"Όταν μοιράζεστε ολόκληρη την οθόνη, όλο το περιεχόμενο που εμφανίζεται στην οθόνη είναι ορατό στην εφαρμογή [APP NAME]. Επομένως, να είστε προσεκτικοί με τους κωδικούς πρόσβασης, τα στοιχεία πληρωμής, τα μηνύματα, τις φωτογραφίες, τον ήχο και το βίντεο."</string>
+    <!-- no translation found for screen_share_a11y_announcement (8938007210094494367) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Λήψη στιγμιότυπου οθόνης του παραθύρου"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Εγγραφή παραθύρου"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Λήψη στιγμιότυπου οθόνης της επιλεγμένης περιοχής"</string>
@@ -390,7 +394,8 @@
     <string name="accessibility_clear_all" msgid="970525598287244592">"Διαγραφή όλων των ειδοποιήσεων."</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"Ειδοποιήσεις"</string>
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Βοηθός"</string>
-    <string name="accessibility_status_bar_input_method_indicator" msgid="4316411266975554038">"Μέθοδος εισαγωγής"</string>
+    <!-- no translation found for accessibility_status_bar_input_method_indicator (4911669064186093506) -->
+    <skip />
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{# ακόμη ειδοποίηση μέσα στην ομάδα.}other{# ακόμη ειδοποιήσεις μέσα στην ομάδα.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"Η οθόνη έχει κλειδωθεί σε οριζόντιο προσανατολισμό."</string>
