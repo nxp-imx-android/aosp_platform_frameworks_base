@@ -2114,6 +2114,7 @@
     <string name="app_suspended_more_details" msgid="211260942831587014">"Več o tem"</string>
     <string name="app_suspended_unsuspend_message" msgid="1665438589450555459">"Prekliči začasno zaustavitev aplikacije"</string>
     <string name="locked_app_biometric_prompt_description" msgid="6853122652400451464">"Aplikacija <xliff:g id="APP_NAME">%1$s</xliff:g> je zaklenjena"</string>
+    <string name="locked_app_external_display_message" msgid="5483884799685545338">"Če želite dostopati do aplikacije na tem zaslonu, najprej v drugi napravi potrdite svojo identiteto"</string>
     <string name="work_mode_off_title" msgid="6367463960165135829">"Želite znova aktivirati delovne aplikacije?"</string>
     <string name="work_mode_turn_on" msgid="5316648862401307800">"Znova aktiviraj"</string>
     <string name="work_mode_emergency_call_button" msgid="6818855962881612322">"Nujni primer"</string>

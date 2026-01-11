@@ -2112,6 +2112,8 @@
     <string name="app_suspended_more_details" msgid="211260942831587014">"વધુ જાણો"</string>
     <string name="app_suspended_unsuspend_message" msgid="1665438589450555459">"ઍપ ફરી શરૂ કરો"</string>
     <string name="locked_app_biometric_prompt_description" msgid="6853122652400451464">"<xliff:g id="APP_NAME">%1$s</xliff:g> લૉક કરેલી છે"</string>
+    <!-- no translation found for locked_app_external_display_message (5483884799685545338) -->
+    <skip />
     <string name="work_mode_off_title" msgid="6367463960165135829">"ઑફિસની થોભાવેલી ઍપ ચાલુ કરીએ?"</string>
     <string name="work_mode_turn_on" msgid="5316648862401307800">"ફરી ચાલુ કરો"</string>
     <string name="work_mode_emergency_call_button" msgid="6818855962881612322">"ઇમર્જન્સી"</string>
