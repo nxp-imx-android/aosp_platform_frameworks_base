@@ -781,6 +781,7 @@ flag {
     namespace: "web_apps_on_chromeos_and_android"
     description: "Enables the Interactive Picture-in-Picture window API."
     bug: "399376001"
+    is_exported: true
 }
 
 flag {
