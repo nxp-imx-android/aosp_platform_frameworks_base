@@ -723,7 +723,6 @@ public class TelephonyCallback {
      *
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_CELLULAR_IDENTIFIER_DISCLOSURE_INDICATIONS)
     @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE)
     @SystemApi
     public static final int EVENT_SECURITY_ALGORITHMS_CHANGED = 46;
@@ -734,7 +733,6 @@ public class TelephonyCallback {
       *
       * @hide
       */
-    @FlaggedApi(Flags.FLAG_CELLULAR_IDENTIFIER_DISCLOSURE_INDICATIONS)
     @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE)
     @SystemApi
     public static final int EVENT_CELLULAR_IDENTIFIER_DISCLOSED_CHANGED = 47;
@@ -1891,7 +1889,6 @@ public class TelephonyCallback {
      * @hide
      */
     @SystemApi
-    @FlaggedApi(Flags.FLAG_CELLULAR_IDENTIFIER_DISCLOSURE_INDICATIONS)
     public interface CellularIdentifierDisclosedListener {
         /**
          * Callback invoked when a device identifier (IMSI, IMEI, or unciphered SUCI)
@@ -2480,8 +2477,6 @@ public class TelephonyCallback {
         }
 
         public void onCellularIdentifierDisclosedChanged(CellularIdentifierDisclosure disclosure) {
-            if (!Flags.cellularIdentifierDisclosureIndications()) return;
-
             CellularIdentifierDisclosedListener listener =
                     (CellularIdentifierDisclosedListener) mTelephonyCallbackWeakRef.get();
             if (listener == null) return;
