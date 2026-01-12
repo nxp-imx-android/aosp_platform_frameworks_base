@@ -993,18 +993,6 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
     private static boolean sUseMeasureCacheDuringForceLayoutFlagValue;
 
     /**
-     * When true, extends heuristics for calculating whether a node is considered important for
-     * content capture. This will consider nodes with content descriptions and accessibility-related
-     * fields as important.
-     */
-    private static boolean sNewHeuristicsForContentCaptureImportanceEnabledFlagValue;
-
-    /**
-     * When true, enables reporting content interaction events.
-     */
-    private static boolean sContentInteractionApiEnabledFlagValue;
-
-    /**
      * Allow setForeground/setBackground to be called (and ignored) on a textureview,
      * without throwing
      */
@@ -2501,10 +2489,33 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
         private static String sFrameRateSysProp =
                 ViewProperties.vrr_velocity_threshold().orElse("");
 
+        /**
+         * When true, extends heuristics for calculating whether a node is considered important for
+         * content capture. This will consider nodes with content descriptions and
+         * accessibility-related fields as important.
+         */
+        private static final boolean sNewHeuristicsForContentCaptureImportanceEnabledFlagValue;
+
+        /**
+         * When true, enables reporting content interaction events.
+         */
+        private static final boolean sContentInteractionApiEnabledFlagValue;
+
         static {
             if (!sFrameRateSysProp.isEmpty()) {
                 sFrameRateMappings = parseFrameRateMapping(sFrameRateSysProp);
             }
+            sNewHeuristicsForContentCaptureImportanceEnabledFlagValue =
+                    newHeuristicsForImportanceEnabled();
+            sContentInteractionApiEnabledFlagValue = contentInteractionApiEnabled();
+        }
+
+        public static boolean isNewHeuristicsForContentCaptureImportanceEnabled() {
+            return sNewHeuristicsForContentCaptureImportanceEnabledFlagValue;
+        }
+
+        public static boolean isContentInteractionApiEnabled() {
+            return sContentInteractionApiEnabledFlagValue;
         }
 
         /**
@@ -2687,9 +2698,6 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
         sToolkitSetFrameRateReadOnlyFlagValue = toolkitSetFrameRateReadOnly();
         sToolkitMetricsForFrameRateDecisionFlagValue = toolkitMetricsForFrameRateDecision();
         sUseMeasureCacheDuringForceLayoutFlagValue = enableUseMeasureCacheDuringForceLayout();
-        sNewHeuristicsForContentCaptureImportanceEnabledFlagValue =
-                newHeuristicsForImportanceEnabled();
-        sContentInteractionApiEnabledFlagValue = contentInteractionApiEnabled();
     }
 
     /**
@@ -11033,7 +11041,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
             return true;
         }
 
-        if (sNewHeuristicsForContentCaptureImportanceEnabledFlagValue) {
+        if (NoPreloadHolder.isNewHeuristicsForContentCaptureImportanceEnabled()) {
             // If the app developer has set a content description, it's important.
             if (getContentDescription() != null) {
                 return true;
@@ -11592,7 +11600,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
     }
 
     private void dispatchContentCaptureInteractionEvent() {
-     if (!sContentInteractionApiEnabledFlagValue) {
+     if (!NoPreloadHolder.isContentInteractionApiEnabled()) {
         return;
      }
 
