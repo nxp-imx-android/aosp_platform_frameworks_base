@@ -771,7 +771,7 @@ public class BackNavigationControllerTests extends WindowTestsBase {
                         null /* hostWindow */, 0 /* callingUid */,
                         0 /* callingPid */, TYPE_APPLICATION_OVERLAY, 0 /* displayId */,
                         inputTransferToken, "inputHandleName", true /* isFocusable */);
-        embeddedWindow.openInputChannel(new InputChannel());
+        InputChannel channel = embeddedWindow.openInputChannel();
         mWm.mEmbeddedWindowController.add(mock(IBinder.class), embeddedWindow);
 
         final IOnBackInvokedCallback embedCallback = createOnBackInvokedCallback();
@@ -793,6 +793,7 @@ public class BackNavigationControllerTests extends WindowTestsBase {
         mWm.grantEmbeddedWindowFocus(mockSession, inputTransferToken, false /* grantFocus */);
         BackNavigationInfo backNavigationInfo2 = startBackNavigation();
         assertThat(backNavigationInfo2.getOnBackInvokedCallback()).isEqualTo(windowCallback);
+        channel.dispose();
     }
 
     @Test
