@@ -589,7 +589,18 @@ constructor(
                                         loggingReason = loggingReason,
                                         instantlySnapScenes = true,
                                     )
-                                } else if (willAnimateDismissAction) {
+                                } else if (
+                                    willAnimateDismissAction ||
+                                        // If we're switching to Gone mid-transition from Ls ->
+                                        // Bouncer,
+                                        // we'll want to animate the scene change to avoid a
+                                        // jump-cut
+                                        // from partially visible LS/Bouncer to Gone.
+                                        sceneInteractor.transitionState.value.isTransitioning(
+                                            from = Scenes.Lockscreen,
+                                            to = Overlays.Bouncer,
+                                        )
+                                ) {
                                     SwitchSceneCommand.SwitchToScene(
                                         targetSceneKey = Scenes.Gone,
                                         hideOverlays = HideOverlayCommand.HideAll,
