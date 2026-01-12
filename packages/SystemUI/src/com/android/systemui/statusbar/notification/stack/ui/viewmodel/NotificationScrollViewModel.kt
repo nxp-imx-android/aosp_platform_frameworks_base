@@ -86,10 +86,10 @@ constructor(
     shadeModeInteractor: ShadeModeInteractor,
     bouncerInteractor: BouncerInteractor,
     private val remoteInputInteractor: RemoteInputInteractor,
-    private val headsUpNotificationInteractor: HeadsUpNotificationInteractor,
+    headsUpNotificationInteractor: HeadsUpNotificationInteractor,
     sceneInteractor: SceneInteractor,
-    // TODO(b/336364825) Remove Lazy when SceneContainerFlag is released -
-    // while the flag is off, creating this object too early results in a crash
+    // TODO(b/336364825) Remove Lazy when SceneContainerFlag is released. While the flag is off,
+    //  creating this object too early results in a crash.
     keyguardInteractor: Lazy<KeyguardInteractor>,
 ) :
     ActivatableFlowDumper by ActivatableFlowDumperImpl(dumpManager, "NotificationScrollViewModel"),
@@ -99,60 +99,46 @@ constructor(
         activateFlowDumper()
     }
 
-    private fun expandedInScene(scene: SceneKey): Boolean {
-        return when (scene) {
-            Scenes.Lockscreen,
-            Scenes.Shade,
-            Scenes.QuickSettings -> true
-            else -> false
-        }
-    }
-
-    private fun fullyExpandedDuringSceneChange(change: ChangeScene): Boolean {
-        // The lockscreen stack is visible during all transitions away from the lockscreen, so keep
-        // the stack expanded until those transitions finish.
-        return if (change.isTransitioning(from = Scenes.Lockscreen)) {
-            true
-        } else if (change.isTransitioning(from = Scenes.Shade, to = Scenes.Lockscreen)) {
-            false
-        } else {
-            (expandedInScene(change.fromScene) && expandedInScene(change.toScene))
-        }
-    }
-
     private fun expandFractionWhileIdle(
         currentScene: SceneKey,
         currentOverlays: Set<OverlayKey>,
     ): Float =
-        if (expandedInScene(currentScene) || Overlays.NotificationsShade in currentOverlays) {
+        if (currentScene.showsNotifications() || Overlays.NotificationsShade in currentOverlays) {
             1f
         } else {
             0f
         }
 
-    private fun expandFractionDuringSceneChange(transitionState: ChangeScene): Flow<Float> =
-        if (fullyExpandedDuringSceneChange(change = transitionState)) {
-            flowOf(1f)
-        } else if (
-            transitionState.isTransitioningBetween(Scenes.Gone, Scenes.Shade) ||
-                transitionState.isTransitioning(from = Scenes.Shade, to = Scenes.Lockscreen) ||
-                transitionState.isTransitioningBetween(Scenes.Occluded, Scenes.Shade)
-        ) {
-            shadeInteractor.shadeExpansion
-        } else if (transitionState.isTransitioningBetween(Scenes.Gone, Scenes.QuickSettings)) {
-            shadeInteractor.qsExpansion
-                .map { qsExpansion ->
-                    // during QS expansion, increase fraction at same rate as scrim alpha, but start
-                    // when scrim alpha is at EXPANSION_FOR_DELAYED_STACK_FADE_IN.
-                    (qsExpansion / EXPANSION_FOR_MAX_SCRIM_ALPHA -
-                            EXPANSION_FOR_DELAYED_STACK_FADE_IN)
-                        .coerceIn(0f, 1f)
-                }
-                .distinctUntilChanged()
-        } else {
-            // TODO(b/356596436): If notification shade overlay is open, we'll reach this point and
-            //  the expansion fraction in that case should be `shadeExpansion`.
-            flowOf(0f)
+    private fun expandFractionDuringSceneChange(sceneChange: ChangeScene): Flow<Float> =
+        with(sceneChange) {
+            when {
+                isTransitioning(from = Scenes.Shade, to = Scenes.Lockscreen) ->
+                    shadeInteractor.shadeExpansion
+
+                // The lockscreen stack is visible during all transitions away from the lockscreen,
+                // so keep the stack expanded until those transitions finish.
+                isTransitioning(from = Scenes.Lockscreen) -> flowOf(1f)
+
+                // When the stack in visible on both scenes, keep it expanded throughout.
+                fromScene.showsNotifications() && toScene.showsNotifications() -> flowOf(1f)
+
+                isTransitioningFromOrTo(Scenes.Shade) -> shadeInteractor.shadeExpansion
+
+                isTransitioningBetween(Scenes.Gone, Scenes.QuickSettings) ->
+                    shadeInteractor.qsExpansion
+                        .map { qsExpansion ->
+                            // During QS expansion, increase fraction at same rate as scrim alpha,
+                            // but start when scrim alpha is at EXPANSION_FOR_DELAYED_STACK_FADE_IN.
+                            (qsExpansion / EXPANSION_FOR_MAX_SCRIM_ALPHA -
+                                    EXPANSION_FOR_DELAYED_STACK_FADE_IN)
+                                .coerceIn(0f, 1f)
+                        }
+                        .distinctUntilChanged()
+
+                // TODO(b/356596436): If notification shade overlay is open, we'll reach this point
+                //  and the expansion fraction in that case should be `shadeExpansion`.
+                else -> flowOf(0f)
+            }
         }
 
     private fun expandFractionDuringOverlayTransition(
@@ -493,6 +479,16 @@ constructor(
         return when (this) {
             Overlays.NotificationsShade,
             Scenes.Shade -> true
+
+            else -> false
+        }
+    }
+
+    private fun SceneKey.showsNotifications(): Boolean {
+        return when (this) {
+            Scenes.Lockscreen,
+            Scenes.Shade,
+            Scenes.QuickSettings -> true
 
             else -> false
         }
