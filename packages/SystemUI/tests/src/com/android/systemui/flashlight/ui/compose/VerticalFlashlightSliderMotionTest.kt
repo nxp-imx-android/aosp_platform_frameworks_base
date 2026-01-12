@@ -33,6 +33,7 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.flashlight.ui.composable.VerticalFlashlightSlider
 import com.android.systemui.flashlight.ui.composable.VerticalFlashlightSliderMotionTestKeys
 import com.android.systemui.haptics.slider.sliderHapticsViewModelFactory
+import com.android.systemui.integration.SystemUiIntegrationTest
 import com.android.systemui.motion.createSysUiComposeMotionTestRule
 import com.android.systemui.testKosmos
 import kotlin.test.Test
@@ -57,6 +58,7 @@ import platform.test.screenshot.Displays.Phone
 @RunWith(AndroidJUnit4::class)
 @LargeTest
 @MotionTest
+@SystemUiIntegrationTest
 class VerticalFlashlightSliderMotionTest : SysuiTestCase() {
 
     private val deviceSpec = DeviceEmulationSpec(Phone)

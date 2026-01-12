@@ -35,6 +35,7 @@ import com.android.systemui.authentication.shared.model.AuthenticationMethodMode
 import com.android.systemui.bouncer.ui.viewmodel.bouncerOverlayContentViewModelFactory
 import com.android.systemui.flags.Flags
 import com.android.systemui.flags.fakeFeatureFlagsClassic
+import com.android.systemui.integration.SystemUiIntegrationTest
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.motion.createSysUiComposeMotionTestRule
 import com.android.systemui.res.R
@@ -64,6 +65,7 @@ import platform.test.screenshot.Displays.FoldableInner
 @RunWith(AndroidJUnit4::class)
 @LargeTest
 @MotionTest
+@SystemUiIntegrationTest
 class BouncerContentTest : SysuiTestCase() {
     private val deviceSpec = DeviceEmulationSpec(FoldableInner, isLandscape = true)
     private val kosmos = testKosmos()

@@ -31,6 +31,7 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.brightness.ui.viewmodel.BrightnessSliderViewModel
 import com.android.systemui.common.shared.model.asIcon
 import com.android.systemui.haptics.slider.sliderHapticsViewModelFactory
+import com.android.systemui.integration.SystemUiIntegrationTest
 import com.android.systemui.motion.createSysUiComposeMotionTestRule
 import com.android.systemui.testKosmos
 import com.android.systemui.util.policy.PolicyRestriction
@@ -58,6 +59,7 @@ import platform.test.screenshot.Displays.Phone
 @RunWith(AndroidJUnit4::class)
 @LargeTest
 @MotionTest
+@SystemUiIntegrationTest
 class BrightnessSliderMotionTest : SysuiTestCase() {
 
     private val deviceSpec = DeviceEmulationSpec(Phone)

@@ -51,6 +51,7 @@ import com.android.systemui.communal.shared.model.CommunalScenes
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.flags.andSceneContainer
+import com.android.systemui.integration.SystemUiIntegrationTest
 import com.android.systemui.keyguard.data.repository.FakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepositorySpy
@@ -86,6 +87,7 @@ import platform.test.runner.parameterized.ParameterizedAndroidJunit4
 import platform.test.runner.parameterized.Parameters
 
 @SmallTest
+@SystemUiIntegrationTest
 @RunWith(ParameterizedAndroidJunit4::class)
 class FromAodTransitionInteractorTest(flags: FlagsParameterization) : SysuiTestCase() {
 
