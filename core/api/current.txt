@@ -52864,8 +52864,8 @@ package android.view {
   @FlaggedApi("com.android.server.display.feature.flags.frame_rate_mapping_api") public final class FrameRateVelocityPoint implements android.os.Parcelable {
     ctor public FrameRateVelocityPoint(float, float);
     method public int describeContents();
+    method public float getDpPerSecond();
     method public float getFramePerSecond();
-    method public float getPixelPerSecond();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.view.FrameRateVelocityPoint> CREATOR;
   }
