@@ -16,12 +16,19 @@
 
 package com.android.systemui.biometrics.ui.viewmodel
 
+import android.app.ActivityTaskManager
+import android.content.ComponentName
 import android.content.Context
+import android.content.pm.ActivityInfo
+import android.content.pm.ApplicationInfo
+import android.content.pm.PackageManager
 import android.graphics.Rect
+import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.hardware.biometrics.BiometricFingerprintConstants
 import android.hardware.biometrics.BiometricPrompt
 import android.hardware.biometrics.PromptContentView
+import android.os.UserHandle
 import android.text.TextPaint
 import android.util.Log
 import android.view.HapticFeedbackConstants
@@ -29,20 +36,21 @@ import android.view.MotionEvent
 import android.view.accessibility.AccessibilityManager
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.keyguard.AuthInteractionProperties
-import com.android.systemui.Flags
+import com.android.launcher3.icons.IconProvider
 import com.android.systemui.Flags.msdlFeedback
 import com.android.systemui.accessibility.domain.interactor.AccessibilityInteractor
 import com.android.systemui.biometrics.UdfpsUtils
+import com.android.systemui.biometrics.Utils.isSystem
 import com.android.systemui.biometrics.domain.interactor.BiometricPromptView
 import com.android.systemui.biometrics.domain.interactor.BiometricStatusInteractor
 import com.android.systemui.biometrics.domain.interactor.PromptSelectorInteractor
 import com.android.systemui.biometrics.domain.interactor.UdfpsOverlayInteractor
+import com.android.systemui.biometrics.domain.model.BiometricPromptRequest
 import com.android.systemui.biometrics.shared.model.BiometricModalities
 import com.android.systemui.biometrics.shared.model.BiometricModality
 import com.android.systemui.biometrics.shared.model.PromptKind
 import com.android.systemui.biometrics.shared.model.UdfpsOverlayParams
 import com.android.systemui.biometrics.ui.BiometricPromptLayoutState
-import com.android.systemui.biometrics.ui.BiometricPromptLogoProvider
 import com.android.systemui.biometrics.ui.NegativeButtonState
 import com.android.systemui.biometrics.ui.PositiveButtonState
 import com.android.systemui.biometrics.ui.PromptPosition
@@ -85,13 +93,14 @@ constructor(
     udfpsOverlayInteractor: UdfpsOverlayInteractor,
     biometricStatusInteractor: BiometricStatusInteractor,
     udfpsUtils: UdfpsUtils,
+    private val iconProvider: IconProvider,
+    private val activityTaskManager: ActivityTaskManager,
     accessibilityInteractor: AccessibilityInteractor,
     accessibilityManager: AccessibilityManager,
     promptFallbackViewModelFactory: PromptFallbackViewModel.Factory,
     shadeInteractor: ShadeInteractor,
     promptIconViewModelFactory: PromptIconViewModel.Factory,
     biometricAuthIconViewModelFactory: BiometricAuthIconViewModel.Factory,
-    private val promptLogoProvider: BiometricPromptLogoProvider,
 ) {
     /** Viewmodel for the fallback view */
     val promptFallbackViewModel = promptFallbackViewModelFactory.create()
@@ -201,12 +210,7 @@ constructor(
     /** Whether the fallback options screen is currently showing, auth view if false */
     val fallbackShowing: Flow<Boolean> = currentView.map { it == BiometricPromptView.FALLBACK }
 
-    private val forceLargeSize =
-        if (Flags.largeScreenBp()) {
-            currentView.map { false }
-        } else {
-            currentView.map { it == BiometricPromptView.CREDENTIAL }
-        }
+    private val forceLargeSize = currentView.map { it == BiometricPromptView.CREDENTIAL }
     private val _forceMediumSize = MutableStateFlow(false)
 
     private val authInteractionProperties = AuthInteractionProperties()
@@ -246,15 +250,12 @@ constructor(
                 forceLargeSize,
                 _forceMediumSize,
                 modalities,
-                currentView,
                 promptSelectorInteractor.isConfirmationRequired,
                 fingerprintStartMode,
-            ) { forceLarge, forceMedium, modalities, currentView, confirmationRequired, fpStartMode
-                ->
+            ) { forceLarge, forceMedium, modalities, confirmationRequired, fpStartMode ->
                 when {
                     forceLarge -> PromptSize.LARGE
-                    forceMedium || currentView == BiometricPromptView.CREDENTIAL ->
-                        PromptSize.MEDIUM
+                    forceMedium -> PromptSize.MEDIUM
                     modalities.hasFaceOnly && !confirmationRequired -> PromptSize.SMALL
                     modalities.hasFaceAndFingerprint &&
                         !confirmationRequired &&
@@ -343,7 +344,7 @@ constructor(
             .map {
                 when {
                     it == null -> Pair(null, "")
-                    else -> promptLogoProvider.getLogoInfo(it)
+                    else -> context.getUserBadgedLogoInfo(it, iconProvider, activityTaskManager)
                 }
             }
             .distinctUntilChanged()
@@ -949,6 +950,113 @@ constructor(
         const val TAG = "PromptViewModel"
     }
 }
+
+/**
+ * The order of getting logo icon/description is:
+ * 1. If the app sets customized icon/description, use the passed-in value
+ * 2. If shouldUseActivityLogo(), use activityInfo to get icon/description
+ * 3. Otherwise, use applicationInfo to get icon/description
+ */
+private fun Context.getUserBadgedLogoInfo(
+    prompt: BiometricPromptRequest.Biometric,
+    iconProvider: IconProvider,
+    activityTaskManager: ActivityTaskManager,
+): Pair<Drawable?, String> {
+    // If the app sets customized icon/description, use the passed-in value directly
+    val customizedIcon: Drawable? =
+        prompt.logoBitmap?.let { BitmapDrawable(resources, prompt.logoBitmap) }
+    var icon = customizedIcon
+    var label = prompt.logoDescription ?: ""
+    if (icon != null && label.isNotEmpty()) {
+        return Pair(icon, label)
+    }
+
+    // Use activityInfo if shouldUseActivityLogo() is true
+    val componentName = prompt.getComponentNameForLogo(activityTaskManager)
+    if (componentName != null && shouldUseActivityLogo(componentName)) {
+        val activityInfo = getActivityInfo(componentName)
+        if (activityInfo != null) {
+            icon = icon ?: iconProvider.getIcon(activityInfo)
+            label = label.ifEmpty { activityInfo.loadLabel(packageManager).toString() }
+        }
+    }
+    // Use applicationInfo for other cases
+    if (icon == null || label.isEmpty()) {
+        val appInfo = prompt.getApplicationInfo(this, componentName)
+        if (appInfo != null) {
+            icon = icon ?: packageManager.getApplicationIcon(appInfo)
+            label = label.ifEmpty { packageManager.getApplicationLabel(appInfo).toString() }
+        } else {
+            Log.w(PromptViewModel.TAG, "Cannot find app logo for package $opPackageName")
+        }
+    }
+
+    // Add user badge for non-customized logo icon
+    val userHandle = UserHandle.of(prompt.userInfo.userId)
+    if (icon != null && icon != customizedIcon) {
+        icon = packageManager.getUserBadgedIcon(icon, userHandle)
+    }
+
+    return Pair(icon, label)
+}
+
+private fun BiometricPromptRequest.Biometric.getComponentNameForLogo(
+    activityTaskManager: ActivityTaskManager
+): ComponentName? {
+    val topActivity: ComponentName? = activityTaskManager.getTasks(1).firstOrNull()?.topActivity
+    return when {
+        componentNameForConfirmDeviceCredentialActivity != null ->
+            componentNameForConfirmDeviceCredentialActivity
+        topActivity?.packageName.contentEquals(opPackageName) -> topActivity
+        else -> {
+            Log.w(PromptViewModel.TAG, "Top activity $topActivity is not the client $opPackageName")
+            null
+        }
+    }
+}
+
+private fun BiometricPromptRequest.Biometric.getApplicationInfo(
+    context: Context,
+    componentNameForLogo: ComponentName?,
+): ApplicationInfo? {
+    val packageName =
+        when {
+            componentNameForLogo != null -> componentNameForLogo.packageName
+            // TODO(b/353597496): We should check whether |allowBackgroundAuthentication| should be
+            // removed.
+            // This is being consistent with the check in [AuthController.showDialog()].
+            allowBackgroundAuthentication || isSystem(context, opPackageName) -> opPackageName
+            else -> null
+        }
+    return if (packageName == null) {
+        Log.w(PromptViewModel.TAG, "Cannot find application info for $opPackageName")
+        null
+    } else {
+        try {
+            context.packageManager.getApplicationInfo(
+                packageName,
+                PackageManager.MATCH_DISABLED_COMPONENTS or PackageManager.MATCH_ANY_USER,
+            )
+        } catch (e: PackageManager.NameNotFoundException) {
+            Log.w(PromptViewModel.TAG, "Cannot find application info for $opPackageName", e)
+            null
+        }
+    }
+}
+
+private fun Context.shouldUseActivityLogo(componentName: ComponentName): Boolean {
+    return resources.getStringArray(R.array.config_useActivityLogoForBiometricPrompt).find {
+        componentName.packageName.contentEquals(it)
+    } != null
+}
+
+private fun Context.getActivityInfo(componentName: ComponentName): ActivityInfo? =
+    try {
+        packageManager.getActivityInfo(componentName, 0)
+    } catch (e: PackageManager.NameNotFoundException) {
+        Log.w(PromptViewModel.TAG, "Cannot find activity info for $opPackageName", e)
+        null
+    }
 
 fun Context.getCredentialString(kind: PromptKind): String =
     when (kind) {
