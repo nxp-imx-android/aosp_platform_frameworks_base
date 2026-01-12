@@ -4097,6 +4097,14 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         pw.println(mLastWakeLockObscuringWindow);
 
         pw.println();
+        pw.print(prefix);
+        pw.print("mIsHardwareRendererOutputDisabled=");
+        pw.println(mIsHardwareRendererOutputDisabled);
+        pw.print(prefix);
+        pw.print("mAreClientRenderingLimitationsEnabled=");
+        pw.println(mAreClientRenderingLimitationsEnabled);
+
+        pw.println();
         mWallpaperController.dump(pw, "  ");
 
         if (mSystemGestureExclusionListeners.getRegisteredCallbackCount() > 0) {

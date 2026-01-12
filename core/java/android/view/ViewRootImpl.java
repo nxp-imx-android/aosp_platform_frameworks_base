@@ -10479,6 +10479,10 @@ public final class ViewRootImpl implements ViewParent,
         writer.println(innerPrefix + "mIsAmbientMode="  + mIsAmbientMode);
         writer.println(innerPrefix + "mUnbufferedInputSource="
                 + Integer.toHexString(mUnbufferedInputSource));
+        writer.println(innerPrefix + "mIsHardwareRendererOutputDisabled"
+                + mIsHardwareRendererOutputDisabled);
+        writer.println(innerPrefix + "mIsDisablingViewAnimationsRequested"
+                + mIsDisablingViewAnimationsRequested);
         if (mAttachInfo != null) {
             writer.print(innerPrefix + "mAttachInfo= ");
             mAttachInfo.dump(innerPrefix, writer);
