@@ -16,6 +16,7 @@
 
 package com.android.systemui.screencapture.record.camera.data.repository
 
+import android.graphics.Region
 import android.util.Size
 import android.view.Surface
 import com.android.systemui.dagger.SysUISingleton
@@ -33,6 +34,7 @@ class ScreenRecordCameraRepositoryImpl @Inject constructor() : ScreenRecordCamer
     override val state: StateFlow<CameraState> =
         MutableStateFlow(CameraState.Unavailable).asStateFlow()
     override val isConnected: StateFlow<Boolean> = MutableStateFlow(false).asStateFlow()
+    override val cameraSubjectBounds: StateFlow<Region?> = MutableStateFlow(null).asStateFlow()
 
     override fun connect() {}
 

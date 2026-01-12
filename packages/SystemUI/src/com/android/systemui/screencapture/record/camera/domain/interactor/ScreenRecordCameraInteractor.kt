@@ -18,6 +18,7 @@ package com.android.systemui.screencapture.record.camera.domain.interactor
 
 import android.content.res.Resources
 import android.graphics.Color
+import android.graphics.Region
 import android.util.Log
 import android.util.Size
 import android.view.Surface
@@ -65,6 +66,7 @@ constructor(
     val errors: Flow<Int> = repository.errors
     val state: Flow<CameraState> = repository.state
     val isConnected: Flow<Boolean> = repository.isConnected
+    val cameraSubjectBounds: StateFlow<Region?> = repository.cameraSubjectBounds
 
     private val _cameraBackground = MutableStateFlow(cameraBackgroundColors.first())
     val cameraBackground: StateFlow<Int> = _cameraBackground

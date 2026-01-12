@@ -18,6 +18,7 @@ package com.android.systemui.screencapture.record.camera.ui.viewmodel
 
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.screencapture.record.camera.domain.interactor.screenCaptureCameraTransformationInteractor
+import com.android.systemui.screencapture.record.camera.domain.interactor.screenRecordCameraInteractor
 import com.android.systemui.screenrecord.domain.interactor.screenRecordingServiceInteractor
 
 val Kosmos.screenCaptureCameraTransformationViewModel: ScreenCaptureCameraTransformationViewModel by
@@ -30,7 +31,8 @@ val Kosmos.screenCaptureCameraTransformationViewModelFactory:
             override fun create(): ScreenCaptureCameraTransformationViewModel =
                 ScreenCaptureCameraTransformationViewModel(
                     screenRecordingServiceInteractor = screenRecordingServiceInteractor,
-                    interactor = screenCaptureCameraTransformationInteractor,
+                    cameraInteractor = screenRecordCameraInteractor,
+                    transformationInteractor = screenCaptureCameraTransformationInteractor,
                 )
         }
     }
