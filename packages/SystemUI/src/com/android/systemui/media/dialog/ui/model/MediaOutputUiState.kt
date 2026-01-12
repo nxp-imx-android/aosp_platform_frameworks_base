@@ -16,8 +16,6 @@
 
 package com.android.systemui.media.dialog.ui.model
 
-import com.android.systemui.media.dialog.MediaItem
-
 /**
  * Represents the full UI state for the Compose-based Output Switcher dialog. This is intended to be
  * the single source of truth from the ViewModel to the UI.
