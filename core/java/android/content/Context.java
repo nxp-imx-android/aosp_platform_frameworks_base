@@ -5026,6 +5026,16 @@ public abstract class Context {
 
     /**
      * Use with {@link #getSystemService(String)} to retrieve a
+     * {@link android.os.storage.FilesManager} for handling file operations.
+     *
+     * @see #getSystemService(String)
+     * @see android.os.storage.FilesManager
+     */
+    @FlaggedApi(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public static final String FILES_SERVICE = "files";
+
+    /**
+     * Use with {@link #getSystemService(String)} to retrieve a
      * {@link android.app.AlarmManager} for receiving intents at a
      * time of your choosing.
      *

@@ -11872,6 +11872,7 @@ package android.content {
     field public static final String DOWNLOAD_SERVICE = "download";
     field public static final String DROPBOX_SERVICE = "dropbox";
     field public static final String EUICC_SERVICE = "euicc";
+    field @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public static final String FILES_SERVICE = "files";
     field public static final String FILE_INTEGRITY_SERVICE = "file_integrity";
     field public static final String GAME_SERVICE = "game";
     field public static final String GRAMMATICAL_INFLECTION_SERVICE = "grammatical_inflection";
@@ -36810,6 +36811,16 @@ package android.os.multisensory {
 }
 
 package android.os.storage {
+
+  @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public final class FilesManager {
+    method @NonNull public android.os.storage.operations.FileOperationEnqueueResult enqueueOperation(@NonNull android.os.storage.operations.FileOperationRequest);
+    method @Nullable public android.os.storage.operations.FileOperationResult fetchResult(@NonNull String);
+    method public void registerCompletionListener(@NonNull String);
+    method public void unregisterCompletionListener(@NonNull String);
+    field public static final String ACTION_FILE_OPERATION_COMPLETED = "android.os.storage.action.FILE_OPERATION_COMPLETED";
+    field public static final String EXTRA_REQUEST_ID = "android.os.storage.extra.REQUEST_ID";
+    field public static final String EXTRA_RESULT = "android.os.storage.extra.RESULT";
+  }
 
   public abstract class OnObbStateChangeListener {
     ctor public OnObbStateChangeListener();
