@@ -167,6 +167,7 @@ fun ContentScope.ConstrainedNotificationStack(
                 .onUnplaced {
                     debugLog(viewModel) { "Constrained.container onUnplaced" }
                     viewModel.resetStackBounds()
+                    viewModel.onLockScreenStackBottomChanged(-1f)
                 }
     ) {
         StackPlaceholder(
