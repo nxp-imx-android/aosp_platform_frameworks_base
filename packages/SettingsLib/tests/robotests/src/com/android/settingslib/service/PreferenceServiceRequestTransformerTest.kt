@@ -48,6 +48,7 @@ import com.android.settingslib.graph.rangeValueProto
 import com.android.settingslib.graph.textProto
 import com.android.settingslib.graph.toProto
 import com.android.settingslib.metadata.PreferenceCoordinate
+import com.android.settingslib.metadata.ReadWritePermit
 import com.android.settingslib.metadata.SensitivityLevel
 import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
@@ -201,6 +202,38 @@ class PreferenceServiceRequestTransformerTest {
     }
 
     @Test
+    fun transformCatalystGetValueResponse_stringValueTypePreference_returnsValidFrameworkResponse() {
+        val getResultProto = preferenceProto {
+            key = "preference_key"
+            persistent = true
+            sensitivityLevel = SensitivityLevel.LOW_SENSITIVITY
+            readWritePermit = ReadWritePermit.make(
+                readPermit = ReadWritePermit.ALLOW,
+                writePermit = ReadWritePermit.ALLOW
+            )
+            value = preferenceValueProto {
+                stringValue = "hello"
+            }
+            valueDescriptor = preferenceValueDescriptorProto {
+                stringType = true
+            }
+        }
+        val fRequest = GetValueRequest.Builder("screen_key", "preference_key").build()
+        val cResult =
+            PreferenceGetterResponse(
+                emptyMap(),
+                mapOf(
+                    PreferenceCoordinate(fRequest.screenKey, fRequest.preferenceKey) to
+                        getResultProto
+                ),
+            )
+        val fResult = transformCatalystGetValueResponse(context, fRequest, cResult)
+        assertThat(fResult!!.resultCode).isEqualTo(GetValueResult.RESULT_OK)
+        assertThat(fResult.value?.type).isEqualTo(SettingsPreferenceValue.TYPE_STRING)
+        assertThat(fResult.value?.stringValue).isEqualTo("hello")
+    }
+
+    @Test
     fun transformCatalystGetValueResponse_sensitivityLevel() {
         verifySensitivityLevelMapping(
             SensitivityLevel.NO_SENSITIVITY, SettingsPreferenceMetadata.NO_SENSITIVITY
@@ -317,7 +350,7 @@ class PreferenceServiceRequestTransformerTest {
     }
 
     @Test
-    fun transformFrameworkSetValueRequest_typeString_returnsNull() {
+    fun transformFrameworkSetValueRequest_typeString_returnsValidCatalystRequest() {
         val fRequest =
             SetValueRequest.Builder(
                 "screen",
@@ -328,7 +361,12 @@ class PreferenceServiceRequestTransformerTest {
             )
                 .build()
         val cRequest = transformFrameworkSetValueRequest(fRequest)
-        assertThat(cRequest).isNull()
+        with(cRequest!!) {
+            assertThat(screenKey).isEqualTo(fRequest.screenKey)
+            assertThat(key).isEqualTo(fRequest.preferenceKey)
+            assertThat(value.hasStringValue()).isTrue()
+            assertThat(value.stringValue).isEqualTo("value")
+        }
     }
 
     @Test

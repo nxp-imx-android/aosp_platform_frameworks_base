@@ -616,6 +616,7 @@ fun PreferenceMetadata.toProto(
                 Boolean::class.javaObjectType -> storage.getBoolean(key)?.let { booleanValue = it }
                 Float::class.javaObjectType -> storage.getFloat(key)?.let { floatValue = it }
                 Long::class.javaObjectType -> storage.getLong(key)?.let { longValue = it }
+                String::class.javaObjectType -> storage.getString(key) ?.let {stringValue = it}
                 else -> {}
             }
         }
@@ -634,6 +635,7 @@ fun PreferenceMetadata.toProto(
                 Boolean::class.javaObjectType -> booleanType = true
                 Float::class.javaObjectType -> floatType = true
                 Long::class.javaObjectType -> longType = true
+                String::class.javaObjectType -> stringType = true
             }
         }
     }

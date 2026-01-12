@@ -164,6 +164,7 @@ message PreferenceValueProto {
     int32 int_value = 2;
     float float_value = 3;
     int64 long_value = 4;
+    string string_value = 5;
   }
 }
 
@@ -174,6 +175,7 @@ message PreferenceValueDescriptorProto {
     RangeValueProto range_value = 2;
     bool float_type = 3;
     bool long_type = 4;
+    bool string_type = 5;
   }
 }
 

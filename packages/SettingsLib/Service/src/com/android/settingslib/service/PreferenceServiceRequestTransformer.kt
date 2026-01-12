@@ -17,6 +17,7 @@
 package com.android.settingslib.service
 
 import android.content.Context
+import android.os.Build
 import android.os.Bundle
 import android.service.settings.preferences.GetValueRequest
 import android.service.settings.preferences.GetValueResult
@@ -25,6 +26,7 @@ import android.service.settings.preferences.SetValueRequest
 import android.service.settings.preferences.SetValueResult
 import android.service.settings.preferences.SettingsPreferenceMetadata
 import android.service.settings.preferences.SettingsPreferenceValue
+import androidx.annotation.RequiresApi
 import com.android.settingslib.graph.PreferenceGetterErrorCode
 import com.android.settingslib.graph.PreferenceGetterFlags
 import com.android.settingslib.graph.PreferenceGetterRequest
@@ -111,6 +113,7 @@ fun transformFrameworkGetValueRequest(
 }
 
 /** Translate Catalyst GET VALUE result to Framework GET VALUE result */
+@RequiresApi(Build.VERSION_CODES.BAKLAVA)
 fun transformCatalystGetValueResponse(
     context: Context, request: GetValueRequest, response: PreferenceGetterResponse
 ): GetValueResult? {
@@ -138,6 +141,7 @@ fun transformCatalystGetValueResponse(
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.BAKLAVA)
 private fun PreferenceValueProto.toSettingsPreferenceValue(): SettingsPreferenceValue? =
     when (valueCase.number) {
         PreferenceValueProto.BOOLEAN_VALUE_FIELD_NUMBER -> {
@@ -150,10 +154,16 @@ private fun PreferenceValueProto.toSettingsPreferenceValue(): SettingsPreference
                 SettingsPreferenceValue.TYPE_INT
             ).setIntValue(intValue)
         }
+        PreferenceValueProto.STRING_VALUE_FIELD_NUMBER -> {
+            SettingsPreferenceValue.Builder(
+                SettingsPreferenceValue.TYPE_STRING
+            ).setStringValue(stringValue)
+        }
         else -> null
     }?.build()
 
 /** Translate Framework SET VALUE request to Catalyst SET VALUE request */
+@RequiresApi(Build.VERSION_CODES.BAKLAVA)
 fun transformFrameworkSetValueRequest(request: SetValueRequest): PreferenceSetterRequest? {
     val valueProto = when (request.preferenceValue.type) {
         SettingsPreferenceValue.TYPE_BOOLEAN -> preferenceValueProto {
@@ -161,6 +171,9 @@ fun transformFrameworkSetValueRequest(request: SetValueRequest): PreferenceSette
         }
         SettingsPreferenceValue.TYPE_INT -> preferenceValueProto {
             intValue = request.preferenceValue.intValue
+        }
+        SettingsPreferenceValue.TYPE_STRING -> preferenceValueProto {
+            stringValue = request.preferenceValue.stringValue
         }
         else -> return null
     }
