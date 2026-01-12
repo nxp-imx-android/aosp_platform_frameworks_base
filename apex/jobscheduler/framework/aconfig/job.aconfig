@@ -65,3 +65,11 @@ flag {
     description: "Introduce a new getPendingJobReasonStats() API which returns a holistic view of which constraints contributed the most to why a job remained pending."
     bug: "448485520"
 }
+
+flag {
+    name: "enhanced_pending_and_stop_reasons_api"
+    namespace: "backstage_power"
+    description: "Introduce new enhanced job pending and stop reasons to improve readability and debuggability"
+    bug: "430347691"
+}
+
