@@ -17,14 +17,13 @@
 package com.android.systemui.screencapture.domain.interactor
 
 import android.util.Log
-import com.android.internal.logging.UiEventLogger
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
-import com.android.systemui.screencapture.ScreenCaptureEvent
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters.Record.LargeScreenCaptureUiParameters
+import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiSource
 import com.android.systemui.screencapture.record.domain.interactor.ScreenCaptureRecordFeaturesInteractor
 import com.android.systemui.screencapture.record.largescreen.domain.interactor.LargeScreenCaptureFeaturesInteractor
 import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureRegion as LargeScreenCaptureRegion
@@ -42,7 +41,6 @@ class ScreenCaptureKeyboardShortcutInteractor
 constructor(
     @Background private val backgroundScope: CoroutineScope,
     private val screenCaptureUiInteractor: ScreenCaptureUiInteractor,
-    private val uiEventLogger: UiEventLogger,
     private val keyguardInteractor: KeyguardInteractor,
     private val userRepository: UserRepository,
     private val hsum: HeadlessSystemUserMode,
@@ -96,31 +94,24 @@ constructor(
             return
         }
 
-        logEventForType(captureRegion)
-
         screenCaptureUiInteractor.show(
             ScreenCaptureUiParameters.Record(
                 largeScreenParameters = LargeScreenCaptureUiParameters(captureType, captureRegion)
-            )
+            ),
+            source = getUiSource(captureRegion),
         )
     }
 
-    private fun logEventForType(captureRegion: LargeScreenCaptureRegion) {
-        when (captureRegion) {
+    private fun getUiSource(captureRegion: LargeScreenCaptureRegion): ScreenCaptureUiSource? {
+        return when (captureRegion) {
             LargeScreenCaptureRegion.PARTIAL -> {
-                uiEventLogger.log(
-                    ScreenCaptureEvent
-                        .SCREEN_CAPTURE_LARGE_SCREEN_PARTIAL_SCREENSHOT_KEYBOARD_SHORTCUT
-                )
+                ScreenCaptureUiSource.PARTIAL_SCREENSHOT_KEYBOARD_SHORTCUT
             }
             LargeScreenCaptureRegion.APP_WINDOW -> {
-                uiEventLogger.log(
-                    ScreenCaptureEvent
-                        .SCREEN_CAPTURE_LARGE_SCREEN_APP_WINDOW_SCREENSHOT_KEYBOARD_SHORTCUT
-                )
+                ScreenCaptureUiSource.APP_WINDOW_SCREENSHOT_KEYBOARD_SHORTCUT
             }
             else -> {
-                // Do nothing.
+                null
             }
         }
     }

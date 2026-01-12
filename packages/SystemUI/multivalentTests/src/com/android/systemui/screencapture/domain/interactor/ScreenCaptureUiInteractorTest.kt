@@ -22,12 +22,15 @@ import android.platform.test.flag.junit.SetFlagsRule
 import android.testing.TestableLooper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.internal.logging.uiEventLoggerFake
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.mediaprojection.devicepolicy.mockDevicePolicyResolver
+import com.android.systemui.screencapture.ScreenCaptureEvent
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters
+import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiSource
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiState
 import com.android.systemui.testKosmos
 import com.android.systemui.user.data.repository.fakeUserRepository
@@ -66,6 +69,26 @@ class ScreenCaptureUiInteractorTest : SysuiTestCase() {
 
             underTest.show(ScreenCaptureUiParameters.Record())
             assertThat(uiState).isEqualTo(ScreenCaptureUiState.Invisible)
+        }
+
+    @Test
+    fun show_whenSourceArgumentProvided_logsEvent() =
+        kosmos.runTest {
+            val source = ScreenCaptureUiSource.QUICK_SETTINGS_TILE
+
+            underTest.show(ScreenCaptureUiParameters.Record(), source)
+
+            assertThat(uiEventLoggerFake.numLogs()).isEqualTo(1)
+            val event = ScreenCaptureEvent.SCREEN_CAPTURE_UI_SOURCE_QUICK_SETTINGS
+            assertThat(uiEventLoggerFake.eventId(0)).isEqualTo(event.id)
+        }
+
+    @Test
+    fun show_whenSourceArgumentNotProvided_doesNotLogEvent() =
+        kosmos.runTest {
+            underTest.show(ScreenCaptureUiParameters.Record())
+
+            assertThat(uiEventLoggerFake.numLogs()).isEqualTo(0)
         }
 
     @Test

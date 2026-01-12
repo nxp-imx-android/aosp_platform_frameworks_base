@@ -17,6 +17,7 @@
 package com.android.systemui.screencapture.domain.interactor
 
 import android.content.applicationContext
+import com.android.internal.logging.uiEventLogger
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.mediaprojection.devicepolicy.mockDevicePolicyResolver
@@ -34,5 +35,6 @@ val Kosmos.screenCaptureUiInteractor: ScreenCaptureUiInteractor by
             repository = screenCaptureUiRepository,
             userRepository = userRepository,
             devicePolicyResolver = Lazy { mockDevicePolicyResolver },
+            uiEventLogger = uiEventLogger,
         )
     }

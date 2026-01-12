@@ -19,12 +19,14 @@ package com.android.systemui.screencapture.domain.interactor
 import android.content.Context
 import android.os.UserHandle
 import android.widget.Toast
+import com.android.internal.logging.UiEventLogger
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.mediaprojection.devicepolicy.ScreenCaptureDevicePolicyResolver
 import com.android.systemui.res.R
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters
+import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiSource
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiState
 import com.android.systemui.screencapture.data.repository.ScreenCaptureDeviceStateRepository
 import com.android.systemui.screencapture.data.repository.ScreenCaptureUiRepository
@@ -45,6 +47,7 @@ constructor(
     private val repository: ScreenCaptureUiRepository,
     private val userRepository: UserRepository,
     private val devicePolicyResolver: Lazy<ScreenCaptureDevicePolicyResolver>,
+    private val uiEventLogger: UiEventLogger,
 ) {
 
     val isLargeScreen: StateFlow<Boolean> = deviceStateRepository.isLargeScreen
@@ -55,7 +58,8 @@ constructor(
         return uiState(type).value is ScreenCaptureUiState.Visible
     }
 
-    fun show(parameters: ScreenCaptureUiParameters) {
+    // TODO(b/475561417) Remove nullable parameter if/when all invocations define a source.
+    fun show(parameters: ScreenCaptureUiParameters, source: ScreenCaptureUiSource? = null) {
         if (
             devicePolicyResolver
                 .get()
@@ -81,6 +85,10 @@ constructor(
             } else {
                 return@updateStateForType ScreenCaptureUiState.Visible(parameters)
             }
+        }
+
+        if (source != null) {
+            uiEventLogger.log(source.event)
         }
     }
 
