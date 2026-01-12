@@ -1310,4 +1310,7 @@
 
     <!-- Default height of taskbar for Launcher.   -->
     <dimen name="taskbar_stashed_size">24dp</dimen>
+
+    <!-- App Lock -->
+    <dimen name="app_lock_pill_radius">100dp</dimen>
 </resources>
