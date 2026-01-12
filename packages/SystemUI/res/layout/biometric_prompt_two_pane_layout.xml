@@ -51,6 +51,20 @@ android:layout_height="match_parent">
         app:layout_constraintTop_toTopOf="@+id/topGuideline"
         app:layout_constraintVertical_bias="1.0" />
 
+    <androidx.compose.ui.platform.ComposeView
+        android:id="@+id/compose_credential_view"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:fillViewport="true"
+        app:layout_constrainedHeight="true"
+        app:layout_constrainedWidth="true"
+        app:layout_constraintBottom_toTopOf="@id/bottomGuideline"
+        app:layout_constraintEnd_toEndOf="@id/panel"
+        app:layout_constraintStart_toStartOf="@id/panel"
+        app:layout_constraintTop_toTopOf="@+id/topGuideline"
+        app:layout_constraintVertical_bias="1.0" />
+
     <FrameLayout
         android:id="@+id/credential_view"
         android:layout_width="0dp"
@@ -243,7 +257,7 @@ android:layout_height="match_parent">
         android:layout_height="wrap_content"
         app:barrierAllowsGoneWidgets="false"
         app:barrierDirection="top"
-        app:constraint_referenced_ids="scrollView, fallback_view" />
+        app:constraint_referenced_ids="scrollView, fallback_view, compose_credential_view" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/leftGuideline"

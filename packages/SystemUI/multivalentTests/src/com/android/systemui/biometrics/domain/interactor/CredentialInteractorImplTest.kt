@@ -44,6 +44,7 @@ private const val OWNER_ID = 10
 private const val PASSWORD_ID = 30
 private const val OPERATION_ID = 100L
 private const val MAX_ATTEMPTS = 5
+private const val OP_PACKAGE_NAME = "biometric.testapp"
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
@@ -268,6 +269,7 @@ private fun pinRequest(credentialOwner: Int = USER_ID): BiometricPromptRequest.C
             userIdForPasswordEntry = PASSWORD_ID,
         ),
         BiometricOperationInfo(OPERATION_ID),
+        OP_PACKAGE_NAME,
     )
 
 private fun goodCredential(
