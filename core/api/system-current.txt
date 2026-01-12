@@ -343,6 +343,7 @@ package android {
     field public static final String QUERY_USERS = "android.permission.QUERY_USERS";
     field public static final String RADIO_SCAN_WITHOUT_LOCATION = "android.permission.RADIO_SCAN_WITHOUT_LOCATION";
     field public static final String READ_ACTIVE_EMERGENCY_SESSION = "android.permission.READ_ACTIVE_EMERGENCY_SESSION";
+    field @FlaggedApi("android.app.appfunctions.flags.enable_app_function_permission_v2") public static final String READ_APP_FUNCTION_METADATA = "android.permission.READ_APP_FUNCTION_METADATA";
     field @FlaggedApi("android.app.appfunctions.flags.enable_app_interaction_api") public static final String READ_APP_INTERACTION = "android.permission.READ_APP_INTERACTION";
     field public static final String READ_APP_SPECIFIC_LOCALES = "android.permission.READ_APP_SPECIFIC_LOCALES";
     field @FlaggedApi("com.android.server.telecom.flags.telecom_resolve_hidden_dependencies") public static final String READ_BLOCKED_NUMBERS = "android.permission.READ_BLOCKED_NUMBERS";
