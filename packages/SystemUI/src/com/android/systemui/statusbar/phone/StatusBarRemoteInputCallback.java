@@ -133,7 +133,7 @@ public class StatusBarRemoteInputCallback implements Callback, Callbacks,
                     mDeviceUnlockedInteractorLazy.get().getDeviceUnlockStatus(),
                     deviceUnlockStatus -> onStateChanged(mStatusBarStateController.getState()));
             javaAdapter.alwaysCollectFlow(
-                    mSceneInteractorLazy.get().getTransitionState(),
+                    mSceneInteractorLazy.get().getTransitionStateFlow(),
                     deviceUnlockStatus -> onStateChanged(mStatusBarStateController.getState()));
         }
     }
@@ -346,7 +346,7 @@ public class StatusBarRemoteInputCallback implements Callback, Callbacks,
             final boolean isUnlocked = mDeviceUnlockedInteractorLazy.get()
                     .getDeviceUnlockStatus().getValue().isUnlocked();
             final boolean isIdle = mSceneInteractorLazy.get()
-                    .getTransitionState().getValue() instanceof ObservableTransitionState.Idle;
+                    .getTransitionStateFlow().getValue() instanceof ObservableTransitionState.Idle;
             return isUnlocked && isIdle;
         } else {
             return mKeyguardStateController.isUnlocked()

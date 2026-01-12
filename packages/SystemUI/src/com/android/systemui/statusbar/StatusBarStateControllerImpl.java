@@ -218,7 +218,7 @@ public class StatusBarStateControllerImpl implements
                         mSceneInteractorLazy.get().getCurrentOverlays(),
                         mSceneBackInteractorLazy.get().getBackStack(),
                         mAlternateBouncerInteractorLazy.get().isVisible(),
-                        mSceneInteractorLazy.get().getTransitionState(),
+                        mSceneInteractorLazy.get().getTransitionStateFlow(),
                         this::calculateStateFromSceneFramework),
                     this::onStatusBarStateChanged);
 

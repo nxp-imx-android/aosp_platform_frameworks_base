@@ -121,7 +121,7 @@ constructor(
      * 2. When transitioning, which scenes are being transitioned between.
      * 3. When transitioning, what the progress of the transition is.
      */
-    val transitionState: StateFlow<ObservableTransitionState> =
+    val transitionStateFlow: StateFlow<ObservableTransitionState> =
         repository.transitionState
             .onEach { logger.logSceneTransition(it) }
             .stateInTraced(
@@ -135,11 +135,11 @@ constructor(
      * The key of the content that the UI is currently transitioning to or `null` if there is no
      * active transition at the moment.
      *
-     * This is a convenience wrapper around [transitionState], meant for flow-challenged consumers
-     * like Java code.
+     * This is a convenience wrapper around [transitionStateFlow], meant for flow-challenged
+     * consumers like Java code.
      */
     val transitioningTo: StateFlow<ContentKey?> =
-        transitionState
+        transitionStateFlow
             .map { state ->
                 when (state) {
                     is ObservableTransitionState.Idle -> null
@@ -159,7 +159,7 @@ constructor(
      * the screen, then false for the rest of the transition.
      */
     val isTransitionUserInputOngoing: StateFlow<Boolean> =
-        transitionState
+        transitionStateFlow
             .flatMapLatest {
                 when (it) {
                     is ObservableTransitionState.Transition -> it.isUserInputOngoing
@@ -209,7 +209,7 @@ constructor(
      */
     @OptIn(ExperimentalCoroutinesApi::class)
     fun transitionProgress(content: ContentKey): Flow<Float> {
-        return transitionState.flatMapLatest { transition ->
+        return transitionStateFlow.flatMapLatest { transition ->
             when (transition) {
                 is ObservableTransitionState.Idle -> {
                     flowOf(
@@ -511,7 +511,7 @@ constructor(
      * [onSceneContainerUserInputStarted] and [onRemoteUserInputStarted]) has finished.
      */
     fun onUserInputFinished() {
-        logger.logUserInputFinished(transitionState.value)
+        logger.logUserInputFinished(transitionStateFlow.value)
         repository.isSceneContainerUserInputOngoing.value = false
         repository.isRemoteUserInputOngoing.value = false
     }
@@ -616,7 +616,7 @@ constructor(
         }
 
         val inMidTransitionFromGone =
-            (transitionState.value as? ObservableTransitionState.Transition)?.fromContent ==
+            (transitionStateFlow.value as? ObservableTransitionState.Transition)?.fromContent ==
                 Scenes.Gone
         val isChangeAllowed =
             to != Scenes.Gone ||
@@ -626,7 +626,7 @@ constructor(
                 !keyguardEnabledInteractor.get().isKeyguardEnabled.value
         check(isChangeAllowed) {
             "Cannot change to the Gone scene while the device is locked/secured and not currently" +
-                " transitioning from Gone. Current transition state is ${transitionState.value}." +
+                " transitioning from Gone. Current transition state is ${transitionStateFlow.value}." +
                 " Logging reason for scene change was: $loggingReason"
         }
 
@@ -650,7 +650,7 @@ constructor(
     ): Boolean {
         check(from != null || to != null) {
             "No overlay key provided for requested change." +
-                " Current transition state is ${transitionState.value}." +
+                " Current transition state is ${transitionStateFlow.value}." +
                 " Logging reason for overlay change was: $loggingReason"
         }
 

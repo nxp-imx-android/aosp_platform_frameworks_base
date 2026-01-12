@@ -418,7 +418,7 @@ constructor(
             ),
             Pair(
                 if (SceneContainerFlag.isEnabled) {
-                    sceneInteractor.get().transitionState.map {
+                    sceneInteractor.get().transitionStateFlow.map {
                         !it.isTransitioning(to = Scenes.Gone) && !it.isIdle(Scenes.Gone)
                     }
                 } else {
@@ -445,7 +445,7 @@ constructor(
                     keyguardInteractor.isSecureCameraActive,
                     alternateBouncerInteractor.isVisible,
                     if (SceneContainerFlag.isEnabled) {
-                        sceneInteractor.get().transitionState.map {
+                        sceneInteractor.get().transitionStateFlow.map {
                             it.isIdle(overlay = Overlays.Bouncer)
                         }
                     } else {

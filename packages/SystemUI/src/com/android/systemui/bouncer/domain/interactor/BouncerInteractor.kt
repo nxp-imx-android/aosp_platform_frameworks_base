@@ -171,7 +171,7 @@ constructor(
     /** The amount [0-1] that the Bouncer Overlay has been transitioned to. */
     val bouncerExpansion: Flow<Float> =
         if (SceneContainerFlag.isEnabled) {
-                sceneInteractor.transitionState.flatMapLatestConflated { state ->
+                sceneInteractor.transitionStateFlow.flatMapLatestConflated { state ->
                     when (state) {
                         is ObservableTransitionState.Idle ->
                             flowOf(if (Overlays.Bouncer in state.currentOverlays) 1f else 0f)

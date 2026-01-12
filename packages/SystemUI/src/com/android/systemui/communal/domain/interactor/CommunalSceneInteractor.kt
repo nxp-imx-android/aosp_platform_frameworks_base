@@ -263,16 +263,16 @@ constructor(
     }
 
     /** Transition state of the hub mode. */
-    val transitionState: StateFlow<ObservableTransitionState> =
+    val transitionStateFlow: StateFlow<ObservableTransitionState> =
         if (SceneContainerFlag.isEnabled) {
-            sceneInteractor.transitionState
+            sceneInteractor.transitionStateFlow
         } else {
-            repository.transitionState
+            repository.transitionStateFlow
                 .onEach { logger.logSceneTransition(it) }
                 .stateIn(
                     scope = applicationScope,
                     started = SharingStarted.Eagerly,
-                    initialValue = repository.transitionState.value,
+                    initialValue = repository.transitionStateFlow.value,
                 )
         }
 
@@ -296,7 +296,7 @@ constructor(
      * [SceneContainerFlag] is enabled.
      */
     fun transitionProgressToScene(targetScene: SceneKey) =
-        transitionState
+        transitionStateFlow
             .flatMapLatest { state ->
                 when (state) {
                     is ObservableTransitionState.Idle ->
@@ -325,7 +325,7 @@ constructor(
      * swipe to exit the hub starts.
      */
     val isIdleOnCommunal: StateFlow<Boolean> =
-        transitionState
+        transitionStateFlow
             .map {
                 it is ObservableTransitionState.Idle &&
                     (it.currentScene ==
@@ -345,7 +345,7 @@ constructor(
      */
     @OptIn(ExperimentalCoroutinesApi::class)
     val isCommunalCurrentScene: Flow<Boolean> =
-        transitionState
+        transitionStateFlow
             .flatMapLatest { it.currentScene() }
             .map {
                 it == if (SceneContainerFlag.isEnabled) Scenes.Communal else CommunalScenes.Communal
@@ -361,7 +361,7 @@ constructor(
      * This flow will be true during any transition and when idle on the communal scene.
      */
     val isCommunalVisible: StateFlow<Boolean> =
-        transitionState
+        transitionStateFlow
             .map {
                 if (SceneContainerFlag.isEnabled)
                     it is ObservableTransitionState.Idle && it.currentScene == Scenes.Communal ||
@@ -379,7 +379,7 @@ constructor(
 
     /** Flow that emits a boolean if transitioning to or idle on communal scene. */
     val isTransitioningToOrIdleOnCommunal: Flow<Boolean> =
-        transitionState
+        transitionStateFlow
             .map {
                 (it is ObservableTransitionState.Idle &&
                     it.currentScene == CommunalScenes.Communal) ||
@@ -394,7 +394,7 @@ constructor(
 
     /** Flow that emits a boolean if user is swiping between two scenes. */
     val isCommunalSceneTransitioning: Flow<Boolean> =
-        transitionState
+        transitionStateFlow
             .map { it is ObservableTransitionState.Transition && it.isInitiatedByUserInput }
             .distinctUntilChanged()
 

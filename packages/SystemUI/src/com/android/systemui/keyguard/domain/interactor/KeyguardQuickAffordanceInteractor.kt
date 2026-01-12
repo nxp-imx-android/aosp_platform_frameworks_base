@@ -132,7 +132,7 @@ constructor(
             if (SceneContainerFlag.isEnabled) {
                 sceneInteractor
                     .get()
-                    .transitionState
+                    .transitionStateFlow
                     .map {
                         when (it) {
                             is ObservableTransitionState.Idle ->

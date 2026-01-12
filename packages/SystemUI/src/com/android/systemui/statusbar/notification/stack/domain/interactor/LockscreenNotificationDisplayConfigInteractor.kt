@@ -48,7 +48,7 @@ constructor(
     private val notificationStackAppearanceInteractor: NotificationStackAppearanceInteractor,
 ) {
     private val showOnlyFullHeightNotifications: Flow<Boolean> =
-        sceneInteractor.transitionState.flatMapLatest { transitionState ->
+        sceneInteractor.transitionStateFlow.flatMapLatest { transitionState ->
             when (transitionState) {
                 is Idle ->
                     flowOf(

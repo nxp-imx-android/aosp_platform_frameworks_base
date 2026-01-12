@@ -664,7 +664,7 @@ constructor(
                         .transitionValue(LOCKSCREEN)
                         .map { it > 0f }
                         .distinctUntilChanged(),
-                    sceneInteractor.transitionState
+                    sceneInteractor.transitionStateFlow
                         .map { it is ObservableTransitionState.Idle }
                         .distinctUntilChanged(),
                 ) { bouncerExpansion, inLockscreenTransition, isIdle ->

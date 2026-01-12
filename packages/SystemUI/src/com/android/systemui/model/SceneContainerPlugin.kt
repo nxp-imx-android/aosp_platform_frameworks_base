@@ -92,7 +92,7 @@ constructor(
             // window display. If there will be more, this will need to be revisited
             return false
         }
-        val transitionState = sceneInteractor.get().transitionState.value
+        val transitionState = sceneInteractor.get().transitionStateFlow.value
         val idleTransitionStateOrNull = transitionState as? ObservableTransitionState.Idle
         val sceneBehind = sceneBackInteractor.get().backStack.value.peek()
         val shadeMode = shadeModeInteractor.get().shadeMode.value
