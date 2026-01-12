@@ -148,13 +148,20 @@ abstract class PreferencesApiScreen(
     override val keyParameters: ValidatedKeyParameters?
         get() = if (::screenParameters.isInitialized) screenParameters else super.keyParameters
 
+    private var cachedLaunchScreenExtra: Bundle? = null
+
     override val launchScreenExtra: Bundle
         get() {
+            // Return cached version if available
+            cachedLaunchScreenExtra?.let { return it }
+
             val bundle = super.launchScreenExtra ?: Bundle()
-            val keyParameters = keyParameters ?: return bundle
+            val keyParams = keyParameters ?: return bundle
 
-            prepareScreenExtras?.invoke(keyParameters, bundle)
+            prepareScreenExtras?.invoke(keyParams, bundle)
 
+            // Cache the result
+            cachedLaunchScreenExtra = bundle
             return bundle
         }
 
@@ -251,6 +258,8 @@ abstract class PreferencesApiScreen(
      */
     fun initializeParameters(keyParameters: ValidatedKeyParameters) {
         screenParameters = keyParameters
+        // Ensure the cache is cleared if parameters are re-initialized
+        cachedLaunchScreenExtra = null
     }
 
     /**

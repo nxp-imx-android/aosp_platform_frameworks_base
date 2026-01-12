@@ -137,6 +137,10 @@ abstract class ApiPreference<V : Any>(val isFlagEnabled: Boolean) : PersistentPr
             String.format(VALUE_TYPE_MISMATCH_ERROR, expected.name, actual.name)
     }
 
+    private val cachedKeyParameters: ValidatedKeyParameters by lazy {
+        getScreenParameters.invoke() ?: ValidatedKeyParameters.EMPTY
+    }
+
     /**
      * Builds the final [Permissions] object by combining screen-level, common, and
      * operation-specific permissions.
@@ -161,10 +165,8 @@ abstract class ApiPreference<V : Any>(val isFlagEnabled: Boolean) : PersistentPr
      * @param context The application context to be used in the operation context.
      * @return An initialized [ApiOperationContext] instance.
      */
-    private fun getApiOperationContext(context: Context): ApiOperationContext {
-        val keyParameters = getScreenParameters.invoke() ?: ValidatedKeyParameters.EMPTY
-        return ApiOperationContext(context, keyParameters)
-    }
+    private fun getApiOperationContext(context: Context) =
+        ApiOperationContext(context, cachedKeyParameters)
 
     /**
      * Evaluates preconditions in order: screen-level, common, and operation-specific.
@@ -175,7 +177,8 @@ abstract class ApiPreference<V : Any>(val isFlagEnabled: Boolean) : PersistentPr
         context: Context,
         operationPreconditions: PreconditionsConfig?
     ): ApiPreconditions {
-        val operationContext = getApiOperationContext(context)
+        val operationContext: ApiOperationContext by lazy { getApiOperationContext(context) }
+
         screenPreconditions?.check(operationContext)?.let {
             if (it != Allowed) return it
         }
@@ -214,7 +217,9 @@ abstract class ApiPreference<V : Any>(val isFlagEnabled: Boolean) : PersistentPr
 
     override fun storage(context: Context): KeyValueStore =
         object : NoOpKeyedObservable<String>(), KeyValueStore {
-            private val operationContext = getApiOperationContext(context)
+            private val operationContext: ApiOperationContext by lazy {
+                getApiOperationContext(context)
+            }
 
             override fun contains(storeKey: String): Boolean = storeKey == key
 
@@ -241,7 +246,9 @@ abstract class ApiPreference<V : Any>(val isFlagEnabled: Boolean) : PersistentPr
                 }
 
                 // If value type is not of the preference valueType (V), throw an exception
-                if (value != null && !this@ApiPreference.valueType.isInstance(value)) {
+                // Normalize expected and actual types to their object wrapper equivalents to
+                // prevent primitive/boxed type mismatches.
+                if (value != null && this@ApiPreference.valueType.kotlin.javaObjectType != value.javaClass.kotlin.javaObjectType) {
                     throw IllegalArgumentException(
                         buildValueTypeMismatchError(
                             this@ApiPreference.valueType,
