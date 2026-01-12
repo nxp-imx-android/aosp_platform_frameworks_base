@@ -4121,7 +4121,6 @@ public class PowerManagerServiceTest {
     }
 
     @Test
-    @RequiresFlagsEnabled({Flags.FLAG_FORCE_DISABLE_WAKELOCKS})
     public void testDisableWakelocks_whenForced() {
         createService();
         startSystem();
@@ -4144,7 +4143,6 @@ public class PowerManagerServiceTest {
 
 
     @Test
-    @RequiresFlagsEnabled({Flags.FLAG_FORCE_DISABLE_WAKELOCKS})
     public void testDisableWakelocks_certainGroups_whenForced() {
         createService();
         startSystem();
