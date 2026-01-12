@@ -998,19 +998,28 @@ public final class BroadcastHelper {
                                                @NonNull int[] instantUserIds,
                                                @Nullable SparseArray<int[]> broadcastAllowList,
                                                @Nullable Bundle bOptions) {
-        mHandler.post(() -> sendPackageBroadcast(action, pkg, extras, flags,
-                targetPkg, finishedReceiver, userIds, instantUserIds, broadcastAllowList,
-                null /* filterExtrasForReceiver */, bOptions, null /* requiredPermissions */));
-        if (targetPkg == null) {
-            // For some broadcast action, e.g. ACTION_PACKAGE_ADDED, this method will be called
-            // many times to different targets, e.g. installer app, permission controller, other
-            // registered apps. We should filter it to avoid calling back many times for the same
-            // action. When the targetPkg is set, it sends the broadcast to specific app, e.g.
-            // installer app or null for registered apps. The callback only need to send back to the
-            // registered apps so we check the null condition here.
-            notifyPackageMonitor(action, pkg, extras, userIds, instantUserIds, broadcastAllowList,
-                    null /* filterExtras */);
-        }
+
+        mHandler.post(() -> {
+            sendPackageBroadcast(action, pkg, extras, flags,
+                    targetPkg, finishedReceiver, userIds, instantUserIds, broadcastAllowList,
+                    null /* filterExtrasForReceiver */, bOptions, null /* requiredPermissions */);
+
+            // Ensure we notifyPackageMonitor AFTER broadcast has been sent to avoid race condition
+            // For example, one of the PackageMonitor restarts app process after update while system
+            // kills the process as part of PACKAGE_REPLACED broadcast. We need predictable ordering
+            // between consumers to avoid process dying after restart.
+
+            if (targetPkg == null) {
+                // For some broadcast action, e.g. ACTION_PACKAGE_ADDED, this method will be called
+                // many times to different targets, e.g. installer app, permission controller, other
+                // registered apps. We should filter it to avoid calling back many times for the
+                // same action. When the targetPkg is set, it sends the broadcast to specific app,
+                // e.g. installer app or null for registered apps. The callback only need to send
+                // back to the registered apps so we check the null condition here.
+                notifyPackageMonitor(action, pkg, extras, userIds, instantUserIds,
+                        broadcastAllowList, null /* filterExtras */);
+            }
+        });
     }
 
     void sendSystemPackageUpdatedBroadcasts(@NonNull PackageRemovedInfo packageRemovedInfo) {
@@ -1167,13 +1176,17 @@ public final class BroadcastHelper {
         BiFunction<Integer, Bundle, Bundle> filterExtrasForReceiver =
                 (callingUid, intentExtras) -> BroadcastHelper.filterExtrasChangedPackageList(
                         snapshotSupplier, callingUid, intentExtras);
-        mHandler.post(() -> sendPackageBroadcast(intent, null /* pkg */,
-                extras, flags, null /* targetPkg */, null /* finishedReceiver */,
-                new int[]{userId}, null /* instantUserIds */, null /* broadcastAllowList */,
-                filterExtrasForReceiver,
-                options, null /* requiredPermissions */));
-        notifyPackageMonitor(intent, null /* pkg */, extras, new int[]{userId},
-                null /* instantUserIds */, null /* broadcastAllowList */, filterExtrasForReceiver);
+        mHandler.post(() -> {
+            sendPackageBroadcast(intent, null /* pkg */,
+                    extras, flags, null /* targetPkg */, null /* finishedReceiver */,
+                    new int[]{userId}, null /* instantUserIds */, null /* broadcastAllowList */,
+                    filterExtrasForReceiver,
+                    options, null /* requiredPermissions */);
+
+            notifyPackageMonitor(intent, null /* pkg */, extras, new int[]{userId},
+                    null /* instantUserIds */, null /* broadcastAllowList */,
+                    filterExtrasForReceiver);
+        });
     }
 
     void sendMyPackageSuspendedOrUnsuspended(@NonNull Supplier<Computer> snapshotSupplier,
