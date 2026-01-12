@@ -54,7 +54,6 @@
 #include <SkHighContrastFilter.h>
 #include <SkImage.h>
 #include <SkImageAndroid.h>
-#include <SkImagePriv.h>
 #include <SkJpegEncoder.h>
 #include <SkJpegGainmapEncoder.h>
 #include <SkPixmap.h>
@@ -490,7 +489,7 @@ sk_sp<SkImage> Bitmap::makeImage() {
         // pinnable images are only supported with the Ganesh GPU backend compiled in.
         image = SkImages::PinnableRasterFromBitmap(skiaBitmap);
 #else
-        image = SkMakeImageFromRasterBitmap(skiaBitmap, kNever_SkCopyPixelsMode);
+        image = SkImages::RasterFromBitmapNoCopy(skiaBitmap);
 #endif
     }
     return image;
