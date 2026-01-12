@@ -1699,7 +1699,7 @@ public class ApplicationInfo extends PackageItemInfo implements Parcelable {
     /**
      * If {@code true} this app supports App Lock. This field is only set if the
      * {@link PackageManager#GET_APP_LOCK_INFO} was used when retrieving the application info and
-     * the caller has the {@link Manifest.permission.LOCK_APPS} permission, and will default to
+     * the caller has the {@link Manifest.permission#LOCK_APPS} permission, and will default to
      * {@code false}. To enable App Lock for a package, call
      * {@link PackageManager#getEnableAppLockIntentForPackage}.
      */
@@ -1710,7 +1710,7 @@ public class ApplicationInfo extends PackageItemInfo implements Parcelable {
     /**
      * App lock enablement state of an application. This field is only set if the
      * {@link PackageManager#GET_APP_LOCK_INFO} was used when retrieving the application info and
-     * the caller has the {@link Manifest.permission.LOCK_APPS} permission and will default to
+     * the caller has the {@link Manifest.permission#LOCK_APPS} permission and will default to
      * {@code false}. To enable App Lock for a package, call
      * {@link PackageManager#getEnableAppLockIntentForPackage}.
      */

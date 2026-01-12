@@ -98,7 +98,7 @@ public final class CameraOutputSurface {
     /**
      * Return the dynamic range profile. The default
      * dynamicRangeProfile is
-     * {@link android.hardware.camera2.params.DynamicRangeProfiles.STANDARD}
+     * {@link android.hardware.camera2.params.DynamicRangeProfiles#STANDARD}
      * unless specified by CameraOutputSurface.setDynamicRangeProfile.
      */
     public @DynamicRangeProfiles.Profile long getDynamicRangeProfile() {
@@ -107,7 +107,7 @@ public final class CameraOutputSurface {
 
     /**
      * Return the color space. The default colorSpace is
-     * {@link android.hardware.camera2.params.ColorSpaceProfiles.UNSPECIFIED}
+     * {@link android.hardware.camera2.params.ColorSpaceProfiles#UNSPECIFIED}
      * unless specified by CameraOutputSurface.setColorSpace.
      */
     @SuppressLint("MethodNameUnits")
@@ -117,7 +117,7 @@ public final class CameraOutputSurface {
 
     /**
      * Set the dynamic range profile. The default dynamicRangeProfile
-     * will be {@link android.hardware.camera2.params.DynamicRangeProfiles.STANDARD}
+     * will be {@link android.hardware.camera2.params.DynamicRangeProfiles#STANDARD}
      * unless explicitly set using this method.
      */
     public void setDynamicRangeProfile(

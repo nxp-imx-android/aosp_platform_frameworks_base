@@ -80,12 +80,12 @@ public class VirtualDpad implements Closeable {
      *
      * <p>Supported key codes are:
      * <ul>
-     *     <li>{@link KeyEvent.KEYCODE_DPAD_UP}</li>
-     *     <li>{@link KeyEvent.KEYCODE_DPAD_DOWN}</li>
-     *     <li>{@link KeyEvent.KEYCODE_DPAD_LEFT}</li>
-     *     <li>{@link KeyEvent.KEYCODE_DPAD_RIGHT}</li>
-     *     <li>{@link KeyEvent.KEYCODE_DPAD_CENTER}</li>
-     *     <li>{@link KeyEvent.KEYCODE_BACK}</li>
+     *     <li>{@link KeyEvent#KEYCODE_DPAD_UP}</li>
+     *     <li>{@link KeyEvent#KEYCODE_DPAD_DOWN}</li>
+     *     <li>{@link KeyEvent#KEYCODE_DPAD_LEFT}</li>
+     *     <li>{@link KeyEvent#KEYCODE_DPAD_RIGHT}</li>
+     *     <li>{@link KeyEvent#KEYCODE_DPAD_CENTER}</li>
+     *     <li>{@link KeyEvent#KEYCODE_BACK}</li>
      * </ul>
      *
      * @param event the event to send

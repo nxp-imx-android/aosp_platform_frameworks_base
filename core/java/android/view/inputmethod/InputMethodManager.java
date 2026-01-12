@@ -2675,7 +2675,7 @@ public final class InputMethodManager {
      *
      * @param windowToken The token of the window that is making the request,
      * as returned by {@link View#getWindowToken() View.getWindowToken()}.
-     * @return <p>For apps targeting Android {@link Build.VERSION_CODES.BAKLAVA}, onwards, it
+     * @return <p>For apps targeting Android {@link Build.VERSION_CODES#BAKLAVA}, onwards, it
      * will always return {@code true}. To see when the IME is hidden, use
      * {@link View.OnApplyWindowInsetsListener} and verify the provided {@link WindowInsets} for
      * the visibility of IME.

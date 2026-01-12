@@ -84,7 +84,7 @@ public final class BluetoothProfileConnectionInfo implements Parcelable {
     /**
      * Constructor for A2dp info
      *
-     * @param suppressNoisyIntent if true the {@link AudioManager.ACTION_AUDIO_BECOMING_NOISY}
+     * @param suppressNoisyIntent if true the {@link AudioManager#ACTION_AUDIO_BECOMING_NOISY}
      * intent will not be sent.
      *
      * @param volume of device -1 to ignore value
@@ -97,7 +97,7 @@ public final class BluetoothProfileConnectionInfo implements Parcelable {
 
     /**
      * Constructor for A2dp sink info
-     * The {@link AudioManager.ACTION_AUDIO_BECOMING_NOISY} intent will not be sent.
+     * The {@link AudioManager#ACTION_AUDIO_BECOMING_NOISY} intent will not be sent.
      *
      * @param volume of device -1 to ignore value
      */
@@ -108,7 +108,7 @@ public final class BluetoothProfileConnectionInfo implements Parcelable {
     /**
      * Constructor for hearing aid info
      *
-     * @param suppressNoisyIntent if true the {@link AudioManager.ACTION_AUDIO_BECOMING_NOISY}
+     * @param suppressNoisyIntent if true the {@link AudioManager#ACTION_AUDIO_BECOMING_NOISY}
      * intent will not be sent.
      */
     public static @NonNull BluetoothProfileConnectionInfo createHearingAidInfo(
@@ -122,7 +122,7 @@ public final class BluetoothProfileConnectionInfo implements Parcelable {
      * Use this method for an input device connection,
      * or for an output device connection if the connection volume is unknown,
      * otherwise use {@link #createLeAudioOutputInfo(boolean, int)}.
-     * @param suppressNoisyIntent if true the {@link AudioManager.ACTION_AUDIO_BECOMING_NOISY}
+     * @param suppressNoisyIntent if true the {@link AudioManager#ACTION_AUDIO_BECOMING_NOISY}
      * intent will not be sent.
      *
      * @param isLeOutput if true mean the device is an output device, if false it's an input device
@@ -137,7 +137,7 @@ public final class BluetoothProfileConnectionInfo implements Parcelable {
      * Factory method for <code>BluetoothProfileConnectionInfo</code> for an LE output device
      * Use this method for an output device connection with a volume to be used at connection
      * time.
-     * @param suppressNoisyIntent if true the {@link AudioManager.ACTION_AUDIO_BECOMING_NOISY}
+     * @param suppressNoisyIntent if true the {@link AudioManager#ACTION_AUDIO_BECOMING_NOISY}
      *     intent will not be sent.
      * @param volume the volume index of the device, -1 if unknown or to be ignored
      * @return an instance of BluetoothProfileConnectionInfo for the BLE output device that reflects
@@ -157,7 +157,7 @@ public final class BluetoothProfileConnectionInfo implements Parcelable {
     }
 
     /**
-     * @return {@code true} if {@link AudioManager.ACTION_AUDIO_BECOMING_NOISY} intent will not be
+     * @return {@code true} if {@link AudioManager#ACTION_AUDIO_BECOMING_NOISY} intent will not be
      * sent
      */
     public boolean isSuppressNoisyIntent() {
@@ -165,7 +165,7 @@ public final class BluetoothProfileConnectionInfo implements Parcelable {
     }
 
     /**
-     * Only for {@link BluetoothProfile.A2DP} profile
+     * Only for {@link BluetoothProfile#A2DP} profile
      * @return the volume of the connection or -1 if the value is ignored
      */
     public int getVolume() {
@@ -173,7 +173,7 @@ public final class BluetoothProfileConnectionInfo implements Parcelable {
     }
 
     /**
-     * Only for {@link BluetoothProfile.LE_AUDIO} profile
+     * Only for {@link BluetoothProfile#LE_AUDIO} profile
      * @return {@code true} is the LE device is an output device, {@code false} if it's an input
      * device
      */

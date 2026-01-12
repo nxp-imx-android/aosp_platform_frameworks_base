@@ -242,7 +242,7 @@ public final class VirtualDeviceParams implements Parcelable {
      * <p>Activities launched on untrusted displays will always show in the host device recents,
      * regardless of the policy.</p>
      *
-     * @see android.hardware.display.DisplayManager.VIRTUAL_DISPLAY_FLAG_TRUSTED
+     * @see android.hardware.display.DisplayManager#VIRTUAL_DISPLAY_FLAG_TRUSTED
      */
     public static final int POLICY_TYPE_RECENTS = 2;
 

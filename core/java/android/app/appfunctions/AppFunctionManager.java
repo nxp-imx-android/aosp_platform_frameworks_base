@@ -728,7 +728,7 @@ public final class AppFunctionManager {
     /**
      * Checks whether the given agent has access to app functions of the given target app, or if the
      * access is not {@link #getAccessRequestState(String) valid}. Requires the {@link
-     * Manifest.permission.MANAGE_APP_FUNCTION_ACCESS} permission if the {@code agentPackageName} is
+     * Manifest.permission#MANAGE_APP_FUNCTION_ACCESS} permission if the {@code agentPackageName} is
      * not the calling app.
      *
      * @param agentPackageName The package name of the agent
@@ -758,7 +758,7 @@ public final class AppFunctionManager {
      * Checks whether the calling app has access to app functions of the given target app, for the
      * given users, or if the access is invalid (not able to be requested). An access is valid if:
      * 1. The agent (calling app) and target apps are both installed, and the agent has visibility
-     * of the target. 2. The agent has the {@link Manifest.permission.EXECUTE_APP_FUNCTIONS}
+     * of the target. 2. The agent has the {@link Manifest.permission#EXECUTE_APP_FUNCTIONS}
      * permission granted. 3. The agent is allowlisted by the system. 4. The target has an
      * AppFunctionService.
      *

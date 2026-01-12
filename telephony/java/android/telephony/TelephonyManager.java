@@ -16122,7 +16122,7 @@ public class TelephonyManager {
      * @param apnSetting The {@link ApnSetting} describing the new APN.
      * @return An integer, corresponding to a primary key in a database, that allows the caller to
      *         modify the APN in the future via {@link #modifyDevicePolicyOverrideApn}, or
-     *         {@link android.provider.Telephony.Carriers.INVALID_APN_ID} if the override operation
+     *         {@link android.provider.Telephony.Carriers#INVALID_APN_ID} if the override operation
      *         failed.
      * @throws SecurityException if the caller is not the system or phone process.
      * @hide

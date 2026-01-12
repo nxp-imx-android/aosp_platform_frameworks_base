@@ -1444,7 +1444,7 @@ public abstract class PackageManager {
      * <p>
      * This flag is used only for query and not resolution, the default behaviour would be to
      * restrict querying across clone profile. This flag would be honored only if caller have
-     * permission {@link Manifest.permission.QUERY_CLONED_APPS}.
+     * permission {@link Manifest.permission#QUERY_CLONED_APPS}.
      *
      * @hide
      */
@@ -1456,7 +1456,7 @@ public abstract class PackageManager {
      * {@link ApplicationInfo}, {@link ComponentInfo}, and {@link ResolveInfo} flag: return the
      * {@link ApplicationInfo#isAppLockSupported} and {@link ApplicationInfo#isAppLockEnabled}
      * associated with an application. The caller should have the
-     * {@link Manifest.permission.LOCK_APPS} permission, or a {@link SecurityException} will be
+     * {@link Manifest.permission#LOCK_APPS} permission, or a {@link SecurityException} will be
      * thrown.
      */
     @FlaggedApi(android.security.Flags.FLAG_APP_LOCK_APIS)

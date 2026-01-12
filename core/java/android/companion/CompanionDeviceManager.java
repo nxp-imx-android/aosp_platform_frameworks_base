@@ -1518,7 +1518,7 @@ public final class CompanionDeviceManager {
      * <p>This method establishes a single listener for a given {@code serviceName}.
      * If a listener is already registered for the same service, it will be replaced.
      *
-     * If the caller relies on the {@link android.Manifest.permission.ACCESS_COMPANION_MESSAGE_PCC}
+     * If the caller relies on the {@link android.Manifest.permission#ACCESS_COMPANION_MESSAGE_PCC}
      * permission, the system requires that the targeted association has been verified as a
      * {@link AssociationInfo#isTrusted() trusted device}.
      *
@@ -2466,7 +2466,7 @@ public final class CompanionDeviceManager {
      *   </li>
      * </ul>
      *
-     * If the caller relies on the {@link android.Manifest.permission.ACCESS_COMPANION_MESSAGE_PCC}
+     * If the caller relies on the {@link android.Manifest.permission#ACCESS_COMPANION_MESSAGE_PCC}
      * permission, the system requires that the targeted association has been verified as a
      * {@link AssociationInfo#isTrusted() trusted device}.
      *
