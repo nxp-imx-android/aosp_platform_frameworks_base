@@ -61,6 +61,10 @@ public class PowerCommand extends Svc.Command {
             if (args.length >= 2) {
                 IPowerManager pm = IPowerManager.Stub.asInterface(
                         ServiceManager.getService(Context.POWER_SERVICE));
+                if (pm == null) {
+                    System.err.println("Failed to get power manager.");
+                    return;
+                }
                 if ("stayon".equals(args[1]) && args.length == 3) {
                     int val;
                     if ("true".equals(args[2])) {
