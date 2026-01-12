@@ -125,7 +125,7 @@ class DeviceEntryInteractorTest : SysuiTestCase() {
     fun isUnlocked_whenAuthMethodIsSimAndUnlocked_isFalse() =
         kosmos.runTest {
             fakeAuthenticationRepository.setAuthenticationMethod(Sim)
-            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+            biometricUnlockInteractor.setBiometricUnlockState(
                 unlockStateInt = BiometricUnlockController.MODE_DISMISS,
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
@@ -199,7 +199,7 @@ class DeviceEntryInteractorTest : SysuiTestCase() {
 
             // Unlock device and go to home screen.
             fakeAuthenticationRepository.setAuthenticationMethod(Pattern)
-            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+            biometricUnlockInteractor.setBiometricUnlockState(
                 unlockStateInt = BiometricUnlockController.MODE_DISMISS,
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
@@ -283,7 +283,7 @@ class DeviceEntryInteractorTest : SysuiTestCase() {
             switchToScene(Scenes.Lockscreen)
             assertThat(canSwipeToEnter).isFalse()
 
-            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+            biometricUnlockInteractor.setBiometricUnlockState(
                 unlockStateInt = BiometricUnlockController.MODE_NONE_UNLOCKED,
                 biometricUnlockSource = BiometricUnlockSource.FACE_SENSOR,
             )
@@ -301,7 +301,7 @@ class DeviceEntryInteractorTest : SysuiTestCase() {
             assertThat(canSwipeToEnter).isFalse()
 
             // MODE_ONLY_WAKE can occur if unlocking isn't allowed:
-            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+            biometricUnlockInteractor.setBiometricUnlockState(
                 unlockStateInt = BiometricUnlockController.MODE_ONLY_WAKE,
                 biometricUnlockSource = BiometricUnlockSource.FACE_SENSOR,
             )
@@ -329,7 +329,7 @@ class DeviceEntryInteractorTest : SysuiTestCase() {
     @Test
     fun isAuthenticationRequired_unlockedAndSecured_false() =
         kosmos.runTest {
-            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+            biometricUnlockInteractor.setBiometricUnlockState(
                 unlockStateInt = BiometricUnlockController.MODE_DISMISS,
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
@@ -341,7 +341,7 @@ class DeviceEntryInteractorTest : SysuiTestCase() {
     @Test
     fun isAuthenticationRequired_unlockedAndNotSecured_false() =
         kosmos.runTest {
-            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+            biometricUnlockInteractor.setBiometricUnlockState(
                 unlockStateInt = BiometricUnlockController.MODE_DISMISS,
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
@@ -358,7 +358,7 @@ class DeviceEntryInteractorTest : SysuiTestCase() {
             assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
 
             fakeAuthenticationRepository.setAuthenticationMethod(Pin)
-            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+            biometricUnlockInteractor.setBiometricUnlockState(
                 unlockStateInt = BiometricUnlockController.MODE_DISMISS,
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
@@ -375,20 +375,20 @@ class DeviceEntryInteractorTest : SysuiTestCase() {
             val backStack by collectLastValue(sceneBackInteractor.backStack)
             switchToScene(Scenes.Lockscreen)
             assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
-            switchToScene(Scenes.QuickSettings)
-            assertThat(currentScene).isEqualTo(Scenes.QuickSettings)
-            assertThat(backStack!!.asIterable().toList()).isEqualTo(listOf(Scenes.Lockscreen))
+            switchToScene(Scenes.Shade)
+            assertThat(currentScene).isEqualTo(Scenes.Shade)
+            assertThat(backStack!!.asIterable()).containsExactly(Scenes.Lockscreen)
 
             fakeAuthenticationRepository.setAuthenticationMethod(Pin)
-            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+            biometricUnlockInteractor.setBiometricUnlockState(
                 unlockStateInt = BiometricUnlockController.MODE_DISMISS,
-                biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
+                biometricUnlockSource = BiometricUnlockSource.FACE_SENSOR,
             )
 
             underTest.attemptDeviceEntry("test")
 
-            assertThat(currentScene).isEqualTo(Scenes.QuickSettings)
-            assertThat(backStack!!.asIterable().toList()).isEqualTo(listOf(Scenes.Gone))
+            assertThat(currentScene).isEqualTo(Scenes.Shade)
+            assertThat(backStack!!.asIterable()).containsExactly(Scenes.Gone)
         }
 
     @Test
@@ -412,16 +412,16 @@ class DeviceEntryInteractorTest : SysuiTestCase() {
             val backStack by collectLastValue(sceneBackInteractor.backStack)
             switchToScene(Scenes.Lockscreen)
             assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
-            switchToScene(Scenes.QuickSettings)
-            assertThat(currentScene).isEqualTo(Scenes.QuickSettings)
-            assertThat(backStack!!.asIterable().toList()).isEqualTo(listOf(Scenes.Lockscreen))
+            switchToScene(Scenes.Shade)
+            assertThat(currentScene).isEqualTo(Scenes.Shade)
+            assertThat(backStack!!.asIterable()).containsExactly(Scenes.Lockscreen)
 
             fakeAuthenticationRepository.setAuthenticationMethod(None)
 
             underTest.attemptDeviceEntry("test")
 
-            assertThat(currentScene).isEqualTo(Scenes.QuickSettings)
-            assertThat(backStack!!.asIterable().toList()).isEqualTo(listOf(Scenes.Gone))
+            assertThat(currentScene).isEqualTo(Scenes.Shade)
+            assertThat(backStack!!.asIterable()).containsExactly(Scenes.Gone)
         }
 
     @Test
@@ -433,7 +433,7 @@ class DeviceEntryInteractorTest : SysuiTestCase() {
             assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
             switchToScene(Scenes.Communal)
             assertThat(currentScene).isEqualTo(Scenes.Communal)
-            assertThat(backStack!!.asIterable().toList()).isEqualTo(listOf(Scenes.Lockscreen))
+            assertThat(backStack!!.asIterable()).containsExactly(Scenes.Lockscreen)
 
             fakeAuthenticationRepository.setAuthenticationMethod(None)
 
@@ -452,7 +452,7 @@ class DeviceEntryInteractorTest : SysuiTestCase() {
             assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
             switchToScene(Scenes.Shade)
             assertThat(currentScene).isEqualTo(Scenes.Shade)
-            assertThat(backStack!!.asIterable().toList()).isEqualTo(listOf(Scenes.Lockscreen))
+            assertThat(backStack!!.asIterable()).containsExactly(Scenes.Lockscreen)
 
             // Since the dismiss action wants to animate over the lockscreen, attempting device
             // entry should animate Lockscreen -> Gone instead of replacing Lockscreen in the back
@@ -497,17 +497,17 @@ class DeviceEntryInteractorTest : SysuiTestCase() {
             val backStack by collectLastValue(sceneBackInteractor.backStack)
             switchToScene(Scenes.Lockscreen)
             assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
-            switchToScene(Scenes.QuickSettings)
-            assertThat(currentScene).isEqualTo(Scenes.QuickSettings)
-            assertThat(backStack!!.asIterable().toList()).isEqualTo(listOf(Scenes.Lockscreen))
+            switchToScene(Scenes.Shade)
+            assertThat(currentScene).isEqualTo(Scenes.Shade)
+            assertThat(backStack!!.asIterable()).containsExactly(Scenes.Lockscreen)
 
             fakeDeviceEntryRepository.setLockscreenEnabled(true)
             fakeAuthenticationRepository.setAuthenticationMethod(None)
 
             underTest.attemptDeviceEntry("test")
 
-            assertThat(currentScene).isEqualTo(Scenes.QuickSettings)
-            assertThat(backStack!!.asIterable().toList()).isEqualTo(listOf(Scenes.Gone))
+            assertThat(currentScene).isEqualTo(Scenes.Shade)
+            assertThat(backStack!!.asIterable()).containsExactly(Scenes.Gone)
         }
 
     @Test
@@ -619,7 +619,7 @@ class DeviceEntryInteractorTest : SysuiTestCase() {
             val isUnlocked by collectLastValue(underTest.isUnlocked)
             val currentScene by collectLastValue(sceneInteractor.currentScene)
             fakeAuthenticationRepository.setAuthenticationMethod(Pin)
-            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+            biometricUnlockInteractor.setBiometricUnlockState(
                 unlockStateInt = BiometricUnlockController.MODE_DISMISS,
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
@@ -674,7 +674,7 @@ class DeviceEntryInteractorTest : SysuiTestCase() {
 
             assertThat(isUnlocked).isTrue()
             assertThat(currentScene).isEqualTo(Scenes.Dream)
-            assertThat(backStack!!.asIterable().toList()).isEqualTo(listOf(Scenes.Lockscreen))
+            assertThat(backStack!!.asIterable()).containsExactly(Scenes.Lockscreen)
         }
 
     @Test
