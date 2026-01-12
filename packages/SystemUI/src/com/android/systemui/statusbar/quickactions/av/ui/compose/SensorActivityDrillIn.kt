@@ -142,6 +142,8 @@ private fun AppDetailItem(
     isFirstItem: Boolean,
     isLastItem: Boolean,
 ) {
+    // TODO(467631762): Enable icons once the icon is available.
+    val ICONS_ENABLED = false
     val colorScheme = MaterialTheme.colorScheme
 
     val bigRadius = 26.dp
@@ -156,10 +158,10 @@ private fun AppDetailItem(
             bottomEnd = bottomCornerRadius,
         )
     ListItem(
-        leadingContent =
+        leadingContent = if(ICONS_ENABLED)
             appIcon?.let {
                 { Icon(painter = DrawablePainter(drawable = it), contentDescription = null) }
-            },
+            } else null,
         headlineContent = { Text(text = appName) },
         supportingContent = {
             SupportingContent(
