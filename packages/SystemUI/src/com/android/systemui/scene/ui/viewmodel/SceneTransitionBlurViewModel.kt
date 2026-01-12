@@ -25,6 +25,7 @@ import com.android.compose.animation.scene.ContentKey
 import com.android.compose.animation.scene.OverlayKey
 import com.android.compose.animation.scene.SceneKey
 import com.android.compose.animation.scene.content.state.TransitionState
+import com.android.systemui.Flags.spatialModelBouncerPushback
 import com.android.systemui.communal.domain.interactor.CommunalSettingsInteractor
 import com.android.systemui.communal.shared.model.CommunalBackgroundType
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryInteractor
@@ -150,15 +151,15 @@ constructor(
                         } else {
                             blurConfig.minBlurRadiusPx
                         }
-
                     Scenes.Lockscreen ->
                         if (
                             ambientModeSupported &&
                                 keyguardTransitionInteractor.currentKeyguardState.value == AOD
-                        )
+                        ) {
                             blurConfig.maxBlurRadiusPx / 2
-                        else blurConfig.minBlurRadiusPx
-
+                        } else {
+                            blurConfig.minBlurRadiusPx
+                        }
                     Scenes.QuickSettings -> blurConfig.maxBlurRadiusPx
                     Scenes.Shade -> blurConfig.maxBlurRadiusPx
                     Scenes.Dream -> blurConfig.minBlurRadiusPx
@@ -181,22 +182,36 @@ constructor(
     ): Float = lerp(startBlurRadius, endBlurRadius, transitionProgress)
 
     private fun computeBackgroundBlurScale(state: TransitionState): Float {
-        return when {
-            state is TransitionState.Transition.ChangeScene ->
-                1.0f -
+        return 1f -
+            when {
+                state is TransitionState.Transition.ChangeScene ->
                     when {
                         state.fromScene == Scenes.Lockscreen && state.toScene == Scenes.Communal ->
                             state.progress * BLUR_SCALE_COMMUNAL
-
                         state.fromScene == Scenes.Communal ->
-                            (1 - state.progress) * BLUR_SCALE_COMMUNAL
-
+                            (1f - state.progress) * BLUR_SCALE_COMMUNAL
                         else -> 0f
                     }
-
-            state is TransitionState.Idle && state.currentScene == Scenes.Communal -> 0.95f
-            else -> 1.0f
-        }
+                state is TransitionState.Transition.ShowOrHideOverlay ->
+                    when {
+                        spatialModelBouncerPushback() && state.fromContent == Scenes.Lockscreen &&
+                            state.toContent == Overlays.Bouncer ->
+                            state.progress * BLUR_SCALE_BOUNCER
+                        spatialModelBouncerPushback() && state.fromContent == Overlays.Bouncer &&
+                            state.toContent == Scenes.Lockscreen ->
+                            (1f - state.progress) * BLUR_SCALE_BOUNCER
+                        else -> 0f
+                    }
+                state is TransitionState.Idle ->
+                    when {
+                        state.currentScene == Scenes.Communal -> BLUR_SCALE_COMMUNAL
+                        spatialModelBouncerPushback() &&
+                            state.currentScene == Scenes.Lockscreen &&
+                            state.currentOverlays.contains(Overlays.Bouncer) -> BLUR_SCALE_BOUNCER
+                        else -> 0f
+                    }
+                else -> 0f
+            }
     }
 
     private fun applyBlur(blurEffect: BlurEffect) {
@@ -294,6 +309,7 @@ constructor(
 
     companion object {
         private const val BLUR_SCALE_COMMUNAL = 0.05f
+        private const val BLUR_SCALE_BOUNCER = 0.05f
         private const val TAG = "SceneTransitionBlur"
         private val isLoggable
             get() = Log.isLoggable(TAG, Log.VERBOSE) || Build.IS_ENG
