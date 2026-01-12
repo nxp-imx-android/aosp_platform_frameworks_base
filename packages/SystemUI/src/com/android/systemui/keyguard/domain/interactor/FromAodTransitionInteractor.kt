@@ -119,6 +119,12 @@ constructor(
                     val primaryBouncerShowing = keyguardInteractor.primaryBouncerShowing.value
                     val autoOpenCommunal = communalSettingsInteractor.autoOpenEnabled.value
 
+                    // Do not transition to LOCKSCREEN or GONE if we are waking and unlocking.
+                    // We will wait for dismissAod() / the dismiss call.
+                    // This previously wasn't a problem with the 50ms debounce caused delay
+                    if (Flags.wakefulnessForAnimations() && isWakeAndDismiss(biometricUnlockMode)) {
+                        return@collect
+                    }
                     if (!maybeHandleInsecurePowerGesture()) {
                         val shouldTransitionToLockscreen =
                             if (KeyguardWmStateRefactor.isEnabled) {
@@ -129,11 +135,11 @@ constructor(
                                 !maybeStartTransitionToOccludedOrInsecureCamera { state, reason ->
                                     startTransitionTo(state, ownerReason = reason)
                                 } &&
-                                    !isWakeAndDismiss(biometricUnlockMode) &&
+                                    (Flags.wakefulnessForAnimations() || !isWakeAndDismiss(biometricUnlockMode)) &&
                                     !primaryBouncerShowing
                             } else {
                                 !isKeyguardOccludedLegacy &&
-                                    !isWakeAndDismiss(biometricUnlockMode) &&
+                                    (Flags.wakefulnessForAnimations() || !isWakeAndDismiss(biometricUnlockMode)) &&
                                     !primaryBouncerShowing
                             }
 
