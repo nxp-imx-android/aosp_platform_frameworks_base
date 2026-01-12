@@ -2106,8 +2106,6 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
      */
     @Override
     public boolean hideKeyguardImpl(boolean forceStateChange) {
-        if (SceneContainerFlag.isEnabled()) return false;
-
         Trace.beginSection("CentralSurfaces#hideKeyguard");
         boolean staying = mStatusBarStateController.leaveOpenOnKeyguardHide();
         int previousState = mStatusBarStateController.getState();
@@ -2121,6 +2119,12 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
                 mStackScrollerController.updateSensitivenessWithoutAnimation();
             }
         }
+
+        if (SceneContainerFlag.isEnabled()) {
+            Trace.endSection();
+            return false;
+        }
+
         if (mStatusBarStateController.leaveOpenOnKeyguardHide()) {
             long delay = mKeyguardStateController.calculateGoingToFullShadeDelay();
             mLockscreenShadeTransitionController.onHideKeyguard(delay, previousState);
