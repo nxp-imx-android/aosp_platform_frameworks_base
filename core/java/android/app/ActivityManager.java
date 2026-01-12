@@ -6500,6 +6500,7 @@ public class ActivityManager {
          *
          * @return The RecentTaskInfo for this task, or null if the task no longer exists.
          */
+        @Nullable
         public RecentTaskInfo getTaskInfo() {
             try {
                 return mAppTaskImpl.getTaskInfo();

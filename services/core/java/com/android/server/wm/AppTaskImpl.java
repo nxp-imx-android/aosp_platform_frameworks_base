@@ -149,7 +149,8 @@ class AppTaskImpl extends IAppTask.Stub {
                 Task task = mService.mRootWindowContainer.anyTaskForId(mTaskId,
                         MATCH_ATTACHED_TASK_OR_RECENT_TASKS);
                 if (task == null) {
-                    throw new IllegalArgumentException("Unable to find task ID " + mTaskId);
+                    Slog.w(TAG, "Unable to find task ID " + mTaskId);
+                    return null;
                 }
                 return mService.getRecentTasks().createRecentTaskInfo(task,
                         false /* stripExtras */, true /* getTasksAllowed */);
