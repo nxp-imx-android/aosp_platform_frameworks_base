@@ -18,12 +18,14 @@ package com.android.systemui.communal.posturing.data.repository
 
 import android.hardware.Sensor
 import android.hardware.SensorEvent
+import android.util.MathUtils
+import com.android.app.tracing.TraceStateLogger
+import com.android.app.tracing.coroutines.TrackTracer
 import com.android.systemui.communal.posturing.data.model.PositionState
 import com.android.systemui.communal.posturing.shared.model.ConfidenceLevel
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.core.Logger
 import com.android.systemui.log.dagger.PostureDetectionLog
-import com.android.systemui.util.time.SystemClock
 import javax.inject.Inject
 import javax.inject.Named
 import kotlin.math.abs
@@ -72,7 +74,6 @@ import kotlin.time.Duration.Companion.milliseconds
 class PostureDetectionAlgorithm
 @Inject
 constructor(
-    private val clock: SystemClock,
     @Named(POSTURE_DETECTION_FLAT_ANGLE_TH) flatAngleThreshold: Int,
     @Named(POSTURE_DETECTION_UPRIGHT_ANGLE_TH) uprightAngleThreshold: Int,
     @PostureDetectionLog private val logBuffer: LogBuffer,
@@ -80,12 +81,28 @@ constructor(
 
     private val logger = Logger(logBuffer, TAG)
 
-    private val samples = ArrayDeque<AccelSample>()
+    private val tracer = TrackTracer(TAG, trackGroup = TRACK_GROUP_NAME)
+    private val stationaryStateLogger = createTraceStateLogger("stationary")
+    private val posturedStateLogger = createTraceStateLogger("postured")
+    private val orientationStateLogger = createTraceStateLogger("orientation")
+
+    // Capacity is double the expected number of samples to provide a buffer.
+    private val samples =
+        AccelSampleBuffer(
+            capacity = (SAMPLE_WINDOW_DURATION / SENSOR_SAMPLING_PERIOD_US).toInt() * 2
+        )
+
+    // Reused vectors to avoid allocation in hot path
+    private val sum = AccelVector.zero()
+    private val sumOfSquares = AccelVector.zero()
+    private val temp = AccelVector.zero()
+    private val avg = AccelVector.zero()
+    private val variance = AccelVector.zero()
 
     private var prevLogInfo: PositionStateLogInfo? = null
 
     // Cosine of the angle threshold for flatness detection.
-    private val flatAngleThresholdCos = cos(Math.toRadians(flatAngleThreshold.toDouble())).toFloat()
+    private val flatAngleThresholdCos = flatAngleThreshold.cosine()
 
     // Minimum gravity on the Z-axis for flatness detection.
     private val flatGravityMin = GRAVITY * flatAngleThresholdCos
@@ -94,8 +111,7 @@ constructor(
     private val flatGravityMax = GRAVITY * (1 + GRAVITY_HW_TOLERANCE)
 
     // Cosine of the angle threshold for upright detection.
-    private val uprightAngleThresholdCos =
-        cos(Math.toRadians(uprightAngleThreshold.toDouble())).toFloat()
+    private val uprightAngleThresholdCos = uprightAngleThreshold.cosine()
 
     // Minimum gravity on the Y-axis for upright detection.
     private val uprightThresholdMin = GRAVITY * uprightAngleThresholdCos
@@ -107,57 +123,96 @@ constructor(
      * @param event The [SensorEvent] from the accelerometer.
      * @return A new [PositionState] or `null` if there is not enough data to make a determination.
      */
-    fun onSensorChanged(event: SensorEvent?): PositionState? {
-        if (event?.sensor?.type != Sensor.TYPE_ACCELEROMETER) return null
+    fun onSensorChanged(event: SensorEvent?): PositionState? =
+        tracer.traceSyncAndAsync({
+            "onSensorChanged event=(${event?.x}, ${event?.y}, ${event?.z})"
+        }) {
+            if (event?.sensor?.type != Sensor.TYPE_ACCELEROMETER) return@traceSyncAndAsync null
 
-        val now = clock.elapsedRealtime()
-        samples.addLast(AccelSample(now, event.values[0], event.values[1], event.values[2]))
+            updateSamples(event)
 
-        // Remove old samples that are outside the sliding window.
-        while (
-            samples.isNotEmpty() &&
-                (now - samples.first().timestamp > SAMPLE_WINDOW_DURATION.inWholeMilliseconds)
-        ) {
-            samples.removeFirst()
-        }
-
-        // We need a minimum number of samples to get an accurate reading.
-        if (samples.size < MIN_SAMPLES) {
-            return null
-        }
-
-        val (stationaryConfidence, avg, variance) = computeStationaryConfidence(samples)
-        val (posturedConfidence, orientation) =
-            if (stationaryConfidence is ConfidenceLevel.Positive) {
-                computePosturedConfidence(avg, stationaryConfidence.confidence)
-            } else {
-                // If the device is moving, it cannot be postured.
-                ConfidenceLevel.Negative(1.0f) to OrientationState.NONE
+            // We need a minimum number of samples to get an accurate reading.
+            if (samples.size < MIN_SAMPLES) {
+                return@traceSyncAndAsync null
             }
 
-        val positionState = PositionState(stationaryConfidence, posturedConfidence)
-        val logInfo = PositionStateLogInfo(positionState, orientation)
-        if (logInfo.isRelativelyDifferentFrom(prevLogInfo)) {
-            logger.d({
-                "stationary=$str1 postured=$str2 orientation=${OrientationState.entries[int1]} " +
-                    "numSamples=$int2 $str3"
-            }) {
-                str1 = logInfo.positionState.stationary.toLogString()
-                str2 = logInfo.positionState.postured.toLogString()
-                // Storing avg and variance in one string since we're running out of slots
-                str3 = "avg=$avg variance=$variance"
-                int1 = logInfo.orientation.ordinal
-                int2 = samples.size
-            }
-        }
-        prevLogInfo = logInfo
+            val stationaryConfidence = computeStationaryConfidence(samples)
 
-        return positionState
-    }
+            var orientation = OrientationState.NONE
+            val posturedConfidence =
+                if (stationaryConfidence is ConfidenceLevel.Positive) {
+                    orientation = computeOrientation(avg)
+                    val isPostured =
+                        when (orientation) {
+                            OrientationState.POSTURED_BOTTOM_EDGE,
+                            OrientationState.POSTURED_LEFT_EDGE,
+                            OrientationState.POSTURED_RIGHT_EDGE -> true
+                            else -> false
+                        }
+                    if (isPostured) {
+                        ConfidenceLevel.Positive(stationaryConfidence.confidence)
+                    } else {
+                        ConfidenceLevel.Negative(stationaryConfidence.confidence)
+                    }
+                } else {
+                    // If the device is moving, it cannot be postured.
+                    ConfidenceLevel.Negative(1.0f)
+                }
+
+            val positionState = PositionState(stationaryConfidence, posturedConfidence)
+
+            val logInfo = PositionStateLogInfo(positionState, orientation)
+            if (logInfo.isRelativelyDifferentFrom(prevLogInfo)) {
+                stationaryStateLogger.log(stationaryConfidence.toLogString())
+                posturedStateLogger.log(posturedConfidence.toLogString())
+                orientationStateLogger.log(orientation.name)
+
+                logger.d({
+                    "stationary=$str1 postured=$str2 orientation=${OrientationState.entries[int1]} " +
+                        "numSamples=$int2 $str3"
+                }) {
+                    str1 = logInfo.positionState.stationary.toLogString()
+                    str2 = logInfo.positionState.postured.toLogString()
+                    // Storing avg and variance in one string since we're running out of slots
+                    str3 = "avg=$avg variance=$variance"
+                    int1 = logInfo.orientation.ordinal
+                    int2 = samples.size
+                }
+            }
+            prevLogInfo = logInfo
+
+            positionState
+        }
 
     /** Resets the internal state of the algorithm. */
     fun reset() {
         prevLogInfo = null
+        samples.clear()
+    }
+
+    private fun createTraceStateLogger(name: String) =
+        TraceStateLogger(tracer.trackName + "#" + name, logOnlyIfDifferent = true)
+
+    /**
+     * Updates the internal list of accelerometer samples with the new sensor event.
+     *
+     * This method adds the latest accelerometer reading to the [samples] queue and removes any
+     * samples that fall outside the [SAMPLE_WINDOW_DURATION]. This maintains a sliding window of
+     * recent sensor data for analysis.
+     *
+     * @param event The [SensorEvent] containing the new accelerometer data.
+     */
+    private fun updateSamples(event: SensorEvent) {
+        val now = event.timestamp
+        samples.add(now, event.x, event.y, event.z)
+
+        // Remove old samples that are outside the sliding window.
+        while (
+            samples.isNotEmpty() &&
+                (now - samples.firstTimestamp() > SAMPLE_WINDOW_DURATION.inWholeNanoseconds)
+        ) {
+            samples.removeFirst()
+        }
     }
 
     /**
@@ -180,110 +235,58 @@ constructor(
      *     - Otherwise, it's considered stationary with low confidence.
      *
      * @param samples A list of [AccelSample] collected over a time window.
-     * @return A [Pair] where the first element is the stationary [ConfidenceLevel] and the second
-     *   is the average acceleration vector ([AccelVector]). The average vector is crucial for the
-     *   subsequent orientation check, as it represents the direction of gravity when the device is
-     *   stationary.
+     * @return The stationary [ConfidenceLevel]. The [avg] and [variance] member variables are also
+     *   updated as a side effect.
      */
-    private fun computeStationaryConfidence(
-        samples: List<AccelSample>
-    ): Triple<ConfidenceLevel, AccelVector, AccelVector> {
-        val numSamples = samples.size
-        val sum = AccelVector.zero()
-        val sumOfSquares = AccelVector.zero()
-        val temp = AccelVector.zero()
+    private fun computeStationaryConfidence(samples: AccelSampleBuffer): ConfidenceLevel =
+        tracer.traceSyncAndAsync({ "computeStationaryConfidence with ${samples.size} samples" }) {
+            val numSamples = samples.size
+            sum.set(0f, 0f, 0f)
+            sumOfSquares.set(0f, 0f, 0f)
 
-        for (sample in samples) {
-            // Avoid creating a new AccelVector for each iteration by reusing the same object.
-            // This is a performance optimization since creating and garbage collecting a new
-            // object is expensive in this tight loop.
-            temp.set(sample.x, sample.y, sample.z)
-            sum += temp
-            sumOfSquares.addSquare(temp)
-        }
+            samples.forEach { x, y, z ->
+                // Avoid creating a new AccelVector for each iteration by reusing the same object.
+                // This is a performance optimization since creating and garbage collecting a new
+                // object is expensive in this tight loop.
+                temp.set(x, y, z)
+                sum += temp
+                sumOfSquares.addSquare(temp)
+            }
 
-        val avg = sum.copy()
-        avg /= numSamples
+            avg.set(sum.x, sum.y, sum.z)
+            avg /= numSamples
 
-        // Calculate variance in-place using the formula:
-        // Var(X) = E[X^2] - (E[X])^2
-        val variance = sumOfSquares
-        variance /= numSamples
+            // Calculate variance in-place using the formula:
+            // Var(X) = E[X^2] - (E[X])^2
+            variance.set(sumOfSquares.x, sumOfSquares.y, sumOfSquares.z)
+            variance /= numSamples
 
-        // Reuse temp to calculate avg*avg and subtract from variance
-        temp.set(avg.x, avg.y, avg.z)
-        temp.componentwiseProductAssign(avg)
-        variance -= temp
+            // Reuse temp to calculate avg*avg and subtract from variance
+            temp.set(avg.x, avg.y, avg.z)
+            temp.componentwiseProductAssign(avg)
+            variance -= temp
 
-        val totalVariance = variance.sum()
+            val totalVariance = variance.sum()
 
-        val stationaryConfidence =
             if (
-                variance.x > STATIONARY_ACCEL_VARIANCE_TH ||
-                    variance.y > STATIONARY_ACCEL_VARIANCE_TH ||
-                    variance.z > STATIONARY_ACCEL_VARIANCE_TH ||
+                variance.anyComponentGreaterThan(STATIONARY_ACCEL_VARIANCE_TH) ||
                     totalVariance > STATIONARY_ACCEL_VARIANCE_TH
             ) {
                 ConfidenceLevel.Negative(1.0f)
             } else if (totalVariance < STATIONARY_ACCEL_VARIANCE_TH_HIGH_CONF) {
                 ConfidenceLevel.Positive(1.0f)
             } else {
-                // Linearly interpolate confidence between high confidence and negative thresholds.
+                // Linearly interpolate confidence between high confidence and negative
+                // thresholds.
                 val confidence =
-                    1.0f -
-                        (totalVariance - STATIONARY_ACCEL_VARIANCE_TH_HIGH_CONF) /
-                            (STATIONARY_ACCEL_VARIANCE_TH - STATIONARY_ACCEL_VARIANCE_TH_HIGH_CONF)
+                    MathUtils.lerpInv(
+                        STATIONARY_ACCEL_VARIANCE_TH,
+                        STATIONARY_ACCEL_VARIANCE_TH_HIGH_CONF,
+                        totalVariance,
+                    )
                 ConfidenceLevel.Positive(confidence)
             }
-
-        return Triple(stationaryConfidence, avg, variance)
-    }
-
-    /**
-     * Determines if the device is in a postured state, which is defined as being upright resting on
-     * its bottom, left, or right edge.
-     *
-     * @param avg The average acceleration vector.
-     * @return A [Pair] where the first value is a boolean for whether the device is postured, and
-     *   the second value is the [OrientationState].
-     */
-    private fun computeIsPostured(avg: AccelVector): Pair<Boolean, OrientationState> {
-        val orientation = computeOrientation(avg)
-        val isPostured =
-            when (orientation) {
-                OrientationState.POSTURED_BOTTOM_EDGE,
-                OrientationState.POSTURED_LEFT_EDGE,
-                OrientationState.POSTURED_RIGHT_EDGE -> true
-                else -> false
-            }
-        return isPostured to orientation
-    }
-
-    /**
-     * Computes the postured confidence and the device's orientation.
-     *
-     * This function first determines if the device is in a postured state (upright resting on its
-     * bottom, left, or right edge) based on the average acceleration vector. If it is postured, the
-     * confidence level mirrors the stationary confidence. Otherwise, it is negative.
-     *
-     * @param avg The average acceleration vector, representing the direction of gravity.
-     * @param stationaryConfidence The confidence level that the device is stationary.
-     * @return A [Pair] where the first element is the postured [ConfidenceLevel] and the second is
-     *   the [OrientationState].
-     */
-    private fun computePosturedConfidence(
-        avg: AccelVector,
-        stationaryConfidence: Float,
-    ): Pair<ConfidenceLevel, OrientationState> {
-        val (isPostured, orientation) = computeIsPostured(avg)
-        val posturedConfidence =
-            if (isPostured) {
-                ConfidenceLevel.Positive(stationaryConfidence)
-            } else {
-                ConfidenceLevel.Negative(stationaryConfidence)
-            }
-        return posturedConfidence to orientation
-    }
+        }
 
     // Computes the orientation of the device based on the average acceleration vector.
     private fun computeOrientation(avg: AccelVector): OrientationState {
@@ -315,10 +318,9 @@ constructor(
         }
     }
 
-    private data class AccelSample(val timestamp: Long, val x: Float, val y: Float, val z: Float)
-
     companion object {
         private const val TAG = "PostureDetectionAlgorithm"
+        private const val TRACK_GROUP_NAME = "posturing"
 
         const val POSTURE_DETECTION_FLAT_ANGLE_TH = "posture_detection_flat_angle_th"
 
@@ -426,6 +428,11 @@ private value class AccelVector(private val values: FloatArray) {
     /** Returns a copy of this vector. */
     fun copy() = AccelVector(values.clone())
 
+    /** Returns true if any component is greater than [threshold]. */
+    fun anyComponentGreaterThan(threshold: Float): Boolean {
+        return x > threshold || y > threshold || z > threshold
+    }
+
     override fun toString(): String {
         return "($x, $y, $z)"
     }
@@ -433,6 +440,66 @@ private value class AccelVector(private val values: FloatArray) {
     companion object {
         /** Returns a new vector with all components set to zero. */
         fun zero() = AccelVector(floatArrayOf(0f, 0f, 0f))
+    }
+}
+
+/**
+ * A ring buffer implementation for storing accelerometer samples using primitive arrays. This
+ * prevents boxing overhead and object allocation during the hot path of sensor updates.
+ */
+private class AccelSampleBuffer(private val capacity: Int) {
+    private val timestamps = LongArray(capacity)
+    private val xValues = FloatArray(capacity)
+    private val yValues = FloatArray(capacity)
+    private val zValues = FloatArray(capacity)
+
+    var size = 0
+        private set
+
+    private var head = 0
+
+    fun add(timestamp: Long, x: Float, y: Float, z: Float) {
+        if (size == capacity) {
+            // Buffer full, overwrite oldest (head) and advance head
+            head = (head + 1) % capacity
+            size--
+        }
+
+        val tail = (head + size) % capacity
+        timestamps[tail] = timestamp
+        xValues[tail] = x
+        yValues[tail] = y
+        zValues[tail] = z
+        size++
+    }
+
+    fun removeFirst() {
+        if (size > 0) {
+            head = (head + 1) % capacity
+            size--
+        }
+    }
+
+    fun firstTimestamp(): Long {
+        return if (size > 0) timestamps[head] else 0L
+    }
+
+    fun clear() {
+        size = 0
+        head = 0
+    }
+
+    fun isNotEmpty() = size > 0
+
+    inline fun forEach(action: (x: Float, y: Float, z: Float) -> Unit) {
+        var current = head
+        for (i in 0 until size) {
+            action(xValues[current], yValues[current], zValues[current])
+            current++
+            if (current == capacity) {
+                current = 0
+            }
+        }
     }
 }
 
@@ -487,3 +554,14 @@ private fun PositionStateLogInfo.isRelativelyDifferentFrom(other: PositionStateL
 private fun ConfidenceLevel.toLogString(): String {
     return "${this is ConfidenceLevel.Positive}($confidence)"
 }
+
+private val SensorEvent.x: Float
+    get() = values[0]
+
+private val SensorEvent.y: Float
+    get() = values[1]
+
+private val SensorEvent.z: Float
+    get() = values[2]
+
+private fun Int.cosine(): Float = cos(MathUtils.radians(this.toFloat()))
