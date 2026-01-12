@@ -162,6 +162,7 @@ import com.android.wm.shell.draganddrop.DragAndDropController
 import com.android.wm.shell.freeform.FreeformTaskTransitionStarter
 import com.android.wm.shell.fullscreen.FullscreenDisconnectHandler
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController
+import com.android.wm.shell.pip2.phone.PipDisplayDisconnectHandler
 import com.android.wm.shell.pip2.phone.PipScheduler
 import com.android.wm.shell.pip2.phone.PipTransitionState
 import com.android.wm.shell.recents.RecentTasksController
@@ -330,6 +331,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @Mock private lateinit var launcherApps: LauncherApps
     @Mock private lateinit var transitionStateHolder: TransitionStateHolder
     @Mock private lateinit var fullscreenDisconnectHandler: FullscreenDisconnectHandler
+    @Mock private lateinit var pipDisconnectHandler: PipDisplayDisconnectHandler
     @Mock private lateinit var pinnedLayerController: PinnedLayerController
     @Mock private lateinit var desktopTasksTransitionObserver: DesktopTasksTransitionObserver
 
@@ -519,6 +521,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 desktopTasksController = Optional.of(controller),
                 fullscreenDisconnectHandler = Optional.of(fullscreenDisconnectHandler),
                 pinnedLayerController = Optional.of(pinnedLayerController),
+                pipDisplayDisconnectHandler = Optional.of(pipDisconnectHandler),
             )
 
         shellInit.init()
@@ -539,6 +542,9 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         doReturn(HOME_LAUNCHER_PACKAGE_NAME)
             .whenever(desktopModeCompatPolicy)
             .getDefaultHomePackage(any())
+
+        whenever(pipDisconnectHandler.onDisplayDisconnect(anyInt(), anyInt()))
+            .thenReturn(WindowContainerTransaction())
     }
 
     private fun createController() =
