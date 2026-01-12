@@ -855,8 +855,8 @@ public class CameraServiceProxy extends SystemService
         }
 
         /**
-         * Placeholder method to fetch the system state for autoframing.
-         * TODO: b/260617354
+         * This is a placeholder for a feature to override autoframing based on system state.
+         * The feature was not implemented. See b/260617354 for context.
          */
         @Override
         public int getAutoframingOverride(String packageName) {
