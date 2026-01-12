@@ -181,7 +181,8 @@ public class AutoclickIndicatorView extends View {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         // Get the screen dimensions.
-        // TODO(b/397944891): Handle device rotation case.
+        // The autoclick type panel handles device rotation correctly without special logic.
+        // See b/397944891 for context.
         DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
         int screenWidth = displayMetrics.widthPixels;
         int screenHeight = displayMetrics.heightPixels;
