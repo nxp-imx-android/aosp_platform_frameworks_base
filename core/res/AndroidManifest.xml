@@ -3234,6 +3234,15 @@
     <permission android:name="android.permission.USE_ICC_AUTH_WITH_DEVICE_IDENTIFIER"
         android:protectionLevel="signature|appop" />
 
+    <!-- Allows caller to perform SIM Auth.  Splitting this sensitive permission
+         off of READ_PRIVILEGED_PHONE_STATE for better control and auditing.
+         <p>Protection level: signature|privileged
+         @FlaggedApi("com.android.internal.telephony.flags.new_sim_auth_permission")
+         @hide -->
+    <permission android:name="android.permission.USE_ICC_AUTH"
+      android:protectionLevel="signature|privileged"
+      android:featureFlag="com.android.internal.telephony.flags.new_sim_auth_permission" />
+
     <!-- @SystemApi Allows read access to emergency number information for ongoing calls or SMS
          sessions.
          @hide Used internally. -->
