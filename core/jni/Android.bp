@@ -57,6 +57,7 @@ cc_defaults_for_libandroid_runtime {
     cppflags: ["-Wno-conversion-null"],
     header_libs: [
         "libhwui_internal_headers",
+        "libbinder_internal_headers",
     ],
 
     product_variables: {
