@@ -18960,8 +18960,8 @@ public class DevicePolicyManager {
     /**
      * Gets the value of the given policy, as it was set by the caller.
      *
-     * <p>This does not return the effective policy value used on the device. Instead, this returns
-     * the value set by the caller.
+     * <p>Use {@link #getResolvedDeviceWidePolicy} and {@link #getResolvedPerUserPolicy} to get the
+     * resolved policy value used on the device. Instead, this returns the value set by the caller.
      *
      * @param id The policy identifier to retrieve. It must be one of the values inside {@link
      *     DevicePolicyIdentifier}.
@@ -19006,13 +19006,20 @@ public class DevicePolicyManager {
     }
 
     /**
-     * Returns the effective value of the given device-wide policy.
+     * Returns the resolved value of the given device-wide policy. The resolved value is the value
+     * that is currently being enforced on the device after conflict resolution has been performed
+     * between all the policies set by all admins at both the device and user scope. The value can
+     * change when the current user changes or when users log in or out.
+     *
+     * <p> Use {@link #getPolicy} to get the value set by the caller, which may differ.
      *
      * <p> Can only applied on a {@link #RESOURCE_DEVICE_WIDE} policy.
      *
+     * <p> Returns null when the policy is not set and no default value is defined.
+     *
      * @param id Which policy to retrieve.
      * @param <T> The type of the policy
-     * @return The effective value of the policy.
+     * @return The resolved value of the policy.
      * @throws IllegalArgumentException if the policy is not a device-wide resource.
      * @throws SecurityException If the caller does not have sufficient permissions to get the
      *      specified policy. Check the documentation of individual identifiers for more details.
@@ -19037,16 +19044,22 @@ public class DevicePolicyManager {
     }
 
     /**
-     * Returns the effective value of the given per-user policy.
+     * Returns the resolved value of the given per-user policy. The resolved value is the value
+     * that is currently being enforced on the device for the context user after conflict
+     * resolution has been performed between all the policies set by all admins at both the device
+     * and user scope.
      *
-     * <p> Can only applied on a {@link #RESOURCE_PER_USER} policy. Returns the effective policy
-     * value of the context user.
+     * <p> Use {@link #getPolicy} to get the value set by the caller, which may differ.
+     *
+     * <p> Can only applied on a {@link #RESOURCE_PER_USER} policy.
+     *
+     * <p> Returns null when the policy is not set and no default value is defined.
      *
      * @param id Which policy to retrieve.
      * @param <T> The type of the policy
-     * @return The effective value of the policy.
+     * @return The resolved value of the policy.
      * @throws IllegalArgumentException if the policy is not a per-user resource.
-     * throws SecurityException If the caller does not have sufficient permissions to get the
+     * @throws SecurityException If the caller does not have sufficient permissions to get the
      *      specified policy. Check the documentation of individual identifiers for more details.
      *      The QUERY_ADMIN_POLICY permission can in most cases be used to replace the per-policy
      *      permission, but the cros-user permission is still checked when querying a different
