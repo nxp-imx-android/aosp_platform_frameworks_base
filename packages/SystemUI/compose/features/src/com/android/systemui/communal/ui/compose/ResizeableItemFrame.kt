@@ -447,11 +447,7 @@ private fun BoxScope.UnifiedResizeHandle(
                         directionalModifier * (size.height / 2 + outlinePadding.toPx()) +
                             (draggableState.offset.takeIf { it.fastIsFinite() } ?: 0f)
                 }
-                .anchoredDraggable(
-                    state = draggableState,
-                    orientation = Orientation.Vertical,
-                    enabled = !state.isAccessibilityControlsVisible,
-                )
+                .anchoredDraggable(state = draggableState, orientation = Orientation.Vertical)
     ) {
         if (communalEditModeAccessibilityResize()) {
             if (!state.canExpand && !state.canShrink) return@Box
@@ -608,9 +604,15 @@ fun ResizableItemFrame(
                 val topOffset = viewModel.topDragState.offset.takeIf { it.fastIsFinite() } ?: 0f
                 val bottomOffset =
                     viewModel.bottomDragState.offset.takeIf { it.fastIsFinite() } ?: 0f
-                topOffset > 0 || bottomOffset > 0
+                topOffset != 0f || bottomOffset != 0f
             }
         }
+
+    LaunchedEffect(isDragging) {
+        if (isDragging && communalEditModeAccessibilityResize()) {
+            viewModel.clearAccessibilityResizeHandle()
+        }
+    }
 
     // Draw content surrounded by resize handles at top and bottom. Allow resize handles
     // to overlap content.
