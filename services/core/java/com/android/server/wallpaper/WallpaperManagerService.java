@@ -20,6 +20,7 @@ import static android.Manifest.permission.INTERACT_ACROSS_USERS_FULL;
 import static android.Manifest.permission.MANAGE_EXTERNAL_STORAGE;
 import static android.Manifest.permission.READ_WALLPAPER_INTERNAL;
 import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND;
+import static android.app.Flags.postponeWallpaperChangeNotificationOnUnlockUser;
 import static android.app.WallpaperManager.COMMAND_REAPPLY;
 import static android.app.WallpaperManager.FLAG_LOCK;
 import static android.app.WallpaperManager.FLAG_SYSTEM;
@@ -1806,18 +1807,29 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
                     final WallpaperData systemWallpaper =
                             getWallpaperSafeLocked(userId, FLAG_SYSTEM);
                     systemWallpaper.mBindSource = BindSource.SWITCH_WALLPAPER_UNLOCK_USER;
-                    switchWallpaper(systemWallpaper, null);
-                    // TODO(b/278261563): call notifyCallbacksLocked inside switchWallpaper
-                    notifyCallbacksLocked(systemWallpaper);
-                    notifyWallpaperChanged(systemWallpaper);
+                    if (postponeWallpaperChangeNotificationOnUnlockUser()) {
+                        switchWallpaper(
+                                systemWallpaper,
+                                wrapReplyToNotifyWallpaperChanged(systemWallpaper, null));
+                    } else {
+                        switchWallpaper(systemWallpaper, null);
+                        // TODO(b/278261563): call notifyCallbacksLocked inside switchWallpaper
+                        notifyCallbacksLocked(systemWallpaper);
+                        notifyWallpaperChanged(systemWallpaper);
+                    }
                 }
                 if (mLockWallpaperWaitingForUnlock) {
-                    final WallpaperData lockWallpaper =
-                            getWallpaperSafeLocked(userId, FLAG_LOCK);
+                    final WallpaperData lockWallpaper = getWallpaperSafeLocked(userId, FLAG_LOCK);
                     lockWallpaper.mBindSource = BindSource.SWITCH_WALLPAPER_UNLOCK_USER;
-                    switchWallpaper(lockWallpaper, null);
-                    notifyCallbacksLocked(lockWallpaper);
-                    notifyWallpaperChanged(lockWallpaper);
+                    if (postponeWallpaperChangeNotificationOnUnlockUser()) {
+                        switchWallpaper(
+                                lockWallpaper,
+                                wrapReplyToNotifyWallpaperChanged(lockWallpaper, null));
+                    } else {
+                        switchWallpaper(lockWallpaper, null);
+                        notifyCallbacksLocked(lockWallpaper);
+                        notifyWallpaperChanged(lockWallpaper);
+                    }
                 }
 
                 // Make sure that the SELinux labeling of all the relevant files is correct.
@@ -1867,30 +1879,37 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
                 }
                 mCurrentUserId = userId;
                 systemWallpaper = getWallpaperSafeLocked(userId, FLAG_SYSTEM);
-                lockWallpaper = systemWallpaper.mWhich == (FLAG_LOCK | FLAG_SYSTEM)
-                        ? systemWallpaper : getWallpaperSafeLocked(userId, FLAG_LOCK);
+                lockWallpaper =
+                        systemWallpaper.mWhich == (FLAG_LOCK | FLAG_SYSTEM)
+                                ? systemWallpaper
+                                : getWallpaperSafeLocked(userId, FLAG_LOCK);
 
                 // Not started watching yet, in case wallpaper data was loaded for other reasons.
                 if (systemWallpaper.wallpaperObserver == null) {
                     systemWallpaper.wallpaperObserver = new WallpaperObserver(systemWallpaper);
                     systemWallpaper.wallpaperObserver.startWatching();
                 }
+                IRemoteCallback systemReply =
+                        postponeWallpaperChangeNotificationOnUnlockUser()
+                                ? wrapReplyToNotifyWallpaperChanged(systemWallpaper, reply)
+                                : reply;
                 if (Flags.reorderWallpaperDuringUserSwitch()) {
                     detachWallpaperLocked(mLastLockWallpaper);
                     detachWallpaperLocked(mLastWallpaper);
-                    if (lockWallpaper == systemWallpaper)  {
-                        switchWallpaper(systemWallpaper, reply);
+                    if (lockWallpaper == systemWallpaper) {
+                        switchWallpaper(systemWallpaper, systemReply);
                     } else {
                         KeyguardManager km = mContext.getSystemService(KeyguardManager.class);
                         boolean isDeviceSecure = km != null && km.isDeviceSecure(userId);
-                        switchWallpaper(isDeviceSecure ? lockWallpaper : systemWallpaper, reply);
+                        switchWallpaper(
+                                isDeviceSecure ? lockWallpaper : systemWallpaper, systemReply);
                         switchWallpaper(isDeviceSecure ? systemWallpaper : lockWallpaper, null);
                     }
                 } else {
-                    if (lockWallpaper != systemWallpaper)  {
+                    if (lockWallpaper != systemWallpaper) {
                         switchWallpaper(lockWallpaper, null);
                     }
-                    switchWallpaper(systemWallpaper, reply);
+                    switchWallpaper(systemWallpaper, systemReply);
                 }
                 mInitialUserSwitch = false;
             }
@@ -1918,6 +1937,23 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
                 onSwitchWallpaperFailLocked(wallpaper, reply, si);
             }
         }
+    }
+
+    private IRemoteCallback wrapReplyToNotifyWallpaperChanged(
+            WallpaperData wallpaper, IRemoteCallback reply) {
+        IRemoteCallback.Stub wrappedReply =
+                new IRemoteCallback.Stub() {
+                    @Override
+                    public void sendResult(Bundle data) throws RemoteException {
+                        if (DEBUG) {
+                            Slog.d(TAG, "publish home wallpaper set onUnlockUser");
+                        }
+                        if (reply != null) reply.sendResult(data);
+                        notifyCallbacksLocked(wallpaper);
+                        notifyWallpaperChanged(wallpaper);
+                    }
+                };
+        return wrappedReply;
     }
 
     /**
@@ -2266,7 +2302,8 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
                 wallpaperUserId, false, true, "getWallpaper", null);
 
         if (which != FLAG_SYSTEM && which != FLAG_LOCK) {
-            throw new IllegalArgumentException("Must specify exactly one kind of wallpaper to read");
+            throw new IllegalArgumentException(
+                    "Must specify exactly one kind of wallpaper to read");
         }
 
         synchronized (mLock) {
@@ -4126,7 +4163,8 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
     public void settingsRestored() {
         // Verify caller is the system
         if (Binder.getCallingUid() != android.os.Process.SYSTEM_UID) {
-            throw new RuntimeException("settingsRestored() can only be called from the system process");
+            throw new RuntimeException(
+                    "settingsRestored() can only be called from the system process");
         }
         // TODO: If necessary, make it work for secondary users as well. This currently assumes
         // restores only to the primary user
