@@ -728,7 +728,13 @@ public class WindowManagerServiceTests extends WindowTestsBase {
                 .hasListener(eq(windowContextToken));
         doReturn(TYPE_INPUT_METHOD).when(mWm.mWindowContextListenerController)
                 .getWindowType(eq(windowContextToken));
-        doReturn(true).when(mWm.mUmInternal).isUserVisible(anyInt(), anyInt());
+        // Clean up with the allow_current_user_access_unassigned_displays_in_mumd flag.
+        if (Flags.currentUserAccessUnassignedDisplays()) {
+            doReturn(UserHandle.getUserId(session.mUid))
+                .when(mWm.mUmInternal).getUserAssignedToDisplay(anyInt());
+        } else {
+            doReturn(true).when(mWm.mUmInternal).isUserVisible(anyInt(), anyInt());
+        }
 
         mWm.addWindow(session, new TestIWindow(), params, View.VISIBLE, DEFAULT_DISPLAY,
                 UserHandle.USER_SYSTEM, WindowInsets.Type.defaultVisible(), null,
@@ -1663,7 +1669,13 @@ public class WindowManagerServiceTests extends WindowTestsBase {
         DisplayContent dc = createNewDisplay();
         int displayId = dc.getDisplayId();
         int userId = UserHandle.getUserId(uid);
-        doReturn(false).when(mWm.mUmInternal).isUserVisible(eq(userId), eq(displayId));
+        // Clean up with the allow_current_user_access_unassigned_displays_in_mumd flag.
+        if (Flags.currentUserAccessUnassignedDisplays()) {
+            doReturn(UserHandle.USER_SYSTEM).when(mWm.mUmInternal)
+                .getUserAssignedToDisplay(displayId);
+        } else {
+            doReturn(false).when(mWm.mUmInternal).isUserVisible(eq(userId), eq(displayId));
+        }
         WindowManager.LayoutParams params = new WindowManager.LayoutParams(
                 LayoutParams.TYPE_APPLICATION_OVERLAY);
 

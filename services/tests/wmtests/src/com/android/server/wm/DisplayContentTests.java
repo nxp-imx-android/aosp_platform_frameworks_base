@@ -3228,7 +3228,8 @@ public class DisplayContentTests extends WindowTestsBase {
     }
 
     @Test
-    public void testHasAccessConsidersUserVisibilityForBackgroundVisibleUsers() {
+    @DisableFlags(Flags.FLAG_CURRENT_USER_ACCESS_UNASSIGNED_DISPLAYS)
+    public void testHasAccessConsidersUserVisibilityForBackgroundVisibleUsers_flagDisabled() {
         doReturn(true).when(UserManager::isVisibleBackgroundUsersEnabled);
         final int appId = 1234;
         final int userId1 = 11;
@@ -3246,7 +3247,8 @@ public class DisplayContentTests extends WindowTestsBase {
     }
 
     @Test
-    public void testHasAccessIgnoresUserVisibilityForPrivateDisplay() {
+    @DisableFlags(Flags.FLAG_CURRENT_USER_ACCESS_UNASSIGNED_DISPLAYS)
+    public void testHasAccessIgnoresUserVisibilityForPrivateDisplay_flagDisabled() {
         doReturn(true).when(UserManager::isVisibleBackgroundUsersEnabled);
         final int appId = 1234;
         final int userId2 = 12;
@@ -3261,6 +3263,42 @@ public class DisplayContentTests extends WindowTestsBase {
 
         verify(mWm.mUmInternal, never()).isUserVisible(userId2, displayId);
     }
+
+  @Test
+  @EnableFlags(Flags.FLAG_CURRENT_USER_ACCESS_UNASSIGNED_DISPLAYS)
+  public void testHasAccessConsidersUserVisibilityForBackgroundVisibleUsers() {
+    doReturn(true).when(UserManager::isVisibleBackgroundUsersEnabled);
+    final int appId = 1234;
+    final int userId1 = 11;
+    final int userId2 = 12;
+    final int uid1 = UserHandle.getUid(userId1, appId);
+    final int uid2 = UserHandle.getUid(userId2, appId);
+    final DisplayInfo displayInfo = new DisplayInfo(mDisplayInfo);
+    final DisplayContent dc = createNewDisplay(displayInfo);
+    int displayId = dc.getDisplayId();
+    doReturn(userId1).when(mWm.mUmInternal).getUserAssignedToDisplay(displayId);
+
+    assertTrue(dc.hasAccess(uid1));
+    assertFalse(dc.hasAccess(uid2));
+  }
+
+  @Test
+  @EnableFlags(Flags.FLAG_CURRENT_USER_ACCESS_UNASSIGNED_DISPLAYS)
+  public void testHasAccessIgnoresUserVisibilityForPrivateDisplay() {
+    doReturn(true).when(UserManager::isVisibleBackgroundUsersEnabled);
+    final int appId = 1234;
+    final int userId2 = 12;
+    final int uid2 = UserHandle.getUid(userId2, appId);
+    final DisplayInfo displayInfo = new DisplayInfo(mDisplayInfo);
+    displayInfo.flags = FLAG_PRIVATE;
+    displayInfo.ownerUid = uid2;
+    final DisplayContent dc = createNewDisplay(displayInfo);
+    int displayId = dc.getDisplayId();
+
+    assertTrue(dc.hasAccess(uid2));
+
+    verify(mWm.mUmInternal, never()).getUserAssignedToDisplay(displayId);
+  }
 
     @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
     @Test
