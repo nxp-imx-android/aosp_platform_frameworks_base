@@ -167,14 +167,6 @@ flag {
 }
 
 flag {
-    name: "enable_type_window_control"
-    namespace: "accessibility"
-    is_exported: true
-    description: "adds new TYPE_WINDOW_CONTROL to AccessibilityWindowInfo for detecting Window Decorations"
-    bug: "320445550"
-}
-
-flag {
     name: "fix_add_extra_data_to_accessibility_node_info_delegation"
     namespace: "accessibility"
     description: "Fix missing delegation to AccessibilityDelegate in View#addExtraDataToAccessibilityNodeInfo."
