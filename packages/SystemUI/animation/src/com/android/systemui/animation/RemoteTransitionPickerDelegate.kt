@@ -30,7 +30,7 @@ import android.window.WindowContainerTransaction
  * The remote transition is updated in [#startAnimation] - after that the same remote transition is
  * used throughout the transition lifecycle.
  */
-class RemoteTransitionDelegate(
+class RemoteTransitionPickerDelegate(
     private val remoteTransitionPicker: Function1<TransitionInfo, IRemoteTransition>
 ) : IRemoteTransition.Stub() {
     private var currentRemoteTransition: IRemoteTransition? = null
@@ -47,7 +47,7 @@ class RemoteTransitionDelegate(
             object : IRemoteTransitionFinishedCallback.Stub() {
                 override fun onTransitionFinished(
                     wct: WindowContainerTransaction?,
-                    sct: SurfaceControl.Transaction?
+                    sct: SurfaceControl.Transaction?,
                 ) {
                     currentRemoteTransition = null
                     finishCallback.onTransitionFinished(wct, sct)
