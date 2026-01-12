@@ -36885,6 +36885,98 @@ package android.os.storage {
 
 }
 
+package android.os.storage.operations {
+
+  @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public final class FileOperationEnqueueResult implements android.os.Parcelable {
+    ctor public FileOperationEnqueueResult(int);
+    method public int describeContents();
+    method public int getErrorCode();
+    method @Nullable public String getRequestId();
+    method public boolean isSuccessful();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.os.storage.operations.FileOperationEnqueueResult> CREATOR;
+  }
+
+  @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public final class FileOperationRequest implements android.os.Parcelable {
+    method public int describeContents();
+    method public int getMode();
+    method @NonNull public android.os.storage.operations.sources.OperationSource getSource();
+    method @Nullable public android.os.storage.operations.targets.OperationTarget getTarget();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.os.storage.operations.FileOperationRequest> CREATOR;
+    field public static final int OPERATION_COPY = 2; // 0x2
+    field public static final int OPERATION_MOVE = 1; // 0x1
+  }
+
+  public static final class FileOperationRequest.Builder {
+    ctor public FileOperationRequest.Builder(int);
+    method @NonNull public android.os.storage.operations.FileOperationRequest build();
+    method @NonNull public android.os.storage.operations.FileOperationRequest.Builder setSource(@NonNull android.os.storage.operations.sources.OperationSource);
+    method @NonNull public android.os.storage.operations.FileOperationRequest.Builder setTarget(@Nullable android.os.storage.operations.targets.OperationTarget);
+  }
+
+  @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public final class FileOperationResult implements android.os.Parcelable {
+    method public int describeContents();
+    method public int getErrorCode();
+    method @Nullable public String getErrorMessage();
+    method @NonNull public java.util.List<java.lang.String> getFailedPaths();
+    method public static int getMaxReportedFailures();
+    method @NonNull public String getRequestId();
+    method @NonNull public android.os.storage.operations.sources.OperationSource getSource();
+    method public int getStatus();
+    method @Nullable public android.os.storage.operations.targets.OperationTarget getTarget();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.os.storage.operations.FileOperationResult> CREATOR;
+    field public static final int ERROR_BUSY = 1; // 0x1
+    field public static final int ERROR_DISK_FULL = 6; // 0x6
+    field public static final int ERROR_INVALID_REQUEST = 2; // 0x2
+    field public static final int ERROR_PERMISSION_DENIED = 5; // 0x5
+    field public static final int ERROR_UNKNOWN = 0; // 0x0
+    field public static final int ERROR_UNSUPPORTED_SOURCE = 3; // 0x3
+    field public static final int ERROR_UNSUPPORTED_TARGET = 4; // 0x4
+    field public static final int STATUS_FAILED = 4; // 0x4
+    field public static final int STATUS_FINISHED = 3; // 0x3
+    field public static final int STATUS_IN_PROGRESS = 2; // 0x2
+    field public static final int STATUS_QUEUED = 1; // 0x1
+    field public static final int STATUS_UNKNOWN = 0; // 0x0
+  }
+
+}
+
+package android.os.storage.operations.sources {
+
+  @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public final class AppDataFileSource extends android.os.storage.operations.sources.OperationSource {
+    ctor public AppDataFileSource(@NonNull java.io.File);
+    method public int describeContents();
+    method @NonNull public java.io.File getFile();
+    method @NonNull public String toString();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.os.storage.operations.sources.AppDataFileSource> CREATOR;
+  }
+
+  @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public abstract class OperationSource implements android.os.Parcelable {
+    method @NonNull public abstract String toString();
+  }
+
+}
+
+package android.os.storage.operations.targets {
+
+  @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public abstract class OperationTarget implements android.os.Parcelable {
+    method @NonNull public abstract String toString();
+  }
+
+  @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public final class PccTarget extends android.os.storage.operations.targets.OperationTarget {
+    ctor public PccTarget();
+    ctor public PccTarget(@NonNull String);
+    method public int describeContents();
+    method @NonNull public String toString();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.os.storage.operations.targets.PccTarget> CREATOR;
+  }
+
+}
+
 package android.os.strictmode {
 
   public final class CleartextNetworkViolation extends android.os.strictmode.Violation {
