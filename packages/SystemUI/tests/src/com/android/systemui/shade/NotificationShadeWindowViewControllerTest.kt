@@ -394,6 +394,7 @@ class NotificationShadeWindowViewControllerTest(flags: FlagsParameterization) : 
         }
 
     @Test
+    @DisableSceneContainer
     fun handleDispatchTouchEvent_downEventSentToSbThenAnotherEvent_sendsTouchToSb() =
         testScope.runTest {
             setStatusBarViewController()
