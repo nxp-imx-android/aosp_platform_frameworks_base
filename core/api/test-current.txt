@@ -3699,7 +3699,7 @@ package android.telephony {
     ctor public BarringInfo.BarringServiceInfo(int, boolean, int, int);
   }
 
-  @FlaggedApi("com.android.internal.telephony.flags.cellular_identifier_disclosure_indications") public final class CellularIdentifierDisclosure implements android.os.Parcelable {
+  public final class CellularIdentifierDisclosure implements android.os.Parcelable {
     ctor public CellularIdentifierDisclosure(int, int, @NonNull String, boolean);
   }
 

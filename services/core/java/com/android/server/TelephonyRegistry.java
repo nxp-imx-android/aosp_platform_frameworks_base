@@ -4023,10 +4023,6 @@ public class TelephonyRegistry extends ITelephonyRegistry.Stub {
      */
     public void notifyCellularIdentifierDisclosedChanged(int phoneId, int subId,
             @NonNull CellularIdentifierDisclosure disclosure) {
-        if (!Flags.cellularIdentifierDisclosureIndications()) {
-            log("Not available due to cellularIdentifierDisclosureIndications() flag");
-            return;
-        }
         if (!checkNotifyPermission("notifyCellularIdentifierDisclosedChanged()")) {
             return;
         }
