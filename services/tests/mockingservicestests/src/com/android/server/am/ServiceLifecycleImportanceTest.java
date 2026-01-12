@@ -44,6 +44,9 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.platform.test.annotations.Presubmit;
 
+import com.android.server.am.psc.ProcessStateValidator;
+import com.android.server.am.psc.ProcessStateValidatorTemplate;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;

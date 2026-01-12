@@ -19,8 +19,6 @@ package com.android.server.am;
 import static android.os.Process.myUid;
 import static android.platform.test.flag.junit.SetFlagsRule.DefaultInitValueType.DEVICE_DEFAULT;
 
-import static com.android.server.am.psc.OomAdjuster.ALL_CPU_TIME_CAPABILITIES;
-
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -32,8 +30,6 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 
-import android.annotation.Nullable;
-import android.app.ActivityManager;
 import android.app.usage.UsageStatsManagerInternal;
 import android.content.ComponentName;
 import android.content.Context;
@@ -165,7 +161,7 @@ public abstract class BaseServiceTest {
         doReturn(true).when(mUserControllerInt).hasStartedUserState(anyInt());
     }
 
-    /**  Clean up anything that can affect subsequent tests. */
+    /** Clean up anything that can affect subsequent tests. */
     public void tearDown() throws Exception {
         LocalServices.removeServiceForTest(DropBoxManagerInternal.class);
         LocalServices.removeServiceForTest(PackageManagerInternal.class);
@@ -306,237 +302,6 @@ public abstract class BaseServiceTest {
                     mock(WindowProcessController.class));
 
             return proc;
-        }
-    }
-
-    // A data-only template used to generate a ProcessStateValidator with
-    // ProcessStateValidator#create
-    public static class ProcessStateValidatorTemplate {
-        protected Integer mExpectedProcStateLowerBound = null;
-        protected Integer mExpectedProcStateUpperBound = null;
-        protected Integer mExpectedOomAdjScoreUpperBound = null;
-        protected Integer mExpectedOomAdjScoreLowerBound = null;
-        protected Boolean mExpectedFreezability = null;
-    }
-
-    public static class ProcessStateValidator extends ProcessStateValidatorTemplate {
-        void validate(ProcessRecord proc) {
-            final int actualProcState = proc.getCurProcState();
-            final int actualOomAdjScore = proc.getSetAdj();
-            final boolean actualFreezability =
-                    (proc.getSetCapability() & ALL_CPU_TIME_CAPABILITIES) == 0;
-
-            if (checkState(actualProcState, actualOomAdjScore, actualFreezability)) {
-                // Passed
-                return;
-            }
-
-            // Fail with a dump of the state.
-            StringBuilder str = new StringBuilder();
-            str.append("Process State Validation failed for ");
-            str.append(proc);
-            str.append("\n");
-            str.append("ProcState - actual:");
-            str.append(actualProcState);
-            if (mExpectedProcStateUpperBound != null && mExpectedProcStateLowerBound != null) {
-                str.append(" expected:");
-                if (mExpectedProcStateUpperBound.equals(mExpectedProcStateLowerBound)) {
-                    str.append(mExpectedProcStateUpperBound);
-                } else {
-                    str.append("[");
-                    str.append(mExpectedProcStateLowerBound);
-                    str.append(",");
-                    str.append(mExpectedProcStateUpperBound);
-                    str.append("]");
-                }
-            } else if (mExpectedProcStateUpperBound != null) {
-                str.append(" expected:<=");
-                str.append(mExpectedProcStateUpperBound);
-            } else if (mExpectedProcStateLowerBound != null) {
-                str.append(" expected:>=");
-                str.append(mExpectedProcStateLowerBound);
-            }
-            str.append("\n");
-
-            str.append("OomAdjScore - actual:");
-            str.append(actualOomAdjScore);
-            if (mExpectedOomAdjScoreUpperBound != null && mExpectedOomAdjScoreLowerBound != null) {
-                str.append(" expected:");
-                if (mExpectedOomAdjScoreUpperBound.equals(mExpectedOomAdjScoreLowerBound)) {
-                    str.append(mExpectedOomAdjScoreUpperBound);
-                } else {
-                    str.append("[");
-                    str.append(mExpectedOomAdjScoreLowerBound);
-                    str.append(",");
-                    str.append(mExpectedOomAdjScoreUpperBound);
-                    str.append("]");
-                }
-            } else if (mExpectedOomAdjScoreUpperBound != null) {
-                str.append(" expected:<=");
-                str.append(mExpectedOomAdjScoreUpperBound);
-            } else if (mExpectedOomAdjScoreLowerBound != null) {
-                str.append(" expected:>=");
-                str.append(mExpectedOomAdjScoreLowerBound);
-            }
-            str.append("\n");
-
-            str.append("Freezability - actual:");
-            str.append(actualFreezability);
-            if (mExpectedFreezability != null) {
-                str.append(" expected:");
-                str.append(mExpectedFreezability);
-            }
-            str.append("\n");
-
-            fail(str.toString());
-        }
-
-        private boolean checkState(int actualProcState, int actualOomAdjScore,
-                boolean actualFreezability) {
-            if (mExpectedProcStateUpperBound != null
-                    && mExpectedProcStateUpperBound < actualProcState) {
-                return false;
-            }
-            if (mExpectedProcStateLowerBound != null
-                    && mExpectedProcStateLowerBound > actualProcState) {
-                return false;
-            }
-            if (mExpectedOomAdjScoreUpperBound != null
-                    && mExpectedOomAdjScoreUpperBound < actualOomAdjScore) {
-                return false;
-            }
-            if (mExpectedOomAdjScoreLowerBound != null
-                    && mExpectedOomAdjScoreLowerBound > actualOomAdjScore) {
-                return false;
-            }
-            if (mExpectedFreezability != null && mExpectedFreezability != actualFreezability) {
-                return false;
-            }
-            return true;
-        }
-
-        // Create a validator that satisfies all constraints from the provided validators.
-        static ProcessStateValidator create(ProcessStateValidatorTemplate... validators) {
-            final ProcessStateValidator merged = new ProcessStateValidator();
-            for (ProcessStateValidatorTemplate validator : validators) {
-                merged.maybeRaiseProcStateLowerBound(validator.mExpectedProcStateLowerBound);
-                merged.maybeLowerProcStateUpperBound(validator.mExpectedProcStateUpperBound);
-                merged.maybeRaiseOomAdjScoreLowerBound(validator.mExpectedOomAdjScoreLowerBound);
-                merged.maybeLowerOomAdjScoreUpperBound(validator.mExpectedOomAdjScoreUpperBound);
-                merged.mergeFreezeabilityExpectations(validator.mExpectedFreezability);
-            }
-            return merged;
-        }
-
-        // If any proc state of oom adj score bounds are unset, clamp them to the corresponding
-        // bound.
-        ProcessStateValidator clamp() {
-            if (mExpectedProcStateLowerBound == null) {
-                mExpectedProcStateLowerBound = mExpectedProcStateUpperBound;
-            }
-            if (mExpectedProcStateUpperBound == null) {
-                mExpectedProcStateUpperBound = mExpectedProcStateLowerBound;
-            }
-            if (mExpectedOomAdjScoreLowerBound == null) {
-                mExpectedOomAdjScoreLowerBound = mExpectedOomAdjScoreUpperBound;
-            }
-            if (mExpectedOomAdjScoreUpperBound == null) {
-                mExpectedOomAdjScoreUpperBound = mExpectedOomAdjScoreLowerBound;
-            }
-            return this;
-        }
-
-        ProcessStateValidator expectedProcState(@ActivityManager.ProcessState int state) {
-            expectedProcStateAtLeast(state);
-            expectedProcStateAtMost(state);
-            return this;
-        }
-
-        ProcessStateValidator expectedProcStateAtLeast(int value) {
-            mExpectedProcStateLowerBound = value;
-            return this;
-        }
-
-        private void maybeRaiseProcStateLowerBound(@Nullable Integer value) {
-            if (value == null) return;
-            if (mExpectedProcStateLowerBound == null) {
-                mExpectedProcStateLowerBound = value;
-                return;
-            }
-            if (mExpectedProcStateLowerBound < value) {
-                mExpectedProcStateLowerBound = value;
-            }
-        }
-
-        ProcessStateValidator expectedProcStateAtMost(int value) {
-            mExpectedProcStateUpperBound = value;
-            return this;
-        }
-
-        private void maybeLowerProcStateUpperBound(@Nullable Integer value) {
-            if (value == null) return;
-            if (mExpectedProcStateUpperBound == null) {
-                mExpectedProcStateUpperBound = value;
-                return;
-            }
-            if (mExpectedProcStateUpperBound > value) {
-                mExpectedProcStateUpperBound = value;
-            }
-        }
-
-        ProcessStateValidator expectedOomAdjScore(int value) {
-            // Just set the upper and lower bounds to the value.
-            expectedOomAdjScoreAtLeast(value);
-            expectedOomAdjScoreAtMost(value);
-            return this;
-        }
-
-        ProcessStateValidator expectedOomAdjScoreAtLeast(int value) {
-            mExpectedOomAdjScoreLowerBound = value;
-            return this;
-        }
-
-        private void maybeRaiseOomAdjScoreLowerBound(@Nullable Integer value) {
-            if (value == null) return;
-            if (mExpectedOomAdjScoreLowerBound == null) {
-                mExpectedOomAdjScoreLowerBound = value;
-                return;
-            }
-            if (mExpectedOomAdjScoreLowerBound < value) {
-                mExpectedOomAdjScoreLowerBound = value;
-            }
-        }
-
-        ProcessStateValidator expectedOomAdjScoreAtMost(int value) {
-            mExpectedOomAdjScoreUpperBound = value;
-            return this;
-        }
-
-        private void maybeLowerOomAdjScoreUpperBound(@Nullable Integer value) {
-            if (value == null) return;
-            if (mExpectedOomAdjScoreUpperBound == null) {
-                mExpectedOomAdjScoreUpperBound = value;
-                return;
-            }
-            if (mExpectedOomAdjScoreUpperBound > value) {
-                mExpectedOomAdjScoreUpperBound = value;
-            }
-        }
-
-        ProcessStateValidator expectedFreezability(boolean freezable) {
-            mExpectedFreezability = freezable;
-            return this;
-        }
-
-        private void mergeFreezeabilityExpectations(@Nullable Boolean freezable) {
-            if (freezable == null) return;
-            if (mExpectedFreezability == null) {
-                mExpectedFreezability = freezable;
-            }
-
-            // A process should only be considered freezable if all expectations are considered
-            // freezable.
-            mExpectedFreezability = mExpectedFreezability && freezable;
         }
     }
 
