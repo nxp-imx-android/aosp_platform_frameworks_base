@@ -592,11 +592,10 @@ constructor(
                                 } else if (
                                     willAnimateDismissAction ||
                                         // If we're switching to Gone mid-transition from Ls ->
-                                        // Bouncer,
-                                        // we'll want to animate the scene change to avoid a
-                                        // jump-cut
-                                        // from partially visible LS/Bouncer to Gone.
-                                        sceneInteractor.transitionState.value.isTransitioning(
+                                        // Bouncer, we'll want to animate the scene change to
+                                        // avoid a jump-cut from partially visible LS/Bouncer to
+                                        // Gone.
+                                        sceneInteractor.transitionStateFlow.value.isTransitioning(
                                             from = Scenes.Lockscreen,
                                             to = Overlays.Bouncer,
                                         )
