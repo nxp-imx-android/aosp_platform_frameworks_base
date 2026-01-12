@@ -25,6 +25,8 @@ import android.graphics.Point
 import android.graphics.Rect
 import android.hardware.display.displayManager
 import android.net.Uri
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import android.util.DisplayMetrics
 import android.view.Display
 import android.view.WindowManager
@@ -34,6 +36,7 @@ import androidx.test.filters.SmallTest
 import com.android.internal.logging.uiEventLoggerFake
 import com.android.internal.util.ScreenshotRequest
 import com.android.internal.util.mockScreenshotHelper
+import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.kosmos.advanceTimeBy
 import com.android.systemui.kosmos.collectLastValue
@@ -140,6 +143,31 @@ class PreCaptureViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    fun captureType_initializeBySelectedType() =
+        kosmos.runTest {
+            setupViewModel()
+            assertThat(viewModel.captureType).isEqualTo(ScreenCaptureType.SCREENSHOT)
+            viewModel.updateCaptureType(ScreenCaptureType.RECORDING)
+
+            setupViewModel()
+            assertThat(viewModel.captureType).isEqualTo(ScreenCaptureType.RECORDING)
+        }
+
+    @Test
+    fun captureType_selectedTypeOverriddenByDefaultType() =
+        kosmos.runTest {
+            setupViewModel(
+                LargeScreenCaptureUiParameters(defaultCaptureType = ScreenCaptureType.RECORDING)
+            )
+            assertThat(viewModel.captureType).isEqualTo(ScreenCaptureType.RECORDING)
+
+            setupViewModel()
+            assertThat(largeScreenCaptureParametersInteractor.getSelectedCaptureType())
+                .isEqualTo(ScreenCaptureType.RECORDING)
+            assertThat(viewModel.captureType).isEqualTo(ScreenCaptureType.RECORDING)
+        }
+
+    @Test
     fun captureRegion_defaultsToFullscreen() =
         kosmos.runTest {
             setupViewModel()
@@ -155,6 +183,56 @@ class PreCaptureViewModelTest : SysuiTestCase() {
             )
 
             assertThat(viewModel.captureRegion).isEqualTo(ScreenCaptureRegion.PARTIAL)
+        }
+
+    @Test
+    fun captureRegion_initializeBySelectedRegion() =
+        kosmos.runTest {
+            setupViewModel()
+            assertThat(viewModel.captureRegion).isEqualTo(ScreenCaptureRegion.FULLSCREEN)
+            viewModel.updateCaptureRegion(ScreenCaptureRegion.PARTIAL)
+
+            setupViewModel()
+            assertThat(largeScreenCaptureParametersInteractor.getSelectedCaptureRegion())
+                .isEqualTo(ScreenCaptureRegion.PARTIAL)
+            assertThat(viewModel.captureRegion).isEqualTo(ScreenCaptureRegion.PARTIAL)
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_LARGE_SCREEN_SCREENSHOT_APP_WINDOW)
+    fun captureRegion_selectedRegionOverriddenByDefaultRegion() =
+        kosmos.runTest {
+            setupViewModel(
+                LargeScreenCaptureUiParameters(
+                    defaultCaptureRegion = ScreenCaptureRegion.APP_WINDOW
+                )
+            )
+            assertThat(viewModel.captureRegion).isEqualTo(ScreenCaptureRegion.APP_WINDOW)
+
+            setupViewModel()
+            assertThat(largeScreenCaptureParametersInteractor.getSelectedCaptureRegion())
+                .isEqualTo(ScreenCaptureRegion.APP_WINDOW)
+            assertThat(viewModel.captureRegion).isEqualTo(ScreenCaptureRegion.APP_WINDOW)
+        }
+
+    @Test
+    @DisableFlags(Flags.FLAG_LARGE_SCREEN_REGION_RECORDING)
+    fun captureRegion_resetInvalidSelectedRegion() =
+        kosmos.runTest {
+            largeScreenCaptureParametersInteractor.setSelectedCaptureType(
+                ScreenCaptureType.RECORDING
+            )
+            largeScreenCaptureParametersInteractor.setSelectedCaptureRegion(
+                ScreenCaptureRegion.PARTIAL
+            )
+
+            setupViewModel()
+            assertThat(viewModel.captureType).isEqualTo(ScreenCaptureType.RECORDING)
+            assertThat(viewModel.captureRegion).isEqualTo(ScreenCaptureRegion.FULLSCREEN)
+            assertThat(largeScreenCaptureParametersInteractor.getSelectedCaptureType())
+                .isEqualTo(ScreenCaptureType.RECORDING)
+            assertThat(largeScreenCaptureParametersInteractor.getSelectedCaptureRegion())
+                .isEqualTo(ScreenCaptureRegion.FULLSCREEN)
         }
 
     @Test
