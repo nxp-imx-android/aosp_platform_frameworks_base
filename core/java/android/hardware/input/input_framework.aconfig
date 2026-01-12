@@ -260,3 +260,10 @@ flag {
     is_exported: true
 }
 
+flag {
+    name: "enable_assistive_input_trigger"
+    namespace: "input"
+    description: "Enables keyboard triggers (shortcut and dedicated key) for assistive input"
+    bug: "469890315"
+}
+
