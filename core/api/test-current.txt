@@ -3261,6 +3261,14 @@ package android.provider {
     field public static final String POINTER_SPEED = "pointer_speed";
   }
 
+  @FlaggedApi("com.android.internal.telephony.flags.secure_access_to_restricted_rcs_messages") public static final class Telephony.ReadRestriction {
+    field @FlaggedApi("com.android.internal.telephony.flags.secure_access_to_restricted_rcs_messages") public static final String READ_RESTRICTION_COLUMN_NAME = "read_restriction";
+  }
+
+  @FlaggedApi("com.android.internal.telephony.flags.secure_access_to_restricted_rcs_messages") public static final class Telephony.ReadRestriction.ReadRestrictionValues {
+    field @FlaggedApi("com.android.internal.telephony.flags.secure_access_to_restricted_rcs_messages") public static final int READ_RESTRICTION_RESTRICTED = 65536; // 0x10000
+  }
+
   public static final class Telephony.Sms.Intents {
     field public static final String SMS_CARRIER_PROVISION_ACTION = "android.provider.Telephony.SMS_CARRIER_PROVISION";
   }
