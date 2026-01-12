@@ -25,9 +25,11 @@ import android.os.CombinedVibration;
 import android.os.IBinder;
 import android.os.VibrationAttributes;
 import android.os.VibrationEffect;
+import android.os.vibrator.BasicPwleSegment;
 import android.os.vibrator.Flags;
 import android.os.vibrator.PrebakedSegment;
 import android.os.vibrator.PrimitiveSegment;
+import android.os.vibrator.PwleSegment;
 import android.os.vibrator.RampSegment;
 import android.os.vibrator.StepSegment;
 import android.os.vibrator.VibrationEffectSegment;
@@ -351,7 +353,31 @@ abstract class Vibration {
                 dumpEffect(proto, SegmentProto.PREBAKED, (PrebakedSegment) segment);
             } else if (segment instanceof PrimitiveSegment) {
                 dumpEffect(proto, SegmentProto.PRIMITIVE, (PrimitiveSegment) segment);
+            } else if (segment instanceof PwleSegment) {
+                dumpEffect(proto, SegmentProto.PWLE, (PwleSegment) segment);
+            } else if (segment instanceof BasicPwleSegment) {
+                dumpEffect(proto, SegmentProto.BASIC_PWLE, (BasicPwleSegment) segment);
             }
+            proto.end(token);
+        }
+
+        private void dumpEffect(ProtoOutputStream proto, long fieldId, PwleSegment segment) {
+            final long token = proto.start(fieldId);
+            proto.write(PwleSegmentProto.START_AMPLITUDE, segment.getStartAmplitude());
+            proto.write(PwleSegmentProto.END_AMPLITUDE, segment.getEndAmplitude());
+            proto.write(PwleSegmentProto.START_FREQUENCY, segment.getStartFrequencyHz());
+            proto.write(PwleSegmentProto.END_FREQUENCY, segment.getEndFrequencyHz());
+            proto.write(PwleSegmentProto.DURATION, (int) segment.getDuration());
+            proto.end(token);
+        }
+
+        private void dumpEffect(ProtoOutputStream proto, long fieldId, BasicPwleSegment segment) {
+            final long token = proto.start(fieldId);
+            proto.write(BasicPwleSegmentProto.START_INTENSITY, segment.getStartIntensity());
+            proto.write(BasicPwleSegmentProto.END_INTENSITY, segment.getEndIntensity());
+            proto.write(BasicPwleSegmentProto.START_SHARPNESS, segment.getStartSharpness());
+            proto.write(BasicPwleSegmentProto.END_SHARPNESS, segment.getEndSharpness());
+            proto.write(BasicPwleSegmentProto.DURATION, (int) segment.getDuration());
             proto.end(token);
         }
 
@@ -378,7 +404,7 @@ abstract class Vibration {
             final long token = proto.start(fieldId);
             proto.write(PrebakedSegmentProto.EFFECT_ID, segment.getEffectId());
             proto.write(PrebakedSegmentProto.EFFECT_STRENGTH, segment.getEffectStrength());
-            proto.write(PrebakedSegmentProto.FALLBACK, segment.shouldFallback());
+            proto.write(PrebakedSegmentProto.FALLBACK, segment.shouldFallback() ? 1 : 0);
             proto.end(token);
         }
 
