@@ -29,7 +29,6 @@ import com.android.systemui.common.coroutine.ChannelExt.trySendWithFailureLoggin
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
-import com.android.systemui.shared.Flags
 import com.android.systemui.shared.system.TaskStackChangeListener
 import com.android.systemui.shared.system.TaskStackChangeListeners
 import com.android.systemui.topwindoweffects.data.repository.InvocationEffectPreferencesImpl.Companion.DEFAULT_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT_PREFERENCE
@@ -195,9 +194,7 @@ constructor(
     }
 
     override fun isGestureEffectEnabled(): Boolean {
-        // The gesture effect requires the lpp effect to be enabled as well
-        return preferences.isInvocationEffectEnabledByAssistant.value &&
-            Flags.enableGestureAssistInvocationEffect()
+        return preferences.isInvocationEffectEnabledByAssistant.value
     }
 
     private val _isPowerButtonLongPressed = MutableStateFlow(false)

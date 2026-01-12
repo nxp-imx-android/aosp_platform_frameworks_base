@@ -21,8 +21,6 @@ import android.app.activityManager
 import android.hardware.input.InputManager
 import android.hardware.input.KeyGestureEvent
 import android.os.Bundle
-import android.platform.test.annotations.DisableFlags
-import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
@@ -32,7 +30,6 @@ import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
-import com.android.systemui.shared.Flags
 import com.android.systemui.shared.system.TaskStackChangeListeners
 import com.android.systemui.testKosmos
 import com.android.systemui.topwindoweffects.data.repository.InvocationEffectPreferencesImpl.Companion.DEFAULT_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT_PREFERENCE
@@ -317,23 +314,13 @@ class SqueezeEffectRepositoryTest : SysuiTestCase() {
                 .isEqualTo(DEFAULT_OUTWARD_EFFECT_DURATION_MS)
         }
 
-    @EnableFlags(Flags.FLAG_ENABLE_GESTURE_ASSIST_INVOCATION_EFFECT)
     @Test
-    fun testGestureEffectEnabled_flagEnabled_preferenceEnabled() =
+    fun testGestureEffectEnabled_preferenceEnabled() =
         kosmos.runTest {
             fakeInvocationEffectPreferences.setInvocationEffectEnabledByAssistant(true)
             assertThat(underTest.isGestureEffectEnabled()).isTrue()
         }
 
-    @DisableFlags(Flags.FLAG_ENABLE_GESTURE_ASSIST_INVOCATION_EFFECT)
-    @Test
-    fun testGestureEffectEnabled_gestureFlagDisabled() =
-        kosmos.runTest {
-            fakeInvocationEffectPreferences.setInvocationEffectEnabledByAssistant(true)
-            assertThat(underTest.isGestureEffectEnabled()).isFalse()
-        }
-
-    @EnableFlags(Flags.FLAG_ENABLE_GESTURE_ASSIST_INVOCATION_EFFECT)
     @Test
     fun testGestureEffectEnabled_preferenceDisabled() =
         kosmos.runTest {
@@ -341,7 +328,6 @@ class SqueezeEffectRepositoryTest : SysuiTestCase() {
             assertThat(underTest.isGestureEffectEnabled()).isFalse()
         }
 
-    @EnableFlags(Flags.FLAG_ENABLE_GESTURE_ASSIST_INVOCATION_EFFECT)
     @Test
     fun onGestureProgress_updatesGestureProgressStateFlow() =
         kosmos.runTest {
@@ -355,7 +341,6 @@ class SqueezeEffectRepositoryTest : SysuiTestCase() {
             assertThat(gestureProgress?.progress).isEqualTo(0.5f)
         }
 
-    @EnableFlags(Flags.FLAG_ENABLE_GESTURE_ASSIST_INVOCATION_EFFECT)
     @Test
     fun onGestureCompletion_updatesGestureProgressStateFlow() =
         kosmos.runTest {
@@ -368,7 +353,6 @@ class SqueezeEffectRepositoryTest : SysuiTestCase() {
                 .isEqualTo(SqueezeEffectRepository.GestureStatus.COMPLETED)
         }
 
-    @EnableFlags(Flags.FLAG_ENABLE_GESTURE_ASSIST_INVOCATION_EFFECT)
     @Test
     fun hideGestureEffect_updatesGestureProgressStateFlow() =
         kosmos.runTest {
