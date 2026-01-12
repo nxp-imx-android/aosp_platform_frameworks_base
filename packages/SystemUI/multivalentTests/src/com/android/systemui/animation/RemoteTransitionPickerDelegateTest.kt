@@ -38,11 +38,11 @@ import org.mockito.kotlin.whenever
 
 @RunWith(AndroidJUnit4::class)
 @SmallTest
-class RemoteTransitionDelegateTest : SysuiTestCase() {
+class RemoteTransitionPickerDelegateTest : SysuiTestCase() {
     private val mockPicker = mock<Function1<TransitionInfo, IRemoteTransition>>()
     private val firstRemoteTransition = mock<IRemoteTransition>()
     private val secondRemoteTransition = mock<IRemoteTransition>()
-    private val remoteTransitionDelegate = RemoteTransitionDelegate(mockPicker)
+    private val remoteTransitionPickerDelegate = RemoteTransitionPickerDelegate(mockPicker)
 
     private val firstBinder = mock<IBinder>()
     private val firstTransitionInfo = mock<TransitionInfo>()
@@ -60,7 +60,7 @@ class RemoteTransitionDelegateTest : SysuiTestCase() {
 
     @Test
     fun startAnimation_callsRemote() {
-        remoteTransitionDelegate.startAnimation(
+        remoteTransitionPickerDelegate.startAnimation(
             firstBinder,
             firstTransitionInfo,
             firstSct,
@@ -73,21 +73,21 @@ class RemoteTransitionDelegateTest : SysuiTestCase() {
 
     @Test
     fun singleTransition_callsSameRemote() {
-        remoteTransitionDelegate.startAnimation(
+        remoteTransitionPickerDelegate.startAnimation(
             firstBinder,
             firstTransitionInfo,
             firstSct,
             firstFinishedCallback,
         )
 
-        remoteTransitionDelegate.mergeAnimation(
+        remoteTransitionPickerDelegate.mergeAnimation(
             secondBinder,
             secondTransitionInfo,
             secondSct,
             firstBinder,
             secondFinishedCallback,
         )
-        remoteTransitionDelegate.onTransitionConsumed(firstBinder, false)
+        remoteTransitionPickerDelegate.onTransitionConsumed(firstBinder, false)
 
         verify(firstRemoteTransition)
             .startAnimation(eq(firstBinder), eq(firstTransitionInfo), eq(firstSct), any())
@@ -105,22 +105,22 @@ class RemoteTransitionDelegateTest : SysuiTestCase() {
     @Test
     fun severalTransitions_usesCorrectRemote() {
         whenever(mockPicker.invoke(any())).thenReturn(firstRemoteTransition)
-        remoteTransitionDelegate.startAnimation(
+        remoteTransitionPickerDelegate.startAnimation(
             firstBinder,
             firstTransitionInfo,
             firstSct,
             firstFinishedCallback,
         )
-        remoteTransitionDelegate.onTransitionConsumed(firstBinder, false)
+        remoteTransitionPickerDelegate.onTransitionConsumed(firstBinder, false)
         whenever(mockPicker.invoke(any())).thenReturn(secondRemoteTransition)
 
-        remoteTransitionDelegate.startAnimation(
+        remoteTransitionPickerDelegate.startAnimation(
             secondBinder,
             secondTransitionInfo,
             secondSct,
             secondFinishedCallback,
         )
-        remoteTransitionDelegate.onTransitionConsumed(secondBinder, false)
+        remoteTransitionPickerDelegate.onTransitionConsumed(secondBinder, false)
 
         verify(firstRemoteTransition)
             .startAnimation(eq(firstBinder), eq(firstTransitionInfo), eq(firstSct), any())
@@ -137,7 +137,7 @@ class RemoteTransitionDelegateTest : SysuiTestCase() {
     @Test
     fun finishCallback_clearsRemoteTransitionAndDelegatesFinish() {
         val callbackCaptor = argumentCaptor<IRemoteTransitionFinishedCallback>()
-        remoteTransitionDelegate.startAnimation(
+        remoteTransitionPickerDelegate.startAnimation(
             firstBinder,
             firstTransitionInfo,
             firstSct,
@@ -145,10 +145,14 @@ class RemoteTransitionDelegateTest : SysuiTestCase() {
         )
         verify(firstRemoteTransition)
             .startAnimation(
-                eq(firstBinder), eq(firstTransitionInfo), eq(firstSct), callbackCaptor.capture())
+                eq(firstBinder),
+                eq(firstTransitionInfo),
+                eq(firstSct),
+                callbackCaptor.capture(),
+            )
 
         // Before finish, the remote is set and should receive calls
-        remoteTransitionDelegate.onTransitionConsumed(firstBinder, false)
+        remoteTransitionPickerDelegate.onTransitionConsumed(firstBinder, false)
         verify(firstRemoteTransition).onTransitionConsumed(firstBinder, false)
 
         // WHEN the transition is finished
@@ -158,7 +162,7 @@ class RemoteTransitionDelegateTest : SysuiTestCase() {
         verify(firstFinishedCallback).onTransitionFinished(null, null)
 
         // AND the remote transition is cleared, so it no longer receives calls
-        remoteTransitionDelegate.onTransitionConsumed(firstBinder, true)
+        remoteTransitionPickerDelegate.onTransitionConsumed(firstBinder, true)
         verify(firstRemoteTransition, never()).onTransitionConsumed(firstBinder, true)
     }
 }
