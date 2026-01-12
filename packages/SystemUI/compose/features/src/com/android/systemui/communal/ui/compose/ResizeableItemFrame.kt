@@ -17,20 +17,15 @@
 package com.android.systemui.communal.ui.compose
 
 import android.util.MathUtils
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.AnimatedVisibilityScope
-import androidx.compose.animation.EnterExitState
-import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.updateTransition
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.AnchoredDraggableState
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.anchoredDraggable
@@ -43,6 +38,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridState
@@ -51,7 +47,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -61,6 +56,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -76,10 +72,6 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
-import android.content.Context
-import android.view.View
-import android.view.accessibility.AccessibilityEvent
-import android.view.accessibility.AccessibilityManager
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
@@ -103,8 +95,43 @@ import com.android.systemui.res.R
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 
-private val AccessibilityResizeButtonSize = 48.dp
 private const val IconAnimationDelayThreshold = 0.5f
+
+private object ResizeFrameDimensions {
+    val ResizeButtonContentSize = 32.dp
+    val TouchTargetSize = 48.dp
+    val BorderWidth = 2.dp
+
+    fun resizeButtonShape(isTopRounded: Boolean): RoundedCornerShape {
+        return if (isTopRounded) {
+            RoundedCornerShape(topStartPercent = 50, topEndPercent = 50)
+        } else {
+            RoundedCornerShape(bottomStartPercent = 50, bottomEndPercent = 50)
+        }
+    }
+
+    fun resizeButtonPadding(isTopRounded: Boolean): PaddingValues {
+        val outerPadding = 11.dp
+        val innerPadding = 5.dp
+        val axialPadding = 8.dp
+
+        return if (isTopRounded) {
+            PaddingValues(
+                top = outerPadding,
+                bottom = innerPadding,
+                start = axialPadding,
+                end = axialPadding,
+            )
+        } else {
+            PaddingValues(
+                top = innerPadding,
+                bottom = outerPadding,
+                start = axialPadding,
+                end = axialPadding,
+            )
+        }
+    }
+}
 
 private val MedLowBounceSpring = spring<Float>(stiffness = 400f, dampingRatio = 0.7f)
 private val MedLowNoBounceSpring = spring<Float>(stiffness = 400f, dampingRatio = 1f)
@@ -183,37 +210,14 @@ private fun AccessibilityResizeButtonWrapper(
     onClick: () -> Unit,
     isTopRounded: Boolean,
 ) {
-    Box(modifier = Modifier.height(AccessibilityResizeButtonSize)) {
-        val transformOrigin =
-            if (isTopRounded) TransformOrigin(0.5f, 1f) else TransformOrigin(0.5f, 0f)
-
-        // Use a MutableTransitionState to ensure the enter animation runs when the button is first
-        // displayed, as AnimatedVisibility typically defaults to no animation for the initial state.
-        val visibleState = remember { MutableTransitionState(false) }
-        visibleState.targetState = visible
-
-        AnimatedVisibility(
-            visibleState = visibleState,
-            enter =
-                scaleIn(
-                    animationSpec = MedLowBounceSpring,
-                    initialScale = 0.5f,
-                    transformOrigin = transformOrigin,
-                ) + fadeIn(animationSpec = MedLowNoBounceSpring),
-            exit =
-                scaleOut(
-                    animationSpec = MedLowBounceSpring,
-                    targetScale = 0.5f,
-                    transformOrigin = transformOrigin,
-                ) + fadeOut(animationSpec = MedLowNoBounceSpring),
-        ) {
-            ResizeButton(
-                icon = icon,
-                contentDescription = contentDescription,
-                onClick = onClick,
-                isTopRounded = isTopRounded,
-            )
-        }
+    Box(modifier = Modifier.height(ResizeFrameDimensions.TouchTargetSize)) {
+        ResizeButton(
+            visible = visible,
+            icon = icon,
+            contentDescription = contentDescription,
+            onClick = onClick,
+            isTopRounded = isTopRounded,
+        )
     }
 }
 
@@ -265,10 +269,7 @@ private fun BoxScope.AccessibilityButtons(
                 listOf(shrinkAction, expandAction)
             }
 
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(spacing),
-        ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
             actions.forEachIndexed { index, action ->
                 AccessibilityResizeButtonWrapper(
                     visible = action.isVisible,
@@ -283,62 +284,96 @@ private fun BoxScope.AccessibilityButtons(
 }
 
 @Composable
-private fun AnimatedVisibilityScope.ResizeButton(
+private fun ResizeButton(
+    visible: Boolean,
     icon: ImageVector,
     contentDescription: String,
     onClick: () -> Unit,
     isTopRounded: Boolean,
     modifier: Modifier = Modifier,
 ) {
-    val shape =
-        remember(isTopRounded) {
-            if (isTopRounded) {
-                RoundedCornerShape(topStartPercent = 50, topEndPercent = 50)
-            } else {
-                RoundedCornerShape(bottomStartPercent = 50, bottomEndPercent = 50)
-            }
+    val shape = remember(isTopRounded) { ResizeFrameDimensions.resizeButtonShape(isTopRounded) }
+
+    var show by remember { androidx.compose.runtime.mutableStateOf(false) }
+    LaunchedEffect(visible) { show = visible }
+    val transition = updateTransition(targetState = show, label = "ResizeButtonTransition")
+
+    val buttonContainerScale by
+        transition.animateFloat(label = "ResizeButtonScale", transitionSpec = { MedLowBounceSpring }) {
+            expanded ->
+            if (expanded) 1.0f else 0.5f
+        }
+    val buttonContainerAlpha by
+        transition.animateFloat(label = "ResizeButtonAlpha", transitionSpec = { MedLowNoBounceSpring }) {
+            expanded ->
+            if (expanded) 1.0f else 0.0f
         }
 
-    val progressionState =
+    // Overall button's animation progress
+    val buttonProgression by
         transition.animateFloat(
+            label = "ResizeButtonProgression",
             transitionSpec = { MedLowNoBounceSpring },
-            label = "ResizeButtonIconProgression",
-        ) { state: EnterExitState ->
-            if (state == EnterExitState.Visible) 1f else 0f
+        ) { expanded ->
+            if (expanded) 1.0f else 0.0f
         }
+    val buttonLengthPercent = MathUtils.lerp(0.7f, 1.0f, buttonProgression) // 70% -> 100%
+
+    // Icon animation runs during 0.5-1.0 of button's progress
+    val iconProgression = ((buttonProgression - 0.5f) * 2.0f).coerceIn(0.0f, 1.0f)
+    val iconScale = MathUtils.lerp(0.5f, 1.0f, iconProgression) // 50% -> 100%
+    val iconAlpha = MathUtils.lerp(0.0f, 1.0f, iconProgression) // 0% -> 100%
 
     val borderColor = MaterialTheme.colorScheme.onTertiaryContainer
-    val border = remember(borderColor) { BorderStroke(2.dp, borderColor) }
+    val border =
+        remember(borderColor) { BorderStroke(ResizeFrameDimensions.BorderWidth, borderColor) }
 
-    Button(
-        onClick = onClick,
-        colors =
-            ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
-            ),
-        modifier = modifier.size(AccessibilityResizeButtonSize),
-        shape = shape,
-        border = border,
-        contentPadding = PaddingValues(0.dp),
+    val transformOrigin =
+        remember(isTopRounded) {
+            if (isTopRounded) TransformOrigin(0.5f, 1f) else TransformOrigin(0.5f, 0f)
+        }
+
+    Box(
+        modifier =
+            modifier
+                .size(ResizeFrameDimensions.TouchTargetSize)
+                .clickable(
+                    enabled = visible,
+                    role = Role.Button,
+                    onClickLabel = contentDescription,
+                    onClick = onClick,
+                    interactionSource = null,
+                    indication = null,
+                )
+                .padding(ResizeFrameDimensions.resizeButtonPadding(isTopRounded)),
+        contentAlignment = Alignment.Center,
     ) {
-        Icon(
-            icon,
-            contentDescription = contentDescription,
+        Box(
             modifier =
-                Modifier.graphicsLayer {
-                    val progression = progressionState.value
-                    val iconProgression =
-                        (progression - IconAnimationDelayThreshold).coerceAtLeast(0f) /
-                            (1f - IconAnimationDelayThreshold)
-                    val iconScale = MathUtils.lerp(0.5f, 1.0f, iconProgression)
-                    val iconAlpha = iconProgression
-
-                    scaleX = iconScale
-                    scaleY = iconScale
-                    alpha = iconAlpha
-                },
-        )
+                Modifier.size(ResizeFrameDimensions.ResizeButtonContentSize)
+                    .graphicsLayer {
+                        this.alpha = buttonContainerAlpha
+                        this.transformOrigin = transformOrigin
+                        this.scaleX = buttonContainerScale
+                        this.scaleY = buttonContainerScale * buttonLengthPercent
+                    }
+                    .border(border, shape)
+                    .padding(ResizeFrameDimensions.BorderWidth)
+                    .background(MaterialTheme.colorScheme.tertiaryContainer, shape),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                icon,
+                contentDescription = null,
+                modifier =
+                    Modifier.graphicsLayer {
+                        this.alpha = iconAlpha
+                        this.scaleX = iconScale
+                        this.scaleY = iconScale
+                    },
+                tint = MaterialTheme.colorScheme.onTertiaryContainer,
+            )
+        }
     }
 }
 
@@ -351,10 +386,7 @@ private data class ResizeHandleUiState(
 )
 
 @Composable
-private fun Modifier.accessibilityResizeClickable(
-    label: String,
-    onClick: () -> Unit,
-): Modifier {
+private fun Modifier.accessibilityResizeClickable(label: String, onClick: () -> Unit): Modifier {
     return this.pointerInput(Unit) { observeTaps(shouldConsume = true) { onClick() } }
         .semantics {
             role = Role.Button
@@ -462,7 +494,10 @@ private fun BoxScope.UnifiedResizeHandle(
                                 Modifier.fillMaxWidth()
                                     .height(dragHandleRadius * 2)
                                     .accessibilityResizeClickable(
-                                        label = stringResource(R.string.accessibility_action_label_resize_widget),
+                                        label =
+                                            stringResource(
+                                                R.string.accessibility_action_label_resize_widget
+                                            ),
                                         onClick = currentOnToggle,
                                     ),
                         )
