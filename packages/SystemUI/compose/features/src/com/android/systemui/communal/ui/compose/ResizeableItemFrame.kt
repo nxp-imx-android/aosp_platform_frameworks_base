@@ -42,6 +42,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -63,7 +64,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.TransformOrigin
@@ -299,13 +299,17 @@ private fun ResizeButton(
     val transition = updateTransition(targetState = show, label = "ResizeButtonTransition")
 
     val buttonContainerScale by
-        transition.animateFloat(label = "ResizeButtonScale", transitionSpec = { MedLowBounceSpring }) {
-            expanded ->
+        transition.animateFloat(
+            label = "ResizeButtonScale",
+            transitionSpec = { MedLowBounceSpring },
+        ) { expanded ->
             if (expanded) 1.0f else 0.5f
         }
     val buttonContainerAlpha by
-        transition.animateFloat(label = "ResizeButtonAlpha", transitionSpec = { MedLowNoBounceSpring }) {
-            expanded ->
+        transition.animateFloat(
+            label = "ResizeButtonAlpha",
+            transitionSpec = { MedLowNoBounceSpring },
+        ) { expanded ->
             if (expanded) 1.0f else 0.0f
         }
 
@@ -398,13 +402,24 @@ private fun Modifier.accessibilityResizeClickable(label: String, onClick: () -> 
 }
 
 @Composable
-private fun DragPill(brush: Brush, radius: Dp, alpha: () -> Float, modifier: Modifier = Modifier) {
-    Canvas(modifier = modifier) {
-        drawCircle(
-            brush = brush,
-            radius = radius.toPx(),
-            center = Offset(size.width / 2, size.height / 2),
-            alpha = alpha(),
+private fun DragHandle(
+    radius: Dp,
+    alpha: () -> Float,
+    modifier: Modifier = Modifier,
+    borderWidth: Dp = ResizeFrameDimensions.BorderWidth,
+    backgroundColor: Color = MaterialTheme.colorScheme.tertiaryContainer,
+    borderColor: Color = MaterialTheme.colorScheme.onTertiaryContainer,
+) {
+    val size = radius * 2
+
+    Box(modifier = modifier, contentAlignment = Alignment.Center) {
+        Box(
+            modifier =
+                Modifier.size(size)
+                    .graphicsLayer { this.alpha = alpha() }
+                    .border(borderWidth, borderColor, CircleShape)
+                    .padding(borderWidth)
+                    .background(backgroundColor, CircleShape)
         )
     }
 }
@@ -418,7 +433,6 @@ private fun BoxScope.UnifiedResizeHandle(
     onShrink: () -> Unit,
     dragHandleRadius: Dp,
     outlinePadding: Dp,
-    brush: Brush,
     contentAlpha: () -> Float,
     modifier: Modifier = Modifier,
 ) {
@@ -451,18 +465,18 @@ private fun BoxScope.UnifiedResizeHandle(
             val transformOriginY = if (state.orientation == ResizeHandle.TOP) 1f else 0f
             val dragHandleTransformOrigin = TransformOrigin(0.5f, transformOriginY)
 
-            val dragPillAlpha by
+            val dragHandleAlpha by
                 transition.animateFloat(
                     transitionSpec = { if (targetState) HighStiffnessSpring else HandleFadeSpring },
-                    label = "dragPillAlpha",
+                    label = "dragHandleAlpha",
                 ) { isVisible ->
                     if (isVisible) 0f else 1f
                 }
 
-            val dragPillScale by
+            val dragHandleScale by
                 transition.animateFloat(
                     transitionSpec = { if (targetState) NoBounceFastSpring else HandleScaleSpring },
-                    label = "dragPillScale",
+                    label = "dragHandleScale",
                 ) { isVisible ->
                     if (isVisible) 0.33f else 1f
                 }
@@ -480,19 +494,18 @@ private fun BoxScope.UnifiedResizeHandle(
                     Box(
                         modifier =
                             Modifier.graphicsLayer {
-                                alpha = dragPillAlpha
-                                scaleX = dragPillScale
-                                scaleY = dragPillScale
+                                alpha = dragHandleAlpha
+                                scaleX = dragHandleScale
+                                scaleY = dragHandleScale
                                 transformOrigin = dragHandleTransformOrigin
                             }
                     ) {
-                        DragPill(
-                            brush = brush,
+                        DragHandle(
                             radius = dragHandleRadius,
-                            alpha = { dragPillAlpha * contentAlpha() },
+                            alpha = { dragHandleAlpha * contentAlpha() },
                             modifier =
                                 Modifier.fillMaxWidth()
-                                    .height(dragHandleRadius * 2)
+                                    .height(ResizeFrameDimensions.TouchTargetSize)
                                     .accessibilityResizeClickable(
                                         label =
                                             stringResource(
@@ -521,8 +534,7 @@ private fun BoxScope.UnifiedResizeHandle(
         } else {
             // Replicate the original DragHandle behavior when the flag is off.
             if (draggableState.anchors.size > 1) {
-                DragPill(
-                    brush = brush,
+                DragHandle(
                     radius = dragHandleRadius,
                     alpha = contentAlpha,
                     modifier = Modifier.fillMaxWidth().height(dragHandleRadius * 2),
@@ -569,7 +581,7 @@ fun ResizableItemFrame(
     outlinePadding: Dp = 0.dp,
     outlineColor: Color = MaterialTheme.colorScheme.primary,
     cornerRadius: Dp = dimensionResource(system_app_widget_background_radius),
-    strokeWidth: Dp = 4.dp,
+    strokeWidth: Dp = ResizeFrameDimensions.BorderWidth,
     minHeightPx: Int = 0,
     maxHeightPx: Int = Int.MAX_VALUE,
     resizeMultiple: Int = 1,
@@ -615,6 +627,26 @@ fun ResizableItemFrame(
         content()
 
         if (enabled) {
+            // Draw outline around the element.
+            Canvas(modifier = Modifier.matchParentSize()) {
+                val paddingPx = outlinePadding.toPx()
+                val topOffset = viewModel.topDragState.offset.takeIf { it.fastIsFinite() } ?: 0f
+                val bottomOffset =
+                    viewModel.bottomDragState.offset.takeIf { it.fastIsFinite() } ?: 0f
+                drawRoundRect(
+                    brush,
+                    alpha = alpha(),
+                    topLeft = Offset(-paddingPx, topOffset + -paddingPx),
+                    size =
+                        Size(
+                            width = size.width + paddingPx * 2,
+                            height = -topOffset + bottomOffset + size.height + paddingPx * 2,
+                        ),
+                    cornerRadius = CornerRadius(cornerRadius.toPx()),
+                    style = Stroke(width = strokeWidth.toPx()),
+                )
+            }
+
             listOf(ResizeHandle.TOP, ResizeHandle.BOTTOM).forEach { handle ->
                 val uiState =
                     ResizeHandleUiState(
@@ -646,28 +678,7 @@ fun ResizableItemFrame(
                         ),
                     dragHandleRadius = dragHandleRadius,
                     outlinePadding = outlinePadding,
-                    brush = brush,
                     contentAlpha = alpha,
-                )
-            }
-
-            // Draw outline around the element.
-            Canvas(modifier = Modifier.matchParentSize()) {
-                val paddingPx = outlinePadding.toPx()
-                val topOffset = viewModel.topDragState.offset.takeIf { it.fastIsFinite() } ?: 0f
-                val bottomOffset =
-                    viewModel.bottomDragState.offset.takeIf { it.fastIsFinite() } ?: 0f
-                drawRoundRect(
-                    brush,
-                    alpha = alpha(),
-                    topLeft = Offset(-paddingPx, topOffset + -paddingPx),
-                    size =
-                        Size(
-                            width = size.width + paddingPx * 2,
-                            height = -topOffset + bottomOffset + size.height + paddingPx * 2,
-                        ),
-                    cornerRadius = CornerRadius(cornerRadius.toPx()),
-                    style = Stroke(width = strokeWidth.toPx()),
                 )
             }
 
