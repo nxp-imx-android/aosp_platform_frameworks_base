@@ -90,6 +90,7 @@ constructor(
     mediaCarouselController: MediaCarouselController,
     mediaViewModelFactory: MediaViewModel.Factory,
     mediaCarouselInteractorLazy: Lazy<MediaCarouselInteractor>,
+    val resizeableItemFrameViewModelFactory: ResizeableItemFrameViewModel.Factory,
 ) :
     BaseCommunalViewModel(
         communalSceneInteractor,

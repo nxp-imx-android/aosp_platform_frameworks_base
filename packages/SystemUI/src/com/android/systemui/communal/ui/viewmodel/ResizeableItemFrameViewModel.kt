@@ -15,6 +15,7 @@
  */
 package com.android.systemui.communal.ui.viewmodel
 
+import android.content.ComponentName
 import androidx.compose.foundation.gestures.AnchoredDraggableState
 import androidx.compose.foundation.gestures.DraggableAnchors
 import androidx.compose.foundation.gestures.snapTo
@@ -22,9 +23,13 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshotFlow
 import com.android.app.tracing.coroutines.coroutineScopeTraced as coroutineScope
+import com.android.internal.logging.UiEventLogger
 import com.android.systemui.Flags.communalEditModeAccessibilityResize
+import com.android.systemui.communal.ui.metrics.CommunalUiEvent
 import com.android.systemui.lifecycle.HydratedActivatable
-import com.android.systemui.util.kotlin.pairwise
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 import kotlin.math.abs
 import kotlin.math.ceil
 import kotlin.math.floor
@@ -57,7 +62,17 @@ data class ResizeInfo(
     val isExpanding = spans > 0
 }
 
-class ResizeableItemFrameViewModel : HydratedActivatable(enableEnqueuedActivations = true) {
+class ResizeableItemFrameViewModel
+@AssistedInject
+constructor(
+    private val uiEventLogger: UiEventLogger,
+    @Assisted private val componentName: ComponentName?,
+) : HydratedActivatable(enableEnqueuedActivations = true) {
+
+    @AssistedFactory
+    interface Factory {
+        fun create(componentName: ComponentName?): ResizeableItemFrameViewModel
+    }
 
     private val _visibleAccessibilityResizeHandle = mutableStateOf<ResizeHandle?>(null)
     val visibleAccessibilityResizeHandle: State<ResizeHandle?> = _visibleAccessibilityResizeHandle
@@ -69,13 +84,30 @@ class ResizeableItemFrameViewModel : HydratedActivatable(enableEnqueuedActivatio
     fun toggleAccessibilityResizeHandle(handle: ResizeHandle) {
         if (_visibleAccessibilityResizeHandle.value == handle) {
             _visibleAccessibilityResizeHandle.value = null
+            uiEventLogger.log(
+                CommunalUiEvent.COMMUNAL_HUB_WIDGET_HIDE_ACCESSIBILITY_RESIZE_BUTTONS,
+                0,
+                componentName?.packageName,
+            )
         } else {
             _visibleAccessibilityResizeHandle.value = handle
+            uiEventLogger.log(
+                CommunalUiEvent.COMMUNAL_HUB_WIDGET_SHOW_ACCESSIBILITY_RESIZE_BUTTONS,
+                0,
+                componentName?.packageName,
+            )
         }
     }
 
     /** Hides the accessibility resize handle. */
     fun clearAccessibilityResizeHandle() {
+        _visibleAccessibilityResizeHandle.value?.let {
+            uiEventLogger.log(
+                CommunalUiEvent.COMMUNAL_HUB_WIDGET_HIDE_ACCESSIBILITY_RESIZE_BUTTONS,
+                0,
+                componentName?.packageName,
+            )
+        }
         _visibleAccessibilityResizeHandle.value = null
     }
 
@@ -178,10 +210,24 @@ class ResizeableItemFrameViewModel : HydratedActivatable(enableEnqueuedActivatio
     }
 
     /** Handle expansion to the next anchor from a specific handle. */
-    fun expand(handle: ResizeHandle) = performResize(handle, isExpand = true)
+    fun expand(handle: ResizeHandle) {
+        uiEventLogger.log(
+            CommunalUiEvent.COMMUNAL_HUB_WIDGET_EXPAND_BY_ACCESSIBILITY_BUTTON,
+            0,
+            componentName?.packageName,
+        )
+        performResize(handle, isExpand = true)
+    }
 
     /** Handle shrinking to the next anchor from a specific handle. */
-    fun shrink(handle: ResizeHandle) = performResize(handle, isExpand = false)
+    fun shrink(handle: ResizeHandle) {
+        uiEventLogger.log(
+            CommunalUiEvent.COMMUNAL_HUB_WIDGET_SHRINK_BY_ACCESSIBILITY_BUTTON,
+            0,
+            componentName?.packageName,
+        )
+        performResize(handle, isExpand = false)
+    }
 
     private fun performResize(handle: ResizeHandle, isExpand: Boolean) {
         enqueueOnActivatedScope {
@@ -207,11 +253,11 @@ class ResizeableItemFrameViewModel : HydratedActivatable(enableEnqueuedActivatio
     /** Emits a [ResizeInfo] when the element is resized using a drag gesture. */
     private val resizeInfo: Flow<ResizeInfo> =
         merge(
-            snapshotFlow { topDragState.settledValue }
-                .map { ResizeInfo(-it, ResizeHandle.TOP) },
-            snapshotFlow { bottomDragState.settledValue }
-                .map { ResizeInfo(it, ResizeHandle.BOTTOM) },
-        )
+                snapshotFlow { topDragState.settledValue }
+                    .map { ResizeInfo(-it, ResizeHandle.TOP) },
+                snapshotFlow { bottomDragState.settledValue }
+                    .map { ResizeInfo(it, ResizeHandle.BOTTOM) },
+            )
             .filter { it.spans != 0 }
             .onEach {
                 if (communalEditModeAccessibilityResize()) {
