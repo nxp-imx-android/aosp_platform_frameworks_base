@@ -782,7 +782,11 @@ constructor(
                     if (wakeDirectlyToGoneInteractor.canWakeDirectlyToGone.value) {
                         switchToScene(
                             targetSceneKey = Scenes.Gone,
-                            loggingReason = "device is waking up while we can wake directly to gone",
+                            loggingReason =
+                                "device is waking up while we can wake directly to gone",
+                            // If we're waking directly to Gone from DOZING (no AOD), there's
+                            // nothing visible on screen to animate out, so we should snap.
+                            instantlySnapScenes = !keyguardInteractor.isAodAvailable.value,
                         )
                     } else if (
                         authenticationInteractor.get().authenticationMethod.value ==
