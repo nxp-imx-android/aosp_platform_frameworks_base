@@ -39,7 +39,7 @@ import org.mockito.MockitoAnnotations;
 @RunWith(JUnit4.class)
 public class ActivityDebouncerTest {
     private static final int MSG_INACTIVITY = 1;
-    private static final int DEBOUNCE_MS = 64;
+    private static final int DEBOUNCE_MS = 1024;
     private static final int TEST_UID = 10001;
     private static final int TEST_UID_2 = 10002;
 
