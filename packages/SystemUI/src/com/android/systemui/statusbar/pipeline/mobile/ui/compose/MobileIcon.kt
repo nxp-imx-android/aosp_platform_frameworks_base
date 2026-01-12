@@ -50,11 +50,12 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
+import com.android.systemui.common.ui.compose.Icon
 import com.android.systemui.common.ui.compose.load
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.pipeline.mobile.domain.model.SignalIconModel
-import com.android.systemui.statusbar.pipeline.shared.ui.composable.ActivityIndicators
 import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.MobileIconState
+import com.android.systemui.statusbar.pipeline.shared.ui.composable.ActivityIndicators
 
 /** Composable for displaying a single mobile icon. */
 @Composable
@@ -64,17 +65,8 @@ fun MobileIcon(state: MobileIconState, modifier: Modifier = Modifier) {
     if (!isVisible) return
 
     val iconModel = state.icon
-    if (iconModel !is SignalIconModel.CellularTypeIconModel.Cellular) return
-
     val contentDescription = state.contentDescription
-    val networkTypeIcon = state.networkTypeIcon
-    val roaming = state.roaming
-    val activityInVisible = state.activityInVisible
-    val activityOutVisible = state.activityOutVisible
-    val activityContainerVisible = state.activityContainerVisible
     val context = LocalContext.current
-    val contentColor = LocalContentColor.current
-    val spacing = with(LocalDensity.current) { MobileIconDimensions.IconSpacingSp.toDp() }
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -85,58 +77,73 @@ fun MobileIcon(state: MobileIconState, modifier: Modifier = Modifier) {
                 }
             },
     ) {
-        if (activityContainerVisible) {
-            Column {
-                ActivityIndicators(
-                    isActivityInVisible = activityInVisible,
-                    isActivityOutVisible = activityOutVisible,
-                    color = contentColor,
-                )
+        when (iconModel) {
+            is SignalIconModel.CellularTypeIconModel ->
+                MobileIcon(state = state, iconModel = iconModel)
+            is SignalIconModel.Satellite -> {
+                Icon(iconModel.icon)
             }
         }
+    }
+}
 
-        networkTypeIcon?.let { networkIcon ->
-            val height = with(LocalDensity.current) { MobileIconDimensions.IconHeightSp.toDp() }
-            Box(modifier = Modifier.height(height), contentAlignment = Alignment.Center) {
-                Image(
-                    painter = painterResource(networkIcon.resId),
-                    contentDescription = networkIcon.contentDescription?.load(),
-                    modifier = Modifier.height(height),
-                    colorFilter = ColorFilter.tint(contentColor, BlendMode.SrcIn),
-                    contentScale = ContentScale.FillHeight,
-                )
-            }
+@Composable
+private fun MobileIcon(state: MobileIconState, iconModel: SignalIconModel.CellularTypeIconModel) {
+    val networkTypeIcon = state.networkTypeIcon
+    val roaming = state.roaming
+    val activityInVisible = state.activityInVisible
+    val activityOutVisible = state.activityOutVisible
+    val activityContainerVisible = state.activityContainerVisible
+    val contentColor = LocalContentColor.current
+    val spacing = with(LocalDensity.current) { MobileIconDimensions.IconSpacingSp.toDp() }
+
+    if (activityContainerVisible) {
+        Column {
+            ActivityIndicators(
+                isActivityInVisible = activityInVisible,
+                isActivityOutVisible = activityOutVisible,
+                color = contentColor,
+            )
         }
+    }
 
-        Spacer(Modifier.size(spacing))
-
-        MobileSignalIcon(
-            viewModel = iconModel as SignalIconModel.CellularTypeIconModel.Cellular,
-            color = contentColor,
-        )
-
-        Spacer(Modifier.size(spacing))
-
-        if (roaming) {
-            val height =
-                with(LocalDensity.current) { MobileIconDimensions.RoamingIconHeightSp.toDp() }
-            val paddingTop =
-                with(LocalDensity.current) { MobileIconDimensions.RoamingIconPaddingTopSp.toDp() }
+    networkTypeIcon?.let { networkIcon ->
+        val height = with(LocalDensity.current) { MobileIconDimensions.IconHeightSp.toDp() }
+        Box(modifier = Modifier.height(height), contentAlignment = Alignment.Center) {
             Image(
-                painter = painterResource(R.drawable.stat_sys_roaming_updated),
-                contentDescription = stringResource(R.string.data_connection_roaming),
-                modifier = Modifier.height(height).offset(y = paddingTop),
+                painter = painterResource(networkIcon.resId),
+                contentDescription = networkIcon.contentDescription?.load(),
+                modifier = Modifier.height(height),
                 colorFilter = ColorFilter.tint(contentColor, BlendMode.SrcIn),
                 contentScale = ContentScale.FillHeight,
             )
         }
+    }
+
+    Spacer(Modifier.size(spacing))
+
+    MobileSignalIcon(viewModel = iconModel, color = contentColor)
+
+    if (roaming) {
+        Spacer(Modifier.size(spacing))
+
+        val height = with(LocalDensity.current) { MobileIconDimensions.RoamingIconHeightSp.toDp() }
+        val paddingTop =
+            with(LocalDensity.current) { MobileIconDimensions.RoamingIconPaddingTopSp.toDp() }
+        Image(
+            painter = painterResource(R.drawable.stat_sys_roaming_updated),
+            contentDescription = stringResource(R.string.data_connection_roaming),
+            modifier = Modifier.height(height).offset(y = paddingTop),
+            colorFilter = ColorFilter.tint(contentColor, BlendMode.SrcIn),
+            contentScale = ContentScale.FillHeight,
+        )
     }
 }
 
 /** Composable for rendering the mobile signal strength */
 @Composable
 private fun MobileSignalIcon(
-    viewModel: SignalIconModel.CellularTypeIconModel.Cellular,
+    viewModel: SignalIconModel.CellularTypeIconModel,
     color: Color,
     modifier: Modifier = Modifier,
 ) {
