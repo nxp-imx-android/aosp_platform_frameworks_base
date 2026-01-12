@@ -9974,6 +9974,18 @@
             android:featureFlag="android.service.notification.enable_dnd_sync">
     </permission>
 
+    <!-- Allows an application to register listener with user attention service.
+         This permission is associated with the
+         {@link android.app.role.RoleManager#ROLE_SYSTEM_VENDOR_INTELLIGENCE} role.
+        <p>Protection level: signature|role|privileged
+          @FlaggedApi(com.android.input.flags.Flags.FLAG_ENABLE_ATTENTION_SERVICE_APIS)
+          @SystemApi
+          @hide
+      -->
+    <permission android:name="android.permission.ACCESS_ATTENTION_LISTENER"
+        android:protectionLevel="signature|role|privileged"
+        android:featureFlag="com.android.input.flags.enable_attention_service_apis" />
+
     <!-- Permission needed to ensure that only the system process can bind with the
          {@link android.service.messaging.MessagePromotionService}.
          @FlaggedApi(com.android.internal.telephony.flags.Flags.FLAG_MESSAGE_PROMOTION)

@@ -207,6 +207,7 @@ android_app {
         "android.os.profiling.anomaly.flags-aconfig",
         "com.android.media.flags.mediasession-aconfig",
         "npumanager_aconfig_flags",
+        "com.android.input.flags-aconfig",
         "telecom_flags",
         "android.multiuser.flags-aconfig",
         "com.android.nfc.module.flags-aconfig",
