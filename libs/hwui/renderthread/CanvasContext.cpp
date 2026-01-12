@@ -187,6 +187,7 @@ void CanvasContext::destroy() {
     setSurface(nullptr);
 #ifdef __ANDROID__
     setSurfaceControl(nullptr);
+    setBLASTBufferQueue(nullptr);
 #endif
     freePrefetchedLayers();
     destroyHardwareResources();
