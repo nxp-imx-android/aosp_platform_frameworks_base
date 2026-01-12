@@ -1301,7 +1301,7 @@ package android.content.pm {
     method public boolean isProfile();
     method public boolean isQuietModeEnabled();
     method public boolean isRestricted();
-    method @FlaggedApi("android.multiuser.allow_supervising_profile") public boolean isSupervisingProfile();
+    method public boolean isSupervisingProfile();
     method public boolean supportsSwitchTo();
     method public void writeToParcel(android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.content.pm.UserInfo> CREATOR;

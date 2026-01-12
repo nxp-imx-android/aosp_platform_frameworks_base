@@ -304,12 +304,7 @@ flag {
     is_exported: true
 }
 
-flag {
-    name: "allow_supervising_profile"
-    namespace: "supervision"
-    description: "Enables support for new supervising user type"
-    bug: "389712089"
-}
+
 
 flag {
      name: "profiles_for_all"

@@ -49,7 +49,6 @@ import android.os.Process;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.platform.test.annotations.EnableFlags;
-import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.testing.DexmakerShareClassLoaderRule;
 import android.testing.TestableContext;
@@ -476,7 +475,6 @@ public class AccessibilitySecurityPolicyTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(android.multiuser.Flags.FLAG_ALLOW_SUPERVISING_PROFILE)
     public void resolveProfileParent_userIdNotCurrentUser_isSupervising_returnCurrentUser() {
         final int userId = 15;
         final int currentUserId = 20;
