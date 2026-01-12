@@ -129,13 +129,6 @@ flag {
 }
 
 flag {
-    name: "enable_app_header_with_task_density"
-    namespace: "lse_desktop_experience"
-    description: "Matches the App Header density to that of the app window, instead of SysUI's"
-    bug: "332414819"
-}
-
-flag {
     name: "enable_app_restart_after_update"
     namespace: "lse_desktop_experience"
     description: "Enables the app restart after update feature."

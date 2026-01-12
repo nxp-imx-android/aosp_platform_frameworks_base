@@ -512,7 +512,6 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_APP_HEADER_WITH_TASK_DENSITY)
     public void updateRelayoutParams_appHeader_usesTaskDensity() {
         final int systemDensity = mTestableContext.getOrCreateTestableResources().getResources()
                 .getConfiguration().densityDpi;
@@ -525,23 +524,6 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
         updateRelayoutParams(relayoutParams, taskInfo);
 
         assertThat(relayoutParams.mWindowDecorConfig.densityDpi).isEqualTo(customTaskDensity);
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_ENABLE_APP_HEADER_WITH_TASK_DENSITY)
-    public void updateRelayoutParams_appHeader_usesSystemDensity() {
-        mDesktopConfig.setUseDesktopOverrideDensity(true);
-        final int systemDensity = mTestableContext.getOrCreateTestableResources().getResources()
-                .getConfiguration().densityDpi;
-        final int customTaskDensity = systemDensity + 300;
-        final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(/* visible= */ true);
-        taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_FULLSCREEN);
-        taskInfo.configuration.densityDpi = customTaskDensity;
-        final RelayoutParams relayoutParams = new RelayoutParams();
-
-        updateRelayoutParams(relayoutParams, taskInfo);
-
-        assertThat(relayoutParams.mWindowDecorConfig.densityDpi).isEqualTo(systemDensity);
     }
 
     @Test
