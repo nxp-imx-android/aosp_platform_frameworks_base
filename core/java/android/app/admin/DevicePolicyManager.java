@@ -19120,6 +19120,21 @@ public class DevicePolicyManager {
     }
 
     /**
+     * Template free version of setPolicy for strings.
+     *
+     * @hide
+     */
+    @TestApi
+    @SuppressWarnings("UnflaggedApi") // @TestApi without associated feature.
+    public void setStringPolicy(
+            @NonNull String key,
+            @PolicyScope int scope,
+            @Nullable String value) {
+        // TODO(b/434920631): Remove this method and use {@link #setPolicy} in tests directly.
+        setPolicy(new PolicyIdentifier<String>(key), scope, value);
+    }
+
+    /**
      * Template free version of getPolicy for integers.
      * Returns '-1' if the policy is not set.
      *
@@ -19149,5 +19164,21 @@ public class DevicePolicyManager {
         //  directly.
         var result = getResolvedPerUserPolicy(new PolicyIdentifier<Integer>(key));
         return result == null ? -1 : result;
+    }
+
+    /**
+     * Template free version of getPolicy for strings.
+     * Returns null if the policy is not set.
+     *
+     * @hide
+     */
+    @Nullable
+    @TestApi
+    @SuppressWarnings("UnflaggedApi") // @TestApi without associated feature.
+    public String getStringPolicy(
+            @NonNull String key,
+            @PolicyScope int scope) {
+        // TODO(b/434920631): Remove this method and use {@link #getPolicy} in tests directly.
+        return getPolicy(new PolicyIdentifier<String>(key), scope);
     }
 }
