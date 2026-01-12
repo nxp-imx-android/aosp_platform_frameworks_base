@@ -633,9 +633,15 @@ fun ContentScope.NestedScrollingNotificationPanel(
             val contentMeasurable = measurables[1][0]
 
             if (shouldScrimBackgroundFillMaxHeight) {
-                // Let the content match its constraints, but force the background to match the
-                // screen height to ensure it covers the full display area.
-                val content = contentMeasurable.measure(constraints)
+                // Fill the entire available space with the content, and force the background to
+                // match the screen height to ensure it covers the full display area.
+                val content =
+                    contentMeasurable.measure(
+                        Constraints.fixed(
+                            width = constraints.maxWidth,
+                            height = constraints.maxHeight,
+                        )
+                    )
                 val background =
                     backgroundMeasurable.measure(
                         Constraints.fixed(
