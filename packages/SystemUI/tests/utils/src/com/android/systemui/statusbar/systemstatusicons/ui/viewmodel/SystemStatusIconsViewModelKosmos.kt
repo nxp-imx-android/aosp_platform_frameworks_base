@@ -24,6 +24,7 @@ import com.android.systemui.statusbar.systemstatusicons.bluetooth.ui.viewmodel.b
 import com.android.systemui.statusbar.systemstatusicons.connecteddisplay.ui.viewmodel.connectedDisplayIconViewModelFactory
 import com.android.systemui.statusbar.systemstatusicons.datasaver.ui.viewmodel.dataSaverIconViewModelFactory
 import com.android.systemui.statusbar.systemstatusicons.devicesatellite.ui.viewmodel.deviceBasedSatelliteIconViewModelFactory
+import com.android.systemui.statusbar.systemstatusicons.domain.interactor.externalSystemStatusIconInteractor
 import com.android.systemui.statusbar.systemstatusicons.ethernet.ui.viewmodel.ethernetIconViewModelFactory
 import com.android.systemui.statusbar.systemstatusicons.hotspot.ui.viewmodel.hotspotIconViewModelFactory
 import com.android.systemui.statusbar.systemstatusicons.mobile.ui.viewmodel.mobileSystemStatusIconsViewModelFactory
@@ -42,6 +43,7 @@ val Kosmos.systemStatusIconsViewModelFactory by
                 SystemStatusIconsViewModel(
                     context = context,
                     orderedIconSlotNamesInteractor = orderedIconSlotNamesInteractor,
+                    externalSystemStatusIconInteractor = externalSystemStatusIconInteractor,
                     airplaneModeIconViewModelFactory = airplaneModeIconViewModelFactory,
                     bluetoothIconViewModelFactory = bluetoothIconViewModelFactory,
                     connectedDisplayIconViewModelFactory = connectedDisplayIconViewModelFactory,

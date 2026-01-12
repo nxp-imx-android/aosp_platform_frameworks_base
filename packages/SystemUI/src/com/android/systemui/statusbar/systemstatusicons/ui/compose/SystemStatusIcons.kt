@@ -16,6 +16,9 @@
 
 package com.android.systemui.statusbar.systemstatusicons.ui.compose
 
+import android.content.Context
+import android.graphics.drawable.Drawable
+import android.os.UserHandle
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
@@ -29,6 +32,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.android.internal.statusbar.StatusBarIcon
+import com.android.systemui.common.shared.model.ContentDescription
+import com.android.systemui.common.shared.model.Icon as IconModel
 import com.android.systemui.common.ui.compose.Icon
 import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.lifecycle.rememberViewModel
@@ -64,11 +70,16 @@ fun SystemStatusIcons(
                 .filter { it.visible }
                 .forEach { iconViewModel ->
                     // TODO(414653733): Make sure icons are sized uniformly.
+                    val defaultSizeModifier = Modifier.height(iconHeightDp)
+
                     when (iconViewModel) {
                         is SystemStatusIconViewModel.Default ->
                             iconViewModel.icon?.let {
-                                Icon(icon = it, modifier = Modifier.height(iconHeightDp))
+                                Icon(icon = it, modifier = defaultSizeModifier)
                             }
+                        is SystemStatusIconViewModel.External -> {
+                            ExternalSystemStatusIcon(iconViewModel, modifier = defaultSizeModifier)
+                        }
 
                         is SystemStatusIconViewModel.MobileIcons -> {
                             MobileIcons(
@@ -80,5 +91,46 @@ fun SystemStatusIcons(
                     }
                 }
         }
+    }
+}
+
+/** Renders an icon that came from an external process. */
+@Composable
+private fun ExternalSystemStatusIcon(
+    viewModel: SystemStatusIconViewModel.External,
+    modifier: Modifier = Modifier,
+) {
+    val context = LocalContext.current
+    val iconAsDrawable = viewModel.statusBarIcon.toDrawable(context) ?: return
+    val contentDescription =
+        viewModel.statusBarIcon.contentDescription?.let { ContentDescription.Loaded(it.toString()) }
+
+    Icon(
+        icon = IconModel.Loaded(drawable = iconAsDrawable, contentDescription = contentDescription),
+        modifier = modifier,
+    )
+}
+
+/**
+ * Transforms the [StatusBarIcon] sent from the external process into an icon displayable in
+ * SystemUI.
+ *
+ * Equivalent to StatusBarIconView#loadDrawable.
+ */
+private fun StatusBarIcon.toDrawable(context: Context): Drawable? {
+    // TODO(b/475251350): Downscale the icon (see StatusBarIconView#getIcon).
+    // TODO(b/475251350): Verify icon levels work.
+    val preloaded = this.preloadedIcon
+    return if (preloaded != null) {
+        val cached: Drawable.ConstantState? = preloaded.constantState
+        cached?.newDrawable(context.resources)?.mutate() ?: preloaded.mutate()
+    } else {
+        val userId =
+            if (this.user.identifier == UserHandle.USER_ALL) {
+                UserHandle.USER_SYSTEM
+            } else {
+                this.user.identifier
+            }
+        this.icon.loadDrawableAsUser(context, userId)
     }
 }
