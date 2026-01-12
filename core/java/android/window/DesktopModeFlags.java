@@ -70,8 +70,6 @@ public enum DesktopModeFlags {
     ENABLE_INPUT_LAYER_TRANSITION_FIX(Flags::enableInputLayerTransitionFix, true),
     ENABLE_REQUEST_FULLSCREEN_BUGFIX(Flags::enableRequestFullscreenBugfix, true),
     ENABLE_RESIZING_METRICS(Flags::enableResizingMetrics, true),
-    ENABLE_RESTORE_TO_PREVIOUS_SIZE_FROM_DESKTOP_IMMERSIVE(
-            Flags::enableRestoreToPreviousSizeFromDesktopImmersive, true),
     ENABLE_TASKBAR_OVERFLOW(Flags::enableTaskbarOverflow, false),
     ENABLE_TASK_STACK_OBSERVER_IN_SHELL(Flags::enableTaskStackObserverInShell, true),
     ENABLE_WINDOWING_EDGE_DRAG_RESIZE(Flags::enableWindowingEdgeDragResize, true),

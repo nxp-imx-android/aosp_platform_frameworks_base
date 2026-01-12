@@ -23,7 +23,6 @@ import android.os.IBinder
 import android.view.SurfaceControl
 import android.view.WindowManager.TRANSIT_CHANGE
 import android.view.animation.DecelerateInterpolator
-import android.window.DesktopModeFlags
 import android.window.TransitionInfo
 import android.window.TransitionRequestInfo
 import android.window.WindowContainerTransaction
@@ -393,17 +392,15 @@ class DesktopImmersiveController(
                 taskId = taskId,
                 immersive = pendingTransition.direction == Direction.ENTER,
             )
-            if (DesktopModeFlags.ENABLE_RESTORE_TO_PREVIOUS_SIZE_FROM_DESKTOP_IMMERSIVE.isTrue) {
-                when (pendingTransition.direction) {
-                    Direction.EXIT -> {
-                        desktopRepository.removeBoundsBeforeFullImmersive(taskId)
-                    }
-                    Direction.ENTER -> {
-                        desktopRepository.saveBoundsBeforeFullImmersive(
-                            taskId,
-                            immersiveChange.startAbsBounds,
-                        )
-                    }
+            when (pendingTransition.direction) {
+                Direction.EXIT -> {
+                    desktopRepository.removeBoundsBeforeFullImmersive(taskId)
+                }
+                Direction.ENTER -> {
+                    desktopRepository.saveBoundsBeforeFullImmersive(
+                        taskId,
+                        immersiveChange.startAbsBounds,
+                    )
                 }
             }
         }
@@ -454,12 +451,8 @@ class DesktopImmersiveController(
         val displayLayout =
             displayController.getDisplayLayout(taskInfo.displayId)
                 ?: error("Expected non-null display layout for displayId: ${taskInfo.displayId}")
-        return if (DesktopModeFlags.ENABLE_RESTORE_TO_PREVIOUS_SIZE_FROM_DESKTOP_IMMERSIVE.isTrue) {
-            desktopUserRepositories.current.removeBoundsBeforeFullImmersive(taskInfo.taskId)
-                ?: calculateInitialBounds(displayLayout, taskInfo)
-        } else {
-            return calculateMaximizeBounds(displayLayout, taskInfo)
-        }
+        return desktopUserRepositories.current.removeBoundsBeforeFullImmersive(taskInfo.taskId)
+            ?: calculateInitialBounds(displayLayout, taskInfo)
     }
 
     private fun TransitionInfo.getTaskChange(taskId: Int): TransitionInfo.Change? =
