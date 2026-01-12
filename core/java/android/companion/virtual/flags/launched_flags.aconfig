@@ -20,3 +20,11 @@ flag {
      bug: "333443509"
      is_exported: true
 }
+
+flag {
+    name: "virtual_rotary"
+    is_exported: true
+    namespace: "virtual_devices"
+    description: "Enable virtual rotary input"
+    bug: "320328752"
+}
