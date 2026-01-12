@@ -89,6 +89,7 @@ fun createDisplayMode(
     alternativeRefreshRates, supportedHdrTypes
 )
 
+@JvmOverloads
 fun createSfDisplayMode(
     id: Int = Display.Mode.INVALID_MODE_ID,
     width: Int = 100,

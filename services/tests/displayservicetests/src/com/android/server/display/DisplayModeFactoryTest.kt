@@ -220,7 +220,7 @@ class DisplayModeFactoryTest {
                 .map { mode -> LocalDisplayAdapter.DisplayModeRecord(mode) }
                 .toList()
         val result =
-            DisplayModeFactory.createAnisotropyCorrectedModes(inputRecords, testCase.inputSfModes)
+            DisplayModeFactory.createAnisotropyCorrectedModes(inputRecords, testCase.inputSfModes, true)
         assertThat(result).hasSize(testCase.expectedModes.size)
         result.forEachIndexed { index, record ->
             assertModesEqual(record.mMode, testCase.expectedModes[index])

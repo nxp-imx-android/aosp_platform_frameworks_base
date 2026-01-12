@@ -3221,8 +3221,7 @@ public class DisplayModeDirectorTest {
         listener.notifyThrottling(getSkinTemp(Temperature.THROTTLING_CRITICAL));
         BackgroundThread.getHandler().runWithScissors(() -> { }, 500 /*timeout*/);
         vote = director.getVote(DISPLAY_ID, Vote.PRIORITY_SKIN_TEMPERATURE);
-        Vote expectedVote = new CombinedVote(List.of(new RefreshRateVote.RenderVote(0f, 60f)));
-        assertEquals(expectedVote, vote);
+        assertVoteForRenderFrameRateRange(vote, 0f, 60f);
 
         // Set the skin temperature to severe and verify that the vote is gone.
         listener.notifyThrottling(getSkinTemp(Temperature.THROTTLING_SEVERE));
@@ -3577,7 +3576,7 @@ public class DisplayModeDirectorTest {
     }
 
     @Test
-    public void testUpdateUserPreferredMode_withFlagSizeOverride_returnsNull() {
+    public void testUpdateUserPreferredMode_withFlagSizeOverride_returnsMode() {
         DisplayModeDirector director =
                 createDirectorFromRefreshRateArray(new float[]{60.0f, 90.0f}, 0);
         director.start(createMockSensorManager());
@@ -3601,10 +3600,92 @@ public class DisplayModeDirectorTest {
 
         displayListener.onDisplayChanged(DISPLAY_ID);
 
-        Vote vote = director.getVote(DISPLAY_ID, Vote.PRIORITY_USER_SETTING_DISPLAY_PREFERRED_SIZE);
-        assertThat(vote).isNull();
+        Vote vote = director.getVote(DISPLAY_ID,
+                Vote.PRIORITY_USER_SETTING_DISPLAY_PREFERRED_OPTIONS);
+        assertVoteForRenderFrameRateRange(vote, 0f, 60f);
     }
 
+    @Test
+    public void testUpdateUserPreferredMode_withFlagArrRenderRate_returnsMode() {
+        DisplayModeDirector director =
+                createDirectorFromRefreshRateArray(new float[]{60.0f, 90.0f}, 0);
+        director.start(createMockSensorManager());
+        waitForIdleSync();
+
+        ArgumentCaptor<DisplayListener> displayListenerCaptor =
+                ArgumentCaptor.forClass(DisplayListener.class);
+        verify(mInjector, atLeastOnce()).registerDisplayListener(displayListenerCaptor.capture(),
+                any(Handler.class));
+
+        DisplayListener displayListener = displayListenerCaptor.getAllValues().get(0);
+        mInjector.mDisplayInfo.supportedModes = new Display.Mode[] {
+                new Display.Mode(1, -1, Display.Mode.FLAG_ARR_RENDER_RATE,
+                        1000, 1000, 60f, 60f, new float[]{},
+                        new int[]{}),
+                new Display.Mode(2, -1, Display.Mode.FLAG_ARR_RENDER_RATE,
+                        2000, 2000, 60f, 60f, new float[]{},
+                        new int[]{}),
+        };
+        mInjector.mDisplayInfo.userPreferredModeId = 1;
+
+        displayListener.onDisplayChanged(DISPLAY_ID);
+
+        Vote vote = director.getVote(DISPLAY_ID,
+                Vote.PRIORITY_USER_SETTING_DISPLAY_PREFERRED_OPTIONS);
+        assertThat(vote).isInstanceOf(CombinedVote.class);
+        CombinedVote combinedVote = (CombinedVote) vote;
+        assertThat(combinedVote.mVotes).hasSize(2);
+        SizeVote sizeVote = (SizeVote) combinedVote.mVotes.getFirst();
+        RequestedRefreshRateVote rrVote = (RequestedRefreshRateVote) combinedVote.mVotes.getLast();
+        assertThat(sizeVote.mHeight).isEqualTo(1000);
+        assertThat(sizeVote.mWidth).isEqualTo(1000);
+        assertThat(sizeVote.mMinHeight).isEqualTo(1000);
+        assertThat(sizeVote.mMinWidth).isEqualTo(1000);
+        assertThat(rrVote.mRefreshRate).isWithin(FLOAT_TOLERANCE).of(60f);
+    }
+
+    @Test
+    public void testUpdateUserPreferredMode_withFlagAnisotropyCorrection_returnsMode() {
+        mContext.getOrCreateTestableResources().addOverride(
+                R.bool.config_refreshRateSynchronizationEnabled, false);
+        mInjector.setEnabledDisplays(Map.of(DISPLAY_ID, Display.TYPE_EXTERNAL));
+        DisplayModeDirector director =
+                createDirectorFromRefreshRateArray(new float[]{60.0f, 90.0f}, 0);
+        director.start(createMockSensorManager());
+        waitForIdleSync();
+
+        ArgumentCaptor<DisplayListener> displayListenerCaptor =
+                ArgumentCaptor.forClass(DisplayListener.class);
+        verify(mInjector, atLeastOnce()).registerDisplayListener(displayListenerCaptor.capture(),
+                any(Handler.class));
+
+        DisplayListener displayListener = displayListenerCaptor.getAllValues().get(0);
+        mInjector.mDisplayInfo.supportedModes = new Display.Mode[] {
+                new Display.Mode(1, 2, Display.Mode.FLAG_ANISOTROPY_CORRECTION,
+                        1000, 1000, 60f, 60f, new float[]{},
+                        new int[]{}),
+                new Display.Mode(2, -1, 0,
+                        2000, 2000, 60f, 60f, new float[]{},
+                        new int[]{}),
+        };
+        mInjector.mDisplayInfo.userPreferredModeId = 1;
+
+        displayListener.onDisplayChanged(DISPLAY_ID);
+
+        Vote vote = director.getVote(DISPLAY_ID,
+                Vote.PRIORITY_USER_SETTING_DISPLAY_PREFERRED_OPTIONS);
+        assertThat(vote).isInstanceOf(CombinedVote.class);
+        CombinedVote combinedVote = (CombinedVote) vote;
+        assertThat(combinedVote.mVotes).hasSize(2);
+        SizeVote sizeVote = (SizeVote) combinedVote.mVotes.getFirst();
+        Vote rrVote = combinedVote.mVotes.getLast();
+        assertThat(sizeVote.mHeight).isEqualTo(2000);
+        assertThat(sizeVote.mWidth).isEqualTo(2000);
+        assertThat(sizeVote.mMinHeight).isEqualTo(2000);
+        assertThat(sizeVote.mMinWidth).isEqualTo(2000);
+        assertVoteForPhysicalRefreshRate(rrVote, 60f);
+    }
+    // anisotropic
     @Test
     public void testUpdateUserPreferredMode_withoutFlagSizeOverride_returnsMode() {
         DisplayModeDirector director =
@@ -3630,7 +3711,8 @@ public class DisplayModeDirectorTest {
 
         displayListener.onDisplayChanged(DISPLAY_ID);
 
-        Vote vote = director.getVote(DISPLAY_ID, Vote.PRIORITY_USER_SETTING_DISPLAY_PREFERRED_SIZE);
+        Vote vote = director.getVote(DISPLAY_ID,
+                Vote.PRIORITY_USER_SETTING_DISPLAY_PREFERRED_OPTIONS);
         assertThat(vote).isNotNull();
     }
 
@@ -3769,10 +3851,13 @@ public class DisplayModeDirectorTest {
 
     private void assertVoteForPhysicalRefreshRate(Vote vote, float refreshRate) {
         assertThat(vote).isNotNull();
-        assertThat(vote).isInstanceOf(CombinedVote.class);
-        CombinedVote combinedVote = (CombinedVote) vote;
-        RefreshRateVote.PhysicalVote physicalVote =
-                (RefreshRateVote.PhysicalVote) combinedVote.mVotes.get(0);
+        RefreshRateVote.PhysicalVote physicalVote;
+        if (vote instanceof CombinedVote combinedVote) {
+            physicalVote = (RefreshRateVote.PhysicalVote) combinedVote.mVotes.getFirst();
+        } else {
+            physicalVote = (RefreshRateVote.PhysicalVote) vote;
+        }
+
         assertThat(physicalVote.mMinRefreshRate).isWithin(FLOAT_TOLERANCE).of(refreshRate);
         assertThat(physicalVote.mMaxRefreshRate).isWithin(FLOAT_TOLERANCE).of(refreshRate);
     }
@@ -3780,10 +3865,18 @@ public class DisplayModeDirectorTest {
     private void assertVoteForRenderFrameRateRange(
             Vote vote, float frameRateLow, float frameRateHigh) {
         assertThat(vote).isNotNull();
-        assertThat(vote).isInstanceOf(RefreshRateVote.RenderVote.class);
-        RefreshRateVote.RenderVote renderVote = (RefreshRateVote.RenderVote) vote;
-        assertThat(renderVote.mMinRefreshRate).isEqualTo(frameRateLow);
-        assertThat(renderVote.mMaxRefreshRate).isEqualTo(frameRateHigh);
+        RefreshRateVote.RenderVote renderVote;
+        if (vote instanceof CombinedVote combinedVote) {
+            renderVote = (RefreshRateVote.RenderVote) combinedVote.mVotes.getFirst();
+        } else {
+            renderVote = (RefreshRateVote.RenderVote) vote;
+        }
+        assertThat(renderVote.mMinRefreshRate).isWithin(FLOAT_TOLERANCE).of(frameRateLow);
+        if (frameRateHigh == Float.POSITIVE_INFINITY) {
+            assertThat(renderVote.mMaxRefreshRate).isEqualTo(Float.POSITIVE_INFINITY);
+        } else {
+            assertThat(renderVote.mMaxRefreshRate).isWithin(FLOAT_TOLERANCE).of(frameRateHigh);
+        }
     }
 
     public static class FakeDeviceConfig extends FakeDeviceConfigInterface {

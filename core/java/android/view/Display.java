@@ -2731,6 +2731,15 @@ public final class Display {
         }
 
         /**
+         * Returns {@code true} if this mode matches the given parameters.
+         *
+         * @hide
+         */
+        public boolean matches(int width, int height) {
+            return mWidth == width && mHeight == height;
+        }
+
+        /**
          * Returns {@code true} if this mode matches the given parameters, if those parameters are
          * valid.<p>
          * If resolution (width and height) is valid and refresh-rate is not, the method matches
