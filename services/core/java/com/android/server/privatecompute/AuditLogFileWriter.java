@@ -1,0 +1,84 @@
+/*
+ * Copyright (C) 2025 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.android.server.privatecompute;
+
+import android.util.Log;
+import com.android.internal.annotations.VisibleForTesting;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
+import java.util.List;
+
+/**
+ * Writes a list of serialized AuditLogEntry to a file. If the file already exists, it is
+ * overwritten. {@link #writeEntries} is synchronous and meant to be executed in a background
+ * thread. Prepends the version number to the file, to allow for format changes in the future.
+ */
+@VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
+class AuditLogFileWriter {
+    private static final String TAG = "PccSandboxManagerServiceAuditMode.AuditLogFileWriter";
+
+    // Open file for writing, creating it if it doesn't exist, or truncating it if it does.
+    private static final StandardOpenOption[] OPEN_OPTIONS =
+            new StandardOpenOption[] {
+                StandardOpenOption.CREATE,
+                StandardOpenOption.WRITE,
+                StandardOpenOption.TRUNCATE_EXISTING
+            };
+
+    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
+    static final int AUDIT_FILE_FORMAT_VERSION = 0;
+
+    private final File mFile;
+
+    AuditLogFileWriter(File file) {
+        mFile = file;
+    }
+
+    /**
+     * Writes a list of AuditLogEntry to a file. If the file already exists, it is overwritten.
+     *
+     * <p>If the current thread is interrupted, the method stops early and returns; this is to allow
+     * an ExecutorService to stop all of its threads somewhat gracefully.
+     *
+     * @param entries The list of AuditLogEntry to write.
+     * @throws IOException If an error occurs.
+     */
+    void writeEntries(List<byte[]> entries) throws IOException {
+        try (DataOutputStream outputStream =
+                new DataOutputStream(
+                        new BufferedOutputStream(
+                                Files.newOutputStream(mFile.toPath(), OPEN_OPTIONS)))) {
+            outputStream.writeInt(AUDIT_FILE_FORMAT_VERSION);
+            for (byte[] entry : entries) {
+                if (Thread.currentThread().isInterrupted()) {
+                    Log.w(TAG, "writeBundlesToStream was interrupted. Exiting.");
+                    return;
+                }
+                outputStream.write(entry);
+            }
+            outputStream.flush();
+        } catch (IOException e) {
+            Log.e(TAG, "Failed to write audit log to disk", e);
+        }
+    }
+}
