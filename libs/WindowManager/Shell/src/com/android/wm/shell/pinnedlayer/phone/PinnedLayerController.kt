@@ -179,7 +179,7 @@ class PinnedLayerController(
      */
     fun closeTask(task: TaskInfo): Boolean {
         if (isNotPinned(task.taskId)) {
-            logV("closeTask: the task=$task is not pinned. Skipping.")
+            logV("closeTask: the task=%s is not pinned. Skipping.", task)
             return false
         }
 
@@ -264,7 +264,7 @@ class PinnedLayerController(
      */
     fun requestFocus(task: TaskInfo) {
         if (isNotPinned(task.taskId)) {
-            logV("requestFocus: the task=$task is not pinned. Skipping.")
+            logV("requestFocus: the task=%s is not pinned. Skipping.", task)
             return
         }
 
@@ -371,6 +371,7 @@ class PinnedLayerController(
     }
 
     // TODO(b/449681882): Remove when Handler introduces its own state management for animations.
+    // Use PinnedLayerUiState instead.
     fun cleanup(transition: IBinder) {
         activeTransitions.remove(transition)
     }
@@ -390,7 +391,7 @@ class PinnedLayerController(
         finishTransaction: SurfaceControl.Transaction,
     ) {
         // TODO(b/449681882): Clean transitions here. Handler should track animation data
-        // separately.
+        // separately. Use PinnedLayerUiState instead.
         val transitions = activeTransitions[transition] ?: return
         transitions.forEach { transition ->
             logV("onTransitionReady: Pin layer transition ready: %s", transition)

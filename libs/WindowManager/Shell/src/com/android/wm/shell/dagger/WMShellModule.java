@@ -189,6 +189,7 @@ import com.android.wm.shell.packageupdate.PackageUpdateController;
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController;
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerFlags;
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerHandler;
+import com.android.wm.shell.pinnedlayer.phone.PinnedLayerUiState;
 import com.android.wm.shell.pip.PipTransitionController;
 import com.android.wm.shell.pip2.phone.PipScheduler;
 import com.android.wm.shell.pip2.phone.PipTransitionState;
@@ -1451,7 +1452,8 @@ public abstract class WMShellModule {
             DesktopConfig desktopConfig,
             UserProfileContexts userProfileContexts,
             LockTaskChangeListener lockTaskChangeListener,
-            Optional<PinnedLayerController> pinnedLayerController
+            Optional<PinnedLayerController> pinnedLayerController,
+            Optional<PinnedLayerUiState> pinnedLayerUiState
     ) {
         if (!shelldesktopState.canEnterDesktopModeOrShowAppHandle()) {
             return Optional.empty();
@@ -1471,7 +1473,8 @@ public abstract class WMShellModule {
                 desktopModeCompatPolicy, desktopTilingDecorViewModel,
                 multiDisplayDragMoveIndicatorController, compatUI.orElse(null),
                 desksOrganizer, shelldesktopState, desktopConfig, userProfileContexts,
-                lockTaskChangeListener, pinnedLayerController.orElse(null)));
+                lockTaskChangeListener, pinnedLayerController.orElse(null),
+                pinnedLayerUiState.orElse(null)));
     }
 
     @WMSingleton

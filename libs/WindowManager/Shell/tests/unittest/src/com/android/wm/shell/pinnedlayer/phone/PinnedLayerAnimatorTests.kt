@@ -17,6 +17,7 @@
 package com.android.wm.shell.pinnedlayer.phone
 
 import android.animation.ValueAnimator
+import android.app.ActivityManager.RunningTaskInfo
 import android.graphics.Rect
 import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper
@@ -28,6 +29,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.android.window.flags.Flags
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.transition.Transitions
+import kotlin.math.roundToInt
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -35,8 +37,10 @@ import org.mockito.Mock
 import org.mockito.Mockito.atLeastOnce
 import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
-import org.mockito.Mockito.`when` as whenever
 import org.mockito.kotlin.any
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.stub
+import org.mockito.Mockito.`when` as whenever
 
 /**
  * Unit tests against [PinnedLayerAnimator]
@@ -55,6 +59,7 @@ class PinnedLayerAnimatorTests : ShellTestCase() {
     @Mock private lateinit var change: TransitionInfo.Change
 
     private lateinit var testLeash: SurfaceControl
+    private lateinit var task: RunningTaskInfo
 
     @Before
     fun setUp() {
@@ -63,8 +68,10 @@ class PinnedLayerAnimatorTests : ShellTestCase() {
                 .setName("PinnedLayerAnimatorTest")
                 .setCallsite("PinnedLayerAnimatorTest")
                 .build()
+        task = createTask(0)
 
         whenever(change.leash).thenReturn(testLeash)
+        change.stub { on { taskInfo } doReturn task }
     }
 
     @Test
@@ -124,7 +131,7 @@ class PinnedLayerAnimatorTests : ShellTestCase() {
 
         // At 50% progress (in time) animation is at |interpolatedProgress|:
         val interpolatedProgress = animator.interpolator.getInterpolation(0.5f)
-        val expectedXY = 100f * interpolatedProgress
+        val expectedXY = (100f * interpolatedProgress).roundToInt().toFloat()
         val expectedWidth = 100 + (200 - 100) * interpolatedProgress
         val expectedHeight = 100 + (300 - 100) * interpolatedProgress
         verify(intermediateTransaction).setPosition(testLeash, expectedXY, expectedXY)
@@ -136,5 +143,9 @@ class PinnedLayerAnimatorTests : ShellTestCase() {
         verify(finishTransaction, never()).setPosition(any(), any(), any())
         verify(finishTransaction, never()).setWindowCrop(any(), any(), any())
         verify(finishCallback, never()).onTransitionFinished(any())
+    }
+
+    private fun createTask(taskId: Int): RunningTaskInfo {
+        return RunningTaskInfo().apply { this.taskId = taskId }
     }
 }

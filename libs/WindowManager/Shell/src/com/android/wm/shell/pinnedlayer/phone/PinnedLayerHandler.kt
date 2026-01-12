@@ -47,6 +47,7 @@ class PinnedLayerHandler(
     shellInit: ShellInit,
     private val transitions: Transitions,
     private val pinnedLayerController: PinnedLayerController,
+    private val pinnedLayerUiState: PinnedLayerUiState,
     private val normalLayerController: NormalAppLayerController,
     private val desktopUserRepositories: DesktopUserRepositories?,
     private val desktopTasksController: DesktopTasksController?,
@@ -130,12 +131,7 @@ class PinnedLayerHandler(
         if (isClosePinnedRequest || isSwitchingToAnotherLayer) {
             // Reparenting must happen first because WCT operations order matters, otherwise AoT
             // is not cleared.
-            moveToAnotherLayerIfNeeded(
-                transition,
-                triggerTask,
-                windowingLayerChange,
-                wct,
-            )
+            moveToAnotherLayerIfNeeded(transition, triggerTask, windowingLayerChange, wct)
 
             val targetUnpinType = resolveTargetUnpinType(request)
             wct.merge(
@@ -279,6 +275,9 @@ class PinnedLayerHandler(
                     startTransaction,
                     finishTransaction,
                     finishCallback,
+                    onAnimationStart = pinnedLayerUiState::onResizeMoveStarted,
+                    onAnimationUpdate = pinnedLayerUiState::onResizeMoveUpdated,
+                    onAnimationEnd = pinnedLayerUiState::onResizeMoveEnded,
                 )
             animator.start()
             return true
