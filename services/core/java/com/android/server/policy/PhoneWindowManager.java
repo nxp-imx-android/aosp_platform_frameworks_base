@@ -268,6 +268,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
@@ -945,6 +946,29 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         }
     };
 
+    private final class KeyguardStateCallback implements KeyguardServiceDelegate.StateCallback {
+        @Override
+        public void onTrustedChanged() {
+            mWindowManagerFuncs.notifyKeyguardTrustedChanged();
+        }
+
+        @Override
+        public void onShowingChanged() {
+            mWindowManagerFuncs.onKeyguardShowingAndNotOccludedChanged();
+        }
+
+        @Override
+        public void onDrawn() {
+            if (DEBUG_WAKEUP) Slog.d(TAG, "mKeyguardDelegate.onDrawn.");
+            mHandler.sendEmptyMessage(MSG_KEYGUARD_DRAWN_COMPLETE);
+        }
+
+        @Override
+        public void onKeyguardServiceConnected() {
+            mWindowManagerFuncs.resetFirstKeyguardLockedStateDispatched();
+        }
+    }
+
     private void handleRingerChordGesture() {
         if (mRingerToggleChord == VOLUME_HUSH_OFF) {
             return;
@@ -1152,7 +1176,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     break;
                 }
                 case SHORT_PRESS_POWER_LOCK_OR_SLEEP: {
-                    if (mKeyguardDelegate == null || !mKeyguardDelegate.hasKeyguard()
+                    if (!mKeyguardDelegate.hasKeyguard()
                             || !mKeyguardDelegate.isSecure(mCurrentUserId) || keyguardOn()) {
                         sleepDefaultDisplayFromPowerButton(eventTime, 0);
                     } else {
@@ -1419,8 +1443,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             ResolveInfo resolveInfo = mContext.getPackageManager().resolveActivity(
                     intent, /* flags= */0);
             if (resolveInfo != null) {
-                final boolean keyguardActive =
-                        mKeyguardDelegate != null && mKeyguardDelegate.isShowing();
+                final boolean keyguardActive = mKeyguardDelegate.isShowing();
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                         | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
                 if (!keyguardActive) {
@@ -1600,7 +1623,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         Slog.d(TAG, "stemPrimarySinglePressAction: behavior=" + behavior);
         if (behavior == SHORT_PRESS_PRIMARY_NOTHING) return;
 
-        final boolean keyguardActive = mKeyguardDelegate != null && mKeyguardDelegate.isShowing();
+        final boolean keyguardActive = mKeyguardDelegate.isShowing();
         if (keyguardActive) {
             // If keyguarded then notify the keyguard.
             mKeyguardDelegate.onSystemKeyPressed(KeyEvent.KEYCODE_STEM_PRIMARY);
@@ -1652,9 +1675,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             case DOUBLE_PRESS_PRIMARY_NOTHING:
                 break;
             case DOUBLE_PRESS_PRIMARY_SWITCH_RECENT_APP:
-                final boolean keyguardActive = mKeyguardDelegate == null
-                        ? false
-                        : mKeyguardDelegate.isShowing();
+                final boolean keyguardActive = mKeyguardDelegate.isShowing();
                 if (!keyguardActive) {
                     performStemPrimaryDoublePressSwitchToRecentTask();
                 }
@@ -2221,24 +2242,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             return () -> new GlobalActions(mContext, mWindowManagerFuncs);
         }
 
-        KeyguardServiceDelegate getKeyguardServiceDelegate() {
-            return new KeyguardServiceDelegate(mContext,
-                    new KeyguardServiceDelegate.StateCallback() {
-                        @Override
-                        public void onTrustedChanged() {
-                            mWindowManagerFuncs.notifyKeyguardTrustedChanged();
-                        }
-
-                        @Override
-                        public void onShowingChanged() {
-                            mWindowManagerFuncs.onKeyguardShowingAndNotOccludedChanged();
-                        }
-
-                        @Override
-                        public void onKeyguardServiceConnected() {
-                            mWindowManagerFuncs.resetFirstKeyguardLockedStateDispatched();
-                        }
-                    });
+        @NonNull KeyguardServiceDelegate getKeyguardServiceDelegate(
+                @NonNull KeyguardServiceDelegate.StateCallback callback) {
+            return new KeyguardServiceDelegate(mContext, callback);
         }
 
         IActivityManager getActivityManagerService() {
@@ -2452,6 +2458,14 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 
         mGlobalKeyManager = new GlobalKeyManager(mContext);
 
+        mKeyguardDrawnTimeoutMs = mContext.getResources().getInteger(
+                com.android.internal.R.integer.config_keyguardDrawnTimeout);
+        if (wearKeyguardDrawnTimeoutOnBootConfig()) {
+            mKeyguardDrawnTimeoutOnBootMs = mContext.getResources().getInteger(
+                    com.android.internal.R.integer.config_keyguardDrawnTimeoutOnBoot);
+        }
+        mKeyguardDelegate = injector.getKeyguardServiceDelegate(new KeyguardStateCallback());
+
         // Controls rotation and the like.
         initializeHdmiState();
 
@@ -2500,13 +2514,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         };
         mWindowManagerInternal.registerAppTransitionListener(transitionListener);
 
-        mKeyguardDrawnTimeoutMs = mContext.getResources().getInteger(
-                com.android.internal.R.integer.config_keyguardDrawnTimeout);
-        if (wearKeyguardDrawnTimeoutOnBootConfig()) {
-            mKeyguardDrawnTimeoutOnBootMs = mContext.getResources().getInteger(
-                    com.android.internal.R.integer.config_keyguardDrawnTimeoutOnBoot);
-        }
-        mKeyguardDelegate = injector.getKeyguardServiceDelegate();
         mTalkbackShortcutController = injector.getTalkbackShortcutController();
         mWindowWakeUpPolicy = injector.getWindowWakeUpPolicy();
         initSingleKeyGestureRules(injector.getLooper());
@@ -3967,9 +3974,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 
     @Override
     public void onKeyguardOccludedChangedLw(boolean occluded) {
-        if (mKeyguardDelegate != null) {
-            mPendingKeyguardOccluded = occluded;
-        }
+        mPendingKeyguardOccluded = occluded;
     }
 
     @Override
@@ -4076,8 +4081,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
      * Does nothing on keyguard except for watches. Delegates it to keyguard if present on watch.
      */
     private void launchVoiceAssist(boolean allowDuringSetup) {
-        final boolean keyguardActive =
-                mKeyguardDelegate != null && mKeyguardDelegate.isShowing();
+        final boolean keyguardActive = mKeyguardDelegate.isShowing();
         if (!keyguardActive) {
             startActivityAsUser(
                     new Intent(Intent.ACTION_VOICE_ASSIST),
@@ -4238,16 +4242,13 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             if (!isKeyguardOccluded() && mKeyguardDelegate.isInputRestricted()) {
                 // when in keyguard restricted mode, must first verify unlock
                 // before launching home
-                mKeyguardDelegate.verifyUnlock(new OnKeyguardExitResult() {
-                    @Override
-                    public void onKeyguardExitResult(boolean success) {
-                        if (success) {
-                            final long origId = Binder.clearCallingIdentity();
-                            try {
-                                startDockOrHome(displayId, true /*fromHomeKey*/, awakenFromDreams);
-                            } finally {
-                                Binder.restoreCallingIdentity(origId);
-                            }
+                mKeyguardDelegate.verifyUnlock(success -> {
+                    if (success) {
+                        final long origId = Binder.clearCallingIdentity();
+                        try {
+                            startDockOrHome(displayId, true /*fromHomeKey*/, awakenFromDreams);
+                        } finally {
+                            Binder.restoreCallingIdentity(origId);
                         }
                     }
                 });
@@ -4336,8 +4337,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         if (mCameraLensCoverState == CAMERA_LENS_COVERED &&
                 lensCoverState == CAMERA_LENS_UNCOVERED) {
             Intent intent;
-            final boolean keyguardActive = mKeyguardDelegate == null ? false :
-                    mKeyguardDelegate.isShowing();
+            final boolean keyguardActive = mKeyguardDelegate.isShowing();
             if (keyguardActive) {
                 intent = new Intent(MediaStore.INTENT_ACTION_STILL_IMAGE_CAMERA_SECURE);
             } else {
@@ -4456,9 +4456,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             // the same as if it were open and in front.
             // This will prevent any keys other than the power button from waking the screen
             // when the keyguard is hidden by another activity.
-            final boolean keyguardActive = (mKeyguardDelegate != null
-                    && (interactive ? isKeyguardShowingAndNotOccluded() :
-                    mKeyguardDelegate.isShowing()));
+            final boolean keyguardActive = interactive ? isKeyguardShowingAndNotOccluded()
+                    : mKeyguardDelegate.isShowing();
             Log.d(TAG, "interceptKeyTq keycode=" + keyCode
                     + " interactive=" + interactive + " keyguardActive=" + keyguardActive
                     + " policyFlags=" + Integer.toHexString(policyFlags));
@@ -5420,9 +5419,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         mIsGoingToSleep = true;
         setPendingSleepingGroup(displayGroupId);
 
-        if (mKeyguardDelegate != null) {
-            mKeyguardDelegate.onStartedGoingToSleep(pmSleepReason);
-        }
+        mKeyguardDelegate.onStartedGoingToSleep(pmSleepReason);
     }
 
     // Called on the PowerManager's Notifier thread.
@@ -5456,10 +5453,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         }
         mDefaultDisplayRotation.updateOrientationListener();
 
-        if (mKeyguardDelegate != null) {
-            mKeyguardDelegate.onFinishedGoingToSleep(pmSleepReason,
-                    mPowerButtonLaunchGestureTriggeredDuringGoingToSleep);
-        }
+        mKeyguardDelegate.onFinishedGoingToSleep(pmSleepReason,
+                mPowerButtonLaunchGestureTriggeredDuringGoingToSleep);
         if (mDisplayFoldController != null) {
             mDisplayFoldController.finishedGoingToSleep();
         }
@@ -5497,12 +5492,10 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         }
         mDefaultDisplayRotation.updateOrientationListener();
 
-        if (mKeyguardDelegate != null) {
-            if (commitKeyguardOcclusionBeforeWakingUp()) {
-                applyKeyguardOcclusionChange();
-            }
-            mKeyguardDelegate.onStartedWakingUp(pmWakeReason, mPowerButtonLaunchGestureTriggered);
+        if (commitKeyguardOcclusionBeforeWakingUp()) {
+            applyKeyguardOcclusionChange();
         }
+        mKeyguardDelegate.onStartedWakingUp(pmWakeReason, mPowerButtonLaunchGestureTriggered);
 
         mPowerButtonLaunchGestureTriggered = false;
     }
@@ -5522,9 +5515,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         }
 
         setPendingWakingUpGroup(Display.INVALID_DISPLAY_GROUP);
-        if (mKeyguardDelegate != null) {
-            mKeyguardDelegate.onFinishedWakingUp();
-        }
+        mKeyguardDelegate.onFinishedWakingUp();
         if (mDisplayFoldController != null) {
             mDisplayFoldController.finishedWakingUp();
         }
@@ -5580,9 +5571,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         }
 
         synchronized (mLock) {
-            if (mKeyguardDelegate != null) {
-                mHandler.removeMessages(MSG_KEYGUARD_DRAWN_TIMEOUT);
-            }
+            mHandler.removeMessages(MSG_KEYGUARD_DRAWN_TIMEOUT);
         }
 
         // ... eventually calls finishWindowsDrawn which will finalize our screen turn on
@@ -5604,9 +5593,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             mRequestedOrSleepingDefaultDisplay = false;
             mDefaultDisplayPolicy.screenTurnedOff(acquireSleepToken);
             synchronized (mLock) {
-                if (mKeyguardDelegate != null) {
-                    mKeyguardDelegate.onScreenTurnedOff();
-                }
+                mKeyguardDelegate.onScreenTurnedOff();
             }
             mDefaultDisplayRotation.updateOrientationListener();
             reportScreenStateToVrManager(false);
@@ -5662,21 +5649,17 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             mBootAnimationDismissable = false;
 
             synchronized (mLock) {
-                if (mKeyguardDelegate != null && mKeyguardDelegate.hasKeyguard()) {
+                if (mKeyguardDelegate.hasKeyguard()) {
                     mHandler.removeMessages(MSG_KEYGUARD_DRAWN_TIMEOUT);
                     mHandler.sendEmptyMessageDelayed(MSG_KEYGUARD_DRAWN_TIMEOUT,
                             getKeyguardDrawnTimeout());
                     final int reason = mDefaultDisplayPolicy.isDisplaySwitching()
                             ? SCREEN_TURNING_ON_REASON_DISPLAY_SWITCH
                             : SCREEN_TURNING_ON_REASON_UNKNOWN;
-                    mKeyguardDelegate.onScreenTurningOn(reason,
-                            /* onDrawn= */ () -> {
-                                if (DEBUG_WAKEUP) Slog.d(TAG, "mKeyguardDelegate.onDrawn.");
-                                mHandler.sendEmptyMessage(MSG_KEYGUARD_DRAWN_COMPLETE);
-                            });
+                    mKeyguardDelegate.onScreenTurningOn(reason);
                 } else {
                     if (DEBUG_WAKEUP) Slog.d(TAG,
-                            "null mKeyguardDelegate: setting mKeyguardDrawComplete.");
+                            "Device has no keyguard. Setting mKeyguardDrawComplete.");
                     mHandler.sendEmptyMessage(MSG_KEYGUARD_DRAWN_COMPLETE);
                 }
             }
@@ -5703,9 +5686,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         }
 
         synchronized (mLock) {
-            if (mKeyguardDelegate != null) {
-                mKeyguardDelegate.onScreenTurnedOn();
-            }
+            mKeyguardDelegate.onScreenTurnedOn();
         }
         mDefaultDisplayPolicy.screenTurnedOn();
         reportScreenStateToVrManager(true);
@@ -5720,9 +5701,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 
         mRequestedOrSleepingDefaultDisplay = true;
         synchronized (mLock) {
-            if (mKeyguardDelegate != null) {
-                mKeyguardDelegate.onScreenTurningOff();
-            }
+            mKeyguardDelegate.onScreenTurningOff();
         }
     }
 
@@ -5829,34 +5808,27 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     /** {@inheritDoc} */
     @Override
     public void enableKeyguard(boolean enabled) {
-        if (mKeyguardDelegate != null) {
-            mKeyguardDelegate.setKeyguardEnabled(enabled);
-        }
+        mKeyguardDelegate.setKeyguardEnabled(enabled);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void exitKeyguardSecurely(OnKeyguardExitResult callback) {
-        if (mKeyguardDelegate != null) {
-            mKeyguardDelegate.verifyUnlock(callback);
-        }
+    public void exitKeyguardSecurely(@NonNull Consumer<Boolean> callback) {
+        mKeyguardDelegate.verifyUnlock(callback);
     }
 
     @Override
     public boolean isKeyguardShowing() {
-        if (mKeyguardDelegate == null) return false;
         return mKeyguardDelegate.isShowing();
     }
 
     @Override
     public boolean isKeyguardShowingAndNotOccluded() {
-        if (mKeyguardDelegate == null) return false;
         return mKeyguardDelegate.isShowing() && !isKeyguardOccluded();
     }
 
     @Override
     public boolean isKeyguardTrustedLw() {
-        if (mKeyguardDelegate == null) return false;
         return mKeyguardDelegate.isTrusted();
     }
 
@@ -5869,27 +5841,24 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     /** {@inheritDoc} */
     @Override
     public boolean isKeyguardSecure(int userId) {
-        if (mKeyguardDelegate == null) return false;
         return mKeyguardDelegate.isSecure(userId);
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean isKeyguardOccluded() {
-        if (mKeyguardDelegate == null) return false;
         return mKeyguardDelegate.isOccluded();
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean inKeyguardRestrictedKeyInputMode() {
-        if (mKeyguardDelegate == null) return false;
         return mKeyguardDelegate.isInputRestricted();
     }
 
     @Override
     public void dismissKeyguardLw(IKeyguardDismissCallback callback, CharSequence message) {
-        if (mKeyguardDelegate != null && mKeyguardDelegate.isShowing()) {
+        if (mKeyguardDelegate.isShowing()) {
             if (DEBUG_KEYGUARD) Slog.d(TAG, "PWM.dismissKeyguardLw");
 
             // ask the keyguard to prompt the user to authenticate if necessary
@@ -5912,10 +5881,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 
     @Override
     public void startKeyguardExitAnimation(long startTime) {
-        if (mKeyguardDelegate != null) {
-            if (DEBUG_KEYGUARD) Slog.d(TAG, "PWM.startKeyguardExitAnimation");
-            mKeyguardDelegate.startKeyguardExitAnimation(startTime);
-        }
+        if (DEBUG_KEYGUARD) Slog.d(TAG, "PWM.startKeyguardExitAnimation");
+        mKeyguardDelegate.startKeyguardExitAnimation(startTime);
     }
 
     void sendCloseSystemWindows() {
@@ -6116,9 +6083,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         public void run() {
             synchronized (this) {
                 if (localLOGV) Log.v(TAG, "mScreenLockTimeout activating keyguard");
-                if (mKeyguardDelegate != null) {
-                    mKeyguardDelegate.doKeyguardTimeout(options);
-                }
+                mKeyguardDelegate.doKeyguardTimeout(options);
                 mLockScreenTimerActive = false;
                 mLockNowPending = false;
                 options = null;
@@ -6172,7 +6137,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             }
             final boolean enable = !mAllowLockscreenWhenOnDisplays.isEmpty()
                     && mDefaultDisplayPolicy.isAwake()
-                    && mKeyguardDelegate != null && mKeyguardDelegate.isSecure(mCurrentUserId);
+                    && mKeyguardDelegate.isSecure(mCurrentUserId);
             if (mLockScreenTimerActive != enable) {
                 if (enable) {
                     if (localLOGV) Log.v(TAG, "setting lockscreen timer");
@@ -6468,9 +6433,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     @Override
     public void setCurrentUserLw(int newUserId) {
         mCurrentUserId = newUserId;
-        if (mKeyguardDelegate != null) {
-            mKeyguardDelegate.setCurrentUser(newUserId);
-        }
+        mKeyguardDelegate.setCurrentUser(newUserId);
         StatusBarManagerInternal statusBar = getStatusBarManagerInternal();
         if (statusBar != null) {
             statusBar.setCurrentUser(newUserId);
@@ -6614,9 +6577,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         if (mBurnInProtectionHelper != null) {
             mBurnInProtectionHelper.dump(prefix, pw);
         }
-        if (mKeyguardDelegate != null) {
-            mKeyguardDelegate.dump(prefix, pw);
-        }
+        mKeyguardDelegate.dump(prefix, pw);
 
         pw.print(prefix); pw.println("Looper state:");
         mHandler.getLooper().dump(new PrintWriterPrinter(pw), prefix + "  ");

@@ -231,7 +231,9 @@ class TestPhoneWindowManager {
             return () -> mGlobalActions;
         }
 
-        KeyguardServiceDelegate getKeyguardServiceDelegate() {
+        @Override
+        KeyguardServiceDelegate getKeyguardServiceDelegate(
+                KeyguardServiceDelegate.StateCallback callbacks) {
             return mKeyguardServiceDelegate;
         }
 
