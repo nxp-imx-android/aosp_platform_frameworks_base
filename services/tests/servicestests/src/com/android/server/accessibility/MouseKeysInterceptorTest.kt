@@ -16,6 +16,7 @@
 
 package com.android.server.accessibility
 
+import android.Manifest
 import android.companion.virtual.VirtualDeviceManager
 import android.companion.virtual.VirtualDeviceParams
 import android.content.Context
@@ -40,6 +41,7 @@ import android.util.ArraySet
 import android.util.MathUtils.sqrt
 import android.view.InputDevice
 import android.view.KeyEvent
+import androidx.annotation.RequiresPermission
 import androidx.test.core.app.ApplicationProvider
 import com.android.server.LocalServices
 import com.android.server.accessibility.MouseKeysInterceptor.FAKE_DEVICE_GENERATION_ID
@@ -100,9 +102,9 @@ class MouseKeysInterceptorTest {
     private lateinit var inputDevice: InputDevice
     private lateinit var virtualInputDevice: InputDevice
     private lateinit var numpadInputDevice: InputDevice
+    private lateinit var testLooper: TestLooper
 
     private val clock = OffsettableClock()
-    private val testLooper = TestLooper { clock.now() }
     private val nextInterceptor = TrackingInterceptor()
 
     @get:Rule
@@ -193,6 +195,7 @@ class MouseKeysInterceptorTest {
      * This will ensure the test is run with the correct primary keys setting.
      * This function should be called at the beginning of each test.
      */
+    @RequiresPermission(Manifest.permission.CREATE_VIRTUAL_DEVICE)
     private fun setupMouseKeysInterceptor(usePrimaryKeys: Boolean) {
         val setting = if (usePrimaryKeys) 1 else 0
         Settings.Secure.putIntForUser(testableContext.getContentResolver(),
@@ -202,6 +205,7 @@ class MouseKeysInterceptorTest {
         Settings.Secure.putFloatForUser(testableContext.getContentResolver(),
             Settings.Secure.ACCESSIBILITY_MOUSE_KEYS_ACCELERATION, 0.2f, USER_ID)
 
+        testLooper = TestLooper { clock.now() }
         mouseKeysInterceptor = MouseKeysInterceptor(mockAms, testableContext,
             testLooper.looper, DISPLAY_ID, testTimeSource, USER_ID)
 
@@ -754,6 +758,29 @@ class MouseKeysInterceptorTest {
         assertThat(secondName).startsWith(mouseKeysVirtualDevicePrefix)
 
         assertThat(firstName).isNotEqualTo(secondName)
+    }
+
+    @Test
+    fun onKeyEvent_mapClearedDuringMovement_doesNotCrash() {
+        setupMouseKeysInterceptor(usePrimaryKeys = true)
+        // There should be some delay between the downTime of the key event and calling onKeyEvent
+        val downTime = clock.now() - KEYBOARD_POST_EVENT_DELAY_MILLIS
+        val keyCode = MouseKeysInterceptor.MouseKeyEvent.DIAGONAL_DOWN_LEFT_MOVE.getKeyCodeValue(
+            USE_PRIMARY_KEYS)
+        val downEvent = KeyEvent(downTime, downTime, KeyEvent.ACTION_DOWN,
+            keyCode, 0, 0, DEVICE_ID, 0)
+
+        mouseKeysInterceptor.onKeyEvent(downEvent, 0)
+        testLooper.dispatchAll()
+
+        // Simulate race condition by clearing the device mapping.
+        // This would happen during onInputDeviceRemoved or a settings change
+        mouseKeysInterceptor.onInputDeviceRemoved(DEVICE_ID)
+        testLooper.dispatchAll()
+
+        // Verify that the virtual mouse didn't get a second event after the map was cleared
+        Mockito.verify(mockVirtualMouse, times(1))
+            .sendRelativeEvent(Mockito.any())
     }
 
     private fun verifyRelativeEvents(expectedX: FloatArray, expectedY: FloatArray) {
