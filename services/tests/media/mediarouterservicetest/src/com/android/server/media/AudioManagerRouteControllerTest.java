@@ -264,6 +264,7 @@ public class AudioManagerRouteControllerTest {
                 getAvailableRouteWithType(MediaRoute2Info.TYPE_BLE_HEADSET);
         // Make a transfer so that a preferred device is set.
         mControllerUnderTest.transferTo(/* requestId= */ 0L, bleHeadsetRoute.getId());
+        mLooperManager.execute(mLooperManager.next());
         clearInvocations(mMockAudioManager);
         addAvailableAudioDeviceInfo(
                 /* newSelectedDevice= */ FAKE_AUDIO_DEVICE_INFO_WIRED_HEADSET,
@@ -752,12 +753,6 @@ public class AudioManagerRouteControllerTest {
         }
         updateMockAudioManagerState();
         mAudioDeviceCallback.onAudioDevicesAdded(newAvailableDevices);
-        var message = mLooperManager.poll();
-        while (message != null) {
-            mLooperManager.execute(message);
-            mLooperManager.recycle(message);
-            message = mLooperManager.poll();
-        }
     }
 
     private void removeAvailableAudioDeviceInfos(
