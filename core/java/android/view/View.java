@@ -205,7 +205,6 @@ import android.view.autofill.AutofillId;
 import android.view.autofill.AutofillManager;
 import android.view.autofill.AutofillValue;
 import android.view.contentcapture.ContentCaptureContext;
-import android.view.contentcapture.ContentCaptureEvent;
 import android.view.contentcapture.ContentCaptureManager;
 import android.view.contentcapture.ContentCaptureSession;
 import android.view.displayhash.DisplayHash;
@@ -11836,6 +11835,27 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
     @FlaggedApi(android.view.accessibility.Flags.FLAG_A11Y_EXTRA_RENDERING_INFO_COLOR_ADDITIONS)
     @CallSuper
     public void addExtraDataToAccessibilityNodeInfo(
+            @NonNull AccessibilityNodeInfo info, @NonNull String extraDataKey,
+            @Nullable Bundle arguments) {
+        if (android.view.accessibility.Flags.fixAddExtraDataToAccessibilityNodeInfoDelegation()) {
+            if (mAccessibilityDelegate != null) {
+                mAccessibilityDelegate.addExtraDataToAccessibilityNodeInfo(
+                        this, info, extraDataKey, arguments);
+            } else {
+                addExtraDataToAccessibilityNodeInfoInternal(info, extraDataKey, arguments);
+            }
+        } else {
+            addExtraDataToAccessibilityNodeInfoInternal(info, extraDataKey, arguments);
+        }
+    }
+
+    /**
+     * @see #addExtraDataToAccessibilityNodeInfo(AccessibilityNodeInfo, String, Bundle)
+     *
+     * Note: Called from the default {@link AccessibilityDelegate}.
+     *
+     */
+    private void addExtraDataToAccessibilityNodeInfoInternal(
             @NonNull AccessibilityNodeInfo info, @NonNull String extraDataKey,
             @Nullable Bundle arguments) {
         if (extraDataKey.equals(AccessibilityNodeInfo.EXTRA_DATA_RENDERING_INFO_KEY)
@@ -33588,7 +33608,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
         public void addExtraDataToAccessibilityNodeInfo(@NonNull View host,
                 @NonNull AccessibilityNodeInfo info, @NonNull String extraDataKey,
                 @Nullable Bundle arguments) {
-            host.addExtraDataToAccessibilityNodeInfo(info, extraDataKey, arguments);
+            host.addExtraDataToAccessibilityNodeInfoInternal(info, extraDataKey, arguments);
         }
 
         /**
