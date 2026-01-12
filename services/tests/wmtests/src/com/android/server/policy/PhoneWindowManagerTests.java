@@ -41,6 +41,7 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.when;
 import static com.android.internal.policy.IKeyguardService.SCREEN_TURNING_ON_REASON_DISPLAY_SWITCH;
 import static com.android.internal.policy.IKeyguardService.SCREEN_TURNING_ON_REASON_UNKNOWN;
+import static com.android.server.flags.Flags.FLAG_RESET_KEYGUARD_FIRST_STATE_DISPATCH_ON_SERVICE_CONNECTED;
 import static com.android.server.policy.PhoneWindowManager.EXTRA_TRIGGER_HUB;
 import static com.android.server.policy.PhoneWindowManager.MULTI_PRESS_POWER_BRIGHTNESS_BOOST;
 import static com.android.server.policy.PhoneWindowManager.SHORT_PRESS_POWER_DREAM_OR_AWAKE_OR_SLEEP;
@@ -60,20 +61,26 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 
 import android.app.ActivityManager;
+import android.app.ActivityTaskManager;
 import android.app.AppOpsManager;
 import android.bluetooth.BluetoothProfile;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.hardware.display.DisplayManagerInternal;
 import android.hardware.input.InputManager;
 import android.hardware.input.KeyGestureEvent;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.Handler;
 import android.os.PowerManager;
 import android.os.PowerManagerInternal;
 import android.os.SystemProperties;
+import android.os.UserHandle;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
@@ -91,6 +98,7 @@ import android.view.KeyEvent;
 import androidx.test.filters.SmallTest;
 
 import com.android.dx.mockito.inline.extended.StaticMockitoSession;
+import com.android.internal.policy.IKeyguardService;
 import com.android.internal.util.test.LocalServiceKeeperRule;
 import com.android.internal.widget.LockPatternUtils;
 import com.android.server.SystemServiceManager;
@@ -146,6 +154,8 @@ public class PhoneWindowManagerTests {
     PhoneWindowManager mPhoneWindowManager;
 
     @Mock
+    private android.app.IActivityTaskManager mIActivityTaskManager;
+    @Mock
     private ActivityTaskManagerInternal mAtmInternal;
     @Mock
     private DreamManagerInternal mDreamManagerInternal;
@@ -188,8 +198,10 @@ public class PhoneWindowManagerTests {
         when(mContext.getSystemService(Context.POWER_SERVICE)).thenReturn(mPowerManager);
         mMockitoSession = mockitoSession()
                 .mockStatic(SystemProperties.class)
+                .mockStatic(ActivityTaskManager.class)
                 .strictness(Strictness.LENIENT)
                 .startMocking();
+        when(ActivityTaskManager.getService()).thenReturn(mIActivityTaskManager);
 
         mOffsettableClock = new OffsettableClock.Stopped();
 
@@ -818,6 +830,63 @@ public class PhoneWindowManagerTests {
         verify(mAtmInternal).startHomeOnDisplay(/* userId= */ anyInt(), /* reason= */
                 anyString(), /* displayId= */ eq(DEFAULT_DISPLAY), /* allowInstrumenting= */
                 eq(true), /* fromHomeKey= */ eq(true));
+    }
+
+    @Test
+    @EnableFlags(FLAG_RESET_KEYGUARD_FIRST_STATE_DISPATCH_ON_SERVICE_CONNECTED)
+    public void testKeyguardServiceDelegate_onKeyguardServiceConnected() throws Exception {
+        // Set up the KeyguardServiceDelegate so that it can attempt to bind a KeyguardService
+        KeyguardServiceDelegate.StateCallback mockCallback =
+                mock(KeyguardServiceDelegate.StateCallback.class);
+        KeyguardServiceDelegate delegate = new KeyguardServiceDelegate(mContext, mockCallback);
+
+        ArgumentCaptor<ServiceConnection> serviceConnectionCaptor =
+                ArgumentCaptor.forClass(ServiceConnection.class);
+
+        ComponentName keyguardServiceComponentName =
+                new ComponentName("testPackage", "testService");
+
+        // Return a mock KeyguardService when binder is queried for IKeyguardService
+        IBinder mockBinder = mock(IBinder.class);
+        IKeyguardService mockKeyguardService = mock(IKeyguardService.class);
+        when(mockBinder.queryLocalInterface(anyString())).thenReturn(mockKeyguardService);
+
+        doReturn(true)
+                .when(mContext)
+                .bindServiceAsUser(
+                        any(Intent.class),
+                        any(ServiceConnection.class),
+                        anyInt(),
+                        any(Handler.class),
+                        any(UserHandle.class));
+        delegate.bindService(mContext);
+
+        verify(mContext)
+                .bindServiceAsUser(
+                        any(Intent.class),
+                        serviceConnectionCaptor.capture(),
+                        anyInt(),
+                        any(Handler.class),
+                        any(UserHandle.class));
+        ServiceConnection connection = serviceConnectionCaptor.getValue();
+
+        // Fake out a successful connection
+        connection.onServiceConnected(keyguardServiceComponentName, mockBinder);
+
+        // Verify that the onKeyguardServiceConnected callback is called
+        verify(mockCallback).onKeyguardServiceConnected();
+
+        // Simulate disconnect
+        connection.onServiceDisconnected(keyguardServiceComponentName);
+
+        // Verify that the onKeyguardServiceConnected callback is not called on disconnect
+        verify(mockCallback, times(1)).onKeyguardServiceConnected();
+
+        // Simulate a reconnect
+        connection.onServiceConnected(keyguardServiceComponentName, mockBinder);
+
+        // Verify that the onKeyguardServiceConnected callback is called a second time on reconnect
+        verify(mockCallback, times(2)).onKeyguardServiceConnected();
     }
 
     private void initNonSpyPhoneWindowManager() {

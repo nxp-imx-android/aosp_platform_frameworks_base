@@ -6,6 +6,7 @@ import static android.internal.perfetto.protos.Windowmanagerservice.KeyguardServ
 import static android.internal.perfetto.protos.Windowmanagerservice.KeyguardServiceDelegateProto.SECURE;
 import static android.internal.perfetto.protos.Windowmanagerservice.KeyguardServiceDelegateProto.SHOWING;
 import static com.android.internal.policy.IKeyguardService.SCREEN_TURNING_ON_REASON_UNKNOWN;
+import static com.android.server.flags.Flags.resetKeyguardFirstStateDispatchOnServiceConnected;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -61,6 +62,9 @@ public class KeyguardServiceDelegate {
 
         /** Indicates that the value of {@link #isShowing()} has changed recently. */
         void onShowingChanged();
+
+        /** Indicates that the KeyguardService has connected successfully. */
+        void onKeyguardServiceConnected();
     }
 
     private static final int SCREEN_STATE_OFF = 0;
@@ -286,6 +290,10 @@ public class KeyguardServiceDelegate {
 
             if (mKeyguardState.currentUser == UserHandle.USER_NULL) {
                 mKeyguardState.currentUser = ActivityManager.getCurrentUser();
+            }
+
+            if (resetKeyguardFirstStateDispatchOnServiceConnected()) {
+                mCallback.onKeyguardServiceConnected();
             }
 
             // Replay the previous KeyguardState for the new KeyguardService.

@@ -372,6 +372,11 @@ public interface WindowManagerPolicy extends WindowManagerPolicyConstants {
          * Returns whether the display with the given ID is trusted.
          */
         boolean isDisplayTrusted(int displayId);
+
+        /**
+         * Resets the flag indicating if the first keyguard locked state has been dispatched.
+         */
+        void resetFirstKeyguardLockedStateDispatched();
     }
 
     /**

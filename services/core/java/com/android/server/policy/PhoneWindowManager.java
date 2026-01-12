@@ -2234,6 +2234,11 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                         public void onShowingChanged() {
                             mWindowManagerFuncs.onKeyguardShowingAndNotOccludedChanged();
                         }
+
+                        @Override
+                        public void onKeyguardServiceConnected() {
+                            mWindowManagerFuncs.resetFirstKeyguardLockedStateDispatched();
+                        }
                     });
         }
 
