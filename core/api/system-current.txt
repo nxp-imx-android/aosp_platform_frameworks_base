@@ -2517,23 +2517,13 @@ package android.app.modes {
 
 package android.app.motioncues {
 
-  @FlaggedApi("android.app.enable_motion_cues") public final class MotionCuesData implements android.os.Parcelable {
-    ctor @FlaggedApi("android.app.enable_motion_cues") public MotionCuesData(@ColorInt int, @DrawableRes int);
-    ctor @FlaggedApi("android.app.enable_motion_cues") public MotionCuesData(@NonNull android.app.motioncues.MotionCuesData);
-    method @FlaggedApi("android.app.enable_motion_cues") public int describeContents();
-    method @FlaggedApi("android.app.enable_motion_cues") @ColorInt public int getColor();
-    method @FlaggedApi("android.app.enable_motion_cues") @DrawableRes public int getShapeRes();
-    method @FlaggedApi("android.app.enable_motion_cues") public void writeToParcel(@NonNull android.os.Parcel, int);
-    field @FlaggedApi("android.app.enable_motion_cues") @NonNull public static final android.os.Parcelable.Creator<android.app.motioncues.MotionCuesData> CREATOR;
-  }
-
   @FlaggedApi("android.app.enable_motion_cues") public abstract class MotionCuesService extends android.app.Service {
     ctor public MotionCuesService();
     method @FlaggedApi("android.app.enable_motion_cues") @Nullable @RequiresPermission(android.Manifest.permission.BIND_MOTION_CUES_SERVICE) public final android.os.IBinder onBind(@Nullable android.content.Intent);
     method @FlaggedApi("android.app.enable_motion_cues") public abstract void onClientConnected();
     method @FlaggedApi("android.app.enable_motion_cues") public abstract void onClientDisconnected();
     method @FlaggedApi("android.app.enable_motion_cues") public final void updateBubblePixelPos(float, float);
-    method @FlaggedApi("android.app.enable_motion_cues") public final void updateMotionCuesData(@NonNull android.app.motioncues.MotionCuesData);
+    method @FlaggedApi("android.app.enable_motion_cues") public final void updateMotionCuesVisualStyle(@NonNull android.app.motioncues.MotionCuesVisualStyle);
     field @FlaggedApi("android.app.enable_motion_cues") public static final String EXTRA_API_CALLBACK = "android.app.motioncues.extra.API_CALLBACK";
   }
 
@@ -2555,6 +2545,16 @@ package android.app.motioncues {
     method @FlaggedApi("android.app.enable_motion_cues") @NonNull public android.app.motioncues.MotionCuesSettings.Builder setMarginSizeDp(int);
     method @FlaggedApi("android.app.enable_motion_cues") @NonNull public android.app.motioncues.MotionCuesSettings.Builder setRadiusDp(int);
     method @FlaggedApi("android.app.enable_motion_cues") @NonNull public android.app.motioncues.MotionCuesSettings.Builder setVerticalSpacingDp(int);
+  }
+
+  @FlaggedApi("android.app.enable_motion_cues") public final class MotionCuesVisualStyle implements android.os.Parcelable {
+    ctor @FlaggedApi("android.app.enable_motion_cues") public MotionCuesVisualStyle(@ColorInt int, @DrawableRes int);
+    ctor @FlaggedApi("android.app.enable_motion_cues") public MotionCuesVisualStyle(@NonNull android.app.motioncues.MotionCuesVisualStyle);
+    method @FlaggedApi("android.app.enable_motion_cues") public int describeContents();
+    method @FlaggedApi("android.app.enable_motion_cues") @ColorInt public int getColor();
+    method @FlaggedApi("android.app.enable_motion_cues") @DrawableRes public int getShapeRes();
+    method @FlaggedApi("android.app.enable_motion_cues") public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @FlaggedApi("android.app.enable_motion_cues") @NonNull public static final android.os.Parcelable.Creator<android.app.motioncues.MotionCuesVisualStyle> CREATOR;
   }
 
 }
