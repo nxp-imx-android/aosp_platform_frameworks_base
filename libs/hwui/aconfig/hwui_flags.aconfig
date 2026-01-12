@@ -216,3 +216,13 @@ flag {
   description: "Set a default listener for ImageDecoder"
   bug: "447585785"
 }
+
+flag {
+  name: "edt_gradient_detection"
+  namespace: "accessibility"
+  description: "Add detection for the gradient lightness to improve the decision in expanded Dark theme"
+  bug: "418004794"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
