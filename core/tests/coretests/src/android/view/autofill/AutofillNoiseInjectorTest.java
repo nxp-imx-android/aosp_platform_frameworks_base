@@ -139,9 +139,9 @@ public class AutofillNoiseInjectorTest {
         AutofillNoiseInjector injector = new AutofillNoiseInjector(MASTER_SEED1, TEST_COMPONENT);
         AutofillNoiseInjectedData result = injector.injectNoise(mMockViewNode);
         byte[] payload = result.getNoiseInjectedPayload();
-        int retainedBitMask = result.getRetainedBitMask();
+        byte retainedBitMask = result.getRetainedBitMask();
 
-        assertEquals(BITS_TO_RETAIN, Integer.bitCount(retainedBitMask));
+        assertEquals(BITS_TO_RETAIN, Integer.bitCount(retainedBitMask & 0xFF));
         for (byte b : payload) {
             for (int i = 0; i < 8; i++) {
                 if ((retainedBitMask & (1 << i)) == 0) {
