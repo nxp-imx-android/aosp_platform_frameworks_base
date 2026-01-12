@@ -37,6 +37,7 @@ import android.os.OutcomeReceiver;
 import android.os.RemoteException;
 import android.os.ResultReceiver;
 import android.telephony.CarrierConfigManager;
+import android.telephony.NetworkRegistrationInfo;
 import android.telephony.SubscriptionManager;
 import android.telephony.TelephonyCallback;
 import android.telephony.TelephonyFrameworkInitializer;
@@ -3995,6 +3996,45 @@ public final class SatelliteManager {
             ex.rethrowAsRuntimeException();
         }
         return isInCarrierRoamingNtnMode;
+    }
+
+    /**
+     * Get the array of available services for carrier roaming NTN.
+     *
+     * <p>In order to monitor ongoing changes to carrier roaming ntn available services, register to
+     * {@link TelephonyCallback.CarrierRoamingNtnListener} callback.
+     *
+     * @param subId The subscription ID of the carrier.
+     * @return an array of available services for carrier roaming NTN.
+     * @throws IllegalArgumentException if the provided {@code subId} is not valid.
+     * @throws SecurityException if the caller doesn't have required permission.
+     * @throws IllegalStateException if the Telephony process is not currently available.
+     * @throws RuntimeException if an unexpected error occurs during the remote call to the
+     *     Telephony service.
+     * @hide
+     */
+    @SystemApi
+    @RequiresPermission(Manifest.permission.SATELLITE_COMMUNICATION)
+    @FlaggedApi(Flags.FLAG_SATELLITE_26Q2_APIS)
+    public @NonNull @NetworkRegistrationInfo.ServiceType int[]
+            getCarrierRoamingNtnAvailableServices(int subId) {
+        if (!SubscriptionManager.isValidSubscriptionId(subId)) {
+            throw new IllegalArgumentException("Invalid subscription ID");
+        }
+
+        int[] availableServices = new int[0];
+        try {
+            ITelephony telephony = getITelephony();
+            if (telephony != null) {
+                availableServices = telephony.getCarrierRoamingNtnAvailableServices(subId);
+            } else {
+                throw new IllegalStateException("telephony service is null.");
+            }
+        } catch (RemoteException ex) {
+            loge("getCarrierRoamingNtnAvailableServices() RemoteException:" + ex);
+            ex.rethrowAsRuntimeException();
+        }
+        return availableServices;
     }
 
     @Nullable
