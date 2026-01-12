@@ -98,7 +98,7 @@ class NextAlarmIconViewModelTest : SysuiTestCase() {
     companion object {
         private val EXPECTED_ALARM_ICON =
             Icon.Resource(
-                resId = R.drawable.ic_alarm,
+                resId = R.drawable.stat_sys_alarm,
                 contentDescription = ContentDescription.Resource(R.string.status_bar_alarm),
             )
     }
