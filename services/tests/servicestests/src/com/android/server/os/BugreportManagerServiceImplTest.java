@@ -59,13 +59,13 @@ import org.mockito.MockitoAnnotations;
 
 import java.io.FileDescriptor;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
-import java.util.HashSet;
-import java.util.Set;
 
 @RunWith(AndroidJUnit4.class)
 public class BugreportManagerServiceImplTest {
@@ -185,14 +185,16 @@ public class BugreportManagerServiceImplTest {
 
     @Test
     public void testStartBugreport() throws Exception {
+        CountDownLatch hasStarted = new CountDownLatch(1);
         mService.startBugreport(mCallingUid, mContext.getPackageName(),
                 new FileDescriptor(), /* screenshotFd= */ null,
                 BugreportParams.BUGREPORT_MODE_FULL,
-                /* flags= */ 0, new Listener(new CountDownLatch(1)),
+                /* flags= */ 0, new Listener(hasStarted),
                 /* isScreenshotRequested= */ false,
                 /* skipUserConsentUnused = */ false);
 
-        assertThat(mInjector.isBugreportStarted()).isTrue();
+        assertThat(hasStarted.await(5, TimeUnit.SECONDS)).isTrue();
+        assertThat(mInjector.getNumBugreportsStarted()).isEqualTo(1);
     }
 
     @Test
@@ -206,14 +208,16 @@ public class BugreportManagerServiceImplTest {
         }
         when(mMockUserManager.getProfileParent(callingUserId)).thenReturn(ADMIN_USER_INFO);
 
+        CountDownLatch hasStarted = new CountDownLatch(1);
         mService.startBugreport(mCallingUid, mContext.getPackageName(),
                 new FileDescriptor(), /* screenshotFd= */ null,
                 BugreportParams.BUGREPORT_MODE_FULL,
-                /* flags= */ 0, new Listener(new CountDownLatch(1)),
+                /* flags= */ 0, new Listener(hasStarted),
                 /* isScreenshotRequested= */ false,
                 /* skipUserConsentUnused = */ false);
 
-        assertThat(mInjector.isBugreportStarted()).isTrue();
+        assertThat(hasStarted.await(5, TimeUnit.SECONDS)).isTrue();
+        assertThat(mInjector.getNumBugreportsStarted()).isEqualTo(1);
     }
 
     @Test
@@ -262,14 +266,16 @@ public class BugreportManagerServiceImplTest {
         mInjector.grantPermission(android.Manifest.permission.INITIATE_BUGREPORT_AS_NON_ADMIN);
         mInjector.setInitiateBugreportAsNonAdminEnabled(true);
 
+        CountDownLatch hasStarted = new CountDownLatch(1);
         mService.startBugreport(mCallingUid, mContext.getPackageName(),
                 new FileDescriptor(), /* screenshotFd= */ null,
                 BugreportParams.BUGREPORT_MODE_FULL,
-                /* flags= */ 0, new Listener(new CountDownLatch(1)),
+                /* flags= */ 0, new Listener(hasStarted),
                 /* isScreenshotRequested= */ false,
                 /* skipUserConsentUnused = */ false);
 
-        assertThat(mInjector.isBugreportStarted()).isTrue();
+        assertThat(hasStarted.await(5, TimeUnit.SECONDS)).isTrue();
+        assertThat(mInjector.getNumBugreportsStarted()).isEqualTo(1);
     }
 
     @Test
@@ -314,16 +320,18 @@ public class BugreportManagerServiceImplTest {
 
     @Test
     @RequiresFlagsEnabled(android.os.Flags.FLAG_BUGREPORT_MULTI_DISPLAY_SCREENSHOT_ENABLED)
-    public void testStartBugreportWithMultiDisplayScreenshotFlag() {
+    public void testStartBugreportWithMultiDisplayScreenshotFlag() throws Exception {
+        CountDownLatch hasStarted = new CountDownLatch(1);
         mService.startBugreport(mCallingUid, mContext.getPackageName(),
                 new FileDescriptor(), new FileDescriptor(),
                 BugreportParams.BUGREPORT_MODE_FULL,
                 BugreportParams.BUGREPORT_FLAG_CAPTURE_MULTI_DISPLAY_SCREENSHOT,
-                new Listener(new CountDownLatch(1)),
+                new Listener(hasStarted),
                 /* isScreenshotRequested= */ true,
                 /* skipUserConsentUnused = */ false);
 
-        assertThat(mInjector.isBugreportStarted()).isTrue();
+        assertThat(hasStarted.await(5, TimeUnit.SECONDS)).isTrue();
+        assertThat(mInjector.getNumBugreportsStarted()).isEqualTo(1);
     }
 
     @Test
@@ -417,6 +425,7 @@ public class BugreportManagerServiceImplTest {
         private final UserManager mUserManager;
         private final DevicePolicyManager mDevicePolicyManager;
         private boolean mBugreportStarted = false;
+        private int mNumBugreportsStarted = 0;
         private boolean mTreatCallerAsAdmin = false;
         private final Set<String> mGrantedPermissions = new HashSet<>();
         private boolean mIsInitiateBugreportAsNonAdminEnabled = false;
@@ -441,28 +450,33 @@ public class BugreportManagerServiceImplTest {
         }
 
         @Override
-        public UserManager getUserManager() {
+        UserManager getUserManager() {
             return mUserManager;
         }
 
         @Override
-        public DevicePolicyManager getDevicePolicyManager() {
+        DevicePolicyManager getDevicePolicyManager() {
             return mDevicePolicyManager;
         }
 
         @Override
-        public void setSystemProperty(String key, String value) {
+        void setSystemProperty(String key, String value) {
             // Calling SystemProperties.set() will throw a RuntimeException due to permission error.
             // Instead, we are just marking a flag to store the state for testing.
             if (SYSTEM_PROPERTY_BUGREPORT_START.equals(key)) {
                 mBugreportStarted = true;
+                mNumBugreportsStarted++;
             } else if (SYSTEM_PROPERTY_BUGREPORT_STOP.equals(key)) {
                 mBugreportStarted = false;
             }
         }
 
-        public boolean isBugreportStarted() {
+        boolean isBugreportStarted() {
             return mBugreportStarted;
+        }
+
+        int getNumBugreportsStarted() {
+            return mNumBugreportsStarted;
         }
 
         void setTreatCallerAsAdmin(boolean treatCallerAsAdmin) {
