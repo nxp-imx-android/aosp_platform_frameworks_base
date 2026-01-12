@@ -24,7 +24,6 @@ import static android.app.ActivityManager.PROCESS_STATE_CACHED_EMPTY;
 import static android.app.ActivityManager.PROCESS_STATE_FOREGROUND_SERVICE;
 import static android.app.ActivityManager.PROCESS_STATE_HOME;
 import static android.app.ActivityManager.PROCESS_STATE_SERVICE;
-import static android.content.Context.BIND_ALLOW_OOM_MANAGEMENT;
 import static android.content.Context.BIND_AUTO_CREATE;
 import static android.content.Context.BIND_INCLUDE_CAPABILITIES;
 import static android.content.Context.BIND_WAIVE_PRIORITY;
@@ -54,7 +53,6 @@ import static org.mockito.Mockito.verify;
 
 import android.app.IServiceConnection;
 import android.content.Intent;
-import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 
@@ -211,244 +209,13 @@ public final class ServiceBindingOomAdjPolicyTest extends BaseServiceTest {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_CPU_TIME_CAPABILITY_BASED_FREEZE_POLICY)
-    public void testServiceDistinctBindingOomAdjShouldNotFreeze() throws Exception {
-        testServiceDistinctBindingOomAdjShouldNotFreeze(/*isNativeService=*/ false);
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_CPU_TIME_CAPABILITY_BASED_FREEZE_POLICY)
-    @EnableFlags(android.os.Flags.FLAG_NATIVE_APP_ZYGOTE)
-    public void testServiceDistinctBindingOomAdjShouldNotFreezeNative() throws Exception {
-        testServiceDistinctBindingOomAdjShouldNotFreeze(/*isNativeService=*/ true);
-    }
-
-    private void testServiceDistinctBindingOomAdjShouldNotFreeze(boolean isNativeService)
-            throws Exception {
-        // Verify that there should be at least 1 oom adj update
-        // because the shouldNotFreeze state needs to be propagated.
-        performTestServiceDistinctBindingOomAdj(TEST_APP1_PID, TEST_APP1_UID,
-                PROCESS_STATE_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
-                PROCESS_CAPABILITY_NONE, TEST_APP1_NAME,
-                (app) -> {
-                    this.setHasForegroundServices(app);
-                    this.setAllowListed(app);
-                },
-                TEST_APP2_PID, TEST_APP2_UID, PROCESS_STATE_HOME,
-                HOME_APP_ADJ, PROCESS_CAPABILITY_NONE, TEST_APP2_NAME, TEST_SERVICE2_NAME,
-                this::setHomeProcess,
-                BIND_AUTO_CREATE,
-                atLeastOnce(), atLeastOnce(), isNativeService);
-
-        // Verify that there should be at least 1 oom adj update
-        // because the shouldNotFreeze state needs to be propagated.
-        performTestServiceDistinctBindingOomAdj(TEST_APP1_PID, TEST_APP1_UID,
-                PROCESS_STATE_HOME, HOME_APP_ADJ, PROCESS_CAPABILITY_NONE, TEST_APP1_NAME,
-                (app) -> {
-                    this.setHomeProcess(app);
-                    this.setAllowListed(app);
-                },
-                TEST_APP2_PID, TEST_APP2_UID, PROCESS_STATE_FOREGROUND_SERVICE,
-                PERCEPTIBLE_APP_ADJ, PROCESS_CAPABILITY_NONE, TEST_APP2_NAME, TEST_SERVICE2_NAME,
-                this::setHasForegroundServices,
-                BIND_AUTO_CREATE,
-                atLeastOnce(), atLeastOnce(), isNativeService);
-
-        // Verify that there should be at least 1 oom adj update
-        // because the client is more important (regardless of shouldNotFreeze state).
-        performTestServiceDistinctBindingOomAdj(TEST_APP1_PID, TEST_APP1_UID,
-                PROCESS_STATE_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
-                PROCESS_CAPABILITY_NONE, TEST_APP1_NAME,
-                (app) -> {
-                    this.setHasForegroundServices(app);
-                    this.setAllowListed(app);
-                },
-                TEST_APP2_PID, TEST_APP2_UID, PROCESS_STATE_HOME,
-                HOME_APP_ADJ, PROCESS_CAPABILITY_NONE, TEST_APP2_NAME, TEST_SERVICE2_NAME,
-                (app) -> {
-                    this.setHomeProcess(app);
-                    this.setAllowListed(app);
-                },
-                BIND_AUTO_CREATE,
-                atLeastOnce(), atLeastOnce(), isNativeService);
-
-        // Verify that there should be 0 oom adj update for binding
-        // because setShouldNotFreeze is already set
-        // but for the unbinding must update in case the binding could be the source of the
-        // shouldNotFreeze.
-        performTestServiceDistinctBindingOomAdj(TEST_APP1_PID, TEST_APP1_UID,
-                PROCESS_STATE_HOME, HOME_APP_ADJ, PROCESS_CAPABILITY_NONE, TEST_APP1_NAME,
-                (app) -> {
-                    this.setHomeProcess(app);
-                    this.setAllowListed(app);
-                },
-                TEST_APP2_PID, TEST_APP2_UID, PROCESS_STATE_FOREGROUND_SERVICE,
-                PERCEPTIBLE_APP_ADJ, PROCESS_CAPABILITY_NONE, TEST_APP2_NAME, TEST_SERVICE2_NAME,
-                (app) -> {
-                    this.setHasForegroundServices(app);
-                    this.setAllowListed(app);
-                },
-                BIND_AUTO_CREATE,
-                never(), atLeastOnce(), isNativeService);
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_CPU_TIME_CAPABILITY_BASED_FREEZE_POLICY)
-    public void testServiceDistinctBindingOomAdjAllowOomManagement() throws Exception {
-        testServiceDistinctBindingOomAdjAllowOomManagementVariant(/*isNativeService=*/ false);
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_CPU_TIME_CAPABILITY_BASED_FREEZE_POLICY)
-    @EnableFlags(android.os.Flags.FLAG_NATIVE_APP_ZYGOTE)
-    public void testServiceDistinctBindingOomAdjAllowOomManagementNative() throws Exception {
-        testServiceDistinctBindingOomAdjAllowOomManagementVariant(/*isNativeService=*/ true);
-    }
-
-    private void testServiceDistinctBindingOomAdjAllowOomManagementVariant(boolean isNativeService)
-            throws Exception {
-        // Verify that there should be at least 1 oom adj update
-        // because BIND_ALLOW_OOM_MANAGEMENT sets the shouldNotFreeze state which needs to be
-        // propagated.
-        performTestServiceDistinctBindingOomAdj(TEST_APP1_PID, TEST_APP1_UID,
-                PROCESS_STATE_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
-                PROCESS_CAPABILITY_NONE, TEST_APP1_NAME,
-                this::setHasForegroundServices,
-                TEST_APP2_PID, TEST_APP2_UID, PROCESS_STATE_HOME,
-                HOME_APP_ADJ, PROCESS_CAPABILITY_NONE, TEST_APP2_NAME, TEST_SERVICE2_NAME,
-                this::setHomeProcess,
-                BIND_AUTO_CREATE | BIND_ALLOW_OOM_MANAGEMENT,
-                atLeastOnce(), atLeastOnce(), isNativeService);
-
-        // Verify that there should be at least 1 oom adj update
-        // because BIND_ALLOW_OOM_MANAGEMENT sets the shouldNotFreeze state which needs to be
-        // propagated.
-        performTestServiceDistinctBindingOomAdj(TEST_APP1_PID, TEST_APP1_UID,
-                PROCESS_STATE_HOME, HOME_APP_ADJ, PROCESS_CAPABILITY_NONE, TEST_APP1_NAME,
-                this::setHomeProcess,
-                TEST_APP2_PID, TEST_APP2_UID, PROCESS_STATE_FOREGROUND_SERVICE,
-                PERCEPTIBLE_APP_ADJ, PROCESS_CAPABILITY_NONE, TEST_APP2_NAME, TEST_SERVICE2_NAME,
-                this::setHasForegroundServices,
-                BIND_AUTO_CREATE | BIND_ALLOW_OOM_MANAGEMENT,
-                atLeastOnce(), atLeastOnce(), isNativeService);
-
-        // Verify that there should be at least 1 oom adj update
-        // because the client is more important (regardless of BIND_ALLOW_OOM_MANAGEMENT).
-        performTestServiceDistinctBindingOomAdj(TEST_APP1_PID, TEST_APP1_UID,
-                PROCESS_STATE_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
-                PROCESS_CAPABILITY_NONE, TEST_APP1_NAME,
-                this::setHasForegroundServices,
-                TEST_APP2_PID, TEST_APP2_UID, PROCESS_STATE_HOME,
-                HOME_APP_ADJ, PROCESS_CAPABILITY_NONE, TEST_APP2_NAME, TEST_SERVICE2_NAME,
-                (app) -> {
-                    this.setHomeProcess(app);
-                    this.setAllowListed(app);
-                },
-                BIND_AUTO_CREATE | BIND_ALLOW_OOM_MANAGEMENT,
-                atLeastOnce(), atLeastOnce(), isNativeService);
-
-        // Verify that there should be 0 oom adj update for binding
-        // because setShouldNotFreeze is already set
-        // but for the unbinding must update in case the BIND_ALLOW_OOM_MANAGEMENT maintaining the
-        // shouldNotFreeze.
-        performTestServiceDistinctBindingOomAdj(TEST_APP1_PID, TEST_APP1_UID,
-                PROCESS_STATE_HOME, HOME_APP_ADJ, PROCESS_CAPABILITY_NONE, TEST_APP1_NAME,
-                this::setHomeProcess,
-                TEST_APP2_PID, TEST_APP2_UID, PROCESS_STATE_FOREGROUND_SERVICE,
-                PERCEPTIBLE_APP_ADJ, PROCESS_CAPABILITY_NONE, TEST_APP2_NAME, TEST_SERVICE2_NAME,
-                (app) -> {
-                    this.setHasForegroundServices(app);
-                    this.setAllowListed(app);
-                },
-                BIND_AUTO_CREATE | BIND_ALLOW_OOM_MANAGEMENT,
-                never(), atLeastOnce(), isNativeService);
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_CPU_TIME_CAPABILITY_BASED_FREEZE_POLICY)
-    public void testServiceDistinctBindingOomAdjWaivePriority_propagateUnfreeze() throws Exception {
-        testServiceDistinctBindingOomAdjWaivePriority_propagateUnfreezeVariant(
-                /*isNativeService=*/ false);
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_CPU_TIME_CAPABILITY_BASED_FREEZE_POLICY)
-    @EnableFlags(android.os.Flags.FLAG_NATIVE_APP_ZYGOTE)
-    public void testServiceDistinctBindingOomAdjWaivePriority_propagateUnfreezeNative()
-            throws Exception {
-        testServiceDistinctBindingOomAdjWaivePriority_propagateUnfreezeVariant(
-                /*isNativeService=*/ true);
-    }
-
-    private void testServiceDistinctBindingOomAdjWaivePriority_propagateUnfreezeVariant(
-            boolean isNativeService) throws Exception {
-        // Verify that there should be at least 1 oom adj update
-        // because BIND_WAIVE_PRIORITY sets the shouldNotFreeze state which needs to be propagated.
-        performTestServiceDistinctBindingOomAdj(TEST_APP1_PID, TEST_APP1_UID,
-                PROCESS_STATE_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
-                PROCESS_CAPABILITY_NONE, TEST_APP1_NAME,
-                this::setHasForegroundServices,
-                TEST_APP2_PID, TEST_APP2_UID, PROCESS_STATE_HOME,
-                HOME_APP_ADJ, PROCESS_CAPABILITY_NONE, TEST_APP2_NAME, TEST_SERVICE2_NAME,
-                this::setHomeProcess,
-                BIND_AUTO_CREATE | BIND_WAIVE_PRIORITY,
-                atLeastOnce(), atLeastOnce(), isNativeService);
-
-        // Verify that there should be at least 1 oom adj update
-        // because BIND_WAIVE_PRIORITY sets the shouldNotFreeze state which needs to be propagated.
-        performTestServiceDistinctBindingOomAdj(TEST_APP1_PID, TEST_APP1_UID,
-                PROCESS_STATE_HOME, HOME_APP_ADJ, PROCESS_CAPABILITY_NONE, TEST_APP1_NAME,
-                this::setHomeProcess,
-                TEST_APP2_PID, TEST_APP2_UID, PROCESS_STATE_FOREGROUND_SERVICE,
-                PERCEPTIBLE_APP_ADJ, PROCESS_CAPABILITY_NONE, TEST_APP2_NAME, TEST_SERVICE2_NAME,
-                this::setHasForegroundServices,
-                BIND_AUTO_CREATE | BIND_WAIVE_PRIORITY,
-                atLeastOnce(), atLeastOnce(), isNativeService);
-
-        // Verify that there should be 0 oom adj update for binding
-        // because setShouldNotFreeze is already set
-        // but for the unbinding, because client is better than service, we can't skip it safely.
-        performTestServiceDistinctBindingOomAdj(TEST_APP1_PID, TEST_APP1_UID,
-                PROCESS_STATE_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
-                PROCESS_CAPABILITY_NONE, TEST_APP1_NAME,
-                this::setHasForegroundServices,
-                TEST_APP2_PID, TEST_APP2_UID, PROCESS_STATE_HOME,
-                HOME_APP_ADJ, PROCESS_CAPABILITY_NONE, TEST_APP2_NAME, TEST_SERVICE2_NAME,
-                (app) -> {
-                    this.setHomeProcess(app);
-                    this.setAllowListed(app);
-                },
-                BIND_AUTO_CREATE | BIND_WAIVE_PRIORITY,
-                never(), atLeastOnce(), isNativeService);
-
-        // Verify that there should be 0 oom adj update for binding
-        // because setShouldNotFreeze is already set
-        // but for the unbinding must update in case the BIND_WAIVE_PRIORITY maintaining the
-        // shouldNotFreeze.
-        performTestServiceDistinctBindingOomAdj(TEST_APP1_PID, TEST_APP1_UID,
-                PROCESS_STATE_HOME, HOME_APP_ADJ, PROCESS_CAPABILITY_NONE, TEST_APP1_NAME,
-                this::setHomeProcess,
-                TEST_APP2_PID, TEST_APP2_UID, PROCESS_STATE_FOREGROUND_SERVICE,
-                PERCEPTIBLE_APP_ADJ, PROCESS_CAPABILITY_NONE, TEST_APP2_NAME, TEST_SERVICE2_NAME,
-                (app) -> {
-                    this.setHasForegroundServices(app);
-                    this.setAllowListed(app);
-                },
-                BIND_AUTO_CREATE | BIND_WAIVE_PRIORITY,
-                never(), atLeastOnce(), isNativeService);
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_CPU_TIME_CAPABILITY_BASED_FREEZE_POLICY)
     public void testServiceDistinctBindingOomAdj_propagateCpuTimeCapability() throws Exception {
         testServiceDistinctBindingOomAdj_propagateCpuTimeCapabilityVariant(
                 /*isNativeService=*/ false);
     }
 
     @Test
-    @EnableFlags({
-        Flags.FLAG_CPU_TIME_CAPABILITY_BASED_FREEZE_POLICY,
-        android.os.Flags.FLAG_NATIVE_APP_ZYGOTE})
+    @EnableFlags(android.os.Flags.FLAG_NATIVE_APP_ZYGOTE)
     public void testServiceDistinctBindingOomAdj_propagateCpuTimeCapabilityNative()
             throws Exception {
         testServiceDistinctBindingOomAdj_propagateCpuTimeCapabilityVariant(
@@ -574,15 +341,12 @@ public final class ServiceBindingOomAdjPolicyTest extends BaseServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_CPU_TIME_CAPABILITY_BASED_FREEZE_POLICY)
     public void testServiceDistinctBindingOomAdjCpuTime() throws Exception {
         testServiceDistinctBindingOomAdjCpuTimeVariant(/*isNativeService=*/ false);
     }
 
     @Test
-    @EnableFlags({
-        Flags.FLAG_CPU_TIME_CAPABILITY_BASED_FREEZE_POLICY,
-        android.os.Flags.FLAG_NATIVE_APP_ZYGOTE})
+    @EnableFlags(android.os.Flags.FLAG_NATIVE_APP_ZYGOTE)
     public void testServiceDistinctBindingOomAdjCpuTimeNative() throws Exception {
         testServiceDistinctBindingOomAdjCpuTimeVariant(/*isNativeService=*/ true);
     }
@@ -601,15 +365,12 @@ public final class ServiceBindingOomAdjPolicyTest extends BaseServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_CPU_TIME_CAPABILITY_BASED_FREEZE_POLICY)
     public void testServiceDistinctBindingOomAdjCpuTime_hostHasCpuTime() throws Exception {
         testServiceDistinctBindingOomAdjCpuTime_hostHasCpuTimeVariant(/*isNativeService=*/ false);
     }
 
     @Test
-    @EnableFlags({
-        Flags.FLAG_CPU_TIME_CAPABILITY_BASED_FREEZE_POLICY,
-        android.os.Flags.FLAG_NATIVE_APP_ZYGOTE})
+    @EnableFlags(android.os.Flags.FLAG_NATIVE_APP_ZYGOTE)
     public void testServiceDistinctBindingOomAdjCpuTime_hostHasCpuTimeNative() throws Exception {
         testServiceDistinctBindingOomAdjCpuTime_hostHasCpuTimeVariant(/*isNativeService=*/ true);
     }
@@ -628,16 +389,13 @@ public final class ServiceBindingOomAdjPolicyTest extends BaseServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_CPU_TIME_CAPABILITY_BASED_FREEZE_POLICY)
     public void testServiceDistinctBindingOomAdjCpuTime_hostHasImplicitCpuTime() throws Exception {
         testServiceDistinctBindingOomAdjCpuTime_hostHasImplicitCpuTimeVariant(
                 /*isNativeService=*/ false);
     }
 
     @Test
-    @EnableFlags({
-        Flags.FLAG_CPU_TIME_CAPABILITY_BASED_FREEZE_POLICY,
-        android.os.Flags.FLAG_NATIVE_APP_ZYGOTE})
+    @EnableFlags(android.os.Flags.FLAG_NATIVE_APP_ZYGOTE)
     public void testServiceDistinctBindingOomAdjCpuTime_hostHasImplicitCpuTimeNative()
             throws Exception {
         testServiceDistinctBindingOomAdjCpuTime_hostHasImplicitCpuTimeVariant(
@@ -660,15 +418,12 @@ public final class ServiceBindingOomAdjPolicyTest extends BaseServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_CPU_TIME_CAPABILITY_BASED_FREEZE_POLICY)
     public void testServiceDistinctBindingOomAdjImplicitCpuTime() throws Exception {
         testServiceDistinctBindingOomAdjImplicitCpuTimeVariant(/*isNativeService=*/ false);
     }
 
     @Test
-    @EnableFlags({
-        Flags.FLAG_CPU_TIME_CAPABILITY_BASED_FREEZE_POLICY,
-        android.os.Flags.FLAG_NATIVE_APP_ZYGOTE})
+    @EnableFlags(android.os.Flags.FLAG_NATIVE_APP_ZYGOTE)
     public void testServiceDistinctBindingOomAdjImplicitCpuTimeNative() throws Exception {
         testServiceDistinctBindingOomAdjImplicitCpuTimeVariant(/*isNativeService=*/ true);
     }
@@ -688,16 +443,13 @@ public final class ServiceBindingOomAdjPolicyTest extends BaseServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_CPU_TIME_CAPABILITY_BASED_FREEZE_POLICY)
     public void testServiceDistinctBindingOomAdjImplicitCpuTime_hostHasCpuTime() throws Exception {
         testServiceDistinctBindingOomAdjImplicitCpuTime_hostHasCpuTimeVariant(
                 /*isNativeService=*/ false);
     }
 
     @Test
-    @EnableFlags({
-        Flags.FLAG_CPU_TIME_CAPABILITY_BASED_FREEZE_POLICY,
-        android.os.Flags.FLAG_NATIVE_APP_ZYGOTE})
+    @EnableFlags(android.os.Flags.FLAG_NATIVE_APP_ZYGOTE)
     public void testServiceDistinctBindingOomAdjImplicitCpuTime_hostHasCpuTimeNative()
             throws Exception {
         testServiceDistinctBindingOomAdjImplicitCpuTime_hostHasCpuTimeVariant(
@@ -720,7 +472,6 @@ public final class ServiceBindingOomAdjPolicyTest extends BaseServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_CPU_TIME_CAPABILITY_BASED_FREEZE_POLICY)
     public void testServiceDistinctBindingOomAdjImplicitCpuTime_hostHasImplicitCpuTime()
             throws Exception {
         testServiceDistinctBindingOomAdjImplicitCpuTime_hostHasImplicitCpuTimeVariant(
@@ -728,9 +479,7 @@ public final class ServiceBindingOomAdjPolicyTest extends BaseServiceTest {
     }
 
     @Test
-    @EnableFlags({
-        Flags.FLAG_CPU_TIME_CAPABILITY_BASED_FREEZE_POLICY,
-        android.os.Flags.FLAG_NATIVE_APP_ZYGOTE})
+    @EnableFlags(android.os.Flags.FLAG_NATIVE_APP_ZYGOTE)
     public void testServiceDistinctBindingOomAdjImplicitCpuTime_hostHasImplicitCpuTimeNative()
             throws Exception {
         testServiceDistinctBindingOomAdjImplicitCpuTime_hostHasImplicitCpuTimeVariant(

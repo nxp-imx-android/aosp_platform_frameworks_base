@@ -19811,7 +19811,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                                     + (hasImplicitCpuCapability ? "X" : "-")
                                     + (immediate ? "I" : "-")
                                     + (freezePolicy ? "Z" : "-")
-                                    + (Flags.cpuTimeCapabilityBasedFreezePolicy() ? "t" : "-")
+                                    + "t" // Bit for denoting CPU_TIME based freeze policy
                                     + (Flags.prototypeAggressiveFreezing() ? "a" : "-")
                                     + "/" + app.getPid()
                                     + "/" + app.getCurAdj()
@@ -19839,8 +19839,7 @@ public class ActivityManagerService extends IActivityManager.Stub
             }
 
             if (freezePolicy) {
-                if (Flags.cpuTimeCapabilityBasedFreezePolicy()
-                        && !com.android.server.notification.Flags.allowFreezingIdleNls()
+                if (!com.android.server.notification.Flags.allowFreezingIdleNls()
                         && app.getCurAdj() < CACHED_APP_MIN_ADJ) {
                     Slog.wtfStack(TAG, "Unexpected non-cached process may get frozen soon: "
                             + " name: " + app.processName
