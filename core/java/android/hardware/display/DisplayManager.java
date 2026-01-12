@@ -538,7 +538,6 @@ public final class DisplayManager {
      * @hide
      */
     @FlaggedApi(com.android.server.display.feature.flags.Flags.FLAG_VIRTUAL_SECONDARY_DISPLAYS)
-    @SystemApi
     public static final int VIRTUAL_DISPLAY_FLAG_ALLOWS_CONTENT_MODE_SWITCH = 1 << 17;
 
     /** @hide */
