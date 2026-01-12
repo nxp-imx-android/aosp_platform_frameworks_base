@@ -20,8 +20,8 @@ import com.android.internal.logging.UiEvent
 import com.android.internal.logging.UiEventLogger
 
 /**
- * Legacy bouncer UI events {@link com.android.keyguard.KeyguardSecurityContainer.BouncerUiEvent}.
- * Only contains that used by metrics.
+ * Bouncer UI events {@link com.android.keyguard.KeyguardSecurityContainer.BouncerUiEvent}. Only
+ * contains that used by metrics.
  */
 enum class BouncerUiEvent(private val _id: Int) : UiEventLogger.UiEventEnum {
     @UiEvent(doc = "Bouncer is dismissed using extended security access.")
