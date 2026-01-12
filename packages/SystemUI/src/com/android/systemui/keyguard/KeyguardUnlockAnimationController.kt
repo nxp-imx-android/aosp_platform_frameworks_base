@@ -1037,6 +1037,11 @@ constructor(
             // SyncRtSurfaceTransactionApplier cannot apply transaction when the target view is
             // unable to draw
             val leash: SurfaceControl = wallpaper.leash
+
+            // If the animation runs longer than the transition itself, the leash might have already
+            // been released. If so, continue on to the next to avoid crashing.
+            if (!leash.isValid) return@forEach
+
             if (
                 keyguardViewController.viewRootImpl.view?.visibility != View.VISIBLE &&
                     leash.isValid
