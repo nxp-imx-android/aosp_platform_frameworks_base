@@ -22,6 +22,7 @@ import android.app.StatusBarManager.WINDOW_STATUS_BAR
 import android.app.StatusBarManager.WindowVisibleState
 import android.app.StatusBarManager.windowStateToString
 import android.util.Log
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.PerDisplaySingleton
 import com.android.systemui.statusbar.CommandQueue
@@ -42,7 +43,8 @@ import javax.inject.Inject
 @Deprecated("Use StatusBarWindowStateRepositoryStore.defaultDisplay instead")
 class StatusBarWindowStateController
 @Inject
-constructor(@DisplayAware private val thisDisplayId: Int, commandQueue: CommandQueue) {
+constructor(@DisplayAware private val thisDisplayId: Int, private val commandQueue: CommandQueue) :
+    SystemUIDisplaySubcomponent.LifecycleListener {
     private val commandQueueCallback =
         object : CommandQueue.Callbacks {
             override fun setWindowState(
@@ -59,6 +61,10 @@ constructor(@DisplayAware private val thisDisplayId: Int, commandQueue: CommandQ
 
     init {
         commandQueue.addCallback(commandQueueCallback)
+    }
+
+    override fun stop() {
+        commandQueue.removeCallback(commandQueueCallback)
     }
 
     /** Adds a listener. */
