@@ -288,19 +288,19 @@ public class HeadsUpManagerImpl
 
     @Override
     public void showNotification(
-            @NonNull NotificationEntry entry, boolean isPinnedByUser) {
+            @NonNull NotificationEntry entry, boolean isFromUserOpenAction) {
         HeadsUpEntry headsUpEntry = createHeadsUpEntry(entry);
 
-        mLogger.logShowNotificationRequest(entry, isPinnedByUser);
+        mLogger.logShowNotificationRequest(entry, isFromUserOpenAction);
 
         PinnedStatus requestedPinnedStatus =
-                isPinnedByUser
+                isFromUserOpenAction
                         ? PinnedStatus.PinnedByUser
                         : PinnedStatus.PinnedBySystem;
         headsUpEntry.setRequestedPinnedStatus(requestedPinnedStatus);
 
         Runnable runnable = () -> {
-            mLogger.logShowNotification(entry, isPinnedByUser);
+            mLogger.logShowNotification(entry, isFromUserOpenAction);
 
             // Add new entry and begin managing it
             mHeadsUpEntryMap.put(entry.getKey(), headsUpEntry);
