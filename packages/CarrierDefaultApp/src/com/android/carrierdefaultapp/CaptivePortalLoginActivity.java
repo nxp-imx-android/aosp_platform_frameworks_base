@@ -243,8 +243,7 @@ public class CaptivePortalLoginActivity extends Activity {
                 int oldTag = TrafficStats.getAndSetThreadStatsTag(
                         NetworkStackConstants.TAG_SYSTEM_PROBE);
                 try {
-                    urlConnection = (HttpURLConnection) mNetwork.openConnection(
-                            new URL(mCm.getCaptivePortalServerUrl()));
+                    urlConnection = (HttpURLConnection) mNetwork.openConnection(mUrl);
                     urlConnection.setInstanceFollowRedirects(false);
                     urlConnection.setConnectTimeout(SOCKET_TIMEOUT_MS);
                     urlConnection.setReadTimeout(SOCKET_TIMEOUT_MS);
