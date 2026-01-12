@@ -45,7 +45,6 @@ import com.android.wm.shell.taskview.TaskViewTaskController
 import com.android.wm.shell.taskview.TaskViewTransitions
 import com.google.testing.junit.testparameterinjector.TestParameter
 import com.google.testing.junit.testparameterinjector.TestParameterInjector
-import java.util.Optional
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito.never
@@ -83,12 +82,7 @@ class BubblesTransitionObserverTest : ShellTestCase() {
     private val splitScreenController =
         mock<SplitScreenController> { on { isTaskRootOrStageRoot(any()) } doReturn false }
     private val transitionObserver =
-        BubblesTransitionObserver(
-            bubbleController,
-            bubbleData,
-            taskViewTransitions,
-            { Optional.of(splitScreenController) },
-        )
+        BubblesTransitionObserver(bubbleController, bubbleData, taskViewTransitions)
 
     @Test
     fun testOnTransitionReady_openWithTaskTransition_collapsesStack() {
