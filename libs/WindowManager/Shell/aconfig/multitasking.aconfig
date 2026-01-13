@@ -221,16 +221,6 @@ flag {
 }
 
 flag {
-    name: "limit_persisted_launch_params_freeform"
-    namespace: "multitasking"
-    description: "Limits loading persisted launch params to freeform TDAs"
-    bug: "419385904"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "add_one_off_handler_leashes"
     namespace: "multitasking"
     description: "Add one-off leashes to non-Shell handlers (Remote, Recents, etc.) when starting or taking over an animation."

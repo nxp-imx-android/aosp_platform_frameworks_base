@@ -46,8 +46,6 @@ import android.app.ActivityOptions;
 import android.content.ComponentName;
 import android.content.pm.ActivityInfo.WindowLayout;
 import android.graphics.Rect;
-import android.platform.test.annotations.DisableFlags;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.util.ArrayMap;
 import android.util.SparseArray;
@@ -105,37 +103,9 @@ public class LaunchParamsControllerTests extends WindowTestsBase {
     }
 
     /**
-     * Makes sure controller passes stored params to modifiers.
-     */
-    @Test
-    @DisableFlags(com.android.wm.shell.Flags.FLAG_LIMIT_PERSISTED_LAUNCH_PARAMS_FREEFORM)
-    public void testStoredParamsRecovery() {
-        final LaunchParamsModifier positioner = mock(LaunchParamsModifier.class);
-        mController.registerModifier(positioner);
-
-        final ComponentName name = new ComponentName("com.android.foo", ".BarActivity");
-        final int userId = 0;
-        final ActivityRecord activity = new ActivityBuilder(mAtm).setComponent(name)
-                .setUid(userId).build();
-        final LaunchParams expected = new LaunchParams();
-        expected.mPreferredTaskDisplayArea = mock(TaskDisplayArea.class);
-        expected.mWindowingMode = WINDOWING_MODE_PINNED;
-        expected.mBounds.set(200, 300, 400, 500);
-        expected.mNeedsSafeRegionBounds = true;
-
-        mPersister.putLaunchParams(userId, name, expected);
-
-        mController.calculate(activity.getTask(), null /*layout*/, activity, null /*source*/,
-                null /*options*/, null /*request*/, PHASE_BOUNDS, new LaunchParams());
-        verify(positioner, times(1)).onCalculate(any(), any(), any(), any(), any(), any(),
-                anyInt(), eq(expected), any());
-    }
-
-    /**
      * Makes sure controller passes stored params to modifiers when it is supported.
      */
     @Test
-    @EnableFlags(com.android.wm.shell.Flags.FLAG_LIMIT_PERSISTED_LAUNCH_PARAMS_FREEFORM)
     public void testStoredParamsRecovery_taskSupports_paramsLoaded() {
         final ComponentName name = new ComponentName("com.android.foo", ".BarActivity");
         final int userId = 0;
@@ -174,7 +144,6 @@ public class LaunchParamsControllerTests extends WindowTestsBase {
      * Makes sure controller does not pass stored params to modifiers when it is not supported.
      */
     @Test
-    @EnableFlags(com.android.wm.shell.Flags.FLAG_LIMIT_PERSISTED_LAUNCH_PARAMS_FREEFORM)
     public void testStoredParamsRecovery_taskDoesNotSupport_paramsNotLoaded() {
         final ComponentName name = new ComponentName("com.android.foo", ".BarActivity");
         final int userId = 0;
