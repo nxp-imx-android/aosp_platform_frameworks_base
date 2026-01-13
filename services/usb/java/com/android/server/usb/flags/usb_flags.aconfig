@@ -29,6 +29,7 @@ flag {
     bug: "378826805"
 }
 
+# TODO(b/369430205) - Needs deletion after namespace migration.
 flag {
     name: "enable_usb4"
     namespace: "usb_desktop"
@@ -37,12 +38,20 @@ flag {
 }
 
 flag {
-    name: "enable_usb_authorization"
+    name: "enable_usb4_tbt"
     namespace: "usb_desktop"
-    description: "This flag enables USB authorization"
+    description: "This flag enables USB4 and Thunderbolt support"
+    bug: "369430205"
+}
+
+flag {
+    name: "enable_usb_host_authorization"
+    namespace: "usb_desktop"
+    description: "This flag enables USB host authorization"
     bug: "409385933"
 }
 
+# TODO(b/369430205) - Needs deletion after namespace migration.
 flag {
     name: "default_allow_pci_tunnels"
     namespace: "usb_desktop"
