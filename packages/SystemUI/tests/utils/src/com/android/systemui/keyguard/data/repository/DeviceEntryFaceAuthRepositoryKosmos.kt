@@ -16,10 +16,12 @@
 
 package com.android.systemui.keyguard.data.repository
 
+import android.content.applicationContext
 import android.hardware.face.FaceManager
 import com.android.internal.logging.uiEventLogger
 import com.android.systemui.biometrics.faceManager
 import com.android.systemui.bouncer.domain.interactor.alternateBouncerInteractor
+import com.android.systemui.concurrency.fakeExecutor
 import com.android.systemui.deviceentry.data.repository.DeviceEntryFaceAuthRepository
 import com.android.systemui.deviceentry.data.repository.DeviceEntryFaceAuthRepositoryImpl
 import com.android.systemui.deviceentry.domain.interactor.faceAuthLogger
@@ -42,7 +44,7 @@ import com.android.systemui.user.data.repository.fakeUserRepository
 
 fun Kosmos.deviceEntryFaceAuthRepositoryImpl(
     fmOverride: FaceManager? = faceManager,
-    bypassControllerOverride: KeyguardBypassController? = keyguardBypassController,
+    bypassControllerOverride: KeyguardBypassController? = keyguardBypassController
 ): DeviceEntryFaceAuthRepositoryImpl {
     return DeviceEntryFaceAuthRepositoryImpl(
         fmOverride,
@@ -51,6 +53,7 @@ fun Kosmos.deviceEntryFaceAuthRepositoryImpl(
         backgroundScope,
         testDispatcher,
         testDispatcher,
+        fakeExecutor,
         sessionTracker,
         uiEventLogger,
         faceAuthLogger,
