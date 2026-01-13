@@ -1362,4 +1362,10 @@ public abstract class WindowManagerInternal {
      * @param displayId
      */
     public abstract void disableSystemPerformanceHinter(int displayId);
+
+    /**
+     * Attempts to limit the rendering of client windows by turning down the frame rate and
+     * animations on the display.
+     */
+    public abstract void enableClientRenderingLimitationsOnDisplay(int displayId, boolean enable);
 }
