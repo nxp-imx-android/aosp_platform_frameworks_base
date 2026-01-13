@@ -475,6 +475,9 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
 
         boolean isShowing(@Nullable UserData userData);
 
+        void onImeAndSubtypeChanged(@Nullable String imeId, int subtypeIndex,
+                @Nullable Intent settingsIntent, @UserIdInt int userId);
+
         void dump(@NonNull Printer pw, @NonNull String prefix);
     }
 
@@ -525,6 +528,20 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         @Override
         public boolean isShowing(@Nullable UserData userData) {
             return userData != null && userData.mImeSwitcherMenuVisible;
+        }
+
+        @Override
+        public void onImeAndSubtypeChanged(@Nullable String imeId, int subtypeIndex,
+                @Nullable Intent settingsIntent, @UserIdInt int userId) {
+            if (mIImeSwitcherMenu != null) {
+                try {
+                    mIImeSwitcherMenu.notifyImeAndSubtypeChanged(imeId, subtypeIndex,
+                            settingsIntent, userId);
+                } catch (RemoteException e) {
+                    Slog.w(TAG, "Failed to notify IME Switcher Menu of new selected IME: " + imeId
+                            + " and subtype index: " + subtypeIndex + " for user: " + userId, e);
+                }
+            }
         }
 
         public void dump(@NonNull Printer pw, @NonNull String prefix) {
@@ -5769,6 +5786,15 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         }
 
         getUserData(userId).mSwitchingController.onInputMethodSubtypeChanged();
+        if (Flags.imeSwitcherMenuSystemui()) {
+            final var imeId = imi != null ? imi.getId() : null;
+            final int index = newSubtype != null
+                    ? SubtypeUtils.getSubtypeIndexFromHashCode(imi, newSubtype.hashCode())
+                    : NOT_A_SUBTYPE_INDEX;
+            final var settingsIntent = imi != null
+                    ? imi.createImeLanguageSettingsActivityIntent() : null;
+            mImeSwitcherMenu.onImeAndSubtypeChanged(imeId, index, settingsIntent, userId);
+        }
     }
 
     @GuardedBy("ImfLock.class")
