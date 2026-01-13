@@ -1848,13 +1848,6 @@ flag {
 }
 
 flag {
-   name: "switch_user_on_bg"
-   namespace: "systemui"
-   description: "Does user switching on a background thread"
-   bug: "284095720"
-}
-
-flag {
     name: "synchronized_queue_cascade_notify"
     namespace: "systemui"
     description: "Cascade notify() in SynchornizedLinkedBlockingQueue to prevent waking up all threads unnecessarily"

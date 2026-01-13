@@ -33,7 +33,6 @@ import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.internal.logging.UiEventLogger
 import com.android.keyguard.KeyguardUpdateMonitor
 import com.android.keyguard.KeyguardUpdateMonitorCallback
-import com.android.systemui.Flags.switchUserOnBg
 import com.android.systemui.Flags.userSwitcherAddSignOutOption
 import com.android.systemui.SystemUISecondaryUserService
 import com.android.systemui.animation.Expandable
@@ -611,11 +610,7 @@ constructor(
             }
         }
 
-        if (switchUserOnBg()) {
-            applicationScope.launch { withContext(backgroundDispatcher) { runnable.run() } }
-        } else {
-            runnable.run()
-        }
+        applicationScope.launch { withContext(backgroundDispatcher) { runnable.run() } }
     }
 
     private suspend fun onBroadcastReceived(intent: Intent, previousUserInfo: UserInfo?) {
