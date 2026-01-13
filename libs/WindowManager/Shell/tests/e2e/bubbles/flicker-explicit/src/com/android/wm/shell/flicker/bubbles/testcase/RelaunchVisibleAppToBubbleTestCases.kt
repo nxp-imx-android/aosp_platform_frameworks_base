@@ -17,6 +17,8 @@
 package com.android.wm.shell.flicker.bubbles.testcase
 
 import androidx.test.filters.FlakyTest
+import com.android.wm.shell.flicker.bubbles.utils.FlickerAssertionHelper.isBubbled
+import com.android.wm.shell.flicker.bubbles.utils.FlickerAssertionHelper.isNotBubbled
 import com.android.wm.shell.flicker.bubbles.utils.FlickerAssertionHelper.moveInSingleDirection
 import com.android.wm.shell.flicker.bubbles.utils.FlickerAssertionHelper.resizeConsistently
 import com.android.wm.shell.flicker.bubbles.utils.TransitionSnapshotMatcher
@@ -64,5 +66,11 @@ interface RelaunchVisibleAppToBubbleTestCases :
             // the value may be changed slightly when starting scaling and shrinking.
             threshold = 1,
         )
+    }
+
+    /** Verifies the app layer becomes bubbled during the transition. */
+    @Test
+    fun appLayerBecomesBubbled() {
+        layersTraceSubject.isNotBubbled(testApp).then().isBubbled(testApp).forAllEntries()
     }
 }

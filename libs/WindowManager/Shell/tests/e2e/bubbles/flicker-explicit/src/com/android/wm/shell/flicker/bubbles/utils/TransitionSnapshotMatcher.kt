@@ -39,10 +39,10 @@ class TransitionSnapshotMatcher(private val snapShotName: String) : LayerMatcher
             // the transition snapshot of trampoline activity. Using contains() may also match
             // activity with the same package name unexpectedly.
             val escapedSnapShotName = Regex.escape(snapShotName)
-            return@any """^transition snapshot: Task\{.*?${escapedSnapShotName}\}.*$"""
+            return@any """^transition snapshot: Task\{.*?$escapedSnapShotName\}.*$"""
                 .toRegex()
                 .matches(it.name)
         }
 
-    override fun toLayerIdentifier(): String = "transition snapshot:[${snapShotName}]"
+    override fun toLayerIdentifier(): String = "transition snapshot:[$snapShotName]"
 }
