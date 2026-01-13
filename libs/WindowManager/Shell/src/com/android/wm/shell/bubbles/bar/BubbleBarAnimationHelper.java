@@ -144,7 +144,7 @@ public class BubbleBarAnimationHelper {
         setScaleFromBubbleBar(mExpandedViewContainerMatrix,
                 1f - EXPANDED_VIEW_ANIMATE_SCALE_AMOUNT);
 
-        ObjectAnimator alphaAnim = createAlphaAnimator(bbev, /* visible= */ true);
+        Animator alphaAnim = createAlphaAnimator(bbev, /* visible= */ true);
         alphaAnim.setDuration(EXPANDED_VIEW_EXPAND_ALPHA_DURATION);
         alphaAnim.setInterpolator(Interpolators.PANEL_CLOSE_ACCELERATED);
         alphaAnim.addListener(new AnimatorListenerAdapter() {
@@ -153,6 +153,7 @@ public class BubbleBarAnimationHelper {
                 bbev.setAnimating(false);
             }
         });
+
         Runnable animationRunnable = () -> {
             bbev.getHandleView().setAlpha(1);
             startNewAnimator(alphaAnim);
@@ -213,7 +214,7 @@ public class BubbleBarAnimationHelper {
 
         setScaleFromBubbleBar(mExpandedViewContainerMatrix, 1f);
 
-        ObjectAnimator alphaAnim = createAlphaAnimator(bbev, /* visible= */ false);
+        Animator alphaAnim = createAlphaAnimator(bbev, /* visible= */ false);
         alphaAnim.setDuration(EXPANDED_VIEW_EXPAND_ALPHA_DURATION);
         alphaAnim.setInterpolator(Interpolators.PANEL_CLOSE_ACCELERATED);
         alphaAnim.addListener(new AnimatorListenerAdapter() {
@@ -222,6 +223,7 @@ public class BubbleBarAnimationHelper {
                 bbev.setAnimating(false);
             }
         });
+
         startNewAnimator(alphaAnim);
         PhysicsAnimator.getInstance(mExpandedViewContainerMatrix).cancel();
         PhysicsAnimator.getInstance(mExpandedViewContainerMatrix)
@@ -291,8 +293,6 @@ public class BubbleBarAnimationHelper {
         prepareForAnimateIn(toBbev);
         final float endTx = toBbev.getTranslationX();
         final float startTx = getSwitchAnimationInitialTx(endTx);
-        toBbev.getHandleView().setAlpha(0f);
-        toBbev.getCaptionView().setAlpha(0f);
 
         AnimatorSet switchAnim = new AnimatorSet();
         switchAnim.playTogether(
@@ -318,6 +318,7 @@ public class BubbleBarAnimationHelper {
                 // Immediately jump to the ending stage as jumpcut.
                 switchAnim.end();
                 toBbev.getCaptionView().setAlpha(1f);
+                toBbev.getHandleView().setAlpha(1f);
             };
         } else {
             // For normal animation, the end runnable can be added to onAnimationEnd directly since
@@ -327,6 +328,7 @@ public class BubbleBarAnimationHelper {
                     @Override
                     public void onAnimationEnd(Animator animation) {
                         toBbev.getCaptionView().setAlpha(1f);
+                        toBbev.getHandleView().setAlpha(1f);
                         ProtoLog.d(WM_SHELL_BUBBLES_NOISY,
                                 "BBAnimationHelper.animateSwitch(): finished");
                         endRunnable.run();
@@ -371,7 +373,7 @@ public class BubbleBarAnimationHelper {
         scaleAnim.setInterpolator(Interpolators.ACCELERATE);
         scaleAnim.setDuration(SWITCH_OUT_SCALE_DURATION);
 
-        ObjectAnimator alphaAnim = createAlphaAnimator(bbev, /* visible= */ false);
+        Animator alphaAnim = createAlphaAnimator(bbev, /* visible= */ false);
         alphaAnim.setStartDelay(SWITCH_OUT_HANDLE_ALPHA_DURATION);
         alphaAnim.setDuration(SWITCH_OUT_ALPHA_DURATION);
 
@@ -417,6 +419,12 @@ public class BubbleBarAnimationHelper {
             }
         });
 
+        bbev.getCaptionView().setAlpha(0f);
+        ObjectAnimator captionAlphaAnim = ObjectAnimator.ofFloat(bbev.getCaptionView(), ALPHA, 1f);
+        captionAlphaAnim.setStartDelay(SWITCH_IN_ANIM_DELAY);
+        captionAlphaAnim.setDuration(SWITCH_IN_ALPHA_DURATION);
+
+        bbev.getHandleView().setAlpha(0f);
         ObjectAnimator handleAlphaAnim = ObjectAnimator.ofFloat(bbev.getHandleView(), ALPHA, 1f);
         handleAlphaAnim.setStartDelay(SWITCH_IN_HANDLE_ALPHA_DELAY);
         handleAlphaAnim.setDuration(SWITCH_IN_HANDLE_ALPHA_DURATION);
@@ -429,7 +437,7 @@ public class BubbleBarAnimationHelper {
         });
 
         AnimatorSet animator = new AnimatorSet();
-        animator.playTogether(positionAnim, alphaAnim, handleAlphaAnim);
+        animator.playTogether(positionAnim, alphaAnim, captionAlphaAnim, handleAlphaAnim);
 
         animator.addListener(new AnimatorListenerAdapter() {
             @Override
@@ -797,11 +805,13 @@ public class BubbleBarAnimationHelper {
      * be called before alpha can be applied.
      * Only supports alpha of 1 or 0. Otherwise we can't reset surface z-order at the end.
      */
-    private ObjectAnimator createAlphaAnimator(BubbleBarExpandedView bubbleBarExpandedView,
+    private Animator createAlphaAnimator(BubbleBarExpandedView bubbleBarExpandedView,
             boolean visible) {
-        ObjectAnimator animator = ObjectAnimator.ofFloat(bubbleBarExpandedView, TASK_VIEW_ALPHA,
-                visible ? 1f : 0f);
-        animator.addListener(new AnimatorListenerAdapter() {
+        float startAlpha = visible ? 0f : 1f;
+        float endAlpha = visible ? 1f : 0f;
+        ObjectAnimator alphaAnim = ObjectAnimator.ofFloat(bubbleBarExpandedView, TASK_VIEW_ALPHA,
+                endAlpha);
+        alphaAnim.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationStart(Animator animation) {
                 // Move task view to the top of the window so alpha can be applied to it
@@ -818,6 +828,14 @@ public class BubbleBarAnimationHelper {
                 bubbleBarExpandedView.setSurfaceZOrderedOnTop(false);
             }
         });
+
+        bubbleBarExpandedView.getCaptionView().setAlpha(startAlpha);
+        ObjectAnimator captionAlphaAnim = ObjectAnimator.ofFloat(
+                bubbleBarExpandedView.getCaptionView(), ALPHA, endAlpha);
+
+        AnimatorSet animator = new AnimatorSet();
+        animator.playTogether(alphaAnim, captionAlphaAnim);
+
         return animator;
     }
 
