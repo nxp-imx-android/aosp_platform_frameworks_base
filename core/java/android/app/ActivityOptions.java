@@ -1245,7 +1245,14 @@ public class ActivityOptions extends ComponentOptions {
      * <p>This behavior is not supported for activities with {@link
      * android.R.styleable#AndroidManifestActivity_launchMode launchMode} values of
      * <code>singleInstance</code> or <code>singleTask</code>.
+     *
+     * @deprecated This method is deprecated because starting an Activity behind the current task
+     * lacks transparency and violates user expectations. <b>Alternative:</b> Start the target
+     * Activity, then immediately call {@link android.app.ActivityManager.AppTask#moveToFront()} on
+     * the <b>caller's task</b> to restore its foreground focus.
      */
+    @Deprecated
+    @FlaggedApi(com.android.window.flags.Flags.FLAG_DEPRECATE_MAKE_TASK_LAUNCH_BEHIND)
     public static ActivityOptions makeTaskLaunchBehind() {
         final ActivityOptions opts = new ActivityOptions();
         opts.mAnimationType = ANIM_LAUNCH_TASK_BEHIND;

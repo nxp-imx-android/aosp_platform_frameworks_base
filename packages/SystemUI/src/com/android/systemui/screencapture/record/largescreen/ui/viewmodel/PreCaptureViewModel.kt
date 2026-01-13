@@ -20,7 +20,8 @@ import android.app.ActivityManager
 import android.app.ActivityOptions.LaunchCookie
 import android.graphics.Point
 import android.graphics.Rect
-import android.view.WindowManager
+import android.hardware.display.DisplayManager
+import android.util.DisplayMetrics
 import com.android.internal.logging.UiEventLogger
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.lifecycle.HydratedActivatable
@@ -56,7 +57,7 @@ class PreCaptureViewModel
 constructor(
     @Assisted private val displayId: Int,
     @Background private val backgroundScope: CoroutineScope,
-    private val windowManager: WindowManager,
+    private val displayManager: DisplayManager,
     private val screenshotInteractor: ScreenshotInteractor,
     private val drawableLoaderViewModel: DrawableLoaderViewModel,
     private val screenCaptureUiInteractor: ScreenCaptureUiInteractor,
@@ -337,7 +338,10 @@ constructor(
         if (regionBoxSource.value != null) {
             return
         }
-        val bounds = windowManager.currentWindowMetrics.bounds
+        val display = displayManager.getDisplay(displayId) ?: return
+        val displayMetrics = DisplayMetrics()
+        display.getRealMetrics(displayMetrics)
+        val bounds = Rect(0, 0, displayMetrics.widthPixels, displayMetrics.heightPixels)
         regionBoxSource.value =
             Rect(bounds).apply { inset(bounds.width() / 4, bounds.height() / 4) }
     }

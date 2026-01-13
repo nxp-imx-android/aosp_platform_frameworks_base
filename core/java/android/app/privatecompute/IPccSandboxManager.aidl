@@ -24,5 +24,5 @@ import android.os.PersistableBundle;
 interface IPccSandboxManager {
     boolean isPrivateComputeServicesUid(int uid);
 
-    oneway void writeToAuditLog(in PersistableBundle data);
+    oneway void writeToAuditLog(in PersistableBundle data, in String packageName);
 }

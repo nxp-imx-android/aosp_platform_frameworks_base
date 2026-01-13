@@ -66,6 +66,9 @@ class SingleLineViewInflaterTest : SysuiTestCase() {
         const val CONTENT_TITLE = "A Cool Group"
         const val CONTENT_TEXT = "This is an amazing group chat"
 
+        const val REPLY_ONE = "reply one of two"
+        const val REPLY_TWO = "reply two of two"
+
         const val SHORTCUT_ID = "Shortcut"
     }
 
@@ -142,6 +145,36 @@ class SingleLineViewInflaterTest : SysuiTestCase() {
         val conversationData = singleLineViewModel.payload as SingleLineViewPayload.ConversationData
         // Sender name should be null for one-on-one conversation
         assertThat(conversationData.conversationSenderName).isNull()
+        assertThat(
+                conversationData.avatar.equalsTo(SingleIcon(firstSenderIcon.loadDrawable(context)))
+            )
+            .isTrue()
+    }
+
+    @Test
+    fun createViewModelForNonGroupConversationNotification_withRemoteInputHistory() {
+        // Given: a non-group conversation notification
+        val notificationType = OneToOneConversation()
+        val notification =
+            getNotification(notificationType) { builder ->
+                builder.setRemoteInputHistory(arrayOf<CharSequence>(REPLY_ONE, REPLY_TWO))
+            }
+
+        // When: inflate the SingleLineViewModel
+        val singleLineViewModel = notification.makeSingleLineViewModel(notificationType)
+
+        // Then: the inflated SingleLineViewModel should be as expected
+        // titleText: Notification.ConversationTitle
+        // contentText: the second reply text
+        // conversationSenderName: "User:" because the last message is a remote input
+        // conversationData.avatar: a single icon of the last sender
+        assertThat(singleLineViewModel.titleText).isEqualTo(CONVERSATION_TITLE)
+        assertThat(singleLineViewModel.contentText).isEqualTo(REPLY_TWO)
+        assertThat(singleLineViewModel.payload)
+            .isInstanceOf(SingleLineViewPayload.ConversationData::class.java)
+        val conversationData = singleLineViewModel.payload as SingleLineViewPayload.ConversationData
+        // Sender name should be "User:" because the last message is a remote input
+        assertThat(conversationData.conversationSenderName).isEqualTo("User:")
         assertThat(
                 conversationData.avatar.equalsTo(SingleIcon(firstSenderIcon.loadDrawable(context)))
             )
@@ -247,6 +280,36 @@ class SingleLineViewInflaterTest : SysuiTestCase() {
                     LAST_SENDER_NAME,
                 )
             )
+        assertThat(conversationData.avatar.equalsTo(SingleIcon(largeIcon.loadDrawable(context))))
+            .isTrue()
+    }
+
+    @Test
+    fun createViewModelForGroupConversationNotificationWithLargeIcon_withRemoteInputHistory() {
+        // Given: a group conversation notification with a large icon
+        val largeIcon =
+            Icon.createWithResource(context, com.android.internal.R.drawable.ic_account_circle)
+        val notificationType = GroupConversation(largeIcon = largeIcon)
+        val notification =
+            getNotification(notificationType) { builder ->
+                builder.setRemoteInputHistory(arrayOf<CharSequence>(REPLY_ONE, REPLY_TWO))
+            }
+
+        // When: inflate the SingleLineViewModel
+        val singleLineViewModel = notification.makeSingleLineViewModel(notificationType)
+
+        // Then: the inflated SingleLineViewModel should be expected
+        // titleText: Notification.ConversationTitle
+        // contentText: the second reply text
+        // conversationSenderName: the user's name
+        // conversationData.avatar: a single icon
+        assertThat(singleLineViewModel.titleText).isEqualTo(CONVERSATION_TITLE)
+        assertThat(singleLineViewModel.contentText).isEqualTo(REPLY_TWO)
+        assertThat(singleLineViewModel.payload)
+            .isInstanceOf(SingleLineViewPayload.ConversationData::class.java)
+
+        val conversationData = singleLineViewModel.payload as SingleLineViewPayload.ConversationData
+        assertThat(conversationData.conversationSenderName).isEqualTo("User:")
         assertThat(conversationData.avatar.equalsTo(SingleIcon(largeIcon.loadDrawable(context))))
             .isTrue()
     }
@@ -379,13 +442,17 @@ class SingleLineViewInflaterTest : SysuiTestCase() {
 
     class MetricNotification(val metric: Notification.Metric) : NotificationType()
 
-    private fun getNotification(type: NotificationType): Notification {
+    private fun getNotification(
+        type: NotificationType,
+        extraBuild: (Notification.Builder) -> Unit = {},
+    ): Notification {
         val notificationBuilder: Notification.Builder =
             Notification.Builder(mContext, "channelId")
                 .setSmallIcon(R.drawable.ic_person)
                 .setContentTitle(CONTENT_TITLE)
                 .setContentText(CONTENT_TEXT)
                 .setLargeIcon(type.largeIcon)
+                .also(extraBuild)
 
         val user = Person.Builder().setName("User").build()
 

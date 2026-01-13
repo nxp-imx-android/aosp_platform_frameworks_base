@@ -20,8 +20,12 @@ import android.app.Notification
 import android.app.Notification.MessagingStyle
 import android.app.Person
 import android.content.Context
+import android.graphics.Typeface
 import android.graphics.drawable.Icon
+import android.text.Spannable
+import android.text.SpannableString
 import android.text.TextUtils
+import android.text.style.StyleSpan
 import android.util.Log
 import android.view.LayoutInflater
 import androidx.annotation.VisibleForTesting
@@ -95,7 +99,8 @@ object SingleLineViewInflater {
 
             val isGroupConversation = messagingStyle.isGroupConversation
 
-            val conversationTextData = messagingStyle.loadConversationTextData(systemUiContext)
+            val conversationTextData =
+                loadConversationTextData(systemUiContext, notification, messagingStyle)
             if (conversationTextData?.conversationTitle?.isNotEmpty() == true) {
                 titleText = conversationTextData.conversationTitle
             }
@@ -113,9 +118,15 @@ object SingleLineViewInflater {
 
             val conversationData =
                 SingleLineViewPayload.ConversationData(
-                    // We don't show the sender's name for one-to-one conversation
                     conversationSenderName =
-                        if (isGroupConversation) conversationTextData?.senderName else null,
+                        conversationTextData?.senderName?.takeIf {
+                            // Show sender name for group conversations and replies from this user
+                            //  to prevent the user's reply looking like an incoming message.
+                            // TODO(474648629): It's possible (though unusual) that an app would
+                            //  post the notification with the last message being from the user, in
+                            //  which case we should still probably show the sender name.
+                            isGroupConversation || conversationTextData.isRemoteInputHistory
+                        },
                     avatar = conversationAvatar,
                     summarization = summarization,
                 )
@@ -181,18 +192,26 @@ object SingleLineViewInflater {
         )
     }
 
+    private fun Notification.getLastRemoteInputHistoryMessage(): MessagingStyle.Message? {
+        val remoteInputHistoryItems = getRemoteInputHistoryItems()
+        val text = remoteInputHistoryItems?.lastOrNull()?.text ?: return null
+        return MessagingStyle.Message(text, 0, null, true /* remoteHistory */)
+    }
+
     /** load conversation text data from the MessagingStyle of conversation notifications */
-    private fun MessagingStyle.loadConversationTextData(
-        systemUiContext: Context
+    private fun loadConversationTextData(
+        systemUiContext: Context,
+        notification: Notification,
+        messagingStyle: MessagingStyle,
     ): ConversationTextData? {
         var conversationText: CharSequence?
 
-        if (messages.isEmpty()) {
+        // load the conversation text
+        val lastRemoteInputHistoryMessage = notification.getLastRemoteInputHistoryMessage()
+        val lastMessage = lastRemoteInputHistoryMessage ?: messagingStyle.messages.lastOrNull()
+        if (lastMessage == null) {
             return null
         }
-
-        // load the conversation text
-        val lastMessage = messages[messages.lastIndex]
         conversationText = lastMessage.text
         if (conversationText == null && lastMessage.isImageMessage()) {
             conversationText = findBackUpConversationText(lastMessage, systemUiContext)
@@ -200,7 +219,7 @@ object SingleLineViewInflater {
 
         // load the sender's name to display
         // null senderPerson means the current user.
-        val name = lastMessage.senderPerson?.name ?: user.name
+        val name = lastMessage.senderPerson?.name ?: messagingStyle.user.name
 
         val senderName =
             systemUiContext.resources.getString(
@@ -211,9 +230,11 @@ object SingleLineViewInflater {
         // We need to find back-up values for those texts if they are needed and empty
         return ConversationTextData(
             conversationTitle =
-                conversationTitle ?: findBackUpConversationTitle(senderName, systemUiContext),
+                messagingStyle.conversationTitle
+                    ?: messagingStyle.findBackUpConversationTitle(senderName, systemUiContext),
             conversationText = conversationText,
             senderName = senderName,
+            isRemoteInputHistory = lastMessage.isRemoteInputHistory,
         )
     }
 
@@ -246,8 +267,18 @@ object SingleLineViewInflater {
         // If the message is not an image message, just return empty, the back-up text for showing
         // will be SingleLineViewModel.contentText
         if (!message.isImageMessage()) return null
-        // If is image message, return a placeholder
-        return context.resources.getString(R.string.conversation_single_line_image_placeholder)
+        // If is image message, return a placeholder: "sent an image"
+        val unformatted =
+            context.resources.getString(R.string.conversation_single_line_image_placeholder)
+        // Italicize the "sent an image" text
+        val spannableString = SpannableString(unformatted)
+        spannableString.setSpan(
+            StyleSpan(Typeface.ITALIC),
+            0,
+            spannableString.length,
+            Spannable.SPAN_INCLUSIVE_EXCLUSIVE,
+        )
+        return spannableString
     }
 
     /**
@@ -266,11 +297,13 @@ object SingleLineViewInflater {
      *   notification's text when conversationText is null
      * @property senderName the sender's name to be shown in the row when needed. senderName can be
      *   null
+     * @property isRemoteInputHistory whether the text content is from the remote input history.
      */
     data class ConversationTextData(
         val conversationTitle: CharSequence,
         val conversationText: CharSequence?,
         val senderName: CharSequence?,
+        val isRemoteInputHistory: Boolean,
     )
 
     private fun groupMessages(

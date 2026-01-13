@@ -174,7 +174,7 @@ public class UiModeManager {
      * <p>
      * This is primarily intended to be received by other components of the Android OS.
      * <p>
-     * Receiver requires permission: {@link android.Manifest.permission.HANDLE_CAR_MODE_CHANGES}
+     * Receiver requires permission: {@link android.Manifest.permission#HANDLE_CAR_MODE_CHANGES}
      * @hide
      */
     @SystemApi
@@ -211,7 +211,7 @@ public class UiModeManager {
      * <p>
      * This is primarily intended to be received by other components of the Android OS.
      * <p>
-     * Receiver requires permission: {@link android.Manifest.permission.HANDLE_CAR_MODE_CHANGES}
+     * Receiver requires permission: {@link android.Manifest.permission#HANDLE_CAR_MODE_CHANGES}
      * @hide
      */
     @SystemApi
@@ -1576,7 +1576,7 @@ public class UiModeManager {
     /**
      * Sets the given {@link ProjectionType}.
      *
-     * Caller must have {@link android.Manifest.permission.TOGGLE_AUTOMOTIVE_PROJECTION} if
+     * Caller must have {@link android.Manifest.permission#TOGGLE_AUTOMOTIVE_PROJECTION} if
      * argument is {@link #PROJECTION_TYPE_AUTOMOTIVE}.
      * @param projectionType the type of projection to request. This must be a single
      * {@link ProjectionType} and cannot be a bitmask.
@@ -1605,7 +1605,7 @@ public class UiModeManager {
     /**
      * Releases the given {@link ProjectionType}.
      *
-     * Caller must have {@link android.Manifest.permission.TOGGLE_AUTOMOTIVE_PROJECTION} if
+     * Caller must have {@link android.Manifest.permission#TOGGLE_AUTOMOTIVE_PROJECTION} if
      * argument is {@link #PROJECTION_TYPE_AUTOMOTIVE}.
      * @param projectionType the type of projection to release. This must be a single
      * {@link ProjectionType} and cannot be a bitmask.

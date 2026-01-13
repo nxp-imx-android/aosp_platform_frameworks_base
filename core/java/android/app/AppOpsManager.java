@@ -2723,7 +2723,7 @@ public class AppOpsManager {
      * user location setting is off, but only during pre-defined emergency sessions.
      *
      * <p>This op is only used for tracking, not for permissions, so it is still the client's
-     * responsibility to check the {@link Manifest.permission.LOCATION_BYPASS} permission
+     * responsibility to check the {@link Manifest.permission#LOCATION_BYPASS} permission
      * appropriately.
      *
      * @hide

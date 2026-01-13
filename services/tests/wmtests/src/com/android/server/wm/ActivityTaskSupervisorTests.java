@@ -349,14 +349,20 @@ public class ActivityTaskSupervisorTests extends WindowTestsBase {
         doReturn(true).when(display).isTrusted();
         final boolean allowedOnTrusted = mSupervisor.isCallerAllowedToLaunchOnDisplay(callingPid,
                 callingUid, display.getDisplayId(), activityInfo);
+        final boolean allowedOnTrustedNullAinfo = mSupervisor.isCallerAllowedToLaunchOnDisplay(
+                callingPid, callingUid, display.getDisplayId(), null);
 
         assertThat(allowedOnTrusted).isTrue();
+        assertThat(allowedOnTrustedNullAinfo).isTrue();
 
         doReturn(false).when(display).isTrusted();
         final boolean allowedOnUntrusted = mSupervisor.isCallerAllowedToLaunchOnDisplay(callingPid,
                 callingUid, display.getDisplayId(), activityInfo);
+        final boolean allowedOnUntrustedNullAinfo = mSupervisor.isCallerAllowedToLaunchOnDisplay(
+                callingPid, callingUid, display.getDisplayId(), null);
 
         assertThat(allowedOnUntrusted).isFalse();
+        assertThat(allowedOnUntrustedNullAinfo).isFalse();
     }
 
     /**

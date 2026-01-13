@@ -431,8 +431,7 @@ public class BubbleController implements ConfigurationChangeListener,
                         context, organizer, mTaskViewController, syncQueue);
                 TaskView taskView = new TaskView(context, mTaskViewController,
                         taskViewTaskController);
-                return new BubbleTaskView(taskView, mainExecutor, BubbleController.this,
-                        splitScreenController);
+                return new BubbleTaskView(taskView, mainExecutor, BubbleController.this);
             }
         };
         mExpandedViewManager = BubbleExpandedViewManager.fromBubbleController(this);
@@ -562,10 +561,9 @@ public class BubbleController implements ConfigurationChangeListener,
         }, mMainHandler);
 
         mTransitions.registerObserver(new BubblesTransitionObserver(this, mBubbleData,
-                mBubbleTransitions.mTaskViewTransitions, mSplitScreenController));
+                mBubbleTransitions.mTaskViewTransitions));
 
-        mTaskStackListener.addListener(
-                new BubbleTaskStackListener(mBubbleHelper, mBubbleData, mSplitScreenController));
+        mTaskStackListener.addListener(new BubbleTaskStackListener(mBubbleHelper, mBubbleData));
 
         mDisplayController.addDisplayChangingController(
                 (displayId, fromRotation, toRotation, newDisplayAreaInfo, t) -> {

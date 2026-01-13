@@ -181,12 +181,30 @@ constructor(
 
     /** Called when the user approves sharing of an entire display. */
     fun onDisplaySharingApproved(displayId: Int) {
-        mediaProjectionHelper.setReviewedConsentIfNeeded(
-            ReviewGrantedConsentResult.RECORD_CONTENT_DISPLAY,
-            reviewGrantedConsentRequired,
-            projection,
-        )
-        _sharingState.value = SharingState.Approved(projection)
+        try {
+            val projectionToUse =
+                if (displayId == initialDisplayId) {
+                    projection
+                } else {
+                    // Create a new projection instance associated with the *correct* displayId.
+                    mediaProjectionHelper.createOrReuseProjection(
+                        uid,
+                        packageName,
+                        reviewGrantedConsentRequired,
+                        displayId,
+                    )
+                }
+
+            mediaProjectionHelper.setReviewedConsentIfNeeded(
+                ReviewGrantedConsentResult.RECORD_CONTENT_DISPLAY,
+                reviewGrantedConsentRequired,
+                projectionToUse,
+            )
+            _sharingState.value = SharingState.Approved(projectionToUse)
+        } catch (e: RemoteException) {
+            Log.e(TAG, "Error granting projection permission for display $displayId", e)
+            _sharingState.value = SharingState.Denied
+        }
     }
 
     fun onClose() {

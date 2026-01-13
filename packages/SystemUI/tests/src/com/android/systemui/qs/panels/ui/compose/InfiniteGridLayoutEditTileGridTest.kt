@@ -44,6 +44,7 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.compose.modifiers.resIdToTestTag
 import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.haptics.msdl.tileHapticsViewModelFactory
+import com.android.systemui.integration.SystemUiIntegrationTest
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
@@ -70,6 +71,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 @SmallTest
+@SystemUiIntegrationTest
 @RunWith(AndroidJUnit4::class)
 class InfiniteGridLayoutEditTileGridTest : SysuiTestCase() {
 

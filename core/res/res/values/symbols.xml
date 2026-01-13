@@ -3350,7 +3350,6 @@
   <java-symbol type="drawable" name="ic_notification_summary_auto" />
   <java-symbol type="dimen" name="notification_header_shrink_min_width" />
   <java-symbol type="dimen" name="notification_header_shrink_hide_width" />
-  <java-symbol type="dimen" name="notification_content_margin_start" />
   <java-symbol type="dimen" name="notification_content_margin_end" />
   <java-symbol type="dimen" name="notification_heading_margin_end" />
   <java-symbol type="dimen" name="notification_content_margin_top" />
@@ -3671,16 +3670,21 @@
   <java-symbol type="string" name="app_suspended_unsuspend_message" />
   <java-symbol type="string" name="app_suspended_default_message" />
 
-  <java-symbol type="id" name="locked_app_activity_external_display_message_id" />
-  <java-symbol type="string" name="enable_app_lock_dialog_title" />
-  <java-symbol type="string" name="enable_app_lock_dialog_enable_button_text" />
-  <java-symbol type="string" name="disable_app_lock_dialog_title" />
-  <java-symbol type="string" name="disable_app_lock_dialog_disable_button_text" />
-  <java-symbol type="string" name="enable_app_lock_success_toast_message" />
-  <java-symbol type="string" name="enable_app_lock_failure_toast_message" />
+  <!-- App Lock -->
+  <java-symbol type="id" name="app_lock_dialog_add_screen_lock_button" />
+  <java-symbol type="id" name="app_lock_dialog_cancel_button" />
+  <java-symbol type="id" name="app_lock_dialog_message" />
+  <java-symbol type="id" name="app_lock_dialog_title" />
+  <java-symbol type="layout" name="app_lock_add_screen_lock_dialog" />
+  <java-symbol type="string" name="app_lock_add_screen_lock_button_text" />
+  <java-symbol type="string" name="app_lock_add_screen_lock_message" />
+  <java-symbol type="string" name="app_lock_add_screen_lock_title" />
   <java-symbol type="string" name="disable_app_lock_success_toast_message" />
-  <java-symbol type="string" name="locked_app_biometric_prompt_description" />
+  <java-symbol type="string" name="enable_app_lock_failure_toast_message" />
+  <java-symbol type="string" name="enable_app_lock_success_toast_message" />
+  <java-symbol type="id" name="locked_app_activity_external_display_message_id" />
   <java-symbol type="layout" name="locked_app_activity_layout" />
+  <java-symbol type="string" name="locked_app_biometric_prompt_description" />
 
   <java-symbol type="string" name="app_blocked_title" />
   <java-symbol type="string" name="app_blocked_message" />
@@ -4370,7 +4374,6 @@
   <java-symbol type="id" name="bubble_button" />
   <java-symbol type="id" name="snooze_button" />
   <java-symbol type="dimen" name="text_size_body_2_material" />
-  <java-symbol type="dimen" name="notification_icon_circle_size" />
   <java-symbol type="drawable" name="notification_2025_conversation_icon_background" />
   <java-symbol type="drawable" name="notification_icon_circle" />
   <java-symbol type="drawable" name="notification_progress_icon_background" />

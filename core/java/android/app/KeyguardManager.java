@@ -1041,7 +1041,7 @@ public class KeyguardManager {
     * Set the lockscreen password after validating against its expected complexity level.
     *
     * Below {@link android.os.Build.VERSION_CODES#S_V2}, this API will only work
-    * when {@link PackageManager.FEATURE_AUTOMOTIVE} is present.
+    * when {@link PackageManager#FEATURE_AUTOMOTIVE} is present.
     * @param lockType - type of lock as specified in {@link LockTypes}
     * @param password - password to validate; this has the same encoding
     *        as the output of String#getBytes

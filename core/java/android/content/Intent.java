@@ -1938,7 +1938,7 @@ public class Intent implements Parcelable, Cloneable {
      * Used as an int extra field with {@link #ACTION_INSTALL_PACKAGE} and
      * {@link #ACTION_VIEW} to indicate the uid of the package that initiated the install
      * Currently only a system app that hosts the provider authority "downloads" or holds the
-     * permission {@link android.Manifest.permission.MANAGE_DOCUMENTS} can use this.
+     * permission {@link android.Manifest.permission#MANAGE_DOCUMENTS} can use this.
      * @hide
      */
     @SystemApi
@@ -7212,7 +7212,7 @@ public class Intent implements Parcelable, Cloneable {
      *
      * @see #ACTION_PICK
      * @see #setData(Uri)
-     * @see android.provider.ContactsPickerSessionContract.ACTION_PICK_CONTACTS
+     * @see android.provider.ContactsPickerSessionContract#ACTION_PICK_CONTACTS
      */
     @FlaggedApi(android.content.flags.Flags.FLAG_ENABLE_SYSTEM_CONTACTS_PICKER)
     public static final String EXTRA_USE_SYSTEM_CONTACTS_PICKER =

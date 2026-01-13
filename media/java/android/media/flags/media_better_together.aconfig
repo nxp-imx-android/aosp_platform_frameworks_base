@@ -106,6 +106,13 @@ flag {
 }
 
 flag {
+    name: "enable_mr2_proxy_invalidation_on_target_uninstall"
+    namespace: "media_better_together"
+    description: "Enables the invalidation of MediaRouter2 proxy instances when the target application being controlled is uninstalled."
+    bug: "331204554"
+}
+
+flag {
     name: "enable_mr2_service_non_main_bg_thread"
     namespace: "media_solutions"
     description: "Enables the use of a background thread in the media routing framework, instead of using the main thread."

@@ -48,7 +48,7 @@ public class ShowSecretsSetting {
 
     /**
      * If enabled system services and SDKs will use the new split settings instead of {@link
-     * android.provider.Settings.System.TEXT_SHOW_PASSWORD}.
+     * android.provider.Settings.System#TEXT_SHOW_PASSWORD}.
      *
      * @hide
      */

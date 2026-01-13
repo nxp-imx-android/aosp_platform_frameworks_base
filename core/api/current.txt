@@ -4874,7 +4874,7 @@ package android.app {
 
   public static class ActivityManager.AppTask {
     method public void finishAndRemoveTask();
-    method public android.app.ActivityManager.RecentTaskInfo getTaskInfo();
+    method @Nullable public android.app.ActivityManager.RecentTaskInfo getTaskInfo();
     method @FlaggedApi("com.android.window.flags.enable_window_repositioning_api") @RequiresPermission(android.Manifest.permission.REPOSITION_SELF_WINDOWS) public void moveTaskTo(@NonNull android.app.TaskLocation, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<android.app.TaskLocation,java.lang.Exception>);
     method public void moveToFront();
     method public void setExcludeFromRecents(boolean);
@@ -5052,7 +5052,7 @@ package android.app {
     method public static android.app.ActivityOptions makeScaleUpAnimation(android.view.View, int, int, int, int);
     method public static android.app.ActivityOptions makeSceneTransitionAnimation(android.app.Activity, android.view.View, String);
     method @java.lang.SafeVarargs public static android.app.ActivityOptions makeSceneTransitionAnimation(android.app.Activity, android.util.Pair<android.view.View,java.lang.String>...);
-    method public static android.app.ActivityOptions makeTaskLaunchBehind();
+    method @Deprecated @FlaggedApi("com.android.window.flags.deprecate_make_task_launch_behind") public static android.app.ActivityOptions makeTaskLaunchBehind();
     method public static android.app.ActivityOptions makeThumbnailScaleUpAnimation(android.view.View, android.graphics.Bitmap, int, int);
     method public void requestUsageTimeReport(android.app.PendingIntent);
     method @FlaggedApi("com.android.window.flags.touch_pass_through_opt_in") public void setAllowPassThroughOnTouchOutside(boolean);
@@ -52864,8 +52864,8 @@ package android.view {
   @FlaggedApi("com.android.server.display.feature.flags.frame_rate_mapping_api") public final class FrameRateVelocityPoint implements android.os.Parcelable {
     ctor public FrameRateVelocityPoint(float, float);
     method public int describeContents();
+    method public float getDpPerSecond();
     method public float getFramePerSecond();
-    method public float getPixelPerSecond();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.view.FrameRateVelocityPoint> CREATOR;
   }

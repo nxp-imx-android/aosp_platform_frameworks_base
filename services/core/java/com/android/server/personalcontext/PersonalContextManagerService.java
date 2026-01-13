@@ -17,6 +17,7 @@
 package com.android.server.personalcontext;
 
 import android.annotation.PermissionManuallyEnforced;
+import android.annotation.RequiresNoPermission;
 import android.annotation.UserIdInt;
 import android.app.ActivityManagerInternal;
 import android.content.Context;
@@ -84,7 +85,7 @@ import javax.crypto.spec.SecretKeySpec;
 public class PersonalContextManagerService extends SystemService {
     private static final String TAG = "PersonalContext";
 
-    private static final SecretKeySpec HINT_SIGNING_KEY;
+    static final SecretKeySpec HINT_SIGNING_KEY;
 
     static {
         // Generate a new random signing key on each system start.
@@ -455,6 +456,15 @@ public class PersonalContextManagerService extends SystemService {
                                             userId,
                                             ContextInsightWrapper.unwrapInto(
                                                     insights, new HashSet<>())));
+        }
+
+        @RequiresNoPermission
+        @Override
+        public ContextHintWithSignature signHint(ContextHintWrapper hint) {
+            final int callingPid = Binder.getCallingPid();
+
+            return Binder.withCleanCallingIdentity(
+                    () -> getService().signHint(hint.getContextHint(), callingPid, null));
         }
 
         @PermissionManuallyEnforced

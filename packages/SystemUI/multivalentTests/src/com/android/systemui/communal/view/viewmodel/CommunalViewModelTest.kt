@@ -25,6 +25,7 @@ import android.provider.Settings
 import android.widget.RemoteViews
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.ObservableTransitionState
+import com.android.internal.logging.UiEventLogger
 import com.android.systemui.Flags.FLAG_BOUNCER_UI_REVAMP
 import com.android.systemui.Flags.FLAG_COMMUNAL_HUB
 import com.android.systemui.Flags.FLAG_COMMUNAL_RESPONSIVE_GRID
@@ -61,6 +62,7 @@ import com.android.systemui.communal.shared.model.EditModeState
 import com.android.systemui.communal.ui.viewmodel.CommunalViewModel
 import com.android.systemui.communal.ui.viewmodel.CommunalViewModel.Companion.POPUP_AUTO_HIDE_TIMEOUT_MS
 import com.android.systemui.communal.ui.viewmodel.PopupType
+import com.android.systemui.communal.ui.viewmodel.ResizeableItemFrameViewModel
 import com.android.systemui.flags.Flags.COMMUNAL_SERVICE_ENABLED
 import com.android.systemui.flags.andSceneContainer
 import com.android.systemui.flags.fakeFeatureFlagsClassic

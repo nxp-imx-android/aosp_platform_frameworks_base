@@ -42,12 +42,10 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -110,18 +108,13 @@ constructor(
     /** Emits when the keyguard is dismissed behind the shade. */
     private val unlockedWhileShadeOpen: Flow<Unit> =
         if (SceneContainerFlag.isEnabled) {
-            combine(
-                    shadeInteractor.get().isAnyExpanded,
-                    deviceUnlockedInteractor
-                        .get()
-                        .deviceUnlockStatus
-                        .map { it.isUnlocked }
-                        .distinctUntilChanged(),
-                    sceneBackInteractor.backStack
-                        .map { !it.contains(Scenes.Lockscreen) }
-                        .distinctUntilChanged(),
-                ) { isShadeOpen, isUnlocked, lockscreenGoneFromBackStack ->
-                    isShadeOpen && isUnlocked && lockscreenGoneFromBackStack
+            sceneBackInteractor.backStack
+                .map { !it.contains(Scenes.Lockscreen) }
+                .distinctUntilChanged()
+                .map { lockscreenGoneFromBackStack ->
+                    lockscreenGoneFromBackStack &&
+                        shadeInteractor.get().isAnyExpanded.value &&
+                        deviceUnlockedInteractor.get().isUnlocked
                 }
                 .filter { it }
                 .map {}
@@ -155,7 +148,7 @@ constructor(
     override suspend fun onActivated(): Nothing {
         coroutineScope {
             launch {
-                merge(finishedTransitionToGone).collect {
+                finishedTransitionToGone.collect {
                     log("finishedTransitionToGone")
                     runDismissAction()
                 }

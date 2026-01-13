@@ -83,13 +83,7 @@ class DefaultMixedHandlerTest : ShellTestCase() {
     private val activityEmbeddingController = mock<ActivityEmbeddingController>()
     private val bubbleController = mock<BubbleController>()
     private val bubbleRootTask = mock<BubbleRootTask>()
-    private val bubbleHelper =
-        spy(
-            BubbleHelperImpl(
-                bubbleRootTask = bubbleRootTask,
-                splitScreenController = { Optional.of(splitScreenController) },
-            )
-        )
+    private val bubbleHelper = spy(BubbleHelperImpl(bubbleRootTask = bubbleRootTask))
     private val bubbleTransitions =
         spy(
             BubbleTransitions(

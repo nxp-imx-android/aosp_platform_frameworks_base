@@ -175,6 +175,16 @@ flag {
 }
 
 flag {
+    name: "fix_add_extra_data_to_accessibility_node_info_delegation"
+    namespace: "accessibility"
+    description: "Fix missing delegation to AccessibilityDelegate in View#addExtraDataToAccessibilityNodeInfo."
+    bug: "465180578"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "flash_notification_system_api"
     namespace: "accessibility"
     is_exported: true

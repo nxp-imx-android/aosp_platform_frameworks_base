@@ -2622,12 +2622,13 @@
         android:protectionLevel="signature|role|verifier" />
 
     <!-- Permission granted to apps holding the {@link android.app.role.RoleManager#ROLE_HOME} role
-         that allows them to enable app lock. App Lock is a feature that allows users to require
-         authentication before opening apps.
-         <p>Protection level: internal|role
+         that allows them to enable app lock. This is also granted to the recents component, which
+         is typically the system launcher, to ensure a consistent user experience. App Lock is a
+         feature that allows users to require authentication before opening apps.
+         <p>Protection level: internal|role|recents
          @FlaggedApi(android.security.Flags.FLAG_APP_LOCK_APIS) -->
     <permission android:name="android.permission.LOCK_APPS"
-        android:protectionLevel="internal|role"
+        android:protectionLevel="internal|role|recents"
         android:featureFlag="android.security.app_lock_apis" />
 
     <!-- @SystemApi
@@ -9919,6 +9920,14 @@
         android:protectionLevel="signature|privileged"
         android:featureFlag="com.android.npumanager.npumanager_enabled" />
 
+    <!-- @SystemApi Allows an application to attribute work (such as NPU usage) to other apps.
+         <p>Protection level: signature|privileged
+         @FlaggedApi(com.android.npumanager.Flags.FLAG_NPUMANAGER_ENABLED)
+         @hide -->
+    <permission
+        android:name="android.permission.ATTRIBUTE_WORK_TO_OTHER_APPS"
+        android:protectionLevel="signature|privileged"
+        android:featureFlag="com.android.npumanager.npumanager_enabled" />
 
     <!--
     Permission needed to request to show the Power Menu.
@@ -9973,6 +9982,18 @@
             android:protectionLevel="signature"
             android:featureFlag="android.service.notification.enable_dnd_sync">
     </permission>
+
+    <!-- Allows an application to register listener with user attention service.
+         This permission is associated with the
+         {@link android.app.role.RoleManager#ROLE_SYSTEM_VENDOR_INTELLIGENCE} role.
+        <p>Protection level: signature|role|privileged
+          @FlaggedApi(com.android.input.flags.Flags.FLAG_ENABLE_ATTENTION_SERVICE_APIS)
+          @SystemApi
+          @hide
+      -->
+    <permission android:name="android.permission.ACCESS_ATTENTION_LISTENER"
+        android:protectionLevel="signature|role|privileged"
+        android:featureFlag="com.android.input.flags.enable_attention_service_apis" />
 
     <!-- Permission needed to ensure that only the system process can bind with the
          {@link android.service.messaging.MessagePromotionService}.
@@ -10200,7 +10221,7 @@
         <!-- Activity that allows the user to enable or disable App Lock for an app. -->
         <activity android:name="com.android.internal.app.AppLockActivity"
                   android:permission="android.permission.LOCK_APPS"
-                  android:theme="@style/Theme.Dialog.Confirmation"
+                  android:theme="@style/Theme.DeviceDefault.AppLockActivity"
                   android:excludeFromRecents="true"
                   android:exported="false"
                   android:process=":ui"

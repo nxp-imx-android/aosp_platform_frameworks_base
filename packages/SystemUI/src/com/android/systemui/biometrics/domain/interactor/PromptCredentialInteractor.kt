@@ -77,14 +77,8 @@ constructor(
                 biometricPromptRepository.challenge,
                 biometricPromptRepository.userId,
                 biometricPromptRepository.promptKind,
-                biometricPromptRepository.opPackageName,
-            ) { promptInfo, challenge, userId, promptKind, opPackageName ->
-                if (
-                    promptInfo == null ||
-                        userId == null ||
-                        challenge == null ||
-                        opPackageName == null
-                ) {
+            ) { promptInfo, challenge, userId, promptKind ->
+                if (promptInfo == null || userId == null || challenge == null) {
                     return@combine null
                 }
 
@@ -98,7 +92,6 @@ constructor(
                                     promptInfo.shouldUseParentProfileForDeviceCredential(),
                                 ),
                             operationInfo = operationInfo(challenge),
-                            opPackageName = opPackageName,
                         )
                     PromptKind.Pattern ->
                         BiometricPromptRequest.Credential.Pattern(
@@ -110,7 +103,6 @@ constructor(
                                 ),
                             operationInfo = operationInfo(challenge),
                             stealthMode = credentialInteractor.isStealthModeActive(userId),
-                            opPackageName = opPackageName,
                         )
                     PromptKind.Password ->
                         BiometricPromptRequest.Credential.Password(
@@ -121,7 +113,6 @@ constructor(
                                     promptInfo.shouldUseParentProfileForDeviceCredential(),
                                 ),
                             operationInfo = operationInfo(challenge),
-                            opPackageName = opPackageName,
                         )
                     else -> null
                 }

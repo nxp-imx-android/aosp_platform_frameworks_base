@@ -1522,7 +1522,7 @@ public final class UsageStatsManager {
      * Also note that component usage is only reported for component bindings (e.g. broadcast
      * receiver, service, content provider) and only when such a binding would cause an app to leave
      * the stopped state.
-     * See {@link UsageEvents.Event.USER_INTERACTION}, {@link UsageEvents.Event.APP_COMPONENT_USED}.
+     * See {@link UsageEvents.Event#USER_INTERACTION}, {@link UsageEvents.Event#APP_COMPONENT_USED}.
      * </p>
      *
      * @param packageName The name of the package to be queried.

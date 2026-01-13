@@ -25,10 +25,7 @@ import com.android.wm.shell.Flags
 import com.android.wm.shell.bubbles.util.BubbleUtils.isBubbleMovedToAnotherRootTask
 import com.android.wm.shell.bubbles.util.BubbleUtils.isBubbleToFullscreen
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
-import com.android.wm.shell.splitscreen.SplitScreenController
 import com.android.wm.shell.taskview.TaskView
-import dagger.Lazy
-import java.util.Optional
 import java.util.concurrent.Executor
 
 /**
@@ -36,15 +33,10 @@ import java.util.concurrent.Executor
  *
  * [delegateListener] allows callers to change listeners after a task has been created.
  */
-class BubbleTaskView
-@JvmOverloads
-constructor(
+class BubbleTaskView(
     val taskView: TaskView,
     executor: Executor,
     val bubbleController: BubbleController,
-    private val splitScreenController: Lazy<Optional<SplitScreenController>> = Lazy {
-        Optional.empty()
-    },
 ) {
 
     /** Whether the task is already created. */

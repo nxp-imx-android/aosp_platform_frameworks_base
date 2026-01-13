@@ -219,7 +219,7 @@ public final class RefinerWorkflow {
             for (ContextHint hint : newHints) {
                 final ComponentName componentName = source.getComponentName();
                 final String packageName =
-                        componentName == null ? null : componentName.getPackageName();
+                        componentName != null ? componentName.getPackageName() : null;
                 result.add(new ContextHintWithSignature.Builder(hint, mSecretKey)
                         .setOriginatingPackage(packageName)
                         .setRenderToken(mRenderToken)

@@ -4,6 +4,7 @@ package android {
   public static final class Manifest.permission {
     field public static final String ACCESS_AMBIENT_CONTEXT_EVENT = "android.permission.ACCESS_AMBIENT_CONTEXT_EVENT";
     field public static final String ACCESS_AMBIENT_LIGHT_STATS = "android.permission.ACCESS_AMBIENT_LIGHT_STATS";
+    field @FlaggedApi("com.android.input.flags.enable_attention_service_apis") public static final String ACCESS_ATTENTION_LISTENER = "android.permission.ACCESS_ATTENTION_LISTENER";
     field public static final String ACCESS_BROADCAST_RADIO = "android.permission.ACCESS_BROADCAST_RADIO";
     field public static final String ACCESS_BROADCAST_RESPONSE_STATS = "android.permission.ACCESS_BROADCAST_RESPONSE_STATS";
     field public static final String ACCESS_CACHE_FILESYSTEM = "android.permission.ACCESS_CACHE_FILESYSTEM";
@@ -52,6 +53,7 @@ package android {
     field public static final String AMBIENT_WALLPAPER = "android.permission.AMBIENT_WALLPAPER";
     field public static final String APPROVE_INCIDENT_REPORTS = "android.permission.APPROVE_INCIDENT_REPORTS";
     field public static final String ASSOCIATE_COMPANION_DEVICES = "android.permission.ASSOCIATE_COMPANION_DEVICES";
+    field @FlaggedApi("com.android.npumanager.npumanager_enabled") public static final String ATTRIBUTE_WORK_TO_OTHER_APPS = "android.permission.ATTRIBUTE_WORK_TO_OTHER_APPS";
     field public static final String BACKGROUND_CAMERA = "android.permission.BACKGROUND_CAMERA";
     field public static final String BACKUP = "android.permission.BACKUP";
     field @FlaggedApi("android.permission.flags.health_connect_backup_restore_permission_enabled") public static final String BACKUP_HEALTH_CONNECT_DATA_AND_SETTINGS = "android.permission.BACKUP_HEALTH_CONNECT_DATA_AND_SETTINGS";
@@ -3932,7 +3934,7 @@ package android.companion.virtual {
     method @NonNull public android.hardware.input.VirtualMouse createVirtualMouse(@NonNull android.hardware.input.VirtualMouseConfig);
     method @Deprecated @NonNull public android.hardware.input.VirtualMouse createVirtualMouse(@NonNull android.hardware.display.VirtualDisplay, @NonNull String, int, int);
     method @NonNull public android.hardware.input.VirtualNavigationTouchpad createVirtualNavigationTouchpad(@NonNull android.hardware.input.VirtualNavigationTouchpadConfig);
-    method @FlaggedApi("android.companion.virtualdevice.flags.virtual_rotary") @NonNull public android.hardware.input.VirtualRotaryEncoder createVirtualRotaryEncoder(@NonNull android.hardware.input.VirtualRotaryEncoderConfig);
+    method @NonNull public android.hardware.input.VirtualRotaryEncoder createVirtualRotaryEncoder(@NonNull android.hardware.input.VirtualRotaryEncoderConfig);
     method @NonNull public android.hardware.input.VirtualStylus createVirtualStylus(@NonNull android.hardware.input.VirtualStylusConfig);
     method @NonNull public android.hardware.input.VirtualTouchscreen createVirtualTouchscreen(@NonNull android.hardware.input.VirtualTouchscreenConfig);
     method @Deprecated @NonNull public android.hardware.input.VirtualTouchscreen createVirtualTouchscreen(@NonNull android.hardware.display.VirtualDisplay, @NonNull String, int, int);
@@ -6779,13 +6781,13 @@ package android.hardware.input {
     method @NonNull public android.hardware.input.VirtualNavigationTouchpadConfig build();
   }
 
-  @FlaggedApi("android.companion.virtualdevice.flags.virtual_rotary") public class VirtualRotaryEncoder implements java.io.Closeable {
+  public class VirtualRotaryEncoder implements java.io.Closeable {
     method public void close();
     method @FlaggedApi("com.android.hardware.input.create_virtual_keyboard_api") public int getInputDeviceId();
     method public void sendScrollEvent(@NonNull android.hardware.input.VirtualRotaryEncoderScrollEvent);
   }
 
-  @FlaggedApi("android.companion.virtualdevice.flags.virtual_rotary") public final class VirtualRotaryEncoderConfig extends android.hardware.input.VirtualInputDeviceConfig implements android.os.Parcelable {
+  public final class VirtualRotaryEncoderConfig extends android.hardware.input.VirtualInputDeviceConfig implements android.os.Parcelable {
     method public int describeContents();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.hardware.input.VirtualRotaryEncoderConfig> CREATOR;
@@ -6796,7 +6798,7 @@ package android.hardware.input {
     method @NonNull public android.hardware.input.VirtualRotaryEncoderConfig build();
   }
 
-  @FlaggedApi("android.companion.virtualdevice.flags.virtual_rotary") public final class VirtualRotaryEncoderScrollEvent implements android.os.Parcelable {
+  public final class VirtualRotaryEncoderScrollEvent implements android.os.Parcelable {
     method public int describeContents();
     method public long getEventTimeNanos();
     method @FloatRange(from=-1.0F, to=1.0f) public float getScrollAmount();
@@ -12710,7 +12712,7 @@ package android.os {
     field public static final String USER_TYPE_FULL_GUEST = "android.os.usertype.full.GUEST";
     field public static final String USER_TYPE_FULL_SECONDARY = "android.os.usertype.full.SECONDARY";
     field public static final String USER_TYPE_FULL_SYSTEM = "android.os.usertype.full.SYSTEM";
-    field @FlaggedApi("android.multiuser.allow_supervising_profile") public static final String USER_TYPE_PROFILE_SUPERVISING = "android.os.usertype.profile.SUPERVISING";
+    field public static final String USER_TYPE_PROFILE_SUPERVISING = "android.os.usertype.profile.SUPERVISING";
     field public static final String USER_TYPE_SYSTEM_HEADLESS = "android.os.usertype.system.HEADLESS";
   }
 
@@ -14663,6 +14665,7 @@ package android.service.personalcontext {
     method @NonNull public android.service.personalcontext.Token mintToken();
     method public void publishInsight(@NonNull java.util.List<android.service.personalcontext.insight.ContextInsight>);
     method public void publishTriggeringHint(@NonNull java.util.List<android.service.personalcontext.hint.ContextHint>, @Nullable android.service.personalcontext.RenderToken);
+    method @NonNull public android.service.personalcontext.hint.ContextHintWithSignature signHint(@NonNull android.service.personalcontext.hint.ContextHint);
     field public static final String PERSONAL_CONTEXT_SERVICE = "personal_context";
   }
 

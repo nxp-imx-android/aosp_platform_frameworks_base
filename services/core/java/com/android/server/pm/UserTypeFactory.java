@@ -371,7 +371,7 @@ public final class UserTypeFactory {
                 .setBaseType(FLAG_PROFILE)
                 .setMaxAllowed(1)
                 .setProfileParentRequired(false)
-                .setEnabled(android.multiuser.Flags.allowSupervisingProfile() ? 1 : 0)
+
                 .setLabels(R.string.profile_label_supervising)
                 .setDefaultRestrictions(getDefaultSupervisingProfileRestrictions())
                 .setDefaultSecureSettings(getDefaultNonManagedProfileSecureSettings())

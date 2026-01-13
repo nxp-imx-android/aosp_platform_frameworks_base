@@ -25,18 +25,11 @@ import android.window.WindowContainerToken
 import com.android.wm.shell.shared.TransitionUtil.isClosingMode
 import com.android.wm.shell.shared.TransitionUtil.isOpeningMode
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
-import com.android.wm.shell.splitscreen.SplitScreenController
-import dagger.Lazy
-import java.util.Optional
 import javax.inject.Inject
 
 /** Helper class to query Bubble info from other components. */
-class BubbleHelperImpl
-@Inject
-constructor(
-    private val bubbleRootTask: BubbleRootTask,
-    private val splitScreenController: Lazy<Optional<SplitScreenController>>,
-) : BubbleHelper {
+class BubbleHelperImpl @Inject constructor(private val bubbleRootTask: BubbleRootTask) :
+    BubbleHelper {
     override fun getAppBubbleRootTaskToken(): WindowContainerToken? =
         bubbleRootTask.windowContainerToken
 

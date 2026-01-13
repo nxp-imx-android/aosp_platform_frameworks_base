@@ -194,11 +194,11 @@
                 </xs:element>
                 <!-- The frame rate / velocity mapping -->
                 <!-- Format: first = frame rate per second,
-                    second = pixels per second. E.g. :
+                    second = dp (density-independent pixels) per second. E.g. :
                     <frameRateVelocityData>
                         <point>
                             <first>120</first>   // frame rate per second
-                            <second>300</second> // pixels per second
+                            <second>300</second> // dp per second
                         </point>
                         ....
                     </frameRateVelocityData>

@@ -225,7 +225,6 @@ public class UserManager {
      * actions; it does not represent the user to which restriction or management is applied.
      * @hide
      */
-    @FlaggedApi(android.multiuser.Flags.FLAG_ALLOW_SUPERVISING_PROFILE)
     @SystemApi
     public static final String USER_TYPE_PROFILE_SUPERVISING =
             "android.os.usertype.profile.SUPERVISING";
@@ -3411,7 +3410,6 @@ public class UserManager {
      *
      * @hide
      */
-    @FlaggedApi(android.multiuser.Flags.FLAG_ALLOW_SUPERVISING_PROFILE)
     @android.ravenwood.annotation.RavenwoodKeep
     public static boolean isUserTypeSupervisingProfile(@Nullable String userType) {
         return USER_TYPE_PROFILE_SUPERVISING.equals(userType);

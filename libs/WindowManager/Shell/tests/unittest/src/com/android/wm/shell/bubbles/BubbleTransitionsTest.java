@@ -91,7 +91,6 @@ import com.android.wm.shell.common.SyncTransactionQueue;
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
 import com.android.wm.shell.shared.bubbles.BubbleBarLocation;
 import com.android.wm.shell.shared.bubbles.UserType;
-import com.android.wm.shell.splitscreen.SplitScreenController;
 import com.android.wm.shell.taskview.TaskView;
 import com.android.wm.shell.taskview.TaskViewRepository;
 import com.android.wm.shell.taskview.TaskViewTaskController;
@@ -158,8 +157,6 @@ public class BubbleTransitionsTest extends ShellTestCase {
     @Mock
     private PendingIntent mPendingIntent;
     @Mock
-    private SplitScreenController mSplitScreenController;
-    @Mock
     private BubbleRootTask mBubbleRootTask;
 
     private TaskViewTransitions mTaskViewTransitions;
@@ -172,8 +169,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         mRepository = new TaskViewRepository();
-        mBubbleHelper = spy(new BubbleHelperImpl(
-                mBubbleRootTask, () -> Optional.of(mSplitScreenController)));
+        mBubbleHelper = spy(new BubbleHelperImpl(mBubbleRootTask));
         final ShellExecutor syncExecutor = new TestSyncExecutor();
 
         BubbleUserResolver bubbleUserResolver = userId -> new BubbleUserInfo(userId, UserType.MAIN);

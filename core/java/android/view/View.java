@@ -205,7 +205,6 @@ import android.view.autofill.AutofillId;
 import android.view.autofill.AutofillManager;
 import android.view.autofill.AutofillValue;
 import android.view.contentcapture.ContentCaptureContext;
-import android.view.contentcapture.ContentCaptureEvent;
 import android.view.contentcapture.ContentCaptureManager;
 import android.view.contentcapture.ContentCaptureSession;
 import android.view.displayhash.DisplayHash;
@@ -992,18 +991,6 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
      * enabled. This helps avoiding multiple measures in the same frame with the same dimensions.
      */
     private static boolean sUseMeasureCacheDuringForceLayoutFlagValue;
-
-    /**
-     * When true, extends heuristics for calculating whether a node is considered important for
-     * content capture. This will consider nodes with content descriptions and accessibility-related
-     * fields as important.
-     */
-    private static boolean sNewHeuristicsForContentCaptureImportanceEnabledFlagValue;
-
-    /**
-     * When true, enables reporting content interaction events.
-     */
-    private static boolean sContentInteractionApiEnabledFlagValue;
 
     /**
      * Allow setForeground/setBackground to be called (and ignored) on a textureview,
@@ -2502,10 +2489,33 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
         private static String sFrameRateSysProp =
                 ViewProperties.vrr_velocity_threshold().orElse("");
 
+        /**
+         * When true, extends heuristics for calculating whether a node is considered important for
+         * content capture. This will consider nodes with content descriptions and
+         * accessibility-related fields as important.
+         */
+        private static final boolean sNewHeuristicsForContentCaptureImportanceEnabledFlagValue;
+
+        /**
+         * When true, enables reporting content interaction events.
+         */
+        private static final boolean sContentInteractionApiEnabledFlagValue;
+
         static {
             if (!sFrameRateSysProp.isEmpty()) {
                 sFrameRateMappings = parseFrameRateMapping(sFrameRateSysProp);
             }
+            sNewHeuristicsForContentCaptureImportanceEnabledFlagValue =
+                    newHeuristicsForImportanceEnabled();
+            sContentInteractionApiEnabledFlagValue = contentInteractionApiEnabled();
+        }
+
+        public static boolean isNewHeuristicsForContentCaptureImportanceEnabled() {
+            return sNewHeuristicsForContentCaptureImportanceEnabledFlagValue;
+        }
+
+        public static boolean isContentInteractionApiEnabled() {
+            return sContentInteractionApiEnabledFlagValue;
         }
 
         /**
@@ -2688,9 +2698,6 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
         sToolkitSetFrameRateReadOnlyFlagValue = toolkitSetFrameRateReadOnly();
         sToolkitMetricsForFrameRateDecisionFlagValue = toolkitMetricsForFrameRateDecision();
         sUseMeasureCacheDuringForceLayoutFlagValue = enableUseMeasureCacheDuringForceLayout();
-        sNewHeuristicsForContentCaptureImportanceEnabledFlagValue =
-                newHeuristicsForImportanceEnabled();
-        sContentInteractionApiEnabledFlagValue = contentInteractionApiEnabled();
     }
 
     /**
@@ -11034,7 +11041,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
             return true;
         }
 
-        if (sNewHeuristicsForContentCaptureImportanceEnabledFlagValue) {
+        if (NoPreloadHolder.isNewHeuristicsForContentCaptureImportanceEnabled()) {
             // If the app developer has set a content description, it's important.
             if (getContentDescription() != null) {
                 return true;
@@ -11593,7 +11600,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
     }
 
     private void dispatchContentCaptureInteractionEvent() {
-     if (!sContentInteractionApiEnabledFlagValue) {
+     if (!NoPreloadHolder.isContentInteractionApiEnabled()) {
         return;
      }
 
@@ -11836,6 +11843,27 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
     @FlaggedApi(android.view.accessibility.Flags.FLAG_A11Y_EXTRA_RENDERING_INFO_COLOR_ADDITIONS)
     @CallSuper
     public void addExtraDataToAccessibilityNodeInfo(
+            @NonNull AccessibilityNodeInfo info, @NonNull String extraDataKey,
+            @Nullable Bundle arguments) {
+        if (android.view.accessibility.Flags.fixAddExtraDataToAccessibilityNodeInfoDelegation()) {
+            if (mAccessibilityDelegate != null) {
+                mAccessibilityDelegate.addExtraDataToAccessibilityNodeInfo(
+                        this, info, extraDataKey, arguments);
+            } else {
+                addExtraDataToAccessibilityNodeInfoInternal(info, extraDataKey, arguments);
+            }
+        } else {
+            addExtraDataToAccessibilityNodeInfoInternal(info, extraDataKey, arguments);
+        }
+    }
+
+    /**
+     * @see #addExtraDataToAccessibilityNodeInfo(AccessibilityNodeInfo, String, Bundle)
+     *
+     * Note: Called from the default {@link AccessibilityDelegate}.
+     *
+     */
+    private void addExtraDataToAccessibilityNodeInfoInternal(
             @NonNull AccessibilityNodeInfo info, @NonNull String extraDataKey,
             @Nullable Bundle arguments) {
         if (extraDataKey.equals(AccessibilityNodeInfo.EXTRA_DATA_RENDERING_INFO_KEY)
@@ -33588,7 +33616,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
         public void addExtraDataToAccessibilityNodeInfo(@NonNull View host,
                 @NonNull AccessibilityNodeInfo info, @NonNull String extraDataKey,
                 @Nullable Bundle arguments) {
-            host.addExtraDataToAccessibilityNodeInfo(info, extraDataKey, arguments);
+            host.addExtraDataToAccessibilityNodeInfoInternal(info, extraDataKey, arguments);
         }
 
         /**

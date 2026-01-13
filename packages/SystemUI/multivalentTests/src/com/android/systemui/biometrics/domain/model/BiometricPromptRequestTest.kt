@@ -145,7 +145,6 @@ class BiometricPromptRequestTest : SysuiTestCase() {
                     ),
                     BiometricUserInfo(USER_ID),
                     BiometricOperationInfo(OPERATION_ID),
-                    OP_PACKAGE_NAME,
                 ),
                 BiometricPromptRequest.Credential.Password(
                     promptInfo(
@@ -156,7 +155,6 @@ class BiometricPromptRequestTest : SysuiTestCase() {
                     ),
                     BiometricUserInfo(USER_ID),
                     BiometricOperationInfo(OPERATION_ID),
-                    OP_PACKAGE_NAME,
                 ),
                 BiometricPromptRequest.Credential.Pattern(
                     promptInfo(
@@ -169,15 +167,14 @@ class BiometricPromptRequestTest : SysuiTestCase() {
                     ),
                     BiometricUserInfo(USER_ID),
                     BiometricOperationInfo(OPERATION_ID),
-                    OP_PACKAGE_NAME,
                     stealth,
                 ),
             )
 
         for (request in toCheck) {
-            assertThat(request.credentialTitle).isEqualTo(title)
-            assertThat(request.credentialSubtitle).isEqualTo(subtitle)
-            assertThat(request.credentialDescription).isEqualTo(description)
+            assertThat(request.title).isEqualTo(title)
+            assertThat(request.subtitle).isEqualTo(subtitle)
+            assertThat(request.description).isEqualTo(description)
             assertThat(request.contentView).isEqualTo(contentView)
             assertThat(request.userInfo).isEqualTo(BiometricUserInfo(USER_ID))
             assertThat(request.operationInfo).isEqualTo(BiometricOperationInfo(OPERATION_ID))

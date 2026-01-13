@@ -1103,6 +1103,7 @@
 
     <!-- Permission required for CTS test - CtsNpuManagerTestCases -->
     <uses-permission android:name="android.permission.ACCESS_NPU_MODEL_MANAGER_API"/>
+    <uses-permission android:name="android.permission.ATTRIBUTE_WORK_TO_OTHER_APPS"/>
 
     <!-- Permission required for CTS test - CtsProviderUiTestCases -->
     <uses-permission android:name="android.permission.MANAGE_DOCUMENTS" />

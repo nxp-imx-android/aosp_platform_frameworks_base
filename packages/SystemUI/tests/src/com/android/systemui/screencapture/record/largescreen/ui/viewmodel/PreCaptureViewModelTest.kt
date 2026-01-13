@@ -19,13 +19,16 @@ package com.android.systemui.screencapture.record.largescreen.ui.viewmodel
 import android.app.ActivityManager
 import android.app.WindowConfiguration
 import android.content.ComponentName
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Point
 import android.graphics.Rect
+import android.hardware.display.displayManager
 import android.net.Uri
+import android.util.DisplayMetrics
+import android.view.Display
 import android.view.WindowManager
 import android.view.WindowMetrics
-import android.view.windowManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.logging.uiEventLoggerFake
@@ -61,6 +64,7 @@ import org.mockito.Mock
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
@@ -75,6 +79,9 @@ class PreCaptureViewModelTest : SysuiTestCase() {
     @Mock private lateinit var mockBitmap: Bitmap
     @Mock private lateinit var mockBackgroundBitmap: Bitmap
     @Mock private lateinit var mockWindowMetrics: WindowMetrics
+    @Mock private lateinit var mockDisplay: Display
+    @Mock private lateinit var mockDisplayContext: Context
+    @Mock private lateinit var mockWindowManager: WindowManager
 
     private val screenBounds = Rect(0, 0, 100, 100)
     private val displayId = 1234
@@ -83,8 +90,15 @@ class PreCaptureViewModelTest : SysuiTestCase() {
     @Before
     fun setUp() {
         MockitoAnnotations.openMocks(this)
-        whenever(kosmos.windowManager.currentWindowMetrics).thenReturn(mockWindowMetrics)
-        whenever(mockWindowMetrics.bounds).thenReturn(screenBounds)
+        whenever(kosmos.displayManager.getDisplay(displayId)).thenReturn(mockDisplay)
+        doAnswer {
+                val metrics = it.arguments[0] as DisplayMetrics
+                metrics.widthPixels = screenBounds.width()
+                metrics.heightPixels = screenBounds.height()
+                null
+            }
+            .whenever(mockDisplay)
+            .getRealMetrics(any())
     }
 
     @Test

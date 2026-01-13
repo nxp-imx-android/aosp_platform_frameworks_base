@@ -2948,7 +2948,7 @@ public abstract class ContentProvider implements ContentInterface, ComponentCall
      * @throws IllegalArgumentException if
      * <ul>
      *  <li>the given URI is not content URI (a content URI has {@link Uri#getScheme} equal to
-     *  {@link ContentResolver.SCHEME_CONTENT}) or</li>
+     *  {@link ContentResolver#SCHEME_CONTENT}) or</li>
      *  <li>the given URI is already explicitly associated with a {@link UserHandle}, which is
      *  different than the given one.</li>
      *  </ul>

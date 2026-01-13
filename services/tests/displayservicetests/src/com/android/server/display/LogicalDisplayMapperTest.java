@@ -31,6 +31,7 @@ import static android.view.Display.STATE_OFF;
 import static android.view.Display.STATE_ON;
 import static android.view.Display.TYPE_EXTERNAL;
 import static android.view.Display.TYPE_INTERNAL;
+import static android.view.Display.TYPE_OVERLAY;
 import static android.view.Display.TYPE_VIRTUAL;
 
 import static com.android.server.display.DeviceStateToLayoutMap.STATE_DEFAULT;
@@ -307,7 +308,7 @@ public class LogicalDisplayMapperTest {
         initLogicalDisplayMapper();
         testDisplayDeviceAddAndRemove_NonInternal(TYPE_EXTERNAL, infoCacheEnabled);
         testDisplayDeviceAddAndRemove_NonInternal(Display.TYPE_WIFI, infoCacheEnabled);
-        testDisplayDeviceAddAndRemove_NonInternal(Display.TYPE_OVERLAY, infoCacheEnabled);
+        testDisplayDeviceAddAndRemove_NonInternal(TYPE_OVERLAY, infoCacheEnabled);
         testDisplayDeviceAddAndRemove_NonInternal(TYPE_VIRTUAL, infoCacheEnabled);
         testDisplayDeviceAddAndRemove_NonInternal(Display.TYPE_UNKNOWN, infoCacheEnabled);
 
@@ -323,7 +324,7 @@ public class LogicalDisplayMapperTest {
         initLogicalDisplayMapper();
         testDisplayDeviceAddAndRemove_NonInternal(TYPE_EXTERNAL, infoCacheEnabled);
         testDisplayDeviceAddAndRemove_NonInternal(Display.TYPE_WIFI, infoCacheEnabled);
-        testDisplayDeviceAddAndRemove_NonInternal(Display.TYPE_OVERLAY, infoCacheEnabled);
+        testDisplayDeviceAddAndRemove_NonInternal(TYPE_OVERLAY, infoCacheEnabled);
         testDisplayDeviceAddAndRemove_NonInternal(TYPE_VIRTUAL, infoCacheEnabled);
         testDisplayDeviceAddAndRemove_NonInternal(Display.TYPE_UNKNOWN, infoCacheEnabled);
 
@@ -726,6 +727,19 @@ public class LogicalDisplayMapperTest {
                 mLogicalDisplayMapper.getDisplayGroupIdFromDisplayIdLocked(id(display2)));
         assertEquals(DEFAULT_DISPLAY_GROUP,
                 mLogicalDisplayMapper.getDisplayGroupIdFromDisplayIdLocked(id(display3)));
+    }
+
+    @Test
+    public void testOverlayDisplayInDefaultGroup() {
+        initLogicalDisplayMapper();
+        LogicalDisplay display1 = add(createDisplayDevice(TYPE_INTERNAL, 600, 800,
+                FLAG_ALLOWED_TO_BE_DEFAULT_DISPLAY));
+        LogicalDisplay display2 = add(createDisplayDevice(TYPE_OVERLAY, 600, 800, 0));
+
+        assertEquals(DEFAULT_DISPLAY_GROUP,
+                mLogicalDisplayMapper.getDisplayGroupIdFromDisplayIdLocked(id(display1)));
+        assertEquals(DEFAULT_DISPLAY_GROUP,
+                mLogicalDisplayMapper.getDisplayGroupIdFromDisplayIdLocked(id(display2)));
     }
 
     @Test

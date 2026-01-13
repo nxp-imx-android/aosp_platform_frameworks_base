@@ -418,7 +418,6 @@ public class UserInfo implements Parcelable {
         return UserManager.isUserTypePrivateProfile(userType);
     }
 
-    @FlaggedApi(android.multiuser.Flags.FLAG_ALLOW_SUPERVISING_PROFILE)
     public boolean isSupervisingProfile() {
         return UserManager.isUserTypeSupervisingProfile(userType);
     }

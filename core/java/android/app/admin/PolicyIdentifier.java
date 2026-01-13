@@ -129,7 +129,7 @@ public final class PolicyIdentifier<T> {
      * secure video output. See {@link android.view.Display#FLAG_SECURE} for more details about
      * secure surfaces and secure displays. Throws SecurityException if the caller is not permitted
      * to control screen capture policy. If the scope is set to {@link
-     * DevicePolicyManager.POLICY_SCOPE_DEVICE} and the caller is not a profile owner of an
+     * DevicePolicyManager#POLICY_SCOPE_DEVICE} and the caller is not a profile owner of an
      * organization-owned managed profile or a device owner, a security exception will be thrown.
      */
     @FlaggedApi(FLAG_POLICY_STREAMLINING)

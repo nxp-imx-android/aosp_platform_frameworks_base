@@ -1498,11 +1498,7 @@ internal class PromptViewModelTest(private val testCase: TestCase) : SysuiTestCa
         // TODO(b/251476085): remove Spaghetti, migrate logic, and update this test
         kosmos.promptViewModel.onSwitchToCredential()
 
-        if (Flags.largeScreenBp()) {
-            assertThat(size).isEqualTo(PromptSize.MEDIUM)
-        } else {
-            assertThat(size).isEqualTo(PromptSize.LARGE)
-        }
+        assertThat(size).isEqualTo(PromptSize.LARGE)
     }
 
     @Test
@@ -1624,7 +1620,6 @@ internal class PromptViewModelTest(private val testCase: TestCase) : SysuiTestCa
     } // TODO(b/335278136): Add test for no sensor landscape
 
     @Test
-    @DisableFlags(Flags.FLAG_LARGE_SCREEN_BP)
     fun position_bottom_forceLarge() = runGenericTest {
         kosmos.displayStateRepository.setCurrentRotation(DisplayRotation.ROTATION_270)
         kosmos.promptViewModel.onSwitchToCredential()

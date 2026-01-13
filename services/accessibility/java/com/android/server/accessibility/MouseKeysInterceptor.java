@@ -19,6 +19,7 @@ package com.android.server.accessibility;
 import static android.accessibilityservice.AccessibilityTrace.FLAGS_INPUT_FILTER;
 import static android.util.MathUtils.sqrt;
 
+import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
@@ -50,6 +51,8 @@ import androidx.annotation.VisibleForTesting;
 import com.android.server.LocalServices;
 import com.android.server.companion.virtual.VirtualDeviceManagerInternal;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.Objects;
 
 /**
@@ -80,6 +83,16 @@ public class MouseKeysInterceptor extends BaseEventStreamTransformation
     // (requires restart)
     private static final boolean DEBUG = AccessibilityLogUtil.isDebugEnabled(LOG_TAG);
 
+    /** @hide */
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef(prefix = "MESSAGE_", value = {
+            MESSAGE_STOP_MOUSE_ACTION,
+            MESSAGE_MOVE_MOUSE_POINTER,
+            MESSAGE_SCROLL_MOUSE_POINTER
+    })
+    public @interface MouseKeyMessageType {}
+
+    private static final int MESSAGE_STOP_MOUSE_ACTION = -1;
     private static final int MESSAGE_MOVE_MOUSE_POINTER = 1;
     private static final int MESSAGE_SCROLL_MOUSE_POINTER = 2;
     private static final int KEY_NOT_SET = -1;
@@ -387,6 +400,33 @@ public class MouseKeysInterceptor extends BaseEventStreamTransformation
         }
     }
 
+    /**
+     * Stop any active mouse movement or scroll loops and clear the associated state.
+     *
+     * This should be called on the handler thread. This ensures there are no race conditions
+     * from other threads trying to modify the active state variables. This prevents
+     * ghost movements, when a mouse pointer continues moving because another thread cleared the
+     * setting but did not cancel the movement messages already queued in the Handler's loop.
+     */
+    private void stopActiveMouseActions(@MouseKeyMessageType int messageType) {
+        //
+        if (!mHandler.getLooper().isCurrentThread()) {
+            throw new IllegalStateException(
+                    "stopActiveMouseActions must be called on the Handler thread. "
+                            + "Current thread: " + Thread.currentThread().getName());
+        }
+        if (messageType == MESSAGE_MOVE_MOUSE_POINTER
+                || messageType == MESSAGE_STOP_MOUSE_ACTION) {
+            mActiveMoveKey = KEY_NOT_SET;
+            mHandler.removeMessages(MESSAGE_MOVE_MOUSE_POINTER);
+        }
+        if (messageType == MESSAGE_SCROLL_MOUSE_POINTER
+                || messageType == MESSAGE_STOP_MOUSE_ACTION) {
+            mActiveScrollKey = KEY_NOT_SET;
+            mHandler.removeMessages(MESSAGE_SCROLL_MOUSE_POINTER);
+        }
+    }
+
     @RequiresPermission(android.Manifest.permission.CREATE_VIRTUAL_DEVICE)
     private void sendVirtualMouseRelativeEvent(float x, float y) {
         waitForVirtualMouseCreation();
@@ -434,6 +474,12 @@ public class MouseKeysInterceptor extends BaseEventStreamTransformation
     private void performMouseScrollAction(int keyCode) {
         MouseKeyEvent mouseKeyEvent = MouseKeyEvent.from(
                 keyCode, mActiveInputDeviceId, mDeviceKeyCodeMap);
+        if (mouseKeyEvent == null) {
+            Slog.w(LOG_TAG, "Active key " + keyCode + " lost its mapping. Cleaning up state.");
+            stopActiveMouseActions(MESSAGE_SCROLL_MOUSE_POINTER);
+            return;
+        }
+
         float x = 0f;
         float y = 0f;
 
@@ -479,6 +525,12 @@ public class MouseKeysInterceptor extends BaseEventStreamTransformation
     private void performMouseButtonAction(int keyCode) {
         MouseKeyEvent mouseKeyEvent = MouseKeyEvent.from(
                 keyCode, mActiveInputDeviceId, mDeviceKeyCodeMap);
+        if (mouseKeyEvent == null) {
+            Slog.w(LOG_TAG, "Active key " + keyCode + " lost its mapping. Cleaning up state.");
+            stopActiveMouseActions(MESSAGE_STOP_MOUSE_ACTION);
+            return;
+        }
+
         int buttonCode = switch (mouseKeyEvent) {
             case LEFT_CLICK -> VirtualMouseButtonEvent.BUTTON_PRIMARY;
             case RIGHT_CLICK -> VirtualMouseButtonEvent.BUTTON_SECONDARY;
@@ -538,8 +590,14 @@ public class MouseKeysInterceptor extends BaseEventStreamTransformation
         } else {
             mCurrentMovementStep = MOUSE_POINTER_MOVEMENT_STEP;
         }
+
         MouseKeyEvent mouseKeyEvent = MouseKeyEvent.from(
                 keyCode, mActiveInputDeviceId, mDeviceKeyCodeMap);
+        if (mouseKeyEvent == null) {
+            Slog.w(LOG_TAG, "Active key " + keyCode + " lost its mapping. Cleaning up state.");
+            stopActiveMouseActions(MESSAGE_MOVE_MOUSE_POINTER);
+            return;
+        }
 
         switch (mouseKeyEvent) {
             case DIAGONAL_DOWN_LEFT_MOVE -> {
@@ -706,6 +764,7 @@ public class MouseKeysInterceptor extends BaseEventStreamTransformation
             } else if (isMouseButtonKey(keyCode)) {
                 performMouseButtonAction(keyCode);
             } else if (mScrollToggleOn && isMouseScrollKey(keyCode)) {
+                stopActiveMouseActions(MESSAGE_STOP_MOUSE_ACTION);
                 // If the scroll key is pressed down and no other key is active,
                 // set it as the active key and send a message to scroll the pointer
                 if (mActiveScrollKey == KEY_NOT_SET) {
@@ -901,6 +960,9 @@ public class MouseKeysInterceptor extends BaseEventStreamTransformation
 
     @Override
     public void onInputDeviceRemoved(int deviceId) {
+        if (mActiveInputDeviceId == deviceId) {
+            mHandler.post(() -> stopActiveMouseActions(MESSAGE_STOP_MOUSE_ACTION));
+        }
         mDeviceKeyCodeMap.remove(deviceId);
         mDeviceNumpadCapabilityCache.delete(deviceId);
     }
@@ -1031,9 +1093,14 @@ public class MouseKeysInterceptor extends BaseEventStreamTransformation
                         + mUsePrimaryKeys);
 
                 // Clear the existing device keycode map.
+                // Stop repeating move/scroll loops before clearing the map to prevent
+                // recurring messages from processing invalid keycodes and crashing.
                 // The next call to onKeyEventInternal will force re-initialize the keycode map
                 // for the device according to the key binding selected by user.
-                mDeviceKeyCodeMap.clear();
+                mHandler.post(() -> {
+                    stopActiveMouseActions(MESSAGE_STOP_MOUSE_ACTION);
+                    mDeviceKeyCodeMap.clear();
+                });
             }
 
             if (mMaxSpeedSettingsUri.equals(uri)) {

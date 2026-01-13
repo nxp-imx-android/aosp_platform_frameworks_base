@@ -27,6 +27,7 @@ import android.os.ParcelUuid;
 import android.os.RemoteException;
 import android.service.personalcontext.embedded.InsightSurfaceClientInfo;
 import android.service.personalcontext.hint.ContextHint;
+import android.service.personalcontext.hint.ContextHintWithSignature;
 import android.service.personalcontext.hint.ContextHintWrapper;
 import android.service.personalcontext.insight.ContextInsight;
 import android.service.personalcontext.insight.ContextInsightWrapper;
@@ -101,6 +102,26 @@ public final class PersonalContextManager {
     public void publishInsight(@NonNull List<ContextInsight> insights) {
         try {
             mService.publishInsight(ContextInsightWrapper.wrapList(insights), mContext.getUserId());
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Takes a {@link ContextHint}, attaches this application's package name, and signs it.
+     *
+     * <p>This can be used to sign a hint that your application has created, in order to attach it
+     * to a new {@link ContextInsight}.
+     *
+     * @param hint raw data to be signed
+     * @return signed version of hint annotated with caller's package
+     * @hide
+     */
+    @SystemApi
+    @NonNull
+    public ContextHintWithSignature signHint(@NonNull ContextHint hint) {
+        try {
+            return mService.signHint(new ContextHintWrapper(hint));
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

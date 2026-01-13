@@ -810,8 +810,8 @@ public class StatusBarManager {
     /**
      * Collapse the notifications and settings panels.
      *
-     * Starting in Android {@link Build.VERSION_CODES.S}, apps targeting SDK level {@link
-     * Build.VERSION_CODES.S} or higher will need {@link android.Manifest.permission.STATUS_BAR}
+     * Starting in Android {@link Build.VERSION_CODES#S}, apps targeting SDK level {@link
+     * Build.VERSION_CODES#S} or higher will need {@link android.Manifest.permission#STATUS_BAR}
      * permission to call this API.
      *
      * @hide

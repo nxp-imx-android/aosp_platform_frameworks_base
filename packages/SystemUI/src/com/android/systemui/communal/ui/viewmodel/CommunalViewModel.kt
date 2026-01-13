@@ -19,6 +19,7 @@ package com.android.systemui.communal.ui.viewmodel
 import android.content.ComponentName
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.compose.animation.scene.SceneKey
+import com.android.internal.logging.UiEventLogger
 import com.android.systemui.Flags
 import com.android.systemui.classifier.Classifier
 import com.android.systemui.classifier.domain.interactor.FalsingInteractor

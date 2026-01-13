@@ -84,13 +84,13 @@ public class FrameRateVelocityData {
             FrameRateVelocityPoint curr = sortedPoints.get(i);
 
             if (prev.getFramePerSecond() == curr.getFramePerSecond()
-                    || prev.getPixelPerSecond() == curr.getPixelPerSecond()) {
+                    || prev.getDpPerSecond() == curr.getDpPerSecond()) {
                 throw new IllegalStateException("Found two entries in the frame rate"
                         + " veolicy map with the same frame per second: " + prev + ", " + curr);
             } else if (prev.getFramePerSecond() > curr.getFramePerSecond()
-                    || prev.getPixelPerSecond() >= curr.getPixelPerSecond()) {
+                    || prev.getDpPerSecond() >= curr.getDpPerSecond()) {
                 throw new IllegalStateException("Found two entries in the frame rate veolicy map"
-                        + " with increasing frame per second but decreasing pixel per second: "
+                        + " with increasing frame per second but decreasing dp per second: "
                         + prev + ", " + curr);
             }
         }
