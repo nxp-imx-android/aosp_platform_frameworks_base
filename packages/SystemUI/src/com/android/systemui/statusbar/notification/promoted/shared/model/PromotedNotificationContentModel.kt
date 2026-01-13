@@ -63,6 +63,7 @@ data class PromotedNotificationContentModel(
     val identity: Identity,
 
     // for all styles:
+    val preferSmallIcon: Boolean,
     val skeletonNotifIcon: NotifIcon?,
     val iconLevel: Int,
     val appName: CharSequence?,
@@ -98,6 +99,7 @@ data class PromotedNotificationContentModel(
     val notificationView: View?,
 ) {
     class Builder(val key: String) {
+        var preferSmallIcon: Boolean = false
         var skeletonNotifIcon: NotifIcon? = null
         var iconLevel: Int = 0
         var appName: CharSequence? = null
@@ -129,6 +131,7 @@ data class PromotedNotificationContentModel(
         fun build() =
             PromotedNotificationContentModel(
                 identity = Identity(key, style),
+                preferSmallIcon = preferSmallIcon,
                 skeletonNotifIcon = skeletonNotifIcon,
                 iconLevel = iconLevel,
                 appName = appName,
