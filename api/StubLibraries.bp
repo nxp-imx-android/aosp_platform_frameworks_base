@@ -884,7 +884,7 @@ java_library {
         "//visibility:private",
     ],
     static_libs: [
-        "stable.core.platform.api.stubs",
+        "legacy.core.platform.api.stubs",
         "core-lambda-stubs-for-system-modules",
         "core-generated-annotation-stubs",
         "framework",
