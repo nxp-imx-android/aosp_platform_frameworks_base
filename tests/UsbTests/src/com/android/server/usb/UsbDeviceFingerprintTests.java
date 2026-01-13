@@ -146,7 +146,7 @@ public class UsbDeviceFingerprintTests {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_ENABLE_PERSISTENT_DEVICE_PERMISSIONS})
+    @EnableFlags({Flags.FLAG_ENABLE_PERSISTENT_USB_DEVICE_PERMISSIONS})
     public void testHashcode() throws NoSuchAlgorithmException {
         byte[] testData = "test data".getBytes();
         Hashcode.Hasher hasher = Hashcode.getHasher();
@@ -160,7 +160,7 @@ public class UsbDeviceFingerprintTests {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_ENABLE_PERSISTENT_DEVICE_PERMISSIONS})
+    @EnableFlags({Flags.FLAG_ENABLE_PERSISTENT_USB_DEVICE_PERMISSIONS})
     public void testHashcodeEquals() {
         Hashcode first = Hashcode.getHasher().putBytes(DESCRIPTOR_SERIAL_ONLY).hash();
         Hashcode second = Hashcode.getHasher().putBytes(DESCRIPTOR_SERIAL_ONLY).hash();
@@ -173,7 +173,7 @@ public class UsbDeviceFingerprintTests {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_ENABLE_PERSISTENT_DEVICE_PERMISSIONS})
+    @EnableFlags({Flags.FLAG_ENABLE_PERSISTENT_USB_DEVICE_PERMISSIONS})
     public void testCreateEmptyHashcode() {
         Hashcode hashcode = Hashcode.createEmptyHashcode();
         byte[] expected = new byte[32];
@@ -182,7 +182,7 @@ public class UsbDeviceFingerprintTests {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_ENABLE_PERSISTENT_DEVICE_PERMISSIONS})
+    @EnableFlags({Flags.FLAG_ENABLE_PERSISTENT_USB_DEVICE_PERMISSIONS})
     public void testFingerprintWithSerialNumber() {
         UsbDevice device = spy(getDeviceCopy("12345"));
 
@@ -205,7 +205,7 @@ public class UsbDeviceFingerprintTests {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_ENABLE_PERSISTENT_DEVICE_PERMISSIONS})
+    @EnableFlags({Flags.FLAG_ENABLE_PERSISTENT_USB_DEVICE_PERMISSIONS})
     public void testFingerprintDirectConnection() throws IOException {
         String deviceAddr = "/dev/bus/usb/001/002";
         UsbDevice device = spy(getDeviceCopy(null));
@@ -247,7 +247,7 @@ public class UsbDeviceFingerprintTests {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_ENABLE_PERSISTENT_DEVICE_PERMISSIONS})
+    @EnableFlags({Flags.FLAG_ENABLE_PERSISTENT_USB_DEVICE_PERMISSIONS})
     public void testFingerprintWithHubTopology() throws IOException {
         String deviceAddr = "/dev/bus/usb/001/003";
         UsbDevice device = spy(getDeviceCopy(null));
@@ -332,7 +332,7 @@ public class UsbDeviceFingerprintTests {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_ENABLE_PERSISTENT_DEVICE_PERMISSIONS})
+    @EnableFlags({Flags.FLAG_ENABLE_PERSISTENT_USB_DEVICE_PERMISSIONS})
     public void testEqualsAndHashCode() throws IOException {
         UsbDevice device = spy(getDeviceCopy("SERIAL1"));
         doReturn(new Pair<>(1, 2)).when(device).getBusAndDeviceNumber();

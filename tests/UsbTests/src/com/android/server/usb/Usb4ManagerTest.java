@@ -61,7 +61,7 @@ import java.util.concurrent.TimeUnit;
 /** Tests for {@link com.android.server.usb.Usb4Manager} atest UsbTests:Usb4ManagerTest */
 @RunWith(AndroidJUnit4.class)
 @EnableFlags({
-    Flags.FLAG_ENABLE_USB4,
+    Flags.FLAG_ENABLE_USB4_TBT,
     Flags.FLAG_DEFAULT_ALLOW_PCI_TUNNELS,
     android.hardware.usb.flags.Flags.FLAG_ENABLE_PCI_TUNNEL_CONTROL
 })

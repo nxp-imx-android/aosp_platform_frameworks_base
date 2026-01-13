@@ -213,10 +213,11 @@ public class UsbService extends IUsbManager.Stub {
         mSettingsManager = new UsbSettingsManager(context, this);
         mPermissionManager = new UsbPermissionManager(context, this);
         mAlsaManager = new UsbAlsaManager(context);
-        if (com.android.server.usb.flags.Flags.enableUsb4()) {
+        if (com.android.server.usb.flags.Flags.enableUsb4()
+                || com.android.server.usb.flags.Flags.enableUsb4Tbt()) {
             mUsb4Manager = new Usb4Manager(context, mUserManager);
         }
-        if (com.android.server.usb.flags.Flags.enableUsbAuthorization()) {
+        if (com.android.server.usb.flags.Flags.enableUsbHostAuthorization()) {
             mAuthManager = new UsbAuthManager(context, mUserManager);
         }
         final PackageManager pm = mContext.getPackageManager();
@@ -389,7 +390,8 @@ public class UsbService extends IUsbManager.Stub {
         }
 
         if (com.android.server.usb.flags.Flags.enableUsb4()
-                || com.android.server.usb.flags.Flags.enableUsbAuthorization()) {
+                || com.android.server.usb.flags.Flags.enableUsb4Tbt()
+                || com.android.server.usb.flags.Flags.enableUsbHostAuthorization()) {
             registerForKeyguardCallbacks();
         }
     }

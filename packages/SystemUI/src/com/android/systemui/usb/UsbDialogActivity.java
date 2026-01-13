@@ -16,7 +16,7 @@
 
 package com.android.systemui.usb;
 
-import static com.android.internal.hidden_from_bootclasspath.android.hardware.usb.flags.Flags.enablePersistentDevicePermissions;
+import static com.android.internal.hidden_from_bootclasspath.android.hardware.usb.flags.Flags.enablePersistentUsbDevicePermissions;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -166,7 +166,7 @@ abstract class UsbDialogActivity extends AlertActivity
                         && !mDialogHelper.packageHasAudioRecordingPermission();
         final boolean showAlwaysUseCheckBox = canBeDefault && !useRecordWarning;
 
-        if (enablePersistentDevicePermissions()) {
+        if (enablePersistentUsbDevicePermissions()) {
             Log.d(TAG, "Show new UsbDialogActivity");
 
             mAlertParams.mView = createDialogView(title, message);
