@@ -364,11 +364,14 @@ public class PipTransitionState {
         return mPipTaskInfo != null ? mPipTaskInfo.getToken() : null;
     }
 
-    @Nullable SurfaceControl getPinnedTaskLeash() {
+    @Nullable public SurfaceControl getPinnedTaskLeash() {
         return mPinnedTaskLeash;
     }
 
-    void setPinnedTaskLeash(@Nullable SurfaceControl leash) {
+    /**
+     * Sets the SurfaceControl leash for the currently pinned PiP task.
+     */
+    public void setPinnedTaskLeash(@Nullable SurfaceControl leash) {
         if (!com.android.window.flags.Flags.releaseAllTransitionSurfaces()) {
             mPinnedTaskLeash = leash;
             return;
@@ -387,7 +390,7 @@ public class PipTransitionState {
         return mPipTaskInfo;
     }
 
-    void setPipTaskInfo(@Nullable TaskInfo pipTaskInfo) {
+    public void setPipTaskInfo(@Nullable TaskInfo pipTaskInfo) {
         mPipTaskInfo = pipTaskInfo;
     }
 
@@ -395,7 +398,7 @@ public class PipTransitionState {
         return mPipCandidateTaskInfo;
     }
 
-    void setPipCandidateTaskInfo(@Nullable TaskInfo pipCandidateTaskInfo) {
+    public void setPipCandidateTaskInfo(@Nullable TaskInfo pipCandidateTaskInfo) {
         mPipCandidateTaskInfo = pipCandidateTaskInfo;
     }
 

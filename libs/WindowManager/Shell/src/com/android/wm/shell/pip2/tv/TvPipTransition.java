@@ -24,7 +24,9 @@ import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_PICTURE_
 import android.annotation.NonNull;
 import android.app.ActivityManager;
 import android.app.PictureInPictureParams;
+import android.app.TaskInfo;
 import android.content.Context;
+import android.graphics.Insets;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.os.Bundle;
@@ -34,11 +36,14 @@ import android.view.Surface;
 import android.view.SurfaceControl;
 import android.window.TransitionInfo;
 import android.window.TransitionRequestInfo;
+import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
 
 import androidx.annotation.Nullable;
 
 import com.android.internal.protolog.ProtoLog;
+import com.android.internal.util.Preconditions;
+import com.android.wm.shell.R;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.common.pip.PipUtils;
 import com.android.wm.shell.pip.PipTransitionController;
@@ -57,7 +62,8 @@ import com.android.wm.shell.transition.Transitions;
  * A skeleton placeholder for the TV PiP2 Transition handler.
  * It does not handle any incoming requests.
  */
-public class TvPipTransition extends PipTransitionController {
+public class TvPipTransition extends PipTransitionController implements
+        PipTransitionState.PipTransitionStateChangedListener {
     private static final String TAG = "TvPip2Transition";
 
     // Used when for ENTERING_PIP state update.
@@ -102,6 +108,7 @@ public class TvPipTransition extends PipTransitionController {
         mPipSurfaceTransactionHelper = pipSurfaceTransactionHelper;
         mTvPipMenuController = tvPipMenuController;
         mPipTransitionState = pipTransitionState;
+        mPipTransitionState.addPipTransitionStateChangedListener(this);
     }
 
     @Override
@@ -133,18 +140,36 @@ public class TvPipTransition extends PipTransitionController {
             @NonNull TransitionRequestInfo.PipChange pipChange) {
         final ActivityManager.RunningTaskInfo pipTask = pipChange.getTaskInfo();
 
+        final TvPipBoundsState tvPipBoundsState = (TvPipBoundsState) mPipBoundsState;
         PictureInPictureParams pipParams = pipTask.pictureInPictureParams;
-        mPipBoundsState.setBoundsStateForEntry(pipTask.topActivity, pipTask.topActivityInfo,
+        tvPipBoundsState.setBoundsStateForEntry(pipTask.topActivity, pipTask.topActivityInfo,
                 pipParams, mPipBoundsAlgorithm);
+
+        // Temporarily add insets for menu border and edu text height during bounds calculation
+        // since the task leash is not yet available and menu cannot be attached here.
+        int pipMenuBorderWidth = mContext.getResources()
+                .getDimensionPixelSize(R.dimen.pip_menu_border_width);
+        tvPipBoundsState.setPipMenuPermanentDecorInsets(Insets.of(-pipMenuBorderWidth,
+                -pipMenuBorderWidth, -pipMenuBorderWidth, -pipMenuBorderWidth));
+        final int pipEduTextHeight = mContext.getResources()
+                .getDimensionPixelSize(R.dimen.pip_menu_edu_text_view_height);
+        tvPipBoundsState.setPipMenuTemporaryDecorInsets(Insets.of(0, 0, 0,
+                -pipEduTextHeight));
 
         // Calculate the final PiP bounds.
         final Rect entryBounds =
                 mPipBoundsAlgorithm.getEntryDestinationBoundsIgnoringKeepClearAreas();
+        tvPipBoundsState.setBounds(entryBounds);
+
+        // Undo the insets.
+        tvPipBoundsState.setPipMenuPermanentDecorInsets(Insets.NONE);
+        tvPipBoundsState.setPipMenuTemporaryDecorInsets(Insets.NONE);
 
         // Create the transaction that tells the core to pin task and move to final bounds.
+        WindowContainerToken token = pipChange.getTaskFragmentToken();
         WindowContainerTransaction wct = new WindowContainerTransaction();
-        wct.movePipActivityToPinnedRootTask(pipTask.token, entryBounds);
-        wct.deferConfigToTransitionEnd(pipTask.token);
+        wct.movePipActivityToPinnedRootTask(token, entryBounds);
+        wct.deferConfigToTransitionEnd(token);
         return wct;
     }
 
@@ -264,6 +289,36 @@ public class TvPipTransition extends PipTransitionController {
             final Transitions.TransitionFinishCallback finishCallback = mFinishCallback;
             mFinishCallback = null;
             finishCallback.onTransitionFinished(null /* finishWct */);
+        }
+    }
+
+    @Override
+    public void onPipTransitionStateChanged(@PipTransitionState.TransitionState int oldState,
+            @PipTransitionState.TransitionState int newState, @Nullable Bundle extra) {
+        switch (newState) {
+            case PipTransitionState.ENTERING_PIP:
+                Preconditions.checkState(extra != null,
+                        "No extra bundle for " + mPipTransitionState);
+
+                mPipTransitionState.setPinnedTaskLeash(extra.getParcelable(
+                        PIP_TASK_LEASH, SurfaceControl.class));
+                mPipTransitionState.setPipTaskInfo(extra.getParcelable(
+                        PIP_TASK_INFO, TaskInfo.class));
+
+                boolean hasValidTokenAndLeash = mPipTransitionState.getPipTaskToken() != null
+                        && mPipTransitionState.getPinnedTaskLeash() != null;
+                Preconditions.checkState(hasValidTokenAndLeash,
+                        "Unexpected state for " + mPipTransitionState);
+                break;
+            case PipTransitionState.EXITED_PIP:
+                mPipTransitionState.setPinnedTaskLeash(null);
+                mPipTransitionState.setPipTaskInfo(null);
+                mPipTransitionState.setPipCandidateTaskInfo(null);
+                break;
+            case PipTransitionState.CHANGING_PIP_BOUNDS:
+                Preconditions.checkState(mPipTransitionState.getPinnedTaskLeash() != null,
+                        "Unexpected state for " + mPipTransitionState);
+                break;
         }
     }
 }
