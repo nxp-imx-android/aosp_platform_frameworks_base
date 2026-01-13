@@ -289,12 +289,11 @@ public class CompanionDeviceManagerService extends SystemService {
         // Notify and bind the app after the phone is unlocked.
         mDevicePresenceProcessor.sendDevicePresenceEventOnUnlocked(userId);
 
-        // Load user's session keys from disk.
-        mTrustedDevicesStore.readSessionKeysForUser(userId);
-
         ExecutorService executor = Executors.newSingleThreadExecutor();
-        executor.execute(() -> mCompanionExemptionProcessor.updateAutoRevokeExemptions(
-                user.getUserIdentifier()));
+        executor.execute(() -> {
+            mTrustedDevicesStore.readSessionKeysForUser(userId); // Load user's session keys.
+            mCompanionExemptionProcessor.updateAutoRevokeExemptions(userId);
+        });
     }
 
     private void onPackageRemoveOrDataClearedInternal(
