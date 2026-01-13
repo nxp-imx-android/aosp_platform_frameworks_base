@@ -31,9 +31,9 @@
 #include "utils/Log.h"
 
 using namespace android;
-using ::aidl::android::hardware::contexthub::DataFlowConsumerHandle;
+using ::aidl::android::hardware::contexthub::DataFlowAlertFds;
 using ::aidl::android::hardware::contexthub::DataFlowId;
-using ::aidl::android::hardware::contexthub::DataFlowNotificationFds;
+using ::aidl::android::hardware::contexthub::DataFlowSinkContext;
 using ::aidl::android::hardware::contexthub::EndpointId;
 using ::aidl::android::hardware::contexthub::SharedDataRegion;
 using android::contexthub::data_flow::AllocatorRegion;
@@ -55,15 +55,15 @@ static JavaVM* gVm = nullptr;
         return retval;                                  \
     }
 
-class ProducerWrapper {
+class SourceWrapper {
 public:
-    ProducerWrapper(UntypedProducer&& producer, AllocatorRegion allocator,
-                    NotificationManager::NotificationDataHandle notificationDataHandle)
+    SourceWrapper(UntypedProducer&& producer, AllocatorRegion allocator,
+                  NotificationManager::NotificationDataHandle notificationDataHandle)
           : mProducer(std::move(producer)),
             mAllocator(allocator),
             mNotificationDataHandle(notificationDataHandle) {}
 
-    ProducerWrapper(ProducerWrapper&& other)
+    SourceWrapper(SourceWrapper&& other)
           : mProducer(std::move(other.mProducer)),
             mAllocator(other.mAllocator),
             mNotificationDataHandle(other.mNotificationDataHandle) {}
@@ -87,12 +87,12 @@ public:
         mDataFlowId = dataFlowId;
     }
 
-    std::set<EndpointId>& getOffloadConsumers() {
-        return mOffloadConsumers;
+    std::set<EndpointId>& getOffloadSinks() {
+        return mOffloadSinks;
     }
 
-    void removeOffloadConsumer(EndpointId endpointId) {
-        mOffloadConsumers.erase(endpointId);
+    void removeOffloadSink(EndpointId endpointId) {
+        mOffloadSinks.erase(endpointId);
     }
 
 private:
@@ -101,14 +101,14 @@ private:
     NotificationManager::NotificationDataHandle mNotificationDataHandle;
     std::optional<DataFlowId> mDataFlowId;
 
-    std::set<EndpointId> mOffloadConsumers;
+    std::set<EndpointId> mOffloadSinks;
 };
 
-class ConsumerWrapper {
+class SinkWrapper {
 public:
-    ConsumerWrapper(UntypedConsumer&& consumer, DataFlowId dataFlowId)
+    SinkWrapper(UntypedConsumer&& consumer, DataFlowId dataFlowId)
           : mConsumer(std::move(consumer)), mDataFlowId(dataFlowId) {}
-    ConsumerWrapper(ConsumerWrapper&& other)
+    SinkWrapper(SinkWrapper&& other)
           : mConsumer(std::move(other.mConsumer)), mDataFlowId(other.mDataFlowId) {}
 
     UntypedConsumer& getConsumer() {
@@ -118,7 +118,7 @@ public:
         return mDataFlowId;
     }
 
-    ~ConsumerWrapper() {
+    ~SinkWrapper() {
         mConsumer.disable();
     }
 
@@ -175,11 +175,11 @@ public:
     }
 
     ~HubEndpointResource() {
-        for (auto& [id, producerWrapper] : mProducers) {
-            removeProducerWrapper(id);
+        for (auto& [id, sourceWrapper] : mSources) {
+            removeSourceWrapper(id);
         }
-        for (auto& [id, consumerWrapper] : mConsumers) {
-            removeConsumerWrapper(id);
+        for (auto& [id, sinkWrapper] : mSinks) {
+            removeSinkWrapper(id);
         }
     }
 
@@ -207,50 +207,50 @@ public:
         return mNotifier;
     }
 
-    ProducerWrapper* getProducerWrapper(int regionId) {
-        auto it = mProducers.find(regionId);
-        if (it == mProducers.end()) {
+    SourceWrapper* getSourceWrapper(int regionId) {
+        auto it = mSources.find(regionId);
+        if (it == mSources.end()) {
             return nullptr;
         }
         return &it->second;
     }
 
-    void removeProducerWrapper(int regionId) {
-        ProducerWrapper* wrapper = getProducerWrapper(regionId);
+    void removeSourceWrapper(int regionId) {
+        SourceWrapper* wrapper = getSourceWrapper(regionId);
         if (wrapper != nullptr) {
             auto dataFlowId = wrapper->getDataFlowId();
             if (dataFlowId.has_value()) {
                 mNotificationManager->removeHostProducerDataFlow(dataFlowId.value().id);
             }
-            mProducers.erase(regionId);
+            mSources.erase(regionId);
             mRegionManager.unmapHostProducerRegion(regionId);
         }
     }
 
-    void addProducerWrapper(int regionId, ProducerWrapper&& producerWrapper) {
-        mProducers.emplace(regionId, std::move(producerWrapper));
+    void addSourceWrapper(int regionId, SourceWrapper&& sourceWrapper) {
+        mSources.emplace(regionId, std::move(sourceWrapper));
     }
 
-    ConsumerWrapper* getConsumerWrapper(int dataFlowId) {
-        auto it = mConsumers.find(dataFlowId);
-        if (it == mConsumers.end()) {
+    SinkWrapper* getSinkWrapper(int dataFlowId) {
+        auto it = mSinks.find(dataFlowId);
+        if (it == mSinks.end()) {
             return nullptr;
         }
         return &it->second;
     }
 
-    void removeConsumerWrapper(int dataFlowId) {
-        ConsumerWrapper* wrapper = getConsumerWrapper(dataFlowId);
+    void removeSinkWrapper(int dataFlowId) {
+        SinkWrapper* wrapper = getSinkWrapper(dataFlowId);
         if (wrapper != nullptr) {
             auto dataFlowId = wrapper->getDataFlowId();
             mNotificationManager->disableHostConsumer(dataFlowId);
-            mConsumers.erase(dataFlowId.id);
+            mSinks.erase(dataFlowId.id);
             mRegionManager.unlinkHostConsumerDataFlow(dataFlowId);
         }
     }
 
-    void addConsumerWrapper(int dataFlowId, ConsumerWrapper&& consumerWrapper) {
-        mConsumers.emplace(dataFlowId, std::move(consumerWrapper));
+    void addSinkWrapper(int dataFlowId, SinkWrapper&& sinkWrapper) {
+        mSinks.emplace(dataFlowId, std::move(sinkWrapper));
     }
 
 private:
@@ -262,9 +262,9 @@ private:
     DataNotifier mNotifier;
 
     // Key is the shared data region ID.
-    std::map<int, ProducerWrapper> mProducers;
+    std::map<int, SourceWrapper> mSources;
     // Key is the data flow ID.
-    std::map<int, ConsumerWrapper> mConsumers;
+    std::map<int, SinkWrapper> mSinks;
 };
 
 static jlong android_hardware_HubEndpoint_init(JNIEnv* env, jobject /* thiz */, jobject queueObject,
@@ -322,16 +322,16 @@ static jintArray android_hardware_HubEndpoint_createDataFlowInfo(JNIEnv* env, jo
 
     std::vector<jint> out;
     out.push_back(dataFlowInfo.metadataOffsetBytes);
-    out.push_back(dup(dataFlowInfo.notificationFds.waking.get()));
-    out.push_back(dup(dataFlowInfo.notificationFds.nonWaking.get()));
-    out.push_back(dup(dataFlowInfo.notificationFds.halAck.get()));
+    out.push_back(dup(dataFlowInfo.alertFds.waking.get()));
+    out.push_back(dup(dataFlowInfo.alertFds.nonWaking.get()));
+    out.push_back(dup(dataFlowInfo.alertFds.halAck.get()));
     jintArray javaArray = env->NewIntArray(out.size());
     RETURN_ON_FALSE(javaArray != nullptr, nullptr, "Failed to create int array");
     env->SetIntArrayRegion(javaArray, 0, out.size(), out.data());
 
-    resource->addProducerWrapper(regionId,
-                                 ProducerWrapper(std::move(*producer), alloc.value(),
-                                                 notificationDataHandle));
+    resource->addSourceWrapper(regionId,
+                               SourceWrapper(std::move(*producer), alloc.value(),
+                                             notificationDataHandle));
 
     return javaArray;
 }
@@ -342,13 +342,13 @@ static jboolean android_hardware_HubEndpoint_activateDataFlow(JNIEnv* env, jobje
     HubEndpointResource* resource = reinterpret_cast<HubEndpointResource*>(handle);
     RETURN_ON_FALSE(resource != nullptr, JNI_FALSE, "Invalid handle");
 
-    ProducerWrapper* producerWrapper = resource->getProducerWrapper(regionId);
-    RETURN_ON_FALSE(producerWrapper != nullptr, JNI_FALSE, "Producer not found for regionId");
+    SourceWrapper* sourceWrapper = resource->getSourceWrapper(regionId);
+    RETURN_ON_FALSE(sourceWrapper != nullptr, JNI_FALSE, "Source not found for regionId");
 
     auto status =
             resource->getNotificationManager()
                     ->activateHostProducerDataFlow(dataFlowId,
-                                                   producerWrapper->getNotificationDataHandle());
+                                                   sourceWrapper->getNotificationDataHandle());
     RETURN_ON_FALSE(status.ok(), JNI_FALSE,
                     (std::string("Failed to activate host producer data flow: ") + status.str())
                             .c_str());
@@ -358,7 +358,7 @@ static jboolean android_hardware_HubEndpoint_activateDataFlow(JNIEnv* env, jobje
                      status.str())
                             .c_str());
 
-    producerWrapper->setDataFlowId({
+    sourceWrapper->setDataFlowId({
             .hubId = resource->getHubId(),
             .id = static_cast<int32_t>(dataFlowId),
     });
@@ -366,7 +366,7 @@ static jboolean android_hardware_HubEndpoint_activateDataFlow(JNIEnv* env, jobje
     return JNI_TRUE; // Success
 }
 
-static jintArray android_hardware_HubEndpoint_enableHostConsumer(
+static jintArray android_hardware_HubEndpoint_enableHostSink(
         JNIEnv* env, jobject /* thiz */, jlong handle, jint regionId, jlong regionSize,
         jint regionFd, jlong dataFlowHubId, jint dataFlowId, jint notifyHostFdsWaking,
         jint notifyHostFdsNonWaking, jint notifyHostFdsHalAck, jint notifyOffloadFdsWaking,
@@ -385,29 +385,29 @@ static jintArray android_hardware_HubEndpoint_enableHostConsumer(
     auto result = resource->getRegionManager()->mapHostConsumerRegions(std::move(regionToMap),
                                                                        std::nullopt, id);
     RETURN_ON_FALSE(result.ok(), nullptr,
-                    (std::string("Failed to map consumer region: ") + result.status().str())
-                            .c_str());
+                    (std::string("Failed to map sink region: ") + result.status().str()).c_str());
     auto [region, _] = std::move(result.value());
 
-    DataFlowNotificationFds notifyHostFds =
-            {.waking = ndk::ScopedFileDescriptor(dup(notifyHostFdsWaking)),
-             .nonWaking = ndk::ScopedFileDescriptor(dup(notifyHostFdsNonWaking)),
-             .halAck = ndk::ScopedFileDescriptor(dup(notifyHostFdsHalAck))};
-    DataFlowNotificationFds notifyOffloadFds = {.waking = ndk::ScopedFileDescriptor(
-                                                        dup(notifyOffloadFdsWaking)),
-                                                .nonWaking = ndk::ScopedFileDescriptor(
-                                                        dup(notifyOffloadFdsNonWaking))};
+    DataFlowAlertFds notifyHostFds = {.waking = ndk::ScopedFileDescriptor(dup(notifyHostFdsWaking)),
+                                      .nonWaking = ndk::ScopedFileDescriptor(
+                                              dup(notifyHostFdsNonWaking)),
+                                      .halAck =
+                                              ndk::ScopedFileDescriptor(dup(notifyHostFdsHalAck))};
+    DataFlowAlertFds notifyOffloadFds = {.waking = ndk::ScopedFileDescriptor(
+                                                 dup(notifyOffloadFdsWaking)),
+                                         .nonWaking = ndk::ScopedFileDescriptor(
+                                                 dup(notifyOffloadFdsNonWaking))};
     auto status = resource->getNotificationManager()
                           ->enableHostConsumerFromEventFds(id, std::move(notifyHostFds),
                                                            std::move(notifyOffloadFds));
     RETURN_ON_FALSE(status.ok(), nullptr,
-                    (std::string("Failed to enable host consumer: ") + status.str()).c_str());
+                    (std::string("Failed to enable host sink: ") + status.str()).c_str());
 
     RemoteNotifyArgs args = {.fn = [](pw::ConstByteSpan /*id*/) { return; }, .id = {}};
     auto consumer = UntypedConsumer::createRemote(region, std::nullopt, queueOffset, metadataOffset,
                                                   std::move(args));
     RETURN_ON_FALSE(consumer.ok(), nullptr,
-                    (std::string("Failed to create consumer: ") + consumer.status().str()).c_str());
+                    (std::string("Failed to create sink: ") + consumer.status().str()).c_str());
 
     std::vector<jint> out;
     out.push_back(consumer->getElementSize());
@@ -416,7 +416,7 @@ static jintArray android_hardware_HubEndpoint_enableHostConsumer(
     RETURN_ON_FALSE(javaArray != nullptr, nullptr, "Failed to create int array");
     env->SetIntArrayRegion(javaArray, 0, out.size(), out.data());
 
-    resource->addConsumerWrapper(id.id, ConsumerWrapper(std::move(*consumer), id));
+    resource->addSinkWrapper(id.id, SinkWrapper(std::move(*consumer), id));
 
     return javaArray;
 }
@@ -427,10 +427,10 @@ static jint android_hardware_HubEndpoint_sourcePush(JNIEnv* env, jobject /*thiz*
     HubEndpointResource* resource = reinterpret_cast<HubEndpointResource*>(handle);
     RETURN_ON_FALSE(resource != nullptr, 0, "Invalid handle");
 
-    ProducerWrapper* producerWrapper = resource->getProducerWrapper(regionId);
-    RETURN_ON_FALSE(producerWrapper != nullptr, JNI_FALSE, "Producer not found for regionId");
+    SourceWrapper* sourceWrapper = resource->getSourceWrapper(regionId);
+    RETURN_ON_FALSE(sourceWrapper != nullptr, JNI_FALSE, "Source not found for regionId");
 
-    UntypedProducer& producer = producerWrapper->getProducer();
+    UntypedProducer& producer = sourceWrapper->getProducer();
 
     jbyte* dataPtr = env->GetByteArrayElements(data, nullptr);
     RETURN_ON_FALSE(dataPtr != nullptr, 0, "Failed to get byte array elements");
@@ -446,14 +446,13 @@ static jint android_hardware_HubEndpoint_sourcePush(JNIEnv* env, jobject /*thiz*
                             .c_str());
 
     // TODO(b/460528144): Wrap this using the default notifier
-    for (auto& consumer : producerWrapper->getOffloadConsumers()) {
-        ALOGI("Notifying offload consumer: endpoint id=0x%" PRIx64, consumer.id);
+    for (auto& sink : sourceWrapper->getOffloadSinks()) {
+        ALOGI("Notifying offload sink: endpoint id=0x%" PRIx64, sink.id);
         auto status =
-                resource->getNotificationManager()->notifyOffloadConsumer(consumer,
+                resource->getNotificationManager()->notifyOffloadConsumer(sink,
                                                                           /* waking = */ true);
         RETURN_ON_FALSE(status.ok(), 0,
-                        (std::string("Failed to notify offload consumer: ") + status.str())
-                                .c_str());
+                        (std::string("Failed to notify offload sink: ") + status.str()).c_str());
     }
 
     return static_cast<jint>(pushResult.value());
@@ -464,10 +463,10 @@ static jboolean android_hardware_HubEndpoint_sourceFull(JNIEnv* env, jobject /*t
     HubEndpointResource* resource = reinterpret_cast<HubEndpointResource*>(handle);
     RETURN_ON_FALSE(resource != nullptr, JNI_FALSE, "Invalid handle");
 
-    ProducerWrapper* producerWrapper = resource->getProducerWrapper(regionId);
-    RETURN_ON_FALSE(producerWrapper != nullptr, JNI_FALSE, "Producer not found for regionId");
+    SourceWrapper* sourceWrapper = resource->getSourceWrapper(regionId);
+    RETURN_ON_FALSE(sourceWrapper != nullptr, JNI_FALSE, "Source not found for regionId");
 
-    return static_cast<jboolean>(producerWrapper->getProducer().full());
+    return static_cast<jboolean>(sourceWrapper->getProducer().full());
 }
 
 static jint android_hardware_HubEndpoint_sourceSize(JNIEnv* env, jobject /*thiz*/, jlong handle,
@@ -475,10 +474,10 @@ static jint android_hardware_HubEndpoint_sourceSize(JNIEnv* env, jobject /*thiz*
     HubEndpointResource* resource = reinterpret_cast<HubEndpointResource*>(handle);
     RETURN_ON_FALSE(resource != nullptr, 0, "Invalid handle");
 
-    ProducerWrapper* producerWrapper = resource->getProducerWrapper(regionId);
-    RETURN_ON_FALSE(producerWrapper != nullptr, 0, "Producer not found for regionId");
+    SourceWrapper* sourceWrapper = resource->getSourceWrapper(regionId);
+    RETURN_ON_FALSE(sourceWrapper != nullptr, 0, "Source not found for regionId");
 
-    return static_cast<jint>(producerWrapper->getProducer().size(includeReserved));
+    return static_cast<jint>(sourceWrapper->getProducer().size(includeReserved));
 }
 
 static jbyteArray android_hardware_HubEndpoint_sinkRequestData(JNIEnv* env, jobject /*thiz*/,
@@ -488,14 +487,14 @@ static jbyteArray android_hardware_HubEndpoint_sinkRequestData(JNIEnv* env, jobj
     HubEndpointResource* resource = reinterpret_cast<HubEndpointResource*>(handle);
     RETURN_ON_FALSE(resource != nullptr, nullptr, "Invalid handle");
 
-    ConsumerWrapper* consumerWrapper = resource->getConsumerWrapper(dataFlowId);
-    RETURN_ON_FALSE(consumerWrapper != nullptr, nullptr, "Consumer not found for dataFlowId");
+    SinkWrapper* sinkWrapper = resource->getSinkWrapper(dataFlowId);
+    RETURN_ON_FALSE(sinkWrapper != nullptr, nullptr, "Sink not found for dataFlowId");
 
-    UntypedConsumer& consumer = consumerWrapper->getConsumer();
+    UntypedConsumer& consumer = sinkWrapper->getConsumer();
     if (allOrNothing) {
         auto sizeResult = consumer.size();
         RETURN_ON_FALSE(sizeResult.ok(), nullptr,
-                        (std::string("Failed to get consumer size: ") + sizeResult.status().str())
+                        (std::string("Failed to get sink size: ") + sizeResult.status().str())
                                 .c_str());
         if (elementCount > static_cast<jint>(sizeResult.value())) {
             return nullptr;
@@ -520,12 +519,12 @@ static jboolean android_hardware_HubEndpoint_sinkSyncToSource(JNIEnv* env, jobje
     HubEndpointResource* resource = reinterpret_cast<HubEndpointResource*>(handle);
     RETURN_ON_FALSE(resource != nullptr, JNI_FALSE, "Invalid handle");
 
-    ConsumerWrapper* consumerWrapper = resource->getConsumerWrapper(dataFlowId);
-    RETURN_ON_FALSE(consumerWrapper != nullptr, JNI_FALSE, "Consumer not found for dataFlowId");
+    SinkWrapper* sinkWrapper = resource->getSinkWrapper(dataFlowId);
+    RETURN_ON_FALSE(sinkWrapper != nullptr, JNI_FALSE, "Sink not found for dataFlowId");
 
-    auto syncStatus = consumerWrapper->getConsumer().resync(offset);
+    auto syncStatus = sinkWrapper->getConsumer().resync(offset);
     RETURN_ON_FALSE(syncStatus.ok(), JNI_FALSE,
-                    (std::string("Failed to resync consumer: ") + syncStatus.str()).c_str());
+                    (std::string("Failed to resync sink: ") + syncStatus.str()).c_str());
     return JNI_TRUE;
 }
 
@@ -536,12 +535,12 @@ static jboolean android_hardware_HubEndpoint_sinkSourceCanOverwriteReadPosition(
     HubEndpointResource* resource = reinterpret_cast<HubEndpointResource*>(handle);
     RETURN_ON_FALSE(resource != nullptr, JNI_FALSE, "Invalid handle");
 
-    ConsumerWrapper* consumerWrapper = resource->getConsumerWrapper(dataFlowId);
-    RETURN_ON_FALSE(consumerWrapper != nullptr, JNI_FALSE, "Consumer not found for dataFlowId");
+    SinkWrapper* sinkWrapper = resource->getSinkWrapper(dataFlowId);
+    RETURN_ON_FALSE(sinkWrapper != nullptr, JNI_FALSE, "Sink not found for dataFlowId");
 
-    auto overwritableResult = consumerWrapper->getConsumer().isOverwritable();
+    auto overwritableResult = sinkWrapper->getConsumer().isOverwritable();
     RETURN_ON_FALSE(overwritableResult.ok(), JNI_FALSE,
-                    (std::string("Failed to get consumer overwritable: ") +
+                    (std::string("Failed to get sink overwritable: ") +
                      overwritableResult.status().str())
                             .c_str());
     return static_cast<jboolean>(overwritableResult.value());
@@ -552,36 +551,33 @@ static jint android_hardware_HubEndpoint_sinkSize(JNIEnv* env, jobject /*thiz*/,
     HubEndpointResource* resource = reinterpret_cast<HubEndpointResource*>(handle);
     RETURN_ON_FALSE(resource != nullptr, 0, "Invalid handle");
 
-    ConsumerWrapper* consumerWrapper = resource->getConsumerWrapper(dataFlowId);
-    RETURN_ON_FALSE(consumerWrapper != nullptr, 0, "Consumer not found for dataFlowId");
+    SinkWrapper* sinkWrapper = resource->getSinkWrapper(dataFlowId);
+    RETURN_ON_FALSE(sinkWrapper != nullptr, 0, "Sink not found for dataFlowId");
 
-    auto sizeResult = consumerWrapper->getConsumer().size();
+    auto sizeResult = sinkWrapper->getConsumer().size();
     RETURN_ON_FALSE(sizeResult.ok(), 0,
-                    (std::string("Failed to get consumer size: ") + sizeResult.status().str())
-                            .c_str());
+                    (std::string("Failed to get sink size: ") + sizeResult.status().str()).c_str());
     return static_cast<jint>(sizeResult.value());
 }
 
-static jintArray android_hardware_HubEndpoint_addOffloadConsumer(JNIEnv* env, jobject /*thiz*/,
-                                                                 jlong handle, jint regionId,
-                                                                 jlong hubId, jlong endpointId) {
+static jintArray android_hardware_HubEndpoint_addOffloadSink(JNIEnv* env, jobject /*thiz*/,
+                                                             jlong handle, jint regionId,
+                                                             jlong hubId, jlong endpointId) {
     HubEndpointResource* resource = reinterpret_cast<HubEndpointResource*>(handle);
     RETURN_ON_FALSE(resource != nullptr, nullptr, "Invalid handle");
 
-    ProducerWrapper* producerWrapper = resource->getProducerWrapper(regionId);
-    RETURN_ON_FALSE(producerWrapper != nullptr, nullptr, "Producer not found for regionId");
-    auto dataFlowId = producerWrapper->getDataFlowId();
-    RETURN_ON_FALSE(dataFlowId.has_value(), nullptr, "Data flow ID not set for producer");
+    SourceWrapper* sourceWrapper = resource->getSourceWrapper(regionId);
+    RETURN_ON_FALSE(sourceWrapper != nullptr, nullptr, "Source not found for regionId");
+    auto dataFlowId = sourceWrapper->getDataFlowId();
+    RETURN_ON_FALSE(dataFlowId.has_value(), nullptr, "Data flow ID not set for source");
 
-    EndpointId consumerEndpointId;
-    consumerEndpointId.hubId = hubId;
-    consumerEndpointId.id = endpointId;
-    auto result =
-            resource->getNotificationManager()
-                    ->addOffloadConsumerAndGetEventFds(dataFlowId.value().id, consumerEndpointId);
+    EndpointId sinkEndpointId;
+    sinkEndpointId.hubId = hubId;
+    sinkEndpointId.id = endpointId;
+    auto result = resource->getNotificationManager()
+                          ->addOffloadConsumerAndGetEventFds(dataFlowId.value().id, sinkEndpointId);
     RETURN_ON_FALSE(result.ok(), nullptr,
-                    (std::string("Failed to add offload consumer: ") + result.status().str())
-                            .c_str());
+                    (std::string("Failed to add offload sink: ") + result.status().str()).c_str());
 
     std::vector<jint> out;
     out.push_back(dup(result->waking.get()));
@@ -590,7 +586,7 @@ static jintArray android_hardware_HubEndpoint_addOffloadConsumer(JNIEnv* env, jo
     RETURN_ON_FALSE(javaArray != nullptr, nullptr, "Failed to create int array");
     env->SetIntArrayRegion(javaArray, 0, out.size(), out.data());
 
-    producerWrapper->getOffloadConsumers().insert(consumerEndpointId);
+    sourceWrapper->getOffloadSinks().insert(sinkEndpointId);
 
     return javaArray;
 }
@@ -625,90 +621,85 @@ static ConsumerPolicyBuilder createConsumerPolicyBuilder(jint notificationPolicy
     return policy;
 }
 
-static std::array<std::byte, 16> getConsumerNameArray(jlong consumerHubId,
-                                                      jlong consumerEndpointId) {
-    // The consumer name is a combination of the hub ID and endpoint ID.
+static std::array<std::byte, 16> getSinkNameArray(jlong sinkHubId, jlong sinkEndpointId) {
+    // The sink name is a combination of the hub ID and endpoint ID.
     // The size of the array is chosen to be large enough to hold both jlongs.
     // The static_assert ensures this assumption holds.
-    std::array<std::byte, 16> consumerName;
-    static_assert(sizeof(consumerHubId) + sizeof(consumerEndpointId) <= consumerName.size());
+    std::array<std::byte, 16> sinkName;
+    static_assert(sizeof(sinkHubId) + sizeof(sinkEndpointId) <= sinkName.size());
 
-    memcpy(consumerName.data(), &consumerHubId, sizeof(consumerHubId));
-    memcpy(consumerName.data() + sizeof(consumerHubId), &consumerEndpointId,
-           sizeof(consumerEndpointId));
+    memcpy(sinkName.data(), &sinkHubId, sizeof(sinkHubId));
+    memcpy(sinkName.data() + sizeof(sinkHubId), &sinkEndpointId, sizeof(sinkEndpointId));
 
-    return consumerName;
+    return sinkName;
 }
 
-static jint android_hardware_HubEndpoint_mapOffloadConsumerRegion(
-        JNIEnv* env, jobject /*thiz*/, jlong handle, jint producerRegionId, jint dataFlowId,
-        jlong consumerHubId, jlong consumerEndpointId, jint regionId, jlong regionSize,
-        jint regionFd, jint notificationPolicy, jint notificationPolicyData,
-        jboolean canOverwrite) {
+static jint android_hardware_HubEndpoint_mapOffloadSinkRegion(
+        JNIEnv* env, jobject /*thiz*/, jlong handle, jint sourceRegionId, jint dataFlowId,
+        jlong sinkHubId, jlong sinkEndpointId, jint regionId, jlong regionSize, jint regionFd,
+        jint notificationPolicy, jint notificationPolicyData, jboolean canOverwrite) {
     HubEndpointResource* resource = reinterpret_cast<HubEndpointResource*>(handle);
     RETURN_ON_FALSE(resource != nullptr, 0, "Invalid handle");
 
-    ProducerWrapper* producerWrapper = resource->getProducerWrapper(producerRegionId);
-    RETURN_ON_FALSE(producerWrapper != nullptr, 0, "Producer not found for regionId");
+    SourceWrapper* sourceWrapper = resource->getSourceWrapper(sourceRegionId);
+    RETURN_ON_FALSE(sourceWrapper != nullptr, 0, "Source not found for regionId");
 
     SharedDataRegion region = {.id = regionId,
                                .sharedMemory = ndk::ScopedFileDescriptor(dup(regionFd)),
                                .sizeBytes = regionSize};
-    EndpointId id = {.id = consumerEndpointId, .hubId = consumerHubId};
+    EndpointId id = {.id = sinkEndpointId, .hubId = sinkHubId};
     auto result = resource->getRegionManager()->mapOffloadConsumerRegion(std::move(region), id,
                                                                          dataFlowId);
 
     RETURN_ON_FALSE(result.ok(), 0,
-                    (std::string("Failed to map offload consumer region: ") + result.status().str())
+                    (std::string("Failed to map offload sink region: ") + result.status().str())
                             .c_str());
 
-    std::array<std::byte, 16> consumerNameArray =
-            getConsumerNameArray(consumerHubId, consumerEndpointId);
-    pw::ConstByteSpan nameSpan(consumerNameArray.data(),
-                               sizeof(consumerHubId) + sizeof(consumerEndpointId));
+    std::array<std::byte, 16> sinkNameArray = getSinkNameArray(sinkHubId, sinkEndpointId);
+    pw::ConstByteSpan nameSpan(sinkNameArray.data(), sizeof(sinkHubId) + sizeof(sinkEndpointId));
     ConsumerPolicyBuilder policy =
             createConsumerPolicyBuilder(notificationPolicy, notificationPolicyData, canOverwrite);
     auto consDescOffsetRes =
-            producerWrapper->getProducer().getConsumerManager().addConsumer(nameSpan, policy,
-                                                                            &result.value());
+            sourceWrapper->getProducer().getConsumerManager().addConsumer(nameSpan, policy,
+                                                                          &result.value());
     RETURN_ON_FALSE(consDescOffsetRes.ok(), 0,
-                    (std::string("Failed to add consumer: ") + consDescOffsetRes.status().str())
+                    (std::string("Failed to add sink: ") + consDescOffsetRes.status().str())
                             .c_str());
 
     return consDescOffsetRes.value();
 }
 
-static void android_hardware_HubEndpoint_updateSinkPolicy(
-        JNIEnv* env, jobject /*thiz*/, jlong handle, jint regionId, jlong consumerHubId,
-        jlong consumerEndpointId, jint notificationPolicy, jint notificationPolicyData,
-        jboolean canOverwrite) {
+static void android_hardware_HubEndpoint_updateSinkPolicy(JNIEnv* env, jobject /*thiz*/,
+                                                          jlong handle, jint regionId,
+                                                          jlong sinkHubId, jlong sinkEndpointId,
+                                                          jint notificationPolicy,
+                                                          jint notificationPolicyData,
+                                                          jboolean canOverwrite) {
     HubEndpointResource* resource = reinterpret_cast<HubEndpointResource*>(handle);
     if (resource != nullptr) {
-        ProducerWrapper* producerWrapper = resource->getProducerWrapper(regionId);
-        if (producerWrapper != nullptr) {
-            std::array<std::byte, 16> consumerNameArray =
-                    getConsumerNameArray(consumerHubId, consumerEndpointId);
-            pw::ConstByteSpan nameSpan(consumerNameArray.data(),
-                                       sizeof(consumerHubId) + sizeof(consumerEndpointId));
+        SourceWrapper* sourceWrapper = resource->getSourceWrapper(regionId);
+        if (sourceWrapper != nullptr) {
+            std::array<std::byte, 16> sinkNameArray = getSinkNameArray(sinkHubId, sinkEndpointId);
+            pw::ConstByteSpan nameSpan(sinkNameArray.data(),
+                                       sizeof(sinkHubId) + sizeof(sinkEndpointId));
             ConsumerPolicyBuilder policy =
                     createConsumerPolicyBuilder(notificationPolicy, notificationPolicyData,
                                                 canOverwrite);
-            producerWrapper->getProducer().getConsumerManager().updateConsumerPolicy(nameSpan,
-                                                                                     policy);
+            sourceWrapper->getProducer().getConsumerManager().updateConsumerPolicy(nameSpan,
+                                                                                   policy);
         }
     }
 }
 
 static void android_hardware_HubEndpoint_removeOffloadSink(JNIEnv* env, jobject /* thiz */,
                                                            jlong handle, jint regionId,
-                                                           jlong consumerHubId,
-                                                           jlong consumerEndpointId) {
+                                                           jlong sinkHubId, jlong sinkEndpointId) {
     HubEndpointResource* resource = reinterpret_cast<HubEndpointResource*>(handle);
     if (resource != nullptr) {
-        ProducerWrapper* producerWrapper = resource->getProducerWrapper(regionId);
-        if (producerWrapper != nullptr) {
-            EndpointId id = {.id = consumerEndpointId, .hubId = consumerHubId};
-            producerWrapper->removeOffloadConsumer(id);
+        SourceWrapper* sourceWrapper = resource->getSourceWrapper(regionId);
+        if (sourceWrapper != nullptr) {
+            EndpointId id = {.id = sinkEndpointId, .hubId = sinkHubId};
+            sourceWrapper->removeOffloadSink(id);
         }
     }
 }
@@ -717,7 +708,7 @@ static void android_hardware_HubEndpoint_removeHostSource(JNIEnv* env, jobject /
                                                           jlong handle, jint regionId) {
     HubEndpointResource* resource = reinterpret_cast<HubEndpointResource*>(handle);
     if (resource != nullptr) {
-        resource->removeProducerWrapper(regionId);
+        resource->removeSourceWrapper(regionId);
     }
 }
 
@@ -725,7 +716,7 @@ static void android_hardware_HubEndpoint_removeHostSink(JNIEnv* env, jobject /* 
                                                         jlong handle, jint dataFlowId) {
     HubEndpointResource* resource = reinterpret_cast<HubEndpointResource*>(handle);
     if (resource != nullptr) {
-        resource->removeConsumerWrapper(dataFlowId);
+        resource->removeSinkWrapper(dataFlowId);
     }
 }
 
@@ -745,8 +736,8 @@ static const JNINativeMethod method_table[] = {
         {"native_createDataFlowInfo", "(JIJIIIII)[I",
          (void*)android_hardware_HubEndpoint_createDataFlowInfo},
         {"native_activateDataFlow", "(JII)Z", (void*)android_hardware_HubEndpoint_activateDataFlow},
-        {"native_enableHostConsumer", "(JIJIJIIIIIIJJ)[I",
-         (void*)android_hardware_HubEndpoint_enableHostConsumer},
+        {"native_enableHostSink", "(JIJIJIIIIIIJJ)[I",
+         (void*)android_hardware_HubEndpoint_enableHostSink},
         {"native_sourcePush", "(JI[BZ)I", (void*)android_hardware_HubEndpoint_sourcePush},
         {"native_sourceFull", "(JI)Z", (void*)android_hardware_HubEndpoint_sourceFull},
         {"native_sourceSize", "(JIZ)I", (void*)android_hardware_HubEndpoint_sourceSize},
@@ -755,10 +746,9 @@ static const JNINativeMethod method_table[] = {
         {"native_sinkSourceCanOverwriteReadPosition", "(JI)Z",
          (void*)android_hardware_HubEndpoint_sinkSourceCanOverwriteReadPosition},
         {"native_sinkSize", "(JI)I", (void*)android_hardware_HubEndpoint_sinkSize},
-        {"native_addOffloadConsumer", "(JIJJ)[I",
-         (void*)android_hardware_HubEndpoint_addOffloadConsumer},
-        {"native_mapOffloadConsumerRegion", "(JIIJJIJIIIZ)I",
-         (void*)android_hardware_HubEndpoint_mapOffloadConsumerRegion},
+        {"native_addOffloadSink", "(JIJJ)[I", (void*)android_hardware_HubEndpoint_addOffloadSink},
+        {"native_mapOffloadSinkRegion", "(JIIJJIJIIIZ)I",
+         (void*)android_hardware_HubEndpoint_mapOffloadSinkRegion},
         {"native_updateSinkPolicy", "(JIJJIIZ)V",
          (void*)android_hardware_HubEndpoint_updateSinkPolicy},
         {"native_removeOffloadSink", "(JIJJ)V",
