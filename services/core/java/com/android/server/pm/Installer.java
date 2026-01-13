@@ -191,6 +191,8 @@ public class Installer extends SystemService {
         final CreateAppDataResult result = new CreateAppDataResult();
         result.ceDataInode = -1;
         result.deDataInode = -1;
+        result.pccCeDataInode = -1;
+        result.pccDeDataInode = -1;
         result.exceptionCode = 0;
         result.exceptionMessage = null;
         return result;

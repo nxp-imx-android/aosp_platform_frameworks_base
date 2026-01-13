@@ -302,6 +302,8 @@ final class RemovePackageHelper {
             synchronized (mPm.mLock) {
                 ps.setCeDataInode(-1, userId);
                 ps.setDeDataInode(-1, userId);
+                ps.setPccCeDataInode(-1, userId);
+                ps.setPccDeDataInode(-1, userId);
             }
         }
 

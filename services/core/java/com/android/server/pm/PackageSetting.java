@@ -1111,6 +1111,24 @@ public class PackageSetting extends SettingBase implements PackageStateInternal 
         onChanged();
     }
 
+    long getPccCeDataInode(int userId) {
+        return readUserState(userId).getPccCeDataInode();
+    }
+
+    long getPccDeDataInode(int userId) {
+        return readUserState(userId).getPccDeDataInode();
+    }
+
+    void setPccCeDataInode(long pccCeDataInode, int userId) {
+        modifyUserState(userId).setPccCeDataInode(pccCeDataInode);
+        onChanged();
+    }
+
+    void setPccDeDataInode(long pccDeDataInode, int userId) {
+        modifyUserState(userId).setPccDeDataInode(pccDeDataInode);
+        onChanged();
+    }
+
     boolean getStopped(int userId) {
         return readUserState(userId).isStopped();
     }
@@ -1171,7 +1189,8 @@ public class PackageSetting extends SettingBase implements PackageStateInternal 
         onChanged();
     }
 
-    void setUserState(int userId, long ceDataInode, long deDataInode, int enabled,
+    void setUserState(int userId, long ceDataInode, long deDataInode,
+                      long pccCeDataInode, long pccDeDataInode, int enabled,
                       boolean installed, boolean stopped, boolean notLaunched, boolean hidden,
                       int distractionFlags, ArrayMap<UserPackage, SuspendParams> suspendParams,
                       boolean instantApp, boolean virtualPreload, String lastDisableAppCaller,
@@ -1184,6 +1203,8 @@ public class PackageSetting extends SettingBase implements PackageStateInternal 
                 .setSuspendParams(suspendParams)
                 .setCeDataInode(ceDataInode)
                 .setDeDataInode(deDataInode)
+                .setPccCeDataInode(pccCeDataInode)
+                .setPccDeDataInode(pccDeDataInode)
                 .setEnabledState(enabled)
                 .setInstalled(installed)
                 .setStopped(stopped)
@@ -1209,7 +1230,8 @@ public class PackageSetting extends SettingBase implements PackageStateInternal 
 
     void setUserState(int userId, PackageUserStateInternal otherState) {
         setUserState(userId, otherState.getCeDataInode(), otherState.getDeDataInode(),
-                otherState.getEnabledState(), otherState.isInstalled(), otherState.isStopped(),
+                otherState.getPccCeDataInode(), otherState.getPccDeDataInode(),
+                otherState.getEnabledState(),  otherState.isInstalled(), otherState.isStopped(),
                 otherState.isNotLaunched(), otherState.isHidden(), otherState.getDistractionFlags(),
                 otherState.getSuspendParams() == null
                         ? null : otherState.getSuspendParams().untrackedStorage(),
