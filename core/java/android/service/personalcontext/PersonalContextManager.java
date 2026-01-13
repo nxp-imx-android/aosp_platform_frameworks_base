@@ -96,7 +96,6 @@ public final class PersonalContextManager {
      * @param insights new insights to be injected into the context flow
      * @hide
      */
-    @SystemApi
     @UserHandleAware(
             requiresPermissionIfNotCaller = android.Manifest.permission.INTERACT_ACROSS_USERS)
     public void publishInsight(@NonNull List<ContextInsight> insights) {
