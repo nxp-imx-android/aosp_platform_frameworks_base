@@ -187,9 +187,7 @@ class KeyguardStateCallbackStartableTest : SysuiTestCase() {
         kosmos.fakeUserRepository.setUserInfos(listOf(selectedUser))
         kosmos.fakeUserRepository.setSelectedUserInfo(selectedUser)
 
-        if (isInputRestricted && !isKeyguardShowing) {
-            // TODO(b/348644111): add support for mNeedToReshowWhenReenabled
-        } else if (!isInputRestricted) {
+        if (!isInputRestricted) {
             assertWithMessage(
                     "If isInputRestricted is false, isKeyguardShowing must also be false!"
                 )
