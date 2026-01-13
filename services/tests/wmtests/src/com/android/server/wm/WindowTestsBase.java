@@ -758,6 +758,20 @@ public class WindowTestsBase extends SystemServiceTestsBase {
         }
     }
 
+    /** Creates a task as if from an organizer. */
+    Task createOrganizerTask(DisplayContent dc) {
+        final Task task = createTask(dc);
+        task.mCreatedByOrganizer = true;
+        return task;
+    }
+
+    /** Creates a task as if from an organizer. */
+    Task createOrganizerTask(DisplayContent dc, int windowingMode, int activityType) {
+        final Task task = createTask(dc.getDefaultTaskDisplayArea(), windowingMode, activityType);
+        task.mCreatedByOrganizer = true;
+        return task;
+    }
+
     /** Creates a {@link Task} and adds to the given root {@link Task}. */
     Task createTaskInRootTask(Task rootTask, int userId) {
         final Task task = new TaskBuilder(rootTask.mTaskSupervisor)
