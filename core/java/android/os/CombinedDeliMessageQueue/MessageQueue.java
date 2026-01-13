@@ -23,6 +23,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.SuppressLint;
 import android.annotation.TestApi;
+import android.app.compat.CompatChanges;
 import android.app.ActivityThread;
 import android.compat.annotation.ChangeId;
 import android.compat.annotation.EnabledAfter;
@@ -148,16 +149,46 @@ public final class MessageQueue {
      * system processes and provides a higher level of concurrency and higher enqueue throughput
      * than the legacy implementation.
      */
+    private static boolean sUseDeliQueueInitialized = false;
     private static boolean sUseDeliQueue;
 
     // This isn't named "getUseDeliQueue"; it's referenced from Message.java.
     static boolean getUseConcurrent() {
+        // setUseDeliQueue() is always called when starting apps or system_server, but some tests
+        // create Loopers directly--in these cases, we still need to initialize sUseDeliQueue.
+        setUseDeliQueue(true);
         return sUseDeliQueue;
     }
 
     /** @hide */
     public static void setUseDeliQueue(boolean enable) {
-        sUseDeliQueue = enable;
+        if (!sUseDeliQueueInitialized) {
+            if (!enable) {
+                sUseDeliQueue = false;
+            } else {
+                final boolean useDeliQueue = computeUseDeliQueue(enable);
+                sUseDeliQueue = useDeliQueue;
+            }
+        }
+        sUseDeliQueueInitialized = true;
+    }
+
+    @RavenwoodRedirect(bug = 454028089, reason = "change IDs are not initialized when we call it")
+    private static boolean computeUseDeliQueue(boolean enable) {
+        if (CompatChanges.isChangeEnabled(USE_NEW_MESSAGEQUEUE)
+                || Flags.useConcurrentMessageQueueInApps()) {
+            return true;
+        }
+
+        final String processName = Process.myProcessName();
+        if (processName == null) {
+            // Assume that this is a host-side test and avoid DeliQueue mode for now.
+            return false;
+        }
+
+        // We can lift these restrictions in the future after we've made it possible for test
+        // authors to test Looper and MessageQueue without resorting to reflection.
+        return enable;
     }
 
     /**
