@@ -55,8 +55,8 @@ class HearingDeviceStatusNotificationTest : SysuiTestCase() {
     private val cachedDevice = mock<CachedBluetoothDevice>()
     private val device = mock<BluetoothDevice>()
 
-    private lateinit var notification: HearingDeviceStatusNotification
     private val mainExecutor = FakeExecutor(FakeSystemClock())
+    private lateinit var notification: HearingDeviceStatusNotification
 
     @Before
     fun setUp() {
@@ -77,6 +77,20 @@ class HearingDeviceStatusNotificationTest : SysuiTestCase() {
                 notificationManager,
                 mainExecutor,
             )
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_HEARING_DEVICE_STATUS_NOTIFICATION)
+    fun updateNotification_fastPairDevice_cancelNotification() {
+        device.stub {
+            on { getMetadata(BluetoothDevice.METADATA_IS_UNTETHERED_HEADSET) } doReturn
+                "true".toByteArray()
+        }
+
+        notification.start()
+        mainExecutor.runAllReady()
+
+        verify(notificationManager).cancel(anyString(), anyInt())
     }
 
     @Test

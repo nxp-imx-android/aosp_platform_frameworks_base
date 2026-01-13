@@ -29,6 +29,7 @@ import android.os.UserHandle
 import android.util.Log
 import androidx.annotation.MainThread
 import com.android.settingslib.Utils
+import com.android.settingslib.bluetooth.BluetoothUtils
 import com.android.settingslib.bluetooth.CachedBluetoothDevice
 import com.android.systemui.CoreStartable
 import com.android.systemui.Flags
@@ -124,27 +125,27 @@ constructor(
         trackedDevices.clear()
     }
 
-    private fun updateNotification(device: CachedBluetoothDevice?) {
-        if (
-            device == null ||
-                !device.isConnected ||
-                device.batteryLevel == BluetoothDevice.BATTERY_LEVEL_UNKNOWN
-        ) {
+    private fun updateNotification(device: CachedBluetoothDevice) {
+        if (isValidHearingDevice(device)) {
+            postNotification(device)
+        } else {
             cancelNotification()
-            return
         }
+    }
 
-        val title = device.name
-        val message = getBatteryMessage(device)
-        val subContentTitle = getStatusMessage(device)
-        val pendingIntent = getDeviceDetailsPendingIntent(device)
+    private fun isValidHearingDevice(device: CachedBluetoothDevice): Boolean {
+        return device.isConnected &&
+            device.batteryLevel != BluetoothDevice.BATTERY_LEVEL_UNKNOWN &&
+            !isFastPairDevice(device)
+    }
 
+    private fun postNotification(device: CachedBluetoothDevice) {
         val builder =
             Notification.Builder(context, CHANNEL_ID)
                 .setSmallIcon(com.android.internal.R.drawable.ic_bt_hearing_aid)
-                .setContentTitle(title)
-                .setContentText(message)
-                .setSubText(subContentTitle)
+                .setContentTitle(device.name)
+                .setContentText(getBatteryMessage(device))
+                .setSubText(getStatusMessage(device))
                 .setVisibility(Notification.VISIBILITY_PUBLIC)
                 .setCategory(Notification.CATEGORY_SYSTEM)
                 .setOnlyAlertOnce(true)
@@ -153,12 +154,12 @@ constructor(
                 .setOngoing(true)
                 .setAutoCancel(false)
 
-        if (pendingIntent != null) {
+        getDeviceDetailsPendingIntent(device)?.let {
             builder.addAction(
                 Notification.Action.Builder(
                         null,
                         context.getString(R.string.hearing_devices_settings_button),
-                        pendingIntent,
+                        it,
                     )
                     .build()
             )
@@ -253,6 +254,13 @@ constructor(
         } else {
             context.getString(R.string.quick_settings_bluetooth_device_connected)
         }
+    }
+
+    private fun isFastPairDevice(device: CachedBluetoothDevice): Boolean {
+        return BluetoothUtils.getBooleanMetaData(
+            device.device,
+            BluetoothDevice.METADATA_IS_UNTETHERED_HEADSET,
+        )
     }
 
     companion object {
