@@ -274,3 +274,10 @@ flag {
     purpose: PURPOSE_BUGFIX
   }
 }
+
+flag {
+  name: "ime_switcher_menu_large_screen"
+  namespace: "input_method"
+  description: "IME Switcher Menu large screen UI adjustments"
+  bug: "443854916"
+}
