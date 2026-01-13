@@ -1305,7 +1305,10 @@ constructor(
             keyguardShowWhileAwakeInteractor.showWhileAwakeEvents
                 .filter { it == ShowWhileAwakeReason.FOLDED_WITH_SWIPE_UP_TO_CONTINUE }
                 .collect {
-                    if (keyguardEnabledInteractor.isKeyguardEnabled.value) {
+                    if (
+                        keyguardEnabledInteractor.isKeyguardEnabled.value &&
+                            !occlusionInteractor.isKeyguardOccluded.value
+                    ) {
                         switchToScene(Scenes.Lockscreen, "folded with swipe up to continue")
                     }
                 }
