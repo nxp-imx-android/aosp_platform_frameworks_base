@@ -601,7 +601,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             boolean isFocusedGlobally) {
         final WindowDecorationWrapper decor = mWindowDecorByTaskId.get(taskInfo.taskId);
         if (decor != null) {
-            decor.relayout(taskInfo, isFocusedGlobally, decor.getExclusionRegion());
+            decor.relayout(decor.getTaskInfo(), isFocusedGlobally, decor.getExclusionRegion());
         }
     }
 
