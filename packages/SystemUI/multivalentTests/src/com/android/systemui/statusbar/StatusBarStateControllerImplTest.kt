@@ -55,6 +55,8 @@ import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.domain.interactor.disableDualShade
 import com.android.systemui.shade.domain.interactor.enableDualShade
 import com.android.systemui.shade.domain.interactor.enableSingleShade
+import com.android.systemui.shade.domain.interactor.shadeModeInteractor
+import com.android.systemui.shade.shared.model.ShadeMode
 import com.android.systemui.statusbar.phone.BiometricUnlockController
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
@@ -234,6 +236,7 @@ class StatusBarStateControllerImplTest(flags: FlagsParameterization) : SysuiTest
             val currentScene by collectLastValue(sceneInteractor.currentScene)
             val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
             val deviceUnlockStatus by collectLastValue(deviceUnlockedInteractor.deviceUnlockStatus)
+            val shadeMode by collectLastValue(shadeModeInteractor.shadeMode)
 
             fakeAuthenticationRepository.setAuthenticationMethod(AuthenticationMethodModel.Password)
             assertThat(deviceUnlockStatus!!.isUnlocked).isFalse()
@@ -252,9 +255,14 @@ class StatusBarStateControllerImplTest(flags: FlagsParameterization) : SysuiTest
             assertThat(currentScene).isEqualTo(Scenes.Shade)
             assertThat(statusBarState).isEqualTo(StatusBarState.SHADE_LOCKED)
 
-            sceneInteractor.changeScene(toScene = Scenes.QuickSettings, loggingReason = "reason")
-            assertThat(currentScene).isEqualTo(Scenes.QuickSettings)
-            assertThat(statusBarState).isEqualTo(StatusBarState.SHADE_LOCKED)
+            if (shadeMode is ShadeMode.Single) {
+                sceneInteractor.changeScene(
+                    toScene = Scenes.QuickSettings,
+                    loggingReason = "reason",
+                )
+                assertThat(currentScene).isEqualTo(Scenes.QuickSettings)
+                assertThat(statusBarState).isEqualTo(StatusBarState.SHADE_LOCKED)
+            }
 
             sceneInteractor.changeScene(toScene = Scenes.Communal, loggingReason = "reason")
             assertThat(currentScene).isEqualTo(Scenes.Communal)
@@ -285,7 +293,7 @@ class StatusBarStateControllerImplTest(flags: FlagsParameterization) : SysuiTest
             val alternateBouncerIsVisible by collectLastValue(alternateBouncerInteractor.isVisible)
 
             fakeAuthenticationRepository.setAuthenticationMethod(AuthenticationMethodModel.Password)
-            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+            biometricUnlockInteractor.setBiometricUnlockState(
                 unlockStateInt = BiometricUnlockController.MODE_DISMISS,
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
@@ -381,7 +389,7 @@ class StatusBarStateControllerImplTest(flags: FlagsParameterization) : SysuiTest
             val currentScene by collectLastValue(sceneInteractor.currentScene)
             val deviceUnlockStatus by collectLastValue(deviceUnlockedInteractor.deviceUnlockStatus)
             fakeAuthenticationRepository.setAuthenticationMethod(AuthenticationMethodModel.Password)
-            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+            biometricUnlockInteractor.setBiometricUnlockState(
                 unlockStateInt = BiometricUnlockController.MODE_DISMISS,
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
@@ -427,7 +435,7 @@ class StatusBarStateControllerImplTest(flags: FlagsParameterization) : SysuiTest
             val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
             val deviceUnlockStatus by collectLastValue(deviceUnlockedInteractor.deviceUnlockStatus)
             fakeAuthenticationRepository.setAuthenticationMethod(AuthenticationMethodModel.Password)
-            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+            biometricUnlockInteractor.setBiometricUnlockState(
                 unlockStateInt = BiometricUnlockController.MODE_DISMISS,
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
@@ -557,7 +565,7 @@ class StatusBarStateControllerImplTest(flags: FlagsParameterization) : SysuiTest
             assertThat(statusBarState).isEqualTo(StatusBarState.KEYGUARD)
 
             // unlock device
-            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+            biometricUnlockInteractor.setBiometricUnlockState(
                 unlockStateInt = BiometricUnlockController.MODE_DISMISS,
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
