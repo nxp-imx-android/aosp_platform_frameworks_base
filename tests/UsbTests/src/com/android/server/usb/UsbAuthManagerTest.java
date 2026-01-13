@@ -20,8 +20,10 @@ import static android.hardware.usb.UsbAuthorizationStatus.AUTHORIZED;
 import static android.hardware.usb.UsbAuthorizationStatus.DENIED;
 
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -65,6 +67,7 @@ public class UsbAuthManagerTest {
     @Mock private IUsbAuthManager mService;
     @Mock private UsbHostManager mHostManager;
     @Mock private IBinder mBinder;
+    private UsbAuthManager.ProvisioningListener mDeviceProvisionedListener;
 
     private UsbAuthManager mUsbAuthManager;
 
@@ -179,7 +182,13 @@ public class UsbAuthManagerTest {
 
         createTestData();
 
-        mUsbAuthManager = new UsbAuthManager(mContext, mUserManager, mHostManager, mService);
+        mDeviceProvisionedListener = spy(new UsbAuthManager.ProvisioningListener(mContext, null));
+        doReturn(false).when(mDeviceProvisionedListener).isDeviceInSetup();
+
+        mUsbAuthManager =
+                new UsbAuthManager(
+                        mContext, mUserManager, mHostManager, mService, mDeviceProvisionedListener);
+        mDeviceProvisionedListener.setAuthManager(mUsbAuthManager);
     }
 
     @After
@@ -218,6 +227,21 @@ public class UsbAuthManagerTest {
     @Test
     public void testInitialState_isBooted() throws Exception {
         verify(mService).setSystemState(UsbAuthorizationSystemState.BOOTED);
+    }
+
+    @Test
+    public void testSetup_withAndWithoutChanges() throws Exception {
+        reset(mService);
+        doReturn(true).when(mDeviceProvisionedListener).isDeviceInSetup();
+
+        mUsbAuthManager.onUpdateScreenLockedState(true);
+        verify(mService).setSystemState(UsbAuthorizationSystemState.SET_UP);
+        mUsbAuthManager.onUpdateLoggedInState(true, TEST_USER_ID_FULL_ADMIN);
+        verify(mService).setSystemState(UsbAuthorizationSystemState.SET_UP);
+
+        doReturn(false).when(mDeviceProvisionedListener).isDeviceInSetup();
+        mDeviceProvisionedListener.onChange(false);
+        verify(mService).setSystemState(UsbAuthorizationSystemState.SCREEN_LOCKED);
     }
 
     @Test

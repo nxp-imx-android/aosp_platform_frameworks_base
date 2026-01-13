@@ -20,6 +20,7 @@ import android.annotation.RequiresNoPermission;
 import android.annotation.UserIdInt;
 import android.content.Context;
 import android.content.pm.UserInfo;
+import android.database.ContentObserver;
 import android.hardware.usb.IUsbAuthEventsListener;
 import android.hardware.usb.IUsbAuthManager;
 import android.hardware.usb.UsbAuthDeviceInfo;
@@ -30,6 +31,7 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.os.UserManager;
+import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.ArrayMap;
 import android.util.ArraySet;
@@ -109,11 +111,74 @@ public class UsbAuthManager implements IBinder.DeathRecipient {
 
     private final Object mLock = new Object();
 
+    /**
+     * Internal listener for changes to DEVICE_PROVISIONED state.
+     *
+     * <p>This is provided as a separate class for ease of testing. Tests can provide an overridden
+     * implementation for mocking purposes.
+     */
+    @VisibleForTesting
+    static class ProvisioningListener extends ContentObserver {
+        private UsbAuthManager mAuthManager;
+        private Context mLocalContext;
+
+        ProvisioningListener(Context context, UsbAuthManager authManager) {
+            super(FgThread.getHandler());
+
+            mLocalContext = context;
+            mAuthManager = authManager;
+
+            // Register a provisioning listener only if we are currently not provisioned.
+            if (isDeviceInSetup()) {
+                context.getContentResolver()
+                        .registerContentObserver(
+                                Settings.Global.getUriFor(Settings.Global.DEVICE_PROVISIONED),
+                                /* notifyForDescendants= */ false,
+                                this);
+            }
+        }
+
+        /**
+         * Check if device is in setup (not provisioned).
+         *
+         * @return True if not provisioned, false if provisioned.
+         */
+        public boolean isDeviceInSetup() {
+            int provisioned =
+                    Settings.Global.getInt(
+                            mLocalContext.getContentResolver(),
+                            Settings.Global.DEVICE_PROVISIONED,
+                            1);
+
+            // Setup means it is not provisioned.
+            return provisioned == 0;
+        }
+
+        @VisibleForTesting
+        void setAuthManager(UsbAuthManager authManager) {
+            mAuthManager = authManager;
+        }
+
+        @Override
+        public void onChange(boolean selfChanged) {
+            mAuthManager.updateSystemStateInternal();
+
+            // We no longer need to listen for provisioned if we're already out of setup.
+            if (!isDeviceInSetup()) {
+                mLocalContext.getContentResolver().unregisterContentObserver(this);
+            }
+        }
+    }
+
+    // Listener for device provisioning. Safe to unregister after first check.
+    private ProvisioningListener mDeviceProvisionedListener;
+
     public UsbAuthManager(Context context, UserManager userManager, UsbHostManager hostManager) {
         mHostManager = hostManager;
         mUserManager = userManager;
         mContext = context;
         mAuthEventsListener = new UsbAuthEventsListener();
+        mDeviceProvisionedListener = new ProvisioningListener(context, this);
         listenForService();
     }
 
@@ -122,11 +187,13 @@ public class UsbAuthManager implements IBinder.DeathRecipient {
             Context context,
             UserManager userManager,
             UsbHostManager hostManager,
-            IUsbAuthManager service) {
+            IUsbAuthManager service,
+            ProvisioningListener deviceProvisionedListener) {
         mHostManager = hostManager;
         mUserManager = userManager;
         mContext = context;
         mAuthEventsListener = new UsbAuthEventsListener();
+        mDeviceProvisionedListener = deviceProvisionedListener;
         setAndLinkService(service);
     }
 
@@ -283,7 +350,10 @@ public class UsbAuthManager implements IBinder.DeathRecipient {
     private void updateSystemStateInternal() {
         @UsbAuthorizationSystemState int state;
         synchronized (mLock) {
-            if (mFullUsersLoggedIn.size() == 0) {
+            if (mDeviceProvisionedListener.isDeviceInSetup()) {
+                // Set-up wizard has not completed.
+                state = UsbAuthorizationSystemState.SET_UP;
+            } else if (mFullUsersLoggedIn.size() == 0) {
                 // No full users logged in
                 state = UsbAuthorizationSystemState.BOOTED;
             } else if (!mIsScreenLocked && mFullUsersLoggedIn.get(mCurrentUserId, false)) {
