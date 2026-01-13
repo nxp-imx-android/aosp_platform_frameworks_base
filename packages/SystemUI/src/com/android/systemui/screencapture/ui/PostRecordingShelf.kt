@@ -20,8 +20,12 @@ import android.graphics.drawable.Icon
 import android.net.Uri
 import android.view.Display
 import android.view.Gravity
+import android.view.View
+import android.view.ViewGroup
 import android.view.Window
 import android.view.WindowManager
+import android.view.accessibility.AccessibilityEvent
+import android.view.accessibility.AccessibilityManager
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.spring
@@ -81,6 +85,8 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -95,6 +101,7 @@ constructor(
     private val actionsViewModelFactory: PostRecordingActionsViewModel.Factory,
     private val videoViewModelFactory: PostRecordingImmediateVideoViewModel.Factory,
     private val postRecordSnackbarDialogs: PostRecordSnackbarDialogs,
+    private val accessibilityManager: AccessibilityManager,
 ) {
     private val visibleState = MutableTransitionState(false)
     private val dialog: SystemUIDialog =
@@ -103,8 +110,8 @@ constructor(
                 context.createWindowContext(display, DIALOG_WINDOW_TYPE, null),
                 theme = R.style.Theme_SystemUI_Dialog,
                 dialogDelegate = EdgeToEdgeDialogDelegate(),
-            ) {
-                DialogContent(uri = uri, thumbnail = thumbnail)
+            ) { dialogInstance ->
+                DialogContent(uri = uri, thumbnail = thumbnail, window = dialogInstance.window)
             }
             .apply {
                 setupWindow(window!!)
@@ -130,7 +137,7 @@ constructor(
     }
 
     @Composable
-    private fun DialogContent(uri: Uri, thumbnail: Icon?) {
+    private fun DialogContent(uri: Uri, thumbnail: Icon?, window: Window?) {
         var isConfirmDeletionDialogShowing by remember { mutableStateOf(false) }
         if (!visibleState.targetState && visibleState.isIdle) {
             SideEffect {
@@ -140,14 +147,38 @@ constructor(
             }
         }
 
+        val coroutineScope = rememberCoroutineScope()
+
+        var timeoutJob by remember { mutableStateOf<Job?>(null) }
+
+        fun resetTimeout() {
+            timeoutJob?.cancel()
+            timeoutJob = coroutineScope.launch { scheduleTimeout() }
+        }
+
+        window!!.decorView.accessibilityDelegate =
+            object : View.AccessibilityDelegate() {
+                override fun onRequestSendAccessibilityEvent(
+                    host: ViewGroup,
+                    child: View,
+                    event: AccessibilityEvent,
+                ): Boolean {
+                    if (event.eventType == AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUSED) {
+                        resetTimeout()
+                    }
+                    return super.onRequestSendAccessibilityEvent(host, child, event)
+                }
+            }
+
         LaunchedEffect(visibleState.targetState, isConfirmDeletionDialogShowing) {
             if (visibleState.targetState && !isConfirmDeletionDialogShowing) {
-                delay(DEFAULT_TIMEOUT)
-                hide()
+                resetTimeout()
+            } else {
+                // If the deletion dialog shows, stop the timer entirely
+                timeoutJob?.cancel()
             }
         }
 
-        val coroutineScope = rememberCoroutineScope()
         val actionsViewModel =
             rememberViewModel("PostRecordingShelf#viewModel") {
                 actionsViewModelFactory.create(uri, display.displayId)
@@ -333,6 +364,21 @@ constructor(
                         modifier = Modifier.size(24.dp),
                     )
                 }
+            }
+        }
+    }
+
+    private suspend fun scheduleTimeout() {
+        val recommendedTimeout =
+            accessibilityManager.getRecommendedTimeoutMillis(
+                DEFAULT_TIMEOUT.inWholeMilliseconds.toInt(),
+                AccessibilityManager.FLAG_CONTENT_TEXT or AccessibilityManager.FLAG_CONTENT_CONTROLS,
+            )
+
+        coroutineScope {
+            launch {
+                delay(recommendedTimeout.toLong())
+                hide()
             }
         }
     }
