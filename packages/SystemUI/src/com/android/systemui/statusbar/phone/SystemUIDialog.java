@@ -31,6 +31,7 @@ import android.os.Looper;
 import android.os.SystemProperties;
 import android.os.UserHandle;
 import android.util.TypedValue;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewRootImpl;
@@ -39,6 +40,7 @@ import android.view.WindowInsets.Type;
 import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StyleRes;
 
@@ -523,6 +525,15 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
             // it is clicked.
             mOnCreateRunnables.add(() -> getButton(whichButton).setOnClickListener(
                     view -> onClick.onClick(this, whichButton)));
+        }
+    }
+
+    @Override
+    public boolean onTouchEvent(@NonNull MotionEvent motionEvent) {
+        if (mDelegate.onTouchEvent(this, motionEvent)) {
+            return true;
+        } else {
+            return super.onTouchEvent(motionEvent);
         }
     }
 

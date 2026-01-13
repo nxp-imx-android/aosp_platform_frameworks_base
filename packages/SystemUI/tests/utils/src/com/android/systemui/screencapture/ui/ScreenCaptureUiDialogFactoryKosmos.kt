@@ -20,6 +20,7 @@ import android.content.applicationContext
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.screencapture.common.screenCaptureUiComponentBuilder
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
+import com.android.systemui.screencapture.ui.viewmodel.screenCaptureUiDialogViewModel
 import com.android.systemui.screencapture.ui.viewmodel.screenCaptureUiViewModelFactory
 import com.android.systemui.statusbar.phone.systemUIDialogFactory
 
@@ -31,5 +32,6 @@ val Kosmos.screenCaptureUiDialogFactory by
             componentBuilders =
                 ScreenCaptureType.entries.associateWith { screenCaptureUiComponentBuilder(it) },
             dialogFactory = systemUIDialogFactory,
+            dialogViewModel = screenCaptureUiDialogViewModel,
         )
     }

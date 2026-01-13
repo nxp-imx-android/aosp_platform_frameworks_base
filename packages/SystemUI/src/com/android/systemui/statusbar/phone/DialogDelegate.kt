@@ -20,6 +20,7 @@ import android.app.Dialog
 import android.content.res.Configuration
 import android.os.Bundle
 import android.util.DisplayMetrics
+import android.view.MotionEvent
 import android.view.ViewRootImpl
 import com.android.systemui.animation.back.BackAnimationSpec
 import com.android.systemui.animation.back.floatingSystemSurfacesForSysUi
@@ -55,4 +56,6 @@ interface DialogDelegate<T : Dialog> {
 
     fun getBackAnimationSpec(displayMetricsProvider: () -> DisplayMetrics): BackAnimationSpec =
         BackAnimationSpec.floatingSystemSurfacesForSysUi(displayMetricsProvider)
+
+    fun onTouchEvent(dialog: T, motionEvent: MotionEvent): Boolean = false
 }
