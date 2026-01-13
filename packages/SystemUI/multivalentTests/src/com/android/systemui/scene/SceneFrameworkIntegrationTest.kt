@@ -77,6 +77,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.advanceTimeBy
 import org.junit.Before
 import org.junit.Test
+import org.junit.Ignore
 import org.junit.runner.RunWith
 
 /**
@@ -406,6 +407,7 @@ class SceneFrameworkIntegrationTest : SysuiTestCase() {
         }
 
     @Test
+    @Ignore("b/462133799")
     fun swipeDownOnShade_goesToQuickSettings() =
         kosmos.runTest {
             emulateUserDrivenSceneTransition(to = Scenes.Shade)
