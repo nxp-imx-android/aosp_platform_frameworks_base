@@ -164,7 +164,7 @@ fun ContentScope.SingleShadeNestedScrollLayout(
     // expanded and IME is not showing, reset scrim offset.
     LaunchedEffectWithLifecycle(contentHeight, minScrimHeight, scrimOffset) {
         snapshotFlow { contentHeight.intValue < minScrimHeight.intValue && scrimOffset.value < 0f }
-            .collect { shouldCollapse -> if (shouldCollapse) scrimOffset.snapTo(0f) }
+            .collect { shouldCollapse -> if (shouldCollapse) scrimOffset.animateTo(0f) }
     }
     var scrimHeight by remember { mutableIntStateOf(0) }
     Layout(
