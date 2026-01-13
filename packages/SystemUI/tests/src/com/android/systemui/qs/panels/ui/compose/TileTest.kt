@@ -72,7 +72,6 @@ class TileTest : SysuiTestCase() {
                             ),
                         tileHapticsViewModelFactory = tileHapticsViewModelFactory,
                         detailsViewModel = null,
-                        interactionSourceFromParent = null,
                     )
                 }
             }

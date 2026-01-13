@@ -1342,16 +1342,6 @@ flag {
 }
 
 flag {
-    name: "qs_material_expressive_tiles"
-    namespace: "systemui"
-    description: "Uses the Material Expressive button groups for QS tiles."
-    bug: "419309247"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
    name: "qs_new_tiles"
    namespace: "systemui"
    description: "Use the new tiles in the Quick Settings. Should have no behavior changes."
