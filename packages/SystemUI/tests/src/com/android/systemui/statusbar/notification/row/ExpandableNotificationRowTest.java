@@ -64,6 +64,7 @@ import androidx.test.filters.SmallTest;
 
 import com.android.internal.R;
 import com.android.internal.widget.CachingIconView;
+import com.android.systemui.flags.EnableSceneContainer;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.SysuiTestableContext;
 import com.android.systemui.kosmos.KosmosJavaAdapter;
@@ -113,6 +114,31 @@ public class ExpandableNotificationRowTest extends SysuiTestCase {
                         changedRow.setChildrenExpanded(expanded);
                     }
                 });
+    }
+
+    @Test
+    @EnableSceneContainer
+    public void canShowHeadsUp_onKeyguard_isHeadsUpState_returnsTrue() {
+        ExpandableNotificationRow row = mKosmos.createRow();
+        StatusBarStateController statusBarStateController = mKosmos.getStatusBarStateController();
+        KeyguardBypassController bypassController = mKosmos.getKeyguardBypassController();
+
+        // GIVEN: Keyguard is showing, dozing is false (waking up), bypass is false
+        row.setOnKeyguard(true);
+        when(statusBarStateController.isDozing()).thenReturn(false);
+        when(bypassController.getBypassEnabled()).thenReturn(false);
+
+        // GIVEN: We are trying to save space
+        row.setSaveSpaceOnLockscreen(true);
+
+        // GIVEN: the row is heads up
+        row.setHeadsUp(true);
+
+        // WHEN
+        boolean canShow = row.canShowHeadsUp();
+
+        // THEN: show HUN layout instead of collapsed layout
+        assertTrue(canShow);
     }
 
     @Test
