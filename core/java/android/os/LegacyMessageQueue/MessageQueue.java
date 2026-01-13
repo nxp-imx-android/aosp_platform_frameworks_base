@@ -124,6 +124,11 @@ public final class MessageQueue {
         return false;
     }
 
+    /** @hide */
+    public static void setUseDeliQueue(boolean enable) {
+        // no-op for LegacyMessageQueue.
+    }
+
     /**
      * @return human-readable string that identifies the implementation.
      * @hide

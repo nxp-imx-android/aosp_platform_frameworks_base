@@ -2572,12 +2572,13 @@ public final class ProcessList extends ProcessListInternal
             app.mProcessGroupCreated = false;
             app.mSkipProcessGroupCreation = false;
             long forkTimeNs = SystemClock.uptimeNanos();
+            final boolean useDeliQueue = mPlatformCompat.getUseDeliQueue(app.info);
             if (hostingRecord.usesWebviewZygote()) {
                 startResult = startWebView(entryPoint,
                         app.processName, uid, uid, gids, runtimeFlags, mountExternal,
                         app.info.targetSdkVersion, seInfo, requiredAbi, instructionSet,
                         app.info.dataDir, null, app.info.packageName,
-                        app.getDisabledCompatChanges(), app.getStartSeq(),
+                        app.getDisabledCompatChanges(), useDeliQueue, app.getStartSeq(),
                         new String[]{PROC_START_SEQ_IDENT + app.getStartSeq()});
             } else if (hostingRecord.usesAppZygote()) {
                 final AppZygote appZygote = createAppZygoteForProcessIfNeeded(app);
@@ -2598,7 +2599,7 @@ public final class ProcessList extends ProcessListInternal
                         app.processName, uid, gids, runtimeFlags, mountExternal,
                         app.info.targetSdkVersion, seInfo, requiredAbi, instructionSet,
                         app.info.dataDir, app.info.packageName, isTopApp,
-                        app.getDisabledCompatChanges(), pkgDataInfoMap,
+                        app.getDisabledCompatChanges(), useDeliQueue, pkgDataInfoMap,
                         allowlistedAppDataInfoMap, app.getStartSeq(),
                         new String[]{PROC_START_SEQ_IDENT + app.getStartSeq()});
             } else {
@@ -2607,10 +2608,9 @@ public final class ProcessList extends ProcessListInternal
                         app.processName, uid, uid, gids, runtimeFlags, mountExternal,
                         app.info.targetSdkVersion, seInfo, requiredAbi, instructionSet,
                         app.info.dataDir, invokeWith, app.info.packageName, zygotePolicyFlags,
-                        isTopApp, app.getDisabledCompatChanges(), pkgDataInfoMap,
+                        isTopApp, app.getDisabledCompatChanges(), useDeliQueue, pkgDataInfoMap,
                         allowlistedAppDataInfoMap, bindMountAppsData, bindMountAppStorageDirs,
-                        bindOverrideSysprops,
-                        app.getStartSeq(),
+                        bindOverrideSysprops, app.getStartSeq(),
                         new String[]{PROC_START_SEQ_IDENT + app.getStartSeq()});
                 // By now the process group should have been created by zygote.
                 app.mProcessGroupCreated = true;

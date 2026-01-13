@@ -9408,21 +9408,30 @@ public final class ActivityThread extends ClientTransactionHandler
         // Call per-process mainline module initialization.
         initializeMainlineModules();
 
-        Looper.prepareMainLooper();
-
         Process.setArgV0("<pre-initialized>");
 
-        // Find the value for {@link #PROC_START_SEQ_IDENT} if provided on the command line.
-        // It will be in the format "seq=114"
         long startSeq = 0;
         if (args != null) {
             for (int i = args.length - 1; i >= 0; --i) {
-                if (args[i] != null && args[i].startsWith(PROC_START_SEQ_IDENT)) {
-                    startSeq = Long.parseLong(
-                            args[i].substring(PROC_START_SEQ_IDENT.length()));
+                if (args[i] != null) {
+                    // Find the value for {@link #PROC_START_SEQ_IDENT} if provided on the command
+                    // line. It will be in the format "seq=114"
+                    if (args[i].startsWith(PROC_START_SEQ_IDENT)) {
+                        startSeq = Long.parseLong(
+                                args[i].substring(PROC_START_SEQ_IDENT.length()));
+                    } else if (args[i].startsWith("--use-deliqueue=")) {
+                        boolean useDeliQueue =
+                                Boolean.parseBoolean(args[i].substring(args[i].indexOf('=') + 1));
+                        // This must be called before Looper.prepareMainLooper(), which will
+                        // instantiate a MessageQueue.
+                        MessageQueue.setUseDeliQueue(useDeliQueue);
+                    }
                 }
             }
         }
+
+        Looper.prepareMainLooper();
+
         ActivityThread thread = new ActivityThread();
         thread.attach(false, startSeq);
 

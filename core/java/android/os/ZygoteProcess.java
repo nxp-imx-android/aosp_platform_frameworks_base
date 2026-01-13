@@ -316,6 +316,7 @@ public class ZygoteProcess implements IZygoteProcess {
                                                   int zygotePolicyFlags,
                                                   boolean isTopApp,
                                                   @Nullable long[] disabledCompatChanges,
+                                                  boolean useDeliQueue,
                                                   @Nullable Map<String, Pair<String, Long>>
                                                           pkgDataInfoMap,
                                                   @Nullable Map<String, Pair<String, Long>>
@@ -335,7 +336,7 @@ public class ZygoteProcess implements IZygoteProcess {
                     runtimeFlags, mountExternal, targetSdkVersion, seInfo,
                     abi, instructionSet, appDataDir, invokeWith, /*startChildZygote=*/ false,
                     packageName, zygotePolicyFlags, isTopApp, disabledCompatChanges,
-                    pkgDataInfoMap, allowlistedDataInfoList, bindMountAppsData,
+                    useDeliQueue, pkgDataInfoMap, allowlistedDataInfoList, bindMountAppsData,
                     bindMountAppStorageDirs, bindOverrideSysprops, startSeq, zygoteArgs);
         } catch (ZygoteStartFailedEx ex) {
             Log.e(LOG_TAG,
@@ -603,6 +604,7 @@ public class ZygoteProcess implements IZygoteProcess {
                                                       int zygotePolicyFlags,
                                                       boolean isTopApp,
                                                       @Nullable long[] disabledCompatChanges,
+                                                      boolean useDeliQueue,
                                                       @Nullable Map<String, Pair<String, Long>>
                                                               pkgDataInfoMap,
                                                       @Nullable Map<String, Pair<String, Long>>
@@ -751,6 +753,14 @@ public class ZygoteProcess implements IZygoteProcess {
         if (extraArgs != null) {
             Collections.addAll(argsForZygote, extraArgs);
         }
+
+        // Ordering is significant; only args after processClass (android.app.ActivityThread if
+        // started from ProcessList) are propagated to ActivityThread, where
+        // Looper.prepareMainLooper() is called.
+        StringBuilder deliQueueSb = new StringBuilder();
+        deliQueueSb.append("--use-deliqueue=");
+        deliQueueSb.append(useDeliQueue);
+        argsForZygote.add(deliQueueSb.toString());
 
         synchronized(mLock) {
             // The USAP pool can not be used if the application will not use the systems graphics
@@ -1270,10 +1280,10 @@ public class ZygoteProcess implements IZygoteProcess {
                     abi, instructionSet, null /* appDataDir */, null /* invokeWith */,
                     true /* startChildZygote */, null /* packageName */,
                     ZYGOTE_POLICY_FLAG_SYSTEM_PROCESS /* zygotePolicyFlags */, false /* isTopApp */,
-                    null /* disabledCompatChanges */, null /* pkgDataInfoMap */,
-                    null /* allowlistedDataInfoList */, true /* bindMountAppsData*/,
-                    /* bindMountAppStorageDirs */ false, /*bindMountOverrideSysprops */ false,
-                    /* startSeq */ 0, extraArgs);
+                    null /* disabledCompatChanges */, true /* useDeliQueue */,
+                    null /* pkgDataInfoMap */, null /* allowlistedDataInfoList */,
+                    true /* bindMountAppsData*/, /* bindMountAppStorageDirs */ false,
+                    /*bindMountOverrideSysprops */ false, /* startSeq */ 0, extraArgs);
 
         } catch (ZygoteStartFailedEx ex) {
             throw new RuntimeException("Starting child-zygote through Zygote failed", ex);
