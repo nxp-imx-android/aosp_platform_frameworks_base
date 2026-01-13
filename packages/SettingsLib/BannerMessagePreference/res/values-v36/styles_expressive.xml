@@ -27,7 +27,7 @@
         <item name="android:textAlignment">viewStart</item>
         <item name="android:layout_gravity">center_vertical</item>
         <item name="android:textAppearance">@style/TextAppearance.SettingsLib.LabelMedium</item>
-        <item name="android:textColor">?android:attr/textColorPrimary</item>
+        <item name="android:textColor">@color/settingslib_materialColorOnSurfaceVariant</item>
     </style>
 
     <style name="Banner.Title.SettingsLib.Expressive"
@@ -43,7 +43,7 @@
         <item name="android:layout_gravity">start</item>
         <item name="android:textAlignment">viewStart</item>
         <item name="android:textAppearance">@style/TextAppearance.SettingsLib.BodyMedium</item>
-        <item name="android:textColor">?android:attr/textColorPrimary</item>
+        <item name="android:textColor">@color/settingslib_materialColorOnSurfaceVariant</item>
     </style>
 
     <style name="Banner.Summary.SettingsLib.Expressive"
@@ -52,7 +52,7 @@
         <item name="android:textAlignment">viewStart</item>
         <item name="android:paddingTop">@dimen/settingslib_expressive_space_extrasmall6</item>
         <item name="android:textAppearance">@style/TextAppearance.SettingsLib.BodyMedium</item>
-        <item name="android:textColor">?android:attr/textColorPrimary</item>
+        <item name="android:textColor">@color/settingslib_materialColorOnSurfaceVariant</item>
     </style>
 
     <style name="Banner.Dismiss.SettingsLib.Expressive">
