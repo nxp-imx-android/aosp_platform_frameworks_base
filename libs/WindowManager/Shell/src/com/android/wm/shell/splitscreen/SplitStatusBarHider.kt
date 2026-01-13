@@ -20,6 +20,7 @@ import android.graphics.Insets
 import android.graphics.Rect
 import android.os.Binder
 import android.view.Display.DEFAULT_DISPLAY
+import android.view.InsetsBoundingRect
 import android.view.InsetsSource.FLAG_FORCE_CONSUMING
 import android.view.InsetsState
 import android.view.WindowInsets.Type.captionBar
@@ -248,15 +249,27 @@ class SplitStatusBarHider(
             // apps lay out their contents in 90:10 in the same way as they do in 70:30, even though
             // we are hiding the status bar in 90:10.
             val flags = FLAG_FORCE_CONSUMING
-            wct.addInsetsSource(
-                displayToken,
-                systemBarOwner,
-                0,
-                captionBar(),
-                Insets.of(0, statusBarHeight, 0, 0),
-                null,
-                flags,
-            )
+            if (com.android.window.flags.Flags.improveFluidResizingPerformance()) {
+                wct.addInsetsSource(
+                    displayToken,
+                    systemBarOwner,
+                    0,
+                    captionBar(),
+                    Insets.of(0, statusBarHeight, 0, 0),
+                    null as Array<InsetsBoundingRect>?,
+                    flags,
+                )
+            } else {
+                wct.addInsetsSource(
+                    displayToken,
+                    systemBarOwner,
+                    0,
+                    captionBar(),
+                    Insets.of(0, statusBarHeight, 0, 0),
+                    null as Array<Rect>?,
+                    flags,
+                )
+            }
             wct.setSystemBarVisibilityOverride(
                 displayToken,
                 systemBarOwner,

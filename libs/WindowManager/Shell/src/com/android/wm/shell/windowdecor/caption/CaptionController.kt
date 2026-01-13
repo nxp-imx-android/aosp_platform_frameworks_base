@@ -327,6 +327,7 @@ abstract class CaptionController<T>(
                 frame = captionInsets,
                 taskFrame = null,
                 boundingRects = emptyList(),
+                insetsBoundingRects = emptyList(),
                 flags = 0,
                 shouldAddCaptionInset = true,
                 excludedFromAppBounds = false,
@@ -359,11 +360,25 @@ abstract class CaptionController<T>(
         // insets than traditional |Insets| to apps about where their content is occluded.
         // These are in coordinates relative to the caption frame.
         val boundingRects =
-            CaptionRegionHelper.calculateBoundingRectsInsets(
-                context = decorWindowContext,
-                captionFrame = localCaptionBounds,
-                elements = elements,
-            )
+            if (!com.android.window.flags.Flags.improveFluidResizingPerformance()) {
+                CaptionRegionHelper.calculateBoundingRectsInsets(
+                    context = decorWindowContext,
+                    captionFrame = localCaptionBounds,
+                    elements = elements,
+                )
+            } else {
+                emptyList()
+            }
+        val insetsBoundingRects =
+            if (com.android.window.flags.Flags.improveFluidResizingPerformance()) {
+                CaptionRegionHelper.calculateInsetsBoundingRectsInsets(
+                    context = decorWindowContext,
+                    captionFrame = localCaptionBounds,
+                    elements = elements,
+                )
+            } else {
+                emptyList()
+            }
 
         val newInsets =
             WindowDecorationInsets(
@@ -372,6 +387,7 @@ abstract class CaptionController<T>(
                 captionInsetsRect,
                 taskBounds,
                 boundingRects,
+                insetsBoundingRects,
                 params.insetSourceFlags,
                 params.isInsetSource,
                 params.shouldSetAppBounds,

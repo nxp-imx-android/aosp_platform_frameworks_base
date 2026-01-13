@@ -19,6 +19,7 @@ package com.android.wm.shell.windowdecor
 import android.graphics.Insets
 import android.graphics.Rect
 import android.os.Binder
+import android.view.InsetsBoundingRect
 import android.view.InsetsSource
 import android.view.WindowInsets
 import android.window.WindowContainerToken
@@ -34,6 +35,7 @@ private constructor(
     private val owner: Binder,
     private val frame: Frame,
     private val boundingRects: List<Rect> = emptyList(),
+    private val insetsBoundingRects: List<InsetsBoundingRect> = emptyList(),
     @InsetsSource.Flags private val flags: Int = 0,
     private val shouldAddCaptionInset: Boolean = false,
     private val appBoundsExclusion: AppBoundsExclusion? = null,
@@ -54,6 +56,7 @@ private constructor(
         frame: Rect,
         taskFrame: Rect? = null,
         boundingRects: List<Rect> = emptyList(),
+        insetsBoundingRects: List<InsetsBoundingRect> = emptyList(),
         @InsetsSource.Flags flags: Int = 0,
         shouldAddCaptionInset: Boolean = false,
         excludedFromAppBounds: Boolean = false,
@@ -66,6 +69,7 @@ private constructor(
             Frame.Absolute(frame)
         },
         boundingRects,
+        insetsBoundingRects,
         flags,
         shouldAddCaptionInset,
         if (excludedFromAppBounds) AppBoundsExclusion(checkNotNull(taskFrame)) else null,
@@ -78,51 +82,104 @@ private constructor(
             "update insets for wc=%s with frame=%s, rects=%s, appBoundsExclusion=%s",
             token,
             frame,
-            boundingRects,
+            if (com.android.window.flags.Flags.improveFluidResizingPerformance()) {
+                insetsBoundingRects
+            } else {
+                boundingRects
+            },
             appBoundsExclusion,
         )
-        val rects = if (boundingRects.isEmpty()) null else boundingRects.toTypedArray()
-        when (frame) {
-            is Frame.Absolute -> {
-                wct.addInsetsSource(
-                    token,
-                    owner,
-                    INDEX,
-                    WindowInsets.Type.captionBar(),
-                    frame.rect,
-                    rects,
-                    flags,
-                )
-                wct.addInsetsSource(
-                    token,
-                    owner,
-                    INDEX,
-                    WindowInsets.Type.mandatorySystemGestures(),
-                    frame.rect,
-                    rects,
-                    /* flags= */ 0,
-                )
+        if (com.android.window.flags.Flags.improveFluidResizingPerformance()) {
+            val rects: Array<InsetsBoundingRect>? =
+                if (insetsBoundingRects.isEmpty()) null else insetsBoundingRects.toTypedArray()
+            when (frame) {
+                is Frame.Absolute -> {
+                    wct.addInsetsSource(
+                        token,
+                        owner,
+                        INDEX,
+                        WindowInsets.Type.captionBar(),
+                        frame.rect,
+                        rects,
+                        flags,
+                    )
+                    wct.addInsetsSource(
+                        token,
+                        owner,
+                        INDEX,
+                        WindowInsets.Type.mandatorySystemGestures(),
+                        frame.rect,
+                        rects,
+                        /* flags= */ 0,
+                    )
+                }
+                is Frame.Relative -> {
+                    val insets = Insets.of(0, frame.height, 0, 0)
+                    wct.addInsetsSource(
+                        token,
+                        owner,
+                        INDEX,
+                        WindowInsets.Type.captionBar(),
+                        insets,
+                        rects,
+                        flags,
+                    )
+                    wct.addInsetsSource(
+                        token,
+                        owner,
+                        INDEX,
+                        WindowInsets.Type.mandatorySystemGestures(),
+                        insets,
+                        rects,
+                        /* flags= */ 0,
+                    )
+                }
             }
-            is Frame.Relative -> {
-                val insets = Insets.of(0, frame.height, 0, 0)
-                wct.addInsetsSource(
-                    token,
-                    owner,
-                    INDEX,
-                    WindowInsets.Type.captionBar(),
-                    insets,
-                    rects,
-                    flags,
-                )
-                wct.addInsetsSource(
-                    token,
-                    owner,
-                    INDEX,
-                    WindowInsets.Type.mandatorySystemGestures(),
-                    insets,
-                    rects,
-                    /* flags= */ 0,
-                )
+        } else {
+            val rects: Array<Rect>? =
+                if (boundingRects.isEmpty()) null else boundingRects.toTypedArray()
+            when (frame) {
+                is Frame.Absolute -> {
+                    wct.addInsetsSource(
+                        token,
+                        owner,
+                        INDEX,
+                        WindowInsets.Type.captionBar(),
+                        frame.rect,
+                        rects,
+                        flags,
+                    )
+                    wct.addInsetsSource(
+                        token,
+                        owner,
+                        INDEX,
+                        WindowInsets.Type.mandatorySystemGestures(),
+                        frame.rect,
+                        rects,
+                        /* flags= */ 0,
+                    )
+                }
+                is Frame.Relative -> {
+                    val insets = Insets.of(0, frame.height, 0, 0)
+                    wct.addInsetsSource(
+                        token,
+                        owner,
+                        INDEX,
+                        WindowInsets.Type.captionBar(),
+                        insets,
+                        rects,
+                        flags,
+                    )
+                    wct.addInsetsSource(
+                        token,
+                        owner,
+                        INDEX,
+                        WindowInsets.Type.mandatorySystemGestures(),
+                        insets,
+                        rects,
+                        /* flags= */ 0,
+                    )
+                }
             }
         }
         if (!Flags.refactorCaptionSandboxingToCore()) {

@@ -56,6 +56,7 @@ import android.os.Parcelable;
 import android.util.ArrayMap;
 import android.util.DebugUtils;
 import android.util.Log;
+import android.view.InsetsBoundingRect;
 import android.view.InsetsFrameProvider;
 import android.view.InsetsSource;
 import android.view.SurfaceControl;
@@ -1248,8 +1249,11 @@ public final class WindowContainerTransaction implements Parcelable {
      * @param type     The {@link InsetsType} of the insets source.
      * @param frame    The rectangle area of the insets source.
      * @param boundingRects The bounding rects within this inset, relative to the |frame|.
+     * @deprecated Use {@link #addInsetsSource(WindowContainerToken, IBinder, int, int, Rect,
+     *             InsetsBoundingRect[], int)} instead.
      * @hide
      */
+    @Deprecated
     @NonNull
     public WindowContainerTransaction addInsetsSource(
             @NonNull WindowContainerToken receiver,
@@ -1273,13 +1277,68 @@ public final class WindowContainerTransaction implements Parcelable {
      * @param type          The {@link InsetsType} of the insets source.
      * @param insets        The size of the insets on each side of the edges.
      * @param boundingRects The bounding rects within this inset, relative to the |frame|.
+     * @deprecated Use {@link #addInsetsSource(WindowContainerToken, IBinder, int, int, Insets,
+     *             InsetsBoundingRect[], int)} instead.
+     * @hide
+     */
+    @Deprecated
+    @NonNull
+    public WindowContainerTransaction addInsetsSource(
+            @NonNull WindowContainerToken receiver,
+            @Nullable IBinder owner, int index, @InsetsType int type, @NonNull Insets insets,
+            @Nullable Rect[] boundingRects, @InsetsSource.Flags int flags) {
+        return addInsetsSource(receiver, owner, new InsetsFrameProvider(owner, index, type)
+                .setSource(InsetsFrameProvider.SOURCE_ATTACHED_CONTAINER_BOUNDS)
+                .setInsetsSize(insets)
+                .setBoundingRects(boundingRects)
+                .setFlags(flags));
+    }
+
+    /**
+     * Adds a given {@code Rect} as an insets source frame on the {@code receiver}.
+     *
+     * @param receiver The window container that the insets source is added to.
+     * @param owner    The owner of the insets source. An insets source can only be modified by its
+     *                 owner.
+     * @param index    An owner might add multiple insets sources with the same type.
+     *                 This identifies them.
+     * @param type     The {@link InsetsType} of the insets source.
+     * @param frame    The rectangle area of the insets source.
+     * @param boundingRects The {@link InsetsBoundingRect}s within this source, relative to the
+     *                      source frame.
+     * @hide
+     */
+    @NonNull
+    public WindowContainerTransaction addInsetsSource(
+            @NonNull WindowContainerToken receiver,
+            @Nullable IBinder owner, int index, @InsetsType int type, @Nullable Rect frame,
+            @Nullable InsetsBoundingRect[] boundingRects, @InsetsSource.Flags int flags) {
+        return addInsetsSource(receiver, owner, new InsetsFrameProvider(owner, index, type)
+                .setSource(InsetsFrameProvider.SOURCE_ARBITRARY_RECTANGLE)
+                .setArbitraryRectangle(frame)
+                .setBoundingRects(boundingRects)
+                .setFlags(flags));
+    }
+
+    /**
+     * Adds a given {@code Insets} attached to the {@code receiver}'s bounds.
+     *
+     * @param receiver      The window container that the insets source is attached to.
+     * @param owner         The owner of the insets source. An insets source can only be modified by
+     *                      its owner.
+     * @param index         An owner might add multiple insets sources with the same type.
+     *                      This identifies them.
+     * @param type          The {@link InsetsType} of the insets source.
+     * @param insets        The size of the insets on each side of the edges.
+     * @param boundingRects The {@link InsetsBoundingRect}s within this source, relative to the
+     *                      source frame.
      * @hide
      */
     @NonNull
     public WindowContainerTransaction addInsetsSource(
             @NonNull WindowContainerToken receiver,
             @Nullable IBinder owner, int index, @InsetsType int type, @NonNull Insets insets,
-            @Nullable Rect[] boundingRects, @InsetsSource.Flags int flags) {
+            @Nullable InsetsBoundingRect[] boundingRects, @InsetsSource.Flags int flags) {
         return addInsetsSource(receiver, owner, new InsetsFrameProvider(owner, index, type)
                 .setSource(InsetsFrameProvider.SOURCE_ATTACHED_CONTAINER_BOUNDS)
                 .setInsetsSize(insets)
