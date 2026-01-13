@@ -1129,18 +1129,27 @@ public class AdbDebuggingManager {
                 case MSG_ADBD_SOCKET_CONNECTED -> {
                     Slog.d(TAG, "adbd socket connected");
                     if (mAdbWifiEnabled) {
-                        // In scenarios where adbd is restarted, the tls port may change.
-                        startTLSPortPoller();
-                        if (wifiLifeCycleOverAdbdauthSupported()) {
-                            mThread.sendResponse(MSG_START_ADB_WIFI);
+                        if (com.android.server.adb.Flags.allowAdbWifiReconnect()) {
+                            Slog.d(TAG, "Starting TLS service after adbd socket connected");
+                            mHandler.sendEmptyMessage(AdbDebuggingHandler.MSG_START_TLS_SERVICE);
+                        } else {
+                            startTLSPortPoller();
+                            if (wifiLifeCycleOverAdbdauthSupported()) {
+                                mThread.sendResponse(MSG_START_ADB_WIFI);
+                            }
                         }
                     }
                 }
                 case MSG_ADBD_SOCKET_DISCONNECTED -> {
                     Slog.d(TAG, "adbd socket disconnected");
                     stopTLSPortPoller();
-                    if (mAdbWifiEnabled) {
-                        // In scenarios where adbd is restarted, the tls port may change.
+                    if (com.android.server.adb.Flags.allowAdbWifiReconnect()) {
+                        mAdbdServicesManager.unregisterAll();
+                        if (mAdbWifiEnabled) {
+                            Slog.d(TAG, "Stopping TLS service after adbd socket disconnected");
+                            mHandler.sendEmptyMessage(AdbDebuggingHandler.MSG_STOP_TLS_SERVICE);
+                        }
+                    } else if (mAdbWifiEnabled) {
                         onAdbdWifiServerDisconnected(-1);
                         mAdbdServicesManager.unregisterAll();
                     }
