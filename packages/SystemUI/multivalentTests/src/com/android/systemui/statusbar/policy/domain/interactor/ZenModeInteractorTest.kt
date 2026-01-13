@@ -356,6 +356,45 @@ class ZenModeInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    fun activeModesBlockingMedia_hasModesWithPolicyBlockingAssistant() =
+        kosmos.runTest {
+            val blockingMedia by
+                collectLastValue(
+                    underTest.activeModesBlockingStream(AudioStream(AudioManager.STREAM_ASSISTANT))
+                )
+
+            zenModeRepository.addModes(
+                listOf(
+                    TestModeBuilder()
+                        .setName("Blocks media, Not active")
+                        .setZenPolicy(ZenPolicy.Builder().allowMedia(false).build())
+                        .setActive(false)
+                        .build(),
+                    TestModeBuilder()
+                        .setName("Allows media, Active")
+                        .setZenPolicy(ZenPolicy.Builder().allowMedia(true).build())
+                        .setActive(true)
+                        .build(),
+                    TestModeBuilder()
+                        .setName("Blocks media, Active")
+                        .setZenPolicy(ZenPolicy.Builder().allowMedia(false).build())
+                        .setActive(true)
+                        .build(),
+                    TestModeBuilder()
+                        .setName("Blocks media, Active Too")
+                        .setZenPolicy(ZenPolicy.Builder().allowMedia(false).build())
+                        .setActive(true)
+                        .build(),
+                )
+            )
+
+            assertThat(blockingMedia!!.main!!.name).isEqualTo("Blocks media, Active")
+            assertThat(blockingMedia!!.names)
+                .containsExactly("Blocks media, Active", "Blocks media, Active Too")
+                .inOrder()
+        }
+
+    @Test
     fun activeModesBlockingMedia_hasModesWithPolicyBlockingMedia() =
         kosmos.runTest {
             val blockingMedia by
