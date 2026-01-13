@@ -19,9 +19,6 @@ import android.app.Activity
 import android.app.Instrumentation
 import android.app.UiAutomation.FLAG_DONT_SUPPRESS_ACCESSIBILITY_SERVICES
 import android.os.Bundle
-import android.platform.test.annotations.RequiresFlagsEnabled
-import android.platform.test.flag.junit.CheckFlagsRule
-import android.platform.test.flag.junit.DeviceFlagsValueProvider
 import android.provider.Settings
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.GestureDetector
@@ -37,7 +34,6 @@ import androidx.test.uiautomator.By
 import androidx.test.uiautomator.Configurator
 import androidx.test.uiautomator.UiDevice
 import com.android.compatibility.common.util.SettingsStateChangerRule
-import com.android.server.accessibility.Flags
 import kotlin.test.assertEquals
 import org.junit.AfterClass
 import org.junit.Before
@@ -49,18 +45,14 @@ import platform.test.desktop.DesktopMouseTestRule
 import platform.test.desktop.LogicalDisplayPointPx
 
 @RunWith(AndroidJUnit4::class)
-@RequiresFlagsEnabled(Flags.FLAG_ENABLE_AUTOCLICK_INDICATOR)
 class AutoclickClickTypeTests {
-    @Rule(order = 0)
-    @JvmField
-    val checkFlagsRule: CheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()
 
-    @Rule(order = 1)
+    @Rule(order = 0)
     @JvmField
     val activityScenarioRule: ActivityScenarioRule<TestClickActivity> =
         ActivityScenarioRule(TestClickActivity::class.java)
 
-    @Rule(order = 2)
+    @Rule(order = 1)
     @JvmField
     val autoclickEnabledSettingRule: SettingsStateChangerRule =
         SettingsStateChangerRule(
@@ -69,7 +61,7 @@ class AutoclickClickTypeTests {
             "1"
         )
 
-    @Rule(order = 3)
+    @Rule(order = 2)
     @JvmField
     val desktopMouseTestRule = DesktopMouseTestRule()
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
