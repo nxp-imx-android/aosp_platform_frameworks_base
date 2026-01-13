@@ -2113,6 +2113,7 @@
     <string name="app_suspended_more_details" msgid="211260942831587014">"Saiba mais"</string>
     <string name="app_suspended_unsuspend_message" msgid="1665438589450555459">"Retomar app"</string>
     <string name="locked_app_biometric_prompt_description" msgid="6853122652400451464">"A app <xliff:g id="APP_NAME">%1$s</xliff:g> está bloqueada"</string>
+    <string name="locked_app_external_display_message" msgid="5483884799685545338">"Para aceder à app neste ecrã, comece por validar a sua identidade no seu outro dispositivo"</string>
     <string name="work_mode_off_title" msgid="6367463960165135829">"Retomar apps de trabalho?"</string>
     <string name="work_mode_turn_on" msgid="5316648862401307800">"Retomar"</string>
     <string name="work_mode_emergency_call_button" msgid="6818855962881612322">"Emergência"</string>

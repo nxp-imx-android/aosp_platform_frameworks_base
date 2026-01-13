@@ -2112,6 +2112,7 @@
     <string name="app_suspended_more_details" msgid="211260942831587014">"Batafsil"</string>
     <string name="app_suspended_unsuspend_message" msgid="1665438589450555459">"Ilovani pauzadan chiqarish"</string>
     <string name="locked_app_biometric_prompt_description" msgid="6853122652400451464">"<xliff:g id="APP_NAME">%1$s</xliff:g> qulflandi"</string>
+    <string name="locked_app_external_display_message" msgid="5483884799685545338">"Bu ekranda ilovaga ruxsat uchun avval boshqa qurilmada shaxsingizni tasdiqlang"</string>
     <string name="work_mode_off_title" msgid="6367463960165135829">"Ishga oid ilovalar qaytarilsinmi?"</string>
     <string name="work_mode_turn_on" msgid="5316648862401307800">"Davom ettirish"</string>
     <string name="work_mode_emergency_call_button" msgid="6818855962881612322">"Favqulodda holat"</string>

@@ -2112,6 +2112,8 @@
     <string name="app_suspended_more_details" msgid="211260942831587014">"瞭解詳情"</string>
     <string name="app_suspended_unsuspend_message" msgid="1665438589450555459">"取消暫停應用程式"</string>
     <string name="locked_app_biometric_prompt_description" msgid="6853122652400451464">"「<xliff:g id="APP_NAME">%1$s</xliff:g>」已上鎖"</string>
+    <!-- no translation found for locked_app_external_display_message (5483884799685545338) -->
+    <skip />
     <string name="work_mode_off_title" msgid="6367463960165135829">"要取消暫停工作應用程式嗎？"</string>
     <string name="work_mode_turn_on" msgid="5316648862401307800">"取消暫停"</string>
     <string name="work_mode_emergency_call_button" msgid="6818855962881612322">"撥打緊急電話"</string>
