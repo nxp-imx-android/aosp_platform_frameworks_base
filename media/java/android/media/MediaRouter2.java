@@ -20,7 +20,6 @@ import static android.media.RoutingChangeInfo.ENTRY_POINT_LOCAL_ROUTER_UNSPECIFI
 import static android.media.RoutingChangeInfo.ENTRY_POINT_PROXY_ROUTER_UNSPECIFIED;
 
 import static com.android.internal.util.function.pooled.PooledLambda.obtainMessage;
-import static com.android.media.flags.Flags.FLAG_ENABLE_BUILT_IN_SPEAKER_ROUTE_SUITABILITY_STATUSES;
 import static com.android.media.flags.Flags.FLAG_ENABLE_GET_TRANSFERABLE_ROUTES;
 import static com.android.media.flags.Flags.FLAG_ENABLE_PRIVILEGED_ROUTING_FOR_MEDIA_ROUTING_CONTROL;
 import static com.android.media.flags.Flags.FLAG_ENABLE_ROUTE_VISIBILITY_CONTROL_API;
@@ -2299,7 +2298,6 @@ public final class MediaRouter2 {
          * Returns whether the transfer was initiated by the calling app (as determined by comparing
          * {@link UserHandle} and package name).
          */
-        @FlaggedApi(FLAG_ENABLE_BUILT_IN_SPEAKER_ROUTE_SUITABILITY_STATUSES)
         public boolean wasTransferInitiatedBySelf() {
             return mImpl.wasTransferredBySelf(getRoutingSessionInfo());
         }
@@ -2496,8 +2494,7 @@ public final class MediaRouter2 {
                 // through as a provider driven transfer in order to update the transfer reason and
                 // initiator data.
                 boolean isSystemRouteReselection =
-                        Flags.enableBuiltInSpeakerRouteSuitabilityStatuses()
-                                && mSessionInfo.isSystemSession()
+                        mSessionInfo.isSystemSession()
                                 && route.isSystemRoute()
                                 && mSessionInfo.getSelectedRoutes().contains(route.getId());
                 if (!isSystemRouteReselection

@@ -134,17 +134,15 @@ final class MediaRoute2ProviderServiceProxy extends MediaRoute2Provider {
             @NonNull UserHandle transferInitiatorUserHandle,
             @NonNull String transferInitiatorPackageName) {
         if (mConnectionReady) {
-            if (Flags.enableBuiltInSpeakerRouteSuitabilityStatuses()) {
-                synchronized (mLock) {
-                    mRequestIdToSessionCreationRequest.put(
-                            requestId,
-                            new SessionCreationOrTransferRequest(
-                                    requestId,
-                                    routeOriginalId,
-                                    transferReason,
-                                    transferInitiatorUserHandle,
-                                    transferInitiatorPackageName));
-                }
+            synchronized (mLock) {
+                mRequestIdToSessionCreationRequest.put(
+                        requestId,
+                        new SessionCreationOrTransferRequest(
+                                requestId,
+                                routeOriginalId,
+                                transferReason,
+                                transferInitiatorUserHandle,
+                                transferInitiatorPackageName));
             }
             mActiveConnection.requestCreateSession(
                     requestId, packageName, routeOriginalId, sessionHints);
@@ -159,10 +157,8 @@ final class MediaRoute2ProviderServiceProxy extends MediaRoute2Provider {
 
     public void releaseSession(long requestId, String sessionId, boolean shouldRetainFocus) {
         if (mConnectionReady) {
-            if (Flags.enableBuiltInSpeakerRouteSuitabilityStatuses()) {
-                synchronized (mLock) {
-                    mSessionOriginalIdToTransferRequest.remove(sessionId);
-                }
+            synchronized (mLock) {
+                mSessionOriginalIdToTransferRequest.remove(sessionId);
             }
             mActiveConnection.releaseSession(requestId, sessionId, shouldRetainFocus);
             updateBinding();
@@ -206,17 +202,15 @@ final class MediaRoute2ProviderServiceProxy extends MediaRoute2Provider {
             String routeOriginalId,
             @RoutingSessionInfo.TransferReason int transferReason) {
         if (mConnectionReady) {
-            if (Flags.enableBuiltInSpeakerRouteSuitabilityStatuses()) {
-                synchronized (mLock) {
-                    mSessionOriginalIdToTransferRequest.put(
-                            sessionOriginalId,
-                            new SessionCreationOrTransferRequest(
-                                    requestId,
-                                    routeOriginalId,
-                                    transferReason,
-                                    transferInitiatorUserHandle,
-                                    transferInitiatorPackageName));
-                }
+            synchronized (mLock) {
+                mSessionOriginalIdToTransferRequest.put(
+                        sessionOriginalId,
+                        new SessionCreationOrTransferRequest(
+                                requestId,
+                                routeOriginalId,
+                                transferReason,
+                                transferInitiatorUserHandle,
+                                transferInitiatorPackageName));
             }
             mActiveConnection.transferToRoute(requestId, sessionOriginalId, routeOriginalId);
         }
@@ -505,11 +499,9 @@ final class MediaRoute2ProviderServiceProxy extends MediaRoute2Provider {
                 return;
             }
 
-            if (Flags.enableBuiltInSpeakerRouteSuitabilityStatuses()) {
-                newSession =
-                        createSessionWithPopulatedTransferInitiationDataLocked(
-                                requestId, /* oldSessionInfo= */ null, newSession);
-            }
+            newSession =
+                    createSessionWithPopulatedTransferInitiationDataLocked(
+                            requestId, /* oldSessionInfo= */ null, newSession);
             if (mSessionInfos.stream()
                     .anyMatch(session -> TextUtils.equals(session.getId(), newSessionId))
                     || mReleasingSessions.stream()
@@ -561,12 +553,10 @@ final class MediaRoute2ProviderServiceProxy extends MediaRoute2Provider {
                 } else if (sourceIndex < targetIndex) {
                     Slog.w(TAG, "Ignoring duplicate session ID: " + session.getId());
                 } else {
-                    if (Flags.enableBuiltInSpeakerRouteSuitabilityStatuses()) {
-                        RoutingSessionInfo oldSessionInfo = mSessionInfos.get(sourceIndex);
-                        session =
-                                createSessionWithPopulatedTransferInitiationDataLocked(
-                                        REQUEST_ID_NONE, oldSessionInfo, session);
-                    }
+                    RoutingSessionInfo oldSessionInfo = mSessionInfos.get(sourceIndex);
+                    session =
+                            createSessionWithPopulatedTransferInitiationDataLocked(
+                                    REQUEST_ID_NONE, oldSessionInfo, session);
                     mSessionInfos.set(sourceIndex, session);
                     Collections.swap(mSessionInfos, sourceIndex, targetIndex++);
                     dispatchSessionUpdated(session);
@@ -706,10 +696,8 @@ final class MediaRoute2ProviderServiceProxy extends MediaRoute2Provider {
     }
 
     private void onRequestFailed(Connection connection, long requestId, int reason) {
-        if (Flags.enableBuiltInSpeakerRouteSuitabilityStatuses()) {
-            synchronized (mLock) {
-                mRequestIdToSessionCreationRequest.remove(requestId);
-            }
+        synchronized (mLock) {
+            mRequestIdToSessionCreationRequest.remove(requestId);
         }
         if (mActiveConnection != connection) {
             return;
