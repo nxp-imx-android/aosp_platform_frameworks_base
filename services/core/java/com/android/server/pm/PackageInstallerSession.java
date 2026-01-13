@@ -5728,13 +5728,15 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
             }
         }
 
-        final long token = Binder.clearCallingIdentity();
-        try {
+        // Post the callback instead of running it directly here because the verification could have
+        // just finished on the handler thread, leading to two contradictory result statuses
+        // (session abandoned and verification succeeded) occurring at the same time, which causes
+        // non-deterministic behavior.
+        // Posting the abandon callback to the handler thread ensures that this doesn't happen.
+        mHandler.post(() -> {
             // This will call into StagingManager which might trigger external callbacks
             r.run();
-        } finally {
-            Binder.restoreCallingIdentity(token);
-        }
+        });
     }
 
     @Override
