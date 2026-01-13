@@ -225,3 +225,10 @@ flag {
     bug: "361042865"
 }
 
+flag {
+    name: "gnss_capability_restart_engine_after_power_mode_change"
+    namespace: "location"
+    description: "Flag for engine restart after power mode change capability"
+    bug: "475552312"
+    is_exported: true
+}
