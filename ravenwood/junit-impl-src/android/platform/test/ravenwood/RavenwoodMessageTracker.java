@@ -182,6 +182,12 @@ public final class RavenwoodMessageTracker {
         if (msg == null) {
             return "{null Message}";
         }
-        return msg.hashCode() + "/" + msg;
+        try {
+            return msg.hashCode() + "/" + msg;
+        } catch (RuntimeException th) {
+            // If the message is recycled (and maybe reused) already, Message.toString() could
+            // throw.
+            return msg.hashCode() + "/[toString() not accessible - recycled?]";
+        }
     }
 }
