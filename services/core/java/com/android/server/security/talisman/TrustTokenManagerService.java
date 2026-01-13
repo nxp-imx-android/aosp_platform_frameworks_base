@@ -23,6 +23,7 @@ import android.content.Context;
 import android.security.talisman.ITrustTokenManager;
 import android.security.talisman.TrustToken;
 import android.security.talisman.TrustTokenIdentitySet;
+import android.security.talisman.TrustTokenWithChallenge;
 import android.util.Slog;
 
 import com.android.server.SystemService;
@@ -51,7 +52,7 @@ public class TrustTokenManagerService extends SystemService {
             new ITrustTokenManager.Stub() {
                 @RequiresNoPermission
                 @Override
-                public TrustToken acquireVerifiedDeviceToken() {
+                public TrustTokenWithChallenge acquireVerifiedDeviceToken(byte[] challenge) {
                     // TODO(b/418280383): Implement this method.
                     // TODO(b/418280383): Protect with permissions
                     Slog.w(TAG, "acquireVerifiedDeviceToken is not yet implemented.");
@@ -60,7 +61,7 @@ public class TrustTokenManagerService extends SystemService {
 
                 @RequiresNoPermission
                 @Override
-                public TrustTokenIdentitySet acquirePreparedIdentitySet() {
+                public TrustTokenIdentitySet acquirePreparedIdentitySet(byte[] challenge) {
                     // TODO(b/418280383): Implement this method.
                     // TODO(b/418280383): Protect with permissions
                     Slog.w(TAG, "acquirePreparedIdentitySet is not yet implemented.");

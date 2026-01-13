@@ -39,7 +39,7 @@ import java.util.Objects;
  */
 public final class TrustTokenIdentitySet implements Parcelable {
 
-    private final TrustToken mVerifiedDeviceToken;
+    private final TrustTokenWithChallenge mVerifiedDeviceToken;
     private final Map<String, TrustToken> mIdentityTokens;
     private final byte[] mSecretKey;
 
@@ -51,7 +51,7 @@ public final class TrustTokenIdentitySet implements Parcelable {
      * @param secretKey the secret key for identity-related cryptographic operations.
      */
     public TrustTokenIdentitySet(
-            @NonNull TrustToken verifiedDeviceToken,
+            @NonNull TrustTokenWithChallenge verifiedDeviceToken,
             @NonNull Map<String, TrustToken> identityTokens,
             @NonNull byte[] secretKey) {
         mVerifiedDeviceToken = Objects.requireNonNull(verifiedDeviceToken);
@@ -62,7 +62,7 @@ public final class TrustTokenIdentitySet implements Parcelable {
     }
 
     private TrustTokenIdentitySet(Parcel in) {
-        mVerifiedDeviceToken = in.readTypedObject(TrustToken.CREATOR);
+        mVerifiedDeviceToken = in.readTypedObject(TrustTokenWithChallenge.CREATOR);
         int size = in.readInt();
         mIdentityTokens = new HashMap<>(size);
         for (int i = 0; i < size; i++) {
@@ -75,7 +75,7 @@ public final class TrustTokenIdentitySet implements Parcelable {
 
     /** Returns the "verified device" trust token. */
     @NonNull
-    public TrustToken getVerifiedDeviceToken() {
+    public TrustTokenWithChallenge getVerifiedDeviceToken() {
         return mVerifiedDeviceToken;
     }
 

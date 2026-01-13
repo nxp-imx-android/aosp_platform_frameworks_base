@@ -18,14 +18,15 @@ package android.security.talisman;
 
 import android.security.talisman.TrustToken;
 import android.security.talisman.TrustTokenIdentitySet;
+import android.security.talisman.TrustTokenWithChallenge;
 
 /**
  * Interface for the TrustTokenManagerService.
  * @hide
  */
 interface ITrustTokenManager {
-    TrustToken acquireVerifiedDeviceToken();
-    TrustTokenIdentitySet acquirePreparedIdentitySet();
+    TrustTokenWithChallenge acquireVerifiedDeviceToken(in byte[] challenge);
+    TrustTokenIdentitySet acquirePreparedIdentitySet(in byte[] challenge);
     int verifyTrustTokenAndChallenge(in TrustToken token, in byte[] remoteResponse,
             in byte[] expectedChallenge);
     int[] verifyIdentityTokens(in TrustToken verifiedDeviceToken, in TrustToken[] identityTokens);
