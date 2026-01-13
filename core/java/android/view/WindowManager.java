@@ -1526,6 +1526,30 @@ public interface WindowManager extends ViewManager {
             "android.window.PROPERTY_COMPAT_ALLOW_SAFE_REGION_LETTERBOXING";
 
     /**
+     * Activity level {@link android.content.pm.PackageManager.Property PackageManager.Property}
+     * that specifies an activity's request to launch in fullscreen if launching in a new task.
+     * Requires application to hold the
+     * {@link android.Manifest.permission#PREFER_FULLSCREEN_IN_NEW_TASK} permission to take effect,
+     * not holding the permission will result in the property value set being ignored
+     * (equivalent to default value {@code false}).
+     *
+     * <p><b>Syntax:</b>
+     * <pre>
+     * &lt;activity&gt;
+     *   &lt;property
+     *     android:name="android.window.PROPERTY_PREFER_FULLSCREEN_IN_NEW_TASK"
+     *     android:value="true"/&gt;
+     * &lt;/activity&gt;
+     * </pre>
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_ENABLE_FULLSCREEN_IN_NEW_TASK_PREFERENCE)
+    @RequiresPermission(android.Manifest.permission.PREFER_FULLSCREEN_IN_NEW_TASK)
+    String PROPERTY_PREFER_FULLSCREEN_IN_NEW_TASK =
+            "android.window.PROPERTY_PREFER_FULLSCREEN_IN_NEW_TASK";
+
+    /**
      * {@link android.content.pm.PackageManager.Property} for an activity that is a home activity
      * (i.e. has a {@link android.content.Intent#CATEGORY_HOME} or
      * {@link android.content.Intent#CATEGORY_SECONDARY_HOME} category).

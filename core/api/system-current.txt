@@ -20891,6 +20891,7 @@ package android.view {
     field public static final int DISPLAY_IME_POLICY_LOCAL = 0; // 0x0
     field @FlaggedApi("com.android.window.flags.device_engagement_mode") public static final int ENGAGEMENT_MODE_FLAG_AUDIO_ON = 2; // 0x2
     field @FlaggedApi("com.android.window.flags.device_engagement_mode") public static final int ENGAGEMENT_MODE_FLAG_VISUALS_ON = 1; // 0x1
+    field @FlaggedApi("com.android.window.flags.enable_fullscreen_in_new_task_preference") @RequiresPermission(android.Manifest.permission.PREFER_FULLSCREEN_IN_NEW_TASK) public static final String PROPERTY_PREFER_FULLSCREEN_IN_NEW_TASK = "android.window.PROPERTY_PREFER_FULLSCREEN_IN_NEW_TASK";
   }
 
   @FlaggedApi("com.android.window.flags.device_engagement_mode") public static final class WindowManager.DisplayEngagementModeState {
