@@ -16,8 +16,8 @@
 
 package android.hardware.contexthub;
 
-import android.hardware.contexthub.DataFlowConsumerHandle;
 import android.hardware.contexthub.DataFlowId;
+import android.hardware.contexthub.DataFlowSinkContext;
 import android.hardware.contexthub.HubEndpointInfo;
 import android.hardware.contexthub.HubMessage;
 import android.hardware.contexthub.HubServiceInfo;
@@ -64,18 +64,18 @@ oneway interface IContextHubEndpointCallback {
     void onMessageReceived(int sessionId, in HubMessage message);
 
     /**
-     * Callback delivering a consumer handle for a data flow produced by an offload endpoint.
+     * Callback delivering a sink context for a data flow whose source is an offload endpoint.
      *
-     * @param handle The handle used to give the new consumer access to the data flow.
-     * @param producer The offload endpoint which is producing this data flow.
+     * @param context The context used to give the new sink access to the data flow.
+     * @param source The offload endpoint which is the source of this data flow.
      * @param msg [optional] An optional message sent by the offload endpoint.
-     * @param sessionId [optional] An optional open session id between the data flow producer and
+     * @param sessionId [optional] An optional open session id between the data flow source and
      *         the destination endpoint to associate this call with. If msg is provided, this
      *         session can be used to send a MessageDeliveryStatus in response. Ignored if set to
      *         SESSION_ID_INVALID.
      */
-    void onDataFlowHostConsumerRegistered(in DataFlowConsumerHandle handle,
-            in HubEndpointInfo producer, in @nullable HubMessage msg, int sessionId);
+    void onDataFlowHostSinkRegistered(in DataFlowSinkContext context, in HubEndpointInfo source,
+            in @nullable HubMessage msg, int sessionId);
 
     /**
      * Callback notifying this endpoint that an endpoint on the other side of a data flow has
@@ -85,8 +85,8 @@ oneway interface IContextHubEndpointCallback {
      * can be notified of the disconnection via
      * IContextHubService::registerEndpointDiscoveryCallbackId().
      *
-     * If this endpoint is a consumer on the data flow, it must stop accessing it and release
-     * resources associated with the data flow. If it is the producer, it must release resources
+     * If this endpoint is a sink on the data flow, it must stop accessing it and release
+     * resources associated with the data flow. If it is the source, it must release resources
      * associated with the other endpoint.
      *
      * @param dataFlowId The id of the active data flow.

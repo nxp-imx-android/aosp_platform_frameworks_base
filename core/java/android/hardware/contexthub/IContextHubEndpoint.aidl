@@ -16,9 +16,9 @@
 
 package android.hardware.contexthub;
 
-import android.hardware.contexthub.DataFlowConsumerHandle;
 import android.hardware.contexthub.DataFlowId;
 import android.hardware.contexthub.DataFlowInfo;
+import android.hardware.contexthub.DataFlowSinkContext;
 import android.hardware.contexthub.HubEndpointInfo;
 import android.hardware.contexthub.HubMessage;
 import android.hardware.contexthub.HubServiceInfo;
@@ -143,7 +143,7 @@ interface IContextHubEndpoint {
     void freeSharedDataRegion(int id);
 
     /**
-     * Registers a new data flow in the given shared data region.
+     * Registers a new data flow from a host source in the given shared data region.
      *
      * @param endpoint The endpoint that will produce on this data flow.
      * @param info The information about the data flow to register.
@@ -155,57 +155,56 @@ interface IContextHubEndpoint {
      * @throws UnsupportedOperationException if shared data regions are not supported.
      */
     @EnforcePermission("ACCESS_CONTEXT_HUB")
-    int registerDataFlowHostProducer(in DataFlowInfo info);
+    int registerDataFlowHostSource(in DataFlowInfo info);
 
     /**
      * Unregisters the data flow with given id.
      *
-     * NOTE: This does not guarantee that consumers that have access to the data flow will stop
-     * accessing it. It will clean up the state that helps propagate data flow notifications in
+     * NOTE: This does not guarantee that sinks that have access to the data flow will stop
+     * accessing it. It will clean up the state that helps propagate data flow alerts in
      * either direction.
      *
      * @param id The id of the data flow to remove. Must have been successfully returned by
-     *         registerDataFlowHostProducer() and not already removed.
+     *         registerDataFlowHostSource() and not already removed.
      *
      * @throws IllegalArgumentException if the id is unknown.
      * @throws UnsupportedOperationException if shared data regions are not supported.
      */
     @EnforcePermission("ACCESS_CONTEXT_HUB")
-    void unregisterDataFlowHostProducer(int id);
+    void unregisterDataFlowHostSource(int id);
 
     /**
-     * Sends a consumer handle for a data flow on this hub to an offload endpoint.
+     * Sends a sink context for a data flow on this hub to an offload endpoint.
      *
-     * The service will call IRegisterOffloadConsumerCallback::addConsumerInRegion() from the
-     * thread servicing this call to provide a region for allocating the consumer descriptor. The
-     * consumer descriptor is allocated at that time and its descriptor is passed back to the system
+     * The service will call IRegisterOffloadSinkCallback::addSinkInRegion() from the
+     * thread servicing this call to provide a region for allocating the sink descriptor. The
+     * sink descriptor is allocated at that time and its descriptor is passed back to the system
      * service as the return value.
      *
-     * @param handle The handle used to give the new consumer access to the data flow.
-     * @param consumer The offload endpoint that will consume from this data flow.
+     * @param context The context used to give the new sink access to the data flow.
+     * @param sink The offload endpoint that will read from this data flow.
      * @param callback The callback to provide additional information to the system service within
      *         this call.
      * @param msg [optional] An optional message to send to the offload endpoint.
-     * @param sessionId [optional] An optional open session id between the data flow producer and
+     * @param sessionId [optional] An optional open session id between the data flow source and
      *         the destination endpoint to associate this call with. If msg is provided, this
      *         session can be used to send a MessageDeliveryStatus in response. Ignored if set to
      *         SESSION_ID_INVALID.
      * @param transactionCallback [optional] Set if the client requires a reply to this call.
      *
      * @throws IllegalArgumentException if the data flow doesn't exist or is not active, or if the
-     *         consumer handle is invalid.
-     * @throws SecurityException if the consumer endpoint is not allowed to access the data flow.
+     *         sink context is invalid.
+     * @throws SecurityException if the sink endpoint is not allowed to access the data flow.
      * @throws UnsupportedOperationException if shared data regions are not supported.
      */
     @EnforcePermission("ACCESS_CONTEXT_HUB")
-    void registerDataFlowOffloadConsumer(in DataFlowConsumerHandle handle,
-            in HubEndpointInfo consumer, in IRegisterOffloadConsumerCallback callback,
-            in @nullable HubMessage msg, int sessionId,
-            in @nullable IContextHubTransactionCallback transactionCallback);
+    void registerDataFlowOffloadSink(in DataFlowSinkContext context, in HubEndpointInfo sink,
+            in IRegisterOffloadSinkCallback callback, in @nullable HubMessage msg,
+            int sessionId, in @nullable IContextHubTransactionCallback transactionCallback);
 
     /**
-     * Releases system service resources associated with the client consuming from a data flow
-     * received via IContextHubEndpointCallback::registerDataFlowHostConsumer().
+     * Releases system service resources associated with the client reading from a data flow
+     * received via IContextHubEndpointCallback::registerDataFlowHostSink().
      *
      * @param dataFlowId The id of the data flow to release.
      *
@@ -213,27 +212,27 @@ interface IContextHubEndpoint {
      * @throws UnsupportedOperationException if shared data regions are not supported.
      */
     @EnforcePermission("ACCESS_CONTEXT_HUB")
-    void unregisterDataFlowHostConsumer(in DataFlowId dataFlowId);
+    void unregisterDataFlowHostSink(in DataFlowId dataFlowId);
 
     /**
      * An interface to nest callbacks from the system service to the client within
-     * registerDataFlowOffloadConsumer().
+     * registerDataFlowOffloadSink().
      *
      * @hide
      */
-    interface IRegisterOffloadConsumerCallback {
+    interface IRegisterOffloadSinkCallback {
         /**
-         * Provides an optional region for allocating the consumer descriptor. The system service
-         * will call this while servicing IContextHubEndpoint::registerDataFlowOffloadConsumer().
+         * Provides an optional region for allocating the sink descriptor. The system service
+         * will call this while servicing IContextHubEndpoint::registerDataFlowOffloadSink().
          *
-         * @param region The shared data region to allocate the consumer descriptor from. If null,
+         * @param region The shared data region to allocate the sink descriptor from. If null,
          *         the descriptor will be allocated from the primary region returned by
          *         allocateSharedDataRegion(). Otherwise, the descriptor will be allocated in the
          *         given region.
          *
-         * @return The offset of the consumer descriptor in the provided region if not null or in
+         * @return The offset of the sink descriptor in the provided region if not null or in
          *         the primary region.
          */
-        long addConsumerInRegion(in @nullable SharedDataRegion region);
+        long addSinkInRegion(in @nullable SharedDataRegion region);
     }
 }

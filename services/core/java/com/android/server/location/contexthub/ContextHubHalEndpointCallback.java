@@ -15,7 +15,8 @@
  */
 package com.android.server.location.contexthub;
 
-import android.hardware.contexthub.DataFlowConsumerHandle;
+import android.hardware.contexthub.DataFlowSinkContext;
+import android.hardware.contexthub.DataFlowSinkRegistrationParams;
 import android.hardware.contexthub.DataFlowId;
 import android.hardware.contexthub.EndpointId;
 import android.hardware.contexthub.HubEndpointInfo;
@@ -65,11 +66,11 @@ public class ContextHubHalEndpointCallback
 
     /** Interface for listening for data flow events. */
     public interface IEndpointDataFlowCallback {
-        /** Called when a data flow host consumer is registered. */
-        void onDataFlowHostConsumerRegistered(
-                DataFlowConsumerHandle handle,
-                HubEndpointInfo.HubEndpointIdentifier producerId,
-                HubEndpointInfo.HubEndpointIdentifier consumerId,
+        /** Called when a data flow host sink is registered. */
+        void onDataFlowHostSinkRegistered(
+                DataFlowSinkContext handle,
+                HubEndpointInfo.HubEndpointIdentifier sourceId,
+                HubEndpointInfo.HubEndpointIdentifier sinkId,
                 HubMessage msg,
                 int sessionId);
 
@@ -150,19 +151,15 @@ public class ContextHubHalEndpointCallback
     }
 
     @Override
-    public void onDataFlowHostConsumerRegistered(
-            DataFlowConsumerHandle handle,
-            EndpointId producerId,
-            EndpointId consumerId,
-            Message msg,
-            int sessionId)
+    public void onDataFlowHostSinkRegistered(DataFlowSinkRegistrationParams params)
             throws RemoteException {
-        mEndpointDataFlowCallback.onDataFlowHostConsumerRegistered(
-                handle,
-                new HubEndpointInfo.HubEndpointIdentifier(producerId.hubId, producerId.id),
-                new HubEndpointInfo.HubEndpointIdentifier(consumerId.hubId, consumerId.id),
-                msg == null ? null : ContextHubServiceUtil.createHubMessage(msg),
-                sessionId);
+        mEndpointDataFlowCallback.onDataFlowHostSinkRegistered(
+                params.context,
+                new HubEndpointInfo.HubEndpointIdentifier(
+                        params.sourceId.hubId, params.sourceId.id),
+                new HubEndpointInfo.HubEndpointIdentifier(params.sinkId.hubId, params.sinkId.id),
+                params.msg == null ? null : ContextHubServiceUtil.createHubMessage(params.msg),
+                params.sessionId);
     }
 
     @Override
