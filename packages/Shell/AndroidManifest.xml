@@ -1007,6 +1007,9 @@
     <!-- Permissions required for CTS test - AppFunctionManagerTest -->
     <uses-permission android:name="android.permission.EXECUTE_APP_FUNCTIONS" />
 
+    <!-- Permission required for CTS test - AppFunctionManagerTest -->
+    <uses-permission android:name="android.permission.READ_APP_FUNCTION_METADATA" />
+
     <!-- Permission required for CTS test - CtsNfcTestCases -->
     <uses-permission android:name="android.permission.NFC_SET_CONTROLLER_ALWAYS_ON" />
     <uses-permission android:name="android.permission.PERFORM_GESTURE_EXCHANGE" />
