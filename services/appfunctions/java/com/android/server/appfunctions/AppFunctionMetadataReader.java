@@ -49,6 +49,8 @@ import android.os.ParcelableException;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.text.TextUtils;
+import android.util.ArrayMap;
+import android.util.Pair;
 import android.util.Slog;
 
 import com.android.internal.annotations.GuardedBy;
@@ -58,6 +60,7 @@ import com.android.internal.infra.AndroidFuture;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -182,6 +185,38 @@ final class AppFunctionMetadataReader {
                         });
     }
 
+    private CompletableFuture<AppFunctionPackageMetadata> searchAppFunctionPackageMetadata(
+            @NonNull FutureGlobalSearchSession futureSession, @NonNull String packageName) {
+        Objects.requireNonNull(futureSession);
+        Objects.requireNonNull(packageName);
+
+        SearchSpec appFunctionDocumentSearchSpec =
+                new SearchSpec.Builder()
+                        .addFilterNamespaces(APP_FUNCTION_STATIC_NAMESPACE)
+                        .addFilterPackageNames(APP_FUNCTION_INDEXER_PACKAGE)
+                        .setVerbatimSearchEnabled(true)
+                        .setListFilterQueryLanguageEnabled(true)
+                        .setListFilterHasPropertyFunctionEnabled(true)
+                        .setResultCountPerPage(250) // Maximum AppFunction related document per app
+                        .build();
+        // TODO(b/473468720): -hasProperty("functionId") is not a reliable signal
+        String query =
+                TextUtils.formatSimple(
+                        "packageName:\"%s\" -hasProperty(\"functionId\")", packageName);
+        return futureSession
+                .search(query, appFunctionDocumentSearchSpec)
+                .thenCompose(FutureSearchResults::getNextPage)
+                .thenApply(
+                        page -> {
+                            ArrayList<GenericDocument> topLevelDocuments = new ArrayList<>();
+                            for (int i = 0; i < page.size(); i++) {
+                                topLevelDocuments.add(page.get(i).getGenericDocument());
+                            }
+                            return AppFunctionPackageMetadata.create(
+                                    packageName, topLevelDocuments);
+                        });
+    }
+
     /**
      * Performs a one-time search for AppFunctionMetadata with the given searchSpec and returns the
      * result.
@@ -235,7 +270,9 @@ final class AppFunctionMetadataReader {
     @Nullable
     @WorkerThread
     public AppFunctionMetadata buildAppFunctionMetadata(
-            @NonNull SearchResult searchResult, int userId) {
+            @NonNull SearchResult searchResult,
+            @NonNull AppFunctionPackageMetadata packageMetadata,
+            int userId) {
         try {
             GenericDocument staticDocument = requireNonNull(searchResult.getGenericDocument());
             if (requireNonNull(searchResult.getJoinedResults()).size() != 1) {
@@ -246,15 +283,8 @@ final class AppFunctionMetadataReader {
             }
             GenericDocument runtimeDocument =
                     requireNonNull(searchResult.getJoinedResults().getFirst().getGenericDocument());
-            String packageName =
-                    requireNonNull(
-                            runtimeDocument.getPropertyString(
-                                    AppFunctionRuntimeMetadata.PROPERTY_PACKAGE_NAME));
 
-            return new AppFunctionMetadata.Builder(
-                            staticDocument,
-                            // TODO(b/438413081): Add package-level components
-                            AppFunctionPackageMetadata.create(packageName, Collections.emptyList()))
+            return new AppFunctionMetadata.Builder(staticDocument, packageMetadata)
                     .setEnabled(
                             calculateEffectiveEnabledState(staticDocument, runtimeDocument, userId))
                     .build();
@@ -368,34 +398,92 @@ final class AppFunctionMetadataReader {
                 }
             }
 
+            AndroidFuture<List<SearchResult>> nextPageFuture;
             final long token = Binder.clearCallingIdentity();
             try {
-                return mSearchResults
-                        .getNextPage()
-                        .thenComposeAsync(
-                                page -> {
-                                    if (page.isEmpty()) {
-                                        // No more next page
-                                        return AndroidFuture.completedFuture(
-                                                Collections.emptyList());
-                                    }
-                                    List<AppFunctionMetadata> metadataList =
-                                            new ArrayList<>(page.size());
-                                    for (SearchResult result : page) {
-                                        AppFunctionMetadata meta =
-                                                mReader.buildAppFunctionMetadata(result, mUserId);
-                                        if (meta != null) metadataList.add(meta);
-                                    }
-
-                                    if (metadataList.isEmpty()) {
-                                        return getNextValidPage();
-                                    } else {
-                                        return AndroidFuture.completedFuture(metadataList);
-                                    }
-                                },
-                                mExecutor);
+                nextPageFuture = mSearchResults.getNextPage();
             } finally {
                 Binder.restoreCallingIdentity(token);
+            }
+
+            return nextPageFuture
+                    .thenComposeAsync(this::searchWithPackageMetadata, mExecutor)
+                    .thenCompose(this::processSearchResult);
+        }
+
+        // TODO(b/473468720): Optimize top-level search
+        @NonNull
+        private CompletableFuture<Pair<List<SearchResult>, Map<String, AppFunctionPackageMetadata>>>
+                searchWithPackageMetadata(@NonNull List<SearchResult> results) {
+            Objects.requireNonNull(results);
+
+            ArrayMap<String, CompletableFuture<AppFunctionPackageMetadata>> futuresMap =
+                    new ArrayMap<>();
+            for (SearchResult result : results) {
+                String packageName =
+                        result.getGenericDocument()
+                                .getPropertyString(
+                                        AppFunctionRuntimeMetadata.PROPERTY_PACKAGE_NAME);
+                if (packageName == null || futuresMap.containsKey(packageName)) {
+                    continue;
+                }
+                futuresMap.put(
+                        packageName,
+                        mReader.searchAppFunctionPackageMetadata(mGlobalSession, packageName));
+            }
+
+            CompletableFuture<Void> allFutures =
+                    CompletableFuture.allOf(futuresMap.values().toArray(new CompletableFuture[0]));
+            return allFutures.thenApply(
+                    v -> {
+                        ArrayMap<String, AppFunctionPackageMetadata> packageMetadataMap =
+                                new ArrayMap<>();
+                        for (int i = 0; i < futuresMap.size(); i++) {
+                            packageMetadataMap.put(
+                                    futuresMap.keyAt(i), futuresMap.valueAt(i).join());
+                        }
+                        return new Pair<>(results, packageMetadataMap);
+                    });
+        }
+
+        @NonNull
+        private CompletableFuture<List<AppFunctionMetadata>> processSearchResult(
+                @NonNull
+                        Pair<List<SearchResult>, Map<String, AppFunctionPackageMetadata>>
+                                searchResult) {
+            Objects.requireNonNull(searchResult);
+
+            List<SearchResult> page = searchResult.first;
+            Map<String, AppFunctionPackageMetadata> packageMetadataMap = searchResult.second;
+
+            if (page.isEmpty()) {
+                // No more next page
+                return AndroidFuture.completedFuture(Collections.emptyList());
+            }
+            List<AppFunctionMetadata> metadataList = new ArrayList<>(page.size());
+            for (SearchResult result : page) {
+                String pkg =
+                        result.getGenericDocument()
+                                .getPropertyString(
+                                        AppFunctionRuntimeMetadata.PROPERTY_PACKAGE_NAME);
+                if (pkg == null) continue;
+                AppFunctionPackageMetadata packageMetadata;
+                if (packageMetadataMap.containsKey(pkg)) {
+                    packageMetadata = Objects.requireNonNull(packageMetadataMap.get(pkg));
+                } else {
+                    packageMetadata =
+                            AppFunctionPackageMetadata.create(pkg, Collections.emptyList());
+                }
+
+                AppFunctionMetadata meta =
+                        mReader.buildAppFunctionMetadata(result, packageMetadata, mUserId);
+                if (meta != null) metadataList.add(meta);
+            }
+
+            if (metadataList.isEmpty()) {
+                return getNextValidPage();
+            } else {
+                return AndroidFuture.completedFuture(metadataList);
             }
         }
 
