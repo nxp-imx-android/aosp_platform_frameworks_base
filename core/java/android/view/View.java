@@ -34390,7 +34390,9 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
      *
      * @attr ref android.R.styleable#View_isCredential
      *
-     * @deprecated The {@link #isCredential} is no longer needed.
+     * @deprecated The {@link #isCredential} is no longer used by the system and is not
+     * recommended for use by apps. The purpose and usage expectations of this property were
+     * never clearly defined.
      */
     @FlaggedApi(android.view.flags.Flags.FLAG_DEPRECATE_IS_CREDENTIAL_API)
     @Deprecated
@@ -34411,7 +34413,9 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
      *
      * @attr ref android.R.styleable#View_isCredential
      *
-     * @deprecated The {@link #isCredential} is no longer needed.
+     * @deprecated The {@link #isCredential} is no longer used by the system and is not
+     * recommended for use by apps. The purpose and usage expectations of this property were
+     * never clearly defined.
      */
     @FlaggedApi(android.view.flags.Flags.FLAG_DEPRECATE_IS_CREDENTIAL_API)
     @Deprecated
