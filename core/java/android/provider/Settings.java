@@ -13038,7 +13038,10 @@ public final class Settings {
          * No VALIDATOR as this setting will not be backed up.
          * @hide
          */
+        @FlaggedApi(android.service.chooser.Flags.FLAG_TAP_TO_SHARE)
+        @TestApi
         @Readable
+        @SuppressLint("NoSettingsProvider")
         public static final String TAP_EVENT_SERVICE_COMPONENT = "tap_event_service_component";
 
         /**
@@ -13048,7 +13051,10 @@ public final class Settings {
          * No VALIDATOR as this setting will not be backed up.
          * @hide
          */
+        @FlaggedApi(android.service.chooser.Flags.FLAG_TAP_TO_SHARE)
+        @TestApi
         @Readable
+        @SuppressLint("NoSettingsProvider")
         public static final String TAP_SHARE_FULFILLMENT_ACTIVITY_COMPONENT =
                 "tap_share_fulfillment_activity_component";
 

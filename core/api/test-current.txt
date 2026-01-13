@@ -3254,6 +3254,8 @@ package android.provider {
     field public static final int STYLUS_HANDWRITING_DEFAULT_VALUE = 1; // 0x1
     field public static final String STYLUS_HANDWRITING_ENABLED = "stylus_handwriting_enabled";
     field @RequiresPermission(android.Manifest.permission.WRITE_SECURE_SETTINGS) public static final String SYNC_PARENT_SOUNDS = "sync_parent_sounds";
+    field @FlaggedApi("android.service.chooser.tap_to_share") public static final String TAP_EVENT_SERVICE_COMPONENT = "tap_event_service_component";
+    field @FlaggedApi("android.service.chooser.tap_to_share") public static final String TAP_SHARE_FULFILLMENT_ACTIVITY_COMPONENT = "tap_share_fulfillment_activity_component";
     field public static final String VOICE_INTERACTION_SERVICE = "voice_interaction_service";
   }
 
