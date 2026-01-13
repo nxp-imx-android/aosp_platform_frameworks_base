@@ -154,15 +154,8 @@ final class CompanionDeviceResources {
         map.put(DEVICE_PROFILE_FITNESS_TRACKER, R.string.summary_watch);
         map.put(DEVICE_PROFILE_GLASSES, R.string.summary_glasses);
         map.put(DEVICE_PROFILE_MEDICAL, R.string.summary_glasses);
-        if (android.companion.virtualdevice.flags.Flags.itemizedVdmPermissions()) {
-            map.put(DEVICE_PROFILE_APP_STREAMING, R.string.summary_app_streaming);
-            map.put(DEVICE_PROFILE_NEARBY_DEVICE_STREAMING,
-                    R.string.summary_nearby_device_streaming);
-        } else {
-            map.put(DEVICE_PROFILE_APP_STREAMING, R.string.summary_app_streaming_legacy);
-            map.put(DEVICE_PROFILE_NEARBY_DEVICE_STREAMING,
-                    R.string.summary_nearby_device_streaming_legacy);
-        }
+        map.put(DEVICE_PROFILE_APP_STREAMING, R.string.summary_app_streaming);
+        map.put(DEVICE_PROFILE_NEARBY_DEVICE_STREAMING, R.string.summary_nearby_device_streaming);
         map.put(DEVICE_PROFILE_VIRTUAL_DEVICE, R.string.summary_virtual_device);
         map.put(null, R.string.summary_generic);
 
