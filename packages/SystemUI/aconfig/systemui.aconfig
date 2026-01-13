@@ -1921,6 +1921,13 @@ flag {
 }
 
 flag {
+  name: "upright_charging_dreams_setup"
+  namespace: "systemui"
+  description: "Trigger a setup component based on the first time the user is upright + charging"
+  bug: "473859719"
+}
+
+flag {
   name: "use_android_ui_dispatcher"
   namespace: "systemui"
   description: "Use compose's AndroidUiDispatcher as default"
