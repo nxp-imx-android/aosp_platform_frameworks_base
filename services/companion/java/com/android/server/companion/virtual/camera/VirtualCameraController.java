@@ -229,8 +229,7 @@ public final class VirtualCameraController implements IBinder.DeathRecipient {
         }
 
         // Multiple external cameras are allowed on any policy
-        if (Flags.externalVirtualCameras()
-                && CameraMetadata.LENS_FACING_EXTERNAL == config.getLensFacing()) {
+        if (CameraMetadata.LENS_FACING_EXTERNAL == config.getLensFacing()) {
             return;
         }
 

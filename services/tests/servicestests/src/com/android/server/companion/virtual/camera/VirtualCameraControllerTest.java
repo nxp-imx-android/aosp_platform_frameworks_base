@@ -203,7 +203,6 @@ public class VirtualCameraControllerTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_EXTERNAL_VIRTUAL_CAMERAS)
     public void registerMultipleExternalCameras_withCustomCameraPolicy_succeeds() {
         mVirtualCameraController.registerCamera(
                 createVirtualCameraConfig(CAMERA_WIDTH_1, CAMERA_HEIGHT_1, CAMERA_FORMAT_1,
@@ -214,16 +213,6 @@ public class VirtualCameraControllerTest {
                 createVirtualCameraConfig(CAMERA_WIDTH_2, CAMERA_HEIGHT_2, CAMERA_FORMAT_2,
                         CAMERA_MAX_FPS_2, CAMERA_NAME_2, CAMERA_SENSOR_ORIENTATION_2,
                         LENS_FACING_EXTERNAL), AttributionSource.myAttributionSource());
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_EXTERNAL_VIRTUAL_CAMERAS)
-    public void registerExternalCameras_withCustomCameraPolicy_throwsException_whenNotSupported() {
-        assertThrows(IllegalArgumentException.class,
-                () -> mVirtualCameraController.registerCamera(
-                createVirtualCameraConfig(CAMERA_WIDTH_1, CAMERA_HEIGHT_1, CAMERA_FORMAT_1,
-                        CAMERA_MAX_FPS_1, CAMERA_NAME_1, CAMERA_SENSOR_ORIENTATION_1,
-                        LENS_FACING_EXTERNAL), AttributionSource.myAttributionSource()));
     }
 
     @Parameters(method = "getFixedCamerasLensFacingDirections")
@@ -241,7 +230,7 @@ public class VirtualCameraControllerTest {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_EXTERNAL_VIRTUAL_CAMERAS, Flags.FLAG_EXTERNAL_CAMERA_DEFAULT_POLICY})
+    @EnableFlags(Flags.FLAG_EXTERNAL_CAMERA_DEFAULT_POLICY)
     public void registerCamera_withDefaultCameraPolicy_allowsMultipleExternal() {
         mVirtualCameraController.close();
         mVirtualCameraController = new VirtualCameraController(mVirtualCameraServiceMock,
@@ -258,11 +247,7 @@ public class VirtualCameraControllerTest {
                         LENS_FACING_EXTERNAL), AttributionSource.myAttributionSource());
     }
 
-    @Test
-    @DisableFlags(Flags.FLAG_EXTERNAL_VIRTUAL_CAMERAS)
-    public void registerCamera_withDefaultCameraPolicy_throwsException_whenExternalNotSupported() {
-        verifyRegisterDefaultPolicyCameraThrowsException();
-    }
+
 
     @Test
     @DisableFlags(Flags.FLAG_EXTERNAL_CAMERA_DEFAULT_POLICY)
@@ -498,11 +483,6 @@ public class VirtualCameraControllerTest {
 
     @SuppressWarnings("unused") // Parameter for parametrized tests
     private static List<Integer> getAllLensFacingDirections() {
-        List<Integer> lensFacingDirections = new ArrayList<>(
-                List.of(LENS_FACING_BACK, LENS_FACING_FRONT));
-        if (Flags.externalVirtualCameras()) {
-            lensFacingDirections.add(LENS_FACING_EXTERNAL);
-        }
-        return lensFacingDirections;
+        return List.of(LENS_FACING_BACK, LENS_FACING_FRONT, LENS_FACING_EXTERNAL);
     }
 }
