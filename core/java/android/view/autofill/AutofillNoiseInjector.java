@@ -20,7 +20,10 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.assist.AssistStructure.ViewNode;
 import android.content.ComponentName;
+import android.text.InputType;
 import android.text.TextUtils;
+import android.view.View;
+import android.widget.EditText;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -35,7 +38,7 @@ import java.util.Random;
  */
 public final class AutofillNoiseInjector {
     private static final int FIXED_LENGTH_BYTES = 32;
-    private static final int BITS_TO_RETAIN = 2;
+    private static final int BITS_TO_RETAIN = 4;
 
     private final String mMasterSeed;
     private final ComponentName mActivityComponent;
@@ -126,6 +129,12 @@ public final class AutofillNoiseInjector {
      */
     @Nullable
     public AutofillNoiseInjectedData injectNoise(@NonNull ViewNode viewNode) {
+        // If a view is editable(e.g. an input text box), then its content is most likely
+        // to be personal information. Simply skipping collecting them since they'll be dropped
+        // as noise after aggregation anyways.
+        if (isEditable(viewNode)) {
+            return null;
+        }
         CharSequence textChars = viewNode.getText();
         if (TextUtils.isEmpty(textChars)) {
             return null;
@@ -185,5 +194,18 @@ public final class AutofillNoiseInjector {
         }
 
         return new AutofillNoiseInjectedData(mRetainedBitMask, resultBytes);
+    }
+
+    private boolean isEditable(ViewNode viewNode) {
+        if (viewNode.getAutofillType() != View.AUTOFILL_TYPE_NONE) {
+            return true;
+        }
+        if (EditText.class.getName().equals(viewNode.getClassName())) {
+            return true;
+        }
+        if (viewNode.getInputType() != InputType.TYPE_NULL) {
+            return true;
+        }
+        return false;
     }
 }
