@@ -67,6 +67,7 @@ import com.android.settingslib.metadata.isPreferenceIndexable
 import com.android.settingslib.preference.PreferenceScreenCreator
 import com.android.settingslib.preference.PreferenceScreenFactory
 import com.android.settingslib.preference.PreferenceScreenProvider
+import com.android.settingslib.utils.applications.AppUtils
 import com.google.errorprone.annotations.CanIgnoreReturnValue
 import java.util.Locale
 import kotlinx.coroutines.CoroutineScope
@@ -655,10 +656,7 @@ fun <T> PersistentPreference<T>.evalWritePermit(
     callingPid: Int,
     callingUid: Int,
 ): Int? {
-    // Build.IS_DEBUGGABLE is a hidden API and cannot be used here because this module
-    // is built against "system_current". We check Build.TYPE instead to identify
-    // debuggable builds (userdebug/eng).
-    val isDebuggable = Build.TYPE == "eng" || Build.TYPE == "userdebug"
+    val isDebuggable = AppUtils.isDebuggable()
 
     return when {
         // High sensitivity is strictly disallowed.
