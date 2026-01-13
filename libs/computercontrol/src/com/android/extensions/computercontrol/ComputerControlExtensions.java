@@ -186,6 +186,11 @@ public class ComputerControlExtensions {
             return false;
         }
 
-        return context.getSystemService(VirtualDeviceManager.class) != null;
+        var vdm = context.getSystemService(VirtualDeviceManager.class);
+        if (vdm == null) {
+            return false;
+        }
+
+        return vdm.isComputerControlAvailable();
     }
 }

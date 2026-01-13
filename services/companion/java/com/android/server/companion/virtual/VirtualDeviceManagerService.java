@@ -686,6 +686,11 @@ public class VirtualDeviceManagerService extends SystemService {
         }
 
         @Override // Binder call
+        public boolean isComputerControlAvailable(@NonNull AttributionSource attributionSource) {
+            return mComputerControlSessionProcessor.isComputerControlAvailable(attributionSource);
+        }
+
+        @Override // Binder call
         @VirtualDeviceParams.DevicePolicy
         public int getDevicePolicy(int deviceId, @VirtualDeviceParams.PolicyType int policyType) {
             if (deviceId == Context.DEVICE_ID_DEFAULT) {

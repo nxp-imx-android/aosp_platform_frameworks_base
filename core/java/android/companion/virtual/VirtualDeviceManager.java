@@ -435,6 +435,21 @@ public final class VirtualDeviceManager {
     }
 
     /**
+     * Returns whether the computer control functionality is available for the caller.
+     * @hide
+     */
+    public boolean isComputerControlAvailable() {
+        if (mService == null) {
+            return false;
+        }
+        try {
+            return mService.isComputerControlAvailable(mContext.getAttributionSource());
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
      * Returns the device policy for the given virtual device and policy type.
      *
      * <p>In case the virtual device identifier is not valid,
