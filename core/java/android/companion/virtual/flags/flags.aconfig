@@ -265,3 +265,11 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "associated_display_id_input_api"
+    namespace: "virtual_devices"
+    description: "API for getting the associated display id for an input device"
+    bug: "441661489"
+    is_exported: true
+}
