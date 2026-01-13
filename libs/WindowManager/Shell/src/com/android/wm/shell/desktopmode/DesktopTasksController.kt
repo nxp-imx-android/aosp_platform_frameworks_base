@@ -1712,7 +1712,7 @@ class DesktopTasksController(
                     taskSurface,
                     handler,
                 )
-                .setTimeout(APP_HANDLE_DRAG_HOLD_CUJ_TIMEOUT_MS)
+                .setTimeout(APP_HANDLE_DRAG_CUJ_TIMEOUT_MS)
         interactionJankMonitor.begin(jankConfigBuilder)
         dragToDesktopTransitionHandler.startDragToDesktopTransition(
             taskInfo,
@@ -6540,13 +6540,13 @@ class DesktopTasksController(
                 } else {
                     // Start a new jank interaction for the drag release to desktop window
                     // animation.
-                    interactionJankMonitor.begin(
-                        taskSurface,
-                        context,
-                        handler,
+                    val jankConfigBuilder = InteractionJankMonitor.Configuration.Builder.withSurface(
                         CUJ_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG_RELEASE,
-                        "to_desktop",
-                    )
+                        context,
+                        taskSurface,
+                        handler,
+                    ).setTimeout(APP_HANDLE_DRAG_CUJ_TIMEOUT_MS).setTag("to_desktop")
+                    interactionJankMonitor.begin(jankConfigBuilder)
                 }
                 desktopModeUiEventLogger.log(
                     taskInfo,
@@ -7323,9 +7323,9 @@ class DesktopTasksController(
     }
 
     companion object {
-        // Timeout used for CUJ_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG_HOLD, this is longer than the
+        // Timeout used for CUJ_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG_HOLD/RELEASE, this is longer than the
         // default timeout to avoid timing out in the middle of a drag action.
-        private val APP_HANDLE_DRAG_HOLD_CUJ_TIMEOUT_MS: Long = TimeUnit.SECONDS.toMillis(10L)
+        private val APP_HANDLE_DRAG_CUJ_TIMEOUT_MS: Long = TimeUnit.SECONDS.toMillis(10L)
 
         private const val TAG = "DesktopTasksController"
 
