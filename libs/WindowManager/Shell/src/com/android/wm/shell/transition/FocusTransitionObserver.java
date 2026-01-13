@@ -157,9 +157,18 @@ public class FocusTransitionObserver {
                 mFocusedTaskOnDisplay.get(displayId);
         mFocusedTaskOnDisplay.put(displayId, task);
 
-        if (lastFocusedTaskOnDisplay != null && lastFocusedTaskOnDisplay.taskId != task.taskId) {
-            // only notify if the task has changed to avoid notifying the same task twice (and with
-            // lastFocusedTaskOnDisplay state likely outdated)
+        final int lastFocusedId = lastFocusedTaskOnDisplay != null
+                ? lastFocusedTaskOnDisplay.taskId : INVALID_TASK_ID;
+        if (lastFocusedId == task.taskId) {
+            Slog.d(
+                    TAG,
+                    String.format(
+                            "Task id=%d is already focused on displayId=%d. Skip notifying.",
+                            task.taskId, displayId));
+            return;
+        }
+
+        if (lastFocusedTaskOnDisplay != null) {
             mTmpTasksToBeNotified.add(lastFocusedTaskOnDisplay);
         }
         mTmpTasksToBeNotified.add(task);
