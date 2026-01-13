@@ -40,6 +40,9 @@ public interface InsightVisitor {
     /** Visits a {@link BundleInsight}. */
     default void visit(@NonNull BundleInsight insight) {}
 
+    /** Visits a {@link HintInvalidationInsight}. */
+    default void visit(@NonNull HintInvalidationInsight insight) {}
+
     /** Visits an unknown {@link ContextInsight}. */
     default void visitUnknown(@NonNull ContextInsight insight) {}
 }
