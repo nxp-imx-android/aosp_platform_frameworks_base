@@ -27,10 +27,12 @@ import com.android.systemui.kosmos.testScope
 import com.android.systemui.qs.panels.data.repository.qsPreferencesRepository
 import com.android.systemui.qs.pipeline.shared.TileSpec
 import com.android.systemui.qs.pipeline.shared.TilesUpgradePath
+import com.android.systemui.qs.pipeline.shared.internetTileMigration
 import com.android.systemui.qs.pipeline.shared.logging.QSPipelineLogger
 import com.android.systemui.res.R
 import com.android.systemui.retail.data.repository.FakeRetailModeRepository
 import com.android.systemui.testKosmos
+import com.android.systemui.user.data.repository.userRepository
 import com.android.systemui.user.domain.interactor.HeadlessSystemUserModeFake
 import com.android.systemui.util.settings.FakeSettings
 import com.google.common.truth.Truth.assertThat
@@ -66,6 +68,8 @@ class TileSpecSettingsRepositoryTest : SysuiTestCase() {
                     hsum,
                     logger,
                     kosmos.qsPreferencesRepository,
+                    kosmos.internetTileMigration,
+                    kosmos.userRepository,
                     testScope.backgroundScope,
                     testDispatcher,
                 )
