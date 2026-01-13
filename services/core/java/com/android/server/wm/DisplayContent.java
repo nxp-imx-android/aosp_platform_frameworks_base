@@ -1539,6 +1539,13 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
 
         mAreClientRenderingLimitationsEnabled = enable;
 
+        forAllWindows(w -> {
+            try {
+                w.mClient.requestViewAnimationsDisabled(enable);
+            } catch (RemoteException e) {
+            }
+        }, true /* traverseTopToBottom */);
+
         final var transaction = mWmService.mTransactionFactory.get();
         if (enable) {
             enableClientRenderingLimitations(transaction);

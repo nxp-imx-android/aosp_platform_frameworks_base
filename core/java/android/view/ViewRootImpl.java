@@ -135,7 +135,6 @@ import static android.internal.perfetto.protos.Inputmethodeditor.InputMethodClie
 import static android.window.DesktopModeFlags.ENABLE_CAPTION_COMPAT_INSET_FORCE_CONSUMPTION;
 import static android.window.DesktopExperienceFlags.DEFER_RESUME_FOCUS_IN_NON_FOCUSED_WINDOW;
 
-import static com.android.graphics.libgui.flags.Flags.outOfProcessRendering;
 import static com.android.graphics.surfaceflinger.flags.Flags.setClientDrawnCornerRadii;
 import static com.android.internal.annotations.VisibleForTesting.Visibility.PACKAGE;
 import static com.android.text.flags.Flags.disableHandwritingInitiatorForIme;
@@ -704,6 +703,7 @@ public final class ViewRootImpl implements ViewParent,
     // VRR: List of all Views that are animating with the threaded render
     private ArrayList<View> mThreadedRendererViews = new ArrayList();
     private ArrayList<View> mThreadedRendererViewsCache = new ArrayList();
+    private boolean mIsDisablingViewAnimationsRequested;
 
     /**
      * Update the Choreographer's FrameInfo object with the timing information for the current
@@ -7102,6 +7102,7 @@ public final class ViewRootImpl implements ViewParent,
     private static final int MSG_SURFACE_REPLACED_TIMEOUT = 43;
     private static final int MSG_INITIAL_TOUCH_BOOST_TIMEOUT = 44;
     private static final int MSG_REQUEST_HARDWARE_RENDERER_OUTPUT_DISABLED = 45;
+    private static final int MSG_REQUEST_VIEW_ANIMATIONS_DISABLED = 46;
 
     final class ViewRootHandler extends Handler {
         @Override
@@ -7179,6 +7180,8 @@ public final class ViewRootImpl implements ViewParent,
                     return "MSG_INITIAL_TOUCH_BOOST_TIMEOUT";
                 case MSG_REQUEST_HARDWARE_RENDERER_OUTPUT_DISABLED:
                     return "MSG_REQUEST_HARDWARE_RENDERER_OUTPUT_DISABLED";
+                case MSG_REQUEST_VIEW_ANIMATIONS_DISABLED:
+                    return "MSG_REQUEST_VIEW_ANIMATIONS_DISABLED";
             }
             return super.getMessageName(message);
         }
@@ -7502,6 +7505,16 @@ public final class ViewRootImpl implements ViewParent,
                             mAttachInfo.mThreadedRenderer.invalidateRoot();
                         }
                     }
+                    break;
+                }
+                case MSG_REQUEST_VIEW_ANIMATIONS_DISABLED: {
+                    final boolean disabled = msg.arg1 != 0;
+                    if (mIsDisablingViewAnimationsRequested == disabled) {
+                        break;
+                    }
+                    mIsDisablingViewAnimationsRequested = disabled;
+                    WindowManagerGlobal.getInstance()
+                            .onAnimationDisableRequestChangedForViewRoot();
                     break;
                 }
             }
@@ -12496,6 +12509,15 @@ public final class ViewRootImpl implements ViewParent,
                         /* arg1 */ disabled ? 1 : 0, /* arg2 */ 0).sendToTarget();
             }
         }
+
+        @Override
+        public void requestViewAnimationsDisabled(boolean disabled) {
+            final ViewRootImpl viewAncestor = mViewAncestor.get();
+            if (viewAncestor != null) {
+                viewAncestor.mHandler.obtainMessage(MSG_REQUEST_VIEW_ANIMATIONS_DISABLED,
+                        /* arg1 */ disabled ? 1 : 0, /* arg2 */ 0).sendToTarget();
+            }
+        }
     }
 
     public static final class CalledFromWrongThreadException extends AndroidRuntimeException {
@@ -14259,5 +14281,9 @@ public final class ViewRootImpl implements ViewParent,
             return true;
         }
         return false;
+    }
+
+    public boolean isDisablingViewAnimationsRequested() {
+        return mIsDisablingViewAnimationsRequested;
     }
 }
