@@ -489,27 +489,23 @@ public class StagedInstallInternalTest extends BaseHostJUnit4Test {
 
     @Test
     public void testApexActivationFailureIsCapturedInSession() throws Exception {
-        final String apexdConfig = getDevice().executeShellCommand("apexd --dump config");
-        assumeTrue("When using pinned APEX, /data/app-staging is not checked after staging",
-                apexdConfig.contains("uses_pinned_apex=false"));
-
         // We initiate staging a normal apex update which passes pre-reboot verification.
-        // Then we replace the valid apex waiting in /data/app-staging with something
-        // that cannot be activated and reboot. The apex should fail to activate, which
-        // is what we want for this test.
+        // Then we inject a failure so that the staged apex can't be activated after reboot. The
+        // failure should be captured in session.
         runPhase("testApexActivationFailureIsCapturedInSession_Commit");
-        final String sessionId = getDevice().executeShellCommand(
-                "pm get-stagedsessions --only-ready --only-parent --only-sessionid").trim();
-        assertThat(sessionId).isNotEmpty();
-        // Now replace the valid staged apex with something invalid
-        getDevice().enableAdbRoot();
-        getDevice().executeShellCommand("rm /data/app-staging/session_" + sessionId + "/*");
-        final File invalidApexFile = mHostUtils.getTestFile(APEX_WRONG_SHA);
-        getDevice().pushFile(invalidApexFile,
-                "/data/app-staging/session_" + sessionId + "/base.apex");
-        getDevice().reboot();
+        try {
+            // Now inject failure via a test_hook prop.
+            getDevice().enableAdbRoot();
+            getDevice().executeShellCommand("echo \"apexd.test_hook.verify_package_boot=error has "
+                                            + "unexpected SHA512 hash\" > "
+                    + "/metadata/apex/test_hook.prop");
+            getDevice().reboot();
 
-        runPhase("testApexActivationFailureIsCapturedInSession_Verify");
+            runPhase("testApexActivationFailureIsCapturedInSession_Verify");
+        } finally {
+            getDevice().executeShellCommand("rm -f /metadata/apex/test_hook.prop");
+            getDevice().setProperty("apexd.test_hook.verify_package_boot", "");
+        }
     }
 
     @Test
