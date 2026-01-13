@@ -768,11 +768,7 @@ constructor(
                     decorWindowContext,
                     WindowManagerGlobal.getWindowSession(),
                     mainExecutor,
-                    if (DesktopModeFlags.ENABLE_DRAG_RESIZE_SET_UP_IN_BG_THREAD.isTrue) {
-                        bgExecutor
-                    } else {
-                        mainExecutor
-                    },
+                    bgExecutor,
                     taskInfo,
                     handler,
                     choreographer,
