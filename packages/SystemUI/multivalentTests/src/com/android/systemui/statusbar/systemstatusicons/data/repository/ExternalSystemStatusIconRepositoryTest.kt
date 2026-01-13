@@ -16,15 +16,14 @@
 
 package com.android.systemui.statusbar.systemstatusicons.data.repository
 
-import android.os.UserHandle
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
-import com.android.internal.statusbar.StatusBarIcon
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.statusbar.getCommandQueueCallback
+import com.android.systemui.statusbar.systemstatusicons.data.repository.ExternalSystemStatusIconRepositoryHelper.createStatusBarIcon
 import com.android.systemui.statusbar.systemstatusicons.shared.model.ExternalIconModel
 import com.android.systemui.testKosmosNew
 import com.google.common.truth.Truth.assertThat
@@ -174,22 +173,4 @@ class ExternalSystemStatusIconRepositoryTest : SysuiTestCase() {
 
             assertThat(latest).isEmpty()
         }
-
-    companion object {
-        fun createStatusBarIcon(
-            iconId: Int = 1,
-            contentDescription: String = "contentDescription",
-            packageName: String = "external.package",
-        ): StatusBarIcon {
-            return StatusBarIcon(
-                packageName,
-                UserHandle.ALL,
-                /* iconId= */ iconId,
-                /* iconLevel= */ 0,
-                /* number= */ 0,
-                contentDescription,
-                StatusBarIcon.Type.SystemIcon,
-            )
-        }
-    }
 }

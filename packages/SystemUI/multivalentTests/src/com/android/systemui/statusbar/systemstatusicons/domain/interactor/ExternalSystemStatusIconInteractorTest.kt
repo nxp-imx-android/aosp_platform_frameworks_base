@@ -23,7 +23,7 @@ import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.statusbar.getCommandQueueCallback
-import com.android.systemui.statusbar.systemstatusicons.data.repository.ExternalSystemStatusIconRepositoryTest.Companion.createStatusBarIcon
+import com.android.systemui.statusbar.systemstatusicons.data.repository.ExternalSystemStatusIconRepositoryHelper.createStatusBarIcon
 import com.android.systemui.statusbar.systemstatusicons.shared.model.ExternalIconModel
 import com.android.systemui.testKosmosNew
 import com.google.common.truth.Truth.assertThat
