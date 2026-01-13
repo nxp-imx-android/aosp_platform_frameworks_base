@@ -92,7 +92,8 @@ public final class ActivitiesHelper {
                 () -> launchActivity(activityClass));
 
         assertWithMessage("exception message").that(thrown).hasMessageThat()
-                .contains("Unknown error code -88");
+                .containsMatch("Cannot start activity for Intent.*" + activityClass.getSimpleName()
+                        + ".* for this user");
     }
 
     private ActivitiesHelper() {
