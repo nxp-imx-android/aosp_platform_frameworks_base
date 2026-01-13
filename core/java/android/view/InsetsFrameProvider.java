@@ -130,6 +130,13 @@ public class InsetsFrameProvider implements Parcelable {
     private Rect[] mBoundingRects = null;
 
     /**
+     * Describes the bounding rectangles within the provided insets frame, in relative coordinates
+     * to the source frame.
+     */
+    @Nullable
+    private InsetsBoundingRect[] mInsetsBoundingRects = null;
+
+    /**
      * Creates an InsetsFrameProvider which describes what frame an insets source should have.
      *
      * @param owner the owner of this provider. We might have multiple sources with the same type on
@@ -253,11 +260,34 @@ public class InsetsFrameProvider implements Parcelable {
     }
 
     /**
-     * Returns the arbitrary bounding rects, or null if none were set.
+     * Sets the bounding rectangles within and relative to the source frame.
      */
+    @NonNull
+    public InsetsFrameProvider setBoundingRects(@Nullable InsetsBoundingRect[] boundingRects) {
+        mInsetsBoundingRects = boundingRects == null ? null : boundingRects.clone();
+        return this;
+    }
+
+    /**
+     * Returns the arbitrary bounding rects, or null if none were set.
+     * @deprecated Use {@link #getInsetsBoundingRects()} instead.
+     */
+    @Deprecated
     @Nullable
     public Rect[] getBoundingRects() {
         return mBoundingRects;
+    }
+
+    // TODO(b/474542908): Rename this to getBoundingRects once the legacy one is not needed. The
+    //                    caller should always use this one when
+    //                    {@link com.android.window.flags.Flags#improveFluidResizingPerformance()}
+    //                    is enabled.
+    /**
+     * Returns {@link InsetsBoundingRect}s of this InsetsFrameProvider.
+     */
+    @Nullable
+    public InsetsBoundingRect[] getInsetsBoundingRects() {
+        return mInsetsBoundingRects;
     }
 
     @Override
@@ -289,6 +319,9 @@ public class InsetsFrameProvider implements Parcelable {
         if (mBoundingRects != null) {
             sb.append(", mBoundingRects=").append(Arrays.toString(mBoundingRects));
         }
+        if (mInsetsBoundingRects != null) {
+            sb.append(", mInsetsBoundingRects=").append(Arrays.toString(mInsetsBoundingRects));
+        }
         sb.append("}");
         return sb.toString();
     }
@@ -319,6 +352,7 @@ public class InsetsFrameProvider implements Parcelable {
         mArbitraryRectangle = in.readTypedObject(Rect.CREATOR);
         mMinimalInsetsSizeInDisplayCutoutSafe = in.readTypedObject(Insets.CREATOR);
         mBoundingRects = in.createTypedArray(Rect.CREATOR);
+        mInsetsBoundingRects = in.createTypedArray(InsetsBoundingRect.CREATOR);
     }
 
     @Override
@@ -331,6 +365,7 @@ public class InsetsFrameProvider implements Parcelable {
         out.writeTypedObject(mArbitraryRectangle, flags);
         out.writeTypedObject(mMinimalInsetsSizeInDisplayCutoutSafe, flags);
         out.writeTypedArray(mBoundingRects, flags);
+        out.writeTypedArray(mInsetsBoundingRects, flags);
     }
 
     public boolean idEquals(@NonNull InsetsFrameProvider o) {
@@ -352,14 +387,16 @@ public class InsetsFrameProvider implements Parcelable {
                 && Objects.equals(mArbitraryRectangle, other.mArbitraryRectangle)
                 && Objects.equals(mMinimalInsetsSizeInDisplayCutoutSafe,
                         other.mMinimalInsetsSizeInDisplayCutoutSafe)
-                && Arrays.equals(mBoundingRects, other.mBoundingRects);
+                && Arrays.equals(mBoundingRects, other.mBoundingRects)
+                && Arrays.equals(mInsetsBoundingRects, other.mInsetsBoundingRects);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(mId, mSource, mFlags, mInsetsSize,
                 Arrays.hashCode(mInsetsSizeOverrides), mArbitraryRectangle,
-                mMinimalInsetsSizeInDisplayCutoutSafe, Arrays.hashCode(mBoundingRects));
+                mMinimalInsetsSizeInDisplayCutoutSafe, Arrays.hashCode(mBoundingRects),
+                Arrays.hashCode(mInsetsBoundingRects));
     }
 
     @NonNull
