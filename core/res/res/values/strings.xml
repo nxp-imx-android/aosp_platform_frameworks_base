@@ -5735,11 +5735,6 @@
     <!-- Accessibility text for the close window button -->
     <string name="close_button_text">Close</string>
 
-    <!-- Ellipsis character to appear in notification templates, e.g.
-         notification_template_material_inbox.xml.
-         DO NOT TRANSLATE -->
-    <string name="notification_inbox_ellipsis">\u2026</string>
-
     <!-- Tempalate for Notification.MessagingStyle to join a conversation name with the name of the sender of a message, to make a notification title [CHAR LIMIT=NONE] -->
     <string name="notification_messaging_title_template"><xliff:g id="conversation_title" example="Tasty Treat Team">%1$s</xliff:g>: <xliff:g id="sender_name" example="Adrian Baker">%2$s</xliff:g></string>
 

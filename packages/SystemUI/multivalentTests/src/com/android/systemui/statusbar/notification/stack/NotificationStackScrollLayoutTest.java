@@ -2176,7 +2176,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         when(row.getActualHeight()).thenReturn(200);
         when(row.getRemoteInputActionsContainerExpandedOffset()).thenReturn(50f);
         mTestableResources.addOverride(
-                com.android.internal.R.dimen.notification_content_margin, 10);
+                com.android.internal.R.dimen.notification_2025_margin, 10);
 
         // WHEN requestScrollToRemoteInput is called
         mStackScroller.requestScrollToRemoteInput(row);
@@ -2210,7 +2210,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         when(parent.getTranslationY()).thenReturn(50f);
         when(row.getNotificationParent()).thenReturn(parent);
         mTestableResources.addOverride(
-                com.android.internal.R.dimen.notification_content_margin, 10);
+                com.android.internal.R.dimen.notification_2025_margin, 10);
 
         // WHEN requestScrollToRemoteInput is called for the grouped row
         mStackScroller.requestScrollToRemoteInput(row);

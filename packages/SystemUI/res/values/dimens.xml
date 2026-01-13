@@ -253,7 +253,7 @@
     <item name="status_bar_icon_scale_factor" format="float" type="dimen">1.0</item>
 
     <dimen name="group_overflow_number_size">@*android:dimen/notification_text_size</dimen>
-    <dimen name="group_overflow_number_padding">@*android:dimen/notification_content_margin_end
+    <dimen name="group_overflow_number_padding">@*android:dimen/notification_2025_margin
     </dimen>
 
     <!-- End margin for the RSSI status icon of a device connected via bluetooth. -->
@@ -398,12 +398,8 @@
     <!-- Extra horizontal space for properly aligning guts buttons with the notification content -->
     <dimen name="notification_guts_button_side_margin">8dp</dimen>
     <dimen name="notification_guts_conversation_icon_size">56dp</dimen>
-    <dimen name="notification_guts_header_top_padding">12dp</dimen>
     <!-- The vertical space between items in the alert selections in the inline settings -->
     <dimen name="notification_guts_option_vertical_padding">16dp</dimen>
-
-    <!-- Extra space for guts bundle feedback button -->
-    <dimen name="notification_guts_bundle_feedback_size">48dp</dimen>
 
     <!-- The height of notification bundle headers -->
     <dimen name="notification_bundle_header_height">48dp</dimen>
@@ -421,7 +417,6 @@
     <dimen name="notification_importance_button_separation">8dp</dimen>
     <dimen name="notification_importance_drawable_padding">8dp</dimen>
     <dimen name="notification_importance_header_text">12sp</dimen>
-    <dimen name="notification_importance_description_text">14sp</dimen>
     <dimen name="notification_importance_channel_text">16sp</dimen>
     <dimen name="notification_importance_channel_group_text">14sp</dimen>
     <dimen name="notification_importance_button_text">14sp</dimen>
@@ -802,9 +797,6 @@
     <!-- The horizontal margin of the content in the notification shade -->
     <dimen name="notification_shade_content_margin_horizontal">16dp</dimen>
 
-    <!-- The top margin for the notification children container in its non-expanded form. -->
-    <dimen name="notification_children_container_margin_top">48dp</dimen>
-
     <!-- The spacing between the notification children container in its non-expanded form, and the
          header text above it, scaling with text size. This value is chosen so that, taking into
          account the text spacing for both the text in the top line and the text in the container,
@@ -820,9 +812,6 @@
 
     <!-- Size of the face pile shown on one-line (children of a group) conversation notifications -->
     <dimen name="conversation_single_line_face_pile_size">24dp</dimen>
-
-    <!-- Size of the avatars within a face pile shown on one-line (children of a group) conversation notifications -->
-    <dimen name="conversation_single_line_face_pile_avatar_size">17dp</dimen>
 
     <!-- Size of an avatar shown on one-line (children of a group) conversation notifications -->
     <dimen name="conversation_single_line_avatar_size">24dp</dimen>
@@ -1151,16 +1140,9 @@
     <dimen name="smart_reply_button_spacing">8dp</dimen>
     <dimen name="smart_reply_button_padding_vertical">14dp</dimen>
     <dimen name="smart_reply_button_padding_horizontal">16dp</dimen>
-    <dimen name="smart_reply_button_action_padding_left">8dp</dimen>
-    <dimen name="smart_reply_button_min_height">48dp</dimen>
     <dimen name="smart_reply_button_stroke_width">1dp</dimen>
-    <dimen name="smart_reply_button_font_size">14sp</dimen>
-    <dimen name="smart_reply_button_line_spacing_extra">6sp</dimen> <!-- Total line height 20sp. -->
-    <!-- Corner radius = half of min_height to create rounded sides. -->
-    <dimen name="smart_reply_button_corner_radius">8dp</dimen>
     <dimen name="smart_action_button_icon_size">18dp</dimen>
     <dimen name="smart_action_button_icon_padding">8dp</dimen>
-    <dimen name="smart_action_button_outline_stroke_width">2dp</dimen>
     <dimen name="notification_2025_smart_reply_button_corner_radius">24dp</dimen>
     <dimen name="notification_2025_smart_reply_button_min_height">48dp</dimen>
     <!-- The "inner" padding between the chip and the text should be 8dp, but since the chip

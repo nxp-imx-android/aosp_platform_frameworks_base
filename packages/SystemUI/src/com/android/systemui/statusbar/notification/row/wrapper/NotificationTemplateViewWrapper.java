@@ -153,7 +153,7 @@ public class NotificationTemplateViewWrapper extends NotificationHeaderViewWrapp
 
                 }, TRANSFORMING_VIEW_TEXT);
         int contentMargin = ctx.getResources().getDimensionPixelSize(
-                com.android.internal.R.dimen.notification_content_margin);
+                com.android.internal.R.dimen.notification_2025_margin);
         int contentMarginTop = Notification.Builder.getContentMarginTop(ctx,
                         com.android.internal.R.dimen.notification_2025_content_margin_top);
         mFullHeaderTranslation = contentMargin - contentMarginTop;
