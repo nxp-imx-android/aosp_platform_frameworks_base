@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -126,9 +127,20 @@ constructor(
         protected fun LockscreenScope<ContentScope>.MediaCarousel(modifier: Modifier = Modifier) {
             val bottomPadding =
                 dimensionResource(R.dimen.notification_section_divider_height_lockscreen)
+            val notificationWidth =
+                dimensionResource(R.dimen.shade_panel_width) -
+                    (dimensionResource(R.dimen.overlay_qs_layout_horizontal_padding) * 2)
+            val widthModifier =
+                if (viewModel.shadeMode == ShadeMode.Dual) {
+                    Modifier.width(notificationWidth)
+                } else {
+                    Modifier.fillMaxWidth()
+                }
+
             LockscreenElement(
                 MediaCarousel,
-                Modifier.padding(bottom = bottomPadding).then(modifier),
+                modifier =
+                    Modifier.then(widthModifier).padding(bottom = bottomPadding).then(modifier),
             )
         }
 
@@ -216,14 +228,22 @@ constructor(
                         )
                     }
                 },
-                modifier = modifier,
+                modifier =
+                    Modifier.padding(
+                            horizontal =
+                                dimensionResource(
+                                    R.dimen
+                                        .lockscreen_upper_region_horizontal_padding_narrow_screens
+                                )
+                        )
+                        .then(modifier),
                 debugName = "NarrowLayout - Clocks",
             ) {
                 scene(NarrowScenes.LargeClock) { LockscreenElement(Region.Clock.Large) }
                 scene(NarrowScenes.SmallClock) {
                     Column {
                         LockscreenElement(Region.Clock.Small)
-                        MediaCarousel()
+                        MediaCarousel(Modifier.align(Alignment.Start))
                         Notifications(aodAlignment = Alignment.TopStart)
                     }
                 }
@@ -306,7 +326,14 @@ constructor(
                         )
                     }
                 },
-                modifier = modifier,
+                modifier =
+                    Modifier.padding(
+                            horizontal =
+                                dimensionResource(
+                                    R.dimen.lockscreen_upper_region_horizontal_padding_wide_screens
+                                )
+                        )
+                        .then(modifier),
                 debugName = "WideLayout - Clocks",
             ) {
                 scene(WideScenes.CenteredClock) {
@@ -375,7 +402,7 @@ constructor(
             TwoColumn(
                 startContent = {
                     Column {
-                        MediaCarousel()
+                        MediaCarousel(Modifier.align(Alignment.Start))
                         Notifications(aodAlignment = Alignment.TopStart)
                     }
                 },
@@ -392,7 +419,7 @@ constructor(
                 startContent = {
                     Column {
                         LockscreenElement(Region.Clock.Small)
-                        MediaCarousel()
+                        MediaCarousel(Modifier.align(Alignment.Start))
                         Notifications(aodAlignment = Alignment.TopStart)
                     }
                 },
@@ -419,7 +446,7 @@ constructor(
                 startContent = { LockscreenElement(Region.Clock.Large) },
                 endContent = {
                     Column {
-                        MediaCarousel()
+                        MediaCarousel(Modifier.align(Alignment.End))
                         Notifications(aodAlignment = Alignment.TopEnd)
                     }
                 },
@@ -435,7 +462,7 @@ constructor(
                 startContent = {
                     Column {
                         LockscreenElement(Region.Clock.Small)
-                        MediaCarousel()
+                        MediaCarousel(Modifier.align(Alignment.Start))
                     }
                 },
                 endContent = { Notifications(aodAlignment = Alignment.TopEnd) },
@@ -451,7 +478,7 @@ constructor(
                 startContent = { LockscreenElement(Region.Clock.Small) },
                 endContent = {
                     Column {
-                        MediaCarousel()
+                        MediaCarousel(Modifier.align(Alignment.End))
                         Notifications(aodAlignment = Alignment.TopEnd)
                     }
                 },
@@ -465,20 +492,32 @@ constructor(
             startContent: @Composable BoxScope.() -> Unit = {},
             endContent: @Composable BoxScope.() -> Unit = {},
         ) {
+            // The spec dictates that each column should get internal paddings that match the ones
+            // used for narrow layouts. It is like two narrow layouts side by side.
+            val narrowPadding =
+                Modifier.padding(
+                    horizontal =
+                        dimensionResource(
+                            R.dimen.lockscreen_upper_region_horizontal_padding_narrow_screens
+                        )
+                )
+
             Row(modifier) {
                 Box(
                     content = startContent,
                     modifier =
-                        Modifier.fillMaxWidth(0.5f).fillMaxHeight().graphicsLayer {
-                            translationX = viewModel.unfoldTranslations.start
-                        },
+                        Modifier.fillMaxWidth(0.5f)
+                            .then(narrowPadding)
+                            .fillMaxHeight()
+                            .graphicsLayer { translationX = viewModel.unfoldTranslations.start },
                 )
                 Box(
                     content = endContent,
                     modifier =
-                        Modifier.fillMaxWidth(1f).fillMaxHeight().graphicsLayer {
-                            translationX = viewModel.unfoldTranslations.end
-                        },
+                        Modifier.fillMaxWidth(1f)
+                            .then(narrowPadding)
+                            .fillMaxHeight()
+                            .graphicsLayer { translationX = viewModel.unfoldTranslations.end },
                 )
             }
         }

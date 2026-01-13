@@ -46,7 +46,6 @@ import androidx.core.view.isEmpty
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.animation.scene.MovableElementContentScope
 import com.android.compose.animation.scene.MovableElementKey
-import com.android.systemui.customization.clocks.R as clocksR
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.keyguard.KeyguardUnlockAnimationController
 import com.android.systemui.keyguard.ui.composable.elements.LockscreenUpperRegionElementProvider.Companion.LayoutType
@@ -190,10 +189,6 @@ constructor(
                 return
             }
 
-            val smartspaceHorizontalPadding =
-                dimensionResource(R.dimen.smartspace_padding_horizontal) +
-                    dimensionResource(clocksR.dimen.status_view_margin_horizontal)
-
             // In wide-layouts limit the maximum width of the card to be half the screen width.
             val shadeMode by keyguardSmartspaceViewModel.shadeMode.collectAsStateWithLifecycle()
             val widthMod =
@@ -239,10 +234,8 @@ constructor(
                     modifier =
                         Modifier.then(widthMod)
                             .padding(
-                                start = smartspaceHorizontalPadding,
-                                end = smartspaceHorizontalPadding,
                                 bottom =
-                                    dimensionResource(R.dimen.keyguard_status_view_bottom_margin),
+                                    dimensionResource(R.dimen.keyguard_status_view_bottom_margin)
                             )
                             .burnInAware(isClock = false)
                             .nonAuthUI(),

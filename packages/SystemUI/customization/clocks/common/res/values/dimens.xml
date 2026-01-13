@@ -35,6 +35,7 @@
     <dimen name="clock_padding_start">28dp</dimen>
     <dimen name="weather_date_icon_padding">28dp</dimen>
     <dimen name="clock_vertical_digit_buffer">8dp</dimen>
+    <dimen name="small_clock_horizontal_padding">8dp</dimen>
 
     <dimen name="weather_clock_smartspace_bottom_margin">10dp</dimen>
 
