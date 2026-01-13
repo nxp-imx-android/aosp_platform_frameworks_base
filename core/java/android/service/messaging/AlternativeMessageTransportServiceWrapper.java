@@ -28,7 +28,7 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.os.UserHandle;
-import android.telephony.MessagePromotionController.MessagePromotionCallback;
+import android.telephony.MessageUpgradeController.MessageUpgradeCallback;
 
 import com.android.internal.util.Preconditions;
 
@@ -36,48 +36,50 @@ import java.util.Objects;
 import java.util.concurrent.Executor;
 
 /**
- * Provides basic structure for platform to connect to the message promotion service.
+ * Provides basic structure for platform to connect to the
+ * {@link AlternativeMessageTransportService}.
+ *
  * <p>
  * Example:
  * <code>
- * MessagePromotionServiceWrapper messagePromotionServiceWrapper =
- *     new MessagePromotionServiceWrapper();
- * if (messagePromotionServiceWrapper.bindToMessagePromotionService(context, smsAppPackageName)) {
+ * AlternativeMessageTransportServiceWrapper serviceWrapper =
+ *     new AlternativeMessageTransportServiceWrapper();
+ * if (serviceWrapper.bindToService(context, smsAppPackageName)) {
  *   // wait for onServiceReady callback
  * } else {
  *   // Unable to bind: handle error.
  * }
  * </code>
- * <p> Upon completion {@link #close} should be called to unbind the message promotion service.
+ * <p> Upon completion {@link #close} should be called to unbind the AMTS service.
  * @hide
  */
 // TODO(b/474304887): Make this class thread-safe
-public final class MessagePromotionServiceWrapper implements AutoCloseable {
-    // Populated by bindToMessagePromotionService. bindToMessagePromotionService must complete
+public final class AlternativeMessageTransportServiceWrapper implements AutoCloseable {
+    // Populated by bindToService. bindToService must complete
     // prior to calling close so that mServiceConnection is initialized.
-    private volatile MessagePromotionServiceConnection
+    private volatile MessageUpgradeServiceConnection
             mServiceConnection;
 
-    private volatile IMessagePromotionService mIMessagePromotionService;
+    private volatile IAlternativeMessageTransportService mAlternativeMessageTransportService;
     private Runnable mOnServiceReadyCallback;
     private Executor mOnServiceReadyCallbackExecutor;
     private Context mContext;
 
     /**
-     * Binds to the message promotion service under package {@code dmaPackageName}. This method
-     * should be called exactly once.
+     * Binds to the {@link AlternativeMessageTransportService} under package
+     * {@code smsAppPackageName}. This method should be called exactly once.
      *
      * @param context the context
      * @param smsAppPackageName the default SMS app's package name
      * @param executor the executor to run the callback.
      * @param onServiceReadyCallback the callback when service becomes ready.
-     * @return true upon successfully binding to a message promotion service, false otherwise
+     * @return true upon successfully binding to a message upgrade service, false otherwise
      * @hide
      */
     @RequiresPermission(anyOf = {android.Manifest.permission.INTERACT_ACROSS_USERS_FULL,
             android.Manifest.permission.INTERACT_ACROSS_USERS,
             android.Manifest.permission.INTERACT_ACROSS_PROFILES})
-    public boolean bindToMessagePromotionService(Context context,
+    public boolean bindToService(Context context,
             String smsAppPackageName,
             @CallbackExecutor Executor executor,
             Runnable onServiceReadyCallback) {
@@ -87,9 +89,9 @@ public final class MessagePromotionServiceWrapper implements AutoCloseable {
         Objects.requireNonNull(executor, "executor cannot be null");
         Objects.requireNonNull(onServiceReadyCallback, "onServiceReadyCallback cannot be null");
 
-        Intent intent = new Intent(MessagePromotionService.SERVICE_INTERFACE);
+        Intent intent = new Intent(AlternativeMessageTransportService.SERVICE_INTERFACE);
         intent.setPackage(smsAppPackageName);
-        mServiceConnection = new MessagePromotionServiceWrapper.MessagePromotionServiceConnection();
+        mServiceConnection = new MessageUpgradeServiceConnection();
         mOnServiceReadyCallback = onServiceReadyCallback;
         mOnServiceReadyCallbackExecutor = executor;
         mContext = context;
@@ -98,7 +100,8 @@ public final class MessagePromotionServiceWrapper implements AutoCloseable {
     }
 
     /**
-     * Unbinds the message promotion service. This method should be called exactly once.
+     * Unbinds the {@link AlternativeMessageTransportService}. This method should be called exactly
+     * once.
      *
      * @hide
      */
@@ -107,29 +110,29 @@ public final class MessagePromotionServiceWrapper implements AutoCloseable {
             mContext.unbindService(mServiceConnection);
             mServiceConnection = null;
         }
-        mIMessagePromotionService = null;
+        mAlternativeMessageTransportService = null;
         mOnServiceReadyCallback = null;
         mOnServiceReadyCallbackExecutor = null;
     }
 
     /**
-     * Promotes SMS/MMS message to the default SMS app supported transport.
+     * Upgrades SMS/MMS message to the default SMS app supported transport.
      *
      * @param contentUri the content URI of the SMS/MMS message.
      * @param mClientCallbackExecutor the executor to run the callback on.
-     * @param clientCallback the callback to notify about promotion status.
+     * @param clientCallback the callback to notify about the upgrade status.
      *
      * @hide
      */
-    public void promoteMessage(
+    public void upgradeMessage(
             @NonNull Uri contentUri,
             @NonNull @CallbackExecutor Executor mClientCallbackExecutor,
-            @NonNull MessagePromotionCallback clientCallback) {
-        Objects.requireNonNull(mIMessagePromotionService);
+            @NonNull MessageUpgradeCallback clientCallback) {
+        Objects.requireNonNull(mAlternativeMessageTransportService);
         try {
-            mIMessagePromotionService.promoteMessage(
+            mAlternativeMessageTransportService.upgradeMessage(
                     contentUri,
-                    new MessagePromotionCallbackInternal(mClientCallbackExecutor, clientCallback));
+                    new MessageUpgradeCallbackInternal(mClientCallbackExecutor, clientCallback));
         } catch (RemoteException e) {
             throw new RuntimeException(e);
         }
@@ -141,13 +144,9 @@ public final class MessagePromotionServiceWrapper implements AutoCloseable {
         disconnect();
     }
 
-    /**
-     * Called when connection with service is established.
-     *
-     * @param messagePromotionService the message promotion service interface
-     */
-    private void onServiceReady(IMessagePromotionService messagePromotionService) {
-        mIMessagePromotionService = messagePromotionService;
+    private void onServiceReady(
+            IAlternativeMessageTransportService alternativeMessageTransportService) {
+        mAlternativeMessageTransportService = alternativeMessageTransportService;
         if (mOnServiceReadyCallback != null && mOnServiceReadyCallbackExecutor != null) {
             final long identity = Binder.clearCallingIdentity();
             try {
@@ -161,33 +160,33 @@ public final class MessagePromotionServiceWrapper implements AutoCloseable {
     /**
      * A basic {@link ServiceConnection}.
      */
-    private final class MessagePromotionServiceConnection implements ServiceConnection {
+    private final class MessageUpgradeServiceConnection implements ServiceConnection {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
-            onServiceReady(IMessagePromotionService.Stub.asInterface(service));
+            onServiceReady(IAlternativeMessageTransportService.Stub.asInterface(service));
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
-            mIMessagePromotionService = null;
+            mAlternativeMessageTransportService = null;
         }
     }
 
-    private static final class MessagePromotionCallbackInternal
-            extends IMessagePromotionCallback.Stub {
+    private static final class MessageUpgradeCallbackInternal
+            extends IMessageUpgradeCallback.Stub {
         private final Executor mClientCallbackExecutor;
-        private final MessagePromotionCallback mClientCallback;
+        private final MessageUpgradeCallback mClientCallback;
 
-        private MessagePromotionCallbackInternal(
-                Executor executor, MessagePromotionCallback callback) {
+        private MessageUpgradeCallbackInternal(
+                Executor executor, MessageUpgradeCallback callback) {
             mClientCallbackExecutor = executor;
             mClientCallback = callback;
         }
 
         @Override
-        public void onPromotionStatusAvailable(int status) throws RemoteException {
+        public void onUpgradeStatusAvailable(int status) throws RemoteException {
             mClientCallbackExecutor.execute(() ->
-                    mClientCallback.onPromotionStatusAvailable(status));
+                    mClientCallback.onUpgradeStatusAvailable(status));
         }
     }
 }

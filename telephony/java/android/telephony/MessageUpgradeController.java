@@ -16,8 +16,9 @@
 
 package android.telephony;
 
-import static android.service.messaging.MessagePromotionService.PROMOTION_STATUS_REJECTED;
+import static android.service.messaging.AlternativeMessageTransportService.UPGRADE_STATUS_REJECTED;
 
+import android.Manifest;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.content.Context;
@@ -27,8 +28,8 @@ import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Binder;
 import android.provider.Telephony;
-import android.service.messaging.MessagePromotionService;
-import android.service.messaging.MessagePromotionServiceWrapper;
+import android.service.messaging.AlternativeMessageTransportService;
+import android.service.messaging.AlternativeMessageTransportServiceWrapper;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -38,34 +39,35 @@ import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 
 /**
- * Checks if message promotion is supported and enables android system to bind with the
- * available {@link MessagePromotionService} in the default SMS app to promote messages.
+ * Checks if message upgrade is supported and enables android system to bind with the
+ * available {@link android.service.messaging.AlternativeMessageTransportService} in the default
+ * SMS app to upgrade SMS/MMS messages to another transport.
  *
  * @hide
  */
 // TODO(b/474304887): Make this class thread-safe
-public final class MessagePromotionController {
+public final class MessageUpgradeController {
 
-    private static final String TAG = "MsgPromotionController";
+    private static final String TAG = "MsgUpgradeController";
     private static final boolean VDBG = Log.isLoggable(TAG, Log.VERBOSE);
     private final Context mContext;
-    private final MessagePromotionServiceWrapper mServiceWrapper =
-            new MessagePromotionServiceWrapper();
+    private final AlternativeMessageTransportServiceWrapper mServiceWrapper =
+            new AlternativeMessageTransportServiceWrapper();
 
     /** @hide */
-    public MessagePromotionController(@NonNull Context context) {
+    public MessageUpgradeController(@NonNull Context context) {
         mContext = Objects.requireNonNull(context);
     }
 
     /**
-     * Promotes a SMS/MMS message.
+     * Upgrades a SMS/MMS message.
      *
      * @param contentUri The content URI of the SMS/MMS message.
      * @param clientCallbackExecutor The executor to run the callback on.
-     * @param clientCallback The callback to report the promotion status.
+     * @param clientCallback The callback to report the upgrade status.
      */
     // TODO(b/473520736): Add timeout logic if service doesn't respond within specified duration
-    public void promoteMessage(
+    public void upgradeMessage(
             @NonNull Uri contentUri,
             @NonNull Executor clientCallbackExecutor,
             @NonNull Consumer<Integer> clientCallback) {
@@ -73,26 +75,26 @@ public final class MessagePromotionController {
         Objects.requireNonNull(clientCallbackExecutor, "clientCallbackExecutor cannot be null");
         Objects.requireNonNull(clientCallback, "clientCallback cannot be null");
 
-        if (!isMessagePromotionSupported()) {
-            clientCallbackExecutor.execute(() -> clientCallback.accept(PROMOTION_STATUS_REJECTED));
+        if (!isMessageUpgradeSupported()) {
+            clientCallbackExecutor.execute(() -> clientCallback.accept(UPGRADE_STATUS_REJECTED));
             return;
         }
 
         final long identity = Binder.clearCallingIdentity();
         try {
             String smsAppPackage = getDefaultSmsAppPackage();
-            if (mServiceWrapper.bindToMessagePromotionService(
+            if (mServiceWrapper.bindToService(
                     mContext, smsAppPackage, Runnable::run,
                     () -> onServiceReady(contentUri, clientCallbackExecutor, clientCallback))) {
                 if (VDBG) {
-                    Log.v(TAG, "bindService() to the message promotion service: "
+                    Log.v(TAG, "bindService() to the message upgrade service: "
                             + smsAppPackage + " succeeded.");
                 }
             } else {
-                Log.e(TAG, "bindService() to the message promotion service: "
+                Log.e(TAG, "bindService() to the message upgrade service: "
                         + smsAppPackage + " failed.");
                 clientCallbackExecutor.execute(() ->
-                        clientCallback.accept(PROMOTION_STATUS_REJECTED));
+                        clientCallback.accept(UPGRADE_STATUS_REJECTED));
             }
         } finally {
             Binder.restoreCallingIdentity(identity);
@@ -100,19 +102,20 @@ public final class MessagePromotionController {
     }
 
     /**
-     * Checks if the default SMS app has implemented the {@link MessagePromotionService}.
+     * Checks if the default SMS app has implemented the
+     * {@link android.service.messaging.AlternativeMessageTransportService}.
      *
-     * @return {@code true} if the default SMS app has a message promotion service.
+     * @return {@code true} if the default SMS app has a AlternativeMessageTransportService.
      */
-    // TODO(b/470708258): cache the result of message promotion supported check
-    public boolean isMessagePromotionSupported() {
+    // TODO(b/470708258): cache the result of message upgrade supported check
+    public boolean isMessageUpgradeSupported() {
         String smsAppPackage = getDefaultSmsAppPackage();
         if (TextUtils.isEmpty(smsAppPackage)) {
             Log.e(TAG, "No default sms app found.");
             return false;
         }
 
-        Intent intent = new Intent(MessagePromotionService.SERVICE_INTERFACE);
+        Intent intent = new Intent(AlternativeMessageTransportService.SERVICE_INTERFACE);
         intent.setPackage(smsAppPackage);
 
         List<ResolveInfo> services = mContext.getPackageManager().queryIntentServices(
@@ -121,7 +124,7 @@ public final class MessagePromotionController {
         for (int i = 0; i < services.size(); i++) {
             ResolveInfo info = services.get(i);
             if (info.serviceInfo != null
-                    && android.Manifest.permission.BIND_MESSAGE_PROMOTION_SERVICE.equals(
+                    && Manifest.permission.BIND_ALTERNATIVE_MESSAGE_TRANSPORT_SERVICE.equals(
                             info.serviceInfo.permission)) {
                 return true;
             }
@@ -144,7 +147,7 @@ public final class MessagePromotionController {
     }
 
     /**
-     * Disposes the service connection to the message promotion service.
+     * Disposes the service connection to the AlternativeMessageTransportService.
      */
     private void disposeServiceConnection() {
         mServiceWrapper.close();
@@ -159,45 +162,45 @@ public final class MessagePromotionController {
     private void onServiceReady(
             Uri contentUri, Executor clientCallbackExecutor,
             Consumer<Integer> clientCallback) {
-        MessagePromotionCallback controllerCallback = new MessagePromotionControllerCallback(
+        MessageUpgradeCallback controllerCallback = new MessageUpgradeControllerCallback(
                 clientCallbackExecutor, clientCallback);
         try {
-            mServiceWrapper.promoteMessage(contentUri, Runnable::run, controllerCallback);
+            mServiceWrapper.upgradeMessage(contentUri, Runnable::run, controllerCallback);
         } catch (RuntimeException e) {
-            Log.e(TAG, "Exception while promoting mms message.", e);
-            controllerCallback.onPromotionStatusAvailable(PROMOTION_STATUS_REJECTED);
+            Log.e(TAG, "Exception while upgrading message.", e);
+            controllerCallback.onUpgradeStatusAvailable(UPGRADE_STATUS_REJECTED);
         }
     }
 
     /**
-     * Callback wrapper used by {@link MessagePromotionController} to report the promotion status
-     * to the caller and manage service lifecycle.
+     * Callback wrapper used by {@link MessageUpgradeController} to report the message upgrade
+     * status to the caller and manage service lifecycle.
      *
      * @hide
      */
-    public interface MessagePromotionCallback {
+    public interface MessageUpgradeCallback {
         /**
-         * Called when the promotion status is available.
+         * Called when the upgrade status is available.
          *
-         * @param status the status of the promotion request.
+         * @param status the status of the upgrade request.
          */
-        default void onPromotionStatusAvailable(int status) {
+        default void onUpgradeStatusAvailable(int status) {
 
         }
     }
 
-    private final class MessagePromotionControllerCallback implements MessagePromotionCallback {
+    private final class MessageUpgradeControllerCallback implements MessageUpgradeCallback {
         private final Executor mClientCallbackExecutor;
         private final Consumer<Integer> mClientCallback;
 
-        private MessagePromotionControllerCallback(
+        private MessageUpgradeControllerCallback(
                 Executor executor, Consumer<Integer> callback) {
             mClientCallbackExecutor = executor;
             mClientCallback = callback;
         }
 
         @Override
-        public void onPromotionStatusAvailable(int status) {
+        public void onUpgradeStatusAvailable(int status) {
             try {
                 mClientCallbackExecutor.execute(() -> mClientCallback.accept(status));
             } finally {

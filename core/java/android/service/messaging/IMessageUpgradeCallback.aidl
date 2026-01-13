@@ -17,15 +17,15 @@
 package android.service.messaging;
 
 /**
- * Callback interface definition for the Message Promotion Service client to get informed of the
- * message promotion status.
+ * Callback interface definition for the Message Upgrade Service to report the status of message
+ * upgrade request back to the client.
  * @hide
  */
-oneway interface IMessagePromotionCallback {
+oneway interface IMessageUpgradeCallback {
     /**
-     * Called when the promotion status is available.
+     * Called when the service is ready to send the message upgrade status.
      *
-     * @param status the status of the promotion request.
+     * @param status the status of the message upgrade request.
      */
-    void onPromotionStatusAvailable(in int status);
+    void onUpgradeStatusAvailable(in int status);
 }
