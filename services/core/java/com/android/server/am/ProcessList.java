@@ -2396,6 +2396,9 @@ public final class ProcessList extends ProcessListInternal
             String[] packages, int uid, boolean areAllowlistedPackages) {
         Map<String, Pair<String, Long>> result = new ArrayMap<>(packages.length);
         int userId = UserHandle.getUserId(uid);
+        final boolean isPcc = enablePccFrameworkSupport()
+                && Process.isPrivateComputeCoreUid(uid)
+                && !areAllowlistedPackages;
         for (String packageName : packages) {
             final PackageStateInternal packageState = pmInt.getPackageStateInternal(packageName);
             if (packageState == null) {
@@ -2403,28 +2406,20 @@ public final class ProcessList extends ProcessListInternal
                 continue;
             }
             String volumeUuid = packageState.getVolumeUuid();
-            long inode = packageState.getUserStateOrDefault(userId).getCeDataInode();
+            final long inode;
+            final String keyName;
+            if (isPcc) {
+                inode = packageState.getUserStateOrDefault(userId).getPccCeDataInode();
+                keyName = packageName + Environment.PCC_DATA_DIRECTORY_SUFFIX;
+            } else {
+                inode = packageState.getUserStateOrDefault(userId).getCeDataInode();
+                keyName = packageName;
+            }
             if (inode <= 0) {
-                Slog.w(TAG, packageName + " inode == 0 or app uninstalled with keep-data");
+                Slog.w(TAG, keyName + " inode == 0 or app uninstalled with keep-data");
                 return null;
             }
-
-            final long finalInode;
-            final String finalPackageName;
-            // Currently, we do not anticipate PCC apps needing to start before device unlock so
-            // it's safe to pass 0 as the inode value.
-            // Also, the allowlisted apps themselves don't have PCC components so we should not add
-            // the PCC suffix to them.
-            if (enablePccFrameworkSupport()
-                    && Process.isPrivateComputeCoreUid(uid)
-                    && !areAllowlistedPackages) {
-                finalInode = 0L;
-                finalPackageName = packageName + Environment.PCC_DATA_DIRECTORY_SUFFIX;
-            } else {
-                finalInode = inode;
-                finalPackageName = packageName;
-            }
-            result.put(finalPackageName, Pair.create(volumeUuid, finalInode));
+            result.put(keyName, Pair.create(volumeUuid, inode));
         }
 
         return result;
