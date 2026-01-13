@@ -43839,6 +43839,9 @@ package android.service.persistentdata {
 
 package android.service.personalcontext {
 
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public interface ComponentIdProvider {
+  }
+
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class RenderToken implements java.lang.Comparable<android.service.personalcontext.RenderToken> android.os.Parcelable {
     method public int compareTo(@NonNull android.service.personalcontext.RenderToken);
     method public int describeContents();
@@ -44172,6 +44175,7 @@ package android.service.personalcontext.insight {
     method @NonNull public final java.util.UUID getInsightId();
     method @NonNull public java.util.Set<android.service.personalcontext.hint.ContextHintWithSignature> getOriginHints();
     method @NonNull public java.util.Set<android.service.personalcontext.Token> getTokens();
+    method public void reportEvent(@NonNull android.content.Context, int, @NonNull android.service.personalcontext.RenderToken, @Nullable android.os.Bundle);
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class DisplayInsight extends android.service.personalcontext.insight.ContextInsight {
@@ -44210,8 +44214,8 @@ package android.service.personalcontext.insight {
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class InsightCollection.Builder {
-    ctor public InsightCollection.Builder(@NonNull java.util.Collection<android.service.personalcontext.insight.ContextInsight>);
     ctor public InsightCollection.Builder();
+    ctor public InsightCollection.Builder(@NonNull java.util.Collection<android.service.personalcontext.insight.ContextInsight>);
     method @NonNull public android.service.personalcontext.insight.InsightCollection.Builder addInsight(@NonNull android.service.personalcontext.insight.ContextInsight);
     method @NonNull public android.service.personalcontext.insight.InsightCollection build();
   }

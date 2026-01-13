@@ -25,6 +25,7 @@ import android.os.RemoteException;
 import android.service.personalcontext.hint.ContextHint;
 import android.service.personalcontext.hint.ContextHintWithSignature;
 import android.service.personalcontext.hint.ContextHintWrapper;
+import android.service.personalcontext.insight.interaction.InsightEvent;
 import android.service.personalcontext.refiner.HintFilter;
 import android.service.personalcontext.refiner.IGetFilterCallback;
 import android.service.personalcontext.refiner.IRefineCallback;
@@ -111,6 +112,17 @@ public class ServiceClientRefiner extends BaseServiceClientComponent<IRefiner> i
             } catch (RemoteException e) {
                 Slog.w(TAG, this + " refine() failed", e);
                 callback.accept(Collections.emptySet());
+            }
+        });
+    }
+
+    @Override
+    public void handleEvent(@NonNull String packageName, @NonNull InsightEvent event) {
+        runWithBinder(binder -> {
+            try {
+                binder.handleEvent(packageName, event);
+            } catch (RemoteException e) {
+                Slog.w(TAG, this + " handleEvent() failed", e);
             }
         });
     }

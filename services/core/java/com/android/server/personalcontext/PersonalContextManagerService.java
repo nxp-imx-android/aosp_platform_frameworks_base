@@ -41,6 +41,7 @@ import android.service.personalcontext.hint.NotificationHint;
 import android.service.personalcontext.hint.TextClassificationHint;
 import android.service.personalcontext.insight.ContextInsight;
 import android.service.personalcontext.insight.ContextInsightWrapper;
+import android.service.personalcontext.insight.interaction.InsightEvent;
 import android.util.Log;
 import android.util.Slog;
 import android.util.SparseArray;
@@ -53,6 +54,7 @@ import androidx.annotation.VisibleForTesting;
 import com.android.internal.util.DumpUtils;
 import com.android.server.SystemService;
 import com.android.server.notification.NotificationManagerInternal;
+import com.android.server.personalcontext.component.Refiner;
 import com.android.server.personalcontext.embedded.EmbeddedInsightRenderer;
 import com.android.server.personalcontext.notifications.ContextActionResolver;
 import com.android.server.personalcontext.notifications.NotificationActionFactory;
@@ -354,6 +356,29 @@ public class PersonalContextManagerService extends SystemService {
         startRefinerWorkflow(userId, processId, hints, Set.of(renderToken), emptySet());
     }
 
+    private void reportEvent(
+            int userId,
+            int processId,
+            InsightEvent event) {
+        final UserState userState = getUserStateSynchronized(userId);
+        if (userState == null) {
+            Slog.e(TAG, "No user state when reporting insight event");
+            return;
+        }
+
+        final UUID componentId = event.getInsight().getOriginatingComponentId();
+        final Refiner refiner = userState.componentManager.getRefinerById(componentId);
+        if (refiner == null) {
+            Slog.e(
+                    TAG,
+                    "No component found with ID " + componentId + " when reporting insight event");
+            return;
+        }
+
+        final String packageName = mActivityManager.getPackageNameByPid(processId);
+        refiner.handleEvent(packageName, event);
+    }
+
     private UserState getUserStateSynchronized(int userId) {
         synchronized (mUserStates) {
             return mUserStates.get(userId);
@@ -526,6 +551,21 @@ public class PersonalContextManagerService extends SystemService {
                                             callingPid,
                                             ContextHintWrapper.unwrapInto(hints, new HashSet<>()),
                                             clientInfo));
+        }
+
+        @PermissionManuallyEnforced
+        @Override
+        public void reportEvent(InsightEvent event, int userId) {
+            verifyUser(userId);
+
+            final int callingPid = Binder.getCallingPid();
+
+            // TODO(b/450547433): Add security checks.
+            Binder.withCleanCallingIdentity(
+                    () -> getService().reportEvent(
+                            userId,
+                            callingPid,
+                            event));
         }
 
         @PermissionManuallyEnforced
