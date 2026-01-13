@@ -67,8 +67,15 @@ public class LightsService extends SystemService {
     static final String TAG = "LightsService";
     static final boolean DEBUG = false;
 
-    private final LightImpl[] mLightsByType = new LightImpl[LightsManager.LIGHT_ID_COUNT];
+    // Priority for the system override session, higher than typical app priorities.
+    static final int DEFAULT_SYSTEM_SESSION_PRIORITY = 1_000;
+
+    @VisibleForTesting
+    final LightImpl[] mLightsByType = new LightImpl[LightsManager.LIGHT_ID_COUNT];
     private final SparseArray<LightImpl> mLightsById = new SparseArray<>();
+
+    // A special session used to mute all user-controllable lights.
+    private LightsManagerBinderService.Session mSystemOverrideSession;
 
     @Nullable
     private final Supplier<ILights> mVintfLights;
@@ -291,6 +298,57 @@ public class LightsService extends SystemService {
                         }
                     }
                 }
+            }
+        }
+
+        /**
+         * Mutes or unmutes all non-critical lights on the device.
+         * <p>
+         * When muted, user-controllable lights are overridden by a high-priority system session
+         * that turns them off. Non-critical system lights are muted directly. Critical lights
+         * such as the screen backlight are unaffected.
+         *
+         * @param enabled false to mute lights, true to unmute.
+         */
+        public void setEnabledState(boolean enabled) {
+            synchronized (LightsService.this) {
+                boolean currentlyEnabled = mSystemOverrideSession == null;
+                if (enabled == currentlyEnabled) {
+                    Slog.i(TAG, "Lights already " + (enabled ? "unmuted." : "muted."));
+                    // We are already in the right state. Just return.
+                    return;
+                }
+
+                LightState state = null;
+                if (enabled) {
+                    Slog.i(TAG, "Unmuting lights.");
+                } else {
+                    Slog.i(TAG, "Muting lights.");
+                    state = new LightState.Builder().setColor(0).build();
+                    mSystemOverrideSession =
+                            new Session(
+                                    null, DEFAULT_SYSTEM_SESSION_PRIORITY, mSessionListener, mH);
+                }
+
+                for (int i = 0; i < mLightsById.size(); i++) {
+                    LightImpl light = mLightsById.valueAt(i);
+                    if (!light.isSystemLight()) {
+                        // All user lights mute/unmute through session priority.
+                        mSystemOverrideSession.setRequest(light.mHwLight.id, state);
+                    } else if (!light.isCriticalLight()) {
+                        // Non critical system lights are muted/unmuted directly.
+                        light.setMuteState(!enabled);
+                    }
+                }
+
+                if (enabled) {
+                    mSessions.remove(mSystemOverrideSession);
+                    mSystemOverrideSession = null;
+                } else {
+                    mSessions.add(mSystemOverrideSession);
+                }
+                Collections.sort(mSessions);
+                computeAndApplyLightConfigurationsLocked();
             }
         }
 
@@ -707,7 +765,11 @@ public class LightsService extends SystemService {
                 mOnMS = onMS;
                 mOffMS = offMS;
                 mBrightnessMode = brightnessMode;
-                setLightUnchecked(color, mode, onMS, offMS, brightnessMode);
+
+                // Only send the new configuration if the light is not muted.
+                if (!mMuted) {
+                    setLightUnchecked(color, mode, onMS, offMS, brightnessMode);
+                }
             }
         }
 
@@ -764,6 +826,47 @@ public class LightsService extends SystemService {
             }
         }
 
+        /**
+         * Returns whether the light provides a critical functionality and should not be muted.
+         * <p>
+         * Most lights are non-critical and can be muted if the system requires them to temporarily
+         * turn off during light-sensitive use cases (i.e.: camera taking photos / video), but some
+         * lights such as backlight and keyboard provide critical functionality and should not be
+         * turned off.
+         */
+        private boolean isCriticalLight() {
+            switch(mHwLight.type) {
+                case  LightType.BACKLIGHT:
+                case  LightType.KEYBOARD:
+                case  LightType.BUTTONS:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        /**
+         * Mutes or unmutes this light.
+         * <p>
+         * When a light is muted, it is turned off immediatelly and further changes, while
+         * reflected in the light state, won't be propagated to the HAL.
+         * <p>
+         * When unmuted, its last state before muting is restored.
+         *
+         * @param muted true to mute the light, false to unmute.
+         */
+        private void setMuteState(boolean muted) {
+            synchronized (this) {
+                mMuted = muted;
+                if (mMuted) {
+                    setLightUnchecked(0, LIGHT_FLASH_NONE, 0, 0, 0);
+                } else {
+                    // The light had a permanent state that needs to be restored.
+                    setLightUnchecked(mColor, mMode, mOnMS, mOffMS, mBrightnessMode);
+                }
+            }
+        }
+
         private int getColor() {
             return mColor;
         }
@@ -781,6 +884,7 @@ public class LightsService extends SystemService {
         private boolean mVrModeEnabled;
         private boolean mUseLowPersistenceForVR;
         private boolean mInitialized;
+        private boolean mMuted;
     }
 
     public LightsService(Context context) {
@@ -870,8 +974,9 @@ public class LightsService extends SystemService {
         }
     };
 
-    private void setEnabledState(boolean enabled) {
-        // TODO
+    @VisibleForTesting
+    void setEnabledState(boolean enabled) {
+        mManagerService.setEnabledState(enabled);
     }
 
     private static class VintfHalCache implements Supplier<ILights>, IBinder.DeathRecipient {

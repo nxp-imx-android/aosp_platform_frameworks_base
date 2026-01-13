@@ -922,4 +922,189 @@ public class LightsServiceTest {
             inOrder.verify(mHal, never()).setLightEffects(any());
         }
     }
+
+    @Test
+    @EnableFlags({Flags.FLAG_ENABLE_LIGHT_ANIMATIONS})
+    public void testControlLights_muteLights_criticalUserAndSystemBehavior() throws Exception {
+        // Report one of each light type, to test filtering.
+        when(mHal.getLights()).thenReturn(new HwLight[]{
+                // System lights that should be filtered
+                fakeHwLight(1, LightType.BACKLIGHT, 1, 0),
+                fakeHwLight(2, LightType.KEYBOARD, 1, 0),
+                fakeHwLight(3, LightType.BUTTONS, 1, 0),
+                fakeHwLight(4, LightType.BATTERY, 1, 0),
+                fakeHwLight(5, LightType.NOTIFICATIONS, 1, 0),
+                fakeHwLight(6, LightType.ATTENTION, 1, 0),
+                fakeHwLight(7, LightType.BLUETOOTH, 1, 0),
+                fakeHwLight(8, LightType.WIFI, 1, 0),
+                // Non-system lights that should be available to apps
+                fakeHwLight(9, Light.LIGHT_TYPE_MICROPHONE, 1, 0),
+                fakeHwLight(10, Light.LIGHT_TYPE_APPLICATION, 1, 0),
+                fakeHwLight(11, Light.LIGHT_TYPE_CAMERA, 1, 0),
+                // A light with a type that is not defined in LightType, but is not a system
+                // light
+                fakeHwLight(100, 100, 1, 0)});
+
+        InOrder inOrder = inOrder(mHal);
+        LightsService service = new LightsService(mContext, () -> mHal, Looper.getMainLooper());
+        LightsManager manager = new SystemLightsManager(mContext, service.mManagerService);
+        ArgumentCaptor<HwLightState> stateCaptor =
+                ArgumentCaptor.forClass(HwLightState.class);
+
+        LightsRequest.Builder requestBuilder = new LightsRequest.Builder();
+        // Set all user ligths to one color.
+        for (Light light : manager.getLights()) {
+            requestBuilder.addLight(
+                    light, new LightState.Builder().setColor(RED).build());
+        }
+
+        try (LightsManager.LightsSession session = manager.openSession()) {
+            session.requestLights(requestBuilder.build());
+
+            inOrder.verify(mHal).setLightState(eq(9), stateCaptor.capture());
+            assertThat(stateCaptor.getValue().color).isEqualTo(RED);
+            inOrder.verify(mHal).setLightState(eq(10), stateCaptor.capture());
+            assertThat(stateCaptor.getValue().color).isEqualTo(RED);
+            inOrder.verify(mHal).setLightState(eq(11), stateCaptor.capture());
+            assertThat(stateCaptor.getValue().color).isEqualTo(RED);
+            inOrder.verify(mHal).setLightState(eq(100), stateCaptor.capture());
+            assertThat(stateCaptor.getValue().color).isEqualTo(RED);
+
+            // Set the color for system-only lights. Light retrieval is by type.
+            for (LogicalLight light : service.mLightsByType) {
+                light.setColor(RED);
+            }
+
+            inOrder.verify(mHal).setLightState(eq(1), stateCaptor.capture());
+            assertThat(stateCaptor.getValue().color).isEqualTo(RED);
+            inOrder.verify(mHal).setLightState(eq(2), stateCaptor.capture());
+            assertThat(stateCaptor.getValue().color).isEqualTo(RED);
+            inOrder.verify(mHal).setLightState(eq(3), stateCaptor.capture());
+            assertThat(stateCaptor.getValue().color).isEqualTo(RED);
+            inOrder.verify(mHal).setLightState(eq(4), stateCaptor.capture());
+            assertThat(stateCaptor.getValue().color).isEqualTo(RED);
+            inOrder.verify(mHal).setLightState(eq(5), stateCaptor.capture());
+            assertThat(stateCaptor.getValue().color).isEqualTo(RED);
+            inOrder.verify(mHal).setLightState(eq(6), stateCaptor.capture());
+            assertThat(stateCaptor.getValue().color).isEqualTo(RED);
+            inOrder.verify(mHal).setLightState(eq(7), stateCaptor.capture());
+            assertThat(stateCaptor.getValue().color).isEqualTo(RED);
+            inOrder.verify(mHal).setLightState(eq(8), stateCaptor.capture());
+            assertThat(stateCaptor.getValue().color).isEqualTo(RED);
+
+            service.setEnabledState(false);
+
+            inOrder.verify(mHal, never()).setLightState(eq(1), any());
+            inOrder.verify(mHal, never()).setLightState(eq(2), any());
+            inOrder.verify(mHal, never()).setLightState(eq(3), any());
+            inOrder.verify(mHal).setLightState(eq(4), stateCaptor.capture());
+            assertThat(stateCaptor.getValue().color).isEqualTo(0);
+            inOrder.verify(mHal).setLightState(eq(5), stateCaptor.capture());
+            assertThat(stateCaptor.getValue().color).isEqualTo(0);
+            inOrder.verify(mHal).setLightState(eq(6), stateCaptor.capture());
+            assertThat(stateCaptor.getValue().color).isEqualTo(0);
+            inOrder.verify(mHal).setLightState(eq(7), stateCaptor.capture());
+            assertThat(stateCaptor.getValue().color).isEqualTo(0);
+            inOrder.verify(mHal).setLightState(eq(8), stateCaptor.capture());
+            assertThat(stateCaptor.getValue().color).isEqualTo(0);
+            inOrder.verify(mHal).setLightState(eq(9), stateCaptor.capture());
+            assertThat(stateCaptor.getValue().color).isEqualTo(0);
+            inOrder.verify(mHal).setLightState(eq(10), stateCaptor.capture());
+            assertThat(stateCaptor.getValue().color).isEqualTo(0);
+            inOrder.verify(mHal).setLightState(eq(11), stateCaptor.capture());
+            assertThat(stateCaptor.getValue().color).isEqualTo(0);
+            inOrder.verify(mHal).setLightState(eq(100), stateCaptor.capture());
+            assertThat(stateCaptor.getValue().color).isEqualTo(0);
+
+            service.setEnabledState(true);
+
+            inOrder.verify(mHal, never()).setLightState(eq(1), any());
+            inOrder.verify(mHal, never()).setLightState(eq(2), any());
+            inOrder.verify(mHal, never()).setLightState(eq(3), any());
+            inOrder.verify(mHal).setLightState(eq(4), stateCaptor.capture());
+            assertThat(stateCaptor.getValue().color).isEqualTo(RED);
+            inOrder.verify(mHal).setLightState(eq(5), stateCaptor.capture());
+            assertThat(stateCaptor.getValue().color).isEqualTo(RED);
+            inOrder.verify(mHal).setLightState(eq(6), stateCaptor.capture());
+            assertThat(stateCaptor.getValue().color).isEqualTo(RED);
+            inOrder.verify(mHal).setLightState(eq(7), stateCaptor.capture());
+            assertThat(stateCaptor.getValue().color).isEqualTo(RED);
+            inOrder.verify(mHal).setLightState(eq(8), stateCaptor.capture());
+            assertThat(stateCaptor.getValue().color).isEqualTo(RED);
+            inOrder.verify(mHal).setLightState(eq(9), stateCaptor.capture());
+            assertThat(stateCaptor.getValue().color).isEqualTo(RED);
+            inOrder.verify(mHal).setLightState(eq(10), stateCaptor.capture());
+            assertThat(stateCaptor.getValue().color).isEqualTo(RED);
+            inOrder.verify(mHal).setLightState(eq(11), stateCaptor.capture());
+            assertThat(stateCaptor.getValue().color).isEqualTo(RED);
+            inOrder.verify(mHal).setLightState(eq(100), stateCaptor.capture());
+            assertThat(stateCaptor.getValue().color).isEqualTo(RED);
+        }
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_ENABLE_LIGHT_ANIMATIONS})
+    public void testControlLights_disableDuringEffect() throws Exception {
+        InOrder inOrder = inOrder(mHal);
+        LightsService service = new LightsService(mContext, () -> mHal, Looper.getMainLooper());
+        LightsManager manager = new SystemLightsManager(mContext, service.mManagerService);
+        Light light = manager.getLights().get(ANIMATED_LIGHT_INDEX);
+        ArgumentCaptor<HwLightState> stateCaptor =
+                ArgumentCaptor.forClass(HwLightState.class);
+
+        // Create a simple effect for a light that supports effects.
+        MultiLightEffect effect = new MultiLightEffect.Builder()
+                .addLightSequence(
+                        light, new ColorSequence.Builder().addControlPoint(100, BLUE).build())
+                .build();
+        try (LightsManager.LightsSession session = manager.openSession()) {
+            session.requestLights(new LightsRequest.Builder().setEffect(effect).build());
+
+            // Validate that the service sent the hal the effect.
+            inOrder.verify(mHal).setLightEffects(any());
+
+            service.setEnabledState(false);
+
+            inOrder.verify(mHal).setLightState(eq(light.getId()), stateCaptor.capture());
+            assertThat(stateCaptor.getValue().color).isEqualTo(0);
+        }
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_ENABLE_LIGHT_ANIMATIONS})
+    public void testControlLights_mute_systemLightUpdateWhileMuted() throws Exception {
+        // Report one of each light type, to test filtering.
+        when(mHal.getLights()).thenReturn(new HwLight[]{
+                fakeHwLight(5, LightType.NOTIFICATIONS, 1, 0)
+        });
+
+        InOrder inOrder = inOrder(mHal);
+        LightsService service = new LightsService(mContext, () -> mHal, Looper.getMainLooper());
+        ArgumentCaptor<HwLightState> stateCaptor =
+                ArgumentCaptor.forClass(HwLightState.class);
+
+        LogicalLight light = service.mLightsByType[LightType.NOTIFICATIONS];
+        light.setColor(BLUE);
+
+        // Set an initial color
+        inOrder.verify(mHal).setLightState(eq(5), stateCaptor.capture());
+        assertThat(stateCaptor.getValue().color).isEqualTo(BLUE);
+
+        // Mute the lights and verify that the light got muted.
+        service.setEnabledState(false);
+
+        inOrder.verify(mHal).setLightState(eq(5), stateCaptor.capture());
+        assertThat(stateCaptor.getValue().color).isEqualTo(0);
+
+        // Change the color on a muted light and verify that the mute blocks the HAL update.
+        light.setColor(GREEN);
+        inOrder.verify(mHal, never()).setLightState(eq(5), any());
+
+        // Unmute the lights.
+        service.setEnabledState(true);
+
+        // Validate that the light got the new value set during the mute.
+        inOrder.verify(mHal).setLightState(eq(5), stateCaptor.capture());
+        assertThat(stateCaptor.getValue().color).isEqualTo(GREEN);
+    }
 }
