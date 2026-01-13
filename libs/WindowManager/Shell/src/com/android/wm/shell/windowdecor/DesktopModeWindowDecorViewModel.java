@@ -1953,21 +1953,23 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
     private class DesktopModeOnTaskResizeAnimationListener
             implements OnTaskResizeAnimationListener {
         @Override
-        public void onAnimationStart(int taskId, Transaction t, Rect bounds) {
+        public boolean onAnimationStart(int taskId, Transaction t, Rect bounds) {
             final WindowDecorationWrapper decoration = mWindowDecorByTaskId.get(taskId);
             if (decoration == null) {
                 t.apply();
-                return;
+                return true;
             }
             decoration.showResizeVeil(t, bounds);
             decoration.setAnimatingTaskResizeOrReposition(true);
+            return true;
         }
 
         @Override
-        public void onBoundsChange(int taskId, Transaction t, Rect bounds) {
+        public boolean onBoundsChange(int taskId, Transaction t, Rect bounds) {
             final WindowDecorationWrapper decoration = mWindowDecorByTaskId.get(taskId);
-            if (decoration == null) return;
+            if (decoration == null) return false;
             decoration.updateResizeVeil(t, bounds);
+            return true;
         }
 
         @Override

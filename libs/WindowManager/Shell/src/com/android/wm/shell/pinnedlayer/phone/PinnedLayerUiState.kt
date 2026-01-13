@@ -23,7 +23,7 @@ import com.android.wm.shell.windowdecor.OnTaskResizeAnimationListener
 /**
  * A class that reflects a UI state of the pinned layer windows, for example, what
  * [PinnedLayerHandler] plans to do with a [android.app.TaskInfo] after handling the
- * [android.transition.Transition], e.g. animating, resizing, etc.
+ * [com.android.wm.shell.transition.Transitions], e.g. animating, resizing, etc.
  */
 class PinnedLayerUiState {
 
@@ -45,15 +45,11 @@ class PinnedLayerUiState {
      * @param taskId a task id that represents a window that being moved/resized.
      * @param t a start transaction to be applied on the animation start.
      * @param bounds a [Rect] that represent window bound on the animation start.
-     * @throws IllegalStateException when mandatory listener is not register.
+     * @return `true` if the transaction was applied, `false` otherwise.
      * @see OnTaskResizeAnimationListener.onAnimationStart
      */
-    fun onResizeMoveStarted(taskId: Int, t: SurfaceControl.Transaction, bounds: Rect) {
-        val listener =
-            checkNotNull(resizeAnimationListener) {
-                "Resize animation must be registered for the pinned window animations."
-            }
-        listener.onAnimationStart(taskId, t, bounds)
+    fun onResizeMoveStarted(taskId: Int, t: SurfaceControl.Transaction, bounds: Rect): Boolean {
+        return resizeAnimationListener?.onAnimationStart(taskId, t, bounds) ?: false
     }
 
     /**
@@ -62,29 +58,20 @@ class PinnedLayerUiState {
      * @param taskId a task id that represents a window that being moved/resized.
      * @param t a start transaction to be applied on the animation update.
      * @param bounds a [Rect] that represent window bound on the animation update.
-     * @throws IllegalStateException when mandatory listener is not register.
+     * @return `true` if the transaction was applied, `false` otherwise.
      * @see OnTaskResizeAnimationListener.onBoundsChange
      */
-    fun onResizeMoveUpdated(taskId: Int, t: SurfaceControl.Transaction, bounds: Rect) {
-        val listener =
-            checkNotNull(resizeAnimationListener) {
-                "Resize animation must be registered for the pinned window animations."
-            }
-        listener.onBoundsChange(taskId, t, bounds)
+    fun onResizeMoveUpdated(taskId: Int, t: SurfaceControl.Transaction, bounds: Rect): Boolean {
+        return resizeAnimationListener?.onBoundsChange(taskId, t, bounds) ?: false
     }
 
     /**
      * Dispatched an update the window move/resize has ended.
      *
      * @param taskId a task id that represents a window that being moved/resized.
-     * @throws IllegalStateException when mandatory listener is not register.
      * @see OnTaskResizeAnimationListener.onAnimationEnd
      */
     fun onResizeMoveEnded(taskId: Int) {
-        val listener =
-            checkNotNull(resizeAnimationListener) {
-                "Resize animation must be registered for the pinned window animations."
-            }
-        listener.onAnimationEnd(taskId)
+        resizeAnimationListener?.onAnimationEnd(taskId)
     }
 }
