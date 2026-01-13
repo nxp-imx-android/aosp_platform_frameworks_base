@@ -17,6 +17,7 @@
 package com.android.systemui.statusbar.policy
 
 import android.app.ActivityOptions
+import android.app.Flags.enableActionAttribution
 import android.app.Flags.notificationAnimatedActionContentDescription
 import android.app.Notification
 import android.app.Notification.Action.SEMANTIC_ACTION_MARK_CONVERSATION_AS_PRIORITY
@@ -458,7 +459,12 @@ constructor(
             }
         return (LayoutInflater.from(parent.context).inflate(layoutRes, parent, false) as Button)
             .apply {
-                text = action.title
+                if (enableActionAttribution() && isAnimatedAction) {
+                    val fullTextWithAttribution = formatChoiceWithAttribution(context, action.title)
+                    text = fullTextWithAttribution
+                } else {
+                    text = action.title
+                }
                 if (
                     notificationAnimatedActionContentDescription() &&
                         isAnimatedAction &&
@@ -586,7 +592,7 @@ constructor(
                     choiceToDeliver = choice.toString()
                     // If the choice is animated reply, format the text by concatenating
                     // attributionText with different color to choice text
-                    val fullTextWithAttribution = formatChoiceWithAttribution(choice)
+                    val fullTextWithAttribution = formatChoiceWithAttribution(context, choice)
                     text = fullTextWithAttribution
                     if (notificationAnimatedActionContentDescription()) {
                         val animatedReplyContentDescription =
@@ -738,34 +744,6 @@ constructor(
         }
         return null
     }
-
-    // Format the text by concatenating attributionText with attribution text color to choice text
-    private fun formatChoiceWithAttribution(choice: CharSequence): CharSequence {
-        val colorInt = context.getColor(R.color.animated_action_button_attribution_color)
-        if (choice is Spanned) {
-            val annotations = choice.getSpans(0, choice.length, Annotation::class.java)
-            for (annotation in annotations) {
-                if (annotation.key == "attributionText") {
-                    // Extract the attribution text
-                    val extraText = annotation.value
-                    // Concatenate choice text and attribution text
-                    val spannableWithColor = SpannableStringBuilder(choice)
-                    spannableWithColor.append(" $extraText")
-                    // Apply color to attribution text
-                    spannableWithColor.setSpan(
-                        ForegroundColorSpan(colorInt),
-                        choice.length,
-                        spannableWithColor.length,
-                        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
-                    )
-                    return spannableWithColor
-                }
-            }
-        }
-
-        // Return the original if no attributionText found
-        return choice.toString()
-    }
 }
 
 /**
@@ -805,3 +783,31 @@ private fun ActivityStarter.startPendingIntentDismissingKeyguard(
     associatedView: View?,
     runnable: () -> Unit,
 ) = startPendingIntentDismissingKeyguard(intent, runnable::invoke, associatedView)
+
+// Format the text by concatenating attributionText with attribution text color to choice text
+private fun formatChoiceWithAttribution(context: Context, choice: CharSequence): CharSequence {
+    val colorInt = context.getColor(R.color.animated_action_button_attribution_color)
+    if (choice is Spanned) {
+        val annotations = choice.getSpans(0, choice.length, Annotation::class.java)
+        for (annotation in annotations) {
+            if (annotation.key == "attributionText") {
+                // Extract the attribution text
+                val extraText = annotation.value
+                // Concatenate choice text and attribution text
+                val spannableWithColor = SpannableStringBuilder(choice)
+                spannableWithColor.append(" $extraText")
+                // Apply color to attribution text
+                spannableWithColor.setSpan(
+                    ForegroundColorSpan(colorInt),
+                    choice.length,
+                    spannableWithColor.length,
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
+                )
+                return spannableWithColor
+            }
+        }
+    }
+
+    // Return the original if no attributionText found
+    return choice.toString()
+}
