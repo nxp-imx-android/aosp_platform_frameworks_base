@@ -257,7 +257,7 @@ public final class DocumentsContract {
             ACTION_DOCUMENT_ROOT_SETTINGS = "android.provider.action.DOCUMENT_ROOT_SETTINGS";
 
     /**
-     * Intent category to filter out activities that can handle document intents.
+     * Intent category to filter for activities that can handle document intents.
      *
      * <p>Indicates that an approved activity can receive intents {@link Intent#ACTION_SEND} and/or
      * {@link Intent#ACTION_SEND_MULTIPLE}. The activity's package must be allowlisted by the system
