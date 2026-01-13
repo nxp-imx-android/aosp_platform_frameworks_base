@@ -18,7 +18,7 @@ package com.android.server.security.talisman;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.*;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
@@ -26,14 +26,31 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.security.KeyFactory;
+import java.security.PublicKey;
 import java.security.Signature;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
+import java.util.List;
+
+import co.nstant.in.cbor.CborDecoder;
+import co.nstant.in.cbor.CborException;
+import co.nstant.in.cbor.model.ByteString;
+import co.nstant.in.cbor.model.DataItem;
+import co.nstant.in.cbor.model.MajorType;
+import co.nstant.in.cbor.model.Map;
+import co.nstant.in.cbor.model.NegativeInteger;
+import co.nstant.in.cbor.model.UnsignedInteger;
 
 @RunWith(AndroidJUnit4.class)
 public final class TrustTokenMasterKeyTest {
+    // COSE IANA IDs needed for Ed25519 CoseKey
+    private static final DataItem KEY_PARAMETER_KEY_TYPE = new UnsignedInteger(1);
+    private static final DataItem KEY_TYPE_EC2 = new UnsignedInteger(2);
+    private static final DataItem KEY_PARAMETER_CURVE = new NegativeInteger(-1);
+    private static final DataItem KEY_PARAMETER_X = new NegativeInteger(-2);
+    private static final DataItem CURVE_OKP_ED25519 = new UnsignedInteger(6);
+
     @Test
     public void generateMasterKey_success() throws Exception {
         TrustTokenMasterKey.generateMasterKey("trust_token-");
@@ -56,14 +73,13 @@ public final class TrustTokenMasterKeyTest {
     public void sign_success() throws Exception {
         var masterKey = TrustTokenMasterKey.generateMasterKey("trust_token-");
         TrustTokenKey tokenKey = masterKey.generatePerTokenKey();
+        PublicKey key = decodeCoseKey(tokenKey.getPublicKey());
         byte[] message = "trust_token".getBytes();
         byte[] signature = masterKey.sign(tokenKey, message);
-        var keyFactory = KeyFactory.getInstance("Ed25519");
-        var verifier = Signature.getInstance("Ed25519");
-        var publicKey = keyFactory.generatePublic(new X509EncodedKeySpec(tokenKey.getPublicKey()));
-        verifier.initVerify(publicKey);
+        Signature verifier = Signature.getInstance(key.getAlgorithm());
+        verifier.initVerify(key);
         verifier.update(message);
-        assertThat(verifier.verify(signature)).isTrue();
+        assertTrue(verifier.verify(signature));
     }
 
     @Test
@@ -110,5 +126,33 @@ public final class TrustTokenMasterKeyTest {
         TrustTokenKey tokenKey = masterKey1.generatePerTokenKey();
         assertThrows(
                 IllegalArgumentException.class, () -> masterKey2.attest(Arrays.asList(tokenKey)));
+    }
+
+    private PublicKey decodeCoseKey(byte[] encoded) throws Exception {
+        List<DataItem> items;
+        try {
+            items = CborDecoder.decode(encoded);
+        } catch (CborException e) {
+            throw new IllegalArgumentException("invalid CBOR: ", e);
+        }
+        if (items.size() > 1) {
+            throw new IllegalArgumentException("the encoded key contains more than one DataItem");
+        }
+        if (items.get(0).getMajorType() != MajorType.MAP) {
+            throw new IllegalArgumentException("invalid CBOR: not a map");
+        }
+        var coseKey = (Map) items.get(0);
+        var keyType = coseKey.get(KEY_PARAMETER_KEY_TYPE);
+        var curve = coseKey.get(KEY_PARAMETER_CURVE);
+        if (!keyType.equals(KEY_TYPE_EC2) || !curve.equals(CURVE_OKP_ED25519)) {
+            throw new IllegalArgumentException(
+                    "invalid key: not a Ed25519 key, key_type=" + keyType + ", curve=" + curve);
+        }
+        var rawKey = coseKey.get(KEY_PARAMETER_X);
+        if (rawKey == null || rawKey.getMajorType() != MajorType.BYTE_STRING) {
+            throw new IllegalArgumentException("invalid key: invalid parameter");
+        }
+        return KeyFactory.getInstance("ED25519")
+                .generatePublic(new RawEncodedKeySpec(((ByteString) rawKey).getBytes()));
     }
 }
