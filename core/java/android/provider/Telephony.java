@@ -158,6 +158,8 @@ public final class Telephony {
          * <P>Type: INTEGER</P>
          * @hide
          */
+        @TestApi
+        @FlaggedApi(Flags.FLAG_SECURE_ACCESS_TO_RESTRICTED_RCS_MESSAGES)
         public static final String READ_RESTRICTION_COLUMN_NAME = "read_restriction";
 
         /**
@@ -177,6 +179,8 @@ public final class Telephony {
          * {@link #READ_RESTRICTION_MASK} in the {@link #READ_RESTRICTION_COLUMN_NAME}.
          * @hide
          */
+        @TestApi
+        @FlaggedApi(Flags.FLAG_SECURE_ACCESS_TO_RESTRICTED_RCS_MESSAGES)
         public static final class ReadRestrictionValues {
             /**
              * Not instantiable.
@@ -189,6 +193,8 @@ public final class Telephony {
              * messages app op.
              * @hide
              */
+            @TestApi
+            @FlaggedApi(Flags.FLAG_SECURE_ACCESS_TO_RESTRICTED_RCS_MESSAGES)
             public static final int READ_RESTRICTION_RESTRICTED = 1 << READ_RESTRICTION_SHIFT;
         }
 
@@ -276,31 +282,29 @@ public final class Telephony {
          */
         public static void appendReadRestrictionToQuery(@NonNull SQLiteQueryBuilder qb,
                 @Nullable String tableName, boolean canReadRestrictedMessages) {
-            if (Flags.secureAccessToRestrictedRcsMessages() & !canReadRestrictedMessages) {
+            if (Flags.secureAccessToRestrictedRcsMessages() && !canReadRestrictedMessages) {
                 final String readRestrictionColumnName = tableName == null
                         ? READ_RESTRICTION_COLUMN_NAME
                         : (tableName + "." + READ_RESTRICTION_COLUMN_NAME);
-                final String readRestrictionValue = canReadRestrictedMessages ? "1" : "0";
                 final int readRestrictionMask = ReadRestrictionValues.READ_RESTRICTION_RESTRICTED;
                 qb.appendWhereStandalone(readRestrictionColumnName + " & " + readRestrictionMask
-                        + " = 0 OR " + readRestrictionValue + " = 1");
+                        + " = 0");
             }
         }
 
         /**
          * Appends the read_restriction column value to the query builder to make sure only apps
          * with appropriate permissions can access restricted messages. Otherwise, the restricted
-         * messages will be filtered out. If the table name is null, the query uses
-         * "read_restriction" as the column name.
+         * messages will be filtered out.
          *
          * If the flag {@link Flags#FLAG_SECURE_ACCESS_TO_RESTRICTED_RCS_MESSAGES} is disabled,
          * the query will not be modified, because the client can read all messages.
          *
          * @param qb The SQLiteQueryBuilder to construct the query with.
-         * @param tables The tables to query. Can be a single table name or a join statement.
+         * @param joinAssignmentClause join assignment clause to join a table with the read
+         * restriction table. e.g. "pdu._id=part.mid"
          * @param readRestrictionTableName The name of the table that contains the read restriction
-         * column. Accepted values are "pdu" and "sms". If null, the query will just use the
-         * read_restriction column name.
+         * column. Accepted values are "pdu" and "sms".
          * @param canReadRestrictedMessages Whether the caller can read restricted messages. If
          * false, the restricted messages will be filtered out.
          * @hide
