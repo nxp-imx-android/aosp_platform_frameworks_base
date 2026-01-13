@@ -72,6 +72,7 @@ public class ApkSignatureSchemeV3Verifier {
 
     static final int APK_SIGNATURE_SCHEME_V3_BLOCK_ID = 0xf05368c0;
     static final int APK_SIGNATURE_SCHEME_V31_BLOCK_ID = 0x1b93ad61;
+    static final int APK_SIGNATURE_SCHEME_V32_BLOCK_ID = 0x70e1c89f;
 
     /**
      * Returns {@code true} if the provided APK contains an APK Signature Scheme V3 signature.
@@ -137,6 +138,17 @@ public class ApkSignatureSchemeV3Verifier {
             throws SignatureNotFoundException, SecurityException, IOException {
         ApkSignatureSchemeV3Verifier verifier = new ApkSignatureSchemeV3Verifier(apk,
                 verifyIntegrity);
+        if (android.security.Flags.apkPqcHybridSigning()) {
+            try {
+                SignatureInfo signatureInfo = findSignature(apk, APK_SIGNATURE_SCHEME_V32_BLOCK_ID);
+                return verifier.verify(signatureInfo, APK_SIGNATURE_SCHEME_V32_BLOCK_ID);
+            } catch (SignatureNotFoundException ignored) {
+                // This is expected if the APK is not signed with a v3.2 hybrid block.
+            } catch (PlatformNotSupportedException ignored) {
+                // This is expected if the v3.2 hybrid block is targeting a platform version later
+                // than that of the current device.
+            }
+        }
         try {
             SignatureInfo signatureInfo = findSignature(apk, APK_SIGNATURE_SCHEME_V31_BLOCK_ID);
             return verifier.verify(signatureInfo, APK_SIGNATURE_SCHEME_V31_BLOCK_ID);
@@ -182,6 +194,7 @@ public class ApkSignatureSchemeV3Verifier {
     private final RandomAccessFile mApk;
     private final boolean mVerifyIntegrity;
     private OptionalInt mOptionalRotationMinSdkVersion = OptionalInt.empty();
+    private OptionalInt mOptionalHybridMinSdkVersion = OptionalInt.empty();
     private int mSignerMinSdkVersion;
     private int mBlockId;
 
@@ -200,10 +213,7 @@ public class ApkSignatureSchemeV3Verifier {
     private VerifiedSigner verify(SignatureInfo signatureInfo, int blockId)
             throws SecurityException, IOException, PlatformNotSupportedException {
         mBlockId = blockId;
-        int signerCount = 0;
-        Map<Integer, byte[]> contentDigests = new ArrayMap<>();
-        Pair<X509Certificate[], ApkSigningBlockUtils.VerifiedProofOfRotation> result = null;
-        boolean isResultDevTarget = false;
+        List<VerifiedSigner> verifiedSigners = new ArrayList<>();
         CertificateFactory certFactory;
         try {
             certFactory = CertificateFactory.getInstance("X.509");
@@ -219,51 +229,24 @@ public class ApkSignatureSchemeV3Verifier {
         while (signers.hasRemaining()) {
             try {
                 ByteBuffer signer = getLengthPrefixedSlice(signers);
-                boolean[] isDevTarget = new boolean[1];
-                Pair<X509Certificate[], ApkSigningBlockUtils.VerifiedProofOfRotation>
-                        candidateResult = verifySigner(signer, contentDigests, certFactory,
-                        isDevTarget);
-                signerCount++;
-                if (android.security.Flags.apkPqcHybridSigning()) {
-                    // While the V3.0 / V3.1 signature schemes only support a single signer, if a
-                    // new signature algorithm is targeting the current development release, then
-                    // it's possible to have a signer signed with this new algorithm and the
-                    // previous signer both targeting the same SDK version. In this case, a signer
-                    // targeting the development release is technically targeting the new release
-                    // and should be used.
-                    if (signerCount > 1) {
-                        // If both signers have the same value for dev targeting, or there are more
-                        // than two signers, then this is a multiple signer case which is not
-                        // supported.
-                        if (isDevTarget[0] == isResultDevTarget || signerCount > 2) {
-                            throw new SecurityException(
-                                    "APK Signature Scheme V3 only supports one signer: multiple "
-                                            + "signers found.");
-                        }
-                        // The dev target should be preferred since a match means the device is
-                        // running the development SDK version that the signer is targeting.
-                        if (isDevTarget[0]) {
-                            result = candidateResult;
-                            isResultDevTarget = isDevTarget[0];
-                        }
-                    } else {
-                        result = candidateResult;
-                        isResultDevTarget = isDevTarget[0];
-                    }
-                } else {
-                    result = candidateResult;
+                verifiedSigners.add(verifySigner(signer, certFactory));
+                // No V3 signature scheme supports more than 2 signers.
+                if (verifiedSigners.size() > 2) {
+                    throw new SecurityException(
+                            "APK Signature Scheme V3 found at least 3 signers targeting this "
+                                    + "release");
                 }
             } catch (PlatformNotSupportedException e) {
                 // this signer is for a different platform, ignore it.
                 continue;
             } catch (IOException | BufferUnderflowException | SecurityException e) {
                 throw new SecurityException(
-                        "Failed to parse/verify signer #" + signerCount + " block",
+                        "Failed to parse/verify signer #" + verifiedSigners.size() + " block",
                         e);
             }
         }
 
-        if (signerCount < 1 || result == null) {
+        if (verifiedSigners.isEmpty()) {
             // There must always be a valid signer targeting the device SDK version for a v3.0
             // signature.
             if (blockId == APK_SIGNATURE_SCHEME_V3_BLOCK_ID) {
@@ -273,38 +256,56 @@ public class ApkSignatureSchemeV3Verifier {
                     "None of the signers support the current platform version");
         }
 
-        if (!android.security.Flags.apkPqcHybridSigning()) {
-            if (signerCount != 1) {
+        VerifiedSigner result;
+        if (android.security.Flags.apkPqcHybridSigning()) {
+            if (blockId == APK_SIGNATURE_SCHEME_V32_BLOCK_ID) {
+                result = verifyV32Signers(verifiedSigners);
+            } else if (blockId == APK_SIGNATURE_SCHEME_V31_BLOCK_ID) {
+                result = verifyV31Signers(verifiedSigners);
+            } else {
+                // The v3.0 scheme only supports a single signer
+                if (verifiedSigners.size() != 1) {
+                    throw new SecurityException("APK Signature Scheme V3 only supports one signer: "
+                            + "multiple signers found.");
+                }
+                result = verifiedSigners.get(0);
+                if (ApkSigningBlockUtils.isCertificatePqc(result.certs[0])) {
+                    throw new SecurityException(
+                            "The platform does not currently support single PQC signers in the v3 "
+                                    + "signature blocks");
+                }
+            }
+        } else {
+            if (verifiedSigners.size() != 1) {
                 throw new SecurityException("APK Signature Scheme V3 only supports one signer: "
                         + "multiple signers found.");
             }
+            result = verifiedSigners.get(0);
         }
 
-        if (contentDigests.isEmpty()) {
+        if (result.contentDigests.isEmpty()) {
             throw new SecurityException("No content digests found");
         }
 
         if (mVerifyIntegrity) {
-            ApkSigningBlockUtils.verifyIntegrity(contentDigests, mApk, signatureInfo);
+            ApkSigningBlockUtils.verifyIntegrity(result.contentDigests, mApk, signatureInfo);
         }
 
         byte[] verityRootHash = null;
-        if (contentDigests.containsKey(CONTENT_DIGEST_VERITY_CHUNKED_SHA256)) {
-            byte[] verityDigest = contentDigests.get(CONTENT_DIGEST_VERITY_CHUNKED_SHA256);
+        if (result.contentDigests.containsKey(CONTENT_DIGEST_VERITY_CHUNKED_SHA256)) {
+            byte[] verityDigest = result.contentDigests.get(CONTENT_DIGEST_VERITY_CHUNKED_SHA256);
             verityRootHash = ApkSigningBlockUtils.parseVerityDigestAndVerifySourceLength(
                     verityDigest, mApk.getChannel().size(), signatureInfo);
         }
 
-        return new VerifiedSigner(result.first, result.second, verityRootHash, contentDigests,
-                blockId);
+        result.verityRootHash = verityRootHash;
+        result.blockId = blockId;
+        return result;
     }
 
-    private Pair<X509Certificate[], ApkSigningBlockUtils.VerifiedProofOfRotation>
-            verifySigner(
+    private VerifiedSigner verifySigner(
                 ByteBuffer signerBlock,
-                Map<Integer, byte[]> contentDigests,
-                CertificateFactory certFactory,
-                boolean[] isDevTarget)
+                CertificateFactory certFactory)
             throws SecurityException, IOException, PlatformNotSupportedException {
         ByteBuffer signedData = getLengthPrefixedSlice(signerBlock);
         int minSdkVersion = signerBlock.getInt();
@@ -317,6 +318,22 @@ public class ApkSignatureSchemeV3Verifier {
                 if (!mOptionalRotationMinSdkVersion.isPresent()
                         || mOptionalRotationMinSdkVersion.getAsInt() > minSdkVersion) {
                     mOptionalRotationMinSdkVersion = OptionalInt.of(minSdkVersion);
+                }
+            } else if (android.security.Flags.apkPqcHybridSigning()
+                    && mBlockId == APK_SIGNATURE_SCHEME_V32_BLOCK_ID) {
+                // Stripping protection is also available for the v3.2 hybrid block; save the hybrid
+                // block's minSdkVersion to ensure it matches what's written in the v3.0/v3.1 blocks
+                if (mOptionalHybridMinSdkVersion.isPresent()) {
+                    // The hybrid block should contain exactly two signers targeting the same SDK
+                    // range.
+                    int firstSignerMinSdkVersion = mOptionalHybridMinSdkVersion.getAsInt();
+                    if (firstSignerMinSdkVersion != minSdkVersion) {
+                        throw new SecurityException(
+                                "Hybrid signer minimum SDK versions do not match; signer1: "
+                                        + firstSignerMinSdkVersion + ", signer2: " + minSdkVersion);
+                    }
+                } else {
+                    mOptionalHybridMinSdkVersion = OptionalInt.of(minSdkVersion);
                 }
             }
             // this signature isn't meant to be used with this platform, skip it.
@@ -392,7 +409,7 @@ public class ApkSignatureSchemeV3Verifier {
         }
 
         // Signature over signedData has verified.
-
+        Map<Integer, byte[]> contentDigests = new ArrayMap<>();
         byte[] contentDigest = null;
         signedData.clear();
         ByteBuffer digests = getLengthPrefixedSlice(signedData);
@@ -470,19 +487,24 @@ public class ApkSignatureSchemeV3Verifier {
         }
 
         ByteBuffer additionalAttrs = getLengthPrefixedSlice(signedData);
-        return verifyAdditionalAttributes(additionalAttrs, certs, certFactory, isDevTarget);
+        VerifiedSigner verifiedSigner = verifyAdditionalAttributes(additionalAttrs, certs,
+                certFactory, contentDigests);
+        verifiedSigner.minSdkVersion = signedMinSDK;
+        verifiedSigner.maxSdkVersion = signedMaxSDK;
+        return verifiedSigner;
     }
 
     private static final int PROOF_OF_ROTATION_ATTR_ID = 0x3ba06f8c;
     private static final int ROTATION_MIN_SDK_VERSION_ATTR_ID = 0x559f8b02;
-    private static final int ROTATION_ON_DEV_RELEASE_ATTR_ID = 0xc2a6b3ba;
+    private static final int SIGNER_TARGETS_DEV_RELEASE_ATTR_ID = 0xc2a6b3ba;
+    private static final int HYBRID_MIN_SDK_VERSION_ATTR_ID = 0xbf940529;
 
-    private Pair<X509Certificate[], ApkSigningBlockUtils.VerifiedProofOfRotation>
-            verifyAdditionalAttributes(ByteBuffer attrs, List<X509Certificate> certs,
-            CertificateFactory certFactory, boolean[] isDevTarget)
+    private VerifiedSigner verifyAdditionalAttributes(ByteBuffer attrs, List<X509Certificate> certs,
+            CertificateFactory certFactory, Map<Integer, byte[]> contentDigests)
             throws IOException, PlatformNotSupportedException {
         X509Certificate[] certChain = certs.toArray(new X509Certificate[certs.size()]);
         ApkSigningBlockUtils.VerifiedProofOfRotation por = null;
+        boolean isDevTarget = false;
 
         while (attrs.hasRemaining()) {
             ByteBuffer attr = getLengthPrefixedSlice(attrs);
@@ -536,10 +558,37 @@ public class ApkSignatureSchemeV3Verifier {
                                         + rotationMinSdkVersion);
                     }
                     break;
-                case ROTATION_ON_DEV_RELEASE_ATTR_ID:
-                    // This attribute should only be used in a v3.1 signer as it allows the v3.1
-                    // signature scheme to target a platform under development.
-                    if (mBlockId == APK_SIGNATURE_SCHEME_V31_BLOCK_ID) {
+                case HYBRID_MIN_SDK_VERSION_ATTR_ID:
+                    if (android.security.Flags.apkPqcHybridSigning()) {
+                        if (attr.remaining() < 4) {
+                            throw new IOException(
+                                    "Remining buffer too short to contain the hybrid minSdkVersion "
+                                            + "value. Remaining: "
+                                            + attr.remaining());
+                        }
+                        int attrHybridMinSdkVersion = attr.getInt();
+                        if (!mOptionalHybridMinSdkVersion.isPresent()) {
+                            throw new SecurityException(
+                                    "Expected a v3.2 signing block targeting SDK version "
+                                            + attrHybridMinSdkVersion
+                                            + ", but a v3.2 block was not found");
+                        }
+                        int hybridMinSdkVersion = mOptionalHybridMinSdkVersion.getAsInt();
+                        if (hybridMinSdkVersion != attrHybridMinSdkVersion) {
+                            throw new SecurityException(
+                                    "Expected a v3.2 signing block targeting SDK version "
+                                            + attrHybridMinSdkVersion
+                                            + ", but the v3.2 block was targeting "
+                                            + hybridMinSdkVersion);
+                        }
+                    }
+                    break;
+                case SIGNER_TARGETS_DEV_RELEASE_ATTR_ID:
+                    // This attribute can be used by both a v3.1 signer and v3.2 signers as it
+                    // allows these signature schemes to target a platform under development.
+                    if (mBlockId == APK_SIGNATURE_SCHEME_V31_BLOCK_ID
+                            || (android.security.Flags.apkPqcHybridSigning()
+                                    && mBlockId == APK_SIGNATURE_SCHEME_V32_BLOCK_ID)) {
                         // A platform under development uses the same SDK version as the most
                         // recently released platform; if this platform's SDK version is the same as
                         // the minimum of the signer, then only allow this signer to be used if this
@@ -554,7 +603,11 @@ public class ApkSignatureSchemeV3Verifier {
                                             + mSignerMinSdkVersion
                                             + ", but the signer is targeting a dev release");
                         }
-                        isDevTarget[0] = true;
+                        // Note, this is set without checking the device SDK version because it's
+                        // possible the SDK has since been finalized and no longer matches the
+                        // minSdkVersion set by the signer; this signer should still be used in that
+                        // case since it was intended to target the new platform release.
+                        isDevTarget = true;
                     }
                     break;
                 default:
@@ -562,7 +615,159 @@ public class ApkSignatureSchemeV3Verifier {
                     break;
             }
         }
-        return Pair.create(certChain, por);
+        return new VerifiedSigner(certChain, por, contentDigests, isDevTarget);
+    }
+
+    /**
+     * Returns the signer from the provided {@code verifiedSigners} that should be used for
+     * verifying this APK's signature while ensuring that the single signer is not a PQC signer
+     * since PQC signing is only supported in the hybrid block for now.
+     *
+     * <p>The only time when multiple signers are supported for the V3.1 scheme is if one is
+     * targeting the latest platform release and the other is targeting the current development
+     * platform release which is still using the same SDK version as the previous release. In this
+     * case, the signer targeting the development release should be returned since it is intended
+     * to target the latest release.
+     */
+    private VerifiedSigner verifyV31Signers(List<VerifiedSigner> verifiedSigners) {
+        VerifiedSigner result;
+        if (verifiedSigners.size() == 2) {
+            VerifiedSigner signer1 = verifiedSigners.get(0);
+            VerifiedSigner signer2 = verifiedSigners.get(1);
+            // If both signers have the same value for dev targeting then this is a multiple signer
+            // case which is not supported.
+            if (signer1.isDevTarget == signer2.isDevTarget) {
+                throw new SecurityException(
+                        "APK Signature Scheme V3 only supports one signer: multiple signers found"
+                                + ".");
+            }
+            result = signer1.isDevTarget ? signer1 : signer2;
+        } else {
+            result = verifiedSigners.get(0);
+        }
+        if (ApkSigningBlockUtils.isCertificatePqc(result.certs[0])) {
+            throw new SecurityException(
+                    "The platform does not currently support single PQC signers in the v3 "
+                            + "signature blocks");
+        }
+        return result;
+    }
+
+    /**
+     * Returns the signer from the provided {@code verifiedSigners} that should be used as the
+     * current signer of the APK; the hybrid block requires both a classical and a PQC signer, and
+     * the PQC signer is treated as the current signer.
+     *
+     * <p>This method will also verify that the hybrid block meets all other requirements such as
+     * both signers targeting the same SDK range and having the same signing lineage.
+     */
+    public VerifiedSigner verifyV32Signers(List<VerifiedSigner> verifiedSigners) {
+        // Verify that there are exactly two signers in the provided list.
+        if (verifiedSigners.size() != 2) {
+            throw new SecurityException("APK Signature Scheme V3.2 supports exactly two signers; "
+                    + verifiedSigners.size() + " found");
+        }
+        VerifiedSigner signer1 = verifiedSigners.get(0);
+        VerifiedSigner signer2 = verifiedSigners.get(1);
+
+        // Verify that there is one classical and one PQC signer; note, the first cert in the
+        // array is always treated as the signing certificate.
+        boolean signer1IsPqc = ApkSigningBlockUtils.isCertificatePqc(signer1.certs[0]);
+        boolean signer2IsPqc = ApkSigningBlockUtils.isCertificatePqc(signer2.certs[0]);
+        if (signer1IsPqc == signer2IsPqc) {
+            String algoType = signer1IsPqc ? "PQC" : "classical";
+            throw new SecurityException(
+                    "APK Signature Scheme V3.2 requires one classical and one PQC signer; both are "
+                            + algoType);
+        }
+        VerifiedSigner classicalSigner = signer1IsPqc ? signer2 : signer1;
+        VerifiedSigner pqcSigner = signer1IsPqc ? signer1 : signer2;
+
+        // Verify both signers target the exact same SDK range.
+        if (classicalSigner.minSdkVersion != pqcSigner.minSdkVersion
+                || classicalSigner.maxSdkVersion != pqcSigner.maxSdkVersion) {
+            throw new SecurityException(
+                    "APK Signature Scheme V3.2 requires both signers target the same SDK range; "
+                            + "classical: "
+                            + classicalSigner.minSdkVersion + "-" + classicalSigner.maxSdkVersion
+                            + ", PQC: " + pqcSigner.minSdkVersion + "-" + pqcSigner.maxSdkVersion);
+        }
+
+        // Verify both signers have the exact same signing history attesting to their current key.
+        ApkSigningBlockUtils.VerifiedProofOfRotation pqcPor;
+        if (classicalSigner.por != null || pqcSigner.por != null) {
+            if (classicalSigner.por == null || pqcSigner.por == null) {
+                throw new SecurityException(
+                        "APK Signature Scheme V3.2 requires both signers have the same signing "
+                                + "history, but one of the signers is missing its lineage");
+            }
+            // Note, during creation the certs are initialized as an empty array list, so there's no
+            // concern about the certs being null here.
+            int classicalLineageSize = classicalSigner.por.certs.size();
+            int pqcLineageSize = pqcSigner.por.certs.size();
+            if (classicalLineageSize != pqcLineageSize) {
+                throw new SecurityException(
+                        "APK Signature Scheme V3.2 requires both signers have the same signing "
+                                + "history, but classical has "
+                                + classicalLineageSize + ", PQC has " + pqcLineageSize);
+            }
+            // The last entry in the lineage is the current signer, verify all of the certs before
+            // the current signer are the same.
+            for (int i = 0; i < classicalLineageSize - 1; i++) {
+                try {
+                    byte[] classicalCertBytes = classicalSigner.por.certs.get(i).getEncoded();
+                    byte[] pqcCertBytes = pqcSigner.por.certs.get(i).getEncoded();
+                    if (!Arrays.equals(classicalCertBytes, pqcCertBytes)) {
+                        throw new SecurityException(
+                                "APK Signature Scheme V3.2 requires both signers have the same "
+                                        + "signing history, but the history diverges at index "
+                                        + i);
+                    }
+                    if (!classicalSigner.por.flagsList.get(i).equals(
+                            pqcSigner.por.flagsList.get(i))) {
+                        throw new SecurityException(
+                                "APK Signature Scheme V3.2 requires both signers have the same "
+                                        + "capabilities granted to the signing history, but the "
+                                        + "capabilities diverge at index "
+                                        + i);
+                    }
+                } catch (CertificateEncodingException e) {
+                    throw new SecurityException(
+                            "Failed to encode certificate when comparing signing history between "
+                                    + "V3.2 hybrid signers at index "
+                                    + i, e);
+                }
+            }
+            // Once the certificates are verified, add all of the certificates from the classical
+            // lineage to the PQC signer's lineage since the platform treats this as an implicit
+            // rotation from the classical signer to the PQC signer.
+            List<X509Certificate> pqcLineage = new ArrayList<>();
+            pqcLineage.addAll(classicalSigner.por.certs);
+            // The last entry in the lineage is always the current signing certificate, and the PQC
+            // signer is treated as the current signer.
+            pqcLineage.add(pqcSigner.certs[0]);
+            // The lineage also contains a corresponding flags list which has the capabilities
+            // granted to previous signers in the lineage, so add all of the classical flags along
+            // with the flags assigned to the PQC signer.
+            List<Integer> pqcFlags = new ArrayList<>();
+            pqcFlags.addAll(classicalSigner.por.flagsList);
+            pqcFlags.add(pqcFlags.get(pqcFlags.size() - 1));
+            pqcPor = new ApkSigningBlockUtils.VerifiedProofOfRotation(pqcLineage, pqcFlags);
+        } else {
+            // This is a new install with only the hybrid block, build the implicit lineage with
+            // just the classical and PQC signers using the default flags.
+            List<X509Certificate> pqcLineage = new ArrayList<>();
+            List<Integer> pqcFlags = new ArrayList<>();
+            pqcLineage.add(classicalSigner.certs[0]);
+            pqcFlags.add(ApkSigningBlockUtils.VerifiedProofOfRotation.DEFAULT_FLAGS);
+            pqcLineage.add(pqcSigner.certs[0]);
+            pqcFlags.add(ApkSigningBlockUtils.VerifiedProofOfRotation.DEFAULT_FLAGS);
+            pqcPor = new ApkSigningBlockUtils.VerifiedProofOfRotation(pqcLineage, pqcFlags);
+        }
+
+        VerifiedSigner result = new VerifiedSigner(pqcSigner.certs, pqcPor,
+                pqcSigner.contentDigests, pqcSigner.isDevTarget);
+        return result;
     }
 
     static byte[] getVerityRootHash(String apkPath)
@@ -591,14 +796,26 @@ public class ApkSignatureSchemeV3Verifier {
     public static class VerifiedSigner {
         public final X509Certificate[] certs;
         public final ApkSigningBlockUtils.VerifiedProofOfRotation por;
-
-        public final byte[] verityRootHash;
         // Algorithm -> digest map of signed digests in the signature.
         // All these are verified if requested.
         public final Map<Integer, byte[]> contentDigests;
 
+        public byte[] verityRootHash;
+
         // ID of the signature block used to verify.
-        public final int blockId;
+        public int blockId;
+        public int minSdkVersion;
+        public int maxSdkVersion;
+        public boolean isDevTarget;
+
+        public VerifiedSigner(X509Certificate[] certs,
+                ApkSigningBlockUtils.VerifiedProofOfRotation por,
+                Map<Integer, byte[]> contentDigests, boolean isDevTarget) {
+            this.certs = certs;
+            this.por = por;
+            this.contentDigests = contentDigests;
+            this.isDevTarget = isDevTarget;
+        }
 
         public VerifiedSigner(X509Certificate[] certs,
                 ApkSigningBlockUtils.VerifiedProofOfRotation por,
@@ -610,7 +827,6 @@ public class ApkSignatureSchemeV3Verifier {
             this.contentDigests = contentDigests;
             this.blockId = blockId;
         }
-
     }
 
     private static class PlatformNotSupportedException extends Exception {

@@ -16,6 +16,7 @@
 
 package android.util.apk;
 
+import android.content.pm.SigningDetails;
 import android.util.ArrayMap;
 import android.util.Pair;
 
@@ -52,6 +53,8 @@ import java.util.Map;
  * @hide for internal use only.
  */
 public final class ApkSigningBlockUtils {
+    private static final String OID_ML_DSA_65 = "2.16.840.1.101.3.4.3.18";
+    private static final String OID_ML_DSA_87 = "2.16.840.1.101.3.4.3.19";
 
     private ApkSigningBlockUtils() {
     }
@@ -574,6 +577,14 @@ public final class ApkSigningBlockUtils {
         }
     }
 
+    static boolean isCertificatePqc(X509Certificate cert) {
+        PublicKey publicKey = cert.getPublicKey();
+        return switch (publicKey.getAlgorithm()) {
+            case "ML-DSA", OID_ML_DSA_65, OID_ML_DSA_87 -> true;
+            default -> false;
+        };
+    }
+
     static Pair<String, ? extends AlgorithmParameterSpec>
             getSignatureAlgorithmJcaSignatureAlgorithm(int sigAlgorithm) {
         switch (sigAlgorithm) {
@@ -933,6 +944,10 @@ public final class ApkSigningBlockUtils {
      * @hide for internal use only.
      */
     public static class VerifiedProofOfRotation {
+        public static final int DEFAULT_FLAGS = SigningDetails.CertCapabilities.INSTALLED_DATA
+                | SigningDetails.CertCapabilities.SHARED_USER_ID
+                | SigningDetails.CertCapabilities.PERMISSION | SigningDetails.CertCapabilities.AUTH;
+
         public final List<X509Certificate> certs;
         public final List<Integer> flagsList;
 
