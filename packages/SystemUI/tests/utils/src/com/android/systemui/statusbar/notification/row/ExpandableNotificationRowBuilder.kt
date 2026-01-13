@@ -25,6 +25,7 @@ import android.app.PendingIntent.FLAG_IMMUTABLE
 import android.content.Context
 import android.content.Intent
 import android.content.pm.LauncherApps
+import android.graphics.drawable.Drawable
 import android.os.UserHandle
 import androidx.core.os.bundleOf
 import com.android.internal.logging.MetricsLogger
@@ -32,6 +33,7 @@ import com.android.internal.logging.UiEventLogger
 import com.android.internal.statusbar.IStatusBarService
 import com.android.systemui.TestableDependency
 import com.android.systemui.classifier.FalsingManagerFake
+import com.android.systemui.dump.dumpManager
 import com.android.systemui.flags.FakeFeatureFlagsClassic
 import com.android.systemui.flags.FeatureFlagsClassic
 import com.android.systemui.flags.Flags
@@ -72,12 +74,15 @@ import com.android.systemui.statusbar.notification.collection.render.GroupMember
 import com.android.systemui.statusbar.notification.collection.render.groupExpansionManager
 import com.android.systemui.statusbar.notification.headsup.HeadsUpManager
 import com.android.systemui.statusbar.notification.headsup.mockHeadsUpManager
+import com.android.systemui.statusbar.notification.icon.IconBuilder
+import com.android.systemui.statusbar.notification.icon.IconManager
 import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier
 import com.android.systemui.statusbar.notification.promoted.promotedNotificationContentExtractor
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow.ExpandableNotificationRowLogger
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow.OnExpandClickListener
 import com.android.systemui.statusbar.notification.row.NotificationRowContentBinder.FLAG_CONTENT_VIEW_ALL
 import com.android.systemui.statusbar.notification.row.NotificationRowContentBinder.InflationFlag
+import com.android.systemui.statusbar.notification.row.icon.NotificationRowIconViewInflaterFactory
 import com.android.systemui.statusbar.notification.row.icon.notificationRowIconViewInflaterFactory
 import com.android.systemui.statusbar.notification.stack.NotificationChildrenContainerLogger
 import com.android.systemui.statusbar.phone.KeyguardBypassController
@@ -89,6 +94,7 @@ import com.android.systemui.statusbar.policy.SmartReplyStateInflaterImpl
 import com.android.systemui.statusbar.policy.dagger.RemoteInputViewSubcomponent
 import com.android.systemui.util.Assert.runWithCurrentThreadAsMainThread
 import com.android.systemui.util.concurrency.FakeExecutor
+import com.android.systemui.util.time.FakeSystemClock
 import com.android.systemui.util.time.fakeSystemClock
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executor
@@ -99,6 +105,7 @@ import org.junit.Assert.assertTrue
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 
@@ -114,6 +121,7 @@ class ExpandableNotificationRowBuilder(
     private val mKeyguardBypassController: KeyguardBypassController
     private val mGroupMembershipManager: GroupMembershipManager
     private val mHeadsUpManager: HeadsUpManager
+    private val mIconManager: IconManager
     private val mContentBinder: NotificationRowContentBinder
     private val mBindStage: RowContentBindStage
     private val mBindPipeline: NotifBindPipeline
@@ -149,6 +157,16 @@ class ExpandableNotificationRowBuilder(
             kosmos.mockHeadsUpManager.apply {
                 whenever(isTrackingHeadsUp()).thenReturn(MutableStateFlow(false))
             }
+        mIconManager =
+            IconManager(
+                Mockito.mock(CommonNotifCollection::class.java, STUB_ONLY),
+                Mockito.mock(LauncherApps::class.java, STUB_ONLY),
+                IconBuilder(context),
+                mTestScope,
+                mBgCoroutineContext,
+                mMainCoroutineContext,
+                context,
+            )
 
         mSmartReplyConstants = SmartReplyConstants(context)
         val remoteViewsFactories = getNotifRemoteViewsFactoryContainer(featureFlags)
@@ -418,6 +436,7 @@ class ExpandableNotificationRowBuilder(
 
         val row = initRow(entry)
         entry.row = row
+        mIconManager.createIcons(entry)
         mBindPipelineEntryListener.onEntryInit(entry)
         mBindPipeline.manageRow(entry, row)
         mBindStage.getStageParams(entry).requireContentViews(extraInflationFlags)
