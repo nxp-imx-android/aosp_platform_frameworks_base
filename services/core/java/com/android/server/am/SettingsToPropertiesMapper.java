@@ -20,6 +20,8 @@ import static com.android.aconfig_new_storage.Flags.enableAconfigStorageDaemon;
 import static com.android.aconfig_new_storage.Flags.enableAconfigdFromMainline;
 import static com.android.aconfig_new_storage.Flags.supportClearLocalOverridesImmediately;
 import static com.android.aconfig_new_storage.Flags.supportImmediateLocalOverrides;
+import static com.android.server.am.Flags.rolloutPixelFaceauth;
+
 import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
 
 import android.aconfigd.Aconfigd.StorageRequestMessage;
@@ -49,6 +51,7 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashSet;
 
 /**
@@ -90,6 +93,9 @@ public class SettingsToPropertiesMapper {
     // TODO(b/282593625): Move this constant to DeviceConfig module
     private static final String NAMESPACE_TETHERING_U_OR_LATER_NATIVE =
             "tethering_u_or_later_native";
+
+    private static final String NAMESPACE_PIXEL_FACEAUTH =
+            "pixel_faceauth";
 
     // All the flags under the listed DeviceConfig scopes will be synced to native level.
     //
@@ -615,6 +621,10 @@ public class SettingsToPropertiesMapper {
     static String[] getDeviceConfigScopes() {
         String[] deviceConfigScopes = sDeviceConfigScopes;
         // Add new namespace behind a flag here. e.g., ag/35184768
+        if (rolloutPixelFaceauth()) {
+            deviceConfigScopes = Arrays.copyOf(deviceConfigScopes, deviceConfigScopes.length + 1);
+            deviceConfigScopes[deviceConfigScopes.length - 1] = NAMESPACE_PIXEL_FACEAUTH;
+        }
         return deviceConfigScopes;
     }
 }
