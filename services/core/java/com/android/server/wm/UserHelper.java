@@ -21,6 +21,7 @@ import static android.app.ActivityManager.START_SUCCESS;
 import static android.app.ActivityManager.START_NOT_ALLOWED_FOR_USER;
 import static android.os.UserHandle.USER_SYSTEM;
 
+import static com.android.server.pm.GenericAllowlist.AllowlistStatus;
 import static com.android.server.pm.UserActivitiesAllowlist.ALLOWLIST_MODE_ENABLED;
 import static com.android.server.pm.UserActivitiesAllowlist.ALLOWLIST_MODE_DISABLED;
 import static com.android.server.pm.UserActivitiesAllowlist.ALLOWLIST_MODE_LOG_ONLY;
@@ -155,7 +156,8 @@ final class UserHelper {
             return START_SUCCESS;
         }
 
-        if (!mHsuActivitiesAllowlist.isAllowed(compName)) {
+        request.userAllowlistStatus = mHsuActivitiesAllowlist.getAllowlistStatus(compName);
+        if (!UserActivitiesAllowlist.isAllowed(request.userAllowlistStatus)) {
             String suffix = logOnly ? ", but allowing because it's log-only mode" : "";
             int userId = getUserId(aInfo);
             if (userId == USER_SYSTEM) {
@@ -166,11 +168,7 @@ final class UserHelper {
                         + "USER_SYSTEM (which is the current user)%s",
                         compName.flattenToShortString(), userId, suffix);
             }
-            // TODO(b/414326600): consolidate with the logActivityStarted() on
-            // handleResult and/or log for all users (once the final API for logging is
-            // defined)
-            // TODO(b/414326600): pass different status when it's log-only
-            mUmi.logBlockedHsuActivity(compName);
+            mUmi.logActivityLaunchStatus(compName, USER_SYSTEM, request.userAllowlistStatus);
             return logOnly ? START_SUCCESS : START_NOT_ALLOWED_FOR_USER;
         }
 
@@ -189,26 +187,24 @@ final class UserHelper {
     /**
      * Logs whether the given activity was started.
      */
-    public void logActivityStarted(ActivityRecord started, boolean isStarted) {
+    public void logActivityStarted(ActivityRecord started, boolean isStarted,
+            @AllowlistStatus int allowlistStatus) {
         if (!isStarted || !mIsHeadlessSystemUserMode) {
             return;
         }
 
-        logActivityStarted(started.mUserId, started.mActivityComponent);
+        logActivityStarted(started.mUserId, started.mActivityComponent, allowlistStatus);
     }
 
     // NOTE: method below is only used by UserHelperTest, otherwise it would be a pain to create a
     // ActivityRecord to test the "real" method above...
     @VisibleForTesting
-    void logActivityStarted(@UserIdInt int userId, ComponentName started) {
+    void logActivityStarted(@UserIdInt int userId, ComponentName started,
+            @AllowlistStatus int allowlistStatus) {
         if (userId != USER_SYSTEM) {
             return;
         }
-        // TODO(b/414326600): for now we're just logging activities launched on HSU, but once the
-        // allowlist metrics mechanism is fully implemented, we'll need to change this call to log a
-        // successful launch, but also log when it's blocked earlier on (probably before the check
-        // voice session on executeRequest(), as voice interaction is not supported on the HSU)
-        mUmi.logLaunchedHsuActivity(started);
+        mUmi.logActivityLaunchStatus(started, userId, allowlistStatus);
     }
 
     /**

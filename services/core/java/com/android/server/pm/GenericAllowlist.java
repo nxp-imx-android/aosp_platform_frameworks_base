@@ -50,7 +50,7 @@ import java.util.stream.Stream;
  *
  * @param <E> type of the element being allowlisted.
  */
-abstract class GenericAllowlist<E> {
+public abstract class GenericAllowlist<E> {
 
     @VisibleForTesting
     static final boolean DEBUG = Log.isLoggable(GenericAllowlist.class.getSimpleName(), Log.DEBUG);
@@ -94,8 +94,7 @@ abstract class GenericAllowlist<E> {
       *
       * <p>Typically used when initializing a status.
       */
-    @VisibleForTesting
-    static final int STATUS_UNKNOWN = 0;
+    public static final int STATUS_UNKNOWN = 0;
 
     /** Element is not allowed because the temporary allowlist is set and it's not in it. */
     public static final int STATUS_DISALLOWED_NOT_IN_TEMPORARY_LIST = -1;
@@ -130,6 +129,8 @@ abstract class GenericAllowlist<E> {
     private static final int LAST_STATUS_ALLOWED =
             STATUS_ALLOWED_NOT_IN_PERMANENT_LIST_BUT_LOG_ONLY_MODE;
 
+    // TODO(b/414326600): this class is public because WM uses @AllowlistStatus. It might be cleaner
+    // to create a new class for it.
     @IntDef(prefix = { "STATUS_" }, value = {
             STATUS_UNKNOWN,
             STATUS_ALLOWED_INVALID_MODE,
