@@ -46,6 +46,10 @@
     <string name="usb_accessory_confirm_prompt" msgid="5728408382798643421">"Buksan ang <xliff:g id="APPLICATION">%1$s</xliff:g> upang pamahalaan ang <xliff:g id="USB_ACCESSORY">%2$s</xliff:g>?"</string>
     <string name="usb_accessory_uri_prompt" msgid="6756649383432542382">"Wala sa mga na-install na app ang gumagana sa USB accessory na ito. Matuto pa tungkol sa accessory na ito sa <xliff:g id="URL">%1$s</xliff:g>"</string>
     <string name="title_usb_accessory" msgid="1236358027511638648">"USB accessory"</string>
+    <!-- no translation found for usb_device_dialog_allow_only_this_time_button (3653881633944232491) -->
+    <skip />
+    <!-- no translation found for usb_device_dialog_cancel_button (9050554648474787233) -->
+    <skip />
     <string name="label_view" msgid="6815442985276363364">"Tingnan"</string>
     <string name="always_use_device" msgid="210535878779644679">"Palaging buksan ang <xliff:g id="APPLICATION">%1$s</xliff:g> kapag nakakonekta ang <xliff:g id="USB_DEVICE">%2$s</xliff:g>"</string>
     <string name="always_use_accessory" msgid="1977225429341838444">"Palaging buksan ang <xliff:g id="APPLICATION">%1$s</xliff:g> kapag nakakonekta ang <xliff:g id="USB_ACCESSORY">%2$s</xliff:g>"</string>
@@ -187,6 +191,8 @@
     <string name="screen_share_entire_screen_sharing_title" msgid="9093580141248337998">"I-share ang buong screen"</string>
     <string name="screen_share_disclaimer_app_sharing" msgid="4191319837838590771">"Kapag nagbabahagi ng app, makikita ng [APP NAME] ang ipinapakita o pine-play sa app. Mag-ingat sa mga bagay tulad ng password, detalye ng pagbabayad, mensahe, larawan, at audio at video."</string>
     <string name="screen_share_disclaimer_full_screen_sharing" msgid="6445373139864031364">"Kapag ibinahagi mo ang iyong buong screen, makikita ng [APP NAME] ang kahit anong nasa screen mo. Kaya mag-ingat sa mga bagay tulad ng mga password, detalye ng pagbabayad, mensahe, larawan, at audio at video."</string>
+    <!-- no translation found for screen_share_a11y_announcement (8938007210094494367) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Kunan ng screenshot ang window"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"I-record ang window"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Kunan ng screenshot ang napiling bahagi"</string>
@@ -388,7 +394,8 @@
     <string name="accessibility_clear_all" msgid="970525598287244592">"I-clear ang lahat ng notification."</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"Mga Notification"</string>
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Assistant"</string>
-    <string name="accessibility_status_bar_input_method_indicator" msgid="4316411266975554038">"Paraan ng pag-input"</string>
+    <!-- no translation found for accessibility_status_bar_input_method_indicator (4911669064186093506) -->
+    <skip />
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{May # pang notification sa loob.}one{May # pang notification sa loob.}other{May # pang notification sa loob.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"Naka-lock ang screen sa pahigang oryentasyon."</string>

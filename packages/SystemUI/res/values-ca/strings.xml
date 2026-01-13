@@ -46,6 +46,10 @@
     <string name="usb_accessory_confirm_prompt" msgid="5728408382798643421">"Vols obrir <xliff:g id="APPLICATION">%1$s</xliff:g> per gestionar <xliff:g id="USB_ACCESSORY">%2$s</xliff:g>?"</string>
     <string name="usb_accessory_uri_prompt" msgid="6756649383432542382">"Les aplicacions instal·lades no funcionen amb l\'accessori USB. Més informació: <xliff:g id="URL">%1$s</xliff:g>"</string>
     <string name="title_usb_accessory" msgid="1236358027511638648">"Accessori USB"</string>
+    <!-- no translation found for usb_device_dialog_allow_only_this_time_button (3653881633944232491) -->
+    <skip />
+    <!-- no translation found for usb_device_dialog_cancel_button (9050554648474787233) -->
+    <skip />
     <string name="label_view" msgid="6815442985276363364">"Mostra"</string>
     <string name="always_use_device" msgid="210535878779644679">"Obre sempre <xliff:g id="APPLICATION">%1$s</xliff:g> quan es connecti <xliff:g id="USB_DEVICE">%2$s</xliff:g>"</string>
     <string name="always_use_accessory" msgid="1977225429341838444">"Obre sempre <xliff:g id="APPLICATION">%1$s</xliff:g> quan es connecti <xliff:g id="USB_ACCESSORY">%2$s</xliff:g>"</string>
@@ -91,10 +95,8 @@
     <string name="screenshot_failed_to_save_text" msgid="7232739948999195960">"No es pot desar la captura de pantalla"</string>
     <string name="screenshot_failed_to_capture_text" msgid="7818288545874407451">"L\'aplicació o la teva organització no permeten fer captures de pantalla"</string>
     <string name="screenshot_blocked_by_admin" msgid="5486757604822795797">"El teu administrador de TI ha bloquejat les captures de pantalla"</string>
-    <!-- no translation found for screenshot_copy_label (3551237076438128722) -->
-    <skip />
-    <!-- no translation found for screenshot_copy_description (2890150686381938858) -->
-    <skip />
+    <string name="screenshot_copy_label" msgid="3551237076438128722">"Copia"</string>
+    <string name="screenshot_copy_description" msgid="2890150686381938858">"Botó per copiar la captura de pantalla al porta-retalls"</string>
     <string name="screenshot_edit_label" msgid="8754981973544133050">"Edita"</string>
     <string name="screenshot_edit_description" msgid="7802378587672433507">"Botó Edita la captura de pantalla"</string>
     <string name="screenshot_share_label" msgid="1653061117238861559">"Comparteix"</string>
@@ -189,6 +191,8 @@
     <string name="screen_share_entire_screen_sharing_title" msgid="9093580141248337998">"Comparteix tota la pantalla"</string>
     <string name="screen_share_disclaimer_app_sharing" msgid="4191319837838590771">"Quan comparteixes una aplicació, qualsevol cosa que s\'hi mostra o s\'hi reprodueix és visible a [APP NAME]. Per aquest motiu, ves amb compte amb les contrasenyes, les dades de pagament, els missatges, les fotos, i l\'àudio i el vídeo."</string>
     <string name="screen_share_disclaimer_full_screen_sharing" msgid="6445373139864031364">"Quan comparteixes tota la pantalla, qualsevol cosa que s\'hi mostra és visible a [APP NAME]. Per aquest motiu, ves amb compte amb les contrasenyes, les dades de pagament, els missatges, les fotos, i l\'àudio i el vídeo."</string>
+    <!-- no translation found for screen_share_a11y_announcement (8938007210094494367) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Fes una captura de pantalla de la finestra"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Grava la finestra"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Fes una captura de pantalla de l\'àrea seleccionada"</string>
@@ -390,7 +394,8 @@
     <string name="accessibility_clear_all" msgid="970525598287244592">"Esborra totes les notificacions."</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"Notificacions"</string>
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Assistent"</string>
-    <string name="accessibility_status_bar_input_method_indicator" msgid="4316411266975554038">"Mètode d\'introducció de text"</string>
+    <!-- no translation found for accessibility_status_bar_input_method_indicator (4911669064186093506) -->
+    <skip />
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{# notificació més a l\'interior.}many{# notificacions més a l\'interior.}other{# notificacions més a l\'interior.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"La pantalla està bloquejada en orientació horitzontal."</string>

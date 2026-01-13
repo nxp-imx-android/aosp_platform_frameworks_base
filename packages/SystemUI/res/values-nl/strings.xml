@@ -46,6 +46,10 @@
     <string name="usb_accessory_confirm_prompt" msgid="5728408382798643421">"<xliff:g id="APPLICATION">%1$s</xliff:g> openen om <xliff:g id="USB_ACCESSORY">%2$s</xliff:g> te verwerken?"</string>
     <string name="usb_accessory_uri_prompt" msgid="6756649383432542382">"Er werken geen geïnstalleerde apps met dit USB-accessoire. Meer informatie op: <xliff:g id="URL">%1$s</xliff:g>"</string>
     <string name="title_usb_accessory" msgid="1236358027511638648">"USB-accessoire"</string>
+    <!-- no translation found for usb_device_dialog_allow_only_this_time_button (3653881633944232491) -->
+    <skip />
+    <!-- no translation found for usb_device_dialog_cancel_button (9050554648474787233) -->
+    <skip />
     <string name="label_view" msgid="6815442985276363364">"Bekijken"</string>
     <string name="always_use_device" msgid="210535878779644679">"<xliff:g id="APPLICATION">%1$s</xliff:g> altijd openen wanneer <xliff:g id="USB_DEVICE">%2$s</xliff:g> verbonden is"</string>
     <string name="always_use_accessory" msgid="1977225429341838444">"<xliff:g id="APPLICATION">%1$s</xliff:g> altijd openen wanneer <xliff:g id="USB_ACCESSORY">%2$s</xliff:g> verbonden is"</string>
@@ -154,10 +158,8 @@
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"Selfiecamera tonen"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Aanraakbewerkingen tonen"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Kies een app om op te nemen"</string>
-    <!-- no translation found for screen_record_settings (2377267679200139285) -->
-    <skip />
-    <!-- no translation found for screen_record_markup (5583986085046693669) -->
-    <skip />
+    <string name="screen_record_settings" msgid="2377267679200139285">"Instellingen voor schermopname"</string>
+    <string name="screen_record_markup" msgid="5583986085046693669">"Opmaak"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Video opgeslagen"</string>
     <string name="screen_record_video_deleted" msgid="30786214839944540">"Video verwijderd"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"Ongedaan maken"</string>
@@ -170,8 +172,7 @@
     <string name="screen_record_pause" msgid="1715012292444967776">"Pauzeren"</string>
     <string name="screen_record_mute" msgid="8111682249858638168">"Geluid uitzetten"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"Geluid aanzetten"</string>
-    <!-- no translation found for screen_record_video_preview_elapsed_time_a11y_template (969599623785875798) -->
-    <skip />
+    <string name="screen_record_video_preview_elapsed_time_a11y_template" formatted="false" msgid="969599623785875798">"<xliff:g id="ELAPSED_TIME">%1$s</xliff:g> van <xliff:g id="DURATION">%2$s</xliff:g>"</string>
     <string name="screen_capture_blocked_by_admin" msgid="1751756953683506644">"Schermopname is geblokkeerd door je IT-beheerder"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"Screenshot van hele scherm maken"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"Hele scherm opnemen"</string>
@@ -187,6 +188,8 @@
     <string name="screen_share_entire_screen_sharing_title" msgid="9093580141248337998">"Hele scherm delen"</string>
     <string name="screen_share_disclaimer_app_sharing" msgid="4191319837838590771">"Als je een app deelt, is alles dat wordt getoond of afgespeeld in die app zichtbaar voor [APP NAME]. Wees dus voorzichtig met bijvoorbeeld wachtwoorden, betalingsgegevens, berichten, foto\'s en audio en video."</string>
     <string name="screen_share_disclaimer_full_screen_sharing" msgid="6445373139864031364">"Als je je hele scherm deelt, is alles op je scherm zichtbaar voor [APP NAME]. Wees dus voorzichtig met bijvoorbeeld wachtwoorden, betalingsgegevens, berichten, foto\'s en audio en video."</string>
+    <!-- no translation found for screen_share_a11y_announcement (8938007210094494367) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Screenshot van venster maken"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Venster opnemen"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Screenshot van geselecteerd gebied maken"</string>
@@ -388,7 +391,8 @@
     <string name="accessibility_clear_all" msgid="970525598287244592">"Alle meldingen wissen."</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"Meldingen"</string>
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Assistent"</string>
-    <string name="accessibility_status_bar_input_method_indicator" msgid="4316411266975554038">"Invoermethode"</string>
+    <!-- no translation found for accessibility_status_bar_input_method_indicator (4911669064186093506) -->
+    <skip />
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{Nog # melding in deze groep.}other{Nog # meldingen in deze groep.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"Het scherm is nu vergrendeld in liggende stand."</string>
@@ -938,8 +942,7 @@
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"Nieuwsbrieven, aanbevolen media en meer"</string>
     <string name="notification_onboarding_summaries_turn_on" msgid="3831339570984683297">"Aanzetten in Instellingen"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"Je langere gesprekken kunnen nu worden samengevat om je een snelle samenvatting te geven"</string>
-    <!-- no translation found for notification_onboarding_summaries_message_with_apps (5320980333818238465) -->
-    <skip />
+    <string name="notification_onboarding_summaries_message_with_apps" msgid="5320980333818238465">"Je apparaat en apps kunnen nu langere gesprekken samenvatten om je een korte samenvatting te geven"</string>
     <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"Meldingsorganisator bundelt meldingen met lagere prioriteit en zet ze op stil. Voeg meer categorieën toe in Instellingen."</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# melding}other{# meldingen}}"</string>
     <string name="notification_bundle_header_joined_description" msgid="4517556837418088139">"<xliff:g id="NAME">%1$s</xliff:g>, <xliff:g id="NUM_NOTIFICATIONS">%2$s</xliff:g>"</string>
