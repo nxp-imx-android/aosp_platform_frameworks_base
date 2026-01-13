@@ -37,9 +37,12 @@ public abstract class LightsManager {
     public abstract LogicalLight getLight(int id);
 
     /**
-     * Set overall lights enable/disable state, when it is necessary to limit
-     * light emission to avoid interfering with use cases such as video recording
+     * Set overall lights muted/unmuted state, when it is necessary to limit light emission to
+     * avoid interfering with use cases such as video recording.
+     * <p>
+     * Critical lights like backlight, keyboard or buttons won't be muted but user and the other
+     * system lights will be turned off until the muted state is set to false.
      */
-    public abstract void setEnabledState(boolean enabled);
+    public abstract void setMutedState(boolean muted);
 
 }

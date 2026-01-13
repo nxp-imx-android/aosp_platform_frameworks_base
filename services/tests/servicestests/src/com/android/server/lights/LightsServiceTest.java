@@ -992,7 +992,7 @@ public class LightsServiceTest {
             inOrder.verify(mHal).setLightState(eq(8), stateCaptor.capture());
             assertThat(stateCaptor.getValue().color).isEqualTo(RED);
 
-            service.setEnabledState(false);
+            service.setMutedState(true);
 
             inOrder.verify(mHal, never()).setLightState(eq(1), any());
             inOrder.verify(mHal, never()).setLightState(eq(2), any());
@@ -1016,7 +1016,7 @@ public class LightsServiceTest {
             inOrder.verify(mHal).setLightState(eq(100), stateCaptor.capture());
             assertThat(stateCaptor.getValue().color).isEqualTo(0);
 
-            service.setEnabledState(true);
+            service.setMutedState(false);
 
             inOrder.verify(mHal, never()).setLightState(eq(1), any());
             inOrder.verify(mHal, never()).setLightState(eq(2), any());
@@ -1063,7 +1063,7 @@ public class LightsServiceTest {
             // Validate that the service sent the hal the effect.
             inOrder.verify(mHal).setLightEffects(any());
 
-            service.setEnabledState(false);
+            service.setMutedState(true);
 
             inOrder.verify(mHal).setLightState(eq(light.getId()), stateCaptor.capture());
             assertThat(stateCaptor.getValue().color).isEqualTo(0);
@@ -1091,7 +1091,7 @@ public class LightsServiceTest {
         assertThat(stateCaptor.getValue().color).isEqualTo(BLUE);
 
         // Mute the lights and verify that the light got muted.
-        service.setEnabledState(false);
+        service.setMutedState(true);
 
         inOrder.verify(mHal).setLightState(eq(5), stateCaptor.capture());
         assertThat(stateCaptor.getValue().color).isEqualTo(0);
@@ -1101,7 +1101,7 @@ public class LightsServiceTest {
         inOrder.verify(mHal, never()).setLightState(eq(5), any());
 
         // Unmute the lights.
-        service.setEnabledState(true);
+        service.setMutedState(false);
 
         // Validate that the light got the new value set during the mute.
         inOrder.verify(mHal).setLightState(eq(5), stateCaptor.capture());
