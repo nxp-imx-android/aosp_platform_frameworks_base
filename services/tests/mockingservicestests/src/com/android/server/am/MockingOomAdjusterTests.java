@@ -607,7 +607,11 @@ public class MockingOomAdjusterTests {
 
         setWakefulness(PowerManagerInternal.WAKEFULNESS_AWAKE);
         setIsReceivingBroadcast(app, true, SCHED_GROUP_BACKGROUND);
-        updateOomAdj(app);
+        if (Flags.pscAutoUpdateBroadcastState()) {
+            // No need to manually trigger an update.
+        } else {
+            updateOomAdj(app);
+        }
 
         assertProcStates(app, PROCESS_STATE_RECEIVER, FOREGROUND_APP_ADJ, SCHED_GROUP_BACKGROUND);
         assertThatProcess(app).hasImplicitCpuTimeCapability();
@@ -628,7 +632,11 @@ public class MockingOomAdjusterTests {
         assertTrue(app.getHasForegroundActivities());
 
         setIsReceivingBroadcast(app, true, SCHED_GROUP_BACKGROUND);
-        updateOomAdj(app);
+        if (Flags.pscAutoUpdateBroadcastState()) {
+            // No need to manually trigger an update.
+        } else {
+            updateOomAdj(app);
+        }
 
         assertProcStates(app, PROCESS_STATE_RECEIVER, FOREGROUND_APP_ADJ, SCHED_GROUP_BACKGROUND);
         assertThatProcess(app).hasImplicitCpuTimeCapability();
@@ -1168,11 +1176,19 @@ public class MockingOomAdjusterTests {
         assertThatProcess(app).notHasCpuTimeCapability();
 
         mProcessStateController.noteBroadcastDeliveryStarted(app, SCHED_GROUP_BACKGROUND);
-        updateOomAdj(app);
+        if (Flags.pscAutoUpdateBroadcastState()) {
+            // No need to manually trigger an update.
+        } else {
+            updateOomAdj(app);
+        }
         assertThatProcess(app).hasCpuTimeCapability();
 
         mProcessStateController.noteBroadcastDeliveryEnded(app);
-        updateOomAdj(app);
+        if (Flags.pscAutoUpdateBroadcastState()) {
+            // No need to manually trigger an update.
+        } else {
+            updateOomAdj(app);
+        }
         assertThatProcess(app).notHasCpuTimeCapability();
     }
 

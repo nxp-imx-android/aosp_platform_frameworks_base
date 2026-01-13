@@ -956,7 +956,7 @@ public class ActivityManagerService extends IActivityManager.Stub
      * The list of phantom processes.
      * @see PhantomProcessRecord
      */
-    final PhantomProcessList mPhantomProcessList;
+    PhantomProcessList mPhantomProcessList;
 
     /**
      * Tracking long-term execution of processes to look for abuse and other

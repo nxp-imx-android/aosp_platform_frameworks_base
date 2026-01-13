@@ -1256,6 +1256,10 @@ public class OomAdjusterImpl extends OomAdjuster {
                 reportOomAdjMessageLocked(TAG_OOM_ADJ, "Making instrumentation: " + app);
             }
         } else if (isReceivingBroadcast(app)) {
+            // TODO: b/476480930 - Not every running receiver needs to elevated in importance.
+            //  Update this policy and the ProcessStateController API to distinguish different
+            //  importance receivers.
+
             // An app that is currently receiving a broadcast also
             // counts as being in the foreground for OOM killer purposes.
             // It's placed in a sched group based on the nature of the
