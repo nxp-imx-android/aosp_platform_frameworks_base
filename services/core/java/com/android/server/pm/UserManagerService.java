@@ -32,7 +32,6 @@ import static android.os.UserManager.DISALLOW_USER_SWITCH;
 import static android.os.UserManager.SYSTEM_USER_MODE_EMULATION_PROPERTY;
 import static android.os.UserManager.USER_OPERATION_ERROR_UNKNOWN;
 import static android.os.UserManager.USER_OPERATION_ERROR_USER_RESTRICTED;
-import static android.os.UserManager.USER_TYPE_PROFILE_PRIVATE;
 import static android.provider.Settings.Secure.HIDE_PRIVATESPACE_ENTRY_POINT;
 
 import static com.android.internal.util.ConcurrentUtils.DIRECT_EXECUTOR;
@@ -4469,7 +4468,7 @@ public class UserManagerService extends IUserManager.Stub {
     private static final void checkManageUserAndAcrossUsersFullPermission(String message) {
         final int uid = Binder.getCallingUid();
 
-        if (uid == Process.SYSTEM_UID || uid == 0) {
+        if (uid == Process.SYSTEM_UID || uid == Process.ROOT_UID) {
             // System UID or root's UID are granted privilege.
             return;
         }
