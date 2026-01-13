@@ -288,7 +288,13 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         } else {
             registerAppSearchObserver(user);
         }
-        trySyncRuntimeMetadata(user);
+        // TODO: b/472621015 - Consider optimizing resetting RuntimeMetadata schema in
+        // onUserUnlocked. AppSearch already optimizes for unchanged schema definition but we can
+        // consider doing a diff or use a version to decide when to update the schema.
+        trySyncRuntimeMetadata(
+                user,
+                /* shouldSetRuntimeMetadataSchemaUnconditionally= */ android.app.appfunctions.flags
+                        .Flags.enableAppFunctionPermissionV2());
         PackageMonitor pkgMonitorForUser =
                 AppFunctionPackageMonitor.registerPackageMonitorForUser(mContext, user);
         mPackageMonitors.append(user.getUserIdentifier(), pkgMonitorForUser);
@@ -1385,7 +1391,8 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                                 });
     }
 
-    private void trySyncRuntimeMetadata(@NonNull TargetUser user) {
+    private void trySyncRuntimeMetadata(
+            @NonNull TargetUser user, boolean shouldSetRuntimeMetadataSchemaUnconditionally) {
         MetadataSyncAdapter metadataSyncAdapter =
                 MetadataSyncPerUser.getPerUserMetadataSyncAdapter(
                         user.getUserHandle(),
@@ -1393,7 +1400,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         if (metadataSyncAdapter != null) {
             var unused =
                     metadataSyncAdapter
-                            .submitSyncRequest()
+                            .submitSyncRequest(shouldSetRuntimeMetadataSchemaUnconditionally)
                             .whenComplete(
                                     (isSuccess, ex) -> {
                                         if (ex != null || !isSuccess) {
@@ -1510,7 +1517,9 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
             }
             if (documentChangeInfo.getDatabaseName().equals(APP_FUNCTION_STATIC_METADATA_DB)
                     && documentChangeInfo.getNamespace().equals(APP_FUNCTION_STATIC_NAMESPACE)) {
-                var unused = mPerUserMetadataSyncAdapter.submitSyncRequest();
+                var unused =
+                        mPerUserMetadataSyncAdapter.submitSyncRequest(
+                                /* shouldSetRuntimeMetadataSchemaUnconditionally= */ false);
             }
         }
 
@@ -1528,7 +1537,9 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                     }
                 }
                 if (shouldInitiateSync) {
-                    var unused = mPerUserMetadataSyncAdapter.submitSyncRequest();
+                    var unused =
+                            mPerUserMetadataSyncAdapter.submitSyncRequest(
+                                    /* shouldSetRuntimeMetadataSchemaUnconditionally= */ false);
                 }
             }
         }
