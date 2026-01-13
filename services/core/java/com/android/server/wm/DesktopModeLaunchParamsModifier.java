@@ -419,15 +419,12 @@ class DesktopModeLaunchParamsModifier extends DefaultLaunchParamsModifier {
                     return WINDOWING_MODE_FULLSCREEN;
                 }
 
-                if (mDesktopModeCompatPolicy.isPartOfDefaultHomePackageOrNoHomeAvailable(
-                                source.mActivityComponent.getPackageName(), source.mUserId)) {
+                ActivityRecord rootActivity = task.getRootActivity();
+                if (rootActivity != null
+                        && mDesktopModeCompatPolicy.isPartOfDefaultHomePackageOrNoHomeAvailable(
+                                rootActivity.mActivityComponent.getPackageName(),
+                                rootActivity.mUserId)) {
                     appendLog("desktop-first-but-fullscreen-relaunch-from-home");
-                    return WINDOWING_MODE_FULLSCREEN;
-                }
-
-                if (source.info != null && source.info.applicationInfo != null
-                                && source.info.applicationInfo.isSignedWithPlatformKey()) {
-                    appendLog("desktop-first-but-fullscreen-relaunch-from-signed-activity");
                     return WINDOWING_MODE_FULLSCREEN;
                 }
 
