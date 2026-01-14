@@ -6088,20 +6088,6 @@
     <permission android:name="android.permission.BIND_COMPANION_DEVICE_SERVICE"
                 android:protectionLevel="signature" />
 
-    <!-- Allows the caller to acquire verified device tokens from TrustTokenManager.
-         @hide -->
-    <permission
-        android:name="android.permission.ACQUIRE_VERIFIED_DEVICE_TOKEN"
-        android:protectionLevel="signature"
-        android:featureFlag="android.security.enable_talisman_service" />
-
-    <!-- Allows the caller to sign the challenge with the trust token keys.
-         @hide -->
-    <permission
-        android:name="android.permission.SIGN_WITH_TRUST_TOKEN"
-        android:protectionLevel="signature"
-        android:featureFlag="android.security.enable_talisman_service" />
-
     <!-- Must be required by {@link android.security.trusttoken.TrustTokenService}
          to ensure that only the system can bind to it.
          <p>Protection level: signature
