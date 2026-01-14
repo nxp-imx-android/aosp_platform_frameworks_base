@@ -690,7 +690,7 @@ public class SimpleIconFactory {
                 mDrawPaint);
 
         // Draw the icon
-        mDrawPaint.setAlpha(255); // TODO if b/128609682 not fixed by launch use .setAlpha(254)
+        mDrawPaint.setAlpha(255);
         out.drawBitmap(icon, 0, 0, mDrawPaint);
     }
 
