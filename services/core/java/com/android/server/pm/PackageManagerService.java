@@ -2228,7 +2228,9 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
                 }
             }
 
-            SELinuxMMAC.readInstallPolicy();
+            if (!SELinuxMMAC.readInstallPolicy()) {
+                throw new RuntimeException("Unable to load SELinux MMAC policy");
+            }
 
             t.traceBegin("loadFallbacks");
             FallbackCategoryProvider.loadFallbacks();

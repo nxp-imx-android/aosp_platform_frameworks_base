@@ -145,7 +145,7 @@ class MockSystem(withSession: (StaticMockitoSessionBuilder) -> Unit = {}) {
                 .mockStatic(SaferIntentUtils::class.java)
                 .mockStatic(SystemProperties::class.java)
                 .mockStatic(SystemConfig::class.java)
-                .mockStatic(SELinuxMMAC::class.java, Mockito.CALLS_REAL_METHODS)
+                .mockStatic(SELinuxMMAC::class.java)
                 .mockStatic(FallbackCategoryProvider::class.java)
                 .mockStatic(PackageManagerServiceUtils::class.java)
                 .mockStatic(Environment::class.java)
@@ -334,6 +334,7 @@ class MockSystem(withSession: (StaticMockitoSessionBuilder) -> Unit = {}) {
         wheneverStatic { Environment.getRootDirectory() }.thenReturn(rootDirectory)
         wheneverStatic { SystemServerInitThreadPool.submit(any(Runnable::class.java), anyString()) }
                 .thenAnswer { FutureTask<Any?>(it.getArgument(0), null) }
+        wheneverStatic { SELinuxMMAC.readInstallPolicy() }.thenReturn(true)
 
         wheneverStatic { Environment.getDataDirectory() }.thenReturn(dataAppDirectory.parentFile)
         wheneverStatic { Environment.getDataSystemDirectory() }
