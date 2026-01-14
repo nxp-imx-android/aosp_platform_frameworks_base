@@ -1402,6 +1402,17 @@ class BackNavigationController {
             if (mOpenAnimAdaptor.mRequestedStartingSurfaceId == INVALID_TASK_ID) {
                 return;
             }
+            if (mOpenActivities == null) {
+                return;
+            }
+            boolean allWindowDrawn = true;
+            for (int i = mOpenActivities.length - 1; i >= 0; --i) {
+                final ActivityRecord ar = mOpenActivities[i];
+                allWindowDrawn &= ar.isReportedDrawn();
+            }
+            if (!allWindowDrawn) {
+                return;
+            }
             startTransaction.addTransactionCommittedListener(Runnable::run, () -> {
                 synchronized (mWindowManagerService.mGlobalLock) {
                     if (mOpenAnimAdaptor != null) {
