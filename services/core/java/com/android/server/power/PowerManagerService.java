@@ -31,7 +31,6 @@ import static android.os.PowerManagerInternal.WAKEFULNESS_DOZING;
 import static android.os.PowerManagerInternal.WAKEFULNESS_DREAMING;
 import static android.os.PowerManagerInternal.WakeUpDelegate;
 import static android.os.PowerManagerInternal.wakefulnessToString;
-
 import static android.service.dreams.Flags.dreamsV2;
 import static android.service.dreams.Flags.napWhenDreamEnabled;
 
@@ -4653,10 +4652,6 @@ public final class PowerManagerService extends SystemService
      */
     void setForceDisableWakelocksInternal(boolean forceDisable, IntArray groupsToActUpon) {
         synchronized (mLock) {
-            if (!mFeatureFlags.isForceDisableWakelocksEnabled()) {
-                return;
-            }
-
             List<WakeLock> wakeLocksToActUpon = mWakeLocks;
 
             if (groupsToActUpon.size() > 0) {

@@ -57,13 +57,6 @@ flag {
 }
 
 flag {
-    name: "force_disable_wakelocks"
-    namespace: "power"
-    description: "Feature flag to force disable wakelocks"
-    bug: "370557028"
-}
-
-flag {
     name: "tap_to_wake_cd"
     namespace: "lse_desktop_experience"
     description: "Feature flag to enable tap to wake on connected displays"
