@@ -25,7 +25,6 @@ import android.content.pm.PackageManager.NameNotFoundException
 import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.os.UserHandle
-import androidx.annotation.VisibleForTesting
 import com.android.internal.R
 import com.android.launcher3.icons.BaseIconFactory
 import com.android.launcher3.icons.BaseIconFactory.IconOptions
@@ -80,8 +79,10 @@ interface AppIconProvider {
     fun purgeCache(wantedPackages: Collection<String>)
 }
 
+// TODO: b/476412775 - This class shouldn't be open, instead the open methods should be moved to
+//  an interface we can inject.
 @SysUISingleton
-class AppIconProviderImpl
+open class AppIconProviderImpl
 @Inject
 constructor(
     @ShadeDisplayAware private val sysuiContext: Context,
@@ -199,6 +200,18 @@ constructor(
             )
         }
 
+    /**
+     * Get the unstyled, unbadged icon corresponding to the given package and user. By default this
+     * calls directly into PackageManager, but it can be overridden if a different approach is
+     * needed (e.g. in tests).
+     */
+    protected open fun getRawIcon(packageName: String, userHandle: UserHandle): Drawable? {
+        val pm = sysuiContext.packageManager
+        val userId = userHandle.identifier
+        return pm.getApplicationInfoAsUser(packageName, MATCH_UNINSTALLED_PACKAGES, userId)
+            .loadUnbadgedIcon(pm)
+    }
+
     @WorkerThread
     private fun fetchAppIconBitmapInfo(
         iconFactory: BaseIconFactory,
@@ -206,31 +219,15 @@ constructor(
         userHandle: UserHandle,
         allowProfileBadge: Boolean,
     ): BitmapInfo {
-        val pm = sysuiContext.packageManager
-        val userId = userHandle.identifier
-        val icon =
-            pm.getApplicationInfoAsUser(packageName, MATCH_UNINSTALLED_PACKAGES, userId)
-                .loadUnbadgedIcon(pm)
-        val options = iconOptions(userHandle, allowProfileBadge = allowProfileBadge)
+        val icon = getRawIcon(packageName, userHandle)
+        val options =
+            iconOptions(getUserIconInfo(userHandle, allowProfileBadge = allowProfileBadge))
         return iconFactory.createBadgedIconBitmap(icon, options)
-    }
-
-    @VisibleForTesting
-    fun createAppIconForTest(packageName: String, @UserIconInfo.UserType userType: Int): Drawable {
-        val pm = sysuiContext.packageManager
-        val userHandle = UserHandle.of(pm.userId)
-        val icon = pm.getApplicationInfo(packageName, 0).loadUnbadgedIcon(pm)
-        val options = iconOptions(UserIconInfo(userHandle, userType))
-        val bitmapInfo = standardIconFactory.createBadgedIconBitmap(icon, options)
-        return bitmapInfo.createIconDrawable(themed = false)
     }
 
     private fun BitmapInfo.createIconDrawable(themed: Boolean): Drawable =
         newIcon(context = sysuiContext, creationFlags = if (themed) BitmapInfo.FLAG_THEMED else 0)
             .apply { isAnimationEnabled = false }
-
-    private fun iconOptions(userHandle: UserHandle, allowProfileBadge: Boolean): IconOptions =
-        iconOptions(userIconInfo(userHandle, allowProfileBadge = allowProfileBadge))
 
     private fun iconOptions(userIconInfo: UserIconInfo): IconOptions {
         return IconOptions().apply {
@@ -243,7 +240,10 @@ constructor(
         }
     }
 
-    private fun userIconInfo(userHandle: UserHandle, allowProfileBadge: Boolean): UserIconInfo =
+    protected open fun getUserIconInfo(
+        userHandle: UserHandle,
+        allowProfileBadge: Boolean,
+    ): UserIconInfo =
         if (allowProfileBadge) {
             // Look up the user to determine if it is a profile, and if so which badge to use
             Utils.fetchUserIconInfo(sysuiContext, userHandle)
