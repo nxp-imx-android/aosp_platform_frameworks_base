@@ -240,10 +240,6 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
                         animateQsTilesAsShared = { animateQsTilesViewModel.animateQsTiles }
                     )
                 }
-                sharedElement(
-                    Notifications.Elements.HeadsUpNotificationPlaceholder,
-                    enabled = false,
-                )
             }
             from(
                 Scenes.QuickSettings,
