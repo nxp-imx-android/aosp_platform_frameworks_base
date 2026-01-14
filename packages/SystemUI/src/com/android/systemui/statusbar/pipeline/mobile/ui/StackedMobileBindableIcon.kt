@@ -19,7 +19,6 @@ package com.android.systemui.statusbar.pipeline.mobile.ui
 import android.content.Context
 import com.android.settingslib.flags.Flags
 import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.kairos.KairosNetwork
 import com.android.systemui.statusbar.pipeline.icons.shared.model.BindableIcon
 import com.android.systemui.statusbar.pipeline.icons.shared.model.ModernStatusBarViewCreator
 import com.android.systemui.statusbar.pipeline.mobile.ui.binder.StackedMobileIconBinder
@@ -27,6 +26,7 @@ import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.MobileIconsVi
 import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.StackedMobileIconViewModelImpl
 import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.StackedMobileIconViewModelKairos
 import com.android.systemui.statusbar.pipeline.shared.ui.view.SingleBindableStatusBarComposeIconView
+import dagger.Lazy
 import javax.inject.Inject
 
 @SysUISingleton
@@ -34,10 +34,9 @@ class StackedMobileBindableIcon
 @Inject
 constructor(
     context: Context,
-    mobileIconsViewModel: MobileIconsViewModel,
+    mobileIconsViewModel: Lazy<MobileIconsViewModel>,
     viewModelFactory: StackedMobileIconViewModelImpl.Factory,
     kairosViewModelFactory: StackedMobileIconViewModelKairos.Factory,
-    kairosNetwork: KairosNetwork,
 ) : BindableIcon {
     override val slot: String =
         context.getString(com.android.internal.R.string.status_bar_stacked_mobile)
@@ -47,10 +46,9 @@ constructor(
             view.initView(slot) {
                 StackedMobileIconBinder.bind(
                     view,
-                    mobileIconsViewModel,
+                    mobileIconsViewModel.get(),
                     viewModelFactory,
                     kairosViewModelFactory,
-                    kairosNetwork,
                 )
             }
         }

@@ -26,6 +26,7 @@ import com.android.systemui.log.table.logDiffsForTable
 import com.android.systemui.statusbar.phone.StatusBarLocation
 import com.android.systemui.statusbar.pipeline.airplane.domain.interactor.AirplaneModeInteractor
 import com.android.systemui.statusbar.pipeline.dagger.MobileSummaryLog
+import com.android.systemui.statusbar.pipeline.mobile.StatusBarMobileIconKairos
 import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.MobileIconsInteractor
 import com.android.systemui.statusbar.pipeline.mobile.ui.MobileViewLogger
 import com.android.systemui.statusbar.pipeline.mobile.ui.VerboseMobileViewLogger
@@ -64,6 +65,11 @@ constructor(
     @MobileSummaryLog private val tableLogger: TableLogBuffer,
     @Background private val scope: CoroutineScope,
 ) {
+
+    init {
+        StatusBarMobileIconKairos.assertInLegacyMode()
+    }
+
     @VisibleForTesting
     val reuseCache = ConcurrentHashMap<Int, Pair<MobileIconViewModel, CoroutineScope>>()
 
