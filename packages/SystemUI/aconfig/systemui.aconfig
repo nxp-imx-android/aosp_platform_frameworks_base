@@ -99,17 +99,6 @@ flag {
 }
 
 flag {
-    name: "brightness_icons_refresh"
-    namespace: "systemui"
-    description: "Replaces the brightness slider icon for the rounded ones"
-    bug: "456222699"
-    is_fixed_read_only: true
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "brightness_slider_focus_state"
     namespace: "systemui"
     description: "enables new focus outline for the brightness slider when focused on with physical keyboard"
