@@ -9707,13 +9707,16 @@ public class AudioService extends IAudioService.Stub
             // As for VSS, mute shall apply minIndex to all devices found in IndexMap and default.
             if (changed) {
                 mIsMuted = muted;
-                sendMsg(mAudioHandler,
-                        MSG_PERSIST_VOLUME_GROUP_MUTE,
-                        SENDMSG_QUEUE,
-                        0,
-                        0,
-                        this,
-                        PERSIST_DELAY);
+                if (isPlatformPc()) {
+                    // TODO(b/475861305): persist mute only for PC until bug is fixed
+                    sendMsg(mAudioHandler,
+                            MSG_PERSIST_VOLUME_GROUP_MUTE,
+                            SENDMSG_QUEUE,
+                            0,
+                            0,
+                            this,
+                            PERSIST_DELAY);
+                }
                 applyAllVolumes(false /*userSwitch*/);
             }
             return changed;
@@ -10017,10 +10020,13 @@ public class AudioService extends IAudioService.Stub
                             getIndex(device),
                             getVolumePersistenceUserId());
                 }
-                success &= mSettings.putSystemIntForUser(mContentResolver,
-                        getSettingMuteName(),
-                        isMuted() ? 1 : 0,
-                        getVolumePersistenceUserId());
+                if (isPlatformPc()) {
+                    // TODO(b/475861305): persist mute only for PC until bug is fixed
+                    success &= mSettings.putSystemIntForUser(mContentResolver,
+                            getSettingMuteName(),
+                            isMuted() ? 1 : 0,
+                            getVolumePersistenceUserId());
+                }
                 if (!success) {
                     Log.e(TAG, "persistVolumeGroup failed for group " +  mAudioVolumeGroup.name());
                 }
@@ -10045,8 +10051,12 @@ public class AudioService extends IAudioService.Stub
                     String muteName = getSettingMuteName();
                     index = mSettings.getSystemIntForUser(mContentResolver, name, defaultIndex,
                             getVolumePersistenceUserId());
-                    boolean isMuted = mSettings.getSystemIntForUser(mContentResolver, muteName,
-                            /*def=*/0, getVolumePersistenceUserId()) != 0;
+                    boolean isMuted = false;
+                    if (isPlatformPc()) {
+                        // TODO(b/475861305): apply mute only for PC until bug is fixed
+                        isMuted = mSettings.getSystemIntForUser(mContentResolver, muteName,
+                                /*def=*/0, getVolumePersistenceUserId()) != 0;
+                    }
                     if (index == -1) {
                         continue;
                     }
@@ -10475,9 +10485,12 @@ public class AudioService extends IAudioService.Stub
                         index = mSettings.getSystemIntForUser(
                                 mContentResolver, getSettingNameForDevice(device), defaultIndex,
                                 getVolumePersistenceUserId());
-                        isMuted = mSettings.getSystemIntForUser(
-                                mContentResolver, getSettingMuteName(), /*def=*/0,
-                                getVolumePersistenceUserId()) != 0;
+                        if (isPlatformPc()) {
+                            // TODO(b/475861305): apply mute only for PC until bug is fixed
+                            isMuted = mSettings.getSystemIntForUser(
+                                    mContentResolver, getSettingMuteName(), /*def=*/0,
+                                    getVolumePersistenceUserId()) != 0;
+                        }
                     }
                     if (index == -1) {
                         continue;
@@ -10963,13 +10976,16 @@ public class AudioService extends IAudioService.Stub
                     Log.d(TAG, "Clear volume cache after changing mute state");
                 }
                 AudioManager.clearVolumeCache(AudioManager.VOLUME_CACHING_API);
-                sendMsg(mAudioHandler,
-                        MSG_PERSIST_VOLUME_MUTE,
-                        SENDMSG_QUEUE,
-                        0,
-                        0,
-                        this,
-                        PERSIST_DELAY);
+                if (isPlatformPc()) {
+                    // TODO(b/475861305): apply mute only for PC until bug is fixed
+                    sendMsg(mAudioHandler,
+                            MSG_PERSIST_VOLUME_MUTE,
+                            SENDMSG_QUEUE,
+                            0,
+                            0,
+                            this,
+                            PERSIST_DELAY);
+                }
             }
 
             return changed;
@@ -11271,10 +11287,13 @@ public class AudioService extends IAudioService.Stub
                             (streamState.getIndex(device) + 5) / 10,
                             streamState.getVolumePersistenceUserId());
                 }
-                mSettings.putSystemIntForUser(mContentResolver,
-                        streamState.getSettingMuteName(),
-                        streamState.mIsMuted ? 1 : 0,
-                        streamState.getVolumePersistenceUserId());
+                if (isPlatformPc()) {
+                    // TODO(b/475861305): persist mute only for PC until bug is fixed
+                    mSettings.putSystemIntForUser(mContentResolver,
+                            streamState.getSettingMuteName(),
+                            streamState.mIsMuted ? 1 : 0,
+                            streamState.getVolumePersistenceUserId());
+                }
             }
         }
 
