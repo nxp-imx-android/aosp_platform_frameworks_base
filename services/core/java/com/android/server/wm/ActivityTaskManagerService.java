@@ -2973,8 +2973,13 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
                         HANDOFF_FAILURE_APP_DID_NOT_REPORT_HANDOFF_DATA);
                 return;
             }
+
+            // If Handoff is requested for a specific package, ensure the package is the same as the
+            // package of the activity which provided the HandoffActivityData.
             final ComponentName componentName = activityData.getComponentName();
-            if (!componentName.getPackageName().equals(activityPackageName)) {
+            if (componentName != null
+                && !componentName.getPackageName().equals(activityPackageName)) {
+
                 Slog.w(TAG, "Handoff component package "
                         + componentName.getPackageName()
                         + " does not match generating package "
