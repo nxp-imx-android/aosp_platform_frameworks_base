@@ -16,7 +16,6 @@
 
 <com.android.wm.shell.apptoweb.OpenByDefaultDialogView
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:androidprv="http://schemas.android.com/apk/prv/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     style="@style/LetterboxDialog">
@@ -61,7 +60,7 @@
                     android:layout_gravity="center_horizontal"
                     android:layout_marginBottom="8dp"
                     android:lineHeight="32dp"
-                    android:textFontWeight="400"
+                    android:fontFamily="@*android:string/config_headlineFontFamily"
                     android:textSize="24sp"
                     android:textColor="@color/materialColorOnSurface"
                     tools:text="Gmail" />
@@ -71,7 +70,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textSize="12sp"
-                    android:textFontWeight="400"
+                    android:fontFamily="@*android:string/config_headlineFontFamily"
                     android:lineHeight="28dp"
                     android:layout_gravity="center_horizontal"
                     android:layout_marginBottom="16dp"
@@ -92,7 +91,7 @@
                         android:layout_marginHorizontal="16dp"
                         android:layout_marginBottom="4dp"
                         android:text="@string/open_by_default_dialog_in_app_text"
-                        android:textFontWeight="500"
+                        android:fontFamily="@*android:string/config_headlineFontFamilyMedium"
                         android:textSize="16sp"
                         android:textColor="@color/open_by_default_settings_dialog_radio_button_text_color"
                         android:buttonTint="@color/open_by_default_settings_dialog_radio_button_text_color"
@@ -106,7 +105,7 @@
                         android:paddingEnd="0dp"
                         android:layout_marginStart="16dp"
                         android:text="@string/open_by_default_dialog_in_browser_text"
-                        android:textFontWeight="500"
+                        android:fontFamily="@*android:string/config_headlineFontFamilyMedium"
                         android:textSize="16sp"
                         android:textColor="@color/open_by_default_settings_dialog_radio_button_text_color"
                         android:buttonTint="@color/open_by_default_settings_dialog_radio_button_text_color"
@@ -128,7 +127,7 @@
                     android:textSize="14sp"
                     android:paddingHorizontal="16dp"
                     android:paddingVertical="8dp"
-                    android:textFontWeight="500"
+                    android:fontFamily="@*android:string/config_headlineFontFamilyMedium"
                     android:textColor="@color/materialColorOnPrimary"
                     android:background="@drawable/open_by_default_settings_dialog_confirm_button_background"/>
             </LinearLayout>
