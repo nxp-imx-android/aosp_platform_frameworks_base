@@ -17,6 +17,6 @@
 <resources>
     <!-- Whether to enable large screen capture. Currently enabled for tablet and desktop types. -->
     <bool name="config_enableLargeScreenScreencapture" product="default">false</bool>
-    <bool name="config_enableLargeScreenScreencapture" product="tablet">true</bool>
+    <bool name="config_enableLargeScreenScreencapture" product="tablet">false</bool>
     <bool name="config_enableLargeScreenScreencapture" product="desktop">true</bool>
 </resources>
