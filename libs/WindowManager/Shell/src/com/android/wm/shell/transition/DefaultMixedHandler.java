@@ -1250,8 +1250,7 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
 
     private boolean shouldMergeSplitToBubbleTrampolineTransition(@NonNull MixedTransition mixed,
             @NonNull TransitionInfo info) {
-        return com.android.window.flags.Flags.enableForceOpaque()
-                && isSplitToBubbleTrampolineTransition(mixed, info);
+        return isSplitToBubbleTrampolineTransition(mixed, info);
     }
 
     /**

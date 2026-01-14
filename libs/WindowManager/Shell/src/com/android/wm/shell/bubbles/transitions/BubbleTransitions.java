@@ -84,8 +84,8 @@ import com.android.wm.shell.bubbles.Bubbles;
 import com.android.wm.shell.bubbles.bar.BubbleBarExpandedView;
 import com.android.wm.shell.bubbles.bar.BubbleBarLayerView;
 import com.android.wm.shell.common.HomeIntentProvider;
-import com.android.wm.shell.shared.bubbles.BubbleFlagHelper;
 import com.android.wm.shell.shared.bubbles.BubbleBarLocation;
+import com.android.wm.shell.shared.bubbles.BubbleFlagHelper;
 import com.android.wm.shell.shared.bubbles.logging.BubbleLog;
 import com.android.wm.shell.taskview.TaskView;
 import com.android.wm.shell.taskview.TaskViewRepository;
@@ -1279,9 +1279,6 @@ public class BubbleTransitions {
                 @NonNull SurfaceControl.Transaction finishT,
                 @NonNull IBinder mergeTarget,
                 @NonNull Transitions.TransitionFinishCallback finishCallback) {
-            if (!com.android.window.flags.Flags.enableForceOpaque()) {
-                return;
-            }
             if (info.getType() != TRANSIT_SPLIT_DISMISS) {
                 return;
             }
