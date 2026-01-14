@@ -66,7 +66,6 @@ import android.os.Message;
 import android.os.Parcelable;
 import android.os.RemoteException;
 import android.os.UserHandle;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.view.DragEvent;
 import android.view.InputChannel;
@@ -83,7 +82,6 @@ import androidx.test.filters.SmallTest;
 
 import com.android.server.LocalServices;
 import com.android.server.pm.UserManagerInternal;
-import com.android.window.flags.Flags;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -454,7 +452,6 @@ public class DragDropControllerTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_CONNECTED_DISPLAYS_DND)
     public void testDragEventConnectedDisplaysCoordinates() {
         final DisplayContent testDisplay = createMockSimulatedDisplay();
         int dragStartX = mWindow.getBounds().centerX();
@@ -541,7 +538,6 @@ public class DragDropControllerTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_CONNECTED_DISPLAYS_DND)
     public void testConnectedDisplaysDragMoveToOtherDisplay() {
         final float testDensityMultiplier = 1.5f;
         final DisplayContent testDisplay = createMockSimulatedDisplay();
@@ -572,7 +568,6 @@ public class DragDropControllerTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_CONNECTED_DISPLAYS_DND)
     public void testDragCancelledOnTopologyChange() {
         // Necessary for now since DragState.sendDragStartedLocked() will recycle drag events
         // immediately after dispatching, which is a problem when using mockito arguments captor
