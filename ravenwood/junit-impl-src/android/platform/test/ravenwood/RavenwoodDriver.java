@@ -39,6 +39,7 @@ import android.os.SystemProperties;
 import android.provider.DeviceConfig_ravenwood;
 import android.system.ErrnoException;
 import android.system.Os;
+import android.text.Hyphenator;
 import android.util.Log;
 import android.util.Log_ravenwood;
 
@@ -237,6 +238,9 @@ public class RavenwoodDriver {
         Typeface.init();
         Typeface.loadPreinstalledSystemFontMap();
         Typeface.loadNativeSystemFonts();
+
+        // Initialize Hyphenator
+        Hyphenator.init();
 
         // Do it after the framework is initialized.
         dumpFrameworkInfo();
