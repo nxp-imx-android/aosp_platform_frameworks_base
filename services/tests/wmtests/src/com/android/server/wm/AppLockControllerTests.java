@@ -19,6 +19,7 @@ package com.android.server.wm;
 import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION;
 import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
 
+import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -186,15 +187,76 @@ public class AppLockControllerTests extends WindowTestsBase {
     }
 
     @Test
-    public void testRegisterTask() {
-        final Task mockTask = mock(Task.class);
+    public void testIsActivityLockedByAppLock_activityFinishing_returnsFalse() {
+        final ActivityRecord activity = new ActivityBuilder(mAtm).build();
+        activity.finishing = true;
+        doReturn(true).when(mAppLockController).isPackageLockedByAppLockLocked(anyString(),
+                anyInt());
+        final AppLockOverlayController overlayController =
+                mAppLockController.mAppLockOverlayController;
+        spyOn(overlayController);
+        doReturn(false).when(overlayController).hasVisibleNonLockedTaskForPackage(
+                anyString(), anyInt());
+
+        assertThat(mAppLockController.isActivityLockedByAppLockLocked(activity)).isFalse();
+    }
+
+    @Test
+    public void testIsActivityLockedByAppLock_packageNotLocked_returnsFalse() {
+        final ActivityRecord activity = new ActivityBuilder(mAtm)
+                .setComponent(TEST_COMPONENT_1)
+                .build();
+        activity.finishing = false;
+        doReturn(false).when(mAppLockController).isPackageLockedByAppLockLocked(TEST_PACKAGE_1,
+                activity.mUserId);
+
+        assertThat(mAppLockController.isActivityLockedByAppLockLocked(activity)).isFalse();
+    }
+
+    @Test
+    public void testIsActivityLockedByAppLock_packageLocked_hasVisibleTask_returnsFalse() {
+        final ActivityRecord activity = new ActivityBuilder(mAtm)
+                .setComponent(TEST_COMPONENT_1)
+                .build();
+        activity.finishing = false;
+        doReturn(true).when(mAppLockController).isPackageLockedByAppLockLocked(TEST_PACKAGE_1,
+                activity.mUserId);
+        final AppLockOverlayController overlayController =
+                mAppLockController.mAppLockOverlayController;
+        spyOn(overlayController);
+        doReturn(true).when(overlayController).hasVisibleNonLockedTaskForPackage(TEST_PACKAGE_1,
+                activity.mUserId);
+
+        assertThat(mAppLockController.isActivityLockedByAppLockLocked(activity)).isFalse();
+    }
+
+    @Test
+    public void testIsActivityLockedByAppLock_packageLocked_noVisibleTask_returnsTrue() {
+        final ActivityRecord activity = new ActivityBuilder(mAtm)
+                .setComponent(TEST_COMPONENT_1)
+                .build();
+        activity.finishing = false;
+        doReturn(true).when(mAppLockController).isPackageLockedByAppLockLocked(TEST_PACKAGE_1,
+                activity.mUserId);
+        final AppLockOverlayController overlayController =
+                mAppLockController.mAppLockOverlayController;
+        spyOn(overlayController);
+        doReturn(false).when(overlayController).hasVisibleNonLockedTaskForPackage(TEST_PACKAGE_1,
+                activity.mUserId);
+
+        assertThat(mAppLockController.isActivityLockedByAppLockLocked(activity)).isTrue();
+    }
+
+    @Test
+    public void tesAddLockedByAppLockActivityOverlayLocked() {
+        final ActivityRecord mockActivity = mock(ActivityRecord.class);
         final AppLockOverlayController appLockOverlayController =
                 mAppLockController.mAppLockOverlayController;
         spyOn(appLockOverlayController);
 
-        mAppLockController.registerTask(mockTask);
+        mAppLockController.addLockedByAppLockActivityOverlayLocked(mockActivity);
 
-        verify(appLockOverlayController).registerTask(mockTask);
+        verify(appLockOverlayController).addLockedByAppLockActivityOverlay(mockActivity);
     }
 
     @Test
@@ -207,7 +269,7 @@ public class AppLockControllerTests extends WindowTestsBase {
 
         listener.onPackageLockedStateChanged(DEFAULT_COMPONENT_PACKAGE_NAME, TEST_USER_ID_1, true);
 
-        verify(appLockOverlayController).lockActivitiesTasksForAppLockLocked(
+        verify(appLockOverlayController).lockActivitiesTasksForAppLock(
                 DEFAULT_COMPONENT_PACKAGE_NAME, TEST_USER_ID_1);
     }
 
@@ -222,7 +284,7 @@ public class AppLockControllerTests extends WindowTestsBase {
 
         listener.onPackageLockedStateChanged(DEFAULT_COMPONENT_PACKAGE_NAME, TEST_USER_ID_1, false);
 
-        verify(appLockOverlayController, never()).lockActivitiesTasksForAppLockLocked(anyString(),
+        verify(appLockOverlayController, never()).lockActivitiesTasksForAppLock(anyString(),
                 anyInt());
     }
 

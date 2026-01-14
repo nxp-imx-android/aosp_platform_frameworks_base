@@ -20,7 +20,6 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.doAnswer;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doNothing;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
-import static com.android.server.wm.WindowContainer.POSITION_BOTTOM;
 import static com.android.server.wm.WindowContainer.POSITION_TOP;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -31,19 +30,13 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.clearInvocations;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import android.app.ActivityManager;
 import android.app.ActivityOptions;
-import android.app.IApplicationThread;
-import android.app.ProfilerInfo;
 import android.content.ComponentName;
 import android.content.Intent;
-import android.os.Bundle;
-import android.os.IBinder;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.security.Flags;
@@ -57,6 +50,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 
+import java.lang.ref.WeakReference;
+import java.util.function.Predicate;
+
 /**
  * Build/Install/Run:
  * atest WmTests:AppLockOverlayControllerTests
@@ -66,6 +62,8 @@ import org.mockito.ArgumentCaptor;
 @Presubmit
 @RunWith(WindowTestRunner.class)
 public class AppLockOverlayControllerTests extends WindowTestsBase {
+
+    private static final String SYSTEM_PACKAGE_NAME = "android";
 
     private AppLockOverlayController mAppLockOverlayController;
 
@@ -77,71 +75,71 @@ public class AppLockOverlayControllerTests extends WindowTestsBase {
     }
 
     @Test
-    public void lockActivitiesTasksForAppLockLocked_emptyTask_doesNothing() {
+    public void lockActivitiesTasksForAppLock_emptyTask_doesNothing() {
         // GIVEN an empty task
         final Task task = createLockedTask(/* isVisible= */ false);
         task.mChildren.clear();
 
         // WHEN we try to lock tasks for that package
-        mAppLockOverlayController.lockActivitiesTasksForAppLockLocked(TEST_PACKAGE_1,
+        mAppLockOverlayController.lockActivitiesTasksForAppLock(TEST_PACKAGE_1,
                 TEST_USER_ID_1);
 
         // THEN no overlay is added because the task doesn't have any children
-        verify(mAppLockOverlayController, never()).addLockedByAppLockTaskOverlayLocked(any(), any(),
+        verify(mAppLockOverlayController, never()).addLockedByAppLockTaskOverlay(any(), any(),
                 anyInt());
-        verify(mAppLockOverlayController, never()).addLockedByAppLockActivityOverlayLocked(any());
+        verify(mAppLockOverlayController, never()).addLockedByAppLockActivityOverlay(any());
     }
 
     @Test
-    public void lockActivitiesTasksForAppLockLocked_withNullRealActivity_doesNothing() {
+    public void lockActivitiesTasksForAppLock_withNullRealActivity_doesNothing() {
         // GIVEN a task with a null realActivity
         final Task task = createLockedTask(/* isVisible= */ false);
         task.realActivity = null;
 
         // WHEN we try to lock tasks for that package
-        mAppLockOverlayController.lockActivitiesTasksForAppLockLocked(TEST_PACKAGE_1,
+        mAppLockOverlayController.lockActivitiesTasksForAppLock(TEST_PACKAGE_1,
                 TEST_USER_ID_1);
 
         // THEN no overlay is added because the task has no realActivity to check
-        verify(mAppLockOverlayController, never()).addLockedByAppLockTaskOverlayLocked(any(),
-                any(), anyInt());
-        verify(mAppLockOverlayController, never()).addLockedByAppLockActivityOverlayLocked(any());
+        verify(mAppLockOverlayController, never()).addLockedByAppLockTaskOverlay(any(), any(),
+                anyInt());
+        verify(mAppLockOverlayController, never()).addLockedByAppLockActivityOverlay(any());
     }
 
     @Test
-    public void lockActivitiesTasksForAppLockLocked_withVisibleTask_doesNothing() {
+    public void lockActivitiesTasksForAppLock_withVisibleTask_doesNothing() {
         // GIVEN a task that is visible and belongs to a locked package
         createLockedTask(/* isVisible= */ true);
 
         // WHEN we try to lock tasks for that package
-        mAppLockOverlayController.lockActivitiesTasksForAppLockLocked(TEST_PACKAGE_1,
+        mAppLockOverlayController.lockActivitiesTasksForAppLock(TEST_PACKAGE_1,
                 TEST_USER_ID_1);
 
         // THEN no overlay is added because the task is already visible
-        verify(mAppLockOverlayController, never()).addLockedByAppLockTaskOverlayLocked(any(),
-                any(), anyInt());
-        verify(mAppLockOverlayController, never()).addLockedByAppLockActivityOverlayLocked(any());
+        verify(mAppLockOverlayController, never()).addLockedByAppLockTaskOverlay(any(), any(),
+                anyInt());
+        verify(mAppLockOverlayController, never()).addLockedByAppLockActivityOverlay(any());
     }
 
     @Test
-    public void lockActivitiesTasksForAppLockLocked_withInvisibleTask_locksTask() {
+    public void lockActivitiesTasksForAppLock_withInvisibleTask_locksTask() {
         // GIVEN an invisible task that belongs to a locked package
         final Task task = createLockedTask(/* isVisible= */ false);
-        doNothing().when(mAppLockOverlayController).addLockedByAppLockTaskOverlayLocked(any(),
-                any(), anyInt());
+        doNothing().when(mAppLockOverlayController).addLockedByAppLockTaskOverlay(any(), any(),
+                anyInt());
 
         // WHEN we try to lock tasks for that package
-        mAppLockOverlayController.lockActivitiesTasksForAppLockLocked(TEST_PACKAGE_1,
+        mAppLockOverlayController.lockActivitiesTasksForAppLock(TEST_PACKAGE_1,
                 TEST_USER_ID_1);
 
         // THEN a task-level overlay is added
-        verify(mAppLockOverlayController).addLockedByAppLockTaskOverlayLocked(eq(task),
+        verify(mAppLockOverlayController).addLockedByAppLockTaskOverlay(eq(task),
                 eq(TEST_PACKAGE_1), eq(TEST_USER_ID_1));
-        verify(mAppLockOverlayController, never()).addLockedByAppLockActivityOverlayLocked(any());
+        verify(mAppLockOverlayController, never()).addLockedByAppLockActivityOverlay(any());
     }
 
     @Test
-    public void lockActivitiesTasksForAppLockLocked_withInvisibleMixedTask_locksTopmostActivity() {
+    public void lockActivitiesTasksForAppLock_withInvisibleMixedTask_registersActivities() {
         // GIVEN an invisible task with multiple locked activities from the same package
         final TestMixedStateTask mixedStateTask = createMixedStateTask(/* isVisible=*/ false);
         final ActivityRecord topLockedActivity = new ActivityBuilder(mAtm)
@@ -153,23 +151,24 @@ public class AppLockOverlayControllerTests extends WindowTestsBase {
         // Ensure the task is not visible since adding a new activity may make it visible.
         mixedStateTask.mTask.setVisibleRequested(false);
         clearInvocations(mAppLockOverlayController);
-        doNothing().when(mAppLockOverlayController).addLockedByAppLockActivityOverlayLocked(any());
 
         // WHEN we try to lock tasks for the locked package
-        mAppLockOverlayController.lockActivitiesTasksForAppLockLocked(TEST_PACKAGE_1,
+        mAppLockOverlayController.lockActivitiesTasksForAppLock(TEST_PACKAGE_1,
                 TEST_USER_ID_1);
 
-        // THEN an activity-level overlay is added only for the topmost locked activity
-        verify(mAppLockOverlayController).addLockedByAppLockActivityOverlayLocked(
-                eq(topLockedActivity));
-        verify(mAppLockOverlayController, never()).addLockedByAppLockActivityOverlayLocked(
-                eq(mixedStateTask.mLockedActivity));
-        verify(mAppLockOverlayController, never()).addLockedByAppLockActivityOverlayLocked(
+        // THEN no overlay is added
+        verify(mAppLockOverlayController, never()).addLockedByAppLockActivityOverlay(any());
+        verify(mAppLockOverlayController, never()).addLockedByAppLockTaskOverlay(any(), any(),
+                anyInt());
+        // AND registers all activities belonging to the locked package
+        verify(mAppLockOverlayController).registerActivity(eq(topLockedActivity));
+        verify(mAppLockOverlayController).registerActivity(eq(mixedStateTask.mLockedActivity));
+        verify(mAppLockOverlayController, never()).registerActivity(
                 eq(mixedStateTask.mUnlockedActivity));
     }
 
     @Test
-    public void lockActivitiesTasksForAppLockLocked_withVisibleMixedTask_locksTopmostActivity() {
+    public void lockActivitiesTasksForAppLock_withVisibleMixedTask_registersActivities() {
         // GIVEN a visible task with multiple locked activities from the same package
         final TestMixedStateTask mixedStateTask = createMixedStateTask(/* isVisible= */ true);
         final ActivityRecord topLockedActivity = new ActivityBuilder(mAtm)
@@ -187,190 +186,147 @@ public class AppLockOverlayControllerTests extends WindowTestsBase {
         // Ensure the task is visible.
         mixedStateTask.mTask.setVisibleRequested(true);
         clearInvocations(mAppLockOverlayController);
-        doNothing().when(mAppLockOverlayController).addLockedByAppLockActivityOverlayLocked(any());
 
         // WHEN we try to lock tasks for the locked package
-        mAppLockOverlayController.lockActivitiesTasksForAppLockLocked(TEST_PACKAGE_1,
-                TEST_USER_ID_1);
+        mAppLockOverlayController.lockActivitiesTasksForAppLock(TEST_PACKAGE_1, TEST_USER_ID_1);
 
-        // THEN an activity-level overlay is added only for the topmost locked activity
-        verify(mAppLockOverlayController).addLockedByAppLockActivityOverlayLocked(
-                eq(topLockedActivity));
-        verify(mAppLockOverlayController, never()).addLockedByAppLockActivityOverlayLocked(
-                eq(mixedStateTask.mLockedActivity));
-        verify(mAppLockOverlayController, never()).addLockedByAppLockActivityOverlayLocked(
+        // THEN no overlay is added
+        verify(mAppLockOverlayController, never()).addLockedByAppLockActivityOverlay(any());
+        verify(mAppLockOverlayController, never()).addLockedByAppLockTaskOverlay(any(), any(),
+                anyInt());
+        // AND registers all activities belonging to the locked package
+        verify(mAppLockOverlayController).registerActivity(eq(topLockedActivity));
+        verify(mAppLockOverlayController).registerActivity(eq(mixedStateTask.mLockedActivity));
+        verify(mAppLockOverlayController, never()).registerActivity(
                 eq(mixedStateTask.mUnlockedActivity));
     }
 
     @Test
-    public void lockActivitiesTasksForAppLockLocked_withMixedTask_activityFinishing_doesNothing() {
+    public void lockActivitiesTasksForAppLock_withMixedTask_activityFinishing_doesNothing() {
         // GIVEN an invisible task with a mix of locked and unlocked activities
         final TestMixedStateTask mixedStateTask = createMixedStateTask(/* isVisible= */ false);
         final ActivityRecord lockedActivity = mixedStateTask.mLockedActivity;
         lockedActivity.finishing = true;
 
         // WHEN we try to lock tasks for the locked package
-        mAppLockOverlayController.lockActivitiesTasksForAppLockLocked(TEST_PACKAGE_1,
-                TEST_USER_ID_1);
+        mAppLockOverlayController.lockActivitiesTasksForAppLock(TEST_PACKAGE_1, TEST_USER_ID_1);
 
-        // THEN no overlay is added
-        verify(mAppLockOverlayController, never()).addLockedByAppLockTaskOverlayLocked(any(), any(),
+        // THEN no overlay is added and no activity is registered
+        verify(mAppLockOverlayController, never()).addLockedByAppLockTaskOverlay(any(), any(),
                 anyInt());
-        verify(mAppLockOverlayController, never()).addLockedByAppLockActivityOverlayLocked(any());
+        verify(mAppLockOverlayController, never()).addLockedByAppLockActivityOverlay(any());
+        verify(mAppLockOverlayController, never()).registerActivity(any());
     }
 
     @Test
-    public void registerTask_registersListenerOnTask() {
-        // GIVEN a mock task
-        // Note: We use a mock Task here instead of getTestTask() because getTestTask() creates a
-        // real Task, which (when the flag is enabled) automatically registers itself with the
-        // controller in its constructor. This causes the controller's registerTask method to return
-        // early (already registered), preventing the listener registration we want to verify.
-        final Task task = mock(Task.class);
-
-        // WHEN the task is registered with the controller
-        mAppLockOverlayController.registerTask(task);
-
-        // THEN a window container listener is registered on the task
-        verify(task).registerWindowContainerListener(any(WindowContainerListener.class));
-    }
-
-    @Test
-    public void registerTask_listenerSelfUnregistersOnTaskRemoved() {
-        // GIVEN a task that was previously registered
-        final Task task = getTestTask();
-        spyOn(task);
-
-        // WHEN the task is removed
-        task.removeIfPossible();
-
-        // THEN the window container listener is unregistered from the task
-        verify(task).unregisterWindowContainerListener(any(WindowContainerListener.class));
-    }
-
-    @Test
-    public void onTaskBecomesInvisibleAndEmpty_doesNothing() {
-        // GIVEN a locked visible empty task
-        final Task task = createLockedTask(/* isVisible= */ true);
-        task.mChildren.clear();
-
-        // WHEN the task becomes invisible
-        task.setVisibleRequested(false);
-
-        // THEN no overlay is added
-        verify(mAppLockOverlayController, never()).addLockedByAppLockTaskOverlayLocked(any(),
-                anyString(), anyInt());
-        verify(mAppLockOverlayController, never()).addLockedByAppLockActivityOverlayLocked(any());
-    }
-
-    @Test
-    public void onTaskBecomesInvisibleAndLocked_addsTaskOverlay() {
-        // GIVEN a locked visible task with no other visible tasks for that package
-        final Task task = createLockedTask(/* isVisible= */ true);
-        doNothing().when(mAppLockOverlayController).addLockedByAppLockTaskOverlayLocked(any(),
-                any(), anyInt());
-
-        // WHEN the task becomes invisible
-        task.setVisibleRequested(false);
-
-        // THEN a task-level overlay is added
-        verify(mAppLockOverlayController).addLockedByAppLockTaskOverlayLocked(task, TEST_PACKAGE_1,
-                TEST_USER_ID_1);
-        verify(mAppLockOverlayController, never()).addLockedByAppLockActivityOverlayLocked(any());
-    }
-
-    @Test
-    public void onTaskBecomesInvisibleAndLocked_withOtherVisible_doesNothing() {
-        // GIVEN a locked visible task and another visible task for the same package
-        final Task task1 = createLockedTask(/* isVisible= */ true);
+    public void hasVisibleNonLockedTaskForPackage_withVisibleNonLockedTask_returnsTrue() {
+        // GIVEN a visible task for the target package and user
         createLockedTask(/* isVisible= */ true);
-        doNothing().when(mAppLockOverlayController).addLockedByAppLockTaskOverlayLocked(any(),
-                any(), anyInt());
 
-        // WHEN the first task becomes invisible
-        task1.setVisibleRequested(false);
+        // WHEN checking for a visible task
+        final boolean hasVisibleTask = mAppLockOverlayController.hasVisibleNonLockedTaskForPackage(
+                TEST_PACKAGE_1, TEST_USER_ID_1);
 
-        // THEN no overlay is added because another task is still visible
-        verify(mAppLockOverlayController, never()).addLockedByAppLockTaskOverlayLocked(any(),
-                anyString(), anyInt());
-        verify(mAppLockOverlayController, never()).addLockedByAppLockActivityOverlayLocked(any());
+        // THEN the result is true
+        assertThat(hasVisibleTask).isTrue();
     }
 
     @Test
-    public void onTaskBecomesInvisibleWithMultipleLockedPackages_addsOneOverlayPerPackage() {
-        // GIVEN a visible task with activities from two different locked packages
-        final Task task = new TaskBuilder(mSupervisor).setCreateActivity(false).build();
-        task.realActivity = TEST_COMPONENT_3; // Main package is not locked
-        task.mUserId = TEST_USER_ID_1;
+    public void hasVisibleNonLockedTaskForPackage_withInvisibleNonLockedTask_returnsFalse() {
+        // GIVEN an invisible task for the target package and user
+        createLockedTask(/* isVisible= */ false);
 
-        // Bottom locked activity for package 1
-        new ActivityBuilder(mAtm).setComponent(TEST_COMPONENT_1).setTask(task).build();
-        // Topmost locked activity for package 2
-        final ActivityRecord topLockedActivity2 = new ActivityBuilder(mAtm)
-                .setComponent(TEST_COMPONENT_2).setTask(task).build();
-        // Unlocked activity
-        new ActivityBuilder(mAtm).setComponent(TEST_COMPONENT_3).setTask(task).build();
-        // Topmost locked activity for package 1
-        final ActivityRecord topLockedActivity1 = new ActivityBuilder(mAtm)
-                .setComponent(TEST_COMPONENT_1).setTask(task).build();
+        // WHEN checking for a visible task
+        final boolean hasVisibleTask = mAppLockOverlayController.hasVisibleNonLockedTaskForPackage(
+                TEST_PACKAGE_1, TEST_USER_ID_1);
 
-        doReturn(true).when(mWm).isPackageLockedByAppLockLocked(TEST_PACKAGE_1, TEST_USER_ID_1);
-        doReturn(true).when(mWm).isPackageLockedByAppLockLocked(TEST_PACKAGE_2, TEST_USER_ID_1);
-        doReturn(false).when(mWm).isPackageLockedByAppLockLocked(TEST_PACKAGE_3, TEST_USER_ID_1);
-        doNothing().when(mAppLockOverlayController).addLockedByAppLockActivityOverlayLocked(any());
-        clearInvocations(mAppLockOverlayController);
-
-        // WHEN the task becomes invisible
-        task.setVisibleRequested(false);
-
-        // THEN an activity-level overlay is added for the topmost activity of each locked package
-        verify(mAppLockOverlayController, times(1))
-                .addLockedByAppLockActivityOverlayLocked(topLockedActivity1);
-        verify(mAppLockOverlayController, times(1))
-                .addLockedByAppLockActivityOverlayLocked(topLockedActivity2);
-        verify(mAppLockOverlayController, times(2))
-                .addLockedByAppLockActivityOverlayLocked(any());
+        // THEN the result is false
+        assertThat(hasVisibleTask).isFalse();
     }
 
     @Test
-    public void onTaskBecomesInvisibleWithLockedActivityFinishing_doesNothing() {
-        // GIVEN a visible task with a mix of locked and unlocked activities
-        final TestMixedStateTask mixedStateTask = createMixedStateTask(/* isVisible= */ true);
-        final ActivityRecord lockedActivity = mixedStateTask.mLockedActivity;
-        lockedActivity.finishing = true;
+    public void hasVisibleNonLockedTaskForPackage_withVisibleLockedTask_returnsFalse() {
+        // GIVEN a visible task that is already locked (has overlay on top)
+        final Task task = createLockedTask(/* isVisible= */ true);
+        final ActivityRecord overlay = createOverlayActivity(task, TEST_PACKAGE_1, TEST_USER_ID_1);
 
-        // WHEN the task becomes invisible
-        mixedStateTask.mTask.setVisibleRequested(false);
+        // Ensure the overlay is the top non-finishing activity
+        task.positionChildAt(POSITION_TOP, overlay, /* includingParents= */ false);
 
-        // THEN no overlay is added
-        verify(mAppLockOverlayController, never()).addLockedByAppLockTaskOverlayLocked(any(),
-                anyString(), anyInt());
-        verify(mAppLockOverlayController, never()).addLockedByAppLockActivityOverlayLocked(any());
+        // WHEN checking for a visible non-locked task
+        final boolean hasVisibleTask = mAppLockOverlayController.hasVisibleNonLockedTaskForPackage(
+                TEST_PACKAGE_1, TEST_USER_ID_1);
+
+        // THEN the result is false because the top activity is the lock overlay,
+        // so the task is considered "locked"
+        assertThat(hasVisibleTask).isFalse();
     }
 
     @Test
-    public void onTaskBecomesVisibleAndLocked_doesNothing() {
-        // GIVEN a locked invisible task
-        final Task task = createLockedTask(/* isVisible= */ false);
+    public void hasVisibleNonLockedTaskForPackage_withDifferentUser_returnsFalse() {
+        // GIVEN a visible task for a different user
+        final Task task = createLockedTask(/* isVisible= */ true);
+        task.mUserId = TEST_USER_ID_2;
 
-        // WHEN the task becomes visible
-        task.setVisibleRequested(true);
+        // WHEN checking for a visible task for the original user
+        final boolean hasVisibleTask = mAppLockOverlayController.hasVisibleNonLockedTaskForPackage(
+                TEST_PACKAGE_1, TEST_USER_ID_1);
 
-        // THEN no overlay logic is added
-        verify(mAppLockOverlayController, never()).addLockedByAppLockTaskOverlayLocked(any(),
-                anyString(), anyInt());
-        verify(mAppLockOverlayController, never()).addLockedByAppLockActivityOverlayLocked(any());
+        // THEN the result is false
+        assertThat(hasVisibleTask).isFalse();
     }
 
     @Test
-    public void addLockedByAppLockTaskOverlayLocked_emptyTask_doesNothing() {
+    public void hasVisibleNonLockedTaskForPackage_withDifferentPackage_returnsFalse() {
+        // GIVEN a visible task for a different package
+        final Task task = createLockedTask(/* isVisible= */ true);
+        task.realActivity = TEST_COMPONENT_2; // Belongs to TEST_PACKAGE_2
+
+        // WHEN checking for a visible task for the original package
+        final boolean hasVisibleTask = mAppLockOverlayController.hasVisibleNonLockedTaskForPackage(
+                TEST_PACKAGE_1, TEST_USER_ID_1);
+
+        // THEN the result is false
+        assertThat(hasVisibleTask).isFalse();
+    }
+
+    @Test
+    public void hasVisibleNonLockedTaskForPackage_withNullRealActivity_returnsFalse() {
+        // GIVEN a visible task with a null realActivity
+        final Task task = createLockedTask(/* isVisible= */ true);
+        task.realActivity = null;
+
+        // WHEN checking for a visible task
+        final boolean hasVisibleTask = mAppLockOverlayController.hasVisibleNonLockedTaskForPackage(
+                TEST_PACKAGE_1, TEST_USER_ID_1);
+
+        // THEN the result is false
+        assertThat(hasVisibleTask).isFalse();
+    }
+
+    @Test
+    public void hasVisibleNonLockedTaskForPackage_withOnlyFinishingActivities_returnsFalse() {
+        // GIVEN a visible task where all activities are finishing
+        final Task task = createLockedTask(/* isVisible= */ true);
+        task.forAllActivities((Predicate<ActivityRecord>) activity -> activity.finishing = true);
+
+        // WHEN checking for a visible task
+        final boolean hasVisibleTask = mAppLockOverlayController.hasVisibleNonLockedTaskForPackage(
+                TEST_PACKAGE_1, TEST_USER_ID_1);
+
+        // THEN the result is false
+        assertThat(hasVisibleTask).isFalse();
+    }
+
+    @Test
+    public void addLockedByAppLockTaskOverlay_emptyTask_doesNothing() {
         // GIVEN an empty task
         final Task task = getTestTask();
         task.mChildren.clear();
         spyOn(mSupervisor);
 
         // WHEN a task overlay is added
-        mAppLockOverlayController.addLockedByAppLockTaskOverlayLocked(task, TEST_PACKAGE_1,
+        mAppLockOverlayController.addLockedByAppLockTaskOverlay(task, TEST_PACKAGE_1,
                 TEST_USER_ID_1);
         waitHandlerIdle(mAtm.mH);
 
@@ -381,14 +337,14 @@ public class AppLockOverlayControllerTests extends WindowTestsBase {
     }
 
     @Test
-    public void addLockedByAppLockTaskOverlayLocked_startsLockedAppActivity() {
+    public void addLockedByAppLockTaskOverlay_startsLockedAppActivity() {
         // GIVEN a task and a successful activity start result
         final Task task = getTestTask();
         doReturn(ActivityManager.START_SUCCESS).when(mAtm).startActivityAsUser(any(), any(), any(),
                 any(), any(), any(), any(), anyInt(), anyInt(), any(), any(), anyInt());
 
         // WHEN a task overlay is added
-        mAppLockOverlayController.addLockedByAppLockTaskOverlayLocked(task, TEST_PACKAGE_1,
+        mAppLockOverlayController.addLockedByAppLockTaskOverlay(task, TEST_PACKAGE_1,
                 TEST_USER_ID_1);
         waitHandlerIdle(mAtm.mH);
 
@@ -414,7 +370,7 @@ public class AppLockOverlayControllerTests extends WindowTestsBase {
     }
 
     @Test
-    public void addLockedByAppLockTaskOverlayLocked_removesTaskOnOverlayLaunchFailure() {
+    public void addLockedByAppLockTaskOverlay_removesTaskOnOverlayLaunchFailure() {
         // GIVEN a task and a failed activity start result
         final Task task = getTestTask();
         doReturn(ActivityManager.START_CANCELED).when(mAtm).startActivityAsUser(any(), any(), any(),
@@ -422,7 +378,7 @@ public class AppLockOverlayControllerTests extends WindowTestsBase {
         spyOn(mSupervisor);
 
         // WHEN a task overlay is added
-        mAppLockOverlayController.addLockedByAppLockTaskOverlayLocked(task, TEST_PACKAGE_1,
+        mAppLockOverlayController.addLockedByAppLockTaskOverlay(task, TEST_PACKAGE_1,
                 TEST_USER_ID_1);
         waitHandlerIdle(mAtm.mH);
 
@@ -431,14 +387,14 @@ public class AppLockOverlayControllerTests extends WindowTestsBase {
     }
 
     @Test
-    public void addLockedByAppLockTaskOverlayLocked_withExistingOverlay_doesNothing() {
+    public void addLockedByAppLockTaskOverlay_withExistingOverlay_doesNothing() {
         // GIVEN a task with an existing overlay for the same package
         final Task task = getTestTask();
         createOverlayActivity(task, TEST_PACKAGE_1, TEST_USER_ID_1);
         spyOn(mSupervisor);
 
         // WHEN a task overlay is added
-        mAppLockOverlayController.addLockedByAppLockTaskOverlayLocked(task, TEST_PACKAGE_1,
+        mAppLockOverlayController.addLockedByAppLockTaskOverlay(task, TEST_PACKAGE_1,
                 TEST_USER_ID_1);
         waitHandlerIdle(mAtm.mH);
 
@@ -449,87 +405,143 @@ public class AppLockOverlayControllerTests extends WindowTestsBase {
     }
 
     @Test
-    public void addLockedByAppLockActivityOverlayLocked_repositionsOverlayInSameParent() {
+    public void addLockedByAppLockActivityOverlay_withTargetOnTop_addsOverlayOnTop() {
         // GIVEN a task with a target activity
         final Task task = getTestTask();
         final ActivityRecord targetActivity = task.getTopMostActivity();
-        new ActivityBuilder(mAtm).setTask(task).build();
-        task.positionChildAt(POSITION_BOTTOM, targetActivity, false);
 
         // Mock startActivityAsUser to actually add the overlay activity to the task
-        mockStartActivityToAddTask(task, TEST_PACKAGE_1, TEST_USER_ID_1, POSITION_TOP);
+        final ActivityRecord[] overlayHolder = mockStartActivityToAddTask(task, TEST_PACKAGE_1,
+                TEST_USER_ID_1);
 
         // WHEN an activity overlay is added
-        mAppLockOverlayController.addLockedByAppLockActivityOverlayLocked(targetActivity);
+        mAppLockOverlayController.addLockedByAppLockActivityOverlay(targetActivity);
         waitHandlerIdle(mAtm.mH);
 
-        // THEN the overlay is positioned directly above the target activity
+        // THEN the overlay is positioned on top
         verify(mAtm).startActivityAsUser(any(), any(), any(), any(), any(), any(), any(), anyInt(),
                 anyInt(), any(), any(), anyInt());
         final TaskFragment parent = targetActivity.getParent().asTaskFragment();
-        assertThat(parent.mChildren.size()).isEqualTo(3);
-        final int targetIndex = parent.mChildren.indexOf(targetActivity);
-        final int overlayIndex = targetIndex + 1;
-        final ActivityRecord overlay = parent.mChildren.get(overlayIndex).asActivityRecord();
-        assertThat(overlay.mActivityComponent).isNotNull();
-        assertThat(overlay.mActivityComponent.getClassName()).isEqualTo(
+        assertThat(parent.mChildren.size()).isEqualTo(2);
+        assertThat(parent.mChildren.get(0)).isEqualTo(targetActivity);
+        assertThat(overlayHolder.length).isEqualTo(1);
+        final ActivityRecord overlayActivity = overlayHolder[0];
+        assertThat(overlayActivity).isNotNull();
+        assertThat(parent.mChildren.get(1)).isEqualTo(overlayActivity);
+        assertThat(overlayActivity.mActivityComponent).isNotNull();
+        assertThat(overlayActivity.mActivityComponent.getPackageName()).isEqualTo(
+                SYSTEM_PACKAGE_NAME);
+        assertThat(overlayActivity.mActivityComponent.getClassName()).isEqualTo(
                 LockedAppActivity.class.getName());
+
+        // And both the overlay and target activities are registered
+        verify(mAppLockOverlayController).registerActivity(eq(targetActivity));
+        verify(mAppLockOverlayController).registerActivity(eq(overlayActivity));
     }
 
     @Test
-    public void
-            addLockedByAppLockActivityOverlayLocked_repositionsBottomOverlayInDifferentParents() {
-        // GIVEN a task with two TaskFragments, and the target activity in the bottom one.
-        // The overlay is initially positioned at the bottom of the task.
-        final Task task = new TaskBuilder(mSupervisor).setCreateActivity(false).build();
+    public void addLockedByAppLockActivityOverlay_withTargetNotOnTop_addsOverlayOnTop() {
+        // GIVEN a task with a middle TaskFragment, and the target activity in the TaskFragment.
+        final Task task = getTestTask();
         final TaskFragment taskFragment = new TaskFragmentBuilder(mAtm).setParentTask(task).build();
-        // Create the activity in the task, then move it to the fragment.
+        new ActivityBuilder(mAtm).setTask(task).build();
         final ActivityRecord targetActivity = new ActivityBuilder(mAtm).setTask(task).build();
         targetActivity.reparent(taskFragment, POSITION_TOP);
 
-        // Mock startActivityAsUser to add overlay to the Task at the bottom.
-        mockStartActivityToAddTask(task, TEST_PACKAGE_1, TEST_USER_ID_1, POSITION_BOTTOM);
+        // Mock startActivityAsUser to add overlay to the Task.
+        final ActivityRecord[] overlayHolder = mockStartActivityToAddTask(task, TEST_PACKAGE_1,
+                TEST_USER_ID_1);
 
-        // WHEN an activity overlay is added
-        mAppLockOverlayController.addLockedByAppLockActivityOverlayLocked(targetActivity);
+        // WHEN an activity overlay is added.
+        mAppLockOverlayController.addLockedByAppLockActivityOverlay(targetActivity);
         waitHandlerIdle(mAtm.mH);
 
-        // THEN the overlay is positioned directly above the target's TaskFragment.
-        final ActivityRecord overlay = task.getActivity(
-                activity -> LockedAppActivity.class.getName().equals(
-                        activity.mActivityComponent.getClassName()));
-        final int overlayIndex = task.mChildren.indexOf(overlay);
-        final int taskFragmentIndex = task.mChildren.indexOf(taskFragment);
-        assertThat(overlayIndex).isEqualTo(taskFragmentIndex + 1);
+        // THEN the overlay stays at the top of the task.
+        verify(mAtm).startActivityAsUser(any(), any(), any(), any(), any(), any(), any(), anyInt(),
+                anyInt(), any(), any(), anyInt());
+        assertThat(overlayHolder.length).isEqualTo(1);
+        final ActivityRecord overlayActivity = overlayHolder[0];
+        assertThat(overlayActivity).isNotNull();
+        assertThat(task.getTopMostActivity()).isEqualTo(overlayActivity);
+
+        // And both the overlay and target activities are registered
+        verify(mAppLockOverlayController).registerActivity(eq(targetActivity));
+        verify(mAppLockOverlayController).registerActivity(eq(overlayActivity));
     }
 
     @Test
-    public void addLockedByAppLockActivityOverlayLocked_repositionsTopOverlayInDifferentParents() {
-        // GIVEN a task with two TaskFragments, and the target activity in the bottom one.
-        // The overlay is initially positioned at the top of the task.
-        final Task task = new TaskBuilder(mSupervisor).setCreateActivity(false).build();
-        final TaskFragment taskFragment = new TaskFragmentBuilder(mAtm).setParentTask(task).build();
-        final ActivityRecord targetActivity = new ActivityBuilder(mAtm).setTask(task).build();
-        targetActivity.reparent(taskFragment, POSITION_TOP);
-
-        // Mock startActivityAsUser to add overlay to the Task at the top.
-        mockStartActivityToAddTask(task, TEST_PACKAGE_1, TEST_USER_ID_1, POSITION_TOP);
+    public void addLockedByAppLockActivityOverlay_activityFinishing_doesNothing() {
+        // GIVEN a target activity that is already finishing
+        final Task task = getTestTask();
+        final ActivityRecord targetActivity = task.getTopMostActivity();
+        targetActivity.finishing = true;
+        spyOn(targetActivity);
 
         // WHEN an activity overlay is added
-        mAppLockOverlayController.addLockedByAppLockActivityOverlayLocked(targetActivity);
+        mAppLockOverlayController.addLockedByAppLockActivityOverlay(targetActivity);
         waitHandlerIdle(mAtm.mH);
 
-        // THEN the overlay is positioned directly above the target's TaskFragment.
-        final ActivityRecord overlay = task.getActivity(
-                activity -> LockedAppActivity.class.getName().equals(
-                        activity.mActivityComponent.getClassName()));
-        final int overlayIndex = task.mChildren.indexOf(overlay);
-        final int taskFragmentIndex = task.mChildren.indexOf(taskFragment);
-        assertThat(overlayIndex).isEqualTo(taskFragmentIndex + 1);
+        // THEN the method returns early and does not attempt to finish the activity
+        verify(targetActivity, never()).finishIfPossible(anyString(), anyBoolean());
     }
 
     @Test
-    public void addLockedByAppLockActivityOverlayLocked_finishesTargetIfOverlayNotFound() {
+    public void addLockedByAppLockActivityOverlay_withNoTask_finishesActivity() {
+        // GIVEN an activity that is not attached to any task
+        final ActivityRecord targetActivity = new ActivityBuilder(mAtm).setTask(null).build();
+        spyOn(targetActivity);
+
+        // WHEN an activity overlay is added
+        mAppLockOverlayController.addLockedByAppLockActivityOverlay(targetActivity);
+        waitHandlerIdle(mAtm.mH);
+
+        // THEN the method returns early and does not attempt to finish the activity
+        verify(targetActivity).finishIfPossible(eq("could-not-find-task"), anyBoolean());
+    }
+
+    @Test
+    public void addLockedByAppLockActivityOverlay_withExistingOverlay_doesNothing() {
+        // GIVEN a task with a target activity and an existing valid overlay on top of it
+        final OverlayTargetPair pair = createValidOverlayTargetPair();
+        final ActivityRecord targetActivity = pair.mTarget;
+
+        spyOn(targetActivity);
+        spyOn(mSupervisor);
+
+        // WHEN an activity overlay is added for the target activity (which already has a valid
+        // overlay)
+        mAppLockOverlayController.addLockedByAppLockActivityOverlay(targetActivity);
+        waitHandlerIdle(mAtm.mH);
+
+        // THEN the method returns early and does not attempt to start a new activity or remove the
+        // task
+        verify(mAtm, never()).startActivityAsUser(any(), any(), any(), any(), any(), any(), any(),
+                anyInt(), anyInt(), any(), any(), anyInt());
+        verify(mSupervisor, never()).removeTask(eq(pair.mTask), anyBoolean(), anyBoolean(),
+                anyString());
+    }
+
+    @Test
+    public void addLockedByAppLockActivityOverlay_withExistingFinishingOverlay_doesNothing() {
+        // GIVEN a task with a target activity and an existing overlay that is finishing
+        final OverlayTargetPair pair = createValidOverlayTargetPair();
+        final ActivityRecord targetActivity = pair.mTarget;
+        final ActivityRecord existingOverlay = pair.mOverlay;
+        existingOverlay.finishing = true; // Mark as finishing
+
+        spyOn(mSupervisor);
+
+        // WHEN an activity overlay is added for the target activity
+        mAppLockOverlayController.addLockedByAppLockActivityOverlay(targetActivity);
+        waitHandlerIdle(mAtm.mH);
+
+        // THEN the method returns early and does not attempt to start a new activity
+        verify(mAtm, never()).startActivityAsUser(any(), any(), any(), any(), any(), any(), any(),
+                anyInt(), anyInt(), any(), any(), anyInt());
+    }
+
+    @Test
+    public void addLockedByAppLockActivityOverlay_finishesTargetIfOverlayNotFound() {
         // GIVEN a task where the overlay activity cannot be found after launch
         final Task task = getTestTask();
         final ActivityRecord targetActivity = task.getTopMostActivity();
@@ -541,7 +553,7 @@ public class AppLockOverlayControllerTests extends WindowTestsBase {
         spyOn(targetActivity);
 
         // WHEN an activity overlay is added
-        mAppLockOverlayController.addLockedByAppLockActivityOverlayLocked(targetActivity);
+        mAppLockOverlayController.addLockedByAppLockActivityOverlay(targetActivity);
         waitHandlerIdle(mAtm.mH);
 
         // THEN the target activity is finished as a fallback
@@ -549,40 +561,11 @@ public class AppLockOverlayControllerTests extends WindowTestsBase {
     }
 
     @Test
-    public void addLockedByAppLockActivityOverlayLocked_withNoTask_doesNothing() {
-        // GIVEN an activity that is not attached to any task
-        final ActivityRecord targetActivity = new ActivityBuilder(mAtm).setTask(null).build();
-        spyOn(targetActivity);
-
-        // WHEN an activity overlay is added
-        mAppLockOverlayController.addLockedByAppLockActivityOverlayLocked(targetActivity);
-        waitHandlerIdle(mAtm.mH);
-
-        // THEN the method returns early and does not attempt to finish the activity
-        verify(targetActivity, never()).finishIfPossible(anyString(), anyBoolean());
-    }
-
-    @Test
-    public void addLockedByAppLockActivityOverlayLocked_activityFinishing_doesNothing() {
-        // GIVEN a target activity that is already finishing
-        final Task task = getTestTask();
-        final ActivityRecord targetActivity = task.getTopMostActivity();
-        targetActivity.finishing = true;
-        spyOn(targetActivity);
-
-        // WHEN an activity overlay is added
-        mAppLockOverlayController.addLockedByAppLockActivityOverlayLocked(targetActivity);
-        waitHandlerIdle(mAtm.mH);
-
-        // THEN the method returns early and does not attempt to finish the activity
-        verify(targetActivity, never()).finishIfPossible(anyString(), anyBoolean());
-    }
-
-    @Test
-    public void addLockedByAppLockActivityOverlayLocked_removesTaskOnOverlayLaunchFailure() {
+    public void addLockedByAppLockActivityOverlay_finishesActivityOnOverlayLaunchFailure() {
         // GIVEN a task with a target activity
         final Task task = getTestTask();
         final ActivityRecord targetActivity = task.getTopMostActivity();
+        spyOn(targetActivity);
 
         // Mock startActivityAsUser to fail
         doReturn(ActivityManager.START_CANCELED).when(mAtm).startActivityAsUser(any(), any(), any(),
@@ -590,79 +573,17 @@ public class AppLockOverlayControllerTests extends WindowTestsBase {
         spyOn(mSupervisor);
 
         // WHEN an activity overlay is added but fails to start
-        mAppLockOverlayController.addLockedByAppLockActivityOverlayLocked(targetActivity);
+        mAppLockOverlayController.addLockedByAppLockActivityOverlay(targetActivity);
         waitHandlerIdle(mAtm.mH);
 
-        // THEN the entire task is removed as a security fallback
-        verify(mSupervisor).removeTask(eq(task), anyBoolean(), anyBoolean(), anyString());
-    }
-
-    @Test
-    public void addLockedByAppLockActivityOverlayLocked_withExistingOverlay_doesNothing() {
-        // GIVEN a task with a target activity and an existing overlay on top of it
-        final Task task = getTestTask();
-        final ActivityRecord targetActivity = task.getTopMostActivity();
-        final ActivityRecord existingOverlay = createOverlayActivity(task,
-                targetActivity.packageName,
-                targetActivity.mUserId);
-        // Position existing overlay right on top of the target activity.
-        task.positionChildAt(task.mChildren.indexOf(targetActivity) + 1, existingOverlay,
-                /* includingParents= */ false);
-
-        spyOn(targetActivity);
-        spyOn(mSupervisor);
-
-        // WHEN an activity overlay is added
-        mAppLockOverlayController.addLockedByAppLockActivityOverlayLocked(targetActivity);
-        waitHandlerIdle(mAtm.mH);
-
-        // THEN the method returns early and does not attempt to start a new activity or remove the
-        // task
-        verify(mAtm, never()).startActivityAsUser(any(), any(), any(), any(), any(), any(), any(),
-                anyInt(), anyInt(), any(), any(), anyInt());
+        // THEN the target activity is finished as a security fallback
+        verify(targetActivity).finishIfPossible(eq("app-lock-overlay-failed"), anyBoolean());
+        // AND the task is NOT removed
         verify(mSupervisor, never()).removeTask(eq(task), anyBoolean(), anyBoolean(), anyString());
     }
 
     @Test
-    public void addLockedByAppLockActivityOverlayLocked_finishesTargetIfParentMissing() {
-        // GIVEN a task with a target activity
-        final Task task = getTestTask();
-        final ActivityRecord targetActivity = task.getTopMostActivity();
-        // Add a dummy activity to keep the task alive when targetActivity is detached
-        new ActivityBuilder(mAtm).setTask(task).build();
-
-        // Mock startActivityAsUser to succeed, but detach target from parent before callback
-        doAnswer(invocation -> {
-            // Detach target from task to simulate race condition
-            targetActivity.setParent(null);
-
-            // Create the overlay so the lookup succeeds
-            Intent intent = invocation.getArgument(3);
-            String identifier = intent.getIdentifier();
-            synchronized (mAtm.mGlobalLock) {
-                ActivityRecord overlay = new ActivityBuilder(mAtm)
-                        .setComponent(new ComponentName("android",
-                                LockedAppActivity.class.getName()))
-                        .setTask(task).build();
-                overlay.intent.setIdentifier(identifier);
-            }
-            return ActivityManager.START_SUCCESS;
-        }).when(mAtm).startActivityAsUser(any(), any(), any(), any(), any(), any(), any(), anyInt(),
-                anyInt(), any(), any(), anyInt());
-
-        spyOn(targetActivity);
-
-        // WHEN an activity overlay is added
-        mAppLockOverlayController.addLockedByAppLockActivityOverlayLocked(targetActivity);
-        waitHandlerIdle(mAtm.mH);
-
-        // THEN the target activity is finished because it has no parent to reposition in
-        verify(targetActivity).finishIfPossible(eq("target-or-overlay-has-no-parent"),
-                anyBoolean());
-    }
-
-    @Test
-    public void addLockedByAppLockActivityOverlayLocked_finishesOverlayIfTargetFinishing() {
+    public void addLockedByAppLockActivityOverlay_finishesOverlayIfTargetFinishing() {
         // GIVEN a task with a target activity
         final Task task = getTestTask();
         final ActivityRecord targetActivity = task.getTopMostActivity();
@@ -691,13 +612,280 @@ public class AppLockOverlayControllerTests extends WindowTestsBase {
                 any(), any(), any(), anyInt(), anyInt(), any(), any(), anyInt());
 
         // WHEN an activity overlay is added
-        mAppLockOverlayController.addLockedByAppLockActivityOverlayLocked(targetActivity);
+        mAppLockOverlayController.addLockedByAppLockActivityOverlay(targetActivity);
         waitHandlerIdle(mAtm.mH);
 
         // THEN the overlay activity is finished
         final ActivityRecord overlay = task.getActivity(
                 activity -> overlayIdentifier.toString().equals(activity.intent.getIdentifier()));
         verify(overlay).finishIfPossible(eq("target-finishing"), anyBoolean());
+    }
+
+    @Test
+    public void registerActivity_listenerSelfUnregistersOnActivityRemoved() {
+        // GIVEN a registered activity
+        final ActivityRecord activity = getTestTask().getTopMostActivity();
+        spyOn(activity);
+        mAppLockOverlayController.registerActivity(activity);
+
+        // WHEN the activity is removed
+        activity.removeIfPossible();
+
+        // THEN the listener is unregistered from the activity
+        verify(activity).unregisterWindowContainerListener(any(WindowContainerListener.class));
+    }
+
+    @Test
+    public void registerActivity_alreadyRegistered_doesNothing() {
+        // GIVEN an activity that is already registered
+        final ActivityRecord activity = getTestTask().getTopMostActivity();
+        spyOn(activity);
+        mAppLockOverlayController.registerActivity(activity);
+        clearInvocations(activity);
+
+        // WHEN we try to register it again
+        mAppLockOverlayController.registerActivity(activity);
+
+        // THEN no new listener is registered
+        verify(activity, never()).registerWindowContainerListener(any());
+    }
+
+    @Test
+    public void onOverlayActivityBecomesVisible_notAnOrphan_doesNothing() {
+        // GIVEN a registered overlay that is NOT an orphan (it has a valid target)
+        final OverlayTargetPair pair = createValidOverlayTargetPair();
+        final ActivityRecord overlay = pair.mOverlay;
+        overlay.setVisibleRequested(false);
+        clearInvocations(overlay);
+
+        // WHEN the overlay becomes visible
+        overlay.setVisibleRequested(true);
+
+        // THEN the overlay is NOT finished because it is not an orphan
+        verify(overlay, never()).finishIfPossible(anyString(), anyBoolean());
+    }
+
+    @Test
+    public void onOverlayActivityBecomesVisible_orphan_finishesOverlay() {
+        // GIVEN a registered overlay whose target has been removed (is null)
+        final Task task = getTestTask();
+        final ActivityRecord overlay = createOverlayActivity(task, TEST_PACKAGE_1,
+                TEST_USER_ID_1);
+        mAppLockOverlayController.registerActivity(overlay);
+        // Simulate the target being removed by not adding it to the overlay -> target map
+        overlay.setVisibleRequested(false);
+        clearInvocations(overlay);
+
+        // WHEN the overlay becomes visible
+        overlay.setVisibleRequested(true);
+
+        // THEN the overlay is finished because it is an orphan
+        verify(overlay).finishIfPossible(eq("orphaned-app-lock-overlay"), anyBoolean());
+    }
+
+    @Test
+    public void onOverlayActivityBecomesVisible_targetNotLocked_finishesOverlay() {
+        // GIVEN a registered overlay with a valid target, but the package is no longer locked
+        final OverlayTargetPair pair = createValidOverlayTargetPair();
+        final ActivityRecord overlay = pair.mOverlay;
+        overlay.setVisibleRequested(false);
+        clearInvocations(overlay);
+
+        doReturn(false).when(mWm).isPackageLockedByAppLockLocked(pair.mTarget.packageName,
+                pair.mTarget.mUserId);
+
+        // WHEN the overlay becomes visible
+        overlay.setVisibleRequested(true);
+
+        // THEN the overlay is finished because its target is no longer locked
+        verify(overlay).finishIfPossible(eq("orphaned-app-lock-overlay"), anyBoolean());
+    }
+
+    @Test
+    public void onTargetActivityBecomesVisible_addsOverlay() {
+        // GIVEN a registered locked activity that is not visible
+        final TestMixedStateTask mixedStateTask = createMixedStateTask(/* isVisible= */ false);
+        final ActivityRecord targetActivity = mixedStateTask.mLockedActivity;
+        targetActivity.setVisibleRequested(false);
+        mAppLockOverlayController.registerActivity(targetActivity);
+        doNothing().when(mAppLockOverlayController).addLockedByAppLockActivityOverlay(any());
+        clearInvocations(mAppLockOverlayController);
+
+        // WHEN the target activity becomes visible
+        targetActivity.setVisibleRequested(true);
+        waitHandlerIdle(mAtm.mH);
+
+        // THEN an overlay is added for it
+        verify(mAppLockOverlayController).addLockedByAppLockActivityOverlay(eq(targetActivity));
+    }
+
+    @Test
+    public void onTargetActivityBecomesVisible_withOtherVisibleTask_doesNotAddOverlay() {
+        // GIVEN a registered locked activity that is not visible
+        final TestMixedStateTask mixedStateTask = createMixedStateTask(/* isVisible= */ false);
+        final ActivityRecord targetActivity = mixedStateTask.mLockedActivity;
+        targetActivity.setVisibleRequested(false);
+        mAppLockOverlayController.registerActivity(targetActivity);
+
+        // AND another visible task for the same package exists
+        createLockedTask(/* isVisible= */ true);
+        clearInvocations(mAppLockOverlayController);
+
+        // WHEN the target activity becomes visible
+        targetActivity.setVisibleRequested(true);
+
+        // THEN an overlay is NOT added because there's another visible task for that package
+        verify(mAppLockOverlayController, never()).addLockedByAppLockActivityOverlay(any());
+    }
+
+    @Test
+    public void onActivityRemoved_finishesPartnerAndCleansUp() {
+        // GIVEN a registered target activity and its overlay
+        final OverlayTargetPair pair = createValidOverlayTargetPair();
+        final ActivityRecord targetActivity = pair.mTarget;
+        final ActivityRecord overlay = pair.mOverlay;
+
+        // WHEN the target activity is removed
+        targetActivity.removeIfPossible();
+
+        // THEN the overlay is finished
+        verify(overlay).finishIfPossible(eq("cleaning-up-app-lock-pair"), anyBoolean());
+        // AND both listeners are unregistered
+        verify(targetActivity).unregisterWindowContainerListener(
+                any(WindowContainerListener.class));
+        verify(overlay).unregisterWindowContainerListener(any(WindowContainerListener.class));
+    }
+
+    @Test
+    public void isAppLockOverlayValidForTarget_targetPackageNot_returnsFalse() {
+        // GIVEN a valid overlay-target pair, but the target package is no longer locked
+        final OverlayTargetPair pair = createValidOverlayTargetPair();
+        doReturn(false).when(mWm).isPackageLockedByAppLockLocked(pair.mTarget.packageName,
+                pair.mTarget.mUserId);
+
+        // WHEN checking if the overlay is valid for the target
+        final boolean isValid = mAppLockOverlayController.isAppLockOverlayValidForTarget(
+                pair.mOverlay, pair.mTarget);
+
+        // THEN it is not considered valid
+        assertThat(isValid).isFalse();
+    }
+
+    @Test
+    public void isAppLockOverlayValidForTarget_overlayForDifferentPackage_returnsFalse() {
+        // GIVEN a valid overlay-target pair, but the overlay's package is different
+        final OverlayTargetPair pair = createValidOverlayTargetPair();
+        pair.mOverlay.intent.putExtra(Intent.EXTRA_PACKAGE_NAME, TEST_PACKAGE_2);
+
+        // WHEN checking if the overlay is valid for the target
+        final boolean isValid = mAppLockOverlayController.isAppLockOverlayValidForTarget(
+                pair.mOverlay, pair.mTarget);
+
+        // THEN it is not considered valid
+        assertThat(isValid).isFalse();
+    }
+
+    @Test
+    public void isAppLockOverlayValidForTarget_tasksMismatch_returnsFalse() {
+        // GIVEN a valid overlay-target pair, but the overlay's task is different
+        final OverlayTargetPair pair = createValidOverlayTargetPair();
+        final Task otherTask = getTestTask();
+        spyOn(pair.mTarget);
+        doReturn(otherTask).when(pair.mTarget).getTask();
+
+        // WHEN checking if the overlay is valid for the target
+        final boolean isValid = mAppLockOverlayController.isAppLockOverlayValidForTarget(
+                pair.mOverlay, pair.mTarget);
+
+        // THEN it is not considered valid
+        assertThat(isValid).isFalse();
+    }
+
+    @Test
+    public void isAppLockOverlayValidForTarget_targetTaskNull_returnsFalse() {
+        // GIVEN a valid overlay-target pair, but the target activity's task is null
+        final OverlayTargetPair pair = createValidOverlayTargetPair();
+        spyOn(pair.mTarget);
+        doReturn(null).when(pair.mTarget).getTask();
+
+        // WHEN checking if the overlay is valid for the target
+        final boolean isValid = mAppLockOverlayController.isAppLockOverlayValidForTarget(
+                pair.mOverlay, pair.mTarget);
+
+        // THEN it is not considered valid
+        assertThat(isValid).isFalse();
+    }
+
+    @Test
+    public void isAppLockOverlayValidForTarget_mapReferenceMismatch_returnsFalse() {
+        // GIVEN a valid overlay-target pair, but one of the map references is incorrect
+        final OverlayTargetPair pair = createValidOverlayTargetPair();
+        final ActivityRecord otherActivity = new ActivityBuilder(mAtm).build();
+        mAppLockOverlayController.mOverlayToTargetMap.put(pair.mOverlay,
+                new WeakReference<>(otherActivity));
+
+        // WHEN checking if the overlay is valid for the target
+        final boolean isValid = mAppLockOverlayController.isAppLockOverlayValidForTarget(
+                pair.mOverlay, pair.mTarget);
+
+        // THEN it is not considered valid
+        assertThat(isValid).isFalse();
+    }
+
+    @Test
+    public void isAppLockOverlayValidForTarget_targetNotInMap_returnsFalse() {
+        // GIVEN a valid overlay-target pair, but the target is removed from the map
+        final OverlayTargetPair pair = createValidOverlayTargetPair();
+        mAppLockOverlayController.mTargetToOverlayMap.remove(pair.mTarget);
+
+        // WHEN checking if the overlay is valid for the target
+        final boolean isValid = mAppLockOverlayController.isAppLockOverlayValidForTarget(
+                pair.mOverlay, pair.mTarget);
+
+        // THEN it is not considered valid
+        assertThat(isValid).isFalse();
+    }
+
+    @Test
+    public void isAppLockOverlayValidForTarget_overlayNotInMap_returnsFalse() {
+        // GIVEN a valid overlay-target pair, but the overlay is removed from the map
+        final OverlayTargetPair pair = createValidOverlayTargetPair();
+        mAppLockOverlayController.mOverlayToTargetMap.remove(pair.mOverlay);
+
+        // WHEN checking if the overlay is valid for the target
+        final boolean isValid = mAppLockOverlayController.isAppLockOverlayValidForTarget(
+                pair.mOverlay, pair.mTarget);
+
+        // THEN it is not considered valid
+        assertThat(isValid).isFalse();
+    }
+
+    @Test
+    public void isAppLockOverlayValidForTarget_targetFinishing_returnsFalse() {
+        // GIVEN a valid overlay-target pair, but the target is finishing
+        final OverlayTargetPair pair = createValidOverlayTargetPair();
+        pair.mTarget.finishing = true;
+
+        // WHEN checking if the overlay is valid for the target
+        final boolean isValid = mAppLockOverlayController.isAppLockOverlayValidForTarget(
+                pair.mOverlay, pair.mTarget);
+
+        // THEN it is not considered valid
+        assertThat(isValid).isFalse();
+    }
+
+    @Test
+    public void isAppLockOverlayValidForTarget_overlayFinishing_returnsFalse() {
+        // GIVEN a valid overlay-target pair, but the overlay is finishing
+        final OverlayTargetPair pair = createValidOverlayTargetPair();
+        pair.mOverlay.finishing = true;
+
+        // WHEN checking if the overlay is valid for the target
+        final boolean isValid = mAppLockOverlayController.isAppLockOverlayValidForTarget(
+                pair.mOverlay, pair.mTarget);
+
+        // THEN it is not considered valid
+        assertThat(isValid).isFalse();
     }
 
     /** Helper to create a basic task for testing. */
@@ -766,9 +954,12 @@ public class AppLockOverlayControllerTests extends WindowTestsBase {
      * {@link ActivityTaskManagerService#startActivityAsUser(IApplicationThread, String, String,
      * Intent, String, IBinder, String, int, int, ProfilerInfo, Bundle, int)} to add a new
      * {@link LockedAppActivity} to the specified task and position within the task.
+     *
+     * @return a one element array containing the overlay activity
      */
-    private void mockStartActivityToAddTask(Task task, String packageName, int userId,
-            int position) {
+    private ActivityRecord[] mockStartActivityToAddTask(Task task, String packageName, int userId) {
+        // Capture the overlay to verify its interactions
+        final ActivityRecord[] overlayHolder = new ActivityRecord[1];
         doAnswer(invocation -> {
             Intent intent = invocation.getArgument(3);
             String identifier = intent.getIdentifier();
@@ -776,13 +967,51 @@ public class AppLockOverlayControllerTests extends WindowTestsBase {
             synchronized (mAtm.mGlobalLock) {
                 final ActivityRecord overlay = createOverlayActivity(task, packageName, userId);
                 overlay.intent.setIdentifier(identifier);
-                if (position != POSITION_TOP) {
-                    task.positionChildAt(position, overlay, /* includingParents= */ false);
-                }
+                spyOn(overlay);
+                overlayHolder[0] = overlay;
             }
             return ActivityManager.START_SUCCESS;
         }).when(mAtm).startActivityAsUser(any(), any(), any(), any(),
                 any(), any(), any(), anyInt(), anyInt(), any(), any(), anyInt());
+        return overlayHolder;
+    }
+
+    /** Helper to create a valid overlay and target activity pair. */
+    private OverlayTargetPair createValidOverlayTargetPair() {
+        final Task task = getTestTask();
+        final ActivityRecord targetActivity = task.getTopMostActivity();
+        // Add a dummy activity to keep the task alive when the target is removed.
+        new ActivityBuilder(mAtm).setTask(task).build();
+        final ActivityRecord overlay = createOverlayActivity(task, targetActivity.packageName,
+                targetActivity.mUserId);
+        task.positionChildAt(task.mChildren.indexOf(targetActivity) + 1, overlay, false);
+
+        // Manually add to maps and register listeners for isAppLockOverlayValidForTargetLocked
+        // tests, since addLockedByAppLockActivityOverlayLocked is not called here.
+        mAppLockOverlayController.mOverlayToTargetMap.put(overlay,
+                new WeakReference<>(targetActivity));
+        mAppLockOverlayController.mTargetToOverlayMap.put(targetActivity,
+                new WeakReference<>(overlay));
+        mAppLockOverlayController.registerActivity(overlay);
+        mAppLockOverlayController.registerActivity(targetActivity);
+
+        doReturn(true).when(mWm).isPackageLockedByAppLockLocked(targetActivity.packageName,
+                targetActivity.mUserId);
+        clearInvocations(mAppLockOverlayController);
+        return new OverlayTargetPair(overlay, targetActivity, task);
+    }
+
+    /** Data class to hold the result of creating an overlay-target pair. */
+    private static class OverlayTargetPair {
+        final ActivityRecord mOverlay;
+        final ActivityRecord mTarget;
+        final Task mTask;
+
+        OverlayTargetPair(ActivityRecord overlay, ActivityRecord target, Task task) {
+            this.mOverlay = overlay;
+            this.mTarget = target;
+            this.mTask = task;
+        }
     }
 
     /** Data class to hold the result of creating a mixed-lock-state task. */
