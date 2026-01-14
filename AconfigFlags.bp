@@ -259,6 +259,10 @@ java_aconfig_library {
     min_sdk_version: "36",
     preserve_legacy_impl_interface: true,
     defaults: ["framework-minus-apex-aconfig-java-defaults"],
+    apex_available: [
+        "//apex_available:platform",
+        "com.android.telephonycore",
+    ],
 }
 
 java_aconfig_library {
@@ -278,8 +282,13 @@ java_aconfig_library {
 java_aconfig_library {
     name: "telephony_flags_core_java_lib",
     aconfig_declarations: "telephony_flags",
+    min_sdk_version: "36",
     preserve_legacy_impl_interface: true,
     defaults: ["framework-minus-apex-aconfig-java-defaults"],
+    apex_available: [
+        "//apex_available:platform",
+        "com.android.telephonycore",
+    ],
 }
 
 java_aconfig_library {
@@ -620,7 +629,7 @@ java_aconfig_library {
         "com.android.bt",
         "com.android.mediaprovider",
         "com.android.permission",
-        "com.android.neuralnetworks"
+        "com.android.neuralnetworks",
     ],
 }
 
