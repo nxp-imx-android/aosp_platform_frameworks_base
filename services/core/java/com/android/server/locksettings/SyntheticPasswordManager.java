@@ -2182,7 +2182,7 @@ class SyntheticPasswordManager {
             if (key.length < mWeaverConfig.keySize) {
                 throw new IllegalArgumentException("weaver key length too small");
             }
-            return Arrays.copyOf(key, mWeaverConfig.keySize);
+            return ArrayUtils.copyOfArrayNonMovable(key, mWeaverConfig.keySize);
         } finally {
             ArrayUtils.zeroize(key);
         }
