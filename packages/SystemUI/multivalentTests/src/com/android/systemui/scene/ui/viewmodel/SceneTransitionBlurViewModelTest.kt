@@ -366,7 +366,27 @@ class SceneTransitionBlurViewModelTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(Flags.FLAG_SPATIAL_MODEL_BOUNCER_PUSHBACK)
-    fun lockscreen_bouncerClosed_correctBlurScale() =
+    fun lockscreen_bouncerClosed_startHasCorrectBlurScale() =
+        kosmos.runTest {
+            val transitionProgress = 0f
+            val transition =
+                mock<TransitionState.Transition.ShowOrHideOverlay>() {
+                    on { overlay } doReturn Overlays.Bouncer
+                    on { fromContent } doReturn Overlays.Bouncer
+                    on { currentScene } doReturn Scenes.Lockscreen
+                    on { toContent } doReturn Scenes.Lockscreen
+                    on { progress } doReturn transitionProgress
+                }
+
+            underTest.requestWindowBackgroundBlur(transition, transitionProgress)
+
+            assertThat(fakeBlurChoreographer.lastAppliedBlurEffect)
+                .isEqualTo(BlurEffect(blurConfig.maxBlurRadiusPx, 0.95f))
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_SPATIAL_MODEL_BOUNCER_PUSHBACK)
+    fun lockscreen_bouncerClosed_endHasCorrectBlurScale() =
         kosmos.runTest {
             val transitionProgress = 1f
             val transition =
@@ -375,6 +395,46 @@ class SceneTransitionBlurViewModelTest : SysuiTestCase() {
                     on { fromContent } doReturn Overlays.Bouncer
                     on { currentScene } doReturn Scenes.Lockscreen
                     on { toContent } doReturn Scenes.Lockscreen
+                    on { progress } doReturn transitionProgress
+                }
+
+            underTest.requestWindowBackgroundBlur(transition, transitionProgress)
+
+            assertThat(fakeBlurChoreographer.lastAppliedBlurEffect)
+                .isEqualTo(BlurEffect(blurConfig.minBlurRadiusPx, 1f))
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_SPATIAL_MODEL_BOUNCER_PUSHBACK)
+    fun bouncerClosed_unlocked_startHasCorrectBlurScale() =
+        kosmos.runTest {
+            val transitionProgress = 0f
+            val transition =
+                mock<TransitionState.Transition.ShowOrHideOverlay>() {
+                    on { overlay } doReturn Overlays.Bouncer
+                    on { fromContent } doReturn Overlays.Bouncer
+                    on { currentScene } doReturn Scenes.Lockscreen
+                    on { toContent } doReturn Scenes.Gone
+                    on { progress } doReturn transitionProgress
+                }
+
+            underTest.requestWindowBackgroundBlur(transition, transitionProgress)
+
+            assertThat(fakeBlurChoreographer.lastAppliedBlurEffect)
+                .isEqualTo(BlurEffect(blurConfig.maxBlurRadiusPx, 0.95f))
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_SPATIAL_MODEL_BOUNCER_PUSHBACK)
+    fun bouncerClosed_unlocked_endHasCorrectBlurScale() =
+        kosmos.runTest {
+            val transitionProgress = 1f
+            val transition =
+                mock<TransitionState.Transition.ShowOrHideOverlay>() {
+                    on { overlay } doReturn Overlays.Bouncer
+                    on { fromContent } doReturn Overlays.Bouncer
+                    on { currentScene } doReturn Scenes.Lockscreen
+                    on { toContent } doReturn Scenes.Gone
                     on { progress } doReturn transitionProgress
                 }
 
