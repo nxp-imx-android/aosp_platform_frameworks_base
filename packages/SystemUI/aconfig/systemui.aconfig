@@ -1918,6 +1918,14 @@ flag {
 }
 
 flag {
+    name: "touchpad_gesture_tutorial_updates"
+    namespace: "systemui"
+    description: "Updates the touchpad gesture tutorial to reflect the latest gesture and "
+            "animation changes"
+    bug: "456784841"
+}
+
+flag {
     name: "update_user_switcher_background"
     namespace: "systemui"
     description: "Decide whether to update user switcher in background thread."
