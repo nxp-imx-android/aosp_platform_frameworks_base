@@ -440,8 +440,14 @@ final class InstallPackageHelper {
 
 
         if (pkgAlreadyExists && oldPkgSetting.getPccId() > 0 && !parsedPackage.hasPccComponents()) {
+            Slog.i(TAG,
+                    "Package " + oldPkgSetting.getPackageName()
+                            + " is no longer a PCC package. Cleaning up.");
             mPm.mSettings.removePccIdLPw(oldPkgSetting.getPccId());
             pkgSetting.setPccId(Process.INVALID_UID);
+
+            mAppDataHelper.destroyPccData(
+                    oldPkgSetting, FLAG_STORAGE_CE | FLAG_STORAGE_DE, allUsers);
         }
 
       if(android.content.pm.Flags.verifiedDexopt()){

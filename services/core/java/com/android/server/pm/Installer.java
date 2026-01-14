@@ -757,6 +757,17 @@ public class Installer extends SystemService {
         }
     }
 
+    /** Deletes PCC directories of the given package. */
+    public void destroyPccData(String uuid, String packageName, int userId, int flags,
+            long ceDataInode) throws InstallerException {
+        if (!checkBeforeRemote()) return;
+        try {
+            mInstalld.destroyPccData(uuid, packageName, userId, flags, ceDataInode);
+        } catch (Exception e) {
+            throw InstallerException.from(e);
+        }
+    }
+
     /**
      * Deletes all snapshots of credential encrypted user data, where the snapshot id is not
      * included in {@code retainSnapshotIds}.
