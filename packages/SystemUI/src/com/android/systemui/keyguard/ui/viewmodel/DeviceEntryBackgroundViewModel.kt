@@ -68,6 +68,9 @@ constructor(
     lockscreenToDozingTransitionViewModel: LockscreenToDozingTransitionViewModel,
     glanceableHubToAodTransitionViewModel: GlanceableHubToAodTransitionViewModel,
     glanceableHubToLockscreenTransitionViewModel: GlanceableHubToLockscreenTransitionViewModel,
+    toLockscreenEndStateTransitionViewModel: ToLockscreenEndStateTransitionViewModel,
+    toAodEndStateTransitionViewModel: ToAodEndStateTransitionViewModel,
+    toDozingEndStateTransitionViewModel: ToDozingEndStateTransitionViewModel,
     private val sceneInteractor: Lazy<SceneInteractor>,
 ) {
     val color: Flow<Int> =
@@ -118,6 +121,9 @@ constructor(
                         lockscreenToDozingTransitionViewModel.deviceEntryBackgroundViewAlpha,
                         glanceableHubToAodTransitionViewModel.deviceEntryBackgroundViewAlpha,
                         glanceableHubToLockscreenTransitionViewModel.deviceEntryBackgroundViewAlpha,
+                        toLockscreenEndStateTransitionViewModel.deviceEntryBackgroundViewAlpha,
+                        toAodEndStateTransitionViewModel.deviceEntryBackgroundViewAlpha,
+                        toDozingEndStateTransitionViewModel.deviceEntryBackgroundViewAlpha,
                     )
                     .merge()
                     .onStart {
