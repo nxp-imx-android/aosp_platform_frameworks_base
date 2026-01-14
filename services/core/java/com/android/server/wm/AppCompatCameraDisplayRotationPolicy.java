@@ -309,10 +309,6 @@ final class AppCompatCameraDisplayRotationPolicy implements AppCompatCameraState
         return isTreatmentEnabledForActivity(activity, /* mustBeFullscreen */ true);
     }
 
-    boolean shouldCameraCompatControlOrientation(@NonNull ActivityRecord activity) {
-        return isCameraRunningAndWindowingModeEligible(activity, /* mustBeFullscreen= */ true);
-    }
-
     boolean shouldCameraCompatControlAspectRatio(@NonNull ActivityRecord unusedActivity) {
         // This policy does not apply camera compat aspect ratio by default, only via overrides.
         return false;

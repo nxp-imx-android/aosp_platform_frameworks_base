@@ -99,11 +99,9 @@ class AppCompatOrientationPolicy {
             return candidate;
         }
 
-        if (displayContent != null
+        if (displayContent != null && !shouldCameraCompatControlOrientation
                 && mAppCompatOverrides.getCameraOverrides()
-                    .isOverrideOrientationOnlyForCameraEnabled()
-                && !AppCompatCameraPolicy
-                    .isActivityEligibleForOrientationOverride(mActivityRecord)) {
+                        .isOverrideOrientationOnlyForCameraEnabled()) {
             return candidate;
         }
 

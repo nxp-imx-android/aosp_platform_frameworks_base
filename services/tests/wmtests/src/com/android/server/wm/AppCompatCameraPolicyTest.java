@@ -17,9 +17,11 @@
 package com.android.server.wm;
 
 import static android.content.pm.ActivityInfo.OVERRIDE_MIN_ASPECT_RATIO_ONLY_FOR_CAMERA;
+import static android.content.pm.ActivityInfo.OVERRIDE_ORIENTATION_ONLY_FOR_CAMERA;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 import static com.android.server.wm.AppCompatCameraPolicy.isTreatmentEnabledForActivity;
+import static com.android.server.wm.AppCompatCameraPolicy.shouldCameraCompatControlOrientation;
 import static com.android.server.wm.AppCompatCameraPolicy.shouldOverrideMinAspectRatioForCamera;
 import static com.android.window.flags.Flags.FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES;
 import static com.android.window.flags.Flags.FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING;
@@ -284,6 +286,58 @@ public class AppCompatCameraPolicyTest extends WindowTestsBase {
 
     @Test
     @DisableFlags(FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES)
+    @EnableCompatChanges(OVERRIDE_ORIENTATION_ONLY_FOR_CAMERA)
+    public void testShouldOverrideOrientationForCamera_whenCameraIsNotRunning() {
+        runTestScenario((robot) -> {
+            robot.applyOnActivity((a)-> {
+                robot.dw().allowEnterDesktopMode(true);
+                robot.conf().enableCameraCompatForceRotateTreatmentAtBuildTime(/* enabled= */ true);
+                a.createActivityWithComponentInNewTaskAndDisplay();
+                a.setIgnoreOrientationRequest(true);
+                a.setIsCameraRunningAndWindowingModeEligibleFullscreen(/* enabled */ false);
+            });
+
+            robot.checkShouldOverrideOrientationForCamera(/* active */ false);
+        });
+    }
+
+    @Test
+    @EnableCompatChanges(OVERRIDE_ORIENTATION_ONLY_FOR_CAMERA)
+    @DisableFlags(FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES)
+    public void testShouldOverrideOrientationForCameraFullscr_cameraIsRunning() {
+        runTestScenario((robot) -> {
+            robot.applyOnActivity((a)-> {
+                robot.conf().enableCameraCompatForceRotateTreatment(/* enabled= */ true);
+                robot.conf().enableCameraCompatForceRotateTreatmentAtBuildTime(/* enabled= */ true);
+                a.createActivityWithComponentInNewTaskAndDisplay();
+                a.setIgnoreOrientationRequest(true);
+                a.setIsCameraRunningAndWindowingModeEligibleFullscreen(/* active */ true);
+            });
+
+            robot.checkShouldOverrideOrientationForCamera(/* active */ true);
+        });
+    }
+
+    @Test
+    @EnableCompatChanges(OVERRIDE_ORIENTATION_ONLY_FOR_CAMERA)
+    @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
+    public void testShouldOverrideOrientationForCameraFreeform_cameraRunning_overrideEnabled() {
+        runTestScenario((robot) -> {
+            robot.applyOnActivity((a)-> {
+                robot.conf().enableCameraCompatSimReqOrientationTreatment(
+                        /* enabled= */ true);
+                robot.dw().allowEnterDesktopMode(true);
+                a.createActivityWithComponentInNewTaskAndDisplay();
+                a.setIgnoreOrientationRequest(true);
+                a.setIsCameraRunningAndWindowingModeEligibleFreeform(/* active */ true);
+            });
+
+            robot.checkShouldOverrideOrientationForCamera(/* active */ true);
+        });
+    }
+
+    @Test
+    @DisableFlags(FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES)
     @EnableCompatChanges(OVERRIDE_MIN_ASPECT_RATIO_ONLY_FOR_CAMERA)
     public void testShouldOverrideMinAspectRatioForCamera_whenCameraIsNotRunning() {
         runTestScenario((robot) -> {
@@ -328,7 +382,6 @@ public class AppCompatCameraPolicyTest extends WindowTestsBase {
             robot.checkShouldOverrideMinAspectRatioForCamera(/* active */ true);
         });
     }
-
 
     @Test
     @EnableCompatChanges(OVERRIDE_MIN_ASPECT_RATIO_ONLY_FOR_CAMERA)
@@ -411,6 +464,10 @@ public class AppCompatCameraPolicyTest extends WindowTestsBase {
 
         void checkShouldOverrideMinAspectRatioForCamera(boolean expected) {
             assertEquals(expected, shouldOverrideMinAspectRatioForCamera(activity().top()));
+        }
+
+        void checkShouldOverrideOrientationForCamera(boolean expected) {
+            assertEquals(expected, shouldCameraCompatControlOrientation(activity().top()));
         }
     }
 }

@@ -131,13 +131,6 @@ class AppCompatCameraPolicy {
         }
     }
 
-    static boolean isActivityEligibleForOrientationOverride(@NonNull ActivityRecord activity) {
-        final AppCompatCameraPolicy cameraPolicy = getAppCompatCameraPolicy(activity);
-        return cameraPolicy != null && cameraPolicy.mDisplayRotationPolicy != null
-                && cameraPolicy.mDisplayRotationPolicy
-                        .isActivityEligibleForOrientationOverride(activity);
-    }
-
     /**
      * Whether camera compat treatment is applicable for the given activity.
      *
@@ -206,10 +199,10 @@ class AppCompatCameraPolicy {
         }
         return (cameraPolicy.mDisplayRotationPolicy != null
                         && cameraPolicy.mDisplayRotationPolicy
-                                .shouldCameraCompatControlOrientation(activity))
+                                .isActivityEligibleForOrientationOverride(activity))
                 || (cameraPolicy.mSimReqOrientationPolicy != null
                         && cameraPolicy.mSimReqOrientationPolicy
-                                .shouldCameraCompatControlOrientation(activity));
+                                .isActivityEligibleForOrientationOverride(activity));
     }
 
     // TODO(b/369070416): have policies implement the same interface.
