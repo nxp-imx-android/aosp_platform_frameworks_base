@@ -36,7 +36,6 @@ import javax.inject.Inject;
 /**
  * Provides charging status as a string to a registered callback such that it can be displayed to
  * the user (e.g. on the low-light clock).
- * TODO(b/223681352): Make this code shareable with {@link KeyguardIndicationController}.
  */
 public class ChargingStatusProvider {
 
