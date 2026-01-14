@@ -171,7 +171,9 @@ class ResizeTaskPositioner(
             val wct = taskResizer.onResizeEnd(session, x, y)
             wct?.let {
                 session.dragResizeEndTransition =
-                    transitions.startTransition(WindowManager.TRANSIT_CHANGE, it, this)
+                    transitions.startTransition(WindowManager.TRANSIT_CHANGE, it, this).also { t ->
+                        desktopTasksController.onDragResizeTransitionStarted(t)
+                    }
             }
                 ?: run {
                     // If no transition is started, clear the session now.

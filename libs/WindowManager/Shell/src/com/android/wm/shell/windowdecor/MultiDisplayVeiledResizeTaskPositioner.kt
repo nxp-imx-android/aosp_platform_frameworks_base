@@ -367,7 +367,8 @@ class MultiDisplayVeiledResizeTaskPositioner(
                     // Reset app bounds if app bounds were overridden.
                     wct.setAppBounds(windowDecoration.taskInfo.token, null)
                 }
-                transitions.startTransition(WindowManager.TRANSIT_CHANGE, wct, this)
+                val t = transitions.startTransition(WindowManager.TRANSIT_CHANGE, wct, this)
+                desktopTasksController.onDragResizeTransitionStarted(t)
             } else {
                 // If bounds haven't changed, perform necessary veil reset here as startAnimation
                 // won't be called.

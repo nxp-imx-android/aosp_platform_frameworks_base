@@ -1067,7 +1067,8 @@ public abstract class WMShellModule {
             LockTaskChangeListener lockTaskChangeListener,
             LauncherApps launcherApps,
             TransitionStateHolder transitionStateHolder,
-            DesksController desksController) {
+            DesksController desksController,
+            Optional<DesktopTasksTransitionObserver> desktopTasksTransitionObserver) {
         return new DesktopTasksController(
                 context,
                 shellInit,
@@ -1125,7 +1126,8 @@ public abstract class WMShellModule {
                 lockTaskChangeListener,
                 launcherApps,
                 transitionStateHolder,
-                desksController);
+                desksController,
+                desktopTasksTransitionObserver.get());
     }
 
     @WMSingleton
@@ -1613,8 +1615,10 @@ public abstract class WMShellModule {
     @WMSingleton
     @Provides
     static ToggleResizeDesktopTaskTransitionHandler provideToggleResizeDesktopTaskTransitionHandler(
-            Transitions transitions, InteractionJankMonitor interactionJankMonitor) {
-        return new ToggleResizeDesktopTaskTransitionHandler(transitions, interactionJankMonitor);
+            Transitions transitions, InteractionJankMonitor interactionJankMonitor,
+            Optional<DesktopTasksTransitionObserver> desktopTasksTransitionObserver) {
+        return new ToggleResizeDesktopTaskTransitionHandler(transitions, interactionJankMonitor,
+                desktopTasksTransitionObserver);
     }
 
     @WMSingleton
@@ -1720,7 +1724,6 @@ public abstract class WMShellModule {
             Optional<DesktopMixedTransitionHandler> desktopMixedTransitionHandler,
             DesktopWallpaperActivityTokenProvider desktopWallpaperActivityTokenProvider,
             DisplayController displayController,
-            Optional<DesktopImmersiveController> desktopImmersiveController,
             DesktopState desktopState,
             ShellInit shellInit) {
         return desktopUserRepositories.flatMap(
@@ -1733,7 +1736,6 @@ public abstract class WMShellModule {
                                         desktopMixedTransitionHandler.get(),
                                         desktopWallpaperActivityTokenProvider,
                                         displayController,
-                                        desktopImmersiveController.get(),
                                         desktopState,
                                         shellInit)));
     }
@@ -2296,7 +2298,6 @@ public abstract class WMShellModule {
             @NonNull LetterboxCleanupAdapter letterboxCleanupAdapter,
             @NonNull Optional<CompatUISharedRepositoryCleanUp> compatUISharedStateManager,
             Optional<ClientFullscreenRequestController> clientFullscreenRequestController,
-            Optional<DesktopTasksTransitionObserver> desktopTasksTransitionObserverOptional,
             Optional<DesktopDisplayEventHandler> desktopDisplayEventHandler,
             Optional<DesktopModeKeyGestureHandler> desktopModeKeyGestureHandler,
             Optional<SystemModalsTransitionHandler> systemModalsTransitionHandler,

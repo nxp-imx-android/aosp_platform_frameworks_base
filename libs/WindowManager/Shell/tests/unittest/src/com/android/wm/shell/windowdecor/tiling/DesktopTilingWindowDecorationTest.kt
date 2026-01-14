@@ -187,7 +187,7 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
         )
 
         verify(toggleResizeDesktopTaskTransitionHandler)
-            .startTransition(capture(wctCaptor), any(), any())
+            .startTransition(capture(wctCaptor), any(), any(), eq(true))
         for (change in wctCaptor.value.changes) {
             val bounds = change.value.configuration.windowConfiguration.bounds
             val leftBounds = getLeftTaskBounds()
@@ -258,7 +258,7 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
         )
 
         verify(toggleResizeDesktopTaskTransitionHandler)
-            .startTransition(capture(wctCaptor), any(), any())
+            .startTransition(capture(wctCaptor), any(), any(), eq(true))
         for (change in wctCaptor.value.changes) {
             val bounds = change.value.configuration.windowConfiguration.bounds
             val leftBounds = getRightTaskBounds()
@@ -296,7 +296,7 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
         )
 
         verify(toggleResizeDesktopTaskTransitionHandler, times(1))
-            .startTransition(capture(wctCaptor), any(), any())
+            .startTransition(capture(wctCaptor), any(), any(), eq(true))
         verify(returnToDragStartAnimator, times(1)).start(any(), any(), any(), any(), anyOrNull())
         for (change in wctCaptor.value.changes) {
             val bounds = change.value.configuration.windowConfiguration.bounds
@@ -394,7 +394,7 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
         )
 
         verify(toggleResizeDesktopTaskTransitionHandler, times(2))
-            .startTransition(capture(wctCaptor), any(), capture(callbackCaptor))
+            .startTransition(capture(wctCaptor), any(), capture(callbackCaptor), eq(true))
         (callbackCaptor.value).invoke()
         // Ensures tiling isn't brought to front if tasks aren't focused, for example when
         // initializing tiling from persistence.
@@ -444,7 +444,7 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
             destinationBoundsOverride = null,
         )
         verify(toggleResizeDesktopTaskTransitionHandler, times(2))
-            .startTransition(capture(wctCaptor), any(), capture(callbackCaptor))
+            .startTransition(capture(wctCaptor), any(), capture(callbackCaptor), eq(true))
         (callbackCaptor.value).invoke()
 
         verify(transitions, times(1)).startTransition(eq(TRANSIT_TO_FRONT), any(), eq(null))
@@ -485,7 +485,7 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
         task1.isFocused = true
         task3.isFocused = true
         verify(toggleResizeDesktopTaskTransitionHandler, times(2))
-            .startTransition(capture(wctCaptor), any(), capture(callbackCaptor))
+            .startTransition(capture(wctCaptor), any(), capture(callbackCaptor), eq(true))
         (callbackCaptor.value).invoke()
 
         assertThat(tilingDecoration.moveTiledPairToFront(task3.taskId, true)).isFalse()
@@ -527,7 +527,7 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
             destinationBoundsOverride = null,
         )
         verify(toggleResizeDesktopTaskTransitionHandler, times(2))
-            .startTransition(capture(wctCaptor), any(), capture(callbackCaptor))
+            .startTransition(capture(wctCaptor), any(), capture(callbackCaptor), eq(true))
         (callbackCaptor.value).invoke()
 
         assertThat(tilingDecoration.moveTiledPairToFront(task3.taskId, isFocusedOnDisplay = true))
@@ -881,7 +881,7 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
         )
 
         verify(toggleResizeDesktopTaskTransitionHandler, times(2))
-            .startTransition(capture(wctCaptor), any(), capture(callbackCaptor))
+            .startTransition(capture(wctCaptor), any(), capture(callbackCaptor), eq(true))
         (callbackCaptor.value).invoke()
 
         val changeInfo = createTransitRecentsEnds()
