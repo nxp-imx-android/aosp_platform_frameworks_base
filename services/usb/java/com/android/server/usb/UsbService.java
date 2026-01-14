@@ -1699,7 +1699,19 @@ public class UsbService extends IUsbManager.Stub {
                         }
                     }
                 }
-
+            } else if ("limit-power-transfer".equals(args[0]) && args.length == 3) {
+                final String portId = args[1];
+                final boolean enable = Boolean.parseBoolean(args[2]);
+                if (mPortManager != null) {
+                    for (UsbPort p : mPortManager.getPorts()) {
+                        if (p.getId().equals(portId)) {
+                            int res = p.enableLimitPowerTransfer(enable);
+                            Slog.i(TAG, "limitPowerTransfer " + enable + " on port " + portId +
+                                    " status " + res);
+                            break;
+                        }
+                    }
+                }
             } else if ("ports".equals(args[0]) && args.length == 1) {
                 if (mPortManager != null) {
                     mPortManager.dump(new DualDumpOutputStream(new IndentingPrintWriter(pw, "  ")),
@@ -1787,6 +1799,10 @@ public class UsbService extends IUsbManager.Stub {
                 pw.println("This dumpsys command functions for both simulated and real ports.");
                 pw.println("  dumpsys usb enable-usb-data \"matrix\" true");
                 pw.println("  dumpsys usb enable-usb-data \"matrix\" false");
+                pw.println();
+                pw.println("Example enableLimitPowerTransfer:");
+                pw.println("  dumpsys usb limit-power-transfer \"matrix\" true");
+                pw.println("  dumpsys usb limit-power-transfer \"matrix\" false");
                 pw.println();
                 pw.println("Example USB device descriptors:");
                 pw.println("  dumpsys usb dump-descriptors -dump-short");
