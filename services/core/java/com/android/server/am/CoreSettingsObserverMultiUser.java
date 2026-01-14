@@ -53,7 +53,7 @@ final class CoreSettingsObserverMultiUser extends CoreSettingsObserver {
     private final Bundle mDeviceConfigBundle;
 
     protected CoreSettingsObserverMultiUser(ActivityManagerService activityManagerService) {
-        super(activityManagerService, /* initialize */ false);
+        super(activityManagerService);
         mGlobalSettingsBundle = new Bundle(sGlobalSettingToTypeMap.size());
         mDeviceConfigBundle = new Bundle(sDeviceConfigEntries.size());
         updateGlobalSettings();
