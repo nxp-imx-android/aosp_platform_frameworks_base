@@ -64,8 +64,8 @@ import android.util.SparseBooleanArray;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.util.CollectionUtils;
-import com.android.server.companion.CompanionExemptionProcessor;
 import com.android.server.companion.association.AssociationStore;
+import com.android.server.companion.powerexemption.CompanionExemptionProcessor;
 import com.android.server.companion.utils.MetricUtils;
 
 import java.io.PrintWriter;
