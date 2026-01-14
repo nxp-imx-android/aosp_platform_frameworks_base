@@ -64,6 +64,7 @@ import android.os.Looper;
 import android.os.Parcel;
 import android.os.Process;
 import android.os.RemoteException;
+import android.os.Trace;
 import android.os.UserHandle;
 import android.util.Slog;
 import android.window.TransitionRequestInfo.WindowingLayerChange;
@@ -79,6 +80,7 @@ import java.util.Objects;
  */
 class AppTaskImpl extends IAppTask.Stub {
     private static final String TAG = "AppTaskImpl";
+    private static final String TRACE_WINDOWING_LAYER_NAME = "AppTaskImpl#requestWindowingLayer";
     /** Used to detect potential SysUI crash to reject the unhandled request. */
     @VisibleForTesting
     static final int WINDOWING_LAYER_CALLBACK_INVOKE_TIMEOUT_MS = 1000;
@@ -486,10 +488,15 @@ class AppTaskImpl extends IAppTask.Stub {
                                     return;
                                 }
                             }
+
+                            final int cookieTraceId = transition.getSyncId();
                             final ObservedRemoteCallback observedCallback =
                                     new ObservedRemoteCallback(callback);
-                            transition.addTransitionEndedListener(() ->
-                                    rejectRequestIfNotHandledAfterTimeout(observedCallback));
+                            transition.addTransitionEndedListener(() -> {
+                                rejectRequestIfNotHandledAfterTimeout(observedCallback);
+                                Trace.endAsyncSection(TRACE_WINDOWING_LAYER_NAME, cookieTraceId);
+                            });
+                            Trace.beginAsyncSection(TRACE_WINDOWING_LAYER_NAME, cookieTraceId);
                             controller.requestStartWindowingLayerTransition(transition, task,
                                     new WindowingLayerChange(layer, observedCallback));
                             transition.setReady(task, true);
