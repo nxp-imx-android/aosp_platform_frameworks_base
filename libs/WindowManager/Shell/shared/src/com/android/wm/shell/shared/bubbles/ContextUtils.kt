@@ -45,6 +45,8 @@ object ContextUtils {
     /** Returns whether non-resizable activities are supported in multi-window on small screens. */
     @JvmStatic
     val Context.supportsNonResizableMultiWindowOnSmallScreen: Boolean
-        get() = resources.getInteger(
-            com.android.internal.R.integer.config_supportsNonResizableMultiWindow) == 1
+        get() =
+            resources.getInteger(
+                com.android.internal.R.integer.config_supportsNonResizableMultiWindow
+            ) == 1
 }

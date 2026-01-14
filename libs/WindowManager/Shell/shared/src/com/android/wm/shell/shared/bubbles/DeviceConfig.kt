@@ -24,18 +24,17 @@ import android.graphics.Rect
 import android.view.View.LAYOUT_DIRECTION_RTL
 import android.view.WindowInsets
 import android.view.WindowManager
-import kotlin.math.max
-
 import com.android.wm.shell.shared.ShellSharedConstants.SMALL_TABLET_MAX_EDGE_DP
+import kotlin.math.max
 
 /** Contains device configuration used for positioning bubbles on the screen. */
 data class DeviceConfig(
-        val isLargeScreen: Boolean,
-        val isSmallTablet: Boolean,
-        val isLandscape: Boolean,
-        val isRtl: Boolean,
-        val windowBounds: Rect,
-        val insets: Insets,
+    val isLargeScreen: Boolean,
+    val isSmallTablet: Boolean,
+    val isLandscape: Boolean,
+    val isRtl: Boolean,
+    val windowBounds: Rect,
+    val insets: Insets,
 ) {
     companion object {
 
@@ -45,19 +44,22 @@ data class DeviceConfig(
         fun create(context: Context, windowManager: WindowManager): DeviceConfig {
             val windowMetrics = windowManager.currentWindowMetrics
             val metricInsets = windowMetrics.windowInsets
-            val insets = metricInsets.getInsetsIgnoringVisibility(WindowInsets.Type.navigationBars()
-                    or WindowInsets.Type.statusBars()
-                    or WindowInsets.Type.displayCutout())
+            val insets =
+                metricInsets.getInsetsIgnoringVisibility(
+                    WindowInsets.Type.navigationBars() or
+                        WindowInsets.Type.statusBars() or
+                        WindowInsets.Type.displayCutout()
+                )
             val windowBounds = windowMetrics.bounds
             val config: Configuration = context.resources.configuration
             val isLandscape = context.resources.configuration.orientation == ORIENTATION_LANDSCAPE
             val isRtl = context.resources.configuration.layoutDirection == LAYOUT_DIRECTION_RTL
             return DeviceConfig(
-                    isLargeScreen = isLargeScreen(config),
-                    isSmallTablet = isSmallTablet(context),
-                    isLandscape = isLandscape,
-                    isRtl = isRtl,
-                    windowBounds = windowBounds,
+                isLargeScreen = isLargeScreen(config),
+                isSmallTablet = isSmallTablet(context),
+                isLandscape = isLandscape,
+                isRtl = isRtl,
+                windowBounds = windowBounds,
                 insets = insets,
             )
         }
