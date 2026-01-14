@@ -166,7 +166,7 @@ public class LockscreenCredential implements Parcelable, AutoCloseable {
     public static LockscreenCredential createUnifiedProfilePassword(@NonNull byte[] password) {
         return new LockscreenCredential(
                 CREDENTIAL_TYPE_PASSWORD,
-                copyOfArrayNonMovable(password),
+                ArrayUtils.copyOfArrayNonMovable(password, password.length),
                 /* hasInvalidChars= */ false,
                 /* isUnifiedProfilePassword= */ true,
                 /* isFromParcel= */ false);
@@ -277,7 +277,9 @@ public class LockscreenCredential implements Parcelable, AutoCloseable {
     public LockscreenCredential duplicate() {
         return new LockscreenCredential(
                 mType,
-                mCredential != null ? copyOfArrayNonMovable(mCredential) : null,
+                mCredential != null
+                        ? ArrayUtils.copyOfArrayNonMovable(mCredential, mCredential.length)
+                        : null,
                 mHasInvalidChars,
                 mIsUnifiedProfilePassword,
                 /* Any duplicate copy is not from a Parcel, so set isFromParcel=false */
@@ -297,15 +299,6 @@ public class LockscreenCredential implements Parcelable, AutoCloseable {
         if (credential != null && credential.mIsFromParcel) {
             credential.zeroize();
         }
-    }
-
-    /**
-     * Copies the given array into a new non-movable array.
-     */
-    private static byte[] copyOfArrayNonMovable(byte[] array) {
-        byte[] copy = ArrayUtils.newNonMovableByteArray(array.length);
-        System.arraycopy(array, 0, copy, 0, array.length);
-        return copy;
     }
 
     /**
