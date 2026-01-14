@@ -2503,6 +2503,7 @@ class DesktopTasksController(
         unminimizeReason: UnminimizeReason = UnminimizeReason.UNKNOWN,
         dragEvent: DragEvent? = null,
     ): IBinder {
+        snapController.onTaskLaunchStarted()
         logV(
             "startLaunchTransition type=%s launchingTaskId=%d deskId=%d displayId=%d",
             transitTypeToString(transitionType),

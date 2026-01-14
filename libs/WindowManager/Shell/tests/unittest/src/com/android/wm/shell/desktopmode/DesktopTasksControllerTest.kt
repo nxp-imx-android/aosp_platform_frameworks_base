@@ -10948,6 +10948,20 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         }
 
     @Test
+    fun startLaunchTransition_notifiesSnapEventHandler() {
+        controller.startLaunchTransition(
+            transitionType = TRANSIT_OPEN,
+            wct = WindowContainerTransaction(),
+            launchingTaskId = null,
+            deskId = 0,
+            displayId = DEFAULT_DISPLAY,
+            userId = 0,
+        )
+
+        verify(snapEventHandler).onTaskLaunchStarted()
+    }
+
+    @Test
     @EnableFlags(
         Flags.FLAG_ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY,
         Flags.FLAG_ENABLE_DESKTOP_WALLPAPER_ACTIVITY_FOR_SYSTEM_USER,

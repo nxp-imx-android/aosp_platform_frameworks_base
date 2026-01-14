@@ -1275,6 +1275,11 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
     }
 
     @Override
+    public void onTaskLaunchStarted() {
+        mDesktopTilingDecorViewModel.onTaskLaunchStarted();
+    }
+
+    @Override
     public void onDeskDeactivated(int deskId) {
         mDesktopTilingDecorViewModel.onDeskDeactivated(deskId);
     }
