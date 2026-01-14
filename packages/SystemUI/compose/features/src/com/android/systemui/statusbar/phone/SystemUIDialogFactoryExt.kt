@@ -100,12 +100,17 @@ import kotlin.math.roundToInt
  * @param context the [Context] in which the dialog will be constructed.
  * @param dismissOnDeviceLock whether the dialog should be automatically dismissed when the device
  *   is locked (true by default).
+ * @param refreshBackgroundOnThemeChange whether the dialog background should be refreshed when the
+ *   theme changes between light and dark mode. Note, when set to `true` the content of the dialog
+ *   should also handle the configuration change. Composables usually handle this by default, but
+ *   Views may need a manual update.
  * @param dialogGravity is one of the [android.view.Gravity] and determines dialog position on the
  *   screen.
  */
 fun SystemUIDialogFactory.create(
     context: Context = this.applicationContext,
     theme: Int = SystemUIDialog.DEFAULT_THEME,
+    refreshBackgroundOnThemeChange: Boolean = Flags.dialogBackgroundRefresh(),
     dismissOnDeviceLock: Boolean = SystemUIDialog.DEFAULT_DISMISS_ON_DEVICE_LOCK,
     @GravityInt dialogGravity: Int? = null,
     dialogDelegate: DialogDelegate<SystemUIDialog> =
@@ -122,6 +127,7 @@ fun SystemUIDialogFactory.create(
         context = context,
         theme = theme,
         dismissOnDeviceLock = dismissOnDeviceLock,
+        refreshBackgroundOnThemeChange = refreshBackgroundOnThemeChange,
         delegate = dialogDelegate,
         content = content,
         isTransient = isTransient,
@@ -143,6 +149,9 @@ fun SystemUIDialogFactory.createBottomSheet(
         context = context,
         theme = theme,
         dismissOnDeviceLock = dismissOnDeviceLock,
+        // TODO(b/475196806): Expose refreshBackgroundOnThemeChange as an argument (default true)
+        //  after fixing duplicate BottomSheet background drawing.
+        refreshBackgroundOnThemeChange = false,
         delegate = EdgeToEdgeDialogDelegate(),
         content = { dialog ->
             val dragState =
@@ -159,12 +168,10 @@ fun SystemUIDialogFactory.createBottomSheet(
             }
             Box(
                 modifier =
-                    Modifier
-                        .bottomSheetClickable { dialog.dismiss() }
+                    Modifier.bottomSheetClickable { dialog.dismiss() }
                         .then(
                             if (isDraggable)
-                                Modifier
-                                    .anchoredDraggable(
+                                Modifier.anchoredDraggable(
                                         state = dragState!!,
                                         interactionSource = interactionSource,
                                         orientation = Orientation.Vertical,
@@ -227,8 +234,7 @@ fun SystemUIDialogFactory.createBottomSheet(
                     }
                 Surface(
                     modifier =
-                        Modifier
-                            .bottomSheetPaddings()
+                        Modifier.bottomSheetPaddings()
                             // consume input so it doesn't get to the parent Composable
                             .bottomSheetClickable {}
                             .widthIn(
@@ -289,6 +295,7 @@ private fun SystemUIDialogFactory.create(
     context: Context,
     theme: Int,
     dismissOnDeviceLock: Boolean,
+    refreshBackgroundOnThemeChange: Boolean,
     delegate: DialogDelegate<SystemUIDialog>,
     isTransient: Boolean = false,
     content: @Composable (SystemUIDialog) -> Unit,
@@ -298,6 +305,7 @@ private fun SystemUIDialogFactory.create(
             context = context,
             theme = theme,
             dismissOnDeviceLock = dismissOnDeviceLock,
+            refreshBackgroundOnThemeChange = refreshBackgroundOnThemeChange,
             dialogDelegate = delegate,
             isTransient = isTransient,
         )
@@ -357,8 +365,7 @@ private fun DragHandle(dialog: Dialog) {
         stringResource(id = R.string.shortcut_helper_content_description_drag_handle)
     Surface(
         modifier =
-            Modifier
-                .padding(top = 16.dp, bottom = 6.dp)
+            Modifier.padding(top = 16.dp, bottom = 6.dp)
                 .semantics {
                     contentDescription = dragHandleContentDescription
                     hideFromAccessibility()

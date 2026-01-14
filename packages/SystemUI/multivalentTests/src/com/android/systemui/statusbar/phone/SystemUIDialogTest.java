@@ -213,6 +213,7 @@ public class SystemUIDialogTest extends SysuiTestCase {
                 mContext,
                 DEFAULT_THEME,
                 DEFAULT_DISMISS_ON_DEVICE_LOCK,
+                false /* refreshBackgroundOnThemeChange */,
                 mSystemUIDialogManager,
                 mBroadcastDispatcher,
                 mDialogTransiationAnimator,

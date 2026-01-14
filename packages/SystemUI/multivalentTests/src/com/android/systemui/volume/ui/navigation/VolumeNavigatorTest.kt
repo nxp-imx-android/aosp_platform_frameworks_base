@@ -61,6 +61,7 @@ class VolumeNavigatorTest : SysuiTestCase() {
                                 context = any(),
                                 theme = anyInt(),
                                 dismissOnDeviceLock = anyBoolean(),
+                                refreshBackgroundOnThemeChange = anyBoolean(),
                                 dialogDelegate = any(),
                                 isTransient = anyBoolean(),
                             )
