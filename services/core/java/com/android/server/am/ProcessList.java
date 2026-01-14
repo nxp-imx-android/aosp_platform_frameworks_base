@@ -3619,8 +3619,8 @@ public final class ProcessList extends ProcessListInternal
             final IApplicationThread thread = processRecord.getThread();
             try {
                 // It's possible for userSettings to be null here if a process has already started
-                // for a new user after CoreSettingsObserverMultiUser retrieves the list of running
-                // users. In that situation, CoreSettingsObserverMultiUser will receive another
+                // for a new user after CoreSettingsObserver retrieves the list of running
+                // users. In that situation, CoreSettingsObserver will receive another
                 // onUserStarted() call for that user and call onCoreSettingsChange() again, so we
                 // can skip setCoreSettings() if userSettings is null.
                 if (thread != null && userSettings != null) {
