@@ -10330,7 +10330,8 @@ public class TelephonyManager {
      * brand value input. To unset the value, the same function should be
      * called with a null brand value.
      *
-     * <p>Requires that the calling app has carrier privileges (see {@link #hasCarrierPrivileges}).
+     * <p>Requires Permission: {@link android.Manifest.permission#MODIFY_PHONE_STATE} or
+     * that the calling app has carrier privileges (see {@link #hasCarrierPrivileges()}).
      *
      * @param brand The brand name to display/set.
      * @return true if the operation was executed correctly.
@@ -10338,6 +10339,8 @@ public class TelephonyManager {
      * @throws UnsupportedOperationException If the device does not have
      *          {@link PackageManager#FEATURE_TELEPHONY_SUBSCRIPTION}.
      */
+    @RequiresPermission(value = android.Manifest.permission.MODIFY_PHONE_STATE,
+            conditional = true)
     @RequiresFeature(PackageManager.FEATURE_TELEPHONY_SUBSCRIPTION)
     public boolean setOperatorBrandOverride(String brand) {
         return setOperatorBrandOverride(getSubId(), brand);
