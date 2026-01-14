@@ -5095,6 +5095,7 @@ package android.app {
     method @RequiresPermission(value=android.Manifest.permission.SCHEDULE_EXACT_ALARM, conditional=true) public void setExact(int, long, @NonNull android.app.PendingIntent);
     method public void setExact(int, long, @Nullable String, @NonNull android.app.AlarmManager.OnAlarmListener, @Nullable android.os.Handler);
     method @RequiresPermission(value=android.Manifest.permission.SCHEDULE_EXACT_ALARM, conditional=true) public void setExactAndAllowWhileIdle(int, long, @NonNull android.app.PendingIntent);
+    method @FlaggedApi("android.app.allow_listeners_while_idle") public void setExactAndAllowWhileIdle(int, long, @NonNull String, @NonNull java.util.concurrent.Executor, @NonNull android.app.AlarmManager.OnAlarmListener);
     method public void setInexactRepeating(int, long, long, @NonNull android.app.PendingIntent);
     method public void setRepeating(int, long, long, @NonNull android.app.PendingIntent);
     method @RequiresPermission(android.Manifest.permission.SET_TIME) public void setTime(long);
