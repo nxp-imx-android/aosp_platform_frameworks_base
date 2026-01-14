@@ -677,45 +677,45 @@ class Task extends TaskFragment {
     /** @see #isForceLeafTasksNonOccluding() */
     private boolean mIsForceLeafTasksNonOccluding;
 
-    private Task(ActivityTaskManagerService atmService, int _taskId, Intent _intent,
-            Intent _affinityIntent, String _affinity, String _rootAffinity,
-            ComponentName _realActivity, ComponentName _origActivity, boolean _rootWasReset,
-            boolean _autoRemoveRecents, int _userId, int _effectiveUid,
-            String _lastDescription, long lastTimeMoved, boolean neverRelinquishIdentity,
-            TaskDescription _lastTaskDescription, int taskAffiliation, int prevTaskId,
+    private Task(ActivityTaskManagerService atmService, int taskId, Intent intent,
+            Intent affinityIntent, String affinity, String rootAffinity,
+            ComponentName realActivity, ComponentName origActivity, boolean rootWasReset,
+            boolean autoRemoveRecents, int userId, int effectiveUid,
+            String lastDescription, long lastTimeMoved, boolean neverRelinquishIdentity,
+            TaskDescription lastTaskDescription, int taskAffiliation, int prevTaskId,
             int nextTaskId, int callingUid, String callingPackage,
             @Nullable String callingFeatureId, int resizeMode, boolean supportsPictureInPicture,
-            boolean _realActivitySuspended, boolean userSetupComplete, int minWidth, int minHeight,
-            @Nullable ActivityInfo info, @Nullable IVoiceInteractionSession _voiceSession,
-            IVoiceInteractor _voiceInteractor, boolean _createdByOrganizer, IBinder _launchCookie,
-            boolean _deferTaskAppear, boolean _removeWithTaskOrganizer,
+            boolean realActivitySuspended, boolean userSetupComplete, int minWidth, int minHeight,
+            @Nullable ActivityInfo info, @Nullable IVoiceInteractionSession voiceSession,
+            IVoiceInteractor voiceInteractor, boolean createdByOrganizer, IBinder launchCookie,
+            boolean deferTaskAppear, boolean removeWithTaskOrganizer,
             boolean isForceOpaque, boolean shouldIgnoreInsets,
-            boolean disableAppCompatRoundedCorners, boolean _realActivityAppLockEnabled,
+            boolean disableAppCompatRoundedCorners, boolean realActivityAppLockEnabled,
             boolean isVisibilityBarrier) {
-        super(atmService, null /* fragmentToken */, _createdByOrganizer, false /* isEmbedded */);
+        super(atmService, null /* fragmentToken */, createdByOrganizer, false /* isEmbedded */);
 
-        mTaskId = _taskId;
-        mUserId = _userId;
+        mTaskId = taskId;
+        mUserId = userId;
         mSupportsPictureInPicture = supportsPictureInPicture;
-        mTaskDescription = _lastTaskDescription != null
-                ? _lastTaskDescription
+        mTaskDescription = lastTaskDescription != null
+                ? lastTaskDescription
                 : new TaskDescription();
-        affinityIntent = _affinityIntent;
-        affinity = _affinity;
-        rootAffinity = _rootAffinity;
-        voiceSession = _voiceSession;
-        voiceInteractor = _voiceInteractor;
-        realActivity = _realActivity;
-        realActivitySuspended = _realActivitySuspended;
-        mRealActivityAppLockEnabled = _realActivityAppLockEnabled;
-        origActivity = _origActivity;
-        rootWasReset = _rootWasReset;
+        this.affinityIntent = affinityIntent;
+        this.affinity = affinity;
+        this.rootAffinity = rootAffinity;
+        this.voiceSession = voiceSession;
+        this.voiceInteractor = voiceInteractor;
+        this.realActivity = realActivity;
+        this.realActivitySuspended = realActivitySuspended;
+        mRealActivityAppLockEnabled = realActivityAppLockEnabled;
+        this.origActivity = origActivity;
+        this.rootWasReset = rootWasReset;
         isAvailable = true;
-        autoRemoveRecents = _autoRemoveRecents;
+        this.autoRemoveRecents = autoRemoveRecents;
         mUserSetupComplete = userSetupComplete;
-        effectiveUid = _effectiveUid;
+        this.effectiveUid = effectiveUid;
         touchActiveTime();
-        lastDescription = _lastDescription;
+        this.lastDescription = lastDescription;
         mLastTimeMoved = lastTimeMoved;
         mNeverRelinquishIdentity = neverRelinquishIdentity;
         mAffiliatedTaskId = taskAffiliation;
@@ -726,19 +726,19 @@ class Task extends TaskFragment {
         mCallingFeatureId = callingFeatureId;
         mResizeMode = resizeMode;
         if (info != null) {
-            setIntent(_intent, info);
+            setIntent(intent, info);
         } else {
-            intent = _intent;
+            this.intent = intent;
             mMinWidth = minWidth;
             mMinHeight = minHeight;
         }
-        mAtmService.getTaskChangeNotificationController().notifyTaskCreated(_taskId, realActivity);
+        mAtmService.getTaskChangeNotificationController().notifyTaskCreated(taskId, realActivity);
         mHandler = new ActivityTaskHandler(mTaskSupervisor.mLooper);
         mCurrentUser = mAtmService.mAmInternal.getCurrentUserId();
 
-        mLaunchCookie = _launchCookie;
-        mDeferTaskAppear = _deferTaskAppear;
-        mRemoveWithTaskOrganizer = _removeWithTaskOrganizer;
+        mLaunchCookie = launchCookie;
+        mDeferTaskAppear = deferTaskAppear;
+        mRemoveWithTaskOrganizer = removeWithTaskOrganizer;
         mIsVisibilityBarrier = isVisibilityBarrier;
         mIsTrimmableFromRecents = true;
         mIsForceOpaque = isForceOpaque;

@@ -2550,9 +2550,14 @@ public class ActivityInfo extends ComponentInfo implements Parcelable {
         @FlaggedApi(Flags.FLAG_RUNTIME_DENSITY_RESOLUTION_FOR_WINDOW_LAYOUT)
         public WindowLayout(int width, float widthFraction, int height, float heightFraction,
                 int gravity, int minWidth, int minHeight) {
-            this(width, -1 /* complexWidth */, widthFraction, height, -1 /* complexHeight */,
-                    heightFraction, gravity, minWidth, -1 /* complexMinWidth */, minHeight,
-                    -1 /* complexMinHeight */, null /* windowLayoutAffinity */);
+            this(width, TypedValue.createComplexDimension(width, TypedValue.COMPLEX_UNIT_PX),
+                    widthFraction, height,
+                    TypedValue.createComplexDimension(height, TypedValue.COMPLEX_UNIT_PX),
+                    heightFraction, gravity, minWidth,
+                    TypedValue.createComplexDimension(minWidth, TypedValue.COMPLEX_UNIT_PX),
+                    minHeight,
+                    TypedValue.createComplexDimension(minHeight, TypedValue.COMPLEX_UNIT_PX),
+                    null /* windowLayoutAffinity */);
         }
 
         /** @hide */
@@ -2802,6 +2807,26 @@ public class ActivityInfo extends ComponentInfo implements Parcelable {
                     this.complexMinHeight,
                     metrics
             );
+        }
+
+        /**
+         * Returns the minimum width of the window in complex format.
+         *
+         * @return The minimum width of the window in complex format.
+         * @hide
+         */
+        public int getComplexMinWidth() {
+            return complexMinWidth;
+        }
+
+        /**
+         * Returns the minimum height of the window in complex format.
+         *
+         * @return The minimum height of the window in complex format.
+         * @hide
+         */
+        public int getComplexMinHeight() {
+            return complexMinHeight;
         }
 
         private static int complexToDimensionPixelSize(int complex,
