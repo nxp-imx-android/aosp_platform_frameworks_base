@@ -255,9 +255,12 @@ public class RavenwoodErrorHandler {
         }
         RavenwoodMessageTracker.getInstance().onDispatchStarted(msg);
         try {
-            handler.dispatchMessageImpl(msg);
+            try {
+                handler.dispatchMessageImpl(msg);
+            } finally {
+                RavenwoodMessageTracker.getInstance().onDispatchFinished(msg);
+            }
         } catch (Throwable th) {
-            RavenwoodMessageTracker.getInstance().onDispatchFinished(msg);
             var desc = String.format("Detected %s on looper thread %s", th.getClass().getName(),
                     Thread.currentThread());
             Log.w(TAG, desc);
