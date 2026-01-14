@@ -22,6 +22,7 @@ import com.android.settingslib.datastore.KeyValueStore
 import com.android.settingslib.datastore.NoOpKeyedObservable
 import com.android.settingslib.datastore.Permissions
 import com.android.settingslib.datastore.and
+import com.android.settingslib.datastore.or
 import com.android.settingslib.metadata.PersistentPreference
 import com.android.settingslib.metadata.ReadWritePermit
 import com.android.settingslib.metadata.preferencesapi.Utils.getExceptionMessageMultipleDefines
@@ -51,12 +52,6 @@ class ApiOperationContext(
 /** Configuration of the [ApiPreference] flag. */
 class FlagConfig(val check: () -> Boolean)
 
-/** Configuration of the [ApiPreference] permissions. */
-class PermissionsConfig(incomingPermissions: List<String>) {
-    // Create a new, immutable list from the incoming one, avoiding unforeseen changes to the list
-    val permissions: List<String> = incomingPermissions.toList()
-}
-
 /** Configuration of the [ApiPreference] preconditions. */
 class PreconditionsConfig private constructor(
     @StringRes val descriptionRes: Int?,
@@ -84,7 +79,7 @@ class PreconditionsConfig private constructor(
 
 /** Configuration of the [ApiPreference] get. */
 class GetConfig<V : Any>(
-    val permissions: PermissionsConfig? = null,
+    val permissions: Permissions? = null,
     val preconditions: PreconditionsConfig? = null,
     val execute: suspend ApiOperationContext.() -> V
 )
@@ -116,7 +111,7 @@ class ValuePreconditionsConfig<V : Any> private constructor(
 
 /** Configuration of the [ApiPreference] set. */
 class SetConfig<V : Any>(
-    val permissions: PermissionsConfig? = null,
+    val permissions: Permissions? = null,
     val preconditions: PreconditionsConfig? = null,
     val valuePreconditions: ValuePreconditionsConfig<V>? = null,
     val execute: (suspend ApiOperationContext.(V) -> Unit)
@@ -145,13 +140,12 @@ abstract class ApiPreference<V : Any>(val isFlagEnabled: Boolean) : PersistentPr
      * Builds the final [Permissions] object by combining screen-level, common, and
      * operation-specific permissions.
      */
-    private fun buildPermissions(operationPermissions: PermissionsConfig?): Permissions {
-        val permissionsList = mutableListOf<String>()
-        screenPermissions?.let { permissionsList.addAll(it.permissions) }
-        permissions?.let { permissionsList.addAll(it.permissions) }
-        operationPermissions?.let { permissionsList.addAll(it.permissions) }
-
-        return permissionsList.fold(Permissions.EMPTY) { acc, perm -> acc and perm }
+    private fun buildPermissions(operationPermissions: Permissions?): Permissions {
+        var permissions = Permissions.EMPTY
+        screenPermissions?.let { permissions = permissions and it }
+        this.permissions?.let { permissions = permissions and it }
+        operationPermissions?.let { permissions = permissions and it }
+        return permissions
     }
 
     /**
@@ -238,36 +232,36 @@ abstract class ApiPreference<V : Any>(val isFlagEnabled: Boolean) : PersistentPr
             override fun <T : Any> setValue(storeKey: String, valueType: Class<T>, value: T?) =
                 // TODO(b/469317113): This should run asynchronously
                 runBlocking {
-                // Catalyst's KeyValueStore is designed to handle arbitrary key/value pairs.
-                // However, the API-first approach dictates that each [ApiPreference] instance
-                // is responsible for a single, specific key. Thus, ignoring calls for other keys.
-                if (storeKey != key) {
-                    return@runBlocking
-                }
+                    // Catalyst's KeyValueStore is designed to handle arbitrary key/value pairs.
+                    // However, the API-first approach dictates that each [ApiPreference] instance
+                    // is responsible for a single, specific key. Thus, ignoring calls for other keys.
+                    if (storeKey != key) {
+                        return@runBlocking
+                    }
 
-                // If value type is not of the preference valueType (V), throw an exception
-                // Normalize expected and actual types to their object wrapper equivalents to
-                // prevent primitive/boxed type mismatches.
-                if (value != null && this@ApiPreference.valueType.kotlin.javaObjectType != value.javaClass.kotlin.javaObjectType) {
-                    throw IllegalArgumentException(
-                        buildValueTypeMismatchError(
-                            this@ApiPreference.valueType,
-                            value.javaClass
+                    // If value type is not of the preference valueType (V), throw an exception
+                    // Normalize expected and actual types to their object wrapper equivalents to
+                    // prevent primitive/boxed type mismatches.
+                    if (value != null && this@ApiPreference.valueType.kotlin.javaObjectType != value.javaClass.kotlin.javaObjectType) {
+                        throw IllegalArgumentException(
+                            buildValueTypeMismatchError(
+                                this@ApiPreference.valueType,
+                                value.javaClass
+                            )
                         )
-                    )
-                }
+                    }
 
-                // This cast is safe because we already checked the `value` is of type `V`
-                val valueV = value as V
-                val valuePreconditionsCheck =
-                    set?.valuePreconditions?.check?.invoke(operationContext, valueV) ?: Allowed
-                when (valuePreconditionsCheck) {
-                    Allowed -> set?.execute(operationContext, valueV)
-                    is Disallowed -> error(
-                        valuePreconditionsCheck.getReason(operationContext.context)
-                    )
+                    // This cast is safe because we already checked the `value` is of type `V`
+                    val valueV = value as V
+                    val valuePreconditionsCheck =
+                        set?.valuePreconditions?.check?.invoke(operationContext, valueV) ?: Allowed
+                    when (valuePreconditionsCheck) {
+                        Allowed -> set?.execute(operationContext, valueV)
+                        is Disallowed -> error(
+                            valuePreconditionsCheck.getReason(operationContext.context)
+                        )
+                    }
                 }
-            }
         }
 
     /**
@@ -280,13 +274,13 @@ abstract class ApiPreference<V : Any>(val isFlagEnabled: Boolean) : PersistentPr
     abstract val getScreenParameters: () -> ValidatedKeyParameters?
 
     /** Preference's permission on the screen level. */
-    abstract val screenPermissions: PermissionsConfig?
+    abstract val screenPermissions: Permissions?
 
     /** Preference's preconditions on the screen level. */
     abstract val screenPreconditions: PreconditionsConfig?
 
     /** Preference's permission. */
-    abstract val permissions: PermissionsConfig?
+    abstract val permissions: Permissions?
 
     /** Preference's preconditions. */
     abstract val preconditions: PreconditionsConfig?
@@ -319,12 +313,12 @@ internal annotation class ApiPreferenceDsl
  */
 @ApiPreferenceDsl
 class GetConfigBuilder<V : Any> {
-    private var permissionsConfig: PermissionsConfig? = null
+    private var permissionsConfig: Permissions? = null
     private var preconditionsConfig: PreconditionsConfig? = null
     private var executeBlock: (suspend ApiOperationContext.() -> V)? = null
 
     /** Sets permissions for the get. */
-    fun permissions(permissionsList: List<String>) {
+    fun permissions(permissions: Permissions) {
         if (permissionsConfig != null) {
             error(getExceptionMessageMultipleDefines("permissions"))
         }
@@ -333,8 +327,25 @@ class GetConfigBuilder<V : Any> {
             error(getExceptionMessageWrongOrder("permissions"))
         }
 
-        permissionsConfig = PermissionsConfig(permissionsList)
+        permissionsConfig = permissions
     }
+
+    /** Sets permissions for the get. */
+    fun permissions(permission: String) {
+        permissions(Permissions.allOf(permission))
+    }
+
+    /** Create a [Permissions] which requires two permissions. */
+    infix fun String.and(other: String): Permissions = Permissions.allOf(this, other)
+
+    /** Create a [Permissions] which requires either of two permissions. */
+    infix fun String.or(other: String): Permissions = Permissions.anyOf(this, other)
+
+    /** Create a [Permissions] which requires two permissions. */
+    infix fun String.and(other: Permissions): Permissions = Permissions.allOf(this) and other
+
+    /** Create a [Permissions] which requires either of two permissions. */
+    infix fun String.or(other: Permissions): Permissions = Permissions.anyOf(this) or other
 
     /**
      * Defines a precondition check that must pass for the get to be executed, with a string
@@ -402,13 +413,13 @@ class GetConfigBuilder<V : Any> {
  */
 @ApiPreferenceDsl
 class SetConfigBuilder<V : Any> {
-    private var permissionsConfig: PermissionsConfig? = null
+    private var permissionsConfig: Permissions? = null
     private var preconditionsConfig: PreconditionsConfig? = null
     private var valuePreconditionsConfig: ValuePreconditionsConfig<V>? = null
     private var executeBlock: (suspend ApiOperationContext.(V) -> Unit)? = null
 
     /** Sets permissions for the set. */
-    fun permissions(permissionsList: List<String>) {
+    fun permissions(permissions: Permissions) {
         if (permissionsConfig != null) {
             error(getExceptionMessageMultipleDefines("permissions"))
         }
@@ -417,8 +428,25 @@ class SetConfigBuilder<V : Any> {
             error(getExceptionMessageWrongOrder("permissions"))
         }
 
-        permissionsConfig = PermissionsConfig(permissionsList)
+        permissionsConfig = permissions
     }
+
+    /** Sets permissions for the set. */
+    fun permissions(permission: String) {
+        permissions(Permissions.allOf(permission))
+    }
+
+    /** Create a [Permissions] which requires two permissions. */
+    infix fun String.and(other: String): Permissions = Permissions.allOf(this, other)
+
+    /** Create a [Permissions] which requires either of two permissions. */
+    infix fun String.or(other: String): Permissions = Permissions.anyOf(this, other)
+
+    /** Create a [Permissions] which requires two permissions. */
+    infix fun String.and(other: Permissions): Permissions = Permissions.allOf(this) and other
+
+    /** Create a [Permissions] which requires either of two permissions. */
+    infix fun String.or(other: Permissions): Permissions = Permissions.anyOf(this) or other
 
     /**
      * Defines a precondition check that must pass for the set to be executed, with a string
@@ -511,12 +539,12 @@ class ApiPreferenceConfigBuilder<V : Any>(
     @StringRes val purpose: Int,
     val type: ApiType<V>,
     val valueType: Class<V>,
-    val screenPermissions: PermissionsConfig?,
+    val screenPermissions: Permissions?,
     val screenPreconditions: PreconditionsConfig?,
     val getScreenParameters: () -> ValidatedKeyParameters?
 ) {
     private var flagConfig: FlagConfig? = null
-    private var permissionsConfig: PermissionsConfig? = null
+    private var permissionsConfig: Permissions? = null
     private var preconditionsConfig: PreconditionsConfig? = null
     private var getConfig: GetConfig<V>? = null
     private var setConfig: SetConfig<V>? = null
@@ -537,9 +565,9 @@ class ApiPreferenceConfigBuilder<V : Any>(
     }
 
     /**
-     * Build the [PermissionsConfig] from the given permissions.
+     * Build the [Permissions] from the given permissions.
      */
-    fun permissions(permissionsList: List<String>) {
+    fun permissions(permissions: Permissions) {
         if (permissionsConfig != null) {
             error(getExceptionMessageMultipleDefines("permissions"))
         }
@@ -548,8 +576,25 @@ class ApiPreferenceConfigBuilder<V : Any>(
             error(getExceptionMessageWrongOrder("permissions"))
         }
 
-        permissionsConfig = PermissionsConfig(incomingPermissions = permissionsList)
+        permissionsConfig = permissions
     }
+
+    /** Sets permissions. */
+    fun permissions(permission: String) {
+        permissions(Permissions.allOf(permission))
+    }
+
+    /** Create a [Permissions] which requires two permissions. */
+    infix fun String.and(other: String): Permissions = Permissions.allOf(this, other)
+
+    /** Create a [Permissions] which requires either of two permissions. */
+    infix fun String.or(other: String): Permissions = Permissions.anyOf(this, other)
+
+    /** Create a [Permissions] which requires two permissions. */
+    infix fun String.and(other: Permissions): Permissions = Permissions.allOf(this) and other
+
+    /** Create a [Permissions] which requires either of two permissions. */
+    infix fun String.or(other: Permissions): Permissions = Permissions.anyOf(this) or other
 
     /**
      * Build the [PreconditionsConfig] from the given block, with a string resource description.
@@ -615,7 +660,7 @@ class ApiPreferenceConfigBuilder<V : Any>(
     fun build() = object : ApiPreference<V>(flagConfig?.check() ?: true) {
         override val screenPermissions = this@ApiPreferenceConfigBuilder.screenPermissions
         override val screenPreconditions = this@ApiPreferenceConfigBuilder.screenPreconditions
-        override val permissions: PermissionsConfig? = permissionsConfig
+        override val permissions: Permissions? = permissionsConfig
         override val preconditions: PreconditionsConfig? = preconditionsConfig
         override val get: GetConfig<V> = getConfig ?: error("'get' block is required")
         override val set: SetConfig<V>? = setConfig
