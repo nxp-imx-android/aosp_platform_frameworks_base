@@ -4664,6 +4664,31 @@ public class SubscriptionManager {
     }
 
     /**
+     * Called to retrieve the platform-managed SIM PINs to be backed up.
+     *
+     * @return data in byte[] to be backed up.
+     *
+     * @hide
+     */
+    @NonNull
+    @RequiresPermission(Manifest.permission.CONTROL_SIM_AUTO_PIN_MANAGEMENT)
+    public byte[] getAllPlatformManagedPins() {
+        try {
+            ISub iSub = TelephonyManager.getSubscriptionService();
+            if (iSub != null) {
+                return iSub.getAllPlatformManagedPinsForBackup();
+            } else {
+                throw new IllegalStateException("subscription service unavailable.");
+            }
+        } catch (RemoteException ex) {
+            if (!isSystemProcess()) {
+                ex.rethrowAsRuntimeException();
+            }
+        }
+        return new byte[0];
+    }
+
+    /**
      * Called during setup wizard restore flow to attempt to restore the backed up sim-specific
      * configs to device for all existing SIMs in the subscription database {@link SimInfo}.
      * Internally, it will store the backup data in an internal file. This file will persist on
@@ -4688,6 +4713,28 @@ public class SubscriptionManager {
             ISub iSub = TelephonyManager.getSubscriptionService();
             if (iSub != null) {
                 iSub.restoreAllSimSpecificSettingsFromBackup(data);
+            } else {
+                throw new IllegalStateException("subscription service unavailable.");
+            }
+        } catch (RemoteException ex) {
+            if (!isSystemProcess()) {
+                ex.rethrowAsRuntimeException();
+            }
+        }
+    }
+
+    /**
+     * Called during Setup Wizard to restore platform-managed SIM PINs.
+     * @param data Platform-managed SIM PINs blob.
+     *
+     * @hide
+     */
+    @RequiresPermission(Manifest.permission.CONTROL_SIM_AUTO_PIN_MANAGEMENT)
+    public void restorePlatformManagedSimPinsFromBackup(@NonNull byte[] data) {
+        try {
+            ISub iSub = TelephonyManager.getSubscriptionService();
+            if (iSub != null) {
+                iSub.restorePlatformManagedSimPins(data);
             } else {
                 throw new IllegalStateException("subscription service unavailable.");
             }

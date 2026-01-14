@@ -447,4 +447,17 @@ interface ISub {
      * @return the package name, or null if not found.
      */
     String getEnrollableSubscriptionPlansOwner(int subId);
+
+    /**
+     * Returns the SIM PINs database for backing up.
+     */
+    @EnforcePermission("CONTROL_SIM_AUTO_PIN_MANAGEMENT")
+    byte[] getAllPlatformManagedPinsForBackup();
+
+    /**
+     * Called during setup wizard restore flow to attempt to restore the backed up SIM card PINs.
+     * @param data with the SIM card PINs database to restore.
+     */
+    @EnforcePermission("CONTROL_SIM_AUTO_PIN_MANAGEMENT")
+    void restorePlatformManagedSimPins(in byte[] data);
 }
