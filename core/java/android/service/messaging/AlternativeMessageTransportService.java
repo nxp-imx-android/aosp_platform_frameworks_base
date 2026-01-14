@@ -19,6 +19,7 @@ package android.service.messaging;
 import static com.android.internal.telephony.flags.Flags.FLAG_MESSAGE_PROMOTION;
 
 import android.annotation.FlaggedApi;
+import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.SdkConstant;
@@ -29,6 +30,10 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.util.function.Consumer;
 
 /**
@@ -78,12 +83,21 @@ public abstract class AlternativeMessageTransportService extends Service {
      */
     public static final int UPGRADE_STATUS_REJECTED = 2;
 
+    /** @hide */
+    @IntDef(prefix = { "UPGRADE_STATUS_" }, value = {
+            UPGRADE_STATUS_ACCEPTED,
+            UPGRADE_STATUS_REJECTED
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    @Target({ElementType.TYPE_USE})
+    public @interface UpgradeStatus {}
+
     private final IAlternativeMessageTransportServiceImpl mImpl =
             new IAlternativeMessageTransportServiceImpl();
 
     /**
      * Called by the service upon receiving a new message upgrade request. SMS app will have
-     * limited time to respond to the upgrade request with either
+     * 10 seconds to respond to the upgrade request with either
      * {@link #UPGRADE_STATUS_ACCEPTED} or {@link #UPGRADE_STATUS_REJECTED}. It's not expected
      * to keep running while the message is being sent.
      *
@@ -92,7 +106,7 @@ public abstract class AlternativeMessageTransportService extends Service {
      */
     public abstract void onMessageUpgradeRequested(
             @NonNull Uri contentUri,
-            @NonNull Consumer<Integer> upgradeStatus);
+            @NonNull Consumer<@UpgradeStatus Integer> upgradeStatus);
 
     @Override
     @Nullable
