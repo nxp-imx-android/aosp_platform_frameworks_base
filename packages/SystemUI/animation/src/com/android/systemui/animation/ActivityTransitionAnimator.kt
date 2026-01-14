@@ -65,6 +65,7 @@ import com.android.systemui.Flags.animationLibraryAtomicListeners
 import com.android.systemui.Flags.animationLibraryShellMigration
 import com.android.systemui.animation.ActivityTransitionAnimator.Companion.LONG_TRANSITION_TIMEOUT
 import com.android.systemui.animation.ActivityTransitionAnimator.Companion.TRANSITION_TIMEOUT
+import com.android.systemui.animation.DefaultTransitionHelper.Companion.invoke
 import com.android.systemui.animation.TransitionAnimator.Companion.SPRING_INTERPOLATORS
 import com.android.systemui.animation.TransitionAnimator.Companion.SPRING_TIMINGS
 import com.android.systemui.animation.TransitionAnimator.Companion.toTransitionState
@@ -1297,18 +1298,20 @@ constructor(
                     "Skipping the animation because the required data is missing: token=$token, " +
                         "info=$info, startTransaction=$startTransaction",
                 )
-                finishCallback?.invoke(token, info)
+                cleanUpAnimation(token, info, startTransaction, finishCallback)
                 return
             }
 
-            initAndRun(onFailure = { finishCallback?.invoke(token, info) }) {
+            initAndRun(
+                onFailure = { cleanUpAnimation(token, info, transaction = null, finishCallback) }
+            ) {
                 transitionHelper.setUpAnimation(token, info, startTransaction, finishCallback)
                 performAnimation(delegate) { delegate ->
                     delegate.onAnimationStart(
                         info,
                         startTransaction = startTransaction,
                         onAnimationFinished = { finishTransaction ->
-                            finishCallback?.invoke(token, info, finishTransaction)
+                            cleanUpAnimation(token, info, finishTransaction, finishCallback)
                         },
                     )
                 }
@@ -1329,18 +1332,20 @@ constructor(
                     "Skipping the animation takeover because the required data is missing: " +
                         "token=$token, info=$info, startTransaction=$startTransaction",
                 )
-                finishCallback?.invoke(token, info)
+                cleanUpAnimation(token, info, startTransaction, finishCallback)
                 return
             }
 
-            initAndRun(onFailure = { finishCallback?.invoke(token, info) }) {
+            initAndRun(
+                onFailure = { cleanUpAnimation(token, info, transaction = null, finishCallback) }
+            ) {
                 transitionHelper.setUpAnimation(token, info, startTransaction, finishCallback)
                 performAnimation(delegate) { delegate ->
                     delegate.takeOverAnimation(
                         info,
                         startTransaction = startTransaction,
                         onAnimationFinished = { finishTransaction ->
-                            finishCallback?.invoke(token, info, finishTransaction)
+                            cleanUpAnimation(token, info, finishTransaction, finishCallback)
                         },
                         states,
                     )
@@ -1396,16 +1401,18 @@ constructor(
             finishCallback: IRemoteTransitionFinishedCallback?,
         ) {
             removeTimeouts()
-            transaction?.close()
-            mainExecutor.execute {
-                cancelled = true
-                delegate?.onAnimationCancelled()
+            if (transitionHelper.mergeAnimation(info, transaction, mergeTarget)) {
+                // Only cancel if the merge was successful.
+                mainExecutor.execute {
+                    cancelled = true
+                    delegate?.onAnimationCancelled()
+                }
             }
-            finishCallback?.invoke(token, info)
         }
 
-        override fun onTransitionConsumed(transition: IBinder?, aborted: Boolean) {
+        override fun onTransitionConsumed(token: IBinder?, aborted: Boolean) {
             removeTimeouts()
+            token?.let { transitionHelper.onTransitionConsumed(it) }
             mainExecutor.execute {
                 cancelled = true
                 delegate?.onAnimationCancelled()
@@ -1433,6 +1440,21 @@ constructor(
             listener?.onTransitionAnimationCancelled()
         }
 
+        private fun cleanUpAnimation(
+            token: IBinder?,
+            info: TransitionInfo?,
+            transaction: SurfaceControl.Transaction?,
+            finishedCallback: IRemoteTransitionFinishedCallback?,
+        ) {
+            // If the helper fails, this method was called _before_ the helper setup happened. In
+            // that case, invoke the callback directly.
+            if (token == null || !transitionHelper.cleanUpAnimation(token, transaction)) {
+                finishedCallback?.invoke(info, transaction)
+            }
+
+            dispose()
+        }
+
         @AnyThread
         fun dispose() =
             mainExecutor.execute {
@@ -1442,26 +1464,6 @@ constructor(
                 cancelled = false
                 timedOut = false
             }
-
-        fun IRemoteTransitionFinishedCallback.invoke(
-            token: IBinder?,
-            info: TransitionInfo?,
-            transaction: SurfaceControl.Transaction? = null,
-        ) {
-            info?.releaseAllSurfaces()
-
-            val finishTransaction = transaction ?: SurfaceControl.Transaction()
-            token?.let { transitionHelper.cleanUpAnimation(token, finishTransaction) }
-            try {
-                onTransitionFinished(null, finishTransaction)
-            } catch (e: RemoteException) {
-                Log.e(TAG, "Failed to call animation finished callback", e)
-            } finally {
-                finishTransaction.close()
-            }
-
-            dispose()
-        }
     }
 
     /** [Runner] wrapper that supports animation takeovers. */

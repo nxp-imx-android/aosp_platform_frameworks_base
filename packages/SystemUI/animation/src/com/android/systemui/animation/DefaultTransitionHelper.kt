@@ -18,6 +18,7 @@ package com.android.systemui.animation
 
 import android.app.WindowConfiguration.ACTIVITY_TYPE_HOME
 import android.os.IBinder
+import android.os.RemoteException
 import android.util.Log
 import android.util.RotationUtils
 import android.view.SurfaceControl
@@ -30,6 +31,8 @@ import com.android.systemui.animation.RemoteTransitionHelper.Companion.OPENING_M
 import com.android.wm.shell.shared.CounterRotator
 import com.android.wm.shell.shared.TransitionUtil.FLAG_IS_DESKTOP_WALLPAPER_ACTIVITY
 import com.android.wm.shell.shared.TransitionUtil.isClosingMode
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.withLock
 
 private const val TAG = "DefaultTransitionHelper"
 
@@ -38,6 +41,31 @@ private const val TAG = "DefaultTransitionHelper"
  * wallpaper and Launcher.
  */
 class DefaultTransitionHelper : RemoteTransitionHelper {
+    companion object {
+        fun IRemoteTransitionFinishedCallback.invoke(
+            info: TransitionInfo?,
+            transaction: SurfaceControl.Transaction? = null,
+        ) {
+            val finishTransaction = transaction ?: SurfaceControl.Transaction()
+
+            // Since this is a remote, we are in charge of cleaning up the allocated surfaces.
+            info?.releaseAllSurfaces()
+
+            try {
+                onTransitionFinished(null, finishTransaction)
+            } catch (e: RemoteException) {
+                Log.e(TAG, "Failed to call transition finished callback", e)
+            } finally {
+                finishTransaction.close()
+            }
+        }
+    }
+
+    // Finish callbacks for ongoing transitions. These are cached so the original transition can be
+    // finished correctly when a merge request comes in.
+    private val finishCallbacks = mutableMapOf<IBinder, (SurfaceControl.Transaction) -> Unit>()
+    private val finishCallbacksLock = ReentrantLock()
+
     private val launcherRotators = mutableMapOf<IBinder, CounterRotator>()
     private val wallpaperRotators = mutableMapOf<IBinder, CounterRotator>()
 
@@ -47,6 +75,18 @@ class DefaultTransitionHelper : RemoteTransitionHelper {
         transaction: SurfaceControl.Transaction,
         finishCallback: IRemoteTransitionFinishedCallback?,
     ) {
+        finishCallbacksLock.withLock {
+            finishCallbacks[token] = { transaction ->
+                for (rotators in arrayOf(launcherRotators, wallpaperRotators)) {
+                    rotators.remove(token)?.let { rotator ->
+                        rotator.surface?.let { if (it.isValid) rotator.cleanUp(transaction) }
+                    }
+                }
+
+                finishCallback?.invoke(info, transaction)
+            }
+        }
+
         val launcherRotator = CounterRotator()
         launcherRotators[token] = launcherRotator
         val wallpaperRotator = CounterRotator()
@@ -200,10 +240,32 @@ class DefaultTransitionHelper : RemoteTransitionHelper {
         }
     }
 
-    override fun cleanUpAnimation(token: IBinder, transaction: SurfaceControl.Transaction) {
-        launcherRotators.remove(token)?.cleanUp(transaction)
-        wallpaperRotators.remove(token)?.cleanUp(transaction)
-        transaction.apply()
+    override fun mergeAnimation(
+        info: TransitionInfo?,
+        transaction: SurfaceControl.Transaction?,
+        mergeTarget: IBinder?,
+    ): Boolean {
+        transaction?.close()
+        info?.releaseAllSurfaces()
+        return mergeTarget?.let { cleanUpAnimation(it, transaction = null) } ?: false
+    }
+
+    override fun onTransitionConsumed(token: IBinder) {
+        finishCallbacksLock.withLock { finishCallbacks.remove(token) }
+    }
+
+    override fun cleanUpAnimation(
+        token: IBinder,
+        transaction: SurfaceControl.Transaction?,
+    ): Boolean {
+        val finishCallback = finishCallbacksLock.withLock { finishCallbacks.remove(token) }
+        return if (finishCallback != null) {
+            val finishTransaction = transaction ?: SurfaceControl.Transaction()
+            finishCallback.invoke(finishTransaction)
+            true
+        } else {
+            false
+        }
     }
 
     /** Wrapper for information related to a change for the Launcher surface. */

@@ -29,7 +29,6 @@ import android.widget.LinearLayout
 import android.window.IRemoteTransition
 import android.window.IRemoteTransitionFinishedCallback
 import android.window.RemoteTransition
-import android.window.TransitionFilter
 import android.window.TransitionInfo
 import android.window.WindowAnimationState
 import android.window.WindowContainerTransaction
@@ -427,12 +426,19 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
             var finished = false
 
             activityTransitionAnimator
-                .createOriginTransition(controllerWithCookie, testScope, isDialogLaunch = false)
+                .createOriginTransition(
+                    controllerWithCookie,
+                    testScope,
+                    isDialogLaunch = false,
+                    transitionHelper = transitionHelper,
+                )
                 .startAnimation(null, info, startTransaction, finishedCallback { finished = true })
 
             waitForIdleSync()
             assertThat(finished).isTrue()
             verify(listener, never()).onTransitionAnimationStart()
+            verify(transitionHelper, never()).setUpAnimation(any(), any(), any(), any())
+            verify(transitionHelper, never()).cleanUpAnimation(any(), any())
         }
     }
 
@@ -447,15 +453,25 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
                 }
             val token = mock<IBinder>()
             val startTransaction = mock<SurfaceControl.Transaction>()
+            whenever(transitionHelper.cleanUpAnimation(token, startTransaction)).thenAnswer {
+                false
+            }
             var finished = false
 
             activityTransitionAnimator
-                .createOriginTransition(controllerWithCookie, testScope, isDialogLaunch = false)
+                .createOriginTransition(
+                    controllerWithCookie,
+                    testScope,
+                    isDialogLaunch = false,
+                    transitionHelper = transitionHelper,
+                )
                 .startAnimation(token, null, startTransaction, finishedCallback { finished = true })
 
             waitForIdleSync()
             assertThat(finished).isTrue()
             verify(listener, never()).onTransitionAnimationStart()
+            verify(transitionHelper, never()).setUpAnimation(any(), any(), any(), any())
+            verify(transitionHelper).cleanUpAnimation(token, startTransaction)
         }
     }
 
@@ -470,15 +486,25 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
                 }
             val token = mock<IBinder>()
             val info = mock<TransitionInfo>()
+            whenever(transitionHelper.cleanUpAnimation(token, transaction = null)).thenAnswer {
+                false
+            }
             var finished = false
 
             activityTransitionAnimator
-                .createOriginTransition(controllerWithCookie, testScope, isDialogLaunch = false)
+                .createOriginTransition(
+                    controllerWithCookie,
+                    testScope,
+                    isDialogLaunch = false,
+                    transitionHelper = transitionHelper,
+                )
                 .startAnimation(token, info, null, finishedCallback { finished = true })
 
             waitForIdleSync()
             assertThat(finished).isTrue()
             verify(listener, never()).onTransitionAnimationStart()
+            verify(transitionHelper, never()).setUpAnimation(any(), any(), any(), any())
+            verify(transitionHelper).cleanUpAnimation(token, null)
         }
     }
 
