@@ -154,6 +154,7 @@ import com.android.wm.shell.desktopmode.WindowDecorCaptionRepository;
 import com.android.wm.shell.desktopmode.WindowDragTransitionHandler;
 import com.android.wm.shell.desktopmode.api.DesktopMode;
 import com.android.wm.shell.desktopmode.api.impl.DesktopModeImpl;
+import com.android.wm.shell.desktopmode.api.impl.IDesktopModeProvider;
 import com.android.wm.shell.desktopmode.clientfullscreenrequest.DesktopFullscreenRequestHandler;
 import com.android.wm.shell.desktopmode.compatui.SystemModalsTransitionHandler;
 import com.android.wm.shell.desktopmode.data.DesktopRepositoryInitializer;
@@ -2272,8 +2273,23 @@ public abstract class WMShellModule {
             ShellCrashHandler shellCrashHandler,
             AppToWebEducationController appToWebEducationController,
             QuitFocusedAppKeyGestureHandler quitFocusedAppKeyGestureHandler,
-            BubbleRootTask bubbleRootTask) {
+            BubbleRootTask bubbleRootTask,
+            IDesktopModeProvider desktopModeProvider) {
         return new Object();
+    }
+
+    @WMSingleton
+    @Provides
+    static IDesktopModeProvider provideIDesktopModeProvider(
+            ShellInit shellInit,
+            ShellController shellController,
+            Optional<DesktopTasksController> desktopTasksController,
+            DesktopState desktopState) {
+        return new IDesktopModeProvider(
+                shellInit,
+                shellController,
+                desktopTasksController,
+                desktopState);
     }
 
     @WMSingleton
