@@ -319,7 +319,14 @@ constructor(
     private fun View.setIsBlurSupported(supported: Boolean) {
         if (blurOnMoreSurfaces()) {
             val layers = (background as LayerDrawable)
-            (layers.getDrawable(0) as BackgroundBlurDrawable).setVisible(supported, false)
+            (layers.getDrawable(0) as BackgroundBlurDrawable).setBlurRadius(
+                if (supported) {
+                    context.resources.getDimensionPixelSize(
+                        R.dimen.volume_dialog_background_surface_blur_radius)
+                } else {
+                    0
+                }
+            )
             (layers.getDrawable(1) as GradientDrawable).setColor(
                 context.getColor(
                     if (supported) R.color.volume_dialog_view_background_blur
@@ -558,9 +565,7 @@ constructor(
                 R.dimen.volume_dialog_background_corner_radius
             )
             blurDrawable.setCornerRadius(dialogCornerRadius.toFloat())
-            blurDrawable.setBlurRadius(
-                context.resources.getDimensionPixelSize(
-                    R.dimen.volume_dialog_background_surface_blur_radius))
+            blurDrawable.setBlurRadius(0)
             setBackgroundDrawable(
                 LayerDrawable(
                     arrayOf<Drawable>(
