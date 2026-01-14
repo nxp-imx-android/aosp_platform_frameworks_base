@@ -92,13 +92,16 @@ constructor(
     }
 
     private fun createDialog() {
+        val displayId = viewModel.dialogRequest.displayId
+        val dialogContext = viewModel.getDialogContextByDisplayId(displayId)
+
+        // Ensure the dialog is shown on the display where the shortcut was triggered.
         dialogInstance =
             dialogFactory
-                .create { dialog ->
+                .create(context = dialogContext) { dialog ->
                     val dialogType by viewModel.dialogType.collectAsStateWithLifecycle()
                     val dialogRequest = viewModel.dialogRequest
                     val shortcutType = dialogRequest.shortcutType
-                    val displayId = dialogRequest.displayId
 
                     when (dialogType) {
                         DialogType.TUTORIAL -> {
