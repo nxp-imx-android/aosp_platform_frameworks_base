@@ -37,6 +37,7 @@ import android.os.IBinder;
 import android.os.Parcel;
 import android.view.DisplayCutout;
 import android.view.WindowInsets;
+import android.window.IWindowContainerToken;
 import android.window.WindowContainerToken;
 
 import java.util.ArrayList;
@@ -437,6 +438,86 @@ public class TaskInfo {
         // Do nothing
     }
 
+    /**
+     * @hide
+     */
+    TaskInfo(@NonNull TaskInfo other) {
+        userId = other.userId;
+        taskId = other.taskId;
+        effectiveUid = other.effectiveUid;
+        displayId = other.displayId;
+        isRunning = other.isRunning;
+        baseIntent = other.baseIntent != null ? new Intent(other.baseIntent) : null;
+        baseActivity = other.baseActivity != null ? other.baseActivity.clone() : null;
+        topActivity = other.topActivity != null ? other.topActivity.clone() : null;
+        origActivity = other.origActivity != null ? other.origActivity.clone() : null;
+        realActivity = other.realActivity != null ? other.realActivity.clone() : null;
+        isRealActivityAppLockEnabled = other.isRealActivityAppLockEnabled;
+        numActivities = other.numActivities;
+        lastActiveTime = other.lastActiveTime;
+        taskDescription = other.taskDescription != null
+                ? new ActivityManager.TaskDescription(other.taskDescription)
+                : null;
+        supportsMultiWindow = other.supportsMultiWindow;
+        resizeMode = other.resizeMode;
+        configuration.setTo(other.configuration);
+        token = other.token != null
+                ? new WindowContainerToken(
+                        IWindowContainerToken.Stub.asInterface(other.token.asBinder()))
+                : null;
+        topActivityType = other.topActivityType;
+        pictureInPictureParams = other.pictureInPictureParams != null
+                ? new PictureInPictureParams(other.pictureInPictureParams)
+                : null;
+        shouldDockBigOverlays = other.shouldDockBigOverlays;
+        launchIntoPipHostTaskId = other.launchIntoPipHostTaskId;
+        lastParentTaskIdBeforePip = other.lastParentTaskIdBeforePip;
+        displayCutoutInsets = other.displayCutoutInsets != null
+                ? new Rect(other.displayCutoutInsets)
+                : null;
+        topActivityInfo = other.topActivityInfo != null
+                ? new ActivityInfo(other.topActivityInfo)
+                : null;
+        isResizeable = other.isResizeable;
+        minWidth = other.minWidth;
+        minHeight = other.minHeight;
+        defaultMinSize = other.defaultMinSize;
+        launchCookies = other.launchCookies != null
+                ? new ArrayList<>(other.launchCookies)
+                : null;
+        positionInParent = other.positionInParent != null
+                ? new Point(other.positionInParent)
+                : null;
+        parentTaskId = other.parentTaskId;
+        isFocused = other.isFocused;
+        isVisible = other.isVisible;
+        isVisibleRequested = other.isVisibleRequested;
+        isTopActivityNoDisplay = other.isTopActivityNoDisplay;
+        isSleeping = other.isSleeping;
+        mTopActivityLocusId = other.mTopActivityLocusId != null
+                ? new LocusId(other.mTopActivityLocusId.getId())
+                : null;
+        displayAreaFeatureId = other.displayAreaFeatureId;
+        isTopActivityTransparent = other.isTopActivityTransparent;
+        isActivityStackTransparent = other.isActivityStackTransparent;
+        lastNonFullscreenBounds = other.lastNonFullscreenBounds != null
+                ? new Rect(other.lastNonFullscreenBounds)
+                : null;
+        leafTaskBoundsFromOptions = other.leafTaskBoundsFromOptions;
+        capturedLink = other.capturedLink != null ? Uri.parse(other.capturedLink.toString()) : null;
+        capturedLinkTimestamp = other.capturedLinkTimestamp;
+        requestedVisibleTypes = other.requestedVisibleTypes;
+        topActivityRequestOpenInBrowserEducationTimestamp
+                = other.topActivityRequestOpenInBrowserEducationTimestamp;
+        appCompatTaskInfo = other.appCompatTaskInfo != null
+                ? new AppCompatTaskInfo(other.appCompatTaskInfo)
+                : null;
+        topActivityMainWindowFrame = other.topActivityMainWindowFrame != null
+                ? new Rect(other.topActivityMainWindowFrame)
+                : null;
+        isAppBubble = other.isAppBubble;
+    }
+
     /** @hide */
     public TaskInfo(Parcel source) {
         readTaskFromParcel(source);
@@ -623,10 +704,8 @@ public class TaskInfo {
         origActivity = ComponentName.readFromParcel(source);
         realActivity = ComponentName.readFromParcel(source);
         isRealActivityAppLockEnabled = source.readBoolean();
-
         numActivities = source.readInt();
         lastActiveTime = source.readLong();
-
         taskDescription = source.readTypedObject(ActivityManager.TaskDescription.CREATOR);
         supportsMultiWindow = source.readBoolean();
         resizeMode = source.readInt();

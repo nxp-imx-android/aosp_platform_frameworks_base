@@ -171,6 +171,22 @@ public class AppCompatTaskInfo implements Parcelable {
         readFromParcel(source);
     }
 
+    /**
+     * @hide
+     */
+    public AppCompatTaskInfo(@NonNull AppCompatTaskInfo other) {
+        mTopActivityFlags = other.mTopActivityFlags;
+        topActivityLetterboxVerticalPosition = other.topActivityLetterboxVerticalPosition;
+        topActivityLetterboxHorizontalPosition = other.topActivityLetterboxHorizontalPosition;
+        topActivityLetterboxWidth = other.topActivityLetterboxWidth;
+        topActivityLetterboxHeight = other.topActivityLetterboxHeight;
+        topActivityAppBounds.set(other.topActivityAppBounds);
+        topActivityLetterboxBounds = other.topActivityLetterboxBounds != null
+                ? new Rect(other.topActivityLetterboxBounds)
+                : null;
+        topNonResizableActivityAspectRatio = other.topNonResizableActivityAspectRatio;
+    }
+
     @Override
     public int describeContents() {
         return 0;
