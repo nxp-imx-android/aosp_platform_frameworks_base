@@ -9256,9 +9256,13 @@ public class ActivityManagerService extends IActivityManager.Stub
             final boolean skipKeyguardWhenSwitchingToUnlockedUsers = res.getBoolean(
                     com.android.internal.R.bool
                             .config_multiuserSkipKeyguardWhenSwitchingToUnlockedUsers);
+            final boolean hideUserSwitchingUiDuringSetup = res.getBoolean(
+                    com.android.internal.R.bool
+                            .config_hideUserSwitchingUiDuringSetup);
             mUserController.setInitialConfig(userSwitchUiEnabled, maxRunningUsers,
                     delayUserDataLocking, backgroundUserConsideredDispensableTimeSecs,
-                    skipKeyguardWhenSwitchingToUnlockedUsers);
+                    skipKeyguardWhenSwitchingToUnlockedUsers,
+                    hideUserSwitchingUiDuringSetup);
         }
         mAppErrors.loadAppsNotReportingCrashesFromConfig(res.getString(
                 com.android.internal.R.string.config_appsNotReportingCrashes));

@@ -3372,6 +3372,11 @@
          This config is only relevant on Headless System User Mode (HSUM) devices. -->
     <bool name="config_canSwitchToHeadlessSystemUser">false</bool>
 
+    <!-- Whether to automatically hide user switching UI during setup.
+         If it's true and the device setup is not complete, then the user switching dialog is
+         skipped. -->
+    <bool name="config_hideUserSwitchingUiDuringSetup">false</bool>
+
     <!-- Whether this device supports multiple switchable users.
          Note that, even if false, multiple users such as profiles can still be supported since
          they are not switchable.
