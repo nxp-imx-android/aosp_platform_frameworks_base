@@ -72,12 +72,14 @@ public class AutoclickTypePanel {
     protected static final String POSITION_DELIMITER = ",";
 
     // Distance between panel and screen edge.
-    // TODO(b/396402941): Finalize horizontal margin.
-    private static final int PANEL_HORIZONTAL_MARGIN = 15;
-    // TODO(b/396402941): Finalize vertical margin.
+    // TODO(b/397681794): Finalize horizontal margin.
+    @VisibleForTesting
+    static final int PANEL_HORIZONTAL_MARGIN = 15;
+    // TODO(b/397681794): Finalize vertical margin.
     // Using 30 as the panel's vertical margin to keep it same with the panel position after
     // clicking position button on the panel that moves it to next corner.
-    private static final int PANEL_VERTICAL_MARGIN = 30;
+    @VisibleForTesting
+    static final int PANEL_VERTICAL_MARGIN = 30;
 
     // Touch point when drag starts, it can be anywhere inside the panel.
     private float mTouchStartX, mTouchStartY;
@@ -307,7 +309,8 @@ public class AutoclickTypePanel {
         final int bottomPosition = screenHeight - taskbarHeight - panelHeight - mStatusBarHeight
                 - PANEL_VERTICAL_MARGIN;
         params.x = PANEL_HORIZONTAL_MARGIN;
-        params.y = Math.min(Math.max(PANEL_VERTICAL_MARGIN, yPosition), bottomPosition);
+        params.y = Math.min(Math.max(PANEL_VERTICAL_MARGIN + mStatusBarHeight, yPosition),
+                bottomPosition);
         mWindowManager.updateViewLayout(mContentView, params);
 
         // Use actual position for icon (not mCurrentCorner which is mainly used for rotation
@@ -600,22 +603,27 @@ public class AutoclickTypePanel {
      * @param corner The corner to position the panel in.
      */
     private void setPanelPositionForCorner(WindowManager.LayoutParams params, @Corner int corner) {
-        // TODO(b/396402941): Current values are experimental and may not work correctly across
+        // TODO(b/397681794): Current values are experimental and may not work correctly across
         // different device resolutions and configurations.
         params.x = PANEL_HORIZONTAL_MARGIN;
         params.y = PANEL_VERTICAL_MARGIN;
+        int taskbarHeight = SystemBarUtils.getTaskbarHeight(mContext.getResources());
         switch (corner) {
             case CORNER_BOTTOM_RIGHT:
                 params.gravity = Gravity.END | Gravity.BOTTOM;
+                params.y += taskbarHeight;
                 break;
             case CORNER_BOTTOM_LEFT:
                 params.gravity = Gravity.START | Gravity.BOTTOM;
+                params.y += taskbarHeight;
                 break;
             case CORNER_TOP_LEFT:
                 params.gravity = Gravity.START | Gravity.TOP;
+                params.y += mStatusBarHeight;
                 break;
             case CORNER_TOP_RIGHT:
                 params.gravity = Gravity.END | Gravity.TOP;
+                params.y += mStatusBarHeight;
                 break;
             default:
                 throw new IllegalArgumentException("Invalid corner: " + corner);
