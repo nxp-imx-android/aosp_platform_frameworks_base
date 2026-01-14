@@ -19,10 +19,11 @@ package com.android.server.personalcontext.embedded;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.service.personalcontext.RenderToken;
 import android.service.personalcontext.embedded.IEmbeddedInsightSurfaceCallback;
 import android.service.personalcontext.embedded.InsightSurfaceClientInfo;
-import android.window.InputTransferToken;
+import android.view.View;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
@@ -86,6 +87,13 @@ public class ClientRegistryTest {
 
     private InsightSurfaceClientInfo createClient() {
         return new InsightSurfaceClientInfo(
-                new InputTransferToken(), 1, 2, 3, new Configuration(), mCallbacks);
+                1,
+                2,
+                3,
+                Color.valueOf(Color.RED),
+                View.SCROLL_AXIS_NONE,
+                false,
+                new Configuration(),
+                mCallbacks);
     }
 }

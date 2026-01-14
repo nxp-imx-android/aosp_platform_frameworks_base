@@ -19,9 +19,10 @@ package android.service.personalcontext.embedded;
 import static android.annotation.SystemApi.Client.PRIVILEGED_APPS;
 
 import android.annotation.FlaggedApi;
+import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
 import android.content.Context;
-import android.content.res.Configuration;
+import android.graphics.Color;
 import android.service.personalcontext.Flags;
 import android.service.personalcontext.PersonalContextManager;
 import android.service.personalcontext.hint.ContextHint;
@@ -30,8 +31,11 @@ import android.service.personalcontext.insight.ContextInsightWrapper;
 import android.util.Log;
 import android.view.SurfaceControlViewHost;
 import android.view.SurfaceView;
+import android.view.View;
 
 import androidx.annotation.NonNull;
+
+import com.android.internal.util.Preconditions;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -114,6 +118,7 @@ public class InsightSurfaceClient implements AutoCloseable {
     private final Executor mCallbacksExecutor;
     @NonNull
     private final List<ContextHint> mHints;
+    private boolean mIsRegistered;
 
     private final IEmbeddedInsightSurfaceCallback mInsightSurfaceCallback =
             new IEmbeddedInsightSurfaceCallback.Stub() {
@@ -147,6 +152,11 @@ public class InsightSurfaceClient implements AutoCloseable {
 
     private InsightSurfaceClient(
             Context context,
+            int widthMeasureSpec,
+            int heightMeasureSpec,
+            @NonNull Color backgroundColor,
+            int nestedScrollAxes,
+            boolean nestedScrollAxisLocked,
             @NonNull ClientCallback callbacks,
             @NonNull Executor callbacksExecutor,
             @NonNull List<ContextHint> hints,
@@ -157,6 +167,16 @@ public class InsightSurfaceClient implements AutoCloseable {
         mCallbacks = callbacks;
         mCallbacksExecutor = callbacksExecutor;
         mInsightReceivers = List.copyOf(receivers);
+
+        mClientInfo = new InsightSurfaceClientInfo(
+                mContext.getDisplay().getDisplayId(),
+                widthMeasureSpec,
+                heightMeasureSpec,
+                backgroundColor,
+                nestedScrollAxes,
+                nestedScrollAxisLocked,
+                mContext.getResources().getConfiguration(),
+                mInsightSurfaceCallback);
     }
 
     /**
@@ -194,6 +214,53 @@ public class InsightSurfaceClient implements AutoCloseable {
     }
 
     /**
+     * Return the width {@link View.MeasureSpec} for this client.
+     */
+    public int getMeasureSpecWidth() {
+        return mClientInfo.getMeasureSpecWidth();
+    }
+
+    /**
+     * Return the height {@link View.MeasureSpec} for this client.
+     */
+    public int getMeasureSpecHeight() {
+        return mClientInfo.getMeasureSpecHeight();
+    }
+
+    /**
+     * Return the background {@link Color} for this client.
+     */
+    @NonNull
+    public Color getBackgroundColor() {
+        return mClientInfo.getBackgroundColor();
+    }
+
+    /**
+     * Return a bitmask indicating the nested scroll axes supported by the client. This ensures
+     * that an embedded surface will only send these nested scroll events back to the client when
+     * nested scroll axis is locked. Possible values are
+     * {@link View#SCROLL_AXIS_HORIZONTAL},
+     * {@link View#SCROLL_AXIS_VERTICAL}, or
+     * {@link View#SCROLL_AXIS_NONE}.
+     */
+    public int getNestedScrollAxes() {
+        return mClientInfo.getNestedScrollAxes();
+    }
+
+    /**
+     * Return whether an embedded surface should report a specific axis when a nested scroll gesture
+     * is detected, and whether that axis should be locked such that subsequent nested scroll events
+     * are only reported for that axis. A value of {@code true} is typical for Android UIs where
+     * scroll axes are locked during a gesture, while a value of {@code false} can be used to give
+     * the illusion of a 2D canvas. Only applicable when nested scroll axes is set to
+     * {@link View#SCROLL_AXIS_HORIZONTAL} or
+     * {@link View#SCROLL_AXIS_VERTICAL}.
+     */
+    public boolean isNestedScrollAxisLocked() {
+        return mClientInfo.getNestedScrollAxisLocked();
+    }
+
+    /**
      * Register with the personal context engine. Once registered, the client can receive a
      * {@link SurfaceControlViewHost.SurfacePackage} via {@link ClientCallback}.
      *
@@ -202,31 +269,51 @@ public class InsightSurfaceClient implements AutoCloseable {
      * @param heightMeasureSpec a height measure spec indicating the desired height of the
      *                          embedded surface; the personal context engine will attempt to honor
      *                          the spec
+     * @deprecated Use {@link #register()} instead.
      */
+    @Deprecated
     public void register(int widthMeasureSpec, int heightMeasureSpec) {
-        if (DEBUG) {
-            Log.d(TAG, "registering client...");
-        }
-
-        if (mClientInfo != null) {
+        if (mIsRegistered) {
             // Already registered.
             Log.w(TAG, "client is already registered");
             return;
         }
 
-        final int displayId = mContext.getDisplay().getDisplayId();
-        final Configuration configuration = mContext.getResources().getConfiguration();
-
-        mClientInfo = new InsightSurfaceClientInfo.Builder(
-                displayId,
+        // Re-create client info to update measure specs for backward compatibility. All other
+        // properties are preserved.
+        mClientInfo = new InsightSurfaceClientInfo(
+                mClientInfo.getDisplayId(),
                 widthMeasureSpec,
                 heightMeasureSpec,
-                configuration,
-                mInsightSurfaceCallback).build();
+                mClientInfo.getBackgroundColor(),
+                mClientInfo.getNestedScrollAxes(),
+                mClientInfo.getNestedScrollAxisLocked(),
+                mClientInfo.getConfiguration(),
+                mInsightSurfaceCallback);
+        register();
+    }
+
+    /**
+     * Register with the personal context engine. Once registered, the client can receive a
+     * {@link SurfaceControlViewHost.SurfacePackage} via {@link ClientCallback}.
+     */
+    public void register() {
+        if (DEBUG) {
+            Log.d(TAG, "registering client...");
+        }
+
+        if (mIsRegistered) {
+            // Already registered.
+            Log.w(TAG, "client is already registered");
+            return;
+        }
+
         final PersonalContextManager personalContextManager =
                 mContext.getSystemService(PersonalContextManager.class);
         personalContextManager.registerInsightSurfaceClient(mClientInfo, mHints);
-    };
+
+        mIsRegistered = true;
+    }
 
     /**
      * Unregister from the personal context engine.
@@ -236,7 +323,7 @@ public class InsightSurfaceClient implements AutoCloseable {
             Log.d(TAG, "unregistering client...");
         }
 
-        if (mClientInfo == null) {
+        if (!mIsRegistered) {
             Log.w(TAG, "client not registered");
             return;
         }
@@ -245,12 +332,12 @@ public class InsightSurfaceClient implements AutoCloseable {
                 mContext.getSystemService(PersonalContextManager.class);
         personalContextManager.unregisterInsightSurfaceClient(mClientInfo);
 
-        mClientInfo = null;
+        mIsRegistered = false;
     }
 
     @Override
     public void close() {
-        if (mClientInfo != null) {
+        if (mIsRegistered) {
             unregister();
         }
     }
@@ -262,6 +349,13 @@ public class InsightSurfaceClient implements AutoCloseable {
         private final Executor mCallbacksExecutor;
         private final List<InsightReceiver> mReceivers = new ArrayList<>();
         private final List<ContextHint> mHints = new ArrayList<>();
+        private int mWidthMeasureSpec =
+                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
+        private int mHeightMeasureSpec =
+                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
+        private Color mBackgroundColor = Color.valueOf(Color.TRANSPARENT);
+        private int mNestedScrollAxes = View.SCROLL_AXIS_NONE;
+        private boolean mNestedScrollAxisLocked = false;
 
         /**
          * Construct a new builder.
@@ -336,6 +430,71 @@ public class InsightSurfaceClient implements AutoCloseable {
         }
 
         /**
+         * Set the width {@link View.MeasureSpec} of the client surface
+         *
+         * @param widthMeasureSpec the width {@link View.MeasureSpec} of the client surface
+         * @param heightMeasureSpec the height {@link View.MeasureSpec} of the client surface
+         * @throws IllegalArgumentException when the {@link View.MeasureSpec} is not one of
+         * {@code View.MeasureSpec.UNSPECIFIED}, {@code View.MeasureSpec.EXACTLY}, or
+         * {@code View.MeasureSpec.At_MOST}
+         */
+        @SuppressLint("MissingGetterMatchingBuilder")
+        @NonNull
+        public Builder setMeasureSpecs(int widthMeasureSpec, int heightMeasureSpec) {
+            Preconditions.checkArgument(isValidMeasureSpec(widthMeasureSpec));
+            Preconditions.checkArgument(isValidMeasureSpec(heightMeasureSpec));
+            mWidthMeasureSpec = widthMeasureSpec;
+            mHeightMeasureSpec = heightMeasureSpec;
+            return this;
+        }
+
+        /**
+         * Set the surface background color. Transparent is the default background color when no
+         * background color is set.
+         *
+         * @param backgroundColor the background color of the client
+         */
+        @NonNull
+        public Builder setBackgroundColor(@NonNull Color backgroundColor) {
+            mBackgroundColor = backgroundColor;
+            return this;
+        }
+
+        /**
+         * Sets a bitmask indicating the nested scroll axes supported by the client. This ensures
+         * that an embedded surface will only send these nested scroll events for the specified axes
+         * back to the client. Possible values are {@link View#SCROLL_AXIS_HORIZONTAL},
+         * {@link View#SCROLL_AXIS_VERTICAL}, or {@link View#SCROLL_AXIS_NONE}.
+         *
+         * @param nestedScrollAxes the axes that the client supports
+         * @throws IllegalArgumentException when nestedScrollAxes is not a bitmask of the possible
+         * values
+         */
+        @NonNull
+        public Builder setNestedScrollAxes(int nestedScrollAxes) {
+            Preconditions.checkArgument(isValidNestedScrollAxes(nestedScrollAxes));
+            mNestedScrollAxes = nestedScrollAxes;
+            return this;
+        }
+
+        /**
+         * Sets whether nested scrolling is locked (based on the bitmask past to
+         * {@link #setNestedScrollAxes(int)}). A value of {@code true} is typical for Android UIs
+         * where scroll axes are locked during a gesture, while a value of {@code false} can be
+         * used to give the illusion of a 2D canvas. Only applicable when nested scroll axes is
+         * set to {@link View#SCROLL_AXIS_HORIZONTAL} or
+         * {@link View#SCROLL_AXIS_VERTICAL}.
+         *
+         * @param nestedScrollAxisLocked {@code true} if the embedded surface should only send
+         *                               nested scroll events for the axes the client supports
+         */
+        @NonNull
+        public Builder setNestedScrollAxisLocked(boolean nestedScrollAxisLocked) {
+            mNestedScrollAxisLocked = nestedScrollAxisLocked;
+            return this;
+        }
+
+        /**
          * Build and return an {@link InsightSurfaceClient}.
          *
          * @return the {@link InsightSurfaceClient}
@@ -344,10 +503,31 @@ public class InsightSurfaceClient implements AutoCloseable {
         public InsightSurfaceClient build() {
             return new InsightSurfaceClient(
                     mContext,
+                    mWidthMeasureSpec,
+                    mHeightMeasureSpec,
+                    mBackgroundColor,
+                    mNestedScrollAxes,
+                    mNestedScrollAxisLocked,
                     mCallbacks,
                     mCallbacksExecutor,
                     mHints,
                     mReceivers);
         }
+    }
+
+    private static boolean isValidNestedScrollAxes(int nestedScrollAxes) {
+        return switch (nestedScrollAxes) {
+            case View.SCROLL_AXIS_NONE, View.SCROLL_AXIS_VERTICAL,
+                 View.SCROLL_AXIS_HORIZONTAL + View.SCROLL_AXIS_VERTICAL -> true;
+            default -> false;
+        };
+    }
+
+    private static boolean isValidMeasureSpec(int measureSpec) {
+        return switch (View.MeasureSpec.getMode(measureSpec)) {
+            case View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.EXACTLY, View.MeasureSpec.AT_MOST
+                    -> true;
+            default -> false;
+        };
     }
 }
