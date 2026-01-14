@@ -26,7 +26,6 @@ import android.app.appfunctions.IObserveAppFunctionChangesCallback;
 import android.app.appsearch.AppSearchManager;
 import android.app.appsearch.observer.ObserverSpec;
 import android.content.Context;
-import android.os.ParcelableException;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.util.Slog;
@@ -135,28 +134,37 @@ public class AppFunctionMetadataObserver {
     void registerClientAppCallback(
             @NonNull UserHandle userHandle,
             @NonNull AppFunctionSearchSpec searchSpec,
-            @NonNull IObserveAppFunctionChangesCallback proxyCallback) {
+            @NonNull IObserveAppFunctionChangesCallback proxyCallback)
+            throws RemoteException {
         requireNonNull(userHandle);
         requireNonNull(searchSpec);
         requireNonNull(proxyCallback);
-        InternalObserverCallbackRouter router;
 
+        InternalObserverCallbackRouter router;
         synchronized (mRoutersLock) {
             router = mInternalCallbackRouters.get(userHandle.getIdentifier());
         }
-        if (router == null) {
-            try {
-                proxyCallback.onRegistrationError(
-                        new ParcelableException(
-                                new IllegalStateException(
-                                        "Unable to register callback for user "
-                                                + userHandle.toString())));
-            } catch (RemoteException e) {
-                Slog.e(TAG, "Failed to execute callback#onRegistrationError.", e);
-            }
-            return;
+        if (router != null) {
+            router.addCallback(proxyCallback, searchSpec);
+        } else {
+            throw new IllegalStateException(
+                    "Unable to register callback for user " + userHandle.toString());
         }
-        router.addCallback(proxyCallback, searchSpec);
+    }
+
+    void unregisterClientAppCallback(
+            @NonNull UserHandle userHandle,
+            @NonNull IObserveAppFunctionChangesCallback proxyCallback) {
+        requireNonNull(userHandle);
+        requireNonNull(proxyCallback);
+
+        InternalObserverCallbackRouter router;
+        synchronized (mRoutersLock) {
+            router = mInternalCallbackRouters.get(userHandle.getIdentifier());
+        }
+        if (router != null) {
+            router.removeCallback(proxyCallback);
+        }
     }
 
     /** Notifies observers of a change to an app function's enabled state. */

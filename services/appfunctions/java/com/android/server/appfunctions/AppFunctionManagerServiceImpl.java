@@ -615,32 +615,23 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
     }
 
     @Override
-    public void registerAppFunctionObserverCallback(
+    public void observeAppFunctions(
             @NonNull AppFunctionAidlSearchSpec aidlSearchSpec,
             @NonNull IObserveAppFunctionChangesCallback observeAppFunctionsCallback)
-            throws RemoteException {
+            throws RemoteException, SecurityException {
         Objects.requireNonNull(aidlSearchSpec);
         Objects.requireNonNull(observeAppFunctionsCallback);
 
         final int callingUid = Binder.getCallingUid();
         final int callingPid = Binder.getCallingPid();
 
-        try {
-            // The calling package name will be used to determine the visible packages.
-            mCallerValidator.validateCallingPackage(aidlSearchSpec.getCallingPackageName());
-            mCallerValidator.verifyUserInteraction(
-                    /* targetUserId= */ aidlSearchSpec.getTargetUserId(),
-                    /* callingUid= */ callingUid,
-                    /* callingPid= */ callingPid,
-                    /* callingPackageName= */ aidlSearchSpec.getCallingPackageName());
-        } catch (SecurityException e) {
-            try {
-                observeAppFunctionsCallback.onRegistrationError(new ParcelableException(e));
-            } catch (RemoteException ex) {
-                Slog.e(TAG, "Failed to execute callback#onError.", e);
-            }
-            return;
-        }
+        // The calling package name will be used to determine the visible packages.
+        mCallerValidator.validateCallingPackage(aidlSearchSpec.getCallingPackageName());
+        mCallerValidator.verifyUserInteraction(
+                /* targetUserId= */ aidlSearchSpec.getTargetUserId(),
+                /* callingUid= */ callingUid,
+                /* callingPid= */ callingPid,
+                /* callingPackageName= */ aidlSearchSpec.getCallingPackageName());
 
         UserHandle targetUser = UserHandle.of(aidlSearchSpec.getTargetUserId());
 
@@ -655,6 +646,30 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
 
         mAppFunctionMetadataObserver.registerClientAppCallback(
                 targetUser, filteredSearchSpec, observeAppFunctionsCallback);
+    }
+
+    @Override
+    public void unregisterAppFunctionObserver(
+            @NonNull String callingPackage,
+            @NonNull UserHandle userHandle,
+            @NonNull IObserveAppFunctionChangesCallback observeAppFunctionsCallback)
+            throws SecurityException {
+        Objects.requireNonNull(callingPackage);
+        Objects.requireNonNull(userHandle);
+        Objects.requireNonNull(observeAppFunctionsCallback);
+
+        final int callingUid = Binder.getCallingUid();
+        final int callingPid = Binder.getCallingPid();
+
+        mCallerValidator.validateCallingPackage(callingPackage);
+        mCallerValidator.verifyUserInteraction(
+                /* targetUserId= */ userHandle.getIdentifier(),
+                /* callingUid= */ callingUid,
+                /* callingPid= */ callingPid,
+                /* callingPackageName= */ callingPackage);
+
+        mAppFunctionMetadataObserver.unregisterClientAppCallback(
+                userHandle, observeAppFunctionsCallback);
     }
 
     @Override

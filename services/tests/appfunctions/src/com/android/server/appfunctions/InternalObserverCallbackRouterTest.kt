@@ -26,7 +26,6 @@ import android.app.appsearch.observer.DocumentChangeInfo
 import android.app.appsearch.observer.SchemaChangeInfo
 import android.os.Binder
 import android.os.IBinder
-import android.os.ParcelableException
 import android.platform.test.annotations.RequiresFlagsEnabled
 import com.google.common.truth.Truth.assertThat
 import com.google.common.util.concurrent.MoreExecutors
@@ -641,7 +640,7 @@ class InternalObserverCallbackRouterTest {
     class TestInternalCallback() : IObserveAppFunctionChangesCallback {
         var changedPackageNames: List<String>? = null
         var changedFunctionNames: List<AppFunctionName>? = null
-        var callbackException: Throwable? = null
+        val binder = Binder((binderId++).toString())
 
         override fun onAppFunctionsChanged(appFunctions: List<AppFunctionName>) {
             changedFunctionNames = appFunctions
@@ -651,14 +650,12 @@ class InternalObserverCallbackRouterTest {
             changedPackageNames = packageNames
         }
 
-        override fun onRegistrationError(exception: ParcelableException?) {
-            if (exception != null) {
-                callbackException = exception.cause
-            }
+        override fun asBinder(): IBinder {
+            return binder
         }
 
-        override fun asBinder(): IBinder? {
-            return Binder()
+        companion object {
+            var binderId = 1
         }
     }
 }
