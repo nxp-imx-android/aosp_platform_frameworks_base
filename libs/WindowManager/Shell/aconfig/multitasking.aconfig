@@ -41,10 +41,13 @@ flag {
 }
 
 flag {
-    name: "enable_bubbles_long_press_nav_handle"
+    name: "fix_bubbles_long_press_nav_handle"
     namespace: "multitasking"
-    description: "Enables long-press action for nav handle when a bubble is expanded"
+    description: "Allows handling of long-press on nav handle when bubbles are expanded"
     bug: "324910035"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }
 
 flag {
