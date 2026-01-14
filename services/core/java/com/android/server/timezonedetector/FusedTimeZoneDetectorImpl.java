@@ -26,11 +26,11 @@ import android.app.timezonedetector.TelephonySignal;
 import android.content.Context;
 import android.os.Handler;
 import android.os.SystemClock;
-import android.os.UserHandle;
 import android.provider.Settings;
-import android.util.IndentingPrintWriter;
+import android.timezone.flags.Flags;
 import android.util.ArrayMap;
 import android.util.ArraySet;
+import android.util.IndentingPrintWriter;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
@@ -104,6 +104,7 @@ public final class FusedTimeZoneDetectorImpl implements FusedTimeZoneDetector {
     private final ServiceConfigAccessor mServiceConfigAccessor;
     private final Handler mHandler;
     private final Duration mAirplaneModeResetDelay;
+    private final TimeZoneDetectorTelemetry mTelemetry;
 
     @GuardedBy("this")
     @Nullable
@@ -181,6 +182,10 @@ public final class FusedTimeZoneDetectorImpl implements FusedTimeZoneDetector {
                         context,
                         serviceConfigAccessor,
                         DeviceActivityMonitorImpl.create(context, handler),
+                        new TimeZoneDetectorTelemetryImpl(context,
+                                new EnvironmentImpl(handler),
+                                new TimeZoneDetectorStatsdLogger(),
+                                context.getPackageManager()),
                         handler);
         fusedTimeZoneDetector.init();
 
@@ -192,11 +197,13 @@ public final class FusedTimeZoneDetectorImpl implements FusedTimeZoneDetector {
             @NonNull Context context,
             @NonNull ServiceConfigAccessor serviceConfigAccessor,
             @NonNull DeviceActivityMonitor deviceActivityMonitor,
+            @NonNull TimeZoneDetectorTelemetry telemetry,
             @NonNull Handler handler) {
         this(
                 context,
                 serviceConfigAccessor,
                 deviceActivityMonitor,
+                telemetry,
                 handler,
                 DEFAULT_AIRPLANE_MODE_RESET_DELAY);
     }
@@ -206,6 +213,7 @@ public final class FusedTimeZoneDetectorImpl implements FusedTimeZoneDetector {
             @NonNull Context context,
             @NonNull ServiceConfigAccessor serviceConfigAccessor,
             @NonNull DeviceActivityMonitor deviceActivityMonitor,
+            @NonNull TimeZoneDetectorTelemetry telemetry,
             @NonNull Handler handler,
             @NonNull Duration airplaneModeResetDelay) {
         mContext = Objects.requireNonNull(context);
@@ -213,6 +221,7 @@ public final class FusedTimeZoneDetectorImpl implements FusedTimeZoneDetector {
         mDeviceActivityMonitor = Objects.requireNonNull(deviceActivityMonitor);
         mHandler = handler;
         mAirplaneModeResetDelay = airplaneModeResetDelay;
+        mTelemetry = telemetry;
 
         synchronized (this) {
             mIsLocationOnlyTzDetection =
@@ -264,6 +273,11 @@ public final class FusedTimeZoneDetectorImpl implements FusedTimeZoneDetector {
             return;
         }
 
+        if (Flags.enableTimeZoneTransitionTelemetryLogging()
+                || Flags.enablePermanentTimeZoneCorrectnessTelemetryLogging()) {
+            mTelemetry.onTelephonyTimeZoneSuggestion(suggestion.suggestion());
+        }
+
         mValidTelephonyUpdates++;
 
         synchronized (this) {
@@ -297,6 +311,11 @@ public final class FusedTimeZoneDetectorImpl implements FusedTimeZoneDetector {
 
         mValidLocationUpdates++;
         List<String> newZoneIds = event.getSuggestion().getZoneIds();
+
+        if (Flags.enableTimeZoneTransitionTelemetryLogging()
+                || Flags.enablePermanentTimeZoneCorrectnessTelemetryLogging()) {
+            mTelemetry.onGeolocationTimeZoneSuggestion(event.getSuggestion());
+        }
 
         synchronized (this) {
             if (mCurrentFusedSignals == null) {
@@ -569,6 +588,10 @@ public final class FusedTimeZoneDetectorImpl implements FusedTimeZoneDetector {
             return;
         }
         String cause = "Found good suggestion from " + source;
+        if (Flags.enableTimeZoneTransitionTelemetryLogging()
+                || Flags.enablePermanentTimeZoneCorrectnessTelemetryLogging()) {
+            mTelemetry.onFusedTimeZoneChanged(fusedSignals.getTimeZoneId());
+        }
         mTimeZoneSetter.setDeviceTimeZoneIfRequired(
                 fusedSignals.getTimeZoneId(), cause, ORIGIN_FUSED);
     }

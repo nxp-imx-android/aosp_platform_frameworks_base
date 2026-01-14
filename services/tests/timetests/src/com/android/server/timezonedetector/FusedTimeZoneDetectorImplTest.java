@@ -22,24 +22,20 @@ import static android.service.timezone.TimeZoneProviderStatus.DEPENDENCY_STATUS_
 import static android.service.timezone.TimeZoneProviderStatus.DEPENDENCY_STATUS_OK;
 import static android.service.timezone.TimeZoneProviderStatus.OPERATION_STATUS_OK;
 
-import static com.android.server.SystemTimeZone.TIME_ZONE_CONFIDENCE_HIGH;
-import static com.android.server.SystemTimeZone.TIME_ZONE_CONFIDENCE_LOW;
-import static com.android.server.timezonedetector.TimeZoneDetectorStrategyImpl.TELEPHONY_SCORE_HIGH;
-import static com.android.server.timezonedetector.TimeZoneDetectorStrategyImpl.TELEPHONY_SCORE_LOW;
-import static com.android.server.timezonedetector.TimeZoneDetectorStrategyImpl.TELEPHONY_SCORE_USAGE_THRESHOLD;
-import static com.android.server.timezonedetector.TimeZoneDetectorStrategy.Origin;
+import static com.android.server.timezonedetector.FusedTimeZoneDetector.TimeZoneSetter;
 import static com.android.server.timezonedetector.TimeZoneDetectorStrategy.ORIGIN_FUSED;
 import static com.android.server.timezonedetector.TimeZoneDetectorStrategy.ORIGIN_LOCATION;
 import static com.android.server.timezonedetector.TimeZoneDetectorStrategy.ORIGIN_TELEPHONY;
-import static com.android.server.timezonedetector.FusedTimeZoneDetector.TimeZoneSetter;
+import static com.android.server.timezonedetector.TimeZoneDetectorStrategy.Origin;
+import static com.android.server.timezonedetector.TimeZoneDetectorStrategyImpl.TELEPHONY_SCORE_HIGH;
+import static com.android.server.timezonedetector.TimeZoneDetectorStrategyImpl.TELEPHONY_SCORE_LOW;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -55,6 +51,8 @@ import android.os.HandlerThread;
 import android.service.timezone.TimeZoneProviderStatus;
 import android.util.IndentingPrintWriter;
 
+import androidx.test.core.app.ApplicationProvider;
+
 import com.android.server.SystemTimeZone.TimeZoneConfidence;
 import com.android.server.timezonedetector.ftzd.FusedSignals;
 
@@ -62,17 +60,14 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.time.Duration;
-import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.TimeZone;
@@ -97,6 +92,7 @@ public class FusedTimeZoneDetectorImplTest {
 
     @Mock private Context mMockContext;
     @Mock private ContentResolver mMockContentResolver;
+    @Mock private TimeZoneDetectorTelemetry mMockTelemetry;
 
     private FakeDeviceActivityMonitor mFakeDeviceActivityMonitor;
     private FakeServiceConfigAccessor mFakeServiceConfigAccessor;
@@ -130,6 +126,7 @@ public class FusedTimeZoneDetectorImplTest {
                         mMockContext,
                         mFakeServiceConfigAccessor,
                         mFakeDeviceActivityMonitor,
+                        mMockTelemetry,
                         mTestHandler,
                         /* airplaneModeResetDelay= */ Duration.ofSeconds(1));
         mFusedTimeZoneDetector.init();
@@ -159,6 +156,7 @@ public class FusedTimeZoneDetectorImplTest {
                 createTelephonySuggestion(timeZoneId, TELEPHONY_SCORE_HIGH, "310", "us");
 
         mScript.simulateTelephonySuggestion(suggestion).verifyTimeZoneSuggested(timeZoneId);
+        verify(mMockTelemetry).onTelephonyTimeZoneSuggestion(eq(suggestion.suggestion()));
     }
 
     @Test
@@ -178,12 +176,14 @@ public class FusedTimeZoneDetectorImplTest {
         // 1. Set initial time zone via location.
         LocationAlgorithmEvent locationEvent = createLocationEvent(initialZoneId);
         mScript.simulateLocationEvent(locationEvent).verifyTimeZoneSuggested(initialZoneId);
+        verify(mMockTelemetry).onGeolocationTimeZoneSuggestion(eq(locationEvent.getSuggestion()));
 
         // 2. Send an agreeing telephony suggestion. The time zone should not change.
         // This internally strengthens the current time zone by adding a second origin.
         QualifiedTelephonyTimeZoneSuggestion telephonySuggestion =
                 createTelephonySuggestion(initialZoneId, TELEPHONY_SCORE_HIGH, "310", "us");
         mScript.simulateTelephonySuggestion(telephonySuggestion).verifyTimeZoneNotChanged();
+        verify(mMockTelemetry).onTelephonyTimeZoneSuggestion(eq(telephonySuggestion.suggestion()));
 
         // 3. Send a disagreeing location suggestion. Because the current zone is supported by
         // both location and telephony, it should not be immediately overridden. A disagreement
@@ -208,6 +208,7 @@ public class FusedTimeZoneDetectorImplTest {
         // Set initial time zone via location.
         LocationAlgorithmEvent locationEvent = createLocationEvent(initialZoneId);
         mScript.simulateLocationEvent(locationEvent).verifyTimeZoneSuggested(initialZoneId);
+        verify(mMockTelemetry).onGeolocationTimeZoneSuggestion(eq(locationEvent.getSuggestion()));
 
         // A base configuration that enables everything.
         ConfigurationInternal.Builder baseConfigBuilder =
