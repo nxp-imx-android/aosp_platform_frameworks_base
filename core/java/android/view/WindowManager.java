@@ -2305,12 +2305,18 @@ public interface WindowManager extends ViewManager {
         public static final int TYPE_APPLICATION_MEDIA_OVERLAY  = FIRST_SUB_WINDOW + 4;
 
         /**
-         * Window type: a above sub-panel on top of an application window and it's
+         * Window type: an above sub-panel on top of an application window and it's
          * sub-panel windows. These windows are displayed on top of their attached window
          * and any {@link #TYPE_APPLICATION_SUB_PANEL} panels.
          * @hide
          */
         public static final int TYPE_APPLICATION_ABOVE_SUB_PANEL = FIRST_SUB_WINDOW + 5;
+
+        /**
+         * Window type: a caption bar on top of an application window.
+         * @hide
+         */
+        public static final int TYPE_APPLICATION_CAPTION_BAR = FIRST_SUB_WINDOW + 6;
 
         /**
          * End of types of sub-windows.
