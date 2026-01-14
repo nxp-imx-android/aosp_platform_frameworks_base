@@ -125,3 +125,10 @@ flag {
   description: "Feature flag for adding the getBiometricSensorStrengths API to BiometricManager."
   bug: "454275027"
 }
+
+flag {
+    name: "agent_auth_api"
+    namespace: "biometrics_framework"
+    description: "Feature flag for internal xdevice agent auth API"
+    bug: "474639153"
+}

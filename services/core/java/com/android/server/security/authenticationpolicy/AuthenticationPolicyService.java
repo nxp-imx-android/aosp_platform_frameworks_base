@@ -111,6 +111,7 @@ public class AuthenticationPolicyService extends SystemService {
     private final boolean mEnableFailedAuthLockToggle;
     private SecureLockDeviceServiceInternal mSecureLockDeviceService;
     private WatchRangingServiceInternal mWatchRangingService;
+    private final AgentAuthServiceInternal mAgentAuthService;
     @VisibleForTesting
     final SparseIntArray mFailedAttemptsForUser = new SparseIntArray();
     private final SparseLongArray mLastLockedTimestamp = new SparseLongArray();
@@ -122,6 +123,8 @@ public class AuthenticationPolicyService extends SystemService {
     @VisibleForTesting
     public AuthenticationPolicyService(Context context, LockPatternUtils lockPatternUtils) {
         super(context);
+
+        // fetch dependencies
         mLockPatternUtils = lockPatternUtils;
         mLockSettings = Objects.requireNonNull(
                 LocalServices.getService(LockSettingsInternal.class));
@@ -131,6 +134,8 @@ public class AuthenticationPolicyService extends SystemService {
         mWindowManager = Objects.requireNonNull(
                 LocalServices.getService(WindowManagerInternal.class));
         mUserManager = Objects.requireNonNull(LocalServices.getService(UserManagerInternal.class));
+
+        // sub-services
         if (secureLockdown()) {
             mSecureLockDeviceService = Objects.requireNonNull(
                     LocalServices.getService(SecureLockDeviceServiceInternal.class));
@@ -139,6 +144,10 @@ public class AuthenticationPolicyService extends SystemService {
             mWatchRangingService = Objects.requireNonNull(LocalServices.getService(
                     WatchRangingServiceInternal.class));
         }
+        mAgentAuthService = Flags.agentAuthApi() ? Objects.requireNonNull(
+                LocalServices.getService(AgentAuthServiceInternal.class)) : null;
+
+        // settings / config for policy services
         mEnableFailedAuthLock = context.getResources().getBoolean(
                 com.android.internal.R.bool.config_enableFailedAuthLock);
         mMaxAllowedFailedAuthAttempts = context.getResources().getInteger(
