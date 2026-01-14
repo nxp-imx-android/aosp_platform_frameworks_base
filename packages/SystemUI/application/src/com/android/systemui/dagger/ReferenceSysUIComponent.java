@@ -16,6 +16,7 @@
 
 package com.android.systemui.dagger;
 
+import com.android.systemui.bundle.phone.PodModulePhone;
 import com.android.systemui.controls.dagger.StartControlsStartableModule;
 import com.android.systemui.keyguard.CustomizationProvider;
 import com.android.systemui.settings.MultiUserUtilsModule;
@@ -41,6 +42,7 @@ import dagger.Subcomponent;
         StartControlsStartableModule.class,
         StartBinderLoggerModule.class,
         SystemUIModule.class,
+        PodModulePhone.class,
         SystemUICoreStartableModule.class,
         SysUIUnfoldModule.class,
         WallpaperModule.class})

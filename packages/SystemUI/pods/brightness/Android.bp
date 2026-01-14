@@ -54,7 +54,9 @@ java_library {
         "com.android.systemui.brightness_main",
     ],
 
-    visibility: ["//frameworks/base/packages/SystemUI/pods"],
+    visibility: [
+        "//frameworks/base/packages/SystemUI/pods/bundle:__subpackages__",
+    ],
 }
 
 java_library {
