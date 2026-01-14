@@ -338,6 +338,12 @@ class SyntheticPasswordManager {
             this.mSyntheticPassword = Arrays.copyOf(syntheticPassword, syntheticPassword.length);
         }
 
+        /** Zeroizes a synthetic password. */
+        public void zeroize() {
+            ArrayUtils.zeroize(mSyntheticPassword);
+            mSyntheticPassword = null;
+        }
+
         /**
          * Generates a new random synthetic password with escrow data.
          */
