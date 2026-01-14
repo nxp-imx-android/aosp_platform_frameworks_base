@@ -1294,6 +1294,7 @@ java_aconfig_library {
     apex_available: [
         "//apex_available:platform",
         "com.android.wifi",
+        "com.android.telephonycore",
     ],
     min_sdk_version: "30",
 }
@@ -2045,6 +2046,18 @@ java_aconfig_library {
     defaults: ["framework-minus-apex-aconfig-java-defaults"],
     mode: "exported",
     min_sdk_version: "30",
+}
+
+java_aconfig_library {
+    name: "android.provider.flags-exported-aconfig-java",
+    aconfig_declarations: "android.provider.flags-aconfig",
+    defaults: ["framework-minus-apex-aconfig-java-defaults"],
+    mode: "exported",
+    apex_available: [
+        "//apex_available:platform",
+        "com.android.telephonycore",
+    ],
+    min_sdk_version: "36",
 }
 
 // ContextHub
