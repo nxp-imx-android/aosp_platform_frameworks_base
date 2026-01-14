@@ -400,17 +400,20 @@ class PhysicsAnimator<T> private constructor (target: T) {
      * this specific animation have ended (unless they were explicitly canceled, in which you should
      * use [withEndOrCancelActions]). For example, if you call:
      *
+     * ```
      * animator
      *   .spring(TRANSLATION_X, ...)
      *   .spring(TRANSLATION_Y, ...)
      *   .withEndAction(action)
      *   .start()
+     * ```
      *
      * 'action' will be run when both TRANSLATION_X and TRANSLATION_Y end.
      *
      * Other properties may still be animating, if those animations were not started in the same
      * call. For example:
      *
+     * ```
      * animator
      *   .spring(ALPHA, ...)
      *   .start()
@@ -420,6 +423,7 @@ class PhysicsAnimator<T> private constructor (target: T) {
      *   .spring(TRANSLATION_Y, ...)
      *   .withEndAction(action)
      *   .start()
+     * ```
      *
      * 'action' will still be run as soon as TRANSLATION_X and TRANSLATION_Y end, even if ALPHA is
      * still animating.
@@ -536,57 +540,62 @@ class PhysicsAnimator<T> private constructor (target: T) {
                     val flingMax = flingConfig.max
 
                     // Add an end listener that will start the spring when the fling ends.
-                    endListeners.add(0, object : EndListener<T> {
-                        override fun onAnimationEnd(
-                            target: T,
-                            property: FloatPropertyCompat<in T>,
-                            wasFling: Boolean,
-                            canceled: Boolean,
-                            finalValue: Float,
-                            finalVelocity: Float,
-                            allRelevantPropertyAnimsEnded: Boolean
-                        ) {
-                            // If this isn't the relevant property, it wasn't a fling, or the fling
-                            // was explicitly cancelled, don't spring.
-                            if (property != animatedProperty || !wasFling || canceled) {
-                                return
-                            }
-
-                            val endedWithVelocity = abs(finalVelocity) > 0
-
-                            // If the object was out of bounds when the fling animation started, it
-                            // will immediately end. In that case, we'll spring it back in bounds.
-                            val endedOutOfBounds = finalValue !in flingMin..flingMax
-
-                            // If the fling ended either out of bounds or with remaining velocity,
-                            // it's time to spring.
-                            if (endedWithVelocity || endedOutOfBounds) {
-                                springConfig.startVelocity = finalVelocity
-
-                                // If the spring's final position isn't set, this is a
-                                // flingThenSpring where flingMustReachMinOrMax was false. We'll
-                                // need to set the spring's final position here.
-                                if (springConfig.finalPosition == UNSET) {
-                                    if (endedWithVelocity) {
-                                        // If the fling ended with negative velocity, that means it
-                                        // hit the min bound, so spring to that bound (and vice
-                                        // versa).
-                                        springConfig.finalPosition =
-                                                if (finalVelocity < 0) flingMin else flingMax
-                                    } else if (endedOutOfBounds) {
-                                        // If the fling ended out of bounds, spring it to the
-                                        // nearest bound.
-                                        springConfig.finalPosition =
-                                                if (finalValue < flingMin) flingMin else flingMax
-                                    }
+                    endListeners.add(
+                        0,
+                        object : EndListener<T> {
+                            override fun onAnimationEnd(
+                                target: T,
+                                property: FloatPropertyCompat<in T>,
+                                wasFling: Boolean,
+                                canceled: Boolean,
+                                finalValue: Float,
+                                finalVelocity: Float,
+                                allRelevantPropertyAnimsEnded: Boolean,
+                            ) {
+                                // If this isn't the relevant property, it wasn't a fling, or the
+                                // fling was explicitly cancelled, don't spring.
+                                if (property != animatedProperty || !wasFling || canceled) {
+                                    return
                                 }
 
-                                // Apply the configuration and start the spring animation.
-                                getSpringAnimation(animatedProperty, target)
-                                    .also { springConfig.applyToAnimation(it) }.start()
+                                val endedWithVelocity = abs(finalVelocity) > 0
+
+                                // If the object was out of bounds when the fling animation started,
+                                // it will immediately end. In that case, we'll spring it back in
+                                // bounds.
+                                val endedOutOfBounds = finalValue !in flingMin..flingMax
+
+                                // If the fling ended either out of bounds or with remaining
+                                // velocity, it's time to spring.
+                                if (endedWithVelocity || endedOutOfBounds) {
+                                    springConfig.startVelocity = finalVelocity
+
+                                    // If the spring's final position isn't set, this is a
+                                    // flingThenSpring where flingMustReachMinOrMax was false. We'll
+                                    // need to set the spring's final position here.
+                                    if (springConfig.finalPosition == UNSET) {
+                                        if (endedWithVelocity) {
+                                            // If the fling ended with negative velocity, that means
+                                            // it hit the min bound, so spring to that bound (and
+                                            // vice versa).
+                                            springConfig.finalPosition =
+                                                if (finalVelocity < 0) flingMin else flingMax
+                                        } else if (endedOutOfBounds) {
+                                            // If the fling ended out of bounds, spring it to the
+                                            // nearest bound.
+                                            springConfig.finalPosition =
+                                                if (finalValue < flingMin) flingMin else flingMax
+                                        }
+                                    }
+
+                                    // Apply the configuration and start the spring animation.
+                                    getSpringAnimation(animatedProperty, target)
+                                        .also { springConfig.applyToAnimation(it) }
+                                        .start()
+                                }
                             }
-                        }
-                    })
+                        },
+                    )
                 }
             }
         }
@@ -954,11 +963,13 @@ class PhysicsAnimator<T> private constructor (target: T) {
          * have ended. Relevant properties are those which were animated alongside the
          * [addEndListener] call where this animator was passed in. For example:
          *
+         * ```
          * animator
          *    .spring(TRANSLATION_X, 100f)
          *    .spring(TRANSLATION_Y, 200f)
          *    .withEndListener(firstEndListener)
          *    .start()
+         * ```
          *
          * firstEndListener will be called first for TRANSLATION_X, with allEnded = false,
          * because TRANSLATION_Y is still running. When TRANSLATION_Y ends, it'll be called with
@@ -969,10 +980,12 @@ class PhysicsAnimator<T> private constructor (target: T) {
          * TRANSLATION_Y end. For example, if immediately after the prior example, while
          * TRANSLATION_X and TRANSLATION_Y are still animating, we called:
          *
+         * ```
          * animator.
          *    .spring(SCALE_X, 2f, stiffness = 10f) // That will take awhile...
          *    .withEndListener(secondEndListener)
          *    .start()
+         * ```
          *
          * firstEndListener will still be called with allEnded = true when TRANSLATION_X/Y end, even
          * though SCALE_X is still animating. Similarly, secondEndListener will be called with

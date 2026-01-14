@@ -220,15 +220,19 @@ object PhysicsAnimatorTestUtils {
      * cleared. Subsequent calls to this method will start verification at the next animation frame.
      *
      * Example: Verify that an animation surpassed x = 50f before going negative.
+     * ```
      * verifyAnimationUpdateFrames(
      *    animator, TRANSLATION_X,
      *    { u -> u.value > 50f },
      *    { u -> u.value < 0f })
+     * ```
      *
      * Example: verify that an animation went backwards at some point while still being on-screen.
+     * ```
      * verifyAnimationUpdateFrames(
      *    animator, TRANSLATION_X,
      *    { u -> u.velocity < 0f && u.value >= 0f })
+     * ```
      *
      * This method is intended to help you test longer, more complicated animations where it's
      * critical that certain values were reached. Using this method to test short animations can
@@ -236,20 +240,24 @@ object PhysicsAnimatorTestUtils {
      * animation from x = 1f to x = 5f might only have two frames, at x = 3f and x = 5f. The
      * following would then fail despite it seeming logically sound:
      *
+     * ```
      * verifyAnimationUpdateFrames(
      *    animator, TRANSLATION_X,
      *    { u -> u.value > 1f },
      *    { u -> u.value > 2f },
      *    { u -> u.value > 3f })
+     * ```
      *
      * Tests might also fail if your matchers are too granular, such as this example test after an
      * animation from x = 0f to x = 100f. It's unlikely there was a frame specifically between 2f
      * and 3f.
      *
+     * ```
      * verifyAnimationUpdateFrames(
      *    animator, TRANSLATION_X,
      *    { u -> u.value > 2f && u.value < 3f },
      *    { u -> u.value >= 50f })
+     * ```
      *
      * Failures will print a helpful log of all animation frames so you can see what caused the test
      * to fail.
@@ -306,8 +314,9 @@ object PhysicsAnimatorTestUtils {
     /**
      * Overload of [verifyAnimationUpdateFrames] that builds matchers for you, from given float
      * values. For example, to verify that an animations passed from 0f to 50f to 100f back to 50f:
-     *
+     * ```
      * verifyAnimationUpdateFrames(animator, TRANSLATION_X, 0f, 50f, 100f, 50f)
+     * ```
      *
      * This verifies that update frames were received with values of >= 0f, >= 50f, >= 100f, and
      * <= 50f.
