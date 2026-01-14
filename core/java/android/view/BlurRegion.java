@@ -21,7 +21,6 @@ import static android.view.flags.Flags.FLAG_SURFACE_VIEW_SET_BLUR_REGIONS;
 import android.annotation.FlaggedApi;
 import android.annotation.FloatRange;
 import android.annotation.NonNull;
-import android.annotation.SuppressLint;
 
 import java.util.Objects;
 
@@ -35,18 +34,30 @@ public abstract class BlurRegion {
     private float mAlpha;
 
     /**
-     * @param builder builder to construct the BlurRegion from
+     * Default constructor.
      * @hide
      */
-    protected BlurRegion(@NonNull Builder<?> builder) {
-        this.mBlurRadius = builder.mBlurRadius;
-        this.mAlpha = builder.mAlpha;
+    protected BlurRegion() {
+        this.mAlpha = 1.0f;
+        this.mBlurRadius = 0.0f;
+    }
+
+    /**
+     * Constructs a new {@code BlurRegion} with the specified alpha and blur radius.
+     *
+     * @param alpha alpha value of the region [0.0 - 1.0]
+     * @param blurRadius the blur radius in pixels
+     * @hide
+     */
+    protected BlurRegion(@FloatRange(from = 0.0, to = 1.0) float alpha, float blurRadius) {
+        this.mAlpha = alpha;
+        this.mBlurRadius = blurRadius;
     }
 
     /**
      * Copy constructor.
      *
-     * @param other blur region to copy, must be non-{@code null}
+     * @param other blur region to copy, must not be {@code null}
      * @throws IllegalArgumentException if {@code other} is {@code null}
      * @hide
      */
@@ -103,6 +114,8 @@ public abstract class BlurRegion {
     /**
      * Sets the blur radius for this region.
      *
+     * <p>The default value for blur radius is 0.0f.
+     *
      * @param blurRadius blur radius in pixels
      */
     public void setBlurRadius(float blurRadius) {
@@ -121,71 +134,11 @@ public abstract class BlurRegion {
     /**
      * Sets the alpha for this region.
      *
+     * <p>The default value for alpha is 1.0f.
+     *
      * @param alpha alpha value of the region [0.0 - 1.0]
      */
     public void setAlpha(@FloatRange(from = 0.0, to = 1.0) float alpha) {
         mAlpha = alpha;
-    }
-
-    /**
-     * The builder for creating {@link BlurRegion} objects.
-     * @param <T> subclass to be built
-     */
-    @SuppressLint("StaticFinalBuilder")
-    public abstract static class Builder<T extends Builder<T>> {
-        private float mBlurRadius = 0.0f;
-        private float mAlpha = 1.0f;
-
-        /**
-         * @return builder instance
-         */
-        @SuppressLint("BuilderSetStyle")
-        abstract T self();
-
-        /**
-         * Default constructor for the Builder.
-         */
-        Builder() {}
-
-        /**
-         * Constructs a builder from an existing BlurRegion.
-         *
-         * @param other blur to copy properties from
-         */
-        Builder(@NonNull BlurRegion other) {
-            this.mBlurRadius = other.mBlurRadius;
-            this.mAlpha = other.mAlpha;
-        }
-
-        /**
-         * Sets the blur radius.
-         *
-         * @param blurRadius blur radius in pixels
-         * @return this builder
-         */
-        @NonNull
-        public T setBlurRadius(float blurRadius) {
-            this.mBlurRadius = blurRadius;
-            return self();
-        }
-
-        /**
-         * Sets the alpha.
-         *
-         * @param alpha alpha value to set on the region [0.0 - 1.0]
-         * @return this builder
-         */
-        @NonNull
-        public T setAlpha(@FloatRange(from = 0.0, to = 1.0) float alpha) {
-            this.mAlpha = alpha;
-            return self();
-        }
-
-        /**
-         * Builds the {@link BlurRegion} object.
-         * @return built {@link BlurRegion}
-         */
-        @NonNull
-        public abstract BlurRegion build();
     }
 }
