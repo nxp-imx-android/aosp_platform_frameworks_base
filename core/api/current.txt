@@ -44060,6 +44060,7 @@ package android.service.personalcontext {
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class PersonalContextManager {
     method public void publishTriggeringHint(@NonNull android.service.personalcontext.insight.interaction.ReturnHintReport, @NonNull java.util.List<android.service.personalcontext.hint.ContextHint>);
     method public void reportUserFeedback(@NonNull android.service.personalcontext.insight.ContextInsight, @Nullable android.os.Bundle);
+    method public void showAttribution(@NonNull android.service.personalcontext.insight.ContextInsight);
     field public static final String ACTION_PERSONAL_CONTEXT_ENABLED_CHANGED = "android.service.personalcontext.action.PERSONAL_CONTEXT_ENABLED_CHANGED";
     field public static final String PERSONAL_CONTEXT_SERVICE = "personal_context";
   }
@@ -44440,6 +44441,7 @@ package android.service.personalcontext.insight {
     method @NonNull public java.util.Set<android.service.personalcontext.hint.ContextHintWithSignature> getOriginHints();
     method @NonNull public java.util.Set<android.service.personalcontext.Token> getTokens();
     method @Nullable public android.service.personalcontext.insight.interaction.FeedbackRequest getUserFeedbackRequest();
+    method public boolean hasAttribution();
     method public void reportEvent(@NonNull android.content.Context, int, @NonNull android.service.personalcontext.RenderToken, @Nullable android.os.Bundle);
   }
 
@@ -44514,6 +44516,25 @@ package android.service.personalcontext.insight {
 }
 
 package android.service.personalcontext.insight.interaction {
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class AttributionDetails implements android.os.Parcelable {
+    ctor public AttributionDetails(@NonNull java.util.Collection<android.service.personalcontext.insight.interaction.AttributionDetails.AttributionLine>);
+    method public int describeContents();
+    method @NonNull public java.util.List<android.service.personalcontext.insight.interaction.AttributionDetails.AttributionLine> getLines();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.service.personalcontext.insight.interaction.AttributionDetails> CREATOR;
+  }
+
+  public static final class AttributionDetails.AttributionLine implements android.os.Parcelable {
+    ctor public AttributionDetails.AttributionLine(@Nullable CharSequence, @Nullable android.graphics.drawable.Icon, @Nullable CharSequence, @Nullable CharSequence);
+    method public int describeContents();
+    method @Nullable public CharSequence getContentDescription();
+    method @Nullable public android.graphics.drawable.Icon getIcon();
+    method @Nullable public CharSequence getSubtitle();
+    method @Nullable public CharSequence getTitle();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.service.personalcontext.insight.interaction.AttributionDetails.AttributionLine> CREATOR;
+  }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class FeedbackRequest implements android.os.Parcelable {
     ctor public FeedbackRequest(@NonNull java.util.Collection<android.service.personalcontext.insight.interaction.FeedbackRequest.FeedbackField>);
