@@ -31,6 +31,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.annotation.StringRes
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.ColorUtils
 import androidx.core.view.children
 import androidx.dynamicanimation.animation.DynamicAnimation
 import androidx.dynamicanimation.animation.SpringAnimation
@@ -361,15 +362,43 @@ constructor(
             val toColor =
                 getBackgroundColor(if (level == BannerStatus.OFF) BannerStatus.GENERIC else level)
 
+            // Set up text color with disabled state
+            val currentTextColors = textColors
+            val enabledTextColor = currentTextColors.getColorForState(
+                intArrayOf(android.R.attr.state_enabled), currentTextColors.defaultColor
+            )
+            val disabledTextColor = ColorUtils.setAlphaComponent(enabledTextColor, DISABLED_BUTTON_ALPHA)
+            setTextColor(ColorStateList(
+                arrayOf(
+                    intArrayOf(android.R.attr.state_enabled),
+                    intArrayOf(-android.R.attr.state_enabled),
+                ),
+                intArrayOf(enabledTextColor, disabledTextColor)
+            ))
+
+            val backgroundStates = arrayOf(
+                intArrayOf(android.R.attr.state_enabled),
+                intArrayOf(-android.R.attr.state_enabled),
+            )
+
             if (shouldAnimate && fromColor != toColor) {
                 val colorAnimator = ValueAnimator.ofObject(ArgbEvaluator(), fromColor, toColor)
                 colorAnimator.duration = BACKGROUND_TRANSITION_SPEED.toLong()
                 colorAnimator.addUpdateListener { animator ->
-                    backgroundTintList = ColorStateList.valueOf(animator.animatedValue as Int)
+                    val animatedColor = animator.animatedValue as Int
+                    val disabledAnimatedColor =
+                        ColorUtils.setAlphaComponent(animatedColor, DISABLED_BUTTON_ALPHA)
+                    backgroundTintList = ColorStateList(
+                        backgroundStates,
+                        intArrayOf(animatedColor, disabledAnimatedColor)
+                    )
                 }
                 colorAnimator.start()
             } else {
-                backgroundTintList = ColorStateList.valueOf(toColor)
+                val disabledToColor = ColorUtils.setAlphaComponent(toColor, DISABLED_BUTTON_ALPHA)
+                backgroundTintList = ColorStateList(
+                    backgroundStates, intArrayOf(toColor, disabledToColor)
+                )
             }
             text = buttonText
             setOnClickListener(listener)
@@ -684,6 +713,7 @@ constructor(
         const val DEFAULT_DAMPING_RATIO = 0.7f
         const val DEFAULT_STIFFNESS = 800f
         const val BACKGROUND_TRANSITION_SPEED = 150
+        const val DISABLED_BUTTON_ALPHA = 97
     }
 
     /**
