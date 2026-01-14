@@ -21,7 +21,9 @@ import android.app.ActivityTaskManager
 import android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
+import android.view.SurfaceControl
 import android.view.WindowManager
+import android.window.TaskAppearedInfo
 import android.window.TransitionInfo
 import androidx.test.filters.SmallTest
 import com.android.testing.wm.util.MockToken
@@ -48,6 +50,7 @@ import org.mockito.kotlin.stub
 @SmallTest
 class BubbleHelperImplTest : ShellTestCase() {
 
+    private val leash = mock<SurfaceControl>()
     private val shellInit = mock<ShellInit>()
     private val taskOrganizer = mock<ShellTaskOrganizer>()
 
@@ -71,11 +74,18 @@ class BubbleHelperImplTest : ShellTestCase() {
     @EnableFlags(FLAG_VISIBILITY_MANAGEMENT_IN_BUBBLE_ROOT)
     @Test
     fun getAppBubbleVisibilityBarrierToken() {
-        val token = MockToken.token()
-        taskOrganizer.stub { on { createTask(any(), any()) } doReturn token }
+        val taskToken = MockToken.token()
+        val bubbleTask =
+            ActivityManager.RunningTaskInfo().apply {
+                taskId = 123
+                token = taskToken
+            }
+        taskOrganizer.stub {
+            on { createTask(any(), any()) } doReturn TaskAppearedInfo(bubbleTask, leash)
+        }
         bubbleRootTask.prepareRootTaskForTest(bubbleRootTaskId = 123)
 
-        assertThat(bubbleHelper.getAppBubbleVisibilityBarrierToken()).isEqualTo(token)
+        assertThat(bubbleHelper.getAppBubbleVisibilityBarrierToken()).isEqualTo(taskToken)
     }
 
     @Test
