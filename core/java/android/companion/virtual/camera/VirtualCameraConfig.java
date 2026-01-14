@@ -418,10 +418,8 @@ public final class VirtualCameraConfig implements Parcelable {
         @NonNull
         public Builder setLensFacing(int lensFacing) {
             boolean allowLensFacing = lensFacing == CameraMetadata.LENS_FACING_FRONT
-                    || lensFacing == CameraMetadata.LENS_FACING_BACK;
-            if (Flags.externalVirtualCameras()) {
-                allowLensFacing |= lensFacing == CameraMetadata.LENS_FACING_EXTERNAL;
-            }
+                    || lensFacing == CameraMetadata.LENS_FACING_BACK
+                    || lensFacing == CameraMetadata.LENS_FACING_EXTERNAL;
             if (!allowLensFacing) {
                 throw new IllegalArgumentException("Unsupported lens facing: " + lensFacing);
             }
