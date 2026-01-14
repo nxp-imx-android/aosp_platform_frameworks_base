@@ -346,9 +346,6 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
     }
 
     void onActivityPinned() {
-        // If free-floating PiP is enabled, we don't stash and always snap-to-edge if PiP is dragged
-        // past display bounds
-        mEnableStash = !mPipDesktopState.isFreeFloatingPipEnabled();
         mPipDismissTargetHandler.createOrUpdateDismissTarget();
         mPipResizeGestureHandler.onActivityPinned();
         mFloatingContentCoordinator.onContentAdded(mMotionHelper);
@@ -974,6 +971,9 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
                             shouldShowResizeHandle());
                 }
                 mShouldHideMenuAfterFling = mMenuState == MENU_STATE_NONE;
+                // If free-floating PiP is enabled, we don't stash and always snap-to-edge if PiP is
+                // dragged past display bounds
+                mEnableStash = !mPipDesktopState.isFreeFloatingPipEnabled();
 
                 // Reset the touch state on up before the fling settles
                 mTouchState.reset();
