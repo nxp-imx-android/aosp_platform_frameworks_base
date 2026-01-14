@@ -27,7 +27,6 @@ import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.log.logcatLogBuffer
-import com.android.systemui.lowlight.AmbientLightModeMonitor
 import com.android.systemui.lowlightclock.LowLightLogger
 import com.android.systemui.testKosmos
 import com.android.systemui.util.time.fakeSystemClock
@@ -377,21 +376,22 @@ class LightSensorDebounceAlgorithmTest(flags: FlagsParameterization) : SysuiTest
         }
 
     @Test
-    fun shouldImmediatelyComputeResultWhenStarted() = kosmos.runTest {
-        val callback = startAlgorithm()
+    fun shouldImmediatelyComputeResultWhenStarted() =
+        kosmos.runTest {
+            val callback = startAlgorithm()
 
-        // Mock first sensor event, which is between thresholds 2 and 5.
-        underTest.onUpdateLightSensorEvent(3.0f)
+            // Mock first sensor event, which is between thresholds 2 and 5.
+            underTest.onUpdateLightSensorEvent(3.0f)
 
-        // Verify callback not triggered, because mode is undetermined.
-        verify(callback, never()).onChange(any())
+            // Verify callback not triggered, because mode is undetermined.
+            verify(callback, never()).onChange(any())
 
-        // Mock second sensor event, which is below dark threshold 2.
-        underTest.onUpdateLightSensorEvent(1.0f)
+            // Mock second sensor event, which is below dark threshold 2.
+            underTest.onUpdateLightSensorEvent(1.0f)
 
-        // Verify mode immediately changed to dark.
-        verify(callback).onChange(AmbientLightModeMonitor.AMBIENT_LIGHT_MODE_DARK)
-    }
+            // Verify mode immediately changed to dark.
+            verify(callback).onChange(AmbientLightModeMonitor.AMBIENT_LIGHT_MODE_DARK)
+        }
 
     @Test
     fun shouldImmediatelyComputeResultAfterRestart() =
@@ -474,30 +474,31 @@ class LightSensorDebounceAlgorithmTest(flags: FlagsParameterization) : SysuiTest
 
     @Test
     @EnableFlags(FLAG_LOW_LIGHT_DREAM_HYSTERESIS)
-    fun updateMode_withHysteresis_switchesCorrectly() = kosmos.runTest {
-        // Start in undecided
-        underTest.mode = AmbientLightModeMonitor.AMBIENT_LIGHT_MODE_UNDECIDED
-        underTest.isLightMode = false
-        underTest.isDarkMode = false
+    fun updateMode_withHysteresis_switchesCorrectly() =
+        kosmos.runTest {
+            // Start in undecided
+            underTest.mode = AmbientLightModeMonitor.AMBIENT_LIGHT_MODE_UNDECIDED
+            underTest.isLightMode = false
+            underTest.isDarkMode = false
 
-        // Undecided -> Dark
-        underTest.isDarkMode = true
-        assertThat(underTest.mode).isEqualTo(AmbientLightModeMonitor.AMBIENT_LIGHT_MODE_DARK)
+            // Undecided -> Dark
+            underTest.isDarkMode = true
+            assertThat(underTest.mode).isEqualTo(AmbientLightModeMonitor.AMBIENT_LIGHT_MODE_DARK)
 
-        // Dark -> Light (should not switch if isDarkMode is still true)
-        underTest.isLightMode = true
-        assertThat(underTest.mode).isEqualTo(AmbientLightModeMonitor.AMBIENT_LIGHT_MODE_DARK)
+            // Dark -> Light (should not switch if isDarkMode is still true)
+            underTest.isLightMode = true
+            assertThat(underTest.mode).isEqualTo(AmbientLightModeMonitor.AMBIENT_LIGHT_MODE_DARK)
 
-        // Dark -> Light (should switch)
-        underTest.isDarkMode = false
-        assertThat(underTest.mode).isEqualTo(AmbientLightModeMonitor.AMBIENT_LIGHT_MODE_LIGHT)
+            // Dark -> Light (should switch)
+            underTest.isDarkMode = false
+            assertThat(underTest.mode).isEqualTo(AmbientLightModeMonitor.AMBIENT_LIGHT_MODE_LIGHT)
 
-        // Light -> Dark (should not switch if isLightMode is still true)
-        underTest.isDarkMode = true
-        assertThat(underTest.mode).isEqualTo(AmbientLightModeMonitor.AMBIENT_LIGHT_MODE_LIGHT)
+            // Light -> Dark (should not switch if isLightMode is still true)
+            underTest.isDarkMode = true
+            assertThat(underTest.mode).isEqualTo(AmbientLightModeMonitor.AMBIENT_LIGHT_MODE_LIGHT)
 
-        // Light -> Dark (should switch)
-        underTest.isLightMode = false
-        assertThat(underTest.mode).isEqualTo(AmbientLightModeMonitor.AMBIENT_LIGHT_MODE_DARK)
-    }
+            // Light -> Dark (should switch)
+            underTest.isLightMode = false
+            assertThat(underTest.mode).isEqualTo(AmbientLightModeMonitor.AMBIENT_LIGHT_MODE_DARK)
+        }
 }

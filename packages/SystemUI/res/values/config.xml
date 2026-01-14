@@ -1092,6 +1092,12 @@
     <!-- The dream component used when the device is low light environment. -->
     <string translatable="false" name="config_lowLightDreamComponent"/>
 
+    <!-- The type of the light sensor used by the low light monitor. -->
+    <string name="config_lowLightMonitorLightSensorType" translatable="false"/>
+
+    <!-- The name of the light sensor used by the low light monitor. -->
+    <string name="config_lowLightMonitorLightSensorName" translatable="false"/>
+
     <!-- Determines whether low light should be allowed pre-unlock -->
     <bool translatable="false" name="config_allowLowLightBehaviorWhenLocked">false</bool>
 
