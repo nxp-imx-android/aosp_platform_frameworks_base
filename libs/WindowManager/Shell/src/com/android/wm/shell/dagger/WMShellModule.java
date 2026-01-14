@@ -1877,8 +1877,7 @@ public abstract class WMShellModule {
             @NonNull RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer,
             @NonNull DisplayController displayController
     ) {
-        if (desktopState.canEnterDesktopMode()
-                && DesktopExperienceFlags.ENABLE_DESKTOP_FIRST_LISTENER.isTrue()) {
+        if (desktopState.canEnterDesktopMode()) {
             return Optional.of(
                     new DesktopFirstListenerManager(shellInit, rootTaskDisplayAreaOrganizer,
                             displayController));
