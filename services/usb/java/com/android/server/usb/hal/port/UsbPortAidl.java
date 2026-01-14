@@ -714,9 +714,15 @@ public final class UsbPortAidl implements UsbPortHal {
             return powerMw;
         }
 
-        private PowerProfileInfo[] populatePowerProfileInfo(
+       private PowerProfileInfo[] populatePowerProfileInfo(
                     android.hardware.usb.PowerProfile[] profiles) {
-            PowerProfileInfo[] profileInfoList = new PowerProfileInfo[profiles.length];
+            PowerProfileInfo[] profileInfoList;
+
+            if (profiles == null) {
+                return new PowerProfileInfo[0];
+            }
+
+            profileInfoList = new PowerProfileInfo[profiles.length];
 
             for (int i = 0; i < profiles.length; i++) {
                 PowerProfileInfo.Builder builder = new PowerProfileInfo.Builder();
@@ -815,7 +821,13 @@ public final class UsbPortAidl implements UsbPortHal {
 
         private PowerProfileMatchInfo[] populatePowerProfileMatches(
                 PowerProfileMatchResult[] matchResults) {
-            PowerProfileMatchInfo[] matchInfoList = new PowerProfileMatchInfo[matchResults.length];
+            PowerProfileMatchInfo[] matchInfoList;
+
+            if (matchResults == null) {
+                return new PowerProfileMatchInfo[0];
+            }
+
+            matchInfoList = new PowerProfileMatchInfo[matchResults.length];
 
             for (int i = 0; i < matchResults.length; i++) {
                 PowerProfileMatchResult matchResult = matchResults[i];
