@@ -154,6 +154,8 @@ interface ISub {
      * @param nameSource, 0: DEFAULT_SOURCE, 1: SIM_SOURCE, 2: USER_INPUT
      * @return the number of records updated
      */
+     @JavaPassthrough(annotation = "@android.annotation.RequiresPermission("
+                    + "android.Manifest.permission.MODIFY_PHONE_STATE)")
     int setDisplayNameUsingSrc(String displayName, int subId, int nameSource);
 
     /**
