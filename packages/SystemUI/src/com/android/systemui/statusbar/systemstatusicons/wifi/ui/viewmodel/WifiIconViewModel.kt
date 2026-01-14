@@ -37,7 +37,7 @@ import dagger.assisted.AssistedInject
 class WifiIconViewModel
 @AssistedInject
 constructor(@Assisted private val context: Context, wifiViewModel: WifiViewModel) :
-    SystemStatusIconViewModel.Default, ExclusiveActivatable() {
+    SystemStatusIconViewModel.Wifi, ExclusiveActivatable() {
 
     init {
         SystemStatusIconsInCompose.expectInNewMode()
@@ -52,6 +52,27 @@ constructor(@Assisted private val context: Context, wifiViewModel: WifiViewModel
             traceName = "SystemStatus.wifiIcon",
             initialValue = WifiIcon.Hidden,
             source = wifiViewModel.wifiIcon,
+        )
+
+    override val isActivityContainerVisible: Boolean by
+        hydrator.hydratedStateOf(
+            traceName = "SystemStatus.wifiIcon.activityContainerVisible",
+            initialValue = false,
+            source = wifiViewModel.isActivityContainerVisible,
+        )
+
+    override val isActivityInVisible: Boolean by
+        hydrator.hydratedStateOf(
+            traceName = "SystemStatus.wifiIcon.activityInVisible",
+            initialValue = false,
+            source = wifiViewModel.isActivityInViewVisible,
+        )
+
+    override val isActivityOutVisible: Boolean by
+        hydrator.hydratedStateOf(
+            traceName = "SystemStatus.wifiIcon.activityOutVisible",
+            initialValue = false,
+            source = wifiViewModel.isActivityOutViewVisible,
         )
 
     override val visible: Boolean
