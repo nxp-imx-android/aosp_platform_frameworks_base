@@ -34,13 +34,11 @@ constructor(
 
     override fun getDefaultTiles(isHeadlessSystemUser: Boolean): List<TileSpec> {
         return if (
-                isHeadlessSystemUser &&
-                    hsuTilesRepository.allowedTiles is AllowedTiles.SpecificTiles
-            ) {
-                hsuTilesRepository.allowedTiles.tiles
-            } else {
-                defaultTiles
-            }
-            .migrateInternetTile()
+            isHeadlessSystemUser && hsuTilesRepository.allowedTiles is AllowedTiles.SpecificTiles
+        ) {
+            hsuTilesRepository.allowedTiles.tiles.migrateInternetTile()
+        } else {
+            defaultTiles
+        }
     }
 }

@@ -109,7 +109,11 @@ class DefaultTilesQSHostRepositoryTest : SysuiTestCase() {
 
     private fun Kosmos.overrideDefaultTilesResource(defaultTiles: String) {
         testCase.context.orCreateTestableResources.addOverride(
-            R.string.quick_settings_tiles_default,
+            if (QsSplitInternetTile.isEnabled) {
+                R.string.quick_settings_tiles_default_split
+            } else {
+                R.string.quick_settings_tiles_default
+            },
             defaultTiles,
         )
     }
