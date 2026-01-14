@@ -119,7 +119,7 @@ final class AppCompatCameraDisplayRotationPolicy implements AppCompatCameraState
     static boolean isPolicyEnabled(@NonNull DisplayContent displayContent) {
         return !(Flags.cameraCompatUnifyCameraPolicies()
                 && displayContent.mWmService.mAppCompatConfiguration
-                        .isCameraCompatSimulateRequestedOrientationTreatmentEnabled())
+                        .isCameraCompatSimReqOrientationTreatmentEnabled())
                 && displayContent.mWmService.mAppCompatConfiguration
                         .isCameraCompatForceRotateTreatmentEnabledAtBuildTime();
     }

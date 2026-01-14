@@ -267,7 +267,7 @@ public final class AppCompatCameraDisplayRotationPolicyTests extends WindowTests
     @DisableFlags(Flags.FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES)
     public void testDisplayTypeExternal_noForceRotationOrRefresh() {
         runTestScenario((robot) -> {
-            robot.conf().enableCameraCompatSimulateRequestedOrientationTreatment(false);
+            robot.conf().enableCameraCompatSimReqOrientationTreatment(false);
             robot.configureActivityAndDisplay(SCREEN_ORIENTATION_PORTRAIT,
                     WINDOWING_MODE_FULLSCREEN, ORIENTATION_PORTRAIT, TYPE_EXTERNAL);
 
