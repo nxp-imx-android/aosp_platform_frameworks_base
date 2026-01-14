@@ -259,7 +259,7 @@ constructor(
      * the interim providers (wifi, mobile, ethernet, or not-connected)
      */
     private val activeModelProvider: Flow<InternetTileModel> =
-        connectivityRepository.defaultConnections.flatMapLatest {
+        connectivityRepository.resolvedConnections.flatMapLatest {
             when {
                 it.ethernet.isDefault -> ethernetIconFlow
                 it.mobile.isDefault || it.carrierMerged.isDefault -> mobileIconFlow
