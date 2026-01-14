@@ -361,9 +361,10 @@ class ThemeStatePair {
      * - Whether the theme state has changed.
      * - Whether the ColorScheme requires a new overlay.
      *
+     * @param isBooting {@code true} if the system is currently in the boot phase.
      * @return {@code true} if an update is necessary, {@code false} otherwise.
      */
-    protected boolean shouldUpdate() {
+    protected boolean shouldUpdate(boolean isBooting) {
         synchronized (mLock) {
             // force update in case of different timeStamp
             if (mCurrent.timeStamp() != mPending.timeStamp()) {
@@ -374,6 +375,12 @@ class ThemeStatePair {
             if (mPending.equals(mCurrent)) {
                 Slog.d(TAG, "No change in State for user " + userId + ". Skipping. ");
                 return false;
+            }
+
+            // If we are booting (in bootanimation), we want to allow updates even if setup is not
+            // complete or if updates would otherwise be deferred.
+            if (isBooting) {
+                return true;
             }
 
             // never update if user is not setup, even if forced

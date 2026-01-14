@@ -139,44 +139,59 @@ public class ThemeStatePairTests {
     @Test
     public void testShouldUpdate_differentTimestamp_shouldUpdate() {
         mStatePair.forceUpdate();
-        assertTrue(mStatePair.shouldUpdate());
+        assertTrue(mStatePair.shouldUpdate(false));
     }
 
     @Test
     public void testShouldUpdate_sameState_shouldNotUpdate() {
-        assertFalse(mStatePair.shouldUpdate());
+        assertFalse(mStatePair.shouldUpdate(false));
     }
 
     @Test
     public void testShouldUpdate_userNotSetup_shouldNotUpdate() {
         mStatePair = new ThemeStatePair(USER_ID, false, SEED_COLOR_VALID, CONTRAST_DEFAULT,
                 STYLE_VALID);
-        assertFalse(mStatePair.shouldUpdate());
+        assertFalse(mStatePair.shouldUpdate(false));
     }
 
     @Test
     public void testShouldUpdate_backgroundChangesDeferred_shouldNotUpdate() {
         mStatePair.setDeferUpdatesOnLock(true);
         mStatePair.applySeedColor(SEED_COLOR_RED);
-        assertFalse(mStatePair.shouldUpdate());
+        assertFalse(mStatePair.shouldUpdate(false));
     }
 
     @Test
     public void testShouldUpdate_backgroundChangesDeferredButForced_shouldUpdate() {
         mStatePair.setDeferUpdatesOnLock(true);
         mStatePair.forceUpdate(); // Force the update by changing the timestamp
-        assertTrue(mStatePair.shouldUpdate());
+        assertTrue(mStatePair.shouldUpdate(false));
     }
 
     @Test
     public void testShouldUpdate_overlaysShouldUpdate_shouldUpdate() {
         mStatePair.applySeedColor(SEED_COLOR_RED);
-        assertTrue(mStatePair.shouldUpdate());
+        assertTrue(mStatePair.shouldUpdate(false));
     }
 
     @Test
     public void testShouldUpdate_noChanges_shouldUpdate() {
         mStatePair.forceUpdate(); // This ensures the timestamps are different
-        assertTrue(mStatePair.shouldUpdate());
+        assertTrue(mStatePair.shouldUpdate(false));
+    }
+
+    @Test
+    public void testShouldUpdate_booting_shouldUpdateEvenIfNotSetup() {
+        mStatePair = new ThemeStatePair(USER_ID, false /* isSetup */, SEED_COLOR_VALID,
+                CONTRAST_DEFAULT,
+                STYLE_VALID);
+        // Apply a change so pending != current, but do NOT use forceUpdate() because
+        // that bypasses the setup check.
+        mStatePair.applySeedColor(SEED_COLOR_RED);
+
+        // User not setup, normally returns false.
+        assertFalse(mStatePair.shouldUpdate(false));
+        // But if booting, should return true.
+        assertTrue(mStatePair.shouldUpdate(true));
     }
 }
