@@ -353,16 +353,6 @@ flag {
 }
 
 flag {
-    name: "enable_desktop_first_fullscreen_refocus_bugfix"
-    namespace: "lse_desktop_experience"
-    description: "Fix windowing mode handling for the existing fullscreen tasks on desktop-first."
-    bug: "421801240"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_desktop_first_launch_adjacent_bugfix"
     namespace: "lse_desktop_experience"
     description: "Fix a task launch with FLAG_ACTIVITY_LAUNCH_ADJACENT on desktop-first displays."

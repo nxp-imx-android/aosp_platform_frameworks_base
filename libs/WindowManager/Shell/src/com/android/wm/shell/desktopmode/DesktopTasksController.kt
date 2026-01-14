@@ -4771,11 +4771,7 @@ class DesktopTasksController(
             }
         }
 
-        if (
-            DesktopExperienceFlags.ENABLE_DESKTOP_FIRST_FULLSCREEN_REFOCUS_BUGFIX.isTrue &&
-                isDesktopFirst &&
-                isFullscreenRelaunch(openingTask, requestType)
-        ) {
+        if (isDesktopFirst && isFullscreenRelaunch(openingTask, requestType)) {
             logV(
                 "shouldForceEnterDesktopByDesktopFirstPolicy: no switch as fullscreen relaunch on" +
                     " desktop-first display#%s",
