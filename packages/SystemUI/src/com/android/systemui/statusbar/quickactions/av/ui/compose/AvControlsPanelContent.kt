@@ -213,6 +213,9 @@ private fun SensorAccessButton(
     setCurrentPage: (PageType) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    // TODO(467631762): Enable icons once the icon is available.
+    val ICONS_ENABLED = false
+
     val viewModel =
         rememberViewModel("SensorAccessButton.viewModel", key = setCurrentPage) {
             viewModelFactory.create(setCurrentPage = setCurrentPage)
@@ -224,10 +227,10 @@ private fun SensorAccessButton(
                     .padding(4.dp)
                     .clip(shape = RoundedCornerShape(22.dp))
                     .clickable(onClick = { viewModel.enterDedicatedPage() }),
-            leadingContent =
+            leadingContent = if(ICONS_ENABLED)
                 viewModel.activeAppsIconDrawable?.let {
                     { Icon(painter = DrawablePainter(drawable = it), contentDescription = null) }
-                },
+                } else null,
             headlineContent = {
                 viewModel.activeAppsSensorSectionSummary?.let { summary ->
                     Text(
