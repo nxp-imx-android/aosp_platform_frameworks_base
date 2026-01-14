@@ -16,5 +16,13 @@
 
 package com.android.settingslib.metadata.preferencesapi.types
 
+import android.content.Context
+import androidx.annotation.StringRes
+import com.android.settingslib.metadata.R
+
 /** Any int value. */
-object AnyInt: ApiType<Int>
+object AnyInt: ApiType<Int> {
+
+    override fun getDescription(context: Context): String =
+        context.getString(R.string.any_int_type_description)
+}

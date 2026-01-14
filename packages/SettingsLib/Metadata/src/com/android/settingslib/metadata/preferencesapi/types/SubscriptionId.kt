@@ -16,4 +16,12 @@
 
 package com.android.settingslib.metadata.preferencesapi.types
 
-class SubscriptionId : ApiType<Int>
+import android.content.Context
+import androidx.annotation.StringRes
+import com.android.settingslib.metadata.R
+
+class SubscriptionId : ApiType<Int> {
+
+    override fun getDescription(context: Context): String =
+        context.getString(R.string.subscription_id_type_description)
+}

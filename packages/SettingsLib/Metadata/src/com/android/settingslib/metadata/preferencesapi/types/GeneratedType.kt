@@ -66,7 +66,7 @@ class GeneratedType<T : Any> private constructor(
     ) : this(descriptionRes = null, description = description, lambda = lambda)
 
     /** Get the description as a string using the provided context. */
-    fun getDescription(context: Context): String =
+    override fun getDescription(context: Context): String =
         resolveString(context, descriptionRes, description)
 
     override fun getOptions(context: Context) = lambda(GeneratedTypeContext(context)).map{

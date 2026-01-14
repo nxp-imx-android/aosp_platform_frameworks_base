@@ -16,5 +16,23 @@
 
 package com.android.settingslib.metadata.preferencesapi.types
 
+import android.content.Context
+import com.android.settingslib.metadata.R
+
 /** Any int in the given range, along the given step. */
-class IntInRange(val min: Int?, val max: Int?, val step: Int = 1): ApiType<Int>
+class IntInRange(val min: Int?, val max: Int?, val step: Int = 1): ApiType<Int> {
+
+    init {
+        require(min != null || max != null)
+    }
+
+    override fun getDescription(context: Context): String {
+        return when {
+            min != null && max != null ->
+                context.getString(R.string.int_in_range_type_description_between, min, max, step)
+            min != null -> context.getString(R.string.int_in_range_type_description_from, min, step)
+            max != null -> context.getString(R.string.int_in_range_type_description_to, max, step)
+            else -> error("There needs to be at least a minimum bound or a maximum bound in an IntInRange")
+        }
+    }
+}

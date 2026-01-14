@@ -16,8 +16,15 @@
 
 package com.android.settingslib.metadata.preferencesapi.types
 
+import android.content.Context
+import com.android.settingslib.metadata.R
+
 /**
  * The Ssid of a network which is either currently connected, able to be connected to, or saved to
  * the device.
  */
-class WifiSsid : ApiType<String>
+class WifiSsid : ApiType<String> {
+
+    override fun getDescription(context: Context): String =
+        context.getString(R.string.wifi_ssid_type_description)
+}

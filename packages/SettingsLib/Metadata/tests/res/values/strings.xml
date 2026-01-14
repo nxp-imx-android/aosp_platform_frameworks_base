@@ -41,4 +41,6 @@
     <string name="enum_api_purpose_message1" translatable="false">Enum purpose message 1</string>
     <string name="enum_api_purpose_message2" translatable="false">Enum purpose message 2</string>
     <string name="enum_api_purpose_message3" translatable="false">Enum purpose message 3</string>
+
+    <string name="test_int_enum_description" translatable="false">Test Int enum</string>
 </resources>
