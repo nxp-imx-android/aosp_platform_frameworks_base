@@ -577,6 +577,7 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
 
             kosmos.sceneContainerRepository.instantlyTransitionTo(Scenes.Gone)
             kosmos.sceneContainerRepository.showOverlay(Overlays.NotificationsShade)
+            kosmos.shadeTestUtil.setShadeExpansion(1f)
             runCurrent()
 
             assertThat(latest).isFalse()
@@ -607,6 +608,7 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
 
             kosmos.sceneContainerRepository.instantlyTransitionTo(Scenes.Gone)
             kosmos.sceneContainerRepository.showOverlay(Overlays.QuickSettingsShade)
+            kosmos.shadeTestUtil.setQsExpansion(1f)
             kosmos.fakeShadeDisplaysRepository.setDisplayId(EXTERNAL_DISPLAY)
             runCurrent()
 
@@ -623,6 +625,7 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
 
             kosmos.sceneContainerRepository.instantlyTransitionTo(Scenes.Gone)
             kosmos.sceneContainerRepository.showOverlay(Overlays.QuickSettingsShade)
+            kosmos.shadeTestUtil.setQsExpansion(1f)
             kosmos.fakeShadeDisplaysRepository.setDisplayId(DEFAULT_DISPLAY)
             runCurrent()
 
@@ -698,6 +701,7 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
 
             sceneContainerRepository.instantlyTransitionTo(Scenes.Gone)
             sceneContainerRepository.showOverlay(Overlays.QuickSettingsShade)
+            kosmos.shadeTestUtil.setQsExpansion(1f)
             fakeShadeDisplaysRepository.setDisplayId(DEFAULT_DISPLAY)
 
             assertThat(latest).isFalse()
@@ -1901,6 +1905,7 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
             kosmos.fakeShadeDisplaysRepository.setDisplayId(DEFAULT_DISPLAY)
 
             // WHEN scene changes to Shade
+            kosmos.shadeTestUtil.setShadeExpansion(1f)
             kosmos.sceneContainerRepository.instantlyTransitionTo(Scenes.Shade)
             runCurrent()
 
