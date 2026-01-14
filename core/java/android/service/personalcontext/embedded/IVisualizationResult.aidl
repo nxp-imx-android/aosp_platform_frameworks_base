@@ -17,9 +17,10 @@
 package android.service.personalcontext.embedded;
 
 /**
-* A callback used by InsightSurfaceVisualizerService to return whether a visualization was created.
+* A callback by which an InsightSurfaceVisualizerService informs its insight renderer whether a
+* visualization was successfully created for a client.
 * @hide
 */
-interface IEmbeddedInsightSurfaceVisualizerCallback {
+interface IVisualizationResult {
     oneway void onResult(in boolean visualizationCreated);
 }

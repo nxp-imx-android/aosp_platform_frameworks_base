@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 The Android Open Source Project
+ * Copyright (C) 2026 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.os.RemoteException;
-import android.service.personalcontext.embedded.IEmbeddedInsightSurfaceVisualizer;
+import android.service.personalcontext.embedded.IInsightSurfaceVisualizer;
 import android.service.personalcontext.embedded.InsightSurfaceClientInfo;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -48,7 +48,7 @@ public class VisualizerConnectionTest {
     @Mock
     private ComponentName mComponentName;
     @Mock
-    private IEmbeddedInsightSurfaceVisualizer mEmbeddedInsightSurfaceVisualizer;
+    private IInsightSurfaceVisualizer mVisualizer;
     @Mock
     private IBinder mBinder;
 
@@ -86,8 +86,8 @@ public class VisualizerConnectionTest {
         MockitoAnnotations.openMocks(this);
 
         mVisualizerConnection = new VisualizerConnection(mComponentName, mTestInjector);
-        when(IEmbeddedInsightSurfaceVisualizer.Stub.asInterface(mBinder))
-                .thenReturn(mEmbeddedInsightSurfaceVisualizer);
+        when(IInsightSurfaceVisualizer.Stub.asInterface(mBinder))
+                .thenReturn(mVisualizer);
     }
 
     @Test
@@ -114,7 +114,7 @@ public class VisualizerConnectionTest {
         mVisualizerConnection.onRegistered();
         final InsightSurfaceClientInfo client = mock(InsightSurfaceClientInfo.class);
         mVisualizerConnection.onClientDisconnected(client);
-        verify(mEmbeddedInsightSurfaceVisualizer).onClientDisconnected(client);
+        verify(mVisualizer).onClientDisconnected(client);
     }
 
     @Test
@@ -122,6 +122,6 @@ public class VisualizerConnectionTest {
         mVisualizerConnection.onRegistered();
         final InsightSurfaceClientInfo client = mock(InsightSurfaceClientInfo.class);
         mVisualizerConnection.createVisualizationForClient(List.of(), client, (success) -> {});
-        verify(mEmbeddedInsightSurfaceVisualizer).createVisualizationForClient(any(), any(), any());
+        verify(mVisualizer).createVisualizationForClient(any(), any(), any());
     }
 }

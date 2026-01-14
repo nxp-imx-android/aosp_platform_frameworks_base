@@ -40,7 +40,7 @@ import org.mockito.MockitoAnnotations;
 @SmallTest
 @RunWith(AndroidJUnit4.class)
 public class InsightSurfaceClientInfoTest {
-    @Mock private IEmbeddedInsightSurfaceCallback mCallbacks;
+    @Mock private IInsightSurfaceClient mClient;
     @Mock private SurfacePackage mSurfacePackage;
 
     @Before
@@ -67,7 +67,7 @@ public class InsightSurfaceClientInfoTest {
                         nestedScrollingAxes,
                         nestedScrollAxisLocked,
                         configuration,
-                        mCallbacks);
+                        mClient);
 
         assertThat(clientInfo.getMeasureSpecWidth()).isEqualTo(widthMeasureSpec);
         assertThat(clientInfo.getMeasureSpecHeight()).isEqualTo(heightMeasureSpec);
@@ -89,9 +89,9 @@ public class InsightSurfaceClientInfoTest {
                         View.SCROLL_AXIS_NONE,
                         false,
                         new Configuration(),
-                        mCallbacks);
+                        mClient);
         clientInfo.onSurfaceCreated(mSurfacePackage);
-        verify(mCallbacks).onSurfaceCreated(mSurfacePackage);
+        verify(mClient).onSurfaceCreated(mSurfacePackage);
     }
 
     @Test
@@ -105,8 +105,8 @@ public class InsightSurfaceClientInfoTest {
                         View.SCROLL_AXIS_NONE,
                         false,
                         new Configuration(),
-                        mCallbacks);
+                        mClient);
         clientInfo.onReceiveInsight(new BundleInsight.Builder().build());
-        verify(mCallbacks).onReceiveInsight(any());
+        verify(mClient).onReceiveInsight(any());
     }
 }

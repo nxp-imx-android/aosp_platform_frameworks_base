@@ -248,7 +248,7 @@ public abstract class InsightSurfaceVisualizerService extends Service {
             @NonNull List<ContextInsight> insights,
             @NonNull InsightSurfaceClientInfo info);
 
-    private static final class BinderService extends IEmbeddedInsightSurfaceVisualizer.Stub {
+    private static final class BinderService extends IInsightSurfaceVisualizer.Stub {
         private final WeakReference<InsightSurfaceVisualizerService> mService;
         private final Context mContext;
         private final Display mDisplay;
@@ -274,14 +274,14 @@ public abstract class InsightSurfaceVisualizerService extends Service {
         public void createVisualizationForClient(
                 List<ContextInsightWrapper> insights,
                 InsightSurfaceClientInfo clientInfo,
-                IEmbeddedInsightSurfaceVisualizerCallback callback) {
+                IVisualizationResult result) {
             post(service -> {
 
                 final View view = service.onCreateEmbeddedView(
                         mContext, ContextInsightWrapper.unwrapList(insights), clientInfo);
                 if (view == null) {
                     Log.e(TAG, "onCreateEmbeddedView returned null for client: " + clientInfo);
-                    sendResult(/*visualizationCreated= */ false, callback);
+                    sendResult(/*visualizationCreated= */ false, result);
                     return;
                 }
 
@@ -304,13 +304,8 @@ public abstract class InsightSurfaceVisualizerService extends Service {
                 // Tell the visualizer the client is now connected.
                 service.onClientConnected(clientInfo);
 
-                sendResult(/*visualizationCreated= */ true, callback);
+                sendResult(/*visualizationCreated= */ true, result);
             });
-        }
-
-        @Override
-        public void onClientConnected(InsightSurfaceClientInfo client) {
-            post(service -> service.onClientConnected(client));
         }
 
         @Override
@@ -338,9 +333,9 @@ public abstract class InsightSurfaceVisualizerService extends Service {
         }
 
         private void sendResult(
-                boolean visualizationCreated, IEmbeddedInsightSurfaceVisualizerCallback callback) {
+                boolean visualizationCreated, IVisualizationResult result) {
             try {
-                callback.onResult(visualizationCreated);
+                result.onResult(visualizationCreated);
             } catch (RemoteException e) {
                 Log.e(TAG, "Error sending result", e);
             }

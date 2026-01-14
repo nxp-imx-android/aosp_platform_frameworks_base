@@ -21,7 +21,7 @@ import static com.google.common.truth.Truth.assertThat;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.service.personalcontext.RenderToken;
-import android.service.personalcontext.embedded.IEmbeddedInsightSurfaceCallback;
+import android.service.personalcontext.embedded.IInsightSurfaceClient;
 import android.service.personalcontext.embedded.InsightSurfaceClientInfo;
 import android.view.View;
 
@@ -38,7 +38,7 @@ import org.mockito.MockitoAnnotations;
 @RunWith(AndroidJUnit4.class)
 public class ClientRegistryTest {
     @Mock
-    private IEmbeddedInsightSurfaceCallback mCallbacks;
+    private IInsightSurfaceClient mClient;
 
     private ClientRegistry mClientRegistry;
 
@@ -94,6 +94,6 @@ public class ClientRegistryTest {
                 View.SCROLL_AXIS_NONE,
                 false,
                 new Configuration(),
-                mCallbacks);
+                mClient);
     }
 }

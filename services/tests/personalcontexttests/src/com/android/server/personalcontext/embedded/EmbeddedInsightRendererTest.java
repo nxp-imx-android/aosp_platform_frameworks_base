@@ -27,7 +27,7 @@ import static org.mockito.Mockito.when;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.service.personalcontext.RenderToken;
-import android.service.personalcontext.embedded.IEmbeddedInsightSurfaceCallback;
+import android.service.personalcontext.embedded.IInsightSurfaceClient;
 import android.service.personalcontext.embedded.InsightSurfaceClientInfo;
 import android.service.personalcontext.insight.BundleInsight;
 import android.view.View;
@@ -95,8 +95,8 @@ public class EmbeddedInsightRendererTest {
     }
 
     private InsightSurfaceClientInfo createClient() {
-        final IEmbeddedInsightSurfaceCallback callback =
-                IEmbeddedInsightSurfaceCallback.Stub.asInterface(new android.os.Binder());
+        final IInsightSurfaceClient client =
+                IInsightSurfaceClient.Stub.asInterface(new android.os.Binder());
         return new InsightSurfaceClientInfo(
                 1,
                 2,
@@ -105,6 +105,6 @@ public class EmbeddedInsightRendererTest {
                 View.SCROLL_AXIS_NONE,
                 false,
                 new Configuration(),
-                callback);
+                client);
     }
 }
