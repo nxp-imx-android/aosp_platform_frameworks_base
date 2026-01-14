@@ -153,6 +153,8 @@ cc_defaults {
                 "libstatspull_lazy",
                 "libstatssocket_lazy",
                 "libtonemap",
+                "libgui_aidl",
+                "libipcrenderbuffer_static",
             ],
             whole_static_libs: [
                 "hwui_flags_cc_lib",
@@ -601,6 +603,7 @@ cc_defaults {
         "hwui/Canvas.cpp",
         "hwui/ImageDecoder.cpp",
         "hwui/MinikinSkia.cpp",
+        "hwui/OutOfProcessRendering.cpp",
         "hwui/MinikinUtils.cpp",
         "hwui/PaintImpl.cpp",
         "hwui/Typeface.cpp",

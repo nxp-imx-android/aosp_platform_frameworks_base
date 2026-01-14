@@ -16,12 +16,22 @@
 
 package com.android.test.ipcrendering;
 
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.HardwareRenderer;
+import android.graphics.Paint;
+import android.graphics.PorterDuff;
+
 import androidx.test.rule.ActivityTestRule;
 import androidx.test.runner.AndroidJUnit4;
 
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 @RunWith(AndroidJUnit4.class)
 public class IPCRenderingJUnitTest {
@@ -32,14 +42,73 @@ public class IPCRenderingJUnitTest {
 
     @Test
     public void testIPCRendering() {
-        // The activity launches and performs rendering in surfaceCreated.
-        // We can add specific assertions here if needed, but for now,
-        // just launching the activity validates that it doesn't crash
-        // and executes the surfaceCreated logic.
+        final IPCRenderingTest activity = mActivityRule.getActivity();
+        final CountDownLatch latch = new CountDownLatch(1);
+        activity.setRenderer(new IPCRenderingTest.Renderer() {
+            @Override
+            public void onSurfaceCreated(IPCRenderingTest.IpcCanvasContext context) {
+                Canvas c = context.lockCanvas(512, 512);
+                c.drawColor(0xFFB0E0E6, PorterDuff.Mode.SRC);
+
+                Paint paint = new Paint();
+                paint.setAntiAlias(true);
+                paint.setColor(0xFFE55B13);
+                c.drawRect(0, 0, 256, 256, paint);
+
+                Paint circlePaint = new Paint();
+                circlePaint.setAntiAlias(true);
+                circlePaint.setColor(0xFF556B2F);
+                c.drawCircle(512, 512, 256, circlePaint);
+
+                // Create fractal bitmap
+                Bitmap bitmap = createFractalBitmap(256, 256);
+                // Upload to hardware buffer (
+                Bitmap hwBitmap = bitmap.copy(Bitmap.Config.HARDWARE, false);
+
+                Paint bitmapPaint = new Paint();
+                bitmapPaint.setAlpha(128); // 50% alpha
+                c.drawBitmap(hwBitmap, 128, 128, bitmapPaint);
+
+                context.unlockAndPost(c);
+                latch.countDown();
+            }
+        });
+
         try {
+            boolean result = latch.await(5, TimeUnit.SECONDS);
+            if (!result) {
+                throw new RuntimeException("Timed out waiting for surface creation");
+            }
             Thread.sleep(1000000);
         } catch (InterruptedException e) {
-            // Ignore
         }
+    }
+
+    private Bitmap createFractalBitmap(int width, int height) {
+        Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        int[] pixels = new int[width * height];
+
+        for (int y = 0; y < height; ++y) {
+            for (int x = 0; x < width; ++x) {
+                float real = (x - width / 2.0f) * 4.0f / width;
+                float imag = (y - height / 2.0f) * 4.0f / height;
+                float cr = real;
+                float ci = imag;
+                int n;
+                for (n = 0; n < 255; n++) {
+                    float nr = real * real - imag * imag + cr;
+                    float ni = 2 * real * imag + ci;
+                    if (nr * nr + ni * ni > 4.0f)
+                        break;
+                    real = nr;
+                    imag = ni;
+                }
+                int color = n;
+                // Grayscale fractal pattern
+                pixels[y * width + x] = 0xFF000000 | (color << 16) | (color << 8) | color;
+            }
+        }
+        bitmap.setPixels(pixels, 0, width, 0, 0, width, height);
+        return bitmap;
     }
 }
