@@ -387,8 +387,7 @@ class DesksTransitionObserver(
                                 when {
                                     // (1) When keyguard is appearing, so that we return to the
                                     // active desk when it unlocks.
-                                    Flags.keepDeskActiveOnKeyguardAppear() &&
-                                        isKeyguardAppearing(info) -> false
+                                    isKeyguardAppearing(info) -> false
                                     // (2) When a task is going full-immersive, this task is
                                     // considered "in" the desk, it just happens to occlude/stop
                                     // everything behind it.
@@ -409,8 +408,7 @@ class DesksTransitionObserver(
                                     // Disable if keyguard is appearing, the desk remains active so
                                     // that we can return to it, but we also don't want things
                                     // to launch in it while the keyguard is showing.
-                                    Flags.keepDeskActiveOnKeyguardAppear() &&
-                                        isKeyguardAppearing(info) -> true
+                                    isKeyguardAppearing(info) -> true
                                     else -> false
                                 }
 
