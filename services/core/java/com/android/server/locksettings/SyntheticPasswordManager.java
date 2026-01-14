@@ -335,7 +335,8 @@ class SyntheticPasswordManager {
          * Re-creates a synthetic password from its raw bytes.
          */
         public void recreateDirectly(byte[] syntheticPassword) {
-            this.mSyntheticPassword = Arrays.copyOf(syntheticPassword, syntheticPassword.length);
+            this.mSyntheticPassword =
+                    ArrayUtils.copyOfArrayNonMovable(syntheticPassword, syntheticPassword.length);
         }
 
         /** Zeroizes a synthetic password. */
