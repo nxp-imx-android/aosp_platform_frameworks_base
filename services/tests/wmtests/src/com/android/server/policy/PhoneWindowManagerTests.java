@@ -102,6 +102,7 @@ import com.android.internal.policy.IKeyguardService;
 import com.android.internal.util.test.LocalServiceKeeperRule;
 import com.android.internal.widget.LockPatternUtils;
 import com.android.server.SystemServiceManager;
+import com.android.server.UiThread;
 import com.android.server.input.InputManagerInternal;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.policy.WindowManagerPolicy.ScreenOnListener;
@@ -236,6 +237,7 @@ public class PhoneWindowManagerTests {
 
     @After
     public void tearDown() {
+        UiThread.dispose();
         reset(ActivityManager.getService());
         reset(mContext);
         mMockitoSession.finishMocking();
