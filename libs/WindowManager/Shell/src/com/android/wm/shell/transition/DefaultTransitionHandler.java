@@ -59,6 +59,7 @@ import static android.window.TransitionInfo.FLAG_STARTING_WINDOW_TRANSFER_RECIPI
 import static android.window.TransitionInfo.FLAG_TRANSLUCENT;
 
 import static com.android.internal.jank.Cuj.CUJ_DEFAULT_TASK_TO_TASK_ANIMATION;
+import static com.android.internal.policy.TransitionAnimation.MAX_ANIMATION_DURATION;
 import static com.android.internal.policy.TransitionAnimation.WALLPAPER_TRANSITION_CHANGE;
 import static com.android.internal.policy.TransitionAnimation.WALLPAPER_TRANSITION_CLOSE;
 import static com.android.internal.policy.TransitionAnimation.WALLPAPER_TRANSITION_INTRA_CLOSE;
@@ -124,7 +125,6 @@ import java.util.NoSuchElementException;
 
 /** The default handler that handles anything not already handled. */
 public class DefaultTransitionHandler implements Transitions.TransitionHandler {
-    private static final int MAX_ANIMATION_DURATION = 1500;
     private static final int SIZE_CHANGE_ANIMATION_DURATION = 400;
 
     private final TransactionPool mTransactionPool;
