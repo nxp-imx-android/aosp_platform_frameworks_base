@@ -19,6 +19,7 @@ import com.android.systemui.scene.shared.model.TransitionKeys.ShadeExpandedToAlw
 import com.android.systemui.scene.shared.model.TransitionKeys.SlightlyFasterShadeTransition
 import com.android.systemui.scene.shared.model.TransitionKeys.SystemCommunalTransition
 import com.android.systemui.scene.shared.model.TransitionKeys.ToSplitShade
+import com.android.systemui.scene.ui.composable.transitions.aodToGoneTransition
 import com.android.systemui.scene.ui.composable.transitions.bouncerToGoneTransition
 import com.android.systemui.scene.ui.composable.transitions.bouncerToLockscreenTransition
 import com.android.systemui.scene.ui.composable.transitions.communalToBouncerTransition
@@ -35,6 +36,7 @@ import com.android.systemui.scene.ui.composable.transitions.dreamToSingleShadeTr
 import com.android.systemui.scene.ui.composable.transitions.dreamToSplitShadeTransition
 import com.android.systemui.scene.ui.composable.transitions.fromBouncerPreview
 import com.android.systemui.scene.ui.composable.transitions.fromBouncerTransition
+import com.android.systemui.scene.ui.composable.transitions.goneToAodEnterFromTop
 import com.android.systemui.scene.ui.composable.transitions.goneToQuickSettingsTransition
 import com.android.systemui.scene.ui.composable.transitions.goneToSingleShadeTransition
 import com.android.systemui.scene.ui.composable.transitions.goneToSplitShadeTransition
@@ -212,6 +214,20 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
                 key = KeyguardTransitionKeys.WithAnimationOverLockscreen,
             ) {
                 lockscreenToGoneWithAnimationOverLockscreenTransition()
+            }
+            from(
+                Scenes.Gone,
+                to = Scenes.Lockscreen,
+                key = KeyguardTransitionKeys.GoneToAodEnterFromTop,
+            ) {
+                goneToAodEnterFromTop()
+            }
+            from(
+                Scenes.Lockscreen,
+                to = Scenes.Gone,
+                key = KeyguardTransitionKeys.AodToGoneTransition,
+            ) {
+                aodToGoneTransition()
             }
             from(
                 Scenes.QuickSettings,
