@@ -49,10 +49,13 @@ import com.android.systemui.scene.shared.model.TransitionKeys.ToSplitShade
 import com.android.systemui.shade.domain.interactor.disableDualShade
 import com.android.systemui.shade.domain.interactor.enableSingleShade
 import com.android.systemui.shade.domain.interactor.enableSplitShade
+import com.android.systemui.shade.domain.interactor.shadeModeInteractor
 import com.android.systemui.shade.domain.startable.shadeStartable
+import com.android.systemui.shade.shared.model.ShadeMode
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
+import org.junit.Assume.assumeFalse
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -222,6 +225,11 @@ class ShadeUserActionsViewModelTest : SysuiTestCase() {
     @Test
     fun upOrBackTransitionSceneKey_neverGoesBackToShadeScene() =
         kosmos.runTest {
+            val shadeMode by collectLastValue(shadeModeInteractor.shadeMode)
+            // Skip this test on configurations running Split Shade, where Scenes.QuickSettings is
+            // not available.
+            assumeFalse(shadeMode is ShadeMode.Split)
+
             enableSingleShade()
             val actions by collectValues(underTest.actions)
             val currentScene by collectLastValue(sceneInteractor.currentScene)
