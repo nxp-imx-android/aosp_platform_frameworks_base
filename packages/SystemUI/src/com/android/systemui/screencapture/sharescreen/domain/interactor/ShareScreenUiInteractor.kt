@@ -60,7 +60,9 @@ constructor(
     var uid: Int = -1
         private set
 
-    private lateinit var packageName: String
+    var packageName: String = ""
+        private set
+
     private var initialDisplayId: Int = -1
 
     fun initialize(
