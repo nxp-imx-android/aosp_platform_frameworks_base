@@ -86,6 +86,13 @@ interface PerDisplayStatusBarModule {
     ): StatusBarWindowStateController
 
     @Binds
+    @IntoSet
+    @DisplayAware
+    fun statusBarWindowStateControllerAsLifecycleListener(
+        controller: StatusBarWindowStateController
+    ): SystemUIDisplaySubcomponent.LifecycleListener
+
+    @Binds
     @DisplayAware
     fun statusBarContentInsetsProvider(
         impl: StatusBarContentInsetsProviderImpl

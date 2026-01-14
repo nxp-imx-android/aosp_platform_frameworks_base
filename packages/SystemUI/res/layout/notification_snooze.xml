@@ -37,7 +37,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
             android:layout_centerVertical="true"
-            android:paddingStart="@*android:dimen/notification_content_margin_end"
+            android:paddingStart="@*android:dimen/notification_2025_margin"
             android:textColor="@androidprv:color/materialColorOnSurface"
             android:paddingEnd="4dp"/>
 

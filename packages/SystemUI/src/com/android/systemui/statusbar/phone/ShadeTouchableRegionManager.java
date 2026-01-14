@@ -171,7 +171,7 @@ public final class ShadeTouchableRegionManager implements Dumpable {
 
         if (SceneContainerFlag.isEnabled()) {
             javaAdapter.alwaysCollectFlow(
-                    sceneInteractor.get().getTransitionState(),
+                    sceneInteractor.get().getTransitionStateFlow(),
                     this::onSceneContainerTransition);
             javaAdapter.alwaysCollectFlow(
                     sceneInteractor.get().isRemoteUserInteractionOngoing(),

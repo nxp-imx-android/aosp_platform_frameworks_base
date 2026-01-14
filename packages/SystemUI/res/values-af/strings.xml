@@ -46,6 +46,10 @@
     <string name="usb_accessory_confirm_prompt" msgid="5728408382798643421">"Hanteer <xliff:g id="USB_ACCESSORY">%2$s</xliff:g> met <xliff:g id="APPLICATION">%1$s</xliff:g>?"</string>
     <string name="usb_accessory_uri_prompt" msgid="6756649383432542382">"Geen geïnstalleerde programme werk met hierdie USB-toebehoorsel nie. Vind meer uit oor hierdie toebehoorsel by <xliff:g id="URL">%1$s</xliff:g>"</string>
     <string name="title_usb_accessory" msgid="1236358027511638648">"USB-toebehoorsel"</string>
+    <!-- no translation found for usb_device_dialog_allow_only_this_time_button (3653881633944232491) -->
+    <skip />
+    <!-- no translation found for usb_device_dialog_cancel_button (9050554648474787233) -->
+    <skip />
     <string name="label_view" msgid="6815442985276363364">"Sien"</string>
     <string name="always_use_device" msgid="210535878779644679">"Maak <xliff:g id="APPLICATION">%1$s</xliff:g> altyd oop wanneer <xliff:g id="USB_DEVICE">%2$s</xliff:g> gekoppel is"</string>
     <string name="always_use_accessory" msgid="1977225429341838444">"Maak <xliff:g id="APPLICATION">%1$s</xliff:g> altyd oop wanneer <xliff:g id="USB_ACCESSORY">%2$s</xliff:g> gekoppel is"</string>
@@ -91,10 +95,8 @@
     <string name="screenshot_failed_to_save_text" msgid="7232739948999195960">"Kan nie skermkiekie stoor nie"</string>
     <string name="screenshot_failed_to_capture_text" msgid="7818288545874407451">"Die app of jou organisasie laat nie toe dat skermkiekies geneem word nie"</string>
     <string name="screenshot_blocked_by_admin" msgid="5486757604822795797">"Die neem van skermskote word deur jou IT-admin geblokkeer"</string>
-    <!-- no translation found for screenshot_copy_label (3551237076438128722) -->
-    <skip />
-    <!-- no translation found for screenshot_copy_description (2890150686381938858) -->
-    <skip />
+    <string name="screenshot_copy_label" msgid="3551237076438128722">"Kopieer"</string>
+    <string name="screenshot_copy_description" msgid="2890150686381938858">"Knoppie om skermskoot na knipbord te kopieer"</string>
     <string name="screenshot_edit_label" msgid="8754981973544133050">"Wysig"</string>
     <string name="screenshot_edit_description" msgid="7802378587672433507">"Wysig Skermskoot-knoppie"</string>
     <string name="screenshot_share_label" msgid="1653061117238861559">"Deel"</string>
@@ -189,6 +191,8 @@
     <string name="screen_share_entire_screen_sharing_title" msgid="9093580141248337998">"Deel hele skerm"</string>
     <string name="screen_share_disclaimer_app_sharing" msgid="4191319837838590771">"Wanneer jy ’n app deel, is enigiets wat in die app wys of speel sigbaar aan [APP NAME]. Oppas dus met dinge soos wagwoorde, betalingbesonderhede, boodskappe, foto’s en oudio en video."</string>
     <string name="screen_share_disclaimer_full_screen_sharing" msgid="6445373139864031364">"Wanneer jy jou hele skerm deel, is enigiets op jou skerm sigbaar aan [APP NAME]. Oppas dus met dinge soos wagwoorde, betalingbesonderhede, boodskappe, foto’s, en oudio en video."</string>
+    <!-- no translation found for screen_share_a11y_announcement (8938007210094494367) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Neem skermskoot van venster"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Neem venster op"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Neem ’n skermskoot van die geselekteerde area"</string>
@@ -390,7 +394,8 @@
     <string name="accessibility_clear_all" msgid="970525598287244592">"Verwyder alle kennisgewings."</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"Kennisgewings"</string>
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Assistent"</string>
-    <string name="accessibility_status_bar_input_method_indicator" msgid="4316411266975554038">"Invoermetode"</string>
+    <!-- no translation found for accessibility_status_bar_input_method_indicator (4911669064186093506) -->
+    <skip />
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{nog # kennisgewing binne.}other{nog # kennisgewings binne.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"Skerm is in landskapsoriëntasie gesluit."</string>

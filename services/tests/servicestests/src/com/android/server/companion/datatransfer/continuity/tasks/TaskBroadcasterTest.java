@@ -27,6 +27,8 @@ import android.app.ActivityTaskManager;
 import android.app.AppOpsManager;
 import android.app.HandoffActivityParams;
 import android.content.ComponentName;
+import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.RemoteException;
 import android.platform.test.annotations.Presubmit;
 import android.testing.AndroidTestingRunner;
@@ -55,6 +57,7 @@ public class TaskBroadcasterTest {
     @Mock private ActivityTaskManagerInternal mockActivityTaskManagerInternal;
     @Mock private TaskContinuityMessenger mMockTaskContinuityMessenger;
     @Mock private AppOpsManager mockAppOps;
+    @Mock private PackageManager mockPackageManager;
 
     private TaskBroadcaster mTaskBroadcaster;
 
@@ -67,17 +70,35 @@ public class TaskBroadcasterTest {
                         mMockTaskContinuityMessenger,
                         mockActivityTaskManager,
                         mockActivityTaskManagerInternal,
-                        mockAppOps);
+                        mockAppOps,
+                        mockPackageManager);
     }
 
     @Test
     public void testOnDeviceConnected_sendsMessageToDevice() throws RemoteException {
         int associationId = 100;
         FakeTask[] tasks = {
-            new FakeTask(1, USER_ID, "com.example.app1", 100, new HandoffOptions(true, true), true),
             new FakeTask(
-                    2, USER_ID, "com.example.app2", 200, new HandoffOptions(false, true), true),
-            new FakeTask(4, 1000, "com.example.app4", 400, new HandoffOptions(true, true), false),
+                    1,
+                    USER_ID,
+                    "com.example.app1",
+                    100,
+                    new HandoffOptions(true, true),
+                    AppOpsManager.MODE_ALLOWED),
+            new FakeTask(
+                    2,
+                    USER_ID,
+                    "com.example.app2",
+                    200,
+                    new HandoffOptions(false, true),
+                    AppOpsManager.MODE_ALLOWED),
+            new FakeTask(
+                    4,
+                    1000,
+                    "com.example.app4",
+                    400,
+                    new HandoffOptions(true, true),
+                    AppOpsManager.MODE_IGNORED),
         };
         setupRunningTasks(tasks);
         mTaskBroadcaster.onDeviceConnected(associationId);
@@ -88,10 +109,27 @@ public class TaskBroadcasterTest {
     @Test
     public void testOnTaskStackChanged_sendsMessageToDevice() throws RemoteException {
         FakeTask[] tasks = {
-            new FakeTask(1, USER_ID, "com.example.app1", 100, new HandoffOptions(true, true), true),
             new FakeTask(
-                    2, USER_ID, "com.example.app2", 200, new HandoffOptions(false, true), true),
-            new FakeTask(4, 1000, "com.example.app4", 400, new HandoffOptions(true, true), false),
+                    1,
+                    USER_ID,
+                    "com.example.app1",
+                    100,
+                    new HandoffOptions(true, true),
+                    AppOpsManager.MODE_ALLOWED),
+            new FakeTask(
+                    2,
+                    USER_ID,
+                    "com.example.app2",
+                    200,
+                    new HandoffOptions(false, true),
+                    AppOpsManager.MODE_ALLOWED),
+            new FakeTask(
+                    4,
+                    1000,
+                    "com.example.app4",
+                    400,
+                    new HandoffOptions(true, true),
+                    AppOpsManager.MODE_IGNORED),
         };
         setupRunningTasks(tasks);
         mTaskBroadcaster.onTaskStackChanged();
@@ -102,10 +140,79 @@ public class TaskBroadcasterTest {
     @Test
     public void testOnHandoffEnabledChanged_sendTaskStackBroadcastMessage() throws RemoteException {
         FakeTask[] tasks = {
-            new FakeTask(1, USER_ID, "com.example.app1", 100, new HandoffOptions(true, true), true),
             new FakeTask(
-                    2, USER_ID, "com.example.app2", 200, new HandoffOptions(false, true), true),
-            new FakeTask(4, 1000, "com.example.app4", 400, new HandoffOptions(true, true), false),
+                    1,
+                    USER_ID,
+                    "com.example.app1",
+                    100,
+                    new HandoffOptions(true, true),
+                    AppOpsManager.MODE_ALLOWED),
+            new FakeTask(
+                    2,
+                    USER_ID,
+                    "com.example.app2",
+                    200,
+                    new HandoffOptions(false, true),
+                    AppOpsManager.MODE_ALLOWED),
+            new FakeTask(
+                    4,
+                    1000,
+                    "com.example.app4",
+                    400,
+                    new HandoffOptions(true, true),
+                    AppOpsManager.MODE_IGNORED),
+        };
+        setupRunningTasks(tasks);
+        mTaskBroadcaster.onHandoffEnabledChanged(100, true);
+        verify(mMockTaskContinuityMessenger, times(1))
+                .sendMessage(eq(createExpectedTaskContinuityMessage(tasks[0])));
+    }
+
+    @Test
+    public void testOnHandoffEnabledChanged_appOpsIgnored_doesNotBroadcastTask()
+            throws RemoteException {
+        FakeTask[] tasks = {
+            new FakeTask(
+                    1,
+                    USER_ID,
+                    "com.example.app1",
+                    100,
+                    new HandoffOptions(true, true),
+                    AppOpsManager.MODE_IGNORED),
+        };
+        setupRunningTasks(tasks);
+        mTaskBroadcaster.onHandoffEnabledChanged(100, true);
+        verify(mMockTaskContinuityMessenger, times(1))
+                .sendMessage(eq(createExpectedTaskContinuityMessage()));
+    }
+
+    @Test
+    public void testOnHandoffEnabledChanged_appOpsDefault_broadcastsTask() throws RemoteException {
+        FakeTask[] tasks = {
+            new FakeTask(
+                    1,
+                    USER_ID,
+                    "com.example.app1",
+                    100,
+                    new HandoffOptions(true, true),
+                    AppOpsManager.MODE_DEFAULT),
+        };
+        setupRunningTasks(tasks);
+        mTaskBroadcaster.onHandoffEnabledChanged(100, true);
+        verify(mMockTaskContinuityMessenger, times(1))
+                .sendMessage(eq(createExpectedTaskContinuityMessage(tasks[0])));
+    }
+
+    @Test
+    public void testOnHandoffEnabledChanged_appOpsAllowed_broadcastsTask() throws RemoteException {
+        FakeTask[] tasks = {
+            new FakeTask(
+                    1,
+                    USER_ID,
+                    "com.example.app1",
+                    100,
+                    new HandoffOptions(true, true),
+                    AppOpsManager.MODE_ALLOWED),
         };
         setupRunningTasks(tasks);
         mTaskBroadcaster.onHandoffEnabledChanged(100, true);
@@ -119,7 +226,7 @@ public class TaskBroadcasterTest {
             String packageName,
             long lastActiveTime,
             HandoffOptions handoffOptions,
-            boolean isOpContinueAcrossDevicesAllowed) {
+            int continueAcrossDevicesOpMode) {
 
         public RemoteTaskInfo toRemoteTaskInfo() {
             return new RemoteTaskInfo(taskId, packageName, true, lastActiveTime, handoffOptions);
@@ -161,15 +268,16 @@ public class TaskBroadcasterTest {
                         new HandoffActivityParams.Builder()
                                 .setAllowHandoffWithoutPackageInstalled(true)
                                 .build());
-        when(mockAppOps.noteOpNoThrow(
-                        AppOpsManager.OP_CONTINUE_ACROSS_DEVICES,
-                        taskInfo.userId,
-                        task.packageName))
-                .thenReturn(
-                        task.isOpContinueAcrossDevicesAllowed
-                                ? AppOpsManager.MODE_ALLOWED
-                                : AppOpsManager.MODE_ERRORED);
+        int uid = 10000 + task.taskId;
+        try {
+            when(mockPackageManager.getPackageUid(task.packageName, 0)).thenReturn(uid);
+        } catch (NameNotFoundException e) {
+            // Do nothing.
+        }
 
+        when(mockAppOps.checkOpNoThrow(
+                        AppOpsManager.OP_CONTINUE_ACROSS_DEVICES, uid, task.packageName))
+                .thenReturn(task.continueAcrossDevicesOpMode);
         return taskInfo;
     }
 }

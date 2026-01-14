@@ -2896,7 +2896,7 @@ public class KeyguardUpdateMonitorTest extends SysuiTestCase {
             if (SceneContainerFlag.isEnabled()) {
                 ObservableTransitionState transitionState = new ObservableTransitionState.Idle(
                         Scenes.Lockscreen, isVisible ? Set.of(Overlays.Bouncer) : emptySet());
-                when(mSceneInteractor.getTransitionState()).thenReturn(
+                when(mSceneInteractor.getTransitionStateFlow()).thenReturn(
                         MutableStateFlow(transitionState));
                 onTransitionStateChanged(transitionState);
             } else {

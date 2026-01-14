@@ -46,6 +46,10 @@
     <string name="usb_accessory_confirm_prompt" msgid="5728408382798643421">"要打开<xliff:g id="APPLICATION">%1$s</xliff:g>来处理<xliff:g id="USB_ACCESSORY">%2$s</xliff:g>吗？"</string>
     <string name="usb_accessory_uri_prompt" msgid="6756649383432542382">"未安装此USB配件适用的应用。要了解此配件的详情，请访问：<xliff:g id="URL">%1$s</xliff:g>"</string>
     <string name="title_usb_accessory" msgid="1236358027511638648">"USB配件"</string>
+    <!-- no translation found for usb_device_dialog_allow_only_this_time_button (3653881633944232491) -->
+    <skip />
+    <!-- no translation found for usb_device_dialog_cancel_button (9050554648474787233) -->
+    <skip />
     <string name="label_view" msgid="6815442985276363364">"查看"</string>
     <string name="always_use_device" msgid="210535878779644679">"连接<xliff:g id="USB_DEVICE">%2$s</xliff:g>后一律打开<xliff:g id="APPLICATION">%1$s</xliff:g>"</string>
     <string name="always_use_accessory" msgid="1977225429341838444">"连接<xliff:g id="USB_ACCESSORY">%2$s</xliff:g>后一律打开<xliff:g id="APPLICATION">%1$s</xliff:g>"</string>
@@ -187,6 +191,8 @@
     <string name="screen_share_entire_screen_sharing_title" msgid="9093580141248337998">"共享整个屏幕"</string>
     <string name="screen_share_disclaimer_app_sharing" msgid="4191319837838590771">"当您共享应用时，该应用中显示或播放的所有内容均对“[APP NAME]”可见。因此，请务必小心操作，谨防泄露密码、支付信息、消息、照片、音频、视频等。"</string>
     <string name="screen_share_disclaimer_full_screen_sharing" msgid="6445373139864031364">"当您共享整个屏幕时，屏幕上的所有内容均对“[APP NAME]”可见。因此，请务必小心操作，谨防泄露密码、支付信息、消息、照片、音频、视频等。"</string>
+    <!-- no translation found for screen_share_a11y_announcement (8938007210094494367) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"窗口截图"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"录制窗口"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"所选区域局部截图"</string>
@@ -388,7 +394,8 @@
     <string name="accessibility_clear_all" msgid="970525598287244592">"清除所有通知。"</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"通知"</string>
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Google 助理"</string>
-    <string name="accessibility_status_bar_input_method_indicator" msgid="4316411266975554038">"输入法"</string>
+    <!-- no translation found for accessibility_status_bar_input_method_indicator (4911669064186093506) -->
+    <skip />
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{此群组内还有 # 条通知。}other{此群组内还有 # 条通知。}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"屏幕锁定为横屏模式。"</string>

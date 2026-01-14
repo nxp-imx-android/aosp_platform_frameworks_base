@@ -126,7 +126,7 @@ constructor(
      */
     val surfaceBehindVisibility: Flow<Boolean> =
         if (SceneContainerFlag.isEnabled) {
-                sceneInteractor.get().transitionState.flatMapLatestConflated { state ->
+                sceneInteractor.get().transitionStateFlow.flatMapLatestConflated { state ->
                     when {
                         state.isTransitioning(from = Scenes.Lockscreen, to = Scenes.Gone) ||
                             state.isTransitioning(from = Scenes.Communal, to = Scenes.Gone) ||
@@ -167,7 +167,7 @@ constructor(
     val usingKeyguardGoingAwayAnimation: Flow<Boolean> =
         if (SceneContainerFlag.isEnabled) {
             combine(
-                    sceneInteractor.get().transitionState,
+                    sceneInteractor.get().transitionStateFlow,
                     surfaceBehindInteractor.isAnimatingSurface,
                     notificationLaunchAnimationInteractor.isLaunchAnimationRunning,
                 ) { transition, isAnimatingSurface, isLaunchAnimationRunning ->
@@ -254,7 +254,7 @@ constructor(
             isProvisioned ->
             if (isProvisioned) {
                 combine(
-                        sceneInteractor.get().transitionState.flatMapLatestConflated {
+                        sceneInteractor.get().transitionStateFlow.flatMapLatestConflated {
                             when (it) {
                                 is Idle ->
                                     when {

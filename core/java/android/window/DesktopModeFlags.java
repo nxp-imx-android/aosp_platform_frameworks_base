@@ -44,7 +44,6 @@ public enum DesktopModeFlags {
     // All desktop mode related flags to be overridden by developer option toggle will be added here
     // go/keep-sorted start
     ENABLE_ACCESSIBLE_CUSTOM_HEADERS(Flags::enableAccessibleCustomHeaders, true),
-    ENABLE_APP_HEADER_WITH_TASK_DENSITY(Flags::enableAppHeaderWithTaskDensity, true),
     ENABLE_CAMERA_COMPAT_SIMULATE_REQUESTED_ORIENTATION(
             Flags::enableCameraCompatForDesktopWindowing, true),
     ENABLE_CAPTION_COMPAT_INSET_FORCE_CONSUMPTION(Flags::enableCaptionCompatInsetForceConsumption,
@@ -66,7 +65,6 @@ public enum DesktopModeFlags {
     ENABLE_DESKTOP_WINDOWING_SIZE_CONSTRAINTS(Flags::enableDesktopWindowingSizeConstraints, true),
     ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY(Flags::enableDesktopWindowingWallpaperActivity,
             true),
-    ENABLE_DRAG_RESIZE_SET_UP_IN_BG_THREAD(Flags::enableDragResizeSetUpInBgThread, true),
     ENABLE_FULLY_IMMERSIVE_IN_DESKTOP(Flags::enableFullyImmersiveInDesktop, true),
     ENABLE_HANDLE_INPUT_FIX(Flags::enableHandleInputFix, true),
     ENABLE_HOLD_TO_DRAG_APP_HANDLE(Flags::enableHoldToDragAppHandle, true),
@@ -77,7 +75,6 @@ public enum DesktopModeFlags {
             Flags::enableRestoreToPreviousSizeFromDesktopImmersive, true),
     ENABLE_TASKBAR_OVERFLOW(Flags::enableTaskbarOverflow, false),
     ENABLE_TASK_STACK_OBSERVER_IN_SHELL(Flags::enableTaskStackObserverInShell, true),
-    ENABLE_THEMED_APP_HEADERS(Flags::enableThemedAppHeaders, true),
     ENABLE_WINDOWING_EDGE_DRAG_RESIZE(Flags::enableWindowingEdgeDragResize, true),
     // go/keep-sorted end
     ;

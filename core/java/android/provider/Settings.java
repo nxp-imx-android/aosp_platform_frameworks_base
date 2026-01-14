@@ -13032,6 +13032,27 @@ public final class Settings {
         public static final String NEARBY_SHARING_COMPONENT = "nearby_sharing_component";
 
         /**
+         * Current provider of the component that manages the gesture lifecycle while the share
+         * sheet is active.
+         * Default value in @string/config_defaultTapEventServiceComponent.
+         * No VALIDATOR as this setting will not be backed up.
+         * @hide
+         */
+        @Readable
+        public static final String TAP_EVENT_SERVICE_COMPONENT = "tap_event_service_component";
+
+        /**
+         * Current provider of the component that receives the finalized intent after a successful
+         * tap is detected.
+         * Default value in @string/config_defaultTapShareFulfillmentActivityComponent.
+         * No VALIDATOR as this setting will not be backed up.
+         * @hide
+         */
+        @Readable
+        public static final String TAP_SHARE_FULFILLMENT_ACTIVITY_COMPONENT =
+                "tap_share_fulfillment_activity_component";
+
+        /**
          * Nearby Sharing Slice URI for the SliceProvider to
          * read Nearby Sharing scan results and then draw the UI.
          * @hide
@@ -20922,11 +20943,25 @@ public final class Settings {
             public static final String AMBIENT_LOW_BIT_ENABLED = "ambient_low_bit_enabled";
 
             /**
-             * The timeout duration in minutes of ambient mode when plugged in.
+             * The timeout duration in minutes of ambient mode when plugged in with Wear Charging
+             * Experience enabled. This remaining time in this timeout will be reset only when the
+             * device is unplugged. If the remaining time is less than AMBIENT_PLUGGED_TIMEOUT_MIN
+             * when entering ambient mode, AMBIENT_OFFWRIST_TIMEOUT_MIN will be used instead.
              * @hide
              */
             @Readable
             public static final String AMBIENT_PLUGGED_TIMEOUT_MIN = "ambient_plugged_timeout_min";
+
+            /**
+             * The timeout duration in minutes of ambient mode when offwrist. It fallbacks to
+             * AMBIENT_PLUGGED_TIMEOUT_MIN if undefined or negative. This timeout will also be used
+             * when the plugged device enters ambient mode with Wear Charging Experience disabled,
+             * or plugged remaining time is less than this timeout.
+             * @hide
+             */
+            @Readable
+            public static final String AMBIENT_OFFWRIST_TIMEOUT_MIN =
+                    "ambient_offwrist_timeout_min";
 
             /**
              * What OS does paired device has.

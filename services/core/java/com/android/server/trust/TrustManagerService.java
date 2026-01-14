@@ -1581,7 +1581,8 @@ public class TrustManagerService extends SystemService {
             mStrongAuthTracker.allowTrustFromUnlock(userId);
             // Allow the presence of trust on a successful unlock attempt to extend unlock
             updateTrust(userId, 0 /* flags */, true, null);
-            mHandler.obtainMessage(MSG_REFRESH_TRUSTABLE_TIMERS_AFTER_AUTH, userId).sendToTarget();
+            mHandler.obtainMessage(
+                MSG_REFRESH_TRUSTABLE_TIMERS_AFTER_AUTH, userId, /* arg2= */ 0).sendToTarget();
         }
 
         for (int i = 0; i < mActiveAgents.size(); i++) {
@@ -2129,7 +2130,8 @@ public class TrustManagerService extends SystemService {
             int updateTrustOnUnlock = isAutomotive() ? 0 : 1;
             mHandler.obtainMessage(MSG_REFRESH_DEVICE_LOCKED_FOR_USER, userId,
                     updateTrustOnUnlock).sendToTarget();
-            mHandler.obtainMessage(MSG_REFRESH_TRUSTABLE_TIMERS_AFTER_AUTH, userId).sendToTarget();
+            mHandler.obtainMessage(
+                MSG_REFRESH_TRUSTABLE_TIMERS_AFTER_AUTH, userId, /* arg2= */ 0).sendToTarget();
         }
 
         @Override

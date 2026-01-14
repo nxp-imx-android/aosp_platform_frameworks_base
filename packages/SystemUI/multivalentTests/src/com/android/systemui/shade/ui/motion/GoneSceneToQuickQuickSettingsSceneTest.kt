@@ -147,7 +147,7 @@ class GoneSceneToQuickQuickSettingsSceneTest : SysuiTestCase() {
                             MotionControl(
                                 delayRecording = {
                                     awaitCondition {
-                                        kosmos.sceneInteractor.transitionState.value.isIdle()
+                                        kosmos.sceneInteractor.transitionStateFlow.value.isIdle()
                                     }
                                 }
                             ) {
@@ -159,7 +159,7 @@ class GoneSceneToQuickQuickSettingsSceneTest : SysuiTestCase() {
                                     )
                                 }
                                 awaitCondition {
-                                    kosmos.sceneInteractor.transitionState.value.isIdle()
+                                    kosmos.sceneInteractor.transitionStateFlow.value.isIdle()
                                 }
                             }
                         ) {
@@ -190,7 +190,7 @@ class GoneSceneToQuickQuickSettingsSceneTest : SysuiTestCase() {
                             MotionControl(
                                 delayRecording = {
                                     awaitCondition {
-                                        kosmos.sceneInteractor.transitionState.value.isIdle()
+                                        kosmos.sceneInteractor.transitionStateFlow.value.isIdle()
                                     }
                                 }
                             ) {
@@ -202,7 +202,7 @@ class GoneSceneToQuickQuickSettingsSceneTest : SysuiTestCase() {
                                     )
                                 }
                                 awaitCondition {
-                                    kosmos.sceneInteractor.transitionState.value.isIdle()
+                                    kosmos.sceneInteractor.transitionStateFlow.value.isIdle()
                                 }
                             }
                         ) {
@@ -234,7 +234,7 @@ class GoneSceneToQuickQuickSettingsSceneTest : SysuiTestCase() {
                             MotionControl(
                                 delayRecording = {
                                     awaitCondition {
-                                        kosmos.sceneInteractor.transitionState.value.isIdle()
+                                        kosmos.sceneInteractor.transitionStateFlow.value.isIdle()
                                     }
                                 }
                             ) {
@@ -270,7 +270,7 @@ class GoneSceneToQuickQuickSettingsSceneTest : SysuiTestCase() {
                             MotionControl(
                                 delayRecording = {
                                     awaitCondition {
-                                        kosmos.sceneInteractor.transitionState.value.isIdle()
+                                        kosmos.sceneInteractor.transitionStateFlow.value.isIdle()
                                     }
                                 }
                             ) {
@@ -312,7 +312,7 @@ class GoneSceneToQuickQuickSettingsSceneTest : SysuiTestCase() {
                             MotionControl(
                                 delayRecording = {
                                     awaitCondition {
-                                        kosmos.sceneInteractor.transitionState.value.isIdle()
+                                        kosmos.sceneInteractor.transitionStateFlow.value.isIdle()
                                     }
                                 }
                             ) {

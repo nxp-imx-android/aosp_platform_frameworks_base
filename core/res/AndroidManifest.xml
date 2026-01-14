@@ -8962,6 +8962,13 @@
     <permission android:name="android.permission.READ_ASSISTANT_APP_SEARCH_DATA"
         android:protectionLevel="internal|role" />
 
+    <!-- @SystemApi Allows an application to query AppFunction metadata stored within platform.
+         @hide
+         @FlaggedApi(android.app.appfunctions.flags.Flags.FLAG_ENABLE_APP_FUNCTION_PERMISSION_V2) -->
+    <permission android:name="android.permission.READ_APP_FUNCTION_METADATA"
+        android:protectionLevel="internal|role"
+        android:featureFlag="android.app.appfunctions.flags.enable_app_function_permission_v2" />
+
     <!-- Allows an application to query over global data in AppSearch that's visible to the
          HOME role.  -->
     <permission android:name="android.permission.READ_HOME_APP_SEARCH_DATA"
@@ -9996,11 +10003,11 @@
         android:featureFlag="com.android.input.flags.enable_attention_service_apis" />
 
     <!-- Permission needed to ensure that only the system process can bind with the
-         {@link android.service.messaging.MessagePromotionService}.
+         {@link android.service.messaging.AlternativeMessageTransportService}.
          @FlaggedApi(com.android.internal.telephony.flags.Flags.FLAG_MESSAGE_PROMOTION)
-         @hide -->
+    -->
     <permission
-        android:name="android.permission.BIND_MESSAGE_PROMOTION_SERVICE"
+        android:name="android.permission.BIND_ALTERNATIVE_MESSAGE_TRANSPORT_SERVICE"
         android:protectionLevel="signature"
         android:featureFlag="com.android.internal.telephony.flags.message_promotion" />
 
@@ -10645,8 +10652,7 @@
 
         <service android:name="android.net.ConnectivityCallListenerService"
                  android:permission="android.permission.BIND_INCALL_SERVICE"
-                 android:exported="true"
-                 android:featureFlag="com.android.server.telecom.flags.enable_incall_service_class_check">
+                 android:exported="true">
             <meta-data android:name="android.telecom.INCLUDE_SELF_MANAGED_CALLS"
                        android:value="true" />
             <!-- Indicates that this service's class may not be present in all builds.

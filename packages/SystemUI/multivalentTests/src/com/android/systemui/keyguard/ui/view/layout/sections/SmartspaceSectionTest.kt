@@ -17,7 +17,10 @@
 
 package com.android.systemui.keyguard.ui.view.layout.sections
 
+import android.content.Context
+import android.testing.ViewUtils
 import android.view.View
+import android.view.ViewTreeObserver
 import android.widget.LinearLayout
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
@@ -30,6 +33,7 @@ import com.android.systemui.keyguard.domain.interactor.KeyguardSmartspaceInterac
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardClockViewModel
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardSmartspaceViewModel
 import com.android.systemui.res.R
+import com.android.systemui.runOnMainThreadAndWaitForIdleSync
 import com.android.systemui.shared.R as sharedR
 import com.android.systemui.statusbar.lockscreen.LockscreenSmartspaceController
 import com.google.common.truth.Truth.assertThat
@@ -41,7 +45,11 @@ import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
+import org.mockito.kotlin.clearInvocations
 import org.mockito.kotlin.eq
+import org.mockito.kotlin.never
+import org.mockito.kotlin.spy
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
 @RunWith(AndroidJUnit4::class)
@@ -112,13 +120,23 @@ class SmartspaceSectionTest : SysuiTestCase() {
     }
 
     @Test
-    fun testAddViews_notSmartspaceEnabled() {
+    fun testAddViews_smartspaceNotEnabled() {
         whenever(keyguardSmartspaceViewModel.isSmartspaceEnabled).thenReturn(false)
-        val constraintLayout = ConstraintLayout(mContext)
+
         underTest.addViews(constraintLayout)
+
         assertThat(smartspaceView.parent).isNull()
         assertThat(weatherView.parent).isNull()
         assertThat(dateView.parent).isNull()
+    }
+
+    @Test
+    fun testAddViews_smartspaceEnabled() {
+        underTest.addViews(constraintLayout)
+
+        assertThat(smartspaceView.parent).isEqualTo(constraintLayout)
+        assertThat(weatherView.parent).isEqualTo(dateView)
+        assertThat(dateView.parent).isEqualTo(constraintLayout)
     }
 
     @Test
@@ -149,5 +167,53 @@ class SmartspaceSectionTest : SysuiTestCase() {
 
         val dateConstraints = constraintSet.getConstraint(dateView.id)
         assertThat(dateConstraints.layout.bottomToTop).isEqualTo(smartspaceView.id)
+    }
+
+    @Test
+    fun testRemoveViews_unRegistersListener_fromAttachInfoTreeObserver() {
+        val ssViewWithSpiedTreeObserver =
+            ViewWithSpiedTreeObserver(mContext).also { it.id = sharedR.id.bc_smartspace_view }
+        whenever(lockscreenSmartspaceController.buildAndConnectView(any()))
+            .thenReturn(ssViewWithSpiedTreeObserver)
+
+        runOnMainThreadAndWaitForIdleSync { ViewUtils.attachView(constraintLayout) }
+        assertThat(constraintLayout.isAttachedToWindow).isTrue()
+
+        runOnMainThreadAndWaitForIdleSync { underTest.addViews(constraintLayout) }
+
+        assertThat(ssViewWithSpiedTreeObserver.isAttachedToWindow).isTrue()
+        assertThat(ssViewWithSpiedTreeObserver.getSuperViewTreeObserver())
+            .isEqualTo(constraintLayout.viewTreeObserver)
+        val viewTreeObserver1 = ssViewWithSpiedTreeObserver.viewTreeObserver
+
+        verify(viewTreeObserver1).addOnGlobalLayoutListener(any())
+        clearInvocations(viewTreeObserver1)
+
+        runOnMainThreadAndWaitForIdleSync { underTest.removeViews(constraintLayout) }
+
+        assertThat(ssViewWithSpiedTreeObserver.isAttachedToWindow).isFalse()
+        assertThat(ssViewWithSpiedTreeObserver.getSuperViewTreeObserver())
+            .isNotEqualTo(constraintLayout.viewTreeObserver)
+        val viewTreeObserver2 = ssViewWithSpiedTreeObserver.viewTreeObserver
+        verify(viewTreeObserver1).removeOnGlobalLayoutListener(any())
+        verify(viewTreeObserver2, never()).removeOnGlobalLayoutListener(any())
+    }
+
+    class ViewWithSpiedTreeObserver(context: Context) : View(context) {
+        private var realTreeObserver: ViewTreeObserver? = null
+        private var spiedTreeObserver: ViewTreeObserver? = null
+
+        override fun getViewTreeObserver(): ViewTreeObserver {
+            val viewViewTreeObserver = getSuperViewTreeObserver()
+            if (realTreeObserver == null || realTreeObserver !== viewViewTreeObserver) {
+                realTreeObserver = viewViewTreeObserver
+                spiedTreeObserver = spy(realTreeObserver)
+            }
+            return spiedTreeObserver!!
+        }
+
+        fun getSuperViewTreeObserver(): ViewTreeObserver {
+            return super.getViewTreeObserver()
+        }
     }
 }

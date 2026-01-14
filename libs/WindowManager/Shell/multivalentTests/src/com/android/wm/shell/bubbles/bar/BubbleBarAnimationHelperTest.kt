@@ -155,11 +155,13 @@ class BubbleBarAnimationHelperTest {
         assertThat(semaphore.tryAcquire(5, TimeUnit.SECONDS)).isTrue()
         assertThat(fromBubble.bubbleBarExpandedView?.visibility).isEqualTo(View.INVISIBLE)
         assertThat(fromBubble.bubbleBarExpandedView?.alpha).isEqualTo(0f)
+        assertThat(fromBubble.bubbleBarExpandedView?.captionView?.alpha).isEqualTo(0f)
         assertThat(fromBubble.bubbleBarExpandedView?.isSurfaceZOrderedOnTop).isFalse()
 
         assertThat(toBubble.bubbleBarExpandedView?.visibility).isEqualTo(View.VISIBLE)
         assertThat(toBubble.bubbleBarExpandedView?.alpha).isEqualTo(1f)
         assertThat(toBubble.bubbleBarExpandedView?.captionView?.alpha).isEqualTo(1f)
+        assertThat(toBubble.bubbleBarExpandedView?.handleView?.alpha).isEqualTo(1f)
         assertThat(toBubble.bubbleBarExpandedView?.isSurfaceZOrderedOnTop).isFalse()
     }
 
@@ -194,11 +196,13 @@ class BubbleBarAnimationHelperTest {
 
         assertThat(fromBubble.bubbleBarExpandedView?.visibility).isEqualTo(View.INVISIBLE)
         assertThat(fromBubble.bubbleBarExpandedView?.alpha).isEqualTo(0f)
+        assertThat(fromBubble.bubbleBarExpandedView?.captionView?.alpha).isEqualTo(0f)
         assertThat(fromBubble.bubbleBarExpandedView?.isSurfaceZOrderedOnTop).isFalse()
 
         assertThat(toBubble.bubbleBarExpandedView?.visibility).isEqualTo(View.VISIBLE)
         assertThat(toBubble.bubbleBarExpandedView?.alpha).isEqualTo(1f)
         assertThat(toBubble.bubbleBarExpandedView?.captionView?.alpha).isEqualTo(1f)
+        assertThat(toBubble.bubbleBarExpandedView?.handleView?.alpha).isEqualTo(1f)
         assertThat(toBubble.bubbleBarExpandedView?.isSurfaceZOrderedOnTop).isFalse()
     }
 
@@ -299,10 +303,13 @@ class BubbleBarAnimationHelperTest {
         assertThat(semaphore.tryAcquire(5, TimeUnit.SECONDS)).isTrue()
         assertThat(fromBubble.bubbleBarExpandedView?.visibility).isEqualTo(View.INVISIBLE)
         assertThat(fromBubble.bubbleBarExpandedView?.alpha).isEqualTo(0f)
+        assertThat(fromBubble.bubbleBarExpandedView?.captionView?.alpha).isEqualTo(0f)
         assertThat(fromBubble.bubbleBarExpandedView?.isSurfaceZOrderedOnTop).isFalse()
 
         assertThat(overflow.bubbleBarExpandedView?.visibility).isEqualTo(View.VISIBLE)
         assertThat(overflow.bubbleBarExpandedView?.alpha).isEqualTo(1f)
+        assertThat(overflow.bubbleBarExpandedView?.captionView?.alpha).isEqualTo(1f)
+        assertThat(overflow.bubbleBarExpandedView?.handleView?.alpha).isEqualTo(1f)
     }
 
     @Test
@@ -327,9 +334,12 @@ class BubbleBarAnimationHelperTest {
         assertThat(semaphore.tryAcquire(5, TimeUnit.SECONDS)).isTrue()
         assertThat(overflow.bubbleBarExpandedView?.visibility).isEqualTo(View.INVISIBLE)
         assertThat(overflow.bubbleBarExpandedView?.alpha).isEqualTo(0f)
+        assertThat(overflow.bubbleBarExpandedView?.captionView?.alpha).isEqualTo(0f)
 
         assertThat(toBubble.bubbleBarExpandedView?.visibility).isEqualTo(View.VISIBLE)
         assertThat(toBubble.bubbleBarExpandedView?.alpha).isEqualTo(1f)
+        assertThat(toBubble.bubbleBarExpandedView?.captionView?.alpha).isEqualTo(1f)
+        assertThat(toBubble.bubbleBarExpandedView?.handleView?.alpha).isEqualTo(1f)
         assertThat(toBubble.bubbleBarExpandedView?.isSurfaceZOrderedOnTop).isFalse()
     }
 

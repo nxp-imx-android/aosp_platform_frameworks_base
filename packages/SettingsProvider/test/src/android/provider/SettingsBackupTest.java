@@ -599,6 +599,7 @@ public class SettingsBackupTest {
                     Settings.Global.Wearable.AMBIENT_FORCE_WHEN_DOCKED,
                     Settings.Global.Wearable.AMBIENT_LOW_BIT_ENABLED,
                     Settings.Global.Wearable.AMBIENT_PLUGGED_TIMEOUT_MIN,
+                    Settings.Global.Wearable.AMBIENT_OFFWRIST_TIMEOUT_MIN,
                     Settings.Global.Wearable.PAIRED_DEVICE_OS_TYPE,
                     Settings.Global.Wearable.COMPANION_BLE_ROLE,
                     Settings.Global.Wearable.COMPANION_NAME,
@@ -793,6 +794,8 @@ public class SettingsBackupTest {
                  Settings.Secure.FACE_UNLOCK_RE_ENROLL,
                  Settings.Secure.TAP_GESTURE,
                  Settings.Secure.NEARBY_SHARING_COMPONENT, // not user configurable
+                 Settings.Secure.TAP_EVENT_SERVICE_COMPONENT, // not user configurable
+                 Settings.Secure.TAP_SHARE_FULFILLMENT_ACTIVITY_COMPONENT, // not user configurable
                  Settings.Secure.ACCESSIBILITY_SHORTCUT_TARGET_MAGNIFICATION_CONTROLLER,
                  Settings.Secure.SUPPRESS_DOZE,
                  Settings.Secure.REDUCE_BRIGHT_COLORS_ACTIVATED,

@@ -21,11 +21,13 @@ import static android.app.ActivityManager.START_SUCCESS;
 import static android.os.UserHandle.USER_SYSTEM;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
+import static com.android.server.pm.GenericAllowlist.AllowlistStatus;
 import static com.android.server.pm.UserActivitiesAllowlist.ALLOWLIST_MODE_ENABLED;
 import static com.android.server.pm.UserActivitiesAllowlist.ALLOWLIST_MODE_DISABLED;
 import static com.android.server.pm.UserActivitiesAllowlist.ALLOWLIST_MODE_LOG_ONLY;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
@@ -64,6 +66,12 @@ public final class UserHelperTest {
     private static final boolean NOT_STARTED = false;
 
     private static final int INVALID_ALLOWLIST_MODE = 666;
+
+    // The actual value "doesn't matter", as long as it's allowed or disallowed.
+    private static final int STATUS_ALLOWED =
+            UserActivitiesAllowlist.STATUS_ALLOWED_BY_PERMANENT_LIST;
+    private static final int STATUS_DISALLOWED =
+            UserActivitiesAllowlist.STATUS_DISALLOWED_NOT_IN_PERMANENT_LIST;
 
     @Rule
     public final Expect expect = Expect.create();
@@ -104,6 +112,7 @@ public final class UserHelperTest {
         mockIsHsum(true);
         mockHsuActivityAllowlistMode(ALLOWLIST_MODE_ENABLED);
         mockHsuActivityAllowlist(mMockHsuAllowlist);
+        mockDefaultActivityAllowlistStatus(STATUS_DISALLOWED);
         mUserHelper = createUserHelper();
     }
 
@@ -115,7 +124,7 @@ public final class UserHelperTest {
                 .that(mUserHelper.checkRequest(mRequest))
                 .isEqualTo(START_CLASS_NOT_FOUND);
 
-        verifyUmiNotNotifiedActivityBlockedOnHsu();
+        verifyUmiLogActivityLaunchStatusNeverCalled();
     }
 
     @Test
@@ -126,7 +135,7 @@ public final class UserHelperTest {
                 .that(mUserHelper.checkRequest(mRequest))
                 .isEqualTo(START_SUCCESS);
 
-        verifyUmiNotNotifiedActivityBlockedOnHsu();
+        verifyUmiLogActivityLaunchStatusNeverCalled();
     }
 
     @Test
@@ -138,7 +147,7 @@ public final class UserHelperTest {
                 .that(userHelper.checkRequest(mRequest))
                 .isEqualTo(START_SUCCESS);
 
-        verifyUmiNotNotifiedActivityBlockedOnHsu();
+        verifyUmiLogActivityLaunchStatusNeverCalled();
     }
 
     @Test
@@ -147,7 +156,7 @@ public final class UserHelperTest {
                 .that(mUserHelper.checkRequest(mRequest))
                 .isEqualTo(START_NOT_ALLOWED_FOR_USER);
 
-        verifyUmiNotifiedActivityBlockedOnHsu();
+        verifyUmiLogDefaultActivityLaunchStatusForHsu(STATUS_DISALLOWED);
     }
 
     @Test
@@ -159,7 +168,7 @@ public final class UserHelperTest {
                 .that(userHelper.checkRequest(mRequest))
                 .isEqualTo(START_SUCCESS);
 
-        verifyUmiNotNotifiedActivityBlockedOnHsu();
+        verifyUmiLogActivityLaunchStatusNeverCalled();
     }
 
     @Test
@@ -170,7 +179,7 @@ public final class UserHelperTest {
                 .that(mUserHelper.checkRequest(mRequest))
                 .isEqualTo(START_SUCCESS);
 
-        verifyUmiNotNotifiedActivityBlockedOnHsu();
+        verifyUmiLogActivityLaunchStatusNeverCalled();
     }
 
     @Test
@@ -182,7 +191,7 @@ public final class UserHelperTest {
                 .that(userHelper.checkRequest(mRequest))
                 .isEqualTo(START_SUCCESS);
 
-        verifyUmiNotNotifiedActivityBlockedOnHsu();
+        verifyUmiLogActivityLaunchStatusNeverCalled();
     }
 
     @Test
@@ -194,7 +203,7 @@ public final class UserHelperTest {
                 .that(userHelper.checkRequest(mRequest))
                 .isEqualTo(START_SUCCESS);
 
-        verifyUmiNotNotifiedActivityBlockedOnHsu();
+        verifyUmiLogActivityLaunchStatusNeverCalled();
     }
 
     @Test
@@ -206,7 +215,7 @@ public final class UserHelperTest {
                 .that(userHelper.checkRequest(mRequest))
                 .isEqualTo(START_SUCCESS);
 
-        verifyUmiNotifiedActivityBlockedOnHsu();
+        verifyUmiLogDefaultActivityLaunchStatusForHsu(STATUS_DISALLOWED);
     }
 
     @Test
@@ -217,14 +226,14 @@ public final class UserHelperTest {
                 .that(mUserHelper.checkRequest(mRequest))
                 .isEqualTo(START_SUCCESS);
 
-        verifyUmiNotNotifiedActivityBlockedOnHsu();
+        verifyUmiLogActivityLaunchStatusNeverCalled();
     }
 
     @Test
     public void testLogStarted_notStarted() {
-        mUserHelper.logActivityStarted(mMockActivityRecord, NOT_STARTED);
+        mUserHelper.logActivityStarted(mMockActivityRecord, NOT_STARTED, STATUS_ALLOWED);
 
-        verifyUmiNotNotifiedActivityLaunchedOnHsu();
+        verifyUmiLogActivityLaunchStatusNeverCalled();
     }
 
     @Test
@@ -232,23 +241,23 @@ public final class UserHelperTest {
         mockIsHsum(false);
         var userHelper = createUserHelper();
 
-        userHelper.logActivityStarted(mMockActivityRecord, STARTED);
+        userHelper.logActivityStarted(mMockActivityRecord, STARTED, STATUS_ALLOWED);
 
-        verifyUmiNotNotifiedActivityLaunchedOnHsu();
+        verifyUmiLogActivityLaunchStatusNeverCalled();
     }
 
     @Test
     public void testLogStarted_started_dontLogWhenNotHsu() {
-        mUserHelper.logActivityStarted(USER_ID, COMP_NAME);
+        mUserHelper.logActivityStarted(USER_ID, COMP_NAME, STATUS_ALLOWED);
 
-        verifyUmiNotNotifiedActivityLaunchedOnHsu();
+        verifyUmiLogActivityLaunchStatusNeverCalled();
     }
 
     @Test
     public void testLogStarted_started_logWhenNotHsu() {
-        mUserHelper.logActivityStarted(USER_SYSTEM, COMP_NAME);
+        mUserHelper.logActivityStarted(USER_SYSTEM, COMP_NAME, STATUS_ALLOWED);
 
-        verifyUmiNotifiedActivityLaunchedOnHsu();
+        verifyUmiLogDefaultActivityLaunchStatusForHsu(STATUS_ALLOWED);
     }
 
     @Test
@@ -401,26 +410,23 @@ public final class UserHelperTest {
 
     private void mockDefaultActivityAllowlisted() {
         when(mMockHsuAllowlist.isAllowed(COMP_NAME)).thenReturn(true);
+        mockDefaultActivityAllowlistStatus(STATUS_ALLOWED);
+    }
+
+    private void mockDefaultActivityAllowlistStatus(@AllowlistStatus int status) {
+        when(mMockHsuAllowlist.getAllowlistStatus(COMP_NAME)).thenReturn(status);
     }
 
     private void setCurrentUserId(@UserIdInt int userId) {
         doReturn(userId).when(ActivityManager::getCurrentUser);
     }
 
-    private void verifyUmiNotifiedActivityBlockedOnHsu() {
-        verify(mMockUmi).logBlockedHsuActivity(COMP_NAME);
+    private void verifyUmiLogDefaultActivityLaunchStatusForHsu(@AllowlistStatus int status) {
+        verify(mMockUmi).logActivityLaunchStatus(COMP_NAME, USER_SYSTEM, status);
     }
 
-    private void verifyUmiNotNotifiedActivityBlockedOnHsu() {
-        verify(mMockUmi, never()).logBlockedHsuActivity(any());
-    }
-
-    private void verifyUmiNotifiedActivityLaunchedOnHsu() {
-        verify(mMockUmi).logLaunchedHsuActivity(COMP_NAME);
-    }
-
-    private void verifyUmiNotNotifiedActivityLaunchedOnHsu() {
-        verify(mMockUmi, never()).logLaunchedHsuActivity(any());
+    private void verifyUmiLogActivityLaunchStatusNeverCalled() {
+        verify(mMockUmi, never()).logActivityLaunchStatus(any(), anyInt(), anyInt());
     }
 
     private static String dump(UserHelper userHelper, String prefix) throws IOException {

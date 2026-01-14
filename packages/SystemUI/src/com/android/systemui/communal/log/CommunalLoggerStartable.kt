@@ -56,7 +56,7 @@ constructor(
 ) : CoreStartable {
 
     override fun start() {
-        communalSceneInteractor.transitionState
+        communalSceneInteractor.transitionStateFlow
             .map { state ->
                 when {
                     state.isOnCommunal() -> CommunalUiEvent.COMMUNAL_HUB_SHOWN
@@ -71,7 +71,7 @@ constructor(
             .onEach { uiEvent -> uiEventLogger.log(uiEvent) }
             .launchIn(backgroundScope)
 
-        communalSceneInteractor.transitionState
+        communalSceneInteractor.transitionStateFlow
             .pairwise()
             .combine(keyguardInteractor.isDreamingWithOverlay) { (old, new), isDreaming ->
                 when {

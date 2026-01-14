@@ -160,7 +160,7 @@ constructor(
             launch { hydrator.activate() }
 
             launch {
-                sceneInteractor.transitionState
+                sceneInteractor.transitionStateFlow
                     .filter { it is ObservableTransitionState.Idle }
                     .collect { headsUpNotificationInteractor.onTransitionIdle() }
             }

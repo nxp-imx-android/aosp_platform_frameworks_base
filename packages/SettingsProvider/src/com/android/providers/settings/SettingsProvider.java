@@ -4318,7 +4318,7 @@ public class SettingsProvider extends ContentProvider {
 
         @VisibleForTesting
         final class UpgradeController {
-            private static final int SETTINGS_VERSION = 234;
+            private static final int SETTINGS_VERSION = 236;
 
             private final int mUserId;
             private final int mDeviceId;
@@ -6957,6 +6957,37 @@ public class SettingsProvider extends ContentProvider {
                                 Settings.Secure.ADAPTIVE_CONNECTIVITY_ENABLED);
                     }
                     currentVersion = 234;
+                }
+
+                if (currentVersion == 234) {
+                    // Version 234: Add AMBIENT_OFFWRIST_TIMEOUT for Wear charging experience
+                    // AMBIENT_OFFWRIST_TIMEOUT_MIN
+                    initGlobalSettingsDefaultValLocked(
+                            globalSettings,
+                            Settings.Global.Wearable.AMBIENT_OFFWRIST_TIMEOUT_MIN,
+                            SystemProperties.getInt("ro.ambient.offwrist_timeout_min", -1));
+
+                    currentVersion = 235;
+                }
+
+                // Version 235: Migrate the value of TEXT_SHOW_PASSWORD to TEXT_SHOW_PASSWORD_TOUCH.
+                if (currentVersion == 235) {
+                    final Setting showPasswordSetting =
+                            systemSettings.getSettingLocked(Settings.System.TEXT_SHOW_PASSWORD);
+
+                    if (!showPasswordSetting.isNull()) {
+                        String value = showPasswordSetting.getValue();
+                        secureSettings.insertSettingOverrideableByRestoreLocked(
+                                Settings.Secure.TEXT_SHOW_PASSWORD_TOUCH,
+                                value,
+                                null,
+                                true,
+                                SettingsState.SYSTEM_PACKAGE_NAME);
+                        // We don't migrate the value for the PHYSICAL setting as this can be
+                        // considered new. Also some vendors may chose to not expose the physical
+                        // setting at all and we don't want the user to be stuck on these devices.
+                    }
+                    currentVersion = 236;
                 }
 
                 // vXXX: Add new settings above this point.

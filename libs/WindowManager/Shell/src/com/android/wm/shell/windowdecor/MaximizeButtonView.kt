@@ -31,10 +31,8 @@ import android.view.ViewStub
 import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.ProgressBar
-import android.window.DesktopModeFlags
 import androidx.core.animation.doOnEnd
 import androidx.core.animation.doOnStart
-import androidx.core.content.ContextCompat
 import com.android.wm.shell.R
 
 private const val OPEN_MAXIMIZE_MENU_DELAY_ON_HOVER_MS = 350
@@ -107,42 +105,15 @@ class MaximizeButtonView(context: Context, attrs: AttributeSet) : FrameLayout(co
         baseForegroundColor: Int? = null,
         backgroundDrawable: Drawable? = null,
     ) {
-        if (DesktopModeFlags.ENABLE_THEMED_APP_HEADERS.isTrue()) {
-            requireNotNull(iconForegroundColor) { "Icon foreground color must be non-null" }
-            requireNotNull(baseForegroundColor) { "Base foreground color must be non-null" }
-            requireNotNull(backgroundDrawable) { "Background drawable must be non-null" }
-            maximizeWindow.imageTintList = iconForegroundColor
-            maximizeWindow.background = backgroundDrawable
-            onProgressBarInflated { _, progressBar ->
-                progressBar.progressTintList =
-                    ColorStateList.valueOf(baseForegroundColor).withAlpha(OPACITY_15)
-                progressBar.progressBackgroundTintList = ColorStateList.valueOf(Color.TRANSPARENT)
-            }
-        } else {
-            val progressTint =
-                if (darkMode) {
-                    ColorStateList.valueOf(
-                        resources.getColor(R.color.desktop_mode_maximize_menu_progress_dark)
-                    )
-                } else {
-                    ColorStateList.valueOf(
-                        resources.getColor(R.color.desktop_mode_maximize_menu_progress_light)
-                    )
-                }
-            val backgroundTint =
-                if (darkMode) {
-                    ContextCompat.getColorStateList(
-                        context,
-                        R.color.desktop_mode_caption_button_color_selector_dark,
-                    )
-                } else {
-                    ContextCompat.getColorStateList(
-                        context,
-                        R.color.desktop_mode_caption_button_color_selector_light,
-                    )
-                }
-            onProgressBarInflated { _, progressBar -> progressBar.progressTintList = progressTint }
-            maximizeWindow.background?.setTintList(backgroundTint)
+        requireNotNull(iconForegroundColor) { "Icon foreground color must be non-null" }
+        requireNotNull(baseForegroundColor) { "Base foreground color must be non-null" }
+        requireNotNull(backgroundDrawable) { "Background drawable must be non-null" }
+        maximizeWindow.imageTintList = iconForegroundColor
+        maximizeWindow.background = backgroundDrawable
+        onProgressBarInflated { _, progressBar ->
+            progressBar.progressTintList =
+                ColorStateList.valueOf(baseForegroundColor).withAlpha(OPACITY_15)
+            progressBar.progressBackgroundTintList = ColorStateList.valueOf(Color.TRANSPARENT)
         }
     }
 

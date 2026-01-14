@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2025 The Android Open Source Project
+# Copyright (C) 2026 The Android Open Source Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -397,6 +397,8 @@ android.app.ApplicationErrorReport$ParcelableCrashInfo
 android.app.ApplicationErrorReport$RunningServiceInfo
 android.app.ApplicationErrorReport
 android.app.ApplicationExitInfo$1
+android.app.ApplicationExitInfo$AnrInfo$1
+android.app.ApplicationExitInfo$AnrInfo
 android.app.ApplicationExitInfo-IA
 android.app.ApplicationExitInfo
 android.app.ApplicationLoaders$CachedClassLoader
@@ -436,8 +438,6 @@ android.app.BroadcastStickyCache$StickyBroadcastFilter$$ExternalSyntheticRecord0
 android.app.BroadcastStickyCache$StickyBroadcastFilter
 android.app.BroadcastStickyCache-IA
 android.app.BroadcastStickyCache
-android.app.CameraCompatTaskInfo$1
-android.app.CameraCompatTaskInfo
 android.app.ClientTransactionHandler
 android.app.ComponentCaller
 android.app.ComponentOptions
@@ -886,9 +886,11 @@ android.app.SystemServiceRegistry$155
 android.app.SystemServiceRegistry$156
 android.app.SystemServiceRegistry$157
 android.app.SystemServiceRegistry$158
+android.app.SystemServiceRegistry$159
 android.app.SystemServiceRegistry$15
 android.app.SystemServiceRegistry$160
-android.app.SystemServiceRegistry$161
+android.app.SystemServiceRegistry$163
+android.app.SystemServiceRegistry$164
 android.app.SystemServiceRegistry$16
 android.app.SystemServiceRegistry$17
 android.app.SystemServiceRegistry$18
@@ -1503,6 +1505,7 @@ android.content.ApexEnvironment
 android.content.AsyncQueryHandler$WorkerArgs
 android.content.AsyncQueryHandler$WorkerHandler
 android.content.AsyncQueryHandler
+android.content.AsyncTaskLoader
 android.content.Attributable
 android.content.AttributionSource$1
 android.content.AttributionSource$Builder
@@ -1545,6 +1548,7 @@ android.content.ContentProvider$CallingIdentity
 android.content.ContentProvider$PipeDataWriter
 android.content.ContentProvider$Transport
 android.content.ContentProvider
+android.content.ContentProviderClient$1
 android.content.ContentProviderClient$CursorWrapperInner
 android.content.ContentProviderClient$NotRespondingRunnable
 android.content.ContentProviderClient-IA
@@ -5364,12 +5368,14 @@ android.media.MediaCodec$ParameterDescriptor
 android.media.MediaCodec$PersistentSurface
 android.media.MediaCodec$QueueRequest
 android.media.MediaCodec-IA
+android.media.MediaCodec
 android.media.MediaCodecInfo$AudioCapabilities$AudioCapsIntf
 android.media.MediaCodecInfo$AudioCapabilities$AudioCapsNativeImpl
 android.media.MediaCodecInfo$AudioCapabilities
 android.media.MediaCodecInfo$CodecCapabilities$CodecCapsIntf
 android.media.MediaCodecInfo$CodecCapabilities$CodecCapsLegacyImpl
 android.media.MediaCodecInfo$CodecCapabilities$CodecCapsNativeImpl
+android.media.MediaCodecInfo$CodecCapabilities
 android.media.MediaCodecInfo$CodecProfileLevel
 android.media.MediaCodecInfo$EncoderCapabilities$EncoderCapsIntf
 android.media.MediaCodecInfo$EncoderCapabilities$EncoderCapsNativeImpl
@@ -5381,6 +5387,7 @@ android.media.MediaCodecInfo$VideoCapabilities$VideoCapsIntf
 android.media.MediaCodecInfo$VideoCapabilities$VideoCapsLegacyImpl
 android.media.MediaCodecInfo$VideoCapabilities$VideoCapsNativeImpl
 android.media.MediaCodecInfo$VideoCapabilities
+android.media.MediaCodecInfo
 android.media.MediaCodecList
 android.media.MediaCrypto
 android.media.MediaCryptoException
@@ -5908,7 +5915,6 @@ android.net.WifiKey-IA
 android.net.WifiKey
 android.net.http.HttpResponseCache
 android.net.http.SslCertificate
-android.net.http.UrlResponseInfoWrapper$HeaderBlockImpl$$ExternalSyntheticLambda1
 android.net.http.X509TrustManagerExtensions
 android.net.metrics.ApfProgramEvent$1
 android.net.metrics.ApfProgramEvent$Decoder
@@ -6196,7 +6202,6 @@ android.os.FabricatedOverlayInternalEntry
 android.os.FactoryTest
 android.os.FileBridge$FileBridgeOutputStream
 android.os.FileBridge
-android.os.FileObserver$ObserverThread
 android.os.FileUtils$$ExternalSyntheticLambda0
 android.os.FileUtils$$ExternalSyntheticLambda1
 android.os.FileUtils$$ExternalSyntheticLambda2
@@ -6290,7 +6295,6 @@ android.os.IPowerManager$LowPowerStandbyPortDescription
 android.os.IPowerManager$Stub$Proxy
 android.os.IPowerManager$Stub
 android.os.IPowerManager
-android.os.IPowerStatsService$Stub$Proxy
 android.os.IPowerStatsService$Stub
 android.os.IPowerStatsService
 android.os.IProcessInfoService$Stub
@@ -6673,7 +6677,6 @@ android.os.connectivity.WifiActivityEnergyInfo$1
 android.os.connectivity.WifiActivityEnergyInfo
 android.os.connectivity.WifiBatteryStats$1
 android.os.connectivity.WifiBatteryStats
-android.os.flagging.AconfigPackage
 android.os.flagging.PlatformAconfigPackage
 android.os.health.HealthKeys$Constant
 android.os.health.HealthKeys$Constants
@@ -6687,7 +6690,6 @@ android.os.health.PidHealthStats
 android.os.health.ProcessHealthStats
 android.os.health.ServiceHealthStats
 android.os.health.SystemHealthManager$$ExternalSyntheticLambda1
-android.os.health.SystemHealthManager$PendingUidSnapshots
 android.os.health.SystemHealthManager
 android.os.health.TimerStat$1
 android.os.health.TimerStat
@@ -6772,6 +6774,7 @@ android.os.vibrator.StepSegment$1
 android.os.vibrator.StepSegment
 android.os.vibrator.VibrationEffectSegment$1
 android.os.vibrator.VibrationEffectSegment
+android.os.vibrator.VibratorInfoFactory
 android.ota.nano.OtaPackageMetadata$ApexInfo
 android.ota.nano.OtaPackageMetadata$ApexMetadata
 android.ota.nano.OtaPackageMetadata$DeviceState
@@ -7354,6 +7357,9 @@ android.service.notification.IDispatchCompletionListener$Stub
 android.service.notification.IDispatchCompletionListener
 android.service.notification.INotificationListener$Stub
 android.service.notification.INotificationListener
+android.service.notification.IStatusBarNotificationHolder$Stub$Proxy
+android.service.notification.IStatusBarNotificationHolder$Stub
+android.service.notification.IStatusBarNotificationHolder
 android.service.notification.NotificationAssistantService$MyHandler
 android.service.notification.NotificationAssistantService$NotificationAssistantServiceWrapper
 android.service.notification.NotificationAssistantService
@@ -7437,6 +7443,7 @@ android.service.trust.TrustAgentService$1
 android.service.trust.TrustAgentService$ConfigurationData
 android.service.trust.TrustAgentService$TrustAgentServiceWrapper
 android.service.trust.TrustAgentService
+android.service.uprobestats.DynamicInstrumentationManager
 android.service.voice.IVoiceInteractionService$Stub$Proxy
 android.service.voice.IVoiceInteractionService$Stub
 android.service.voice.IVoiceInteractionService
@@ -7491,11 +7498,13 @@ android.speech.tts.TextToSpeech$$ExternalSyntheticLambda17
 android.speech.tts.TextToSpeech$$ExternalSyntheticLambda1
 android.speech.tts.TextToSpeech$Action
 android.speech.tts.TextToSpeech$Connection$1
+android.speech.tts.TextToSpeech$Connection
 android.speech.tts.TextToSpeech$DirectConnection
 android.speech.tts.TextToSpeech$EngineInfo
 android.speech.tts.TextToSpeech$OnInitListener
 android.speech.tts.TextToSpeech$SystemConnection
 android.speech.tts.TextToSpeech-IA
+android.speech.tts.TextToSpeech
 android.speech.tts.TtsEngines$EngineInfoComparator
 android.speech.tts.TtsEngines
 android.speech.tts.UtteranceProgressListener
@@ -7742,6 +7751,7 @@ android.telephony.NetworkRegistrationInfo
 android.telephony.NetworkScan
 android.telephony.NetworkScanRequest$1
 android.telephony.NetworkScanRequest
+android.telephony.NetworkSecurityEvent
 android.telephony.NetworkService$NetworkServiceHandler
 android.telephony.NetworkService$NetworkServiceProvider
 android.telephony.NetworkService
@@ -7893,6 +7903,7 @@ android.telephony.TelephonyCallback$DataActivityListener
 android.telephony.TelephonyCallback$DataConnectionStateListener
 android.telephony.TelephonyCallback$DataEnabledListener
 android.telephony.TelephonyCallback$DisplayInfoListener
+android.telephony.TelephonyCallback$DomainSelectionEmergencyModeListener
 android.telephony.TelephonyCallback$EmergencyCallbackModeListener
 android.telephony.TelephonyCallback$EmergencyNumberListListener
 android.telephony.TelephonyCallback$IPhoneStateListenerStub$$ExternalSyntheticLambda26
@@ -7908,6 +7919,7 @@ android.telephony.TelephonyCallback$ImsCallDisconnectCauseListener
 android.telephony.TelephonyCallback$LinkCapacityEstimateChangedListener
 android.telephony.TelephonyCallback$MediaQualityStatusChangedListener
 android.telephony.TelephonyCallback$MessageWaitingIndicatorListener
+android.telephony.TelephonyCallback$NetworkSecurityEventsListener
 android.telephony.TelephonyCallback$OutgoingEmergencyCallListener
 android.telephony.TelephonyCallback$OutgoingEmergencySmsListener
 android.telephony.TelephonyCallback$PhoneCapabilityListener
@@ -8883,6 +8895,8 @@ android.view.FrameMetrics
 android.view.FrameMetricsObserver
 android.view.FrameRateCategoryRate$1
 android.view.FrameRateCategoryRate
+android.view.FrameRateVelocityPoint$1
+android.view.FrameRateVelocityPoint
 android.view.FrameStats
 android.view.GestureDetector$GestureHandler
 android.view.GestureDetector$OnContextClickListener
@@ -9166,6 +9180,7 @@ android.view.SurfaceControl$TransactionCommittedListener
 android.view.SurfaceControl$TransactionStats
 android.view.SurfaceControl$TrustedPresentationCallback
 android.view.SurfaceControl$TrustedPresentationThresholds
+android.view.SurfaceControl$WorkDuration
 android.view.SurfaceControl-IA
 android.view.SurfaceControl
 android.view.SurfaceControlActivePicture
@@ -9344,8 +9359,25 @@ android.view.ViewRootImpl$$ExternalSyntheticLambda21
 android.view.ViewRootImpl$$ExternalSyntheticLambda22
 android.view.ViewRootImpl$$ExternalSyntheticLambda23
 android.view.ViewRootImpl$$ExternalSyntheticLambda24
+android.view.ViewRootImpl$$ExternalSyntheticLambda25
+android.view.ViewRootImpl$$ExternalSyntheticLambda26
+android.view.ViewRootImpl$$ExternalSyntheticLambda27
+android.view.ViewRootImpl$$ExternalSyntheticLambda29
 android.view.ViewRootImpl$$ExternalSyntheticLambda2
+android.view.ViewRootImpl$$ExternalSyntheticLambda31
+android.view.ViewRootImpl$$ExternalSyntheticLambda32
+android.view.ViewRootImpl$$ExternalSyntheticLambda33
+android.view.ViewRootImpl$$ExternalSyntheticLambda34
+android.view.ViewRootImpl$$ExternalSyntheticLambda35
+android.view.ViewRootImpl$$ExternalSyntheticLambda36
+android.view.ViewRootImpl$$ExternalSyntheticLambda37
+android.view.ViewRootImpl$$ExternalSyntheticLambda38
+android.view.ViewRootImpl$$ExternalSyntheticLambda39
 android.view.ViewRootImpl$$ExternalSyntheticLambda3
+android.view.ViewRootImpl$$ExternalSyntheticLambda41
+android.view.ViewRootImpl$$ExternalSyntheticLambda42
+android.view.ViewRootImpl$$ExternalSyntheticLambda43
+android.view.ViewRootImpl$$ExternalSyntheticLambda44
 android.view.ViewRootImpl$$ExternalSyntheticLambda4
 android.view.ViewRootImpl$$ExternalSyntheticLambda5
 android.view.ViewRootImpl$$ExternalSyntheticLambda6
@@ -10210,8 +10242,6 @@ android.widget.ListView$FixedViewInfo
 android.widget.ListView$FocusSelector
 android.widget.ListView-IA
 android.widget.ListView
-android.widget.Magnifier$Builder
-android.widget.Magnifier$InternalPopupWindow
 android.widget.MediaController$MediaPlayerControl
 android.widget.MultiAutoCompleteTextView$Tokenizer
 android.widget.MultiAutoCompleteTextView
@@ -10465,13 +10495,6 @@ android.window.CompatOnBackInvokedCallback
 android.window.ConfigurationDispatcher
 android.window.ConfigurationHelper
 android.window.DesktopExperienceFlags$$ExternalSyntheticLambda0
-android.window.DesktopExperienceFlags$$ExternalSyntheticLambda100
-android.window.DesktopExperienceFlags$$ExternalSyntheticLambda101
-android.window.DesktopExperienceFlags$$ExternalSyntheticLambda102
-android.window.DesktopExperienceFlags$$ExternalSyntheticLambda103
-android.window.DesktopExperienceFlags$$ExternalSyntheticLambda104
-android.window.DesktopExperienceFlags$$ExternalSyntheticLambda105
-android.window.DesktopExperienceFlags$$ExternalSyntheticLambda106
 android.window.DesktopExperienceFlags$$ExternalSyntheticLambda10
 android.window.DesktopExperienceFlags$$ExternalSyntheticLambda11
 android.window.DesktopExperienceFlags$$ExternalSyntheticLambda12
@@ -10568,8 +10591,6 @@ android.window.DesktopExperienceFlags$$ExternalSyntheticLambda94
 android.window.DesktopExperienceFlags$$ExternalSyntheticLambda95
 android.window.DesktopExperienceFlags$$ExternalSyntheticLambda96
 android.window.DesktopExperienceFlags$$ExternalSyntheticLambda97
-android.window.DesktopExperienceFlags$$ExternalSyntheticLambda98
-android.window.DesktopExperienceFlags$$ExternalSyntheticLambda99
 android.window.DesktopExperienceFlags$$ExternalSyntheticLambda9
 android.window.DesktopExperienceFlags
 android.window.DesktopModeFlags$$ExternalSyntheticLambda0
@@ -10600,11 +10621,6 @@ android.window.DesktopModeFlags$$ExternalSyntheticLambda31
 android.window.DesktopModeFlags$$ExternalSyntheticLambda32
 android.window.DesktopModeFlags$$ExternalSyntheticLambda33
 android.window.DesktopModeFlags$$ExternalSyntheticLambda34
-android.window.DesktopModeFlags$$ExternalSyntheticLambda35
-android.window.DesktopModeFlags$$ExternalSyntheticLambda36
-android.window.DesktopModeFlags$$ExternalSyntheticLambda37
-android.window.DesktopModeFlags$$ExternalSyntheticLambda38
-android.window.DesktopModeFlags$$ExternalSyntheticLambda39
 android.window.DesktopModeFlags$$ExternalSyntheticLambda3
 android.window.DesktopModeFlags$$ExternalSyntheticLambda4
 android.window.DesktopModeFlags$$ExternalSyntheticLambda5
@@ -10749,6 +10765,7 @@ android.window.WindowContext
 android.window.WindowContextController
 android.window.WindowContextInfo$1
 android.window.WindowContextInfo
+android.window.WindowExtensionsHelper
 android.window.WindowInfosListener$DisplayInfo
 android.window.WindowInfosListener
 android.window.WindowMetricsController$$ExternalSyntheticLambda0
@@ -11609,6 +11626,9 @@ com.android.internal.graphics.drawable.BackgroundBlurDrawable
 com.android.internal.hidden_from_bootclasspath.android.adpf.FeatureFlags
 com.android.internal.hidden_from_bootclasspath.android.adpf.FeatureFlagsImpl
 com.android.internal.hidden_from_bootclasspath.android.adpf.Flags
+com.android.internal.hidden_from_bootclasspath.android.aiseal.FeatureFlags
+com.android.internal.hidden_from_bootclasspath.android.aiseal.FeatureFlagsImpl
+com.android.internal.hidden_from_bootclasspath.android.aiseal.Flags
 com.android.internal.hidden_from_bootclasspath.android.app.FeatureFlags
 com.android.internal.hidden_from_bootclasspath.android.app.FeatureFlagsImpl
 com.android.internal.hidden_from_bootclasspath.android.app.Flags
@@ -11645,6 +11665,9 @@ com.android.internal.hidden_from_bootclasspath.android.companion.Flags
 com.android.internal.hidden_from_bootclasspath.android.companion.virtualdevice.flags.FeatureFlags
 com.android.internal.hidden_from_bootclasspath.android.companion.virtualdevice.flags.FeatureFlagsImpl
 com.android.internal.hidden_from_bootclasspath.android.companion.virtualdevice.flags.Flags
+com.android.internal.hidden_from_bootclasspath.android.content.flags.FeatureFlags
+com.android.internal.hidden_from_bootclasspath.android.content.flags.FeatureFlagsImpl
+com.android.internal.hidden_from_bootclasspath.android.content.flags.Flags
 com.android.internal.hidden_from_bootclasspath.android.content.pm.FeatureFlags
 com.android.internal.hidden_from_bootclasspath.android.content.pm.FeatureFlagsImpl
 com.android.internal.hidden_from_bootclasspath.android.content.pm.Flags
@@ -11712,6 +11735,9 @@ com.android.internal.hidden_from_bootclasspath.android.service.personalcontext.F
 com.android.internal.hidden_from_bootclasspath.android.service.personalcontext.FeatureFlagsImpl
 com.android.internal.hidden_from_bootclasspath.android.service.personalcontext.Flags
 com.android.internal.hidden_from_bootclasspath.android.service.voice.flags.Flags
+com.android.internal.hidden_from_bootclasspath.android.telecom.flags.FeatureFlags
+com.android.internal.hidden_from_bootclasspath.android.telecom.flags.FeatureFlagsImpl
+com.android.internal.hidden_from_bootclasspath.android.telecom.flags.Flags
 com.android.internal.hidden_from_bootclasspath.android.tracing.FeatureFlags
 com.android.internal.hidden_from_bootclasspath.android.tracing.FeatureFlagsImpl
 com.android.internal.hidden_from_bootclasspath.android.tracing.Flags
@@ -11792,6 +11818,9 @@ com.android.internal.hidden_from_bootclasspath.com.android.settingslib.flags.Fla
 com.android.internal.hidden_from_bootclasspath.com.android.text.flags.FeatureFlags
 com.android.internal.hidden_from_bootclasspath.com.android.text.flags.FeatureFlagsImpl
 com.android.internal.hidden_from_bootclasspath.com.android.text.flags.Flags
+com.android.internal.hidden_from_bootclasspath.com.android.webapp.flags.FeatureFlags
+com.android.internal.hidden_from_bootclasspath.com.android.webapp.flags.FeatureFlagsImpl
+com.android.internal.hidden_from_bootclasspath.com.android.webapp.flags.Flags
 com.android.internal.hidden_from_bootclasspath.com.android.window.flags.FeatureFlags
 com.android.internal.hidden_from_bootclasspath.com.android.window.flags.FeatureFlagsImpl
 com.android.internal.hidden_from_bootclasspath.com.android.window.flags.Flags
@@ -11896,6 +11925,7 @@ com.android.internal.jank.InteractionJankMonitor$RunningTracker
 com.android.internal.jank.InteractionJankMonitor$TimeFunction
 com.android.internal.jank.InteractionJankMonitor$TrackerResult
 com.android.internal.jank.InteractionJankMonitor-IA
+com.android.internal.jank.InteractionJankMonitor
 com.android.internal.jank.InteractionMonitorDebugOverlay
 com.android.internal.listeners.ListenerExecutor$$ExternalSyntheticLambda0
 com.android.internal.listeners.ListenerExecutor$FailureCallback
@@ -12174,7 +12204,6 @@ com.android.internal.protolog.IProtoLogConfigurationService
 com.android.internal.protolog.LogcatOnlyProtoLogImpl
 com.android.internal.protolog.NoViewerConfigProtoLogImpl$$ExternalSyntheticLambda0
 com.android.internal.protolog.PerfettoProtoLogImpl$$ExternalSyntheticLambda0
-com.android.internal.protolog.PerfettoProtoLogImpl$$ExternalSyntheticLambda10
 com.android.internal.protolog.PerfettoProtoLogImpl$$ExternalSyntheticLambda11
 com.android.internal.protolog.PerfettoProtoLogImpl$$ExternalSyntheticLambda2
 com.android.internal.protolog.PerfettoProtoLogImpl$$ExternalSyntheticLambda3
@@ -12182,6 +12211,7 @@ com.android.internal.protolog.PerfettoProtoLogImpl$$ExternalSyntheticLambda4
 com.android.internal.protolog.PerfettoProtoLogImpl$$ExternalSyntheticLambda5
 com.android.internal.protolog.PerfettoProtoLogImpl$$ExternalSyntheticLambda6
 com.android.internal.protolog.PerfettoProtoLogImpl$$ExternalSyntheticLambda7
+com.android.internal.protolog.PerfettoProtoLogImpl$$ExternalSyntheticLambda8
 com.android.internal.protolog.PerfettoProtoLogImpl$$ExternalSyntheticLambda9
 com.android.internal.protolog.PerfettoProtoLogImpl$1
 com.android.internal.protolog.PerfettoProtoLogImpl$Message
@@ -12236,6 +12266,8 @@ com.android.internal.statusbar.RegisterStatusBarResult$1
 com.android.internal.statusbar.RegisterStatusBarResult
 com.android.internal.statusbar.StatusBarIcon$1
 com.android.internal.statusbar.StatusBarIcon
+com.android.internal.telecom.DependencyAdapter
+com.android.internal.telecom.TelecomDependencies
 com.android.internal.telephony.ATParseEx
 com.android.internal.telephony.AndroidUtilIndentingPrintWriter
 com.android.internal.telephony.AppSmsManager$AppRequestInfo
@@ -13723,6 +13755,7 @@ com.android.internal.util.LatencyTracker$FrameworkStatsLogEvent
 com.android.internal.util.LatencyTracker$Session$$ExternalSyntheticLambda0
 com.android.internal.util.LatencyTracker$Session
 com.android.internal.util.LatencyTracker-IA
+com.android.internal.util.LatencyTracker
 com.android.internal.util.LineBreakBufferedWriter
 com.android.internal.util.LocalLog
 com.android.internal.util.MemInfoReader
@@ -14489,8 +14522,6 @@ com.android.org.bouncycastle.util.encoders.Encoder
 com.android.org.bouncycastle.util.encoders.Hex
 com.android.org.bouncycastle.util.encoders.HexEncoder
 com.android.org.bouncycastle.util.io.Streams
-com.android.org.conscrypt.OpenSSLRSAPublicKey
-com.android.org.conscrypt.OpenSSLX509Certificate
 com.android.org.kxml2.io.KXmlParser$ContentSource
 com.android.org.kxml2.io.KXmlParser$ValueContext
 com.android.org.kxml2.io.KXmlParser
@@ -14649,7 +14680,6 @@ dalvik.system.DexFile$OptimizationInfo
 dalvik.system.DexFile-IA
 dalvik.system.DexFile
 dalvik.system.DexPathList$$ExternalSyntheticLambda0
-dalvik.system.DexPathList$0
 dalvik.system.DexPathList$Element
 dalvik.system.DexPathList$NativeLibraryElement
 dalvik.system.DexPathList
@@ -15094,7 +15124,6 @@ java.awt.font.NumericShaper
 java.awt.font.TextAttribute
 java.io.Bits
 java.io.BufferedInputStream$$ExternalSyntheticBackportWithForwarding0
-java.io.BufferedInputStream$0
 java.io.BufferedInputStream
 java.io.BufferedOutputStream
 java.io.BufferedReader
@@ -15144,7 +15173,6 @@ java.io.NotActiveException
 java.io.NotSerializableException
 java.io.ObjectInput
 java.io.ObjectInputStream$$ExternalSyntheticLambda0
-java.io.ObjectInputStream$0
 java.io.ObjectInputStream$1
 java.io.ObjectInputStream$BlockDataInputStream
 java.io.ObjectInputStream$Caches
@@ -15176,7 +15204,6 @@ java.io.ObjectStreamClass$2
 java.io.ObjectStreamClass$3
 java.io.ObjectStreamClass$4
 java.io.ObjectStreamClass$5
-java.io.ObjectStreamClass$7
 java.io.ObjectStreamClass$Caches
 java.io.ObjectStreamClass$ClassDataSlot
 java.io.ObjectStreamClass$DefaultSUIDCompatibilityListener
@@ -15239,13 +15266,10 @@ java.lang.CaseMapper$1
 java.lang.CaseMapper
 java.lang.CharSequence$$ExternalSyntheticLambda0
 java.lang.CharSequence$$ExternalSyntheticLambda1
-java.lang.CharSequence$0
-java.lang.CharSequence$1
 java.lang.CharSequence$1CharIterator
 java.lang.CharSequence$1CodePointIterator
 java.lang.CharSequence
 java.lang.Character$$ExternalSyntheticBackport0
-java.lang.Character$0
 java.lang.Character$CharacterCache
 java.lang.Character$Subset
 java.lang.Character$UnicodeBlock
@@ -15253,9 +15277,6 @@ java.lang.Character
 java.lang.Class$$ExternalSyntheticBackport0
 java.lang.Class$$ExternalSyntheticLambda1
 java.lang.Class$$ExternalSyntheticLambda2
-java.lang.Class$0
-java.lang.Class$1
-java.lang.Class$2
 java.lang.Class$Caches
 java.lang.Class
 java.lang.ClassCastException
@@ -15263,9 +15284,6 @@ java.lang.ClassFormatError
 java.lang.ClassLoader$$ExternalSyntheticLambda0
 java.lang.ClassLoader$$ExternalSyntheticLambda1
 java.lang.ClassLoader$$ExternalSyntheticLambda2
-java.lang.ClassLoader$0
-java.lang.ClassLoader$1
-java.lang.ClassLoader$2
 java.lang.ClassLoader$SystemClassLoader
 java.lang.ClassLoader
 java.lang.ClassNotFoundException
@@ -15288,7 +15306,6 @@ java.lang.Deprecated
 java.lang.DexCache
 java.lang.Double
 java.lang.Enum$$ExternalSyntheticLambda0
-java.lang.Enum$0
 java.lang.Enum$1
 java.lang.Enum$EnumDesc
 java.lang.Enum
@@ -15309,7 +15326,6 @@ java.lang.InheritableThreadLocal
 java.lang.InstantiationError
 java.lang.InstantiationException
 java.lang.Integer$$ExternalSyntheticBackport0
-java.lang.Integer$0
 java.lang.Integer$IntegerCache
 java.lang.Integer
 java.lang.InternalError
@@ -15323,9 +15339,6 @@ java.lang.MatchException
 java.lang.Math$$ExternalSyntheticBackport0
 java.lang.Math$$ExternalSyntheticBackport1
 java.lang.Math$$ExternalSyntheticBackport2
-java.lang.Math$0
-java.lang.Math$1
-java.lang.Math$2
 java.lang.Math$RandomNumberGeneratorHolder
 java.lang.Math
 java.lang.NegativeArraySizeException
@@ -15374,8 +15387,6 @@ java.lang.StackWalker$StackFrame
 java.lang.StackWalker
 java.lang.StrictMath$$ExternalSyntheticBackport11
 java.lang.StrictMath$$ExternalSyntheticBackport4
-java.lang.StrictMath$11
-java.lang.StrictMath$4
 java.lang.StrictMath
 java.lang.String$$ExternalSyntheticBackport0
 java.lang.String$$ExternalSyntheticBackport1
@@ -15383,12 +15394,6 @@ java.lang.String$$ExternalSyntheticLambda2
 java.lang.String$$ExternalSyntheticLambda3
 java.lang.String$$ExternalSyntheticLambda4
 java.lang.String$$ExternalSyntheticLambda5
-java.lang.String$0
-java.lang.String$1
-java.lang.String$2
-java.lang.String$3
-java.lang.String$4
-java.lang.String$5
 java.lang.String$CaseInsensitiveComparator
 java.lang.String-IA
 java.lang.String
@@ -15454,11 +15459,6 @@ java.lang.VirtualThread$$ExternalSyntheticLambda3
 java.lang.VirtualThread$$ExternalSyntheticLambda4
 java.lang.VirtualThread$$ExternalSyntheticLambda6
 java.lang.VirtualThread$$ExternalSyntheticLambda7
-java.lang.VirtualThread$0
-java.lang.VirtualThread$3
-java.lang.VirtualThread$4
-java.lang.VirtualThread$6
-java.lang.VirtualThread$7
 java.lang.VirtualThread$JvmtiEventsListener
 java.lang.VirtualThread
 java.lang.Void
@@ -15471,7 +15471,6 @@ java.lang.annotation.Inherited
 java.lang.annotation.Retention
 java.lang.annotation.Target
 java.lang.constant.ClassDesc$$ExternalSyntheticBackport0
-java.lang.constant.ClassDesc$0
 java.lang.constant.ClassDesc
 java.lang.constant.Constable
 java.lang.constant.ConstantDesc
@@ -15532,29 +15531,6 @@ java.lang.invoke.MethodHandles$$ExternalSyntheticLambda6
 java.lang.invoke.MethodHandles$$ExternalSyntheticLambda7
 java.lang.invoke.MethodHandles$$ExternalSyntheticLambda8
 java.lang.invoke.MethodHandles$$ExternalSyntheticLambda9
-java.lang.invoke.MethodHandles$0
-java.lang.invoke.MethodHandles$10
-java.lang.invoke.MethodHandles$11
-java.lang.invoke.MethodHandles$12
-java.lang.invoke.MethodHandles$13
-java.lang.invoke.MethodHandles$15
-java.lang.invoke.MethodHandles$16
-java.lang.invoke.MethodHandles$18
-java.lang.invoke.MethodHandles$19
-java.lang.invoke.MethodHandles$1
-java.lang.invoke.MethodHandles$20
-java.lang.invoke.MethodHandles$21
-java.lang.invoke.MethodHandles$22
-java.lang.invoke.MethodHandles$23
-java.lang.invoke.MethodHandles$24
-java.lang.invoke.MethodHandles$25
-java.lang.invoke.MethodHandles$2
-java.lang.invoke.MethodHandles$3
-java.lang.invoke.MethodHandles$4
-java.lang.invoke.MethodHandles$5
-java.lang.invoke.MethodHandles$6
-java.lang.invoke.MethodHandles$7
-java.lang.invoke.MethodHandles$9
 java.lang.invoke.MethodHandles$Lookup
 java.lang.invoke.MethodHandles
 java.lang.invoke.MethodType$1
@@ -15857,12 +15833,14 @@ java.nio.charset.UnsupportedCharsetException
 java.nio.charset.spi.CharsetProvider
 java.nio.file.AccessDeniedException
 java.nio.file.AccessMode
+java.nio.file.AtomicMoveNotSupportedException
 java.nio.file.CopyMoveHelper
 java.nio.file.CopyOption
 java.nio.file.DirectoryIteratorException
 java.nio.file.DirectoryStream$Filter
 java.nio.file.DirectoryStream
 java.nio.file.FileAlreadyExistsException
+java.nio.file.FileStore
 java.nio.file.FileSystem
 java.nio.file.FileSystemException
 java.nio.file.FileSystems
@@ -15876,6 +15854,7 @@ java.nio.file.NoSuchFileException
 java.nio.file.NotDirectoryException
 java.nio.file.OpenOption
 java.nio.file.Path
+java.nio.file.PathMatcher
 java.nio.file.Paths
 java.nio.file.ProviderMismatchException
 java.nio.file.SecureDirectoryStream
@@ -15883,15 +15862,20 @@ java.nio.file.SimpleFileVisitor
 java.nio.file.StandardCopyOption
 java.nio.file.StandardOpenOption
 java.nio.file.Watchable
+java.nio.file.attribute.AclFileAttributeView
 java.nio.file.attribute.AttributeView
 java.nio.file.attribute.BasicFileAttributeView
 java.nio.file.attribute.BasicFileAttributes
+java.nio.file.attribute.DosFileAttributeView
 java.nio.file.attribute.FileAttribute
 java.nio.file.attribute.FileAttributeView
 java.nio.file.attribute.FileOwnerAttributeView
 java.nio.file.attribute.FileTime
 java.nio.file.attribute.PosixFileAttributeView
 java.nio.file.attribute.PosixFileAttributes
+java.nio.file.attribute.PosixFilePermission
+java.nio.file.attribute.UserDefinedFileAttributeView
+java.nio.file.attribute.UserPrincipalLookupService
 java.nio.file.spi.FileSystemProvider
 java.security.AccessControlContext
 java.security.AccessControlException
@@ -16085,10 +16069,6 @@ java.text.Normalizer$Form$$ExternalSyntheticLambda0
 java.text.Normalizer$Form$$ExternalSyntheticLambda1
 java.text.Normalizer$Form$$ExternalSyntheticLambda2
 java.text.Normalizer$Form$$ExternalSyntheticLambda3
-java.text.Normalizer$Form$0
-java.text.Normalizer$Form$1
-java.text.Normalizer$Form$2
-java.text.Normalizer$Form$3
 java.text.Normalizer$Form
 java.text.Normalizer
 java.text.NumberFormat$Field
@@ -16132,18 +16112,14 @@ java.time.chrono.Chronology
 java.time.chrono.IsoChronology
 java.time.format.DateTimeFormatter$$ExternalSyntheticLambda0
 java.time.format.DateTimeFormatter$$ExternalSyntheticLambda1
-java.time.format.DateTimeFormatter$0
-java.time.format.DateTimeFormatter$1
 java.time.format.DateTimeFormatter
 java.time.format.DateTimeFormatterBuilder$$ExternalSyntheticLambda0
-java.time.format.DateTimeFormatterBuilder$0
 java.time.format.DateTimeFormatterBuilder$1
 java.time.format.DateTimeFormatterBuilder$2
 java.time.format.DateTimeFormatterBuilder$CharLiteralPrinterParser
 java.time.format.DateTimeFormatterBuilder$CompositePrinterParser
 java.time.format.DateTimeFormatterBuilder$DateTimePrinterParser
 java.time.format.DateTimeFormatterBuilder$DayPeriod$$ExternalSyntheticLambda0
-java.time.format.DateTimeFormatterBuilder$DayPeriod$0
 java.time.format.DateTimeFormatterBuilder$DayPeriod
 java.time.format.DateTimeFormatterBuilder$FractionPrinterParser
 java.time.format.DateTimeFormatterBuilder$InstantPrinterParser
@@ -16190,7 +16166,6 @@ java.time.temporal.TemporalAdjusters$$ExternalSyntheticLambda1
 java.time.temporal.TemporalAdjusters$$ExternalSyntheticLambda3
 java.time.temporal.TemporalAdjusters$$ExternalSyntheticLambda6
 java.time.temporal.TemporalAdjusters$$ExternalSyntheticLambda8
-java.time.temporal.TemporalAdjusters$6
 java.time.temporal.TemporalAdjusters
 java.time.temporal.TemporalAmount
 java.time.temporal.TemporalField
@@ -16252,10 +16227,6 @@ java.util.Arrays$$ExternalSyntheticLambda0
 java.util.Arrays$$ExternalSyntheticLambda1
 java.util.Arrays$$ExternalSyntheticLambda2
 java.util.Arrays$$ExternalSyntheticLambda3
-java.util.Arrays$0
-java.util.Arrays$1
-java.util.Arrays$2
-java.util.Arrays$3
 java.util.Arrays$ArrayItr
 java.util.Arrays$ArrayList
 java.util.Arrays$NaturalOrder
@@ -16334,12 +16305,6 @@ java.util.Comparator$$ExternalSyntheticLambda2
 java.util.Comparator$$ExternalSyntheticLambda3
 java.util.Comparator$$ExternalSyntheticLambda4
 java.util.Comparator$$ExternalSyntheticLambda5
-java.util.Comparator$0
-java.util.Comparator$1
-java.util.Comparator$2
-java.util.Comparator$3
-java.util.Comparator$4
-java.util.Comparator$5
 java.util.Comparator
 java.util.Comparators$NaturalOrderComparator
 java.util.Comparators$NullComparator
@@ -16494,7 +16459,6 @@ java.util.Objects
 java.util.Observable
 java.util.Observer
 java.util.Optional$$ExternalSyntheticBackport0
-java.util.Optional$0
 java.util.Optional
 java.util.OptionalDouble
 java.util.OptionalInt
@@ -16592,7 +16556,6 @@ java.util.TreeMap$Values
 java.util.TreeMap
 java.util.TreeSet
 java.util.Tripwire$$ExternalSyntheticLambda0
-java.util.Tripwire$0
 java.util.Tripwire
 java.util.UUID$Holder
 java.util.UUID
@@ -16624,8 +16587,12 @@ java.util.concurrent.CompletableFuture$AltResult
 java.util.concurrent.CompletableFuture$AsyncRun
 java.util.concurrent.CompletableFuture$AsyncSupply
 java.util.concurrent.CompletableFuture$AsynchronousCompletionTask
+java.util.concurrent.CompletableFuture$Canceller
 java.util.concurrent.CompletableFuture$Completion
+java.util.concurrent.CompletableFuture$Delayer$DaemonThreadFactory
+java.util.concurrent.CompletableFuture$Delayer
 java.util.concurrent.CompletableFuture$Signaller
+java.util.concurrent.CompletableFuture$Timeout
 java.util.concurrent.CompletableFuture$UniCompletion
 java.util.concurrent.CompletableFuture$UniWhenComplete
 java.util.concurrent.CompletableFuture
@@ -16691,7 +16658,6 @@ java.util.concurrent.ConcurrentLinkedQueue$Itr
 java.util.concurrent.ConcurrentLinkedQueue$Node
 java.util.concurrent.ConcurrentLinkedQueue
 java.util.concurrent.ConcurrentMap$$ExternalSyntheticLambda0
-java.util.concurrent.ConcurrentMap$0
 java.util.concurrent.ConcurrentMap
 java.util.concurrent.ConcurrentNavigableMap
 java.util.concurrent.ConcurrentSkipListMap$CSLMSpliterator
@@ -16726,7 +16692,6 @@ java.util.concurrent.Executor
 java.util.concurrent.ExecutorService
 java.util.concurrent.Executors$AutoShutdownDelegatedExecutorService$$ExternalSyntheticLambda0
 java.util.concurrent.Executors$AutoShutdownDelegatedExecutorService$$ExternalSyntheticLambda1
-java.util.concurrent.Executors$AutoShutdownDelegatedExecutorService$0
 java.util.concurrent.Executors$AutoShutdownDelegatedExecutorService
 java.util.concurrent.Executors$DefaultThreadFactory
 java.util.concurrent.Executors$DelegatedExecutorService
@@ -16775,7 +16740,6 @@ java.util.concurrent.SynchronousQueue$Transferer
 java.util.concurrent.SynchronousQueue
 java.util.concurrent.ThreadFactory
 java.util.concurrent.ThreadPoolExecutor$$ExternalSyntheticBackportWithForwarding0
-java.util.concurrent.ThreadPoolExecutor$0
 java.util.concurrent.ThreadPoolExecutor$AbortPolicy
 java.util.concurrent.ThreadPoolExecutor$DiscardPolicy
 java.util.concurrent.ThreadPoolExecutor$Worker
@@ -16827,7 +16791,6 @@ java.util.concurrent.locks.ReentrantReadWriteLock$WriteLock
 java.util.concurrent.locks.ReentrantReadWriteLock
 java.util.function.BiConsumer
 java.util.function.BiFunction$$ExternalSyntheticLambda0
-java.util.function.BiFunction$0
 java.util.function.BiFunction
 java.util.function.BiPredicate
 java.util.function.BinaryOperator$$ExternalSyntheticLambda0
@@ -16841,13 +16804,10 @@ java.util.function.DoubleSupplier
 java.util.function.DoubleUnaryOperator$$ExternalSyntheticLambda0
 java.util.function.DoubleUnaryOperator$$ExternalSyntheticLambda1
 java.util.function.DoubleUnaryOperator$$ExternalSyntheticLambda2
-java.util.function.DoubleUnaryOperator$1
-java.util.function.DoubleUnaryOperator$2
 java.util.function.DoubleUnaryOperator
 java.util.function.Function$$ExternalSyntheticLambda0
 java.util.function.Function$$ExternalSyntheticLambda1
 java.util.function.Function$$ExternalSyntheticLambda2
-java.util.function.Function$0
 java.util.function.Function
 java.util.function.IntBinaryOperator
 java.util.function.IntConsumer
@@ -16939,7 +16899,6 @@ java.util.regex.Matcher
 java.util.regex.Pattern
 java.util.regex.PatternSyntaxException
 java.util.stream.AbstractPipeline$$ExternalSyntheticLambda0
-java.util.stream.AbstractPipeline$0
 java.util.stream.AbstractPipeline
 java.util.stream.AbstractSpinedBuffer
 java.util.stream.BaseStream
@@ -16993,25 +16952,6 @@ java.util.stream.Collectors$$ExternalSyntheticLambda80
 java.util.stream.Collectors$$ExternalSyntheticLambda82
 java.util.stream.Collectors$$ExternalSyntheticLambda87
 java.util.stream.Collectors$$ExternalSyntheticLambda94
-java.util.stream.Collectors$0
-java.util.stream.Collectors$1
-java.util.stream.Collectors$25
-java.util.stream.Collectors$26
-java.util.stream.Collectors$30
-java.util.stream.Collectors$47
-java.util.stream.Collectors$48
-java.util.stream.Collectors$49
-java.util.stream.Collectors$50
-java.util.stream.Collectors$63
-java.util.stream.Collectors$68
-java.util.stream.Collectors$69
-java.util.stream.Collectors$72
-java.util.stream.Collectors$73
-java.util.stream.Collectors$74
-java.util.stream.Collectors$75
-java.util.stream.Collectors$76
-java.util.stream.Collectors$80
-java.util.stream.Collectors$94
 java.util.stream.Collectors$CollectorImpl
 java.util.stream.Collectors
 java.util.stream.DistinctOps$1$1
@@ -17029,13 +16969,9 @@ java.util.stream.DoubleStream
 java.util.stream.FindOps$FindOp
 java.util.stream.FindOps$FindSink$OfInt$$ExternalSyntheticLambda0
 java.util.stream.FindOps$FindSink$OfInt$$ExternalSyntheticLambda1
-java.util.stream.FindOps$FindSink$OfInt$0
-java.util.stream.FindOps$FindSink$OfInt$1
 java.util.stream.FindOps$FindSink$OfInt
 java.util.stream.FindOps$FindSink$OfRef$$ExternalSyntheticLambda0
 java.util.stream.FindOps$FindSink$OfRef$$ExternalSyntheticLambda1
-java.util.stream.FindOps$FindSink$OfRef$0
-java.util.stream.FindOps$FindSink$OfRef$1
 java.util.stream.FindOps$FindSink$OfRef
 java.util.stream.FindOps$FindSink
 java.util.stream.FindOps
@@ -17051,12 +16987,9 @@ java.util.stream.IntPipeline$$ExternalSyntheticLambda1
 java.util.stream.IntPipeline$$ExternalSyntheticLambda5
 java.util.stream.IntPipeline$$ExternalSyntheticLambda7
 java.util.stream.IntPipeline$$ExternalSyntheticLambda8
-java.util.stream.IntPipeline$0
 java.util.stream.IntPipeline$1$1
 java.util.stream.IntPipeline$10
 java.util.stream.IntPipeline$1
-java.util.stream.IntPipeline$22
-java.util.stream.IntPipeline$23
 java.util.stream.IntPipeline$4$1
 java.util.stream.IntPipeline$4
 java.util.stream.IntPipeline$9
@@ -17075,10 +17008,8 @@ java.util.stream.LongStream
 java.util.stream.MatchOps$$ExternalSyntheticLambda0
 java.util.stream.MatchOps$$ExternalSyntheticLambda1
 java.util.stream.MatchOps$$ExternalSyntheticLambda3
-java.util.stream.MatchOps$1
 java.util.stream.MatchOps$1MatchSink
 java.util.stream.MatchOps$2MatchSink
-java.util.stream.MatchOps$3
 java.util.stream.MatchOps$3MatchSink
 java.util.stream.MatchOps$BooleanTerminalSink
 java.util.stream.MatchOps$MatchKind
@@ -17132,7 +17063,6 @@ java.util.stream.ReferencePipeline$$ExternalSyntheticLambda0
 java.util.stream.ReferencePipeline$$ExternalSyntheticLambda1
 java.util.stream.ReferencePipeline$15$1
 java.util.stream.ReferencePipeline$15
-java.util.stream.ReferencePipeline$16
 java.util.stream.ReferencePipeline$2$1
 java.util.stream.ReferencePipeline$2
 java.util.stream.ReferencePipeline$3$1
@@ -17467,8 +17397,6 @@ jdk.internal.foreign.AbstractMemorySegmentImpl
 jdk.internal.foreign.GlobalSession
 jdk.internal.foreign.MemorySessionImpl$$ExternalSyntheticLambda0
 jdk.internal.foreign.MemorySessionImpl$$ExternalSyntheticLambda1
-jdk.internal.foreign.MemorySessionImpl$0
-jdk.internal.foreign.MemorySessionImpl$1
 jdk.internal.foreign.MemorySessionImpl
 jdk.internal.foreign.NativeMemorySegmentImpl
 jdk.internal.foreign.SegmentFactories
@@ -17512,10 +17440,6 @@ jdk.internal.util.ReferencedKeyMap$$ExternalSyntheticLambda0
 jdk.internal.util.ReferencedKeyMap$$ExternalSyntheticLambda1
 jdk.internal.util.ReferencedKeyMap$$ExternalSyntheticLambda2
 jdk.internal.util.ReferencedKeyMap$$ExternalSyntheticLambda3
-jdk.internal.util.ReferencedKeyMap$0
-jdk.internal.util.ReferencedKeyMap$1
-jdk.internal.util.ReferencedKeyMap$2
-jdk.internal.util.ReferencedKeyMap$3
 jdk.internal.util.ReferencedKeyMap
 jdk.internal.util.ReferencedKeySet
 jdk.internal.util.SoftReferenceKey
@@ -17533,7 +17457,6 @@ jdk.internal.vm.ThreadContainers$RootContainer$TrackingRootContainer
 jdk.internal.vm.ThreadContainers$RootContainer
 jdk.internal.vm.ThreadContainers
 libcore.content.type.MimeMap$$ExternalSyntheticLambda0
-libcore.content.type.MimeMap$0
 libcore.content.type.MimeMap$Builder$Element
 libcore.content.type.MimeMap$Builder
 libcore.content.type.MimeMap$MemoizingSupplier
@@ -17562,9 +17485,6 @@ libcore.io.IoTracker
 libcore.io.IoUtils$$ExternalSyntheticAutoCloseableDispatcher0
 libcore.io.IoUtils$$ExternalSyntheticAutoCloseableForwarder1
 libcore.io.IoUtils$$ExternalSyntheticThrowIAE2
-libcore.io.IoUtils$0
-libcore.io.IoUtils$1
-libcore.io.IoUtils$2
 libcore.io.IoUtils$FileReader
 libcore.io.IoUtils
 libcore.io.Libcore
@@ -17836,8 +17756,6 @@ sun.nio.fs.NativeBuffer$Deallocator
 sun.nio.fs.NativeBuffer
 sun.nio.fs.NativeBuffers$1
 sun.nio.fs.NativeBuffers
-sun.nio.fs.UnixChannelFactory$1
-sun.nio.fs.UnixChannelFactory$Flags
 sun.nio.fs.UnixConstants
 sun.nio.fs.UnixDirectoryStream$UnixDirectoryIterator
 sun.nio.fs.UnixDirectoryStream

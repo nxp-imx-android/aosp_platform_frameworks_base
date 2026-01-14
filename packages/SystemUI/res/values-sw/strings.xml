@@ -46,6 +46,10 @@
     <string name="usb_accessory_confirm_prompt" msgid="5728408382798643421">"Ungependa kufungua <xliff:g id="APPLICATION">%1$s</xliff:g> ili itumie <xliff:g id="USB_ACCESSORY">%2$s</xliff:g>?"</string>
     <string name="usb_accessory_uri_prompt" msgid="6756649383432542382">"Hakuna programu zilizosakinishwa zinazofanya kazi na kifaa hiki cha USB. Pata maelezo zaidi kuhusu kifaa hiki kwenye <xliff:g id="URL">%1$s</xliff:g>"</string>
     <string name="title_usb_accessory" msgid="1236358027511638648">"Kifaa cha Usb"</string>
+    <!-- no translation found for usb_device_dialog_allow_only_this_time_button (3653881633944232491) -->
+    <skip />
+    <!-- no translation found for usb_device_dialog_cancel_button (9050554648474787233) -->
+    <skip />
     <string name="label_view" msgid="6815442985276363364">"Ona"</string>
     <string name="always_use_device" msgid="210535878779644679">"Fungua <xliff:g id="APPLICATION">%1$s</xliff:g> kila wakati <xliff:g id="USB_DEVICE">%2$s</xliff:g> imeunganishwa"</string>
     <string name="always_use_accessory" msgid="1977225429341838444">"Fungua <xliff:g id="APPLICATION">%1$s</xliff:g> kila wakati <xliff:g id="USB_ACCESSORY">%2$s</xliff:g> imeunganishwa"</string>
@@ -91,10 +95,8 @@
     <string name="screenshot_failed_to_save_text" msgid="7232739948999195960">"Imeshindwa kuhifadhi picha ya skrini"</string>
     <string name="screenshot_failed_to_capture_text" msgid="7818288545874407451">"Programu au shirika lako halikuruhusu kupiga picha za skrini"</string>
     <string name="screenshot_blocked_by_admin" msgid="5486757604822795797">"Kupiga picha za skrini kumezuiwa na Msimamizi wako wa TEHAMA"</string>
-    <!-- no translation found for screenshot_copy_label (3551237076438128722) -->
-    <skip />
-    <!-- no translation found for screenshot_copy_description (2890150686381938858) -->
-    <skip />
+    <string name="screenshot_copy_label" msgid="3551237076438128722">"Nakili"</string>
+    <string name="screenshot_copy_description" msgid="2890150686381938858">"Kitufe cha kunakili picha ya skrini kwenye ubao wa kunakili"</string>
     <string name="screenshot_edit_label" msgid="8754981973544133050">"Badilisha"</string>
     <string name="screenshot_edit_description" msgid="7802378587672433507">"Kitufe cha kuhariri picha ya skrini"</string>
     <string name="screenshot_share_label" msgid="1653061117238861559">"Tuma"</string>
@@ -189,6 +191,8 @@
     <string name="screen_share_entire_screen_sharing_title" msgid="9093580141248337998">"Ruhusu ufikiaji wa skrini nzima"</string>
     <string name="screen_share_disclaimer_app_sharing" msgid="4191319837838590771">"Unaporuhusu ufikiaji wa programu, chochote kinachoonyeshwa au kuchezwa katika programu hiyo kitaonekana kwa [APP NAME]. Kwa hivyo kuwa mwangalifu na vitu kama vile manenosiri, maelezo ya malipo, ujumbe, picha, sauti na video."</string>
     <string name="screen_share_disclaimer_full_screen_sharing" msgid="6445373139864031364">"Unaporuhusu ufikiaji wa skrini nzima, chochote kilicho katika skrini yako kitaonekana kwa [APP NAME]. Kwa hivyo kuwa mwangalifu na vitu kama vile manenosiri, maelezo ya malipo, ujumbe, picha, sauti na video."</string>
+    <!-- no translation found for screen_share_a11y_announcement (8938007210094494367) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Piga picha ya skrini ya dirisha"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Rekodi dirisha"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Piga picha ya skrini ya sehemu uliyochagua"</string>
@@ -390,7 +394,8 @@
     <string name="accessibility_clear_all" msgid="970525598287244592">"Futa arifa zote."</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"Arifa"</string>
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Kiratibu"</string>
-    <string name="accessibility_status_bar_input_method_indicator" msgid="4316411266975554038">"Mbinu ya kuingiza data"</string>
+    <!-- no translation found for accessibility_status_bar_input_method_indicator (4911669064186093506) -->
+    <skip />
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{Kuna arifa # zaidi ndani ya kikundi.}other{Kuna arifa # zaidi ndani ya kikundi.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"Skrini imefungwa sasa katika uelekezo wa mandhari."</string>
@@ -583,7 +588,7 @@
     <string name="zen_mode_on" msgid="9085304934016242591">"Imewashwa"</string>
     <string name="zen_mode_on_with_details" msgid="7416143430557895497">"Imewashwa • <xliff:g id="TRIGGER_DESCRIPTION">%1$s</xliff:g>"</string>
     <string name="zen_mode_off" msgid="1736604456618147306">"Imezimwa"</string>
-    <string name="zen_mode_set_up" msgid="8231201163894922821">"Haijawekwa"</string>
+    <string name="zen_mode_set_up" msgid="8231201163894922821">"Hujaweka"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"Dhibiti katika mipangilio"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{Hakuna hali zinazotumika}=1{Unatumia {mode}}other{Unatumia hali #}}"</string>
     <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"Hali <xliff:g id="NUMBER">%d</xliff:g>"</string>

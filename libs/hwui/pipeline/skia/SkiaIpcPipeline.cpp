@@ -138,7 +138,7 @@ IRenderPipeline::DrawResult SkiaIpcPipeline::draw(
     } else {
         SurfaceComposerClient::Transaction transaction;
         transaction.setRenderCommandBufferFrameId(mSurfaceControl, getFrameNumber());
-        syncTransaction->merge(std::move(pendingTransactions));
+        transaction.merge(std::move(pendingTransactions));
         transaction.setApplyToken(mApplyToken);
         transaction.apply(false, true);
     }

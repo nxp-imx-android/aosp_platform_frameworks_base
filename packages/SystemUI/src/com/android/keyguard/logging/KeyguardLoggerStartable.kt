@@ -51,7 +51,7 @@ constructor(
             return
         }
         scope.launch {
-            sceneInteractor.transitionState
+            sceneInteractor.transitionStateFlow
                 .filter { it.isIdle() }
                 .distinctUntilChanged()
                 .collect {

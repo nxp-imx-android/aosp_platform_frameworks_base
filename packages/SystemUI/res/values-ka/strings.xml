@@ -46,6 +46,10 @@
     <string name="usb_accessory_confirm_prompt" msgid="5728408382798643421">"გსურთ, გახსნათ <xliff:g id="APPLICATION">%1$s</xliff:g>, <xliff:g id="USB_ACCESSORY">%2$s</xliff:g>-ის გამოსაყენებლად?"</string>
     <string name="usb_accessory_uri_prompt" msgid="6756649383432542382">"არცერთი დაყენებული აპი არ მუშაობს ამ USB აქსესუართან. შეიტყვეთ მეტი ამ აქსესუარის შესახებ <xliff:g id="URL">%1$s</xliff:g>"</string>
     <string name="title_usb_accessory" msgid="1236358027511638648">"USB აქსესუარი"</string>
+    <!-- no translation found for usb_device_dialog_allow_only_this_time_button (3653881633944232491) -->
+    <skip />
+    <!-- no translation found for usb_device_dialog_cancel_button (9050554648474787233) -->
+    <skip />
     <string name="label_view" msgid="6815442985276363364">"ნახვა"</string>
     <string name="always_use_device" msgid="210535878779644679">"ყოველთვის გაიხსნას <xliff:g id="APPLICATION">%1$s</xliff:g>, როცა <xliff:g id="USB_DEVICE">%2$s</xliff:g> დაკავშირებულია"</string>
     <string name="always_use_accessory" msgid="1977225429341838444">"ყოველთვის გაიხსნას <xliff:g id="APPLICATION">%1$s</xliff:g>, როცა <xliff:g id="USB_ACCESSORY">%2$s</xliff:g> დაკავშირებულია"</string>
@@ -154,10 +158,8 @@
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"სელფის კამერის ჩვენება"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"შეხების ჩვენება"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"აპის არჩევა ჩასაწერად"</string>
-    <!-- no translation found for screen_record_settings (2377267679200139285) -->
-    <skip />
-    <!-- no translation found for screen_record_markup (5583986085046693669) -->
-    <skip />
+    <string name="screen_record_settings" msgid="2377267679200139285">"ეკრანის ჩაწერის პარამეტრები"</string>
+    <string name="screen_record_markup" msgid="5583986085046693669">"მარკირება"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"ვიდეო შენახულია"</string>
     <string name="screen_record_video_deleted" msgid="30786214839944540">"ვიდეო წაშლილია"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"მოქმედების გაუქმება"</string>
@@ -170,8 +172,7 @@
     <string name="screen_record_pause" msgid="1715012292444967776">"დაპაუზება"</string>
     <string name="screen_record_mute" msgid="8111682249858638168">"დადუმება"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"დადუმების მოხსნა"</string>
-    <!-- no translation found for screen_record_video_preview_elapsed_time_a11y_template (969599623785875798) -->
-    <skip />
+    <string name="screen_record_video_preview_elapsed_time_a11y_template" formatted="false" msgid="969599623785875798">"<xliff:g id="DURATION">%2$s</xliff:g>-დან <xliff:g id="ELAPSED_TIME">%1$s</xliff:g>"</string>
     <string name="screen_capture_blocked_by_admin" msgid="1751756953683506644">"ეკრანის აღბეჭდვა დაბლოკილია თქვენი IT ადმინისტრატორის მიერ"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"სრული ეკრანის ანაბეჭდის გადაღება"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"მთლიანი ეკრანის ჩაწერა"</string>
@@ -187,6 +188,8 @@
     <string name="screen_share_entire_screen_sharing_title" msgid="9093580141248337998">"მთლიანი ეკრანის გაზიარება"</string>
     <string name="screen_share_disclaimer_app_sharing" msgid="4191319837838590771">"აპის გაზიარებისას [APP NAME] ხედავს ყველაფერს, რაც ჩანს ან უკრავს ამ აპში. ამიტომ სიფრთხილე გამოიჩინეთ ისეთ ინფორმაციასთან, როგორიცაა პაროლები, გადახდის დეტალები, შეტყობინებები, ფოტოები, აუდიო და ვიდეომასალა."</string>
     <string name="screen_share_disclaimer_full_screen_sharing" msgid="6445373139864031364">"მთლიანი ეკრანის გაზიარებისას [APP NAME] ხედავს ყველაფერს, რაც თქვენს ეკრანზეა. ამიტომ სიფრთხილე გამოიჩინეთ ისეთ ინფორმაციასთან, როგორიცაა პაროლები, გადახდის დეტალები, შეტყობინებები, ფოტოები, აუდიო და ვიდეომასალა."</string>
+    <!-- no translation found for screen_share_a11y_announcement (8938007210094494367) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"ფანჯრის ეკრანის ანაბეჭდის გადაღება"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"ფანჯრის ჩაწერა"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"ეკრანის მონიშნული მონაკვეთის ანაბეჭდის გადაღება"</string>
@@ -388,7 +391,8 @@
     <string name="accessibility_clear_all" msgid="970525598287244592">"ყველა შეტყობინების წაშლა"</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"შეტყობინებები"</string>
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"ასისტენტი"</string>
-    <string name="accessibility_status_bar_input_method_indicator" msgid="4316411266975554038">"შეყვანის მეთოდი"</string>
+    <!-- no translation found for accessibility_status_bar_input_method_indicator (4911669064186093506) -->
+    <skip />
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{კიდევ # შეტყობინება.}other{კიდევ # შეტყობინება.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"ეკრანი დაბლოკილია თარაზულ ორიენტაციაში"</string>
@@ -938,8 +942,7 @@
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"ნიუსლეთერები, რეკომენდებული მედია და სხვა"</string>
     <string name="notification_onboarding_summaries_turn_on" msgid="3831339570984683297">"ჩართვა პარამეტრებში"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"ახლა უკვე შესაძლებელია თქვენი უფრო გრძელი საუბრების შეჯამება სწრაფი მიმოხილვების მისაღებად"</string>
-    <!-- no translation found for notification_onboarding_summaries_message_with_apps (5320980333818238465) -->
-    <skip />
+    <string name="notification_onboarding_summaries_message_with_apps" msgid="5320980333818238465">"თქვენს მოწყობილობას და აპებს უკვე შეუძლია გრძელი საუბრების შეჯამება, რათა სწრაფი მიმოხილვები მოგაწოდოთ"</string>
     <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"შეტყობინებების ორგანიზატორი აერთიანებს და ადუმებს დაბალი პრიორიტეტის შეტყობინებებს. მეტი კატეგორიის დამატება პარამეტრებიდან შეგიძლიათ."</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# შეტყობინება}other{# შეტყობინება}}"</string>
     <string name="notification_bundle_header_joined_description" msgid="4517556837418088139">"<xliff:g id="NAME">%1$s</xliff:g>, <xliff:g id="NUM_NOTIFICATIONS">%2$s</xliff:g>"</string>

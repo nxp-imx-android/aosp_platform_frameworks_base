@@ -19,14 +19,15 @@ package com.android.systemui.communal.posturing.data.repository
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
+import android.os.Handler
+import com.android.app.tracing.FlowTracing.tracedAwaitClose
+import com.android.app.tracing.FlowTracing.tracedConflatedCallbackFlow
 import com.android.systemui.communal.posturing.data.model.PositionState
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.util.sensors.AsyncSensorManager
-import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
@@ -42,6 +43,7 @@ constructor(
     private val sensorManager: AsyncSensorManager,
     private val algorithm: PostureDetectionAlgorithm,
     @Background private val bgScope: CoroutineScope,
+    @Background private val bgHandler: Handler,
 ) : PosturingRepository {
 
     /**
@@ -49,12 +51,12 @@ constructor(
      * stationary and upright. The flow only emits new values when the state changes.
      */
     override val positionState: Flow<PositionState> =
-        conflatedCallbackFlow {
+        tracedConflatedCallbackFlow("positionState") {
                 val accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
                 if (accelerometer == null) {
                     trySend(PositionState())
                     close()
-                    return@conflatedCallbackFlow
+                    return@tracedConflatedCallbackFlow
                 }
 
                 val listener =
@@ -70,9 +72,10 @@ constructor(
                     listener,
                     accelerometer,
                     PostureDetectionAlgorithm.SENSOR_SAMPLING_PERIOD_US.inWholeMicroseconds.toInt(),
+                    bgHandler,
                 )
 
-                awaitClose {
+                tracedAwaitClose("positionState") {
                     sensorManager.unregisterListener(listener)
                     algorithm.reset()
                 }

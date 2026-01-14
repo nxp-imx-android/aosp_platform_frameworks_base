@@ -17,6 +17,7 @@
 package android.view;
 
 import static android.view.flags.Flags.bufferStuffingMultiRecovery;
+import static android.view.flags.Flags.bufferStuffingRecoveryThreshold;
 import static android.view.flags.Flags.FLAG_EXPECTED_PRESENTATION_TIME_API;
 import static android.view.DisplayEventReceiver.VSYNC_SOURCE_APP;
 import static android.view.DisplayEventReceiver.VSYNC_SOURCE_SURFACE_FLINGER;
@@ -256,6 +257,12 @@ public final class Choreographer {
         // being skipped due to FPSDivisor.
         public int numberWaitsForNextVsync = 0;
 
+        // Tracks the accumulated time that the frame was delayed for the current animation.
+        public long accumulatedDelayNanos = 0;
+
+        // Duration threshold of delays that can occur for the animation.
+        private static final long MAX_BUFFER_STUFFING_DELAY_NS = 100000000L;
+
         /**
          * After buffer stuffing recovery has ended with a detected idle state, the
          * recovery data trackers can be reset in preparation for any future
@@ -265,6 +272,11 @@ public final class Choreographer {
             isStuffed.set(false);
             isRecovering = false;
             numberWaitsForNextVsync = 0;
+            accumulatedDelayNanos = 0;
+        }
+
+        public boolean maxDelayReached() {
+            return accumulatedDelayNanos >= MAX_BUFFER_STUFFING_DELAY_NS;
         }
     }
 
@@ -978,8 +990,14 @@ public final class Choreographer {
                     }
                     mBufferStuffingState.isRecovering = true;
                 }
-                Trace.instant(Trace.TRACE_TAG_VIEW, "buffer stuffed");
-                return BufferStuffingState.RecoveryAction.DELAY_FRAME;
+
+                if (bufferStuffingRecoveryThreshold() && mBufferStuffingState.maxDelayReached()) {
+                    Trace.instant(Trace.TRACE_TAG_VIEW,
+                            "buffer stuffed - max recovery delay reached");
+                } else {
+                    Trace.instant(Trace.TRACE_TAG_VIEW, "buffer stuffed");
+                    return BufferStuffingState.RecoveryAction.DELAY_FRAME;
+                }
 
             // No recovery action needed when there is no buffer stuffing and
             // no recovery currently occurring.
@@ -1062,6 +1080,7 @@ public final class Choreographer {
             case DELAY_FRAME:
                 // Intentional frame delay to help reduce queued buffer count.
                 mBufferStuffingState.numberWaitsForNextVsync++;
+                mBufferStuffingState.accumulatedDelayNanos += frameIntervalNanos;
                 scheduleVsyncLocked();
                 return;
             default:

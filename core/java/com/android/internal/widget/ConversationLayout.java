@@ -316,7 +316,7 @@ public class ConversationLayout extends FrameLayout
                     R.dimen.importance_ring_size);
             int baseSize = standardSize - standardThickness * 2;
             int bgSize = getResources()
-                    .getDimensionPixelSize(R.dimen.conversation_icon_size_badged);
+                    .getDimensionPixelSize(R.dimen.notification_2025_conversation_icon_badge_size);
 
             ValueAnimator.AnimatorUpdateListener animatorUpdateListener = animation -> {
                 int strokeWidth = Math.round((float) animation.getAnimatedValue());

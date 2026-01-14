@@ -2112,6 +2112,7 @@
     <string name="app_suspended_more_details" msgid="211260942831587014">"ज़्यादा जानें"</string>
     <string name="app_suspended_unsuspend_message" msgid="1665438589450555459">"ऐप्लिकेशन पर लगी रोक हटाएं"</string>
     <string name="locked_app_biometric_prompt_description" msgid="6853122652400451464">"<xliff:g id="APP_NAME">%1$s</xliff:g> लॉक है"</string>
+    <string name="locked_app_external_display_message" msgid="5483884799685545338">"इस डिस्पले पर ऐप्लिकेशन ऐक्सेस करने के लिए, पहले अपने दूसरे डिवाइस पर अपनी पहचान की पुष्टि करें"</string>
     <string name="work_mode_off_title" msgid="6367463960165135829">"वर्क ऐप्लिकेशन चालू करने हैं?"</string>
     <string name="work_mode_turn_on" msgid="5316648862401307800">"चालू करें"</string>
     <string name="work_mode_emergency_call_button" msgid="6818855962881612322">"आपातकालीन कॉल"</string>

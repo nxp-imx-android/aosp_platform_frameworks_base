@@ -2113,6 +2113,8 @@
     <string name="app_suspended_more_details" msgid="211260942831587014">"Scopri di più"</string>
     <string name="app_suspended_unsuspend_message" msgid="1665438589450555459">"Riattiva app"</string>
     <string name="locked_app_biometric_prompt_description" msgid="6853122652400451464">"L\'app <xliff:g id="APP_NAME">%1$s</xliff:g> è bloccata"</string>
+    <!-- no translation found for locked_app_external_display_message (5483884799685545338) -->
+    <skip />
     <string name="work_mode_off_title" msgid="6367463960165135829">"Riattivare le app di lavoro?"</string>
     <string name="work_mode_turn_on" msgid="5316648862401307800">"Riattiva"</string>
     <string name="work_mode_emergency_call_button" msgid="6818855962881612322">"Emergenza"</string>

@@ -16,10 +16,13 @@
 
 package com.android.systemui.scene.ui.viewmodel
 
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.animation.scene.content.state.TransitionState
+import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.deviceentry.data.repository.fakeDeviceEntryRepository
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryInteractor
@@ -51,6 +54,8 @@ import kotlinx.coroutines.flow.flowOf
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.mock
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
@@ -126,6 +131,7 @@ class SceneTransitionBlurViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableFlags(Flags.FLAG_SPATIAL_MODEL_BOUNCER_PUSHBACK)
     fun idleOnBouncerOnLockscreen_mapsToCorrectBlurValue() =
         kosmos.runTest {
             underTest.requestWindowBackgroundBlur(
@@ -135,6 +141,19 @@ class SceneTransitionBlurViewModelTest : SysuiTestCase() {
 
             assertThat(fakeBlurChoreographer.lastAppliedBlurEffect)
                 .isEqualTo(BlurEffect(blurConfig.maxBlurRadiusPx, 1f))
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_SPATIAL_MODEL_BOUNCER_PUSHBACK)
+    fun idleOnBouncerOnLockscreen_enableBouncerSpacialModel_correctBlurValue() =
+        kosmos.runTest {
+            underTest.requestWindowBackgroundBlur(
+                TransitionState.Idle(Scenes.Lockscreen, currentOverlays = setOf(Overlays.Bouncer)),
+                1f,
+            )
+
+            assertThat(fakeBlurChoreographer.lastAppliedBlurEffect)
+                .isEqualTo(BlurEffect(blurConfig.maxBlurRadiusPx, 0.95f))
         }
 
     @Test
@@ -323,5 +342,45 @@ class SceneTransitionBlurViewModelTest : SysuiTestCase() {
             runCurrent()
 
             assertThat(fakeBlurChoreographer.persistentEarlyWakeup).isTrue()
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_SPATIAL_MODEL_BOUNCER_PUSHBACK)
+    fun lockscreen_bouncerOpen_correctBlurScale() =
+        kosmos.runTest {
+            val transitionProgress = 1f
+            val transition =
+                mock<TransitionState.Transition.ShowOrHideOverlay>() {
+                    on { overlay } doReturn Overlays.Bouncer
+                    on { fromContent } doReturn Scenes.Lockscreen
+                    on { currentScene } doReturn Scenes.Lockscreen
+                    on { toContent } doReturn Overlays.Bouncer
+                    on { progress } doReturn transitionProgress
+                }
+
+            underTest.requestWindowBackgroundBlur(transition, transitionProgress)
+
+            assertThat(fakeBlurChoreographer.lastAppliedBlurEffect)
+                .isEqualTo(BlurEffect(blurConfig.maxBlurRadiusPx, 0.95f))
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_SPATIAL_MODEL_BOUNCER_PUSHBACK)
+    fun lockscreen_bouncerClosed_correctBlurScale() =
+        kosmos.runTest {
+            val transitionProgress = 1f
+            val transition =
+                mock<TransitionState.Transition.ShowOrHideOverlay>() {
+                    on { overlay } doReturn Overlays.Bouncer
+                    on { fromContent } doReturn Overlays.Bouncer
+                    on { currentScene } doReturn Scenes.Lockscreen
+                    on { toContent } doReturn Scenes.Lockscreen
+                    on { progress } doReturn transitionProgress
+                }
+
+            underTest.requestWindowBackgroundBlur(transition, transitionProgress)
+
+            assertThat(fakeBlurChoreographer.lastAppliedBlurEffect)
+                .isEqualTo(BlurEffect(blurConfig.minBlurRadiusPx, 1f))
         }
 }

@@ -28,6 +28,7 @@ import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
 import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
+import static android.window.DisplayAreaOrganizer.FEATURE_DEFAULT_TASK_CONTAINER;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_APP_COMPAT_REACHABILITY;
 import static android.window.WindowContainerTransaction.HierarchyOp.LAUNCH_KEY_TASK_ID;
 import static android.window.WindowContainerTransaction.HierarchyOp.REACHABILITY_EVENT_X;
@@ -46,6 +47,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.when;
 
 import android.content.Intent;
 import android.graphics.Rect;
@@ -53,6 +55,7 @@ import android.os.Binder;
 import android.os.Bundle;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
+import android.window.IDisplayAreaOrganizer;
 import android.window.ITaskOrganizer;
 import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
@@ -63,6 +66,7 @@ import androidx.test.filters.SmallTest;
 
 import com.android.window.flags.Flags;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -80,10 +84,21 @@ import java.util.List;
 @RunWith(WindowTestRunner.class)
 public class WindowContainerTransactionTests extends WindowTestsBase {
     private final Rect mSafeRegionBounds = new Rect(50, 50, 200, 300);
+    private final ITaskOrganizer mMockTaskOrg = mock(ITaskOrganizer.class);
+    private final IDisplayAreaOrganizer mMockDAOrg = mock(IDisplayAreaOrganizer.class);
+
+    @Before
+    public void setupOrganizers() {
+        when(mMockTaskOrg.asBinder()).thenReturn(new Binder());
+        when(mMockDAOrg.asBinder()).thenReturn(new Binder());
+        mAtm.mTaskOrganizerController.registerTaskOrganizer(mMockTaskOrg);
+        mAtm.mWindowOrganizerController.mDisplayAreaOrganizerController.registerOrganizer(
+                mMockDAOrg, FEATURE_DEFAULT_TASK_CONTAINER);
+    }
 
     @Test
     public void testRemoveTask() {
-        final Task rootTask = createTask(mDisplayContent);
+        final Task rootTask = createOrganizerTask(mDisplayContent);
         final Task task = createTaskInRootTask(rootTask, 0 /* userId */);
         final ActivityRecord activity = createActivityRecord(mDisplayContent, task);
 
@@ -106,19 +121,20 @@ public class WindowContainerTransactionTests extends WindowTestsBase {
         assertEquals(0, task.getChildCount());
         assertNull(activity.getParent());
         verify(mAtm.getLockTaskController(), atLeast(1)).clearLockedTask(task);
-        verify(mAtm.getLockTaskController(), atLeast(1)).clearLockedTask(rootTask);
+        // Created-by-organizer tasks are not removed by WM
+        assertTrue(rootTask.isAttached());
     }
 
     @Test
     public void testRemoveRootTask() {
-        final Task rootTask = createTask(mDisplayContent);
+        final Task rootTask = createOrganizerTask(mDisplayContent);
         final Task task = createTaskInRootTask(rootTask, 0 /* userId */);
         final ActivityRecord activity = createActivityRecord(mDisplayContent, task);
         final TaskDisplayArea taskDisplayArea = mDisplayContent.getDefaultTaskDisplayArea();
 
         WindowContainerTransaction wct = new WindowContainerTransaction();
         WindowContainerToken token = rootTask.getTaskInfo().token;
-        wct.removeTask(token);
+        wct.removeRootTask(token);
         applyTransaction(wct);
 
         // There is still an activity to be destroyed, so the task is not removed immediately.
@@ -233,7 +249,7 @@ public class WindowContainerTransactionTests extends WindowTestsBase {
     @Test
     @EnableFlags(Flags.FLAG_SAFE_REGION_LETTERBOXING_V1)
     public void testSetSafeRegionBoundsOnTaskDisplayArea() {
-        final Task rootTask = createTask(mDisplayContent);
+        final Task rootTask = createOrganizerTask(mDisplayContent);
         final Task task = createTaskInRootTask(rootTask, 0 /* userId */);
         final ActivityRecord activity = createActivityRecord(mDisplayContent, task);
         final TaskDisplayArea taskDisplayArea = mDisplayContent.getDefaultTaskDisplayArea();
@@ -253,7 +269,7 @@ public class WindowContainerTransactionTests extends WindowTestsBase {
     @Test
     @EnableFlags(Flags.FLAG_SAFE_REGION_LETTERBOXING_V1)
     public void testSetSafeRegionBoundsOnRootTask() {
-        final Task rootTask = createTask(mDisplayContent);
+        final Task rootTask = createOrganizerTask(mDisplayContent);
         final Task task = createTaskInRootTask(rootTask, 0 /* userId */);
         final ActivityRecord activity = createActivityRecord(mDisplayContent, task);
         final TaskDisplayArea taskDisplayArea = mDisplayContent.getDefaultTaskDisplayArea();
@@ -273,7 +289,7 @@ public class WindowContainerTransactionTests extends WindowTestsBase {
     @Test
     @EnableFlags(Flags.FLAG_SAFE_REGION_LETTERBOXING_V1)
     public void testSetSafeRegionBoundsOnTask() {
-        final Task rootTask = createTask(mDisplayContent);
+        final Task rootTask = createOrganizerTask(mDisplayContent);
         final Task task = createTaskInRootTask(rootTask, 0 /* userId */);
         final ActivityRecord activity = createActivityRecord(mDisplayContent, task);
         final TaskDisplayArea taskDisplayArea = mDisplayContent.getDefaultTaskDisplayArea();
@@ -293,7 +309,7 @@ public class WindowContainerTransactionTests extends WindowTestsBase {
     @Test
     @EnableFlags(Flags.FLAG_SAFE_REGION_LETTERBOXING_V1)
     public void testSetSafeRegionBoundsOnTask_resetSafeRegionBounds() {
-        final Task rootTask = createTask(mDisplayContent);
+        final Task rootTask = createOrganizerTask(mDisplayContent);
         final Task task = createTaskInRootTask(rootTask, 0 /* userId */);
         final ActivityRecord activity = createActivityRecord(mDisplayContent, task);
         final TaskDisplayArea taskDisplayArea = mDisplayContent.getDefaultTaskDisplayArea();
@@ -322,7 +338,7 @@ public class WindowContainerTransactionTests extends WindowTestsBase {
     @Test
     @EnableFlags(Flags.FLAG_SAFE_REGION_LETTERBOXING_V1)
     public void testSetSafeRegionBoundsOnRootTaskAndTask() {
-        final Task rootTask = createTask(mDisplayContent);
+        final Task rootTask = createOrganizerTask(mDisplayContent);
         final Task task = createTaskInRootTask(rootTask, 0 /* userId */);
         final ActivityRecord activity = createActivityRecord(mDisplayContent, task);
         final TaskDisplayArea taskDisplayArea = mDisplayContent.getDefaultTaskDisplayArea();
@@ -345,7 +361,7 @@ public class WindowContainerTransactionTests extends WindowTestsBase {
     @Test
     @EnableFlags(Flags.FLAG_SAFE_REGION_LETTERBOXING_V1)
     public void testSetSafeRegionBoundsOnRootTaskAndTask_resetSafeRegionBoundsOnTask() {
-        final Task rootTask = createTask(mDisplayContent);
+        final Task rootTask = createOrganizerTask(mDisplayContent);
         final Task task = createTaskInRootTask(rootTask, 0 /* userId */);
         final ActivityRecord activity = createActivityRecord(mDisplayContent, task);
         final TaskDisplayArea taskDisplayArea = mDisplayContent.getDefaultTaskDisplayArea();
@@ -378,7 +394,7 @@ public class WindowContainerTransactionTests extends WindowTestsBase {
 
     @Test
     public void testSetTaskForceExcludedFromRecents() {
-        final Task rootTask = createTask(mDisplayContent);
+        final Task rootTask = createOrganizerTask(mDisplayContent);
         final Task task = createTaskInRootTask(rootTask, 0 /* userId */);
         final WindowContainerTransaction wct = new WindowContainerTransaction();
         final WindowContainerToken token = task.mRemoteToken.toWindowContainerToken();
@@ -475,9 +491,8 @@ public class WindowContainerTransactionTests extends WindowTestsBase {
 
     @Test
     public void testSetPreserveLeafTaskIfRelaunch() {
-        final Task rootTask =
-                createTask(mDisplayContent, WINDOWING_MODE_MULTI_WINDOW, ACTIVITY_TYPE_STANDARD);
-        rootTask.mCreatedByOrganizer = true;
+        final Task rootTask = createOrganizerTask(mDisplayContent, WINDOWING_MODE_MULTI_WINDOW,
+                ACTIVITY_TYPE_STANDARD);
         rootTask.mTaskOrganizer = mock(ITaskOrganizer.class);
         final WindowContainerToken token = rootTask.mRemoteToken.toWindowContainerToken();
 
@@ -495,9 +510,8 @@ public class WindowContainerTransactionTests extends WindowTestsBase {
 
     @Test
     public void testSetReparentLeafTaskIfRelaunchFromHome() {
-        final Task rootTask =
-                createTask(mDisplayContent, WINDOWING_MODE_MULTI_WINDOW, ACTIVITY_TYPE_STANDARD);
-        rootTask.mCreatedByOrganizer = true;
+        final Task rootTask = createOrganizerTask(mDisplayContent, WINDOWING_MODE_MULTI_WINDOW,
+                ACTIVITY_TYPE_STANDARD);
         rootTask.mTaskOrganizer = mock(ITaskOrganizer.class);
         final WindowContainerToken token = rootTask.mRemoteToken.toWindowContainerToken();
 
@@ -598,12 +612,11 @@ public class WindowContainerTransactionTests extends WindowTestsBase {
     public void testSetDisallowOverrideBoundsForChildren() {
         final Rect overrideBounds = new Rect(10, 10, 100, 100);
         final Rect emptyBounds = new Rect();
-        final Task parentTask = createTask(mDisplayContent);
+        final Task parentTask = createOrganizerTask(mDisplayContent);
         final Task childTask = new TaskBuilder(mSupervisor)
                 .setTaskDisplayArea(parentTask.getTaskDisplayArea())
                 .setParentTask(parentTask)
                 .build();
-        parentTask.mCreatedByOrganizer = true;
 
         // Verifies the override bounds once set.
         childTask.setBounds(overrideBounds);
@@ -629,7 +642,6 @@ public class WindowContainerTransactionTests extends WindowTestsBase {
                 .setTaskDisplayArea(parentTask.getTaskDisplayArea())
                 .setParentTask(parentTask)
                 .build();
-        parentTask.mCreatedByOrganizer = true;
 
         // Verifies the override windowing mode once set.
         childTask.setWindowingMode(WINDOWING_MODE_MULTI_WINDOW);

@@ -48,7 +48,6 @@ import android.view.ViewConfiguration;
 import android.view.WindowInsets;
 import android.view.WindowManager;
 import android.view.WindowManagerGlobal;
-import android.window.DesktopModeFlags;
 import android.window.WindowContainerTransaction;
 
 import com.android.internal.annotations.VisibleForTesting;
@@ -304,14 +303,11 @@ public class CaptionWindowDecoration extends WindowDecoration<WindowDecorLinearL
 
         if (oldDecorationSurface != mDecorationContainerSurface || mDragResizeListener == null) {
             closeDragResizeListener();
-            final ShellExecutor bgExecutor =
-                    DesktopModeFlags.ENABLE_DRAG_RESIZE_SET_UP_IN_BG_THREAD.isTrue()
-                            ? mBgExecutor : mMainExecutor;
             mDragResizeListener = new DragResizeInputListener(
                     mContext,
                     WindowManagerGlobal.getWindowSession(),
                     mMainExecutor,
-                    bgExecutor,
+                    mBgExecutor,
                     mTaskInfo,
                     mHandler,
                     mChoreographer,

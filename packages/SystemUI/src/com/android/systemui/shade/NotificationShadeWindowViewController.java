@@ -503,7 +503,7 @@ public class NotificationShadeWindowViewController implements Dumpable {
                     } else {
                         mShadeLogger.d("NSWVC: touch not within view");
                     }
-                } else if (mIsTrackingBarGesture) {
+                } else if (!SceneContainerFlag.isEnabled() && mIsTrackingBarGesture) {
                     boolean sendToStatusBar = phoneStatusBarViewController.sendTouchToView(ev);
                     if (isUp || isCancel) {
                         mIsTrackingBarGesture = false;

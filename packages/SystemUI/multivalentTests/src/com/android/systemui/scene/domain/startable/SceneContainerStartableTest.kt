@@ -80,9 +80,11 @@ import com.android.systemui.keyguard.data.repository.fakeDeviceEntryFingerprintA
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.data.repository.fakeTrustRepository
+import com.android.systemui.keyguard.data.repository.keyguardOcclusionRepository
 import com.android.systemui.keyguard.data.repository.keyguardRepository
 import com.android.systemui.keyguard.data.repository.keyguardTransitionRepository
 import com.android.systemui.keyguard.dismissCallbackRegistry
+import com.android.systemui.keyguard.domain.interactor.ShowWhileAwakeReason
 import com.android.systemui.keyguard.domain.interactor.biometricUnlockInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardDismissActionInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardEnabledInteractor
@@ -3260,6 +3262,39 @@ class SceneContainerStartableTest : SysuiTestCase() {
             assertThat(isDeviceEntered).isFalse()
             assertThat(deviceUnlockStatus?.isUnlocked).isFalse()
             assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
+        }
+
+    @Test
+    fun doesNotSwitchToLockscreen_showDismissibleKeyguard_ifOccluded() =
+        kosmos.runTest {
+            prepareState(isDeviceUnlocked = false, initialSceneKey = Scenes.Occluded)
+            underTest.start()
+
+            val currentScene by collectLastValue(sceneInteractor.currentScene)
+
+            kosmos.powerInteractor.setAwakeForTest()
+            kosmos.keyguardOcclusionRepository.setShowWhenLockedActivityInfo(true, null)
+            kosmos.keyguardServiceShowLockscreenInteractor.showNowEvents.tryEmit(
+                ShowWhileAwakeReason.FOLDED_WITH_SWIPE_UP_TO_CONTINUE
+            )
+
+            assertThat(currentScene).isEqualTo(Scenes.Occluded)
+        }
+
+    @Test
+    fun doesNotSwitchToLockscreen_showDismissibleKeyguard_ifDisabled() =
+        kosmos.runTest {
+            prepareState(isDeviceUnlocked = true, initialSceneKey = Scenes.Gone)
+            underTest.start()
+
+            val currentScene by collectLastValue(sceneInteractor.currentScene)
+
+            kosmos.fakeKeyguardRepository.setKeyguardEnabled(false)
+            kosmos.keyguardServiceShowLockscreenInteractor.showNowEvents.tryEmit(
+                ShowWhileAwakeReason.FOLDED_WITH_SWIPE_UP_TO_CONTINUE
+            )
+
+            assertThat(currentScene).isEqualTo(Scenes.Gone)
         }
 
     @EnableFlags(FLAG_SECURE_LOCK_DEVICE)

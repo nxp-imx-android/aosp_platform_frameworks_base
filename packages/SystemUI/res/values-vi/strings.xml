@@ -46,6 +46,10 @@
     <string name="usb_accessory_confirm_prompt" msgid="5728408382798643421">"Mở <xliff:g id="APPLICATION">%1$s</xliff:g> để điều khiển <xliff:g id="USB_ACCESSORY">%2$s</xliff:g>?"</string>
     <string name="usb_accessory_uri_prompt" msgid="6756649383432542382">"Không có ứng dụng được cài đặt nào hoạt động với phụ kiện USB này. Tìm hiểu thêm về phụ kiện này tại <xliff:g id="URL">%1$s</xliff:g>"</string>
     <string name="title_usb_accessory" msgid="1236358027511638648">"Phụ kiện USB"</string>
+    <!-- no translation found for usb_device_dialog_allow_only_this_time_button (3653881633944232491) -->
+    <skip />
+    <!-- no translation found for usb_device_dialog_cancel_button (9050554648474787233) -->
+    <skip />
     <string name="label_view" msgid="6815442985276363364">"Xem"</string>
     <string name="always_use_device" msgid="210535878779644679">"Luôn mở <xliff:g id="APPLICATION">%1$s</xliff:g> khi kết nối <xliff:g id="USB_DEVICE">%2$s</xliff:g>"</string>
     <string name="always_use_accessory" msgid="1977225429341838444">"Luôn mở <xliff:g id="APPLICATION">%1$s</xliff:g> khi kết nối <xliff:g id="USB_ACCESSORY">%2$s</xliff:g>"</string>
@@ -91,10 +95,8 @@
     <string name="screenshot_failed_to_save_text" msgid="7232739948999195960">"Không thể lưu ảnh chụp màn hình"</string>
     <string name="screenshot_failed_to_capture_text" msgid="7818288545874407451">"Ứng dụng hoặc tổ chức của bạn không cho phép chụp ảnh màn hình"</string>
     <string name="screenshot_blocked_by_admin" msgid="5486757604822795797">"Quản trị viên CNTT chặn tính năng chụp ảnh màn hình"</string>
-    <!-- no translation found for screenshot_copy_label (3551237076438128722) -->
-    <skip />
-    <!-- no translation found for screenshot_copy_description (2890150686381938858) -->
-    <skip />
+    <string name="screenshot_copy_label" msgid="3551237076438128722">"Sao chép"</string>
+    <string name="screenshot_copy_description" msgid="2890150686381938858">"Nút sao chép ảnh chụp màn hình vào bảng nhớ tạm"</string>
     <string name="screenshot_edit_label" msgid="8754981973544133050">"Chỉnh sửa"</string>
     <string name="screenshot_edit_description" msgid="7802378587672433507">"Nút Chỉnh sửa ảnh chụp màn hình"</string>
     <string name="screenshot_share_label" msgid="1653061117238861559">"Chia sẻ"</string>
@@ -189,6 +191,8 @@
     <string name="screen_share_entire_screen_sharing_title" msgid="9093580141248337998">"Chia sẻ toàn bộ màn hình"</string>
     <string name="screen_share_disclaimer_app_sharing" msgid="4191319837838590771">"Khi bạn chia sẻ một ứng dụng, [APP NAME] sẽ thấy mọi nội dung xuất hiện hoặc phát trên ứng dụng đó. Vì vậy, hãy thận trọng với những thông tin như mật khẩu, thông tin thanh toán, tin nhắn, ảnh, âm thanh và video."</string>
     <string name="screen_share_disclaimer_full_screen_sharing" msgid="6445373139864031364">"Khi bạn chia sẻ toàn bộ màn hình, [APP NAME] sẽ thấy mọi nội dung trên màn hình của bạn. Vì vậy, hãy thận trọng với những thông tin như mật khẩu, thông tin thanh toán, tin nhắn, ảnh, âm thanh và video."</string>
+    <!-- no translation found for screen_share_a11y_announcement (8938007210094494367) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Chụp ảnh màn hình cửa sổ"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Ghi hình nội dung của cửa sổ"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Chụp ảnh màn hình vùng đã chọn"</string>
@@ -390,7 +394,8 @@
     <string name="accessibility_clear_all" msgid="970525598287244592">"Xóa tất cả thông báo."</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"Thông báo"</string>
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Trợ lý"</string>
-    <string name="accessibility_status_bar_input_method_indicator" msgid="4316411266975554038">"Phương thức nhập"</string>
+    <!-- no translation found for accessibility_status_bar_input_method_indicator (4911669064186093506) -->
+    <skip />
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{# thông báo khác bên trong.}other{# thông báo khác bên trong.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"Màn hình hiện bị khóa theo hướng ngang."</string>

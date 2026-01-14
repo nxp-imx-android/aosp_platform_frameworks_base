@@ -46,6 +46,8 @@
     <string name="usb_accessory_confirm_prompt" msgid="5728408382798643421">"Open <xliff:g id="APPLICATION">%1$s</xliff:g> to handle <xliff:g id="USB_ACCESSORY">%2$s</xliff:g>?"</string>
     <string name="usb_accessory_uri_prompt" msgid="6756649383432542382">"No installed apps work with this USB accessory. Learn more about this accessory at <xliff:g id="URL">%1$s</xliff:g>"</string>
     <string name="title_usb_accessory" msgid="1236358027511638648">"USB accessory"</string>
+    <string name="usb_device_dialog_allow_only_this_time_button" msgid="3653881633944232491">"Only this time"</string>
+    <string name="usb_device_dialog_cancel_button" msgid="9050554648474787233">"Cancel"</string>
     <string name="label_view" msgid="6815442985276363364">"View"</string>
     <string name="always_use_device" msgid="210535878779644679">"Always open <xliff:g id="APPLICATION">%1$s</xliff:g> when <xliff:g id="USB_DEVICE">%2$s</xliff:g> is connected"</string>
     <string name="always_use_accessory" msgid="1977225429341838444">"Always open <xliff:g id="APPLICATION">%1$s</xliff:g> when <xliff:g id="USB_ACCESSORY">%2$s</xliff:g> is connected"</string>
@@ -184,6 +186,7 @@
     <string name="screen_share_entire_screen_sharing_title" msgid="9093580141248337998">"Share entire screen"</string>
     <string name="screen_share_disclaimer_app_sharing" msgid="4191319837838590771">"When you’re sharing an app, anything shown or played in that app is visible to [APP NAME]. So be careful with things like passwords, payment details, messages, photos and audio &amp; video."</string>
     <string name="screen_share_disclaimer_full_screen_sharing" msgid="6445373139864031364">"When you’re sharing your entire screen, anything on your screen is visible to [APP NAME]. So be careful with things like passwords, payment details, messages, photos, and audio &amp; video."</string>
+    <string name="screen_share_a11y_announcement" msgid="8938007210094494367">"Choose what to share. Select tab, app, or entire screen. Then press share."</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Take screenshot of window"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Record window"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Take screenshot of selected area"</string>
@@ -385,7 +388,7 @@
     <string name="accessibility_clear_all" msgid="970525598287244592">"Clear all notifications."</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"Notifications"</string>
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Assistant"</string>
-    <string name="accessibility_status_bar_input_method_indicator" msgid="4316411266975554038">"Input method"</string>
+    <string name="accessibility_status_bar_input_method_indicator" msgid="4911669064186093506">"Keyboard"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{# more notification inside.}other{# more notifications inside.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"Screen is locked in landscape orientation."</string>
@@ -1789,62 +1792,33 @@
     <string name="location_button_text_use_precise_location" msgid="3499475231656390476">"Use precise location"</string>
     <string name="location_button_text_near_precise_location" msgid="3607275724182981412">"Near precise location"</string>
     <string name="location_button_text_precise_location" msgid="4441259889842542799">"Precise location"</string>
-    <!-- no translation found for privacy_chip_use_string (979159484631969073) -->
-    <skip />
-    <!-- no translation found for privacy_chip_use_string_with_app (6807216002072346877) -->
-    <skip />
-    <!-- no translation found for privacy_chip_camera_and_mic_text (6254449489859255607) -->
-    <skip />
-    <!-- no translation found for av_panel_title (455230832870768515) -->
-    <skip />
-    <!-- no translation found for sensor_activity_header (2145727448786698035) -->
-    <skip />
-    <!-- no translation found for sensor_activity_see_all_access_button (8005330122289549048) -->
-    <skip />
-    <!-- no translation found for sensor_activity_camera_label (4260675418606211259) -->
-    <skip />
-    <!-- no translation found for sensor_activity_microphone_label (4012136402420177411) -->
-    <skip />
-    <!-- no translation found for sensor_activity_manage_access_button (1275701280501357102) -->
-    <skip />
-    <!-- no translation found for sensor_activity_close_app_button (6907314738150753330) -->
-    <skip />
-    <!-- no translation found for sensor_activity_back_button_cd (6894532284650291222) -->
-    <skip />
-    <!-- no translation found for privacy_chip_apps_using_sensor_suffix (527247786536767096) -->
-    <skip />
-    <!-- no translation found for privacy_chip_camera_in_use (5163494654848590528) -->
-    <skip />
-    <!-- no translation found for privacy_chip_mic_in_use (1586091297556363367) -->
-    <skip />
-    <!-- no translation found for privacy_chip_camera_mic_in_use (5179267787210197484) -->
-    <skip />
-    <!-- no translation found for av_camera_portrait_touch_up (5191856296212427203) -->
-    <skip />
-    <!-- no translation found for av_mic_label (5427348054144789879) -->
-    <skip />
-    <!-- no translation found for av_camera_label (7719772172590702343) -->
-    <skip />
-    <!-- no translation found for av_camera_blur_drill_in_title (2250600375798981511) -->
-    <skip />
-    <!-- no translation found for av_camera_blur_off (3170334995799202022) -->
-    <skip />
-    <!-- no translation found for av_camera_blur_light (5666055368940059418) -->
-    <skip />
-    <!-- no translation found for av_camera_blur_full (3276351992811619332) -->
-    <skip />
-    <!-- no translation found for av_camera_improve_lighting (1540549414296669133) -->
-    <skip />
-    <!-- no translation found for av_camera_framing (5108462267843042492) -->
-    <skip />
-    <!-- no translation found for av_studio_mic (2614843492629357766) -->
-    <skip />
-    <!-- no translation found for av_studio_look (621893522645557619) -->
-    <skip />
-    <!-- no translation found for av_studio_look_effects (4105109585851068415) -->
-    <skip />
-    <!-- no translation found for av_blur (405131343487260171) -->
-    <skip />
-    <!-- no translation found for av_live_captions (7819416886586903077) -->
-    <skip />
+    <string name="privacy_chip_use_string" msgid="979159484631969073">"<xliff:g id="SENSOR">%1$s</xliff:g> in use"</string>
+    <string name="privacy_chip_use_string_with_app" msgid="6807216002072346877">"<xliff:g id="SENSOR">%1$s</xliff:g> in use by <xliff:g id="APP">%2$s</xliff:g>"</string>
+    <string name="privacy_chip_camera_and_mic_text" msgid="6254449489859255607">"Camera and mic"</string>
+    <string name="av_panel_title" msgid="455230832870768515">"Privacy"</string>
+    <string name="sensor_activity_header" msgid="2145727448786698035">"See apps that are actively or recently using these permissions."</string>
+    <string name="sensor_activity_see_all_access_button" msgid="8005330122289549048">"See all access"</string>
+    <string name="sensor_activity_camera_label" msgid="4260675418606211259">"Camera"</string>
+    <string name="sensor_activity_microphone_label" msgid="4012136402420177411">"Microphone"</string>
+    <string name="sensor_activity_manage_access_button" msgid="1275701280501357102">"Manage access"</string>
+    <string name="sensor_activity_close_app_button" msgid="6907314738150753330">"Close app"</string>
+    <string name="sensor_activity_back_button_cd" msgid="6894532284650291222">"Back"</string>
+    <string name="privacy_chip_apps_using_sensor_suffix" msgid="527247786536767096">"+<xliff:g id="COUNT">%1$d</xliff:g> more"</string>
+    <string name="privacy_chip_camera_in_use" msgid="5163494654848590528">"Camera in use"</string>
+    <string name="privacy_chip_mic_in_use" msgid="1586091297556363367">"Mic in use"</string>
+    <string name="privacy_chip_camera_mic_in_use" msgid="5179267787210197484">"Camera, mic in use"</string>
+    <string name="av_camera_portrait_touch_up" msgid="5191856296212427203">"Portrait touch-up"</string>
+    <string name="av_mic_label" msgid="5427348054144789879">"Microphone"</string>
+    <string name="av_camera_label" msgid="7719772172590702343">"Camera"</string>
+    <string name="av_camera_blur_drill_in_title" msgid="2250600375798981511">"Background Blur"</string>
+    <string name="av_camera_blur_off" msgid="3170334995799202022">"Off"</string>
+    <string name="av_camera_blur_light" msgid="5666055368940059418">"Light"</string>
+    <string name="av_camera_blur_full" msgid="3276351992811619332">"Full"</string>
+    <string name="av_camera_improve_lighting" msgid="1540549414296669133">"Improve lighting"</string>
+    <string name="av_camera_framing" msgid="5108462267843042492">"Camera Framing"</string>
+    <string name="av_studio_mic" msgid="2614843492629357766">"Studio Mic"</string>
+    <string name="av_studio_look" msgid="621893522645557619">"Studio Look"</string>
+    <string name="av_studio_look_effects" msgid="4105109585851068415">"%d effects"</string>
+    <string name="av_blur" msgid="405131343487260171">"Blur"</string>
+    <string name="av_live_captions" msgid="7819416886586903077">"Live Captions"</string>
 </resources>

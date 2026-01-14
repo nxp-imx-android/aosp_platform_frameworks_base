@@ -16,7 +16,7 @@
 
 package com.android.systemui.motioncues
 
-import android.app.motioncues.MotionCuesData
+import android.app.motioncues.MotionCuesVisualStyle
 import android.app.motioncues.MotionCuesSettings
 import android.content.Context
 import android.content.pm.PackageManager
@@ -129,7 +129,7 @@ class MotionCuesUiTest : SysuiTestCase() {
     }
 
     @Test
-    fun updateMotionCuesData_updatesColorAndShape() {
+    fun updateMotionCuesVisualStyle_updatesColorAndShape() {
         whenever(mockContext.createPackageContextAsUser(anyString(), anyInt(), any(UserHandle::class.java)))
             .thenReturn(clientPackageContext)
         whenever(clientPackageContext.getDrawable(anyInt())).thenReturn(drawable)
@@ -139,8 +139,8 @@ class MotionCuesUiTest : SysuiTestCase() {
 
         val newColor = Color.RED
         val newShapeRes = 12345
-        val data = MotionCuesData(newColor, newShapeRes)
-        underTest.updateMotionCuesData(data)
+        val data = MotionCuesVisualStyle(newColor, newShapeRes)
+        underTest.updateMotionCuesVisualStyle(data)
 
         val state: MotionCueState = underTest.getState()
         assertThat(state.paintColor).isEqualTo(String.format("#%08X", newColor))
@@ -148,7 +148,7 @@ class MotionCuesUiTest : SysuiTestCase() {
     }
 
     @Test
-    fun updateMotionCuesData_withInvalidPackage_usesDefault() {
+    fun updateMotionCuesVisualStyle_withInvalidPackage_usesDefault() {
         whenever(mockContext.createPackageContextAsUser(anyString(), anyInt(), any(UserHandle::class.java)))
             .thenThrow(PackageManager.NameNotFoundException())
         underTest = MotionCuesUi(mockContext, windowManager)
@@ -156,8 +156,8 @@ class MotionCuesUiTest : SysuiTestCase() {
 
         val newColor = Color.RED
         val newShapeRes = 12345
-        val data = MotionCuesData(newColor, newShapeRes)
-        underTest.updateMotionCuesData(data)
+        val data = MotionCuesVisualStyle(newColor, newShapeRes)
+        underTest.updateMotionCuesVisualStyle(data)
 
         val state: MotionCueState = underTest.getState()
         assertThat(state.paintColor).isEqualTo(String.format("#%08X", newColor))

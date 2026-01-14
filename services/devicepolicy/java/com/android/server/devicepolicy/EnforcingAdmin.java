@@ -24,7 +24,6 @@ import android.app.admin.DpcAuthority;
 import android.app.admin.RoleAuthority;
 import android.app.admin.SystemAuthority;
 import android.app.admin.UnknownAuthority;
-import android.app.admin.flags.Flags;
 import android.app.role.RoleManager;
 import android.content.ComponentName;
 import android.os.UserHandle;
@@ -297,39 +296,12 @@ final class EnforcingAdmin {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         EnforcingAdmin other = (EnforcingAdmin) o;
-        if (Flags.packageAsAdminId()) {
-            return mAdminKey.equals(other.mAdminKey);
-        }
-        return Objects.equals(mAdminKey.getPackageName(), other.mAdminKey.getPackageName())
-                && Objects.equals(mAdminKey.getSystemEntity(), other.mAdminKey.getSystemEntity())
-                && Objects.equals(mComponentName, other.mComponentName)
-                && Objects.equals(mIsRoleAuthority, other.mIsRoleAuthority)
-                && (isSystemAuthority() == other.isSystemAuthority())
-                && hasMatchingAuthorities(this, other);
-    }
-
-    private static boolean hasMatchingAuthorities(EnforcingAdmin admin1, EnforcingAdmin admin2) {
-        if (admin1.mIsRoleAuthority && admin2.mIsRoleAuthority) {
-            return true;
-        }
-        return admin1.getAuthorities().equals(admin2.getAuthorities());
+        return mAdminKey.equals(other.mAdminKey);
     }
 
     @Override
     public int hashCode() {
-        if (Flags.packageAsAdminId()) {
-            return mAdminKey.hashCode();
-        }
-        if (mIsRoleAuthority) {
-            return Objects.hash(mAdminKey.getPackageName(), mAdminKey.getUserId());
-        } else if (isSystemAuthority()) {
-            return Objects.hash(mAdminKey.getSystemEntity());
-        } else {
-            return Objects.hash(
-                    mComponentName == null ? mAdminKey.getPackageName() : mComponentName,
-                    mAdminKey.getUserId(),
-                    getAuthorities());
-        }
+        return mAdminKey.hashCode();
     }
 
     void saveToXml(TypedXmlSerializer serializer) throws IOException {

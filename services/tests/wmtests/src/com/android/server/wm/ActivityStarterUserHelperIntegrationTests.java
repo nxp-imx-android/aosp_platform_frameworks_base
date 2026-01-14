@@ -84,7 +84,7 @@ public final class ActivityStarterUserHelperIntegrationTests extends ActivitySta
     private void verifyUserHelperNotifiedActivityStarted() {
         ArgumentCaptor<ActivityRecord> captor = ArgumentCaptor.forClass(ActivityRecord.class);
 
-        verify(mMockUserHelper).logActivityStarted(captor.capture(), eq(true));
+        verify(mMockUserHelper).logActivityStarted(captor.capture(), eq(true), anyInt());
 
         ActivityRecord activityRecord = captor.getValue();
         assertWithMessage("ComponentName on (%s from logActivityStarted()", activityRecord)
@@ -93,6 +93,6 @@ public final class ActivityStarterUserHelperIntegrationTests extends ActivitySta
     }
 
     private void verifyUserHelperNotNotifiedActivityStarted() {
-        verify(mMockUserHelper, never()).logActivityStarted(anyInt(), any());
+        verify(mMockUserHelper, never()).logActivityStarted(anyInt(), any(), anyInt());
     }
 }

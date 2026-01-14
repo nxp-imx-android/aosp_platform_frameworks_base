@@ -167,18 +167,7 @@ class SystemMediaRoute2Provider extends MediaRoute2Provider {
             return;
         }
 
-        synchronized (mLock) {
-            if (!Flags.enableBuiltInSpeakerRouteSuitabilityStatuses()) {
-                if (mSelectedRouteIds.size() == 1 && mSelectedRouteIds.contains(routeOriginalId)) {
-                    RoutingSessionInfo currentSessionInfo =
-                            Flags.enableMirroringInMediaRouter2()
-                                    ? mSystemSessionInfo
-                                    : mSessionInfos.get(0);
-                    notifySessionCreated(requestId, currentSessionInfo);
-                    return;
-                }
-            }
-        }
+
 
         synchronized (mRequestLock) {
             // Handle the previous request as a failure if exists.
@@ -246,31 +235,23 @@ class SystemMediaRoute2Provider extends MediaRoute2Provider {
         String selectedDeviceRouteId =
                 mDeviceRouteController.getSelectedRoutes().getFirst().getId();
         if (TextUtils.equals(routeOriginalId, MediaRoute2Info.ROUTE_ID_DEFAULT)) {
-            if (Flags.enableBuiltInSpeakerRouteSuitabilityStatuses()) {
-                // Transfer to the default route (which is the selected route). We replace the id to
-                // be the selected route id so that the transfer reason gets updated.
-                routeOriginalId = selectedDeviceRouteId;
-            } else {
-                Log.w(TAG, "Ignoring transfer to " + MediaRoute2Info.ROUTE_ID_DEFAULT);
-                return;
-            }
+            // Transfer to the default route (which is the selected route). We replace the id to
+            // be the selected route id so that the transfer reason gets updated.
+            routeOriginalId = selectedDeviceRouteId;
         }
 
-        if (Flags.enableBuiltInSpeakerRouteSuitabilityStatuses()) {
-            synchronized (mTransferLock) {
-                mPendingTransferRequest =
-                        new SessionCreationOrTransferRequest(
-                                requestId,
-                                routeOriginalId,
-                                transferReason,
-                                transferInitiatorUserHandle,
-                                transferInitiatorPackageName);
-            }
+        synchronized (mTransferLock) {
+            mPendingTransferRequest =
+                    new SessionCreationOrTransferRequest(
+                            requestId,
+                            routeOriginalId,
+                            transferReason,
+                            transferInitiatorUserHandle,
+                            transferInitiatorPackageName);
         }
         mDeviceRouteController.transferTo(requestId, routeOriginalId);
 
-        if (Flags.enableBuiltInSpeakerRouteSuitabilityStatuses()
-                && updateSessionInfosIfNeeded()) {
+        if (updateSessionInfosIfNeeded()) {
             notifyGlobalSessionInfoUpdated();
         }
     }
@@ -388,15 +369,14 @@ class SystemMediaRoute2Provider extends MediaRoute2Provider {
                 }
             }
 
-            if (Flags.enableBuiltInSpeakerRouteSuitabilityStatuses()) {
-                var oldSessionInfo =
-                        Flags.enableMirroringInMediaRouter2()
-                                ? mSystemSessionInfo
-                                : mSessionInfos.get(0);
-                builder.setTransferReason(oldSessionInfo.getTransferReason())
-                        .setTransferInitiator(oldSessionInfo.getTransferInitiatorUserHandle(),
-                                oldSessionInfo.getTransferInitiatorPackageName());
-            }
+            var oldSessionInfo =
+                    Flags.enableMirroringInMediaRouter2()
+                            ? mSystemSessionInfo
+                            : mSessionInfos.get(0);
+            builder.setTransferReason(oldSessionInfo.getTransferReason())
+                    .setTransferInitiator(
+                            oldSessionInfo.getTransferInitiatorUserHandle(),
+                            oldSessionInfo.getTransferInitiatorPackageName());
 
             if (Flags.enableOutputSwitcherPersonalAudioSharing()) {
                 builder.setReleaseType(mDeviceRouteController.getSessionReleaseType());
@@ -508,49 +488,46 @@ class SystemMediaRoute2Provider extends MediaRoute2Provider {
             }
             mDefaultRoute = defaultRouteBuilder.build();
 
-            if (Flags.enableBuiltInSpeakerRouteSuitabilityStatuses()) {
-                int transferReason = RoutingSessionInfo.TRANSFER_REASON_FALLBACK;
-                UserHandle transferInitiatorUserHandle = null;
-                String transferInitiatorPackageName = null;
+            int transferReason = RoutingSessionInfo.TRANSFER_REASON_FALLBACK;
+            UserHandle transferInitiatorUserHandle = null;
+            String transferInitiatorPackageName = null;
 
-                if (oldSessionInfo != null
-                        && containsSelectedRouteWithId(
-                                oldSessionInfo, mSelectedRouteIds.getFirst())) {
-                    transferReason = oldSessionInfo.getTransferReason();
-                    transferInitiatorUserHandle = oldSessionInfo.getTransferInitiatorUserHandle();
-                    transferInitiatorPackageName = oldSessionInfo.getTransferInitiatorPackageName();
-                }
+            if (oldSessionInfo != null
+                    && containsSelectedRouteWithId(oldSessionInfo, mSelectedRouteIds.getFirst())) {
+                transferReason = oldSessionInfo.getTransferReason();
+                transferInitiatorUserHandle = oldSessionInfo.getTransferInitiatorUserHandle();
+                transferInitiatorPackageName = oldSessionInfo.getTransferInitiatorPackageName();
+            }
 
-                synchronized (mTransferLock) {
-                    if (mPendingTransferRequest != null) {
-                        boolean isTransferringToTheSelectedRoute =
-                                mPendingTransferRequest.isTargetRoute(selectedRoutes.getFirst());
-                        boolean canBePotentiallyTransferred =
-                                mPendingTransferRequest.isTargetRouteIdInRouteOriginalIdList(
-                                        transferableRoutes);
+            synchronized (mTransferLock) {
+                if (mPendingTransferRequest != null) {
+                    boolean isTransferringToTheSelectedRoute =
+                            mPendingTransferRequest.isTargetRoute(selectedRoutes.getFirst());
+                    boolean canBePotentiallyTransferred =
+                            mPendingTransferRequest.isTargetRouteIdInRouteOriginalIdList(
+                                    transferableRoutes);
 
-                        if (isTransferringToTheSelectedRoute) {
-                            transferReason = mPendingTransferRequest.mTransferReason;
-                            transferInitiatorUserHandle =
-                                    mPendingTransferRequest.mTransferInitiatorUserHandle;
-                            transferInitiatorPackageName =
-                                    mPendingTransferRequest.mTransferInitiatorPackageName;
+                    if (isTransferringToTheSelectedRoute) {
+                        transferReason = mPendingTransferRequest.mTransferReason;
+                        transferInitiatorUserHandle =
+                                mPendingTransferRequest.mTransferInitiatorUserHandle;
+                        transferInitiatorPackageName =
+                                mPendingTransferRequest.mTransferInitiatorPackageName;
 
-                            mPendingTransferRequest = null;
-                        } else if (!canBePotentiallyTransferred) {
-                            mPendingTransferRequest = null;
-                        }
+                        mPendingTransferRequest = null;
+                    } else if (!canBePotentiallyTransferred) {
+                        mPendingTransferRequest = null;
                     }
                 }
-
-                if (Flags.enableOutputSwitcherPersonalAudioSharing()) {
-                    builder.setReleaseType(mDeviceRouteController.getSessionReleaseType());
-                }
-
-                builder.setTransferReason(transferReason)
-                        .setTransferInitiator(
-                                transferInitiatorUserHandle, transferInitiatorPackageName);
             }
+
+            if (Flags.enableOutputSwitcherPersonalAudioSharing()) {
+                builder.setReleaseType(mDeviceRouteController.getSessionReleaseType());
+            }
+
+            builder.setTransferReason(transferReason)
+                    .setTransferInitiator(
+                            transferInitiatorUserHandle, transferInitiatorPackageName);
 
             RoutingSessionInfo newSessionInfo = builder.setProviderId(mUniqueId).build();
 

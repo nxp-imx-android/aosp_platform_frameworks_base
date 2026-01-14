@@ -46,6 +46,10 @@
     <string name="usb_accessory_confirm_prompt" msgid="5728408382798643421">"<xliff:g id="USB_ACCESSORY">%2$s</xliff:g> കൈകാര്യം ചെയ്യാൻ <xliff:g id="APPLICATION">%1$s</xliff:g> തുറക്കണോ?"</string>
     <string name="usb_accessory_uri_prompt" msgid="6756649383432542382">"ഈ USB ആക്‌സസ്സറിയിൽ ഇൻസ്‌റ്റാളുചെയ്‌തവയൊന്നും പ്രവർത്തിക്കുന്നില്ല. <xliff:g id="URL">%1$s</xliff:g>-ൽ ഇതേക്കുറിച്ച് കൂടുതലറിയുക"</string>
     <string name="title_usb_accessory" msgid="1236358027511638648">"USB ആക്‌സസ്സറി"</string>
+    <!-- no translation found for usb_device_dialog_allow_only_this_time_button (3653881633944232491) -->
+    <skip />
+    <!-- no translation found for usb_device_dialog_cancel_button (9050554648474787233) -->
+    <skip />
     <string name="label_view" msgid="6815442985276363364">"കാണുക"</string>
     <string name="always_use_device" msgid="210535878779644679">"<xliff:g id="USB_DEVICE">%2$s</xliff:g> കണക്‌റ്റ് ചെയ്‌തിരിക്കുമ്പോൾ എപ്പോഴും <xliff:g id="APPLICATION">%1$s</xliff:g> തുറക്കൂ"</string>
     <string name="always_use_accessory" msgid="1977225429341838444">"<xliff:g id="USB_ACCESSORY">%2$s</xliff:g> കണക്‌റ്റ് ചെയ്‌തിരിക്കുമ്പോൾ എപ്പോഴും <xliff:g id="APPLICATION">%1$s</xliff:g> തുറക്കൂ"</string>
@@ -154,10 +158,8 @@
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"സെൽഫി ക്യാമറ കാണിക്കുക"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"ടച്ചുകൾ കാണിക്കുക"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"റെക്കോർഡ് ചെയ്യാൻ ഒരു ആപ്പ് തിരഞ്ഞെടുക്കുക"</string>
-    <!-- no translation found for screen_record_settings (2377267679200139285) -->
-    <skip />
-    <!-- no translation found for screen_record_markup (5583986085046693669) -->
-    <skip />
+    <string name="screen_record_settings" msgid="2377267679200139285">"സ്ക്രീൻ റെക്കോർഡിംഗ് ക്രമീകരണം"</string>
+    <string name="screen_record_markup" msgid="5583986085046693669">"മാർക്കപ്പ്"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"വീഡിയോ സംരക്ഷിച്ചു"</string>
     <string name="screen_record_video_deleted" msgid="30786214839944540">"വീഡിയോ ഇല്ലാതാക്കി"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"പഴയപടിയാക്കുക"</string>
@@ -170,8 +172,7 @@
     <string name="screen_record_pause" msgid="1715012292444967776">"താൽക്കാലികമായി നിർത്തുക"</string>
     <string name="screen_record_mute" msgid="8111682249858638168">"മ്യൂട്ട് ചെയ്യുക"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"അൺമ്യൂട്ട് ചെയ്യുക"</string>
-    <!-- no translation found for screen_record_video_preview_elapsed_time_a11y_template (969599623785875798) -->
-    <skip />
+    <string name="screen_record_video_preview_elapsed_time_a11y_template" formatted="false" msgid="969599623785875798">"<xliff:g id="DURATION">%2$s</xliff:g>-ൽ <xliff:g id="ELAPSED_TIME">%1$s</xliff:g>"</string>
     <string name="screen_capture_blocked_by_admin" msgid="1751756953683506644">"നിങ്ങളുടെ ഐടി അഡ്‌മിൻ സ്ക്രീൻ ക്യാപ്‌ചർ ചെയ്യുന്നത് ബ്ലോക്ക് ചെയ്തിരിക്കുന്നു"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"മുഴുവൻ സ്ക്രീനിന്റെ സ്ക്രീൻഷോട്ട് എടുക്കുക"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"സ്ക്രീൻ പൂർണ്ണമായി റെക്കോർഡ് ചെയ്യുക"</string>
@@ -187,6 +188,8 @@
     <string name="screen_share_entire_screen_sharing_title" msgid="9093580141248337998">"സ്ക്രീൻ പൂർണമായും പങ്കിടുക"</string>
     <string name="screen_share_disclaimer_app_sharing" msgid="4191319837838590771">"നിങ്ങൾ ഒരു ആപ്പ് പങ്കിടുമ്പോൾ, ആ ആപ്പിൽ കാണിക്കുന്നതോ പ്ലേ ചെയ്യുന്നതോ ആയ എല്ലാം [APP NAME] എന്നതിന് കാണാം. അതിനാൽ പാസ്‌വേഡ്, പേയ്‌മെന്റ് വിശദാംശം, സന്ദേശം, ഫോട്ടോ, ഓഡിയോ, വീഡിയോ എന്നിവ പോലുള്ള കാര്യങ്ങൾ നൽകുമ്പോൾ ശ്രദ്ധിക്കുക."</string>
     <string name="screen_share_disclaimer_full_screen_sharing" msgid="6445373139864031364">"നിങ്ങളുടെ സ്ക്രീൻ മുഴുവനായി പങ്കിടുമ്പോൾ, സ്ക്രീനിലെ എല്ലാ കാര്യങ്ങളും [APP NAME] എന്നതിന് ദൃശ്യമാകും. അതിനാൽ പാസ്‌വേഡുകൾ, പേയ്‌മെന്റ് വിശദാംശങ്ങൾ, സന്ദേശങ്ങൾ, ഫോട്ടോകൾ, ഓഡിയോ, വീഡിയോ എന്നിവ പോലുള്ള കാര്യങ്ങൾ നൽകുമ്പോൾ ശ്രദ്ധിക്കുക."</string>
+    <!-- no translation found for screen_share_a11y_announcement (8938007210094494367) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"വിൻഡോയുടെ സ്ക്രീൻഷോട്ട് എടുക്കുക"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"വിൻഡോ റെക്കോർഡ് ചെയ്യുക"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"തിരഞ്ഞെടുത്ത ഭാഗത്തിന്റെ സ്ക്രീൻഷോട്ട് എടുക്കുക"</string>
@@ -388,7 +391,8 @@
     <string name="accessibility_clear_all" msgid="970525598287244592">"എല്ലാ വിവരങ്ങളും മായ്‌ക്കുക."</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"അറിയിപ്പുകൾ"</string>
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Assistant"</string>
-    <string name="accessibility_status_bar_input_method_indicator" msgid="4316411266975554038">"ഇൻപുട്ട് രീതി"</string>
+    <!-- no translation found for accessibility_status_bar_input_method_indicator (4911669064186093506) -->
+    <skip />
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{# അറിയിപ്പ് കൂടിയുണ്ട്.}other{# അറിയിപ്പുകൾ കൂടിയുണ്ട്.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"സ്‌ക്രീൻ ലാൻഡ്‌സ്‌കേപ്പ് ഓറിയന്റേഷനിൽ ലോക്കുചെയ്‌തു."</string>
@@ -938,8 +942,7 @@
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"വാർത്താക്കുറിപ്പുകളും നിർദ്ദേശിക്കുന്ന മീഡിയയും മറ്റും"</string>
     <string name="notification_onboarding_summaries_turn_on" msgid="3831339570984683297">"ക്രമീകരണത്തിൽ ഓണാക്കുക"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"ഇപ്പോൾ നിങ്ങളുടെ ദൈർഘ്യമേറിയ സംഭാഷണങ്ങൾ സംഗ്രഹിച്ച് നിങ്ങൾക്ക് വേഗത്തിലുള്ള റീക്യാപ്പുകൾ നൽകാനാകും"</string>
-    <!-- no translation found for notification_onboarding_summaries_message_with_apps (5320980333818238465) -->
-    <skip />
+    <string name="notification_onboarding_summaries_message_with_apps" msgid="5320980333818238465">"നിങ്ങൾക്ക് വേഗത്തിലുള്ള റീക്യാപ്പുകൾ നൽകാൻ നിങ്ങളുടെ ഉപകരണത്തിനും ആപ്പുകൾക്കും ഇപ്പോൾ ദൈർഘ്യമേറിയ സംഭാഷണങ്ങൾ സംഗ്രഹിക്കാനാകും"</string>
     <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"അറിയിപ്പ് ഓർഗനൈസർ, മുൻഗണന കുറഞ്ഞ അറിയിപ്പുകൾ ബണ്ടിൽ ചെയ്യുകയും അവ നിശബ്ദമാക്കുകയും ചെയ്യുന്നു. ക്രമീകരണത്തിൽ കൂടുതൽ വിഭാഗങ്ങൾ ചേർക്കുക."</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# അറിയിപ്പ്}other{# അറിയിപ്പുകൾ}}"</string>
     <string name="notification_bundle_header_joined_description" msgid="4517556837418088139">"<xliff:g id="NAME">%1$s</xliff:g>, <xliff:g id="NUM_NOTIFICATIONS">%2$s</xliff:g>"</string>

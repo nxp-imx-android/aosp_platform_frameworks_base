@@ -56,7 +56,7 @@ constructor(
         if (SceneContainerFlag.isEnabled) {
             sceneInteractor
                 .get()
-                .transitionState
+                .transitionStateFlow
                 .flatMapLatestConflated { state ->
                     when (state) {
                         is ObservableTransitionState.Idle -> {

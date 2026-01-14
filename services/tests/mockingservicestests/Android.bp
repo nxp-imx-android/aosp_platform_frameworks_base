@@ -74,6 +74,7 @@ android_test {
         "services.wallpapereffectsgeneration",
         "servicestests-assert-utils",
         "servicestests-core-utils",
+        "servicestests-psc-utils",
         "servicestests-utils-mockito-extended",
         "StatsdTestUtils",
         "testables",

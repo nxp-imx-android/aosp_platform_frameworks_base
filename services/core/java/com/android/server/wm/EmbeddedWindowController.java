@@ -262,7 +262,7 @@ class EmbeddedWindowController {
         final WindowManagerService mWmService;
         final int mDisplayId;
         public Session mSession;
-        InputChannel mInputChannel;
+        IBinder mInputChannelToken;
         final int mWindowType;
 
         /**
@@ -328,17 +328,17 @@ class EmbeddedWindowController {
                     mHostWindowState.mInputWindowHandle.getInputApplicationHandle());
         }
 
-        void openInputChannel(@NonNull InputChannel outInputChannel) {
+        InputChannel openInputChannel() {
             final String name = toString();
-            mInputChannel = mWmService.mInputManager.createInputChannel(name);
-            mInputChannel.copyTo(outInputChannel);
+            InputChannel channel = mWmService.mInputManager.createInputChannel(name);
+            mInputChannelToken = channel.getToken();
+            return channel;
         }
 
         void onRemoved() {
-            if (mInputChannel != null) {
-                mWmService.mInputManager.removeInputChannel(mInputChannel.getToken());
-                mInputChannel.dispose();
-                mInputChannel = null;
+            if (mInputChannelToken != null) {
+                mWmService.mInputManager.removeInputChannel(mInputChannelToken);
+                mInputChannelToken = null;
             }
             if (mHostActivityRecord != null) {
                 final WindowProcessController wpc =
@@ -408,10 +408,7 @@ class EmbeddedWindowController {
         }
 
         IBinder getInputChannelToken() {
-            if (mInputChannel != null) {
-                return mInputChannel.getToken();
-            }
-            return null;
+            return mInputChannelToken;
         }
 
         void setIsFocusable(boolean isFocusable) {
@@ -428,7 +425,7 @@ class EmbeddedWindowController {
         }
 
         private void handleTap(boolean grantFocus) {
-            if (mInputChannel != null) {
+            if (mInputChannelToken != null) {
                 if (mHostWindowState != null) {
                     // Use null session since this is being granted by system server and doesn't
                     // require the host session to be passed in

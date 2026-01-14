@@ -29,6 +29,8 @@ import static android.view.RoundedCorner.POSITION_BOTTOM_RIGHT;
 import static android.view.RoundedCorner.POSITION_TOP_LEFT;
 import static android.view.RoundedCorner.POSITION_TOP_RIGHT;
 import static android.view.View.SYSTEM_UI_FLAG_LAYOUT_STABLE;
+import static android.view.WindowInsets.Side.LEFT;
+import static android.view.WindowInsets.Side.RIGHT;
 import static android.view.WindowInsets.Type.captionBar;
 import static android.view.WindowInsets.Type.ime;
 import static android.view.WindowInsets.Type.navigationBars;
@@ -559,6 +561,22 @@ public class InsetsStateTest {
         assertNotEqualsAndHashCode();
     }
 
+    // TODO(b/474542908): Remove "2" from the test name once the test with the legacy
+    //                    setBoundingRects is removed.
+    @Test
+    public void testEquals_visibility2() {
+        mState.getOrCreateSource(ID_IME, ime())
+                .setFrame(new Rect(0, 0, 100, 100))
+                .setBoundingRects(new InsetsBoundingRect[]{
+                        new InsetsBoundingRect(LEFT, 0, 0, 10, 10) })
+                .setVisible(true);
+        mState2.getOrCreateSource(ID_IME, ime())
+                .setFrame(new Rect(0, 0, 100, 100))
+                .setBoundingRects(new InsetsBoundingRect[]{
+                        new InsetsBoundingRect(LEFT, 0, 0, 10, 10) });
+        assertNotEqualsAndHashCode();
+    }
+
     @Test
     public void testEquals_differentFrame() {
         mState.setDisplayFrame(new Rect(0, 1, 2, 3));
@@ -578,10 +596,14 @@ public class InsetsStateTest {
         mState.getOrCreateSource(ID_CAPTION_BAR, captionBar())
                 .setFrame(new Rect(0, 0, 100, 100))
                 .setBoundingRects(new Rect[]{ new Rect(0, 0, 10, 10) })
+                .setBoundingRects(new InsetsBoundingRect[]{
+                        new InsetsBoundingRect(LEFT, 0, 0, 10, 10) })
                 .setVisible(true);
         mState2.getOrCreateSource(ID_CAPTION_BAR, captionBar())
                 .setFrame(new Rect(0, 0, 100, 100))
-                .setBoundingRects(new Rect[]{ new Rect(0, 0, 10, 10) });
+                .setBoundingRects(new Rect[]{ new Rect(0, 0, 10, 10) })
+                .setBoundingRects(new InsetsBoundingRect[]{
+                        new InsetsBoundingRect(LEFT, 0, 0, 10, 10) });
         assertEqualsAndHashCode();
     }
 
@@ -593,7 +615,25 @@ public class InsetsStateTest {
                 .setVisible(true);
         mState2.getOrCreateSource(ID_CAPTION_BAR, captionBar())
                 .setFrame(new Rect(0, 0, 100, 100))
-                .setBoundingRects(new Rect[]{ new Rect(0, 0, 20, 20) });
+                .setBoundingRects(new Rect[]{ new Rect(0, 0, 20, 20) })
+                .setVisible(true);
+        assertNotEqualsAndHashCode();
+    }
+
+    // TODO(b/474542908): Remove "2" from the test name once the test with the legacy
+    //                    setBoundingRects is removed.
+    @Test
+    public void testEquals_differentBoundingRects2() {
+        mState.getOrCreateSource(ID_CAPTION_BAR, captionBar())
+                .setFrame(new Rect(0, 0, 100, 100))
+                .setBoundingRects(new InsetsBoundingRect[]{
+                        new InsetsBoundingRect(LEFT, 0, 0, 10, 10) })
+                .setVisible(true);
+        mState2.getOrCreateSource(ID_CAPTION_BAR, captionBar())
+                .setFrame(new Rect(0, 0, 100, 100))
+                .setBoundingRects(new InsetsBoundingRect[]{
+                        new InsetsBoundingRect(LEFT, 0, 0, 20, 10) })
+                .setVisible(true);
         assertNotEqualsAndHashCode();
     }
 
@@ -948,7 +988,7 @@ public class InsetsStateTest {
     public void testCalculateBoundingRects() {
         mState.getOrCreateSource(ID_STATUS_BAR, statusBars())
                 .setFrame(new Rect(0, 0, 1000, 100))
-                .setBoundingRects(null)
+                .setBoundingRects((Rect[]) null)
                 .setVisible(true);
         mState.getOrCreateSource(ID_CAPTION_BAR, captionBar())
                 .setFrame(new Rect(0, 0, 1000, 100))
@@ -1031,7 +1071,101 @@ public class InsetsStateTest {
                 List.of(new Rect(0, 0, 200, 100)),
                 insets.getBoundingRects(Type.tappableElement())
         );
+    }
 
+    // TODO(b/474542908): Remove "2" from the name of the following tests once the tests with the
+    //                    legacy setBoundingRects is removed.
+
+    @Test
+    public void testCalculateBoundingRects2() {
+        mState.getOrCreateSource(ID_STATUS_BAR, statusBars())
+                .setFrame(new Rect(0, 0, 1000, 100))
+                .setBoundingRects((InsetsBoundingRect[]) null)
+                .setVisible(true);
+        mState.getOrCreateSource(ID_CAPTION_BAR, captionBar())
+                .setFrame(new Rect(0, 0, 1000, 100))
+                .setBoundingRects(new InsetsBoundingRect[]{
+                        new InsetsBoundingRect(LEFT, 0, 0, 200, 100),
+                        new InsetsBoundingRect(RIGHT, 0, 0, 200, 100)
+                })
+                .setVisible(true);
+        SparseIntArray typeSideMap = new SparseIntArray();
+
+        WindowInsets insets = mState.calculateInsets(new Rect(0, 0, 1000, 1000), null, null, false,
+                SOFT_INPUT_ADJUST_RESIZE, 0, 0, TYPE_APPLICATION, ACTIVITY_TYPE_UNDEFINED,
+                typeSideMap);
+
+        assertEquals(
+                List.of(new Rect(0, 0, 1000, 100)),
+                insets.getBoundingRects(Type.statusBars())
+        );
+        assertEquals(
+                List.of(
+                        new Rect(0, 0, 200, 100),
+                        new Rect(800, 0, 1000, 100)
+                ),
+                insets.getBoundingRects(Type.captionBar())
+        );
+    }
+
+    @Test
+    public void testCalculateBoundingRects2_multipleSourcesOfSameType_concatenated() {
+        mState.getOrCreateSource(ID_CAPTION_BAR, captionBar())
+                .setFrame(new Rect(0, 0, 1000, 100))
+                .setBoundingRects(new InsetsBoundingRect[]{
+                        new InsetsBoundingRect(LEFT, 0, 0, 200, 100)})
+                .setVisible(true);
+        mState.getOrCreateSource(ID_EXTRA_CAPTION_BAR, captionBar())
+                .setFrame(new Rect(0, 0, 1000, 100))
+                .setBoundingRects(new InsetsBoundingRect[]{
+                        new InsetsBoundingRect(RIGHT, 0, 0, 200, 100)})
+                .setVisible(true);
+        SparseIntArray typeSideMap = new SparseIntArray();
+
+        WindowInsets insets = mState.calculateInsets(new Rect(0, 0, 1000, 1000), null, null, false,
+                SOFT_INPUT_ADJUST_RESIZE, 0, 0, TYPE_APPLICATION, ACTIVITY_TYPE_UNDEFINED,
+                typeSideMap);
+
+        final List<Rect> expected = List.of(
+                new Rect(0, 0, 200, 100),
+                new Rect(800, 0, 1000, 100)
+        );
+        final List<Rect> actual = insets.getBoundingRects(captionBar());
+        assertEquals(expected.size(), actual.size());
+
+        // Order does not matter.
+        assertTrue(actual.containsAll(expected));
+    }
+
+    @Test
+    public void testCalculateBoundingRects2_captionBar_reportedAsSysGesturesAndTappableElement() {
+        mState.getOrCreateSource(ID_CAPTION_BAR, captionBar())
+                .setFrame(new Rect(0, 0, 1000, 100))
+                .setBoundingRects(new InsetsBoundingRect[]{
+                        new InsetsBoundingRect(LEFT, 0, 0, 200, 100)})
+                .setVisible(true);
+        SparseIntArray typeSideMap = new SparseIntArray();
+
+        WindowInsets insets = mState.calculateInsets(new Rect(0, 0, 1000, 1000), null, null, false,
+                SOFT_INPUT_ADJUST_RESIZE, 0, 0, TYPE_APPLICATION, ACTIVITY_TYPE_UNDEFINED,
+                typeSideMap);
+
+        assertEquals(
+                List.of(new Rect(0, 0, 200, 100)),
+                insets.getBoundingRects(Type.captionBar())
+        );
+        assertEquals(
+                List.of(new Rect(0, 0, 200, 100)),
+                insets.getBoundingRects(Type.systemGestures())
+        );
+        assertEquals(
+                List.of(new Rect(0, 0, 200, 100)),
+                insets.getBoundingRects(Type.mandatorySystemGestures())
+        );
+        assertEquals(
+                List.of(new Rect(0, 0, 200, 100)),
+                insets.getBoundingRects(Type.tappableElement())
+        );
     }
 
     @Test

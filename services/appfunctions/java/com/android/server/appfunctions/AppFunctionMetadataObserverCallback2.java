@@ -70,7 +70,8 @@ public class AppFunctionMetadataObserverCallback2 implements ObserverCallback {
         }
         var unused =
                 mPerUserMetadataSyncAdapter
-                        .submitSyncRequest()
+                        .submitSyncRequest(
+                                /* shouldSetRuntimeMetadataSchemaUnconditionally= */ false)
                         .whenComplete(
                                 (isSyncSuccessful, ex) -> {
                                     if (!isSyncSuccessful) {
@@ -103,7 +104,8 @@ public class AppFunctionMetadataObserverCallback2 implements ObserverCallback {
         if (shouldInitiateSync) {
             var unused =
                     mPerUserMetadataSyncAdapter
-                            .submitSyncRequest()
+                            .submitSyncRequest(
+                                    /* shouldSetRuntimeMetadataSchemaUnconditionally= */ false)
                             .whenComplete(
                                     (isSyncSuccessful, ex) -> {
                                         if (!isSyncSuccessful) {

@@ -83,9 +83,6 @@
     <!-- Summary for associating an application with a companion device of APP_STREAMING profile [CHAR LIMIT=NONE] -->
     <string name="summary_app_streaming"><xliff:g id="app_name" example="Exo">%1$s</xliff:g> will be granted the following permissions:</string>
 
-    <!-- Legacy Summary for associating an application with a companion device of APP_STREAMING profile [CHAR LIMIT=NONE] -->
-    <string name="summary_app_streaming_legacy"><xliff:g id="app_name" example="Exo">%1$s</xliff:g> will have access to anything that’s visible or played on your <xliff:g id="device_type" example="phone">%2$s</xliff:g>, including audio, photos, payment info, passwords, and messages.&lt;br/>&lt;br/><xliff:g id="app_name" example="Exo">%1$s</xliff:g> will be able to stream apps to <xliff:g id="device_name" example="Chromebook">%3$s</xliff:g> until you remove access to this permission.</string>
-
     <!-- Description of the helper dialog for APP_STREAMING profile. [CHAR LIMIT=NONE] -->
     <string name="helper_summary_app_streaming"><xliff:g id="app_name" example="Exo">%1$s</xliff:g> is requesting permission on behalf of <xliff:g id="device_name" example="Chromebook">%2$s</xliff:g> to stream apps and system features between your devices</string>
 
@@ -112,9 +109,6 @@
 
     <!-- Summary for associating an application with a companion device of NEARBY_DEVICE_STREAMING profile [CHAR LIMIT=NONE] -->
     <string name="summary_nearby_device_streaming"><xliff:g id="app_name" example="Exo">%1$s</xliff:g> will be granted the following permissions:</string>
-
-    <!-- Legacy Summary for associating an application with a companion device of NEARBY_DEVICE_STREAMING profile [CHAR LIMIT=NONE] -->
-    <string name="summary_nearby_device_streaming_legacy"><xliff:g id="app_name" example="Exo">%1$s</xliff:g> will have access to anything that’s visible or played on <xliff:g id="device_name" example="Chromebook">%3$s</xliff:g>, including audio, photos, payment info, passwords, and messages.&lt;br/>&lt;br/><xliff:g id="app_name" example="Exo">%1$s</xliff:g> will be able to stream apps to <xliff:g id="device_name" example="Chromebook">%3$s</xliff:g> until you remove access to this permission.</string>
 
     <!-- Description of the helper dialog for NEARBY_DEVICE_STREAMING profile. [CHAR LIMIT=NONE] -->
     <string name="helper_summary_nearby_device_streaming"><xliff:g id="app_name" example="Exo">%1$s</xliff:g> is requesting permission on behalf of <xliff:g id="device_name" example="Chromebook">%2$s</xliff:g> to stream apps from your <xliff:g id="device_type" example="phone">%3$s</xliff:g></string>

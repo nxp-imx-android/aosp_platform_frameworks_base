@@ -190,7 +190,7 @@ class SceneContainerViewModelTest : SysuiTestCase() {
                         )
                     )
                     runCurrent()
-                    assertThat(sceneInteractor.transitionState).isNotNull()
+                    assertThat(sceneInteractor.transitionStateFlow).isNotNull()
                     sendMotionEventUp()
 
                     assertWithMessage("Protected scene $toScene not properly protected")

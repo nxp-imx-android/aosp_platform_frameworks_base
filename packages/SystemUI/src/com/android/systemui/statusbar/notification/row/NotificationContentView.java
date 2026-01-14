@@ -372,7 +372,7 @@ public class NotificationContentView extends FrameLayout implements Notification
     private int getExtraRemoteInputHeight(RemoteInputView remoteInput) {
         if (remoteInput != null && (remoteInput.isActive() || remoteInput.isSending())) {
             return getResources().getDimensionPixelSize(
-                    com.android.internal.R.dimen.notification_content_margin);
+                    com.android.internal.R.dimen.notification_2025_margin);
         }
         return 0;
     }

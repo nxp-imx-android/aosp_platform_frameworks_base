@@ -315,7 +315,7 @@ constructor(
                 .flatMapLatest { isAllowedToBeVisible ->
                     if (isAllowedToBeVisible) {
                         combine(
-                                sceneInteractor.transitionState,
+                                sceneInteractor.transitionStateFlow,
                                 headsUpInteractor.isHeadsUpOrAnimatingAway,
                                 alternateBouncerInteractor.isVisible,
                                 surfaceBehindInteractor.isAnimatingSurface,
@@ -479,7 +479,7 @@ constructor(
             deviceUnlockedInteractor.deviceUnlockStatus
                 .map { deviceUnlockStatus ->
                     val (renderedScenes: List<SceneKey>, renderedOverlays: Set<OverlayKey>) =
-                        when (val transitionState = sceneInteractor.transitionState.value) {
+                        when (val transitionState = sceneInteractor.transitionStateFlow.value) {
                             is ObservableTransitionState.Idle ->
                                 listOf(transitionState.currentScene) to
                                     transitionState.currentOverlays
@@ -589,7 +589,17 @@ constructor(
                                         loggingReason = loggingReason,
                                         instantlySnapScenes = true,
                                     )
-                                } else if (willAnimateDismissAction) {
+                                } else if (
+                                    willAnimateDismissAction ||
+                                        // If we're switching to Gone mid-transition from Ls ->
+                                        // Bouncer, we'll want to animate the scene change to
+                                        // avoid a jump-cut from partially visible LS/Bouncer to
+                                        // Gone.
+                                        sceneInteractor.transitionStateFlow.value.isTransitioning(
+                                            from = Scenes.Lockscreen,
+                                            to = Overlays.Bouncer,
+                                        )
+                                ) {
                                     SwitchSceneCommand.SwitchToScene(
                                         targetSceneKey = Scenes.Gone,
                                         hideOverlays = HideOverlayCommand.HideAll,
@@ -723,7 +733,8 @@ constructor(
                 // If we're mid-transition from Gone to Lockscreen due to the first power button
                 // press, then unlock the device if needed and return to Gone.
                 val transition: ObservableTransitionState.Transition? =
-                    sceneInteractor.transitionState.value as? ObservableTransitionState.Transition
+                    sceneInteractor.transitionStateFlow.value
+                        as? ObservableTransitionState.Transition
 
                 if (
                     transition != null &&
@@ -770,7 +781,11 @@ constructor(
                     if (wakeDirectlyToGoneInteractor.canWakeDirectlyToGone.value) {
                         switchToScene(
                             targetSceneKey = Scenes.Gone,
-                            loggingReason = "device is waking up while we can wake directly to gone",
+                            loggingReason =
+                                "device is waking up while we can wake directly to gone",
+                            // If we're waking directly to Gone from DOZING (no AOD), there's
+                            // nothing visible on screen to animate out, so we should snap.
+                            instantlySnapScenes = !keyguardInteractor.isAodAvailable.value,
                         )
                     } else if (
                         authenticationInteractor.get().authenticationMethod.value ==
@@ -872,7 +887,7 @@ constructor(
     private fun hydrateSystemUiState() {
         applicationScope.launch {
             combine(
-                    sceneInteractor.transitionState
+                    sceneInteractor.transitionStateFlow
                         .mapNotNull { it as? ObservableTransitionState.Idle }
                         .distinctUntilChanged(),
                     sceneInteractor.isVisible,
@@ -907,7 +922,7 @@ constructor(
 
     private fun hydrateWindowController() {
         applicationScope.launch {
-            sceneInteractor.transitionState
+            sceneInteractor.transitionStateFlow
                 .map {
                     !it.isIdle(Scenes.Gone) ||
                         // We must be idle on Gone here, so we check if the overlays are empty
@@ -918,7 +933,11 @@ constructor(
         }
 
         applicationScope.launch {
-            combine(deviceEntryInteractor.isDeviceEntered, sceneInteractor.transitionState, ::Pair)
+            combine(
+                    deviceEntryInteractor.isDeviceEntered,
+                    sceneInteractor.transitionStateFlow,
+                    ::Pair,
+                )
                 .map { (isDeviceEntered, transitionState) ->
                     !isDeviceEntered ||
                         transitionState.isTransitioningSets(
@@ -1001,7 +1020,7 @@ constructor(
                 .map { !it.isUnlocked }
                 .flatMapLatest { isDeviceLocked ->
                     if (isDeviceLocked) {
-                        sceneInteractor.transitionState
+                        sceneInteractor.transitionStateFlow
                             .mapNotNull { it as? ObservableTransitionState.Idle }
                             .map { it.currentScene to it.currentOverlays }
                             .distinctUntilChanged()
@@ -1038,7 +1057,7 @@ constructor(
 
     private fun handleBouncerOverscroll() {
         applicationScope.launch {
-            sceneInteractor.transitionState
+            sceneInteractor.transitionStateFlow
                 // Only consider transitions.
                 .filterIsInstance<ObservableTransitionState.Transition>()
                 // Only consider user-initiated (e.g. drags) that go from bouncer to lockscreen.
@@ -1204,7 +1223,7 @@ constructor(
      */
     private fun refreshLockscreenEnabled() {
         applicationScope.launch {
-            sceneInteractor.transitionState
+            sceneInteractor.transitionStateFlow
                 .map { it.isTransitioning(to = Scenes.Lockscreen) }
                 .distinctUntilChanged()
                 .filter { it }
@@ -1286,7 +1305,10 @@ constructor(
             keyguardShowWhileAwakeInteractor.showWhileAwakeEvents
                 .filter { it == ShowWhileAwakeReason.FOLDED_WITH_SWIPE_UP_TO_CONTINUE }
                 .collect {
-                    if (keyguardEnabledInteractor.isKeyguardEnabled.value) {
+                    if (
+                        keyguardEnabledInteractor.isKeyguardEnabled.value &&
+                            !occlusionInteractor.isKeyguardOccluded.value
+                    ) {
                         switchToScene(Scenes.Lockscreen, "folded with swipe up to continue")
                     }
                 }
@@ -1300,7 +1322,7 @@ constructor(
     private fun wakeFromDozingOnContentChange() {
         applicationScope.launch {
             launch {
-                sceneInteractor.transitionState
+                sceneInteractor.transitionStateFlow
                     .filter {
                         it.isTransitioning(from = Scenes.Lockscreen) ||
                             !it.isIdle(Scenes.Lockscreen)

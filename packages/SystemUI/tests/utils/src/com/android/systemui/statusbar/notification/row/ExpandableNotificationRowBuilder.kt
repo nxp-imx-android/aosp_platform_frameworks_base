@@ -114,6 +114,7 @@ class ExpandableNotificationRowBuilder(
     private val kosmos: Kosmos,
     dependency: TestableDependency,
     featureFlags: FakeFeatureFlagsClassic = FakeFeatureFlagsClassic(),
+    private val createStatusBarIcons: Boolean = true,
 ) {
 
     private val mMockLogger: ExpandableNotificationRowLogger
@@ -436,7 +437,9 @@ class ExpandableNotificationRowBuilder(
 
         val row = initRow(entry)
         entry.row = row
-        mIconManager.createIcons(entry)
+        if (createStatusBarIcons) {
+            mIconManager.createIcons(entry)
+        }
         mBindPipelineEntryListener.onEntryInit(entry)
         mBindPipeline.manageRow(entry, row)
         mBindStage.getStageParams(entry).requireContentViews(extraInflationFlags)

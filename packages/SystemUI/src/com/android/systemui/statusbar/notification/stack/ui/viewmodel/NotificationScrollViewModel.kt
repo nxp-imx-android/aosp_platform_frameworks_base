@@ -184,7 +184,7 @@ constructor(
 
     /** Are notification stack height updates suppressed? */
     val suppressHeightUpdates: Flow<HeightSuppressionState> =
-        sceneInteractor.transitionState
+        sceneInteractor.transitionStateFlow
             .map { state: ObservableTransitionState ->
                 when (state) {
                     is Idle -> {
@@ -217,7 +217,7 @@ constructor(
      */
     val expandFraction: Flow<Float> =
         combine(
-                sceneInteractor.transitionState,
+                sceneInteractor.transitionStateFlow,
                 sceneInteractor.currentOverlays,
                 shadeModeInteractor.shadeMode,
             ) { transitionState, currentOverlays, _ ->
@@ -325,7 +325,7 @@ constructor(
 
     /** Whether the Notification Stack is visibly on the lockscreen scene. */
     val isShowingStackOnLockscreen: Flow<Boolean> =
-        sceneInteractor.transitionState
+        sceneInteractor.transitionStateFlow
             .mapNotNull { state ->
                 state.isIdle(Scenes.Lockscreen) ||
                     state.isTransitioning(from = Scenes.Lockscreen, to = Scenes.Shade)
@@ -343,7 +343,7 @@ constructor(
                     is ShadeMode.Dual ->
                         // Don't clip notifications while we are opening the DualShade panel to
                         // enable the shared element transition.
-                        sceneInteractor.transitionState.map { transition ->
+                        sceneInteractor.transitionStateFlow.map { transition ->
                             !transition.isTransitioning(to = Overlays.NotificationsShade)
                         }
 

@@ -6781,7 +6781,7 @@ public class Notification implements Parcelable
             int iconMarginId = R.dimen.notification_2025_right_icon_content_margin;
             final float iconMarginDp = resources.getDimension(iconMarginId) / density;
             final float contentMarginDp = resources.getDimension(
-                    R.dimen.notification_content_margin_end) / density;
+                    R.dimen.notification_2025_margin) / density;
             float spaceForExpanderDp;
             if (mN.isPromotedOngoing() && !mParams.mHeaderless) {
                 // No expander is shown in promoted notifications
@@ -9145,7 +9145,7 @@ public class Notification implements Parcelable
             } else {
                 Resources resources = context.getResources();
                 result.mTitleMarginSet.applyToView(template, R.id.notification_main_column,
-                        resources.getDimension(R.dimen.notification_content_margin_end)
+                        resources.getDimension(R.dimen.notification_2025_margin)
                                 / resources.getDisplayMetrics().density);
             }
             template.removeAllViewsExceptId(R.id.notification_main_column, R.id.progress);

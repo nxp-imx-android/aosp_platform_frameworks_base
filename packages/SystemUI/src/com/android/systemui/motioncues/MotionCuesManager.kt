@@ -17,7 +17,7 @@
 package com.android.systemui.motioncues
 
 import android.app.motioncues.IMotionCuesCallback
-import android.app.motioncues.MotionCuesData
+import android.app.motioncues.MotionCuesVisualStyle
 import android.app.motioncues.MotionCuesService.EXTRA_API_CALLBACK
 import android.app.motioncues.MotionCuesSettings
 import android.content.ComponentName
@@ -154,8 +154,8 @@ class MotionCuesManager @Inject constructor(
             motionCuesUi.updateBubblePos(dx, dy)
         }
 
-        override fun updateMotionCuesData(motionCuesData: MotionCuesData) {
-            motionCuesUi.updateMotionCuesData(motionCuesData)
+        override fun updateMotionCuesVisualStyle(motionCuesVisualStyle: MotionCuesVisualStyle) {
+            motionCuesUi.updateMotionCuesVisualStyle(motionCuesVisualStyle)
         }
     }
 }

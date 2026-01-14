@@ -61,7 +61,7 @@ class PostureDetectionAlgorithmTest : SysuiTestCase() {
 
     private val Kosmos.underTest by
         Kosmos.Fixture {
-            PostureDetectionAlgorithm(clock, flatAngleThreshold, uprightAngleThreshold, logBuffer)
+            PostureDetectionAlgorithm(flatAngleThreshold, uprightAngleThreshold, logBuffer)
         }
 
     @Test

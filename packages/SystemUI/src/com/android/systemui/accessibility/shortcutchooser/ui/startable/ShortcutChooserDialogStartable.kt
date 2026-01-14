@@ -145,9 +145,7 @@ constructor(
                                         shortcutType,
                                         target.targetName,
                                     )
-                                    if (!target.isToggleable) {
-                                        viewModel.dismissDialog()
-                                    }
+                                    viewModel.dismissDialog()
                                 },
                             )
                         }
@@ -166,9 +164,7 @@ constructor(
                                             shortcutType,
                                             target.targetName,
                                         )
-                                        if (!target.isToggleable) {
-                                            viewModel.dismissDialog()
-                                        }
+                                        viewModel.dismissDialog()
                                     }
                                 },
                                 targets = allTargets,

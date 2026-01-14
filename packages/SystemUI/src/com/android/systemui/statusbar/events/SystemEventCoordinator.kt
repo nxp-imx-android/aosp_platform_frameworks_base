@@ -110,7 +110,7 @@ constructor(
             val items = PrivacyChipBuilder(context, event.privacyItems).joinTypes()
             context.getString(R.string.ongoing_privacy_chip_content_multiple_apps, items)
         }
-        scheduler.onStatusEvent(event)
+        scope.launch(mainCoroutineContext) { scheduler.onStatusEvent(event) }
     }
 
     private fun startConnectedDisplayCollection() {

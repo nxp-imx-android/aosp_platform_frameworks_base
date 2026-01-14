@@ -320,9 +320,11 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
             .thenReturn(mockTaskPositioner)
 
         // InputChannel cannot be mocked because it passes to InputEventReceiver.
-        val inputChannels = InputChannel.openInputChannelPair(TAG)
-        inputChannels.first().dispose()
-        whenever(mockInputMonitor.inputChannel).thenReturn(inputChannels[1])
+        whenever(mockInputMonitor.inputChannel).thenAnswer {
+            val inputChannels = InputChannel.openInputChannelPair(TAG)
+            inputChannels.first().dispose()
+            inputChannels.last()
+        }
 
         shellInit.init()
 

@@ -345,6 +345,7 @@ package android {
     field public static final String QUERY_USERS = "android.permission.QUERY_USERS";
     field public static final String RADIO_SCAN_WITHOUT_LOCATION = "android.permission.RADIO_SCAN_WITHOUT_LOCATION";
     field public static final String READ_ACTIVE_EMERGENCY_SESSION = "android.permission.READ_ACTIVE_EMERGENCY_SESSION";
+    field @FlaggedApi("android.app.appfunctions.flags.enable_app_function_permission_v2") public static final String READ_APP_FUNCTION_METADATA = "android.permission.READ_APP_FUNCTION_METADATA";
     field @FlaggedApi("android.app.appfunctions.flags.enable_app_interaction_api") public static final String READ_APP_INTERACTION = "android.permission.READ_APP_INTERACTION";
     field public static final String READ_APP_SPECIFIC_LOCALES = "android.permission.READ_APP_SPECIFIC_LOCALES";
     field @FlaggedApi("com.android.server.telecom.flags.telecom_resolve_hidden_dependencies") public static final String READ_BLOCKED_NUMBERS = "android.permission.READ_BLOCKED_NUMBERS";
@@ -2517,23 +2518,13 @@ package android.app.modes {
 
 package android.app.motioncues {
 
-  @FlaggedApi("android.app.enable_motion_cues") public final class MotionCuesData implements android.os.Parcelable {
-    ctor @FlaggedApi("android.app.enable_motion_cues") public MotionCuesData(@ColorInt int, @DrawableRes int);
-    ctor @FlaggedApi("android.app.enable_motion_cues") public MotionCuesData(@NonNull android.app.motioncues.MotionCuesData);
-    method @FlaggedApi("android.app.enable_motion_cues") public int describeContents();
-    method @FlaggedApi("android.app.enable_motion_cues") @ColorInt public int getColor();
-    method @FlaggedApi("android.app.enable_motion_cues") @DrawableRes public int getShapeRes();
-    method @FlaggedApi("android.app.enable_motion_cues") public void writeToParcel(@NonNull android.os.Parcel, int);
-    field @FlaggedApi("android.app.enable_motion_cues") @NonNull public static final android.os.Parcelable.Creator<android.app.motioncues.MotionCuesData> CREATOR;
-  }
-
   @FlaggedApi("android.app.enable_motion_cues") public abstract class MotionCuesService extends android.app.Service {
     ctor public MotionCuesService();
     method @FlaggedApi("android.app.enable_motion_cues") @Nullable @RequiresPermission(android.Manifest.permission.BIND_MOTION_CUES_SERVICE) public final android.os.IBinder onBind(@Nullable android.content.Intent);
     method @FlaggedApi("android.app.enable_motion_cues") public abstract void onClientConnected();
     method @FlaggedApi("android.app.enable_motion_cues") public abstract void onClientDisconnected();
     method @FlaggedApi("android.app.enable_motion_cues") public final void updateBubblePixelPos(float, float);
-    method @FlaggedApi("android.app.enable_motion_cues") public final void updateMotionCuesData(@NonNull android.app.motioncues.MotionCuesData);
+    method @FlaggedApi("android.app.enable_motion_cues") public final void updateMotionCuesVisualStyle(@NonNull android.app.motioncues.MotionCuesVisualStyle);
     field @FlaggedApi("android.app.enable_motion_cues") public static final String EXTRA_API_CALLBACK = "android.app.motioncues.extra.API_CALLBACK";
   }
 
@@ -2555,6 +2546,16 @@ package android.app.motioncues {
     method @FlaggedApi("android.app.enable_motion_cues") @NonNull public android.app.motioncues.MotionCuesSettings.Builder setMarginSizeDp(int);
     method @FlaggedApi("android.app.enable_motion_cues") @NonNull public android.app.motioncues.MotionCuesSettings.Builder setRadiusDp(int);
     method @FlaggedApi("android.app.enable_motion_cues") @NonNull public android.app.motioncues.MotionCuesSettings.Builder setVerticalSpacingDp(int);
+  }
+
+  @FlaggedApi("android.app.enable_motion_cues") public final class MotionCuesVisualStyle implements android.os.Parcelable {
+    ctor @FlaggedApi("android.app.enable_motion_cues") public MotionCuesVisualStyle(@ColorInt int, @DrawableRes int);
+    ctor @FlaggedApi("android.app.enable_motion_cues") public MotionCuesVisualStyle(@NonNull android.app.motioncues.MotionCuesVisualStyle);
+    method @FlaggedApi("android.app.enable_motion_cues") public int describeContents();
+    method @FlaggedApi("android.app.enable_motion_cues") @ColorInt public int getColor();
+    method @FlaggedApi("android.app.enable_motion_cues") @DrawableRes public int getShapeRes();
+    method @FlaggedApi("android.app.enable_motion_cues") public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @FlaggedApi("android.app.enable_motion_cues") @NonNull public static final android.os.Parcelable.Creator<android.app.motioncues.MotionCuesVisualStyle> CREATOR;
   }
 
 }
@@ -6158,7 +6159,6 @@ package android.hardware.display {
     method @RequiresPermission(android.Manifest.permission.CONFIGURE_DISPLAY_BRIGHTNESS) public void setBrightnessConfiguration(android.hardware.display.BrightnessConfiguration);
     method @RequiresPermission(android.Manifest.permission.CONFIGURE_DISPLAY_BRIGHTNESS) public void setBrightnessConfigurationForDisplay(@NonNull android.hardware.display.BrightnessConfiguration, @NonNull String);
     method @Deprecated @RequiresPermission(android.Manifest.permission.CONTROL_DISPLAY_SATURATION) public void setSaturationLevel(float);
-    field @FlaggedApi("com.android.server.display.feature.flags.virtual_secondary_displays") public static final int VIRTUAL_DISPLAY_FLAG_ALLOWS_CONTENT_MODE_SWITCH = 131072; // 0x20000
     field public static final int VIRTUAL_DISPLAY_FLAG_ROTATES_WITH_CONTENT = 128; // 0x80
     field public static final int VIRTUAL_DISPLAY_FLAG_STEAL_TOP_FOCUS_DISABLED = 65536; // 0x10000
     field public static final int VIRTUAL_DISPLAY_FLAG_TRUSTED = 1024; // 0x400
@@ -15829,7 +15829,7 @@ package android.telephony {
     method @NonNull public android.telephony.CellIdentityWcdma sanitizeLocationInfo();
   }
 
-  @FlaggedApi("com.android.internal.telephony.flags.cellular_identifier_disclosure_indications") public final class CellularIdentifierDisclosure implements android.os.Parcelable {
+  public final class CellularIdentifierDisclosure implements android.os.Parcelable {
     method public int describeContents();
     method public int getCellularIdentifier();
     method public int getNasProtocolMessage();
@@ -16682,7 +16682,7 @@ package android.telephony {
     field @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") @RequiresPermission(android.Manifest.permission.READ_PHONE_STATE) public static final int EVENT_CARRIER_ROAMING_NTN_ELIGIBLE_STATE_CHANGED = 43; // 0x2b
     field @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") @RequiresPermission(android.Manifest.permission.READ_PHONE_STATE) public static final int EVENT_CARRIER_ROAMING_NTN_MODE_CHANGED = 42; // 0x2a
     field @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") @RequiresPermission(android.Manifest.permission.READ_PHONE_STATE) public static final int EVENT_CARRIER_ROAMING_NTN_SIGNAL_STRENGTH_CHANGED = 45; // 0x2d
-    field @FlaggedApi("com.android.internal.telephony.flags.cellular_identifier_disclosure_indications") @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE) public static final int EVENT_CELLULAR_IDENTIFIER_DISCLOSED_CHANGED = 47; // 0x2f
+    field @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE) public static final int EVENT_CELLULAR_IDENTIFIER_DISCLOSED_CHANGED = 47; // 0x2f
     field @RequiresPermission(allOf={android.Manifest.permission.READ_PHONE_STATE, android.Manifest.permission.ACCESS_FINE_LOCATION}) public static final int EVENT_CELL_INFO_CHANGED = 11; // 0xb
     field @RequiresPermission(android.Manifest.permission.ACCESS_FINE_LOCATION) public static final int EVENT_CELL_LOCATION_CHANGED = 5; // 0x5
     field public static final int EVENT_DATA_ACTIVATION_STATE_CHANGED = 19; // 0x13
@@ -16708,7 +16708,7 @@ package android.telephony {
     field @RequiresPermission(android.Manifest.permission.READ_PRECISE_PHONE_STATE) public static final int EVENT_PRECISE_DATA_CONNECTION_STATE_CHANGED = 13; // 0xd
     field @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE) public static final int EVENT_RADIO_POWER_STATE_CHANGED = 24; // 0x18
     field @RequiresPermission(allOf={android.Manifest.permission.READ_PRECISE_PHONE_STATE, android.Manifest.permission.ACCESS_FINE_LOCATION}) public static final int EVENT_REGISTRATION_FAILURE = 31; // 0x1f
-    field @FlaggedApi("com.android.internal.telephony.flags.cellular_identifier_disclosure_indications") @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE) public static final int EVENT_SECURITY_ALGORITHMS_CHANGED = 46; // 0x2e
+    field @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE) public static final int EVENT_SECURITY_ALGORITHMS_CHANGED = 46; // 0x2e
     field public static final int EVENT_SERVICE_STATE_CHANGED = 1; // 0x1
     field public static final int EVENT_SIGNAL_STRENGTHS_CHANGED = 9; // 0x9
     field public static final int EVENT_SIGNAL_STRENGTH_CHANGED = 2; // 0x2
@@ -16727,7 +16727,7 @@ package android.telephony {
     method @RequiresPermission(android.Manifest.permission.READ_PRECISE_PHONE_STATE) public default void onCallStatesChanged(@NonNull java.util.List<android.telephony.CallState>);
   }
 
-  @FlaggedApi("com.android.internal.telephony.flags.cellular_identifier_disclosure_indications") public static interface TelephonyCallback.CellularIdentifierDisclosedListener {
+  public static interface TelephonyCallback.CellularIdentifierDisclosedListener {
     method public void onCellularIdentifierDisclosedChanged(@NonNull android.telephony.CellularIdentifierDisclosure);
   }
 
@@ -19481,6 +19481,7 @@ package android.telephony.satellite {
     method @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") @RequiresPermission(android.Manifest.permission.SATELLITE_COMMUNICATION) public void deprovisionSatellite(@NonNull java.util.List<android.telephony.satellite.SatelliteSubscriberInfo>, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.lang.Void,android.telephony.satellite.SatelliteManager.SatelliteException>);
     method @RequiresPermission(android.Manifest.permission.SATELLITE_COMMUNICATION) public void deprovisionService(@NonNull String, @NonNull java.util.concurrent.Executor, @NonNull java.util.function.Consumer<java.lang.Integer>);
     method @NonNull @RequiresPermission(android.Manifest.permission.SATELLITE_COMMUNICATION) public java.util.Set<java.lang.Integer> getAttachRestrictionReasonsForCarrier(int);
+    method @FlaggedApi("com.android.internal.telephony.flags.satellite_26q2_apis") @NonNull @RequiresPermission(android.Manifest.permission.SATELLITE_COMMUNICATION) public int[] getCarrierRoamingNtnAvailableServices(int);
     method @FlaggedApi("com.android.internal.telephony.flags.satellite_26q2_apis") @NonNull @RequiresPermission(android.Manifest.permission.SATELLITE_COMMUNICATION) public android.telephony.satellite.PlmnSatelliteConfig getPlmnSatelliteConfig(int, @NonNull String);
     method @FlaggedApi("com.android.internal.telephony.flags.satellite_25q4_apis") @NonNull @RequiresPermission(android.Manifest.permission.SATELLITE_COMMUNICATION) public java.util.List<java.lang.String> getSatelliteDataOptimizedApps();
     method @FlaggedApi("com.android.internal.telephony.flags.satellite_25q4_apis") @RequiresPermission(android.Manifest.permission.SATELLITE_COMMUNICATION) public int getSatelliteDataSupportMode(int);

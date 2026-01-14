@@ -137,7 +137,7 @@ class ShadeSceneToQuickSettingsSceneTest : SysuiTestCase() {
                             MotionControl(
                                 delayRecording = {
                                     awaitCondition {
-                                        kosmos.sceneInteractor.transitionState.value.isIdle()
+                                        kosmos.sceneInteractor.transitionStateFlow.value.isIdle()
                                     }
                                 }
                             ) {
@@ -149,7 +149,7 @@ class ShadeSceneToQuickSettingsSceneTest : SysuiTestCase() {
                                     )
                                 }
                                 awaitCondition {
-                                    kosmos.sceneInteractor.transitionState.value.isIdle()
+                                    kosmos.sceneInteractor.transitionStateFlow.value.isIdle()
                                 }
                             }
                         ) {
@@ -180,7 +180,7 @@ class ShadeSceneToQuickSettingsSceneTest : SysuiTestCase() {
                             MotionControl(
                                 delayRecording = {
                                     awaitCondition {
-                                        kosmos.sceneInteractor.transitionState.value.isIdle()
+                                        kosmos.sceneInteractor.transitionStateFlow.value.isIdle()
                                     }
                                 }
                             ) {
@@ -192,7 +192,7 @@ class ShadeSceneToQuickSettingsSceneTest : SysuiTestCase() {
                                     )
                                 }
                                 awaitCondition {
-                                    kosmos.sceneInteractor.transitionState.value.isIdle()
+                                    kosmos.sceneInteractor.transitionStateFlow.value.isIdle()
                                 }
                             }
                         ) {
@@ -223,7 +223,7 @@ class ShadeSceneToQuickSettingsSceneTest : SysuiTestCase() {
                             MotionControl(
                                 delayRecording = {
                                     awaitCondition {
-                                        kosmos.sceneInteractor.transitionState.value.isIdle()
+                                        kosmos.sceneInteractor.transitionStateFlow.value.isIdle()
                                     }
                                 }
                             ) {
@@ -235,7 +235,7 @@ class ShadeSceneToQuickSettingsSceneTest : SysuiTestCase() {
                                     )
                                 }
                                 awaitCondition {
-                                    kosmos.sceneInteractor.transitionState.value.isIdle()
+                                    kosmos.sceneInteractor.transitionStateFlow.value.isIdle()
                                 }
                             }
                         ) {
@@ -266,7 +266,7 @@ class ShadeSceneToQuickSettingsSceneTest : SysuiTestCase() {
                             MotionControl(
                                 delayRecording = {
                                     awaitCondition {
-                                        kosmos.sceneInteractor.transitionState.value.isIdle()
+                                        kosmos.sceneInteractor.transitionStateFlow.value.isIdle()
                                     }
                                 }
                             ) {
@@ -278,7 +278,7 @@ class ShadeSceneToQuickSettingsSceneTest : SysuiTestCase() {
                                     )
                                 }
                                 awaitCondition {
-                                    kosmos.sceneInteractor.transitionState.value.isIdle()
+                                    kosmos.sceneInteractor.transitionStateFlow.value.isIdle()
                                 }
                             }
                         ) {
@@ -309,7 +309,7 @@ class ShadeSceneToQuickSettingsSceneTest : SysuiTestCase() {
                             MotionControl(
                                 delayRecording = {
                                     awaitCondition {
-                                        kosmos.sceneInteractor.transitionState.value.isIdle()
+                                        kosmos.sceneInteractor.transitionStateFlow.value.isIdle()
                                     }
                                 }
                             ) {
@@ -321,7 +321,7 @@ class ShadeSceneToQuickSettingsSceneTest : SysuiTestCase() {
                                     )
                                 }
                                 awaitCondition {
-                                    kosmos.sceneInteractor.transitionState.value.isIdle()
+                                    kosmos.sceneInteractor.transitionStateFlow.value.isIdle()
                                 }
                             }
                         ) {

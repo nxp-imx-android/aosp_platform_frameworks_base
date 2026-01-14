@@ -1543,7 +1543,6 @@ public class PreferencesHelperTest extends UiServiceTestCase {
 
     @Test
     public void testRestoreXml_withNonExistentCanonicalizedSoundUri() throws Exception {
-        Thread.sleep(3000);
         doReturn(null)
                 .when(mTestIContentProvider).canonicalize(any(), eq(CANONICAL_SOUND_URI));
         doReturn(null)
@@ -6652,7 +6651,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
             // trigger a removal from the list
             mXmlHelper.onPackagesChanged(true, mUserId, new String[]{PKG_P},
                     new int[]{INVALID_UID});
-        }, 20, 50);
+        }, 10, 20);
     }
 
     @Test

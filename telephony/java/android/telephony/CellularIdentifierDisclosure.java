@@ -37,7 +37,6 @@ import java.util.Objects;
  * @hide
  */
 @SystemApi
-@FlaggedApi(Flags.FLAG_CELLULAR_IDENTIFIER_DISCLOSURE_INDICATIONS)
 public final class CellularIdentifierDisclosure implements Parcelable {
     private static final String TAG = "CellularIdentifierDisclosure";
 

@@ -645,7 +645,7 @@
     <string name="permdesc_uwb_ranging" msgid="2519723069604307055">"Sallii sovelluksen määrittää UVB-taajuutta käyttävien laitteiden sijainnin suhteessa toisiinsa"</string>
     <string name="permlab_nearby_wifi_devices" msgid="392774237063608500">"käyttää lähellä olevia Wi-Fi-laitteita"</string>
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"Sallii sovelluksen ilmoittaa ja määrittää lähellä olevien Wi-Fi-laitteiden suhteellisen sijainnin sekä yhdistää niihin"</string>
-    <string name="permlab_access_local_network" msgid="3420360767259066877">"pääsy lähiverkon laitteisiin"</string>
+    <string name="permlab_access_local_network" msgid="3420360767259066877">"pääsy paikallisen verkon laitteisiin"</string>
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"Sallii sovelluksen käyttää paikallisen verkon laitteita"</string>
     <string name="permlab_use_loopback_interface" msgid="8032765172835686213">"käytä silmukkarajapintaa"</string>
     <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"Antaa sovelluksen olla yhteydessä muihin sovelluksiin silmukkarajapinnan kautta"</string>
@@ -2112,12 +2112,14 @@
     <string name="app_suspended_more_details" msgid="211260942831587014">"Lue lisää"</string>
     <string name="app_suspended_unsuspend_message" msgid="1665438589450555459">"Peru keskeytys"</string>
     <string name="locked_app_biometric_prompt_description" msgid="6853122652400451464">"<xliff:g id="APP_NAME">%1$s</xliff:g> on lukittu"</string>
+    <!-- no translation found for locked_app_external_display_message (5483884799685545338) -->
+    <skip />
     <string name="work_mode_off_title" msgid="6367463960165135829">"Laita työsovellukset päälle?"</string>
     <string name="work_mode_turn_on" msgid="5316648862401307800">"Laita päälle"</string>
     <string name="work_mode_emergency_call_button" msgid="6818855962881612322">"Hätätilanne"</string>
-    <string name="set_up_screen_lock_title" msgid="8346083801616474030">"Näytön lukituksen asettaminen"</string>
-    <string name="set_up_screen_lock_action_label" msgid="2687634803649209367">"Aseta näytön lukitus"</string>
-    <string name="private_space_set_up_screen_lock_message" msgid="1109956797005149814">"Edellyttää näytön lukitusta"</string>
+    <string name="set_up_screen_lock_title" msgid="8346083801616474030">"Valitse näytön lukitus"</string>
+    <string name="set_up_screen_lock_action_label" msgid="2687634803649209367">"Valitse näytön lukitus"</string>
+    <string name="private_space_set_up_screen_lock_message" msgid="1109956797005149814">"Jos haluat käyttää yksityistä tilaa, valitse laitteelle näytön lukitus"</string>
     <string name="private_space_set_up_screen_lock_for_reset" msgid="7817091386408432097">"Jos haluat poistaa yksityisen tilan, lisää laitteelle näytön lukitus"</string>
     <string name="app_blocked_title" msgid="7353262160455028160">"Sovellus ei ole käytettävissä"</string>
     <string name="app_blocked_message" msgid="542972921087873023">"<xliff:g id="APP_NAME">%1$s</xliff:g> ei ole nyt käytettävissä."</string>

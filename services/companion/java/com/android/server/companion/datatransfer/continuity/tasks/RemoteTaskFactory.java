@@ -22,7 +22,6 @@ import android.companion.datatransfer.continuity.RemoteTask;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.graphics.drawable.Icon;
 import android.util.Slog;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskInfo;
 import java.util.Objects;
@@ -31,7 +30,6 @@ public class RemoteTaskFactory {
 
     private static final String TAG = RemoteTaskFactory.class.getSimpleName();
 
-    private final Icon mDefaultIcon;
     private final PackageManager mPackageManager;
     private final String mBrowserPackageName;
     private final int mUserId;
@@ -40,7 +38,6 @@ public class RemoteTaskFactory {
             int userId, @NonNull Context context, @NonNull PackageManager packageManager) {
         mUserId = userId;
         mPackageManager = Objects.requireNonNull(packageManager);
-        mDefaultIcon = Icon.createWithResource(context, android.R.drawable.sym_def_app_icon);
         mBrowserPackageName = packageManager.getDefaultBrowserPackageNameAsUser(userId);
     }
 
@@ -66,7 +63,6 @@ public class RemoteTaskFactory {
                 .setLabel(getPackageLabel(packageName))
                 .setLastUsedTimestampMillis(remoteTaskInfo.lastUsedTimeMillis())
                 .setAssociationDisplayName(associationDisplayName)
-                .setIcon(getPackageIcon(packageName))
                 .setTaskInForeground(remoteTaskInfo.isInForeground())
                 .setHandoffEnabled(remoteTaskInfo.handoffOptions().isHandoffEnabled())
                 .build();
@@ -80,20 +76,6 @@ public class RemoteTaskFactory {
         }
 
         return mPackageManager.getApplicationLabel(packageInfo.applicationInfo).toString();
-    }
-
-    @Nullable
-    private Icon getPackageIcon(@NonNull String packageName) {
-        PackageInfo packageInfo = getPackageInfo(packageName);
-        if (packageInfo == null) {
-            return mDefaultIcon;
-        }
-
-        if (packageInfo.applicationInfo.icon == 0) {
-            return mDefaultIcon;
-        }
-
-        return Icon.createWithResource(packageName, packageInfo.applicationInfo.icon);
     }
 
     @Nullable

@@ -20,10 +20,8 @@ import android.app.admin.DeviceAdminAuthority
 import android.app.admin.DpcAuthority
 import android.app.admin.RoleAuthority
 import android.app.admin.SystemAuthority
-import android.app.admin.flags.Flags
 import android.content.ComponentName
 import android.os.UserHandle
-import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.SetFlagsRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.role.RoleManagerLocal
@@ -221,7 +219,6 @@ class EnforcingAdminTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_PACKAGE_AS_ADMIN_ID)
     fun DpcAndDaAdmins_notEquals() {
         val daAdmin = EnforcingAdmin.createDeviceAdminEnforcingAdmin(COMPONENT_NAME, SYSTEM_USER_ID)
         val dpcAdmin = EnforcingAdmin.createEnterpriseEnforcingAdmin(COMPONENT_NAME, SYSTEM_USER_ID)
@@ -230,7 +227,6 @@ class EnforcingAdminTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_PACKAGE_AS_ADMIN_ID)
     fun RoleAndDaAdmins_notEquals() {
         val daAdmin = EnforcingAdmin.createDeviceAdminEnforcingAdmin(COMPONENT_NAME, SYSTEM_USER_ID)
         val roleAdmin =
@@ -240,7 +236,6 @@ class EnforcingAdminTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_PACKAGE_AS_ADMIN_ID)
     fun DpcAndRoleAdmins_equals() {
         val dpcAdmin = EnforcingAdmin.createEnterpriseEnforcingAdmin(COMPONENT_NAME, SYSTEM_USER_ID)
         val roleAdmin =

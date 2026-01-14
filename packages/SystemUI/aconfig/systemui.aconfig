@@ -1366,17 +1366,6 @@ flag {
 }
 
 flag {
-    name: "qs_power_icon_refresh"
-    namespace: "systemui"
-    description: "Replaces the footer power icon with a heavier weight"
-    bug: "452644748"
-    is_fixed_read_only: true
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "qs_sizes_in_tile_request_dialog"
     namespace: "systemui"
     description: "Allows for selecting a tile's size in the tile request dialog."
@@ -1841,6 +1830,14 @@ flag {
     description: "Move the StatusBar window to a new UI thread, which is separate from the main "
         "thread."
     bug: "374159193"
+}
+
+flag {
+    name: "status_icons_in_compose_refresh"
+    namespace: "systemui"
+    description: "Build time flag for status icons in compose refresh"
+    bug: "391605373"
+    is_fixed_read_only: true
 }
 
 flag {

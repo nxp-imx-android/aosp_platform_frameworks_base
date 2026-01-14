@@ -89,13 +89,11 @@ import com.android.ims.internal.IImsServiceFeatureCallback;
 import com.android.internal.telephony.CellNetworkScanResult;
 import com.android.internal.telephony.IBooleanConsumer;
 import com.android.internal.telephony.ICallForwardingInfoCallback;
-import com.android.internal.telephony.IccLogicalChannelRequest;
 import com.android.internal.telephony.IImsStateCallback;
 import com.android.internal.telephony.IIntegerConsumer;
 import com.android.internal.telephony.INumberVerificationCallback;
-
+import com.android.internal.telephony.IccLogicalChannelRequest;
 import com.android.internal.telephony.OperatorInfo;
-
 import java.util.List;
 import java.util.Map;
 
@@ -3657,4 +3655,15 @@ interface ITelephony {
     @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
                     + "android.Manifest.permission.MODIFY_PHONE_STATE)")
     void notifyEntitlementStatusChanged(in int subId, in List<String> appIds, in long timeInMillis);
+
+    /**
+     * Get the list of available services for carrier roaming NTN.
+     *
+     * @param subId The subscription ID of the carrier.
+     * @return List of available services for carrier roaming NTN.
+     */
+    @JavaPassthrough(annotation = "@android.annotation.RequiresPermission("
+                    + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
+    int[]
+    getCarrierRoamingNtnAvailableServices(int subId);
 }

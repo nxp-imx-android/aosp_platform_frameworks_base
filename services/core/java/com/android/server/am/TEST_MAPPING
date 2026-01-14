@@ -62,6 +62,10 @@
     {
       "file_patterns": ["AppStartInfo.*"],
       "name": "FrameworksMockingServicesTests_android_server_am_app_start_info"
+    },
+    {
+      "file_patterns": ["MemoryLimiter.*"],
+      "name": "MemoryLimiterTests"
     }
   ],
   "postsubmit": [

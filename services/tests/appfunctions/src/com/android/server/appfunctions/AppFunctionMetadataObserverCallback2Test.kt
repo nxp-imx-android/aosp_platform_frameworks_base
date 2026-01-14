@@ -49,7 +49,8 @@ class AppFunctionMetadataObserverCallback2Test {
 
     @Before
     fun setup() {
-        whenever(mockMetadataSyncAdapter.submitSyncRequest())
+        whenever(mockMetadataSyncAdapter.submitSyncRequest(
+                    /* shouldSetRuntimeMetadataSchemaUnconditionally= */ false))
             .thenReturn(AndroidFuture.completedFuture(true))
     }
 

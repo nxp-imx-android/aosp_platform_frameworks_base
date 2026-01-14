@@ -231,7 +231,7 @@ constructor(
         "Use com.android.systemui.communal.domain.interactor.CommunalSceneInteractor instead"
     )
     val transitionState: StateFlow<ObservableTransitionState> =
-        communalSceneInteractor.transitionState
+        communalSceneInteractor.transitionStateFlow
 
     private val _userActivity: MutableSharedFlow<Unit> =
         MutableSharedFlow(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)

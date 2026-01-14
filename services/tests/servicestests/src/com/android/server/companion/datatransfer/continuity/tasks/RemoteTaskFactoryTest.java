@@ -28,7 +28,6 @@ import android.content.pm.PackageManager;
 import android.platform.test.annotations.Presubmit;
 import android.testing.AndroidTestingRunner;
 import androidx.test.InstrumentationRegistry;
-import com.android.frameworks.servicestests.R;
 import com.android.server.companion.datatransfer.continuity.messages.HandoffOptions;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskInfo;
 import org.junit.Before;
@@ -54,7 +53,7 @@ public class RemoteTaskFactoryTest {
         MockitoAnnotations.initMocks(this);
         when(mockPackageManager.getDefaultBrowserPackageNameAsUser(0))
                 .thenReturn(BROWSER_PACKAGE_NAME);
-        setupMockApplicationInfo(BROWSER_PACKAGE_NAME, BROWSER_LABEL, R.drawable.black_32x32);
+        setupMockApplicationInfo(BROWSER_PACKAGE_NAME, BROWSER_LABEL);
 
         remoteTaskFactory =
                 new RemoteTaskFactory(
@@ -69,7 +68,7 @@ public class RemoteTaskFactoryTest {
         String associationDisplayName = "test_device";
         String packageName = "com.example.app";
         String label = "label";
-        setupMockApplicationInfo(packageName, label, R.drawable.black_32x32);
+        setupMockApplicationInfo(packageName, label);
         HandoffOptions handoffOptions = new HandoffOptions(true, false);
         RemoteTaskInfo remoteTaskInfo =
                 new RemoteTaskInfo(1, packageName, true, 100, handoffOptions);
@@ -90,7 +89,7 @@ public class RemoteTaskFactoryTest {
         String associationDisplayName = "test_device";
         String packageName = "com.example.app";
         String label = "label";
-        setupMockApplicationInfo(packageName, label, R.drawable.black_32x32);
+        setupMockApplicationInfo(packageName, label);
         HandoffOptions handoffOptions = new HandoffOptions(false, false);
         RemoteTaskInfo remoteTaskInfo =
                 new RemoteTaskInfo(1, packageName, true, 100, handoffOptions);
@@ -136,12 +135,11 @@ public class RemoteTaskFactoryTest {
         assertThat(remoteTask.isTaskInForeground()).isTrue();
     }
 
-    private void setupMockApplicationInfo(String packageName, String label, int iconResourceId) {
+    private void setupMockApplicationInfo(String packageName, String label) {
         PackageInfo packageInfo = new PackageInfo();
         packageInfo.packageName = packageName;
         packageInfo.applicationInfo = new ApplicationInfo();
         packageInfo.applicationInfo.name = packageName;
-        packageInfo.applicationInfo.icon = iconResourceId;
         try {
             when(mockPackageManager.getPackageInfo(
                             eq(packageName), eq(PackageManager.GET_META_DATA)))

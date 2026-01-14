@@ -72,7 +72,7 @@ constructor(
                     shadeInteractor.anyExpansion,
                     shadeModeInteractorProvider.get().shadeMode,
                     sceneInteractorProvider.get().isTransitionUserInputOngoing,
-                    sceneInteractorProvider.get().transitionState,
+                    sceneInteractorProvider.get().transitionStateFlow,
                 ) { panelExpansion, shadeMode, tracking, transitionState ->
                     val fraction =
                         if (transitionState.isIdle(Scenes.Lockscreen)) {

@@ -621,11 +621,11 @@ final class DefaultPermissionGrantPolicy {
                 userId, STORAGE_PERMISSIONS, NOTIFICATION_PERMISSIONS);
 
         // Verifier
-        final String verifier = ArrayUtils.firstOrNull(getKnownPackages(
-                KnownPackages.PACKAGE_VERIFIER, userId));
-        grantSystemFixedPermissionsToSystemPackage(pm, verifier, userId, STORAGE_PERMISSIONS);
-        grantPermissionsToSystemPackage(pm, verifier, userId, PHONE_PERMISSIONS, SMS_PERMISSIONS,
-                NOTIFICATION_PERMISSIONS);
+        for (String verifier : getKnownPackages(KnownPackages.PACKAGE_VERIFIER, userId)) {
+            grantSystemFixedPermissionsToSystemPackage(pm, verifier, userId, STORAGE_PERMISSIONS);
+            grantPermissionsToSystemPackage(pm, verifier, userId, PHONE_PERMISSIONS,
+                    SMS_PERMISSIONS, NOTIFICATION_PERMISSIONS);
+        }
 
         // SetupWizard
         final String setupWizardPackage = ArrayUtils.firstOrNull(getKnownPackages(

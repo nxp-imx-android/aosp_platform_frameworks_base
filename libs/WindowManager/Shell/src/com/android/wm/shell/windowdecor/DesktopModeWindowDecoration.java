@@ -752,14 +752,11 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             closeDragResizeListener();
         }
         if (shouldCreateListener) {
-            final ShellExecutor bgExecutor =
-                    DesktopModeFlags.ENABLE_DRAG_RESIZE_SET_UP_IN_BG_THREAD.isTrue()
-                            ? mBgExecutor : mMainExecutor;
             mDragResizeListener = new DragResizeInputListener(
                     mContext,
                     WindowManagerGlobal.getWindowSession(),
                     mMainExecutor,
-                    bgExecutor,
+                    mBgExecutor,
                     mTaskInfo,
                     mHandler,
                     mChoreographer,
@@ -1268,7 +1265,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         // TODO(b/301119301): consider moving the config data needed for diffs to relayout params
         // instead of using a whole Configuration as a parameter.
         final Configuration windowDecorConfig = new Configuration();
-        if (DesktopModeFlags.ENABLE_APP_HEADER_WITH_TASK_DENSITY.isTrue() && isAppHeader) {
+        if (isAppHeader) {
             // Should match the density of the task. The task may have had its density overridden
             // to be different that SysUI's.
             windowDecorConfig.setTo(taskInfo.configuration);

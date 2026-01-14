@@ -45,7 +45,7 @@ import kotlinx.coroutines.flow.stateIn
 interface CommunalSceneRepository : SceneDataSource {
 
     /** Exposes the transition state of the communal [SceneTransitionLayout]. */
-    val transitionState: StateFlow<ObservableTransitionState>
+    val transitionStateFlow: StateFlow<ObservableTransitionState>
 
     /** Current orientation of the communal container. */
     val communalContainerOrientation: StateFlow<Int>
@@ -76,7 +76,7 @@ constructor(
 
     private val defaultTransitionState = ObservableTransitionState.Idle(CommunalScenes.Default)
     private val _transitionState = MutableStateFlow<Flow<ObservableTransitionState>?>(null)
-    override val transitionState: StateFlow<ObservableTransitionState> =
+    override val transitionStateFlow: StateFlow<ObservableTransitionState> =
         _transitionState
             .flatMapLatest { innerFlowOrNull -> innerFlowOrNull ?: flowOf(defaultTransitionState) }
             .stateIn(

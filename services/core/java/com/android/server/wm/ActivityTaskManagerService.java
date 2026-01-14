@@ -643,7 +643,6 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
     boolean mForceResizableActivities;
 
     /** Development option to enable non resizable in multi window. */
-    // TODO(b/176061101) change the default value to false.
     boolean mDevEnableNonResizableMultiWindow;
 
     /**

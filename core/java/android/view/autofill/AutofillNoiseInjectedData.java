@@ -19,13 +19,11 @@ package android.view.autofill;
 import static android.service.autofill.Flags.FLAG_STRING_REBUILD_API;
 
 import android.annotation.FlaggedApi;
-import android.annotation.IntDef;
 import android.annotation.NonNull;
+import android.annotation.SuppressLint;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -37,7 +35,7 @@ import java.util.Objects;
  * Autofill detection's quality.
  *
  * <p>The noise injection process involves the following steps: 1. The original string is converted
- * to a byte array using UTF-16BE Encoding. The actual length of the string is hidden by padding
+ * to a byte array using UTF-8 Encoding. The actual length of the string is hidden by padding
  * with 0x0000 or truncating as needed. 2. Then for each bit in the byte array, random noise is
  * introduced by "coin flipping": first we flip a coin to decide whether to change this bit. The
  * probability is 50%. If we decide to change this bit, then we flip another coin to decide its new
@@ -58,63 +56,17 @@ import java.util.Objects;
 @FlaggedApi(FLAG_STRING_REBUILD_API)
 public final class AutofillNoiseInjectedData implements Parcelable {
 
-    /** @hide */
-    @IntDef(
-            prefix = {"RETAIN_BIT_"},
-            value = {
-                RETAIN_BIT_0,
-                RETAIN_BIT_1,
-                RETAIN_BIT_2,
-                RETAIN_BIT_3,
-                RETAIN_BIT_4,
-                RETAIN_BIT_5,
-                RETAIN_BIT_6,
-                RETAIN_BIT_7
-            })
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface RetainBitType {}
-
-    /**
-     * Flag to retain the Least Significant Bit (bit 0) within each byte. Mask value is {@code 1 <<
-     * 0} (0x01).
-     */
-    public static final @RetainBitType int RETAIN_BIT_0 = 1 << 0;
-
-    /** Flag to retain bit 1 within each byte. Mask value is {@code 1 << 1} (0x02). */
-    public static final @RetainBitType int RETAIN_BIT_1 = 1 << 1;
-
-    /** Flag to retain bit 2 within each byte. Mask value is {@code 1 << 2} (0x04). */
-    public static final @RetainBitType int RETAIN_BIT_2 = 1 << 2;
-
-    /** Flag to retain bit 3 within each byte. Mask value is {@code 1 << 3} (0x08). */
-    public static final @RetainBitType int RETAIN_BIT_3 = 1 << 3;
-
-    /** Flag to retain bit 4 within each byte. Mask value is {@code 1 << 4} (0x10). */
-    public static final @RetainBitType int RETAIN_BIT_4 = 1 << 4;
-
-    /** Flag to retain bit 5 within each byte. Mask value is {@code 1 << 5} (0x20). */
-    public static final @RetainBitType int RETAIN_BIT_5 = 1 << 5;
-
-    /** Flag to retain bit 6 within each byte. Mask value is {@code 1 << 6} (0x40). */
-    public static final @RetainBitType int RETAIN_BIT_6 = 1 << 6;
-
-    /**
-     * Flag to retain the Most Significant Bit (bit 7) within each byte. Mask value is {@code 1 <<
-     * 7} (0x80).
-     */
-    public static final @RetainBitType int RETAIN_BIT_7 = 1 << 7;
-
-    private final int mRetainedBitMask;
+    private final byte mRetainedBitMask;
     private final @NonNull byte[] mNoiseInjectedPayload;
 
     /** @hide */
-    public AutofillNoiseInjectedData(int retainedBitMask, @NonNull byte[] noiseInjectedPayload) {
+    public AutofillNoiseInjectedData(byte retainedBitMask, @NonNull byte[] noiseInjectedPayload) {
         mRetainedBitMask = retainedBitMask;
         mNoiseInjectedPayload = noiseInjectedPayload;
     }
 
     private AutofillNoiseInjectedData(Parcel in) {
-        mRetainedBitMask = in.readInt();
+        mRetainedBitMask = in.readByte();
         mNoiseInjectedPayload = in.createByteArray();
     }
 
@@ -123,12 +75,12 @@ public final class AutofillNoiseInjectedData implements Parcelable {
      * returned by {@link #getNoiseInjectedPayload()}. Bits not retained are marked as 0 in the
      * returned payload. The same bit mask is applied to every byte in the payload.
      *
-     * @return Bitwise-or of zero or more of flags {@link #RETAIN_BIT_0}, {@link #RETAIN_BIT_1},
-     *     {@link #RETAIN_BIT_2}, {@link #RETAIN_BIT_3}, {@link #RETAIN_BIT_4}, {@link
-     *     #RETAIN_BIT_5}, {@link #RETAIN_BIT_6}, {@link #RETAIN_BIT_7}.
+     * @return A byte where each bit corresponds to a bit position in a byte. If the n-th bit
+     *     (0 <= n <= 7) is set, it means the n-th bit of each byte in the payload is retained.
      */
+    @SuppressLint("NoByteOrShort")
     @FlaggedApi(FLAG_STRING_REBUILD_API)
-    public int getRetainedBitMask() {
+    public byte getRetainedBitMask() {
         return mRetainedBitMask;
     }
 
@@ -152,7 +104,7 @@ public final class AutofillNoiseInjectedData implements Parcelable {
 
     @Override
     public void writeToParcel(@NonNull Parcel dest, int flags) {
-        dest.writeInt(mRetainedBitMask);
+        dest.writeByte(mRetainedBitMask);
         dest.writeByteArray(mNoiseInjectedPayload);
     }
 

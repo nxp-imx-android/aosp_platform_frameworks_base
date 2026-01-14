@@ -23,6 +23,8 @@ import android.app.ActivityTaskManager;
 import android.app.AppOpsManager;
 import android.app.HandoffActivityParams;
 import android.app.TaskStackListener;
+import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.RemoteException;
 import android.os.Trace;
 import android.util.Slog;
@@ -50,19 +52,22 @@ public class TaskBroadcaster extends TaskStackListener
     private final ActivityTaskManager mActivityTaskManager;
     private final ActivityTaskManagerInternal mActivityTaskManagerInternal;
     private final AppOpsManager mAppOps;
+    private final PackageManager mPackageManager;
 
     public TaskBroadcaster(
             int userId,
             @NonNull TaskContinuityMessenger taskContinuityMessenger,
             @NonNull ActivityTaskManager activityTaskManager,
             @NonNull ActivityTaskManagerInternal activityTaskManagerInternal,
-            @NonNull AppOpsManager appOps) {
+            @NonNull AppOpsManager appOps,
+            @NonNull PackageManager packageManager) {
 
         mUserId = userId;
         mTaskContinuityMessenger = Objects.requireNonNull(taskContinuityMessenger);
         mActivityTaskManager = Objects.requireNonNull(activityTaskManager);
         mActivityTaskManagerInternal = Objects.requireNonNull(activityTaskManagerInternal);
         mAppOps = Objects.requireNonNull(appOps);
+        mPackageManager = Objects.requireNonNull(packageManager);
     }
 
     public void onDeviceConnected(int associationId) {
@@ -126,11 +131,7 @@ public class TaskBroadcaster extends TaskStackListener
             return null;
         }
 
-        if (mAppOps.noteOpNoThrow(
-                        AppOpsManager.OP_CONTINUE_ACROSS_DEVICES,
-                        taskInfo.userId,
-                        taskInfo.baseActivity.getPackageName())
-                != AppOpsManager.MODE_ALLOWED) {
+        if (!isContinueAcrossDevicesAllowedForPackage(taskInfo.baseActivity.getPackageName())) {
             Slog.w(
                     TAG,
                     "AppOpsManager.OP_CONTINUE_ACROSS_DEVICES is not allowed for task: "
@@ -159,5 +160,18 @@ public class TaskBroadcaster extends TaskStackListener
         }
 
         return remoteTaskInfoBuilder.setHandoffOptions(handoffOptionsBuilder.build()).build();
+    }
+
+    private boolean isContinueAcrossDevicesAllowedForPackage(@NonNull String packageName) {
+        try {
+            return mAppOps.checkOpNoThrow(
+                            AppOpsManager.OP_CONTINUE_ACROSS_DEVICES,
+                            mPackageManager.getPackageUid(packageName, 0),
+                            packageName)
+                    != AppOpsManager.MODE_IGNORED;
+        } catch (NameNotFoundException e) {
+            Slog.w(TAG, "Failed to note op for package: " + packageName, e);
+            return false;
+        }
     }
 }

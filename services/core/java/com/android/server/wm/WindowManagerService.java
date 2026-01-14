@@ -9921,7 +9921,7 @@ public class WindowManagerService extends IWindowManager.Stub
         final int sanitizedType = sanitizeWindowType(session, displayId, windowToken, type);
         final InputApplicationHandle applicationHandle;
         final String name;
-        InputChannel inputChannel = new InputChannel();
+        InputChannel inputChannel;
         Objects.requireNonNull(inputTransferToken);
 
         synchronized (mGlobalLock) {
@@ -9931,7 +9931,7 @@ public class WindowManagerService extends IWindowManager.Stub
                     new EmbeddedWindowController.EmbeddedWindow(session, this, clientToken,
                             hostWindowState, callingUid, callingPid, sanitizedType, displayId,
                             inputTransferToken, inputHandleName, (flags & FLAG_NOT_FOCUSABLE) == 0);
-            win.openInputChannel(inputChannel);
+            inputChannel = win.openInputChannel();
             mEmbeddedWindowController.add(inputChannel.getToken(), win);
             applicationHandle = win.getApplicationHandle();
             name = win.toString();

@@ -83,6 +83,16 @@ class PackageUserStateDefault implements PackageUserStateInternal {
     }
 
     @Override
+    public long getPccCeDataInode() {
+        return 0;
+    }
+
+    @Override
+    public long getPccDeDataInode() {
+        return 0;
+    }
+
+    @Override
     public int getDistractionFlags() {
         return 0;
     }
