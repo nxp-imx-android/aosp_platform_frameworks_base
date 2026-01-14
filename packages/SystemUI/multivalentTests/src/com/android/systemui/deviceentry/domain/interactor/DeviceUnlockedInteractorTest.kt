@@ -38,6 +38,7 @@ import com.android.systemui.keyguard.data.repository.fakeBiometricSettingsReposi
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.keyguard.data.repository.fakeTrustRepository
 import com.android.systemui.keyguard.domain.interactor.biometricUnlockInteractor
+import com.android.systemui.keyguard.domain.interactor.keyguardEnabledInteractor
 import com.android.systemui.keyguard.shared.model.AuthenticationFlags
 import com.android.systemui.keyguard.shared.model.BiometricUnlockSource
 import com.android.systemui.kosmos.testScope
@@ -713,6 +714,38 @@ class DeviceUnlockedInteractorTest : SysuiTestCase() {
             //    from User A should have already been consumed.
             authenticationRepository.setAuthenticationMethod(AuthenticationMethodModel.Pin)
             runCurrent()
+            assertThat(isUnlocked).isTrue()
+        }
+
+    @Test
+    fun deviceUnlockStatus_doesNotLock_secureAuth_keyguardDisabled() =
+        testScope.runTest {
+            val isUnlocked by collectLastValue(underTest.deviceUnlockStatus.map { it.isUnlocked })
+
+            authenticationRepository.setAuthenticationMethod(AuthenticationMethodModel.Pin)
+            runCurrent()
+            assertThat(isUnlocked).isFalse()
+
+            kosmos.keyguardEnabledInteractor.notifyKeyguardEnabled(false)
+            assertThat(isUnlocked).isTrue()
+
+            underTest.lockNow("test")
+            assertThat(isUnlocked).isTrue()
+        }
+
+    @Test
+    fun deviceUnlockStatus_doesNotLock_insecureAuth_keyguardEnabled() =
+        testScope.runTest {
+            val isUnlocked by collectLastValue(underTest.deviceUnlockStatus.map { it.isUnlocked })
+
+            authenticationRepository.setAuthenticationMethod(AuthenticationMethodModel.None)
+            runCurrent()
+            assertThat(isUnlocked).isTrue()
+
+            kosmos.keyguardEnabledInteractor.notifyKeyguardEnabled(true)
+            assertThat(isUnlocked).isTrue()
+
+            underTest.lockNow("test")
             assertThat(isUnlocked).isTrue()
         }
 

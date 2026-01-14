@@ -20,6 +20,7 @@ import com.android.systemui.authentication.domain.interactor.authenticationInter
 import com.android.systemui.deviceentry.data.repository.deviceEntryRepository
 import com.android.systemui.flags.fakeSystemPropertiesHelper
 import com.android.systemui.keyguard.domain.interactor.biometricUnlockInteractor
+import com.android.systemui.keyguard.domain.interactor.keyguardEnabledInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.trustInteractor
 import com.android.systemui.kosmos.Kosmos
@@ -46,6 +47,7 @@ val Kosmos.deviceUnlockedInteractor by Fixture {
             keyguardInteractor = keyguardInteractor,
             tableLogBuffer = logcatTableLogBuffer(this, "sceneFrameworkTableLogBuffer"),
             biometricUnlockInteractor = biometricUnlockInteractor,
+            keyguardEnabledInteractor = keyguardEnabledInteractor,
         )
         .apply { activateIn(testScope) }
 }

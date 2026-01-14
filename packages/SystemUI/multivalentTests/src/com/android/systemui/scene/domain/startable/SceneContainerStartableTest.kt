@@ -2664,8 +2664,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
             keyguardEnabledInteractor.notifyKeyguardEnabled(true)
             runCurrent()
 
-            // Shouldn't go to Lockscreen, DreamStartable will take us to Scenes.Dream.
-            assertThat(currentScene).isEqualTo(Scenes.Gone)
+            assertThat(currentScene).isEqualTo(Scenes.Dream)
         }
 
     @Test
