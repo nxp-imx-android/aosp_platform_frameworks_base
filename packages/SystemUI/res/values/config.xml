@@ -1180,4 +1180,7 @@
 
     <!-- Whether to enable Bouncer containerization at a lower - large width breakpoint -->
     <bool name="config_lowerBouncerContainerizationBreakpointToLargeWidth">false</bool>
+
+    <!-- Enable/disable keyguard connected display presentation -->
+    <bool name="config_enableKeyguardOnConnectedDisplay">true</bool>
 </resources>

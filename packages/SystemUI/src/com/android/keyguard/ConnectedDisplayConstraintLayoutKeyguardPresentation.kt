@@ -129,6 +129,12 @@ constructor(
     }
 
     private fun setClock(rootView: ConstraintLayout, clockController: ClockController) {
+        // Some configurations do not want to display keyguard/clock content on secondary
+        // displays
+        if (!context.resources.getBoolean(R.bool.config_enableKeyguardOnConnectedDisplay)) {
+            return
+        }
+
         clockEventController.clock = clockController
         clockEventController.setLargeClockOnSecondaryDisplay(true)
         faceController = clockController.largeClock
