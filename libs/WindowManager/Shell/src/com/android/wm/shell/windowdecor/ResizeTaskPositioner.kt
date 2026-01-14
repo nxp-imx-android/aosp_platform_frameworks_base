@@ -28,6 +28,8 @@ import android.window.TransitionInfo
 import android.window.TransitionRequestInfo
 import android.window.WindowContainerTransaction
 import com.android.wm.shell.common.DisplayController
+import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.ResizeTrigger
+import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.getInputMethodType
 import com.android.wm.shell.desktopmode.DesktopTasksController
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import com.android.wm.shell.transition.Transitions
@@ -61,6 +63,10 @@ class ResizeTaskPositioner(
     private val desktopTasksController: DesktopTasksController,
     private val desktopUserRepositories: DesktopUserRepositories,
 ) : TaskPositioner, Transitions.TransitionHandler {
+    // The TaskPositioner interface requires the add and remove DragEventListener methods,
+    // making this the central manager of the listener list.
+    private val resizeEventListeners =
+        mutableListOf<DragPositioningCallbackUtility.DragEventListener>()
     private var dragSession: DragSession? = null
     private val isResizing: Boolean
         get() =
@@ -80,6 +86,19 @@ class ResizeTaskPositioner(
     ): Rect {
         val taskBounds = Rect(windowDecoration.taskInfo.configuration.windowConfiguration.bounds)
         val rotation = windowDecoration.taskInfo.configuration.windowConfiguration.displayRotation
+        val resizeTrigger =
+            if (
+                ctrlType == CTRL_TYPE_BOTTOM ||
+                    ctrlType == CTRL_TYPE_TOP ||
+                    ctrlType == CTRL_TYPE_RIGHT ||
+                    ctrlType == CTRL_TYPE_LEFT
+            ) {
+                ResizeTrigger.EDGE
+            } else {
+                ResizeTrigger.CORNER
+            }
+        val inputMethod = getInputMethodType(inputMethodType)
+
         val newDragSession =
             DragSession(
                     windowDecoration,
@@ -88,7 +107,10 @@ class ResizeTaskPositioner(
                     repositionTaskBounds = Rect(taskBounds),
                     repositionStartPoint = PointF(x, y),
                     rotation = rotation,
-                    hasFirstMoveEventConsumed = false, // Initialize to false for a new drag session
+                    hasFirstMoveEventConsumed = false,
+                    resizeTrigger = resizeTrigger,
+                    inputMethod = inputMethod,
+                    resizeEventListeners = resizeEventListeners,
                 )
                 .also {
                     dragSession = it
@@ -104,6 +126,10 @@ class ResizeTaskPositioner(
         displayController
             .getDisplayLayout(windowDecoration.taskInfo.displayId)
             ?.getStableBounds(newDragSession.stableBounds)
+
+        if (isResizing) {
+            taskResizer.onResizeStart(newDragSession)
+        }
 
         return Rect(newDragSession.repositionTaskBounds)
     }
@@ -171,11 +197,15 @@ class ResizeTaskPositioner(
 
     override fun addDragEventListener(
         dragEventListener: DragPositioningCallbackUtility.DragEventListener
-    ) {}
+    ) {
+        resizeEventListeners.add(dragEventListener)
+    }
 
     override fun removeDragEventListener(
         dragEventListener: DragPositioningCallbackUtility.DragEventListener
-    ) {}
+    ) {
+        resizeEventListeners.remove(dragEventListener)
+    }
 
     override fun startAnimation(
         transition: IBinder,

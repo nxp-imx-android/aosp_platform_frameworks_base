@@ -67,6 +67,7 @@ class ResizeTaskPositionerTest : ShellTestCase() {
     private val mockDesktopTasksController = mock<DesktopTasksController>()
     private val mockDesktopUserRepositories = mock<DesktopUserRepositories>()
     private val mockDesktopRepository = mock<DesktopRepository>()
+    private val mockDragEventListener = mock<DragPositioningCallbackUtility.DragEventListener>()
 
     private val mainHandler = Handler(Looper.getMainLooper())
     private lateinit var taskPositioner: ResizeTaskPositioner
@@ -104,6 +105,7 @@ class ResizeTaskPositionerTest : ShellTestCase() {
                 mockDesktopTasksController,
                 mockDesktopUserRepositories,
             )
+        taskPositioner.addDragEventListener(mockDragEventListener)
     }
 
     @Test
@@ -116,6 +118,7 @@ class ResizeTaskPositionerTest : ShellTestCase() {
             100f,
             DragPositioningCallback.INPUT_METHOD_TYPE_UNKNOWN,
         )
+        verify(mockTaskResizer).onResizeStart(any())
 
         // First Move
         taskPositioner.onDragPositioningMove(0, 200f, 200f)

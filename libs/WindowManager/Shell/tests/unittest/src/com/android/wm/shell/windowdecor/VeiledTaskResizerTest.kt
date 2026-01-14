@@ -34,6 +34,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
@@ -50,6 +51,7 @@ class VeiledTaskResizerTest : ShellTestCase() {
     private val mockWindowDecoration = mock<WindowDecorationWrapper>()
     private val mockDisplayController = mock<DisplayController>()
     private val mockDesktopRepository = mock<DesktopRepository>()
+    private val mockDragEventListener = mock<DragPositioningCallbackUtility.DragEventListener>()
 
     private val desktopState = FakeDesktopState()
     private lateinit var taskResizer: VeiledTaskResizer
@@ -82,6 +84,35 @@ class VeiledTaskResizerTest : ShellTestCase() {
                 stableBounds = Rect(STABLE_BOUNDS),
                 rotation = 0,
                 desktopRepository = mockDesktopRepository,
+                resizeEventListeners = listOf(mockDragEventListener),
+            )
+    }
+
+    @Test
+    fun testResize_notifiesListeners() = runOnUiThread {
+        taskResizer.onResizeStart(dragSession)
+
+        verify(mockDragEventListener)
+            .onDragResizeStarted(
+                eq(TASK_ID),
+                eq(dragSession.resizeTrigger),
+                eq(dragSession.inputMethod),
+                eq(STARTING_BOUNDS),
+            )
+
+        taskResizer.onResizeUpdate(dragSession, 150f, 110f)
+
+        verify(mockDragEventListener).onDragMove(TASK_ID)
+
+        taskResizer.onResizeEnd(dragSession, 10f, 50f)
+
+        val expectedEndBounds = Rect(10, 50, 200, 200)
+        verify(mockDragEventListener)
+            .onDragResizeEnded(
+                eq(TASK_ID),
+                eq(dragSession.resizeTrigger),
+                eq(dragSession.inputMethod),
+                eq(expectedEndBounds),
             )
     }
 
