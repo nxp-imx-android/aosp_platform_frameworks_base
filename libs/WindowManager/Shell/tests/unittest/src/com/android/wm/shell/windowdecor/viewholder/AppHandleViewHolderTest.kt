@@ -295,8 +295,8 @@ class AppHandleViewHolderTest : ShellTestCase() {
         return AppHandleViewHolder(
                 view,
                 mContext,
+                mock(),
                 mockOnTouchListener,
-                mockOnClickListener,
                 mockWindowManagerWrapper,
                 mockHandler,
                 mockDesktopModeUiEventLogger,
