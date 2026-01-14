@@ -35,6 +35,7 @@ import com.android.wm.shell.R
 import com.android.wm.shell.bubbles.Bubble
 import com.android.wm.shell.bubbles.BubbleExpandedViewManager
 import com.android.wm.shell.bubbles.BubbleHelper
+import com.android.wm.shell.bubbles.BubbleOverflowContainerView
 import com.android.wm.shell.bubbles.BubblePositioner
 import com.android.wm.shell.bubbles.BubbleTaskView
 import com.android.wm.shell.bubbles.FakeBubbleFactory
@@ -53,8 +54,10 @@ import org.junit.runner.RunWith
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
+import org.mockito.kotlin.spy
 import org.mockito.kotlin.stub
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 
 /** Tests for [BubbleBarExpandedViewTest] */
 @SmallTest
@@ -354,6 +357,79 @@ class BubbleBarExpandedViewTest {
         bubbleExpandedView.onTaskInfoChanged(taskInfo)
 
         verify(expandedViewManager, never()).collapseStack()
+    }
+
+    @Test
+    fun updateLocale_forOverflow_callsUpdateLocaleOnOverflowView() {
+        // Create an overflow expanded view with a mocked overflow container.
+        val (overflowExpandedView, mockOverflowView) = createOverflowViewWithMockContent()
+
+        // When updateLocale is called on the expanded view
+        overflowExpandedView.updateLocale()
+
+        // Then the call is delegated to the overflow container view.
+        verify(mockOverflowView).updateLocale()
+    }
+
+    @Test
+    fun updateFontSize_forOverflow_callsUpdateFontSizeOnOverflowView() {
+        // Create an overflow expanded view with a mocked overflow container.
+        val (overflowExpandedView, mockOverflowView) = createOverflowViewWithMockContent()
+
+        // When updateFontSize is called on the expanded view
+        overflowExpandedView.updateFontSize()
+
+        // Then the call is delegated to the overflow container view.
+        verify(mockOverflowView).updateFontSize()
+    }
+
+    @Test
+    fun updateTheme_forOverflow_callsUpdateThemeOnOverflowView() {
+        // Create an overflow expanded view with a mocked overflow container.
+        val (overflowExpandedView, mockOverflowView) = createOverflowViewWithMockContent()
+
+        // When updateTheme is called on the expanded view
+        overflowExpandedView.updateTheme()
+
+        // Then the call is delegated to the overflow container view.
+        verify(mockOverflowView).updateTheme()
+    }
+
+    @Test
+    fun updateMethods_notForOverflow_doesNothing() {
+        // This test ensures that calling update methods on a non-overflow expanded view
+        // does not cause a crash. The view is set up as non-overflow in the @Before method.
+        bubbleExpandedView.updateLocale()
+        bubbleExpandedView.updateFontSize()
+        bubbleExpandedView.updateTheme()
+    }
+
+    private fun createOverflowViewWithMockContent():
+        Pair<BubbleBarExpandedView, BubbleOverflowContainerView> {
+        val mockOverflowView = mock<BubbleOverflowContainerView>()
+        val mockInflater = mock<LayoutInflater>()
+        whenever(mockInflater.inflate(R.layout.bubble_overflow_container, null))
+            .thenReturn(mockOverflowView)
+
+        val spyContext = spy(context)
+        whenever(spyContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE))
+            .thenReturn(mockInflater)
+
+        val realInflater = LayoutInflater.from(context)
+        val overflowExpandedView =
+            realInflater.cloneInContext(spyContext)
+                .inflate(R.layout.bubble_bar_expanded_view, null, false)
+                as BubbleBarExpandedView
+
+        overflowExpandedView.bubbleLogger = BubbleLogger(uiEventLoggerFake)
+        overflowExpandedView.initialize(
+            expandedViewManager,
+            positioner,
+            true /* isOverflow */,
+            null, /* bubble */
+            null, /* bubbleTaskView */
+        )
+        return overflowExpandedView to mockOverflowView
     }
 
     private fun BubbleBarExpandedView.menuView(): BubbleBarMenuView {
