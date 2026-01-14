@@ -55,6 +55,7 @@ android_library {
         "com.android.window.flags.window-aconfig-java",
         "jsr330",
         "kotlin-parcelize-runtime",
+        "dynamiccolors",
     ],
     kotlin_plugins: ["kotlin-parcelize-compiler-plugin"],
     kotlincflags: ["-Xjvm-default=all"],

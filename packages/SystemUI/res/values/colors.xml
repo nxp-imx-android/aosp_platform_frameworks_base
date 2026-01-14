@@ -136,7 +136,7 @@
     <!-- Keyboard shortcuts colors -->
     <color name="ksh_application_group_color">#fff44336</color>
     <color name="ksh_key_item_color">@*android:color/system_on_surface_variant_light</color>
-    <color name="ksh_key_item_background">@androidprv:color/materialColorSurfaceContainerHighest</color>
+    <color name="ksh_key_item_background">@color/materialColorSurfaceContainerHighest</color>
 
     <color name="instant_apps_color">#ff4d5a64</color>
 
@@ -148,9 +148,9 @@
     <color name="smart_reply_button_stroke">@*android:color/accent_device_default</color>
 
     <!-- Animated Action colors -->
-    <color name="animated_action_button_text_color">@androidprv:color/materialColorOnSurface</color>
-    <color name="animated_action_button_stroke_color">@androidprv:color/materialColorOnSurface</color>
-    <color name="animated_action_button_attribution_color">@androidprv:color/materialColorOnSurfaceVariant</color>
+    <color name="animated_action_button_text_color">@color/materialColorOnSurface</color>
+    <color name="animated_action_button_stroke_color">@color/materialColorOnSurface</color>
+    <color name="animated_action_button_attribution_color">@color/materialColorOnSurfaceVariant</color>
 
     <!-- Biometric dialog colors -->
     <color name="biometric_dialog_gray">#ff757575</color>

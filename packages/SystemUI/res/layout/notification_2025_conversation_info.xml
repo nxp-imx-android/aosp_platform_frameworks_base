@@ -175,7 +175,7 @@
             android:contentDescription="@string/notification_guts_bundle_feedback"
             android:src="@*android:drawable/ic_feedback"
             android:padding="@*android:dimen/notification_2025_margin"
-            android:tint="@androidprv:color/materialColorPrimary"/>
+            android:tint="@color/materialColorPrimary"/>
 
         <!-- System notification settings -->
         <ImageButton
@@ -186,7 +186,7 @@
             android:background="@drawable/ripple_drawable"
             android:src="@drawable/ic_settings"
             android:padding="@*android:dimen/notification_2025_margin"
-            android:tint="@androidprv:color/materialColorPrimary" />
+            android:tint="@color/materialColorPrimary" />
 
     </LinearLayout>
 
@@ -245,7 +245,7 @@
                     android:paddingEnd="@*android:dimen/notification_2025_margin"
                     android:src="@drawable/ic_important_outline"
                     android:background="@android:color/transparent"
-                    android:tint="@androidprv:color/materialColorOnSurface"
+                    android:tint="@color/materialColorOnSurface"
                     android:clickable="false"
                     android:focusable="false"/>
                 <LinearLayout
@@ -297,7 +297,7 @@
                     android:paddingEnd="@*android:dimen/notification_2025_margin"
                     android:src="@drawable/ic_notifications_alert"
                     android:background="@android:color/transparent"
-                    android:tint="@androidprv:color/materialColorOnSurface"
+                    android:tint="@color/materialColorOnSurface"
                     android:clickable="false"
                     android:focusable="false"/>
                 <LinearLayout
@@ -350,7 +350,7 @@
                     android:paddingEnd="@*android:dimen/notification_2025_margin"
                     android:src="@drawable/ic_notifications_silence"
                     android:background="@android:color/transparent"
-                    android:tint="@androidprv:color/materialColorOnSurface"
+                    android:tint="@color/materialColorOnSurface"
                     android:clickable="false"
                     android:focusable="false"/>
                 <LinearLayout

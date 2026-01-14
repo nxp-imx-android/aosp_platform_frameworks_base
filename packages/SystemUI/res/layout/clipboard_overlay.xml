@@ -151,7 +151,7 @@
                   android:autoSizeMaxTextSize="@dimen/clipboard_overlay_max_font"
                   android:textColor="?attr/overlayButtonTextColor"
                   android:textColorLink="?attr/overlayButtonTextColor"
-                  android:background="?androidprv:attr/colorAccentSecondary"
+                  android:background="@color/materialColorSecondary"
                   android:layout_width="@dimen/clipboard_preview_size"
                   android:layout_height="@dimen/clipboard_preview_size"/>
         <ImageView
@@ -169,7 +169,7 @@
             android:gravity="center"
             android:textSize="14sp"
             android:textColor="?attr/overlayButtonTextColor"
-            android:background="?androidprv:attr/colorAccentSecondary"
+            android:background="@color/materialColorSecondary"
             android:layout_width="@dimen/clipboard_preview_size"
             android:layout_height="@dimen/clipboard_preview_size"/>
     </FrameLayout>

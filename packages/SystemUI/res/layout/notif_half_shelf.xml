@@ -67,7 +67,7 @@
                     android:gravity="center_vertical|start"
                     android:ellipsize="end"
                     android:maxLines="2"
-                    android:textColor="@androidprv:color/materialColorOnSurface"
+                    android:textColor="@color/materialColorOnSurface"
                     android:fontFamily="variable-title-medium"
                     android:textSize="16sp"
                 />
