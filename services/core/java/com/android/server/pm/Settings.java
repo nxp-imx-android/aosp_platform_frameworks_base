@@ -978,9 +978,7 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
             ret.setRestrictUpdateHash(p.getRestrictUpdateHash());
             ret.setScannedAsStoppedSystemApp(p.isScannedAsStoppedSystemApp());
             ret.setInstallSource(p.getInstallSource());
-            if (Flags.fixEnableSystemPackageWithSharedUid()) {
-                ret.setSharedUserAppId(p.getSharedUserAppId());
-            }
+            ret.setSharedUserAppId(p.getSharedUserAppId());
         }
         mDisabledSysPackages.remove(name);
         return ret;
@@ -1017,7 +1015,7 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
                 .setAppId(uid);
         if ((uid == Process.INVALID_UID && isSdkLibrary && Flags.disallowSdkLibsToBeApps())
                 || mAppIds.registerExistingAppId(uid, p, name)
-                || (Flags.fixEnableSystemPackageWithSharedUid() && hasSharedUser)) {
+                || hasSharedUser) {
             mPackages.put(name, p);
             return p;
         }

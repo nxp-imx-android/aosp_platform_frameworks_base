@@ -360,16 +360,6 @@ flag {
 }
 
 flag {
-    name: "fix_enable_system_package_with_shared_uid"
-    namespace: "package_manager_service"
-    description: "Fix enable system package with shared uid after update uninstallation"
-    bug: "454062218"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "is_device_upgrading_uses_shared_memory"
     namespace: "watch_software_performance"
     description: "ApplicationPackageManager.isDeviceUpgrading() reads the value from shared memory"
