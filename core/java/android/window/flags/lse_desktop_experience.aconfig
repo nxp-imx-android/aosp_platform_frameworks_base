@@ -1019,6 +1019,16 @@ flag {
 }
 
 flag {
+    name: "enable_task_positioner_refactor_clank"
+    namespace: "lse_desktop_experience"
+    description: "Enables refactoring the TaskPositioner to separate task move and resize for Clank only."
+    bug: "465979009"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_task_stack_observer_in_shell"
     namespace: "lse_desktop_experience"
     description: "Introduces a new observer in shell to track the task stack."
