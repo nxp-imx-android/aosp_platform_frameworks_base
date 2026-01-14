@@ -114,10 +114,4 @@ android_library {
         "testables",
         "truth",
     ],
-
-    plugins: [
-        // TODO (b/473565514): Remove all usages of dagger from test fixtures so we can
-        // skip annotation processing
-        "dagger2-compiler",
-    ],
 }
