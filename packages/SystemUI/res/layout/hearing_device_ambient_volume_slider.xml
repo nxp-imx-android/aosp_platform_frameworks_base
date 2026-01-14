@@ -29,7 +29,7 @@
         android:layout_height="wrap_content"
         style="@style/HearingDeviceDialog.Title"
         android:textAppearance="@style/TextAppearance.HearingDeviceDialog.Title"
-        android:textColor="@androidprv:color/materialColorOnSurface"
+        android:textColor="@color/materialColorOnSurface"
         android:labelFor="@+id/ambient_volume_slider"
         android:visibility="gone"/>
 

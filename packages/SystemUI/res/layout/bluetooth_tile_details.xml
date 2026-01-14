@@ -147,7 +147,7 @@
                 android:src="@drawable/ic_info_outline"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:tint="?android:attr/textColorTertiary"
+                android:tint="@color/materialColorOutline"
                 android:paddingStart="36dp"
                 android:layout_marginTop="20dp"
                 android:layout_marginBottom="@dimen/bluetooth_dialog_layout_margin"
@@ -191,7 +191,7 @@
                 app:layout_constraintBottom_toTopOf="@+id/pair_new_device_button"
                 android:drawableStart="@drawable/ic_arrow_forward"
                 android:drawablePadding="26dp"
-                android:drawableTint="?android:attr/textColorPrimary"
+                android:drawableTint="@color/materialColorOnSurface"
                 android:text="@string/see_all_bluetooth_devices"
                 android:textSize="14sp"
                 android:textAppearance="@style/TextAppearance.TileDetailsEntryTitle"
@@ -225,7 +225,7 @@
                         android:src="@drawable/ic_add"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:tint="?android:attr/textColorPrimary" />
+                        android:tint="@color/materialColorOnSurface" />
                 </FrameLayout>
 
                 <FrameLayout

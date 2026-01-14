@@ -1759,7 +1759,7 @@ please see styles_device_defaults.xml.
         <item name="android:layout_height">wrap_content</item>
         <item name="android:gravity">center</item>
         <item name="android:textSize">20sp</item>
-        <item name="android:textColor">?android:attr/textColorPrimary</item>
+        <item name="android:textColor">@color/materialColorOnSurface</item>
         <item name="android:fontFamily">@*android:string/config_headlineFontFamilyMedium</item>
     </style>
 
@@ -1770,7 +1770,7 @@ please see styles_device_defaults.xml.
         <item name="android:layout_marginTop">16dp</item>
         <item name="android:layout_marginBottom">32dp</item>
         <item name="android:textSize">16sp</item>
-        <item name="android:textColor">?android:attr/textColorPrimary</item>
+        <item name="android:textColor">@color/materialColorOnSurface</item>
     </style>
 
     <style name="AccessibilityDialogPermissionTitle"
@@ -1778,7 +1778,7 @@ please see styles_device_defaults.xml.
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:textSize">16sp</item>
-        <item name="android:textColor">?android:attr/textColorPrimary</item>
+        <item name="android:textColor">@color/materialColorOnSurface</item>
         <item name="android:fontFamily">@*android:string/config_headlineFontFamily</item>
     </style>
 
@@ -1787,7 +1787,7 @@ please see styles_device_defaults.xml.
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:textSize">14sp</item>
-        <item name="android:textColor">?android:attr/textColorSecondary</item>
+        <item name="android:textColor">@color/materialColorOnSurfaceVariant</item>
     </style>
 
     <style name="AccessibilityDialogButtonBarSpace">
