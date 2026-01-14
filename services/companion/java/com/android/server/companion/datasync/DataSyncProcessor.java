@@ -89,14 +89,14 @@ public class DataSyncProcessor {
      */
     @NonNull
     public PersistableBundle getLocalMetadata(@UserIdInt int userId) {
-        PersistableBundle userMetadata = mLocalMetadataStore.getMetadataForUser(userId);
+        PersistableBundle userMetadata = mLocalMetadataStore.readData(userId);
         if (userId == UserHandle.USER_ALL) {
             return userMetadata;
         }
 
         // Merge the user metadata into the device metadata.
         // Prioritize the user metadata over the device metadata for each entry key conflict.
-        PersistableBundle metadata = mLocalMetadataStore.getMetadataForUser(UserHandle.USER_ALL);
+        PersistableBundle metadata = mLocalMetadataStore.readData(UserHandle.USER_ALL);
         for (String feature : userMetadata.keySet()) {
             if (metadata.containsKey(feature)) {
                 PersistableBundle merged = metadata.getPersistableBundle(feature).deepCopy();
@@ -120,13 +120,13 @@ public class DataSyncProcessor {
                 + "] feature=[" + feature + "] value=[" + metadata + "]...");
 
         // Update the local metadata for the user.
-        final PersistableBundle localMetadata = mLocalMetadataStore.getMetadataForUser(userId);
+        final PersistableBundle localMetadata = mLocalMetadataStore.readData(userId);
         if (metadata == null) {
             localMetadata.remove(feature);
         } else {
             localMetadata.putPersistableBundle(feature, metadata);
         }
-        mLocalMetadataStore.setMetadataForUser(userId, localMetadata);
+        mLocalMetadataStore.writeData(userId, localMetadata);
 
         // Isolate the associations with transport for the user to broadcast to.
         mTransportManager.getAssociationsWithTransport()

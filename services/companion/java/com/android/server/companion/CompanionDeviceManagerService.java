@@ -196,7 +196,7 @@ public class CompanionDeviceManagerService extends SystemService {
                 packageManagerInternal, mAssociationStore);
         mBackupRestoreProcessor = new BackupRestoreProcessor(context, packageManagerInternal,
                 mAssociationStore, associationDiskStore, mSystemDataTransferRequestStore,
-                mAssociationRequestsProcessor, mLocalMetadataStore);
+                mAssociationRequestsProcessor);
 
         mCompanionAppBinder = new CompanionAppBinder(context);
 
@@ -243,7 +243,7 @@ public class CompanionDeviceManagerService extends SystemService {
         }
 
         // Init UUID store
-        mObservableUuidStore.getObservableUuidsForUser(getContext().getUserId());
+        mObservableUuidStore.readObservableUuids(getContext().getUserId());
 
         // Publish "binder" service.
         final CompanionDeviceManagerImpl impl = new CompanionDeviceManagerImpl();
@@ -313,9 +313,9 @@ public class CompanionDeviceManagerService extends SystemService {
 
         // Clear observable UUIDs for the package.
         final List<ObservableUuid> uuidsTobeObserved =
-                mObservableUuidStore.getObservableUuidsForPackage(userId, packageName);
+                mObservableUuidStore.readObservableUuidsForPackage(userId, packageName);
         for (ObservableUuid uuid : uuidsTobeObserved) {
-            mObservableUuidStore.removeObservableUuid(userId, uuid.getUuid(), packageName);
+            mObservableUuidStore.removeObservableUuid(userId, uuid.uuid(), packageName);
         }
     }
 
