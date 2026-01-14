@@ -525,23 +525,38 @@ public class ActivityThreadTest {
             newerConfig.orientation = orientation == ORIENTATION_LANDSCAPE
                     ? ORIENTATION_PORTRAIT : ORIENTATION_LANDSCAPE;
             newerConfig.seq = seq + 2;
-            activityThread.updatePendingActivityConfiguration(activity.getActivityToken(),
-                    newerConfig);
+            if (!com.android.window.flags.Flags.improveFluidResizingPerformance()) {
+                activityThread.updatePendingActivityConfiguration(activity.getActivityToken(),
+                        newerConfig);
+            } else {
+                activityThread.updatePendingActivityConfiguration(activity.getActivityToken(),
+                        newerConfig, new ActivityWindowInfo(), INVALID_DISPLAY);
+            }
 
             final Configuration olderConfig = new Configuration();
             olderConfig.orientation = orientation;
             olderConfig.seq = seq + 1;
 
             final ActivityClientRecord r = getActivityClientRecord(activity);
-            activityThread.handleActivityConfigurationChanged(r, olderConfig, INVALID_DISPLAY,
-                    new ActivityWindowInfo());
-            assertEquals(numOfConfig, activity.mNumOfConfigChanges);
-            assertEquals(olderConfig.orientation, activity.mConfig.orientation);
+            if (!com.android.window.flags.Flags.improveFluidResizingPerformance()) {
+                activityThread.handleActivityConfigurationChanged(r, olderConfig, INVALID_DISPLAY,
+                        new ActivityWindowInfo());
+                assertEquals(numOfConfig, activity.mNumOfConfigChanges);
+                assertEquals(olderConfig.orientation, activity.mConfig.orientation);
 
-            activityThread.handleActivityConfigurationChanged(r, newerConfig, INVALID_DISPLAY,
-                    new ActivityWindowInfo());
-            assertEquals(numOfConfig + 1, activity.mNumOfConfigChanges);
-            assertEquals(newerConfig.orientation, activity.mConfig.orientation);
+                activityThread.handleActivityConfigurationChanged(r, newerConfig, INVALID_DISPLAY,
+                        new ActivityWindowInfo());
+                assertEquals(numOfConfig + 1, activity.mNumOfConfigChanges);
+                assertEquals(newerConfig.orientation, activity.mConfig.orientation);
+            } else {
+                activityThread.handleActivityConfigurationChanged(r);
+                assertEquals(numOfConfig + 1, activity.mNumOfConfigChanges);
+                assertEquals(newerConfig.orientation, activity.mConfig.orientation);
+
+                activityThread.handleActivityConfigurationChanged(r);
+                assertEquals(numOfConfig + 1, activity.mNumOfConfigChanges);
+                assertEquals(newerConfig.orientation, activity.mConfig.orientation);
+            }
         });
     }
 
@@ -556,8 +571,15 @@ public class ActivityThreadTest {
             config.seq = BASE_SEQ;
             config.orientation = ORIENTATION_PORTRAIT;
 
-            activityThread.handleActivityConfigurationChanged(getActivityClientRecord(activity),
-                    config, INVALID_DISPLAY, new ActivityWindowInfo());
+            final ActivityClientRecord r = getActivityClientRecord(activity);
+            if (!com.android.window.flags.Flags.improveFluidResizingPerformance()) {
+                activityThread.handleActivityConfigurationChanged(r,
+                        config, INVALID_DISPLAY, new ActivityWindowInfo());
+            } else {
+                activityThread.updatePendingActivityConfiguration(activity.getActivityToken(),
+                        config, new ActivityWindowInfo(), INVALID_DISPLAY);
+                activityThread.handleActivityConfigurationChanged(r);
+            }
         });
 
         final IApplicationThread appThread = activityThread.getApplicationThread();
@@ -629,8 +651,15 @@ public class ActivityThreadTest {
             config.seq = BASE_SEQ;
             config.orientation = ORIENTATION_PORTRAIT;
 
-            activityThread.handleActivityConfigurationChanged(getActivityClientRecord(activity),
-                    config, INVALID_DISPLAY, new ActivityWindowInfo());
+            final ActivityClientRecord r = getActivityClientRecord(activity);
+            if (!com.android.window.flags.Flags.improveFluidResizingPerformance()) {
+                activityThread.handleActivityConfigurationChanged(r,
+                        config, INVALID_DISPLAY, new ActivityWindowInfo());
+            } else {
+                activityThread.updatePendingActivityConfiguration(activity.getActivityToken(),
+                        config, new ActivityWindowInfo(), INVALID_DISPLAY);
+                activityThread.handleActivityConfigurationChanged(r);
+            }
         });
 
         final int numOfConfig = activity.mNumOfConfigChanges;
@@ -688,8 +717,15 @@ public class ActivityThreadTest {
             config.seq = BASE_SEQ;
             config.densityDpi = 1000;
 
-            activityThread.handleActivityConfigurationChanged(getActivityClientRecord(activity),
-                    config, INVALID_DISPLAY, new ActivityWindowInfo());
+            final ActivityClientRecord r = getActivityClientRecord(activity);
+            if (!com.android.window.flags.Flags.improveFluidResizingPerformance()) {
+                activityThread.handleActivityConfigurationChanged(r,
+                        config, INVALID_DISPLAY, new ActivityWindowInfo());
+            } else {
+                activityThread.updatePendingActivityConfiguration(activity.getActivityToken(),
+                        config, new ActivityWindowInfo(), INVALID_DISPLAY);
+                activityThread.handleActivityConfigurationChanged(r);
+            }
         });
 
         final CountDownLatch transactionsScheduled = new CountDownLatch(1);
@@ -842,10 +878,16 @@ public class ActivityThreadTest {
                     ? ORIENTATION_LANDSCAPE : ORIENTATION_PORTRAIT;
 
             final ActivityClientRecord r = getActivityClientRecord(activity);
-            activityThread.updatePendingActivityConfiguration(activity.getActivityToken(),
-                    newActivityConfig);
-            activityThread.handleActivityConfigurationChanged(r, newActivityConfig,
-                    INVALID_DISPLAY, new ActivityWindowInfo());
+            if (!com.android.window.flags.Flags.improveFluidResizingPerformance()) {
+                activityThread.updatePendingActivityConfiguration(activity.getActivityToken(),
+                        newActivityConfig);
+                activityThread.handleActivityConfigurationChanged(r, newActivityConfig,
+                        INVALID_DISPLAY, new ActivityWindowInfo());
+            } else {
+                activityThread.updatePendingActivityConfiguration(activity.getActivityToken(),
+                        newActivityConfig, new ActivityWindowInfo(), INVALID_DISPLAY);
+                activityThread.handleActivityConfigurationChanged(r);
+            }
 
             assertEquals("Virtual display orientation must not change when activity"
                             + " configuration orientation changes.",
@@ -1241,8 +1283,14 @@ public class ActivityThreadTest {
         Configuration config = new Configuration();
         config.orientation = ORIENTATION_PORTRAIT;
         config.seq = seq;
-        activityThread.handleActivityConfigurationChanged(r, config, INVALID_DISPLAY,
-                new ActivityWindowInfo());
+        if (!com.android.window.flags.Flags.improveFluidResizingPerformance()) {
+            activityThread.handleActivityConfigurationChanged(r, config, INVALID_DISPLAY,
+                    new ActivityWindowInfo());
+        } else {
+            activityThread.updatePendingActivityConfiguration(activity.getActivityToken(),
+                    config, new ActivityWindowInfo(), INVALID_DISPLAY);
+            activityThread.handleActivityConfigurationChanged(r);
+        }
 
         if (activity.mNumOfConfigChanges > numOfConfig) {
             return config.seq;
@@ -1251,8 +1299,14 @@ public class ActivityThreadTest {
         config = new Configuration();
         config.orientation = ORIENTATION_LANDSCAPE;
         config.seq = seq + 1;
-        activityThread.handleActivityConfigurationChanged(r, config, INVALID_DISPLAY,
-                new ActivityWindowInfo());
+        if (!com.android.window.flags.Flags.improveFluidResizingPerformance()) {
+            activityThread.handleActivityConfigurationChanged(r, config, INVALID_DISPLAY,
+                    new ActivityWindowInfo());
+        } else {
+            activityThread.updatePendingActivityConfiguration(activity.getActivityToken(),
+                    config, new ActivityWindowInfo(), INVALID_DISPLAY);
+            activityThread.handleActivityConfigurationChanged(r);
+        }
 
         return config.seq;
     }
