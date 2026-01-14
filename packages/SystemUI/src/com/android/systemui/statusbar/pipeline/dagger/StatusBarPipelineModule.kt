@@ -39,6 +39,8 @@ import com.android.systemui.statusbar.events.data.repository.SystemStatusEventAn
 import com.android.systemui.statusbar.events.domain.interactor.SystemStatusEventAnimationInteractor
 import com.android.systemui.statusbar.pipeline.airplane.ui.viewmodel.AirplaneModeViewModel
 import com.android.systemui.statusbar.pipeline.airplane.ui.viewmodel.AirplaneModeViewModelImpl
+import com.android.systemui.statusbar.pipeline.audio.data.repository.WiredAudioDeviceRepository
+import com.android.systemui.statusbar.pipeline.audio.data.repository.WiredAudioDeviceRepositoryImpl
 import com.android.systemui.statusbar.pipeline.battery.data.repository.BatteryRepository
 import com.android.systemui.statusbar.pipeline.battery.data.repository.BatteryRepositoryImpl
 import com.android.systemui.statusbar.pipeline.icons.shared.BindableIconsRegistry
@@ -126,6 +128,11 @@ abstract class StatusBarPipelineModule {
     abstract fun connectivityRepository(impl: ConnectivityRepositoryImpl): ConnectivityRepository
 
     @Binds abstract fun batteryRepository(impl: BatteryRepositoryImpl): BatteryRepository
+
+    @Binds
+    abstract fun wiredAudioDeviceRepository(
+        impl: WiredAudioDeviceRepositoryImpl
+    ): WiredAudioDeviceRepository
 
     @Binds
     abstract fun realDeviceBasedSatelliteRepository(
