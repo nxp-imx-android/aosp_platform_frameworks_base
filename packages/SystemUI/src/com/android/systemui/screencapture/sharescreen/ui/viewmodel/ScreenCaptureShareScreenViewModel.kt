@@ -16,18 +16,23 @@
 
 package com.android.systemui.screencapture.sharescreen.ui.viewmodel
 
+import android.content.Context
 import android.content.pm.PackageManager
 import android.media.projection.MediaProjectionConfig.PROJECTION_SOURCE_APP
 import android.media.projection.MediaProjectionConfig.PROJECTION_SOURCE_APP_CONTENT
 import android.media.projection.MediaProjectionConfig.PROJECTION_SOURCE_DISPLAY
 import android.os.UserHandle
 import android.util.Log
+import android.view.accessibility.AccessibilityEvent
+import android.view.accessibility.AccessibilityManager
+import android.widget.Toast
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.android.app.tracing.coroutines.launchTraced
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.mediaprojection.MediaProjectionMetricsLogger
+import com.android.systemui.res.R
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureTarget
 import com.android.systemui.screencapture.common.ui.viewmodel.AppContentsViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.AudioSwitchViewModel
@@ -52,6 +57,8 @@ constructor(
     appContentsViewModelFactory: AppContentsViewModel.Factory,
     private val recentTasksViewModel: RecentTasksViewModel,
     private val displaysViewModel: DisplaysViewModel,
+    private val accessibilityManager: AccessibilityManager,
+    private val context: Context,
 ) :
     HydratedActivatable(enableEnqueuedActivations = true),
     DrawableLoaderViewModel by drawableLoaderViewModel {
@@ -137,6 +144,7 @@ constructor(
     fun onShareClicked() {
         // Hide the UI immediately for responsive feedback.
         isUiVisible = false
+        var announcement: String? = null
 
         when (val currentModel = currentTargetsModel) {
             is RecentTasksViewModel -> {
@@ -144,6 +152,11 @@ constructor(
                     enqueueOnActivatedScope {
                         shareScreenUiInteractor.onAppSharingApproved(it.model.taskId)
                     }
+                    announcement =
+                        context.getString(
+                            R.string.screen_share_a11y_sharing_app,
+                            it.label?.getOrNull() ?: "",
+                        )
                 }
             }
             is AppContentsViewModel -> {
@@ -160,14 +173,36 @@ constructor(
                         callback,
                         currentModel.captureAudio.value,
                     )
+                    announcement =
+                        context.getString(
+                            R.string.screen_share_a11y_sharing_tab,
+                            it.label?.getOrNull() ?: "",
+                        )
                 }
             }
             is DisplaysViewModel -> {
                 currentModel.selectedTarget.value?.let {
                     shareScreenUiInteractor.onDisplaySharingApproved(it.model.displayId)
+                    announcement =
+                        context.getString(
+                            R.string.screen_share_a11y_sharing_display,
+                            it.label?.getOrNull() ?: "",
+                        )
                 }
             }
             else -> throw IllegalStateException("Unsupported TargetsViewModel type: $currentModel")
+        }
+
+        announcement?.let {
+            if (accessibilityManager.isEnabled) {
+                accessibilityManager.sendAccessibilityEvent(
+                    AccessibilityEvent(AccessibilityEvent.TYPE_NOTIFICATION_STATE_CHANGED).apply {
+                        packageName = context.packageName
+                        className = Toast::class.java.name
+                        text.add(it)
+                    }
+                )
+            }
         }
     }
 
