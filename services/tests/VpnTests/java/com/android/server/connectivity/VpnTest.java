@@ -1298,6 +1298,8 @@ public class VpnTest extends VpnTestBase {
         verifySetAppExclusionList(vpn, sessionKey, PKGS);
 
         // Mock the remove operation for a *different* app's list to succeed.
+        when(mVpnProfileStore.get(PRIMARY_USER_OTHER_APP_EXCLUDE_KEY))
+                .thenReturn(HexDump.hexStringToByteArray(PKGS_BYTES));
         when(mVpnProfileStore.remove(eq(PRIMARY_USER_OTHER_APP_EXCLUDE_KEY))).thenReturn(true);
 
         clearInvocations(mConnectivityManager);
@@ -1315,13 +1317,12 @@ public class VpnTest extends VpnTestBase {
         final String sessionKey = startVpnForVerifyAppExclusionList(vpn);
         verifySetAppExclusionList(vpn, sessionKey, PKGS);
 
-        // Mock VpnProfileStore.remove to return false for a *different* app's exclusion list.
-        when(mVpnProfileStore.remove(eq(PRIMARY_USER_OTHER_APP_EXCLUDE_KEY))).thenReturn(false);
+        when(mVpnProfileStore.get(PRIMARY_USER_OTHER_APP_EXCLUDE_KEY)).thenReturn(null);
 
         clearInvocations(mConnectivityManager);
 
         assertFalse(vpn.clearAppExclusionList(TEST_OTHER_PKG));
-        verify(mVpnProfileStore).remove(eq(PRIMARY_USER_OTHER_APP_EXCLUDE_KEY));
+        verify(mVpnProfileStore, never()).remove(eq(PRIMARY_USER_OTHER_APP_EXCLUDE_KEY));
         assertEquals(Arrays.asList(PKGS), vpn.getAppExclusionList(TEST_VPN_PKG));
         verify(mConnectivityManager, never()).setVpnDefaultForUids(anyString(), any());
     }

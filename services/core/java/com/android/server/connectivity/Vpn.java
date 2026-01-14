@@ -4666,6 +4666,11 @@ public class Vpn {
      */
     public synchronized boolean clearAppExclusionList(@NonNull String packageName) {
         requireNonNull(packageName, "No package name provided");
+
+        if (getAppExclusionList(packageName).isEmpty()) {
+            return false;
+        }
+
         enforceNotRestrictedUser();
         final long oldId = Binder.clearCallingIdentity();
         try {
