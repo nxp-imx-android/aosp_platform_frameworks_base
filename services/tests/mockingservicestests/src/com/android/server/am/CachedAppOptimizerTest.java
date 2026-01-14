@@ -26,11 +26,8 @@ import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -46,7 +43,6 @@ import android.os.IMmd;
 import android.os.IMmdProcessWritebackCallback;
 import android.os.MessageQueue;
 import android.os.Process;
-import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.SetFlagsRule;
@@ -55,8 +51,8 @@ import android.text.TextUtils;
 
 import androidx.test.platform.app.InstrumentationRegistry;
 
-import com.android.modules.utils.testing.ExtendedMockitoRule;
 import com.android.internal.os.KernelAllocationStats;
+import com.android.modules.utils.testing.ExtendedMockitoRule;
 import com.android.modules.utils.testing.TestableDeviceConfig;
 import com.android.server.LocalServices;
 import com.android.server.ServiceThread;
@@ -1242,7 +1238,6 @@ public final class CachedAppOptimizerTest {
         assertTrue(mFreezeCounter.await(5, TimeUnit.SECONDS));
     }
 
-    @EnableFlags(Flags.FLAG_CPU_TIME_CAPABILITY_BASED_FREEZE_POLICY)
     @Test
     public void shouldNotFreezeIgnored() throws InterruptedException {
         mProcessDependencies.setRss(new long[] {
@@ -1274,40 +1269,6 @@ public final class CachedAppOptimizerTest {
 
         assertTrue(mFreezeCounter.await(0, TimeUnit.SECONDS));
         assertTrue(app.mOptRecord.isFrozen());
-    }
-
-    @DisableFlags(Flags.FLAG_CPU_TIME_CAPABILITY_BASED_FREEZE_POLICY)
-    @Test
-    public void shouldNotFreezeAbortsFreeze() throws InterruptedException {
-        mProcessDependencies.setRss(new long[] {
-                0 /*total_rss*/,
-                0 /*file*/,
-                0 /*anon*/,
-                0 /*swap*/,
-                0 /*shmem*/
-        });
-        mUseFreezer = true;
-        // Force the system to use the freezer
-        DeviceConfig.setProperty(DeviceConfig.NAMESPACE_ACTIVITY_MANAGER_NATIVE_BOOT,
-                CachedAppOptimizer.KEY_USE_FREEZER, "true", false);
-        mCachedAppOptimizerUnderTest.init();
-        initActivityManagerService();
-
-        int pid = 10000;
-        int uid = 2;
-        int pkgUid = 3;
-        final ProcessRecord app = makeProcessRecord(pid, uid, pkgUid, "p1", "app1");
-        app.setShouldNotFreeze(true, false, 0, 0);
-
-        assertNotNull(app.mOptRecord);
-        assertFalse(app.mOptRecord.isFrozen());
-
-        mFreezeCounter = new CountDownLatch(1);
-        mCachedAppOptimizerUnderTest.forceFreezeForTest(app, true);
-        waitForHandler();
-
-        assertFalse(mFreezeCounter.await(0, TimeUnit.SECONDS));
-        assertFalse(app.mOptRecord.isFrozen());
     }
 
     private void setFlag(String key, String value, boolean defaultValue) throws Exception {

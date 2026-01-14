@@ -46,7 +46,6 @@ import static android.app.ActivityManager.PROCESS_STATE_TOP;
 import static android.app.ActivityManager.PROCESS_STATE_TOP_SLEEPING;
 import static android.app.ActivityManager.PROCESS_STATE_TRANSIENT_BACKGROUND;
 import static android.app.ActivityManager.PROCESS_STATE_UNKNOWN;
-import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_NONE;
 import static android.content.Context.BIND_TREAT_LIKE_VISIBLE_FOREGROUND_SERVICE;
 import static android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_CAMERA;
 import static android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION;
@@ -1821,12 +1820,7 @@ public class OomAdjusterImpl extends OomAdjuster {
             // Propagate the shouldNotFreeze flag down the bindings.
             if (app.setShouldNotFreeze(true, dryRun,
                     app.shouldNotFreezeReason() | client.shouldNotFreezeReason(), mAdjSeq)) {
-                if (Flags.cpuTimeCapabilityBasedFreezePolicy()) {
-                    // Do nothing, capability updated check will handle the dryrun output.
-                } else {
-                    // Bail out early, as we only care about the return value for a dryrun.
-                    return true;
-                }
+                // Do nothing, capability updated check will handle the dryrun output.
             }
         }
 
@@ -1886,12 +1880,7 @@ public class OomAdjusterImpl extends OomAdjuster {
                             app.shouldNotFreezeReason()
                                     | SHOULD_NOT_FREEZE_REASON_BINDER_ALLOW_OOM_MANAGEMENT,
                             mAdjSeq)) {
-                        if (Flags.cpuTimeCapabilityBasedFreezePolicy()) {
-                            // Do nothing, capability updated check will handle the dryrun output.
-                        } else {
-                            // Bail out early, as we only care about the return value for a dryrun.
-                            return true;
-                        }
+                        // Do nothing, capability updated check will handle the dryrun output.
                     }
                 }
                 // Not doing bind OOM management, so treat
@@ -2127,14 +2116,9 @@ public class OomAdjusterImpl extends OomAdjuster {
             // unfrozen.
             if (clientAdj < CACHED_APP_MIN_ADJ) {
                 if (app.setShouldNotFreeze(true, dryRun,
-                        app.shouldNotFreezeReason() | SHOULD_NOT_FREEZE_REASON_BIND_WAIVE_PRIORITY,
-                        mAdjSeq)) {
-                    if (Flags.cpuTimeCapabilityBasedFreezePolicy()) {
-                        // Do nothing, capability updated check will handle the dryrun output.
-                    } else {
-                        // Bail out early, as we only care about the return value for a dryrun.
-                        return true;
-                    }
+                        app.shouldNotFreezeReason()
+                                | SHOULD_NOT_FREEZE_REASON_BIND_WAIVE_PRIORITY, mAdjSeq)) {
+                    // Do nothing, capability updated check will handle the dryrun output.
                 }
             }
         }
@@ -2191,19 +2175,9 @@ public class OomAdjusterImpl extends OomAdjuster {
                 updated = true;
             }
 
-            if (Flags.cpuTimeCapabilityBasedFreezePolicy()) {
-                if ((capability != prevCapability)
-                        && ((capability & prevCapability) == prevCapability)) {
-                    updated = true;
-                }
-            } else {
-                // Ignore CPU related capabilities in comparison
-                final int curFiltered = capability & ~ALL_CPU_TIME_CAPABILITIES;
-                final int prevFiltered = prevCapability & ~ALL_CPU_TIME_CAPABILITIES;
-                if ((curFiltered != prevFiltered)
-                        && ((curFiltered & prevFiltered) == prevFiltered)) {
-                    updated = true;
-                }
+            if ((capability != prevCapability)
+                    && ((capability & prevCapability) == prevCapability)) {
+                updated = true;
             }
         }
 
@@ -2268,12 +2242,7 @@ public class OomAdjusterImpl extends OomAdjuster {
             // Propagate the shouldNotFreeze flag down the bindings.
             if (app.setShouldNotFreeze(true, dryRun,
                     app.shouldNotFreezeReason() | client.shouldNotFreezeReason(), mAdjSeq)) {
-                if (Flags.cpuTimeCapabilityBasedFreezePolicy()) {
-                    // Do nothing, capability updated check will handle the dryrun output.
-                } else {
-                    // Bail out early, as we only care about the return value for a dryrun.
-                    return true;
-                }
+                // Do nothing, capability updated check will handle the dryrun output.
             }
         }
 
@@ -2353,19 +2322,9 @@ public class OomAdjusterImpl extends OomAdjuster {
                 return true;
             }
 
-            if (Flags.cpuTimeCapabilityBasedFreezePolicy()) {
-                if ((capability != prevCapability)
-                        && ((capability & prevCapability) == prevCapability)) {
-                    return true;
-                }
-            } else {
-                // Ignore CPU related capabilities in comparison
-                final int curFiltered = capability & ~ALL_CPU_TIME_CAPABILITIES;
-                final int prevFiltered = prevCapability & ~ALL_CPU_TIME_CAPABILITIES;
-                if ((curFiltered != prevFiltered)
-                        && ((curFiltered & prevFiltered) == prevFiltered)) {
-                    return true;
-                }
+            if ((capability != prevCapability)
+                    && ((capability & prevCapability) == prevCapability)) {
+                return true;
             }
         }
 
