@@ -16,6 +16,7 @@
 
 package android.hardware.usb;
 
+import android.hardware.usb.IUsbAuthEventsListener;
 import android.hardware.usb.UsbAuthDeviceInfo;
 import android.hardware.usb.UsbAuthorizationStatus;
 import android.hardware.usb.UsbAuthorizationSystemState;
@@ -50,6 +51,19 @@ interface IUsbAuthManager {
     List<UsbAuthDeviceInfo> getDevicesAwaitingAuthorization();
 
     /**
+     * Gets a list of USB devices that require authorization from the client
+     * (i.e., "allow-persisted devices"). These are devices that are not yet
+     * authorized and are waiting for the client to call setAuthorizationStatus.
+     *
+     * Unlike devices with the "Ask" policy action, the client should only
+     * authorize devices with "AllowPersisted" if a user had previously
+     * authorized the device and chose to remember that decision.
+     *
+     * @return A List of UsbAuthDeviceInfo objects awaiting authorization.
+     */
+    List<UsbAuthDeviceInfo> getDevicesAwaitingPersistedAuthorization();
+
+    /**
      * Gets the authorization status for a specific USB device.
      *
      * @param device The UsbAuthDeviceInfo to check.
@@ -70,4 +84,19 @@ interface IUsbAuthManager {
      * event that will cause policy evaluations.
      */
     void setSystemState(in UsbAuthorizationSystemState state);
+
+    /**
+     * Registers a callback to provide user interaction for authorization.
+     *
+     * @param listener - Binder interface to add to listeners list.
+     * @return True if listener was registered successfully or false.
+     */
+    boolean registerForUsbAuthorizationEvents(in IUsbAuthEventsListener listener);
+
+    /**
+     * Unregisters a callback for authorization events.
+     *
+     * @param listener - Binder interface to remove from listeners list.
+     */
+    void unregisterForUsbAuthorizationEvents(in IUsbAuthEventsListener listener);
 }

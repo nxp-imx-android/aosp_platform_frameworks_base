@@ -805,6 +805,7 @@ aidl_interface {
         "android/hardware/usb/UsbAuthorizationStatus.aidl",
         "android/hardware/usb/UsbAuthorizationSystemState.aidl",
         "android/hardware/usb/UsbAuthDeviceInfo.aidl",
+        "android/hardware/usb/IUsbAuthEventsListener.aidl",
         "android/hardware/usb/IUsbAuthManager.aidl",
     ],
     backend: {
