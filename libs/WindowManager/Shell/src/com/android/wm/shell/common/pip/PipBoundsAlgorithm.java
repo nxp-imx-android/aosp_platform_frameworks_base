@@ -43,6 +43,7 @@ public class PipBoundsAlgorithm implements PipDisplayLayoutState.DisplayIdListen
     private static final String TAG = PipBoundsAlgorithm.class.getSimpleName();
     private static final float INVALID_SNAP_FRACTION = -1f;
 
+    @NonNull private final Context mContext;
     @NonNull private final PipBoundsState mPipBoundsState;
     @NonNull protected final PipDisplayLayoutState mPipDisplayLayoutState;
     @NonNull protected final SizeSpecSource mSizeSpecSource;
@@ -59,6 +60,7 @@ public class PipBoundsAlgorithm implements PipDisplayLayoutState.DisplayIdListen
             @NonNull PipKeepClearAlgorithmInterface pipKeepClearAlgorithm,
             @NonNull PipDisplayLayoutState pipDisplayLayoutState,
             @NonNull SizeSpecSource sizeSpecSource) {
+        mContext = context;
         mPipBoundsState = pipBoundsState;
         mSnapAlgorithm = pipSnapAlgorithm;
         mPipKeepClearAlgorithm = pipKeepClearAlgorithm;
@@ -165,14 +167,17 @@ public class PipBoundsAlgorithm implements PipDisplayLayoutState.DisplayIdListen
             return null;
         }
         final ActivityInfo.WindowLayout windowLayout = activityInfo.windowLayout;
+        final DisplayMetrics metrics = mContext.getResources().getDisplayMetrics();
+        final int minWidth = windowLayout.getMinWidth(metrics);
+        final int minHeight = windowLayout.getMinHeight(metrics);
         // -1 will be populated if an activity specifies defaultWidth/defaultHeight in <layout>
         // without minWidth/minHeight
-        if (windowLayout.minWidth > 0 && windowLayout.minHeight > 0) {
+        if (minWidth > 0 && minHeight > 0) {
             // If either dimension is smaller than the allowed minimum, adjust them
             // according to mOverridableMinSize
             return new Size(
-                    Math.max(windowLayout.minWidth, getOverrideMinEdgeSize()),
-                    Math.max(windowLayout.minHeight, getOverrideMinEdgeSize()));
+                    Math.max(minWidth, getOverrideMinEdgeSize()),
+                    Math.max(minHeight, getOverrideMinEdgeSize()));
         }
         return null;
     }
