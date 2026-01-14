@@ -164,7 +164,7 @@ public final class MemoryStatUtil {
     }
 
     /**
-     * Parses a long from the input using the pattern. Returns 0 if the captured value is not
+     * Parses a long from the input using the pattern. Returns -1 if the captured value is not
      * parsable. The pattern must have a single capturing group.
      */
     private static long tryParseLong(Pattern pattern, String input) {
@@ -173,7 +173,7 @@ public final class MemoryStatUtil {
             return m.find() ? Long.parseLong(m.group(1)) : 0;
         } catch (NumberFormatException e) {
             Slog.e(TAG, "Failed to parse value", e);
-            return 0;
+            return -1;
         }
     }
 
