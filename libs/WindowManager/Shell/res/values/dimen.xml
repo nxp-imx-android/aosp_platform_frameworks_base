@@ -263,6 +263,8 @@
     <dimen name="bubble_popup_elevation">2dp</dimen>
     <!-- The size of the caption bar inset at the top of bubble bar expanded view. -->
     <dimen name="bubble_bar_expanded_view_caption_height">36dp</dimen>
+    <!-- The height of the handle view touch zone. -->
+    <dimen name="bubble_bar_expanded_view_handle_touch_height">48dp</dimen>
     <!-- The height of the handle shown for the caption menu in the bubble bar expanded view. -->
     <dimen name="bubble_bar_expanded_view_handle_height">4dp</dimen>
     <!-- The width of the handle shown for the caption menu in the bubble bar expanded view. -->
