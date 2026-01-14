@@ -34,7 +34,7 @@ public final class ContextHintTestUtils {
      * Parcels and unparcels the given {@link ContextHint} and asserts the same amount of data was
      * written to and read from the {@link Parcel}.
      */
-    public static ContextHint assertParcelUnparcel(ContextHint hint) {
+    public static <T extends ContextHint> T assertParcelUnparcel(T hint) {
         final ContextHintWrapper wrapper = new ContextHintWrapper(hint);
 
         final Parcel parcel = Parcel.obtain();
@@ -49,7 +49,7 @@ public final class ContextHintTestUtils {
 
             // Same size of data is written and read.
             assertThat(dataSize).isEqualTo(parcel.dataPosition());
-            return fromParcel.getContextHint();
+            return (T) fromParcel.getContextHint();
         } finally {
             parcel.recycle();
         }
