@@ -17,7 +17,6 @@
 package com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel
 
 import com.android.settingslib.R as settingsLibR
-import com.android.systemui.Flags.statusBarStaticInoutIndicators
 import com.android.systemui.KairosBuilder
 import com.android.systemui.activated
 import com.android.systemui.common.shared.model.ContentDescription
@@ -40,6 +39,7 @@ import com.android.systemui.statusbar.pipeline.mobile.domain.model.SignalIconMod
 import com.android.systemui.statusbar.pipeline.mobile.ui.model.MobileContentDescription
 import com.android.systemui.statusbar.pipeline.shared.ConnectivityConstants
 import com.android.systemui.statusbar.pipeline.shared.data.model.DataActivityModel
+import com.android.systemui.statusbar.systemstatusicons.SystemStatusIconsInCompose
 
 /** Common interface for all of the location-based mobile icon view models. */
 interface MobileIconViewModelKairosCommon {
@@ -326,7 +326,7 @@ private class CellularIconViewModelKairos(
         activity.map { it?.hasActivityOut ?: false }
 
     override val activityContainerVisible: KairosState<Boolean> =
-        if (statusBarStaticInoutIndicators()) {
+        if (SystemStatusIconsInCompose.isEnabled) {
             stateOf(constants.shouldShowActivityConfig)
         } else {
             activity.map { it != null && (it.hasActivityIn || it.hasActivityOut) }

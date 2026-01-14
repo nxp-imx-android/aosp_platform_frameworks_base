@@ -25,7 +25,6 @@ import android.widget.ImageView
 import android.widget.Space
 import androidx.core.view.isVisible
 import com.android.settingslib.graph.SignalDrawable
-import com.android.systemui.Flags
 import com.android.systemui.common.ui.binder.IconViewBinder
 import com.android.systemui.kairos.BuildScope
 import com.android.systemui.kairos.BuildSpec
@@ -43,7 +42,6 @@ import com.android.systemui.statusbar.pipeline.mobile.ui.MobileViewLogger
 import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.LocationBasedMobileViewModelKairos
 import com.android.systemui.statusbar.pipeline.shared.ui.binder.ModernStatusBarViewBinding
 import com.android.systemui.statusbar.pipeline.shared.ui.binder.ModernStatusBarViewVisibilityHelper
-import com.android.systemui.statusbar.pipeline.shared.ui.binder.StatusBarViewBinderConstants
 import com.android.systemui.util.lifecycle.kairos.repeatWhenAttachedToWindow
 import com.android.systemui.util.lifecycle.kairos.repeatWhenWindowIsVisible
 import kotlinx.coroutines.CoroutineScope
@@ -306,34 +304,16 @@ object MobileIconBinderKairos {
                 roamingSpace.isVisible = isRoaming
             }
 
-            if (Flags.statusBarStaticInoutIndicators()) {
-                // Set the opacity of the activity indicators
-                viewModel.activityInVisible.observe(
-                    name = nameTag { "MobileIconBinderKairos.activityInVisible" }
-                ) { visible ->
-                    activityIn.imageAlpha =
-                        (if (visible) StatusBarViewBinderConstants.ALPHA_ACTIVE
-                        else StatusBarViewBinderConstants.ALPHA_INACTIVE)
-                }
-                viewModel.activityOutVisible.observe(
-                    name = nameTag { "MobileIconBinderKairos.activityOutVisible" }
-                ) { visible ->
-                    activityOut.imageAlpha =
-                        (if (visible) StatusBarViewBinderConstants.ALPHA_ACTIVE
-                        else StatusBarViewBinderConstants.ALPHA_INACTIVE)
-                }
-            } else {
-                // Set the activity indicators
-                viewModel.activityInVisible.observe(
-                    name = nameTag { "MobileIconBinderKairos.activityInVisible" }
-                ) {
-                    activityIn.isVisible = it
-                }
-                viewModel.activityOutVisible.observe(
-                    name = nameTag { "MobileIconBinderKairos.activityOutVisible" }
-                ) {
-                    activityOut.isVisible = it
-                }
+            // Set the activity indicators
+            viewModel.activityInVisible.observe(
+                name = nameTag { "MobileIconBinderKairos.activityInVisible" }
+            ) {
+                activityIn.isVisible = it
+            }
+            viewModel.activityOutVisible.observe(
+                name = nameTag { "MobileIconBinderKairos.activityOutVisible" }
+            ) {
+                activityOut.isVisible = it
             }
 
             viewModel.activityContainerVisible.observe(

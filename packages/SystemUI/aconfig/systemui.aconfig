@@ -1789,14 +1789,6 @@ flag {
 }
 
 flag {
-    name: "status_bar_static_inout_indicators"
-    namespace: "systemui"
-    description: "(Upstream request) Always show the network activity inout indicators and "
-        "prefer using alpha to distinguish network activity."
-    bug: "310715220"
-}
-
-flag {
     name: "status_bar_switch_to_spn_from_data_spn"
     namespace: "systemui"
     description: "Fix usage of the SPN broadcast extras"
