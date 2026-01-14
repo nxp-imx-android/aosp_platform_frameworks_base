@@ -534,8 +534,7 @@ public class WallpaperManagerServiceTests {
         TypedXmlPullParser parser = Xml.newBinaryPullParser();
         parser.setInput(istream, StandardCharsets.UTF_8.name());
         mService.mWallpaperDataParser.loadSettingsFromSerializer(parser,
-                actualData, /* userId= */0, /* loadSystem= */ true, /* loadLock= */
-                false, /* keepDimensionHints= */ true,
+                actualData, /* userId= */0, /* loadSystem= */ true, /* loadLock= */ false,
                 new WallpaperDisplayHelper.DisplayData(0));
 
         assertThat(actualData.getComponent()).isEqualTo(expectedData.getComponent());
@@ -575,7 +574,7 @@ public class WallpaperManagerServiceTests {
         parser.setInput(istream, StandardCharsets.UTF_8.name());
         mService.mWallpaperDataParser.loadSettingsFromSerializer(parser,
                 actualData, /* userId= */0, /* loadSystem= */ true, /* loadLock= */
-                false, /* keepDimensionHints= */ true,
+                false, /* keepDimensionHints= */
                 new WallpaperDisplayHelper.DisplayData(0));
 
         assertThat(actualData.getComponent()).isEqualTo(expectedData.getComponent());

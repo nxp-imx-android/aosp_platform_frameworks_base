@@ -27,7 +27,6 @@ import static com.android.wallpaperbackup.WallpaperEventLogger.ERROR_INELIGIBLE;
 import static com.android.wallpaperbackup.WallpaperEventLogger.ERROR_NO_METADATA;
 import static com.android.wallpaperbackup.WallpaperEventLogger.ERROR_NO_WALLPAPER;
 import static com.android.wallpaperbackup.WallpaperEventLogger.ERROR_QUOTA_EXCEEDED;
-import static com.android.window.flags.Flags.multiCrop;
 
 import android.annotation.Nullable;
 import android.app.AppGlobals;
@@ -651,72 +650,23 @@ public class WallpaperBackupAgent extends BackupAgent {
             Pair<Point, Point> sourceDeviceDimensions)
             throws IOException {
         if (stage.exists()) {
-            if (multiCrop()) {
-                SparseArray<Rect> cropHints = parseCropHints(info, hintTag);
-                Point bitmapSize = getBitmapSize(stage);
-                SparseArray<Rect> newCropHints =
-                        adjustCropHints(cropHints, bitmapSize, sourceDeviceDimensions);
-                cropHints = newCropHints != null ? newCropHints : cropHints;
-                if (cropHints != null) {
-                    Slog.i(TAG, "Got restored wallpaper; applying which=" + which
-                            + "; cropHints = " + cropHints);
-                    try (FileInputStream in = new FileInputStream(stage)) {
-                        mWallpaperManager.setStreamWithCrops(in, cropHints, true, which);
-                    }
-                    // And log the success
-                    if ((which & FLAG_SYSTEM) > 0) {
-                        mEventLogger.onSystemImageWallpaperRestored();
-                    }
-                    if ((which & FLAG_LOCK) > 0) {
-                        mEventLogger.onLockImageWallpaperRestored();
-                    }
-                } else {
-                    logRestoreError(which, ERROR_NO_METADATA);
-                }
-                return;
-            }
-            // Parse the restored info file to find the crop hint.  Note that this currently
-            // relies on a priori knowledge of the wallpaper info file schema.
-            Rect cropHint = parseCropHint(info, hintTag);
-            if (cropHint != null) {
+            SparseArray<Rect> cropHints = parseCropHints(info, hintTag);
+            Point bitmapSize = getBitmapSize(stage);
+            SparseArray<Rect> newCropHints =
+                    adjustCropHints(cropHints, bitmapSize, sourceDeviceDimensions);
+            cropHints = newCropHints != null ? newCropHints : cropHints;
+            if (cropHints != null) {
                 Slog.i(TAG, "Got restored wallpaper; applying which=" + which
-                        + "; cropHint = " + cropHint);
+                        + "; cropHints = " + cropHints);
                 try (FileInputStream in = new FileInputStream(stage)) {
-
-                    if (sourceDeviceDimensions != null && sourceDeviceDimensions.first != null) {
-                        BitmapFactory.Options options = new BitmapFactory.Options();
-                        options.inJustDecodeBounds = true;
-                        ParcelFileDescriptor pdf = ParcelFileDescriptor.open(stage, MODE_READ_ONLY);
-                        BitmapFactory.decodeFileDescriptor(pdf.getFileDescriptor(),
-                                null, options);
-                        Point bitmapSize = new Point(options.outWidth, options.outHeight);
-                        Point sourceDeviceSize = new Point(sourceDeviceDimensions.first.x,
-                                sourceDeviceDimensions.first.y);
-                        Point targetDeviceDimensions = getScreenDimensions();
-
-                        // TODO: for now we handle only the case where the target device has smaller
-                        // aspect ratio than the source device i.e. the target device is more narrow
-                        // than the source device
-                        if (isTargetMoreNarrowThanSource(targetDeviceDimensions,
-                                sourceDeviceSize)) {
-                            Rect adjustedCrop = findNewCropfromOldCrop(cropHint,
-                                    sourceDeviceDimensions.first, targetDeviceDimensions,
-                                    bitmapSize, true);
-
-                            cropHint.set(adjustedCrop);
-                        }
-                    }
-
-                    mWallpaperManager.setStream(in, cropHint.isEmpty() ? null : cropHint,
-                            true, which);
-
-                    // And log the success
-                    if ((which & FLAG_SYSTEM) > 0) {
-                        mEventLogger.onSystemImageWallpaperRestored();
-                    }
-                    if ((which & FLAG_LOCK) > 0) {
-                        mEventLogger.onLockImageWallpaperRestored();
-                    }
+                    mWallpaperManager.setStreamWithCrops(in, cropHints, true, which);
+                }
+                // And log the success
+                if ((which & FLAG_SYSTEM) > 0) {
+                    mEventLogger.onSystemImageWallpaperRestored();
+                }
+                if ((which & FLAG_LOCK) > 0) {
+                    mEventLogger.onLockImageWallpaperRestored();
                 }
             } else {
                 logRestoreError(which, ERROR_NO_METADATA);
@@ -836,8 +786,6 @@ public class WallpaperBackupAgent extends BackupAgent {
     private Rect findNewCropfromOldCrop(Rect oldCrop, Point oldDisplaySize,
             Point newDisplaySize, Point bitmapSize, boolean newRtl) {
         Rect cropWithoutParallax = withoutParallax(oldCrop, oldDisplaySize, newRtl, bitmapSize);
-        // TODO (b/281648899) this is never empty when multi_crop is true
-        oldCrop = oldCrop.isEmpty() ? new Rect(0, 0, bitmapSize.x, bitmapSize.y) : oldCrop;
         float oldParallaxAmount = ((float) oldCrop.width() / cropWithoutParallax.width()) - 1;
 
         Rect newCrop = sameCenter(newDisplaySize, bitmapSize, cropWithoutParallax);
@@ -897,12 +845,6 @@ public class WallpaperBackupAgent extends BackupAgent {
      * must be removed if it exists.
      */
     Rect withoutParallax(Rect crop, Point displaySize, boolean rtl, Point bitmapSize) {
-        // in the case an image's crop is not set, we assume the image itself is cropped
-        // TODO (b/281648899) this is never empty when multi_crop is true
-        if (crop.isEmpty()) {
-            crop = new Rect(0, 0, bitmapSize.x, bitmapSize.y);
-        }
-
         if (DEBUG) {
             Slog.w(TAG, "- crop: " + crop);
         }
@@ -950,12 +892,6 @@ public class WallpaperBackupAgent extends BackupAgent {
      * </ul>
      */
     Rect sameCenter(Point displaySize, Point bitmapSize, Rect crop) {
-
-        // in the case an image's crop is not set, we assume the image itself is cropped
-        // TODO (b/281648899) this is never empty if multi_crop is true
-        if (crop.isEmpty()) {
-            crop = new Rect(0, 0, bitmapSize.x, bitmapSize.y);
-        }
 
         float screenRatio = (float) displaySize.x / displaySize.y;
         float cropRatio = (float) crop.width() / crop.height();
