@@ -2419,6 +2419,14 @@
   <java-symbol type="string" name="usb_contaminant_detected_message" />
   <java-symbol type="string" name="usb_contaminant_not_detected_title" />
   <java-symbol type="string" name="usb_contaminant_not_detected_message" />
+  <java-symbol type="string" name="usb_authorization_notify_on_screenlock_title" />
+  <java-symbol type="string" name="usb_authorization_notify_on_screenlock_message" />
+  <java-symbol type="string" name="usb_authorization_notify_on_screenlock_message_multiple" />
+  <java-symbol type="string" name="usb_authorization_notify_finish_logging_in_title" />
+  <java-symbol type="string" name="usb_authorization_notify_finish_logging_in_message" />
+  <java-symbol type="string" name="usb_authorization_notify_finish_logging_in_title_multiple" />
+  <java-symbol type="string" name="usb_authorization_notify_finish_logging_in_message_multiple" />
+  <java-symbol type="string" name="notification_channel_usb_authorization" />
   <java-symbol type="string" name="config_UsbDeviceConnectionHandling_component" />
   <java-symbol type="string" name="vpn_text" />
   <java-symbol type="string" name="vpn_text_long" />

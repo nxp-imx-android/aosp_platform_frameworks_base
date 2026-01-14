@@ -18,7 +18,14 @@ package com.android.server.usb;
 
 import android.annotation.RequiresNoPermission;
 import android.annotation.UserIdInt;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.UserInfo;
 import android.database.ContentObserver;
 import android.hardware.usb.IUsbAuthEventsListener;
@@ -27,9 +34,12 @@ import android.hardware.usb.UsbAuthDeviceInfo;
 import android.hardware.usb.UsbAuthorizationStatus;
 import android.hardware.usb.UsbAuthorizationSystemState;
 import android.hardware.usb.UsbDevice;
+import android.os.Binder;
+import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.os.ServiceManager;
+import android.os.UserHandle;
 import android.os.UserManager;
 import android.provider.Settings;
 import android.text.TextUtils;
@@ -38,19 +48,31 @@ import android.util.ArraySet;
 import android.util.Slog;
 import android.util.SparseBooleanArray;
 
+import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.messages.nano.SystemMessageProto.SystemMessage;
+import com.android.internal.os.BackgroundThread;
 import com.android.server.FgThread;
 import com.android.server.SystemServerInitThreadPool;
 
 public class UsbAuthManager implements IBinder.DeathRecipient {
     private static final String TAG = "UsbAuthManager";
     private IUsbAuthManager mService;
+    private NotificationManager mNotificationManager = null;
     private final Context mContext;
     private final UserManager mUserManager;
     private final UsbHostManager mHostManager;
     private final UsbAuthEventsListener mAuthEventsListener;
     private static final String USB_AUTH_SERVICE_NAME = "usb_auth";
+
+    // Name of notification channel for Usb authorization notifications.
+    private static final String USB_AUTHORIZATION_CHANNEL = "usb_authorization";
+
+    @VisibleForTesting
+    // Broadcast sent when auth notifications are dismissed.
+    static final String ACTION_NOTIFICATION_DISMISSED =
+            "com.android.server.usb.ACTION_NOTIFICATION_DISMISSED";
 
     @GuardedBy("mLock")
     private @UserIdInt int mCurrentUserId;
@@ -100,6 +122,18 @@ public class UsbAuthManager implements IBinder.DeathRecipient {
     // Set of authorized devices that are persisted to disk.
     @GuardedBy("mLock")
     private ArraySet<UsbDeviceFingerprint> mPersistedAuthorizedDevices = new ArraySet<>();
+
+    // For devices that were authorized before fully logged in, persist after
+    // fully logged-in.
+    @GuardedBy("mLock")
+    private ArraySet<String> mPersistAfterLogin = new ArraySet<>();
+
+    // For devices that were deferred at the lock screen, used for notifications.
+    @GuardedBy("mLock")
+    private ArraySet<String> mDeferredAtLockscreen = new ArraySet<>();
+
+    // Is timer active for devices that need to persist after login?
+    boolean mPersistAfterLoginTimerActive = false;
 
     // Set of devices that are waiting to ask for user input.
     @GuardedBy("mLock")
@@ -173,12 +207,50 @@ public class UsbAuthManager implements IBinder.DeathRecipient {
     // Listener for device provisioning. Safe to unregister after first check.
     private ProvisioningListener mDeviceProvisionedListener;
 
+    private final BroadcastReceiver mDismissNotificationReceiver =
+            new BroadcastReceiver() {
+                @Override
+                public void onReceive(Context context, Intent intent) {
+                    if (ACTION_NOTIFICATION_DISMISSED.equals(intent.getAction())) {
+                        deauthorizeDevicesAwaitingPersistAfterLogin();
+                    }
+                }
+            };
+
+    @VisibleForTesting
+    // Duration user has to complete login after trusting device at BOOTED state.
+    static final long LOGIN_TIMEOUT_MS = 60_000;
+
+    // Handler for scheduling timeout operations. Injected for ease of testing.
+    private final Handler mTimerHandler;
+
+    private final Runnable mLoginTimeoutRunnable =
+            new Runnable() {
+                @Override
+                public void run() {
+                    boolean shouldDeauthorize = false;
+                    synchronized (mLock) {
+                        // Check if timer is active.
+                        if (!mPersistAfterLoginTimerActive) return;
+
+                        Slog.d(TAG, "Timed out waiting for login to complete");
+                        shouldDeauthorize = true;
+                        mPersistAfterLoginTimerActive = false;
+                    }
+
+                    if (shouldDeauthorize) {
+                        deauthorizeDevicesAwaitingPersistAfterLogin();
+                    }
+                }
+            };
+
     public UsbAuthManager(Context context, UserManager userManager, UsbHostManager hostManager) {
         mHostManager = hostManager;
         mUserManager = userManager;
         mContext = context;
         mAuthEventsListener = new UsbAuthEventsListener();
         mDeviceProvisionedListener = new ProvisioningListener(context, this);
+        mTimerHandler = BackgroundThread.getHandler();
         listenForService();
     }
 
@@ -188,12 +260,14 @@ public class UsbAuthManager implements IBinder.DeathRecipient {
             UserManager userManager,
             UsbHostManager hostManager,
             IUsbAuthManager service,
-            ProvisioningListener deviceProvisionedListener) {
+            ProvisioningListener deviceProvisionedListener,
+            Handler timerHandler) {
         mHostManager = hostManager;
         mUserManager = userManager;
         mContext = context;
         mAuthEventsListener = new UsbAuthEventsListener();
         mDeviceProvisionedListener = deviceProvisionedListener;
+        mTimerHandler = timerHandler;
         setAndLinkService(service);
     }
 
@@ -235,6 +309,27 @@ public class UsbAuthManager implements IBinder.DeathRecipient {
     public void binderDied() {
         mService = null;
         listenForService();
+    }
+
+    // Take actions after ActivityManager is ready.
+    void systemReady() {
+        if (mNotificationManager == null) {
+            mNotificationManager = mContext.getSystemService(NotificationManager.class);
+
+            // Authorization notifications should be high importance and persist until dismissed.
+            NotificationChannel channel =
+                    new NotificationChannel(
+                            USB_AUTHORIZATION_CHANNEL,
+                            mContext.getString(R.string.notification_channel_usb_authorization),
+                            NotificationManager.IMPORTANCE_HIGH);
+            channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
+            mNotificationManager.createNotificationChannel(channel);
+
+            // Register for notification dismissal broadcast.
+            IntentFilter filter = new IntentFilter(ACTION_NOTIFICATION_DISMISSED);
+            mContext.registerReceiver(
+                    mDismissNotificationReceiver, filter, Context.RECEIVER_NOT_EXPORTED);
+        }
     }
 
     private IUsbAuthManager getService() {
@@ -373,6 +468,15 @@ public class UsbAuthManager implements IBinder.DeathRecipient {
             mPendingAskDevices.clear();
             mPendingAllowPersistedDevices.clear();
         }
+
+        // When logged in, move all devices that are pending persistence
+        // to the persisted list and remove all notifications that we may have
+        // previously enabled.
+        if (state == UsbAuthorizationSystemState.LOGGED_IN) {
+            persistDevicesAfterLogin();
+            clearNotificationsOnLoggedIn();
+        }
+
         setSystemState(state);
     }
 
@@ -422,10 +526,24 @@ public class UsbAuthManager implements IBinder.DeathRecipient {
     void usbDeviceRemoved(String deviceAddress) {
         Slog.d(TAG, TextUtils.formatSimple("Host removed device %s", deviceAddress));
 
+        boolean loginNotificationChange = false;
+        boolean lockNotificationChange = false;
+
         synchronized (mLock) {
             mPendingAskDevices.remove(deviceAddress);
             mPendingAllowPersistedDevices.remove(deviceAddress);
             mConnectedDeviceForHostMgr.remove(deviceAddress);
+
+            loginNotificationChange = mPersistAfterLogin.remove(deviceAddress);
+            lockNotificationChange = mDeferredAtLockscreen.remove(deviceAddress);
+        }
+
+        if (loginNotificationChange) {
+            cancelOrUpdatePersistenceDelayedNotification();
+        }
+
+        if (lockNotificationChange) {
+            cancelOrUpdateScreenLockedNotification();
         }
     }
 
@@ -499,6 +617,283 @@ public class UsbAuthManager implements IBinder.DeathRecipient {
         }
     }
 
+    @GuardedBy("mLock")
+    private void cancelLoginTimerLocked() {
+        if (mPersistAfterLoginTimerActive) {
+            mTimerHandler.removeCallbacks(mLoginTimeoutRunnable);
+            mPersistAfterLoginTimerActive = false;
+        }
+    }
+
+    @GuardedBy("mLock")
+    private void startLoginTimerLocked() {
+        if (mPersistAfterLoginTimerActive) {
+            return;
+        }
+
+        mTimerHandler.postDelayed(mLoginTimeoutRunnable, LOGIN_TIMEOUT_MS);
+        mPersistAfterLoginTimerActive = true;
+    }
+
+    private void startPersistenceDelayedNotification(boolean resetTimeout) {
+        if (mNotificationManager == null) {
+            return;
+        }
+
+        // Build notification while locked to make sure we have the most up-to-date info.
+        Notification notification;
+        synchronized (mLock) {
+            if (mCurrentState == UsbAuthorizationSystemState.LOGGED_IN) {
+                Slog.d(
+                        TAG,
+                        "AuthNotify: Starting ~Finish Logging In~ notification in invalid state");
+                return;
+            }
+
+            if (resetTimeout) {
+                // Remove any existing timers first.
+                if (mPersistAfterLoginTimerActive) {
+                    Slog.d(TAG, "AuthNotify: Login timer already exists. Resetting.");
+                    cancelLoginTimerLocked();
+                }
+            }
+
+            // Start a timer if one isn't already active.
+            startLoginTimerLocked();
+
+            boolean hasMultiple = mPersistAfterLogin.size() > 1;
+
+            Intent intent = new Intent(ACTION_NOTIFICATION_DISMISSED);
+            intent.setPackage(mContext.getPackageName()); // Internal only
+
+            PendingIntent deletePendingIntent =
+                    PendingIntent.getBroadcast(
+                            mContext,
+                            0,
+                            intent,
+                            PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE);
+
+            int titleId, messageId;
+
+            if (hasMultiple) {
+                titleId = R.string.usb_authorization_notify_finish_logging_in_title_multiple;
+                messageId = R.string.usb_authorization_notify_finish_logging_in_message_multiple;
+            } else {
+                titleId = R.string.usb_authorization_notify_finish_logging_in_title;
+                messageId = R.string.usb_authorization_notify_finish_logging_in_message;
+            }
+
+            String title = mContext.getString(titleId);
+            String message = mContext.getString(messageId, LOGIN_TIMEOUT_MS / 1000);
+
+            Notification.Builder builder =
+                    new Notification.Builder(mContext, USB_AUTHORIZATION_CHANNEL)
+                            .setOngoing(true)
+                            .setSmallIcon(com.android.internal.R.drawable.stat_sys_data_usb)
+                            .setDeleteIntent(deletePendingIntent)
+                            .setContentTitle(title)
+                            .setContentText(message)
+                            .setVisibility(Notification.VISIBILITY_PUBLIC)
+                            .setStyle(new Notification.BigTextStyle().bigText(message));
+            notification = builder.build();
+        }
+
+        Slog.d(TAG, TextUtils.formatSimple("AuthNotify: Start ~Finish Logging In~ notification"));
+        final long token = Binder.clearCallingIdentity();
+        try {
+            mNotificationManager.notifyAsUser(
+                    null,
+                    SystemMessage.NOTE_USB_AUTH_FINISH_LOGGING_IN_REMINDER,
+                    notification,
+                    UserHandle.ALL);
+        } finally {
+            Binder.restoreCallingIdentity(token);
+        }
+    }
+
+    // Checks if we have any devices to persist after login and either updates notification or
+    // cancels it. Updates from this call should not reset the timeout.
+    private void cancelOrUpdatePersistenceDelayedNotification() {
+        boolean shouldCancel;
+        synchronized (mLock) {
+            shouldCancel = mPersistAfterLogin.isEmpty();
+        }
+
+        if (shouldCancel) {
+            deauthorizeDevicesAwaitingPersistAfterLogin();
+        } else {
+            startPersistenceDelayedNotification(/* resetTimeout= */false);
+        }
+    }
+
+    private void startScreenLockedNotification() {
+        if (mNotificationManager == null) {
+            return;
+        }
+
+        // Build notification while locked so we have up-to-date info.
+        Notification notification;
+        synchronized (mLock) {
+            boolean hasMultiple = mDeferredAtLockscreen.size() > 1;
+
+            String title =
+                    mContext.getString(R.string.usb_authorization_notify_on_screenlock_title);
+            String message;
+
+            if (hasMultiple) {
+                message =
+                        mContext.getString(
+                                R.string.usb_authorization_notify_on_screenlock_message_multiple);
+            } else {
+                message =
+                        mContext.getString(R.string.usb_authorization_notify_on_screenlock_message);
+            }
+
+            Notification.Builder builder =
+                    new Notification.Builder(mContext, USB_AUTHORIZATION_CHANNEL)
+                            .setOngoing(true)
+                            .setSmallIcon(com.android.internal.R.drawable.stat_sys_data_usb)
+                            .setContentTitle(title)
+                            .setContentText(message)
+                            .setVisibility(Notification.VISIBILITY_PUBLIC)
+                            .setStyle(new Notification.BigTextStyle().bigText(message));
+            notification = builder.build();
+        }
+
+        Slog.d(TAG, TextUtils.formatSimple("AuthNotify: Starting screen locked notification"));
+        final long token = Binder.clearCallingIdentity();
+        try {
+            mNotificationManager.notifyAsUser(
+                    null,
+                    SystemMessage.NOTE_USB_AUTH_SCREEN_LOCKED_REMINDER,
+                    notification,
+                    UserHandle.ALL);
+        } finally {
+            Binder.restoreCallingIdentity(token);
+        }
+    }
+
+    // Checks if we have any deferred devices and either update the notification or cancel it.
+    private void cancelOrUpdateScreenLockedNotification() {
+        if (mNotificationManager == null) {
+            return;
+        }
+
+        boolean shouldCancel;
+        synchronized (mLock) {
+            shouldCancel = mDeferredAtLockscreen.isEmpty();
+        }
+
+        if (shouldCancel) {
+            mNotificationManager.cancelAsUser(
+                    null, SystemMessage.NOTE_USB_AUTH_SCREEN_LOCKED_REMINDER, UserHandle.ALL);
+        } else {
+            startScreenLockedNotification();
+        }
+    }
+
+    // Once the state transitions to logged in, check if there are any devices that
+
+    // Check screen is locked and then start notification.
+    private void checkScreenLockedThenNotify(String deviceAddress) {
+        boolean showNotification = false;
+
+        synchronized (mLock) {
+            mDeferredAtLockscreen.add(deviceAddress);
+
+            if (mCurrentState == UsbAuthorizationSystemState.SCREEN_LOCKED
+                    && mPersistAfterLogin.isEmpty()) {
+                Slog.d(
+                        TAG,
+                        TextUtils.formatSimple(
+                                "AuthNotify: Screen is locked and not awaiting login."));
+                showNotification = true;
+            }
+        }
+
+        if (showNotification) {
+            startScreenLockedNotification();
+        }
+    }
+
+    // Clear all notifications that we could have sent out.
+    private void clearNotificationsOnLoggedIn() {
+        if (mNotificationManager == null) {
+            return;
+        }
+
+        synchronized (mLock) {
+            cancelLoginTimerLocked();
+
+            // Also clear deferred devices list (used for notifications).
+            mDeferredAtLockscreen.clear();
+        }
+
+        mNotificationManager.cancelAsUser(
+                null, SystemMessage.NOTE_USB_AUTH_SCREEN_LOCKED_REMINDER, UserHandle.ALL);
+        mNotificationManager.cancelAsUser(
+                null, SystemMessage.NOTE_USB_AUTH_FINISH_LOGGING_IN_REMINDER, UserHandle.ALL);
+    }
+
+    // Devices in the mPersistAfterLogin list get deauthorized in one of two scenarios:
+    //   * The notification informing the user to complete logging in is dismissed.
+    //   * The timeout for logging in after trusting the device at the login screen elapses.
+    private void deauthorizeDevicesAwaitingPersistAfterLogin() {
+        ArraySet<UsbAuthDeviceInfo> devicesToDeauthorize = new ArraySet<>();
+
+        synchronized (mLock) {
+            for (String deviceAddr : mPersistAfterLogin) {
+                AuthorizationState state = mConnectedDeviceForHostMgr.get(deviceAddr);
+                if (state != null) {
+                    devicesToDeauthorize.add(state.mDeviceInfo);
+                }
+            }
+
+            mPersistAfterLogin.clear();
+
+            // If a login timer is active, remove it.
+            cancelLoginTimerLocked();
+        }
+
+        // Deny all these devices.
+        for (UsbAuthDeviceInfo device : devicesToDeauthorize) {
+            setAuthorizationStatusInternal(device, UsbAuthorizationStatus.DENIED);
+        }
+
+        if (mNotificationManager != null) {
+            // Remove notification to complete logging in (if it exist).
+            mNotificationManager.cancelAsUser(
+                    null, SystemMessage.NOTE_USB_AUTH_FINISH_LOGGING_IN_REMINDER, UserHandle.ALL);
+        }
+    }
+
+    // need to be persisted, look up their fingerprints and persist them.
+    private void persistDevicesAfterLogin() {
+        String[] devicesToPersist;
+        ArraySet<UsbDeviceFingerprint> fingerprintsToPersist = new ArraySet<>();
+        synchronized (mLock) {
+            if (mCurrentState != UsbAuthorizationSystemState.LOGGED_IN
+                    || mPersistAfterLogin.isEmpty()) {
+                return;
+            }
+
+            devicesToPersist = mPersistAfterLogin.toArray(new String[mPersistAfterLogin.size()]);
+            mPersistAfterLogin.clear();
+        }
+
+        for (String deviceAddress : devicesToPersist) {
+            UsbDeviceFingerprint fingerprint =
+                    mHostManager.getConnectedDeviceFingerprintForAddress(deviceAddress);
+            if (fingerprint != null) {
+                fingerprintsToPersist.add(fingerprint);
+            }
+        }
+
+        synchronized (mLock) {
+            mPersistedAuthorizedDevices.addAll(fingerprintsToPersist);
+        }
+    }
+
     // Set authorization response for a specific device. Valid for any currently connected device.
     //
     // This should be sent when the UI responds to an "Ask" request for a USB device.
@@ -508,6 +903,7 @@ public class UsbAuthManager implements IBinder.DeathRecipient {
         UsbDeviceFingerprint fingerprint =
                 mHostManager.getConnectedDeviceFingerprintForAddress(deviceAddress);
         UsbAuthDeviceInfo deviceInfo = null;
+        boolean notifyDelayedPersistence = false;
 
         if (mHostManager.getConnectedDeviceForAddress(deviceAddress) == null) {
             Slog.e(TAG, "Attempted to authorize device that's not connected: " + deviceAddress);
@@ -526,9 +922,15 @@ public class UsbAuthManager implements IBinder.DeathRecipient {
                 }
             }
 
-            if (deviceInfo != null) {
+            if (deviceInfo != null && fingerprint != null) {
                 if (isPersistent && response == UsbAuthorizationStatus.AUTHORIZED) {
-                    if (fingerprint != null) {
+                    // In booted and screen locked states, we delay persistence until
+                    // after a successful login is completed.
+                    if (mCurrentState == UsbAuthorizationSystemState.BOOTED
+                            || mCurrentState == UsbAuthorizationSystemState.SCREEN_LOCKED) {
+                        mPersistAfterLogin.add(deviceAddress);
+                        notifyDelayedPersistence = true;
+                    } else {
                         mPersistedAuthorizedDevices.add(fingerprint);
                     }
                 }
@@ -537,6 +939,10 @@ public class UsbAuthManager implements IBinder.DeathRecipient {
 
         if (deviceInfo != null) {
             setAuthorizationStatusInternal(deviceInfo, response);
+        }
+
+        if (notifyDelayedPersistence) {
+            startPersistenceDelayedNotification(/* resetTimeout= */true);
         }
     }
 
@@ -567,6 +973,7 @@ public class UsbAuthManager implements IBinder.DeathRecipient {
 
                 AuthorizationState state = mConnectedDeviceForHostMgr.get(deviceAddress);
                 if (state != null) {
+                    state.mDeviceInfo = device;
                     readyForCheck = state.mHostReady;
                 }
             }
@@ -594,6 +1001,7 @@ public class UsbAuthManager implements IBinder.DeathRecipient {
 
                 AuthorizationState state = mConnectedDeviceForHostMgr.get(deviceAddress);
                 if (state != null) {
+                    state.mDeviceInfo = device;
                     readyForCheck = state.mHostReady;
                 }
             }
@@ -617,6 +1025,7 @@ public class UsbAuthManager implements IBinder.DeathRecipient {
                 @UsbAuthorizationSystemState int systemState) {
             boolean notifyHostManager = false;
             boolean hostAuthorized = false;
+            boolean handleDenyDefers = false;
             String deviceAddress = null;
 
             Slog.d(
@@ -642,6 +1051,8 @@ public class UsbAuthManager implements IBinder.DeathRecipient {
                         && status != UsbAuthorizationStatus.AUTHORIZED) {
                     notifyHostManager = true;
                     state.mHostAuthorized = false;
+                } else if (status == UsbAuthorizationStatus.DENIED_AND_DEFERRED) {
+                    handleDenyDefers = true;
                 }
 
                 // Hold authorized state for what message to send to host manager.
@@ -665,6 +1076,14 @@ public class UsbAuthManager implements IBinder.DeathRecipient {
                 } else {
                     mHostManager.usbDeviceDeauthorized(deviceAddress);
                 }
+            }
+
+            if (handleDenyDefers) {
+                Slog.d(
+                        TAG,
+                        TextUtils.formatSimple(
+                                "AuthEvents: Notify deny-defer notification if screen locked"));
+                checkScreenLockedThenNotify(deviceAddress);
             }
         }
     }

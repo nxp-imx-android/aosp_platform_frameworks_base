@@ -18,16 +18,28 @@ package com.android.server.usb;
 
 import static android.hardware.usb.UsbAuthorizationStatus.AUTHORIZED;
 import static android.hardware.usb.UsbAuthorizationStatus.DENIED;
+import static android.hardware.usb.UsbAuthorizationStatus.DENIED_AND_DEFERRED;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.UserInfo;
 import android.hardware.usb.DeviceFilter;
 import android.hardware.usb.IUsbAuthManager;
@@ -36,14 +48,19 @@ import android.hardware.usb.UsbAuthDeviceInfo;
 import android.hardware.usb.UsbAuthorizationSystemState;
 import android.hardware.usb.UsbConfiguration;
 import android.hardware.usb.UsbDevice;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.UserHandle;
 import android.os.UserManager;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.util.ArrayMap;
 
+import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.runner.AndroidJUnit4;
 
+import com.android.internal.R;
+import com.android.internal.messages.nano.SystemMessageProto.SystemMessage;
 import com.android.server.LocalServices;
 import com.android.server.usb.flags.Flags;
 
@@ -52,7 +69,9 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import java.util.Base64;
@@ -62,12 +81,17 @@ import java.util.Base64;
 @EnableFlags({Flags.FLAG_ENABLE_USB_HOST_AUTHORIZATION})
 public class UsbAuthManagerTest {
     @Rule public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
-    @Mock private Context mContext;
+    private Context mContext;
     @Mock private UserManager mUserManager;
     @Mock private IUsbAuthManager mService;
     @Mock private UsbHostManager mHostManager;
     @Mock private IBinder mBinder;
+    @Mock private Handler mHandler;
+    @Mock private NotificationManager mNotificationManager;
     private UsbAuthManager.ProvisioningListener mDeviceProvisionedListener;
+    private ArgumentCaptor<BroadcastReceiver> mDismissNotificationCaptor =
+            ArgumentCaptor.forClass(BroadcastReceiver.class);
+    private ArgumentCaptor<Runnable> mTimeoutCaptor = ArgumentCaptor.forClass(Runnable.class);
 
     private UsbAuthManager mUsbAuthManager;
 
@@ -157,6 +181,23 @@ public class UsbAuthManagerTest {
     public void setUp() throws Exception {
         LocalServices.removeAllServicesForTest();
         mMocks = MockitoAnnotations.openMocks(this);
+        mContext = spy(InstrumentationRegistry.getInstrumentation().getContext());
+
+        doAnswer(
+                        (invocation) -> {
+                            String name = invocation.getArgument(0);
+                            if (name == Context.NOTIFICATION_SERVICE) {
+                                return mNotificationManager;
+                            }
+
+                            return invocation.callRealMethod();
+                        })
+                .when(mContext)
+                .getSystemService(anyString());
+
+        doReturn(mock(Intent.class))
+                .when(mContext)
+                .registerReceiver(mDismissNotificationCaptor.capture(), any(), anyInt());
 
         when(mService.asBinder()).thenReturn(mBinder);
 
@@ -187,8 +228,14 @@ public class UsbAuthManagerTest {
 
         mUsbAuthManager =
                 new UsbAuthManager(
-                        mContext, mUserManager, mHostManager, mService, mDeviceProvisionedListener);
+                        mContext,
+                        mUserManager,
+                        mHostManager,
+                        mService,
+                        mDeviceProvisionedListener,
+                        mHandler);
         mDeviceProvisionedListener.setAuthManager(mUsbAuthManager);
+        mUsbAuthManager.systemReady();
     }
 
     @After
@@ -396,5 +443,349 @@ public class UsbAuthManagerTest {
         addConnectedDevice(fake1);
         mUsbAuthManager.usbDeviceAdded(fake1.deviceAddress);
         verify(mService).setAuthorizationStatus(fake1.deviceInfo, DENIED);
+    }
+
+    @Test
+    public void testScreenLocked_deniedDeferredSendsNotification() throws Exception {
+        TestData fake0 = mTestData.get(FAKE0);
+        TestData fake1 = mTestData.get(FAKE1);
+
+        ArgumentCaptor<Notification> notificationCaptor =
+                ArgumentCaptor.forClass(Notification.class);
+
+        // Put system into screen locked state.
+        mUsbAuthManager.onUpdateScreenLockedState(true);
+        mUsbAuthManager.onUpdateLoggedInState(true, TEST_USER_ID_FULL_ADMIN);
+        verify(mService).setSystemState(UsbAuthorizationSystemState.SCREEN_LOCKED);
+
+        // Now send a DenyDefer notice and expect notification to be created
+        mUsbAuthManager
+                .getEventsListenerForTest()
+                .onDeviceAuthorizationStatusChanged(
+                        fake0.deviceInfo,
+                        DENIED_AND_DEFERRED,
+                        UsbAuthorizationSystemState.SCREEN_LOCKED);
+        verify(mNotificationManager)
+                .notifyAsUser(
+                        any(),
+                        eq(SystemMessage.NOTE_USB_AUTH_SCREEN_LOCKED_REMINDER),
+                        notificationCaptor.capture(),
+                        eq(UserHandle.ALL));
+
+        // Assert singular variant.
+        assertEquals(
+                mContext.getString(R.string.usb_authorization_notify_on_screenlock_message),
+                notificationCaptor.getValue().extras.getString(Notification.EXTRA_TEXT));
+
+        Mockito.clearInvocations(mNotificationManager);
+
+        // Now send a second DenyDefer notice. This should update the notification to a new message.
+        mUsbAuthManager
+                .getEventsListenerForTest()
+                .onDeviceAuthorizationStatusChanged(
+                        fake1.deviceInfo,
+                        DENIED_AND_DEFERRED,
+                        UsbAuthorizationSystemState.SCREEN_LOCKED);
+        verify(mNotificationManager)
+                .notifyAsUser(
+                        any(),
+                        eq(SystemMessage.NOTE_USB_AUTH_SCREEN_LOCKED_REMINDER),
+                        notificationCaptor.capture(),
+                        eq(UserHandle.ALL));
+
+        // Assert multiple devices variant.
+        assertEquals(
+                mContext.getString(
+                        R.string.usb_authorization_notify_on_screenlock_message_multiple),
+                notificationCaptor.getValue().extras.getString(Notification.EXTRA_TEXT));
+
+        Mockito.clearInvocations(mNotificationManager);
+        mUsbAuthManager.onUpdateScreenLockedState(false);
+        verify(mService).setSystemState(UsbAuthorizationSystemState.LOGGED_IN);
+
+        // No notifications should be created when the screen isn't locked.
+        mUsbAuthManager
+                .getEventsListenerForTest()
+                .onDeviceAuthorizationStatusChanged(
+                        fake0.deviceInfo,
+                        DENIED_AND_DEFERRED,
+                        UsbAuthorizationSystemState.LOGGED_IN);
+        verify(mNotificationManager, never())
+                .notifyAsUser(
+                        any(),
+                        eq(SystemMessage.NOTE_USB_AUTH_SCREEN_LOCKED_REMINDER),
+                        notificationCaptor.capture(),
+                        eq(UserHandle.ALL));
+    }
+
+    @Test
+    public void testScreenLocked_deviceRemoved() throws Exception {
+        TestData fake0 = mTestData.get(FAKE0);
+        TestData fake1 = mTestData.get(FAKE1);
+
+        addConnectedDevice(fake0);
+        addConnectedDevice(fake1);
+        mUsbAuthManager.usbDeviceAdded(fake0.deviceAddress);
+        mUsbAuthManager.usbDeviceAdded(fake1.deviceAddress);
+
+        // Put system into screen locked state.
+        mUsbAuthManager.onUpdateScreenLockedState(true);
+        mUsbAuthManager.onUpdateLoggedInState(true, TEST_USER_ID_FULL_ADMIN);
+        verify(mService).setSystemState(UsbAuthorizationSystemState.SCREEN_LOCKED);
+
+        // Expect notification to be started when we get the deny + defer.
+        mUsbAuthManager
+                .getEventsListenerForTest()
+                .onDeviceAuthorizationStatusChanged(
+                        fake0.deviceInfo,
+                        DENIED_AND_DEFERRED,
+                        UsbAuthorizationSystemState.SCREEN_LOCKED);
+        verify(mNotificationManager)
+                .notifyAsUser(
+                        any(),
+                        eq(SystemMessage.NOTE_USB_AUTH_SCREEN_LOCKED_REMINDER),
+                        any(),
+                        eq(UserHandle.ALL));
+
+        // Send another deny defer to update the notification.
+        mUsbAuthManager
+                .getEventsListenerForTest()
+                .onDeviceAuthorizationStatusChanged(
+                        fake1.deviceInfo,
+                        DENIED_AND_DEFERRED,
+                        UsbAuthorizationSystemState.SCREEN_LOCKED);
+
+        Mockito.clearInvocations(mNotificationManager);
+
+        // The first removal should just update the notification.
+        mUsbAuthManager.usbDeviceRemoved(fake1.deviceAddress);
+        verify(mNotificationManager)
+                .notifyAsUser(
+                        any(),
+                        eq(SystemMessage.NOTE_USB_AUTH_SCREEN_LOCKED_REMINDER),
+                        any(),
+                        eq(UserHandle.ALL));
+
+        Mockito.clearInvocations(mNotificationManager);
+
+        // Remove the second device and expect the notification to be cancelled.
+        mUsbAuthManager.usbDeviceRemoved(fake0.deviceAddress);
+        verify(mNotificationManager)
+                .cancelAsUser(
+                        any(),
+                        eq(SystemMessage.NOTE_USB_AUTH_SCREEN_LOCKED_REMINDER),
+                        eq(UserHandle.ALL));
+    }
+
+    @Test
+    public void testBooted_authorizePersistent_timeoutOrDismiss() throws Exception {
+        TestData fake0 = mTestData.get(FAKE0);
+        TestData fake1 = mTestData.get(FAKE1);
+
+        addConnectedDevice(fake0);
+        addConnectedDevice(fake1);
+        mUsbAuthManager.usbDeviceAdded(fake0.deviceAddress);
+        mUsbAuthManager.usbDeviceAdded(fake1.deviceAddress);
+
+        // We should be starting in booted state.
+        verify(mService).setSystemState(UsbAuthorizationSystemState.BOOTED);
+
+        // First validate that the timeout works properly.
+        mUsbAuthManager.getEventsListenerForTest().onDeviceAskForAuthorization(fake0.deviceInfo);
+        verify(mService).setAuthorizationStatus(fake0.deviceInfo, AUTHORIZED);
+        verify(mNotificationManager)
+                .notifyAsUser(
+                        any(),
+                        eq(SystemMessage.NOTE_USB_AUTH_FINISH_LOGGING_IN_REMINDER),
+                        any(),
+                        eq(UserHandle.ALL));
+        verify(mHandler).postDelayed(mTimeoutCaptor.capture(), eq(UsbAuthManager.LOGIN_TIMEOUT_MS));
+        mTimeoutCaptor.getValue().run();
+        verify(mService).setAuthorizationStatus(fake0.deviceInfo, DENIED);
+        verify(mNotificationManager)
+                .cancelAsUser(
+                        any(),
+                        eq(SystemMessage.NOTE_USB_AUTH_FINISH_LOGGING_IN_REMINDER),
+                        eq(UserHandle.ALL));
+
+        Mockito.clearInvocations(mService);
+        Mockito.clearInvocations(mNotificationManager);
+        Mockito.clearInvocations(mHandler);
+
+        // Also check the notification dismissal is working.
+        mUsbAuthManager.getEventsListenerForTest().onDeviceAskForAuthorization(fake1.deviceInfo);
+        verify(mService).setAuthorizationStatus(fake1.deviceInfo, AUTHORIZED);
+        verify(mNotificationManager)
+                .notifyAsUser(
+                        any(),
+                        eq(SystemMessage.NOTE_USB_AUTH_FINISH_LOGGING_IN_REMINDER),
+                        any(),
+                        eq(UserHandle.ALL));
+        verify(mHandler).postDelayed(any(), eq(UsbAuthManager.LOGIN_TIMEOUT_MS));
+
+        // Send dismiss broadcast intent directly to the captured notification.
+        Intent intent = new Intent(UsbAuthManager.ACTION_NOTIFICATION_DISMISSED);
+        mDismissNotificationCaptor.getValue().onReceive(mContext, intent);
+        verify(mService).setAuthorizationStatus(fake1.deviceInfo, DENIED);
+        verify(mHandler).removeCallbacks(any());
+        // We always cancel the notification (even on the dismiss notifier).
+        verify(mNotificationManager)
+                .cancelAsUser(
+                        any(),
+                        eq(SystemMessage.NOTE_USB_AUTH_FINISH_LOGGING_IN_REMINDER),
+                        eq(UserHandle.ALL));
+    }
+
+    @Test
+    public void testBooted_authorizePersistent_handleMultiple() throws Exception {
+        TestData fake0 = mTestData.get(FAKE0);
+        TestData fake1 = mTestData.get(FAKE1);
+
+        ArgumentCaptor<Notification> notificationCaptor =
+                ArgumentCaptor.forClass(Notification.class);
+
+        addConnectedDevice(fake0);
+        addConnectedDevice(fake1);
+        mUsbAuthManager.usbDeviceAdded(fake0.deviceAddress);
+        mUsbAuthManager.usbDeviceAdded(fake1.deviceAddress);
+
+        mUsbAuthManager.getEventsListenerForTest().onDeviceAskForAuthorization(fake0.deviceInfo);
+        verify(mService).setAuthorizationStatus(fake0.deviceInfo, AUTHORIZED);
+        verify(mNotificationManager)
+                .notifyAsUser(
+                        any(),
+                        eq(SystemMessage.NOTE_USB_AUTH_FINISH_LOGGING_IN_REMINDER),
+                        notificationCaptor.capture(),
+                        eq(UserHandle.ALL));
+
+        // There should have been no timers running and we simply added a new one.
+        verify(mHandler, never()).removeCallbacks(any());
+        verify(mHandler).postDelayed(any(), eq(UsbAuthManager.LOGIN_TIMEOUT_MS));
+
+        // First we expect a singular text in the notification.
+        assertEquals(
+                mContext.getString(
+                        R.string.usb_authorization_notify_finish_logging_in_message,
+                        UsbAuthManager.LOGIN_TIMEOUT_MS / 1000),
+                notificationCaptor.getValue().extras.getString(Notification.EXTRA_TEXT));
+
+        Mockito.clearInvocations(mNotificationManager);
+        Mockito.clearInvocations(mHandler);
+        Mockito.clearInvocations(mService);
+
+        mUsbAuthManager.getEventsListenerForTest().onDeviceAskForAuthorization(fake0.deviceInfo);
+        verify(mService).setAuthorizationStatus(fake0.deviceInfo, AUTHORIZED);
+        verify(mNotificationManager)
+                .notifyAsUser(
+                        any(),
+                        eq(SystemMessage.NOTE_USB_AUTH_FINISH_LOGGING_IN_REMINDER),
+                        notificationCaptor.capture(),
+                        eq(UserHandle.ALL));
+
+        // We should have cancelled the previous timer and added a new one.
+        verify(mHandler).removeCallbacks(any());
+        verify(mHandler).postDelayed(any(), eq(UsbAuthManager.LOGIN_TIMEOUT_MS));
+
+        // Expect that we have the multiple device message.
+        assertEquals(
+                mContext.getString(
+                        R.string.usb_authorization_notify_finish_logging_in_message,
+                        UsbAuthManager.LOGIN_TIMEOUT_MS / 1000),
+                notificationCaptor.getValue().extras.getString(Notification.EXTRA_TEXT));
+    }
+
+    @Test
+    public void testBooted_authorizePersistent_deviceRemoved() throws Exception {
+        TestData fake0 = mTestData.get(FAKE0);
+        TestData fake1 = mTestData.get(FAKE1);
+
+        addConnectedDevice(fake0);
+        addConnectedDevice(fake1);
+        mUsbAuthManager.usbDeviceAdded(fake0.deviceAddress);
+        mUsbAuthManager.usbDeviceAdded(fake1.deviceAddress);
+
+        // First device sets up notification.
+        mUsbAuthManager.getEventsListenerForTest().onDeviceAskForAuthorization(fake0.deviceInfo);
+        verify(mService).setAuthorizationStatus(fake0.deviceInfo, AUTHORIZED);
+        verify(mNotificationManager)
+                .notifyAsUser(
+                        any(),
+                        eq(SystemMessage.NOTE_USB_AUTH_FINISH_LOGGING_IN_REMINDER),
+                        any(),
+                        eq(UserHandle.ALL));
+
+        Mockito.clearInvocations(mNotificationManager);
+        Mockito.clearInvocations(mHandler);
+        Mockito.clearInvocations(mService);
+
+        // Second device should update notification and timer.
+        mUsbAuthManager.getEventsListenerForTest().onDeviceAskForAuthorization(fake1.deviceInfo);
+        verify(mService).setAuthorizationStatus(fake1.deviceInfo, AUTHORIZED);
+        verify(mNotificationManager)
+                .notifyAsUser(
+                        any(),
+                        eq(SystemMessage.NOTE_USB_AUTH_FINISH_LOGGING_IN_REMINDER),
+                        any(),
+                        eq(UserHandle.ALL));
+        verify(mHandler).removeCallbacks(any());
+        verify(mHandler).postDelayed(any(), eq(UsbAuthManager.LOGIN_TIMEOUT_MS));
+
+        Mockito.clearInvocations(mNotificationManager);
+        Mockito.clearInvocations(mHandler);
+
+        // Removing one device should update notification and not update timer.
+        mUsbAuthManager.usbDeviceRemoved(fake1.deviceAddress);
+        verify(mHandler, never()).removeCallbacks(any());
+        verify(mHandler, never()).postDelayed(any(), eq(UsbAuthManager.LOGIN_TIMEOUT_MS));
+        verify(mNotificationManager)
+                .notifyAsUser(
+                        any(),
+                        eq(SystemMessage.NOTE_USB_AUTH_FINISH_LOGGING_IN_REMINDER),
+                        any(),
+                        eq(UserHandle.ALL));
+
+        Mockito.clearInvocations(mNotificationManager);
+
+        // Remove the device and expect the notification to be cancelled.
+        mUsbAuthManager.usbDeviceRemoved(fake0.deviceAddress);
+        verify(mNotificationManager)
+                .cancelAsUser(
+                        any(),
+                        eq(SystemMessage.NOTE_USB_AUTH_FINISH_LOGGING_IN_REMINDER),
+                        eq(UserHandle.ALL));
+
+    }
+
+    @Test
+    public void testBooted_authorizePersistent_completesOnLogin() throws Exception {
+        TestData fake0 = mTestData.get(FAKE0);
+
+        addConnectedDevice(fake0);
+        mUsbAuthManager.usbDeviceAdded(fake0.deviceAddress);
+
+        // Now check that logging in fully works.
+        mUsbAuthManager.getEventsListenerForTest().onDeviceAskForAuthorization(fake0.deviceInfo);
+        verify(mService).setAuthorizationStatus(fake0.deviceInfo, AUTHORIZED);
+
+        mUsbAuthManager.onUpdateLoggedInState(true, TEST_USER_ID_FULL_ADMIN);
+        mUsbAuthManager.onUpdateScreenLockedState(false);
+        verify(mService).setSystemState(UsbAuthorizationSystemState.LOGGED_IN);
+
+        // We should cancel the timer and dismiss all notifications.
+        assertTrue(
+                mUsbAuthManager
+                        .getPersistedFingerprintsCopyForTesting()
+                        .contains(fake0.fingerprint));
+        verify(mHandler).removeCallbacks(any());
+        verify(mNotificationManager)
+                .cancelAsUser(
+                        any(),
+                        eq(SystemMessage.NOTE_USB_AUTH_FINISH_LOGGING_IN_REMINDER),
+                        eq(UserHandle.ALL));
+        verify(mNotificationManager)
+                .cancelAsUser(
+                        any(),
+                        eq(SystemMessage.NOTE_USB_AUTH_SCREEN_LOCKED_REMINDER),
+                        eq(UserHandle.ALL));
     }
 }

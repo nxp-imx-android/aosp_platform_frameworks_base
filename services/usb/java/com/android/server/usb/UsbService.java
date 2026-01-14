@@ -409,6 +409,9 @@ public class UsbService extends IUsbManager.Stub {
         if (mPortManager != null) {
             mPortManager.systemReady();
         }
+        if (mAuthManager != null) {
+            mAuthManager.systemReady();
+        }
 
         if (com.android.server.usb.flags.Flags.enableUsb4()
                 || com.android.server.usb.flags.Flags.enableUsb4Tbt()
