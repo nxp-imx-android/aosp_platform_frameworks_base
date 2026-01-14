@@ -122,6 +122,45 @@ public final class LutProperties {
         return mSamplingKeys;
     }
 
+    private String samplingKeyToString(@SamplingKey int samplingKey) {
+        switch(samplingKey) {
+            case 0:
+                return "RGB";
+            case 1:
+                return "MAX_RGB";
+            case 2:
+                return "CIE_Y";
+            default:
+                return String.valueOf(samplingKey);
+        }
+    }
+
+    private String samplingKeysToString() {
+        if (mSamplingKeys.length == 0) {
+            return "[]";
+        }
+
+        StringBuilder sb = new StringBuilder("[");
+        for (int i = 0; i < mSamplingKeys.length; i++) {
+            sb.append(samplingKeyToString(mSamplingKeys[i]));
+            if (i != mSamplingKeys.length - 1) {
+                sb.append(", ");
+            }
+        }
+        sb.append("]");
+
+        return sb.toString();
+    }
+
+    @Override
+    public String toString() {
+        return "LutProperties{"
+                + "dimension=" + mDimension
+                + ", size=" + mSize
+                + ", samplingKeys=" + samplingKeysToString()
+                + "}";
+    }
+
     /* use in the native code */
     private LutProperties(@Dimension int dimension, int size, @SamplingKey int[] samplingKeys) {
         if (dimension != ONE_DIMENSION && dimension != THREE_DIMENSION) {

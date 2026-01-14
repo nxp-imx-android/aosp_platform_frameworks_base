@@ -496,6 +496,15 @@ public final class HardwareBuffer implements Parcelable, AutoCloseable {
         nSetSmpte2094_50(mNativeObject, metadata, offset, length);
     }
 
+    /**
+     * @hide
+     * Clears SMPTE 2094-50 as a property of the HardwareBuffer.
+     */
+    public void clearSmpte2094_50() {
+        checkClosed("setSmpte2094_50");
+        nSetSmpte2094_50(mNativeObject, null, 0, 0);
+    }
+
     private void checkClosed(String name) {
         if (isClosed()) {
             throw new IllegalStateException("This HardwareBuffer has been closed and its "
