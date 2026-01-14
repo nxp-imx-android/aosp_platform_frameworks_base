@@ -19,6 +19,7 @@ package com.android.internal.inputmethod;
 import android.content.Intent;
 
 import com.android.internal.inputmethod.IImeSwitcherMenuListener;
+import com.android.internal.inputmethod.ImeSwitcherMenuItemSafeList;
 
 /**
  * Interface to send calls to the IME Switcher Menu controller.
@@ -67,9 +68,9 @@ oneway interface IImeSwitcherMenu {
      * @param displayId                 the ID of the display where the menu was requested.
      * @param userId                    the ID of the user that requested the menu.
      */
-    void show(in List<Item> items, in @nullable String selectedImeId, int selectedSubtypeIndex,
-            in @nullable Intent selectedImeSettingsIntent, boolean isScreenLocked, int displayId,
-            int userId);
+    void show(in ImeSwitcherMenuItemSafeList items, in @nullable String selectedImeId,
+            int selectedSubtypeIndex, in @nullable Intent selectedImeSettingsIntent,
+            boolean isScreenLocked, int displayId, int userId);
 
     /**
      * Hides the IME Switcher Menu.
