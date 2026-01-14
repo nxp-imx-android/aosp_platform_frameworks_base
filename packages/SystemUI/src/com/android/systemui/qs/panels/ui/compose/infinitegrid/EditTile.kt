@@ -43,6 +43,8 @@ import androidx.compose.foundation.clipScrollableContainer
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.rememberScrollableState
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement.spacedBy
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -60,6 +62,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeightIn
 import androidx.compose.foundation.layout.size
@@ -153,6 +156,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.fastMap
+import androidx.compose.ui.zIndex
 import com.android.compose.gesture.effect.rememberOffsetOverscrollEffectFactory
 import com.android.compose.modifiers.height
 import com.android.compose.modifiers.thenIf
@@ -336,33 +340,35 @@ fun DefaultEditTileGrid(
                 }
             }
 
-            EditModeScrollableColumn(
-                listState = listState,
-                selectionState = selectionState,
-                innerPadding = innerPadding,
-                scrollState = scrollState,
-                onEditAction = onEditAction,
-            ) {
-                Spacer(Modifier.height(16.dp))
-
-                CurrentTilesGrid(
+            NavBarInsetScrollZone {
+                EditModeScrollableColumn(
                     listState = listState,
                     selectionState = selectionState,
+                    innerPadding = innerPadding,
+                    scrollState = scrollState,
                     onEditAction = onEditAction,
-                )
+                ) {
+                    Spacer(Modifier.height(16.dp))
 
-                // Only show available tiles when a drag or placement isn't in progress, OR the
-                // drag is within the current tiles grid
-                AnimatedAvailableTilesGrid(
-                    allTiles = allTiles,
-                    listState = listState,
-                    selectionState = selectionState,
-                    onEditAction = onEditAction,
-                    canLayoutTile = true,
-                    showAvailableTiles =
-                        !(listState.dragInProgress || selectionState.placementEnabled) ||
-                            listState.dragType == DragType.Move,
-                )
+                    CurrentTilesGrid(
+                        listState = listState,
+                        selectionState = selectionState,
+                        onEditAction = onEditAction,
+                    )
+
+                    // Only show available tiles when a drag or placement isn't in progress, OR the
+                    // drag is within the current tiles grid
+                    AnimatedAvailableTilesGrid(
+                        allTiles = allTiles,
+                        listState = listState,
+                        selectionState = selectionState,
+                        onEditAction = onEditAction,
+                        canLayoutTile = true,
+                        showAvailableTiles =
+                            !(listState.dragInProgress || selectionState.placementEnabled) ||
+                                listState.dragType == DragType.Move,
+                    )
+                }
             }
         }
     }
@@ -402,6 +408,25 @@ private fun EditModeScrollableColumn(
         content()
 
         Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.systemBars))
+    }
+}
+
+@Composable
+private fun NavBarInsetScrollZone(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
+    Box(modifier.fillMaxWidth()) {
+        content()
+
+        // Adding a scrollable box the size of the navigation bar at the bottom of the screen and
+        // with a higher zIndex than the scrollable list of tiles.
+        // This box intercepts scroll gestures in the navigation bar area without consuming them to
+        // allow STL to handle them.
+        Box(
+            Modifier.align(Alignment.BottomCenter)
+                .zIndex(2f)
+                .fillMaxWidth()
+                .windowInsetsBottomHeight(WindowInsets.navigationBars)
+                .scrollable(rememberScrollableState { 0f }, orientation = Orientation.Vertical)
+        )
     }
 }
 
