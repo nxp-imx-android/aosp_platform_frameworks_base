@@ -459,7 +459,7 @@ public final class UserTypeFactory {
      * configuration.
      */
     private static UserTypeDetails.Builder getDefaultTypeSystemHeadless() {
-        return new UserTypeDetails.Builder()
+        final UserTypeDetails.Builder builder = new UserTypeDetails.Builder()
                 .setName(USER_TYPE_SYSTEM_HEADLESS)
                 .setBaseType(FLAG_SYSTEM)
                 .setDefaultUserInfoPropertyFlags(FLAG_PRIMARY
@@ -469,6 +469,20 @@ public final class UserTypeFactory {
                 .setActivitiesAllowlist(android.multiuser.Flags.hsuAllowlistActivities()
                         ? com.android.internal.R.array.hsu_allowlist_activities
                         : Resources.ID_NULL);
+
+        if (android.multiuser.Flags.hsuAppManagement()) {
+            // We apply a specific badge to the Headless System User so that its apps can be
+            // visually distinguished in Settings.
+            builder.setIconBadge(com.android.internal.R.drawable.ic_hsu_icon_badge)
+                    .setBadgePlain(com.android.internal.R.drawable.ic_hsu_badge)
+                    .setBadgeNoBackground(
+                            com.android.internal.R.drawable.ic_hsu_badge_no_background)
+                    .setBadgeLabels(com.android.internal.R.string.hsu_label_badge)
+                    .setBadgeColors(com.android.internal.R.color.transparent)
+                    .setDarkThemeBadgeColors(com.android.internal.R.color.transparent);
+        }
+
+        return builder;
     }
 
     /** Gets the deprecated config_defaultFirstUserRestrictions as system default restrictions. */

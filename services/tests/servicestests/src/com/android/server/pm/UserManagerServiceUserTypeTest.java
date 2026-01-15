@@ -24,6 +24,7 @@ import static android.content.pm.UserInfo.FLAG_MANAGED_PROFILE;
 import static android.content.pm.UserInfo.FLAG_PROFILE;
 import static android.content.pm.UserInfo.FLAG_RESTRICTED;
 import static android.content.pm.UserInfo.FLAG_SYSTEM;
+import static android.os.UserManager.USER_TYPE_SYSTEM_HEADLESS;
 
 import static com.google.common.truth.Truth.assertWithMessage;
 
@@ -32,6 +33,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 import static org.testng.Assert.assertThrows;
 
 import android.content.pm.UserInfo;
@@ -40,7 +42,10 @@ import android.content.res.Resources;
 import android.content.res.XmlResourceParser;
 import android.os.Bundle;
 import android.os.UserManager;
+import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
+import android.platform.test.flag.junit.SetFlagsRule;
 import android.util.ArrayMap;
 
 import androidx.test.InstrumentationRegistry;
@@ -49,7 +54,10 @@ import androidx.test.runner.AndroidJUnit4;
 
 import com.android.frameworks.servicestests.R;
 
+import com.google.common.truth.Expect;
+
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -65,11 +73,48 @@ import java.util.List;
 @MediumTest
 public class UserManagerServiceUserTypeTest {
 
+    @Rule
+    public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
+
+    @Rule
+    public final Expect expect = Expect.create();
+
     private Resources mResources;
 
     @Before
     public void setup() {
         mResources = InstrumentationRegistry.getTargetContext().getResources();
+    }
+
+    @Test
+    @EnableFlags(android.multiuser.Flags.FLAG_HSU_APP_MANAGEMENT)
+    public void testUserTypeBuilder_systemHeadless_hsuAppManagementEnabled() throws Exception {
+        assumeTrue("Feature supported only on Headless System User Mode devices",
+                UserManager.isHeadlessSystemUserMode());
+
+        UserTypeDetails type = UserTypeFactory.getUserTypes().get(USER_TYPE_SYSTEM_HEADLESS);
+
+        expect.withMessage("hasBadge()").that(type.hasBadge()).isTrue();
+        expect.withMessage("getIconBadge()").that(type.getIconBadge())
+                .isEqualTo(com.android.internal.R.drawable.ic_hsu_icon_badge);
+        expect.withMessage("getBadgePlain()").that(type.getBadgePlain())
+                .isEqualTo(com.android.internal.R.drawable.ic_hsu_badge);
+        expect.withMessage("getBadgeNoBackground()").that(type.getBadgeNoBackground())
+                .isEqualTo(com.android.internal.R.drawable.ic_hsu_badge_no_background);
+        expect.withMessage("getBadgeLabel(0)").that(type.getBadgeLabel(0))
+                .isEqualTo(com.android.internal.R.string.hsu_label_badge);
+    }
+
+    @Test
+    @DisableFlags(android.multiuser.Flags.FLAG_HSU_APP_MANAGEMENT)
+    public void testUserTypeBuilder_systemHeadless_hsuAppManagementDisabled_flagOff()
+            throws Exception {
+        assumeTrue("Feature supported only on Headless System User Mode devices",
+                UserManager.isHeadlessSystemUserMode());
+
+        UserTypeDetails type = UserTypeFactory.getUserTypes().get(USER_TYPE_SYSTEM_HEADLESS);
+
+        expect.that(type.hasBadge()).isFalse();
     }
 
     @Test
