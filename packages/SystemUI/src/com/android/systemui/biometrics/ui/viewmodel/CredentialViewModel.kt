@@ -5,6 +5,7 @@ import android.graphics.drawable.Drawable
 import android.hardware.biometrics.PromptContentView
 import android.text.InputType
 import com.android.internal.widget.LockPatternView
+import com.android.systemui.Flags
 import com.android.systemui.biometrics.Utils
 import com.android.systemui.biometrics.domain.interactor.CredentialStatus
 import com.android.systemui.biometrics.domain.interactor.PromptCredentialInteractor
@@ -14,12 +15,16 @@ import com.android.systemui.biometrics.shared.model.BiometricUserInfo
 import com.android.systemui.biometrics.shared.model.FallbackOptionModel
 import com.android.systemui.biometrics.shared.model.PromptKind
 import com.android.systemui.biometrics.shared.model.WatchRangingState
+import com.android.systemui.biometrics.ui.BiometricPromptLogoProvider
 import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.display.domain.interactor.DisplayStateInteractor
+import com.android.systemui.display.shared.model.DisplayRotation
 import com.android.systemui.res.R
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.google.android.msdl.data.model.MSDLToken
 import com.google.android.msdl.domain.MSDLPlayer
-import javax.inject.Inject
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 import kotlin.reflect.KClass
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -32,14 +37,23 @@ import kotlinx.coroutines.flow.map
 
 /** View-model for all CredentialViews within BiometricPrompt. */
 class CredentialViewModel
-@Inject
+@AssistedInject
 constructor(
     @Application private val applicationContext: Context,
     private val promptCredentialInteractor: PromptCredentialInteractor,
     shadeInteractor: ShadeInteractor,
     private val promptSelectorInteractor: PromptSelectorInteractor,
     private val msdlPlayer: MSDLPlayer,
+    displayStateInteractor: DisplayStateInteractor,
+    promptLogoProvider: BiometricPromptLogoProvider,
 ) {
+    @AssistedFactory
+    interface Factory {
+        fun create(): CredentialViewModel
+    }
+
+    val credentialKind: Flow<PromptKind> = promptSelectorInteractor.credentialKind
+
     /**
      * Whether credential is allowed in the prompt True if bp caller requested credential and
      * identity check or watch ranging allow it
@@ -61,15 +75,23 @@ constructor(
             isCredentialAllowed,
             promptCredentialInteractor.credentialKind,
         ) { request, showTitleOnly, credentialAllowed, credentialKind ->
+            val (logoIcon, logoDescription) = promptLogoProvider.getLogoInfo(request)
             if (credentialAllowed) {
                 BiometricPromptHeaderViewModelImpl(
                     request,
                     user = request.userInfo,
-                    title = request.title,
-                    subtitle = if (showTitleOnly) "" else request.subtitle,
+                    title = request.credentialTitle,
+                    subtitle = if (showTitleOnly) "" else request.credentialSubtitle,
                     contentView = if (!showTitleOnly) request.contentView else null,
-                    description = if (request.contentView != null) "" else request.description,
-                    icon = applicationContext.asLockIcon(request.userInfo.deviceCredentialOwnerId),
+                    description =
+                        if (request.contentView != null) "" else request.credentialDescription,
+                    icon =
+                        if (Flags.largeScreenBp() && logoIcon != null) logoIcon
+                        else
+                            promptLogoProvider.getLockIcon(
+                                request.userInfo.deviceCredentialOwnerId
+                            ),
+                    logoDescription = logoDescription,
                     showEmergencyCallButton = request.showEmergencyCallButton,
                 )
             } else {
@@ -79,9 +101,12 @@ constructor(
                     title = applicationContext.asResetTitle(credentialKind),
                     description = applicationContext.asResetSubtitle(credentialKind),
                     icon =
-                        applicationContext.asLockIcon(
-                            request.userInfo.deviceCredentialOwnerId
-                        ), // TODO: Need custom icon
+                        if (Flags.largeScreenBp() && logoIcon != null) logoIcon
+                        else
+                            promptLogoProvider.getLockIcon(
+                                request.userInfo.deviceCredentialOwnerId
+                            ),
+                    logoDescription = logoDescription,
                     showEmergencyCallButton = request.showEmergencyCallButton,
                 )
             }
@@ -165,6 +190,16 @@ constructor(
             !biometricsRequested && fallbackOptions.isNotEmpty()
         }
 
+    /** Whether the UI should use the Two Pane layout */
+    val isTwoPane: Flow<Boolean> =
+        combine(displayStateInteractor.isLargeScreen, displayStateInteractor.currentRotation) {
+            isLargeScreen,
+            rotation ->
+            val isLandscape =
+                rotation == DisplayRotation.ROTATION_90 || rotation == DisplayRotation.ROTATION_270
+            isLandscape && !isLargeScreen
+        }
+
     /** Enable transition animations. */
     fun setAnimateContents(animate: Boolean) {
         _animateContents.value = animate
@@ -200,34 +235,50 @@ constructor(
         _validatedAttestation.emit(null)
     }
 
-    /** Check a PIN or password and update [validatedAttestation] or [remainingAttempts]. */
-    suspend fun checkCredential(text: CharSequence, header: CredentialHeaderViewModel) =
+    /**
+     * Check a PIN or password. Updates [remainingAttempts] and legacy [validatedAttestation] flows.
+     *
+     * @return The attestation [ByteArray] if successful, null otherwise.
+     */
+    suspend fun checkCredential(text: CharSequence, header: CredentialHeaderViewModel): ByteArray? =
         checkCredential(promptCredentialInteractor.checkCredential(header.asRequest(), text = text))
 
-    /** Check a pattern and update [validatedAttestation] or [remainingAttempts]. */
+    /**
+     * Check a pattern. Updates [remainingAttempts] and legacy [validatedAttestation] flows.
+     *
+     * @return The attestation [ByteArray] if successful, null otherwise.
+     */
     suspend fun checkCredential(
         pattern: List<LockPatternView.Cell>,
         header: CredentialHeaderViewModel,
-    ) =
+    ): ByteArray? =
         checkCredential(
             promptCredentialInteractor.checkCredential(header.asRequest(), pattern = pattern)
         )
 
-    private suspend fun checkCredential(result: CredentialStatus) {
-        when (result) {
+    /**
+     * Processes the credential result.
+     * * Used in 2 ways currently:
+     * 1. The Legacy UI: Updates [_validatedAttestation] and [_remainingAttempts] flows.
+     * 2. The Compose UI: Returns the [ByteArray?] result directly.
+     */
+    private suspend fun checkCredential(result: CredentialStatus): ByteArray? {
+        return when (result) {
             is CredentialStatus.Success.Verified -> {
                 _validatedAttestation.emit(result.hat)
                 _remainingAttempts.value = RemainingAttempts()
+                result.hat
             }
             is CredentialStatus.Fail.Error -> {
                 _validatedAttestation.emit(null)
                 _remainingAttempts.value =
                     RemainingAttempts(result.remainingAttempts, result.urgentMessage ?: "")
+                null
             }
             is CredentialStatus.Fail.Throttled -> {
-                // required for completeness, but a throttled error cannot be the final result
                 _validatedAttestation.emit(null)
                 _remainingAttempts.value = RemainingAttempts()
+                null
             }
         }
     }
@@ -245,6 +296,9 @@ constructor(
     }
 
     fun performPatternDotFeedback() = msdlPlayer.playToken(MSDLToken.DRAG_INDICATOR_DISCRETE)
+
+    // TODO: Use BouncerHapticPlayer?
+    fun performPinPressFeedback() = msdlPlayer.playToken(MSDLToken.KEYPRESS_STANDARD)
 }
 
 private fun Context.asBadCredentialErrorMessage(prompt: BiometricPromptRequest?): String =
@@ -298,7 +352,7 @@ private fun Context.asResetSubtitle(credentialKind: PromptKind): String =
         }
     )
 
-private class BiometricPromptHeaderViewModelImpl(
+internal class BiometricPromptHeaderViewModelImpl(
     val request: BiometricPromptRequest.Credential,
     override val user: BiometricUserInfo,
     override val title: String,
@@ -306,6 +360,7 @@ private class BiometricPromptHeaderViewModelImpl(
     override val description: String = "",
     override val contentView: PromptContentView? = null,
     override val icon: Drawable,
+    override val logoDescription: String,
     override val showEmergencyCallButton: Boolean,
 ) : CredentialHeaderViewModel
 

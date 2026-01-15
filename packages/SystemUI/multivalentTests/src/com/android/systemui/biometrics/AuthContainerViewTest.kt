@@ -30,6 +30,7 @@ import android.hardware.fingerprint.FingerprintSensorPropertiesInternal
 import android.os.IBinder
 import android.os.UserManager
 import android.os.userManager
+import android.platform.test.annotations.DisableFlags
 import android.testing.TestableLooper
 import android.testing.TestableLooper.RunWithLooper
 import android.testing.ViewUtils
@@ -44,9 +45,10 @@ import com.android.internal.widget.LockPatternUtils.CREDENTIAL_TYPE_PASSWORD
 import com.android.internal.widget.LockPatternUtils.CREDENTIAL_TYPE_PATTERN
 import com.android.internal.widget.LockPatternUtils.CREDENTIAL_TYPE_PIN
 import com.android.internal.widget.lockPatternUtils
+import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.biometrics.domain.interactor.promptSelectorInteractor
-import com.android.systemui.biometrics.ui.viewmodel.credentialViewModel
+import com.android.systemui.biometrics.ui.viewmodel.credentialViewModelFactory
 import com.android.systemui.biometrics.ui.viewmodel.fallbackViewModelFactory
 import com.android.systemui.biometrics.ui.viewmodel.promptViewModel
 import com.android.systemui.concurrency.fakeExecutor
@@ -437,11 +439,16 @@ open class AuthContainerViewTest : SysuiTestCase() {
             )
         waitForIdleSync()
 
-        assertThat(container.hasCredentialPatternView()).isTrue()
+        if (Flags.largeScreenBp()) {
+            assertThat(container.hasCredentialView()).isTrue()
+        } else {
+            assertThat(container.hasCredentialPatternView()).isTrue()
+        }
         assertThat(container.hasBiometricPrompt()).isFalse()
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_LARGE_SCREEN_BP)
     fun testCredentialUI_disablesClickingOnBackground() {
         val container = initializeCredentialPasswordContainer()
         assertThat(container.hasBiometricPrompt()).isFalse()
@@ -451,7 +458,11 @@ open class AuthContainerViewTest : SysuiTestCase() {
         container.findViewById<View>(R.id.background)?.performClick()
         waitForIdleSync()
 
-        assertThat(container.hasCredentialPasswordView()).isTrue()
+        if (Flags.largeScreenBp()) {
+            assertThat(container.hasCredentialView()).isTrue()
+        } else {
+            assertThat(container.hasCredentialPasswordView()).isTrue()
+        }
         assertThat(container.hasBiometricPrompt()).isFalse()
     }
 
@@ -533,7 +544,11 @@ open class AuthContainerViewTest : SysuiTestCase() {
             )
         waitForIdleSync()
 
-        assertThat(container.hasCredentialPasswordView()).isTrue()
+        if (Flags.largeScreenBp()) {
+            assertThat(container.hasCredentialView()).isTrue()
+        } else {
+            assertThat(container.hasCredentialPasswordView()).isTrue()
+        }
         return container
     }
 
@@ -615,7 +630,7 @@ open class AuthContainerViewTest : SysuiTestCase() {
             kosmos.promptViewModel.apply {
                 this.iconViewModel.internal.activateIn(kosmos.testScope)
             },
-            { kosmos.credentialViewModel },
+            kosmos.credentialViewModelFactory,
             kosmos.fakeExecutor,
             kosmos.vibratorHelper,
             kosmos.msdlPlayer,
@@ -663,8 +678,12 @@ private fun AuthContainerView.hasConstraintBiometricPrompt() =
 private fun AuthContainerView.hasBiometricPrompt() =
     (findViewById<ScrollView>(R.id.biometric_scrollview)?.childCount ?: 0) > 0
 
-private fun AuthContainerView.hasCredentialView() =
-    (findViewById<View>(R.id.credential_view)?.visibility ?: View.GONE) == View.VISIBLE
+private fun AuthContainerView.hasCredentialView(): Boolean {
+    val legacy = findViewById<View>(R.id.credential_view)
+    val compose = findViewById<View>(R.id.compose_credential_view)
+
+    return (legacy?.visibility == View.VISIBLE) || (compose?.visibility == View.VISIBLE)
+}
 
 private fun AuthContainerView.hasCredentialPatternView() =
     findViewById<View>(R.id.lockPattern) != null

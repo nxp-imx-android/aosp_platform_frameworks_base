@@ -184,7 +184,7 @@ fun PinPad(viewModel: PinBouncerViewModel, verticalSpacing: Dp, modifier: Modifi
 
 @Composable
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
-private fun DigitButton(
+fun DigitButton(
     digit: Int,
     isInputEnabled: Boolean,
     onClicked: (Int) -> Unit,
@@ -215,7 +215,7 @@ private fun DigitButton(
 }
 
 @Composable
-private fun ActionButton(
+fun ActionButton(
     icon: Icon,
     isInputEnabled: Boolean,
     onClicked: () -> Unit,
