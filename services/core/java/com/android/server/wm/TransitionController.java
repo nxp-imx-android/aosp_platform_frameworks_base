@@ -21,7 +21,12 @@ import static android.view.WindowManager.TRANSIT_CHANGE;
 import static android.view.WindowManager.TRANSIT_CLOSE;
 import static android.view.WindowManager.TRANSIT_FLAG_DISPLAY_LEVEL_TRANSITION;
 import static android.view.WindowManager.TRANSIT_NONE;
+import static android.view.WindowManager.TRANSIT_OPEN;
+import static android.view.WindowManager.TRANSIT_TO_BACK;
+import static android.view.WindowManager.TRANSIT_TO_FRONT;
 import static android.window.DesktopExperienceFlags.ENABLE_PARALLEL_CD_TRANSITIONS_DURING_RECENTS;
+import static android.window.TransitionInfo.FLAGS_IS_NON_APP_WINDOW;
+import static android.window.TransitionInfo.FLAG_IS_WALLPAPER;
 
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_WINDOW_TRANSITIONS_MIN;
 import static com.android.server.wm.ActivityTaskManagerService.POWER_MODE_REASON_CHANGE_DISPLAY;
@@ -945,7 +950,7 @@ class TransitionController {
             @Nullable TransitionRequestInfo.UserChange userChange,
             @Nullable TransitionRequestInfo.WindowingLayerChange windowingLayerChange,
             @Nullable TransitionRequestInfo.FullscreenRequestChange fullscreenRequestChange) {
-        if (mIsWaitingForDisplayEnabled) {
+        if (mIsWaitingForDisplayEnabled && !Flags.fallbackTransitionPlayer()) {
             ProtoLog.v(WmProtoLogGroups.WM_DEBUG_WINDOW_TRANSITIONS,
                     "Disabling player for transition #%d because display isn't enabled yet",
                     transition.getSyncId());
@@ -2124,6 +2129,7 @@ class TransitionController {
                 throws RemoteException {
             ProtoLog.v(WM_DEBUG_WINDOW_TRANSITIONS_MIN, "Playing [FALLBACK] "
                     + "animation for #%d @%d", info.getDebugId(), info.getTrack());
+            setupStartState(info, t, finishT);
             t.apply();
             finishT.apply();
             mAtm.mH.post(() -> {
@@ -2157,6 +2163,28 @@ class TransitionController {
         @Override
         public void removeStartingWindow(StartingWindowRemovalInfo removalInfo)
                 throws RemoteException {
+        }
+
+        /**
+         * proxy of {@link com.android.wm.shell.transition.Transitions#setupStartState} but only
+         * concerned with visibility since it won't animate.
+         */
+        private static void setupStartState(@NonNull TransitionInfo info,
+                @NonNull SurfaceControl.Transaction t,
+                @NonNull SurfaceControl.Transaction finishT) {
+            for (int i = info.getChanges().size() - 1; i >= 0; --i) {
+                final TransitionInfo.Change change = info.getChanges().get(i);
+                if (change.hasFlags(FLAGS_IS_NON_APP_WINDOW & ~FLAG_IS_WALLPAPER)) continue;
+                final SurfaceControl leash = change.getLeash();
+                final int mode = info.getChanges().get(i).getMode();
+
+                if (mode == TRANSIT_OPEN || mode == TRANSIT_TO_FRONT || mode == TRANSIT_CHANGE) {
+                    t.show(leash);
+                    finishT.show(leash);
+                } else if (mode == TRANSIT_CLOSE || mode == TRANSIT_TO_BACK) {
+                    finishT.hide(leash);
+                }
+            }
         }
     }
 }
