@@ -26,6 +26,8 @@ import android.os.Parcel;
 import android.os.ParcelFileDescriptor;
 import android.os.Parcelable;
 import android.os.PersistableBundle;
+import android.os.SharedMemory;
+import android.system.OsConstants;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
@@ -173,6 +175,31 @@ public class PccBundleSanitizationUtilTest {
             PccBundleSanitizationUtil.sanitizeBundle(parcelAndUnparcel(bundle));
         } catch (Exception e) {
             throw new AssertionError("Sanitization should not fail for Bitmaps.", e);
+        }
+    }
+
+    @Test
+    public void sanitizeBundle_disallowsWritableSharedMemory() throws Exception {
+        SharedMemory sm = SharedMemory.create("test", 1024);
+        Bundle bundle = new Bundle();
+        bundle.putParcelable("sm", sm);
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            PccBundleSanitizationUtil.sanitizeBundle(parcelAndUnparcel(bundle));
+        });
+    }
+
+    @Test
+    public void sanitizeBundle_allowsReadOnlySharedMemory() throws Exception {
+        SharedMemory sm = SharedMemory.create("test", 1024);
+        sm.setProtect(OsConstants.PROT_READ);
+        Bundle bundle = new Bundle();
+        bundle.putParcelable("sm", sm);
+
+        try {
+            PccBundleSanitizationUtil.sanitizeBundle(parcelAndUnparcel(bundle));
+        } catch (IllegalArgumentException e) {
+            throw new AssertionError("Sanitization failed for read-only SharedMemory.", e);
         }
     }
 

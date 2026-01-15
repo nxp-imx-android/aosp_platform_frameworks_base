@@ -35885,6 +35885,7 @@ package android.os {
     method public int describeContents();
     method @NonNull public static android.os.SharedMemory fromFileDescriptor(@NonNull android.os.ParcelFileDescriptor);
     method public int getSize();
+    method @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public boolean isRegionReadOnly();
     method @NonNull public java.nio.ByteBuffer map(int, int, int) throws android.system.ErrnoException;
     method @NonNull public java.nio.ByteBuffer mapReadOnly() throws android.system.ErrnoException;
     method @NonNull public java.nio.ByteBuffer mapReadWrite() throws android.system.ErrnoException;
