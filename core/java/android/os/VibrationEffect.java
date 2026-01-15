@@ -1596,7 +1596,6 @@ public abstract class VibrationEffect implements Parcelable {
          *         .compose()
          * </pre>
          */
-        @FlaggedApi(Flags.FLAG_PRIMITIVE_COMPOSITION_ABSOLUTE_DELAY)
         public static final int DELAY_TYPE_PAUSE = 0;
 
         /**
@@ -1625,7 +1624,6 @@ public abstract class VibrationEffect implements Parcelable {
          *
          * <p>A primitive will be dropped from the composition if it overlaps with previous ones.
          */
-        @FlaggedApi(Flags.FLAG_PRIMITIVE_COMPOSITION_ABSOLUTE_DELAY)
         public static final int DELAY_TYPE_RELATIVE_START_OFFSET = 1;
 
         private final ArrayList<VibrationEffectSegment> mSegments = new ArrayList<>();
@@ -1710,7 +1708,6 @@ public abstract class VibrationEffect implements Parcelable {
          *                  this one or a start offset.
          * @return This {@link Composition} object to enable adding multiple elements in one chain.
          */
-        @FlaggedApi(Flags.FLAG_PRIMITIVE_COMPOSITION_ABSOLUTE_DELAY)
         @NonNull
         public Composition addPrimitive(@PrimitiveType int primitiveId,
                 @FloatRange(from = 0f, to = 1f) float scale, @IntRange(from = 0) int delay,
