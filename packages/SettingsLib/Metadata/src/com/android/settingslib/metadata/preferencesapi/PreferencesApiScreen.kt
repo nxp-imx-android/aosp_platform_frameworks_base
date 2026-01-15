@@ -34,9 +34,8 @@ import com.android.settingslib.metadata.preferencesapi.Utils.EXCEPTION_MESSAGE_N
 import com.android.settingslib.metadata.preferencesapi.Utils.getExceptionMessageMultipleParametersDefined
 import com.android.settingslib.metadata.preferencesapi.preconditions.ApiPreconditions
 import com.android.settingslib.metadata.preferencesapi.types.ApiType
-import com.android.settingslib.metadata.preferencesapi.types.GeneratedParameterType
-import com.android.settingslib.metadata.preferencesapi.types.GeneratedTypeContext
 import com.android.settingslib.metadata.preferenceHierarchy
+import com.android.settingslib.metadata.preferencesapi.types.FiniteOptionsType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
@@ -58,7 +57,7 @@ class ParameterizationConfig {
         val name: String,
         @StringRes val purpose: Int,
         val required: Boolean,
-        val type: GeneratedParameterType
+        val type: FiniteOptionsType<String>
     )
 
     internal val parameters = mutableMapOf<String, ApiParameterDefinition>()
@@ -78,7 +77,7 @@ class ParameterizationConfig {
         name: String,
         @StringRes purpose: Int,
         required: Boolean = false,
-        type: GeneratedParameterType
+        type: FiniteOptionsType<String>
     ) {
         if (parameters.containsKey(name)) {
             throw IllegalArgumentException("Parameter '$name' is already defined.")
@@ -336,9 +335,9 @@ abstract class PreferencesApiScreen(
             val parameterToUse = scope.parameters.values.first()
 
             this@PreferencesApiScreen.allPossibleParameters = { context ->
-                parameterToUse.type.lambda.invoke(GeneratedTypeContext(context)).map { parameterOption ->
+                parameterToUse.type.getOptions(context).map { parameterOption ->
                     this@PreferencesApiScreen.parametersSchema!!.prepare(
-                        parameterToUse.name to parameterOption.value
+                        parameterToUse.name to parameterOption.first
                     )
                 }
             }
