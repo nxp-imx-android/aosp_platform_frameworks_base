@@ -13889,6 +13889,65 @@ package android.security.keystore.recovery {
 
 }
 
+package android.security.trusttoken {
+
+  @FlaggedApi("android.security.talisman_service_api") public abstract class TrustTokenCallback {
+    ctor public TrustTokenCallback();
+    method public abstract void onFailure(int);
+    method public abstract void onSuccess(@NonNull android.security.trusttoken.TrustTokenResponse);
+    field public static final int ERROR_INTERNAL = 2; // 0x2
+    field public static final int ERROR_INVALID_ARGUMENT = 1; // 0x1
+    field public static final int ERROR_UNAVAILABLE = 3; // 0x3
+    field public static final int ERROR_UNKNOWN = 0; // 0x0
+  }
+
+  @FlaggedApi("android.security.talisman_service_api") public final class TrustTokenRequest implements android.os.Parcelable {
+    method public int describeContents();
+    method @NonNull public java.util.List<byte[]> getAttestation();
+    method @Nullable public byte[] getBatchHash();
+    method @NonNull public java.util.List<byte[]> getPublicKeys();
+    method @Nullable public byte[] getSignature();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.security.trusttoken.TrustTokenRequest> CREATOR;
+  }
+
+  public static final class TrustTokenRequest.Builder {
+    ctor public TrustTokenRequest.Builder();
+    method @NonNull public android.security.trusttoken.TrustTokenRequest build();
+    method @NonNull public android.security.trusttoken.TrustTokenRequest.Builder setAttestation(@NonNull java.util.List<byte[]>);
+    method @FlaggedApi("android.security.talisman_service_api") @NonNull public android.security.trusttoken.TrustTokenRequest.Builder setBatchHash(@NonNull byte[]);
+    method @NonNull public android.security.trusttoken.TrustTokenRequest.Builder setPublicKeys(@NonNull java.util.List<byte[]>);
+    method @NonNull public android.security.trusttoken.TrustTokenRequest.Builder setSignature(@NonNull byte[]);
+  }
+
+  @FlaggedApi("android.security.talisman_service_api") public final class TrustTokenResponse implements android.os.Parcelable {
+    method public int describeContents();
+    method @NonNull public java.util.List<byte[]> getEncodedTokens();
+    method @NonNull public java.util.List<byte[]> getIntermediateCertificates();
+    method @NonNull public java.util.List<byte[]> getRootAuthorityKeys();
+    method @NonNull public java.time.Instant getUpdateTime();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.security.trusttoken.TrustTokenResponse> CREATOR;
+  }
+
+  public static final class TrustTokenResponse.Builder {
+    ctor public TrustTokenResponse.Builder();
+    method @NonNull public android.security.trusttoken.TrustTokenResponse.Builder addEncodedToken(@NonNull byte[]);
+    method @NonNull public android.security.trusttoken.TrustTokenResponse.Builder addIntermediateCertificate(@NonNull byte[]);
+    method @NonNull public android.security.trusttoken.TrustTokenResponse.Builder addRootAuthorityKey(@NonNull byte[]);
+    method @NonNull public android.security.trusttoken.TrustTokenResponse build();
+    method @NonNull public android.security.trusttoken.TrustTokenResponse.Builder setUpdateTime(@NonNull java.time.Instant);
+  }
+
+  @FlaggedApi("android.security.talisman_service_api") public abstract class TrustTokenService extends android.app.Service {
+    ctor public TrustTokenService();
+    method @Nullable public final android.os.IBinder onBind(@Nullable android.content.Intent);
+    method public abstract void onRequestTrustTokens(@NonNull android.security.trusttoken.TrustTokenRequest, @NonNull android.security.trusttoken.TrustTokenCallback);
+    field public static final String SERVICE_INTERFACE = "android.security.trusttoken.TrustTokenService";
+  }
+
+}
+
 package android.service.ambientcontext {
 
   public final class AmbientContextDetectionResult implements android.os.Parcelable {
