@@ -31,6 +31,8 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.pm.UserInfo;
 import android.os.UserHandle;
+import android.service.personalcontext.hint.BundleHint;
+import android.service.personalcontext.hint.ContextHintWrapper;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
@@ -42,6 +44,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+
+import java.util.List;
+import java.util.Set;
 
 @SmallTest
 @RunWith(AndroidJUnit4.class)
@@ -160,6 +165,33 @@ public class PersonalContextManagerServiceTest {
 
         assertThat(mService.getComponentManagerForUser(USER_ID_1)).isNull();
         assertThat(mService.getComponentManagerForUser(USER_ID_2)).isNull();
+    }
+
+    @Test
+    public void testPublishTriggeringHint() {
+        PersonalContextManagerService.BinderService binderService =
+                new PersonalContextManagerService.BinderService(mService);
+
+        BundleHint hint = new BundleHint.Builder().build();
+        ContextHintWrapper hintWrapper = new ContextHintWrapper(hint);
+        List<ContextHintWrapper> hints = List.of(hintWrapper);
+        binderService.publishTriggeringHint(hints, List.of(), USER_ID_1);
+
+        verify(mService).startRefinerWorkflow(eq(USER_ID_1), anyInt(), eq(Set.of(hint)), any());
+    }
+
+    @Test
+    public void testPublishTriggeringHint_nullRenderTokens() {
+        PersonalContextManagerService.BinderService binderService =
+                new PersonalContextManagerService.BinderService(mService);
+
+        BundleHint hint = new BundleHint.Builder().build();
+        ContextHintWrapper hintWrapper = new ContextHintWrapper(hint);
+        List<ContextHintWrapper> hints = List.of(hintWrapper);
+        // publishTriggeringHint accepts null for the renderTokens argument
+        binderService.publishTriggeringHint(hints, null, USER_ID_1);
+
+        verify(mService).startRefinerWorkflow(eq(USER_ID_1), anyInt(), eq(Set.of(hint)), any());
     }
 
     private void mockUserContext(UserHandle userHandle) {

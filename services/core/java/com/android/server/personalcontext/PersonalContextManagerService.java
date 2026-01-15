@@ -275,7 +275,8 @@ public class PersonalContextManagerService extends SystemService {
         return null;
     }
 
-    private void startRefinerWorkflow(
+    @VisibleForTesting
+    void startRefinerWorkflow(
             @UserIdInt int userId,
             int processId,
             Set<ContextHint> hints,
@@ -385,10 +386,12 @@ public class PersonalContextManagerService extends SystemService {
                 .build();
     }
 
-    private static final class BinderService extends IPersonalContextManager.Stub {
+    @VisibleForTesting
+    static final class BinderService extends IPersonalContextManager.Stub {
         private final WeakReference<PersonalContextManagerService> mService;
 
-        private BinderService(PersonalContextManagerService service) {
+        @VisibleForTesting
+        BinderService(PersonalContextManagerService service) {
             mService = new WeakReference<>(service);
         }
 
@@ -418,7 +421,9 @@ public class PersonalContextManagerService extends SystemService {
         @PermissionManuallyEnforced
         @Override
         public void publishTriggeringHint(
-                List<ContextHintWrapper> hints, List<RenderToken> renderTokens, int userId) {
+                List<ContextHintWrapper> hints,
+                @Nullable List<RenderToken> renderTokens,
+                int userId) {
             verifyUser(userId);
 
             final int callingPid = Binder.getCallingPid();
@@ -431,7 +436,9 @@ public class PersonalContextManagerService extends SystemService {
                                         userId,
                                         callingPid,
                                         ContextHintWrapper.unwrapInto(hints, new HashSet<>()),
-                                        new HashSet<>(renderTokens));
+                                        renderTokens == null
+                                                ? new HashSet<>()
+                                                : new HashSet<>(renderTokens));
                     });
         }
 
