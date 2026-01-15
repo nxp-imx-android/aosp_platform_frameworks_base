@@ -22,9 +22,9 @@ import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
 import static android.content.Context.RECEIVER_NOT_EXPORTED;
 import static android.provider.Settings.ACTION_DATE_SETTINGS;
 
+import static com.android.internal.util.FrameworkStatsLog.AUTOMATIC_TIME_ZONE_CHANGE_REVERTED_BY_USER_REPORTED__SOURCE__TIME_ZONE_SOURCE_FUSED_SIGNALS;
 import static com.android.internal.util.FrameworkStatsLog.AUTOMATIC_TIME_ZONE_CHANGE_REVERTED_BY_USER_REPORTED__SOURCE__TIME_ZONE_SOURCE_LOCATION;
 import static com.android.internal.util.FrameworkStatsLog.AUTOMATIC_TIME_ZONE_CHANGE_REVERTED_BY_USER_REPORTED__SOURCE__TIME_ZONE_SOURCE_TELEPHONY;
-import static com.android.internal.util.FrameworkStatsLog.AUTOMATIC_TIME_ZONE_CHANGE_REVERTED_BY_USER_REPORTED__SOURCE__TIME_ZONE_SOURCE_FUSED_SIGNALS;
 import static com.android.internal.util.FrameworkStatsLog.AUTOMATIC_TIME_ZONE_CHANGE_REVERTED_BY_USER_REPORTED__SOURCE__UNSPECIFIED;
 import static com.android.server.SystemTimeZone.TIME_ZONE_CONFIDENCE_LOW;
 import static com.android.server.timezonedetector.TimeZoneDetectorStrategy.ORIGIN_FUSED;
@@ -425,14 +425,13 @@ public class NotifyingTimeZoneChangeListener implements TimeZoneChangeListener {
                         AUTOMATIC_TIME_ZONE_CHANGE_REVERTED_BY_USER_REPORTED__SOURCE__TIME_ZONE_SOURCE_FUSED_SIGNALS;
                 break;
             default:
-                source =
-                        AUTOMATIC_TIME_ZONE_CHANGE_REVERTED_BY_USER_REPORTED__SOURCE__UNSPECIFIED;
+                source = AUTOMATIC_TIME_ZONE_CHANGE_REVERTED_BY_USER_REPORTED__SOURCE__UNSPECIFIED;
                 break;
         }
 
         FrameworkStatsLog.write(
-                /* atomId= */ FrameworkStatsLog.
-                                    AUTOMATIC_TIME_ZONE_CHANGE_REVERTED_BY_USER_REPORTED,
+                /* atomId= */ FrameworkStatsLog
+                        .AUTOMATIC_TIME_ZONE_CHANGE_REVERTED_BY_USER_REPORTED,
                 /* source= */ source,
                 /* mcc= */ getMcc(autoEvent.getTelephonySuggestion()),
                 /* mnc= */ getMnc(autoEvent.getTelephonySuggestion()),
@@ -483,7 +482,8 @@ public class NotifyingTimeZoneChangeListener implements TimeZoneChangeListener {
 
     @NonNull
     private static String getMnc(TelephonyTimeZoneSuggestion suggestion) {
-        if (suggestion == null || suggestion.getTelephonySignal() == null
+        if (suggestion == null
+                || suggestion.getTelephonySignal() == null
                 || suggestion.getTelephonySignal().getMnc() == null) {
             return "";
         }
@@ -491,7 +491,8 @@ public class NotifyingTimeZoneChangeListener implements TimeZoneChangeListener {
     }
 
     private static int getNitzOffsetSeconds(TelephonyTimeZoneSuggestion suggestion) {
-        if (suggestion == null || suggestion.getTelephonySignal() == null
+        if (suggestion == null
+                || suggestion.getTelephonySignal() == null
                 || suggestion.getTelephonySignal().getNitzSignal() == null) {
             return -1;
         }
@@ -499,7 +500,8 @@ public class NotifyingTimeZoneChangeListener implements TimeZoneChangeListener {
     }
 
     private static int getNitzDstOffsetSeconds(TelephonyTimeZoneSuggestion suggestion) {
-        if (suggestion == null || suggestion.getTelephonySignal() == null
+        if (suggestion == null
+                || suggestion.getTelephonySignal() == null
                 || suggestion.getTelephonySignal().getNitzSignal() == null
                 || suggestion.getTelephonySignal().getNitzSignal().getDstOffset() == null) {
             // If the NITZ DST signal is not available, device is expected to assume that it is
@@ -509,8 +511,8 @@ public class NotifyingTimeZoneChangeListener implements TimeZoneChangeListener {
         return suggestion.getTelephonySignal().getNitzSignal().getDstOffset() / 1000;
     }
 
-    private static int getPrimaryLocationTimeZoneProviderPackageUid(Context context,
-             PackageManager packageManager) {
+    private static int getPrimaryLocationTimeZoneProviderPackageUid(
+            Context context, PackageManager packageManager) {
         String packageName =
                 context.getResources()
                         .getString(

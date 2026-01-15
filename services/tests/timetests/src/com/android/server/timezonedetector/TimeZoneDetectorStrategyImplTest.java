@@ -78,13 +78,11 @@ import android.app.timezonedetector.TelephonyTimeZoneSuggestion;
 import android.app.timezonedetector.TelephonyTimeZoneSuggestion.MatchType;
 import android.app.timezonedetector.TelephonyTimeZoneSuggestion.Quality;
 import android.platform.test.annotations.EnableFlags;
-import android.platform.test.annotations.RequiresFlagsDisabled;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.service.timezone.TimeZoneProviderStatus;
 import android.util.IndentingPrintWriter;
 
 import com.android.server.SystemTimeZone.TimeZoneConfidence;
-import com.android.server.timezonedetector.QualifiedTelephonyTimeZoneSuggestion;
 
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
@@ -96,7 +94,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -588,12 +585,9 @@ public class TimeZoneDetectorStrategyImplTest {
          * configuration is reset at every loop.
          */
         assertEquals(6, mFakeTimeZoneChangeEventTracker.getTimeZoneChangeEvents().size());
-            assertEquals(
-                    ORIGIN_TELEPHONY,
-                    mFakeTimeZoneChangeEventTracker
-                            .getTimeZoneChangeEvents()
-                            .getFirst()
-                            .getOrigin());
+        assertEquals(
+                ORIGIN_TELEPHONY,
+                mFakeTimeZoneChangeEventTracker.getTimeZoneChangeEvents().getFirst().getOrigin());
     }
 
     @Test

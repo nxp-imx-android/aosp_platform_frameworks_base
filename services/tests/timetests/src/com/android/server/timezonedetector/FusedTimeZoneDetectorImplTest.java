@@ -51,8 +51,6 @@ import android.os.HandlerThread;
 import android.service.timezone.TimeZoneProviderStatus;
 import android.util.IndentingPrintWriter;
 
-import androidx.test.core.app.ApplicationProvider;
-
 import com.android.server.SystemTimeZone.TimeZoneConfidence;
 import com.android.server.timezonedetector.ftzd.FusedSignals;
 

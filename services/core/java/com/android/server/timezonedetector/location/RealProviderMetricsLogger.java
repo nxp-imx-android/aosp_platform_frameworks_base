@@ -38,8 +38,8 @@ import com.android.server.timezonedetector.location.LocationTimeZoneProvider.Pro
 import com.android.server.timezonedetector.location.LocationTimeZoneProvider.ProviderState.ProviderStateEnum;
 
 /**
- * The real implementation of {@link ProviderMetricsLogger} which logs using
- * {@link FrameworkStatsLog}.
+ * The real implementation of {@link ProviderMetricsLogger} which logs using {@link
+ * FrameworkStatsLog}.
  */
 final class RealProviderMetricsLogger implements ProviderMetricsLogger {
 
@@ -52,7 +52,8 @@ final class RealProviderMetricsLogger implements ProviderMetricsLogger {
 
     @Override
     public void onProviderStateChanged(@ProviderStateEnum int stateEnum) {
-        FrameworkStatsLog.write(FrameworkStatsLog.LOCATION_TIME_ZONE_PROVIDER_STATE_CHANGED,
+        FrameworkStatsLog.write(
+                FrameworkStatsLog.LOCATION_TIME_ZONE_PROVIDER_STATE_CHANGED,
                 mProviderIndex,
                 metricsProviderState(stateEnum));
     }

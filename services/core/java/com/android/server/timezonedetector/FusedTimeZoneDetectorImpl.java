@@ -182,7 +182,8 @@ public final class FusedTimeZoneDetectorImpl implements FusedTimeZoneDetector {
                         context,
                         serviceConfigAccessor,
                         DeviceActivityMonitorImpl.create(context, handler),
-                        new TimeZoneDetectorTelemetryImpl(context,
+                        new TimeZoneDetectorTelemetryImpl(
+                                context,
                                 new EnvironmentImpl(handler),
                                 new TimeZoneDetectorStatsdLogger(),
                                 context.getPackageManager()),
