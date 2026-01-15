@@ -157,7 +157,7 @@ public class DisplayBrightnessStrategySelector {
                 displayPowerRequest.useNormalBrightnessForDoze);
         if (targetDisplayState == Display.STATE_OFF) {
             displayBrightnessStrategy = mScreenOffBrightnessStrategy;
-        } else if (shouldUseDozeBrightnessStrategy(displayPowerRequest, targetDisplayState)) {
+        } else if (shouldUseDozeBrightnessStrategy(strategySelectionRequest)) {
             displayBrightnessStrategy = mDozeBrightnessStrategy;
         } else if (BrightnessUtils.isValidBrightnessValue(
                 mFollowerBrightnessStrategy.getBrightnessToFollow())) {
@@ -334,13 +334,18 @@ public class DisplayBrightnessStrategySelector {
      * Validates if the conditions are met to qualify for the DozeBrightnessStrategy.
      */
     private boolean shouldUseDozeBrightnessStrategy(
-            DisplayManagerInternal.DisplayPowerRequest displayPowerRequest,
-            int targetDisplayState) {
+            StrategySelectionRequest strategySelectionRequest) {
+        int targetDisplayState = strategySelectionRequest.getTargetDisplayState();
+        DisplayPowerRequest displayPowerRequest = strategySelectionRequest
+                .getDisplayPowerRequest();
+
         // Check mAllowAutoBrightnessWhileDozingConfig, not mAllowAutoBrightnessWhileDozing. If
         // the first one is true but the second is false, it means that the offload session
         // temporarily disabled auto-brightness, in which case we want to use
         // FallbackBrightnessStrategy to keep the current brightness, not DozeBrightnessStrategy.
-        if (mAutomaticBrightnessStrategy.shouldUseAutoBrightness()
+        // When special charging mode is enabled, use the AutomaticBrightnessStrategy.
+        if ((mAutomaticBrightnessStrategy.shouldUseAutoBrightness()
+                || strategySelectionRequest.isChargingModeEnabled())
                 && mAllowAutoBrightnessWhileDozingConfig) {
             // Auto-brightness in doze is enabled so we shouldn't use this strategy
             return false;
