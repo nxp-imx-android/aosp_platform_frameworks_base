@@ -32,67 +32,178 @@ import java.util.Random;
 @LargeTest
 public class ArraysPerfTest {
 
-    @Rule
-    public BenchmarkRule mBenchmarkRule = new BenchmarkRule();
+    @Rule public BenchmarkRule mBenchmarkRule = new BenchmarkRule();
 
-    // A volatile boolean to store the result of the Arrays.equals calls to avoid the compiler
-    // optimizing it away.
-    private volatile boolean mResult;
+    private volatile boolean mSink;
 
-    private static final int LENGTH = 4096;
-    private final int[] a;
-    private final int[] aCopy;
-    private final int[] aDiff;
-    private final byte[] b;
-    private final byte[] bCopy;
-    private final byte[] bDiff;
+    private static final int ARRAY_LENGTH = 1024 * 1024; // 1MB elements roughly
+
+    // Primitives
+    private final byte[] byteA = new byte[ARRAY_LENGTH];
+    private final byte[] byteB = new byte[ARRAY_LENGTH];
+    private final short[] shortA = new short[ARRAY_LENGTH];
+    private final short[] shortB = new short[ARRAY_LENGTH];
+    private final int[] intA = new int[ARRAY_LENGTH];
+    private final int[] intB = new int[ARRAY_LENGTH];
+    private final long[] longA = new long[ARRAY_LENGTH];
+    private final long[] longB = new long[ARRAY_LENGTH];
+    private final char[] charA = new char[ARRAY_LENGTH];
+    private final char[] charB = new char[ARRAY_LENGTH];
+    private final float[] floatA = new float[ARRAY_LENGTH];
+    private final float[] floatB = new float[ARRAY_LENGTH];
+    private final double[] doubleA = new double[ARRAY_LENGTH];
+    private final double[] doubleB = new double[ARRAY_LENGTH];
+    private final boolean[] booleanA = new boolean[ARRAY_LENGTH];
+    private final boolean[] booleanB = new boolean[ARRAY_LENGTH];
 
     public ArraysPerfTest() {
-        a = new int[LENGTH];
-        Random random = new Random(0);
-        for (int i = 0; i < LENGTH; i++) {
-            a[i] = random.nextInt();
-        }
-        aCopy = Arrays.copyOf(a, LENGTH);
-        aDiff = Arrays.copyOf(a, LENGTH);
-        aDiff[LENGTH - 1] += 1; // Make it different at the end
+        Random r = new Random(0);
+        r.nextBytes(byteA);
+        System.arraycopy(byteA, 0, byteB, 0, ARRAY_LENGTH);
 
-        b = new byte[LENGTH];
-        random.nextBytes(b);
-        bCopy = Arrays.copyOf(b, LENGTH);
-        bDiff = Arrays.copyOf(b, LENGTH);
-        bDiff[LENGTH - 1] += 1; // Make it different at the end
+        for (int i = 0; i < ARRAY_LENGTH; i++) {
+            shortA[i] = (short) r.nextInt();
+            intA[i] = r.nextInt();
+            longA[i] = r.nextLong();
+            charA[i] = (char) r.nextInt();
+            floatA[i] = r.nextFloat();
+            doubleA[i] = r.nextDouble();
+            booleanA[i] = r.nextBoolean();
+        }
+        System.arraycopy(shortA, 0, shortB, 0, ARRAY_LENGTH);
+        System.arraycopy(intA, 0, intB, 0, ARRAY_LENGTH);
+        System.arraycopy(longA, 0, longB, 0, ARRAY_LENGTH);
+        System.arraycopy(charA, 0, charB, 0, ARRAY_LENGTH);
+        System.arraycopy(floatA, 0, floatB, 0, ARRAY_LENGTH);
+        System.arraycopy(doubleA, 0, doubleB, 0, ARRAY_LENGTH);
+        System.arraycopy(booleanA, 0, booleanB, 0, ARRAY_LENGTH);
     }
 
     @Test
-    public void timeArraysEqualsIntTrue() {
+    public void timeArraysEqualsByte() {
         final BenchmarkState state = mBenchmarkRule.getState();
         while (state.keepRunning()) {
-            mResult = Arrays.equals(a, aCopy);
-        }
-    }
-
-    @Test
-    public void timeArraysEqualsIntFalse() {
-        final BenchmarkState state = mBenchmarkRule.getState();
-        while (state.keepRunning()) {
-            mResult = Arrays.equals(a, aDiff);
+            mSink = Arrays.equals(byteA, byteB);
         }
     }
 
     @Test
-    public void timeArraysEqualsByteTrue() {
+    public void timeArraysEqualsByteRange() {
         final BenchmarkState state = mBenchmarkRule.getState();
         while (state.keepRunning()) {
-            mResult = Arrays.equals(b, bCopy);
+            mSink = Arrays.equals(byteA, 0, ARRAY_LENGTH, byteB, 0, ARRAY_LENGTH);
         }
     }
 
     @Test
-    public void timeArraysEqualsByteFalse() {
+    public void timeArraysEqualsShort() {
         final BenchmarkState state = mBenchmarkRule.getState();
         while (state.keepRunning()) {
-            mResult = Arrays.equals(b, bDiff);
+            mSink = Arrays.equals(shortA, shortB);
+        }
+    }
+
+    @Test
+    public void timeArraysEqualsShortRange() {
+        final BenchmarkState state = mBenchmarkRule.getState();
+        while (state.keepRunning()) {
+            mSink = Arrays.equals(shortA, 0, ARRAY_LENGTH, shortB, 0, ARRAY_LENGTH);
+        }
+    }
+
+    @Test
+    public void timeArraysEqualsInt() {
+        final BenchmarkState state = mBenchmarkRule.getState();
+        while (state.keepRunning()) {
+            mSink = Arrays.equals(intA, intB);
+        }
+    }
+
+    @Test
+    public void timeArraysEqualsIntRange() {
+        final BenchmarkState state = mBenchmarkRule.getState();
+        while (state.keepRunning()) {
+            mSink = Arrays.equals(intA, 0, ARRAY_LENGTH, intB, 0, ARRAY_LENGTH);
+        }
+    }
+
+    @Test
+    public void timeArraysEqualsLong() {
+        final BenchmarkState state = mBenchmarkRule.getState();
+        while (state.keepRunning()) {
+            mSink = Arrays.equals(longA, longB);
+        }
+    }
+
+    @Test
+    public void timeArraysEqualsLongRange() {
+        final BenchmarkState state = mBenchmarkRule.getState();
+        while (state.keepRunning()) {
+            mSink = Arrays.equals(longA, 0, ARRAY_LENGTH, longB, 0, ARRAY_LENGTH);
+        }
+    }
+
+    @Test
+    public void timeArraysEqualsChar() {
+        final BenchmarkState state = mBenchmarkRule.getState();
+        while (state.keepRunning()) {
+            mSink = Arrays.equals(charA, charB);
+        }
+    }
+
+    @Test
+    public void timeArraysEqualsCharRange() {
+        final BenchmarkState state = mBenchmarkRule.getState();
+        while (state.keepRunning()) {
+            mSink = Arrays.equals(charA, 0, ARRAY_LENGTH, charB, 0, ARRAY_LENGTH);
+        }
+    }
+
+    @Test
+    public void timeArraysEqualsFloat() {
+        final BenchmarkState state = mBenchmarkRule.getState();
+        while (state.keepRunning()) {
+            mSink = Arrays.equals(floatA, floatB);
+        }
+    }
+
+    @Test
+    public void timeArraysEqualsFloatRange() {
+        final BenchmarkState state = mBenchmarkRule.getState();
+        while (state.keepRunning()) {
+            mSink = Arrays.equals(floatA, 0, ARRAY_LENGTH, floatB, 0, ARRAY_LENGTH);
+        }
+    }
+
+    @Test
+    public void timeArraysEqualsDouble() {
+        final BenchmarkState state = mBenchmarkRule.getState();
+        while (state.keepRunning()) {
+            mSink = Arrays.equals(doubleA, doubleB);
+        }
+    }
+
+    @Test
+    public void timeArraysEqualsDoubleRange() {
+        final BenchmarkState state = mBenchmarkRule.getState();
+        while (state.keepRunning()) {
+            mSink = Arrays.equals(doubleA, 0, ARRAY_LENGTH, doubleB, 0, ARRAY_LENGTH);
+        }
+    }
+
+    @Test
+    public void timeArraysEqualsBoolean() {
+        final BenchmarkState state = mBenchmarkRule.getState();
+        while (state.keepRunning()) {
+            mSink = Arrays.equals(booleanA, booleanB);
+        }
+    }
+
+    @Test
+    public void timeArraysEqualsBooleanRange() {
+        final BenchmarkState state = mBenchmarkRule.getState();
+        while (state.keepRunning()) {
+            mSink = Arrays.equals(booleanA, 0, ARRAY_LENGTH, booleanB, 0, ARRAY_LENGTH);
         }
     }
 }
