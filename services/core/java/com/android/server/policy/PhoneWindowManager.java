@@ -39,7 +39,6 @@ import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.internal.perfetto.protos.Windowmanagerservice.WindowManagerPolicyProto.KEYGUARD_DELEGATE;
 import static android.internal.perfetto.protos.Windowmanagerservice.WindowManagerPolicyProto.KEYGUARD_DRAW_COMPLETE;
 import static android.internal.perfetto.protos.Windowmanagerservice.WindowManagerPolicyProto.KEYGUARD_OCCLUDED;
-import static android.internal.perfetto.protos.Windowmanagerservice.WindowManagerPolicyProto.KEYGUARD_OCCLUDED_CHANGED;
 import static android.internal.perfetto.protos.Windowmanagerservice.WindowManagerPolicyProto.KEYGUARD_OCCLUDED_PENDING;
 import static android.internal.perfetto.protos.Windowmanagerservice.WindowManagerPolicyProto.ORIENTATION;
 import static android.internal.perfetto.protos.Windowmanagerservice.WindowManagerPolicyProto.ROTATION;
@@ -3539,11 +3538,12 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_ASSISTANT:
             case KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_VOICE_ASSISTANT:
-                boolean isPowerLongPress = event.isLongPress() && isPowerKeyPressed;
-                boolean shouldLaunchAssist = complete && (canLaunchApp || isPowerLongPress);
+                boolean isLongPress = event.isLongPress();
+                boolean isPowerLongPress = isLongPress && isPowerKeyPressed;
+                boolean shouldLaunchAssist = complete && (canLaunchApp || isLongPress);
                 if (shouldLaunchAssist) {
                     launchAssistAction(
-                            isPowerLongPress ? null : Intent.EXTRA_ASSIST_INPUT_HINT_KEYBOARD,
+                            isLongPress ? null : Intent.EXTRA_ASSIST_INPUT_HINT_KEYBOARD,
                             deviceId, event.getDisplayId(), mInjector.getUptimeMillis(),
                             isPowerLongPress
                                     ? AssistUtils.INVOCATION_TYPE_POWER_BUTTON_LONG_PRESS

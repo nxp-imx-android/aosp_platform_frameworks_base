@@ -21,6 +21,7 @@ import android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.view.SurfaceControl
+import android.window.TaskAppearedInfo
 import android.window.TaskCreationParams
 import android.window.TaskPropertiesRequest.REQUEST_NONE
 import android.window.WindowContainerToken
@@ -87,10 +88,11 @@ class BubbleRootTaskTest : ShellTestCase() {
 
         initCallback.run()
 
-        val rootTaskParams = argumentCaptor<TaskCreationParams>().let { paramsCaptor ->
-            verify(taskOrganizer).createTask(paramsCaptor.capture(), eq(bubbleRootTask))
-            paramsCaptor.firstValue
-        }
+        val rootTaskParams =
+            argumentCaptor<TaskCreationParams>().let { paramsCaptor ->
+                verify(taskOrganizer).createTask(paramsCaptor.capture(), eq(bubbleRootTask))
+                paramsCaptor.firstValue
+            }
 
         assertThat(rootTaskParams.windowingMode).isEqualTo(WINDOWING_MODE_MULTI_WINDOW)
         val rootTaskProperties = rootTaskParams.taskPropertiesRequest
@@ -163,19 +165,25 @@ class BubbleRootTaskTest : ShellTestCase() {
     fun onTaskAppeared_addVisibilityBarrier() {
         val rootTaskToken = MockToken.token()
         val visibilityBarrierToken = MockToken.token()
+        val visibilityBarrierTask =
+            ActivityManager.RunningTaskInfo().apply {
+                taskId = 11
+                token = visibilityBarrierToken
+            }
         taskOrganizer.stub {
-            on { createTask(any(), any()) } doReturn visibilityBarrierToken
+            on { createTask(any(), any()) } doReturn TaskAppearedInfo(visibilityBarrierTask, mock())
         }
         bubbleRootTask.prepareRootTaskForTest(
             bubbleRootTaskId = 123,
-            bubbleRootToken = rootTaskToken
+            bubbleRootToken = rootTaskToken,
         )
 
         assertThat(bubbleRootTask.visibilityBarrierToken).isEqualTo(visibilityBarrierToken)
-        val visibilityBarrierParams = argumentCaptor<TaskCreationParams>().let { paramsCaptor ->
-            verify(taskOrganizer).createTask(paramsCaptor.capture(), eq(bubbleRootTask))
-            paramsCaptor.firstValue
-        }
+        val visibilityBarrierParams =
+            argumentCaptor<TaskCreationParams>().let { paramsCaptor ->
+                verify(taskOrganizer).createTask(paramsCaptor.capture(), eq(bubbleRootTask))
+                paramsCaptor.firstValue
+            }
         assertThat(visibilityBarrierParams.parentContainer).isEqualTo(rootTaskToken)
         assertThat(visibilityBarrierParams.isVisibilityBarrier).isTrue()
         assertThat(visibilityBarrierParams.taskPropertiesRequest.requestMask)
@@ -187,17 +195,19 @@ class BubbleRootTaskTest : ShellTestCase() {
     fun visibilityBarrier_onTaskAppearedOrChanged_doesNotAffectRootTask() {
         val rootTaskToken = MockToken.token()
         val visibilityBarrierToken = MockToken.token()
+        val visibilityBarrierTaskInfo =
+            ActivityManager.RunningTaskInfo().apply {
+                taskId = 456
+                token = visibilityBarrierToken
+            }
         taskOrganizer.stub {
-            on { createTask(any(), any()) } doReturn visibilityBarrierToken
+            on { createTask(any(), any()) } doReturn
+                TaskAppearedInfo(visibilityBarrierTaskInfo, mock())
         }
         bubbleRootTask.prepareRootTaskForTest(
             bubbleRootTaskId = 123,
-            bubbleRootToken = rootTaskToken
+            bubbleRootToken = rootTaskToken,
         )
-        val visibilityBarrierTaskInfo = ActivityManager.RunningTaskInfo().apply {
-            taskId = 456
-            token = visibilityBarrierToken
-        }
 
         bubbleRootTask.onTaskAppeared(visibilityBarrierTaskInfo, mock<SurfaceControl>())
 

@@ -17,7 +17,6 @@
 package com.android.systemui.shade;
 
 import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
-import static android.view.Display.TYPE_INTERNAL;
 
 import static com.android.systemui.display.data.repository.FakeDisplayRepositoryKt.display;
 import static com.android.systemui.log.LogBufferHelperKt.logcatLogBuffer;
@@ -44,7 +43,6 @@ import android.content.res.Resources;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.DisplayMetrics;
-import android.view.Display;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -417,8 +415,7 @@ public class NotificationPanelViewControllerBaseTest extends SysuiTestCase {
             return null;
         }).when(mView).setOnTouchListener(any(NotificationPanelViewController.TouchHandler.class));
 
-        var displayMock = display(TYPE_INTERNAL, /* flags= */ 0, /* id= */Display.DEFAULT_DISPLAY,
-                /* state= */ null);
+        var displayMock = display();
         when(mView.getDisplay()).thenReturn(displayMock);
         // Any edge transition
         when(mKeyguardTransitionInteractor.transition(any()))

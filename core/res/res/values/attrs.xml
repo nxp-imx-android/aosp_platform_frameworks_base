@@ -2032,6 +2032,26 @@
         <enum name="KEYCODE_MACRO_4" value="316" />
         <enum name="KEYCODE_EMOJI_PICKER" value="317" />
         <enum name="KEYCODE_SCREENSHOT" value="318" />
+        <enum name="KEYCODE_DICTATE" value="319" />
+        <enum name="KEYCODE_NEW" value="320" />
+        <enum name="KEYCODE_CLOSE" value="321" />
+        <enum name="KEYCODE_DO_NOT_DISTURB" value="322" />
+        <enum name="KEYCODE_PRINT" value="323" />
+        <enum name="KEYCODE_LOCK" value="324" />
+        <enum name="KEYCODE_FULLSCREEN" value="325" />
+        <enum name="KEYCODE_F13" value="326" />
+        <enum name="KEYCODE_F14" value="327" />
+        <enum name="KEYCODE_F15" value="328" />
+        <enum name="KEYCODE_F16" value="329" />
+        <enum name="KEYCODE_F17" value="330" />
+        <enum name="KEYCODE_F18" value="331" />
+        <enum name="KEYCODE_F19" value="332" />
+        <enum name="KEYCODE_F20" value="333" />
+        <enum name="KEYCODE_F21" value="334" />
+        <enum name="KEYCODE_F22" value="335" />
+        <enum name="KEYCODE_F23" value="336" />
+        <enum name="KEYCODE_F24" value="337" />
+        <enum name="KEYCODE_ACCESSIBILITY" value="338" />
     </attr>
 
     <!-- @hide same as keycode enum defined above, but to be used to define keycode output.
@@ -2356,6 +2376,26 @@
         <enum name="KEYCODE_MACRO_4" value="316" />
         <enum name="KEYCODE_EMOJI_PICKER" value="317" />
         <enum name="KEYCODE_SCREENSHOT" value="318" />
+        <enum name="KEYCODE_DICTATE" value="319" />
+        <enum name="KEYCODE_NEW" value="320" />
+        <enum name="KEYCODE_CLOSE" value="321" />
+        <enum name="KEYCODE_DO_NOT_DISTURB" value="322" />
+        <enum name="KEYCODE_PRINT" value="323" />
+        <enum name="KEYCODE_LOCK" value="324" />
+        <enum name="KEYCODE_FULLSCREEN" value="325" />
+        <enum name="KEYCODE_F13" value="326" />
+        <enum name="KEYCODE_F14" value="327" />
+        <enum name="KEYCODE_F15" value="328" />
+        <enum name="KEYCODE_F16" value="329" />
+        <enum name="KEYCODE_F17" value="330" />
+        <enum name="KEYCODE_F18" value="331" />
+        <enum name="KEYCODE_F19" value="332" />
+        <enum name="KEYCODE_F20" value="333" />
+        <enum name="KEYCODE_F21" value="334" />
+        <enum name="KEYCODE_F22" value="335" />
+        <enum name="KEYCODE_F23" value="336" />
+        <enum name="KEYCODE_F24" value="337" />
+        <enum name="KEYCODE_ACCESSIBILITY" value="338" />
     </attr>
 
     <!-- ***************************************************************** -->

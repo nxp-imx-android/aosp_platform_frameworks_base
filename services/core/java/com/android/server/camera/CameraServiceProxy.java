@@ -957,12 +957,12 @@ public class CameraServiceProxy extends SystemService
                 return;
             }
 
-            boolean enableLights = (mode != AudioRestriction.VIBRATION_SOUND);
+            boolean mutedLights = (mode == AudioRestriction.VIBRATION_SOUND);
             LightsManager lm = LocalServices.getService(LightsManager.class);
             if (lm != null) {
-                lm.setEnabledState(enableLights);
+                lm.setMutedState(mutedLights);
                 if (DEBUG) {
-                    Slog.d(TAG, "Setting lights to: " + enableLights + ", mode: " + mode);
+                    Slog.d(TAG, "Muting lights: " + mutedLights + ", mode: " + mode);
                 }
             } else {
                 Slog.w(TAG, "Unable to find the Lights service");

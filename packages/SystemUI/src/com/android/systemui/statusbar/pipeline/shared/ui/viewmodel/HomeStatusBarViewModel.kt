@@ -53,7 +53,6 @@ import com.android.systemui.plugins.DarkIconDispatcher
 import com.android.systemui.res.R
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
-import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.display.domain.interactor.ShadeExpansionTargetDisplayInteractor
 import com.android.systemui.shade.domain.interactor.ShadeDisplaysInteractor
@@ -368,14 +367,7 @@ constructor(
 
     private val isShadeVisibleOnAnyDisplay =
         if (SceneContainerFlag.isEnabled) {
-            combine(sceneInteractor.currentScene, sceneInteractor.currentOverlays) {
-                currentScene,
-                currentOverlays ->
-                currentScene == Scenes.Shade ||
-                    currentScene == Scenes.QuickSettings ||
-                    Overlays.NotificationsShade in currentOverlays ||
-                    Overlays.QuickSettingsShade in currentOverlays
-            }
+            shadeInteractor.isAnyExpanded
         } else {
             isShadeExpandedEnough
         }
@@ -402,30 +394,24 @@ constructor(
             )
             .flowOn(bgDispatcher)
 
+    private val isSceneGone =
+        sceneInteractor.currentScene.map { it == Scenes.Gone }.distinctUntilChanged()
+
     private val isHomeStatusBarAllowedByScene: Flow<Boolean> =
         combine(
-                sceneInteractor.currentScene,
+                isSceneGone,
                 isShadeVisibleOnAnyDisplay,
                 occlusionInteractor.isKeyguardOccluded,
                 isShadeWindowOnThisDisplay,
-            ) { currentScene, isShadeVisibleOnAnyDisplay, isOccluded, isShadeWindowOnThisDisplay ->
-                // The `isShadeVisibleOnAnyDisplay` flow is derived from `currentScene`, so it may
-                // be stale when `currentScene` changes (diamond problem).
-                // We check `currentScene` directly here to avoid a frame where the status bar
-                // disappears on the main display when the shade opens on an external display.
-                val isShadeVisible =
-                    isShadeVisibleOnAnyDisplay ||
-                        currentScene == Scenes.Shade ||
-                        currentScene == Scenes.QuickSettings
-
+            ) { isSceneGone, isShadeVisibleOnAnyDisplay, isOccluded, isShadeWindowOnThisDisplay ->
                 if (isOccluded) {
                     true
                 } else if (isShadeWindowOnThisDisplay) {
-                    currentScene == Scenes.Gone && !isShadeVisible
+                    isSceneGone && !isShadeVisibleOnAnyDisplay
                 } else {
                     // When the shade is visible on another display,
                     // allow the home status bar on the current display.
-                    currentScene == Scenes.Gone || isShadeVisible
+                    isSceneGone || isShadeVisibleOnAnyDisplay
                 }
             }
             .distinctUntilChanged()

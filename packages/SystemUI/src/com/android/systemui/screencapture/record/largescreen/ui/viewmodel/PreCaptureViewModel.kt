@@ -32,6 +32,7 @@ import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiPar
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
 import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInteractor
 import com.android.systemui.screencapture.record.largescreen.domain.interactor.AppWindowInteractor
+import com.android.systemui.screencapture.record.largescreen.domain.interactor.LargeScreenCaptureParametersInteractor
 import com.android.systemui.screencapture.record.largescreen.domain.interactor.ScreenshotInteractor
 import com.android.systemui.screencapture.record.largescreen.shared.model.AppWindowModel
 import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureRegion
@@ -62,6 +63,7 @@ constructor(
     private val drawableLoaderViewModel: DrawableLoaderViewModel,
     private val screenCaptureUiInteractor: ScreenCaptureUiInteractor,
     private val screenRecordingServiceInteractor: ScreenRecordingServiceInteractor,
+    private val largeScreenCaptureParametersInteractor: LargeScreenCaptureParametersInteractor,
     private val uiEventLogger: UiEventLogger,
     @ScreenCapture private val screenCaptureUiParams: ScreenCaptureUiParameters,
     toolbarViewModelFactory: PreCaptureToolbarViewModel.Factory,
@@ -77,16 +79,10 @@ constructor(
                 !wasRecording && !isRecording
             }
             .hydratedStateOf("PreCaptureViewModel#recordingIsStarted")
-    private val captureTypeSource =
-        MutableStateFlow(
-            recordingParameters.largeScreenParameters?.defaultCaptureType
-                ?: ScreenCaptureType.SCREENSHOT
-        )
-    private val captureRegionSource =
-        MutableStateFlow(
-            recordingParameters.largeScreenParameters?.defaultCaptureRegion
-                ?: ScreenCaptureRegion.FULLSCREEN
-        )
+
+    private val captureTypeSource = MutableStateFlow(ScreenCaptureType.SCREENSHOT)
+    private val captureRegionSource = MutableStateFlow(ScreenCaptureRegion.FULLSCREEN)
+
     private val regionBoxSource = MutableStateFlow<Rect?>(null)
 
     private var runningTasks: List<ActivityManager.RunningTaskInfo> = emptyList()
@@ -98,15 +94,55 @@ constructor(
 
     val isShowingUi: Boolean by isShowingUiFlow.hydratedStateOf()
 
-    // TODO(b/423697394) Init default value to be user's previously selected option
     val captureType: ScreenCaptureType by captureTypeSource.hydratedStateOf()
 
-    // TODO(b/423697394) Init default value to be user's previously selected option
     val captureRegion: ScreenCaptureRegion by captureRegionSource.hydratedStateOf()
 
     val topTask: ActivityManager.RunningTaskInfo? by topTaskSource.hydratedStateOf()
 
     val regionBox: Rect? by regionBoxSource.hydratedStateOf()
+
+    private fun isValidCaptureOptions(
+        captureType: ScreenCaptureType,
+        captureRegion: ScreenCaptureRegion,
+    ): Boolean {
+        if (
+            captureType == ScreenCaptureType.SCREENSHOT &&
+                captureRegion == ScreenCaptureRegion.APP_WINDOW
+        ) {
+            return toolbarViewModel.appWindowRegionSupported
+        }
+
+        if (
+            captureType == ScreenCaptureType.RECORDING &&
+                captureRegion == ScreenCaptureRegion.PARTIAL
+        ) {
+            return toolbarViewModel.regionRecordingSupported
+        }
+        return true
+    }
+
+    private suspend fun initializeCaptureType() {
+        val defaultType = recordingParameters.largeScreenParameters?.defaultCaptureType
+        if (defaultType != null) {
+            captureTypeSource.value = defaultType
+            largeScreenCaptureParametersInteractor.setSelectedCaptureType(defaultType)
+        } else {
+            captureTypeSource.value =
+                largeScreenCaptureParametersInteractor.getSelectedCaptureType()
+        }
+    }
+
+    private suspend fun initializeCaptureRegion() {
+        val defaultRegion = recordingParameters.largeScreenParameters?.defaultCaptureRegion
+        if (defaultRegion != null) {
+            captureRegionSource.value = defaultRegion
+            largeScreenCaptureParametersInteractor.setSelectedCaptureRegion(defaultRegion)
+        } else {
+            captureRegionSource.value =
+                largeScreenCaptureParametersInteractor.getSelectedCaptureRegion()
+        }
+    }
 
     fun updateCaptureType(selectedType: ScreenCaptureType) {
         // This fixes the crash when select partial capture region first and then click Record radio
@@ -118,6 +154,9 @@ constructor(
             updateCaptureRegion(ScreenCaptureRegion.FULLSCREEN)
         }
         captureTypeSource.value = selectedType
+        backgroundScope.launch {
+            largeScreenCaptureParametersInteractor.setSelectedCaptureType(selectedType)
+        }
         uiEventLogger.log(
             ScreenCaptureEvent.fromRegionAndType(captureRegionSource.value, selectedType)
         )
@@ -134,6 +173,9 @@ constructor(
             runningTasks = appWindowInteractor.getAppWindowTasks(displayId)
         }
         captureRegionSource.value = selectedRegion
+        backgroundScope.launch {
+            largeScreenCaptureParametersInteractor.setSelectedCaptureRegion(selectedRegion)
+        }
         uiEventLogger.log(
             ScreenCaptureEvent.fromRegionAndType(selectedRegion, captureTypeSource.value)
         )
@@ -326,6 +368,22 @@ constructor(
 
     override suspend fun onActivated() {
         coroutineScope {
+            launch {
+                coroutineScope {
+                    launch { initializeCaptureType() }
+                    launch { initializeCaptureRegion() }
+                }
+                if (!isValidCaptureOptions(captureTypeSource.value, captureRegionSource.value)) {
+                    // When the initial capture type and region are invalid, reset the region to
+                    // Fullscreen.
+                    captureRegionSource.value = ScreenCaptureRegion.FULLSCREEN
+                    launch {
+                        largeScreenCaptureParametersInteractor.setSelectedCaptureRegion(
+                            ScreenCaptureRegion.FULLSCREEN
+                        )
+                    }
+                }
+            }
             launch { toolbarViewModel.activate() }
             launch { initializeRegionBox() }
             if (captureRegion == ScreenCaptureRegion.APP_WINDOW) {

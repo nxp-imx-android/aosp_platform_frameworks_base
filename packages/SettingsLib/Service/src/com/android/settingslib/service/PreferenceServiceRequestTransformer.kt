@@ -44,6 +44,7 @@ import com.android.settingslib.metadata.CatalystFlagProviderFactory
 import com.android.settingslib.metadata.PreferenceCoordinate
 import com.android.settingslib.metadata.ReadWritePermit
 import com.android.settingslib.metadata.SensitivityLevel
+import com.android.settingslib.utils.applications.AppUtils
 
 /** Transform Catalyst Graph result to Framework GET METADATA result */
 fun transformCatalystGetMetadataResponse(
@@ -219,6 +220,14 @@ private fun PreferenceProto.toMetadata(
         SensitivityLevel.LOW_SENSITIVITY -> SettingsPreferenceMetadata.EXPECT_POST_CONFIRMATION
         SensitivityLevel.MEDIUM_SENSITIVITY -> SettingsPreferenceMetadata.DEEPLINK_ONLY
         SensitivityLevel.HIGH_SENSITIVITY -> SettingsPreferenceMetadata.DEEPLINK_ONLY
+        SensitivityLevel.UNKNOWN_SENSITIVITY -> {
+            // If it's unknown sensitivity on debug builds, report it as NO_SENSITIVITY
+            if (AppUtils.isDebuggable()) {
+                SettingsPreferenceMetadata.NO_SENSITIVITY
+            } else {
+                SettingsPreferenceMetadata.NO_DIRECT_ACCESS
+            }
+        }
         else -> SettingsPreferenceMetadata.NO_DIRECT_ACCESS
     }
     val extras = Bundle()

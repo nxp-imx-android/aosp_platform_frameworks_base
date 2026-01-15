@@ -3150,9 +3150,18 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
      */
     public boolean canShowHeadsUp() {
         boolean canEntryHun = mEntryAdapter.canPeek();
-        if (mOnKeyguard && !isDozing() && !isBypassEnabled() &&
-                (!canEntryHun
-                        || (!mIgnoreLockscreenConstraints && mSaveSpaceOnLockscreen))) {
+
+        // If SceneContainer is enabled, active HUNs (isHeadsUpState) should ALWAYS remain
+        // expanded on Keyguard. We cannot rely on dozeAmount (isWakingUp) because it
+        // reaches 0.0f (fully awake) mid-swipe, which would cause the HUN to collapse mid-swipe.
+        final boolean keepHunExpandedForSceneContainer =
+                SceneContainerFlag.isEnabled() && isHeadsUpState() && mOnKeyguard;
+
+        if (mOnKeyguard
+                && !isDozing()
+                && !isBypassEnabled()
+                && (!canEntryHun || (!mIgnoreLockscreenConstraints && mSaveSpaceOnLockscreen))
+                && !keepHunExpandedForSceneContainer) {
             return false;
         }
         return true;

@@ -100,12 +100,9 @@ public class TelecomLoaderService extends SystemService {
             connectToTelecom();
         }
     }
+    private static final String PACKAGE_NAME = "com.android.server.telecom";
 
-    private static final ComponentName SERVICE_COMPONENT = new ComponentName(
-            "com.android.server.telecom",
-            "com.android.server.telecom.components.TelecomService");
-
-    private static final String SERVICE_ACTION = "com.android.ITelecomService";
+    private static final String SERVICE_ACTION = "android.telecom.TelecomService";
 
     private final Object mLock = new Object();
 
@@ -168,7 +165,7 @@ public class TelecomLoaderService extends SystemService {
 
             LoaderServiceConnection serviceConnection = new LoaderServiceConnection();
             Intent intent = new Intent(SERVICE_ACTION);
-            intent.setComponent(SERVICE_COMPONENT);
+            intent.setPackage(PACKAGE_NAME);
             int flags = Context.BIND_IMPORTANT | Context.BIND_FOREGROUND_SERVICE
                     | Context.BIND_AUTO_CREATE;
 
@@ -286,7 +283,7 @@ public class TelecomLoaderService extends SystemService {
 
     private void restrictPhoneCallOps() {
         PackageTagsList packageRestriction = new PackageTagsList.Builder()
-                .add(SERVICE_COMPONENT.getPackageName())
+                .add(PACKAGE_NAME)
                 .build();
         if (mAppOpsManager != null) {
             mAppOpsManager.setUserRestrictionForUser(AppOpsManager.OP_PHONE_CALL_MICROPHONE, true,

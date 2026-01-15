@@ -478,7 +478,7 @@ class PreferencesApiScreenTest {
                 purpose = R.string.preference_screen_purpose
             ) {
                 init {
-                    permissions(listOf(Manifest.permission.ACCESS_FINE_LOCATION))
+                    permissions(Manifest.permission.ACCESS_FINE_LOCATION)
 
                     flag { false }
 
@@ -570,7 +570,7 @@ class PreferencesApiScreenTest {
                         HardwareUnsupported(R.string.preconditions_hardware_unsupported_message)
                     }
 
-                    permissions(listOf(Manifest.permission.ACCESS_FINE_LOCATION))
+                    permissions(Manifest.permission.ACCESS_FINE_LOCATION)
 
                     preference(
                         key = preferenceKey,
@@ -773,8 +773,8 @@ class PreferencesApiScreenTest {
                 purpose = R.string.preference_screen_purpose
             ) {
                 init {
-                    permissions(listOf(Manifest.permission.ACCESS_FINE_LOCATION))
-                    permissions(listOf(Manifest.permission.WRITE_SETTINGS))
+                    permissions(Manifest.permission.ACCESS_FINE_LOCATION)
+                    permissions(Manifest.permission.WRITE_SETTINGS)
 
                     preference(
                         key = preferenceKey,
@@ -850,8 +850,8 @@ class PreferencesApiScreenTest {
                         purpose = R.string.preference_purpose1,
                         type = AnyBoolean
                     ) {
-                        permissions(listOf(Manifest.permission.ACCESS_FINE_LOCATION))
-                        permissions(listOf(Manifest.permission.WRITE_SETTINGS))
+                        permissions(Manifest.permission.ACCESS_FINE_LOCATION)
+                        permissions(Manifest.permission.WRITE_SETTINGS)
 
                         get {
                             execute {
@@ -1084,7 +1084,7 @@ class PreferencesApiScreenTest {
                             }
                         }
 
-                        permissions(listOf(Manifest.permission.ACCESS_FINE_LOCATION))
+                        permissions(Manifest.permission.ACCESS_FINE_LOCATION)
                         preconditions(R.string.preconditions_description1) {
                             HardwareUnsupported(R.string.preconditions_hardware_unsupported_message)
                         }
@@ -1121,7 +1121,7 @@ class PreferencesApiScreenTest {
                         type = AnyBoolean
                     ) {
                         get {
-                            permissions(listOf(Manifest.permission.ACCESS_FINE_LOCATION))
+                            permissions(Manifest.permission.ACCESS_FINE_LOCATION)
 
                             execute {
                                 preferenceValue
@@ -1158,8 +1158,8 @@ class PreferencesApiScreenTest {
                         type = AnyBoolean
                     ) {
                         get {
-                            permissions(listOf(Manifest.permission.ACCESS_FINE_LOCATION))
-                            permissions(listOf(Manifest.permission.WRITE_SETTINGS))
+                            permissions(Manifest.permission.ACCESS_FINE_LOCATION)
+                            permissions(Manifest.permission.WRITE_SETTINGS)
 
                             execute {
                                 preferenceValue
@@ -1265,7 +1265,7 @@ class PreferencesApiScreenTest {
                         type = AnyBoolean
                     ) {
                         set {
-                            permissions(listOf(Manifest.permission.ACCESS_FINE_LOCATION))
+                            permissions(Manifest.permission.ACCESS_FINE_LOCATION)
 
                             preconditions(R.string.preconditions_description1) {
                                 HardwareUnsupported(R.string.preconditions_hardware_unsupported_message)
@@ -1306,8 +1306,8 @@ class PreferencesApiScreenTest {
                         type = AnyBoolean
                     ) {
                         set {
-                            permissions(listOf(Manifest.permission.ACCESS_FINE_LOCATION))
-                            permissions(listOf(Manifest.permission.WRITE_SETTINGS))
+                            permissions(Manifest.permission.ACCESS_FINE_LOCATION)
+                            permissions(Manifest.permission.WRITE_SETTINGS)
 
                             execute { value ->
                                 preferenceValue = value

@@ -16,6 +16,7 @@
 
 package com.android.systemui.accessibility.shortcutchooser.domain.interactor
 
+import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
@@ -37,6 +38,7 @@ import com.android.systemui.accessibility.shortcutchooser.shared.model.DialogReq
 import com.android.systemui.broadcast.broadcastDispatcher
 import com.android.systemui.broadcast.mockBroadcastSender
 import com.android.systemui.coroutines.collectLastValue
+import com.android.systemui.display.data.repository.displayRepository
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
@@ -73,6 +75,7 @@ class ShortcutChooserDialogInteractorTest : SysuiTestCase() {
         Kosmos.Fixture {
             ShortcutChooserDialogInteractor(
                 mockRepository,
+                displayRepository,
                 broadcastDispatcher,
                 mockBroadcastSender,
                 userRepository,
@@ -189,6 +192,26 @@ class ShortcutChooserDialogInteractorTest : SysuiTestCase() {
 
             assertThat(underTest.getAssignedAccessibilityTargetsCount(shortcutType))
                 .isEqualTo(targets.size)
+        }
+
+    @Test
+    fun getDialogContextByDisplayId_externalDisplayIdRequested_returnExpectedContext() =
+        kosmos.runTest {
+            // Mock the default application context's displayId is 0.
+            val mockApplicationContext = mock<Context>()
+            whenever(mockApplicationContext.displayId).thenReturn(DEFAULT_DISPLAY)
+            // The dialog displayId is 2.
+            val externalDisplayId = 2
+            displayRepository.addDisplay(externalDisplayId)
+            val externalDisplay = displayRepository.getDisplay(externalDisplayId)!!
+            val mockDisplayContext = mock<Context>()
+            whenever(mockApplicationContext.createDisplayContext(externalDisplay))
+                .thenReturn(mockDisplayContext)
+
+            val result =
+                underTest.getDialogContextByDisplayId(externalDisplayId, mockApplicationContext)
+
+            assertThat(result).isEqualTo(mockDisplayContext)
         }
 
     @Test

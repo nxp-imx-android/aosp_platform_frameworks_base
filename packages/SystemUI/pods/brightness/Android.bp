@@ -15,32 +15,59 @@
 
 package {
     default_applicable_licenses: ["frameworks_base_packages_SystemUI_license"],
+    default_visibility: [":__subpackages__"],
 }
 
 java_library {
-    name: "com.android.systemui.brightness-api",
+    name: "com.android.systemui.brightness_api",
+    defaults: ["sysui_api"],
+
     static_libs: [
-        "com.android.systemui.brightness.shared-api",
-        "com.android.systemui.brightness.data-api",
-        "com.android.systemui.brightness.domain-api",
-    ],
-    defaults: [
-        "SystemUI_pod_defaults_api",
+        "androidx.annotation_annotation",
+        "kotlinx_coroutines",
+        "com.android.systemui.util.kotlin",
+        "com.android.systemui.util.policy-api",
+        "SettingsLibDisplayUtils",
     ],
 }
 
 java_library {
-    name: "com.android.systemui.brightness-impl",
-    srcs: [
-        "src/main/**/*.kt",
-    ],
+    name: "com.android.systemui.brightness_main",
+    defaults: ["sysui_main"],
+
     static_libs: [
-        "com.android.systemui.brightness-api",
-        "com.android.systemui.brightness.shared-impl",
-        "com.android.systemui.brightness.data-impl",
-        "com.android.systemui.brightness.domain-impl",
+        "androidx.annotation_annotation",
+        "com.android.systemui.brightness_api",
+        "com.android.systemui.user.data-api",
+        "com.android.systemui.util.kotlin",
+        "com.android.systemui.util.policy-api",
+        "kotlinx_coroutines",
+        "SystemUISharedLib",
     ],
-    defaults: [
-        "SystemUI_pod_defaults_impl",
+}
+
+java_library {
+    name: "com.android.systemui.brightness_dagger",
+    defaults: ["sysui_dagger"],
+
+    static_libs: [
+        "com.android.systemui.brightness_main",
     ],
+
+    visibility: ["//frameworks/base/packages/SystemUI/pods"],
+}
+
+java_library {
+    name: "com.android.systemui.brightness_testlib",
+    defaults: ["sysui_testlib"],
+
+    static_libs: [
+        "com.android.systemui.brightness_main",
+        "com.android.systemui.log.table-api",
+    ],
+}
+
+filegroup {
+    name: "com.android.systemui.brightness_fixtureFiles",
+    defaults: ["sysui_fixtureFiles"],
 }

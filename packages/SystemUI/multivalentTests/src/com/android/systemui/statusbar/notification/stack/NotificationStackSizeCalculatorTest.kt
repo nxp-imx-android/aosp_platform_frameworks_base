@@ -425,6 +425,33 @@ class NotificationStackSizeCalculatorTest : SysuiTestCase() {
         assertThat(space.whenSavingSpace).isEqualTo(rowHeight)
     }
 
+    @Test
+    @EnableSceneContainer
+    fun getSpaceNeeded_onLockscreen_isHeadsUpState_returnsIntrinsicHeight() {
+        // GIVEN: No divider height since we're testing one element where index = 0
+        setGapHeight(0f)
+
+        // AND: the row is heads up
+        val expandableView = createMockRow(rowHeight)
+        whenever(expandableView.isHeadsUpState).thenReturn(true)
+
+        // AND: the row has a smaller min height, which we want to ensure is ignored
+        whenever(expandableView.getMinHeight(any())).thenReturn(1)
+
+        // WHEN: we calculate the space for the Lockscreen
+        val space =
+            sizeCalculator.getSpaceNeeded(
+                expandableView,
+                visibleIndex = 0,
+                previousView = null,
+                stack = stackLayout,
+                onLockscreen = true,
+            )
+
+        // THEN: the row gets its unrestricted height (because it is a HUN)
+        assertThat(space.whenEnoughSpace).isEqualTo(rowHeight)
+    }
+
     private fun computeMaxKeyguardNotifications(
         rows: List<ExpandableView>,
         spaceForNotifications: Float,

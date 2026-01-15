@@ -43,6 +43,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.StyleRes;
 
 import com.android.systemui.Dependency;
+import com.android.systemui.Flags;
 import com.android.systemui.animation.DialogTransitionAnimator;
 import com.android.systemui.broadcast.BroadcastDispatcher;
 import com.android.systemui.dagger.qualifiers.Application;
@@ -85,6 +86,13 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
     private final DismissReceiver mDismissReceiver;
     private final Handler mHandler = new Handler();
     private final SystemUIDialogManager mDialogManager;
+    /**
+     * Whether the dialog background should be refreshed when the theme changes between light and
+     * dark mode. Note, when set to `true` the content of the dialog should also handle the
+     * configuration change. Composables usually handle this by default, but Views may need a manual
+     * update.
+     */
+    private final boolean mRefreshBackgroundOnThemeChange;
 
     private final boolean mIsTransient;
 
@@ -92,6 +100,7 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
     private int mLastHeight = Integer.MIN_VALUE;
     private int mLastConfigurationWidthDp = -1;
     private int mLastConfigurationHeightDp = -1;
+    private int mLastNightMode = -1;
 
     private final List<Runnable> mOnCreateRunnables = new ArrayList<>();
 
@@ -203,6 +212,7 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
                     context,
                     theme,
                     DEFAULT_DISMISS_ON_DEVICE_LOCK,
+                    false /* refreshBackgroundOnThemeChange */,
                     mSystemUIDialogManager,
                     mBroadcastDispatcher,
                     mDialogTransitionAnimator,
@@ -225,6 +235,7 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
                 context,
                 theme,
                 dismissOnDeviceLock,
+                false /* refreshBackgroundOnThemeChange */,
                 dialogManager,
                 broadcastDispatcher,
                 dialogTransitionAnimator,
@@ -248,6 +259,7 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
                 context,
                 theme,
                 dismissOnDeviceLock,
+                false /* refreshBackgroundOnThemeChange */,
                 dialogManager,
                 broadcastDispatcher,
                 dialogTransitionAnimator,
@@ -261,6 +273,7 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
             Context context,
             int theme,
             boolean dismissOnDeviceLock,
+            boolean refreshBackgroundOnThemeChange,
             SystemUIDialogManager dialogManager,
             BroadcastDispatcher broadcastDispatcher,
             DialogTransitionAnimator dialogTransitionAnimator,
@@ -279,10 +292,15 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
         WindowManager.LayoutParams attrs = getWindow().getAttributes();
         attrs.setTitle(getClass().getSimpleName());
         getWindow().setAttributes(attrs);
+        if (Flags.dialogBackgroundRefresh()) {
+            mLastNightMode = context.getResources().getConfiguration().uiMode
+                    & Configuration.UI_MODE_NIGHT_MASK;
+        }
 
         mDismissReceiver = dismissOnDeviceLock ? new DismissReceiver(this, broadcastDispatcher,
                 dialogTransitionAnimator, shouldAcsdDismissDialog) : null;
         mDialogManager = dialogManager;
+        mRefreshBackgroundOnThemeChange = refreshBackgroundOnThemeChange;
     }
 
     @Override
@@ -334,6 +352,16 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
             mLastConfigurationHeightDp = configuration.screenHeightDp;
 
             updateWindowSize();
+        }
+        if (Flags.dialogBackgroundRefresh()) {
+            int nightMode = configuration.uiMode & Configuration.UI_MODE_NIGHT_MASK;
+            if (mLastNightMode != nightMode) {
+                mLastNightMode = nightMode;
+
+                if (mRefreshBackgroundOnThemeChange) {
+                    refreshBackground();
+                }
+            }
         }
 
         mDelegate.onConfigurationChanged(this, configuration);
@@ -636,24 +664,64 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
     }
 
     private static int getHorizontalInsets(Dialog dialog) {
-        View decorView = dialog.getWindow().getDecorView();
-        if (decorView == null) {
+        final View viewWithBackground = getViewWithBackground(dialog);
+        if (viewWithBackground == null) {
             return 0;
         }
-
-        // We first look for the background on the dialogContentWithBackground added by
-        // DialogTransitionAnimator. If it's not there, we use the background of the DecorView.
-        View viewWithBackground = decorView.findViewByPredicate(
-                view -> view.getTag(
-                        com.android.systemui.animation.R.id.tag_dialog_background) != null);
-        Drawable background = viewWithBackground != null ? viewWithBackground.getBackground()
-                : decorView.getBackground();
+        Drawable background = viewWithBackground.getBackground();
         Insets insets = background != null ? background.getOpticalInsets() : Insets.NONE;
         return insets.left + insets.right;
     }
 
     static int getDefaultDialogHeight() {
         return ViewGroup.LayoutParams.WRAP_CONTENT;
+    }
+
+    /**
+     * Refreshes the background of the dialog, applying the theme change between light and dark
+     * mode.
+     */
+    private void refreshBackground() {
+        final Window window = getWindow();
+        if (window == null) {
+            return;
+        }
+        final View viewWithBackground = getViewWithBackground(this);
+        if (viewWithBackground == null) {
+            return;
+        }
+        // Use the Window's Context as it already has the configuration change applied, the View's
+        // Context is updated with a delay.
+        final Context context = window.getContext();
+
+        final TypedValue outValue = new TypedValue();
+        context.getTheme().resolveAttribute(android.R.attr.windowBackground, outValue, true);
+        viewWithBackground.setBackground(context.getDrawable(outValue.resourceId));
+    }
+
+    /**
+     * Returns the view that draws the background of the dialog, or {@code null} if no suitable view
+     * was found. If non-{@code null}, this is either the view added by
+     * {@link DialogTransitionAnimator}, or the {@code decorView}.
+     *
+     * @param dialog the dialog to get the view with background for.
+     */
+    @Nullable
+    private static View getViewWithBackground(Dialog dialog) {
+        final Window window = dialog.getWindow();
+        if (window == null) {
+            return null;
+        }
+        final View decorView = window.getDecorView();
+        if (decorView == null) {
+            return null;
+        }
+        // We first look for the background on the dialogContentWithBackground added by
+        // DialogTransitionAnimator. If it's not there, we use the background of the DecorView.
+        final View viewWithBackground = decorView.findViewByPredicate(
+                view -> view.getTag(
+                        com.android.systemui.animation.R.id.tag_dialog_background) != null);
+        return viewWithBackground != null ? viewWithBackground : decorView;
     }
 
     private static class DismissReceiver extends BroadcastReceiver {

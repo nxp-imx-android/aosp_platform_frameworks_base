@@ -845,12 +845,7 @@ public class AutoclickTypePanel {
 
         // Update panel position, based on Top-Left absolute positioning.
         mParams.x = mPanelStartX + (int) deltaX;
-
-        // Adjust Y by status bar height:
-        // Note: mParams.y is relative to the content area (below the status bar),
-        // but mPanelStartY uses absolute screen coordinates. Subtract status bar
-        // height to align coordinates properly.
-        mParams.y = Math.max(0, mPanelStartY + (int) deltaY - mStatusBarHeight);
+        mParams.y = mPanelStartY + (int) deltaY;
         mWindowManager.updateViewLayout(mContentView, mParams);
 
         // Keep grabbing cursor during drag.

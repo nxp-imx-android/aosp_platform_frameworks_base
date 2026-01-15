@@ -300,6 +300,9 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
 
     static final float INVALID_DPI = 0.0f;
 
+    /** Override frame rate to use for the display when client rendering limitations are enabled. */
+    private static final float CLIENT_RENDERING_LIMITATION_FRAME_RATE_OVERRIDE = 10;
+
     private final boolean mVisibleBackgroundUserEnabled =
             UserManager.isVisibleBackgroundUsersEnabled();
 
@@ -855,6 +858,12 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
      */
     private boolean mIsHardwareRendererOutputDisabled = false;
 
+    /** Whether SystemPerformanceHinter is disabled for the display. */
+    private boolean mIsSystemPerformanceHinterDisabled = false;
+
+    /** Whether client rendering limitations are enabled for this display. **/
+    private boolean mAreClientRenderingLimitationsEnabled = false;
+
     private final Consumer<WindowState> mUpdateWindowsForAnimator = w -> {
         WindowStateAnimator winAnimator = w.mWinAnimator;
         final ActivityRecord activity = w.mActivityRecord;
@@ -1256,7 +1265,6 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         mDisplayId = display.getDisplayId();
         mCurrentUniqueDisplayId = display.getUniqueId();
         mWallpaperController = new WallpaperController(mWmService, this);
-        mWallpaperController.resetLargestDisplay(display);
         display.getDisplayInfo(mDisplayInfo);
         display.getMetrics(mDisplayMetrics);
         mDisplayUpdater = new DeferredDisplayUpdater(this);
@@ -1507,12 +1515,62 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         return mIsHardwareRendererOutputDisabled;
     }
 
+    void disableSystemPerformanceHinter() {
+        mIsSystemPerformanceHinterDisabled = true;
+    }
+
+    boolean isSystemPerformanceHinterDisabled() {
+        return mIsSystemPerformanceHinterDisabled;
+    }
+
     void setAnimationsDisabledLocked(boolean disabled) {
         if (mAnimationsDisabled != disabled) {
             mAnimationsDisabled = disabled;
             mWmService.mDisplayNotificationController
                     .dispatchDisplayAnimationsDisabledChanged(mDisplayId, mAnimationsDisabled);
         }
+    }
+
+    void enableClientRenderingLimitations(boolean enable) {
+        if (mAreClientRenderingLimitationsEnabled == enable) {
+            return;
+        }
+
+        mAreClientRenderingLimitationsEnabled = enable;
+
+        forAllWindows(w -> {
+            try {
+                w.mClient.requestViewAnimationsDisabled(enable);
+            } catch (RemoteException e) {
+            }
+        }, true /* traverseTopToBottom */);
+
+        final var transaction = mWmService.mTransactionFactory.get();
+        if (enable) {
+            enableClientRenderingLimitations(transaction);
+        } else if (mSurfaceControl != null) {
+            // Remove the frame rate override.
+            transaction
+                    .clearFrameRate(mSurfaceControl)
+                    .setFrameRateSelectionStrategy(mSurfaceControl,
+                            SurfaceControl.FRAME_RATE_SELECTION_STRATEGY_PROPAGATE);
+        }
+        transaction.apply();
+    }
+
+    boolean areClientRenderingLimitationsEnabled() {
+        return mAreClientRenderingLimitationsEnabled;
+    }
+
+    private void enableClientRenderingLimitations(Transaction transaction) {
+        if (mSurfaceControl == null) {
+            return;
+        }
+        transaction
+                .setFrameRate(mSurfaceControl, CLIENT_RENDERING_LIMITATION_FRAME_RATE_OVERRIDE,
+                        Surface.FRAME_RATE_COMPATIBILITY_DEFAULT)
+                .setFrameRateSelectionStrategy(mSurfaceControl,
+                        SurfaceControl.FRAME_RATE_SELECTION_STRATEGY_OVERRIDE_CHILDREN);
     }
 
     /**
@@ -1584,6 +1642,10 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
 
         for (int i = 0; i < mDisplayMirrors.size(); i++) {
             mDisplayMirrors.get(i).recreateMirror(mSurfaceControl, transaction);
+        }
+
+        if (mAreClientRenderingLimitationsEnabled) {
+            enableClientRenderingLimitations(transaction);
         }
 
         transaction
@@ -3731,7 +3793,6 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             mWmService.mAccessibilityController.onDisplayRemoved(mDisplayId);
             mRootWindowContainer.mTaskSupervisor
                     .getKeyguardController().onDisplayRemoved(this);
-            mWallpaperController.resetLargestDisplay(mDisplay);
             mWmService.mDisplayWindowSettings.onDisplayRemoved(this);
             getDisplayUiContext().unregisterComponentCallbacks(mSysUiContextConfigCallback);
             removeAllDisplayMirrors(getPendingTransaction());
@@ -4032,6 +4093,14 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         pw.println();
         pw.print(prefix + "mLastWakeLockObscuringWindow=");
         pw.println(mLastWakeLockObscuringWindow);
+
+        pw.println();
+        pw.print(prefix);
+        pw.print("mIsHardwareRendererOutputDisabled=");
+        pw.println(mIsHardwareRendererOutputDisabled);
+        pw.print(prefix);
+        pw.print("mAreClientRenderingLimitationsEnabled=");
+        pw.println(mAreClientRenderingLimitationsEnabled);
 
         pw.println();
         mWallpaperController.dump(pw, "  ");
@@ -6385,8 +6454,6 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                 updateRecording();
             }
         }
-        // Notify wallpaper controller of any size changes.
-        mWallpaperController.resetLargestDisplay(mDisplay);
         // Dispatch pending Configuration to WindowContext if the associated display changes to
         // un-suspended state from suspended.
         if (isSuspendedState(lastDisplayState)

@@ -172,23 +172,11 @@ flag {
 }
 
 flag {
-    name: "enable_bubble_event_history_logs"
-    namespace: "multitasking"
-    description: "Enable bubble event history logs"
-    bug: "436320481"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
      name: "enable_2x1_split"
      namespace: "multitasking"
      description: "Enables the 2x1 split implementation"
      bug: "439992109"
 }
-
-
 
 flag {
     name: "bug_dont_remove_task_bubble"
@@ -215,16 +203,6 @@ flag {
     namespace: "multitasking"
     description: "Fixes the swipe up gesture getting broken due to bubbles."
     bug: "444859270"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "limit_persisted_launch_params_freeform"
-    namespace: "multitasking"
-    description: "Limits loading persisted launch params to freeform TDAs"
-    bug: "419385904"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

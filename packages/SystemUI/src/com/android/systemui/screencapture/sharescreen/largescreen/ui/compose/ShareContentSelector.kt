@@ -53,9 +53,12 @@ import com.android.systemui.screencapture.common.ui.viewmodel.AppContentsViewMod
 import com.android.systemui.screencapture.common.ui.viewmodel.DisplaysViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.RecentTasksViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.TargetsViewModel
+import com.android.systemui.screencapture.sharescreen.ui.viewmodel.ScreenCaptureShareScreenViewModel
 
 @Composable
-fun ShareContentSelector(targetsViewModel: TargetsViewModel) {
+fun ShareContentSelector(shareScreenViewModel: ScreenCaptureShareScreenViewModel) {
+    val targetsViewModel = shareScreenViewModel.currentTargetsModel
+
     Surface(color = MaterialTheme.colorScheme.surfaceBright, shape = RoundedCornerShape(20.dp)) {
         Column(
             modifier =
@@ -91,7 +94,7 @@ fun ShareContentSelector(targetsViewModel: TargetsViewModel) {
                     itemSelected = selectedItem != null,
                 )
             }
-            DisclaimerText(targetsViewModel)
+            DisclaimerText(targetsViewModel, shareScreenViewModel.requestingAppName)
             if (targetsViewModel is AppContentsViewModel) {
                 AudioSwitch(targetsViewModel)
             }
@@ -132,16 +135,17 @@ private fun ItemPreview(
 }
 
 @Composable
-private fun DisclaimerText(targetsViewModel: TargetsViewModel) {
+private fun DisclaimerText(targetsViewModel: TargetsViewModel, requestingAppName: String) {
     Text(
         text =
             stringResource(
                 when (targetsViewModel) {
+                    is AppContentsViewModel -> R.string.screen_share_disclaimer_tab_sharing
+                    is RecentTasksViewModel -> R.string.screen_share_disclaimer_app_sharing
                     is DisplaysViewModel -> R.string.screen_share_disclaimer_full_screen_sharing
-                    // TODO(b/423708479) Fill the tab sharing legal text with potential text
-                    // refactoring.
-                    else -> R.string.screen_share_disclaimer_app_sharing
-                }
+                    else -> throw IllegalArgumentException("Unknown TargetsViewModel type")
+                },
+                requestingAppName,
             ),
         style = MaterialTheme.typography.labelMedium,
         modifier = Modifier.padding(start = 8.dp, end = 8.dp).fillMaxWidth(),

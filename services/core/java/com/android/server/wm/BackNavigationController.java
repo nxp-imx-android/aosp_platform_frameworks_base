@@ -376,6 +376,14 @@ class BackNavigationController {
                 // Skip if one of previous activity doesn't has window. Predictive back animation
                 // cannot resume previous activity, so nothing will be shown.
                 backType = BackNavigationInfo.TYPE_CALLBACK;
+            } else if (hasActivityLockedByAppLockLocked(prevActivities)) {
+                // Skip if one of previous activities is locked by App Lock since it won't be
+                // visible according to AppLockOverlayController. Disabling animation to avoid
+                // animating the App Lock overlay prematurely.
+                ProtoLog.d(WM_DEBUG_BACK_PREVIEW, "One of previous activities is locked by App"
+                        + " Lock, which means it won't be visible. Disabling animation to avoid"
+                        + " animating App Lock overlay prematurely.");
+                backType = BackNavigationInfo.TYPE_CALLBACK;
             } else if (prevActivities.size() > 0
                     && requestOverride == SystemOverrideOnBackInvokedCallback.OVERRIDE_UNDEFINED) {
                 if ((!isOccluded || isAllActivitiesCanShowWhenLocked(prevActivities))
@@ -681,6 +689,21 @@ class BackNavigationController {
         for (int i = prevActivities.size() - 1; i >= 0; --i) {
             final ActivityRecord test = prevActivities.get(i);
             if (!test.occludesParent() || test.hasWallpaper()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean hasActivityLockedByAppLockLocked(
+            @NonNull ArrayList<ActivityRecord> prevActivities) {
+        if (!android.security.Flags.appLockApis() || !android.security.Flags.appLockCore()) {
+            return false;
+        }
+        for (int i = prevActivities.size() - 1; i >= 0; --i) {
+            final ActivityRecord test = prevActivities.get(i);
+            if (mWindowManagerService.isPackageLockedByAppLockLocked(test.packageName,
+                    test.mUserId)) {
                 return true;
             }
         }
@@ -1400,6 +1423,17 @@ class BackNavigationController {
             mStartingSurfaceTargetMatch = true;
 
             if (mOpenAnimAdaptor.mRequestedStartingSurfaceId == INVALID_TASK_ID) {
+                return;
+            }
+            if (mOpenActivities == null) {
+                return;
+            }
+            boolean allWindowDrawn = true;
+            for (int i = mOpenActivities.length - 1; i >= 0; --i) {
+                final ActivityRecord ar = mOpenActivities[i];
+                allWindowDrawn &= ar.isReportedDrawn();
+            }
+            if (!allWindowDrawn) {
                 return;
             }
             startTransaction.addTransactionCommittedListener(Runnable::run, () -> {

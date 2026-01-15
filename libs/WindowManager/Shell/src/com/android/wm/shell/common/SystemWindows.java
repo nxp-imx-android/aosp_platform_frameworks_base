@@ -408,5 +408,8 @@ public class SystemWindows {
 
         @Override
         public void requestHardwareRendererOutputDisabled(boolean disabled) {}
+
+        @Override
+        public void requestViewAnimationsDisabled(boolean disabled) {}
     }
 }

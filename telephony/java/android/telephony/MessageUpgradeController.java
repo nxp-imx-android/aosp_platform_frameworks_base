@@ -102,13 +102,34 @@ public final class MessageUpgradeController {
     }
 
     /**
+     * Checks if the calling package is not the default messaging app (DMA) and if the DMA has a
+     * valid {@link AlternativeMessageTransportService}.
+     *
+     * @param callingPkg the calling app's package.
+     * @return {@code true} if the calling package is not the default messaging app (DMA) and if the
+     *         DMA has a valid {@link AlternativeMessageTransportService}, returns false otherise.
+     */
+    public boolean isMessageUpgradeSupportedAndNotDma(String callingPkg) {
+        if (TextUtils.isEmpty(callingPkg)) {
+            throw new IllegalArgumentException("callingPkg cannot be null or empty");
+        }
+
+        String defaultSmsAppPackage = getDefaultSmsAppPackage();
+        if (TextUtils.isEmpty(defaultSmsAppPackage)) {
+            throw new NullPointerException("Default SMS app package is null");
+        }
+
+        return !callingPkg.equals(defaultSmsAppPackage) && isMessageUpgradeSupported();
+    }
+
+    /**
      * Checks if the default SMS app has implemented the
      * {@link android.service.messaging.AlternativeMessageTransportService}.
      *
      * @return {@code true} if the default SMS app has a AlternativeMessageTransportService.
      */
     // TODO(b/470708258): cache the result of message upgrade supported check
-    public boolean isMessageUpgradeSupported() {
+    private boolean isMessageUpgradeSupported() {
         String smsAppPackage = getDefaultSmsAppPackage();
         if (TextUtils.isEmpty(smsAppPackage)) {
             Log.e(TAG, "No default sms app found.");
@@ -130,20 +151,6 @@ public final class MessageUpgradeController {
             }
         }
         return false;
-    }
-
-    /**
-     * Checks if the given package is the default SMS app for the current user.
-     *
-     * @param packageName The package name to check.
-     * @return true if the packageName is the default SMS app.
-     */
-    public boolean isDefaultSmsApp(@NonNull String packageName) {
-        if (TextUtils.isEmpty(packageName)) {
-            throw new IllegalArgumentException("Package name cannot be null or empty");
-        }
-
-        return packageName.equals(getDefaultSmsAppPackage());
     }
 
     /**

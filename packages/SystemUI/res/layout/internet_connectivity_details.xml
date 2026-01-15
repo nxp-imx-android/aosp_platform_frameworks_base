@@ -39,8 +39,8 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:paddingTop="@dimen/settingslib_expressive_space_extrasmall3"
-            android:progressBackgroundTint="@androidprv:color/materialColorSecondaryContainer"
-            android:progressTint="@androidprv:color/materialColorPrimary"
+            android:progressBackgroundTint="@color/materialColorSecondaryContainer"
+            android:progressTint="@color/materialColorPrimary"
             android:splitTrack="false"
             android:visibility="gone" />
     </LinearLayout>
@@ -172,7 +172,7 @@
                             <ImageView
                                 android:id="@+id/signal_icon"
                                 android:contentDescription="@string/mobile_data"
-                                android:tint="@androidprv:color/materialColorOnSurface"
+                                android:tint="@color/materialColorOnSurface"
                                 android:autoMirrored="true"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
@@ -399,7 +399,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
-                        android:tint="@androidprv:color/materialColorOnSurface" />
+                        android:tint="@color/materialColorOnSurface" />
                 </FrameLayout>
 
                 <FrameLayout
@@ -436,7 +436,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:src="@drawable/ic_info_outline"
-                    android:tint="?android:attr/textColorTertiary" />
+                    android:tint="@color/materialColorOutline" />
 
                 <TextView
                     android:text="@string/change_connected_wifi_text"
@@ -471,7 +471,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:src="@drawable/ic_info_outline"
-                        android:tint="?android:attr/textColorTertiary" />
+                        android:tint="@color/materialColorOutline" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -486,7 +486,7 @@
                         android:clickable="true"
                         android:paddingBottom="8dp"
                         android:paddingTop="16dp"
-                        android:textColor="?android:attr/textColorSecondary" />
+                        android:textColor="@color/materialColorOnSurfaceVariant" />
                 </LinearLayout>
             </LinearLayout>
 
@@ -524,7 +524,7 @@
                             android:src="@drawable/qs_airplane_icon_on"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:tint="@androidprv:color/materialColorOnSurface" />
+                            android:tint="@color/materialColorOnSurface" />
                     </FrameLayout>
 
                     <FrameLayout
@@ -567,7 +567,7 @@
                             android:src="@drawable/ic_screenshot_share"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:tint="@androidprv:color/materialColorOnSurface" />
+                            android:tint="@color/materialColorOnSurface" />
                     </FrameLayout>
 
                     <FrameLayout

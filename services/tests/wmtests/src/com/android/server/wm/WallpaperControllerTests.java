@@ -33,7 +33,6 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.mock;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 import static com.android.server.policy.WindowManagerPolicy.FINISH_LAYOUT_REDO_WALLPAPER;
-import static com.android.window.flags.Flags.multiCrop;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -43,7 +42,6 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeFalse;
 import static org.mockito.ArgumentMatchers.anyFloat;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
@@ -481,10 +479,9 @@ public class WallpaperControllerTests extends WindowTestsBase {
     }
 
     @Test
-    public void testUpdateWallpaperOffset_initial_shouldCenterDisabled() {
+    public void testUpdateWallpaperOffset_initial() {
         final DisplayContent dc = new TestDisplayContent.Builder(mAtm, INITIAL_WIDTH,
                 INITIAL_HEIGHT).build();
-        dc.mWallpaperController.setShouldOffsetWallpaperCenter(false);
         prepareSmallerSecondDisplay(dc, SECOND_WIDTH, INITIAL_HEIGHT);
         final WindowState wallpaperWindow = createWallpaperWindow(dc, INITIAL_WIDTH,
                 INITIAL_HEIGHT);
@@ -497,48 +494,9 @@ public class WallpaperControllerTests extends WindowTestsBase {
     }
 
     @Test
-    public void testUpdateWallpaperOffset_initial_shouldCenterEnabled() {
+    public void testUpdateWallpaperOffset_resize() {
         final DisplayContent dc = new TestDisplayContent.Builder(mAtm, INITIAL_WIDTH,
                 INITIAL_HEIGHT).build();
-        dc.mWallpaperController.setShouldOffsetWallpaperCenter(true);
-        prepareSmallerSecondDisplay(dc, SECOND_WIDTH, INITIAL_HEIGHT);
-        final WindowState wallpaperWindow = createWallpaperWindow(dc, INITIAL_WIDTH,
-                INITIAL_HEIGHT);
-
-        dc.mWallpaperController.updateWallpaperOffset(wallpaperWindow);
-
-        // Wallpaper matches first display, so has no offset.
-        assertThat(wallpaperWindow.mXOffset).isEqualTo(0);
-        assertThat(wallpaperWindow.mYOffset).isEqualTo(0);
-    }
-
-    @Test
-    public void testUpdateWallpaperOffset_resize_shouldCenterEnabled() {
-        assumeFalse(multiCrop());
-        final DisplayContent dc = new TestDisplayContent.Builder(mAtm, INITIAL_WIDTH,
-                INITIAL_HEIGHT).build();
-        dc.mWallpaperController.setShouldOffsetWallpaperCenter(true);
-        prepareSmallerSecondDisplay(dc, SECOND_WIDTH, INITIAL_HEIGHT);
-        final WindowState wallpaperWindow = createWallpaperWindow(dc, INITIAL_WIDTH,
-                INITIAL_HEIGHT);
-
-        dc.mWallpaperController.updateWallpaperOffset(wallpaperWindow);
-
-        // Resize display to match second display bounds.
-        resizeDisplayAndWallpaper(dc, wallpaperWindow, SECOND_WIDTH, INITIAL_HEIGHT);
-
-        dc.mWallpaperController.updateWallpaperOffset(wallpaperWindow);
-
-        // Wallpaper is 300 wider than second display.
-        assertThat(wallpaperWindow.mXOffset).isEqualTo(-Math.abs(INITIAL_WIDTH - SECOND_WIDTH) / 2);
-        assertThat(wallpaperWindow.mYOffset).isEqualTo(0);
-    }
-
-    @Test
-    public void testUpdateWallpaperOffset_resize_shouldCenterDisabled() {
-        final DisplayContent dc = new TestDisplayContent.Builder(mAtm, INITIAL_WIDTH,
-                INITIAL_HEIGHT).build();
-        dc.mWallpaperController.setShouldOffsetWallpaperCenter(false);
         prepareSmallerSecondDisplay(dc, SECOND_WIDTH, INITIAL_HEIGHT);
         final WindowState wallpaperWindow = createWallpaperWindow(dc, INITIAL_WIDTH,
                 INITIAL_HEIGHT);

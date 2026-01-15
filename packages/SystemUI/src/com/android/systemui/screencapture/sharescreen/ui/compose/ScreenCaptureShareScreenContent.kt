@@ -39,16 +39,16 @@ constructor(
     @Composable
     override fun Content() {
         val isLargeScreen by deviceStateRepository.isLargeScreen.collectAsStateWithLifecycle()
-        val content: ScreenCaptureContent? by
+        val content: ScreenCaptureContent by
             remember(isLargeScreen) {
                 derivedStateOf {
-                    when (isLargeScreen) {
-                        true -> largeShareScreenContent.get()
-                        false -> smallShareScreenContent.get()
-                        else -> null
+                    if (isLargeScreen) {
+                        largeShareScreenContent.get()
+                    } else {
+                        smallShareScreenContent.get()
                     }
                 }
             }
-        content?.Content()
+        content.Content()
     }
 }

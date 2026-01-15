@@ -295,6 +295,16 @@ flag {
 }
 
 flag {
+    name: "dialog_background_refresh"
+    namespace: "systemui"
+    description: "Enable refreshing the background of SystemUIDialogs when the theme changes between light and dark mode"
+    bug: "474600479"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
    name: "disable_contextual_tips_frequency_check"
    description: "Disables frequency capping check for contextual tips."
    namespace: "systemui"
@@ -1342,16 +1352,6 @@ flag {
 }
 
 flag {
-    name: "qs_material_expressive_tiles"
-    namespace: "systemui"
-    description: "Uses the Material Expressive button groups for QS tiles."
-    bug: "419309247"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
    name: "qs_new_tiles"
    namespace: "systemui"
    description: "Use the new tiles in the Quick Settings. Should have no behavior changes."
@@ -1848,13 +1848,6 @@ flag {
 }
 
 flag {
-   name: "switch_user_on_bg"
-   namespace: "systemui"
-   description: "Does user switching on a background thread"
-   bug: "284095720"
-}
-
-flag {
     name: "synchronized_queue_cascade_notify"
     namespace: "systemui"
     description: "Cascade notify() in SynchornizedLinkedBlockingQueue to prevent waking up all threads unnecessarily"
@@ -1907,6 +1900,13 @@ flag {
     metadata {
         purpose: PURPOSE_BUGFIX
     }
+}
+
+flag {
+  name: "upright_charging_dreams_setup"
+  namespace: "systemui"
+  description: "Trigger a setup component based on the first time the user is upright + charging"
+  bug: "473859719"
 }
 
 flag {

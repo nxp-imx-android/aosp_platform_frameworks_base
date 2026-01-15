@@ -22,6 +22,7 @@ import static android.view.WindowManager.LayoutParams.TYPE_ACCESSIBILITY_MAGNIFI
 import static android.view.WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY;
 import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION_ABOVE_SUB_PANEL;
 import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION_ATTACHED_DIALOG;
+import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION_CAPTION_BAR;
 import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION_MEDIA;
 import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION_MEDIA_OVERLAY;
 import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
@@ -666,6 +667,7 @@ public interface WindowManagerPolicy extends WindowManagerPolicyConstants {
     default int getSubWindowLayerFromTypeLw(int type) {
         switch (type) {
             case TYPE_APPLICATION_PANEL:
+            case TYPE_APPLICATION_CAPTION_BAR:
             case TYPE_APPLICATION_ATTACHED_DIALOG:
                 return APPLICATION_PANEL_SUBLAYER;
             case TYPE_APPLICATION_MEDIA:

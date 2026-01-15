@@ -20,7 +20,7 @@ import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.content.Context;
 import android.hardware.contexthub.ContextHubInfo;
-import android.hardware.contexthub.DataFlowConsumerHandle;
+import android.hardware.contexthub.DataFlowSinkContext;
 import android.hardware.contexthub.DataFlowId;
 import android.hardware.contexthub.EndpointInfo;
 import android.hardware.contexthub.ErrorCode;
@@ -514,22 +514,22 @@ import java.util.function.Consumer;
     }
 
     @Override
-    public void onDataFlowHostConsumerRegistered(
-            DataFlowConsumerHandle handle,
-            HubEndpointInfo.HubEndpointIdentifier producerId,
-            HubEndpointInfo.HubEndpointIdentifier consumerId,
+    public void onDataFlowHostSinkRegistered(
+            DataFlowSinkContext context,
+            HubEndpointInfo.HubEndpointIdentifier sourceId,
+            HubEndpointInfo.HubEndpointIdentifier sinkId,
             HubMessage msg,
             int sessionId) {
-        ContextHubEndpointBroker broker = mEndpointMap.get(consumerId.getEndpoint());
+        ContextHubEndpointBroker broker = mEndpointMap.get(sinkId.getEndpoint());
         if (broker == null) {
             Log.w(
                     TAG,
-                    "onDataFlowHostConsumerRegistered: unknown consumer endpoint ID "
-                            + consumerId.getEndpoint());
+                    "onDataFlowHostSinkRegistered: unknown sink endpoint ID "
+                            + sinkId.getEndpoint());
             return;
         }
-        broker.onDataFlowHostConsumerRegistered(
-                handle, mHubInfoRegistry.getEndpointInfo(producerId), msg, sessionId);
+        broker.onDataFlowHostSinkRegistered(
+                context, mHubInfoRegistry.getEndpointInfo(sourceId), msg, sessionId);
     }
 
     @Override

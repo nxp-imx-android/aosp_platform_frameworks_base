@@ -11680,6 +11680,132 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun handleRequest_freeformTaskMove_fromMinimizedState_sameDisplay_staysMinimized_noZOrderChange() {
+        val stableBounds =
+            Rect(0, 0, DISPLAY_DIMENSION_LONG, DISPLAY_DIMENSION_SHORT - TASKBAR_FRAME_HEIGHT)
+        whenever(displayLayout.getStableBounds(any())).thenAnswer { i ->
+            (i.arguments.first() as Rect).set(stableBounds)
+        }
+
+        val task = setUpFreeformTask(bounds = DEFAULT_LANDSCAPE_BOUNDS)
+        taskRepository.minimizeTask(DEFAULT_DISPLAY, task.taskId)
+        val requestedBounds = Rect(DEFAULT_LANDSCAPE_BOUNDS).apply { inset(10, 20, 30, 40) }
+
+        val wct =
+            controller.handleRequest(
+                Binder(),
+                createTaskMoveTransition(task, task.displayId, requestedBounds),
+            )
+
+        assertNotNull(wct, "should handle request")
+        assertThat(findBoundsChange(wct, task)).isEqualTo(requestedBounds)
+        verify(desksOrganizer, never()).moveTaskToDesk(eq(wct), any(), any(), any())
+        verify(desksOrganizer, never()).unminimizeTask(eq(wct), any(), any())
+        verify(desksOrganizer, never()).reorderTaskToFront(eq(wct), any(), any())
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun handleRequest_freeformTaskMove_fromMinimizedState_crossDisplay_unminimizes() {
+        val stableBounds =
+            Rect(0, 0, DISPLAY_DIMENSION_LONG, DISPLAY_DIMENSION_SHORT - TASKBAR_FRAME_HEIGHT)
+        whenever(displayLayout.getStableBounds(any())).thenAnswer { i ->
+            (i.arguments.first() as Rect).set(stableBounds)
+        }
+
+        val task = setUpFreeformTask(bounds = DEFAULT_LANDSCAPE_BOUNDS)
+        taskRepository.minimizeTask(DEFAULT_DISPLAY, task.taskId)
+        val requestedBounds = Rect(DEFAULT_LANDSCAPE_BOUNDS).apply { inset(10, 20, 30, 40) }
+
+        val targetDeskId = 2
+        taskRepository.addDesk(displayId = SECOND_DISPLAY, deskId = targetDeskId)
+        taskRepository.setActiveDesk(displayId = SECOND_DISPLAY, deskId = targetDeskId)
+        whenever(rootTaskDisplayAreaOrganizer.displayIds)
+            .thenReturn(intArrayOf(DEFAULT_DISPLAY, SECOND_DISPLAY))
+        desktopState.enterDesktopByDefaultOnFreeformDisplay = true
+        rootTaskDisplayAreaOrganizer.setDesktopFirst(SECOND_DISPLAY)
+
+        val wct =
+            controller.handleRequest(
+                Binder(),
+                createTaskMoveTransition(task, SECOND_DISPLAY, requestedBounds),
+            )
+
+        assertNotNull(wct, "should handle request")
+        assertThat(findBoundsChange(wct, task)).isEqualTo(requestedBounds)
+        verify(desksOrganizer).moveTaskToDesk(wct, targetDeskId, task, minimized = false)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun handleRequest_freeformTaskMove_fromInactiveDesk_sameDisplay_noZOrderChange() {
+        val stableBounds =
+            Rect(0, 0, DISPLAY_DIMENSION_LONG, DISPLAY_DIMENSION_SHORT - TASKBAR_FRAME_HEIGHT)
+        whenever(displayLayout.getStableBounds(any())).thenAnswer { i ->
+            (i.arguments.first() as Rect).set(stableBounds)
+        }
+
+        val activeDeskId = 4
+        taskRepository.addDesk(displayId = DEFAULT_DISPLAY, deskId = activeDeskId)
+        taskRepository.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = activeDeskId)
+        val inactiveDeskId = 5
+        taskRepository.addDesk(displayId = DEFAULT_DISPLAY, deskId = inactiveDeskId)
+
+        val task = setUpFreeformTask(bounds = DEFAULT_LANDSCAPE_BOUNDS, deskId = inactiveDeskId)
+        val requestedBounds = Rect(DEFAULT_LANDSCAPE_BOUNDS).apply { inset(10, 20, 30, 40) }
+
+        val wct =
+            controller.handleRequest(
+                Binder(),
+                createTaskMoveTransition(task, task.displayId, requestedBounds),
+            )
+
+        assertNotNull(wct, "should handle request")
+        assertThat(findBoundsChange(wct, task)).isEqualTo(requestedBounds)
+        verify(desksOrganizer, never()).moveTaskToDesk(eq(wct), any(), any(), any())
+        verify(desksOrganizer, never()).unminimizeTask(eq(wct), any(), any())
+        verify(desksOrganizer, never()).reorderTaskToFront(eq(wct), any(), any())
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun handleRequest_freeformTaskMove_fromInactiveDesk_crossDisplay_movesToActiveDesk() {
+        val stableBounds =
+            Rect(0, 0, DISPLAY_DIMENSION_LONG, DISPLAY_DIMENSION_SHORT - TASKBAR_FRAME_HEIGHT)
+        whenever(displayLayout.getStableBounds(any())).thenAnswer { i ->
+            (i.arguments.first() as Rect).set(stableBounds)
+        }
+
+        val activeDeskId = 4
+        taskRepository.addDesk(displayId = DEFAULT_DISPLAY, deskId = activeDeskId)
+        taskRepository.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = activeDeskId)
+        val inactiveDeskId = 5
+        taskRepository.addDesk(displayId = DEFAULT_DISPLAY, deskId = inactiveDeskId)
+
+        val targetDeskId = 2
+        taskRepository.addDesk(displayId = SECOND_DISPLAY, deskId = targetDeskId)
+        taskRepository.setActiveDesk(displayId = SECOND_DISPLAY, deskId = targetDeskId)
+        whenever(rootTaskDisplayAreaOrganizer.displayIds)
+            .thenReturn(intArrayOf(DEFAULT_DISPLAY, SECOND_DISPLAY))
+        desktopState.enterDesktopByDefaultOnFreeformDisplay = true
+        rootTaskDisplayAreaOrganizer.setDesktopFirst(SECOND_DISPLAY)
+
+        val task = setUpFreeformTask(bounds = DEFAULT_LANDSCAPE_BOUNDS, deskId = inactiveDeskId)
+        val requestedBounds = Rect(DEFAULT_LANDSCAPE_BOUNDS).apply { inset(10, 20, 30, 40) }
+
+        val wct =
+            controller.handleRequest(
+                Binder(),
+                createTaskMoveTransition(task, SECOND_DISPLAY, requestedBounds),
+            )
+
+        assertNotNull(wct, "should handle request")
+        assertThat(findBoundsChange(wct, task)).isEqualTo(requestedBounds)
+        verify(desksOrganizer).moveTaskToDesk(wct, targetDeskId, task, minimized = false)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun handleRequest_userSwitch() {
         val previousUser = DEFAULT_USER_ID
         val newUser = SECONDARY_USER_ID

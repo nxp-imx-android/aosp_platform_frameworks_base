@@ -27,6 +27,8 @@ android_library {
         "WifiTrackerLibRes",
         "setupdesign",
 
+        "dynamiccolors",
+
         "SettingsLibActionBarShadow",
         "SettingsLibActionButtonsPreference",
         "SettingsLibAdaptiveIcon",

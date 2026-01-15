@@ -414,6 +414,7 @@ import com.android.server.notification.toast.CustomToastRecord;
 import com.android.server.notification.toast.TextToastRecord;
 import com.android.server.notification.toast.ToastRecord;
 import com.android.server.personalcontext.PersonalContextManagerInternal;
+import com.android.server.pm.GenericAllowlist;
 import com.android.server.pm.PackageManagerService;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.policy.PermissionPolicyInternal;
@@ -10689,7 +10690,11 @@ public class NotificationManagerService extends SystemService {
                         // Also report to UserManagerService if this notification was shown on HSU
                         // (headless system user)
                         if (shouldLogHsuNotification(r)) {
-                            mUmInternal.logShownHsuNotification(r.getSbn());
+                            // TODO(b/412176703): need to get proper AllowlistStatus from
+                            // mUmInternal itself
+                            mUmInternal.logNotificationShownStatus(r.getSbn(),
+                                    UserHandle.USER_SYSTEM,
+                                    GenericAllowlist.STATUS_ALLOWED_INVALID_MODE);
                         }
                     } else {
                         Slog.e(TAG, "Not posting notification without small icon: " + notification);

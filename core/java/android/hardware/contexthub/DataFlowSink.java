@@ -72,7 +72,7 @@ public final class DataFlowSink implements AutoCloseable {
     /** The configuration of data read from this data flow. */
     private final DataFlowDataConfig mConfig;
 
-    private final DataFlowConsumerHandle mHandle;
+    private final DataFlowSinkContext mContext;
     private final HubEndpoint mEndpoint;
 
     @Nullable private CompletableFuture<Void> mNotificationFuture;
@@ -341,7 +341,7 @@ public final class DataFlowSink implements AutoCloseable {
                         "seekToSource() offset must be less than or equal to the current size of"
                                 + " the data flow.");
             }
-            mEndpoint.sinkSyncToSource(mHandle, offsetFromSource);
+            mEndpoint.sinkSyncToSource(mContext, offsetFromSource);
         }
     }
 
@@ -356,7 +356,7 @@ public final class DataFlowSink implements AutoCloseable {
     @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB)
     public boolean canSourceOverwriteReadPosition() {
         try (ApiGuard guard = acquireApiGuard()) {
-            return mEndpoint.sinkSourceCanOverwriteReadPosition(mHandle);
+            return mEndpoint.sinkSourceCanOverwriteReadPosition(mContext);
         }
     }
 
@@ -385,16 +385,16 @@ public final class DataFlowSink implements AutoCloseable {
     @IntRange(from = 0)
     public int size() {
         try (ApiGuard guard = acquireApiGuard()) {
-            return mEndpoint.sinkSize(mHandle);
+            return mEndpoint.sinkSize(mContext);
         }
     }
 
     /* package */ DataFlowSink(
             @NonNull DataFlowDataConfig config,
-            @NonNull DataFlowConsumerHandle handle,
+            @NonNull DataFlowSinkContext context,
             @NonNull HubEndpoint endpoint) {
         mConfig = config;
-        mHandle = handle;
+        mContext = context;
         mEndpoint = endpoint;
         SystemCleaner.cleaner()
                 .register(
@@ -443,7 +443,7 @@ public final class DataFlowSink implements AutoCloseable {
                 cancelOp.mGuard.close();
             }
         }
-        mEndpoint.removeSink(mHandle);
+        mEndpoint.removeSink(mContext);
     }
 
     /** Runnable dispatched to await data asynchronously. */
@@ -499,7 +499,7 @@ public final class DataFlowSink implements AutoCloseable {
     }
 
     private DataFlowData requestDataInternal(int elementCount, boolean allOrNothing) {
-        byte[] buffer = mEndpoint.sinkRequestData(mHandle, elementCount, allOrNothing);
+        byte[] buffer = mEndpoint.sinkRequestData(mContext, elementCount, allOrNothing);
         return buffer == null ? null : new DataFlowData(ByteBuffer.wrap(buffer), mConfig);
     }
 

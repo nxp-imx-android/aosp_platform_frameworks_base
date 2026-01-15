@@ -135,4 +135,12 @@ oneway interface IWindow {
      * Note that clients may still produce output when using non-standard rendering pipelines.
      */
     void requestHardwareRendererOutputDisabled(boolean disabled);
+
+    /**
+     * Request to disable view animations for this window by overriding the animation scale.
+     *
+     * View animations can only be toggled for the entire process. They will only be disabled for
+     * this process if *all* view roots for the process have requested animations to be disabled.
+     */
+     void requestViewAnimationsDisabled(boolean disabled);
 }

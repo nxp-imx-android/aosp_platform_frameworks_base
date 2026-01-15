@@ -20,6 +20,8 @@ import android.graphics.PointF
 import android.graphics.Rect
 import android.os.IBinder
 import android.view.Surface
+import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.InputMethod
+import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.ResizeTrigger
 import com.android.wm.shell.desktopmode.data.DesktopRepository
 
 /**
@@ -50,6 +52,11 @@ import com.android.wm.shell.desktopmode.data.DesktopRepository
  * @param shouldRestoreBoundsOnMove Whether the task should be restored to its pre-maximized or
  *   pre-snapped state on the first move event.
  * @param desktopRepository The [DesktopRepository] for the current user.
+ * @param resizeTrigger The [ResizeTrigger] that initiated the resize operation.
+ * @param inputMethod The [InputMethod] used to initiate the drag operation.
+ * @param resizeEventListeners The list of [DragPositioningCallbackUtility.DragEventListener]s to be
+ *   notified of resize-related events. These listeners are managed by the TaskPositioner and passed
+ *   to the TaskResizer via the session.
  */
 data class DragSession(
     val windowDecoration: WindowDecorationWrapper,
@@ -66,4 +73,7 @@ data class DragSession(
     var pendingBoundsRestoreTransition: IBinder? = null,
     var shouldRestoreBoundsOnMove: Boolean = false,
     var desktopRepository: DesktopRepository? = null,
+    val resizeTrigger: ResizeTrigger = ResizeTrigger.UNKNOWN_RESIZE_TRIGGER,
+    val inputMethod: InputMethod = InputMethod.UNKNOWN_INPUT_METHOD,
+    val resizeEventListeners: List<DragPositioningCallbackUtility.DragEventListener> = emptyList(),
 )

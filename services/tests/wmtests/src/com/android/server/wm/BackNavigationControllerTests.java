@@ -644,6 +644,48 @@ public class BackNavigationControllerTests extends WindowTestsBase {
         assertThat(backNavigationInfo.getOnBackInvokedCallback()).isEqualTo(appCallback);
     }
 
+    @Test
+    @EnableFlags({android.security.Flags.FLAG_APP_LOCK_APIS,
+            android.security.Flags.FLAG_APP_LOCK_CORE})
+    public void backNavigationToLockedActivity_disablesAnimation() {
+        CrossActivityTestCase testCase = createTopTaskWithTwoActivities();
+        withSystemCallback(testCase.task);
+        final AppLockController appLockController = mWm.mAppLockController;
+        spyOn(appLockController);
+
+        doReturn(true).when(appLockController).isPackageLockedByAppLockLocked(
+                testCase.recordBack.packageName, testCase.recordBack.mUserId);
+
+        BackNavigationInfo backNavigationInfo = startBackNavigation();
+
+        assertThat(backNavigationInfo).isNotNull();
+        assertThat(typeToString(backNavigationInfo.getType()))
+                .isEqualTo(typeToString(BackNavigationInfo.TYPE_CALLBACK));
+        assertThat(backNavigationInfo.isPrepareRemoteAnimation()).isFalse();
+    }
+
+    @Test
+    @EnableFlags({android.security.Flags.FLAG_APP_LOCK_APIS,
+            android.security.Flags.FLAG_APP_LOCK_CORE})
+    public void backNavigationToLockedActivity_overridesShowWhenLocked() {
+        CrossActivityTestCase testCase = createTopTaskWithTwoActivities();
+        withSystemCallback(testCase.task);
+        setupKeyguardOccluded();
+        final AppLockController appLockController = mWm.mAppLockController;
+        spyOn(appLockController);
+
+        doReturn(true).when(testCase.recordBack).canShowWhenLocked();
+        doReturn(true).when(appLockController).isPackageLockedByAppLockLocked(
+                testCase.recordBack.packageName, testCase.recordBack.mUserId);
+
+        BackNavigationInfo backNavigationInfo = startBackNavigation();
+
+        assertThat(backNavigationInfo).isNotNull();
+        assertThat(typeToString(backNavigationInfo.getType()))
+                .isEqualTo(typeToString(BackNavigationInfo.TYPE_CALLBACK));
+        assertThat(backNavigationInfo.isPrepareRemoteAnimation()).isFalse();
+    }
+
     // TODO (b/259427810) Remove this test when we figure out new API
     @Test
     public void backAnimationSkipSharedElementTransition() {

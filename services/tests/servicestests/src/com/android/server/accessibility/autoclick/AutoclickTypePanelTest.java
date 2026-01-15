@@ -378,9 +378,7 @@ public class AutoclickTypePanelTest {
         assertThat(mAutoclickTypePanel.getIsDragging()).isTrue();
         assertThat(params.gravity).isEqualTo(Gravity.LEFT | Gravity.TOP);
         assertThat(params.x).isEqualTo(panelLocation[0] + delta);
-        assertThat(params.y).isEqualTo(
-                Math.max(0, panelLocation[1] + delta
-                        - mAutoclickTypePanel.getStatusBarHeightForTesting()));
+        assertThat(params.y).isEqualTo(panelLocation[1] + delta);
     }
 
     @Test

@@ -8730,10 +8730,12 @@ public class TelephonyManager {
      *     <li>the calling app has carrier privileges (see {@link #hasCarrierPrivileges}).
      *     <li>the calling app has been granted the
      *     {@link Manifest.permission#USE_ICC_AUTH_WITH_DEVICE_IDENTIFIER} permission.
+     *     <li>the calling app has been granted the {@link Manifest.permission#USE_ICC_AUTH}
+     *     permission.
      * </ul>
      *
-     * The use of {@link Manifest.permission#READ_PRIVILEGED_PHONE_STATE} is deprecated.
-     * Use {@link Manifest.permission#USE_ICC_AUTH_WITH_DEVICE_IDENTIFIER} instead.
+     * The use of {@link Manifest.permission#READ_PRIVILEGED_PHONE_STATE} is no longer supported.
+     * Use {@link Manifest.permission#USE_ICC_AUTH} instead.
      *
      * @param appType the icc application type, like {@link #APPTYPE_USIM}
      * @param authType the authentication type, any one of {@link #AUTHTYPE_EAP_AKA} or
@@ -10330,7 +10332,8 @@ public class TelephonyManager {
      * brand value input. To unset the value, the same function should be
      * called with a null brand value.
      *
-     * <p>Requires that the calling app has carrier privileges (see {@link #hasCarrierPrivileges}).
+     * <p>Requires Permission: {@link android.Manifest.permission#MODIFY_PHONE_STATE} or
+     * that the calling app has carrier privileges (see {@link #hasCarrierPrivileges()}).
      *
      * @param brand The brand name to display/set.
      * @return true if the operation was executed correctly.
@@ -10338,6 +10341,8 @@ public class TelephonyManager {
      * @throws UnsupportedOperationException If the device does not have
      *          {@link PackageManager#FEATURE_TELEPHONY_SUBSCRIPTION}.
      */
+    @RequiresPermission(value = android.Manifest.permission.MODIFY_PHONE_STATE,
+            conditional = true)
     @RequiresFeature(PackageManager.FEATURE_TELEPHONY_SUBSCRIPTION)
     public boolean setOperatorBrandOverride(String brand) {
         return setOperatorBrandOverride(getSubId(), brand);

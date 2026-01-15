@@ -220,7 +220,7 @@ abstract class UsbDialogActivityTest<T> : SysuiTestCase()
     }
 
     @Test
-    @DisableFlags(android.hardware.usb.flags.Flags.FLAG_ENABLE_PERSISTENT_DEVICE_PERMISSIONS)
+    @DisableFlags(android.hardware.usb.flags.Flags.FLAG_ENABLE_PERSISTENT_USB_DEVICE_PERMISSIONS)
     fun testHideNonSystemOverlay() {
         deviceConfiguration(isUsbDevice = false)
         assertThat(
@@ -231,7 +231,7 @@ abstract class UsbDialogActivityTest<T> : SysuiTestCase()
     }
 
     @Test
-    @EnableFlags(android.hardware.usb.flags.Flags.FLAG_ENABLE_PERSISTENT_DEVICE_PERMISSIONS)
+    @EnableFlags(android.hardware.usb.flags.Flags.FLAG_ENABLE_PERSISTENT_USB_DEVICE_PERMISSIONS)
     fun testHideNonSystemOverlayNewDialog() {
         deviceConfiguration(isUsbDevice = false)
         assertThat(

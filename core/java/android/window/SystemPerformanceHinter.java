@@ -257,16 +257,26 @@ public class SystemPerformanceHinter {
         if (nowEnabled(oldPerDisplayFlags, newPerDisplayFlags, HINT_SF_FRAME_RATE)) {
             SurfaceControl displaySurfaceControl = mDisplayRootProvider.getRootForDisplay(
                     session.displayId);
-            mTransaction.setFrameRateSelectionStrategy(displaySurfaceControl,
-                    FRAME_RATE_SELECTION_STRATEGY_OVERRIDE_CHILDREN);
-            // smoothSwitchOnly is false to request a higher framerate, even if it means switching
-            // the display mode will cause would jank on non-VRR devices because keeping a lower
-            // refresh rate would mean a poorer user experience.
-            mTransaction.setFrameRateCategory(
-                    displaySurfaceControl, FRAME_RATE_CATEGORY_HIGH, /* smoothSwitchOnly= */ false);
-            transactionChanged = true;
-            if (isTraceEnabled) {
-                asyncTraceBegin(HINT_SF_FRAME_RATE, session.displayId);
+            // Since we are obtaining the surface control every time, the surface control could
+            // have changed at any moment, so null checks are necessary.
+            // TODO: b/475212190 - Take ownership of a single surface control for the lifecycle
+            //  of the session.
+            if (displaySurfaceControl != null) {
+                mTransaction.setFrameRateSelectionStrategy(displaySurfaceControl,
+                        FRAME_RATE_SELECTION_STRATEGY_OVERRIDE_CHILDREN);
+                // smoothSwitchOnly is false to request a higher framerate, even if it means
+                // switching the display mode will cause would jank on non-VRR devices because
+                // keeping a lower refresh rate would mean a poorer user experience.
+                mTransaction.setFrameRateCategory(
+                        displaySurfaceControl, FRAME_RATE_CATEGORY_HIGH, /* smoothSwitchOnly= */
+                        false);
+                transactionChanged = true;
+                if (isTraceEnabled) {
+                    asyncTraceBegin(HINT_SF_FRAME_RATE, session.displayId);
+                }
+            } else {
+                Log.e(TAG,
+                        "Failed to restore surface control state: displaySurfaceControl is null");
             }
         }
 
@@ -307,16 +317,22 @@ public class SystemPerformanceHinter {
         if (nowDisabled(oldPerDisplayFlags, newPerDisplayFlags, HINT_SF_FRAME_RATE)) {
             SurfaceControl displaySurfaceControl = mDisplayRootProvider.getRootForDisplay(
                     session.displayId);
-            mTransaction.setFrameRateSelectionStrategy(displaySurfaceControl,
-                    FRAME_RATE_SELECTION_STRATEGY_PROPAGATE);
-            // smoothSwitchOnly is false to request a higher framerate, even if it means switching
-            // the display mode will cause would jank on non-VRR devices because keeping a lower
-            // refresh rate would mean a poorer user experience.
-            mTransaction.setFrameRateCategory(displaySurfaceControl, FRAME_RATE_CATEGORY_DEFAULT,
-                    /* smoothSwitchOnly= */ false);
-            transactionChanged = true;
-            if (isTraceEnabled) {
-                asyncTraceEnd(HINT_SF_FRAME_RATE);
+            if (displaySurfaceControl != null) {
+                mTransaction.setFrameRateSelectionStrategy(displaySurfaceControl,
+                        FRAME_RATE_SELECTION_STRATEGY_PROPAGATE);
+                // smoothSwitchOnly is false to request a higher framerate, even if it means
+                // switching the display mode will cause would jank on non-VRR devices because
+                // keeping a lower refresh rate would mean a poorer user experience.
+                mTransaction.setFrameRateCategory(displaySurfaceControl,
+                        FRAME_RATE_CATEGORY_DEFAULT,
+                        /* smoothSwitchOnly= */ false);
+                transactionChanged = true;
+                if (isTraceEnabled) {
+                    asyncTraceEnd(HINT_SF_FRAME_RATE);
+                }
+            } else {
+                Log.e(TAG,
+                        "Failed to restore surface control state: displaySurfaceControl is null");
             }
         }
 

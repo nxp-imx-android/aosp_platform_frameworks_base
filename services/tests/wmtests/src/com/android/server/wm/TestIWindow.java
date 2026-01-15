@@ -129,4 +129,7 @@ public class TestIWindow extends IWindow.Stub {
     public void requestHardwareRendererOutputDisabled(boolean disabled) throws RemoteException {
 
     }
+
+    @Override
+    public void requestViewAnimationsDisabled(boolean disabled) {}
 }

@@ -41,6 +41,10 @@ constructor(
      * on the main thread.
      *
      * @param context the [Context] in which the dialog will be constructed.
+     * @param refreshBackgroundOnThemeChange whether the dialog background should be refreshed when
+     *   the theme changes between light and dark mode. Note, when set to `true` the content of the
+     *   dialog should also handle the configuration change. Composables usually handle this by
+     *   default, but Views may need a manual update.
      * @param dismissOnDeviceLock whether the dialog should be automatically dismissed when the
      *   device is locked (true by default).
      * @param isTransient transient dialogs pass through touches and should take care of dismissing
@@ -50,6 +54,7 @@ constructor(
         context: Context = this.applicationContext,
         theme: Int = SystemUIDialog.DEFAULT_THEME,
         dismissOnDeviceLock: Boolean = SystemUIDialog.DEFAULT_DISMISS_ON_DEVICE_LOCK,
+        refreshBackgroundOnThemeChange: Boolean = false,
         dialogDelegate: DialogDelegate<SystemUIDialog> = object : DialogDelegate<SystemUIDialog> {},
         isTransient: Boolean = false,
     ): ComponentSystemUIDialog {
@@ -59,6 +64,7 @@ constructor(
             context = context,
             theme = theme,
             dismissOnDeviceLock = dismissOnDeviceLock,
+            refreshBackgroundOnThemeChange = refreshBackgroundOnThemeChange,
             dialogManager = dialogManager,
             broadcastDispatcher = broadcastDispatcher,
             dialogTransitionAnimator = dialogTransitionAnimator,

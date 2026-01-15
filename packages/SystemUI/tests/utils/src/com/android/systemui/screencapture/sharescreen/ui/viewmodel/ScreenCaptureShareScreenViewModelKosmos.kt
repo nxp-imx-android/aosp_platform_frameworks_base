@@ -16,6 +16,7 @@
 
 package com.android.systemui.screencapture.sharescreen.ui.viewmodel
 
+import android.content.pm.PackageManager
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.mediaprojection.MediaProjectionMetricsLogger
@@ -34,6 +35,7 @@ val Kosmos.screenCaptureShareScreenViewModelFactory by Fixture {
             thumbnailHeightPx: Int,
         ): ScreenCaptureShareScreenViewModel {
             return ScreenCaptureShareScreenViewModel(
+                mock<PackageManager>(),
                 drawableLoaderViewModel,
                 shareScreenUiInteractor,
                 shareScreenPrivacyIndicatorInteractor,

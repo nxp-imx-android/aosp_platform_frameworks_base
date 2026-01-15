@@ -19,7 +19,6 @@ package com.android.server.accessibility.autoclick;
 import static android.view.MotionEvent.BUTTON_PRIMARY;
 import static android.view.MotionEvent.BUTTON_SECONDARY;
 import static android.view.accessibility.AccessibilityManager.AUTOCLICK_CURSOR_AREA_SIZE_DEFAULT;
-import static android.view.accessibility.AccessibilityManager.AUTOCLICK_DELAY_DEFAULT;
 import static android.view.accessibility.AccessibilityManager.AUTOCLICK_DELAY_WITH_INDICATOR_DEFAULT;
 import static android.view.accessibility.AccessibilityManager.AUTOCLICK_IGNORE_MINOR_CURSOR_MOVEMENT_DEFAULT;
 import static android.view.accessibility.AccessibilityManager.AUTOCLICK_REVERT_TO_LEFT_CLICK_DEFAULT;
@@ -94,8 +93,7 @@ public class AutoclickController extends BaseEventStreamTransformation implement
         ComponentCallbacks {
 
     // Default duration between mouse movement stops and the auto click happens.
-    public static final int DEFAULT_AUTOCLICK_DELAY_TIME = Flags.enableAutoclickIndicator()
-            ? AUTOCLICK_DELAY_WITH_INDICATOR_DEFAULT : AUTOCLICK_DELAY_DEFAULT;
+    public static final int DEFAULT_AUTOCLICK_DELAY_TIME = AUTOCLICK_DELAY_WITH_INDICATOR_DEFAULT;
 
     // Time interval between two left click events are considered as a double click.
     public static long DOUBLE_CLICK_MINIMUM_TIMEOUT = ViewConfiguration.getDoubleTapMinTime();
@@ -346,11 +344,9 @@ public class AutoclickController extends BaseEventStreamTransformation implement
             }
             final int displayId = event.getDisplayId();
             if (mClickScheduler == null) {
-                if (Flags.enableAutoclickIndicator()) {
-                    mCurrentDisplayId = displayId;
-                    initiateAutoclickUi(mHandler);
-                    registerInputDeviceListener(mHandler);
-                }
+                mCurrentDisplayId = displayId;
+                initiateAutoclickUi(mHandler);
+                registerInputDeviceListener(mHandler);
 
                 mClickScheduler = new ClickScheduler(
                         mHandler, DEFAULT_AUTOCLICK_DELAY_TIME);
@@ -585,16 +581,16 @@ public class AutoclickController extends BaseEventStreamTransformation implement
      * without really clicking the mouse button.
      */
     private boolean isPaused() {
-        return Flags.enableAutoclickIndicator() && mAutoclickTypePanel.isPaused()
+        return mAutoclickTypePanel.isPaused()
                 && !isClickTypePanelHovered();
     }
 
     private boolean isClickTypePanelHovered() {
-        return Flags.enableAutoclickIndicator() && mAutoclickTypePanel.isHovered();
+        return mAutoclickTypePanel.isHovered();
     }
 
     private boolean isScrollPanelHovered() {
-        return Flags.enableAutoclickIndicator() && mAutoclickScrollPanel.isHovered();
+        return mAutoclickScrollPanel.isHovered();
     }
 
     private void cancelPendingClick() {
@@ -892,32 +888,30 @@ public class AutoclickController extends BaseEventStreamTransformation implement
             // Initialize mClickScheduler's initial delay value.
             onChange(/* selfChange= */ true, mAutoclickDelaySettingUri);
 
-            if (Flags.enableAutoclickIndicator()) {
-                // Register observer to listen to cursor area size setting change.
-                mContentResolver.registerContentObserver(
-                        mAutoclickCursorAreaSizeSettingUri,
-                        /* notifyForDescendants= */ false,
-                        /* observer= */ this,
-                        mUserId);
-                // Initialize mAutoclickIndicatorView's initial size.
-                onChange(/* selfChange= */ true, mAutoclickCursorAreaSizeSettingUri);
+            // Register observer to listen to cursor area size setting change.
+            mContentResolver.registerContentObserver(
+                    mAutoclickCursorAreaSizeSettingUri,
+                    /* notifyForDescendants= */ false,
+                    /* observer= */ this,
+                    mUserId);
+            // Initialize mAutoclickIndicatorView's initial size.
+            onChange(/* selfChange= */ true, mAutoclickCursorAreaSizeSettingUri);
 
-                // Register observer to listen to ignore minor cursor movement setting change.
-                mContentResolver.registerContentObserver(
-                        mAutoclickIgnoreMinorCursorMovementSettingUri,
-                        /* notifyForDescendants= */ false,
-                        /* observer= */ this,
-                        mUserId);
-                onChange(/* selfChange= */ true, mAutoclickIgnoreMinorCursorMovementSettingUri);
+            // Register observer to listen to ignore minor cursor movement setting change.
+            mContentResolver.registerContentObserver(
+                    mAutoclickIgnoreMinorCursorMovementSettingUri,
+                    /* notifyForDescendants= */ false,
+                    /* observer= */ this,
+                    mUserId);
+            onChange(/* selfChange= */ true, mAutoclickIgnoreMinorCursorMovementSettingUri);
 
-                // Register observer to listen to revert to left click setting change.
-                mContentResolver.registerContentObserver(
-                        mAutoclickRevertToLeftClickSettingUri,
-                        /* notifyForDescendants= */ false,
-                        /* observer= */ this,
-                        mUserId);
-                onChange(/* selfChange= */ true, mAutoclickRevertToLeftClickSettingUri);
-            }
+            // Register observer to listen to revert to left click setting change.
+            mContentResolver.registerContentObserver(
+                    mAutoclickRevertToLeftClickSettingUri,
+                    /* notifyForDescendants= */ false,
+                    /* observer= */ this,
+                    mUserId);
+            onChange(/* selfChange= */ true, mAutoclickRevertToLeftClickSettingUri);
         }
 
         /**
@@ -946,47 +940,45 @@ public class AutoclickController extends BaseEventStreamTransformation implement
                 mClickScheduler.updateDelay(delay);
             }
 
-            if (Flags.enableAutoclickIndicator()) {
-                if (mAutoclickCursorAreaSizeSettingUri.equals(uri)) {
-                    int size =
-                            Settings.Secure.getIntForUser(
-                                    mContentResolver,
-                                    Settings.Secure.ACCESSIBILITY_AUTOCLICK_CURSOR_AREA_SIZE,
-                                    AUTOCLICK_CURSOR_AREA_SIZE_DEFAULT,
-                                    mUserId);
-                    if (mAutoclickIndicatorScheduler != null) {
-                        mAutoclickIndicatorScheduler.updateCursorAreaSize(size);
-                    }
-                    mClickScheduler.updateMovementSlop(size);
+            if (mAutoclickCursorAreaSizeSettingUri.equals(uri)) {
+                int size =
+                        Settings.Secure.getIntForUser(
+                                mContentResolver,
+                                Settings.Secure.ACCESSIBILITY_AUTOCLICK_CURSOR_AREA_SIZE,
+                                AUTOCLICK_CURSOR_AREA_SIZE_DEFAULT,
+                                mUserId);
+                if (mAutoclickIndicatorScheduler != null) {
+                    mAutoclickIndicatorScheduler.updateCursorAreaSize(size);
                 }
+                mClickScheduler.updateMovementSlop(size);
+            }
 
-                if (mAutoclickIgnoreMinorCursorMovementSettingUri.equals(uri)) {
-                    boolean ignoreMinorCursorMovement =
-                            Settings.Secure.getIntForUser(
-                                    mContentResolver,
-                                    Settings.Secure
-                                            .ACCESSIBILITY_AUTOCLICK_IGNORE_MINOR_CURSOR_MOVEMENT,
-                                    AUTOCLICK_IGNORE_MINOR_CURSOR_MOVEMENT_DEFAULT
-                                            ? AccessibilityUtils.State.ON
-                                            : AccessibilityUtils.State.OFF,
-                                    mUserId)
-                                    == AccessibilityUtils.State.ON;
-                    mClickScheduler.setIgnoreMinorCursorMovement(ignoreMinorCursorMovement);
-                }
+            if (mAutoclickIgnoreMinorCursorMovementSettingUri.equals(uri)) {
+                boolean ignoreMinorCursorMovement =
+                        Settings.Secure.getIntForUser(
+                                mContentResolver,
+                                Settings.Secure
+                                        .ACCESSIBILITY_AUTOCLICK_IGNORE_MINOR_CURSOR_MOVEMENT,
+                                AUTOCLICK_IGNORE_MINOR_CURSOR_MOVEMENT_DEFAULT
+                                        ? AccessibilityUtils.State.ON
+                                        : AccessibilityUtils.State.OFF,
+                                mUserId)
+                                == AccessibilityUtils.State.ON;
+                mClickScheduler.setIgnoreMinorCursorMovement(ignoreMinorCursorMovement);
+            }
 
-                if (mAutoclickRevertToLeftClickSettingUri.equals(uri)) {
-                    boolean revertToLeftClick =
-                            Settings.Secure.getIntForUser(
-                                    mContentResolver,
-                                    Settings.Secure
-                                            .ACCESSIBILITY_AUTOCLICK_REVERT_TO_LEFT_CLICK,
-                                    AUTOCLICK_REVERT_TO_LEFT_CLICK_DEFAULT
-                                            ? AccessibilityUtils.State.ON
-                                            : AccessibilityUtils.State.OFF,
-                                    mUserId)
-                                    == AccessibilityUtils.State.ON;
-                    mClickScheduler.setRevertToLeftClick(revertToLeftClick);
-                }
+            if (mAutoclickRevertToLeftClickSettingUri.equals(uri)) {
+                boolean revertToLeftClick =
+                        Settings.Secure.getIntForUser(
+                                mContentResolver,
+                                Settings.Secure
+                                        .ACCESSIBILITY_AUTOCLICK_REVERT_TO_LEFT_CLICK,
+                                AUTOCLICK_REVERT_TO_LEFT_CLICK_DEFAULT
+                                        ? AccessibilityUtils.State.ON
+                                        : AccessibilityUtils.State.OFF,
+                                mUserId)
+                                == AccessibilityUtils.State.ON;
+                mClickScheduler.setRevertToLeftClick(revertToLeftClick);
             }
         }
     }
@@ -1172,20 +1164,15 @@ public class AutoclickController extends BaseEventStreamTransformation implement
             boolean moved = detectMovement(event);
             cacheLastEvent(event, policyFlags, mLastMotionEvent == null || moved /* useAsAnchor */);
 
-            if (Flags.enableAutoclickIndicator()) {
-                // Give the indicator the latest mouse coordinates for when the indicator is ready
-                // to redraw.
-                final int pointerIndex = event.getActionIndex();
-                mAutoclickIndicatorView.setCoordination(
-                        event.getX(pointerIndex), event.getY(pointerIndex));
-            }
+            // Give the indicator the latest mouse coordinates for when the indicator is ready
+            // to redraw.
+            final int pointerIndex = event.getActionIndex();
+            mAutoclickIndicatorView.setCoordination(
+                    event.getX(pointerIndex), event.getY(pointerIndex));
 
             if (moved) {
                 rescheduleClick(mDelay);
-
-                if (Flags.enableAutoclickIndicator()) {
-                    mAutoclickIndicatorScheduler.update();
-                }
+                mAutoclickIndicatorScheduler.update();
             }
         }
 
@@ -1276,7 +1263,7 @@ public class AutoclickController extends BaseEventStreamTransformation implement
         public void updateDelay(int delay) {
             mDelay = delay;
 
-            if (Flags.enableAutoclickIndicator() && mAutoclickIndicatorView != null) {
+            if (mAutoclickIndicatorView != null) {
                 mAutoclickIndicatorView.setAnimationDuration(delay - SHOW_INDICATOR_DELAY_TIME);
             }
         }
@@ -1346,7 +1333,7 @@ public class AutoclickController extends BaseEventStreamTransformation implement
             }
             mScheduledClickTime = -1;
 
-            if (Flags.enableAutoclickIndicator() && mAutoclickIndicatorView != null) {
+            if (mAutoclickIndicatorView != null) {
                 mAutoclickIndicatorView.clearIndicator();
             }
         }
@@ -1374,9 +1361,7 @@ public class AutoclickController extends BaseEventStreamTransformation implement
             // If a panel is hovered, use the special slop to make clicking the panel buttons
             // easier.
             double slop;
-            if (!Flags.enableAutoclickIndicator()) {
-                slop = DEFAULT_MOVEMENT_SLOP;
-            } else if (isClickTypePanelHovered() || isScrollPanelHovered()) {
+            if (isClickTypePanelHovered() || isScrollPanelHovered()) {
                 slop = PANEL_HOVERED_SLOP;
             } else {
                 slop = mMovementSlop;

@@ -616,7 +616,6 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
         Runnable modeChangeCallback = () -> {
             sendUpdatePowerState();
             postBrightnessChangeRunnable();
-            // TODO(b/192258832): Switch the HBMChangeCallback to a listener pattern.
             if (mAutomaticBrightnessController != null) {
                 mAutomaticBrightnessController.update();
             }

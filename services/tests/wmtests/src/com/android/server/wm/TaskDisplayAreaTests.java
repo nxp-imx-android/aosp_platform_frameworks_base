@@ -984,4 +984,61 @@ public class TaskDisplayAreaTests extends WindowTestsBase {
                 sourceTask /* sourceTask */, 0 /* launchFlags */);
         assertSame(rootTask, actualRootTask);
     }
+
+    @Test
+    public void getLaunchRootTask_nullSourceTask_returnsNull() {
+        final TaskDisplayArea tda = mDisplayContent.getDefaultTaskDisplayArea();
+        final Task candidateTask = createTask(mDisplayContent);
+
+        final Task launchRootTask = tda.getLaunchRootTask(WINDOWING_MODE_UNDEFINED,
+                ACTIVITY_TYPE_STANDARD, null /* options */, null /* sourceTask */,
+                0 /* launchFlags */, candidateTask);
+
+        assertThat(launchRootTask).isNull();
+    }
+
+    @Test
+    public void getLaunchRootTask_adjacentTasks_candidateNotAdjacent_returnsSourceOrganizerTask() {
+        final TaskDisplayArea tda = mDisplayContent.getDefaultTaskDisplayArea();
+        final Task sourceRoot = createTask(tda, WINDOWING_MODE_MULTI_WINDOW,
+                ACTIVITY_TYPE_STANDARD);
+        sourceRoot.mCreatedByOrganizer = true;
+        final Task adjacentRoot = createTask(tda, WINDOWING_MODE_MULTI_WINDOW,
+                ACTIVITY_TYPE_STANDARD);
+        adjacentRoot.mCreatedByOrganizer = true;
+        adjacentRoot.setAdjacentTaskFragments(
+                new TaskFragment.AdjacentSet(adjacentRoot, sourceRoot));
+        final Task sourceTask = createTaskInRootTask(sourceRoot, 0 /* userId */);
+
+        // Candidate task is in a different, non-adjacent root task.
+        final Task otherRoot = createTask(tda, WINDOWING_MODE_MULTI_WINDOW,
+                ACTIVITY_TYPE_STANDARD);
+        final Task candidateTask = createTaskInRootTask(otherRoot, 0 /* userId */);
+
+        final Task launchRootTask = tda.getLaunchRootTask(WINDOWING_MODE_UNDEFINED,
+                ACTIVITY_TYPE_STANDARD, null /* options */, sourceTask, 0 /* launchFlags */,
+                candidateTask);
+
+        // The launch root should fall back to the source's organizer task because the candidate
+        // is not in an adjacent task and does not need to be preserved.
+        assertThat(launchRootTask).isEqualTo(sourceRoot);
+    }
+
+    @Test
+    @EnableFlags(com.android.window.flags.Flags.FLAG_ENABLE_BUBBLE_ROOT_TASK)
+    public void getLaunchRootTask_bubbleRootTask_parentInSameTda_returnsParent() {
+        final TaskDisplayArea tda = mDisplayContent.getDefaultTaskDisplayArea();
+        final Task parentTask = createTask(tda, WINDOWING_MODE_MULTI_WINDOW,
+                ACTIVITY_TYPE_STANDARD);
+        parentTask.mCreatedByOrganizer = true;
+        final Task sourceTask = createTaskInRootTask(parentTask, 0 /* userId */);
+
+        final Task launchRootTask = tda.getLaunchRootTask(WINDOWING_MODE_UNDEFINED,
+                ACTIVITY_TYPE_STANDARD, null /* options */, sourceTask, 0 /* launchFlags */,
+                null /* candidateTask */);
+
+        // The launch root should be the source task's parent because it's an organizer-created
+        // task in the same TaskDisplayArea.
+        assertThat(launchRootTask).isEqualTo(parentTask);
+    }
 }

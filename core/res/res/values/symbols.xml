@@ -4382,10 +4382,7 @@
   <java-symbol type="layout" name="slice_grid" />
   <java-symbol type="layout" name="slice_message_local" />
   <java-symbol type="layout" name="slice_message" />
-  <java-symbol type="layout" name="slice_title" />
-  <java-symbol type="layout" name="slice_secondary_text" />
   <java-symbol type="layout" name="slice_remote_input" />
-  <java-symbol type="layout" name="slice_small_template" />
   <java-symbol type="id" name="remote_input_progress" />
   <java-symbol type="id" name="remote_input_send" />
   <java-symbol type="id" name="remote_input" />
@@ -4929,10 +4926,6 @@
   <java-symbol type="dimen" name="config_wallpaperMinScale"/>
   <!-- The max scale for the wallpaper when it's zoomed in -->
   <java-symbol type="dimen" name="config_wallpaperMaxScale"/>
-
-  <!-- Set to true to offset the wallpaper when using multiple displays so that it's centered
-        at the same position than in the largest display. -->
-  <java-symbol type="bool" name="config_offsetWallpaperToCenterOfLargestDisplay" />
 
   <!-- Set to true to enable the user switcher on the keyguard. -->
   <java-symbol type="bool" name="config_keyguardUserSwitcher" />

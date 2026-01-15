@@ -99,18 +99,23 @@ public class MediaProjectionPermissionActivity extends Activity {
     // select a particular task to capture.
     private boolean mUserSelectingTask = false;
 
+    private final ScreenCaptureShareScreenFeaturesInteractor
+            mScreenCaptureShareScreenFeaturesInteractor;
+
     @Inject
     public MediaProjectionPermissionActivity(
             Lazy<ScreenCaptureDevicePolicyResolver> screenCaptureDevicePolicyResolver,
             StatusBarManager statusBarManager,
             KeyguardManager keyguardManager,
             MediaProjectionMetricsLogger mediaProjectionMetricsLogger,
-            ScreenCaptureDisabledDialogDelegate screenCaptureDisabledDialogDelegate) {
+            ScreenCaptureDisabledDialogDelegate screenCaptureDisabledDialogDelegate,
+            ScreenCaptureShareScreenFeaturesInteractor screenCaptureShareScreenFeaturesInteractor) {
         mScreenCaptureDevicePolicyResolver = screenCaptureDevicePolicyResolver;
         mStatusBarManager = statusBarManager;
         mKeyguardManager = keyguardManager;
         mMediaProjectionMetricsLogger = mediaProjectionMetricsLogger;
         mScreenCaptureDisabledDialogDelegate = screenCaptureDisabledDialogDelegate;
+        mScreenCaptureShareScreenFeaturesInteractor = screenCaptureShareScreenFeaturesInteractor;
     }
 
     @Override
@@ -202,10 +207,8 @@ public class MediaProjectionPermissionActivity extends Activity {
                             : SessionCreationSource.APP);
         }
 
-        final boolean showLargeScreenShareDialog =
-                !hasCastingCapabilities
-                        && ScreenCaptureShareScreenFeaturesInteractor
-                        .INSTANCE.isLargeScreenSharingEnabled();
+        final boolean showLargeScreenShareDialog = !hasCastingCapabilities
+                && mScreenCaptureShareScreenFeaturesInteractor.isLargeScreenSharingEnabled();
         final Runnable screenShareDialogRunnable;
         if (showLargeScreenShareDialog) {
             screenShareDialogRunnable = this::grantMediaProjectionPermissionForLargeScreen;

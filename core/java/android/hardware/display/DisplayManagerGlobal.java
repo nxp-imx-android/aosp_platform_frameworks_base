@@ -285,13 +285,7 @@ public final class DisplayManagerGlobal {
             }
             return mDmInternal.getDisplayInfo(displayId);
         }
-        if (Flags.getDisplayInfoOutsideLock()) {
-            return getDisplayInfoInternal(displayId);
-        } else {
-            synchronized (mLock) {
-                return getDisplayInfoInternal(displayId);
-            }
-        }
+        return getDisplayInfoInternal(displayId);
     }
 
     /**

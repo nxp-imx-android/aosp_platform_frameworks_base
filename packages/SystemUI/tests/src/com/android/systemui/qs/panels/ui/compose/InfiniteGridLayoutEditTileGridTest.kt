@@ -36,6 +36,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.swipeUp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.theme.PlatformTheme
@@ -212,6 +213,10 @@ class InfiniteGridLayoutEditTileGridTest : SysuiTestCase() {
             composeRule
                 .onNodeWithTag(AVAILABLE_TILES_GRID_TEST_TAG)
                 .performScrollToNode(hasText("rotation"))
+                .performTouchInput {
+                    // Perform additional scroll to make sure the tile is above the nav bar
+                    swipeUp(startY = centerY, endY = top)
+                }
             composeRule.onNodeWithText("rotation").performClick()
             composeRule.waitForIdle()
 

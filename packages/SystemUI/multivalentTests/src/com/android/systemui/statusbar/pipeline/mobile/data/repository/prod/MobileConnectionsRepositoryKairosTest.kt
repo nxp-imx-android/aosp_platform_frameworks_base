@@ -31,6 +31,8 @@ import android.net.connectivityManager
 import android.net.vcn.VcnTransportInfo
 import android.net.wifi.WifiInfo
 import android.net.wifi.WifiManager
+import android.os.Handler
+import android.os.Looper
 import android.os.ParcelUuid
 import android.telephony.CarrierConfigManager
 import android.telephony.ServiceState
@@ -142,6 +144,7 @@ class MobileConnectionsRepositoryKairosTest : SysuiTestCase() {
                 ConnectivityRepositoryImpl(
                     connectivityManager,
                     ConnectivitySlots(applicationContext),
+                    Handler(Looper.getMainLooper()),
                     applicationContext,
                     mock(),
                     mock(),

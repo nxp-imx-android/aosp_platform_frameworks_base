@@ -8309,6 +8309,7 @@ public class AudioService extends IAudioService.Stub
             zenModeAffectedStreams |= 1 << AudioManager.STREAM_RING;
             zenModeAffectedStreams |= 1 << AudioManager.STREAM_ALARM;
             zenModeAffectedStreams |= 1 << AudioManager.STREAM_MUSIC;
+            zenModeAffectedStreams |= 1 << AudioManager.STREAM_ASSISTANT;
         } else if (zenMode == Settings.Global.ZEN_MODE_ALARMS) {
             zenModeAffectedStreams |= 1 << AudioManager.STREAM_SYSTEM;
             zenModeAffectedStreams |= 1 << AudioManager.STREAM_NOTIFICATION;
@@ -8323,6 +8324,7 @@ public class AudioService extends IAudioService.Stub
             if ((zenPolicy.priorityCategories
                     & NotificationManager.Policy.PRIORITY_CATEGORY_MEDIA) == 0) {
                 zenModeAffectedStreams |= 1 << AudioManager.STREAM_MUSIC;
+                zenModeAffectedStreams |= 1 << AudioManager.STREAM_ASSISTANT;
             }
 
             // even if zen isn't muting the system stream, the ringer mode can still mute

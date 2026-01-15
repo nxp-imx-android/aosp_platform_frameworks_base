@@ -58,7 +58,7 @@
             android:contentDescription="@string/collapse_menu_text"
             android:src="@drawable/ic_baseline_expand_more_16"
             android:rotation="180"
-            android:tint="@androidprv:color/materialColorOnSurface"
+            android:tint="@color/materialColorOnSurface"
             style="@style/DesktopModeHandleMenuWindowingButton"/>
     </LinearLayout>
 
@@ -174,7 +174,7 @@
             android:paddingEnd="16dp"
             android:contentDescription="@string/open_by_default_settings_text"
             android:src="@drawable/desktop_mode_ic_handle_menu_open_by_default_settings"
-            android:tint="@androidprv:color/materialColorOnSurface"
+            android:tint="@color/materialColorOnSurface"
             style="@style/DesktopModeHandleMenuWindowingButton"/>
     </LinearLayout>
 </LinearLayout>

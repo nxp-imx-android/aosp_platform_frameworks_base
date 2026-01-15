@@ -156,7 +156,6 @@ import static com.android.server.wm.WindowManagerDebugConfig.TAG_WITH_CLASS_NAME
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WM;
 import static com.android.server.wm.WindowManagerInternal.OnWindowRemovedListener;
 import static com.android.server.wm.WindowManagerInternal.WindowFocusChangeListener;
-import static com.android.window.flags.Flags.multiCrop;
 
 import android.Manifest;
 import android.Manifest.permission;
@@ -1552,7 +1551,8 @@ public class WindowManagerService extends IWindowManager.Stub
         mSystemPerformanceHinter = new SystemPerformanceHinter(mContext, displayId -> {
             synchronized (mGlobalLock) {
                 DisplayContent dc = mRoot.getDisplayContent(displayId);
-                return (dc == null) ? null : dc.getSurfaceControl();
+                return (dc != null && !dc.isSystemPerformanceHinterDisabled())
+                        ? dc.getSurfaceControl() : null;
             }
         }, mTransactionFactory);
         mSystemPerformanceHinter.mTraceTag = TRACE_TAG_WINDOW_MANAGER;
@@ -8801,6 +8801,32 @@ public class WindowManagerService extends IWindowManager.Stub
         }
 
         @Override
+        public void disableSystemPerformanceHinter(int displayId) {
+            synchronized (mGlobalLock) {
+                final DisplayContent dc = mRoot.getDisplayContent(displayId);
+                if (dc == null) {
+                    Slog.e(TAG, "Failed to disable SystemPerformanceHinter"
+                            + " for display: " + displayId
+                            + " - DisplayContent not found.");
+                    return;
+                }
+                dc.disableSystemPerformanceHinter();
+            }
+        }
+
+        @Override
+        public void enableClientRenderingLimitationsOnDisplay(int displayId, boolean enable) {
+            final DisplayContent dc = mRoot.getDisplayContent(displayId);
+            if (dc == null) {
+                Slog.e(TAG, "Failed to change client rendering limitations"
+                        + " for display: " + displayId
+                        + " - DisplayContent not found.");
+                return;
+            }
+            dc.enableClientRenderingLimitations(enable);
+        }
+
+        @Override
         @ImeClientFocusResult
         public int hasInputMethodClientFocus(IBinder windowToken, int uid, int pid, int displayId) {
             if (displayId == Display.INVALID_DISPLAY) {
@@ -10391,8 +10417,7 @@ public class WindowManagerService extends IWindowManager.Stub
         final long origId = Binder.clearCallingIdentity();
         try {
             synchronized (mGlobalLock) {
-                if (!mAtmService.isCallerRecents(callingUid)
-                        && (!multiCrop() || callingUid != SYSTEM_UID)) {
+                if (!mAtmService.isCallerRecents(callingUid) && callingUid != SYSTEM_UID) {
                     Slog.e(TAG, "Unable to verify uid for getPossibleDisplayInfo"
                             + " on uid " + callingUid);
                     return new ArrayList<>();

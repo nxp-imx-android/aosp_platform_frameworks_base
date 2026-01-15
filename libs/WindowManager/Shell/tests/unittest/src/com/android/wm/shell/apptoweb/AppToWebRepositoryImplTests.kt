@@ -51,9 +51,11 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.Mock
+import org.mockito.Mockito.reset
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
@@ -376,6 +378,58 @@ class AppToWebRepositoryImplTests : ShellTestCase() {
                 baseIntent = Intent().apply { addFlags(Intent.FLAG_ACTIVITY_REQUIRE_NON_BROWSER) }
             }
         assertFalse(appToWebRepository.shouldShowFirstRunPrompt(taskInfoWithFlag))
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_ENHANCED_APP_TO_WEB_TRANSITION)
+    fun onInit_registersCallback_whenPromptIsSupported() {
+        // Reset launcherApps mock to clear invocations from setUp()
+        reset(launcherApps)
+
+        // Re-initialize with active prompting enabled
+        setAppToWebActivePrompting(true)
+        val newShellInit = ShellInit(testExecutor)
+        AppToWebRepositoryImpl(
+            mockContext,
+            mockAssistContentRequester,
+            mockGenericLinksParser,
+            appToWebDatastoreRepository,
+            testScope,
+            testScope.backgroundScope,
+            shellTaskOrganizer,
+            launcherApps,
+            newShellInit,
+        )
+        newShellInit.init()
+
+        // Verify that the callback is registered
+        verify(launcherApps).registerCallback(any())
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_ENHANCED_APP_TO_WEB_TRANSITION)
+    fun onInit_doesNotRegisterCallback_whenPromptNotSupported() {
+        // Reset launcherApps mock to clear invocations from setUp()
+        reset(launcherApps)
+
+        // Re-initialize with active prompting disabled
+        setAppToWebActivePrompting(false)
+        val newShellInit = ShellInit(testExecutor)
+        AppToWebRepositoryImpl(
+            mockContext,
+            mockAssistContentRequester,
+            mockGenericLinksParser,
+            appToWebDatastoreRepository,
+            testScope,
+            testScope.backgroundScope,
+            shellTaskOrganizer,
+            launcherApps,
+            newShellInit,
+        )
+        newShellInit.init()
+
+        // Verify that the callback is not registered
+        verify(launcherApps, never()).registerCallback(any())
     }
 
     private suspend fun assertAppToWebIntent(expectedUri: Uri, isBrowserApp: Boolean = false) {

@@ -18,17 +18,33 @@ package com.android.settingslib.metadata.preferencesapi.types
 
 import android.content.Context
 import androidx.annotation.StringRes
+import com.android.settingslib.metadata.preferencesapi.resolveString
 import kotlin.reflect.KClass
 
 /** An entry from the enum. */
-class CustomEnum<T, E>(enumClass: KClass<E>) : FiniteOptionsType<E> where E : Enum<E>, E : EnumApi<T> {
+class CustomEnum<T, E> private constructor (
+    enumClass: KClass<E>,
+    @field:StringRes val descriptionRes: Int?,
+    val description: String?,
+) : FiniteOptionsType<E> where E : Enum<E>, E : EnumApi<T> {
     init {
         val isStringApi = EnumApiWithString::class.java.isAssignableFrom(enumClass.java)
         val isResApi = EnumApiWithRes::class.java.isAssignableFrom(enumClass.java)
 
         // Enum class must implement either EnumApiWithString or EnumApiWithRes
         require(isStringApi || isResApi)
+        require(descriptionRes != null || description != null)
     }
+
+    constructor(
+        enumClass: KClass<E>,
+        @StringRes description: Int
+    ) : this(enumClass, descriptionRes = description, description = null)
+
+    constructor(
+        enumClass: KClass<E>,
+        description: String
+    ) : this(enumClass, descriptionRes = null, description = description)
 
     @Suppress("UNCHECKED_CAST")
     private val entries: Array<E> = enumClass.java.enumConstants ?: (emptyArray<Any>() as Array<E>)
@@ -51,6 +67,8 @@ class CustomEnum<T, E>(enumClass: KClass<E>) : FiniteOptionsType<E> where E : En
         }
         entry to purposeString
     }.toList()
+
+    override fun getDescription(context: Context): String = resolveString(context, descriptionRes, description)
 }
 
 /**

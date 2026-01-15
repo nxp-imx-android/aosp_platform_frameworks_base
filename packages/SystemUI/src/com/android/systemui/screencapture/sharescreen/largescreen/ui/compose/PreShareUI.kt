@@ -51,7 +51,7 @@ fun PreShareUI(shareScreenViewModel: ScreenCaptureShareScreenViewModel) {
                 onCloseClick = { shareScreenViewModel.onCloseClicked() },
                 shareButtonEnabled = targetsViewModel.selectedTarget.value != null,
             )
-            ShareContentSelector(targetsViewModel)
+            ShareContentSelector(shareScreenViewModel)
         }
     }
 }

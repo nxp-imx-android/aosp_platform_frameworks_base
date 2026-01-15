@@ -28,6 +28,8 @@ import android.net.NetworkCapabilities.TRANSPORT_WIFI
 import android.net.vcn.VcnTransportInfo
 import android.net.wifi.WifiInfo
 import android.net.wifi.WifiManager
+import android.os.Handler
+import android.os.Looper
 import android.os.ParcelUuid
 import android.telephony.CarrierConfigManager
 import android.telephony.ServiceState
@@ -466,6 +468,7 @@ abstract class MobileConnectionsRepositoryTest<T : MobileConnectionsRepository> 
             ConnectivityRepositoryImpl(
                 connectivityManager,
                 ConnectivitySlots(context),
+                Handler(Looper.getMainLooper()),
                 context,
                 mock(),
                 mock(),

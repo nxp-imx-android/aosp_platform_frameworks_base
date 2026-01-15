@@ -22,10 +22,13 @@ import static android.view.WindowManager.PROPERTY_ACTIVITY_EMBEDDING_SPLITS_ENAB
 
 import android.annotation.Nullable;
 import android.app.Activity;
+import android.app.AppGlobals;
 import android.app.compat.CompatChanges;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.IPackageManager;
 import android.content.pm.PackageManager;
+import android.os.RemoteException;
 import android.util.ArraySet;
 import android.util.TypedValue;
 import android.window.WindowContainerTransaction;
@@ -40,6 +43,13 @@ import java.util.Set;
 public class AppCompatEmbeddingRuleController {
     private static final int DEFAULT_MIN_DP = 600;
 
+    private static boolean sIsVirtualGamepadEnabled;
+
+    /** Initializes the controller. Must be called before any other functions. */
+    public static void init(@NonNull Context context) {
+        sIsVirtualGamepadEnabled = isVirtualGamepadEnabled(context);
+    }
+
     /** Loads {@link EmbeddingRule}s if any app compat override rules apply to the app. */
     @NonNull
     public static Set<EmbeddingRule> loadAppCompatRules(@NonNull Context context) {
@@ -49,7 +59,7 @@ public class AppCompatEmbeddingRuleController {
             return rules;
         }
 
-        if (CompatChanges.isChangeEnabled(OVERRIDE_ENABLE_VIRTUAL_GAMEPAD)) {
+        if (sIsVirtualGamepadEnabled) {
             final EmbeddingRule rule = createVirtualGamepadOverrideRule(
                     context.getResources().getString(R.string.config_virtual_gamepad_package_name),
                     context.getResources().getString(R.string.config_virtual_gamepad_activity_name),
@@ -100,7 +110,7 @@ public class AppCompatEmbeddingRuleController {
             @NonNull SplitPresenter presenter,
             @NonNull TaskFragmentContainer container,
             @NonNull WindowContainerTransaction wct) {
-        if (CompatChanges.isChangeEnabled(OVERRIDE_ENABLE_VIRTUAL_GAMEPAD)) {
+        if (sIsVirtualGamepadEnabled) {
             // Ensure isolated navigation and always-on-top behavior of the gamepad placeholder.
             presenter.setTaskFragmentPinned(wct, container, true /* pinned */);
         }
@@ -125,6 +135,24 @@ public class AppCompatEmbeddingRuleController {
         } catch (PackageManager.NameNotFoundException e) {
             // If not defined, the app is not using embedding.
             return true;
+        }
+    }
+
+    private static boolean isVirtualGamepadEnabled(@NonNull Context context) {
+        int userOption = getVirtualGamepadUserOption(context);
+        if (userOption == PackageManager.VIRTUAL_GAMEPAD_USER_OPTION_OPT_OUT) {
+            return false;
+        }
+        return CompatChanges.isChangeEnabled(OVERRIDE_ENABLE_VIRTUAL_GAMEPAD);
+    }
+
+    @PackageManager.VirtualGamepadUserOption
+    private static int getVirtualGamepadUserOption(@NonNull Context context) {
+        final IPackageManager pm = AppGlobals.getPackageManager();
+        try {
+            return pm.getVirtualGamepadUserOption(context.getPackageName(), context.getUserId());
+        } catch (RemoteException e) {
+            return PackageManager.VIRTUAL_GAMEPAD_USER_OPTION_UNSET;
         }
     }
 }

@@ -92,6 +92,12 @@ constructor(
     fun getAssignedAccessibilityTargets(@UserShortcutType shortcutType: Int) =
         interactor.getAssignedAccessibilityTargets(shortcutType)
 
+    fun getDialogContextByDisplayId(dialogDisplayId: Int) =
+        interactor.getDialogContextByDisplayId(
+            dialogDisplayId = dialogDisplayId,
+            applicationContext = applicationContext,
+        )
+
     fun enableShortcutForTarget(
         enable: Boolean,
         @UserShortcutType shortcutType: Int,
@@ -154,7 +160,7 @@ constructor(
 
         if (assignedTargetsCount == 1) {
             // The target should be directly performed without showing any dialog.
-            Log.d(TAG, "No dialog for shortcut type=${shortcutType} with 1 assigned target")
+            Log.d(TAG, "No dialog for shortcut type=$shortcutType with 1 assigned target")
             return
         }
 
@@ -169,7 +175,7 @@ constructor(
                 } else {
                     Log.d(
                         TAG,
-                        "No dialog for shortcut type=${shortcutType} with no assigned targets on lock screen",
+                        "No dialog for shortcut type=$shortcutType with no assigned targets on lock screen",
                     )
                 }
                 return
@@ -179,7 +185,7 @@ constructor(
         if (assignedTargetsCount != 0) {
             _dialogType.value = DialogType.TOGGLE_TARGETS
         } else {
-            Log.d(TAG, "No dialog for shortcut type=${shortcutType} with no assigned targets")
+            Log.d(TAG, "No dialog for shortcut type=$shortcutType with no assigned targets")
         }
     }
 

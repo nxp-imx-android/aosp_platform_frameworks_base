@@ -1355,4 +1355,17 @@ public abstract class WindowManagerInternal {
      */
     public abstract boolean requestHardwareRendererOutputEnabled(int displayId,
             long timeoutMs, Consumer<Boolean> callback, @CallbackExecutor Executor executor);
+
+    /**
+     * Disable the SystemPerformanceHinter for the given display.
+     *
+     * @param displayId
+     */
+    public abstract void disableSystemPerformanceHinter(int displayId);
+
+    /**
+     * Attempts to limit the rendering of client windows by turning down the frame rate and
+     * animations on the display.
+     */
+    public abstract void enableClientRenderingLimitationsOnDisplay(int displayId, boolean enable);
 }

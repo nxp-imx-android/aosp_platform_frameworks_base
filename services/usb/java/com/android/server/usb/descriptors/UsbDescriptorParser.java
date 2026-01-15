@@ -100,8 +100,8 @@ public final class UsbDescriptorParser {
 
     // Calculate the hashcode by hashing the raw bytes of all the descriptors.
     private void calculateHashcode(byte[] rawDescriptors) {
-        if (android.hardware.usb.flags.Flags.enablePersistentDevicePermissions()
-                || com.android.server.usb.flags.Flags.enableUsbAuthorization()) {
+        if (android.hardware.usb.flags.Flags.enablePersistentUsbDevicePermissions()
+                || com.android.server.usb.flags.Flags.enableUsbHostAuthorization()) {
             mDescriptorHashcode = Hashcode.getHasher().putBytes(rawDescriptors).hash();
         } else {
             mDescriptorHashcode = Hashcode.createEmptyHashcode();

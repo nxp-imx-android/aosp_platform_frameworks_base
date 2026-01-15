@@ -21,6 +21,13 @@ import android.window.WindowContainerTransaction
 /** Interface for resizing a task via drag gestures. */
 interface TaskResizer {
     /**
+     * Called when a drag resize starts.
+     *
+     * @param session The drag session for the current drag operation.
+     */
+    fun onResizeStart(session: DragSession)
+
+    /**
      * Called when a drag resize updates.
      *
      * @param session The drag session for the current drag operation.

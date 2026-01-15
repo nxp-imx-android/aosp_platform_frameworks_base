@@ -207,6 +207,9 @@ static void initFrameworkNativeCode(JNIEnv* env, jclass, jstring javaRuntimePath
     auto icuPath = std::string(runtimePath.c_str()) + "ravenwood-data/" U_ICUDATA_NAME ".dat";
     base::SetProperty("ro.icu.data.path", icuPath.c_str());
 
+    auto hyphPath = std::string(runtimePath.c_str()) + "hyph-data";
+    base::SetProperty("ro.hyphen.data.dir", hyphPath.c_str());
+
     Vector<String8> args;
     RavenwoodRuntime runtime;
 

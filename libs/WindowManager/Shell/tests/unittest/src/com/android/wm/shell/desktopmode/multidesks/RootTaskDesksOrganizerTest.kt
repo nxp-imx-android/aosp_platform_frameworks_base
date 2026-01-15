@@ -25,6 +25,7 @@ import android.view.Display.DEFAULT_DISPLAY
 import android.view.SurfaceControl
 import android.view.WindowManager.TRANSIT_TO_FRONT
 import android.window.DisplayAreaInfo
+import android.window.TaskAppearedInfo
 import android.window.TransitionInfo
 import android.window.WindowContainerToken
 import android.window.WindowContainerTransaction
@@ -1281,13 +1282,15 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
         whenever(mockShellTaskOrganizer.createTask(any(), eq(organizer)))
             .thenAnswer { invocation ->
                 val listener = (invocation.arguments[1] as TaskListener)
-                listener.onTaskAppeared(freeformRootTask, SurfaceControl())
-                freeformRootTask.token
+                val taskAppearedInfo = TaskAppearedInfo(freeformRootTask, SurfaceControl())
+                listener.onTaskAppeared(taskAppearedInfo.taskInfo, taskAppearedInfo.leash)
+                taskAppearedInfo
             }
             .thenAnswer { invocation ->
                 val listener = (invocation.arguments[1] as TaskListener)
-                listener.onTaskAppeared(minimizationRootTask, SurfaceControl())
-                minimizationRootTask.token
+                val taskAppearedInfo = TaskAppearedInfo(minimizationRootTask, SurfaceControl())
+                listener.onTaskAppeared(taskAppearedInfo.taskInfo, taskAppearedInfo.leash)
+                taskAppearedInfo
             }
         val deskId = organizer.createDeskSuspending(displayId, userId)
         val deskRoot = assertNotNull(organizer.deskRootsByDeskId.get(deskId))
@@ -1310,13 +1313,15 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
         whenever(mockShellTaskOrganizer.createTask(any(), eq(organizer)))
             .thenAnswer { invocation ->
                 val listener = (invocation.arguments[1] as TaskListener)
-                listener.onTaskAppeared(freeformRootTask, SurfaceControl())
-                freeformRootTask.token
+                val taskAppearedInfo = TaskAppearedInfo(freeformRootTask, SurfaceControl())
+                listener.onTaskAppeared(taskAppearedInfo.taskInfo, taskAppearedInfo.leash)
+                taskAppearedInfo
             }
             .thenAnswer { invocation ->
                 val listener = (invocation.arguments[1] as TaskListener)
-                listener.onTaskAppeared(minimizationRootTask, SurfaceControl())
-                minimizationRootTask.token
+                val taskAppearedInfo = TaskAppearedInfo(minimizationRootTask, SurfaceControl())
+                listener.onTaskAppeared(taskAppearedInfo.taskInfo, taskAppearedInfo.leash)
+                taskAppearedInfo
             }
         organizer.warmUpDefaultDesk(displayId, userId)
     }

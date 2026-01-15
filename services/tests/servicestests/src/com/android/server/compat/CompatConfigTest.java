@@ -1239,4 +1239,23 @@ public class CompatConfigTest {
                 + "    </change-overrides>\n"
                 + "</overrides>\n");
     }
+
+    @Test
+    public void testGetVersionCodeOrNull_nullPackageName() {
+        // This test is to ensure that calling a method that uses getVersionCodeOrNull with a
+        // null package name does not cause a NullPointerException.
+        CompatConfig compatConfig = new CompatConfig(mBuildClassifier, mContext);
+        compatConfig.recheckOverrides(null);
+        // No exception thrown is the success condition.
+    }
+
+    @Test
+    public void testGetVersionCodeOrNull_nullPackageManager() {
+        // This test is to ensure that getVersionCodeOrNull returns null when PackageManager
+        // is not available, without causing a NullPointerException.
+        when(mContext.getPackageManager()).thenReturn(null);
+        CompatConfig compatConfig = new CompatConfig(mBuildClassifier, mContext);
+        compatConfig.recheckOverrides("com.some.package");
+        // No exception thrown is the success condition.
+    }
 }

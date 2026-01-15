@@ -16,12 +16,9 @@
 
 package com.android.wm.shell.shared.bubbles.logging
 
-import android.platform.test.annotations.EnableFlags
-import android.platform.test.flag.junit.SetFlagsRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import androidx.test.platform.app.InstrumentationRegistry
-import com.android.wm.shell.Flags
 import com.android.wm.shell.shared.bubbles.logging.BubbleEventHistoryLogger.Companion.DATE_FORMAT
 import com.android.wm.shell.shared.bubbles.logging.BubbleEventHistoryLogger.Companion.DATE_FORMATTER
 import com.android.wm.shell.shared.bubbles.logging.BubbleEventHistoryLogger.Companion.MAX_EVENTS_DEBUG
@@ -34,17 +31,13 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import org.junit.AfterClass
 import org.junit.BeforeClass
-import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
 /** Unit tests for [BubbleEventHistoryLogger]. */
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@EnableFlags(Flags.FLAG_ENABLE_BUBBLE_EVENT_HISTORY_LOGS)
 class BubbleEventHistoryLoggerTest {
-
-    @get:Rule val flagsRule = SetFlagsRule()
 
     private val logger = BubbleEventHistoryLogger(isUserBuild = false)
     private val releaseLogger = BubbleEventHistoryLogger(isUserBuild = true)

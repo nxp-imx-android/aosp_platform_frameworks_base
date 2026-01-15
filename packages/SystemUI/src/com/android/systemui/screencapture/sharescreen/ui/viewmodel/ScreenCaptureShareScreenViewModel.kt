@@ -16,6 +16,8 @@
 
 package com.android.systemui.screencapture.sharescreen.ui.viewmodel
 
+import android.content.pm.PackageManager
+import android.os.UserHandle
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -40,6 +42,7 @@ import kotlinx.coroutines.coroutineScope
 class ScreenCaptureShareScreenViewModel
 @AssistedInject
 constructor(
+    private val packageManager: PackageManager,
     private val drawableLoaderViewModel: DrawableLoaderViewModel,
     private val shareScreenUiInteractor: ShareScreenUiInteractor,
     private val shareScreenPrivacyIndicatorInteractor: ShareScreenPrivacyIndicatorInteractor,
@@ -60,6 +63,25 @@ constructor(
 
     var isUiVisible by mutableStateOf(true)
         private set
+
+    val requestingAppName: String by lazy {
+        try {
+            val appInfo =
+                packageManager.getApplicationInfoAsUser(
+                    shareScreenUiInteractor.packageName,
+                    /* flags= */ 0,
+                    UserHandle.getUserId(shareScreenUiInteractor.uid),
+                )
+            packageManager.getApplicationLabel(appInfo).toString()
+        } catch (e: PackageManager.NameNotFoundException) {
+            Log.w(
+                TAG,
+                "Could not find app name for package ${shareScreenUiInteractor.packageName}",
+                e,
+            )
+            shareScreenUiInteractor.packageName
+        }
+    }
 
     fun setTargetViewModel(type: ScreenCaptureTarget) {
         currentTargetsModel =

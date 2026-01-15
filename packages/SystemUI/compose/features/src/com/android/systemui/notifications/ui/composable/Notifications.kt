@@ -454,10 +454,13 @@ fun ContentScope.NestedScrollingNotificationPanel(
         modifier =
             modifier
                 .element(Notifications.Elements.NotificationScrim)
-                // Apply overscroll visuals (visuals only, no event handling):
-                .overscroll(verticalOverscrollEffect) // SceneContainer transitions
-                .overscroll(scrollingContentOverscrollEffect) // Content scrolling
-                .overscroll(shortContentOverscrollEffect) // Short/Empty content swipes
+                // Only apply visual effects when the background is drawn.
+                .thenIf(shouldDrawScrimBackground) {
+                    // Apply overscroll visuals (visuals only, no event handling):
+                    Modifier.overscroll(verticalOverscrollEffect) // SceneContainer transitions
+                        .overscroll(scrollingContentOverscrollEffect) // Content scrolling
+                        .overscroll(shortContentOverscrollEffect) // Short/Empty content swipes
+                }
                 .onGloballyPositioned { coordinates ->
                     val boundsInWindow = coordinates.boundsInWindow()
                     debugLog(viewModel) {

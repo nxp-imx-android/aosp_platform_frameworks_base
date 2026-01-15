@@ -4289,13 +4289,9 @@ class DesktopTasksController(
 
         val repository = userRepositories.getProfile(task.userId)
         val deskId = repository.getDeskIdForTask(task.taskId)
-        if (
-            deskId == null ||
-                !repository.isDeskActive(deskId) ||
-                !repository.isVisibleTask(task.taskId)
-        ) {
+        if (deskId == null) {
             logV(
-                "handleTaskLocationRequest taskId=%d is not visible in an active desk, dropping " +
+                "handleTaskLocationRequest taskId=%d is not hosted by any desk, dropping " +
                     "the request",
                 task.taskId,
             )
@@ -4306,6 +4302,7 @@ class DesktopTasksController(
             task = task,
             transition = transition,
             targetDisplayId = requestedDisplayId,
+            suggestedTargetDeskId = if (requestedDisplayId == task.displayId) deskId else null,
             requestedTaskBounds = requestedTaskBounds,
             requestType = TRANSIT_CHANGE,
             enterReason = EnterReason.APP_SELF_REPOSITION,
@@ -4511,7 +4508,7 @@ class DesktopTasksController(
             // Moving to a new or different desk
             sourceDeskId != targetDeskId -> desksOrganizer.moveTaskToDesk(wct, targetDeskId, task)
             // Already in target desk, but minimized. Expand it.
-            repository.isMinimizedTask(task.taskId) ->
+            bringTaskToFront && repository.isMinimizedTask(task.taskId) ->
                 desksOrganizer.unminimizeTask(wct, targetDeskId, task)
             // Already expanded in target desk, move it to front if needed.
             bringTaskToFront -> desksOrganizer.reorderTaskToFront(wct, targetDeskId, task)

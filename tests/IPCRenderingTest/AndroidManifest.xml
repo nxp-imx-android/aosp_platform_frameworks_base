@@ -13,8 +13,10 @@
 -->
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-     package="com.android.test.ipcrendering">
+     package="com.android.test.ipcrendering"
+     android:sharedUserId="android.uid.system">
 
+    <uses-permission android:name="android.permission.ACCESS_SURFACE_FLINGER" />
     <application>
         <activity android:name="IPCRenderingTest"
              android:label="IPCRenderingTest"

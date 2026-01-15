@@ -3115,7 +3115,8 @@ public class DevicePolicyManager {
     /**
      * Results code for {@link #checkProvisioningPrecondition}.
      *
-     * <p> Returned for {@link #ACTION_PROVISION_MANAGED_DEVICE} when the device owner is not marked
+     * <p> Returned for {@link #ACTION_PROVISION_MANAGED_DEVICE} and
+     * {@link #ACTION_PROVISION_MANAGED_PROFILE} when the DPC is not marked
      * as test-only and a non-default Device Policy Management role holder exists.
      *
      * @hide

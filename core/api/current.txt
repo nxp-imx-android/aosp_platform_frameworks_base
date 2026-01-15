@@ -5095,6 +5095,7 @@ package android.app {
     method @RequiresPermission(value=android.Manifest.permission.SCHEDULE_EXACT_ALARM, conditional=true) public void setExact(int, long, @NonNull android.app.PendingIntent);
     method public void setExact(int, long, @Nullable String, @NonNull android.app.AlarmManager.OnAlarmListener, @Nullable android.os.Handler);
     method @RequiresPermission(value=android.Manifest.permission.SCHEDULE_EXACT_ALARM, conditional=true) public void setExactAndAllowWhileIdle(int, long, @NonNull android.app.PendingIntent);
+    method @FlaggedApi("android.app.allow_listeners_while_idle") public void setExactAndAllowWhileIdle(int, long, @NonNull String, @NonNull java.util.concurrent.Executor, @NonNull android.app.AlarmManager.OnAlarmListener);
     method public void setInexactRepeating(int, long, long, @NonNull android.app.PendingIntent);
     method public void setRepeating(int, long, long, @NonNull android.app.PendingIntent);
     method @RequiresPermission(android.Manifest.permission.SET_TIME) public void setTime(long);
@@ -25097,10 +25098,14 @@ package android.media {
     field public static final String KEY_AAC_DRC_OUTPUT_LOUDNESS = "aac-drc-output-loudness";
     field public static final String KEY_AAC_DRC_TARGET_REFERENCE_LEVEL = "aac-target-ref-level";
     field public static final String KEY_AAC_ENCODED_TARGET_LEVEL = "aac-encoded-target-level";
+    field @FlaggedApi("android.media.codec.xhe_aac_encoder") public static final String KEY_AAC_LIVE_AUTOMATIC_LOUDNESS_MODE = "aac-live-automatic-loudness-mode";
+    field @FlaggedApi("android.media.codec.xhe_aac_encoder") public static final String KEY_AAC_LOUDNESS_DATA = "aac-loudness-data";
     field @Deprecated public static final String KEY_AAC_MAX_OUTPUT_CHANNEL_COUNT = "aac-max-output-channel_count";
     field public static final String KEY_AAC_PROFILE = "aac-profile";
+    field @FlaggedApi("android.media.codec.xhe_aac_encoder") public static final String KEY_AAC_RAP_INTERVALS = "aac-rap-intervals";
     field public static final String KEY_AAC_SBR_MODE = "aac-sbr-mode";
     field public static final String KEY_ALLOW_FRAME_DROP = "allow-frame-drop";
+    field @FlaggedApi("android.media.codec.xhe_aac_encoder") public static final String KEY_AUDIO_ENCODING_MODE = "audio-encoding-mode";
     field @FlaggedApi("android.media.codec.audio_mix_presentation_support") public static final String KEY_AUDIO_PRESENTATION_ID = "audio-presentation-id";
     field public static final String KEY_AUDIO_SESSION_ID = "audio-session-id";
     field public static final String KEY_BITRATE_MODE = "bitrate-mode";
@@ -25178,6 +25183,7 @@ package android.media {
     field @FlaggedApi("android.media.codec.in_process_sw_audio_codec") public static final String KEY_SECURITY_MODEL = "security-model";
     field public static final String KEY_SLICE_HEIGHT = "slice-height";
     field public static final String KEY_SLOW_MOTION_MARKERS = "slow-motion-markers";
+    field @FlaggedApi("android.media.codec.xhe_aac_encoder") public static final String KEY_STREAM_ID = "stream-id";
     field public static final String KEY_STRIDE = "stride";
     field public static final String KEY_TEMPORAL_LAYERING = "ts-schema";
     field @FlaggedApi("android.media.codec.temporal_layer_encoding") public static final String KEY_TEMPORAL_LAYER_ID = "temporal-layer-id";
@@ -41721,6 +41727,7 @@ package android.security {
     field public static final int ERROR_KEY_OPERATION_EXPIRED = 15; // 0xf
     field public static final int ERROR_OTHER = 1; // 0x1
     field public static final int ERROR_PERMISSION_DENIED = 5; // 0x5
+    field @FlaggedApi("android.security.keystore2.limit_keys_per_uid") public static final int ERROR_TOO_MANY_KEYS = 18; // 0x12
     field public static final int ERROR_UNIMPLEMENTED = 12; // 0xc
     field public static final int ERROR_USER_AUTHENTICATION_REQUIRED = 2; // 0x2
     field public static final int RETRY_AFTER_NEXT_REBOOT = 4; // 0x4
@@ -48045,7 +48052,7 @@ package android.telephony {
     method @RequiresPermission(android.Manifest.permission.MODIFY_PHONE_STATE) public void setNetworkSelectionModeAutomatic();
     method @RequiresPermission(android.Manifest.permission.MODIFY_PHONE_STATE) public boolean setNetworkSelectionModeManual(String, boolean);
     method @RequiresPermission(android.Manifest.permission.MODIFY_PHONE_STATE) public boolean setNetworkSelectionModeManual(@NonNull String, boolean, int);
-    method public boolean setOperatorBrandOverride(String);
+    method @RequiresPermission(value=android.Manifest.permission.MODIFY_PHONE_STATE, conditional=true) public boolean setOperatorBrandOverride(String);
     method public boolean setPreferredNetworkTypeToGlobal();
     method public void setPreferredOpportunisticDataSubscription(int, boolean, @Nullable java.util.concurrent.Executor, @Nullable java.util.function.Consumer<java.lang.Integer>);
     method @RequiresPermission(android.Manifest.permission.MODIFY_PHONE_STATE) public void setSignalStrengthUpdateRequest(@NonNull android.telephony.SignalStrengthUpdateRequest);

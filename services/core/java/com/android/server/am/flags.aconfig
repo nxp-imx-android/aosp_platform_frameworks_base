@@ -351,3 +351,13 @@ flag {
     description: "Use SafeSetID to enforce UID policies instead of SELinux filters"
     bug: "414893665"
 }
+
+flag {
+    name: "error_dialog_for_visible_background_users"
+    namespace: "multiuser"
+    description: "Show Error dialog for visible background user on their assigned display"
+    bug: "442905483"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

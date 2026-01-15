@@ -169,6 +169,7 @@ abstract class ActivityStarterTestBase extends WindowTestsBase {
         doReturn(false).when(signingDetails).hasAncestorOrSelfWithDigest(any());
 
         doReturn(mMockUmi).when(mAtm).getUserManagerInternal();
+        doReturn(false).when(mMockPackageManager).isPackageAppLockEnabled(any(), anyInt());
 
         final Intent intent = new Intent();
         intent.addFlags(launchFlags);

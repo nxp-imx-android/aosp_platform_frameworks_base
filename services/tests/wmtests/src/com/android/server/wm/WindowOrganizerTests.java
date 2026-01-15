@@ -2481,15 +2481,17 @@ public class WindowOrganizerTests extends WindowTestsBase {
     @Test
     @EnableFlags(Flags.FLAG_VISIBILITY_MANAGEMENT_IN_BUBBLE_ROOT)
     public void testCreateTask_setParentContainer_inRootTask() {
+        registerMockOrganizer();
         final Task rootTask = new TaskBuilder(mSupervisor).setCreatedByOrganizer(true).build();
         final TaskCreationParams params = new TaskCreationParams.Builder()
                 .setParentContainer(rootTask.mRemoteToken.toWindowContainerToken())
                 .build();
 
-        final WindowContainerToken token =
+        final TaskAppearedInfo taskAppearedInfo =
                 mWm.mAtmService.mTaskOrganizerController.createTask(params);
 
-        assertNotNull(token);
+        assertNotNull(taskAppearedInfo);
+        final WindowContainerToken token = taskAppearedInfo.getTaskInfo().getToken();
         assertNotNull(fromBinder(token.asBinder()));
         final Task newTask = fromBinder(token.asBinder()).asTask();
         assertNotNull(newTask);
@@ -2500,15 +2502,17 @@ public class WindowOrganizerTests extends WindowTestsBase {
     @Test
     @EnableFlags(Flags.FLAG_VISIBILITY_MANAGEMENT_IN_BUBBLE_ROOT)
     public void testCreateTask_setParentContainer_inTaskDisplayArea() {
+        registerMockOrganizer();
         final TaskDisplayArea tda = createTaskDisplayArea(mDisplayContent, mWm, "test", 1000);
         final TaskCreationParams params = new TaskCreationParams.Builder()
                 .setParentContainer(tda.mRemoteToken.toWindowContainerToken())
                 .build();
 
-        final WindowContainerToken token =
+        final TaskAppearedInfo taskAppearedInfo =
                 mWm.mAtmService.mTaskOrganizerController.createTask(params);
 
-        assertNotNull(token);
+        assertNotNull(taskAppearedInfo);
+        final WindowContainerToken token = taskAppearedInfo.getTaskInfo().getToken();
         assertNotNull(fromBinder(token.asBinder()));
         final Task newTask = fromBinder(token.asBinder()).asTask();
         assertNotNull(newTask);
@@ -2519,6 +2523,7 @@ public class WindowOrganizerTests extends WindowTestsBase {
     @Test
     @EnableFlags(Flags.FLAG_VISIBILITY_MANAGEMENT_IN_BUBBLE_ROOT)
     public void testCreateTask_setParentContainer_inRootTaskOfNonDefaultDisplay() {
+        registerMockOrganizer();
         final DisplayContent dc = createNewDisplay();
         final Task rootTask = new TaskBuilder(mSupervisor)
                 .setDisplay(dc)
@@ -2529,10 +2534,11 @@ public class WindowOrganizerTests extends WindowTestsBase {
                 .setParentContainer(rootTask.mRemoteToken.toWindowContainerToken())
                 .build();
 
-        final WindowContainerToken token =
+        final TaskAppearedInfo taskAppearedInfo =
                 mWm.mAtmService.mTaskOrganizerController.createTask(params);
 
-        assertNotNull(token);
+        assertNotNull(taskAppearedInfo);
+        final WindowContainerToken token = taskAppearedInfo.getTaskInfo().getToken();
         assertNotNull(fromBinder(token.asBinder()));
         final Task newTask = fromBinder(token.asBinder()).asTask();
         assertNotNull(newTask);
@@ -2543,6 +2549,7 @@ public class WindowOrganizerTests extends WindowTestsBase {
     @Test
     @EnableFlags(Flags.FLAG_VISIBILITY_MANAGEMENT_IN_BUBBLE_ROOT)
     public void testCreateTask_setParentContainer_inValidRootTask() {
+        registerMockOrganizer();
         final Task rootTask = new TaskBuilder(mSupervisor).setCreatedByOrganizer(false).build();
         final TaskCreationParams params = new TaskCreationParams.Builder()
                 .setParentContainer(rootTask.mRemoteToken.toWindowContainerToken())
@@ -2554,6 +2561,7 @@ public class WindowOrganizerTests extends WindowTestsBase {
     @Test
     @EnableFlags(Flags.FLAG_VISIBILITY_MANAGEMENT_IN_BUBBLE_ROOT)
     public void testCreateTask_setParentContainer_unmatchedDisplay() {
+        registerMockOrganizer();
         final DisplayContent dc = createNewDisplay();
         final Task rootTask = new TaskBuilder(mSupervisor)
                 .setDisplay(dc)
@@ -2570,14 +2578,16 @@ public class WindowOrganizerTests extends WindowTestsBase {
     @Test
     @EnableFlags(Flags.FLAG_VISIBILITY_MANAGEMENT_IN_BUBBLE_ROOT)
     public void testCreateTask_setVisibilityBarrier() {
+        registerMockOrganizer();
         final TaskCreationParams params = new TaskCreationParams.Builder()
                 .setVisibilityBarrier(true)
                 .build();
 
-        final WindowContainerToken token =
+        final TaskAppearedInfo taskAppearedInfo =
                 mWm.mAtmService.mTaskOrganizerController.createTask(params);
 
-        assertNotNull(token);
+        assertNotNull(taskAppearedInfo);
+        final WindowContainerToken token = taskAppearedInfo.getTaskInfo().getToken();
         assertNotNull(fromBinder(token.asBinder()));
         final Task newTask = fromBinder(token.asBinder()).asTask();
         assertNotNull(newTask);
@@ -2588,15 +2598,17 @@ public class WindowOrganizerTests extends WindowTestsBase {
     @Test
     @EnableFlags(Flags.FLAG_VISIBILITY_MANAGEMENT_IN_BUBBLE_ROOT)
     public void testCreateTask_setForceLeafTasksNonOccluding() {
+        registerMockOrganizer();
         final TaskCreationParams params = new TaskCreationParams.Builder()
                 .setTaskPropertiesRequest(
                         new TaskPropertiesRequest().setForceLeafTasksNonOccluding(true))
                 .build();
 
-        final WindowContainerToken token =
+        final TaskAppearedInfo taskAppearedInfo =
                 mWm.mAtmService.mTaskOrganizerController.createTask(params);
 
-        assertNotNull(token);
+        assertNotNull(taskAppearedInfo);
+        final WindowContainerToken token = taskAppearedInfo.getTaskInfo().getToken();
         assertNotNull(fromBinder(token.asBinder()));
         final Task newTask = fromBinder(token.asBinder()).asTask();
         assertNotNull(newTask);

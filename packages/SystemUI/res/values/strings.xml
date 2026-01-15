@@ -445,9 +445,11 @@
     <!-- Title for the screen prompting the user to begin sharing their entire screen [CHAR LIMIT=NONE]-->
     <string name="screen_share_entire_screen_sharing_title">Share entire screen</string>
     <!-- Text disclaimer that tells a user that they're currently sharing an app [CHAR LIMIT=100] -->
-    <string name="screen_share_disclaimer_app_sharing">When you’re sharing an app, anything shown or played in that app is visible to [APP NAME]. So be careful with things like passwords, payment details, messages, photos and audio &amp; video.</string>
+    <string name="screen_share_disclaimer_app_sharing">When you’re sharing an app, anything shown or played in that app is visible to <xliff:g id="app_name">%1$s</xliff:g>. So be careful with sensitive information.</string>
+    <!-- Text disclaimer that tells a user that they're currently sharing a tab [CHAR LIMIT=100] -->
+    <string name="screen_share_disclaimer_tab_sharing">When you’re sharing a tab, anything within the tab is visible to <xliff:g id="app_name">%1$s</xliff:g>. So be careful with sensitive information.</string>
     <!-- Disclaimer text for full screen sharing. [CHAR LIMIT=NONE] -->
-    <string name="screen_share_disclaimer_full_screen_sharing">When you’re sharing your entire screen, anything on your screen is visible to [APP NAME]. So be careful with things like passwords, payment details, messages, photos, and audio &amp; video.</string>
+    <string name="screen_share_disclaimer_full_screen_sharing">When you’re sharing your entire screen, anything on your screen is visible to <xliff:g id="app_name">%1$s</xliff:g>. So be careful with sensitive information.</string>
     <!-- Accessibility announcement for the screen share UI [CHAR LIMIT=NONE] -->
     <string name="screen_share_a11y_announcement">Choose what to share. Select tab, app, or entire screen. Then press share.</string>
     <!-- Content description for the app window screenshot button in the toolbar, when the capture mode is set to "screenshot". [CHAR LIMIT=NONE] -->

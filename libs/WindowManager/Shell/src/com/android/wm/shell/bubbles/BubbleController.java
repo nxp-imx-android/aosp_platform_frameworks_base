@@ -3088,10 +3088,8 @@ public class BubbleController implements ConfigurationChangeListener,
 
         mBubblePositioner.dump(pw);
 
-        if (Flags.enableBubbleEventHistoryLogs()) {
-            BubbleLog.dump(pw, prefix);
-            pw.println();
-        }
+        BubbleLog.dump(pw, prefix);
+        pw.println();
     }
 
     /**

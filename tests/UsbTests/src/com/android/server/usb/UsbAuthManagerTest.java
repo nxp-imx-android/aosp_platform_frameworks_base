@@ -26,10 +26,13 @@ import android.hardware.usb.IUsbAuthManager;
 import android.hardware.usb.UsbAuthorizationSystemState;
 import android.os.IBinder;
 import android.os.UserManager;
+import android.platform.test.flag.junit.SetFlagsRule;
+
 import androidx.test.runner.AndroidJUnit4;
+
 import com.android.server.LocalServices;
 import com.android.server.usb.flags.Flags;
-import android.platform.test.flag.junit.SetFlagsRule;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -61,7 +64,7 @@ public class UsbAuthManagerTest {
 
     @Before
     public void setUp() throws Exception {
-        mSetFlagsRule.enableFlags(Flags.FLAG_ENABLE_USB_AUTHORIZATION);
+        mSetFlagsRule.enableFlags(Flags.FLAG_ENABLE_USB_HOST_AUTHORIZATION);
         LocalServices.removeAllServicesForTest();
         MockitoAnnotations.initMocks(this);
 

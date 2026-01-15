@@ -35,7 +35,6 @@ import androidx.test.filters.SmallTest
 import com.android.internal.logging.UiEventLogger
 import com.android.keyguard.KeyguardUpdateMonitor
 import com.android.keyguard.KeyguardUpdateMonitorCallback
-import com.android.systemui.Flags as AConfigFlags
 import com.android.systemui.Flags.FLAG_USER_SWITCHER_ADD_SIGN_OUT_OPTION
 import com.android.systemui.GuestResetOrExitSessionReceiver
 import com.android.systemui.GuestResumeSessionReceiver
@@ -135,7 +134,6 @@ class UserSwitcherInteractorTest : SysuiTestCase() {
         )
 
         kosmos.fakeFeatureFlagsClassic.set(Flags.FULL_SCREEN_USER_SWITCHER, false)
-        mSetFlagsRule.enableFlags(AConfigFlags.FLAG_SWITCH_USER_ON_BG)
         spyContext = spy(context)
         keyguardReply =
             KeyguardInteractorFactory.create(

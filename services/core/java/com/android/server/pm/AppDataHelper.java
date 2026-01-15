@@ -368,6 +368,36 @@ public class AppDataHelper {
         }
     }
 
+    /**
+     * Destroy PCC directories for the given PackageSetting and list of users
+     */
+    @GuardedBy("mPm.mInstallLock")
+    public void destroyPccData(PackageSetting packageSetting, int storageFlags, int[] users) {
+        int[] usersInstalledOrHasData = packageSetting.queryUsersInstalledOrHasData(users);
+        for (int userId : usersInstalledOrHasData) {
+            try {
+                long pccCeDataInode = packageSetting.getPccCeDataInode(userId);
+                if (pccCeDataInode > 0) {
+                    mInstaller.destroyPccData(
+                            packageSetting.getVolumeUuid(),
+                            packageSetting.getPackageName(),
+                            userId,
+                            storageFlags,
+                            pccCeDataInode
+                    );
+                    Slog.d(TAG,
+                            "Destroyed PCC data for "
+                                    + packageSetting.getPackageName() + " u" + userId);
+                }
+            } catch (Installer.InstallerException e) {
+                logCriticalInfo(Log.WARN, "Failed to destroy PCC data for "
+                        + packageSetting.getPackageName()
+                        + " u" + userId + ": " + e.getMessage());
+
+            }
+        }
+    }
+
     @GuardedBy("mPm.mInstallLock")
     void reconcileAppsDataLI(String volumeUuid, int userId, @StorageManager.StorageFlags int flags,
             boolean migrateAppData) {

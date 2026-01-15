@@ -122,8 +122,26 @@ public class MessageQueueTest {
     }
 
     @Test
+    public void testResetClearsMessages_differentThread() throws Exception {
+        for (int i = 0; i < 100; i++) {
+            handler.sendEmptyMessageDelayed(0, LONG_DELAY_MS);
+        }
+
+        queue.resetForTest();
+
+        assertNull(queue.peekLastMessageForTest());
+    }
+
+    @Test
     public void testResetAllowsAdditionalMessages() throws Exception {
         resetQueue();
+        assertTrue(handler.sendEmptyMessageDelayed(1, LONG_DELAY_MS));
+        assertEquals(1, queue.peekLastMessageForTest().what);
+    }
+
+    @Test
+    public void testResetAllowsAdditionalMessages_differentThread() throws Exception {
+        queue.resetForTest();
         assertTrue(handler.sendEmptyMessageDelayed(1, LONG_DELAY_MS));
         assertEquals(1, queue.peekLastMessageForTest().what);
     }

@@ -16,5 +16,12 @@
 
 package com.android.settingslib.metadata.preferencesapi.types
 
+import android.content.Context
+import com.android.settingslib.metadata.R
+
 /** A valid sim slot ID. */
-class SimSlotId: ApiType<String>
+class SimSlotId: ApiType<String> {
+
+    override fun getDescription(context: Context) =
+        context.getString(R.string.sim_slot_id_type_description)
+}

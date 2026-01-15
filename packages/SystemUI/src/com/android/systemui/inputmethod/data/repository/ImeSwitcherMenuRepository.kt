@@ -153,7 +153,7 @@ constructor(
         if (!visible) {
             // The UI is no longer visible, remove the model immediately to avoid accidentally
             // showing if the model is partially updated later.
-            updateModel(userId, model = null)
+            mainExecutor.execute { updateModel(userId, model = null) }
         }
 
         try {
@@ -237,6 +237,27 @@ constructor(
         override fun registerListener(listener: IImeSwitcherMenuListener) {
             mainExecutor.execute {
                 this@ImeSwitcherMenuRepositoryImpl.systemServerListener = listener
+            }
+        }
+
+        override fun notifyImeAndSubtypeChanged(
+            selectedImeId: String?,
+            selectedSubtypeIndex: Int,
+            selectedImeSettingsIntent: Intent?,
+            @UserIdInt userId: Int,
+        ) {
+            mainExecutor.execute {
+                val current = models[userId]
+                if (current != null) {
+                    val newModel =
+                        current.copy(
+                            selectedImeId = selectedImeId,
+                            selectedSubtypeIndex = selectedSubtypeIndex,
+                            selectedImeSettingsIntent = selectedImeSettingsIntent,
+                        )
+
+                    updateModel(userId, newModel)
+                }
             }
         }
     }

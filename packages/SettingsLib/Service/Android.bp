@@ -10,6 +10,7 @@ android_library {
     srcs: ["src/**/*.kt"],
     static_libs: [
         "SettingsLibGraph",
+        "SettingsLibUtils",
     ],
     sdk_version: "system_current",
     min_sdk_version: "23",

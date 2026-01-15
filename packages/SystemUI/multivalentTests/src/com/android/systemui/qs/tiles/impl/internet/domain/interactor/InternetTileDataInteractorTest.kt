@@ -169,7 +169,7 @@ class InternetTileDataInteractorTest : SysuiTestCase() {
                     underTest.tileData(testUser, flowOf(DataUpdateTrigger.InitialRequest))
                 )
 
-            connectivityRepository.defaultConnections.value = DefaultConnectionModel()
+            connectivityRepository.resolvedConnections.value = DefaultConnectionModel()
 
             val expectedIcon =
                 InternetTileIconModel.ResourceId(R.drawable.ic_qs_no_internet_unavailable)
@@ -559,7 +559,7 @@ class InternetTileDataInteractorTest : SysuiTestCase() {
                 )
             val iconLevel = 2
 
-            connectivityRepository.defaultConnections.value =
+            connectivityRepository.resolvedConnections.value =
                 DefaultConnectionModel(
                     carrierMerged = DefaultConnectionModel.CarrierMerged(isDefault = true)
                 )
@@ -595,6 +595,47 @@ class InternetTileDataInteractorTest : SysuiTestCase() {
                 .isEqualTo(latest?.secondaryTitle.toString())
             assertThat(latest?.contentDescription.loadContentDescription(context))
                 .isEqualTo(internet)
+        }
+
+    @Test
+    @EnableFlags(NewSatelliteIcon.FLAG_NAME)
+    fun satellite_viaConstrainedFlow_showsSatelliteIcon() =
+        testScope.runTest {
+            // Start collecting the tile data flow to capture updates.
+            val latest by
+                collectLastValue(
+                    underTest.tileData(testUser, flowOf(DataUpdateTrigger.InitialRequest))
+                )
+
+            // Simulate the repository state:
+            // The 'resolvedConnections' flow (which monitors satellite) reports a valid mobile
+            // connection.
+            connectivityRepository.resolvedConnections.value =
+                DefaultConnectionModel(
+                    mobile = DefaultConnectionModel.Mobile(isDefault = true),
+                    isValidated = true,
+                )
+
+            // Set up the specific mobile connection details in the mobile repository.
+            // This configures the connection as a non-terrestrial (Satellite) network.
+            val satelliteLevel = 4
+            mobileConnectionsRepository.mobileIsDefault.value = true
+            mobileConnectionsRepository.activeMobileDataSubscriptionId.value = SUB_1_ID
+            mobileConnectionRepository.apply {
+                isInService.value = true
+                dataConnectionState.value = DataConnectionState.Connected
+                isNonTerrestrial.value = true
+                this.satelliteLevel.value = satelliteLevel
+                networkName.value = NetworkNameModel.Default("Satellite Network")
+            }
+
+            // Assert that the resulting tile model reflects the satellite state.
+            assertThat(latest).isNotNull()
+            // The secondary title should display the network name provided above.
+            assertThat(latest?.secondaryTitle.toString()).contains("Satellite Network")
+            // The icon should match the specific satellite signal level set in step 3.
+            val expectedIcon = InternetTileIconModel.SignalLevel(satelliteLevel)
+            assertThat(latest?.icon).isEqualTo(expectedIcon)
         }
 
     private fun setWifiNetworkWithHotspot(hotspot: WifiNetworkModel.HotspotDeviceType) {

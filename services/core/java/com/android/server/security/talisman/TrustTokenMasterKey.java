@@ -22,6 +22,7 @@ import android.security.keystore.KeyGenParameterSpec;
 import android.security.keystore.KeyProperties;
 import android.util.Slog;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -44,7 +45,6 @@ import java.security.spec.AlgorithmParameterSpec;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.InvalidParameterSpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -57,6 +57,11 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.GCMParameterSpec;
+
+import co.nstant.in.cbor.CborBuilder;
+import co.nstant.in.cbor.CborEncoder;
+import co.nstant.in.cbor.CborException;
+import co.nstant.in.cbor.model.DataItem;
 
 /**
  * Represents the master key that's used to encrypt and attest per-TrustToken keys.
@@ -115,7 +120,7 @@ final class TrustTokenMasterKey {
     @NonNull
     TrustTokenKey generatePerTokenKey() {
         KeyPair key = mHelper.generateKeyPair();
-        byte[] publicKey = mHelper.encode(key.getPublic());
+        byte[] publicKey = mHelper.encodePublic(key.getPublic());
         // Use the public key as the AAD so that we can easily verify that the public key and the
         // private key are a pair.
         byte[] privateKey = mHelper.wrap(mEncryptionKey, key.getPrivate(), publicKey);
@@ -168,6 +173,12 @@ final class TrustTokenMasterKey {
 
     private static class KeyStoreHelper {
         private static final String ED25519 = "Ed25519";
+        // COSE IANA IDs needed for Ed25519 CoseKey
+        private static final int KEY_PARAMETER_KEY_TYPE = 1;
+        private static final int KEY_TYPE_EC2 = 2;
+        private static final int KEY_PARAMETER_CURVE = -1;
+        private static final int KEY_PARAMETER_X = -2;
+        private static final int CURVE_OKP_ED25519 = 6;
 
         @NonNull private final KeyStore mKeyStore;
         @NonNull private final KeyPairGenerator mPerTokenKeyGenerator;
@@ -212,13 +223,33 @@ final class TrustTokenMasterKey {
             return mPerTokenKeyGenerator.generateKeyPair();
         }
 
-        byte[] encode(PublicKey key) {
+        byte[] encodePublic(PublicKey key) {
+            byte[] rawKey;
             try {
-                return mKeyFactory.getKeySpec(key, X509EncodedKeySpec.class).getEncoded();
+                rawKey = mKeyFactory.getKeySpec(key, RawEncodedKeySpec.class).getEncoded();
             } catch (InvalidKeySpecException impossible) {
-                // This method only encodes the public key, for which X.509 is appropriate.
+                // This method only encodes the public key, and RawEncodedKeySpec is valid.
                 throw new AssertionError(impossible);
             }
+            // This must comply with RFC9052 Section 4.1, so that we can match keys by bytes.
+            // TODO(b/418280383): Explore if we can use cose_lib.
+            List<DataItem> items =
+                    new CborBuilder()
+                            .addMap()
+                            .put(KEY_PARAMETER_KEY_TYPE, KEY_TYPE_EC2)
+                            .put(KEY_PARAMETER_CURVE, CURVE_OKP_ED25519)
+                            .put(KEY_PARAMETER_X, rawKey)
+                            .end()
+                            .build();
+            var output = new ByteArrayOutputStream();
+            var encoder = new CborEncoder(output);
+            try {
+                encoder.encode(items);
+            } catch (CborException impossible) {
+                // We should always be able to encode an Ed25519 key.
+                throw new AssertionError(impossible);
+            }
+            return output.toByteArray();
         }
 
         @NonNull

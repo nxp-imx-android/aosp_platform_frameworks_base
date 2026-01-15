@@ -2379,8 +2379,6 @@ public class WallpaperManager {
         try {
             Resources resources = mContext.getResources();
             WallpaperDescription description = new WallpaperDescription.Builder().build();
-            // This code no longer executes because multiCrop() is always true. This is just so
-            // that this compiles.
             ParcelFileDescriptor fd = sGlobals.mService.setWallpaper(
                     "res:" + resources.getResourceName(resid), mContext.getOpPackageName(),
                     description, false, result, which, completion, mContext.getUserId());
