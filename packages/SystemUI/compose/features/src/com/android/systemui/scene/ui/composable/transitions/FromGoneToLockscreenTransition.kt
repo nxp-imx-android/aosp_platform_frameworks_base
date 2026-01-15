@@ -16,15 +16,16 @@
 package com.android.systemui.scene.ui.composable.transitions
 
 import androidx.compose.animation.core.tween
+import com.android.compose.animation.Easings
 import com.android.compose.animation.scene.TransitionBuilder
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
 
 fun TransitionBuilder.goneToAodEnterFromTop() {
-    spec = tween(durationMillis = 1100)
+    spec = tween(durationMillis = 1100, easing = Easings.Linear)
 
     // Translation, which accounts for both burn-in movement and the "enter from top" movement,
     // happens in both [GoneToAodTransitionViewModel] and [AodBurnInViewModel]. They should
     // eventually move here.
 
-    fractionRange(start = 0.67f) { fade(LockscreenElementKeys.Root) }
+    fractionRange(start = 0.62f) { fade(LockscreenElementKeys.Root) }
 }
