@@ -256,6 +256,7 @@ import android.app.ActivityManagerInternal.OomAdjReason;
 import android.app.ActivityTaskManager.RootTaskInfo;
 import android.app.ActivityThread;
 import android.app.AnrController;
+import android.app.AnrTypes.AnrType;
 import android.app.AppGlobals;
 import android.app.AppLockInternal;
 import android.app.AppOpsManager;
@@ -17900,6 +17901,22 @@ public class ActivityManagerService extends IActivityManager.Stub
         @Override
         public void monitor() {
             ActivityManagerService.this.monitor();
+        }
+
+        @Override
+        public void inputDispatchingTimedOutWarning(
+                int uid,
+                int eventId,
+                @AnrType int anrType,
+                long elapsedDurationMs,
+                long timeoutDurationMs) {
+            ActivityManagerService.this.notifyAnrWarning(
+                    uid,
+                    eventId,
+                    anrType,
+                    elapsedDurationMs,
+                    timeoutDurationMs,
+                    /* description= */ "");
         }
 
         @Override
