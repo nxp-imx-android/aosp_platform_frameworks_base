@@ -231,9 +231,6 @@ constructor(
 
                     selectedUser.selectionStatus != SelectionStatus.SELECTION_COMPLETE -> false
 
-                    !android.multiuser.Flags.logoutUserApi() ->
-                        selectedUser.userInfo.id != UserHandle.USER_SYSTEM
-
                     else ->
                         withContext(backgroundDispatcher) {
                             manager.getUserLogoutability(selectedUser.userInfo.id) ==
@@ -262,13 +259,9 @@ constructor(
 
     override suspend fun logOutWithUserManager() {
         if (isUserManagerLogoutEnabled.value) {
-            if (android.multiuser.Flags.logoutUserApi()) {
-                withContext(backgroundDispatcher) {
-                    val currentUserId = tracker.userId
-                    activityManager.logoutUser(currentUserId)
-                }
-            } else {
-                withContext(backgroundDispatcher) { statusBarService.reboot(false) }
+            withContext(backgroundDispatcher) {
+                val currentUserId = tracker.userId
+                activityManager.logoutUser(currentUserId)
             }
         }
     }

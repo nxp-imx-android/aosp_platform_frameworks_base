@@ -2705,10 +2705,8 @@ public class UserManagerService extends IUserManager.Stub {
                 int number = mUser0Allocations.incrementAndGet();
                 Slog.w(LOG_TAG, "System user instantiated at least " + number + " times");
             }
-            if (android.multiuser.Flags.logoutUserApi()) {
-                if (isHeadlessSystemUserMode()) {
-                    return getHeadlessSystemUserName();
-                }
+            if (isHeadlessSystemUserMode()) {
+                return getHeadlessSystemUserName();
             }
             return getOwnerName();
         }
@@ -3335,11 +3333,6 @@ public class UserManagerService extends IUserManager.Stub {
 
     @Override
     public @UserLogoutability int getUserLogoutability(@UserIdInt int userId) {
-        if (!android.multiuser.Flags.logoutUserApi()) {
-            throw new UnsupportedOperationException(
-                    "aconfig flag android.multiuser.logout_user_api not enabled");
-        }
-
         checkManageUsersPermission("getUserLogoutability");
 
         if (isHeadlessSystemUserMode() && !canSwitchToHeadlessSystemUser()) {

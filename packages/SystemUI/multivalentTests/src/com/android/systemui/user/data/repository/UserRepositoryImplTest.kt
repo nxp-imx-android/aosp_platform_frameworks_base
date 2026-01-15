@@ -26,8 +26,6 @@ import android.content.pm.UserInfo
 import android.internal.statusbar.fakeStatusBarService
 import android.os.UserHandle
 import android.os.UserManager
-import android.platform.test.annotations.DisableFlags
-import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
 import android.platform.test.flag.junit.FlagsParameterization.allCombinationsOf
 import android.provider.Settings
@@ -406,7 +404,6 @@ class UserRepositoryImplTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(android.multiuser.Flags.FLAG_LOGOUT_USER_API)
     fun isLogoutWithUserManagerEnabled_userManagerLogoutEnabled_systemUserLogoutDisabled() =
         testScope.runTest {
             underTest = create(testScope.backgroundScope)
@@ -424,7 +421,6 @@ class UserRepositoryImplTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(android.multiuser.Flags.FLAG_LOGOUT_USER_API)
     fun isLogoutWithUserManagerEnabled_userManagerLogoutEnabled_regularUserLogoutEnabled() =
         testScope.runTest {
             underTest = create(testScope.backgroundScope)
@@ -442,7 +438,6 @@ class UserRepositoryImplTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(android.multiuser.Flags.FLAG_LOGOUT_USER_API)
     fun isLogoutWithUserManagerEnabled_userManagerLogoutEnabled_guestUserLogoutEnabled() =
         testScope.runTest {
             underTest = create(testScope.backgroundScope)
@@ -453,32 +448,6 @@ class UserRepositoryImplTest(flags: FlagsParameterization) : SysuiTestCase() {
                 isFirstSystemUser = true,
                 isLastGuestUser = true,
             )
-            val userManagerLogoutEnabled by collectLastValue(underTest.isUserManagerLogoutEnabled)
-
-            tracker.onProfileChanged()
-            assertThat(userManagerLogoutEnabled).isTrue()
-        }
-
-    @Test
-    @DisableFlags(android.multiuser.Flags.FLAG_LOGOUT_USER_API)
-    fun isLogoutWithUserManagerEnabled_userManagerLogoutEnabled_noLogoutApi_systemUserLogoutDisabled() =
-        testScope.runTest {
-            underTest = create(testScope.backgroundScope)
-            setUserSwitchingMustGoThroughLoginScreen(true)
-            setUpUsers(count = 2, selectedIndex = 0, isFirstSystemUser = true)
-            val userManagerLogoutEnabled by collectLastValue(underTest.isUserManagerLogoutEnabled)
-
-            tracker.onProfileChanged()
-            assertThat(userManagerLogoutEnabled).isFalse()
-        }
-
-    @Test
-    @DisableFlags(android.multiuser.Flags.FLAG_LOGOUT_USER_API)
-    fun isLogoutWithUserManagerEnabled_userManagerLogoutEnabled_noLogoutApi_regularUserLogoutEnabled() =
-        testScope.runTest {
-            underTest = create(testScope.backgroundScope)
-            setUserSwitchingMustGoThroughLoginScreen(true)
-            setUpUsers(count = 2, selectedIndex = 1, isFirstSystemUser = true)
             val userManagerLogoutEnabled by collectLastValue(underTest.isUserManagerLogoutEnabled)
 
             tracker.onProfileChanged()
