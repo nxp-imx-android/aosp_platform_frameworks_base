@@ -92,6 +92,7 @@ import com.android.wm.shell.keyguard.KeyguardTransitionHandler;
 import com.android.wm.shell.shared.FocusTransitionListener;
 import com.android.wm.shell.shared.IFocusTransitionListener;
 import com.android.wm.shell.shared.IHomeTransitionListener;
+import com.android.wm.shell.shared.IOverviewOverlayLeashInvalidationCallback;
 import com.android.wm.shell.shared.IShellTransitions;
 import com.android.wm.shell.shared.ShellTransitions;
 import com.android.wm.shell.shared.TransactionPool;
@@ -1384,6 +1385,16 @@ public class Transitions implements RemoteCallable<Transitions>,
         return mOrganizer.getOverviewOverlayContainer(displayId);
     }
 
+    public void registerOverviewOverlayLeashInvalidationCallback(
+            int displayId, IOverviewOverlayLeashInvalidationCallback callback) {
+        mOrganizer.registerOverviewOverlayLeashInvalidationCallback(displayId, callback);
+    }
+
+    public void unregisterOverviewOverlayLeashInvalidationCallback(
+            int displayId, IOverviewOverlayLeashInvalidationCallback callback) {
+        mOrganizer.unregisterOverviewOverlayLeashInvalidationCallback(displayId, callback);
+    }
+
     /**
      * Interface for a callback that must be called after a TransitionHandler finishes playing an
      * animation.
@@ -1753,6 +1764,26 @@ public class Transitions implements RemoteCallable<Transitions>,
             }
             // Return a copy as writing to parcel releases the original surface
             return new SurfaceControl(result[0], "Transitions.OverviewOverlay");
+        }
+
+        @Override
+        public void registerOverviewOverlayLeashInvalidationCallback(
+                int displayId, IOverviewOverlayLeashInvalidationCallback callback) {
+            executeRemoteCallWithTaskPermission(mTransitions,
+                    "registerOverviewOverlayLeashInvalidationListener",
+                    controller -> controller.registerOverviewOverlayLeashInvalidationCallback(
+                            displayId, callback),
+                    false /* blocking */);
+        }
+
+        @Override
+        public void unregisterOverviewOverlayLeashInvalidationCallback(
+                int displayId, IOverviewOverlayLeashInvalidationCallback callback) {
+            executeRemoteCallWithTaskPermission(mTransitions,
+                    "unregisterOverviewOverlayLeashInvalidationCallback",
+                    controller -> controller.unregisterOverviewOverlayLeashInvalidationCallback(
+                            displayId, callback),
+                    false /* blocking */);
         }
 
         @Override
