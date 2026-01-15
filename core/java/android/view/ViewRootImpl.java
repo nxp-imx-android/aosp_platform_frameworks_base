@@ -760,6 +760,8 @@ public final class ViewRootImpl implements ViewParent,
      */
     private final AtomicLong mTraversalBarrierAtomic = new AtomicLong(UNSET_TRAVERSAL_BARRIER);
 
+    private final boolean mAtomicTraversalBarrier = atomicTraversalBarrier();
+
     boolean mWillDrawSoon;
     /** Set to true while in performTraversals for detecting when die(true) is called from internal
      * callbacks such as onMeasure, onPreDraw, onDraw and deferring doDie() until later. */
@@ -3258,7 +3260,7 @@ public final class ViewRootImpl implements ViewParent,
 
     private void postTraversalBarrier() {
         int newBarrier = mQueue.postSyncBarrier();
-        if (atomicTraversalBarrier()) {
+        if (mAtomicTraversalBarrier) {
             // Atomically set the barrier
             final long oldBarrier = mTraversalBarrierAtomic.getAndSet(newBarrier);
             if (oldBarrier != UNSET_TRAVERSAL_BARRIER) {
@@ -3271,7 +3273,7 @@ public final class ViewRootImpl implements ViewParent,
     }
 
     private void removeTraversalBarrier() {
-        if (atomicTraversalBarrier()) {
+        if (mAtomicTraversalBarrier) {
             // Atomically unset the barrier
             final long oldBarrier = mTraversalBarrierAtomic.getAndSet(UNSET_TRAVERSAL_BARRIER);
             if (oldBarrier != UNSET_TRAVERSAL_BARRIER) {
