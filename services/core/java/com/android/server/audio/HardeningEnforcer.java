@@ -36,6 +36,7 @@ import android.text.TextUtils;
 import android.util.Slog;
 import android.util.SparseArray;
 
+import com.android.media.audio.metrics.AudioAtomsLog;
 import com.android.modules.expresslog.Counter;
 import com.android.server.utils.EventLogger;
 
