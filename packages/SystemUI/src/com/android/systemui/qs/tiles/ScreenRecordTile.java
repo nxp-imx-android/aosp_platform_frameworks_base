@@ -50,6 +50,7 @@ import com.android.systemui.qs.pipeline.domain.interactor.PanelInteractor;
 import com.android.systemui.qs.tileimpl.QSTileImpl;
 import com.android.systemui.res.R;
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters;
+import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiSource;
 import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInteractor;
 import com.android.systemui.screencapture.record.domain.interactor.ScreenCaptureRecordFeaturesInteractor;
 import com.android.systemui.screenrecord.ScreenRecordUxController;
@@ -142,7 +143,8 @@ public class ScreenRecordTile extends QSTileImpl<QSTile.BooleanState>
                     instanceof ScreenRecordingStatus.Stopped) {
                 mUiHandler.post(() -> mActivityStarter.executeRunnableDismissingKeyguard(
                         () -> mScreenCaptureUiInteractor.show(
-                                new ScreenCaptureUiParameters.Record()
+                                new ScreenCaptureUiParameters.Record(),
+                                ScreenCaptureUiSource.QUICK_SETTINGS_TILE
                         ),
                         /* cancelAction= */ null,
                         /* dismissShade= */ true,
