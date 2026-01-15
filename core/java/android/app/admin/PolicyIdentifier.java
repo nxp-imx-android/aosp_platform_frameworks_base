@@ -18,10 +18,14 @@ package android.app.admin;
 
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS;
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_SCREEN_CAPTURE;
+import static android.Manifest.permission.SET_TIME;
 import static android.app.admin.DevicePolicyManager.POLICY_SCOPE_DEVICE;
 import static android.app.admin.DevicePolicyManager.POLICY_SCOPE_USER;
+import static android.app.admin.DevicePolicyManager.RESOURCE_DEVICE_WIDE;
+import static android.app.admin.DevicePolicyManager.RESOURCE_DEVICE_WIDE;
 import static android.app.admin.DevicePolicyManager.RESOURCE_PER_USER;
 import static android.app.admin.flags.Flags.FLAG_POLICY_STREAMLINING;
+import static android.app.admin.flags.Flags.FLAG_POLICY_STREAMLINING_AUTO_TIME;
 import static android.processor.devicepolicy.AllowedDpcTypes.ALLOWED;
 import static android.processor.devicepolicy.AllowedDpcTypes.DISALLOWED;
 
@@ -29,6 +33,7 @@ import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.TestApi;
+import android.os.UserManager;
 import android.processor.devicepolicy.AllowedDpcTypes;
 import android.processor.devicepolicy.EnumPolicyDefinition;
 import android.processor.devicepolicy.PolicyDefinition;
@@ -153,4 +158,78 @@ public final class PolicyIdentifier<T> {
             defaultValue = SCREEN_CAPTURE_ALLOWED)
     public static final PolicyIdentifier<Integer> SCREEN_CAPTURE =
             new PolicyIdentifier<>("SCREEN_CAPTURE");
+
+    /** The user can choose whether the time is automatically obtained from the network or not. */
+    @FlaggedApi(FLAG_POLICY_STREAMLINING_AUTO_TIME)
+    public static final int AUTO_TIME_USER_CHOICE = 0;
+
+    /**
+     * The admin has disabled the time to be automatically obtained from the network. This is not
+     * enforced and the user can still enable it. Use {@link UserManager#DISALLOW_CONFIG_DATE_TIME}
+     * to enforce the policy.
+     */
+    @FlaggedApi(FLAG_POLICY_STREAMLINING_AUTO_TIME)
+    public static final int AUTO_TIME_DISABLED_UNENFORCED = 1;
+
+    /**
+     * The admin has enabled the time to be automatically obtained from the network. This is not
+     * enforced and the user can still disable it. Use {@link UserManager#DISALLOW_CONFIG_DATE_TIME}
+     * to enforce the policy.
+     */
+    @FlaggedApi(FLAG_POLICY_STREAMLINING_AUTO_TIME)
+    public static final int AUTO_TIME_ENABLED_UNENFORCED = 2;
+
+    /**
+     * The admin has disabled the time to be automatically obtained from the network. This is
+     * enforced and the user cannot enable it.
+     */
+    @FlaggedApi(FLAG_POLICY_STREAMLINING_AUTO_TIME)
+    public static final int AUTO_TIME_DISABLED = 3;
+
+    /**
+     * The admin has enabled the time to be automatically obtained from the network. This is
+     * enforced and the user cannot disable it.
+     */
+    @FlaggedApi(FLAG_POLICY_STREAMLINING_AUTO_TIME)
+    public static final int AUTO_TIME_ENFORCED = 4;
+
+    /**
+     * Possible values {@link AUTO_TIME}
+     *
+     * @hide
+     */
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef(
+            prefix = {"AUTO_TIME_"},
+            value = {
+                AUTO_TIME_USER_CHOICE,
+                AUTO_TIME_DISABLED_UNENFORCED,
+                AUTO_TIME_ENABLED_UNENFORCED,
+                AUTO_TIME_DISABLED,
+                AUTO_TIME_ENFORCED,
+            })
+    public @interface AutoTimeValue {}
+
+    /**
+     * Policy that controls whether the time is automatically obtained from the network or not.
+     */
+    @FlaggedApi(FLAG_POLICY_STREAMLINING_AUTO_TIME)
+    @NonNull
+    @EnumPolicyDefinition(
+            base =
+                    @PolicyDefinition(
+                            allowedScopes = {POLICY_SCOPE_DEVICE},
+                            affectedResource = RESOURCE_DEVICE_WIDE,
+                            requiredPermission = SET_TIME,
+                            requiredCrossUserPermission = MANAGE_DEVICE_POLICY_ACROSS_USERS,
+                            allowedDpcTypes =
+                                    @AllowedDpcTypes(
+                                            deviceOwner = ALLOWED,
+                                            managedProfileOwnerOfOrganizationOwnedDevice = ALLOWED,
+                                            managedProfileOwnerOfPersonalOwnedDevice = DISALLOWED,
+                                            unaffiliatedFullUserProfileOwner = DISALLOWED,
+                                            profileOwnerOnUser0 = ALLOWED)),
+            intDef = AutoTimeValue.class,
+            defaultValue = AUTO_TIME_USER_CHOICE)
+    public static final PolicyIdentifier<Integer> AUTO_TIME = new PolicyIdentifier<>("AUTO_TIME");
 }
