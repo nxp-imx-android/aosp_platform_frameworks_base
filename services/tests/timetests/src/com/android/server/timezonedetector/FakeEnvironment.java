@@ -20,7 +20,6 @@ import static com.android.server.SystemTimeZone.TIME_ZONE_CONFIDENCE_LOW;
 
 import android.annotation.CurrentTimeMillisLong;
 import android.annotation.ElapsedRealtimeLong;
-import android.util.Pair;
 
 import com.android.server.SystemTimeZone;
 
@@ -36,7 +35,6 @@ public class FakeEnvironment implements Environment {
     private final TestState<String> mTimeZoneId = new TestState<>();
     private final TestState<Integer> mTimeZoneConfidence = new TestState<>();
     private final List<Runnable> mAsyncRunnables = new ArrayList<>();
-    private final List<Pair<Long, Runnable>> mDelayedRunnables = new ArrayList<>();
     private @ElapsedRealtimeLong long mElapsedRealtimeMillis;
     private @CurrentTimeMillisLong long mInitializationTimeMillis;
 
@@ -59,10 +57,6 @@ public class FakeEnvironment implements Environment {
 
     void incrementClock() {
         mElapsedRealtimeMillis++;
-    }
-
-    void advanceClock(@ElapsedRealtimeLong long durationMillis) {
-        mElapsedRealtimeMillis += durationMillis;
     }
 
     @Override
@@ -143,43 +137,5 @@ public class FakeEnvironment implements Environment {
             runnable.run();
         }
         mAsyncRunnables.clear();
-    }
-
-    @Override
-    public void postDelayed(Runnable runnable, long delayMillis) {
-        removePendingRunnable(runnable);
-        mDelayedRunnables.add(new Pair<>(delayMillis + elapsedRealtimeMillis(), runnable));
-    }
-
-    /**
-     * Checks if there are any delayed runnables that  have been supplied to {@code #postDelayed}
-     * and runs them if time is up.
-     */
-    public void runDelayedRunnables() {
-        ArrayList<Pair<Long, Runnable>> runnablesToRun = new ArrayList<>(mDelayedRunnables);
-        mDelayedRunnables.clear();
-        for (Pair<Long, Runnable> pair : runnablesToRun) {
-            if (pair.first > elapsedRealtimeMillis()) {
-                mDelayedRunnables.add(new Pair<>(pair.first, pair.second));
-                continue;
-            }
-            pair.second.run();
-        }
-    }
-
-    @Override
-    public void removePendingRunnable(Runnable runnable) {
-        ArrayList<Pair<Long, Runnable>> runnablesToRun = new ArrayList<>(mDelayedRunnables);
-        mDelayedRunnables.clear();
-        for (Pair<Long, Runnable> pair : runnablesToRun) {
-            if (pair.second == runnable) {
-                continue;
-            }
-            mDelayedRunnables.add(new Pair<>(pair.first, pair.second));
-        }
-    }
-
-    public int getDelayedRunnableCount() {
-        return mDelayedRunnables.size();
     }
 }
