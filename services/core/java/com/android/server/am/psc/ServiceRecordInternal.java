@@ -80,7 +80,7 @@ public abstract class ServiceRecordInternal extends Binder {
         return mStartRequested;
     }
 
-    public void setStartRequested(boolean startRequested) {
+    void setStartRequested(boolean startRequested) {
         mStartRequested = startRequested;
     }
 
@@ -88,7 +88,7 @@ public abstract class ServiceRecordInternal extends Binder {
         return mIsForeground;
     }
 
-    public void setIsForeground(boolean isForeground) {
+    void setIsForeground(boolean isForeground) {
         this.mIsForeground = isForeground;
     }
 
@@ -103,7 +103,7 @@ public abstract class ServiceRecordInternal extends Binder {
         return mLastActivity;
     }
 
-    public void setLastActivity(long lastActivity) {
+    void setLastActivity(long lastActivity) {
         mLastActivity = lastActivity;
     }
 
@@ -111,7 +111,7 @@ public abstract class ServiceRecordInternal extends Binder {
         return mForegroundServiceType;
     }
 
-    public void setForegroundServiceType(int foregroundServiceType) {
+    void setForegroundServiceType(int foregroundServiceType) {
         mForegroundServiceType = foregroundServiceType;
     }
 
@@ -119,7 +119,7 @@ public abstract class ServiceRecordInternal extends Binder {
         return mLastTopAlmostPerceptibleBindRequestUptimeMs;
     }
 
-    public void setLastTopAlmostPerceptibleBindRequestUptimeMs(
+    void setLastTopAlmostPerceptibleBindRequestUptimeMs(
             long lastTopAlmostPerceptibleBindRequestUptimeMs) {
         mLastTopAlmostPerceptibleBindRequestUptimeMs = lastTopAlmostPerceptibleBindRequestUptimeMs;
     }
@@ -179,7 +179,7 @@ public abstract class ServiceRecordInternal extends Binder {
         return mHostProcess;
     }
 
-    public void setHostProcess(ProcessRecordInternal process) {
+    void setHostProcess(ProcessRecordInternal process) {
         mHostProcess = process;
     }
 

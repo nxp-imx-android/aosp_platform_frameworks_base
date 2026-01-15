@@ -2919,7 +2919,7 @@ public final class ActiveServices {
                 }
                 // foregroundServiceType is used in logFGSStateChangeLocked(), so we can't clear it
                 // earlier.
-                r.setForegroundServiceType(0);
+                mAm.mProcessStateController.setForegroundServiceType(r, 0);
                 r.mFgsNotificationWasDeferred = false;
                 r.systemRequestedFgToBg = systemRequestedTransition;
                 signalForegroundServiceObserversLocked(r);
