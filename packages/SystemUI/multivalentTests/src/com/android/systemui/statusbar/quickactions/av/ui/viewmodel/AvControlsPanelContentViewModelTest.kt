@@ -74,7 +74,7 @@ class AvControlsPanelContentViewModelTest() : SysuiTestCase() {
             assertThat(underTest.showBlurControls).isTrue()
             assertThat(underTest.showCameraFramingButton).isTrue()
             assertThat(underTest.showStudioMicButton).isFalse()
-            assertThat(underTest.showLiveCaptionsButton).isFalse()
+            assertThat(underTest.showLiveCaptionsButton).isTrue()
         }
 
     @Test
@@ -100,6 +100,7 @@ class AvControlsPanelContentViewModelTest() : SysuiTestCase() {
             assertThat(underTest.showBlurControls).isFalse()
             assertThat(underTest.showCameraFramingButton).isFalse()
             assertThat(underTest.showStudioMicButton).isFalse()
-            assertThat(underTest.showLiveCaptionsButton).isFalse()
+            // Live captions is always shown
+            assertThat(underTest.showLiveCaptionsButton).isTrue()
         }
 }
