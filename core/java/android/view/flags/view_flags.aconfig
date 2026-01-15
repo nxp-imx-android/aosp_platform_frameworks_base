@@ -64,14 +64,6 @@ flag {
 }
 
 flag {
-    name: "enable_invalidate_check_thread"
-    namespace: "toolkit"
-    description: "Enable checkThread call in ViewRootImpl#onDescendentInvalidated"
-    bug: "333752000"
-    is_fixed_read_only: true
-}
-
-flag {
     name: "disable_draw_wake_lock"
     namespace: "wear_frameworks"
     description: "Disable Draw Wakelock starting U."
