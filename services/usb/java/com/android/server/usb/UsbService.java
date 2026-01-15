@@ -206,6 +206,11 @@ public class UsbService extends IUsbManager.Stub {
         return mPermissionManager.getPermissionsForUser(userId);
     }
 
+    // Gets connected device fingerprint from UsbHostManager.
+    UsbDeviceFingerprint getConnectedDeviceFingerprintForAddress(String deviceAddress) {
+        return mHostManager.getConnectedDeviceFingerprintForAddress(deviceAddress);
+    }
+
     public UsbService(Context context) {
         mContext = context;
         mDevicePolicyManagerInternal = LocalServices.getService(DevicePolicyManagerInternal.class);
