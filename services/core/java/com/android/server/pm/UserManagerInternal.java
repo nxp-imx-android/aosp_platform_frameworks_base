@@ -658,34 +658,10 @@ public abstract class UserManagerInternal {
     public abstract @Nullable UserActivitiesAllowlist getActivitiesAllowlist(@UserIdInt int userId);
 
     /**
-     * Logs an activity launched in the headless system user.
-     *
-     *  @deprecated use {@link #logActivityLaunchStatus(ComponentName, int, int)} instead.
-     */
-    @Deprecated
-    public abstract void logLaunchedHsuActivity(ComponentName activity);
-
-    /**
-     * Logs an activity blocked in the headless system user.
-     *
-     *  @deprecated use {@link #logActivityLaunchStatus(ComponentName, int, int)} instead.
-     */
-    @Deprecated
-    public abstract void logBlockedHsuActivity(ComponentName activity);
-
-    /**
      * Logs the status of trying to launch an activity in the given user.
      */
     public abstract void logActivityLaunchStatus(ComponentName activity, @UserIdInt int userId,
             @AllowlistStatus int status);
-
-    /**
-     * Logs a notification shown in the headless system user.
-     *
-     *  @deprecated use {@link #logNotificationShownStatus(StatusBarNotification, int)} instead.
-     */
-    @Deprecated
-    public abstract void logShownHsuNotification(StatusBarNotification sbn);
 
     /** Logs the status of trying to show a notification in the given user.*/
     public abstract void logNotificationShownStatus(StatusBarNotification sbn,
