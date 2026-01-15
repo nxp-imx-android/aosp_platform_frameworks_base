@@ -38,11 +38,9 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import android.app.Flags;
 import android.content.res.Resources;
 import android.graphics.Point;
 import android.graphics.Rect;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.util.ArraySet;
@@ -780,7 +778,6 @@ public class WallpaperCropperTest {
      * suggested crop, properly reuses the suggested crop to get the crop for the external display.
      */
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_CONNECTED_DISPLAYS_WALLPAPER)
     public void testGetCrop_hasOneSuggestedCrop_externalDisplay_usesSuggestedCrop() {
         WallpaperDefaultDisplayInfo defaultDisplayInfo = setUpWithDisplays(FOLDABLE_ONE);
         Point bitmapSize = new Point(2000, 2000);
@@ -845,7 +842,6 @@ public class WallpaperCropperTest {
      * terms of aspect ratio.
      */
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_CONNECTED_DISPLAYS_WALLPAPER)
     public void testGetCrop_multipleSuggestedCrops_externalDisplay_usesClosestDisplayAspectRatio() {
         WallpaperDefaultDisplayInfo defaultDisplayInfo = setUpWithDisplays(
                 List.of(new Point(500, 800), new Point(1000, 800)));
@@ -875,7 +871,6 @@ public class WallpaperCropperTest {
      * as per {@link WallpaperCropper#CONNECTED_DISPLAY_MAX_DISPLAY_TO_IMAGE_RATIO}.
      */
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_CONNECTED_DISPLAYS_WALLPAPER)
     public void testGetCrop_externalDisplay_lowResolution_enlargesSuggestedCrop() {
         WallpaperDefaultDisplayInfo defaultDisplayInfo = setUpWithDisplays(List.of(PORTRAIT_ONE));
         Point bitmapSize = new Point(10000, 10000);

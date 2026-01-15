@@ -41,7 +41,6 @@ import android.util.Slog;
 import android.util.SparseArray;
 import android.view.DisplayInfo;
 import android.view.View;
-import android.window.DesktopExperienceFlags;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.utils.TimingsTraceAndSlog;
@@ -123,17 +122,15 @@ public class WallpaperCropper {
             Point bitmapSize, SparseArray<Rect> suggestedCrops, boolean rtl) {
 
         // Case 0: if we're looking for the crop of an external display, use external display logic
-        if (DesktopExperienceFlags.ENABLE_CONNECTED_DISPLAYS_WALLPAPER.isTrue()) {
-            boolean isExternalDisplay = true;
-            for (int i = 0; i < defaultDisplayInfo.defaultDisplaySizes.size(); i++) {
-                if (defaultDisplayInfo.defaultDisplaySizes.valueAt(i).equals(displaySize)) {
-                    isExternalDisplay = false;
-                }
+        boolean isExternalDisplay = true;
+        for (int i = 0; i < defaultDisplayInfo.defaultDisplaySizes.size(); i++) {
+            if (defaultDisplayInfo.defaultDisplaySizes.valueAt(i).equals(displaySize)) {
+                isExternalDisplay = false;
             }
-            if (isExternalDisplay) {
-                return getCropForExternalDisplay(
-                        displaySize, defaultDisplayInfo, bitmapSize, suggestedCrops, rtl);
-            }
+        }
+        if (isExternalDisplay) {
+            return getCropForExternalDisplay(
+                    displaySize, defaultDisplayInfo, bitmapSize, suggestedCrops, rtl);
         }
 
         int orientation = getOrientation(displaySize);

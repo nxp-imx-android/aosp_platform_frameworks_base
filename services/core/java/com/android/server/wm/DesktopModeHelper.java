@@ -19,7 +19,6 @@ package com.android.server.wm;
 import android.annotation.NonNull;
 import android.content.Context;
 import android.os.SystemProperties;
-import android.window.DesktopExperienceFlags;
 import android.window.DesktopModeFlags;
 
 import com.android.internal.R;
@@ -106,8 +105,7 @@ public final class DesktopModeHelper {
 
     /** Returns {@code true} if desktop experience wallpaper is supported on this device. */
     public static boolean isDeviceEligibleForDesktopExperienceWallpaper(@NonNull Context context) {
-        return DesktopExperienceFlags.ENABLE_CONNECTED_DISPLAYS_WALLPAPER.isTrue()
-                && canEnterDesktopMode(context);
+        return canEnterDesktopMode(context);
     }
 
     /** Returns {@code true} if the desktop experience developer option should be shown. */

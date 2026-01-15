@@ -634,8 +634,8 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
             return mWallpaperCropper.isWallpaperCompatibleForDisplay(displayId,
                     connection.mWallpaper);
         }
-        // When enableConnectedDisplaysWallpaper is off, we assume the image wallpaper supports all
-        // usable displays.
+        // When isWallpaperDesktopExperienceEnabled is false, we assume the image wallpaper supports
+        // all usable displays.
         return true;
     }
 
