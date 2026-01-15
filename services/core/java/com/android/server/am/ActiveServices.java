@@ -4804,7 +4804,7 @@ public final class ActiveServices {
             if (updatedFlags != (updatedFlags & Context.BIND_UPDATEABLE_FLAGS)) {
                 throw new IllegalArgumentException("Attempting to update non-updatedable flags");
             }
-            if (r.updateFlags(flags)) {
+            if (mAm.mProcessStateController.updateConnectionFlags(r, flags)) {
                 final ProcessRecord app = r.binding.service.getHostProcess();
                 if (app != null) {
                     mAm.updateLruProcessLocked(app, true, null);

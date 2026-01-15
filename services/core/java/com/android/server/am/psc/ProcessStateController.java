@@ -1001,6 +1001,16 @@ public class ProcessStateController {
     }
 
     /**
+     * Updates the flags for a given connection record.
+     *
+     * @return {@code true} if the flags were changed, {@code false} otherwise.
+     */
+    @GuardedBy("mLock")
+    public boolean updateConnectionFlags(@NonNull ConnectionRecordInternal cr, long flags) {
+        return cr.updateFlags(flags);
+    }
+
+    /**
      * Note whether an executing service should be considered in the foreground or not.
      */
     @GuardedBy("mLock")
