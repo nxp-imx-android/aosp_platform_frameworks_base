@@ -25138,6 +25138,7 @@ package android.media {
     field public static final String KEY_HAPTIC_CHANNEL_COUNT = "haptic-channel-count";
     field public static final String KEY_HARDWARE_AV_SYNC_ID = "hw-av-sync-id";
     field public static final String KEY_HDR10_PLUS_INFO = "hdr10-plus-info";
+    field @FlaggedApi("android.media.codec.agtm_metadata") public static final String KEY_HDR_ECLIPSA_VIDEO_INFO = "hdr-eclipsa-video-info";
     field public static final String KEY_HDR_STATIC_INFO = "hdr-static-info";
     field public static final String KEY_HEIGHT = "height";
     field @FlaggedApi("android.media.codec.flip_support") public static final String KEY_HORIZONTAL_FLIP = "horizontal-flip";
