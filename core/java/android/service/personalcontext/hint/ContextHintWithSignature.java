@@ -30,8 +30,11 @@ import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -52,19 +55,19 @@ public final class ContextHintWithSignature implements Parcelable {
     private final @NonNull ContextHintWrapper mContextHintWrapper;
     private final @NonNull List<ContextHintWithSignature> mAttributionHints;
     private final @Nullable String mOriginatingPackageName;
-    private final @Nullable RenderToken mRenderToken;
+    private final @Nullable Set<RenderToken> mRenderTokens;
 
     private ContextHintWithSignature(
             @NonNull byte[] hash,
             @NonNull ContextHintWrapper contextHint,
             @NonNull List<ContextHintWithSignature> attributionHints,
             @Nullable String originatingPackageName,
-            @Nullable RenderToken renderToken) {
+            @Nullable Set<RenderToken> renderTokens) {
         mHash = hash;
         mContextHintWrapper = contextHint;
         mAttributionHints = attributionHints;
         mOriginatingPackageName = originatingPackageName;
-        mRenderToken = renderToken;
+        mRenderTokens = renderTokens;
     }
 
     private ContextHintWithSignature(Parcel source) {
@@ -77,7 +80,11 @@ public final class ContextHintWithSignature implements Parcelable {
                 mAttributionHints, /* loader= */ null, ContextHintWithSignature.class);
 
         mOriginatingPackageName = source.readString8();
-        mRenderToken = source.readParcelable(/* loader= */ null, RenderToken.class);
+
+        final ArrayList<RenderToken> renderTokens = new ArrayList<>();
+        source.readParcelableList(renderTokens, /* leader= */ null, RenderToken.class);
+
+        mRenderTokens = new HashSet<>(renderTokens);
     }
 
     /** Returns the {@link ContextHint} contained in this wrapper. */
@@ -107,10 +114,10 @@ public final class ContextHintWithSignature implements Parcelable {
         return mOriginatingPackageName;
     }
 
-    /** Returns the {@link RenderToken} that is associated with this hint. */
-    @Nullable
-    public RenderToken getRenderToken() {
-        return mRenderToken;
+    /** Returns the {@link RenderToken}s that are associated with this hint. */
+    @NonNull
+    public Set<RenderToken> getRenderTokens() {
+        return mRenderTokens;
     }
 
     /**
@@ -124,7 +131,7 @@ public final class ContextHintWithSignature implements Parcelable {
                 mContextHintWrapper,
                 mAttributionHints,
                 mOriginatingPackageName,
-                mRenderToken,
+                mRenderTokens,
                 secretKey));
     }
 
@@ -135,7 +142,7 @@ public final class ContextHintWithSignature implements Parcelable {
         return Objects.equals(mContextHintWrapper, that.mContextHintWrapper)
                 && Objects.equals(mAttributionHints, that.mAttributionHints)
                 && Objects.equals(mOriginatingPackageName, that.mOriginatingPackageName)
-                && Objects.equals(mRenderToken, that.mRenderToken)
+                && Objects.equals(mRenderTokens, that.mRenderTokens)
                 && Objects.deepEquals(mHash, that.mHash);
     }
 
@@ -145,7 +152,7 @@ public final class ContextHintWithSignature implements Parcelable {
                 mContextHintWrapper,
                 mAttributionHints,
                 mOriginatingPackageName,
-                mRenderToken,
+                mRenderTokens,
                 Arrays.hashCode(mHash));
     }
 
@@ -154,7 +161,7 @@ public final class ContextHintWithSignature implements Parcelable {
         return "ContextHintWithSignature{"
                 + "contextHint=" + mContextHintWrapper.getContextHint()
                 + ", originatingPackageName='" + mOriginatingPackageName + '\''
-                + ", renderToken=" + mRenderToken
+                + ", renderTokens=" + mRenderTokens
                 + '}';
     }
 
@@ -169,7 +176,7 @@ public final class ContextHintWithSignature implements Parcelable {
         dest.writeParcelable(mContextHintWrapper, 0);
         dest.writeParcelableList(mAttributionHints, 0);
         dest.writeString8(mOriginatingPackageName);
-        dest.writeParcelable(mRenderToken, 0);
+        dest.writeParcelableList(new ArrayList<>(mRenderTokens), 0);
     }
 
     /**
@@ -217,14 +224,16 @@ public final class ContextHintWithSignature implements Parcelable {
             @NonNull ContextHintWrapper contextHintWrapper,
             @NonNull List<ContextHintWithSignature> attributionHints,
             @Nullable String originatingPackageName,
-            @Nullable RenderToken renderToken,
+            @Nullable Set<RenderToken> renderTokens,
             @NonNull SecretKeySpec secretKey) throws GeneralSecurityException {
         final Parcel scratch = Parcel.obtain();
         try {
             contextHintWrapper.getContextHint().writeToSignatureParcel(scratch);
             scratch.writeParcelableList(attributionHints, 0);
             scratch.writeString(originatingPackageName);
-            scratch.writeParcelable(renderToken, 0);
+            for (RenderToken renderToken : orderRenderTokens(renderTokens)) {
+                scratch.writeParcelable(renderToken, 0);
+            }
 
             // Generate the signature.
             final Mac mac = Mac.getInstance(HMAC_ALGORITHM);
@@ -233,7 +242,12 @@ public final class ContextHintWithSignature implements Parcelable {
         } finally {
             scratch.recycle();
         }
+    }
 
+    private static List<RenderToken> orderRenderTokens(Collection<RenderToken> renderTokens) {
+        final List<RenderToken> result = new ArrayList<>(renderTokens);
+        Collections.sort(result);
+        return result;
     }
 
     /**
@@ -246,7 +260,7 @@ public final class ContextHintWithSignature implements Parcelable {
         private final @NonNull List<ContextHintWithSignature> mAttributionHints = new ArrayList<>();
         private final @NonNull SecretKeySpec mSecretKey;
         private @Nullable String mOriginatingPackageName;
-        private @Nullable RenderToken mRenderToken = null;
+        private final @Nullable Set<RenderToken> mRenderTokens = new HashSet<>();
 
         /** @hide */
         public Builder(
@@ -269,8 +283,8 @@ public final class ContextHintWithSignature implements Parcelable {
 
         /** Sets the RenderToken. */
         @NonNull
-        public Builder setRenderToken(@Nullable RenderToken renderToken) {
-            mRenderToken = renderToken;
+        public Builder addRenderTokens(@NonNull Collection<RenderToken> renderTokens) {
+            mRenderTokens.addAll(renderTokens);
             return this;
         }
 
@@ -297,12 +311,12 @@ public final class ContextHintWithSignature implements Parcelable {
                             mContextHintWrapper,
                             mAttributionHints,
                             mOriginatingPackageName,
-                            mRenderToken,
+                            mRenderTokens,
                             mSecretKey),
                     mContextHintWrapper,
                     mAttributionHints,
                     mOriginatingPackageName,
-                    mRenderToken);
+                    mRenderTokens);
         }
     }
 }

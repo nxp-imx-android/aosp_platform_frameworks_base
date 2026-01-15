@@ -18,7 +18,6 @@ package com.android.server.personalcontext.embedded;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -83,12 +82,13 @@ public class EmbeddedInsightRendererTest {
     @Test
     public void testRender() {
         final InsightSurfaceClientInfo client = createClient();
+        final RenderToken renderToken = mEmbeddedInsightRenderer.mintRenderToken();
         when(mClientRegistry.isEmpty()).thenReturn(false);
-        when(mClientRegistry.getClientForRenderToken(any())).thenReturn(client);
+        when(mClientRegistry.getClientForRenderToken(eq(renderToken))).thenReturn(client);
         when(mVisualizerRegistry.isEmpty()).thenReturn(false);
 
         final BundleInsight insight = new BundleInsight.Builder().build();
-        mEmbeddedInsightRenderer.render(insight);
+        mEmbeddedInsightRenderer.render(insight, renderToken);
 
         verify(mVisualizerRegistry).createVisualizationForClient(
                 argThat(insights -> insights.contains(insight)), eq(client));

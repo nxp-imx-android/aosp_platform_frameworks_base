@@ -67,19 +67,19 @@ public final class PersonalContextManager {
      * Triggers a Personal Context service flow with raw data in the form of hints.
      *
      * @param hints raw data to be injected into the context flow
-     * @param renderToken optional token indicating which renderer should be used to render results
-     *     of this flow to the user; if {@code null} then this flow can be rendered by any Personal
-     *     Context renderer
+     * @param renderTokens optional tokens indicating which renderers should be used to render
+     *                     results of this flow to the user; if empty, then this flow can be
+     *                     rendered by any Personal Context renderer
      * @hide
      */
     @SystemApi
     @UserHandleAware(
             requiresPermissionIfNotCaller = android.Manifest.permission.INTERACT_ACROSS_USERS)
     public void publishTriggeringHint(
-            @NonNull List<ContextHint> hints, @Nullable RenderToken renderToken) {
+            @NonNull List<ContextHint> hints, @Nullable List<RenderToken> renderTokens) {
         try {
             mService.publishTriggeringHint(
-                    ContextHintWrapper.wrapList(hints), renderToken, mContext.getUserId());
+                    ContextHintWrapper.wrapList(hints), renderTokens, mContext.getUserId());
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

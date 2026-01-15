@@ -25,7 +25,6 @@ import android.service.personalcontext.RenderToken;
 import android.service.personalcontext.Token;
 import android.service.personalcontext.hint.ContextHint;
 import android.service.personalcontext.hint.ContextHintWithSignature;
-import android.text.TextUtils;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -187,22 +186,13 @@ public abstract class ContextInsight {
      * @hide
      */
     @Nullable
-    public RenderToken getRenderToken() {
-        ContextHintWithSignature renderTokenHint = null;
+    public Set<RenderToken> getRenderTokens() {
+        final Set<RenderToken> allRenderTokens = new HashSet<>();
         for (ContextHintWithSignature hint : getOriginHints()) {
-            if (hint.getRenderToken() != null) {
-                if (renderTokenHint == null) {
-                    renderTokenHint = hint;
-                } else if (!renderTokenHint.getRenderToken().equals(hint.getRenderToken())) {
-                    throw new IllegalStateException(TextUtils.formatSimple(
-                            "Hints %s and %s have conflicting RenderTokens",
-                            renderTokenHint,
-                            hint));
-                }
-            }
+            allRenderTokens.addAll(hint.getRenderTokens());
         }
 
-        return renderTokenHint != null ? renderTokenHint.getRenderToken() : null;
+        return allRenderTokens;
     }
 
     /** Returns the set of tokens that were added to this insight. */

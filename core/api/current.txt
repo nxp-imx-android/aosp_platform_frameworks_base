@@ -43754,7 +43754,8 @@ package android.service.persistentdata {
 
 package android.service.personalcontext {
 
-  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class RenderToken implements android.os.Parcelable {
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class RenderToken implements java.lang.Comparable<android.service.personalcontext.RenderToken> android.os.Parcelable {
+    method public int compareTo(@NonNull android.service.personalcontext.RenderToken);
     method public int describeContents();
     method @NonNull public java.util.UUID getRendererComponentId();
     method @NonNull public java.util.UUID getTokenId();
@@ -43888,7 +43889,7 @@ package android.service.personalcontext.hint {
     method @NonNull public java.util.List<android.service.personalcontext.hint.ContextHintWithSignature> getAttributionHints();
     method @NonNull public android.service.personalcontext.hint.ContextHint getContextHint();
     method @Nullable public String getOriginatingPackage();
-    method @Nullable public android.service.personalcontext.RenderToken getRenderToken();
+    method @NonNull public java.util.Set<android.service.personalcontext.RenderToken> getRenderTokens();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.service.personalcontext.hint.ContextHintWithSignature> CREATOR;
   }

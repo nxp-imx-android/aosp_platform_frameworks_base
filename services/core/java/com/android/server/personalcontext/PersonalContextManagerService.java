@@ -29,7 +29,6 @@ import android.service.notification.StatusBarNotification;
 import android.service.personalcontext.IPersonalContextManager;
 import android.service.personalcontext.PersonalContextManager;
 import android.service.personalcontext.RenderToken;
-import android.service.personalcontext.RenderToken.RenderTokenBuilder;
 import android.service.personalcontext.Token;
 import android.service.personalcontext.embedded.InsightSurfaceClientInfo;
 import android.service.personalcontext.hint.ContextHint;
@@ -63,6 +62,7 @@ import java.io.PrintWriter;
 import java.lang.ref.WeakReference;
 import java.security.GeneralSecurityException;
 import java.security.SecureRandom;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -117,9 +117,6 @@ public class PersonalContextManagerService extends SystemService {
             new PersonalContextManagerInternal() {
                 @Override
                 public void onNotificationEvent(@NonNull NotificationEvent event) {
-                    final Set<ContextHint> hints =
-                            Set.of(new NotificationHint.Builder(event).build());
-
                     final StatusBarNotification sbn = getSbnFromNotificationEvent(event);
                     if (sbn == null) {
                         Slog.e(TAG, "Could not get SBN from notification event.");
@@ -133,13 +130,11 @@ public class PersonalContextManagerService extends SystemService {
                         return;
                     }
 
-                    final RenderToken renderToken =
-                            new RenderTokenBuilder()
-                                    .setRendererComponentId(
-                                            userState.notificationActionRenderer().getComponentId())
-                                    .build();
-
-                    startRefinerWorkflow(user.getIdentifier(), Process.myPid(), hints, renderToken);
+                    startRefinerWorkflow(
+                            user.getIdentifier(),
+                            Process.myPid(),
+                            Set.of(new NotificationHint.Builder(event).build()),
+                            Set.of(userState.notificationActionRenderer().mintRenderToken()));
                 }
 
                 @Override
@@ -155,17 +150,11 @@ public class PersonalContextManagerService extends SystemService {
                         return;
                     }
 
-                    final Set<ContextHint> hints =
-                            Set.of(new TextClassificationHint.Builder(request, sessionId).build());
-                    final RenderToken renderToken =
-                            new RenderTokenBuilder()
-                                    .setRendererComponentId(
-                                            userState
-                                                    .textClassificationActionRenderer()
-                                                    .getComponentId())
-                                    .build();
-
-                    startRefinerWorkflow(userId, Process.myPid(), hints, renderToken);
+                    startRefinerWorkflow(
+                            userId,
+                            Process.myPid(),
+                            Set.of(new TextClassificationHint.Builder(request, sessionId).build()),
+                            Set.of(userState.textClassificationActionRenderer().mintRenderToken()));
                 }
             };
 
@@ -287,7 +276,10 @@ public class PersonalContextManagerService extends SystemService {
     }
 
     private void startRefinerWorkflow(
-            @UserIdInt int userId, int processId, Set<ContextHint> hints, RenderToken renderToken) {
+            @UserIdInt int userId,
+            int processId,
+            Set<ContextHint> hints,
+            Set<RenderToken> renderTokens) {
         final ContextComponentManager componentManager = getComponentManagerForUser(userId);
         if (componentManager == null) {
             Slog.w(TAG, "Cannot start refiner workflow, no component manager for user " + userId);
@@ -297,13 +289,13 @@ public class PersonalContextManagerService extends SystemService {
         try {
             final Set<ContextHintWithSignature> signedHints = new HashSet<>();
             for (ContextHint hint : hints) {
-                signedHints.add(signHint(hint, processId, renderToken));
+                signedHints.add(signHint(hint, processId, renderTokens));
             }
 
             RefinerWorkflow.start(
                     componentManager,
                     signedHints,
-                    renderToken,
+                    renderTokens,
                     HINT_SIGNING_KEY,
                     mLogger,
                     mExecutor);
@@ -346,7 +338,7 @@ public class PersonalContextManagerService extends SystemService {
                         Slog.e(TAG, "No render token for client " + clientInfo.getId());
                         return;
                     }
-                    startRefinerWorkflow(userId, processId, clientHints, renderToken);
+                    startRefinerWorkflow(userId, processId, clientHints, Set.of(renderToken));
                 });
     }
 
@@ -375,7 +367,7 @@ public class PersonalContextManagerService extends SystemService {
             return;
         }
 
-        startRefinerWorkflow(userId, processId, hints, renderToken);
+        startRefinerWorkflow(userId, processId, hints, Set.of(renderToken));
     }
 
     private UserState getUserStateSynchronized(int userId) {
@@ -385,11 +377,11 @@ public class PersonalContextManagerService extends SystemService {
     }
 
     private ContextHintWithSignature signHint(
-            ContextHint hint, int callingPid, RenderToken renderToken)
+            ContextHint hint, int callingPid, Set<RenderToken> renderTokens)
             throws GeneralSecurityException {
         return new ContextHintWithSignature.Builder(hint, HINT_SIGNING_KEY)
                 .setOriginatingPackage(mActivityManager.getPackageNameByPid(callingPid))
-                .setRenderToken(renderToken)
+                .addRenderTokens(renderTokens)
                 .build();
     }
 
@@ -426,7 +418,7 @@ public class PersonalContextManagerService extends SystemService {
         @PermissionManuallyEnforced
         @Override
         public void publishTriggeringHint(
-                List<ContextHintWrapper> hints, RenderToken renderToken, int userId) {
+                List<ContextHintWrapper> hints, List<RenderToken> renderTokens, int userId) {
             verifyUser(userId);
 
             final int callingPid = Binder.getCallingPid();
@@ -439,7 +431,7 @@ public class PersonalContextManagerService extends SystemService {
                                         userId,
                                         callingPid,
                                         ContextHintWrapper.unwrapInto(hints, new HashSet<>()),
-                                        renderToken);
+                                        new HashSet<>(renderTokens));
                     });
         }
 
@@ -464,7 +456,8 @@ public class PersonalContextManagerService extends SystemService {
             final int callingPid = Binder.getCallingPid();
 
             return Binder.withCleanCallingIdentity(
-                    () -> getService().signHint(hint.getContextHint(), callingPid, null));
+                    () -> getService().signHint(
+                            hint.getContextHint(), callingPid, Collections.emptySet()));
         }
 
         @PermissionManuallyEnforced

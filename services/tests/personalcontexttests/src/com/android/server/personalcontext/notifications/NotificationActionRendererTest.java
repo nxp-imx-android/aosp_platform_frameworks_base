@@ -18,13 +18,9 @@ package com.android.server.personalcontext.notifications;
 
 import static android.app.NotificationManager.IMPORTANCE_DEFAULT;
 
-import com.android.server.personalcontext.notifications.ContextActionResolver.ActionType;
-import com.android.server.personalcontext.notifications.ContextActionResolver.ResolutionResult;
-
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -39,7 +35,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.drawable.Icon;
 import android.service.notification.Adjustment;
@@ -62,6 +57,8 @@ import androidx.test.filters.SmallTest;
 import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.android.server.notification.NotificationManagerInternal;
+import com.android.server.personalcontext.notifications.ContextActionResolver.ActionType;
+import com.android.server.personalcontext.notifications.ContextActionResolver.ResolutionResult;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -110,7 +107,7 @@ public class NotificationActionRendererTest {
     public void testRender_notActionableInsight_noAction() {
         ContextInsight insight = new BundleInsight.Builder().build();
 
-        mRenderer.render(insight);
+        mRenderer.render(insight, null);
 
         verify(mNotificationManagerInternal, never()).requestSystemAdjustments(any());
     }
@@ -124,7 +121,7 @@ public class NotificationActionRendererTest {
         ActionableInsight insight =
                 new ActionableInsight.Builder(actionDetails, displayDetails).build();
 
-        mRenderer.render(insight);
+        mRenderer.render(insight, null);
 
         verify(mNotificationManagerInternal, never()).requestSystemAdjustments(any());
     }
@@ -226,7 +223,7 @@ public class NotificationActionRendererTest {
         when(mNotificationActionFactory.createNotificationAction(any(ActionableInsight.class)))
                 .thenReturn(null);
 
-        mRenderer.render(insight);
+        mRenderer.render(insight, null);
 
         verify(mNotificationManagerInternal, never()).requestSystemAdjustments(any());
     }
@@ -359,7 +356,7 @@ public class NotificationActionRendererTest {
                 new InsightCollection.Builder()
                         .addInsight(new BundleInsight.Builder().build())
                         .build();
-        mRenderer.render(collection);
+        mRenderer.render(collection, null);
         verify(mNotificationManagerInternal, never()).requestSystemAdjustments(any());
     }
 
@@ -477,7 +474,7 @@ public class NotificationActionRendererTest {
     }
 
     private List<Adjustment> renderAndCaptureAdjustments(ContextInsight insight) {
-        mRenderer.render(insight);
+        mRenderer.render(insight, null);
 
         ArgumentCaptor<List<Adjustment>> captor = ArgumentCaptor.forClass(List.class);
         verify(mNotificationManagerInternal).requestSystemAdjustments(captor.capture());

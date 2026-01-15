@@ -44,24 +44,27 @@ public class ContextHintWithSignatureTest {
         final BundleHint hint = new BundleHint.Builder().build();
         final BundleHint attributedHint1 = new BundleHint.Builder().build();
         final BundleHint attributedHint2 = new BundleHint.Builder().build();
-        final RenderToken renderToken = new RenderToken.RenderTokenBuilder()
+        final RenderToken renderToken1 = new RenderToken.RenderTokenBuilder()
+                .setRendererComponentId(UUID.randomUUID())
+                .build();
+        final RenderToken renderToken2 = new RenderToken.RenderTokenBuilder()
                 .setRendererComponentId(UUID.randomUUID())
                 .build();
 
         final ContextHintWithSignature signedAttributedHint1 =
                 new ContextHintWithSignature.Builder(attributedHint1, key)
-                        .setRenderToken(renderToken)
+                        .addRenderTokens(List.of(renderToken1, renderToken2))
                         .build();
 
         final ContextHintWithSignature signedAttributedHint2 =
                 new ContextHintWithSignature.Builder(attributedHint2, key)
-                        .setRenderToken(renderToken)
+                        .addRenderTokens(List.of(renderToken1, renderToken2))
                         .build();
 
         final Parcel parcel = Parcel.obtain();
         parcel.writeParcelable(new ContextHintWithSignature.Builder(hint, key)
-                .setRenderToken(renderToken)
                 .setOriginatingPackage(origin.getPackageName())
+                .addRenderTokens(List.of(renderToken1, renderToken2))
                 .addAttributionHint(signedAttributedHint1)
                 .addAttributionHint(signedAttributedHint2)
                 .build(), 0);
@@ -75,8 +78,7 @@ public class ContextHintWithSignatureTest {
 
         assertThat(signedHint.isSignatureValid(key)).isTrue();
         assertThat(signedHint.getContextHint().getHintId()).isEqualTo(hint.getHintId());
-        assertThat(signedHint.getRenderToken().getRendererComponentId())
-                .isEqualTo(renderToken.getRendererComponentId());
+        assertThat(signedHint.getRenderTokens()).containsExactly(renderToken1, renderToken2);
         assertThat(signedHint.getOriginatingPackage()).isEqualTo(origin.getPackageName());
         assertThat(signedHint.getAttributionHints().size()).isEqualTo(2);
         assertThat(signedHint.getAttributionHints().get(0).getOriginatingPackage()).isNull();
@@ -99,17 +101,17 @@ public class ContextHintWithSignatureTest {
 
         final ContextHintWithSignature signedAttributedHint1 =
                 new ContextHintWithSignature.Builder(attributedHint1, key)
-                        .setRenderToken(renderToken)
+                        .addRenderTokens(List.of(renderToken))
                         .build();
 
         final ContextHintWithSignature signedAttributedHint2 =
                 new ContextHintWithSignature.Builder(attributedHint2, key)
-                        .setRenderToken(renderToken)
+                        .addRenderTokens(List.of(renderToken))
                         .build();
 
         final Parcel parcel = Parcel.obtain();
         parcel.writeParcelable(new ContextHintWithSignature.Builder(hint, key)
-                .setRenderToken(renderToken)
+                .addRenderTokens(List.of(renderToken))
                 .addAttributionHint(signedAttributedHint1)
                 .addAttributionHint(signedAttributedHint2)
                 .build(), 0);
@@ -123,8 +125,7 @@ public class ContextHintWithSignatureTest {
 
         assertThat(signedHint.isSignatureValid(key)).isTrue();
         assertThat(signedHint.getContextHint().getHintId()).isEqualTo(hint.getHintId());
-        assertThat(signedHint.getRenderToken().getRendererComponentId())
-                .isEqualTo(renderToken.getRendererComponentId());
+        assertThat(signedHint.getRenderTokens()).containsExactly(renderToken);
         assertThat(signedHint.getOriginatingPackage()).isNull();
         assertThat(signedHint.getAttributionHints().size()).isEqualTo(2);
         assertThat(signedHint.getAttributionHints().get(0).getOriginatingPackage()).isNull();
@@ -164,7 +165,7 @@ public class ContextHintWithSignatureTest {
 
         assertThat(signedHint.isSignatureValid(key)).isTrue();
         assertThat(signedHint.getContextHint().getHintId()).isEqualTo(hint.getHintId());
-        assertThat(signedHint.getRenderToken()).isNull();
+        assertThat(signedHint.getRenderTokens()).isEmpty();
         assertThat(signedHint.getOriginatingPackage()).isEqualTo(origin.getPackageName());
         assertThat(signedHint.getAttributionHints().size()).isEqualTo(2);
         assertThat(signedHint.getAttributionHints().get(0).getContextHint().getHintId())
@@ -185,7 +186,7 @@ public class ContextHintWithSignatureTest {
         final Parcel parcel = Parcel.obtain();
         parcel.writeParcelable(new ContextHintWithSignature.Builder(hint, key)
                 .setOriginatingPackage(origin.getPackageName())
-                .setRenderToken(renderToken)
+                .addRenderTokens(List.of(renderToken))
                 .build(), 0);
 
         parcel.setDataPosition(0);
@@ -197,8 +198,7 @@ public class ContextHintWithSignatureTest {
 
         assertThat(signedHint.isSignatureValid(key)).isTrue();
         assertThat(signedHint.getContextHint().getHintId()).isEqualTo(hint.getHintId());
-        assertThat(signedHint.getRenderToken().getRendererComponentId())
-                .isEqualTo(renderToken.getRendererComponentId());
+        assertThat(signedHint.getRenderTokens()).containsExactly(renderToken);
         assertThat(signedHint.getOriginatingPackage()).isEqualTo(origin.getPackageName());
         assertThat(signedHint.getAttributionHints().size()).isEqualTo(0);
     }

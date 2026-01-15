@@ -36,15 +36,14 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import java.lang.ref.WeakReference;
-import java.util.List;
 import java.util.UUID;
 
 /**
  * The base insight renderer service, which is a service responsible for rendering
  * {@link ContextInsight}s to the user as suggestions or other actionable items. This is an abstract
  * class intended to be subclassed by concrete renderer services. Subclasses need to implement
- * {@link #onRegistered()} (which should return a {@link RendererFilter} indicating what types of
- * hints and insights the renderer will accept), and {@link #onRender(List, boolean)} (which the
+ * {@link #onConnected()} (which should return a {@link RendererFilter} indicating what types of
+ * hints and insights the renderer will accept), and {@link #onRender} (which the
  * personal context engine will call with a list of {@link ContextInsight}s to be rendered).
  *
  * <p>You must declare the service in the AndroidManifest of the app hosting the service with the
@@ -121,7 +120,7 @@ public abstract class InsightRendererService extends Service {
 
     /**
      * The renderer should return a {@link RendererFilter} that will be used to filter the insights
-     * that this renderer's {@link #onRender(ContextInsight)} method will be called with.
+     * that this renderer's {@link #onRender} method will be called with.
      *
      * The result of this method will be cached and re-used between service bindings. If the filter
      * returned by this method changes, the changes will be ignored.
@@ -134,9 +133,11 @@ public abstract class InsightRendererService extends Service {
     /**
      * This method will be called when the given {@link ContextInsight} needs to be rendered.
      *
-     * @param insight the {@link ContextInsight} to renderer
+     * @param insight the {@link ContextInsight} to render
+     * @param renderToken the {@link RenderToken} that was used to select this renderer
      */
-    public abstract void onRender(@NonNull ContextInsight insight);
+    public abstract void onRender(
+            @NonNull ContextInsight insight, @NonNull RenderToken renderToken);
 
     private static final class Binder extends IInsightRenderer.Stub {
         private final WeakReference<InsightRendererService> mService;
@@ -157,8 +158,9 @@ public abstract class InsightRendererService extends Service {
         }
 
         @Override
-        public void render(ContextInsightWrapper insight) throws RemoteException {
-            getServiceOrThrow().onRender(insight.getContextInsight());
+        public void render(ContextInsightWrapper insight, RenderToken renderToken)
+                throws RemoteException {
+            getServiceOrThrow().onRender(insight.getContextInsight(), renderToken);
         }
 
         @Override

@@ -33,7 +33,7 @@ import java.util.UUID;
  * should only be sent to the specific renderer associated with this token.
  */
 @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
-public final class RenderToken implements Parcelable {
+public final class RenderToken implements Parcelable, Comparable<RenderToken> {
     /**
      * Unique identifier for this token.
      */
@@ -73,6 +73,11 @@ public final class RenderToken implements Parcelable {
      */
     public @NonNull UUID getTokenId() {
         return mId;
+    }
+
+    @Override
+    public int compareTo(@NonNull RenderToken o) {
+        return mId.compareTo(o.mId);
     }
 
     /**

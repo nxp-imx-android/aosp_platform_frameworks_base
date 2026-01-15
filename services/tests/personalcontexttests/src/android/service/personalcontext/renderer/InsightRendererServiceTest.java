@@ -63,15 +63,17 @@ public class InsightRendererServiceTest {
     }
 
     @Test
-    public void testOnRenderCalled() throws RemoteException {
+    public void testOnRenderCalledWithRenderToken() throws RemoteException {
         final InsightRendererService service =
                 mock(InsightRendererService.class, Answers.CALLS_REAL_METHODS);
         final IBinder binder = service.onBind(new Intent(InsightRendererService.SERVICE_INTERFACE));
         final IInsightRenderer renderer = IInsightRenderer.Stub.asInterface(binder);
+        renderer.configure(new ParcelUuid(UUID.randomUUID()));
 
         final ContextInsight insight = new BundleInsight.Builder().build();
-        renderer.render(new ContextInsightWrapper(insight));
-        verify(service).onRender(eq(insight));
+        final RenderToken renderToken = service.mintRenderToken();
+        renderer.render(new ContextInsightWrapper(insight), renderToken);
+        verify(service).onRender(eq(insight), eq(renderToken));
     }
 
     @Test
