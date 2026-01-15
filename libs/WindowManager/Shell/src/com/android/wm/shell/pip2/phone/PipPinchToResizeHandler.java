@@ -20,6 +20,7 @@ import android.graphics.PointF;
 import android.graphics.Rect;
 import android.view.MotionEvent;
 
+import com.android.internal.annotations.VisibleForTesting;
 import com.android.wm.shell.common.pip.PipBoundsState;
 import com.android.wm.shell.common.pip.PipPinchResizingAlgorithm;
 
@@ -48,6 +49,7 @@ public class PipPinchToResizeHandler {
     }
 
     /** Invoked by {@link PipResizeGestureHandler#onInputEvent} if pinch-to-resize is enabled. */
+    @VisibleForTesting
     void onPinchResize(MotionEvent ev, PointF downPoint, PointF downSecondPoint, Rect downBounds,
             PointF lastPoint, PointF lastSecondPoint, Rect lastResizeBounds, float touchSlop,
             Point minSize, Point maxSize) {
