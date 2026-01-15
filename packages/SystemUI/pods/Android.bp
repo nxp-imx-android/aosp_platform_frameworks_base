@@ -136,5 +136,5 @@ filegroup {
         ":com.android.systemui.brightness_fixtureFiles",
     ],
 
-    visibility: ["//frameworks/base/packages/SystemUI:__pkg__"],
+    visibility: ["//frameworks/base/packages/SystemUI/tests:__pkg__"],
 }
