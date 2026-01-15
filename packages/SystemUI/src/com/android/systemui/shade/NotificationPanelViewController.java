@@ -3800,7 +3800,10 @@ public final class NotificationPanelViewController implements
                 return false;
             }
 
-            mShadeLog.logMotionEvent(event, "NPVC onInterceptTouchEvent");
+            // Logging every motion event is very costly, even when tracing/logcat
+            // endpoints are disabled. Uncomment the following line if full touch
+            // event history is needed.
+            // mShadeLog.logMotionEvent(event, "NPVC onInterceptTouchEvent");
             if (mQsController.disallowTouches()) {
                 mShadeLog.logMotionEvent(event,
                         "NPVC not intercepting touch, panel touches disallowed");
