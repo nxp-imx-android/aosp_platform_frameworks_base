@@ -3726,8 +3726,14 @@ public final class SystemServer implements Dumpable {
     }
 
     private void startAttentionService(@NonNull Context context, @NonNull TimingsTraceAndSlog t) {
-        if (!AttentionManagerService.isServiceConfigured(context)) {
+        // We start service only if either AttentionManager service is configured on the device or
+        // InteractionProviderService is enabled.
+        if (!com.android.input.flags.Flags.enableAttentionServiceApis()
+                && !AttentionManagerService.isServiceConfigured(context)) {
             Slog.d(TAG, "AttentionService is not configured on this device");
+            return;
+        } else if (!AttentionManagerService.isInteractionProviderServiceEnabled(context)) {
+            Slog.d(TAG, "InteractionProviderService is not enabled on this device");
             return;
         }
 

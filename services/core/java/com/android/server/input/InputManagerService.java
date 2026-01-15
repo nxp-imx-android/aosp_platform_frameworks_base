@@ -162,6 +162,8 @@ import com.android.server.IoThread;
 import com.android.server.LocalServices;
 import com.android.server.SystemService;
 import com.android.server.Watchdog;
+import com.android.server.attention.AttentionManagerService;
+import com.android.server.attention.InteractionProviderInternal;
 import com.android.server.input.InputManagerInternal.LidSwitchCallback;
 import com.android.server.input.data.InputDataStore;
 import com.android.server.input.debug.FocusEventDebugView;
@@ -538,7 +540,7 @@ public class InputManagerService extends IInputManager.Stub
         }
 
         NativeInputManagerService getNativeService(InputManagerService service) {
-            return new NativeInputManagerService.NativeImpl(service, mLooper.getQueue());
+            return new NativeInputManagerService.NativeImpl(service, mLooper.getQueue(), mContext);
         }
 
         void registerLocalService(InputManagerInternal localService) {
@@ -720,6 +722,11 @@ public class InputManagerService extends IInputManager.Stub
         mPointerIconCache.systemRunning();
         mKeyboardGlyphManager.systemRunning();
         mKeyGestureController.systemRunning();
+
+        if (AttentionManagerService.isInteractionProviderServiceEnabled(mContext)) {
+            mNative.setInteractionProviderService(
+                    LocalServices.getService(InteractionProviderInternal.class));
+        }
         initKeyGestures();
     }
 
