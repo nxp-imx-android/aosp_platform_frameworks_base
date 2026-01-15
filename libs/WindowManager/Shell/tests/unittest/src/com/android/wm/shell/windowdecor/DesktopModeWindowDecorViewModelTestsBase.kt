@@ -187,6 +187,9 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
 
     protected val mockPinnedLayerController = mock<PinnedLayerController>()
     protected val mockPinnedLayerUiState = mock<PinnedLayerUiState>()
+    protected val mockFluidTaskResizer = mock<FluidTaskResizer>()
+    protected val mockVeiledTaskResizer = mock<VeiledTaskResizer>()
+    protected val mockMultiDisplayTaskMover = mock<MultiDisplayTaskMover>()
 
     private val transactionFactory =
         Supplier<SurfaceControl.Transaction> { SurfaceControl.Transaction() }
@@ -293,6 +296,9 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
                 mockLockTaskChangeListener,
                 mockPinnedLayerController,
                 mockPinnedLayerUiState,
+                mockFluidTaskResizer,
+                mockVeiledTaskResizer,
+                mockMultiDisplayTaskMover,
             )
         desktopModeWindowDecorViewModel.setSplitScreenController(mockSplitScreenController)
         desktopModeWindowDecorViewModel.setFreeformTaskTransitionStarter(
@@ -303,6 +309,9 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
         whenever(mockInputMonitorFactory.create(any(), any())).thenReturn(mockInputMonitor)
         whenever(
                 mockTaskPositionerFactory.create(
+                    any(),
+                    any(),
+                    any(),
                     any(),
                     any(),
                     any(),

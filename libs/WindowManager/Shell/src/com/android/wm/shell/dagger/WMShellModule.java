@@ -228,6 +228,9 @@ import com.android.wm.shell.unfold.qualifier.UnfoldShellTransition;
 import com.android.wm.shell.unfold.qualifier.UnfoldTransition;
 import com.android.wm.shell.windowdecor.CaptionWindowDecorViewModel;
 import com.android.wm.shell.windowdecor.DesktopModeWindowDecorViewModel;
+import com.android.wm.shell.windowdecor.FluidTaskResizer;
+import com.android.wm.shell.windowdecor.MultiDisplayTaskMover;
+import com.android.wm.shell.windowdecor.VeiledTaskResizer;
 import com.android.wm.shell.windowdecor.WindowDecorViewModel;
 import com.android.wm.shell.windowdecor.additionalviewcontainer.AdditionalSystemViewContainer;
 import com.android.wm.shell.windowdecor.common.CaptionVisibilityHelper;
@@ -1454,7 +1457,10 @@ public abstract class WMShellModule {
             UserProfileContexts userProfileContexts,
             LockTaskChangeListener lockTaskChangeListener,
             Optional<PinnedLayerController> pinnedLayerController,
-            Optional<PinnedLayerUiState> pinnedLayerUiState
+            Optional<PinnedLayerUiState> pinnedLayerUiState,
+            FluidTaskResizer fluidTaskResizer,
+            VeiledTaskResizer veiledTaskResizer,
+            MultiDisplayTaskMover multiDisplayTaskMover
     ) {
         if (!shelldesktopState.canEnterDesktopModeOrShowAppHandle()) {
             return Optional.empty();
@@ -1475,7 +1481,8 @@ public abstract class WMShellModule {
                 multiDisplayDragMoveIndicatorController, compatUI.orElse(null),
                 desksOrganizer, shelldesktopState, desktopConfig, userProfileContexts,
                 lockTaskChangeListener, pinnedLayerController.orElse(null),
-                pinnedLayerUiState.orElse(null)));
+                pinnedLayerUiState.orElse(null), fluidTaskResizer, veiledTaskResizer,
+                multiDisplayTaskMover));
     }
 
     @WMSingleton
@@ -1483,6 +1490,31 @@ public abstract class WMShellModule {
     static LockTaskChangeListener provideLockTaskChangeListener(ShellInit shellInit,
             TaskStackListenerImpl taskStackListenerImpl) {
         return new LockTaskChangeListener(shellInit, taskStackListenerImpl);
+    }
+
+    @Provides
+    static FluidTaskResizer provideFluidTaskResizer(
+            ShellTaskOrganizer taskOrganizer,
+            DisplayController displayController,
+            DesktopState desktopState) {
+        return new FluidTaskResizer(taskOrganizer, displayController, desktopState);
+    }
+
+    @Provides
+    static VeiledTaskResizer provideVeiledTaskResizer(
+            DisplayController displayController,
+            DesktopState desktopState) {
+        return new VeiledTaskResizer(displayController, desktopState);
+    }
+
+    @Provides
+    static MultiDisplayTaskMover provideMultiDisplayTaskMover(
+            DisplayController displayController,
+            MultiDisplayDragMoveIndicatorController indicatorController) {
+        return new MultiDisplayTaskMover(
+                displayController,
+                SurfaceControl.Transaction::new,
+                indicatorController);
     }
 
     @WMSingleton
