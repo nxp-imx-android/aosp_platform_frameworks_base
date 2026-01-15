@@ -267,3 +267,9 @@ flag {
     bug: "469890315"
 }
 
+flag {
+    name: "hid_api"
+    namespace: "input"
+    description: "Enables HID APIs"
+    bug: "390701065"
+}
