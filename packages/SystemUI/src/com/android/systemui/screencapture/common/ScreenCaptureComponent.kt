@@ -20,7 +20,7 @@ import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters
 import com.android.systemui.screencapture.domain.interactor.ScreenCaptureOverlayStateInteractor
 import com.android.systemui.screencapture.ui.ScreenCaptureOverlayUi
-import com.android.systemui.screencapture.ui.ScreenCaptureUi
+import com.android.systemui.screencapture.ui.ScreenCaptureUiDialogFactory
 import dagger.BindsInstance
 import dagger.Subcomponent
 import kotlinx.coroutines.CoroutineScope
@@ -35,7 +35,7 @@ interface ScreenCaptureComponent {
 
     @ScreenCapture fun coroutineScope(): CoroutineScope
 
-    fun screenCaptureUiFactory(): ScreenCaptureUi.Factory
+    fun screenCaptureUiDialogFactory(): ScreenCaptureUiDialogFactory
 
     fun uiComponentBuilders():
         Map<

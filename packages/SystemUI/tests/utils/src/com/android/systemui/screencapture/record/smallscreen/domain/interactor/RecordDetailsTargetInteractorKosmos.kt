@@ -36,7 +36,7 @@ val Kosmos.recordDetailsTargetInteractor: RecordDetailsTargetInteractor by
             recentTaskInteractor = screenCaptureRecentTaskInteractor,
             screenCaptureLabelInteractor = screenCaptureLabelInteractor,
             parametersInteractor = screenCaptureRecordParametersInteractor,
-            cameraInteracor = screenRecordCameraSurfaceInteractor,
+            cameraInteractor = screenRecordCameraSurfaceInteractor,
             markupInteractor = screenCaptureMarkupInteractor,
             displayRepository = displayRepository,
         )

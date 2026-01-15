@@ -21,6 +21,7 @@ import android.app.ActivityOptions.LaunchCookie
 import android.app.ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOW_ALWAYS
 import android.media.projection.StopReason
 import android.view.Display
+import androidx.annotation.VisibleForTesting
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import com.android.app.tracing.coroutines.launchTraced
@@ -54,7 +55,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.withContext
 
 class SmallScreenCaptureRecordViewModel
-@AssistedInject
+@VisibleForTesting
 constructor(
     @Background private val bgContext: CoroutineContext,
     private val screenRecordingServiceInteractor: ScreenRecordingServiceInteractor,
@@ -71,7 +72,44 @@ constructor(
     private val screenCaptureRecordFeaturesInteractor: ScreenCaptureRecordFeaturesInteractor,
     recordDetailsTargetInteractor: RecordDetailsTargetInteractor,
     private val recordDetailsStateInteractor: RecordDetailsStateInteractor,
+    private val defaultDetailsPopupType: RecordDetailsPopupType,
 ) : HydratedActivatable(), DrawableLoaderViewModel by drawableLoaderViewModel {
+
+    @AssistedInject
+    constructor(
+        @Background bgContext: CoroutineContext,
+        screenRecordingServiceInteractor: ScreenRecordingServiceInteractor,
+        screenCaptureCameraTransformationInteractor: ScreenCaptureCameraTransformationInteractor,
+        recordDetailsAppSelectorViewModelFactory: RecordDetailsAppSelectorViewModel.Factory,
+        screenCaptureRecordParametersViewModelFactory:
+            ScreenCaptureRecordParametersViewModel.Factory,
+        recordDetailsTargetViewModelFactory: RecordDetailsTargetViewModel.Factory,
+        recordDetailsMarkupColorPickerViewModelFactory:
+            RecordDetailsMarkupColorPickerViewModel.Factory,
+        drawableLoaderViewModel: DrawableLoaderViewModel,
+        screenCaptureUiInteractor: ScreenCaptureUiInteractor,
+        markupInteractor: ScreenCaptureMarkupInteractor,
+        activityManager: ActivityManagerWrapper,
+        screenCaptureRecordFeaturesInteractor: ScreenCaptureRecordFeaturesInteractor,
+        recordDetailsTargetInteractor: RecordDetailsTargetInteractor,
+        recordDetailsStateInteractor: RecordDetailsStateInteractor,
+    ) : this(
+        bgContext,
+        screenRecordingServiceInteractor,
+        screenCaptureCameraTransformationInteractor,
+        recordDetailsAppSelectorViewModelFactory,
+        screenCaptureRecordParametersViewModelFactory,
+        recordDetailsTargetViewModelFactory,
+        recordDetailsMarkupColorPickerViewModelFactory,
+        drawableLoaderViewModel,
+        screenCaptureUiInteractor,
+        markupInteractor,
+        activityManager,
+        screenCaptureRecordFeaturesInteractor,
+        recordDetailsTargetInteractor,
+        recordDetailsStateInteractor,
+        RecordDetailsPopupType.Invisible,
+    )
 
     val recordDetailsAppSelectorViewModel: RecordDetailsAppSelectorViewModel =
         recordDetailsAppSelectorViewModelFactory.create()
@@ -86,7 +124,11 @@ constructor(
         screenRecordingServiceInteractor.status
             .map { it.isRecording }
             .distinctUntilChanged()
-            .onEach(::performResetDetailsPopup)
+            .onEach { recording ->
+                if (recording) {
+                    detailsPopup = defaultDetailsPopupType
+                }
+            }
             .hydratedStateOf(
                 traceName = "SmallScreenCaptureRecordViewModel#isRecording",
                 initialValue = screenRecordingServiceInteractor.status.value.isRecording,
@@ -157,12 +199,8 @@ constructor(
     }
 
     fun resetDetailsPopup() {
-        performResetDetailsPopup(isRecording)
-    }
-
-    private fun performResetDetailsPopup(recording: Boolean) {
         detailsPopup =
-            if (recording) {
+            if (isRecording) {
                 RecordDetailsPopupType.Invisible
             } else {
                 RecordDetailsPopupType.Settings

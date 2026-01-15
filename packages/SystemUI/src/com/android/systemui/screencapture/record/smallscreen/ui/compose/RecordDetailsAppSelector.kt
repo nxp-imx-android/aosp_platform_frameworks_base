@@ -198,13 +198,14 @@ private fun AppPreview(
                         .clickable(onClick = onClick)
                         .background(MaterialTheme.colorScheme.surfaceContainer),
             ) { thumbnail ->
+                val sizeModifier = Modifier.fillMaxSize()
                 if (thumbnail == null) {
-                    Spacer(modifier = Modifier.fillMaxSize())
+                    Spacer(modifier = sizeModifier)
                 } else {
                     Image(
                         bitmap = thumbnail.asImageBitmap(),
                         contentDescription = null,
-                        modifier = Modifier,
+                        modifier = sizeModifier,
                     )
                 }
             }
