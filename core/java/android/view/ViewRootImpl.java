@@ -504,6 +504,8 @@ public final class ViewRootImpl implements ViewParent,
     @Nullable
     private ForceInvertStateChangeListener mForceInvertStateChangeListener;
 
+    private boolean mForceInvertAllowed = true;
+
     /**
      * Callback for notifying about global configuration changes.
      */
@@ -2210,7 +2212,7 @@ public final class ViewRootImpl implements ViewParent,
             // properly configured dark theme are unaffected by force invert dark theme. For
             // self-declared light theme apps HWUI then performs its own "color area"
             // calculation to determine if the app actually renders with light colors.
-            boolean shouldForceInvertDark = !isInputWindow()
+            boolean shouldForceInvertDark = mForceInvertAllowed && !isInputWindow()
                     && a.getBoolean(R.styleable.Theme_isLightTheme, false);
             return determineForceInvertDarkOverride(shouldForceInvertDark);
         } finally {
@@ -2220,6 +2222,13 @@ public final class ViewRootImpl implements ViewParent,
 
     private boolean isInputWindow() {
         return mOrigWindowType == TYPE_INPUT_METHOD || mOrigWindowType == TYPE_INPUT_METHOD_DIALOG;
+    }
+
+    /** Set whether this ViewRootImpl is allowed to enable force invert (expanded dark theme). */
+    public void setForceInvertAllowed(boolean allowed) {
+        if (android.view.accessibility.Flags.disableEdtForAutofillInlineView()) {
+            mForceInvertAllowed = allowed;
+        }
     }
 
     private @ForceDarkType.ForceDarkTypeDef int determineForceInvertDarkOverride(

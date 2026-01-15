@@ -523,11 +523,19 @@ public class SurfaceControlViewHost {
     }
 
     /**
-     * @return the ViewRootImpl wrapped by this host.
+     * @return the window token of the ViewRootImpl wrapped by this host.
      * @hide
      */
     public IWindow getWindowToken() {
         return mViewRoot.mWindow;
+    }
+
+    /**
+     * @return the ViewRootImpl wrapped by this host.
+     * @hide
+     */
+    public ViewRootImpl getViewRoot() {
+        return mViewRoot;
     }
 
     /**

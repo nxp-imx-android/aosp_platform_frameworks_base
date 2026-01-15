@@ -1866,6 +1866,27 @@ public class ViewRootImplTest {
     }
 
     @Test
+    @EnableFlags(android.view.accessibility.Flags.FLAG_DISABLE_EDT_FOR_AUTOFILL_INLINE_VIEW)
+    public void determineForceDarkType_forceInvertNotAllowed_returnsNone() throws Exception {
+        // Set up configurations for force invert color
+        waitForSystemNightModeActivated(true);
+        enableForceInvertColor(true);
+        setUpViewAttributes(/* isLightTheme= */ true, /* isForceDarkAllowed= */ false);
+
+        // Make sure all other properties are set up to allow force invert dark
+        TestUtils.waitUntil("Waiting for ForceDarkType to be ready",
+                () -> (mViewRootImpl.determineForceDarkType()
+                        == ForceDarkType.FORCE_INVERT_COLOR_DARK));
+
+        // Explicitly disallow force invert dark
+        mViewRootImpl.setForceInvertAllowed(false);
+
+        // Ensure that the force dark type is now NONE
+        TestUtils.waitUntil("Waiting for ForceDarkType to be ready",
+                () -> (mViewRootImpl.determineForceDarkType() == ForceDarkType.NONE));
+    }
+
+    @Test
     @EnableFlags(FLAG_FORCE_INVERT_COLOR)
     public void forceInvertOffForceDarkOff_forceDarkModeDisabled() {
         // Set up configurations for force invert color
