@@ -52,7 +52,6 @@ import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.qs.composefragment.dagger.usingMediaInComposeFragment
 import com.android.systemui.qs.flags.QsSplitInternetTile
-import com.android.systemui.qs.panels.data.repository.defaultLargeTilesRepository
 import com.android.systemui.qs.panels.domain.interactor.iconTilesInteractor
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.InfiniteGridLayout
 import com.android.systemui.qs.panels.ui.viewmodel.InfiniteGridViewModel
@@ -106,9 +105,7 @@ class InfiniteGridLayoutEditTileGridTest : SysuiTestCase() {
             editModeViewModel.startEditing()
             usingMediaInComposeFragment = false
         }
-        kosmos.run {
-            iconTilesInteractor.setLargeTiles(defaultLargeTilesRepository.defaultLargeTiles)
-        }
+        kosmos.run { iconTilesInteractor.setLargeTiles(initialLargeTiles) }
     }
 
     @Composable
@@ -359,6 +356,13 @@ class InfiniteGridLayoutEditTileGridTest : SysuiTestCase() {
         private val AVAILABLE_TILES_GRID_TEST_TAG = resIdToTestTag("AvailableTilesGrid")
         private const val OPTIONS_DROP_DOWN_TEST_TAG = "OptionsDropdown"
         private val internetTileSpec = if (QsSplitInternetTile.isEnabled) "wifi" else "internet"
+        private val initialLargeTiles =
+            setOf(
+                TileSpec.create(internetTileSpec),
+                TileSpec.create("bt"),
+                TileSpec.create("dnd"),
+                TileSpec.create("cast"),
+            )
         private val TestEditTiles =
             listOf(
                 TileSpec.create(internetTileSpec),
