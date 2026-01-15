@@ -24,7 +24,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import com.android.app.tracing.coroutines.launchTraced
 import com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType
-import com.android.internal.accessibility.util.AccessibilityUtils
 import com.android.systemui.accessibility.shortcutchooser.domain.interactor.ShortcutChooserDialogInteractor
 import com.android.systemui.accessibility.shortcutchooser.shared.model.AccessibilityTargetModel
 import com.android.systemui.accessibility.shortcutchooser.shared.model.DialogRequestModel
@@ -133,13 +132,8 @@ constructor(
 
     private suspend fun updateEditButtonVisibility() {
         _isEditButtonVisible.value =
-            !isOOBE() &&
-                !interactor.isHeadlessSystemUser() &&
-                !keyguardInteractor.isKeyguardCurrentlyShowing()
+            interactor.isCompletedFullUser() && !keyguardInteractor.isKeyguardCurrentlyShowing()
     }
-
-    // TODO: https://issuetracker.google.com/461597843 - Use SecureSettings in interactor.
-    private fun isOOBE() = !AccessibilityUtils.isUserSetupCompleted(applicationContext)
 
     private suspend fun onDialogRequest(requestModel: DialogRequestModel) {
         val shortcutType = requestModel.shortcutType
@@ -147,9 +141,7 @@ constructor(
         if (shortcutType == UserShortcutType.QUICK_ACCESS) {
             if (Flags.quickAccessShortcutType()) {
                 coroutineScope {
-                    launchTraced {
-                        interactor.enableShortcutForAllTargetsNotNeedingWarning(shortcutType)
-                    }
+                    launchTraced { interactor.enableShortcutForAllAllowedTargets(shortcutType) }
                 }
                 _dialogType.value = DialogType.QUICK_ACCESS
             }
@@ -165,7 +157,7 @@ constructor(
         }
 
         if (shortcutType == UserShortcutType.TOP_ROW_KEY) {
-            if (interactor.isHeadlessSystemUser() || isOOBE()) {
+            if (!interactor.isCompletedFullUser()) {
                 interactor.launchQuickAccessDialog(requestModel.displayId)
                 return
             }
