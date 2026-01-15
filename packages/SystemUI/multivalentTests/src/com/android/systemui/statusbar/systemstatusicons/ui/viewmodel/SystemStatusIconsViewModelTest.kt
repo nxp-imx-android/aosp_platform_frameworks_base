@@ -21,7 +21,6 @@ import android.app.PendingIntent
 import android.bluetooth.BluetoothProfile
 import android.content.testableContext
 import android.media.AudioManager
-import android.platform.test.annotations.EnableFlags
 import android.view.Display.TYPE_EXTERNAL
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -42,7 +41,6 @@ import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.domain.startable.sceneContainerStartable
 import com.android.systemui.scene.shared.model.Scenes
-import com.android.systemui.statusbar.core.NewStatusBarIcons
 import com.android.systemui.statusbar.pipeline.airplane.data.repository.airplaneModeRepository
 import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.fakeMobileIconsInteractor
 import com.android.systemui.statusbar.pipeline.satellite.data.repository.deviceBasedSatelliteRepository
@@ -61,8 +59,8 @@ import com.android.systemui.statusbar.policy.profile.data.repository.managedProf
 import com.android.systemui.statusbar.policy.profile.shared.model.ProfileInfo
 import com.android.systemui.statusbar.policy.vpn.data.repository.vpnRepository
 import com.android.systemui.statusbar.policy.vpn.shared.model.VpnState
-import com.android.systemui.statusbar.systemstatusicons.SystemStatusIconsInCompose
 import com.android.systemui.statusbar.systemstatusicons.data.repository.statusBarConfigIconSlotNames
+import com.android.systemui.statusbar.systemstatusicons.flags.EnableSystemStatusIconsInCompose
 import com.android.systemui.testKosmos
 import com.android.systemui.volume.data.repository.fakeAudioRepository
 import com.google.common.truth.Truth.assertThat
@@ -72,7 +70,7 @@ import org.junit.runner.RunWith
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 
-@EnableFlags(SystemStatusIconsInCompose.FLAG_NAME, NewStatusBarIcons.FLAG_NAME)
+@EnableSystemStatusIconsInCompose
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class SystemStatusIconsViewModelTest : SysuiTestCase() {

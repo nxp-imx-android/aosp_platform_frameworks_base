@@ -17,7 +17,6 @@
 package com.android.systemui.statusbar.systemstatusicons.profile.ui.viewmodel
 
 import android.content.testableContext
-import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.ObservableTransitionState
@@ -38,7 +37,7 @@ import com.android.systemui.scene.domain.startable.sceneContainerStartable
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.statusbar.policy.profile.data.repository.managedProfileRepository
 import com.android.systemui.statusbar.policy.profile.shared.model.ProfileInfo
-import com.android.systemui.statusbar.systemstatusicons.SystemStatusIconsInCompose
+import com.android.systemui.statusbar.systemstatusicons.flags.EnableSystemStatusIconsInCompose
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.flow.flowOf
@@ -48,7 +47,7 @@ import org.junit.runner.RunWith
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@EnableFlags(SystemStatusIconsInCompose.FLAG_NAME)
+@EnableSystemStatusIconsInCompose
 class ManagedProfileIconViewModelTest : SysuiTestCase() {
 
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
