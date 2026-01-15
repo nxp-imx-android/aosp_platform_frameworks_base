@@ -51,7 +51,7 @@ import com.android.internal.util.CollectionUtils;
 import com.android.server.companion.datatransfer.SystemDataTransferRequestStore;
 import com.android.server.companion.devicepresence.CompanionAppBinder;
 import com.android.server.companion.devicepresence.DevicePresenceProcessor;
-import com.android.server.companion.devicetrust.TrustedDevicesStore;
+import com.android.server.companion.devicetrust.TrustedDeviceStore;
 import com.android.server.companion.transport.CompanionTransportManager;
 import com.android.server.companion.utils.PermissionsUtils;
 import com.android.server.companion.utils.RolesUtils;
@@ -98,7 +98,7 @@ public class DisassociationProcessor {
     @NonNull
     private final CompanionTransportManager mTransportManager;
     @NonNull
-    private final TrustedDevicesStore mTrustedDevicesStore;
+    private final TrustedDeviceStore mTrustedDeviceStore;
     private final OnPackageVisibilityChangeListener mOnPackageVisibilityChangeListener;
     private final ActivityManager mActivityManager;
     private final NotificationManager mNotificationManager;
@@ -111,7 +111,7 @@ public class DisassociationProcessor {
             @NonNull CompanionAppBinder applicationController,
             @NonNull SystemDataTransferRequestStore systemDataTransferRequestStore,
             @NonNull CompanionTransportManager companionTransportManager,
-            @NonNull TrustedDevicesStore trustedDevicesStore,
+            @NonNull TrustedDeviceStore trustedDeviceStore,
             @NonNull NotificationManager notificationManager) {
         mContext = context;
         mActivityManager = activityManager;
@@ -123,7 +123,7 @@ public class DisassociationProcessor {
         mCompanionAppController = applicationController;
         mSystemDataTransferRequestStore = systemDataTransferRequestStore;
         mTransportManager = companionTransportManager;
-        mTrustedDevicesStore = trustedDevicesStore;
+        mTrustedDeviceStore = trustedDeviceStore;
         mNotificationManager = notificationManager;
         mPackageManager = context.getPackageManager();
     }
@@ -180,7 +180,7 @@ public class DisassociationProcessor {
         // Association cleanup.
         mSystemDataTransferRequestStore.removeRequestsByAssociationId(userId, id);
         mAssociationStore.removeAssociation(association.getId(), reason);
-        mTrustedDevicesStore.removeSessionKey(userId, id);
+        mTrustedDeviceStore.removeSessionKey(userId, id);
 
         // Revoke NLS if the last association has been removed for the package
         Binder.withCleanCallingIdentity(() -> {
