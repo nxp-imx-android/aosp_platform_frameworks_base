@@ -22,6 +22,8 @@ import com.android.systemui.keyguard.ui.composable.elements.StatusBarElementProv
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.shade.notificationPanelView
+import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.batteryViewModelShowWhenChargingOrSettingFactory
+import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.systemStatusIconsViewModelFactory
 import com.android.systemui.statusbar.ui.viewmodel.keyguardStatusBarViewModelFactory
 import org.mockito.kotlin.mock
 
@@ -35,5 +37,7 @@ val Kosmos.statusBarElementProvider by Fixture {
         componentFactory = keyguardStatusBarViewComponentFactory,
         notificationPanelView = { notificationPanelView },
         viewModelFactory = keyguardStatusBarViewModelFactory,
+        systemStatusIconsViewModelFactory = systemStatusIconsViewModelFactory,
+        batteryViewModelFactory = batteryViewModelShowWhenChargingOrSettingFactory,
     )
 }

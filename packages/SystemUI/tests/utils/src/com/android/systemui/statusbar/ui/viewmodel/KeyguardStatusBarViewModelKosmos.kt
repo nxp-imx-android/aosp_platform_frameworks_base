@@ -23,6 +23,8 @@ import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.shade.domain.interactor.shadeStatusBarComponentsInteractor
 import com.android.systemui.statusbar.domain.interactor.keyguardStatusBarInteractor
+import com.android.systemui.statusbar.phone.domain.interactor.shadeDarkIconInteractor
+import com.android.systemui.statusbar.pipeline.shared.domain.interactor.homeStatusBarIconBlockListInteractor
 
 val Kosmos.keyguardStatusBarViewModelFactory by
     Kosmos.Fixture {
@@ -35,6 +37,8 @@ val Kosmos.keyguardStatusBarViewModelFactory by
                     keyguardInteractor,
                     keyguardStatusBarInteractor,
                     shadeStatusBarComponentsInteractor,
+                    shadeDarkIconInteractor,
+                    homeStatusBarIconBlockListInteractor,
                 )
         }
     }

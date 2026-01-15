@@ -90,6 +90,7 @@ import com.android.systemui.statusbar.pipeline.shared.ui.view.SystemStatusIconsL
 import com.android.systemui.statusbar.policy.ConfigurationController;
 import com.android.systemui.statusbar.policy.KeyguardStateController;
 import com.android.systemui.statusbar.policy.UserInfoController;
+import com.android.systemui.statusbar.systemstatusicons.SystemStatusIconsInCompose;
 import com.android.systemui.user.ui.viewmodel.StatusBarUserChipViewModel;
 import com.android.systemui.util.ViewController;
 import com.android.systemui.util.settings.SecureSettings;
@@ -428,7 +429,8 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
                 this::updateViewState
         );
         mStatusOverlayHoverListenerFactory = statusOverlayHoverListenerFactory;
-        if (NewStatusBarIcons.isEnabled() && SceneContainerFlag.isEnabled()) {
+        if (NewStatusBarIcons.isEnabled() && SceneContainerFlag.isEnabled()
+                && !SystemStatusIconsInCompose.isEnabled()) {
             mBatteryComposeView = createAndBindComposeBattery();
         }
     }
@@ -516,7 +518,7 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
         if (Flags.bouncerUiRevamp()) {
             collectFlow(mView, mKeyguardInteractor.primaryBouncerShowing, x -> updateViewState());
         }
-        if (NewStatusBarIcons.isEnabled()) {
+        if (NewStatusBarIcons.isEnabled() && !SystemStatusIconsInCompose.isEnabled()) {
             if (!SceneContainerFlag.isEnabled()) {
                 mBatteryComposeView = createAndBindComposeBattery();
             }
