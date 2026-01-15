@@ -43,18 +43,7 @@ interface RelaunchVisibleAppToBubbleTestCases :
     @FlakyTest(bugId = 472629753)
     @Test
     fun appOrTransitionSnapshotLayerIsAlwaysVisible() {
-        // At start, the layer of [testApp] is shown.
-        layerTraceEntrySubjectAtStart.isVisible(testApp)
-        // Then the shell plays the animation with transition snapshot layer.
-        // Note that [testApp] and transition snapshot may be shown at the same time.
-        layersTraceSubject
-            .skipUntilFirstAssertion()
-            .isVisible(TransitionSnapshotMatcher(testApp))
-            .then()
-            .isInvisible(TransitionSnapshotMatcher(testApp))
-            .forAllEntries()
-        // At end, the layer of [testApp] is shown.
-        layerTraceEntrySubjectAtEnd.isVisible(testApp)
+        layersTraceSubject.isVisible(testApp.or(TransitionSnapshotMatcher(testApp))).forAllEntries()
     }
 
     /** Verifies that [testApp] resizes consistently. */

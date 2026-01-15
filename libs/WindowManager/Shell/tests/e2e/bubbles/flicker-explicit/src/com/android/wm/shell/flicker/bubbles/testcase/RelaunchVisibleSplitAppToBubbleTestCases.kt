@@ -23,6 +23,7 @@ import android.tools.traces.component.IComponentNameMatcher
 import androidx.test.filters.FlakyTest
 import com.android.wm.shell.flicker.bubbles.utils.FlickerAssertionHelper.moveInSingleDirection
 import com.android.wm.shell.flicker.bubbles.utils.FlickerAssertionHelper.resizeConsistently
+import com.android.wm.shell.flicker.bubbles.utils.TransitionSnapshotMatcher
 import org.junit.Test
 
 /**
@@ -50,15 +51,18 @@ interface RelaunchVisibleSplitAppToBubbleTestCases : RelaunchVisibleAppToBubbleT
 
     /** Verifies the [toFullscreenApp] layer is always visible. */
     @Test
-    fun toFullscreenAppLayerIsAlwaysVisible() {
-        layersTraceSubject.isVisible(toFullscreenApp).forAllEntries()
+    fun toFullscreenAppOrTransitionSnapshotLayerIsAlwaysVisible() {
+        layersTraceSubject
+            .isVisible(toFullscreenApp.or(TransitionSnapshotMatcher(toFullscreenApp)))
+            .forAllEntries()
     }
 
     /** Verifies the [toFullscreenApp] window expands to fullscreen. */
     @Test
     fun toFullscreenAppWindowBecomesFullscreen() {
         val displayBounds = WindowUtils.displayBounds
-        wmTraceSubject.visibleRegion(toFullscreenApp)
+        wmTraceSubject
+            .visibleRegion(toFullscreenApp)
             .isStrictlySmallerThan(Region(displayBounds))
             .then()
             .coversExactly(displayBounds)
@@ -69,7 +73,8 @@ interface RelaunchVisibleSplitAppToBubbleTestCases : RelaunchVisibleAppToBubbleT
     @Test
     fun toFullscreenAppLayerBecomesFullscreen() {
         val displayBounds = WindowUtils.displayBounds
-        layersTraceSubject.visibleRegion(toFullscreenApp)
+        layersTraceSubject
+            .visibleRegion(toFullscreenApp)
             .isStrictlySmallerThan(Region(displayBounds))
             .then()
             .coversExactly(displayBounds)

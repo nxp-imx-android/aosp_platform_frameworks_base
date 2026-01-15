@@ -19,7 +19,6 @@ package com.android.wm.shell.flicker.bubbles
 import android.platform.test.annotations.Presubmit
 import android.platform.test.annotations.RequiresFlagsEnabled
 import android.tools.NavBar
-import android.tools.Rotation
 import android.tools.device.apphelpers.StandardAppHelper
 import android.tools.traces.component.IComponentNameMatcher
 import androidx.test.filters.RequiresDevice
@@ -28,12 +27,8 @@ import com.android.wm.shell.Flags
 import com.android.wm.shell.Utils.testSetupRule
 import com.android.wm.shell.flicker.bubbles.testcase.RelaunchVisibleSplitAppToBubbleTestCases
 import com.android.wm.shell.flicker.bubbles.utils.AssumptionRule
-import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.BubbleLaunchSource.FROM_TASK_BAR
-import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.launchBubbleViaBubbleMenu
-import com.android.wm.shell.flicker.bubbles.utils.RecordTraceWithTransitionRule
 import com.android.wm.shell.flicker.bubbles.utils.RunOncePerParameterRule
-import com.android.wm.shell.flicker.utils.SplitScreenUtils
-import com.android.wm.shell.flicker.utils.SplitScreenUtils.enterSplit
+import com.android.wm.shell.flicker.bubbles.utils.VisibleSplitToBubbleTestScenario
 import org.junit.FixMethodOrder
 import org.junit.Rule
 import org.junit.runner.RunWith
@@ -67,94 +62,20 @@ import org.junit.runners.Parameterized.Parameters
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Presubmit
 @RunWith(Parameterized::class)
-class RelaunchVisibleSplitAppToBubbleTest(private val testScenario: TestScenario) :
-    BubbleFlickerTestBase(), RelaunchVisibleSplitAppToBubbleTestCases {
+class RelaunchVisibleSplitAppToBubbleTest(
+    private val testScenario: VisibleSplitToBubbleTestScenario
+) : BubbleFlickerTestBase(), RelaunchVisibleSplitAppToBubbleTestCases {
 
     companion object {
         private val testApp2: StandardAppHelper = ShowWhenLockedAppHelper(instrumentation)
 
-        private fun generateTransitionRule(
-            primaryApp: StandardAppHelper,
-            secondaryApp: StandardAppHelper,
-            focusOnPrimary: Boolean,
-        ) =
-            RecordTraceWithTransitionRule(
-                setUpBeforeTransition = {
-                    // Pin to hotseat to ensure the app icon is on the taskbar, which is used
-                    // to launch the app into a bubble.
-                    SplitScreenUtils.createShortcutOnHotseatIfNotExist(tapl, testApp.appName)
-                    enterSplit(
-                        wmHelper,
-                        tapl,
-                        uiDevice,
-                        primaryApp,
-                        secondaryApp,
-                        Rotation.ROTATION_0,
-                    )
-                    // Update focus to either primary or secondary app.
-                    val bounds =
-                        wmHelper
-                            .getWindowRegion(
-                                if (focusOnPrimary) {
-                                    primaryApp
-                                } else {
-                                    secondaryApp
-                                }
-                            )
-                            .bounds
-                    uiDevice.click(bounds.centerX(), bounds.centerY())
-                },
-                transition = {
-                    launchBubbleViaBubbleMenu(testApp, tapl, wmHelper, fromSource = FROM_TASK_BAR)
-                },
-                tearDownAfterTransition = {
-                    testApp.exit(wmHelper)
-                    testApp2.exit(wmHelper)
-                },
-            )
-
-        @Parameters(name = "scenario={0}")
+        @Parameters(name = "{0}")
         @JvmStatic
-        fun data(): List<TestScenario> = TestScenario.entries
-    }
-
-    /**
-     * Defines the different test scenarios for relaunching a visible split-screen app into a
-     * bubble.
-     */
-    enum class TestScenario(val rule: RecordTraceWithTransitionRule) {
-        /** Focus on the primary app, then bubble the primary app. */
-        FOCUS_PRIMARY_TO_BUBBLE_PRIMARY(
-            generateTransitionRule(
-                primaryApp = testApp,
-                secondaryApp = testApp2,
-                focusOnPrimary = true,
+        fun data(): List<VisibleSplitToBubbleTestScenario> =
+            VisibleSplitToBubbleTestScenario.generateTestScenarios(
+                toBubbleApp = testApp,
+                toFullscreenApp = testApp2,
             )
-        ),
-        /** Focus on the secondary app, then bubble the primary app. */
-        FOCUS_SECONDARY_TO_BUBBLE_PRIMARY(
-            generateTransitionRule(
-                primaryApp = testApp,
-                secondaryApp = testApp2,
-                focusOnPrimary = false,
-            )
-        ),
-        /** Focus on the primary app, then bubble the secondary app. */
-        FOCUS_PRIMARY_TO_BUBBLE_SECONDARY(
-            generateTransitionRule(
-                primaryApp = testApp2,
-                secondaryApp = testApp,
-                focusOnPrimary = true,
-            )
-        ),
-        /** Focus on the secondary app, then bubble the secondary app. */
-        FOCUS_SECONDARY_TO_BUBBLE_SECONDARY(
-            generateTransitionRule(
-                primaryApp = testApp2,
-                secondaryApp = testApp,
-                focusOnPrimary = false,
-            )
-        ),
     }
 
     @get:Rule(order = 1)

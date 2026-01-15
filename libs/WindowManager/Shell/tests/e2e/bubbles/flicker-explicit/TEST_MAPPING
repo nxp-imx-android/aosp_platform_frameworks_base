@@ -171,6 +171,10 @@
       "keywords": ["device"]
     },
     {
+      "name": "WMShellExplicitFlickerTestsBubbles-RelaunchVisibleSplitAppToBubbleTrampolineTest",
+      "keywords": ["device"]
+    },
+    {
       "name": "WMShellExplicitFlickerTestsBubbles-ScrollableBubbleAppTest",
       "keywords": ["device"]
     },

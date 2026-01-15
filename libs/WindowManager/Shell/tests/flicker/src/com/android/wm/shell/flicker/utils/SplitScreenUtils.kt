@@ -124,6 +124,23 @@ object SplitScreenUtils {
             .waitForAndVerify()
     }
 
+    /**
+     * Enters split-screen from All Apps without verification.
+     *
+     * @param tapl The LauncherInstrumentation instance.
+     * @param primaryApp The primary app helper.
+     * @param secondaryApp The secondary app helper.
+     */
+    fun enterSplitFromAllAppsNoVerify(
+        tapl: LauncherInstrumentation,
+        primaryApp: StandardAppHelper,
+        secondaryApp: StandardAppHelper,
+    ) {
+        val allApps = tapl.workspace.switchToAllApps()
+        allApps.getAppIcon(secondaryApp.appName).openMenu().splitScreenMenuItem.click()
+        allApps.getAppIcon(primaryApp.appName).launch(primaryApp.packageName)
+    }
+
     fun enterSplit(
         wmHelper: WindowManagerStateHelper,
         tapl: LauncherInstrumentation,
