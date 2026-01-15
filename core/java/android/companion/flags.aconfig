@@ -150,3 +150,10 @@ flag {
     description: "Enable storage and notification permissions for the APP_STREAMING role."
     bug: "459812815"
 }
+
+flag {
+    name: "support_ai_agent"
+    namespace: "companion"
+    description: "Add a new field in AssociationRequest to indicate if the device supports AI agent automation."
+    bug: "474639153"
+}
