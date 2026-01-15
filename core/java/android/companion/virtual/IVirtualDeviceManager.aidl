@@ -58,7 +58,7 @@ interface IVirtualDeviceManager {
     /**
      * Requests a new computer control session.
      */
-    @EnforcePermission(allOf={"ACCESS_COMPUTER_CONTROL", "POST_NOTIFICATIONS"})
+    @PermissionManuallyEnforced
     void requestComputerControlSession(
             in IApplicationThread appThread, in AttributionSource attributionSource,
             in ComputerControlSessionParams params, in IComputerControlSessionCallback callback);
