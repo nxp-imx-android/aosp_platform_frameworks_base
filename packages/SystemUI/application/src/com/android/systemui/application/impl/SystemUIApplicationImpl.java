@@ -152,9 +152,7 @@ public class SystemUIApplicationImpl extends SystemUIApplication implements
         if (Flags.enableLayoutTracing()) {
             View.setTraceLayoutSteps(true);
         }
-        if (com.android.window.flags.Flags.systemUiPostAnimationEnd()) {
-            Animator.setPostNotifyEndListenerEnabled(true);
-        }
+        Animator.setPostNotifyEndListenerEnabled(true);
 
         if (mProcessWrapper.isSystemUser()) {
             IntentFilter bootCompletedFilter = new

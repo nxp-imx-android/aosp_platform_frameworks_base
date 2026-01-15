@@ -155,16 +155,6 @@ flag {
 }
 
 flag {
-  name: "system_ui_post_animation_end"
-  namespace: "windowing_frontend"
-  description: "Run AnimatorListener#onAnimationEnd on next frame for SystemUI"
-  bug: "300035126"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "ensure_keyguard_does_transition_starting_bug_fix"
   namespace: "windowing_frontend"
   description: "Ensure that keyguard is the one starting transitions, instead of delegating to Core"
