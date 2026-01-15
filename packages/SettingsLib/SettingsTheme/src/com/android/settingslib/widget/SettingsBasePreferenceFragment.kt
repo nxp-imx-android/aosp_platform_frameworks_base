@@ -108,7 +108,7 @@ abstract class SettingsBasePreferenceFragment : PreferenceFragmentCompat() {
         text: CharSequence,
         listener: View.OnClickListener,
     ) {
-        footerDataMap[preferenceKey] = FooterData(text, listener)
+        footerDataMap[preferenceKey] = FooterData(text = FooterData.TextContent(text, listener))
 
         val adapter = listView?.adapter as? SettingsPreferenceGroupAdapter
 
