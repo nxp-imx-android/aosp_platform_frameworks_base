@@ -98,6 +98,7 @@ import java.io.PrintWriter;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * This interface supplies all UI-specific behavior of the window manager.  An
@@ -964,20 +965,13 @@ public interface WindowManagerPolicy extends WindowManagerPolicyConstants {
     public void enableKeyguard(boolean enabled);
 
     /**
-     * Callback used by {@link #exitKeyguardSecurely}
-     */
-    interface OnKeyguardExitResult {
-        void onKeyguardExitResult(boolean success);
-    }
-
-    /**
      * Tell the policy if anyone is requesting the keyguard to exit securely
      * (this would be called after the keyguard was disabled)
      * @param callback Callback to send the result back.
-     * @see android.app.KeyguardManager#exitKeyguardSecurely(android.app.KeyguardManager.OnKeyguardExitResult)
+     * @see android.app.KeyguardManager#exitKeyguardSecurely(java.util.function.Consumer)
      */
     @SuppressWarnings("javadoc")
-    void exitKeyguardSecurely(OnKeyguardExitResult callback);
+    void exitKeyguardSecurely(@NonNull Consumer<Boolean> callback);
 
     /**
      * isKeyguardLocked

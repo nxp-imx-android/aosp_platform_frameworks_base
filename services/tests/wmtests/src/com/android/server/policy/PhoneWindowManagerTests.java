@@ -785,8 +785,7 @@ public class PhoneWindowManagerTests {
         mPhoneWindowManager.screenTurningOn(DEFAULT_DISPLAY, mock(ScreenOnListener.class));
 
         verify(mKeyguardServiceDelegate).onScreenTurningOn(
-                /* reason= */ eq(SCREEN_TURNING_ON_REASON_DISPLAY_SWITCH),
-                /* drawnListener= */ any());
+                /* reason= */ eq(SCREEN_TURNING_ON_REASON_DISPLAY_SWITCH));
     }
 
     @Test
@@ -798,8 +797,7 @@ public class PhoneWindowManagerTests {
         mPhoneWindowManager.screenTurningOn(DEFAULT_DISPLAY, mock(ScreenOnListener.class));
 
         verify(mKeyguardServiceDelegate).onScreenTurningOn(
-                /* reason= */ eq(SCREEN_TURNING_ON_REASON_UNKNOWN),
-                /* drawnListener= */ any());
+                /* reason= */ eq(SCREEN_TURNING_ON_REASON_UNKNOWN));
     }
 
     @Test
@@ -914,7 +912,9 @@ public class PhoneWindowManagerTests {
             super(context, funcs);
         }
 
-        KeyguardServiceDelegate getKeyguardServiceDelegate() {
+        @Override
+        KeyguardServiceDelegate getKeyguardServiceDelegate(
+                KeyguardServiceDelegate.StateCallback callbacks) {
             return mKeyguardServiceDelegate;
         }
 

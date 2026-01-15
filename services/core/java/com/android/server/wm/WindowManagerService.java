@@ -3728,23 +3728,21 @@ public class WindowManagerService extends IWindowManager.Stub
      * @see android.app.KeyguardManager#exitKeyguardSecurely
      */
     @Override
-    public void exitKeyguardSecurely(final IOnKeyguardExitResult callback) {
+    public void exitKeyguardSecurely(@NonNull final IOnKeyguardExitResult callback) {
         exitKeyguardSecurely_enforcePermission();
 
         if (callback == null) {
             throw new IllegalArgumentException("callback == null");
         }
 
-        mPolicy.exitKeyguardSecurely(new WindowManagerPolicy.OnKeyguardExitResult() {
-            @Override
-            public void onKeyguardExitResult(boolean success) {
-                try {
-                    callback.onKeyguardExitResult(success);
-                } catch (RemoteException e) {
-                    // Client has died, we don't care.
-                }
-            }
-        });
+        mPolicy.exitKeyguardSecurely(
+                success -> {
+                    try {
+                        callback.onKeyguardExitResult(success);
+                    } catch (RemoteException e) {
+                        // Client has died, we don't care.
+                    }
+                });
     }
 
     @Override
