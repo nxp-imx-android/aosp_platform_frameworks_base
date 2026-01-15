@@ -60,6 +60,8 @@ import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.scene.shared.model.fakeSceneDataSource
 import com.android.systemui.scene.ui.viewmodel.SceneContainerViewModel
 import com.android.systemui.shade.domain.interactor.enableSingleShade
+import com.android.systemui.shade.domain.interactor.shadeModeInteractor
+import com.android.systemui.shade.shared.model.ShadeMode
 import com.android.systemui.shade.ui.viewmodel.shadeSceneContentViewModel
 import com.android.systemui.shade.ui.viewmodel.shadeUserActionsViewModel
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.fakeMobileConnectionsRepository
@@ -75,9 +77,9 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.advanceTimeBy
+import org.junit.Assume.assumeTrue
 import org.junit.Before
 import org.junit.Test
-import org.junit.Ignore
 import org.junit.runner.RunWith
 
 /**
@@ -407,9 +409,12 @@ class SceneFrameworkIntegrationTest : SysuiTestCase() {
         }
 
     @Test
-    @Ignore("b/462133799")
     fun swipeDownOnShade_goesToQuickSettings() =
         kosmos.runTest {
+            val shadeMode by collectLastValue(shadeModeInteractor.shadeMode)
+            // The transition to Scenes.QuickSettings is only available in Single shade mode.
+            assumeTrue(shadeMode is ShadeMode.Single)
+
             emulateUserDrivenSceneTransition(to = Scenes.Shade)
             assertCurrentScene(Scenes.Shade)
             val actions by collectLastValue(shadeUserActionsViewModel.actions)
