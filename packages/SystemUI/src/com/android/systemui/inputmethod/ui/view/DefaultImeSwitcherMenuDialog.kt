@@ -122,6 +122,7 @@ constructor(
                         WindowInsets.Type.navigationBars() or
                         WindowInsets.Type.displayCutout()
             }
+            it.setHideOverlayWindows(true)
             it.setLayout(getWidth(dialog), WindowManager.LayoutParams.WRAP_CONTENT)
         }
 
