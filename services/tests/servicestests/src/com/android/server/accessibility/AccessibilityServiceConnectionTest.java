@@ -26,8 +26,8 @@ import static junit.framework.Assert.assertTrue;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.notNull;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -160,6 +160,7 @@ public class AccessibilityServiceConnectionTest {
         when(mServiceInfo.getResolveInfo()).thenReturn(mMockResolveInfo);
         mMockResolveInfo.serviceInfo = mock(ServiceInfo.class);
         mMockResolveInfo.serviceInfo.applicationInfo = mock(ApplicationInfo.class);
+        mMockResolveInfo.serviceInfo.applicationInfo.packageName = COMPONENT_NAME.getPackageName();
 
         when(mMockIBinder.queryLocalInterface(any())).thenReturn(mMockServiceClient);
         when(mMockA11yTrace.isA11yTracingEnabled()).thenReturn(false);
@@ -434,7 +435,7 @@ public class AccessibilityServiceConnectionTest {
     public void connectUsbBrailleDisplay_throwsForMissingUsbPermission() {
         UsbManager usbManager = Mockito.mock(UsbManager.class);
         when(mMockContext.getSystemService(Context.USB_SERVICE)).thenReturn(usbManager);
-        when(usbManager.hasPermission(notNull(), eq(COMPONENT_NAME.getPackageName()),
+        when(usbManager.hasPermission(any(UsbDevice.class), eq(COMPONENT_NAME.getPackageName()),
                 anyInt(), anyInt())).thenReturn(false);
 
         assertThrows(SecurityException.class,
@@ -455,7 +456,7 @@ public class AccessibilityServiceConnectionTest {
             throws Exception {
         UsbManager usbManager = Mockito.mock(UsbManager.class);
         when(mMockContext.getSystemService(Context.USB_SERVICE)).thenReturn(usbManager);
-        when(usbManager.hasPermission(notNull(), eq(COMPONENT_NAME.getPackageName()),
+        when(usbManager.hasPermission(any(UsbDevice.class), eq(COMPONENT_NAME.getPackageName()),
                 anyInt(), anyInt())).thenReturn(true);
         UsbDevice usbDevice = Mockito.mock(UsbDevice.class);
         when(usbDevice.getSerialNumber()).thenReturn("");
@@ -562,7 +563,7 @@ public class AccessibilityServiceConnectionTest {
         when(mMockContext.getSystemService(Context.USB_SERVICE)).thenReturn(usbManager);
         when(mMockContext.getSystemServiceName(UsbManager.class)).thenReturn(Context.USB_SERVICE);
         usbDeviceReceiverCaptor.getValue().onReceive(mMockContext, intent);
-        verify(usbManager).grantPermission(usbDevice, expectedUid);
+        verify(usbManager).grantPermission(usbDevice, COMPONENT_NAME.getPackageName(), expectedUid);
     }
 
     @Test
@@ -596,7 +597,7 @@ public class AccessibilityServiceConnectionTest {
         when(mMockContext.getSystemService(Context.USB_SERVICE)).thenReturn(usbManager);
         when(mMockContext.getSystemServiceName(UsbManager.class)).thenReturn(Context.USB_SERVICE);
         usbDeviceReceiverCaptor.getValue().onReceive(mMockContext, intent);
-        verify(usbManager, never()).grantPermission(any(), any());
+        verify(usbManager, never()).grantPermission(any(UsbDevice.class), anyString(), anyInt());
     }
 
     @Test
@@ -627,7 +628,7 @@ public class AccessibilityServiceConnectionTest {
         when(mMockContext.getSystemService(Context.USB_SERVICE)).thenReturn(usbManager);
         when(mMockContext.getSystemServiceName(UsbManager.class)).thenReturn(Context.USB_SERVICE);
         usbDeviceReceiverCaptor.getValue().onReceive(mMockContext, intent);
-        verify(usbManager, times(1)).grantPermission(usbDevice, 0);
+        verify(usbManager, times(1)).grantPermission(usbDevice, COMPONENT_NAME.getPackageName(), 0);
 
         // After registering the USB device in the SUW, set USER_SETUP_COMPLETE = 1 to simulate
         // plugging in the USB device again outside of SUW.
@@ -640,6 +641,6 @@ public class AccessibilityServiceConnectionTest {
         // Send intent to simulate the USB device was unplugged and plugged in again and verify
         // permission is granted to the device because it was previously connected.
         usbDeviceReceiverCaptor.getValue().onReceive(mMockContext, intent);
-        verify(usbManager, times(1)).grantPermission(usbDevice, 0);
+        verify(usbManager, times(1)).grantPermission(usbDevice, COMPONENT_NAME.getPackageName(), 0);
     }
 }
