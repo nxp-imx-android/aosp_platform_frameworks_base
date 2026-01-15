@@ -20,6 +20,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.graphics.Rect;
 import android.hardware.biometrics.fingerprint.SensorLocationData;
+import android.hardware.biometrics.fingerprint.location.PhysicalSensorLocation;
 import android.hardware.biometrics.fingerprint.location.PowerButtonDisplayLocation;
 import android.hardware.biometrics.fingerprint.location.UnderDisplayLocation;
 import android.os.Parcel;
@@ -118,6 +119,17 @@ public class SensorLocationInternal implements Parcelable {
         sensorLocationY = in.readInt();
         sensorRadius = in.readInt();
         sensorLocationData = in.readTypedObject(SensorLocationData.CREATOR);
+    }
+
+    /**
+     * @return {@link PhysicalSensorLocation} when available or
+     * {@link PhysicalSensorLocation#UNKNOWN}.
+     */
+    public byte getStandalonePhysicalLocation() {
+        if (sensorLocationData != null) {
+            return sensorLocationData.getStandaloneLocation().location;
+        }
+        return PhysicalSensorLocation.UNKNOWN;
     }
 
     @Override
