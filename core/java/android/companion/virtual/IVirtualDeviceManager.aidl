@@ -99,6 +99,11 @@ interface IVirtualDeviceManager {
     boolean validateAutomatedAppLaunchWarningIntent(in Intent intent);
 
     /**
+     * Returns whether the computer control functionality is available for the caller.
+     */
+    boolean isComputerControlAvailable(in AttributionSource attributionSource);
+
+    /**
      * Returns the ID of the device which owns the display with the given ID.
      */
     int getDeviceIdForDisplayId(int displayId);
