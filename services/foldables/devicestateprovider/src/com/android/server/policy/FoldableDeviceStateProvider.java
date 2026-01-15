@@ -54,8 +54,6 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.Preconditions;
 import com.android.server.devicestate.DeviceStateProvider;
-import com.android.server.policy.feature.flags.FeatureFlags;
-import com.android.server.policy.feature.flags.FeatureFlagsImpl;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -121,20 +119,6 @@ public final class FoldableDeviceStateProvider implements DeviceStateProvider,
     private boolean mPowerSaveModeEnabled;
 
     public FoldableDeviceStateProvider(
-            @NonNull Context context,
-            @NonNull SensorManager sensorManager,
-            @NonNull Sensor hingeAngleSensor,
-            @NonNull DisplayManager displayManager,
-            @NonNull PowerManager powerManager,
-            @NonNull PowerManagerInternal powerManagerInternal,
-            @NonNull DeviceStatePredicateWrapper[] deviceStatePredicateWrappers) {
-        this(new FeatureFlagsImpl(), context, sensorManager, hingeAngleSensor, displayManager,
-                powerManager, powerManagerInternal, deviceStatePredicateWrappers);
-    }
-
-    @VisibleForTesting
-    public FoldableDeviceStateProvider(
-            @NonNull FeatureFlags featureFlags,
             @NonNull Context context,
             @NonNull SensorManager sensorManager,
             @NonNull Sensor hingeAngleSensor,

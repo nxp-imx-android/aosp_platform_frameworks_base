@@ -112,7 +112,6 @@ class BugreportManagerServiceImpl extends IDumpstate.Stub {
     private final TelephonyManager mTelephonyManager;
     private final ArraySet<String> mBugreportAllowlistedPackages;
     private final BugreportFileManager mBugreportFileManager;
-    private static final FeatureFlags sFeatureFlags = new FeatureFlagsImpl();
 
 
     @GuardedBy("mLock")
@@ -541,7 +540,7 @@ class BugreportManagerServiceImpl extends IDumpstate.Stub {
 
         Slogf.i(TAG, "Starting bugreport for %s / %d", callingPackage, callingUid);
         final MutableBoolean handoffLock = new MutableBoolean(false);
-        if (sFeatureFlags.asyncStartBugreport()) {
+        if (Flags.asyncStartBugreport()) {
             synchronized (handoffLock) {
                 new Thread(()-> {
                     try {
