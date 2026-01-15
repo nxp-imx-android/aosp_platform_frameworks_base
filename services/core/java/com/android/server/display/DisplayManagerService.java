@@ -5680,9 +5680,6 @@ public final class DisplayManagerService extends SystemService {
         @Override // Binder call
         public void setVirtualDisplayRotation(IVirtualDisplayCallback callback,
                 @Surface.Rotation int rotation) {
-            if (!android.companion.virtualdevice.flags.Flags.virtualDisplayRotationApi()) {
-                return;
-            }
             final long token = Binder.clearCallingIdentity();
             try {
                 setVirtualDisplayRotationInternal(callback.asBinder(), rotation);
