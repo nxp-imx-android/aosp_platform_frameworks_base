@@ -29,8 +29,6 @@ import com.android.systemui.statusbar.connectivity.WifiIcons.WIFI_NO_INTERNET_IC
 import com.android.systemui.statusbar.connectivity.WifiIcons.WIFI_NO_NETWORK
 import com.android.systemui.statusbar.pipeline.airplane.data.repository.AirplaneModeRepository
 import com.android.systemui.statusbar.pipeline.airplane.data.repository.airplaneModeRepository
-import com.android.systemui.statusbar.pipeline.airplane.ui.viewmodel.AirplaneModeViewModel
-import com.android.systemui.statusbar.pipeline.airplane.ui.viewmodel.airplaneModeViewModel
 import com.android.systemui.statusbar.pipeline.shared.ConnectivityConstants
 import com.android.systemui.statusbar.pipeline.shared.data.model.ConnectivitySlot
 import com.android.systemui.statusbar.pipeline.shared.data.repository.FakeConnectivityRepository
@@ -48,7 +46,6 @@ import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.yield
@@ -77,7 +74,6 @@ internal class WifiViewModelIconParameterizedTest(private val testCase: TestCase
     private lateinit var connectivityRepository: FakeConnectivityRepository
     private lateinit var wifiRepository: FakeWifiRepository
     private lateinit var interactor: WifiInteractor
-    private lateinit var airplaneModeViewModel: AirplaneModeViewModel
     private lateinit var scope: CoroutineScope
 
     @Before
@@ -89,7 +85,6 @@ internal class WifiViewModelIconParameterizedTest(private val testCase: TestCase
         wifiRepository.setIsWifiEnabled(true)
         scope = CoroutineScope(IMMEDIATE)
         interactor = WifiInteractorImpl(connectivityRepository, wifiRepository, scope)
-        airplaneModeViewModel = kosmos.airplaneModeViewModel
     }
 
     @After
@@ -115,8 +110,6 @@ internal class WifiViewModelIconParameterizedTest(private val testCase: TestCase
                 .thenReturn(testCase.hasDataCapabilities)
             underTest =
                 WifiViewModel(
-                    airplaneModeViewModel,
-                    shouldShowSignalSpacerProvider = { MutableStateFlow(false) },
                     connectivityConstants,
                     context,
                     tableLogBuffer,

@@ -21,8 +21,6 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.log.table.TableLogBuffer
 import com.android.systemui.log.table.logDiffsForTable
-import com.android.systemui.statusbar.pipeline.airplane.ui.viewmodel.AirplaneModeViewModel
-import com.android.systemui.statusbar.pipeline.dagger.StatusBarPipelineModule.Companion.FIRST_MOBILE_SUB_SHOWING_NETWORK_TYPE_ICON
 import com.android.systemui.statusbar.pipeline.dagger.WifiTableLog
 import com.android.systemui.statusbar.pipeline.shared.ConnectivityConstants
 import com.android.systemui.statusbar.pipeline.shared.data.model.DataActivityModel
@@ -31,9 +29,7 @@ import com.android.systemui.statusbar.pipeline.wifi.shared.WifiConstants
 import com.android.systemui.statusbar.pipeline.wifi.shared.model.WifiNetworkModel
 import com.android.systemui.statusbar.pipeline.wifi.ui.model.WifiIcon
 import com.android.systemui.statusbar.systemstatusicons.SystemStatusIconsInCompose
-import java.util.function.Supplier
 import javax.inject.Inject
-import javax.inject.Named
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
@@ -54,11 +50,6 @@ import kotlinx.coroutines.flow.stateIn
 class WifiViewModel
 @Inject
 constructor(
-    airplaneModeViewModel: AirplaneModeViewModel,
-    // TODO(b/238425913): The wifi icon shouldn't need to consume mobile information. A
-    //  container-level view model should do the work instead.
-    @Named(FIRST_MOBILE_SUB_SHOWING_NETWORK_TYPE_ICON)
-    shouldShowSignalSpacerProvider: Supplier<Flow<Boolean>>,
     connectivityConstants: ConnectivityConstants,
     private val context: Context,
     @WifiTableLog wifiTableLogBuffer: TableLogBuffer,
@@ -127,12 +118,4 @@ constructor(
                 activity.map { it != null && (it.hasActivityIn || it.hasActivityOut) }
             }
             .stateIn(scope, SharingStarted.WhileSubscribed(), false)
-
-    // TODO(b/238425913): It isn't ideal for the wifi icon to need to know about whether the
-    //  airplane icon is visible. Instead, we should have a parent StatusBarSystemIconsViewModel
-    //  that appropriately knows about both icons and sets the padding appropriately.
-    override val isAirplaneSpacerVisible: Flow<Boolean> =
-        airplaneModeViewModel.isAirplaneModeIconVisible
-
-    override val isSignalSpacerVisible: Flow<Boolean> = shouldShowSignalSpacerProvider.get()
 }
