@@ -703,6 +703,7 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
                         addIfShouldShowAction(
                                 tempActions, new SendFeedbackAction(mFirstFeedbackReceiver));
                     }
+                    break;
                 case SILENT:
                     if (mShowSilentToggle) {
                         addIfShouldShowAction(tempActions, mSilentModeAction);
