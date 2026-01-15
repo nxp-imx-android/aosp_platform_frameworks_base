@@ -240,6 +240,23 @@ public class DisplayImeController implements DisplayController.OnDisplaysChanged
         }
     }
 
+    /**
+     * Sets whether IME insets updates are paused for a specific display.
+     * When paused, incoming {@link InsetsState} and {@link InsetsSourceControl} updates are
+     * cached and will be applied once unpaused. This is useful to synchronize IME animations
+     * with other concurrent transitions, such as entering split-screen.
+     *
+     * @param displayId the id of the display to pause/unpause updates for.
+     * @param paused {@code true} to pause updates, {@code false} to resume and apply cached
+     *                          updates.
+     */
+    public void setImeInsetsUpdatesPaused(int displayId, boolean paused) {
+        PerDisplay pd = mImePerDisplay.get(displayId);
+        if (pd != null) {
+            pd.setImeInsetsUpdatesPaused(paused);
+        }
+    }
+
     /** An implementation of {@link IDisplayWindowInsetsController} for a given display id. */
     public class PerDisplay implements DisplayInsetsController.OnInsetsChangedListener {
         final int mDisplayId;
@@ -254,6 +271,10 @@ public class DisplayImeController implements DisplayController.OnDisplaysChanged
         final Rect mImeFrame = new Rect();
         boolean mAnimateAlpha = true;
 
+        boolean mImeInsetsUpdatesPaused = false;
+        InsetsState mCachedInsetsState = null;
+        InsetsSourceControl[] mCachedActiveControls = null;
+
         public PerDisplay(int displayId, int initialRotation) {
             mDisplayId = displayId;
             mRotation = initialRotation;
@@ -267,8 +288,35 @@ public class DisplayImeController implements DisplayController.OnDisplaysChanged
             mDisplayInsetsController.removeInsetsChangedListener(mDisplayId, this);
         }
 
+        /**
+         * Sets whether IME insets updates are paused for this display.
+         * @see DisplayImeController#setImeInsetsUpdatesPaused(int, boolean)
+         *
+         * @param paused {@code true} to pause updates. {@code false} to resume and apply any
+         *               cached updates. Calling with {@code false} multiple times in a row
+         *               is safe and will only apply cached updates once.
+         */
+        void setImeInsetsUpdatesPaused(boolean paused) {
+            mImeInsetsUpdatesPaused = paused;
+            if (paused) {
+                return;
+            }
+            if (mCachedInsetsState != null) {
+                insetsChanged(mCachedInsetsState);
+                mCachedInsetsState = null;
+            }
+            if (mCachedActiveControls != null) {
+                insetsControlChanged(mInsetsState, mCachedActiveControls);
+                mCachedActiveControls = null;
+            }
+        }
+
         @Override
         public void insetsChanged(InsetsState insetsState) {
+            if (mImeInsetsUpdatesPaused) {
+                mCachedInsetsState = new InsetsState(insetsState, true);
+                return;
+            }
             if (mInsetsState.equals(insetsState)) {
                 return;
             }
@@ -293,6 +341,11 @@ public class DisplayImeController implements DisplayController.OnDisplaysChanged
         @VisibleForTesting
         public void insetsControlChanged(InsetsState insetsState,
                 InsetsSourceControl[] activeControls) {
+            if (mImeInsetsUpdatesPaused) {
+                mCachedInsetsState = new InsetsState(insetsState, true);
+                mCachedActiveControls = activeControls;
+                return;
+            }
             ProtoLog.d(WM_SHELL_IME_CONTROLLER, "Insets control changed, state=%s controls=%s",
                     insetsState,
                     activeControls != null ? TextUtils.join(", ", activeControls) : "null");
