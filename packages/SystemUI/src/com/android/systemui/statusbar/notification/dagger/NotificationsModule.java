@@ -20,6 +20,7 @@ import android.app.NotificationManager;
 import android.content.Context;
 import android.os.Handler;
 import android.service.notification.NotificationListenerService;
+import android.view.Choreographer;
 
 import com.android.internal.jank.InteractionJankMonitor;
 import com.android.settingslib.notification.data.repository.ZenModeRepository;
@@ -30,6 +31,7 @@ import com.android.systemui.CoreStartable;
 import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.dagger.qualifiers.Application;
 import com.android.systemui.dagger.qualifiers.Background;
+import com.android.systemui.dagger.qualifiers.Main;
 import com.android.systemui.res.R;
 import com.android.systemui.shade.ShadeDisplayAware;
 import com.android.systemui.statusbar.NotificationListener;
@@ -41,7 +43,8 @@ import com.android.systemui.statusbar.notification.collection.EntryAdapterFactor
 import com.android.systemui.statusbar.notification.collection.EntryAdapterFactoryImpl;
 import com.android.systemui.statusbar.notification.collection.NotifInflaterImpl;
 import com.android.systemui.statusbar.notification.collection.NotifPipeline;
-import com.android.systemui.statusbar.notification.collection.NotifPipelineChoreographerModule;
+import com.android.systemui.statusbar.notification.collection.NotifPipelineChoreographer;
+import com.android.systemui.statusbar.notification.collection.NotifPipelineChoreographerImpl;
 import com.android.systemui.statusbar.notification.collection.coordinator.ShadeEventCoordinator;
 import com.android.systemui.statusbar.notification.collection.inflation.BindEventManager;
 import com.android.systemui.statusbar.notification.collection.inflation.BindEventManagerImpl;
@@ -78,7 +81,6 @@ import com.android.systemui.statusbar.notification.promoted.PromotedNotification
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationContentExtractorImpl;
 import com.android.systemui.statusbar.notification.promoted.ShowPromotedNotificationsOnAOD;
 import com.android.systemui.statusbar.notification.promoted.ShowPromotedNotificationsOnAODImpl;
-import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel;
 import com.android.systemui.statusbar.notification.row.NotificationEntryProcessorFactory;
 import com.android.systemui.statusbar.notification.row.NotificationEntryProcessorFactoryLooperImpl;
 import com.android.systemui.statusbar.notification.row.NotificationGutsManager;
@@ -97,6 +99,7 @@ import com.android.systemui.statusbar.notification.stack.StackScrollAlgorithm;
 import com.android.systemui.statusbar.phone.KeyguardBypassController;
 import com.android.systemui.statusbar.phone.StatusBarNotificationActivityStarter;
 import com.android.systemui.statusbar.policy.ZenModesCleanupStartable;
+import com.android.systemui.util.concurrency.DelayableExecutor;
 
 import dagger.Binds;
 import dagger.Module;
@@ -106,9 +109,9 @@ import dagger.multibindings.IntoMap;
 
 import kotlin.coroutines.CoroutineContext;
 
-import kotlinx.coroutines.CoroutineScope;
-
 import javax.inject.Provider;
+
+import kotlinx.coroutines.CoroutineScope;
 
 /**
  * Dagger Module for classes found within the com.android.systemui.statusbar.notification package.
@@ -117,7 +120,6 @@ import javax.inject.Provider;
         includes = {
                 ActivatableNotificationViewModelModule.class,
                 KeyguardNotificationVisibilityProviderModule.class,
-                NotifPipelineChoreographerModule.class,
                 NotificationDataLayerModule.class,
                 NotificationDomainLayerModule.class,
                 NotificationMemoryModule.class,
@@ -298,6 +300,10 @@ public interface NotificationsModule {
             ZenModeRepository repository) {
         return new NotificationsSoundPolicyInteractor(repository);
     }
+
+    @Binds
+    NotifPipelineChoreographer provideNotifPipelineChoreographer(
+            NotifPipelineChoreographerImpl impl);
 
     /** Binds {@link ZenModesCleanupStartable} as a {@link CoreStartable}. */
     @Binds
