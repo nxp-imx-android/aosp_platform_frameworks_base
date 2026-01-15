@@ -21,24 +21,42 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.provider.Settings
 import androidx.core.content.edit
+import com.android.systemui.statusbar.policy.Clock
 
 class ScreenRecordingPreferenceRepository(private val context: Context) {
 
     @JvmOverloads
-    fun updateShowTaps(showTaps: Boolean, rememberOriginal: Boolean = true) {
-        val originalSetting = getShowTaps()
+    fun updateSettings(
+        showTaps: Boolean,
+        rememberOriginalShowTaps: Boolean = true,
+        showSeconds: Boolean = true,
+        rememberOriginalShowSeconds: Boolean = true,
+    ) {
+        val originalShowTapsSetting = getShowTaps()
         setShowTaps(showTaps)
-        if (rememberOriginal && showTaps != originalSetting) {
+        if (rememberOriginalShowTaps && showTaps != originalShowTapsSetting) {
             sharedPreference().edit {
-                putBoolean(STORED_SHOW_TAPS_VALUE, originalSetting)
+                putBoolean(STORED_SHOW_TAPS_VALUE, originalShowTapsSetting)
                 putBoolean(UPDATE_SHOW_TAPS, true)
+            }
+        }
+
+        val originalShowSecondsSetting = getShowSeconds()
+        setShowSeconds(showSeconds)
+        if (rememberOriginalShowSeconds && showSeconds != originalShowSecondsSetting) {
+            sharedPreference().edit {
+                putBoolean(STORED_SHOW_SECONDS_VALUE, originalShowSecondsSetting)
+                putBoolean(UPDATE_SHOW_SECONDS, true)
             }
         }
     }
 
-    fun maybeRestoreShowTapsSetting() {
+    fun maybeRestoreSetting(): ScreenRecordingPreferenceRepository = apply {
         if (sharedPreference().getBoolean(UPDATE_SHOW_TAPS, false)) {
             restoreShowTapsSetting()
+        }
+        if (sharedPreference().getBoolean(UPDATE_SHOW_SECONDS, false)) {
+            restoreShowSecondsSetting()
         }
     }
 
@@ -59,6 +77,19 @@ class ScreenRecordingPreferenceRepository(private val context: Context) {
         return Settings.System.getInt(context.contentResolver, Settings.System.SHOW_TOUCHES, 0) != 0
     }
 
+    private fun restoreShowSecondsSetting() {
+        setShowSeconds(sharedPreference().getBoolean(STORED_SHOW_SECONDS_VALUE, false))
+        sharedPreference().edit { putBoolean(UPDATE_SHOW_SECONDS, false) }
+    }
+
+    private fun setShowSeconds(isOn: Boolean) {
+        Settings.Secure.putInt(context.contentResolver, Clock.CLOCK_SECONDS, if (isOn) 1 else 0)
+    }
+
+    private fun getShowSeconds(): Boolean {
+        return Settings.Secure.getInt(context.contentResolver, Clock.CLOCK_SECONDS, 0) != 0
+    }
+
     private fun sharedPreference(): SharedPreferences {
         return context.getSharedPreferences(SHARED_PREFERENCES_NAME, MODE_PRIVATE)
     }
@@ -67,5 +98,7 @@ class ScreenRecordingPreferenceRepository(private val context: Context) {
         const val SHARED_PREFERENCES_NAME = "com.android.systemui.screenrecord"
         const val STORED_SHOW_TAPS_VALUE = "stored_show_taps_value"
         const val UPDATE_SHOW_TAPS = "update_show_taps"
+        const val STORED_SHOW_SECONDS_VALUE = "stored_show_seconds_value"
+        const val UPDATE_SHOW_SECONDS = "update_show_seconds"
     }
 }
