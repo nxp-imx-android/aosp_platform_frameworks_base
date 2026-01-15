@@ -76,7 +76,7 @@ public class DisplayGroupAllocatorTest {
         mDga.initLater(mTestableContext);
 
         doReturn(false).when(mLogicalDisplayMock).canHostTasksLocked();
-        assertEquals("secondary_mode",
+        assertEquals(DisplayGroupAllocator.GROUP_TYPE_SECONDARY,
                 mDga.decideRequiredGroupTypeLocked(mLogicalDisplayMock, Display.TYPE_EXTERNAL));
 
     }
@@ -90,7 +90,7 @@ public class DisplayGroupAllocatorTest {
 
         doReturn(true).when(mLogicalDisplayMock).canHostTasksLocked();
 
-        assertEquals("",
+        assertEquals(DisplayGroupAllocator.GROUP_TYPE_PRIMARY,
                 mDga.decideRequiredGroupTypeLocked(mLogicalDisplayMock, Display.TYPE_INTERNAL));
 
     }
@@ -104,7 +104,7 @@ public class DisplayGroupAllocatorTest {
         mDga.initLater(mTestableContext);
 
         doReturn(true).when(mLogicalDisplayMock).canHostTasksLocked();
-        assertEquals("",
+        assertEquals(DisplayGroupAllocator.GROUP_TYPE_PRIMARY,
                 mDga.decideRequiredGroupTypeLocked(mLogicalDisplayMock, Display.TYPE_INTERNAL));
 
     }
@@ -118,7 +118,7 @@ public class DisplayGroupAllocatorTest {
         mDga.initLater(mTestableContext);
 
         doReturn("name_from_ddc").when(mLogicalDisplayMock).getLayoutGroupNameLocked();
-        assertEquals("",
+        assertEquals(DisplayGroupAllocator.GROUP_TYPE_PRIMARY,
                 mDga.decideRequiredGroupTypeLocked(mLogicalDisplayMock, Display.TYPE_INTERNAL));
 
     }
@@ -132,8 +132,7 @@ public class DisplayGroupAllocatorTest {
         mDga.initLater(mTestableContext);
 
         doReturn(true).when(mLogicalDisplayMock).canHostTasksLocked();
-        // non-desktop should return primary, which returns an empty string.
-        assertEquals("",
+        assertEquals(DisplayGroupAllocator.GROUP_TYPE_PRIMARY,
                 mDga.decideRequiredGroupTypeLocked(mLogicalDisplayMock, Display.TYPE_OVERLAY));
     }
 
