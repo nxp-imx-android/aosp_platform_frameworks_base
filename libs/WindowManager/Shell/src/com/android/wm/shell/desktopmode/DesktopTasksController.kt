@@ -403,11 +403,6 @@ class DesktopTasksController(
         }
         shellCommandHandler.addDumpCallback(this::dump, this)
         shellCommandHandler.addCommandCallback("desktopmode", desktopModeShellCommandHandler, this)
-        shellController.addExternalInterface(
-            IDesktopMode.DESCRIPTOR,
-            { createExternalInterface() },
-            this,
-        )
         shellController.addUserChangeListener(this)
         // Update the current user id again because it might be updated between init and onInit().
         updateCurrentUser(ActivityManager.getCurrentUser())
@@ -6231,8 +6226,9 @@ class DesktopTasksController(
 
     private fun getDefaultDensityDpi(): Int = context.resources.displayMetrics.densityDpi
 
+    // TODO: b/457313894 - remove this method once IDesktopModeImpl is moved to a separate class.
     /** Creates a new instance of the external interface to pass to another process. */
-    private fun createExternalInterface(): ExternalInterfaceBinder =
+    public fun createExternalInterface(): ExternalInterfaceBinder =
         IDesktopModeImpl(shellController, transitionStateHolder, this)
 
     /**
