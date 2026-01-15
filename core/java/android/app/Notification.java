@@ -6560,6 +6560,9 @@ public class Notification implements Parcelable
             final Bundle ex = mN.extras;
             updateBackgroundColor(contentView, p);
             bindNotificationHeader(contentView, p);
+            if (richOngoingImprovements()) {
+                updateToplineCentering(contentView, p);
+            }
             bindLargeIconAndApplyMargin(contentView, p, result);
             boolean showProgress = handleProgressBar(contentView, ex, p);
             boolean hasSecondLine = showProgress;
@@ -6622,6 +6625,12 @@ public class Notification implements Parcelable
             }
 
             return contentView;
+        }
+
+        private void updateToplineCentering(RemoteViews contentView,
+                StandardTemplateParams params) {
+            contentView.setBoolean(R.id.notification_header,
+                    "centerTopLine", shouldCenterTopLine(params));
         }
 
         private static void updateExpanderAlignment(RemoteViews contentView,
@@ -6911,6 +6920,47 @@ public class Notification implements Parcelable
                 bindBridgedIcon(contentView);
             }
             mN.mUsesStandardHeader = true;
+        }
+
+        private boolean shouldCenterTopLine(StandardTemplateParams params) {
+            // Center top line vertically in minimized and public header-only views
+            if (params.mViewType == StandardTemplateParams.VIEW_TYPE_MINIMIZED
+                    || params.mViewType == StandardTemplateParams.VIEW_TYPE_PUBLIC) {
+                return true;
+            }
+
+            if (!mN.isPromotedOngoing()) return false;
+            if (params.mViewType != StandardTemplateParams.VIEW_TYPE_EXPANDED) return false;
+
+            // MetricStyle and CallStyle never centers the top line.
+            if (mN.isStyle(Notification.MetricStyle.class)
+                    || mN.isStyle(Notification.CallStyle.class)) {
+                return false;
+            } else {
+                final boolean hasText = !TextUtils.isEmpty(params.mText);
+                final boolean hasSubText = !params.mHideSubText && !TextUtils.isEmpty(
+                        params.mSubText);
+
+                if (mN.isStyle(Notification.ProgressStyle.class)) {
+                    return !hasSubText && !hasText;
+                } else if (mN.getNotificationStyle() == null
+                        || mN.isStyle(Notification.BigTextStyle.class)) {
+                    boolean hasProgress = hasNormalProgress();
+                    return !hasSubText && !hasText && !hasProgress;
+                } else {
+                    final String newPromoteableType = mN.getNotificationStyle().getSimpleName();
+                    Log.w(TAG, "New Promotable Notification Type! it is "
+                            + newPromoteableType);
+                    return false;
+                }
+            }
+        }
+
+        private boolean hasNormalProgress() {
+            final Bundle ex = mN.extras;
+            final int max = ex.getInt(EXTRA_PROGRESS_MAX, 0);
+            final boolean ind = ex.getBoolean(EXTRA_PROGRESS_INDETERMINATE);
+            return max != 0 || ind;
         }
 
         private void bindBridgedIcon(RemoteViews contentView) {
@@ -7981,10 +8031,14 @@ public class Notification implements Parcelable
             resetNotificationHeader(header);
             bindNotificationHeader(header, p);
             updateHeaderBackgroundColor(header, p);
-            if (p.mViewType == StandardTemplateParams.VIEW_TYPE_MINIMIZED
-                    || p.mViewType == StandardTemplateParams.VIEW_TYPE_PUBLIC) {
-                // Center top line vertically in minimized and public header-only views
-                header.setBoolean(R.id.notification_header, "centerTopLine", true);
+            if (richOngoingImprovements()) {
+                updateToplineCentering(header, p);
+            } else {
+                if (p.mViewType == StandardTemplateParams.VIEW_TYPE_MINIMIZED
+                        || p.mViewType == StandardTemplateParams.VIEW_TYPE_PUBLIC) {
+                    // Center top line vertically in minimized and public header-only views
+                    header.setBoolean(R.id.notification_header, "centerTopLine", true);
+                }
             }
             return header;
         }
