@@ -19,7 +19,6 @@ package android.media;
 import static android.companion.virtual.VirtualDeviceParams.DEVICE_POLICY_CUSTOM;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_AUDIO;
 import static android.content.Context.DEVICE_ID_DEFAULT;
-import static android.media.MediaRecorder.AudioSource.AUDIO_SOURCE_INVALID;
 import static android.media.audio.Flags.FLAG_ASSISTANT_VOLUME_CONTROL;
 import static android.media.audio.Flags.FLAG_AUDIO_FOCUS_DESKTOP;
 import static android.media.audio.Flags.FLAG_DEPRECATE_STREAM_BT_SCO;
@@ -36,7 +35,6 @@ import static android.media.audio.Flags.autoPublicVolumeApiHardening;
 import static android.media.audio.Flags.streamAssistantPublic;
 import static android.media.audiopolicy.Flags.FLAG_ENABLE_FADE_MANAGER_CONFIGURATION;
 import static android.media.audiopolicy.Flags.FLAG_MULTI_ZONE_AUDIO;
-import static android.media.audiopolicy.Flags.multiZoneAudio;
 
 import android.Manifest;
 import android.annotation.CallbackExecutor;
@@ -126,7 +124,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 /**
  * AudioManager provides access to volume and ringer mode control.
@@ -3158,15 +3155,7 @@ public class AudioManager {
                                                @NonNull AudioAttributes attributes) {
         Objects.requireNonNull(format);
         Objects.requireNonNull(attributes);
-        if (multiZoneAudio()) {
-            final IAudioService service = getService();
-            try {
-                return service.getDirectPlaybackSupport(format, attributes);
-            } catch (RemoteException e) {
-                throw e.rethrowFromSystemServer();
-            }
-        }
-        return AudioSystem.getDirectPlaybackSupport(format, attributes, /* uid= */ 0);
+        return AudioSystem.getDirectPlaybackSupport(format, attributes);
     }
 
     //====================================================================
@@ -6826,7 +6815,6 @@ public class AudioManager {
     /**
      * @hide
      * Get the audio devices that would be used for the routing of the given audio attributes.
-     *
      * @param attributes the {@link AudioAttributes} for which the routing is being queried.
      *   For queries about output devices (playback use cases), a valid usage must be specified in
      *   the audio attributes via AudioAttributes.Builder.setUsage(). The capture preset MUST NOT
@@ -6834,16 +6822,14 @@ public class AudioManager {
      *   For queries about input devices (capture use case), a valid capture preset MUST be
      *   specified in the audio attributes via AudioAttributes.Builder.setCapturePreset(). If a
      *   capture preset is present, then this has precedence over any usage or content type also
-     *   present in the audio attributes.
-     *
+     *   present in the audio attrirutes.
      * @return an empty list if there was an issue with the request, a list of audio devices
      *   otherwise (typically one device, except for duplicated paths).
      */
     @SystemApi
     @RequiresPermission(anyOf = {
             Manifest.permission.MODIFY_AUDIO_ROUTING,
-            Manifest.permission.QUERY_AUDIO_STATE,
-            Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED
+            Manifest.permission.QUERY_AUDIO_STATE
     })
     public @NonNull List<AudioDeviceAttributes> getDevicesForAttributes(
             @NonNull AudioAttributes attributes) {
@@ -6854,48 +6840,6 @@ public class AudioManager {
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
-    }
-
-    /**
-     * Get the audio devices that would be used for the routing of the given audio attributes.
-     *
-     * @param attributes the {@link AudioAttributes} for which the routing is being queried.
-     *   For queries about output devices (playback use cases), a valid usage must be specified in
-     *   the audio attributes via AudioAttributes.Builder.setUsage(). The capture preset MUST NOT
-     *   be changed from default.
-     *   For queries about input devices (capture use case), a valid capture preset MUST be
-     *   specified in the audio attributes via AudioAttributes.Builder.setCapturePreset(). If a
-     *   capture preset is present, then this has precedence over any usage or content type also
-     *   present in the audio attributes.
-     * @param uid for which the device is being queried.
-     *
-     * @return an empty list if there was an issue with the request, a list of audio devices
-     *   otherwise (typically one device, except for duplicated paths).
-     *
-     * @hide
-     */
-    @FlaggedApi(FLAG_MULTI_ZONE_AUDIO)
-    @SystemApi
-    @RequiresPermission(anyOf = {
-            Manifest.permission.MODIFY_AUDIO_ROUTING,
-            Manifest.permission.QUERY_AUDIO_STATE,
-            Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED
-    })
-    public @NonNull List<AudioDeviceInfo> getDevicesForAttributesAndUid(
-            @NonNull AudioAttributes attributes, int uid) {
-        Objects.requireNonNull(attributes);
-        List<AudioDeviceAttributes> deviceAttributes;
-        try {
-            deviceAttributes = getService().getDevicesForAttributesAndUid(attributes, uid);
-        } catch (RemoteException e) {
-            throw e.rethrowFromSystemServer();
-        }
-        int devicesTypes = attributes.getCapturePreset() == AUDIO_SOURCE_INVALID ?
-                GET_DEVICES_OUTPUTS : GET_DEVICES_INPUTS;
-        List<AudioDeviceInfo> allDevices = List.of(getDevicesStatic(devicesTypes));
-        return deviceAttributes.stream().flatMap(deviceAttr -> allDevices.stream().filter(info ->
-                deviceAttr.getType() == info.getType()
-                        && TextUtils.equals(deviceAttr.getAddress(), info.getAddress()))).toList();
     }
 
     // Each listener corresponds to a unique callback stub because each listener can subscribe to
@@ -9739,42 +9683,9 @@ public class AudioManager {
     public List<AudioProfile> getDirectProfilesForAttributes(@NonNull AudioAttributes attributes) {
         Objects.requireNonNull(attributes);
         ArrayList<AudioProfile> audioProfilesList = new ArrayList<>();
-        int status = AudioSystem.getDirectProfilesForAttributes(attributes, /* uid= */ 0,
-                audioProfilesList);
+        int status = AudioSystem.getDirectProfilesForAttributes(attributes, audioProfilesList);
         if (status != SUCCESS) {
             Log.w(TAG, "getDirectProfilesForAttributes failed.");
-            return new ArrayList<>();
-        }
-        return audioProfilesList;
-    }
-
-    /**
-     * Returns a list of direct {@link AudioProfile} that are supported for the specified
-     * {@link AudioAttributes}. This can be empty in case of an error or if no direct playback
-     * is possible.
-     *
-     * <p>Direct playback means that the audio stream is not resampled or downmixed
-     * by the framework. Checking for direct support can help the app select the representation
-     * of audio content that most closely matches the capabilities of the device and peripherals
-     * (e.g. A/V receiver) connected to it. Note that the provided stream can still be re-encoded
-     * or mixed with other streams, if needed.
-     * <p>When using this information to inform your application which audio format to play,
-     * query again whenever audio output devices change (see {@link AudioDeviceCallback}).
-     *
-     * @param attributes a non-null {@link AudioAttributes} instance.
-     * @param uid Application/Service UID for the query
-     * @return a list of {@link AudioProfile}
-     */
-    @FlaggedApi(FLAG_MULTI_ZONE_AUDIO)
-    @NonNull
-    public List<AudioProfile> getDirectProfilesForAttributes(@NonNull AudioAttributes attributes,
-            int uid) {
-        Objects.requireNonNull(attributes);
-        ArrayList<AudioProfile> audioProfilesList = new ArrayList<>();
-        int status = AudioSystem.getDirectProfilesForAttributes(
-                attributes, uid, audioProfilesList);
-        if (status != SUCCESS) {
-            Log.w(TAG, "getDirectProfilesForAttributes failed: " + status);
             return new ArrayList<>();
         }
         return audioProfilesList;

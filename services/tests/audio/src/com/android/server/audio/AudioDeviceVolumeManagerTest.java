@@ -74,14 +74,7 @@ public class AudioDeviceVolumeManagerTest {
         mTestLooper = new TestLooper();
         mContext = InstrumentationRegistry.getTargetContext();
         mPackageName = mContext.getOpPackageName();
-        var audioManager = mContext.getSystemService(AudioManager.class);
-        var productStrategies = audioManager.getAudioProductStrategies();
-        var noOpAudioSystem = new NoOpAudioSystemAdapter();
-        noOpAudioSystem.configureAudioProductStrategies(productStrategies);
-        noOpAudioSystem.configureMinMaxVolumeGroupValues(
-                AudioTestUtils.getMinGroupValues(productStrategies, audioManager),
-                AudioTestUtils.getMaxGroupValues(productStrategies, audioManager));
-        mSpyAudioSystem = spy(noOpAudioSystem);
+        mSpyAudioSystem = spy(new NoOpAudioSystemAdapter());
 
         mSystemServer = new NoOpSystemServerAdapter();
         mSettingsAdapter = new NoOpSettingsAdapter();
