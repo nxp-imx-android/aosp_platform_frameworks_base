@@ -50,6 +50,7 @@ import static android.view.displayhash.DisplayHashResultCallback.DISPLAY_HASH_ER
 import static android.view.displayhash.DisplayHashResultCallback.DISPLAY_HASH_ERROR_UNKNOWN;
 import static android.view.displayhash.DisplayHashResultCallback.EXTRA_DISPLAY_HASH;
 import static android.view.displayhash.DisplayHashResultCallback.EXTRA_DISPLAY_HASH_ERROR_CODE;
+import static android.view.flags.Flags.FLAG_CALLED_FROM_WRONG_THREAD_LISTENER_API;
 import static android.view.flags.Flags.FLAG_SENSITIVE_CONTENT_APP_PROTECTION_API;
 import static android.view.flags.Flags.FLAG_TOOLKIT_SET_FRAME_RATE_READ_ONLY;
 import static android.view.flags.Flags.FLAG_VIEW_VELOCITY_API;
@@ -23007,6 +23008,68 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
      * @hide
      */
     public void onMovedToDisplay(int displayId, Configuration config) {
+    }
+
+    /**
+     * A listener that is notiied when certain View APIs are called from the wrong thread.
+     *
+     * <p>Example use case:
+     * <pre><code>
+     * View.registerCalledFromWrongThreadListener(() -> {
+     *     // Handle the issue, e.g. crash if this is a dev build, or log an event
+     *     // Unregister the listener to avoid being notified again of possibly the same problem
+     *     View.unregisterCalledFromWrongThreadListener(this);
+     * });
+     * </code></pre>
+     *
+     * @see #registerCalledFromWrongThreadListener(CalledFromWrongThreadListener)
+     * @see #unregisterCalledFromWrongThreadListener(CalledFromWrongThreadListener)
+     */
+    @FlaggedApi(FLAG_CALLED_FROM_WRONG_THREAD_LISTENER_API)
+    public interface CalledFromWrongThreadListener {
+        /**
+         * Called when a View API is called from the wrong thread.
+         */
+        void onCalledFromWrongThread();
+    }
+
+    /**
+     * Registers a listener that is notified when a View API is called from the wrong thread.
+     *
+     * <p>Most View APIs should only be called on the UI thread, and will throw a
+     * {@code CalledFromWrongThreadException} if they are called from the wrong thread. View APIs
+     * that throw {@code CalledFromWrongThreadException} will not notify registered listeners.
+     *
+     * <p>For certain APIs, if they are called on the wrong thread
+     * then an exception may not be thrown, subject to App Compatibility settings. Instead,
+     * applications may be notified when a call to such an API is made from the wrong thread by
+     * registering a {@link CalledFromWrongThreadListener} using this method.
+     *
+     * <p>Since {@link android.os.Build.VERSION_CODES#CINNAMON_BUN} this listener may be notified
+     * for calls to {@link #invalidate()} that are made on the wrong thread.
+     *
+     * @param listener The listener to register.
+     *
+     * @see #unregisterCalledFromWrongThreadListener(CalledFromWrongThreadListener)
+     */
+    @FlaggedApi(FLAG_CALLED_FROM_WRONG_THREAD_LISTENER_API)
+    public static void registerCalledFromWrongThreadListener(
+            @NonNull CalledFromWrongThreadListener listener) {
+        ViewRootImpl.sCalledFromWrongThreadListeners.add(listener);
+    }
+
+    /**
+     * Unregisters a listener that was previously registered with
+     * {@link #registerCalledFromWrongThreadListener(CalledFromWrongThreadListener)}.
+     *
+     * @param listener The listener to unregister.
+     *
+     * @see {@link #registerCalledFromWrongThreadListener(CalledFromWrongThreadListener)}
+     */
+    @FlaggedApi(FLAG_CALLED_FROM_WRONG_THREAD_LISTENER_API)
+    public static void unregisterCalledFromWrongThreadListener(
+            @NonNull CalledFromWrongThreadListener listener) {
+        ViewRootImpl.sCalledFromWrongThreadListeners.remove(listener);
     }
 
     /**

@@ -322,6 +322,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.OptionalInt;
 import java.util.Queue;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -507,6 +508,8 @@ public final class ViewRootImpl implements ViewParent,
     }
 
     private static final ArrayList<ConfigChangedCallback> sConfigCallbacks = new ArrayList<>();
+    static final CopyOnWriteArrayList<View.CalledFromWrongThreadListener>
+            sCalledFromWrongThreadListeners = new CopyOnWriteArrayList<>();
 
     /**
      * Callback for notifying activities.
@@ -1326,6 +1329,7 @@ public final class ViewRootImpl implements ViewParent,
     private boolean mChildBoundingInsetsChanged = false;
 
     private final boolean mDisableDrawWakeLock;
+    private boolean mEnforceThreadChecksCompat;
 
     private String mTag = TAG;
     private String mDrawTrace = "draw-" + mTag; // cache to avoid allocating on each frame
@@ -1448,6 +1452,8 @@ public final class ViewRootImpl implements ViewParent,
         // Disable DRAW_WAKE_LOCK starting U.
         mDisableDrawWakeLock =
                 CompatChanges.isChangeEnabled(DISABLE_DRAW_WAKE_LOCK) && disableDrawWakeLock();
+        mEnforceThreadChecksCompat =
+                CompatChanges.isChangeEnabled(ENFORCE_THREAD_CHECKS_ON_VIEW_ROOT_IMPL_APIS);
         mIsSubscribeGranularDisplayEventsEnabled =
                 com.android.server.display.feature.flags.Flags.subscribeGranularDisplayEvents();
 
@@ -11852,12 +11858,13 @@ public final class ViewRootImpl implements ViewParent,
      * Checks if the current thread is the same as the thread that created the view hierarchy.
      *
      * <p>If the check fails, logs or throws an exception depending on the {@link
-     * ViewRootImpl#ENFORCE_THREAD_CHECKS_ON_VIEW_ROOT_IMPL_APIS} ChangeId.
+     * ViewRootImpl#ENFORCE_THREAD_CHECKS_ON_VIEW_ROOT_IMPL_APIS} ChangeId, or as determined by
+     * {@link #setEnforceThreadChecks(boolean)} if called.
      *
      * <p>If logging, logs at most once per process lifetime.
      *
-     * @return true if the caller may proceed to perform the action on the current thread.
-     *         false if the caller must post the work using {@link #executeOnCorrectThread}.
+     * @return true if the caller may proceed to perform the action on the current thread. false if
+     *     the caller must post the work using {@link #executeOnCorrectThread}.
      */
     // TODO(b/465527827): eventually delete this method, replace with plain checkThread()
     private void checkThreadCompat() {
@@ -11866,21 +11873,25 @@ public final class ViewRootImpl implements ViewParent,
             return;
         }
 
-        if (CompatChanges.isChangeEnabled(ENFORCE_THREAD_CHECKS_ON_VIEW_ROOT_IMPL_APIS)) {
-            throwCalledFromWrongThreadException();
+        for (View.CalledFromWrongThreadListener listener : sCalledFromWrongThreadListeners) {
+            listener.onCalledFromWrongThread();
         }
 
-        // Log the issue, but not too many times per process.
-        // Note that this counter is not atomic, so it's possible we log more than the requisite
-        // times per process lifetime. That's fine because the precise number of logs isn't
-        // important so long as we eventually stop logging.
-        if (++sCalledFromWrongThreadCount <= 10) {
-            final CalledFromWrongThreadException e = newCalledFromWrongThreadException();
-            Log.wtf(
-                    TAG,
-                    "Attempt to call method from wrong thread. "
-                            + "This will throw an exception in a future version.",
-                    e);
+        if (mEnforceThreadChecksCompat) {
+            throwCalledFromWrongThreadException();
+        } else {
+            // Log the issue, but not too many times per process.
+            // Note that this counter is not atomic, so it's possible we log more than the requisite
+            // times per process lifetime. That's fine because the precise number of logs isn't
+            // important so long as we eventually stop logging.
+            if (++sCalledFromWrongThreadCount <= 10) {
+                final CalledFromWrongThreadException e = newCalledFromWrongThreadException();
+                Log.wtf(
+                        TAG,
+                        "Attempt to call method from wrong thread. "
+                                + "This will throw an exception in a future version.",
+                        e);
+            }
         }
     }
 
