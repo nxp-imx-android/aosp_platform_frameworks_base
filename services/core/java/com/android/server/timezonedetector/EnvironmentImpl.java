@@ -88,4 +88,14 @@ final class EnvironmentImpl implements Environment {
     public void runAsync(@NonNull Runnable runnable) {
         mHandler.post(runnable);
     }
+
+    @Override
+    public void postDelayed(@NonNull Runnable runnable, long delayMillis) {
+        mHandler.postDelayed(runnable, delayMillis);
+    }
+
+    @Override
+    public void removePendingRunnable(@NonNull Runnable runnable) {
+        mHandler.removeCallbacks(runnable);
+    }
 }
