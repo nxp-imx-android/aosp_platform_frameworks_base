@@ -101,6 +101,8 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
+import java.util.Arrays;
+
 /**
  * Tests for desktop mode task bounds.
  *
@@ -2370,6 +2372,10 @@ public class DesktopModeLaunchParamsModifierTests extends
             throws PackageManager.NameNotFoundException {
         final PackageInfo packageInfo = mock(PackageInfo.class);
         packageInfo.requestedPermissions = permissions;
+        packageInfo.requestedPermissionsFlags = new int[permissions.length];
+        Arrays.fill(
+                packageInfo.requestedPermissionsFlags,
+                PackageInfo.REQUESTED_PERMISSION_GRANTED);
         doReturn(packageInfo).when(mPackageManager).getPackageInfoAsUser(
                 anyString(),
                 eq(PackageManager.GET_PERMISSIONS),
