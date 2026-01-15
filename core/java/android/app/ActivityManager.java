@@ -6519,6 +6519,33 @@ public class ActivityManager {
         public @interface WindowingLayer {
         }
 
+        /**
+         * The request to change the windowing layer was granted.
+         */
+        @FlaggedApi(com.android.window.flags.Flags.FLAG_ENABLE_INTERACTIVE_PICTURE_IN_PICTURE)
+        public static final int WINDOWING_LAYER_REQUEST_GRANTED = 0;
+
+        /**
+         * The request to change the windowing layer was rejected.
+         *
+         * <p>This result implies the system is in a state where the request cannot be fulfilled,
+         * but the request itself was valid.
+         */
+        @FlaggedApi(com.android.window.flags.Flags.FLAG_ENABLE_INTERACTIVE_PICTURE_IN_PICTURE)
+        public static final int WINDOWING_LAYER_REQUEST_REJECTED = 1;
+
+        /**
+         * Defines the result of a windowing layer request.
+         * @hide
+         */
+        @IntDef(prefix = { "WINDOWING_LAYER_REQUEST_" }, value = {
+                WINDOWING_LAYER_REQUEST_GRANTED,
+                WINDOWING_LAYER_REQUEST_REJECTED,
+        })
+        @Retention(RetentionPolicy.SOURCE)
+        public @interface WindowingLayerResult {
+        }
+
         private IAppTask mAppTaskImpl;
 
         /** @hide */
@@ -6678,6 +6705,10 @@ public class ActivityManager {
          * will receive an exception with a descriptive message accessible via
          * {@link Exception#getMessage()}.
          *
+         * <p>If the request is rejected due to a system state, the callback will receive
+         * {@link AppTask#WINDOWING_LAYER_REQUEST_REJECTED}. If the request is granted, the callback
+         * will receive {@link AppTask#WINDOWING_LAYER_REQUEST_GRANTED}.
+         *
          * <p>To ensure system integrity and a consistent user experience, the system might impose
          * restrictions on tasks requesting a specific layer. See
          * {@link AppTask#WINDOWING_LAYER_PINNED} for implications when requesting the pinned layer.
@@ -6685,8 +6716,11 @@ public class ActivityManager {
          * <p>If {@link AppTask#WINDOWING_LAYER_PINNED} is requested,
          * {@link android.app.AppOpsManager#OPSTR_PICTURE_IN_PICTURE} must be allowed and the
          * {@link android.Manifest.permission#USE_PINNED_WINDOWING_LAYER} permission must be
-         * granted. If the permission is not granted, a {@link SecurityException} will
-         * be propagated via the callback's {@link OutcomeReceiver#onError}.
+         * granted.
+         *
+         * <p>If the request fails due to a developer error (such as missing permissions or
+         * invalid arguments), {@link OutcomeReceiver#onError} will be invoked with a
+         * {@link Exception} describing the error.
          *
          * @param layer The {@link WindowingLayer} to move the task to.
          * @param executor An {@link Executor} used to invoke the callback.
@@ -6698,7 +6732,7 @@ public class ActivityManager {
         public void requestWindowingLayer(
                 @WindowingLayer int layer,
                 @NonNull @CallbackExecutor Executor executor,
-                @NonNull OutcomeReceiver<Void, Exception> callback) {
+                @NonNull OutcomeReceiver<Integer, Exception> callback) {
             Objects.requireNonNull(executor, "executor cannot be null");
             Objects.requireNonNull(callback, "callback cannot be null");
             TaskWindowingLayerRequestHandler.requestWindowingLayer(

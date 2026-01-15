@@ -4878,11 +4878,13 @@ package android.app {
     method @Nullable public android.app.ActivityManager.RecentTaskInfo getTaskInfo();
     method @FlaggedApi("com.android.window.flags.enable_window_repositioning_api") @RequiresPermission(android.Manifest.permission.REPOSITION_SELF_WINDOWS) public void moveTaskTo(@NonNull android.app.TaskLocation, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<android.app.TaskLocation,java.lang.Exception>);
     method public void moveToFront();
-    method @FlaggedApi("com.android.window.flags.enable_interactive_picture_in_picture") @RequiresPermission(value=android.Manifest.permission.USE_PINNED_WINDOWING_LAYER, conditional=true) public void requestWindowingLayer(int, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.lang.Void,java.lang.Exception>);
+    method @FlaggedApi("com.android.window.flags.enable_interactive_picture_in_picture") @RequiresPermission(value=android.Manifest.permission.USE_PINNED_WINDOWING_LAYER, conditional=true) public void requestWindowingLayer(int, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.lang.Integer,java.lang.Exception>);
     method public void setExcludeFromRecents(boolean);
     method public void startActivity(android.content.Context, android.content.Intent, android.os.Bundle);
     field @FlaggedApi("com.android.window.flags.enable_interactive_picture_in_picture") public static final int WINDOWING_LAYER_NORMAL_APP = 1; // 0x1
     field @FlaggedApi("com.android.window.flags.enable_interactive_picture_in_picture") public static final int WINDOWING_LAYER_PINNED = 2; // 0x2
+    field @FlaggedApi("com.android.window.flags.enable_interactive_picture_in_picture") public static final int WINDOWING_LAYER_REQUEST_GRANTED = 0; // 0x0
+    field @FlaggedApi("com.android.window.flags.enable_interactive_picture_in_picture") public static final int WINDOWING_LAYER_REQUEST_REJECTED = 1; // 0x1
     field @FlaggedApi("com.android.window.flags.enable_interactive_picture_in_picture") public static final int WINDOWING_LAYER_UNDEFINED = 0; // 0x0
   }
 
