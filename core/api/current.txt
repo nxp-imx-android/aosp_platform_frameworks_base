@@ -9680,6 +9680,49 @@ package android.app.blob {
 
 }
 
+package android.app.contentrestriction {
+
+  @FlaggedApi("android.app.contentrestriction.flags.content_restriction_api") public final class Content implements android.os.Parcelable {
+    method public int describeContents();
+    method @Nullable public android.os.ParcelFileDescriptor getData();
+    method @NonNull public android.content.LocusId getId();
+    method @NonNull public String getMimeType();
+    method @Nullable public android.net.Uri getUri();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.app.contentrestriction.Content> CREATOR;
+  }
+
+  public static final class Content.Builder {
+    ctor public Content.Builder(@NonNull android.content.LocusId, @NonNull String);
+    method @NonNull public android.app.contentrestriction.Content build();
+    method @NonNull public android.app.contentrestriction.Content.Builder setData(@NonNull android.os.ParcelFileDescriptor);
+    method @NonNull public android.app.contentrestriction.Content.Builder setUri(@NonNull android.net.Uri);
+  }
+
+  @FlaggedApi("android.app.contentrestriction.flags.content_restriction_api") public final class ContentClassificationResult implements android.os.Parcelable {
+    ctor public ContentClassificationResult(@NonNull android.content.LocusId, int);
+    method public int describeContents();
+    method @NonNull public android.content.LocusId getLocusId();
+    method public int getType();
+    method public boolean isAllowed();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.app.contentrestriction.ContentClassificationResult> CREATOR;
+    field @FlaggedApi("android.app.contentrestriction.flags.content_restriction_api") public static final int TYPE_ALLOWED = 0; // 0x0
+    field @FlaggedApi("android.app.contentrestriction.flags.content_restriction_api") public static final int TYPE_BLOCKED = 1; // 0x1
+    field @FlaggedApi("android.app.contentrestriction.flags.content_restriction_api") public static final int TYPE_UNCLASSIFIED = 2; // 0x2
+  }
+
+  @FlaggedApi("android.app.contentrestriction.flags.content_restriction_api") public class ContentRestrictionAppService extends android.app.Service {
+    ctor public ContentRestrictionAppService();
+    method @Nullable public final android.os.IBinder onBind(@Nullable android.content.Intent);
+    method @FlaggedApi("android.app.contentrestriction.flags.content_restriction_api") @Nullable public android.app.contentrestriction.ContentClassificationResult onClassifyContent(@NonNull android.app.contentrestriction.Content);
+    method @FlaggedApi("android.app.contentrestriction.flags.content_restriction_api") public void onContentRestrictionDisabled();
+    method @FlaggedApi("android.app.contentrestriction.flags.content_restriction_api") public void onContentRestrictionEnabled();
+    field public static final String ACTION_CONTENT_RESTRICTION_APP_SERVICE = "android.app.action.CONTENT_RESTRICTION_SERVICE";
+  }
+
+}
+
 package android.app.jank {
 
   @FlaggedApi("android.app.jank.detailed_app_jank_metrics_api") public final class AppJankStats {

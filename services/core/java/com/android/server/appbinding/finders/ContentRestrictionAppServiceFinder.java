@@ -95,7 +95,7 @@ public class ContentRestrictionAppServiceFinder
     @NonNull
     @Override
     protected String getServiceAction() {
-        return ContentRestrictionAppService.ACTION_BIND_CONTENT_RESTRICTION_APP_SERVICE;
+        return ContentRestrictionAppService.ACTION_CONTENT_RESTRICTION_APP_SERVICE;
     }
 
     @NonNull

@@ -29,8 +29,6 @@ import android.os.ParcelFileDescriptor;
 
 /**
  * A class representing content to be classified.
- *
- * @hide
  */
 @FlaggedApi(Flags.FLAG_CONTENT_RESTRICTION_API)
 public final class Content implements Parcelable {
@@ -79,6 +77,7 @@ public final class Content implements Parcelable {
      *
      * @return the {@link LocusId} of the content
      */
+    @NonNull
     public LocusId getId() {
         return mLocusId;
     }
@@ -88,6 +87,7 @@ public final class Content implements Parcelable {
      *
      * @return the MIME type
      */
+    @NonNull
     public String getMimeType() {
         return mMimeType;
     }
