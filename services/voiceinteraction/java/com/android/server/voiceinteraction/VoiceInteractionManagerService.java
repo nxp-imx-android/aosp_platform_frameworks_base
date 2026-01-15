@@ -270,7 +270,8 @@ public class VoiceInteractionManagerService extends SystemService {
             mShortcutServiceInternal = Objects.requireNonNull(
                     LocalServices.getService(ShortcutServiceInternal.class));
             mSoundTriggerInternal = LocalServices.getService(SoundTriggerInternal.class);
-            mServiceStub.systemServicesReady();
+        } else if (phase == PHASE_ACTIVITY_MANAGER_READY) {
+            mServiceStub.activityManagerReady();
         } else if (phase == PHASE_THIRD_PARTY_APPS_CAN_START) {
             mServiceStub.systemRunning(isSafeMode());
         } else if (phase == PHASE_BOOT_COMPLETED) {
@@ -313,89 +314,88 @@ public class VoiceInteractionManagerService extends SystemService {
         if (!android.permission.flags.Flags.assistSettingsPrivacyImprovementsEnabled()) {
             return;
         }
-        BackgroundThread.getHandler().post(() -> {
-            synchronized (mAssistSettingsLock) {
-                final VoiceInteractionManagerSettings settings =
-                        VoiceInteractionManagerSettings.getInstance();
-                final PackageManager packageManager = mContext.getPackageManager();
-                if (DEBUG) {
-                    Slog.i(TAG, "performAssistStructureUpgradeIfNeeded isDeviceUpgrading:"
-                            + packageManager.isDeviceUpgrading() + ", isAssistMigrationComplete:"
-                            + settings.isAssistMigrationComplete());
-                }
-                if (settings.isAssistMigrationComplete()) {
-                    return;
-                } else if (!packageManager.isDeviceUpgrading()) {
-                    settings.setAssistMigrationComplete();
-                    return;
-                }
-
-                List<UserInfo> users =
-                        mUserManagerInternal.getUsers(USER_FILTER_WITH_ALL_COMPLETE_USERS);
-                for (UserInfo user : users) {
-                    final int userId = user.id;
-
-                    if (DEBUG) {
-                        Slog.i(TAG, "Performing assist structure upgrade for user " + userId);
-                    }
-
-                    final RoleManager roleManager = mContext.getSystemService(RoleManager.class);
-                    final List<String> holders =
-                            roleManager.getRoleHolders(RoleManager.ROLE_ASSISTANT);
-                    if (holders.isEmpty()) {
-                        continue;
-                    }
-
-                    // New default mode is MODE_IGNORED. For migration of this setting we set:
-                    // MODE_ALLOWED only if both settings are explicitly enabled (1), MODE_IGNORED
-                    // if either setting is explicitly disabled (0), and MODE_DEFAULT otherwise
-                    final ContentResolver contentResolver = mContext.getContentResolver();
-                    final int isAssistStructureEnabled = Settings.Secure.getIntForUser(
-                            contentResolver, Settings.Secure.ASSIST_STRUCTURE_ENABLED, -1, userId);
-                    final int isAssistScreenshotEnabled = Settings.Secure.getIntForUser(
-                            contentResolver, Settings.Secure.ASSIST_SCREENSHOT_ENABLED, -1, userId);
-                    int assistStructureMode;
-                    if (isAssistStructureEnabled == 1 && isAssistScreenshotEnabled == 1) {
-                        assistStructureMode = AppOpsManager.MODE_ALLOWED;
-                    } else if (isAssistStructureEnabled == 0 || isAssistScreenshotEnabled == 0) {
-                        assistStructureMode = AppOpsManager.MODE_IGNORED;
-                    } else {
-                        assistStructureMode = AppOpsManager.MODE_DEFAULT;
-                    }
-
-                    if (DEBUG) {
-                        Slog.i(TAG, "Attempting to migrate ASSIST_STRUCTURE_ENABLED and "
-                                + "ASSIST_SCREENSHOT_ENABLED to appop. "
-                                + isAssistStructureEnabled + " & "
-                                + isAssistScreenshotEnabled + " -> " + assistStructureMode);
-                    }
-                    final String assistantPackage = holders.get(0);
-                    try {
-                        final int assistantUid = packageManager.getPackageUidAsUser(
-                                assistantPackage,
-                                userId);
-                        final AppOpsManager appOpsManager = mContext.getSystemService(
-                                AppOpsManager.class);
-                        appOpsManager.setUidMode(
-                                AppOpsManager.OPSTR_READ_SCREEN_CONTEXT,
-                                assistantUid, assistStructureMode);
-                        if (DEBUG) {
-                            Slog.i(TAG, "Set OPSTR_READ_SCREEN_CONTEXT to "
-                                    + assistStructureMode + " for assistant " + assistantPackage);
-                        }
-                    } catch (PackageManager.NameNotFoundException e) {
-                        Slog.e(TAG, "Assistant package not found: " + assistantPackage, e);
-                    }
-                }
+        synchronized (mAssistSettingsLock) {
+            final VoiceInteractionManagerSettings settings =
+                    VoiceInteractionManagerSettings.getInstance();
+            final PackageManager packageManager = mContext.getPackageManager();
+            if (DEBUG) {
+                Slog.i(TAG, "performAssistStructureUpgradeIfNeeded isDeviceUpgrading:"
+                        + packageManager.isDeviceUpgrading() + ", isAssistMigrationComplete:"
+                        + settings.isAssistMigrationComplete());
+            }
+            if (settings.isAssistMigrationComplete()) {
+                return;
+            } else if (!packageManager.isDeviceUpgrading()) {
                 settings.setAssistMigrationComplete();
-                if (DEBUG) {
-                    Slog.i(TAG, "Marked assist structure upgrade as complete for all users");
-                }
-
                 // Now that the migration is complete, re-run the observer logic.
                 mServiceStub.updateAssistStructureSecureSettingsForAllUsers();
+                return;
             }
-        });
+
+            List<UserInfo> users =
+                    mUserManagerInternal.getUsers(USER_FILTER_WITH_ALL_COMPLETE_USERS);
+            for (UserInfo user : users) {
+                final int userId = user.id;
+
+                if (DEBUG) {
+                    Slog.i(TAG, "Performing assist structure upgrade for user " + userId);
+                }
+
+                final RoleManager roleManager = mContext.getSystemService(RoleManager.class);
+                final List<String> holders =
+                        roleManager.getRoleHoldersAsUser(RoleManager.ROLE_ASSISTANT,
+                                UserHandle.of(userId));
+                if (holders.isEmpty()) {
+                    continue;
+                }
+
+                // New default mode is MODE_IGNORED. For migration of this setting we set:
+                // MODE_ALLOWED only if both settings are explicitly enabled (1), MODE_IGNORED
+                // if either setting is explicitly disabled (0), and MODE_DEFAULT otherwise
+                final ContentResolver contentResolver = mContext.getContentResolver();
+                final int isAssistStructureEnabled = Settings.Secure.getIntForUser(
+                        contentResolver, Settings.Secure.ASSIST_STRUCTURE_ENABLED, -1, userId);
+                final int isAssistScreenshotEnabled = Settings.Secure.getIntForUser(
+                        contentResolver, Settings.Secure.ASSIST_SCREENSHOT_ENABLED, -1, userId);
+                int assistStructureMode;
+                if (isAssistStructureEnabled == 1 && isAssistScreenshotEnabled == 1) {
+                    assistStructureMode = AppOpsManager.MODE_ALLOWED;
+                } else if (isAssistStructureEnabled == 0 || isAssistScreenshotEnabled == 0) {
+                    assistStructureMode = AppOpsManager.MODE_IGNORED;
+                } else {
+                    assistStructureMode = AppOpsManager.MODE_DEFAULT;
+                }
+
+                if (DEBUG) {
+                    Slog.i(TAG, "Attempting to migrate ASSIST_STRUCTURE_ENABLED and "
+                            + "ASSIST_SCREENSHOT_ENABLED to appop. "
+                            + isAssistStructureEnabled + " & "
+                            + isAssistScreenshotEnabled + " -> " + assistStructureMode);
+                }
+                final String assistantPackage = holders.get(0);
+                try {
+                    final int assistantUid = packageManager.getPackageUidAsUser(assistantPackage,
+                            userId);
+                    final AppOpsManager appOpsManager = mContext.getSystemService(
+                            AppOpsManager.class);
+                    appOpsManager.setUidMode(AppOpsManager.OPSTR_READ_SCREEN_CONTEXT,
+                            assistantUid, assistStructureMode);
+                    if (DEBUG) {
+                        Slog.i(TAG, "Set OPSTR_READ_SCREEN_CONTEXT to "
+                                + assistStructureMode + " for assistant " + assistantPackage);
+                    }
+                } catch (PackageManager.NameNotFoundException e) {
+                    Slog.e(TAG, "Assistant package not found: " + assistantPackage, e);
+                }
+            }
+            settings.setAssistMigrationComplete();
+            if (DEBUG) {
+                Slog.i(TAG, "Marked assist structure upgrade as complete for all users");
+            }
+
+            // Now that the migration is complete, re-run the observer logic.
+            mServiceStub.updateAssistStructureSecureSettingsForAllUsers();
+        }
     }
 
     class LocalService extends VoiceInteractionManagerInternal {
@@ -881,10 +881,19 @@ public class VoiceInteractionManagerService extends SystemService {
             return TextUtils.isEmpty(interactorPackage) ? null : interactorPackage;
         }
 
-        public void systemServicesReady() {
-            if (android.permission.flags.Flags.assistSettingsPrivacyImprovementsEnabled()) {
-                performAssistStructureUpgradeIfNeeded();
-                new ReadScreenContextAppOpObserver(BackgroundThread.getExecutor());
+        public void activityManagerReady() {
+            Trace.traceBegin(Trace.TRACE_TAG_SYSTEM_SERVER,
+                    "VoiceInteractionManagerService#activityManagerReady");
+            try {
+                if (android.permission.flags.Flags.assistSettingsPrivacyImprovementsEnabled()) {
+                    // performAssistStructureUpgradeIfNeeded references
+                    // PackageManager#isDeviceUpgrading() which is only ready only after
+                    // PHASE_SYSTEM_SERVICES_READY phase completes
+                    performAssistStructureUpgradeIfNeeded();
+                    new ReadScreenContextAppOpObserver();
+                }
+            } finally {
+                Trace.traceEnd(Trace.TRACE_TAG_SYSTEM_SERVER);
             }
         }
 
@@ -2779,6 +2788,12 @@ public class VoiceInteractionManagerService extends SystemService {
             enforceCrossUserPermission(userId, "getReadScreenContextRequestState");
 
             String roleHolder = getAssistantRoleHolderForUser(userId);
+            if (roleHolder == null) {
+                if (DEBUG) {
+                    Slog.i(TAG, "No role holder found for user " + userId);
+                }
+                return READ_SCREEN_CONTEXT_REQUEST_STATE_UNREQUESTABLE;
+            }
             try {
                 int roleHolderUid =
                         mContext.getPackageManager().getPackageUidAsUser(roleHolder, userId);
@@ -3035,8 +3050,7 @@ public class VoiceInteractionManagerService extends SystemService {
 
                 int userId = user.getIdentifier();
                 if (android.permission.flags.Flags.assistSettingsPrivacyImprovementsEnabled()) {
-                    BackgroundThread.getHandler().post(
-                            () -> updateAssistStructureSecureSettingsForUser(userId));
+                    updateAssistStructureSecureSettingsForUser(userId);
                 }
                 if (roleHolders.isEmpty()) {
                     Settings.Secure.putStringForUser(getContext().getContentResolver(),
@@ -3114,15 +3128,9 @@ public class VoiceInteractionManagerService extends SystemService {
 
         private final class ReadScreenContextAppOpObserver implements
                 AppOpsManager.OnOpChangedListener {
-            private final Executor mExecutor;
-
-            ReadScreenContextAppOpObserver(@NonNull @CallbackExecutor Executor executor) {
-                mExecutor = executor;
-
+            ReadScreenContextAppOpObserver() {
                 // Do an initial sync of ASSIST_STRUCTURE app ops mode for all users
-                mExecutor.execute(
-                        VoiceInteractionManagerServiceStub
-                                .this::updateAssistStructureSecureSettingsForAllUsers);
+                updateAssistStructureSecureSettingsForAllUsers();
 
                 AppOpsManager appOpsManager = mContext.getSystemService(AppOpsManager.class);
                 appOpsManager.startWatchingMode(
@@ -3140,7 +3148,7 @@ public class VoiceInteractionManagerService extends SystemService {
                             + ", userId: " + userId);
                 }
 
-                mExecutor.execute(() -> updateAssistStructureSecureSettingsForUser(userId));
+                updateAssistStructureSecureSettingsForUser(userId);
             }
         }
 
