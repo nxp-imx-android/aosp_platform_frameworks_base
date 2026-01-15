@@ -70,6 +70,9 @@ constructor(
     val isEntireScreenSharingEnabled: Boolean
         get() = shareScreenUiInteractor.config?.isSourceEnabled(PROJECTION_SOURCE_DISPLAY) ?: true
 
+    val isAudioRequested: Boolean
+        get() = shareScreenUiInteractor.config?.isAudioRequested ?: false
+
     private val initialSource = shareScreenUiInteractor.config?.initiallySelectedSource ?: -1
 
     var currentTargetsModel by
