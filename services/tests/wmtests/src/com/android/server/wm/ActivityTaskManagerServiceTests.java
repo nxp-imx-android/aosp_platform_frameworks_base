@@ -92,6 +92,7 @@ import android.os.UserHandle;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
+import android.util.TypedValue;
 import android.view.Display;
 import android.view.DisplayInfo;
 import android.view.IDisplayWindowListener;
@@ -1192,15 +1193,12 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
 
     @Test
     public void testSupportsMultiWindow_activityMinWidthHeight_largerThanSupport() {
-        final float density = mContext.getResources().getDisplayMetrics().density;
         final ActivityInfo.WindowLayout windowLayout =
-                new ActivityInfo.WindowLayout(0, 0, 0, 0, 0,
-                        // This is larger than the min dimensions device support in multi window,
-                        // the activity will not be supported in multi window if the device respects
-                        /* minWidth= */
-                        (int) (WindowManager.LARGE_SCREEN_SMALLEST_SCREEN_WIDTH_DP * density),
-                        /* minHeight= */
-                        (int) (WindowManager.LARGE_SCREEN_SMALLEST_SCREEN_WIDTH_DP * density));
+                createWindowLayoutWithMinSize(
+                        WindowManager.LARGE_SCREEN_SMALLEST_SCREEN_WIDTH_DP,
+                        WindowManager.LARGE_SCREEN_SMALLEST_SCREEN_WIDTH_DP,
+                        mContext.getResources().getDisplayMetrics(),
+                        TypedValue.COMPLEX_UNIT_DIP);
         final ActivityRecord activity = new ActivityBuilder(mAtm)
                 .setCreateTask(true)
                 .setWindowLayout(windowLayout)
@@ -1248,13 +1246,13 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
     public void testSupportsMultiWindow_landscape_checkActivityMinWidth() {
         // This is smaller than the min dimensions device support in multi window,
         // the activity will be supported in multi window
-        final float density = mContext.getResources().getDisplayMetrics().density;
-        final int supportedWidth = (int) (WindowManager.LARGE_SCREEN_SMALLEST_SCREEN_WIDTH_DP
-                * mAtm.mMinPercentageMultiWindowSupportWidth * density);
         final ActivityInfo.WindowLayout windowLayout =
-                new ActivityInfo.WindowLayout(0, 0, 0, 0, 0,
-                        /* minWidth= */ supportedWidth,
-                        /* minHeight= */ 0);
+                createWindowLayoutWithMinSize(
+                        (int) (WindowManager.LARGE_SCREEN_SMALLEST_SCREEN_WIDTH_DP
+                                * mAtm.mMinPercentageMultiWindowSupportWidth),
+                        0,
+                        mContext.getResources().getDisplayMetrics(),
+                        TypedValue.COMPLEX_UNIT_DIP);
         final ActivityRecord activity = new ActivityBuilder(mAtm)
                 .setCreateTask(true)
                 .setWindowLayout(windowLayout)
@@ -1283,13 +1281,13 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
     public void testSupportsMultiWindow_portrait_checkActivityMinHeight() {
         // This is smaller than the min dimensions device support in multi window,
         // the activity will be supported in multi window
-        final float density = mContext.getResources().getDisplayMetrics().density;
-        final int supportedHeight = (int) (WindowManager.LARGE_SCREEN_SMALLEST_SCREEN_WIDTH_DP
-                * mAtm.mMinPercentageMultiWindowSupportHeight * density);
         final ActivityInfo.WindowLayout windowLayout =
-                new ActivityInfo.WindowLayout(0, 0, 0, 0, 0,
-                        /* minWidth= */ 0,
-                        /* minHeight= */ supportedHeight);
+                createWindowLayoutWithMinSize(
+                        0,
+                        (int) (WindowManager.LARGE_SCREEN_SMALLEST_SCREEN_WIDTH_DP
+                                * mAtm.mMinPercentageMultiWindowSupportHeight),
+                        mContext.getResources().getDisplayMetrics(),
+                        TypedValue.COMPLEX_UNIT_DIP);
         final ActivityRecord activity = new ActivityBuilder(mAtm)
                 .setCreateTask(true)
                 .setWindowLayout(windowLayout)
