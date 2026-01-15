@@ -679,7 +679,7 @@ public class AudioDeviceBroker {
                             mAudioSystem.getAudioProductStrategies(/* filterInternal*/ true),
                             AudioSystem.STREAM_VOICE_CALL);
             List<AudioDeviceAttributes> devices = mAudioSystem.getDevicesForAttributes(
-                    attr, mAudioService.getRootUidForCurrentUser(), false /* forVolume */);
+                    attr, false /* forVolume */);
             if (devices.isEmpty()) {
                 if (mAudioService.isPlatformVoice()) {
                     Log.w(TAG,

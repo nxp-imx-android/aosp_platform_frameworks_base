@@ -305,16 +305,7 @@ public class AudioSystemAdapter implements AudioSystem.RoutingUpdateCallback,
     }
 
     /**
-     * Same as {@link AudioSystem#getDevicesForAttributes(AudioAttributes, int, boolean)}
-     */
-    public @NonNull List<AudioDeviceAttributes> getDevicesForAttributes(
-            @NonNull AudioAttributes attributes, int uid, boolean forVolume) {
-        // not using cache for version with UID. Would need to generate a key with UserId? Uid?
-        return AudioSystem.getDevicesForAttributes(attributes, uid, forVolume);
-    }
-
-    /**
-     * Same as {@link AudioSystem#getDevicesForAttributes(AudioAttributes, boolean)}
+     * Same as {@link AudioSystem#getDevicesForAttributes(AudioAttributes)}
      * @param attributes the attributes for which the routing is queried
      * @return the devices that the stream with the given attributes would be routed to
      */
@@ -572,6 +563,11 @@ public class AudioSystemAdapter implements AudioSystem.RoutingUpdateCallback,
         return AudioSystem.setVolumeIndexForAttributes(attributes, index, muted, device);
     }
 
+    /** Same as {@link AudioSystem#setVolumeIndexForGroup(int, int, boolean, int)} */
+    public int setVolumeIndexForGroup(int groupId, int index, boolean muted, int device) {
+        return AudioSystem.setVolumeIndexForGroup(groupId, index, muted, device);
+    }
+
     /** Same as {@link AudioSystem#getVolumeIndexForGroup(int, int)} */
     public int getVolumeIndexForGroup(int groupId, int device) {
         return AudioSystem.getVolumeIndexForGroup(groupId, device);
@@ -595,12 +591,6 @@ public class AudioSystemAdapter implements AudioSystem.RoutingUpdateCallback,
     /** Same as {@link AudioSystem#setMaxVolumeIndexForGroup(int, int)} */
     public int setMaxVolumeIndexForGroup(int groupId, int index) {
         return AudioSystem.setMaxVolumeIndexForGroup(groupId, index);
-    }
-
-    /** Same as {@link AudioSystem#setVolumeIndexForGroup(int, int, int, boolean, int)} */
-    /** Same as {@link AudioSystem#setVolumeIndexForGroup(int, int, int, boolean, int)} */
-    public int setVolumeIndexForGroup(int groupId, int uid, int index, boolean muted, int device) {
-        return AudioSystem.setVolumeIndexForGroup(groupId, uid, index, muted, device);
     }
 
     /**
@@ -867,39 +857,6 @@ public class AudioSystemAdapter implements AudioSystem.RoutingUpdateCallback,
      */
     public int unregisterAudioVolumeGroupCallback(INativeAudioVolumeGroupCallback callback) {
         return AudioSystem.unregisterAudioVolumeGroupCallback(callback);
-    }
-
-    /**
-     * Same as {@link AudioSystem#setProductStrategiesZoneIdForUserId(int, userid_t)}
-     */
-    public int setProductStrategiesZoneIdForUserId(int userId, int zoneId) {
-        return AudioSystem.setProductStrategiesZoneIdForUserId(userId, zoneId);
-    }
-
-    /**
-     * Same as {@link AudioSystem#resetProductStrategiesZoneIdForUserId(userid_t)}
-     */
-    public int resetProductStrategiesZoneIdForUserId(int userId) {
-        return AudioSystem.resetProductStrategiesZoneIdForUserId(userId);
-    }
-
-    /**
-     * Returns the zone ID for the given group ID
-     *
-     * @param groupId group id to query
-     * @return zone ID for the given group id if found, @link AudioProductStrategy#INVALID_ZONE_ID}
-     * otherwise.
-     */
-    public int getZoneIdForAudioVolumeGroupId(int groupId) {
-        List<AudioProductStrategy> strategies =
-                getAudioProductStrategies(/* filterInternal= */ true);
-        return AudioProductStrategy.getZoneIdForAudioVolumeGroupId(strategies, groupId);
-    }
-
-    /** Same as {@link AudioSystem#getPreferredMixerAttributes(AudioAttributes, int, int, List)} */
-    public int getPreferredMixerAttributes(AudioAttributes attributes, int portId, int uid,
-            List<AudioMixerAttributes> mixerAttrList) {
-        return AudioSystem.getPreferredMixerAttributes(attributes, portId, uid, mixerAttrList);
     }
 
     /**
