@@ -24,6 +24,7 @@ import android.app.Notification.CallStyle
 import android.app.Notification.EXTRA_BIG_TEXT
 import android.app.Notification.EXTRA_CALL_PERSON
 import android.app.Notification.EXTRA_CHRONOMETER_COUNT_DOWN
+import android.app.Notification.EXTRA_PREFER_SMALL_ICON
 import android.app.Notification.EXTRA_PROGRESS
 import android.app.Notification.EXTRA_PROGRESS_INDETERMINATE
 import android.app.Notification.EXTRA_PROGRESS_MAX
@@ -154,6 +155,7 @@ constructor(
         privateModel: PromotedNotificationContentModel,
         publicBuilder: PromotedNotificationContentModel.Builder,
     ) {
+        publicBuilder.preferSmallIcon = privateModel.preferSmallIcon
         publicBuilder.skeletonNotifIcon = privateModel.skeletonNotifIcon
         publicBuilder.iconLevel = privateModel.iconLevel
         publicBuilder.appName = privateModel.appName
@@ -221,6 +223,7 @@ constructor(
         val contentBuilder = PromotedNotificationContentModel.Builder(key)
         // TODO: Pitch a fit if style is unsupported or mandatory fields are missing once
         // FLAG_PROMOTED_ONGOING is set reliably and we're not testing status bar chips.
+        contentBuilder.preferSmallIcon = notification.preferSmallIcon()
         contentBuilder.skeletonNotifIcon =
             sbn.skeletonAppIcon(packageContext)
                 ?: notification.skeletonSmallIcon(imageModelProvider)
@@ -354,7 +357,10 @@ constructor(
         getCharSequenceExtraUnlessEmpty(EXTRA_SUB_TEXT)
 
     private fun Notification.chronometerCountDown(): Boolean =
-        extras?.getBoolean(EXTRA_CHRONOMETER_COUNT_DOWN, /* defaultValue= */ false) ?: false
+        extras?.getBoolean(EXTRA_CHRONOMETER_COUNT_DOWN) ?: false
+
+    private fun Notification.preferSmallIcon(): Boolean =
+        extras?.getBoolean(EXTRA_PREFER_SMALL_ICON) ?: false
 
     private fun Notification.skeletonLargeIcon(
         imageModelProvider: ImageModelProvider

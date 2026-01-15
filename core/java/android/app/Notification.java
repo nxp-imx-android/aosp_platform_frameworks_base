@@ -7917,10 +7917,8 @@ public class Notification implements Parcelable
                     StandardTemplateParams p = mParams.reset()
                             .viewType(StandardTemplateParams.VIEW_TYPE_EXPANDED)
                             .allowTextWithProgress(true)
+                            .maybeUseMinimalHeader(this)
                             .fillTextsFrom(this);
-                    if (richOngoingImprovements() && mN.isPromotedOngoing()) {
-                        p.useMinimalHeader(isTimeInTheFuture());
-                    }
                     result = applyStandardTemplateWithActions(getExpandedBaseLayoutResource(), p,
                             null /* result */);
                 }
@@ -9817,17 +9815,13 @@ public class Notification implements Parcelable
                     .viewType(StandardTemplateParams.VIEW_TYPE_EXPANDED)
                     .allowTextWithProgress(true)
                     .textViewId(R.id.big_text)
+                    .maybeUseMinimalHeader(mBuilder)
                     .fillTextsFrom(mBuilder);
-
-            boolean promoted = mBuilder.mN.isPromotedOngoing();
-            if (richOngoingImprovements() && promoted) {
-                p.useMinimalHeader(mBuilder.isTimeInTheFuture());
-            }
 
             // Replace the text with the big text, but only if the big text is not empty.
             CharSequence bigTextText = mBuilder.processLegacyText(mBigText);
             // Ongoing promoted notifications are allowed to have styling.
-            if (!promoted) {
+            if (!mBuilder.mN.isPromotedOngoing()) {
                 bigTextText = normalizeBigText(stripStyling(bigTextText));
             }
             if (!TextUtils.isEmpty(bigTextText)) {
@@ -12433,16 +12427,12 @@ public class Notification implements Parcelable
             final StandardTemplateParams p = mBuilder.mParams.reset()
                     .viewType(StandardTemplateParams.VIEW_TYPE_EXPANDED)
                     .hideProgress(true)
+                    .maybeUseMinimalHeader(mBuilder)
                     .fillTextsFrom(mBuilder)
                     .text(null)
                     .titleViewId(R.id.alt_title)
+                    .subTextViewId(R.id.header_text)  // reset default after maybeUseMinimalHeader
                     .hideRightIcon(true);
-
-            if (Flags.richOngoingImprovements() && mBuilder.mN.isPromotedOngoing()) {
-                // Use the minimal header style when promoted, but keep the subtext in the top line
-                // (even if it may be cramped).
-                p.useMinimalHeader(mBuilder.isTimeInTheFuture()).subTextViewId(R.id.header_text);
-            }
 
             final int expandedLayoutRes;
             if (mMetrics.size() == 1) {
@@ -14188,11 +14178,8 @@ public class Notification implements Parcelable
                     .viewType(StandardTemplateParams.VIEW_TYPE_EXPANDED)
                     .allowTextWithProgress(true)
                     .hideProgress(true)
+                    .maybeUseMinimalHeader(mBuilder)
                     .fillTextsFrom(mBuilder);
-
-            if (richOngoingImprovements() && mBuilder.mN.isPromotedOngoing()) {
-                p.useMinimalHeader(mBuilder.isTimeInTheFuture());
-            }
 
             final int progressLayoutResId;
             if (Flags.apiNotificationActionCustom() && mBuilder.mN.isPromotedOngoing()) {
@@ -18439,13 +18426,15 @@ public class Notification implements Parcelable
          * Certain promoted notifications show a simplified version of the header. This also moves
          * the title to the top line.
          */
-        public StandardTemplateParams useMinimalHeader(boolean isTimeInTheFuture) {
-            if (Flags.richOngoingImprovements()) {
+        public StandardTemplateParams maybeUseMinimalHeader(Builder b) {
+            if (Flags.richOngoingImprovements() && b.mN.isPromotedOngoing()) {
+                boolean isTimeInTheFuture = b.isTimeInTheFuture();
+                boolean prefersSmallIcon = b.mN.extras.getBoolean(EXTRA_PREFER_SMALL_ICON);
                 titleViewId(R.id.alt_title);
                 subTextViewId(R.id.alt_subtext);
-                hideAppName(true);
+                hideAppName(!prefersSmallIcon);
+                hideProfileBadge(!prefersSmallIcon);
                 hideTime(!isTimeInTheFuture);
-                hideProfileBadge(true);
             }
             return this;
         }

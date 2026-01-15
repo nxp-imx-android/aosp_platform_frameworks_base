@@ -31,8 +31,8 @@ val Kosmos.realNotificationIconStyleProvider by
 
 val Kosmos.alwaysShowNotificationIconStyleProvider by
     Kosmos.Fixture {
-        object : NotificationIconStyleProvider {
-            override fun shouldShowAppIcon(
+        object : NotificationIconStyleProviderBase() {
+            override fun packageHasAppIcon(
                 notification: StatusBarNotification,
                 context: Context,
             ): Boolean = true

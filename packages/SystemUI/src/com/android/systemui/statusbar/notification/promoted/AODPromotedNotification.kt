@@ -553,7 +553,7 @@ private class AODPromotedNotificationViewUpdater(root: View) {
                     val hasText = !content.text.isNullOrEmpty()
                     val hasProgress = content.oldProgress != null
                     updateTitle(headerTitleView, content)
-                    updateAppName(content, forceHide = true)
+                    val showingAppName = updateAppName(content, maybeHide = true)
                     updateTextView(altSubtext, content.subText)
                     updateTimeAndChronometer(content)
                     updateProfileBadge(content)
@@ -561,13 +561,13 @@ private class AODPromotedNotificationViewUpdater(root: View) {
                     val isTopLineOnly = !hasSubText && !hasText
                     header?.centerTopLine(isTopLineOnly && !hasProgress)
                     actionsContainer?.isVisible = !isTopLineOnly
-                    updateHeaderDividers(content, hideTitle = false, hideAppName = true)
+                    updateHeaderDividers(content, hideTitle = false, hideAppName = !showingAppName)
                 }
                 Style.Progress -> {
                     val hasSubText = !content.subText.isNullOrEmpty()
                     val hasText = !content.text.isNullOrEmpty()
                     updateTitle(headerTitleView, content)
-                    updateAppName(content, forceHide = true)
+                    val showingAppName = updateAppName(content, maybeHide = true)
                     updateTextView(altSubtext, content.subText)
                     updateTimeAndChronometer(content)
                     updateProfileBadge(content)
@@ -576,20 +576,24 @@ private class AODPromotedNotificationViewUpdater(root: View) {
 
                     header?.centerTopLine(isTopLineOnly)
                     actionsContainer?.isVisible = true
-                    updateHeaderDividers(content, hideTitle = false, hideAppName = true)
+                    updateHeaderDividers(content, hideTitle = false, hideAppName = !showingAppName)
                 }
                 Style.Metric,
                 Style.MetricSingle -> {
                     val hasTitle = !content.title.isNullOrEmpty()
                     updateTitle(headerTitleView, content)
-                    updateAppName(content, forceHide = hasTitle)
+                    val showingAppName = updateAppName(content, maybeHide = hasTitle)
                     updateTextView(headerTextSecondary, content.subText)
                     updateTimeAndChronometer(content)
                     updateProfileBadge(content)
 
                     header?.centerTopLine(false)
                     actionsContainer?.isVisible = true
-                    updateHeaderDividers(content, hideTitle = !hasTitle, hideAppName = hasTitle)
+                    updateHeaderDividers(
+                        content,
+                        hideTitle = !hasTitle,
+                        hideAppName = !showingAppName,
+                    )
                 }
                 Style.Call,
                 Style.CollapsedCall -> {
@@ -726,8 +730,15 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         }
     }
 
-    private fun updateAppName(content: PromotedNotificationContentModel, forceHide: Boolean) {
-        updateTextView(appNameText, content.appName?.takeUnless { forceHide })
+    private fun updateAppName(
+        content: PromotedNotificationContentModel,
+        forceHide: Boolean = false,
+        maybeHide: Boolean = false,
+    ): Boolean {
+        val hide = forceHide || (richOngoingImprovements() && maybeHide && !content.preferSmallIcon)
+        val appName = content.appName?.takeUnless { hide }
+        updateTextView(appNameText, appName)
+        return !appName.isNullOrEmpty()
     }
 
     private fun updateTitle(titleView: TextView?, content: PromotedNotificationContentModel) {
@@ -833,8 +844,8 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         content: PromotedNotificationContentModel,
         isCallStyle: Boolean = false,
     ) {
-        val canShowProfileBadge = !richOngoingImprovements() || isCallStyle
-        if (canShowProfileBadge && content.profileBadgeBitmap != null) {
+        val showProfileBadge = !richOngoingImprovements() || content.preferSmallIcon || isCallStyle
+        if (showProfileBadge && content.profileBadgeBitmap != null) {
             profileBadge?.setImageBitmap(content.profileBadgeBitmap)
             profileBadge?.visibility = VISIBLE
             profileBadge?.setColorFilter(PrimaryText.colorInt, PorterDuff.Mode.SRC_IN)
