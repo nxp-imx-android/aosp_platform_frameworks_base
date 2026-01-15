@@ -82,6 +82,7 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.res.Configuration;
 import android.graphics.Rect;
+import android.net.Uri;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.LocaleList;
@@ -539,6 +540,48 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
 
         // Request Handoff
         requestHandoffTaskData(task.getRootTaskId(), receiver);
+
+        // Verify that the result code is success.
+        receiver.verifySucceeded(task.getRootTaskId(), handoffActivityData);
+    }
+
+    @EnableFlags(android.companion.Flags.FLAG_TASK_CONTINUITY)
+    @Test
+    public void testRequestHandoffTaskData_succeedsWhenPassingURL()
+        throws Exception{
+        // Create a test task.
+        final Task task = new TaskBuilder(mSupervisor)
+                              .setComponent(new ComponentName("pkg", "cls"))
+                              .setCreateActivity(true).build();
+        final ActivityRecord activity = task.getTopNonFinishingActivity();
+        doReturn(true).when(activity).attachedToProcess();
+        doReturn(true).when(activity).isState(RESUMED);
+        WindowProcessController mockWindowProcessController = mock(WindowProcessController.class);
+        activity.app = mockWindowProcessController;
+        IApplicationThread mockThread = mock(IApplicationThread.class);
+        doReturn(mockThread).when(mockWindowProcessController).getThread();
+        doReturn(true).when(activity).isProcessRunning();
+        doReturn(true).when(activity).isHandoffEnabled();
+
+        // Setup a fake receiver to receive the result.
+        TestHandoffTaskDataReceiver receiver = new TestHandoffTaskDataReceiver();
+
+        // Request Handoff
+        requestHandoffTaskData(task.getRootTaskId(), receiver);
+
+        ArgumentCaptor<IBinder> requestTokenCaptor = ArgumentCaptor.forClass(IBinder.class);
+        ArgumentCaptor<List<IBinder>> activityTokenCaptor = ArgumentCaptor.forClass(List.class);
+        verify(mockThread).requestHandoffActivityData(
+            requestTokenCaptor.capture(),
+            activityTokenCaptor.capture());
+
+        // Finish the request
+        HandoffActivityData handoffActivityData
+            = HandoffActivityData.createWebHandoff(Uri.parse("https://www.google.com"));
+
+        mAtm.reportHandoffActivityData(
+            requestTokenCaptor.getValue(),
+            List.of(handoffActivityData));
 
         // Verify that the result code is success.
         receiver.verifySucceeded(task.getRootTaskId(), handoffActivityData);
