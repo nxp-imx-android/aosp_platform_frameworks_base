@@ -80,10 +80,8 @@ oneway interface IContextHubEndpointCallback {
     /**
      * Callback notifying this endpoint that an endpoint on the other side of a data flow has
      * stopped using it. This callback will only be invoked for a data flow that this endpoint is
-     * currently producing to or consuming from. It will not be invoked if the other endpoint
-     * crashed or otherwise disconnected from the messaging system. In those cases, this endpoint
-     * can be notified of the disconnection via
-     * IContextHubService::registerEndpointDiscoveryCallbackId().
+     * currently producing to or consuming from. It will be called both in the case that the offload
+     * endpoint crashed and when the endpoint intentionally stops accessing the data flow.
      *
      * If this endpoint is a sink on the data flow, it must stop accessing it and release
      * resources associated with the data flow. If it is the source, it must release resources
