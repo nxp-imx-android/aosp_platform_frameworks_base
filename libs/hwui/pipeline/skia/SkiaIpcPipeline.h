@@ -16,18 +16,20 @@
 
 #pragma once
 
+#include <android-base/thread_annotations.h>
+#include <android/hardware_buffer.h>
 #include <android/ipcrenderbuffer/IPCRecordingCanvas.h>
 #include <android/ipcrenderbuffer/RenderBufferOps.h>
 #include <gui/SurfaceComposerClient.h>
 #include <gui/SurfaceControl.h>
 
-#include <android-base/thread_annotations.h>
-
 #include <memory>
 #include <mutex>
 #include <tuple>
+#include <unordered_map>
 #include <vector>
 
+#include "include/gpu/ganesh/SkSurfaceGanesh.h"
 #include "pipeline/skia/SkiaPipeline.h"
 
 namespace android {
