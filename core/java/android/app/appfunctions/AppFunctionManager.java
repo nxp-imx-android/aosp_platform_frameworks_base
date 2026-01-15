@@ -24,6 +24,7 @@ import static android.app.appfunctions.AppFunctionManagerHelper.buildCancellatio
 import static android.app.appfunctions.AppFunctionManagerHelper.executionExceptionToErrorCode;
 import static android.app.appfunctions.flags.Flags.FLAG_ENABLE_APP_FUNCTION_MANAGER;
 import static android.app.appfunctions.flags.Flags.FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS;
+import static android.app.appfunctions.flags.Flags.FLAG_ENABLE_APP_FUNCTION_PERMISSION_V2;
 import static android.permission.flags.Flags.FLAG_APP_FUNCTION_ACCESS_UI_ENABLED;
 import static android.permission.flags.Flags.allowlistServiceEnabled;
 
@@ -85,15 +86,15 @@ import java.util.concurrent.Executor;
  * <h3>Declaring App Functions</h3>
  *
  * <p>App functions can be declared in two ways in your {@code AndroidManifest.xml}:
- * <ul>
- *     <li><b>Application-level (for dynamic registration):</b> Declare these functions using a
- *         {@code <property>} tag within the {@code <application>} element. These functions
- *         <strong>must</strong> be registered at runtime using
- *         {@link AppFunctionManager#registerAppFunction} API to become executable.
  *
- *     <li><b>Service-level (for service binding):</b> Declare these functions within a
- *         {@code <service>} definition that extends {@link AppFunctionService}. The system
- *         automatically handles these functions by binding to the service for execution.
+ * <ul>
+ *   <li><b>Application-level (for dynamic registration):</b> Declare these functions using a {@code
+ *       <property>} tag within the {@code <application>} element. These functions
+ *       <strong>must</strong> be registered at runtime using {@link
+ *       AppFunctionManager#registerAppFunction} API to become executable.
+ *   <li><b>Service-level (for service binding):</b> Declare these functions within a {@code
+ *       <service>} definition that extends {@link AppFunctionService}. The system automatically
+ *       handles these functions by binding to the service for execution.
  * </ul>
  *
  * <h3>Discovering App Functions</h3>
@@ -471,8 +472,9 @@ public final class AppFunctionManager {
      *
      * <p>The calling app can search for:
      * <li>Functions in its own package (no permission required).
-     * <li>When holding the `android.permission.EXECUTE_APP_FUNCTIONS` permission - functions in
-     *     other packages that it is allowed to query via {@link
+     * <li>When holding the {@link Manifest.permission#EXECUTE_APP_FUNCTIONS} or {@link
+     *     Manifest.permission#READ_APP_FUNCTION_METADATA} permission - functions in other packages
+     *     that it is allowed to query via {@link
      *     android.content.pm.PackageManager#canPackageQuery}.
      *
      * @param searchSpec The spec of app functions to search for.
@@ -480,7 +482,12 @@ public final class AppFunctionManager {
      * @param callback The callback to receive the search results.
      */
     @FlaggedApi(FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS)
-    @RequiresPermission(value = Manifest.permission.EXECUTE_APP_FUNCTIONS, conditional = true)
+    @RequiresPermission(
+            anyOf = {
+                Manifest.permission.EXECUTE_APP_FUNCTIONS,
+                Manifest.permission.READ_APP_FUNCTION_METADATA
+            },
+            conditional = true)
     @UserHandleAware
     public void searchAppFunctions(
             @NonNull AppFunctionSearchSpec searchSpec,
@@ -528,7 +535,8 @@ public final class AppFunctionManager {
      *
      * <p>This method can only check app functions owned by the caller, or those where the caller
      * has visibility to the owner package and holds the {@link
-     * Manifest.permission#EXECUTE_APP_FUNCTIONS} permission.
+     * Manifest.permission#EXECUTE_APP_FUNCTIONS} or {@link
+     * Manifest.permission#READ_APP_FUNCTION_METADATA} permission.
      *
      * <p>If the operation fails, the callback's {@link OutcomeReceiver#onError} is called with
      * errors:
@@ -545,7 +553,13 @@ public final class AppFunctionManager {
      * @param executor the executor to run the request
      * @param callback the callback to receive the function enabled check result
      */
-    @RequiresPermission(value = Manifest.permission.EXECUTE_APP_FUNCTIONS, conditional = true)
+    @FlaggedApi(FLAG_ENABLE_APP_FUNCTION_PERMISSION_V2)
+    @RequiresPermission(
+            anyOf = {
+                Manifest.permission.EXECUTE_APP_FUNCTIONS,
+                Manifest.permission.READ_APP_FUNCTION_METADATA
+            },
+            conditional = true)
     public void isAppFunctionEnabled(
             @NonNull String functionIdentifier,
             @NonNull String targetPackage,
