@@ -82,9 +82,6 @@ test_module_config {
         "com.android.wm.shell.flicker.bubbles.FinishExpandedBubbleToExpandCollapsedTest",
         "com.android.wm.shell.flicker.bubbles.LaunchMultipleBubbleTest",
         "com.android.wm.shell.flicker.bubbles.LaunchNewTaskFromBubbleTest",
-        "com.android.wm.shell.flicker.bubbles.ScrollableBubbleAppTest",
-        "com.android.wm.shell.flicker.bubbles.SwitchBetweenBubblesTest",
-        "com.android.wm.shell.flicker.bubbles.SwitchBetweenBubblesTwiceTest",
         "com.android.wm.shell.flicker.bubbles.RelaunchBubbleToFullscreenViaAppIconTest",
         "com.android.wm.shell.flicker.bubbles.RelaunchBubbleToFullscreenViaShortcutTest",
         "com.android.wm.shell.flicker.bubbles.RelaunchBubbleToFullscreenViaTaskbarAppIconTest",
@@ -96,6 +93,10 @@ test_module_config {
         "com.android.wm.shell.flicker.bubbles.RelaunchBubbleIntoSplitScreenTest",
         "com.android.wm.shell.flicker.bubbles.RelaunchVisibleFullscreenAppToBubbleTest",
         "com.android.wm.shell.flicker.bubbles.RelaunchVisibleSplitAppToBubbleTest",
+        "com.android.wm.shell.flicker.bubbles.ScrollableBubbleAppTest",
+        "com.android.wm.shell.flicker.bubbles.SwitchBetweenBubblesTest",
+        "com.android.wm.shell.flicker.bubbles.SwitchBetweenBubblesTwiceTest",
+        "com.android.wm.shell.flicker.bubbles.SwitchToOverflowBubbleTest",
     ],
 }
 
@@ -303,27 +304,6 @@ test_module_config {
 }
 
 test_module_config {
-    name: "WMShellExplicitFlickerTestsBubbles-ScrollableBubbleAppTest",
-    base: "WMShellExplicitFlickerTestsBubbles",
-    test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.flicker.bubbles.ScrollableBubbleAppTest"],
-}
-
-test_module_config {
-    name: "WMShellExplicitFlickerTestsBubbles-SwitchBetweenBubblesTest",
-    base: "WMShellExplicitFlickerTestsBubbles",
-    test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.flicker.bubbles.SwitchBetweenBubblesTest"],
-}
-
-test_module_config {
-    name: "WMShellExplicitFlickerTestsBubbles-SwitchBetweenBubblesTwiceTest",
-    base: "WMShellExplicitFlickerTestsBubbles",
-    test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.flicker.bubbles.SwitchBetweenBubblesTwiceTest"],
-}
-
-test_module_config {
     name: "WMShellExplicitFlickerTestsBubbles-RelaunchBubbleToFullscreenViaAppIconTest",
     base: "WMShellExplicitFlickerTestsBubbles",
     test_suites: ["device-tests"],
@@ -398,4 +378,32 @@ test_module_config {
     base: "WMShellExplicitFlickerTestsBubbles",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.flicker.bubbles.RelaunchVisibleSplitAppToBubbleTest"],
+}
+
+test_module_config {
+    name: "WMShellExplicitFlickerTestsBubbles-ScrollableBubbleAppTest",
+    base: "WMShellExplicitFlickerTestsBubbles",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.bubbles.ScrollableBubbleAppTest"],
+}
+
+test_module_config {
+    name: "WMShellExplicitFlickerTestsBubbles-SwitchBetweenBubblesTest",
+    base: "WMShellExplicitFlickerTestsBubbles",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.bubbles.SwitchBetweenBubblesTest"],
+}
+
+test_module_config {
+    name: "WMShellExplicitFlickerTestsBubbles-SwitchBetweenBubblesTwiceTest",
+    base: "WMShellExplicitFlickerTestsBubbles",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.bubbles.SwitchBetweenBubblesTwiceTest"],
+}
+
+test_module_config {
+    name: "WMShellExplicitFlickerTestsBubbles-SwitchToOverflowBubbleTest",
+    base: "WMShellExplicitFlickerTestsBubbles",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.bubbles.SwitchToOverflowBubbleTest"],
 }

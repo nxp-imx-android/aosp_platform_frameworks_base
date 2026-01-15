@@ -19,6 +19,7 @@ package com.android.wm.shell.flicker.bubbles.utils
 import android.content.Context
 import android.platform.systemui_tapl.ui.Bubble
 import android.platform.systemui_tapl.ui.BubbleBarItem
+import android.platform.systemui_tapl.ui.BubbleOverflow
 import android.platform.systemui_tapl.ui.Root
 import android.tools.device.apphelpers.BrowserAppHelper
 import android.tools.device.apphelpers.CalculatorAppHelper
@@ -151,7 +152,7 @@ internal object BubbleFlickerTestHelper {
      * @param wmHelper the [WindowManagerStateHelper]
      */
     fun launchBubbleViaOverflow(testApp: StandardAppHelper, wmHelper: WindowManagerStateHelper) {
-        val overflow = Root.get().expandedBubbleStack.openOverflow()
+        val overflow = clickOverflowIcon()
         overflow.verifyHasBubbles()
         overflow.openBubble()
 
@@ -228,6 +229,11 @@ internal object BubbleFlickerTestHelper {
     fun clickBubbleAppIcon(appToClick: StandardAppHelper) {
         val bubbleAppIcon = getBubbleAppIcon(appToClick)
         bubbleAppIcon.click()
+    }
+
+    /** Clicks on the overflow icon. */
+    fun clickOverflowIcon(): BubbleOverflow {
+        return Root.get().expandedBubbleStack.openOverflow()
     }
 
     /**

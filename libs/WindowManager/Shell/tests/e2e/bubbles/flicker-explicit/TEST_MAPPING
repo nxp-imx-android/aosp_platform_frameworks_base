@@ -131,18 +131,6 @@
       "keywords": ["device"]
     },
     {
-      "name": "WMShellExplicitFlickerTestsBubbles-ScrollableBubbleAppTest",
-      "keywords": ["device"]
-    },
-    {
-      "name": "WMShellExplicitFlickerTestsBubbles-SwitchBetweenBubblesTest",
-      "keywords": ["device"]
-    },
-    {
-      "name": "WMShellExplicitFlickerTestsBubbles-SwitchBetweenBubblesTwiceTest",
-      "keywords": ["device"]
-    },
-    {
       "name": "WMShellExplicitFlickerTestsBubbles-RelaunchFullscreenToBubbleTest",
       "keywords": ["device"]
     },
@@ -180,6 +168,22 @@
     },
     {
       "name": "WMShellExplicitFlickerTestsBubbles-RelaunchVisibleSplitAppToBubbleTest",
+      "keywords": ["device"]
+    },
+    {
+      "name": "WMShellExplicitFlickerTestsBubbles-ScrollableBubbleAppTest",
+      "keywords": ["device"]
+    },
+    {
+      "name": "WMShellExplicitFlickerTestsBubbles-SwitchBetweenBubblesTest",
+      "keywords": ["device"]
+    },
+    {
+      "name": "WMShellExplicitFlickerTestsBubbles-SwitchBetweenBubblesTwiceTest",
+      "keywords": ["device"]
+    },
+    {
+      "name": "WMShellExplicitFlickerTestsBubbles-SwitchToOverflowBubbleTest",
       "keywords": ["device"]
     }
   ]
