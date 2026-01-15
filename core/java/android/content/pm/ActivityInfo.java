@@ -1766,12 +1766,15 @@ public class ActivityInfo extends ComponentInfo implements Parcelable {
      * This change id skips the activity recreation by default on config change of
      * {@link #CONFIG_KEYBOARD}, {@link #CONFIG_KEYBOARD_HIDDEN}, {@link #CONFIG_NAVIGATION},
      * {@link #CONFIG_TOUCHSCREEN}, {@link #CONFIG_COLOR_MODE} and {@link #CONFIG_UI_MODE} (only if
-     * it is changed from or to {@link Configuration#UI_MODE_TYPE_DESK}).
+     * it is changed from or to {@link Configuration#UI_MODE_TYPE_DESK}), unless the corresponding
+     * flag is explicitly defined in the {@link android.R.attr#recreateOnConfigChanges} attribute.
      *
      * @hide
      */
     @ChangeId
     @Overridable
+    @FlaggedApi(Flags.FLAG_ENABLE_LESS_ACTIVITY_RECREATION_ON_CONFIG_CHANGE)
+    @TestApi
     public static final long SKIP_ACTIVITY_RECREATION_ON_CONFIG_CHANGE = 454795633L;
 
     /**
