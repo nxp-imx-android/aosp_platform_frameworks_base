@@ -3459,6 +3459,37 @@ public class TransitionTests extends WindowTestsBase {
         assertTrue(ancestor.isDescendantOf(otherDisplay.getParent()));
     }
 
+
+    @Test
+    @EnableFlags(Flags.FLAG_REFINE_ANCESTOR_SEARCH_AND_BOUNDS)
+    public void testCommonAncestor_afterReparentToDisplay() {
+        final Task rootTask = createTask(mDisplayContent);
+        final Task toBackNestedTask = createTaskInRootTask(rootTask, 0);
+        final TaskFragment closeTaskFragment = createTaskFragmentWithActivity(toBackNestedTask);
+        final Task openNestedTask = createTaskInRootTask(rootTask, 0);
+        final TaskFragment openTaskFragment = createTaskFragmentWithActivity(openNestedTask);
+
+        final TaskDisplayArea tda = mDisplayContent.getDefaultTaskDisplayArea();
+        rootTask.setVisibleRequested(true);
+
+        final Transition.ChangeInfo taskChange = new Transition.ChangeInfo(toBackNestedTask,
+                true /* vis */, false /* exChg */);
+        taskChange.mStartParent = rootTask;
+        toBackNestedTask.reparent(tda, false /* onTop */);
+        toBackNestedTask.setVisibleRequested(false);
+        final ArrayList<Transition.ChangeInfo> sortedTargets = new ArrayList<>();
+        sortedTargets.add(new Transition.ChangeInfo(openTaskFragment, true /* vis*/ ,
+                false /* exChg */));
+        sortedTargets.add(new Transition.ChangeInfo(openNestedTask, true /* vis*/ ,
+                false /* exChg */));
+        sortedTargets.add(new Transition.ChangeInfo(closeTaskFragment, true /* vis*/ ,
+                false /* exChg */));
+        sortedTargets.add(taskChange);
+
+        WindowContainer ancestor = Transition.findCommonAncestor(sortedTargets, toBackNestedTask);
+        assertEquals(rootTask, ancestor);
+    }
+
     @Test
     public void testSetAlwaysOnTopChange() {
         final TransitionController controller = mDisplayContent.mTransitionController;

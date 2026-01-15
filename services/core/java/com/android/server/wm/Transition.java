@@ -3586,6 +3586,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
             @NonNull WindowContainer<?> topWc) {
         final int displayId = getDisplayId(topWc);
         WindowContainer<?> ancestor = topWc.getParent();
+        WindowContainer<?> reparentedClosingTarget = null;
         // Go up ancestor parent chain until all targets are descendants. Ancestor should never be
         // null because all targets are attached.
         for (int i = targets.size() - 1; i >= 0; i--) {
@@ -3615,8 +3616,16 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
                 final int transitionMode = change.getTransitMode(wc);
                 if (transitionMode == TRANSIT_CLOSE || transitionMode == TRANSIT_TO_BACK) {
                     ancestor = change.mStartParent;
+                    reparentedClosingTarget = wc;
                     continue;
                 }
+            }
+            // Do not escalate if other container is a descendant of the initial break container.
+            // (e.g. TaskFragment belongs to a Task.)
+            if (com.android.window.flags.Flags.refineAncestorSearchAndBounds()
+                    && reparentedClosingTarget != null
+                    && wc.isDescendantOf(reparentedClosingTarget)) {
+                continue;
             }
             while (!wc.isDescendantOf(ancestor)) {
                 ancestor = ancestor.getParent();
