@@ -26,7 +26,7 @@ import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.user.domain.interactor.selectedUserInteractor
 
-val Kosmos.keyguardEnabledInteractor by
+val Kosmos.keyguardEnabledInteractor: KeyguardEnabledInteractor by
     Kosmos.Fixture {
         KeyguardEnabledInteractor(
             applicationCoroutineScope,

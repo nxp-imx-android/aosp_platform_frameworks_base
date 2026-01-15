@@ -284,7 +284,11 @@ constructor(
     }
 
     /**
-     * Returns `true` if the power button should instantly lock the device, `false` otherwise.
+     * Returns `true` if the user's settings are such that pressing the power button should
+     * instantly lock the device, vs. waiting for a lock timeout.
+     *
+     * This does not necessarily mean that the device *should* be locked (keyguard may be disabled
+     * or suppressed, etc).
      *
      * WARNING: This causes a blocking IPC to LockPatternUtils (b/446735679).
      */

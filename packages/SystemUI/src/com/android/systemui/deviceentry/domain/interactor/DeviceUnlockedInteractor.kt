@@ -32,6 +32,7 @@ import com.android.systemui.deviceentry.shared.model.DeviceUnlockStatus
 import com.android.systemui.flags.SystemPropertiesHelper
 import com.android.systemui.keyguard.KeyguardViewMediator
 import com.android.systemui.keyguard.domain.interactor.BiometricUnlockInteractor
+import com.android.systemui.keyguard.domain.interactor.KeyguardEnabledInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.TrustInteractor
 import com.android.systemui.keyguard.shared.model.AuthenticationFlags
@@ -89,6 +90,7 @@ constructor(
     private val keyguardInteractor: KeyguardInteractor,
     @SceneFrameworkTableLog private val tableLogBuffer: TableLogBuffer,
     biometricUnlockInteractor: BiometricUnlockInteractor,
+    private val keyguardEnabledInteractor: KeyguardEnabledInteractor,
 ) : ExclusiveActivatable() {
     private val faceEnrolledAndEnabled = biometricSettingsInteractor.isFaceAuthEnrolledAndEnabled
     private val fingerprintEnrolledAndEnabled =
@@ -252,20 +254,32 @@ constructor(
     override suspend fun onActivated(): Nothing {
         coroutineScope {
             launch {
-                authenticationInteractor.authenticationMethod.collectLatest { authMethod ->
-                    if (!authMethod.isSecure) {
-                        // Device remains unlocked as long as the authentication method is not
-                        // secure.
-                        Log.d(TAG, "remaining unlocked because auth method not secure")
-                        repository.deviceUnlockStatus.value = DeviceUnlockStatus(true, null)
-                    } else if (authMethod == AuthenticationMethodModel.Sim) {
-                        // Device remains locked while SIM is locked.
-                        Log.d(TAG, "remaining locked because SIM locked")
-                        repository.deviceUnlockStatus.value = DeviceUnlockStatus(false, null)
-                    } else {
-                        handleLockAndUnlockEvents()
+                combine(
+                        authenticationInteractor.authenticationMethod,
+                        keyguardEnabledInteractor.isKeyguardEnabled,
+                        ::Pair,
+                    )
+                    .collectLatest { (authMethod, keyguardEnabled) ->
+                        // Keyguard can be disabled externally (by an app, app pinning, etc.) even
+                        // if a secure auth method is set.
+                        if (!authMethod.isSecure || !keyguardEnabled) {
+                            // Device remains unlocked as long as the authentication method is not
+                            // secure or keyguard is disabled.
+                            Log.d(
+                                TAG,
+                                "remaining unlocked because auth method is " +
+                                    "${if (authMethod.isSecure) "secure" else "not secure"} or " +
+                                    "keyguard is ${if (keyguardEnabled) "enabled" else "disabled"}",
+                            )
+                            repository.deviceUnlockStatus.value = DeviceUnlockStatus(true, null)
+                        } else if (authMethod == AuthenticationMethodModel.Sim) {
+                            // Device remains locked while SIM is locked.
+                            Log.d(TAG, "remaining locked because SIM locked")
+                            repository.deviceUnlockStatus.value = DeviceUnlockStatus(false, null)
+                        } else {
+                            handleLockAndUnlockEvents()
+                        }
                     }
-                }
             }
 
             launch {
