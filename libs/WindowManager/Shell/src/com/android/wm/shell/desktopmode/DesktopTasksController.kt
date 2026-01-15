@@ -2736,6 +2736,11 @@ class DesktopTasksController(
         }
         if (taskInfo?.leafTaskBoundsFromOptions == true) {
             // ActivityOptions have a higher priority.
+            logV(
+                "calculateRememberedBounds: Not using remembered bounds for task#%d because " +
+                    "leafTaskBoundsFromOptions is true.",
+                taskInfo.taskId,
+            )
             return null
         }
         val packageName = componentName?.packageName ?: return null
@@ -2745,9 +2750,21 @@ class DesktopTasksController(
             }
         ) {
             // Do not use remembered bounds when another instance of the same package is active.
+            logV(
+                "calculateRememberedBounds: Not using remembered bounds for task#%d because " +
+                    "another instance of the same package (%s) is active.",
+                taskInfo?.taskId,
+                packageName,
+            )
             return null
         }
         val ratio = repository.getRememberedBoundsRatio(packageName) ?: return null
+        logV(
+            "calculateRememberedBounds: Use ratio=%s for %s (task#%d)",
+            ratio,
+            packageName,
+            taskInfo?.taskId,
+        )
         val stableBounds = Rect().also { displayLayout.getStableBoundsForDesktopMode(it) }
         return Rect().apply {
             left = (stableBounds.left + stableBounds.width() * ratio.left).toInt()
