@@ -26,7 +26,6 @@ import com.android.compose.animation.scene.ObservableTransitionState.Idle
 import com.android.compose.animation.scene.ObservableTransitionState.Transition
 import com.android.compose.animation.scene.ObservableTransitionState.Transition.ChangeScene
 import com.android.compose.animation.scene.OverlayKey
-import com.android.compose.animation.scene.Scale
 import com.android.compose.animation.scene.SceneKey
 import com.android.systemui.bouncer.domain.interactor.BouncerInteractor
 import com.android.systemui.dump.DumpManager
@@ -405,9 +404,6 @@ constructor(
 
     /** Alpha requested by the StackPlaceholder STL element. */
     val stackPlaceholderAlpha: ObservableState<Float> = placeholderStateStorage.stackAlpha
-
-    /** Draw scale requested by the StackPlaceholder STL element. */
-    val stackPlaceholderScale: ObservableState<Scale> = placeholderStateStorage.stackScale
 
     /**
      * Max alpha to apply directly to the view based on the compose placeholder.

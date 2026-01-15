@@ -20,8 +20,10 @@ package com.android.systemui.statusbar.notification.stack.ui.viewmodel
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
+import androidx.compose.ui.geometry.Offset
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.ObservableTransitionState
+import com.android.compose.animation.scene.Scale
 import com.android.systemui.Flags.FLAG_DUAL_SHADE
 import com.android.systemui.Flags.FLAG_GESTURE_BETWEEN_HUB_AND_LOCKSCREEN_MOTION
 import com.android.systemui.Flags.FLAG_GLANCEABLE_HUB_V2
@@ -1924,6 +1926,41 @@ class SharedNotificationContainerViewModelTest(flags: FlagsParameterization) : S
             transitionState.value = ObservableTransitionState.Idle(CommunalScenes.Blank)
 
             assertThat(scale).isEqualTo(1f)
+        }
+
+    @Test
+    @EnableSceneContainer
+    fun onLockscreenElementScaleChanges() =
+        kosmos.runTest {
+            val vmFactory = kosmos.notificationsPlaceholderViewModelFactory
+            val lockscreenViewModel = vmFactory.create(Scenes.Lockscreen)
+
+            var elementScale: Scale = Scale.Unspecified
+            val disposable = underTest.containerScale.observe { value -> elementScale = value }
+
+            // Given: Initial Scale is 1f with no Offset.
+            assertThat(elementScale).isEqualTo(Scale(1f, 1f))
+
+            // When: Lockscreen comes in
+            lockscreenViewModel.setStackScale(Scale(1f, 1f))
+            // Then: Scale is still 1f.
+            assertThat(elementScale).isEqualTo(Scale(1f, 1f))
+
+            // When: Lockscreen does the pushback effect
+            val pivot = Offset(.5f, .5f)
+            lockscreenViewModel.setStackScale(Scale(.8f, .8f, pivot))
+            // Then: Scale is updated
+            assertThat(elementScale).isEqualTo(Scale(.8f, .8f, pivot))
+
+            lockscreenViewModel.setStackScale(Scale(.4f, .4f, pivot))
+            assertThat(elementScale).isEqualTo(Scale(.4f, .4f, pivot))
+
+            // When: Lockscreen is gone
+            lockscreenViewModel.resetStackScale()
+            // Then: Scale is default again.
+            assertThat(elementScale).isEqualTo(Scale(1f, 1f))
+
+            disposable.dispose()
         }
 
     private suspend fun Kosmos.showLockscreen() {
