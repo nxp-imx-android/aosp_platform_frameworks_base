@@ -24,6 +24,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static kotlinx.coroutines.flow.StateFlowKt.MutableStateFlow;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -52,6 +53,7 @@ import com.android.systemui.Flags;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.accessibility.AccessibilityButtonModeObserver;
 import com.android.systemui.accessibility.AccessibilityButtonTargetsObserver;
+import com.android.systemui.accessibility.Magnification;
 import com.android.systemui.inputdevice.data.repository.FakePointerDeviceRepository;
 import com.android.systemui.keyboard.data.repository.FakeKeyboardRepository;
 import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor;
@@ -223,9 +225,7 @@ public class AccessibilityFloatingMenuControllerTest extends SysuiTestCase {
     public void onKeyguardVisibilityChanged_showing_destroyWidget() {
         enableAccessibilityFloatingMenuConfig();
         mController = setUpController();
-        mController.mFloatingMenu = new MenuViewLayerController(mContextWrapper, mWindowManager,
-                mAccessibilityManager, mSecureSettings, mNavigationModeController,
-                mHearingAidDeviceManager, mKeyboardRepository, mPointerDeviceRepository);
+        mController.mFloatingMenu = createMenuViewLayerController();
         captureKeyguardUpdateMonitorCallback();
         mKeyguardCallback.onUserUnlocked();
 
@@ -253,9 +253,7 @@ public class AccessibilityFloatingMenuControllerTest extends SysuiTestCase {
         final int fakeUserId = 1;
         enableAccessibilityFloatingMenuConfig();
         mController = setUpController();
-        mController.mFloatingMenu = new MenuViewLayerController(mContextWrapper, mWindowManager,
-                mAccessibilityManager, mSecureSettings, mNavigationModeController,
-                mHearingAidDeviceManager, mKeyboardRepository, mPointerDeviceRepository);
+        mController.mFloatingMenu = createMenuViewLayerController();
         captureKeyguardUpdateMonitorCallback();
 
         mKeyguardCallback.onUserSwitching(fakeUserId);
@@ -269,9 +267,7 @@ public class AccessibilityFloatingMenuControllerTest extends SysuiTestCase {
         final int fakeUserId = 1;
         enableAccessibilityFloatingMenuConfig();
         mController = setUpController();
-        mController.mFloatingMenu = new MenuViewLayerController(mContextWrapper, mWindowManager,
-                mAccessibilityManager, mSecureSettings, mNavigationModeController,
-                mHearingAidDeviceManager, mKeyboardRepository, mPointerDeviceRepository);
+        mController.mFloatingMenu = createMenuViewLayerController();
         captureKeyguardUpdateMonitorCallback();
         mKeyguardCallback.onUserUnlocked();
         mKeyguardCallback.onKeyguardVisibilityChanged(true);
@@ -606,7 +602,8 @@ public class AccessibilityFloatingMenuControllerTest extends SysuiTestCase {
                         /*coroutineScope= */ null ,
                         mKeyguardInteractor, mSceneInteractor, mUserTracker,
                         mKeyboardRepository, mPointerDeviceRepository,
-                        mHeadlessSystemUserMode);
+                        mHeadlessSystemUserMode,
+                        mock(Magnification.class));
         controller.init();
 
         return controller;
@@ -628,5 +625,12 @@ public class AccessibilityFloatingMenuControllerTest extends SysuiTestCase {
     private void captureUserTrackerCallback() {
         verify(mUserTracker).addCallback(mUserTrackerCallbackCaptor.capture(), any());
         mUserTrackerCallback = mUserTrackerCallbackCaptor.getValue();
+    }
+
+    private MenuViewLayerController createMenuViewLayerController() {
+        return new MenuViewLayerController(mContextWrapper, mWindowManager,
+                mAccessibilityManager, mSecureSettings, mNavigationModeController,
+                mHearingAidDeviceManager, mKeyboardRepository, mPointerDeviceRepository,
+                mock(Magnification.class));
     }
 }

@@ -49,7 +49,8 @@ class MenuListViewTouchHandlerTest : SysuiTestCase() {
             menuView.translationX = 0f
             menuView.translationY = 0f
 
-            menuView.targetFeaturesView.adapter = AccessibilityTargetAdapter(stubTargets)
+            menuView.targetFeaturesView.adapter =
+                AccessibilityTargetAdapter(stubTargets, context, mock())
             // this prevents vertical move actions from being skipped
             menuView.targetFeaturesView.overScrollMode = View.OVER_SCROLL_NEVER
         }

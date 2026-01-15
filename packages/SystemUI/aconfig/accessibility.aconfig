@@ -24,6 +24,16 @@ flag {
 }
 
 flag {
+    name: "floating_menu_magnification_status"
+    namespace: "accessibility"
+    description: "Exposes magnification activated status to floating menu magnification targets"
+    bug: "449812613"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "floating_menu_more_options"
     namespace: "accessibility"
     description: "Adds a 'More Options' button to the accessibility floating menu, which reveals additional actions like Edit, Move, and Remove all."

@@ -38,6 +38,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.android.internal.accessibility.dialog.AccessibilityTarget;
 import com.android.modules.expresslog.Counter;
 import com.android.settingslib.bluetooth.HearingAidDeviceManager;
+import com.android.systemui.accessibility.Magnification;
 import com.android.systemui.util.settings.SecureSettings;
 
 import java.util.ArrayList;
@@ -78,14 +79,14 @@ public class MenuView extends FrameLayout implements
     private SecureSettings mSecureSettings;
 
     MenuView(Context context, MenuViewModel menuViewModel, MenuViewAppearance menuViewAppearance,
-            SecureSettings secureSettings) {
+            SecureSettings secureSettings, Magnification magnification) {
         super(context);
 
         mMenuViewModel = menuViewModel;
         mMenuViewAppearance = menuViewAppearance;
         mSecureSettings = secureSettings;
         mMenuAnimationController = new MenuAnimationController(this, menuViewAppearance);
-        mAdapter = new AccessibilityTargetAdapter(mTargetFeatures);
+        mAdapter = new AccessibilityTargetAdapter(mTargetFeatures, mContext, magnification);
         mTargetFeaturesView = new RecyclerView(context);
         mTargetFeaturesView.setAdapter(mAdapter);
         mTargetFeaturesView.setLayoutManager(new LinearLayoutManager(context));

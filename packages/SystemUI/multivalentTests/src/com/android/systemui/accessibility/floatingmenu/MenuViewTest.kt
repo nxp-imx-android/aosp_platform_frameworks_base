@@ -39,7 +39,6 @@ import com.android.systemui.Flags
 import com.android.systemui.Prefs
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.accessibility.floatingmenu.MenuView.OnTargetFeaturesChangeListener
-import com.android.systemui.accessibility.utils.TestUtils
 import com.android.systemui.inputdevice.data.repository.pointerDeviceRepository
 import com.android.systemui.keyboard.data.repository.keyboardRepository
 import com.android.systemui.kosmos.runTest
@@ -323,14 +322,6 @@ class MenuViewTest : SysuiTestCase() {
 
     private fun createAndAttachMenuView() {
         with(kosmos) {
-            menuView =
-                MenuView(
-                    context,
-                    menuViewModel,
-                    menuViewAppearance,
-                    TestUtils.mockSecureSettings(context),
-                )
-
             menuView.setOnTargetFeaturesChangeListener(onTargetFeaturesChangeListener)
             menuView.setViewTreeLifecycleOwner(fakeLifecycleOwner)
             menuView.onAttachedToWindow()
