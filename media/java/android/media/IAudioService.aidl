@@ -806,7 +806,6 @@ interface IAudioService {
             in AudioAttributes aa, int portId, in AudioMixerAttributes mixerAttributes);
     @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.MODIFY_AUDIO_SETTINGS)")
     int clearPreferredMixerAttributes(in AudioAttributes aa, int portId);
-    AudioMixerAttributes getPreferredMixerAttributes(in AudioAttributes attributes, int portId);
     void registerPreferredMixerAttributesDispatcher(
             IPreferredMixerAttributesDispatcher dispatcher);
     oneway void unregisterPreferredMixerAttributesDispatcher(

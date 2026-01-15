@@ -21,7 +21,6 @@ import static android.media.audiopolicy.AudioProductStrategy.DEFAULT_ZONE_ID;
 import android.annotation.NonNull;
 import android.media.AudioAttributes;
 import android.media.AudioDeviceAttributes;
-import android.media.AudioMixerAttributes;
 import android.media.AudioSystem;
 import android.media.audiopolicy.AudioProductStrategy;
 import android.util.Log;
@@ -243,11 +242,5 @@ public class NoOpAudioSystemAdapter extends AudioSystemAdapter {
     @Override
     public int getZoneIdForAudioVolumeGroupId(int groupId) {
         return DEFAULT_ZONE_ID;
-    }
-
-    @Override
-    public int getPreferredMixerAttributes(AudioAttributes attributes, int portId, int uid,
-            List<AudioMixerAttributes> mixerAttrList) {
-        return AudioSystem.AUDIO_STATUS_OK;
     }
 }

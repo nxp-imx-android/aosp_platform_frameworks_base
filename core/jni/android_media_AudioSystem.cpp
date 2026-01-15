@@ -3322,7 +3322,7 @@ static jint android_media_AudioSystem_setPreferredMixerAttributes(JNIEnv *env, j
 
 static jint android_media_AudioSystem_getPreferredMixerAttributes(JNIEnv *env, jobject thiz,
                                                                   jobject jAudioAttributes,
-                                                                  jint portId, jint uid,
+                                                                  jint portId,
                                                                   jobject jAudioMixerAttributes) {
     ALOGV("%s", __func__);
 
@@ -3348,7 +3348,7 @@ static jint android_media_AudioSystem_getPreferredMixerAttributes(JNIEnv *env, j
     std::optional<audio_mixer_attributes_t> nMixerAttributes;
     status_t status =
             AudioSystem::getPreferredMixerAttributes(paa.get(), (audio_port_handle_t)portId,
-                                                     (uid_t)uid, &nMixerAttributes);
+                                                     &nMixerAttributes);
     if (status != NO_ERROR) {
         return nativeToJavaStatus(status);
     }
@@ -3710,7 +3710,7 @@ static const JNINativeMethod gMethods[] = {
                                "AudioMixerAttributes;)I",
                                android_media_AudioSystem_setPreferredMixerAttributes),
         MAKE_JNI_NATIVE_METHOD("getPreferredMixerAttributes",
-                               "(Landroid/media/AudioAttributes;IILjava/util/List;)I",
+                               "(Landroid/media/AudioAttributes;ILjava/util/List;)I",
                                android_media_AudioSystem_getPreferredMixerAttributes),
         MAKE_JNI_NATIVE_METHOD("clearPreferredMixerAttributes",
                                "(Landroid/media/AudioAttributes;II)I",

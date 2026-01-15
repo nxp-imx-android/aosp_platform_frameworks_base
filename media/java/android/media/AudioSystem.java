@@ -2955,7 +2955,7 @@ public class AudioSystem
      * {link #setPreferredMixerAttributes}.
      */
     public static native int getPreferredMixerAttributes(
-            @NonNull AudioAttributes attributes, int portId, int uid,
+            @NonNull AudioAttributes attributes, int portId,
             List<AudioMixerAttributes> mixerAttributesList);
 
     /**
