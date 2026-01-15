@@ -10072,7 +10072,9 @@ public class AudioService extends IAudioService.Stub
                                  + ", User=" + getCurrentUserId());
                     }
                     mIndexMap.put(device, getValidIndex(index));
-                    mIsMuted = isMuted;
+                    if (isPlatformPc()) {
+                        mIsMuted = isMuted;
+                    }
                 }
             }
         }
@@ -10500,7 +10502,9 @@ public class AudioService extends IAudioService.Stub
 
                     mIndexMap.put(device, getValidIndex(10 * index,
                             true /*hasModifyAudioSettings*/));
-                    mIsMuted = isMuted;
+                    if (isPlatformPc()) {
+                        mIsMuted = isMuted;
+                    }
                 }
             }
         }
