@@ -271,6 +271,8 @@ public:
 
     void startHintSession();
 
+    void setHintSessionEnabled(bool enabled);
+
     static bool shouldDither();
 
     void visitAllRenderNodes(std::function<void(const RenderNode&)>) const;
@@ -409,6 +411,7 @@ private:
     std::function<void()> mPrepareSurfaceControlForWebviewCallback;
 
     std::shared_ptr<HintSessionWrapper> mHintSessionWrapper;
+    bool mIsHintSessionEnabled = true;
     nsecs_t mLastDequeueBufferDuration = 0;
     nsecs_t mSyncDelayDuration = 0;
     nsecs_t mIdleDuration = 0;

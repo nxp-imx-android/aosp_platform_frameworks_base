@@ -106,6 +106,7 @@ public:
     void setLightGeometry(const Vector3& lightCenter, float lightRadius);
     void setHardwareBufferRenderParams(const HardwareBufferRenderParams& params);
     void setOpaque(bool opaque);
+    void setHintSessionEnabled(bool enabled);
     float setColorMode(ColorMode mode);
     void setRenderSdrHdrRatio(float ratio);
     int64_t* frameInfo();

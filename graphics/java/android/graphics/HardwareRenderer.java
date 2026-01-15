@@ -29,7 +29,6 @@ import android.hardware.DataSpace;
 import android.hardware.HardwareBuffer;
 import android.hardware.OverlayProperties;
 import android.hardware.display.DisplayManager;
-import android.os.Debug;
 import android.os.IBinder;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
@@ -724,6 +723,17 @@ public class HardwareRenderer {
             mOpaque = opaque;
             nSetOpaque(mNativeProxy, mOpaque);
         }
+    }
+
+    /**
+     * Sets whether the performance hint session is enabled. By default, the hint session
+     * is enabled.
+     *
+     * @param enabled true if the performance hint session is enabled, false otherwise.
+     * @hide
+     */
+    public void setHintSessionEnabled(boolean enabled) {
+        nSetHintSessionEnabled(mNativeProxy, enabled);
     }
 
     /**
@@ -1755,6 +1765,8 @@ public class HardwareRenderer {
             float spotShadowAlpha);
 
     private static native void nSetOpaque(long nativeProxy, boolean opaque);
+
+    private static native void nSetHintSessionEnabled(long nativeProxy, boolean enabled);
 
     private static native float nSetColorMode(long nativeProxy, int colorMode);
 

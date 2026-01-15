@@ -404,6 +404,7 @@ public final class ViewRootImpl implements ViewParent,
     private static final String IPC_RENDERING_PACKAGES =
             SystemProperties.get("viewroot.ipc_rendering_packages", "");
     private boolean mIpcRenderingEnabled = false;
+    private boolean mPerfHintSessionDisabled = false;
 
     /**
      * Set this system property to true to force the view hierarchy to render
@@ -2152,6 +2153,11 @@ public final class ViewRootImpl implements ViewParent,
                 if (mIsHardwareRendererOutputDisabled) {
                     renderer.setRendererDrawingEnabled(false);
                 }
+
+                mPerfHintSessionDisabled = attrs.isPerfHintSessionDisabled();
+                if (mPerfHintSessionDisabled) {
+                    renderer.setHintSessionEnabled(false);
+                }
                 renderer.setSurfaceControl(mSurfaceControl, mBlastBufferQueue);
                 updateColorModeIfNeeded(attrs.getColorMode(), attrs.getDesiredHdrHeadroom());
                 mHdrRenderState.forceUpdateHdrSdrRatio();
@@ -2245,6 +2251,16 @@ public final class ViewRootImpl implements ViewParent,
                 invalidateWorld(mView);
             }
         }
+    }
+
+    private void updatePerformanceHintSession() {
+        if (mAttachInfo.mThreadedRenderer == null) return;
+        boolean disable = mWindowAttributes.isPerfHintSessionDisabled();
+        if (mPerfHintSessionDisabled == disable) {
+            return;
+        }
+        mPerfHintSessionDisabled = disable;
+        mAttachInfo.mThreadedRenderer.setHintSessionEnabled(!disable);
     }
 
     @UnsupportedAppUsage
@@ -4112,6 +4128,7 @@ public final class ViewRootImpl implements ViewParent,
                             mTransaction.setColorSpaceAgnostic(
                                     mSurfaceControl, colorSpaceAgnostic).applyAsyncUnsafe();
                         }
+                        updatePerformanceHintSession();
                     }
                 }
 
