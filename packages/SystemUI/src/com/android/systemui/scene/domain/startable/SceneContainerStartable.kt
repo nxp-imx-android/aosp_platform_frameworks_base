@@ -57,7 +57,10 @@ import com.android.systemui.keyguard.domain.interactor.KeyguardSurfaceBehindInte
 import com.android.systemui.keyguard.domain.interactor.KeyguardWakeDirectlyToGoneInteractor
 import com.android.systemui.keyguard.domain.interactor.ShowWhileAwakeReason
 import com.android.systemui.keyguard.domain.interactor.TrustInteractor
+import com.android.systemui.keyguard.shared.model.BiometricUnlockMode
 import com.android.systemui.keyguard.shared.model.KeyguardState
+import com.android.systemui.keyguard.shared.model.KeyguardTransitionKeys.AodToGoneTransition
+import com.android.systemui.keyguard.shared.model.KeyguardTransitionKeys.GoneToAodEnterFromTop
 import com.android.systemui.log.table.TableLogBuffer
 import com.android.systemui.model.SceneContainerPlugin
 import com.android.systemui.model.SceneContainerPluginImpl
@@ -659,6 +662,13 @@ constructor(
                                     true ->
                                     SwitchSceneCommand.SwitchToScene(
                                         targetSceneKey = Scenes.Gone,
+                                        transitionKey =
+                                            AodToGoneTransition.takeIf {
+                                                BiometricUnlockMode.isWakeAndDismiss(
+                                                    keyguardInteractor.biometricUnlockState.value
+                                                        .mode
+                                                )
+                                            },
                                         loggingReason =
                                             "device was unlocked while lockscreen" +
                                                 " with bypass enabled or using an active" +
@@ -713,6 +723,7 @@ constructor(
                                 hideOverlays = command.hideOverlays,
                                 loggingReason = command.loggingReason,
                                 instantlySnapScenes = command.instantlySnapScenes,
+                                transitionKey = command.transitionKey,
                             )
                         }
                         is SwitchSceneCommand.NoOp -> Unit
@@ -770,8 +781,11 @@ constructor(
                         targetSceneKey = Scenes.Lockscreen,
                         loggingReason = "device is starting to sleep",
                         transitionKey =
-                            ShadeExpandedToAlwaysOnDisplay.takeIf {
-                                isShadeAnyExpanded && isAodAvailable
+                            when {
+                                isShadeAnyExpanded && isAodAvailable ->
+                                    ShadeExpandedToAlwaysOnDisplay
+                                isAodAvailable -> GoneToAodEnterFromTop
+                                else -> null
                             },
                         keyguardState = getKeyguardStateForWakefulness(isAwake = false),
                         freezeAndAnimateToCurrentState = !isAodAvailable,
@@ -1376,6 +1390,7 @@ constructor(
             val loggingReason: String,
             val hideOverlays: HideOverlayCommand = HideOverlayCommand.HideAll,
             val instantlySnapScenes: Boolean = false,
+            val transitionKey: TransitionKey? = null,
         ) : SwitchSceneCommand
     }
 
