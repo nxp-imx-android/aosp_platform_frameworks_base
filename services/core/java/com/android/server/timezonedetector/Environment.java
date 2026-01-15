@@ -77,14 +77,4 @@ public interface Environment {
      * Requests that the supplied runnable be invoked asynchronously.
      */
     void runAsync(@NonNull Runnable runnable);
-
-    /**
-     * Posts the supplied runnable to the main thread handler after the specified delay.
-     */
-    void postDelayed(@NonNull Runnable runnable, long delayMillis);
-
-    /**
-     * Removes pending runnable from the main thread handler.
-     */
-    void removePendingRunnable(@NonNull Runnable runnable);
 }
