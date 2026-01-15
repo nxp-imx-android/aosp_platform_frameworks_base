@@ -2749,10 +2749,7 @@ public class ActivityInfo extends ComponentInfo implements Parcelable {
                 return this.width;
             }
 
-            return TypedValue.complexToDimensionPixelSize(
-                    this.complexWidth,
-                    metrics
-            );
+            return complexToDimensionPixelSize(complexWidth, metrics);
         }
 
         /**
@@ -2767,10 +2764,7 @@ public class ActivityInfo extends ComponentInfo implements Parcelable {
                 return this.height;
             }
 
-            return TypedValue.complexToDimensionPixelSize(
-                    this.complexHeight,
-                    metrics
-            );
+            return complexToDimensionPixelSize(complexHeight, metrics);
         }
 
         /**
@@ -2785,10 +2779,7 @@ public class ActivityInfo extends ComponentInfo implements Parcelable {
                 return this.minWidth;
             }
 
-            return TypedValue.complexToDimensionPixelSize(
-                    this.complexMinWidth,
-                    metrics
-            );
+            return complexToDimensionPixelSize(complexMinWidth, metrics);
         }
 
         /**
@@ -2803,10 +2794,7 @@ public class ActivityInfo extends ComponentInfo implements Parcelable {
                 return this.minHeight;
             }
 
-            return TypedValue.complexToDimensionPixelSize(
-                    this.complexMinHeight,
-                    metrics
-            );
+            return complexToDimensionPixelSize(complexMinHeight, metrics);
         }
 
         /**
