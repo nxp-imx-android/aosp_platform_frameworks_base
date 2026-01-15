@@ -20,6 +20,7 @@ import android.view.View
 import androidx.core.animation.Animator
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.repeatOnLifecycle
+import com.android.app.animation.Interpolators
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.lifecycle.repeatWhenAttached
 import com.android.systemui.lifecycle.setSnapshotBinding
@@ -56,7 +57,11 @@ object KeyguardStatusBarViewBinder {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
                     viewModel.isVisible.collect { isVisible ->
-                        view.visibility = if (isVisible) View.VISIBLE else View.INVISIBLE
+                        if (isVisible) {
+                            view.show(shouldAnimateChange = true)
+                        } else {
+                            view.hide(shouldAnimateChange = true)
+                        }
                     }
                 }
 
@@ -122,6 +127,48 @@ object KeyguardStatusBarViewBinder {
         }
     }
 
+    private fun View.show(shouldAnimateChange: Boolean) {
+        animate().cancel()
+        if (visibility == View.VISIBLE && alpha >= 1f) {
+            return
+        }
+        visibility = View.VISIBLE
+        if (!shouldAnimateChange) {
+            alpha = 1f
+            return
+        }
+        animate()
+            .alpha(1f)
+            .setDuration(FADE_IN_DURATION.toLong())
+            .setInterpolator(Interpolators.ALPHA_IN)
+            .setStartDelay(FADE_IN_DELAY.toLong())
+            .withEndAction(null)
+    }
+
+    private fun View.hide(nextVisibility: Int = View.INVISIBLE, shouldAnimateChange: Boolean) {
+        animate().cancel()
+
+        if (
+            (visibility == View.INVISIBLE && nextVisibility == View.INVISIBLE) ||
+                (visibility == View.GONE && nextVisibility == View.GONE)
+        ) {
+            return
+        }
+        val isAlreadyHidden = visibility == View.INVISIBLE || visibility == View.GONE
+        if (!shouldAnimateChange || isAlreadyHidden) {
+            alpha = 0f
+            visibility = nextVisibility
+            return
+        }
+
+        animate()
+            .alpha(0f)
+            .setDuration(FADE_OUT_DURATION.toLong())
+            .setStartDelay(0)
+            .setInterpolator(Interpolators.ALPHA_OUT)
+            .withEndAction { visibility = nextVisibility }
+    }
+
     private fun SystemEventAnimationState.isAnimatingChip() =
         when (this) {
             AnimatingIn,
@@ -129,4 +176,8 @@ object KeyguardStatusBarViewBinder {
             RunningChipAnim -> true
             else -> false
         }
+
+    const val FADE_IN_DURATION = 320
+    const val FADE_OUT_DURATION = 160
+    const val FADE_IN_DELAY = 50
 }
