@@ -197,8 +197,8 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
     private final DisplayController mDisplayController;
     private final DisplayImeController mDisplayImeController;
     private final ParentContainerCallbacks mParentContainerCallbacks;
-    private final ImePositionProcessor mImePositionProcessor;
-    private final ResizingEffectPolicy mSurfaceEffectPolicy;
+    @VisibleForTesting ImePositionProcessor mImePositionProcessor;
+    @VisibleForTesting ResizingEffectPolicy mSurfaceEffectPolicy;
     private final ShellTaskOrganizer mTaskOrganizer;
     private final InsetsState mInsetsState = new InsetsState();
     private final DesktopState mDesktopState;
@@ -209,7 +209,7 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
     private WindowContainerToken mWinToken1;
     private WindowContainerToken mWinToken2;
     private int mDividerPosition;
-    private boolean mInitialized = false;
+    @VisibleForTesting boolean mInitialized = false;
     private boolean mFreezeDividerWindow = false;
     private boolean mIsLargeScreen = false;
     private int mOrientation;
@@ -514,12 +514,14 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
         final int density = configuration.densityDpi;
         final int uiMode = configuration.uiMode;
         final boolean wasLeftRightSplit = mIsLeftRightSplit;
+        final int oldDisplayId = mContext.getDisplayId();
 
         if (mOrientation == orientation
                 && mRotation == rotation
                 && mDensity == density
                 && mUiMode == uiMode
-                && mRootBounds.equals(rootBounds)) {
+                && mRootBounds.equals(rootBounds)
+                && oldDisplayId == displayId) {
             return false;
         }
 
@@ -527,10 +529,19 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
                 && mDisplayController.getDisplayContext(displayId) != null
                 ? mDisplayController.getDisplayContext(displayId) : mContext;
         mContext = displayContext.createConfigurationContext(configuration);
+
         if ((enableNonDefaultDisplaySplitBugfix())) {
             mSplitWindowManager.updateDisplayContext(mContext);
         }
         mSplitWindowManager.setConfiguration(configuration);
+
+        if (displayId != oldDisplayId) {
+            // Recreate ResizingEffectPolicy to disable the dim layer on connected displays
+            int parallaxType = (Flags.enableFlexibleTwoAppSplit() && displayId == DEFAULT_DISPLAY)
+                    ? PARALLAX_FLEX_HYBRID : PARALLAX_ALIGN_CENTER;
+            mSurfaceEffectPolicy = new ResizingEffectPolicy(parallaxType, this);
+        }
+
         mOrientation = orientation;
         mTempRect.set(mRootBounds);
         mRootBounds.set(rootBounds);
