@@ -60,6 +60,7 @@ import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 
+import android.annotation.NonNull;
 import android.app.ActivityManager;
 import android.app.ActivityTaskManager;
 import android.app.AppOpsManager;
@@ -70,13 +71,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
-import android.content.res.Resources;
 import android.hardware.display.DisplayManagerInternal;
 import android.hardware.input.InputManager;
 import android.hardware.input.KeyGestureEvent;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.PowerManager;
 import android.os.PowerManagerInternal;
 import android.os.SystemProperties;
@@ -859,7 +859,8 @@ public class PhoneWindowManagerTests {
                         anyInt(),
                         any(Handler.class),
                         any(UserHandle.class));
-        delegate.bindService(mContext);
+        Handler mockHandler = mock(Handler.class);
+        delegate.bindService(mContext, mockHandler);
 
         verify(mContext)
                 .bindServiceAsUser(
@@ -912,9 +913,10 @@ public class PhoneWindowManagerTests {
             super(context, funcs);
         }
 
+        @NonNull
         @Override
         KeyguardServiceDelegate getKeyguardServiceDelegate(
-                KeyguardServiceDelegate.StateCallback callbacks) {
+                @NonNull KeyguardServiceDelegate.StateCallback callbacks) {
             return mKeyguardServiceDelegate;
         }
 
