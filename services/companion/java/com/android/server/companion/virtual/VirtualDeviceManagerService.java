@@ -115,6 +115,10 @@ public class VirtualDeviceManagerService extends SystemService {
 
     private static final String VIRTUAL_DEVICE_NATIVE_SERVICE = "virtualdevice_native";
 
+    private static final String DEVICE_PROFILE_UNKNOWN = "DEVICE_PROFILE_UNKNOWN";
+    private static final String DEVICE_PROFILE_SYSTEM = "DEVICE_PROFILE_SYSTEM";
+    private static final String DEVICE_PROFILE_COMPUTER_CONTROL = "DEVICE_PROFILE_COMPUTER_CONTROL";
+
     private static final List<String> VIRTUAL_DEVICE_COMPANION_DEVICE_PROFILES = Arrays.asList(
             AssociationRequest.DEVICE_PROFILE_AUTOMOTIVE_PROJECTION,
             AssociationRequest.DEVICE_PROFILE_APP_STREAMING,
@@ -207,7 +211,8 @@ public class VirtualDeviceManagerService extends SystemService {
                         (token, attributionSource, params) ->
                                 new VirtualDeviceManager.VirtualDevice(context,
                                         mImpl.createLocalVirtualDevice(
-                                                token, attributionSource, params)));
+                                                token, attributionSource, params,
+                                                DEVICE_PROFILE_COMPUTER_CONTROL)));
         mAutomatedPackagesRepository = new AutomatedPackagesRepository(mHandler);
     }
 
@@ -575,18 +580,19 @@ public class VirtualDeviceManagerService extends SystemService {
                 }
             }
             return createVirtualDevice(token, attributionSource, associationInfo, params,
-                    activityListener, soundEffectListener);
+                    activityListener, soundEffectListener, /* deviceProfile= */ null);
         }
 
         private IVirtualDevice createLocalVirtualDevice(
                 IBinder token,
                 AttributionSource attributionSource,
-                @NonNull VirtualDeviceParams params) {
+                @NonNull VirtualDeviceParams params,
+                @NonNull String deviceProfile) {
             IVirtualDeviceActivityListener stubActivityListener =
                     new IVirtualDeviceActivityListener.Default();
             return createVirtualDevice(token, attributionSource, /* associationInfo= */ null,
                     params, /* activityListener= */ stubActivityListener,
-                    /* soundEffectListener= */ null);
+                    /* soundEffectListener= */ null, deviceProfile);
         }
 
         private IVirtualDevice createVirtualDevice(
@@ -595,7 +601,8 @@ public class VirtualDeviceManagerService extends SystemService {
                 @Nullable AssociationInfo associationInfo,
                 @NonNull VirtualDeviceParams params,
                 @NonNull IVirtualDeviceActivityListener activityListener,
-                @Nullable IVirtualDeviceSoundEffectListener soundEffectListener) {
+                @Nullable IVirtualDeviceSoundEffectListener soundEffectListener,
+                @Nullable String deviceProfile) {
             attributionSource.enforceCallingUid();
 
             final String packageName = attributionSource.getPackageName();
@@ -611,9 +618,11 @@ public class VirtualDeviceManagerService extends SystemService {
                     getCameraAccessController(userHandle, params,
                             attributionSource.getPackageName());
             final int deviceId = sNextUniqueIndex.getAndIncrement();
+            final String profile = computeDeviceProfile(associationInfo, deviceProfile);
             VirtualDeviceImpl virtualDevice = new VirtualDeviceImpl(getContext(), associationInfo,
                     VirtualDeviceManagerService.this, mVirtualDeviceLog, token, attributionSource,
-                    deviceId, cameraAccessController, mPendingTrampolineCallback, activityListener,
+                    deviceId, profile, cameraAccessController, mPendingTrampolineCallback,
+                    activityListener,
                     soundEffectListener, params);
             Counter.logIncrement("virtual_devices.value_virtual_devices_created_count");
 
@@ -843,8 +852,26 @@ public class VirtualDeviceManagerService extends SystemService {
                 virtualDevicesSnapshot.get(i).dump(fd, fout, args);
             }
 
+            fout.println();
+            fout.println("ComputerControlSessionProcessor: ");
+            mComputerControlSessionProcessor.dump(fd, fout, args);
+
+            fout.println();
             mVirtualDeviceLog.dump(fout);
         }
+    }
+
+    private String computeDeviceProfile(@Nullable AssociationInfo associationInfo,
+            @Nullable String deviceProfile) {
+        if (deviceProfile != null) {
+            return deviceProfile;
+        }
+
+        if (associationInfo != null) {
+            return associationInfo.getDeviceProfile();
+        }
+
+        return DEVICE_PROFILE_UNKNOWN;
     }
 
     final class VirtualDeviceManagerNativeImpl extends IVirtualDeviceManagerNative.Stub {
@@ -886,7 +913,8 @@ public class VirtualDeviceManagerService extends SystemService {
                     /* associationInfo= */ null,
                     params,
                     /* activityListener= */ stubActivityListener,
-                    /* soundEffectListener= */ null);
+                    /* soundEffectListener= */ null,
+                    DEVICE_PROFILE_SYSTEM);
             return new VirtualDeviceManager.VirtualDevice(getContext(), virtualDevice);
         }
 

@@ -94,6 +94,8 @@ import com.android.server.pm.UserManagerInternal;
 import com.android.server.wm.ActivityTaskManagerInternal;
 import com.android.server.wm.WindowManagerInternal;
 
+import java.io.FileDescriptor;
+import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -186,6 +188,21 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     private final VirtualDpad mVirtualDpad;
     private final ComputerControlAudioCapture mAudioCapture;
     private final ComputerControlAudioInjector mAudioInjector;
+
+    @Override
+    protected void dump(@androidx.annotation.NonNull FileDescriptor fd,
+            @androidx.annotation.NonNull PrintWriter fout,
+            @androidx.annotation.Nullable String[] args) {
+        String indent = "        ";
+        fout.print(indent);
+
+        fout.print("ComupterControlSession {");
+        fout.print(" mDeviceId=" + mVirtualDeviceId);
+        fout.print(" mOwnerPackageName=" + mOwnerPackageName);
+        fout.print("}");
+        fout.print("\n");
+    }
+
     private final ScheduledExecutorService mScheduler =
             Executors.newSingleThreadScheduledExecutor();
     /** Executor for the shared FgThread. */

@@ -62,6 +62,8 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.LocalServices;
 import com.android.server.ServiceThread;
 
+import java.io.FileDescriptor;
+import java.io.PrintWriter;
 import java.util.Objects;
 
 /**
@@ -360,6 +362,21 @@ public final class ComputerControlSessionProcessor {
                                         ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED)
                                 .toBundle(),
                         UserHandle.CURRENT));
+    }
+
+    /**
+     * Dump debug information about the state of ComputerControl sessions.
+     */
+    public void dump(@NonNull FileDescriptor fd, @NonNull PrintWriter fout,
+            @Nullable String[] args) {
+        String indent = "    ";
+        fout.println(indent + "Maximum Concurrent Sessions: " + MAXIMUM_CONCURRENT_SESSIONS);
+        fout.println(indent + "Active computer control sessions: ");
+        synchronized (mSessions) {
+            for (int i = 0; i < mSessions.size(); i++) {
+                mSessions.valueAt(i).dump(fd, fout, args);
+            }
+        }
     }
 
     private final class ConsentResultReceiver extends ResultReceiver {
