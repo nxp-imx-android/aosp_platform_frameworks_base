@@ -620,6 +620,7 @@ android_library {
         "SystemUI-core",
         "com.android.systemui.pods-api-aosp-handheld",
         "com.android.systemui.pods-impl-aosp-handheld",
+        "dagger2",
     ],
     enable_ksp: true,
     annotation_processor_flags: [
