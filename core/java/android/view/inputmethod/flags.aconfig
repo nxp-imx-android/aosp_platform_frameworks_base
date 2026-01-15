@@ -281,3 +281,13 @@ flag {
   description: "IME Switcher Menu large screen UI adjustments"
   bug: "443854916"
 }
+
+flag {
+  name: "limit_subtype_count"
+  namespace: "input_method"
+  description: "Limits the number of subtypes per ime"
+  bug: "456008595"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}

@@ -114,6 +114,11 @@ public final class InputMethodInfo implements Parcelable {
     @SuppressLint("MinMaxConstant")
     public static final int MAX_IMES_PER_PACKAGE = 20;
 
+    /**
+     * The maximum number of subtypes per IME.
+     */
+    static final int MAX_SUBTYPES_PER_IME = 1500;
+
     static final String TAG = "InputMethodInfo";
 
     /**

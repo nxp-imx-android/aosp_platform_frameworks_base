@@ -56,6 +56,9 @@ import java.util.Objects;
  * <a href="{@docRoot}guide/topics/text/creating-input-method.html">
  * Creating an Input Method</a>.</p>
  *
+ * <p>Starting from Android 17, the number of subtypes that a single input method editor can declare
+ * is limited up to 1500.</p>
+ *
  * @see InputMethodInfo
  *
  * @attr ref android.R.styleable#InputMethod_Subtype_label
