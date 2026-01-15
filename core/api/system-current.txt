@@ -16594,6 +16594,8 @@ package android.telephony {
     method @NonNull @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE) public android.net.Uri getSmscIdentity();
     method @Deprecated @RequiresPermission(android.Manifest.permission.MODIFY_CELL_BROADCASTS) public void resetAllCellBroadcastRanges();
     method @RequiresPermission(android.Manifest.permission.MODIFY_PHONE_STATE) public void sendMultipartTextMessageWithoutPersisting(String, String, java.util.List<java.lang.String>, java.util.List<android.app.PendingIntent>, java.util.List<android.app.PendingIntent>);
+    method @FlaggedApi("com.android.internal.telephony.flags.message_promotion") @RequiresPermission(allOf={android.Manifest.permission.MODIFY_PHONE_STATE, android.Manifest.permission.SEND_SMS}) public void sendStoredMultipartTextMessage(@NonNull android.net.Uri, @Nullable java.util.List<android.app.PendingIntent>, @Nullable java.util.List<android.app.PendingIntent>);
+    method @FlaggedApi("com.android.internal.telephony.flags.message_promotion") @RequiresPermission(allOf={android.Manifest.permission.MODIFY_PHONE_STATE, android.Manifest.permission.SEND_SMS}) public void sendStoredTextMessage(@NonNull android.net.Uri, @Nullable android.app.PendingIntent, @Nullable android.app.PendingIntent);
     method @RequiresPermission(android.Manifest.permission.MODIFY_PHONE_STATE) public void setPremiumSmsConsent(@NonNull String, int);
     field public static final int PREMIUM_SMS_CONSENT_ALWAYS_ALLOW = 3; // 0x3
     field public static final int PREMIUM_SMS_CONSENT_ASK_USER = 1; // 0x1

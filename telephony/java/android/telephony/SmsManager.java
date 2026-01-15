@@ -870,19 +870,74 @@ public final class SmsManager {
      * @param contentUri the uri of the stored message.
      * @param sentIntent if not null this <code>PendingIntent</code> is broadcast when the message
      *                   is successfully sent, or failed. The result code will be
-     *                   <code>Activity.RESULT_OK</code> for success, or the relevant error for
-     *                   failure.<br>
+     *                   <code>Activity.RESULT_OK</code> for success, or one of these errors:<br>
+     *                   <code>RESULT_ERROR_GENERIC_FAILURE</code><br>
+     *                   <code>RESULT_ERROR_RADIO_OFF</code><br>
+     *                   <code>RESULT_ERROR_NULL_PDU</code><br>
+     *                   <code>RESULT_ERROR_NO_SERVICE</code><br>
+     *                   <code>RESULT_ERROR_LIMIT_EXCEEDED</code><br>
+     *                   <code>RESULT_ERROR_FDN_CHECK_FAILURE</code><br>
+     *                   <code>RESULT_ERROR_SHORT_CODE_NOT_ALLOWED</code><br>
+     *                   <code>RESULT_ERROR_SHORT_CODE_NEVER_ALLOWED</code><br>
+     *                   <code>RESULT_RADIO_NOT_AVAILABLE</code><br>
+     *                   <code>RESULT_NETWORK_REJECT</code><br>
+     *                   <code>RESULT_INVALID_ARGUMENTS</code><br>
+     *                   <code>RESULT_INVALID_STATE</code><br>
+     *                   <code>RESULT_NO_MEMORY</code><br>
+     *                   <code>RESULT_INVALID_SMS_FORMAT</code><br>
+     *                   <code>RESULT_SYSTEM_ERROR</code><br>
+     *                   <code>RESULT_MODEM_ERROR</code><br>
+     *                   <code>RESULT_NETWORK_ERROR</code><br>
+     *                   <code>RESULT_ENCODING_ERROR</code><br>
+     *                   <code>RESULT_INVALID_SMSC_ADDRESS</code><br>
+     *                   <code>RESULT_OPERATION_NOT_ALLOWED</code><br>
+     *                   <code>RESULT_INTERNAL_ERROR</code><br>
+     *                   <code>RESULT_NO_RESOURCES</code><br>
+     *                   <code>RESULT_CANCELLED</code><br>
+     *                   <code>RESULT_REQUEST_NOT_SUPPORTED</code><br>
+     *                   <code>RESULT_NO_BLUETOOTH_SERVICE</code><br>
+     *                   <code>RESULT_INVALID_BLUETOOTH_ADDRESS</code><br>
+     *                   <code>RESULT_BLUETOOTH_DISCONNECTED</code><br>
+     *                   <code>RESULT_UNEXPECTED_EVENT_STOP_SENDING</code><br>
+     *                   <code>RESULT_SMS_BLOCKED_DURING_EMERGENCY</code><br>
+     *                   <code>RESULT_SMS_SEND_RETRY_FAILED</code><br>
+     *                   <code>RESULT_REMOTE_EXCEPTION</code><br>
+     *                   <code>RESULT_NO_DEFAULT_SMS_APP</code><br>
+     *                   <code>RESULT_RIL_RADIO_NOT_AVAILABLE</code><br>
+     *                   <code>RESULT_RIL_SMS_SEND_FAIL_RETRY</code><br>
+     *                   <code>RESULT_RIL_NETWORK_REJECT</code><br>
+     *                   <code>RESULT_RIL_INVALID_STATE</code><br>
+     *                   <code>RESULT_RIL_INVALID_ARGUMENTS</code><br>
+     *                   <code>RESULT_RIL_NO_MEMORY</code><br>
+     *                   <code>RESULT_RIL_REQUEST_RATE_LIMITED</code><br>
+     *                   <code>RESULT_RIL_INVALID_SMS_FORMAT</code><br>
+     *                   <code>RESULT_RIL_SYSTEM_ERR</code><br>
+     *                   <code>RESULT_RIL_ENCODING_ERR</code><br>
+     *                   <code>RESULT_RIL_INVALID_SMSC_ADDRESS</code><br>
+     *                   <code>RESULT_RIL_MODEM_ERR</code><br>
+     *                   <code>RESULT_RIL_NETWORK_ERR</code><br>
+     *                   <code>RESULT_RIL_INTERNAL_ERR</code><br>
+     *                   <code>RESULT_RIL_REQUEST_NOT_SUPPORTED</code><br>
+     *                   <code>RESULT_RIL_INVALID_MODEM_STATE</code><br>
+     *                   <code>RESULT_RIL_NETWORK_NOT_READY</code><br>
+     *                   <code>RESULT_RIL_OPERATION_NOT_ALLOWED</code><br>
+     *                   <code>RESULT_RIL_NO_RESOURCES</code><br>
+     *                   <code>RESULT_RIL_CANCELLED</code><br>
+     *                   <code>RESULT_RIL_SIM_ABSENT</code><br>
+     *                   <code>RESULT_RIL_SIMULTANEOUS_SMS_AND_CALL_NOT_ALLOWED</code><br>
+     *                   <code>RESULT_RIL_ACCESS_BARRED</code><br>
+     *                   <code>RESULT_RIL_BLOCKED_DUE_TO_CALL</code><br>
      * @param deliveryIntent if not null this <code>PendingIntent</code> is broadcast when the
      *                       message is delivered to the recipient. The raw pdu of the status
      *                       report is in the extended data ("pdu").
      * @hide
      */
-    // TODO(b/475112104): make this a system api
     @RequiresPermission(allOf = {
             android.Manifest.permission.MODIFY_PHONE_STATE,
             android.Manifest.permission.SEND_SMS
     })
     @RequiresFeature(PackageManager.FEATURE_TELEPHONY_MESSAGING)
+    @SystemApi
     @FlaggedApi(FLAG_MESSAGE_PROMOTION)
     public void sendStoredTextMessage(
             @NonNull Uri contentUri,
@@ -917,20 +972,85 @@ public final class SmsManager {
      *  {@link PackageManager#FEATURE_TELEPHONY_MESSAGING}.
      *
      * @param contentUri the uri of the stored message.
-     * @param sentIntents if not null, a <code>List</code> of <code>PendingIntent</code>s (one for
-     *                    each message part) that is broadcast when the corresponding message part
-     *                    has been sent.
-     * @param deliveryIntents if not null, a <code>List</code> of <code>PendingIntent</code>s
-     *                        (one for each message part) that is broadcast when the corresponding
-     *                        message part has been delivered to the recipient.
+     * @param sentIntents if not null, a <code>List</code> of <code>PendingIntent</code>s. Each
+     *                    {@link PendingIntent} in the list corresponds to a single part of the
+     *                    multipart message. The order of {@link PendingIntent}s in this list
+     *                    matches the order of the message parts which are created by calling
+     *                    <code>divideMessage</code>. The {@link PendingIntent} at index {@code i}
+     *                    will be broadcast when the message part at index {@code i} is
+     *                    successfully sent, or failed. The result code will be
+     *                    <code>Activity.RESULT_OK</code> for success, or one of these errors:<br>
+     *                    <code>RESULT_ERROR_GENERIC_FAILURE</code><br>
+     *                    <code>RESULT_ERROR_RADIO_OFF</code><br>
+     *                    <code>RESULT_ERROR_NULL_PDU</code><br>
+     *                    <code>RESULT_ERROR_NO_SERVICE</code><br>
+     *                    <code>RESULT_ERROR_LIMIT_EXCEEDED</code><br>
+     *                    <code>RESULT_ERROR_FDN_CHECK_FAILURE</code><br>
+     *                    <code>RESULT_ERROR_SHORT_CODE_NOT_ALLOWED</code><br>
+     *                    <code>RESULT_ERROR_SHORT_CODE_NEVER_ALLOWED</code><br>
+     *                    <code>RESULT_RADIO_NOT_AVAILABLE</code><br>
+     *                    <code>RESULT_NETWORK_REJECT</code><br>
+     *                    <code>RESULT_INVALID_ARGUMENTS</code><br>
+     *                    <code>RESULT_INVALID_STATE</code><br>
+     *                    <code>RESULT_NO_MEMORY</code><br>
+     *                    <code>RESULT_INVALID_SMS_FORMAT</code><br>
+     *                    <code>RESULT_SYSTEM_ERROR</code><br>
+     *                    <code>RESULT_MODEM_ERROR</code><br>
+     *                    <code>RESULT_NETWORK_ERROR</code><br>
+     *                    <code>RESULT_ENCODING_ERROR</code><br>
+     *                    <code>RESULT_INVALID_SMSC_ADDRESS</code><br>
+     *                    <code>RESULT_OPERATION_NOT_ALLOWED</code><br>
+     *                    <code>RESULT_INTERNAL_ERROR</code><br>
+     *                    <code>RESULT_NO_RESOURCES</code><br>
+     *                    <code>RESULT_CANCELLED</code><br>
+     *                    <code>RESULT_REQUEST_NOT_SUPPORTED</code><br>
+     *                    <code>RESULT_NO_BLUETOOTH_SERVICE</code><br>
+     *                    <code>RESULT_INVALID_BLUETOOTH_ADDRESS</code><br>
+     *                    <code>RESULT_BLUETOOTH_DISCONNECTED</code><br>
+     *                    <code>RESULT_UNEXPECTED_EVENT_STOP_SENDING</code><br>
+     *                    <code>RESULT_SMS_BLOCKED_DURING_EMERGENCY</code><br>
+     *                    <code>RESULT_SMS_SEND_RETRY_FAILED</code><br>
+     *                    <code>RESULT_REMOTE_EXCEPTION</code><br>
+     *                    <code>RESULT_NO_DEFAULT_SMS_APP</code><br>
+     *                    <code>RESULT_RIL_RADIO_NOT_AVAILABLE</code><br>
+     *                    <code>RESULT_RIL_SMS_SEND_FAIL_RETRY</code><br>
+     *                    <code>RESULT_RIL_NETWORK_REJECT</code><br>
+     *                    <code>RESULT_RIL_INVALID_STATE</code><br>
+     *                    <code>RESULT_RIL_INVALID_ARGUMENTS</code><br>
+     *                    <code>RESULT_RIL_NO_MEMORY</code><br>
+     *                    <code>RESULT_RIL_REQUEST_RATE_LIMITED</code><br>
+     *                    <code>RESULT_RIL_INVALID_SMS_FORMAT</code><br>
+     *                    <code>RESULT_RIL_SYSTEM_ERR</code><br>
+     *                    <code>RESULT_RIL_ENCODING_ERR</code><br>
+     *                    <code>RESULT_RIL_INVALID_SMSC_ADDRESS</code><br>
+     *                    <code>RESULT_RIL_MODEM_ERR</code><br>
+     *                    <code>RESULT_RIL_NETWORK_ERR</code><br>
+     *                    <code>RESULT_RIL_INTERNAL_ERR</code><br>
+     *                    <code>RESULT_RIL_REQUEST_NOT_SUPPORTED</code><br>
+     *                    <code>RESULT_RIL_INVALID_MODEM_STATE</code><br>
+     *                    <code>RESULT_RIL_NETWORK_NOT_READY</code><br>
+     *                    <code>RESULT_RIL_OPERATION_NOT_ALLOWED</code><br>
+     *                    <code>RESULT_RIL_NO_RESOURCES</code><br>
+     *                    <code>RESULT_RIL_CANCELLED</code><br>
+     *                    <code>RESULT_RIL_SIM_ABSENT</code><br>
+     *                    <code>RESULT_RIL_SIMULTANEOUS_SMS_AND_CALL_NOT_ALLOWED</code><br>
+     *                    <code>RESULT_RIL_ACCESS_BARRED</code><br>
+     *                    <code>RESULT_RIL_BLOCKED_DUE_TO_CALL</code><br>
+     * @param deliveryIntents if not null, a <code>List</code> of <code>PendingIntent</code>s. Each
+     *                        {@link PendingIntent} in the list corresponds to a single part of the
+     *                        multipart message. The order of {@link PendingIntent}s in this list
+     *                        matches the order of the message parts which are created by calling
+     *                        <code>divideMessage</code>. The {@link PendingIntent} at index
+     *                        {@code i} will be broadcast when the message part at index {@code i}
+     *                        is successfully delivered to the recipient.
      * @hide
      */
-    // TODO(b/475112104): make this a system api
     @RequiresPermission(allOf = {
             android.Manifest.permission.MODIFY_PHONE_STATE,
             android.Manifest.permission.SEND_SMS
     })
     @RequiresFeature(PackageManager.FEATURE_TELEPHONY_MESSAGING)
+    @SystemApi
     @FlaggedApi(FLAG_MESSAGE_PROMOTION)
     public void sendStoredMultipartTextMessage(
             @NonNull Uri contentUri,
