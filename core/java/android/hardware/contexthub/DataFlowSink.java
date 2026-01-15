@@ -333,11 +333,11 @@ public final class DataFlowSink implements AutoCloseable {
         try (ApiGuard guard = acquireApiGuard()) {
             if (mConfig.getFormat() == DataFlowDataConfig.FORMAT_FIXED_SIZE
                     && offsetFromSource % mConfig.getElementSize() != 0) {
-                throw new IllegalStateException(
+                throw new IllegalArgumentException(
                         "seekToSource() offset must be a multiple of the element size for"
                                 + " fixed-size element data flows.");
             } else if (offsetFromSource > size()) {
-                throw new IllegalStateException(
+                throw new IllegalArgumentException(
                         "seekToSource() offset must be less than or equal to the current size of"
                                 + " the data flow.");
             }
