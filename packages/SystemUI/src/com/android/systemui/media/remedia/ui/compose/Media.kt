@@ -262,7 +262,13 @@ private fun CardCarouselContent(
     modifier: Modifier = Modifier,
     mediaSquishiness: () -> Float,
 ) {
-    val carouselState = rememberCarouselState { viewModel.cards.size }
+    val carouselState = rememberCarouselState {
+        if (behavior.isCarouselScrollingEnabled) {
+            viewModel.cards.size
+        } else {
+            1
+        }
+    }
     var userTappedIndex by remember { mutableStateOf<Int?>(null) }
     LaunchedEffect(viewModel.currentIndex) {
         if (viewModel.currentIndex != carouselState.currentItem) {
@@ -319,9 +325,14 @@ private fun CardCarouselContent(
                             )
                         }
                         val presentation =
-                            if (pageIndex == viewModel.currentIndex) {
+                            if (
+                                pageIndex == viewModel.currentIndex ||
+                                    !behavior.isCarouselScrollingEnabled
+                            ) {
                                 presentationStyle
-                            } else MediaPresentationStyle.Thumbnail
+                            } else {
+                                MediaPresentationStyle.Thumbnail
+                            }
                         Card(
                             viewModel = viewModel.cards[pageIndex],
                             cardStyle = presentation,
