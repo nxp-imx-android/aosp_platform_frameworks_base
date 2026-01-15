@@ -21,6 +21,7 @@ import static android.view.WindowManager.LayoutParams.ROTATION_ANIMATION_CROSSFA
 import static android.view.WindowManager.LayoutParams.ROTATION_ANIMATION_JUMPCUT;
 import static android.view.WindowManagerPolicyConstants.SCREEN_FREEZE_LAYER_BASE;
 
+import static com.android.internal.policy.TransitionAnimation.MAX_ANIMATION_DURATION;
 import static com.android.wm.shell.transition.DefaultSurfaceAnimator.buildSurfaceAnimation;
 import static com.android.wm.shell.transition.Transitions.TAG;
 
@@ -74,7 +75,6 @@ import java.util.ArrayList;
  * </ul>
  */
 class ScreenRotationAnimation {
-    static final int MAX_ANIMATION_DURATION = 10 * 1000;
     static final int FLAG_HAS_WALLPAPER = 1;
 
     private final Context mContext;

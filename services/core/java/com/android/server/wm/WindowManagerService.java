@@ -415,11 +415,6 @@ public class WindowManagerService extends IWindowManager.Stub
 
     static final int LAYOUT_REPEAT_THRESHOLD = 4;
 
-    /** The maximum length we will accept for a loaded animation duration:
-     * this is 10 seconds.
-     */
-    static final int MAX_ANIMATION_DURATION = 10 * 1000;
-
     /** Amount of time (in milliseconds) to delay before declaring a window freeze timeout. */
     static final int WINDOW_FREEZE_TIMEOUT_DURATION = 2000;
 
