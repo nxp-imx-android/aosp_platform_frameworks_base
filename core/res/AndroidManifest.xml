@@ -8222,6 +8222,17 @@
     <permission android:name="android.permission.MANAGE_SOUND_TRIGGER"
         android:protectionLevel="signature|privileged|role" />
 
+    <!--
+        Allows an application to manage supervision.
+        <p>Protection level: internal|role
+        <p>Intended for use by the SYSTEM_SUPERVISION and SUPERVISION roles only.
+        @SystemApi
+        @hide
+        @FlaggedApi(android.app.supervision.flags.Flags.FLAG_ENABLE_SUPERVISION_MANAGER_POLICY_APIS)
+    -->
+    <permission android:name="android.permission.MANAGE_SUPERVISION"
+        android:protectionLevel="internal|role" />
+
     <!-- Must be required by system/priv apps to run sound trigger recognition sessions while in
          battery saver mode.
          @hide
