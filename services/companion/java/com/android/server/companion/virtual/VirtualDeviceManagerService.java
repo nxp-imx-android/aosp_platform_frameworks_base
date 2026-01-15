@@ -84,11 +84,14 @@ import android.window.DisplayWindowPolicyController;
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.Initializer;
+import com.android.internal.annotations.SystemServerLock;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.DumpUtils;
+import com.android.internal.util.NamedLock;
 import com.android.internal.widget.LockPatternUtils;
 import com.android.modules.expresslog.Counter;
 import com.android.server.LocalServices;
+import com.android.server.LockGuard;
 import com.android.server.SystemService;
 import com.android.server.companion.virtual.VirtualDeviceImpl.PendingTrampoline;
 import com.android.server.companion.virtual.computercontrol.AutomatedPackagesRepository;
@@ -146,7 +149,8 @@ public class VirtualDeviceManagerService extends SystemService {
      * Making a call to another service while holding this lock creates lock order inversion and
      * will potentially cause a deadlock.
      */
-    private final Object mVirtualDeviceManagerLock = new Object();
+    @SystemServerLock(LockGuard.INDEX_VIRTUAL_DEVICE_MANAGER)
+    private final Object mVirtualDeviceManagerLock = NamedLock.create("VirtualDeviceManager");
 
     @SuppressWarnings("NullAway") // Initialized on start, not in constructor
     private ActivityTaskManagerInternal mActivityTaskManagerInternal;

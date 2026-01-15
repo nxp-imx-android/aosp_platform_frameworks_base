@@ -267,6 +267,7 @@ import android.window.WindowContainerTransaction;
 
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
+import com.android.internal.annotations.SystemServerLock;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.app.IVoiceInteractor;
 import com.android.internal.app.ProcessMap;
@@ -282,6 +283,7 @@ import com.android.internal.util.FrameworkStatsLog;
 import com.android.internal.util.function.pooled.PooledLambda;
 import com.android.server.LocalManagerRegistry;
 import com.android.server.LocalServices;
+import com.android.server.LockGuard;
 import com.android.server.SystemConfig;
 import com.android.server.SystemService;
 import com.android.server.SystemServiceManager;
@@ -412,6 +414,7 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
     final ArrayList<ActivityRecord> mStartingProcessActivities = new ArrayList<>();
 
     /* Global service lock used by the package the owns this service. */
+    @SystemServerLock(LockGuard.INDEX_WINDOW)
     final WindowManagerGlobalLock mGlobalLock = new WindowManagerGlobalLock();
     /**
      * It is the same instance as {@link #mGlobalLock}, just declared as a type that the
@@ -420,6 +423,7 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
      *
      * @see WindowManagerThreadPriorityBooster
      */
+    @SystemServerLock(LockGuard.INDEX_WINDOW)
     final Object mGlobalLockWithoutBoost = mGlobalLock;
     ActivityTaskSupervisor mTaskSupervisor;
     ActivityClientController mActivityClientController;

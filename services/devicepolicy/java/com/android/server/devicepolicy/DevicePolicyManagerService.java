@@ -487,6 +487,7 @@ import android.view.accessibility.IAccessibilityManager;
 import android.view.inputmethod.InputMethodInfo;
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
+import com.android.internal.annotations.SystemServerLock;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.app.LocalePicker;
 import com.android.internal.infra.AndroidFuture;
@@ -509,6 +510,7 @@ import com.android.modules.utils.TypedXmlSerializer;
 import com.android.net.module.util.ProxyUtils;
 import com.android.server.AccessibilityManagerInternal;
 import com.android.server.LocalServices;
+import com.android.server.LockGuard;
 import com.android.server.SystemService;
 import com.android.server.SystemServiceManager;
 import com.android.server.accounts.AccountManagerService;
@@ -1045,6 +1047,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
 
     private final Lock mLock = new Lock();
 
+    @SystemServerLock(LockGuard.INDEX_DPMS)
     final Object getLockObject() {
         return mLock.getLockObject();
     }
