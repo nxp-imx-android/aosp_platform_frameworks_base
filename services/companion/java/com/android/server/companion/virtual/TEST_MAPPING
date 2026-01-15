@@ -26,6 +26,9 @@
       "keywords": ["primary-device"]
     },
     {
+      "name": "CtsVirtualDevicesComputerControlTests"
+    },
+    {
       "name": "CtsHardwareTestCases_cts_tests",
       "file_patterns": ["Virtual[^/]*\\.java"]
     },
