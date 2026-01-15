@@ -225,8 +225,7 @@ class AppCompatCameraOverrides {
      */
     boolean shouldApplyCameraCompatSimReqOrientationTreatment() {
         return DesktopModeFlags.ENABLE_CAMERA_COMPAT_SIMULATE_REQUESTED_ORIENTATION.isTrue()
-                && (shouldEnableCameraCompatSimulateRequestedOrientationTreatmentForApp()
-                || shouldForceEnableCameraCompatSimulateRequestedOrientationTreatment());
+                && shouldEnableCameraCompatSimulateRequestedOrientationTreatmentForApp();
     }
 
     private boolean shouldEnableCameraCompatSimulateRequestedOrientationTreatmentForApp() {
@@ -257,25 +256,10 @@ class AppCompatCameraOverrides {
             return false;
         }
 
-        if (shouldForceEnableCameraCompatSimulateRequestedOrientationTreatment()) {
-            return true;
-        }
-
         return shouldApplyCameraCompatSimReqOrientationTreatment()
                 && mCameraCompatAllowLandscapeToPortraitTreatmentOptProp
                 .shouldEnableWithOptInOverrideAndOptOutProperty(isChangeEnabled(mActivityRecord,
                         CameraManager.OVERRIDE_CAMERA_LANDSCAPE_TO_PORTRAIT));
-    }
-
-    /**
-     * Returns whether camera compat treatment should be enabled for all apps targeted for treatment
-     * (usually fixed-orientation apps).
-     *
-     * <p>This can be enabled via adb only.
-     */
-    private boolean shouldForceEnableCameraCompatSimulateRequestedOrientationTreatment() {
-        return mActivityRecord.mWmService.mAppCompatConfiguration
-                .isCameraCompatSimReqOrientationTreatmentForceEnabled();
     }
 
     boolean isOverrideOrientationOnlyForCameraEnabled() {

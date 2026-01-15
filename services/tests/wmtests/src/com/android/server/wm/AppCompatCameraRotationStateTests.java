@@ -196,7 +196,6 @@ public class AppCompatCameraRotationStateTests extends WindowTestsBase {
         private void setupAppCompatConfiguration() {
             applyOnConf((c) -> {
                 c.enableCameraCompatForceRotateTreatment(true);
-                c.enableCameraCompatForceRotateTreatmentAtBuildTime(true);
             });
         }
 
