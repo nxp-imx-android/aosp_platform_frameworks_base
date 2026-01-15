@@ -6404,6 +6404,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
         val packageInfo = org.mockito.kotlin.mock<PackageInfo>()
         packageInfo.requestedPermissions = arrayOf(SYSTEM_ALERT_WINDOW)
+        packageInfo.requestedPermissionsFlags = intArrayOf(PackageInfo.REQUESTED_PERMISSION_GRANTED)
         whenever(
                 packageManager.getPackageInfoAsUser(
                     anyString(),
