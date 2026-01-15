@@ -24,6 +24,7 @@ import static android.hardware.serial.SerialPort.OPEN_FLAG_READ_WRITE;
 import static android.hardware.serial.SerialPort.OPEN_FLAG_SYNC;
 import static android.hardware.serial.SerialPort.OPEN_FLAG_WRITE_ONLY;
 import static android.hardware.serial.flags.Flags.enableWiredSerialApi;
+import static android.hardware.serial.flags.Flags.persistentAccess;
 
 import android.Manifest;
 import android.annotation.NonNull;
@@ -55,6 +56,7 @@ import android.util.SparseArray;
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.os.BackgroundThread;
 import com.android.internal.util.DumpUtils;
 import com.android.server.LocalServices;
 import com.android.server.SystemService;
@@ -101,6 +103,8 @@ public class SerialManagerService extends ISerialManager.Stub implements
 
     private final SerialUserAccessManagerFactory mAccessManagerFactory;
 
+    private final PortAccessSerializerInterface mPortAccessSerializer;
+
     private final Object mLock = new Object();
 
     // Binder proxy for the native serial service.
@@ -127,20 +131,23 @@ public class SerialManagerService extends ISerialManager.Stub implements
                 context.getResources().getString(R.string.config_portAccessDialogComponent),
                 () -> android.hardware.serialservice.ISerialManager.Stub.asInterface(
                         ServiceManager.getService(NATIVE_SERIAL_SERVICE_NAME)),
-                SerialUserAccessManager::new);
+                SerialUserAccessManager::new,
+                new PortAccessSerializer(BackgroundThread.getExecutor()));
     }
 
     @VisibleForTesting
     SerialManagerService(Context context, String[] portsInConfig, String[] blockedPortsInConfig,
             String dialogComponent,
             Supplier<android.hardware.serialservice.ISerialManager> nativeServiceSupplier,
-            SerialUserAccessManagerFactory accessManagerFactory) {
+            SerialUserAccessManagerFactory accessManagerFactory,
+            PortAccessSerializerInterface portAccessSerializer) {
         mContext = context;
         mDialogComponent = dialogComponent;
         mPortsInConfig = stripDevPrefix(portsInConfig);
         mBlockedPortsInConfig = stripDevPrefix(blockedPortsInConfig);
         mNativeServiceSupplier = nativeServiceSupplier;
         mAccessManagerFactory = accessManagerFactory;
+        mPortAccessSerializer = portAccessSerializer;
     }
 
     private static String[] stripDevPrefix(String[] portPaths) {
@@ -198,10 +205,25 @@ public class SerialManagerService extends ISerialManager.Stub implements
         }
     }
 
+    private void onUserUnlocking(int userId) {
+        synchronized (mLock) {
+            final SerialUserAccessManagerInterface accessManager = createAccessManager(userId);
+            mAccessManagerPerUser.put(userId, accessManager);
+        }
+    }
+
+    private void onUserStopping(int userId) {
+        final SerialUserAccessManagerInterface accessManager;
+        synchronized (mLock) {
+            accessManager = mAccessManagerPerUser.removeReturnOld(userId);
+        }
+        accessManager.onUserStopping();
+    }
+
     @Override
     @RequiresPermission(Manifest.permission.MANAGE_SERIAL_PORTS)
     public void grantSerialPortAccess(
-            @NonNull String serialPort, int uid, @Nullable IBinder token) {
+            @NonNull String serialPort, int uid, boolean persistent, @Nullable IBinder token) {
         mContext.enforceCallingPermission(
                 Manifest.permission.MANAGE_SERIAL_PORTS,
                 "The caller doesn't have MANAGE_SERIAL_PORTS permission.");
@@ -219,7 +241,7 @@ public class SerialManagerService extends ISerialManager.Stub implements
             traceBegin("grantSerialPortAccess", 0);
             final @UserIdInt int userId = UserHandle.getUserId(uid);
             final SerialUserAccessManagerInterface accessManager = getOrCreateAccessManager(userId);
-            accessManager.grantAccess(serialPort, uid, token);
+            accessManager.grantAccess(serialPort, uid, persistent, token);
             traceEnd(0);
         }
     }
@@ -227,7 +249,7 @@ public class SerialManagerService extends ISerialManager.Stub implements
     @Override
     @RequiresPermission(Manifest.permission.MANAGE_SERIAL_PORTS)
     public void revokeSerialPortAccess(
-            @NonNull String serialPort, int uid, @Nullable IBinder token) {
+            @NonNull String serialPort, int uid, boolean persistent, @Nullable IBinder token) {
         mContext.enforceCallingPermission(
                 Manifest.permission.MANAGE_SERIAL_PORTS,
                 "The caller doesn't have MANAGE_SERIAL_PORTS permission.");
@@ -236,7 +258,7 @@ public class SerialManagerService extends ISerialManager.Stub implements
             // We always allow to revoke access to a port, even if it is unplugged.
             final @UserIdInt int userId = UserHandle.getUserId(uid);
             final SerialUserAccessManagerInterface accessManager = getOrCreateAccessManager(userId);
-            accessManager.revokeAccess(serialPort, uid, token);
+            accessManager.revokeAccess(serialPort, uid, persistent, token);
             traceEnd(0);
         }
     }
@@ -300,7 +322,18 @@ public class SerialManagerService extends ISerialManager.Stub implements
         if (accessManager != null) {
             return accessManager;
         }
-        accessManager = mAccessManagerFactory.create(mContext, mPortsInConfig, mDialogComponent);
+        return createAccessManager(userId);
+    }
+
+    @GuardedBy("mLock")
+    private SerialUserAccessManagerInterface createAccessManager(int userId) {
+        SerialUserAccessManagerInterface accessManager = mAccessManagerPerUser.get(userId);
+        if (accessManager != null) {
+            Slog.wtf(TAG, "There is an access manager for user " + userId);
+            return accessManager;
+        }
+        accessManager = mAccessManagerFactory.create(
+                mContext, mPortsInConfig, mDialogComponent, mPortAccessSerializer, userId);
         mAccessManagerPerUser.put(userId, accessManager);
         return accessManager;
     }
@@ -491,7 +524,14 @@ public class SerialManagerService extends ISerialManager.Stub implements
      */
     void clearUserAccess() {
         synchronized (mLock) {
-            mAccessManagerPerUser.clear();
+            if (persistentAccess()) {
+                for (int i = 0; i < mAccessManagerPerUser.size(); ++i) {
+                    mAccessManagerPerUser.valueAt(i).clearUserAccess(
+                            mAccessManagerPerUser.keyAt(i));
+                }
+            } else {
+                mAccessManagerPerUser.clear();
+            }
         }
     }
 
@@ -510,11 +550,12 @@ public class SerialManagerService extends ISerialManager.Stub implements
 
     interface SerialUserAccessManagerFactory {
         SerialUserAccessManagerInterface create(Context context, String[] portsInConfig,
-                String dialogComponent);
+                String dialogComponent, PortAccessSerializerInterface serializer, int userId);
     }
 
     public static class Lifecycle extends SystemService {
         private final Context mContext;
+        private SerialManagerService mService;
 
         public Lifecycle(@NonNull Context context) {
             super(context);
@@ -525,9 +566,26 @@ public class SerialManagerService extends ISerialManager.Stub implements
         public void onStart() {
             if (enableWiredSerialApi()) {
                 traceBegin("createSerialManager", 0);
-                publishBinderService(Context.SERIAL_SERVICE, new SerialManagerService(mContext));
+                mService = new SerialManagerService(mContext);
+                publishBinderService(Context.SERIAL_SERVICE, mService);
                 traceEnd(0);
             }
+        }
+
+        @Override
+        public void onUserUnlocking(@NonNull TargetUser user) {
+            if (!persistentAccess()) {
+                return;
+            }
+            mService.onUserUnlocking(user.getUserIdentifier());
+        }
+
+        @Override
+        public void onUserStopping(@NonNull TargetUser user) {
+            if (!persistentAccess()) {
+                return;
+            }
+            mService.onUserStopping(user.getUserIdentifier());
         }
     }
 }

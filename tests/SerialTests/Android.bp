@@ -35,6 +35,7 @@ android_test {
         "frameworks-base-testutils",
         "mockito-kotlin-nodeps",
         "mockito-target-minus-junit4",
+        "platform-parametric-runner-lib",
         "platform-test-annotations",
         "services.core",
         "services.serial",
