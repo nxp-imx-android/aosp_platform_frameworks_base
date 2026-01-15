@@ -26,6 +26,7 @@ import android.annotation.Nullable;
 import android.annotation.UserIdInt;
 import android.app.AppOpsManager;
 import android.content.Intent;
+import android.content.pm.Flags;
 import android.content.pm.SuspendDialogInfo;
 import android.content.pm.UserPackage;
 import android.os.Binder;
@@ -576,6 +577,13 @@ public final class SuspendPackageHelper {
                 if (packageName.equals(requiredDeveloperVerificationServiceProviderPackage)) {
                     Slog.w(TAG, "Cannot suspend package \"" + packageName
                             + "\": required for package verification service");
+                    continue;
+                }
+                if (Flags.protectSystemRequiredPackages()
+                        && mPm.isRequiredSystemPackageThatCallerCannotControl(
+                                snapshot, packageName, callingUid)) {
+                    Slog.w(TAG, "Cannot suspend package \"" + packageName
+                            + "\": required system package");
                     continue;
                 }
 

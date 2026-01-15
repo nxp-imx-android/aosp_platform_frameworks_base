@@ -795,6 +795,22 @@ final class DeletePackageHelper {
                     });
                     return;
                 }
+
+                if (Flags.protectSystemRequiredPackages()
+                        && mPm.isRequiredSystemPackageThatCallerCannotControl(
+                                snapshot, packageName, callingUid)) {
+                    mPm.mHandler.post(() -> {
+                        try {
+                            Slog.w(TAG, "Attempted to delete system required package: "
+                                    + packageName + ", callingUid: " + callingUid);
+                            observer.onPackageDeleted(packageName,
+                                    PackageManager.DELETE_FAILED_INTERNAL_ERROR, null);
+                        } catch (RemoteException re) {
+                            // no-op
+                        }
+                    });
+                    return;
+                }
             }
         } finally {
             Binder.restoreCallingIdentity(token);
