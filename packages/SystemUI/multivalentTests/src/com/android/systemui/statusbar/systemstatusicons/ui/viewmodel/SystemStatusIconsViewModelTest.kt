@@ -20,6 +20,7 @@ import android.app.AutomaticZenRule
 import android.app.PendingIntent
 import android.bluetooth.BluetoothProfile
 import android.content.testableContext
+import android.media.AudioDeviceInfo
 import android.media.AudioManager
 import android.view.Display.TYPE_EXTERNAL
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -34,6 +35,7 @@ import com.android.systemui.deviceentry.data.repository.fakeDeviceEntryRepositor
 import com.android.systemui.display.data.repository.display
 import com.android.systemui.display.data.repository.displayRepository
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.audio.audioManager
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
@@ -92,6 +94,7 @@ class SystemStatusIconsViewModelTest : SysuiTestCase() {
     private lateinit var slotDataSaver: String
     private lateinit var slotDeviceBasedSatellite: String
     private lateinit var slotEthernet: String
+    private lateinit var slotHeadset: String
     private lateinit var slotHotspot: String
     private lateinit var slotManagedProfile: String
     private lateinit var slotMute: String
@@ -112,6 +115,7 @@ class SystemStatusIconsViewModelTest : SysuiTestCase() {
         slotDeviceBasedSatellite =
             context.getString(com.android.internal.R.string.status_bar_oem_satellite)
         slotEthernet = context.getString(com.android.internal.R.string.status_bar_ethernet)
+        slotHeadset = context.getString(com.android.internal.R.string.status_bar_headset)
         slotHotspot = context.getString(com.android.internal.R.string.status_bar_hotspot)
         slotManagedProfile =
             context.getString(com.android.internal.R.string.status_bar_managed_profile)
@@ -265,6 +269,7 @@ class SystemStatusIconsViewModelTest : SysuiTestCase() {
             showVpn()
             showManagedProfile()
             showSatelliteIcon()
+            showHeadset()
 
             assertThat(underTest.activeSlotNames)
                 .containsExactly(
@@ -273,6 +278,7 @@ class SystemStatusIconsViewModelTest : SysuiTestCase() {
                     slotDataSaver,
                     slotDeviceBasedSatellite,
                     slotEthernet,
+                    slotHeadset,
                     slotHotspot,
                     slotManagedProfile,
                     slotNextAlarm,
@@ -294,6 +300,7 @@ class SystemStatusIconsViewModelTest : SysuiTestCase() {
                     slotBluetooth,
                     slotConnectedDisplay,
                     slotDataSaver,
+                    slotHeadset,
                     slotHotspot,
                     slotManagedProfile,
                     slotMute,
@@ -403,6 +410,14 @@ class SystemStatusIconsViewModelTest : SysuiTestCase() {
         deviceBasedSatelliteRepository.isSatelliteProvisioned.value = true
         deviceBasedSatelliteRepository.isSatelliteAllowedForCurrentLocation.value = true
         deviceBasedSatelliteRepository.connectionState.value = SatelliteConnectionState.Connected
+    }
+
+    private fun Kosmos.showHeadset() {
+        val device =
+            mock<AudioDeviceInfo>().also {
+                whenever(it.type).thenReturn(AudioDeviceInfo.TYPE_WIRED_HEADSET)
+            }
+        audioManager.setDevices(arrayOf(device))
     }
 
     private fun Kosmos.showExternalIcon(slotName: String) {
