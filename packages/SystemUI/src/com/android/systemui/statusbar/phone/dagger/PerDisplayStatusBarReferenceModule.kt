@@ -16,8 +16,10 @@
 
 package com.android.systemui.statusbar.phone.dagger
 
+import com.android.systemui.Flags
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware
+import com.android.systemui.statusbar.events.SystemStatusAnimationScheduler
 import com.android.systemui.statusbar.phone.fragment.dagger.HomeStatusBarComponent
 import com.android.systemui.statusbar.phone.ongoingcall.domain.interactor.OngoingCallStatusBarInteractor
 import com.android.systemui.statusbar.pipeline.shared.ui.binder.HomeStatusBarViewBinder
@@ -26,6 +28,8 @@ import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.HomeStatusBar
 import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.HomeStatusBarViewModelImpl.HomeStatusBarViewModelFactoryImpl
 import dagger.Binds
 import dagger.Module
+import dagger.Provides
+import dagger.multibindings.ElementsIntoSet
 import dagger.multibindings.IntoSet
 
 @Module(subcomponents = [HomeStatusBarComponent::class])
@@ -53,4 +57,19 @@ interface PerDisplayStatusBarReferenceModule {
     fun ongoingCallStatusBarInteractorAsLifecycleListener(
         interactor: OngoingCallStatusBarInteractor
     ): SystemUIDisplaySubcomponent.LifecycleListener
+
+    companion object {
+        @Provides
+        @ElementsIntoSet
+        @DisplayAware
+        fun systemStatusSchedulerAsLifecycleListener(
+            @DisplayAware scheduler: SystemStatusAnimationScheduler
+        ): Set<SystemUIDisplaySubcomponent.LifecycleListener> {
+            return if (Flags.systemStatusAnimationPerDisplay()) {
+                setOf(scheduler)
+            } else {
+                emptySet()
+            }
+        }
+    }
 }
