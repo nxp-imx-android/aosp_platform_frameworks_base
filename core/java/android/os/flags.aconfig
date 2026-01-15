@@ -365,6 +365,7 @@ flag {
     namespace: "system_performance"
     description: "Enable support for the native-only variant of App Zygote"
     bug: "442732151"
+    is_exported: true
 }
 
 flag {
