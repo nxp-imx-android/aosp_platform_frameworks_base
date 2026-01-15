@@ -153,7 +153,7 @@ constructor(
         if (!visible) {
             // The UI is no longer visible, remove the model immediately to avoid accidentally
             // showing if the model is partially updated later.
-            mainExecutor.execute { updateModel(userId, model = null) }
+            updateModel(userId, model = null)
         }
 
         try {
