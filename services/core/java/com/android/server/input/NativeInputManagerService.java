@@ -237,7 +237,7 @@ interface NativeInputManagerService {
 
     void changeUniqueIdAssociation();
 
-    void changeTypeAssociation();
+    void changeConfigurationOverrides();
 
     void changeKeyboardLayoutAssociation();
 
@@ -603,8 +603,8 @@ interface NativeInputManagerService {
         public native void reloadPointerIcons();
 
         @Override
-        public native boolean setPointerIcon(PointerIcon icon, int displayId, int deviceId,
-                int pointerId, IBinder inputToken);
+        public native boolean setPointerIcon(@NonNull PointerIcon icon, int displayId, int deviceId,
+                int pointerId, @NonNull IBinder inputToken);
 
         @Override
         public native void setPointerIconVisibility(int displayId, boolean visible);
@@ -622,7 +622,7 @@ interface NativeInputManagerService {
         public native void changeUniqueIdAssociation();
 
         @Override
-        public native void changeTypeAssociation();
+        public native void changeConfigurationOverrides();
 
         @Override
         public native void changeKeyboardLayoutAssociation();

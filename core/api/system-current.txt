@@ -6753,6 +6753,21 @@ package android.hardware.input {
     method @FlaggedApi("com.android.hardware.input.create_virtual_keyboard_api") @NonNull @RequiresPermission(anyOf={android.Manifest.permission.INJECT_KEY_EVENTS, android.Manifest.permission.INJECT_EVENTS}) public android.hardware.input.VirtualKeyboard createVirtualKeyboard(@NonNull android.hardware.input.VirtualKeyboardConfig);
   }
 
+  @FlaggedApi("android.companion.virtualdevice.flags.virtual_input_view_behavior") public final class ViewBehaviorConfig implements android.os.Parcelable {
+    method public int describeContents();
+    method public int getPrimaryDirectionalMotionAxis();
+    method public boolean shouldSmoothScroll();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.hardware.input.ViewBehaviorConfig> CREATOR;
+  }
+
+  @FlaggedApi("android.companion.virtualdevice.flags.virtual_input_view_behavior") public static final class ViewBehaviorConfig.Builder {
+    ctor public ViewBehaviorConfig.Builder();
+    method @NonNull public android.hardware.input.ViewBehaviorConfig build();
+    method @NonNull public android.hardware.input.ViewBehaviorConfig.Builder setPrimaryDirectionalMotionAxis(int);
+    method @NonNull public android.hardware.input.ViewBehaviorConfig.Builder setShouldSmoothScroll(boolean);
+  }
+
   public class VirtualDpad implements java.io.Closeable {
     method public void close();
     method @FlaggedApi("com.android.hardware.input.create_virtual_keyboard_api") public int getInputDeviceId();
@@ -6777,6 +6792,7 @@ package android.hardware.input {
     method @NonNull public String getInputDeviceName();
     method public int getProductId();
     method public int getVendorId();
+    method @FlaggedApi("android.companion.virtualdevice.flags.virtual_input_view_behavior") @Nullable public android.hardware.input.ViewBehaviorConfig getViewBehaviorConfig();
   }
 
   public abstract static class VirtualInputDeviceConfig.Builder<T extends android.hardware.input.VirtualInputDeviceConfig.Builder<T>> {
@@ -6785,6 +6801,7 @@ package android.hardware.input {
     method @NonNull public T setInputDeviceName(@NonNull String);
     method @NonNull public T setProductId(int);
     method @NonNull public T setVendorId(int);
+    method @FlaggedApi("android.companion.virtualdevice.flags.virtual_input_view_behavior") @NonNull public T setViewBehaviorConfig(@NonNull android.hardware.input.ViewBehaviorConfig);
   }
 
   public final class VirtualKeyEvent implements android.os.Parcelable {

@@ -24,6 +24,7 @@ import android.Manifest;
 import android.annotation.EnforcePermission;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.annotation.RequiresNoPermission;
 import android.annotation.StringDef;
 import android.content.Context;
@@ -41,6 +42,7 @@ import android.hardware.input.IVirtualTouchscreen;
 import android.hardware.input.InputDeviceIdentifier;
 import android.hardware.input.InputManager.InputDeviceListener;
 import android.hardware.input.InputManagerGlobal;
+import android.hardware.input.ViewBehaviorConfig;
 import android.hardware.input.VirtualGamepad;
 import android.hardware.input.VirtualGamepadMotionEvent;
 import android.hardware.input.VirtualKeyEvent;
@@ -141,12 +143,13 @@ class VirtualInputDeviceController {
     }
 
     IVirtualDpad createDpad(@NonNull String deviceName, int vendorId, int productId,
-            @NonNull IBinder deviceToken, int displayId) {
+            @NonNull IBinder deviceToken, int displayId,
+            @Nullable ViewBehaviorConfig viewBehaviorConfig) {
         final String phys = createPhys(PHYS_TYPE_DPAD);
         try {
             final InputDeviceDescriptor device = createDeviceInternal(
                     InputDeviceDescriptor.TYPE_DPAD, deviceName, vendorId,
-                    productId, deviceToken, displayId, phys,
+                    productId, deviceToken, displayId, phys, viewBehaviorConfig,
                     () -> mNativeWrapper.openUinputDpad(deviceName, vendorId, productId, phys));
             return new VirtualDpadDevice(device);
         } catch (DeviceCreationException e) {
@@ -156,13 +159,13 @@ class VirtualInputDeviceController {
 
     IVirtualKeyboard createKeyboard(@NonNull String deviceName, int vendorId, int productId,
             @NonNull IBinder deviceToken, int displayId, @NonNull String languageTag,
-            @NonNull String layoutType) {
+            @NonNull String layoutType, @Nullable ViewBehaviorConfig viewBehaviorConfig) {
         final String phys = createPhys(PHYS_TYPE_KEYBOARD);
         mService.addKeyboardLayoutAssociation(phys, languageTag, layoutType);
         try {
             final InputDeviceDescriptor device = createDeviceInternal(
                     InputDeviceDescriptor.TYPE_KEYBOARD, deviceName, vendorId,
-                    productId, deviceToken, displayId, phys,
+                    productId, deviceToken, displayId, phys, viewBehaviorConfig,
                     () -> mNativeWrapper.openUinputKeyboard(deviceName, vendorId, productId, phys));
             return new VirtualKeyboardDevice(device);
         } catch (DeviceCreationException e) {
@@ -177,7 +180,7 @@ class VirtualInputDeviceController {
         try {
             final InputDeviceDescriptor device = createDeviceInternal(
                     InputDeviceDescriptor.TYPE_GAMEPAD, deviceName, vendorId,
-                    productId, deviceToken, displayId, phys,
+                    productId, deviceToken, displayId, phys, /* viewBehaviorConfig= */ null,
                     () -> mNativeWrapper.openUinputGamepad(deviceName, vendorId, productId, phys,
                             registerTriggerAxes));
             return new VirtualGamepadDevice(device, registerTriggerAxes);
@@ -187,12 +190,13 @@ class VirtualInputDeviceController {
     }
 
     IVirtualMouse createMouse(@NonNull String deviceName, int vendorId, int productId,
-            @NonNull IBinder deviceToken, int displayId) {
+            @NonNull IBinder deviceToken, int displayId,
+            @Nullable ViewBehaviorConfig viewBehaviorConfig) {
         final String phys = createPhys(PHYS_TYPE_MOUSE);
         try {
             final InputDeviceDescriptor device = createDeviceInternal(
                     InputDeviceDescriptor.TYPE_MOUSE, deviceName, vendorId,
-                    productId, deviceToken, displayId, phys,
+                    productId, deviceToken, displayId, phys, viewBehaviorConfig,
                     () -> mNativeWrapper.openUinputMouse(deviceName, vendorId, productId, phys));
             return new VirtualMouseDevice(device);
         } catch (DeviceCreationException e) {
@@ -201,12 +205,13 @@ class VirtualInputDeviceController {
     }
 
     IVirtualTouchscreen createTouchscreen(@NonNull String deviceName, int vendorId, int productId,
-            @NonNull IBinder deviceToken, int displayId, int height, int width) {
+            @NonNull IBinder deviceToken, int displayId, int height, int width,
+            @Nullable ViewBehaviorConfig viewBehaviorConfig) {
         final String phys = createPhys(PHYS_TYPE_TOUCHSCREEN);
         try {
             final InputDeviceDescriptor device = createDeviceInternal(
                     InputDeviceDescriptor.TYPE_TOUCHSCREEN, deviceName, vendorId, productId,
-                    deviceToken, displayId, phys,
+                    deviceToken, displayId, phys, viewBehaviorConfig,
                     () -> mNativeWrapper.openUinputTouchscreen(deviceName, vendorId, productId,
                             phys, height, width));
             return new VirtualTouchscreenDevice(device);
@@ -216,29 +221,29 @@ class VirtualInputDeviceController {
     }
 
     IVirtualNavigationTouchpad createNavigationTouchpad(@NonNull String deviceName, int vendorId,
-            int productId, @NonNull IBinder deviceToken, int displayId, int height, int width) {
+            int productId, @NonNull IBinder deviceToken, int displayId, int height, int width,
+            @Nullable ViewBehaviorConfig viewBehaviorConfig) {
         final String phys = createPhys(PHYS_TYPE_NAVIGATION_TOUCHPAD);
-        mService.setTypeAssociationInternal(phys, NAVIGATION_TOUCHPAD_DEVICE_TYPE);
         try {
             final InputDeviceDescriptor device = createDeviceInternal(
                     InputDeviceDescriptor.TYPE_NAVIGATION_TOUCHPAD, deviceName,
-                    vendorId, productId, deviceToken, displayId, phys,
+                    vendorId, productId, deviceToken, displayId, phys, viewBehaviorConfig,
                     () -> mNativeWrapper.openUinputTouchscreen(deviceName, vendorId, productId,
                             phys, height, width));
             return new VirtualNavigationTouchpadDevice(device);
         } catch (DeviceCreationException e) {
-            mService.unsetTypeAssociationInternal(phys);
             throw new IllegalArgumentException(e);
         }
     }
 
     IVirtualStylus createStylus(@NonNull String deviceName, int vendorId, int productId,
-            @NonNull IBinder deviceToken, int displayId, int height, int width) {
+            @NonNull IBinder deviceToken, int displayId, int height, int width,
+            @Nullable ViewBehaviorConfig viewBehaviorConfig) {
         final String phys = createPhys(PHYS_TYPE_STYLUS);
         try {
             final InputDeviceDescriptor device = createDeviceInternal(
                     InputDeviceDescriptor.TYPE_STYLUS, deviceName, vendorId,
-                    productId, deviceToken, displayId, phys,
+                    productId, deviceToken, displayId, phys, viewBehaviorConfig,
                     () -> mNativeWrapper.openUinputStylus(deviceName, vendorId, productId, phys,
                             height, width));
             return new VirtualStylusDevice(device);
@@ -248,12 +253,13 @@ class VirtualInputDeviceController {
     }
 
     IVirtualRotaryEncoder createRotaryEncoder(@NonNull String deviceName, int vendorId,
-            int productId, @NonNull IBinder deviceToken, int displayId) {
+            int productId, @NonNull IBinder deviceToken, int displayId,
+            @Nullable ViewBehaviorConfig viewBehaviorConfig) {
         final String phys = createPhys(PHYS_TYPE_ROTARY_ENCODER);
         try {
             final InputDeviceDescriptor device = createDeviceInternal(
                     InputDeviceDescriptor.TYPE_ROTARY_ENCODER, deviceName,
-                    vendorId, productId, deviceToken, displayId, phys,
+                    vendorId, productId, deviceToken, displayId, phys, viewBehaviorConfig,
                     () -> mNativeWrapper.openUinputRotaryEncoder(deviceName, vendorId, productId,
                             phys));
             return new VirtualRotaryEncoderDevice(device);
@@ -285,15 +291,22 @@ class VirtualInputDeviceController {
         if (disableSettingsForVirtualDevices()) {
             mService.removeVirtualDevice(phys);
         }
-        // Type associations are added in the case of navigation touchpads. Those should be removed
-        // once the input device gets closed.
-        if (inputDeviceDescriptor.getType() == InputDeviceDescriptor.TYPE_NAVIGATION_TOUCHPAD) {
-            mService.unsetTypeAssociationInternal(phys);
-        }
+        mService.unsetConfigurationOverride(phys);
 
         if (inputDeviceDescriptor.getType() == InputDeviceDescriptor.TYPE_KEYBOARD) {
             mService.removeKeyboardLayoutAssociation(phys);
         }
+    }
+
+    private void setDeviceConfiguration(@NonNull String phys, @Nullable String deviceType,
+            @Nullable ViewBehaviorConfig viewBehaviorConfig) {
+        if (deviceType == null && viewBehaviorConfig == null) {
+            return;
+        }
+
+        InputManagerService.ConfigurationOverride configurationOverride =
+                new InputManagerService.ConfigurationOverride(deviceType, viewBehaviorConfig);
+        mService.setConfigurationOverride(phys, configurationOverride);
     }
 
     /**
@@ -726,7 +739,8 @@ class VirtualInputDeviceController {
      */
     private InputDeviceDescriptor createDeviceInternal(@InputDeviceDescriptor.Type int type,
             String deviceName, int vendorId, int productId, IBinder deviceToken, int displayId,
-            String phys, Supplier<Long> deviceOpener) throws DeviceCreationException {
+            String phys, ViewBehaviorConfig viewBehaviorConfig,
+            Supplier<Long> deviceOpener) throws DeviceCreationException {
         if (!mThreadVerifier.isValidThread()) {
             throw new IllegalStateException(
                     "Virtual input device creation should happen on an auxiliary thread (e.g. "
@@ -749,6 +763,10 @@ class VirtualInputDeviceController {
         } else {
             setUniqueIdAssociation(displayId, phys);
         }
+
+        final String deviceType = type == InputDeviceDescriptor.TYPE_NAVIGATION_TOUCHPAD
+                ? NAVIGATION_TOUCHPAD_DEVICE_TYPE : null;
+        setDeviceConfiguration(phys, deviceType, viewBehaviorConfig);
 
         if (disableSettingsForVirtualDevices()) {
             mService.addVirtualDevice(phys);
@@ -792,6 +810,7 @@ class VirtualInputDeviceController {
             return device;
         } catch (DeviceCreationException e) {
             mService.removeUniqueIdAssociationByPort(phys);
+            mService.unsetConfigurationOverride(phys);
             if (disableSettingsForVirtualDevices()) {
                 mService.removeVirtualDevice(phys);
             }

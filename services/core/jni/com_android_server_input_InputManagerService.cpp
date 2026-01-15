@@ -139,7 +139,7 @@ static struct {
     jmethodID getInputPortAssociations;
     jmethodID getInputUniqueIdAssociationsByPort;
     jmethodID getInputUniqueIdAssociationsByDescriptor;
-    jmethodID getDeviceTypeAssociations;
+    jmethodID getDeviceConfigurationOverrides;
     jmethodID getKeyboardLayoutAssociations;
     jmethodID getVirtualDevicePorts;
     jmethodID getPointerLayer;
@@ -150,6 +150,40 @@ static struct {
     jmethodID notifyDropWindow;
     jmethodID getParentSurfaceForPointers;
 } gServiceClassInfo;
+
+static struct {
+    jclass clazz;
+    jmethodID entrySet;
+} gMapClassInfo;
+
+static struct {
+    jclass clazz;
+    jmethodID iterator;
+} gSetClassInfo;
+
+static struct {
+    jclass clazz;
+    jmethodID hasNext;
+    jmethodID next;
+} gIteratorClassInfo;
+
+static struct {
+    jclass clazz;
+    jmethodID getKey;
+    jmethodID getValue;
+} gMapEntryClassInfo;
+
+static struct {
+    jclass clazz;
+    jfieldID mDeviceType;
+    jfieldID mViewBehaviorConfig;
+} gConfigurationOverrideClassInfo;
+
+static struct {
+    jclass clazz;
+    jfieldID mPrimaryDirectionalMotionAxis;
+    jfieldID mShouldSmoothScroll;
+} gViewBehaviorConfigClassInfo;
 
 static struct {
     jclass clazz;
@@ -787,10 +821,58 @@ void NativeInputManager::getReaderConfiguration(InputReaderConfiguration* outCon
             std::string>(gServiceClassInfo.getInputUniqueIdAssociationsByDescriptor,
                          "getInputUniqueIdAssociationsByDescriptor");
 
-    outConfig->deviceTypeAssociations =
-            readMapFromInterleavedJavaArray<std::string>(gServiceClassInfo
-                                                                 .getDeviceTypeAssociations,
-                                                         "getDeviceTypeAssociations");
+    outConfig->deviceConfigurationOverrides.clear();
+    if (jobject configMap =
+                env->CallObjectMethod(mServiceObj,
+                                      gServiceClassInfo.getDeviceConfigurationOverrides);
+        !checkAndClearExceptionFromCallback(env, "getDeviceConfigurationOverrides") && configMap) {
+        jobject entrySet = env->CallObjectMethod(configMap, gMapClassInfo.entrySet);
+        jobject iterator = env->CallObjectMethod(entrySet, gSetClassInfo.iterator);
+
+        while (env->CallBooleanMethod(iterator, gIteratorClassInfo.hasNext)) {
+            auto entry = env->CallObjectMethod(iterator, gIteratorClassInfo.next);
+            auto key = jstring(env->CallObjectMethod(entry, gMapEntryClassInfo.getKey));
+            auto value = env->CallObjectMethod(entry, gMapEntryClassInfo.getValue);
+
+            ScopedUtfChars keyChars(env, key);
+            std::string inputPort = keyChars.c_str();
+
+            InputDeviceConfigurationOverride deviceConfigOverride;
+
+            auto deviceType = jstring(
+                    env->GetObjectField(value, gConfigurationOverrideClassInfo.mDeviceType));
+            if (deviceType) {
+                ScopedUtfChars typeChars(env, deviceType);
+                deviceConfigOverride.deviceType = std::make_optional(typeChars.c_str());
+                env->DeleteLocalRef(deviceType);
+            }
+
+            jobject viewBehavior =
+                    env->GetObjectField(value, gConfigurationOverrideClassInfo.mViewBehaviorConfig);
+            if (viewBehavior) {
+                InputDeviceViewBehavior behavior{};
+                behavior.primaryDirectionalMotionAxis = std::make_optional(
+                        env->GetIntField(viewBehavior,
+                                         gViewBehaviorConfigClassInfo
+                                                 .mPrimaryDirectionalMotionAxis));
+                behavior.shouldSmoothScroll = std::make_optional(
+                        env->GetBooleanField(viewBehavior,
+                                             gViewBehaviorConfigClassInfo.mShouldSmoothScroll));
+                deviceConfigOverride.viewBehavior = std::make_optional(behavior);
+                env->DeleteLocalRef(viewBehavior);
+            }
+
+            outConfig->deviceConfigurationOverrides.insert({inputPort, deviceConfigOverride});
+
+            env->DeleteLocalRef(entry);
+            env->DeleteLocalRef(key);
+            env->DeleteLocalRef(value);
+        }
+        env->DeleteLocalRef(configMap);
+        env->DeleteLocalRef(entrySet);
+        env->DeleteLocalRef(iterator);
+    }
+
     outConfig->keyboardLayoutAssociations = readMapFromInterleavedJavaArray<
             KeyboardLayoutInfo>(gServiceClassInfo.getKeyboardLayoutAssociations,
                                 "getKeyboardLayoutAssociations", [](auto&& layoutIdentifier) {
@@ -3207,10 +3289,10 @@ static void nativeChangeUniqueIdAssociation(JNIEnv* env, jobject nativeImplObj) 
             InputReaderConfiguration::Change::DISPLAY_INFO);
 }
 
-static void nativeChangeTypeAssociation(JNIEnv* env, jobject nativeImplObj) {
+static void nativeChangeConfigurationOverrides(JNIEnv* env, jobject nativeImplObj) {
     NativeInputManager* im = getNativeInputManager(env, nativeImplObj);
     im->getInputManager()->getReader().requestRefreshConfiguration(
-            InputReaderConfiguration::Change::DEVICE_TYPE);
+            InputReaderConfiguration::Change::DEVICE_CONFIGURATION_OVERRIDES);
 }
 
 static void changeKeyboardLayoutAssociation(JNIEnv* env, jobject nativeImplObj) {
@@ -3607,7 +3689,7 @@ static const JNINativeMethod gInputManagerMethods[] = {
         {"canDispatchToDisplay", "(II)Z", (void*)nativeCanDispatchToDisplay},
         {"notifyPortAssociationsChanged", "()V", (void*)nativeNotifyPortAssociationsChanged},
         {"changeUniqueIdAssociation", "()V", (void*)nativeChangeUniqueIdAssociation},
-        {"changeTypeAssociation", "()V", (void*)nativeChangeTypeAssociation},
+        {"changeConfigurationOverrides", "()V", (void*)nativeChangeConfigurationOverrides},
         {"changeKeyboardLayoutAssociation", "()V", (void*)changeKeyboardLayoutAssociation},
         {"changeVirtualDevices", "()V", (void*)changeVirtualDevices},
         {"setDisplayEligibilityForPointerCapture", "(IZ)V",
@@ -3770,8 +3852,8 @@ int register_android_server_InputManager(JNIEnv* env) {
     GET_METHOD_ID(gServiceClassInfo.getInputUniqueIdAssociationsByDescriptor, clazz,
                   "getInputUniqueIdAssociationsByDescriptor", "()[Ljava/lang/String;");
 
-    GET_METHOD_ID(gServiceClassInfo.getDeviceTypeAssociations, clazz, "getDeviceTypeAssociations",
-                  "()[Ljava/lang/String;");
+    GET_METHOD_ID(gServiceClassInfo.getDeviceConfigurationOverrides, clazz,
+                  "getDeviceConfigurationOverrides", "()Ljava/util/Map;");
 
     GET_METHOD_ID(gServiceClassInfo.getKeyboardLayoutAssociations, clazz,
                   "getKeyboardLayoutAssociations", "()[Ljava/lang/String;");
@@ -3798,6 +3880,52 @@ int register_android_server_InputManager(JNIEnv* env) {
 
     GET_METHOD_ID(gServiceClassInfo.getParentSurfaceForPointers, clazz,
                   "getParentSurfaceForPointers", "(I)J");
+
+    // Map
+    FIND_CLASS(gMapClassInfo.clazz, "java/util/Map");
+    gMapClassInfo.clazz = jclass(env->NewGlobalRef(gMapClassInfo.clazz));
+    GET_METHOD_ID(gMapClassInfo.entrySet, gMapClassInfo.clazz, "entrySet", "()Ljava/util/Set;");
+
+    // Set
+    FIND_CLASS(gSetClassInfo.clazz, "java/util/Set");
+    gSetClassInfo.clazz = jclass(env->NewGlobalRef(gSetClassInfo.clazz));
+    GET_METHOD_ID(gSetClassInfo.iterator, gSetClassInfo.clazz, "iterator",
+                  "()Ljava/util/Iterator;");
+
+    // Iterator
+    FIND_CLASS(gIteratorClassInfo.clazz, "java/util/Iterator");
+    gIteratorClassInfo.clazz = jclass(env->NewGlobalRef(gIteratorClassInfo.clazz));
+    GET_METHOD_ID(gIteratorClassInfo.hasNext, gIteratorClassInfo.clazz, "hasNext", "()Z");
+    GET_METHOD_ID(gIteratorClassInfo.next, gIteratorClassInfo.clazz, "next",
+                  "()Ljava/lang/Object;");
+
+    // Map.Entry
+    FIND_CLASS(gMapEntryClassInfo.clazz, "java/util/Map$Entry");
+    gMapEntryClassInfo.clazz = jclass(env->NewGlobalRef(gMapEntryClassInfo.clazz));
+    GET_METHOD_ID(gMapEntryClassInfo.getKey, gMapEntryClassInfo.clazz, "getKey",
+                  "()Ljava/lang/Object;");
+    GET_METHOD_ID(gMapEntryClassInfo.getValue, gMapEntryClassInfo.clazz, "getValue",
+                  "()Ljava/lang/Object;");
+
+    // ConfigurationOverride
+    FIND_CLASS(gConfigurationOverrideClassInfo.clazz,
+               "com/android/server/input/InputManagerService$ConfigurationOverride");
+    gConfigurationOverrideClassInfo.clazz =
+            jclass(env->NewGlobalRef(gConfigurationOverrideClassInfo.clazz));
+    GET_FIELD_ID(gConfigurationOverrideClassInfo.mDeviceType, gConfigurationOverrideClassInfo.clazz,
+                 "mDeviceType", "Ljava/lang/String;");
+    GET_FIELD_ID(gConfigurationOverrideClassInfo.mViewBehaviorConfig,
+                 gConfigurationOverrideClassInfo.clazz, "mViewBehaviorConfig",
+                 "Landroid/hardware/input/ViewBehaviorConfig;");
+
+    // ViewBehaviorConfig
+    FIND_CLASS(gViewBehaviorConfigClassInfo.clazz, "android/hardware/input/ViewBehaviorConfig");
+    gViewBehaviorConfigClassInfo.clazz =
+            jclass(env->NewGlobalRef(gViewBehaviorConfigClassInfo.clazz));
+    GET_FIELD_ID(gViewBehaviorConfigClassInfo.mPrimaryDirectionalMotionAxis,
+                 gViewBehaviorConfigClassInfo.clazz, "mPrimaryDirectionalMotionAxis", "I");
+    GET_FIELD_ID(gViewBehaviorConfigClassInfo.mShouldSmoothScroll,
+                 gViewBehaviorConfigClassInfo.clazz, "mShouldSmoothScroll", "Z");
 
     // InputDevice
 

@@ -505,7 +505,8 @@ public final class InputDevice implements Parcelable {
 
     private static final int VIBRATOR_ID_ALL = -1;
 
-    private static final int UNSPECIFIED_PRIMARY_DIRECTIONAL_MOTION_AXIS = -1;
+    /** @hide */
+    public static final int UNSPECIFIED_PRIMARY_DIRECTIONAL_MOTION_AXIS = -1;
 
     public static final @android.annotation.NonNull Parcelable.Creator<InputDevice> CREATOR =
             new Parcelable.Creator<InputDevice>() {
@@ -1605,7 +1606,8 @@ public final class InputDevice implements Parcelable {
      */
     @FlaggedApi(FLAG_INPUT_DEVICE_VIEW_BEHAVIOR_API)
     public static final class ViewBehavior {
-        private static final boolean DEFAULT_SHOULD_SMOOTH_SCROLL = false;
+        /** @hide */
+        public static final boolean DEFAULT_SHOULD_SMOOTH_SCROLL = false;
 
         private final InputDevice mInputDevice;
 

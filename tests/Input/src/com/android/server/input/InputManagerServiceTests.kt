@@ -220,30 +220,6 @@ class InputManagerServiceTests {
     }
 
     @Test
-    fun setDeviceTypeAssociation_setsDeviceTypeAssociation() {
-        val inputPort = "inputPort"
-        val type = "type"
-
-        localService.setTypeAssociation(inputPort, type)
-
-        assertThat(service.getDeviceTypeAssociations())
-            .asList()
-            .containsExactly(inputPort, type)
-            .inOrder()
-    }
-
-    @Test
-    fun setAndUnsetDeviceTypeAssociation_deviceTypeAssociationIsMissing() {
-        val inputPort = "inputPort"
-        val type = "type"
-
-        localService.setTypeAssociation(inputPort, type)
-        localService.unsetTypeAssociation(inputPort)
-
-        assertTrue(service.getDeviceTypeAssociations().isEmpty())
-    }
-
-    @Test
     fun testAddAndRemoveVirtualKeyboardLayoutAssociation() {
         val inputPort = "input port"
         val languageTag = "language"
