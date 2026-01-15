@@ -53025,6 +53025,7 @@ package android.view {
 
   public final class InputDevice implements android.os.Parcelable {
     method public int describeContents();
+    method @FlaggedApi("android.companion.virtualdevice.flags.associated_display_id_input_api") public int getAssociatedDisplayId();
     method @NonNull public android.hardware.BatteryState getBatteryState();
     method public int getControllerNumber();
     method public String getDescriptor();

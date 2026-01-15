@@ -1457,8 +1457,13 @@ public final class InputDevice implements Parcelable {
         return mHostUsiVersion.isValid() ? mHostUsiVersion : null;
     }
 
-    /** @hide */
-    @TestApi
+    /**
+     * Returns the associated display id of this input device.
+     *
+     * @return the associated display id, or {@link Display#INVALID_DISPLAY} if the input device is
+     * not associated with a display.
+     */
+    @FlaggedApi(android.companion.virtualdevice.flags.Flags.FLAG_ASSOCIATED_DISPLAY_ID_INPUT_API)
     public int getAssociatedDisplayId() {
         return mAssociatedDisplayId;
     }
