@@ -88,8 +88,8 @@ public class InsightSurfaceClientTest {
         verify(mPersonalContextManager).registerInsightSurfaceClient(
                 clientInfoCaptor.capture(), eq(List.of(mHint)));
 
-        final IEmbeddedInsightSurfaceCallback callback = clientInfoCaptor.getValue().getCallback();
-        callback.onSurfaceCreated(mSurfacePackage);
+        final IInsightSurfaceClient client = clientInfoCaptor.getValue().getClient();
+        client.onSurfaceCreated(mSurfacePackage);
         verify(mClientCallbacks).onSurfaceCreated(mSurfacePackage);
     }
 
@@ -101,8 +101,8 @@ public class InsightSurfaceClientTest {
                 ArgumentCaptor.forClass(InsightSurfaceClientInfo.class);
         verify(mPersonalContextManager).unregisterInsightSurfaceClient(clientInfoCaptor.capture());
 
-        final IEmbeddedInsightSurfaceCallback callback = clientInfoCaptor.getValue().getCallback();
-        callback.onSurfaceReleased(mSurfacePackage);
+        final IInsightSurfaceClient client = clientInfoCaptor.getValue().getClient();
+        client.onSurfaceReleased(mSurfacePackage);
         verify(mClientCallbacks).onSurfaceReleased(mSurfacePackage);
     }
 

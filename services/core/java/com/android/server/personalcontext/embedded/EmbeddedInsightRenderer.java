@@ -89,7 +89,7 @@ public class EmbeddedInsightRenderer implements Renderer {
 
             // Link the client to death so we can unregister it if it dies.
             try {
-                clientInfo.getCallback().asBinder().linkToDeath(() -> {
+                clientInfo.getClient().asBinder().linkToDeath(() -> {
                     logDebug("client has died: " + clientInfo.getId());
                     unregisterInsightSurfaceClient(clientInfo.getId());
                 }, 0);

@@ -120,8 +120,8 @@ public class InsightSurfaceClient implements AutoCloseable {
     private final List<ContextHint> mHints;
     private boolean mIsRegistered;
 
-    private final IEmbeddedInsightSurfaceCallback mInsightSurfaceCallback =
-            new IEmbeddedInsightSurfaceCallback.Stub() {
+    private final IInsightSurfaceClient mClient =
+            new IInsightSurfaceClient.Stub() {
                 @Override
                 public void onSurfaceCreated(SurfaceControlViewHost.SurfacePackage surfacePackage) {
                     if (DEBUG) {
@@ -176,7 +176,7 @@ public class InsightSurfaceClient implements AutoCloseable {
                 nestedScrollAxes,
                 nestedScrollAxisLocked,
                 mContext.getResources().getConfiguration(),
-                mInsightSurfaceCallback);
+                mClient);
     }
 
     /**
@@ -289,7 +289,7 @@ public class InsightSurfaceClient implements AutoCloseable {
                 mClientInfo.getNestedScrollAxes(),
                 mClientInfo.getNestedScrollAxisLocked(),
                 mClientInfo.getConfiguration(),
-                mInsightSurfaceCallback);
+                mClient);
         register();
     }
 

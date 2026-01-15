@@ -56,16 +56,16 @@ public final class InsightSurfaceClientInfo implements Parcelable {
     private final int mNestedScrollAxes;
     private final boolean mNestedScrollAxisLocked;
     private final Configuration mConfiguration;
-    private final IEmbeddedInsightSurfaceCallback mCallback;
+    private final IInsightSurfaceClient mClient;
 
     /**
      * Create a new insight surface client info object.
      *
-     * @param displayId The client app's {@link android.view.Display#getDisplayId}
+     * @param displayId the client app's {@link android.view.Display#getDisplayId}
      * @param measureSpecWidth the width MeasureSpec of the client surface
      * @param measureSpecHeight the height MeasureSpec of the client surface
      * @param configuration resource configuration from the client's local context
-     * @param callback callback used to pass surfaces and insights back to the client
+     * @param client interface used to pass surfaces and insights back to the client
      *
      * @hide
      */
@@ -78,7 +78,7 @@ public final class InsightSurfaceClientInfo implements Parcelable {
             int nestedScrollAxes,
             boolean nestedScrollAxisLocked,
             @NonNull Configuration configuration,
-            @NonNull IEmbeddedInsightSurfaceCallback callback) {
+            @NonNull IInsightSurfaceClient client) {
         mId = UUID.randomUUID();
         mDisplayId = displayId;
         mMeasureSpecWidth = measureSpecWidth;
@@ -87,7 +87,7 @@ public final class InsightSurfaceClientInfo implements Parcelable {
         mNestedScrollAxes = nestedScrollAxes;
         mNestedScrollAxisLocked = nestedScrollAxisLocked;
         mConfiguration = configuration;
-        mCallback = callback;
+        mClient = client;
     }
 
     private InsightSurfaceClientInfo(Parcel in) {
@@ -100,7 +100,7 @@ public final class InsightSurfaceClientInfo implements Parcelable {
         mNestedScrollAxisLocked = in.readBoolean();
         mConfiguration =
                 in.readParcelable(Configuration.class.getClassLoader(), Configuration.class);
-        mCallback = IEmbeddedInsightSurfaceCallback.Stub.asInterface(in.readStrongBinder());
+        mClient = IInsightSurfaceClient.Stub.asInterface(in.readStrongBinder());
     }
 
     /**
@@ -186,15 +186,15 @@ public final class InsightSurfaceClientInfo implements Parcelable {
     }
 
     /**
-     * Get the client's {@link IEmbeddedInsightSurfaceCallback}.
+     * Get the {@link IInsightSurfaceClient} interface for the client.
      *
-     * @return the client's {@link IEmbeddedInsightSurfaceCallback}
+     * @return the client's {@link IInsightSurfaceClient}
      *
      * @hide
      */
     @NonNull
-    public IEmbeddedInsightSurfaceCallback getCallback() {
-        return mCallback;
+    public IInsightSurfaceClient getClient() {
+        return mClient;
     }
 
     /**
@@ -204,7 +204,7 @@ public final class InsightSurfaceClientInfo implements Parcelable {
      */
     public void onSurfaceCreated(@NonNull SurfaceControlViewHost.SurfacePackage surfacePackage) {
         try {
-            mCallback.onSurfaceCreated(surfacePackage);
+            mClient.onSurfaceCreated(surfacePackage);
         } catch (RemoteException e) {
             Log.e(TAG, "Error creating SurfacePackage", e);
             throw e.rethrowFromSystemServer();
@@ -218,7 +218,7 @@ public final class InsightSurfaceClientInfo implements Parcelable {
      */
     public void onSurfaceReleased(@NonNull SurfaceControlViewHost.SurfacePackage surfacePackage) {
         try {
-            mCallback.onSurfaceReleased(surfacePackage);
+            mClient.onSurfaceReleased(surfacePackage);
         } catch (RemoteException e) {
             Log.e(TAG, "Error releasing SurfacePackage", e);
             throw e.rethrowFromSystemServer();
@@ -235,7 +235,7 @@ public final class InsightSurfaceClientInfo implements Parcelable {
      */
     public void onReceiveInsight(@NonNull ContextInsight insight) {
         try {
-            mCallback.onReceiveInsight(new ContextInsightWrapper(insight));
+            mClient.onReceiveInsight(new ContextInsightWrapper(insight));
         } catch (RemoteException e) {
             Log.e(TAG, "Error sending insight to client", e);
             throw e.rethrowFromSystemServer();
@@ -257,7 +257,7 @@ public final class InsightSurfaceClientInfo implements Parcelable {
         dest.writeInt(mNestedScrollAxes);
         dest.writeBoolean(mNestedScrollAxisLocked);
         dest.writeParcelable(mConfiguration, flags);
-        dest.writeStrongInterface(mCallback);
+        dest.writeStrongInterface(mClient);
     }
 
     @NonNull

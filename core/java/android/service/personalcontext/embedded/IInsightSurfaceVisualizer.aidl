@@ -16,12 +16,20 @@
 
 package android.service.personalcontext.embedded;
 
+import android.service.personalcontext.embedded.IVisualizationResult;
+import android.service.personalcontext.embedded.InsightSurfaceClientInfo;
 import android.service.personalcontext.insight.ContextInsightWrapper;
 import android.view.SurfaceControlViewHost;
 
-/** @hide */
-interface IEmbeddedInsightSurfaceCallback {
-    oneway void onSurfaceCreated(in SurfaceControlViewHost.SurfacePackage surfacePackage);
-    oneway void onSurfaceReleased(in SurfaceControlViewHost.SurfacePackage surfacePackage);
-    oneway void onReceiveInsight(in ContextInsightWrapper insight);
+/**
+ * An interface implemented by an {@link InsightSurfaceVisualizerService} to be called by the
+ * embedded renderer.
+ * @hide
+ */
+interface IInsightSurfaceVisualizer {
+    oneway void createVisualizationForClient(
+        in List<ContextInsightWrapper> insights,
+        in InsightSurfaceClientInfo clientInfo,
+        in IVisualizationResult callback);
+    oneway void onClientDisconnected(in InsightSurfaceClientInfo clientInfo);
 }
