@@ -76,6 +76,7 @@ import com.android.wm.shell.common.pip.PhoneSizeSpecSource;
 import com.android.wm.shell.common.pip.PipAppOpsListener;
 import com.android.wm.shell.common.pip.PipBoundsAlgorithm;
 import com.android.wm.shell.common.pip.PipBoundsState;
+import com.android.wm.shell.common.pip.PipDesktopState;
 import com.android.wm.shell.common.pip.PipDisplayLayoutState;
 import com.android.wm.shell.common.pip.PipMediaController;
 import com.android.wm.shell.common.pip.PipPerfHintController;
@@ -621,9 +622,10 @@ public abstract class WMShellBaseModule {
     static PipBoundsAlgorithm providesPipBoundsAlgorithm(Context context,
             PipBoundsState pipBoundsState, PipSnapAlgorithm pipSnapAlgorithm,
             PhonePipKeepClearAlgorithm pipKeepClearAlgorithm,
-            PipDisplayLayoutState pipDisplayLayoutState, SizeSpecSource sizeSpecSource) {
+            PipDisplayLayoutState pipDisplayLayoutState,
+            PipDesktopState pipDesktopState, SizeSpecSource sizeSpecSource) {
         return new PipBoundsAlgorithm(context, pipBoundsState, pipSnapAlgorithm,
-                pipKeepClearAlgorithm, pipDisplayLayoutState, sizeSpecSource);
+                pipKeepClearAlgorithm, pipDisplayLayoutState, pipDesktopState, sizeSpecSource);
     }
 
     @WMSingleton
