@@ -179,6 +179,7 @@ public:
 
     // IFrameCallback, Choreographer-driven frame callback entry point
     virtual void doFrame() override;
+    virtual std::chrono::nanoseconds getExpectedDuration() override;
     void prepareAndDraw(RenderNode* node);
 
     void buildLayer(RenderNode* node);
@@ -430,6 +431,8 @@ private:
      *    used. All other nodes are treated in MODE_RT, using their main displaylists.
      */
     void determineColors(const RenderNode* target);
+
+    std::chrono::nanoseconds mExpectedFrameCallbackDuration;
 };
 
 } /* namespace renderthread */

@@ -226,3 +226,13 @@ flag {
     purpose: PURPOSE_BUGFIX
   }
 }
+
+flag {
+  name: "use_prev_frame_duration_for_render_thread"
+  namespace: "core_graphics"
+  description: "Use previous frame duration for calculating render rate schedule time"
+  bug: "361682988"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
