@@ -155,7 +155,7 @@ final class ComputerControlAccessibilityProxy extends AccessibilityDisplayProxy 
         private final Handler mHandler;
         private final EventIdleTracker mEventIdleTracker;
         private boolean mIsFirstFrameReceived;
-        private boolean mIsIdle;
+        private boolean mIsUnstable;
 
         StabilitySignalTracker(long timeoutMillis, Handler handler,
                 ComputerControlSession.StabilityListener listener, boolean isFirstFrameReceived) {
@@ -176,15 +176,12 @@ final class ComputerControlAccessibilityProxy extends AccessibilityDisplayProxy 
         }
 
         void onAccessibilityEvent() {
-            mHandler.post(() -> {
-                mIsIdle = false;
-                mEventIdleTracker.onEvent();
-            });
+            mHandler.post(mEventIdleTracker::onEvent);
         }
 
         void resetStabilityState() {
             mHandler.post(() -> {
-                mIsIdle = false;
+                mIsUnstable = true;
                 mEventIdleTracker.reset();
                 mEventIdleTracker.registerOneShotIdleCallback(this);
             });
@@ -197,15 +194,14 @@ final class ComputerControlAccessibilityProxy extends AccessibilityDisplayProxy 
 
         @Override
         public void onEventIdle() {
-            mIsIdle = true;
             checkStability();
         }
 
         private void checkStability() {
-            if (!mIsIdle || !mIsFirstFrameReceived) {
+            if (!mIsUnstable || mEventIdleTracker.hasPendingCallback() || !mIsFirstFrameReceived) {
                 return;
             }
-            mIsIdle = false;
+            mIsUnstable = false;
             mStabilityListener.onSessionStable();
         }
     }
@@ -259,6 +255,10 @@ final class ComputerControlAccessibilityProxy extends AccessibilityDisplayProxy 
             mPendingCallback = callback;
             long now = SystemClock.uptimeMillis();
             mHandler.postAtTime(mCallbackExecutor, now + mEventIdleTimeoutMs);
+        }
+
+        boolean hasPendingCallback() {
+            return mPendingCallback != null;
         }
 
         void reset() {
