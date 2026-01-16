@@ -62,8 +62,14 @@ import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.MobileIc
 import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.MobileIconsInteractorKairosImpl
 import com.android.systemui.statusbar.pipeline.mobile.ui.MobileUiAdapter
 import com.android.systemui.statusbar.pipeline.mobile.ui.MobileUiAdapterKairos
+import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.MobileIconsState
+import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.MobileIconsStateImpl
+import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.MobileIconsStateKairos
 import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.MobileIconsViewModel
 import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.MobileIconsViewModelKairos
+import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.StackedMobileIconViewModel
+import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.StackedMobileIconViewModelImpl
+import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.StackedMobileIconViewModelKairos
 import com.android.systemui.statusbar.pipeline.mobile.util.MobileMappingsProxy
 import com.android.systemui.statusbar.pipeline.mobile.util.MobileMappingsProxyImpl
 import com.android.systemui.statusbar.pipeline.mobile.util.SubscriptionManagerProxy
@@ -361,6 +367,20 @@ abstract class StatusBarPipelineModule {
         ): SystemStatusEventAnimationInteractor {
             return factory.create(repo, configurationInteractor, scope)
         }
+
+        @Provides
+        fun mobileIconsStateFactory(
+            kairosFactory: MobileIconsStateKairos.Factory,
+            legacyFactory: MobileIconsStateImpl.Factory,
+        ): MobileIconsState.Factory =
+            if (StatusBarMobileIconKairos.isEnabled) kairosFactory else legacyFactory
+
+        @Provides
+        fun stackedMobileIconViewModelFactory(
+            kairosFactory: StackedMobileIconViewModelKairos.Factory,
+            legacyFactory: StackedMobileIconViewModelImpl.Factory,
+        ): StackedMobileIconViewModel.Factory =
+            if (StatusBarMobileIconKairos.isEnabled) kairosFactory else legacyFactory
 
         const val FIRST_MOBILE_SUB_SHOWING_NETWORK_TYPE_ICON =
             "FirstMobileSubShowingNetworkTypeIcon"

@@ -20,8 +20,17 @@ import android.content.testableContext
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.log.table.logcatTableLogBuffer
 import com.android.systemui.statusbar.connectivity.ui.mobileContextProvider
+import com.android.systemui.statusbar.pipeline.mobile.StatusBarMobileIconKairos
 
-val Kosmos.stackedMobileIconViewModelFactory: StackedMobileIconViewModelImpl.Factory by
+val Kosmos.stackedMobileIconViewModelFactory: StackedMobileIconViewModel.Factory
+    get() =
+        if (StatusBarMobileIconKairos.isEnabled) {
+            StackedMobileIconViewModel.Factory { stackedMobileIconViewModelKairos }
+        } else {
+            stackedMobileIconViewModelFactoryImpl
+        }
+
+val Kosmos.stackedMobileIconViewModelFactoryImpl: StackedMobileIconViewModelImpl.Factory by
     Kosmos.Fixture {
         object : StackedMobileIconViewModelImpl.Factory {
             override fun create(): StackedMobileIconViewModelImpl = stackedMobileIconViewModelImpl
