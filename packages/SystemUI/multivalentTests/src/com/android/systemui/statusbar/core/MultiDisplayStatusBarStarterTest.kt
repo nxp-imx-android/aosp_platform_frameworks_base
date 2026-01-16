@@ -21,6 +21,8 @@ import android.view.Display.DEFAULT_DISPLAY
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.display.data.repository.createFakeDisplaySubcomponent
+import com.android.systemui.display.data.repository.displayPhoneSubcomponentPerDisplayRepository
 import com.android.systemui.display.data.repository.displayRepository
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.statusbar.data.repository.fakeLightBarControllerStore
@@ -64,6 +66,11 @@ class MultiDisplayStatusBarStarterTest : SysuiTestCase() {
     fun setUp() = runBlocking {
         fakeDisplayRepository.addDisplay(DEFAULT_DISPLAY)
         fakeDisplayRepository.addDisplay(DISPLAY_2)
+
+        kosmos.displayPhoneSubcomponentPerDisplayRepository.add(
+            DISPLAY_2,
+            kosmos.createFakeDisplaySubcomponent(),
+        )
     }
 
     @Test

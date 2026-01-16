@@ -23,6 +23,7 @@ import com.android.systemui.statusbar.phone.fragment.dagger.HomeStatusBarCompone
 import com.android.systemui.statusbar.pipeline.shared.ui.binder.HomeStatusBarViewBinder
 import com.android.systemui.statusbar.pipeline.shared.ui.composable.StatusBarRootFactory
 import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.HomeStatusBarViewModel.HomeStatusBarViewModelFactory
+import com.android.systemui.statusbar.window.data.repository.StatusBarWindowStatePerDisplayRepository
 import dagger.BindsInstance
 import dagger.Subcomponent
 
@@ -50,6 +51,8 @@ interface ReferenceSysUIDisplaySubcomponent : SystemUIDisplaySubcomponent {
     @get:DisplayAware val homeStatusBarViewBinder: HomeStatusBarViewBinder
 
     @get:DisplayAware val statusBarRootFactory: StatusBarRootFactory
+
+    @get:DisplayAware val statusBarWindowStateRepository: StatusBarWindowStatePerDisplayRepository
 
     @Subcomponent.Factory
     interface Factory : SystemUIDisplaySubcomponent.Factory {
