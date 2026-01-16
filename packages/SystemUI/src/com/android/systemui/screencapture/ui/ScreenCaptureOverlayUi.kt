@@ -38,9 +38,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.asAndroidPath
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.toAndroidRectF
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.changedToUp
 import androidx.compose.ui.input.pointer.pointerInput
@@ -49,7 +47,6 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.util.fastAll
-import androidx.core.graphics.toRegion
 import com.android.internal.R as internalR
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.lifecycle.rememberViewModel
@@ -146,7 +143,7 @@ constructor(
                 transformationViewModel.rotation,
                 transformationViewModel.scale,
             ) {
-                transformationViewModel.fillRegion(outTouchableRegion)
+                transformationViewModel.fillCameraInteractableRegion(outTouchableRegion)
             }
 
             Box(
@@ -175,9 +172,12 @@ constructor(
                                 isEverywhere = false,
                             )
                             .onGloballyPositioned { layoutCoordinates ->
-                                transformationViewModel.bounds =
+                                transformationViewModel.onCameraScreenBoundsUpdated(
                                     layoutCoordinates.boundsInWindow(false)
-                                transformationViewModel.fillRegion(outTouchableRegion)
+                                )
+                                transformationViewModel.fillCameraInteractableRegion(
+                                    outTouchableRegion
+                                )
                             }
                             .graphicsLayer {
                                 alpha = surfaceAlpha
@@ -256,14 +256,5 @@ private fun ConditionalLaunchedEffect(condition: Boolean, action: suspend () -> 
         if (condition) {
             action()
         }
-    }
-}
-
-private fun ScreenCaptureCameraTransformationViewModel.fillRegion(region: Region) {
-    val boundsAsRegion = bounds.toAndroidRectF().toRegion()
-    if (transformableByTouchAnywhere) {
-        region.set(boundsAsRegion)
-    } else {
-        region.setPath(transformedBounds.asAndroidPath(), boundsAsRegion)
     }
 }
