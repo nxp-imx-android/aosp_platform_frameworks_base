@@ -35,4 +35,7 @@ android_test {
     host_required: [
         "MultiUserTestsTradefedLibrary",
     ],
+    test_suites: [
+        "general-tests",
+    ],
 }
