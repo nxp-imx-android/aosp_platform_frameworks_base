@@ -130,7 +130,7 @@ flag {
    is_exported: true
    namespace: "systemui"
    description: "Allows the NAS to delete conversation notification channels"
-   bug: "416144530"
+   bug: "452259694"
 }
 
 flag {
