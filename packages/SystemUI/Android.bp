@@ -835,7 +835,7 @@ android_library {
     name: "SystemUI-tests",
     use_resource_processor: true,
     manifest: "tests/AndroidManifest-base.xml",
-    resource_dirs: [],
+    resource_dirs: ["tests/res/"],
 
     additional_manifests: ["tests/AndroidManifest.xml"],
     srcs: [
