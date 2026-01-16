@@ -1115,7 +1115,7 @@ package android.location {
     method @NonNull public short[] getTecMap();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.location.IonexAssistance.TecMapSnapshot> CREATOR;
-    field public static final int UNAVAILABLE_TEC = 9999; // 0x270f
+    field public static final short UNAVAILABLE_TEC = 9999; // 0x270f
   }
 
   public static final class IonexAssistance.TecMapSnapshot.Builder {
