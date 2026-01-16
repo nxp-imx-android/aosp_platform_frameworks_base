@@ -16131,7 +16131,7 @@ package android.database.sqlite {
     method public int getColumnLength(int);
     method public long getColumnLong(int);
     method @NonNull public String getColumnName(int);
-    method @NonNull public String getColumnText(int);
+    method @Nullable public String getColumnText(int);
     method public int getColumnType(int);
     method public int getParameterCount();
     method public int getParameterIndex(@NonNull String);

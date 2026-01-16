@@ -16,12 +16,9 @@
 
 package android.database.sqlite;
 
-import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
-
-import com.android.internal.annotations.VisibleForTesting;
 
 import dalvik.annotation.optimization.FastNative;
 
@@ -778,7 +775,7 @@ public final class SQLiteRawStatement implements Closeable {
      * @throws SQLiteMisuseException if the row has no data. See {@link #getColumnType()}.
      * @throws SQLiteException if a native error occurs.
      */
-    @NonNull
+    @Nullable
     public String getColumnText(int columnIndex) {
         throwIfInvalid();
         try {
