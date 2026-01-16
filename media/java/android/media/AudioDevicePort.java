@@ -193,6 +193,16 @@ public class AudioDevicePort extends AudioPort {
         return new AudioDevicePortConfig(this, samplingRate, channelMask, format, gain);
     }
 
+    /**
+     * Build a specific configuration of this audio device port for use by methods
+     * like AudioManager.connectAudioPatch().
+     */
+    public AudioDevicePortConfig buildConfig(int samplingRate,
+                                        @NonNull AudioFormat.ChannelMasks channelMasks, int format,
+                                        AudioGainConfig gain) {
+        return new AudioDevicePortConfig(this, samplingRate, channelMasks, format, gain);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || !(o instanceof AudioDevicePort)) {

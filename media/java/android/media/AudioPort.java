@@ -16,6 +16,7 @@
 
 package android.media;
 
+import android.annotation.NonNull;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.os.Build;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
@@ -254,6 +255,23 @@ public class AudioPort {
     public AudioPortConfig buildConfig(int samplingRate, int channelMask, int format,
                                         AudioGainConfig gain) {
         return new AudioPortConfig(this, samplingRate, channelMask, format, gain);
+    }
+
+    /**
+     * Build a specific configuration of this audio port for use by methods
+     * like AudioManager.connectAudioPatch().
+     * @param samplingRate The sampling rate.
+     * @param channelMasks The desired channel mask. Use AudioFormat.ChannelMasks(
+     * AudioFormat.CHANNEL_OUT_DEFAULT, AudioFormat.CHANNEL_INVALID) if no change
+     * from active configuration requested.
+     * @param format The desired audio format. AudioFormat.ENCODING_DEFAULT if no change
+     * from active configuration requested.
+     * @param gain The desired gain. null if no gain changed requested.
+     */
+    public AudioPortConfig buildConfig(int samplingRate,
+                                        @NonNull AudioFormat.ChannelMasks channelMasks, int format,
+                                        AudioGainConfig gain) {
+        return new AudioPortConfig(this, samplingRate, channelMasks, format, gain);
     }
 
     /**

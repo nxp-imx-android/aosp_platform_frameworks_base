@@ -8081,7 +8081,7 @@ public class AudioManager {
         }
         AudioPortConfig activeConfig = port.activeConfig();
         AudioPortConfig config = new AudioPortConfig(port, activeConfig.samplingRate(),
-                                        activeConfig.channelMask(), activeConfig.format(), gain);
+                                        activeConfig.channelMasks(), activeConfig.format(), gain);
         config.mConfigMask = AudioPortConfig.GAIN;
         return AudioSystem.setAudioPortConfig(config);
     }
@@ -8265,7 +8265,7 @@ public class AudioManager {
                                        gainCfg.rampDurationMs());
         }
         return port.buildConfig(portCfg.samplingRate(),
-                                                 portCfg.channelMask(),
+                                                 portCfg.channelMasks(),
                                                  portCfg.format(),
                                                  gainCfg);
     }
