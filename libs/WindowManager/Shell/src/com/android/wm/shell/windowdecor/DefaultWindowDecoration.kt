@@ -17,7 +17,9 @@
 package com.android.wm.shell.windowdecor
 
 import android.app.ActivityManager.RunningTaskInfo
+import android.app.compat.CompatChanges
 import android.content.Context
+import android.content.pm.ActivityInfo
 import android.content.pm.ActivityInfo.CONFIG_FONT_SCALE
 import android.content.pm.ActivityInfo.CONFIG_LOCALE
 import android.content.pm.ActivityInfo.CONFIG_UI_MODE
@@ -49,6 +51,7 @@ import android.window.WindowContainerTransaction
 import androidx.annotation.VisibleForTesting
 import com.android.app.tracing.traceSection
 import com.android.internal.policy.DesktopModeCompatPolicy
+import com.android.window.flags.Flags
 import com.android.wm.shell.R
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTaskOrganizer
@@ -92,7 +95,6 @@ import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHostSuppl
 import com.android.wm.shell.windowdecor.extension.getDimensionPixelSize
 import com.android.wm.shell.windowdecor.extension.isDragResizable
 import com.android.wm.shell.windowdecor.extension.isFullscreen
-import com.android.wm.shell.windowdecor.extension.isPinned
 import com.android.wm.shell.windowdecor.extension.isTransparentCaptionBarAppearance
 import com.android.wm.shell.windowdecor.viewholder.AppHeaderViewHolder
 import kotlinx.coroutines.CoroutineScope
@@ -297,6 +299,21 @@ constructor(
         decorationContainerSurface?.let { updateDragResizeListenerIfNeeded(it) }
     }
 
+    private fun isFluidResizingApp(): Boolean {
+        if (!desktopConfig.isVeiledResizeEnabled) {
+            return true
+        }
+        if (!Flags.enableFluidResizingForListedApps()) {
+            return false
+        }
+        val baseActivity = taskInfo.baseActivity ?: return false
+        return CompatChanges.isChangeEnabled(
+            ActivityInfo.ENABLE_FLUID_RESIZING,
+            baseActivity.getPackageName(),
+            userContext.getUser(),
+        )
+    }
+
     /** Updates all window decorations, including any existing caption. */
     override fun relayout(
         taskInfo: RunningTaskInfo,
@@ -315,7 +332,7 @@ constructor(
         // transitions to resize the task, so onTaskInfoChanged relayouts is the only way to make
         // sure the crop is set correctly.
         val shouldSetTaskVisibilityPositionAndCrop =
-            !desktopConfig.isVeiledResizeEnabled && taskDragResizer?.isResizingOrAnimating() == true
+            isFluidResizingApp() && taskDragResizer?.isResizingOrAnimating() == true
 
         // For headers only (i.e. in freeform): use |applyStartTransactionOnDraw| so that the
         // transaction (that applies task crop) is synced with the buffer transaction (that draws
