@@ -192,13 +192,15 @@ constructor(
                             (1f - state.progress) * BLUR_SCALE_COMMUNAL
                         else -> 0f
                     }
-                state is TransitionState.Transition.ShowOrHideOverlay ->
+                state is TransitionState.Transition.ShowOrHideOverlay &&
+                    spatialModelBouncerPushback() ->
                     when {
-                        spatialModelBouncerPushback() && state.fromContent == Scenes.Lockscreen &&
+                        state.fromContent == Scenes.Lockscreen &&
                             state.toContent == Overlays.Bouncer ->
                             state.progress * BLUR_SCALE_BOUNCER
-                        spatialModelBouncerPushback() && state.fromContent == Overlays.Bouncer &&
-                            state.toContent == Scenes.Lockscreen ->
+                        state.fromContent == Overlays.Bouncer &&
+                            (state.toContent == Scenes.Lockscreen ||
+                                state.toContent == Scenes.Gone) ->
                             (1f - state.progress) * BLUR_SCALE_BOUNCER
                         else -> 0f
                     }

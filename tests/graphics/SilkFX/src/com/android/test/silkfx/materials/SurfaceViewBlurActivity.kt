@@ -21,10 +21,11 @@ import android.graphics.Canvas
 import android.graphics.ImageDecoder
 import android.graphics.Paint
 import android.graphics.Rect
+import android.graphics.RectF
 import android.os.Bundle
 import android.view.SurfaceView
 import android.view.BlurRegion
-import android.view.RRectBlurRegion
+import android.view.RoundedRectBlurRegion
 import android.view.SurfaceHolder
 import androidx.appcompat.app.AppCompatActivity
 import android.widget.RadioGroup
@@ -65,22 +66,16 @@ class SurfaceViewBlurActivity : AppCompatActivity() {
                 regionsOne.clear()
                 regionsTwo.clear()
                 // Create a blur region that covers the entire surface.
-                blurOne = RRectBlurRegion.Builder(0.0f, 0.0f, surfaceView.width.toFloat(), surfaceView.height.toFloat(), cornerRadius)
-                    .setBlurRadius(10.0f)
-                    .setAlpha(1.0f)
-                    .build()
+                var rect =
+                    RectF(0.0f, 0.0f, surfaceView.width.toFloat(), surfaceView.height.toFloat())
+                blurOne = RoundedRectBlurRegion(rect, cornerRadius, 1.0f, 10.0f)
                 regionsOne.add(blurOne!!)
                 // Create a blur region that covers the top left part of the surface.
-                blurTwo = RRectBlurRegion.Builder(0.0f, 0.0f, surfaceView.width / 2.0f, surfaceView.height / 2.0f, cornerRadius)
-                    .setBlurRadius(10.0f)
-                    .setAlpha(1.0f)
-                    .build()
+                rect = RectF(0.0f, 0.0f, surfaceView.width / 2.0f, surfaceView.height / 2.0f)
+                blurTwo = RoundedRectBlurRegion(rect, cornerRadius, 1.0f, 10.0f)
                 // Create a blur region that covers the bottom right part of the surface.
-                blurThree = RRectBlurRegion.Builder(surfaceView.width / 2.0f, surfaceView.height / 2.0f,
-                    surfaceView.width.toFloat(), surfaceView.height.toFloat(), cornerRadius)
-                    .setBlurRadius(10.0f)
-                    .setAlpha(1.0f)
-                    .build()
+                rect = RectF(surfaceView.width / 2.0f, surfaceView.height / 2.0f, surfaceView.width.toFloat(), surfaceView.height.toFloat())
+                blurThree = RoundedRectBlurRegion(rect, cornerRadius, 1.0f, 10.0f)
                 regionsTwo.add(blurTwo!!)
                 regionsTwo.add(blurThree!!)
                 applyBlur()

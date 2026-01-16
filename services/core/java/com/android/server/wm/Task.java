@@ -247,6 +247,8 @@ class Task extends TaskFragment {
     private static final String ATTR_NON_FULLSCREEN_BOUNDS = "non_fullscreen_bounds";
     private static final String ATTR_MIN_WIDTH = "min_width";
     private static final String ATTR_MIN_HEIGHT = "min_height";
+    private static final String ATTR_COMPLEX_MIN_WIDTH = "complex_min_width";
+    private static final String ATTR_COMPLEX_MIN_HEIGHT = "complex_min_height";
     private static final String ATTR_PERSIST_TASK_VERSION = "persist_task_version";
     private static final String ATTR_WINDOW_LAYOUT_AFFINITY = "window_layout_affinity";
 
@@ -686,10 +688,10 @@ class Task extends TaskFragment {
             int nextTaskId, int callingUid, String callingPackage,
             @Nullable String callingFeatureId, int resizeMode, boolean supportsPictureInPicture,
             boolean realActivitySuspended, boolean userSetupComplete, int minWidth, int minHeight,
-            @Nullable ActivityInfo info, @Nullable IVoiceInteractionSession voiceSession,
-            IVoiceInteractor voiceInteractor, boolean createdByOrganizer, IBinder launchCookie,
-            boolean deferTaskAppear, boolean removeWithTaskOrganizer,
-            boolean isForceOpaque, boolean shouldIgnoreInsets,
+            int complexMinWidth, int complexMinHeight, @Nullable ActivityInfo info,
+            @Nullable IVoiceInteractionSession voiceSession, IVoiceInteractor voiceInteractor,
+            boolean createdByOrganizer, IBinder launchCookie, boolean deferTaskAppear,
+            boolean removeWithTaskOrganizer, boolean isForceOpaque, boolean shouldIgnoreInsets,
             boolean disableAppCompatRoundedCorners, boolean realActivityAppLockEnabled,
             boolean isVisibilityBarrier) {
         super(atmService, null /* fragmentToken */, createdByOrganizer, false /* isEmbedded */);
@@ -731,6 +733,8 @@ class Task extends TaskFragment {
             this.intent = intent;
             mMinWidth = minWidth;
             mMinHeight = minHeight;
+            mComplexMinWidth = complexMinWidth;
+            mComplexMinHeight = complexMinHeight;
         }
         mAtmService.getTaskChangeNotificationController().notifyTaskCreated(taskId, realActivity);
         mHandler = new ActivityTaskHandler(mTaskSupervisor.mLooper);
@@ -1120,23 +1124,38 @@ class Task extends TaskFragment {
     boolean setMinDimensions(ActivityInfo info) {
         final int minWidth;
         final int minHeight;
+        final int complexMinWidth;
+        final int complexMinHeight;
         if (info != null && info.windowLayout != null) {
             minWidth = info.windowLayout.minWidth;
             minHeight = info.windowLayout.minHeight;
+            complexMinWidth = info.windowLayout.getComplexMinWidth();
+            complexMinHeight = info.windowLayout.getComplexMinHeight();
         } else {
             minWidth = INVALID_MIN_SIZE;
             minHeight = INVALID_MIN_SIZE;
+            complexMinWidth = INVALID_MIN_SIZE;
+            complexMinHeight = INVALID_MIN_SIZE;
         }
 
-        if (mMinWidth == minWidth && mMinHeight == minHeight) {
+        if (!Flags.runtimeDensityResolutionForWindowLayout() && mMinWidth == minWidth
+                && mMinHeight == minHeight) {
             return false;
         }
+
+        if (Flags.runtimeDensityResolutionForWindowLayout() && mComplexMinWidth == complexMinWidth
+                && mComplexMinHeight == complexMinHeight) {
+            return false;
+        }
+
         mMinWidth = minWidth;
         mMinHeight = minHeight;
+        mComplexMinWidth = complexMinWidth;
+        mComplexMinHeight = complexMinHeight;
         // Only update for pure TaskFragment.
         forAllTaskFragments(tf -> {
             if (tf.asTask() == null) {
-                tf.setMinDimensions(minWidth, minHeight);
+                tf.setMinDimensions(minWidth, minHeight, complexMinWidth, complexMinHeight);
             }
         });
         return true;
@@ -1601,7 +1620,8 @@ class Task extends TaskFragment {
                 mTaskFragmentHostUid = childTaskFrag.mTaskFragmentOrganizerUid;
                 mTaskFragmentHostProcessName = childTaskFrag.mTaskFragmentOrganizerProcessName;
             }
-            childTaskFrag.setMinDimensions(mMinWidth, mMinHeight);
+            childTaskFrag.setMinDimensions(mMinWidth, mMinHeight, mComplexMinWidth,
+                    mComplexMinHeight);
 
             // The starting window should keep covering its task when a pure TaskFragment is added
             // because its bounds may not fill the task.
@@ -2062,8 +2082,8 @@ class Task extends TaskFragment {
         forAllActivities(f);
         f.recycle();
         taskDescription.setResizeMode(mResizeMode);
-        taskDescription.setMinWidth(mMinWidth);
-        taskDescription.setMinHeight(mMinHeight);
+        taskDescription.setMinWidth(getMinWidth());
+        taskDescription.setMinHeight(getMinHeight());
         setTaskDescription(taskDescription);
         mAtmService.getTaskChangeNotificationController().notifyTaskDescriptionChanged(
                 getTaskInfo());
@@ -2170,6 +2190,7 @@ class Task extends TaskFragment {
         }
 
         final int prevWinMode = getWindowingMode();
+        final int prevDensityDpi = getConfiguration().densityDpi;
         mTmpPrevBounds.set(getBounds());
         final boolean wasInMultiWindowMode = inMultiWindowMode();
         final boolean wasInPictureInPicture = inPinnedWindowingMode();
@@ -2234,6 +2255,13 @@ class Task extends TaskFragment {
         // the latest task-info thus the task-info won't have changed.
         if (!taskOrgChanged) {
             dispatchTaskInfoChangedIfNeeded(false /* force */);
+        }
+
+        // TaskDescription's minWidth/minHeight are derived from density-dependent values,
+        // so they must be updated when density changes.
+        if (Flags.runtimeDensityResolutionForWindowLayout()
+                && getConfiguration().densityDpi != prevDensityDpi) {
+            updateTaskDescription();
         }
     }
 
@@ -2336,8 +2364,8 @@ class Task extends TaskFragment {
             return;
         }
 
-        int minWidth = mMinWidth;
-        int minHeight = mMinHeight;
+        int minWidth = getMinWidth();
+        int minHeight = getMinHeight();
         // Use Display specific min sizes when there is one associated with this Task.
         final int defaultMinSizeDp = mDisplayContent == null
                 ? DEFAULT_MIN_TASK_SIZE_DP : mDisplayContent.mMinSizeOfResizeableTaskDp;
@@ -3428,8 +3456,10 @@ class Task extends TaskFragment {
         info.topActivityType = topTask.getActivityType();
         info.displayCutoutInsets = topTask.getDisplayCutoutInsets();
         info.isResizeable = isResizeable();
-        info.minWidth = mMinWidth;
-        info.minHeight = mMinHeight;
+        // TODO(b/438420596): Add runtime density resolution support to {@Link TaskInfo#minWidth}
+        //  and {@Link TaskInfo#minHeight}.
+        info.minWidth = getMinWidth();
+        info.minHeight = getMinHeight();
         info.defaultMinSize = mDisplayContent == null
                 ? DEFAULT_MIN_TASK_SIZE_DP : mDisplayContent.mMinSizeOfResizeableTaskDp;
         info.positionInParent = getRelativePosition();
@@ -3957,9 +3987,9 @@ class Task extends TaskFragment {
         if (!isResizeable()) {
             sb.append(" nonResizable");
         }
-        if (mMinWidth != INVALID_MIN_SIZE || mMinHeight != INVALID_MIN_SIZE) {
-            sb.append(" minWidth=").append(mMinWidth);
-            sb.append(" minHeight=").append(mMinHeight);
+        if (getMinWidth() != INVALID_MIN_SIZE || getMinHeight() != INVALID_MIN_SIZE) {
+            sb.append(" minWidth=").append(getMinWidth());
+            sb.append(" minHeight=").append(getMinHeight());
         }
         sb.append('}');
         return stringName = sb.toString();
@@ -4023,6 +4053,8 @@ class Task extends TaskFragment {
         }
         out.attributeInt(null, ATTR_MIN_WIDTH, mMinWidth);
         out.attributeInt(null, ATTR_MIN_HEIGHT, mMinHeight);
+        out.attributeInt(null, ATTR_COMPLEX_MIN_WIDTH, mComplexMinWidth);
+        out.attributeInt(null, ATTR_COMPLEX_MIN_HEIGHT, mComplexMinHeight);
         out.attributeInt(null, ATTR_PERSIST_TASK_VERSION, PERSIST_TASK_VERSION);
 
         if (affinityIntent != null) {
@@ -4103,6 +4135,8 @@ class Task extends TaskFragment {
         Rect lastNonFullscreenBounds = null;
         int minWidth = INVALID_MIN_SIZE;
         int minHeight = INVALID_MIN_SIZE;
+        int complexMinWidth = INVALID_MIN_SIZE;
+        int complexMinHeight = INVALID_MIN_SIZE;
         int persistTaskVersion = 0;
 
         for (int attrNdx = in.getAttributeCount() - 1; attrNdx >= 0; --attrNdx) {
@@ -4197,6 +4231,12 @@ class Task extends TaskFragment {
                     break;
                 case ATTR_MIN_HEIGHT:
                     minHeight = Integer.parseInt(attrValue);
+                    break;
+                case ATTR_COMPLEX_MIN_WIDTH:
+                    complexMinWidth = Integer.parseInt(attrValue);
+                    break;
+                case ATTR_COMPLEX_MIN_HEIGHT:
+                    complexMinHeight = Integer.parseInt(attrValue);
                     break;
                 case ATTR_PERSIST_TASK_VERSION:
                     persistTaskVersion = Integer.parseInt(attrValue);
@@ -4307,6 +4347,8 @@ class Task extends TaskFragment {
                 .setUserSetupComplete(userSetupComplete)
                 .setMinWidth(minWidth)
                 .setMinHeight(minHeight)
+                .setComplexMinWidth(complexMinWidth)
+                .setComplexMinHeight(complexMinHeight)
                 .buildInner();
         task.mLastNonFullscreenBounds = lastNonFullscreenBounds;
         task.setBounds(lastNonFullscreenBounds);
@@ -6182,9 +6224,9 @@ class Task extends TaskFragment {
                     prefix + "  topPausingActivity=", null);
             printThisActivity(pw, getTopResumedActivity(), dumpPackage, false,
                     prefix + "  topResumedActivity=", null);
-            if (mMinWidth != INVALID_MIN_SIZE || mMinHeight != INVALID_MIN_SIZE) {
-                pw.print(prefix); pw.print("  mMinWidth="); pw.print(mMinWidth);
-                pw.print(" mMinHeight="); pw.println(mMinHeight);
+            if (getMinWidth() != INVALID_MIN_SIZE || getMinHeight() != INVALID_MIN_SIZE) {
+                pw.print(prefix); pw.print("  minWidth="); pw.print(getMinWidth());
+                pw.print(" minHeight="); pw.println(getMinHeight());
             }
         }
     }
@@ -6771,6 +6813,8 @@ class Task extends TaskFragment {
         private boolean mUserSetupComplete;
         private int mMinWidth = INVALID_MIN_SIZE;
         private int mMinHeight = INVALID_MIN_SIZE;
+        private int mComplexMinWidth = INVALID_MIN_SIZE;
+        private int mComplexMinHeight = INVALID_MIN_SIZE;
         private ActivityInfo mActivityInfo;
         private ActivityOptions mActivityOptions;
         private IVoiceInteractionSession mVoiceSession;
@@ -6849,6 +6893,16 @@ class Task extends TaskFragment {
 
         Builder setMinHeight(int minHeight) {
             mMinHeight = minHeight;
+            return this;
+        }
+
+        Builder setComplexMinWidth(int complexMinWidth) {
+            mComplexMinWidth = complexMinWidth;
+            return this;
+        }
+
+        Builder setComplexMinHeight(int complexMinHeight) {
+            mComplexMinHeight = complexMinHeight;
             return this;
         }
 
@@ -7195,10 +7249,11 @@ class Task extends TaskFragment {
                     mTaskAffiliation, mPrevAffiliateTaskId, mNextAffiliateTaskId, mCallingUid,
                     mCallingPackage, mCallingFeatureId, mResizeMode, mSupportsPictureInPicture,
                     mRealActivitySuspended, mUserSetupComplete, mMinWidth, mMinHeight,
-                    mActivityInfo, mVoiceSession, mVoiceInteractor, mCreatedByOrganizer,
-                    mLaunchCookie, mDeferTaskAppear, mRemoveWithTaskOrganizer,
-                    mIsForceOpaque, mShouldIgnoreInsets, mDisableAppCompatRoundedCorners,
-                    mRealActivityAppLockEnabled, mIsVisibilityBarrier);
+                    mComplexMinWidth, mComplexMinHeight, mActivityInfo, mVoiceSession,
+                    mVoiceInteractor, mCreatedByOrganizer, mLaunchCookie, mDeferTaskAppear,
+                    mRemoveWithTaskOrganizer, mIsForceOpaque, mShouldIgnoreInsets,
+                    mDisableAppCompatRoundedCorners, mRealActivityAppLockEnabled,
+                    mIsVisibilityBarrier);
         }
     }
 

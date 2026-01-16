@@ -18,6 +18,7 @@ package com.android.systemui.screencapture
 
 import android.content.Context
 import android.util.Log
+import android.view.Display
 import com.android.app.tracing.coroutines.launchInTraced
 import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.SysUISingleton
@@ -33,10 +34,11 @@ import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInter
 import com.android.systemui.screencapture.record.domain.interactor.ScreenCaptureRecordFeaturesInteractor
 import com.android.systemui.screencapture.record.smallscreen.ui.SmallScreenPostRecordingActivity
 import com.android.systemui.screencapture.ui.PostRecordingShelf
-import com.android.systemui.screencapture.ui.ScreenCaptureUi
+import com.android.systemui.screencapture.ui.ScreenCaptureUiDialogFactory
 import com.android.systemui.screenrecord.domain.interactor.ScreenRecordingServiceInteractor
 import com.android.systemui.screenrecord.shared.model.ScreenRecording
 import javax.inject.Inject
+import kotlin.coroutines.resume
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filter
@@ -46,6 +48,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 
 @SysUISingleton
 class ScreenCaptureCoreStartable
@@ -87,22 +90,38 @@ constructor(
                         screenCaptureUiInteractor.hide(type)
                         null
                     } else {
-                        screenCaptureComponent
-                            .screenCaptureUiFactory()
-                            .create(type = state.parameters.screenCaptureType, display = display)
+                        ScreenCaptureUiContext(
+                            display = display,
+                            factory = screenCaptureComponent.screenCaptureUiDialogFactory(),
+                        )
                     }
                 } else {
                     null
                 }
             }
-            .mapLatest { screenCaptureUi: ScreenCaptureUi? ->
-                if (screenCaptureUi != null) {
-                    screenCaptureUi.show()
+            .mapLatest { ctx: ScreenCaptureUiContext? ->
+                if (ctx != null) {
+                    ctx.showUi(type = type)
                     screenCaptureUiInteractor.hide(type)
                 }
             }
             .launchIn(appScope)
     }
+
+    /**
+     * Shows the UI and suspends until it's is dismissed. Cancelling the suspension dismisses the UI
+     */
+    private suspend fun ScreenCaptureUiContext.showUi(type: ScreenCaptureType): Unit =
+        suspendCancellableCoroutine { invocation ->
+            val dialog = factory.create(display = display, type = type)
+            dialog.setOnDismissListener {
+                if (invocation.isActive) {
+                    invocation.resume(Unit)
+                }
+            }
+            dialog.show()
+            invocation.invokeOnCancellation { dialog.dismiss() }
+        }
 
     private fun setupSmallScreenPostRecordings() {
         if (!screenCaptureRecordFeaturesInteractor.isSmallScreenRecordingEnabled) return
@@ -161,3 +180,8 @@ constructor(
             .launchInTraced("ScreenCaptureOverlayStateInteractor#show", coroutineScope())
     }
 }
+
+private data class ScreenCaptureUiContext(
+    val display: Display,
+    val factory: ScreenCaptureUiDialogFactory,
+)

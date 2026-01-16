@@ -15,54 +15,112 @@
  */
 package com.android.settingslib.widget
 
+import android.graphics.drawable.Drawable
 import android.text.method.LinkMovementMethod
 import android.view.View
+import android.widget.ImageView
 import android.widget.TextView
+import androidx.annotation.DrawableRes
 import androidx.core.view.isVisible
 import androidx.preference.PreferenceViewHolder
 import com.android.settingslib.widget.theme.R
 
 /**
- * Holds the configuration for a single preference footer.
+ * Holds the configuration for a single preference footer, which can contain an optional image and
+ * optional text content.
+ *
+ * @property image The optional image content for the footer.
+ * @property text The optional text content for the footer.
  */
 data class FooterData(
-    val text: CharSequence,
-    val listener: View.OnClickListener,
-)
+    val image: ImageContent? = null,
+    val text: TextContent? = null,
+) {
+    /**
+     * Represents the image content for a preference footer.
+     *
+     * @property imageRes The drawable resource ID for the image.
+     * @property description The content description for the image.
+     */
+    data class ImageContent(
+        @DrawableRes val imageRes: Int? = null,
+        val imageDrawable: Drawable? = null,
+        val description: String? = null,
+    ) {
+        init {
+            require(imageRes != null || imageDrawable != null) {
+                "Either imageRes or imageDrawable must be provided."
+            }
+            require(imageRes == null || imageDrawable == null) {
+                "Cannot provide both imageRes and imageDrawable."
+            }
+        }
+    }
+
+    /**
+     * Represents the text content for a preference footer.
+     *
+     * @property text The character sequence to display.
+     * @property listener The click listener for the text.
+     */
+    data class TextContent(val text: CharSequence, val listener: View.OnClickListener)
+}
 
 /**
  * Finds or creates the footer view and binds the provided data to it.
  * Handles view recycling by explicitly showing/hiding the footer.
  */
 fun bindFooter(holder: PreferenceViewHolder, data: FooterData?) {
-    val footerView = holder.itemView.findViewById<TextView>(R.id.settingslib_expressive_link_footer)
+    val container = holder.itemView.findViewById<View>(R.id.settingslib_expressive_footer_container)
+    val imageView = holder.itemView.findViewById<ImageView>(R.id.settingslib_expressive_footer_image)
+    val textView = holder.itemView.findViewById<TextView>(R.id.settingslib_expressive_footer_text)
 
-    footerView?.apply {
-        val shouldShowFooter = data != null && data.text.isNotEmpty()
-        if (shouldShowFooter) {
-            text = data.text
-            setOnClickListener(data.listener)
-            movementMethod = LinkMovementMethod.getInstance()
-            visibility = View.VISIBLE
-
-            val icon = holder.itemView.findViewById<View>(android.R.id.icon)
-            if (icon != null && icon.isVisible) {
-                setPaddingRelative(
-                    resources.getDimensionPixelSize(R.dimen.settingslib_expressive_preference_footer_padding_start),
-                    paddingTop,
-                    paddingEnd,
-                    paddingBottom
-                )
-            } else {
-                setPaddingRelative(
-                    0,
-                    paddingTop,
-                    paddingEnd,
-                    paddingBottom
-                )
-            }
-        } else {
-            visibility = View.GONE
-        }
+    if (container == null || imageView == null || textView == null) {
+        return // Views not found, do nothing.
     }
+
+    val hasImage = data?.image != null
+    val hasText = data?.text != null
+
+    if (hasImage) {
+        data.image.let {
+            if (it.imageRes != null) {
+                imageView.setImageResource(it.imageRes)
+            } else {
+                imageView.setImageDrawable(it.imageDrawable)
+            }
+            imageView.contentDescription = it.description
+        }
+        imageView.visibility = View.VISIBLE
+    } else {
+        imageView.visibility = View.GONE
+    }
+
+    // Bind text content
+    if (hasText) {
+        data.text.let {
+            textView.text = it.text
+            textView.setOnClickListener(it.listener)
+            textView.movementMethod = LinkMovementMethod.getInstance()
+        }
+        val icon = holder.itemView.findViewById<View>(android.R.id.icon)
+        if (icon != null && icon.isVisible) {
+            textView.setPaddingRelative(
+                textView.resources.getDimensionPixelSize(
+                    R.dimen.settingslib_expressive_preference_footer_padding_start
+                ),
+                textView.paddingTop,
+                textView.paddingEnd,
+                textView.paddingBottom
+            )
+        } else {
+            textView.setPaddingRelative(0, textView.paddingTop, textView.paddingEnd, textView.paddingBottom)
+        }
+        textView.visibility = View.VISIBLE
+    } else {
+        textView.visibility = View.GONE
+    }
+
+    // Set container visibility
+    container.visibility = if (hasImage || hasText) View.VISIBLE else View.GONE
 }

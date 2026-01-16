@@ -4878,11 +4878,13 @@ package android.app {
     method @Nullable public android.app.ActivityManager.RecentTaskInfo getTaskInfo();
     method @FlaggedApi("com.android.window.flags.enable_window_repositioning_api") @RequiresPermission(android.Manifest.permission.REPOSITION_SELF_WINDOWS) public void moveTaskTo(@NonNull android.app.TaskLocation, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<android.app.TaskLocation,java.lang.Exception>);
     method public void moveToFront();
-    method @FlaggedApi("com.android.window.flags.enable_interactive_picture_in_picture") @RequiresPermission(value=android.Manifest.permission.USE_PINNED_WINDOWING_LAYER, conditional=true) public void requestWindowingLayer(int, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.lang.Void,java.lang.Exception>);
+    method @FlaggedApi("com.android.window.flags.enable_interactive_picture_in_picture") @RequiresPermission(value=android.Manifest.permission.USE_PINNED_WINDOWING_LAYER, conditional=true) public void requestWindowingLayer(int, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.lang.Integer,java.lang.Exception>);
     method public void setExcludeFromRecents(boolean);
     method public void startActivity(android.content.Context, android.content.Intent, android.os.Bundle);
     field @FlaggedApi("com.android.window.flags.enable_interactive_picture_in_picture") public static final int WINDOWING_LAYER_NORMAL_APP = 1; // 0x1
     field @FlaggedApi("com.android.window.flags.enable_interactive_picture_in_picture") public static final int WINDOWING_LAYER_PINNED = 2; // 0x2
+    field @FlaggedApi("com.android.window.flags.enable_interactive_picture_in_picture") public static final int WINDOWING_LAYER_REQUEST_GRANTED = 0; // 0x0
+    field @FlaggedApi("com.android.window.flags.enable_interactive_picture_in_picture") public static final int WINDOWING_LAYER_REQUEST_REJECTED = 1; // 0x1
     field @FlaggedApi("com.android.window.flags.enable_interactive_picture_in_picture") public static final int WINDOWING_LAYER_UNDEFINED = 0; // 0x0
   }
 
@@ -25138,6 +25140,7 @@ package android.media {
     field public static final String KEY_HAPTIC_CHANNEL_COUNT = "haptic-channel-count";
     field public static final String KEY_HARDWARE_AV_SYNC_ID = "hw-av-sync-id";
     field public static final String KEY_HDR10_PLUS_INFO = "hdr10-plus-info";
+    field @FlaggedApi("android.media.codec.agtm_metadata") public static final String KEY_HDR_ECLIPSA_VIDEO_INFO = "hdr-eclipsa-video-info";
     field public static final String KEY_HDR_STATIC_INFO = "hdr-static-info";
     field public static final String KEY_HEIGHT = "height";
     field @FlaggedApi("android.media.codec.flip_support") public static final String KEY_HORIZONTAL_FLIP = "horizontal-flip";
@@ -35883,6 +35886,7 @@ package android.os {
     method public int describeContents();
     method @NonNull public static android.os.SharedMemory fromFileDescriptor(@NonNull android.os.ParcelFileDescriptor);
     method public int getSize();
+    method @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public boolean isRegionReadOnly();
     method @NonNull public java.nio.ByteBuffer map(int, int, int) throws android.system.ErrnoException;
     method @NonNull public java.nio.ByteBuffer mapReadOnly() throws android.system.ErrnoException;
     method @NonNull public java.nio.ByteBuffer mapReadWrite() throws android.system.ErrnoException;
@@ -43753,7 +43757,8 @@ package android.service.persistentdata {
 
 package android.service.personalcontext {
 
-  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class RenderToken implements android.os.Parcelable {
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class RenderToken implements java.lang.Comparable<android.service.personalcontext.RenderToken> android.os.Parcelable {
+    method public int compareTo(@NonNull android.service.personalcontext.RenderToken);
     method public int describeContents();
     method @NonNull public java.util.UUID getRendererComponentId();
     method @NonNull public java.util.UUID getTokenId();
@@ -43887,7 +43892,7 @@ package android.service.personalcontext.hint {
     method @NonNull public java.util.List<android.service.personalcontext.hint.ContextHintWithSignature> getAttributionHints();
     method @NonNull public android.service.personalcontext.hint.ContextHint getContextHint();
     method @Nullable public String getOriginatingPackage();
-    method @Nullable public android.service.personalcontext.RenderToken getRenderToken();
+    method @NonNull public java.util.Set<android.service.personalcontext.RenderToken> getRenderTokens();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.service.personalcontext.hint.ContextHintWithSignature> CREATOR;
   }
@@ -52617,12 +52622,6 @@ package android.view {
     method public void setBlurRadius(float);
   }
 
-  public abstract static class BlurRegion.Builder<T extends android.view.BlurRegion.Builder<T>> {
-    method @NonNull public abstract android.view.BlurRegion build();
-    method @NonNull public T setAlpha(@FloatRange(from=0.0, to=1.0) float);
-    method @NonNull public T setBlurRadius(float);
-  }
-
   public final class Choreographer {
     method public static android.view.Choreographer getInstance();
     method public void postFrameCallback(android.view.Choreographer.FrameCallback);
@@ -53027,6 +53026,7 @@ package android.view {
 
   public final class InputDevice implements android.os.Parcelable {
     method public int describeContents();
+    method @FlaggedApi("android.companion.virtualdevice.flags.associated_display_id_input_api") public int getAssociatedDisplayId();
     method @NonNull public android.hardware.BatteryState getBatteryState();
     method public int getControllerNumber();
     method public String getDescriptor();
@@ -54137,27 +54137,6 @@ package android.view {
     field public static final int TYPE_ZOOM_OUT = 1019; // 0x3fb
   }
 
-  @FlaggedApi("android.view.flags.surface_view_set_blur_regions") public final class RRectBlurRegion extends android.view.BlurRegion {
-    ctor public RRectBlurRegion(@NonNull android.view.RRectBlurRegion);
-    method @NonNull public android.view.RRectBlurRegion copy();
-    method public float getBottom();
-    method @NonNull public float[] getCornerRadius();
-    method public float getLeft();
-    method public float getRight();
-    method public float getTop();
-    method public void setBottom(float);
-    method public void setCornerRadius(@NonNull float[]);
-    method public void setLeft(float);
-    method public void setRight(float);
-    method public void setTop(float);
-  }
-
-  public static final class RRectBlurRegion.Builder extends android.view.BlurRegion.Builder<android.view.RRectBlurRegion.Builder> {
-    ctor public RRectBlurRegion.Builder(@NonNull android.view.RRectBlurRegion);
-    ctor public RRectBlurRegion.Builder(float, float, float, float, @Nullable float[]);
-    method @NonNull public android.view.RRectBlurRegion build();
-  }
-
   public final class RoundedCorner implements android.os.Parcelable {
     ctor public RoundedCorner(int, int, int, int);
     method public int describeContents();
@@ -54170,6 +54149,18 @@ package android.view {
     field public static final int POSITION_BOTTOM_RIGHT = 2; // 0x2
     field public static final int POSITION_TOP_LEFT = 0; // 0x0
     field public static final int POSITION_TOP_RIGHT = 1; // 0x1
+  }
+
+  @FlaggedApi("android.view.flags.surface_view_set_blur_regions") public final class RoundedRectBlurRegion extends android.view.BlurRegion {
+    ctor public RoundedRectBlurRegion();
+    ctor public RoundedRectBlurRegion(@NonNull android.graphics.RectF, @NonNull float[], @FloatRange(from=0.0, to=1.0) float, float);
+    ctor public RoundedRectBlurRegion(@NonNull android.view.RoundedRectBlurRegion);
+    method @NonNull public android.view.RoundedRectBlurRegion copy();
+    method @NonNull public android.graphics.RectF getBounds();
+    method @NonNull public float[] getCornerRadius();
+    method public void setBounds(@NonNull android.graphics.RectF);
+    method public void setCornerRadius(@NonNull float[]);
+    method public void setCornerRadius(float);
   }
 
   public class ScaleGestureDetector {

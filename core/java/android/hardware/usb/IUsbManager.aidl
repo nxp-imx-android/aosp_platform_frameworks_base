@@ -47,17 +47,17 @@ interface IUsbManager
     /* Returns a file descriptor for communicating with the USB accessory.
      * This file descriptor can be used with standard Java file operations.
      */
-    ParcelFileDescriptor openAccessory(in UsbAccessory accessory);
+    ParcelFileDescriptor openAccessory(in UsbAccessory accessory, String packageName);
 
     /* Returns a file descriptor for reading from the USB accessory.
      * This file descriptor can be used with standard Java file operations.
      */
-    ParcelFileDescriptor openAccessoryForInputStream(in UsbAccessory accessory);
+    ParcelFileDescriptor openAccessoryForInputStream(in UsbAccessory accessory, String packageName);
 
     /* Returns a file descriptor for writing to the USB accessory.
      * This file descriptor can be used with standard Java file operations.
      */
-    ParcelFileDescriptor openAccessoryForOutputStream(in UsbAccessory accessory);
+    ParcelFileDescriptor openAccessoryForOutputStream(in UsbAccessory accessory, String packageName);
 
     /* Returns the max packet size of the USB accessory.*/
     int getMaxPacketSize(in UsbAccessory accessory);
@@ -87,14 +87,6 @@ interface IUsbManager
     /* Removes packages from the set of "denied and don't ask again" launch preferences for an accessory */
     void removeAccessoryPackagesFromPreferenceDenied(in UsbAccessory device, in String[] packageNames, in UserHandle user);
 
-    /* Sets the persistent permission granted state for USB device
-     */
-    void setDevicePersistentPermission(in UsbDevice device, int uid, in UserHandle user, boolean shouldBeGranted);
-
-    /* Sets the persistent permission granted state for USB accessory
-     */
-    void setAccessoryPersistentPermission(in UsbAccessory accessory, int uid, in UserHandle user, boolean shouldBeGranted);
-
     /* Returns true if the caller has permission to access the device. */
     boolean hasDevicePermission(in UsbDevice device, String packageName);
 
@@ -106,13 +98,13 @@ interface IUsbManager
             int pid, int uid);
 
     /* Returns true if the caller has permission to access the accessory. */
-    boolean hasAccessoryPermission(in UsbAccessory accessory);
+    boolean hasAccessoryPermission(in UsbAccessory accessory, String packageName);
 
     /* Returns true if the given pid/uid has permission to access the accessory. */
     @EnforcePermission("MANAGE_USB")
     @JavaPassthrough(annotation=
             "@android.annotation.RequiresPermission(android.Manifest.permission.MANAGE_USB)")
-    boolean hasAccessoryPermissionWithIdentity(in UsbAccessory accessory, int pid, int uid);
+    boolean hasAccessoryPermissionWithIdentity(in UsbAccessory accessory, String packageName, int pid, int uid);
 
     /* Requests permission for the given package to access the device.
      * Will display a system dialog to query the user if permission
@@ -127,13 +119,18 @@ interface IUsbManager
     void requestAccessoryPermission(in UsbAccessory accessory, String packageName,
             in PendingIntent pi);
 
-    /* Grants permission for the given UID to access the device */
+    /* Grants permission for the given packageName + UID to access the device */
     @EnforcePermission("MANAGE_USB")
-    void grantDevicePermission(in UsbDevice device, int uid);
+    void grantDevicePermission(in UsbDevice device, String packageName, int uid, boolean isPersistent);
 
-    /* Grants permission for the given UID to access the accessory */
+    /* Grants permission for the given packageName + UID to access the accessory
+     *
+     * Note: By design, you cannot persist permissions for accessories. We do not
+     * enforce that UsbAccessory fields are filled in and this makes it hard to
+     * fingerprint accessories.
+     */
     @EnforcePermission("MANAGE_USB")
-    void grantAccessoryPermission(in UsbAccessory accessory, int uid);
+    void grantAccessoryPermission(in UsbAccessory accessory, String packageName, int uid);
 
     /* Returns true if the USB manager has default preferences or permissions for the package */
     boolean hasDefaults(String packageName, int userId);

@@ -234,6 +234,32 @@ public final class ComputerControlSessionProcessor {
     }
 
     /**
+     * Returns whether the computer control functionality is available for the caller.
+     */
+    public boolean isComputerControlAvailable(@NonNull AttributionSource attributionSource) {
+        final UserHandle ownerUser = UserHandle.getUserHandleForUid(attributionSource.getUid());
+        final Context ownerContext;
+        final long token = Binder.clearCallingIdentity();
+        try {
+            // TODO: b/445856399 - Support managed profiles.
+            if (mDevicePolicyManagerInternal.isUserOrganizationManaged(ownerUser.getIdentifier())) {
+                return false;
+            }
+            ownerContext = mContext.createContextAsUser(ownerUser, /* flags = */ 0);
+        } finally {
+            Binder.restoreCallingIdentity(token);
+        }
+        final PackageManager ownerPackageManager = ownerContext.getPackageManager();
+        final String callerPackageName = attributionSource.getPackageName();
+        try {
+            return mAllowlistController.isPackageAllowedToCreateSession(callerPackageName,
+                    ownerPackageManager);
+        } catch (SecurityException e) {
+            return false;
+        }
+    }
+
+    /**
      * Returns whether the virtual device with the given ID represents a computer control session.
      */
     public boolean isComputerControlSession(int deviceId) {

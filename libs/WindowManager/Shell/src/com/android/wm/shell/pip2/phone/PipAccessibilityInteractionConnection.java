@@ -36,6 +36,7 @@ import android.window.ScreenCaptureInternal;
 import androidx.annotation.BinderThread;
 import androidx.annotation.Nullable;
 
+import com.android.internal.annotations.VisibleForTesting;
 import com.android.wm.shell.R;
 import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.common.pip.PipBoundsState;
@@ -52,7 +53,7 @@ import java.util.List;
 public class PipAccessibilityInteractionConnection implements
         PipTransitionState.PipTransitionStateChangedListener {
 
-    private static final String A11Y_SCHEDULED_PIP_BOUNDS = "a11y_schedule_pip_bounds";
+    @VisibleForTesting static final String A11Y_SCHEDULED_PIP_BOUNDS = "a11y_schedule_pip_bounds";
 
     public interface AccessibilityCallbacks {
         /**
@@ -100,6 +101,11 @@ public class PipAccessibilityInteractionConnection implements
         mConnectionImpl = new PipAccessibilityInteractionConnectionImpl();
 
         mPipTransitionState.addPipTransitionStateChangedListener(this);
+    }
+
+    @VisibleForTesting
+    IAccessibilityInteractionConnection getConnectionImpl() {
+        return mConnectionImpl;
     }
 
     /**

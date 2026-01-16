@@ -162,8 +162,8 @@ internal object FlickerAssertionHelper {
             }
 
             check(
-                (leftDiffMeetThreshold || xDirection == 0 || prevXDirection == xDirection) &&
-                    (topDiffMeetThreshold || yDirection == 0 || prevYDirection == yDirection)
+                (xDirection == 0 || prevXDirection == xDirection) &&
+                    (yDirection == 0 || prevYDirection == yDirection)
             ) {
                 "Position of $layerMatcher should only move in one direction, but it has" +
                     " prevXDirection=$prevXDirection currXDirection=$xDirection" +

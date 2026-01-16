@@ -64,7 +64,7 @@ class KeyguardDisplayManagerTest : SysuiTestCase() {
     private val presentationFactory = mock(ConnectedDisplayKeyguardPresentationFactory::class.java)
     @Mock
     private val connectedDisplayKeyguardPresentation =
-        mock(ConnectedDisplayKeyguardPresentation::class.java)
+        mock(ConnectedDisplayConstraintLayoutKeyguardPresentation::class.java)
     @Mock private val deviceStateHelper = mock(DeviceStateHelper::class.java)
     @Mock private val keyguardStateController = mock(KeyguardStateController::class.java)
     private val shadePositionRepository = FakeShadeDisplayRepository()

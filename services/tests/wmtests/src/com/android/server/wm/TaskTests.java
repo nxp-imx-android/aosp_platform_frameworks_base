@@ -96,6 +96,7 @@ import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.util.DisplayMetrics;
+import android.util.TypedValue;
 import android.util.Xml;
 import android.view.DisplayInfo;
 import android.view.SurfaceControl;
@@ -1060,10 +1061,9 @@ public class TaskTests extends WindowTestsBase {
         final Task fullscreenTask = new TaskBuilder(mSupervisor).build();
         final Rect originalTaskBounds = new Rect(fullscreenTask.getBounds());
         final ActivityInfo aInfo = new ActivityInfo();
-        aInfo.windowLayout = new ActivityInfo.WindowLayout(0 /* width */, 0 /* widthFraction */,
-                0 /* height */, 0 /* heightFraction */, 0 /* gravity */,
-                originalTaskBounds.width() * 2 /* minWidth */,
-                originalTaskBounds.height() * 2 /* minHeight */);
+        aInfo.windowLayout = createWindowLayoutWithMinSize(originalTaskBounds.width() * 2,
+                originalTaskBounds.height() * 2, mContext.getResources().getDisplayMetrics(),
+                TypedValue.COMPLEX_UNIT_PX);
         fullscreenTask.setMinDimensions(aInfo);
         fullscreenTask.onConfigurationChanged(fullscreenTask.getParent().getConfiguration());
 
@@ -2322,26 +2322,28 @@ public class TaskTests extends WindowTestsBase {
 
     @Test
     public void testAllowRelingquish_updateMinDimensions() {
+        createWindowLayoutWithMinSize(500, 1000, mContext.getResources().getDisplayMetrics(),
+                TypedValue.COMPLEX_UNIT_PX);
         // r0 allows relingquish
         final ActivityRecord r0 = new ActivityBuilder(mAtm)
                 .setCreateTask(true)
-                .setWindowLayout(new ActivityInfo.WindowLayout(
-                        0, 0, 0, 0, 0, 500 /* minWidth */, 1000 /* minHeight*/))
+                .setWindowLayout(createWindowLayoutWithMinSize(500, 1000,
+                        mContext.getResources().getDisplayMetrics(), TypedValue.COMPLEX_UNIT_PX))
                 .setActivityFlags(FLAG_RELINQUISH_TASK_IDENTITY)
                 .build();
         final Task task = r0.getTask();
 
-        assertEquals(500, task.mMinWidth);
-        assertEquals(1000, task.mMinHeight);
+        assertEquals(500, task.getMinWidth());
+        assertEquals(1000, task.getMinHeight());
 
         final ActivityRecord r1 = new ActivityBuilder(mAtm)
                 .setTask(task)
-                .setWindowLayout(new ActivityInfo.WindowLayout(
-                        0, 0, 0, 0, 0, 1000 /* minWidth */, 500 /* minHeight*/))
+                .setWindowLayout(createWindowLayoutWithMinSize(1000, 500,
+                        mContext.getResources().getDisplayMetrics(), TypedValue.COMPLEX_UNIT_PX))
                 .build();
 
-        assertEquals(1000, task.mMinWidth);
-        assertEquals(500, task.mMinHeight);
+        assertEquals(1000, task.getMinWidth());
+        assertEquals(500, task.getMinHeight());
     }
 
     @Test
@@ -2349,22 +2351,22 @@ public class TaskTests extends WindowTestsBase {
         // r0 disallows relingquish
         final ActivityRecord r0 = new ActivityBuilder(mAtm)
                 .setCreateTask(true)
-                .setWindowLayout(new ActivityInfo.WindowLayout(
-                        0, 0, 0, 0, 0, 500 /* minWidth */, 1000 /* minHeight*/))
+                .setWindowLayout(createWindowLayoutWithMinSize(500, 1000,
+                        mContext.getResources().getDisplayMetrics(), TypedValue.COMPLEX_UNIT_PX))
                 .build();
         final Task task = r0.getTask();
 
-        assertEquals(500, task.mMinWidth);
-        assertEquals(1000, task.mMinHeight);
+        assertEquals(500, task.getMinWidth());
+        assertEquals(1000, task.getMinHeight());
 
         final ActivityRecord r1 = new ActivityBuilder(mAtm)
                 .setTask(task)
-                .setWindowLayout(new ActivityInfo.WindowLayout(
-                        0, 0, 0, 0, 0, 1000 /* minWidth */, 500 /* minHeight*/))
+                .setWindowLayout(createWindowLayoutWithMinSize(1000, 500,
+                        mContext.getResources().getDisplayMetrics(), TypedValue.COMPLEX_UNIT_PX))
                 .build();
 
-        assertEquals(500, task.mMinWidth);
-        assertEquals(1000, task.mMinHeight);
+        assertEquals(500, task.getMinWidth());
+        assertEquals(1000, task.getMinHeight());
     }
 
     @Test

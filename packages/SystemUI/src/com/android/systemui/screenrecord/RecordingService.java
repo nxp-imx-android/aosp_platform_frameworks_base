@@ -205,7 +205,7 @@ public class RecordingService extends Service implements ScreenMediaRecorderList
 
                 int displayId = intent.getIntExtra(EXTRA_DISPLAY_ID, Display.DEFAULT_DISPLAY);
 
-                mRecordingPreferenceRepository.updateShowTaps(showTaps);
+                mRecordingPreferenceRepository.updateSettings(showTaps);
 
                 mRecorder = new ScreenMediaRecorder(
                         mUserContextTracker.getUserContext(),
@@ -496,7 +496,7 @@ public class RecordingService extends Service implements ScreenMediaRecorderList
         }
         UserHandle currentUser = new UserHandle(userId);
         Log.d(getTag(), "notifying for user " + userId);
-        mRecordingPreferenceRepository.maybeRestoreShowTapsSetting();
+        mRecordingPreferenceRepository.maybeRestoreSetting();
         try {
             if (getRecorder() != null) {
                 getRecorder().end(stopReason);

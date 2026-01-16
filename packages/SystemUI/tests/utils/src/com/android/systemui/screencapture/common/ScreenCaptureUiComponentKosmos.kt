@@ -29,12 +29,7 @@ fun Kosmos.screenCaptureUiComponentBuilder(
 ): ScreenCaptureUiComponent.Builder =
     object : ScreenCaptureUiComponent.Builder {
 
-        private lateinit var scope: CoroutineScope
-
-        override fun setScope(scope: CoroutineScope): ScreenCaptureUiComponent.Builder {
-            this.scope = scope
-            return this
-        }
+        override fun setScope(scope: CoroutineScope): ScreenCaptureUiComponent.Builder = this
 
         override fun setDisplay(display: Display): ScreenCaptureUiComponent.Builder = this
 

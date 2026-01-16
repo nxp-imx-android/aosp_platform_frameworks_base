@@ -1023,7 +1023,8 @@ public class UsbManager {
             // If accessory isn't available in map
             if (!mAccessoryHandleMap.containsKey(accessory)) {
                 // open accessory and store associated AccessoryHandle in map
-                ParcelFileDescriptor pfd = mService.openAccessory(accessory);
+                ParcelFileDescriptor pfd = mService.openAccessory(
+                        accessory, mContext.getPackageName());
                 AccessoryHandle newHandle = new AccessoryHandle(pfd, openingInputStream,
                         !openingInputStream);
                 mAccessoryHandleMap.put(accessory, newHandle);
@@ -1374,7 +1375,7 @@ public class UsbManager {
     @RequiresFeature(PackageManager.FEATURE_USB_ACCESSORY)
     public ParcelFileDescriptor openAccessory(UsbAccessory accessory) {
         try {
-            return mService.openAccessory(accessory);
+            return mService.openAccessory(accessory, mContext.getPackageName());
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
@@ -1399,7 +1400,7 @@ public class UsbManager {
             if (isAccessoryFfsEnabled) {
                 return new AccessoryAutoCloseInputStream(
                         accessory,
-                        mService.openAccessoryForInputStream(accessory),
+                        mService.openAccessoryForInputStream(accessory, mContext.getPackageName()),
                         isAccessoryFfsEnabled);
             }
             return new AccessoryAutoCloseInputStream(
@@ -1426,7 +1427,7 @@ public class UsbManager {
             if (isAccessoryFfsEnabled) {
                 return new AccessoryAutoCloseOutputStream(
                         accessory,
-                        mService.openAccessoryForOutputStream(accessory),
+                        mService.openAccessoryForOutputStream(accessory, mContext.getPackageName()),
                         mService.getMaxPacketSize(accessory),
                         isAccessoryFfsEnabled);
             }
@@ -1518,7 +1519,7 @@ public class UsbManager {
             return false;
         }
         try {
-            return mService.hasAccessoryPermission(accessory);
+            return mService.hasAccessoryPermission(accessory, mContext.getPackageName());
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
@@ -1534,12 +1535,13 @@ public class UsbManager {
      */
     @RequiresPermission(Manifest.permission.MANAGE_USB)
     @RequiresFeature(PackageManager.FEATURE_USB_ACCESSORY)
-    public boolean hasPermission(@NonNull UsbAccessory accessory, int pid, int uid) {
+    public boolean hasPermission(
+            @NonNull UsbAccessory accessory, String packageName, int pid, int uid) {
         if (mService == null) {
             return false;
         }
         try {
-            return mService.hasAccessoryPermissionWithIdentity(accessory, pid, uid);
+            return mService.hasAccessoryPermissionWithIdentity(accessory, packageName, pid, uid);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
@@ -1611,20 +1613,21 @@ public class UsbManager {
      * @hide
      */
     public void grantPermission(UsbDevice device) {
-        grantPermission(device, Process.myUid());
+        grantPermission(device, mContext.getPackageName(), Process.myUid());
     }
 
     /**
-     * Grants permission for USB device to given uid without showing system dialog.
-     * Only system components can call this function.
-     * @param device to request permissions for
-     * @uid uid to give permission
+     * Grants permission for USB device to given uid without showing system dialog. Only system
+     * components can call this function and permissions are temporary.
      *
+     * @param device to request permissions for
+     * @param packageName to give permission
+     * @param uid to give permission
      * @hide
      */
-    public void grantPermission(UsbDevice device, int uid) {
+    public void grantPermission(UsbDevice device, String packageName, int uid) {
         try {
-            mService.grantDevicePermission(device, uid);
+            mService.grantDevicePermission(device, packageName, uid, /* isPersistent= */ false);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
@@ -1644,7 +1647,7 @@ public class UsbManager {
         try {
             int uid = mContext.getPackageManager()
                 .getPackageUidAsUser(packageName, mContext.getUserId());
-            grantPermission(device, uid);
+            grantPermission(device, packageName, uid);
         } catch (NameNotFoundException e) {
             Log.e(TAG, "Package " + packageName + " not found.", e);
         }

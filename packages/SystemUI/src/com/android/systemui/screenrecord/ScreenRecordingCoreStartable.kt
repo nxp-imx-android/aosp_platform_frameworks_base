@@ -27,6 +27,6 @@ class ScreenRecordingCoreStartable @Inject constructor(context: Context) : CoreS
     private val screenRecordingPreferenceRepository = ScreenRecordingPreferenceRepository(context)
 
     override fun start() {
-        screenRecordingPreferenceRepository.maybeRestoreShowTapsSetting()
+        screenRecordingPreferenceRepository.maybeRestoreSetting()
     }
 }

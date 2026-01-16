@@ -123,6 +123,16 @@ final class InputManagerCallback implements InputManagerService.WindowManagerCal
         mService.mAnrController.notifyWindowResponsive(token, pid);
     }
 
+    @Override
+    public void warnNoFocusedWindowAnr(
+            @NonNull InputApplicationHandle inputApplicationHandle,
+            int eventId,
+            long elapsedDurationMs,
+            long timeoutDurationMs) {
+        mService.mAnrController.notifyAppUnresponsiveWarning(
+                inputApplicationHandle, eventId, elapsedDurationMs, timeoutDurationMs);
+    }
+
     /** Notifies that the input device configuration has changed. */
     @Override
     public void notifyConfigurationChanged() {

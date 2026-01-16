@@ -20,7 +20,6 @@ package com.android.systemui.keyguard.ui.viewmodel
 import androidx.annotation.VisibleForTesting
 import com.android.app.tracing.FlowTracing.traceEmissionCount
 import com.android.app.tracing.coroutines.flow.flowName
-import com.android.systemui.Flags
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
@@ -69,6 +68,9 @@ constructor(
     lockscreenToOccludedTransitionViewModel: LockscreenToOccludedTransitionViewModel,
     lockscreenToPrimaryBouncerTransitionViewModel: LockscreenToPrimaryBouncerTransitionViewModel,
     lockscreenToGlanceableHubTransitionViewModel: LockscreenToGlanceableHubTransitionViewModel,
+    toLockscreenEndStateTransitionViewModel: ToLockscreenEndStateTransitionViewModel,
+    toAodEndStateTransitionViewModel: ToAodEndStateTransitionViewModel,
+    toDozingEndStateTransitionViewModel: ToDozingEndStateTransitionViewModel,
     transitionInteractor: KeyguardTransitionInteractor,
 ) {
 
@@ -126,6 +128,7 @@ constructor(
             offToLockscreenTransitionViewModel.shortcutsAlpha,
             primaryBouncerToLockscreenTransitionViewModel.shortcutsAlpha,
             glanceableHubToLockscreenTransitionViewModel.shortcutsAlpha,
+            toLockscreenEndStateTransitionViewModel.shortcutsAlpha,
         )
 
     /** alpha while fading the quick affordances in */
@@ -138,6 +141,8 @@ constructor(
             lockscreenToOccludedTransitionViewModel.shortcutsAlpha,
             lockscreenToPrimaryBouncerTransitionViewModel.shortcutsAlpha,
             lockscreenToGlanceableHubTransitionViewModel.shortcutsAlpha,
+            toAodEndStateTransitionViewModel.shortcutsAlpha,
+            toDozingEndStateTransitionViewModel.shortcutsAlpha,
             shadeExpansionAlpha,
         )
 

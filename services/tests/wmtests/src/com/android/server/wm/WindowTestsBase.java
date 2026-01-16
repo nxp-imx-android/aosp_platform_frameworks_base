@@ -91,8 +91,10 @@ import android.os.UserHandle;
 import android.provider.Settings;
 import android.service.voice.IVoiceInteractionSession;
 import android.tools.function.Supplier;
+import android.util.DisplayMetrics;
 import android.util.MergedConfiguration;
 import android.util.SparseArray;
+import android.util.TypedValue;
 import android.view.Display;
 import android.view.DisplayInfo;
 import android.view.Gravity;
@@ -1212,6 +1214,22 @@ public class WindowTestsBase extends SystemServiceTestsBase {
     public void removeGlobalMinSizeRestriction() {
         mAtm.mRootWindowContainer.forAllDisplays(
                 displayContent -> displayContent.mMinSizeOfResizeableTaskDp = 1);
+    }
+
+    /**
+     * Creates a {@link ActivityInfo.WindowLayout} with minimum dimensions specified in the given
+     * type, converting them to the complex unit format used by the system.
+     */
+    static ActivityInfo.WindowLayout createWindowLayoutWithMinSize(int minWidth,
+            int minHeight, DisplayMetrics metrics, @TypedValue.ComplexDimensionUnit int type) {
+        final int complexMinWidth =
+                TypedValue.createComplexDimension(minWidth, type);
+        final int complexMinHeight =
+                TypedValue.createComplexDimension(minHeight, type);
+        return new ActivityInfo.WindowLayout(
+                -1 /* complexWidth */, -1f /* widthFraction */, -1 /* complexHeight */,
+                -1f /* heightFraction */, 0 /* gravity */, complexMinWidth, complexMinHeight,
+                null /* windowLayoutAffinity */, metrics);
     }
 
     static ComponentName getUniqueComponentName() {

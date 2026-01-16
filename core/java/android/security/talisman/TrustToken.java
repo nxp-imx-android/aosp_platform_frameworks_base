@@ -30,10 +30,6 @@ import java.util.Objects;
  * by a key trusted by the system. It can be used to prove properties of the device to a remote
  * party.
  *
- * <p>This object can be used with {@link TrustTokenManager} to sign challenges to prove possession
- * of the private key associated with the trust token. This operation requires the {@link
- * android.Manifest.permission#SIGN_WITH_TRUST_TOKEN} permission.
- *
  * <p>Instances of this class are obtained from {@link TrustTokenManager}.
  *
  * @hide

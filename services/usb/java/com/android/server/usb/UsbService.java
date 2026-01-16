@@ -468,7 +468,7 @@ public class UsbService extends IUsbManager.Stub {
 
     /* opens the currently attached USB accessory (device mode) */
     @Override
-    public ParcelFileDescriptor openAccessory(UsbAccessory accessory) {
+    public ParcelFileDescriptor openAccessory(UsbAccessory accessory, String packageName) {
         if (mDeviceManager != null) {
             int uid = Binder.getCallingUid();
             int pid = Binder.getCallingPid();
@@ -479,7 +479,7 @@ public class UsbService extends IUsbManager.Stub {
                 synchronized (mLock) {
                     if (mUserManager.isSameProfileGroup(user, mCurrentUserId)) {
                         return mDeviceManager.openAccessory(accessory, getPermissionsForUser(user),
-                                pid, uid);
+                                packageName, pid, uid);
                     } else {
                         Slog.w(TAG, "Cannot open " + accessory + " for user " + user
                                 + " as user is not active.");
@@ -495,7 +495,8 @@ public class UsbService extends IUsbManager.Stub {
 
     /* opens the currently attached USB accessory to read from (device mode) */
     @Override
-    public ParcelFileDescriptor openAccessoryForInputStream(UsbAccessory accessory) {
+    public ParcelFileDescriptor openAccessoryForInputStream(
+            UsbAccessory accessory, String packageName) {
         if (mDeviceManager != null) {
             int uid = Binder.getCallingUid();
             int pid = Binder.getCallingPid();
@@ -506,7 +507,8 @@ public class UsbService extends IUsbManager.Stub {
                 synchronized (mLock) {
                     if (mUserManager.isSameProfileGroup(user, mCurrentUserId)) {
                         return mDeviceManager.openAccessoryForInputStream(
-                                accessory, getPermissionsForUser(user), pid, uid);
+                                accessory, getPermissionsForUser(user), packageName,
+                                pid, uid);
                     } else {
                         Slog.w(TAG, "Cannot open " + accessory + " for user " + user
                                         + " as user is not active.");
@@ -522,7 +524,8 @@ public class UsbService extends IUsbManager.Stub {
 
     /* opens the currently attached USB accessory to write to (device mode) */
     @Override
-    public ParcelFileDescriptor openAccessoryForOutputStream(UsbAccessory accessory) {
+    public ParcelFileDescriptor openAccessoryForOutputStream(
+            UsbAccessory accessory, String packageName) {
         if (mDeviceManager != null) {
             int uid = Binder.getCallingUid();
             int pid = Binder.getCallingPid();
@@ -533,7 +536,8 @@ public class UsbService extends IUsbManager.Stub {
                 synchronized (mLock) {
                     if (mUserManager.isSameProfileGroup(user, mCurrentUserId)) {
                         return mDeviceManager.openAccessoryForOutputStream(
-                                accessory, getPermissionsForUser(user), pid, uid);
+                                accessory, getPermissionsForUser(user), packageName,
+                                pid, uid);
                     } else {
                         Slog.w(
                                 TAG,
@@ -705,40 +709,6 @@ public class UsbService extends IUsbManager.Stub {
     }
 
     @Override
-    public void setDevicePersistentPermission(UsbDevice device, int uid, UserHandle user,
-            boolean shouldBeGranted) {
-        Objects.requireNonNull(device);
-        Objects.requireNonNull(user);
-
-        mContext.enforceCallingOrSelfPermission(android.Manifest.permission.MANAGE_USB, null);
-
-        final long token = Binder.clearCallingIdentity();
-        try {
-            mPermissionManager.getPermissionsForUser(user).setDevicePersistentPermission(device,
-                    uid, shouldBeGranted);
-        } finally {
-            Binder.restoreCallingIdentity(token);
-        }
-    }
-
-    @Override
-    public void setAccessoryPersistentPermission(UsbAccessory accessory, int uid,
-            UserHandle user, boolean shouldBeGranted) {
-        Objects.requireNonNull(accessory);
-        Objects.requireNonNull(user);
-
-        mContext.enforceCallingOrSelfPermission(android.Manifest.permission.MANAGE_USB, null);
-
-        final long token = Binder.clearCallingIdentity();
-        try {
-            mPermissionManager.getPermissionsForUser(user).setAccessoryPersistentPermission(
-                    accessory, uid, shouldBeGranted);
-        } finally {
-            Binder.restoreCallingIdentity(token);
-        }
-    }
-
-    @Override
     public boolean hasDevicePermission(UsbDevice device, String packageName) {
         final int uid = Binder.getCallingUid();
         final int pid = Binder.getCallingPid();
@@ -763,14 +733,14 @@ public class UsbService extends IUsbManager.Stub {
     }
 
     @Override
-    public boolean hasAccessoryPermission(UsbAccessory accessory) {
+    public boolean hasAccessoryPermission(UsbAccessory accessory, String packageName) {
         final int uid = Binder.getCallingUid();
         final int pid = Binder.getCallingPid();
         final int userId = UserHandle.getUserId(uid);
 
         final long token = Binder.clearCallingIdentity();
         try {
-            return getPermissionsForUser(userId).hasPermission(accessory, pid, uid);
+            return getPermissionsForUser(userId).hasPermission(accessory, packageName, pid, uid);
         } finally {
             Binder.restoreCallingIdentity(token);
         }
@@ -778,11 +748,12 @@ public class UsbService extends IUsbManager.Stub {
 
     @android.annotation.EnforcePermission(android.Manifest.permission.MANAGE_USB)
     @Override
-    public boolean hasAccessoryPermissionWithIdentity(UsbAccessory accessory, int pid, int uid) {
+    public boolean hasAccessoryPermissionWithIdentity(
+            UsbAccessory accessory, String packageName, int pid, int uid) {
         hasAccessoryPermissionWithIdentity_enforcePermission();
 
         final int userId = UserHandle.getUserId(uid);
-        return getPermissionsForUser(userId).hasPermission(accessory, pid, uid);
+        return getPermissionsForUser(userId).hasPermission(accessory, packageName, pid, uid);
     }
 
     @Override
@@ -816,13 +787,15 @@ public class UsbService extends IUsbManager.Stub {
 
     @android.annotation.EnforcePermission(android.Manifest.permission.MANAGE_USB)
     @Override
-    public void grantDevicePermission(UsbDevice device, int uid) {
+    public void grantDevicePermission(
+            UsbDevice device, String packageName, int uid, boolean isPersistent) {
         grantDevicePermission_enforcePermission();
         final int userId = UserHandle.getUserId(uid);
 
         final long token = Binder.clearCallingIdentity();
         try {
-            getPermissionsForUser(userId).grantDevicePermission(device, uid);
+            getPermissionsForUser(userId)
+                    .grantDevicePermission(device, packageName, uid, isPersistent);
         } finally {
             Binder.restoreCallingIdentity(token);
         }
@@ -830,13 +803,13 @@ public class UsbService extends IUsbManager.Stub {
 
     @android.annotation.EnforcePermission(android.Manifest.permission.MANAGE_USB)
     @Override
-    public void grantAccessoryPermission(UsbAccessory accessory, int uid) {
+    public void grantAccessoryPermission(UsbAccessory accessory, String packageName, int uid) {
         grantAccessoryPermission_enforcePermission();
         final int userId = UserHandle.getUserId(uid);
 
         final long token = Binder.clearCallingIdentity();
         try {
-            getPermissionsForUser(userId).grantAccessoryPermission(accessory, uid);
+            getPermissionsForUser(userId).grantAccessoryPermission(accessory, packageName, uid);
         } finally {
             Binder.restoreCallingIdentity(token);
         }

@@ -1402,7 +1402,7 @@ public abstract class ForegroundServiceTypePolicy {
             final UsbAccessory[] accessories = usbManager.getAccessoryList();
             if (!ArrayUtils.isEmpty(accessories)) {
                 for (UsbAccessory accessory: accessories) {
-                    if (usbManager.hasPermission(accessory, callerPid, callerUid)) {
+                    if (usbManager.hasPermission(accessory, packageName, callerPid, callerUid)) {
                         return PERMISSION_GRANTED;
                     }
                 }

@@ -29,6 +29,7 @@ import android.graphics.Rect;
 import android.os.IBinder;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.DisplayMetrics;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -95,9 +96,9 @@ public final class TaskFragmentInfo implements Parcelable {
     private final boolean mIsClearedForReorderActivityToFront;
 
     /**
-     * The maximum {@link android.content.pm.ActivityInfo.WindowLayout#minWidth} and
-     * {@link android.content.pm.ActivityInfo.WindowLayout#minHeight} aggregated from the
-     * TaskFragment's child activities.
+     * The maximum {@link android.content.pm.ActivityInfo.WindowLayout#getMinWidth(DisplayMetrics)}
+     * and {@link android.content.pm.ActivityInfo.WindowLayout#getMinHeight(DisplayMetrics)}
+     * aggregated from the TaskFragment's child activities.
      */
     @NonNull
     private final Point mMinimumDimensions = new Point();

@@ -115,7 +115,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
     @NonNull private final AudioProductStrategy mStrategyForMedia;
 
-    @NonNull private final AudioDeviceCallback mAudioDeviceCallback = new AudioDeviceCallbackImpl();
+    @NonNull
+    private final AudioDeviceCallback mAudioDeviceCallbackOnHandler =
+            new AudioDeviceCallbackImplOnHandler();
 
     @MediaRoute2Info.SuitabilityStatus private final int mBuiltInSpeakerSuitabilityStatus;
 
@@ -258,7 +260,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
         mBluetoothRouteController.start(
                 Flags.enableUseOfSingletonAudioManagerRouteController() ? UserHandle.SYSTEM : mUser,
                 this::rebuildAvailableRoutesAndNotify);
-        mAudioManager.registerAudioDeviceCallback(mAudioDeviceCallback, mHandler);
+        mAudioManager.registerAudioDeviceCallback(mAudioDeviceCallbackOnHandler, mHandler);
         mAudioManager.addOnDevicesForAttributesChangedListener(
                 AudioRoutingUtils.ATTRIBUTES_MEDIA,
                 new HandlerExecutor(mHandler),
@@ -279,7 +281,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
         mAudioManager.removeOnDevicesForAttributesChangedListener(
                 mOnDevicesForAttributesChangedListener);
-        mAudioManager.unregisterAudioDeviceCallback(mAudioDeviceCallback);
+        mAudioManager.unregisterAudioDeviceCallback(mAudioDeviceCallbackOnHandler);
         mBluetoothRouteController.stop();
         mHandler.removeCallbacksAndMessages(/* token= */ null);
     }
@@ -474,6 +476,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
                 mBluetoothRouteController.activateBluetoothDeviceWithAddress(deviceAddress);
                 mAudioManager.removePreferredDeviceForStrategy(mStrategyForMedia);
                 mActiveAudioRoutingPolicyOnHandler = false;
+                // We don't need to refresh the state and send updates, because that will happen
+                // as soon as the bluetooth route becomes active and the corresponding audio output
+                // becomes available.
             };
 
         } else {
@@ -494,6 +499,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
             return () -> {
                 mActiveAudioRoutingPolicyOnHandler = true;
                 mAudioManager.setPreferredDeviceForStrategy(mStrategyForMedia, deviceAttributes);
+                rebuildAvailableRoutesAndNotify();
             };
         }
     }
@@ -881,21 +887,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
     }
 
     /**
-     * Clears the preferred device (using {@link AudioManager#removePreferredDeviceForStrategy}), if
-     * this object has set a preferred device and said preference is active. Otherwise, does
-     * nothing.
-     *
-     * <p>Must be called on {@link #mHandler}.
-     */
-    @RequiresPermission(Manifest.permission.MODIFY_AUDIO_ROUTING)
-    private void maybeRemovePreferredDeviceOnHandler() {
-        if (mActiveAudioRoutingPolicyOnHandler) {
-            mAudioManager.removePreferredDeviceForStrategy(mStrategyForMedia);
-            mActiveAudioRoutingPolicyOnHandler = false;
-        }
-    }
-
-    /**
      * Holds a {@link MediaRoute2Info} and associated information that we don't want to put in the
      * {@link MediaRoute2Info} class because it's solely necessary for the implementation of this
      * class.
@@ -984,7 +975,12 @@ import java.util.concurrent.CopyOnWriteArrayList;
         }
     }
 
-    private class AudioDeviceCallbackImpl extends AudioDeviceCallback {
+    /**
+     * Updates the internal state in response to audio framework events.
+     *
+     * <p>Must be invoked on {@link #mHandler}.
+     */
+    private class AudioDeviceCallbackImplOnHandler extends AudioDeviceCallback {
         @RequiresPermission(Manifest.permission.MODIFY_AUDIO_ROUTING)
         @Override
         public void onAudioDevicesAdded(AudioDeviceInfo[] addedDevices) {
@@ -999,9 +995,10 @@ import java.util.concurrent.CopyOnWriteArrayList;
                     // of this, when the user connects a bluetooth device or a wired headset, the
                     // new device becomes the active route, which is the traditional behavior.
                     if (Flags.enableRemovePreferredDeviceFixes()) {
-                        mHandler.post(
-                                AudioManagerRouteController.this
-                                        ::maybeRemovePreferredDeviceOnHandler);
+                        if (mActiveAudioRoutingPolicyOnHandler) {
+                            mAudioManager.removePreferredDeviceForStrategy(mStrategyForMedia);
+                            mActiveAudioRoutingPolicyOnHandler = false;
+                        }
                     } else {
                         mAudioManager.removePreferredDeviceForStrategy(mStrategyForMedia);
                     }

@@ -295,9 +295,10 @@ public class ThemeSettingsManagerTests {
                 mContext.getResources(), mHardwareColorRule.sysPropReader, mUserId);
 
         // Since the primary source (wallpaper) failed, it should fall back to the wildcard,
-        // which is also wallpaper. Since that will also fail, it uses the hardcoded fallback.
-        assertThat(defaultSettings.colorSource()).isEqualTo(FieldColorSource.VALUE_PRESET);
-        assertThat(defaultSettings.themeStyle()).isEqualTo(ThemeStyle.TONAL_SPOT);
+        // which is also wallpaper. Since that will also fail, it uses the hardcoded fallback
+        // palette but keeps the source as HOME_WALLPAPER.
+        assertThat(defaultSettings.colorSource()).isEqualTo(FieldColorSource.VALUE_HOME_WALLPAPER);
+        assertThat(defaultSettings.themeStyle()).isEqualTo(ThemeStyle.EXPRESSIVE);
         assertThat(defaultSettings.systemPalette()).isEqualTo(Color.valueOf(0xFF1b6ef3));
     }
 

@@ -2510,34 +2510,16 @@ public abstract class OomAdjuster {
 
     /**
      * Return whether or not a process should be frozen.
+     * A process is unfrozen only if it is important enough (see {@link #getCpuCapability} and
+     * {@link #getImplicitCpuCapability}) or bound by something important enough (see
+     * {@link #getCpuCapabilitiesFromClient}).
      */
     public static boolean getFreezePolicy(ProcessRecordInternal proc) {
-        if (Flags.cpuTimeCapabilityBasedFreezePolicy()) {
-            if ((proc.getCurCapability() & ALL_CPU_TIME_CAPABILITIES) != 0) {
-                /// App is important enough (see {@link #getCpuCapability} and
-                /// {@link #getImplicitCpuCapability}) or bound by something important enough to
-                /// not be frozen (see {@link #getCpuCapabilitiesFromClient}).
-                return false;
-            }
-
-            // Default, freeze a process.
-            return true;
-        } else {
-            // The CPU capability handling covers all setShouldNotFreeze paths. Must check
-            // shouldNotFreeze, if the CPU capability is not being used.
-            if (proc.shouldNotFreeze()) {
-                return false;
-            }
-
-            // Reasons to freeze:
-            if (proc.getCurAdj() >= CACHED_APP_MIN_ADJ) {
-                // Oomscore is in a high enough state, it is safe to freeze.
-                return true;
-            }
-
-            // Default, do not freeze a process.
+        if ((proc.getCurCapability() & ALL_CPU_TIME_CAPABILITIES) != 0) {
             return false;
         }
+        // Default, freeze a process.
+        return true;
     }
 
     /**
@@ -2638,9 +2620,8 @@ public abstract class OomAdjuster {
                         != client.getSetCapability()) {
             // The connection might elevate the importance of the service's capabilities.
             needDryRun = true;
-        } else if (Flags.cpuTimeCapabilityBasedFreezePolicy()
-                && (client.getSetCapability() & ~app.getSetCapability()
-                    & ALL_CPU_TIME_CAPABILITIES) != 0) {
+        } else if ((client.getSetCapability() & ~app.getSetCapability()
+                & ALL_CPU_TIME_CAPABILITIES) != 0) {
             // The connection might grant CPU capability to the service.
             needDryRun = true;
         } else if (cr.hasFlag(Context.BIND_WAIVE_PRIORITY | Context.BIND_ALLOW_OOM_MANAGEMENT)) {
@@ -2685,9 +2666,8 @@ public abstract class OomAdjuster {
         } else if (app.shouldNotFreeze() && client.shouldNotFreeze()) {
             // Process has shouldNotFreeze and it could have gotten it from the client.
             return true;
-        } else if (Flags.cpuTimeCapabilityBasedFreezePolicy()
-                && (client.getSetCapability() & app.getSetCapability()
-                & ALL_CPU_TIME_CAPABILITIES) != 0) {
+        } else if ((client.getSetCapability() & app.getSetCapability()
+                    & ALL_CPU_TIME_CAPABILITIES) != 0) {
             return true;
         }
         return false;
@@ -2711,9 +2691,8 @@ public abstract class OomAdjuster {
             needDryRun = true;
         } else if (client.shouldNotFreeze() && !app.shouldNotFreeze()) {
             needDryRun = true;
-        } else if (Flags.cpuTimeCapabilityBasedFreezePolicy()
-                && (client.getSetCapability() & ~app.getSetCapability()
-                & ALL_CPU_TIME_CAPABILITIES) != 0) {
+        } else if ((client.getSetCapability() & ~app.getSetCapability()
+                    & ALL_CPU_TIME_CAPABILITIES) != 0) {
             // The connection might grant CPU capability to the provider.
             needDryRun = true;
         }
@@ -2742,9 +2721,8 @@ public abstract class OomAdjuster {
         } else if (app.shouldNotFreeze() && client.shouldNotFreeze()) {
             // Process has shouldNotFreeze and it could have gotten it from the client.
             return true;
-        } else if (Flags.cpuTimeCapabilityBasedFreezePolicy()
-                && (client.getSetCapability() & app.getSetCapability()
-                    & ALL_CPU_TIME_CAPABILITIES) != 0) {
+        } else if ((client.getSetCapability() & app.getSetCapability()
+                & ALL_CPU_TIME_CAPABILITIES) != 0) {
             return true;
         }
 

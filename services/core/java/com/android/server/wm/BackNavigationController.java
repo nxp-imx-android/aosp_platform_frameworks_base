@@ -29,6 +29,7 @@ import static android.view.RemoteAnimationTarget.MODE_OPENING;
 import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_APP_PROGRESS_GENERATION_ALLOWED;
 import static android.view.WindowManager.LayoutParams.TYPE_BASE_APPLICATION;
 import static android.view.WindowManager.TRANSIT_CHANGE;
+import static android.view.WindowManager.TRANSIT_CLOSE_PREPARE_BACK_NAVIGATION;
 import static android.view.WindowManager.TRANSIT_PREPARE_BACK_NAVIGATION;
 import static android.window.SystemOverrideOnBackInvokedCallback.OVERRIDE_FINISH_AND_REMOVE_TASK;
 import static android.window.SystemOverrideOnBackInvokedCallback.OVERRIDE_UNDEFINED;
@@ -1409,7 +1410,10 @@ class BackNavigationController {
                 mCloseAdaptor = null;
             }
             if (mOpenAnimAdaptor != null) {
-                mOpenAnimAdaptor.cleanUp(mStartingSurfaceTargetMatch);
+                final boolean closePB = mPrepareCloseTransition != null
+                        && mPrepareCloseTransition.mType == TRANSIT_CLOSE_PREPARE_BACK_NAVIGATION;
+                mOpenAnimAdaptor.cleanUp(mStartingSurfaceTargetMatch,
+                        !(cancel || closePB) /* deferForIme */);
                 mOpenAnimAdaptor = null;
             }
         }
@@ -1439,7 +1443,8 @@ class BackNavigationController {
             startTransaction.addTransactionCommittedListener(Runnable::run, () -> {
                 synchronized (mWindowManagerService.mGlobalLock) {
                     if (mOpenAnimAdaptor != null) {
-                        mOpenAnimAdaptor.cleanUpWindowlessSurface(true);
+                        mOpenAnimAdaptor.cleanUpWindowlessSurface(true /* openTransitionMatch */ ,
+                                true /* deferForIme */);
                     }
                 }
             });
@@ -1563,8 +1568,8 @@ class BackNavigationController {
                 return true;
             }
 
-            void cleanUp(boolean startingSurfaceMatch) {
-                cleanUpWindowlessSurface(startingSurfaceMatch);
+            void cleanUp(boolean startingSurfaceMatch, boolean deferForIme) {
+                cleanUpWindowlessSurface(startingSurfaceMatch, deferForIme);
                 for (int i = mAdaptors.length - 1; i >= 0; --i) {
                     mAdaptors[i].mTarget.cancelAnimation();
                 }
@@ -1700,14 +1705,17 @@ class BackNavigationController {
              * Ask shell to clear the starting surface.
              * @param openTransitionMatch if true, shell will play the remove starting window
              *                            animation, otherwise remove it directly.
+             * @param deferForIme if true and the starting surface contains IME, defer removing the
+             *                   starting surface because the IME may not be drawn yet.
              */
-            void cleanUpWindowlessSurface(boolean openTransitionMatch) {
+            void cleanUpWindowlessSurface(boolean openTransitionMatch, boolean deferForIme) {
                 if (mRequestedStartingSurfaceId == INVALID_TASK_ID) {
                     return;
                 }
                 mAdaptors[0].mTarget.mWmService.mAtmService.mTaskOrganizerController
                         .removeWindowlessStartingSurface(mRequestedStartingSurfaceId,
-                                !openTransitionMatch, mHasImeSurface);
+                                !openTransitionMatch,
+                                mHasImeSurface && deferForIme /* deferRemove */);
                 mRequestedStartingSurfaceId = INVALID_TASK_ID;
                 mHasImeSurface = false;
                 if (mStartingSurface != null && mStartingSurface.isValid()) {

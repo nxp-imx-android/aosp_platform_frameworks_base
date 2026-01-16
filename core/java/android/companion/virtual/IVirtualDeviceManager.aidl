@@ -58,7 +58,7 @@ interface IVirtualDeviceManager {
     /**
      * Requests a new computer control session.
      */
-    @EnforcePermission(allOf={"ACCESS_COMPUTER_CONTROL", "POST_NOTIFICATIONS"})
+    @PermissionManuallyEnforced
     void requestComputerControlSession(
             in IApplicationThread appThread, in AttributionSource attributionSource,
             in ComputerControlSessionParams params, in IComputerControlSessionCallback callback);
@@ -97,6 +97,11 @@ interface IVirtualDeviceManager {
      * Validates the intent to warn the user about launching an application that is being automated.
      */
     boolean validateAutomatedAppLaunchWarningIntent(in Intent intent);
+
+    /**
+     * Returns whether the computer control functionality is available for the caller.
+     */
+    boolean isComputerControlAvailable(in AttributionSource attributionSource);
 
     /**
      * Returns the ID of the device which owns the display with the given ID.

@@ -115,6 +115,7 @@ import android.os.Trace;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.os.storage.StorageManager;
+import android.provider.Settings;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.util.ArraySet;
@@ -304,6 +305,12 @@ class UserController implements Handler.Callback {
      */
     @GuardedBy("mLock")
     private boolean mSkipKeyguardWhenSwitchingToUnlockedUsers = false;
+
+    /**
+     * When enabled, user switching dialog UI is not shown during device setup.
+     * Setup Wizard should take care of the user switching UI in this case.
+     */
+    private boolean mHideUserSwitchingUiDuringSetup = false;
 
     // Lock for internal state.
     private final Object mLock = new Object();
@@ -523,7 +530,8 @@ class UserController implements Handler.Callback {
 
     void setInitialConfig(boolean userSwitchUiEnabled, int maxRunningUsers,
             boolean delayUserDataLocking, int backgroundUserConsideredDispensableTimeSecs,
-            boolean skipKeyguardWhenSwitchingToUnlockedUsers) {
+            boolean skipKeyguardWhenSwitchingToUnlockedUsers,
+            boolean hideUserSwitchingUiDuringSetup) {
         synchronized (mLock) {
             mUserSwitchUiEnabled = userSwitchUiEnabled;
             mMaxRunningUsers = maxRunningUsers;
@@ -534,6 +542,9 @@ class UserController implements Handler.Callback {
                 // If flag is off, the default value of false applies, disabling the feature.
                 mSkipKeyguardWhenSwitchingToUnlockedUsers =
                         skipKeyguardWhenSwitchingToUnlockedUsers;
+            }
+            if (android.app.admin.flags.Flags.multiUserManagementDeviceProvisioning()) {
+                mHideUserSwitchingUiDuringSetup = hideUserSwitchingUiDuringSetup;
             }
             mInitialized = true;
         }
@@ -2573,6 +2584,7 @@ class UserController implements Handler.Callback {
         mInjector.showUserSwitchingDialog(fromToUserPair.first, fromToUserPair.second,
                 getSwitchingFromUserMessageUnchecked(fromToUserPair.first.id),
                 getSwitchingToUserMessageUnchecked(fromToUserPair.second.id),
+                mHideUserSwitchingUiDuringSetup,
                 /* onShown= */ () -> sendStartUserSwitchFgMessage(fromToUserPair.second.id));
     }
 
@@ -4645,7 +4657,7 @@ class UserController implements Handler.Callback {
 
         void showUserSwitchingDialog(UserInfo fromUser, UserInfo toUser,
                 @Nullable String switchingFromUserMessage, @Nullable String switchingToUserMessage,
-                @NonNull Runnable onShown) {
+                boolean hideUserSwitchingUiDuringSetup, @NonNull Runnable onShown) {
             if (mService.mContext.getPackageManager()
                     .hasSystemFeature(PackageManager.FEATURE_AUTOMOTIVE)) {
                 // config_customUserSwitchUi is set to true on Automotive as CarSystemUI is
@@ -4656,6 +4668,14 @@ class UserController implements Handler.Callback {
             }
             synchronized (mUserSwitchingDialogLock) {
                 dismissUserSwitchingDialog(null);
+                if (hideUserSwitchingUiDuringSetup
+                        && Settings.Global.getInt(getContext().getContentResolver(),
+                                Settings.Global.DEVICE_PROVISIONED, 0) == 0) {
+                    // Skip showing user switching dialog if disabled.
+                    onShown.run();
+                    return;
+                }
+
                 mUserSwitchingDialog = new UserSwitchingDialog(mService.mContext, fromUser, toUser,
                         mHandler, switchingFromUserMessage, switchingToUserMessage);
                 mUserSwitchingDialog.show(onShown);

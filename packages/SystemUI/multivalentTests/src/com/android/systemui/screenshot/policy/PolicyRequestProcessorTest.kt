@@ -172,52 +172,6 @@ class PolicyRequestProcessorTest : SysuiTestCase() {
         assertWithMessage("Task ID").that(result.taskId).isEqualTo(1234)
     }
 
-    /** Tests behavior when no policies are applied */
-    @Test
-    @DisableFlags(Flags.FLAG_SCREENSHOT_POLICY_SPLIT_AND_DESKTOP_MODE)
-    fun testProcess_defaultOwner_whenNoPolicyApplied() {
-        val fullScreenWork = DisplayContentRepository {
-            singleFullScreen(TaskSpec(taskId = TASK_ID, name = FILES, userId = WORK))
-        }
-
-        val request =
-            ScreenshotData(
-                TAKE_SCREENSHOT_FULLSCREEN,
-                SCREENSHOT_KEY_CHORD,
-                UserHandle.CURRENT,
-                topComponent = null,
-                originalScreenBounds = Rect(0, 0, 1, 1),
-                taskId = -1,
-                originalInsets = Insets.NONE,
-                bitmap = null,
-                displayId = DEFAULT_DISPLAY,
-            )
-
-        /* Create a policy request processor with no capture policies */
-        val requestProcessor =
-            PolicyRequestProcessor(
-                Dispatchers.Unconfined,
-                createImageCapture(),
-                policy = ScreenshotPolicy(kosmos.profileTypeRepository),
-                policies = emptyList(),
-                defaultOwner = UserHandle.of(PERSONAL),
-                defaultComponent = ComponentName("default", "Component"),
-                displayTasks = fullScreenWork,
-            )
-
-        val result = runBlocking { requestProcessor.process(request) }
-
-        assertWithMessage("With no policy, the screenshot should be assigned to the default user")
-            .that(result.userHandle)
-            .isEqualTo(UserHandle.of(PERSONAL))
-
-        assertWithMessage("The topComponent of the screenshot")
-            .that(result.topComponent)
-            .isEqualTo(ComponentName.unflattenFromString(FILES))
-
-        assertWithMessage("Task ID").that(result.taskId).isEqualTo(TASK_ID)
-    }
-
     @Test
     fun testProcess_throwsWhenCaptureFails() {
         val request = ScreenshotData.forTesting()

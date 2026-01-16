@@ -56,7 +56,7 @@ constructor(
     recentTaskInteractor: ScreenCaptureRecentTaskInteractor,
     private val screenCaptureLabelInteractor: ScreenCaptureLabelInteractor,
     private val parametersInteractor: ScreenCaptureRecordParametersInteractor,
-    private val cameraInteracor: ScreenRecordCameraSurfaceInteractor,
+    private val cameraInteractor: ScreenRecordCameraSurfaceInteractor,
     private val markupInteractor: ScreenCaptureMarkupInteractor,
     displayRepository: DisplayRepository,
 ) {
@@ -166,7 +166,7 @@ constructor(
                 val selectedTask = it?.currentTargetModel ?: return@onEach
                 if (!selectedTask.canUseCamera) {
                     parametersInteractor.setShouldShowFrontCamera(false)
-                    cameraInteracor.stopStream()
+                    cameraInteractor.stopStream()
                 }
                 if (!selectedTask.canUseMarkup) {
                     markupInteractor.setEnabled(false)

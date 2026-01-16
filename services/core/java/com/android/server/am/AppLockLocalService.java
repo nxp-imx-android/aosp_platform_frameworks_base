@@ -19,6 +19,7 @@ package com.android.server.am;
 import static android.app.ActivityManager.PROCESS_STATE_TOP;
 
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.app.AppLockInternal;
 import android.app.KeyguardManager;
 import android.content.Context;
@@ -353,10 +354,13 @@ public final class AppLockLocalService implements AppLockInternal,
      * @param procState      the process state the uid is moving to
      */
     @GuardedBy("mAmService")
-    public void handleUidChangeLocked(UidRecord uidRec, int uid, int enqueuedChange,
+    public void handleUidChangeLocked(@Nullable UidRecord uidRec, int uid, int enqueuedChange,
             int procState) {
         Trace.beginSection(TAG + ".handleUidChangeLocked");
         try {
+            if (uidRec == null) {
+                return;
+            }
             if ((enqueuedChange & UidRecord.CHANGE_PROCSTATE) == 0) {
                 // Only handles process state changes, e.g. TOP <-> NOT_TOP
                 return;

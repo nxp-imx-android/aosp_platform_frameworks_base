@@ -55,6 +55,9 @@ import com.android.systemui.keyguard.ui.viewmodel.occludedToLockscreenTransition
 import com.android.systemui.keyguard.ui.viewmodel.offToLockscreenTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.primaryBouncerToGoneTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.primaryBouncerToLockscreenTransitionViewModel
+import com.android.systemui.keyguard.ui.viewmodel.toAodEndStateTransitionViewModel
+import com.android.systemui.keyguard.ui.viewmodel.toDozingEndStateTransitionViewModel
+import com.android.systemui.keyguard.ui.viewmodel.toLockscreenEndStateTransitionViewModel
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.kosmos.applicationCoroutineScope
@@ -125,6 +128,9 @@ val Kosmos.sharedNotificationContainerViewModel by Fixture {
         unfoldTransitionInteractor = unfoldTransitionInteractor,
         glanceableHubToAodTransitionViewModel = glanceableHubToAodTransitionViewModel,
         aodToGlanceableHubTransitionViewModel = aodToGlanceableHubTransitionViewModel,
+        toAodEndStateTransitionViewModel = toAodEndStateTransitionViewModel,
+        toDozingEndStateTransitionViewModel = toDozingEndStateTransitionViewModel,
+        toLockscreenEndStateTransitionViewModel = toLockscreenEndStateTransitionViewModel,
         activeNotificationsInteractor = activeNotificationsInteractor,
         mediaDataManager = legacyMediaDataManagerImpl,
         alphaTableLogger = logcatTableLogBuffer(this, "NotificationAlphaTableLog"),

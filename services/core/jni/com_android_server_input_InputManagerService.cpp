@@ -77,6 +77,7 @@
 #include "android_hardware_input_InputApplicationHandle.h"
 #include "android_hardware_input_InputWindowHandle.h"
 #include "android_util_Binder.h"
+#include "com_android_server_attention_InteractionProviderServiceInternal.h"
 #include "com_android_server_power_PowerManagerService.h"
 
 #define INDENT "  "
@@ -116,6 +117,7 @@ static struct {
     jmethodID notifyTouchpadThreeFingerTap;
     jmethodID notifySwitch;
     jmethodID notifyInputChannelBroken;
+    jmethodID warnNoFocusedWindowAnr;
     jmethodID notifyNoFocusedWindowAnr;
     jmethodID notifyWindowUnresponsive;
     jmethodID notifyWindowResponsive;
@@ -314,7 +316,8 @@ protected:
     virtual ~NativeInputManager();
 
 public:
-    NativeInputManager(jobject serviceObj, const sp<Looper>& looper);
+    NativeInputManager(jobject serviceObj, const sp<Looper>& looper,
+                       bool createInteractionProvider);
 
     inline sp<InputManagerInterface> getInputManager() const { return mInputManager; }
 
@@ -378,6 +381,7 @@ public:
                                   const std::unordered_map<int32_t, int32_t>& keyRemapping);
     void setAxisRemappingForDevice(int32_t deviceId,
                                    const std::unordered_map<int32_t, int32_t>& axisRemapping);
+    void setInteractionProviderService(jobject interactionProviderService);
 
     /* --- InputReaderPolicyInterface implementation --- */
 
@@ -408,6 +412,9 @@ public:
     void notifyNoFocusedWindowAnr(const std::shared_ptr<InputApplicationHandle>& handle,
                                   int32_t eventId, nsecs_t eventTime,
                                   std::chrono::milliseconds timeoutDuration) override;
+    void warnNoFocusedWindowAnr(const std::shared_ptr<InputApplicationHandle>& handle,
+                                int32_t eventId, std::chrono::milliseconds elapsedDuration,
+                                std::chrono::milliseconds timeoutDuration) override;
     void notifyWindowUnresponsive(const sp<IBinder>& token, std::optional<gui::Pid> pid,
                                   const std::string& reason, int32_t eventId, nsecs_t eventTime,
                                   std::chrono::milliseconds timeoutDuration) override;
@@ -599,7 +606,8 @@ private:
     static inline JNIEnv* jniEnv() { return AndroidRuntime::getJNIEnv(); }
 };
 
-NativeInputManager::NativeInputManager(jobject serviceObj, const sp<Looper>& looper)
+NativeInputManager::NativeInputManager(jobject serviceObj, const sp<Looper>& looper,
+                                       bool createInteractionProvider)
       : mLooper(looper) {
     JNIEnv* env = jniEnv();
 
@@ -607,7 +615,7 @@ NativeInputManager::NativeInputManager(jobject serviceObj, const sp<Looper>& loo
 
     JavaVM* vm;
     env->GetJavaVM(&vm);
-    InputManager* im = new InputManager(this, *this, *this, *this, vm);
+    InputManager* im = new InputManager(this, *this, *this, *this, vm, createInteractionProvider);
     mInputManager = im;
     defaultServiceManager()->addService(String16("inputflinger"), im);
 }
@@ -1211,6 +1219,25 @@ static jobject getInputApplicationHandleObjLocalRef(
             static_cast<NativeInputApplicationHandle*>(inputApplicationHandle.get());
 
     return handle->getInputApplicationHandleObjLocalRef(env);
+}
+
+void NativeInputManager::warnNoFocusedWindowAnr(
+        const std::shared_ptr<InputApplicationHandle>& handle, int32_t eventId,
+        std::chrono::milliseconds elapsedDuration, std::chrono::milliseconds timeoutDuration) {
+#if DEBUG_INPUT_DISPATCHER_POLICY
+    ALOGD("warnNoFocusedWindowAnr");
+#endif
+    ATRACE_CALL();
+
+    JNIEnv* env = jniEnv();
+    ScopedLocalFrame localFrame(env);
+
+    jobject inputApplicationHandleObj = getInputApplicationHandleObjLocalRef(env, handle);
+
+    env->CallVoidMethod(mServiceObj, gServiceClassInfo.warnNoFocusedWindowAnr,
+                        inputApplicationHandleObj, eventId, elapsedDuration.count(),
+                        timeoutDuration.count());
+    checkAndClearExceptionFromCallback(env, "warnNoFocusedWindowAnr");
 }
 
 void NativeInputManager::notifyNoFocusedWindowAnr(
@@ -2285,6 +2312,13 @@ void NativeInputManager::setAxisRemappingForDevice(
     }
 }
 
+void NativeInputManager::setInteractionProviderService(jobject interactionProviderService) {
+    LOG_ALWAYS_FATAL_IF(interactionProviderService == NULL,
+                        "InteractionProviderService expected to be nonnull");
+    mInputManager->getInteractionReporter().setInteractionProviderService(
+            std::make_unique<NativeInteractionProviderServiceInternal>(interactionProviderService));
+}
+
 // ----------------------------------------------------------------------------
 
 static NativeInputManager* getNativeInputManager(JNIEnv* env, jobject clazz) {
@@ -2293,7 +2327,7 @@ static NativeInputManager* getNativeInputManager(JNIEnv* env, jobject clazz) {
 }
 
 static jlong nativeInit(JNIEnv* env, jclass /* clazz */, jobject serviceObj,
-                        jobject messageQueueObj) {
+                        jobject messageQueueObj, bool createInteractionReporter) {
     sp<MessageQueue> messageQueue = android_os_MessageQueue_getMessageQueue(env, messageQueueObj);
     if (messageQueue == nullptr) {
         jniThrowRuntimeException(env, "MessageQueue is not initialized.");
@@ -2305,7 +2339,8 @@ static jlong nativeInit(JNIEnv* env, jclass /* clazz */, jobject serviceObj,
     std::call_once(nativeInitialize, [&]() {
         // Create the NativeInputManager, which should not be destroyed or deallocated for the
         // lifetime of the process.
-        im = new NativeInputManager(serviceObj, messageQueue->getLooper());
+        im = new NativeInputManager(serviceObj, messageQueue->getLooper(),
+                                    createInteractionReporter);
     });
     LOG_ALWAYS_FATAL_IF(im == nullptr, "NativeInputManager was already initialized.");
     return reinterpret_cast<jlong>(im);
@@ -3462,13 +3497,19 @@ static jstring nativeGetPhysicalLocationPath(JNIEnv* env, jobject nativeImplObj,
     return !phys.has_value() || phys->empty() ? nullptr : env->NewStringUTF(phys->c_str());
 }
 
+static void nativeSetInteractionProviderService(JNIEnv* env, jobject nativeImplObj,
+                                                jobject interactionProviderService) {
+    NativeInputManager* im = getNativeInputManager(env, nativeImplObj);
+    im->setInteractionProviderService(interactionProviderService);
+}
+
 // ----------------------------------------------------------------------------
 
 static const JNINativeMethod gInputManagerMethods[] = {
         /* name, signature, funcPtr */
         {"init",
          "(Lcom/android/server/input/InputManagerService;Landroid/os/"
-         "MessageQueue;)J",
+         "MessageQueue;Z)J",
          (void*)nativeInit},
         {"start", "()V", (void*)nativeStart},
         {"setDisplayViewports", "([Landroid/hardware/display/DisplayViewport;)V",
@@ -3600,6 +3641,9 @@ static const JNINativeMethod gInputManagerMethods[] = {
         {"setAccessibilityPointerMotionFilterEnabled", "(Z)V",
          (void*)nativeSetAccessibilityPointerMotionFilterEnabled},
         {"getPhysicalLocationPath", "(I)Ljava/lang/String;", (void*)nativeGetPhysicalLocationPath},
+        {"setInteractionProviderService",
+         "(Lcom/android/server/attention/InteractionProviderInternal;)V",
+         (void*)nativeSetInteractionProviderService},
 };
 
 #define FIND_CLASS(var, className) \
@@ -3671,6 +3715,9 @@ int register_android_server_InputManager(JNIEnv* env) {
                   "(IJ)V");
 
     GET_METHOD_ID(gServiceClassInfo.notifyVibratorState, clazz, "notifyVibratorState", "(IZ)V");
+
+    GET_METHOD_ID(gServiceClassInfo.warnNoFocusedWindowAnr, clazz, "warnNoFocusedWindowAnr",
+                  "(Landroid/view/InputApplicationHandle;IJJ)V");
 
     GET_METHOD_ID(gServiceClassInfo.notifyNoFocusedWindowAnr, clazz, "notifyNoFocusedWindowAnr",
                   "(Landroid/view/InputApplicationHandle;IJJ)V");

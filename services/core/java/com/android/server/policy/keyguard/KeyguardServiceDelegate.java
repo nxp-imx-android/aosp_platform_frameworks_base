@@ -38,10 +38,10 @@ import com.android.internal.policy.IKeyguardService;
 import com.android.internal.policy.IKeyguardStateCallback;
 import com.android.server.LocalServices;
 import com.android.server.UiThread;
-import com.android.server.policy.WindowManagerPolicy.OnKeyguardExitResult;
 import com.android.server.wm.EventLogTags;
 
 import java.io.PrintWriter;
+import java.util.function.Consumer;
 
 /**
  * A local class that keeps a cache of keyguard state that can be restored in the event
@@ -62,6 +62,9 @@ public class KeyguardServiceDelegate {
 
         /** Indicates that the value of {@link #isShowing()} has changed recently. */
         void onShowingChanged();
+
+        /** Indicates that the KeyguardService has drawn after the screen turned on. */
+        void onDrawn();
 
         /** Indicates that the KeyguardService has connected successfully. */
         void onKeyguardServiceConnected();
@@ -104,10 +107,6 @@ public class KeyguardServiceDelegate {
     @NonNull
     private final StateCallback mCallback;
 
-    /** Options for a deferred call to onScreenTurningOn. */
-    @Nullable
-    private Runnable mDrawnListenerWhenConnect;
-
     /** Options for a deferred call to doKeyguardTimeout. */
     private boolean doKeyguardTimeoutRequested;
     @Nullable
@@ -149,6 +148,15 @@ public class KeyguardServiceDelegate {
         public void onTrustedChanged(boolean trusted) {
             mKeyguardReportedState.trusted = trusted;
             mCallback.onTrustedChanged();
+        }
+    };
+
+    // A delegate class to map a particular invocation with a ShowListener object.
+    private final IKeyguardDrawnCallback mKeyguardShowDelegate = new IKeyguardDrawnCallback.Stub() {
+        @Override
+        public void onDrawn() throws RemoteException {
+            if (DEBUG) Log.v(TAG, "**** SHOWN CALLED ****");
+            KeyguardServiceDelegate.this.mCallback.onDrawn();
         }
     };
 
@@ -212,41 +220,6 @@ public class KeyguardServiceDelegate {
         }
     }
 
-    // A delegate class to map a particular invocation with a ShowListener object.
-    private final class KeyguardShowDelegate extends IKeyguardDrawnCallback.Stub {
-        @Nullable
-        private final Runnable mDrawnListener;
-
-        KeyguardShowDelegate(@Nullable Runnable drawnListener) {
-            mDrawnListener = drawnListener;
-        }
-
-        @Override
-        public void onDrawn() throws RemoteException {
-            if (DEBUG) Log.v(TAG, "**** SHOWN CALLED ****");
-            if (mDrawnListener != null) {
-                mDrawnListener.run();
-            }
-        }
-    };
-
-    // A delegate class to map a particular invocation with an OnKeyguardExitResult object.
-    private final class KeyguardExitDelegate extends IKeyguardExitCallback.Stub {
-        private OnKeyguardExitResult mOnKeyguardExitResult;
-
-        KeyguardExitDelegate(OnKeyguardExitResult onKeyguardExitResult) {
-            mOnKeyguardExitResult = onKeyguardExitResult;
-        }
-
-        @Override
-        public void onKeyguardExitResult(boolean success) throws RemoteException {
-            if (DEBUG) Log.v(TAG, "**** onKeyguardExitResult(" + success +") CALLED ****");
-            if (mOnKeyguardExitResult != null) {
-                mOnKeyguardExitResult.onKeyguardExitResult(success);
-            }
-        }
-    };
-
     public KeyguardServiceDelegate(@NonNull Context context, @NonNull StateCallback callback) {
         mContext = context;
         mHandler = UiThread.getHandler();
@@ -288,9 +261,7 @@ public class KeyguardServiceDelegate {
         public void onServiceConnected(ComponentName name, IBinder service) {
             if (DEBUG) Log.v(TAG, "*** Keyguard connected (yay!)");
 
-            if (mKeyguardState.currentUser == UserHandle.USER_NULL) {
-                mKeyguardState.currentUser = ActivityManager.getCurrentUser();
-            }
+            mKeyguardState.currentUser = ActivityManager.getCurrentUser();
 
             if (resetKeyguardFirstStateDispatchOnServiceConnected()) {
                 mCallback.onKeyguardServiceConnected();
@@ -317,12 +288,11 @@ public class KeyguardServiceDelegate {
                     if (mKeyguardState.screenState == SCREEN_STATE_ON
                             || mKeyguardState.screenState == SCREEN_STATE_TURNING_ON) {
                         mKeyguardService.onScreenTurningOn(SCREEN_TURNING_ON_REASON_UNKNOWN,
-                                new KeyguardShowDelegate(mDrawnListenerWhenConnect));
+                                mKeyguardShowDelegate);
                     }
                     if (mKeyguardState.screenState == SCREEN_STATE_ON) {
                         mKeyguardService.onScreenTurnedOn();
                     }
-                    mDrawnListenerWhenConnect = null;
                 }
                 if (mKeyguardState.bootCompleted) {
                     mKeyguardService.onBootCompleted();
@@ -382,13 +352,21 @@ public class KeyguardServiceDelegate {
         return mKeyguardReportedState.inputRestricted;
     }
 
-    public void verifyUnlock(final OnKeyguardExitResult onKeyguardExitResult) {
-        if (mKeyguardService != null) {
-            try {
-                mKeyguardService.verifyUnlock(new KeyguardExitDelegate(onKeyguardExitResult));
-            } catch (RemoteException e) {
-                Slog.w(TAG, "Remote Exception", e);
-            }
+    public void verifyUnlock(@NonNull final Consumer<Boolean> onKeyguardExitResult) {
+        final var keyguardService = mKeyguardService;
+        if (keyguardService == null) {
+            return;
+        }
+        try {
+            keyguardService.verifyUnlock(new IKeyguardExitCallback.Stub() {
+                @Override
+                public void onKeyguardExitResult(boolean success) throws RemoteException {
+                    if (DEBUG) Log.v(TAG, "**** onKeyguardExitResult(" + success +") CALLED ****");
+                    onKeyguardExitResult.accept(success);
+                }
+            });
+        } catch (RemoteException e) {
+            Slog.w(TAG, "Remote Exception", e);
         }
     }
 
@@ -510,22 +488,17 @@ public class KeyguardServiceDelegate {
      * @param reason one of the SCREEN_TURNING_ON_REASON constants in IKeyguardService.aidl.
      * @param drawnListener callback for the first frame having been drawn by Keyguard.
      */
-    public void onScreenTurningOn(int reason, final Runnable drawnListener) {
+    public void onScreenTurningOn(int reason) {
         if (mKeyguardService != null) {
-            if (DEBUG) Log.v(TAG, "onScreenTurnedOn(reason = " + reason
-                    + ", showListener = " + drawnListener + ")");
+            if (DEBUG) Log.v(TAG, "onScreenTurnedOn(reason = " + reason + ")");
             try {
-                mKeyguardService.onScreenTurningOn(reason,
-                        new KeyguardShowDelegate(drawnListener));
+                mKeyguardService.onScreenTurningOn(reason, mKeyguardShowDelegate);
             } catch (RemoteException e) {
                 Slog.w(TAG, "Remote Exception", e);
             }
         } else {
             // try again when we establish a connection
             Slog.w(TAG, "onScreenTurningOn(): no keyguard service!");
-            // This shouldn't happen, but if it does, show the scrim immediately and
-            // invoke the listener's callback after the service actually connects.
-            mDrawnListenerWhenConnect = drawnListener;
         }
         mKeyguardState.screenState = SCREEN_STATE_TURNING_ON;
     }

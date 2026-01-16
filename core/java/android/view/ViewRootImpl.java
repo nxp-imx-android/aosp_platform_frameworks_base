@@ -165,7 +165,6 @@ import android.app.WindowConfiguration;
 import android.app.compat.CompatChanges;
 import android.app.servertransaction.WindowStateTransactionItem;
 import android.compat.annotation.ChangeId;
-import android.compat.annotation.EnabledAfter;
 import android.compat.annotation.EnabledSince;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.content.ClipData;
@@ -387,7 +386,7 @@ public final class ViewRootImpl implements ViewParent,
      * @hide
      */
     @ChangeId
-    @EnabledAfter(targetSdkVersion = Build.VERSION_CODES.CINNAMON_BUN)
+    @EnabledSince(targetSdkVersion = Build.VERSION_CODES.CUR_DEVELOPMENT)
     public static final long ENFORCE_THREAD_CHECKS_ON_VIEW_ROOT_IMPL_APIS = 464275874L;
 
     /**
@@ -760,6 +759,8 @@ public final class ViewRootImpl implements ViewParent,
      * Only used if {@link Flags#atomicTraversalBarrier} is enabled.
      */
     private final AtomicLong mTraversalBarrierAtomic = new AtomicLong(UNSET_TRAVERSAL_BARRIER);
+
+    private final boolean mAtomicTraversalBarrier = atomicTraversalBarrier();
 
     boolean mWillDrawSoon;
     /** Set to true while in performTraversals for detecting when die(true) is called from internal
@@ -3259,7 +3260,7 @@ public final class ViewRootImpl implements ViewParent,
 
     private void postTraversalBarrier() {
         int newBarrier = mQueue.postSyncBarrier();
-        if (atomicTraversalBarrier()) {
+        if (mAtomicTraversalBarrier) {
             // Atomically set the barrier
             final long oldBarrier = mTraversalBarrierAtomic.getAndSet(newBarrier);
             if (oldBarrier != UNSET_TRAVERSAL_BARRIER) {
@@ -3272,7 +3273,7 @@ public final class ViewRootImpl implements ViewParent,
     }
 
     private void removeTraversalBarrier() {
-        if (atomicTraversalBarrier()) {
+        if (mAtomicTraversalBarrier) {
             // Atomically unset the barrier
             final long oldBarrier = mTraversalBarrierAtomic.getAndSet(UNSET_TRAVERSAL_BARRIER);
             if (oldBarrier != UNSET_TRAVERSAL_BARRIER) {

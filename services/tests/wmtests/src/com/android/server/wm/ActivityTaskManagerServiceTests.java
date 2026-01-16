@@ -82,6 +82,7 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.res.Configuration;
 import android.graphics.Rect;
+import android.net.Uri;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.LocaleList;
@@ -91,6 +92,7 @@ import android.os.UserHandle;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
+import android.util.TypedValue;
 import android.view.Display;
 import android.view.DisplayInfo;
 import android.view.IDisplayWindowListener;
@@ -539,6 +541,48 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
 
         // Request Handoff
         requestHandoffTaskData(task.getRootTaskId(), receiver);
+
+        // Verify that the result code is success.
+        receiver.verifySucceeded(task.getRootTaskId(), handoffActivityData);
+    }
+
+    @EnableFlags(android.companion.Flags.FLAG_TASK_CONTINUITY)
+    @Test
+    public void testRequestHandoffTaskData_succeedsWhenPassingURL()
+        throws Exception{
+        // Create a test task.
+        final Task task = new TaskBuilder(mSupervisor)
+                              .setComponent(new ComponentName("pkg", "cls"))
+                              .setCreateActivity(true).build();
+        final ActivityRecord activity = task.getTopNonFinishingActivity();
+        doReturn(true).when(activity).attachedToProcess();
+        doReturn(true).when(activity).isState(RESUMED);
+        WindowProcessController mockWindowProcessController = mock(WindowProcessController.class);
+        activity.app = mockWindowProcessController;
+        IApplicationThread mockThread = mock(IApplicationThread.class);
+        doReturn(mockThread).when(mockWindowProcessController).getThread();
+        doReturn(true).when(activity).isProcessRunning();
+        doReturn(true).when(activity).isHandoffEnabled();
+
+        // Setup a fake receiver to receive the result.
+        TestHandoffTaskDataReceiver receiver = new TestHandoffTaskDataReceiver();
+
+        // Request Handoff
+        requestHandoffTaskData(task.getRootTaskId(), receiver);
+
+        ArgumentCaptor<IBinder> requestTokenCaptor = ArgumentCaptor.forClass(IBinder.class);
+        ArgumentCaptor<List<IBinder>> activityTokenCaptor = ArgumentCaptor.forClass(List.class);
+        verify(mockThread).requestHandoffActivityData(
+            requestTokenCaptor.capture(),
+            activityTokenCaptor.capture());
+
+        // Finish the request
+        HandoffActivityData handoffActivityData
+            = HandoffActivityData.createWebHandoff(Uri.parse("https://www.google.com"));
+
+        mAtm.reportHandoffActivityData(
+            requestTokenCaptor.getValue(),
+            List.of(handoffActivityData));
 
         // Verify that the result code is success.
         receiver.verifySucceeded(task.getRootTaskId(), handoffActivityData);
@@ -1149,15 +1193,12 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
 
     @Test
     public void testSupportsMultiWindow_activityMinWidthHeight_largerThanSupport() {
-        final float density = mContext.getResources().getDisplayMetrics().density;
         final ActivityInfo.WindowLayout windowLayout =
-                new ActivityInfo.WindowLayout(0, 0, 0, 0, 0,
-                        // This is larger than the min dimensions device support in multi window,
-                        // the activity will not be supported in multi window if the device respects
-                        /* minWidth= */
-                        (int) (WindowManager.LARGE_SCREEN_SMALLEST_SCREEN_WIDTH_DP * density),
-                        /* minHeight= */
-                        (int) (WindowManager.LARGE_SCREEN_SMALLEST_SCREEN_WIDTH_DP * density));
+                createWindowLayoutWithMinSize(
+                        WindowManager.LARGE_SCREEN_SMALLEST_SCREEN_WIDTH_DP,
+                        WindowManager.LARGE_SCREEN_SMALLEST_SCREEN_WIDTH_DP,
+                        mContext.getResources().getDisplayMetrics(),
+                        TypedValue.COMPLEX_UNIT_DIP);
         final ActivityRecord activity = new ActivityBuilder(mAtm)
                 .setCreateTask(true)
                 .setWindowLayout(windowLayout)
@@ -1205,13 +1246,13 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
     public void testSupportsMultiWindow_landscape_checkActivityMinWidth() {
         // This is smaller than the min dimensions device support in multi window,
         // the activity will be supported in multi window
-        final float density = mContext.getResources().getDisplayMetrics().density;
-        final int supportedWidth = (int) (WindowManager.LARGE_SCREEN_SMALLEST_SCREEN_WIDTH_DP
-                * mAtm.mMinPercentageMultiWindowSupportWidth * density);
         final ActivityInfo.WindowLayout windowLayout =
-                new ActivityInfo.WindowLayout(0, 0, 0, 0, 0,
-                        /* minWidth= */ supportedWidth,
-                        /* minHeight= */ 0);
+                createWindowLayoutWithMinSize(
+                        (int) (WindowManager.LARGE_SCREEN_SMALLEST_SCREEN_WIDTH_DP
+                                * mAtm.mMinPercentageMultiWindowSupportWidth),
+                        0,
+                        mContext.getResources().getDisplayMetrics(),
+                        TypedValue.COMPLEX_UNIT_DIP);
         final ActivityRecord activity = new ActivityBuilder(mAtm)
                 .setCreateTask(true)
                 .setWindowLayout(windowLayout)
@@ -1240,13 +1281,13 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
     public void testSupportsMultiWindow_portrait_checkActivityMinHeight() {
         // This is smaller than the min dimensions device support in multi window,
         // the activity will be supported in multi window
-        final float density = mContext.getResources().getDisplayMetrics().density;
-        final int supportedHeight = (int) (WindowManager.LARGE_SCREEN_SMALLEST_SCREEN_WIDTH_DP
-                * mAtm.mMinPercentageMultiWindowSupportHeight * density);
         final ActivityInfo.WindowLayout windowLayout =
-                new ActivityInfo.WindowLayout(0, 0, 0, 0, 0,
-                        /* minWidth= */ 0,
-                        /* minHeight= */ supportedHeight);
+                createWindowLayoutWithMinSize(
+                        0,
+                        (int) (WindowManager.LARGE_SCREEN_SMALLEST_SCREEN_WIDTH_DP
+                                * mAtm.mMinPercentageMultiWindowSupportHeight),
+                        mContext.getResources().getDisplayMetrics(),
+                        TypedValue.COMPLEX_UNIT_DIP);
         final ActivityRecord activity = new ActivityBuilder(mAtm)
                 .setCreateTask(true)
                 .setWindowLayout(windowLayout)

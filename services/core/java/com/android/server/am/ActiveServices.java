@@ -6361,13 +6361,6 @@ public final class ActiveServices {
         if (clientApp != null && hostApp != null) {
             if (clientApp == hostApp) {
                 policy = DEFAULT_SERVICE_NO_BUMP_BIND_POLICY_FLAG;
-            } else if (clientApp.isCached()) {
-                if (!Flags.cpuTimeCapabilityBasedFreezePolicy()) {
-                    policy = DEFAULT_SERVICE_NO_BUMP_BIND_POLICY_FLAG;
-                    if (clientApp.isFreezable()) {
-                        policy |= SERVICE_BIND_OOMADJ_POLICY_FREEZE_CALLER;
-                    }
-                }
             }
             if ((policy & SERVICE_BIND_OOMADJ_POLICY_SKIP_OOM_UPDATE_ON_CONNECT) == 0) {
                 // Binding between two different processes.
@@ -6378,11 +6371,9 @@ public final class ActiveServices {
                     policy = DEFAULT_SERVICE_NO_BUMP_BIND_POLICY_FLAG;
                 }
             }
-            if (Flags.cpuTimeCapabilityBasedFreezePolicy()) {
-                // Non cached processes can possibly be frozen, always check their freezability.
-                if (clientApp.isFreezable()) {
-                    policy |= SERVICE_BIND_OOMADJ_POLICY_FREEZE_CALLER;
-                }
+            // Non cached processes can possibly be frozen, always check their freezability.
+            if (clientApp.isFreezable()) {
+                policy |= SERVICE_BIND_OOMADJ_POLICY_FREEZE_CALLER;
             }
         }
         return policy;

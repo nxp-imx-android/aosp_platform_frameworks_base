@@ -21,7 +21,6 @@ import com.android.server.wm.flicker.helpers.DesktopModeAppHelper
 import com.android.server.wm.flicker.helpers.MailAppHelper
 import com.android.wm.shell.shared.desktopmode.DesktopConfig
 import org.junit.After
-import org.junit.Assume
 import org.junit.Before
 import org.junit.Ignore
 import org.junit.Test
@@ -38,13 +37,13 @@ constructor(
     private val mailAppDesktopHelper = DesktopModeAppHelper(mailAppHelper)
 
     private val desktopConfig = DesktopConfig.fromContext(instrumentation.context)
-    private val maxNum = desktopConfig.maxTaskLimit
+    private val hasTaskLimit = desktopConfig.maxTaskLimit > 0
+    private val numWindows = if (hasTaskLimit) desktopConfig.maxTaskLimit - 1 else 15
 
     @Before
     fun setup() {
-        Assume.assumeTrue(maxNum > 0)
         mailAppDesktopHelper.enterDesktopMode(wmHelper, device)
-        mailAppDesktopHelper.openTasks(wmHelper, numTasks = maxNum - 1)
+        mailAppDesktopHelper.openTasks(wmHelper, numTasks = numWindows)
         mailAppDesktopHelper.exitDesktopModeToFullScreenViaKeyboard(wmHelper)
     }
 

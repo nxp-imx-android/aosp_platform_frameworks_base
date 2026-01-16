@@ -66,12 +66,10 @@ import java.util.List;
  * <h4>On the Prover Device:</h4>
  *
  * <ol>
- *   <li><b>Obtain a trust token:</b> Get a {@link TrustToken} using {@link
- *       #acquireVerifiedDeviceToken()}
  *   <li><b>Receive a challenge:</b> The verifier will send a unique, random byte array (a "nonce"
- *       or "challenge").
- *   <li><b>Sign the challenge:</b> Use {@link #signChallenge(TrustToken, byte[])} to sign the
- *       challenge with the trust token's private key. This proves possession of the key.
+ *       or "challenge"). One may also use a challenge derived from the connection.
+ *   <li><b>Obtain a trust token:</b> Get a {@link TrustToken} and the challenge response using
+ *       {@link #acquireVerifiedDeviceToken()}
  *   <li><b>Send response to verifier:</b> Send the encoded trust token (from {@link
  *       TrustToken#encoded()}) and the signature back to the verifier.
  * </ol>
@@ -186,10 +184,17 @@ public class TrustTokenManager {
      * <p>The system maintains a limited number of trust tokens and must use the internet & system
      * battery to refresh the cache. Therefore, clients should only request trust tokens that they
      * will use imminently.
+     *
+     * <p>This operation requires the {@link android.Manifest.permission#SIGN_WITH_TRUST_TOKEN}
+     *  and the {@link android.Manifest.permission#ACQUIRE_VERIFIED_DEVICE_TOKEN} permissions.
+     *
+     * @param challenge the challenge from the verifier.
+     * @return a token with the challenge response.
      */
-    public TrustToken acquireVerifiedDeviceToken() {
+    // TODO(b/418280383): Add @RequiresPermission
+    public TrustTokenWithChallenge acquireVerifiedDeviceToken(byte[] challenge) {
         try {
-            return mService.acquireVerifiedDeviceToken();
+            return mService.acquireVerifiedDeviceToken(challenge);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
@@ -201,10 +206,13 @@ public class TrustTokenManager {
      * <p>The system maintains a limited number of trust tokens and must use the internet & system
      * battery to refresh the cache. Therefore, clients should only request trust tokens that they
      * will use imminently.
+     *
+     * @param challenge the challenge from the verifier.
      */
-    public TrustTokenIdentitySet acquirePreparedIdentitySet() {
+    // TODO(b/418280383): Add @RequiresPermission
+    public TrustTokenIdentitySet acquirePreparedIdentitySet(byte[] challenge) {
         try {
-            return mService.acquirePreparedIdentitySet();
+            return mService.acquirePreparedIdentitySet(challenge);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
@@ -232,23 +240,6 @@ public class TrustTokenManager {
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
-    }
-
-    /**
-     * Signs the given challenge with the trust token's private key.
-     *
-     * <p>This proves possession of the private key corresponding to the public key in the trust
-     * token. This operation requires the {@link android.Manifest.permission#SIGN_WITH_TRUST_TOKEN}
-     * permission.
-     *
-     * @param token the trust token to sign with.
-     * @param challenge the challenge to sign.
-     * @return the signature.
-     */
-    @NonNull
-    // @RequiresPermission(android.Manifest.permission.SIGN_WITH_TRUST_TOKEN)
-    public byte[] signChallenge(TrustToken token, byte[] challenge) {
-        throw new UnsupportedOperationException("Signing not implemented.");
     }
 
     /**

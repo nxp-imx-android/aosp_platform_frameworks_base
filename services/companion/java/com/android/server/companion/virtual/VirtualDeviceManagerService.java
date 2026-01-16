@@ -27,6 +27,7 @@ import static com.android.server.wm.ActivityInterceptorCallback.VIRTUAL_DEVICE_S
 import android.annotation.EnforcePermission;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.PermissionManuallyEnforced;
 import android.annotation.RequiresPermission;
 import android.annotation.SuppressLint;
 import android.annotation.UserIdInt;
@@ -525,15 +526,13 @@ public class VirtualDeviceManagerService extends SystemService {
                     }
                 };
 
-        @EnforcePermission(allOf = {android.Manifest.permission.ACCESS_COMPUTER_CONTROL,
-                android.Manifest.permission.POST_NOTIFICATIONS})
+        @PermissionManuallyEnforced
         @Override // Binder call
         public void requestComputerControlSession(
                 @NonNull IApplicationThread appThread,
                 @NonNull AttributionSource attributionSource,
                 @NonNull ComputerControlSessionParams params,
                 @NonNull IComputerControlSessionCallback callback) {
-            requestComputerControlSession_enforcePermission();
             if (!android.companion.virtualdevice.flags.Flags.computerControlAccess()) {
                 throw new IllegalStateException(
                         "Cannot create ComputerControlSession - flag disabled");
@@ -684,6 +683,11 @@ public class VirtualDeviceManagerService extends SystemService {
         @Override // Binder call
         public boolean validateAutomatedAppLaunchWarningIntent(@NonNull Intent intent) {
             return mAutomatedPackagesRepository.validateAutomatedAppLaunchWarningIntent(intent);
+        }
+
+        @Override // Binder call
+        public boolean isComputerControlAvailable(@NonNull AttributionSource attributionSource) {
+            return mComputerControlSessionProcessor.isComputerControlAvailable(attributionSource);
         }
 
         @Override // Binder call

@@ -21,8 +21,6 @@ import android.app.admin.DevicePolicyManager
 import android.content.Intent
 import android.graphics.drawable.Drawable
 import android.os.UserHandle
-import android.platform.test.annotations.DisableFlags
-import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.widget.LockPatternUtils
@@ -94,7 +92,6 @@ import org.mockito.Mockito
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.isNull
 import org.mockito.kotlin.verify
-import org.mockito.kotlin.verifyNoInteractions
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
@@ -154,6 +151,12 @@ class KeyguardQuickAffordancesCombinedViewModelTest : SysuiTestCase() {
     @Mock
     private lateinit var glanceableHubToLockscreenTransitionViewModel:
         GlanceableHubToLockscreenTransitionViewModel
+    @Mock
+    private lateinit var toLockscreenEndStateTransitionViewModel:
+        ToLockscreenEndStateTransitionViewModel
+    @Mock private lateinit var toAodEndStateTransitionViewModel: ToAodEndStateTransitionViewModel
+    @Mock
+    private lateinit var toDozingEndStateTransitionViewModel: ToDozingEndStateTransitionViewModel
 
     private lateinit var underTest: KeyguardQuickAffordancesCombinedViewModel
 
@@ -275,6 +278,9 @@ class KeyguardQuickAffordancesCombinedViewModelTest : SysuiTestCase() {
             .thenReturn(emptyFlow())
         whenever(glanceableHubToLockscreenTransitionViewModel.shortcutsAlpha)
             .thenReturn(emptyFlow())
+        whenever(toLockscreenEndStateTransitionViewModel.shortcutsAlpha).thenReturn(emptyFlow())
+        whenever(toDozingEndStateTransitionViewModel.shortcutsAlpha).thenReturn(emptyFlow())
+        whenever(toAodEndStateTransitionViewModel.shortcutsAlpha).thenReturn(emptyFlow())
         whenever(shadeInteractor.anyExpansion).thenReturn(intendedShadeAlphaMutableStateFlow)
 
         underTest =
@@ -325,6 +331,9 @@ class KeyguardQuickAffordancesCombinedViewModelTest : SysuiTestCase() {
                 lockscreenToGlanceableHubTransitionViewModel =
                     lockscreenToGlanceableHubTransitionViewModel,
                 transitionInteractor = kosmos.keyguardTransitionInteractor,
+                toLockscreenEndStateTransitionViewModel = toLockscreenEndStateTransitionViewModel,
+                toAodEndStateTransitionViewModel = toAodEndStateTransitionViewModel,
+                toDozingEndStateTransitionViewModel = toDozingEndStateTransitionViewModel,
             )
     }
 

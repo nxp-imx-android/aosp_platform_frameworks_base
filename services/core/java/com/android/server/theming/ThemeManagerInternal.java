@@ -338,6 +338,14 @@ public class ThemeManagerInternal {
     }
 
     /**
+     * Called when the boot animation is being dismissed.
+     * This signals the transition from boot phase to steady state UI.
+     */
+    public void onBootAnimationDismissing() {
+        mStateManager.onBootAnimationDismissing();
+    }
+
+    /**
      * Dumps the current state of the ThemeManagerInternal to the provided PrintWriter.
      *
      * @param pw The PrintWriter to dump the state to.

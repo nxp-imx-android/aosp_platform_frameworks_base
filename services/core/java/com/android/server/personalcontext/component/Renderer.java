@@ -16,6 +16,7 @@
 
 package com.android.server.personalcontext.component;
 
+import android.service.personalcontext.RenderToken;
 import android.service.personalcontext.insight.ContextInsight;
 
 import androidx.annotation.NonNull;
@@ -30,5 +31,12 @@ public interface Renderer extends Component {
     boolean isInterestedInInsight(ContextInsight insight);
 
     /** Renders an insight. */
-    void render(@NonNull ContextInsight insight);
+    void render(@NonNull ContextInsight insight, RenderToken renderToken);
+
+    /** Mints a RenderToken for this renderer. */
+    default RenderToken mintRenderToken() {
+        return new RenderToken.RenderTokenBuilder()
+                .setRendererComponentId(getComponentId())
+                .build();
+    }
 }

@@ -86,7 +86,11 @@ class PccBundleSanitizationUtil {
             switch (value) {
                 case Bundle subBundle -> sanitizeBundleInternal(subBundle, depth + 1);
                 case ParcelFileDescriptor pfd -> validatePfdIsReadOnly(pfd);
-                case SharedMemory sm -> sm.setProtect(OsConstants.PROT_READ);
+                case SharedMemory sm -> {
+                    if (!sm.isRegionReadOnly()) {
+                        throw new IllegalArgumentException("SharedMemory must be read-only.");
+                    }
+                }
                 // Bitmaps are considered safe to send across IPC. When a Bitmap is parceled, it
                 // is either copied into a new blob or, if immutable and backed by shared memory,
                 // its file descriptor is transferred. In either case, the receiving process gets
@@ -132,7 +136,11 @@ class PccBundleSanitizationUtil {
             switch (p) {
                 case ParcelFileDescriptor parcelFileDescriptor -> validatePfdIsReadOnly(
                         parcelFileDescriptor);
-                case SharedMemory sharedMemory -> sharedMemory.setProtect(OsConstants.PROT_READ);
+                case SharedMemory sharedMemory -> {
+                    if (!sharedMemory.isRegionReadOnly()) {
+                        throw new IllegalArgumentException("SharedMemory must be read-only.");
+                    }
+                }
                 case Bitmap ignored -> {
                 }
                 case null -> {

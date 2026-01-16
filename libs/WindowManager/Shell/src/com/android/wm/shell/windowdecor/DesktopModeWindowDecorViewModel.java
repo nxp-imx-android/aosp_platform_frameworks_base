@@ -223,6 +223,9 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
     private final DesktopConfig mDesktopConfig;
     private final @Nullable PinnedLayerController mPinnedLayerController;
     private final @Nullable PinnedLayerUiState mPinnedLayerUiState;
+    private final FluidTaskResizer mFluidTaskResizer;
+    private final VeiledTaskResizer mVeiledTaskResizer;
+    private final MultiDisplayTaskMover mMultiDisplayTaskMover;
     private boolean mTransitionDragActive;
 
     private SparseArray<EventReceiver> mEventReceiversByDisplay = new SparseArray<>();
@@ -334,7 +337,10 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             UserProfileContexts userProfileContexts,
             LockTaskChangeListener lockTaskChangeListener,
             PinnedLayerController pinnedLayerController,
-            PinnedLayerUiState pinnedLayerUiState) {
+            PinnedLayerUiState pinnedLayerUiState,
+            FluidTaskResizer fluidTaskResizer,
+            VeiledTaskResizer veiledTaskResizer,
+            MultiDisplayTaskMover multiDisplayTaskMover) {
         this(
                 context,
                 shellExecutor,
@@ -390,7 +396,10 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                 userProfileContexts,
                 lockTaskChangeListener,
                 pinnedLayerController,
-                pinnedLayerUiState);
+                pinnedLayerUiState,
+                fluidTaskResizer,
+                veiledTaskResizer,
+                multiDisplayTaskMover);
     }
 
     @VisibleForTesting
@@ -449,7 +458,10 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             UserProfileContexts userProfileContexts,
             LockTaskChangeListener lockTaskChangeListener,
             PinnedLayerController pinnedLayerController,
-            PinnedLayerUiState pinnedLayerUiState) {
+            PinnedLayerUiState pinnedLayerUiState,
+            FluidTaskResizer fluidTaskResizer,
+            VeiledTaskResizer veiledTaskResizer,
+            MultiDisplayTaskMover multiDisplayTaskMover) {
         mContext = context;
         mMainExecutor = shellExecutor;
         mMainHandler = mainHandler;
@@ -546,6 +558,9 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         mLockTaskChangeListener = lockTaskChangeListener;
         mPinnedLayerController = pinnedLayerController;
         mPinnedLayerUiState = pinnedLayerUiState;
+        mFluidTaskResizer = fluidTaskResizer;
+        mVeiledTaskResizer = veiledTaskResizer;
+        mMultiDisplayTaskMover = multiDisplayTaskMover;
         shellInit.addInitCallback(this::onInit, this);
     }
 
@@ -1860,7 +1875,10 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                 mShellDesktopState,
                 mDesktopConfig,
                 mDesktopTasksController,
-                mDesktopUserRepositories);
+                mDesktopUserRepositories,
+                mFluidTaskResizer,
+                mVeiledTaskResizer,
+                mMultiDisplayTaskMover);
         windowDecoration.setTaskDragResizer(taskPositioner);
 
         final DesktopModeTouchEventListener touchEventListener =
@@ -2272,7 +2290,10 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                 DesktopState desktopState,
                 DesktopConfig desktopConfig,
                 DesktopTasksController desktopTasksController,
-                DesktopUserRepositories desktopUserRepositories) {
+                DesktopUserRepositories desktopUserRepositories,
+                FluidTaskResizer fluidTaskResizer,
+                VeiledTaskResizer veiledTaskResizer,
+                MultiDisplayTaskMover multiDisplayTaskMover) {
             final RunningTaskInfo taskInfo = windowDecoration.getTaskInfo();
             final String packageName = ComponentUtils.getPackageName(taskInfo);
             final UserHandle user = windowDecoration.getUser();
@@ -2303,7 +2324,17 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                             interactionJankMonitor,
                             handler,
                             desktopState))
-                    : new FluidResizeTaskPositioner(
+                    : Flags.enableTaskPositionerRefactorClank()
+                        ? new ResizeTaskPositioner(
+                            windowDecoration,
+                            displayController,
+                            multiDisplayTaskMover,
+                            fluidTaskResizer,
+                            transitions,
+                            handler,
+                            desktopTasksController,
+                            desktopUserRepositories)
+                        : new FluidResizeTaskPositioner(
                             taskOrganizer,
                             transitions,
                             windowDecoration,

@@ -54,10 +54,10 @@ import android.media.projection.StopReason;
 import android.os.IBinder;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
+import android.util.TypedValue;
 import android.view.ContentRecordingSession;
 import android.view.Display;
 import android.view.DisplayInfo;
-import android.view.Gravity;
 import android.view.SurfaceControl;
 
 import androidx.test.filters.SmallTest;
@@ -381,9 +381,8 @@ public class ContentRecorderTests extends WindowTestsBase {
         final int recordedHeight = 999;
 
         final ActivityInfo info = new ActivityInfo();
-        info.windowLayout = new ActivityInfo.WindowLayout(-1 /* width */,
-                -1 /* widthFraction */, -1 /* height */, -1 /* heightFraction */,
-                Gravity.NO_GRAVITY, minWidth, minHeight);
+        info.windowLayout = createWindowLayoutWithMinSize(minWidth, minHeight,
+                mContext.getResources().getDisplayMetrics(), TypedValue.COMPLEX_UNIT_PX);
         mTask.setMinDimensions(info);
 
         // WHEN a recording is ongoing.

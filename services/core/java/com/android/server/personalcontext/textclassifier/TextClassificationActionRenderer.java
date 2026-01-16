@@ -17,6 +17,7 @@
 package com.android.server.personalcontext.textclassifier;
 
 import android.os.Bundle;
+import android.service.personalcontext.RenderToken;
 import android.service.personalcontext.hint.ContextHintWithSignature;
 import android.service.personalcontext.hint.TextClassificationHint;
 import android.service.personalcontext.insight.ActionableInsight;
@@ -52,7 +53,7 @@ public class TextClassificationActionRenderer implements Renderer {
     }
 
     @Override
-    public void render(@NonNull ContextInsight insight) {
+    public void render(@NonNull ContextInsight insight, RenderToken renderToken) {
         ActionableInsight actionableInsight = getIfActionableInsight(insight);
         if (actionableInsight == null) {
             if (DEBUG) {

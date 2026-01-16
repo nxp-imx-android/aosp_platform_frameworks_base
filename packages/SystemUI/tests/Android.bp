@@ -91,6 +91,7 @@ test_module_config {
 
 android_library {
     name: "SystemUI_test_fixtures",
+    resource_dirs: [],
 
     use_resource_processor: true,
     manifest: "AndroidManifest-base.xml",

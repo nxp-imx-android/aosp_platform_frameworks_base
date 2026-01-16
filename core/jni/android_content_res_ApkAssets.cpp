@@ -649,7 +649,8 @@ int register_android_content_res_ApkAssets(JNIEnv* env) {
   jclass parcelFd = FindClassOrDie(env, "android/os/ParcelFileDescriptor");
   gParcelFileDescriptorOffsets.detachFd = GetMethodIDOrDie(env, parcelFd, "detachFd", "()I");
 
-  gApkAssetsOffsets.classObject = FindClassOrDie(env, "android/content/res/ApkAssets");
+  jclass apkAssets = FindClassOrDie(env, "android/content/res/ApkAssets");
+  gApkAssetsOffsets.classObject = MakeGlobalRefOrDie(env, apkAssets);
   gApkAssetsOffsets.getFlagValues =
           GetStaticMethodIDOrDie(env, gApkAssetsOffsets.classObject, "getFlagValuesForNative",
                                  "([Ljava/lang/String;)[Z");

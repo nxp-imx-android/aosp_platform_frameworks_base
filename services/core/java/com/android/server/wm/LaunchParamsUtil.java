@@ -30,6 +30,7 @@ import android.annotation.Nullable;
 import android.app.ActivityOptions;
 import android.content.pm.ActivityInfo;
 import android.graphics.Rect;
+import android.util.DisplayMetrics;
 import android.util.Size;
 import android.view.Gravity;
 import android.view.View;
@@ -92,8 +93,9 @@ class LaunchParamsUtil {
         final int freeformHeight = (int) (freeformHeightInDp * density + 0.5f);
 
         // Minimum layout requirements.
-        final int layoutMinWidth = (layout == null) ? -1 : layout.minWidth;
-        final int layoutMinHeight = (layout == null) ? -1 : layout.minHeight;
+        final DisplayMetrics displayMetrics = displayArea.getDisplayContent().getDisplayMetrics();
+        final int layoutMinWidth = (layout == null) ? -1 : layout.getMinWidth(displayMetrics);
+        final int layoutMinHeight = (layout == null) ? -1 : layout.getMinHeight(displayMetrics);
 
         // Max size, which is letterboxing/pillarboxing in displayArea. That's to say the large
         // dimension of default size is the small dimension of displayArea size, and the small
@@ -159,8 +161,10 @@ class LaunchParamsUtil {
                     stableBounds.height() / (float) inOutBounds.height();
             final float shrinkRatio = Math.min(heightShrinkRatio, widthShrinkRatio);
             // Minimum layout requirements.
-            final int layoutMinWidth = (layout == null) ? -1 : layout.minWidth;
-            final int layoutMinHeight = (layout == null) ? -1 : layout.minHeight;
+            final DisplayMetrics displayMetrics =
+                    displayArea.getDisplayContent().getDisplayMetrics();
+            final int layoutMinWidth = (layout == null) ? -1 : layout.getMinWidth(displayMetrics);
+            final int layoutMinHeight = (layout == null) ? -1 : layout.getMinHeight(displayMetrics);
             int adjustedWidth = Math.max(layoutMinWidth, (int) (inOutBounds.width() * shrinkRatio));
             int adjustedHeight = Math.max(layoutMinHeight,
                     (int) (inOutBounds.height() * shrinkRatio));
@@ -213,9 +217,9 @@ class LaunchParamsUtil {
      */
     static void calculateLayoutBounds(@NonNull Rect stableBounds,
             @NonNull ActivityInfo.WindowLayout windowLayout, @NonNull Rect inOutBounds,
-            @Nullable Size desiredSize) {
-        final int defaultWidth = stableBounds.width();
-        final int defaultHeight = stableBounds.height();
+            @Nullable Size desiredSize, @NonNull DisplayMetrics displayMetrics) {
+        final int stableParentWidth = stableBounds.width();
+        final int stableParentHeight = stableBounds.height();
         int width;
         int height;
 
@@ -226,17 +230,19 @@ class LaunchParamsUtil {
         }
 
         width = desiredSize.getWidth();
-        if (windowLayout.width > 0 && windowLayout.width < defaultWidth) {
-            width = windowLayout.width;
+        final int defaultWidth = windowLayout.getDefaultWidth(displayMetrics);
+        if (defaultWidth > 0 && defaultWidth < stableParentHeight) {
+            width = defaultWidth;
         } else if (windowLayout.widthFraction > 0 && windowLayout.widthFraction < 1.0f) {
-            width = (int) (defaultWidth * windowLayout.widthFraction);
+            width = (int) (stableParentWidth * windowLayout.widthFraction);
         }
 
         height = desiredSize.getHeight();
-        if (windowLayout.height > 0 && windowLayout.height < defaultHeight) {
-            height = windowLayout.height;
+        final int defaultHeight = windowLayout.getDefaultHeight(displayMetrics);
+        if (defaultHeight > 0 && defaultHeight < stableParentHeight) {
+            height = defaultHeight;
         } else if (windowLayout.heightFraction > 0 && windowLayout.heightFraction < 1.0f) {
-            height = (int) (defaultHeight * windowLayout.heightFraction);
+            height = (int) (stableParentHeight * windowLayout.heightFraction);
         }
 
         inOutBounds.set(0, 0, width, height);

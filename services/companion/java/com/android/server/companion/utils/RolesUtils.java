@@ -27,6 +27,7 @@ import static android.companion.AssociationRequest.DEVICE_PROFILE_VIRTUAL_DEVICE
 import static android.companion.AssociationRequest.DEVICE_PROFILE_WATCH;
 import static android.companion.CompanionResources.PERMISSION_ADD_MIRROR_DISPLAY;
 import static android.companion.CompanionResources.PERMISSION_ADD_TRUSTED_DISPLAY;
+import static android.companion.CompanionResources.PERMISSION_APP_STREAMING;
 import static android.companion.CompanionResources.PERMISSION_BYPASS_DND;
 import static android.companion.CompanionResources.PERMISSION_CALENDAR;
 import static android.companion.CompanionResources.PERMISSION_CALL_LOGS;
@@ -87,9 +88,12 @@ public final class RolesUtils {
                     PERMISSION_SCHEDULE_EXACT_ALARM, PERMISSION_BYPASS_DND
             ),
 
-            DEVICE_PROFILE_APP_STREAMING, List.of(
-                    PERMISSION_CREATE_VIRTUAL_DEVICE, PERMISSION_ADD_MIRROR_DISPLAY,
-                    PERMISSION_ADD_TRUSTED_DISPLAY, PERMISSION_POST_NOTIFICATIONS),
+            DEVICE_PROFILE_APP_STREAMING,
+            android.companion.Flags.expandAppStreamingRolePermissions()
+                    ? List.of(PERMISSION_APP_STREAMING, PERMISSION_NOTIFICATIONS,
+                            PERMISSION_STORAGE)
+                    : List.of(PERMISSION_CREATE_VIRTUAL_DEVICE, PERMISSION_ADD_MIRROR_DISPLAY,
+                            PERMISSION_ADD_TRUSTED_DISPLAY, PERMISSION_POST_NOTIFICATIONS),
 
             DEVICE_PROFILE_NEARBY_DEVICE_STREAMING, List.of(
                     PERMISSION_CREATE_VIRTUAL_DEVICE, PERMISSION_ADD_TRUSTED_DISPLAY,

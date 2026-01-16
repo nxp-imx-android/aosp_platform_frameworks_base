@@ -25,33 +25,37 @@ import com.android.systemui.screencapture.record.camera.domain.interactor.screen
 import com.android.systemui.screencapture.record.domain.interactor.screenCaptureRecordFeaturesInteractor
 import com.android.systemui.screencapture.record.smallscreen.domain.interactor.recordDetailsStateInteractor
 import com.android.systemui.screencapture.record.smallscreen.domain.interactor.recordDetailsTargetInteractor
+import com.android.systemui.screencapture.record.smallscreen.shared.model.RecordDetailsPopupType
 import com.android.systemui.screencapture.record.ui.viewmodel.screenCaptureRecordParametersViewModelFactory
 import com.android.systemui.screenrecord.domain.interactor.screenRecordingServiceInteractor
 import com.android.systemui.shared.system.activityManagerWrapper
 
-val Kosmos.smallScreenCaptureRecordViewModelFactory by
-    Kosmos.Fixture {
-        object : SmallScreenCaptureRecordViewModel.Factory {
-            override fun create(): SmallScreenCaptureRecordViewModel =
-                SmallScreenCaptureRecordViewModel(
-                    bgContext = backgroundCoroutineContext,
-                    screenRecordingServiceInteractor = screenRecordingServiceInteractor,
-                    screenCaptureUiInteractor = screenCaptureUiInteractor,
-                    markupInteractor = screenCaptureMarkupInteractor,
-                    activityManager = activityManagerWrapper,
-                    recordDetailsAppSelectorViewModelFactory =
-                        recordDetailsAppSelectorViewModelFactory,
-                    screenCaptureRecordParametersViewModelFactory =
-                        screenCaptureRecordParametersViewModelFactory,
-                    recordDetailsTargetViewModelFactory = recordDetailsTargetViewModelFactory,
-                    drawableLoaderViewModel = drawableLoaderViewModel,
-                    screenCaptureRecordFeaturesInteractor = screenCaptureRecordFeaturesInteractor,
-                    recordDetailsMarkupColorPickerViewModelFactory =
-                        recordDetailsMarkupColorPickerViewModelFactory,
-                    recordDetailsTargetInteractor = recordDetailsTargetInteractor,
-                    recordDetailsStateInteractor = recordDetailsStateInteractor,
-                    screenCaptureCameraTransformationInteractor =
-                        screenCaptureCameraTransformationInteractor,
-                )
-        }
+fun Kosmos.smallScreenCaptureRecordViewModelFactory(
+    defaultDetailsPopupType: RecordDetailsPopupType
+): SmallScreenCaptureRecordViewModel.Factory =
+    object : SmallScreenCaptureRecordViewModel.Factory {
+        override fun create(): SmallScreenCaptureRecordViewModel =
+            SmallScreenCaptureRecordViewModel(
+                bgContext = backgroundCoroutineContext,
+                screenRecordingServiceInteractor = screenRecordingServiceInteractor,
+                screenCaptureUiInteractor = screenCaptureUiInteractor,
+                markupInteractor = screenCaptureMarkupInteractor,
+                activityManager = activityManagerWrapper,
+                recordDetailsAppSelectorViewModelFactory = recordDetailsAppSelectorViewModelFactory,
+                screenCaptureRecordParametersViewModelFactory =
+                    screenCaptureRecordParametersViewModelFactory,
+                recordDetailsTargetViewModelFactory = recordDetailsTargetViewModelFactory,
+                drawableLoaderViewModel = drawableLoaderViewModel,
+                screenCaptureRecordFeaturesInteractor = screenCaptureRecordFeaturesInteractor,
+                recordDetailsMarkupColorPickerViewModelFactory =
+                    recordDetailsMarkupColorPickerViewModelFactory,
+                recordDetailsTargetInteractor = recordDetailsTargetInteractor,
+                recordDetailsStateInteractor = recordDetailsStateInteractor,
+                screenCaptureCameraTransformationInteractor =
+                    screenCaptureCameraTransformationInteractor,
+                defaultDetailsPopupType = defaultDetailsPopupType,
+            )
     }
+
+var Kosmos.smallScreenCaptureRecordViewModelFactory by
+    Kosmos.Fixture { smallScreenCaptureRecordViewModelFactory(RecordDetailsPopupType.Invisible) }

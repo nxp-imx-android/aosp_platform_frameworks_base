@@ -154,6 +154,7 @@ import com.android.wm.shell.desktopmode.WindowDecorCaptionRepository;
 import com.android.wm.shell.desktopmode.WindowDragTransitionHandler;
 import com.android.wm.shell.desktopmode.api.DesktopMode;
 import com.android.wm.shell.desktopmode.api.impl.DesktopModeImpl;
+import com.android.wm.shell.desktopmode.api.impl.IDesktopModeProvider;
 import com.android.wm.shell.desktopmode.clientfullscreenrequest.DesktopFullscreenRequestHandler;
 import com.android.wm.shell.desktopmode.compatui.SystemModalsTransitionHandler;
 import com.android.wm.shell.desktopmode.data.DesktopRepositoryInitializer;
@@ -227,6 +228,9 @@ import com.android.wm.shell.unfold.qualifier.UnfoldShellTransition;
 import com.android.wm.shell.unfold.qualifier.UnfoldTransition;
 import com.android.wm.shell.windowdecor.CaptionWindowDecorViewModel;
 import com.android.wm.shell.windowdecor.DesktopModeWindowDecorViewModel;
+import com.android.wm.shell.windowdecor.FluidTaskResizer;
+import com.android.wm.shell.windowdecor.MultiDisplayTaskMover;
+import com.android.wm.shell.windowdecor.VeiledTaskResizer;
 import com.android.wm.shell.windowdecor.WindowDecorViewModel;
 import com.android.wm.shell.windowdecor.additionalviewcontainer.AdditionalSystemViewContainer;
 import com.android.wm.shell.windowdecor.common.CaptionVisibilityHelper;
@@ -1453,7 +1457,10 @@ public abstract class WMShellModule {
             UserProfileContexts userProfileContexts,
             LockTaskChangeListener lockTaskChangeListener,
             Optional<PinnedLayerController> pinnedLayerController,
-            Optional<PinnedLayerUiState> pinnedLayerUiState
+            Optional<PinnedLayerUiState> pinnedLayerUiState,
+            FluidTaskResizer fluidTaskResizer,
+            VeiledTaskResizer veiledTaskResizer,
+            MultiDisplayTaskMover multiDisplayTaskMover
     ) {
         if (!shelldesktopState.canEnterDesktopModeOrShowAppHandle()) {
             return Optional.empty();
@@ -1474,7 +1481,8 @@ public abstract class WMShellModule {
                 multiDisplayDragMoveIndicatorController, compatUI.orElse(null),
                 desksOrganizer, shelldesktopState, desktopConfig, userProfileContexts,
                 lockTaskChangeListener, pinnedLayerController.orElse(null),
-                pinnedLayerUiState.orElse(null)));
+                pinnedLayerUiState.orElse(null), fluidTaskResizer, veiledTaskResizer,
+                multiDisplayTaskMover));
     }
 
     @WMSingleton
@@ -1482,6 +1490,31 @@ public abstract class WMShellModule {
     static LockTaskChangeListener provideLockTaskChangeListener(ShellInit shellInit,
             TaskStackListenerImpl taskStackListenerImpl) {
         return new LockTaskChangeListener(shellInit, taskStackListenerImpl);
+    }
+
+    @Provides
+    static FluidTaskResizer provideFluidTaskResizer(
+            ShellTaskOrganizer taskOrganizer,
+            DisplayController displayController,
+            DesktopState desktopState) {
+        return new FluidTaskResizer(taskOrganizer, displayController, desktopState);
+    }
+
+    @Provides
+    static VeiledTaskResizer provideVeiledTaskResizer(
+            DisplayController displayController,
+            DesktopState desktopState) {
+        return new VeiledTaskResizer(displayController, desktopState);
+    }
+
+    @Provides
+    static MultiDisplayTaskMover provideMultiDisplayTaskMover(
+            DisplayController displayController,
+            MultiDisplayDragMoveIndicatorController indicatorController) {
+        return new MultiDisplayTaskMover(
+                displayController,
+                SurfaceControl.Transaction::new,
+                indicatorController);
     }
 
     @WMSingleton
@@ -1877,8 +1910,7 @@ public abstract class WMShellModule {
             @NonNull RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer,
             @NonNull DisplayController displayController
     ) {
-        if (desktopState.canEnterDesktopMode()
-                && DesktopExperienceFlags.ENABLE_DESKTOP_FIRST_LISTENER.isTrue()) {
+        if (desktopState.canEnterDesktopMode()) {
             return Optional.of(
                     new DesktopFirstListenerManager(shellInit, rootTaskDisplayAreaOrganizer,
                             displayController));
@@ -2272,8 +2304,23 @@ public abstract class WMShellModule {
             ShellCrashHandler shellCrashHandler,
             AppToWebEducationController appToWebEducationController,
             QuitFocusedAppKeyGestureHandler quitFocusedAppKeyGestureHandler,
-            BubbleRootTask bubbleRootTask) {
+            BubbleRootTask bubbleRootTask,
+            IDesktopModeProvider desktopModeProvider) {
         return new Object();
+    }
+
+    @WMSingleton
+    @Provides
+    static IDesktopModeProvider provideIDesktopModeProvider(
+            ShellInit shellInit,
+            ShellController shellController,
+            Optional<DesktopTasksController> desktopTasksController,
+            DesktopState desktopState) {
+        return new IDesktopModeProvider(
+                shellInit,
+                shellController,
+                desktopTasksController,
+                desktopState);
     }
 
     @WMSingleton

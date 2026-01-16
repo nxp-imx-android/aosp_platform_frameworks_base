@@ -1032,19 +1032,19 @@
         <flag name="mnc" value="0x0002" />
         <!-- The touchscreen has changed, for example the user has moved the
              app across displays with different touchscreen abilities. -->
-        <flag name="touchscreen" value="0x0004" />
+        <flag name="touchscreen" value="0x0008" />
         <!-- The keyboard type has changed, for example the user has plugged
              in an external keyboard. -->
-        <flag name="keyboard" value="0x0008" />
+        <flag name="keyboard" value="0x0010" />
         <!-- The keyboard or navigation accessibility has changed, for example
              the user has slid the keyboard out to expose it.  Note that
              despite its name, this applied to any accessibility: keyboard
              or navigation. -->
-        <flag name="keyboardHidden" value="0x0010" />
+        <flag name="keyboardHidden" value="0x0020" />
         <!-- The navigation type has changed.  Should never normally happen. -->
-        <flag name="navigation" value="0x0020" />
+        <flag name="navigation" value="0x0040" />
         <!-- The color mode of the screen has changed (color gamut or dynamic range). -->
-        <flag name="colorMode" value="0x0040" />
+        <flag name="colorMode" value="0x4000" />
     </attr>
 
     <!-- Specify one or more configuration changes that the activity will

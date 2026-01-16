@@ -79,8 +79,6 @@ public enum DesktopExperienceFlags {
     ENABLE_CAMERA_COMPAT_EXTERNAL_DISPLAY_ROTATION_BUGFIX(
             Flags::enableCameraCompatExternalDisplayRotationBugfix, false,
             Flags.FLAG_ENABLE_CAMERA_COMPAT_EXTERNAL_DISPLAY_ROTATION_BUGFIX),
-    ENABLE_CONNECTED_DISPLAYS_DND(Flags::enableConnectedDisplaysDnd, true,
-            Flags.FLAG_ENABLE_CONNECTED_DISPLAYS_DND),
     ENABLE_CONNECTED_DISPLAYS_WALLPAPER(android.app.Flags::enableConnectedDisplaysWallpaper, true,
             android.app.Flags.FLAG_ENABLE_CONNECTED_DISPLAYS_WALLPAPER),
     ENABLE_CONNECTED_DISPLAYS_WINDOW_DRAG(Flags::enableConnectedDisplaysWindowDrag, true,
@@ -97,8 +95,6 @@ public enum DesktopExperienceFlags {
             Flags.FLAG_ENABLE_DESKTOP_FIRST_BASED_DRAG_TO_MAXIMIZE),
     ENABLE_DESKTOP_FIRST_FULLSCREEN_REFOCUS_BUGFIX(Flags::enableDesktopFirstFullscreenRefocusBugfix,
             false, Flags.FLAG_ENABLE_DESKTOP_FIRST_FULLSCREEN_REFOCUS_BUGFIX),
-    ENABLE_DESKTOP_FIRST_LISTENER(Flags::enableDesktopFirstListener, false,
-            Flags.FLAG_ENABLE_DESKTOP_FIRST_LISTENER),
     ENABLE_DESKTOP_FIRST_POLICY_IN_LPM(Flags::enableDesktopFirstPolicyInLpm, false,
             Flags.FLAG_ENABLE_DESKTOP_FIRST_POLICY_IN_LPM),
     ENABLE_DESKTOP_FIRST_TOP_FULLSCREEN_BUGFIX(Flags::enableDesktopFirstTopFullscreenBugfix,

@@ -80,6 +80,9 @@ public class ThemeStateManager {
     @GuardedBy("mLock")
     private int mCurrentUserId = UserHandle.USER_NULL;
 
+    @GuardedBy("mLock")
+    private boolean mIsBooting = true;
+
     // We are storing states for users only. Profiles should target their parent users.
     @GuardedBy("mLock")
     private final SparseArray<ThemeStatePair> mThemeStates = new SparseArray<>();
@@ -120,6 +123,16 @@ public class ThemeStateManager {
         mCurrentUserId = LocalServices.getService(ActivityManagerInternal.class).getCurrentUserId();
     }
 
+    /**
+     * Called when the boot animation is dismissed.
+     */
+    void onBootAnimationDismissing() {
+        synchronized (mLock) {
+            Slog.d(TAG, "Boot animation dismissing, exiting boot phase.");
+            mIsBooting = false;
+        }
+    }
+
     @VisibleForTesting
     void setThemeOverlayHelper(ThemeOverlayHelper themeOverlayHelper) {
         mThemeOverlayHelper = themeOverlayHelper;
@@ -136,7 +149,12 @@ public class ThemeStateManager {
     public void onSeedColorChange(int userId, int seedColor, boolean fromForegroundApp) {
         ThemeStatePair statePair = getState(userId);
 
-        if (!fromForegroundApp && mKeyguardManager != null
+        boolean isBooting;
+        synchronized (mLock) {
+            isBooting = mIsBooting;
+        }
+
+        if (!isBooting && !fromForegroundApp && mKeyguardManager != null
                 && !mKeyguardManager.isDeviceLocked()) {
             statePair.setDeferUpdatesOnLock(true);
             Slog.w(TAG, "Wallpaper changed from background app, deferring color change");
@@ -365,8 +383,13 @@ public class ThemeStateManager {
      */
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
     void reevaluateSystemTheme() {
+        boolean isBooting;
+        synchronized (mLock) {
+            isBooting = mIsBooting;
+        }
+
         for (ThemeStatePair statePair : getPairsSnapshot()) {
-            if (!statePair.shouldUpdate()) {
+            if (!statePair.shouldUpdate(isBooting)) {
                 continue;
             }
 

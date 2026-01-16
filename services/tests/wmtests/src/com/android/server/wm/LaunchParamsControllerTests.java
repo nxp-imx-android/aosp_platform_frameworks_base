@@ -19,7 +19,6 @@ package com.android.server.wm;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
-import static android.app.WindowConfiguration.WINDOWING_MODE_PINNED;
 import static android.view.Display.INVALID_DISPLAY;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.any;
@@ -92,7 +91,7 @@ public class LaunchParamsControllerTests extends WindowTestsBase {
 
         final ActivityRecord record = new ActivityBuilder(mAtm).build();
         final ActivityRecord source = new ActivityBuilder(mAtm).build();
-        final WindowLayout layout = new WindowLayout(0, 0, 0, 0, 0, 0, 0);
+        final WindowLayout layout = new LaunchParamsModifierTestsBase.WindowLayoutBuilder().build();
         final ActivityOptions options = mock(ActivityOptions.class);
         final Request request = new Request();
 
@@ -479,7 +478,7 @@ public class LaunchParamsControllerTests extends WindowTestsBase {
 
         final ActivityRecord record = new ActivityBuilder(mAtm).build();
         final ActivityRecord source = new ActivityBuilder(mAtm).build();
-        final WindowLayout layout = new WindowLayout(0, 0, 0, 0, 0, 0, 0);
+        final WindowLayout layout = new LaunchParamsModifierTestsBase.WindowLayoutBuilder().build();
         final ActivityOptions options = mock(ActivityOptions.class);
 
         mController.calculate(record.getTask(), layout, record, source, options, null/*request*/,

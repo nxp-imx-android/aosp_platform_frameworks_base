@@ -22,10 +22,11 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.os.RemoteException;
 import android.service.personalcontext.insight.BundleInsight;
 import android.view.SurfaceControlViewHost.SurfacePackage;
-import android.window.InputTransferToken;
+import android.view.View;
 
 import androidx.test.filters.SmallTest;
 import androidx.test.runner.AndroidJUnit4;
@@ -39,7 +40,7 @@ import org.mockito.MockitoAnnotations;
 @SmallTest
 @RunWith(AndroidJUnit4.class)
 public class InsightSurfaceClientInfoTest {
-    @Mock private IEmbeddedInsightSurfaceCallback mCallbacks;
+    @Mock private IInsightSurfaceClient mClient;
     @Mock private SurfacePackage mSurfacePackage;
 
     @Before
@@ -49,41 +50,63 @@ public class InsightSurfaceClientInfoTest {
 
     @Test
     public void testInsightSurfaceClientInfoCreation() {
-        final InputTransferToken token = new InputTransferToken();
         final int widthMeasureSpec = 1;
         final int heightMeasureSpec = 2;
         final int displayId = 3;
+        final Color backgroundColor = Color.valueOf(Color.RED);
+        final int nestedScrollingAxes = View.SCROLL_AXIS_HORIZONTAL | View.SCROLL_AXIS_VERTICAL;
+        final boolean nestedScrollAxisLocked = true;
         final Configuration configuration = new Configuration();
 
         final InsightSurfaceClientInfo clientInfo =
                 new InsightSurfaceClientInfo(
-                        token,
                         displayId,
                         widthMeasureSpec,
                         heightMeasureSpec,
+                        backgroundColor,
+                        nestedScrollingAxes,
+                        nestedScrollAxisLocked,
                         configuration,
-                        mCallbacks);
+                        mClient);
 
-        assertThat(clientInfo.getInputTransferToken()).isEqualTo(token);
-        assertThat(clientInfo.getWidthMeasureSpec()).isEqualTo(widthMeasureSpec);
-        assertThat(clientInfo.getHeightMeasureSpec()).isEqualTo(heightMeasureSpec);
+        assertThat(clientInfo.getMeasureSpecWidth()).isEqualTo(widthMeasureSpec);
+        assertThat(clientInfo.getMeasureSpecHeight()).isEqualTo(heightMeasureSpec);
         assertThat(clientInfo.getDisplayId()).isEqualTo(displayId);
         assertThat(clientInfo.getConfiguration()).isEqualTo(configuration);
+        assertThat(clientInfo.getBackgroundColor()).isEqualTo(backgroundColor);
+        assertThat(clientInfo.getNestedScrollAxes()).isEqualTo(nestedScrollingAxes);
+        assertThat(clientInfo.getNestedScrollAxisLocked()).isEqualTo(nestedScrollAxisLocked);
     }
 
     @Test
     public void testOnSurfaceCreated() throws RemoteException {
         final InsightSurfaceClientInfo clientInfo =
-                new InsightSurfaceClientInfo(null, 0, 0, 0, new Configuration(), mCallbacks);
+                new InsightSurfaceClientInfo(
+                        0,
+                        0,
+                        0,
+                        Color.valueOf(Color.BLACK),
+                        View.SCROLL_AXIS_NONE,
+                        false,
+                        new Configuration(),
+                        mClient);
         clientInfo.onSurfaceCreated(mSurfacePackage);
-        verify(mCallbacks).onSurfaceCreated(mSurfacePackage);
+        verify(mClient).onSurfaceCreated(mSurfacePackage);
     }
 
     @Test
     public void testOnReceiveInsight() throws RemoteException {
         final InsightSurfaceClientInfo clientInfo =
-                new InsightSurfaceClientInfo(null, 0, 0, 0, new Configuration(), mCallbacks);
+                new InsightSurfaceClientInfo(
+                        0,
+                        0,
+                        0,
+                        Color.valueOf(Color.BLACK),
+                        View.SCROLL_AXIS_NONE,
+                        false,
+                        new Configuration(),
+                        mClient);
         clientInfo.onReceiveInsight(new BundleInsight.Builder().build());
-        verify(mCallbacks).onReceiveInsight(any());
+        verify(mClient).onReceiveInsight(any());
     }
 }

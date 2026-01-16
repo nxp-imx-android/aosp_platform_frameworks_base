@@ -3540,9 +3540,9 @@ package android.service.personalcontext.hint {
     ctor public ContextHintWithSignature.Builder(@NonNull android.service.personalcontext.hint.ContextHint, @NonNull javax.crypto.spec.SecretKeySpec);
     method @NonNull public android.service.personalcontext.hint.ContextHintWithSignature.Builder addAttributionHint(@NonNull android.service.personalcontext.hint.ContextHintWithSignature);
     method @NonNull public android.service.personalcontext.hint.ContextHintWithSignature.Builder addAttributionHints(@NonNull java.util.Collection<android.service.personalcontext.hint.ContextHintWithSignature>);
+    method @NonNull public android.service.personalcontext.hint.ContextHintWithSignature.Builder addRenderTokens(@NonNull java.util.Collection<android.service.personalcontext.RenderToken>);
     method @NonNull public android.service.personalcontext.hint.ContextHintWithSignature build() throws java.security.GeneralSecurityException;
     method @NonNull public android.service.personalcontext.hint.ContextHintWithSignature.Builder setOriginatingPackage(@Nullable String);
-    method @NonNull public android.service.personalcontext.hint.ContextHintWithSignature.Builder setRenderToken(@Nullable android.service.personalcontext.RenderToken);
   }
 
 }
@@ -4086,7 +4086,6 @@ package android.view {
   public final class InputDevice implements android.os.Parcelable {
     method @RequiresPermission("android.permission.DISABLE_INPUT_DEVICE") public void disable();
     method @RequiresPermission("android.permission.DISABLE_INPUT_DEVICE") public void enable();
-    method public int getAssociatedDisplayId();
     method @NonNull public android.hardware.input.InputDeviceIdentifier getIdentifier();
     method @Nullable public String getKeyboardLanguageTag();
     method @Nullable public String getKeyboardLayoutType();

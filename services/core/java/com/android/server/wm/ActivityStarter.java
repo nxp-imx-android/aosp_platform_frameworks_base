@@ -3408,7 +3408,8 @@ class ActivityStarter {
             case EMBEDDING_DISALLOWED_MIN_DIMENSION_VIOLATION: {
                 errMsg = "Cannot embed " + mStartActivity
                         + ". TaskFragment's bounds:" + taskFragment.getBounds()
-                        + ", minimum dimensions:" + mStartActivity.getMinDimensions();
+                        + ", minimum dimensions:" + mStartActivity.getMinDimensions(
+                                taskFragment.getDisplayContent());
                 break;
             }
             case EMBEDDING_DISALLOWED_UNTRUSTED_HOST: {

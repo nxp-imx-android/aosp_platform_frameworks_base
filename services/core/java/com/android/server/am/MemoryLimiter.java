@@ -138,7 +138,7 @@ class MemoryLimiter implements AutoCloseable {
      * A controller specializes the behavior of an individual MemoryLimiter.
      */
     @UsedByNative
-    interface Controller {
+    interface Controller extends AutoCloseable {
          /**
          * Returns true if this controller is enabled and actively managing memory limits.  This
          * can be overridden in test implementations to force the controller to be enabled or
@@ -161,9 +161,6 @@ class MemoryLimiter implements AutoCloseable {
 
         // Block or unblock the limiter from monitoring/configuring the UID.
         void ignoreUid(int uid, boolean ignore);
-
-        // Close and release any resources.
-        void close();
 
         // The controller status, for debug and reports.
         void dump(PrintWriter pw);
@@ -620,8 +617,8 @@ class MemoryLimiter implements AutoCloseable {
     /**
      * Close the instance.  This is idempotent.
      */
-    @VisibleForTesting
-    public void close() {
+    @Override
+    public void close() throws Exception {
         mController.close();
     }
 

@@ -23,8 +23,8 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.os.RemoteException;
-import android.service.personalcontext.embedded.IEmbeddedInsightSurfaceVisualizer;
-import android.service.personalcontext.embedded.IEmbeddedInsightSurfaceVisualizerCallback;
+import android.service.personalcontext.embedded.IInsightSurfaceVisualizer;
+import android.service.personalcontext.embedded.IVisualizationResult;
 import android.service.personalcontext.embedded.InsightSurfaceClientInfo;
 import android.service.personalcontext.embedded.InsightSurfaceVisualizerService;
 import android.service.personalcontext.insight.ContextInsight;
@@ -51,7 +51,7 @@ public class VisualizerConnection {
 
     private final Injector mInjector;
     private final ComponentName mComponentName;
-    private IEmbeddedInsightSurfaceVisualizer mVisualizer;
+    private IInsightSurfaceVisualizer mVisualizer;
     // A queue of actions that have been deferred until a visualizer has connected.
     private final List<Runnable> mDeferredActions = new ArrayList<>();
     private boolean mStarted = false;
@@ -61,7 +61,7 @@ public class VisualizerConnection {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             mInjector.executeAction(() -> {
-                mVisualizer = IEmbeddedInsightSurfaceVisualizer.Stub.asInterface(service);
+                mVisualizer = IInsightSurfaceVisualizer.Stub.asInterface(service);
 
                 // Perform all the deferred actions now that a visualizer exists.
                 mDeferredActions.forEach(Runnable::run);
@@ -169,7 +169,7 @@ public class VisualizerConnection {
                 mVisualizer.createVisualizationForClient(
                         ContextInsightWrapper.wrapList(insights),
                         client,
-                        new IEmbeddedInsightSurfaceVisualizerCallback.Stub() {
+                        new IVisualizationResult.Stub() {
                             @RequiresNoPermission
                             @Override
                             public void onResult(boolean success) {

@@ -57,7 +57,7 @@ public class MessageQueue_ravenwood {
     /**
      * Used by the "combineddeli" version.
      */
-    static boolean computeUseDeliQueue() {
+    static boolean computeUseDeliQueue(boolean enable) {
         // On Ravenwood, @ChangeIds are not yet ready when this method is called,
         // so manually check the test's target SDK version.
         var def = targetsAtLeast(android.os.Build.VERSION_CODES.BAKLAVA);

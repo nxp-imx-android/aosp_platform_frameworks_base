@@ -39,6 +39,7 @@ import com.android.server.policy.keyguard.KeyguardServiceDelegate;
 
 import java.io.PrintWriter;
 import java.util.Collections;
+import java.util.function.Consumer;
 
 class TestWindowManagerPolicy implements WindowManagerPolicy {
 
@@ -191,7 +192,7 @@ class TestWindowManagerPolicy implements WindowManagerPolicy {
     }
 
     @Override
-    public void exitKeyguardSecurely(OnKeyguardExitResult callback) {
+    public void exitKeyguardSecurely(Consumer<Boolean> callback) {
     }
 
     @Override

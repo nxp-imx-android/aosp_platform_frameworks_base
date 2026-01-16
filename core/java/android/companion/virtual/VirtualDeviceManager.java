@@ -242,7 +242,7 @@ public final class VirtualDeviceManager {
      * @hide
      */
     @RequiresPermission(allOf = {Manifest.permission.ACCESS_COMPUTER_CONTROL,
-            Manifest.permission.POST_NOTIFICATIONS})
+            Manifest.permission.POST_NOTIFICATIONS}, conditional = true)
     public void requestComputerControlSession(
             @NonNull ComputerControlSessionParams params,
             @NonNull @CallbackExecutor Executor executor,
@@ -431,6 +431,21 @@ public final class VirtualDeviceManager {
                     it.remove();
                 }
             }
+        }
+    }
+
+    /**
+     * Returns whether the computer control functionality is available for the caller.
+     * @hide
+     */
+    public boolean isComputerControlAvailable() {
+        if (mService == null) {
+            return false;
+        }
+        try {
+            return mService.isComputerControlAvailable(mContext.getAttributionSource());
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
         }
     }
 

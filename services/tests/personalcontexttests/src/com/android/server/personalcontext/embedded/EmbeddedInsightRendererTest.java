@@ -18,18 +18,18 @@ package com.android.server.personalcontext.embedded;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.service.personalcontext.RenderToken;
-import android.service.personalcontext.embedded.IEmbeddedInsightSurfaceCallback;
+import android.service.personalcontext.embedded.IInsightSurfaceClient;
 import android.service.personalcontext.embedded.InsightSurfaceClientInfo;
 import android.service.personalcontext.insight.BundleInsight;
-import android.window.InputTransferToken;
+import android.view.View;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
@@ -82,21 +82,29 @@ public class EmbeddedInsightRendererTest {
     @Test
     public void testRender() {
         final InsightSurfaceClientInfo client = createClient();
+        final RenderToken renderToken = mEmbeddedInsightRenderer.mintRenderToken();
         when(mClientRegistry.isEmpty()).thenReturn(false);
-        when(mClientRegistry.getClientForRenderToken(any())).thenReturn(client);
+        when(mClientRegistry.getClientForRenderToken(eq(renderToken))).thenReturn(client);
         when(mVisualizerRegistry.isEmpty()).thenReturn(false);
 
         final BundleInsight insight = new BundleInsight.Builder().build();
-        mEmbeddedInsightRenderer.render(insight);
+        mEmbeddedInsightRenderer.render(insight, renderToken);
 
         verify(mVisualizerRegistry).createVisualizationForClient(
                 argThat(insights -> insights.contains(insight)), eq(client));
     }
 
     private InsightSurfaceClientInfo createClient() {
-        final IEmbeddedInsightSurfaceCallback callback =
-                IEmbeddedInsightSurfaceCallback.Stub.asInterface(new android.os.Binder());
+        final IInsightSurfaceClient client =
+                IInsightSurfaceClient.Stub.asInterface(new android.os.Binder());
         return new InsightSurfaceClientInfo(
-                new InputTransferToken(), 1, 2, 3, new Configuration(), callback);
+                1,
+                2,
+                3,
+                Color.valueOf(Color.RED),
+                View.SCROLL_AXIS_NONE,
+                false,
+                new Configuration(),
+                client);
     }
 }
