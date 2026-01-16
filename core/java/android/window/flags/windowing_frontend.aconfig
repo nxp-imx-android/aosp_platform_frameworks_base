@@ -112,6 +112,16 @@ flag {
 }
 
 flag {
+  name: "use_known_display_id_for_base_context"
+  namespace: "windowing_frontend"
+  description: "Reduce binder calls that query display id using a token"
+  bug: "476026852"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
   name: "fifo_priority_for_major_ui_processes"
   namespace: "windowing_frontend"
   description: "Use realtime priority for SystemUI and launcher"
