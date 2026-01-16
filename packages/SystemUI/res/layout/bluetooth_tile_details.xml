@@ -22,7 +22,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/bluetooth_tile_details"
     style="@style/Widget.SliceView.Panel"
-    android:paddingBottom="@dimen/tile_details_bottom_padding"
+    android:paddingBottom="@dimen/tile_details_button_margin_vertical_corrected"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content">
 
@@ -201,47 +201,54 @@
                 android:ellipsize="end"
                 android:visibility="gone" />
 
-            <LinearLayout
+            <FrameLayout
                 android:id="@+id/pair_new_device_button"
-                style="@style/BluetoothTileDialog.Device"
-                android:layout_height="@dimen/tile_details_button_row_height"
                 android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:minHeight="@dimen/tile_details_button_tappable_height"
                 app:layout_constrainedWidth="true"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/see_all_button"
-                android:background="@drawable/settingslib_entry_bg_off"
-                android:gravity="center"
                 android:visibility="gone"
-                android:layout_marginTop="@dimen/tile_details_bottom_padding">
+                android:layout_marginTop="@dimen/tile_details_button_margin_vertical_corrected">
 
-                <FrameLayout
-                    android:layout_width="@dimen/tile_details_button_size"
-                    android:layout_height="@dimen/tile_details_button_size"
-                    android:clickable="false">
+                <LinearLayout
+                    style="@style/BluetoothTileDialog.Device"
+                    android:layout_height="@dimen/tile_details_button_row_height"
+                    android:layout_width="match_parent"
+                    android:background="@drawable/settingslib_entry_bg_off"
+                    android:gravity="center"
+                    android:layout_gravity="center"
+                    android:duplicateParentState="true">
 
-                    <ImageView
-                        android:contentDescription="@string/accessibility_bluetooth_device_settings_pair_new_device"
-                        android:src="@drawable/ic_add"
+                    <FrameLayout
+                        android:layout_width="@dimen/tile_details_button_size"
+                        android:layout_height="@dimen/tile_details_button_size"
+                        android:clickable="false">
+
+                        <ImageView
+                            android:contentDescription="@string/accessibility_bluetooth_device_settings_pair_new_device"
+                            android:src="@drawable/ic_add"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:tint="@color/materialColorOnSurface" />
+                    </FrameLayout>
+
+                    <FrameLayout
+                        android:clickable="false"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:tint="@color/materialColorOnSurface" />
-                </FrameLayout>
+                        android:layout_marginStart="@dimen/tile_details_entry_horizontal_margin">
 
-                <FrameLayout
-                    android:clickable="false"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="@dimen/tile_details_entry_horizontal_margin">
-
-                    <TextView
-                        android:text="@string/pair_new_bluetooth_devices"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textAppearance="@style/TextAppearance.TileDetailsEntryTitle" />
-                </FrameLayout>
-            </LinearLayout>
-
+                        <TextView
+                            android:text="@string/pair_new_bluetooth_devices"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textAppearance="@style/TextAppearance.TileDetailsEntryTitle" />
+                    </FrameLayout>
+                </LinearLayout>
+            </FrameLayout>
 
             <androidx.constraintlayout.widget.Barrier
                 android:id="@+id/barrier"
