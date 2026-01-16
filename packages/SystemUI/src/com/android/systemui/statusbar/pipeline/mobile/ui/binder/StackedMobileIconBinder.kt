@@ -24,6 +24,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.android.systemui.kairos.KairosNetwork
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.statusbar.pipeline.mobile.StatusBarMobileIconKairos
@@ -34,6 +35,7 @@ import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.StackedMobile
 import com.android.systemui.statusbar.pipeline.shared.ui.binder.ModernStatusBarViewBinding
 import com.android.systemui.statusbar.pipeline.shared.ui.composable.StackedMobileIcon
 import com.android.systemui.statusbar.pipeline.shared.ui.view.SingleBindableStatusBarComposeIconView
+import com.android.systemui.util.composable.kairos.rememberKairosActivatable
 
 object StackedMobileIconBinder {
     fun bind(
@@ -41,6 +43,7 @@ object StackedMobileIconBinder {
         mobileIconsViewModel: MobileIconsViewModel,
         viewModelFactory: StackedMobileIconViewModelImpl.Factory,
         kairosViewModelFactory: StackedMobileIconViewModelKairos.Factory,
+        kairosNetwork: KairosNetwork,
     ): ModernStatusBarViewBinding {
         return SingleBindableStatusBarComposeIconView.withDefaultBinding(
             view = view,
@@ -56,10 +59,12 @@ object StackedMobileIconBinder {
                 )
                 setContent {
                     val viewModel: StackedMobileIconViewModel =
-                        rememberViewModel("StackedMobileIconBinder") {
-                            if (StatusBarMobileIconKairos.isEnabled) {
+                        if (StatusBarMobileIconKairos.isEnabled) {
+                            rememberKairosActivatable("StackedMobileIconBinder", kairosNetwork) {
                                 kairosViewModelFactory.create()
-                            } else {
+                            }
+                        } else {
+                            rememberViewModel("StackedMobileIconBinder") {
                                 viewModelFactory.create()
                             }
                         }

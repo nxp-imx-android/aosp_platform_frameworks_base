@@ -29,6 +29,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
@@ -52,28 +53,34 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.systemui.Flags
 import com.android.systemui.common.ui.compose.load
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.pipeline.mobile.domain.model.SignalIconModel
-import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.MobileIconState
+import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.MobileIconViewModelCommon
 
 /** Composable for displaying a single mobile icon. */
 @Composable
-fun MobileIcon(state: MobileIconState, modifier: Modifier = Modifier) {
-    val isVisible = state.isVisible
+fun MobileIcon(viewModel: MobileIconViewModelCommon, modifier: Modifier = Modifier) {
+    val isVisible by viewModel.isVisible.collectAsStateWithLifecycle()
 
     if (!isVisible) return
 
-    val iconModel = state.icon
-    if (iconModel !is SignalIconModel.CellularTypeIconModel.Cellular) return
+    val icon by viewModel.icon.collectAsStateWithLifecycle(initialValue = SignalIconModel.DEFAULT)
+    if (icon !is SignalIconModel.CellularTypeIconModel.Cellular) return
 
-    val contentDescription = state.contentDescription
-    val networkTypeIcon = state.networkTypeIcon
-    val roaming = state.roaming
-    val activityInVisible = state.activityInVisible
-    val activityOutVisible = state.activityOutVisible
-    val activityContainerVisible = state.activityContainerVisible
+    val contentDescription by
+        viewModel.contentDescription.collectAsStateWithLifecycle(initialValue = null)
+    val networkTypeIcon by
+        viewModel.networkTypeIcon.collectAsStateWithLifecycle(initialValue = null)
+    val roaming by viewModel.roaming.collectAsStateWithLifecycle(initialValue = false)
+    val activityInVisible by
+        viewModel.activityInVisible.collectAsStateWithLifecycle(initialValue = false)
+    val activityOutVisible by
+        viewModel.activityOutVisible.collectAsStateWithLifecycle(initialValue = false)
+    val activityContainerVisible by
+        viewModel.activityContainerVisible.collectAsStateWithLifecycle(initialValue = false)
     val context = LocalContext.current
     val contentColor = LocalContentColor.current
     val spacing = with(LocalDensity.current) { MobileIconDimensions.IconSpacingSp.toDp() }
@@ -113,7 +120,7 @@ fun MobileIcon(state: MobileIconState, modifier: Modifier = Modifier) {
         Spacer(Modifier.size(spacing))
 
         MobileSignalIcon(
-            viewModel = iconModel as SignalIconModel.CellularTypeIconModel.Cellular,
+            viewModel = icon as SignalIconModel.CellularTypeIconModel.Cellular,
             color = contentColor,
         )
 

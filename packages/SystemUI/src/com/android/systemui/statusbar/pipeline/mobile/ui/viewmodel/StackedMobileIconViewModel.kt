@@ -19,7 +19,6 @@ package com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel
 import android.content.Context
 import androidx.compose.runtime.getValue
 import com.android.systemui.common.shared.model.Icon
-import com.android.systemui.lifecycle.Activatable
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.log.table.TableLogBuffer
@@ -27,7 +26,6 @@ import com.android.systemui.log.table.logDiffsForTable
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.statusbar.connectivity.ui.MobileContextProvider
 import com.android.systemui.statusbar.pipeline.dagger.StackedMobileIconTableLog
-import com.android.systemui.statusbar.pipeline.mobile.StatusBarMobileIconKairos
 import com.android.systemui.statusbar.pipeline.mobile.ui.model.DualSim
 import com.android.systemui.statusbar.pipeline.mobile.ui.model.logDualSimDiff
 import com.android.systemui.statusbar.pipeline.mobile.ui.model.tryParseDualSim
@@ -41,7 +39,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 
-interface StackedMobileIconViewModel : Activatable {
+interface StackedMobileIconViewModel {
     val dualSim: DualSim?
     val contentDescription: String?
     val networkTypeIcon: Icon.Resource?
@@ -52,10 +50,6 @@ interface StackedMobileIconViewModel : Activatable {
     val mobileContext: Context?
     val roaming: Boolean
     val isIconVisible: Boolean
-
-    fun interface Factory {
-        fun create(): StackedMobileIconViewModel
-    }
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -67,11 +61,6 @@ constructor(
     @ShadeDisplayAware private val context: Context,
     private val mobileContextProvider: MobileContextProvider,
 ) : ExclusiveActivatable(), StackedMobileIconViewModel {
-
-    init {
-        StatusBarMobileIconKairos.assertInLegacyMode()
-    }
-
     private val hydrator = Hydrator("StackedMobileIconViewModel")
 
     private val iconViewModelFlow: Flow<List<MobileIconViewModelCommon>> =
@@ -249,8 +238,8 @@ constructor(
     }
 
     @AssistedFactory
-    interface Factory : StackedMobileIconViewModel.Factory {
-        override fun create(): StackedMobileIconViewModelImpl
+    interface Factory {
+        fun create(): StackedMobileIconViewModelImpl
     }
 
     private companion object {
