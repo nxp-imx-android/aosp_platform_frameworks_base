@@ -36,6 +36,8 @@ public class PccSandboxManagerService extends SystemService {
         mContext = context;
         mServiceImpl = new PccSandboxManagerServiceImpl(context);
         mInternal = new PccSandboxManagerInternal(mContext, mServiceImpl);
+        // The service needs a reference to the internal class to support shell commands.
+        mServiceImpl.setPccSandboxManagerInternal(mInternal);
     }
 
     @Override
@@ -49,7 +51,7 @@ public class PccSandboxManagerService extends SystemService {
     @Override
     public void onBootPhase(int phase) {
         if (phase == SystemService.PHASE_SYSTEM_SERVICES_READY) {
-            mInternal.awaitPccTrustedPackages();
+            mInternal.awaitPccInitialization();
         }
     }
 }
