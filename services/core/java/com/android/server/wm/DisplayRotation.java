@@ -716,6 +716,9 @@ public class DisplayRotation {
 
     void restoreSettings(int userRotationMode, int userRotation, int fixedToUserRotation) {
         mFixedToUserRotation = fixedToUserRotation;
+        if (mLaptopController != null) {
+            mLaptopController.refreshConfig();
+        }
 
         // We will retrieve user rotation and user rotation mode from settings for default display.
         if (isDefaultDisplay) {
@@ -2004,8 +2007,16 @@ public class DisplayRotation {
     }
 
     class LaptopController {
+        private DeviceStateController.DeviceStateEnum mCurrentState =
+                DeviceStateController.DeviceStateEnum.UNKNOWN;
+
         void foldStateChanged(DeviceStateController.DeviceStateEnum newState) {
-            if (newState == DeviceStateController.DeviceStateEnum.SLATE) {
+            mCurrentState = newState;
+            refreshConfig();
+        }
+
+        void refreshConfig() {
+            if (mCurrentState == DeviceStateController.DeviceStateEnum.SLATE) {
                 setFixedToUserRotation(IWindowManager.FIXED_TO_USER_ROTATION_DISABLED);
             } else {
                 setFixedToUserRotation(IWindowManager.FIXED_TO_USER_ROTATION_DEFAULT);
