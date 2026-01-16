@@ -16,6 +16,7 @@
 
 package com.android.server.pm;
 
+import static android.content.pm.Flags.scanApksInUpdatedApexAsNewInstalls;
 import static com.android.server.pm.PackageManagerService.SCAN_AS_APK_IN_APEX;
 import static com.android.server.pm.PackageManagerService.SCAN_AS_FACTORY;
 import static com.android.server.pm.PackageManagerService.SCAN_AS_ODM;
@@ -24,6 +25,7 @@ import static com.android.server.pm.PackageManagerService.SCAN_AS_PRODUCT;
 import static com.android.server.pm.PackageManagerService.SCAN_AS_SYSTEM_EXT;
 import static com.android.server.pm.PackageManagerService.SCAN_AS_VENDOR;
 import static com.android.server.pm.PackageManagerService.SCAN_DROP_CACHE;
+import static com.android.server.pm.PackageManagerService.SCAN_NEW_INSTALL;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -64,6 +66,9 @@ public class ScanPartition extends PackagePartitions.SystemPartition {
             scanFlags |= SCAN_AS_APK_IN_APEX;
             if (apexInfo.isFactory) {
                 scanFlags |= SCAN_AS_FACTORY;
+            } else if (scanApksInUpdatedApexAsNewInstalls()) {
+                // Allow APKs in this updated APEX to replace packages in the system image.
+                scanFlags |= SCAN_NEW_INSTALL;
             }
             if (apexInfo.activeApexChanged) {
                 scanFlags |= SCAN_DROP_CACHE;
