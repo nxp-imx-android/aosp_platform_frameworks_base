@@ -370,11 +370,12 @@ jint android_os_Process_createProcessGroup(JNIEnv* env, jobject clazz, jint uid,
  */
 static void parse_cpuset_cpus(char *cpus, cpu_set_t *cpu_set) {
     unsigned int start, end, matched, i;
-    char *cpu_range = strtok(cpus, ",");
+    char* saveptr;
+    char* cpu_range = strtok_r(cpus, ",", &saveptr);
     while (cpu_range != NULL) {
         start = end = 0;
         matched = sscanf(cpu_range, "%u-%u", &start, &end);
-        cpu_range = strtok(NULL, ",");
+        cpu_range = strtok_r(NULL, ",", &saveptr);
         if (start >= CPU_SETSIZE) {
             ALOGE("parse_cpuset_cpus: ignoring CPU number larger than %d.", CPU_SETSIZE);
             continue;
