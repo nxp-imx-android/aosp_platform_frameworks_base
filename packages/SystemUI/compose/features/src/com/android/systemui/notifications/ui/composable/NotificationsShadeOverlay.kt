@@ -197,7 +197,7 @@ constructor(
                     shouldPunchHoleBehindScrim = false,
                     isTransparencyEnabled = viewModel.isTransparencyEnabled,
                     stackTopPadding = notificationStackPadding,
-                    stackBottomPadding = notificationStackPadding,
+                    stackBottomPadding = { notificationStackPadding },
                     shouldDrawScrimBackground = false,
                     modifier =
                         Modifier.fillMaxWidth().focusProperties {
