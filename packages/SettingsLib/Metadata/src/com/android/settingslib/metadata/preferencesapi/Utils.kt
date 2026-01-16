@@ -26,9 +26,9 @@ import androidx.annotation.StringRes
  * (e.g. incorrect block order, duplicate definitions) are reported consistently across the module.
  */
 internal object Utils {
-    private const val EXCEPTION_MESSAGE_WRONG_ORDER = "%s defined in wrong order"
+    private const val EXCEPTION_MESSAGE_WRONG_ORDER = "%s block was defined in wrong order"
     private const val EXCEPTION_MESSAGE_MULTIPLE_DEFINES =
-        "%s should be only defined once per screen"
+        "%s block should be defined only once per screen"
 
     const val EXCEPTION_MESSAGE_NO_PARAMETER_DEFINED =
         "no parameter has been defined for this screen"
