@@ -16,10 +16,8 @@
 
 package com.android.systemui.lowlight
 
-import android.platform.test.annotations.EnableFlags
-import android.platform.test.flag.junit.FlagsParameterization
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
-import com.android.systemui.Flags.FLAG_LOW_LIGHT_DREAM_HYSTERESIS
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.concurrency.fakeExecutor
 import com.android.systemui.dump.dumpManager
@@ -39,29 +37,17 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.verify
-import platform.test.runner.parameterized.ParameterizedAndroidJunit4
-import platform.test.runner.parameterized.Parameters
 
 @SmallTest
-@RunWith(ParameterizedAndroidJunit4::class)
-class LightSensorDebounceAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
+@RunWith(AndroidJUnit4::class)
+class LightSensorDebounceAlgorithmTest : SysuiTestCase() {
     companion object {
-        @JvmStatic
-        @Parameters(name = "{0}")
-        fun getParams(): List<FlagsParameterization> {
-            return FlagsParameterization.allCombinationsOf(FLAG_LOW_LIGHT_DREAM_HYSTERESIS)
-        }
-
         private const val LIGHT_MODE_THRESHOLD = 5.0f
         private const val DARK_MODE_THRESHOLD = 2.0f
         private const val LIGHT_MODE_SPAN = 100
         private const val DARK_MODE_SPAN = 50
         private const val LIGHT_MODE_FREQUENCY = 10
         private const val DARK_MODE_FREQUENCY = 5
-    }
-
-    init {
-        mSetFlagsRule.setFlagsParameterization(flags)
     }
 
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
@@ -473,7 +459,6 @@ class LightSensorDebounceAlgorithmTest(flags: FlagsParameterization) : SysuiTest
     }
 
     @Test
-    @EnableFlags(FLAG_LOW_LIGHT_DREAM_HYSTERESIS)
     fun updateMode_withHysteresis_switchesCorrectly() =
         kosmos.runTest {
             // Start in undecided
