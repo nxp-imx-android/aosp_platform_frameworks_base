@@ -177,6 +177,14 @@ class MultiDisplayVeiledResizeTaskPositioner(
                     taskBoundsAtDragStart,
                 )
             }
+            // Events within the task bounds are handled by WMS#onPointerDownOutsideFocusLocked and
+            // WMS moves the focus to the touched window.
+            if (
+                Flags.moveTaskToFrontOnDragResizingBugfix() &&
+                    !taskBoundsAtDragStart.contains(x.toInt(), y.toInt())
+            ) {
+                desktopTasksController.moveTaskToFront(windowDecoration.taskInfo)
+            }
             // Capture CUJ for re-sizing window in DW mode.
             interactionJankMonitor.begin(
                 createLongTimeoutJankConfigBuilder(Cuj.CUJ_DESKTOP_MODE_RESIZE_WINDOW)
