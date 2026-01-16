@@ -84,6 +84,7 @@ import static org.mockito.Mockito.verify;
 import static java.lang.Integer.MAX_VALUE;
 
 import android.app.ActivityManager;
+import android.app.TaskInfo;
 import android.app.WindowConfiguration;
 import android.content.ComponentName;
 import android.content.res.Configuration;
@@ -3785,6 +3786,77 @@ public class TransitionTests extends WindowTestsBase {
         // Verify cleanup happened even on abort
         verify(mMockT).toggleClientDrawnRoundedCornersOpt(eq(task.getSurfaceControl()), eq(true));
         assertThat(controller.mRoundedCornerOptTasks).isEmpty();
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ALLOW_DRAG_AND_DROP_WHEN_INTERACTIVE_BUGFIX)
+    public void testInteractiveStateChanges_resumedAndPausedTasksAreReported() {
+        final TransitionController controller = mDisplayContent.mTransitionController;
+        final TestTransitionPlayer player = registerTestTransitionPlayer();
+        final Transition transition = createTestTransition(TRANSIT_CHANGE, controller);
+
+        final Task taskA = createTask(mDisplayContent);
+        final Task taskB = createTask(mDisplayContent);
+        final Task taskC = createTask(mDisplayContent);
+
+        // Current state: A and B are resumed, C is paused.
+        taskA.setInteractive(true);
+        taskA.setVisibleRequested(true);
+        taskB.setInteractive(true);
+        taskB.setVisibleRequested(true);
+        taskC.setInteractive(false);
+        taskC.setVisibleRequested(true);
+
+        // Run transition
+        controller.moveToCollecting(transition);
+        controller.recordLifecycle(taskA);
+        controller.recordLifecycle(taskB);
+        controller.recordLifecycle(taskC);
+
+        // Change state: B is paused, C is resumed.
+        taskB.setInteractive(false);
+        taskC.setInteractive(true);
+
+        // Force ready to trigger onTransactionReady
+        controller.requestStartTransition(transition, taskB, null /* remote */, null /* display */);
+
+        // Make a transition ready manually with a test condition. This will force
+        // TransitionController to collect order changes.
+        final Transition.ReadyCondition testCondition = new Transition.ReadyCondition("test");
+        transition.mReadyTracker.add(testCondition);
+        transition.mReadyTracker.meet(testCondition);
+        player.start();
+
+        final TransitionInfo info = player.mLastReady;
+        assertNotNull(info);
+
+        // Only B and C should change.
+        assertEquals(2, info.getChanges().size());
+
+        // Task A: Resumed -> Resumed => no changes.
+        final TransitionInfo.Change changeA =
+                info.getChange(taskA.mRemoteToken.toWindowContainerToken());
+        assertNull("Task A should not change.", changeA);
+
+        // Task B: Resumed -> Paused.
+        final TransitionInfo.Change changeB =
+                info.getChange(taskB.mRemoteToken.toWindowContainerToken());
+        assertNotNull("Task B should have a change.", changeB);
+
+        final TaskInfo taskBInfo = changeB.getTaskInfo();
+        assertNotNull(taskBInfo);
+        assertFalse("Task B should be paused.", taskBInfo.isInteractive);
+
+        // Task C: Stopped -> Resumed.
+        final TransitionInfo.Change changeC =
+                info.getChange(taskC.mRemoteToken.toWindowContainerToken());
+        assertNotNull(changeC);
+
+        final TaskInfo taskCInfo = changeC.getTaskInfo();
+        assertNotNull("Task C should have a change.", taskCInfo);
+        assertTrue("Task C should be resumed", taskCInfo.isInteractive);
+
+        player.finish();
     }
 
     private void tryFinishTransitionSyncSet(Transition transition) {

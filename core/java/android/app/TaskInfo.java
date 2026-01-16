@@ -332,6 +332,18 @@ public class TaskInfo {
     public boolean isFocused;
 
     /**
+     * Represents {@link com.android.server.wm.Task}'s state where it's activity might be resumed or
+     * would be resumed.
+     * <p>
+     * It doesn't guarantee that the topmost activity is resumed at the given point of time, but it
+     * guarantees that with current task hierarchy it would be resumed when all hierarchy operations
+     * are settled down.
+     *
+     * @hide
+     */
+    public boolean isInteractive;
+
+    /**
      * Whether this task is visible.
      * @hide
      */
@@ -516,6 +528,7 @@ public class TaskInfo {
                 ? new Rect(other.topActivityMainWindowFrame)
                 : null;
         isAppBubble = other.isAppBubble;
+        isInteractive = other.isInteractive;
     }
 
     /** @hide */
@@ -743,6 +756,7 @@ public class TaskInfo {
         appCompatTaskInfo = source.readTypedObject(AppCompatTaskInfo.CREATOR);
         topActivityMainWindowFrame = source.readTypedObject(Rect.CREATOR);
         isAppBubble = source.readBoolean();
+        isInteractive = source.readBoolean();
     }
 
     /**
@@ -803,6 +817,7 @@ public class TaskInfo {
         dest.writeTypedObject(appCompatTaskInfo, flags);
         dest.writeTypedObject(topActivityMainWindowFrame, flags);
         dest.writeBoolean(isAppBubble);
+        dest.writeBoolean(isInteractive);
     }
 
     @Override
@@ -837,6 +852,7 @@ public class TaskInfo {
                 + " positionInParent=" + positionInParent
                 + " parentTaskId=" + parentTaskId
                 + " isFocused=" + isFocused
+                + " isInteractive=" + isInteractive
                 + " isVisible=" + isVisible
                 + " isVisibleRequested=" + isVisibleRequested
                 + " isTopActivityNoDisplay=" + isTopActivityNoDisplay

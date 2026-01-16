@@ -684,6 +684,9 @@ class Task extends TaskFragment {
     /** @see #isForceLeafTasksNonOccluding() */
     private boolean mIsForceLeafTasksNonOccluding;
 
+    /** @see #isInteractive() */
+    private boolean mIsInteractive;
+
     private Task(ActivityTaskManagerService atmService, int taskId, Intent intent,
             Intent affinityIntent, String affinity, String rootAffinity,
             ComponentName realActivity, ComponentName origActivity, boolean rootWasReset,
@@ -3528,6 +3531,7 @@ class Task extends TaskFragment {
                 ? parentTask.mTaskId
                 : INVALID_TASK_ID;
         info.isFocused = isFocused();
+        info.isInteractive = Flags.allowDragAndDropWhenInteractiveBugfix() && isInteractive();
         info.isVisible = hasVisibleChildren();
         info.isVisibleRequested = isVisibleRequested();
         info.isTopActivityNoDisplay = top != null && top.isNoDisplay();
@@ -6682,6 +6686,52 @@ class Task extends TaskFragment {
      */
     @SelfMovable int getSelfMovable() {
         return mSelfMovable;
+    }
+
+    /**
+     * Indicates whether current {@link Task} is interactive.
+     *
+     * <p>This property represents a state when current container is visible and interactable by the
+     * user. That means that if an Activity is put into this task it'd be eventually resumed.
+     *
+     * <p><b>Do not mistreat it as {@link ActivityRecord.State#RESUMED} even though there's a
+     * connection to an activity via {@link #canBeResumed(ActivityRecord)}.</b>
+     *
+     * @see #canBeResumed(ActivityRecord)
+     * @see TaskInfo#isInteractive
+     * @return {@code true} when a {@link Task} is resumed, otherwise {@code false}.
+     */
+    boolean isInteractive() {
+        return mIsInteractive;
+    }
+
+    /**
+     * Sets current {@link Task} resumed state.
+     *
+     * @see #isInteractive()
+     * @param isInteractive whether this {@link Task} is resumed or not.
+     */
+    void setInteractive(boolean isInteractive) {
+        if (mIsInteractive == isInteractive) return;
+
+        mIsInteractive = isInteractive;
+        final WindowContainer parent = getParent();
+        if (parent != null && parent.asTask() != null) {
+            final Task parentTask = parent.asTask();
+            parentTask.onChildInteractiveStateChanged(this);
+        }
+    }
+
+    protected void onChildInteractiveStateChanged(Task child) {
+        boolean newInteractive = child.isInteractive();
+        if (!newInteractive && isInteractive()) {
+            for (int i = getChildCount() - 1; i >= 0; --i) {
+                final Task other = getChildAt(i).asTask();
+                if (other == null || other == child) continue;
+                newInteractive |= other.isInteractive();
+            }
+        }
+        setInteractive(newInteractive);
     }
 
     /**

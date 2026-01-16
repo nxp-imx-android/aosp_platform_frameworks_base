@@ -1085,6 +1085,12 @@ class TransitionController {
         mCollectingTransition.recordTaskOrder(wc);
     }
 
+    /** @see Transition#recordLifecycle */
+    void recordLifecycle(@NonNull WindowContainer<?> wc) {
+        if (mCollectingTransition == null) return;
+        mCollectingTransition.recordLifecycle(wc);
+    }
+
     /** @see Transition#hasOrderChanges */
     boolean hasOrderChanges() {
         if (mCollectingTransition == null) return false;
