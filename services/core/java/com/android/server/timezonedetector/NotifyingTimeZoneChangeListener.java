@@ -354,7 +354,7 @@ public class NotifyingTimeZoneChangeListener implements TimeZoneChangeListener {
      */
     @GuardedBy("mTimeZoneChangeRecord")
     private void markChangeAsRejected(
-            int changeEventId,
+            @NonNull TimeZoneChangeRecord lastTimeZoneChangeRecord,
             @UserIdInt int userId,
             @SignalType int signalType,
             @NonNull TimeZoneChangeEvent manualChangeEvent) {
@@ -362,39 +362,28 @@ public class NotifyingTimeZoneChangeListener implements TimeZoneChangeListener {
             return;
         }
 
-        TimeZoneChangeRecord lastTimeZoneChangeRecord = mTimeZoneChangeRecord.get();
-        if (lastTimeZoneChangeRecord != null) {
-            if (lastTimeZoneChangeRecord.getId() != changeEventId) {
-                // To be accepted, the change being accepted has to still be the latest.
-                return;
-            }
-            if (lastTimeZoneChangeRecord.getStatus() != STATUS_UNKNOWN) {
-                // Change status has already been set.
-                return;
-            }
-            lastTimeZoneChangeRecord.setRejected(signalType);
+        lastTimeZoneChangeRecord.setRejected(signalType);
 
-            if (android.timezone.flags.Flags.enableAutomaticTimeZoneRejectionLogging()) {
-                logRejectedChange(
-                        lastTimeZoneChangeRecord.getEvent(),
-                        manualChangeEvent,
-                        getPrimaryLocationTimeZoneProviderPackageUid(mContext, mPackageManager));
-            }
+        if (android.timezone.flags.Flags.enableAutomaticTimeZoneRejectionLogging()) {
+            logRejectedChange(
+                    lastTimeZoneChangeRecord.getEvent(),
+                    manualChangeEvent,
+                    getPrimaryLocationTimeZoneProviderPackageUid(mContext, mPackageManager));
+        }
 
-            switch (lastTimeZoneChangeRecord.getEvent().getOrigin()) {
-                case ORIGIN_TELEPHONY:
-                    mRejectedTelephonyChanges += 1;
-                    break;
-                case ORIGIN_LOCATION:
-                    mRejectedLocationChanges += 1;
-                    break;
-                case ORIGIN_FUSED:
-                    mRejectedFusedChanges += 1;
-                    break;
-                default:
-                    mRejectedUnknownChanges += 1;
-                    break;
-            }
+        switch (lastTimeZoneChangeRecord.getEvent().getOrigin()) {
+            case ORIGIN_TELEPHONY:
+                mRejectedTelephonyChanges += 1;
+                break;
+            case ORIGIN_LOCATION:
+                mRejectedLocationChanges += 1;
+                break;
+            case ORIGIN_FUSED:
+                mRejectedFusedChanges += 1;
+                break;
+            default:
+                mRejectedUnknownChanges += 1;
+                break;
         }
     }
 
@@ -545,7 +534,7 @@ public class NotifyingTimeZoneChangeListener implements TimeZoneChangeListener {
 
                     if (shouldRejectChangeEvent(changeEvent, lastChangeEvent)) {
                         markChangeAsRejected(
-                                lastTimeZoneChangeRecord.getId(),
+                                lastTimeZoneChangeRecord,
                                 changeEvent.getUserId(),
                                 SIGNAL_TYPE_HEURISTIC,
                                 changeEvent);
