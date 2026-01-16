@@ -21,7 +21,6 @@ import android.graphics.drawable.Drawable
 import android.os.UserHandle
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.height
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -29,17 +28,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.android.internal.statusbar.StatusBarIcon
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.shared.model.Icon as IconModel
-import com.android.systemui.common.ui.compose.Icon
 import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.statusbar.pipeline.mobile.ui.compose.MobileIcons
 import com.android.systemui.statusbar.pipeline.wifi.ui.compose.WifiIcon
+import com.android.systemui.statusbar.shared.ui.compose.StatusBarIcon
 import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.SystemStatusIconViewModel
 import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.SystemStatusIconsViewModel
 
@@ -57,10 +54,6 @@ fun SystemStatusIcons(
     val viewModel =
         rememberViewModel(traceName = "SystemStatusIcons") { viewModelFactory.create(context) }
 
-    val density = LocalDensity.current
-    // TODO(414653733): The icon size should always be the same as the battery.
-    val iconHeightDp = with(density) { 13.sp.toDp() }
-
     CompositionLocalProvider(LocalContentColor provides tint) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -70,26 +63,20 @@ fun SystemStatusIcons(
             viewModel.iconViewModels
                 .filter { it.visible }
                 .forEach { iconViewModel ->
-                    // TODO(414653733): Make sure icons are sized uniformly.
-                    val defaultSizeModifier = Modifier.height(iconHeightDp)
-
                     when (iconViewModel) {
                         is SystemStatusIconViewModel.Default ->
-                            iconViewModel.icon?.let {
-                                Icon(icon = it, modifier = defaultSizeModifier)
-                            }
+                            iconViewModel.icon?.let { StatusBarIcon(icon = it) }
                         is SystemStatusIconViewModel.External -> {
-                            ExternalSystemStatusIcon(iconViewModel, modifier = defaultSizeModifier)
+                            ExternalSystemStatusIcon(iconViewModel)
                         }
                         is SystemStatusIconViewModel.Wifi -> {
-                            WifiIcon(iconViewModel, modifier = defaultSizeModifier)
+                            WifiIcon(iconViewModel)
                         }
 
                         is SystemStatusIconViewModel.MobileIcons -> {
                             MobileIcons(
                                 iconViewModel.mobileIcons,
                                 iconViewModel.stackedMobileIconViewModel,
-                                modifier = defaultSizeModifier,
                             )
                         }
                     }
@@ -109,7 +96,7 @@ private fun ExternalSystemStatusIcon(
     val contentDescription =
         viewModel.statusBarIcon.contentDescription?.let { ContentDescription.Loaded(it.toString()) }
 
-    Icon(
+    StatusBarIcon(
         icon = IconModel.Loaded(drawable = iconAsDrawable, contentDescription = contentDescription),
         modifier = modifier,
     )

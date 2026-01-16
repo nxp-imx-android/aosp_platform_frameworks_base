@@ -23,8 +23,8 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.android.systemui.common.ui.compose.Icon
 import com.android.systemui.statusbar.pipeline.shared.ui.composable.ActivityIndicators
+import com.android.systemui.statusbar.shared.ui.compose.StatusBarIcon
 import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.SystemStatusIconViewModel
 
 /** Composable for displaying a wifi icon. */
@@ -41,10 +41,10 @@ fun WifiIcon(viewModel: SystemStatusIconViewModel.Wifi, modifier: Modifier = Mod
                         color = LocalContentColor.current,
                     )
                 }
-                Icon(icon = icon)
+                StatusBarIcon(icon = icon)
             }
         } else {
-            Icon(icon = icon)
+            StatusBarIcon(icon = icon)
         }
     }
 }
