@@ -949,6 +949,22 @@ public class WindowStateTests extends WindowTestsBase {
         assertThat(app.mLayoutSeq, not(is(mDisplayContent.mLayoutSeq)));
     }
 
+    @SetupWindows(addWindows = { W_STATUS_BAR })
+    @Test
+    public void testInsetsNotifiedOnReparent() {
+        final WindowState app = newWindowBuilder("app", TYPE_APPLICATION).build();
+        spyOn(app);
+        mDisplayContent.getDisplayPolicy().addWindowLw(mStatusBarWindow, mStatusBarWindow.mAttrs);
+        mDisplayContent.getInsetsStateController().updateAboveInsetsState(
+                false /* notifyInsetsChange */);
+        clearInvocations(app);
+
+        // Moves the window from a display with a status bar to another without any.
+        app.onDisplayChanged(createNewDisplay());
+
+        verify(app).notifyInsetsChanged();
+    }
+
     @Test
     public void testDisplayIdUpdatedOnReparent() {
         final WindowState app = newWindowBuilder("app", TYPE_APPLICATION).build();

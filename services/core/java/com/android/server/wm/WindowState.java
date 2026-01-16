@@ -1552,9 +1552,9 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             }
             if (dc != null) {
                 dc.getInsetsStateController().updateAboveInsetsState(
-                        // This window doesn't have a frame yet. Don't let this window cause the
-                        // insets change.
-                        false /* notifyInsetsChange */);
+                        // This window needs to be notified about the new insets (if there is any)
+                        // of the new display.
+                        true /* notifyInsetsChange */);
 
                 if (mDisplayContent.getImeInputTarget() == this) {
                     dc.updateImeInputAndControlTarget(getImeInputTarget());
