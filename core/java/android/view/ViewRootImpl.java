@@ -1343,8 +1343,6 @@ public final class ViewRootImpl implements ViewParent,
     private static boolean sToolkitSetFrameRateReadOnlyFlagValue;
     private static boolean sToolkitMetricsForFrameRateDecisionFlagValue;
 
-    private static boolean sToolkitEnableInvalidateCheckThreadFlagValue =
-            Flags.enableInvalidateCheckThread();
     private static final boolean sEnableVrr = ViewProperties.vrr_enabled().orElse(true);
     private static final boolean sToolkitInitialTouchBoostFlagValue = toolkitInitialTouchBoost();
     private static boolean sToolkitFrameRateDebugFlagValue =  toolkitFrameRateDebug();
@@ -2757,9 +2755,6 @@ public final class ViewRootImpl implements ViewParent,
 
     @Override
     public void onDescendantInvalidated(@NonNull View child, @NonNull View descendant) {
-        if (sToolkitEnableInvalidateCheckThreadFlagValue) {
-            checkThread();
-        }
         if ((descendant.mPrivateFlags & PFLAG_DRAW_ANIMATION) != 0) {
             mIsAnimating = true;
         }
