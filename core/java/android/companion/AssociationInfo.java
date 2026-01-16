@@ -293,7 +293,13 @@ public final class AssociationInfo implements Parcelable {
     }
 
     /**
-     * @return true if the association has been verified as a trusted device.
+     * <p>Returns whether an association is a trusted device.</p>
+     *
+     * <p>A trusted device is a device that has been verified as user-owned via a combination of
+     * successful secure connection establishment as well as an internal handshake involving a
+     * direct user confirmation (e.g. Displayed PIN comparison).</p>
+     *
+     * @return True if the device had successfully verified its connection. False otherwise.
      * @hide
      */
     public boolean isTrusted() {

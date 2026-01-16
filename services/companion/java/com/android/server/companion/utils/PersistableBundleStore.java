@@ -50,6 +50,8 @@ public abstract class PersistableBundleStore {
 
     private static final int READ_FROM_DISK_TIMEOUT = 5; // in seconds
 
+    private final boolean mCredentialsEncrypted; // Device-Encrypted if false
+
     private final ExecutorService mExecutor;
 
     private final ConcurrentMap<Integer, AtomicFile> mUserIdToStorageFile =
@@ -59,6 +61,11 @@ public abstract class PersistableBundleStore {
     protected final SparseArray<PersistableBundle> mCachedPerUser = new SparseArray<>();
 
     protected PersistableBundleStore() {
+        this(false);
+    }
+
+    protected PersistableBundleStore(boolean credentialsEncrypted) {
+        mCredentialsEncrypted = credentialsEncrypted;
         mExecutor = Executors.newSingleThreadExecutor();
     }
 
@@ -173,6 +180,6 @@ public abstract class PersistableBundleStore {
     @NonNull
     private AtomicFile getStorageFileForUser(@UserIdInt int userId) {
         return mUserIdToStorageFile.computeIfAbsent(userId,
-                u -> createStorageFileForUser(userId, getFileName(), true));
+                u -> createStorageFileForUser(userId, getFileName(), !mCredentialsEncrypted));
     }
 }

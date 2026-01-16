@@ -55,28 +55,31 @@ import java.util.concurrent.CountDownLatch;
  * <p>This class is responsible for storing and retrieving session keys for trusted devices,
  * and handling trusted devices verification requests.
  */
-public class TrustedDevicesManager {
-    private static final String TAG = "CDM_TrustedDevicesManager";
+public class TrustedDeviceProcessor {
+    private static final String TAG = "CDM_TrustedDeviceProcessor";
 
     private final Context mContext;
     private final AssociationStore mAssociationStore;
-    private final TrustedDevicesStore mTrustedDevicesStore;
+    private final TrustedDeviceStore mTrustedDeviceStore;
     private final CompanionTransportManager mTransportManager;
 
     @GuardedBy("mLock")
     private final SparseArray<Transport> mCurrentSessions = new SparseArray<>();
     @GuardedBy("mLock")
     private final SparseArray<CountDownLatch> mVerificationLatches = new SparseArray<>();
+    // Atomizes fetching available keys, which normally needs to be done twice per exchange.
+    // (once for sending the keys and once for verifying the received keys)
+    private final SparseArray<Map<String, byte[]>> mKeySnapshots = new SparseArray<>();
     private final Set<PskProvider> mPskProviders = new HashSet<>();
     private final Object mLock = new Object();
 
-    public TrustedDevicesManager(Context context,
+    public TrustedDeviceProcessor(Context context,
             AssociationStore associationStore,
-            TrustedDevicesStore trustedDevicesStore,
+            TrustedDeviceStore trustedDeviceStore,
             CompanionTransportManager transportManager) {
         mContext = context;
         mAssociationStore = associationStore;
-        mTrustedDevicesStore = trustedDevicesStore;
+        mTrustedDeviceStore = trustedDeviceStore;
         mTransportManager = transportManager;
 
         mTransportManager.addListener(MESSAGE_REQUEST_TRUSTED_DEVICE, mOnMessageReceivedListener);
@@ -101,8 +104,16 @@ public class TrustedDevicesManager {
     }
 
     @NonNull
-    private Map<String, byte[]> getAvailableSessionKeys(int userId, int associationId) {
-        byte[] sessionKey = mTrustedDevicesStore.getSessionKey(userId, associationId);
+    private synchronized Map<String, byte[]> getAvailableKeys(int userId, int associationId) {
+        // If keys were already fetched, just use that instead of querying the providers again.
+        // DISCARD it afterward since each exchange queries it exactly TWICE.
+        Map<String, byte[]> snapshot = mKeySnapshots.removeReturnOld(associationId);
+        if (snapshot != null) {
+            return snapshot;
+        }
+
+        // Otherwise fetch a fresh list and cache the snapshot for the next query.
+        byte[] sessionKey = mTrustedDeviceStore.getSessionKey(userId, associationId);
         if (sessionKey != null) {
             return Map.of("UKEY2", sessionKey);
         }
@@ -114,6 +125,7 @@ public class TrustedDevicesManager {
                 availableKeys.put(provider.getProviderName(), key);
             }
         }
+        mKeySnapshots.put(associationId, availableKeys);
         return availableKeys;
     }
 
@@ -147,7 +159,7 @@ public class TrustedDevicesManager {
 
         // Get previously verified session key to verify the current session key. Otherwise
         // fetch a list of pre-shared keys with their provider names.
-        Map<String, byte[]> sessionKeys = getAvailableSessionKeys(userId, associationId);
+        Map<String, byte[]> sessionKeys = getAvailableKeys(userId, associationId);
         Map<String, byte[]> sessionMacs = new HashMap<>();
         for (Map.Entry<String, byte[]> entry : sessionKeys.entrySet()) {
             byte[] name = new byte[32];
@@ -192,7 +204,7 @@ public class TrustedDevicesManager {
                                 if (Build.IS_DEBUGGABLE) {
                                     Slog.d(TAG, "Found matching MAC from " + name);
                                 }
-                                mTrustedDevicesStore.setRootOfTrust(associationId, name);
+                                mTrustedDeviceStore.setRootOfTrust(associationId, name);
                                 result = true;
                                 break;
                             }
@@ -304,7 +316,7 @@ public class TrustedDevicesManager {
                 mVerificationLatches.remove(associationId);
                 updateAssociationTrustedStatus(associationId, false);
 
-                mTrustedDevicesStore.removeSessionKey(userId, associationId);
+                mTrustedDeviceStore.removeSessionKey(userId, associationId);
                 return;
             }
 
@@ -319,7 +331,7 @@ public class TrustedDevicesManager {
 
                 // Store the key for session resumption
                 byte[] sessionKey = session.getSessionKey();
-                mTrustedDevicesStore.storeSessionKey(userId, associationId, sessionKey);
+                mTrustedDeviceStore.storeSessionKey(userId, associationId, sessionKey);
             }
         }
     }
