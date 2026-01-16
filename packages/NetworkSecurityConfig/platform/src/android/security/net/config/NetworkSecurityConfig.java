@@ -19,7 +19,6 @@ package android.security.net.config;
 import static android.security.Flags.encryptedClientHelloConfiguration;
 import static android.security.NetworkSecurityPolicy.DOMAIN_ENCRYPTION_MODE_DISABLED;
 import static android.security.NetworkSecurityPolicy.DOMAIN_ENCRYPTION_MODE_ENABLED;
-import static android.security.NetworkSecurityPolicy.DOMAIN_ENCRYPTION_MODE_REQUIRED;
 import static android.security.NetworkSecurityPolicy.DOMAIN_ENCRYPTION_MODE_OPPORTUNISTIC;
 
 import static com.android.org.conscrypt.net.flags.Flags.certificateTransparencyDefaultEnabled;
@@ -457,7 +456,6 @@ public final class NetworkSecurityConfig {
             mDomainEncryptionMode =
                     switch (domainEncryptionValue) {
                         case "disabled" -> DOMAIN_ENCRYPTION_MODE_DISABLED;
-                        case "required" -> DOMAIN_ENCRYPTION_MODE_REQUIRED;
                         case "enabled" -> DOMAIN_ENCRYPTION_MODE_ENABLED;
                         case "opportunistic" -> DOMAIN_ENCRYPTION_MODE_OPPORTUNISTIC;
                         default -> defaultDomainEncryptionMode();
