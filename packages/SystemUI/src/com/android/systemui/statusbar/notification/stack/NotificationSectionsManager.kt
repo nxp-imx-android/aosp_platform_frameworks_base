@@ -277,6 +277,7 @@ internal constructor(
                     if (previousIndex >= 0) {
                         if (
                             hasIntrinsicTopRoundness(child) &&
+                                children[previousIndex] is ExpandableNotificationRow &&
                                 isInSameSection(
                                     child,
                                     children[previousIndex] as ExpandableNotificationRow,
@@ -290,6 +291,7 @@ internal constructor(
                     if (nextIndex < children.size) {
                         if (
                             hasIntrinsicBottomRoundness(child) &&
+                                children[nextIndex] is ExpandableNotificationRow &&
                                 isInSameSection(
                                     child,
                                     children[nextIndex] as ExpandableNotificationRow,
