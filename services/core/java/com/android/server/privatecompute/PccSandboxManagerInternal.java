@@ -172,7 +172,14 @@ public final class PccSandboxManagerInternal {
         return providerInfo != null ? providerInfo.packageName : null;
     }
 
-    private boolean isPccTrustedApp(int appUid, String appPackage) {
+    /**
+     * Returns true if the app is considered a "Trusted App" by the PCC Sandbox
+     * (e.g. System, Bluetooth, Phone, PCS, or explicitly allowlisted packages).
+     *
+     * @param appUid The UID of the application.
+     * @param appPackage The package name of the application.
+     */
+    public boolean isPccTrustedApp(int appUid, String appPackage) {
         for (int uid : TRUSTED_UIDS) {
             if (appUid == uid) {
                 return true;
