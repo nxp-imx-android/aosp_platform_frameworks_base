@@ -1470,47 +1470,47 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
             // device.
             final int deviceId = mProxyManager.getFirstDeviceIdForUidLocked(
                     Binder.getCallingUid());
+            final boolean isProxyedClient = mProxyManager.isProxyedDeviceId(deviceId);
             Client client = new Client(callback, Binder.getCallingUid(), userState, deviceId);
+            final int state;
+            if (isProxyedClient) {
+                state = mProxyManager.getStateLocked(deviceId);
+            } else if (resolvedUserId == mCurrentUserId) {
+                state = getClientStateLocked(userState);
+            } else {
+                // If this client is not for the current user we do not return a state since it is
+                // not for the foreground user. We will send the state to the client on a user
+                // switch.
+                state = 0;
+            }
+            final boolean global;
             // If the client is from a process that runs across users such as
             // the system UI or the system we add it to the global state that
             // is shared across users.
             if (mSecurityPolicy.isCallerInteractingAcrossUsers(userId)) {
-                if (mProxyManager.isProxyedDeviceId(deviceId)) {
-                    if (DEBUG) {
-                        Slog.v(LOG_TAG, "Added global client for proxy-ed pid: "
-                                + Binder.getCallingPid() + " for device id " + deviceId
-                                + " with package names " + Arrays.toString(client.mPackageNames));
-                    }
-                    return IntPair.of(mProxyManager.getStateLocked(deviceId),
-                            client.mLastSentRelevantEventTypes);
-                }
-                mGlobalClients.register(callback, client);
-                if (DEBUG) {
-                    Slog.i(LOG_TAG, "Added global client for pid:" + Binder.getCallingPid());
+                global = true;
+                if (!isProxyedClient) {
+                    mGlobalClients.register(callback, client);
                 }
             } else {
-                // If the display belongs to a proxy connections
-                if (mProxyManager.isProxyedDeviceId(deviceId)) {
-                    if (DEBUG) {
-                        Slog.v(LOG_TAG, "Added user client for proxy-ed pid: "
-                                + Binder.getCallingPid() + " for device id " + deviceId
-                                + " with package names " + Arrays.toString(client.mPackageNames));
-                    }
-                    return IntPair.of(mProxyManager.getStateLocked(deviceId),
-                            client.mLastSentRelevantEventTypes);
-                }
-                userState.mUserClients.register(callback, client);
-                // If this client is not for the current user we do not
-                // return a state since it is not for the foreground user.
-                // We will send the state to the client on a user switch.
-                if (DEBUG) {
-                    Slog.i(LOG_TAG, "Added user client for pid:" + Binder.getCallingPid()
-                            + " and userId:" + mCurrentUserId);
+                global = false;
+                if (!isProxyedClient) {
+                    userState.mUserClients.register(callback, client);
                 }
             }
-            return IntPair.of(
-                    (resolvedUserId == mCurrentUserId) ? getClientStateLocked(userState) : 0,
-                    client.mLastSentRelevantEventTypes);
+            if (DEBUG) {
+                if (isProxyedClient) {
+                    Slog.v(LOG_TAG,
+                            "Added " + (global ? "global" : "user") + " client for proxy-ed pid: "
+                                    + Binder.getCallingPid() + " for device id " + deviceId
+                                    + " with package names " + Arrays.toString(
+                                    client.mPackageNames));
+                } else {
+                    Slog.i(LOG_TAG, "Added " + (global ? "global" : "user") + " client for pid:"
+                            + Binder.getCallingPid());
+                }
+            }
+            return IntPair.of(state, client.mLastSentRelevantEventTypes);
         }
     }
 
