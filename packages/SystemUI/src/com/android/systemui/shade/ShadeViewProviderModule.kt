@@ -27,6 +27,7 @@ import com.android.systemui.Flags.groupedPrivacyChip
 import com.android.systemui.biometrics.AuthRippleView
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.keyguard.ui.view.KeyguardRootView
+import com.android.systemui.keyguard.ui.viewmodel.AuthRippleScrimViewModel
 import com.android.systemui.privacy.AbstractOngoingPrivacyChip
 import com.android.systemui.privacy.ui.view.ComposeOngoingPrivacyChip
 import com.android.systemui.res.R
@@ -83,6 +84,7 @@ abstract class ShadeViewProviderModule {
             sceneJankMonitorFactory: SceneJankMonitor.Factory,
             windowRootViewKeyEventHandler: WindowRootViewKeyEventHandler,
             tintedIconManagerFactory: TintedIconManager.Factory,
+            authRippleViewModelFactory: AuthRippleScrimViewModel.Factory,
         ): WindowRootView {
             return if (SceneContainerFlag.isEnabled) {
                 checkNoSceneDuplicates(scenesProvider.get())
@@ -100,6 +102,7 @@ abstract class ShadeViewProviderModule {
                     sceneJankMonitorFactory = sceneJankMonitorFactory,
                     windowRootViewKeyEventHandler = windowRootViewKeyEventHandler,
                     tintedIconManagerFactory = tintedIconManagerFactory,
+                    authRippleViewModelFactory = authRippleViewModelFactory,
                 )
                 sceneWindowRootView
             } else {
