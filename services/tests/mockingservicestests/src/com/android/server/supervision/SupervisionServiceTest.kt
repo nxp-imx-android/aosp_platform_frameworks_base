@@ -17,6 +17,7 @@
 package com.android.server.supervision
 
 import android.Manifest.permission.BYPASS_ROLE_QUALIFICATION
+import android.Manifest.permission.MANAGE_SUPERVISION
 import android.app.Activity
 import android.app.KeyguardManager
 import android.app.Notification
@@ -188,6 +189,8 @@ class SupervisionServiceTest {
         // bypass the system uid check in setSupervisionEnabled. This is the permission the
         // supervision CTS tests use to enable supervision.
         context.permissions[BYPASS_ROLE_QUALIFICATION] = PERMISSION_GRANTED
+        // Manage supervision permission is needed for policy related APIs.
+        context.permissions[MANAGE_SUPERVISION] = PERMISSION_GRANTED
 
         injector = TestInjector(context, serviceThreadRule.serviceThread)
         service = SupervisionService(injector)
@@ -1228,6 +1231,27 @@ class SupervisionServiceTest {
 
         val policiesAfterInsertion = service.getPolicies(USER_ID)
         assertThat(policiesAfterInsertion).containsExactly(policy)
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_SUPERVISION_MANAGER_POLICY_APIS)
+    fun setPolicy_nonSystemCallerWithoutPermission_throwsSecurityException() {
+        injector.setCallingUid(1234) // Non-system uid.
+        context.permissions[MANAGE_SUPERVISION] = PERMISSION_DENIED
+
+        val policy =
+            PackageUsagePolicy.Builder(PACKAGE_NAME, PackageUsagePolicy.TYPE_BLOCKED).build()
+
+        assertFailsWith<SecurityException> { service.setPolicy(USER_ID, policy) }
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_SUPERVISION_MANAGER_POLICY_APIS)
+    fun getPolicies_nonSystemCallerWithoutPermission_throwsSecurityException() {
+        injector.setCallingUid(1234) // Non-system uid.
+        context.permissions[MANAGE_SUPERVISION] = PERMISSION_DENIED
+
+        assertFailsWith<SecurityException> { service.getPolicies(USER_ID) }
     }
 
     @Test
