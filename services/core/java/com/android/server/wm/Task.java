@@ -1138,13 +1138,13 @@ class Task extends TaskFragment {
             complexMinHeight = INVALID_MIN_SIZE;
         }
 
-        if (!Flags.runtimeDensityResolutionForWindowLayout() && mMinWidth == minWidth
+        if (!Flags.runtimeDensityResolutionForWindowLayoutBugfix() && mMinWidth == minWidth
                 && mMinHeight == minHeight) {
             return false;
         }
 
-        if (Flags.runtimeDensityResolutionForWindowLayout() && mComplexMinWidth == complexMinWidth
-                && mComplexMinHeight == complexMinHeight) {
+        if (Flags.runtimeDensityResolutionForWindowLayoutBugfix()
+                && mComplexMinWidth == complexMinWidth && mComplexMinHeight == complexMinHeight) {
             return false;
         }
 
@@ -2259,7 +2259,7 @@ class Task extends TaskFragment {
 
         // TaskDescription's minWidth/minHeight are derived from density-dependent values,
         // so they must be updated when density changes.
-        if (Flags.runtimeDensityResolutionForWindowLayout()
+        if (Flags.runtimeDensityResolutionForWindowLayoutBugfix()
                 && getConfiguration().densityDpi != prevDensityDpi) {
             updateTaskDescription();
         }
