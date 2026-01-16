@@ -55,6 +55,7 @@ import android.util.Slog;
 import android.util.proto.ProtoOutputStream;
 import android.view.Surface.OutOfResourcesException;
 import android.view.SurfaceControl;
+import android.view.View;
 import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
 import android.view.animation.AlphaAnimation;
@@ -631,6 +632,10 @@ class WindowStateAnimator {
             // The wallpaper surface should have the same lifetime as its window.
             Slog.e(TAG, "Unexpected removing wallpaper surface of " + mWin
                     + " by " + Debug.getCallers(8));
+        }
+        if (WindowManager.useClientSurface() && mWin.mViewVisibility == View.INVISIBLE) {
+            // Release the buffer explicitly because the client may cache the surface control.
+            t.setBuffer(mSurfaceControl, null /* buffer */, null /* fence */);
         }
         t.remove(mSurfaceControl);
         setShown(false);
