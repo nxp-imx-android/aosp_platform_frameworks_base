@@ -1177,5 +1177,16 @@
     <dimen name="taskbar_stashed_size">24dp</dimen>
 
     <!-- App Lock -->
+    <!-- A large value to prevent the education dialog from collapsing. -->
+    <dimen name="app_lock_edu_dialog_max_collapsed_height">2000dp</dimen>
+    <dimen name="app_lock_icon_size_small">24dp</dimen>
+    <dimen name="app_lock_item_icon_size">42dp</dimen>
+    <dimen name="app_lock_item_margin">12dp</dimen>
+    <dimen name="app_lock_margin">16dp</dimen>
+    <dimen name="app_lock_padding_extra_small">8dp</dimen>
+    <dimen name="app_lock_padding_small">16dp</dimen>
+    <dimen name="app_lock_padding_large">32dp</dimen>
+    <dimen name="app_lock_padding_extra_large">40dp</dimen>
+    <dimen name="app_lock_permission_review_app_list_expanded_height">320dp</dimen>
     <dimen name="app_lock_pill_radius">100dp</dimen>
 </resources>
