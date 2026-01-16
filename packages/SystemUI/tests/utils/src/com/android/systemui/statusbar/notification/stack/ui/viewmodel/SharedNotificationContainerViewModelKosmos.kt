@@ -63,6 +63,7 @@ import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.log.table.logcatTableLogBuffer
 import com.android.systemui.media.controls.domain.pipeline.legacyMediaDataManagerImpl
+import com.android.systemui.notifications.ui.notificationPlaceholderStateStorage
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.shade.domain.interactor.shadeModeInteractor
@@ -133,6 +134,7 @@ val Kosmos.sharedNotificationContainerViewModel by Fixture {
         toLockscreenEndStateTransitionViewModel = toLockscreenEndStateTransitionViewModel,
         activeNotificationsInteractor = activeNotificationsInteractor,
         mediaDataManager = legacyMediaDataManagerImpl,
+        notificationPlaceholderStateStorage = notificationPlaceholderStateStorage,
         alphaTableLogger = logcatTableLogBuffer(this, "NotificationAlphaTableLog"),
     )
 }

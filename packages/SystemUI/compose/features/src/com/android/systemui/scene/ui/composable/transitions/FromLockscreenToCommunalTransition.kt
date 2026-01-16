@@ -24,6 +24,7 @@ import com.android.compose.animation.scene.Edge
 import com.android.compose.animation.scene.TransitionBuilder
 import com.android.systemui.communal.ui.compose.Communal
 import com.android.systemui.communal.ui.compose.TransitionDuration
+import com.android.systemui.notifications.ui.composable.Notifications
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
 import com.android.systemui.scene.shared.model.Scenes
 
@@ -60,6 +61,7 @@ private fun TransitionBuilder.lockscreenToCommunalTransition() {
     ) {
         // Lockscreen depth push
         scaleDraw(LockscreenElementKeys.Root, scaleX = 0.9f, scaleY = 0.9f)
+        scaleDraw(Notifications.Elements.StackPlaceholder, scaleX = 0.9f, scaleY = 0.9f)
 
         // Lockscreen fade out
         fade(LockscreenElementKeys.Root)
