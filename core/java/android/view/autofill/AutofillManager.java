@@ -70,6 +70,7 @@ import android.os.Parcelable;
 import android.os.RemoteException;
 import android.os.SystemClock;
 import android.service.autofill.AutofillService;
+import android.service.autofill.Dataset;
 import android.service.autofill.FillEventHistory;
 import android.service.autofill.Flags;
 import android.service.autofill.UserData;
@@ -4192,6 +4193,35 @@ public final class AutofillManager {
                         mContext.getUserId());
             } catch (Exception e) {
                 Log.e(TAG, "autofillRemoteApp() - cannot autofill remote app", e);
+            }
+        }
+    }
+
+    /**
+     * This method is use by SystemUI to notify AutofillManager of personal context suggestions for
+     * inline autofill.
+     *
+     * @hide
+     */
+    @FlaggedApi(android.service.personalcontext.Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
+    public void notifySystemInlineSuggestions(
+            int sessionId, @NonNull List<Dataset> inlineSuggestionsData) {
+        if (android.service.personalcontext.Flags.enablePersonalContextService()
+                && mService != null) {
+            try {
+                if (sVerbose) {
+                    Log.v(TAG, "notifySystemInlineSuggestions() called on sessionId: "
+                            + sessionId);
+                }
+                mService.notifySystemInlineSuggestions(
+                        sessionId, inlineSuggestionsData, mContext.getUserId());
+            } catch (RemoteException e) {
+                // The failure could be a consequence of something going wrong on the
+                // server side. Just log the exception and move-on.
+                Log.w(
+                        TAG,
+                        "notifySystemInlineSuggestions(): RemoteException caught but ignored",
+                        e);
             }
         }
     }

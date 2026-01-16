@@ -32,6 +32,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.UserInfo;
 import android.os.UserHandle;
 import android.service.personalcontext.hint.BundleHint;
+import android.service.personalcontext.hint.ContextHint;
 import android.service.personalcontext.hint.ContextHintWrapper;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -45,6 +46,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -63,6 +65,7 @@ public class PersonalContextManagerServiceTest {
     @Mock private PackageManager mPackageManager;
 
     private PersonalContextManagerService mService;
+    private PersonalContextManagerInternal mLocalService;
     private SystemService.TargetUser mUser1;
     private SystemService.TargetUser mUser2;
     private SystemService.TargetUser mSystemUser;
@@ -79,6 +82,7 @@ public class PersonalContextManagerServiceTest {
         mockUserContext(UserHandle.SYSTEM);
 
         mService = spy(new PersonalContextManagerService(mMockContext));
+        mLocalService = mService.new LocalService();
 
         mUser1 = new SystemService.TargetUser(USER_INFO_1);
         mUser2 = new SystemService.TargetUser(USER_INFO_2);
@@ -97,8 +101,7 @@ public class PersonalContextManagerServiceTest {
         mService.onUserStarting(mUser1);
         mService.onUserUnlocked(mUser1);
 
-        ContextComponentManager user1Manager =
-                mService.getComponentManagerForUser(USER_ID_1);
+        ContextComponentManager user1Manager = mService.getComponentManagerForUser(USER_ID_1);
         assertThat(user1Manager).isNotNull();
 
         // Verify that it tried to register components.
@@ -121,8 +124,7 @@ public class PersonalContextManagerServiceTest {
         // Should not crash, and should create the manager.
         mService.onUserUnlocked(mUser1);
 
-        ContextComponentManager user1Manager =
-                mService.getComponentManagerForUser(USER_ID_1);
+        ContextComponentManager user1Manager = mService.getComponentManagerForUser(USER_ID_1);
         assertThat(user1Manager).isNotNull();
     }
 
@@ -192,6 +194,15 @@ public class PersonalContextManagerServiceTest {
         binderService.publishTriggeringHint(hints, null, USER_ID_1);
 
         verify(mService).startRefinerWorkflow(eq(USER_ID_1), anyInt(), eq(Set.of(hint)), any());
+    }
+
+    @Test
+    public void testLocalService_publishTriggeringHint() {
+        Set<ContextHint> hints = new HashSet<>();
+        hints.add(new BundleHint.Builder().build());
+        mLocalService.publishTriggeringHint(hints, null, USER_ID_1);
+
+        verify(mService).startRefinerWorkflow(eq(USER_ID_1), anyInt(), eq(hints), any());
     }
 
     private void mockUserContext(UserHandle userHandle) {

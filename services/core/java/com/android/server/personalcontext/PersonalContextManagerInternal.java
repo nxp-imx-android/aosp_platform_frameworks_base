@@ -17,8 +17,13 @@
 package com.android.server.personalcontext;
 
 import android.annotation.NonNull;
+import android.annotation.Nullable;
+import android.service.personalcontext.RenderToken;
+import android.service.personalcontext.hint.ContextHint;
 import android.service.personalcontext.hint.NotificationEvent;
 import android.view.textclassifier.TextClassification;
+
+import java.util.Set;
 
 /**
  * Personal context manager local system service interface.
@@ -42,4 +47,16 @@ public abstract class PersonalContextManagerInternal {
      */
     public abstract void onTextClassifyRequest(
             int userId, String sessionId, @NonNull TextClassification.Request request);
+
+    /**
+     * Triggers a Personal Context service flow with raw data in the form of hints.
+     *
+     * @param hints raw data to be injected into the context flow
+     * @param renderToken optional token(s) indicating which renderer should be used to render
+     *     results of this flow to the user; if {@code null} then this flow can be rendered by any
+     *     Personal Context renderer
+     * @param userId to run the flow as
+     */
+    public abstract void publishTriggeringHint(
+            @NonNull Set<ContextHint> hints, @Nullable Set<RenderToken> renderToken, int userId);
 }

@@ -113,50 +113,7 @@ public class PersonalContextManagerService extends SystemService {
     private final ContextLogger mLogger = new ContextLogger();
 
     private final ActivityManagerInternal mActivityManager;
-    private final PersonalContextManagerInternal mInternalService =
-            new PersonalContextManagerInternal() {
-                @Override
-                public void onNotificationEvent(@NonNull NotificationEvent event) {
-                    final StatusBarNotification sbn = getSbnFromNotificationEvent(event);
-                    if (sbn == null) {
-                        Slog.e(TAG, "Could not get SBN from notification event.");
-                        return;
-                    }
-
-                    final UserHandle user = sbn.getUser();
-                    final UserState userState = getUserStateSynchronized(user.getIdentifier());
-                    if (userState == null) {
-                        Slog.e(TAG, "No user state for user " + user.getIdentifier());
-                        return;
-                    }
-
-                    startRefinerWorkflow(
-                            user.getIdentifier(),
-                            Process.myPid(),
-                            Set.of(new NotificationHint.Builder(event).build()),
-                            Set.of(userState.notificationActionRenderer().mintRenderToken()));
-                }
-
-                @Override
-                public void onTextClassifyRequest(
-                        int userId, String sessionId, @NonNull TextClassification.Request request) {
-                    final UserState userState = getUserStateSynchronized(userId);
-                    if (userState == null) {
-                        Slog.e(TAG, "No user state for user " + userId);
-                        return;
-                    }
-                    if (userState.textClassificationActionRenderer == null) {
-                        Slog.e(TAG, "No text classification renderer defined");
-                        return;
-                    }
-
-                    startRefinerWorkflow(
-                            userId,
-                            Process.myPid(),
-                            Set.of(new TextClassificationHint.Builder(request, sessionId).build()),
-                            Set.of(userState.textClassificationActionRenderer().mintRenderToken()));
-                }
-            };
+    private final PersonalContextManagerInternal mInternalService = new LocalService();
 
     public PersonalContextManagerService(Context context) {
         super(context);
@@ -541,6 +498,57 @@ public class PersonalContextManagerService extends SystemService {
             }
 
             service.mLogger.dump(fout);
+        }
+    }
+
+    @VisibleForTesting
+    class LocalService extends PersonalContextManagerInternal {
+        @Override
+        public void onNotificationEvent(@NonNull NotificationEvent event) {
+            final StatusBarNotification sbn = getSbnFromNotificationEvent(event);
+            if (sbn == null) {
+                Slog.e(TAG, "Could not get SBN from notification event.");
+                return;
+            }
+
+            final UserHandle user = sbn.getUser();
+            final UserState userState = getUserStateSynchronized(user.getIdentifier());
+            if (userState == null) {
+                Slog.e(TAG, "No user state for user " + user.getIdentifier());
+                return;
+            }
+
+            startRefinerWorkflow(
+                    user.getIdentifier(),
+                    Process.myPid(),
+                    Set.of(new NotificationHint.Builder(event).build()),
+                    Set.of(userState.notificationActionRenderer().mintRenderToken()));
+        }
+
+        @Override
+        public void onTextClassifyRequest(
+                int userId, String sessionId, @NonNull TextClassification.Request request) {
+            final UserState userState = getUserStateSynchronized(userId);
+            if (userState == null) {
+                Slog.e(TAG, "No user state for user " + userId);
+                return;
+            }
+            if (userState.textClassificationActionRenderer == null) {
+                Slog.e(TAG, "No text classification renderer defined");
+                return;
+            }
+
+            startRefinerWorkflow(
+                    userId,
+                    Process.myPid(),
+                    Set.of(new TextClassificationHint.Builder(request, sessionId).build()),
+                    Set.of(userState.textClassificationActionRenderer().mintRenderToken()));
+        }
+
+        @Override
+        public void publishTriggeringHint(@NonNull Set<ContextHint> hints,
+                @Nullable Set<RenderToken> renderTokens, int userId) {
+            startRefinerWorkflow(userId, Process.myPid(), hints, renderTokens);
         }
     }
 }
