@@ -48,8 +48,5 @@ class FakeDesktopConfig : DesktopConfig {
 
     override var desktopDensityOverride: Int = 284
 
-    override fun dump(
-        pw: PrintWriter,
-        prefix: String,
-    ) { }
+    override fun dump(pw: PrintWriter, prefix: String) {}
 }
