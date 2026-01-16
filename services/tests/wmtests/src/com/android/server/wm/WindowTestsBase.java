@@ -1791,7 +1791,7 @@ public class WindowTestsBase extends SystemServiceTestsBase {
 
             // Create child activity.
             if (mCreateActivity) {
-                new ActivityBuilder(mSupervisor.mService)
+                ActivityRecord activity = new ActivityBuilder(mSupervisor.mService)
                         .setTask(task)
                         .setComponent(mComponent)
                         .build();
@@ -1800,6 +1800,7 @@ public class WindowTestsBase extends SystemServiceTestsBase {
                     // is added. Or {@link TaskDisplayArea#mPreferredTopFocusableRootTask} could be
                     // other root tasks (e.g. home root task).
                     task.moveToFront("createActivityTask");
+                    mTaskDisplayArea.getDisplayContent().setFocusedApp(activity);
                 } else {
                     task.moveToBack("createActivityTask", null);
                 }
