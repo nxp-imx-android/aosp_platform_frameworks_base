@@ -212,25 +212,25 @@ abstract class MagnetizedObject<T : Any>(
      *
      * Flings whose trajectory intersects the area will be attracted and released - even if the
      * target view itself isn't intersected:
-     *
+     * ```
      * |             |
      * |           0 |
      * |          /  |
      * |         /   |
      * |      X /    |
      * |.....###.....|
-     *
+     * ```
      *
      * Flings towards the target whose trajectories do not intersect the area will be treated as
      * normal flings and the magnet will leave the object alone:
-     *
+     * ```
      * |             |
      * |             |
      * |   0         |
      * |  /          |
      * | /    X      |
      * |.....###.....|
-     *
+     * ```
      */
     var flingToTargetWidthPercent = 3f
 
