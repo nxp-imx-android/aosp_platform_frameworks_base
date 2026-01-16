@@ -1463,7 +1463,7 @@ public class ActivityManagerService extends IActivityManager.Stub
     /**
      * For some direct access we need to power manager.
      */
-    PowerManagerInternal mLocalPowerManager;
+    private PowerManagerBatchProxy mPowerManagerBatchProxy;
 
     /**
      * State of external calls telling us if the device is awake or asleep.
@@ -2779,7 +2779,9 @@ public class ActivityManagerService extends IActivityManager.Stub
     public void initPowerManagement() {
         mActivityTaskManager.onInitPowerManagement();
         mBatteryStatsService.initPowerManagement();
-        mLocalPowerManager = LocalServices.getService(PowerManagerInternal.class);
+        mPowerManagerBatchProxy = new PowerManagerBatchProxy(
+                LocalServices.getService(PowerManagerInternal.class),
+                mHandlerThread.getLooper());
     }
 
     /**
@@ -15726,19 +15728,19 @@ public class ActivityManagerService extends IActivityManager.Stub
 
         // Directly update the power manager, since we sit on top of it and it is critical
         // it be kept in sync (so wake locks will be held as soon as appropriate).
-        if (mLocalPowerManager != null) {
+        if (mPowerManagerBatchProxy != null) {
             // TODO: dispatch cached/uncached changes here, so we don't need to report
             // all proc state changes.
             if ((enqueuedChange & UidRecord.CHANGE_ACTIVE) != 0) {
-                mLocalPowerManager.uidActive(uid);
+                mPowerManagerBatchProxy.uidActive(uid);
             }
             if ((enqueuedChange & UidRecord.CHANGE_IDLE) != 0) {
-                mLocalPowerManager.uidIdle(uid);
+                mPowerManagerBatchProxy.uidIdle(uid);
             }
             if ((enqueuedChange & UidRecord.CHANGE_GONE) != 0) {
-                mLocalPowerManager.uidGone(uid);
+                mPowerManagerBatchProxy.uidGone(uid);
             } else if ((enqueuedChange & UidRecord.CHANGE_PROCSTATE) != 0) {
-                mLocalPowerManager.updateUidProcState(uid, procState);
+                mPowerManagerBatchProxy.updateUidProcState(uid, procState);
             }
         }
         if (mAppLockLocalService != null) {
@@ -15939,8 +15941,8 @@ public class ActivityManagerService extends IActivityManager.Stub
 
             synchronized (this) {
                 try {
-                    if (mLocalPowerManager != null) {
-                        mLocalPowerManager.startUidChanges();
+                    if (mPowerManagerBatchProxy != null) {
+                        mPowerManagerBatchProxy.startUidChanges();
                     }
                     final int appId = UserHandle.getAppId(pkgUid);
                     for (int i = mProcessList.mActiveUids.size() - 1; i >= 0; i--) {
@@ -15964,8 +15966,8 @@ public class ActivityManagerService extends IActivityManager.Stub
                         }
                     }
                 } finally {
-                    if (mLocalPowerManager != null) {
-                        mLocalPowerManager.finishUidChanges();
+                    if (mPowerManagerBatchProxy != null) {
+                        mPowerManagerBatchProxy.finishUidChanges();
                     }
                 }
             }
@@ -16004,8 +16006,8 @@ public class ActivityManagerService extends IActivityManager.Stub
         final long maxBgTime = nowElapsed - mConstants.BACKGROUND_SETTLE_TIME;
         long nextTime = 0;
         boolean shouldLogMisc = false;
-        if (mLocalPowerManager != null) {
-            mLocalPowerManager.startUidChanges();
+        if (mPowerManagerBatchProxy != null) {
+            mPowerManagerBatchProxy.startUidChanges();
         }
         for (int i = uidSize - 1; i >= 0; i--) {
             final UidRecord uidRec = mProcessList.mActiveUids.valueAt(i);
@@ -16030,8 +16032,8 @@ public class ActivityManagerService extends IActivityManager.Stub
                 }
             }
         }
-        if (mLocalPowerManager != null) {
-            mLocalPowerManager.finishUidChanges();
+        if (mPowerManagerBatchProxy != null) {
+            mPowerManagerBatchProxy.finishUidChanges();
         }
 
         // Also check if there are any apps in cached and background restricted mode,
@@ -20021,8 +20023,8 @@ public class ActivityManagerService extends IActivityManager.Stub
 
         @Override
         public void onUpdateUidsStarted() {
-            if (mLocalPowerManager != null) {
-                mLocalPowerManager.startUidChanges();
+            if (mPowerManagerBatchProxy != null) {
+                mPowerManagerBatchProxy.startUidChanges();
             }
         }
 
@@ -20033,8 +20035,8 @@ public class ActivityManagerService extends IActivityManager.Stub
                 mInternal.deletePendingTopUid(activeUids.valueAt(i).getUid(), nowElapsed);
             }
 
-            if (mLocalPowerManager != null) {
-                mLocalPowerManager.finishUidChanges();
+            if (mPowerManagerBatchProxy != null) {
+                mPowerManagerBatchProxy.finishUidChanges();
             }
 
             // If we have any new uids that became idle this time, we need to make sure

@@ -736,6 +736,7 @@ com.android.server.ServiceThread
 com.android.server.SystemService
 com.android.server.SystemServiceManager
 com.android.server.am.ConnectionRecord
+com.android.server.am.PowerManagerBatchProxy
 com.android.server.am.psc.AsyncBatchSession
 com.android.server.am.psc.BatchSession
 com.android.server.am.psc.BinderSession

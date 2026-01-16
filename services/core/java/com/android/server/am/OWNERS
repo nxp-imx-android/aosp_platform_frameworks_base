@@ -24,6 +24,7 @@ per-file App*StartInfo* = file:/PERFORMANCE_OWNERS
 per-file appstartinfo.proto = file:/PERFORMANCE_OWNERS
 per-file MemoryLimiter* = file:/PERFORMANCE_OWNERS
 per-file ForegroundService* = file:/ACTIVITY_MANAGER_OWNERS
+per-file PowerManagerBatchProxy.java = file:/ACTIVITY_MANAGER_OWNERS
 
 # Permissions & Packages
 per-file AccessCheckDelegateHelper.java = file:/core/java/android/permission/OWNERS
