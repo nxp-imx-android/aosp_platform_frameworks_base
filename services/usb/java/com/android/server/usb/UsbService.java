@@ -252,7 +252,16 @@ public class UsbService extends IUsbManager.Stub {
                 if (android.app.admin.flags.Flags.fixUsbDataSignalingRestrictionAfterReboot()
                         && UsbManager.ACTION_USB_PORT_CHANGED.equals(action)) {
                     boolean enabled = mDevicePolicyManagerInternal.isUsbDataSignalingEnabled();
-                    setUsbDataSignal(enabled);
+                    Slog.i(TAG, "Broadcast ACTION_USB_PORT_CHANGED received, setting USB "
+                            + "data signal to " + enabled);
+
+                    // Only call setUsbDataSignal if data signaling is disabled by the policy.
+                    // If it is enabled by the policy, it should not be force-enabled here, as
+                    // other mechanisms (e.g. adb) may have disabled it previously.
+                    // This results in the `setUsbDataSignal` call only disabling USB signaling.
+                    if (!enabled) {
+                        setUsbDataSignal(enabled);
+                    }
                 }
             }
         };
