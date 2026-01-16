@@ -147,7 +147,7 @@ public class FusedSignalsTest {
         assertTrue(fusedSignals.getZoneIdCandidates().contains(TZ_NY));
         assertEquals(
                 timestamp,
-                fusedSignals.getOriginInfoForOrigin(ORIGIN_LOCATION).getTimestampAdded());
+                fusedSignals.getOriginInfoForOrigin(ORIGIN_LOCATION).getTimestampDetected());
         assertEquals(
                 timestamp,
                 fusedSignals.getOriginInfoForOrigin(ORIGIN_LOCATION).getTimestampLastUpdated());

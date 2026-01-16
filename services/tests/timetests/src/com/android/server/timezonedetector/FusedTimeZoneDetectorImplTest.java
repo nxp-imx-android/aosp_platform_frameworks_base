@@ -32,6 +32,8 @@ import static com.android.server.timezonedetector.TimeZoneDetectorStrategyImpl.T
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -55,6 +57,7 @@ import com.android.server.SystemTimeZone.TimeZoneConfidence;
 import com.android.server.timezonedetector.ftzd.FusedSignals;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -398,10 +401,10 @@ public class FusedTimeZoneDetectorImplTest {
                 currentSignals.hasOrigin(ORIGIN_TELEPHONY, 0));
 
         assertTrue(
-                currentSignals.getOriginInfoForOrigin(ORIGIN_TELEPHONY).getTimestampAdded()
+                currentSignals.getOriginInfoForOrigin(ORIGIN_TELEPHONY).getTimestampDetected()
                         > currentSignals
                                 .getOriginInfoForOrigin(ORIGIN_LOCATION)
-                                .getTimestampAdded());
+                                .getTimestampDetected());
     }
 
     @Test
@@ -445,10 +448,10 @@ public class FusedTimeZoneDetectorImplTest {
                 currentSignals.hasOrigin(ORIGIN_TELEPHONY, 0));
 
         assertTrue(
-                currentSignals.getOriginInfoForOrigin(ORIGIN_TELEPHONY).getTimestampAdded()
+                currentSignals.getOriginInfoForOrigin(ORIGIN_TELEPHONY).getTimestampDetected()
                         > currentSignals
                                 .getOriginInfoForOrigin(ORIGIN_LOCATION)
-                                .getTimestampAdded());
+                                .getTimestampDetected());
     }
 
     @Test
@@ -541,12 +544,12 @@ public class FusedTimeZoneDetectorImplTest {
         }
 
         Script verifyLocationDisagreementCandidatesPresent() {
-            assertFalse(mFusedTimeZoneDetector.getLocationDisagreementCandidates().isEmpty());
+            assertNotNull(mFusedTimeZoneDetector.getLocationDisagreementCandidate());
             return this;
         }
 
         Script verifyNoLocationDisagreementCandidatesPresent() {
-            assertTrue(mFusedTimeZoneDetector.getLocationDisagreementCandidates().isEmpty());
+            assertNull(mFusedTimeZoneDetector.getLocationDisagreementCandidate());
             return this;
         }
     }
