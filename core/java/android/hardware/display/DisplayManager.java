@@ -2192,7 +2192,7 @@ public final class DisplayManager {
 
     /**
      * @return The current display topology that represents the relative positions of extended
-     * displays.
+     * displays. It only includes the displays that can be reached with the mouse cursor.
      */
     @Nullable
     @FlaggedApi(Flags.FLAG_DISPLAY_TOPOLOGY_API)
