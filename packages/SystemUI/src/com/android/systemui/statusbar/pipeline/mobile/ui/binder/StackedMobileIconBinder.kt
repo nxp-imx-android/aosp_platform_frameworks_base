@@ -24,8 +24,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.android.systemui.kairos.KairosNetwork
-import com.android.systemui.kairos.toColdConflatedFlow
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.statusbar.pipeline.mobile.StatusBarMobileIconKairos
@@ -38,7 +36,6 @@ import com.android.systemui.statusbar.pipeline.shared.ui.binder.ModernStatusBarV
 import com.android.systemui.statusbar.pipeline.shared.ui.composable.StackedMobileIcon
 import com.android.systemui.statusbar.pipeline.shared.ui.view.SingleBindableStatusBarComposeIconView
 import dagger.Lazy
-import kotlinx.coroutines.flow.Flow
 
 object StackedMobileIconBinder {
     fun bind(
@@ -47,17 +44,15 @@ object StackedMobileIconBinder {
         mobileIconsViewModelKairos: Lazy<MobileIconsViewModelKairos>,
         viewModelFactory: StackedMobileIconViewModelImpl.Factory,
         kairosViewModelFactory: StackedMobileIconViewModelKairos.Factory,
-        kairosNetwork: KairosNetwork,
     ): ModernStatusBarViewBinding {
-        val shouldBeVisible: Flow<Boolean> =
-            if (StatusBarMobileIconKairos.isEnabled) {
-                mobileIconsViewModelKairos.get().isStackable.toColdConflatedFlow(kairosNetwork)
-            } else {
-                mobileIconsViewModel.get().isStackable
-            }
         return SingleBindableStatusBarComposeIconView.withDefaultBinding(
             view = view,
-            shouldBeVisible = shouldBeVisible,
+            shouldBeVisible =
+                if (StatusBarMobileIconKairos.isEnabled) {
+                    mobileIconsViewModelKairos.get().isStackableFlow
+                } else {
+                    mobileIconsViewModel.get().isStackable
+                },
         ) { _, tintFlow ->
             view.composeView.apply {
                 setViewCompositionStrategy(
