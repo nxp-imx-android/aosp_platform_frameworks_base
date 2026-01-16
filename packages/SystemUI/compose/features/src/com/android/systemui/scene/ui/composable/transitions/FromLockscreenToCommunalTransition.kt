@@ -16,6 +16,7 @@
 
 package com.android.systemui.scene.ui.composable.transitions
 
+import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
@@ -71,6 +72,13 @@ private fun TransitionBuilder.lockscreenToCommunalTransition() {
         translate(LockscreenElementKeys.IndicationArea, y = (-10).dp)
     }
 
+    timestampRange(
+        endMillis = (TransitionDuration.TO_GLANCEABLE_HUB_DURATION_MS * 0.2f).toInt(),
+        easing = FastOutLinearInEasing,
+    ) {
+        // Fade out Notifications to avoid clashing with the Hub content
+        fade(Notifications.Elements.StackPlaceholder)
+    }
     timestampRange(
         startMillis = (TransitionDuration.TO_GLANCEABLE_HUB_DURATION_MS * 0.2f).toInt(),
         easing = LinearOutSlowInEasing,

@@ -198,17 +198,19 @@ constructor(
                         launch { viewModel.blurRadius.collect { controller.setBlurRadius(it) } }
                     }
 
-                    if (communalSettingsInteractor.isCommunalFlagEnabled()) {
+                    // When SceneContainer is enabled. fading keyguard elements during this
+                    // transition is controlled by STL transitions.
+                    if (
+                        !SceneContainerFlag.isEnabled &&
+                            communalSettingsInteractor.isCommunalFlagEnabled()
+                    ) {
                         launch {
                             viewModel.glanceableHubAlpha.collect {
                                 controller.setMaxAlphaForGlanceableHub(it)
                             }
                         }
 
-                        if (
-                            !SceneContainerFlag.isEnabled &&
-                                Flags.gestureBetweenHubAndLockscreenMotion()
-                        ) {
+                        if (Flags.gestureBetweenHubAndLockscreenMotion()) {
                             launch {
                                 viewModel.viewScale.collect {
                                     view.scaleX = it
