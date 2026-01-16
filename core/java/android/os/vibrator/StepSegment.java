@@ -22,6 +22,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.VibrationEffect;
 import android.os.VibratorInfo;
+import android.util.MathUtils;
 
 import com.android.internal.util.Preconditions;
 
@@ -148,11 +149,11 @@ public final class StepSegment extends VibrationEffectSegment {
     /** @hide */
     @NonNull
     @Override
-    public StepSegment scaleLinearly(float scaleFactor) {
+    public StepSegment applyAdaptiveScale(float scaleFactor) {
         if (Float.compare(mAmplitude, VibrationEffect.DEFAULT_AMPLITUDE) == 0) {
             return this;
         }
-        float newAmplitude = VibrationEffect.scaleLinearly(mAmplitude, scaleFactor);
+        float newAmplitude = MathUtils.constrain(mAmplitude * scaleFactor, 0f, 1f);
         if (Float.compare(newAmplitude, mAmplitude) == 0) {
             return this;
         }
