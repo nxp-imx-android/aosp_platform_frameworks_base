@@ -88,7 +88,8 @@ constructor(
 
     /** True if live captions button should be displayed */
     val showLiveCaptionsButton: Boolean by
-        showControl(Sensor.MICROPHONE) { it.liveCaptionsSupported }
+        desktopEffectInteractor.model
+            .map { it.liveCaptionsSupported }
             .hydratedStateOf(initialValue = false)
 
     /** A factory to be used to create view model instances. */
