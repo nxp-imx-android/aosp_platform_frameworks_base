@@ -72,18 +72,6 @@ public final class PackageTagsList implements Parcelable {
         return mPackageTags.containsKey(packageName);
     }
 
-    /**
-     * This is the same as {@link #containsPackage(String)}. The function name is kept in baklava_1
-     * for backward compatibility with baklava CTS.
-     *
-     * @deprecated to be removed in 26Q2 release.
-     * @hide
-     */
-    @Deprecated
-    @TestApi
-    public boolean includes(@NonNull String packageName) {
-        return containsPackage(packageName);
-    }
 
     /**
      * Returns true if the given attribution tag is found within this instance under any package.
@@ -113,18 +101,6 @@ public final class PackageTagsList implements Parcelable {
         return tags != null && tags.isEmpty();
     }
 
-    /**
-     * This is the same as {@link #containsPackageWithAllTags(String)}. The function name is kept in
-     * baklava_1 for backward compatibility with baklava CTS.
-     *
-     * @deprecated to be removed in 26Q2 release.
-     * @hide
-     */
-    @Deprecated
-    @TestApi
-    public boolean containsAll(@NonNull String packageName) {
-        return containsPackageWithAllTags(packageName);
-    }
 
     /**
      * Returns true if the given package and attribution tag are contained within this instance.
