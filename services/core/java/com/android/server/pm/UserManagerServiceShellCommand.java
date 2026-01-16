@@ -657,6 +657,7 @@ public class UserManagerServiceShellCommand extends ShellCommand {
             case "reset" -> resetActivitiesAllowlist(userType);
             case "disable" -> disableActivitiesAllowlist(userType);
             case "set-mode" -> setActivitiesAllowlistMode(userType);
+            case "get-mode" -> getActivitiesAllowlistMode(userType);
             default -> printAndReturnFailed("invalid action - %s", action);
         };
     }
@@ -677,6 +678,8 @@ public class UserManagerServiceShellCommand extends ShellCommand {
         pw.println("      disable - disables allowlisting (so any activity can be launched)");
         pw.println("      set-mode <VALUE> - sets the mode. Valid values are: 0 (disabled), "
                 + "1 (enabled), 2 (log-only)");
+        pw.println("      get-mode [-v | --verbose] - gets the mode. By default returns just the "
+                + "int value, but returns the description as well with the verbose option");
 
         pw.println("    where ACTIVITY is the flattened representation of the activity's "
                 + "ComponentName (i.e., package/activity)");
@@ -778,6 +781,32 @@ public class UserManagerServiceShellCommand extends ShellCommand {
         getActivitiesAllowlist(userType).setMode(mode);
 
         return printAndReturnSuccess();
+    }
+
+    private int getActivitiesAllowlistMode(String userType) {
+        PrintWriter pw = getOutPrintWriter();
+        boolean verbose = false;
+        String opt;
+        while ((opt = getNextOption()) != null) {
+            switch (opt) {
+                case "-v":
+                case "--verbose":
+                    verbose = true;
+                    break;
+                default:
+                    return printAndReturnFailed("Invalid option: %s", opt);
+            }
+        }
+
+        int mode = getActivitiesAllowlist(userType).getMode();
+        pw.print(mode);
+        // NOTE: non-verbose option should only print the mode as an integer, as it's used by tests
+        // (like InteractiveHsumIntegrationTests)
+        if (verbose) {
+            pw.printf(" (%s)", UserActivitiesAllowlist.allowlistModeToString(mode));
+        }
+        pw.println();
+        return RESULT_SUCCESS;
     }
 
     @SuppressWarnings("AndroidFrameworkRequiresPermission")
