@@ -64,7 +64,6 @@ import android.graphics.Region;
 import android.os.LocaleList;
 import android.os.Looper;
 import android.platform.test.annotations.DisableFlags;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.UsesFlags;
 import android.platform.test.flag.junit.FlagsParameterization;
 import android.util.DisplayMetrics;
@@ -905,34 +904,6 @@ public class WindowDecorationTests extends ShellTestCase {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_RELATIVE_INSETS)
-    public void testRelayout_taskFrameChanged_insetsReapplied() {
-        final Display defaultDisplay = mock(Display.class);
-        doReturn(defaultDisplay).when(mMockDisplayController)
-                .getDisplay(Display.DEFAULT_DISPLAY);
-        mInsetsState.getOrCreateSource(STATUS_BAR_INSET_SOURCE_ID, captionBar()).setVisible(true);
-        final WindowContainerToken token = new MockToken().token();
-        final TestRunningTaskInfoBuilder builder = new TestRunningTaskInfoBuilder()
-                .setDisplayId(Display.DEFAULT_DISPLAY)
-                .setVisible(true);
-        mRelayoutParams.mIsCaptionVisible = true;
-
-        // Relayout twice with different bounds.
-        final ActivityManager.RunningTaskInfo firstTaskInfo =
-                builder.setToken(token).setBounds(new Rect(0, 0, 1000, 1000)).build();
-        final TestWindowDecoration windowDecor = createWindowDecoration(firstTaskInfo);
-        windowDecor.relayout(firstTaskInfo, true /* hasGlobalFocus */);
-        final ActivityManager.RunningTaskInfo secondTaskInfo =
-                builder.setToken(token).setBounds(new Rect(50, 50, 1000, 1000)).build();
-        windowDecor.relayout(secondTaskInfo, true /* hasGlobalFocus */);
-
-        // Insets should be applied twice.
-        verifyAddedInsets(2 /* times */, token, 0 /* index */, captionBar());
-        verifyAddedInsets(2 /* times */, token, 0 /* index */, mandatorySystemGestures());
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_RELATIVE_INSETS)
     public void testRelayout_captionFrameChanged_insetsReapplied() {
         final Display defaultDisplay = mock(Display.class);
         doReturn(defaultDisplay).when(mMockDisplayController)
@@ -1321,70 +1292,36 @@ public class WindowDecorationTests extends ShellTestCase {
 
     private void verifyAddedInsets(int times, WindowContainerToken token, int index, int type) {
         if (com.android.window.flags.Flags.improveFluidResizingPerformance()) {
-            if (com.android.window.flags.Flags.relativeInsets()) {
-                verify(mMockWindowContainerTransaction, times(times)).addInsetsSource(eq(token),
-                        any(), eq(index), eq(type), any(Insets.class), (InsetsBoundingRect[]) any(),
-                        anyInt());
-            } else {
-                verify(mMockWindowContainerTransaction, times(times)).addInsetsSource(eq(token),
-                        any(), eq(index), eq(type), any(Rect.class), (InsetsBoundingRect[]) any(),
-                        anyInt());
-            }
+            verify(mMockWindowContainerTransaction, times(times)).addInsetsSource(eq(token), any(),
+                    eq(index), eq(type), any(Insets.class), (InsetsBoundingRect[]) any(), anyInt());
         } else {
-            if (com.android.window.flags.Flags.relativeInsets()) {
-                verify(mMockWindowContainerTransaction, times(times)).addInsetsSource(eq(token),
-                        any(), eq(index), eq(type), any(Insets.class), (Rect[]) any(), anyInt());
-            } else {
-                verify(mMockWindowContainerTransaction, times(times)).addInsetsSource(eq(token),
-                        any(), eq(index), eq(type), any(Rect.class), (Rect[]) any(), anyInt());
-            }
+            verify(mMockWindowContainerTransaction, times(times)).addInsetsSource(eq(token), any(),
+                    eq(index), eq(type), any(Insets.class), (Rect[]) any(), anyInt());
         }
     }
 
     private void verifyAddedInsets(int times, WindowContainerToken token, int index, int type,
             int flags) {
         if (com.android.window.flags.Flags.improveFluidResizingPerformance()) {
-            if (com.android.window.flags.Flags.relativeInsets()) {
-                verify(mMockWindowContainerTransaction, times(times)).addInsetsSource(eq(token),
-                        any(), eq(index), eq(type), any(Insets.class), (InsetsBoundingRect[]) any(),
-                        eq(flags));
-            } else {
-                verify(mMockWindowContainerTransaction, times(times)).addInsetsSource(eq(token),
-                        any(), eq(index), eq(type), any(Rect.class), (InsetsBoundingRect[]) any(),
-                        eq(flags));
-            }
+            verify(mMockWindowContainerTransaction, times(times)).addInsetsSource(eq(token), any(),
+                    eq(index), eq(type), any(Insets.class), (InsetsBoundingRect[]) any(),
+                    eq(flags));
         } else {
-            if (com.android.window.flags.Flags.relativeInsets()) {
-                verify(mMockWindowContainerTransaction, times(times)).addInsetsSource(eq(token),
-                        any(), eq(index), eq(type), any(Insets.class), (Rect[]) any(), eq(flags));
-            } else {
-                verify(mMockWindowContainerTransaction, times(times)).addInsetsSource(eq(token),
-                        any(), eq(index), eq(type), any(Rect.class), (Rect[]) any(), eq(flags));
-            }
+            verify(mMockWindowContainerTransaction, times(times)).addInsetsSource(eq(token), any(),
+                    eq(index), eq(type), any(Insets.class), (Rect[]) any(), eq(flags));
         }
     }
 
     private void verifyAddedInsets(int times, WindowContainerToken token, int index, int type,
             Rect attachedRect) {
         if (com.android.window.flags.Flags.improveFluidResizingPerformance()) {
-            if (com.android.window.flags.Flags.relativeInsets()) {
-                verify(mMockWindowContainerTransaction, times(times)).addInsetsSource(eq(token),
-                        any(), eq(index), eq(type), eq(Insets.of(0, attachedRect.height(), 0, 0)),
-                        (InsetsBoundingRect[]) any(), anyInt());
-            } else {
-                verify(mMockWindowContainerTransaction, times(times)).addInsetsSource(eq(token),
-                        any(), eq(index), eq(type), eq(attachedRect), (InsetsBoundingRect[]) any(),
-                        anyInt());
-            }
+            verify(mMockWindowContainerTransaction, times(times)).addInsetsSource(eq(token), any(),
+                    eq(index), eq(type), eq(Insets.of(0, attachedRect.height(), 0, 0)),
+                    (InsetsBoundingRect[]) any(), anyInt());
         } else {
-            if (com.android.window.flags.Flags.relativeInsets()) {
-                verify(mMockWindowContainerTransaction, times(times)).addInsetsSource(eq(token),
-                        any(), eq(index), eq(type), eq(Insets.of(0, attachedRect.height(), 0, 0)),
-                        (Rect[]) any(), anyInt());
-            } else {
-                verify(mMockWindowContainerTransaction, times(times)).addInsetsSource(eq(token),
-                        any(), eq(index), eq(type), eq(attachedRect), (Rect[]) any(), anyInt());
-            }
+            verify(mMockWindowContainerTransaction, times(times)).addInsetsSource(eq(token), any(),
+                    eq(index), eq(type), eq(Insets.of(0, attachedRect.height(), 0, 0)),
+                    (Rect[]) any(), anyInt());
         }
     }
 

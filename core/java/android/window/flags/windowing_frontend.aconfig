@@ -252,14 +252,6 @@ flag {
 }
 
 flag {
-  name: "relative_insets"
-  namespace: "windowing_frontend"
-  description: "Support insets definition and calculation relative to task bounds."
-  bug: "277292497"
-  is_fixed_read_only: true
-}
-
-flag {
     name: "reduce_changed_exclusion_rects_msgs"
     namespace: "windowing_frontend"
     description: "Don't send MSG_SYSTEM_GESTURE_EXCLUSION_CHANGED when there is no change"
