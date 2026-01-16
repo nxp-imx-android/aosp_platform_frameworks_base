@@ -2699,6 +2699,21 @@ public final class Settings {
             "android.settings.SHOW_ADMIN_SUPPORT_DETAILS";
 
     /**
+     * Activity Action: Show a dialog with disabled by policy message.
+     * <p> If a package is suspended by policy, this dialog can be triggered to let
+     * the user know about this.
+     * <p>
+     * Input: {@link Intent#EXTRA_USER_ID}: The user that the package is suspended for.
+     * <p>
+     * Output: Nothing.
+     *
+     * @hide
+     */
+    @SdkConstant(SdkConstantType.ACTIVITY_INTENT_ACTION)
+    public static final String ACTION_SHOW_SUSPENDED_PACKAGE_ADMIN_SUPPORT_DETAILS =
+            "android.settings.SHOW_SUSPENDED_PACKAGE_ADMIN_SUPPORT_DETAILS";
+
+    /**
      * Intent extra: The id of a setting restricted by supervisors.
      * <p>
      * Type: Integer with a value from the one of the SUPERVISOR_VERIFICATION_* constants below.

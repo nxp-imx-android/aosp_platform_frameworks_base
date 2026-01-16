@@ -32,6 +32,7 @@ import static android.content.Intent.CATEGORY_SECONDARY_HOME;
 import static android.content.Intent.EXTRA_INTENT;
 import static android.content.Intent.EXTRA_PACKAGE_NAME;
 import static android.content.Intent.EXTRA_TASK_ID;
+import static android.content.Intent.EXTRA_USER_ID;
 import static android.content.Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS;
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 import static android.content.Intent.FLAG_ACTIVITY_TASK_ON_HOME;
@@ -46,7 +47,6 @@ import android.annotation.Nullable;
 import android.app.ActivityOptions;
 import android.app.KeyguardManager;
 import android.app.TaskInfo;
-import android.app.admin.DevicePolicyIdentifiers;
 import android.app.admin.DevicePolicyManagerInternal;
 import android.content.ComponentName;
 import android.content.Context;
@@ -64,6 +64,7 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.os.UserManager;
+import android.provider.Settings;
 import android.util.Pair;
 import android.util.Slog;
 import android.util.SparseArray;
@@ -362,13 +363,11 @@ class ActivityStartInterceptor {
         if (devicePolicyManager == null) {
             return false;
         }
+        final UserInfo parent = mUserManager.getProfileParent(mUserId);
         if (android.app.admin.flags.Flags.policyTransparencyRefactorEnabled()) {
-            Intent adminSupportIntent = devicePolicyManager.createShowAdminSupportIntentForPolicy(
-                    mUserId, DevicePolicyIdentifiers.PACKAGES_SUSPENDED_POLICY);
-            if (adminSupportIntent == null) {
-                return false;
-            }
-            mIntent = adminSupportIntent;
+            mIntent = new Intent(
+                    Settings.ACTION_SHOW_SUSPENDED_PACKAGE_ADMIN_SUPPORT_DETAILS);
+            mIntent.putExtra(EXTRA_USER_ID, mUserId);
         } else {
             mIntent = devicePolicyManager.createShowAdminSupportIntent(mUserId, true);
             mIntent.putExtra(EXTRA_RESTRICTION, POLICY_SUSPEND_PACKAGES);
@@ -379,7 +378,6 @@ class ActivityStartInterceptor {
         mCallingUid = mRealCallingUid;
         mResolvedType = null;
 
-        final UserInfo parent = mUserManager.getProfileParent(mUserId);
         if (parent != null) {
             mRInfo = mSupervisor.resolveIntent(mIntent, mResolvedType, parent.id, 0,
                     mRealCallingUid, mRealCallingPid);
@@ -390,6 +388,7 @@ class ActivityStartInterceptor {
         mAInfo = mSupervisor.resolveActivity(mIntent, mRInfo, mStartFlags, null /*profilerInfo*/);
         return true;
     }
+
 
     private boolean interceptLockedByAppLockPackageIfNeeded() {
         if (!(android.security.Flags.appLockApis() && android.security.Flags.appLockCore())) {

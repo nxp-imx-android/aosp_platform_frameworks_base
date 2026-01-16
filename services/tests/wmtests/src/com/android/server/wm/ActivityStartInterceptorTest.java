@@ -45,7 +45,6 @@ import android.app.ActivityManagerInternal;
 import android.app.ActivityOptions;
 import android.app.KeyguardManager;
 import android.app.TaskInfo;
-import android.app.admin.DevicePolicyIdentifiers;
 import android.app.admin.DevicePolicyManagerInternal;
 import android.content.Context;
 import android.content.Intent;
@@ -173,9 +172,6 @@ public class ActivityStartInterceptorTest {
                 mDevicePolicyManager);
         when(mDevicePolicyManager.createShowAdminSupportIntent(TEST_USER_ID, true))
                 .thenReturn(ADMIN_SUPPORT_INTENT);
-        when(mDevicePolicyManager.createShowAdminSupportIntentForPolicy(
-                TEST_USER_ID, DevicePolicyIdentifiers.PACKAGES_SUSPENDED_POLICY)).thenReturn(
-                ADMIN_SUPPORT_INTENT);
         when(mService.getPackageManagerInternalLocked()).thenReturn(mPackageManagerInternal);
 
         // Mock UserManager
