@@ -43,8 +43,7 @@ import com.android.server.timezonedetector.location.LocationTimeZoneProviderCont
 final class RealControllerMetricsLogger
         implements LocationTimeZoneProviderController.MetricsLogger {
 
-    RealControllerMetricsLogger() {
-    }
+    RealControllerMetricsLogger() {}
 
     @Override
     public void onStateChange(@State String state) {
@@ -59,7 +58,7 @@ final class RealControllerMetricsLogger
                 // Disable lint check (line length) for generated long constant name.
                 // CHECKSTYLE:OFF Generated code
                 return LOCATION_TIME_ZONE_PROVIDER_CONTROLLER_STATE_CHANGED__STATE__PROVIDERS_INITIALIZING;
-                // CHECKSTYLE:ON Generated code
+            // CHECKSTYLE:ON Generated code
             case STATE_STOPPED:
                 return LOCATION_TIME_ZONE_PROVIDER_CONTROLLER_STATE_CHANGED__STATE__STOPPED;
             case STATE_INITIALIZING:

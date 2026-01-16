@@ -29,8 +29,7 @@ interface TimeZoneDetectorTelemetry {
      *
      * @param suggestion The new Telephony suggestion.
      */
-    public void onTelephonyTimeZoneSuggestion(
-            @NonNull TelephonyTimeZoneSuggestion suggestion);
+    public void onTelephonyTimeZoneSuggestion(@NonNull TelephonyTimeZoneSuggestion suggestion);
 
     /**
      * Processes a new Geolocation suggestion.
@@ -41,8 +40,7 @@ interface TimeZoneDetectorTelemetry {
      *
      * @param suggestion The new Geolocation suggestion.
      */
-    public void onGeolocationTimeZoneSuggestion(
-            @NonNull GeolocationTimeZoneSuggestion suggestion);
+    public void onGeolocationTimeZoneSuggestion(@NonNull GeolocationTimeZoneSuggestion suggestion);
 
     /**
      * Processes a new Fused time zone change.

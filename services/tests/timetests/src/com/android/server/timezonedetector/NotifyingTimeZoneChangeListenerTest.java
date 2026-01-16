@@ -40,10 +40,10 @@ import static org.mockito.Mockito.when;
 
 import android.app.KeyguardManager;
 import android.app.NotificationManager;
-import android.app.timezonedetector.NitzSignal;
-import android.app.timezonedetector.TelephonyTimeZoneSuggestion;
-import android.app.timezonedetector.TelephonySignal;
 import android.app.UiAutomation;
+import android.app.timezonedetector.NitzSignal;
+import android.app.timezonedetector.TelephonySignal;
+import android.app.timezonedetector.TelephonyTimeZoneSuggestion;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
@@ -76,8 +76,8 @@ import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
-import java.time.InstantSource;
 import java.time.Duration;
+import java.time.InstantSource;
 import java.util.List;
 import java.util.Set;
 
@@ -150,10 +150,7 @@ public class NotifyingTimeZoneChangeListenerTest {
                 @NonNull TimeZoneChangeEvent autoEvent,
                 @NonNull TimeZoneChangeEvent manualEvent,
                 int locationTimeZoneProviderUid) {
-            super.logRejectedChange(
-                    autoEvent,
-                    manualEvent,
-                    locationTimeZoneProviderUid);
+            super.logRejectedChange(autoEvent, manualEvent, locationTimeZoneProviderUid);
             this.lastAutoEvent = autoEvent;
             this.lastManualEvent = manualEvent;
             this.logRejectedChangeCalled = true;
@@ -743,12 +740,20 @@ public class NotifyingTimeZoneChangeListenerTest {
         assertEquals(mcc, capturedAuto.getTelephonySuggestion().getTelephonySignal().getMcc());
         assertEquals(mnc, capturedAuto.getTelephonySuggestion().getTelephonySignal().getMnc());
         assertEquals(
-            nitzOffsetSeconds,
-            capturedAuto.getTelephonySuggestion().getTelephonySignal().getNitzSignal()
-                    .getZoneOffset());
-        assertEquals(nitzDstOffsetSeconds,
-             (int) capturedAuto.getTelephonySuggestion().getTelephonySignal().getNitzSignal()
-                    .getDstOffset());
+                nitzOffsetSeconds,
+                capturedAuto
+                        .getTelephonySuggestion()
+                        .getTelephonySignal()
+                        .getNitzSignal()
+                        .getZoneOffset());
+        assertEquals(
+                nitzDstOffsetSeconds,
+                (int)
+                        capturedAuto
+                                .getTelephonySuggestion()
+                                .getTelephonySignal()
+                                .getNitzSignal()
+                                .getDstOffset());
 
         // Assertions on the captured manualEvent
         TimeZoneChangeEvent capturedManual = mTimeZoneChangeTracker.lastManualEvent;
@@ -895,12 +900,13 @@ public class NotifyingTimeZoneChangeListenerTest {
                                 /* defaultCountryIsoCod= */ "us",
                                 /* countryIsoCodes= */ Set.of("us"),
                                 new NitzSignal(
-                                       /* receiptElapsedMillis= */ 0L,
-                                       /* ageMillis= */ 0L,
-                                       /* zoneOffset= */ nitzOffsetSeconds,
-                                       /* dstOffset= */ nitzDstOffsetSeconds,
-                                       /* currentTimeMillis= */ 0L,
-                                       /* emulatorHostTimeZone= */ null))).build();
+                                        /* receiptElapsedMillis= */ 0L,
+                                        /* ageMillis= */ 0L,
+                                        /* zoneOffset= */ nitzOffsetSeconds,
+                                        /* dstOffset= */ nitzDstOffsetSeconds,
+                                        /* currentTimeMillis= */ 0L,
+                                        /* emulatorHostTimeZone= */ null)))
+                .build();
     }
 
     private ConfigurationInternal.Builder toBuilder(ConfigurationInternal config) {
