@@ -168,7 +168,20 @@ public final class FusedSignals {
         }
 
         mZoneIdCandidates.addAll(zoneIdCandidates);
-        mOrigins.put(origin, new OriginInfo(timestamp));
+        mOrigins.put(origin, new OriginInfo(/* timestampDetected= */ timestamp));
+        return this;
+    }
+
+    /**
+     * Updates the detected timestamp for a given origin.
+     *
+     * @param origin the origin to update
+     * @param timestamp the new detected timestamp
+     */
+    public FusedSignals setOriginDetectedTimestamp(@Origin int origin, long timestamp) {
+        if (mOrigins.containsKey(origin)) {
+            mOrigins.get(origin).setDetectedTimestamp(timestamp);
+        }
         return this;
     }
 

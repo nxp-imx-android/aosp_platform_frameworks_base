@@ -22,6 +22,7 @@ import static com.android.server.timezonedetector.TimeZoneDetectorStrategy.ORIGI
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
+import android.app.ActivityManager;
 import android.app.timezonedetector.TelephonySignal;
 import android.content.Context;
 import android.os.Handler;
@@ -82,7 +83,8 @@ import java.util.TimeZone;
  */
 public final class FusedTimeZoneDetectorImpl implements FusedTimeZoneDetector {
 
-    private static final int MAX_HISTORY_SIZE = 100;
+    private static final int MAX_HISTORY_SIZE_DEFAULT = 100;
+    private static final int MAX_HISTORY_SIZE_LOW_RAM = 10;
     private static final String SOURCE_TELEPHONY = "telephony";
     private static final String SOURCE_LOCATION = "location";
 
@@ -104,6 +106,7 @@ public final class FusedTimeZoneDetectorImpl implements FusedTimeZoneDetector {
     private final ServiceConfigAccessor mServiceConfigAccessor;
     private final Handler mHandler;
     private final Duration mAirplaneModeResetDelay;
+    private final int mMaxHistorySize;
     private final TimeZoneDetectorTelemetry mTelemetry;
 
     @GuardedBy("this")
@@ -147,20 +150,26 @@ public final class FusedTimeZoneDetectorImpl implements FusedTimeZoneDetector {
     private QualifiedTelephonyTimeZoneSuggestion mLastTelephonySuggestion;
 
     @GuardedBy("this")
-    private final List<FusedSignals> mTimeZoneHistory = new ArrayList<>(MAX_HISTORY_SIZE);
+    private final List<FusedSignals> mTimeZoneHistory;
 
     @GuardedBy("this")
     private boolean mIsAirplaneModeOn;
 
-    @GuardedBy("this")
-    private final List<LocationAlgorithmEvent> mLocationDisagreementCandidates = new ArrayList<>();
-
     /**
-     * The timestamp of the first location suggestion that disagreed with the current time zone.
-     * This is used to record when a potential location-based disagreement started.
+     * The location suggestions that disagreed with the current time zone. When the number of
+     * location suggestions that disagree with the current time zone reaches the threshold, the
+     * location-based time zone is used to override the current time zone.
      */
     @GuardedBy("this")
-    private long mLocationDisagreementCandidateTimestamp;
+    private TimeZoneDisagreementCandidate mLocationDisagreementCandidate;
+
+    /**
+     * The telephony suggestion that disagreed with the current time zone while the device was in
+     * location-only mode. This is used to record when a potential telephony-based disagreement
+     * started and to resolve it when the device exits location-only mode.
+     */
+    @GuardedBy("this")
+    private TimeZoneDisagreementCandidate mTelephonyDisagreementCandidate;
 
     private final Runnable mAirplaneModeTimeoutRunnable =
             () -> {
@@ -222,6 +231,9 @@ public final class FusedTimeZoneDetectorImpl implements FusedTimeZoneDetector {
         mDeviceActivityMonitor = Objects.requireNonNull(deviceActivityMonitor);
         mHandler = handler;
         mAirplaneModeResetDelay = airplaneModeResetDelay;
+        mMaxHistorySize =
+                isLowRamDevice(context) ? MAX_HISTORY_SIZE_LOW_RAM : MAX_HISTORY_SIZE_DEFAULT;
+        mTimeZoneHistory = new ArrayList<>(mMaxHistorySize);
         mTelemetry = telemetry;
 
         synchronized (this) {
@@ -378,29 +390,17 @@ public final class FusedTimeZoneDetectorImpl implements FusedTimeZoneDetector {
     /** Handles a telephony suggestion that overrides a weak or non-existent time zone. */
     @GuardedBy("this")
     private void handleTelephonyOverride(@NonNull String newZoneId) {
-        FusedSignals timeZone;
+        FusedSignals timeZone = new FusedSignals(newZoneId, ORIGIN_TELEPHONY);
 
-        if (!mLocationDisagreementCandidates.isEmpty()
-                && mLocationDisagreementCandidates
-                        .get(0)
-                        .getSuggestion()
-                        .getZoneIds()
-                        .contains(newZoneId)) {
+        if (mLocationDisagreementCandidate != null
+                && mLocationDisagreementCandidate.getZoneIds().contains(newZoneId)) {
             // The new telephony suggestion agrees with a pending location candidate. This resolves
             // the disagreement. We can adopt the new zone and clear the candidates.
-            timeZone =
-                    new FusedSignals(newZoneId, ORIGIN_TELEPHONY)
-                            .addOrigin(
-                                    ORIGIN_LOCATION,
-                                    mLocationDisagreementCandidates
-                                            .get(0)
-                                            .getSuggestion()
-                                            .getZoneIds(),
-                                    mLocationDisagreementCandidateTimestamp);
-
+            timeZone.addOrigin(
+                    mLocationDisagreementCandidate.getOrigin(),
+                    mLocationDisagreementCandidate.getZoneIds(),
+                    mLocationDisagreementCandidate.getTimestamp());
             clearLocationDisagreementCandidates();
-        } else {
-            timeZone = new FusedSignals(newZoneId, ORIGIN_TELEPHONY);
         }
 
         updateCurrentFusedSignals(timeZone);
@@ -430,23 +430,16 @@ public final class FusedTimeZoneDetectorImpl implements FusedTimeZoneDetector {
             String zoneId = suggestion.suggestion().getZoneId();
 
             mUntrustedTelephonyTz.computeIfAbsent(mcc, k -> new ArraySet<>()).add(zoneId);
-        } else if (!mLocationDisagreementCandidates.isEmpty()
-                && mLocationDisagreementCandidates
-                        .get(0)
-                        .getSuggestion()
-                        .getZoneIds()
-                        .contains(newZoneId)) {
+        } else if (mLocationDisagreementCandidate != null
+                && mLocationDisagreementCandidate.getZoneIds().contains(newZoneId)) {
             // The new telephony suggestion agrees with a pending location candidate. This resolves
             // the disagreement. We can adopt the new zone and clear the candidates.
             FusedSignals timeZone =
                     new FusedSignals(newZoneId, ORIGIN_TELEPHONY)
                             .addOrigin(
-                                    ORIGIN_LOCATION,
-                                    mLocationDisagreementCandidates
-                                            .get(0)
-                                            .getSuggestion()
-                                            .getZoneIds(),
-                                    mLocationDisagreementCandidateTimestamp);
+                                    mLocationDisagreementCandidate.getOrigin(),
+                                    mLocationDisagreementCandidate.getZoneIds(),
+                                    mLocationDisagreementCandidate.getTimestamp());
 
             clearLocationDisagreementCandidates();
             updateCurrentFusedSignals(timeZone);
@@ -455,7 +448,18 @@ public final class FusedTimeZoneDetectorImpl implements FusedTimeZoneDetector {
             // Not in location-only mode, so telephony suggestion takes precedence.
             handleTelephonyOverride(newZoneId);
         } else {
-            // In location-only mode and the telephony suggestion is not trusted, so ignore it.
+            // In location-only mode, telephony suggestions are untrusted. We cache the candidate to
+            // validate it against the next incoming location suggestion.
+            if (mTelephonyDisagreementCandidate != null
+                    && mTelephonyDisagreementCandidate.getZoneIds().contains(newZoneId)) {
+                mTelephonyDisagreementCandidate.markOccurrence();
+            } else {
+                mTelephonyDisagreementCandidate =
+                        new TimeZoneDisagreementCandidate(
+                                ORIGIN_TELEPHONY,
+                                List.of(newZoneId),
+                                SystemClock.elapsedRealtime());
+            }
         }
     }
 
@@ -482,8 +486,12 @@ public final class FusedTimeZoneDetectorImpl implements FusedTimeZoneDetector {
 
     @GuardedBy("this")
     private void clearLocationDisagreementCandidates() {
-        mLocationDisagreementCandidates.clear();
-        mLocationDisagreementCandidateTimestamp = 0;
+        mLocationDisagreementCandidate = null;
+    }
+
+    @GuardedBy("this")
+    private void clearTelephonyDisagreementCandidates() {
+        mTelephonyDisagreementCandidate = null;
     }
 
     /** Handles a location suggestion that agrees with the current time zone. */
@@ -498,9 +506,22 @@ public final class FusedTimeZoneDetectorImpl implements FusedTimeZoneDetector {
     @GuardedBy("this")
     private void handleLocationOverride(@NonNull List<String> newZoneIds) {
         FusedSignals timeZone = new FusedSignals(newZoneIds, ORIGIN_LOCATION);
+
+        if (mTelephonyDisagreementCandidate != null
+                && newZoneIds.contains(mTelephonyDisagreementCandidate.getZoneIds().getFirst())) {
+            // If this location override agrees with a pending telephony disagreement candidate
+            // (from location-only mode), we can resolve the disagreement by adding telephony as an
+            // origin for the new time zone.
+            timeZone.addOrigin(
+                    mTelephonyDisagreementCandidate.getOrigin(),
+                    mTelephonyDisagreementCandidate.getZoneIds(),
+                    mTelephonyDisagreementCandidate.getTimestamp());
+        }
+
+        clearTelephonyDisagreementCandidates();
+        clearLocationDisagreementCandidates();
         updateCurrentFusedSignals(timeZone);
         setDeviceTimeZoneIfRequired(timeZone, SOURCE_LOCATION);
-        clearLocationDisagreementCandidates();
     }
 
     /**
@@ -511,44 +532,64 @@ public final class FusedTimeZoneDetectorImpl implements FusedTimeZoneDetector {
     private void handleDisagreeingLocationSuggestion(@NonNull LocationAlgorithmEvent event) {
         mTotalDisagreements++;
 
-        if (!mLocationDisagreementCandidates.isEmpty()
-                && !event.getSuggestion()
+        if (mLocationDisagreementCandidate != null
+                && event.getSuggestion()
                         .getZoneIds()
                         .get(0)
-                        .equals(
-                                mLocationDisagreementCandidates
-                                        .get(0)
-                                        .getSuggestion()
-                                        .getZoneIds()
-                                        .get(0))) {
+                        .equals(mLocationDisagreementCandidate.getZoneIds().getFirst())) {
+            mLocationDisagreementCandidate.markOccurrence();
+        } else {
             // The new disagreement is inconsistent with previous ones, so start over.
+            mLocationDisagreementCandidate =
+                    new TimeZoneDisagreementCandidate(
+                            ORIGIN_LOCATION,
+                            event.getSuggestion().getZoneIds(),
+                            SystemClock.elapsedRealtime());
+        }
+
+        if (mTelephonyDisagreementCandidate != null
+                && mLocationDisagreementCandidate
+                        .getZoneIds()
+                        .contains(mTelephonyDisagreementCandidate.getZoneIds().getFirst())) {
+            // A new location suggestion has arrived that disagrees with the current time zone.
+            // If this new location suggestion *agrees* with a pending telephony disagreement
+            // candidate, it means both location and telephony are now aligned on a new time zone.
+            // This is a strong signal to switch immediately, resolving both disagreements at once.
+            FusedSignals fusedSignals =
+                    new FusedSignals(event.getSuggestion().getZoneIds(), ORIGIN_LOCATION)
+                            .setOriginDetectedTimestamp(
+                                    ORIGIN_LOCATION, mLocationDisagreementCandidate.getTimestamp())
+                            .addOrigin(
+                                    mTelephonyDisagreementCandidate.getOrigin(),
+                                    mTelephonyDisagreementCandidate.getZoneIds(),
+                                    mTelephonyDisagreementCandidate.getTimestamp());
+
+            clearTelephonyDisagreementCandidates();
             clearLocationDisagreementCandidates();
-        }
 
-        mLocationDisagreementCandidates.add(event);
-
-        // Check if this is the first element added
-        if (mLocationDisagreementCandidates.size() == 1) {
-            mLocationDisagreementCandidateTimestamp = SystemClock.elapsedRealtime();
-        }
-
-        if (mLocationDisagreementCandidates.size() >= LOCATION_OVERRIDE_THRESHOLD) {
+            updateCurrentFusedSignals(fusedSignals);
+            setDeviceTimeZoneIfRequired(fusedSignals, SOURCE_LOCATION);
+        } else if (mLocationDisagreementCandidate.getOccurrenceCount()
+                >= LOCATION_OVERRIDE_THRESHOLD) {
             // Location has disagreed consistently, so we trust it over other signals.
             setLocationOnlyTzDetection(true);
 
             FusedSignals fusedSignals =
-                    new FusedSignals(event.getSuggestion().getZoneIds(), ORIGIN_LOCATION);
-            updateCurrentFusedSignals(fusedSignals);
-            setDeviceTimeZoneIfRequired(fusedSignals, SOURCE_LOCATION);
+                    new FusedSignals(event.getSuggestion().getZoneIds(), ORIGIN_LOCATION)
+                            .setOriginDetectedTimestamp(
+                                    ORIGIN_LOCATION, mLocationDisagreementCandidate.getTimestamp());
 
             clearLocationDisagreementCandidates();
+
+            updateCurrentFusedSignals(fusedSignals);
+            setDeviceTimeZoneIfRequired(fusedSignals, SOURCE_LOCATION);
         }
     }
 
     @VisibleForTesting
-    List<LocationAlgorithmEvent> getLocationDisagreementCandidates() {
+    TimeZoneDisagreementCandidate getLocationDisagreementCandidate() {
         synchronized (this) {
-            return mLocationDisagreementCandidates;
+            return mLocationDisagreementCandidate;
         }
     }
 
@@ -599,7 +640,7 @@ public final class FusedTimeZoneDetectorImpl implements FusedTimeZoneDetector {
 
     @GuardedBy("this")
     private void addTimeZoneToHistory(FusedSignals fusedSignals) {
-        if (mTimeZoneHistory.size() >= MAX_HISTORY_SIZE) {
+        if (mTimeZoneHistory.size() >= mMaxHistorySize) {
             mTimeZoneHistory.remove(0);
         }
         mTimeZoneHistory.add(fusedSignals);
@@ -730,17 +771,32 @@ public final class FusedTimeZoneDetectorImpl implements FusedTimeZoneDetector {
             ipw.decreaseIndent(); // level 2
         }
 
-        if (!mLocationDisagreementCandidates.isEmpty()) {
-            ipw.println(
-                    "mLocationDisagreementCandidates (count="
-                            + mLocationDisagreementCandidates.size()
-                            + "):");
+        if (mLocationDisagreementCandidate != null) {
+            ipw.println("mLocationDisagreementCandidate:");
             ipw.increaseIndent(); // level 3
-            printListItems(ipw, mLocationDisagreementCandidates);
+            ipw.println("- " + mLocationDisagreementCandidate);
+            ipw.decreaseIndent(); // level 2
+        }
+
+        if (mTelephonyDisagreementCandidate != null) {
+            ipw.println("mTelephonyDisagreementCandidate:");
+            ipw.increaseIndent(); // level 3
+            ipw.println("- " + mTelephonyDisagreementCandidate);
             ipw.decreaseIndent(); // level 2
         }
 
         ipw.decreaseIndent(); // level 1
         ipw.decreaseIndent(); // level 0
+    }
+
+    private static boolean isLowRamDevice(@NonNull Context context) {
+        try {
+            ActivityManager activityManager = context.getSystemService(ActivityManager.class);
+            return activityManager.isLowRamDevice();
+        } catch (Exception e) {
+            // Catch all exceptions for robustness, as this is not critical and should not crash the
+            // service. Default to false (not a low-RAM device).
+            return false;
+        }
     }
 }
