@@ -427,6 +427,7 @@ public final class ActivityThread extends ClientTransactionHandler
     @UnsupportedAppUsage
     static volatile IPackageManager sPackageManager;
     private static volatile IPermissionManager sPermissionManager;
+    private ConnectivityManager mConnectivityManager;
 
     @UnsupportedAppUsage
     final ApplicationThread mAppThread = new ApplicationThread();
@@ -8150,15 +8151,24 @@ public final class ActivityThread extends ClientTransactionHandler
         // Initialize the default http proxy in this process.
         Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, "Setup proxies");
         try {
-            // In pre-boot mode (doing initial launch to collect password), not all system is up.
-            // This includes the connectivity service, so trying to obtain ConnectivityManager at
-            // that point would return null. Check whether the ConnectivityService is available, and
-            // avoid crashing with a NullPointerException if it is not.
             final IBinder b = ServiceManager.getService(Context.CONNECTIVITY_SERVICE);
-            if (b != null) {
-                final ConnectivityManager cm =
-                        appContext.getSystemService(ConnectivityManager.class);
-                Proxy.setHttpProxyConfiguration(cm.getDefaultProxy());
+            // Defensive check - unlikely to be null on modern (FBE) devices even in Direct Boot
+            // mode, but was possible on older FDE systems.
+            // Slog.wtf will report if this unexpectedly occurs.
+            // TODO(b/463367733): Remove if proven unnecessary by WTF data.
+            if (b == null) {
+                Slog.wtf("ActivityThread", "ConnectivityService is null in handleBindApplication!");
+                Proxy.setHttpProxyConfiguration(null);
+            } else {
+                if (android.net.platform.flags.Flags.enableMultiProxySystemPlatform()) {
+                    // Delegate to ConnectivityManager
+                    mConnectivityManager = appContext.getSystemService(ConnectivityManager.class);
+                    mConnectivityManager.onEarlyInit();
+                } else {
+                    final ConnectivityManager cm =
+                            appContext.getSystemService(ConnectivityManager.class);
+                    Proxy.setHttpProxyConfiguration(cm.getDefaultProxy());
+                }
             }
         } finally {
             Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);

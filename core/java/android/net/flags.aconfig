@@ -129,3 +129,10 @@ flag {
       purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+  name: "enable_multi_proxy_system_platform"
+  namespace: "android_core_networking"
+  description: "Platform-side flag to control interactions related to multi-proxy support."
+  bug: "463367733"
+}
