@@ -211,7 +211,7 @@ public class AccessibilitySecurityPolicy {
             // the accessibility layer reports which are windows
             // that a sighted user can touch.
             default: {
-                return isRetrievalAllowingWindowLocked(userId, event.getWindowId());
+                return isRetrievalAllowingWindowLocked(userId, event.getRealWindowId());
             }
         }
     }
