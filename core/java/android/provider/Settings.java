@@ -11738,7 +11738,9 @@ public final class Settings {
          * @hide
          */
         @UnsupportedAppUsage
+        @TestApi
         @Readable
+        @SuppressLint({"UnflaggedApi", "NoSettingsProvider"}) // @TestApi without associated feature
         public static final String ASSISTANT = "assistant";
 
         /**

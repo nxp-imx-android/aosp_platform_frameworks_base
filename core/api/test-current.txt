@@ -3231,6 +3231,7 @@ package android.provider {
     field public static final int ACCESSIBILITY_MAGNIFICATION_MODE_WINDOW = 2; // 0x2
     field public static final String ACCESSIBILITY_SHORTCUT_TARGET_SERVICE = "accessibility_shortcut_target_service";
     field public static final String ANR_SHOW_BACKGROUND = "anr_show_background";
+    field public static final String ASSISTANT = "assistant";
     field public static final String AUTOFILL_SERVICE = "autofill_service";
     field public static final String BIOMETRIC_VIRTUAL_ENABLED = "biometric_virtual_enabled";
     field public static final String CAMERA_EXTENSIONS_FALLBACK = "camera_extensions_fallback";
