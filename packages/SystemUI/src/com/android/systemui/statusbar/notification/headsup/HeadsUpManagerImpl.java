@@ -88,7 +88,8 @@ public class HeadsUpManagerImpl
         implements HeadsUpManager, HeadsUpRepository, OnHeadsUpChangedListener {
     private static final String TAG = "BaseHeadsUpManager";
     private static final String SETTING_HEADS_UP_SNOOZE_LENGTH_MS = "heads_up_snooze_length_ms";
-    private static final String REASON_REORDER_ALLOWED = "mOnReorderingAllowedListener";
+    @VisibleForTesting
+    static final String REASON_REORDER_ALLOWED = "mOnReorderingAllowedListener";
     private final ListenerSet<OnHeadsUpChangedListener> mListeners = new ListenerSet<>();
 
     private final Context mContext;
@@ -188,6 +189,7 @@ public class HeadsUpManagerImpl
         mUiEventLogger = uiEventLogger;
         mAvalancheController = avalancheController;
         mAvalancheController.setBaseEntryMapStr(this::getEntryMapStr);
+        mAvalancheController.setOnCleanup(this::onAvalancheCleanup);
         mBypassController = bypassController;
         mGroupMembershipManager = groupMembershipManager;
         mVisualStabilityProvider = visualStabilityProvider;
@@ -883,6 +885,13 @@ public class HeadsUpManagerImpl
     private void onQsFullscreen(Boolean isQsFullscreen) {
         if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return;
         if (isQsFullscreen != mIsQsFullscreen) mIsQsFullscreen = isQsFullscreen;
+    }
+
+    private void onAvalancheCleanup(HeadsUpEntry headsUpEntry, String reason) {
+        // Skip removal if we are currently iterating in these listeners
+        if (!reason.contains(REASON_REORDER_ALLOWED)) {
+            mEntriesToRemoveWhenReorderingAllowed.remove(headsUpEntry.mEntry);
+        }
     }
 
     @Override

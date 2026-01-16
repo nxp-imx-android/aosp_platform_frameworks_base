@@ -1056,6 +1056,64 @@ class HeadsUpManagerImplTest(flags: FlagsParameterization) : SysuiTestCase() {
         assertThat(underTest.isHeadsUpEntry(entry.key)).isFalse()
     }
 
+    @Test
+    @EnableFlags(NotificationThrottleHun.FLAG_NAME)
+    fun testOnAvalancheCleanup_clearsTrackedEntries() {
+        val entry = HeadsUpManagerTestUtil.createEntry(/* id= */ 0, mContext)
+        val headsUpEntry = underTest.createHeadsUpEntry(entry)
+
+        // GIVEN the entry is in the sets
+        underTest.mEntriesToRemoveWhenReorderingAllowed.add(entry)
+
+        // WHEN the avalanche cleanup is triggered with a generic reason
+        avalancheController.onCleanup.accept(headsUpEntry, "genericReason")
+
+        // THEN it is removed from the sets
+        assertThat(underTest.mEntriesToRemoveWhenReorderingAllowed).doesNotContain(entry)
+    }
+
+    @Test
+    @EnableFlags(NotificationThrottleHun.FLAG_NAME)
+    fun testOnAvalancheCleanup_withReorderReason_doesNotClearTrackedEntries() {
+        val entry = HeadsUpManagerTestUtil.createEntry(/* id= */ 0, mContext)
+        val headsUpEntry = underTest.createHeadsUpEntry(entry)
+
+        // GIVEN the entry is in the reordering set
+        underTest.mEntriesToRemoveWhenReorderingAllowed.add(entry)
+
+        // WHEN cleanup is triggered with the specific reordering reason
+        avalancheController.onCleanup.accept(headsUpEntry, HeadsUpManagerImpl.REASON_REORDER_ALLOWED)
+
+        // THEN it is NOT removed (to prevent ArrayIndexOutOfBoundsException during iteration)
+        assertThat(underTest.mEntriesToRemoveWhenReorderingAllowed).contains(entry)
+    }
+
+    @Test
+    @EnableFlags(NotificationThrottleHun.FLAG_NAME)
+    fun testDropWhileAvalanche_clearsTrackedEntries() {
+        // GIVEN three notifications arrive in succession
+        val entryA = HeadsUpManagerTestUtil.createEntry(/* id= */ 0, mContext)
+        val entryB = HeadsUpManagerTestUtil.createEntry(/* id= */ 1, mContext)
+        val entryC = HeadsUpManagerTestUtil.createEntry(/* id= */ 2, mContext)
+
+        underTest.showNotification(entryA) // Showing
+        underTest.showNotification(entryB) // Waiting in avalanche queue
+        underTest.showNotification(entryC) // Waiting in Avalanche queue
+
+        // AND they are tracked in the reordering set
+        assertThat(underTest.mEntriesToRemoveWhenReorderingAllowed).contains(entryC)
+
+        // WHEN the showing one is removed, triggering the next batch (B) and dropping the rest (C)
+        underTest.removeNotification(
+            entryA.key,
+            /* releaseImmediately= */ true,
+            "test remove notification"
+        )
+
+        // THEN the dropped entry (C) is automatically cleared
+        assertThat(underTest.mEntriesToRemoveWhenReorderingAllowed).doesNotContain(entryC)
+    }
+
     private fun createStickyEntry(id: Int): NotificationEntry {
         val notif =
             Notification.Builder(mContext, "")
