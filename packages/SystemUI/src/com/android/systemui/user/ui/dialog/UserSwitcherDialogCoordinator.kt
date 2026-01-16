@@ -27,6 +27,7 @@ import com.android.settingslib.users.UserCreatingDialog
 import com.android.systemui.CoreStartable
 import com.android.systemui.animation.DialogCuj
 import com.android.systemui.animation.DialogTransitionAnimator
+import com.android.systemui.animation.TransitionAnimator
 import com.android.systemui.classifier.FalsingCollector
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
@@ -145,7 +146,17 @@ constructor(
 
                 val controller = request.expandable?.dialogTransitionController(dialogCuj)
                 if (controller != null) {
-                    dialogTransitionAnimator.get().show(dialog, controller)
+                    if (TransitionAnimator.dynamicTargetResolutionEnabled()) {
+                        dialogTransitionAnimator
+                            .get()
+                            .show(
+                                dialog,
+                                request.expandable!!::dialogTransitionController,
+                                controller.cuj,
+                            )
+                    } else {
+                        dialogTransitionAnimator.get().show(dialog, controller)
+                    }
                 } else if (request.dialogShower != null && dialogCuj != null) {
                     request.dialogShower?.showDialog(dialog, dialogCuj)
                 } else {

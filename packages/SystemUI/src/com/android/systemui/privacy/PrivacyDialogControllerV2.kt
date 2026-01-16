@@ -33,6 +33,7 @@ import androidx.core.view.isVisible
 import com.android.internal.logging.UiEventLogger
 import com.android.systemui.Flags.groupedPrivacyChip
 import com.android.systemui.animation.DialogTransitionAnimator
+import com.android.systemui.animation.TransitionAnimator
 import com.android.systemui.appops.AppOpsController
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
@@ -294,7 +295,15 @@ class PrivacyDialogControllerV2(
                         if (controller == null) {
                             d.show()
                         } else {
-                            dialogTransitionAnimator.show(d, controller)
+                            if (TransitionAnimator.dynamicTargetResolutionEnabled()) {
+                                dialogTransitionAnimator.show(
+                                    d,
+                                    privacyChip.expandable::dialogTransitionController,
+                                    controller.cuj,
+                                )
+                            } else {
+                                dialogTransitionAnimator.show(d, controller)
+                            }
                         }
                     } else {
                         d.show()

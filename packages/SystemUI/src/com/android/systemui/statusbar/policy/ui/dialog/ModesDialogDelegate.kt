@@ -44,6 +44,7 @@ import com.android.settingslib.notification.modes.EnableDndDialogFactory
 import com.android.systemui.animation.DialogCuj
 import com.android.systemui.animation.DialogTransitionAnimator
 import com.android.systemui.animation.Expandable
+import com.android.systemui.animation.TransitionAnimator
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
@@ -179,8 +180,17 @@ constructor(
                 ?.dialogTransitionController(
                     DialogCuj(InteractionJankMonitor.CUJ_SHADE_DIALOG_OPEN, INTERACTION_JANK_TAG)
                 )
-                ?.let { controller -> dialogTransitionAnimator.show(currentDialog!!, controller) }
-                ?: currentDialog!!.show()
+                ?.let { controller ->
+                    if (TransitionAnimator.dynamicTargetResolutionEnabled()) {
+                        dialogTransitionAnimator.show(
+                            currentDialog!!,
+                            expandable::dialogTransitionController,
+                            controller.cuj,
+                        )
+                    } else {
+                        dialogTransitionAnimator.show(currentDialog!!, controller)
+                    }
+                } ?: currentDialog!!.show()
         }
 
         return currentDialog!!
