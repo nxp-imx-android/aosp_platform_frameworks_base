@@ -70,8 +70,6 @@ test_module_config {
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
     exclude_filters: [
-        "com.android.wm.shell.functional.DisableDisplayMirroringSwitchTest",
-        "com.android.wm.shell.functional.EnableDisplayMirroringSwitchTest",
         "com.android.wm.shell.functional.appcompat.DialogStaysInsideDesktopAppTest",
         "com.android.wm.shell.functional.appcompat.ResizeActivityEmbeddedAppToMinimumWindowTest",
         "com.android.wm.shell.functional.appcompat.RestartSizeCompatAppInDesktopMode",
@@ -173,20 +171,6 @@ test_module_config {
         "com.android.wm.shell.functional.tiling.TilingTest",
         "com.android.wm.shell.functional.unlock.UnlockIntoDesktopFromLockScreenTest",
     ],
-}
-
-test_module_config {
-    name: "FunctionalTestsDesktopMode-DisableDisplayMirroringSwitchTest",
-    base: "FunctionalTestsDesktopMode",
-    test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.functional.DisableDisplayMirroringSwitchTest"],
-}
-
-test_module_config {
-    name: "FunctionalTestsDesktopMode-EnableDisplayMirroringSwitchTest",
-    base: "FunctionalTestsDesktopMode",
-    test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.functional.EnableDisplayMirroringSwitchTest"],
 }
 
 test_module_config {
@@ -656,13 +640,6 @@ test_module_config {
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.functional.mediaprojection.StartAppMediaProjectionWithMaxDesktopWindowsTest"],
-}
-
-test_module_config {
-    name: "FunctionalTestsDesktopMode-mediaprojection-StartAppScreenRecordingFromNotificationTest",
-    base: "FunctionalTestsDesktopMode",
-    test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.functional.mediaprojection.StartAppScreenRecordingFromNotificationTest"],
 }
 
 test_module_config {
