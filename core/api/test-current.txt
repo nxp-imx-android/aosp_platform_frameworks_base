@@ -3381,6 +3381,10 @@ package android.service.autofill {
     method @Nullable public android.view.autofill.AutofillValue sanitize(@NonNull android.view.autofill.AutofillValue);
   }
 
+  public final class FillEventHistory implements android.os.Parcelable {
+    ctor @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public FillEventHistory(int, @Nullable android.os.Bundle);
+  }
+
   public final class FillResponse implements android.os.Parcelable {
     method @NonNull public java.util.Set<android.service.assist.classification.FieldClassification> getDetectedFieldClassifications();
     method public int getFlags();

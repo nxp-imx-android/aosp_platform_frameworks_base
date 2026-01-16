@@ -43867,6 +43867,7 @@ package android.service.personalcontext.hint {
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public class AutofillInlineRequestHint extends android.service.personalcontext.hint.ContextHint {
     method @NonNull public android.content.ComponentName getActivityComponent();
     method @NonNull public android.view.autofill.AutofillValue getAutofillValue();
+    method @Nullable public android.service.autofill.FillEventHistory getFillEventHistory();
     method @NonNull public android.view.autofill.AutofillId getFocusedId();
     method @NonNull public android.view.inputmethod.InlineSuggestionsRequest getInlineSuggestionsRequest();
     method @NonNull public java.time.Instant getRequestTimestamp();
@@ -43880,6 +43881,7 @@ package android.service.personalcontext.hint {
     method @NonNull public android.service.personalcontext.hint.AutofillInlineRequestHint build();
     method @NonNull public android.service.personalcontext.hint.AutofillInlineRequestHint.Builder setActivityComponent(@NonNull android.content.ComponentName);
     method @NonNull public android.service.personalcontext.hint.AutofillInlineRequestHint.Builder setAutofillValue(@NonNull android.view.autofill.AutofillValue);
+    method @NonNull public android.service.personalcontext.hint.AutofillInlineRequestHint.Builder setFillEventHistory(@Nullable android.service.autofill.FillEventHistory);
     method @NonNull public android.service.personalcontext.hint.AutofillInlineRequestHint.Builder setFocusedId(@NonNull android.view.autofill.AutofillId);
     method @NonNull public android.service.personalcontext.hint.AutofillInlineRequestHint.Builder setInlineSuggestionsRequest(@NonNull android.view.inputmethod.InlineSuggestionsRequest);
     method @NonNull public android.service.personalcontext.hint.AutofillInlineRequestHint.Builder setRequestTimestamp(@NonNull java.time.Instant);
