@@ -18,6 +18,7 @@ package com.android.systemui.screencapture.record.smallscreen.ui.compose
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -86,9 +87,10 @@ fun PostRecordSnackbar(
             text = visuals.message,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.inverseOnSurface,
+            modifier = Modifier.weight(weight = 1f, fill = false).basicMarquee(),
         )
         if (visuals.actionLabel != null) {
-            TextButton(onClick = data::performAction) {
+            TextButton(onClick = data::performAction, modifier = Modifier) {
                 Text(
                     text = visuals.actionLabel,
                     style = MaterialTheme.typography.labelLarge,

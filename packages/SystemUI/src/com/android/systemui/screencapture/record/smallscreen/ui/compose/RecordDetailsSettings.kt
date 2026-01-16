@@ -210,7 +210,7 @@ private fun RichSwitch(
         Text(
             text = label,
             style = MaterialTheme.typography.titleSmall,
-            maxLines = 2,
+            maxLines = 1,
             modifier = Modifier.padding(horizontal = 8.dp).weight(1f).basicMarquee(),
         )
         Switch(
@@ -240,21 +240,24 @@ private fun AppSelectorButton(
                     .value,
             modifier = Modifier.size(40.dp).padding(8.dp),
         )
-        Column(modifier = Modifier.padding(horizontal = 8.dp).weight(1f)) {
+        Column(
+            modifier =
+                Modifier.padding(horizontal = 8.dp).weight(weight = 1f, fill = false).basicMarquee()
+        ) {
             Text(
                 text = stringResource(R.string.screen_record_single_app_hint),
                 style = MaterialTheme.typography.titleSmall,
                 color = MaterialTheme.colorScheme.onSurface,
-                maxLines = 2,
-                modifier = Modifier.basicMarquee(),
+                maxLines = 1,
+                modifier = Modifier,
             )
             AnimatedVisibility(visible = !appLabel.isNullOrEmpty()) {
                 Text(
                     text = appLabel ?: "",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 2,
-                    modifier = Modifier.basicMarquee(),
+                    maxLines = 1,
+                    modifier = Modifier,
                 )
             }
         }

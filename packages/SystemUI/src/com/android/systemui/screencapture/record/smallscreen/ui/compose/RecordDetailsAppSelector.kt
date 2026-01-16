@@ -22,6 +22,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.snapping.SnapPosition
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -97,6 +98,8 @@ fun RecordDetailsAppSelector(
                 text = stringResource(R.string.screen_record_capture_target_choose_app),
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 1,
+                modifier = Modifier.basicMarquee(),
             )
         }
         val coroutineScope = rememberCoroutineScope()

@@ -32,6 +32,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -39,10 +40,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
@@ -180,9 +181,9 @@ constructor(
                 Spacer(modifier = Modifier.size(32.dp))
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
-                    modifier = Modifier.padding(horizontal = 24.dp).height(40.dp),
+                    modifier = Modifier.padding(horizontal = 24.dp),
                 ) {
-                    val rowModifier = Modifier.weight(1f).fillMaxHeight()
+                    val rowModifier = Modifier.weight(1f).heightIn(min = 40.dp)
                     PostRecordButton(
                         onClick = {
                             actionsViewModel.retake()
@@ -333,21 +334,29 @@ private fun PostRecordButton(
             ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.primary),
         border = BorderStroke(width = 1.dp, color = MaterialTheme.colorScheme.outlineVariant),
     ) {
-        LoadingIcon(
-            icon =
-                loadIcon(
-                        viewModel = drawableLoaderViewModel,
-                        resId = iconRes,
-                        contentDescription = ContentDescription.Resource(labelRes),
-                    )
-                    .value,
-            modifier = Modifier.size(20.dp),
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(
-            text = stringResource(labelRes),
-            style = MaterialTheme.typography.labelLarge,
-            modifier = Modifier.clearAndSetSemantics {},
-        )
+        // Applying basicMarquee to the PlatformOutlinedButton animates button border, but we only
+        // want to animate the content.
+        Row(
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.basicMarquee(),
+        ) {
+            LoadingIcon(
+                icon =
+                    loadIcon(
+                            viewModel = drawableLoaderViewModel,
+                            resId = iconRes,
+                            contentDescription = ContentDescription.Resource(labelRes),
+                        )
+                        .value,
+                modifier = Modifier.size(20.dp),
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = stringResource(labelRes),
+                style = MaterialTheme.typography.labelLarge,
+                modifier = Modifier.clearAndSetSemantics {}.basicMarquee(),
+            )
+        }
     }
 }

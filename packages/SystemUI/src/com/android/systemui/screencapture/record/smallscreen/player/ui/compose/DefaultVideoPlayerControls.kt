@@ -20,6 +20,7 @@ import android.text.format.DateUtils
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -99,6 +100,7 @@ fun DefaultVideoPlayerControls(
                 currentPositionMillis = viewModel.videoPositionMillis,
                 durationMillis = viewModel.videoDurationMillis,
                 color = color,
+                modifier = Modifier.basicMarquee().weight(1f),
             )
             PlayerButton(
                 viewModel = viewModel,
