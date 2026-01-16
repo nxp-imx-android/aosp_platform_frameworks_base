@@ -108,6 +108,20 @@ import java.util.function.IntConsumer;
  * <p>VirtualDeviceManager enables interactive sharing of capabilities between the host Android
  * device and a remote device.
  *
+ * <p>A device only supports VirtualDeviceManager if it enables it via {@code
+ * config_enableVirtualDeviceManager}. Otherwise {@code Context#getSystemService
+ * (VirtualDeviceManager.class)} will return {@code null}.
+ *
+ * <p>VirtualDeviceManager provides support for the ComputerControl feature in Android. For a
+ * device to support the ComputerControl feature, the device needs to:
+ * <ul>
+ *     <li>Enable support for feature {@code android.software.activities_on_secondary_displays}</li>
+ *     <li>Enable support for VirtualDeviceManager {@code config_enableVirtualDeviceManager}</li>
+ *     <li>Preload the ComputerControl extensions library {@code com.android.extensions
+ *     .computercontrol}</li>
+ *     <li>Preload the platform application {@code VirtualDeviceManager}</li>
+ * </ul>
+ *
  * <p class="note">Not to be confused with the Android Studio's Virtual Device Manager, which allows
  * for device emulation.
  */
