@@ -99,6 +99,7 @@ per-file *Notification* = file:/packages/SystemUI/OWNERS
 per-file *Zen* = file:/packages/SystemUI/OWNERS
 per-file *StatusBar* = file:/packages/SystemUI/OWNERS
 per-file *UiModeManager* = file:/packages/SystemUI/OWNERS
+per-file ui_mode_manager.aconfig = file:/packages/SystemUI/OWNERS
 per-file notification.aconfig = file:/packages/SystemUI/OWNERS
 per-file statusbar.aconfig = file:/packages/SystemUI/OWNERS
 
