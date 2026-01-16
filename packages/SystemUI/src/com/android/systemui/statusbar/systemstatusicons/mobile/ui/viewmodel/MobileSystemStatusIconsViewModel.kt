@@ -17,46 +17,47 @@
 package com.android.systemui.statusbar.systemstatusicons.mobile.ui.viewmodel
 
 import android.content.Context
+import androidx.compose.runtime.getValue
 import com.android.systemui.lifecycle.ExclusiveActivatable
-import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.MobileIconsState
-import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.StackedMobileIconViewModel
+import com.android.systemui.lifecycle.Hydrator
+import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.MobileIconsViewModel
+import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.StackedMobileIconViewModelImpl
 import com.android.systemui.statusbar.systemstatusicons.SystemStatusIconsInCompose
 import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.SystemStatusIconViewModel
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-import kotlinx.coroutines.awaitCancellation
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.map
 
 /** View model to consolidate all mobile icons (signal bars with additional network information) */
 class MobileSystemStatusIconsViewModel
 @AssistedInject
 constructor(
     @Assisted context: Context,
-    mobileIconsStateFactory: MobileIconsState.Factory,
-    stackedMobileIconViewModelFactory: StackedMobileIconViewModel.Factory,
+    // TODO(427984473): Refactor MobileIconsViewModel to be able to use a factory.
+    override val mobileIconsViewModel: MobileIconsViewModel,
+    stackedMobileIconViewModelFactory: StackedMobileIconViewModelImpl.Factory,
 ) : SystemStatusIconViewModel.MobileIcons, ExclusiveActivatable() {
 
     init {
         SystemStatusIconsInCompose.expectInNewMode()
     }
 
+    private val hydrator = Hydrator("MobileSystemStatusIconViewModel.hydrator")
+
     override val slotName = context.getString(com.android.internal.R.string.status_bar_mobile)
 
     override val stackedMobileIconViewModel by lazy { stackedMobileIconViewModelFactory.create() }
 
-    override val mobileIcons by lazy { mobileIconsStateFactory.create() }
-
-    override val visible: Boolean
-        get() = mobileIcons.mobileSubViewModels.isNotEmpty()
+    override val visible: Boolean by
+        hydrator.hydratedStateOf(
+            traceName = null,
+            initialValue = false,
+            source = mobileIconsViewModel.mobileSubViewModels.map { it.isNotEmpty() },
+        )
 
     override suspend fun onActivated(): Nothing {
-        coroutineScope {
-            launch { mobileIcons.activate() }
-            launch { stackedMobileIconViewModel.activate() }
-        }
-        awaitCancellation()
+        hydrator.activate()
     }
 
     @AssistedFactory

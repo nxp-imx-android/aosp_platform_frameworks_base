@@ -18,16 +18,14 @@ package com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel
 
 import android.content.Context
 import androidx.compose.runtime.getValue
-import com.android.systemui.activateIn
+import com.android.systemui.KairosBuilder
 import com.android.systemui.common.shared.model.Icon
-import com.android.systemui.kairos.KairosNetwork
 import com.android.systemui.kairos.State as KairosState
 import com.android.systemui.kairos.combine
 import com.android.systemui.kairos.flatMap
 import com.android.systemui.kairos.map
 import com.android.systemui.kairos.stateOf
 import com.android.systemui.kairosBuilder
-import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.statusbar.connectivity.ui.MobileContextProvider
 import com.android.systemui.statusbar.pipeline.mobile.ui.model.DualSim
@@ -43,13 +41,10 @@ constructor(
     mobileIcons: MobileIconsViewModelKairos,
     @ShadeDisplayAware private val context: Context,
     private val mobileContextProvider: MobileContextProvider,
-    private val kairosNetwork: KairosNetwork,
-) : StackedMobileIconViewModel, ExclusiveActivatable() {
-
-    private val builder = kairosBuilder()
+) : KairosBuilder by kairosBuilder(), StackedMobileIconViewModel {
 
     private val isStackable: Boolean by
-        builder.hydratedComposeStateOf(
+        hydratedComposeStateOf(
             "StackedMobileIconViewModelKairos.isStackable",
             mobileIcons.isStackable,
             initialValue = false,
@@ -64,7 +59,7 @@ constructor(
         }
 
     override val dualSim: DualSim? by
-        builder.hydratedComposeStateOf(
+        hydratedComposeStateOf(
             "StackedMobileIconViewModelKairos.dualSim",
             iconList.flatMap { icons ->
                 icons
@@ -75,7 +70,7 @@ constructor(
         )
 
     override val contentDescription: String? by
-        builder.hydratedComposeStateOf(
+        hydratedComposeStateOf(
             "StackedMobileIconViewModelKairos.contentDescription",
             iconList.flatMap { icons ->
                 icons
@@ -88,14 +83,14 @@ constructor(
         )
 
     override val networkTypeIcon: Icon.Resource? by
-        builder.hydratedComposeStateOf(
+        hydratedComposeStateOf(
             "StackedMobileIconViewModelKairos.networkTypeIcon",
             iconList.flatMap { icons -> icons.firstOrNull()?.networkTypeIcon ?: stateOf(null) },
             initialValue = null,
         )
 
     override val activityInVisible: Boolean by
-        builder.hydratedComposeStateOf(
+        hydratedComposeStateOf(
             name = "activityInVisible",
             source =
                 iconList.flatMap { icons ->
@@ -105,7 +100,7 @@ constructor(
         )
 
     override val activityOutVisible: Boolean by
-        builder.hydratedComposeStateOf(
+        hydratedComposeStateOf(
             name = "activityOutVisible",
             source =
                 iconList.flatMap { icons ->
@@ -115,7 +110,7 @@ constructor(
         )
 
     override val activityContainerVisible: Boolean by
-        builder.hydratedComposeStateOf(
+        hydratedComposeStateOf(
             name = "activityContainerVisible",
             source =
                 iconList.flatMap { icons ->
@@ -125,7 +120,7 @@ constructor(
         )
 
     override val mobileContext: Context? by
-        builder.hydratedComposeStateOf(
+        hydratedComposeStateOf(
             "StackedMobileIconViewModelKairos.mobileContext",
             iconList.map { icons ->
                 icons.firstOrNull()?.let {
@@ -136,7 +131,7 @@ constructor(
         )
 
     override val roaming: Boolean by
-        builder.hydratedComposeStateOf(
+        hydratedComposeStateOf(
             name = "roaming",
             source = iconList.flatMap { icons -> icons.firstOrNull()?.roaming ?: stateOf(false) },
             initialValue = false,
@@ -144,10 +139,6 @@ constructor(
 
     override val isIconVisible: Boolean
         get() = isStackable && dualSim != null
-
-    override suspend fun onActivated() {
-        builder.activateIn(kairosNetwork)
-    }
 
     private fun tryParseContentDescriptions(
         contentDescriptions: List<MobileContentDescription?>
@@ -158,7 +149,7 @@ constructor(
     }
 
     @AssistedFactory
-    fun interface Factory : StackedMobileIconViewModel.Factory {
-        override fun create(): StackedMobileIconViewModelKairos
+    interface Factory {
+        fun create(): StackedMobileIconViewModelKairos
     }
 }
