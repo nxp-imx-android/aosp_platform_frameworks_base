@@ -11,10 +11,11 @@ import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.qs.panels.data.repository.QSPreferencesRepository
 import com.android.systemui.qs.pipeline.data.model.RestoreData
-import com.android.systemui.qs.pipeline.shared.InternetTileMigration.migrateInternetTile
+import com.android.systemui.qs.pipeline.shared.InternetTileMigration
 import com.android.systemui.qs.pipeline.shared.TileSpec
 import com.android.systemui.qs.pipeline.shared.TilesUpgradePath
 import com.android.systemui.qs.pipeline.shared.logging.QSPipelineLogger
+import com.android.systemui.user.data.repository.UserRepository
 import com.android.systemui.user.domain.interactor.HeadlessSystemUserMode
 import com.android.systemui.util.settings.SecureSettings
 import dagger.assisted.Assisted
@@ -53,6 +54,8 @@ constructor(
     private val hsum: HeadlessSystemUserMode,
     private val logger: QSPipelineLogger,
     private val qsPreferencesRepository: QSPreferencesRepository,
+    private val internetTileMigration: InternetTileMigration,
+    private val userRepository: UserRepository,
     @Application private val applicationScope: CoroutineScope,
     @Background private val backgroundDispatcher: CoroutineDispatcher,
 ) {
@@ -315,8 +318,9 @@ constructor(
      */
     private fun List<TileSpec>.migrateInternetTileSpecs(): List<TileSpec> {
         val largeTiles = qsPreferencesRepository.getLargeTilesForUser(userId)
+        val isMainUser = userRepository.mainUserId == userId
         val (newTiles, newLargeTiles) =
-            migrateInternetTile(this, largeTiles) { scenario ->
+            internetTileMigration.migrateInternetTile(this, largeTiles, isMainUser) { scenario ->
                 logger.logInternetTileMigrated(userId, scenario)
             }
         if (newLargeTiles != largeTiles) {
