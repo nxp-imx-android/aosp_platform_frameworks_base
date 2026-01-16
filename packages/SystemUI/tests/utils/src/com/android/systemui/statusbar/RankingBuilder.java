@@ -25,6 +25,7 @@ import android.app.NotificationManager.Importance;
 import android.content.pm.ShortcutInfo;
 import android.service.notification.NotificationListenerService.Ranking;
 import android.service.notification.SnoozeCriterion;
+import android.service.notification.StatusBarNotification;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -88,6 +89,10 @@ public class RankingBuilder {
         mProposedImportance = ranking.getProposedImportance();
         mSensitiveContent = ranking.hasSensitiveContent();
         mSummarization = ranking.getSummarization();
+    }
+
+    public RankingBuilder(StatusBarNotification sbn) {
+        mKey = sbn.getKey();
     }
 
     public Ranking build() {

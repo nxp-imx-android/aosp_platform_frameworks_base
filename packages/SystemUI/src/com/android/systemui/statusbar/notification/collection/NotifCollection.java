@@ -1267,6 +1267,7 @@ public class NotifCollection implements Dumpable, PipelineDumpable {
     @Retention(RetentionPolicy.SOURCE)
     public @interface CancellationReason {}
 
+    public static final int REASON_PLUGIN = -2;
     static final int REASON_NOT_CANCELED = -1;
     public static final int REASON_UNKNOWN = 0;
 
