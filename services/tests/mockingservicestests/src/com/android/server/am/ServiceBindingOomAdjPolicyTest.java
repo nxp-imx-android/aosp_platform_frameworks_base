@@ -411,7 +411,7 @@ public final class ServiceBindingOomAdjPolicyTest extends BaseServiceTest {
     }
 
     private void setHasForegroundServices(ProcessRecord app) {
-        app.mServices.setHasForegroundServices(true,
+        mAms.mProcessStateController.setHasForegroundServices(app.mServices, true,
                 FOREGROUND_SERVICE_TYPE_SYSTEM_EXEMPTED, false);
     }
 

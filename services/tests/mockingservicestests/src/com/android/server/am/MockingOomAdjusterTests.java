@@ -3021,8 +3021,8 @@ public class MockingOomAdjusterTests {
 
         s1.getConnections().clear();
         s2.getConnections().clear();
-        client1.mServices.removeAllConnections();
-        client2.mServices.removeAllConnections();
+        mProcessStateController.removeAllConnections(client1.mServices);
+        mProcessStateController.removeAllConnections(client2.mServices);
         mProcessStateController.setMaxAdj(client1, UNKNOWN_ADJ);
         mProcessStateController.setMaxAdj(client2, UNKNOWN_ADJ);
         mProcessStateController.setHasForegroundServices(client1.mServices, true, 0, true);
@@ -5021,16 +5021,16 @@ public class MockingOomAdjusterTests {
             mProcessStateController.setHasOverlayUi(state, mHasOverlayUi);
             state.setLastTopTime(mLastTopTime);
             mProcessStateController.setForcingToImportant(state, mForcingToImportant);
-            services.setConnectionGroup(mConnectionGroup);
-            services.setConnectionImportance(mConnectionImportance);
-            services.setHasClientActivities(mHasClientActivities);
-            services.setHasForegroundServices(mHasForegroundServices, mFgServiceTypes,
-                    /* hasNoneType=*/false);
-            services.setHasAboveClient(mHasAboveClient);
-            services.setTreatLikeActivity(mTreatLikeActivity);
-            services.setExecServicesFg(mExecServicesFg);
+            mProcessStateController.setConnectionGroup(services, mConnectionGroup);
+            mProcessStateController.setConnectionImportance(services, mConnectionImportance);
+            mProcessStateController.setHasClientActivities(services, mHasClientActivities);
+            mProcessStateController.setHasForegroundServices(services, mHasForegroundServices,
+                    mFgServiceTypes, /* hasNoneType=*/false);
+            mProcessStateController.setHasAboveClient(services, mHasAboveClient);
+            mProcessStateController.setTreatLikeActivity(services, mTreatLikeActivity);
+            mProcessStateController.setExecServicesFg(services, mExecServicesFg);
             for (int i = 0; i < mNumOfExecutingServices; i++) {
-                services.startExecutingService(makeServiceRecord());
+                mProcessStateController.startExecutingService(services, makeServiceRecord());
             }
             mProcessStateController.setLastProviderTime(app, mLastProviderTime);
 

@@ -1070,6 +1070,19 @@ public class ProcessStateController {
         psr.setHasAboveClient(hasAboveClient);
     }
 
+    /** Note the last group set by a connection. */
+    @GuardedBy("mLock")
+    public void setConnectionGroup(@NonNull ProcessServiceRecordInternal psr, int connectionGroup) {
+        psr.setConnectionGroup(connectionGroup);
+    }
+
+    /** Note the last importance set by a connection. */
+    @GuardedBy("mLock")
+    public void setConnectionImportance(@NonNull ProcessServiceRecordInternal psr,
+            int connectionImportance) {
+        psr.setConnectionImportance(connectionImportance);
+    }
+
     /**
      * Recompute whether a process has bound to a service with
      * {@link android.content.Context.BIND_ABOVE_CLIENT} or not.
@@ -1166,6 +1179,26 @@ public class ProcessStateController {
     public void updateHasTopStartedAlmostPerceptibleServices(
             @NonNull ProcessServiceRecordInternal psr) {
         psr.updateHasTopStartedAlmostPerceptibleServices();
+    }
+
+    /**
+     * Sets whether this process has services that were started while it was in the TOP state
+     * and are considered almost perceptible to the user.
+     */
+    @GuardedBy("mLock")
+    public void setHasTopStartedAlmostPerceptibleServices(
+            @NonNull ProcessServiceRecordInternal psr, boolean value) {
+        psr.setHasTopStartedAlmostPerceptibleServices(value);
+    }
+
+    /**
+     * Sets the uptime in milliseconds when the last request to bind to an almost perceptible
+     * service was made while this process was in the TOP state.
+     */
+    @GuardedBy("mLock")
+    public void setLastTopStartedAlmostPerceptibleBindRequestUptimeMs(
+            @NonNull ProcessServiceRecordInternal psr, long value) {
+        psr.setLastTopStartedAlmostPerceptibleBindRequestUptimeMs(value);
     }
 
     /************************ Broadcast Receiver State Events **************************/

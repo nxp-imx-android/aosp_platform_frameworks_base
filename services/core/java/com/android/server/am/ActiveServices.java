@@ -4699,11 +4699,11 @@ public final class ActiveServices {
                 if (srec.getHostProcess() != null) {
                     final ProcessServiceRecord psr = srec.getHostProcess().mServices;
                     if (group > 0) {
-                        psr.setConnectionGroup(group);
-                        psr.setConnectionImportance(importance);
+                        mAm.mProcessStateController.setConnectionGroup(psr, group);
+                        mAm.mProcessStateController.setConnectionImportance(psr, importance);
                     } else {
-                        psr.setConnectionGroup(0);
-                        psr.setConnectionImportance(0);
+                        mAm.mProcessStateController.setConnectionGroup(psr, 0);
+                        mAm.mProcessStateController.setConnectionImportance(psr, 0);
                     }
                 } else {
                     if (group > 0) {
