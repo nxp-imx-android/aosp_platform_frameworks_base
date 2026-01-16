@@ -2745,7 +2745,7 @@ public class ActivityInfo extends ComponentInfo implements Parcelable {
          * @hide
          */
         public int getDefaultWidth(@NonNull DisplayMetrics metrics) {
-            if (!Flags.runtimeDensityResolutionForWindowLayout()) {
+            if (!Flags.runtimeDensityResolutionForWindowLayoutBugfix()) {
                 return this.width;
             }
 
@@ -2760,7 +2760,7 @@ public class ActivityInfo extends ComponentInfo implements Parcelable {
          * @hide
          */
         public int getDefaultHeight(@NonNull DisplayMetrics metrics) {
-            if (!Flags.runtimeDensityResolutionForWindowLayout()) {
+            if (!Flags.runtimeDensityResolutionForWindowLayoutBugfix()) {
                 return this.height;
             }
 
@@ -2775,7 +2775,7 @@ public class ActivityInfo extends ComponentInfo implements Parcelable {
          * @hide
          */
         public int getMinWidth(@NonNull DisplayMetrics metrics) {
-            if (!Flags.runtimeDensityResolutionForWindowLayout()) {
+            if (!Flags.runtimeDensityResolutionForWindowLayoutBugfix()) {
                 return this.minWidth;
             }
 
@@ -2790,7 +2790,7 @@ public class ActivityInfo extends ComponentInfo implements Parcelable {
          * @hide
          */
         public int getMinHeight(@NonNull DisplayMetrics metrics) {
-            if (!Flags.runtimeDensityResolutionForWindowLayout()) {
+            if (!Flags.runtimeDensityResolutionForWindowLayoutBugfix()) {
                 return this.minHeight;
             }
 
