@@ -27703,6 +27703,7 @@ package android.media.metrics {
   public final class EditingSession implements java.lang.AutoCloseable {
     method public void close();
     method @NonNull public android.media.metrics.LogSessionId getSessionId();
+    method @FlaggedApi("android.media.metrics.enable_extended_bundle_metrics") public void reportBundleMetrics(@NonNull android.os.PersistableBundle);
     method @FlaggedApi("com.android.media.editing.flags.add_media_metrics_editing") public void reportEditingEndedEvent(@NonNull android.media.metrics.EditingEndedEvent);
   }
 
@@ -27937,6 +27938,7 @@ package android.media.metrics {
   public final class PlaybackSession implements java.lang.AutoCloseable {
     method public void close();
     method @NonNull public android.media.metrics.LogSessionId getSessionId();
+    method @FlaggedApi("android.media.metrics.enable_extended_bundle_metrics") public void reportBundleMetrics(@NonNull android.os.PersistableBundle);
     method public void reportNetworkEvent(@NonNull android.media.metrics.NetworkEvent);
     method public void reportPlaybackErrorEvent(@NonNull android.media.metrics.PlaybackErrorEvent);
     method public void reportPlaybackMetrics(@NonNull android.media.metrics.PlaybackMetrics);
@@ -27977,6 +27979,7 @@ package android.media.metrics {
   public final class RecordingSession implements java.lang.AutoCloseable {
     method public void close();
     method @NonNull public android.media.metrics.LogSessionId getSessionId();
+    method @FlaggedApi("android.media.metrics.enable_extended_bundle_metrics") public void reportBundleMetrics(@NonNull android.os.PersistableBundle);
   }
 
   public final class TrackChangeEvent extends android.media.metrics.Event implements android.os.Parcelable {
@@ -28032,6 +28035,7 @@ package android.media.metrics {
   public final class TranscodingSession implements java.lang.AutoCloseable {
     method public void close();
     method @NonNull public android.media.metrics.LogSessionId getSessionId();
+    method @FlaggedApi("android.media.metrics.enable_extended_bundle_metrics") public void reportBundleMetrics(@NonNull android.os.PersistableBundle);
   }
 
 }
