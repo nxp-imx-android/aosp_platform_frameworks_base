@@ -118,6 +118,8 @@ import com.android.wm.shell.dagger.back.ShellBackAnimationModule;
 import com.android.wm.shell.dagger.desktop.DesktopModule;
 import com.android.wm.shell.dagger.pinnedlayer.PinnedLayerModule;
 import com.android.wm.shell.dagger.pip.PipModule;
+import com.android.wm.shell.desktopai.dagger.DesktopAIModule;
+import com.android.wm.shell.desktopai.dagger.DesktopAiInitializer;
 import com.android.wm.shell.desktopmode.CloseDesktopTaskTransitionHandler;
 import com.android.wm.shell.desktopmode.DesktopActivityOrientationChangeHandler;
 import com.android.wm.shell.desktopmode.DesktopBackNavTransitionObserver;
@@ -281,7 +283,8 @@ import java.util.Optional;
                 ShellBackAnimationModule.class,
                 LetterboxModule.class,
                 PinnedLayerModule.class,
-                DesktopModule.class
+                DesktopModule.class,
+                DesktopAIModule.class
         })
 public abstract class WMShellModule {
 
@@ -2357,6 +2360,7 @@ public abstract class WMShellModule {
             ShellCrashHandler shellCrashHandler,
             AppToWebEducationController appToWebEducationController,
             QuitFocusedAppKeyGestureHandler quitFocusedAppKeyGestureHandler,
+            Optional<DesktopAiInitializer> desktopAiInitializer,
             BubbleRootTask bubbleRootTask,
             IDesktopModeProvider desktopModeProvider) {
         return new Object();
