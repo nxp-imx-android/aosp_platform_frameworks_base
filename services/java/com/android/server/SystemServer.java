@@ -264,6 +264,7 @@ import com.android.server.security.FileIntegrityService;
 import com.android.server.security.KeyAttestationApplicationIdProviderService;
 import com.android.server.security.KeyChainSystemService;
 import com.android.server.security.advancedprotection.AdvancedProtectionService;
+import com.android.server.security.authenticationpolicy.AgentAuthService;
 import com.android.server.security.authenticationpolicy.AuthenticationPolicyService;
 import com.android.server.security.authenticationpolicy.SecureLockDeviceService;
 import com.android.server.security.authenticationpolicy.WatchRangingService;
@@ -2788,6 +2789,11 @@ public final class SystemServer implements Dumpable {
                 if (android.hardware.biometrics.Flags.identityCheckWatch()) {
                     t.traceBegin("StartWatchRangingService.Lifecycle");
                     mSystemServiceManager.startService(WatchRangingService.Lifecycle.class);
+                    t.traceEnd();
+                }
+                if (android.hardware.biometrics.Flags.agentAuthApi()) {
+                    t.traceBegin("AgentAuthService.Lifecycle");
+                    mSystemServiceManager.startService(AgentAuthService.Lifecycle.class);
                     t.traceEnd();
                 }
 
