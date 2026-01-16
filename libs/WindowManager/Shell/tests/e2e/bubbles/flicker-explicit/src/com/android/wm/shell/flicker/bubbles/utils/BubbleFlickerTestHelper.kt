@@ -31,7 +31,6 @@ import android.tools.traces.ConditionsFactory
 import android.tools.traces.component.IComponentMatcher
 import android.tools.traces.parsers.WindowManagerStateHelper
 import android.tools.traces.parsers.WindowManagerStateHelper.StateSyncBuilder
-import android.tools.traces.surfaceflinger.Layer
 import android.view.Display
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
@@ -490,19 +489,6 @@ internal object BubbleFlickerTestHelper {
             .add(ConditionsFactory.isWMStateComplete())
             .withWindowSurfaceDisappeared(componentMatcher)
             .withBubbleShown()
-
-    /** Whether the layer has a visible child layer. */
-    fun Layer.hasVisibleChild(): Boolean {
-        return children.stream().anyMatch { it.isVisible || it.hasVisibleChild() }
-    }
-
-    /** Whether the layer is a child of Bubble layer. */
-    fun Layer.isBubbled(): Boolean {
-        if (name.contains("Bubbles!")) {
-            return true
-        }
-        return parent?.isBubbled() ?: false
-    }
 
     private fun assertBubbleIconsAligned(tapl: LauncherInstrumentation) {
         val isBubbleIconsAligned =

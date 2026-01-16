@@ -16,9 +16,13 @@
 
 package com.android.wm.shell.flicker.bubbles.utils
 
+import android.tools.flicker.subject.exceptions.ExceptionMessageBuilder
+import android.tools.flicker.subject.exceptions.InvalidPropertyException
+import android.tools.flicker.subject.layers.LayerTraceEntrySubject
 import android.tools.flicker.subject.layers.LayersTraceSubject
 import android.tools.traces.component.IComponentMatcher
 import android.tools.traces.component.IComponentNameMatcher
+import android.tools.traces.surfaceflinger.Layer
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
@@ -200,4 +204,67 @@ internal object FlickerAssertionHelper {
     ) {
         assertLayerMoveInSingleDirection(this, layerMatcher, threshold)
     }
+
+    /** Whether the layer has a visible child layer. */
+    fun Layer.hasVisibleChild(): Boolean {
+        return children.stream().anyMatch { it.isVisible || it.hasVisibleChild() }
+    }
+
+    /** Whether the layer is a child of Bubble layer. */
+    fun Layer.isBubbled(): Boolean {
+        if (name.contains("Bubbles!")) {
+            return true
+        }
+        return parent?.isBubbled() ?: false
+    }
+
+    /** Asserts the [layerMatcher]'s layer is a child of Bubble layer. */
+    fun LayerTraceEntrySubject.isBubbled(layerMatcher: IComponentMatcher): LayerTraceEntrySubject =
+        apply {
+            val hasBubbledLayer =
+                layerMatcher.check(subjects.map { it.layer }) {
+                    it.any { layer -> layer.isBubbled() }
+                }
+
+            if (!hasBubbledLayer) {
+                val errorMsgBuilder =
+                    ExceptionMessageBuilder()
+                        .forSubject(this)
+                        .forInvalidProperty("isBubbled")
+                        .setExpected("true")
+                        .setActual("false")
+                        .addExtraDescription("Filter", layerMatcher.toLayerIdentifier())
+                throw InvalidPropertyException(errorMsgBuilder)
+            }
+        }
+
+    /** Asserts the [layerMatcher]'s layer is not a child of Bubble layer. */
+    fun LayerTraceEntrySubject.isNotBubbled(
+        layerMatcher: IComponentMatcher
+    ): LayerTraceEntrySubject = apply {
+        val hasNoBubbledLayer =
+            layerMatcher.check(subjects.map { it.layer }) { it.all { layer -> !layer.isBubbled() } }
+
+        if (!hasNoBubbledLayer) {
+            val errorMsgBuilder =
+                ExceptionMessageBuilder()
+                    .forSubject(this)
+                    .forInvalidProperty("isBubbled")
+                    .setExpected("false")
+                    .setActual("true")
+                    .addExtraDescription("Filter", layerMatcher.toLayerIdentifier())
+            throw InvalidPropertyException(errorMsgBuilder)
+        }
+    }
+
+    /** Asserts the [layerMatcher]'s layer is a child of Bubble layer. */
+    fun LayersTraceSubject.isBubbled(layerMatcher: IComponentMatcher): LayersTraceSubject = apply {
+        addAssertion("isBubbled($layerMatcher)") { it.isBubbled(layerMatcher) }
+    }
+
+    /** Asserts the [layerMatcher]'s layer is not a child of Bubble layer. */
+    fun LayersTraceSubject.isNotBubbled(layerMatcher: IComponentMatcher): LayersTraceSubject =
+        apply {
+            addAssertion("isNotBubble($layerMatcher)") { it.isNotBubbled(layerMatcher) }
+        }
 }

@@ -18,8 +18,8 @@ package com.android.wm.shell.flicker.bubbles.testcase
 
 import com.android.wm.shell.flicker.bubbles.BubbleFlickerTrampolineTestBase
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerSubjects
-import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.hasVisibleChild
-import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.isBubbled
+import com.android.wm.shell.flicker.bubbles.utils.FlickerAssertionHelper.hasVisibleChild
+import com.android.wm.shell.flicker.bubbles.utils.FlickerAssertionHelper.isBubbled
 import com.android.wm.shell.flicker.bubbles.utils.TaskLayerMatcher
 import org.junit.Test
 
