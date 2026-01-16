@@ -1769,16 +1769,6 @@ flag {
 }
 
 flag {
-    name: "status_bar_rudimentary_battery"
-    namespace: "systemui"
-    description: "Bugfix flag to control the percentage-outside-battery behavior"
-    bug: "408730362"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "status_bar_show_icons_in_secure_camera"
     namespace: "systemui"
     description: "Show status bar icons in secure camera if user swipes down from top of screen"
