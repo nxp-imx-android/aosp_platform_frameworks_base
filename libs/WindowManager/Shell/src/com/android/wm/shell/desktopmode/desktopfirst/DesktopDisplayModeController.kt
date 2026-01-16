@@ -21,6 +21,8 @@ import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
 import android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED
 import android.app.WindowConfiguration.windowingModeToString
 import android.content.Context
+import android.hardware.devicestate.DeviceState
+import android.hardware.devicestate.DeviceStateManager
 import android.hardware.input.InputManager
 import android.os.Handler
 import android.os.SystemProperties
@@ -35,9 +37,11 @@ import android.window.DesktopExperienceFlags
 import android.window.WindowContainerTransaction
 import com.android.internal.annotations.VisibleForTesting
 import com.android.internal.protolog.ProtoLog
+import com.android.window.flags.Flags
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.common.DisplayController
+import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpaperActivityTokenProvider
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.shared.annotations.ShellMainThread
@@ -60,7 +64,9 @@ class DesktopDisplayModeController(
     private val inputManager: InputManager,
     private val displayController: DisplayController,
     @ShellMainThread private val mainHandler: Handler,
+    @ShellMainThread private val mainExecutor: ShellExecutor,
     private val desktopState: DesktopState,
+    private val deviceStateManager: DeviceStateManager,
 ) {
 
     /**
@@ -88,10 +94,43 @@ class DesktopDisplayModeController(
             }
         }
 
+    // True if the last notified device state is eligible for desktop-first.
+    private var isDesktopFirstDeviceState = false
+
+    private val deviceStateCallback =
+        object : DeviceStateManager.DeviceStateCallback {
+            override fun onDeviceStateChanged(state: DeviceState) {
+                val newIsDesktopFirstDeviceState =
+                    // When the lid is fully closed (i.e., LID_CLOSED or DOCKED), usually touchpad
+                    // or keyboard are disabled but we want to keep desktop-first mode.
+                    state.hasProperty(
+                        DeviceState.PROPERTY_LAPTOP_HARDWARE_CONFIGURATION_LID_CLOSED
+                    ) ||
+                        state.hasProperty(
+                            DeviceState.PROPERTY_LAPTOP_HARDWARE_CONFIGURATION_DOCKED
+                        ) ||
+                        // When the lid is opened, the keyboard and touchpad get activated so in
+                        // theory we don't need to override the desktop-first state by this OPEN
+                        // state. But because the activation of input devices may have a slight
+                        // delay which causes glitches, we here include this OPEN state in the list.
+                        state.hasProperty(
+                            DeviceState.PROPERTY_LAPTOP_HARDWARE_CONFIGURATION_LID_OPEN
+                        )
+                if (newIsDesktopFirstDeviceState == isDesktopFirstDeviceState) {
+                    return
+                }
+                isDesktopFirstDeviceState = newIsDesktopFirstDeviceState
+                updateDefaultDisplayWindowingMode()
+            }
+        }
+
     init {
         shellInit.addInitCallback({ shellCommandHandler.addDumpCallback(this::dump, this) }, this)
         if (DesktopExperienceFlags.FORM_FACTOR_BASED_DESKTOP_FIRST_SWITCH.isTrue) {
             inputManager.registerInputDeviceListener(inputDeviceListener, mainHandler)
+        }
+        if (Flags.enableDesktopFirstLaptopStateBugfix()) {
+            deviceStateManager.registerCallback(mainExecutor, deviceStateCallback)
         }
     }
 
@@ -222,6 +261,15 @@ class DesktopDisplayModeController(
                     return true
                 }
             }
+            if (Flags.enableDesktopFirstLaptopStateBugfix()) {
+                logV(
+                    "canDesktopFirstModeBeEnabledOnDefaultDisplay: isDesktopFirstDeviceState=%s",
+                    isDesktopFirstDeviceState,
+                )
+                if (isDesktopFirstDeviceState) {
+                    return true
+                }
+            }
         }
         return false
     }
@@ -312,6 +360,9 @@ class DesktopDisplayModeController(
         if (DesktopExperienceFlags.FORM_FACTOR_BASED_DESKTOP_FIRST_SWITCH.isTrue) {
             pw.println("hasAnyTouchpadDevice=" + hasAnyTouchpadDevice())
             pw.println("hasAnyPhysicalKeyboardDevice=" + hasAnyPhysicalKeyboardDevice())
+        }
+        if (Flags.enableDesktopFirstLaptopStateBugfix()) {
+            pw.println("isDesktopFirstDeviceState=" + isDesktopFirstDeviceState)
         }
 
         pw.println("Current Desktop Display Modes:")
