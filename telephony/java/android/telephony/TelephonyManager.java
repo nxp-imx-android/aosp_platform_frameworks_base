@@ -140,7 +140,6 @@ import com.android.internal.telephony.RILConstants;
 import com.android.internal.telephony.flags.Flags;
 import com.android.internal.telephony.uicc.IccUtils;
 import com.android.internal.telephony.util.TelephonyUtils;
-import com.android.libraries.entitlement.utils.Ts43Constants;
 import com.android.telephony.Rlog;
 
 import java.io.IOException;
