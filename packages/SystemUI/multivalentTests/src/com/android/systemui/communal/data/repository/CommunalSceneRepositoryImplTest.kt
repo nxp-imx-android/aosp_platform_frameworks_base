@@ -20,6 +20,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.communal.shared.model.CommunalSceneDataSourceDelegator
 import com.android.systemui.communal.shared.model.CommunalScenes
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.kosmos.Kosmos
@@ -28,7 +29,6 @@ import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.scene.shared.model.SceneDataSource
-import com.android.systemui.scene.shared.model.SceneDataSourceDelegator
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.flow.flowOf
@@ -43,15 +43,11 @@ import org.mockito.kotlin.verify
 class CommunalSceneRepositoryImplTest : SysuiTestCase() {
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
 
-    private val delegator = mock<SceneDataSourceDelegator> {}
+    private val delegator = mock<CommunalSceneDataSourceDelegator> {}
 
     private val Kosmos.underTest by
         Kosmos.Fixture {
-            CommunalSceneRepositoryImpl(
-                backgroundScope = backgroundScope,
-                sceneDataSource = delegator,
-                delegator = delegator,
-            )
+            CommunalSceneRepositoryImpl(backgroundScope = backgroundScope, delegator = delegator)
         }
 
     @Test
