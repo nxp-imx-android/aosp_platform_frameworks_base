@@ -28,7 +28,6 @@ import android.view.WindowInsetsController.Appearance
 import com.android.internal.statusbar.LetterboxDetails
 import com.android.internal.view.AppearanceRegion
 import com.android.systemui.CoreStartable
-import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.statusbar.CommandQueue
 import com.android.systemui.statusbar.StatusBarAlwaysUseRegionSampling
 import com.android.systemui.statusbar.core.StatusBarInitializer.StatusBarViewLifecycleListener
@@ -121,7 +120,7 @@ interface StatusBarModePerDisplayRepository : StatusBarViewLifecycleListener, Co
 class StatusBarModePerDisplayRepositoryImpl
 @AssistedInject
 constructor(
-    @Application scope: CoroutineScope,
+    @Assisted scope: CoroutineScope,
     @Assisted("displayId") thisDisplayId: Int,
     private val commandQueue: CommandQueue,
     private val letterboxAppearanceCalculator: LetterboxAppearanceCalculator,
@@ -418,5 +417,8 @@ private fun @receiver:Appearance Int.toAppearanceString() =
 
 @AssistedFactory
 interface StatusBarModePerDisplayRepositoryFactory {
-    fun create(@Assisted("displayId") displayId: Int): StatusBarModePerDisplayRepositoryImpl
+    fun create(
+        scope: CoroutineScope,
+        @Assisted("displayId") displayId: Int,
+    ): StatusBarModePerDisplayRepositoryImpl
 }
