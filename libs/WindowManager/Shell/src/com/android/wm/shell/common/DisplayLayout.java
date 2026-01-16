@@ -18,8 +18,6 @@ package com.android.wm.shell.common;
 
 import static android.content.res.Configuration.ORIENTATION_LANDSCAPE;
 import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
-import static android.content.res.Configuration.UI_MODE_TYPE_CAR;
-import static android.content.res.Configuration.UI_MODE_TYPE_MASK;
 import static android.os.Process.SYSTEM_UID;
 import static android.provider.Settings.Global.DEVELOPMENT_FORCE_DESKTOP_MODE_ON_EXTERNAL_DISPLAYS;
 import static android.view.Display.FLAG_SHOULD_SHOW_SYSTEM_DECORATIONS;
@@ -88,6 +86,7 @@ public class DisplayLayout {
     private boolean mHasStatusBar = false;
     private int mNavBarFrameHeight = 0;
     private int mTaskbarFrameHeight = 0;
+    private int mCaptionBarHeight = 0;
     private boolean mAllowSeamlessRotationDespiteNavBarMoving = false;
     private boolean mNavigationBarCanMove = false;
     private boolean mReverseDefaultRotation = false;
@@ -130,6 +129,7 @@ public class DisplayLayout {
                 && mReverseDefaultRotation == other.mReverseDefaultRotation
                 && mNavBarFrameHeight == other.mNavBarFrameHeight
                 && mTaskbarFrameHeight == other.mTaskbarFrameHeight
+                && mCaptionBarHeight == other.mCaptionBarHeight
                 && Objects.equals(mInsetsState, other.mInsetsState);
     }
 
@@ -138,7 +138,7 @@ public class DisplayLayout {
         return Objects.hash(mUiMode, mWidth, mHeight, mGlobalBoundsDp, mCutout, mRotation,
                 mDensityDpi, mNonDecorInsets, mStableInsets, mHasNavigationBar, mHasStatusBar,
                 mNavBarFrameHeight, mTaskbarFrameHeight, mAllowSeamlessRotationDespiteNavBarMoving,
-                mNavigationBarCanMove, mReverseDefaultRotation, mInsetsState);
+                mNavigationBarCanMove, mReverseDefaultRotation, mInsetsState, mCaptionBarHeight);
     }
 
     /**
@@ -204,6 +204,7 @@ public class DisplayLayout {
         mReverseDefaultRotation = dl.mReverseDefaultRotation;
         mNavBarFrameHeight = dl.mNavBarFrameHeight;
         mTaskbarFrameHeight = dl.mTaskbarFrameHeight;
+        mCaptionBarHeight = dl.mCaptionBarHeight;
         mNonDecorInsets.set(dl.mNonDecorInsets);
         mStableInsets.set(dl.mStableInsets);
         mInsetsState.set(dl.mInsetsState, true /* copySources */);
@@ -245,6 +246,8 @@ public class DisplayLayout {
         mNavBarFrameHeight = getNavigationBarFrameHeight(res, mWidth, mHeight, mRotation,
                 mInsetsState);
         mTaskbarFrameHeight = SystemBarUtils.getTaskbarHeight(res);
+        mCaptionBarHeight = res.getDimensionPixelSize(
+                SystemBarUtils.getDesktopViewAppHeaderHeightId());
     }
 
     /**
@@ -304,6 +307,11 @@ public class DisplayLayout {
     /** Get this layout's stable insets. */
     public Rect stableInsets() {
         return mStableInsets;
+    }
+
+    /** Get this layout's caption bar height. */
+    public int captionBarHeight() {
+        return mCaptionBarHeight;
     }
 
     /** Get this layout's width in pixels. */

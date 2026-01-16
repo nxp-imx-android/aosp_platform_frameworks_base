@@ -191,7 +191,7 @@ fun calculateMaximizeBounds(displayLayout: DisplayLayout, taskInfo: RunningTaskI
     } else {
         // if non-resizable then calculate max bounds according to aspect ratio
         val activityAspectRatio = calculateAspectRatio(taskInfo)
-        val captionInsets = taskInfo.freeformCaptionInsets
+        val captionInsets = taskInfo.freeformCaptionInsets(displayLayout)
         val newSize =
             maximizeSizeGivenAspectRatio(
                 taskInfo,
@@ -537,6 +537,20 @@ private fun positionInScreen(desiredSize: Size, stableBounds: Rect): Rect =
         val offset = DesktopTaskPosition.Center.getTopLeftCoordinates(stableBounds, this)
         offsetTo(offset.x, offset.y)
     }
+
+/**
+ * Gets the freeform caption insets if task was eligible for exclude caption insets from app bounds
+ * compatibility treatment. Returns 0 if no compatibility treatment was applied.
+ */
+fun TaskInfo.freeformCaptionInsets(displayLayout: DisplayLayout): Int {
+    if (com.android.window.flags.Flags.refactorCaptionSandboxingToCore()) {
+        if (appCompatTaskInfo.hasIsExcludeCaptionInsets()) {
+            return displayLayout.captionBarHeight()
+        }
+        return 0
+    }
+    return this.freeformCaptionInsets
+}
 
 /**
  * Gets the freeform caption insets if task was eligible for exclude caption insets from app bounds

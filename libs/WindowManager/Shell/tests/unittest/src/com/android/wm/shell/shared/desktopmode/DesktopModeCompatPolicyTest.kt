@@ -29,6 +29,7 @@ import android.content.pm.PackageManager
 import android.os.Process
 import android.os.UserHandle
 import android.os.UserManager
+import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import android.testing.TestableContext
@@ -469,6 +470,7 @@ class DesktopModeCompatPolicyTest : ShellTestCase() {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_REFACTOR_CAPTION_SANDBOXING_TO_CORE)
     @DisableCompatChanges(ActivityInfo.INSETS_DECOUPLED_CONFIGURATION_ENFORCED)
     fun testShouldExcludeCaptionFromAppBounds_resizeable_false() {
         assertFalse(
@@ -479,6 +481,7 @@ class DesktopModeCompatPolicyTest : ShellTestCase() {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_REFACTOR_CAPTION_SANDBOXING_TO_CORE)
     @DisableCompatChanges(ActivityInfo.INSETS_DECOUPLED_CONFIGURATION_ENFORCED)
     fun testShouldExcludeCaptionFromAppBounds_nonResizeable_true() {
         assertTrue(
@@ -489,6 +492,7 @@ class DesktopModeCompatPolicyTest : ShellTestCase() {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_REFACTOR_CAPTION_SANDBOXING_TO_CORE)
     @EnableCompatChanges(ActivityInfo.INSETS_DECOUPLED_CONFIGURATION_ENFORCED)
     fun testShouldExcludeCaptionFromAppBounds_nonResizeable_sdk35_false() {
         assertFalse(
@@ -499,26 +503,29 @@ class DesktopModeCompatPolicyTest : ShellTestCase() {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_REFACTOR_CAPTION_SANDBOXING_TO_CORE)
     @DisableCompatChanges(ActivityInfo.INSETS_DECOUPLED_CONFIGURATION_ENFORCED)
     fun testShouldExcludeCaptionFromAppBounds_resizeable_overridden_true() {
         val taskInfo = setUpFreeformTask().apply { isResizeable = true }
-        taskInfo.appCompatTaskInfo.setOverrideExcludeCaptionInsetsAllowed(true)
+        taskInfo.appCompatTaskInfo.setIsExcludeCaptionInsets(true)
         assertTrue(desktopModeCompatPolicy.shouldExcludeCaptionFromAppBounds(taskInfo))
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_REFACTOR_CAPTION_SANDBOXING_TO_CORE)
     @EnableCompatChanges(ActivityInfo.INSETS_DECOUPLED_CONFIGURATION_ENFORCED)
     fun testShouldExcludeCaptionFromAppBounds_resizeable_sdk35_overridden_notOptOut_true() {
         val taskInfo = setUpFreeformTask().apply { isResizeable = true }
-        taskInfo.appCompatTaskInfo.setOverrideExcludeCaptionInsetsAllowed(true)
+        taskInfo.appCompatTaskInfo.setIsExcludeCaptionInsets(true)
         assertTrue(desktopModeCompatPolicy.shouldExcludeCaptionFromAppBounds(taskInfo))
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_REFACTOR_CAPTION_SANDBOXING_TO_CORE)
     @EnableCompatChanges(ActivityInfo.INSETS_DECOUPLED_CONFIGURATION_ENFORCED)
     fun testShouldExcludeCaptionFromAppBounds_resizeable_sdk35_overridden_optOut_false() {
         val taskInfo = setUpFreeformTask().apply { isResizeable = true }
-        taskInfo.appCompatTaskInfo.setOverrideExcludeCaptionInsetsAllowed(false)
+        taskInfo.appCompatTaskInfo.setIsExcludeCaptionInsets(false)
         assertFalse(desktopModeCompatPolicy.shouldExcludeCaptionFromAppBounds(taskInfo))
     }
 
