@@ -259,6 +259,7 @@ flag {
     namespace: "input"
     description: "Enables HID APIs"
     bug: "390701065"
+    is_exported: true
 }
 
 flag {
