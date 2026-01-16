@@ -109,6 +109,7 @@ import android.content.pm.SigningDetails;
 import android.graphics.Rect;
 import android.graphics.drawable.Icon;
 import android.net.Uri;
+import android.os.AppZygote;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -2336,6 +2337,57 @@ public class ActivityManagerServiceTest {
 
         verify(mActiveServices)
                 .onShortFgsAnrTimeoutWarning(eq(serviceRecord), eq(anrId), eq(elapsedTimeMs));
+    }
+
+    @Test
+    @RequiresFlagsEnabled(android.os.Flags.FLAG_NATIVE_APP_ZYGOTE)
+    public void testCreateAppZygoteForProcessIfNeeded_managedAndNative() throws Exception {
+        final int appUid = 10001;
+        final String packageName = "com.test.app";
+        final String processName = "com.test.app";
+
+        ApplicationInfo info = new ApplicationInfo();
+        info.packageName = packageName;
+        info.processName = processName;
+        info.uid = appUid;
+
+        mAms.mProcessList.mAppIsolatedUidRangeAllocator.getOrCreateIsolatedUidRangeLocked(
+                processName, appUid);
+
+        HostingRecord managedHostingRecord = HostingRecord.byAppZygote(
+                new ComponentName(packageName, "ManagedService"),
+                packageName, appUid, processName, false /* isNativeService */);
+        ProcessRecord managedApp = new ProcessRecord(mAms, info, processName, appUid);
+        managedApp.setHostingRecord(managedHostingRecord);
+
+        HostingRecord nativeHostingRecord = HostingRecord.byAppZygote(
+                new ComponentName(packageName, "NativeService"),
+                packageName, appUid, processName, true /* isNativeService */);
+        ProcessRecord nativeApp = new ProcessRecord(mAms, info, processName, appUid);
+        nativeApp.setHostingRecord(nativeHostingRecord);
+
+        spyOn(mAms.mProcessList);
+
+        AppZygote managedZygoteMock = mock(AppZygote.class);
+        AppZygote nativeZygoteMock = mock(AppZygote.class);
+
+        doReturn(info).when(managedZygoteMock).getAppInfo();
+        doReturn(info).when(nativeZygoteMock).getAppInfo();
+        doReturn(managedZygoteMock).when(mAms.mProcessList).newAppZygote(
+                any(), any(), anyInt(), anyInt(), anyInt(), eq(false), anyString());
+        doReturn(nativeZygoteMock).when(mAms.mProcessList).newAppZygote(
+                any(), any(), anyInt(), anyInt(), anyInt(), eq(true), anyString());
+
+        AppZygote managedZygote = mAms.mProcessList.createAppZygoteForProcessIfNeeded(managedApp);
+        assertEquals(managedZygoteMock, managedZygote);
+
+        AppZygote nativeZygote = mAms.mProcessList.createAppZygoteForProcessIfNeeded(nativeApp);
+        assertEquals(nativeZygoteMock, nativeZygote);
+
+        assertEquals(managedZygote,
+                mAms.mProcessList.mAppZygotes.get(processName + "_zygote", appUid));
+        assertEquals(nativeZygote,
+                mAms.mProcessList.mAppZygotes.get(processName + "_zygote_native", appUid));
     }
 
     private static class TestHandler extends Handler {
