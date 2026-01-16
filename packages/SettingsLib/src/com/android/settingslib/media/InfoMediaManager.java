@@ -308,6 +308,14 @@ public abstract class InfoMediaManager {
         }
     }
 
+    /**
+     * Get the {@link UserHandle} associated with the MediaRouter2 instance.
+     */
+    @NonNull
+    protected UserHandle getUserHandle() {
+        return mUserHandle;
+    }
+
     private void refreshMissingPermissionsInfo() {
         MissingPermissionsInfo newInfo;
         RouteListingPreference preference = getRouteListingPreference();
