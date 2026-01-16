@@ -488,6 +488,7 @@ public class Bubble implements BubbleViewProvider {
                 isImportantConversation(),
                 getParcelableFlyoutMessage(),
                 isApp(),
+                isChat(),
                 mUserType);
     }
 
