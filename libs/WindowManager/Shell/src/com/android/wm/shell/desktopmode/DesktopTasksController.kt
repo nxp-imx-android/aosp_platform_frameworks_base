@@ -391,13 +391,19 @@ class DesktopTasksController(
                 DeskRecreationFactory { deskUserId, destinationDisplayId, _ ->
                     // TODO: b/393978539 - One of the recreated desks may need to be activated by
                     //  default in desktop-first.
-                    createDeskRootSuspending(displayId = destinationDisplayId, userId = deskUserId)
+                    // TODO(b/467367552): Update client invocation to DesksController.
+                    desksController.createDeskRootSuspending(
+                        displayId = destinationDisplayId,
+                        userId = deskUserId,
+                    )
                 }
         }
     }
 
     private fun onInit() {
         logD("onInit")
+        // TODO(b/467367552): Remove when refactoring is completed.
+        desksController.setBackDependency(this)
         if (Flags.enableRememberedBounds()) {
             launcherApps.registerCallback(launcherAppsCallback)
         }
@@ -504,6 +510,7 @@ class DesktopTasksController(
         level = DeprecationLevel.WARNING,
     )
     fun isAnyDeskActive(displayId: Int, userId: Int = shellController.currentUserId): Boolean =
+        // TODO(b/467367552): Update client invocation to DesksController.
         desksController.isAnyDeskActive(displayId, userId)
 
     /** Returns the id of the active desk in [displayId]. */
@@ -514,6 +521,7 @@ class DesktopTasksController(
         level = DeprecationLevel.WARNING,
     )
     fun getActiveDeskId(displayId: Int, userId: Int = shellController.currentUserId): Int? =
+        // TODO(b/467367552): Update client invocation to DesksController.
         desksController.getActiveDeskId(displayId, userId)
 
     /**
@@ -769,12 +777,18 @@ class DesktopTasksController(
         level = DeprecationLevel.WARNING,
     )
     fun canCreateDesks(userId: Int = shellController.currentUserId): Boolean =
+        // TODO(b/467367552): Update client invocation to DesksController.
         desksController.canCreateDesks(userId)
 
     /**
      * Adds a new desk to the given display for the given user and invokes [onResult] once the desk
      * is created, but necessarily activated.
      */
+    @Deprecated(
+        message = "",
+        replaceWith = ReplaceWith("Use same method on DesksController instead."),
+        level = DeprecationLevel.WARNING,
+    )
     fun createDesk(
         displayId: Int,
         userId: Int = shellController.currentUserId,
@@ -783,32 +797,15 @@ class DesktopTasksController(
         enterReason: EnterReason = EnterReason.UNKNOWN_ENTER,
         onResult: ((Int) -> Unit) = {},
     ) {
-        logV(
-            "createDesk displayId=%d, userId=%d enforceDeskLimit=%b",
+        // TODO(b/467367552): Update client invocation to DesksController.
+        desksController.createDesk(
             displayId,
             userId,
             enforceDeskLimit,
+            activateDesk,
+            enterReason,
+            onResult,
         )
-        if (!desksController.canCreateDeskInDisplay(displayId, userId)) {
-            logW("createDesk new desk cannot be created, ignoring request")
-            return
-        }
-        val repository = userRepositories.getProfile(userId)
-        createDeskRoot(displayId, userId) { deskId ->
-            if (deskId == null) {
-                logW("Failed to add desk in displayId=%d for userId=%d", displayId, userId)
-            } else {
-                repository.addDesk(
-                    displayId = displayId,
-                    deskId = deskId,
-                    uniqueDisplayId = displayController.getDisplayUniqueId(displayId),
-                )
-                onResult(deskId)
-                if (activateDesk) {
-                    activateDesk(deskId = deskId, userId = userId, enterReason = enterReason)
-                }
-            }
-        }
     }
 
     @Deprecated("Use createDeskSuspending() instead.", ReplaceWith("createDeskSuspending()"))
@@ -845,34 +842,6 @@ class DesktopTasksController(
         }
     }
 
-    private fun createDeskRoot(displayId: Int, userId: Int, onResult: (Int?) -> Unit) {
-        if (displayId == INVALID_DISPLAY) {
-            logW("createDesk attempt with invalid displayId", displayId)
-            onResult(null)
-            return
-        }
-        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
-            // In single-desk, the desk reuses the display id.
-            logD("createDesk reusing displayId=%d for single-desk", displayId)
-            onResult(displayId)
-            return
-        }
-        if (UserManager.isHeadlessSystemUserMode() && UserHandle.USER_SYSTEM == userId) {
-            logW("createDesk ignoring attempt for system user")
-            onResult(null)
-            return
-        }
-        desksOrganizer.createDesk(displayId, userId) { deskId ->
-            logD(
-                "createDesk obtained deskId=%d for displayId=%d and userId=%d",
-                deskId,
-                displayId,
-                userId,
-            )
-            onResult(deskId)
-        }
-    }
-
     @Deprecated(
         "Use createDeskRootSuspending() instead.",
         ReplaceWith("createDeskRootSuspending()"),
@@ -893,11 +862,6 @@ class DesktopTasksController(
         }
         return desksOrganizer.createDeskImmediate(displayId, userId)
     }
-
-    private suspend fun createDeskRootSuspending(displayId: Int, userId: Int): Int? =
-        suspendCoroutine { cont ->
-            createDeskRoot(displayId, userId) { deskId -> cont.resumeWith(Result.success(deskId)) }
-        }
 
     /**
      * Returns a WindowContainerTransaction containing all the changes when a display is
@@ -6585,12 +6549,15 @@ class DesktopTasksController(
                 } else {
                     // Start a new jank interaction for the drag release to desktop window
                     // animation.
-                    val jankConfigBuilder = InteractionJankMonitor.Configuration.Builder.withSurface(
-                        CUJ_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG_RELEASE,
-                        context,
-                        taskSurface,
-                        handler,
-                    ).setTimeout(APP_HANDLE_DRAG_CUJ_TIMEOUT_MS).setTag("to_desktop")
+                    val jankConfigBuilder =
+                        InteractionJankMonitor.Configuration.Builder.withSurface(
+                                CUJ_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG_RELEASE,
+                                context,
+                                taskSurface,
+                                handler,
+                            )
+                            .setTimeout(APP_HANDLE_DRAG_CUJ_TIMEOUT_MS)
+                            .setTag("to_desktop")
                     interactionJankMonitor.begin(jankConfigBuilder)
                 }
                 desktopModeUiEventLogger.log(
@@ -7285,7 +7252,8 @@ class DesktopTasksController(
     }
 
     companion object {
-        // Timeout used for CUJ_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG_HOLD/RELEASE, this is longer than the
+        // Timeout used for CUJ_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG_HOLD/RELEASE, this is longer than
+        // the
         // default timeout to avoid timing out in the middle of a drag action.
         private val APP_HANDLE_DRAG_CUJ_TIMEOUT_MS: Long = TimeUnit.SECONDS.toMillis(10L)
 
