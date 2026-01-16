@@ -63,7 +63,7 @@ constructor(@Assisted context: Context, interactor: HotspotStatusInteractor) :
     private fun Boolean.toUiState(): Icon? =
         if (this) {
             Icon.Resource(
-                resId = R.drawable.ic_hotspot,
+                resId = R.drawable.stat_sys_hotspot,
                 contentDescription =
                     ContentDescription.Resource(R.string.accessibility_status_bar_hotspot),
             )
