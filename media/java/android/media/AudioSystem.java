@@ -2368,12 +2368,11 @@ public class AudioSystem
 
     static int getOffloadSupport(@NonNull AudioFormat format, @NonNull AudioAttributes attr) {
         return native_get_offload_support(format.getEncoding(), format.getSampleRate(),
-                format.getChannelMask(), format.getChannelIndexMask(),
-                attr.getVolumeControlStream());
+                format.getChannelMasks(), attr.getVolumeControlStream());
     }
 
     private static native int native_get_offload_support(int encoding, int sampleRate,
-            int channelMask, int channelIndexMask, int streamType);
+            Object /*AudioFormat.ChannelMasks*/ channelMasks, int streamType);
 
     /** @hide */
     public static native int getMicrophones(ArrayList<MicrophoneInfo> microphonesInfo);

@@ -63,6 +63,8 @@ TYPE_NAME(audio_encapsulation_mode_t);
 TYPE_NAME(audio_stream_type_t);
 TYPE_NAME(audio_usage_t);
 
+static ChannelMasks::fields_t gAudioChannelMasksFields;
+
 // Used for error logging in template helpers below.
 std::ostream& operator<<(std::ostream& out, const audio_config_base_t& config) {
     return out << "{format=" << config.format << ",sample_rate=" << config.sample_rate
@@ -218,12 +220,13 @@ jint legacy2aidl_audio_usage_t_AudioUsage(JNIEnv* env, jobject, jint legacy) {
 }
 
 jobject api2aidl_AudioFormat_AudioConfigBase_Parcel(JNIEnv* env, jobject, jint sampleRate,
-                                                    jint encoding, jint channelMask,
-                                                    jint channelIndexMask, jboolean isInput) {
+                                                    jint encoding, jobject channelMasks,
+                                                    jboolean isInput) {
     audio_config_base_t legacy;
     legacy.sample_rate = static_cast<uint32_t>(sampleRate);
     legacy.format = audioFormatToNative(static_cast<int>(encoding));
-    legacy.channel_mask = channelMasksToNative(channelMask, channelIndexMask, isInput);
+    legacy.channel_mask = nativeChannelMaskFromJavaChannelMasks(env, gAudioChannelMasksFields,
+                                                                channelMasks, isInput);
     return legacy2aidlParcel(env, legacy, [isInput](audio_config_base_t m) {
         return legacy2aidl_audio_config_base_t_AudioConfigBase(m, static_cast<bool>(isInput));
     });
@@ -252,12 +255,15 @@ const JNINativeMethod gMethods[] = {
          reinterpret_cast<void*>(aidl2legacy_AudioUsage_audio_usage_t)},
         {"legacy2aidl_audio_usage_t_AudioUsage", "(I)I",
          reinterpret_cast<void*>(legacy2aidl_audio_usage_t_AudioUsage)},
-        {"api2aidl_AudioFormat_AudioConfigBase_Parcel", "(IIIIZ)Landroid/os/Parcel;",
+        {"api2aidl_AudioFormat_AudioConfigBase_Parcel",
+         "(IILjava/lang/Object;Z)Landroid/os/Parcel;",
          reinterpret_cast<void*>(api2aidl_AudioFormat_AudioConfigBase_Parcel)},
 };
 
 } // namespace
 
 int register_android_media_audio_common_AidlConversion(JNIEnv* env) {
-    return RegisterMethodsOrDie(env, CLASSNAME, gMethods, NELEM(gMethods));
+    int res = RegisterMethodsOrDie(env, CLASSNAME, gMethods, NELEM(gMethods));
+    gAudioChannelMasksFields.init(env);
+    return res;
 }
