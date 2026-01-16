@@ -55,6 +55,8 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Build/Install/Run:
@@ -193,10 +195,10 @@ public class MemoryLimiterTest {
 
         // Capture an actual event.
         @Override
-        public void onLimitExceeded(int pid, int uid, int limit, String pkg) {
+        public void onLimitExceeded(int pid, int uid, int type, long limit, String pkg) {
             synchronized (mLock) {
                 mLatch.countDown();
-                mEvents.add(new Event(pid, uid, limit, pkg));
+                mEvents.add(new Event(pid, uid, type, pkg));
             }
         }
     }
@@ -287,7 +289,26 @@ public class MemoryLimiterTest {
         }
     }
 
-    // Send a request to the application to change its memory.
+    // Return the current value for high events.
+    private static long currentEvents(int pid, int uid) throws Exception {
+        String path = String.format("/sys/fs/cgroup/apps/uid_%d/pid_%d/memory.events", uid, pid);
+        Path filePath = Paths.get(path);
+
+        // The system resets the protections of the memory.events file every time it changes.
+        prepareHelperCgroup(pid, uid);
+
+        // Always specify the Charset, e.g., UTF_8.  This may throw: allow the test to fail.
+        final String value = Files.readString(filePath, StandardCharsets.UTF_8).trim();
+
+        Matcher high = Pattern.compile("high (\\d+)").matcher(value);
+        if (high.find()) {
+            return Integer.parseInt(high.group(1));
+        } else {
+            throw new IllegalArgumentException("bad memory.events");
+        }
+    }
+
+    // Send a request to the application to change its memory.  The size has unit MB.
     private void appCommand(int size) {
         final Intent intent = new Intent(); // SendActivity.this, SendActivity.class);
         intent.setAction(HELPER + "MEMORY");
@@ -438,22 +459,110 @@ public class MemoryLimiterTest {
      * test app is not moved out of a foreground (visible) procstate before the memory limit is
      * checked.
      */
-    @RequiresFlagsEnabled(Flags.FLAG_MEMORY_LIMITER_ENABLE)
+    @RequiresFlagsEnabled({Flags.FLAG_MEMORY_LIMITER_ENABLE,
+            Flags.FLAG_MEMORY_LIMITER_DEFAULT_APP_LIMITS})
     @Test
     public void testOperation() throws Exception {
+        // Use the default "enabled" controller to fetch the limit.  There is no need for a full
+        // MemoryLimiter.
+        final long expectedLimit;
+        try (MemoryLimiter.Controller controller = new MemoryLimiter.ControllerEnabled()) {
+            expectedLimit = controller.getStateLimit(ActivityManager.PROCESS_STATE_TOP);
+        }
+
         // Start by enabling system_server control over the app.
         blockSystemLimiter(mUid, false);
 
         int pid = prepareHelper(mUid);
 
-        // Use the default "enabled" controller.  There is no need for a full MemoryLimiter.
-        try (MemoryLimiter.Controller controller = new MemoryLimiter.ControllerEnabled()) {
-            long expectedLimit = controller.getStateLimit(ActivityManager.PROCESS_STATE_TOP);
-            // Poll until the limit is set by system_server.
-            while (currentLimit(pid, mUid) != expectedLimit) {
-                Thread.sleep(100); // Wait a bit before polling again.
+        // Poll until the limit is set by system_server.
+        for (int i = 0; i < 100 && currentLimit(pid, mUid) != expectedLimit; i++) {
+            Thread.sleep(100); // Wait a bit before polling again.
+        }
+        assertThat(currentLimit(pid, mUid)).isEqualTo(expectedLimit);
+    }
+
+    /**
+     * This test starts the test application with system_server in control.  As soon as
+     * system_server has configured a limit (the app should be TOP at this point), the test takes
+     * control back, configures a much lower limit, and forces the app over-limit.  system_server
+     * will generate a statsd atom in response.
+     */
+    @RequiresFlagsEnabled({Flags.FLAG_MEMORY_LIMITER_ENABLE,
+            Flags.FLAG_MEMORY_LIMITER_DEFAULT_APP_LIMITS})
+    @Test
+    public void testStatsdAtom() throws Exception {
+        // Start by enabling system_server control over the app.
+        blockSystemLimiter(mUid, false);
+
+        try (EventCounter counter = new EventCounter(1)) {
+            try (MemoryLimiter controller = new MemoryLimiter(counter)) {
+                MemoryLimiter.Limiter limiter = controller.newLimiter("");
+
+                int pid = prepareHelper(mUid);
+                limiter.setUid(mUid);
+                limiter.setPid(pid);
+
+                // Wait for the system server to set its limit.  Any limit that is not "max" is
+                // okay.  This test only runs if default app limits are configured, and none of
+                // thse are "max".
+                for (int i = 0; i < 100 && currentLimit(pid, mUid) != sProcessMemoryMax; i++) {
+                    Thread.sleep(100); // Wait a bit before polling again.
+                }
+
+                // Now make system server stop watching the UID.  The native layer may still be
+                // watching the pid; that's fine.
+                blockSystemLimiter(mUid, true);
+
+                // Set the limit, grow the app, and wait for the over-limit event.
+                limiter.onProcStateUpdated(PROCESS_STATE_100M);
+                appCommand(100);
+                assertTrue(counter.await(10));
+
+                // There should be exactly one event in the counter.
+                assertThat(counter.eventCount()).isEqualTo(1);
+                counter.expect(0, pid, mUid, MemoryLimiter.MEMORY_LIMIT_TYPE, "");
             }
-            assertThat(currentLimit(pid, mUid)).isEqualTo(expectedLimit);
+        }
+    }
+
+    /**
+     * Test the statsd rate limiter.  Care is taken always to use the
+     */
+    @RequiresFlagsEnabled(Flags.FLAG_MEMORY_LIMITER_ENABLE)
+    @Test
+    public void testStatsdAtomRateLimiter() throws Exception {
+        try (EventCounter counter = new EventCounter(1)) {
+            long clock = 0;
+
+            // Start by verifying that the system allows MAX_TOKEN events at the beginning of
+            // time.
+            int total;
+            for (total = 0; total < 100 && counter.shouldLogAtom(clock); total++) {
+                // Nothing to do - this is just counting the number of permitted tokens.
+            }
+            assertThat(total).isEqualTo(EventCounter.MAX_TOKENS);
+
+            // Advance the clock to 1.5 periods.  Verify that a single event is permitted.
+            clock = (long) (EventCounter.TOKEN_PERIOD_MS * 1.5);
+            assertThat(counter.shouldLogAtom(clock)).isTrue();
+            assertThat(counter.shouldLogAtom(clock)).isFalse();
+
+            // Advance the clock to 1.75 periods.  Verify that no event is permitted.
+            clock = (long) (EventCounter.TOKEN_PERIOD_MS * 1.75);
+            assertThat(counter.shouldLogAtom(clock)).isFalse();
+
+            // Advance the clock to 2.5 periods.  Verify that a single event is permitted.
+            clock = (long) (EventCounter.TOKEN_PERIOD_MS * 2.5);
+            assertThat(counter.shouldLogAtom(clock)).isTrue();
+            assertThat(counter.shouldLogAtom(clock)).isFalse();
+
+            // Advance the clock to 50 periods.  Verify that MAX_TOKEN events are permitted.
+            clock = EventCounter.TOKEN_PERIOD_MS * 100;
+            for (total = 0; total < 100 && counter.shouldLogAtom(clock); total++) {
+                // Nothing to do - this is just counting the number of permitted tokens.
+            }
+            assertThat(total).isEqualTo(EventCounter.MAX_TOKENS);
         }
     }
 

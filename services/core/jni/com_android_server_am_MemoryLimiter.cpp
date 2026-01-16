@@ -113,7 +113,7 @@ public:
     bool init() {
         int pfd = syscall(SYS_pidfd_open, mPid, 0);
         if (pfd < 0) {
-            ALOGE("pidfd_open(%d) failed: %s", mPid, strerror(errno));
+            ALOGE_IF(errno != ESRCH, "pidfd_open(%d) failed: %s", mPid, strerror(errno));
             return false;
         }
         mPidFd.reset(pfd);
@@ -210,7 +210,7 @@ public:
             throwRuntime(env, "failed to find Controller class");
             return;
         }
-        mFunc = env->GetMethodID(service, "onLimitExceeded", "(IIILjava/lang/String;)V");
+        mFunc = env->GetMethodID(service, "onLimitExceeded", "(IIIJLjava/lang/String;)V");
         if (mFunc == nullptr) {
             throwRuntime(env, "failed to find limiter callback");
             return;
@@ -238,14 +238,15 @@ public:
         }
     }
 
-    void operator()(int pid, int uid, MonitoredLimit type, std::optional<std::string>& pkg) {
+    void operator()(int pid, int uid, MonitoredLimit type, int64_t limit,
+                    std::optional<std::string>& pkg) {
         JNIEnv* env;
         if (mVm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6) == JNI_OK) {
             jstring jpkg = nullptr;
             if (pkg.has_value()) {
                 jpkg = env->NewStringUTF(pkg.value().c_str());
             }
-            env->CallVoidMethod(mLimiter, mFunc, pid, uid, type, jpkg);
+            env->CallVoidMethod(mLimiter, mFunc, pid, uid, type, limit, jpkg);
         } else {
             ALOGE("GetEnv() failed");
         }
@@ -505,7 +506,7 @@ private:
             int wd = data.event.wd;
             pid_t pid = 0;
             uid_t uid = 0;
-            MonitoredLimit limit = MonitoredLimit::kUnknown;
+            MonitoredLimit type = MonitoredLimit::kUnknown;
             std::optional<std::string> pkg;
             {
                 AutoMutex _l(mLock);
@@ -514,13 +515,27 @@ private:
                 if (i != mTargets.end()) {
                     Process* p = &i->second;
                     uid = p->mUid;
-                    limit = p->getLimitType(wd);
+                    type = p->getLimitType(wd);
                     pkg = p->mPkg;
                     p->unwatch(mInotifyFd, mWdMap);
                 }
             }
             if (pid != 0) {
-                mCallback(pid, uid, limit, pkg);
+                // Fetch the configure memcg memory.high limit.  A value of 0 means the limit
+                // could not be read or the value was read but is suspicious.
+                int64_t limit = 0;
+                std::string path;
+                if (CgroupGetAttributePathForProcess("MemHigh", uid, pid, path)) {
+                    std::string value;
+                    if (android::base::ReadFileToString(path, &value, false)) {
+                        // This will fail if the limit is "max".  If so, the limit value above
+                        // will remain zero, which indicates that the limit could not be read or
+                        // is suspicious.  A value of "max" at this point suggests that there
+                        // may be another control process that is trying to configure limits.
+                        sscanf(value.c_str(), "%" SCNd64, &limit);
+                    }
+                }
+                mCallback(pid, uid, type, limit, pkg);
             }
         } else {
             ALOGE("read(inotify) failed: %s", strerror(errno));
