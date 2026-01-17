@@ -23,7 +23,10 @@ import android.view.PointerIcon as AndroidPointerIcon
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.border
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
@@ -46,6 +49,11 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.PointerIcon
@@ -57,6 +65,9 @@ import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
@@ -316,6 +327,18 @@ class RegionBoxState(
         resizeZone = null
     }
 
+    /**
+     * Handles resizing the region box by a zone (corner) with the provided offset e.g. from
+     * pressing arrow keys.
+     *
+     * @param zone The resize zone that is currently focused.
+     * @param offset The amount to resize the region box by.
+     */
+    fun adjustZone(zone: ResizeZone, offset: Offset) {
+        val currentRect = rect ?: return
+        rect = zone.processResizeDrag(currentRect, offset, minSizePx, screenWidth, screenHeight)
+    }
+
     /** Determines which pointer device is being used based on the given motion event. */
     fun setPointerDevice(motionEvent: MotionEvent?) {
         motionEvent ?: return
@@ -442,6 +465,19 @@ fun RegionBox(
     val scrimColor = ScreenCaptureColors.scrimColor
     val pointerIcon = rememberPointerIcon(state)
 
+    fun notifyRegionSelected() {
+        state.rect?.let { rect: Rect ->
+            onRegionSelected(
+                IntRect(
+                    rect.left.roundToInt(),
+                    rect.top.roundToInt(),
+                    rect.right.roundToInt(),
+                    rect.bottom.roundToInt(),
+                )
+            )
+        }
+    }
+
     LaunchedEffect(state.dragMode) { onInteractionStateChanged(state.dragMode != DragMode.NONE) }
 
     Box(
@@ -479,18 +515,7 @@ fun RegionBox(
                         },
                         onDragEnd = {
                             state.dragEnd()
-                            state.rect?.let { rect: Rect ->
-                                // Store the rectangle to the ViewModel for taking a screenshot.
-                                // The screenshot API requires a Rect class with int values.
-                                onRegionSelected(
-                                    IntRect(
-                                        rect.left.roundToInt(),
-                                        rect.top.roundToInt(),
-                                        rect.right.roundToInt(),
-                                        rect.bottom.roundToInt(),
-                                    )
-                                )
-                            }
+                            notifyRegionSelected()
                         },
                         onDragCancel = { state.dragEnd() },
                     )
@@ -738,10 +763,50 @@ fun RegionBox(
                     val (topLeftHandle, topRightHandle, bottomLeftHandle, bottomRightHandle) =
                         subcompose("resizeHandles") {
                                 val handleSize = 20.dp
-                                ResizeHandle(rotation = 0f, size = handleSize) // Top left
-                                ResizeHandle(rotation = 90f, size = handleSize) // Top right
-                                ResizeHandle(rotation = 270f, size = handleSize) // Bottom left
-                                ResizeHandle(rotation = 180f, size = handleSize) // Bottom right
+
+                                fun handleResize(zone: ResizeZone, offset: Offset) {
+                                    state.adjustZone(zone, offset)
+                                    notifyRegionSelected()
+                                }
+
+                                // Top left
+                                ResizeHandle(
+                                    rotation = 0f,
+                                    size = handleSize,
+                                    onResize = {
+                                        handleResize(zone = ResizeZone.Corner.TopLeft, offset = it)
+                                    },
+                                )
+                                // Top right
+                                ResizeHandle(
+                                    rotation = 90f,
+                                    size = handleSize,
+                                    onResize = {
+                                        handleResize(zone = ResizeZone.Corner.TopRight, offset = it)
+                                    },
+                                )
+                                // Bottom left
+                                ResizeHandle(
+                                    rotation = 270f,
+                                    size = handleSize,
+                                    onResize = {
+                                        handleResize(
+                                            zone = ResizeZone.Corner.BottomLeft,
+                                            offset = it,
+                                        )
+                                    },
+                                )
+                                // Bottom right
+                                ResizeHandle(
+                                    rotation = 180f,
+                                    size = handleSize,
+                                    onResize = {
+                                        handleResize(
+                                            zone = ResizeZone.Corner.BottomRight,
+                                            offset = it,
+                                        )
+                                    },
+                                )
                             }
                             .map { it.measure(constraints) }
 
@@ -754,8 +819,8 @@ fun RegionBox(
                         // The parent Box's graphicsLayer then translates this entire
                         // SubcomposeLayout to the correct on-screen position, ensuring all
                         // elements move as a single, synchronized unit.
+                        // The order of these placeables also specify the focus order for a11y.
                         selectionBoxPlaceable.place(0, 0)
-                        captureButtonPlaceable.place(0, 0)
 
                         if (
                             state.dragMode == DragMode.RESIZING ||
@@ -780,6 +845,8 @@ fun RegionBox(
                                 selectionBoxPlaceable.height - bottomRightHandle.height,
                             )
                         }
+
+                        captureButtonPlaceable.place(0, 0)
                     }
                 }
             }
@@ -788,9 +855,49 @@ fun RegionBox(
 }
 
 @Composable
-private fun ResizeHandle(rotation: Float, size: Dp, modifier: Modifier = Modifier) {
+private fun ResizeHandle(
+    rotation: Float,
+    size: Dp,
+    onResize: (Offset) -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val handleColor = MaterialTheme.colorScheme.primary
-    Canvas(modifier = modifier.size(size).graphicsLayer { rotationZ = rotation }) {
+    val density = LocalDensity.current
+    val stepSize = 10.dp
+    val stepSizePx = remember(density) { with(density) { stepSize.toPx() } }
+
+    // TODO(b/430364645) Update focused state UI
+    val interactionSource = remember { MutableInteractionSource() }
+    val isFocused by interactionSource.collectIsFocusedAsState()
+
+    Canvas(
+        modifier =
+            modifier
+                .size(size)
+                .graphicsLayer { rotationZ = rotation }
+                .focusable(interactionSource = interactionSource)
+                .onKeyEvent { event ->
+                    if (event.type == KeyEventType.KeyDown) {
+                        val offset =
+                            when (event.key) {
+                                Key.DirectionUp -> Offset(0f, -stepSizePx)
+                                Key.DirectionDown -> Offset(0f, stepSizePx)
+                                Key.DirectionLeft -> Offset(-stepSizePx, 0f)
+                                Key.DirectionRight -> Offset(stepSizePx, 0f)
+                                else -> Offset.Zero
+                            }
+                        if (offset != Offset.Zero) {
+                            onResize(offset)
+                            return@onKeyEvent true
+                        }
+                    }
+                    false
+                }
+                .semantics {
+                    // TODO(b/430364645): Figure out what the correct role should be.
+                    this.role = Role.Button
+                }
+    ) {
         val strokeWidth = 6.dp.toPx()
         val canvasSize = this.size.width
         val path =
