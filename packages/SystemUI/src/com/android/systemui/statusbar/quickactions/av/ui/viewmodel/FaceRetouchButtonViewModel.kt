@@ -33,7 +33,7 @@ constructor(private val desktopEffectInteractor: DesktopEffectInteractor) :
             .map {
                 ButtonUiState(
                     isEnabled = it.faceRetouch,
-                    mainTitle = com.android.systemui.res.R.string.av_camera_improve_lighting,
+                    mainTitle = com.android.systemui.res.R.string.av_camera_portrait_touch_up,
                     image = com.android.systemui.res.R.drawable.gs_face_retouch,
                 )
             }
