@@ -21,35 +21,33 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.Flags.FLAG_EXPANDED_PRIVACY_INDICATORS_ON_LARGE_SCREEN
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
-import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.privacy.PrivacyApplication
 import com.android.systemui.privacy.PrivacyItem
 import com.android.systemui.privacy.PrivacyType
 import com.android.systemui.shade.data.repository.fakePrivacyChipRepository
-import com.android.systemui.testKosmos
+import com.android.systemui.testKosmosNew
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.Test
-import org.junit.Before
 import org.junit.runner.RunWith
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class AvControlsPanelContentViewModelTest() : SysuiTestCase() {
-    private val kosmos = testKosmos().useUnconfinedTestDispatcher()
-    private lateinit var underTest: AvControlsPanelContentViewModel
+    private val kosmos = testKosmosNew()
+    private val Kosmos.underTest by
+        Kosmos.Fixture {
+            val res = avControlsPanelContentViewModelFactory.create {}
+            res.activateIn(testScope)
+            res
+        }
     private val cameraItem =
         PrivacyItem(PrivacyType.TYPE_CAMERA, PrivacyApplication("fakepackage", 0))
     private val microphoneItem =
         PrivacyItem(PrivacyType.TYPE_MICROPHONE, PrivacyApplication("fakepackage", 0))
-
-    @Before
-    fun setUp() {
-        underTest = kosmos.avControlsPanelContentViewModelFactory.create {}
-        underTest.activateIn(kosmos.testScope)
-    }
 
     @Test
     @EnableFlags(FLAG_EXPANDED_PRIVACY_INDICATORS_ON_LARGE_SCREEN)
