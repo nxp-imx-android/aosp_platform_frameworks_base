@@ -246,7 +246,7 @@ public abstract class StageCoordinatorAbstract implements SplitLayout.SplitLayou
     /// Split operations.
     ///
     /// ////////////////////////////////////////////////////////////////////////////////////////////
-    abstract void requestEnterSplitSelect(RunningTaskInfo taskInfo,
+    abstract boolean requestEnterSplitSelect(RunningTaskInfo taskInfo,
             int splitPosition, Rect taskBounds, boolean startRecents,
             @Nullable WindowContainerTransaction withRecentsWct);
 

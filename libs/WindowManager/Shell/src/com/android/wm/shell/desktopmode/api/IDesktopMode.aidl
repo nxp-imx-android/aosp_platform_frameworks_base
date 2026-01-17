@@ -84,6 +84,11 @@ interface IDesktopMode {
     /** Perform cleanup transactions after choosing a split select task launch option. */
     oneway void onDesktopSplitSelectChoice(in RunningTaskInfo taskInfo);
 
+    /**
+    * Callback to notify shell that the task with the given id is being animated to split select.
+    */
+    oneway void onSplitSelectAnimationStarted(in int taskId);
+
     /** Set listener that will receive callbacks about updates to desktop tasks */
     oneway void setTaskListener(IDesktopTaskListener listener);
 
