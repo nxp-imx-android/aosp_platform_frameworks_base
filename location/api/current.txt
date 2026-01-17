@@ -176,6 +176,7 @@ package android.location {
     method public boolean hasAntennaInfo();
     method public boolean hasGeofencing();
     method @Deprecated public boolean hasGnssAntennaInfo();
+    method @FlaggedApi("android.location.flags.gnss_capability_restart_engine_after_power_mode_change") public boolean hasGnssEngineRestartAfterPowerModeChange();
     method public boolean hasLowPowerMode();
     method public boolean hasMeasurementCorrections();
     method public boolean hasMeasurementCorrectionsExcessPathLength();
@@ -213,6 +214,7 @@ package android.location {
     method @NonNull public android.location.GnssCapabilities.Builder setHasAccumulatedDeltaRange(int);
     method @NonNull public android.location.GnssCapabilities.Builder setHasAntennaInfo(boolean);
     method @NonNull public android.location.GnssCapabilities.Builder setHasGeofencing(boolean);
+    method @FlaggedApi("android.location.flags.gnss_capability_restart_engine_after_power_mode_change") @NonNull public android.location.GnssCapabilities.Builder setHasGnssEngineRestartAfterPowerModeChange(boolean);
     method @NonNull public android.location.GnssCapabilities.Builder setHasLowPowerMode(boolean);
     method @NonNull public android.location.GnssCapabilities.Builder setHasMeasurementCorrections(boolean);
     method @NonNull public android.location.GnssCapabilities.Builder setHasMeasurementCorrectionsExcessPathLength(boolean);
