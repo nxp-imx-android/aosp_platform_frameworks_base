@@ -287,12 +287,12 @@ fun StatusBarRoot(
                             StatusBarLocation.HOME,
                             darkIconDispatcher,
                         )
-                    iconController.addIconGroup(darkIconManager)
 
                     HomeStatusBarIconBlockListBinder.bind(
                         statusIconContainer,
                         darkIconManager,
                         statusBarViewModel.iconBlockList,
+                        iconController,
                     )
 
                     if (NewStatusBarIcons.isEnabled) {

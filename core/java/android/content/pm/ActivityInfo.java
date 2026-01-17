@@ -1748,6 +1748,9 @@ public class ActivityInfo extends ComponentInfo implements Parcelable {
      * display space. In addition, even without compatibility issues, some games work better with
      * a gamepad. Showing a system-provided virtual gamepad can improve the user experience.
      *
+     * This flag also forces the app to be resizable similar to {@link #FORCE_RESIZE_APP} to ensure
+     * that the app works well with the virtual gamepad.
+     *
      * This is disabled by default, and can be enabled by device manufacturers on a per-application
      * basis, controlled via
      * <a href="https://developer.android.com/guide/practices/device-compatibility-mode#device_manufacturer_per-app_overrides">Device manufacturer per-app overrides</a>.
@@ -2745,7 +2748,7 @@ public class ActivityInfo extends ComponentInfo implements Parcelable {
          * @hide
          */
         public int getDefaultWidth(@NonNull DisplayMetrics metrics) {
-            if (!Flags.runtimeDensityResolutionForWindowLayout()) {
+            if (!Flags.runtimeDensityResolutionForWindowLayoutBugfix()) {
                 return this.width;
             }
 
@@ -2760,7 +2763,7 @@ public class ActivityInfo extends ComponentInfo implements Parcelable {
          * @hide
          */
         public int getDefaultHeight(@NonNull DisplayMetrics metrics) {
-            if (!Flags.runtimeDensityResolutionForWindowLayout()) {
+            if (!Flags.runtimeDensityResolutionForWindowLayoutBugfix()) {
                 return this.height;
             }
 
@@ -2775,7 +2778,7 @@ public class ActivityInfo extends ComponentInfo implements Parcelable {
          * @hide
          */
         public int getMinWidth(@NonNull DisplayMetrics metrics) {
-            if (!Flags.runtimeDensityResolutionForWindowLayout()) {
+            if (!Flags.runtimeDensityResolutionForWindowLayoutBugfix()) {
                 return this.minWidth;
             }
 
@@ -2790,7 +2793,7 @@ public class ActivityInfo extends ComponentInfo implements Parcelable {
          * @hide
          */
         public int getMinHeight(@NonNull DisplayMetrics metrics) {
-            if (!Flags.runtimeDensityResolutionForWindowLayout()) {
+            if (!Flags.runtimeDensityResolutionForWindowLayoutBugfix()) {
                 return this.minHeight;
             }
 

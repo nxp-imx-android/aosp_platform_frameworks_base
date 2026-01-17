@@ -357,7 +357,7 @@ public class SystemConfig {
     // These packages will be set as 'prevent disable', where they are no longer possible
     // for the end user to disable via settings. This flag should only be used for packages
     // which meet the 'force or keep enabled apps' policy.
-    private final ArrayList<String> mPreventUserDisablePackages = new ArrayList<>();
+    private final ArraySet<String> mPreventUserDisablePackages = new ArraySet<>();
 
     // Map of packagesNames to userTypes. Stored temporarily until cleared by UserManagerService().
     private ArrayMap<String, Set<String>> mPackageToUserTypeAllowlist = new ArrayMap<>();
@@ -573,7 +573,7 @@ public class SystemConfig {
         return mAppDataIsolationWhitelistedApps;
     }
 
-    public @NonNull ArrayList<String> getPreventUserDisablePackages() {
+    public @NonNull ArraySet<String> getPreventUserDisablePackages() {
         return mPreventUserDisablePackages;
     }
 

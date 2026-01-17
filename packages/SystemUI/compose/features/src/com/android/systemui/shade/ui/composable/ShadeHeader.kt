@@ -652,13 +652,13 @@ private fun CarrierTextWithSubscriptionId(
         factory = { context ->
             ModernShadeCarrierGroupMobileView.constructAndBind(
                     context = context,
-                    logger = viewModel.mobileIconsViewModel.get().logger,
+                    logger = viewModel.mobileIconsViewModel.logger,
                     slot = "mobile_carrier_shade_group",
                     viewModel =
-                        (viewModel.mobileIconsViewModel
-                            .get()
-                            .viewModelForSub(subId, StatusBarLocation.SHADE_CARRIER_GROUP)
-                            as ShadeCarrierGroupMobileIconViewModel),
+                        (viewModel.mobileIconsViewModel.viewModelForSub(
+                            subId,
+                            StatusBarLocation.SHADE_CARRIER_GROUP,
+                        ) as ShadeCarrierGroupMobileIconViewModel),
                 )
                 .also { it.setOnClickListener { viewModel.onShadeCarrierGroupClicked() } }
         },

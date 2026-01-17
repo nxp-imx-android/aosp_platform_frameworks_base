@@ -20,28 +20,28 @@ import androidx.compose.foundation.layout.Arrangement.spacedBy
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.key
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.sp
-import com.android.systemui.lifecycle.rememberActivated
-import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.MobileIconsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.MobileIconsViewModel
 import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.StackedMobileIconViewModel
 import com.android.systemui.statusbar.pipeline.shared.ui.composable.StackedMobileIcon
 
 /** Renders the mobile icons for the status bar. */
 @Composable
 fun MobileIcons(
-    state: MobileIconsState,
+    viewModel: MobileIconsViewModel,
     stackedMobileIconViewModel: StackedMobileIconViewModel,
     modifier: Modifier = Modifier,
 ) {
-    val isStackable = state.isStackable
+    val isStackable by viewModel.isStackable.collectAsStateWithLifecycle()
     if (isStackable) {
         StackedMobileIcon(viewModel = stackedMobileIconViewModel, modifier = modifier)
     } else {
-        val mobileSubViewModels = state.mobileSubViewModels
+        val mobileSubViewModels by viewModel.mobileSubViewModels.collectAsStateWithLifecycle()
         val iconPaddingSp = 4.sp
         val iconSpacingSp = 2.sp
         val padding = with(LocalDensity.current) { iconPaddingSp.toDp() }
@@ -53,13 +53,7 @@ fun MobileIcons(
             modifier = modifier.padding(horizontal = padding),
         ) {
             mobileSubViewModels.forEach { mobileViewModel ->
-                val id = mobileViewModel.subscriptionId
-                key(id) {
-                    MobileIcon(
-                        state =
-                            rememberActivated("MobileIconState[$id]") { mobileViewModel.create() }
-                    )
-                }
+                MobileIcon(viewModel = mobileViewModel)
             }
         }
     }

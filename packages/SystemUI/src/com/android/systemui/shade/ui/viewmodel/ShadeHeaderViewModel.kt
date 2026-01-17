@@ -74,7 +74,7 @@ constructor(
     private val shadeModeInteractor: ShadeModeInteractor,
     shadeDarkIconInteractor: ShadeDarkIconInteractor,
     mobileIconsInteractor: MobileIconsInteractor,
-    val mobileIconsViewModel: dagger.Lazy<MobileIconsViewModel>,
+    val mobileIconsViewModel: MobileIconsViewModel,
     private val privacyChipInteractor: PrivacyChipInteractor,
     private val clockInteractor: ClockInteractor,
     private val batteryMeterViewControllerFactory: BatteryMeterViewController.Factory,

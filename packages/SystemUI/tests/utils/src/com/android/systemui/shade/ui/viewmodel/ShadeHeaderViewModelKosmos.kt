@@ -50,7 +50,7 @@ val Kosmos.shadeHeaderViewModelFactory: ShadeHeaderViewModel.Factory by
                     shadeModeInteractor = shadeModeInteractor,
                     shadeDarkIconInteractor = shadeDarkIconInteractor,
                     mobileIconsInteractor = mobileIconsInteractor,
-                    mobileIconsViewModel = { mobileIconsViewModel },
+                    mobileIconsViewModel = mobileIconsViewModel,
                     privacyChipInteractor = privacyChipInteractor,
                     clockInteractor = clockInteractor,
                     batteryMeterViewControllerFactory = batteryMeterViewControllerFactory,

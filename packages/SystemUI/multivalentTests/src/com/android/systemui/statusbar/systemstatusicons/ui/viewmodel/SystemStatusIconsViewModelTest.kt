@@ -41,6 +41,7 @@ import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.domain.startable.sceneContainerStartable
 import com.android.systemui.scene.shared.model.Scenes
+import com.android.systemui.statusbar.getCommandQueueCallback
 import com.android.systemui.statusbar.pipeline.airplane.data.repository.airplaneModeRepository
 import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.fakeMobileIconsInteractor
 import com.android.systemui.statusbar.pipeline.satellite.data.repository.deviceBasedSatelliteRepository
@@ -59,6 +60,7 @@ import com.android.systemui.statusbar.policy.profile.data.repository.managedProf
 import com.android.systemui.statusbar.policy.profile.shared.model.ProfileInfo
 import com.android.systemui.statusbar.policy.vpn.data.repository.vpnRepository
 import com.android.systemui.statusbar.policy.vpn.shared.model.VpnState
+import com.android.systemui.statusbar.systemstatusicons.data.repository.ExternalSystemStatusIconRepositoryTest.Companion.createStatusBarIcon
 import com.android.systemui.statusbar.systemstatusicons.data.repository.statusBarConfigIconSlotNames
 import com.android.systemui.statusbar.systemstatusicons.flags.EnableSystemStatusIconsInCompose
 import com.android.systemui.testKosmos
@@ -163,6 +165,38 @@ class SystemStatusIconsViewModelTest : SysuiTestCase() {
             assertThat(underTest.activeSlotNames)
                 .containsExactly(slotAirplane, slotEthernet, slotVibrate, slotBluetooth, slotZen)
                 .inOrder()
+        }
+
+    @Test
+    fun iconViewModels_firstExternalThenUnorderedThenOrdered() =
+        kosmos.runTest {
+            val customOrder = arrayOf(slotBluetooth)
+            statusBarConfigIconSlotNames = customOrder
+            assertThat(underTest.activeSlotNames).isEmpty()
+
+            showBluetooth()
+            showEthernet()
+            showExternalIcon(slotName = "externalSlot")
+
+            assertThat(underTest.activeSlotNames)
+                .containsExactly("externalSlot", slotEthernet, slotBluetooth)
+                .inOrder()
+        }
+
+    @Test
+    fun iconViewModels_externalSlotSameNameAsInternal_bothShown() =
+        kosmos.runTest {
+            assertThat(underTest.activeSlotNames).isEmpty()
+
+            showAirplaneMode()
+            showExternalIcon(slotName = slotAirplane)
+            // Verify both icons are shown
+            assertThat(underTest.activeSlotNames).containsExactly(slotAirplane, slotAirplane)
+            // Verify external is before internal
+            assertThat(underTest.iconViewModels[0])
+                .isInstanceOf(SystemStatusIconViewModel.External::class.java)
+            assertThat(underTest.iconViewModels[1])
+                .isInstanceOf(SystemStatusIconViewModel.Default::class.java)
         }
 
     @Test
@@ -369,5 +403,10 @@ class SystemStatusIconsViewModelTest : SysuiTestCase() {
         deviceBasedSatelliteRepository.isSatelliteProvisioned.value = true
         deviceBasedSatelliteRepository.isSatelliteAllowedForCurrentLocation.value = true
         deviceBasedSatelliteRepository.connectionState.value = SatelliteConnectionState.Connected
+    }
+
+    private fun Kosmos.showExternalIcon(slotName: String) {
+        val icon = createStatusBarIcon()
+        getCommandQueueCallback().setIcon(slotName, icon)
     }
 }

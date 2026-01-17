@@ -886,6 +886,9 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
     @NonNull
     private final ArraySet<String> mKeepUninstalledPackages = new ArraySet<>();
 
+    @NonNull
+    private final ArraySet<String> mRequiredSystemPackages = new ArraySet<>();
+
     // Cached reference to IDevicePolicyManager.
     private IDevicePolicyManager mDevicePolicyManager = null;
 
@@ -2505,6 +2508,9 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
 
             // Resolve the sdk sandbox package
             mRequiredSdkSandboxPackage = getRequiredSdkSandboxPackageName(computer);
+            if (Flags.protectSystemRequiredPackages()) {
+                buildRequiredSystemPackages();
+            }
             // Check that the developer verification service provider package specified in the
             // config can indeed be a verifier.
             mDeveloperVerificationServiceProvider =
@@ -3985,6 +3991,31 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
         }
     }
 
+    private void buildRequiredSystemPackages() {
+        mRequiredSystemPackages.addAll(mInjector.getSystemConfig().getPreventUserDisablePackages());
+        mRequiredSystemPackages.add(mRequiredInstallerPackage);
+        mRequiredSystemPackages.add(mRequiredUninstallerPackage);
+        mRequiredSystemPackages.add(mRequiredPermissionControllerPackage);
+        mRequiredSystemPackages.add(mRequiredSdkSandboxPackage);
+    }
+
+    private boolean isRequiredSystemPackage(Computer snapshot, String pkgName) {
+        return mRequiredSystemPackages.contains(pkgName)
+                && snapshot.getPackageStateInternal(pkgName).isSystem();
+    }
+
+    private boolean canControlSystemRequiredPackages(Computer snapshot, int callingUid) {
+        return snapshot.checkUidPermission(
+                android.Manifest.permission.ALLOW_CONTROL_SYSTEM_REQUIRED_PACKAGES,
+                callingUid) == PERMISSION_GRANTED;
+    }
+
+    boolean isRequiredSystemPackageThatCallerCannotControl(
+            Computer snapshot, String pkgName, int callingUid) {
+        return isRequiredSystemPackage(snapshot, pkgName)
+                && !canControlSystemRequiredPackages(snapshot, callingUid);
+    }
+
     private void setEnabledSettings(List<ComponentEnabledSetting> settings, int userId,
             @NonNull String callingPackage) {
         final int callingUid = Binder.getCallingUid();
@@ -4100,6 +4131,20 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
                         throw new SecurityException(
                                 "Shell cannot change component state for "
                                         + setting.getComponentName() + " to " + newState);
+                    }
+                }
+                if (Flags.protectSystemRequiredPackages()) {
+                    final int newState = setting.getEnabledState();
+                    if (isRequiredSystemPackageThatCallerCannotControl(
+                            preLockSnapshot, packageName, callingUid)
+                            && (newState == COMPONENT_ENABLED_STATE_DISABLED
+                                || newState == COMPONENT_ENABLED_STATE_DISABLED_USER
+                                || newState == COMPONENT_ENABLED_STATE_DISABLED_UNTIL_USED)
+                            && !setting.isComponent()) {
+                        Log.w(TAG, "Cannot disable system required package " + packageName
+                                + ", callingPackage: " + callingPackage);
+                        throw new SecurityException("Cannot disable required package "
+                                + packageName);
                     }
                 }
                 pkgSettings.put(packageName, pkgSetting);
@@ -6119,6 +6164,15 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
                     || LocalServices.getService(PackageManagerInternal.class)
                             .getSystemUiServiceComponent().getPackageName().equals(packageName)) {
                 Slog.w(TAG, "Cannot hide package: " + packageName);
+                return false;
+            }
+
+            // Don't allow hiding of required system packages as these are required at boot time.
+            if (Flags.protectSystemRequiredPackages()
+                    && isRequiredSystemPackageThatCallerCannotControl(
+                            snapshot, packageName, callingUid)) {
+                Slog.w(TAG, "Cannot hide package: " + packageName + " as it is required by the "
+                        + "system");
                 return false;
             }
 

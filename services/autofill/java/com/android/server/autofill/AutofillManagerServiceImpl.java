@@ -1293,7 +1293,18 @@ final class AutofillManagerServiceImpl
                     new Event(Event.TYPE_DATASETS_SHOWN, null, clientState, null, null, null,
                             null, null, null, null, null, NO_SAVE_UI_REASON_NONE,
                             UI_TYPE_INLINE, /* focusedId= */ null));
+        }
+    }
 
+    void logAugmentedAutofillResponseDiscarded(int sessionId, @Nullable Bundle clientState) {
+        synchronized (mLock) {
+            if (mAugmentedAutofillEventHistory == null
+                    || mAugmentedAutofillEventHistory.getSessionId() != sessionId) {
+                return;
+            }
+            mAugmentedAutofillEventHistory.addEvent(
+                    new Event(Event.TYPE_RESPONSE_DISCARDED, null, clientState, null, null,
+                            null, null, null, null, null, null, /* focusedId= */ null));
         }
     }
 
@@ -1731,6 +1742,12 @@ final class AutofillManagerServiceImpl
                                             sessionId, suggestionId, clientState);
                         }
 
+                        @Override
+                        public void logAugmentedAutofillResponseDiscarded(int sessionId,
+                                Bundle clientState) {
+                            AutofillManagerServiceImpl.this.logAugmentedAutofillResponseDiscarded(
+                                    sessionId, clientState);
+                        }
                         @Override
                         public void onServiceDied(@NonNull RemoteAugmentedAutofillService service) {
                             Slog.w(TAG, "remote augmented autofill service died");

@@ -40,7 +40,7 @@ public class WindowLayoutTest {
     @Rule
     public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
-    @EnableFlags(Flags.FLAG_RUNTIME_DENSITY_RESOLUTION_FOR_WINDOW_LAYOUT)
+    @EnableFlags(Flags.FLAG_RUNTIME_DENSITY_RESOLUTION_FOR_WINDOW_LAYOUT_BUGFIX)
     @Test
     public void testWindowLayout_resolvesDensityCorrectly() {
         final DisplayMetrics metrics = new DisplayMetrics();
