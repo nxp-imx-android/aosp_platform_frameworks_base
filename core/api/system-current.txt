@@ -8808,7 +8808,9 @@ package android.media.audiopolicy {
     method public int attachMixes(@NonNull java.util.List<android.media.audiopolicy.AudioMix>);
     method @FlaggedApi("android.media.audiopolicy.enable_fade_manager_configuration") @RequiresPermission(android.Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED) public int clearFadeManagerConfigurationForFocusLoss();
     method public android.media.AudioRecord createAudioRecordSink(android.media.audiopolicy.AudioMix) throws java.lang.IllegalArgumentException;
+    method @FlaggedApi("android.media.audio.audio_policy_builders_api") @Nullable @RequiresPermission(android.Manifest.permission.RECORD_AUDIO) public android.media.AudioRecord createAudioRecordSink(@NonNull android.media.audiopolicy.AudioMix, @NonNull android.media.AudioRecord.Builder);
     method public android.media.AudioTrack createAudioTrackSource(android.media.audiopolicy.AudioMix) throws java.lang.IllegalArgumentException;
+    method @FlaggedApi("android.media.audio.audio_policy_builders_api") @Nullable public android.media.AudioTrack createAudioTrackSource(@NonNull android.media.audiopolicy.AudioMix, @NonNull android.media.AudioTrack.Builder);
     method public int detachMixes(@NonNull java.util.List<android.media.audiopolicy.AudioMix>);
     method @FlaggedApi("android.media.audiopolicy.enable_fade_manager_configuration") @NonNull @RequiresPermission(android.Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED) public android.media.FadeManagerConfiguration getFadeManagerConfigurationForFocusLoss();
     method public int getFocusDuckingBehavior();

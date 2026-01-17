@@ -670,6 +670,14 @@ public class AudioRecord implements AudioRouting, MicrophoneDirection,
         }
 
         /**
+         * @hide
+         * Internal accessor function for getting the AudioAttributes from an AudioRecord.Builder.
+         */
+        public @Nullable AudioAttributes getAudioAttributes() {
+            return mAttributes;
+        }
+
+        /**
          * Sets the format of the audio data to be captured.
          * @param format a non-null {@link AudioFormat} instance
          * @return the same Builder instance.
