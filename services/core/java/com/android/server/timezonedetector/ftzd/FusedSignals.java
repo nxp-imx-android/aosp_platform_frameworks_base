@@ -15,10 +15,10 @@
  */
 package com.android.server.timezonedetector.ftzd;
 
+import static com.android.server.timezonedetector.FusedTimeZoneDetector.Quality;
 import static com.android.server.timezonedetector.TimeZoneDetectorStrategy.ORIGIN_LOCATION;
 import static com.android.server.timezonedetector.TimeZoneDetectorStrategy.ORIGIN_TELEPHONY;
 import static com.android.server.timezonedetector.TimeZoneDetectorStrategy.Origin;
-import static com.android.server.timezonedetector.FusedTimeZoneDetector.Quality;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -32,7 +32,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Represents the fusion of time zone signals from multiple origins, such as telephony and location,
@@ -169,7 +168,20 @@ public final class FusedSignals {
         }
 
         mZoneIdCandidates.addAll(zoneIdCandidates);
-        mOrigins.put(origin, new OriginInfo(timestamp));
+        mOrigins.put(origin, new OriginInfo(/* timestampDetected= */ timestamp));
+        return this;
+    }
+
+    /**
+     * Updates the detected timestamp for a given origin.
+     *
+     * @param origin the origin to update
+     * @param timestamp the new detected timestamp
+     */
+    public FusedSignals setOriginDetectedTimestamp(@Origin int origin, long timestamp) {
+        if (mOrigins.containsKey(origin)) {
+            mOrigins.get(origin).setDetectedTimestamp(timestamp);
+        }
         return this;
     }
 

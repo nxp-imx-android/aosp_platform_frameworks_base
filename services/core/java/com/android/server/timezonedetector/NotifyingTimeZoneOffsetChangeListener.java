@@ -34,17 +34,15 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Resources;
-import android.icu.util.TimeZone;
 import android.icu.text.DateFormat;
 import android.icu.text.MeasureFormat;
 import android.icu.text.SimpleDateFormat;
 import android.icu.util.Measure;
 import android.icu.util.MeasureUnit;
+import android.icu.util.TimeZone;
 import android.os.SystemClock;
 import android.os.UserHandle;
-import android.timezone.flags.Flags;
 import android.util.IndentingPrintWriter;
-import android.util.Log;
 
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
@@ -53,10 +51,6 @@ import com.android.internal.notification.SystemNotificationChannels;
 import com.android.server.timezonedetector.TimeZoneOffsetChangeListener.TimeZoneOffsetChangeEvent;
 
 import java.time.Duration;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.zone.ZoneOffsetTransition;
-import java.time.zone.ZoneRules;
 import java.util.Objects;
 
 /** An implementation of {@link TimeZoneOffsetChangeListener} that fires notifications. */

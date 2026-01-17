@@ -29,6 +29,7 @@ import android.view.inputmethod.InputMethodManager
 import androidx.annotation.MainThread
 import com.android.internal.inputmethod.IImeSwitcherMenu
 import com.android.internal.inputmethod.IImeSwitcherMenuListener
+import com.android.internal.inputmethod.ImeSwitcherMenuItemSafeList
 import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Main
@@ -153,7 +154,7 @@ constructor(
         if (!visible) {
             // The UI is no longer visible, remove the model immediately to avoid accidentally
             // showing if the model is partially updated later.
-            mainExecutor.execute { updateModel(userId, model = null) }
+            updateModel(userId, model = null)
         }
 
         try {
@@ -208,7 +209,7 @@ constructor(
     private inner class IImeSwitcherMenuImpl : IImeSwitcherMenu.Stub() {
 
         override fun show(
-            items: List<IImeSwitcherMenu.Item>,
+            items: ImeSwitcherMenuItemSafeList,
             selectedImeId: String?,
             selectedSubtypeIndex: Int,
             selectedImeSettingsIntent: Intent?,
@@ -219,7 +220,7 @@ constructor(
             mainExecutor.execute {
                 val model =
                     ImeSwitcherMenuModel(
-                        items,
+                        items = ImeSwitcherMenuItemSafeList.extractFrom(items),
                         selectedImeId,
                         selectedSubtypeIndex,
                         selectedImeSettingsIntent,

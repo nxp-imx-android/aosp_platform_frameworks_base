@@ -19,8 +19,6 @@ package com.android.wm.shell.scenarios
 import android.app.Instrumentation
 import android.tools.Rotation
 import android.tools.device.apphelpers.CalculatorAppHelper
-import android.tools.device.apphelpers.ClockAppHelper
-import android.tools.device.apphelpers.MessagingAppHelper
 import android.tools.traces.parsers.WindowManagerStateHelper
 import android.tools.traces.parsers.toFlickerComponent
 import androidx.test.platform.app.InstrumentationRegistry
@@ -48,9 +46,11 @@ abstract class OpenTrampolineAppInDesktopModeTaskLimit(
 
     private val mailAppHelper = MailAppHelper(instrumentation)
     private val mailAppDesktopHelper = DesktopModeAppHelper(mailAppHelper)
+
     private val calculatorHelper = CalculatorAppHelper(instrumentation)
-    private val clockAppHelper = ClockAppHelper()
-    private val messagingAppHelper = MessagingAppHelper(instrumentation)
+    private val calculatorDesktopHelper = DesktopModeAppHelper(calculatorHelper)
+
+
     private val trampolineAppHelper =
         SimpleAppHelper(
             instrumentation,
@@ -61,10 +61,9 @@ abstract class OpenTrampolineAppInDesktopModeTaskLimit(
     @Before
     fun setup() {
         Assume.assumeTrue(desktopConfig.maxTaskLimit > 0)
-        mailAppDesktopHelper.enterDesktopMode(wmHelper, device)
-        calculatorHelper.launchViaIntent(wmHelper)
-        clockAppHelper.launchViaIntent(wmHelper)
-        messagingAppHelper.launchViaIntent(wmHelper)
+        calculatorDesktopHelper.enterDesktopMode(wmHelper, device)
+        mailAppDesktopHelper.openTasks(wmHelper, numTasks = desktopConfig.maxTaskLimit - 1)
+
     }
 
     @Test
@@ -74,10 +73,7 @@ abstract class OpenTrampolineAppInDesktopModeTaskLimit(
             .StateSyncBuilder()
             .withAppTransitionIdle()
             // Exactly one app is minimized
-            .withWindowSurfaceDisappeared(mailAppHelper.componentMatcher)
-            .withLayerVisible(calculatorHelper.componentMatcher)
-            .withLayerVisible(clockAppHelper.componentMatcher)
-            .withLayerVisible(messagingAppHelper.componentMatcher)
+            .withWindowSurfaceDisappeared(calculatorHelper.componentMatcher)
             // We need to verify that the second Activity (opened as trampolined task) is visible
             .withLayerVisible(
                 ActivityOptions.TrampolineFinishActivity.COMPONENT.toFlickerComponent()
@@ -88,9 +84,7 @@ abstract class OpenTrampolineAppInDesktopModeTaskLimit(
     @After
     fun teardown() {
         trampolineAppHelper.exit(wmHelper)
-        messagingAppHelper.exit()
-        clockAppHelper.exit()
-        calculatorHelper.exit()
-        mailAppHelper.exit()
+        mailAppDesktopHelper.exit(wmHelper)
+        calculatorDesktopHelper.exit(wmHelper)
     }
 }

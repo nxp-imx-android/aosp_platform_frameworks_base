@@ -587,3 +587,11 @@ flag {
   description: "Increase the watch strong auth timeout to 14 days."
   bug: "461907039"
 }
+
+flag {
+  name: "policy_streamlining_auto_time"
+  namespace: "enterprise"
+  description: "Redirect set/getAutoTimeEnabled to the generic set/getPolicy APIs."
+  bug: "434919316"
+  is_exported: true
+}

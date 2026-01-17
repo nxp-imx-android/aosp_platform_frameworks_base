@@ -77,8 +77,14 @@ public class UsbHostManager {
     @GuardedBy("mLock")
     // contains all connected USB devices
     private final HashMap<String, UsbDevice> mDevices = new HashMap<>();
+    // contains generated fingerprints for all connected USB devices
+    private final HashMap<String, UsbDeviceFingerprint> mDeviceFingerprints = new HashMap<>();
+
+    // Cache results of aconfig flags to collect fingerprints.
+    private boolean mCollectFingerprints;
 
     private Object mSettingsLock = new Object();
+
     @GuardedBy("mSettingsLock")
     private UsbProfileGroupSettingsManager mCurrentSettings;
 
@@ -256,6 +262,11 @@ public class UsbHostManager {
                     deviceConnectionHandler));
         }
         mHasMidiFeature = context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_MIDI);
+
+        // Collect device fingerprints when these flags are enabled.
+        mCollectFingerprints =
+                android.hardware.usb.flags.Flags.enablePersistentUsbDevicePermissions()
+                        || com.android.server.usb.flags.Flags.enableUsbHostAuthorization();
     }
 
     public void setCurrentUserSettings(UsbProfileGroupSettingsManager settings) {
@@ -417,6 +428,12 @@ public class UsbHostManager {
                 mDevices.put(deviceAddress, newDevice);
                 Slog.d(TAG, "Added device " + newDevice);
 
+                if (mCollectFingerprints) {
+                    UsbDeviceFingerprint fingerprint =
+                            UsbDeviceFingerprint.createLiveFingerprint(newDevice, parser);
+                    mDeviceFingerprints.put(deviceAddress, fingerprint);
+                }
+
                 // It is fine to call this only for the current user as all broadcasts are
                 // sent to all profiles of the user and the dialogs should only show once.
                 ComponentName usbDeviceConnectionHandler = getUsbDeviceConnectionHandler();
@@ -494,6 +511,10 @@ public class UsbHostManager {
 
         synchronized (mLock) {
             UsbDevice device = mDevices.remove(deviceAddress);
+            if (mCollectFingerprints) {
+                mDeviceFingerprints.remove(deviceAddress);
+            }
+
             if (device != null) {
                 Slog.d(TAG, "Removed device at " + deviceAddress + ": " + device.getProductName());
                 mUsbAlsaManager.usbDeviceRemoved(deviceAddress);
@@ -547,6 +568,18 @@ public class UsbHostManager {
             for (String name : mDevices.keySet()) {
                 devices.putParcelable(name, mDevices.get(name));
             }
+        }
+    }
+
+    /**
+     * Gets the fingerprint for a connected device at the address.
+     *
+     * @param deviceAddr - Address of connected UsbDevice
+     * @return {@link UsbDeviceFingerprint} if device exists or null.
+     */
+    UsbDeviceFingerprint getConnectedDeviceFingerprintForAddress(String deviceAddr) {
+        synchronized (mLock) {
+            return mDeviceFingerprints.get(deviceAddr);
         }
     }
 

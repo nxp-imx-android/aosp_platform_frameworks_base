@@ -16,6 +16,7 @@
 package com.android.server.wm;
 
 import static android.app.WindowConfiguration.ROTATION_UNDEFINED;
+import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.content.pm.ActivityInfo.INSETS_DECOUPLED_CONFIGURATION_ENFORCED;
 import static android.content.pm.ActivityInfo.OVERRIDE_ENABLE_INSETS_DECOUPLED_CONFIGURATION;
 import static android.content.res.Configuration.ORIENTATION_LANDSCAPE;
@@ -24,16 +25,22 @@ import static android.content.res.Configuration.ORIENTATION_UNDEFINED;
 import static android.view.Surface.ROTATION_270;
 import static android.view.Surface.ROTATION_90;
 
+import static com.android.internal.policy.DesktopModeCompatUtils.shouldExcludeCaptionFromAppBounds;
+import static com.android.internal.policy.SystemBarUtils.getDesktopViewAppHeaderHeightPx;
 import static com.android.server.wm.AppCompatUtils.isInDesktopMode;
+import static com.android.server.wm.DesktopModeHelper.canEnterDesktopMode;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.WindowConfiguration.WindowingMode;
+import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.graphics.Insets;
 import android.graphics.Rect;
 import android.view.DisplayInfo;
+
+import com.android.window.flags.Flags;
 
 /**
  * Encapsulate logic related to sandboxing for app compatibility.
@@ -90,6 +97,13 @@ class AppCompatSandboxingPolicy {
     void resolveTmpOverrides(@NonNull Configuration parentConfig,
             boolean isFixedRotationTransforming, @Nullable Rect safeRegionBounds,
             boolean shouldApplyLegacyInsets, @Nullable AppCompatDisplayInsets compatDisplayInsets) {
+        if (safeRegionBounds == null) {
+            safeRegionBounds = sandboxContainerBoundsIfNeeded(parentConfig);
+            if (safeRegionBounds != null) {
+                mResolveConfigHint.mUseSandboxedAppBounds = true;
+            }
+        }
+
         mResolveConfigHint.resolveTmpOverrides(mActivityRecord.mDisplayContent, parentConfig,
                 isFixedRotationTransforming, safeRegionBounds, shouldApplyLegacyInsets);
         mResolveConfigHint.mTmpCompatInsets = compatDisplayInsets;
@@ -108,6 +122,47 @@ class AppCompatSandboxingPolicy {
         mResolveConfigHint.mTmpOverrideDisplayInfo = null;
     }
 
+    boolean isCaptionExcludedFromAppBounds(boolean isResizeable) {
+        final boolean isOverrideAllowed = mActivityRecord.mAppCompatController.getSandboxOverrides()
+                .isOverrideExcludeCaptionInsetsAllowed();
+        if (!Flags.refactorCaptionSandboxingToCore()) {
+            return isOverrideAllowed;
+        }
+
+        if (!canEnterDesktopMode(mActivityRecord.mAtmService.mContext)) {
+            return false;
+        }
+
+        return shouldExcludeCaptionFromAppBounds(mActivityRecord.info, isResizeable,
+                mActivityRecord.mOptOutEdgeToEdge, isOverrideAllowed);
+    }
+
+    @Nullable
+    private Rect sandboxContainerBoundsIfNeeded(@NonNull Configuration parentConfig) {
+        if (mActivityRecord.getTask() != null
+                && !mActivityRecord.getTask().getIsCaptionInsetsExcluded()) {
+            return null;
+        }
+
+        if (parentConfig.windowConfiguration.getWindowingMode() != WINDOWING_MODE_FREEFORM) {
+            return null;
+        }
+
+        final Rect containerBounds = parentConfig.windowConfiguration.getBounds();
+        final Rect containerAppBounds = parentConfig.windowConfiguration.getAppBounds() != null
+                ? parentConfig.windowConfiguration.getAppBounds() : containerBounds;
+
+        final Context displayContext =
+                mActivityRecord.mDisplayContent.getDisplayPolicy().getContext();
+        final int captionHeight = getDesktopViewAppHeaderHeightPx(displayContext);
+        final int topOffset = containerAppBounds.top - containerBounds.top;
+        if (captionHeight > topOffset) {
+            final Rect sandboxedAppBounds = new Rect(containerAppBounds);
+            sandboxedAppBounds.top += captionHeight - topOffset;
+            return sandboxedAppBounds;
+        }
+        return null;
+    }
 
     /**
      * Contains sandboxed parent configuration important for resolving activity window
@@ -126,6 +181,7 @@ class AppCompatSandboxingPolicy {
         @Configuration.Orientation
         private int mTmpOverrideConfigOrientation;
         private boolean mUseOverrideInsetsForConfig;
+        private boolean mUseSandboxedAppBounds;
 
         private void resolveTmpOverrides(DisplayContent dc, Configuration parentConfig,
                 boolean isFixedRotationTransforming, @Nullable Rect safeRegionBounds,
@@ -134,8 +190,9 @@ class AppCompatSandboxingPolicy {
                     ? parentConfig.windowConfiguration.getAppBounds() : new Rect();
             mParentAppBoundsOverride.set(safeRegionBounds != null ? safeRegionBounds :
                     parentAppBounds);
-            mParentBoundsOverride.set(safeRegionBounds != null ? safeRegionBounds :
-                    parentConfig.windowConfiguration.getBounds());
+            // If mUseSandboxedAppBounds is true, only sandbox parent app bounds but not bounds.
+            mParentBoundsOverride.set(safeRegionBounds != null && !mUseSandboxedAppBounds
+                    ? safeRegionBounds : parentConfig.windowConfiguration.getBounds());
             mTmpOverrideConfigOrientation = parentConfig.orientation;
             Insets insets = Insets.NONE;
             if (safeRegionBounds != null) {
@@ -170,6 +227,7 @@ class AppCompatSandboxingPolicy {
             mTmpOverrideDisplayInfo = null;
             mTmpCompatInsets = null;
             mTmpOverrideConfigOrientation = ORIENTATION_UNDEFINED;
+            mUseSandboxedAppBounds = false;
         }
 
         @Nullable
@@ -193,7 +251,7 @@ class AppCompatSandboxingPolicy {
         }
 
         boolean shouldUseOverrideInsetsForConfig() {
-            return mUseOverrideInsetsForConfig;
+            return mUseOverrideInsetsForConfig || mUseSandboxedAppBounds;
         }
 
         @Configuration.Orientation

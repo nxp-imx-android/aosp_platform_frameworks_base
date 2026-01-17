@@ -3100,8 +3100,20 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             return true;
         }
         final int userId = UserHandle.getUserId(uid);
-        return userId == UserHandle.USER_SYSTEM
-                || mWmService.mUmInternal.isUserVisible(userId, mDisplayId);
+
+        // - The system user has access to all displays.
+        // - The current user has access to its assigned displays.
+        //   If the allow_current_user_access_unassigned_displays flag is true,
+        //   the current user has access to all unassigned displays.
+        // - A non-current non-system user has access to its assigned displays.
+        if (userId == UserHandle.USER_SYSTEM) {
+          return true;
+        }
+        if (Flags.currentUserAccessUnassignedDisplays()) {
+          // Note that getUserAssignedToDisplay returns the current user for unassigned displays.
+          return userId == mWmService.mUmInternal.getUserAssignedToDisplay(mDisplayId);
+        }
+        return mWmService.mUmInternal.isUserVisible(userId, mDisplayId);
     }
 
     boolean isPrivate() {

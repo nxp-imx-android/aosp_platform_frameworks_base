@@ -205,14 +205,17 @@ constructor(
      *
      * This is triggered either by this class calling ATMS#keyguardGoingAway, or by WM directly,
      * such as when an activity with FLAG_DISMISS_KEYGUARD is launched over a dismissible keyguard.
+     *
+     * @return True if the animation was started, and false if we terminated the transition
+     *   immediately.
      */
-    fun onKeyguardGoingAwayRemoteAnimationStart(params: SurfaceTransition.Params) {
+    fun onKeyguardGoingAwayRemoteAnimationStart(params: SurfaceTransition.Params): Boolean {
         goingAwayRemoteAnimationParams = params
 
         if (maybeStartTransitionIfUserSwitchedDuringGoingAway()) {
             Log.d(TAG, "User switched during keyguard going away - ending remote animation.")
             endKeyguardGoingAwayAnimation()
-            return
+            return false
         }
 
         // If we weren't expecting the keyguard to be going away, WM triggered this transition.
@@ -238,6 +241,7 @@ constructor(
             if (SceneContainerFlag.isEnabled) {
                 if (deviceEntryInteractor.get().isDeviceEntered.value) {
                     alreadyGoneCallback.invoke()
+                    return false
                 } else {
                     deviceEntryInteractor
                         .get()
@@ -263,6 +267,8 @@ constructor(
             // will make *something* visible.
             params.invokeCallback(params.startTransaction)
         }
+
+        return true
     }
 
     fun onKeyguardGoingAwayRemoteAnimationCancelled() {

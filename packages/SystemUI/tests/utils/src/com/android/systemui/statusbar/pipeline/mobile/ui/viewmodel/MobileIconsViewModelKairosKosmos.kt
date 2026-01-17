@@ -18,6 +18,7 @@ package com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel
 
 import android.content.applicationContext
 import com.android.systemui.kairos.ActivatedKairosFixture
+import com.android.systemui.kairos.kairos
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.log.table.tableLogBufferFactory
 import com.android.systemui.statusbar.pipeline.airplane.domain.interactor.airplaneModeInteractor
@@ -36,3 +37,8 @@ val Kosmos.mobileIconsViewModelKairos by ActivatedKairosFixture {
         context = applicationContext,
     )
 }
+
+val Kosmos.mobileIconsStateKairos by
+    Kosmos.Fixture {
+        MobileIconsStateKairos(viewModel = mobileIconsViewModelKairos, kairosNetwork = kairos)
+    }

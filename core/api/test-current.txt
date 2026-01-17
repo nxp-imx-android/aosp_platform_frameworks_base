@@ -2076,8 +2076,8 @@ package android.hardware.location {
 package android.hardware.serial {
 
   @FlaggedApi("android.hardware.serial.flags.enable_wired_serial_api") public final class SerialManager {
-    method @RequiresPermission("android.permission.MANAGE_SERIAL_PORTS") public void grantSerialPortAccess(@NonNull String, int, @Nullable android.os.IBinder);
-    method @RequiresPermission("android.permission.MANAGE_SERIAL_PORTS") public void revokeSerialPortAccess(@NonNull String, int, @Nullable android.os.IBinder);
+    method @RequiresPermission("android.permission.MANAGE_SERIAL_PORTS") public void grantSerialPortAccess(@NonNull String, int, boolean, @Nullable android.os.IBinder);
+    method @RequiresPermission("android.permission.MANAGE_SERIAL_PORTS") public void revokeSerialPortAccess(@NonNull String, int, boolean, @Nullable android.os.IBinder);
   }
 
 }
@@ -2700,11 +2700,6 @@ package android.os {
     ctor public NewUserResponse(@Nullable android.os.UserHandle, int);
   }
 
-  @FlaggedApi("android.location.flags.change_get_adas_allowlist_from_hidden_to_system") public final class PackageTagsList implements android.os.Parcelable {
-    method @Deprecated public boolean containsAll(@NonNull String);
-    method @Deprecated public boolean includes(@NonNull String);
-  }
-
   public final class Parcel {
     method public boolean allowSquashing();
     method public int getFlags();
@@ -3231,6 +3226,7 @@ package android.provider {
     field public static final int ACCESSIBILITY_MAGNIFICATION_MODE_WINDOW = 2; // 0x2
     field public static final String ACCESSIBILITY_SHORTCUT_TARGET_SERVICE = "accessibility_shortcut_target_service";
     field public static final String ANR_SHOW_BACKGROUND = "anr_show_background";
+    field public static final String ASSISTANT = "assistant";
     field public static final String AUTOFILL_SERVICE = "autofill_service";
     field public static final String BIOMETRIC_VIRTUAL_ENABLED = "biometric_virtual_enabled";
     field public static final String CAMERA_EXTENSIONS_FALLBACK = "camera_extensions_fallback";

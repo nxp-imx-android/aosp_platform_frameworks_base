@@ -37,6 +37,8 @@ import static android.content.res.Configuration.SCREEN_WIDTH_DP_UNDEFINED;
 import static android.content.res.Configuration.UI_MODE_NIGHT_NO;
 import static android.content.res.Configuration.UI_MODE_NIGHT_YES;
 import static android.view.InsetsSource.FLAG_FORCE_CONSUMING;
+import static android.view.WindowInsets.Side.LEFT;
+import static android.view.WindowInsets.Side.TOP;
 import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION;
 import static android.window.DisplayAreaOrganizer.FEATURE_DEFAULT_TASK_CONTAINER;
 import static android.window.DisplayAreaOrganizer.FEATURE_ROOT;
@@ -97,6 +99,7 @@ import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.util.ArrayMap;
 import android.util.Rational;
 import android.view.Display;
+import android.view.InsetsBoundingRect;
 import android.view.InsetsSource;
 import android.view.SurfaceControl;
 import android.view.WindowInsets;
@@ -1132,14 +1135,25 @@ public class WindowOrganizerTests extends WindowTestsBase {
                 0, 200, 1080, 700));
 
         final WindowContainerTransaction wct = new WindowContainerTransaction();
-        wct.addInsetsSource(
-                navigationBarInsetsReceiverTask.mRemoteToken.toWindowContainerToken(),
-                new Binder(),
-                0 /* index */,
-                WindowInsets.Type.systemOverlays(),
-                new Rect(0, 0, 1080, 200),
-                null /* boundingRects */,
-                0 /* flags */);
+        if (com.android.window.flags.Flags.improveFluidResizingPerformance()) {
+            wct.addInsetsSource(
+                    navigationBarInsetsReceiverTask.mRemoteToken.toWindowContainerToken(),
+                    new Binder(),
+                    0 /* index */,
+                    WindowInsets.Type.systemOverlays(),
+                    new Rect(0, 0, 1080, 200),
+                    (InsetsBoundingRect[]) null /* boundingRects */,
+                    0 /* flags */);
+        } else {
+            wct.addInsetsSource(
+                    navigationBarInsetsReceiverTask.mRemoteToken.toWindowContainerToken(),
+                    new Binder(),
+                    0 /* index */,
+                    WindowInsets.Type.systemOverlays(),
+                    new Rect(0, 0, 1080, 200),
+                    (Rect[]) null /* boundingRects */,
+                    0 /* flags */);
+        }
         mWm.mAtmService.mWindowOrganizerController.applyTransaction(wct);
 
         assertThat(navigationBarInsetsReceiverTask.mLocalInsetsSources
@@ -1155,22 +1169,42 @@ public class WindowOrganizerTests extends WindowTestsBase {
         navigationBarInsetsReceiverTask.getConfiguration().windowConfiguration.setBounds(new Rect(
                 0, 200, 1080, 700));
 
-        final Rect[] boundingRects = new Rect[]{
-                new Rect(0, 0, 10, 10), new Rect(100, 100, 200, 100)
-        };
         final WindowContainerTransaction wct = new WindowContainerTransaction();
-        wct.addInsetsSource(
-                navigationBarInsetsReceiverTask.mRemoteToken.toWindowContainerToken(),
-                new Binder(),
-                0 /* index */,
-                WindowInsets.Type.systemOverlays(),
-                new Rect(0, 0, 1080, 200),
-                boundingRects,
-                0 /* flags */);
-        mWm.mAtmService.mWindowOrganizerController.applyTransaction(wct);
+        if (com.android.window.flags.Flags.improveFluidResizingPerformance()) {
+            final InsetsBoundingRect[] boundingRects = new InsetsBoundingRect[]{
+                    new InsetsBoundingRect(LEFT | TOP, 0, 0, 10, 10),
+                    new InsetsBoundingRect(LEFT | TOP, 100, 100, 200, 100)
+            };
+            wct.addInsetsSource(
+                    navigationBarInsetsReceiverTask.mRemoteToken.toWindowContainerToken(),
+                    new Binder(),
+                    0 /* index */,
+                    WindowInsets.Type.systemOverlays(),
+                    new Rect(0, 0, 1080, 200),
+                    boundingRects,
+                    0 /* flags */);
+            mWm.mAtmService.mWindowOrganizerController.applyTransaction(wct);
 
-        assertArrayEquals(boundingRects, navigationBarInsetsReceiverTask.mLocalInsetsSources
-                .valueAt(0).getBoundingRects());
+            assertArrayEquals(boundingRects, navigationBarInsetsReceiverTask.mLocalInsetsSources
+                    .valueAt(0).getInsetsBoundingRects());
+        } else {
+            final Rect[] boundingRects = new Rect[]{
+                    new Rect(0, 0, 10, 10),
+                    new Rect(100, 100, 200, 100)
+            };
+            wct.addInsetsSource(
+                    navigationBarInsetsReceiverTask.mRemoteToken.toWindowContainerToken(),
+                    new Binder(),
+                    0 /* index */,
+                    WindowInsets.Type.systemOverlays(),
+                    new Rect(0, 0, 1080, 200),
+                    boundingRects,
+                    0 /* flags */);
+            mWm.mAtmService.mWindowOrganizerController.applyTransaction(wct);
+
+            assertArrayEquals(boundingRects, navigationBarInsetsReceiverTask.mLocalInsetsSources
+                    .valueAt(0).getBoundingRects());
+        }
     }
 
     @Test
@@ -1184,14 +1218,25 @@ public class WindowOrganizerTests extends WindowTestsBase {
 
         final @InsetsSource.Flags int flags = FLAG_FORCE_CONSUMING;
         final WindowContainerTransaction wct = new WindowContainerTransaction();
-        wct.addInsetsSource(
-                insetsReceiverTask.mRemoteToken.toWindowContainerToken(),
-                new Binder(),
-                0 /* index */,
-                WindowInsets.Type.systemOverlays(),
-                new Rect(0, 0, 1080, 200),
-                null /* boundingRects */,
-                flags);
+        if (com.android.window.flags.Flags.improveFluidResizingPerformance()) {
+            wct.addInsetsSource(
+                    insetsReceiverTask.mRemoteToken.toWindowContainerToken(),
+                    new Binder(),
+                    0 /* index */,
+                    WindowInsets.Type.systemOverlays(),
+                    new Rect(0, 0, 1080, 200),
+                    (InsetsBoundingRect[]) null /* boundingRects */,
+                    flags);
+        } else {
+            wct.addInsetsSource(
+                    insetsReceiverTask.mRemoteToken.toWindowContainerToken(),
+                    new Binder(),
+                    0 /* index */,
+                    WindowInsets.Type.systemOverlays(),
+                    new Rect(0, 0, 1080, 200),
+                    (Rect[]) null /* boundingRects */,
+                    flags);
+        }
         mWm.mAtmService.mWindowOrganizerController.applyTransaction(wct);
 
         assertEquals(flags, insetsReceiverTask.mLocalInsetsSources.valueAt(0).getFlags());
@@ -1206,14 +1251,25 @@ public class WindowOrganizerTests extends WindowTestsBase {
                 0, 200, 1080, 700));
         final Binder owner = new Binder();
         final WindowContainerTransaction wct = new WindowContainerTransaction();
-        wct.addInsetsSource(
-                navigationBarInsetsReceiverTask.mRemoteToken.toWindowContainerToken(),
-                owner,
-                0 /* index */,
-                WindowInsets.Type.systemOverlays(),
-                new Rect(0, 0, 1080, 200),
-                null /* boundingRects */,
-                0 /* flags */);
+        if (com.android.window.flags.Flags.improveFluidResizingPerformance()) {
+            wct.addInsetsSource(
+                    navigationBarInsetsReceiverTask.mRemoteToken.toWindowContainerToken(),
+                    owner,
+                    0 /* index */,
+                    WindowInsets.Type.systemOverlays(),
+                    new Rect(0, 0, 1080, 200),
+                    (InsetsBoundingRect[]) null /* boundingRects */,
+                    0 /* flags */);
+        } else {
+            wct.addInsetsSource(
+                    navigationBarInsetsReceiverTask.mRemoteToken.toWindowContainerToken(),
+                    owner,
+                    0 /* index */,
+                    WindowInsets.Type.systemOverlays(),
+                    new Rect(0, 0, 1080, 200),
+                    (Rect[]) null /* boundingRects */,
+                    0 /* flags */);
+        }
         mWm.mAtmService.mWindowOrganizerController.applyTransaction(wct);
 
         final WindowContainerTransaction wct2 = new WindowContainerTransaction();

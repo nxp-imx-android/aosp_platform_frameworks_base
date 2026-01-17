@@ -117,14 +117,16 @@ static struct {
 
 static jclass gAudioPortConfigClass;
 static jmethodID gAudioPortConfigCstor;
+// clang-format off
 static struct {
     jfieldID    mPort;
     jfieldID    mSamplingRate;
-    jfieldID    mChannelMask;
+    jfieldID    mChannelMasks;
     jfieldID    mFormat;
     jfieldID    mGain;
     jfieldID    mConfigMask;
 } gAudioPortConfigFields;
+// clang-format on
 
 static jclass gAudioDevicePortClass;
 static jmethodID gAudioDevicePortCstor;
@@ -178,10 +180,11 @@ static jmethodID gAudioFormatCstor;
 static struct {
     jfieldID    mEncoding;
     jfieldID    mSampleRate;
-    jfieldID    mChannelMask;
-    jfieldID mChannelIndexMask;
+    jfieldID mChannelMasks;
     // other fields unused by JNI
 } gAudioFormatFields;
+
+static ChannelMasks::fields_t gAudioChannelMasksFields;
 
 static jclass gAudioAttributesClass;
 static jmethodID gAudioAttributesCstor;
@@ -1064,15 +1067,9 @@ static jint convertAudioPortConfigToNative(JNIEnv *env,
 
     bool useInMask = audio_port_config_has_input_direction(nAudioPortConfig);
     audio_channel_mask_t nMask;
-    jint jMask = env->GetIntField(jAudioPortConfig,
-                                   gAudioPortConfigFields.mChannelMask);
-    if (useInMask) {
-        nMask = inChannelMaskToNative(jMask);
-        ALOGV("convertAudioPortConfigToNative IN mask java %x native %x", jMask, nMask);
-    } else {
-        nMask = outChannelMaskToNative(jMask);
-        ALOGV("convertAudioPortConfigToNative OUT mask java %x native %x", jMask, nMask);
-    }
+    jobject jMask = env->GetObjectField(jAudioPortConfig, gAudioPortConfigFields.mChannelMasks);
+    nMask = nativeChannelMaskFromJavaChannelMasks(env, gAudioChannelMasksFields, jMask, useInMask);
+    ALOGV("convertAudioPortConfigToNative %s mask to native %x", useInMask ? "IN" : "OUT", nMask);
     nAudioPortConfig->channel_mask = nMask;
     if (nAudioPortConfig->channel_mask != AUDIO_CHANNEL_NONE) {
         configMask |= AUDIO_PORT_CONFIG_CHANNEL_MASK;
@@ -1193,12 +1190,12 @@ static jint convertAudioPortConfigFromNative(JNIEnv *env, ScopedLocalRef<jobject
     bool useInMask = audio_port_config_has_input_direction(nAudioPortConfig);
 
     audio_channel_mask_t nMask;
-    jint jMask;
 
     int gainIndex = (nAudioPortConfig->config_mask & AUDIO_PORT_CONFIG_GAIN)
             ? nAudioPortConfig->gain.index
             : -1;
     if (gainIndex >= 0) {
+        jint jMask;
         ALOGV("convertAudioPortConfigFromNative gain found with index %d mode %x",
               gainIndex, nAudioPortConfig->gain.mode);
         if (audioportCreated) {
@@ -1282,20 +1279,17 @@ static jint convertAudioPortConfigFromNative(JNIEnv *env, ScopedLocalRef<jobject
     nMask = (nAudioPortConfig->config_mask & AUDIO_PORT_CONFIG_CHANNEL_MASK)
             ? nAudioPortConfig->channel_mask
             : AUDIO_CONFIG_BASE_INITIALIZER.channel_mask;
-    if (useInMask) {
-        jMask = inChannelMaskFromNative(nMask);
-        ALOGV("convertAudioPortConfigFromNative IN mask java %x native %x", jMask, nMask);
-    } else {
-        jMask = outChannelMaskFromNative(nMask);
-        ALOGV("convertAudioPortConfigFromNative OUT mask java %x native %x", jMask, nMask);
-    }
+    ALOGV("convertAudioPortConfigFromNative %s mask from native %x", useInMask ? "IN" : "OUT",
+          nMask);
 
     jAudioPortConfig->reset(
             env->NewObject(clazz, methodID, jAudioPort->get(),
                            (nAudioPortConfig->config_mask & AUDIO_PORT_CONFIG_SAMPLE_RATE)
                                    ? nAudioPortConfig->sample_rate
                                    : AUDIO_CONFIG_BASE_INITIALIZER.sample_rate,
-                           jMask,
+                           javaChannelMasksFromNativeChannelMask(env, gAudioChannelMasksFields,
+                                                                 nMask, useInMask)
+                                   .release(),
                            audioFormatFromNative(
                                    (nAudioPortConfig->config_mask & AUDIO_PORT_CONFIG_FORMAT)
                                            ? nAudioPortConfig->format
@@ -2132,11 +2126,14 @@ void javaAudioFormatToNativeAudioConfig(JNIEnv *env, audio_config_t *nConfig,
     *nConfig = AUDIO_CONFIG_INITIALIZER;
     nConfig->format = audioFormatToNative(env->GetIntField(jFormat, gAudioFormatFields.mEncoding));
     nConfig->sample_rate = env->GetIntField(jFormat, gAudioFormatFields.mSampleRate);
-    jint jChannelMask = env->GetIntField(jFormat, gAudioFormatFields.mChannelMask);
+    // TODO(b/460465715): Use nativeChannelMaskFromJavaChannelMasks?
+    jobject jChannelMasks = env->GetObjectField(jFormat, gAudioFormatFields.mChannelMasks);
+    ChannelMasks channelMasks;
+    channelMasks.fillFromJobject(env, gAudioChannelMasksFields, jChannelMasks);
     if (isInput) {
-        nConfig->channel_mask = inChannelMaskToNative(jChannelMask);
+        nConfig->channel_mask = inChannelMaskToNative(channelMasks.positionMask);
     } else {
-        nConfig->channel_mask = outChannelMaskToNative(jChannelMask);
+        nConfig->channel_mask = outChannelMaskToNative(channelMasks.positionMask);
     }
 }
 
@@ -2146,13 +2143,9 @@ void javaAudioFormatToNativeAudioConfigBase(JNIEnv *env, const jobject jFormat,
     nConfigBase->format =
             audioFormatToNative(env->GetIntField(jFormat, gAudioFormatFields.mEncoding));
     nConfigBase->sample_rate = env->GetIntField(jFormat, gAudioFormatFields.mSampleRate);
-    jint jChannelMask = env->GetIntField(jFormat, gAudioFormatFields.mChannelMask);
-    jint jChannelIndexMask = env->GetIntField(jFormat, gAudioFormatFields.mChannelIndexMask);
-    nConfigBase->channel_mask = jChannelIndexMask != 0
-            ? audio_channel_mask_from_representation_and_bits(AUDIO_CHANNEL_REPRESENTATION_INDEX,
-                                                              jChannelIndexMask)
-            : isInput ? inChannelMaskToNative(jChannelMask)
-                      : outChannelMaskToNative(jChannelMask);
+    jobject jChannelMasks = env->GetObjectField(jFormat, gAudioFormatFields.mChannelMasks);
+    nConfigBase->channel_mask = nativeChannelMaskFromJavaChannelMasks(env, gAudioChannelMasksFields,
+                                                                      jChannelMasks, isInput);
 }
 
 jobject nativeAudioConfigBaseToJavaAudioFormat(JNIEnv *env, const audio_config_base_t *nConfigBase,
@@ -2577,13 +2570,14 @@ android_media_AudioSystem_getStreamVolumeDB(JNIEnv *env, jobject thiz,
                                           static_cast<audio_devices_t>(device));
 }
 
-static jint android_media_AudioSystem_getOffloadSupport(JNIEnv *env, jobject thiz, jint encoding,
-                                                        jint sampleRate, jint channelMask,
-                                                        jint channelIndexMask, jint streamType) {
+static jint android_media_AudioSystem_getOffloadSupport(JNIEnv* env, jobject thiz, jint encoding,
+                                                        jint sampleRate, jobject channelMasks,
+                                                        jint streamType) {
     audio_offload_info_t format = AUDIO_INFO_INITIALIZER;
     format.format = static_cast<audio_format_t>(audioFormatToNative(encoding));
     format.sample_rate = sampleRate;
-    format.channel_mask = nativeChannelMaskFromJavaChannelMasks(channelMask, channelIndexMask);
+    format.channel_mask = nativeChannelMaskFromJavaChannelMasks(env, gAudioChannelMasksFields,
+                                                                channelMasks, false /*isInput*/);
     format.stream_type = static_cast<audio_stream_type_t>(streamType);
     format.has_video = false;
     format.is_streaming = false;
@@ -3606,8 +3600,8 @@ static const JNINativeMethod gMethods[] = {
                                        android_media_AudioSystem_registerVolRangeInitReqCallback),
         MAKE_AUDIO_SYSTEM_METHOD(systemReady),
         MAKE_AUDIO_SYSTEM_METHOD(getStreamVolumeDB),
-        MAKE_JNI_NATIVE_METHOD_AUTOSIG("native_get_offload_support",
-                                       android_media_AudioSystem_getOffloadSupport),
+        MAKE_JNI_NATIVE_METHOD("native_get_offload_support", "(IILjava/lang/Object;I)I",
+                               android_media_AudioSystem_getOffloadSupport),
         MAKE_JNI_NATIVE_METHOD("getMicrophones", "(Ljava/util/ArrayList;)I",
                                android_media_AudioSystem_getMicrophones),
         MAKE_JNI_NATIVE_METHOD("getSurroundFormats", "(Ljava/util/Map;)I",
@@ -3761,14 +3755,17 @@ int register_android_media_AudioSystem(JNIEnv *env)
 
     jclass audioPortConfigClass = FindClassOrDie(env, "android/media/AudioPortConfig");
     gAudioPortConfigClass = MakeGlobalRefOrDie(env, audioPortConfigClass);
-    gAudioPortConfigCstor = GetMethodIDOrDie(env, audioPortConfigClass, "<init>",
-            "(Landroid/media/AudioPort;IIILandroid/media/AudioGainConfig;)V");
+    gAudioPortConfigCstor =
+            GetMethodIDOrDie(env, audioPortConfigClass, "<init>",
+                             "(Landroid/media/AudioPort;ILandroid/media/"
+                             "AudioFormat$ChannelMasks;ILandroid/media/AudioGainConfig;)V");
     gAudioPortConfigFields.mPort = GetFieldIDOrDie(env, audioPortConfigClass, "mPort",
                                                    "Landroid/media/AudioPort;");
     gAudioPortConfigFields.mSamplingRate = GetFieldIDOrDie(env, audioPortConfigClass,
                                                            "mSamplingRate", "I");
-    gAudioPortConfigFields.mChannelMask = GetFieldIDOrDie(env, audioPortConfigClass,
-                                                          "mChannelMask", "I");
+    gAudioPortConfigFields.mChannelMasks =
+            GetFieldIDOrDie(env, audioPortConfigClass, "mChannelMasks",
+                            "Landroid/media/AudioFormat$ChannelMasks;");
     gAudioPortConfigFields.mFormat = GetFieldIDOrDie(env, audioPortConfigClass, "mFormat", "I");
     gAudioPortConfigFields.mGain = GetFieldIDOrDie(env, audioPortConfigClass, "mGain",
                                                    "Landroid/media/AudioGainConfig;");
@@ -3777,13 +3774,17 @@ int register_android_media_AudioSystem(JNIEnv *env)
 
     jclass audioDevicePortConfigClass = FindClassOrDie(env, "android/media/AudioDevicePortConfig");
     gAudioDevicePortConfigClass = MakeGlobalRefOrDie(env, audioDevicePortConfigClass);
-    gAudioDevicePortConfigCstor = GetMethodIDOrDie(env, audioDevicePortConfigClass, "<init>",
-            "(Landroid/media/AudioDevicePort;IIILandroid/media/AudioGainConfig;)V");
+    gAudioDevicePortConfigCstor =
+            GetMethodIDOrDie(env, audioDevicePortConfigClass, "<init>",
+                             "(Landroid/media/AudioDevicePort;ILandroid/media/"
+                             "AudioFormat$ChannelMasks;ILandroid/media/AudioGainConfig;)V");
 
     jclass audioMixPortConfigClass = FindClassOrDie(env, "android/media/AudioMixPortConfig");
     gAudioMixPortConfigClass = MakeGlobalRefOrDie(env, audioMixPortConfigClass);
-    gAudioMixPortConfigCstor = GetMethodIDOrDie(env, audioMixPortConfigClass, "<init>",
-            "(Landroid/media/AudioMixPort;IIILandroid/media/AudioGainConfig;)V");
+    gAudioMixPortConfigCstor =
+            GetMethodIDOrDie(env, audioMixPortConfigClass, "<init>",
+                             "(Landroid/media/AudioMixPort;ILandroid/media/"
+                             "AudioFormat$ChannelMasks;ILandroid/media/AudioGainConfig;)V");
 
     jclass audioDevicePortClass = FindClassOrDie(env, "android/media/AudioDevicePort");
     gAudioDevicePortClass = MakeGlobalRefOrDie(env, audioDevicePortClass);
@@ -3873,9 +3874,10 @@ int register_android_media_AudioSystem(JNIEnv *env)
     gAudioFormatCstor = GetMethodIDOrDie(env, audioFormatClass, "<init>", "(IIIII)V");
     gAudioFormatFields.mEncoding = GetFieldIDOrDie(env, audioFormatClass, "mEncoding", "I");
     gAudioFormatFields.mSampleRate = GetFieldIDOrDie(env, audioFormatClass, "mSampleRate", "I");
-    gAudioFormatFields.mChannelMask = GetFieldIDOrDie(env, audioFormatClass, "mChannelMask", "I");
-    gAudioFormatFields.mChannelIndexMask =
-            GetFieldIDOrDie(env, audioFormatClass, "mChannelIndexMask", "I");
+    gAudioFormatFields.mChannelMasks = GetFieldIDOrDie(env, audioFormatClass, "mChannelMasks",
+                                                       "Landroid/media/AudioFormat$ChannelMasks;");
+
+    gAudioChannelMasksFields.init(env);
 
     jclass audioMixingRuleClass = FindClassOrDie(env, "android/media/audiopolicy/AudioMixingRule");
     gAudioMixingRuleClass = MakeGlobalRefOrDie(env, audioMixingRuleClass);

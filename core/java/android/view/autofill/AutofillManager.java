@@ -70,6 +70,7 @@ import android.os.Parcelable;
 import android.os.RemoteException;
 import android.os.SystemClock;
 import android.service.autofill.AutofillService;
+import android.service.autofill.Dataset;
 import android.service.autofill.FillEventHistory;
 import android.service.autofill.Flags;
 import android.service.autofill.UserData;
@@ -4197,6 +4198,35 @@ public final class AutofillManager {
     }
 
     /**
+     * This method is use by SystemUI to notify AutofillManager of personal context suggestions for
+     * inline autofill.
+     *
+     * @hide
+     */
+    @FlaggedApi(android.service.personalcontext.Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
+    public void notifySystemInlineSuggestions(
+            int sessionId, @NonNull List<Dataset> inlineSuggestionsData) {
+        if (android.service.personalcontext.Flags.enablePersonalContextService()
+                && mService != null) {
+            try {
+                if (sVerbose) {
+                    Log.v(TAG, "notifySystemInlineSuggestions() called on sessionId: "
+                            + sessionId);
+                }
+                mService.notifySystemInlineSuggestions(
+                        sessionId, inlineSuggestionsData, mContext.getUserId());
+            } catch (RemoteException e) {
+                // The failure could be a consequence of something going wrong on the
+                // server side. Just log the exception and move-on.
+                Log.w(
+                        TAG,
+                        "notifySystemInlineSuggestions(): RemoteException caught but ignored",
+                        e);
+            }
+        }
+    }
+
+    /**
      * If autofill suggestions for a
      * <a href="{@docRoot}reference/android/service/autofill/Dataset.html#FillDialogUI">
      * dialog-style UI</a> are available for virtual {@code view}, shows a dialog allowing the user
@@ -4380,7 +4410,7 @@ public final class AutofillManager {
             switch (type) {
                 case AccessibilityEvent.TYPE_VIEW_FOCUSED: {
                     synchronized (mLock) {
-                        if (mFocusedWindowId == event.getWindowId()
+                        if (mFocusedWindowId == event.getRealWindowId()
                                 && mFocusedNodeId == event.getSourceNodeId()) {
                             return event;
                         }
@@ -4391,7 +4421,7 @@ public final class AutofillManager {
                             mFocusedNodeId = AccessibilityNodeInfo.UNDEFINED_NODE_ID;
                             mFocusedBounds.set(0, 0, 0, 0);
                         }
-                        final int windowId = event.getWindowId();
+                        final int windowId = event.getRealWindowId();
                         final long nodeId = event.getSourceNodeId();
                         if (notifyViewEntered(windowId, nodeId, mFocusedBounds)) {
                             mFocusedWindowId = windowId;
@@ -4402,16 +4432,16 @@ public final class AutofillManager {
 
                 case AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED: {
                     synchronized (mLock) {
-                        if (mFocusedWindowId == event.getWindowId()
+                        if (mFocusedWindowId == event.getRealWindowId()
                                 && mFocusedNodeId == event.getSourceNodeId()) {
-                            notifyValueChanged(event.getWindowId(), event.getSourceNodeId());
+                            notifyValueChanged(event.getRealWindowId(), event.getSourceNodeId());
                         }
                     }
                 } break;
 
                 case AccessibilityEvent.TYPE_VIEW_CLICKED: {
                     synchronized (mLock) {
-                        notifyViewClicked(event.getWindowId(), event.getSourceNodeId());
+                        notifyViewClicked(event.getRealWindowId(), event.getSourceNodeId());
                     }
                 } break;
 

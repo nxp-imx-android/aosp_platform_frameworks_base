@@ -151,7 +151,7 @@ public class AuthController implements
 
     // TODO: these should be migrated out once ready
     @NonNull private final Provider<PromptSelectorInteractor> mPromptSelectorInteractor;
-    @NonNull private final Provider<CredentialViewModel> mCredentialViewModelProvider;
+    @NonNull private final CredentialViewModel.Factory mCredentialViewModelFactory;
     @NonNull private final Provider<PromptViewModel> mPromptViewModelProvider;
     @NonNull private final Lazy<LogContextInteractor> mLogContextInteractor;
 
@@ -727,7 +727,7 @@ public class AuthController implements
             @NonNull Lazy<UdfpsLogger> udfpsLogger,
             @NonNull Lazy<LogContextInteractor> logContextInteractor,
             @NonNull Provider<PromptSelectorInteractor> promptSelectorInteractorProvider,
-            @NonNull Provider<CredentialViewModel> credentialViewModelProvider,
+            @NonNull CredentialViewModel.Factory credentialViewModelFactory,
             @NonNull Provider<PromptViewModel> promptViewModelProvider,
             @NonNull InteractionJankMonitor jankMonitor,
             @Main Handler handler,
@@ -767,7 +767,7 @@ public class AuthController implements
         mLogContextInteractor = logContextInteractor;
         mPromptSelectorInteractor = promptSelectorInteractorProvider;
         mPromptViewModelProvider = promptViewModelProvider;
-        mCredentialViewModelProvider = credentialViewModelProvider;
+        mCredentialViewModelFactory = credentialViewModelFactory;
 
         keyguardManager.addKeyguardLockedStateListener(
                 context.getMainExecutor(),
@@ -1442,7 +1442,7 @@ public class AuthController implements
         return new AuthContainerView(config, mApplicationCoroutineScope, mFpProps, mFaceProps,
                 wakefulnessLifecycle, userManager, mContextPlugins, lockPatternUtils,
                 mInteractionJankMonitor, mPromptSelectorInteractor, viewModel,
-                mCredentialViewModelProvider, bgExecutor, mVibratorHelper, mMSDLPlayer,
+                mCredentialViewModelFactory, bgExecutor, mVibratorHelper, mMSDLPlayer,
                 mPromptFallbackViewModelFactory);
     }
 

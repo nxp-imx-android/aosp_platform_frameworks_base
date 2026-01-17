@@ -159,6 +159,7 @@ import com.android.internal.inputmethod.IInputMethodSessionCallback;
 import com.android.internal.inputmethod.IRemoteAccessibilityInputConnection;
 import com.android.internal.inputmethod.IRemoteComputerControlInputConnection;
 import com.android.internal.inputmethod.IRemoteInputConnection;
+import com.android.internal.inputmethod.ImeSwitcherMenuItemSafeList;
 import com.android.internal.inputmethod.ImeTracing;
 import com.android.internal.inputmethod.InlineSuggestionsRequestCallback;
 import com.android.internal.inputmethod.InlineSuggestionsRequestInfo;
@@ -505,8 +506,9 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                 final var selectedImeSettingsIntent = selectedImi != null
                         ? selectedImi.createImeLanguageSettingsActivityIntent() : null;
                 try {
-                    mIImeSwitcherMenu.show(menuItems, selectedImeId, selectedSubtypeIndex,
-                            selectedImeSettingsIntent, isScreenLocked, displayId, userId);
+                    mIImeSwitcherMenu.show(ImeSwitcherMenuItemSafeList.create(menuItems),
+                            selectedImeId, selectedSubtypeIndex, selectedImeSettingsIntent,
+                            isScreenLocked, displayId, userId);
                 } catch (RemoteException e) {
                     Slog.w(TAG, "Failed show IME Switcher Menu for user: " + userId
                             + " on display: " + displayId, e);

@@ -90,6 +90,14 @@ public class RavenwoodTestStats {
     }
 
     private static String getCaller(Throwable throwable) {
+        // Return the first frame that's not from RavenwoodExperimentalApiChecker.
+        for (var frame : throwable.getStackTrace()) {
+            if (frame.getClassName().contains(".RavenwoodExperimentalApiChecker")) {
+                continue;
+            }
+            return frame.getClassName() + "#" + frame.getMethodName();
+        }
+        // Fallback: just return the innermost frame.
         var caller = throwable.getStackTrace()[0];
         return caller.getClassName() + "#" + caller.getMethodName();
     }

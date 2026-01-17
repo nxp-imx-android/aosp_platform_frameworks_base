@@ -16,13 +16,18 @@
 
 package com.android.server.privatecompute;
 
+import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresNoPermission;
+import android.annotation.SuppressLint;
 import android.app.privatecompute.IPccService;
 import android.app.privatecompute.IResultCallback;
+import android.app.role.OnRoleHoldersChangedListener;
+import android.app.role.RoleManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManagerInternal;
 import android.content.pm.ProviderInfo;
@@ -36,9 +41,11 @@ import android.os.Process;
 import android.os.RemoteException;
 import android.os.Trace;
 import android.os.UserHandle;
+import android.os.UserManager;
 import android.util.ArrayMap;
 import android.util.ArraySet;
 import android.util.Slog;
+import android.util.SparseArray;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
@@ -49,6 +56,7 @@ import com.android.server.pm.pkg.AndroidPackage;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -60,16 +68,23 @@ import java.util.concurrent.Future;
  *
  * @hide Only for use within system_server.
  */
-public final class PccSandboxManagerInternal {
+public final class PccSandboxManagerInternal implements OnRoleHoldersChangedListener {
     private static final String TAG = "PccSandboxManagerInternal";
 
     private final PackageManagerInternal mPackageManagerInternal;
     private final ExecutorService mExecutor;
-    private final Future<?> mPopulatePccTrustedPackagesFuture;
+    private final Future<?> mPopulateTrustedAndAllowedPackagesFuture;
 
     @VisibleForTesting
     @GuardedBy("mLock")
     final Set<String> mPccTrustedPackages = new ArraySet<>();
+
+    @VisibleForTesting
+    @GuardedBy("mLock")
+    final SparseArray<Set<String>> mPccAllowedPackages = new SparseArray<>();
+
+    @GuardedBy("mLock")
+    final Set<String> mPccAllowedPackagesForTesting = new ArraySet<>();
 
     @VisibleForTesting
     static final int[] TRUSTED_UIDS = new int[] {
@@ -77,6 +92,20 @@ public final class PccSandboxManagerInternal {
             Process.SYSTEM_UID,
             Process.PHONE_UID
     };
+
+    // Only packages that hold one or more of these roles are allowed to have
+    // PCC components.
+    private static final List<String> ALLOWED_ROLES = Arrays.asList(
+            "android.app.role.ASSISTANT",
+            "android.app.role.SYSTEM_AMBIENT_AUDIO_INTELLIGENCE",
+            "android.app.role.SYSTEM_APP_PROTECTION_SERVICE",
+            "android.app.role.SYSTEM_AUDIO_INTELLIGENCE",
+            "android.app.role.SYSTEM_NOTIFICATION_INTELLIGENCE",
+            "android.app.role.SYSTEM_TEXT_INTELLIGENCE",
+            "android.app.role.SYSTEM_VISUAL_INTELLIGENCE",
+            "android.app.role.SYSTEM_VENDOR_INTELLIGENCE",
+            "android.app.role.SYSTEM_UI_INTELLIGENCE"
+    );
 
     private final Context mContext;
     private final PccSandboxManagerServiceImpl mPccSandboxManagerService;
@@ -92,17 +121,26 @@ public final class PccSandboxManagerInternal {
         mPccSandboxManagerService = pccSandboxManagerService;
         mPackageManagerInternal = LocalServices.getService(PackageManagerInternal.class);
         mExecutor = pccSandboxManagerService.getExecutorService();
-        mPopulatePccTrustedPackagesFuture = mExecutor.submit(this::populatePccTrustedPackages);
+        mPopulateTrustedAndAllowedPackagesFuture = mExecutor.submit(() -> {
+            populatePccTrustedPackages();
+            populatePccAllowedPackages();
+        });
+        mPackageManagerInternal.getPackageList(new PackageReceiver());
+
+        RoleManager roleManager = mContext.getSystemService(RoleManager.class);
+        if (roleManager != null) {
+            roleManager.addOnRoleHoldersChangedListenerAsUser(mExecutor, this, UserHandle.ALL);
+        }
     }
 
     /**
-     * Waits for the list of trusted PCC packages to be populated.
+     * Waits for the list of trusted and allowed PCC packages to be populated.
      */
-    void awaitPccTrustedPackages() {
+    void awaitPccInitialization() {
         try {
-            mPopulatePccTrustedPackagesFuture.get();
+            mPopulateTrustedAndAllowedPackagesFuture.get();
         } catch (Exception e) {
-            Slog.e(TAG, "Error populating trusted PCC packages", e);
+            Slog.e(TAG, "Error populating PCC packages", e);
         }
     }
 
@@ -165,6 +203,59 @@ public final class PccSandboxManagerInternal {
         }
     }
 
+    @VisibleForTesting
+    @SuppressLint("AndroidFrameworkRequiresPermission")
+    void populatePccAllowedPackages() {
+        UserManager userManager = mContext.getSystemService(UserManager.class);
+        if (userManager != null) {
+            List<UserHandle> users = userManager.getUserHandles(true);
+            for (UserHandle user : users) {
+                updateAllowedPackagesForUser(user.getIdentifier());
+            }
+        }
+    }
+
+    @VisibleForTesting
+    void updateAllowedPackagesForUser(int userId) {
+        String defaultOnDeviceIntelligenceServicePackage = mContext.getString(
+                com.android.internal.R.string.config_defaultOnDeviceIntelligenceService);
+        String defaultOnDeviceIntelligencePackageName = null;
+        if (defaultOnDeviceIntelligenceServicePackage != null
+                && !defaultOnDeviceIntelligenceServicePackage.isEmpty()) {
+            ComponentName componentName = ComponentName.unflattenFromString(
+                    defaultOnDeviceIntelligenceServicePackage);
+            if (componentName != null) {
+                defaultOnDeviceIntelligencePackageName = componentName.getPackageName();
+            }
+        }
+
+        RoleManager roleManager = mContext.getSystemService(RoleManager.class);
+        Set<String> rolePackages = new ArraySet<>();
+        if (roleManager != null) {
+            UserHandle user = UserHandle.of(userId);
+            for (String role : ALLOWED_ROLES) {
+                try {
+                    List<String> holders = roleManager.getRoleHoldersAsUser(role, user);
+                    if (holders != null) {
+                        rolePackages.addAll(holders);
+                    }
+                } catch (Exception e) {
+                    Slog.e(TAG, "Error fetching role holders for role: " + role + " user: "
+                            + userId, e);
+                }
+            }
+        }
+
+        if (defaultOnDeviceIntelligencePackageName != null) {
+            rolePackages.add(defaultOnDeviceIntelligencePackageName);
+        }
+
+        synchronized (mLock) {
+            mPccAllowedPackages.put(userId, rolePackages);
+            Slog.d(TAG, "Updated allowed PCC Packages for user " + userId + ": " + rolePackages);
+        }
+    }
+
     @Nullable
     private String resolveProviderPackageName(String authority) {
         final PackageManager pm = mContext.getPackageManager();
@@ -172,7 +263,14 @@ public final class PccSandboxManagerInternal {
         return providerInfo != null ? providerInfo.packageName : null;
     }
 
-    private boolean isPccTrustedApp(int appUid, String appPackage) {
+    /**
+     * Returns true if the app is considered a "Trusted App" by the PCC Sandbox
+     * (e.g. System, Bluetooth, Phone, PCS, or explicitly allowlisted packages).
+     *
+     * @param appUid The UID of the application.
+     * @param appPackage The package name of the application.
+     */
+    public boolean isPccTrustedApp(int appUid, String appPackage) {
         for (int uid : TRUSTED_UIDS) {
             if (appUid == uid) {
                 return true;
@@ -198,6 +296,32 @@ public final class PccSandboxManagerInternal {
      */
     public boolean isPrivateComputeServicesUid(int uid) {
         return mPccSandboxManagerService.isPrivateComputeServicesUid(uid);
+    }
+
+    /**
+     * Returns {@code true} if the given package is allowed to run in a PCC process for the given
+     * user.
+     */
+    public boolean isPccAllowedPackage(String packageName, int userId) {
+        synchronized (mLock) {
+            Set<String> userAllowedPackages = mPccAllowedPackages.get(userId);
+            return (userAllowedPackages != null && userAllowedPackages.contains(packageName))
+                    || mPccAllowedPackagesForTesting.contains(packageName);
+        }
+    }
+
+    @VisibleForTesting
+    void addTestAllowedPackage(String packageName) {
+        synchronized (mLock) {
+            mPccAllowedPackagesForTesting.add(packageName);
+        }
+    }
+
+    @VisibleForTesting
+    void removeTestAllowedPackage(String packageName) {
+        synchronized (mLock) {
+            mPccAllowedPackagesForTesting.remove(packageName);
+        }
     }
 
     /**
@@ -409,6 +533,40 @@ public final class PccSandboxManagerInternal {
         }
     }
 
+
+    @Override
+    public void onRoleHoldersChanged(@NonNull String roleName, @NonNull UserHandle user) {
+        if (ALLOWED_ROLES.contains(roleName)) {
+            Slog.i(TAG, "Role " + roleName + " changed, refreshing allowed packages for user "
+                    + user.getIdentifier());
+            updateAllowedPackagesForUser(user.getIdentifier());
+        }
+    }
+
+    private final class PackageReceiver implements PackageManagerInternal.PackageListObserver {
+        @Override
+        public void onPackageAdded(@NonNull String packageName, int uid) {
+            logWhenPccNotAllowed(packageName, uid);
+        }
+
+        @Override
+        public void onPackageChanged(@NonNull String packageName, int uid) {
+            logWhenPccNotAllowed(packageName, uid);
+        }
+
+        private void logWhenPccNotAllowed(@NonNull String packageName, int uid) {
+            int userId = UserHandle.getUserId(uid);
+            ApplicationInfo appInfo = mPackageManagerInternal.getApplicationInfo(
+                    packageName, 0, Process.SYSTEM_UID, userId);
+            if (appInfo != null && Process.isPrivateComputeCoreUid(appInfo.pccUid)) {
+                if (!isPccAllowedPackage(packageName, userId)) {
+                    Slog.w(TAG, "New/Updated package " + packageName + " (pccUid " + appInfo.pccUid
+                            + ") provides PCC components but is currently not allowed to "
+                            + "start any.");
+                }
+            }
+        }
+    }
 
     @VisibleForTesting
     final class PccServiceProxy extends IPccService.Stub {

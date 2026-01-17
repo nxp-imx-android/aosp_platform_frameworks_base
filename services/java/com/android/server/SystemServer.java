@@ -264,6 +264,7 @@ import com.android.server.security.FileIntegrityService;
 import com.android.server.security.KeyAttestationApplicationIdProviderService;
 import com.android.server.security.KeyChainSystemService;
 import com.android.server.security.advancedprotection.AdvancedProtectionService;
+import com.android.server.security.authenticationpolicy.AgentAuthService;
 import com.android.server.security.authenticationpolicy.AuthenticationPolicyService;
 import com.android.server.security.authenticationpolicy.SecureLockDeviceService;
 import com.android.server.security.authenticationpolicy.WatchRangingService;
@@ -1690,12 +1691,6 @@ public final class SystemServer implements Dumpable {
             mSystemServiceManager.startService(ROLE_SERVICE_CLASS);
             t.traceEnd();
 
-            if (android.app.contentrestriction.flags.Flags.contentRestrictionApi()) {
-                t.traceBegin("StartContentRestrictionService");
-                mSystemServiceManager.startService(ContentRestrictionService.Lifecycle.class);
-                t.traceEnd();
-            }
-
             t.traceBegin("StartSupervisionService");
             mSystemServiceManager.startService(SupervisionService.Lifecycle.class);
             t.traceEnd();
@@ -2796,6 +2791,11 @@ public final class SystemServer implements Dumpable {
                     mSystemServiceManager.startService(WatchRangingService.Lifecycle.class);
                     t.traceEnd();
                 }
+                if (android.hardware.biometrics.Flags.agentAuthApi()) {
+                    t.traceBegin("AgentAuthService.Lifecycle");
+                    mSystemServiceManager.startService(AgentAuthService.Lifecycle.class);
+                    t.traceEnd();
+                }
 
                 t.traceBegin("StartAuthenticationPolicyService");
                 mSystemServiceManager.startService(AuthenticationPolicyService.class);
@@ -3103,6 +3103,12 @@ public final class SystemServer implements Dumpable {
         t.traceBegin("StartDynamicInstrumentationManager");
         mSystemServiceManager.startService(DynamicInstrumentationManagerService.class);
         t.traceEnd();
+
+        if (android.app.contentrestriction.flags.Flags.contentRestrictionApi()) {
+            t.traceBegin("StartContentRestrictionService");
+            mSystemServiceManager.startService(ContentRestrictionService.Lifecycle.class);
+            t.traceEnd();
+        }
 
         // It is now time to start up the app processes...
 

@@ -494,7 +494,14 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         whenever(splitScreenController.multiDisplayProvider).thenReturn(splitMultiDisplayProvider)
 
         desksController =
-            DesksController(shellController, userRepositories, desktopConfig, desktopState)
+            DesksController(
+                shellController,
+                userRepositories,
+                desktopConfig,
+                desktopState,
+                displayController,
+                desksOrganizer,
+            )
 
         controller = createController()
         controller.setSplitScreenController(splitScreenController)

@@ -897,14 +897,6 @@ public final class ViewRootImpl implements ViewParent,
     @Nullable
     private SurfaceControl mCachedSurfaceControl;
 
-    /**
-     * Delay for releasing the buffer of an invisible surface. It is intended to allow enough time
-     * for the last buffer to be consumed by the display pipeline, preventing the release request
-     * from being ignored while the buffer is still in use.
-     * TODO(b/308662081): Use a deterministic signal instead of a heuristic delay.
-     */
-    private static final int INVISIBLE_SURFACE_BUFFER_RELEASE_DELAY_MS = 100;
-
     private BLASTBufferQueue mBlastBufferQueue;
     private IBinder mBbqApplyToken = new Binder();
 
@@ -1351,8 +1343,6 @@ public final class ViewRootImpl implements ViewParent,
     private static boolean sToolkitSetFrameRateReadOnlyFlagValue;
     private static boolean sToolkitMetricsForFrameRateDecisionFlagValue;
 
-    private static boolean sToolkitEnableInvalidateCheckThreadFlagValue =
-            Flags.enableInvalidateCheckThread();
     private static final boolean sEnableVrr = ViewProperties.vrr_enabled().orElse(true);
     private static final boolean sToolkitInitialTouchBoostFlagValue = toolkitInitialTouchBoost();
     private static boolean sToolkitFrameRateDebugFlagValue =  toolkitFrameRateDebug();
@@ -2765,9 +2755,6 @@ public final class ViewRootImpl implements ViewParent,
 
     @Override
     public void onDescendantInvalidated(@NonNull View child, @NonNull View descendant) {
-        if (sToolkitEnableInvalidateCheckThreadFlagValue) {
-            checkThread();
-        }
         if ((descendant.mPrivateFlags & PFLAG_DRAW_ANIMATION) != 0) {
             mIsAnimating = true;
         }
@@ -9915,16 +9902,6 @@ public final class ViewRootImpl implements ViewParent,
         } else if (mSurfaceControl.isValid()) {
             if (viewVisibility == View.INVISIBLE) {
                 mCachedSurfaceControl = new SurfaceControl(mSurfaceControl, "VRI-cache");
-                mHandler.postDelayed(() -> {
-                    if (mCachedSurfaceControl != null && mCachedSurfaceControl.isValid()) {
-                        Trace.traceBegin(Trace.TRACE_TAG_VIEW, "releaseUnusedBuffer");
-                        final Transaction t = new Transaction();
-                        t.setBuffer(mCachedSurfaceControl, null /* buffer */, null /* fence */)
-                                .applyAsyncUnsafe();
-                        t.close();
-                        Trace.traceEnd(Trace.TRACE_TAG_VIEW);
-                    }
-                }, INVISIBLE_SURFACE_BUFFER_RELEASE_DELAY_MS);
             }
             mSurfaceControl.release();
         }

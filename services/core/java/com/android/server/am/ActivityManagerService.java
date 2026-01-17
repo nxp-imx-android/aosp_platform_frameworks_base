@@ -328,6 +328,7 @@ import android.content.LocusId;
 import android.content.ServiceConnection;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ActivityPresentationInfo;
+import android.content.pm.AllowComponentAccessPolicyInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.ApplicationInfo.HiddenApiEnforcementPolicy;
 import android.content.pm.IPackageDataObserver;
@@ -346,6 +347,7 @@ import android.content.pm.ProviderInfoList;
 import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
 import android.content.pm.SharedLibraryInfo;
+import android.content.pm.SignedPackage;
 import android.content.pm.SystemFeaturesCache;
 import android.content.pm.TestUtilityService;
 import android.content.pm.UserInfo;
@@ -1463,7 +1465,7 @@ public class ActivityManagerService extends IActivityManager.Stub
     /**
      * For some direct access we need to power manager.
      */
-    PowerManagerInternal mLocalPowerManager;
+    private PowerManagerBatchProxy mPowerManagerBatchProxy;
 
     /**
      * State of external calls telling us if the device is awake or asleep.
@@ -2779,7 +2781,9 @@ public class ActivityManagerService extends IActivityManager.Stub
     public void initPowerManagement() {
         mActivityTaskManager.onInitPowerManagement();
         mBatteryStatsService.initPowerManagement();
-        mLocalPowerManager = LocalServices.getService(PowerManagerInternal.class);
+        mPowerManagerBatchProxy = new PowerManagerBatchProxy(
+                LocalServices.getService(PowerManagerInternal.class),
+                mHandlerThread.getLooper());
     }
 
     /**
@@ -2797,8 +2801,13 @@ public class ActivityManagerService extends IActivityManager.Stub
     /**
      * Returns true if the package {@code pkg1} running under user handle {@code uid1} is
      * allowed association with the package {@code pkg2} running under user handle {@code uid2}.
-     * <p> If either of the packages are running as  part of the core system, then the
-     * association is implicitly allowed.
+     *
+     * <p>This method validates the association against <b>both</b> the system's security rules and
+     * the applications' own manifest restrictions (the {@code <allow-component-access>} tag).
+     *
+     * <p>If the calling package is running as part of the core system, the association is
+     * implicitly allowed. However, if the target is a system component, manifest restrictions
+     * are still enforced.
      */
     boolean validateAssociationAllowedLocked(String pkg1, int uid1, String pkg2, int uid2,
             @AssociationType int associationType) {
@@ -2807,6 +2816,37 @@ public class ActivityManagerService extends IActivityManager.Stub
     }
 
     /**
+     * Returns true if the package {@code pkg1} running under user handle {@code uid1} is allowed
+     * association with the package {@code pkg2} running under user handle {@code uid2}.
+     *
+     * <p>This method validates the association against <b>both</b> the system's security rules and
+     * the applications' own manifest restrictions (the {@code <allow-component-access>} tag).
+     *
+     * <p>If the calling package is running as part of the core system, the association is
+     * implicitly allowed. However, if the target is a system component, manifest restrictions
+     * are still enforced.
+     */
+    boolean validateAssociationAllowedLocked(String pkg1, int uid1,
+            String pkg2, int uid2, @AssociationType int associationType, @Nullable Bundle extras) {
+
+        // Enforce system-level rules
+        if (!validateAssociationAllowedPerSystemLocked(
+                pkg1, uid1, pkg2, uid2, associationType, extras)) {
+            return false;
+        }
+
+        // Enforce app-defined manifest policies
+        if (android.app.privatecompute.flags.Flags.enableAllowComponentAccess()
+                && !validateAssociationAllowedPerAppManifestLocked(pkg1, uid1, pkg2, uid2)) {
+            Slog.w(TAG, "Association denied by app manifest policy: " + pkg1 + " -> " + pkg2);
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Validates the association against system-level security rules.
      * Returns true if the package {@code pkg1} running under user handle {@code uid1} is
      * allowed association with the package {@code pkg2} running under user handle {@code uid2}.
      * <p> If either of the packages are running as  part of the core system, then the
@@ -2814,7 +2854,7 @@ public class ActivityManagerService extends IActivityManager.Stub
      * <p> {@code extras} are checked for some associations to enforce one-way data flow into the
      * PCC sandbox.
      */
-    boolean validateAssociationAllowedLocked(String pkg1, int uid1, String pkg2, int uid2,
+    boolean validateAssociationAllowedPerSystemLocked(String pkg1, int uid1, String pkg2, int uid2,
             @AssociationType int associationType, @Nullable Bundle extras) {
         final boolean isPccFrameworkSupportEnabled = enablePccFrameworkSupport();
         if (isPccFrameworkSupportEnabled) {
@@ -2948,6 +2988,122 @@ public class ActivityManagerService extends IActivityManager.Stub
         PackageAssociationInfo pai = mAllowedAssociations.get(appInfo.packageName);
         if (pai != null) {
             pai.setDebuggable((appInfo.flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0);
+        }
+    }
+
+    /**
+     * Checks if {@code policyOwnerPkg} has an {@code <allow-component-access>} policy, and if so,
+     * verifies that {@code candidatePkg} is explicitly allowed. Returns true if no policy is
+     * specified for {@code policyOwnerPkg}.
+     */
+    private boolean isComponentAccessAllowedByPolicyLocked(
+            String policyOwnerPkg, int policyOwnerUid, String candidatePkg, int candidateUid) {
+
+        if (!android.app.privatecompute.flags.Flags.enableAllowComponentAccess()) {
+            return true;
+        }
+
+        PackageManagerInternal packageManagerInternal = getPackageManagerInternal();
+        int userId = UserHandle.getUserId(policyOwnerUid);
+
+        AllowComponentAccessPolicyInfo policy =
+                packageManagerInternal.getAllowComponentAccessPolicyInfo(policyOwnerPkg, userId);
+
+        // If no policy is defined, access is allowed by default.
+        if (policy == null) {
+            return true;
+        }
+
+        // Policy exists. Fetch candidate details to verify signing.
+        AndroidPackage candidateInfo = packageManagerInternal.getPackage(candidatePkg);
+        if (candidateInfo == null) {
+            Slog.w(TAG, "Access denied: " + policyOwnerPkg + " blocks " + candidatePkg
+                    + " (" + candidateUid + "): package not found");
+            return false;
+        }
+
+        final List<SignedPackage> rules = policy.getAllowlistedSignedPackages();
+        final int rulesSize = rules.size();
+        for (int i = 0; i < rulesSize; i++) {
+            SignedPackage rule = rules.get(i);
+            if (rule.getPackageName().equals(candidatePkg)) {
+                if (rule.hasCertificateDigest()) {
+                    if (candidateInfo
+                            .getSigningDetails()
+                            .hasSha256Certificate(rule.getCertificateDigest())) {
+                        return true;
+                    }
+                } else {
+                    return true;
+                }
+            }
+        }
+
+        Slog.w(TAG, "Access denied: " + policyOwnerPkg + " blocks " + candidatePkg + " (uid "
+                        + candidateUid + ")");
+        return false;
+    }
+
+    /**
+     * Checks if the association is allowed by the App's own Manifest policy (the {@code
+     * <allow-component-access>} tag).
+     *
+     * <p>Performs bidirectional checks (Ingress and Egress) to ensure mutual trust. If either app
+     * has added the tag in the manifest, it must explicitly allow the other.
+     * If the calling package is the System UID, this check is bypassed.
+     */
+    private boolean validateAssociationAllowedPerAppManifestLocked(
+            String sourcePkg, int sourceUid, String targetPkg, int targetUid) {
+        if (!android.app.privatecompute.flags.Flags.enableAllowComponentAccess()) {
+            return true;
+        }
+        Trace.traceBegin(
+                Trace.TRACE_TAG_ACTIVITY_MANAGER,
+                "validateAssociationAllowedPerAppManifestLocked");
+        try {
+            if (sourcePkg == null || targetPkg == null) {
+                Slog.w(TAG, "Skipping manifest association check for null package. "
+                                + "SourceUid: " + sourceUid + ", SourcePkg: " + sourcePkg
+                                + ", TargetUid: " + targetUid + ", TargetPkg: " + targetPkg);
+                return true;
+            }
+            // Always allow self-communication.
+            if (sourceUid == targetUid || sourcePkg.equals(targetPkg)) {
+                return true;
+            }
+            // The system is trusted to access any component. This bypasses both egress
+            // and ingress manifest checks when the system is the source of the request.
+            if (UserHandle.getAppId(sourceUid) == Process.SYSTEM_UID) {
+                return true;
+            }
+
+            // PCC UIDs can bypass manifest checks when accessing Trusted Apps.
+            if (android.app.privatecompute.flags.Flags.enablePccFrameworkSupport()
+                    && Process.isPrivateComputeCoreUid(sourceUid)) {
+
+                PccSandboxManagerInternal pccInternal =
+                        LocalServices.getService(PccSandboxManagerInternal.class);
+
+                if (pccInternal != null && pccInternal.isPccTrustedApp(targetUid, targetPkg)) {
+                    return true;
+                }
+            }
+
+            // Egress: Source must allow Target.
+            if (!isComponentAccessAllowedByPolicyLocked(
+                    sourcePkg, sourceUid, targetPkg, targetUid)) {
+                return false;
+            }
+
+            // Ingress: Target must allow Source.
+            if (!isComponentAccessAllowedByPolicyLocked(
+                    targetPkg, targetUid, sourcePkg, sourceUid)) {
+                return false;
+            }
+
+            return true;
+        } finally {
+            Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
         }
     }
 
@@ -15726,19 +15882,19 @@ public class ActivityManagerService extends IActivityManager.Stub
 
         // Directly update the power manager, since we sit on top of it and it is critical
         // it be kept in sync (so wake locks will be held as soon as appropriate).
-        if (mLocalPowerManager != null) {
+        if (mPowerManagerBatchProxy != null) {
             // TODO: dispatch cached/uncached changes here, so we don't need to report
             // all proc state changes.
             if ((enqueuedChange & UidRecord.CHANGE_ACTIVE) != 0) {
-                mLocalPowerManager.uidActive(uid);
+                mPowerManagerBatchProxy.uidActive(uid);
             }
             if ((enqueuedChange & UidRecord.CHANGE_IDLE) != 0) {
-                mLocalPowerManager.uidIdle(uid);
+                mPowerManagerBatchProxy.uidIdle(uid);
             }
             if ((enqueuedChange & UidRecord.CHANGE_GONE) != 0) {
-                mLocalPowerManager.uidGone(uid);
+                mPowerManagerBatchProxy.uidGone(uid);
             } else if ((enqueuedChange & UidRecord.CHANGE_PROCSTATE) != 0) {
-                mLocalPowerManager.updateUidProcState(uid, procState);
+                mPowerManagerBatchProxy.updateUidProcState(uid, procState);
             }
         }
         if (mAppLockLocalService != null) {
@@ -15939,8 +16095,8 @@ public class ActivityManagerService extends IActivityManager.Stub
 
             synchronized (this) {
                 try {
-                    if (mLocalPowerManager != null) {
-                        mLocalPowerManager.startUidChanges();
+                    if (mPowerManagerBatchProxy != null) {
+                        mPowerManagerBatchProxy.startUidChanges();
                     }
                     final int appId = UserHandle.getAppId(pkgUid);
                     for (int i = mProcessList.mActiveUids.size() - 1; i >= 0; i--) {
@@ -15964,8 +16120,8 @@ public class ActivityManagerService extends IActivityManager.Stub
                         }
                     }
                 } finally {
-                    if (mLocalPowerManager != null) {
-                        mLocalPowerManager.finishUidChanges();
+                    if (mPowerManagerBatchProxy != null) {
+                        mPowerManagerBatchProxy.finishUidChanges();
                     }
                 }
             }
@@ -16004,8 +16160,8 @@ public class ActivityManagerService extends IActivityManager.Stub
         final long maxBgTime = nowElapsed - mConstants.BACKGROUND_SETTLE_TIME;
         long nextTime = 0;
         boolean shouldLogMisc = false;
-        if (mLocalPowerManager != null) {
-            mLocalPowerManager.startUidChanges();
+        if (mPowerManagerBatchProxy != null) {
+            mPowerManagerBatchProxy.startUidChanges();
         }
         for (int i = uidSize - 1; i >= 0; i--) {
             final UidRecord uidRec = mProcessList.mActiveUids.valueAt(i);
@@ -16030,8 +16186,8 @@ public class ActivityManagerService extends IActivityManager.Stub
                 }
             }
         }
-        if (mLocalPowerManager != null) {
-            mLocalPowerManager.finishUidChanges();
+        if (mPowerManagerBatchProxy != null) {
+            mPowerManagerBatchProxy.finishUidChanges();
         }
 
         // Also check if there are any apps in cached and background restricted mode,
@@ -16516,6 +16672,10 @@ public class ActivityManagerService extends IActivityManager.Stub
     @NeverCompile // Avoid size overhead of debugging code.
     public void dumpBitmapsProto(ParcelFileDescriptor fd, String[] processes, int userId,
                             boolean allPkgs, String dumpFormat) {
+        // note: re-use the same permission as dumpHeap until its own permission is available
+        enforceCallingPermission(android.Manifest.permission.SET_ACTIVITY_WATCHER,
+                "dumpBitmapsProto()");
+
         ProtoOutputStream proto = new ProtoOutputStream(fd.getFileDescriptor());
         final ArrayList<ProcessRecord> procs = collectProcesses(null, 0, allPkgs, processes);
         if (procs == null) {
@@ -16532,6 +16692,13 @@ public class ActivityManagerService extends IActivityManager.Stub
                 if (thread == null) {
                     continue;
                 }
+
+                // check process debuggability
+                if (!Build.IS_DEBUGGABLE && !r.isDebuggable()) {
+                    Slog.w(TAG, "Process not debuggable: " + r.info.packageName);
+                    continue;
+                }
+
                 try {
                     if (pid == Process.myPid()) {
                         // Directly dump to target proto for local dump to avoid hang.
@@ -20021,8 +20188,8 @@ public class ActivityManagerService extends IActivityManager.Stub
 
         @Override
         public void onUpdateUidsStarted() {
-            if (mLocalPowerManager != null) {
-                mLocalPowerManager.startUidChanges();
+            if (mPowerManagerBatchProxy != null) {
+                mPowerManagerBatchProxy.startUidChanges();
             }
         }
 
@@ -20033,8 +20200,8 @@ public class ActivityManagerService extends IActivityManager.Stub
                 mInternal.deletePendingTopUid(activeUids.valueAt(i).getUid(), nowElapsed);
             }
 
-            if (mLocalPowerManager != null) {
-                mLocalPowerManager.finishUidChanges();
+            if (mPowerManagerBatchProxy != null) {
+                mPowerManagerBatchProxy.finishUidChanges();
             }
 
             // If we have any new uids that became idle this time, we need to make sure

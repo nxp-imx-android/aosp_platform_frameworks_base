@@ -47,6 +47,11 @@
 #include "renderstate/RenderState.h"
 #include "utils/TimeUtils.h"
 
+#ifdef __linux__
+#include <com_android_graphics_hwui_flags.h>
+namespace hwui_flags = com::android::graphics::hwui::flags;
+#endif  // __linux__
+
 namespace android {
 namespace uirenderer {
 namespace renderthread {
@@ -87,10 +92,18 @@ void RenderThread::frameCallback(int64_t vsyncId, int64_t frameDeadline, int64_t
         const auto deadlineTimePoint = SteadyClock::time_point(Nanos(frameDeadline));
 
         const auto timeUntilDeadline = deadlineTimePoint - frameTimeTimePoint;
-        const auto runAt = (frameTimeTimePoint + (timeUntilDeadline / 4));
+        const auto runAt = [&] {
+            const auto defaultRunAt = (frameTimeTimePoint + (timeUntilDeadline / 4));
+            if (!hwui_flags::use_prev_frame_duration_for_render_thread()) {
+                return defaultRunAt;
+            }
 
-        ATRACE_FORMAT("queue mFrameCallbackTask to run after %.2fms",
-                      toFloatMillis(runAt - SteadyClock::now()).count());
+            const auto callbacksDuration = estimateCallbacksExpectedDuration();
+            return (frameTimeTimePoint + (timeUntilDeadline - callbacksDuration));
+        }();
+
+        ATRACE_FORMAT_INSTANT("queue mFrameCallbackTask to run after %.2fms",
+                              toFloatMillis(runAt - SteadyClock::now()).count());
         queue().postAt(toNsecs_t(runAt.time_since_epoch()).count(),
                        [this]() { dispatchFrameCallbacks(); });
     }
@@ -388,6 +401,16 @@ void RenderThread::requestVsync() {
         mVsyncRequested = true;
         mVsyncSource->requestNextVsync();
     }
+}
+
+std::chrono::nanoseconds RenderThread::estimateCallbacksExpectedDuration() const {
+    std::chrono::nanoseconds total = std::chrono::nanoseconds(0);
+    for (const auto& callback : mFrameCallbacks) {
+        total += callback->getExpectedDuration();
+    }
+
+    // Inflate the expected duration to avoid missing the deadline due to a scheduling delay.
+    return 4 * total / 3;
 }
 
 bool RenderThread::threadLoop() {

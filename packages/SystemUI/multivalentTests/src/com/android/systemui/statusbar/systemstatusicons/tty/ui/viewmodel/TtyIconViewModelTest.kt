@@ -16,7 +16,6 @@
 
 package com.android.systemui.statusbar.systemstatusicons.tty.ui.viewmodel
 
-import android.platform.test.annotations.EnableFlags
 import android.telecom.TelecomManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -30,7 +29,7 @@ import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.policy.domain.interactor.fakeTtyStatusInteractor
-import com.android.systemui.statusbar.systemstatusicons.SystemStatusIconsInCompose
+import com.android.systemui.statusbar.systemstatusicons.flags.EnableSystemStatusIconsInCompose
 import com.android.systemui.testKosmos
 import com.android.telecom.mockTelecomManager
 import com.google.common.truth.Truth.assertThat
@@ -39,7 +38,7 @@ import org.junit.runner.RunWith
 import org.mockito.kotlin.whenever
 
 @SmallTest
-@EnableFlags(SystemStatusIconsInCompose.FLAG_NAME)
+@EnableSystemStatusIconsInCompose
 @RunWith(AndroidJUnit4::class)
 class TtyIconViewModelTest : SysuiTestCase() {
 

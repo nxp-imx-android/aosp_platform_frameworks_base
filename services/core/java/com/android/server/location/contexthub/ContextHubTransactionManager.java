@@ -16,7 +16,6 @@
 
 package com.android.server.location.contexthub;
 
-import android.chre.flags.Flags;
 import android.hardware.contexthub.IEndpointCommunication;
 import android.hardware.contexthub.Message;
 import android.hardware.location.ContextHubTransaction;
@@ -598,52 +597,26 @@ import java.util.concurrent.atomic.AtomicInteger;
      */
     private void onTransactionResponseInternal(
             int transactionId, @ContextHubTransaction.Result int result) {
-        if (!Flags.optimizeServiceTransactionLock()) {
-            synchronized (mTransactionLock) {
-                TransactionAcceptConditions conditions =
-                        transaction -> {
-                            if (transaction.getTransactionId() != transactionId) {
-                                Log.w(
-                                        TAG,
-                                        "Unexpected transaction: expected "
-                                                + transactionId
-                                                + ", received "
-                                                + transaction.getTransactionId());
-                                return false;
-                            }
-                            return true;
-                        };
-                ContextHubServiceTransaction transaction = getTransactionAndHandleNext(conditions);
-                if (transaction == null) {
-                    Log.w(TAG, "Received unexpected transaction response");
-                    return;
-                }
+        TransactionAcceptConditions conditions =
+                transaction -> {
+                    if (transaction.getTransactionId() != transactionId) {
+                        Log.w(
+                                TAG,
+                                "Unexpected transaction: expected "
+                                        + transactionId
+                                        + ", received "
+                                        + transaction.getTransactionId());
+                        return false;
+                    }
+                    return true;
+                };
+        ContextHubServiceTransaction transaction = getTransactionAndHandleNext(conditions);
+        if (transaction == null) {
+            Log.w(TAG, "Received unexpected transaction response");
+        }
 
-                transaction.onTransactionComplete(result);
-                transaction.setComplete();
-            }
-        } else {
-            TransactionAcceptConditions conditions =
-                    transaction -> {
-                        if (transaction.getTransactionId() != transactionId) {
-                            Log.w(
-                                    TAG,
-                                    "Unexpected transaction: expected "
-                                            + transactionId
-                                            + ", received "
-                                            + transaction.getTransactionId());
-                            return false;
-                        }
-                        return true;
-                    };
-            ContextHubServiceTransaction transaction = getTransactionAndHandleNext(conditions);
-            if (transaction == null) {
-                Log.w(TAG, "Received unexpected transaction response");
-            }
-
-            if (!transaction.getAndSetComplete()) {
-                transaction.onTransactionComplete(result);
-            }
+        if (!transaction.getAndSetComplete()) {
+            transaction.onTransactionComplete(result);
         }
     }
 
@@ -655,49 +628,27 @@ import java.util.concurrent.atomic.AtomicInteger;
      */
     /* package */
     void onMessageDeliveryResponse(int messageSequenceNumber, boolean success) {
-        if (!Flags.optimizeServiceTransactionLock()) {
-            ContextHubServiceTransaction transaction = null;
-            synchronized (mReliableMessageLock) {
-                transaction = mReliableMessageTransactionMap.get(messageSequenceNumber);
-                if (transaction == null) {
-                    Log.w(
-                            TAG,
-                            "Could not find reliable message transaction with "
-                                    + "message sequence number = "
-                                    + messageSequenceNumber);
-                    return;
-                }
 
-                removeMessageTransaction(transaction);
-
-                completeMessageTransaction(
-                        transaction,
-                        success
-                                ? ContextHubTransaction.RESULT_SUCCESS
-                                : ContextHubTransaction.RESULT_FAILED_AT_HUB);
-            }
-        } else {
-            ContextHubServiceTransaction transaction = null;
-            synchronized (mReliableMessageLock) {
-                transaction = mReliableMessageTransactionMap.get(messageSequenceNumber);
-                if (transaction == null) {
-                    Log.w(
-                            TAG,
-                            "Could not find reliable message transaction with "
-                                    + "message sequence number = "
-                                    + messageSequenceNumber);
-                    return;
-                }
-
-                removeMessageTransaction(transaction);
+        ContextHubServiceTransaction transaction = null;
+        synchronized (mReliableMessageLock) {
+            transaction = mReliableMessageTransactionMap.get(messageSequenceNumber);
+            if (transaction == null) {
+                Log.w(
+                        TAG,
+                        "Could not find reliable message transaction with "
+                                + "message sequence number = "
+                                + messageSequenceNumber);
+                return;
             }
 
-            completeMessageTransaction(
-                    transaction,
-                    success
-                            ? ContextHubTransaction.RESULT_SUCCESS
-                            : ContextHubTransaction.RESULT_FAILED_AT_HUB);
+            removeMessageTransaction(transaction);
         }
+
+        completeMessageTransaction(
+                transaction,
+                success
+                        ? ContextHubTransaction.RESULT_SUCCESS
+                        : ContextHubTransaction.RESULT_FAILED_AT_HUB);
 
         mExecutor.execute(() -> processMessageTransactions());
     }
@@ -709,35 +660,18 @@ import java.util.concurrent.atomic.AtomicInteger;
      */
     /* package */
     void onQueryResponse(List<NanoAppState> nanoAppStateList) {
-        if (!Flags.optimizeServiceTransactionLock()) {
-            synchronized (mTransactionLock) {
-                TransactionAcceptConditions conditions =
-                        transaction ->
-                                transaction.getTransactionType()
-                                        == ContextHubTransaction.TYPE_QUERY_NANOAPPS;
-                ContextHubServiceTransaction transaction = getTransactionAndHandleNext(conditions);
-                if (transaction == null) {
-                    Log.w(TAG, "Received unexpected query response");
-                    return;
-                }
+        TransactionAcceptConditions conditions =
+                transaction ->
+                        transaction.getTransactionType()
+                                == ContextHubTransaction.TYPE_QUERY_NANOAPPS;
+        ContextHubServiceTransaction transaction = getTransactionAndHandleNext(conditions);
+        if (transaction == null) {
+            Log.w(TAG, "Received unexpected query response");
+            return;
+        }
 
-                transaction.onQueryResponse(ContextHubTransaction.RESULT_SUCCESS, nanoAppStateList);
-                transaction.setComplete();
-            }
-        } else {
-            TransactionAcceptConditions conditions =
-                    transaction ->
-                            transaction.getTransactionType()
-                                    == ContextHubTransaction.TYPE_QUERY_NANOAPPS;
-            ContextHubServiceTransaction transaction = getTransactionAndHandleNext(conditions);
-            if (transaction == null) {
-                Log.w(TAG, "Received unexpected query response");
-                return;
-            }
-
-            if (!transaction.getAndSetComplete()) {
-                transaction.onQueryResponse(ContextHubTransaction.RESULT_SUCCESS, nanoAppStateList);
-            }
+        if (!transaction.getAndSetComplete()) {
+            transaction.onQueryResponse(ContextHubTransaction.RESULT_SUCCESS, nanoAppStateList);
         }
     }
 
@@ -803,12 +737,8 @@ import java.util.concurrent.atomic.AtomicInteger;
         cancelTimeoutFuture();
 
         ContextHubServiceTransaction transaction = mTransactionQueue.remove();
-        if (!Flags.optimizeServiceTransactionLock()) {
+        synchronized (transaction) {
             transaction.setComplete();
-        } else {
-            synchronized (transaction) {
-                transaction.setComplete();
-            }
         }
 
         if (!mTransactionQueue.isEmpty()) {
@@ -844,29 +774,17 @@ import java.util.concurrent.atomic.AtomicInteger;
             if (result == ContextHubTransaction.RESULT_SUCCESS) {
                 Runnable onTimeoutFunc =
                         () -> {
-                            if (!Flags.optimizeServiceTransactionLock()) {
-                                synchronized (mTransactionLock) {
-                                    if (!transaction.isComplete()) {
-                                        Log.w(TAG, transaction + " timed out");
-                                        transaction.onTransactionComplete(
-                                                ContextHubTransaction.RESULT_FAILED_TIMEOUT);
-                                        transaction.setComplete();
-                                        removeTransactionAndStartNext();
-                                    }
-                                }
-                            } else {
-                                int transactionId = transaction.getTransactionId();
-                                TransactionAcceptConditions conditions =
-                                        transactionToCheck -> {
-                                            return transactionToCheck.getTransactionId()
-                                                    == transactionId;
-                                        };
-                                if (getTransactionAndHandleNext(conditions) != null
-                                        && !transaction.getAndSetComplete()) {
-                                    Log.w(TAG, transaction + " timed out");
-                                    transaction.onTransactionComplete(
-                                            ContextHubTransaction.RESULT_FAILED_TIMEOUT);
-                                }
+                            int transactionId = transaction.getTransactionId();
+                            TransactionAcceptConditions conditions =
+                                    transactionToCheck -> {
+                                        return transactionToCheck.getTransactionId()
+                                                == transactionId;
+                                    };
+                            if (getTransactionAndHandleNext(conditions) != null
+                                    && !transaction.getAndSetComplete()) {
+                                Log.w(TAG, transaction + " timed out");
+                                transaction.onTransactionComplete(
+                                        ContextHubTransaction.RESULT_FAILED_TIMEOUT);
                             }
                         };
 
@@ -878,15 +796,9 @@ import java.util.concurrent.atomic.AtomicInteger;
                     Log.e(TAG, "Error when schedule a timer", e);
                 }
             } else {
-                if (!Flags.optimizeServiceTransactionLock()) {
+                if (!transaction.getAndSetComplete()) {
                     transaction.onTransactionComplete(
                             ContextHubServiceUtil.toTransactionResult(result));
-                    transaction.setComplete();
-                } else {
-                    if (!transaction.getAndSetComplete()) {
-                        transaction.onTransactionComplete(
-                                ContextHubServiceUtil.toTransactionResult(result));
-                    }
                 }
 
                 mTransactionQueue.remove();
@@ -972,13 +884,8 @@ import java.util.concurrent.atomic.AtomicInteger;
     @GuardedBy("mReliableMessageLock")
     private void completeMessageTransaction(
             ContextHubServiceTransaction transaction, @ContextHubTransaction.Result int result) {
-        if (!Flags.optimizeServiceTransactionLock()) {
+        if (!transaction.getAndSetComplete()) {
             transaction.onTransactionComplete(result);
-            transaction.setComplete();
-        } else {
-            if (!transaction.getAndSetComplete()) {
-                transaction.onTransactionComplete(result);
-            }
         }
 
         Log.d(

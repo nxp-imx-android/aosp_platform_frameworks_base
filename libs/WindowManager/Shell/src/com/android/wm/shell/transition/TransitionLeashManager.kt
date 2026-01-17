@@ -39,7 +39,7 @@ class TransitionLeashManager {
         if (token == null) return
         surfaces.remove(token)
         val leashes = leashes.remove(token) ?: return
-        leashes.forEach { it.release() }
+        leashes.forEach { if (it.isValid) it.release() }
     }
 
     /** Removes any leashes previously added to a transition's participants. */
@@ -118,10 +118,7 @@ class TransitionLeashManager {
      * Checks whether a [TransitionInfo] participant is a task _and_ is dependent on another task
      * participant.
      */
-    private fun isNestedTaskChange(
-        change: TransitionInfo.Change,
-        info: TransitionInfo,
-    ): Boolean {
+    private fun isNestedTaskChange(change: TransitionInfo.Change, info: TransitionInfo): Boolean {
         if (change.taskInfo?.taskId == null) return false
         val parent = change.parent ?: return true
         return info.getChange(parent)?.taskInfo == null

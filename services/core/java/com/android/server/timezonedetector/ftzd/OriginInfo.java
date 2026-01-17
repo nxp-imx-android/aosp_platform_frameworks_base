@@ -16,6 +16,7 @@
 package com.android.server.timezonedetector.ftzd;
 
 import android.os.SystemClock;
+
 import java.time.Duration;
 import java.util.Objects;
 
@@ -28,8 +29,18 @@ import java.util.Objects;
  * @hide
  */
 public final class OriginInfo {
-    private final long mTimestampAdded;
+    /** The timestamp when the origin was created. */
+    private final long mTimestampCreated;
+
+    /**
+     * The timestamp when the origin was first detected. This is used to determine the first
+     * sighting of an origin and can be earlier than {@link #mTimestampCreated}.
+     */
+    private long mTimestampDetected;
+
+    /** The timestamp when the origin was last updated. */
     private long mTimestampLastUpdated;
+
     private int mUpdates;
     private int mQuality = 100;
 
@@ -44,11 +55,12 @@ public final class OriginInfo {
     /**
      * Creates a new {@link OriginInfo} with a specific timestamp.
      *
-     * @param timestampAdded the timestamp to use for the creation and last-updated time
+     * @param timestampDetected the timestamp at which the origin was first detected
      */
-    public OriginInfo(long timestampAdded) {
-        mTimestampAdded = timestampAdded;
-        mTimestampLastUpdated = timestampAdded;
+    public OriginInfo(long timestampDetected) {
+        mTimestampCreated = SystemClock.elapsedRealtime();
+        mTimestampDetected = timestampDetected;
+        mTimestampLastUpdated = Math.max(mTimestampCreated, mTimestampDetected);
         mUpdates = 1;
     }
 
@@ -58,7 +70,8 @@ public final class OriginInfo {
      * @param other the instance to copy
      */
     public OriginInfo(OriginInfo other) {
-        mTimestampAdded = other.mTimestampAdded;
+        mTimestampCreated = other.mTimestampCreated;
+        mTimestampDetected = other.mTimestampDetected;
         mTimestampLastUpdated = other.mTimestampLastUpdated;
         mUpdates = other.mUpdates;
         mQuality = other.mQuality;
@@ -84,14 +97,30 @@ public final class OriginInfo {
         return this;
     }
 
+    /**
+     * Sets the detected timestamp for this origin.
+     *
+     * @param timestampDetected the timestamp to set
+     */
+    public OriginInfo setDetectedTimestamp(long timestampDetected) {
+        mTimestampDetected = timestampDetected;
+
+        return this;
+    }
+
     /** Returns the quality score for this origin. */
     public int getQuality() {
         return mQuality;
     }
 
-    /** Returns the timestamp when this origin was first added. */
-    public long getTimestampAdded() {
-        return mTimestampAdded;
+    /** Returns the timestamp when this origin was created. */
+    public long getTimestampCreated() {
+        return mTimestampCreated;
+    }
+
+    /** Returns the timestamp when this origin was first detected. */
+    public long getTimestampDetected() {
+        return mTimestampDetected;
     }
 
     /** Returns the timestamp when this origin was last updated. */
@@ -105,7 +134,8 @@ public final class OriginInfo {
             return true;
         }
         if (other instanceof OriginInfo that) {
-            return mTimestampAdded == that.mTimestampAdded
+            return mTimestampCreated == that.mTimestampCreated
+                    && mTimestampDetected == that.mTimestampDetected
                     && mTimestampLastUpdated == that.mTimestampLastUpdated
                     && mUpdates == that.mUpdates
                     && mQuality == that.mQuality;
@@ -115,14 +145,17 @@ public final class OriginInfo {
 
     @Override
     public int hashCode() {
-        return Objects.hash(mTimestampAdded, mTimestampLastUpdated, mUpdates, mQuality);
+        return Objects.hash(
+                mTimestampCreated, mTimestampDetected, mTimestampLastUpdated, mUpdates, mQuality);
     }
 
     @Override
     public String toString() {
         return "OriginInfo{"
-                + "mTimestampAdded="
-                + Duration.ofMillis(mTimestampAdded).toString()
+                + "mTimestampCreated="
+                + Duration.ofMillis(mTimestampCreated).toString()
+                + ", mTimestampDetected="
+                + Duration.ofMillis(mTimestampDetected).toString()
                 + ", mTimestampLastUpdated="
                 + Duration.ofMillis(mTimestampLastUpdated).toString()
                 + ", mQuality="

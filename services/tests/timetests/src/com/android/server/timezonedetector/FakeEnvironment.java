@@ -28,9 +28,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * A partially implemented, fake implementation of Environment for tests.
- */
+/** A partially implemented, fake implementation of Environment for tests. */
 public class FakeEnvironment implements Environment {
 
     private final TestState<String> mTimeZoneId = new TestState<>();
@@ -45,14 +43,15 @@ public class FakeEnvironment implements Environment {
         initializeTimeZoneSetting("", TIME_ZONE_CONFIDENCE_LOW);
     }
 
-    void initializeClock(@CurrentTimeMillisLong long currentTimeMillis,
+    void initializeClock(
+            @CurrentTimeMillisLong long currentTimeMillis,
             @ElapsedRealtimeLong long elapsedRealtimeMillis) {
         mInitializationTimeMillis = currentTimeMillis - elapsedRealtimeMillis;
         mElapsedRealtimeMillis = elapsedRealtimeMillis;
     }
 
-    void initializeTimeZoneSetting(String zoneId,
-            @SystemTimeZone.TimeZoneConfidence int timeZoneConfidence) {
+    void initializeTimeZoneSetting(
+            String zoneId, @SystemTimeZone.TimeZoneConfidence int timeZoneConfidence) {
         mTimeZoneId.init(zoneId);
         mTimeZoneConfidence.init(timeZoneConfidence);
     }
@@ -87,8 +86,8 @@ public class FakeEnvironment implements Environment {
         mTimeZoneConfidence.assertHasNotBeenSet();
     }
 
-    void assertTimeZoneChangedTo(String timeZoneId,
-            @SystemTimeZone.TimeZoneConfidence int confidence) {
+    void assertTimeZoneChangedTo(
+            String timeZoneId, @SystemTimeZone.TimeZoneConfidence int confidence) {
         mTimeZoneId.assertHasBeenSet();
         mTimeZoneId.assertChangeCount(1);
         mTimeZoneId.assertLatestEquals(timeZoneId);
@@ -152,8 +151,8 @@ public class FakeEnvironment implements Environment {
     }
 
     /**
-     * Checks if there are any delayed runnables that  have been supplied to {@code #postDelayed}
-     * and runs them if time is up.
+     * Checks if there are any delayed runnables that have been supplied to {@code #postDelayed} and
+     * runs them if time is up.
      */
     public void runDelayedRunnables() {
         ArrayList<Pair<Long, Runnable>> runnablesToRun = new ArrayList<>(mDelayedRunnables);

@@ -16,7 +16,6 @@
 
 package com.android.systemui.theme;
 
-import static android.app.Flags.fixContrastAndForceInvertStateForMultiUser;
 import static android.util.TypedValue.TYPE_INT_COLOR_ARGB8;
 
 import static com.android.systemui.Flags.hardwareColorStyles;
@@ -248,13 +247,11 @@ public class ThemeOverlayController implements CoreStartable, Dumpable {
     private final UserTracker.Callback mUserTrackerCallback = new UserTracker.Callback() {
         @Override
         public void onUserChanged(int newUser, @NonNull Context userContext) {
-            if (fixContrastAndForceInvertStateForMultiUser()) {
-                UiModeManager uiModeManager = mUiModeManagerProvider.forUser(
-                        UserHandle.of(newUser));
-                uiModeManager.removeContrastChangeListener(mContrastChangeListener);
-                uiModeManager.addContrastChangeListener(mMainExecutor, mContrastChangeListener);
-                mContrast = uiModeManager.getContrast();
-            }
+            UiModeManager uiModeManager = mUiModeManagerProvider.forUser(
+                    UserHandle.of(newUser));
+            uiModeManager.removeContrastChangeListener(mContrastChangeListener);
+            uiModeManager.addContrastChangeListener(mMainExecutor, mContrastChangeListener);
+            mContrast = uiModeManager.getContrast();
 
             boolean isManagedProfile = mUserManager.isManagedProfile(newUser);
             if (!mDeviceProvisionedController.isCurrentUserSetup() && isManagedProfile) {
@@ -523,18 +520,9 @@ public class ThemeOverlayController implements CoreStartable, Dumpable {
                 },
                 UserHandle.USER_ALL);
         int userId = mUserTracker.getUserId();
-        if (fixContrastAndForceInvertStateForMultiUser()) {
-            UiModeManager uiModeManager = mUiModeManagerProvider.forUser(UserHandle.of(userId));
-            uiModeManager.addContrastChangeListener(mMainExecutor, mContrastChangeListener);
-            mContrast = uiModeManager.getContrast();
-        } else {
-            mContrast = mUiModeManager.getContrast();
-            mUiModeManager.addContrastChangeListener(mMainExecutor, contrast -> {
-                mContrast = contrast;
-                // Force reload so that we update even when the main color has not changed
-                reevaluateSystemTheme(true /* forceReload */);
-            });
-        }
+        UiModeManager uiModeManager = mUiModeManagerProvider.forUser(UserHandle.of(userId));
+        uiModeManager.addContrastChangeListener(mMainExecutor, mContrastChangeListener);
+        mContrast = uiModeManager.getContrast();
 
         // All wallpaper color and keyguard logic only applies when Monet is enabled.
         if (!mIsMonetEnabled) {

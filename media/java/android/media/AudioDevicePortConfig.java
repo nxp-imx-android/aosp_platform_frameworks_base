@@ -16,6 +16,7 @@
 
 package android.media;
 
+import android.annotation.NonNull;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.os.Build;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
@@ -38,8 +39,13 @@ public class AudioDevicePortConfig extends AudioPortConfig {
     }
 
     AudioDevicePortConfig(AudioDevicePortConfig config) {
-        this(config.port(), config.samplingRate(), config.channelMask(), config.format(),
+        this(config.port(), config.samplingRate(), config.channelMasks(), config.format(),
                 config.gain());
+    }
+
+    AudioDevicePortConfig(AudioDevicePort devicePort, int samplingRate,
+            @NonNull AudioFormat.ChannelMasks channelMasks, int format, AudioGainConfig gain) {
+        super((AudioPort) devicePort, samplingRate, channelMasks, format, gain);
     }
 
     /**

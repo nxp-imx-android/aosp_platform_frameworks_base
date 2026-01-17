@@ -72,7 +72,7 @@ public class DemoStatusIcons extends StatusIconContainer implements DemoMode, Da
     private int mColor;
     private int mContrastColor;
 
-    private final MobileIconsViewModel mMobileIconsViewModel;
+    private final Lazy<MobileIconsViewModel> mMobileIconsViewModel;
     private final StatusBarLocation mLocation;
 
     private final Lazy<MobileUiAdapterKairos> mMobileUiAdapterKairos;
@@ -83,7 +83,7 @@ public class DemoStatusIcons extends StatusIconContainer implements DemoMode, Da
 
     public DemoStatusIcons(
             LinearLayout statusIcons,
-            MobileIconsViewModel mobileIconsViewModel,
+            Lazy<MobileIconsViewModel> mobileIconsViewModel,
             StatusBarLocation location,
             int iconSize,
             Lazy<MobileUiAdapterKairos> mobileUiAdapterKairos,
@@ -296,7 +296,7 @@ public class DemoStatusIcons extends StatusIconContainer implements DemoMode, Da
                             mobileContext,
                             mobileViewLogger,
                             "mobile",
-                            mMobileIconsViewModel.viewModelForSub(subId, mLocation)
+                            mMobileIconsViewModel.get().viewModelForSub(subId, mLocation)
                     );
 
             // mobile always goes at the end

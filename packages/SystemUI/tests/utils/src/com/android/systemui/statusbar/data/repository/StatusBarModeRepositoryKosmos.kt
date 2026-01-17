@@ -17,8 +17,10 @@
 package com.android.systemui.statusbar.data.repository
 
 import com.android.systemui.display.data.repository.displayRepository
+import com.android.systemui.display.data.repository.displaySubcomponentPerDisplayRepository
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
+import kotlinx.coroutines.CoroutineScope
 import org.mockito.kotlin.mock
 
 val Kosmos.fakeStatusBarModePerDisplayRepository by
@@ -36,12 +38,16 @@ val Kosmos.multiDisplayStatusBarModeRepositoryStore by
             applicationCoroutineScope,
             fakeStatusBarModePerDisplayRepositoryFactory,
             displayRepository,
+            displaySubcomponentPerDisplayRepository,
         )
     }
 
 class FakeStatusBarModePerDisplayRepositoryFactory : StatusBarModePerDisplayRepositoryFactory {
 
-    override fun create(displayId: Int): StatusBarModePerDisplayRepositoryImpl {
+    override fun create(
+        scope: CoroutineScope,
+        displayId: Int,
+    ): StatusBarModePerDisplayRepositoryImpl {
         return mock<StatusBarModePerDisplayRepositoryImpl>()
     }
 }

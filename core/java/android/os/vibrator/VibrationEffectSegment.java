@@ -125,7 +125,7 @@ public abstract class VibrationEffectSegment implements Parcelable {
     public abstract <T extends VibrationEffectSegment> T scale(float scaleFactor);
 
     /**
-     * Performs a linear scaling on the segment intensity with the given factor.
+     * Applies given scale factor as adaptive scale.
      *
      * @param scaleFactor scale factor to be applied to the intensity. Values within [0,1) will
      *                    scale down the intensity, values larger than 1 will scale up
@@ -133,7 +133,7 @@ public abstract class VibrationEffectSegment implements Parcelable {
      * @hide
      */
     @NonNull
-    public abstract <T extends VibrationEffectSegment> T scaleLinearly(float scaleFactor);
+    public abstract <T extends VibrationEffectSegment> T applyAdaptiveScale(float scaleFactor);
 
     /**
      * Applies given effect strength to prebaked effects.

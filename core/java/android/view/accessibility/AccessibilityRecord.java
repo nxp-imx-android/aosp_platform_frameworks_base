@@ -254,6 +254,21 @@ public class AccessibilityRecord {
     }
 
     /**
+     * Returns the real id of the window that sent this event, or owns UI that sent this event.
+     *
+     * <p>
+     * <strong>Note:</strong> Use this for all internal implementation logic that needs access to
+     * the window, and not {@link #getWindowId()}. That method is the public APIs used by
+     * AccessibilityServices which may result in inaccurate results if used for internal node or
+     * window lookup logic.
+     *
+     * @hide
+     */
+    public int getRealWindowId() {
+        return mSourceWindowId;
+    }
+
+    /**
      * Gets if the source is checked.
      *
      * @return True if the view is checked, false otherwise.

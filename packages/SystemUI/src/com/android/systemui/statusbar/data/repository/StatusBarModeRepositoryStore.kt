@@ -16,10 +16,13 @@
 
 package com.android.systemui.statusbar.data.repository
 
+import com.android.app.displaylib.PerDisplayRepository
 import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.DisplayId
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
 import com.android.systemui.display.data.repository.DisplayRepository
 import com.android.systemui.display.data.repository.PerDisplayStore
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
@@ -44,6 +47,7 @@ constructor(
     @Background backgroundApplicationScope: CoroutineScope,
     private val factory: StatusBarModePerDisplayRepositoryFactory,
     displayRepository: DisplayRepository,
+    private val displaySubcomponentRepo: PerDisplayRepository<SystemUIDisplaySubcomponent>,
 ) :
     StatusBarModeRepositoryStore,
     StatusBarPerDisplayStoreImpl<StatusBarModePerDisplayRepository>(
@@ -55,8 +59,11 @@ constructor(
         StatusBarConnectedDisplays.unsafeAssertInNewMode()
     }
 
-    override fun createInstanceForDisplay(displayId: Int): StatusBarModePerDisplayRepository {
-        return factory.create(displayId).also { it.start() }
+    override fun createInstanceForDisplay(displayId: Int): StatusBarModePerDisplayRepository? {
+        val displaySubcomponent = displaySubcomponentRepo[displayId] ?: return null
+        return factory.create(displaySubcomponent.displayCoroutineScope, displayId).also {
+            it.start()
+        }
     }
 
     override suspend fun onDisplayRemovalAction(instance: StatusBarModePerDisplayRepository) {
@@ -72,11 +79,12 @@ class StatusBarModeRepositoryImpl
 constructor(
     @DisplayId private val displayId: Int,
     factory: StatusBarModePerDisplayRepositoryFactory,
+    @Application applicationCoroutineScope: CoroutineScope,
 ) :
     StatusBarModeRepositoryStore,
     CoreStartable,
     StatusBarInitializer.StatusBarViewLifecycleListener {
-    override val defaultDisplay = factory.create(displayId)
+    override val defaultDisplay = factory.create(applicationCoroutineScope, displayId)
 
     override fun forDisplay(displayId: Int) = defaultDisplay
 

@@ -20,6 +20,9 @@ import android.os.Binder
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.SetFlagsRule
 import android.testing.AndroidTestingRunner
+import android.view.InsetsBoundingRect
+import android.view.WindowInsets.Side.LEFT
+import android.view.WindowInsets.Side.RIGHT
 import android.window.WindowContainerToken
 import androidx.test.filters.SmallTest
 import com.android.window.flags.Flags
@@ -53,6 +56,7 @@ class WindowDecorationInsetsTest {
                 frame = frame,
                 taskFrame = taskFrame,
                 boundingRects = emptyList(),
+                insetsBoundingRects = emptyList(),
                 flags = 0,
                 shouldAddCaptionInset = true,
                 excludedFromAppBounds = false,
@@ -64,6 +68,7 @@ class WindowDecorationInsetsTest {
                 frame = frame,
                 taskFrame = taskFrame,
                 boundingRects = emptyList(),
+                insetsBoundingRects = emptyList(),
                 flags = 0,
                 shouldAddCaptionInset = true,
                 excludedFromAppBounds = false,
@@ -77,6 +82,11 @@ class WindowDecorationInsetsTest {
         val frame = Rect(0, 0, 1000, 80)
         val taskFrame = Rect(0, 0, 1000, 600)
         val rects = listOf(Rect(0, 0, 300, 80), Rect(800, 0, 1000, 80))
+        val insetsBoundingRects =
+            listOf(
+                InsetsBoundingRect(LEFT, 0, 0, 300, 80),
+                InsetsBoundingRect(RIGHT, 0, 0, 200, 80),
+            )
         val insets1 =
             WindowDecorationInsets(
                 token = token,
@@ -84,6 +94,7 @@ class WindowDecorationInsetsTest {
                 frame = frame,
                 taskFrame = taskFrame,
                 boundingRects = rects,
+                insetsBoundingRects = insetsBoundingRects,
                 flags = 0,
                 shouldAddCaptionInset = true,
                 excludedFromAppBounds = false,
@@ -95,6 +106,7 @@ class WindowDecorationInsetsTest {
                 frame = frame,
                 taskFrame = taskFrame,
                 boundingRects = rects,
+                insetsBoundingRects = insetsBoundingRects,
                 flags = 0,
                 shouldAddCaptionInset = true,
                 excludedFromAppBounds = false,
@@ -114,6 +126,7 @@ class WindowDecorationInsetsTest {
                 frame = Rect(0, 0, 1000, 80),
                 taskFrame = taskFrame,
                 boundingRects = emptyList(),
+                insetsBoundingRects = emptyList(),
                 flags = 0,
                 shouldAddCaptionInset = true,
                 excludedFromAppBounds = false,
@@ -125,6 +138,7 @@ class WindowDecorationInsetsTest {
                 frame = Rect(100, 0, 1000, 80),
                 taskFrame = taskFrame,
                 boundingRects = emptyList(),
+                insetsBoundingRects = emptyList(),
                 flags = 0,
                 shouldAddCaptionInset = true,
                 excludedFromAppBounds = false,
@@ -143,6 +157,7 @@ class WindowDecorationInsetsTest {
                 frame = frame,
                 taskFrame = Rect(0, 0, 1000, 600),
                 boundingRects = emptyList(),
+                insetsBoundingRects = emptyList(),
                 flags = 0,
                 shouldAddCaptionInset = true,
                 excludedFromAppBounds = false,
@@ -154,6 +169,7 @@ class WindowDecorationInsetsTest {
                 frame = frame,
                 taskFrame = Rect(10, 0, 1010, 600),
                 boundingRects = emptyList(),
+                insetsBoundingRects = emptyList(),
                 flags = 0,
                 shouldAddCaptionInset = true,
                 excludedFromAppBounds = false,

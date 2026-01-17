@@ -25,31 +25,10 @@ flag {
 
 flag {
     namespace: "haptics"
-    name: "haptics_scale_v2_enabled"
-    description: "Enables new haptics scaling function across all usages"
-    bug: "345186129"
-    metadata {
-        purpose: PURPOSE_FEATURE
-    }
-}
-
-flag {
-    namespace: "haptics"
     name: "normalized_pwle_effects"
     is_exported: true
     description: "Enables functionality to create PWLE effects using advanced and simple APIs"
     bug: "341052318"
-    metadata {
-        purpose: PURPOSE_FEATURE
-    }
-}
-
-flag {
-    namespace: "haptics"
-    name: "primitive_composition_absolute_delay"
-    is_exported: true
-    description: "Enables functionality to create primitive compositions with absolute delays"
-    bug: "373357740"
     metadata {
         purpose: PURPOSE_FEATURE
     }

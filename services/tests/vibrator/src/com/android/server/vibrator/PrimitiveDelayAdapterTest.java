@@ -63,21 +63,6 @@ public class PrimitiveDelayAdapterTest {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_PRIMITIVE_COMPOSITION_ABSOLUTE_DELAY)
-    public void testPrimitiveSegments_flagDisabled_keepsListUnchanged() {
-        List<VibrationEffectSegment> segments = new ArrayList<>(Arrays.asList(
-                new PrimitiveSegment(PRIMITIVE_CLICK, 1f, 100, DELAY_TYPE_RELATIVE_START_OFFSET),
-                new PrimitiveSegment(PRIMITIVE_TICK, 0.5f, 10, DELAY_TYPE_PAUSE)));
-        List<VibrationEffectSegment> originalSegments = new ArrayList<>(segments);
-
-        assertEquals(-1, mAdapter.adaptToVibrator(EMPTY_VIBRATOR_INFO, segments, -1));
-        assertEquals(1, mAdapter.adaptToVibrator(BASIC_VIBRATOR_INFO, segments, 1));
-
-        assertEquals(originalSegments, segments);
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_PRIMITIVE_COMPOSITION_ABSOLUTE_DELAY)
     public void testNonPrimitiveSegments_keepsListUnchanged() {
         List<VibrationEffectSegment> segments = new ArrayList<>(Arrays.asList(
                 new StepSegment(/* amplitude= */ 0, /* frequencyHz= */ 1, /* duration= */ 10),
@@ -94,7 +79,6 @@ public class PrimitiveDelayAdapterTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_PRIMITIVE_COMPOSITION_ABSOLUTE_DELAY)
     public void testPrimitiveWithPause_keepsListUnchanged() {
         List<VibrationEffectSegment> segments = new ArrayList<>(Arrays.asList(
                 new PrimitiveSegment(PRIMITIVE_CLICK, 1f, 100, DELAY_TYPE_PAUSE),
@@ -108,7 +92,6 @@ public class PrimitiveDelayAdapterTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_PRIMITIVE_COMPOSITION_ABSOLUTE_DELAY)
     public void testPrimitiveWithRelativeDelay_afterPrimitive_usesPrimitiveStartTimeForDelay() {
         VibratorInfo info = createVibratorInfoWithPrimitives(
                 new int[] { PRIMITIVE_CLICK }, new int[] { 20 });
@@ -130,7 +113,6 @@ public class PrimitiveDelayAdapterTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_PRIMITIVE_COMPOSITION_ABSOLUTE_DELAY)
     public void testPrimitiveWithRelativeDelay_afterRepeatIndex_usesPauseAsFirstDelay() {
         VibratorInfo info = createVibratorInfoWithPrimitives(
                 new int[] { PRIMITIVE_CLICK }, new int[] { 20 });
@@ -152,7 +134,6 @@ public class PrimitiveDelayAdapterTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_PRIMITIVE_COMPOSITION_ABSOLUTE_DELAY)
     public void testPrimitiveWithRelativeDelayAfter_afterStep_usesSegmentStartTimeForDelay() {
         List<VibrationEffectSegment> segments = new ArrayList<>(Arrays.asList(
                 new StepSegment(/* amplitude= */ 0, /* frequencyHz= */ 1, /* duration= */ 10),
@@ -167,7 +148,6 @@ public class PrimitiveDelayAdapterTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_PRIMITIVE_COMPOSITION_ABSOLUTE_DELAY)
     public void testPrimitiveWithRelativeDelayAfter_afterUnknownDuration_usesZeroAsDuration() {
         List<VibrationEffectSegment> segments = new ArrayList<>(Arrays.asList(
                 new PrebakedSegment(VibrationEffect.EFFECT_POP, false,
@@ -185,9 +165,10 @@ public class PrimitiveDelayAdapterTest {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_NORMALIZED_PWLE_EFFECTS,
-            Flags.FLAG_COMPOSITION_PWLE_APIS,
-            Flags.FLAG_PRIMITIVE_COMPOSITION_ABSOLUTE_DELAY})
+    @EnableFlags({
+        Flags.FLAG_NORMALIZED_PWLE_EFFECTS,
+        Flags.FLAG_COMPOSITION_PWLE_APIS,
+    })
     public void testPrimitiveWithRelativeDelay_afterMixedPwles_uses3rdSegmentStartTimeForDelay() {
         List<VibrationEffectSegment> segments = new ArrayList<>(Arrays.asList(
                 new PwleSegment(0.5f, 0.75f, 100f, 150f, 250, /* isFirstSegment= */ true),
@@ -208,9 +189,10 @@ public class PrimitiveDelayAdapterTest {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_NORMALIZED_PWLE_EFFECTS,
-            Flags.FLAG_COMPOSITION_PWLE_APIS,
-            Flags.FLAG_PRIMITIVE_COMPOSITION_ABSOLUTE_DELAY})
+    @EnableFlags({
+        Flags.FLAG_NORMALIZED_PWLE_EFFECTS,
+        Flags.FLAG_COMPOSITION_PWLE_APIS,
+    })
     public void testPrimitiveWithRelativeDelay_afterBasicPwle_usesSegmentStartTimeForDelay() {
         List<VibrationEffectSegment> segments = new ArrayList<>(Arrays.asList(
                 new BasicPwleSegment(0f, 1f, 0f, 1f, 100, /* isFirstSegment= */ true),
@@ -228,10 +210,7 @@ public class PrimitiveDelayAdapterTest {
 
     @Test
     @DisableFlags(Flags.FLAG_COMPOSITION_PWLE_APIS)
-    @EnableFlags({
-        Flags.FLAG_NORMALIZED_PWLE_EFFECTS,
-        Flags.FLAG_PRIMITIVE_COMPOSITION_ABSOLUTE_DELAY
-    })
+    @EnableFlags(Flags.FLAG_NORMALIZED_PWLE_EFFECTS)
     public void
             testPrimitiveAfterBasicPwleWithRelativeDelay_flagDisabled_pauseAdaptionUnchanged() {
         List<VibrationEffectSegment> segments = new ArrayList<>(Arrays.asList(
@@ -249,9 +228,10 @@ public class PrimitiveDelayAdapterTest {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_NORMALIZED_PWLE_EFFECTS,
-            Flags.FLAG_COMPOSITION_PWLE_APIS,
-            Flags.FLAG_PRIMITIVE_COMPOSITION_ABSOLUTE_DELAY})
+    @EnableFlags({
+        Flags.FLAG_NORMALIZED_PWLE_EFFECTS,
+        Flags.FLAG_COMPOSITION_PWLE_APIS,
+    })
     public void
             testPrimitiveWithNotEnoughDelay_afterBasicPwle_removesPrimitive() {
         List<VibrationEffectSegment> segments = new ArrayList<>(Arrays.asList(
@@ -271,7 +251,6 @@ public class PrimitiveDelayAdapterTest {
     @EnableFlags({
         Flags.FLAG_NORMALIZED_PWLE_EFFECTS,
         Flags.FLAG_COMPOSITION_PWLE_APIS,
-        Flags.FLAG_PRIMITIVE_COMPOSITION_ABSOLUTE_DELAY
     })
     public void
             testPrimitiveWithRelativeDelay_afterPwle_calculatesPauseCorrectly() {
@@ -291,8 +270,7 @@ public class PrimitiveDelayAdapterTest {
 
     @Test
     @DisableFlags(Flags.FLAG_COMPOSITION_PWLE_APIS)
-    @EnableFlags({Flags.FLAG_NORMALIZED_PWLE_EFFECTS,
-            Flags.FLAG_PRIMITIVE_COMPOSITION_ABSOLUTE_DELAY})
+    @EnableFlags(Flags.FLAG_NORMALIZED_PWLE_EFFECTS)
     public void testPrimitiveAfterPwlesWithRelativeDelay_flagDisabled_pauseAdaptionUnchanged() {
         List<VibrationEffectSegment> segments = new ArrayList<>(Arrays.asList(
                 new PwleSegment(0f, 1f, 100f, 150f, 2000, /* isFirstSegment= */ true),
@@ -309,9 +287,10 @@ public class PrimitiveDelayAdapterTest {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_NORMALIZED_PWLE_EFFECTS,
-            Flags.FLAG_COMPOSITION_PWLE_APIS,
-            Flags.FLAG_PRIMITIVE_COMPOSITION_ABSOLUTE_DELAY})
+    @EnableFlags({
+        Flags.FLAG_NORMALIZED_PWLE_EFFECTS,
+        Flags.FLAG_COMPOSITION_PWLE_APIS,
+    })
     public void
             testPrimitiveWithNotEnoughDelayWithCompositionPwleApis_afterPwle_removesPrimitive() {
         List<VibrationEffectSegment> segments = new ArrayList<>(Arrays.asList(

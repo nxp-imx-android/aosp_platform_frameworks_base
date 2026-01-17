@@ -1872,6 +1872,18 @@ java_aconfig_library {
 }
 
 java_aconfig_library {
+    name: "android.app.supervision.flags-aconfig-java-export",
+    aconfig_declarations: "android.app.supervision.flags-aconfig",
+    defaults: ["framework-minus-apex-aconfig-java-defaults"],
+    min_sdk_version: "30",
+    mode: "exported",
+    apex_available: [
+        "//apex_available:platform",
+        "com.android.permission",
+    ],
+}
+
+java_aconfig_library {
     name: "android.app.supervision.flags-aconfig-java-host",
     aconfig_declarations: "android.app.supervision.flags-aconfig",
     host_supported: true,

@@ -148,8 +148,9 @@ fun LargeTileContent(
                 Modifier.size(CommonTileDefaults.ToggleTargetSize).thenIf(isDualTarget) {
                     Modifier.borderOnFocus(color = focusBorderColor, iconShape.topEnd)
                         .clip(iconShape)
-                        .verticalSquish(squishiness)
                         .drawBehind { drawRect(animatedBackgroundColor) }
+                        // apply the squish effect after the bg is drawn
+                        .verticalSquish(squishiness)
                         .combinedClickable(
                             onClick = toggleClick!!,
                             onLongClick = onLongClick,

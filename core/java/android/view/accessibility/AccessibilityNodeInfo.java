@@ -1362,6 +1362,21 @@ public class AccessibilityNodeInfo implements Parcelable {
     }
 
     /**
+     * Returns the real id of the window that created this node.
+     *
+     * <p>
+     * <strong>Note:</strong> Use this for all internal implementation logic that needs access to
+     * the window, and not {@link #getWindowId()} nor {@link #getWindow()}. Those methods are the
+     * public APIs used by AccessibilityServices which may result in inaccurate results if used for
+     * internal node or window lookup logic.
+     *
+     * @hide
+     */
+    public int getRealWindowId() {
+        return mWindowId;
+    }
+
+    /**
      * Refreshes this info with the latest state of the view it represents.
      *
      * @param bypassCache Whether to bypass the cache.

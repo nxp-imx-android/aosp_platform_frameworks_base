@@ -22,7 +22,6 @@ import android.util.IndentingPrintWriter;
 
 import com.android.server.timezonedetector.TimeZoneOffsetChangeListener.TimeZoneOffsetChangeEvent;
 
-import java.time.zone.ZoneOffsetTransition;
 import java.util.Objects;
 
 /** An interface for classes that can be notified of daylight saving time changes. */

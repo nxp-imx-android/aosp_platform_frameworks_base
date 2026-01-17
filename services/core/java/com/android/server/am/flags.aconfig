@@ -351,3 +351,14 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "batch_power_manager_calls"
+    namespace: "backstage_power"
+    description: "Batch PowerManagerInternal calls to reduce the lock contention."
+    bug: "470251713"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+

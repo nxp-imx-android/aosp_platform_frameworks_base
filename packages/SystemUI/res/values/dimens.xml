@@ -2218,8 +2218,12 @@
     <dimen name="bluetooth_details_toggle_row_margin_end">26dp</dimen>
     <dimen name="tile_details_switch_container_width">52dp</dimen>
     <dimen name="tile_details_switch_track_height">24dp</dimen>
+    <!-- tile_details_bottom_padding (14dp)
+     + tile_details_button_vertical_margin_correction (-4dp) -->
+    <dimen name="tile_details_button_margin_vertical_corrected">10dp</dimen>
     <dimen name="tile_details_button_row_height">40dp</dimen>
     <dimen name="tile_details_button_size">20dp</dimen>
+    <dimen name="tile_details_button_tappable_height">48dp</dimen>
     <dimen name="tile_details_bottom_padding">14dp</dimen>
     <dimen name="tile_details_horizontal_padding">14dp</dimen>
     <dimen name="tile_details_vertical_padding">8dp</dimen>

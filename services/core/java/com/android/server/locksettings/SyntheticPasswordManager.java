@@ -1664,6 +1664,11 @@ class SyntheticPasswordManager {
             }
             result.syntheticPassword = unwrapSyntheticPasswordBlob(protectorId,
                     PROTECTOR_TYPE_LSKF_BASED, protectorSecret, sid, userId);
+            if (result.syntheticPassword == null) {
+                Slog.e(TAG, "Failed to unwrap synthetic password blob");
+                result.response = VerifyCredentialResponse.OTHER_ERROR;
+                return result;
+            }
 
             // Perform verifyChallenge to refresh auth tokens for GK if user password exists.
             result.response = verifyChallenge(gatekeeper, result.syntheticPassword, 0L, userId);

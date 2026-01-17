@@ -225,21 +225,12 @@ public final class LegacyVibrationEffectXmlSerializer {
         PrimitiveSegment primitive = (PrimitiveSegment) segment;
         PrimitiveEffectName primitiveName =
                 PrimitiveEffectName.findById(primitive.getPrimitiveId());
-
         XmlValidator.checkSerializerCondition(primitiveName != null,
                 "Unsupported primitive effect id %s", primitive.getPrimitiveId());
 
-        PrimitiveDelayType delayType = null;
-
-        if (Flags.primitiveCompositionAbsoluteDelay()) {
-            delayType = PrimitiveDelayType.findByType(primitive.getDelayType());
-            XmlValidator.checkSerializerCondition(delayType != null,
-                    "Unsupported primitive delay type %s", primitive.getDelayType());
-        } else {
-            XmlValidator.checkSerializerCondition(
-                    primitive.getDelayType() == PrimitiveSegment.DEFAULT_DELAY_TYPE,
-                    "Unsupported primitive delay type %s", primitive.getDelayType());
-        }
+        PrimitiveDelayType delayType = PrimitiveDelayType.findByType(primitive.getDelayType());
+        XmlValidator.checkSerializerCondition(delayType != null,
+                "Unsupported primitive delay type %s", primitive.getDelayType());
 
         return new SerializedCompositionPrimitive(
                 primitiveName, primitive.getScale(), primitive.getDelay(), delayType);

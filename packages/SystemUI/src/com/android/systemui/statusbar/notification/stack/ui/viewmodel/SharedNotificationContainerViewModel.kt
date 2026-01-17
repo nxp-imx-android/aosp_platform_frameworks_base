@@ -25,6 +25,7 @@ import androidx.annotation.VisibleForTesting
 import androidx.compose.ui.Alignment
 import com.android.app.tracing.coroutines.flow.flowName
 import com.android.compose.animation.scene.ObservableTransitionState
+import com.android.compose.animation.scene.Scale
 import com.android.systemui.Flags.glanceableHubV2
 import com.android.systemui.biometrics.Utils.getInsetsOf
 import com.android.systemui.bouncer.domain.interactor.BouncerInteractor
@@ -91,6 +92,7 @@ import com.android.systemui.log.table.TableRowLogger
 import com.android.systemui.log.table.logDiffsForTable
 import com.android.systemui.media.controls.domain.pipeline.MediaDataManager
 import com.android.systemui.media.controls.shared.model.MediaData
+import com.android.systemui.notifications.ui.NotificationPlaceholderStateStorage
 import com.android.systemui.res.R
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
@@ -115,6 +117,8 @@ import com.android.systemui.util.kotlin.BooleanFlowOperators.not
 import com.android.systemui.util.kotlin.FlowDumperImpl
 import com.android.systemui.util.kotlin.Utils.Companion.sample as sampleCombine
 import com.android.systemui.util.kotlin.sample
+import com.android.systemui.util.state.ObservableState
+import com.android.systemui.util.state.SynchronouslyObservableState
 import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
 import com.android.systemui.utils.coroutines.flow.transformLatestConflated
@@ -215,6 +219,7 @@ constructor(
     unfoldTransitionInteractor: UnfoldTransitionInteractor,
     val activeNotificationsInteractor: ActiveNotificationsInteractor,
     private val mediaDataManager: MediaDataManager,
+    notificationPlaceholderStateStorage: NotificationPlaceholderStateStorage,
     @NotificationAlphaTableLog private val alphaTableLogger: TableLogBuffer,
 ) : FlowDumperImpl(dumpManager) {
 
@@ -822,27 +827,41 @@ constructor(
      * 1.0f means no visual change to the view.
      */
     val viewScale: Flow<Float> =
-        // Use flatMapLatestConflated so the animation flows aren't collected at all when communal
-        // is not visible.
-        communalInteractor.isCommunalVisible
-            .flatMapLatestConflated { isCommunalVisible ->
-                if (!isCommunalVisible) {
-                    flowOf(1f)
-                } else {
-                    merge(
-                            lockscreenToGlanceableHubTransitionViewModel.zoomOut,
-                            glanceableHubToLockscreenTransitionViewModel.zoomOut,
-                            toLockscreenEndStateTransitionViewModel.zoomOut,
-                        )
-                        .map {
-                            // Rate limit the zoom out by 5% step to avoid jank.
-                            val limited = (round(it * 20) / 20f).coerceIn(0f, 1f)
-                            1 - limited * PUSHBACK_SCALE
-                        }
+        if (SceneContainerFlag.isEnabled) {
+            /** @see containerScale for the SceneContainer implementation. */
+            flowOf(1f)
+        } else {
+            // Use flatMapLatestConflated so the animation flows aren't collected at all when
+            // communal
+            // is not visible.
+            communalInteractor.isCommunalVisible
+                .flatMapLatestConflated { isCommunalVisible ->
+                    if (!isCommunalVisible) {
+                        flowOf(1f)
+                    } else {
+                        merge(
+                                lockscreenToGlanceableHubTransitionViewModel.zoomOut,
+                                glanceableHubToLockscreenTransitionViewModel.zoomOut,
+                                toLockscreenEndStateTransitionViewModel.zoomOut,
+                            )
+                            .map {
+                                // Rate limit the zoom out by 5% step to avoid jank.
+                                val limited = (round(it * 20) / 20f).coerceIn(0f, 1f)
+                                1 - limited * PUSHBACK_SCALE
+                            }
+                    }
                 }
-            }
-            .distinctUntilChanged()
-            .dumpWhileCollecting("viewScale")
+                .distinctUntilChanged()
+                .dumpWhileCollecting("viewScale")
+        }
+
+    /** Draw scale requested by the Notification Stack placeholder STL element. */
+    val containerScale: ObservableState<Scale> =
+        if (SceneContainerFlag.isEnabled) {
+            notificationPlaceholderStateStorage.stackScale
+        } else {
+            SynchronouslyObservableState(Scale.Unspecified)
+        }
 
     /**
      * Returns a flow of the expected alpha while running a LOCKSCREEN<->GLANCEABLE_HUB or

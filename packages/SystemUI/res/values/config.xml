@@ -83,6 +83,20 @@
         internet,bt,dnd,cast,flashlight,airplane,rotation,wallet,alarm,controls,screenrecord,battery
     </string>
 
+    <!-- The default tiles to display in QuickSettings after the internet tile split-->
+    <string name="quick_settings_tiles_default_split" translatable="false">
+        wifi,bt,cell,cast,dnd,wallet,airplane,rotation,flashlight,battery,alarm,controls,screenrecord
+    </string>
+
+    <!-- The default large tiles in Quick Settings after the internet tile split -->
+    <string-array name="quick_settings_large_tiles_default_split" translatable="false">
+        <item>wifi</item>
+        <item>bt</item>
+        <item>cell</item>
+        <item>cast</item>
+        <item>dnd</item>
+        <item>wallet</item>
+    </string-array>
     <!-- The class path of the Safety Quick Settings Tile -->
     <string name="safety_quick_settings_tile_class" translatable="false">
         com.android.permissioncontroller.permission.service.v33.SafetyCenterQsTileService
@@ -1091,6 +1105,12 @@
 
     <!-- The dream component used when the device is low light environment. -->
     <string translatable="false" name="config_lowLightDreamComponent"/>
+
+    <!-- The type of the light sensor used by the low light monitor. -->
+    <string name="config_lowLightMonitorLightSensorType" translatable="false"/>
+
+    <!-- The name of the light sensor used by the low light monitor. -->
+    <string name="config_lowLightMonitorLightSensorName" translatable="false"/>
 
     <!-- Determines whether low light should be allowed pre-unlock -->
     <bool translatable="false" name="config_allowLowLightBehaviorWhenLocked">false</bool>

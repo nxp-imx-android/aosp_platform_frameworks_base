@@ -70,6 +70,7 @@ android_test {
         "androidx.core_core-ktx",
         "androidx.test.core",
         "androidx.test.espresso.core",
+        "androidx.test.espresso.intents",
         "androidx.test.ext.junit",
         "androidx.test.rules",
         "androidx.test.runner",

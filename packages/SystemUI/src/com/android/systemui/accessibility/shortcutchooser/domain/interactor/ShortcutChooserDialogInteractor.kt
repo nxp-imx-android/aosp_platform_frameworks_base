@@ -24,8 +24,10 @@ import android.util.Log
 import android.view.Display.INVALID_DISPLAY
 import android.view.accessibility.Flags as AccessibilityFlags
 import androidx.annotation.VisibleForTesting
+import com.android.internal.accessibility.AccessibilityShortcutController.ACCESSIBILITY_HEARING_AIDS_COMPONENT_NAME
 import com.android.internal.accessibility.common.ShortcutChooserDialogConstants
 import com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType
+import com.android.internal.accessibility.util.AccessibilityUtils
 import com.android.systemui.Flags as SystemUIFlags
 import com.android.systemui.accessibility.data.repository.AccessibilityShortcutsRepository
 import com.android.systemui.accessibility.shortcutchooser.shared.model.AccessibilityTargetModel
@@ -33,24 +35,27 @@ import com.android.systemui.accessibility.shortcutchooser.shared.model.DialogReq
 import com.android.systemui.broadcast.BroadcastDispatcher
 import com.android.systemui.broadcast.BroadcastSender
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.display.data.repository.DisplayRepository
 import com.android.systemui.user.data.repository.UserRepository
 import com.android.systemui.user.domain.interactor.HeadlessSystemUserMode
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 
 @SysUISingleton
 class ShortcutChooserDialogInteractor
 @Inject
 constructor(
+    @param:Application private val applicationContext: Context,
     private val repository: AccessibilityShortcutsRepository,
     private val displayRepository: DisplayRepository,
-    private val broadcastDispatcher: BroadcastDispatcher,
-    private val broadcastSender: BroadcastSender,
     private val userRepository: UserRepository,
     private val hsum: HeadlessSystemUserMode,
+    private val broadcastDispatcher: BroadcastDispatcher,
+    private val broadcastSender: BroadcastSender,
 ) {
     val dialogRequest: Flow<DialogRequestModel> =
         merge(
@@ -74,7 +79,8 @@ constructor(
 
     fun getAllAccessibilityTargets(
         @UserShortcutType shortcutType: Int
-    ): Flow<List<AccessibilityTargetModel>> = repository.getAllAccessibilityTargets(shortcutType)
+    ): Flow<List<AccessibilityTargetModel>> =
+        repository.getAllAccessibilityTargets(shortcutType).map { it.filterExcludedTargets() }
 
     fun getAssignedAccessibilityTargets(
         @UserShortcutType shortcutType: Int
@@ -116,13 +122,21 @@ constructor(
         targetName: String,
     ) = repository.enableShortcutsForTargets(enable, shortcutType, setOf(targetName))
 
-    fun enableShortcutForAllTargetsNotNeedingWarning(@UserShortcutType shortcutType: Int) =
+    /**
+     * Enables (assigns) shortcuts for all targets on the [shortcutType], except:
+     * - Targets that need a consent warning
+     * - Targets that are excluded for the System user if in HSUM
+     *
+     * @param shortcutType The shortcut type.
+     */
+    suspend fun enableShortcutForAllAllowedTargets(@UserShortcutType shortcutType: Int) =
         repository
             .getAllAccessibilityTargetsInfo(shortcutType)
+            .filterExcludedTargets()
             .filter { !it.isAssigned && !isServiceWarningRequired(it) }
-            .map { it.targetName }
-            .toSet()
             .takeIf { it.isNotEmpty() }
+            ?.map { it.targetName }
+            ?.toSet()
             ?.let { repository.enableShortcutsForTargets(true, shortcutType, it) }
 
     fun performAccessibilityShortcut(
@@ -145,9 +159,15 @@ constructor(
             UserHandle.SYSTEM,
         )
 
+    /** True for a full user (not HSU) that has completed OOBE setup. */
+    suspend fun isCompletedFullUser() = !isHeadlessSystemUser() && !isOOBE()
+
     /** True if on login screen (HSU). */
-    suspend fun isHeadlessSystemUser(): Boolean =
+    private suspend fun isHeadlessSystemUser(): Boolean =
         hsum.isHeadlessSystemUser(userRepository.getSelectedUserInfo().id)
+
+    // TODO: https://issuetracker.google.com/461597843 - Use SecureSettings in interactor.
+    private fun isOOBE() = !AccessibilityUtils.isUserSetupCompleted(applicationContext)
 
     fun isServiceWarningRequired(target: AccessibilityTargetModel) =
         repository.isServiceWarningRequired(target)
@@ -185,7 +205,21 @@ constructor(
         return null
     }
 
+    /**
+     * Conditionally filters out excluded targets.
+     * - Excluded targets when current user is Headless System User.
+     * - Excluded targets when in OOBE.
+     */
+    private suspend fun List<AccessibilityTargetModel>.filterExcludedTargets() =
+        if (!isCompletedFullUser()) {
+            filterNot { it.targetName in HSUM_EXCLUDED_TARGETS }
+        } else {
+            this
+        }
+
     companion object {
+        private val TAG = ShortcutChooserDialogInteractor::class.simpleName
+
         @VisibleForTesting
         const val SHORTCUT_CHOOSER_ACTION =
             "com.android.systemui.action.LAUNCH_ACCESSIBILITY_SHORTCUT_CHOOSER_DIALOG"
@@ -197,6 +231,9 @@ constructor(
             "com.android.systemui.permission.LAUNCH_ACCESSIBILITY_QUICK_ACCESS_DIALOG"
         @VisibleForTesting const val SYSTEMUI_PACKAGE = "com.android.systemui"
 
-        private val TAG = ShortcutChooserDialogInteractor::class.simpleName
+        /** Targets that we don't want to show for the System user in HSUM or OOBE. */
+        @VisibleForTesting
+        val HSUM_EXCLUDED_TARGETS =
+            setOf(ACCESSIBILITY_HEARING_AIDS_COMPONENT_NAME.flattenToString())
     }
 }

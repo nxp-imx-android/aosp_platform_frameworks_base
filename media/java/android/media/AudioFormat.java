@@ -35,6 +35,7 @@ import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.Objects;
 
 /**
@@ -1265,6 +1266,67 @@ public final class AudioFormat implements Parcelable {
         return Arrays.copyOf(myCopy, size);
     }
 
+    /**
+     * @hide
+     */
+    public static class ChannelMasks {
+        private final int mPositionMask;
+        private final int mIndexMask;
+        private final int mChannelCount;
+
+        public ChannelMasks() {
+            this(AudioFormat.CHANNEL_INVALID, AudioFormat.CHANNEL_INVALID /*0*/);
+        }
+
+        public ChannelMasks(int positionMask, int indexMask) {
+            final int channelIndexCount = Integer.bitCount(indexMask);
+            // The channel count is calculated in the same way both for In and Out masks.
+            int channelCount = channelCountFromOutChannelMask(positionMask);
+            if (channelCount == 0) {
+                channelCount = channelIndexCount;
+            } else if (channelCount != channelIndexCount && channelIndexCount != 0) {
+                channelCount = 0; // position and index channel count mismatch
+            }
+            mChannelCount = channelCount;
+            mPositionMask = positionMask;
+            mIndexMask = indexMask;
+        }
+
+        public int getPositionMask() {
+            return mPositionMask;
+        }
+
+        public int getIndexMask() {
+            return mIndexMask;
+        }
+
+        public int getChannelCount() {
+            return mChannelCount;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(mPositionMask, mIndexMask);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof ChannelMasks)) return false;
+            ChannelMasks that = (ChannelMasks) o;
+            // mChannelCount is derived from masks, so strictly checking masks is sufficient
+            return mPositionMask == that.mPositionMask
+                    && mIndexMask == that.mIndexMask;
+        }
+
+        @Override
+        public String toString() {
+            return "ChannelMasks:"
+                    + " chan=0x" + Integer.toHexString(mPositionMask).toUpperCase(Locale.ROOT)
+                    + " chan_index=0x" + Integer.toHexString(mIndexMask).toUpperCase(Locale.ROOT);
+        }
+    }
+
     /** @removed */
     public AudioFormat()
     {
@@ -1294,25 +1356,17 @@ public final class AudioFormat implements Parcelable {
                 ? encoding : ENCODING_INVALID;
         mSampleRate = (propertySetMask & AUDIO_FORMAT_HAS_PROPERTY_SAMPLE_RATE) != 0
                 ? sampleRate : SAMPLE_RATE_UNSPECIFIED;
-        mChannelMask = (propertySetMask & AUDIO_FORMAT_HAS_PROPERTY_CHANNEL_MASK) != 0
-                ? channelMask : CHANNEL_INVALID;
-        mChannelIndexMask = (propertySetMask & AUDIO_FORMAT_HAS_PROPERTY_CHANNEL_INDEX_MASK) != 0
-                ? channelIndexMask : CHANNEL_INVALID;
+        mChannelMasks = new ChannelMasks(
+            (propertySetMask & AUDIO_FORMAT_HAS_PROPERTY_CHANNEL_MASK) != 0
+                    ? channelMask : CHANNEL_INVALID,
+            (propertySetMask & AUDIO_FORMAT_HAS_PROPERTY_CHANNEL_INDEX_MASK) != 0
+                    ? channelIndexMask : CHANNEL_INVALID
+        );
 
         // Compute derived values.
-
-        final int channelIndexCount = Integer.bitCount(getChannelIndexMask());
-        int channelCount = channelCountFromOutChannelMask(getChannelMask());
-        if (channelCount == 0) {
-            channelCount = channelIndexCount;
-        } else if (channelCount != channelIndexCount && channelIndexCount != 0) {
-            channelCount = 0; // position and index channel count mismatch
-        }
-        mChannelCount = channelCount;
-
         int frameSizeInBytes = 1;
         try {
-            frameSizeInBytes = getBytesPerSample(mEncoding) * channelCount;
+            frameSizeInBytes = getBytesPerSample(mEncoding) * mChannelMasks.mChannelCount;
         } catch (IllegalArgumentException iae) {
             // ignored
         }
@@ -1339,13 +1393,11 @@ public final class AudioFormat implements Parcelable {
     private final int mEncoding;
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
     private final int mSampleRate;
-    @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
-    private final int mChannelMask;
-    private final int mChannelIndexMask;
+    @NonNull
+    private final ChannelMasks mChannelMasks;
     private final int mPropertySetMask;
 
     // Derived values computed in the constructor, cached here.
-    private final int mChannelCount;
     private final int mFrameSizeInBytes;
 
     /**
@@ -1377,7 +1429,7 @@ public final class AudioFormat implements Parcelable {
      * {@link AudioFormat#CHANNEL_INVALID} if not set.
      */
     public int getChannelMask() {
-        return mChannelMask;
+        return mChannelMasks.mPositionMask;
     }
 
     /**
@@ -1389,7 +1441,12 @@ public final class AudioFormat implements Parcelable {
      * {@link AudioFormat#CHANNEL_INVALID} if not set or an invalid mask was used.
      */
     public int getChannelIndexMask() {
-        return mChannelIndexMask;
+        return mChannelMasks.mIndexMask;
+    }
+
+    /** @hide */
+    public ChannelMasks getChannelMasks() {
+        return mChannelMasks;
     }
 
     /**
@@ -1398,7 +1455,7 @@ public final class AudioFormat implements Parcelable {
      * Zero is returned if both the channel position mask and the channel index mask are not set.
      */
     public int getChannelCount() {
-        return mChannelCount;
+        return mChannelMasks.mChannelCount;
     }
 
     /**
@@ -1428,7 +1485,7 @@ public final class AudioFormat implements Parcelable {
     /** @hide */
     public String toLogFriendlyString() {
         return String.format("%dch %dHz %s",
-                mChannelCount, mSampleRate, toLogFriendlyEncoding(mEncoding));
+                mChannelMasks.mChannelCount, mSampleRate, toLogFriendlyEncoding(mEncoding));
     }
 
     /**
@@ -1466,8 +1523,8 @@ public final class AudioFormat implements Parcelable {
         public Builder(AudioFormat af) {
             mEncoding = af.mEncoding;
             mSampleRate = af.mSampleRate;
-            mChannelMask = af.mChannelMask;
-            mChannelIndexMask = af.mChannelIndexMask;
+            mChannelMask = af.mChannelMasks.mPositionMask;
+            mChannelIndexMask = af.mChannelMasks.mIndexMask;
             mPropertySetMask = af.mPropertySetMask;
         }
 
@@ -1683,15 +1740,14 @@ public final class AudioFormat implements Parcelable {
                     || (((mPropertySetMask & AUDIO_FORMAT_HAS_PROPERTY_SAMPLE_RATE) != 0)
                             && (mSampleRate != that.mSampleRate))
                     || (((mPropertySetMask & AUDIO_FORMAT_HAS_PROPERTY_CHANNEL_MASK) != 0)
-                            && (mChannelMask != that.mChannelMask))
+                            && (mChannelMasks.mPositionMask != that.mChannelMasks.mPositionMask))
                     || (((mPropertySetMask & AUDIO_FORMAT_HAS_PROPERTY_CHANNEL_INDEX_MASK) != 0)
-                            && (mChannelIndexMask != that.mChannelIndexMask)));
+                            && (mChannelMasks.mIndexMask != that.mChannelMasks.mIndexMask)));
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(mPropertySetMask, mSampleRate, mEncoding, mChannelMask,
-                mChannelIndexMask);
+        return Objects.hash(mPropertySetMask, mSampleRate, mEncoding, mChannelMasks.hashCode());
     }
 
     @Override
@@ -1704,8 +1760,8 @@ public final class AudioFormat implements Parcelable {
         dest.writeInt(mPropertySetMask);
         dest.writeInt(mEncoding);
         dest.writeInt(mSampleRate);
-        dest.writeInt(mChannelMask);
-        dest.writeInt(mChannelIndexMask);
+        dest.writeInt(mChannelMasks.mPositionMask);
+        dest.writeInt(mChannelMasks.mIndexMask);
     }
 
     private AudioFormat(Parcel in) {
@@ -1733,8 +1789,7 @@ public final class AudioFormat implements Parcelable {
         return new String("AudioFormat:"
                 + " props=" + mPropertySetMask
                 + " enc=" + mEncoding
-                + " chan=0x" + Integer.toHexString(mChannelMask).toUpperCase()
-                + " chan_index=0x" + Integer.toHexString(mChannelIndexMask).toUpperCase()
+                + mChannelMasks
                 + " rate=" + mSampleRate);
     }
 

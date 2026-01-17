@@ -74,13 +74,13 @@ abstract class SettingsConnectedDisplayTestBase {
         val desktopState = DesktopState.fromContext(instrumentation.context)
         assumeTrue(desktopState.isDesktopModeSupportedOnDisplay(DEFAULT_DISPLAY))
 
-        val displayId = connectedDisplayRule.setupTestDisplay()
-        wmHelper.StateSyncBuilder().withDesktopModeOnDisplay(displayId).waitForAndVerify()
         settingsApp.enterDesktopMode(wmHelper, device)
         // Window should be maximized to ensure all components are visible
-        maximizeAppWindow()
+        settingsApp.maximizeAppWithDragToTopDragZone(wmHelper, device)
         wmHelper.StateSyncBuilder().withAppTransitionIdle().waitForAndVerify()
 
+        val displayId = connectedDisplayRule.setupTestDisplay()
+        wmHelper.StateSyncBuilder().withDesktopModeOnDisplay(displayId).waitForAndVerify()
         openExternalDisplayPage()
     }
 
@@ -133,20 +133,11 @@ abstract class SettingsConnectedDisplayTestBase {
             .click()
     }
 
-    private fun maximizeAppWindow() {
-        waitForObj(By.res(SETTINGS_MAXIMIZE_BUTTON_ID), UIAUTOMATOR_TIMEOUT) {
-                "Could not find maximize button"
-            }
-            .click()
-        wmHelper.StateSyncBuilder().withAppTransitionIdle().waitForAndVerify()
-    }
-
     companion object {
         const val BUILTIN_DISPLAY_NAME = "Built-in display"
         const val CONNECTED_DEVICES_TEXT = "Connected devices"
         const val EXTERNAL_DISPLAY_TEXT = "External displays"
         const val ROTATION_TEXT = "Rotation"
-        const val SETTINGS_MAXIMIZE_BUTTON_ID = "com.android.systemui:id/maximize_window"
         const val MIRROR_BUILT_IN_DISPLAY_SWITCH_ID = "com.android.settings:id/switchWidget"
         val UIAUTOMATOR_TIMEOUT = Duration.ofSeconds(10).platformAdjust()
     }

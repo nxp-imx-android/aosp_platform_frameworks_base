@@ -1514,8 +1514,8 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
         int resolvedUserId;
 
         synchronized (mLock) {
-            if (event.getWindowId() ==
-                AccessibilityWindowInfo.PICTURE_IN_PICTURE_ACTION_REPLACER_WINDOW_ID) {
+            if (event.getRealWindowId()
+                    == AccessibilityWindowInfo.PICTURE_IN_PICTURE_ACTION_REPLACER_WINDOW_ID) {
                 // The replacer window isn't shown to services. Move its events into the pip.
                 AccessibilityWindowInfo pip = mA11yWindowManager.getPictureInPictureWindowLocked();
                 if (pip != null) {
@@ -1538,7 +1538,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
             if (resolvedUserId == mCurrentUserId) {
                 if (mSecurityPolicy.canDispatchAccessibilityEventLocked(mCurrentUserId, event)) {
                     mA11yWindowManager.updateActiveAndAccessibilityFocusedWindowLocked(
-                            mCurrentUserId, event.getWindowId(), event.getSourceNodeId(),
+                            mCurrentUserId, event.getRealWindowId(), event.getSourceNodeId(),
                             event.getEventType(), event.getAction());
                     mSecurityPolicy.updateEventSourceLocked(event);
                     dispatchEvent = true;
@@ -1557,7 +1557,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
             // the computation for performance reasons.
             boolean shouldComputeWindows = false;
             int displayId = event.getDisplayId();
-            final int windowId = event.getWindowId();
+            final int windowId = event.getRealWindowId();
             if (windowId != AccessibilityWindowInfo.UNDEFINED_WINDOW_ID
                     && displayId == INVALID_DISPLAY) {
                 displayId = mA11yWindowManager.getDisplayIdByUserIdAndWindowId(
@@ -5116,7 +5116,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
         if (event.getWindowChanges() == AccessibilityEvent.WINDOWS_CHANGE_ADDED) {
             // We need to ensure the window is available before sending pending
             // window_state_changed events.
-            sendPendingWindowStateChangedEventsForAvailableWindowLocked(event.getWindowId());
+            sendPendingWindowStateChangedEventsForAvailableWindowLocked(event.getRealWindowId());
         }
         sendAccessibilityEventLocked(event, mCurrentUserId);
     }
@@ -5806,7 +5806,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
 
                 // Invert magnification if needed.
                 final Pair<float[], MagnificationSpec> pair =
-                        getWindowTransformationMatrixAndMagnificationSpec(focus.getWindowId());
+                        getWindowTransformationMatrixAndMagnificationSpec(focus.getRealWindowId());
                 MagnificationSpec spec = null;
                 if (pair != null && pair.second != null) {
                     spec = new MagnificationSpec();
@@ -5821,7 +5821,8 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
 
                 //Clip to the window bounds.
                 Rect windowBounds = mTempRect1;
-                AccessibilityWindowInfo window = focus.getWindow();
+                AccessibilityWindowInfo window =
+                        mA11yWindowManager.findA11yWindowInfoByIdLocked(focus.getRealWindowId());
                 if (window != null) {
                     window.getBoundsInScreen(windowBounds);
                 }
@@ -6967,7 +6968,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
 
         SendWindowStateChangedEventRunnable(@NonNull AccessibilityEvent event) {
             mPendingEvent = event;
-            mWindowId = event.getWindowId();
+            mWindowId = event.getRealWindowId();
         }
 
         @Override
@@ -7188,7 +7189,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
     private boolean postponeWindowStateEvent(AccessibilityEvent event) {
         synchronized (mLock) {
             final int resolvedWindowId = mA11yWindowManager.resolveParentWindowIdLocked(
-                    event.getWindowId());
+                    event.getRealWindowId());
             if (mA11yWindowManager.findWindowInfoByIdLocked(resolvedWindowId) != null) {
                 return false;
             }

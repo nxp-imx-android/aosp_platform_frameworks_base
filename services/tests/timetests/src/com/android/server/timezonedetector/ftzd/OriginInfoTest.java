@@ -36,7 +36,8 @@ public class OriginInfoTest {
         long explicitTimestamp = 123456789L;
         OriginInfo originInfo = new OriginInfo(explicitTimestamp);
 
-        assertThat(originInfo.getTimestampAdded()).isEqualTo(explicitTimestamp);
+        assertThat(originInfo.getTimestampCreated()).isNotEqualTo(explicitTimestamp);
+        assertThat(originInfo.getTimestampDetected()).isEqualTo(explicitTimestamp);
         assertThat(originInfo.getTimestampLastUpdated()).isEqualTo(explicitTimestamp);
         assertThat(originInfo.getQuality()).isEqualTo(100);
     }

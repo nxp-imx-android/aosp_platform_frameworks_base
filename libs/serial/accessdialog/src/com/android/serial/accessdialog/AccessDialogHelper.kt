@@ -53,6 +53,7 @@ class AccessDialogHelper(
     private lateinit var listener: SerialPortDisconnectedListener
 
     var granted = false
+    var persistent = false
 
     init {
         val pm = context.packageManager
@@ -82,9 +83,9 @@ class AccessDialogHelper(
 
     fun sendResult() {
         if (granted) {
-            serialAccessManager.grantSerialPortAccess(requestedPort, uid, token)
+            serialAccessManager.grantSerialPortAccess(requestedPort, uid, persistent, token)
         } else {
-            serialAccessManager.revokeSerialPortAccess(requestedPort, uid, token)
+            serialAccessManager.revokeSerialPortAccess(requestedPort, uid, persistent, token)
         }
     }
 

@@ -27,6 +27,7 @@ import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.doubleClick
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.ComposeContentTestRule
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -36,6 +37,7 @@ import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performCustomAccessibilityActionWithLabel
 import androidx.compose.ui.test.performKeyInput
+import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.swipeUp
@@ -130,7 +132,7 @@ class EditModeTest : SysuiTestCase() {
         composeRule.setContent { EditTileGridUnderTest() }
         composeRule.waitForIdle()
 
-        composeRule.onNodeWithText("tileF").performClick() // Tap to add
+        composeRule.scrollToAndClickSpec("tileF")
 
         composeRule.assertCurrentTilesGridContainsExactly(
             listOf("tileA", "tileB", "tileC", "tileD_large", "tileE", "tileF")
@@ -245,7 +247,7 @@ class EditModeTest : SysuiTestCase() {
         composeRule.setContent { EditTileGridUnderTest() }
         composeRule.waitForIdle()
 
-        composeRule.onNodeWithText("tileF").performClick() // Tap to add
+        composeRule.scrollToAndClickSpec("tileF")
         composeRule.waitForIdle()
 
         composeRule.onNodeWithContentDescription("Undo").assertExists()
@@ -318,6 +320,16 @@ class EditModeTest : SysuiTestCase() {
     private fun ComposeContentTestRule.assertAvailableTilesGridContainsExactly(
         specs: List<String>
     ) = assertGridContainsExactly(AVAILABLE_TILES_GRID_TEST_TAG, specs)
+
+    private fun ComposeContentTestRule.scrollToAndClickSpec(spec: String) {
+        onNodeWithTag(AVAILABLE_TILES_GRID_TEST_TAG)
+            .performScrollToNode(hasText(spec))
+            .performTouchInput {
+                // Perform additional scroll to make sure the tile is above the nav bar
+                swipeUp(startY = centerY, endY = top)
+            }
+        onNodeWithText(spec).performClick()
+    }
 
     companion object {
 

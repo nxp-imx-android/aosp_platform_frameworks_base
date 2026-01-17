@@ -366,7 +366,9 @@ public final class PolicyDefinition<V> {
             PolicyEnforcerCallbacks::setMtePolicy,
             new IntegerPolicySerializer());
 
-    static PolicyDefinition<Integer> AUTO_TIME = new PolicyDefinition<>(
+    // TODO(b/464477084): Add a resolution mechanism for AUTO_TIME to include most restrictive
+    // resolution approach.
+    public static PolicyDefinition<Integer> AUTO_TIME = new PolicyDefinition<>(
             new NoArgsPolicyKey(DevicePolicyIdentifiers.AUTO_TIME_POLICY),
             new TopPriority<>(List.of(
                     EnforcingAdmin.getRoleAuthorityOf(ROLE_SYSTEM_SUPERVISION),

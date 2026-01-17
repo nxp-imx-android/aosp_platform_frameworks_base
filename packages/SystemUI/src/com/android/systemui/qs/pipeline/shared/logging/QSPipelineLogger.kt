@@ -360,6 +360,9 @@ constructor(
     }
 
     enum class InternetTileMigrationScenario(val readable: String) {
+        LARGE_INTERNET_TO_LARGE_WIFI(
+            "Large internet tile migrated to large wifi. Cell not supported"
+        ),
         LARGE_INTERNET_TO_SMALL_WIFI_CELL(
             "Large internet tile migrated to small wifi and small cell"
         ),

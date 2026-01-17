@@ -4399,10 +4399,13 @@ public class KeyguardViewMediator implements CoreStartable,
                     SurfaceTransition.Params.create(
                             0 /* startTime */, 0 /* fadeoutDuration */, token, info, transaction,
                             finishedCallback);
-            startKeyguardExitAnimation(params);
+            boolean startAnimation = true;
             if (KeyguardWmStateRefactor.isEnabled()) {
-                mWmLockscreenVisibilityManager.get()
+                startAnimation = mWmLockscreenVisibilityManager.get()
                         .onKeyguardGoingAwayRemoteAnimationStart(params);
+            }
+            if (startAnimation) {
+                startKeyguardExitAnimation(params);
             }
             Trace.endSection();
         }

@@ -312,28 +312,4 @@ public class PackageTagsListTest {
         // A tag is not considered present just because a wildcard package exists.
         assertFalse(list.containsTag("any_attr_for_package3"));
     }
-
-    @Test
-    public void testIncludes_deprecated_behavesLikeContainsPackage() {
-        PackageTagsList list = new PackageTagsList.Builder()
-                .add("package1", "attr1")
-                .add("package2")
-                .build();
-
-        assertTrue(list.includes("package1"));
-        assertTrue(list.includes("package2"));
-        assertFalse(list.includes("package3"));
-    }
-
-    @Test
-    public void testContainsAll_String_deprecated_behavesLikeContainsPackageWithAllTags() {
-        PackageTagsList list = new PackageTagsList.Builder()
-                .add("package1", "attr1")
-                .add("package2")
-                .build();
-
-        assertTrue(list.containsAll("package2"));
-        assertFalse(list.containsAll("package1"));
-        assertFalse(list.containsAll("package3"));
-    }
 }

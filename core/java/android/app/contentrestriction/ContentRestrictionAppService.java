@@ -21,7 +21,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.SdkConstant;
 import android.annotation.SdkConstant.SdkConstantType;
-import android.annotation.SystemApi;
+import android.annotation.SuppressLint;
 import android.app.Service;
 import android.app.contentrestriction.flags.Flags;
 import android.content.Intent;
@@ -34,10 +34,7 @@ import android.util.Slog;
 /**
  * Base class for a service that the
  * {@code android.app.role.RoleManager.ROLE_CONTENT_RESTRICTION} role holder must implement.
- *
- * @hide
  */
-@SystemApi
 @FlaggedApi(Flags.FLAG_CONTENT_RESTRICTION_API)
 public class ContentRestrictionAppService extends Service {
     private static final String TAG = "ContentRestrictionAppService";
@@ -47,12 +44,11 @@ public class ContentRestrictionAppService extends Service {
     /**
      * Service action: Action for a service that the {@code
      * android.app.role.RoleManager.ROLE_CONTENT_RESTRICTION} role holder must implement.
-     *
-     * @hide
      */
+    @SuppressLint("ActionValue")
     @SdkConstant(SdkConstantType.SERVICE_ACTION)
-    public static final String ACTION_BIND_CONTENT_RESTRICTION_APP_SERVICE =
-            "android.app.action.BIND_CONTENT_RESTRICTION_APP_SERVICE";
+    public static final String ACTION_CONTENT_RESTRICTION_APP_SERVICE =
+            "android.app.action.CONTENT_RESTRICTION_SERVICE";
 
     private final IContentRestrictionAppService mBinder = new IContentRestrictionAppService.Stub() {
         @Override
@@ -96,7 +92,7 @@ public class ContentRestrictionAppService extends Service {
     /**
      * Called when content restriction is enabled.
      *
-     * @hide
+     * <p>This is called on the main thread.
      */
     @FlaggedApi(Flags.FLAG_CONTENT_RESTRICTION_API)
     public void onContentRestrictionEnabled() {}
@@ -104,7 +100,7 @@ public class ContentRestrictionAppService extends Service {
     /**
      * Called when content restriction is disabled.
      *
-     * @hide
+     * <p>This is called on the main thread.
      */
     @FlaggedApi(Flags.FLAG_CONTENT_RESTRICTION_API)
     public void onContentRestrictionDisabled() {}
@@ -112,14 +108,13 @@ public class ContentRestrictionAppService extends Service {
     /**
      * Called when content needs to be classified.
      *
-     * <p>This is called on the background thread.
+     * <p>This is called on a background thread.
      *
      * @param content the content to be classified
      * @return the content classification result
-     *
-     * @hide
      */
     @FlaggedApi(Flags.FLAG_CONTENT_RESTRICTION_API)
+    @Nullable
     public ContentClassificationResult onClassifyContent(@NonNull Content content) {
         return null;
     }

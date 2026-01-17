@@ -7,6 +7,7 @@ import android.view.View
 import android.view.WindowInsets
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import com.android.systemui.keyguard.ui.viewmodel.AuthRippleScrimViewModel
 import com.android.systemui.scene.shared.model.SceneContainerConfig
 import com.android.systemui.scene.shared.model.SceneDataSourceDelegator
 import com.android.systemui.scene.ui.composable.Overlay
@@ -34,6 +35,7 @@ class SceneWindowRootView(context: Context, attrs: AttributeSet?) : WindowRootVi
         sceneJankMonitorFactory: SceneJankMonitor.Factory,
         windowRootViewKeyEventHandler: WindowRootViewKeyEventHandler,
         tintedIconManagerFactory: TintedIconManager.Factory,
+        authRippleViewModelFactory: AuthRippleScrimViewModel.Factory,
     ) {
         setLayoutInsetsController(layoutInsetController)
         SceneWindowRootViewBinder.bind(
@@ -53,6 +55,7 @@ class SceneWindowRootView(context: Context, attrs: AttributeSet?) : WindowRootVi
             dataSourceDelegator = sceneDataSourceDelegator,
             sceneJankMonitorFactory = sceneJankMonitorFactory,
             tintedIconManagerFactory = tintedIconManagerFactory,
+            authRippleViewModelFactory = authRippleViewModelFactory,
         )
         setWindowRootViewKeyEventHandler(windowRootViewKeyEventHandler)
     }

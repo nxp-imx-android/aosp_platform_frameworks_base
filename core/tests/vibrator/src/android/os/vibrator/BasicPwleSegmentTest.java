@@ -119,8 +119,8 @@ public class BasicPwleSegmentTest {
     @EnableFlags(Flags.FLAG_NORMALIZED_PWLE_EFFECTS)
     public void testScale() {
         BasicPwleSegment segment = new BasicPwleSegment(0.2f, 0.8f, 0.1f, 0.9f, 20, true);
-        assertThat(segment.scaleLinearly(0.5f))
+        assertThat(segment.scale(0.5f))
                 .isEqualTo(new BasicPwleSegment(0.1f, 0.4f, 0.1f, 0.9f, 20, true));
-        assertThat(segment.scale(1f)).isSameInstanceAs(segment);
+        assertThat(segment.applyAdaptiveScale(1f)).isSameInstanceAs(segment);
     }
 }

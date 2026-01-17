@@ -1286,8 +1286,18 @@ flag {
 flag {
     name: "runtime_density_resolution_for_window_layout"
     namespace: "lse_desktop_experience"
-    description: "Enable runtime density resolution for ActivityInfo.WindowLayout"
+    description: "Enable API changes for runtime density resolution for ActivityInfo.WindowLayout"
     bug: "438420596"
+}
+
+flag {
+    name: "runtime_density_resolution_for_window_layout_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Enable density-related internal bug fixes for ActivityInfo.WindowLayout"
+    bug: "476249569"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }
 
 flag {

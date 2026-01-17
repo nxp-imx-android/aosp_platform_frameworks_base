@@ -58,6 +58,7 @@ import android.os.UserHandle;
 import android.provider.Settings;
 import android.service.autofill.AutofillService;
 import android.service.autofill.AutofillServiceInfo;
+import android.service.autofill.Dataset;
 import android.service.autofill.FieldClassification;
 import android.service.autofill.FieldClassification.Match;
 import android.service.autofill.FillEventHistory;
@@ -279,6 +280,15 @@ final class AutofillManagerServiceImpl
                             resultCallback);
         } catch (RemoteException e) {
             Slog.w(TAG, "autofillRemoteApp fail: " + e);
+        }
+    }
+
+    @GuardedBy("mLock")
+    void notifySystemInlineSuggestions(int sessionId, List<Dataset> inlineSuggestionsData) {
+        final RemoteAugmentedAutofillService remoteService =
+                getRemoteAugmentedAutofillServiceLocked();
+        if (remoteService != null) {
+            remoteService.notifySystemInlineSuggestions(sessionId, inlineSuggestionsData);
         }
     }
 

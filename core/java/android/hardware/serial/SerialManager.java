@@ -260,6 +260,8 @@ public final class SerialManager extends android.hardware.SerialManager {
      *
      * @param serialPort The name of the serial port.
      * @param uid The user ID to grant access to.
+     * @param persistent {@code true} if the grant doesn't expire on disconnection and must be
+     *                   revoked in system settings; {@code false} otherwise
      * @param token An optional token associated with the grant.
      *
      * @hide
@@ -267,9 +269,9 @@ public final class SerialManager extends android.hardware.SerialManager {
     @RequiresPermission(Manifest.permission.MANAGE_SERIAL_PORTS)
     @TestApi
     public void grantSerialPortAccess(@NonNull String serialPort, int uid,
-            @Nullable IBinder token) {
+            boolean persistent, @Nullable IBinder token) {
         try {
-            mService.grantSerialPortAccess(serialPort, uid, token);
+            mService.grantSerialPortAccess(serialPort, uid, persistent, token);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
@@ -280,6 +282,8 @@ public final class SerialManager extends android.hardware.SerialManager {
      *
      * @param serialPort The name of the serial port.
      * @param uid The user ID to revoke access from.
+     * @param persistent {@code true} if future access requests will be automatically denied until
+     *                   users changes the access in system settings
      * @param token An optional token associated with the revocation.
      *
      * @hide
@@ -287,9 +291,9 @@ public final class SerialManager extends android.hardware.SerialManager {
     @RequiresPermission(Manifest.permission.MANAGE_SERIAL_PORTS)
     @TestApi
     public void revokeSerialPortAccess(@NonNull String serialPort, int uid,
-            @Nullable IBinder token) {
+            boolean persistent, @Nullable IBinder token) {
         try {
-            mService.revokeSerialPortAccess(serialPort, uid, token);
+            mService.revokeSerialPortAccess(serialPort, uid, persistent, token);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

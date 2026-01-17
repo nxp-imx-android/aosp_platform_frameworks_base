@@ -19,6 +19,7 @@ package com.android.server.supervision;
 import static android.Manifest.permission.BYPASS_ROLE_QUALIFICATION;
 import static android.Manifest.permission.INTERACT_ACROSS_USERS;
 import static android.Manifest.permission.MANAGE_ROLE_HOLDERS;
+import static android.Manifest.permission.MANAGE_SUPERVISION;
 import static android.Manifest.permission.MANAGE_USERS;
 import static android.Manifest.permission.QUERY_USERS;
 import static android.app.role.RoleManager.ROLE_SUPERVISION;
@@ -27,7 +28,6 @@ import static android.content.pm.PackageInstaller.SessionParams.MAX_PACKAGE_NAME
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.provider.Settings.Secure.BROWSER_CONTENT_FILTERS_ENABLED;
 import static android.provider.Settings.Secure.SEARCH_CONTENT_FILTERS_ENABLED;
-
 import static com.android.internal.util.Preconditions.checkCallAuthorization;
 
 import android.annotation.CallbackExecutor;
@@ -77,7 +77,6 @@ import android.os.UserManager;
 import android.provider.Settings;
 import android.util.ArrayMap;
 import android.util.SparseArray;
-
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
@@ -97,7 +96,6 @@ import com.android.server.appbinding.finders.SupervisionAppServiceFinder;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.supervision.SupervisionUserData.PolicyData;
 import com.android.server.utils.Slogf;
-
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -1122,33 +1120,11 @@ public class SupervisionService extends ISupervisionManager.Stub {
     }
 
     private void enforceCallerCanSetPolicy() {
-        checkCallAuthorization(isCallerSystem() || doesCallerHoldAnySupervisionRole());
+        checkCallAuthorization(isCallerSystem() || hasCallingPermission(MANAGE_SUPERVISION));
     }
 
     private void enforceCallerCanGetPolicies() {
-        checkCallAuthorization(isCallerSystem() || doesCallerHoldAnySupervisionRole());
-    }
-
-    private boolean doesCallerHoldAnySupervisionRole() {
-        UserHandle userHandle = Binder.getCallingUserHandle();
-        int callingUid = Binder.getCallingUid();
-
-        List<String> roleHolders = new ArrayList<String>();
-        synchronized (getLockObject()) {
-            roleHolders.addAll(
-                    getUserDataLocked(UserHandle.getUserId(callingUid)).supervisionRoleHolders);
-        }
-
-        String[] packages = mInjector.getPackageManager().getPackagesForUid(callingUid);
-        if (packages != null) {
-            for (var packageName : packages) {
-                if (roleHolders.contains(packageName)) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
+        checkCallAuthorization(isCallerSystem() || hasCallingPermission(MANAGE_SUPERVISION));
     }
 
     /**

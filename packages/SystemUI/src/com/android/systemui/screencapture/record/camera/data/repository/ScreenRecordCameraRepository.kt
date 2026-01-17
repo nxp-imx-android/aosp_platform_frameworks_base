@@ -16,6 +16,7 @@
 
 package com.android.systemui.screencapture.record.camera.data.repository
 
+import android.graphics.Region
 import android.util.Size
 import android.view.Surface
 import androidx.annotation.ColorInt
@@ -28,6 +29,7 @@ interface ScreenRecordCameraRepository {
     val errors: Flow<Int>
     val state: StateFlow<CameraState>
     val isConnected: Flow<Boolean>
+    val cameraSubjectBounds: StateFlow<Region?>
 
     fun connect()
 

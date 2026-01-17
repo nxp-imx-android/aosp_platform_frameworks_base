@@ -74,11 +74,14 @@ flag {
 }
 
 flag {
-  name: "enable_supervision_auth_controller_updates"
+  name: "enable_supervision_auth_controller_updates_bugfix"
   is_exported: false
   namespace: "supervision"
   description: "Flag that enables supervision auth controller updates to support two pane settings"
   bug: "459821424"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
 }
 
 

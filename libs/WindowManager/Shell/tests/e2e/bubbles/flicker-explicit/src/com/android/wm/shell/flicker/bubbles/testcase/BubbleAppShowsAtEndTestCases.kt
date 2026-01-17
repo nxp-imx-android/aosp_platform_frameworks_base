@@ -20,6 +20,7 @@ import android.tools.traces.component.ComponentNameMatcher.Companion.BUBBLE
 import android.tools.traces.component.ComponentNameMatcher.Companion.BUBBLE_TASK_VIEW
 import com.android.server.wm.flicker.helpers.ImeAppHelper
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerSubjects
+import com.android.wm.shell.flicker.bubbles.utils.FlickerAssertionHelper.isBubbled
 import org.junit.Test
 
 /**
@@ -87,5 +88,11 @@ interface BubbleAppShowsAtEndTestCases : BubbleFlickerSubjects {
             bubbleTaskViewLayerBounds.coversExactly(taskLayerBounds.region)
             taskLayerBounds.coversExactly(taskBounds)
         }
+    }
+
+    /** Verifies the bubble app layer is bubbled at the end of transition. */
+    @Test
+    fun bubbleAppLayerIsBubbledAtEnd() {
+        layerTraceEntrySubjectAtEnd.isBubbled(testApp)
     }
 }

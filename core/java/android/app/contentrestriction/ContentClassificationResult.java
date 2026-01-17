@@ -16,7 +16,10 @@
 
 package android.app.contentrestriction;
 
+import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
+import android.annotation.NonNull;
+import android.app.contentrestriction.flags.Flags;
 import android.content.LocusId;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -27,11 +30,11 @@ import java.lang.annotation.RetentionPolicy;
 
 /**
  * A result reported by a Content Restriction app in response to a content classification request.
- *
- * @hide
  */
+@FlaggedApi(Flags.FLAG_CONTENT_RESTRICTION_API)
 public final class ContentClassificationResult implements Parcelable {
 
+    /** @hide */
     @Retention(RetentionPolicy.SOURCE)
     @IntDef(prefix = { "TYPE_" }, value = {
             TYPE_ALLOWED,
@@ -43,16 +46,19 @@ public final class ContentClassificationResult implements Parcelable {
     /**
      * Indicates that the content is allowed.
      */
+    @FlaggedApi(Flags.FLAG_CONTENT_RESTRICTION_API)
     public static final int TYPE_ALLOWED = 0;
 
     /**
      * Indicates that the content is blocked.
      */
+    @FlaggedApi(Flags.FLAG_CONTENT_RESTRICTION_API)
     public static final int TYPE_BLOCKED = 1;
 
     /**
      * Indicates that the content could not be classified by the content restriction app.
      */
+    @FlaggedApi(Flags.FLAG_CONTENT_RESTRICTION_API)
     public static final int TYPE_UNCLASSIFIED = 2;
 
     /**
@@ -71,7 +77,7 @@ public final class ContentClassificationResult implements Parcelable {
      * @param locusId the {@link LocusId} of the content that was classified
      * @param type the classification type of the content
      */
-    public ContentClassificationResult(LocusId locusId, @ClassificationType int type) {
+    public ContentClassificationResult(@NonNull LocusId locusId, @ClassificationType int type) {
         mLocusId = locusId;
         mType = type;
     }
@@ -91,6 +97,7 @@ public final class ContentClassificationResult implements Parcelable {
      *
      * @return the {@link LocusId}
      */
+    @NonNull
     public LocusId getLocusId() {
         return mLocusId;
     }
@@ -113,10 +120,11 @@ public final class ContentClassificationResult implements Parcelable {
         return mType == TYPE_ALLOWED;
     }
 
+    @NonNull
     public static final Creator<ContentClassificationResult> CREATOR =
             new Creator<ContentClassificationResult>() {
         @Override
-        public ContentClassificationResult createFromParcel(Parcel in) {
+        public ContentClassificationResult createFromParcel(@NonNull Parcel in) {
             return new ContentClassificationResult(in);
         }
 
@@ -132,7 +140,7 @@ public final class ContentClassificationResult implements Parcelable {
     }
 
     @Override
-    public void writeToParcel(Parcel parcel, int flags) {
+    public void writeToParcel(@NonNull Parcel parcel, int flags) {
         parcel.writeTypedObject(mLocusId, flags);
         parcel.writeInt(mType);
     }

@@ -3660,14 +3660,44 @@
   <java-symbol type="string" name="app_suspended_default_message" />
 
   <!-- App Lock -->
+  <java-symbol type="dimen" name="app_lock_permission_review_app_list_expanded_height" />
+
+  <java-symbol type="drawable" name="app_lock_scrollbar_handle" />
+
   <java-symbol type="id" name="app_lock_dialog_add_screen_lock_button" />
   <java-symbol type="id" name="app_lock_dialog_cancel_button" />
   <java-symbol type="id" name="app_lock_dialog_message" />
   <java-symbol type="id" name="app_lock_dialog_title" />
+  <java-symbol type="id" name="app_lock_edu_dialog" />
+  <java-symbol type="id" name="app_lock_edu_dialog_btn_cancel" />
+  <java-symbol type="id" name="app_lock_edu_dialog_btn_lock_app" />
+  <java-symbol type="id" name="app_lock_edu_dialog_desc" />
+  <java-symbol type="id" name="app_lock_edu_dialog_title" />
+  <java-symbol type="id" name="app_lock_permission_review_app_list_recycler_view" />
+  <java-symbol type="id" name="app_lock_permission_review_btn_cancel" />
+  <java-symbol type="id" name="app_lock_permission_review_btn_continue" />
+  <java-symbol type="id" name="app_lock_permission_review_btn_view_all" />
+  <java-symbol type="id" name="app_lock_permission_review_bottom_sheet_divider" />
+  <java-symbol type="id" name="app_lock_permission_review_list_app_icon" />
+  <java-symbol type="id" name="app_lock_permission_review_list_app_name" />
+
   <java-symbol type="layout" name="app_lock_add_screen_lock_dialog" />
+  <java-symbol type="layout" name="app_lock_edu_activity" />
+  <java-symbol type="layout" name="app_lock_permission_app_item" />
+  <java-symbol type="layout" name="app_lock_permission_review_sheet" />
+
   <java-symbol type="string" name="app_lock_add_screen_lock_button_text" />
   <java-symbol type="string" name="app_lock_add_screen_lock_message" />
   <java-symbol type="string" name="app_lock_add_screen_lock_title" />
+  <java-symbol type="string" name="app_lock_edu_dialog_biometric_description_has_face" />
+  <java-symbol type="string" name="app_lock_edu_dialog_biometric_description_has_fingerprint" />
+  <java-symbol type="string" name="app_lock_edu_dialog_biometric_description_has_fingerprint_and_face" />
+  <java-symbol type="string" name="app_lock_edu_dialog_description_template" />
+  <java-symbol type="string" name="app_lock_edu_dialog_description_template_no_biometrics" />
+  <java-symbol type="string" name="app_lock_edu_dialog_enable_app_lock_title" />
+  <java-symbol type="string" name="app_lock_edu_dialog_lockscreen_password_name" />
+  <java-symbol type="string" name="app_lock_edu_dialog_lockscreen_pattern_name" />
+  <java-symbol type="string" name="app_lock_edu_dialog_lockscreen_pin_name" />
   <java-symbol type="string" name="disable_app_lock_success_toast_message" />
   <java-symbol type="string" name="enable_app_lock_failure_toast_message" />
   <java-symbol type="string" name="enable_app_lock_success_toast_message" />

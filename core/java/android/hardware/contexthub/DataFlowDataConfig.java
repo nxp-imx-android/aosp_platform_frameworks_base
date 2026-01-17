@@ -100,7 +100,7 @@ public final class DataFlowDataConfig {
     @NonNull
     public static DataFlowDataConfig createVariableSizeAligned(
             @IntRange(from = 1, to = Short.MAX_VALUE) int elementAlignment) {
-        if (elementAlignment < 0 || (elementAlignment & (elementAlignment - 1)) != 0) {
+        if (elementAlignment < 1 || (elementAlignment & (elementAlignment - 1)) != 0) {
             throw new IllegalArgumentException("Element alignment must be a power of 2.");
         }
         return new DataFlowDataConfig(

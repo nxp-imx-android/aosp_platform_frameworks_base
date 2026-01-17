@@ -150,6 +150,9 @@ public class PolicyHandler<T> {
                                 isDisabled);
                     }
                 });
+
+        HANDLERS.add(
+                new PolicyHandler<Integer>(PolicyIdentifier.AUTO_TIME, PolicyDefinition.AUTO_TIME));
     }
 
     static Integer booleanToEnum(int trueValue, int falseValue, Boolean value) {

@@ -48,6 +48,7 @@ import com.android.systemui.statusbar.phone.StatusBarLocation;
 import com.android.systemui.statusbar.pipeline.mobile.StatusBarMobileIconKairos;
 import com.android.systemui.statusbar.pipeline.mobile.ui.MobileUiAdapter;
 import com.android.systemui.statusbar.pipeline.mobile.ui.MobileUiAdapterKairos;
+import com.android.systemui.statusbar.pipeline.mobile.ui.MobileViewLogger;
 import com.android.systemui.statusbar.pipeline.mobile.ui.binder.MobileIconsBinder;
 import com.android.systemui.statusbar.pipeline.mobile.ui.view.ModernStatusBarMobileView;
 import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.MobileIconsViewModel;
@@ -76,7 +77,7 @@ public class IconManager implements DemoModeCommandReceiver {
     protected final ViewGroup mGroup;
     private final MobileContextProvider mMobileContextProvider;
     private final LocationBasedWifiViewModel mWifiViewModel;
-    private final MobileIconsViewModel mMobileIconsViewModel;
+    private final Lazy<MobileIconsViewModel> mMobileIconsViewModel;
 
     private final Lazy<MobileUiAdapterKairos> mMobileUiAdapterKairos;
     private final KairosNetwork mKairosNetwork;
@@ -124,8 +125,9 @@ public class IconManager implements DemoModeCommandReceiver {
         // This starts the flow for the new pipeline, and will notify us of changes via
         // {@link #setNewMobileIconIds}
         mMobileIconsViewModel = mobileUiAdapter.getMobileIconsViewModel();
-        MobileIconsBinder.bind(mGroup, mMobileIconsViewModel);
-
+        if (!StatusBarMobileIconKairos.isEnabled()) {
+            MobileIconsBinder.bind(mGroup, mMobileIconsViewModel.get());
+        }
 
         mMobileUiAdapterKairos = mobileUiAdapterKairos;
 
@@ -231,10 +233,10 @@ public class IconManager implements DemoModeCommandReceiver {
         if (mIsInDemoMode) {
             Context mobileContext = mMobileContextProvider
                     .getMobileContextForSub(subId, mContext);
-            mDemoStatusIcons.addModernMobileView(
-                    mobileContext,
-                    mMobileIconsViewModel.getLogger(),
-                    subId);
+            MobileViewLogger logger = StatusBarMobileIconKairos.isEnabled()
+                    ? mMobileUiAdapterKairos.get().getMobileIconsViewModel().getLogger()
+                    : mMobileIconsViewModel.get().getLogger();
+            mDemoStatusIcons.addModernMobileView(mobileContext, logger, subId);
         }
 
         return view;
@@ -270,9 +272,9 @@ public class IconManager implements DemoModeCommandReceiver {
             return ModernStatusBarMobileView
                     .constructAndBind(
                             mobileContext,
-                            mMobileIconsViewModel.getLogger(),
+                            mMobileIconsViewModel.get().getLogger(),
                             slot,
-                            mMobileIconsViewModel.viewModelForSub(subId, mLocation)
+                            mMobileIconsViewModel.get().viewModelForSub(subId, mLocation)
                     );
         }
     }

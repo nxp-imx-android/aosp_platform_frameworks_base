@@ -21,15 +21,13 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.spy;
 
 import android.app.Notification;
-import android.app.NotificationManager;
 import android.app.UiAutomation;
 import android.content.Context;
-import android.timezone.flags.Flags;
 import android.os.Process;
 import android.os.SystemClock;
-import android.os.UserHandle;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
+import android.timezone.flags.Flags;
 
 import androidx.test.platform.app.InstrumentationRegistry;
 
@@ -42,11 +40,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import java.time.InstantSource;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.zone.ZoneOffsetTransition;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.TimeZone;
 
 /** White-box unit tests for {@link NotifyingTimeZoneOffsetChangeStatusChangeListener}. */

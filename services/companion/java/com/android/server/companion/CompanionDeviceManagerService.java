@@ -124,8 +124,8 @@ import com.android.server.companion.devicepresence.DevicePresenceProcessor;
 import com.android.server.companion.devicepresence.ObservableUuid;
 import com.android.server.companion.devicepresence.ObservableUuidStore;
 import com.android.server.companion.devicetrust.RandomKeyProvider;
-import com.android.server.companion.devicetrust.TrustedDevicesManager;
-import com.android.server.companion.devicetrust.TrustedDevicesStore;
+import com.android.server.companion.devicetrust.TrustedDeviceProcessor;
+import com.android.server.companion.devicetrust.TrustedDeviceStore;
 import com.android.server.companion.transport.CompanionTransportManager;
 import com.android.server.wm.ActivityTaskManagerInternal;
 
@@ -148,7 +148,7 @@ public class CompanionDeviceManagerService extends SystemService {
     private final AssociationStore mAssociationStore;
     private final SystemDataTransferRequestStore mSystemDataTransferRequestStore;
     private final ObservableUuidStore mObservableUuidStore;
-    private final TrustedDevicesStore mTrustedDevicesStore;
+    private final TrustedDeviceStore mTrustedDeviceStore;
 
     private final CompanionExemptionProcessor mCompanionExemptionProcessor;
     private final AssociationRequestsProcessor mAssociationRequestsProcessor;
@@ -161,7 +161,7 @@ public class CompanionDeviceManagerService extends SystemService {
     private final CrossDeviceSyncController mCrossDeviceSyncController;
     private final LocalMetadataStore mLocalMetadataStore;
     private final DataSyncProcessor mDataSyncProcessor;
-    private final TrustedDevicesManager mTrustedDevicesManager;
+    private final TrustedDeviceProcessor mTrustedDeviceProcessor;
     private final ActionRequestProcessor mActionRequestProcessor;
     private final Object mPackageLock = new Object();
 
@@ -189,7 +189,7 @@ public class CompanionDeviceManagerService extends SystemService {
         mSystemDataTransferRequestStore = new SystemDataTransferRequestStore();
         mObservableUuidStore = new ObservableUuidStore();
         mLocalMetadataStore = new LocalMetadataStore();
-        mTrustedDevicesStore = new TrustedDevicesStore();
+        mTrustedDeviceStore = new TrustedDeviceStore();
 
         // Init processors
         mAssociationRequestsProcessor = new AssociationRequestsProcessor(context,
@@ -216,7 +216,7 @@ public class CompanionDeviceManagerService extends SystemService {
         mDisassociationProcessor = new DisassociationProcessor(context, activityManager,
                 mAssociationStore, packageManagerInternal, mDevicePresenceProcessor,
                 mCompanionAppBinder, mSystemDataTransferRequestStore, mTransportManager,
-                mTrustedDevicesStore, notificationManager);
+                mTrustedDeviceStore, notificationManager);
 
         mSystemDataTransferProcessor = new SystemDataTransferProcessor(this,
                 packageManagerInternal, mAssociationStore,
@@ -225,8 +225,8 @@ public class CompanionDeviceManagerService extends SystemService {
         mDataSyncProcessor = new DataSyncProcessor(mAssociationStore, mLocalMetadataStore,
                 mTransportManager);
 
-        mTrustedDevicesManager = new TrustedDevicesManager(context, mAssociationStore,
-                mTrustedDevicesStore, mTransportManager);
+        mTrustedDeviceProcessor = new TrustedDeviceProcessor(context, mAssociationStore,
+                mTrustedDeviceStore, mTransportManager);
 
         // TODO(b/279663946): move context sync to a dedicated system service
         mCrossDeviceSyncController = new CrossDeviceSyncController(getContext(), mTransportManager);
@@ -291,7 +291,7 @@ public class CompanionDeviceManagerService extends SystemService {
 
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.execute(() -> {
-            mTrustedDevicesStore.readSessionKeysForUser(userId); // Load user's session keys.
+            mTrustedDeviceStore.readSessionKeysForUser(userId); // Load user's session keys.
             mCompanionExemptionProcessor.updateAutoRevokeExemptions(userId);
         });
     }
@@ -701,9 +701,9 @@ public class CompanionDeviceManagerService extends SystemService {
 
             // When using raw channel, enable a random key provider for testing
             if (typeOverride == 1) {
-                mTrustedDevicesManager.addPskProvider(new RandomKeyProvider());
+                mTrustedDeviceProcessor.addPskProvider(new RandomKeyProvider());
             } else {
-                mTrustedDevicesManager.removePskProvider(RandomKeyProvider.NAME);
+                mTrustedDeviceProcessor.removePskProvider(RandomKeyProvider.NAME);
             }
         }
 

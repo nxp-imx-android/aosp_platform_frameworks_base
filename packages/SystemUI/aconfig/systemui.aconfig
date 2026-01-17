@@ -1769,16 +1769,6 @@ flag {
 }
 
 flag {
-    name: "status_bar_rudimentary_battery"
-    namespace: "systemui"
-    description: "Bugfix flag to control the percentage-outside-battery behavior"
-    bug: "408730362"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "status_bar_show_icons_in_secure_camera"
     namespace: "systemui"
     description: "Show status bar icons in secure camera if user swipes down from top of screen"
@@ -1827,6 +1817,17 @@ flag {
     description: "Build time flag for status icons in compose refresh"
     bug: "391605373"
     is_fixed_read_only: true
+}
+
+flag {
+    name: "stl_fling_animation_consume_overshoot"
+    namespace: "systemui"
+    description: "Animates the fling including overshoot in NestedDraggable, instead of delegating"
+        " to nested scroll containers. Workaround for b/469714374"
+    bug: "470340805"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }
 
 flag {

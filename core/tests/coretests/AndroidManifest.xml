@@ -1798,7 +1798,16 @@
         <activity android:name="com.android.internal.app.AppLockActivityTest$TestAppLockActivity"
                   android:exported="false" />
 
+        <activity android:name="com.android.internal.app.AppLockPermissionReviewActivityTest$TestAppLockPermissionReviewActivity"
+                  android:exported="false" />
+
         <activity android:name="com.android.internal.app.LockedAppActivity"
+                  android:exported="false" />
+
+        <activity android:name="com.android.internal.app.AppLockUserEducationActivity"
+                  android:exported="false" />
+
+        <activity android:name="com.android.internal.app.AppLockUserEducationActivityTest$TestAppLockUserEducationActivity"
                   android:exported="false" />
 
         <!-- Used by WallpaperInstanceTest -->

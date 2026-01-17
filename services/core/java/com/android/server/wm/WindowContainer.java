@@ -396,7 +396,12 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
             throw new IllegalArgumentException("The local insets source is using an unsupported"
                     + " source: " + provider);
         }
-        source.updateSideHint(getBounds()).setBoundingRects(provider.getBoundingRects());
+        source.updateSideHint(getBounds());
+        if (com.android.window.flags.Flags.improveFluidResizingPerformance()) {
+            source.setBoundingRects(provider.getInsetsBoundingRects());
+        } else {
+            source.setBoundingRects(provider.getBoundingRects());
+        }
         if (ENABLE_CAPTION_COMPAT_INSET_FORCE_CONSUMPTION.isTrue()) {
             source.setFlags(provider.getFlags());
         }

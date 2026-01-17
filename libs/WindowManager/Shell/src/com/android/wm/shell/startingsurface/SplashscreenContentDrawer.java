@@ -16,7 +16,6 @@
 
 package com.android.wm.shell.startingsurface;
 
-import static android.app.Flags.fixContrastAndForceInvertStateForMultiUser;
 import static android.content.Context.CONTEXT_RESTRICTED;
 import static android.content.res.Configuration.UI_MODE_NIGHT_MASK;
 import static android.os.Process.THREAD_PRIORITY_TOP_APP_BOOST;
@@ -165,30 +164,16 @@ public class SplashscreenContentDrawer {
         mCanUseAppIconForSplashScreen = context.getResources().getBoolean(
                 com.android.wm.shell.R.bool.config_canUseAppIconForSplashScreen);
         if (android.view.accessibility.Flags.forceInvertColor()) {
-            if (fixContrastAndForceInvertStateForMultiUser()) {
-                mUserChangeListener = new UserChangeListener() {
-                    @Override
-                    public void onUserChanged(int newUserId, @NonNull Context userContext) {
-                        if (mUiModeManager != null) {
-                            mUiModeManager.removeForceInvertStateChangeListener(
-                                    mForceInvertStateChangeListener);
-                        }
-                        // We here don't use [context] but [userContext] to properly get the manager
-                        // linked with the current user.
-                        mUiModeManager = userContext.getSystemService(UiModeManager.class);
-                        if (mUiModeManager != null) {
-                            mForceInvertState = mUiModeManager.getForceInvertState();
-                            mUiModeManager.addForceInvertStateChangeListener(
-                                    mSplashscreenWorkerHandler::post,
-                                    mForceInvertStateChangeListener);
-                        }
+            mUserChangeListener = new UserChangeListener() {
+                @Override
+                public void onUserChanged(int newUserId, @NonNull Context userContext) {
+                    if (mUiModeManager != null) {
+                        mUiModeManager.removeForceInvertStateChangeListener(
+                                mForceInvertStateChangeListener);
                     }
-                };
-                shellController.addUserChangeListener(mUserChangeListener);
-            } else {
-                if (mUiModeManager == null) {
-                    mUiModeManager =
-                            context.getSystemService(UiModeManager.class);
+                    // We here don't use [context] but [userContext] to properly get the manager
+                    // linked with the current user.
+                    mUiModeManager = userContext.getSystemService(UiModeManager.class);
                     if (mUiModeManager != null) {
                         mForceInvertState = mUiModeManager.getForceInvertState();
                         mUiModeManager.addForceInvertStateChangeListener(
@@ -196,7 +181,8 @@ public class SplashscreenContentDrawer {
                                 mForceInvertStateChangeListener);
                     }
                 }
-            }
+            };
+            shellController.addUserChangeListener(mUserChangeListener);
         }
     }
 

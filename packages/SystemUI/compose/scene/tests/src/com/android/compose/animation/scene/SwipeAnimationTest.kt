@@ -22,8 +22,6 @@ import android.platform.test.flag.junit.SetFlagsRule
 import androidx.compose.animation.SplineBasedFloatDecayAnimationSpec
 import androidx.compose.animation.core.generateDecayAnimationSpec
 import androidx.compose.animation.core.snap
-import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -66,80 +64,6 @@ class SwipeAnimationTest(flags: FlagsParameterization) {
     }
 
     @get:Rule val setFlagsRule = SetFlagsRule().apply { setFlagsParameterization(flags) }
-
-    @Test
-    fun animationSlowerThanDecay() {
-        assertThat(
-                willDecayFasterThanAnimating(
-                    // High animation duration.
-                    animationSpec = tween(durationMillis = 1_000),
-                    decayAnimationSpec =
-                        SplineBasedFloatDecayAnimationSpec(density = Density(1f))
-                            .generateDecayAnimationSpec(),
-                    initialOffset = 0f,
-                    targetOffset = 1_000f,
-                    initialVelocity = 4_000f,
-                )
-            )
-            .isTrue()
-    }
-
-    @Test
-    fun animationFasterThanDecay() {
-        assertThat(
-                willDecayFasterThanAnimating(
-                    // Low animation duration.
-                    animationSpec = tween(durationMillis = 1),
-                    decayAnimationSpec =
-                        SplineBasedFloatDecayAnimationSpec(density = Density(1f))
-                            .generateDecayAnimationSpec(),
-                    initialOffset = 0f,
-                    targetOffset = 1_000f,
-                    initialVelocity = 4_000f,
-                )
-            )
-            .isFalse()
-    }
-
-    @Test
-    fun sameInitialAndTargetOffset() {
-        assertThat(
-                willDecayFasterThanAnimating(
-                    // Low animation duration.
-                    animationSpec = tween(durationMillis = 1),
-                    decayAnimationSpec =
-                        SplineBasedFloatDecayAnimationSpec(density = Density(1f))
-                            .generateDecayAnimationSpec(),
-                    initialOffset = 1_000f,
-                    targetOffset = 1_000f,
-                    initialVelocity = 4_000f,
-                )
-            )
-            .isTrue()
-    }
-
-    @Test
-    // Regression test for b/439715141.
-    fun smallDeltaToTarget() {
-        val density = Density(1f, 1f)
-
-        // The exact same values as in b/439715141.
-        val initialOffset = 0.049804688f
-        val targetOffset = 0f
-        val initialVelocity = -8528.837f
-
-        val decaySpec =
-            SplineBasedFloatDecayAnimationSpec(density).generateDecayAnimationSpec<Float>()
-        val animationSpec = spring<Float>()
-
-        willDecayFasterThanAnimating(
-            animationSpec,
-            decaySpec,
-            initialOffset,
-            targetOffset,
-            initialVelocity,
-        )
-    }
 
     @Test
     // Regression test for b/462102178.

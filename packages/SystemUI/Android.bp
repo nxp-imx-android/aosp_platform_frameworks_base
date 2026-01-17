@@ -440,12 +440,6 @@ android_library {
 // Defaults for both SystemUI-core and SystemUI-application, used while we migrate code to pods.
 java_defaults {
     name: "SystemUI-srcs-defaults",
-    product_variables: {
-        debuggable: {
-            srcs: [":DebugJavaFiles"],
-            exclude_srcs: [":ReleaseJavaFiles"],
-        },
-    },
     use_resource_processor: true,
     resource_dirs: [],
     libs: [
@@ -494,25 +488,18 @@ filegroup {
     visibility: ["//visibility:private"],
 }
 
-filegroup {
-    name: "SystemUI-core-srcs",
+android_library {
+    name: "SystemUI-core",
     srcs: [
         "src/**/*.kt",
         "src/**/*.java",
         "src/**/I*.aidl",
-    ],
-    path: "src",
-    visibility: ["//visibility:private"],
-}
-
-android_library {
-    name: "SystemUI-core",
-    srcs: [
-        ":SystemUI-core-srcs",
-        ":ReleaseJavaFiles",
         "compose/features/src/**/*.kt",
         "compose/facade/enabled/src/**/*.kt",
-    ],
+    ] + select(product_variable("debuggable"), {
+        true: [":DebugJavaFiles"],
+        false: [":ReleaseJavaFiles"],
+    }),
     defaults: ["SystemUI-srcs-defaults"],
     static_libs: [
         "//frameworks/libs/systemui:compilelib",
@@ -594,6 +581,7 @@ android_library {
         "kairos",
         "displaylib",
         "aconfig_settings_flags_lib",
+        "SurfaceEffectsComposeLib",
     ],
     enable_ksp: true,
     annotation_processor_flags: [
@@ -834,18 +822,15 @@ android_library {
     name: "SystemUI-tests",
     use_resource_processor: true,
     manifest: "tests/AndroidManifest-base.xml",
-    resource_dirs: [],
+    resource_dirs: ["tests/res/"],
 
     additional_manifests: ["tests/AndroidManifest.xml"],
     srcs: [
         "tests/src/**/*.kt",
         "tests/src/**/*.java",
-        ":SystemUI-application-srcs",
         ":ReleaseJavaFiles",
         ":SystemUI-tests-multivalent-monolith",
         ":SystemUI-tests-multivalent-pods",
-        "compose/features/src/**/*.kt",
-        "compose/facade/enabled/src/**/*.kt",
     ],
     static_libs: [
         "//frameworks/libs/systemui:compilelib",
@@ -865,6 +850,7 @@ android_library {
         "kotlin-test",
         "platform-screenshot-diff-core",
         "PlatformMotionTesting",
+        "SystemUI-application",
         "SystemUI-core",
         "SystemUICustomizationTestUtils",
         "androidx.compose.runtime_runtime",

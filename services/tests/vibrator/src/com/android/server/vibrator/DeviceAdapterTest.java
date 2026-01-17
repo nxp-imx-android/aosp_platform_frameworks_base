@@ -482,32 +482,6 @@ public class DeviceAdapterTest {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_PRIMITIVE_COMPOSITION_ABSOLUTE_DELAY)
-    public void testPrimitiveWithRelativeDelay_withoutFlag_returnsNull() {
-        VibrationEffect.Composed effect = new VibrationEffect.Composed(Arrays.asList(
-                new PrimitiveSegment(PRIMITIVE_TICK, 1, 10, DELAY_TYPE_RELATIVE_START_OFFSET),
-                new PrimitiveSegment(PRIMITIVE_TICK, 0.5f, 10, DELAY_TYPE_RELATIVE_START_OFFSET),
-                new PrimitiveSegment(PRIMITIVE_CLICK, 1, 100, DELAY_TYPE_RELATIVE_START_OFFSET)),
-                /* repeatIndex= */ -1);
-
-        assertThat(mAdapter.adaptToVibrator(EMPTY_VIBRATOR_ID, effect)).isNull();
-        assertThat(mAdapter.adaptToVibrator(BASIC_VIBRATOR_ID, effect)).isNull();
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_PRIMITIVE_COMPOSITION_ABSOLUTE_DELAY)
-    public void testUnsupportedPrimitives_withoutFlag_returnsOriginal() {
-        VibrationEffect.Composed effect = new VibrationEffect.Composed(Arrays.asList(
-                new PrimitiveSegment(PRIMITIVE_TICK, 1, 10),
-                new PrimitiveSegment(PRIMITIVE_TICK, 0.5f, 10),
-                new PrimitiveSegment(PRIMITIVE_CLICK, 1, 100)),
-                /* repeatIndex= */ -1);
-
-        assertThat(mAdapter.adaptToVibrator(EMPTY_VIBRATOR_ID, effect)).isEqualTo(effect);
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_PRIMITIVE_COMPOSITION_ABSOLUTE_DELAY)
     public void testUnsupportedPrimitives_returnsNull() {
         VibrationEffect.Composed effect = new VibrationEffect.Composed(Arrays.asList(
                 new PrimitiveSegment(PRIMITIVE_TICK, 1, 10),
@@ -519,7 +493,6 @@ public class DeviceAdapterTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_PRIMITIVE_COMPOSITION_ABSOLUTE_DELAY)
     public void testPrimitiveWithRelativeDelay_returnsPrimitiveWithPauseDelays() {
         int expectedPause = 50;
         int relativeDelay = 50 + TEST_PRIMITIVE_DURATION - 1;

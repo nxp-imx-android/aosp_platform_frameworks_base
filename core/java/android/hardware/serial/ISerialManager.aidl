@@ -37,11 +37,13 @@ interface ISerialManager {
 
     /** Grants serial port permission to a package. */
     @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.MANAGE_SERIAL_PORTS)")
-    void grantSerialPortAccess(in String serialPort, in int uid, in IBinder token);
+    void grantSerialPortAccess(in String serialPort, in int uid, in boolean persistent,
+            in IBinder token);
 
     /** Grants serial port permission to a package. */
     @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.MANAGE_SERIAL_PORTS)")
-    void revokeSerialPortAccess(in String serialPort, in int uid, in IBinder token);
+    void revokeSerialPortAccess(in String serialPort, in int uid, in boolean persistent,
+            in IBinder token);
 
     /**
      * Requests opening a file descriptor for the serial port.

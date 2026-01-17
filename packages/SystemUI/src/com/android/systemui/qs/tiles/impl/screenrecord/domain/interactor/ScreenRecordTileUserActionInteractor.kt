@@ -32,6 +32,7 @@ import com.android.systemui.qs.tiles.base.domain.interactor.QSTileUserActionInte
 import com.android.systemui.qs.tiles.base.domain.model.QSTileInput
 import com.android.systemui.qs.tiles.base.shared.model.QSTileUserAction
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters
+import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiSource
 import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInteractor
 import com.android.systemui.screencapture.record.domain.interactor.ScreenCaptureRecordFeaturesInteractor
 import com.android.systemui.screenrecord.ScreenRecordUxController
@@ -74,7 +75,8 @@ constructor(
                                 activityStarter.executeRunnableDismissingKeyguard(
                                     {
                                         screenCaptureUiInteractor.show(
-                                            ScreenCaptureUiParameters.Record()
+                                            ScreenCaptureUiParameters.Record(),
+                                            ScreenCaptureUiSource.QUICK_SETTINGS_TILE,
                                         )
                                     },
                                     /* cancelAction= */ null,

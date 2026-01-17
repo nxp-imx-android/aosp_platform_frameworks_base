@@ -31,6 +31,7 @@ import android.graphics.Rect;
 import android.gui.TrustedOverlay;
 import android.os.Binder;
 import android.util.CloseGuard;
+import android.view.InsetsBoundingRect;
 import android.view.SurfaceControl;
 import android.view.WindowInsets;
 import android.window.WindowContainerToken;
@@ -423,14 +424,28 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
                 // should always be consumed, otherwise the handle may block app content.
                 flags = FLAG_FORCE_CONSUMING | FLAG_FORCE_CONSUMING_OPAQUE_CAPTION_BAR;
             }
-            if (com.android.window.flags.Flags.relativeInsets()) {
-                wct.addInsetsSource(mTaskToken, mCaptionInsetsOwner, 0,
-                        WindowInsets.Type.captionBar(), Insets.of(0, mCaptionInsets.height(), 0, 0),
-                        null /* boundingRects */, flags);
+            if (com.android.window.flags.Flags.improveFluidResizingPerformance()) {
+                if (com.android.window.flags.Flags.relativeInsets()) {
+                    wct.addInsetsSource(mTaskToken, mCaptionInsetsOwner, 0,
+                            WindowInsets.Type.captionBar(),
+                            Insets.of(0, mCaptionInsets.height(), 0, 0),
+                            (InsetsBoundingRect[]) null /* boundingRects */, flags);
+                } else {
+                    wct.addInsetsSource(mTaskToken, mCaptionInsetsOwner, 0,
+                            WindowInsets.Type.captionBar(), mCaptionInsets,
+                            (InsetsBoundingRect[]) null /* boundingRects */, flags);
+                }
             } else {
-                wct.addInsetsSource(mTaskToken, mCaptionInsetsOwner, 0,
-                        WindowInsets.Type.captionBar(), mCaptionInsets, null /* boundingRects */,
-                        flags);
+                if (com.android.window.flags.Flags.relativeInsets()) {
+                    wct.addInsetsSource(mTaskToken, mCaptionInsetsOwner, 0,
+                            WindowInsets.Type.captionBar(),
+                            Insets.of(0, mCaptionInsets.height(), 0, 0),
+                            (Rect[]) null /* boundingRects */, flags);
+                } else {
+                    wct.addInsetsSource(mTaskToken, mCaptionInsetsOwner, 0,
+                            WindowInsets.Type.captionBar(), mCaptionInsets,
+                            (Rect[]) null /* boundingRects */, flags);
+                }
             }
         } else {
             wct.removeInsetsSource(mTaskToken, mCaptionInsetsOwner, 0,

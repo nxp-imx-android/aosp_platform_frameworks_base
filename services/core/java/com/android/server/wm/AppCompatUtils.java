@@ -190,10 +190,9 @@ final class AppCompatUtils {
         appCompatTaskInfo.setIsFromLetterboxDoubleTap(reachabilityOverrides.isFromDoubleTap());
 
         appCompatTaskInfo.topActivityAppBounds.set(getAppBounds(top));
-        appCompatTaskInfo.topNonResizableActivityAspectRatio =
-                top.getAppCompatDisplayInsets() != null
-                        ? top.getAppCompatDisplayInsets().mAspectRatio
-                        : TaskInfo.PROPERTY_VALUE_UNSET;
+        final float aspectRatio = task.getCompatAspectRatio();
+        appCompatTaskInfo.topNonResizableActivityAspectRatio = aspectRatio >= 0
+                ? aspectRatio : TaskInfo.PROPERTY_VALUE_UNSET;
         final AppCompatLetterboxPolicy letterboxPolicy =
                 top.mAppCompatController.getLetterboxPolicy();
         final boolean isTopActivityLetterboxed = letterboxPolicy.isRunning();
@@ -241,8 +240,7 @@ final class AppCompatUtils {
         appCompatTaskInfo.setHasMinAspectRatioOverride(top.mAppCompatController
                 .getDesktopAspectRatioPolicy().hasMinAspectRatioOverride(task));
         appCompatTaskInfo.setOptOutEdgeToEdge(top.mOptOutEdgeToEdge);
-        appCompatTaskInfo.setOverrideExcludeCaptionInsetsAllowed(top.mAppCompatController
-                .getSandboxOverrides().isOverrideExcludeCaptionInsetsAllowed());
+        appCompatTaskInfo.setIsExcludeCaptionInsets(task.getIsCaptionInsetsExcluded());
     }
 
     /**

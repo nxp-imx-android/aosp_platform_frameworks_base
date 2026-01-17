@@ -1,0 +1,544 @@
+/*
+ * Copyright 2025 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.android.server.autofill;
+
+import static android.service.personalcontext.Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE;
+
+import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentation;
+
+import static com.google.common.truth.Truth.assertThat;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import android.annotation.SuppressLint;
+import android.app.slice.Slice;
+import android.app.slice.SliceSpec;
+import android.content.ComponentName;
+import android.net.Uri;
+import android.os.Bundle;
+import android.os.IBinder;
+import android.os.RemoteException;
+import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.EnableFlags;
+import android.platform.test.flag.junit.SetFlagsRule;
+import android.service.autofill.Dataset;
+import android.service.autofill.Field;
+import android.service.autofill.InlinePresentation;
+import android.service.autofill.InlineSuggestionRenderService;
+import android.service.autofill.augmented.IAugmentedAutofillService;
+import android.service.autofill.augmented.IFillCallback;
+import android.testing.TestableContext;
+import android.util.Size;
+import android.view.autofill.AutofillId;
+import android.view.autofill.AutofillValue;
+import android.view.autofill.IAutoFillManagerClient;
+import android.view.inputmethod.InlineSuggestionsRequest;
+import android.widget.inline.InlinePresentationSpec;
+
+import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.filters.SmallTest;
+
+import com.android.internal.infra.ServiceConnector;
+import com.android.internal.infra.ServiceConnector.Job;
+import com.android.internal.os.IResultReceiver;
+import com.android.internal.util.test.LocalServiceKeeperRule;
+import com.android.server.autofill.RemoteAugmentedAutofillService.InlineSuggestionsResponseData;
+import com.android.server.autofill.RemoteAugmentedAutofillService.RemoteAugmentedAutofillServiceCallbacks;
+import com.android.server.autofill.ui.InlineFillUi;
+import com.android.server.personalcontext.PersonalContextManagerInternal;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.function.Function;
+
+@SmallTest
+@RunWith(AndroidJUnit4.class)
+public class RemoteAugmentedAutofillServiceTest {
+    @Rule public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
+    @Rule public LocalServiceKeeperRule mLocalServiceKeeperRule = new LocalServiceKeeperRule();
+
+    @Rule
+    public final TestableContext mContext =
+            spy(new TestableContext(getInstrumentation().getContext()));
+
+    private static final int USER_ID = 0;
+    private static final int REQUEST_TIMEOUT_MS = 2000;
+
+    private static final InlinePresentationSpec AUTOFILL_INLINE_PRESENTATION_SPEC =
+            new InlinePresentationSpec.Builder(new Size(100, 100), new Size(100, 100)).build();
+    private static final InlinePresentationSpec PERSONAL_CONTEXT_INLINE_PRESENTATION_SPEC =
+            new InlinePresentationSpec.Builder(new Size(200, 200), new Size(200, 200)).build();
+    private static final ComponentName SERVICE_COMPONENT_NAME =
+            new ComponentName("test_service_package", "test_service_class");
+    private static final ComponentName ACTIVITY_COMPONENT_NAME =
+            new ComponentName("test_activity_package", "test_activity_class");
+    private static final AutofillValue AUTOFILL_VALUE = AutofillValue.forText("test_value");
+
+    private final Function<InlineFillUi, Boolean> mInlineSuggestionsCallback =
+            inlineFillUi -> {
+                mInlineFillUiResult = inlineFillUi;
+                return true;
+            };
+
+    @Mock private PersonalContextManagerInternal mContextManagerInternal;
+    @Mock private RemoteAugmentedAutofillServiceCallbacks mAutofillServiceCallbacks;
+
+    @Mock
+    private RemoteInlineSuggestionRenderService.InlineSuggestionRenderCallbacks
+            mInlineSuggestionRenderCallbacks;
+
+    @Mock private IAutoFillManagerClient mClient;
+    @Mock private IBinder mActivityToken;
+    @Mock private IAugmentedAutofillService mAugmentedService;
+    @Mock private ServiceConnector.Impl<IAugmentedAutofillService> mServiceConnector;
+
+    private InlineFillUi mInlineFillUiResult;
+    private AutoCloseable mMockitoSession;
+    private RemoteInlineSuggestionRenderService mRemoteInlineSuggestionRenderService;
+    private RemoteAugmentedAutofillService mService;
+    private ExecutorService mTestExecutorService;
+
+    /**
+     * Captured futures from {@link
+     * RemoteAugmentedAutofillService.Injector#orTimeout(CompletableFuture, long, TimeUnit)}.
+     */
+    private List<CompletableFuture> mAutofillResponseFutures;
+
+    @SuppressLint("VisibleForTests")
+    @Before
+    public void setUp() throws Exception {
+        mMockitoSession = MockitoAnnotations.openMocks(this);
+        mTestExecutorService = Executors.newSingleThreadExecutor();
+
+        // Immediately run any jobs posted to the service connector.
+        ArgumentCaptor<
+                        Job<
+                                IAugmentedAutofillService,
+                                CompletableFuture<InlineSuggestionsResponseData>>>
+                jobCaptor = ArgumentCaptor.forClass(Job.class);
+        when(mServiceConnector.postAsync(jobCaptor.capture()))
+                .thenAnswer(invocation -> jobCaptor.getValue().run(mAugmentedService));
+
+        mLocalServiceKeeperRule.overrideLocalService(
+                PersonalContextManagerInternal.class, mContextManagerInternal);
+
+        mRemoteInlineSuggestionRenderService =
+                new RemoteInlineSuggestionRenderService(
+                        mContext,
+                        SERVICE_COMPONENT_NAME,
+                        InlineSuggestionRenderService.SERVICE_INTERFACE,
+                        USER_ID,
+                        mInlineSuggestionRenderCallbacks,
+                        false,
+                        false);
+
+        mAutofillResponseFutures = new ArrayList<>();
+        mService =
+                new RemoteAugmentedAutofillService(
+                        new RemoteAugmentedAutofillService.Injector() {
+                            @Override
+                            public ExecutorService getExecutorService() {
+                                return mTestExecutorService;
+                            }
+
+                            @Override
+                            public ServiceConnector.Impl<IAugmentedAutofillService>
+                                    getServiceConnector() {
+                                return mServiceConnector;
+                            }
+
+                            @Override
+                            public <T> CompletableFuture<T> orTimeout(
+                                    CompletableFuture<T> future, long timeout, TimeUnit unit) {
+                                mAutofillResponseFutures.add(future);
+                                return future;
+                            }
+                        },
+                        0, // serviceUid
+                        SERVICE_COMPONENT_NAME,
+                        USER_ID, // userId
+                        mAutofillServiceCallbacks,
+                        REQUEST_TIMEOUT_MS);
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        if (mMockitoSession != null) {
+            mMockitoSession.close();
+            mMockitoSession = null;
+        }
+    }
+
+    @EnableFlags(FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
+    @Test
+    public void onRequestAutofillLocked_bothResponses_choosesPersonalContextResult()
+            throws Exception {
+        final int sessionId = 1234;
+        AutofillId focusedId = new AutofillId(3);
+        final InlineSuggestionsRequest inlineSuggestionsRequest =
+                new InlineSuggestionsRequest.Builder(List.of(AUTOFILL_INLINE_PRESENTATION_SPEC))
+                        .build();
+        // Request augmented autofill.
+        mService.onRequestAutofillLocked(
+                sessionId,
+                mClient,
+                4567, // taskId
+                ACTIVITY_COMPONENT_NAME,
+                mActivityToken,
+                focusedId,
+                AUTOFILL_VALUE,
+                inlineSuggestionsRequest,
+                mInlineSuggestionsCallback,
+                () -> {}, // onErrorCallback
+                mRemoteInlineSuggestionRenderService,
+                USER_ID);
+
+        // Augmented autofill service receives fill request.
+        IFillCallback fillCallback =
+                triggerAugmentedAutofillRequest(sessionId, ACTIVITY_COMPONENT_NAME, focusedId);
+
+        // Both augmented autofill and personal context provide a response.
+        sendAutofillResponse(focusedId, fillCallback, false);
+        sendPersonalContextResponse(sessionId, focusedId);
+
+        // Verify inline suggestions are applied.
+        assertInlinePresentationResult(PERSONAL_CONTEXT_INLINE_PRESENTATION_SPEC);
+    }
+
+    @EnableFlags(FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
+    @Test
+    public void onRequestAutofillLocked_onlyAutofillResponse_choosesAutofillResult()
+            throws Exception {
+        final int sessionId = 1234;
+        AutofillId focusedId = new AutofillId(3);
+        final InlineSuggestionsRequest inlineSuggestionsRequest =
+                new InlineSuggestionsRequest.Builder(List.of(AUTOFILL_INLINE_PRESENTATION_SPEC))
+                        .build();
+        // Request augmented autofill.
+        mService.onRequestAutofillLocked(
+                sessionId,
+                mClient,
+                4567, // taskId
+                ACTIVITY_COMPONENT_NAME,
+                mActivityToken,
+                focusedId,
+                AUTOFILL_VALUE,
+                inlineSuggestionsRequest,
+                mInlineSuggestionsCallback,
+                () -> {}, // onErrorCallback
+                mRemoteInlineSuggestionRenderService,
+                USER_ID);
+
+        // Augmented autofill service receives fill request.
+        IFillCallback fillCallback =
+                triggerAugmentedAutofillRequest(sessionId, ACTIVITY_COMPONENT_NAME, focusedId);
+
+        // Augmented autofill provides a response, personal context does not.
+        sendAutofillResponse(focusedId, fillCallback, false);
+
+        timeoutFutures();
+
+        // Verify inline suggestions are applied.
+        assertInlinePresentationResult(AUTOFILL_INLINE_PRESENTATION_SPEC);
+    }
+
+    @DisableFlags(FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
+    @Test
+    public void onRequestAutofillLocked_personalContextDisabled_choosesAutofillResult()
+            throws Exception {
+        final int sessionId = 1234;
+        AutofillId focusedId = new AutofillId(3);
+        final InlineSuggestionsRequest inlineSuggestionsRequest =
+                new InlineSuggestionsRequest.Builder(List.of(AUTOFILL_INLINE_PRESENTATION_SPEC))
+                        .build();
+        // Request augmented autofill.
+        mService.onRequestAutofillLocked(
+                sessionId,
+                mClient,
+                4567, // taskId
+                ACTIVITY_COMPONENT_NAME,
+                mActivityToken,
+                focusedId,
+                AUTOFILL_VALUE,
+                inlineSuggestionsRequest,
+                mInlineSuggestionsCallback,
+                () -> {}, // onErrorCallback
+                mRemoteInlineSuggestionRenderService, // render service?
+                USER_ID);
+
+        // Augmented autofill service receives fill request.
+        IFillCallback fillCallback =
+                triggerAugmentedAutofillRequest(sessionId, ACTIVITY_COMPONENT_NAME, focusedId);
+
+        // Augmented autofill provides a response.
+        sendAutofillResponse(focusedId, fillCallback, false);
+
+        // Send personal context response, but since flag is disabled, it will be a no-op.
+        sendPersonalContextResponse(sessionId, focusedId);
+
+        // Verify inline suggestions are applied.
+        assertInlinePresentationResult(AUTOFILL_INLINE_PRESENTATION_SPEC);
+    }
+
+    @EnableFlags(FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
+    @Test
+    public void onRequestAutofillLocked_fillWindowShowing_doesNotReturnResult() throws Exception {
+        final int sessionId = 1234;
+        AutofillId focusedId = new AutofillId(3);
+        final InlineSuggestionsRequest inlineSuggestionsRequest =
+                new InlineSuggestionsRequest.Builder(List.of(AUTOFILL_INLINE_PRESENTATION_SPEC))
+                        .build();
+        // Request augmented autofill.
+        mService.onRequestAutofillLocked(
+                sessionId,
+                mClient,
+                4567, // taskId
+                ACTIVITY_COMPONENT_NAME,
+                mActivityToken,
+                focusedId,
+                AUTOFILL_VALUE,
+                inlineSuggestionsRequest,
+                mInlineSuggestionsCallback,
+                () -> {}, // onErrorCallback
+                mRemoteInlineSuggestionRenderService,
+                USER_ID);
+
+        // Augmented autofill service receives fill request.
+        IFillCallback fillCallback =
+                triggerAugmentedAutofillRequest(sessionId, ACTIVITY_COMPONENT_NAME, focusedId);
+
+        // Both augmented autofill and personal context provide a response. The fill window is
+        // showing, meaning that we should not provide a result.
+        sendAutofillResponse(focusedId, fillCallback, /* showingFillWindow= */ true);
+        sendPersonalContextResponse(sessionId, focusedId);
+
+        // Verify no result is provided even though all of the responses are returned.
+        assertFuturesDone();
+        assertThat(mInlineFillUiResult).isNull();
+    }
+
+    @EnableFlags(FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
+    @Test
+    public void onRequestAutofillLocked_emptyAutofillResponse_choosesPersonalContextResult()
+            throws Exception {
+        final int sessionId = 1234;
+        AutofillId focusedId = new AutofillId(3);
+        final InlineSuggestionsRequest inlineSuggestionsRequest =
+                new InlineSuggestionsRequest.Builder(List.of(AUTOFILL_INLINE_PRESENTATION_SPEC))
+                        .build();
+        // Request augmented autofill.
+        mService.onRequestAutofillLocked(
+                sessionId,
+                mClient,
+                4567, // taskId
+                ACTIVITY_COMPONENT_NAME,
+                mActivityToken,
+                focusedId,
+                AUTOFILL_VALUE, // focusedValue
+                inlineSuggestionsRequest,
+                mInlineSuggestionsCallback,
+                () -> {}, // onErrorCallback
+                mRemoteInlineSuggestionRenderService, // render service?
+                USER_ID);
+
+        // Augmented autofill service receives fill request.
+        IFillCallback fillCallback =
+                triggerAugmentedAutofillRequest(sessionId, ACTIVITY_COMPONENT_NAME, focusedId);
+
+        // Augmented autofill provides an empty response.
+        sendEmptyAutofillResponse(fillCallback);
+
+        // Personal context provides a valid response.
+        sendPersonalContextResponse(sessionId, focusedId);
+
+        // Verify inline suggestions are applied.
+        assertInlinePresentationResult(PERSONAL_CONTEXT_INLINE_PRESENTATION_SPEC);
+    }
+
+    @EnableFlags(FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
+    @Test
+    public void onRequestAutofillLocked_noPersonalContextResponse_emptyUi() throws Exception {
+        final int sessionId = 1234;
+        AutofillId focusedId = new AutofillId(3);
+        final InlineSuggestionsRequest inlineSuggestionsRequest =
+                new InlineSuggestionsRequest.Builder(List.of(AUTOFILL_INLINE_PRESENTATION_SPEC))
+                        .build();
+        // Request augmented autofill.
+        mService.onRequestAutofillLocked(
+                sessionId,
+                mClient,
+                4567, // taskId
+                ACTIVITY_COMPONENT_NAME,
+                mActivityToken,
+                focusedId,
+                AUTOFILL_VALUE, // focusedValue
+                inlineSuggestionsRequest,
+                mInlineSuggestionsCallback,
+                () -> {}, // onErrorCallback
+                mRemoteInlineSuggestionRenderService, // render service?
+                USER_ID);
+
+        // Augmented autofill service receives fill request.
+        IFillCallback fillCallback =
+                triggerAugmentedAutofillRequest(sessionId, ACTIVITY_COMPONENT_NAME, focusedId);
+
+        // Augmented autofill provides an empty response.
+        sendEmptyAutofillResponse(fillCallback);
+
+        // No personal context result, time out futures.
+        timeoutFutures();
+
+        // Since at least one response was returned, an empty UI is the result.
+        assertThat(mInlineFillUiResult.getInlineSuggestionsResponse().getInlineSuggestions())
+                .isEmpty();
+    }
+
+    @EnableFlags(FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
+    @Test
+    public void onRequestAutofillLocked_neitherResponseReturns_noResult() throws Exception {
+        final int sessionId = 1234;
+        AutofillId focusedId = new AutofillId(3);
+        final InlineSuggestionsRequest inlineSuggestionsRequest =
+                new InlineSuggestionsRequest.Builder(List.of(AUTOFILL_INLINE_PRESENTATION_SPEC))
+                        .build();
+        // Request augmented autofill.
+        mService.onRequestAutofillLocked(
+                sessionId,
+                mClient,
+                4567, // taskId
+                ACTIVITY_COMPONENT_NAME,
+                mActivityToken,
+                focusedId,
+                AUTOFILL_VALUE, // focusedValue
+                inlineSuggestionsRequest,
+                mInlineSuggestionsCallback,
+                () -> {}, // onErrorCallback
+                mRemoteInlineSuggestionRenderService, // render service?
+                USER_ID);
+
+        // Neither result is sent, time out futures.
+        timeoutFutures();
+
+        // Verify no result is provided.
+        assertThat(mInlineFillUiResult).isNull();
+    }
+
+    private IFillCallback triggerAugmentedAutofillRequest(
+            int sessionId, ComponentName activityComponent, AutofillId focusedId)
+            throws RemoteException {
+        ArgumentCaptor<IResultReceiver.Stub> resultReceiverCaptor =
+                ArgumentCaptor.forClass(IResultReceiver.Stub.class);
+        verify(mClient).getAugmentedAutofillClient(resultReceiverCaptor.capture());
+
+        resultReceiverCaptor.getValue().send(0, new Bundle());
+
+        ArgumentCaptor<IFillCallback> callbackCaptor = ArgumentCaptor.forClass(IFillCallback.class);
+        verify(mAugmentedService)
+                .onFillRequest(
+                        eq(sessionId),
+                        any(),
+                        anyInt(),
+                        eq(activityComponent),
+                        eq(focusedId),
+                        any(),
+                        anyLong(),
+                        any(),
+                        callbackCaptor.capture());
+        return callbackCaptor.getValue();
+    }
+
+    private void sendAutofillResponse(
+            AutofillId focusedId, IFillCallback callback, boolean showingFillWindow)
+            throws RemoteException {
+        Slice slice = new Slice.Builder(Uri.parse("test_uri"), new SliceSpec("type", 1)).build();
+        InlinePresentation presentation =
+                new InlinePresentation(slice, AUTOFILL_INLINE_PRESENTATION_SPEC, false);
+        List<Dataset> datasets = new ArrayList<>();
+        datasets.add(
+                new Dataset.Builder(presentation)
+                        .setField(focusedId, new Field.Builder().setValue(AUTOFILL_VALUE).build())
+                        .build());
+        callback.onSuccess(datasets, null, showingFillWindow);
+    }
+
+    private void sendEmptyAutofillResponse(IFillCallback callback) throws RemoteException {
+        callback.onSuccess(null, null, false);
+    }
+
+    private void sendPersonalContextResponse(int sessionId, AutofillId focusedId) {
+        Slice slice = new Slice.Builder(Uri.parse("test_uri"), new SliceSpec("type", 1)).build();
+        InlinePresentation presentation2 =
+                new InlinePresentation(slice, PERSONAL_CONTEXT_INLINE_PRESENTATION_SPEC, false);
+        List<Dataset> datasets2 = new ArrayList<>();
+        datasets2.add(
+                new Dataset.Builder(presentation2)
+                        .setField(focusedId, new Field.Builder().setValue(AUTOFILL_VALUE).build())
+                        .build());
+        mService.notifySystemInlineSuggestions(sessionId, datasets2);
+    }
+
+    private void timeoutFutures() {
+        if (mAutofillResponseFutures.stream().allMatch(CompletableFuture::isDone)) {
+            throw new IllegalStateException("no futures to timeout");
+        }
+        for (CompletableFuture future : mAutofillResponseFutures) {
+            if (!future.isDone()) {
+                future.completeExceptionally(new TimeoutException("timing out for test"));
+            }
+        }
+    }
+
+    /**
+     * Asserts that all futures that were scheduled to time out are finished. Useful when a test
+     * wants to assert that no result is provided even though all the responses were provided.
+     */
+    private void assertFuturesDone() {
+        assertThat(mAutofillResponseFutures.stream().allMatch(CompletableFuture::isDone)).isTrue();
+    }
+
+    private void assertInlinePresentationResult(InlinePresentationSpec expected) {
+        assertThat(mInlineFillUiResult).isNotNull();
+        InlinePresentationSpec resultSpec =
+                mInlineFillUiResult
+                        .getInlineSuggestionsResponse()
+                        .getInlineSuggestions()
+                        .getFirst()
+                        .getInfo()
+                        .getInlinePresentationSpec();
+        assertThat(resultSpec).isEqualTo(expected);
+    }
+}

@@ -446,8 +446,7 @@ public class AidlConversion {
     public static AudioConfigBase api2aidl_AudioFormat_AudioConfigBase(
             @NonNull AudioFormat audioFormat, boolean isInput) {
         Parcel in = api2aidl_AudioFormat_AudioConfigBase_Parcel(audioFormat.getSampleRate(),
-                audioFormat.getEncoding(), audioFormat.getChannelMask(),
-                audioFormat.getChannelIndexMask(), isInput);
+                audioFormat.getEncoding(), audioFormat.getChannelMasks(), isInput);
         if (in != null) {
             try {
                 return AudioConfigBase.CREATOR.createFromParcel(in);
@@ -952,6 +951,7 @@ public class AidlConversion {
                 break;
             case AudioSystem.DEVICE_OUT_BLE_HEARING_AID:
                 aidl.type = AudioDeviceType.OUT_HEARING_AID;
+                aidl.connection = AudioDeviceDescription.CONNECTION_BT_LE;
                 break;
             case AudioSystem.DEVICE_OUT_BLE_CENTRAL:
                 aidl.type = AudioDeviceType.OUT_CENTRAL_DEVICE;
@@ -1003,5 +1003,6 @@ public class AidlConversion {
     private static native Parcel legacy2aidl_audio_format_t_AudioFormatDescription_Parcel(
             int legacy);
     private static native Parcel api2aidl_AudioFormat_AudioConfigBase_Parcel(
-            int sampleRate, int encoding, int channelMask, int channelIndexMask, boolean isInput);
+            int sampleRate, int encoding, Object /*AudioFormat.ChannelMasks*/ channelMasks,
+            boolean isInput);
 }

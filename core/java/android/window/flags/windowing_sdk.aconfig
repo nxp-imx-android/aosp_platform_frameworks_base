@@ -55,6 +55,16 @@ flag {
 }
 
 flag {
+    namespace: "aaos_core_contrib"
+    name: "current_user_access_unassigned_displays"
+    description: "Allows the current user to access unassigned displays in MUMD"
+    bug: "474129122"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     namespace: "windowing_sdk"
     name: "activity_embedding_metrics"
     description: "Metrics for Activity Embedding usage in WM Extensions"

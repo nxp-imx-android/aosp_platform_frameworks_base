@@ -3,8 +3,8 @@ package com.android.server.policy.keyguard;
 import static android.internal.perfetto.protos.Windowmanagerservice.KeyguardServiceDelegateProto.INTERACTIVE_STATE;
 import static android.internal.perfetto.protos.Windowmanagerservice.KeyguardServiceDelegateProto.OCCLUDED;
 import static android.internal.perfetto.protos.Windowmanagerservice.KeyguardServiceDelegateProto.SCREEN_STATE;
-import static android.internal.perfetto.protos.Windowmanagerservice.KeyguardServiceDelegateProto.SECURE;
 import static android.internal.perfetto.protos.Windowmanagerservice.KeyguardServiceDelegateProto.SHOWING;
+
 import static com.android.internal.policy.IKeyguardService.SCREEN_TURNING_ON_REASON_UNKNOWN;
 import static com.android.server.flags.Flags.resetKeyguardFirstStateDispatchOnServiceConnected;
 
@@ -25,19 +25,17 @@ import android.os.PowerManager;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.service.dreams.DreamManagerInternal;
-import com.android.internal.widget.LockPatternUtils;
 import android.util.Log;
 import android.util.Slog;
 import android.util.proto.ProtoOutputStream;
-import android.view.WindowManagerPolicyConstants;
 
 import com.android.internal.policy.IKeyguardDismissCallback;
 import com.android.internal.policy.IKeyguardDrawnCallback;
 import com.android.internal.policy.IKeyguardExitCallback;
 import com.android.internal.policy.IKeyguardService;
 import com.android.internal.policy.IKeyguardStateCallback;
+import com.android.internal.widget.LockPatternUtils;
 import com.android.server.LocalServices;
-import com.android.server.UiThread;
 import com.android.server.wm.EventLogTags;
 
 import java.io.PrintWriter;
@@ -89,10 +87,6 @@ public class KeyguardServiceDelegate {
     @Nullable
     private IKeyguardService mKeyguardService;
 
-    @NonNull
-    private final Context mContext;
-    @NonNull
-    private final Handler mHandler;
     @NonNull
     private final LockPatternUtils mLockPatternUtils;
 
@@ -221,8 +215,6 @@ public class KeyguardServiceDelegate {
     }
 
     public KeyguardServiceDelegate(@NonNull Context context, @NonNull StateCallback callback) {
-        mContext = context;
-        mHandler = UiThread.getHandler();
         mCallback = callback;
         mLockPatternUtils = new LockPatternUtils(context);
     }
@@ -232,7 +224,13 @@ public class KeyguardServiceDelegate {
         mCallback.onShowingChanged();
     }
 
-    public void bindService(Context context) {
+    /**
+     * Creates a binding to the {@link IKeyguardService}.
+     *
+     * @param context the context to bind on.
+     * @param handler the handler to run the ServiceConnection callbacks on.
+     */
+    public void bindService(@NonNull Context context, @NonNull Handler handler) {
         Intent intent = new Intent();
         final Resources resources = context.getApplicationContext().getResources();
 
@@ -241,8 +239,8 @@ public class KeyguardServiceDelegate {
         intent.addFlags(Intent.FLAG_DEBUG_TRIAGED_MISSING);
         intent.setComponent(keyguardComponent);
 
-        if (!context.bindServiceAsUser(intent, mKeyguardConnection,
-                Context.BIND_AUTO_CREATE, mHandler, UserHandle.SYSTEM)) {
+        if (!context.bindServiceAsUser(intent, mKeyguardConnection, Context.BIND_AUTO_CREATE,
+                handler, UserHandle.SYSTEM)) {
             Log.v(TAG, "*** Keyguard: can't bind to " + keyguardComponent);
             mKeyguardReportedState.disable();
         } else {
@@ -251,7 +249,7 @@ public class KeyguardServiceDelegate {
 
         final DreamManagerInternal dreamManager =
                 LocalServices.getService(DreamManagerInternal.class);
-        if(dreamManager != null){
+        if (dreamManager != null) {
             dreamManager.registerDreamManagerStateListener(mDreamManagerStateListener);
         }
     }
@@ -325,14 +323,12 @@ public class KeyguardServiceDelegate {
             mKeyguardService = null;
             mKeyguardState.reset();
             mKeyguardReportedState.reset();
-            mHandler.post(() -> {
-                try {
-                    ActivityTaskManager.getService().setLockScreenShown(true /* keyguardShowing */,
-                            false /* aodShowing */);
-                } catch (RemoteException e) {
-                    // Local call.
-                }
-            });
+            try {
+                ActivityTaskManager.getService().setLockScreenShown(true /* showingKeyguard */,
+                        false /* showingAod */);
+            } catch (RemoteException e) {
+                // Local call.
+            }
         }
     };
 
@@ -361,7 +357,7 @@ public class KeyguardServiceDelegate {
             keyguardService.verifyUnlock(new IKeyguardExitCallback.Stub() {
                 @Override
                 public void onKeyguardExitResult(boolean success) throws RemoteException {
-                    if (DEBUG) Log.v(TAG, "**** onKeyguardExitResult(" + success +") CALLED ****");
+                    if (DEBUG) Log.v(TAG, "**** onKeyguardExitResult(" + success + ") CALLED ****");
                     onKeyguardExitResult.accept(success);
                 }
             });
@@ -486,7 +482,6 @@ public class KeyguardServiceDelegate {
      * Notify Keyguard that the screen started turning on.
      *
      * @param reason one of the SCREEN_TURNING_ON_REASON constants in IKeyguardService.aidl.
-     * @param drawnListener callback for the first frame having been drawn by Keyguard.
      */
     public void onScreenTurningOn(int reason) {
         if (mKeyguardService != null) {
@@ -657,6 +652,7 @@ public class KeyguardServiceDelegate {
             }
         }
     }
+
     public void onSystemKeyPressed(int keycode) {
         if (mKeyguardService != null) {
             try {

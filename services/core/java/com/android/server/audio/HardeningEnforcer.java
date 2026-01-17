@@ -16,9 +16,9 @@
 package com.android.server.audio;
 
 import static android.media.audio.Flags.autoPublicVolumeApiHardening;
+import static com.android.media.audio.Flags.hardeningPartial;
 import static com.android.media.audio.Flags.hardeningPartialVolume;
 import static com.android.media.audio.Flags.hardeningStrict;
-import static com.android.media.audio.Flags.hardeningPartial;
 
 import android.Manifest;
 import android.annotation.NonNull;
@@ -29,6 +29,7 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.media.AudioFocusRequest;
 import android.media.AudioManager;
+import android.media.IAudioPolicyService.HardeningOverride;
 import android.os.Binder;
 import android.os.Build;
 import android.os.UserHandle;
@@ -36,11 +37,12 @@ import android.text.TextUtils;
 import android.util.Slog;
 import android.util.SparseArray;
 
+import com.android.media.audio.metrics.AudioAtomsLog;
 import com.android.modules.expresslog.Counter;
 import com.android.server.utils.EventLogger;
 
 import java.io.PrintWriter;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Class to encapsulate all audio API hardening operations
@@ -53,7 +55,7 @@ public class HardeningEnforcer {
 
     final Context mContext;
     final AppOpsManager mAppOps;
-    final AtomicBoolean mShouldEnableAllHardening;
+    final AtomicInteger mHardeningOverride;
     final boolean mIsAutomotive;
 
     final ActivityManager mActivityManager;
@@ -116,11 +118,11 @@ public class HardeningEnforcer {
     private static final int DENIED_IF_FULL = 2;
 
     public HardeningEnforcer(Context ctxt, boolean isAutomotive,
-            AtomicBoolean shouldEnableHardening, AppOpsManager appOps, PackageManager pm,
+            AtomicInteger hardeningOverride, AppOpsManager appOps, PackageManager pm,
             EventLogger logger) {
         mContext = ctxt;
         mIsAutomotive = isAutomotive;
-        mShouldEnableAllHardening = shouldEnableHardening;
+        mHardeningOverride = hardeningOverride;
         mAppOps = appOps;
         mActivityManager = ctxt.getSystemService(ActivityManager.class);
         mPackageManager = pm;
@@ -159,7 +161,12 @@ public class HardeningEnforcer {
             // This flag is misnamed: it blocks volume changes at the strict level: app usage of
             // volume modifications between partial and strict level should be extremely limited
             // given we don't want to encourage apps modify volume regardless.
-            boolean enforced = mShouldEnableAllHardening.get() || hardeningPartialVolume();
+            var overrideState = mHardeningOverride.get();
+            boolean enforced = switch (overrideState) {
+                case HardeningOverride.ENABLE -> true;
+                case HardeningOverride.DISABLE -> false;
+                default -> hardeningPartialVolume();
+            };
             if (!noteOp(AppOpsManager.OP_CONTROL_AUDIO_PARTIAL, uid, packageName, null)) {
                 // blocked by partial
                 Counter.logIncrementWithUid(
@@ -212,10 +219,18 @@ public class HardeningEnforcer {
             blockLevel = DENIED_IF_FULL;
         }
 
+        var overrideState = mHardeningOverride.get();
         boolean isPreVic = targetSdk < Build.VERSION_CODES.VANILLA_ICE_CREAM;
-        boolean enforcedPartial =
-                mShouldEnableAllHardening.get() || hardeningPartial() || !isPreVic;
-        boolean enforcedFull = mShouldEnableAllHardening.get() || hardeningStrict();
+        boolean enforcedPartial = switch (overrideState) {
+            case HardeningOverride.ENABLE -> true;
+            case HardeningOverride.DISABLE -> false;
+            default -> hardeningPartial() || !isPreVic;
+        };
+        boolean enforcedFull = switch (overrideState) {
+            case HardeningOverride.ENABLE -> true;
+            case HardeningOverride.DISABLE -> false;
+            default -> hardeningStrict();
+        };
 
         if (blockLevel == DENIED_IF_PARTIAL) {
             String msg = "AudioHardening focus request for req "
