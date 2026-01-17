@@ -6878,6 +6878,12 @@
     <permission android:name="android.permission.KEEP_UNINSTALLED_PACKAGES"
         android:protectionLevel="signature" />
 
+    <!-- @hide Allows an application to hide/uninstall/suspend/disable system required apps.
+        <p>Not for use by third-party applications. -->
+    <permission android:name="android.permission.ALLOW_CONTROL_SYSTEM_REQUIRED_PACKAGES"
+        android:protectionLevel="signature"
+        android:featureFlag="android.content.pm.protect_system_required_packages"/>
+
     <!-- Allows an application to change whether an application component (other than its own) is
          enabled or not.
          <p>Not for use by third-party applications. -->

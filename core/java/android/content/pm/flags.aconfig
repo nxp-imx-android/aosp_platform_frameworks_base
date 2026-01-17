@@ -375,3 +375,10 @@ flag {
     description: "ApplicationPackageManager.isDeviceUpgrading() reads the value from shared memory"
     bug: "452842853"
 }
+
+flag {
+    name: "protect_system_required_packages"
+    namespace: "package_manager_service"
+    description: "Protect system required packages from being disabled, hidden, or uninstalled"
+    bug: "476068582"
+}

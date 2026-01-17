@@ -90,6 +90,12 @@ prebuilt_etc {
     src: "preinstalled-packages-app-lock-exempt.xml",
 }
 
+prebuilt_etc {
+    name: "system-required-packages.xml",
+    sub_dir: "sysconfig",
+    src: "system-required-packages.xml",
+}
+
 // Privapp permission whitelist files
 
 prebuilt_etc {
