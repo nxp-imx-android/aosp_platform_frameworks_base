@@ -39,7 +39,6 @@ import android.content.pm.ActivityInfo;
 import android.graphics.Rect;
 import android.os.RemoteException;
 import android.platform.test.annotations.DisableFlags;
-import android.platform.test.annotations.EnableFlags;
 import android.testing.AndroidTestingRunner;
 import android.testing.TestableLooper;
 import android.util.Rational;
@@ -178,7 +177,6 @@ public class PipTaskOrganizerTest extends ShellTestCase {
         assertEquals(mComponent1, mPipBoundsState.getLastPipComponentName());
     }
 
-    @EnableFlags(com.android.window.flags.Flags.FLAG_RUNTIME_DENSITY_RESOLUTION_FOR_WINDOW_LAYOUT)
     @Test
     public void startSwipePipToHome_updatesOverrideMinSize() {
         final Rational aspectRatio = new Rational(2, 1);
@@ -267,7 +265,6 @@ public class PipTaskOrganizerTest extends ShellTestCase {
         assertEquals(mComponent2, mPipBoundsState.getLastPipComponentName());
     }
 
-    @EnableFlags(com.android.window.flags.Flags.FLAG_RUNTIME_DENSITY_RESOLUTION_FOR_WINDOW_LAYOUT)
     @Test
     public void onTaskInfoChanged_inPip_updatesOverrideMinSize() {
         final Rational aspectRatio = new Rational(2, 1);
