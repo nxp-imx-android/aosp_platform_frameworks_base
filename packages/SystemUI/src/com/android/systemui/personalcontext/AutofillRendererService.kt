@@ -1,0 +1,210 @@
+/*
+ * Copyright 2025 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.android.systemui.personalcontext
+
+import android.app.PendingIntent
+import android.app.slice.Slice
+import android.content.Context
+import android.content.Intent
+import android.service.autofill.Dataset
+import android.service.autofill.Field
+import android.service.autofill.InlinePresentation
+import android.service.personalcontext.RenderToken
+import android.service.personalcontext.hint.AutofillInlineRequestHint
+import android.service.personalcontext.insight.ActionableInsight
+import android.service.personalcontext.insight.ContextInsight
+import android.service.personalcontext.insight.DisplayInsight
+import android.service.personalcontext.insight.InsightActionDetails
+import android.service.personalcontext.insight.InsightCollection
+import android.service.personalcontext.insight.InsightDisplayDetails
+import android.service.personalcontext.insight.InsightTraverser
+import android.service.personalcontext.insight.InsightVisitor
+import android.service.personalcontext.renderer.InsightRendererService
+import android.service.personalcontext.renderer.RendererFilter
+import android.util.Log
+import android.view.autofill.AutofillManager
+import android.view.autofill.AutofillValue
+import android.view.inputmethod.InlineSuggestionsRequest
+import androidx.autofill.inline.UiVersions
+import androidx.autofill.inline.v1.InlineSuggestionUi
+import javax.inject.Inject
+
+/**
+ * Renderer used to receive personal context insights for autofill, convert them to a displayable
+ * format using [InlineSuggestionUi], then forward them to the autofill framework to be displayed.
+ *
+ * <p>This renderer is in SysUI due to its dependency on androidx libraries, which cannot be used in
+ * framework.
+ */
+class AutofillRendererService
+@Inject
+constructor(private val context: Context, private val autofillManager: AutofillManager?) :
+    InsightRendererService() {
+
+    override fun onInitializeFilter(): RendererFilter {
+        return RendererFilter.Builder()
+            // Display insight is allowed for plain autofill results.
+            .addAllowedInsightClass(DisplayInsight::class.java)
+            // Actionable insights can be used to attach a click action to the autofill result.
+            .addAllowedInsightClass(ActionableInsight::class.java)
+            // Multiple insights allowed, will result in multiple datasets.
+            .addAllowedInsightClass(InsightCollection::class.java)
+            .build()
+    }
+
+    override fun onRender(insight: ContextInsight, renderToken: RenderToken) {
+        if (autofillManager == null) {
+            return
+        }
+        val inlineSuggestionDetails = mutableListOf<InlineSuggestionDetails>()
+        InsightTraverser.traverse(
+            insight,
+            object : InsightVisitor {
+                override fun visit(insight: ActionableInsight) {
+                    findAutofillHint(insight)?.let { autofillHint ->
+                        inlineSuggestionDetails.add(
+                            InlineSuggestionDetails(
+                                insight.insightId.toString(),
+                                insight.displayDetails,
+                                insight.actionDetails,
+                                autofillHint,
+                            )
+                        )
+                    }
+                }
+
+                override fun visit(insight: DisplayInsight) {
+                    findAutofillHint(insight)?.let { autofillHint ->
+                        inlineSuggestionDetails.add(
+                            InlineSuggestionDetails(
+                                insight.insightId.toString(),
+                                insight.details,
+                                null,
+                                autofillHint,
+                            )
+                        )
+                    }
+                }
+            },
+        )
+
+        if (inlineSuggestionDetails.isEmpty()) {
+            Log.e(TAG, "No autofill insights found")
+            return
+        }
+
+        val sessionIds = inlineSuggestionDetails.map { it.autofillHint.sessionId }.toSet()
+        if (sessionIds.size > 1) {
+            Log.e(TAG, "Multiple sessionIds provided in the same render call")
+            return
+        }
+
+        val sessionId = sessionIds.elementAt(0)
+        val inlineSuggestions = createInlineSuggestions(inlineSuggestionDetails)
+        // Return even if there are no results so that autofill can stop waiting for a response.
+        autofillManager.notifySystemInlineSuggestions(sessionId, inlineSuggestions)
+    }
+
+    private fun findAutofillHint(insight: ContextInsight): AutofillInlineRequestHint? {
+        val hints = insight.originHints
+        for (hint in hints) {
+            if (hint.contextHint is AutofillInlineRequestHint) {
+                return hint.contextHint as AutofillInlineRequestHint
+            }
+        }
+        return null
+    }
+
+    fun createInlineSuggestions(
+        inlineSuggestionDetails: List<InlineSuggestionDetails>
+    ): List<Dataset> {
+        val datasets = mutableListOf<Dataset>()
+        // We already verified the session IDs match, just use the first request.
+        val inlineSuggestionsRequest: InlineSuggestionsRequest =
+            inlineSuggestionDetails.first().autofillHint.inlineSuggestionsRequest ?: return datasets
+        if (inlineSuggestionsRequest.inlinePresentationSpecs.isEmpty()) {
+            return datasets
+        }
+
+        // We can only return as many suggestions as there are specs OR insights. zip does this
+        // implicitly as it always produces a list that's the length of the smaller list, dropping
+        // elements of the longer list.
+        for ((spec, suggestionDetails) in
+            inlineSuggestionsRequest.inlinePresentationSpecs.zip(inlineSuggestionDetails)) {
+            // Personal context inline autofill only supports V1 suggestion UI template.
+            if (!UiVersions.getVersions(spec.style).contains(UiVersions.INLINE_UI_VERSION_1)) {
+                Log.w(TAG, "createInlineSuggestions: spec version wrong")
+                continue
+            }
+
+            val suggestionSlice: Slice = createInlineSuggestionSlice(suggestionDetails) ?: continue
+            val inlinePresentation = InlinePresentation(suggestionSlice, spec, /* pinned= */ false)
+
+            datasets.add(createDataset(suggestionDetails, inlinePresentation))
+        }
+
+        return datasets
+    }
+
+    /** Creates the UI [Slice] to be displayed in the inline autofill results. */
+    fun createInlineSuggestionSlice(suggestionDetails: InlineSuggestionDetails): Slice? {
+        val displayDetails = suggestionDetails.displayDetails
+        // TODO(b/458508340): implement attribution
+        val attributionAction =
+            PendingIntent.getActivity(context, 0, Intent(), PendingIntent.FLAG_IMMUTABLE)
+        val inlineSuggestionUiBuilder =
+            InlineSuggestionUi.newContentBuilder(attributionAction)
+                .setTitle(displayDetails.title ?: return null)
+
+        displayDetails.contentDescription?.let {
+            inlineSuggestionUiBuilder.setContentDescription(it)
+        }
+
+        displayDetails.icon?.let { inlineSuggestionUiBuilder.setStartIcon(it) }
+
+        return inlineSuggestionUiBuilder.build().slice
+    }
+
+    fun createDataset(
+        suggestionDetails: InlineSuggestionDetails,
+        presentation: InlinePresentation,
+    ): Dataset {
+        val builder = Dataset.Builder(presentation).setId(suggestionDetails.id)
+        suggestionDetails.actionDetails?.remoteAction?.actionIntent?.intentSender?.let {
+            builder.setAuthentication(it)
+        }
+        builder.setField(
+            suggestionDetails.autofillHint.focusedId,
+            Field.Builder()
+                .setValue(AutofillValue.forText(suggestionDetails.displayDetails.title))
+                .build(),
+        )
+        return builder.build()
+    }
+
+    /** Data class that holds the information necessary to create an inline suggestion result. */
+    data class InlineSuggestionDetails(
+        val id: String,
+        val displayDetails: InsightDisplayDetails,
+        val actionDetails: InsightActionDetails?,
+        val autofillHint: AutofillInlineRequestHint,
+    )
+
+    companion object {
+        private const val TAG = "AutofillRenderService"
+    }
+}

@@ -1,0 +1,117 @@
+/*
+ * Copyright (C) 2024 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.android.systemui.personalcontext
+
+import android.content.ComponentName
+import android.content.applicationContext
+import android.os.Bundle
+import android.service.autofill.Dataset
+import android.service.personalcontext.RenderToken
+import android.service.personalcontext.hint.AutofillInlineRequestHint
+import android.service.personalcontext.hint.ContextHintWithSignature
+import android.service.personalcontext.insight.DisplayInsight
+import android.service.personalcontext.insight.InsightDisplayDetails
+import android.testing.AndroidTestingRunner
+import android.util.Size
+import android.view.autofill.AutofillId
+import android.view.autofill.AutofillValue
+import android.view.autofill.autofillManager
+import android.view.inputmethod.InlineSuggestionsRequest
+import android.widget.inline.InlinePresentationSpec
+import androidx.autofill.inline.VersionUtils.writeSupportedVersions
+import androidx.test.filters.SmallTest
+import com.android.systemui.SysuiTestCase
+import com.android.systemui.kosmos.runTest
+import com.android.systemui.testKosmos
+import com.google.common.truth.Truth.assertThat
+import java.time.Instant
+import java.util.Random
+import java.util.UUID
+import javax.crypto.spec.SecretKeySpec
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.verify
+
+@SmallTest
+@RunWith(AndroidTestingRunner::class)
+class AutofillRendererServiceTest : SysuiTestCase() {
+
+    private val kosmos = testKosmos()
+
+    private val underTest: AutofillRendererService by lazy {
+        with(kosmos) {
+            AutofillRendererService(context = applicationContext, autofillManager = autofillManager)
+        }
+    }
+
+    @Before
+    fun setUp() {
+        MockitoAnnotations.initMocks(this)
+    }
+
+    @Test
+    fun testOnRender_displayInsight() =
+        kosmos.runTest {
+            val sessionId = 42
+            val inlineSuggestionsRequest =
+                InlineSuggestionsRequest.Builder(
+                        listOf<InlinePresentationSpec?>(AUTOFILL_INLINE_PRESENTATION_SPEC)
+                    )
+                    .build()
+            val originHint =
+                AutofillInlineRequestHint.Builder()
+                    .setSessionId(sessionId)
+                    .setTaskId(0)
+                    .setRequestTimestamp(Instant.now())
+                    .setActivityComponent(ComponentName("test_package", "test_component"))
+                    .setFocusedId(AutofillId(0))
+                    .setAutofillValue(AutofillValue.forText("test"))
+                    .setInlineSuggestionsRequest(inlineSuggestionsRequest)
+                    .build()
+            underTest.onRender(
+                DisplayInsight.Builder(InsightDisplayDetails.Builder("title").build())
+                    .addOriginHint(
+                        ContextHintWithSignature.Builder(originHint, generateSignedHintKey())
+                            .build()
+                    )
+                    .build(),
+                RenderToken.RenderTokenBuilder().setRendererComponentId(UUID.randomUUID()).build(),
+            )
+
+            val datasetCaptor = argumentCaptor<MutableList<Dataset>>()
+            verify(autofillManager)
+                .notifySystemInlineSuggestions(eq(sessionId), datasetCaptor.capture())
+            assertThat(datasetCaptor.firstValue).hasSize(1)
+        }
+
+    private companion object {
+        /** Generates a key to use when signing hints. */
+        fun generateSignedHintKey(): SecretKeySpec {
+            val key = ByteArray(64)
+            Random().nextBytes(key)
+            return SecretKeySpec(key, ContextHintWithSignature.HMAC_ALGORITHM)
+        }
+
+        val AUTOFILL_INLINE_PRESENTATION_SPEC: InlinePresentationSpec =
+            InlinePresentationSpec.Builder(Size(100, 100), Size(100, 100))
+                .setStyle(Bundle().also { writeSupportedVersions(it) })
+                .build()
+    }
+}
