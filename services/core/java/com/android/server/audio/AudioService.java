@@ -2468,14 +2468,14 @@ public class AudioService extends IAudioService.Stub
                 result = initMinMaxForVolumeGroup(groupId, MIN_STREAM_VOLUME[streamType],
                         MAX_STREAM_VOLUME[streamType], /* logEvent= */ false, mAudioSystem);
                 if (result != AudioSystem.AUDIO_STATUS_OK) {
-                    Log.e(TAG, "Failed to initStreamVolume for group (" + result + ") for stream "
-                            + streamType);
+                    Slog.e(TAG, caller + ": Failed to init min/max for volume group " + groupId
+                            + " for stream " + streamType);
                 }
             } else {
                 result = AudioSystem.initStreamVolume(streamType, MIN_STREAM_VOLUME[streamType],
                         MAX_STREAM_VOLUME[streamType]);
                 if (result != AudioSystem.AUDIO_STATUS_OK) {
-                    Log.e(TAG, "Failed to initStreamVolume (" + result + ") for stream "
+                    Slog.e(TAG, "Failed to initStreamVolume (" + result + ") for stream "
                             + streamType);
                 }
             }
