@@ -17,6 +17,7 @@
 package android.service.autofill;
 
 import static android.service.autofill.Flags.FLAG_AUTOFILL_W_METRICS;
+import static android.service.personalcontext.Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE;
 import static android.view.autofill.Helper.sVerbose;
 
 import android.annotation.FlaggedApi;
@@ -261,6 +262,18 @@ public final class FillEventHistory implements Parcelable {
          */
         public static final int TYPE_VIEW_REQUESTED_AUTOFILL = 6;
 
+        /**
+         * The FillResponse is discarded. This could only be available in FillEventHistory of
+         * Augmented Autofill and Personal Context.
+         *
+         * This event is fired when both Augmented Autofill service and
+         * {@link android.service.personalcontext.PersonalContextManager} return non-null
+         * FillResponses, and one of them is discarded. OEMs can choose which FillResponse shall
+         * take the priority.
+         */
+        @FlaggedApi(FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
+        public static final int TYPE_RESPONSE_DISCARDED = 7;
+
         /** @hide */
         @IntDef(prefix = { "TYPE_" }, value = {
                 TYPE_DATASET_SELECTED,
@@ -269,7 +282,8 @@ public final class FillEventHistory implements Parcelable {
                 TYPE_SAVE_SHOWN,
                 TYPE_CONTEXT_COMMITTED,
                 TYPE_DATASETS_SHOWN,
-                TYPE_VIEW_REQUESTED_AUTOFILL
+                TYPE_VIEW_REQUESTED_AUTOFILL,
+                TYPE_RESPONSE_DISCARDED
         })
         @Retention(RetentionPolicy.SOURCE)
         @interface EventIds{}

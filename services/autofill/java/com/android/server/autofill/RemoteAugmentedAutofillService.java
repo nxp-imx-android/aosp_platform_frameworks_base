@@ -626,6 +626,8 @@ final class RemoteAugmentedAutofillService {
 
         void logAugmentedAutofillAuthenticationSelected(int sessionId,
                 @Nullable String suggestionId, @Nullable Bundle clientState);
+
+        void logAugmentedAutofillResponseDiscarded(int sessionId, @Nullable Bundle clientState);
     }
 
     /**
