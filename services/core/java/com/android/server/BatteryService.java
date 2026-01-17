@@ -17,6 +17,7 @@
 package com.android.server;
 
 import static android.os.Flags.batteryChargingInfoApi;
+import static android.os.Flags.batteryManufacturerDiagnosticsApi;
 import static android.os.Flags.batteryServiceSupportCurrentAdbCommand;
 import static android.os.Flags.stateOfHealthPublic;
 
@@ -27,6 +28,7 @@ import static java.lang.Math.abs;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.RequiresPermission;
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.app.ActivityManagerInternal;
@@ -1835,6 +1837,7 @@ public final class BatteryService extends SystemService {
     // in BatteryManager and enforce permissions.
     private final class BatteryPropertiesRegistrar extends IBatteryPropertiesRegistrar.Stub {
         @Override
+        @RequiresPermission(value = android.Manifest.permission.BATTERY_STATS, conditional = true)
         public int getProperty(int id, final BatteryProperty prop) throws RemoteException {
             switch (id) {
                 case BatteryManager.BATTERY_PROPERTY_STATE_OF_HEALTH:
@@ -1859,6 +1862,15 @@ public final class BatteryService extends SystemService {
                         prop.setLong(mLastChargingPolicy);
                         return 0;
                     }
+                case BatteryManager.BATTERY_PROPERTY_MANUFACTURER:
+                case BatteryManager.BATTERY_PROPERTY_MODEL_NAME:
+                case BatteryManager.BATTERY_PROPERTY_VOLTAGE_MIN_DESIGN:
+                    mContext.enforceCallingPermission(
+                            android.Manifest.permission.BATTERY_STATS, null);
+                    if (!batteryManufacturerDiagnosticsApi()) {
+                        return -1;
+                    }
+                    break;
             }
 
             return mHealthServiceWrapper.getProperty(id, prop);

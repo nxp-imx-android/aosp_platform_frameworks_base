@@ -11875,9 +11875,12 @@ package android.os {
     method @RequiresPermission(android.Manifest.permission.POWER_SAVER) public boolean setChargingStateUpdateDelayMillis(int);
     field @RequiresPermission(android.Manifest.permission.BATTERY_STATS) public static final int BATTERY_PROPERTY_CHARGING_POLICY = 9; // 0x9
     field @RequiresPermission(android.Manifest.permission.BATTERY_STATS) public static final int BATTERY_PROPERTY_FIRST_USAGE_DATE = 8; // 0x8
+    field @FlaggedApi("android.os.battery_manufacturer_diagnostics_api") @RequiresPermission(android.Manifest.permission.BATTERY_STATS) public static final int BATTERY_PROPERTY_MANUFACTURER = 13; // 0xd
     field @RequiresPermission(android.Manifest.permission.BATTERY_STATS) public static final int BATTERY_PROPERTY_MANUFACTURING_DATE = 7; // 0x7
+    field @FlaggedApi("android.os.battery_manufacturer_diagnostics_api") @RequiresPermission(android.Manifest.permission.BATTERY_STATS) public static final int BATTERY_PROPERTY_MODEL_NAME = 14; // 0xe
     field @FlaggedApi("android.os.battery_part_status_api") @RequiresPermission(android.Manifest.permission.BATTERY_STATS) public static final int BATTERY_PROPERTY_PART_STATUS = 12; // 0xc
     field @FlaggedApi("android.os.battery_part_status_api") @RequiresPermission(android.Manifest.permission.BATTERY_STATS) public static final int BATTERY_PROPERTY_SERIAL_NUMBER = 11; // 0xb
+    field @FlaggedApi("android.os.battery_manufacturer_diagnostics_api") @RequiresPermission(android.Manifest.permission.BATTERY_STATS) public static final int BATTERY_PROPERTY_VOLTAGE_MIN_DESIGN = 15; // 0xf
     field public static final int CHARGING_POLICY_ADAPTIVE_AC = 3; // 0x3
     field public static final int CHARGING_POLICY_ADAPTIVE_AON = 2; // 0x2
     field public static final int CHARGING_POLICY_ADAPTIVE_LONGLIFE = 4; // 0x4
