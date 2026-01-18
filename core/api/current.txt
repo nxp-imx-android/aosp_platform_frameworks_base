@@ -55125,6 +55125,7 @@ package android.view {
     method public void postOnAnimation(Runnable);
     method public void postOnAnimationDelayed(Runnable, long);
     method public void refreshDrawableState();
+    method @FlaggedApi("android.view.flags.called_from_wrong_thread_listener_api") public static void registerCalledFromWrongThreadListener(@NonNull android.view.View.CalledFromWrongThreadListener);
     method public void releasePointerCapture();
     method public boolean removeCallbacks(Runnable);
     method public void removeOnAttachStateChangeListener(android.view.View.OnAttachStateChangeListener);
@@ -55344,6 +55345,7 @@ package android.view {
     method public void stopNestedScroll();
     method public void transformMatrixToGlobal(@NonNull android.graphics.Matrix);
     method public void transformMatrixToLocal(@NonNull android.graphics.Matrix);
+    method @FlaggedApi("android.view.flags.called_from_wrong_thread_listener_api") public static void unregisterCalledFromWrongThreadListener(@NonNull android.view.View.CalledFromWrongThreadListener);
     method public void unscheduleDrawable(@NonNull android.graphics.drawable.Drawable, @NonNull Runnable);
     method public void unscheduleDrawable(android.graphics.drawable.Drawable);
     method public final void updateDragShadow(android.view.View.DragShadowBuilder);
@@ -55568,6 +55570,10 @@ package android.view {
     ctor public View.BaseSavedState(android.os.Parcel, ClassLoader);
     ctor public View.BaseSavedState(android.os.Parcelable);
     field @NonNull public static final android.os.Parcelable.Creator<android.view.View.BaseSavedState> CREATOR;
+  }
+
+  @FlaggedApi("android.view.flags.called_from_wrong_thread_listener_api") public static interface View.CalledFromWrongThreadListener {
+    method public void onCalledFromWrongThread();
   }
 
   public static class View.DragShadowBuilder {
