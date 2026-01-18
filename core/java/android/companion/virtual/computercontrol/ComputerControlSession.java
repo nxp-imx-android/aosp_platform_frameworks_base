@@ -408,6 +408,9 @@ public final class ComputerControlSession implements AutoCloseable {
         /** A previous request to receive a screenshot is still active. */
         public static final int ERROR_DUPLICATE_REQUEST = 6;
 
+        /** The screenshot request was successful, but the screenshot is unchanged. */
+        public static final int ERROR_SCREEN_UNCHANGED = 7;
+
         @ErrorCode
         private final int mErrorCode;
 
