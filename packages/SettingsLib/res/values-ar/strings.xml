@@ -97,7 +97,7 @@
     <string name="bluetooth_connected_no_a2dp_battery_level" msgid="6499078454894324287">"متّصل (بدون وسائط)، ومستوى البطارية <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g><xliff:g id="ACTIVE_DEVICE">%2$s</xliff:g>"</string>
     <string name="bluetooth_connected_no_headset_no_a2dp_battery_level" msgid="8477440576953067242">"متّصل (بدون هاتف أو وسائط)، ومستوى البطارية <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g><xliff:g id="ACTIVE_DEVICE">%2$s</xliff:g>"</string>
     <string name="bluetooth_active_battery_level" msgid="2685517576209066008">"‏البلوتوث نشِط. مستوى شحن البطارية: ‎<xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g>"</string>
-    <string name="bluetooth_active_battery_level_untethered" msgid="4961338936672922617">"‏البلوتوث نشِط. مستوى الشحن في سماعة الرأس اليسرى: ‎<xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g>، مستوى الشحن في سماعة الرأس اليمنى: ‎<xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g>"</string>
+    <string name="bluetooth_active_battery_level_untethered" msgid="4961338936672922617">"‏البلوتوث نشِط. بطارية السماعة اليسرى: ‎<xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g>، اليمنى: ‎<xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g>"</string>
     <string name="bluetooth_active_battery_level_untethered_left" msgid="2895644748625343977">"‏نشِط. شحن سماعة الرأس اليسرى: ‎<xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g>"</string>
     <string name="bluetooth_active_battery_level_untethered_right" msgid="7407517998880370179">"‏البلوتوث نشِط. مستوى الشحن في سماعة الرأس اليمنى: ‎<xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g>"</string>
     <string name="bluetooth_battery_level" msgid="2893696778200201555">"مستوى طاقة البطارية <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g>"</string>
@@ -132,7 +132,7 @@
     <string name="bluetooth_battery_level_untethered_right_lea_support" msgid="8941549024377771038">"‏البلوتوث متصل (ميزة \"مشاركة الصوت\" متاحة). مستوى الشحن في سماعة الرأس اليمنى: ‎<xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g>"</string>
     <string name="bluetooth_no_battery_level_lea_support" msgid="5721725041048434075">"البلوتوث متصل (ميزة \"مشاركة الصوت\" متاحة)"</string>
     <string name="bluetooth_guest_battery_level_lea_support" msgid="8098327939585013928">"‏جهاز ضيف (يوفِّر ميزة \"مشاركة الصوت\"). مستوى شحن البطارية: ‎<xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g>"</string>
-    <string name="bluetooth_guest_battery_level_untethered_lea_support" msgid="3701035025565668360">"‏جهاز ضيف (يوفِّر ميزة \"مشاركة الصوت\"). اليسرى: ‎<xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g>، اليمنى: ‎<xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g> من البطارية"</string>
+    <string name="bluetooth_guest_battery_level_untethered_lea_support" msgid="3701035025565668360">"‏جهاز ضيف (يوفِّر ميزة \"مشاركة الصوت\"). بطارية السماعة اليسرى: ‎<xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g>، اليمنى: ‎<xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g>"</string>
     <string name="bluetooth_guest_no_battery_level_lea_support" msgid="2977038548753103470">"جهاز ضيف (يوفِّر ميزة \"مشاركة الصوت\")"</string>
     <string name="bluetooth_active_media_only_no_battery_level" msgid="71106861912593126">"البلوتوث مفعَّل (للوسائط فقط)"</string>
     <string name="bluetooth_guest_no_battery_level" msgid="9122974160381136920">"جهاز ضيف"</string>
