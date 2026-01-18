@@ -27703,6 +27703,7 @@ package android.media.metrics {
   public final class EditingSession implements java.lang.AutoCloseable {
     method public void close();
     method @NonNull public android.media.metrics.LogSessionId getSessionId();
+    method @FlaggedApi("android.media.metrics.enable_extended_bundle_metrics") public void reportBundleMetrics(@NonNull android.os.PersistableBundle);
     method @FlaggedApi("com.android.media.editing.flags.add_media_metrics_editing") public void reportEditingEndedEvent(@NonNull android.media.metrics.EditingEndedEvent);
   }
 
@@ -27937,6 +27938,7 @@ package android.media.metrics {
   public final class PlaybackSession implements java.lang.AutoCloseable {
     method public void close();
     method @NonNull public android.media.metrics.LogSessionId getSessionId();
+    method @FlaggedApi("android.media.metrics.enable_extended_bundle_metrics") public void reportBundleMetrics(@NonNull android.os.PersistableBundle);
     method public void reportNetworkEvent(@NonNull android.media.metrics.NetworkEvent);
     method public void reportPlaybackErrorEvent(@NonNull android.media.metrics.PlaybackErrorEvent);
     method public void reportPlaybackMetrics(@NonNull android.media.metrics.PlaybackMetrics);
@@ -27977,6 +27979,7 @@ package android.media.metrics {
   public final class RecordingSession implements java.lang.AutoCloseable {
     method public void close();
     method @NonNull public android.media.metrics.LogSessionId getSessionId();
+    method @FlaggedApi("android.media.metrics.enable_extended_bundle_metrics") public void reportBundleMetrics(@NonNull android.os.PersistableBundle);
   }
 
   public final class TrackChangeEvent extends android.media.metrics.Event implements android.os.Parcelable {
@@ -28032,6 +28035,7 @@ package android.media.metrics {
   public final class TranscodingSession implements java.lang.AutoCloseable {
     method public void close();
     method @NonNull public android.media.metrics.LogSessionId getSessionId();
+    method @FlaggedApi("android.media.metrics.enable_extended_bundle_metrics") public void reportBundleMetrics(@NonNull android.os.PersistableBundle);
   }
 
 }
@@ -55125,6 +55129,7 @@ package android.view {
     method public void postOnAnimation(Runnable);
     method public void postOnAnimationDelayed(Runnable, long);
     method public void refreshDrawableState();
+    method @FlaggedApi("android.view.flags.called_from_wrong_thread_listener_api") public static void registerCalledFromWrongThreadListener(@NonNull android.view.View.CalledFromWrongThreadListener);
     method public void releasePointerCapture();
     method public boolean removeCallbacks(Runnable);
     method public void removeOnAttachStateChangeListener(android.view.View.OnAttachStateChangeListener);
@@ -55344,6 +55349,7 @@ package android.view {
     method public void stopNestedScroll();
     method public void transformMatrixToGlobal(@NonNull android.graphics.Matrix);
     method public void transformMatrixToLocal(@NonNull android.graphics.Matrix);
+    method @FlaggedApi("android.view.flags.called_from_wrong_thread_listener_api") public static void unregisterCalledFromWrongThreadListener(@NonNull android.view.View.CalledFromWrongThreadListener);
     method public void unscheduleDrawable(@NonNull android.graphics.drawable.Drawable, @NonNull Runnable);
     method public void unscheduleDrawable(android.graphics.drawable.Drawable);
     method public final void updateDragShadow(android.view.View.DragShadowBuilder);
@@ -55568,6 +55574,10 @@ package android.view {
     ctor public View.BaseSavedState(android.os.Parcel, ClassLoader);
     ctor public View.BaseSavedState(android.os.Parcelable);
     field @NonNull public static final android.os.Parcelable.Creator<android.view.View.BaseSavedState> CREATOR;
+  }
+
+  @FlaggedApi("android.view.flags.called_from_wrong_thread_listener_api") public static interface View.CalledFromWrongThreadListener {
+    method public void onCalledFromWrongThread();
   }
 
   public static class View.DragShadowBuilder {

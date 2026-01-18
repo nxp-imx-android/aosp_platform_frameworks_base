@@ -188,3 +188,11 @@ flag {
     description: "Control whether traversal sync barriers are stored in atomics."
     bug: "464275874"
 }
+
+flag {
+  name: "called_from_wrong_thread_listener_api"
+  is_exported: true
+  namespace: "system_performance"
+  description: "Guards View#setEnforceThreadChecks"
+  bug: "464275874"
+}

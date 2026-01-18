@@ -306,6 +306,14 @@
     <!-- The overall height of the emphasized notification action -->
     <dimen name="notification_action_emphasized_height">48dp</dimen>
 
+    <!-- Horizontal inset of emphasized notification actions. -->
+    <dimen name="notification_action_emphasized_inset_horizontal">@dimen/button_inset_horizontal_material</dimen>
+
+    <!-- Vertical inset of emphasized notification actions. Actual "apparent" button height will be
+         "notification_action_emphasized_height - 2 * this". -->
+    <dimen name="notification_action_emphasized_inset_vertical" android:featureFlag="!android.app.api_notification_action_custom">@dimen/button_inset_vertical_material</dimen>
+    <dimen name="notification_action_emphasized_inset_vertical" android:featureFlag="android.app.api_notification_action_custom">4dp</dimen>
+
     <!-- The max width of a priority action button when it is collapsed to just the icon. -->
     <dimen name="notification_actions_collapsed_priority_width">60dp</dimen>
 
@@ -319,7 +327,8 @@
     <dimen name="notification_actions_icon_drawable_size">20dp</dimen>
 
     <!-- The corner radius if the emphasized action buttons in a notification -->
-    <dimen name="notification_action_button_radius">18dp</dimen>
+    <dimen name="notification_action_button_radius" android:featureFlag="!android.app.api_notification_action_custom">18dp</dimen>
+    <dimen name="notification_action_button_radius" android:featureFlag="android.app.api_notification_action_custom">20dp</dimen>
 
     <!-- Size of the stroke with for the emphasized notification button style -->
     <dimen name="emphasized_button_stroke_width">1dp</dimen>
