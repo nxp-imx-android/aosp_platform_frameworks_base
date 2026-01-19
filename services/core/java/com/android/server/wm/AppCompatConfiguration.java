@@ -297,7 +297,7 @@ final class AppCompatConfiguration {
     // camera buffer and the app window. This includes letterboxing fixed orientation activities
     // connected to the camera, cropping the camera buffer (rotate-and-crop) and sandboxing display
     // rotation to match what the apps most likely expect in their requested orientation
-    private final boolean mIsCameraCompatSimulateRequestedOrientationTreatmentEnabled;
+    private final boolean mIsCameraCompatSimReqOrientationTreatmentEnabled;
 
     // Whether camera compat treatment that overrides landscape camera sensor to portrait is
     // enabled.
@@ -394,7 +394,7 @@ final class AppCompatConfiguration {
                         .config_letterboxIsDisplayAspectRatioForFixedOrientationLetterboxEnabled);
         mIsCameraCompatSplitScreenAspectRatioEnabled = mContext.getResources().getBoolean(
                 R.bool.config_isWindowManagerCameraCompatSplitScreenAspectRatioEnabled);
-        mIsCameraCompatSimulateRequestedOrientationTreatmentEnabled = mContext.getResources()
+        mIsCameraCompatSimReqOrientationTreatmentEnabled = mContext.getResources()
                 .getBoolean(R.bool
                         .config_isCameraCompatSimulateRequestedOrientationTreatmentEnabled);
         mIsCameraCompatLandscapeTreatmentEnabled = mContext.getResources().getBoolean(
@@ -1401,8 +1401,8 @@ final class AppCompatConfiguration {
      *     <li>The activity has fixed orientation but not "locked" or "nosensor".
      * </ul>
      */
-    boolean isCameraCompatSimulateRequestedOrientationTreatmentEnabled() {
-        return mIsCameraCompatSimulateRequestedOrientationTreatmentEnabled;
+    boolean isCameraCompatSimReqOrientationTreatmentEnabled() {
+        return mIsCameraCompatSimReqOrientationTreatmentEnabled;
     }
 
     /**
@@ -1446,7 +1446,7 @@ final class AppCompatConfiguration {
      */
     boolean isAnyCameraCompatTreatmentEnabled() {
         return isCameraCompatForceRotateTreatmentEnabled()
-                || isCameraCompatSimulateRequestedOrientationTreatmentEnabled();
+                || isCameraCompatSimReqOrientationTreatmentEnabled();
     }
 
     /**
