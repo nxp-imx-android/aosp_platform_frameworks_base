@@ -19,6 +19,7 @@ package com.android.systemui.screencapture.record.camera.ui.viewmodel
 import android.graphics.Region
 import androidx.compose.foundation.gestures.TransformableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Matrix
@@ -35,6 +36,8 @@ import com.android.systemui.screenrecord.domain.interactor.ScreenRecordingServic
 import com.android.systemui.screenrecord.shared.model.ScreenRecordingStatus
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
@@ -81,6 +84,14 @@ constructor(
     private val transformation = Matrix()
     private var transformedCameraSubjectBounds: Path = Path()
 
+    override suspend fun onActivated() {
+        coroutineScope {
+            snapshotFlow { state.isTransformInProgress }
+                .onEach { transformationInteractor.isTransforming = it }
+                .launchIn(this)
+        }
+    }
+
     private fun changeTransformation(
         offsetChange: Offset,
         zoomChange: Float,
@@ -93,14 +104,6 @@ constructor(
             offsetY += offsetChange.y
         }
         recalculateTransformation()
-    }
-
-    fun onTransformationStarted() {
-        transformationInteractor.isTransforming = true
-    }
-
-    fun onTransformationEnded() {
-        transformationInteractor.isTransforming = false
     }
 
     fun onCameraScreenBoundsUpdated(bounds: Rect) {

@@ -39,14 +39,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.PointerEventType
-import androidx.compose.ui.input.pointer.changedToUp
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.IntSize
-import androidx.compose.ui.util.fastAll
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.res.R
@@ -160,7 +156,7 @@ constructor(
                 modifier =
                     modifier
                         .fillMaxSize()
-                        .selfieTransformingModifier(
+                        .selfieTransformableModifier(
                             viewModel = transformationViewModel,
                             isEverywhere = true,
                         ),
@@ -176,7 +172,7 @@ constructor(
                     modifier =
                         Modifier.fillMaxWidth()
                             .aspectRatio(surfaceSize.height.toFloat() / surfaceSize.width)
-                            .selfieTransformingModifier(
+                            .selfieTransformableModifier(
                                 viewModel = transformationViewModel,
                                 isEverywhere = false,
                             )
@@ -216,28 +212,14 @@ constructor(
         }
     }
 
-    private fun Modifier.selfieTransformingModifier(
+    private fun Modifier.selfieTransformableModifier(
         viewModel: ScreenCaptureCameraTransformationViewModel,
         isEverywhere: Boolean,
     ): Modifier {
-        if (isEverywhere == viewModel.transformableByTouchAnywhere) {
-            return pointerInput(Unit) {
-                    awaitPointerEventScope {
-                        while (true) {
-                            with(awaitPointerEvent()) {
-                                when {
-                                    type == PointerEventType.Press ->
-                                        viewModel.onTransformationStarted()
-                                    changes.fastAll { it.changedToUp() } ->
-                                        viewModel.onTransformationEnded()
-                                }
-                            }
-                        }
-                    }
-                }
-                .transformable(viewModel.state)
+        return if (isEverywhere == viewModel.transformableByTouchAnywhere) {
+            transformable(viewModel.state)
         } else {
-            return this
+            this
         }
     }
 
