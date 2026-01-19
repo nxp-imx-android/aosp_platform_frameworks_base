@@ -271,13 +271,6 @@ flag {
 }
 
 flag {
-    name: "enable_connected_displays_window_drag"
-    namespace: "lse_desktop_experience"
-    description: "Enable window drag between connected displays."
-    bug: "381172172"
-}
-
-flag {
     name: "enable_consolidated_window_options"
     namespace: "lse_desktop_experience"
     description: "Whether to consolidate window options into MaximizeMenu"

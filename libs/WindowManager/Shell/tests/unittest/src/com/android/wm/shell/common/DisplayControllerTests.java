@@ -51,7 +51,6 @@ import android.view.IWindowManager;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
-import com.android.window.flags.Flags;
 import com.android.wm.shell.ShellTestCase;
 import com.android.wm.shell.TestSyncExecutor;
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState;
@@ -153,7 +152,6 @@ public class DisplayControllerTests extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_CONNECTED_DISPLAYS_WINDOW_DRAG)
     public void onInit_canEnterDesktopMode_registerListeners() throws RemoteException {
         mDesktopState.setCanEnterDesktopMode(true);
 
@@ -165,7 +163,6 @@ public class DisplayControllerTests extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_CONNECTED_DISPLAYS_WINDOW_DRAG)
     public void onInit_canNotEnterDesktopMode_onlyRegisterDisplayWindowListener()
             throws RemoteException {
         mDesktopState.setCanEnterDesktopMode(false);
@@ -178,7 +175,6 @@ public class DisplayControllerTests extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_CONNECTED_DISPLAYS_WINDOW_DRAG)
     public void addDisplayWindowListener_notifiesExistingDisplaysAndTopology() {
         mDesktopState.setCanEnterDesktopMode(true);
 
@@ -208,7 +204,6 @@ public class DisplayControllerTests extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_CONNECTED_DISPLAYS_WINDOW_DRAG)
     public void onDisplayTopologyChanged_updateDisplayLayout() throws RemoteException {
         mDesktopState.setCanEnterDesktopMode(true);
         mController.onInit();
@@ -224,7 +219,6 @@ public class DisplayControllerTests extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_CONNECTED_DISPLAYS_WINDOW_DRAG)
     public void onDisplayTopologyChanged_topologyBeforeDisplayAdded_appliesBoundsOnAdd()
             throws RemoteException {
         mDesktopState.setCanEnterDesktopMode(true);
@@ -244,7 +238,6 @@ public class DisplayControllerTests extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_CONNECTED_DISPLAYS_WINDOW_DRAG)
     public void onDisplayConfigurationChanged_reInitDisplayLayout()
             throws RemoteException {
         mDesktopState.setCanEnterDesktopMode(true);

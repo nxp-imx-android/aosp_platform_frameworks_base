@@ -101,8 +101,7 @@ public class DisplayController {
                 onDisplayAdded(displayIds[i]);
             }
 
-            if (DesktopExperienceFlags.ENABLE_CONNECTED_DISPLAYS_WINDOW_DRAG.isTrue()
-                    && mDesktopState.canEnterDesktopMode()) {
+            if (mDesktopState.canEnterDesktopMode()) {
                 mDisplayManager.registerTopologyListener(mMainExecutor,
                         this::onDisplayTopologyChanged);
                 onDisplayTopologyChanged(mDisplayManager.getDisplayTopology());
@@ -484,8 +483,7 @@ public class DisplayController {
                     ? new DisplayLayout(
                             context, display, true /* hasNavigationBar */, true /* hasTaskBar */)
                     : new DisplayLayout(context, display);
-            if (DesktopExperienceFlags.ENABLE_CONNECTED_DISPLAYS_WINDOW_DRAG.isTrue()
-                    && mDisplayTopology != null) {
+            if (mDisplayTopology != null) {
                 final RectF globalBounds = mDisplayTopology.getAbsoluteBounds().get(mDisplayId);
                 if (globalBounds != null) {
                     layout.setGlobalBoundsDp(globalBounds);

@@ -49,10 +49,7 @@ import platform.test.desktop.SimulatedConnectedDisplayTestRule
 
 /** Base scenario test for moving a task to another display via window caption bar dragging. */
 @Ignore("Test Base Class")
-@RequiresFlagsEnabled(
-    Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
-    Flags.FLAG_ENABLE_CONNECTED_DISPLAYS_WINDOW_DRAG,
-)
+@RequiresFlagsEnabled(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE)
 abstract class DragMoveWindowToNextDisplay {
     private val wmHelper =
         WindowManagerStateHelper(getInstrumentation(), ignoreLayersInVirtualDisplay = false)
