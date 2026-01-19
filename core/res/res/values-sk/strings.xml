@@ -283,7 +283,7 @@
     <string name="global_action_power_options" msgid="1185286119330160073">"Vypnúť"</string>
     <string name="global_action_restart" msgid="4678451019561687074">"Reštartovať"</string>
     <string name="global_action_emergency" msgid="1387617624177105088">"Tieseň"</string>
-    <string name="global_action_bug_report" msgid="5127867163044170003">"Hlásenie o chybách"</string>
+    <string name="global_action_bug_report" msgid="5127867163044170003">"Hlásenie o chybách"</string>
     <string name="global_action_feedback" msgid="3480836834202300036">"Spätná väzba"</string>
     <string name="global_action_logout" msgid="6093581310002476511">"Ukončiť reláciu"</string>
     <string name="global_action_screenshot" msgid="2610053466156478564">"Snímka obrazovky"</string>
@@ -295,7 +295,7 @@
     <string name="bugreport_option_full_title" msgid="7681035745950045690">"Úplné nahlásenie"</string>
     <string name="bugreport_option_full_summary" msgid="1975130009258435885">"Táto možnosť slúži na minimalizáciu zásahov do systému, keď zariadenie neodpovedá, je príliš pomalé alebo potrebujete zahrnúť všetky sekcie hlásenia. Neumožňuje zadať ďalšie podrobnosti ani vytvoriť dodatočné snímky obrazovky."</string>
     <string name="bugreport_countdown" msgid="6418620521782120755">"{count,plural, =1{Snímka obrazovky pre hlásenie chyby sa vytvorí o # sekundu.}few{Snímka obrazovky pre hlásenie chyby sa vytvorí o # sekundy.}many{Snímka obrazovky pre hlásenie chyby sa vytvorí o # sekundy.}other{Snímka obrazovky pre hlásenie chyby sa vytvorí o # sekúnd.}}"</string>
-    <string name="bugreport_screenshot_success_toast" msgid="7986095104151473745">"Bola vytvorená snímka obrazovky s hlásením chyby"</string>
+    <string name="bugreport_screenshot_success_toast" msgid="7986095104151473745">"Hlásenie chyby so snímkou obrazovky "</string>
     <string name="bugreport_screenshot_failure_toast" msgid="6736320861311294294">"Nepodarilo sa vytvoriť snímku obrazovky s hlásením chyby"</string>
     <string name="global_action_toggle_silent_mode" msgid="8464352592860372188">"Tichý režim"</string>
     <string name="global_action_silent_mode_on_status" msgid="2371892537738632013">"Zvuk je VYPNUTÝ."</string>
@@ -2113,8 +2113,52 @@
     <string name="app_suspended_default_message" msgid="6451215678552004172">"Aplikácia <xliff:g id="APP_NAME_0">%1$s</xliff:g> nie je momentálne k dispozícii. Spravuje to aplikácia <xliff:g id="APP_NAME_1">%2$s</xliff:g>."</string>
     <string name="app_suspended_more_details" msgid="211260942831587014">"Ďalšie informácie"</string>
     <string name="app_suspended_unsuspend_message" msgid="1665438589450555459">"Zrušiť pozastavenie aplikácie"</string>
+    <string name="app_lock_add_screen_lock_button_text" msgid="9209013414563206600">"Pridať zámku obrazovky"</string>
+    <string name="app_lock_add_screen_lock_message" msgid="6107009360675769892">"Zámka obrazovky môže byť PIN, vzor alebo heslo. Pomocou neho budete odomykať zariadenie a získavať prístup k uzamknutým aplikáciám."</string>
+    <string name="app_lock_add_screen_lock_title" msgid="6905612843620128689">"Najprv pridajte zámku obrazovky"</string>
+    <!-- no translation found for enable_app_lock_success_toast_message (3339622779190529987) -->
+    <skip />
+    <!-- no translation found for enable_app_lock_failure_toast_message (1055838896510445566) -->
+    <skip />
+    <!-- no translation found for disable_app_lock_success_toast_message (70733620589071266) -->
+    <skip />
     <string name="locked_app_biometric_prompt_description" msgid="6853122652400451464">"Aplikácia <xliff:g id="APP_NAME">%1$s</xliff:g> je uzamknutá"</string>
-    <!-- no translation found for locked_app_external_display_message (5483884799685545338) -->
+    <string name="locked_app_external_display_message" msgid="5483884799685545338">"Ak chcete mať prístup k aplikácii na tejto obrazovke, najprv overte svoju totožnosť v druhom zariadení"</string>
+    <!-- no translation found for app_lock_edu_dialog_enable_app_lock_title (283314042336592322) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_description (8176807243219769518) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_description_template (8563718120753342530) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_description_template_no_biometrics (7122017109150633691) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_info_header (5876120209204270990) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_info_notifications (1124438392204873305) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_info_widgets (8809009414650740872) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_button_lock (3914687128135704801) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_face (1348151645996748654) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_fingerprint (5206107469561561455) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_fingerprint_and_face (7895807411323811641) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_lockscreen_password_name (8487096457702445059) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_lockscreen_pattern_name (991436996281983547) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_lockscreen_pin_name (6458607126966304795) -->
+    <skip />
+    <!-- no translation found for app_lock_permission_review_dialog_title (5030286398974840579) -->
+    <skip />
+    <!-- no translation found for app_lock_permission_review_dialog_sub_title (310758587817184145) -->
+    <skip />
+    <!-- no translation found for app_lock_permission_review_expand_app_list_button (3214809707125223273) -->
+    <skip />
+    <!-- no translation found for app_lock_permission_review_continue_button (4045066724173414043) -->
     <skip />
     <string name="work_mode_off_title" msgid="6367463960165135829">"Zrušiť pozast. prac. aplikácií?"</string>
     <string name="work_mode_turn_on" msgid="5316648862401307800">"Zrušiť pozastavenie"</string>
