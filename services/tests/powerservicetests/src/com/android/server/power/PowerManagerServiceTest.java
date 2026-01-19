@@ -19,8 +19,8 @@ package com.android.server.power;
 import static android.Manifest.permission.ACQUIRE_SLEEP_LOCK;
 import static android.app.ActivityManager.PROCESS_STATE_BOUND_TOP;
 import static android.app.ActivityManager.PROCESS_STATE_FOREGROUND_SERVICE;
+import static android.app.ActivityManager.PROCESS_STATE_HOME;
 import static android.app.ActivityManager.PROCESS_STATE_RECEIVER;
-import static android.app.ActivityManager.PROCESS_STATE_TOP_SLEEPING;
 import static android.os.Flags.FLAG_LOW_LIGHT_DREAM_BEHAVIOR;
 import static android.os.PowerManager.FLAG_AMBIENT_SUPPRESSION_ALL;
 import static android.os.PowerManager.FLAG_AMBIENT_SUPPRESSION_AOD;
@@ -222,6 +222,7 @@ public class PowerManagerServiceTest {
     @Mock private PowerManagerService.PowerPropertiesWrapper mPowerPropertiesWrapper;
     @Mock private DeviceStateManager mDeviceStateManagerMock;
     @Mock private DeviceConfigParameterProvider mDeviceParameterProvider;
+    @Mock private WakelockMapper mWakelockMapper;
     @Mock private WindowManagerInternal mWindowManagerInternalMock;
 
     @Captor private ArgumentCaptor<DisplayManager.DisplayListener> mDisplayListenerArgumentCaptor;
@@ -345,7 +346,8 @@ public class PowerManagerServiceTest {
             Notifier createNotifier(Looper looper, Context context, IBatteryStats batteryStats,
                     SuspendBlocker suspendBlocker, WindowManagerPolicy policy,
                     FaceDownDetector faceDownDetector, ScreenUndimDetector screenUndimDetector,
-                    Executor executor, PowerManagerFlags powerManagerFlags) {
+                    Executor executor, PowerManagerFlags powerManagerFlags,
+                    WakelockMapper wakelockMapper) {
                 return mNotifierMock;
             }
 
@@ -434,6 +436,11 @@ public class PowerManagerServiceTest {
             @Override
             DeviceConfigParameterProvider createDeviceConfigParameterProvider() {
                 return mDeviceParameterProvider;
+            }
+
+            @Override
+            WakelockMapper getWakelockMapper() {
+                return mWakelockMapper;
             }
         });
         return mService;
@@ -4399,6 +4406,42 @@ public class PowerManagerServiceTest {
     }
 
     /**
+     * Test IPowerManager.acquireWakeLock() with a IWakeLockCallback.
+     */
+    @Test
+    @EnableFlags(Flags.FLAG_REMOVE_CACHED_UIDS_FROM_WAKELOCK)
+    public void testWakelockMapperUpdatedOnAcquireChangeAndRelease() {
+        createService();
+        startSystem();
+        final String tag = "wakelock1";
+        final String packageName = "pkg.name";
+        final IBinder token = new Binder();
+        final int flags = PowerManager.PARTIAL_WAKE_LOCK;
+        final IWakeLockCallback callback = mock(IWakeLockCallback.class);
+        final IBinder callbackBinder = mock(Binder.class);
+        when(callback.asBinder()).thenReturn(callbackBinder);
+        mService.getBinderServiceInstance().acquireWakeLock(token, flags, tag, packageName,
+                /* worksource */ null, null /* historyTag */, Display.INVALID_DISPLAY, callback);
+        verify(mNotifierMock).onWakeLockAcquired(anyInt(), eq(tag), eq(packageName), anyInt(),
+                anyInt(), any(), any(), same(callback));
+        verify(mWakelockMapper).addWakeLock(any());
+
+        reset(mWakelockMapper);
+        WorkSource worksource = new WorkSource(2001);
+        mService.getBinderServiceInstance().acquireWakeLock(token, flags, tag, packageName,
+                worksource, null /* historyTag */, Display.INVALID_DISPLAY, callback);
+        verify(mWakelockMapper).removeWakeLock(any());
+        verify(mWakelockMapper).addWakeLock(any(), eq(new WorkSource(2001)));
+        verify(mWakelockMapper).addWakeLock(any());
+
+        reset(mWakelockMapper);
+        mService.getBinderServiceInstance().releaseWakeLock(token, 0);
+        verify(mNotifierMock).onWakeLockReleased(anyInt(), eq(tag), eq(packageName), anyInt(),
+                anyInt(), any(), any(), same(callback), anyInt());
+        verify(mWakelockMapper).removeWakeLock(any());
+    }
+
+    /**
      * Test IPowerManager.updateWakeLockUids() updates the workchain with the new uids
      */
     @Test
@@ -4428,7 +4471,7 @@ public class PowerManagerServiceTest {
         verify(mNotifierMock).onWakeLockChanging(anyInt(), eq(tag), eq(packageName),
                 anyInt(), anyInt(), eq(oldWorksource), any(), any(),
                 anyInt(), eq(tag), eq(packageName), anyInt(), anyInt(), eq(newWorksource), any(),
-                any());
+                any(), anyBoolean(), anyBoolean(), anyInt());
     }
 
     /**
@@ -4457,7 +4500,7 @@ public class PowerManagerServiceTest {
         verify(mNotifierMock).onWakeLockChanging(anyInt(), eq(tag), eq(packageName),
                 anyInt(), anyInt(), any(), any(), same(callback1),
                 anyInt(), eq(tag), eq(packageName), anyInt(), anyInt(), any(), any(),
-                same(callback2));
+                same(callback2), anyBoolean(), anyBoolean(), anyInt());
 
         mService.getBinderServiceInstance().releaseWakeLock(token, 0);
         verify(mNotifierMock).onWakeLockReleased(anyInt(), eq(tag), eq(packageName), anyInt(),
@@ -5659,7 +5702,7 @@ public class PowerManagerServiceTest {
     }
 
     private void setCachedUidProcState(int uid) {
-        mService.updateUidProcStateInternal(uid, PROCESS_STATE_TOP_SLEEPING);
+        mService.updateUidProcStateInternal(uid, PROCESS_STATE_HOME);
     }
 
     private void setUncachedUidProcState(int uid) {
