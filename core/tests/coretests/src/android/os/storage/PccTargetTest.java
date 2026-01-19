@@ -18,6 +18,7 @@ package android.os.storage;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import android.os.Environment;
 import android.os.storage.operations.targets.PccTarget;
 import android.platform.test.annotations.Presubmit;
 
@@ -25,6 +26,8 @@ import androidx.test.runner.AndroidJUnit4;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.io.File;
 
 @Presubmit
 @RunWith(AndroidJUnit4.class)
@@ -73,5 +76,27 @@ public class PccTargetTest {
 
         // Zero Width Space
         assertThat(new PccTarget("files\u200B").isValid()).isFalse();
+    }
+
+    @Test
+    public void testGetTargetPath() {
+        PccTarget target = new PccTarget("subdir");
+        String pkg = "com.example.app";
+        int userId = 0;
+
+        // CE on internal
+        assertThat(target.getTargetPath(null, false, userId, pkg).getAbsolutePath())
+                .isEqualTo(new File(Environment.getPccDataUserCePackageDirectory(null, userId, pkg),
+                        "subdir").getAbsolutePath());
+
+        // DE on internal
+        assertThat(target.getTargetPath(null, true, userId, pkg).getAbsolutePath())
+                .isEqualTo(new File(Environment.getPccDataUserDePackageDirectory(null, userId, pkg),
+                        "subdir").getAbsolutePath());
+
+        // CE on external volume
+        assertThat(target.getTargetPath("vol1", false, userId, pkg).getAbsolutePath())
+                .isEqualTo(new File(Environment.getPccDataUserCePackageDirectory(
+                        "vol1", userId, pkg), "subdir").getAbsolutePath());
     }
 }

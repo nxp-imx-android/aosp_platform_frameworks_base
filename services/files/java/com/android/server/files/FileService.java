@@ -110,7 +110,7 @@ public class FileService extends SystemService {
         super(context);
         mBinderService = new FileServiceStub(injector);
         mDispatcher = injector.getFileOperationDispatcher();
-        mDispatcher.registerProcessor(new InstalldProcessor());
+        mDispatcher.registerProcessor(new InstalldProcessor(context));
     }
 
     @Override

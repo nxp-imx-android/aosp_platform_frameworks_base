@@ -437,6 +437,30 @@ public class Installer extends SystemService {
         }
     }
 
+    public void moveAppDataPath(String uuid, String fromPath, String toPath, int userId, int appId,
+            String seInfo, int flags, IInstalld.IAppDataOperationCallback callback)
+            throws InstallerException {
+        if (!checkBeforeRemote()) return;
+        try {
+            mInstalld.moveAppDataPath(uuid, fromPath, toPath, userId, appId, seInfo, flags,
+                    callback);
+        } catch (Exception e) {
+            throw InstallerException.from(e);
+        }
+    }
+
+    public void copyAppDataPath(String uuid, String fromPath, String toPath, int userId, int appId,
+            String seInfo, int flags, IInstalld.IAppDataOperationCallback callback)
+            throws InstallerException {
+        if (!checkBeforeRemote()) return;
+        try {
+            mInstalld.copyAppDataPath(uuid, fromPath, toPath, userId, appId, seInfo, flags,
+                    callback);
+        } catch (Exception e) {
+            throw InstallerException.from(e);
+        }
+    }
+
     public void getAppSize(String uuid, String[] packageNames, int userId, int flags, int appId,
             long[] ceDataInodes, String[] codePaths, PackageStats stats)
             throws InstallerException {
