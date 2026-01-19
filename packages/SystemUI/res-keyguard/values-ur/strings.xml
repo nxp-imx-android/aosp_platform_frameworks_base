@@ -91,7 +91,7 @@
     <string name="kg_primary_auth_duplicate_guess_password" msgid="3153406042812407458">"اس پاس ورڈ کو پہلے ہی آزمایا جا چکا ہے۔ کوئی اور آزمائیں۔"</string>
     <string name="kg_primary_auth_locked_out_pattern" msgid="8266214607346180952">"غلط پیٹرن کے ساتھ کافی زیادہ کوششیں"</string>
     <string name="kg_primary_auth_locked_out_password" msgid="6170245108400198659">"غلط پاس ورڈ کے ساتھ کافی زیادہ کوششیں"</string>
-    <string name="kg_primary_auth_locked_out_pin_shortlink" msgid="1294871994741389848">"‏غلط PIN کے ساتھ کافی زیادہ بار کوشش کی گئی\n<xliff:g id="SHORTLINK">{shortlink}</xliff:g> پر مزید جانیں"</string>
+    <string name="kg_primary_auth_locked_out_pin_shortlink" msgid="1294871994741389848">"‏غلط PIN کے ساتھ کافی زیادہ بار کوشش کی گئی\n‫<xliff:g id="SHORTLINK">{shortlink}</xliff:g> پر مزید جانیں"</string>
     <string name="kg_primary_auth_locked_out_pattern_shortlink" msgid="5998598232858156495">"غلط پیٹرن کے ساتھ کافی زیادہ بار کوشش کی گئی\n<xliff:g id="SHORTLINK">{shortlink}</xliff:g> پر مزید جانیں"</string>
     <string name="kg_primary_auth_locked_out_password_shortlink" msgid="7035847891707609104">"غلط پاس ورڈ کے ساتھ کافی زیادہ بار کوشش کی گئی\n<xliff:g id="SHORTLINK">{shortlink}</xliff:g> پر مزید جانیں"</string>
     <string name="kg_too_many_failed_attempts_countdown" msgid="2038195171919795529">"{count,plural, =1{# سیکنڈ میں دوبارہ کوشش کریں۔}other{# سیکنڈ میں دوبارہ کوشش کریں۔}}"</string>
