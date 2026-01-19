@@ -33,6 +33,7 @@ import androidx.test.filters.SmallTest
 import androidx.test.platform.app.InstrumentationRegistry
 import com.android.window.flags.Flags
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
+import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.TestRunningTaskInfoBuilder
 import com.android.wm.shell.TestShellExecutor
@@ -84,6 +85,7 @@ class PinnedLayerPermissionObserverTests : ShellTestCase() {
     @Mock
     private lateinit var multiDisplayDragMoveIndicatorController:
         MultiDisplayDragMoveIndicatorController
+    @Mock private lateinit var shellTaskOrganizer: ShellTaskOrganizer
 
     private val uid = Binder.getCallingUid()
     private val shellExecutor = ObservedTestShellExecutor()
@@ -105,6 +107,7 @@ class PinnedLayerPermissionObserverTests : ShellTestCase() {
                 transitions,
                 desktopState,
                 rootTaskDisplayAreaOrganizer,
+                shellTaskOrganizer,
                 presentationController,
                 windowDragTransitionHandler,
                 pinnedWindowRepositionAnimationHandler,

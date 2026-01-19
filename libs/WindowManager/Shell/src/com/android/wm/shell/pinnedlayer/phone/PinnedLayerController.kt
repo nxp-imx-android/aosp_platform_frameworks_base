@@ -33,6 +33,7 @@ import android.window.TransitionInfo
 import android.window.TransitionRequestInfo
 import android.window.WindowContainerTransaction
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
+import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.common.MultiDisplayDragMoveIndicatorController
 import com.android.wm.shell.desktopmode.WindowDragTransitionHandler
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerLogs.logD
@@ -59,6 +60,7 @@ class PinnedLayerController(
     private val transitions: Transitions,
     private val desktopState: DesktopState,
     private val taskDisplayAreaOrganizer: RootTaskDisplayAreaOrganizer,
+    private val shellTaskOrganizer: ShellTaskOrganizer,
     private val presentationController: PinnedLayerPresentationController,
     private val windowDragTransitionHandler: WindowDragTransitionHandler,
     private val windowRepositionAnimationHandler: PinnedWindowRepositionAnimationHandler,
@@ -68,8 +70,7 @@ class PinnedLayerController(
 
     // Stores ids of pinned TaskInfo.
     private val pinnedTasks = mutableSetOf<Int>()
-    var currentPinnedTask: TaskInfo? = null
-        private set
+    private var currentPinnedTaskId: Int? = null
 
     private val pinnedTasksListeners = mutableSetOf<PinnedTasksListener>()
 
@@ -92,6 +93,15 @@ class PinnedLayerController(
      */
     fun getActiveTransitions(transition: IBinder): Set<ActiveTransition> =
         activeTransitions.getOrDefault(transition, emptySet())
+
+    /**
+     * Provides currently pinned task.
+     *
+     * @return a pinned [TaskInfo].
+     */
+    fun getCurrentPinnedTask(): TaskInfo? {
+        return currentPinnedTaskId?.let { shellTaskOrganizer.getRunningTaskInfo(it) }
+    }
 
     /**
      * Checks whether a task with [taskId] is pinned.
@@ -134,7 +144,7 @@ class PinnedLayerController(
             val bounds = presentationController.getPinEntryDestinationBounds(task)
             merge(getLayerPinnedWct(task.token, bounds), /* transfer= */ true)
 
-            val pinnedTask = currentPinnedTask
+            val pinnedTask = getCurrentPinnedTask()
             if (pinnedTask != null && pinnedTask.token != task.token) {
                 merge(unpinTask(transition, pinnedTask, UnpinStrategy.CLOSE), /* transfer= */ true)
             }
@@ -208,16 +218,68 @@ class PinnedLayerController(
         bounds: Rect? = null,
         handler: Transitions.TransitionHandler? = null,
     ): Boolean {
+        val wct = getMoveToDisplayChanges(task, displayId, bounds) ?: return false
+        transitions.startTransition(TRANSIT_CHANGE, wct, handler)
+        return true
+    }
+
+    /**
+     * Provides [WindowContainerTransaction] changes to be added on display disconnection.
+     *
+     * If a destination display is not eligible to host pinned tasks the task will be closed by
+     * default.
+     *
+     * @param transition a running display disconnect transition.
+     * @param disconnectedDisplayId a display id that was disconnected.
+     * @param destinationDisplayId a display id that should host a pinned task.
+     * @return a [WindowContainerTransaction] that stores operations to move a task to a display or
+     *   close it.
+     */
+    fun getDisplayDisconnectChanges(
+        transition: IBinder,
+        disconnectedDisplayId: Int,
+        destinationDisplayId: Int,
+    ): WindowContainerTransaction? {
+        val task = getCurrentPinnedTask() ?: return null
+
+        // This method can be called for any disconnected display and pinned task may not be on it,
+        // so we filter such displays out.
+        if (task.displayId != disconnectedDisplayId) {
+            return null
+        }
+
+        logD(
+            "onDisplayDisconnect: disconnectedDisplayId=%d, destinationDisplayId=%d, task=%d",
+            disconnectedDisplayId,
+            destinationDisplayId,
+            task.taskId,
+        )
+
+        val finalBounds =
+            presentationController.getPinEntryDestinationBounds(task, destinationDisplayId)
+        val moveWct = getMoveToDisplayChanges(task, destinationDisplayId, finalBounds)
+        if (moveWct != null && !moveWct.isEmpty) {
+            return moveWct
+        }
+
+        return unpinTask(transition, task, UnpinStrategy.CLOSE)
+    }
+
+    private fun getMoveToDisplayChanges(
+        task: TaskInfo,
+        displayId: Int,
+        bounds: Rect? = null,
+    ): WindowContainerTransaction? {
         val displayAreaInfo = taskDisplayAreaOrganizer.getDisplayAreaInfo(displayId)
         val isPinned = isPinned(task.taskId)
-        val isSameDisplay = task.taskId == displayId
+        val isSameDisplay = task.displayId == displayId
         val isDisplayUnavailable = displayAreaInfo == null
         val isDesktopModeSupportedOnDisplay =
             desktopState.isDesktopModeSupportedOnDisplay(displayId)
         logD(
-            "moveToDisplay: task=%s, displayId=%d,\n isPinned=%b, isSameDisplayRequest=%b, " +
+            "moveToDisplay: task=%d, displayId=%d, isPinned=%b, isSameDisplayRequest=%b, " +
                 "isDisplayUnavailable=%b, isDesktopModeSupportedOnDisplay=%b",
-            task,
+            task.taskId,
             displayId,
             isPinned,
             isSameDisplay,
@@ -229,7 +291,7 @@ class PinnedLayerController(
             !isPinned || isSameDisplay || isDisplayUnavailable || !isDesktopModeSupportedOnDisplay
         ) {
             logV("moveToDisplay: skipping for the task=%s and display=%s.", task, displayAreaInfo)
-            return false
+            return null
         }
 
         val finalBounds =
@@ -250,8 +312,7 @@ class PinnedLayerController(
         }
 
         wct.reparent(task.token, displayAreaInfo.token, /* onTop= */ true)
-        transitions.startTransition(TRANSIT_CHANGE, wct, handler)
-        return true
+        return wct
     }
 
     /**
@@ -418,7 +479,7 @@ class PinnedLayerController(
 
     private fun pin(taskInfo: TaskInfo) {
         pinnedTasks += taskInfo.taskId
-        currentPinnedTask = taskInfo
+        currentPinnedTaskId = taskInfo.taskId
         pinnedTasksListeners.forEach { it.onPinnedTasksAdded(taskInfo) }
     }
 
@@ -428,8 +489,8 @@ class PinnedLayerController(
             pinnedTasksListeners.forEach { it.onPinnedTasksRemoved(taskInfo) }
         }
 
-        if (currentPinnedTask?.taskId == taskInfo.taskId) {
-            currentPinnedTask = null
+        if (currentPinnedTaskId == taskInfo.taskId) {
+            currentPinnedTaskId = null
         }
     }
 

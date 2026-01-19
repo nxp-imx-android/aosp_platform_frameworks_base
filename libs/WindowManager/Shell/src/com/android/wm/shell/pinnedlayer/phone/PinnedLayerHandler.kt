@@ -313,7 +313,7 @@ class PinnedLayerHandler(
         request: TransitionRequestInfo,
         outWct: WindowContainerTransaction,
     ) {
-        pinnedLayerController.currentPinnedTask?.let {
+        pinnedLayerController.getCurrentPinnedTask()?.let {
             outWct.merge(
                 pinnedLayerController.unpinTask(transition, it, UnpinStrategy.CLOSE),
                 /* transfer= */ true,
@@ -323,7 +323,7 @@ class PinnedLayerHandler(
 
     /** @return `true` if there is a task that is currently pinned and visible. */
     fun hasActivePinnedTask(): Boolean {
-        return pinnedLayerController.currentPinnedTask != null
+        return pinnedLayerController.getCurrentPinnedTask() != null
     }
 
     /**
