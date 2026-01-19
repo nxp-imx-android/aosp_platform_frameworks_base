@@ -150,6 +150,9 @@ public class MotionEventInjector extends BaseEventStreamTransformation implement
         if (!mHandler.hasMessages(MESSAGE_SEND_MOTION_EVENT) && inputSource == EVENT_SOURCE) {
             mOpenTouchGestureInProgress = false;
         }
+        if (Flags.sendA11yActionCancelOnReset()) {
+            super.clearEvents(inputSource);
+        }
     }
 
     @Override
