@@ -353,11 +353,8 @@ class DesktopDisplayModeControllerTest(
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_DISPLAY_WINDOWING_MODE_SWITCHING,
-        Flags.FLAG_UPDATE_TDAS_TASK_MOVE_ALLOWED_ON_DESKTOP_FIRST_CHANGE,
-    )
-    fun defaultDisplay_taskMoveAllowed_updateFlagEnabled() {
+    @EnableFlags(Flags.FLAG_ENABLE_DISPLAY_WINDOWING_MODE_SWITCHING)
+    fun defaultDisplay_taskMoveAllowed() {
         defaultTDA.configuration.windowConfiguration.windowingMode = WINDOWING_MODE_FREEFORM
         setExtendedMode(true)
         whenever(rootTaskDisplayAreaOrganizer.getDisplayIds())
@@ -371,25 +368,8 @@ class DesktopDisplayModeControllerTest(
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DISPLAY_WINDOWING_MODE_SWITCHING)
-    @DisableFlags(Flags.FLAG_UPDATE_TDAS_TASK_MOVE_ALLOWED_ON_DESKTOP_FIRST_CHANGE)
-    fun defaultDisplay_taskMoveAllowed_updateFlagDisabled() {
-        defaultTDA.configuration.windowConfiguration.windowingMode = WINDOWING_MODE_FREEFORM
-        setExtendedMode(true)
-        whenever(rootTaskDisplayAreaOrganizer.getDisplayIds())
-            .thenReturn(intArrayOf(DEFAULT_DISPLAY, EXTERNAL_DISPLAY_ID))
-
-        controller.updateDefaultDisplayWindowingMode()
-
-        verify(transitions, never()).startTransition(eq(TRANSIT_CHANGE), any(), isNull())
-    }
-
-    @Test
-    @EnableFlags(
-        DisplayFlags.FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT,
-        Flags.FLAG_UPDATE_TDAS_TASK_MOVE_ALLOWED_ON_DESKTOP_FIRST_CHANGE,
-    )
-    fun externalDisplay_taskMoveAllowed_updateFlagEnabled() {
+    @EnableFlags(DisplayFlags.FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT)
+    fun externalDisplay_taskMoveAllowed() {
         externalTDA.configuration.windowConfiguration.windowingMode = WINDOWING_MODE_FULLSCREEN
         setExtendedMode(true)
         whenever(rootTaskDisplayAreaOrganizer.getDisplayIds())
@@ -473,7 +453,6 @@ class DesktopDisplayModeControllerTest(
                 Flags.FLAG_FORM_FACTOR_BASED_DESKTOP_FIRST_SWITCH,
                 DisplayFlags.FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT,
                 Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-                Flags.FLAG_UPDATE_TDAS_TASK_MOVE_ALLOWED_ON_DESKTOP_FIRST_CHANGE,
             )
         }
     }
