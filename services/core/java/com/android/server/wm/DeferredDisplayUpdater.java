@@ -26,7 +26,6 @@ import static com.android.server.wm.ActivityTaskManagerService.POWER_MODE_REASON
 import static com.android.server.wm.utils.DisplayInfoOverrides.WM_OVERRIDE_FIELDS;
 import static com.android.server.wm.utils.DisplayInfoOverrides.copyDisplayInfoFields;
 import static com.android.window.flags.Flags.ensureWallpaperDrawnOnDisplaySwitch;
-import static com.android.window.flags.Flags.handleRepeatedDisplaySwitches;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -247,9 +246,7 @@ class DeferredDisplayUpdater {
         if (physicalDisplayUpdated) {
             mPhysicalDisplayChangeTransition = transition;
 
-            if (handleRepeatedDisplaySwitches()) {
-                mDisplayContent.mTransitionController.removeDisplayChangesFromQueue();
-            }
+            mDisplayContent.mTransitionController.removeDisplayChangesFromQueue();
         }
 
         mDisplayContent.mTransitionController.startCollectOrQueue(transition, deferred -> {
@@ -492,18 +489,16 @@ class DeferredDisplayUpdater {
      */
     private void continueScreenUnblocking(@Nullable Transition fromTransition) {
         synchronized (mDisplayContent.mWmService.mGlobalLock) {
-            if (handleRepeatedDisplaySwitches()) {
-                // Do not proceed with unblocking in case if the ready transition doesn't match
-                // the current mPhysicalDisplayChangeTransition, this means that while we were
-                // waiting for a transition, another one was requested. We want to unblock only
-                // when the last transition is ready.
-                final boolean isTimeout = fromTransition == null;
-                final boolean isTransitionMatching = isTimeout
-                        || fromTransition == mPhysicalDisplayChangeTransition;
+            // Do not proceed with unblocking in case if the ready transition doesn't match
+            // the current mPhysicalDisplayChangeTransition, this means that while we were
+            // waiting for a transition, another one was requested. We want to unblock only
+            // when the last transition is ready.
+            final boolean isTimeout = fromTransition == null;
+            final boolean isTransitionMatching = isTimeout
+                    || fromTransition == mPhysicalDisplayChangeTransition;
 
-                if (!isTransitionMatching) {
-                    return;
-                }
+            if (!isTransitionMatching) {
+                return;
             }
 
             mPhysicalDisplayChangeTransition = null;

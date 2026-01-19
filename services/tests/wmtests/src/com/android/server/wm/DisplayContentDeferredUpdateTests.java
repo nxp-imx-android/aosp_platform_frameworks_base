@@ -471,7 +471,6 @@ public class DisplayContentDeferredUpdateTests extends WindowTestsBase {
         verify(mScreenUnblocker).sendToTarget();
     }
 
-    @EnableFlags(com.android.window.flags.Flags.FLAG_HANDLE_REPEATED_DISPLAY_SWITCHES)
     @Test
     public void test_displaySwitch_timeoutWaitingForTransition_unblocksScreen() {
         // Trigger the first display switch
@@ -493,7 +492,6 @@ public class DisplayContentDeferredUpdateTests extends WindowTestsBase {
         verify(mScreenUnblocker).sendToTarget();
     }
 
-    @EnableFlags(com.android.window.flags.Flags.FLAG_HANDLE_REPEATED_DISPLAY_SWITCHES)
     @Test
     public void test_displaySwitchArrivesWhileAnotherOneIsNotFinishedWhenFlagEnabled_unblocksOnlyAfterSecondDisplaySwitch() {
         // Trigger the first display switch
@@ -527,7 +525,6 @@ public class DisplayContentDeferredUpdateTests extends WindowTestsBase {
         verify(mScreenUnblocker).sendToTarget();
     }
 
-    @EnableFlags(com.android.window.flags.Flags.FLAG_HANDLE_REPEATED_DISPLAY_SWITCHES)
     @Test
     public void test_displaySwitchWhileAnotherOneIsNotFinished_unblocksScreenOnlyAfterSecondTimeout() {
         // Trigger the first display switch
@@ -564,33 +561,6 @@ public class DisplayContentDeferredUpdateTests extends WindowTestsBase {
         mTestHandler.timeAdvance();
 
         // We hit the timeout since the last display change, so we should unblock the screen
-        verify(mScreenUnblocker).sendToTarget();
-    }
-
-    @DisableFlags(com.android.window.flags.Flags.FLAG_HANDLE_REPEATED_DISPLAY_SWITCHES)
-    @Test
-    public void testDisplaySwitchArrivesWhileAnotherOneIsNotFinishedWhenFlagDisabled_unblocksAfterFirstDisplaySwitch() {
-        // Trigger the first display switch
-        mDisplayContent.mDisplayUpdater.onDisplaySwitching(/* switching= */ true);
-        mWmInternal.waitForAllWindowsDrawn(mScreenUnblocker,
-                /* timeout= */ Integer.MAX_VALUE, INVALID_DISPLAY);
-        mUniqueId = "new_default_display_unique_id";
-        mDisplayContent.requestDisplayUpdate(mock(Runnable.class));
-        captureStartTransitionCollection().getValue().onCollectStarted(/* deferred= */ false);
-        final Transition firstTransition = captureRequestedTransition().getValue();
-
-        // Trigger the second display switch
-        mDisplayContent.mDisplayUpdater.onDisplaySwitching(/* switching= */ true);
-        mWmInternal.waitForAllWindowsDrawn(mScreenUnblocker,
-                /* timeout= */ Integer.MAX_VALUE, INVALID_DISPLAY);
-        mUniqueId = "another_default_display_unique_id";
-        mDisplayContent.requestDisplayUpdate(mock(Runnable.class));
-        captureStartTransitionCollection().getValue().onCollectStarted(/* deferred= */ false);
-
-        // The first display switch is complete
-        firstTransition.invokePresentedListenersForTest();
-
-        // Verify that screen is unblocked already as HANDLE_REPEATED_DISPLAY_SWITCHES is disabled
         verify(mScreenUnblocker).sendToTarget();
     }
 
