@@ -17,6 +17,7 @@
 package com.android.server.am.psc;
 
 import static android.app.ActivityManager.PROCESS_CAPABILITY_ALL;
+import static android.app.ActivityManager.PROCESS_CAPABILITY_BFSL;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_NONE;
 
 import static com.android.server.am.psc.Constants.FOREGROUND_APP_ADJ;
@@ -26,6 +27,8 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 
 import android.platform.test.annotations.Presubmit;
+
+import com.android.server.tests.assertutils.FlagAssert;
 
 import org.junit.Test;
 
@@ -38,8 +41,22 @@ import org.junit.Test;
 @Presubmit
 public class CapabilityControllerTest {
     @Test
+    public void testDefaultNode_GrantsNoCapabilities() {
+        TestNode node = new TestNode.Builder().build();
+        ProcessEdge edge = new ProcessEdge(node);
+
+        assertEquals(PROCESS_CAPABILITY_NONE, edge.evaluateCapabilityFilter());
+    }
+
+    @Test
     public void testEvaluateProcessEdgeFilter_NonRunningProcess_GrantsNoCapabilities() {
-        TestNode node = new TestNode.Builder().withProcessRunning(false).build();
+        // A non-running process should never have any capabilities, even if other conditions for
+        // granting capabilities are met.
+        TestNode node = new TestNode.Builder()
+                .withProcessRunning(false)
+                .withMaxAdj(FOREGROUND_APP_ADJ) // This would normally grant all capabilities.
+                .withHasActiveInstrumentation(true) // This would normally grant BFSL.
+                .build();
         ProcessEdge edge = new ProcessEdge(node);
 
         assertEquals(PROCESS_CAPABILITY_NONE, edge.evaluateCapabilityFilter());
@@ -53,13 +70,23 @@ public class CapabilityControllerTest {
         assertEquals(PROCESS_CAPABILITY_ALL, edge.evaluateCapabilityFilter());
     }
 
+    @Test
+    public void testEvaluateInstrumentationPolicy_HasActiveInstrumentation_GrantsBfSl() {
+        TestNode node = new TestNode.Builder().withHasActiveInstrumentation(true).build();
+        ProcessEdge edge = new ProcessEdge(node);
+
+        FlagAssert.assertThat(edge.evaluateCapabilityFilter()).hasSet(PROCESS_CAPABILITY_BFSL);
+    }
+
     private static class TestNode extends GraphNode {
         private final boolean mIsProcessRunning;
+        private final boolean mHasActiveInstrumentation;
         private final int mMaxAdj;
 
-        private TestNode(boolean isProcessRunning, int maxAdj) {
+        private TestNode(boolean isProcessRunning, boolean hasActiveInstrumentation, int maxAdj) {
             super(mock(ProcessRecordInternal.class));
             mIsProcessRunning = isProcessRunning;
+            mHasActiveInstrumentation = hasActiveInstrumentation;
             mMaxAdj = maxAdj;
         }
 
@@ -69,16 +96,27 @@ public class CapabilityControllerTest {
         }
 
         @Override
+        boolean hasActiveInstrumentation() {
+            return mHasActiveInstrumentation;
+        }
+
+        @Override
         int getMaxAdj() {
             return mMaxAdj;
         }
 
         static class Builder {
             private boolean mIsProcessRunning = true;
+            private boolean mHasActiveInstrumentation = false;
             private int mMaxAdj = UNKNOWN_ADJ;
 
             Builder withProcessRunning(boolean isProcessRunning) {
                 mIsProcessRunning = isProcessRunning;
+                return this;
+            }
+
+            Builder withHasActiveInstrumentation(boolean hasActiveInstrumentation) {
+                mHasActiveInstrumentation = hasActiveInstrumentation;
                 return this;
             }
 
@@ -88,7 +126,7 @@ public class CapabilityControllerTest {
             }
 
             TestNode build() {
-                return new TestNode(mIsProcessRunning, mMaxAdj);
+                return new TestNode(mIsProcessRunning, mHasActiveInstrumentation, mMaxAdj);
             }
         }
     }
