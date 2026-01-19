@@ -101,17 +101,27 @@ private fun createDefaultActivityOptions(
 /**
  * If [controller] is not null and does not already have a transition cookie, this function
  * generates a new unique cookie and returns a new [ActivityTransitionAnimator.Controller] with it
- * based on [controller]. Otherwise it just returns [controller] unchanged.
+ * based on [identity] (if provided), or [controller]. Otherwise it just returns [controller]
+ * unchanged.
+ *
+ * The [identity] object can be used to allow multiple calls from the same source but using
+ * individually instantiated controllers to use equivalent cookies.
  */
+@JvmOverloads
 fun addCookieIfNeeded(
-    controller: ActivityTransitionAnimator.Controller?
+    controller: ActivityTransitionAnimator.Controller?,
+    identity: Any? = null,
 ): ActivityTransitionAnimator.Controller? {
     return if (controller?.transitionCookie != null) {
         controller
     } else if (controller != null) {
         object : DelegateTransitionAnimatorController(controller) {
             override val transitionCookie =
-                ActivityTransitionAnimator.TransitionCookie("$controller")
+                if (identity != null) {
+                    ActivityTransitionAnimator.TransitionCookie("$identity")
+                } else {
+                    ActivityTransitionAnimator.TransitionCookie("$controller")
+                }
         }
     } else {
         null

@@ -557,8 +557,10 @@ public class StatusBarNotificationActivityStarter implements NotificationActivit
                             isActivityIntent);
 
             if (ActivityTransitionAnimator.Companion.shellMigrationEnabled()) {
+                // We use the row as an identity object, so if multiple calls are triggered they are
+                // all assigned the same cookie.
                 ActivityTransitionAnimator.Controller controllerWithCookie =
-                        addCookieIfNeeded(animationController);
+                        addCookieIfNeeded(animationController, row /* identity */);
                 ActivityTransitionAnimator.TransitionCookie cookie =
                         controllerWithCookie != null
                                 ? controllerWithCookie.getTransitionCookie() : null;
