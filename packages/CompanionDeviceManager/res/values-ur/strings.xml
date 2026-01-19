@@ -35,7 +35,6 @@
     <string name="profile_name_medical" msgid="5617160509499466400">"طبی آلہ"</string>
     <string name="title_app_streaming" msgid="237666000400427614">"‏آپ کے <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> اور &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; کے درمیان ایپس اور سسٹم کی خصوصیات کی سلسلہ بندی کرنے کی &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; کو اجازت دیں؟"</string>
     <string name="summary_app_streaming" msgid="8346968726357732862">"<xliff:g id="APP_NAME">%1$s</xliff:g> کو مندرجہ ذیل چیزوں کی اجازتیں ہوں گی:"</string>
-    <string name="summary_app_streaming_legacy" msgid="8994180646987541606">"‏<xliff:g id="APP_NAME_0">%1$s</xliff:g> کو آپ کے <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> پر دکھائی دینے والی یا چلائی جانے والی کسی بھی چیز تک رسائی حاصل ہوگی، بشمول آڈیو، تصاویر، ادائیگی کی معلومات، پاس ورڈز اور پیغامات۔;lt;br/&gt;&lt;br/&amp;gt&amp;<xliff:g id="APP_NAME_1">%1$s</xliff:g> <xliff:g id="DEVICE_NAME">%3$s</xliff:g> پر اس وقت تک ایپس کی سلسلہ بندی کر سکے گی جب تک آپ اس اجازت تک رسائی کو ہٹا نہیں دیتے۔"</string>
     <string name="helper_summary_app_streaming" msgid="160149899100957545">"‫<xliff:g id="APP_NAME">%1$s</xliff:g> ایپ <xliff:g id="DEVICE_NAME">%2$s</xliff:g> کی جانب سے آپ کے آلات کے درمیان ایپس اور سسٹم کی خصوصیات کی سلسلہ بندی کرنے کی اجازت کی درخواست کر رہی ہے"</string>
     <string name="title_automotive_projection" msgid="3296005598978412847"></string>
     <string name="summary_automotive_projection" msgid="8683801274662496164"></string>
@@ -43,7 +42,6 @@
     <string name="helper_summary_computer" msgid="2298803016482139668">"<xliff:g id="APP_NAME">%1$s</xliff:g> ایپ آپ کے <xliff:g id="DEVICE_NAME">%2$s</xliff:g> کی جانب سے آپ کے <xliff:g id="DEVICE_TYPE">%3$s</xliff:g> کی تصاویر، میڈیا اور اطلاعات تک رسائی کی اجازت کی درخواست کر رہی ہے"</string>
     <string name="title_nearby_device_streaming" msgid="5342768208699657581">"‏آپ کے <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> اور &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; کے درمیان ایپس اور سسٹم کی خصوصیات کی سلسلہ بندی کرنے کی &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; کو اجازت دیں؟"</string>
     <string name="summary_nearby_device_streaming" msgid="7940640272770197219">"<xliff:g id="APP_NAME">%1$s</xliff:g> کو مندرجہ ذیل چیزوں کی اجازتیں ہوں گی:"</string>
-    <string name="summary_nearby_device_streaming_legacy" msgid="4306665203887990326">"‏<xliff:g id="APP_NAME_0">%1$s</xliff:g> کو <xliff:g id="DEVICE_NAME_1">%3$s</xliff:g> پر دکھائی دینے والی یا چلائی جانے والی کسی بھی چیز تک رسائی حاصل ہوگی، بشمول آڈیو، تصاویر، ادائیگی کی معلومات، پاس ورڈز اور پیغامات۔&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME_2">%1$s</xliff:g> <xliff:g id="DEVICE_NAME_3">%3$s</xliff:g> پر اس وقت تک ایپس کی سلسلہ بندی کر سکے گی جب تک آپ اس اجازت تک رسائی کو ہٹا نہیں دیتے۔"</string>
     <string name="helper_summary_nearby_device_streaming" msgid="4712712177819370967">"<xliff:g id="APP_NAME">%1$s</xliff:g> ایپ <xliff:g id="DEVICE_NAME">%2$s</xliff:g> کی جانب سے آپ کے <xliff:g id="DEVICE_TYPE">%3$s</xliff:g> سے ایپس کی سلسلہ بندی کرنے کی اجازت کی درخواست کر رہی ہے"</string>
     <string name="title_virtual_device" msgid="6556338763070329395">"‏آپ کے <xliff:g id="DEVICE_TYPE">%3$s</xliff:g> اور &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt; کے درمیان آڈیو اور سسٹم کی خصوصیات کی سلسلہ بندی کرنے کی &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; کو اجازت دیں؟"</string>
     <string name="summary_virtual_device" msgid="1062189396947962635">"<xliff:g id="APP_NAME">%2$s</xliff:g> کو مندرجہ ذیل چیزوں کی اجازتیں ہوں گی:"</string>
@@ -70,6 +68,8 @@
     <string name="permission_media_routing_control" msgid="5498639511586715253">"میڈیا آؤٹ پٹ کو تبدیل کریں"</string>
     <string name="permission_storage" msgid="6831099350839392343">"تصاویر اور میڈیا"</string>
     <string name="permission_notifications" msgid="4099418516590632909">"اطلاعات"</string>
+    <!-- no translation found for permission_app_streaming (4488910074894929222) -->
+    <skip />
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"اپنے ڈیٹا کی سلسلہ بندی <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> پر کریں"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"اپنی اسکرین کو مرر کریں"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"ایپس کی سلسلہ بندی کریں"</string>
@@ -84,8 +84,11 @@
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"قریبی آلات کی متعلقہ پوزیشن تلاش کریں، ان سے منسلک کریں اور اس کا تعین کریں"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"رابطوں، پیغامات اور تصاویر جیسی معلومات سمیت تمام اطلاعات پڑھیں"</string>
     <string name="permission_notifications_summary" msgid="6819393427371255636">"‏• تمام اطلاعات کو پڑھیں، بشمول رابطے، پیغامات اور تصاویر‎&lt;br/&gt;‎• اپنی اطلاعات بھیجیں‎&lt;br/&gt;&lt;br/&gt;‎آپ ترتیبات ‎&gt;‎ اطلاعات میں کسی بھی وقت اس ایپ کی اطلاعات کو پڑھنے اور بھیجنے کی اہلیت کا نظم کر سکتے ہیں۔"</string>
-    <string name="permission_storage_summary" msgid="3918240895519506417"></string>
+    <!-- no translation found for permission_storage_summary (3779040306012319942) -->
+    <skip />
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"اپنی اطلاعات بھیجیں"</string>
+    <!-- no translation found for permission_app_streaming_summary (4114223538437344105) -->
+    <skip />
     <string name="permission_create_virtual_device_summary" msgid="3570256456647725172">"‏مائیکروفون، کیمرا اور دیگر سینسر ڈیٹا کی سلسلہ بندی ‎&lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;‎ سے اپنے <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> پر کریں۔"</string>
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"‏اپنے <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> کی اسکرین کو ‎<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;strong&gt;‎‏‎&lt;/strong&gt;‎ پر ریکارڈ کریں، کاسٹ کریں یا اشتراک کریں۔‎&lt;br/&gt;&lt;br/&gt;‎‏<xliff:g id="APP_NAME">%1$s</xliff:g> کو آڈیو، تصاویر، ادائیگی کی معلومات، پاس ورڈز اور پیغامات سمیت آپ کے <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g> پر نظر آنے والی یا چلائی جانے والی ہر چیز تک رسائی حاصل ہوگی۔"</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"‏اپنے <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> کی ایپس کی ‎<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;strong&gt;‎‏‎&lt;/strong&gt;‎ پر سلسلہ بندی کریں۔‎&lt;br/&gt;&lt;br/&gt;‎‏<xliff:g id="APP_NAME">%1$s</xliff:g> کو آڈیو، تصاویر، ادائیگی کی معلومات، پاس ورڈز اور پیغامات سمیت <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g> پر نظر آنے والی یا چلائی جانے والی ہر چیز تک رسائی حاصل ہوگی چاہے آپ کا <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> مقفل ہو۔"</string>

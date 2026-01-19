@@ -35,7 +35,6 @@
     <string name="profile_name_medical" msgid="5617160509499466400">"zdravotnický prostředek"</string>
     <string name="title_app_streaming" msgid="237666000400427614">"Povolit aplikaci &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; streamovat aplikace a systémové funkce mezi zařízeními <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> a &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;?"</string>
     <string name="summary_app_streaming" msgid="8346968726357732862">"Aplikaci <xliff:g id="APP_NAME">%1$s</xliff:g> budou udělena následující oprávnění:"</string>
-    <string name="summary_app_streaming_legacy" msgid="8994180646987541606">"Aplikace <xliff:g id="APP_NAME_0">%1$s</xliff:g> bude mít přístup ke všemu, co na zařízení typu <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> zobrazíte nebo přehrajete, včetně zvuku, fotek, platebních údajů, hesel a zpráv.&lt;br/&gt;&lt;br/&gt;Aplikace <xliff:g id="APP_NAME_1">%1$s</xliff:g> bude moct streamovat aplikace do zařízení typu <xliff:g id="DEVICE_NAME">%3$s</xliff:g>, dokud přístup k tomuto oprávnění neodeberete."</string>
     <string name="helper_summary_app_streaming" msgid="160149899100957545">"Aplikace <xliff:g id="APP_NAME">%1$s</xliff:g> požaduje za vaše zařízení <xliff:g id="DEVICE_NAME">%2$s</xliff:g> oprávnění ke streamování aplikací a systémových funkcí mezi vašimi zařízeními."</string>
     <string name="title_automotive_projection" msgid="3296005598978412847"></string>
     <string name="summary_automotive_projection" msgid="8683801274662496164"></string>
@@ -43,7 +42,6 @@
     <string name="helper_summary_computer" msgid="2298803016482139668">"Aplikace <xliff:g id="APP_NAME">%1$s</xliff:g> požaduje za vaše zařízení <xliff:g id="DEVICE_NAME">%2$s</xliff:g> oprávnění k přístupu k fotkám, médiím a oznámením na zařízení typu <xliff:g id="DEVICE_TYPE">%3$s</xliff:g>"</string>
     <string name="title_nearby_device_streaming" msgid="5342768208699657581">"Povolit aplikaci &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; streamovat aplikace a systémové funkce mezi zařízeními <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> a &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;?"</string>
     <string name="summary_nearby_device_streaming" msgid="7940640272770197219">"Aplikaci <xliff:g id="APP_NAME">%1$s</xliff:g> budou udělena následující oprávnění:"</string>
-    <string name="summary_nearby_device_streaming_legacy" msgid="4306665203887990326">"Aplikace <xliff:g id="APP_NAME_0">%1$s</xliff:g> bude mít přístup ke všemu, co na zařízení typu <xliff:g id="DEVICE_NAME_1">%3$s</xliff:g> zobrazíte nebo přehrajete, včetně zvuku, fotek, platebních údajů, hesel a zpráv.&lt;br/&gt;&lt;br/&gt;Aplikace <xliff:g id="APP_NAME_2">%1$s</xliff:g> bude moct streamovat aplikace do zařízení typu <xliff:g id="DEVICE_NAME_3">%3$s</xliff:g>, dokud přístup k tomuto oprávnění neodeberete."</string>
     <string name="helper_summary_nearby_device_streaming" msgid="4712712177819370967">"Aplikace <xliff:g id="APP_NAME">%1$s</xliff:g> žádá jménem zařízení <xliff:g id="DEVICE_NAME">%2$s</xliff:g> o oprávnění streamovat aplikace z vašeho zařízení typu <xliff:g id="DEVICE_TYPE">%3$s</xliff:g>"</string>
     <string name="title_virtual_device" msgid="6556338763070329395">"Povolit aplikaci &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; streamovat zvuk a systémové funkce mezi zařízeními <xliff:g id="DEVICE_TYPE">%3$s</xliff:g> a &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt;?"</string>
     <string name="summary_virtual_device" msgid="1062189396947962635">"Aplikaci <xliff:g id="APP_NAME">%2$s</xliff:g> budou udělena následující oprávnění:"</string>
@@ -70,6 +68,8 @@
     <string name="permission_media_routing_control" msgid="5498639511586715253">"Změna mediálního výstupu"</string>
     <string name="permission_storage" msgid="6831099350839392343">"Fotky a média"</string>
     <string name="permission_notifications" msgid="4099418516590632909">"Oznámení"</string>
+    <!-- no translation found for permission_app_streaming (4488910074894929222) -->
+    <skip />
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"Streamovat data do zařízení <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"Zrcadlit obrazovku"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"Streamovat aplikace"</string>
@@ -84,8 +84,11 @@
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"Vyhledávání zařízení v okolí, připojování se k nim a zjišťování jejich relativní polohy"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"Čtení veškerých oznámení včetně informací, jako jsou kontakty, zprávy a fotky"</string>
     <string name="permission_notifications_summary" msgid="6819393427371255636">"• Číst veškerá oznámení, včetně informací, jako jsou kontakty, zprávy a fotky&lt;br/&gt;• Odesílat vám oznámení&lt;br/&gt;&lt;br/&gt;Oprávnění této aplikace číst a odesílat oznámení můžete kdykoli změnit v Nastavení &gt; Oznámení."</string>
-    <string name="permission_storage_summary" msgid="3918240895519506417"></string>
+    <!-- no translation found for permission_storage_summary (3779040306012319942) -->
+    <skip />
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"Odesílání oznámení"</string>
+    <!-- no translation found for permission_app_streaming_summary (4114223538437344105) -->
+    <skip />
     <string name="permission_create_virtual_device_summary" msgid="3570256456647725172">"Streamovat data z mikrofonu, kamery a dalších senzorů ze zařízení typu &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; do zařízení <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>."</string>
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"Nahrávat, odesílat nebo sdílet obrazovku zařízení <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> na zařízení &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;Aplikace <xliff:g id="APP_NAME">%1$s</xliff:g> bude mít přístup ke všemu, co na zařízení typu <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g> zobrazíte nebo přehrajete, včetně zvuku, fotek, platebních údajů, hesel a zpráv."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"Streamovat aplikace na zařízení typu <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> do zařízení &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;Aplikace <xliff:g id="APP_NAME">%1$s</xliff:g> bude mít přístup ke všemu, co na zařízení typu <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g> zobrazíte nebo přehrajete, včetně zvuku, fotek, platebních údajů, hesel a zpráv, a to i když bude vaše zařízení typu <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> zamknuté."</string>
