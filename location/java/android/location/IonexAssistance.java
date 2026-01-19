@@ -21,6 +21,7 @@ import android.annotation.FloatRange;
 import android.annotation.IntDef;
 import android.annotation.IntRange;
 import android.annotation.NonNull;
+import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
 import android.location.flags.Flags;
 import android.os.Parcel;
@@ -558,7 +559,8 @@ public final class IonexAssistance implements Parcelable {
          *
          * <p>The value 9999 is defined by the IONEX specification for non-available data.
          */
-        public static final int UNAVAILABLE_TEC = 9999;
+        @SuppressLint("NoByteOrShort")
+        public static final short UNAVAILABLE_TEC = 9999;
 
         /** The epoch of the TEC map, in seconds since the Unix epoch (UTC) */
         private final long mEpochTimeSeconds;
