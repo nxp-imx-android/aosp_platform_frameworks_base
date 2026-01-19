@@ -1174,7 +1174,7 @@ public final class InputMethodManager {
                                 Log.w(TAG, "Ignoring onBind: cur seq=" + curBindSequence
                                         + ", given seq=" + res.sequence);
                             }
-                            if (res.channel != null && res.channel != mCurChannel) {
+                            if (res.channel != null) {
                                 res.channel.dispose();
                             }
                             return;
@@ -1229,7 +1229,7 @@ public final class InputMethodManager {
                                 }
                             }
                             mCurId = res.id; // for @UnsupportedAppUsage
-                        } else if (res.channel != null && res.channel != mCurChannel) {
+                        } else if (res.channel != null) {
                             res.channel.dispose();
                         }
                         switch (res.result) {
@@ -1306,7 +1306,7 @@ public final class InputMethodManager {
                                 Log.w(TAG, "Ignoring onBind: cur seq=" + curBindSequence
                                         + ", given seq=" + res.sequence);
                             }
-                            if (res.channel != null && res.channel != mCurChannel) {
+                            if (res.channel != null) {
                                 res.channel.dispose();
                             }
                             return;
