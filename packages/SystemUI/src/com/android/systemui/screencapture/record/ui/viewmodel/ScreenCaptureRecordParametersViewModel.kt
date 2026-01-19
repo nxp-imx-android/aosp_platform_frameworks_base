@@ -39,72 +39,59 @@ constructor(
     recordDetailsTargetInteractor: RecordDetailsTargetInteractor,
 ) : HydratedActivatable() {
 
-    val audioSource: ScreenRecordingAudioSource? by
-        interactor.parameters
-            .map { it.audioSource }
-            .hydratedStateOf(
-                "ScreenCaptureAudioSourceViewModel#audioSource",
-                interactor.parameters.value.audioSource,
-            )
+    val audioSource: ScreenRecordingAudioSource by interactor::audioSource
     val canChangeAudioSource: Boolean by
         interactor.canChangeAudioSource.hydratedStateOf(
             "ScreenCaptureAudioSourceViewModel#canChangeAudioSource"
         )
 
-    val shouldShowTaps: Boolean? by
-        interactor.parameters
-            .map { it.shouldShowTaps }
-            .hydratedStateOf(
-                "ScreenCaptureAudioSourceViewModel#shouldShowTaps",
-                interactor.parameters.value.shouldShowTaps,
-            )
-
-    val shouldShowFrontCamera: Boolean? by
-        interactor.parameters
-            .map { it.shouldShowFrontCamera }
-            .hydratedStateOf(
-                "ScreenCaptureAudioSourceViewModel#shouldShowFrontCamera",
-                interactor.parameters.value.shouldShowFrontCamera,
-            )
+    var shouldShowTaps: Boolean by interactor::shouldShowTaps
+    var shouldShowFrontCamera: Boolean by interactor::shouldShowFrontCamera
 
     var shouldRecordDevice: Boolean
         get() =
-            audioSource == ScreenRecordingAudioSource.MIC_AND_INTERNAL ||
-                audioSource == ScreenRecordingAudioSource.INTERNAL
-        set(value) {
-            if (value) {
-                if (shouldRecordMicrophone) {
-                    setAudioSource(ScreenRecordingAudioSource.MIC_AND_INTERNAL)
-                } else {
-                    setAudioSource(ScreenRecordingAudioSource.INTERNAL)
-                }
-            } else {
-                if (shouldRecordMicrophone) {
-                    setAudioSource(ScreenRecordingAudioSource.MIC)
-                } else {
-                    setAudioSource(ScreenRecordingAudioSource.NONE)
-                }
+            with(interactor) {
+                audioSource == ScreenRecordingAudioSource.MIC_AND_INTERNAL ||
+                    audioSource == ScreenRecordingAudioSource.INTERNAL
             }
+        set(value) {
+            interactor.audioSource =
+                if (value) {
+                    if (shouldRecordMicrophone) {
+                        ScreenRecordingAudioSource.MIC_AND_INTERNAL
+                    } else {
+                        ScreenRecordingAudioSource.INTERNAL
+                    }
+                } else {
+                    if (shouldRecordMicrophone) {
+                        ScreenRecordingAudioSource.MIC
+                    } else {
+                        ScreenRecordingAudioSource.NONE
+                    }
+                }
         }
 
     var shouldRecordMicrophone: Boolean
         get() =
-            audioSource == ScreenRecordingAudioSource.MIC_AND_INTERNAL ||
-                audioSource == ScreenRecordingAudioSource.MIC
-        set(value) {
-            if (value) {
-                if (shouldRecordDevice) {
-                    setAudioSource(ScreenRecordingAudioSource.MIC_AND_INTERNAL)
-                } else {
-                    setAudioSource(ScreenRecordingAudioSource.MIC)
-                }
-            } else {
-                if (shouldRecordDevice) {
-                    setAudioSource(ScreenRecordingAudioSource.INTERNAL)
-                } else {
-                    setAudioSource(ScreenRecordingAudioSource.NONE)
-                }
+            with(interactor) {
+                audioSource == ScreenRecordingAudioSource.MIC_AND_INTERNAL ||
+                    audioSource == ScreenRecordingAudioSource.MIC
             }
+        set(value) {
+            interactor.audioSource =
+                if (value) {
+                    if (shouldRecordDevice) {
+                        ScreenRecordingAudioSource.MIC_AND_INTERNAL
+                    } else {
+                        ScreenRecordingAudioSource.MIC
+                    }
+                } else {
+                    if (shouldRecordDevice) {
+                        ScreenRecordingAudioSource.INTERNAL
+                    } else {
+                        ScreenRecordingAudioSource.NONE
+                    }
+                }
         }
 
     val canUseFrontCamera: Boolean by
@@ -121,18 +108,6 @@ constructor(
                 flowOf(false)
             }
             .hydratedStateOf("ScreenCaptureAudioSourceViewModel#canUseFrontCamera", true)
-
-    private fun setAudioSource(audioSource: ScreenRecordingAudioSource) {
-        interactor.setAudioSource(audioSource)
-    }
-
-    fun setShouldShowTaps(shouldShowTaps: Boolean) {
-        interactor.setShouldShowTaps(shouldShowTaps)
-    }
-
-    fun setShouldShowFrontCamera(shouldShowFrontCamera: Boolean) {
-        interactor.setShouldShowFrontCamera(shouldShowFrontCamera)
-    }
 
     @AssistedFactory
     interface Factory {

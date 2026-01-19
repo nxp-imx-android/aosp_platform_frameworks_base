@@ -135,8 +135,8 @@ fun RecordDetailsSettings(
                             contentDescription = null,
                         ),
                     label = stringResource(R.string.screen_record_should_show_camera_label),
-                    checked = parametersViewModel.shouldShowFrontCamera == true,
-                    onCheckedChange = { parametersViewModel.setShouldShowFrontCamera(it) },
+                    checked = parametersViewModel.shouldShowFrontCamera,
+                    onCheckedChange = { parametersViewModel.shouldShowFrontCamera = it },
                     modifier = Modifier,
                 )
             }
@@ -149,8 +149,8 @@ fun RecordDetailsSettings(
                             contentDescription = null,
                         ),
                     label = stringResource(R.string.screen_record_should_show_touches_label),
-                    checked = parametersViewModel.shouldShowTaps == true,
-                    onCheckedChange = { parametersViewModel.setShouldShowTaps(it) },
+                    checked = parametersViewModel.shouldShowTaps,
+                    onCheckedChange = { parametersViewModel.shouldShowTaps = it },
                     modifier = Modifier,
                 )
             }

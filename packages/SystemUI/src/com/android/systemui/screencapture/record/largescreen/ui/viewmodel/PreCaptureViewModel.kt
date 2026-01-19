@@ -37,7 +37,6 @@ import com.android.systemui.screencapture.record.largescreen.domain.interactor.S
 import com.android.systemui.screencapture.record.largescreen.shared.model.AppWindowModel
 import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureRegion
 import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureType
-import com.android.systemui.screenrecord.ScreenRecordingAudioSource
 import com.android.systemui.screenrecord.domain.interactor.ScreenRecordingServiceInteractor
 import com.android.systemui.screenrecord.shared.model.ScreenRecordingParameters
 import com.android.systemui.screenrecord.shared.model.ScreenRecordingStatus
@@ -339,12 +338,9 @@ constructor(
                 // TODO(b/437971334): Get options from the UI.
                 ScreenRecordingParameters(
                     captureTarget = recordingTarget,
-                    audioSource =
-                        toolbarViewModel.recordParametersViewModel.audioSource
-                            ?: ScreenRecordingAudioSource.NONE,
+                    audioSource = toolbarViewModel.recordParametersViewModel.audioSource,
                     displayId = displayId,
-                    shouldShowTaps =
-                        toolbarViewModel.recordParametersViewModel.shouldShowTaps ?: false,
+                    shouldShowTaps = toolbarViewModel.recordParametersViewModel.shouldShowTaps,
                 )
             )
         }
