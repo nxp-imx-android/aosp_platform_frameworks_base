@@ -15356,77 +15356,67 @@ public class TextView extends View implements ViewTreeObserver.OnPreDrawListener
             max = Math.max(0, Math.max(selStart, selEnd));
         }
 
-        switch (id) {
-            case ID_SELECT_ALL:
-                final boolean hadSelection = hasSelection();
-                selectAllText();
-                if (mEditor != null && hadSelection) {
-                    mEditor.invalidateActionModeAsync();
-                }
-                return true;
-
-            case ID_UNDO:
-                if (mEditor != null) {
-                    mEditor.undo();
-                }
-                return true;  // Returns true even if nothing was undone.
-
-            case ID_REDO:
-                if (mEditor != null) {
-                    mEditor.redo();
-                }
-                return true;  // Returns true even if nothing was undone.
-
-            case ID_PASTE:
-                paste(true /* withFormatting */);
-                return true;
-
-            case ID_PASTE_AS_PLAIN_TEXT:
-                paste(false /* withFormatting */);
-                return true;
-
-            case ID_CUT:
-                final ClipData cutData = ClipData.newPlainText(null, getTransformedText(min, max));
-                if (setPrimaryClip(cutData)) {
-                    deleteText_internal(min, max);
-                } else {
-                    Toast.makeText(getContext(),
-                            com.android.internal.R.string.failed_to_copy_to_clipboard,
-                            Toast.LENGTH_SHORT).show();
-                }
-                return true;
-
-            case ID_COPY:
-                // For link action mode in a non-selectable/non-focusable TextView,
-                // make sure that we set the appropriate min/max.
-                final int selStart = getSelectionStart();
-                final int selEnd = getSelectionEnd();
-                min = Math.max(0, Math.min(selStart, selEnd));
-                max = Math.max(0, Math.max(selStart, selEnd));
-                final ClipData copyData = ClipData.newPlainText(null, getTransformedText(min, max));
-                if (setPrimaryClip(copyData)) {
-                    stopTextActionMode();
-                } else {
-                    Toast.makeText(getContext(),
-                            com.android.internal.R.string.failed_to_copy_to_clipboard,
-                            Toast.LENGTH_SHORT).show();
-                }
-                return true;
-
-            case ID_REPLACE:
-                if (mEditor != null) {
-                    mEditor.replace();
-                }
-                return true;
-
-            case ID_SHARE:
-                shareSelectedText();
-                return true;
-
-            case ID_AUTOFILL:
-                requestAutofill();
+        if (id == ID_SELECT_ALL) {
+            final boolean hadSelection = hasSelection();
+            selectAllText();
+            if (mEditor != null && hadSelection) {
+                mEditor.invalidateActionModeAsync();
+            }
+            return true;
+        } else if (id == ID_UNDO) {
+            if (mEditor != null) {
+                mEditor.undo();
+            }
+            return true;  // Returns true even if nothing was undone.
+        } else if (id == ID_REDO) {
+            if (mEditor != null) {
+                mEditor.redo();
+            }
+            return true;  // Returns true even if nothing was undone.
+        } else if (id == ID_PASTE) {
+            paste(true /* withFormatting */);
+            return true;
+        } else if (id == ID_PASTE_AS_PLAIN_TEXT) {
+            paste(false /* withFormatting */);
+            return true;
+        } else if (id == ID_CUT) {
+            final ClipData cutData = ClipData.newPlainText(null, getTransformedText(min, max));
+            if (setPrimaryClip(cutData)) {
+                deleteText_internal(min, max);
+            } else {
+                Toast.makeText(getContext(),
+                        com.android.internal.R.string.failed_to_copy_to_clipboard,
+                        Toast.LENGTH_SHORT).show();
+            }
+            return true;
+        } else if (id == ID_COPY) {
+            // For link action mode in a non-selectable/non-focusable TextView,
+            // make sure that we set the appropriate min/max.
+            final int selStart = getSelectionStart();
+            final int selEnd = getSelectionEnd();
+            min = Math.max(0, Math.min(selStart, selEnd));
+            max = Math.max(0, Math.max(selStart, selEnd));
+            final ClipData copyData = ClipData.newPlainText(null, getTransformedText(min, max));
+            if (setPrimaryClip(copyData)) {
                 stopTextActionMode();
-                return true;
+            } else {
+                Toast.makeText(getContext(),
+                        com.android.internal.R.string.failed_to_copy_to_clipboard,
+                        Toast.LENGTH_SHORT).show();
+            }
+            return true;
+        } else if (id == ID_REPLACE) {
+            if (mEditor != null) {
+                mEditor.replace();
+            }
+            return true;
+        } else if (id == ID_SHARE) {
+            shareSelectedText();
+            return true;
+        } else if (id == ID_AUTOFILL) {
+            requestAutofill();
+            stopTextActionMode();
+            return true;
         }
         return false;
     }
