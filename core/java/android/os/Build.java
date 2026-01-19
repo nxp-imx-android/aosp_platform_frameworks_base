@@ -184,6 +184,20 @@ public class Build {
     public static final String BOOTLOADER = getString("ro.bootloader");
 
     /**
+     * SHA-256 digest (as a hex string) of the public key for the root of trust used for
+     * <a href="https://source.android.com/docs/security/features/verifiedboot">Verified Boot
+     * verification</a>. This field must match the value of the `rootOfTrust.verifiedBootKey` in the
+     * <a href="https://source.android.com/docs/security/features/keystore/attestation#rootoftrust-fields">key
+     * attestation certificate</a>.
+     * @hide
+     */
+    @NonNull
+    @SuppressLint("UnflaggedApi")  // @TestApi without associated feature.
+    @TestApi
+    public static final String VBMETA_PUBLIC_KEY_DIGEST =
+            getString("ro.boot.vbmeta.public_key_digest");
+
+    /**
      * The radio firmware version number.
      *
      * @deprecated The radio firmware version is frequently not
