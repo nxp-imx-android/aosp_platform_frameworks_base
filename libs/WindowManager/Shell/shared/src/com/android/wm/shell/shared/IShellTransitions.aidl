@@ -22,6 +22,7 @@ import android.window.TransitionFilter;
 
 import com.android.wm.shell.shared.IFocusTransitionListener;
 import com.android.wm.shell.shared.IHomeTransitionListener;
+import com.android.wm.shell.shared.IOverviewOverlayLeashInvalidationCallback;
 
 /**
  * Interface that is exposed to remote callers to manipulate the transitions feature.
@@ -69,4 +70,20 @@ interface IShellTransitions {
      */
     @nullable
     SurfaceControl getOverviewOverlayContainer(int displayId) = 8;
+
+    /**
+     * Registers a callback for when the overview overlay leash for the given {@code displayId} is
+     * invalidated.
+     */
+     oneway void registerOverviewOverlayLeashInvalidationCallback(
+            int displayId, in IOverviewOverlayLeashInvalidationCallback callback) = 9;
+
+    /**
+     * Requests to unregister the given {@code callback} for the given {@code displayId}.
+     * <p>
+     * No-op if the given {@code callback} is not currently registered for the given
+     * {@code displayId}.
+     */
+     oneway void unregisterOverviewOverlayLeashInvalidationCallback(
+            int displayId, in IOverviewOverlayLeashInvalidationCallback callback) = 10;
 }

@@ -43,6 +43,7 @@ import android.content.pm.ActivityInfo;
 import android.graphics.Rect;
 import android.os.Debug;
 import android.os.IBinder;
+import android.os.RemoteException;
 import android.util.ArrayMap;
 import android.util.Log;
 import android.util.SparseArray;
@@ -70,6 +71,7 @@ import com.android.wm.shell.compatui.api.CompatUITypeUtils;
 import com.android.wm.shell.compatui.impl.CompatUIEvents.SizeCompatRestartButtonAppeared;
 import com.android.wm.shell.compatui.impl.CompatUIEvents.SizeCompatRestartButtonClicked;
 import com.android.wm.shell.recents.RecentTasksController;
+import com.android.wm.shell.shared.IOverviewOverlayLeashInvalidationCallback;
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
 import com.android.wm.shell.startingsurface.StartingWindowController;
 import com.android.wm.shell.sysui.ShellCommandHandler;
@@ -298,6 +300,9 @@ public class ShellTaskOrganizer extends TaskOrganizer {
      * to put overview overlays above the home task.
      */
     private final SparseArray<SurfaceControl> mOverviewOverlayLeashes = new SparseArray<>();
+
+    private final SparseArray<IOverviewOverlayLeashInvalidationCallback>
+            mLeashInvalidationCallbacks = new SparseArray<>();
 
     /**
      * In charge of showing compat UI. Can be {@code null} if the device doesn't support sizef
@@ -709,6 +714,65 @@ public class ShellTaskOrganizer extends TaskOrganizer {
     }
 
     /**
+     * Registers a callback for when the overview overlay leash for the given {@code displayId} is
+     * invalidated.
+     */
+    public void registerOverviewOverlayLeashInvalidationCallback(
+            int displayId, IOverviewOverlayLeashInvalidationCallback callback) {
+        if (!isOverviewOverlayEnabled(displayId)) {
+            ProtoLog.v(WM_SHELL_TASK_ORG,
+                    "registerOverviewOverlayLeashInvalidationCallback: "
+                            + "overview overlay is not enabled on displayId=%d",
+                    displayId);
+            return;
+        }
+        ProtoLog.v(WM_SHELL_TASK_ORG,
+                "Registering overview overlay leash invalidation callback: "
+                        + "displayId=%d, callback=%s",
+                displayId,
+                callback);
+        mLeashInvalidationCallbacks.put(displayId, callback);
+    }
+
+    /**
+     * Requests to unregister the given {@code callback} for the given {@code displayId}.
+     * <p>
+     * No-op if the given {@code callback} is not currently registered for the given
+     * {@code displayId}.
+     */
+    public void unregisterOverviewOverlayLeashInvalidationCallback(
+            int displayId, IOverviewOverlayLeashInvalidationCallback callback) {
+        if (!isOverviewOverlayEnabled(displayId)) {
+            ProtoLog.v(WM_SHELL_TASK_ORG,
+                    "registerOverviewOverlayLeashInvalidationCallback: "
+                            + "overview overlay is not enabled on displayId=%d",
+                    displayId);
+            return;
+        }
+        IOverviewOverlayLeashInvalidationCallback registeredCallback =
+                mLeashInvalidationCallbacks.get(displayId);
+        if (registeredCallback == null
+                || callback == null
+                || registeredCallback.asBinder() != callback.asBinder()) {
+            // Handle variable ordering of Launcher restarts and calls into the shell
+            ProtoLog.v(WM_SHELL_TASK_ORG,
+                    "unregisterOverviewOverlayLeashInvalidationCallback: "
+                            + "requested callback cannot be unregistered "
+                            + "(displayId=%d, requested=%s, registered=%s)",
+                    displayId,
+                    callback,
+                    registeredCallback);
+            return;
+        }
+        ProtoLog.v(WM_SHELL_TASK_ORG,
+                "Unregistering overview overlay leash invalidation callback: "
+                        + "displayId=%d, callback=%s",
+                displayId,
+                callback);
+        mLeashInvalidationCallbacks.remove(displayId);
+    }
+
+    /**
      * Returns or creates a surface which can be used to attach overlays to the home root task
      */
     private SurfaceControl getOrCreateOverviewOverlayContainer(int displayId) {
@@ -948,6 +1012,22 @@ public class ShellTaskOrganizer extends TaskOrganizer {
                 SurfaceControl.Transaction t = new SurfaceControl.Transaction();
                 t.remove(surfaceControl);
                 t.apply();
+                IOverviewOverlayLeashInvalidationCallback invalidationCallback =
+                        mLeashInvalidationCallbacks.get(displayId);
+                if (invalidationCallback != null) {
+                    try {
+                        ProtoLog.v(WM_SHELL_TASK_ORG,
+                                "Running overview overlay leash invalidation callback on "
+                                        + "displayId=%d",
+                                displayId);
+                        invalidationCallback.onOverviewOverlayLeashInvalidated();
+                    } catch (RemoteException e) {
+                        ProtoLog.v(WM_SHELL_TASK_ORG,
+                                "Could not run overview overlay leash invalidation callback on "
+                                        + "displayId=%d",
+                                displayId);
+                    }
+                }
             }
 
             if (isHomeTaskOnDefaultDisplay(taskInfo)) {
