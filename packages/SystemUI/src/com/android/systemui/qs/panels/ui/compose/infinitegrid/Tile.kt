@@ -114,6 +114,7 @@ import com.android.systemui.qs.ui.composable.QuickSettingsShade
 import com.android.systemui.qs.ui.compose.borderOnFocus
 import com.android.systemui.res.R
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.collect
 import platform.test.motion.compose.values.MotionTestValueKey
 import platform.test.motion.compose.values.motionTestValues
 
@@ -380,14 +381,15 @@ private fun TileExpandable(
     Expandable(
         expandable = expandable,
         controller = rememberExpandableController(color = color, shape = shape),
-        modifier =
-            modifier
-                .clip(shape)
-                .motionTestValues { squishiness() exportAs TileMotionTestKeys.Squishness }
-                .verticalSquish(squishiness),
+        modifier = modifier,
         useModifierBasedImplementation = true,
     ) {
-        content(hapticsViewModel?.createStateAwareExpandable(it) ?: it)
+        Box(
+            Modifier.motionTestValues { squishiness() exportAs TileMotionTestKeys.Squishness }
+                .verticalSquish(squishiness)
+        ) {
+            content(hapticsViewModel?.createStateAwareExpandable(it) ?: it)
+        }
     }
 }
 
