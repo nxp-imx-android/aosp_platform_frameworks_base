@@ -184,8 +184,9 @@
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"Share app window"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"Share tab"</string>
     <string name="screen_share_entire_screen_sharing_title" msgid="9093580141248337998">"Share entire screen"</string>
-    <string name="screen_share_disclaimer_app_sharing" msgid="4191319837838590771">"When you’re sharing an app, anything shown or played in that app is visible to [APP NAME]. So be careful with things like passwords, payment details, messages, photos and audio &amp; video."</string>
-    <string name="screen_share_disclaimer_full_screen_sharing" msgid="6445373139864031364">"When you’re sharing your entire screen, anything on your screen is visible to [APP NAME]. So be careful with things like passwords, payment details, messages, photos, and audio &amp; video."</string>
+    <string name="screen_share_disclaimer_app_sharing" msgid="1839029004749224549">"When you’re sharing an app, anything shown or played in that app is visible to <xliff:g id="APP_NAME">%1$s</xliff:g>. So be careful with sensitive information."</string>
+    <string name="screen_share_disclaimer_tab_sharing" msgid="3811486274577713101">"When you’re sharing a tab, anything within the tab is visible to <xliff:g id="APP_NAME">%1$s</xliff:g>. So be careful with sensitive information."</string>
+    <string name="screen_share_disclaimer_full_screen_sharing" msgid="5173795016606926338">"When you’re sharing your entire screen, anything on your screen is visible to <xliff:g id="APP_NAME">%1$s</xliff:g>. So be careful with sensitive information."</string>
     <string name="screen_share_a11y_announcement" msgid="8938007210094494367">"Choose what to share. Select tab, app, or entire screen. Then press share."</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Take screenshot of window"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Record window"</string>

@@ -46,10 +46,8 @@
     <string name="usb_accessory_confirm_prompt" msgid="5728408382798643421">"<xliff:g id="USB_ACCESSORY">%2$s</xliff:g> ಅನ್ನು ನಿರ್ವಹಿಸಲು <xliff:g id="APPLICATION">%1$s</xliff:g> ಅನ್ನು ತೆರೆಯುವುದೇ?"</string>
     <string name="usb_accessory_uri_prompt" msgid="6756649383432542382">"ಆಪ್‌ಗಳು USB ಪರಿಕರದಲ್ಲಿ ಕಾರ್ಯನಿರ್ವಹಿಸುವುದಿಲ್ಲ. ಆ ಬಗ್ಗೆ <xliff:g id="URL">%1$s</xliff:g> ನಲ್ಲಿ ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ"</string>
     <string name="title_usb_accessory" msgid="1236358027511638648">"USB ಆ್ಯಕ್ಸೆಸರಿ"</string>
-    <!-- no translation found for usb_device_dialog_allow_only_this_time_button (3653881633944232491) -->
-    <skip />
-    <!-- no translation found for usb_device_dialog_cancel_button (9050554648474787233) -->
-    <skip />
+    <string name="usb_device_dialog_allow_only_this_time_button" msgid="3653881633944232491">"ಈ ಬಾರಿ ಮಾತ್ರ"</string>
+    <string name="usb_device_dialog_cancel_button" msgid="9050554648474787233">"ರದ್ದುಮಾಡಿ"</string>
     <string name="label_view" msgid="6815442985276363364">"ವೀಕ್ಷಿಸು"</string>
     <string name="always_use_device" msgid="210535878779644679">"<xliff:g id="USB_DEVICE">%2$s</xliff:g> ಸಂಪರ್ಕಗೊಂಡಾಗ ಯಾವಾಗಲೂ <xliff:g id="APPLICATION">%1$s</xliff:g> ಅನ್ನು ತೆರೆಯಿರಿ"</string>
     <string name="always_use_accessory" msgid="1977225429341838444">"<xliff:g id="USB_ACCESSORY">%2$s</xliff:g> ಸಂಪರ್ಕಗೊಂಡಾಗ ಯಾವಾಗಲೂ <xliff:g id="APPLICATION">%1$s</xliff:g> ಅನ್ನು ತೆರೆಯಿರಿ"</string>
@@ -186,10 +184,13 @@
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"ಆ್ಯಪ್ ವಿಂಡೋವನ್ನು ಹಂಚಿಕೊಳ್ಳಿ"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"ಟ್ಯಾಬ್ ಅನ್ನು ಹಂಚಿಕೊಳ್ಳಿ"</string>
     <string name="screen_share_entire_screen_sharing_title" msgid="9093580141248337998">"ಸಂಪೂರ್ಣ ಸ್ಕ್ರೀನ್ ಅನ್ನು ಹಂಚಿಕೊಳ್ಳಿ"</string>
-    <string name="screen_share_disclaimer_app_sharing" msgid="4191319837838590771">"ನೀವು ಆ್ಯಪ್ ಹಂಚಿಕೊಳ್ಳುತ್ತಿರುವಾಗ, ಆ ಆ್ಯಪ್‌ನಲ್ಲಿ ತೋರಿಸಿದ ಅಥವಾ ಪ್ಲೇ ಆದ ಏನಾದರೂ [APP NAME] ಗೆ ಕಾಣಿಸುತ್ತದೆ. ಹಾಗಾಗಿ ಪಾಸ್‌ವರ್ಡ್, ಪಾವತಿ ವಿವರ, ಸಂದೇಶ, ಫೋಟೋ, ಆಡಿಯೋ, ವೀಡಿಯೊದಂತಹ ವಿಷಯಗಳ ಬಗ್ಗೆ ಜಾಗರೂಕರಾಗಿರಿ."</string>
-    <string name="screen_share_disclaimer_full_screen_sharing" msgid="6445373139864031364">"ನಿಮ್ಮ ಸಂಪೂರ್ಣ ಸ್ಕ್ರೀನ್ ಅನ್ನು ನೀವು ಹಂಚಿಕೊಳ್ಳುತ್ತಿರುವಾಗ, ನಿಮ್ಮ ಸ್ಕ್ರೀನ್‌ನಲ್ಲಿರುವ ಏನಾದರೂ [APP NAME] ಗೆ ಕಾಣಿಸುತ್ತದೆ. ಹಾಗಾಗಿ ಪಾಸ್‌ವರ್ಡ್‌ಗಳು, ಪಾವತಿ ವಿವರಗಳು, ಸಂದೇಶಗಳು, ಫೋಟೋಗಳು ಮತ್ತು ಆಡಿಯೋ ಹಾಗೂ ವೀಡಿಯೊದಂತಹ ವಿಷಯಗಳ ಬಗ್ಗೆ ಜಾಗರೂಕರಾಗಿರಿ."</string>
-    <!-- no translation found for screen_share_a11y_announcement (8938007210094494367) -->
+    <!-- no translation found for screen_share_disclaimer_app_sharing (1839029004749224549) -->
     <skip />
+    <!-- no translation found for screen_share_disclaimer_tab_sharing (3811486274577713101) -->
+    <skip />
+    <!-- no translation found for screen_share_disclaimer_full_screen_sharing (5173795016606926338) -->
+    <skip />
+    <string name="screen_share_a11y_announcement" msgid="8938007210094494367">"ಏನನ್ನು ಹಂಚಿಕೊಳ್ಳಬೇಕು ಎಂಬುದನ್ನು ಆಯ್ಕೆಮಾಡಿ. ಟ್ಯಾಬ್, ಆ್ಯಪ್ ಅಥವಾ ಸಂಪೂರ್ಣ ಸ್ಕ್ರೀನ್ ಅನ್ನು ಆಯ್ಕೆಮಾಡಿ. ನಂತರ ಹಂಚಿಕೊಳ್ಳಿ ಎಂಬುದನ್ನು ಒತ್ತಿರಿ."</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"ವಿಂಡೋದ ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ತೆಗೆದುಕೊಳ್ಳಿ"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"ವಿಂಡೋ ರೆಕಾರ್ಡ್ ಮಾಡಿ"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"ಆಯ್ಕೆಮಾಡಿದ ಪ್ರದೇಶದ ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ತೆಗೆದುಕೊಳ್ಳಿ"</string>
@@ -391,8 +392,7 @@
     <string name="accessibility_clear_all" msgid="970525598287244592">"ಎಲ್ಲಾ ಅಧಿಸೂಚನೆಗಳನ್ನು ತೆರವುಗೊಳಿಸು."</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"ನೋಟಿಫಿಕೇಶನ್‌ಗಳು"</string>
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Assistant"</string>
-    <!-- no translation found for accessibility_status_bar_input_method_indicator (4911669064186093506) -->
-    <skip />
+    <string name="accessibility_status_bar_input_method_indicator" msgid="4911669064186093506">"ಕೀಬೋರ್ಡ್"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{ಇನ್ನೂ # ನೋಟಿಫಿಕೇಶನ್ ಒಳಗಿದೆ.}one{ಇನ್ನೂ # ನೋಟಿಫಿಕೇಶನ್‌ಗಳು ಒಳಗಿವೆ.}other{ಇನ್ನೂ # ನೋಟಿಫಿಕೇಶನ್‌ಗಳು ಒಳಗಿವೆ.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"ಪರದೆಯನ್ನು ಲ್ಯಾಂಡ್‌ಸ್ಕೇಪ್ ಓರಿಯಂಟೇಶನ್‍ನಲ್ಲಿ ಲಾಕ್ ಮಾಡಲಾಗಿದೆ."</string>
@@ -1796,62 +1796,33 @@
     <string name="location_button_text_use_precise_location" msgid="3499475231656390476">"ನಿಖರವಾದ ಸ್ಥಳವನ್ನು ಬಳಸಿ"</string>
     <string name="location_button_text_near_precise_location" msgid="3607275724182981412">"ನಿಖರವಾದ ಸ್ಥಳದ ಸಮೀಪದಲ್ಲಿ"</string>
     <string name="location_button_text_precise_location" msgid="4441259889842542799">"ನಿಖರವಾದ ಸ್ಥಳ"</string>
-    <!-- no translation found for privacy_chip_use_string (979159484631969073) -->
-    <skip />
-    <!-- no translation found for privacy_chip_use_string_with_app (6807216002072346877) -->
-    <skip />
-    <!-- no translation found for privacy_chip_camera_and_mic_text (6254449489859255607) -->
-    <skip />
-    <!-- no translation found for av_panel_title (455230832870768515) -->
-    <skip />
-    <!-- no translation found for sensor_activity_header (2145727448786698035) -->
-    <skip />
-    <!-- no translation found for sensor_activity_see_all_access_button (8005330122289549048) -->
-    <skip />
-    <!-- no translation found for sensor_activity_camera_label (4260675418606211259) -->
-    <skip />
-    <!-- no translation found for sensor_activity_microphone_label (4012136402420177411) -->
-    <skip />
-    <!-- no translation found for sensor_activity_manage_access_button (1275701280501357102) -->
-    <skip />
-    <!-- no translation found for sensor_activity_close_app_button (6907314738150753330) -->
-    <skip />
-    <!-- no translation found for sensor_activity_back_button_cd (6894532284650291222) -->
-    <skip />
-    <!-- no translation found for privacy_chip_apps_using_sensor_suffix (527247786536767096) -->
-    <skip />
-    <!-- no translation found for privacy_chip_camera_in_use (5163494654848590528) -->
-    <skip />
-    <!-- no translation found for privacy_chip_mic_in_use (1586091297556363367) -->
-    <skip />
-    <!-- no translation found for privacy_chip_camera_mic_in_use (5179267787210197484) -->
-    <skip />
-    <!-- no translation found for av_camera_portrait_touch_up (5191856296212427203) -->
-    <skip />
-    <!-- no translation found for av_mic_label (5427348054144789879) -->
-    <skip />
-    <!-- no translation found for av_camera_label (7719772172590702343) -->
-    <skip />
-    <!-- no translation found for av_camera_blur_drill_in_title (2250600375798981511) -->
-    <skip />
-    <!-- no translation found for av_camera_blur_off (3170334995799202022) -->
-    <skip />
-    <!-- no translation found for av_camera_blur_light (5666055368940059418) -->
-    <skip />
-    <!-- no translation found for av_camera_blur_full (3276351992811619332) -->
-    <skip />
-    <!-- no translation found for av_camera_improve_lighting (1540549414296669133) -->
-    <skip />
-    <!-- no translation found for av_camera_framing (5108462267843042492) -->
-    <skip />
-    <!-- no translation found for av_studio_mic (2614843492629357766) -->
-    <skip />
-    <!-- no translation found for av_studio_look (621893522645557619) -->
-    <skip />
-    <!-- no translation found for av_studio_look_effects (4105109585851068415) -->
-    <skip />
-    <!-- no translation found for av_blur (405131343487260171) -->
-    <skip />
-    <!-- no translation found for av_live_captions (7819416886586903077) -->
-    <skip />
+    <string name="privacy_chip_use_string" msgid="979159484631969073">"<xliff:g id="SENSOR">%1$s</xliff:g> ಬಳಕೆಯಲ್ಲಿವೆ"</string>
+    <string name="privacy_chip_use_string_with_app" msgid="6807216002072346877">"<xliff:g id="SENSOR">%1$s</xliff:g> ಅನ್ನು <xliff:g id="APP">%2$s</xliff:g> ಬಳಸುತ್ತಿದೆ"</string>
+    <string name="privacy_chip_camera_and_mic_text" msgid="6254449489859255607">"ಕ್ಯಾಮರಾ ಮತ್ತು ಮೈಕ್"</string>
+    <string name="av_panel_title" msgid="455230832870768515">"ಗೌಪ್ಯತೆ"</string>
+    <string name="sensor_activity_header" msgid="2145727448786698035">"ಈ ಅನುಮತಿಗಳನ್ನು ಸಕ್ರಿಯವಾಗಿ ಅಥವಾ ಇತ್ತೀಚೆಗೆ ಬಳಸುತ್ತಿರುವ ಆ್ಯಪ್‌ಗಳನ್ನು ನೋಡಿ."</string>
+    <string name="sensor_activity_see_all_access_button" msgid="8005330122289549048">"ಎಲ್ಲಾ ಆ್ಯಕ್ಸೆಸ್ ಅನ್ನು ನೋಡಿ"</string>
+    <string name="sensor_activity_camera_label" msgid="4260675418606211259">"ಕ್ಯಾಮರಾ"</string>
+    <string name="sensor_activity_microphone_label" msgid="4012136402420177411">"ಮೈಕ್ರೊಫೋನ್‌"</string>
+    <string name="sensor_activity_manage_access_button" msgid="1275701280501357102">"ಆ್ಯಕ್ಸೆಸ್ ನಿರ್ವಹಿಸಿ"</string>
+    <string name="sensor_activity_close_app_button" msgid="6907314738150753330">"ಆ್ಯಪ್ ಅನ್ನು ಮುಚ್ಚಿರಿ"</string>
+    <string name="sensor_activity_back_button_cd" msgid="6894532284650291222">"ಹಿಂದಕ್ಕೆ"</string>
+    <string name="privacy_chip_apps_using_sensor_suffix" msgid="527247786536767096">"+ ಇನ್ನೂ <xliff:g id="COUNT">%1$d</xliff:g>"</string>
+    <string name="privacy_chip_camera_in_use" msgid="5163494654848590528">"ಕ್ಯಾಮರಾ ಬಳಕೆಯಲ್ಲಿದೆ"</string>
+    <string name="privacy_chip_mic_in_use" msgid="1586091297556363367">"ಮೈಕ್ ಬಳಕೆಯಲ್ಲಿದೆ"</string>
+    <string name="privacy_chip_camera_mic_in_use" msgid="5179267787210197484">"ಕ್ಯಾಮರಾ, ಮೈಕ್ ಬಳಕೆಯಲ್ಲಿದೆ"</string>
+    <string name="av_camera_portrait_touch_up" msgid="5191856296212427203">"ಪೋರ್ಟ್ರೇಟ್ ಟಚ್‌-ಅಪ್"</string>
+    <string name="av_mic_label" msgid="5427348054144789879">"ಮೈಕ್ರೊಫೋನ್‌"</string>
+    <string name="av_camera_label" msgid="7719772172590702343">"ಕ್ಯಾಮರಾ"</string>
+    <string name="av_camera_blur_drill_in_title" msgid="2250600375798981511">"ಹಿನ್ನೆಲೆ ಮಸುಕು"</string>
+    <string name="av_camera_blur_off" msgid="3170334995799202022">"ಆಫ್"</string>
+    <string name="av_camera_blur_light" msgid="5666055368940059418">"ಲೈಟ್"</string>
+    <string name="av_camera_blur_full" msgid="3276351992811619332">"ಸಂಪೂರ್ಣ"</string>
+    <string name="av_camera_improve_lighting" msgid="1540549414296669133">"ಸುಧಾರಿತ ಲೈಟಿಂಗ್"</string>
+    <string name="av_camera_framing" msgid="5108462267843042492">"ಕ್ಯಾಮರಾ ಫ್ರೇಮಿಂಗ್"</string>
+    <string name="av_studio_mic" msgid="2614843492629357766">"ಸ್ಟುಡಿಯೋ ಮೈಕ್"</string>
+    <string name="av_studio_look" msgid="621893522645557619">"ಸ್ಟುಡಿಯೋ ಲುಕ್"</string>
+    <string name="av_studio_look_effects" msgid="4105109585851068415">"%d ಎಫೆಕ್ಟ್‌ಗಳು"</string>
+    <string name="av_blur" msgid="405131343487260171">"ಮಸುಕು"</string>
+    <string name="av_live_captions" msgid="7819416886586903077">"ಲೈವ್ ಕ್ಯಾಪ್ಶನ್‌ಗಳು"</string>
 </resources>

@@ -46,10 +46,8 @@
     <string name="usb_accessory_confirm_prompt" msgid="5728408382798643421">"Желите ли да отворите апликацију <xliff:g id="APPLICATION">%1$s</xliff:g> да бисте користили уређај <xliff:g id="USB_ACCESSORY">%2$s</xliff:g>?"</string>
     <string name="usb_accessory_uri_prompt" msgid="6756649383432542382">"Инсталиране апликације не функционишу са овим USB помоћним уређајем. Сазнајте више о њему на адреси <xliff:g id="URL">%1$s</xliff:g>"</string>
     <string name="title_usb_accessory" msgid="1236358027511638648">"USB помоћни уређај"</string>
-    <!-- no translation found for usb_device_dialog_allow_only_this_time_button (3653881633944232491) -->
-    <skip />
-    <!-- no translation found for usb_device_dialog_cancel_button (9050554648474787233) -->
-    <skip />
+    <string name="usb_device_dialog_allow_only_this_time_button" msgid="3653881633944232491">"Само овај пут"</string>
+    <string name="usb_device_dialog_cancel_button" msgid="9050554648474787233">"Откажи"</string>
     <string name="label_view" msgid="6815442985276363364">"Прикажи"</string>
     <string name="always_use_device" msgid="210535878779644679">"Увек отварај апликацију <xliff:g id="APPLICATION">%1$s</xliff:g> када је уређај <xliff:g id="USB_DEVICE">%2$s</xliff:g> повезан"</string>
     <string name="always_use_accessory" msgid="1977225429341838444">"Увек отварај апликацију <xliff:g id="APPLICATION">%1$s</xliff:g> када је уређај <xliff:g id="USB_ACCESSORY">%2$s</xliff:g> повезан"</string>
@@ -66,7 +64,7 @@
     <string name="share_wifi_button_text" msgid="1285273973812029240">"Дели WiFi"</string>
     <string name="add_network_button_text" msgid="4046392140897987570">"Додајте мрежу"</string>
     <string name="wifi_debugging_title" msgid="7300007687492186076">"Желите да дозволите бежично отклањање грешака на овој мрежи?"</string>
-    <string name="wifi_debugging_message" msgid="5461204211731802995">"Назив мреже (SSID)\n<xliff:g id="SSID_0">%1$s</xliff:g>\n\nWi‑Fi адреса (BSSID)\n<xliff:g id="BSSID_1">%2$s</xliff:g>"</string>
+    <string name="wifi_debugging_message" msgid="5461204211731802995">"Назив мреже (SSID)\n<xliff:g id="SSID_0">%1$s</xliff:g>\n\nWiFi адреса (BSSID)\n<xliff:g id="BSSID_1">%2$s</xliff:g>"</string>
     <string name="wifi_debugging_always" msgid="2968383799517975155">"Увек дозволи на овој мрежи"</string>
     <string name="wifi_debugging_allow" msgid="4573224609684957886">"Дозволи"</string>
     <string name="wifi_debugging_secondary_user_title" msgid="2493201475880517725">"Бежично отклањање грешака није дозвољено"</string>
@@ -158,10 +156,8 @@
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"Прикажи предњу камеру"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Прикажи додире"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Одаберите апликацију за снимање"</string>
-    <!-- no translation found for screen_record_settings (2377267679200139285) -->
-    <skip />
-    <!-- no translation found for screen_record_markup (5583986085046693669) -->
-    <skip />
+    <string name="screen_record_settings" msgid="2377267679200139285">"Подешавања снимања екрана"</string>
+    <string name="screen_record_markup" msgid="5583986085046693669">"Означавање"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Видео је сачуван"</string>
     <string name="screen_record_video_deleted" msgid="30786214839944540">"Видео је избрисан"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"Опозови"</string>
@@ -174,8 +170,7 @@
     <string name="screen_record_pause" msgid="1715012292444967776">"Паузирај"</string>
     <string name="screen_record_mute" msgid="8111682249858638168">"Искључи звук"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"Укључи звук"</string>
-    <!-- no translation found for screen_record_video_preview_elapsed_time_a11y_template (969599623785875798) -->
-    <skip />
+    <string name="screen_record_video_preview_elapsed_time_a11y_template" formatted="false" msgid="969599623785875798">"<xliff:g id="ELAPSED_TIME">%1$s</xliff:g> <xliff:g id="DURATION">%2$s</xliff:g>"</string>
     <string name="screen_capture_blocked_by_admin" msgid="1751756953683506644">"ИТ администратор је блокирао снимање екрана"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"Направи снимак целог екрана"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"Сними цео екран"</string>
@@ -189,10 +184,13 @@
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"Прозор за дељење апликације"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"Делите картицу"</string>
     <string name="screen_share_entire_screen_sharing_title" msgid="9093580141248337998">"Делите цео екран"</string>
-    <string name="screen_share_disclaimer_app_sharing" msgid="4191319837838590771">"Када делите апликацију, [APP NAME] види сав садржај који се приказује или пушта у њој. Зато пазите на лозинке, информације о плаћању, поруке, слике, аудио и видео садржај."</string>
-    <string name="screen_share_disclaimer_full_screen_sharing" msgid="6445373139864031364">"Када делите цео екран, [APP NAME] види све што је на њему. Зато пазите на лозинке, информације о плаћању, поруке, слике, аудио и видео садржај."</string>
-    <!-- no translation found for screen_share_a11y_announcement (8938007210094494367) -->
+    <!-- no translation found for screen_share_disclaimer_app_sharing (1839029004749224549) -->
     <skip />
+    <!-- no translation found for screen_share_disclaimer_tab_sharing (3811486274577713101) -->
+    <skip />
+    <!-- no translation found for screen_share_disclaimer_full_screen_sharing (5173795016606926338) -->
+    <skip />
+    <string name="screen_share_a11y_announcement" msgid="8938007210094494367">"Одаберите шта ћете делити. Изаберите картицу, апликацију или цео екран. Затим притисните Дели."</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Направи снимак екрана прозора апликације"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Сними прозор апликације"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Направи снимак екрана изабране области"</string>
@@ -394,8 +392,7 @@
     <string name="accessibility_clear_all" msgid="970525598287244592">"Обриши сва обавештења."</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"Обавештења"</string>
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Помоћник"</string>
-    <!-- no translation found for accessibility_status_bar_input_method_indicator (4911669064186093506) -->
-    <skip />
+    <string name="accessibility_status_bar_input_method_indicator" msgid="4911669064186093506">"Тастатура"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"и још <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{Унутра је још # обавештење.}one{Унутра је још # обавештење.}few{Унутра су још # обавештења.}other{Унутра је још # обавештења.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"Екран је закључан у хоризонталном положају."</string>
@@ -945,8 +942,7 @@
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"Билтени, препоручени медији и друго"</string>
     <string name="notification_onboarding_summaries_turn_on" msgid="3831339570984683297">"Укључите у Подешавањима"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"Дуже конверзације сада могу да се резимирају како бисте добијали брзе прегледе"</string>
-    <!-- no translation found for notification_onboarding_summaries_message_with_apps (5320980333818238465) -->
-    <skip />
+    <string name="notification_onboarding_summaries_message_with_apps" msgid="5320980333818238465">"Уређај и апликације сада могу да резимирају дуже конверзације како бисте добијали брзе прегледе"</string>
     <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"Организатор обавештења групише обавештења нижег приоритета и искључује им звук. Додајте још категорија у Подешавањима."</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# обавештење}one{# обавештење}few{# обавештења}other{# обавештења}}"</string>
     <string name="notification_bundle_header_joined_description" msgid="4517556837418088139">"<xliff:g id="NAME">%1$s</xliff:g>, <xliff:g id="NUM_NOTIFICATIONS">%2$s</xliff:g>"</string>

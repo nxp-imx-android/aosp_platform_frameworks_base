@@ -46,10 +46,8 @@
     <string name="usb_accessory_confirm_prompt" msgid="5728408382798643421">"Želite li da otvorite aplikaciju <xliff:g id="APPLICATION">%1$s</xliff:g> da biste koristili uređaj <xliff:g id="USB_ACCESSORY">%2$s</xliff:g>?"</string>
     <string name="usb_accessory_uri_prompt" msgid="6756649383432542382">"Instalirane aplikacije ne funkcionišu sa ovim USB pomoćnim uređajem. Saznajte više o njemu na adresi <xliff:g id="URL">%1$s</xliff:g>"</string>
     <string name="title_usb_accessory" msgid="1236358027511638648">"USB pomoćni uređaj"</string>
-    <!-- no translation found for usb_device_dialog_allow_only_this_time_button (3653881633944232491) -->
-    <skip />
-    <!-- no translation found for usb_device_dialog_cancel_button (9050554648474787233) -->
-    <skip />
+    <string name="usb_device_dialog_allow_only_this_time_button" msgid="3653881633944232491">"Samo ovaj put"</string>
+    <string name="usb_device_dialog_cancel_button" msgid="9050554648474787233">"Otkaži"</string>
     <string name="label_view" msgid="6815442985276363364">"Prikaži"</string>
     <string name="always_use_device" msgid="210535878779644679">"Uvek otvaraj aplikaciju <xliff:g id="APPLICATION">%1$s</xliff:g> kada je uređaj <xliff:g id="USB_DEVICE">%2$s</xliff:g> povezan"</string>
     <string name="always_use_accessory" msgid="1977225429341838444">"Uvek otvaraj aplikaciju <xliff:g id="APPLICATION">%1$s</xliff:g> kada je uređaj <xliff:g id="USB_ACCESSORY">%2$s</xliff:g> povezan"</string>
@@ -66,7 +64,7 @@
     <string name="share_wifi_button_text" msgid="1285273973812029240">"Deli WiFi"</string>
     <string name="add_network_button_text" msgid="4046392140897987570">"Dodajte mrežu"</string>
     <string name="wifi_debugging_title" msgid="7300007687492186076">"Želite da dozvolite bežično otklanjanje grešaka na ovoj mreži?"</string>
-    <string name="wifi_debugging_message" msgid="5461204211731802995">"Naziv mreže (SSID)\n<xliff:g id="SSID_0">%1$s</xliff:g>\n\nWi‑Fi adresa (BSSID)\n<xliff:g id="BSSID_1">%2$s</xliff:g>"</string>
+    <string name="wifi_debugging_message" msgid="5461204211731802995">"Naziv mreže (SSID)\n<xliff:g id="SSID_0">%1$s</xliff:g>\n\nWiFi adresa (BSSID)\n<xliff:g id="BSSID_1">%2$s</xliff:g>"</string>
     <string name="wifi_debugging_always" msgid="2968383799517975155">"Uvek dozvoli na ovoj mreži"</string>
     <string name="wifi_debugging_allow" msgid="4573224609684957886">"Dozvoli"</string>
     <string name="wifi_debugging_secondary_user_title" msgid="2493201475880517725">"Bežično otklanjanje grešaka nije dozvoljeno"</string>
@@ -158,10 +156,8 @@
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"Prikaži prednju kameru"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Prikaži dodire"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Odaberite aplikaciju za snimanje"</string>
-    <!-- no translation found for screen_record_settings (2377267679200139285) -->
-    <skip />
-    <!-- no translation found for screen_record_markup (5583986085046693669) -->
-    <skip />
+    <string name="screen_record_settings" msgid="2377267679200139285">"Podešavanja snimanja ekrana"</string>
+    <string name="screen_record_markup" msgid="5583986085046693669">"Označavanje"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Video je sačuvan"</string>
     <string name="screen_record_video_deleted" msgid="30786214839944540">"Video je izbrisan"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"Opozovi"</string>
@@ -174,8 +170,7 @@
     <string name="screen_record_pause" msgid="1715012292444967776">"Pauziraj"</string>
     <string name="screen_record_mute" msgid="8111682249858638168">"Isključi zvuk"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"Uključi zvuk"</string>
-    <!-- no translation found for screen_record_video_preview_elapsed_time_a11y_template (969599623785875798) -->
-    <skip />
+    <string name="screen_record_video_preview_elapsed_time_a11y_template" formatted="false" msgid="969599623785875798">"<xliff:g id="ELAPSED_TIME">%1$s</xliff:g> <xliff:g id="DURATION">%2$s</xliff:g>"</string>
     <string name="screen_capture_blocked_by_admin" msgid="1751756953683506644">"IT administrator je blokirao snimanje ekrana"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"Napravi snimak celog ekrana"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"Snimi ceo ekran"</string>
@@ -189,10 +184,13 @@
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"Prozor za deljenje aplikacije"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"Delite karticu"</string>
     <string name="screen_share_entire_screen_sharing_title" msgid="9093580141248337998">"Delite ceo ekran"</string>
-    <string name="screen_share_disclaimer_app_sharing" msgid="4191319837838590771">"Kada delite aplikaciju, [APP NAME] vidi sav sadržaj koji se prikazuje ili pušta u njoj. Zato pazite na lozinke, informacije o plaćanju, poruke, slike, audio i video sadržaj."</string>
-    <string name="screen_share_disclaimer_full_screen_sharing" msgid="6445373139864031364">"Kada delite ceo ekran, [APP NAME] vidi sve što je na njemu. Zato pazite na lozinke, informacije o plaćanju, poruke, slike, audio i video sadržaj."</string>
-    <!-- no translation found for screen_share_a11y_announcement (8938007210094494367) -->
+    <!-- no translation found for screen_share_disclaimer_app_sharing (1839029004749224549) -->
     <skip />
+    <!-- no translation found for screen_share_disclaimer_tab_sharing (3811486274577713101) -->
+    <skip />
+    <!-- no translation found for screen_share_disclaimer_full_screen_sharing (5173795016606926338) -->
+    <skip />
+    <string name="screen_share_a11y_announcement" msgid="8938007210094494367">"Odaberite šta ćete deliti. Izaberite karticu, aplikaciju ili ceo ekran. Zatim pritisnite Deli."</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Napravi snimak ekrana prozora aplikacije"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Snimi prozor aplikacije"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Napravi snimak ekrana izabrane oblasti"</string>
@@ -394,8 +392,7 @@
     <string name="accessibility_clear_all" msgid="970525598287244592">"Obriši sva obaveštenja."</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"Obaveštenja"</string>
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Pomoćnik"</string>
-    <!-- no translation found for accessibility_status_bar_input_method_indicator (4911669064186093506) -->
-    <skip />
+    <string name="accessibility_status_bar_input_method_indicator" msgid="4911669064186093506">"Tastatura"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"i još <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{Unutra je još # obaveštenje.}one{Unutra je još # obaveštenje.}few{Unutra su još # obaveštenja.}other{Unutra je još # obaveštenja.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"Ekran je zaključan u horizontalnom položaju."</string>
@@ -945,8 +942,7 @@
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"Bilteni, preporučeni mediji i drugo"</string>
     <string name="notification_onboarding_summaries_turn_on" msgid="3831339570984683297">"Uključite u Podešavanjima"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"Duže konverzacije sada mogu da se rezimiraju kako biste dobijali brze preglede"</string>
-    <!-- no translation found for notification_onboarding_summaries_message_with_apps (5320980333818238465) -->
-    <skip />
+    <string name="notification_onboarding_summaries_message_with_apps" msgid="5320980333818238465">"Uređaj i aplikacije sada mogu da rezimiraju duže konverzacije kako biste dobijali brze preglede"</string>
     <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"Organizator obaveštenja grupiše obaveštenja nižeg prioriteta i isključuje im zvuk. Dodajte još kategorija u Podešavanjima."</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# obaveštenje}one{# obaveštenje}few{# obaveštenja}other{# obaveštenja}}"</string>
     <string name="notification_bundle_header_joined_description" msgid="4517556837418088139">"<xliff:g id="NAME">%1$s</xliff:g>, <xliff:g id="NUM_NOTIFICATIONS">%2$s</xliff:g>"</string>

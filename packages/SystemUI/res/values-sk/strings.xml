@@ -46,10 +46,8 @@
     <string name="usb_accessory_confirm_prompt" msgid="5728408382798643421">"Otvoriť aplikáciu <xliff:g id="APPLICATION">%1$s</xliff:g> na použitie zariadenia <xliff:g id="USB_ACCESSORY">%2$s</xliff:g>?"</string>
     <string name="usb_accessory_uri_prompt" msgid="6756649383432542382">"S týmto zariad. USB nefunguje žiadna nainštal. aplikácia. Ďalšie informácie na <xliff:g id="URL">%1$s</xliff:g>"</string>
     <string name="title_usb_accessory" msgid="1236358027511638648">"Periférne zariadenie USB"</string>
-    <!-- no translation found for usb_device_dialog_allow_only_this_time_button (3653881633944232491) -->
-    <skip />
-    <!-- no translation found for usb_device_dialog_cancel_button (9050554648474787233) -->
-    <skip />
+    <string name="usb_device_dialog_allow_only_this_time_button" msgid="3653881633944232491">"Iba tentokrát"</string>
+    <string name="usb_device_dialog_cancel_button" msgid="9050554648474787233">"Zrušiť"</string>
     <string name="label_view" msgid="6815442985276363364">"Zobraziť"</string>
     <string name="always_use_device" msgid="210535878779644679">"Po pripojení zariadenia <xliff:g id="USB_DEVICE">%2$s</xliff:g> vždy otvoriť aplikáciu <xliff:g id="APPLICATION">%1$s</xliff:g>"</string>
     <string name="always_use_accessory" msgid="1977225429341838444">"Po pripojení zariadenia <xliff:g id="USB_ACCESSORY">%2$s</xliff:g> vždy otvoriť aplikáciu <xliff:g id="APPLICATION">%1$s</xliff:g>"</string>
@@ -158,10 +156,8 @@
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"Zobraziť selfie kameru"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Zobraziť dotyky"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Vyberte aplikáciu na nahrávanie"</string>
-    <!-- no translation found for screen_record_settings (2377267679200139285) -->
-    <skip />
-    <!-- no translation found for screen_record_markup (5583986085046693669) -->
-    <skip />
+    <string name="screen_record_settings" msgid="2377267679200139285">"Nastavenia nahrávania obrazovky"</string>
+    <string name="screen_record_markup" msgid="5583986085046693669">"Značky"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Video bolo uložené"</string>
     <string name="screen_record_video_deleted" msgid="30786214839944540">"Video bolo odstránené"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"Späť"</string>
@@ -174,8 +170,7 @@
     <string name="screen_record_pause" msgid="1715012292444967776">"Pozastaviť"</string>
     <string name="screen_record_mute" msgid="8111682249858638168">"Vypnúť zvuk"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"Zapnúť zvuk"</string>
-    <!-- no translation found for screen_record_video_preview_elapsed_time_a11y_template (969599623785875798) -->
-    <skip />
+    <string name="screen_record_video_preview_elapsed_time_a11y_template" formatted="false" msgid="969599623785875798">"<xliff:g id="ELAPSED_TIME">%1$s</xliff:g> z <xliff:g id="DURATION">%2$s</xliff:g>"</string>
     <string name="screen_capture_blocked_by_admin" msgid="1751756953683506644">"Snímanie obrazovky blokuje váš správca IT"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"Vytvoriť snímku celej obrazovky"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"Nahrávať celú obrazovku"</string>
@@ -189,10 +184,13 @@
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"Zdieľanie okna aplikácie"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"Zdieľať kartu"</string>
     <string name="screen_share_entire_screen_sharing_title" msgid="9093580141248337998">"Zdieľajte celú obrazovku"</string>
-    <string name="screen_share_disclaimer_app_sharing" msgid="4191319837838590771">"[APP NAME] vidí pri zdieľaní určitej aplikácie všetko, čo sa v zdieľanej aplikácii zobrazuje alebo prehráva. Preto venujte pozornosť veciam, ako sú heslá, platobné údaje, správy, fotky a zvuk aj video."</string>
-    <string name="screen_share_disclaimer_full_screen_sharing" msgid="6445373139864031364">"[APP NAME] vidí pri zdieľaní celej obrazovky všetko, čo je na nej zobrazené. Preto venujte pozornosť veciam, ako sú heslá, platobné údaje, správy, fotky a zvuk aj video."</string>
-    <!-- no translation found for screen_share_a11y_announcement (8938007210094494367) -->
+    <!-- no translation found for screen_share_disclaimer_app_sharing (1839029004749224549) -->
     <skip />
+    <!-- no translation found for screen_share_disclaimer_tab_sharing (3811486274577713101) -->
+    <skip />
+    <!-- no translation found for screen_share_disclaimer_full_screen_sharing (5173795016606926338) -->
+    <skip />
+    <string name="screen_share_a11y_announcement" msgid="8938007210094494367">"Vyberte, čo sa má zdieľať. Vyberte kartu, aplikáciu alebo celú obrazovku. Potom stlačte Zdieľať."</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Vytvoriť snímku okna"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Okno nahrávania"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Vytvoriť snímku vybranej oblasti obrazovky"</string>
@@ -394,8 +392,7 @@
     <string name="accessibility_clear_all" msgid="970525598287244592">"Vymazať všetky upozornenia."</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"Upozornenia"</string>
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Asistent"</string>
-    <!-- no translation found for accessibility_status_bar_input_method_indicator (4911669064186093506) -->
-    <skip />
+    <string name="accessibility_status_bar_input_method_indicator" msgid="4911669064186093506">"Klávesnica"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{# ďalšie upozornenie v skupine.}few{# ďalšie upozornenia v skupine.}many{# more notifications inside.}other{# ďalších upozornení v skupine.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"Obrazovka je uzamknutá v orientácii na šírku."</string>
@@ -945,8 +942,7 @@
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"Bulletiny, odporúčané médiá a ďalší obsah"</string>
     <string name="notification_onboarding_summaries_turn_on" msgid="3831339570984683297">"Zapnúť v Nastaveniach"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"Dlhšie konverzácie je možné teraz zhrnúť, aby ste mali k dispozícii rýchle súhrny"</string>
-    <!-- no translation found for notification_onboarding_summaries_message_with_apps (5320980333818238465) -->
-    <skip />
+    <string name="notification_onboarding_summaries_message_with_apps" msgid="5320980333818238465">"Vaše zariadenie a aplikácie teraz môžu zhrnúť dlhšie konverzácie, aby ste mali k dispozícii rýchle súhrny"</string>
     <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"Organizér upozornení zoskupí upozornenia s nižšou prioritou a vypne ich zvuk. Ďalšie kategórie môžete pridať v Nastaveniach."</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# upozornenie}few{# upozornenia}many{# notifications}other{# upozornení}}"</string>
     <string name="notification_bundle_header_joined_description" msgid="4517556837418088139">"<xliff:g id="NAME">%1$s</xliff:g>, <xliff:g id="NUM_NOTIFICATIONS">%2$s</xliff:g>"</string>
@@ -1800,62 +1796,33 @@
     <string name="location_button_text_use_precise_location" msgid="3499475231656390476">"Použiť presnú polohu"</string>
     <string name="location_button_text_near_precise_location" msgid="3607275724182981412">"V blízkosti presnej polohy"</string>
     <string name="location_button_text_precise_location" msgid="4441259889842542799">"Presná poloha"</string>
-    <!-- no translation found for privacy_chip_use_string (979159484631969073) -->
-    <skip />
-    <!-- no translation found for privacy_chip_use_string_with_app (6807216002072346877) -->
-    <skip />
-    <!-- no translation found for privacy_chip_camera_and_mic_text (6254449489859255607) -->
-    <skip />
-    <!-- no translation found for av_panel_title (455230832870768515) -->
-    <skip />
-    <!-- no translation found for sensor_activity_header (2145727448786698035) -->
-    <skip />
-    <!-- no translation found for sensor_activity_see_all_access_button (8005330122289549048) -->
-    <skip />
-    <!-- no translation found for sensor_activity_camera_label (4260675418606211259) -->
-    <skip />
-    <!-- no translation found for sensor_activity_microphone_label (4012136402420177411) -->
-    <skip />
-    <!-- no translation found for sensor_activity_manage_access_button (1275701280501357102) -->
-    <skip />
-    <!-- no translation found for sensor_activity_close_app_button (6907314738150753330) -->
-    <skip />
-    <!-- no translation found for sensor_activity_back_button_cd (6894532284650291222) -->
-    <skip />
-    <!-- no translation found for privacy_chip_apps_using_sensor_suffix (527247786536767096) -->
-    <skip />
-    <!-- no translation found for privacy_chip_camera_in_use (5163494654848590528) -->
-    <skip />
-    <!-- no translation found for privacy_chip_mic_in_use (1586091297556363367) -->
-    <skip />
-    <!-- no translation found for privacy_chip_camera_mic_in_use (5179267787210197484) -->
-    <skip />
-    <!-- no translation found for av_camera_portrait_touch_up (5191856296212427203) -->
-    <skip />
-    <!-- no translation found for av_mic_label (5427348054144789879) -->
-    <skip />
-    <!-- no translation found for av_camera_label (7719772172590702343) -->
-    <skip />
-    <!-- no translation found for av_camera_blur_drill_in_title (2250600375798981511) -->
-    <skip />
-    <!-- no translation found for av_camera_blur_off (3170334995799202022) -->
-    <skip />
-    <!-- no translation found for av_camera_blur_light (5666055368940059418) -->
-    <skip />
-    <!-- no translation found for av_camera_blur_full (3276351992811619332) -->
-    <skip />
-    <!-- no translation found for av_camera_improve_lighting (1540549414296669133) -->
-    <skip />
-    <!-- no translation found for av_camera_framing (5108462267843042492) -->
-    <skip />
-    <!-- no translation found for av_studio_mic (2614843492629357766) -->
-    <skip />
-    <!-- no translation found for av_studio_look (621893522645557619) -->
-    <skip />
-    <!-- no translation found for av_studio_look_effects (4105109585851068415) -->
-    <skip />
-    <!-- no translation found for av_blur (405131343487260171) -->
-    <skip />
-    <!-- no translation found for av_live_captions (7819416886586903077) -->
-    <skip />
+    <string name="privacy_chip_use_string" msgid="979159484631969073">"Používa sa <xliff:g id="SENSOR">%1$s</xliff:g>"</string>
+    <string name="privacy_chip_use_string_with_app" msgid="6807216002072346877">"Aplikácia <xliff:g id="APP">%2$s</xliff:g> používa <xliff:g id="SENSOR">%1$s</xliff:g>"</string>
+    <string name="privacy_chip_camera_and_mic_text" msgid="6254449489859255607">"Kamera a mikrofón"</string>
+    <string name="av_panel_title" msgid="455230832870768515">"Ochrana súkromia"</string>
+    <string name="sensor_activity_header" msgid="2145727448786698035">"Pozrite si aplikácie, ktoré aktívne používajú tieto povolenia alebo ich použili nedávno."</string>
+    <string name="sensor_activity_see_all_access_button" msgid="8005330122289549048">"Zobraziť všetok prístup"</string>
+    <string name="sensor_activity_camera_label" msgid="4260675418606211259">"Kamera"</string>
+    <string name="sensor_activity_microphone_label" msgid="4012136402420177411">"Mikrofón"</string>
+    <string name="sensor_activity_manage_access_button" msgid="1275701280501357102">"Spravovať prístup"</string>
+    <string name="sensor_activity_close_app_button" msgid="6907314738150753330">"Zavrieť aplikáciu"</string>
+    <string name="sensor_activity_back_button_cd" msgid="6894532284650291222">"Späť"</string>
+    <string name="privacy_chip_apps_using_sensor_suffix" msgid="527247786536767096">"+ ďalšie (<xliff:g id="COUNT">%1$d</xliff:g>)"</string>
+    <string name="privacy_chip_camera_in_use" msgid="5163494654848590528">"Používa sa kamera"</string>
+    <string name="privacy_chip_mic_in_use" msgid="1586091297556363367">"Používa sa mikrofón"</string>
+    <string name="privacy_chip_camera_mic_in_use" msgid="5179267787210197484">"Používa sa kamera a mikrofón"</string>
+    <string name="av_camera_portrait_touch_up" msgid="5191856296212427203">"Retušovanie portrétu"</string>
+    <string name="av_mic_label" msgid="5427348054144789879">"Mikrofón"</string>
+    <string name="av_camera_label" msgid="7719772172590702343">"Kamera"</string>
+    <string name="av_camera_blur_drill_in_title" msgid="2250600375798981511">"Rozmazanie pozadia"</string>
+    <string name="av_camera_blur_off" msgid="3170334995799202022">"Vypnuté"</string>
+    <string name="av_camera_blur_light" msgid="5666055368940059418">"Mierne"</string>
+    <string name="av_camera_blur_full" msgid="3276351992811619332">"Úplné"</string>
+    <string name="av_camera_improve_lighting" msgid="1540549414296669133">"Zlepšenie osvetlenia"</string>
+    <string name="av_camera_framing" msgid="5108462267843042492">"Zameriavanie kamery"</string>
+    <string name="av_studio_mic" msgid="2614843492629357766">"Štúdiový mikrofón"</string>
+    <string name="av_studio_look" msgid="621893522645557619">"Štúdiový vzhľad"</string>
+    <string name="av_studio_look_effects" msgid="4105109585851068415">"%d efektov"</string>
+    <string name="av_blur" msgid="405131343487260171">"Rozmazanie"</string>
+    <string name="av_live_captions" msgid="7819416886586903077">"Živý prepis"</string>
 </resources>

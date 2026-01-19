@@ -46,10 +46,8 @@
     <string name="usb_accessory_confirm_prompt" msgid="5728408382798643421">"<xliff:g id="USB_ACCESSORY">%2$s</xliff:g> ဆောင်ရွက်ရန် <xliff:g id="APPLICATION">%1$s</xliff:g> ကို ဖွင့်လိုပါသလား။"</string>
     <string name="usb_accessory_uri_prompt" msgid="6756649383432542382">"ဒီUSBပစ္စည်းနှင့်ဘယ်အပ်ပလီကေးရှင်းမှ အလုပ်မလုပ်ပါ။ ပိုမိုသိရန် <xliff:g id="URL">%1$s</xliff:g>တွင် လေ့လာပါ"</string>
     <string name="title_usb_accessory" msgid="1236358027511638648">"USBတွဲဖက်ပစ္စည်းများ"</string>
-    <!-- no translation found for usb_device_dialog_allow_only_this_time_button (3653881633944232491) -->
-    <skip />
-    <!-- no translation found for usb_device_dialog_cancel_button (9050554648474787233) -->
-    <skip />
+    <string name="usb_device_dialog_allow_only_this_time_button" msgid="3653881633944232491">"ဤတစ်ကြိမ်သာ"</string>
+    <string name="usb_device_dialog_cancel_button" msgid="9050554648474787233">"မလုပ်တော့"</string>
     <string name="label_view" msgid="6815442985276363364">"မြင်ကွင်း"</string>
     <string name="always_use_device" msgid="210535878779644679">"<xliff:g id="USB_DEVICE">%2$s</xliff:g> ချိတ်ဆက်သည့်အခါ <xliff:g id="APPLICATION">%1$s</xliff:g> ကို အမြဲဖွင့်ပါ"</string>
     <string name="always_use_accessory" msgid="1977225429341838444">"<xliff:g id="USB_ACCESSORY">%2$s</xliff:g> ချိတ်ဆက်သည့်အခါ <xliff:g id="APPLICATION">%1$s</xliff:g> ကို အမြဲဖွင့်ပါ"</string>
@@ -158,10 +156,8 @@
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"ဆယ်လ်ဖီ ကင်မရာ ပြပါ"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"ထိတွေ့ခြင်းများကို ပြပါ"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"ရိုက်ကူးရန် အက်ပ်ရွေးခြင်း"</string>
-    <!-- no translation found for screen_record_settings (2377267679200139285) -->
-    <skip />
-    <!-- no translation found for screen_record_markup (5583986085046693669) -->
-    <skip />
+    <string name="screen_record_settings" msgid="2377267679200139285">"ဖန်သားပြင်ရိုက်ကူးခြင်း ဆက်တင်များ"</string>
+    <string name="screen_record_markup" msgid="5583986085046693669">"စာပြင်ရေးဆွဲခြင်း"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"ဗီဒီယို သိမ်းပြီးပြီ"</string>
     <string name="screen_record_video_deleted" msgid="30786214839944540">"ဗီဒီယို ဖျက်ထားသည်"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"နောက်ပြန်ရန်"</string>
@@ -174,8 +170,7 @@
     <string name="screen_record_pause" msgid="1715012292444967776">"ခဏရပ်ရန်"</string>
     <string name="screen_record_mute" msgid="8111682249858638168">"အသံပိတ်ရန်"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"အသံပြန်ဖွင့်ရန်"</string>
-    <!-- no translation found for screen_record_video_preview_elapsed_time_a11y_template (969599623785875798) -->
-    <skip />
+    <string name="screen_record_video_preview_elapsed_time_a11y_template" formatted="false" msgid="969599623785875798">"<xliff:g id="DURATION">%2$s</xliff:g> အနက် <xliff:g id="ELAPSED_TIME">%1$s</xliff:g>"</string>
     <string name="screen_capture_blocked_by_admin" msgid="1751756953683506644">"ဖန်သားပြင် ပုံဖမ်းခြင်းကို သင့် IT စီမံခန့်ခွဲသူက ပိတ်ထားသည်"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"ဖန်သားပြင်တစ်ခုလုံးကို ဖန်သားပြင်ဓာတ်ပုံရိုက်ရန်"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"ဖန်သားပြင်တစ်ခုလုံးကို ရိုက်ကူးရန်"</string>
@@ -189,10 +184,13 @@
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"အက်ပ်ဝင်းဒိုးကို မျှဝေခြင်း"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"တဘ်မျှဝေခြင်း"</string>
     <string name="screen_share_entire_screen_sharing_title" msgid="9093580141248337998">"စခရင်တစ်ခုလုံး မျှဝေပါ"</string>
-    <string name="screen_share_disclaimer_app_sharing" msgid="4191319837838590771">"အက်ပ်မျှဝေနေချိန် ၎င်းအက်ပ်၌ ပြထား/ဖွင့်ထားသော အရာအားလုံးကို [APP NAME] က မြင်နိုင်သည်။ စကားဝှက်၊ ငွေချေအချက်အလက်၊ မက်ဆေ့ဂျ်၊ ဓာတ်ပုံ၊ အသံ၊ ဗီဒီယိုလိုအရာများကို ဂရုစိုက်ပါ။"</string>
-    <string name="screen_share_disclaimer_full_screen_sharing" msgid="6445373139864031364">"သင့်စခရင်တစ်ခုလုံးကို မျှဝေနေချိန်တွင် စခရင်ပေါ်ရှိ အရာအားလုံးကို [APP NAME] က မြင်နိုင်သည်။ စကားဝှက်၊ ငွေပေးချေမှု အချက်အလက်၊ မက်ဆေ့ဂျ်၊ ဓာတ်ပုံ၊ အသံနှင့် ဗီဒီယိုကဲ့သို့သော အရာများကို ဂရုစိုက်ပါ။"</string>
-    <!-- no translation found for screen_share_a11y_announcement (8938007210094494367) -->
+    <!-- no translation found for screen_share_disclaimer_app_sharing (1839029004749224549) -->
     <skip />
+    <!-- no translation found for screen_share_disclaimer_tab_sharing (3811486274577713101) -->
+    <skip />
+    <!-- no translation found for screen_share_disclaimer_full_screen_sharing (5173795016606926338) -->
+    <skip />
+    <string name="screen_share_a11y_announcement" msgid="8938007210094494367">"မျှဝေမည့်အရာများ ရွေးပါ။ တဘ်၊ အက်ပ် (သို့) စခရင်တစ်ခုလုံးကို ရွေးပါ။ ထို့နောက် မျှဝေရန်ကို နှိပ်ပါ။"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"ဝင်ဒိုးကို ဖန်သားပြင်ဓာတ်ပုံ ရိုက်ရန်"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"ဝင်းဒိုးကို ရိုက်ကူးရန်"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"ရွေးထားသောနေရာကို ဖန်သားပြင်ဓာတ်ပုံရိုက်ရန်"</string>
@@ -394,8 +392,7 @@
     <string name="accessibility_clear_all" msgid="970525598287244592">"အကြောင်းကြားချက်အားလုံးကို ထုတ်ပစ်သည်။"</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"အကြောင်းကြားချက်များ"</string>
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"အထောက်အကူ"</string>
-    <!-- no translation found for accessibility_status_bar_input_method_indicator (4911669064186093506) -->
-    <skip />
+    <string name="accessibility_status_bar_input_method_indicator" msgid="4911669064186093506">"ကီးဘုတ်"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{အထဲတွင် နောက်ထပ်အကြောင်းကြားချက် # ခု ရှိသည်။}other{အထဲတွင် နောက်ထပ်အကြောင်းကြားချက် # ခု ရှိသည်။}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"ဖန်သားပြင် အနေအထားက အလျားလိုက်အဖြစ် ပုံသေ လုပ်ထားပါသည်"</string>
@@ -522,7 +519,7 @@
     <string name="custom" msgid="3337456985275158299">"စိတ်ကြိုက်"</string>
     <string name="custom_trace_settings_dialog_title" msgid="2608570500144830554">"စိတ်ကြိုက်လုပ်ဆောင်ချက်မှတ်တမ်း ဆက်တင်များ"</string>
     <string name="restore_default" msgid="5259420807486239755">"မူရင်းအတိုင်း ပြန်ပြောင်းရန်"</string>
-    <string name="quick_settings_onehanded_label" msgid="2416537930246274991">"လက်တစ်ဖက်သုံးမုဒ်"</string>
+    <string name="quick_settings_onehanded_label" msgid="2416537930246274991">"လက်တစ်ဖက်မုဒ်"</string>
     <string name="quick_settings_hearing_devices_label" msgid="7277170419679404129">"နားကြားကိရိယာ"</string>
     <string name="quick_settings_hearing_devices_connected" msgid="6519069502397037781">"သုံးနေသည်"</string>
     <string name="quick_settings_hearing_devices_disconnected" msgid="8907061223998176187">"ချိတ်ဆက်မထားပါ"</string>
@@ -945,8 +942,7 @@
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"သတင်းလွှာ၊ အကြံပြုထားသော မီဒီယာစသည်"</string>
     <string name="notification_onboarding_summaries_turn_on" msgid="3831339570984683297">"ဆက်တင်များတွင် ဖွင့်ရန်"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"ရှည်လျားသော စကားဝိုင်းများကို အကျဉ်းချုပ်ပြီး အမြန်အနှစ်ချုပ်များ ရယူနိုင်ပါပြီ"</string>
-    <!-- no translation found for notification_onboarding_summaries_message_with_apps (5320980333818238465) -->
-    <skip />
+    <string name="notification_onboarding_summaries_message_with_apps" msgid="5320980333818238465">"သင့်စက်နှင့် အက်ပ်များသည် စကားဝိုင်းအရှည်များကို အနှစ်ချုပ်ပြီး အမြန်အနှစ်ချုပ်များ ထုတ်ပေးနိုင်ပါပြီ"</string>
     <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"အကြောင်းကြားချက် စီစဉ်သောစနစ်သည် ဦးစားပေးမှုနိမ့်သော အကြောင်းကြားချက်များကို တူရာစုပြီး အသံတိတ်ပေးသည်။ ဆက်တင်များတွင် နောက်ထပ်အမျိုးအစားများကို ထည့်ပါ။"</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{အကြောင်းကြားချက် # ခု}other{အကြောင်းကြားချက် # ခု}}"</string>
     <string name="notification_bundle_header_joined_description" msgid="4517556837418088139">"<xliff:g id="NAME">%1$s</xliff:g>၊ <xliff:g id="NUM_NOTIFICATIONS">%2$s</xliff:g>"</string>
@@ -1800,62 +1796,33 @@
     <string name="location_button_text_use_precise_location" msgid="3499475231656390476">"နေရာအတိအကျကို သုံးရန်"</string>
     <string name="location_button_text_near_precise_location" msgid="3607275724182981412">"နေရာအတိအကျအနီး"</string>
     <string name="location_button_text_precise_location" msgid="4441259889842542799">"နေရာအတိအကျ"</string>
-    <!-- no translation found for privacy_chip_use_string (979159484631969073) -->
-    <skip />
-    <!-- no translation found for privacy_chip_use_string_with_app (6807216002072346877) -->
-    <skip />
-    <!-- no translation found for privacy_chip_camera_and_mic_text (6254449489859255607) -->
-    <skip />
-    <!-- no translation found for av_panel_title (455230832870768515) -->
-    <skip />
-    <!-- no translation found for sensor_activity_header (2145727448786698035) -->
-    <skip />
-    <!-- no translation found for sensor_activity_see_all_access_button (8005330122289549048) -->
-    <skip />
-    <!-- no translation found for sensor_activity_camera_label (4260675418606211259) -->
-    <skip />
-    <!-- no translation found for sensor_activity_microphone_label (4012136402420177411) -->
-    <skip />
-    <!-- no translation found for sensor_activity_manage_access_button (1275701280501357102) -->
-    <skip />
-    <!-- no translation found for sensor_activity_close_app_button (6907314738150753330) -->
-    <skip />
-    <!-- no translation found for sensor_activity_back_button_cd (6894532284650291222) -->
-    <skip />
-    <!-- no translation found for privacy_chip_apps_using_sensor_suffix (527247786536767096) -->
-    <skip />
-    <!-- no translation found for privacy_chip_camera_in_use (5163494654848590528) -->
-    <skip />
-    <!-- no translation found for privacy_chip_mic_in_use (1586091297556363367) -->
-    <skip />
-    <!-- no translation found for privacy_chip_camera_mic_in_use (5179267787210197484) -->
-    <skip />
-    <!-- no translation found for av_camera_portrait_touch_up (5191856296212427203) -->
-    <skip />
-    <!-- no translation found for av_mic_label (5427348054144789879) -->
-    <skip />
-    <!-- no translation found for av_camera_label (7719772172590702343) -->
-    <skip />
-    <!-- no translation found for av_camera_blur_drill_in_title (2250600375798981511) -->
-    <skip />
-    <!-- no translation found for av_camera_blur_off (3170334995799202022) -->
-    <skip />
-    <!-- no translation found for av_camera_blur_light (5666055368940059418) -->
-    <skip />
-    <!-- no translation found for av_camera_blur_full (3276351992811619332) -->
-    <skip />
-    <!-- no translation found for av_camera_improve_lighting (1540549414296669133) -->
-    <skip />
-    <!-- no translation found for av_camera_framing (5108462267843042492) -->
-    <skip />
-    <!-- no translation found for av_studio_mic (2614843492629357766) -->
-    <skip />
-    <!-- no translation found for av_studio_look (621893522645557619) -->
-    <skip />
-    <!-- no translation found for av_studio_look_effects (4105109585851068415) -->
-    <skip />
-    <!-- no translation found for av_blur (405131343487260171) -->
-    <skip />
-    <!-- no translation found for av_live_captions (7819416886586903077) -->
-    <skip />
+    <string name="privacy_chip_use_string" msgid="979159484631969073">"<xliff:g id="SENSOR">%1$s</xliff:g> သုံးနေသည်"</string>
+    <string name="privacy_chip_use_string_with_app" msgid="6807216002072346877">"<xliff:g id="APP">%2$s</xliff:g> က <xliff:g id="SENSOR">%1$s</xliff:g> သုံးနေသည်"</string>
+    <string name="privacy_chip_camera_and_mic_text" msgid="6254449489859255607">"ကင်မရာနှင့် မိုက်"</string>
+    <string name="av_panel_title" msgid="455230832870768515">"ကိုယ်ရေးအချက်အလက်လုံခြုံမှု"</string>
+    <string name="sensor_activity_header" msgid="2145727448786698035">"ဤခွင့်ပြုချက်များကို လက်ရှိ (သို့) မကြာသေးမီက သုံးနေသည့် အက်ပ်များကို ကြည့်ပါ။"</string>
+    <string name="sensor_activity_see_all_access_button" msgid="8005330122289549048">"သုံးခွင့်အားလုံး ကြည့်ရန်"</string>
+    <string name="sensor_activity_camera_label" msgid="4260675418606211259">"ကင်မရာ"</string>
+    <string name="sensor_activity_microphone_label" msgid="4012136402420177411">"မိုက်ခရိုဖုန်း"</string>
+    <string name="sensor_activity_manage_access_button" msgid="1275701280501357102">"သုံးခွင့် စီမံရန်"</string>
+    <string name="sensor_activity_close_app_button" msgid="6907314738150753330">"အက်ပ်ကို ပိတ်ရန်"</string>
+    <string name="sensor_activity_back_button_cd" msgid="6894532284650291222">"နောက်သို့"</string>
+    <string name="privacy_chip_apps_using_sensor_suffix" msgid="527247786536767096">"+နောက်ထပ် <xliff:g id="COUNT">%1$d</xliff:g> ခု"</string>
+    <string name="privacy_chip_camera_in_use" msgid="5163494654848590528">"ကင်မရာ သုံးနေသည်"</string>
+    <string name="privacy_chip_mic_in_use" msgid="1586091297556363367">"မိုက် သုံးနေသည်"</string>
+    <string name="privacy_chip_camera_mic_in_use" msgid="5179267787210197484">"ကင်မရာ၊ မိုက်ခရိုဖုန်း သုံးနေသည်"</string>
+    <string name="av_camera_portrait_touch_up" msgid="5191856296212427203">"အလှပုံ ခြယ်မှုန်းမှု"</string>
+    <string name="av_mic_label" msgid="5427348054144789879">"မိုက်ခရိုဖုန်း"</string>
+    <string name="av_camera_label" msgid="7719772172590702343">"ကင်မရာ"</string>
+    <string name="av_camera_blur_drill_in_title" msgid="2250600375798981511">"နောက်ခံ မှုန်ဝါးမှု"</string>
+    <string name="av_camera_blur_off" msgid="3170334995799202022">"ပိတ်"</string>
+    <string name="av_camera_blur_light" msgid="5666055368940059418">"အလင်း"</string>
+    <string name="av_camera_blur_full" msgid="3276351992811619332">"အပြည့်"</string>
+    <string name="av_camera_improve_lighting" msgid="1540549414296669133">"မီးရောင်မွမ်းမံခြင်း"</string>
+    <string name="av_camera_framing" msgid="5108462267843042492">"ကင်မရာ ဘောင်သွင်းချိန်ညှိခြင်း"</string>
+    <string name="av_studio_mic" msgid="2614843492629357766">"စတူဒီယိုမိုက်"</string>
+    <string name="av_studio_look" msgid="621893522645557619">"စတူဒီယိုပုံစံ"</string>
+    <string name="av_studio_look_effects" msgid="4105109585851068415">"အထူးပြုလုပ်ချက် %d ခု"</string>
+    <string name="av_blur" msgid="405131343487260171">"မှုန်ဝါးရန်"</string>
+    <string name="av_live_captions" msgid="7819416886586903077">"တိုက်ရိုက်စာတန်း"</string>
 </resources>
