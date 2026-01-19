@@ -65,6 +65,7 @@ import com.android.systemui.plugins.keyguard.ui.composable.elements.BaseLockscre
 import com.android.systemui.qs.ui.composable.QuickSettingsScene
 import com.android.systemui.qs.ui.viewmodel.quickSettingsSceneContentViewModelFactory
 import com.android.systemui.qs.ui.viewmodel.quickSettingsUserActionsViewModelFactory
+import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.sceneContainerTransitions
 import com.android.systemui.scene.sceneContainerViewModelFactory
 import com.android.systemui.scene.session.shared.SessionStorage
@@ -72,7 +73,6 @@ import com.android.systemui.scene.session.ui.composable.SaveableSession
 import com.android.systemui.scene.session.ui.composable.Session
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.scene.shared.model.sceneDataSourceDelegator
-import com.android.systemui.scene.transitionState
 import com.android.systemui.scene.ui.composable.SceneContainer
 import com.android.systemui.scene.ui.view.sceneJankMonitorFactory
 import com.android.systemui.shade.domain.interactor.enableSingleShade
@@ -85,7 +85,6 @@ import com.android.systemui.testKosmos
 import com.android.systemui.window.data.repository.fakeWindowRootViewBlurRepository
 import kotlin.time.Duration.Companion.seconds
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -104,7 +103,6 @@ import platform.test.motion.golden.asDataPoint
 import platform.test.screenshot.DeviceEmulationSpec
 import platform.test.screenshot.Displays.Phone
 
-@Ignore("b/467228678")
 @RunWith(AndroidJUnit4::class)
 @MotionTest
 @LargeTest
@@ -222,8 +220,8 @@ class LockScreenTransitionTest : SysuiTestCase() {
     @EnableFlags(FLAG_NOTIFICATION_SHADE_BLUR)
     fun recordLockscreenAlpha_duringSwipeDownToQS() {
         motionTestRule.runTest(60.seconds) {
-            kosmos.populateQuickSettings(14)
             kosmos.enableSingleShade()
+            kosmos.populateQuickSettings(14)
             kosmos.fakeWindowRootViewBlurRepository.isBlurSupported.value = true
 
             val motion =
@@ -233,7 +231,9 @@ class LockScreenTransitionTest : SysuiTestCase() {
                         ComposeRecordingSpec(
                             MotionControl(
                                 delayRecording = {
-                                    awaitCondition { kosmos.transitionState.value.isIdle() }
+                                    awaitCondition {
+                                        kosmos.sceneInteractor.transitionStateFlow.value.isIdle()
+                                    }
                                 }
                             ) {
 
@@ -241,8 +241,6 @@ class LockScreenTransitionTest : SysuiTestCase() {
                                 performTouchInputAsync(onRoot()) {
                                     swipeDown(endY = centerY, durationMillis = 300)
                                 }
-
-                                awaitCondition { kosmos.transitionState.value.isIdle() }
                             }
                         ) {
                             featureFloat(LockscreenContent.LockscreenContentMotionTestKeys.Alpha)
