@@ -22,6 +22,7 @@ import android.annotation.StringRes
 import android.graphics.Region
 import android.view.ViewTreeObserver.InternalInsetsInfo
 import android.view.Window
+import android.view.WindowManager
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
@@ -65,6 +66,7 @@ import androidx.compose.material3.ToggleButton
 import androidx.compose.material3.ToggleButtonDefaults
 import androidx.compose.material3.ToggleButtonShapes
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -119,7 +121,7 @@ constructor(
             rememberViewModel("SmallScreenCaptureRecordContent#viewModel") {
                 viewModelFactory.create()
             }
-        SetupWindowTitle(viewModel.detailsPopup.contentDescriptionRes)
+        SetupWindow(viewModel.detailsPopup.contentDescriptionRes)
 
         val viewTreeObserver = window?.decorView?.viewTreeObserver
         val toolbarBounds = remember { Region.obtain() }
@@ -357,7 +359,7 @@ constructor(
         }
 
     @Composable
-    private fun SetupWindowTitle(@StringRes contentDescriptionRes: Int?) {
+    private fun SetupWindow(@StringRes contentDescriptionRes: Int?) {
         val title = stringResource(R.string.screenrecord_title)
         val windowTitle =
             if (contentDescriptionRes == null) {
@@ -365,7 +367,17 @@ constructor(
             } else {
                 "$title. ${stringResource(contentDescriptionRes)}"
             }
-        LaunchedEffect(windowTitle) { window?.setTitle(windowTitle) }
+        DisposableEffect(window, windowTitle) {
+            if (window != null) {
+                window.addFlags(
+                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                        WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
+                        WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH
+                )
+                window.setTitle(windowTitle)
+            }
+            onDispose { /* do nothing */ }
+        }
     }
 }
 

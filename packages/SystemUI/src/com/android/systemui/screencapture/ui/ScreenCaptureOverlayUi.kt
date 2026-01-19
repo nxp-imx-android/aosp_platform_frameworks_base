@@ -47,13 +47,13 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.util.fastAll
-import com.android.internal.R as internalR
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.res.R
 import com.android.systemui.screencapture.common.ScreenCaptureScope
 import com.android.systemui.screencapture.record.camera.ui.viewmodel.ScreenCaptureCameraTransformationViewModel
 import com.android.systemui.screencapture.record.camera.ui.viewmodel.ScreenCaptureCameraViewModel
+import com.android.systemui.screencapture.ui.viewmodel.ScreenCaptureOverlayUiDialogViewModel
 import com.android.systemui.statusbar.phone.EdgeToEdgeDialogDelegate
 import com.android.systemui.statusbar.phone.SystemUIDialogFactory
 import com.android.systemui.statusbar.phone.create
@@ -68,6 +68,7 @@ class ScreenCaptureOverlayUi
 constructor(
     @Application context: Context,
     dialogFactory: SystemUIDialogFactory,
+    dialogViewModel: ScreenCaptureOverlayUiDialogViewModel,
     private val cameraViewModelFactory: ScreenCaptureCameraViewModel.Factory,
     private val cameraTransformationViewModel: ScreenCaptureCameraTransformationViewModel.Factory,
 ) {
@@ -77,9 +78,14 @@ constructor(
             .create(
                 context = context,
                 theme = R.style.Theme_SystemUI_Dialog_ScreenCapture,
-                dialogDelegate = EdgeToEdgeDialogDelegate(),
+                dialogDelegate =
+                    EdgeToEdgeDialogDelegate(
+                        touchEvent = { _, event -> dialogViewModel.onTouchEvent(event) }
+                    ),
                 dismissOnDeviceLock = false,
+                isTransient = true,
             ) {
+                LaunchedEffect(dialogViewModel) { dialogViewModel.activate() }
                 DialogContent(it.window!!)
             }
             .apply {
@@ -94,13 +100,16 @@ constructor(
                 type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
                 title = "ScreenCaptureOverlayUi"
                 format = PixelFormat.TRANSLUCENT
-                layoutInDisplayCutoutMode =
-                    WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS
-                fitInsetsTypes = 0
             }
         with(window) {
+            addFlags(
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                    WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
+                    WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH or
+                    WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED
+            )
             addPrivateFlags(WindowManager.LayoutParams.PRIVATE_FLAG_TRUSTED_OVERLAY)
-            setWindowAnimations(internalR.style.Animation_Toast)
+            setWindowAnimations(-1)
         }
     }
 

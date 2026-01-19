@@ -24,7 +24,6 @@ import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInter
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-import kotlinx.coroutines.flow.map
 
 class ScreenCaptureUiViewModel
 @AssistedInject
@@ -40,8 +39,6 @@ constructor(
                 traceName = "ScreenCaptureUiViewModel#state",
                 initialValue = ScreenCaptureUiState.Invisible,
             )
-
-    val cancelOnTouchOutside: Boolean by interactor.isLargeScreen.map { !it }.hydratedStateOf(false)
 
     fun dismiss() {
         interactor.hide(type)

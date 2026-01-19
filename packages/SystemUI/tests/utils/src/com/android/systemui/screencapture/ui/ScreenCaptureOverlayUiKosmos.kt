@@ -20,14 +20,16 @@ import android.content.applicationContext
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.screencapture.record.camera.ui.viewmodel.screenCaptureCameraTransformationViewModelFactory
 import com.android.systemui.screencapture.record.camera.ui.viewmodel.screenCaptureCameraViewModelFactory
+import com.android.systemui.screencapture.ui.viewmodel.screenCaptureOverlayUiDialogViewModel
 import com.android.systemui.statusbar.phone.systemUIDialogFactory
 
 val Kosmos.screenCaptureOverlayUi: ScreenCaptureOverlayUi by
     Kosmos.Fixture {
         ScreenCaptureOverlayUi(
-            applicationContext,
-            systemUIDialogFactory,
-            screenCaptureCameraViewModelFactory,
-            screenCaptureCameraTransformationViewModelFactory,
+            context = applicationContext,
+            dialogFactory = systemUIDialogFactory,
+            dialogViewModel = screenCaptureOverlayUiDialogViewModel,
+            cameraViewModelFactory = screenCaptureCameraViewModelFactory,
+            cameraTransformationViewModel = screenCaptureCameraTransformationViewModelFactory,
         )
     }
