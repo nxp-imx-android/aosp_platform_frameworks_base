@@ -13942,13 +13942,14 @@ package android.security.trusttoken {
   @FlaggedApi("android.security.talisman_service_api") public abstract class TrustTokenService extends android.app.Service {
     ctor public TrustTokenService();
     method @Nullable public final android.os.IBinder onBind(@Nullable android.content.Intent);
-    method public abstract void onRequestTrustTokens(@NonNull android.security.trusttoken.TrustTokenRequest, @NonNull android.os.OutcomeReceiver<android.security.trusttoken.TrustTokenResponse,android.security.trusttoken.TrustTokenServiceException>);
+    method public abstract void onRequestTrustTokens(@NonNull android.security.trusttoken.TrustTokenRequest, @NonNull android.os.CancellationSignal, @NonNull android.os.OutcomeReceiver<android.security.trusttoken.TrustTokenResponse,android.security.trusttoken.TrustTokenServiceException>);
     field public static final String SERVICE_INTERFACE = "android.security.trusttoken.TrustTokenService";
   }
 
   @FlaggedApi("android.security.talisman_service_api") public final class TrustTokenServiceException extends java.lang.Exception {
     ctor public TrustTokenServiceException(int, @NonNull String);
     method public int getErrorCode();
+    field public static final int ERROR_CANCELLED = 4; // 0x4
     field public static final int ERROR_INTERNAL = 2; // 0x2
     field public static final int ERROR_INVALID_ARGUMENT = 1; // 0x1
     field public static final int ERROR_UNAVAILABLE = 3; // 0x3
