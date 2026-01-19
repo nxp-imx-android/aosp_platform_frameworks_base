@@ -35,7 +35,6 @@
     <string name="profile_name_medical" msgid="5617160509499466400">"جهاز طبي"</string>
     <string name="title_app_streaming" msgid="237666000400427614">"‏هل المطلوب السماح لتطبيق &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; ببثّ محتوى التطبيقات وميزات النظام بين <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> و&lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;؟"</string>
     <string name="summary_app_streaming" msgid="8346968726357732862">"سيتم منح تطبيق \"<xliff:g id="APP_NAME">%1$s</xliff:g>\" الأذونات التالية:"</string>
-    <string name="summary_app_streaming_legacy" msgid="8994180646987541606">"‏سيتمكّن \"<xliff:g id="APP_NAME_0">%1$s</xliff:g>\" من الوصول إلى كل المحتوى المعروض أو الذي يتم تشغيله على <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>، بما في ذلك الملفات الصوتية والصور ومعلومات الدفع وكلمات المرور والرسائل.&lt;br/&gt;&lt;br/&gt;سيتمكّن \"<xliff:g id="APP_NAME_1">%1$s</xliff:g>\" من بثّ التطبيقات إلى <xliff:g id="DEVICE_NAME">%3$s</xliff:g> إلى أن يتم إيقاف استخدام هذا الإذن."</string>
     <string name="helper_summary_app_streaming" msgid="160149899100957545">"يطلب \"<xliff:g id="APP_NAME">%1$s</xliff:g>\" الحصول على إذن نيابةً عن <xliff:g id="DEVICE_NAME">%2$s</xliff:g> لبثّ محتوى التطبيقات وميزات النظام بين أجهزتك"</string>
     <string name="title_automotive_projection" msgid="3296005598978412847"></string>
     <string name="summary_automotive_projection" msgid="8683801274662496164"></string>
@@ -43,7 +42,6 @@
     <string name="helper_summary_computer" msgid="2298803016482139668">"يطلب \"<xliff:g id="APP_NAME">%1$s</xliff:g>\" الحصول على إذن نيابةً عن <xliff:g id="DEVICE_NAME">%2$s</xliff:g> للوصول إلى الصور والوسائط والإشعارات في <xliff:g id="DEVICE_TYPE">%3$s</xliff:g>"</string>
     <string name="title_nearby_device_streaming" msgid="5342768208699657581">"‏هل المطلوب السماح لتطبيق &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; ببثّ محتوى التطبيقات وميزات النظام بين <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> و&lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;؟"</string>
     <string name="summary_nearby_device_streaming" msgid="7940640272770197219">"سيتم منح تطبيق \"<xliff:g id="APP_NAME">%1$s</xliff:g>\" الأذونات التالية:"</string>
-    <string name="summary_nearby_device_streaming_legacy" msgid="4306665203887990326">"‏سيتمكّن \"<xliff:g id="APP_NAME_0">%1$s</xliff:g>\" من الوصول إلى كل المحتوى المعروض أو الذي يتم تشغيله على <xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>، بما في ذلك الملفات الصوتية والصور ومعلومات الدفع وكلمات المرور والرسائل.&lt;br/&gt;&lt;br/&gt;سيتمكّن \"<xliff:g id="APP_NAME_2">%1$s</xliff:g>\" من بثّ التطبيقات إلى <xliff:g id="DEVICE_NAME_3">%3$s</xliff:g> إلى أن يتم إيقاف استخدام هذا الإذن."</string>
     <string name="helper_summary_nearby_device_streaming" msgid="4712712177819370967">"يطلب \"<xliff:g id="APP_NAME">%1$s</xliff:g>\" الحصول على إذن نيابةً عن <xliff:g id="DEVICE_NAME">%2$s</xliff:g> لبثّ التطبيقات من <xliff:g id="DEVICE_TYPE">%3$s</xliff:g>"</string>
     <string name="title_virtual_device" msgid="6556338763070329395">"‏يُرجى تأكيد السماح لتطبيق &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; ببثّ المحتوى الصوتي وميزات النظام بين <xliff:g id="DEVICE_TYPE">%3$s</xliff:g> و&lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt;"</string>
     <string name="summary_virtual_device" msgid="1062189396947962635">"سيتم منح تطبيق \"<xliff:g id="APP_NAME">%2$s</xliff:g>\" الأذونات التالية:"</string>
@@ -70,6 +68,8 @@
     <string name="permission_media_routing_control" msgid="5498639511586715253">"تغيير تطبيق تشغيل الوسائط"</string>
     <string name="permission_storage" msgid="6831099350839392343">"الصور والوسائط"</string>
     <string name="permission_notifications" msgid="4099418516590632909">"الإشعارات"</string>
+    <!-- no translation found for permission_app_streaming (4488910074894929222) -->
+    <skip />
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"بثّ البيانات إلى <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"مزامنة محتوى الشاشة على كلا الجهازَين"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"بثّ محتوى التطبيقات"</string>
@@ -84,8 +84,11 @@
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"يمكن العثور على الأجهزة المجاورة والربط بها وتحديد موقعها النسبي."</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"يمكن لهذا الملف الشخصي قراءة جميع الإشعارات، بما في ذلك المعلومات، مثل جهات الاتصال والرسائل والصور."</string>
     <string name="permission_notifications_summary" msgid="6819393427371255636">"‏• قراءة كل الإشعارات بما فيها المعلومات، مثل جهات الاتصال والرسائل والصور&lt;br/&gt;• إرسال الإشعارات إليك&lt;br/&gt;&lt;br/&gt;يمكن إدارة الإذن الممنوح لهذا التطبيق بقراءة الإشعارات وإرسالها في أي وقت من خلال \"الإعدادات\" &gt; \"الإشعارات\"."</string>
-    <string name="permission_storage_summary" msgid="3918240895519506417"></string>
+    <!-- no translation found for permission_storage_summary (3779040306012319942) -->
+    <skip />
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"إرسال الإشعارات إليك"</string>
+    <!-- no translation found for permission_app_streaming_summary (4114223538437344105) -->
+    <skip />
     <string name="permission_create_virtual_device_summary" msgid="3570256456647725172">"‏يمكن بثّ بيانات الميكروفون والكاميرا وأجهزة الاستشعار الأخرى من &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; إلى <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>."</string>
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"‏يمكن تسجيل محتوى شاشة <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> أو بثّه أو مشاركته مع &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;سيتمكن تطبيق <xliff:g id="APP_NAME">%1$s</xliff:g> من الوصول إلى كل المحتوى المعروض أو الذي يتم تشغيله على <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g>، بما في ذلك الملفات الصوتية والصور ومعلومات الدفع وكلمات المرور والرسائل."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"‏يمكن بثّ محتوى تطبيقات <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> إلى &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;سيتمكن تطبيق <xliff:g id="APP_NAME">%1$s</xliff:g> من الوصول إلى كل المحتوى المعروض أو الذي يتم تشغيله على <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g>، بما في ذلك الملفات الصوتية والصور ومعلومات الدفع وكلمات المرور والرسائل، حتى عندما يكون جهاز <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> مقفلاً."</string>

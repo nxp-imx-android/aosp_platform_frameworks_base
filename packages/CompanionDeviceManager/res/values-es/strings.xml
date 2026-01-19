@@ -35,7 +35,6 @@
     <string name="profile_name_medical" msgid="5617160509499466400">"dispositivo médico"</string>
     <string name="title_app_streaming" msgid="237666000400427614">"¿Permitir que &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; emita apps y funciones del sistema entre tu <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> y tu &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;?"</string>
     <string name="summary_app_streaming" msgid="8346968726357732862">"<xliff:g id="APP_NAME">%1$s</xliff:g> tendrá los siguientes permisos:"</string>
-    <string name="summary_app_streaming_legacy" msgid="8994180646987541606">"<xliff:g id="APP_NAME_0">%1$s</xliff:g> tendrá acceso a todo lo que se vea o se reproduzca en tu <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>, incluidos audio, fotos, información para pagos, contraseñas y mensajes.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME_1">%1$s</xliff:g> podrá emitir apps en <xliff:g id="DEVICE_NAME">%3$s</xliff:g> hasta que quites el acceso a este permiso."</string>
     <string name="helper_summary_app_streaming" msgid="160149899100957545">"<xliff:g id="APP_NAME">%1$s</xliff:g> está pidiendo permiso en nombre de <xliff:g id="DEVICE_NAME">%2$s</xliff:g> para emitir apps y funciones del sistema en otros dispositivos tuyos"</string>
     <string name="title_automotive_projection" msgid="3296005598978412847"></string>
     <string name="summary_automotive_projection" msgid="8683801274662496164"></string>
@@ -43,7 +42,6 @@
     <string name="helper_summary_computer" msgid="2298803016482139668">"<xliff:g id="APP_NAME">%1$s</xliff:g> está pidiendo permiso en nombre de tu <xliff:g id="DEVICE_NAME">%2$s</xliff:g> para acceder a las fotos, los archivos multimedia y las notificaciones de tu <xliff:g id="DEVICE_TYPE">%3$s</xliff:g>"</string>
     <string name="title_nearby_device_streaming" msgid="5342768208699657581">"¿Permitir que &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; emita apps y funciones del sistema entre tu <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> y tu &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;?"</string>
     <string name="summary_nearby_device_streaming" msgid="7940640272770197219">"<xliff:g id="APP_NAME">%1$s</xliff:g> tendrá los siguientes permisos:"</string>
-    <string name="summary_nearby_device_streaming_legacy" msgid="4306665203887990326">"<xliff:g id="APP_NAME_0">%1$s</xliff:g> tendrá acceso a todo lo que se vea o se reproduzca en <xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>, incluidos audio, fotos, información para pagos, contraseñas y mensajes.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME_2">%1$s</xliff:g> podrá emitir apps en <xliff:g id="DEVICE_NAME_3">%3$s</xliff:g> hasta que quites el acceso a este permiso."</string>
     <string name="helper_summary_nearby_device_streaming" msgid="4712712177819370967">"<xliff:g id="APP_NAME">%1$s</xliff:g> está pidiendo permiso en nombre de <xliff:g id="DEVICE_NAME">%2$s</xliff:g> para emitir apps desde tu <xliff:g id="DEVICE_TYPE">%3$s</xliff:g>"</string>
     <string name="title_virtual_device" msgid="6556338763070329395">"¿Permitir que &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; emita audio y funciones del sistema entre tu <xliff:g id="DEVICE_TYPE">%3$s</xliff:g> y tu &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt;?"</string>
     <string name="summary_virtual_device" msgid="1062189396947962635">"<xliff:g id="APP_NAME">%2$s</xliff:g> tendrá los siguientes permisos:"</string>
@@ -70,6 +68,8 @@
     <string name="permission_media_routing_control" msgid="5498639511586715253">"Cambiar salida multimedia"</string>
     <string name="permission_storage" msgid="6831099350839392343">"Fotos y elementos multimedia"</string>
     <string name="permission_notifications" msgid="4099418516590632909">"Notificaciones"</string>
+    <!-- no translation found for permission_app_streaming (4488910074894929222) -->
+    <skip />
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"Emitir datos a tu <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"Replicar pantalla"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"Emitir apps"</string>
@@ -84,8 +84,11 @@
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"Buscar, conectarse y determinar la posición relativa de dispositivos cercanos"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"Leer todas las notificaciones, incluida información como contactos, mensajes y fotos"</string>
     <string name="permission_notifications_summary" msgid="6819393427371255636">"• Leer todas las notificaciones, incluida información como contactos, mensajes y fotos&lt;br/&gt;• Enviarte notificaciones&lt;br/&gt;&lt;br/&gt;Puedes gestionar los permisos de esta aplicación para leer y enviar notificaciones cuando quieras en Ajustes &gt; Notificaciones."</string>
-    <string name="permission_storage_summary" msgid="3918240895519506417"></string>
+    <!-- no translation found for permission_storage_summary (3779040306012319942) -->
+    <skip />
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"Enviarte notificaciones"</string>
+    <!-- no translation found for permission_app_streaming_summary (4114223538437344105) -->
+    <skip />
     <string name="permission_create_virtual_device_summary" msgid="3570256456647725172">"Emite datos de micrófono, cámara y otros sensores de &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; a tu <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>."</string>
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"Graba, envía o comparte la pantalla de tu <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> en &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> tendrá acceso a todo lo que se vea o se reproduzca en tu <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g>, incluidos el audio, las fotos, la información para pagos, las contraseñas y los mensajes."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"Emite las apps de tu <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> en &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> tendrá acceso a todo lo que se vea o se reproduzca en <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g>, incluidos el audio, las fotos, la información para pagos, las contraseñas y los mensajes, incluso cuando tu <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> esté bloqueado."</string>

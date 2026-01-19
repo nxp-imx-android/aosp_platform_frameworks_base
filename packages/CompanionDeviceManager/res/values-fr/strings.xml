@@ -35,7 +35,6 @@
     <string name="profile_name_medical" msgid="5617160509499466400">"dispositif médical"</string>
     <string name="title_app_streaming" msgid="237666000400427614">"Autoriser &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; à caster des applis et des fonctionnalités système entre votre <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> et &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; ?"</string>
     <string name="summary_app_streaming" msgid="8346968726357732862">"<xliff:g id="APP_NAME">%1$s</xliff:g> bénéficiera des autorisations suivantes :"</string>
-    <string name="summary_app_streaming_legacy" msgid="8994180646987541606">"<xliff:g id="APP_NAME_0">%1$s</xliff:g> aura accès à tout ce qui est visible ou lu sur votre <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>, y compris les contenus audio, les photos, les infos de paiement, les mots de passe et les messages.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME_1">%1$s</xliff:g> pourra caster des applis sur <xliff:g id="DEVICE_NAME">%3$s</xliff:g> jusqu\'à ce que vous supprimiez l\'accès à cette autorisation."</string>
     <string name="helper_summary_app_streaming" msgid="160149899100957545">"<xliff:g id="APP_NAME">%1$s</xliff:g> demande l\'autorisation pour <xliff:g id="DEVICE_NAME">%2$s</xliff:g> de caster des fonctionnalités d\'applications et système d\'un appareil à l\'autre."</string>
     <string name="title_automotive_projection" msgid="3296005598978412847"></string>
     <string name="summary_automotive_projection" msgid="8683801274662496164"></string>
@@ -43,7 +42,6 @@
     <string name="helper_summary_computer" msgid="2298803016482139668">"<xliff:g id="APP_NAME">%1$s</xliff:g> demande l\'autorisation au nom de votre <xliff:g id="DEVICE_NAME">%2$s</xliff:g> pour accéder aux photos, multimédias et notifications de votre <xliff:g id="DEVICE_TYPE">%3$s</xliff:g>"</string>
     <string name="title_nearby_device_streaming" msgid="5342768208699657581">"Autoriser &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; à caster des applis et des fonctionnalités système entre votre <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> et &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; ?"</string>
     <string name="summary_nearby_device_streaming" msgid="7940640272770197219">"<xliff:g id="APP_NAME">%1$s</xliff:g> bénéficiera des autorisations suivantes :"</string>
-    <string name="summary_nearby_device_streaming_legacy" msgid="4306665203887990326">"<xliff:g id="APP_NAME_0">%1$s</xliff:g> aura accès à tout ce qui est visible ou lu sur votre <xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>, y compris les contenus audio, les photos, les infos de paiement, les mots de passe et les messages.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME_2">%1$s</xliff:g> pourra caster des applis sur <xliff:g id="DEVICE_NAME_3">%3$s</xliff:g> jusqu\'à ce que vous supprimiez l\'accès à cette autorisation."</string>
     <string name="helper_summary_nearby_device_streaming" msgid="4712712177819370967">"<xliff:g id="APP_NAME">%1$s</xliff:g> demande, au nom de l\'appareil <xliff:g id="DEVICE_NAME">%2$s</xliff:g>, l\'autorisation de caster des applis depuis votre <xliff:g id="DEVICE_TYPE">%3$s</xliff:g>"</string>
     <string name="title_virtual_device" msgid="6556338763070329395">"Autoriser &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; à caster des applis et des fonctionnalités système entre votre <xliff:g id="DEVICE_TYPE">%3$s</xliff:g> et &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt; ?"</string>
     <string name="summary_virtual_device" msgid="1062189396947962635">"<xliff:g id="APP_NAME">%2$s</xliff:g> bénéficiera des autorisations suivantes :"</string>
@@ -70,6 +68,8 @@
     <string name="permission_media_routing_control" msgid="5498639511586715253">"Modifier la sortie multimédia"</string>
     <string name="permission_storage" msgid="6831099350839392343">"Photos et contenus multimédias"</string>
     <string name="permission_notifications" msgid="4099418516590632909">"Notifications"</string>
+    <!-- no translation found for permission_app_streaming (4488910074894929222) -->
+    <skip />
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"Streamer des données sur votre <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"Dupliquer votre écran"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"Streamer vos applis"</string>
@@ -84,8 +84,11 @@
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"Trouver les appareils à proximité, s\'y connecter et déterminer leur position relative"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"Lire toutes les notifications, y compris des informations comme les contacts, messages et photos"</string>
     <string name="permission_notifications_summary" msgid="6819393427371255636">"• Lit toutes les notifications, y compris les informations comme les contacts, les messages et les photos&lt;br/&gt;• Vous envoie des notifications&lt;br/&gt;&lt;br/&gt;Vous pouvez gérer les autorisations de lecture et d\'envoi des notifications à tout moment dans Paramètres &gt; Notifications."</string>
-    <string name="permission_storage_summary" msgid="3918240895519506417"></string>
+    <!-- no translation found for permission_storage_summary (3779040306012319942) -->
+    <skip />
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"Vous envoie des notifications"</string>
+    <!-- no translation found for permission_app_streaming_summary (4114223538437344105) -->
+    <skip />
     <string name="permission_create_virtual_device_summary" msgid="3570256456647725172">"Lisez en streaming les données du micro, de la caméra et d\'autres données des capteurs de &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; sur votre <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>."</string>
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"Enregistrez, castez ou partagez l\'écran de votre <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> sur &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> aura accès à tout ce qui est visible ou lu sur votre <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g>, y compris les contenus audio, les photos, les infos de paiement, les mots de passe et les messages."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"Castez les applis de votre <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> sur &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> aura accès à tout ce qui est visible ou lu sur <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g>, y compris les contenus audio, les photos, les infos de paiement, les mots de passe et les messages, même lorsque votre <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> est verrouillé."</string>
