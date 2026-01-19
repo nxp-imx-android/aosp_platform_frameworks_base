@@ -15,8 +15,6 @@
  */
 package com.android.server.selinux;
 
-import static com.android.server.selinux.flags.Flags.selinuxLogsCollect;
-
 import android.app.job.JobInfo;
 import android.app.job.JobParameters;
 import android.app.job.JobScheduler;
@@ -121,13 +119,10 @@ public class SelinuxAuditLogsService extends JobService {
 
     /** Checks if the service is enabled for all domains */
     public static final boolean enabledForAllDomains() {
-        if (selinuxLogsCollect()) {
-            return DeviceConfig.getBoolean(
-                    DEVICE_CONFIG_SECURITY_NAMESPACE,
-                    CONFIG_SECURITY_SELINUX_AUDIT_JOB_ENABLED,
-                    false);
-        }
-        return false;
+        return DeviceConfig.getBoolean(
+                DEVICE_CONFIG_SECURITY_NAMESPACE,
+                CONFIG_SECURITY_SELINUX_AUDIT_JOB_ENABLED,
+                false);
     }
 
     private static final class SecurityPropertyMonitor
