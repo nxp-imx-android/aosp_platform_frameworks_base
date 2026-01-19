@@ -319,21 +319,11 @@ public class NotifyingTimeZoneChangeListener implements TimeZoneChangeListener {
                 lastTimeZoneChangeRecord.setAccepted(signalType);
 
                 switch (lastTimeZoneChangeRecord.getEvent().getOrigin()) {
-                    case ORIGIN_MANUAL:
-                        mAcceptedManualChanges += 1;
-                        break;
-                    case ORIGIN_TELEPHONY:
-                        mAcceptedTelephonyChanges += 1;
-                        break;
-                    case ORIGIN_LOCATION:
-                        mAcceptedLocationChanges += 1;
-                        break;
-                    case ORIGIN_FUSED:
-                        mAcceptedFusedChanges += 1;
-                        break;
-                    default:
-                        mAcceptedUnknownChanges += 1;
-                        break;
+                    case ORIGIN_MANUAL -> mAcceptedManualChanges += 1;
+                    case ORIGIN_TELEPHONY -> mAcceptedTelephonyChanges += 1;
+                    case ORIGIN_LOCATION -> mAcceptedLocationChanges += 1;
+                    case ORIGIN_FUSED -> mAcceptedFusedChanges += 1;
+                    default -> mAcceptedUnknownChanges += 1;
                 }
             }
         }
