@@ -76,6 +76,16 @@ flag {
 }
 
 flag {
+   name: "desktop_overview_rotation_task_resize_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Does not resize task due to rotation only display changes when in overview."
+    bug: "452131033"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "dimming_wallpaper_for_maximized_and_tiled"
     namespace: "lse_desktop_experience"
     description: "Dim the wallpaper to make maximized and tiled window looks immersive."
