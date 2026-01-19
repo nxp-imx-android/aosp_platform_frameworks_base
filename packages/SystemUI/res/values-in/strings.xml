@@ -156,10 +156,8 @@
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"Tampilkan kamera selfie"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Tampilkan sentuhan"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Pilih aplikasi yang akan direkam"</string>
-    <!-- no translation found for screen_record_settings (2377267679200139285) -->
-    <skip />
-    <!-- no translation found for screen_record_markup (5583986085046693669) -->
-    <skip />
+    <string name="screen_record_settings" msgid="2377267679200139285">"Setelan perekaman layar"</string>
+    <string name="screen_record_markup" msgid="5583986085046693669">"Markup"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Video disimpan"</string>
     <string name="screen_record_video_deleted" msgid="30786214839944540">"Video dihapus"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"Urungkan"</string>
@@ -172,8 +170,7 @@
     <string name="screen_record_pause" msgid="1715012292444967776">"Jeda"</string>
     <string name="screen_record_mute" msgid="8111682249858638168">"Bisukan"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"Bunyikan"</string>
-    <!-- no translation found for screen_record_video_preview_elapsed_time_a11y_template (969599623785875798) -->
-    <skip />
+    <string name="screen_record_video_preview_elapsed_time_a11y_template" formatted="false" msgid="969599623785875798">"<xliff:g id="ELAPSED_TIME">%1$s</xliff:g> dari <xliff:g id="DURATION">%2$s</xliff:g>"</string>
     <string name="screen_capture_blocked_by_admin" msgid="1751756953683506644">"Screenshot diblokir oleh admin IT Anda"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"Ambil screenshot seluruh layar"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"Rekam seluruh layar"</string>
@@ -187,8 +184,12 @@
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"Bagikan jendela aplikasi"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"Bagikan tab"</string>
     <string name="screen_share_entire_screen_sharing_title" msgid="9093580141248337998">"Bagikan seluruh layar"</string>
-    <string name="screen_share_disclaimer_app_sharing" msgid="4191319837838590771">"Saat Anda membagikan aplikasi, semua hal yang ditampilkan atau diputar di aplikasi tersebut akan terlihat oleh [APP NAME]. Jadi, berhati-hatilah saat memasukkan sandi, detail pembayaran, pesan, foto, audio &amp; video."</string>
-    <string name="screen_share_disclaimer_full_screen_sharing" msgid="6445373139864031364">"Jika Anda membagikan seluruh layar, semua hal yang ada di layar Anda akan terlihat oleh [APP NAME]. Jadi, berhati-hatilah saat memasukkan sandi, detail pembayaran, pesan, foto, audio &amp; video."</string>
+    <!-- no translation found for screen_share_disclaimer_app_sharing (1839029004749224549) -->
+    <skip />
+    <!-- no translation found for screen_share_disclaimer_tab_sharing (3811486274577713101) -->
+    <skip />
+    <!-- no translation found for screen_share_disclaimer_full_screen_sharing (5173795016606926338) -->
+    <skip />
     <string name="screen_share_a11y_announcement" msgid="8938007210094494367">"Tentukan hal yang dibagikan. Pilih tab, aplikasi, atau seluruh layar. Lalu tekan bagikan."</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Ambil screenshot jendela"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Rekam jendela"</string>
@@ -941,8 +942,7 @@
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"Newsletter, media yang direkomendasikan, dan lainnya"</string>
     <string name="notification_onboarding_summaries_turn_on" msgid="3831339570984683297">"Aktifkan di Setelan"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"Percakapan yang panjang kini dapat diringkas untuk memberikan rangkuman cepat"</string>
-    <!-- no translation found for notification_onboarding_summaries_message_with_apps (5320980333818238465) -->
-    <skip />
+    <string name="notification_onboarding_summaries_message_with_apps" msgid="5320980333818238465">"Perangkat dan aplikasi Anda kini dapat meringkas percakapan yang panjang untuk memberikan rangkuman singkat"</string>
     <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"Pengatur notifikasi menggabungkan dan menyenyapkan notifikasi yang memiliki prioritas lebih rendah. Tambahkan kategori lainnya di Setelan."</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# notifikasi}other{# notifikasi}}"</string>
     <string name="notification_bundle_header_joined_description" msgid="4517556837418088139">"<xliff:g id="NAME">%1$s</xliff:g>, <xliff:g id="NUM_NOTIFICATIONS">%2$s</xliff:g>"</string>

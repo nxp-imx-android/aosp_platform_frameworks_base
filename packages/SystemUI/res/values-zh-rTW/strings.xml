@@ -46,10 +46,8 @@
     <string name="usb_accessory_confirm_prompt" msgid="5728408382798643421">"要開啟「<xliff:g id="APPLICATION">%1$s</xliff:g>」處理「<xliff:g id="USB_ACCESSORY">%2$s</xliff:g>」嗎？"</string>
     <string name="usb_accessory_uri_prompt" msgid="6756649383432542382">"已安裝的應用程式均無法存取這個 USB 配件，如要進一步瞭解這個配件，請造訪 <xliff:g id="URL">%1$s</xliff:g>"</string>
     <string name="title_usb_accessory" msgid="1236358027511638648">"USB 配件"</string>
-    <!-- no translation found for usb_device_dialog_allow_only_this_time_button (3653881633944232491) -->
-    <skip />
-    <!-- no translation found for usb_device_dialog_cancel_button (9050554648474787233) -->
-    <skip />
+    <string name="usb_device_dialog_allow_only_this_time_button" msgid="3653881633944232491">"僅允許這一次"</string>
+    <string name="usb_device_dialog_cancel_button" msgid="9050554648474787233">"取消"</string>
     <string name="label_view" msgid="6815442985276363364">"查看"</string>
     <string name="always_use_device" msgid="210535878779644679">"當「<xliff:g id="USB_DEVICE">%2$s</xliff:g>」連接時一律開啟「<xliff:g id="APPLICATION">%1$s</xliff:g>」"</string>
     <string name="always_use_accessory" msgid="1977225429341838444">"當「<xliff:g id="USB_ACCESSORY">%2$s</xliff:g>」連接時一律開啟「<xliff:g id="APPLICATION">%1$s</xliff:g>」"</string>
@@ -158,10 +156,8 @@
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"顯示自拍鏡頭"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"顯示觸控操作過程"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"選擇要錄製的應用程式"</string>
-    <!-- no translation found for screen_record_settings (2377267679200139285) -->
-    <skip />
-    <!-- no translation found for screen_record_markup (5583986085046693669) -->
-    <skip />
+    <string name="screen_record_settings" msgid="2377267679200139285">"螢幕錄影設定"</string>
+    <string name="screen_record_markup" msgid="5583986085046693669">"標記"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"影片已儲存"</string>
     <string name="screen_record_video_deleted" msgid="30786214839944540">"影片已刪除"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"還原"</string>
@@ -174,8 +170,7 @@
     <string name="screen_record_pause" msgid="1715012292444967776">"暫停"</string>
     <string name="screen_record_mute" msgid="8111682249858638168">"靜音"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"取消靜音"</string>
-    <!-- no translation found for screen_record_video_preview_elapsed_time_a11y_template (969599623785875798) -->
-    <skip />
+    <string name="screen_record_video_preview_elapsed_time_a11y_template" formatted="false" msgid="969599623785875798">"<xliff:g id="ELAPSED_TIME">%1$s</xliff:g>/<xliff:g id="DURATION">%2$s</xliff:g>"</string>
     <string name="screen_capture_blocked_by_admin" msgid="1751756953683506644">"你的 IT 管理員已禁止擷取螢幕畫面"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"拍攝整個畫面的螢幕截圖"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"錄製整個畫面"</string>
@@ -189,10 +184,13 @@
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"分享應用程式視窗"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"分享分頁"</string>
     <string name="screen_share_entire_screen_sharing_title" msgid="9093580141248337998">"分享整個畫面"</string>
-    <string name="screen_share_disclaimer_app_sharing" msgid="4191319837838590771">"分享應用程式畫面時，「[APP NAME]」可存取該應用程式顯示或播放的所有內容。因此，請謹慎處理密碼、付款資料、訊息、相片和影音內容等資訊。"</string>
-    <string name="screen_share_disclaimer_full_screen_sharing" msgid="6445373139864031364">"分享整個畫面時，「[APP NAME]」可存取畫面上的所有內容。因此，請謹慎處理密碼、付款資料、訊息、相片和影音內容等資訊。"</string>
-    <!-- no translation found for screen_share_a11y_announcement (8938007210094494367) -->
+    <!-- no translation found for screen_share_disclaimer_app_sharing (1839029004749224549) -->
     <skip />
+    <!-- no translation found for screen_share_disclaimer_tab_sharing (3811486274577713101) -->
+    <skip />
+    <!-- no translation found for screen_share_disclaimer_full_screen_sharing (5173795016606926338) -->
+    <skip />
+    <string name="screen_share_a11y_announcement" msgid="8938007210094494367">"選擇要分享的內容。選取分頁、應用程式或整個畫面。然後按下「分享」。"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"擷取視窗螢幕截圖"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"錄製視窗"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"擷取所選區域的螢幕截圖"</string>
@@ -270,11 +268,11 @@
     <string name="biometric_dialog_face_icon_description_authenticated" msgid="2242167416140740920">"臉孔驗證成功"</string>
     <string name="biometric_dialog_face_icon_description_confirmed" msgid="7918067993953940778">"確認完畢"</string>
     <string name="biometric_dialog_tap_confirm" msgid="9166350738859143358">"輕觸 [確認] 完成驗證設定"</string>
-    <string name="biometric_dialog_tap_confirm_with_face" msgid="2378151312221818694">"裝置已透過你的臉解鎖"</string>
-    <string name="biometric_dialog_tap_confirm_with_face_alt_1" msgid="439152621640507113">"裝置已透過你的臉解鎖，按下即可繼續操作。"</string>
+    <string name="biometric_dialog_tap_confirm_with_face" msgid="2378151312221818694">"裝置已透過臉孔解鎖"</string>
+    <string name="biometric_dialog_tap_confirm_with_face_alt_1" msgid="439152621640507113">"裝置已透過臉孔解鎖，點按即可繼續操作。"</string>
     <string name="biometric_dialog_tap_confirm_with_face_alt_2" msgid="8586608186457385108">"臉孔辨識完成，按下即可繼續操作。"</string>
     <string name="biometric_dialog_tap_confirm_with_face_alt_3" msgid="2192670471930606539">"臉孔辨識完成，按下「解鎖」圖示即可繼續操作。"</string>
-    <string name="biometric_dialog_tap_confirm_with_face_sfps" msgid="2499213248903257928">"裝置已透過你的臉解鎖，輕觸這裡即可繼續。"</string>
+    <string name="biometric_dialog_tap_confirm_with_face_sfps" msgid="2499213248903257928">"裝置已透過臉孔解鎖，輕觸即可繼續。"</string>
     <string name="biometric_dialog_authenticated" msgid="7337147327545272484">"已通過驗證"</string>
     <string name="biometric_dialog_cancel_authentication" msgid="981316588773442637">"取消驗證"</string>
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"更多選項"</string>
@@ -394,8 +392,7 @@
     <string name="accessibility_clear_all" msgid="970525598287244592">"清除所有通知。"</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"通知"</string>
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Google 助理"</string>
-    <!-- no translation found for accessibility_status_bar_input_method_indicator (4911669064186093506) -->
-    <skip />
+    <string name="accessibility_status_bar_input_method_indicator" msgid="4911669064186093506">"鍵盤"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{其中還有 # 則通知。}other{其中還有 # 則通知。}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"螢幕已鎖定為橫向模式。"</string>
@@ -423,7 +420,7 @@
     <string name="quick_settings_bluetooth_audio_sharing_button" msgid="7545274861795853838">"分享音訊"</string>
     <string name="quick_settings_bluetooth_audio_sharing_button_sharing" msgid="3069309588231072128">"正在分享音訊"</string>
     <string name="quick_settings_bluetooth_audio_sharing_button_accessibility" msgid="7604615019302091708">"進入音訊分享設定"</string>
-    <string name="quick_settings_bluetooth_audio_sharing_dialog_message" msgid="4251807313264307426">"這部裝置會同時在兩對耳機上播放音樂和影片"</string>
+    <string name="quick_settings_bluetooth_audio_sharing_dialog_message" msgid="4251807313264307426">"這部裝置會同時在兩副耳機上播放音樂和影片"</string>
     <string name="quick_settings_bluetooth_audio_sharing_dialog_title" msgid="4406818346036286793">"分享音訊"</string>
     <string name="quick_settings_bluetooth_audio_sharing_dialog_subtitle" msgid="3014906864710059236">"「<xliff:g id="AVAILABLE_DEVICE_NAME">%1$s</xliff:g>」和「<xliff:g id="ACTIVE_DEVICE_NAME">%2$s</xliff:g>」"</string>
     <string name="quick_settings_bluetooth_audio_sharing_dialog_switch_to_button" msgid="7546825655978203773">"切換至「<xliff:g id="AVAILABLE_DEVICE_NAME">%1$s</xliff:g>」"</string>
@@ -603,12 +600,12 @@
     <string name="keyguard_unlock" msgid="8031975796351361601">"向上滑動即可開啟"</string>
     <string name="keyguard_unlock_press" msgid="9140109453735019209">"按下「解鎖」圖示即可開啟"</string>
     <string name="keyguard_face_successful_unlock_swipe" msgid="6180997591385846073">"你已用自己的臉解鎖裝置，向上滑動即可開啟。"</string>
-    <string name="keyguard_face_successful_unlock_confirm_button" msgid="3862344771780817393">"裝置已透過你的臉解鎖，按下「確認」即可繼續。"</string>
+    <string name="keyguard_face_successful_unlock_confirm_button" msgid="3862344771780817393">"裝置已透過臉孔解鎖，按下「確認」即可繼續。"</string>
     <string name="keyguard_face_successful_unlock_press" msgid="25520941264602588">"裝置已透過人臉解鎖，按下「解鎖」圖示即可開啟。"</string>
-    <string name="keyguard_face_successful_unlock_press_alt_1" msgid="5715461103913071474">"裝置已透過你的臉解鎖，按下即可開啟。"</string>
+    <string name="keyguard_face_successful_unlock_press_alt_1" msgid="5715461103913071474">"裝置已透過臉孔解鎖，按下即可開啟。"</string>
     <string name="keyguard_face_successful_unlock_press_alt_2" msgid="8310787946357120406">"臉孔辨識完成，按下即可開啟。"</string>
     <string name="keyguard_face_successful_unlock_press_alt_3" msgid="7219030481255573962">"臉孔辨識完成，按下「解鎖」圖示即可開啟。"</string>
-    <string name="keyguard_face_successful_unlock" msgid="4203999851465708287">"裝置已透過你的臉解鎖"</string>
+    <string name="keyguard_face_successful_unlock" msgid="4203999851465708287">"裝置已透過臉孔解鎖"</string>
     <string name="keyguard_face_successful_unlock_alt1" msgid="5853906076353839628">"臉孔辨識完成"</string>
     <string name="keyguard_retry" msgid="886802522584053523">"向上滑動即可重試"</string>
     <string name="accesssibility_keyguard_retry" msgid="8880238862712870676">"向上滑動即可再次執行人臉解鎖功能"</string>
@@ -945,8 +942,7 @@
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"電子報、推薦媒體等等"</string>
     <string name="notification_onboarding_summaries_turn_on" msgid="3831339570984683297">"在「設定」中開啟"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"如果對話較長，系統現在可以歸納成摘要，方便你快速掌握重點"</string>
-    <!-- no translation found for notification_onboarding_summaries_message_with_apps (5320980333818238465) -->
-    <skip />
+    <string name="notification_onboarding_summaries_message_with_apps" msgid="5320980333818238465">"裝置和應用程式現在能歸納較長的對話內容，讓你快速掌握重點"</string>
     <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"通知整理工具會將優先順序較低的通知分類，並設為靜音。如要新增更多類別，請前往「設定」。"</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# 則通知}other{# 則通知}}"</string>
     <string name="notification_bundle_header_joined_description" msgid="4517556837418088139">"<xliff:g id="NAME">%1$s</xliff:g>，<xliff:g id="NUM_NOTIFICATIONS">%2$s</xliff:g>"</string>
@@ -1800,62 +1796,33 @@
     <string name="location_button_text_use_precise_location" msgid="3499475231656390476">"使用精確位置"</string>
     <string name="location_button_text_near_precise_location" msgid="3607275724182981412">"靠近精確位置"</string>
     <string name="location_button_text_precise_location" msgid="4441259889842542799">"精確位置"</string>
-    <!-- no translation found for privacy_chip_use_string (979159484631969073) -->
-    <skip />
-    <!-- no translation found for privacy_chip_use_string_with_app (6807216002072346877) -->
-    <skip />
-    <!-- no translation found for privacy_chip_camera_and_mic_text (6254449489859255607) -->
-    <skip />
-    <!-- no translation found for av_panel_title (455230832870768515) -->
-    <skip />
-    <!-- no translation found for sensor_activity_header (2145727448786698035) -->
-    <skip />
-    <!-- no translation found for sensor_activity_see_all_access_button (8005330122289549048) -->
-    <skip />
-    <!-- no translation found for sensor_activity_camera_label (4260675418606211259) -->
-    <skip />
-    <!-- no translation found for sensor_activity_microphone_label (4012136402420177411) -->
-    <skip />
-    <!-- no translation found for sensor_activity_manage_access_button (1275701280501357102) -->
-    <skip />
-    <!-- no translation found for sensor_activity_close_app_button (6907314738150753330) -->
-    <skip />
-    <!-- no translation found for sensor_activity_back_button_cd (6894532284650291222) -->
-    <skip />
-    <!-- no translation found for privacy_chip_apps_using_sensor_suffix (527247786536767096) -->
-    <skip />
-    <!-- no translation found for privacy_chip_camera_in_use (5163494654848590528) -->
-    <skip />
-    <!-- no translation found for privacy_chip_mic_in_use (1586091297556363367) -->
-    <skip />
-    <!-- no translation found for privacy_chip_camera_mic_in_use (5179267787210197484) -->
-    <skip />
-    <!-- no translation found for av_camera_portrait_touch_up (5191856296212427203) -->
-    <skip />
-    <!-- no translation found for av_mic_label (5427348054144789879) -->
-    <skip />
-    <!-- no translation found for av_camera_label (7719772172590702343) -->
-    <skip />
-    <!-- no translation found for av_camera_blur_drill_in_title (2250600375798981511) -->
-    <skip />
-    <!-- no translation found for av_camera_blur_off (3170334995799202022) -->
-    <skip />
-    <!-- no translation found for av_camera_blur_light (5666055368940059418) -->
-    <skip />
-    <!-- no translation found for av_camera_blur_full (3276351992811619332) -->
-    <skip />
-    <!-- no translation found for av_camera_improve_lighting (1540549414296669133) -->
-    <skip />
-    <!-- no translation found for av_camera_framing (5108462267843042492) -->
-    <skip />
-    <!-- no translation found for av_studio_mic (2614843492629357766) -->
-    <skip />
-    <!-- no translation found for av_studio_look (621893522645557619) -->
-    <skip />
-    <!-- no translation found for av_studio_look_effects (4105109585851068415) -->
-    <skip />
-    <!-- no translation found for av_blur (405131343487260171) -->
-    <skip />
-    <!-- no translation found for av_live_captions (7819416886586903077) -->
-    <skip />
+    <string name="privacy_chip_use_string" msgid="979159484631969073">"<xliff:g id="SENSOR">%1$s</xliff:g>使用中"</string>
+    <string name="privacy_chip_use_string_with_app" msgid="6807216002072346877">"「<xliff:g id="APP">%2$s</xliff:g>」正在使用<xliff:g id="SENSOR">%1$s</xliff:g>"</string>
+    <string name="privacy_chip_camera_and_mic_text" msgid="6254449489859255607">"相機和麥克風"</string>
+    <string name="av_panel_title" msgid="455230832870768515">"隱私權"</string>
+    <string name="sensor_activity_header" msgid="2145727448786698035">"查看正在使用或最近曾使用這些權限的應用程式。"</string>
+    <string name="sensor_activity_see_all_access_button" msgid="8005330122289549048">"查看所有存取權"</string>
+    <string name="sensor_activity_camera_label" msgid="4260675418606211259">"相機"</string>
+    <string name="sensor_activity_microphone_label" msgid="4012136402420177411">"麥克風"</string>
+    <string name="sensor_activity_manage_access_button" msgid="1275701280501357102">"管理存取權"</string>
+    <string name="sensor_activity_close_app_button" msgid="6907314738150753330">"關閉應用程式"</string>
+    <string name="sensor_activity_back_button_cd" msgid="6894532284650291222">"返回"</string>
+    <string name="privacy_chip_apps_using_sensor_suffix" msgid="527247786536767096">"還有 <xliff:g id="COUNT">%1$d</xliff:g> 個"</string>
+    <string name="privacy_chip_camera_in_use" msgid="5163494654848590528">"相機使用中"</string>
+    <string name="privacy_chip_mic_in_use" msgid="1586091297556363367">"麥克風使用中"</string>
+    <string name="privacy_chip_camera_mic_in_use" msgid="5179267787210197484">"相機和麥克風使用中"</string>
+    <string name="av_camera_portrait_touch_up" msgid="5191856296212427203">"人像修飾"</string>
+    <string name="av_mic_label" msgid="5427348054144789879">"麥克風"</string>
+    <string name="av_camera_label" msgid="7719772172590702343">"相機"</string>
+    <string name="av_camera_blur_drill_in_title" msgid="2250600375798981511">"背景模糊效果"</string>
+    <string name="av_camera_blur_off" msgid="3170334995799202022">"關閉"</string>
+    <string name="av_camera_blur_light" msgid="5666055368940059418">"輕微"</string>
+    <string name="av_camera_blur_full" msgid="3276351992811619332">"完全"</string>
+    <string name="av_camera_improve_lighting" msgid="1540549414296669133">"改善光線"</string>
+    <string name="av_camera_framing" msgid="5108462267843042492">"相機構圖"</string>
+    <string name="av_studio_mic" msgid="2614843492629357766">"錄音室麥克風"</string>
+    <string name="av_studio_look" msgid="621893522645557619">"攝影棚效果"</string>
+    <string name="av_studio_look_effects" msgid="4105109585851068415">"%d 種效果"</string>
+    <string name="av_blur" msgid="405131343487260171">"模糊處理"</string>
+    <string name="av_live_captions" msgid="7819416886586903077">"即時字幕"</string>
 </resources>
