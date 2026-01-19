@@ -166,7 +166,6 @@ import com.android.internal.inputmethod.InputBindResult;
 import com.android.internal.inputmethod.InputMethodDebug;
 import com.android.internal.inputmethod.InputMethodInfoSafeList;
 import com.android.internal.inputmethod.InputMethodNavButtonFlags;
-import com.android.internal.inputmethod.InputMethodSubtypeHandle;
 import com.android.internal.inputmethod.InputMethodSubtypeSafeList;
 import com.android.internal.inputmethod.SoftInputShowHideReason;
 import com.android.internal.inputmethod.StartInputFlags;
@@ -1572,9 +1571,9 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         // of "current IME user" at b/350386877.
         // TODO(b/356879517): Come up with a way to avoid this special handling.
         if (newUserData.mSubtypeForKeyboardLayoutMapping != null) {
-            final var subtypeHandleAndSubtype = newUserData.mSubtypeForKeyboardLayoutMapping;
+            final var imiAndSubtype = newUserData.mSubtypeForKeyboardLayoutMapping;
             mInputManagerInternal.onInputMethodSubtypeChangedForKeyboardLayoutMapping(
-                    newUserId, subtypeHandleAndSubtype.first, subtypeHandleAndSubtype.second);
+                    newUserId, imiAndSubtype.first, imiAndSubtype.second);
         }
 
         if (initialUserSwitch) {
@@ -3129,21 +3128,19 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         final InputMethodSubtype normalizedSubtype =
                 subtype != null && subtype.isSuitableForPhysicalKeyboardLayoutMapping()
                         ? subtype : null;
-        final InputMethodSubtypeHandle newSubtypeHandle = normalizedSubtype != null
-                ? InputMethodSubtypeHandle.of(imi, normalizedSubtype) : null;
+        final InputMethodInfo normalizedImi = subtype != null ? imi : null;
 
         final var userData = getUserData(userId);
 
         // A workaround for b/356879517. KeyboardLayoutManager has relied on an implementation
         // detail that IMMS triggers this callback only for the current IME user.
         // TODO(b/357663774): Figure out how to better handle this scenario.
-        userData.mSubtypeForKeyboardLayoutMapping =
-                Pair.create(newSubtypeHandle, normalizedSubtype);
+        userData.mSubtypeForKeyboardLayoutMapping = Pair.create(normalizedImi, normalizedSubtype);
         if (userId != mCurrentImeUserId) {
             return;
         }
-        mInputManagerInternal.onInputMethodSubtypeChangedForKeyboardLayoutMapping(
-                userId, newSubtypeHandle, normalizedSubtype);
+        mInputManagerInternal.onInputMethodSubtypeChangedForKeyboardLayoutMapping(userId,
+                normalizedImi, normalizedSubtype);
     }
 
     @GuardedBy("ImfLock.class")
@@ -5884,27 +5881,37 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
 
         final var nextSubtype = nextItem.mSubtypeIndex > NOT_A_SUBTYPE_INDEX
                 ? nextItem.mImi.getSubtypeAt(nextItem.mSubtypeIndex) : null;
-        final var nextSubtypeHandle = InputMethodSubtypeHandle.of(nextItem.mImi, nextSubtype);
-        final InputMethodInfo nextImi = settings.getMethodMap().get(nextSubtypeHandle.getImeId());
+
+        // TODO(b/476928567): nextImi should be equivalent to nextItem.mImi in most cases, but this
+        //  is not guaranteed.
+        final InputMethodInfo nextImi = settings.getMethodMap().get(nextItem.mImi.getId());
         if (nextImi == null) {
+            Slog.e(TAG, "Switching controller's next IMI " + nextItem.mImi.getId()
+                    + " not found in settings");
             return;
         }
 
         final int subtypeCount = nextImi.getSubtypeCount();
         if (subtypeCount == 0) {
-            if (nextSubtypeHandle.equals(InputMethodSubtypeHandle.of(nextImi, null))) {
+            if (nextSubtype == null) {
                 setInputMethodLocked(nextImi.getId(), NOT_A_SUBTYPE_INDEX, userId);
+            } else {
+                Slog.e(TAG, "Switching controller's next IMI " + nextItem.mImi.getId()
+                        + " has 0 subtypes, but expected subtype " + nextSubtype);
             }
             return;
         }
 
         for (int i = 0; i < subtypeCount; ++i) {
-            if (nextSubtypeHandle.equals(
-                    InputMethodSubtypeHandle.of(nextImi, nextImi.getSubtypeAt(i)))) {
+            final var subtype = nextImi.getSubtypeAt(i);
+            if (Objects.equals(nextSubtype, subtype)) {
                 setInputMethodLocked(nextImi.getId(), i, userId);
                 return;
             }
         }
+
+        Slog.e(TAG, "Switching controller's next IMI " + nextItem.mImi.getId()
+                + " does not contain subtype " + nextSubtype);
     }
 
 

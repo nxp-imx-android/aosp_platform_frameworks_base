@@ -148,7 +148,6 @@ import android.view.inputmethod.InputMethodSubtype;
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
-import com.android.internal.inputmethod.InputMethodSubtypeHandle;
 import com.android.internal.os.SomeArgs;
 import com.android.internal.os.TimeoutRecord;
 import com.android.internal.policy.IShortcutService;
@@ -4019,9 +4018,9 @@ public class InputManagerService extends IInputManager.Stub
 
         @Override
         public void onInputMethodSubtypeChangedForKeyboardLayoutMapping(@UserIdInt int userId,
-                @Nullable InputMethodSubtypeHandle subtypeHandle,
+                @Nullable InputMethodInfo imi,
                 @Nullable InputMethodSubtype subtype) {
-            mKeyboardLayoutManager.onInputMethodSubtypeChanged(userId, subtypeHandle, subtype);
+            mKeyboardLayoutManager.onInputMethodSubtypeChanged(userId, imi, subtype);
         }
 
         @Override
