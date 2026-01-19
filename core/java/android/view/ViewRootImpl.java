@@ -1776,9 +1776,7 @@ public final class ViewRootImpl implements ViewParent,
                         mInsetsController.getRequestedVisibleTypes(), 1f /* compactScale */,
                         mTmpFrames);
                 setFrame(mTmpFrames.frame, true /* withinRelayout */);
-                if (com.android.window.flags.Flags.relativeInsets()) {
-                    mInsetsController.onBoundsChanged(bounds);
-                }
+                mInsetsController.onBoundsChanged(bounds);
                 registerBackCallbackOnWindow();
                 if (DEBUG_LAYOUT) Log.v(mTag, "Added window " + mWindow);
                 if (res < WindowManagerGlobal.ADD_OKAY) {
@@ -6978,12 +6976,10 @@ public final class ViewRootImpl implements ViewParent,
             updateConfiguration(newDisplayId);
         }
 
-        if (com.android.window.flags.Flags.relativeInsets()) {
-            // Notify the insets controller about bounds change for insets calculation.
-            final Rect bounds = mergedConfiguration.getMergedConfiguration().windowConfiguration
-                    .getBounds();
-            mInsetsController.onBoundsChanged(bounds);
-        }
+        // Notify the insets controller about bounds change for insets calculation.
+        final Rect bounds = mergedConfiguration.getMergedConfiguration().windowConfiguration
+                .getBounds();
+        mInsetsController.onBoundsChanged(bounds);
 
         mForceNextConfigUpdate = false;
     }

@@ -425,27 +425,15 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
                 flags = FLAG_FORCE_CONSUMING | FLAG_FORCE_CONSUMING_OPAQUE_CAPTION_BAR;
             }
             if (com.android.window.flags.Flags.improveFluidResizingPerformance()) {
-                if (com.android.window.flags.Flags.relativeInsets()) {
-                    wct.addInsetsSource(mTaskToken, mCaptionInsetsOwner, 0,
-                            WindowInsets.Type.captionBar(),
-                            Insets.of(0, mCaptionInsets.height(), 0, 0),
-                            (InsetsBoundingRect[]) null /* boundingRects */, flags);
-                } else {
-                    wct.addInsetsSource(mTaskToken, mCaptionInsetsOwner, 0,
-                            WindowInsets.Type.captionBar(), mCaptionInsets,
-                            (InsetsBoundingRect[]) null /* boundingRects */, flags);
-                }
+                wct.addInsetsSource(mTaskToken, mCaptionInsetsOwner, 0,
+                        WindowInsets.Type.captionBar(),
+                        Insets.of(0, mCaptionInsets.height(), 0, 0),
+                        (InsetsBoundingRect[]) null /* boundingRects */, flags);
             } else {
-                if (com.android.window.flags.Flags.relativeInsets()) {
-                    wct.addInsetsSource(mTaskToken, mCaptionInsetsOwner, 0,
-                            WindowInsets.Type.captionBar(),
-                            Insets.of(0, mCaptionInsets.height(), 0, 0),
-                            (Rect[]) null /* boundingRects */, flags);
-                } else {
-                    wct.addInsetsSource(mTaskToken, mCaptionInsetsOwner, 0,
-                            WindowInsets.Type.captionBar(), mCaptionInsets,
-                            (Rect[]) null /* boundingRects */, flags);
-                }
+                wct.addInsetsSource(mTaskToken, mCaptionInsetsOwner, 0,
+                        WindowInsets.Type.captionBar(),
+                        Insets.of(0, mCaptionInsets.height(), 0, 0),
+                        (Rect[]) null /* boundingRects */, flags);
             }
         } else {
             wct.removeInsetsSource(mTaskToken, mCaptionInsetsOwner, 0,

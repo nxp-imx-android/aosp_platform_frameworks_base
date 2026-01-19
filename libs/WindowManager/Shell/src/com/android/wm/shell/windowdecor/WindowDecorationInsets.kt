@@ -63,11 +63,7 @@ private constructor(
     ) : this(
         token,
         owner,
-        if (Flags.relativeInsets()) {
-            Frame.Relative(frame.height())
-        } else {
-            Frame.Absolute(frame)
-        },
+        Frame.Relative(frame.height()),
         boundingRects,
         insetsBoundingRects,
         flags,
