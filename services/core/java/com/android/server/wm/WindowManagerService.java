@@ -1891,7 +1891,9 @@ public class WindowManagerService extends IWindowManager.Stub
             final boolean openInputChannels = (outInputChannel != null
                     && (attrs.inputFeatures & INPUT_FEATURE_NO_INPUT_CHANNEL) == 0);
             if  (openInputChannels) {
-                win.openInputChannel(outInputChannel);
+                final InputChannel channel = win.openInputChannel();
+                channel.copyTo(outInputChannel);
+                channel.dispose();
             }
 
             // If adding a toast requires a token for this app we always schedule hiding
