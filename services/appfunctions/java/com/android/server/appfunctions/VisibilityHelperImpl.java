@@ -47,6 +47,29 @@ public final class VisibilityHelperImpl implements VisibilityHelper {
         mPmInternal = Objects.requireNonNull(packageManagerInternal);
     }
 
+    @Override
+    public boolean isAppFunctionVisible(
+            @NonNull AppFunctionName appFunctionName,
+            @NonNull String callingPackage,
+            int callingUid,
+            int callingPid) {
+        if (callingPackage.equals(appFunctionName.getPackageName())) {
+            return true;
+        }
+
+        final long token = Binder.clearCallingIdentity();
+        try {
+            if (mContext.checkPermission(
+                            Manifest.permission.EXECUTE_APP_FUNCTIONS, callingPid, callingUid)
+                    != PackageManager.PERMISSION_GRANTED) {
+                return false;
+            }
+            return mPmInternal.canQueryPackage(callingUid, appFunctionName.getPackageName());
+        } finally {
+            Binder.restoreCallingIdentity(token);
+        }
+    }
+
     @Nullable
     @Override
     public AppFunctionSearchSpec applyVisiblePackageFilter(
