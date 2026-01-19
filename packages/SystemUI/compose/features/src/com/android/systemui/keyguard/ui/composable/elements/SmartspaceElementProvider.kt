@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.viewinterop.NoOpUpdate
+import androidx.core.view.isEmpty
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.animation.scene.MovableElementContentScope
 import com.android.compose.animation.scene.MovableElementKey
@@ -166,8 +167,8 @@ constructor(
                 smartspaceController
                     .buildAndConnectWeatherView(linearLayout.context, isLargeClock)
                     ?.let { view ->
-                        // Place weather right after the date, before the extras (alarm and dnd)
-                        val index = if (linearLayout.childCount == 0) 0 else 1
+                        // Place weather right after the date, before the extras (alarm and DND).
+                        val index = if (linearLayout.isEmpty()) 0 else 1
                         linearLayout.addView(view, index)
                     }
             }
@@ -193,7 +194,7 @@ constructor(
                 dimensionResource(R.dimen.smartspace_padding_horizontal) +
                     dimensionResource(clocksR.dimen.status_view_margin_horizontal)
 
-            // In wide-layouts limit the maximum width of the card to be half the screen width
+            // In wide-layouts limit the maximum width of the card to be half the screen width.
             val shadeMode by keyguardSmartspaceViewModel.shadeMode.collectAsStateWithLifecycle()
             val widthMod =
                 when (getLayoutType(shadeMode)) {
@@ -226,7 +227,7 @@ constructor(
                 exit = fadeOut() + shrinkVertically(shrinkTowards = Alignment.Top),
             ) {
                 LookaheadAndroidView(
-                    factory = { ctx ->
+                    factory = { _ ->
                         keyguardUnlockAnimationController.lockscreenSmartspace = view
                         view
                     },

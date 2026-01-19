@@ -432,7 +432,7 @@ constructor(
 
         private fun isAnimatedVectorDrawable(@DrawableRes res: Int, resources: Resources): Boolean {
             /**
-             * Helper method to seek to the first tag within the VectorDrawable xml asset
+             * Helper method to seek to the first tag within the VectorDrawable XML asset.
              *
              * From XmlVectorParser.android.kt
              */
@@ -452,7 +452,7 @@ constructor(
             return try {
                 @Suppress("ResourceType") val parser: XmlPullParser = resources.getXml(res)
                 parser.seekToStartTag().name == "animated-vector"
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 false
             }
         }

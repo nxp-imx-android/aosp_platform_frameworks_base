@@ -69,7 +69,7 @@ import com.google.errorprone.annotations.CompileTimeConstant
 import javax.inject.Inject
 
 @SysUISingleton
-/** Provides a combined element for all lockscreen ui above the lock icon */
+/** Provides a combined element for all lockscreen ui above the lock icon. */
 class LockscreenUpperRegionElementProvider
 @Inject
 constructor(
@@ -111,8 +111,8 @@ constructor(
         ) {
             Box(modifier = Modifier.fillMaxSize().then(modifier)) {
                 AODNotifications(Modifier.align(aodAlignment))
-                // Make the Notification section overlap with the AOD icons,
-                // to avoid jumps while animating them in.
+                // Make the Notification section overlap with the AOD icons, to avoid jumps while
+                // animating them in.
                 AnimatedVisibility(viewModel.isNotificationStackActive) {
                     LockscreenElement(
                         Notifications.Stack,
@@ -356,9 +356,9 @@ constructor(
             modifier: Modifier = Modifier,
         ) {
             // We overlap the notification stack with large clock region so that large clock is
-            // horizontally centered as expected. Since this layout should only be used when the
-            // all notifications are in the shelf, these elements won't overlap visually in
-            // practice outside of momentarially during certain transitions.
+            // horizontally centered as expected. Since this layout should only be used when all
+            // the notifications are on the shelf, these elements won't overlap visually in
+            // practice outside of momentarily during certain transitions.
             Box(
                 modifier = Modifier.fillMaxSize().then(modifier),
                 contentAlignment = Alignment.Center,
