@@ -87,14 +87,14 @@
     <item msgid="1963366694959681026">"avrcp १६"</item>
   </string-array>
   <string-array name="bluetooth_map_versions">
-    <item msgid="8786402640610987099">"MAP १.२ (डिफल्ट)"</item>
+    <item msgid="21178836630730799">"MAP १.४ (डिफल्ट)"</item>
     <item msgid="6817922176194686449">"MAP १.३"</item>
-    <item msgid="3423518690032737851">"MAP १.४"</item>
+    <item msgid="8011898423554516831">"MAP १.२"</item>
   </string-array>
   <string-array name="bluetooth_map_version_values">
-    <item msgid="1164651830068248391">"map12"</item>
+    <item msgid="1357192863455358941">"map14"</item>
     <item msgid="7073042887003102964">"map13"</item>
-    <item msgid="8147982633566548515">"map14"</item>
+    <item msgid="7955441600179437965">"map12"</item>
   </string-array>
   <string-array name="bluetooth_a2dp_codec_summaries">
     <item msgid="8868109554557331312">"सिस्टमको छनौट प्रयोग गर्नुहोस् (डिफल्ट)"</item>
