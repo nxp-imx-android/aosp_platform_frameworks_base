@@ -441,7 +441,6 @@ public class CaptureResult extends CameraMetadata<CaptureResult.Key<?>> {
      * @hide
      */
     @SystemApi
-    @FlaggedApi(android.companion.virtualdevice.flags.Flags.FLAG_VIRTUAL_CAMERA_METADATA)
     public static final class Builder {
         private final CameraMetadataNative mNativeMetadata;
 

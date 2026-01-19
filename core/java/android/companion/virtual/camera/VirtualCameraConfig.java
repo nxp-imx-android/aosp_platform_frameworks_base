@@ -110,7 +110,6 @@ public final class VirtualCameraConfig implements Parcelable {
      * It can be used as a start template in a {@link CameraCharacteristics.Builder} to further
      * customize and overwrite the opinionated preset keys and values.
      */
-    @FlaggedApi(Flags.FLAG_VIRTUAL_CAMERA_METADATA)
     public static final CameraCharacteristics DEFAULT_VIRTUAL_CAMERA_CHARACTERISTICS =
             getDefaultVirtualCameraCharacteristics();
 
@@ -268,11 +267,7 @@ public final class VirtualCameraConfig implements Parcelable {
      *
      * @see Builder#setPerFrameCameraMetadataEnabled(boolean)
      */
-    @FlaggedApi(Flags.FLAG_VIRTUAL_CAMERA_METADATA)
     public boolean isPerFrameCameraMetadataEnabled() {
-        if (!Flags.virtualCameraMetadata()) {
-            throw new UnsupportedOperationException("virtual_camera_metadata not enabled!");
-        }
         return mPerFrameCameraMetadataEnabled;
     }
 
@@ -281,12 +276,8 @@ public final class VirtualCameraConfig implements Parcelable {
      *
      * @see Builder#setCameraCharacteristics(CameraCharacteristics)
      */
-    @FlaggedApi(Flags.FLAG_VIRTUAL_CAMERA_METADATA)
     @Nullable
     public CameraCharacteristics getCameraCharacteristics() {
-        if (!Flags.virtualCameraMetadata()) {
-            throw new UnsupportedOperationException("virtual_camera_metadata not enabled!");
-        }
         return mCameraCharacteristics;
     }
 
@@ -444,12 +435,8 @@ public final class VirtualCameraConfig implements Parcelable {
          * @see VirtualCameraCallback#onProcessCaptureRequest(int, long)
          * @see VirtualCameraCallback#onProcessCaptureRequest(int, long, CaptureRequest)
          */
-        @FlaggedApi(Flags.FLAG_VIRTUAL_CAMERA_METADATA)
         @NonNull
         public Builder setPerFrameCameraMetadataEnabled(boolean perFrameCameraMetadataEnabled) {
-            if (!Flags.virtualCameraMetadata()) {
-                throw new UnsupportedOperationException("virtual_camera_metadata not enabled!");
-            }
             mPerFrameCameraMetadataEnabled = perFrameCameraMetadataEnabled;
             return this;
         }
@@ -472,13 +459,9 @@ public final class VirtualCameraConfig implements Parcelable {
          * @param cameraCharacteristics The instance of the {@link CameraCharacteristics}
          *                              to be associated with the virtual camera.
          */
-        @FlaggedApi(Flags.FLAG_VIRTUAL_CAMERA_METADATA)
         @NonNull
         public Builder setCameraCharacteristics(
                 @Nullable CameraCharacteristics cameraCharacteristics) {
-            if (!Flags.virtualCameraMetadata()) {
-                throw new UnsupportedOperationException("virtual_camera_metadata not enabled!");
-            }
             mCameraCharacteristics = cameraCharacteristics;
             return this;
         }
@@ -539,15 +522,13 @@ public final class VirtualCameraConfig implements Parcelable {
         @Override
         public void onConfigureSession(CaptureRequest sessionParameters,
                 ICaptureResultConsumer captureResultConsumer) {
-            if (Flags.virtualCameraMetadata()) {
-                VirtualCameraSessionConfig virtualCameraSessionConfig =
-                        new VirtualCameraSessionConfig(sessionParameters);
+            VirtualCameraSessionConfig virtualCameraSessionConfig =
+                    new VirtualCameraSessionConfig(sessionParameters);
 
-                Binder.withCleanCallingIdentity(() ->
-                        mExecutor.execute(() -> mCallback.onConfigureSession(
-                                virtualCameraSessionConfig,
-                                convertToFrameworkCaptureResultConsumer(captureResultConsumer))));
-            }
+            Binder.withCleanCallingIdentity(() ->
+                    mExecutor.execute(() -> mCallback.onConfigureSession(
+                            virtualCameraSessionConfig,
+                            convertToFrameworkCaptureResultConsumer(captureResultConsumer))));
         }
 
         @Override
@@ -561,7 +542,7 @@ public final class VirtualCameraConfig implements Parcelable {
         @Override
         public void onProcessCaptureRequest(int streamId, long frameId,
                 CaptureRequest captureRequest) {
-            if (Flags.virtualCameraMetadata() && mPerFrameCameraMetadataEnabled) {
+            if (mPerFrameCameraMetadataEnabled) {
                 Binder.withCleanCallingIdentity(() ->
                         mExecutor.execute(() -> mCallback.onProcessCaptureRequest(
                                 streamId, frameId, captureRequest)));
@@ -617,10 +598,6 @@ public final class VirtualCameraConfig implements Parcelable {
     // Set the default keys and values necessary for a valid and usable CameraCharacteristics
     @NonNull
     private static CameraCharacteristics getDefaultVirtualCameraCharacteristics() {
-        if (!Flags.virtualCameraMetadata()) {
-          return new CameraCharacteristics(new CameraMetadataNative());
-        }
-
         List<CameraCharacteristics.Key<?>> availableCharacteristicsKeys = List.of(
                 CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL,
                 CameraCharacteristics.FLASH_INFO_AVAILABLE, CameraCharacteristics.LENS_FACING,

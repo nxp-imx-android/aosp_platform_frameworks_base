@@ -306,7 +306,6 @@ public class VirtualCameraControllerTest {
 
     @Parameters(method = "getAllLensFacingDirections")
     @Test
-    @EnableFlags(Flags.FLAG_VIRTUAL_CAMERA_METADATA)
     public void registerCameraWithCharacteristics_registersCamera(int lensFacing) throws Exception {
         CameraCharacteristics characteristics = new CameraCharacteristics.Builder(
                 VirtualCameraConfig.DEFAULT_VIRTUAL_CAMERA_CHARACTERISTICS)
@@ -325,7 +324,6 @@ public class VirtualCameraControllerTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_VIRTUAL_CAMERA_METADATA)
     public void unregisterCameraWithCharacteristics_unregistersCamera() throws Exception {
         CameraCharacteristics characteristics = new CameraCharacteristics.Builder(
                 VirtualCameraConfig.DEFAULT_VIRTUAL_CAMERA_CHARACTERISTICS)
@@ -348,7 +346,6 @@ public class VirtualCameraControllerTest {
 
     @Parameters(method = "getAllLensFacingDirections")
     @Test
-    @EnableFlags(Flags.FLAG_VIRTUAL_CAMERA_METADATA)
     public void registerCameraWithPerFrameMetadata_registersCamera(int lensFacing)
             throws Exception {
         VirtualCameraConfig config = new VirtualCameraConfig.Builder(CAMERA_NAME_1)
@@ -374,7 +371,6 @@ public class VirtualCameraControllerTest {
 
     @Parameters(method = "getAllLensFacingDirections")
     @Test
-    @EnableFlags(Flags.FLAG_VIRTUAL_CAMERA_METADATA)
     public void registerCameraWithCharacteristicsAndPerFrameMetadata_registersCamera(int lensFacing)
             throws Exception {
         CameraCharacteristics characteristics = new CameraCharacteristics.Builder(
