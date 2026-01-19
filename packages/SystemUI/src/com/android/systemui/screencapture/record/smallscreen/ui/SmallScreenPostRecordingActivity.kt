@@ -27,8 +27,12 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -52,7 +56,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.booleanResource
@@ -69,7 +76,9 @@ import com.android.systemui.screencapture.common.ui.compose.LoadingIcon
 import com.android.systemui.screencapture.common.ui.compose.PrimaryButton
 import com.android.systemui.screencapture.common.ui.compose.loadIcon
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
+import com.android.systemui.screencapture.record.smallscreen.player.ui.compose.DefaultVideoPlayerControls
 import com.android.systemui.screencapture.record.smallscreen.player.ui.compose.VideoPlayer
+import com.android.systemui.screencapture.record.smallscreen.player.ui.viewmodel.VideoPlayerControlsViewModel
 import com.android.systemui.screencapture.record.smallscreen.ui.viewmodel.PostRecordingActionsViewModel
 import com.android.systemui.screencapture.record.smallscreen.ui.viewmodel.PostRecordingImmediateVideoViewModel
 import com.android.systemui.screencapture.record.smallscreen.ui.viewmodel.PostRecordingVideoViewModel
@@ -145,11 +154,26 @@ constructor(
                                     text = stringResource(R.string.screenrecord_save_error),
                                     modifier = Modifier.align(Alignment.Center).padding(64.dp),
                                 )
-                            is ScreenRecording.Saved ->
+                            is ScreenRecording.Saved -> {
+                                var controlsVisible by remember { mutableStateOf(true) }
                                 videoPlayer.Content(
                                     uri = recording.uri,
-                                    modifier = Modifier.fillMaxSize(),
+                                    modifier =
+                                        Modifier.fillMaxSize()
+                                            .clickable(
+                                                interactionSource = null,
+                                                indication = null,
+                                                onClick = { controlsVisible = !controlsVisible },
+                                            ),
+                                    videoControls = { viewModel ->
+                                        VideoPlayerControls(
+                                            viewModel = viewModel,
+                                            visible = controlsVisible,
+                                            modifier = Modifier.align(Alignment.BottomCenter),
+                                        )
+                                    },
                                 )
+                            }
                         }
                     }
                 }
@@ -224,6 +248,22 @@ constructor(
                     )
                 }
             }
+        }
+    }
+
+    @Composable
+    private fun VideoPlayerControls(
+        viewModel: VideoPlayerControlsViewModel,
+        modifier: Modifier = Modifier,
+        visible: Boolean = true,
+    ) {
+        AnimatedVisibility(
+            visible = visible,
+            enter = fadeIn(),
+            exit = fadeOut(),
+            modifier = modifier,
+        ) {
+            DefaultVideoPlayerControls(viewModel = viewModel, modifier = Modifier)
         }
     }
 
