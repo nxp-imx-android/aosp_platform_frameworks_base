@@ -45,7 +45,7 @@ public class TrustTokenManagerService extends SystemService {
     @Override
     public void onStart() {
         Slog.i(TAG, "Starting TrustTokenManagerService");
-        publishBinderService(Context.TALISMAN_SERVICE, mBinder);
+        publishBinderService(Context.TRUST_TOKEN_SERVICE, mBinder);
     }
 
     private final ITrustTokenManager.Stub mBinder =
