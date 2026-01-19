@@ -351,7 +351,7 @@ class DesktopTasksTransitionObserverTest : ShellTestCase() {
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_REMEMBERED_BOUNDS)
-    fun onTransitionReady_changeTransition_updatesLastPackageState() {
+    fun onTransitionReady_changeTransition_updatesRememberedBounds() {
         val mockTransition = Mockito.mock(IBinder::class.java)
         val startBounds = Rect(0, 0, 100, 100)
         val endBounds = Rect(10, 20, 120, 130)
@@ -389,7 +389,7 @@ class DesktopTasksTransitionObserverTest : ShellTestCase() {
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_REMEMBERED_BOUNDS)
-    fun onTransitionReady_changeTransition_notUserAction_doesNotUpdateLastPackageState() {
+    fun onTransitionReady_changeTransition_notUserAction_doesNotUpdateRememberedBounds() {
         val mockTransition = Mockito.mock(IBinder::class.java)
         val startBounds = Rect(0, 0, 100, 100)
         val endBounds = Rect(10, 20, 120, 130)
@@ -418,7 +418,7 @@ class DesktopTasksTransitionObserverTest : ShellTestCase() {
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_REMEMBERED_BOUNDS)
-    fun onTransitionReady_changeTransition_doesNotUpdateLastPackageState_inImmersive() {
+    fun onTransitionReady_changeTransition_doesNotUpdateRememberedBounds_inImmersive() {
         val startBounds = Rect(0, 0, 100, 100)
         val endBounds = Rect(10, 20, 120, 130)
         val stableBounds = Rect(0, 0, 200, 200)

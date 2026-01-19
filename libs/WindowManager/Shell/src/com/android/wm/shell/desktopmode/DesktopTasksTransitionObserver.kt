@@ -96,7 +96,7 @@ class DesktopTasksTransitionObserver(
             closingTransitionToTransitionInfo.put(transition, info)
         }
         removeWallpaperOnLastTaskClosingIfNeeded(transition, info)
-        updateLastPackageStateChange(info, transition)
+        updateRememberedBoundsIfNeeded(info, transition)
     }
 
     private fun containsClosingTaskInDesktop(info: TransitionInfo): Boolean {
@@ -268,7 +268,7 @@ class DesktopTasksTransitionObserver(
         }
     }
 
-    private fun updateLastPackageStateChange(info: TransitionInfo, transition: IBinder) {
+    private fun updateRememberedBoundsIfNeeded(info: TransitionInfo, transition: IBinder) {
         if (!Flags.enableRememberedBounds()) {
             return
         }
