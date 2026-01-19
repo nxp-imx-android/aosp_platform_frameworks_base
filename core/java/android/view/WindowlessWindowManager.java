@@ -284,13 +284,6 @@ public class WindowlessWindowManager implements IWindowSession {
     }
 
     @Override
-    public int addToDisplayWithoutInputChannel(android.view.IWindow window,
-            android.view.WindowManager.LayoutParams attrs, int viewVisibility, int layerStackId,
-            WindowRelayoutResult result) {
-        return 0;
-    }
-
-    @Override
     public void remove(IBinder clientToken) throws RemoteException {
         mRealWm.remove(clientToken);
         State state;
