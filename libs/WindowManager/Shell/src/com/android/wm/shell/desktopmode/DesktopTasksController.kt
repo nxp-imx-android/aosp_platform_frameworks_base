@@ -1072,7 +1072,7 @@ class DesktopTasksController(
         }
     }
 
-    fun onDisplayDpiChanging(
+    fun onDisplayResolutionOrSizeChanging(
         displayId: Int,
         newConfig: Configuration,
         oldDisplayLayout: DisplayLayout?,
@@ -7267,8 +7267,7 @@ class DesktopTasksController(
 
     companion object {
         // Timeout used for CUJ_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG_HOLD/RELEASE, this is longer than
-        // the
-        // default timeout to avoid timing out in the middle of a drag action.
+        // the default timeout to avoid timing out in the middle of a drag action.
         private val APP_HANDLE_DRAG_CUJ_TIMEOUT_MS: Long = TimeUnit.SECONDS.toMillis(10L)
 
         private const val TAG = "DesktopTasksController"
