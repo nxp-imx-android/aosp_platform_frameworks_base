@@ -35,7 +35,6 @@ import android.window.RemoteTransition;
 import android.window.TransitionFilter;
 
 import com.android.systemui.animation.OriginRemoteTransition.TransitionPlayer;
-import com.android.systemui.animation.shared.IOriginTransitionCallback;
 import com.android.systemui.animation.shared.IOriginTransitions;
 
 import java.lang.annotation.Retention;
