@@ -16,6 +16,10 @@
 
 package com.android.systemui.usb
 
+import android.content.Intent
+import android.content.pm.ActivityInfo
+import android.content.pm.ApplicationInfo
+import android.content.pm.ResolveInfo
 import android.hardware.usb.flags.Flags.FLAG_ENABLE_PERSISTENT_USB_DEVICE_PERMISSIONS
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
@@ -30,8 +34,14 @@ import com.android.internal.app.AlertController
 import com.android.systemui.res.R
 import com.google.common.truth.Truth.assertThat
 import javax.inject.Inject
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoMoreInteractions
 
 /** UsbConfirmActivityTest */
 @RunWith(AndroidJUnit4::class)
@@ -39,6 +49,10 @@ import org.junit.runner.RunWith
 @TestableLooper.RunWithLooper
 class UsbConfirmActivityTest :
     UsbDialogActivityTest<UsbConfirmActivityTest.UsbConfirmActivityTestable>() {
+    companion object {
+        private const val RESOLVE_INFO: String = "rinfo"
+    }
+
     class UsbConfirmActivityTestable
     @Inject
     constructor(val message: UsbAudioWarningDialogMessage) :
@@ -54,6 +68,17 @@ class UsbConfirmActivityTest :
 
     override fun getActivityClass(): Class<UsbConfirmActivityTestable> {
         return UsbConfirmActivityTestable::class.java
+    }
+
+    override fun createIntent(canBeDefault: Boolean): Intent {
+        val resolveInfo = ResolveInfo()
+        resolveInfo.activityInfo = ActivityInfo()
+        resolveInfo.activityInfo.applicationInfo = ApplicationInfo()
+        resolveInfo.activityInfo.applicationInfo.uid = EXTRA_UID
+        resolveInfo.activityInfo.packageName = EXTRA_PACKAGE
+        resolveInfo.activityInfo.name = PACKAGE
+
+        return super.createIntent(canBeDefault).putExtra(RESOLVE_INFO, resolveInfo)
     }
 
     // Tests for old Usb Dialog UI
@@ -213,6 +238,42 @@ class UsbConfirmActivityTest :
 
     @Test
     @EnableFlags(FLAG_ENABLE_PERSISTENT_USB_DEVICE_PERMISSIONS)
+    fun testUsbAccessoryNewDialogCancel() {
+        prepareNewDialogCancel(isUsbDevice = false)
+
+        verifyNoMoreInteractions(mUsbService)
+
+        assertFalse(activityRule.activity.isAlwaysUseChecked)
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_PERSISTENT_USB_DEVICE_PERMISSIONS)
+    fun testUsbAccessoryNewDialogAllowOnlyThisTime() {
+        prepareNewDialogAllowOnlyThisTime(isUsbDevice = false)
+
+        verify(mUsbService)
+            .grantAccessoryPermission(eq(mUsbAccessory), eq(EXTRA_PACKAGE), eq(EXTRA_UID))
+        verify(mUsbService).setAccessoryPackage(eq(mUsbAccessory), eq(null), any())
+        verifyNoMoreInteractions(mUsbService)
+
+        assertFalse(activityRule.activity.isAlwaysUseChecked)
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_PERSISTENT_USB_DEVICE_PERMISSIONS)
+    fun testUsbAccessoryNewDialogAllowOnlyThisTimeWithAlwaysUse() {
+        prepareNewDialogAllowOnlyThisTimeWithAlwaysUse(isUsbDevice = false)
+
+        verify(mUsbService)
+            .grantAccessoryPermission(eq(mUsbAccessory), eq(EXTRA_PACKAGE), eq(EXTRA_UID))
+        verify(mUsbService).setAccessoryPackage(eq(mUsbAccessory), eq(EXTRA_PACKAGE), any())
+        verifyNoMoreInteractions(mUsbService)
+
+        assertTrue(activityRule.activity.isAlwaysUseChecked)
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_PERSISTENT_USB_DEVICE_PERMISSIONS)
     fun testUsbDeviceNewDialogTitleAndMessage() {
         deviceConfiguration(isUsbDevice = true, hasAudioCapture = true)
 
@@ -316,5 +377,54 @@ class UsbConfirmActivityTest :
             .isEqualTo(
                 context.getString(R.string.always_use_device, mAppName, USB_DEVICE_PRODUCT_NAME)
             )
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_PERSISTENT_USB_DEVICE_PERMISSIONS)
+    fun testUsbDeviceNewDialogCancel() {
+        prepareNewDialogCancel(isUsbDevice = true)
+
+        verifyNoMoreInteractions(mUsbService)
+
+        assertFalse(activityRule.activity.isAlwaysUseChecked)
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_PERSISTENT_USB_DEVICE_PERMISSIONS)
+    fun testUsbDeviceNewDialogAllowOnlyThisTime() {
+        prepareNewDialogAllowOnlyThisTime(isUsbDevice = true)
+
+        verify(mUsbService)
+            .grantDevicePermission(eq(mUsbDevice), eq(EXTRA_PACKAGE), eq(EXTRA_UID), eq(false))
+        verify(mUsbService).setDevicePackage(eq(mUsbDevice), eq(null), any())
+        verifyNoMoreInteractions(mUsbService)
+
+        assertFalse(activityRule.activity.isAlwaysUseChecked)
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_PERSISTENT_USB_DEVICE_PERMISSIONS)
+    fun testUsbDeviceNewDialogAllowOnlyThisTimeWithAlwaysUse() {
+        prepareNewDialogAllowOnlyThisTimeWithAlwaysUse(isUsbDevice = true)
+
+        verify(mUsbService)
+            .grantDevicePermission(eq(mUsbDevice), eq(EXTRA_PACKAGE), eq(EXTRA_UID), eq(false))
+        verify(mUsbService).setDevicePackage(eq(mUsbDevice), eq(EXTRA_PACKAGE), any())
+        verifyNoMoreInteractions(mUsbService)
+
+        assertTrue(activityRule.activity.isAlwaysUseChecked)
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_PERSISTENT_USB_DEVICE_PERMISSIONS)
+    fun testUsbDeviceNewDialogAlwaysAllow() {
+        prepareNewDialogAlwaysAllow()
+
+        verify(mUsbService)
+            .grantDevicePermission(eq(mUsbDevice), eq(EXTRA_PACKAGE), eq(EXTRA_UID), eq(true))
+        verify(mUsbService).setDevicePackage(eq(mUsbDevice), eq(null), any())
+        verifyNoMoreInteractions(mUsbService)
+
+        assertFalse(activityRule.activity.isAlwaysUseChecked)
     }
 }

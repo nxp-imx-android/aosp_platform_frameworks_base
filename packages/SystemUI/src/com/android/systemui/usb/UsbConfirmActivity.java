@@ -61,8 +61,8 @@ public class UsbConfirmActivity extends UsbDialogActivity {
     }
 
     @Override
-    void onConfirm() {
-        mDialogHelper.grantUidAccessPermission();
+    void onConfirm(boolean isPersistent) {
+        mDialogHelper.grantUidAccessPermission(isPersistent);
         if (isAlwaysUseChecked()) {
             mDialogHelper.setDefaultPackage();
         } else {
