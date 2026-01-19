@@ -293,7 +293,7 @@
     <string name="bugreport_option_full_title" msgid="7681035745950045690">"Teljes jelentés"</string>
     <string name="bugreport_option_full_summary" msgid="1975130009258435885">"Ezt a beállítást minimális rendszerzavar esetén használja, amikor eszköze nem válaszol, túl lassú, illetve ha minden jelentésrészre szüksége van. A rendszer nem teszi lehetővé további részletek megadását, illetve további képernyőképek készítését."</string>
     <string name="bugreport_countdown" msgid="6418620521782120755">"{count,plural, =1{Képernyőkép készítése a hibajelentéshez # másodpercen belül.}other{Képernyőkép készítése a hibajelentéshez # másodpercen belül.}}"</string>
-    <string name="bugreport_screenshot_success_toast" msgid="7986095104151473745">"Sikerült a képernyőkép elkészítése a hibajelentéshez"</string>
+    <string name="bugreport_screenshot_success_toast" msgid="7986095104151473745">"Képernyőkép készült a hibajelentéshez"</string>
     <string name="bugreport_screenshot_failure_toast" msgid="6736320861311294294">"Nem sikerült képernyőképet készíteni a hibajelentéshez"</string>
     <string name="global_action_toggle_silent_mode" msgid="8464352592860372188">"Néma üzemmód"</string>
     <string name="global_action_silent_mode_on_status" msgid="2371892537738632013">"Hang kikapcsolva"</string>
@@ -2111,8 +2111,52 @@
     <string name="app_suspended_default_message" msgid="6451215678552004172">"A(z) <xliff:g id="APP_NAME_0">%1$s</xliff:g> alkalmazás jelenleg nem áll rendelkezésre. Ezt a(z) <xliff:g id="APP_NAME_1">%2$s</xliff:g> kezeli."</string>
     <string name="app_suspended_more_details" msgid="211260942831587014">"További információ"</string>
     <string name="app_suspended_unsuspend_message" msgid="1665438589450555459">"Alkalmazás szüneteltetésének feloldása"</string>
+    <string name="app_lock_add_screen_lock_button_text" msgid="9209013414563206600">"Képernyőzár hozzáadása"</string>
+    <string name="app_lock_add_screen_lock_message" msgid="6107009360675769892">"A képernyőzár lehet PIN-kód, minta vagy jelszó. Ezt fogja használni az eszköz feloldásához és a zárolt alkalmazásokhoz való hozzáféréshez."</string>
+    <string name="app_lock_add_screen_lock_title" msgid="6905612843620128689">"Először állítson be képernyőzárat"</string>
+    <!-- no translation found for enable_app_lock_success_toast_message (3339622779190529987) -->
+    <skip />
+    <!-- no translation found for enable_app_lock_failure_toast_message (1055838896510445566) -->
+    <skip />
+    <!-- no translation found for disable_app_lock_success_toast_message (70733620589071266) -->
+    <skip />
     <string name="locked_app_biometric_prompt_description" msgid="6853122652400451464">"A(z) <xliff:g id="APP_NAME">%1$s</xliff:g> zárolva van"</string>
-    <!-- no translation found for locked_app_external_display_message (5483884799685545338) -->
+    <string name="locked_app_external_display_message" msgid="5483884799685545338">"Ha hozzá szeretne férni az alkalmazáshoz ezen a kijelzőn, először igazolja személyazonosságát a másik eszközén"</string>
+    <!-- no translation found for app_lock_edu_dialog_enable_app_lock_title (283314042336592322) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_description (8176807243219769518) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_description_template (8563718120753342530) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_description_template_no_biometrics (7122017109150633691) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_info_header (5876120209204270990) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_info_notifications (1124438392204873305) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_info_widgets (8809009414650740872) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_button_lock (3914687128135704801) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_face (1348151645996748654) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_fingerprint (5206107469561561455) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_fingerprint_and_face (7895807411323811641) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_lockscreen_password_name (8487096457702445059) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_lockscreen_pattern_name (991436996281983547) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_lockscreen_pin_name (6458607126966304795) -->
+    <skip />
+    <!-- no translation found for app_lock_permission_review_dialog_title (5030286398974840579) -->
+    <skip />
+    <!-- no translation found for app_lock_permission_review_dialog_sub_title (310758587817184145) -->
+    <skip />
+    <!-- no translation found for app_lock_permission_review_expand_app_list_button (3214809707125223273) -->
+    <skip />
+    <!-- no translation found for app_lock_permission_review_continue_button (4045066724173414043) -->
     <skip />
     <string name="work_mode_off_title" msgid="6367463960165135829">"Feloldja a munkahelyi appokat?"</string>
     <string name="work_mode_turn_on" msgid="5316648862401307800">"Szüneteltetés feloldása"</string>

@@ -2111,9 +2111,32 @@
     <string name="app_suspended_default_message" msgid="6451215678552004172">"<xliff:g id="APP_NAME_0">%1$s</xliff:g> ບໍ່ສາມາດໃຊ້ໄດ້ໃນຕອນນີ້. ມັນຖືກຈັດການໂດຍ <xliff:g id="APP_NAME_1">%2$s</xliff:g>."</string>
     <string name="app_suspended_more_details" msgid="211260942831587014">"ສຶກສາເພີ່ມເຕີມ"</string>
     <string name="app_suspended_unsuspend_message" msgid="1665438589450555459">"ຍົກເລີກການຢຸດແອັບຊົ່ວຄາວ"</string>
+    <string name="app_lock_add_screen_lock_button_text" msgid="9209013414563206600">"ເພີ່ມການລັອກໜ້າຈໍ"</string>
+    <string name="app_lock_add_screen_lock_message" msgid="6107009360675769892">"ການລັອກໜ້າຈໍຂອງທ່ານສາມາດເປັນ PIN, ຮູບແບບ ຫຼື ລະຫັດຜ່ານກໍໄດ້. ທ່ານຈະໃຊ້ສິ່ງນີ້ເພື່ອປົດລັອກອຸປະກອນຂອງທ່ານ ແລະ ເຂົ້າເຖິງແອັບທີ່ລັອກໄວ້."</string>
+    <string name="app_lock_add_screen_lock_title" msgid="6905612843620128689">"ທຳອິດ, ໃຫ້ເພີ່ມການລັອກໜ້າຈໍ"</string>
+    <string name="enable_app_lock_success_toast_message" msgid="3339622779190529987">"<xliff:g id="APP_NAME">%1$s</xliff:g> ຖືກລັອກ"</string>
+    <string name="enable_app_lock_failure_toast_message" msgid="1055838896510445566">"ບໍ່ສາມາດລັອກ <xliff:g id="APP_NAME">%1$s</xliff:g> ໄດ້"</string>
+    <string name="disable_app_lock_success_toast_message" msgid="70733620589071266">"ລຶບ App Lock ອອກຈາກ <xliff:g id="APP_NAME">%1$s</xliff:g> ແລ້ວ"</string>
     <string name="locked_app_biometric_prompt_description" msgid="6853122652400451464">"<xliff:g id="APP_NAME">%1$s</xliff:g> ຖືກລັອກ"</string>
-    <!-- no translation found for locked_app_external_display_message (5483884799685545338) -->
-    <skip />
+    <string name="locked_app_external_display_message" msgid="5483884799685545338">"ເພື່ອເຂົ້າເຖິງແອັບຢູ່ຈໍສະແດງຜົນນີ້, ທຳອິດໃຫ້ຢັ້ງຢືນວ່າແມ່ນທ່ານຢູ່ອຸປະກອນອື່ນຂອງທ່ານ"</string>
+    <string name="app_lock_edu_dialog_enable_app_lock_title" msgid="283314042336592322">"ເພີ່ມການລັອກແອັບໃສ່ <xliff:g id="APP_NAME">%1$s</xliff:g> ບໍ?"</string>
+    <string name="app_lock_edu_dialog_description" msgid="8176807243219769518">"ເພື່ອຄວາມປອດໄພຂອງທ່ານ, ມີພຽງທ່ານເທົ່ານັ້ນທີ່ສາມາດເຂົ້າເຖິງແອັບນີ້ໄດ້ດ້ວຍລາຍນິ້ວມື ແລະ ປົດລັອກດ້ວຍໜ້າ ຫຼື PIN ຂອງທ່ານ"</string>
+    <string name="app_lock_edu_dialog_description_template" msgid="8563718120753342530">"ເພື່ອຄວາມປອດໄພຂອງທ່ານ, ມີພຽງທ່ານເທົ່ານັ້ນທີ່ສາມາດເຂົ້າເຖິງແອັບນີ້ດ້ວຍ %1$s ຫຼື %2$s ຂອງທ່ານໄດ້"</string>
+    <string name="app_lock_edu_dialog_description_template_no_biometrics" msgid="7122017109150633691">"ເພື່ອຄວາມປອດໄພຂອງທ່ານ, ມີພຽງທ່ານເທົ່ານັ້ນທີ່ສາມາດເຂົ້າເຖິງແອັບນີ້ດ້ວຍ %1$s ຂອງທ່ານໄດ້"</string>
+    <string name="app_lock_edu_dialog_info_header" msgid="5876120209204270990">"ດ້ວຍການລັອກແອັບ"</string>
+    <string name="app_lock_edu_dialog_info_notifications" msgid="1124438392204873305">"ເນື້ອຫາການແຈ້ງເຕືອນຈະຖືກເຊື່ອງໄວ້"</string>
+    <string name="app_lock_edu_dialog_info_widgets" msgid="8809009414650740872">"ລະບົບຈະລຶບວິດເຈັດ ແລະ ທາງລັດອອກ"</string>
+    <string name="app_lock_edu_dialog_button_lock" msgid="3914687128135704801">"ເພີ່ມການລັອກແອັບ"</string>
+    <string name="app_lock_edu_dialog_biometric_description_has_face" msgid="1348151645996748654">"ປົດລັອກດ້ວຍໜ້າ"</string>
+    <string name="app_lock_edu_dialog_biometric_description_has_fingerprint" msgid="5206107469561561455">"ປົດລັອກດ້ວຍລາຍນິ້ວມື"</string>
+    <string name="app_lock_edu_dialog_biometric_description_has_fingerprint_and_face" msgid="7895807411323811641">"ລາຍນິ້ວມື ຫຼື ປົດລັອກດ້ວຍໜ້າ"</string>
+    <string name="app_lock_edu_dialog_lockscreen_password_name" msgid="8487096457702445059">"ລະຫັດຜ່ານ"</string>
+    <string name="app_lock_edu_dialog_lockscreen_pattern_name" msgid="991436996281983547">"ຮູບແບບປົດລັອກ"</string>
+    <string name="app_lock_edu_dialog_lockscreen_pin_name" msgid="6458607126966304795">"PIN"</string>
+    <string name="app_lock_permission_review_dialog_title" msgid="5030286398974840579">"ຮູບພາບຂອງທ່ານອາດຍັງຄົງສະແດງໃນແອັບອື່ນໆ"</string>
+    <string name="app_lock_permission_review_dialog_sub_title" msgid="310758587817184145">"ແອັບທີ່ມີສິດເຂົ້າເຖິງຮູບພາບຂອງທ່ານ"</string>
+    <string name="app_lock_permission_review_expand_app_list_button" msgid="3214809707125223273">"ເບິ່ງທັງໝົດ"</string>
+    <string name="app_lock_permission_review_continue_button" msgid="4045066724173414043">"ສືບຕໍ່"</string>
     <string name="work_mode_off_title" msgid="6367463960165135829">"ຍົກເລີກການຢຸດຊົ່ວຄາວແອັບບ່ອນເຮັດວຽກບໍ?"</string>
     <string name="work_mode_turn_on" msgid="5316648862401307800">"ຍົກເລີກການຢຸດຊົ່ວຄາວ"</string>
     <string name="work_mode_emergency_call_button" msgid="6818855962881612322">"ສຸກເສີນ"</string>

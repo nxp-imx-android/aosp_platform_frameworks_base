@@ -293,7 +293,7 @@
     <string name="bugreport_option_full_title" msgid="7681035745950045690">"Täielik aruanne"</string>
     <string name="bugreport_option_full_summary" msgid="1975130009258435885">"Kasutage seda valikut süsteemihäirete minimeerimiseks, kui seade ei reageeri, on liiga aeglane või vajate aruande kõiki jaotisi. Teil ei lubata sisestada lisateavet ega jäädvustada lisaekraanipilte."</string>
     <string name="bugreport_countdown" msgid="6418620521782120755">"{count,plural, =1{Veaaruande jaoks ekraanipildi jäädvustamine # sekundi pärast.}other{Veaaruande jaoks ekraanipildi jäädvustamine # sekundi pärast.}}"</string>
-    <string name="bugreport_screenshot_success_toast" msgid="7986095104151473745">"Veaaruandega koos jäädvustati ekraanipilt"</string>
+    <string name="bugreport_screenshot_success_toast" msgid="7986095104151473745">"Veaaruandega jäädvustati ekraanipilt"</string>
     <string name="bugreport_screenshot_failure_toast" msgid="6736320861311294294">"Ekraanipildi jäädvustamine koos veaaruandega ebaõnnestus"</string>
     <string name="global_action_toggle_silent_mode" msgid="8464352592860372188">"Hääletu režiim"</string>
     <string name="global_action_silent_mode_on_status" msgid="2371892537738632013">"Heli on VÄLJAS"</string>
@@ -2111,8 +2111,52 @@
     <string name="app_suspended_default_message" msgid="6451215678552004172">"<xliff:g id="APP_NAME_0">%1$s</xliff:g> pole praegu saadaval. Seda haldab rakendus <xliff:g id="APP_NAME_1">%2$s</xliff:g>."</string>
     <string name="app_suspended_more_details" msgid="211260942831587014">"Lisateave"</string>
     <string name="app_suspended_unsuspend_message" msgid="1665438589450555459">"Jätka rakendust"</string>
+    <string name="app_lock_add_screen_lock_button_text" msgid="9209013414563206600">"Lisa ekraanilukk"</string>
+    <string name="app_lock_add_screen_lock_message" msgid="6107009360675769892">"Teie ekraanilukk võib olla PIN-kood, muster või parool. Sellega avate oma seadme ja pääsete juurde lukustatud rakendustele."</string>
+    <string name="app_lock_add_screen_lock_title" msgid="6905612843620128689">"Esmalt lisage ekraanilukk"</string>
+    <!-- no translation found for enable_app_lock_success_toast_message (3339622779190529987) -->
+    <skip />
+    <!-- no translation found for enable_app_lock_failure_toast_message (1055838896510445566) -->
+    <skip />
+    <!-- no translation found for disable_app_lock_success_toast_message (70733620589071266) -->
+    <skip />
     <string name="locked_app_biometric_prompt_description" msgid="6853122652400451464">"<xliff:g id="APP_NAME">%1$s</xliff:g> on lukustatud"</string>
-    <!-- no translation found for locked_app_external_display_message (5483884799685545338) -->
+    <string name="locked_app_external_display_message" msgid="5483884799685545338">"Kui soovite sellele rakendusele juurde pääseda sellel ekraanil, kinnitage esmalt teises seadmes oma isik."</string>
+    <!-- no translation found for app_lock_edu_dialog_enable_app_lock_title (283314042336592322) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_description (8176807243219769518) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_description_template (8563718120753342530) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_description_template_no_biometrics (7122017109150633691) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_info_header (5876120209204270990) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_info_notifications (1124438392204873305) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_info_widgets (8809009414650740872) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_button_lock (3914687128135704801) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_face (1348151645996748654) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_fingerprint (5206107469561561455) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_fingerprint_and_face (7895807411323811641) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_lockscreen_password_name (8487096457702445059) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_lockscreen_pattern_name (991436996281983547) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_lockscreen_pin_name (6458607126966304795) -->
+    <skip />
+    <!-- no translation found for app_lock_permission_review_dialog_title (5030286398974840579) -->
+    <skip />
+    <!-- no translation found for app_lock_permission_review_dialog_sub_title (310758587817184145) -->
+    <skip />
+    <!-- no translation found for app_lock_permission_review_expand_app_list_button (3214809707125223273) -->
+    <skip />
+    <!-- no translation found for app_lock_permission_review_continue_button (4045066724173414043) -->
     <skip />
     <string name="work_mode_off_title" msgid="6367463960165135829">"Kas lõpetada töörakenduste peatamine?"</string>
     <string name="work_mode_turn_on" msgid="5316648862401307800">"Lõpeta peatamine"</string>
@@ -2120,7 +2164,7 @@
     <string name="set_up_screen_lock_title" msgid="8346083801616474030">"Seadistage ekraanilukk"</string>
     <string name="set_up_screen_lock_action_label" msgid="2687634803649209367">"Seadistage ekraanilukk"</string>
     <string name="private_space_set_up_screen_lock_message" msgid="1109956797005149814">"Seadistage oma privaatse ruumi jaoks seadmele ekraanilukk."</string>
-    <string name="private_space_set_up_screen_lock_for_reset" msgid="7817091386408432097">"Privaatse ruumi kustutamiseks määrake selles seadmes ekraanilukk"</string>
+    <string name="private_space_set_up_screen_lock_for_reset" msgid="7817091386408432097">"Privaatse ruumi kustutamiseks määrake selles seadmes ekraanilukk."</string>
     <string name="app_blocked_title" msgid="7353262160455028160">"Rakendus ei ole saadaval"</string>
     <string name="app_blocked_message" msgid="542972921087873023">"<xliff:g id="APP_NAME">%1$s</xliff:g> ei ole praegu saadaval."</string>
     <string name="app_streaming_blocked_title" msgid="6090945835898766139">"<xliff:g id="ACTIVITY">%1$s</xliff:g> ei ole saadaval"</string>
