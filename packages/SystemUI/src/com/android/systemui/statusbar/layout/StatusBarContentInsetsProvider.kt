@@ -42,7 +42,6 @@ import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.PerDispla
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.commandline.CommandRegistry
-import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 import com.android.systemui.statusbar.data.repository.StatusBarConfigurationController
 import com.android.systemui.statusbar.policy.CallbackController
 import com.android.systemui.statusbar.policy.ConfigurationController
@@ -166,14 +165,6 @@ constructor(
     private val dumpableName = TAG + nameSuffix
     private val commandName = StatusBarInsetsCommand.NAME + nameSuffix
 
-    init {
-        if (!StatusBarConnectedDisplays.isEnabled) {
-            // Call start(), since it is not called when the flag is disabled, to keep the old
-            // behavior as it was.
-            start()
-        }
-    }
-
     override fun start() {
         configurationController.addCallback(this)
         dumpManager.registerNormalDumpable(dumpableName, this)
@@ -192,7 +183,6 @@ constructor(
     }
 
     override fun stop() {
-        StatusBarConnectedDisplays.unsafeAssertInNewMode()
         configurationController.removeCallback(this)
         dumpManager.unregisterDumpable(dumpableName)
         commandRegistry.unregisterCommand(commandName)
@@ -323,7 +313,7 @@ constructor(
         val currentRotation = getExactRotation(context)
 
         val roundedCornerPadding =
-            if (displayId == DEFAULT_DISPLAY || !StatusBarConnectedDisplays.isEnabled) {
+            if (displayId == DEFAULT_DISPLAY) {
                 rotatedResources.getDimensionPixelSize(R.dimen.rounded_corner_content_padding)
             } else {
                 // Currently the padding is hardcoded for each device default display, and there is

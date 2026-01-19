@@ -19,8 +19,6 @@ package com.android.systemui.statusbar.layout
 import android.content.Context
 import android.content.res.Configuration
 import android.graphics.Rect
-import android.platform.test.annotations.DisableFlags
-import android.platform.test.annotations.EnableFlags
 import android.view.Display
 import android.view.DisplayCutout
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -31,7 +29,6 @@ import com.android.systemui.SysUICutoutProvider
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.statusbar.commandline.CommandRegistry
-import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 import com.android.systemui.statusbar.data.repository.StatusBarConfigurationController
 import com.android.systemui.statusbar.phone.ConfigurationControllerImpl
 import com.android.systemui.util.leak.RotationUtils
@@ -1081,8 +1078,7 @@ class StatusBarContentInsetsProviderTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(StatusBarConnectedDisplays.FLAG_NAME)
-    fun onMaxBoundsChanged_beforeStart_flagEnabled_listenerNotNotified() {
+    fun onMaxBoundsChanged_beforeStart_listenerNotNotified() {
         // Start out with an existing configuration with bounds
         configuration.windowConfiguration.setMaxBounds(0, 0, 100, 100)
         configurationController.onConfigurationChanged(configuration)
@@ -1115,42 +1111,7 @@ class StatusBarContentInsetsProviderTest : SysuiTestCase() {
     }
 
     @Test
-    @DisableFlags(StatusBarConnectedDisplays.FLAG_NAME)
-    fun onMaxBoundsChanged_beforeStart_flagDisabled_listenerNotified() {
-        // Start out with an existing configuration with bounds
-        configuration.windowConfiguration.setMaxBounds(0, 0, 100, 100)
-        configurationController.onConfigurationChanged(configuration)
-        val provider =
-            StatusBarContentInsetsProviderImpl(
-                contextMock,
-                configurationController,
-                mock<DumpManager>(),
-                mock<CommandRegistry>(),
-                mock<SysUICutoutProvider>(),
-                Display.DEFAULT_DISPLAY,
-            )
-        val listener =
-            object : StatusBarContentInsetsChangedListener {
-                var triggered = false
-
-                override fun onStatusBarContentInsetsChanged() {
-                    triggered = true
-                }
-            }
-        provider.addCallback(listener)
-
-        // WHEN the config is updated with new bounds
-        // but provider is not started
-        configuration.windowConfiguration.setMaxBounds(0, 0, 456, 789)
-        configurationController.onConfigurationChanged(configuration)
-
-        // THEN the listener is notified
-        assertThat(listener.triggered).isTrue()
-    }
-
-    @Test
-    @EnableFlags(StatusBarConnectedDisplays.FLAG_NAME)
-    fun onDensityOrFontScaleChanged_beforeStart_flagEnabled_listenerNotNotified() {
+    fun onDensityOrFontScaleChanged_beforeStart_listenerNotNotified() {
         configuration.densityDpi = 12
         val provider =
             StatusBarContentInsetsProviderImpl(
@@ -1177,37 +1138,6 @@ class StatusBarContentInsetsProviderTest : SysuiTestCase() {
 
         // THEN the listener is NOT notified
         assertThat(listener.triggered).isFalse()
-    }
-
-    @Test
-    @DisableFlags(StatusBarConnectedDisplays.FLAG_NAME)
-    fun onDensityOrFontScaleChanged_beforeStart_flagDisabled_listenerNotified() {
-        configuration.densityDpi = 12
-        val provider =
-            StatusBarContentInsetsProviderImpl(
-                contextMock,
-                configurationController,
-                mock<DumpManager>(),
-                mock<CommandRegistry>(),
-                mock<SysUICutoutProvider>(),
-                Display.DEFAULT_DISPLAY,
-            )
-        val listener =
-            object : StatusBarContentInsetsChangedListener {
-                var triggered = false
-
-                override fun onStatusBarContentInsetsChanged() {
-                    triggered = true
-                }
-            }
-        provider.addCallback(listener)
-
-        // WHEN the config is updated, but the provider is not started
-        configuration.densityDpi = 20
-        configurationController.onConfigurationChanged(configuration)
-
-        // THEN the listener is notified
-        assertThat(listener.triggered).isTrue()
     }
 
     @Test
@@ -1270,8 +1200,7 @@ class StatusBarContentInsetsProviderTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(StatusBarConnectedDisplays.FLAG_NAME)
-    fun onThemeChanged_beforeStart_flagEnabled_listenerNotNotified() {
+    fun onThemeChanged_beforeStart_listenerNotNotified() {
         val provider =
             StatusBarContentInsetsProviderImpl(
                 contextMock,
@@ -1294,33 +1223,6 @@ class StatusBarContentInsetsProviderTest : SysuiTestCase() {
         configurationController.notifyThemeChanged()
 
         assertThat(listener.triggered).isFalse()
-    }
-
-    @Test
-    @DisableFlags(StatusBarConnectedDisplays.FLAG_NAME)
-    fun onThemeChanged_beforeStart_flagDisabled_listenerNotified() {
-        val provider =
-            StatusBarContentInsetsProviderImpl(
-                contextMock,
-                configurationController,
-                mock<DumpManager>(),
-                mock<CommandRegistry>(),
-                mock<SysUICutoutProvider>(),
-                Display.DEFAULT_DISPLAY,
-            )
-        val listener =
-            object : StatusBarContentInsetsChangedListener {
-                var triggered = false
-
-                override fun onStatusBarContentInsetsChanged() {
-                    triggered = true
-                }
-            }
-        provider.addCallback(listener)
-
-        configurationController.notifyThemeChanged()
-
-        assertThat(listener.triggered).isTrue()
     }
 
     @Test

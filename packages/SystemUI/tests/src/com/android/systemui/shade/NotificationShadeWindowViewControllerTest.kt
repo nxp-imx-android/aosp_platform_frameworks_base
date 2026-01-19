@@ -76,7 +76,6 @@ import com.android.systemui.statusbar.NotificationInsetsController
 import com.android.systemui.statusbar.NotificationShadeDepthController
 import com.android.systemui.statusbar.NotificationShadeWindowController
 import com.android.systemui.statusbar.SysuiStatusBarStateController
-import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 import com.android.systemui.statusbar.data.repository.homeStatusBarComponentsRepository
 import com.android.systemui.statusbar.notification.data.repository.NotificationLaunchAnimationRepository
 import com.android.systemui.statusbar.notification.domain.interactor.NotificationLaunchAnimationInteractor
@@ -734,20 +733,16 @@ class NotificationShadeWindowViewControllerTest(flags: FlagsParameterization) : 
     private fun setStatusBarViewController(
         controller: PhoneStatusBarViewController? = phoneStatusBarViewController
     ) {
-        if (StatusBarConnectedDisplays.isEnabled) {
-            kosmos.fakeShadeDisplaysRepository.setDisplayId(Display.DEFAULT_DISPLAY)
-            if (controller != null) {
-                val component =
-                    kosmos.createFakeHomeStatusBarComponent(
-                        phoneStatusBarViewController = controller,
-                        displayId = Display.DEFAULT_DISPLAY,
-                    )
-                kosmos.homeStatusBarComponentsRepository.onStatusBarViewInitialized(component)
-            } else {
-                // Simulate a null controller by not adding any HomeStatusBarComponent.
-            }
+        kosmos.fakeShadeDisplaysRepository.setDisplayId(Display.DEFAULT_DISPLAY)
+        if (controller != null) {
+            val component =
+                kosmos.createFakeHomeStatusBarComponent(
+                    phoneStatusBarViewController = controller,
+                    displayId = Display.DEFAULT_DISPLAY,
+                )
+            kosmos.homeStatusBarComponentsRepository.onStatusBarViewInitialized(component)
         } else {
-            underTest.setStatusBarViewController(controller)
+            // Simulate a null controller by not adding any HomeStatusBarComponent.
         }
     }
 

@@ -31,7 +31,6 @@ import com.android.systemui.mediaprojection.data.repository.fakeMediaProjectionR
 import com.android.systemui.mediaprojection.taskswitcher.FakeActivityTaskManager.Companion.createTask
 import com.android.systemui.screenrecord.data.model.ScreenRecordModel
 import com.android.systemui.screenrecord.data.repository.screenRecordRepository
-import com.android.systemui.statusbar.chips.call.ui.viewmodel.CallChipViewModelTest.Companion.createStatusBarIconViewOrNull
 import com.android.systemui.statusbar.chips.notification.domain.interactor.statusBarNotificationChipsInteractor
 import com.android.systemui.statusbar.notification.collection.buildNotificationEntry
 import com.android.systemui.statusbar.notification.collection.buildOngoingCallEntry
@@ -553,14 +552,14 @@ class PromotedNotificationsInteractorTest : SysuiTestCase() {
             activeNotificationListRepository.addNotif(
                 activeNotificationModel(
                     key = "notif1",
-                    statusBarChipIcon = createStatusBarIconViewOrNull(),
+                    statusBarChipIcon = null,
                     promotedContent = PromotedNotificationContentBuilder("notif1").build(),
                 )
             )
             activeNotificationListRepository.addNotif(
                 activeNotificationModel(
                     key = "notif2",
-                    statusBarChipIcon = createStatusBarIconViewOrNull(),
+                    statusBarChipIcon = null,
                     promotedContent = PromotedNotificationContentBuilder("notif2").build(),
                 )
             )
@@ -599,14 +598,14 @@ class PromotedNotificationsInteractorTest : SysuiTestCase() {
             activeNotificationListRepository.addNotif(
                 activeNotificationModel(
                     key = "notif1",
-                    statusBarChipIcon = createStatusBarIconViewOrNull(),
+                    statusBarChipIcon = null,
                     promotedContent = PromotedNotificationContentBuilder("notif1").build(),
                 )
             )
             activeNotificationListRepository.addNotif(
                 activeNotificationModel(
                     key = "notif2",
-                    statusBarChipIcon = createStatusBarIconViewOrNull(),
+                    statusBarChipIcon = null,
                     promotedContent = PromotedNotificationContentBuilder("notif2").build(),
                 )
             )

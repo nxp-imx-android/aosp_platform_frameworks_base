@@ -18,7 +18,6 @@ package com.android.systemui.statusbar.core
 
 import android.internal.statusbar.FakeStatusBarService.Companion.SECONDARY_DISPLAY_ID
 import android.internal.statusbar.fakeStatusBarService
-import android.platform.test.annotations.EnableFlags
 import android.view.WindowInsets
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -33,7 +32,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.verify
 
-@EnableFlags(StatusBarConnectedDisplays.FLAG_NAME)
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class CommandQueueInitializerTest : SysuiTestCase() {

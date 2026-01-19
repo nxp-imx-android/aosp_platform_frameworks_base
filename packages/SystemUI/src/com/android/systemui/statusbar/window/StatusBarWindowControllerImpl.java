@@ -55,7 +55,6 @@ import com.android.systemui.animation.DelegateTransitionAnimatorController;
 import com.android.systemui.log.LogBuffer;
 import com.android.systemui.log.core.LogLevel;
 import com.android.systemui.res.R;
-import com.android.systemui.statusbar.core.StatusBarConnectedDisplays;
 import com.android.systemui.statusbar.data.repository.StatusBarConfigurationController;
 import com.android.systemui.statusbar.layout.StatusBarContentInsetsProvider;
 import com.android.systemui.statusbar.policy.ConfigurationController;
@@ -159,10 +158,7 @@ public class StatusBarWindowControllerImpl implements StatusBarWindowController 
 
     @Override
     public void attach() {
-        if (StatusBarConnectedDisplays.isEnabled()) {
-            mStatusBarWindowView.setStatusBarConfigurationController(
-                    mStatusBarConfigurationController);
-        }
+        mStatusBarWindowView.setStatusBarConfigurationController(mStatusBarConfigurationController);
         // Now that the status bar window encompasses the sliding panel and its
         // translucent backdrop, the entire thing is made TRANSLUCENT and is
         // hardware-accelerated.
@@ -182,10 +178,8 @@ public class StatusBarWindowControllerImpl implements StatusBarWindowController 
                             + " doesn't exist anymore.",
                     e);
         }
-        if (StatusBarConnectedDisplays.isEnabled()) {
-            mStatusBarConfigurationController.addCallback(mConfigurationListener);
-            refreshStatusBarHeight();
-        }
+        mStatusBarConfigurationController.addCallback(mConfigurationListener);
+        refreshStatusBarHeight();
         mLpChanged.copyFrom(mLp);
 
         mContentInsetsProvider.addCallback(this::calculateStatusBarLocationsForAllRotations);
@@ -196,8 +190,6 @@ public class StatusBarWindowControllerImpl implements StatusBarWindowController 
 
     @Override
     public void stop() {
-        StatusBarConnectedDisplays.unsafeAssertInNewMode();
-
         try {
             mWindowManager.removeView(mStatusBarWindowView);
         } catch (IllegalArgumentException e) {

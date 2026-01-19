@@ -84,7 +84,6 @@ import com.android.systemui.shade.ui.composable.VariableDayDate
 import com.android.systemui.statusbar.StatusBarAlwaysUseRegionSampling
 import com.android.systemui.statusbar.chips.ui.compose.OngoingActivityChips
 import com.android.systemui.statusbar.core.NewStatusBarIcons
-import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 import com.android.systemui.statusbar.core.StatusBarEventForwardingModernization
 import com.android.systemui.statusbar.core.StatusBarForDesktop
 import com.android.systemui.statusbar.events.domain.interactor.SystemStatusEventAnimationInteractor
@@ -200,12 +199,8 @@ fun StatusBarRoot(
     val statusBarViewModel =
         rememberViewModel("HomeStatusBar") { statusBarViewModelFactory.create() }
     val iconViewStore: NotificationIconContainerViewBinder.IconViewStore? =
-        if (StatusBarConnectedDisplays.isEnabled) {
-            rememberViewModel("HomeStatusBar.IconViewStore[$displayId]") {
-                iconViewStoreFactory.create(displayId)
-            }
-        } else {
-            null
+        rememberViewModel("HomeStatusBar.IconViewStore[$displayId]") {
+            iconViewStoreFactory.create(displayId)
         }
     val appHandlesViewModel =
         rememberViewModel("AppHandleBounds") {

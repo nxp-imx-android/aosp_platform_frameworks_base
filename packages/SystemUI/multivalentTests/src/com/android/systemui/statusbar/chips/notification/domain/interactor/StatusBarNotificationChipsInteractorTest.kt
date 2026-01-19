@@ -16,8 +16,6 @@
 
 package com.android.systemui.statusbar.chips.notification.domain.interactor
 
-import android.platform.test.annotations.DisableFlags
-import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
@@ -29,7 +27,6 @@ import com.android.systemui.kosmos.collectValues
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.statusbar.StatusBarIconView
-import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 import com.android.systemui.statusbar.notification.data.model.activeNotificationModel
 import com.android.systemui.statusbar.notification.data.repository.ActiveNotificationsStore
 import com.android.systemui.statusbar.notification.data.repository.activeNotificationListRepository
@@ -64,27 +61,7 @@ class StatusBarNotificationChipsInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(StatusBarConnectedDisplays.FLAG_NAME)
-    fun allNotificationChips_notifMissingStatusBarChipIconView_cdFlagOff_empty() =
-        kosmos.runTest {
-            val latest by collectLastValue(underTest.allNotificationChips)
-
-            setNotifs(
-                listOf(
-                    activeNotificationModel(
-                        key = "notif",
-                        statusBarChipIcon = null,
-                        promotedContent = PromotedNotificationContentBuilder("notif").build(),
-                    )
-                )
-            )
-
-            assertThat(latest).isEmpty()
-        }
-
-    @Test
-    @EnableFlags(StatusBarConnectedDisplays.FLAG_NAME)
-    fun allNotificationChips_notifMissingStatusBarChipIconView_cdFlagOn_notEmpty() =
+    fun allNotificationChips_notifMissingStatusBarChipIconView_notEmpty() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.allNotificationChips)
 
