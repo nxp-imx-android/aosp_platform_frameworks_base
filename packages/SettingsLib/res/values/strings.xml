@@ -634,8 +634,8 @@
     <string name="enable_adb">USB debugging</string>
     <!-- Setting checkbox summary for Whether to enable USB debugging support on the phone -->
     <string name="enable_adb_summary">Debug mode when USB is connected</string>
-    <!-- Setting title to revoke secure USB debugging authorizations -->
-    <string name="clear_adb_keys">Revoke USB debugging authorizations</string>
+    <!-- Setting title to revoke adb secure debugging authorizations [BACKUP_MESSAGE_ID=3010148733140369917] -->
+    <string name="clear_adb_keys">Revoke adb debugging authorizations</string>
     <!-- [CHAR LIMIT=32] Setting title for ADB wireless switch -->
     <string name="enable_adb_wireless">Wireless debugging</string>
     <!-- [CHAR LIMIT=NONE] Setting checkbox summary for whether to enable Wireless debugging support on the phone -->
@@ -836,8 +836,8 @@
     <string name="adbwifi_warning_title">Allow wireless debugging?</string>
     <!-- Warning text to user about the implications of enabling USB debugging [CHAR LIMIT=NONE] -->
     <string name="adbwifi_warning_message">Wireless debugging is intended for development purposes only. Use it to copy data between your computer and your device, install apps on your device without notification, and read log data.</string>
-    <!-- Message of dialog confirming that user wants to revoke access to adb from all computers they have authorized -->
-    <string name="adb_keys_warning_message">Revoke access to USB debugging from all computers you\u2019ve previously authorized?</string>
+    <!-- Message of dialog confirming that user wants to revoke access to adb from all computers and networks they have authorized [BACKUP_MESSAGE_ID=2968555274488101220] -->
+    <string name="adb_keys_warning_message">Revoke access to adb debugging from all computers and networks you\u2019ve previously authorized?</string>
     <!-- Title of warning dialog about the implications of enabling developer settings -->
     <string name="dev_settings_warning_title">Allow development settings?</string>
     <!-- Warning text to user about the implications of enabling USB debugging -->
