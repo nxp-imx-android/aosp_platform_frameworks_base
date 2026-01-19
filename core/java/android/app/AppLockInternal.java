@@ -65,11 +65,21 @@ public interface AppLockInternal {
     boolean isPackageLocked(@NonNull String packageName, int userId);
 
     /**
-     * Should be called by an activity that verifies the user's device credential to report
-     * successful authentication.
+     * Reports a successful user authentication for an App Lock enabled package, which transitions
+     * the package to an unlocked state.
      *
-     * @param packageName The package name to set the App Lock locked state as unlocked.
-     * @param userId      The user Id to set the package for App Lock locked state as unlocked.
+     * <p>This method should be called after a user successfully authenticates using their device
+     * credentials or Class 3 biometrics to bypass App Lock for a specific package. This allows
+     * the package to be considered unlocked while it is in the foreground, or for a short grace
+     * period after it is no longer in the foreground.
+     *
+     * <p>To improve user experience in multi-window scenarios, e.g. split screen and freeform
+     * windows, this method also retrieves all packages that have currently visible App Lock
+     * overlays and marks them as successfully authenticated. This prevents the user from having to
+     * authenticate multiple times for apps that are on the screen simultaneously.
+     *
+     * @param packageName The name of the package that was successfully authenticated.
+     * @param userId      The user Id for whom the authentication occurred.
      */
     void setAppLockEnabledPackageSuccessfullyAuthenticated(@NonNull String packageName, int userId);
 

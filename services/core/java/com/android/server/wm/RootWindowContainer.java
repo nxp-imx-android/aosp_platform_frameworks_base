@@ -1773,27 +1773,42 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
 
     /**
      * @return a list of {@link ActivityAssistInfo} of the visible activities in the given display.
+     *
+     * <p>NOTE: This includes all visible activities, even if one is paused, which means it is
+     * behind a translucent container.
+     */
+    List<ActivityAssistInfo> getTopVisibleActivityAssistInfos(int displayId) {
+        final List<ActivityAssistInfo> topVisibleActivityAssistInfos = new ArrayList<>();
+        final List<ActivityRecord> topVisibleActivities = getTopVisibleActivities(displayId);
+        for (int i = 0; i < topVisibleActivities.size(); i++) {
+            topVisibleActivityAssistInfos.add(new ActivityAssistInfo(topVisibleActivities.get(i)));
+        }
+        return topVisibleActivityAssistInfos;
+    }
+
+    /**
+     * @return a list of {@link ActivityRecord} of the visible activities in the given display.
      * Visible activities in the focused root Task are at the front of the list.
      *
      * <p>NOTE: This includes all visible activities, even if one is paused, which means it is
      * behind a translucent container.
      */
-    List<ActivityAssistInfo> getTopVisibleActivities(int displayId) {
-        final ArrayList<ActivityAssistInfo> topVisibleActivities = new ArrayList<>();
+    List<ActivityRecord> getTopVisibleActivities(int displayId) {
+        final ArrayList<ActivityRecord> topVisibleActivities = new ArrayList<>();
         final DisplayContent dc =
                 displayId != INVALID_DISPLAY ? getDisplayContent(displayId) : null;
         final Task topFocusedRootTask =
                 dc != null ? dc.getFocusedRootTask() : getTopDisplayFocusedRootTask();
 
-        final ArrayList<ActivityAssistInfo> visibleActivitiesInFocusedRoot = new ArrayList<>();
+        final ArrayList<ActivityRecord> visibleActivitiesInFocusedRoot = new ArrayList<>();
         final Consumer<ActivityRecord> collectFromFocusedRoot = activity -> {
             if (activity.isVisibleRequested()) {
-                visibleActivitiesInFocusedRoot.add(new ActivityAssistInfo(activity));
+                visibleActivitiesInFocusedRoot.add(activity);
             }
         };
         final Consumer<ActivityRecord> collectFromNonFocusedRoot = activity -> {
             if (activity.isVisibleRequested()) {
-                topVisibleActivities.add(new ActivityAssistInfo(activity));
+                topVisibleActivities.add(activity);
             }
         };
         final Consumer<Task> collectFromDisplay = rootTask -> {

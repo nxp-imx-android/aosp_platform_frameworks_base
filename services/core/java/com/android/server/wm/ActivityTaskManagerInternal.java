@@ -169,6 +169,20 @@ public abstract class ActivityTaskManagerInternal implements ActiveUids.Observer
     public abstract List<ActivityAssistInfo> getTopVisibleActivities(int displayId);
 
     /**
+     * Returns a set of package names that currently have a visible App Lock overlay for the
+     * specified user.
+     *
+     * <p>This is used in multi-window scenarios to identify all apps that are pending
+     * authentication. When a user authenticates one app, this list can be used to simultaneously
+     * authenticate all other visible locked apps, reducing user friction.
+     *
+     * @param userId The user ID for whom to find packages with visible App Lock overlay.
+     * @return A set of package names corresponding to the visible App Lock overlay.
+     */
+    @NonNull
+    public abstract Set<String> getPackagesWithVisibleAppLockOverlay(int userId);
+
+    /**
      * Returns whether {@code uid} has any resumed activity.
      */
     public abstract boolean hasResumedActivity(int uid);

@@ -225,9 +225,16 @@ public final class AppLockLocalService implements AppLockInternal,
         Objects.requireNonNull(packageName);
 
         synchronized (mLock) {
-            return mAppLockLockedStatesForUser.contains(userId) && mAppLockLockedStatesForUser.get(
-                    userId).containsKey(packageName);
+            return isPackageAppLockEnabledLocked(packageName, userId);
         }
+    }
+
+    @GuardedBy("mLock")
+    private boolean isPackageAppLockEnabledLocked(@NonNull String packageName, int userId) {
+        Objects.requireNonNull(packageName);
+
+        return mAppLockLockedStatesForUser.contains(userId) && mAppLockLockedStatesForUser.get(
+                userId).containsKey(packageName);
     }
 
     // NOTE: This method will hold the ActivityManagerService lock. Callers should be mindful of not
@@ -263,12 +270,14 @@ public final class AppLockLocalService implements AppLockInternal,
                 }
 
                 // 4. Check if the package has any visible tasks.
+                // TODO(b/462423789): Move the visible tasks logic in isPackageLocked into
+                //  WindowManager's AppLockController.
                 final List<ActivityAssistInfo> visibleAaInfoList =
                         getVisibleActivityAssistInfosForPackageLocked(packageName, userId);
                 if (!visibleAaInfoList.isEmpty()) {
                     // If there are visible tasks and any of them have showWhenLocked=false, the
-                    // package  is unlocked. showWhenLocked indicates that the activity should be
-                    // shown  even if the device is locked, so those activities should still be
+                    // package is unlocked. showWhenLocked indicates that the activity should be
+                    // shown even if the device is locked, so those activities should still be
                     // shown if the app is locked.
                     final int callingUid = Binder.getCallingUid();
                     for (ActivityAssistInfo aaInfo : visibleAaInfoList) {
@@ -316,9 +325,8 @@ public final class AppLockLocalService implements AppLockInternal,
     private ArrayList<ActivityAssistInfo> getVisibleActivityAssistInfosForPackageLocked(
             String packageName, int userId) {
         final List<ActivityAssistInfo> aaInfoList = mAtmInternal.getTopVisibleActivities();
-        // TODO(b/456178049): Filter out paused activities
         final ArrayList<ActivityAssistInfo> visibleAaInfoList = new ArrayList<>();
-        for (int i = aaInfoList.size() - 1; i >= 0; i--) {
+        for (int i = 0; i < aaInfoList.size(); i++) {
             final ActivityAssistInfo aaInfo = aaInfoList.get(i);
             if (aaInfo.getUserId() == userId && aaInfo.getComponentName().getPackageName().equals(
                     packageName)) {
@@ -488,7 +496,7 @@ public final class AppLockLocalService implements AppLockInternal,
 
         final Runnable setPackageLocked = () -> {
             if (!isPackageAppLockEnabled(packageName, userId)) {
-                // ensure the package still has App Lock enabled
+                // Ensure the package still has App Lock enabled.
                 return;
             }
             synchronized (AppLockLocalService.this.mLock) {
@@ -551,11 +559,48 @@ public final class AppLockLocalService implements AppLockInternal,
             int userId) {
         Objects.requireNonNull(packageName);
 
+        if (DEBUG) {
+            Slog.d(TAG, "setAppLockEnabledPackageSuccessfullyAuthenticated for " + packageName
+                    + " and user: " + userId);
+        }
+
+        final ArraySet<String> packagesToAuthenticate = new ArraySet<>();
+        packagesToAuthenticate.add(packageName);
+        // In a multi-window scenario, e.g. split screen and freeform windows, multiple packages can
+        // be visible with an App Lock overlay simultaneously. To improve user experience, retrieve
+        // all such packages for the current user and authenticate them along with the primary
+        // package.
+        final Set<String> packagesWithVisibleAppLockOverlay = mAtmInternal
+                .getPackagesWithVisibleAppLockOverlay(userId);
+        if (packagesWithVisibleAppLockOverlay != null
+                && !packagesWithVisibleAppLockOverlay.isEmpty()) {
+            packagesToAuthenticate.addAll(packagesWithVisibleAppLockOverlay);
+        }
+
         synchronized (mLock) {
-            final AppLockLockedState state = getOrCreateAppLockLockedStateLocked(packageName,
-                    userId);
-            state.mLastSuccessfulAuthTimeSinceBoot = System.currentTimeMillis();
-            handleUnlockedStateLocked(packageName, userId);
+            // All packages receive the same 'authTime' to accurately reflect a single user
+            // authentication event. Even if processing multiple packages takes longer than a very
+            // short grace period, the functional impact is practically negligible due to the
+            // microsecond scale of loop operations vs. the millisecond or second scale of typical
+            // grace periods.
+            final long authTime = System.currentTimeMillis();
+
+            for (int i = 0; i < packagesToAuthenticate.size(); i++) {
+                final String packageToAuthenticate = packagesToAuthenticate.valueAt(i);
+                if (packageToAuthenticate == null
+                        || !isPackageAppLockEnabledLocked(packageToAuthenticate, userId)) {
+                    // Ensure the package still has App Lock enabled.
+                    continue;
+                }
+                if (DEBUG) {
+                    Slog.d(TAG, "setAppLockEnabledPackageSuccessfullyAuthenticated: authenticating"
+                            + " package " + packageToAuthenticate);
+                }
+                final AppLockLockedState state = getOrCreateAppLockLockedStateLocked(
+                        packageToAuthenticate, userId);
+                state.mLastSuccessfulAuthTimeSinceBoot = authTime;
+                handleUnlockedStateLocked(packageToAuthenticate, userId);
+            }
         }
     }
 
