@@ -227,7 +227,7 @@ public class DesktopModeTouchEventListener
             //  {@link AppHeaderViewHolder}. Let it encapsulate the that and have it report
             //  back to the decoration using
             //  {@link DesktopModeWindowDecoration#setOnMaximizeOrRestoreClickListener}, which
-            //  should shared with the maximize menu's maximize/restore actions.
+            //  should shared with the layout menu's maximize/restore actions.
             final DesktopRepository desktopRepository = mDesktopUserRepositories.getProfile(
                     decoration.getTaskInfo().userId);
             if (desktopRepository.isTaskInFullImmersiveState(decoration.getTaskInfo().taskId)) {
@@ -365,13 +365,13 @@ public class DesktopModeTouchEventListener
         }
         moveTaskToFront(decoration.getTaskInfo());
         if (decoration.getIsDragging()) {
-            logD("onLongClick(%s) but is dragging, skip creating maximize menu", viewName);
+            logD("onLongClick(%s) but is dragging, skip creating layout menu", viewName);
             return true;
         }
-        if (decoration.getMaximizeMenuController() != null
-                && !decoration.getMaximizeMenuController().isMaximizeMenuActive()) {
-            logD("onLongClick(%s) creating maximize menu", viewName);
-            decoration.getMaximizeMenuController().createMaximizeMenu();
+        if (decoration.getLayoutMenuController() != null
+                && !decoration.getLayoutMenuController().isLayoutMenuActive()) {
+            logD("onLongClick(%s) creating layout menu", viewName);
+            decoration.getLayoutMenuController().createLayoutMenu();
         }
         return true;
     }
@@ -389,19 +389,19 @@ public class DesktopModeTouchEventListener
         }
         final int id = v.getId();
         if (ev.getAction() == ACTION_HOVER_ENTER && id == R.id.maximize_window) {
-            if (decoration.getMaximizeMenuController() == null) return false;
-            decoration.getMaximizeMenuController().setAppHeaderMaximizeButtonHovered(true);
-            if (!decoration.getMaximizeMenuController().isMaximizeMenuActive()) {
-                decoration.getMaximizeMenuController().onMaximizeButtonHoverEnter();
+            if (decoration.getLayoutMenuController() == null) return false;
+            decoration.getLayoutMenuController().setAppHeaderMaximizeButtonHovered(true);
+            if (!decoration.getLayoutMenuController().isLayoutMenuActive()) {
+                decoration.getLayoutMenuController().onLayoutButtonHoverEnter();
             }
             return true;
         }
         if (ev.getAction() == ACTION_HOVER_EXIT && id == R.id.maximize_window) {
-            if (decoration.getMaximizeMenuController() == null) return false;
-            decoration.getMaximizeMenuController().setAppHeaderMaximizeButtonHovered(false);
-            decoration.getMaximizeMenuController().onMaximizeHoverStateChanged();
-            if (!decoration.getMaximizeMenuController().isMaximizeMenuActive()) {
-                decoration.getMaximizeMenuController().onMaximizeButtonHoverExit();
+            if (decoration.getLayoutMenuController() == null) return false;
+            decoration.getLayoutMenuController().setAppHeaderMaximizeButtonHovered(false);
+            decoration.getLayoutMenuController().onLayoutButtonHoverStateChanged();
+            if (!decoration.getLayoutMenuController().isLayoutMenuActive()) {
+                decoration.getLayoutMenuController().onLayoutButtonHoverExit();
             }
             return true;
         }
