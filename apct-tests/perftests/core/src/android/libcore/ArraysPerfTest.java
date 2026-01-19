@@ -206,4 +206,26 @@ public class ArraysPerfTest {
             mSink = Arrays.equals(booleanA, 0, ARRAY_LENGTH, booleanB, 0, ARRAY_LENGTH);
         }
     }
+
+    @Test
+    public void timeArraysEqualsFloatNaN() {
+        // Fill arrays with NaNs to test specialized slow paths
+        Arrays.fill(floatA, Float.intBitsToFloat(0x7fc00001));
+        Arrays.fill(floatB, Float.intBitsToFloat(0x7fc00002));
+        final BenchmarkState state = mBenchmarkRule.getState();
+        while (state.keepRunning()) {
+            mSink = Arrays.equals(floatA, floatB);
+        }
+    }
+
+    @Test
+    public void timeArraysEqualsDoubleNaN() {
+        // Fill arrays with NaNs to test specialized slow paths
+        Arrays.fill(doubleA, Double.longBitsToDouble(0x7ff8000000000001L));
+        Arrays.fill(doubleB, Double.longBitsToDouble(0x7ff8000000000002L));
+        final BenchmarkState state = mBenchmarkRule.getState();
+        while (state.keepRunning()) {
+            mSink = Arrays.equals(doubleA, doubleB);
+        }
+    }
 }
