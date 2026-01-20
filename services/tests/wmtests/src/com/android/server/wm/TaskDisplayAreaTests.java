@@ -56,6 +56,7 @@ import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.verify;
 
 import android.app.ActivityOptions;
+import android.app.TaskInfo;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 
@@ -65,6 +66,7 @@ import com.android.server.wm.LaunchParamsController.LaunchParams;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 
 import java.util.List;
 
@@ -1040,5 +1042,38 @@ public class TaskDisplayAreaTests extends WindowTestsBase {
         // The launch root should be the source task's parent because it's an organizer-created
         // task in the same TaskDisplayArea.
         assertThat(launchRootTask).isEqualTo(parentTask);
+    }
+
+    @Test
+    public void testOnTaskMoved_topRootTaskToBack_notifiesNewTopTask() {
+        final TaskDisplayArea tda = mDefaultDisplay.getDefaultTaskDisplayArea();
+
+        // Create a root task with a leaf task and an activity.
+        final Task initialTopRoot = new TaskBuilder(mSupervisor).setTaskDisplayArea(tda).build();
+        final Task initialTopLeaf = new TaskBuilder(mSupervisor).setParentTask(initialTopRoot)
+                .setCreateActivity(true).build();
+
+        // Create another root task with two leaf tasks.
+        final Task anotherRoot = new TaskBuilder(mSupervisor).setTaskDisplayArea(tda).build();
+        final Task bottomLeaf = new TaskBuilder(mSupervisor).setParentTask(anotherRoot)
+                .setCreateActivity(true).build();
+        final Task nextTopLeaf = new TaskBuilder(mSupervisor).setParentTask(anotherRoot)
+                .setCreateActivity(true).build();
+
+        // Ensure the initialTopRoot is on top, making initialTopLeaf the top task.
+        initialTopRoot.moveToFront("move initialTopRoot to front");
+
+        spyOn(mAtm.getTaskChangeNotificationController());
+
+        // Now move initialTopRoot to back.
+        initialTopRoot.moveToBack("move initialTopRoot to back", null /* task */);
+
+        // Verify that the notification controller was informed that the new top task
+        // (nextTopLeaf) was moved to the front.
+        final ArgumentCaptor<TaskInfo> taskInfoCaptor = ArgumentCaptor.forClass(TaskInfo.class);
+
+        verify(mAtm.getTaskChangeNotificationController()).notifyTaskMovedToFront(
+                taskInfoCaptor.capture());
+        assertEquals(nextTopLeaf.mTaskId, taskInfoCaptor.getValue().taskId);
     }
 }

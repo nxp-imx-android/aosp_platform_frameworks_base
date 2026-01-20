@@ -403,6 +403,9 @@ final class TaskDisplayArea extends DisplayArea<WindowContainer> {
 
     void onTaskMoved(@NonNull Task t, boolean toTop, boolean toBottom) {
         if (toBottom && !t.isLeafTask()) {
+            if (t.forAllLeafTasks(childTask -> childTask.isTaskId(mLastLeafTaskToFrontId))) {
+                notifyTaskToFrontWhenPreviousTopLeafTaskMovedToBack();
+            }
             // Return early when a non-leaf task moved to bottom, to prevent sending duplicated
             // leaf task movement callback if the leaf task is moved along with its parent tasks.
             // Unless, we also track the task id, like `mLastLeafTaskToFrontId`.
@@ -421,16 +424,7 @@ final class TaskDisplayArea extends DisplayArea<WindowContainer> {
 
         if (!toTop) {
             if (t.mTaskId == mLastLeafTaskToFrontId) {
-                // If the previous front-most task is moved to the back, then notify of the new
-                // front-most task.
-                final ActivityRecord topMost = getTopNonFinishingActivity();
-                if (topMost != null) {
-                    mAtmService.getTaskChangeNotificationController().notifyTaskMovedToFront(
-                            topMost.getTask().getTaskInfo());
-                    mLastLeafTaskToFrontId = topMost.getTask().mTaskId;
-                } else {
-                    mLastLeafTaskToFrontId = INVALID_TASK_ID;
-                }
+                notifyTaskToFrontWhenPreviousTopLeafTaskMovedToBack();
             }
             return;
         }
@@ -443,6 +437,19 @@ final class TaskDisplayArea extends DisplayArea<WindowContainer> {
         // Notifying only when a leaf task moved to front. Or the listeners would be notified
         // couple times from the leaf task all the way up to the root task.
         mAtmService.getTaskChangeNotificationController().notifyTaskMovedToFront(t.getTaskInfo());
+    }
+
+    private void notifyTaskToFrontWhenPreviousTopLeafTaskMovedToBack() {
+        // If the previous front-most task is moved to the back, then notify of the new
+        // front-most task.
+        final ActivityRecord topMost = getTopNonFinishingActivity();
+        if (topMost != null) {
+            mAtmService.getTaskChangeNotificationController().notifyTaskMovedToFront(
+                    topMost.getTask().getTaskInfo());
+            mLastLeafTaskToFrontId = topMost.getTask().mTaskId;
+        } else {
+            mLastLeafTaskToFrontId = INVALID_TASK_ID;
+        }
     }
 
     @Override
