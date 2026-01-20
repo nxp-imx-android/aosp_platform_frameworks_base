@@ -670,8 +670,7 @@ class Session extends IWindowSession.Stub implements IBinder.DeathRecipient {
                 WallpaperController wallpaperController =
                         windowState.getDisplayContent().mWallpaperController;
                 if (mCanAlwaysUpdateWallpaper
-                        || windowState == wallpaperController.getWallpaperTarget()
-                        || windowState == wallpaperController.getPrevWallpaperTarget()) {
+                        || windowState == wallpaperController.getWallpaperTarget()) {
                     wallpaperController.sendWindowWallpaperCommandUnchecked(
                             windowState, action, x, y, z, extras);
                 }
