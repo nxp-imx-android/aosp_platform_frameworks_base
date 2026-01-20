@@ -36,6 +36,7 @@ import static android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE;
 import static android.media.audio.Flags.roForegroundAudioControl;
 
 import static com.android.server.am.psc.Constants.FOREGROUND_APP_ADJ;
+import static com.android.server.am.psc.OomAdjuster.ALL_CPU_TIME_CAPABILITIES;
 import static com.android.server.am.psc.OomAdjuster.CPU_TIME_REASON_ALLOW_LIST;
 import static com.android.server.am.psc.OomAdjuster.CPU_TIME_REASON_OTHER;
 
@@ -241,14 +242,22 @@ class CapabilityController {
      * Evaluates a filter by combining all the policies of a {@link ProviderBindingEdge}.
      */
     static @ProcessCapability int evaluateFilter(@NonNull ProviderBindingEdge edge) {
-        // TODO: b/476905700 - Add CPU time policy.
-        return evaluateBfslPolicy(edge);
+        return evaluateBfslPolicy(edge) | evaluateCpuTimePolicy(edge);
     }
 
     /** Evaluates whether a {@link ProviderBindingEdge} propagates BFSL. */
     private static @ProcessCapability int evaluateBfslPolicy(@NonNull ProviderBindingEdge unused) {
         // Always propagate BFSL.
         return PROCESS_CAPABILITY_BFSL;
+    }
+
+    /** Evaluates whether a {@link ProviderBindingEdge} propagates CPU time capabilities. */
+    private static @ProcessCapability int evaluateCpuTimePolicy(
+            @NonNull ProviderBindingEdge unused) {
+        // Always propagate CPU time capabilities since
+        // ContentProviderConnectionInternal#cpuTimeTransmissionType() always returns
+        // CPU_TIME_TRANSMISSION_NORMAL.
+        return ALL_CPU_TIME_CAPABILITIES;
     }
 
     /** Performs a partial update from a list of edges. */

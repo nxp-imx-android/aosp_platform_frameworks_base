@@ -43,6 +43,7 @@ import static android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE;
 
 import static com.android.server.am.psc.Constants.FOREGROUND_APP_ADJ;
 import static com.android.server.am.psc.Constants.UNKNOWN_ADJ;
+import static com.android.server.am.psc.OomAdjuster.ALL_CPU_TIME_CAPABILITIES;
 import static com.android.server.am.psc.OomAdjuster.CPU_TIME_REASON_ALLOW_LIST;
 import static com.android.server.am.psc.OomAdjuster.CPU_TIME_REASON_NONE;
 import static com.android.server.am.psc.OomAdjuster.CPU_TIME_REASON_OTHER;
@@ -394,9 +395,10 @@ public class CapabilityControllerTest {
     }
 
     @Test
-    public void testDefaultProviderBindingEdge_GrantsOnlyBfsl() {
+    public void testDefaultProviderBindingEdge_GrantsOnlyBfslAndCpuTime() {
         final TestProviderBindingEdge edge = new TestProviderBindingEdge();
-        assertEquals(PROCESS_CAPABILITY_BFSL, edge.evaluateCapabilityFilter());
+        assertEquals(PROCESS_CAPABILITY_BFSL | ALL_CPU_TIME_CAPABILITIES,
+                edge.evaluateCapabilityFilter());
     }
 
     private static class TestServiceRecord {
