@@ -359,6 +359,22 @@ public class AppTaskImplTests extends WindowTestsBase {
         verify(mMockCallback).sendResult(eq(sampleBundle)); // only once, with sampleBundle
     }
 
+    @EnableFlags(FLAG_ENABLE_INTERACTIVE_PICTURE_IN_PICTURE)
+    @Test
+    public void testRequestWindowingLayer_rejectsPinnedRequestForNonFocusedTask()
+            throws Exception {
+        final Task task = getSampleTask();
+        final Task focusedTask = getSampleTaskBuilder().setOnTop(true).build();
+        final AppTaskImpl appTask = getAppTask(task.getRootTaskId());
+        final Bundle sampleBundle = new Bundle();
+
+        appTask.requestWindowingLayer(WINDOWING_LAYER_PINNED, mMockCallback);
+
+        verifyCallbackReceivedWindowingLayerErrorCode(mMockCallback,
+                TaskWindowingLayerRequestHandler.RESULT_FAILED_BAD_STATE);
+        verify(mTransitionController, never()).startCollectOrQueue(any(), any());
+    }
+
     @EnableFlags(FLAG_ENABLE_WINDOW_REPOSITIONING_API)
     @Test
     public void testMoveTaskTo_failsWhenBalBlocks() throws Exception {
@@ -400,7 +416,11 @@ public class AppTaskImplTests extends WindowTestsBase {
     }
 
     private Task getSampleTask() {
-        return new TaskBuilder(mSupervisor).setCreateActivity(true).build();
+        return getSampleTaskBuilder().build();
+    }
+
+    private TaskBuilder getSampleTaskBuilder() {
+        return new TaskBuilder(mSupervisor).setCreateActivity(true);
     }
 
     private Rect getValidBoundsForDisplay(DisplayContent dc) {
