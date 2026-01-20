@@ -130,9 +130,10 @@ constructor(
                                 seekProgress = progress
                             }
 
-                            val onScrubFinished = { dragDelta: Offset ->
+                            val onScrubFinished = { dragDelta: Offset, isValidVelocity: Boolean ->
                                 if (
-                                    dragDelta.isHorizontal() &&
+                                    isValidVelocity &&
+                                        dragDelta.isHorizontal() &&
                                         !falsingSystem.isFalseTouch(Classifier.MEDIA_SEEKBAR)
                                 ) {
                                     mediaUiEventLogger.logSeek(
