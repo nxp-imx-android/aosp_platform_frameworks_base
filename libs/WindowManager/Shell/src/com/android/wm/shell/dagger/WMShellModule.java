@@ -117,6 +117,7 @@ import com.android.wm.shell.compatui.letterbox.state.LetterboxTaskListenerAdapte
 import com.android.wm.shell.crashhandling.ShellCrashHandler;
 import com.android.wm.shell.dagger.back.ShellBackAnimationModule;
 import com.android.wm.shell.dagger.desktop.DesktopModule;
+import com.android.wm.shell.dagger.hierarchy.HandheldContainersModule;
 import com.android.wm.shell.dagger.pinnedlayer.PinnedLayerModule;
 import com.android.wm.shell.dagger.pip.PipModule;
 import com.android.wm.shell.desktopai.dagger.DesktopAIModule;
@@ -267,13 +268,13 @@ import dagger.Lazy;
 import dagger.Module;
 import dagger.Provides;
 
-import kotlinx.coroutines.CoroutineScope;
-import kotlinx.coroutines.ExperimentalCoroutinesApi;
-import kotlinx.coroutines.MainCoroutineDispatcher;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import kotlinx.coroutines.CoroutineScope;
+import kotlinx.coroutines.ExperimentalCoroutinesApi;
+import kotlinx.coroutines.MainCoroutineDispatcher;
 
 /**
  * Provides dependencies from {@link com.android.wm.shell}, these dependencies are only accessible
@@ -291,7 +292,8 @@ import java.util.Optional;
                 LetterboxModule.class,
                 PinnedLayerModule.class,
                 DesktopModule.class,
-                DesktopAIModule.class
+                DesktopAIModule.class,
+                HandheldContainersModule.class,
         })
 public abstract class WMShellModule {
 

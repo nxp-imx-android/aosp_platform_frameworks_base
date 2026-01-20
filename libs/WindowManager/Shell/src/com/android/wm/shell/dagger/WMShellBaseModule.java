@@ -102,6 +102,7 @@ import com.android.wm.shell.compatui.impl.CompositeCompatUIHandler;
 import com.android.wm.shell.compatui.impl.DefaultCompatUIComponentFactory;
 import com.android.wm.shell.compatui.impl.DefaultCompatUIHandler;
 import com.android.wm.shell.compatui.impl.DefaultComponentIdGenerator;
+import com.android.wm.shell.dagger.hierarchy.ContainerHierarchyCreateTriggerOverride;
 import com.android.wm.shell.desktopmode.DesktopTasksController;
 import com.android.wm.shell.desktopmode.DesktopUserRepositories;
 import com.android.wm.shell.desktopmode.api.DesktopMode;
@@ -180,7 +181,7 @@ import java.util.concurrent.Executors;
 @Module(
         includes = {
                 WMShellConcurrencyModule.class,
-                WMShellCoroutinesModule.class
+                WMShellCoroutinesModule.class,
         })
 public abstract class WMShellBaseModule {
 
@@ -1246,6 +1247,11 @@ public abstract class WMShellBaseModule {
     @ShellCreateTriggerOverride
     abstract Object provideIndependentShellComponentsToCreateOverride();
 
+    // Workaround for dynamic overriding with a default implementation, see {@link DynamicOverride}
+    @BindsOptionalOf
+    @ContainerHierarchyCreateTriggerOverride
+    abstract Object provideIndependentContainerHierarchyComponentsToCreateOverride();
+
     // TODO: Temporarily move dependencies to this instead of ShellInit since that is needed to add
     // the callback. We will be moving to a different explicit startup mechanism in a follow- up CL.
     @WMSingleton
@@ -1273,7 +1279,8 @@ public abstract class WMShellBaseModule {
             Transitions transitions,
             StartingWindowController startingWindow,
             ProtoLogController protoLogController,
-            @ShellCreateTriggerOverride Optional<Object> overriddenCreateTrigger) {
+            @ShellCreateTriggerOverride Optional<Object> overriddenCreateTrigger,
+            @ContainerHierarchyCreateTriggerOverride Optional<Object> hierarchyCreateTrigger) {
         return new Object();
     }
 
