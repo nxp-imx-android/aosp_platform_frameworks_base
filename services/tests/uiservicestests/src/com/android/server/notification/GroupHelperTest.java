@@ -61,10 +61,12 @@ import static org.mockito.Mockito.when;
 
 import android.annotation.SuppressLint;
 import android.app.Notification;
+import android.app.Notification.BridgedNotificationMetadata;
 import android.app.NotificationChannel;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.AdaptiveIconDrawable;
 import android.graphics.drawable.Drawable;
@@ -147,12 +149,20 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     private StatusBarNotification getSbn(String pkg, int id, String tag,
-            UserHandle user, String groupKey, Icon smallIcon, int iconColor) {
+            UserHandle user, String groupKey, Icon smallIcon, int iconColor, boolean isBridged) {
         Notification.Builder nb = new Notification.Builder(getContext(), TEST_CHANNEL_ID)
                 .setContentTitle("A")
                 .setWhen(1205)
                 .setSmallIcon(smallIcon)
                 .setColor(iconColor);
+        if (isBridged) {
+            Icon icon =
+                    Icon.createWithBitmap(Bitmap.createBitmap(300, 300, Bitmap.Config.ARGB_8888));
+            BridgedNotificationMetadata metadata = new BridgedNotificationMetadata(
+                    BridgedNotificationMetadata.BRIDGED_METADATA_TYPE_PHONE, "test_display_name",
+                    "test_bridged_package", TEST_CHANNEL_ID, icon);
+            nb.setBridgedNotificationMetadata(metadata);
+        }
         if (groupKey != null) {
             nb.setGroup(groupKey);
         }
@@ -162,7 +172,7 @@ public class GroupHelperTest extends UiServiceTestCase {
 
     private StatusBarNotification getSbn(String pkg, int id, String tag,
             UserHandle user, String groupKey) {
-        return getSbn(pkg, id, tag, user, groupKey, mSmallIcon, Notification.COLOR_DEFAULT);
+        return getSbn(pkg, id, tag, user, groupKey, mSmallIcon, Notification.COLOR_DEFAULT, false);
     }
 
     private StatusBarNotification getSbn(String pkg, int id, String tag,
@@ -189,6 +199,18 @@ public class GroupHelperTest extends UiServiceTestCase {
     private NotificationRecord getNotificationRecord(String pkg, int id, String tag,
             UserHandle user, String groupKey, boolean isSummary, NotificationChannel channel) {
         StatusBarNotification sbn = getSbn(pkg, id, tag, user, groupKey);
+        if (isSummary) {
+            sbn.getNotification().flags |= FLAG_GROUP_SUMMARY;
+        }
+        return new NotificationRecord(getContext(), sbn, channel);
+    }
+
+    private NotificationRecord getNotificationRecord(String pkg, int id, String tag,
+                                                     UserHandle user, String groupKey,
+                                                     boolean isSummary, NotificationChannel channel,
+                                                     boolean isBridged) {
+        StatusBarNotification sbn = getSbn(pkg, id, tag, user, groupKey, mSmallIcon,
+                Notification.COLOR_DEFAULT, isBridged);
         if (isSummary) {
             sbn.getNotification().flags |= FLAG_GROUP_SUMMARY;
         }
@@ -349,6 +371,18 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
+    @EnableFlags(android.app.Flags.FLAG_BRIDGED_NOTIFICATIONS)
+    public void testNoGroup_bridged() {
+        final String pkg = "package";
+        for (int i = 0; i < AUTOGROUP_AT_COUNT; i++) {
+            mGroupHelper.onNotificationPosted(
+                    getNotificationRecord(getSbn(pkg, i, String.valueOf(i), UserHandle.SYSTEM, null,
+                            mSmallIcon, Notification.COLOR_DEFAULT, true)), false);
+        }
+        verifyNoMoreInteractions(mCallback);
+    }
+
+    @Test
     public void testAddSummary() {
         final String pkg = "package";
         final String autogroupKey = getExpectedAutogroupKey(
@@ -359,8 +393,8 @@ public class GroupHelperTest extends UiServiceTestCase {
                     false)).isFalse();
         }
         assertThat(mGroupHelper.onNotificationPosted(
-            getNotificationRecord(pkg, AUTOGROUP_AT_COUNT - 1, String.valueOf(AUTOGROUP_AT_COUNT - 1),
-                        UserHandle.SYSTEM), false)).isTrue();
+            getNotificationRecord(pkg, AUTOGROUP_AT_COUNT - 1,
+                    String.valueOf(AUTOGROUP_AT_COUNT - 1), UserHandle.SYSTEM), false)).isTrue();
         verify(mCallback, times(1)).addAutoGroupSummary(anyInt(), eq(pkg), anyString(),
                 eq(autogroupKey), anyInt(), eq(getNotificationAttributes(BASE_FLAGS)));
         verify(mCallback, times(AUTOGROUP_AT_COUNT - 1)).addAutoGroup(anyString(), anyString(),
@@ -1057,7 +1091,8 @@ public class GroupHelperTest extends UiServiceTestCase {
         // Add notifications with same icon and color
         for (int i = 0; i < AUTOGROUP_AT_COUNT; i++) {
             NotificationRecord r = getNotificationRecord(
-                    getSbn(pkg, i, String.valueOf(i), UserHandle.SYSTEM, null, icon, iconColor));
+                    getSbn(pkg, i, String.valueOf(i), UserHandle.SYSTEM, null, icon, iconColor,
+                            false));
             mGroupHelper.onNotificationPosted(r, false);
         }
         // Check that the summary would have the same icon and color
@@ -1070,7 +1105,8 @@ public class GroupHelperTest extends UiServiceTestCase {
 
         // After auto-grouping, add new notification with the same color
         NotificationRecord r = getNotificationRecord(getSbn(pkg, AUTOGROUP_AT_COUNT,
-            String.valueOf(AUTOGROUP_AT_COUNT), UserHandle.SYSTEM, null, icon, iconColor));
+                String.valueOf(AUTOGROUP_AT_COUNT), UserHandle.SYSTEM, null, icon, iconColor,
+                false));
         mGroupHelper.onNotificationPosted(r, true);
 
         // Check that the summary was updated
@@ -1100,7 +1136,7 @@ public class GroupHelperTest extends UiServiceTestCase {
         for (int i = 0; i < AUTOGROUP_AT_COUNT; i++) {
             NotificationRecord r = getNotificationRecord(
                 getSbn(pkg, i, String.valueOf(i), UserHandle.SYSTEM, null,
-                    initialIcon, initialIconColor));
+                    initialIcon, initialIconColor, false));
             groupHelper.onNotificationPosted(r, false);
         }
         // Check that the summary would have the same icon and color
@@ -1115,8 +1151,8 @@ public class GroupHelperTest extends UiServiceTestCase {
         final Icon newIcon = mock(Icon.class);
         final int newIconColor = Color.YELLOW;
         NotificationRecord r = getNotificationRecord(getSbn(pkg, AUTOGROUP_AT_COUNT,
-            String.valueOf(AUTOGROUP_AT_COUNT), UserHandle.SYSTEM, null, newIcon,
-            newIconColor));
+                String.valueOf(AUTOGROUP_AT_COUNT), UserHandle.SYSTEM, null, newIcon,
+                newIconColor, false));
         groupHelper.onNotificationPosted(r, true);
 
         // Summary should be updated to the default color and the icon to the monochrome icon
@@ -1139,12 +1175,13 @@ public class GroupHelperTest extends UiServiceTestCase {
         for (int i = 0; i < AUTOGROUP_AT_COUNT - 1; i++) {
             NotificationRecord r = getNotificationRecord(
                 getSbn(pkg, i, String.valueOf(i), UserHandle.SYSTEM, null,
-                    icon, iconColor));
+                    icon, iconColor, false));
             assertThat(mGroupHelper.onNotificationPosted(r, false)).isFalse();
         }
         // The last notification added will reach the autogroup threshold.
         NotificationRecord r = getNotificationRecord(getSbn(pkg, AUTOGROUP_AT_COUNT - 1,
-            String.valueOf(AUTOGROUP_AT_COUNT - 1), UserHandle.SYSTEM, null, icon, iconColor));
+                String.valueOf(AUTOGROUP_AT_COUNT - 1), UserHandle.SYSTEM, null, icon, iconColor,
+                false));
         assertThat(mGroupHelper.onNotificationPosted(r, false)).isTrue();
 
         // Check that the summary has private visibility
@@ -1158,7 +1195,7 @@ public class GroupHelperTest extends UiServiceTestCase {
 
         // After auto-grouping, add new notification with public visibility
         r = getNotificationRecord(getSbn(pkg, AUTOGROUP_AT_COUNT,
-            String.valueOf(AUTOGROUP_AT_COUNT), UserHandle.SYSTEM, null, icon, iconColor));
+            String.valueOf(AUTOGROUP_AT_COUNT), UserHandle.SYSTEM, null, icon, iconColor, false));
         r.getNotification().visibility = VISIBILITY_PUBLIC;
         assertThat(mGroupHelper.onNotificationPosted(r, true)).isTrue();
 
@@ -1184,14 +1221,14 @@ public class GroupHelperTest extends UiServiceTestCase {
         for (int i = 0; i < AUTOGROUP_AT_COUNT - 1; i++) {
             NotificationRecord r = getNotificationRecord(
                 getSbn(pkg, i, String.valueOf(i), UserHandle.SYSTEM, null,
-                    initialIcon, initialIconColor));
+                    initialIcon, initialIconColor, false));
             notifications.add(r);
         }
         // And an additional notification with different icon and color
         final int lastIdx = AUTOGROUP_AT_COUNT - 1;
         NotificationRecord newRec = getNotificationRecord(getSbn(pkg, lastIdx,
-            String.valueOf(lastIdx), UserHandle.SYSTEM, null, mock(Icon.class),
-            Color.YELLOW));
+                String.valueOf(lastIdx), UserHandle.SYSTEM, null, mock(Icon.class),
+                Color.YELLOW, false));
         notifications.add(newRec);
         for (NotificationRecord r: notifications) {
             mGroupHelper.onNotificationPosted(r, false);
@@ -1427,6 +1464,21 @@ public class GroupHelperTest extends UiServiceTestCase {
         final String fullAggregateGroupKey = GroupHelper.getFullAggregateGroupKey("pkg",
                 "groupKey", 1234);
         assertThat(fullAggregateGroupKey).isEqualTo("1234|pkg|g:groupKey");
+    }
+
+    @Test
+    @EnableFlags(android.app.Flags.FLAG_BRIDGED_NOTIFICATIONS)
+    public void testNoGroup_BridgedNotificationPostedWithDelay() {
+        final List<NotificationRecord> notificationList = new ArrayList<>();
+        final ArrayMap<String, NotificationRecord> summaryByGroup = new ArrayMap<>();
+        final String pkg = "package";
+        for (int i = 0; i < AUTOGROUP_AT_COUNT + 1; i++) {
+            NotificationRecord r = getNotificationRecord(getSbn(pkg, i, String.valueOf(i),
+                    UserHandle.SYSTEM, null, mSmallIcon, Notification.COLOR_DEFAULT, true));
+            notificationList.add(r);
+            mGroupHelper.onNotificationPostedWithDelay(r, notificationList, summaryByGroup);
+        }
+        verifyNoMoreInteractions(mCallback);
     }
 
     @Test
@@ -1721,7 +1773,7 @@ public class GroupHelperTest extends UiServiceTestCase {
         final int iconColor = Color.BLUE;
         r = getNotificationRecord(
                 getSbn(pkg, AUTOGROUP_AT_COUNT, String.valueOf(AUTOGROUP_AT_COUNT),
-                    UserHandle.SYSTEM, "testGrp " + AUTOGROUP_AT_COUNT, icon, iconColor));
+                    UserHandle.SYSTEM, "testGrp " + AUTOGROUP_AT_COUNT, icon, iconColor, false));
 
         notificationList.add(r);
         mGroupHelper.onNotificationPostedWithDelay(r, notificationList, summaryByGroup);
@@ -2414,6 +2466,71 @@ public class GroupHelperTest extends UiServiceTestCase {
                 eq(expectedGroupKey_alerting));
         verify(mCallback, never()).updateAutogroupSummary(anyInt(), anyString(), anyString(),
                 any());
+    }
+
+    @Test
+    @EnableFlags(android.app.Flags.FLAG_BRIDGED_NOTIFICATIONS)
+    public void estNoAutoGroupingBridgedNotifications_updateChannel() {
+        final String pkg = "package";
+        final String expectedGroupKey_alerting = GroupHelper.getFullAggregateGroupKey(pkg,
+                AGGREGATE_GROUP_KEY + "AlertingSection", UserHandle.SYSTEM.getIdentifier());
+        final NotificationChannel channel = new NotificationChannel(TEST_CHANNEL_ID,
+                TEST_CHANNEL_ID, IMPORTANCE_DEFAULT);
+        final List<NotificationRecord> notificationList = new ArrayList<>();
+        final ArrayMap<String, NotificationRecord> summaryByGroup = new ArrayMap<>();
+        // Post group notifications without summaries => force autogroup
+        for (int i = 0; i < AUTOGROUP_AT_COUNT; i++) {
+            NotificationRecord r = getNotificationRecord(pkg, i, String.valueOf(i),
+                    UserHandle.SYSTEM, "testGrp " + i, false, channel, true);
+            notificationList.add(r);
+            mGroupHelper.onNotificationPostedWithDelay(r, notificationList, summaryByGroup);
+        }
+        verifyNoMoreInteractions(mCallback);
+        Mockito.reset(mCallback);
+
+        // Update the channel importance for all posted notifications
+        final String expectedGroupKey_silent = GroupHelper.getFullAggregateGroupKey(pkg,
+                AGGREGATE_GROUP_KEY + "SilentSection", UserHandle.SYSTEM.getIdentifier());
+        channel.setImportance(IMPORTANCE_LOW);
+        for (NotificationRecord r: notificationList) {
+            r.updateNotificationChannel(channel);
+        }
+        mGroupHelper.onChannelUpdated(UserHandle.SYSTEM.getIdentifier(), pkg, channel,
+                notificationList, summaryByGroup);
+
+        verifyNoMoreInteractions(mCallback);
+    }
+
+    @Test
+    @EnableFlags(android.app.Flags.FLAG_BRIDGED_NOTIFICATIONS)
+    public void testNoAutoGroupingBridgedNotifications_updateChannelSingleNotification() {
+        final String pkg = "package";
+        final String expectedGroupKey_alerting = GroupHelper.getFullAggregateGroupKey(pkg,
+                AGGREGATE_GROUP_KEY + "AlertingSection", UserHandle.SYSTEM.getIdentifier());
+        final NotificationChannel channel = new NotificationChannel(TEST_CHANNEL_ID,
+                TEST_CHANNEL_ID, IMPORTANCE_DEFAULT);
+        final List<NotificationRecord> notificationList = new ArrayList<>();
+        final ArrayMap<String, NotificationRecord> summaryByGroup = new ArrayMap<>();
+        // Post group notifications without summaries => force autogroup
+        for (int i = 0; i < AUTOGROUP_AT_COUNT; i++) {
+            NotificationRecord r = getNotificationRecord(pkg, i, String.valueOf(i),
+                    UserHandle.SYSTEM, "testGrp " + i, false, channel, true);
+            notificationList.add(r);
+            mGroupHelper.onNotificationPostedWithDelay(r, notificationList, summaryByGroup);
+        }
+        verifyNoMoreInteractions(mCallback);
+        Mockito.reset(mCallback);
+
+        // Update the channel importance for all posted notifications
+        final String expectedGroupKey_silent = GroupHelper.getFullAggregateGroupKey(pkg,
+                AGGREGATE_GROUP_KEY + "SilentSection", UserHandle.SYSTEM.getIdentifier());
+        channel.setImportance(IMPORTANCE_LOW);
+        for (NotificationRecord r: notificationList) {
+            r.updateNotificationChannel(channel);
+        }
+        mGroupHelper.onChannelUpdated(notificationList.get(0));
+
+        verifyNoMoreInteractions(mCallback);
     }
 
     @Test
