@@ -35,6 +35,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
@@ -62,7 +63,11 @@ fun DefaultVideoPlayerControls(
     color: Color = Color.White,
     contrastColor: Color = Color.Black.copy(alpha = 0.5f),
 ) {
-    val backgroundBrush = Brush.verticalGradient(colors = listOf(Color.Transparent, contrastColor))
+    val backgroundBrush =
+        remember(contrastColor) {
+            Brush.verticalGradient(colors = listOf(Color.Transparent, contrastColor))
+        }
+
     Column(
         verticalArrangement = Arrangement.Bottom,
         modifier = modifier.heightIn(min = 164.dp).drawBehind { drawRect(backgroundBrush) },
