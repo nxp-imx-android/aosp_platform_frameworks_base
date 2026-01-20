@@ -424,6 +424,7 @@ cc_defaults_for_libandroid_runtime {
                 "libperfetto_c",
                 "libtracing_perfetto",
                 "libperfetto_framework_jni",
+                "libprotolog",
                 "pw_allocator",
                 "libperformancehint",
             ],
