@@ -19947,9 +19947,9 @@ public class ActivityManagerService extends IActivityManager.Stub
             mCachedAppOptimizer.onOomAdjustChanged(oldAdj, newAdj, (ProcessRecord) app);
         }
 
+        @Override
         public void onProcessFreezabilityChanged(ProcessRecordInternal app, boolean freezePolicy,
-                @OomAdjReason int oomAdjReason, boolean immediate, int oldOomAdj,
-                boolean shouldNotFreezeChanged) {
+                @OomAdjReason int oomAdjReason, boolean immediate, int oldOomAdj) {
             if (!mCachedAppOptimizer.useFreezer()) {
                 return;
             }
@@ -19976,15 +19976,15 @@ public class ActivityManagerService extends IActivityManager.Stub
                         hasImplicitCpuCapability != usedToHaveImplicitCpuCapability;
                 final int cpuTimeReasons = app.getCurCpuTimeReasons();
                 final int implicitCpuTimeReasons = app.getCurImplicitCpuTimeReasons();
-                if ((oomAdjChanged || shouldNotFreezeChanged || cpuCapabilityChanged
-                        || implicitCpuCapabilityChanged)
+                if ((oomAdjChanged || cpuCapabilityChanged || implicitCpuCapabilityChanged)
                         && Trace.isTagEnabled(Trace.TRACE_TAG_ACTIVITY_MANAGER)) {
+                    // TODO: b/477349886 - Migrate to perfettoSDK and clean up obsolete bits.
                     Trace.instantForTrack(Trace.TRACE_TAG_ACTIVITY_MANAGER,
                             "FreezeLite",
                             (app.isFrozen() ? "F" : "-")
                                     + (app.isPendingFreeze() ? "P" : "-")
-                                    + (/* Keeping for app.isFreezeExempt() */ "-")
-                                    + (app.shouldNotFreeze() ? "N" : "-")
+                                    + /* Keeping for app.isFreezeExempt() */ "-"
+                                    + /* Keeping for shouldNotFreeze */ "-"
                                     + (hasCpuCapability ? "T" : "-")
                                     + (hasImplicitCpuCapability ? "X" : "-")
                                     + (immediate ? "I" : "-")
@@ -19994,7 +19994,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                                     + "/" + app.getPid()
                                     + "/" + app.getCurAdj()
                                     + "/" + oldOomAdj
-                                    + "/" + app.shouldNotFreezeReason()
+                                    + /* Always SHOULD_NOT_FREEZE_REASON_NONE */ "/1"
                                     + "/" + cpuTimeReasons
                                     + "/" + implicitCpuTimeReasons);
                     Trace.instantForTrack(Trace.TRACE_TAG_ACTIVITY_MANAGER,
@@ -20003,8 +20003,8 @@ public class ActivityManagerService extends IActivityManager.Stub
                                     + " pid: " + app.getPid()
                                     + " isFreezeExempt: " + false
                                     + " isFrozen: " + app.isFrozen()
-                                    + " shouldNotFreeze: " + app.shouldNotFreeze()
-                                    + " shouldNotFreezeReason: " + app.shouldNotFreezeReason()
+                                    + " shouldNotFreeze: false"
+                                    + " shouldNotFreezeReason: 1"
                                     + " curAdj: " + app.getCurAdj()
                                     + " oldOomAdj: " + oldOomAdj
                                     + " immediate: " + immediate

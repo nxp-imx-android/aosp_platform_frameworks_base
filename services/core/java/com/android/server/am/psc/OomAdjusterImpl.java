@@ -58,9 +58,6 @@ import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_UID_OBSERVE
 import static com.android.server.am.ActivityManagerService.TAG_BACKUP;
 import static com.android.server.am.ActivityManagerService.TAG_OOM_ADJ;
 import static com.android.server.am.ActivityManagerService.TAG_UID_OBSERVERS;
-import static com.android.server.am.ProcessCachedOptimizerRecord.SHOULD_NOT_FREEZE_REASON_BINDER_ALLOW_OOM_MANAGEMENT;
-import static com.android.server.am.ProcessCachedOptimizerRecord.SHOULD_NOT_FREEZE_REASON_BIND_WAIVE_PRIORITY;
-import static com.android.server.am.ProcessCachedOptimizerRecord.SHOULD_NOT_FREEZE_REASON_UID_ALLOWLISTED;
 import static com.android.server.am.psc.Constants.BACKUP_APP_ADJ;
 import static com.android.server.am.psc.Constants.CACHED_APP_MAX_ADJ;
 import static com.android.server.am.psc.Constants.CACHED_APP_MIN_ADJ;
@@ -893,7 +890,6 @@ public class OomAdjusterImpl extends OomAdjuster {
             final int prevProcState = target.getCurProcState();
             final int prevAdj = target.getCurRawAdj();
             final int prevCapability = target.getCurCapability();
-            final boolean prevShouldNotFreeze = target.shouldNotFreeze();
 
             args.mApp = target;
             // If target client is a reachable, reachables need to be reinited in case this
@@ -902,7 +898,7 @@ public class OomAdjusterImpl extends OomAdjuster {
             // If target lowered in importance, reachables need to be reinited because this
             // target may have been the source of a reachable's current importance.
             initReachables |= selfImportanceLoweredLSP(target, prevProcState, prevAdj,
-                    prevCapability, prevShouldNotFreeze);
+                    prevCapability);
 
             mProcessRecordProcStateNodes.offer(target);
             mProcessRecordAdjNodes.offer(target);
@@ -1067,7 +1063,7 @@ public class OomAdjusterImpl extends OomAdjuster {
      */
     @GuardedBy({"mServiceLock", "mProcLock"})
     private static boolean selfImportanceLoweredLSP(ProcessRecordInternal app, int prevProcState,
-            int prevAdj, int prevCapability, boolean prevShouldNotFreeze) {
+            int prevAdj, int prevCapability) {
         if (app.getCurProcState() > prevProcState) {
             return true;
         }
@@ -1075,10 +1071,6 @@ public class OomAdjusterImpl extends OomAdjuster {
             return true;
         }
         if ((app.getCurCapability() & prevCapability) != prevCapability)  {
-            return true;
-        }
-        if (!app.shouldNotFreeze() && prevShouldNotFreeze) {
-            // No long marked as should not freeze.
             return true;
         }
         return false;
@@ -1116,11 +1108,6 @@ public class OomAdjusterImpl extends OomAdjuster {
                 return false;
             }
         }
-
-        if (!host.shouldNotFreeze() && client.shouldNotFreeze()) {
-            // If the client is marked as should not freeze, so should the host.
-            return false;
-        }
         return true;
     }
 
@@ -1150,11 +1137,6 @@ public class OomAdjusterImpl extends OomAdjuster {
         app.setAdjTypeCode(ActivityManager.RunningAppProcessInfo.REASON_UNKNOWN);
         app.setAdjSource(null);
         app.setAdjTarget(null);
-
-        // If this UID is currently allowlisted, it should not be frozen.
-        final UidRecordInternal uidRec = app.getUidRecord();
-        app.setShouldNotFreeze(uidRec != null && uidRec.isCurAllowListed(), false /* dryRun */,
-                SHOULD_NOT_FREEZE_REASON_UID_ALLOWLISTED, mAdjSeq);
 
         final boolean reportDebugMsgs = DEBUG_OOM_ADJ_REASON || mGlobalState.isDebugEnabled(app);
 
@@ -1816,14 +1798,6 @@ public class OomAdjusterImpl extends OomAdjuster {
                     && !client.isBackgroundRestricted()));
         }
 
-        if (client.shouldNotFreeze()) {
-            // Propagate the shouldNotFreeze flag down the bindings.
-            if (app.setShouldNotFreeze(true, dryRun,
-                    app.shouldNotFreezeReason() | client.shouldNotFreezeReason(), mAdjSeq)) {
-                // Do nothing, capability updated check will handle the dryrun output.
-            }
-        }
-
         boolean trackedProcState = false;
 
         // We always propagate PROCESS_CAPABILITY_BFSL over bindings here,
@@ -1874,15 +1848,6 @@ public class OomAdjusterImpl extends OomAdjuster {
             }
             String adjType = null;
             if (cr.hasFlag(Context.BIND_ALLOW_OOM_MANAGEMENT)) {
-                // Similar to BIND_WAIVE_PRIORITY, keep it unfrozen.
-                if (clientAdj < CACHED_APP_MIN_ADJ) {
-                    if (app.setShouldNotFreeze(true, dryRun,
-                            app.shouldNotFreezeReason()
-                                    | SHOULD_NOT_FREEZE_REASON_BINDER_ALLOW_OOM_MANAGEMENT,
-                            mAdjSeq)) {
-                        // Do nothing, capability updated check will handle the dryrun output.
-                    }
-                }
                 // Not doing bind OOM management, so treat
                 // this guy more like a started service.
                 if (app.getHasShownUi() && !isHomeProcess(app)) {
@@ -2104,23 +2069,6 @@ public class OomAdjusterImpl extends OomAdjuster {
                             + ProcessList.makeProcStateString(procState));
                 }
             }
-        } else { // BIND_WAIVE_PRIORITY == true
-            // BIND_WAIVE_PRIORITY bindings are special when it comes to the
-            // freezer. Processes bound via WPRI are expected to be running,
-            // but they are not promoted in the LRU list to keep them out of
-            // cached. As a result, they can freeze based on oom_adj alone.
-            // Normally, bindToDeath would fire when a cached app would die
-            // in the background, but nothing will fire when a running process
-            // pings a frozen process. Accordingly, any cached app that is
-            // bound by an unfrozen app via a WPRI binding has to remain
-            // unfrozen.
-            if (clientAdj < CACHED_APP_MIN_ADJ) {
-                if (app.setShouldNotFreeze(true, dryRun,
-                        app.shouldNotFreezeReason()
-                                | SHOULD_NOT_FREEZE_REASON_BIND_WAIVE_PRIORITY, mAdjSeq)) {
-                    // Do nothing, capability updated check will handle the dryrun output.
-                }
-            }
         }
         if (cr.hasFlag(Context.BIND_TREAT_LIKE_ACTIVITY)) {
             if (!dryRun) {
@@ -2237,13 +2185,6 @@ public class OomAdjusterImpl extends OomAdjuster {
             // If the other app is cached for any reason, for purposes here
             // we are going to consider it empty.
             clientProcState = PROCESS_STATE_CACHED_EMPTY;
-        }
-        if (client.shouldNotFreeze()) {
-            // Propagate the shouldNotFreeze flag down the bindings.
-            if (app.setShouldNotFreeze(true, dryRun,
-                    app.shouldNotFreezeReason() | client.shouldNotFreezeReason(), mAdjSeq)) {
-                // Do nothing, capability updated check will handle the dryrun output.
-            }
         }
 
         if (!dryRun) {

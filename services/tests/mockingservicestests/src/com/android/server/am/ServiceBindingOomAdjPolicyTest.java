@@ -30,7 +30,6 @@ import static android.content.Context.BIND_WAIVE_PRIORITY;
 import static android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_SYSTEM_EXEMPTED;
 import static android.os.UserHandle.USER_SYSTEM;
 
-import static com.android.server.am.ProcessCachedOptimizerRecord.SHOULD_NOT_FREEZE_REASON_NONE;
 import static com.android.server.am.psc.Constants.CACHED_APP_MIN_ADJ;
 import static com.android.server.am.psc.Constants.HOME_APP_ADJ;
 import static com.android.server.am.psc.Constants.PERCEPTIBLE_APP_ADJ;
@@ -574,15 +573,6 @@ public final class ServiceBindingOomAdjPolicyTest extends BaseServiceTest {
     private void setHomeProcess(ProcessRecord app) {
         final WindowProcessController wpc = app.getWindowProcessController();
         doReturn(true).when(wpc).isHomeProcess();
-    }
-
-    @SuppressWarnings("GuardedBy")
-    private void setAllowListed(ProcessRecord app) {
-        final UidRecord uidRec = mock(UidRecord.class);
-        app.setUidRecord(uidRec);
-        doReturn(true).when(uidRec).isCurAllowListed();
-
-        app.mOptRecord.setShouldNotFreeze(true, SHOULD_NOT_FREEZE_REASON_NONE, 1234);
     }
 
     @SuppressWarnings("GuardedBy")

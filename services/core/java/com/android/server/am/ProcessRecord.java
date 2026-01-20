@@ -67,7 +67,6 @@ import com.android.internal.app.procstats.ProcessState;
 import com.android.internal.app.procstats.ProcessStats;
 import com.android.internal.os.Zygote;
 import com.android.server.FgThread;
-import com.android.server.am.ProcessCachedOptimizerRecord.ShouldNotFreezeReason;
 import com.android.server.am.psc.OomAdjuster;
 import com.android.server.am.psc.OomAdjusterImpl.ProcessRecordNode;
 import com.android.server.am.psc.PlatformCompatCache.CachedCompatChangeId;
@@ -1194,27 +1193,6 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
     @Override
     public boolean isPendingFreeze() {
         return mOptRecord.isPendingFreeze();
-    }
-
-    @Override
-    public boolean shouldNotFreeze() {
-        return mOptRecord.shouldNotFreeze();
-    }
-
-    @Override
-    public boolean setShouldNotFreeze(boolean shouldNotFreeze, boolean dryRun,
-            @ShouldNotFreezeReason int reason, int adjSeq) {
-        return mOptRecord.setShouldNotFreeze(shouldNotFreeze, dryRun, reason, adjSeq);
-    }
-
-    @Override
-    public @ShouldNotFreezeReason int shouldNotFreezeReason() {
-        return mOptRecord.shouldNotFreezeReason();
-    }
-
-    @Override
-    public int shouldNotFreezeAdjSeq() {
-        return mOptRecord.shouldNotFreezeAdjSeq();
     }
 
     @Override
