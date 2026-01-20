@@ -27,7 +27,9 @@ import com.android.systemui.flags.featureFlagsClassic
 import com.android.systemui.kairos.KairosTestScope
 import com.android.systemui.kairos.runKairosTest
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
+import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.statusbar.core.NewStatusBarIcons
 import com.android.systemui.statusbar.pipeline.mobile.data.model.SubscriptionModel
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.fake
@@ -49,8 +51,8 @@ class StackedMobileIconViewModelKairosTest : SysuiTestCase() {
             }
         }
 
-    private val Kosmos.underTest
-        get() = stackedMobileIconViewModelKairos
+    private val Kosmos.underTest: StackedMobileIconViewModelKairos by
+        Kosmos.Fixture { stackedMobileIconViewModelKairos.apply { activateIn(testScope) } }
 
     @Test
     @EnableFlags(NewStatusBarIcons.FLAG_NAME)
