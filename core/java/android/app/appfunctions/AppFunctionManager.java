@@ -23,10 +23,9 @@ import static android.app.appfunctions.AppFunctionException.ERROR_SYSTEM_ERROR;
 import static android.app.appfunctions.AppFunctionManagerHelper.buildCancellationSignal;
 import static android.app.appfunctions.AppFunctionManagerHelper.executionExceptionToErrorCode;
 import static android.app.appfunctions.flags.Flags.FLAG_ENABLE_APP_FUNCTION_MANAGER;
-import static android.app.appfunctions.flags.Flags.FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS;
 import static android.app.appfunctions.flags.Flags.FLAG_ENABLE_APP_FUNCTION_PERMISSION_V2;
+import static android.app.appfunctions.flags.Flags.FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS;
 import static android.permission.flags.Flags.FLAG_APP_FUNCTION_ACCESS_UI_ENABLED;
-import static android.permission.flags.Flags.allowlistServiceEnabled;
 
 import android.Manifest;
 import android.annotation.CallbackExecutor;
@@ -44,7 +43,6 @@ import android.app.appsearch.AppSearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.SignedPackage;
-import android.content.pm.SignedPackageParcel;
 import android.os.Binder;
 import android.os.CancellationSignal;
 import android.os.ICancellationSignal;
@@ -966,22 +964,7 @@ public final class AppFunctionManager {
     @RequiresPermission(MANAGE_APP_FUNCTION_ACCESS)
     @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
     public @NonNull List<SignedPackage> getAgentAllowlist() {
-        try {
-            if (allowlistServiceEnabled()) {
-                List<SignedPackage> packages = mService.getAgentAllowlist();
-                return packages;
-            } else {
-                List<SignedPackageParcel> packageParcels = mService.getAgentAllowlistLegacy();
-                int packageParcelsSize = packageParcels.size();
-                List<SignedPackage> packages = new ArrayList<>(packageParcelsSize);
-                for (int i = 0; i < packageParcelsSize; i++) {
-                    packages.add(new SignedPackage(packageParcels.get(i)));
-                }
-                return packages;
-            }
-        } catch (RemoteException e) {
-            throw e.rethrowFromSystemServer();
-        }
+        return new ArrayList<>();
     }
 
     /**

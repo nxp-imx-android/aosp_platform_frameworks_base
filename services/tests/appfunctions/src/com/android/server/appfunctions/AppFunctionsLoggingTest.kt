@@ -89,11 +89,9 @@ class AppFunctionsLoggingTest {
                 whenever(this.newUriPermissionOwner(any())).thenReturn(mock<IBinder>())
             },
             mAppFunctionsLoggerWrapper,
-            mock<AppFunctionAgentAllowlistStorage>(),
             mock<MultiUserDynamicAppFunctionRegistry>(),
             mock<AppInteractionService>(),
-            MoreExecutors.directExecutor(),
-            mMetadataReader
+            mMetadataReader,
         )
 
     @Before
@@ -372,7 +370,13 @@ class AppFunctionsLoggingTest {
                 TEST_INITIAL_REQUEST_TIME_MILLIS,
                 System.currentTimeMillis(),
             )
-        whenever(mMetadataReader.isDynamicFunction(eq(TEST_TARGET_PACKAGE), eq(TEST_FUNCTION_ID), any()))
+        whenever(
+                mMetadataReader.isDynamicFunction(
+                    eq(TEST_TARGET_PACKAGE),
+                    eq(TEST_FUNCTION_ID),
+                    any(),
+                )
+            )
             .thenReturn(false)
         val safeCallback =
             mServiceImpl.initializeSafeExecuteAppFunctionCallback(
@@ -414,7 +418,13 @@ class AppFunctionsLoggingTest {
                 TEST_INITIAL_REQUEST_TIME_MILLIS,
                 System.currentTimeMillis(),
             )
-        whenever(mMetadataReader.isDynamicFunction(eq(TEST_TARGET_PACKAGE), eq(TEST_FUNCTION_ID), any()))
+        whenever(
+                mMetadataReader.isDynamicFunction(
+                    eq(TEST_TARGET_PACKAGE),
+                    eq(TEST_FUNCTION_ID),
+                    any(),
+                )
+            )
             .thenReturn(true)
         val safeCallback =
             mServiceImpl.initializeSafeExecuteAppFunctionCallback(

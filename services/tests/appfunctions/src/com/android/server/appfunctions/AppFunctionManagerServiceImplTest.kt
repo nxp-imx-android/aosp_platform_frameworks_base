@@ -33,7 +33,6 @@ import com.android.server.LocalServices
 import com.android.server.appinteraction.AppInteractionService
 import com.android.server.uri.UriGrantsManagerInternal
 import com.google.common.truth.Truth.assertThat
-import com.google.common.util.concurrent.MoreExecutors
 import kotlinx.coroutines.test.runTest
 import org.junit.Ignore
 import org.junit.Rule
@@ -61,7 +60,6 @@ class AppFunctionManagerServiceImplTest {
         spy(TestableContext(ApplicationProvider.getApplicationContext(), null))
 
     private val appFunctionAccessService = mock<AppFunctionAccessServiceInterface>()
-    private val agentAllowlistStorage = mock<AppFunctionAgentAllowlistStorage>()
 
     private val dynamicRegistry = mock<MultiUserDynamicAppFunctionRegistry>()
 
@@ -77,10 +75,8 @@ class AppFunctionManagerServiceImplTest {
                 whenever(this.newUriPermissionOwner(any())).thenReturn(mock<IBinder>())
             },
             mock<AppFunctionsLoggerWrapper>(),
-            agentAllowlistStorage,
             dynamicRegistry,
             appInteractionService,
-            MoreExecutors.directExecutor(),
             mock<AppFunctionMetadataReader>(),
         )
 
