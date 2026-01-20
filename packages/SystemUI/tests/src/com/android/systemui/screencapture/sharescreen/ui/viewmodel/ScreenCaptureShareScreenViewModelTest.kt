@@ -38,6 +38,8 @@ import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.mediaprojection.appselector.data.RecentTask
+import com.android.systemui.mediaprojection.data.model.MediaProjectionState
+import com.android.systemui.mediaprojection.data.repository.fakeMediaProjectionRepository
 import com.android.systemui.res.R
 import com.android.systemui.screencapture.common.data.repository.fakeScreenCaptureAppContentRepository
 import com.android.systemui.screencapture.common.data.repository.fakeScreenCaptureRecentTaskRepository
@@ -126,6 +128,9 @@ class ScreenCaptureShareScreenViewModelTest : SysuiTestCase() {
             config = config,
         )
         viewModel.activateIn(kosmos.testScope)
+
+        kosmos.fakeMediaProjectionRepository.mediaProjectionState.value =
+            MediaProjectionState.NotProjecting
     }
 
     @Test
@@ -227,6 +232,13 @@ class ScreenCaptureShareScreenViewModelTest : SysuiTestCase() {
                 .thenAnswer {
                     // Immediately invoke the callback to simulate activity start.
                     it.getArgument<(WaitResult) -> Unit>(3).invoke(WaitResult())
+
+                    kosmos.fakeMediaProjectionRepository.mediaProjectionState.value =
+                        MediaProjectionState.Projecting.SingleTask(
+                            hostPackage = "FakeBasePackage",
+                            hostDeviceName = null,
+                            task = mock(),
+                        )
                     true
                 }
             kosmos.fakeMediaProjectionServiceHelperWrapper // Ensure the fake is initialized.
@@ -277,6 +289,12 @@ class ScreenCaptureShareScreenViewModelTest : SysuiTestCase() {
             kosmos.fakeMediaProjectionServiceHelperWrapper // Ensure the fake is initialized.
 
             viewModel.onShareClicked()
+
+            kosmos.fakeMediaProjectionRepository.mediaProjectionState.value =
+                MediaProjectionState.Projecting.EntireScreen(
+                    hostPackage = "test",
+                    hostDeviceName = null,
+                )
 
             val sharingState by collectLastValue(kosmos.shareScreenUiInteractor.sharingState)
             assertThat(sharingState)
@@ -351,6 +369,13 @@ class ScreenCaptureShareScreenViewModelTest : SysuiTestCase() {
 
             // Act
             viewModel.onShareClicked()
+
+            kosmos.fakeMediaProjectionRepository.mediaProjectionState.value =
+                MediaProjectionState.Projecting.SingleTask(
+                    hostPackage = "FakeBasePackage",
+                    hostDeviceName = null,
+                    task = mock(),
+                )
 
             // Assert
             assertThat(viewModel.isUiVisible).isFalse()

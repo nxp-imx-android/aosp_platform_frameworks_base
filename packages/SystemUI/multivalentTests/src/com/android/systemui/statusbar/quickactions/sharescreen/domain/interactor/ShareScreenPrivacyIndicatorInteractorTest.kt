@@ -20,9 +20,11 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.currentValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
+import com.android.systemui.mediaprojection.data.model.MediaProjectionState
 import com.android.systemui.mediaprojection.data.repository.fakeMediaProjectionRepository
 import com.android.systemui.res.R
 import com.android.systemui.testKosmos
@@ -46,6 +48,8 @@ class ShareScreenPrivacyIndicatorInteractorTest : SysuiTestCase() {
             R.bool.config_largeScreenPrivacyIndicator,
             true,
         )
+        kosmos.fakeMediaProjectionRepository.mediaProjectionState.value =
+            MediaProjectionState.NotProjecting
     }
 
     @Test
@@ -53,31 +57,77 @@ class ShareScreenPrivacyIndicatorInteractorTest : SysuiTestCase() {
         kosmos.runTest { assertThat(currentValue(underTest.isChipVisible)).isFalse() }
 
     @Test
-    fun isChipVisible_showChip_true() =
+    fun isChipVisible_onMediaProjectionStarted_true() =
         kosmos.runTest {
-            underTest.showChip()
-            assertThat(currentValue(underTest.isChipVisible)).isTrue()
+            val isChipVisible by collectLastValue(underTest.isChipVisible)
+            assertThat(isChipVisible).isFalse()
+
+            // Simulate media projection starting.
+            kosmos.fakeMediaProjectionRepository.mediaProjectionState.value =
+                MediaProjectionState.Projecting.EntireScreen(
+                    hostPackage = "test",
+                    hostDeviceName = null,
+                )
+            assertThat(isChipVisible).isTrue()
         }
 
     @Test
-    fun isChipVisible_showAndHide_false() =
+    fun isChipVisible_onMediaProjectionStopped_false() =
         kosmos.runTest {
-            underTest.showChip()
-            assertThat(currentValue(underTest.isChipVisible)).isTrue()
+            // Start with a projecting state
+            kosmos.fakeMediaProjectionRepository.mediaProjectionState.value =
+                MediaProjectionState.Projecting.EntireScreen(
+                    hostPackage = "test",
+                    hostDeviceName = null,
+                )
+            val isChipVisible by collectLastValue(underTest.isChipVisible)
+            assertThat(isChipVisible).isTrue()
 
-            underTest.hideChip()
-            assertThat(currentValue(underTest.isChipVisible)).isFalse()
+            // Simulate media projection stopping.
+            kosmos.fakeMediaProjectionRepository.mediaProjectionState.value =
+                MediaProjectionState.NotProjecting
+            assertThat(isChipVisible).isFalse()
+        }
+
+    @Test
+    fun isChipVisible_largeScreenFlagFalse_alwaysFalse() =
+        kosmos.runTest {
+            mContext.orCreateTestableResources.addOverride(
+                R.bool.config_largeScreenPrivacyIndicator,
+                false,
+            )
+            val isChipVisible by collectLastValue(underTest.isChipVisible)
+            assertThat(isChipVisible).isFalse()
+
+            // Simulate media projection starting.
+            kosmos.fakeMediaProjectionRepository.mediaProjectionState.value =
+                MediaProjectionState.Projecting.EntireScreen(
+                    hostPackage = "test",
+                    hostDeviceName = null,
+                )
+            // Chip should still be invisible.
+            assertThat(isChipVisible).isFalse()
         }
 
     @Test
     fun stopShare_hidesChipAndStopsProjection() =
         kosmos.runTest {
-            underTest.showChip()
-            assertThat(currentValue(underTest.isChipVisible)).isTrue()
+            kosmos.fakeMediaProjectionRepository.mediaProjectionState.value =
+                MediaProjectionState.Projecting.EntireScreen(
+                    hostPackage = "test",
+                    hostDeviceName = null,
+                )
+            val isChipVisible by collectLastValue(underTest.isChipVisible)
+            assertThat(isChipVisible).isTrue()
 
             underTest.stopShare()
 
-            assertThat(currentValue(underTest.isChipVisible)).isFalse()
+            // Stopping projection is not synchronous, so we need to manually update the state
+            // in the fake repository to simulate the projection ending.
+            kosmos.fakeMediaProjectionRepository.mediaProjectionState.value =
+                MediaProjectionState.NotProjecting
+
             assertThat(kosmos.fakeMediaProjectionRepository.stopProjectingInvoked).isTrue()
+            assertThat(isChipVisible).isFalse()
         }
 }
