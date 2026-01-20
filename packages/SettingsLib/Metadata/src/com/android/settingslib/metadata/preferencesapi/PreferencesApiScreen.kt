@@ -17,6 +17,7 @@
 package com.android.settingslib.metadata.preferencesapi
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import androidx.annotation.StringRes
 import androidx.fragment.app.Fragment
@@ -25,6 +26,7 @@ import com.android.settingslib.datastore.and
 import com.android.settingslib.datastore.or
 import com.android.settingslib.metadata.KeyParametersSchema
 import com.android.settingslib.metadata.PreferenceHierarchy
+import com.android.settingslib.metadata.PreferenceMetadata
 import com.android.settingslib.metadata.PreferenceScreenMetadata
 import com.android.settingslib.metadata.preferencesapi.Utils.getExceptionMessageMultipleDefines
 import com.android.settingslib.metadata.preferencesapi.Utils.getExceptionMessageWrongOrder
@@ -32,13 +34,15 @@ import com.android.settingslib.metadata.preferencesapi.category.Category
 import com.android.settingslib.metadata.ValidatedKeyParameters
 import com.android.settingslib.metadata.preferencesapi.Utils.EXCEPTION_MESSAGE_NO_PARAMETER_DEFINED
 import com.android.settingslib.metadata.preferencesapi.Utils.getExceptionMessageMultipleParametersDefined
+import com.android.settingslib.metadata.preferencesapi.preconditions.Allowed
 import com.android.settingslib.metadata.preferencesapi.preconditions.ApiPreconditions
 import com.android.settingslib.metadata.preferencesapi.types.ApiType
-import com.android.settingslib.metadata.preferenceHierarchy
 import com.android.settingslib.metadata.preferencesapi.types.FiniteOptionsType
+import com.android.settingslib.metadata.preferenceHierarchy
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.runBlocking
 import kotlin.collections.mutableListOf
 import kotlin.reflect.KClass
 
@@ -141,6 +145,23 @@ abstract class PreferencesApiScreen(
                 }
             }
         }
+
+    override fun getLaunchIntent(context: Context, metadata: PreferenceMetadata?): Intent? {
+        val opContext = ApiOperationContext(
+            context = context,
+            parameters = keyParameters ?: ValidatedKeyParameters.EMPTY,
+        )
+
+        // TODO(b/469317113): This should run asynchronously
+        val checkScreenPreconditions =
+            runBlocking { screenPreconditions?.check(opContext) } ?: Allowed
+
+        if (checkScreenPreconditions != Allowed) {
+            return null
+        }
+
+        return super.getLaunchIntent(context, metadata)
+    }
 
     var flag: FlagConfig? = null
     var parametersSchema: KeyParametersSchema? = null
