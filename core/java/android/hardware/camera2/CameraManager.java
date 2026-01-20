@@ -365,7 +365,7 @@ public final class CameraManager {
      * part of a logical multi-camera device.</p>
      *
      * <p> If a new camera id becomes available through
-     * {@link AvailabilityCallback#onCameraUnavailable(String)}, clients can call
+     * {@link AvailabilityCallback#onCameraAvailable(String)}, clients can call
      * this method to check if new combinations of camera ids which can stream concurrently are
      * available.
      *
