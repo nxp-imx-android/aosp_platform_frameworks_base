@@ -22,6 +22,7 @@ import com.android.window.flags.Flags;
 import com.android.wm.shell.dagger.WMSingleton;
 import com.android.wm.shell.desktopai.api.config.ITriggerManager;
 import com.android.wm.shell.desktopai.api.config.ITriggerSource;
+import com.android.wm.shell.desktopai.core.DesktopAiOrchestrator;
 import com.android.wm.shell.desktopai.core.OverviewTriggerSource;
 import com.android.wm.shell.desktopai.core.TriggerManager;
 import com.android.wm.shell.sysui.ShellController;
@@ -67,4 +68,10 @@ public class DesktopAIModule {
         return Optional.empty();
     }
 
+    @WMSingleton
+    @Provides
+    static DesktopAiOrchestrator provideDesktopAIOrchestrator(
+            @NonNull ITriggerManager triggerManager) {
+        return new DesktopAiOrchestrator(triggerManager);
+    }
 }
