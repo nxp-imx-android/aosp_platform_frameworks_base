@@ -18,6 +18,7 @@ package com.android.server.usb;
 
 import android.annotation.RequiresNoPermission;
 import android.annotation.UserIdInt;
+import android.annotation.WorkerThread;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -35,6 +36,7 @@ import android.hardware.usb.UsbAuthorizationStatus;
 import android.hardware.usb.UsbAuthorizationSystemState;
 import android.hardware.usb.UsbDevice;
 import android.os.Binder;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
@@ -45,16 +47,31 @@ import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.ArrayMap;
 import android.util.ArraySet;
+import android.util.AtomicFile;
 import android.util.Slog;
 import android.util.SparseBooleanArray;
+import android.util.Xml;
 
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.messages.nano.SystemMessageProto.SystemMessage;
 import com.android.internal.os.BackgroundThread;
+import com.android.internal.util.XmlUtils;
+import com.android.modules.utils.TypedXmlPullParser;
+import com.android.modules.utils.TypedXmlSerializer;
 import com.android.server.FgThread;
+import com.android.server.IoThread;
 import com.android.server.SystemServerInitThreadPool;
+
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 public class UsbAuthManager implements IBinder.DeathRecipient {
     private static final String TAG = "UsbAuthManager";
@@ -73,6 +90,9 @@ public class UsbAuthManager implements IBinder.DeathRecipient {
     // Broadcast sent when auth notifications are dismissed.
     static final String ACTION_NOTIFICATION_DISMISSED =
             "com.android.server.usb.ACTION_NOTIFICATION_DISMISSED";
+
+    // Root XML tag for persisted USB device fingerprints.
+    private static final String XML_ROOT_NAME = "persisted-fingerprints";
 
     @GuardedBy("mLock")
     private @UserIdInt int mCurrentUserId;
@@ -142,6 +162,17 @@ public class UsbAuthManager implements IBinder.DeathRecipient {
     // Set of devices that are waiting to check for persisted devices.
     @GuardedBy("mLock")
     private ArrayMap<String, UsbAuthDeviceInfo> mPendingAllowPersistedDevices = new ArrayMap<>();
+
+    // File containing persisted device fingerprints.
+    private final AtomicFile mPersistedDevicesFile;
+
+    // Currently writing persisted devices to file?
+    @GuardedBy("mLock")
+    private boolean mIsWritePersistedScheduled = false;
+
+    // Have we finished reading persisted file from disk?
+    @GuardedBy("mLock")
+    private boolean mIsReadPersistedDevicesComplete = false;
 
     private final Object mLock = new Object();
 
@@ -251,6 +282,10 @@ public class UsbAuthManager implements IBinder.DeathRecipient {
         mAuthEventsListener = new UsbAuthEventsListener();
         mDeviceProvisionedListener = new ProvisioningListener(context, this);
         mTimerHandler = BackgroundThread.getHandler();
+        mPersistedDevicesFile = new AtomicFile(new File(
+                Environment.getDataSystemDeDirectory(UserHandle.USER_SYSTEM),
+                "usb_auth_persisted_devices.xml"), "usb-auth-persisted-devices");
+        readPersisted();
         listenForService();
     }
 
@@ -261,13 +296,16 @@ public class UsbAuthManager implements IBinder.DeathRecipient {
             UsbHostManager hostManager,
             IUsbAuthManager service,
             ProvisioningListener deviceProvisionedListener,
-            Handler timerHandler) {
+            Handler timerHandler,
+            AtomicFile persistedDevicesFile) {
         mHostManager = hostManager;
         mUserManager = userManager;
         mContext = context;
         mAuthEventsListener = new UsbAuthEventsListener();
         mDeviceProvisionedListener = deviceProvisionedListener;
         mTimerHandler = timerHandler;
+        mPersistedDevicesFile = persistedDevicesFile;
+        readPersisted();
         setAndLinkService(service);
     }
 
@@ -557,6 +595,9 @@ public class UsbAuthManager implements IBinder.DeathRecipient {
         UsbDeviceFingerprint fingerprint =
                 mHostManager.getConnectedDeviceFingerprintForAddress(deviceAddress);
 
+        // Wait for iothread to finish reading persisted devices data.
+        waitForPersistedDeviceData();
+
         synchronized (mLock) {
             if (!mPendingAllowPersistedDevices.containsKey(deviceAddress)) {
                 return;
@@ -588,6 +629,9 @@ public class UsbAuthManager implements IBinder.DeathRecipient {
         UsbDeviceFingerprint fingerprint =
                 mHostManager.getConnectedDeviceFingerprintForAddress(deviceAddress);
         UsbDevice device = mHostManager.getConnectedDeviceForAddress(deviceAddress);
+
+        // Wait for iothread to finish reading persisted devices data.
+        waitForPersistedDeviceData();
 
         synchronized (mLock) {
             if (!mPendingAskDevices.containsKey(deviceAddress)) {
@@ -890,7 +934,12 @@ public class UsbAuthManager implements IBinder.DeathRecipient {
         }
 
         synchronized (mLock) {
+            int prevSize = mPersistedAuthorizedDevices.size();
             mPersistedAuthorizedDevices.addAll(fingerprintsToPersist);
+
+            if (mPersistedAuthorizedDevices.size() > prevSize) {
+                scheduleWritePersistedLocked();
+            }
         }
     }
 
@@ -931,7 +980,9 @@ public class UsbAuthManager implements IBinder.DeathRecipient {
                         mPersistAfterLogin.add(deviceAddress);
                         notifyDelayedPersistence = true;
                     } else {
-                        mPersistedAuthorizedDevices.add(fingerprint);
+                        if (mPersistedAuthorizedDevices.add(fingerprint)) {
+                            scheduleWritePersistedLocked();
+                        }
                     }
                 }
             }
@@ -1086,5 +1137,149 @@ public class UsbAuthManager implements IBinder.DeathRecipient {
                 checkScreenLockedThenNotify(deviceAddress);
             }
         }
+    }
+
+    @WorkerThread
+    void waitForPersistedDeviceData() {
+        synchronized (mLock) {
+            while (!mIsReadPersistedDevicesComplete) {
+                try {
+                    mLock.wait();
+                } catch (InterruptedException unused) {
+                }
+            }
+        }
+    }
+
+    // Read from given parser. This is not thread-safe so make sure the parser is protected if
+    // calling from multiple threads.
+    ArraySet<UsbDeviceFingerprint> readFromParser(TypedXmlPullParser parser)
+            throws XmlPullParserException, IOException {
+        // Skip the initial document tag
+        XmlUtils.nextElement(parser);
+
+        if (parser.getEventType() != XmlPullParser.START_TAG) {
+            throw new XmlPullParserException("No start tag found");
+        }
+
+        if (!XML_ROOT_NAME.equals(parser.getName())) {
+            throw new XmlPullParserException("Unexpected root tag: " + parser.getName());
+        }
+
+        ArraySet<UsbDeviceFingerprint> fingerprints = new ArraySet<>();
+
+        int outerDepth = parser.getDepth();
+        XmlUtils.nextElementWithin(parser, outerDepth);
+
+        while (parser.getEventType() != XmlPullParser.END_DOCUMENT) {
+            if (parser.getEventType() != XmlPullParser.START_TAG) {
+                XmlUtils.nextElementWithin(parser, outerDepth);
+                continue;
+            }
+
+            if (!parser.getName().equals(UsbDeviceFingerprint.XML_ROOT_NAME)) {
+                XmlUtils.nextElementWithin(parser, outerDepth);
+                continue;
+            }
+
+            UsbDeviceFingerprint fingerprint = UsbDeviceFingerprint.read(parser);
+            if (fingerprint != null) {
+                fingerprints.add(fingerprint);
+            } else {
+                Slog.e(TAG, "Error reading fingerprint on tag " + parser.getName());
+            }
+        }
+
+        return fingerprints;
+    }
+
+    // Mark reading as incomplete and push reading of file + unblocking readers to iothread.
+    void readPersisted() {
+        synchronized (mLock) {
+            mIsReadPersistedDevicesComplete = false;
+        }
+
+        IoThread.getHandler()
+                .post(
+                        () -> {
+                            ArraySet<UsbDeviceFingerprint> readFingerprints = new ArraySet<>();
+                            try {
+                                synchronized (mPersistedDevicesFile) {
+                                    try (FileInputStream in = mPersistedDevicesFile.openRead()) {
+                                        TypedXmlPullParser parser = Xml.resolvePullParser(in);
+                                        readFingerprints = readFromParser(parser);
+                                    } catch (FileNotFoundException e) {
+                                        Slog.d(TAG, "Persisted devices file not found");
+                                    } catch (XmlPullParserException | IOException e) {
+                                        Slog.e(
+                                                TAG,
+                                                "Error reading persisted device file. Deleting to"
+                                                    + " start fresh.",
+                                                e);
+                                        mPersistedDevicesFile.delete();
+                                    }
+                                }
+                            } finally {
+                                // Store read fingerprints and unblock any waiting threads.
+                                synchronized (mLock) {
+                                    mPersistedAuthorizedDevices = readFingerprints;
+                                    mIsReadPersistedDevicesComplete = true;
+                                    mLock.notifyAll();
+                                }
+                            }
+                        });
+    }
+
+    // Write to given serializer. This is not thread-safe so make sure the serializer is protected
+    // if calling from multiple threads.
+    void writeToSerializer(TypedXmlSerializer serializer, UsbDeviceFingerprint[] fingerprints)
+            throws IOException {
+        serializer.startDocument(null, true);
+        serializer.startTag(null, XML_ROOT_NAME);
+
+        if (fingerprints != null) {
+            for (UsbDeviceFingerprint fp : fingerprints) {
+                fp.write(serializer);
+            }
+        }
+
+        serializer.endTag(null, XML_ROOT_NAME);
+        serializer.endDocument();
+    }
+
+    @GuardedBy("mLock")
+    void scheduleWritePersistedLocked() {
+        if (mIsWritePersistedScheduled) {
+            return;
+        }
+
+        mIsWritePersistedScheduled = true;
+        IoThread.getHandler()
+                .post(
+                        () -> {
+                            UsbDeviceFingerprint[] fingerprints;
+
+                            // Make a copy of fingerprints.
+                            synchronized (mLock) {
+                                fingerprints =
+                                        mPersistedAuthorizedDevices.toArray(
+                                                new UsbDeviceFingerprint[0]);
+                                mIsWritePersistedScheduled = false;
+                            }
+
+                            // Create xml serializer and write to file.
+                            synchronized (mPersistedDevicesFile) {
+                                FileOutputStream out = null;
+                                try {
+                                    out = mPersistedDevicesFile.startWrite();
+                                    TypedXmlSerializer serializer = Xml.resolveSerializer(out);
+                                    writeToSerializer(serializer, fingerprints);
+                                    mPersistedDevicesFile.finishWrite(out);
+                                } catch (IOException e) {
+                                    Slog.e(TAG, "Failed to write persisted devices", e);
+                                    mPersistedDevicesFile.failWrite(out);
+                                }
+                            }
+                        });
     }
 }

@@ -55,12 +55,17 @@ import android.os.UserManager;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.util.ArrayMap;
+import android.util.ArraySet;
+import android.util.AtomicFile;
+import android.util.Xml;
 
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.runner.AndroidJUnit4;
 
 import com.android.internal.R;
 import com.android.internal.messages.nano.SystemMessageProto.SystemMessage;
+import com.android.modules.utils.TypedXmlPullParser;
+import com.android.modules.utils.TypedXmlSerializer;
 import com.android.server.LocalServices;
 import com.android.server.usb.flags.Flags;
 
@@ -68,12 +73,17 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 /** Tests for {@link com.android.server.usb.UsbAuthManager} atest UsbTests:UsbAuthManagerTest */
@@ -81,6 +91,8 @@ import java.util.Base64;
 @EnableFlags({Flags.FLAG_ENABLE_USB_HOST_AUTHORIZATION})
 public class UsbAuthManagerTest {
     @Rule public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
+    @Rule public TemporaryFolder mTempFolder = new TemporaryFolder();
+
     private Context mContext;
     @Mock private UserManager mUserManager;
     @Mock private IUsbAuthManager mService;
@@ -92,6 +104,7 @@ public class UsbAuthManagerTest {
     private ArgumentCaptor<BroadcastReceiver> mDismissNotificationCaptor =
             ArgumentCaptor.forClass(BroadcastReceiver.class);
     private ArgumentCaptor<Runnable> mTimeoutCaptor = ArgumentCaptor.forClass(Runnable.class);
+    private AtomicFile mAtomicFile;
 
     private UsbAuthManager mUsbAuthManager;
 
@@ -226,6 +239,7 @@ public class UsbAuthManagerTest {
         mDeviceProvisionedListener = spy(new UsbAuthManager.ProvisioningListener(mContext, null));
         doReturn(false).when(mDeviceProvisionedListener).isDeviceInSetup();
 
+        mAtomicFile = new AtomicFile(mTempFolder.newFile("usb-auth-persisted-files.xml"));
         mUsbAuthManager =
                 new UsbAuthManager(
                         mContext,
@@ -233,7 +247,8 @@ public class UsbAuthManagerTest {
                         mHostManager,
                         mService,
                         mDeviceProvisionedListener,
-                        mHandler);
+                        mHandler,
+                        mAtomicFile);
         mDeviceProvisionedListener.setAuthManager(mUsbAuthManager);
         mUsbAuthManager.systemReady();
     }
@@ -787,5 +802,65 @@ public class UsbAuthManagerTest {
                         any(),
                         eq(SystemMessage.NOTE_USB_AUTH_SCREEN_LOCKED_REMINDER),
                         eq(UserHandle.ALL));
+    }
+
+    @Test
+    public void testSerialization_writeAndReadback() throws Exception {
+        TestData fake0 = mTestData.get(FAKE0);
+        TestData fake1 = mTestData.get(FAKE1);
+
+        ArraySet<UsbDeviceFingerprint> fingerprints = new ArraySet<>();
+        fingerprints.add(fake0.fingerprint);
+        fingerprints.add(fake1.fingerprint);
+
+        UsbDeviceFingerprint[] fpArray = fingerprints.toArray(new UsbDeviceFingerprint[0]);
+
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        TypedXmlSerializer serializer = Xml.resolveSerializer(stream);
+        mUsbAuthManager.writeToSerializer(serializer, fpArray);
+
+        // Read back the stream.
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(stream.toByteArray());
+        TypedXmlPullParser parser = Xml.resolvePullParser(inputStream);
+
+        ArraySet<UsbDeviceFingerprint> readFingerprints = mUsbAuthManager.readFromParser(parser);
+
+        assertEquals(fingerprints.size(), readFingerprints.size());
+        assertTrue(readFingerprints.contains(fake0.fingerprint));
+        assertTrue(readFingerprints.contains(fake1.fingerprint));
+    }
+
+    @Test
+    public void testReadPersisted_badOrNoFile_clearsAndStartsEmpty() throws Exception {
+        TestData fake0 = mTestData.get(FAKE0);
+        TestData fake1 = mTestData.get(FAKE1);
+
+        // Add some fingerprints so that we don't start empty.
+        mUsbAuthManager.addFingerprintToPersistedForTest(fake0.fingerprint);
+        mUsbAuthManager.addFingerprintToPersistedForTest(fake1.fingerprint);
+        assertEquals(2, mUsbAuthManager.getPersistedFingerprintsCopyForTesting().size());
+
+        // Force a read of the bad XML and confirm that there are no persisted devices.
+        String badXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
+
+        FileOutputStream out = mAtomicFile.startWrite();
+        out.write(badXml.getBytes(StandardCharsets.UTF_8));
+        mAtomicFile.finishWrite(out);
+
+        // Read persisted data and confirm that the persisted devices list is cleared.
+        mUsbAuthManager.readPersisted();
+        mUsbAuthManager.waitForPersistedDeviceData();
+        assertEquals(0, mUsbAuthManager.getPersistedFingerprintsCopyForTesting().size());
+
+        // Reset the fingerprints again
+        mUsbAuthManager.addFingerprintToPersistedForTest(fake0.fingerprint);
+        mUsbAuthManager.addFingerprintToPersistedForTest(fake1.fingerprint);
+        assertEquals(2, mUsbAuthManager.getPersistedFingerprintsCopyForTesting().size());
+
+        // Delete the atomic file and reload.
+        mAtomicFile.delete();
+        mUsbAuthManager.readPersisted();
+        mUsbAuthManager.waitForPersistedDeviceData();
+        assertEquals(0, mUsbAuthManager.getPersistedFingerprintsCopyForTesting().size());
     }
 }
