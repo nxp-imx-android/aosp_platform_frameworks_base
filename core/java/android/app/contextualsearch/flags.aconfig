@@ -64,3 +64,10 @@ flag {
     description: "This flags a feature for enabling or disabling AssistStructure fetching through setUiHints"
     bug: "420404310"
 }
+
+flag {
+    name: "on_demand_screenshot_and_assist_state"
+    namespace: "sysui_integrations"
+    description: "Allow the Circle to Search companion to request and receive fresh screenshot and assist state."
+    bug: "474429707"
+}
