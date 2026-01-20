@@ -17,6 +17,7 @@
 package android.media;
 
 import static android.media.AudioManager.AUDIO_SESSION_ID_GENERATE;
+import static android.media.audiopolicy.Flags.multiZoneAudio;
 import static android.media.audio.Flags.FLAG_CODEC_PROVENANCE_API;
 import static android.media.audio.Flags.FLAG_ROUTED_DEVICE_IDS;
 import static android.media.audio.Flags.FLAG_PARTIAL_FLUSH_FOR_PCM_OFFLOAD;
@@ -1516,10 +1517,22 @@ public class AudioTrack extends PlayerBase
                     throw new UnsupportedOperationException(
                             "Offload and low latency modes are incompatible");
                 }
-                if (AudioSystem.getDirectPlaybackSupport(mFormat, mAttributes)
-                        == AudioSystem.DIRECT_NOT_SUPPORTED) {
-                    throw new UnsupportedOperationException(
-                            "Cannot create AudioTrack, offload format / attributes not supported");
+                if (multiZoneAudio()) {
+                    AttributionSource attributionSource = mContext == null
+                            ? AttributionSource.myAttributionSource() :
+                            mContext.getAttributionSource();
+
+                    if (AudioSystem.getDirectPlaybackSupport(mFormat, mAttributes,
+                            attributionSource.getUid()) == AudioSystem.DIRECT_NOT_SUPPORTED) {
+                        throw new UnsupportedOperationException("Cannot create AudioTrack, "
+                                + "offload format / attributes not supported");
+                    }
+                } else {
+                    if (AudioSystem.getDirectPlaybackSupport(mFormat, mAttributes)
+                            == AudioSystem.DIRECT_NOT_SUPPORTED) {
+                        throw new UnsupportedOperationException("Cannot create AudioTrack, "
+                                + "offload format / attributes not supported");
+                    }
                 }
             }
 
@@ -1999,7 +2012,8 @@ public class AudioTrack extends PlayerBase
                             || channelIndexCount <= AudioSystem.OUT_CHANNEL_COUNT_MAX); // PCM
             if (!accepted) {
                 throw new IllegalArgumentException(
-                        "Unsupported channel index mask configuration " + channelIndexMask
+                        "Unsupported channel index mask configuration "
+                        + channelIndexMask
                         + " for encoding " + audioFormat);
             }
         }

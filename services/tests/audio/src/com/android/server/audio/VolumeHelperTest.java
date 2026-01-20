@@ -83,9 +83,12 @@ import android.media.IDeviceVolumeBehaviorDispatcher;
 import android.media.VolumeInfo;
 import android.media.audiopolicy.AudioVolumeGroup;
 import android.media.audiopolicy.Flags;
+import android.os.Binder;
 import android.os.IpcDataCache;
 import android.os.Looper;
 import android.os.PermissionEnforcer;
+import android.os.Process;
+import android.os.UserHandle;
 import android.os.test.TestLooper;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
@@ -173,6 +176,7 @@ public class VolumeHelperTest {
 
     private static class MyAudioService extends AudioService {
         private final SparseIntArray mStreamDevice = new SparseIntArray();
+        private final SparseIntArray mGroupDevice = new SparseIntArray();
 
         MyAudioService(Context context, AudioSystemAdapter audioSystem,
                 SystemServerAdapter systemServer, SettingsAdapter settings,
@@ -188,12 +192,24 @@ public class VolumeHelperTest {
             mStreamDevice.put(stream, device);
         }
 
+        private void setDeviceForVolumeGroup(int group, int device) {
+            mGroupDevice.put(group, device);
+        }
+
         @Override
         public int getDeviceForStream(int stream, boolean selectAbsoluteDevices) {
             if (mStreamDevice.indexOfKey(stream) < 0) {
                 return DEVICE_OUT_SPEAKER;
             }
             return mStreamDevice.get(stream);
+        }
+
+        @Override
+        public int getDeviceForVolumeGroupId(int group) {
+            if (mGroupDevice.indexOfKey(group) < 0) {
+                return DEVICE_OUT_SPEAKER;
+            }
+            return mGroupDevice.get(group);
         }
 
         @Override
@@ -242,7 +258,14 @@ public class VolumeHelperTest {
         mContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
         mTestLooper = new TestLooper();
 
-        mSpyAudioSystem = spy(new NoOpAudioSystemAdapter());
+        var audioManager = mContext.getSystemService(AudioManager.class);
+        var productStrategies = audioManager.getAudioProductStrategies();
+        var noOpAudioSystem = new NoOpAudioSystemAdapter();
+        noOpAudioSystem.configureAudioProductStrategies(productStrategies);
+        noOpAudioSystem.configureMinMaxVolumeGroupValues(
+                AudioTestUtils.getMinGroupValues(productStrategies, audioManager),
+                AudioTestUtils.getMaxGroupValues(productStrategies, audioManager));
+        mSpyAudioSystem = spy(noOpAudioSystem);
         mSettingsAdapter = new NoOpSettingsAdapter();
 
         mAudioMusicVolumeGroup = getStreamTypeVolumeGroup(STREAM_MUSIC);
@@ -398,7 +421,7 @@ public class VolumeHelperTest {
     }
 
     // --------------- Volume Group APIs ---------------
-    @DisableFlags(Flags.FLAG_VOLUME_GROUP_MANAGEMENT_UPDATE)
+    @DisableFlags({Flags.FLAG_VOLUME_GROUP_MANAGEMENT_UPDATE, Flags.FLAG_MULTI_ZONE_AUDIO})
     @Test
     public void setVolumeGroupVolumeIndex_callsASSetVolumeIndexForAttributes() throws Exception {
         assumeFalse(
@@ -417,8 +440,10 @@ public class VolumeHelperTest {
     }
 
     @EnableFlags(Flags.FLAG_VOLUME_GROUP_MANAGEMENT_UPDATE)
+    @DisableFlags({Flags.FLAG_MULTI_ZONE_AUDIO})
     @Test
-    public void setVolumeGroupVolumeIndex_callsASSetVolumeIndexForGroup() throws Exception {
+    public void setVolumeGroupVolumeIndex_callsASSetVolumeIndexForGroup_withNoZone()
+            throws Exception {
         assumeFalse(
                 "Skipping setVolumeGroupVolumeIndex_callsASSetVolumeIndexForAttributes on "
                         + "automotive", mIsAutomotive);
@@ -430,8 +455,30 @@ public class VolumeHelperTest {
                 mContext.getOpPackageName(), /*attributionTag*/null);
         mTestLooper.dispatchAll();
 
-        verify(mSpyAudioSystem).setVolumeIndexForGroup(eq(mAudioMusicVolumeGroup.getId()), anyInt(),
-                eq(false), eq(DEVICE_OUT_USB_DEVICE));
+        verify(mSpyAudioSystem).setVolumeIndexForGroup(eq(mAudioMusicVolumeGroup.getId()),
+                eq(0), anyInt(), eq(false), eq(DEVICE_OUT_USB_DEVICE));
+    }
+
+
+    @EnableFlags({Flags.FLAG_VOLUME_GROUP_MANAGEMENT_UPDATE, Flags.FLAG_MULTI_ZONE_AUDIO})
+    @Test
+    public void setVolumeGroupVolumeIndex_callsASSetVolumeIndexForGroup_withUserIdMapping()
+            throws Exception {
+        assumeFalse("Skipping setVolumeGroupVolumeIndex_callsASSetVolumeIndexForAttributes on "
+                + "automotive", mIsAutomotive);
+        assumeNotNull(mAudioMusicVolumeGroup);
+
+        mAudioService.setDeviceForVolumeGroup(mAudioMusicVolumeGroup.getId(),
+                DEVICE_OUT_USB_DEVICE);
+        mAudioService.setVolumeGroupVolumeIndex(mAudioMusicVolumeGroup.getId(),
+                circularNoMinMaxIncrementVolume(STREAM_MUSIC), /*flags=*/0,
+                mContext.getOpPackageName(), /*attributionTag*/null);
+        mTestLooper.dispatchAll();
+
+        int userId = UserHandle.getUserId(Binder.getCallingUid());
+        int uid = UserHandle.getUid(userId, Process.ROOT_UID);
+        verify(mSpyAudioSystem).setVolumeIndexForGroup(eq(mAudioMusicVolumeGroup.getId()),
+                eq(uid), anyInt(), eq(false), eq(DEVICE_OUT_USB_DEVICE));
     }
 
     @Test

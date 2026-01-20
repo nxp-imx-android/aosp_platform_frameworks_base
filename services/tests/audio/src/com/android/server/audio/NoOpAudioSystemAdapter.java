@@ -16,12 +16,16 @@
 
 package com.android.server.audio;
 
+import static android.media.audiopolicy.AudioProductStrategy.DEFAULT_ZONE_ID;
+
 import android.annotation.NonNull;
 import android.media.AudioAttributes;
 import android.media.AudioDeviceAttributes;
+import android.media.AudioMixerAttributes;
 import android.media.AudioSystem;
 import android.media.audiopolicy.AudioProductStrategy;
 import android.util.Log;
+import android.util.SparseIntArray;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -37,6 +41,9 @@ public class NoOpAudioSystemAdapter extends AudioSystemAdapter {
     private boolean mMuteMicrophoneFails = false;
     private boolean mIsStreamActive = false;
     private List<AudioProductStrategy> mAudioProductStrategies = Collections.emptyList();
+    private boolean mFailOnUserSetProductStrategiesMapping = false;
+    private SparseIntArray mMinVolumeGroupValues = new SparseIntArray();
+    private SparseIntArray mMaxVolumeGroupValues = new SparseIntArray();
 
     public void configureIsMicrophoneMuted(boolean muted) {
         mIsMicMuted = muted;
@@ -57,6 +64,18 @@ public class NoOpAudioSystemAdapter extends AudioSystemAdapter {
      */
     public void configureAudioProductStrategies(List<AudioProductStrategy> strategies) {
         mAudioProductStrategies = strategies;
+    }
+
+    /**
+     * Configure the min and max volume group values.
+     *
+     * @param minValues the min volume group values
+     * @param maxValues the max volume group values
+     */
+    public void configureMinMaxVolumeGroupValues(SparseIntArray minValues,
+            SparseIntArray maxValues) {
+        mMinVolumeGroupValues = minValues;
+        mMaxVolumeGroupValues = maxValues;
     }
 
     //-----------------------------------------------------------------
@@ -155,18 +174,13 @@ public class NoOpAudioSystemAdapter extends AudioSystemAdapter {
     }
 
     @Override
-    public int setVolumeIndexForGroup(int groupId, int index, boolean muted, int device) {
-        return AudioSystem.AUDIO_STATUS_OK;
-    }
-
-    @Override
     public int getVolumeIndexForGroup(int groupId, int device) {
         return AudioSystem.AUDIO_STATUS_OK;
     }
 
     @Override
     public int getMinVolumeIndexForGroup(int groupId) {
-        return AudioSystem.AUDIO_STATUS_OK;
+        return mMinVolumeGroupValues.get(groupId, AudioSystem.AUDIO_STATUS_OK);
     }
 
     @Override
@@ -176,11 +190,16 @@ public class NoOpAudioSystemAdapter extends AudioSystemAdapter {
 
     @Override
     public int getMaxVolumeIndexForGroup(int groupId) {
-        return AudioSystem.AUDIO_STATUS_OK;
+        return mMaxVolumeGroupValues.get(groupId, AudioSystem.AUDIO_STATUS_OK);
     }
 
     @Override
     public int setMaxVolumeIndexForGroup(int groupId, int index) {
+        return AudioSystem.AUDIO_STATUS_OK;
+    }
+
+    @Override
+    public int setVolumeIndexForGroup(int groupId, int uid, int index, boolean muted, int device) {
         return AudioSystem.AUDIO_STATUS_OK;
     }
 
@@ -199,5 +218,36 @@ public class NoOpAudioSystemAdapter extends AudioSystemAdapter {
     @Override
     public List<AudioProductStrategy> getAudioProductStrategies(boolean filterInternal) {
         return mAudioProductStrategies;
+    }
+
+    @Override
+    public int setProductStrategiesZoneIdForUserId(int userId, int zoneId) {
+        return mFailOnUserSetProductStrategiesMapping
+                ? AudioSystem.AUDIO_STATUS_ERROR : AudioSystem.AUDIO_STATUS_OK;
+    }
+
+    @Override
+    public int resetProductStrategiesZoneIdForUserId(int userId) {
+        return AudioSystem.AUDIO_STATUS_OK;
+    }
+
+    /**
+     * Configures this adapter to fail when calling
+     * {@link #setProductStrategiesZoneIdForUserId(int, int)}.
+     * @param fail true to fail, false otherwise
+     */
+    public void configureFailOnSetProductStrategiesZoneIdForUserId(boolean fail) {
+        mFailOnUserSetProductStrategiesMapping = fail;
+    }
+
+    @Override
+    public int getZoneIdForAudioVolumeGroupId(int groupId) {
+        return DEFAULT_ZONE_ID;
+    }
+
+    @Override
+    public int getPreferredMixerAttributes(AudioAttributes attributes, int portId, int uid,
+            List<AudioMixerAttributes> mixerAttrList) {
+        return AudioSystem.AUDIO_STATUS_OK;
     }
 }
