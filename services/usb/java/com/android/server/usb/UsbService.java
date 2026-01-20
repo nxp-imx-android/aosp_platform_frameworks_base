@@ -730,7 +730,10 @@ public class UsbService extends IUsbManager.Stub {
 
         final long token = Binder.clearCallingIdentity();
         try {
-            return getPermissionsForUser(userId).hasPermission(device, packageName, pid, uid);
+            UsbDeviceFingerprint fingerprint =
+                    getConnectedDeviceFingerprintForAddress(device.getDeviceName());
+            return getPermissionsForUser(userId)
+                    .hasPermission(device, fingerprint, packageName, pid, uid);
         } finally {
             Binder.restoreCallingIdentity(token);
         }
@@ -743,7 +746,10 @@ public class UsbService extends IUsbManager.Stub {
         hasDevicePermissionWithIdentity_enforcePermission();
 
         final int userId = UserHandle.getUserId(uid);
-        return getPermissionsForUser(userId).hasPermission(device, packageName, pid, uid);
+        UsbDeviceFingerprint fingerprint =
+                getConnectedDeviceFingerprintForAddress(device.getDeviceName());
+        return getPermissionsForUser(userId)
+                .hasPermission(device, fingerprint, packageName, pid, uid);
     }
 
     @Override
@@ -778,7 +784,10 @@ public class UsbService extends IUsbManager.Stub {
 
         final long token = Binder.clearCallingIdentity();
         try {
-            getPermissionsForUser(userId).requestPermission(device, packageName, pi, pid, uid);
+            UsbDeviceFingerprint fingerprint =
+                    getConnectedDeviceFingerprintForAddress(device.getDeviceName());
+            getPermissionsForUser(userId)
+                    .requestPermission(device, fingerprint, packageName, pi, pid, uid);
         } finally {
             Binder.restoreCallingIdentity(token);
         }
@@ -808,8 +817,10 @@ public class UsbService extends IUsbManager.Stub {
 
         final long token = Binder.clearCallingIdentity();
         try {
+            UsbDeviceFingerprint fingerprint =
+                    getConnectedDeviceFingerprintForAddress(device.getDeviceName());
             getPermissionsForUser(userId)
-                    .grantDevicePermission(device, packageName, uid, isPersistent);
+                    .grantDevicePermission(device, fingerprint, packageName, uid, isPersistent);
         } finally {
             Binder.restoreCallingIdentity(token);
         }

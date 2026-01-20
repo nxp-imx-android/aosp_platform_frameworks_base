@@ -22,6 +22,7 @@ import android.text.TextUtils;
 import android.util.Pair;
 import android.util.Slog;
 
+import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.XmlUtils;
 import com.android.modules.utils.TypedXmlPullParser;
 import com.android.modules.utils.TypedXmlSerializer;
@@ -247,7 +248,8 @@ public class UsbDeviceFingerprint {
     // @param deviceFilter - Serializable representation of a Usb Device
     // @param descriptorHashcode - Hashcode of the descriptor representing the device
     // @param devicePathHashcode - Hashcode of device path from root hub to this device
-    private UsbDeviceFingerprint(
+    @VisibleForTesting
+    UsbDeviceFingerprint(
             DeviceFilter deviceFilter,
             Hashcode descriptorHashcode,
             Hashcode devicePathHashcode,
@@ -472,6 +474,8 @@ public class UsbDeviceFingerprint {
      */
     public static UsbDeviceFingerprint read(TypedXmlPullParser parser)
             throws XmlPullParserException, IOException {
+        int outerDepth = parser.getDepth();
+
         try {
             Hashcode descriptorHash =
                     Hashcode.fromString(parser.getAttributeValue(null, DESCRIPTOR_HASH_ATTR_TAG));
@@ -480,6 +484,9 @@ public class UsbDeviceFingerprint {
             int hashQuality = parser.getAttributeInt(null, HASHCODE_QUALITY_ATTR_TAG);
             boolean compareDevicePaths =
                     parser.getAttributeBoolean(null, COMPARE_DEVPATHS_ATTR_TAG);
+
+            XmlUtils.nextElementWithin(parser, outerDepth);
+
             DeviceFilter deviceFilter = null;
             if (DeviceFilter.XML_ROOT_NAME.equals(parser.getName())) {
                 deviceFilter = DeviceFilter.read(parser);
@@ -492,6 +499,8 @@ public class UsbDeviceFingerprint {
                         devicePathHash,
                         hashQuality,
                         compareDevicePaths);
+            } else {
+                Slog.e(TAG, "error reading fingerprint data");
             }
 
         } catch (NumberFormatException e) {

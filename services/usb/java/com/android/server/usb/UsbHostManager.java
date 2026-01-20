@@ -432,6 +432,7 @@ public class UsbHostManager {
                     UsbDeviceFingerprint fingerprint =
                             UsbDeviceFingerprint.createLiveFingerprint(newDevice, parser);
                     mDeviceFingerprints.put(deviceAddress, fingerprint);
+                    serialNumberReader.setDeviceFingerprint(fingerprint);
                 }
 
                 // It is fine to call this only for the current user as all broadcasts are
@@ -599,7 +600,8 @@ public class UsbHostManager {
                         "device " + deviceAddress + " does not exist or is restricted");
             }
 
-            permissions.checkPermission(device, packageName, pid, uid);
+            UsbDeviceFingerprint fingerprint = mDeviceFingerprints.get(deviceAddress);
+            permissions.checkPermission(device, fingerprint, packageName, pid, uid);
             return nativeOpenDevice(deviceAddress);
         }
     }
