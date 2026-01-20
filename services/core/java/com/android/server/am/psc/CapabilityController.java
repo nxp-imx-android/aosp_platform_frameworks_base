@@ -260,6 +260,26 @@ class CapabilityController {
         return ALL_CPU_TIME_CAPABILITIES;
     }
 
+    /**
+     * Evaluates a filter by combining all the policies of a {@link ServiceBindingEdge}.
+     */
+    static @ProcessCapability int evaluateFilter(@NonNull ServiceBindingEdge edge) {
+        // TODO: b/476905700 - Add more policies.
+        return evaluateBfslPolicy(edge) | evaluateAudioPolicy(edge);
+    }
+
+    /** Evaluates whether a {@link ServiceBindingEdge} propagates BFSL. */
+    private static @ProcessCapability int evaluateBfslPolicy(@NonNull ServiceBindingEdge unused) {
+        // Always propagate BFSL.
+        return PROCESS_CAPABILITY_BFSL;
+    }
+
+    /** Evaluates whether a {@link ServiceBindingEdge} propagates audio control. */
+    private static @ProcessCapability int evaluateAudioPolicy(@NonNull ServiceBindingEdge unused) {
+        // Always propagate audio control.
+        return PROCESS_CAPABILITY_FOREGROUND_AUDIO_CONTROL;
+    }
+
     /** Performs a partial update from a list of edges. */
     void update(@NonNull ArrayList<GraphEdge> edges) {
         for (int i = 0, size = edges.size(); i < size; i++) {

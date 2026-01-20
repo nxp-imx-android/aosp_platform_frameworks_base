@@ -50,6 +50,7 @@ import static com.android.server.am.psc.OomAdjuster.CPU_TIME_REASON_OTHER;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import android.app.ActivityManager.ProcessCapability;
 import android.app.ActivityManager.ProcessState;
@@ -401,6 +402,13 @@ public class CapabilityControllerTest {
                 edge.evaluateCapabilityFilter());
     }
 
+    @Test
+    public void testDefaultServiceBindingEdge_GrantsOnlyBfslAndAudioControl() {
+        final TestServiceBindingEdge edge = new TestServiceBindingEdge.Builder().build();
+        assertEquals(PROCESS_CAPABILITY_BFSL | PROCESS_CAPABILITY_FOREGROUND_AUDIO_CONTROL,
+                edge.evaluateCapabilityFilter());
+    }
+
     private static class TestServiceRecord {
         final boolean mIsForegroundService;
         final boolean mIsFgsAllowedWiuForCapabilities;
@@ -654,6 +662,25 @@ public class CapabilityControllerTest {
     private static class TestProviderBindingEdge extends ProviderBindingEdge {
         TestProviderBindingEdge() {
             super(mock(ContentProviderConnectionInternal.class));
+        }
+    }
+
+    private static class TestServiceBindingEdge extends ServiceBindingEdge {
+        private TestServiceBindingEdge() {
+            super(buildMockConnectionRecord());
+        }
+
+        private static ConnectionRecordInternal buildMockConnectionRecord() {
+            final ConnectionRecordInternal conn = mock(ConnectionRecordInternal.class);
+            when(conn.getService()).thenReturn(mock(ServiceRecordInternal.class));
+            when(conn.getClient()).thenReturn(mock(ProcessRecordInternal.class));
+            return conn;
+        }
+
+        static class Builder {
+            TestServiceBindingEdge build() {
+                return new TestServiceBindingEdge();
+            }
         }
     }
 }
