@@ -148,7 +148,7 @@ public abstract class InfoMediaManager {
     private MediaDevice mCurrentConnectedDevice;
     private MediaController mMediaController;
     private PlaybackInfo mLastKnownPlaybackInfo;
-    private final LocalBluetoothManager mBluetoothManager;
+    @Nullable private final LocalBluetoothManager mBluetoothManager;
     @GuardedBy("mLock")
     private final Map<String, List<SuggestedDeviceInfo>> mSuggestedDeviceMap = new HashMap<>();
 
@@ -164,7 +164,7 @@ public abstract class InfoMediaManager {
             @NonNull Context context,
             @NonNull String packageName,
             @NonNull UserHandle userHandle,
-            @NonNull LocalBluetoothManager localBluetoothManager,
+            @Nullable LocalBluetoothManager localBluetoothManager,
             @Nullable MediaController mediaController) {
         mContext = context;
         mBluetoothManager = localBluetoothManager;
@@ -191,7 +191,7 @@ public abstract class InfoMediaManager {
             Context context,
             @Nullable String packageName,
             @Nullable UserHandle userHandle,
-            LocalBluetoothManager localBluetoothManager,
+            @Nullable LocalBluetoothManager localBluetoothManager,
             @Nullable MediaSession.Token token) {
         MediaController mediaController = null;
 
@@ -855,6 +855,8 @@ public abstract class InfoMediaManager {
         } else if (isBluetoothMediaDevice(deviceType)) {
             if (route.getAddress() == null) {
                 Log.e(TAG, "Ignoring bluetooth route with no set address: " + route);
+            } else if (mBluetoothManager == null) {
+                Log.e(TAG, "BluetoothManager is null");
             } else {
                 final BluetoothDevice device =
                         BluetoothAdapter.getDefaultAdapter().getRemoteDevice(route.getAddress());

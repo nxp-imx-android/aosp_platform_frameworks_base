@@ -109,7 +109,7 @@ public final class RouterInfoMediaManager extends InfoMediaManager {
             Context context,
             @NonNull String packageName,
             @NonNull UserHandle userHandle,
-            LocalBluetoothManager localBluetoothManager,
+            @Nullable LocalBluetoothManager localBluetoothManager,
             @Nullable MediaController mediaController)
             throws PackageNotAvailableException {
         super(context, packageName, userHandle, localBluetoothManager, mediaController);
@@ -140,7 +140,7 @@ public final class RouterInfoMediaManager extends InfoMediaManager {
             Context context,
             @NonNull String packageName,
             @NonNull UserHandle userHandle,
-            LocalBluetoothManager localBluetoothManager,
+            @Nullable LocalBluetoothManager localBluetoothManager,
             @Nullable MediaController mediaController,
             MediaRouter2 mediaRouter2,
             MediaRouter2Manager mediaRouter2Manager) {
