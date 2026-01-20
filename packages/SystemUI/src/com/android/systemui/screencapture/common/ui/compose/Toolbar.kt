@@ -41,10 +41,10 @@ fun Toolbar(
     modifier: Modifier = Modifier,
     colors: FloatingToolbarColors = defaultColors(),
     elevation: Dp = 2.dp,
+    closeButtonDescription: String =
+        stringResource(id = R.string.underlay_close_button_content_description),
     content: @Composable RowScope.() -> Unit,
 ) {
-    val closeButtonDescription =
-        stringResource(id = R.string.underlay_close_button_content_description)
     HorizontalFloatingToolbar(
         expanded = expanded,
         modifier = modifier,

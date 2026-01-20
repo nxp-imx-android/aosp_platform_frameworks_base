@@ -37,6 +37,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
 import com.android.systemui.common.shared.model.Icon
@@ -53,6 +54,7 @@ data class RadioButtonGroupItem(
     val icon: Icon? = null,
     val label: String? = null,
     val contentDescription: String? = null,
+    val stateDescription: String? = null,
     val hasTooltip: Boolean = false,
     val onClick: () -> Unit,
     val modifier: Modifier = Modifier,
@@ -65,6 +67,7 @@ data class RadioButtonGroupItem(
         isSelected: Boolean,
         onClick: () -> Unit,
         contentDescription: String? = null,
+        stateDescription: String? = null,
         hasTooltip: Boolean = false,
         modifier: Modifier = Modifier,
     ) : this(
@@ -73,6 +76,7 @@ data class RadioButtonGroupItem(
         isSelected = isSelected,
         onClick = onClick,
         contentDescription = contentDescription,
+        stateDescription = stateDescription,
         hasTooltip = hasTooltip,
         modifier = modifier,
     )
@@ -134,7 +138,12 @@ private fun ToggleRadioButton(
         modifier =
             modifier.semantics(mergeDescendants = true) {
                 this.role = Role.RadioButton
-                this.contentDescription = item.contentDescription ?: ""
+                item.contentDescription
+                    ?.takeIf { it.isNotEmpty() }
+                    ?.let { this.contentDescription = it }
+                item.stateDescription
+                    ?.takeIf { it.isNotEmpty() }
+                    ?.let { this.stateDescription = it }
             },
     ) {
         if (item.icon != null && item.label != null) {
