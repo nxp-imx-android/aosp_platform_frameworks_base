@@ -219,6 +219,32 @@ public final class UserHelperTest {
     }
 
     @Test
+    public void testCheckRequest_whenAllowlistModeChangedFromDisabledToEnabled() {
+        mockHsuActivityAllowlistMode(ALLOWLIST_MODE_ENABLED);
+        expect.withMessage("checkRequest() after mode set to enabled")
+                .that(mUserHelper.checkRequest(mRequest))
+                .isEqualTo(START_NOT_ALLOWED_FOR_USER);
+
+        mockHsuActivityAllowlistMode(ALLOWLIST_MODE_DISABLED);
+        expect.withMessage("checkRequest() after mode set to disabled")
+                .that(mUserHelper.checkRequest(mRequest))
+                .isEqualTo(START_SUCCESS);
+    }
+
+    @Test
+    public void testCheckRequest_whenAllowlistModeChangedFromEnabledToDisabled() {
+        mockHsuActivityAllowlistMode(ALLOWLIST_MODE_DISABLED);
+        expect.withMessage("checkRequest() after mode set to disabled")
+                .that(mUserHelper.checkRequest(mRequest))
+                .isEqualTo(START_SUCCESS);
+
+        mockHsuActivityAllowlistMode(ALLOWLIST_MODE_ENABLED);
+        expect.withMessage("checkRequest() after mode set to enabled")
+                .that(mUserHelper.checkRequest(mRequest))
+                .isEqualTo(START_NOT_ALLOWED_FOR_USER);
+    }
+
+    @Test
     public void testCheckRequest_allowlisted_success() {
         mockDefaultActivityAllowlisted();
 
@@ -290,7 +316,7 @@ public final class UserHelperTest {
                       ...UserHelper:
                       ...  TAG=ActivityTaskManager
                       ...  mIsHeadlessSystemUserMode=true
-                      ...  mActivityLaunchIntegrationStatus=1 (ENABLED)
+                      ...  activityLaunchIntegrationStatus=1 (ENABLED)
                       ...  mHsuActivitiesAllowlist=Schindler's
                       """);
     }
@@ -307,7 +333,7 @@ public final class UserHelperTest {
                       ...UserHelper:
                       ...  TAG=ActivityTaskManager
                       ...  mIsHeadlessSystemUserMode=false
-                      ...  mActivityLaunchIntegrationStatus=-1 (DISABLED_NOT_HSUM)
+                      ...  activityLaunchIntegrationStatus=-1 (DISABLED_NOT_HSUM)
                       ...  mHsuActivitiesAllowlist=null
                       """);
     }
@@ -324,7 +350,7 @@ public final class UserHelperTest {
                       ...UserHelper:
                       ...  TAG=ActivityTaskManager
                       ...  mIsHeadlessSystemUserMode=true
-                      ...  mActivityLaunchIntegrationStatus=-2 (DISABLED_NO_ALLOWLIST)
+                      ...  activityLaunchIntegrationStatus=-2 (DISABLED_NO_ALLOWLIST)
                       ...  mHsuActivitiesAllowlist=null
                       """);
     }
@@ -341,7 +367,7 @@ public final class UserHelperTest {
                       ...UserHelper:
                       ...  TAG=ActivityTaskManager
                       ...  mIsHeadlessSystemUserMode=true
-                      ...  mActivityLaunchIntegrationStatus=-3 (DISABLED_EXPLICITLY)
+                      ...  activityLaunchIntegrationStatus=-3 (DISABLED_EXPLICITLY)
                       ...  mHsuActivitiesAllowlist=Schindler's
                       """);
     }
@@ -358,7 +384,7 @@ public final class UserHelperTest {
                       ...UserHelper:
                       ...  TAG=ActivityTaskManager
                       ...  mIsHeadlessSystemUserMode=true
-                      ...  mActivityLaunchIntegrationStatus=-4 (DISABLED_LOG_ONLY)
+                      ...  activityLaunchIntegrationStatus=-4 (DISABLED_LOG_ONLY)
                       ...  mHsuActivitiesAllowlist=Schindler's
                       """);
     }
@@ -375,7 +401,7 @@ public final class UserHelperTest {
                       ...UserHelper:
                       ...  TAG=ActivityTaskManager
                       ...  mIsHeadlessSystemUserMode=true
-                      ...  mActivityLaunchIntegrationStatus=-5 (DISABLED_INVALID_MODE)
+                      ...  activityLaunchIntegrationStatus=-5 (DISABLED_INVALID_MODE)
                       ...  mHsuActivitiesAllowlist=Schindler's
                       """);
     }

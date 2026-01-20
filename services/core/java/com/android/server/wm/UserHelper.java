@@ -75,26 +75,25 @@ final class UserHelper {
 
     private final boolean mIsHeadlessSystemUserMode;
     private final UserManagerInternal mUmi;
-    private final @ActivityLaunchIntegrationStatus int mActivityLaunchIntegrationStatus;
     private final @Nullable UserActivitiesAllowlist mHsuActivitiesAllowlist;
 
     UserHelper(UserManagerInternal umi) {
         mIsHeadlessSystemUserMode = umi.isHeadlessSystemUserMode();
         mUmi = umi;
+        mHsuActivitiesAllowlist = mIsHeadlessSystemUserMode
+                ? mUmi.getActivitiesAllowlist(USER_SYSTEM)
+                : null;
+    }
 
+    private @ActivityLaunchIntegrationStatus int getActivityLaunchIntegrationStatus() {
         if (!mIsHeadlessSystemUserMode) {
-            mActivityLaunchIntegrationStatus = ACTIVITY_LAUNCH_INTEGRATION_STATUS_DISABLED_NOT_HSUM;
-            mHsuActivitiesAllowlist = null;
-            return;
+            return ACTIVITY_LAUNCH_INTEGRATION_STATUS_DISABLED_NOT_HSUM;
         }
-        mHsuActivitiesAllowlist = mUmi.getActivitiesAllowlist(USER_SYSTEM);
         if (mHsuActivitiesAllowlist == null) {
-            mActivityLaunchIntegrationStatus =
-                    ACTIVITY_LAUNCH_INTEGRATION_STATUS_DISABLED_NO_ALLOWLIST;
-            return;
+            return ACTIVITY_LAUNCH_INTEGRATION_STATUS_DISABLED_NO_ALLOWLIST;
         }
         int mode = mHsuActivitiesAllowlist.getMode();
-        mActivityLaunchIntegrationStatus = switch (mode) {
+        return switch (mode) {
             case ALLOWLIST_MODE_ENABLED -> ACTIVITY_LAUNCH_INTEGRATION_STATUS_ENABLED;
             case ALLOWLIST_MODE_DISABLED -> ACTIVITY_LAUNCH_INTEGRATION_STATUS_DISABLED_EXPLICITLY;
             case ALLOWLIST_MODE_LOG_ONLY -> ACTIVITY_LAUNCH_INTEGRATION_STATUS_DISABLED_LOG_ONLY;
@@ -111,13 +110,14 @@ final class UserHelper {
      * @return {@code START_SUCCESS} is valid, or specific error code if it isn't.
      */
     public int checkRequest(Request request) {
-        boolean logOnly = mActivityLaunchIntegrationStatus
+        int activityLaunchIntegrationStatus = getActivityLaunchIntegrationStatus();
+        boolean logOnly = activityLaunchIntegrationStatus
                 == ACTIVITY_LAUNCH_INTEGRATION_STATUS_DISABLED_LOG_ONLY;
-        if (mActivityLaunchIntegrationStatus != ACTIVITY_LAUNCH_INTEGRATION_STATUS_ENABLED
+        if (activityLaunchIntegrationStatus != ACTIVITY_LAUNCH_INTEGRATION_STATUS_ENABLED
                 && !logOnly) {
             if (DEBUG_USER_VISIBILITY) {
                 Slogf.d(TAG, "checkRequest(%s): skipping because status is %s", request,
-                        activityLaunchIntegrationStatusToString(mActivityLaunchIntegrationStatus));
+                        activityLaunchIntegrationStatusToString(activityLaunchIntegrationStatus));
             }
             return START_SUCCESS;
         }
@@ -225,9 +225,10 @@ final class UserHelper {
         String prefix2 = prefix + "  ";
         pw.printf("%sTAG=%s\n", prefix2, TAG);
         pw.printf("%smIsHeadlessSystemUserMode=%b\n", prefix2, mIsHeadlessSystemUserMode);
-        pw.printf("%smActivityLaunchIntegrationStatus=%d (%s)\n", prefix2,
-                mActivityLaunchIntegrationStatus,
-                activityLaunchIntegrationStatusToString(mActivityLaunchIntegrationStatus));
+        int activityLaunchIntegrationStatus = getActivityLaunchIntegrationStatus();
+        pw.printf("%sactivityLaunchIntegrationStatus=%d (%s)\n", prefix2,
+                activityLaunchIntegrationStatus,
+                activityLaunchIntegrationStatusToString(activityLaunchIntegrationStatus));
         pw.printf("%smHsuActivitiesAllowlist=%s\n", prefix2, mHsuActivitiesAllowlist);
     }
 
