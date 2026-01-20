@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+@file:OptIn(ExperimentalMaterial3ExpressiveApi::class)
+
 package com.android.compose.animation.scene
 
 import android.platform.test.annotations.MotionTest
@@ -21,17 +23,22 @@ import android.platform.test.flag.junit.FlagsParameterization
 import android.platform.test.flag.junit.SetFlagsRule
 import androidx.compose.foundation.LocalOverscrollFactory
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.overscroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.onNodeWithTag
@@ -40,10 +47,14 @@ import androidx.compose.ui.test.swipeWithVelocity
 import androidx.compose.ui.unit.dp
 import com.android.compose.animation.scene.TestScenes.SceneA
 import com.android.compose.animation.scene.TestScenes.SceneB
+import com.android.compose.animation.scene.TestScenes.SceneC
+import com.android.compose.animation.scene.TestScenes.SceneD
 import com.android.compose.gesture.effect.OffsetOverscrollEffect
 import com.android.compose.gesture.effect.rememberOffsetOverscrollEffectFactory
+import com.android.compose.modifiers.thenIf
 import com.android.systemui.Flags.FLAG_STL_FLING_ANIMATION_CONSUME_OVERSHOOT
 import com.android.systemui.Flags.stlFlingAnimationConsumeOvershoot
+import kotlin.time.Duration.Companion.milliseconds
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
@@ -69,8 +80,8 @@ import platform.test.runner.parameterized.Parameters
 import platform.test.screenshot.PathConfig
 import platform.test.screenshot.PathElementNoContext
 
-@RunWith(ParameterizedAndroidJunit4::class)
 @MotionTest
+@RunWith(ParameterizedAndroidJunit4::class)
 class SwipeAnimationMotionTest(flags: FlagsParameterization) {
 
     companion object {
@@ -104,10 +115,7 @@ class SwipeAnimationMotionTest(flags: FlagsParameterization) {
     fun dragGesture_lowVelocity_animatesWithSpring() =
         motionRule.runTest {
             val motion =
-                recordSceneTransition(
-                    initialScene = SceneA,
-                    transitions = transitions { from(SceneA, to = SceneB) },
-                ) {
+                recordSceneTransition(initialScene = SceneA, recordScrollState = false) {
                     performTouchInputAsync(onNodeWithTag("stl")) {
                         swipeRight(endX = centerX, durationMillis = 250)
                     }
@@ -123,10 +131,7 @@ class SwipeAnimationMotionTest(flags: FlagsParameterization) {
     fun dragGesture_overdrag_animatesBack() =
         motionRule.runTest {
             val motion =
-                recordSceneTransition(
-                    initialScene = SceneA,
-                    transitions = transitions { from(SceneA, to = SceneB) },
-                ) {
+                recordSceneTransition(initialScene = SceneA) {
                     performTouchInputAsync(onNodeWithTag("stl")) {
                         swipeRight(startX = 10f, endX = width * 1.5f, durationMillis = 250)
                     }
@@ -141,10 +146,7 @@ class SwipeAnimationMotionTest(flags: FlagsParameterization) {
     fun flingGesture_highVelocity_overshoots() =
         motionRule.runTest {
             val motion =
-                recordSceneTransition(
-                    initialScene = SceneA,
-                    transitions = transitions { from(SceneA, to = SceneB) },
-                ) {
+                recordSceneTransition(initialScene = SceneA, recordScrollState = false) {
                     performTouchInputAsync(onNodeWithTag("stl")) {
                         swipeWithVelocity(
                             start = centerLeft,
@@ -160,10 +162,136 @@ class SwipeAnimationMotionTest(flags: FlagsParameterization) {
                 .timeSeriesMatchesGolden("flingGesture_highVelocity_overshoots")
         }
 
+    @Test
+    fun dragGesture_onNestedScroll_lowVelocity_animatesWithSpring() =
+        motionRule.runTest {
+            val motion =
+                recordSceneTransition(initialScene = SceneC) {
+                    performTouchInputAsync(onNodeWithTag("stl")) {
+                        swipeRight(endX = centerX, durationMillis = 250)
+                    }
+                }
+
+            motionRule
+                .assertThat(motion)
+                .timeSeriesMatchesGolden(
+                    "dragGesture_onNestedScroll_lowVelocity_animatesWithSpring"
+                )
+        }
+
+    @Test
+    fun flingGesture_onNestedScroll_highVelocity_overshoots() =
+        motionRule.runTest {
+            val motion =
+                recordSceneTransition(initialScene = SceneC) {
+                    performTouchInputAsync(onNodeWithTag("stl")) {
+                        swipeWithVelocity(
+                            start = centerLeft,
+                            end = Offset(width * .8f, centerY),
+                            durationMillis = 60,
+                            endVelocity = 2000.dp.toPx(),
+                        )
+                    }
+                }
+
+            motionRule
+                .assertThat(motion)
+                .timeSeriesMatchesGolden("flingGesture_onNestedScroll_highVelocity_overshoots")
+        }
+
+    @Test
+    fun dragGesture_onNestedScroll_swipesDisabled_lowVelocity_animatesWithSpring() =
+        motionRule.runTest {
+            val motion =
+                recordSceneTransition(initialScene = SceneD) {
+                    performTouchInputAsync(onNodeWithTag("stl")) {
+                        swipeRight(endX = centerX, durationMillis = 250)
+                    }
+                }
+
+            motionRule
+                .assertThat(motion)
+                .timeSeriesMatchesGolden(
+                    "dragGesture_onNestedScroll_swipesDisabled_lowVelocity_animatesWithSpring"
+                )
+        }
+
+    @Test
+    fun flingGesture_onNestedScroll_swipesDisabled_highVelocity_overshoots() =
+        motionRule.runTest {
+            val motion =
+                recordSceneTransition(initialScene = SceneD) {
+                    performTouchInputAsync(onNodeWithTag("stl")) {
+                        swipeWithVelocity(
+                            start = centerLeft,
+                            end = Offset(width * .8f, centerY),
+                            durationMillis = 60,
+                            endVelocity = 2000.dp.toPx(),
+                        )
+                    }
+                }
+
+            motionRule
+                .assertThat(motion)
+                .timeSeriesMatchesGolden(
+                    "flingGesture_onNestedScroll_swipesDisabled_highVelocity_overshoots"
+                )
+        }
+
     val overscrollDistanceKey = MotionTestValueKey<Float>("overscrollDistance")
+    val scrollValueKey = MotionTestValueKey<Int>("scrollValue")
 
     @Composable
-    private fun ContentScope.TestScene(alignment: Alignment) {
+    private fun ContentScope.SourceSceneFixed(alignment: Alignment) {
+        Box(Modifier.fillMaxSize().background(Color.DarkGray)) {
+            Box(
+                Modifier.overscroll(horizontalOverscrollEffect)
+                    .element(TestElements.Foo)
+                    .motionTestValues {
+                        val overscrollDistance =
+                            (horizontalOverscrollEffect as OffsetOverscrollEffect)
+                                .overscrollDistance
+                        overscrollDistance exportAs overscrollDistanceKey
+                    }
+                    .size(10.dp)
+                    .align(alignment)
+                    .background(Color.Magenta)
+            )
+        }
+    }
+
+    @Composable
+    private fun ContentScope.SourceSceneScrollable(
+        alignment: Alignment,
+        disableSwipesWhenScrolling: Boolean,
+    ) {
+        val scrollState =
+            rememberScrollState(initial = with(LocalDensity.current) { 10.dp.roundToPx() })
+        Box(
+            Modifier.fillMaxSize()
+                .background(Color.DarkGray)
+                .thenIf(disableSwipesWhenScrolling) { Modifier.disableSwipesWhenScrolling() }
+                .horizontalScroll(scrollState)
+        ) {
+            Box(
+                Modifier.overscroll(horizontalOverscrollEffect)
+                    .element(TestElements.Foo)
+                    .motionTestValues {
+                        val overscrollDistance =
+                            (horizontalOverscrollEffect as OffsetOverscrollEffect)
+                                .overscrollDistance
+                        overscrollDistance exportAs overscrollDistanceKey
+                        scrollState.value exportAs scrollValueKey
+                    }
+                    .size(width = 120.dp, 10.dp)
+                    .align(alignment)
+                    .background(Brush.linearGradient(listOf(Color.Green, Color.White)))
+            )
+        }
+    }
+
+    @Composable
+    private fun ContentScope.TargetScene(alignment: Alignment) {
         Box(Modifier.fillMaxSize().background(Color.DarkGray)) {
             Box(
                 Modifier.overscroll(horizontalOverscrollEffect)
@@ -185,7 +313,12 @@ class SwipeAnimationMotionTest(flags: FlagsParameterization) {
 
     private fun recordSceneTransition(
         initialScene: SceneKey,
-        transitions: SceneTransitions,
+        recordScrollState: Boolean = true,
+        transitions: SceneTransitions = transitions {
+            from(SceneA, to = SceneB)
+            from(SceneC, to = SceneB)
+            from(SceneD, to = SceneB)
+        },
         recording: MotionControlFn,
     ): RecordedMotion {
         lateinit var state: MutableSceneTransitionLayoutState
@@ -203,9 +336,22 @@ class SwipeAnimationMotionTest(flags: FlagsParameterization) {
                             implicitTestTags = true,
                         ) {
                             scene(TestScenes.SceneA, userActions = mapOf(Swipe.Right to SceneB)) {
-                                TestScene(Alignment.TopStart)
+                                SourceSceneFixed(Alignment.TopStart)
                             }
-                            scene(TestScenes.SceneB) { TestScene(Alignment.TopEnd) }
+
+                            scene(TestScenes.SceneC, userActions = mapOf(Swipe.Right to SceneB)) {
+                                SourceSceneScrollable(
+                                    Alignment.TopStart,
+                                    disableSwipesWhenScrolling = false,
+                                )
+                            }
+                            scene(TestScenes.SceneD, userActions = mapOf(Swipe.Right to SceneB)) {
+                                SourceSceneScrollable(
+                                    Alignment.TopStart,
+                                    disableSwipesWhenScrolling = true,
+                                )
+                            }
+                            scene(TestScenes.SceneB) { TargetScene(Alignment.TopEnd) }
                         }
                     }
                 }
@@ -213,7 +359,15 @@ class SwipeAnimationMotionTest(flags: FlagsParameterization) {
             ComposeRecordingSpec(
                 MotionControl {
                     recording()
-                    awaitCondition { !state.isTransitioning() }
+                    if (recordScrollState) {
+                        // When `disableSwipesWhenScrolling` applies, the overscroll from the
+                        // horizontalScroll will animate. It's non-trivial to wait for that
+                        // currently. Once go/frame-observation-in-compose-test-rule is implemented,
+                        // this will be a non-issue, hence using awaitDelay to capture some of the
+                        // animation.
+                        awaitDelay(200.milliseconds)
+                    }
+                    awaitCondition { !(state.isTransitioning()) }
                 },
                 recordBefore = false,
                 recordAfter = false,
@@ -236,6 +390,18 @@ class SwipeAnimationMotionTest(flags: FlagsParameterization) {
                             hasMotionTestValue(overscrollDistanceKey) and
                                 SemanticsMatcher.inContent(SceneB),
                     )
+
+                    if (recordScrollState) {
+
+                        feature(
+                            scrollValueKey,
+                            DataPointTypes.int,
+                            matcher =
+                                hasMotionTestValue(scrollValueKey) and
+                                    (SemanticsMatcher.inContent(SceneC) or
+                                        SemanticsMatcher.inContent(SceneD)),
+                        )
+                    }
 
                     on({ state.currentTransition }) {
                         feature("progress") { it.progress.asDataPoint() }
