@@ -42,7 +42,7 @@ import java.util.concurrent.Executors;
 public class TrustTokenRefreshService extends JobService {
     private static final String TAG = "TrustTokenRefreshService";
 
-    private static final String NAMESPACE = "trust_token";
+    private static final String NAMESPACE = "trust_token_refresh";
     private static final ComponentName REFRESH_SERVICE_COMPONENT =
             new ComponentName("android", TrustTokenRefreshService.class.getName());
     private static final int REGULAR_REFRESH_JOB_ID = 1;

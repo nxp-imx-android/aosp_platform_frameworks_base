@@ -19,6 +19,8 @@ package com.android.server.security.talisman;
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.junit.Assert.assertThrows;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import android.content.Context;
 import android.security.talisman.TrustConfiguration;
@@ -37,14 +39,16 @@ import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.function.Predicate;
 
 @RunWith(AndroidJUnit4.class)
 public final class TrustTokenDatabaseTest {
     TrustTokenDatabase mDatabase;
-    MockClock mClock = new MockClock();
+    Clock mClock = mock(Clock.class);
 
     @Before
     public void setUp() {
+        when(mClock.currentTimeMillis()).thenReturn(233333L);
         Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
         try {
             File databaseFile =
@@ -189,6 +193,97 @@ public final class TrustTokenDatabaseTest {
     }
 
     @Test
+    public void cleanUpTrustTokenSets_expired() throws Exception {
+        when(mClock.currentTimeMillis()).thenReturn(10000L);
+        TrustTokenSetWithKey token1 =
+                new TrustTokenSetWithKey(
+                        buildKey("somePublicKey", "someSecretKey"),
+                        tokenSetBuilder("somePublicKey", "someToken").build());
+
+        mDatabase.addTrustTokenSets(Arrays.asList(token1));
+        when(mClock.currentTimeMillis()).thenReturn(10000 + 43200000L);
+        TrustTokenSetWithKey token2 =
+                new TrustTokenSetWithKey(
+                        buildKey("otherPublicKey", "otherSecretKey"),
+                        tokenSetBuilder("otherPublicKey", "otherToken").build());
+        mDatabase.addTrustTokenSets(Arrays.asList(token2));
+        // token1 expired at this point.
+        when(mClock.currentTimeMillis()).thenReturn(10000 + 86400000L);
+        assertThat(
+                        mDatabase.cleanUpTrustTokenSets(
+                                TrustTokenSet.TYPE_VERIFIED_DEVICE,
+                                /* maxTokenNum= */ 100,
+                                (tokenSet) -> true))
+                .isEqualTo(1);
+        assertThat(
+                        mDatabase.cleanUpTrustTokenSets(
+                                TrustTokenSet.TYPE_VERIFIED_DEVICE,
+                                /* maxTokenNum= */ 100,
+                                (tokenSet) -> true))
+                .isEqualTo(0);
+    }
+
+    @Test
+    public void cleanUpTrustTokenSets_excess() throws Exception {
+        TrustTokenSetWithKey token1 =
+                new TrustTokenSetWithKey(
+                        buildKey("somePublicKey", "someSecretKey"),
+                        tokenSetBuilder("somePublicKey", "someToken").build());
+        TrustTokenSetWithKey token2 =
+                new TrustTokenSetWithKey(
+                        buildKey("otherPublicKey", "otherSecretKey"),
+                        tokenSetBuilder("otherPublicKey", "otherToken").build());
+        TrustTokenSetWithKey token3 =
+                new TrustTokenSetWithKey(
+                        buildKey("anotherPublicKey", "anotherSecretKey"),
+                        tokenSetBuilder("anotherPublicKey", "anotherToken").build());
+        mDatabase.addTrustTokenSets(Arrays.asList(token1, token2, token3));
+        assertThat(
+                        mDatabase.cleanUpTrustTokenSets(
+                                TrustTokenSet.TYPE_VERIFIED_DEVICE,
+                                /* maxTokenNum= */ 1,
+                                (tokenSet) -> true))
+                .isEqualTo(2);
+        assertThat(
+                        mDatabase.cleanUpTrustTokenSets(
+                                TrustTokenSet.TYPE_VERIFIED_DEVICE,
+                                /* maxTokenNum= */ 1,
+                                (tokenSet) -> true))
+                .isEqualTo(0);
+    }
+
+    @Test
+    public void cleanUpTrustTokenSets_invalid() throws Exception {
+        TrustTokenSetWithKey token1 =
+                new TrustTokenSetWithKey(
+                        buildKey("somePublicKey", "someSecretKey"),
+                        tokenSetBuilder("somePublicKey", "someToken").build());
+        TrustTokenSetWithKey token2 =
+                new TrustTokenSetWithKey(
+                        buildKey("otherPublicKey", "otherSecretKey"),
+                        tokenSetBuilder("otherPublicKey", "otherToken").build());
+        mDatabase.addTrustTokenSets(Arrays.asList(token1, token2));
+        var verifier =
+                new Predicate<TrustTokenSet>() {
+                    public boolean test(TrustTokenSet tokenSet) {
+                        return Arrays.equals(tokenSet.getTokenSet(), "otherToken".getBytes());
+                    }
+                };
+        assertThat(
+                        mDatabase.cleanUpTrustTokenSets(
+                                TrustTokenSet.TYPE_VERIFIED_DEVICE,
+                                /* maxTokenNum= */ 100,
+                                verifier))
+                .isEqualTo(1);
+        assertThat(
+                        mDatabase.cleanUpTrustTokenSets(
+                                TrustTokenSet.TYPE_VERIFIED_DEVICE,
+                                /* maxTokenNum= */ 100,
+                                verifier))
+                .isEqualTo(0);
+    }
+
+    @Test
     public void trustConfiguration() throws Exception {
         assertThrows(
                 TrustConfigurationUnavailableException.class,
@@ -223,13 +318,5 @@ public final class TrustTokenDatabaseTest {
                 .setTokenSet(token.getBytes())
                 .setCreatedAt(now)
                 .setExpireAt(now.plus(Duration.ofDays(1)));
-    }
-
-    private static final class MockClock extends Clock {
-
-        @Override
-        public long currentTimeMillis() {
-            return 23333333;
-        }
     }
 }

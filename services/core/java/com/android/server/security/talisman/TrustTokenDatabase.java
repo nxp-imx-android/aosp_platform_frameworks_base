@@ -20,6 +20,7 @@ import android.annotation.NonNull;
 import android.security.talisman.TrustConfiguration;
 
 import java.util.List;
+import java.util.function.Predicate;
 
 /** The database for pending and existing trust tokens. */
 abstract class TrustTokenDatabase {
@@ -42,6 +43,16 @@ abstract class TrustTokenDatabase {
      */
     abstract void addTrustTokenSets(@NonNull List<TrustTokenSetWithKey> tokens)
             throws IllegalArgumentException;
+
+    /**
+     * Cleans up the stored tokens. It removes expired, invalid and excess tokens from the database.
+     *
+     * @param type the token type to clean up.
+     * @param maxTokenNum the maximum number of tokens to keep.
+     * @param verifier the token verifier. It should returns true if the token is valid.
+     */
+    abstract int cleanUpTrustTokenSets(
+            @TrustTokenSet.Type int type, int maxTokenNum, Predicate<TrustTokenSet> verifier);
 
     /**
      * Gets the TrustConfiguration from the database.
