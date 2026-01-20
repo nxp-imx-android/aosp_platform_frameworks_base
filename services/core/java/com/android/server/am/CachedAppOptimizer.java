@@ -138,6 +138,10 @@ public class CachedAppOptimizer {
             "zram_writeback_oom_adj";
     @VisibleForTesting static final String KEY_ZRAM_WRITEBACK_THRESHOLD_KB =
             "zram_writeback_threshold_kb";
+    @VisibleForTesting static final String KEY_ZRAM_WRITEBACK_GPU_MEM_THRESHOLD_KB =
+            "zram_writeback_gpu_mem_threshold_kb";
+    @VisibleForTesting static final String KEY_ZRAM_WRITEBACK_DMABUF_MEM_THRESHOLD_KB =
+            "zram_writeback_dmabuf_mem_threshold_kb";
     @VisibleForTesting static final String KEY_COMPACT_THROTTLE_MIN_OOM_ADJ =
             "compact_throttle_min_oom_adj";
     @VisibleForTesting static final String KEY_COMPACT_THROTTLE_MAX_OOM_ADJ =
@@ -307,6 +311,8 @@ public class CachedAppOptimizer {
     @VisibleForTesting static final long DEFAULT_COMPACT_THROTTLE_6 = 10 * 60 * 1000;
     @VisibleForTesting static final long DEFAULT_ZRAM_WRITEBACK_WAIT_SECONDS = 10 * 60;
     @VisibleForTesting static final long DEFAULT_ZRAM_WRITEBACK_THRESHOLD_KB = 150 * 1024L;
+    @VisibleForTesting static final int DEFAULT_ZRAM_WRITEBACK_GPU_MEM_THRESHOLD_KB = 60;
+    @VisibleForTesting static final int DEFAULT_ZRAM_WRITEBACK_DMABUF_MEM_THRESHOLD_KB = 0;
     @VisibleForTesting static final long DEFAULT_COMPACT_THROTTLE_MIN_OOM_ADJ = CACHED_APP_MIN_ADJ;
     @VisibleForTesting static final long DEFAULT_COMPACT_THROTTLE_MAX_OOM_ADJ = CACHED_APP_MAX_ADJ;
     // The sampling rate to push app compaction events into statsd for upload.
@@ -475,6 +481,10 @@ public class CachedAppOptimizer {
                                 updateZramWritebackOomAdj();
                             } else if (KEY_ZRAM_WRITEBACK_THRESHOLD_KB.equals(name)) {
                                 updateZramWritebackThresholdKb();
+                            } else if (KEY_ZRAM_WRITEBACK_GPU_MEM_THRESHOLD_KB.equals(name)) {
+                                updateZramWritebackGpuMemThresholdKb();
+                            } else if (KEY_ZRAM_WRITEBACK_DMABUF_MEM_THRESHOLD_KB.equals(name)) {
+                                updateZramWritebackDmabufMemThresholdKb();
                             }
                         }
                     }
@@ -552,6 +562,12 @@ public class CachedAppOptimizer {
     @GuardedBy("mPhenotypeFlagLock")
     @VisibleForTesting volatile long mZramWritebackThresholdKb =
             DEFAULT_ZRAM_WRITEBACK_THRESHOLD_KB;
+    @GuardedBy("mPhenotypeFlagLock")
+    @VisibleForTesting volatile long mZramWritebackGpuMemThresholdKb =
+            DEFAULT_ZRAM_WRITEBACK_GPU_MEM_THRESHOLD_KB;
+    @GuardedBy("mPhenotypeFlagLock")
+    @VisibleForTesting volatile long mZramWritebackDmabufMemThresholdKb =
+            DEFAULT_ZRAM_WRITEBACK_DMABUF_MEM_THRESHOLD_KB;
     @GuardedBy("mPhenotypeFlagLock")
     @VisibleForTesting volatile int mZramWritebackOomAdj =
             OomAdjuster.DEFAULT_ZRAM_WRITEBACK_OOM_ADJ;
@@ -694,6 +710,8 @@ public class CachedAppOptimizer {
             updateZramWritebackWait();
             updateZramWritebackOomAdj();
             updateZramWritebackThresholdKb();
+            updateZramWritebackGpuMemThresholdKb();
+            updateZramWritebackDmabufMemThresholdKb();
         }
     }
 
@@ -735,6 +753,10 @@ public class CachedAppOptimizer {
             pw.println("  " + KEY_ZRAM_WRITEBACK_WAIT_SECONDS + "=" + mZramWritebackWaitSeconds);
             pw.println("  " + KEY_ZRAM_WRITEBACK_OOM_ADJ + "=" + mZramWritebackOomAdj);
             pw.println("  " + KEY_ZRAM_WRITEBACK_THRESHOLD_KB + "=" + mZramWritebackThresholdKb);
+            pw.println("  " + KEY_ZRAM_WRITEBACK_GPU_MEM_THRESHOLD_KB + "="
+                    + mZramWritebackGpuMemThresholdKb);
+            pw.println("  " + KEY_ZRAM_WRITEBACK_DMABUF_MEM_THRESHOLD_KB + "="
+                    + mZramWritebackDmabufMemThresholdKb);
             pw.println("  " + KEY_COMPACT_STATSD_SAMPLE_RATE + "=" + mCompactStatsdSampleRate);
             pw.println("  " + KEY_COMPACT_FULL_RSS_THROTTLE_KB + "="
                     + mFullAnonRssThrottleKb);
@@ -1184,6 +1206,28 @@ public class CachedAppOptimizer {
                 KEY_ZRAM_WRITEBACK_THRESHOLD_KB, DEFAULT_ZRAM_WRITEBACK_THRESHOLD_KB);
         if (mZramWritebackThresholdKb <= 0) {
             mZramWritebackThresholdKb = DEFAULT_ZRAM_WRITEBACK_THRESHOLD_KB;
+        }
+    }
+
+    @GuardedBy("mPhenotypeFlagLock")
+    private void updateZramWritebackGpuMemThresholdKb() {
+        mZramWritebackGpuMemThresholdKb = DeviceConfig.getLong(
+                DeviceConfig.NAMESPACE_ACTIVITY_MANAGER,
+                KEY_ZRAM_WRITEBACK_GPU_MEM_THRESHOLD_KB,
+                DEFAULT_ZRAM_WRITEBACK_GPU_MEM_THRESHOLD_KB);
+        if (mZramWritebackGpuMemThresholdKb < 0) {
+            mZramWritebackGpuMemThresholdKb = DEFAULT_ZRAM_WRITEBACK_GPU_MEM_THRESHOLD_KB;
+        }
+    }
+
+    @GuardedBy("mPhenotypeFlagLock")
+    private void updateZramWritebackDmabufMemThresholdKb() {
+        mZramWritebackDmabufMemThresholdKb = DeviceConfig.getLong(
+                DeviceConfig.NAMESPACE_ACTIVITY_MANAGER,
+                KEY_ZRAM_WRITEBACK_DMABUF_MEM_THRESHOLD_KB,
+                DEFAULT_ZRAM_WRITEBACK_DMABUF_MEM_THRESHOLD_KB);
+        if (mZramWritebackDmabufMemThresholdKb < 0) {
+            mZramWritebackDmabufMemThresholdKb = DEFAULT_ZRAM_WRITEBACK_DMABUF_MEM_THRESHOLD_KB;
         }
     }
 
@@ -1757,9 +1801,11 @@ public class CachedAppOptimizer {
                 }
             }
         }
-        final boolean hasGpuMemory = graphicsMemKb > 0;
-        final long dmaBufMemKb =
-                mKernelAllocationStats.getDmabufSizeForProcessKb(pid);
+        final boolean gpuMemoryTooHigh =
+                graphicsMemKb > mZramWritebackGpuMemThresholdKb;
+        final boolean dmaBufMemTooHigh =
+                mKernelAllocationStats.getDmabufSizeForProcessKb(pid)
+                        > mZramWritebackDmabufMemThresholdKb;
         try {
             if (zramUsedDeltaKb >= mZramWritebackThresholdKb) {
                 eventTypeToLog =
@@ -1773,13 +1819,13 @@ public class CachedAppOptimizer {
                                 .ZRAM_WRITEBACK_EVENT__EVENT_TYPE__SKIPPED_NO_ACTIVITY;
                 return;
             }
-            if (hasGpuMemory) {
+            if (gpuMemoryTooHigh) {
                 eventTypeToLog =
                         FrameworkStatsLog
                                 .ZRAM_WRITEBACK_EVENT__EVENT_TYPE__SKIPPED_HAS_GPU_MEMORY;
                 return;
             }
-            if (dmaBufMemKb > 0) {
+            if (dmaBufMemTooHigh) {
                 eventTypeToLog =
                         FrameworkStatsLog
                                 .ZRAM_WRITEBACK_EVENT__EVENT_TYPE__SKIPPED_HAS_DMA_BUF;
@@ -1845,7 +1891,7 @@ public class CachedAppOptimizer {
                                         getZramWritebackEventType(status), uid, processName,
                                         hasActivities, zramUsedDeltaKb, bytesWritten,
                                         // the following should both be true if we reach this point.
-                                        dmaBufMemKb > 0, hasGpuMemory);
+                                        dmaBufMemTooHigh, gpuMemoryTooHigh);
                             }
                         };
                 try {
@@ -1889,7 +1935,7 @@ public class CachedAppOptimizer {
             }
             FrameworkStatsLog.write(FrameworkStatsLog.ZRAM_WRITEBACK_EVENT, eventTypeToLog, uid,
                     processName, hasActivities, zramUsedDeltaKb, /* zramBytesWritten= */ 0,
-                    dmaBufMemKb > 0, hasGpuMemory);
+                    dmaBufMemTooHigh, gpuMemoryTooHigh);
         }
     }
 
