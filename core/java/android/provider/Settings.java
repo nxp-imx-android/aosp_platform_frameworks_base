@@ -8291,6 +8291,16 @@ public final class Settings {
         public static final String STYLUS_HANDWRITING_ENABLED = "stylus_handwriting_enabled";
 
         /**
+         * Toggle for enabling the IME Switcher Button in the navigation bar. This does not
+         * automatically make it visible, but allows it to become visible when needed.
+         *
+         * @hide
+         */
+        @Readable
+        public static final String IME_SWITCHER_BUTTON_IN_NAVBAR_ENABLED =
+                "ime_switcher_in_navbar_enabled";
+
+        /**
          * Default value for {@link #STYLUS_HANDWRITING_ENABLED}.
          *
          * @hide

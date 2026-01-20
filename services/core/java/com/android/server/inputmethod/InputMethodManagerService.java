@@ -814,6 +814,12 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                 updateInputMethodsFromSettingsLocked(enabledChanged, userId);
                 break;
             }
+            case Settings.Secure.IME_SWITCHER_BUTTON_IN_NAVBAR_ENABLED: {
+                final var userData = getUserData(userId);
+                updateSystemUiLocked(userId);
+                sendOnNavButtonFlagsChangedLocked(userData);
+                break;
+            }
         }
     }
 
@@ -1678,6 +1684,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                                 Settings.Secure.ENABLED_INPUT_METHODS,
                                 Settings.Secure.SELECTED_INPUT_METHOD_SUBTYPE,
                                 Settings.Secure.STYLUS_HANDWRITING_ENABLED,
+                                Settings.Secure.IME_SWITCHER_BUTTON_IN_NAVBAR_ENABLED,
                         }, (key, flags, userId) -> {
                             synchronized (ImfLock.class) {
                                 onSecureSettingsChangedLocked(key, userId);
@@ -2873,8 +2880,14 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                 .hasNavigationBar(curDisplayId != INVALID_DISPLAY ? curDisplayId : DEFAULT_DISPLAY);
         final boolean imeDrawsImeNavBar = userData.mImeDrawsNavBar.get() && hasNavigationBar;
         final boolean showImeSwitcherButton = shouldShowImeSwitcherButtonLocked(userId);
+        final boolean isImeSwitcherButtonInNavbarEnabled =
+                !Flags.imeSwitcherButtonInNavbarSetting() || InputMethodSettingsRepository.get(
+                        userId).isImeSwitcherButtonInNavBarEnabled();
         return (imeDrawsImeNavBar ? InputMethodNavButtonFlags.IME_DRAWS_IME_NAV_BAR : 0)
-                | (showImeSwitcherButton ? InputMethodNavButtonFlags.SHOW_IME_SWITCHER_BUTTON : 0);
+                | (showImeSwitcherButton ? InputMethodNavButtonFlags.SHOW_IME_SWITCHER_BUTTON : 0)
+                | (isImeSwitcherButtonInNavbarEnabled
+                ? InputMethodNavButtonFlags.IME_SWITCHER_BUTTON_ENABLED
+                : 0);
     }
 
     /**
@@ -6194,6 +6207,10 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             });
         }
 
+        /**
+         * TODO(b/481908434): remove after IME Switcher menu is migrated completely to System UI
+         * (b/460776726).
+         */
         @Override
         public void updateShouldShowImeSwitcherButton(int displayId, @UserIdInt int userId) {
             synchronized (ImfLock.class) {
