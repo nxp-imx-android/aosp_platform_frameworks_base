@@ -14,20 +14,19 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.desktopai.api.config
+package com.android.wm.shell.desktopai.api
 
 /**
- * Defines the contract for a component that manages system triggers and notifies registered
- * listeners.
+ * Definition for an event source that produces [TriggerEvent]s.
+ *
+ * Implementations of this interface wrap specific system listeners (like ShellController or
+ * InputManager) and normalize their signals into standard [TriggerEvent] objects.
  */
-interface ITriggerManager {
+interface ITriggerSource {
     /**
-     * Registers a callback to be invoked when a system event matches the provided strategy.
+     * Starts listening to the underlying system component.
      *
-     * @param strategy The [TriggerStrategy] defining the rules for activation (e.g., specific keys,
-     *   system events).
-     * @param callback The function to execute when the trigger fires. It receives the full
-     *   [TriggerEvent] containing context and payload data.
+     * @param onEvent A lambda that the source must call whenever an event occurs.
      */
-    fun registerTrigger(strategy: TriggerStrategy, callback: (TriggerEvent) -> Unit)
+    fun start(onEvent: (TriggerEvent) -> Unit)
 }

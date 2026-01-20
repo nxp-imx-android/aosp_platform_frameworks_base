@@ -19,8 +19,8 @@ package com.android.wm.shell.desktopai.core
 import android.testing.AndroidTestingRunner
 import androidx.test.filters.SmallTest
 import com.android.wm.shell.ShellTestCase
-import com.android.wm.shell.desktopai.api.config.TriggerEvent
-import com.android.wm.shell.desktopai.api.config.TriggerEventType
+import com.android.wm.shell.desktopai.api.TriggerEvent
+import com.android.wm.shell.desktopai.api.TriggerEventType
 import com.android.wm.shell.sysui.OverviewVisibilityChangeListener
 import com.android.wm.shell.sysui.ShellController
 import com.google.common.truth.Truth.assertThat

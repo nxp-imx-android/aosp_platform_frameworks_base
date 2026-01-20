@@ -17,7 +17,7 @@
 package com.android.wm.shell.desktopai.dagger
 
 import com.android.wm.shell.dagger.WMSingleton
-import com.android.wm.shell.desktopai.api.config.ITriggerManager
+import com.android.wm.shell.desktopai.api.ITriggerManager
 import javax.inject.Inject
 
 /** Singleton used to initialize all the DesktopAi dependencies in a single place */
