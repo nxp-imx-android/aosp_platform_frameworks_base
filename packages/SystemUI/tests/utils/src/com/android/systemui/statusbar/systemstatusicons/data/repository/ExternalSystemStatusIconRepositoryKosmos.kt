@@ -16,6 +16,8 @@
 
 package com.android.systemui.statusbar.systemstatusicons.data.repository
 
+import android.os.UserHandle
+import com.android.internal.statusbar.StatusBarIcon
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.backgroundScope
 import com.android.systemui.statusbar.mockCommandQueue
@@ -27,3 +29,21 @@ val Kosmos.externalSystemStatusIconRepository by
             backgroundScope = backgroundScope,
         )
     }
+
+object ExternalSystemStatusIconRepositoryHelper {
+    fun createStatusBarIcon(
+        iconId: Int = 1,
+        contentDescription: String = "contentDescription",
+        packageName: String = "external.package",
+    ): StatusBarIcon {
+        return StatusBarIcon(
+            packageName,
+            UserHandle.ALL,
+            /* iconId= */ iconId,
+            /* iconLevel= */ 0,
+            /* number= */ 0,
+            contentDescription,
+            StatusBarIcon.Type.SystemIcon,
+        )
+    }
+}
