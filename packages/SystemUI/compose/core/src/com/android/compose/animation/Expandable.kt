@@ -396,7 +396,8 @@ private fun Modifier.expandable(
     val graphicsLayer = rememberGraphicsLayer()
 
     val isAnimating = controller.isAnimating
-    if (isAnimating) {
+    val showDialog = controller.isDialogShowing
+    if (isAnimating || (dynamicTargetResolutionEnabled() && showDialog)) {
         FullScreenComposeViewInOverlay(controller.overlay) { view ->
             Modifier.then(DrawExpandableInOverlayElement(view, controller, graphicsLayer))
         }

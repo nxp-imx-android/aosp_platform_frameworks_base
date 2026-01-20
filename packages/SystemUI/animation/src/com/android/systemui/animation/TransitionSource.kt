@@ -30,6 +30,11 @@ import android.view.View
  */
 interface TransitionSource {
 
+    // If source is visible.
+    var isSourceVisible: Boolean
+
+    var onSourceVisibilityChanged: (Boolean) -> Unit
+
     /**
      * Create a [DialogTransitionAnimator.Controller] that can be used to expand this
      * [TransitionSource] into a Dialog, or return `null` if this [TransitionSource] should not be
@@ -69,6 +74,11 @@ interface TransitionSource {
         @JvmStatic
         fun fromView(view: View): TransitionSource {
             return object : TransitionSource {
+
+                override var onSourceVisibilityChanged: (Boolean) -> Unit = {}
+
+                override var isSourceVisible: Boolean = true
+
                 override fun activityTransitionController(
                     launchCujType: Int?,
                     cookie: ActivityTransitionAnimator.TransitionCookie?,
