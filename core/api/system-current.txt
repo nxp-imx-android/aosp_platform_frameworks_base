@@ -14741,6 +14741,16 @@ package android.service.personalcontext {
 
 package android.service.personalcontext.embedded {
 
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class ClientUpdateException extends java.lang.RuntimeException implements android.os.Parcelable {
+    method public int describeContents();
+    method public int getErrorCode();
+    method @NonNull public android.service.personalcontext.embedded.InsightSurfaceClientUpdate getUpdate();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.service.personalcontext.embedded.ClientUpdateException> CREATOR;
+    field public static final int UPDATE_ERROR_DECLINED_BY_VISUALIZER = 2; // 0x2
+    field public static final int UPDATE_ERROR_UNKNOWN = 1; // 0x1
+  }
+
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public class InsightSurfaceClient implements java.lang.AutoCloseable {
     method public void close();
     method @NonNull public android.graphics.Color getBackgroundColor();
@@ -14750,7 +14760,6 @@ package android.service.personalcontext.embedded {
     method public int getNestedScrollAxes();
     method @NonNull public java.util.List<android.service.personalcontext.embedded.InsightSurfaceClient.InsightReceiver> getReceivers();
     method public boolean isNestedScrollAxisLocked();
-    method public void publishHints(@NonNull java.util.Set<android.service.personalcontext.hint.ContextHint>);
     method @Deprecated public void register(int, int);
     method public void register();
     method public void unregister();
@@ -14770,8 +14779,13 @@ package android.service.personalcontext.embedded {
   }
 
   public static interface InsightSurfaceClient.ClientCallback {
-    method public void onSurfaceCreated(@NonNull android.view.SurfaceControlViewHost.SurfacePackage);
-    method public void onSurfaceReleased(@NonNull android.view.SurfaceControlViewHost.SurfacePackage);
+    method public default void onError(@NonNull Exception);
+    method public default void onSessionCreated(@NonNull android.service.personalcontext.embedded.InsightSurfaceSession);
+    method public default void onSessionDestroyed(@NonNull android.service.personalcontext.embedded.InsightSurfaceSession);
+    method public default void onSessionUpdated(@NonNull android.service.personalcontext.embedded.InsightSurfaceSession);
+    method public default void onSizeChanged(int, int);
+    method @Deprecated public void onSurfaceCreated(@NonNull android.view.SurfaceControlViewHost.SurfacePackage);
+    method @Deprecated public void onSurfaceReleased(@NonNull android.view.SurfaceControlViewHost.SurfacePackage);
   }
 
   public static interface InsightSurfaceClient.InsightReceiver {
@@ -14789,10 +14803,56 @@ package android.service.personalcontext.embedded {
     method public int getNestedScrollAxes();
     method public boolean getNestedScrollAxisLocked();
     method public void onReceiveInsight(@NonNull android.service.personalcontext.insight.ContextInsight);
-    method public void onSurfaceCreated(@NonNull android.view.SurfaceControlViewHost.SurfacePackage);
-    method public void onSurfaceReleased(@NonNull android.view.SurfaceControlViewHost.SurfacePackage);
+    method public void onSizeChanged(int, int);
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.service.personalcontext.embedded.InsightSurfaceClientInfo> CREATOR;
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class InsightSurfaceClientUpdate implements android.os.Parcelable {
+    method public int describeContents();
+    method @Nullable public android.graphics.Color getBackgroundColor();
+    method @Nullable public android.content.res.Configuration getConfiguration();
+    method @NonNull public java.util.Set<android.service.personalcontext.hint.ContextHint> getHints();
+    method public int getMeasureSpecHeight();
+    method public int getMeasureSpecWidth();
+    method public int getNestedScrollAxes();
+    method public boolean hasUpdate(@NonNull String);
+    method public boolean isNestedScrollAxisLocked();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.service.personalcontext.embedded.InsightSurfaceClientUpdate> CREATOR;
+    field public static final String KEY_BACKGROUND_COLOR = "key_background_color";
+    field public static final String KEY_CONFIGURATION = "key_configuration";
+    field public static final String KEY_HINTS = "key_hints";
+    field public static final String KEY_MEASURE_SPEC_HEIGHT = "key_measure_spec_height";
+    field public static final String KEY_MEASURE_SPEC_WIDTH = "key_measure_spec_width";
+    field public static final String KEY_NESTED_SCROLL_AXES = "key_nested_scroll_axes";
+    field public static final String KEY_NESTED_SCROLL_AXIS_LOCKED = "key_nested_scroll_axis_locked";
+  }
+
+  public static final class InsightSurfaceClientUpdate.Builder {
+    ctor public InsightSurfaceClientUpdate.Builder();
+    method @NonNull public android.service.personalcontext.embedded.InsightSurfaceClientUpdate.Builder addHint(@NonNull android.service.personalcontext.hint.ContextHint);
+    method @NonNull public android.service.personalcontext.embedded.InsightSurfaceClientUpdate build();
+    method @NonNull public android.service.personalcontext.embedded.InsightSurfaceClientUpdate.Builder setBackgroundColor(@NonNull android.graphics.Color);
+    method @NonNull public android.service.personalcontext.embedded.InsightSurfaceClientUpdate.Builder setConfiguration(@NonNull android.content.res.Configuration);
+    method @NonNull public android.service.personalcontext.embedded.InsightSurfaceClientUpdate.Builder setMeasureSpecHeight(int);
+    method @NonNull public android.service.personalcontext.embedded.InsightSurfaceClientUpdate.Builder setMeasureSpecWidth(int);
+    method @NonNull public android.service.personalcontext.embedded.InsightSurfaceClientUpdate.Builder setNestedScrollAxes(int);
+    method @NonNull public android.service.personalcontext.embedded.InsightSurfaceClientUpdate.Builder setNestedScrollAxisLocked(boolean);
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public class InsightSurfaceSession implements java.lang.AutoCloseable {
+    method public void close();
+    method @Nullable public android.service.personalcontext.embedded.InsightSurfaceClient getClient();
+    method @Nullable public android.view.SurfaceControlViewHost.SurfacePackage getSurfacePackage();
+    method public void publishHints(@NonNull java.util.Set<android.service.personalcontext.hint.ContextHint>);
+    method public void update(@NonNull android.service.personalcontext.embedded.InsightSurfaceClientUpdate, @Nullable android.os.OutcomeReceiver<android.service.personalcontext.embedded.InsightSurfaceClientUpdate,android.service.personalcontext.embedded.ClientUpdateException>);
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public class InsightSurfaceSessionException extends java.lang.Exception {
+    ctor public InsightSurfaceSessionException(int, @Nullable String);
+    method public int getErrorCode();
+    field public static final int ERROR_FAILED_TO_CREATE_SESSION = 1; // 0x1
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public abstract class InsightSurfaceVisualizerService extends android.app.Service {
@@ -14800,6 +14860,7 @@ package android.service.personalcontext.embedded {
     method @Nullable public final android.os.IBinder onBind(@Nullable android.content.Intent);
     method public abstract void onClientConnected(@NonNull android.service.personalcontext.embedded.InsightSurfaceClientInfo);
     method public abstract void onClientDisconnected(@NonNull android.service.personalcontext.embedded.InsightSurfaceClientInfo);
+    method public boolean onClientUpdated(@NonNull android.service.personalcontext.embedded.InsightSurfaceClientInfo, @NonNull android.service.personalcontext.embedded.InsightSurfaceClientInfo);
     method @Nullable public abstract android.view.View onCreateEmbeddedView(@NonNull android.content.Context, @NonNull java.util.List<android.service.personalcontext.insight.ContextInsight>, @NonNull android.service.personalcontext.embedded.InsightSurfaceClientInfo);
     field public static final String SERVICE_INTERFACE = "android.service.personalcontext.embedded.InsightSurfaceVisualizerService";
   }

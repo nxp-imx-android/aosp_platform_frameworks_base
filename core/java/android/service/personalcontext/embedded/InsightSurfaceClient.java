@@ -35,6 +35,7 @@ import android.view.View;
 
 import androidx.annotation.NonNull;
 
+import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.Preconditions;
 
 import java.util.ArrayList;
@@ -96,18 +97,67 @@ public class InsightSurfaceClient implements AutoCloseable {
          * client to embed in a SurfaceView. This callback will only be called after the client
          * has been registered with the personal context engine by calling the {@link #register}
          * method.
+         * @deprecated Use {@link #onSessionCreated(InsightSurfaceSession)} instead.
          */
+        @Deprecated
         void onSurfaceCreated(@NonNull SurfaceControlViewHost.SurfacePackage surfacePackage);
 
         /**
          * The {@link SurfaceControlViewHost.SurfacePackage} returned by onSurfaceCreated has been
          * released. This is an opportunity for the client owner to release any resources
          * associated with the surface.
+         * @deprecated Use {@link #onSessionDestroyed(InsightSurfaceSession)} instead.
          */
+        @Deprecated
         void onSurfaceReleased(@NonNull SurfaceControlViewHost.SurfacePackage surfacePackage);
+
+        /**
+         * The size of the embedded surface has changed. Subclasses can override this method to be
+         * informed of the size change.
+         * @param width the new width of the surface
+         * @param height the new height of the surface
+         */
+        default void onSizeChanged(int width, int height) {
+        }
+
+        /**
+         * The given {@link InsightSurfaceSession} has been created. Subclasses can override this
+         * method to be informed when a new session has been created. This method will only be
+         * called once for a newly created session. Subsequent session updates will call
+         * {@link #onSessionUpdated(InsightSurfaceSession)}. If a session is destroyed, then this
+         * method will be called again if/when a new session is created.
+         */
+        default void onSessionCreated(@NonNull InsightSurfaceSession session) {
+        }
+
+        /**
+         * The given {@link InsightSurfaceSession} has been updated. Subclasses can override this
+         * method to be informed when a session has been updated. This method will only be called
+         * when a session already exists. If no session yet exists, then
+         * {@link #onSessionCreated(InsightSurfaceSession)} will be called instead. The session
+         * passed to this method will be the same session that was passed to
+         * {@link #onSessionCreated(InsightSurfaceSession)}.
+         */
+        default void onSessionUpdated(@NonNull InsightSurfaceSession session) {
+        }
+
+        /**
+         * The given {@link InsightSurfaceSession} has been destroyed. Subclasses can override this
+         * method to be informed when a session has been destroyed.
+         */
+        default void onSessionDestroyed(@NonNull InsightSurfaceSession session) {
+        }
+
+        /**
+         * An error has occurred. Subclasses can override this method to be informed of errors.
+         * @param exception an {@link Exception} representing the error
+         */
+        default void onError(@NonNull Exception exception) {
+        }
     }
 
     private InsightSurfaceClientInfo mClientInfo;
+    private InsightSurfaceSession mSession;
 
     private final Context mContext;
     @NonNull
@@ -123,11 +173,23 @@ public class InsightSurfaceClient implements AutoCloseable {
     private final IInsightSurfaceClient mClient =
             new IInsightSurfaceClient.Stub() {
                 @Override
-                public void onSurfaceCreated(SurfaceControlViewHost.SurfacePackage surfacePackage) {
+                public void onSurfaceCreated(
+                        SurfaceControlViewHost.SurfacePackage surfacePackage,
+                        IInsightSurfaceSession session) {
                     if (DEBUG) {
                         Log.d(TAG, "onSurfaceCreated [" + surfacePackage + "]");
                     }
-                    mCallbacksExecutor.execute(() -> mCallbacks.onSurfaceCreated(surfacePackage));
+                    mCallbacksExecutor.execute(() -> {
+                        if (mSession != null) {
+                            mSession.close();
+                            mCallbacks.onSessionDestroyed(mSession);
+                        }
+                        mSession = new InsightSurfaceSession(
+                                InsightSurfaceClient.this, surfacePackage, session);
+                        mCallbacks.onSessionCreated(mSession);
+
+                        mCallbacks.onSurfaceCreated(surfacePackage);
+                    });
                 }
 
                 @Override
@@ -136,7 +198,29 @@ public class InsightSurfaceClient implements AutoCloseable {
                     if (DEBUG) {
                         Log.d(TAG, "onSurfaceReleased [" + surfacePackage + "]");
                     }
-                    mCallbacksExecutor.execute(() -> mCallbacks.onSurfaceReleased(surfacePackage));
+                    mCallbacksExecutor.execute(() -> {
+                        mCallbacks.onSurfaceReleased(surfacePackage);
+
+                        if (mSession != null) {
+                            Preconditions.checkState(
+                                    mSession.getSurfacePackage() == surfacePackage);
+                            mCallbacks.onSessionDestroyed(mSession);
+                            mSession.close();
+                            mSession = null;
+                        }
+                    });
+                }
+
+                @Override
+                public void onSurfaceUpdated(SurfaceControlViewHost.SurfacePackage surfacePackage) {
+                    if (DEBUG) {
+                        Log.d(TAG, "onSurfaceUpdated [" + surfacePackage + "]");
+                    }
+                    mCallbacksExecutor.execute(() -> {
+                        Preconditions.checkState(
+                                mSession != null && mSession.getSurfacePackage() == surfacePackage);
+                        mCallbacks.onSessionUpdated(mSession);
+                    });
                 }
 
                 @Override
@@ -147,6 +231,15 @@ public class InsightSurfaceClient implements AutoCloseable {
                     }
                     mCallbacksExecutor.execute(() ->
                             mInsightReceivers.forEach((receiver) -> receiver.onReceive(insight)));
+                }
+
+                @Override
+                public void onSizeChanged(int width, int height) {
+                    if (DEBUG) {
+                        Log.d(TAG, "onSizeChanged [width=" + width + ", height=" + height + "]");
+                    }
+                    mCallbacksExecutor.execute(() ->
+                            mCallbacks.onSizeChanged(width, height));
                 }
             };
 
@@ -184,7 +277,10 @@ public class InsightSurfaceClient implements AutoCloseable {
      * has been created to send new hints to the context engine.
      *
      * @param hints a list of {@link ContextHint}s
+     *
+     * @hide
      */
+    @VisibleForTesting
     public void publishHints(@NonNull Set<ContextHint> hints) {
         Objects.requireNonNull(hints);
         final PersonalContextManager personalContextManager =
@@ -332,6 +428,11 @@ public class InsightSurfaceClient implements AutoCloseable {
                 mContext.getSystemService(PersonalContextManager.class);
         personalContextManager.unregisterInsightSurfaceClient(mClientInfo);
 
+        if (mSession != null) {
+            mSession.close();
+            mSession = null;
+        }
+
         mIsRegistered = false;
     }
 
@@ -340,6 +441,27 @@ public class InsightSurfaceClient implements AutoCloseable {
         if (mIsRegistered) {
             unregister();
         }
+    }
+
+    /**
+     * Return the {@link InsightSurfaceClientInfo} for this client.
+     * @hide
+     */
+    @VisibleForTesting
+    public InsightSurfaceClientInfo getClientInfo() {
+        return mClientInfo;
+    }
+
+    /**
+     * Update the {@link InsightSurfaceClientInfo} with the given
+     * {@link InsightSurfaceClientUpdate}. Returns the old {@link InsightSurfaceClientInfo}.
+     * @hide
+     */
+    @VisibleForTesting
+    public InsightSurfaceClientInfo updateClientInfo(InsightSurfaceClientUpdate update) {
+        final InsightSurfaceClientInfo oldClientInfo = mClientInfo;
+        mClientInfo = mClientInfo.createInfoFromUpdate(update);
+        return oldClientInfo;
     }
 
     /** Builder used to build a new {@link InsightSurfaceClient}. */
