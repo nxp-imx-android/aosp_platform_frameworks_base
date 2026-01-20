@@ -59,6 +59,13 @@ flag {
 }
 
 flag {
+    name: "desktop_ai_platform"
+    namespace: "lse_desktop_experience"
+    description: "Enables DesktopAI platform."
+    bug: "454857285"
+}
+
+flag {
     name: "dimming_wallpaper_for_maximized_and_tiled"
     namespace: "lse_desktop_experience"
     description: "Dim the wallpaper to make maximized and tiled window looks immersive."
