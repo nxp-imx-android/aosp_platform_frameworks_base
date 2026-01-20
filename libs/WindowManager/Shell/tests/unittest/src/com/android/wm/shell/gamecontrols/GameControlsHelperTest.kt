@@ -47,7 +47,7 @@ import org.mockito.kotlin.whenever
  */
 @SmallTest
 @RunWith(AndroidTestingRunner::class)
-@EnableFlags(com.android.window.flags.Flags.FLAG_ENABLE_GAME_CONTROLS_ENTRY_IN_HANDLE_MENU)
+@EnableFlags(com.android.window.flags.Flags.FLAG_ENABLE_GAME_CONTROLS_HANDLE_MENU_ENTRY)
 class GameControlsHelperTest : ShellTestCase() {
 
     private val mockContext = mock<Context>()

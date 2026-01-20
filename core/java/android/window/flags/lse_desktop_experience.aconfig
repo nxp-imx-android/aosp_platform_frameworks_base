@@ -679,8 +679,8 @@ flag {
 }
 
 flag {
-    name: "enable_game_controls_entry_in_handle_menu"
-    namespace: "lse_desktop_experience"
+    name: "enable_game_controls_handle_menu_entry"
+    namespace: "web_apps_on_chromeos_and_android"
     description: "Enables the game controls menu item in the app's handle menu"
     bug: "460164391"
 }

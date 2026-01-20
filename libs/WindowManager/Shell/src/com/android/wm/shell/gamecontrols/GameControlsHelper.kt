@@ -85,7 +85,7 @@ object GameControlsHelper {
     }
 
     private fun gameControlsButtonFlagEnabled(): Boolean {
-        return DesktopExperienceFlags.ENABLE_GAME_CONTROLS_ENTRY_IN_HANDLE_MENU.isTrue
+        return DesktopExperienceFlags.ENABLE_GAME_CONTROLS_HANDLE_MENU_ENTRY.isTrue
     }
 
     private fun isCategoryGame(taskInfo: TaskInfo): Boolean {
