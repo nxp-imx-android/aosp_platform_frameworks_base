@@ -4121,7 +4121,13 @@ public class StageCoordinator extends StageCoordinatorAbstract {
         final TransitionInfo.Change finalSideChild = sideChild;
         final StageTaskListener finalFirstAppStage = firstAppStage;
         final StageTaskListener finalSecondAppStage = secondAppStage;
+        // Pause IME inset updates during the split-enter transition. This prevents the transition
+        // from conflicting with the DisplayImeController's attempt to animate the surface to the
+        // IME offset, which can cause the app to be covered by the IME.
+        // The updates will be resumed/applied when the transition finishes.
+        mDisplayImeController.setImeInsetsUpdatesPaused(mDisplayId, true /* paused */);
         enterTransition.setFinishedCallback((callbackWct, callbackT) -> {
+            mDisplayImeController.setImeInsetsUpdatesPaused(mDisplayId, false /* paused */);
             if (!enterTransition.mResizeAnim) {
                 // If resizing, we'll call notify at the end of the resizing animation (below)
                 notifySplitAnimationStatus(false /*animationRunning*/);
