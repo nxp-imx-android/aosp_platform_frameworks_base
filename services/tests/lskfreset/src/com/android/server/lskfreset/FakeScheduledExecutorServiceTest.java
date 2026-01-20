@@ -791,6 +791,115 @@ public class FakeScheduledExecutorServiceTest {
     }
 
     @Test
+    public void testShutdown() {
+        assertFalse(mExecutor.isShutdown());
+        assertFalse(mExecutor.isTerminated());
+        mExecutor.shutdown();
+        assertTrue(mExecutor.isShutdown());
+        assertTrue(mExecutor.isTerminated());
+    }
+
+    @Test
+    public void testShutdownWithTasks() {
+        AtomicInteger executions = new AtomicInteger(0);
+        ScheduledFuture<?> future1 =
+                mExecutor.schedule(
+                        () -> {
+                            executions.incrementAndGet();
+                        },
+                        1,
+                        TimeUnit.SECONDS);
+        ScheduledFuture<?> future2 =
+                mExecutor.schedule(
+                        () -> {
+                            executions.incrementAndGet();
+                        },
+                        2,
+                        TimeUnit.SECONDS);
+
+        assertFalse(mExecutor.isShutdown());
+        assertFalse(mExecutor.isTerminated());
+        assertFalse(future1.isDone());
+        assertFalse(future1.isCancelled());
+        assertFalse(future2.isDone());
+        assertFalse(future2.isCancelled());
+        assertEquals(0, executions.get());
+
+        mExecutor.shutdown();
+        assertTrue(mExecutor.isShutdown());
+        assertFalse(mExecutor.isTerminated());
+        assertFalse(future1.isDone());
+        assertFalse(future1.isCancelled());
+        assertFalse(future2.isDone());
+        assertFalse(future2.isCancelled());
+        assertEquals(0, executions.get());
+
+        assertEquals(1, mExecutor.fastForwardMillis(1000));
+        assertTrue(mExecutor.isShutdown());
+        assertFalse(mExecutor.isTerminated());
+        assertTrue(future1.isDone());
+        assertFalse(future1.isCancelled());
+        assertFalse(future2.isDone());
+        assertFalse(future2.isCancelled());
+        assertEquals(1, executions.get());
+
+        assertEquals(1, mExecutor.fastForwardMillis(1000));
+        assertTrue(mExecutor.isShutdown());
+        assertTrue(mExecutor.isTerminated());
+        assertTrue(future1.isDone());
+        assertFalse(future1.isCancelled());
+        assertTrue(future2.isDone());
+        assertFalse(future2.isCancelled());
+        assertEquals(2, executions.get());
+
+        assertEquals(0, mExecutor.fastForwardMillis(1000));
+    }
+
+    @Test
+    public void testShutdownNowWithTasks() {
+        AtomicInteger executions = new AtomicInteger(0);
+        ScheduledFuture<?> future1 =
+                mExecutor.schedule(
+                        () -> {
+                            executions.incrementAndGet();
+                        },
+                        1,
+                        TimeUnit.SECONDS);
+        ScheduledFuture<?> future2 =
+                mExecutor.schedule(
+                        () -> {
+                            executions.incrementAndGet();
+                        },
+                        2,
+                        TimeUnit.SECONDS);
+
+        assertFalse(mExecutor.isShutdown());
+        assertFalse(mExecutor.isTerminated());
+        assertFalse(future1.isDone());
+        assertFalse(future1.isCancelled());
+        assertFalse(future2.isDone());
+        assertFalse(future2.isCancelled());
+        assertEquals(0, executions.get());
+
+        List<Runnable> cancelled = mExecutor.shutdownNow();
+        assertEquals(2, cancelled.size());
+        assertTrue(mExecutor.isShutdown());
+        assertTrue(mExecutor.isTerminated());
+        assertTrue(future1.isDone());
+        assertTrue(future1.isCancelled());
+        assertTrue(future2.isDone());
+        assertTrue(future2.isCancelled());
+        assertEquals(0, executions.get());
+
+        assertEquals(0, mExecutor.fastForwardMillis(3000));
+        assertEquals(0, executions.get());
+        for (Runnable runnable : cancelled) {
+            runnable.run();
+        }
+        assertEquals(2, executions.get());
+    }
+
+    @Test
     public void testTaskSchedulesTask() {
         AtomicInteger executions = new AtomicInteger(0);
         List<ScheduledFuture<?>> futures = new ArrayList<>();
