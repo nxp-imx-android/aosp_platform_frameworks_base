@@ -626,37 +626,13 @@ filegroup {
     path: "tests/src",
 }
 
-filegroup {
-    name: "kosmos-src",
-    srcs: ["tests/utils/kosmos/src/**/*.kt"],
-    path: "tests/utils/kosmos",
-}
-
 java_library {
     name: "kosmos",
     host_supported: true,
-    srcs: [":kosmos-src"],
+    srcs: ["tests/utils/kosmos/src/**/*.kt"],
     static_libs: [
         "kotlin-reflect",
         "kotlin-stdlib",
-    ],
-}
-
-filegroup {
-    name: "SystemUI-tests-utils-monolith",
-    srcs: [
-        "tests/utils/src/**/*.java",
-        "tests/utils/src/**/*.kt",
-    ],
-    path: "tests/utils",
-}
-
-filegroup {
-    name: "SystemUI-tests-utils",
-    srcs: [
-        ":SystemUI-tests-utils-monolith",
-        ":SystemUI_pod_fixtureFiles",
-        ":kosmos-src",
     ],
 }
 
@@ -966,7 +942,6 @@ android_robolectric_test {
     srcs: [
         "tests/robolectric/src/**/*.kt",
         "tests/robolectric/src/**/*.java",
-        ":SystemUI-tests-utils",
         ":SystemUI-tests-multivalent-monolith",
         ":SystemUI-tests-multivalent-pods",
     ],
@@ -976,6 +951,7 @@ android_robolectric_test {
         "androidx.compose.runtime_runtime",
         "androidx.compose.ui_ui-test-junit4",
         "SystemUI_pod_tests",
+        "SystemUI_test_fixtures",
     ],
     libs: [
         "android.test.runner.impl",
@@ -1000,7 +976,6 @@ android_robolectric_test {
     srcs: [
         "tests/robolectric/src/**/*.kt",
         "tests/robolectric/src/**/*.java",
-        ":SystemUI-tests-utils",
         ":SystemUI-tests-multivalent-monolith",
         ":SystemUI-tests-multivalent-pods",
         ":SystemUI-tests-robofiles",
@@ -1015,6 +990,7 @@ android_robolectric_test {
         "androidx.compose.runtime_runtime",
         "platform-compat-test-rules",
         "SystemUI_pod_tests",
+        "SystemUI_test_fixtures",
     ],
     libs: [
         "android.test.runner.impl",
@@ -1038,7 +1014,6 @@ android_ravenwood_test {
     build_resources: true,
     data: ["ravenwood.prop"],
     srcs: [
-        ":SystemUI-tests-utils",
         ":SystemUI-tests-multivalent-monolith",
         ":SystemUI-tests-multivalent-pods",
     ],
@@ -1047,6 +1022,7 @@ android_ravenwood_test {
         "SystemUI-core",
         "SystemUI-tests-base",
         "SystemUI_pod_tests",
+        "SystemUI_test_fixtures",
         "androidx.test.uiautomator_uiautomator",
         "androidx.core_core-animation-testing",
         "androidx.test.ext.junit",

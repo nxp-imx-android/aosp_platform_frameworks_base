@@ -340,6 +340,8 @@ public final class PowerManagerService extends SystemService
     private final SystemPropertiesWrapper mSystemProperties;
     private final Clock mClock;
     private final Injector mInjector;
+
+    private final WakelockMapper mWakelockMapper;
     private final PermissionCheckerWrapper mPermissionCheckerWrapper;
     private final PowerPropertiesWrapper mPowerPropertiesWrapper;
     private final DeviceConfigParameterProvider mDeviceConfigProvider;
@@ -1054,10 +1056,12 @@ public final class PowerManagerService extends SystemService
         Notifier createNotifier(Looper looper, Context context, IBatteryStats batteryStats,
                 SuspendBlocker suspendBlocker, WindowManagerPolicy policy,
                 FaceDownDetector faceDownDetector, ScreenUndimDetector screenUndimDetector,
-                Executor backgroundExecutor, PowerManagerFlags powerManagerFlags) {
+                Executor backgroundExecutor, PowerManagerFlags powerManagerFlags,
+                WakelockMapper wakelockMapper) {
             return new Notifier(
                     looper, context, batteryStats, suspendBlocker, policy, faceDownDetector,
-                    screenUndimDetector, backgroundExecutor, powerManagerFlags, /*injector=*/ null);
+                    screenUndimDetector, backgroundExecutor, powerManagerFlags, /*injector=*/ null,
+                    wakelockMapper);
         }
 
         SuspendBlocker createSuspendBlocker(PowerManagerService service, String name) {
@@ -1168,6 +1172,10 @@ public final class PowerManagerService extends SystemService
         PowerManagerFlags getFlags() {
             return new PowerManagerFlags();
         }
+
+        WakelockMapper getWakelockMapper() {
+            return new WakelockMapper();
+        }
     }
 
     /** Interface for checking an app op permission */
@@ -1236,6 +1244,7 @@ public final class PowerManagerService extends SystemService
         mClock = injector.createClock();
         mFeatureFlags = injector.getFlags();
         mInjector = injector;
+        mWakelockMapper = injector.getWakelockMapper();
 
         mHandlerThread = new ServiceThread(TAG,
                 Process.THREAD_PRIORITY_DISPLAY, /* allowIo= */ false);
@@ -1427,7 +1436,7 @@ public final class PowerManagerService extends SystemService
             mNotifier = mInjector.createNotifier(Looper.getMainLooper(), mContext, mBatteryStats,
                     mInjector.createSuspendBlocker(this, "PowerManagerService.Broadcasts"),
                     mPolicy, mFaceDownDetector, mScreenUndimDetector,
-                    BackgroundThread.getExecutor(), mFeatureFlags);
+                    BackgroundThread.getExecutor(), mFeatureFlags, mWakelockMapper);
 
             mPowerGroups.append(Display.DEFAULT_DISPLAY_GROUP,
                     new PowerGroup(WAKEFULNESS_AWAKE, mPowerGroupWakefulnessChangeListener,
@@ -1744,6 +1753,7 @@ public final class PowerManagerService extends SystemService
             addFrozenStateChangeCallbacksLocked(wakeLock);
             mDirty |= DIRTY_WAKE_LOCKS;
             updatePowerStateLocked();
+            mWakelockMapper.addWakeLock(wakeLock);
             if (notifyAcquire) {
                 // This needs to be done last so we are sure we have acquired the
                 // kernel wake lock.  Otherwise we have a race where the system may
@@ -1894,6 +1904,7 @@ public final class PowerManagerService extends SystemService
             wakeLock.unlinkToDeath();
             wakeLock.setDisabled(true);
             removeWakeLockLocked(wakeLock, index);
+            mWakelockMapper.removeWakeLock(wakeLock);
         }
     }
 
@@ -2127,10 +2138,15 @@ public final class PowerManagerService extends SystemService
             String packageName, int uid, int pid, WorkSource ws, String historyTag,
             IWakeLockCallback callback) {
         if (mSystemReady && wakeLock.mNotifiedAcquired) {
+            if (!Objects.equals(wakeLock.mWorkSource, ws)) {
+                mWakelockMapper.removeWakeLock(wakeLock);
+                mWakelockMapper.addWakeLock(wakeLock, ws);
+            }
             mNotifier.onWakeLockChanging(wakeLock.mFlags, wakeLock.mTag, wakeLock.mPackageName,
                     wakeLock.mOwnerUid, wakeLock.mOwnerPid, wakeLock.mWorkSource,
                     wakeLock.mHistoryTag, wakeLock.mCallback, flags, tag, packageName, uid, pid, ws,
-                    historyTag, callback);
+                    historyTag, callback, /* isBeingCached */ false, /* isCached */ false,
+                    /* uid */ -1);
             notifyWakeLockLongFinishedLocked(wakeLock);
             // Changing the wake lock will count as releasing the old wake lock(s) and
             // acquiring the new ones...  we do this because otherwise once a wakelock

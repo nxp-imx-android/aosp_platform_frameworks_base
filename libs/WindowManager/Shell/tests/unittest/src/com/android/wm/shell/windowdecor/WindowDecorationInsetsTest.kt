@@ -17,7 +17,6 @@ package com.android.wm.shell.windowdecor
 
 import android.graphics.Rect
 import android.os.Binder
-import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.SetFlagsRule
 import android.testing.AndroidTestingRunner
 import android.view.InsetsBoundingRect
@@ -25,7 +24,6 @@ import android.view.WindowInsets.Side.LEFT
 import android.view.WindowInsets.Side.RIGHT
 import android.window.WindowContainerToken
 import androidx.test.filters.SmallTest
-import com.android.window.flags.Flags
 import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
@@ -116,7 +114,6 @@ class WindowDecorationInsetsTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_RELATIVE_INSETS)
     fun `equals with different frame but same height`() {
         val taskFrame = Rect(0, 0, 1000, 600)
         val insets1 =

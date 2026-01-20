@@ -6736,14 +6736,26 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         @Override
         public List<ActivityAssistInfo> getTopVisibleActivities() {
             synchronized (mGlobalLock) {
-                return mRootWindowContainer.getTopVisibleActivities(INVALID_DISPLAY);
+                return mRootWindowContainer.getTopVisibleActivityAssistInfos(INVALID_DISPLAY);
             }
         }
 
         @Override
         public List<ActivityAssistInfo> getTopVisibleActivities(int displayId) {
             synchronized (mGlobalLock) {
-                return mRootWindowContainer.getTopVisibleActivities(displayId);
+                return mRootWindowContainer.getTopVisibleActivityAssistInfos(displayId);
+            }
+        }
+
+        @NonNull
+        @Override
+        public Set<String> getPackagesWithVisibleAppLockOverlay(int userId) {
+            if (mWindowManager.mAppLockController == null) {
+                return Collections.emptySet();
+            }
+            synchronized (mGlobalLock) {
+                return mWindowManager.mAppLockController.getPackagesWithVisibleAppLockOverlayLocked(
+                        userId);
             }
         }
 

@@ -128,13 +128,10 @@ class DesktopDisplayModeController(
         if (currentDisplayWindowingMode == targetDisplayWindowingMode) {
             // If the windowing mode is already as needed, just make sure that the task move allowed
             // bit is set correctly.
-            if (
-                DesktopExperienceFlags.UPDATE_TDAS_TASK_MOVE_ALLOWED_ON_DESKTOP_FIRST_CHANGE.isTrue
-            ) {
-                val wct = WindowContainerTransaction()
-                wct.setIsTaskMoveAllowed(tdaInfo.token, taskMoveAllowed)
-                transitions.startTransition(TRANSIT_CHANGE, wct, /* handler= */ null)
-            }
+            val wct = WindowContainerTransaction()
+            wct.setIsTaskMoveAllowed(tdaInfo.token, taskMoveAllowed)
+            transitions.startTransition(TRANSIT_CHANGE, wct, /* handler= */ null)
+
             // Already in the target mode.
             return
         }
@@ -148,9 +145,7 @@ class DesktopDisplayModeController(
 
         val wct = WindowContainerTransaction()
         wct.setWindowingMode(tdaInfo.token, targetDisplayWindowingMode)
-        if (DesktopExperienceFlags.UPDATE_TDAS_TASK_MOVE_ALLOWED_ON_DESKTOP_FIRST_CHANGE.isTrue) {
-            wct.setIsTaskMoveAllowed(tdaInfo.token, taskMoveAllowed)
-        }
+        wct.setIsTaskMoveAllowed(tdaInfo.token, taskMoveAllowed)
         shellTaskOrganizer
             .getRunningTasks(displayId)
             .filter { it.activityType == ACTIVITY_TYPE_STANDARD }

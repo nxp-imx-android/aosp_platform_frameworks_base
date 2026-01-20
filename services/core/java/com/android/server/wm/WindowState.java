@@ -3350,10 +3350,8 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         // requested to be visible in a short time (e.g. before activity stopped).
         if (!clientVisible && mActivityRecord != null && mWinAnimator.mDrawState == HAS_DRAWN) {
             mWinAnimator.resetDrawState();
-            if (!WindowManager.useClientSurface()) {
-                // Make sure the app can report drawn if it becomes visible again.
-                forceReportingResized();
-            }
+            // Make sure the app can report drawn if it becomes visible again.
+            forceReportingResized();
         }
     }
 
@@ -5103,7 +5101,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
      * Clears factors that would cause report-resize.
      */
     void onResizeHandled() {
-        mWindowFrames.onResizeHandled();
+        mWindowFrames.clearForceReportingResized();
     }
 
     @Override
@@ -5882,6 +5880,9 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
     void setViewVisibility(int viewVisibility) {
         mViewVisibility = viewVisibility;
 
+        if (WindowManager.useClientSurface() && viewVisibility != View.VISIBLE) {
+            mWindowFrames.clearForceReportingResized();
+        }
         if (isPublicPresentation()
                 && (viewVisibility == View.INVISIBLE || viewVisibility == View.GONE)) {
             mWmService.mPresentationController.removePresentation(getDisplayId(),

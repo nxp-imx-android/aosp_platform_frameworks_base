@@ -163,6 +163,7 @@ import com.android.wm.shell.desktopmode.multidesks.PreserveDisplayRequestHandler
 import com.android.wm.shell.draganddrop.DragAndDropController
 import com.android.wm.shell.freeform.FreeformTaskTransitionStarter
 import com.android.wm.shell.fullscreen.FullscreenDisconnectHandler
+import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController
 import com.android.wm.shell.pip2.phone.PipScheduler
 import com.android.wm.shell.pip2.phone.PipTransitionState
 import com.android.wm.shell.recents.RecentTasksController
@@ -331,6 +332,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @Mock private lateinit var launcherApps: LauncherApps
     @Mock private lateinit var transitionStateHolder: TransitionStateHolder
     @Mock private lateinit var fullscreenDisconnectHandler: FullscreenDisconnectHandler
+    @Mock private lateinit var pinnedLayerController: PinnedLayerController
 
     private lateinit var controller: DesktopTasksController
     private lateinit var shellInit: ShellInit
@@ -515,6 +517,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 splitScreenController = Optional.of(splitScreenController),
                 desktopTasksController = Optional.of(controller),
                 fullscreenDisconnectHandler = Optional.of(fullscreenDisconnectHandler),
+                pinnedLayerController = Optional.of(pinnedLayerController),
             )
 
         shellInit.init()

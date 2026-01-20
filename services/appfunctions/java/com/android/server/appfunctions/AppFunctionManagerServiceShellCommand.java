@@ -26,15 +26,16 @@ import static com.android.server.appfunctions.AppSearchDataJsonConverter.searchR
 import static com.android.server.appfunctions.AppSearchDataYamlConverter.convertGenericDocumentToYaml;
 
 import android.annotation.NonNull;
+import android.annotation.RequiresNoPermission;
 import android.app.ActivityManager;
 import android.app.appfunctions.AppFunctionException;
 import android.app.appfunctions.AppFunctionManager;
 import android.app.appfunctions.ExecuteAppFunctionAidlRequest;
 import android.app.appfunctions.ExecuteAppFunctionRequest;
 import android.app.appfunctions.ExecuteAppFunctionResponse;
-import android.app.appfunctions.IAppFunctionEnabledCallback;
 import android.app.appfunctions.IAppFunctionManager;
 import android.app.appfunctions.IExecuteAppFunctionCallback;
+import android.app.appfunctions.ISetAppFunctionEnabledCallback;
 import android.app.appsearch.GenericDocument;
 import android.app.appsearch.SearchResult;
 import android.content.Context;
@@ -338,14 +339,16 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
 
         CountDownLatch countDownLatch = new CountDownLatch(1);
 
-        IAppFunctionEnabledCallback callback =
-                new IAppFunctionEnabledCallback.Stub() {
+        ISetAppFunctionEnabledCallback callback =
+                new ISetAppFunctionEnabledCallback.Stub() {
+                    @RequiresNoPermission
                     @Override
                     public void onSuccess() {
                         pw.println("App function enabled state updated successfully.");
                         countDownLatch.countDown();
                     }
 
+                    @RequiresNoPermission
                     @Override
                     public void onError(android.os.ParcelableException exception) {
                         pw.println("Error setting app function state: " + exception);

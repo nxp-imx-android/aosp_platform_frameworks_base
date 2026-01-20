@@ -1548,6 +1548,26 @@ public class DisplayRotationTests {
         WindowTestsBase.setFieldValue(sMockWm, "mIsPc", false);
     }
 
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_AUTO_ROTATE_ON_SLATE_STATE)
+    public void testRestoreSettings_updatesLaptopMode() throws Exception {
+        mBuilder.setIsLaptop(true);
+        mBuilder.build();
+        configureDisplayRotation(SCREEN_ORIENTATION_LANDSCAPE, false, false);
+
+        mTarget.foldStateChanged(DeviceStateController.DeviceStateEnum.SLATE);
+        assertEquals(IWindowManager.FIXED_TO_USER_ROTATION_DISABLED,
+                mTarget.getFixedToUserRotationMode());
+
+        // Restore settings with default fixed rotation.
+        mTarget.restoreSettings(WindowManagerPolicy.USER_ROTATION_FREE, Surface.ROTATION_0,
+                IWindowManager.FIXED_TO_USER_ROTATION_DEFAULT);
+
+        // Laptop mode should still enforce disabled fixed rotation.
+        assertEquals(IWindowManager.FIXED_TO_USER_ROTATION_DISABLED,
+                mTarget.getFixedToUserRotationMode());
+    }
+
     private DeviceStateAutoRotateSettingController createDeviceStateAutoRotateDependencies(
             boolean isFoldable, boolean autoRotateEnabled, boolean isDeviceStateConfigNonEmpty) {
         // init

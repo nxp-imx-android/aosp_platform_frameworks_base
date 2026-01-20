@@ -29,6 +29,9 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 
 import android.Manifest;
 import android.app.AppGlobals;
@@ -98,6 +101,7 @@ public class AppLockLocalServiceTest {
 
     private static final String TEST_PACKAGE_1 = "testpackage1";
     private static final String TEST_PACKAGE_2 = "testpackage2";
+    private static final String TEST_PACKAGE_3 = "testpackage3";
     private static final int TEST_USER_ID_1 = 1234;
     private static final int TEST_USER_ID_2 = 2234;
     private static final int TEST_USER_ID_3 = 3334;
@@ -196,7 +200,7 @@ public class AppLockLocalServiceTest {
 
         // Set up AppLockLocalService
         TestInjector injector = new TestInjector();
-        mAppLockLocalService = new AppLockLocalService(mAms, injector);
+        mAppLockLocalService = spy(new AppLockLocalService(mAms, injector));
         LocalServices.addService(AppLockInternal.class, mAppLockLocalService);
         mAppLockLocalService.registerPackageLockedStateListener(mListener);
 
@@ -237,6 +241,9 @@ public class AppLockLocalServiceTest {
         final String testPackage1 = "test.package.one";
         final String testPackage2 = "test.package.two";
         final String testPackage3 = "test.package.three";
+        mAppLockLocalService.handleAppLockEnabled(testPackage1, TEST_USER_ID_1);
+        mAppLockLocalService.handleAppLockEnabled(testPackage2, TEST_USER_ID_1);
+        mAppLockLocalService.handleAppLockEnabled(testPackage3, TEST_USER_ID_2);
 
         mAppLockLocalService.setAppLockEnabledPackageSuccessfullyAuthenticated(
                 testPackage1, TEST_USER_ID_1);
@@ -293,8 +300,7 @@ public class AppLockLocalServiceTest {
 
     @Test
     public void isPackageLocked_afterAuthTimeout_true() throws Exception {
-        when(mPackageManager.isPackageAppLockEnabled(eq(TEST_PACKAGE_1),
-                eq(TEST_USER_ID_1))).thenReturn(true);
+        mAppLockLocalService.handleAppLockEnabled(TEST_PACKAGE_1, TEST_USER_ID_1);
         mAppLockLocalService.setAppLockEnabledPackageSuccessfullyAuthenticated(TEST_PACKAGE_1,
                 TEST_USER_ID_1);
 
@@ -381,17 +387,65 @@ public class AppLockLocalServiceTest {
     }
 
     @Test
-    public void setAppLockEnabledPackageSuccessfullyAuthenticated_listenersNotified()
+    public void setAppLockAuth_multiplePackagesWithVisibleOverlay_allUnlocked()
             throws Exception {
+        mAppLockLocalService.handleAppLockEnabled(TEST_PACKAGE_1, TEST_USER_ID_1);
+        mAppLockLocalService.handleAppLockEnabled(TEST_PACKAGE_2, TEST_USER_ID_1);
+        mAppLockLocalService.handleAppLockEnabled(TEST_PACKAGE_3, TEST_USER_ID_1);
+        when(mActivityTaskManagerInternal.getPackagesWithVisibleAppLockOverlay(TEST_USER_ID_1))
+                .thenReturn(Set.of(TEST_PACKAGE_1, TEST_PACKAGE_2));
+
+        mAppLockLocalService.setAppLockEnabledPackageSuccessfullyAuthenticated(TEST_PACKAGE_3,
+                TEST_USER_ID_1);
+        mTestHandler.executeRunnables();
+
+        assertThat(mListener.mUnlockedPackages).containsExactly(TEST_PACKAGE_1, TEST_PACKAGE_2,
+                TEST_PACKAGE_3);
+        assertThat(mAppLockLocalService.packageHasQueuedAppLockedJob(TEST_USER_ID_1,
+                TEST_PACKAGE_1)).isFalse();
+        assertThat(mAppLockLocalService.packageHasQueuedAppLockedJob(TEST_USER_ID_1,
+                TEST_PACKAGE_2)).isFalse();
+        assertThat(mAppLockLocalService.packageHasQueuedAppLockedJob(TEST_USER_ID_1,
+                TEST_PACKAGE_3)).isFalse();
+    }
+
+    @Test
+    public void setAppLockAuth_noPackagesWithVisibleOverlay_onlyPassedPackageUnlocked()
+            throws Exception {
+        mAppLockLocalService.handleAppLockEnabled(TEST_PACKAGE_1, TEST_USER_ID_1);
+        when(mActivityTaskManagerInternal.getPackagesWithVisibleAppLockOverlay(TEST_USER_ID_1))
+                .thenReturn(Set.of());
+
         mAppLockLocalService.setAppLockEnabledPackageSuccessfullyAuthenticated(TEST_PACKAGE_1,
                 TEST_USER_ID_1);
         mTestHandler.executeRunnables();
 
+        assertThat(mListener.mUnlockedPackages).containsExactly(TEST_PACKAGE_1);
         assertThat(mListener.mLocked).isFalse();
         assertThat(mListener.mPackageName).isEqualTo(TEST_PACKAGE_1);
         assertThat(mListener.mUserId).isEqualTo(TEST_USER_ID_1);
         assertThat(mAppLockLocalService.packageHasQueuedAppLockedJob(TEST_USER_ID_1,
                 TEST_PACKAGE_1)).isFalse();
+    }
+
+    @Test
+    public void
+            setAppLockAuth_packageWithVisibleOverlayButAppLockDisabled_onlyPassedPackageUnlocked()
+            throws Exception {
+        mAppLockLocalService.handleAppLockEnabled(TEST_PACKAGE_1, TEST_USER_ID_1);
+        when(mActivityTaskManagerInternal.getPackagesWithVisibleAppLockOverlay(TEST_USER_ID_1))
+                .thenReturn(Set.of(TEST_PACKAGE_2));
+
+        mAppLockLocalService.setAppLockEnabledPackageSuccessfullyAuthenticated(TEST_PACKAGE_1,
+                TEST_USER_ID_1);
+        mTestHandler.executeRunnables();
+
+        assertThat(mListener.mUnlockedPackages).containsExactly(TEST_PACKAGE_1);
+        assertThat(mListener.mLocked).isFalse();
+        assertThat(mListener.mPackageName).isEqualTo(TEST_PACKAGE_1);
+        assertThat(mListener.mUserId).isEqualTo(TEST_USER_ID_1);
+        verify(mAppLockLocalService, never()).handleUnlockedStateLocked(TEST_PACKAGE_2,
+                TEST_USER_ID_1);
     }
 
     @Test
@@ -460,6 +514,7 @@ public class AppLockLocalServiceTest {
     @Test
     public void handleUidChangeLocked_packageNewlyUnlocked_listenerReceivedUnlockedUpdate()
             throws Exception {
+        mAppLockLocalService.handleAppLockEnabled(TEST_PACKAGE_1, TEST_USER_ID_1);
         mAppLockLocalService.setAppLockEnabledPackageSuccessfullyAuthenticated(TEST_PACKAGE_1,
                 TEST_USER_ID_1);
         UidRecord record = setupProcessAndUidRecord(PROCESS_STATE_IMPORTANT_BACKGROUND);
@@ -499,6 +554,7 @@ public class AppLockLocalServiceTest {
 
     @Test
     public void onDeviceLocked_allUnlockedPackagesLockedImmediately() throws Exception {
+        mAppLockLocalService.handleAppLockEnabled(TEST_PACKAGE_1, TEST_USER_ID_1);
         mAppLockLocalService.setAppLockEnabledPackageSuccessfullyAuthenticated(TEST_PACKAGE_1,
                 TEST_USER_ID_1);
         UidRecord record = setupProcessAndUidRecord(PROCESS_STATE_IMPORTANT_BACKGROUND);
@@ -671,12 +727,16 @@ public class AppLockLocalServiceTest {
         Boolean mLocked = null;
         String mPackageName = "";
         int mUserId = -1;
+        List<String> mUnlockedPackages = new ArrayList<>();
 
         @Override
         public void onPackageLockedStateChanged(String packageName, int userId, boolean locked) {
             this.mPackageName = packageName;
             this.mUserId = userId;
             this.mLocked = locked;
+            if (!locked) {
+                mUnlockedPackages.add(packageName);
+            }
         }
 
         boolean hasDefaultValues() {

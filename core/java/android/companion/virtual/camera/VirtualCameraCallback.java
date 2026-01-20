@@ -72,7 +72,6 @@ public interface VirtualCameraCallback {
      * @see VirtualCameraConfig.Builder#setPerFrameCameraMetadataEnabled(boolean)
      * @see CameraCaptureSession
      */
-    @FlaggedApi(Flags.FLAG_VIRTUAL_CAMERA_METADATA)
     default void onConfigureSession(
             @NonNull VirtualCameraSessionConfig virtualCameraSessionConfig,
             @Nullable ObjLongConsumer<CaptureResult> captureResultConsumer) {}
@@ -141,7 +140,6 @@ public interface VirtualCameraCallback {
      * @see VirtualCameraConfig.Builder#setPerFrameCameraMetadataEnabled(boolean)
      * @see #onProcessCaptureRequest(int, long)
      */
-    @FlaggedApi(Flags.FLAG_VIRTUAL_CAMERA_METADATA)
     default void onProcessCaptureRequest(int streamId, long frameId,
             @Nullable CaptureRequest captureRequest) {}
 

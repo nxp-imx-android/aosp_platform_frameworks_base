@@ -117,3 +117,10 @@ flag {
           purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "remove_cached_uids_from_wakelock"
+    namespace: "power"
+    description: "When enabled, removes the attribution of the cached uids from wakelock"
+    bug: "397943328"
+}

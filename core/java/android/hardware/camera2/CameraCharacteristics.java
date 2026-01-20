@@ -755,7 +755,6 @@ public final class CameraCharacteristics extends CameraMetadata<CameraCharacteri
      * @hide
      */
     @SystemApi
-    @FlaggedApi(android.companion.virtualdevice.flags.Flags.FLAG_VIRTUAL_CAMERA_METADATA)
     public static final class Builder {
         private final CameraMetadataNative mNativeMetadata;
 

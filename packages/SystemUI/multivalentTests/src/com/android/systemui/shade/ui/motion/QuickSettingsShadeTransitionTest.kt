@@ -66,7 +66,6 @@ import com.android.systemui.testKosmos
 import com.android.systemui.window.data.repository.fakeWindowRootViewBlurRepository
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineScope
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -89,14 +88,14 @@ import platform.test.screenshot.Displays.Phone
 import platform.test.screenshot.PathConfig
 import platform.test.screenshot.PathElementNoContext
 
-@Ignore("b/467228678")
 @RunWith(ParameterizedAndroidJunit4::class)
 @MotionTest
 @LargeTest
 @RunWithLooper
 @EnableSceneContainer
 @EnableFlags(Flags.FLAG_DUAL_SHADE)
-class QuickSettingsShadeTransitionTest(val deviceSpec: DeviceEmulationSpec) : SysuiTestCase() {
+class QuickSettingsShadeTransitionTest(private val deviceSpec: DeviceEmulationSpec) :
+    SysuiTestCase() {
     private val kosmos = testKosmos()
     private val deviceType = deviceSpec.display.name
 
@@ -157,16 +156,19 @@ class QuickSettingsShadeTransitionTest(val deviceSpec: DeviceEmulationSpec) : Sy
                         ComposeRecordingSpec(
                             MotionControl(
                                 delayRecording = {
-                                    runOnMainThreadAndWaitForIdleSync {
-                                        kosmos.sceneInteractor.instantlyShowOverlay(
-                                            Overlays.QuickSettingsShade,
-                                            "testing",
-                                        )
+                                    awaitCondition {
+                                        kosmos.sceneInteractor.transitionStateFlow.value.isIdle()
                                     }
-
-                                    awaitFrames(1)
                                 }
                             ) {
+                                runOnMainThreadAndWaitForIdleSync {
+                                    kosmos.sceneInteractor.instantlyShowOverlay(
+                                        Overlays.QuickSettingsShade,
+                                        "testing",
+                                    )
+                                }
+
+                                awaitFrames(1)
                                 performTouchInputAsync(onRoot()) {
                                     swipe(
                                         start = Offset(x = (centerX + right) / 2, y = centerY / 3),
@@ -337,6 +339,7 @@ class QuickSettingsShadeTransitionTest(val deviceSpec: DeviceEmulationSpec) : Sy
     }
 
     companion object {
+
         private fun TimeSeriesCaptureScope<SemanticsNodeInteractionsProvider>.featureFloat(
             motionTestValueKey: MotionTestValueKey<Float>
         ) {

@@ -156,6 +156,7 @@ import android.view.IWindowManager;
 import android.view.RemoteAnimationAdapter;
 import android.view.RemoteAnimationTarget;
 import android.view.Surface;
+import android.view.View;
 import android.view.WindowManager;
 import android.window.SplashScreenView;
 import android.window.TaskSnapshot;
@@ -3399,8 +3400,13 @@ public class ActivityRecordTests extends WindowTestsBase {
         player.finish();
         assertFalse(activity.isVisible());
         assertFalse("Reset draw state after committing invisible", mAppWindow.isDrawn());
-        if (!WindowManager.useClientSurface()) {
-            assertTrue("Set pending redraw hint", mAppWindow.setReportResizeHints());
+        assertTrue("Set pending redraw hint", mAppWindow.setReportResizeHints());
+        if (WindowManager.useClientSurface()) {
+            // If the client updated to invisible, the redraw hint should be cleared to avoid extra
+            // resize when it becomes visible again.
+            mAppWindow.getWindowFrames().clearReportResizeHints();
+            mAppWindow.setViewVisibility(View.GONE);
+            assertFalse(mAppWindow.setReportResizeHints());
         }
     }
 

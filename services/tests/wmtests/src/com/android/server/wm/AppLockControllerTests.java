@@ -260,6 +260,24 @@ public class AppLockControllerTests extends WindowTestsBase {
     }
 
     @Test
+    public void testGetPackagesWithVisibleAppLockOverlayLocked() {
+        final AppLockOverlayController appLockOverlayController =
+                mAppLockController.mAppLockOverlayController;
+        spyOn(appLockOverlayController);
+        final ArraySet<String> expectedPackages = new ArraySet<>();
+        expectedPackages.add(TEST_PACKAGE_1);
+        expectedPackages.add(TEST_PACKAGE_2);
+        doReturn(expectedPackages).when(appLockOverlayController)
+                .getPackagesWithVisibleAppLockOverlay(TEST_USER_ID_1);
+
+        final Set<String> result =
+                mAppLockController.getPackagesWithVisibleAppLockOverlayLocked(TEST_USER_ID_1);
+
+        verify(appLockOverlayController).getPackagesWithVisibleAppLockOverlay(TEST_USER_ID_1);
+        assertThat(result).containsExactly(TEST_PACKAGE_1, TEST_PACKAGE_2);
+    }
+
+    @Test
     public void testOnPackageLockedStateChanged_packageLocked_callsLockActivitiesTasks() {
         final AppLockInternal.PackageLockedStateListener listener =
                 captureAppLockListenerInSystemReady();

@@ -97,22 +97,26 @@ android_library {
     manifest: "AndroidManifest-base.xml",
 
     srcs: [
-        ":SystemUI-tests-utils",
+        "utils/src/**/*.java",
+        "utils/src/**/*.kt",
+        ":SystemUI_pod_fixtureFiles",
     ],
 
     libs: [
+        // go/keep-sorted start
         "SystemUI-application",
-
+        "SystemUICustomizationTestUtils",
         "android.test.mock.stubs.system",
         "androidx.compose.ui_ui-test-junit4",
         "androidx.core_core-animation-testing",
-        "flag-junit-base",
         "flag-junit",
+        "flag-junit-base",
+        "kosmos",
         "mockito-kotlin-nodeps",
         "mockito-target-extended-minus-junit4",
         "ravenwood-junit",
-        "SystemUICustomizationTestUtils",
         "testables",
         "truth",
+        // go/keep-sorted end
     ],
 }

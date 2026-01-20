@@ -60,7 +60,6 @@ import android.graphics.Rect;
 import android.os.Parcel;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
-import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.platform.test.flag.junit.SetFlagsRule;
@@ -288,7 +287,6 @@ public class InsetsStateTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_RELATIVE_INSETS)
     public void testCalculateInsets_captionRelativeInsets() {
         mState.getOrCreateSource(ID_CAPTION_BAR, captionBar())
                 .setAttachedInsets(Insets.of(0, 100, 0, 0))
