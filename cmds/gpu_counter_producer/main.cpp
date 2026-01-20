@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#include <filesystem>
 #include <string>
 
 #include <android-base/properties.h>
@@ -45,6 +46,12 @@ typedef void (*FN_PTR)(void);
 #define DEFAULT_LIBRARY_PATH "libgpudataproducer.so"
 
 const char* kPidFileName = "/data/local/tmp/gpu_counter_producer.pid";
+
+#if defined(__LP64__)
+#define VENDOR_LIB_DIR "/vendor/lib64"
+#else
+#define VENDOR_LIB_DIR "/vendor/lib"
+#endif
 
 static FN_PTR loadLibrary(const char* lib) {
     char* error;
@@ -100,6 +107,23 @@ static void clearPidFile() {
     unlink(kPidFileName);
 }
 
+std::string getLdLibraryPath(const std::string& libPath) {
+    namespace fs = std::filesystem;
+    if (fs::exists(libPath)) {
+        if (fs::is_symlink(libPath)) {
+            return fs::canonical(libPath).parent_path().string() + ":" VENDOR_LIB_DIR;
+        } else {
+            return fs::path(libPath).parent_path().string() + ":" VENDOR_LIB_DIR;
+        }
+    }
+
+    fs::path vendorPath = fs::path(VENDOR_LIB_DIR) / libPath;
+    if (fs::is_symlink(vendorPath)) {
+        return fs::canonical(vendorPath).parent_path().string() + ":" VENDOR_LIB_DIR;
+    }
+    return VENDOR_LIB_DIR;
+}
+
 static void usage(const char* pname) {
     fprintf(stderr,
             "Starts the GPU hardware counter profiling Perfetto data producer.\n\n"
@@ -136,8 +160,11 @@ int main(int argc, char** argv) {
         daemon(0, 0);
     }
 
+    std::string libPath = GetProperty(LIBRARY_PATH_PROPERTY, DEFAULT_LIBRARY_PATH);
     if (getenv("LD_LIBRARY_PATH") == nullptr) {
-        setenv("LD_LIBRARY_PATH", "/vendor/lib64:/vendor/lib", 0 /*override*/);
+        LOG_INFO("Library name: %s", libPath.c_str());
+        std::string ldPath = getLdLibraryPath(libPath);
+        setenv("LD_LIBRARY_PATH", ldPath.c_str(), 0 /*override*/);
         LOG_INFO("execv with: LD_LIBRARY_PATH=%s", getenv("LD_LIBRARY_PATH"));
         execvpe(pname, argv, environ);
     }
@@ -146,9 +173,6 @@ int main(int argc, char** argv) {
         LOG_ERR("Could not open %s", kPidFileName);
         return 1;
     }
-
-    std::string libPath = GetProperty(
-        LIBRARY_PATH_PROPERTY, DEFAULT_LIBRARY_PATH);
 
     dlerror(); // Clear any possibly ignored previous error.
     FN_PTR startFunc = loadLibrary(libPath.c_str());
