@@ -154,6 +154,7 @@ aconfig_declarations_group {
         "telecom_module_flags-export-java",
         "telephony_flags_core_java_lib",
         "timezone_flags_core_java_lib",
+        "uilatencystats_flags_core_java_lib",
         // !!! KEEP THIS LIST ALPHABETICAL !!!
     ],
 }
@@ -204,6 +205,13 @@ java_aconfig_library {
 java_aconfig_library {
     name: "camera_platform_flags_core_java_lib",
     aconfig_declarations: "camera_platform_flags",
+    defaults: ["framework-minus-apex-aconfig-java-defaults"],
+}
+
+// UiLatencyStats
+java_aconfig_library {
+    name: "uilatencystats_flags_core_java_lib",
+    aconfig_declarations: "uilatencystats_flags",
     defaults: ["framework-minus-apex-aconfig-java-defaults"],
 }
 
