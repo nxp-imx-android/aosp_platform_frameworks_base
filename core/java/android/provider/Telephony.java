@@ -265,17 +265,76 @@ public final class Telephony {
         }
 
         /**
-         * Appends the read_restriction column value to the query builder to make sure only apps
+         * Appends the {@link #RESTRICTED} column value to the query builder to make sure only apps
          * with appropriate permissions can access restricted messages. Otherwise, the restricted
-         * messages will be filtered out. If the table name is null, the query uses
-         * "read_restriction" as the column name.
+         * messages will be filtered out. If the view name is null, the query uses
+         * {@link #RESTRICTED} as the column name.
+         *
+         * If the flag {@link Flags#FLAG_SECURE_ACCESS_TO_RESTRICTED_RCS_MESSAGES} is disabled,
+         * the query will not be modified, because the client can read all messages.
+         *
+         * @param qb The SQLiteQueryBuilder to construct the query with.
+         * @param restrictedViewName The name of the view to query. If null, the query will just use
+         * the restricted column name. Selected view must contain the {@link #RESTRICTED} column.
+         * The accepted values are: "pdu_restricted", "sms_restricted", "pdu_baseline",
+         * "sms_baseline".
+         * @param canReadRestrictedMessages Whether the caller can read restricted messages. If
+         * false, the restricted messages will be filtered out.
+         * @hide
+         */
+        public static void appendRestrictedToQuery(@NonNull SQLiteQueryBuilder qb,
+                @Nullable String restrictedViewName, boolean canReadRestrictedMessages) {
+            if (Flags.secureAccessToRestrictedRcsMessages() && !canReadRestrictedMessages) {
+                final String restrictedColumnName = restrictedViewName == null
+                        ? RESTRICTED
+                        : (restrictedViewName + "." + RESTRICTED);
+                qb.appendWhereStandalone(restrictedColumnName + " = 0");
+            }
+        }
+
+        /**
+         * Appends the {@link #RESTRICTED} column value to the query builder
+         * to filter out restricted messages if the caller does not have the
+         * {@link AppOpsManager#OP_READ_RESTRICTED_MESSAGES} app op.
+         *
+         * If the flag {@link Flags#FLAG_SECURE_ACCESS_TO_RESTRICTED_RCS_MESSAGES} is disabled,
+         * the query will not be modified, because the client can read all messages.
+         *
+         * @param qb The SQLiteQueryBuilder to construct the query with.
+         * @param joinAssignmentClause Join assignment clause to join a table with the view that has
+         * the {@link #RESTRICTED} column "pdu_baseline._id=part.mid"
+         * @param restrictedViewName The name of the view to query. Selected view must contain the
+         * {@link #RESTRICTED} column. The accepted values are: "pdu_restricted", "sms_restricted",
+         * "pdu_baseline" and "sms_baseline".
+         * @param canReadRestrictedMessages Whether the caller can read restricted messages. If
+         * false, the restricted messages will be filtered out.
+         * @hide
+         */
+        public static void appendRestrictedToQuery(@NonNull SQLiteQueryBuilder qb,
+                @NonNull String joinAssignmentClause,
+                @NonNull String restrictedViewName,
+                boolean canReadRestrictedMessages) {
+            if (Flags.secureAccessToRestrictedRcsMessages() && !canReadRestrictedMessages) {
+                final String restrictedColumnName = restrictedViewName + "." + RESTRICTED;
+                String whereClause = "EXISTS (SELECT 1 FROM " + restrictedViewName
+                    + " WHERE " + joinAssignmentClause + " AND " + restrictedColumnName + " = 0)";
+                qb.appendWhereStandalone(whereClause);
+            }
+        }
+
+        /**
+         * Appends the {@link #READ_RESTRICTION_COLUMN_NAME} column value to the query builder
+         * to filter out restricted messages if the caller does not have the
+         * {@link AppOpsManager#OP_READ_RESTRICTED_MESSAGES} app op.
          *
          * If the flag {@link Flags#FLAG_SECURE_ACCESS_TO_RESTRICTED_RCS_MESSAGES} is disabled,
          * the query will not be modified, because the client can read all messages.
          *
          * @param qb The SQLiteQueryBuilder to construct the query with.
          * @param tableName The name of the table to query. If null, the query will just use the
-         * read_restriction column name.
+         * {@link #READ_RESTRICTION_COLUMN_NAME} column name. Selected table must contain the
+         * {@link #READ_RESTRICTION_COLUMN_NAME} column. The accepted values are: "pdu", "sms",
+         * "threads", "canonical_addresses".
          * @param canReadRestrictedMessages Whether the caller can read restricted messages. If
          * false, the restricted messages will be filtered out.
          * @hide
@@ -293,43 +352,15 @@ public final class Telephony {
         }
 
         /**
-         * Appends the read_restriction column value to the query builder to make sure only apps
-         * with appropriate permissions can access restricted messages. Otherwise, the restricted
-         * messages will be filtered out.
-         *
-         * If the flag {@link Flags#FLAG_SECURE_ACCESS_TO_RESTRICTED_RCS_MESSAGES} is disabled,
-         * the query will not be modified, because the client can read all messages.
-         *
-         * @param qb The SQLiteQueryBuilder to construct the query with.
-         * @param joinAssignmentClause join assignment clause to join a table with the read
-         * restriction table. e.g. "pdu._id=part.mid"
-         * @param readRestrictionTableName The name of the table that contains the read restriction
-         * column. Accepted values are "pdu" and "sms".
-         * @param canReadRestrictedMessages Whether the caller can read restricted messages. If
-         * false, the restricted messages will be filtered out.
-         * @hide
-         */
-        public static void appendReadRestrictionToQuery(@NonNull SQLiteQueryBuilder qb,
-                @NonNull String joinAssignmentClause,
-                @NonNull String readRestrictionTableName,
-                boolean canReadRestrictedMessages) {
-            if (Flags.secureAccessToRestrictedRcsMessages() && !canReadRestrictedMessages) {
-                final int readRestrictionMask = ReadRestrictionValues.READ_RESTRICTION_RESTRICTED;
-                final String readRestrictionColumnName = readRestrictionTableName + "."
-                        + READ_RESTRICTION_COLUMN_NAME;
-                String whereClause = "EXISTS (SELECT 1 FROM " + readRestrictionTableName
-                        + " WHERE " + joinAssignmentClause + " AND (" +
-                        readRestrictionColumnName + " & " + readRestrictionMask + ") = 0)";
-                qb.appendWhereStandalone(whereClause);
-            }
-        }
-
-        /**
          * Boolean bundle entry that specifies the read access restriction for the message. It's
          * immutable and can be set to set only when a new sms or pdu message is inserted and the
          * writer has the {@link AppOpsManager#OP_WRITE_RESTRICTED_MESSAGES} app op, otherwise it
          * defaults to false. A restricted message can be accessed only by apps
          * with a {@link AppOpsManager#OP_READ_RESTRICTED_MESSAGES} app op.
+         *
+         * This value is also a column in the following views: "sms_baseline", "sms_restricted",
+         * "pdu_baseline", "pdu_restricted".
+         *
          * <p>Type: BOOLEAN</p>
          * @hide
          */
