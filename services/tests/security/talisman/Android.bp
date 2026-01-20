@@ -32,9 +32,12 @@ java_defaults {
         "androidx.test.rules",
         "androidx.test.runner",
         "mockito-target-extended-minus-junit4",
+        "modules-utils-extended-mockito-rule",
+        "statsdprotolite",
         "testables",
         "testng",
         "truth",
+        "StatsdTestUtils",
     ],
     jni_libs: [
         // Required by mockito

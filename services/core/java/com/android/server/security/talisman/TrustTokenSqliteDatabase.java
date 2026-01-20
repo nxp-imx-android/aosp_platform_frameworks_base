@@ -87,6 +87,13 @@ class TrustTokenSqliteDatabase extends TrustTokenDatabase implements AutoCloseab
                 });
     }
 
+
+    @Override
+    int countTrustTokenSets(@TrustTokenSet.Type int type) {
+        DatabaseHelper db = getWritableDatabase();
+        return db.countTokens(type);
+    }
+
     @Override
     int cleanUpTrustTokenSets(
             @TrustTokenSet.Type int type, int maxTokenNum, Predicate<TrustTokenSet> verifier) {
