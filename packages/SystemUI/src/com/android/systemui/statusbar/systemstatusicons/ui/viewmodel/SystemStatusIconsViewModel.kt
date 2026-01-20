@@ -30,6 +30,7 @@ import com.android.systemui.statusbar.systemstatusicons.devicesatellite.ui.viewm
 import com.android.systemui.statusbar.systemstatusicons.domain.interactor.ExternalSystemStatusIconInteractor
 import com.android.systemui.statusbar.systemstatusicons.domain.interactor.OrderedIconSlotNamesInteractor
 import com.android.systemui.statusbar.systemstatusicons.ethernet.ui.viewmodel.EthernetIconViewModel
+import com.android.systemui.statusbar.systemstatusicons.heaset.ui.viewmodel.HeadsetIconViewModel
 import com.android.systemui.statusbar.systemstatusicons.hotspot.ui.viewmodel.HotspotIconViewModel
 import com.android.systemui.statusbar.systemstatusicons.mobile.ui.viewmodel.MobileSystemStatusIconsViewModel
 import com.android.systemui.statusbar.systemstatusicons.profile.ui.viewmodel.ManagedProfileIconViewModel
@@ -67,6 +68,7 @@ constructor(
     dataSaverIconViewModelFactory: DataSaverIconViewModel.Factory,
     deviceBasedSatelliteIconViewModelFactory: DeviceBasedSatelliteIconViewModel.Factory,
     ethernetIconViewModelFactory: EthernetIconViewModel.Factory,
+    headsetIconsViewModelFactory: HeadsetIconViewModel.Factory,
     hotspotIconViewModelFactory: HotspotIconViewModel.Factory,
     managedProfileIconViewModelFactory: ManagedProfileIconViewModel.Factory,
     mobileSystemStatusIconsViewModelFactory: MobileSystemStatusIconsViewModel.Factory,
@@ -95,6 +97,7 @@ constructor(
         deviceBasedSatelliteIconViewModelFactory.create(context)
     }
     private val ethernetIcon by lazy { ethernetIconViewModelFactory.create(context) }
+    private val headsetIcon by lazy { headsetIconsViewModelFactory.create(context) }
     private val hotspotIcon by lazy { hotspotIconViewModelFactory.create(context) }
     private val managedProfileIcon by lazy { managedProfileIconViewModelFactory.create(context) }
     private val mobileIcons by lazy { mobileSystemStatusIconsViewModelFactory.create(context) }
@@ -125,6 +128,7 @@ constructor(
             dataSaverIcon,
             deviceSatelliteIcon,
             ethernetIcon,
+            headsetIcon,
             hotspotIcon,
             managedProfileIcon,
             mobileIcons,
@@ -171,6 +175,7 @@ constructor(
             launch { dataSaverIcon.activate() }
             launch { deviceSatelliteIcon.activate() }
             launch { ethernetIcon.activate() }
+            launch { headsetIcon.activate() }
             launch { hotspotIcon.activate() }
             launch { managedProfileIcon.activate() }
             launch { mobileIcons.activate() }
