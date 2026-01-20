@@ -314,7 +314,7 @@ private constructor(
 
     private fun checkScreenFlag(metadata: PreferenceScreenMetadata): Boolean {
         val isFlagDisabled = when (metadata) {
-            is PreferenceScreenCreator, is PreferencesApiScreen-> {
+            is PreferenceScreenCreator, is PreferencesApiScreen -> {
                 !metadata.isFlagEnabled(context)
             }
             else -> {
@@ -591,6 +591,7 @@ fun PreferenceMetadata.toProto(
         screenMetadata.getLaunchIntent(context, launchTarget)?.let { launchIntent = it.toProto() }
         for (tag in metadata.tags(context)) addTags(tag)
     }
+    purpose = metadata.purpose
     persistent = metadata.isPersistent(context)
     if (metadata !is PersistentPreference<*>) return@preferenceProto
     sensitivityLevel = metadata.sensitivityLevel
