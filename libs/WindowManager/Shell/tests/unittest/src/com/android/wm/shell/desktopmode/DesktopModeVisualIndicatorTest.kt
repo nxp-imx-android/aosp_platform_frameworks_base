@@ -28,7 +28,6 @@ import android.view.Display.DEFAULT_DISPLAY
 import android.view.SurfaceControl
 import androidx.test.filters.SmallTest
 import com.android.internal.policy.SystemBarUtils
-import com.android.window.flags.Flags.FLAG_ENABLE_CONNECTED_DISPLAYS_WINDOW_DRAG
 import com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE
 import com.android.wm.shell.R
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
@@ -443,7 +442,6 @@ class DesktopModeVisualIndicatorTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_CONNECTED_DISPLAYS_WINDOW_DRAG)
     fun testDefaultIndicators_crossDisplayDrag_noIndicator() {
         createVisualIndicator(DesktopModeVisualIndicator.DragStartState.FROM_FULLSCREEN)
 

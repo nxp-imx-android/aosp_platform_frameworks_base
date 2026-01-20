@@ -6227,17 +6227,6 @@ class DesktopTasksController(
     ) {
         if (taskInfo.windowingMode != WINDOWING_MODE_FREEFORM) return
         snapEventHandler.removeTaskIfTiled(taskInfo.displayId, taskInfo.taskId)
-        if (!DesktopExperienceFlags.ENABLE_CONNECTED_DISPLAYS_WINDOW_DRAG.isTrue) {
-            updateVisualIndicator(
-                taskInfo,
-                taskSurface,
-                displayId,
-                inputX,
-                taskBounds.top.toFloat(),
-                DragStartState.FROM_FREEFORM,
-            )
-            return
-        }
 
         val indicator =
             getOrCreateVisualIndicator(taskInfo, taskSurface, DragStartState.FROM_FREEFORM)
@@ -6419,9 +6408,7 @@ class DesktopTasksController(
                 val newDisplayId = motionEvent.displayId
                 val displayAreaInfo = rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(newDisplayId)
                 val isCrossDisplayDrag =
-                    DesktopExperienceFlags.ENABLE_CONNECTED_DISPLAYS_WINDOW_DRAG.isTrue &&
-                        newDisplayId != taskInfo.getDisplayId() &&
-                        displayAreaInfo != null
+                    newDisplayId != taskInfo.getDisplayId() && displayAreaInfo != null
 
                 if (!isCrossDisplayDrag && destinationBounds == dragStartBounds) {
                     // There's no actual difference between the start and end bounds, so while a

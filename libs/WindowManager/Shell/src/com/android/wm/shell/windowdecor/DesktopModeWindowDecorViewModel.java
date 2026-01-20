@@ -2303,9 +2303,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             final boolean veiledResizing =
                     desktopConfig.isVeiledResizeEnabled() && !isFluidResizeEnabledPerApp;
             final TaskPositioner taskPositioner = veiledResizing
-                    // TODO(b/383632995): Update when the flag is launched.
-                    ? (DesktopExperienceFlags.ENABLE_CONNECTED_DISPLAYS_WINDOW_DRAG.isTrue()
-                        ? new MultiDisplayVeiledResizeTaskPositioner(
+                    ? new MultiDisplayVeiledResizeTaskPositioner(
                             taskOrganizer,
                             windowDecoration,
                             displayController,
@@ -2316,14 +2314,6 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                             desktopState,
                             desktopTasksController,
                             desktopUserRepositories)
-                        : new VeiledResizeTaskPositioner(
-                            taskOrganizer,
-                            windowDecoration,
-                            displayController,
-                            transitions,
-                            interactionJankMonitor,
-                            handler,
-                            desktopState))
                     : Flags.enableTaskPositionerRefactorClank()
                         ? new ResizeTaskPositioner(
                             windowDecoration,
