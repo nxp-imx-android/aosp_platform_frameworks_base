@@ -102,6 +102,11 @@ class HelpPreferenceTest {
         assertThat(helpPreference.isAvailable(context)).isTrue()
     }
 
+    @Test
+    fun indexable_returnsFalse() {
+        assertThat(helpPreference.indexable).isFalse()
+    }
+
     private fun setSetupWizardComplete(isComplete: Boolean) {
         Settings.Secure.putInt(
             context.contentResolver,
