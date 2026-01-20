@@ -18,6 +18,7 @@ package com.android.wm.shell.desktopai.core
 
 import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.desktopai.api.ITriggerManager
+import com.android.wm.shell.desktopai.api.IUserContextService
 import com.android.wm.shell.desktopai.api.TriggerEvent
 import com.android.wm.shell.desktopai.api.config.CujConfiguration
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_AI
@@ -30,7 +31,10 @@ import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_AI
  * not contain hardcoded logic for specific features (like "Coding Mode" vs "Research Mode").
  * Instead, it follows the instructions in the [CujConfiguration] to route data.
  */
-class DesktopAiOrchestrator(private val triggerManager: ITriggerManager) {
+class DesktopAiOrchestrator(
+    private val triggerManager: ITriggerManager,
+    private val contextService: IUserContextService,
+) {
 
     /**
      * Registers a Critical User Journey with the system. This uses the [TriggerStrategy] to set up
@@ -52,6 +56,10 @@ class DesktopAiOrchestrator(private val triggerManager: ITriggerManager) {
      */
     private fun onTriggerReceived(config: CujConfiguration, triggerEvent: TriggerEvent) {
         ProtoLog.v(WM_SHELL_DESKTOP_AI, "$TAG: Processing triggerEvent: %s", triggerEvent)
+        // Context collection phase
+        val contextQuery = config.contextQueryFactory.create(triggerEvent)
+        val contextData = contextService.getContext(contextQuery)
+        // TODO(b/477202336): Use context Data
     }
 
     companion object {
