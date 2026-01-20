@@ -82,6 +82,10 @@ final class VirtualCameraConversionUtil {
             serviceConfiguration.cameraCharacteristics = convertToVirtualCameraMetadata(
                     cameraConfig.getCameraCharacteristics());
         }
+        if (Flags.cameraMultipleInputStreams()) {
+            serviceConfiguration.isMultiInputStreamEnabled =
+                    cameraConfig.isConcurrentStreamConfigSupported();
+        }
         return serviceConfiguration;
     }
 

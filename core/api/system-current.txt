@@ -4088,6 +4088,7 @@ package android.companion.virtual.camera {
     method @NonNull public String getName();
     method public int getSensorOrientation();
     method @NonNull public java.util.Set<android.companion.virtual.camera.VirtualCameraStreamConfig> getStreamConfigs();
+    method @FlaggedApi("android.companion.virtualdevice.flags.camera_multiple_input_streams") public boolean isConcurrentStreamConfigSupported();
     method public boolean isPerFrameCameraMetadataEnabled();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.companion.virtual.camera.VirtualCameraConfig> CREATOR;
@@ -4103,6 +4104,7 @@ package android.companion.virtual.camera {
     method @NonNull public android.companion.virtual.camera.VirtualCameraConfig.Builder addStreamConfig(@IntRange(from=1) int, @IntRange(from=1) int, int, @IntRange(from=1) int);
     method @NonNull public android.companion.virtual.camera.VirtualCameraConfig build();
     method @NonNull public android.companion.virtual.camera.VirtualCameraConfig.Builder setCameraCharacteristics(@Nullable android.hardware.camera2.CameraCharacteristics);
+    method @FlaggedApi("android.companion.virtualdevice.flags.camera_multiple_input_streams") @NonNull public android.companion.virtual.camera.VirtualCameraConfig.Builder setConcurrentStreamConfigSupported(boolean);
     method @NonNull public android.companion.virtual.camera.VirtualCameraConfig.Builder setLensFacing(int);
     method @NonNull public android.companion.virtual.camera.VirtualCameraConfig.Builder setPerFrameCameraMetadataEnabled(boolean);
     method @NonNull public android.companion.virtual.camera.VirtualCameraConfig.Builder setSensorOrientation(int);
