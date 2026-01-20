@@ -862,7 +862,6 @@ android_library {
     ],
     plugins: [
         "androidx.room_room-compiler-plugin",
-        "dagger2-compiler",
     ],
     lint: {
         test: true,
