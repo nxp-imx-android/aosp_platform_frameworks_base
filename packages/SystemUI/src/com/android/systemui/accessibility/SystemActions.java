@@ -478,7 +478,7 @@ public class SystemActions implements CoreStartable, ConfigurationController.Con
     }
 
     private RemoteAction createRemoteAction(int labelId, String intent) {
-        // TODO(b/148087487): update the icon used below to a valid one
+        // Using a generic icon because it is not used by accessibility services. See b/148087487.
         return new RemoteAction(
                 Icon.createWithResource(mContext, R.drawable.ic_info),
                 mContext.getString(labelId),
