@@ -20,16 +20,19 @@ import android.annotation.SuppressLint
 import android.app.ActivityOptions
 import android.os.Bundle
 import android.os.IBinder
+import android.view.RemoteAnimationAdapter
 import android.window.RemoteTransition
 import android.window.SplashScreen
+import com.android.systemui.Flags
 import com.android.systemui.animation.ActivityTransitionAnimator
 import com.android.systemui.animation.DelegateTransitionAnimatorController
+import com.android.systemui.animation.RemoteAnimationRunnerCompat
 
 /**
  * Returns an [ActivityOptions] bundle created using the given parameters.
  *
- * @param displayId The ID of the display to launch the activity in. Typically this would be the
- *   display the status bar is on.
+ * @param displayId The ID of the display from which we are launching the activity. Typically this
+ *   would be the display the status bar is on.
  * @param transition The animation driver used to start this activity, or null for the default
  *   animation.
  * @param cookie The launch cookie associated with this activity, or null. Only used if [transition]
@@ -38,7 +41,9 @@ import com.android.systemui.animation.DelegateTransitionAnimatorController
 fun createActivityOptions(displayId: Int, transition: RemoteTransition?, cookie: IBinder?): Bundle {
     return createDefaultActivityOptions(transition, cookie)
         .apply {
-            launchDisplayId = displayId
+            if (!Flags.removeLaunchDisplayIdOverride()) {
+                launchDisplayId = displayId
+            }
             callerDisplayId = displayId
             isPendingIntentBackgroundActivityLaunchAllowed = true
         }
@@ -48,8 +53,8 @@ fun createActivityOptions(displayId: Int, transition: RemoteTransition?, cookie:
 /**
  * Returns an [ActivityOptions] bundle created using the given parameters.
  *
- * @param displayId The ID of the display to launch the activity in. Typically this would be the
- *   display the status bar is on.
+ * @param displayId The ID of the display from which we are launching the activity. Typically this
+ *   would be the display the status bar is on.
  * @param transition The animation driver used to start this activity, or null for the default
  *   animation.
  * @param cookie The launch cookie associated with this activity, or null. Only used if [transition]
@@ -75,7 +80,9 @@ fun createActivityOptions(
                 },
                 eventTime,
             )
-            launchDisplayId = displayId
+            if (!Flags.removeLaunchDisplayIdOverride()) {
+                launchDisplayId = displayId
+            }
             callerDisplayId = displayId
             isPendingIntentBackgroundActivityLaunchAllowed = true
         }
@@ -94,6 +101,91 @@ private fun createDefaultActivityOptions(
             ActivityOptions.makeBasic()
         }
     options.launchCookie = cookie
+    options.splashScreenStyle = SplashScreen.SPLASH_SCREEN_STYLE_SOLID_COLOR
+    return options
+}
+
+/**
+ * Returns an ActivityOptions bundle created using the given parameters.
+ *
+ * @param displayId The ID of the display from which we are launching the activity. Typically this
+ *   would be the display the status bar is on.
+ * @param animationAdapter The animation adapter used to start this activity, or {@code null} for
+ *   the default animation.
+ */
+@Deprecated(
+    "Launches requiring the creation of ActivityOptions must use the  RemoteTransition API, and " +
+        "the createActivityOptions(Int, RemoteTransition?, IBinder?) overload accordingly."
+)
+fun createActivityOptions(displayId: Int, animationAdapter: RemoteAnimationAdapter?): Bundle {
+    return createDefaultActivityOptions(animationAdapter)
+        .apply {
+            if (!Flags.removeLaunchDisplayIdOverride()) {
+                launchDisplayId = displayId
+            }
+            callerDisplayId = displayId
+            isPendingIntentBackgroundActivityLaunchAllowed = true
+        }
+        .toBundle()
+}
+
+/**
+ * Returns an ActivityOptions bundle created using the given parameters.
+ *
+ * @param displayId The ID of the display from which we are launching the activity. Typically this
+ *   would be the display the status bar is on.
+ * @param animationAdapter The animation adapter used to start this activity, or {@code null} for
+ *   the default animation.
+ * @param isKeyguardShowing Whether keyguard is currently showing.
+ * @param eventTime The event time in milliseconds since boot, not including sleep. See {@link
+ *   ActivityOptions#setSourceInfo}.
+ */
+@Deprecated(
+    "Launches requiring the creation of ActivityOptions must use the  RemoteTransition API, and " +
+        "the createActivityOptions(Int, RemoteTransition?, IBinder?, Boolean, Long) overload " +
+        "accordingly."
+)
+fun createActivityOptions(
+    displayId: Int,
+    animationAdapter: RemoteAnimationAdapter?,
+    isKeyguardShowing: Boolean,
+    eventTime: Long,
+): Bundle {
+    return createDefaultActivityOptions(animationAdapter)
+        .apply {
+            setSourceInfo(
+                if (isKeyguardShowing) {
+                    ActivityOptions.SourceInfo.TYPE_LOCKSCREEN
+                } else {
+                    ActivityOptions.SourceInfo.TYPE_NOTIFICATION
+                },
+                eventTime,
+            )
+            if (!Flags.removeLaunchDisplayIdOverride()) {
+                launchDisplayId = displayId
+            }
+            callerDisplayId = displayId
+            isPendingIntentBackgroundActivityLaunchAllowed = true
+        }
+        .toBundle()
+}
+
+@SuppressLint("MissingPermission")
+private fun createDefaultActivityOptions(
+    animationAdapter: RemoteAnimationAdapter?
+): ActivityOptions {
+    val options =
+        if (animationAdapter != null) {
+            ActivityOptions.makeRemoteTransition(
+                RemoteTransition(
+                    RemoteAnimationRunnerCompat.wrap(animationAdapter.runner),
+                    animationAdapter.callingApplication,
+                    "SysUILaunch",
+                )
+            )
+        } else {
+            ActivityOptions.makeBasic()
+        }
     options.splashScreenStyle = SplashScreen.SPLASH_SCREEN_STYLE_SOLID_COLOR
     return options
 }

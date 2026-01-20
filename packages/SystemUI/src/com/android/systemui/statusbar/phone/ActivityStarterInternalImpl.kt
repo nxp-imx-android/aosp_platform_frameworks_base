@@ -284,10 +284,7 @@ constructor(
                                 animationAdapter: RemoteAnimationAdapter?
                             ): Int {
                                 return startIntent(
-                                    CentralSurfaces.getActivityOptions(
-                                        currentShadeDisplayId,
-                                        animationAdapter,
-                                    )
+                                    createActivityOptions(currentShadeDisplayId, animationAdapter)
                                 )
                             }
                         },
@@ -475,7 +472,7 @@ constructor(
                     animate,
                     intent.getPackage(),
                 ) { adapter: RemoteAnimationAdapter? ->
-                    startIntent(CentralSurfaces.getActivityOptions(currentShadeDisplayId, adapter))
+                    startIntent(createActivityOptions(currentShadeDisplayId, adapter))
                 }
             }
 
@@ -581,7 +578,7 @@ constructor(
                 TaskStackBuilder.create(currentShadeContext)
                     .addNextIntent(intent)
                     .startActivities(
-                        CentralSurfaces.getActivityOptions(currentShadeDisplayId, adapter),
+                        createActivityOptions(currentShadeDisplayId, adapter),
                         userHandle,
                     )
             }
