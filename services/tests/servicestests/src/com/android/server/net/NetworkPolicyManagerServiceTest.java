@@ -3177,8 +3177,9 @@ public class NetworkPolicyManagerServiceTest {
      * Creates mock {@link SubscriptionInfo} from subscription id.
      */
     private SubscriptionInfo createSubscriptionInfo(int subId) {
-        return new SubscriptionInfo(subId, null, -1, null, null, -1, -1,
-                null, -1, null, null, null, null, false, null, null);
+        return new SubscriptionInfo.Builder()
+                .setId(subId)
+                .build();
     }
 
     /**

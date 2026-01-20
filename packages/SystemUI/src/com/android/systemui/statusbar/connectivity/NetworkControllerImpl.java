@@ -1435,8 +1435,27 @@ public class NetworkControllerImpl extends BroadcastReceiver
     }
 
     private SubscriptionInfo addDemoModeSignalController(int id, int simSlotIndex) {
-        SubscriptionInfo info = new SubscriptionInfo(id, "", simSlotIndex, "", "", 0, 0, "", 0,
-                null, null, null, "", false, null, null);
+        SubscriptionInfo info = new SubscriptionInfo.Builder()
+                .setId(id)
+                .setIccId("")
+                .setSimSlotIndex(simSlotIndex)
+                .setDisplayName("")
+                .setCarrierName("")
+                .setDisplayNameSource(0)
+                .setIconTint(0)
+                .setNumber("")
+                .setDataRoaming(0)
+                .setIcon(null)
+                .setMcc("")
+                .setMnc("")
+                .setCountryIso("")
+                .setEmbedded(false)
+                .setNativeAccessRules(null)
+                .setCardString("")
+                .setCardId(-1)
+                .setPortIndex(0)
+                .setUsageSetting(SubscriptionManager.USAGE_SETTING_DEFAULT)
+                .build();
 
         MobileSignalController controller = mMobileFactory.createMobileSignalController(
                 mConfig,
