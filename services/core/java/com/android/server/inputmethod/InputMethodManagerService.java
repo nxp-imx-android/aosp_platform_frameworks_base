@@ -4423,6 +4423,13 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             return;
         }
         Objects.requireNonNull(imeSwitcherMenu, "imeSwitcherMenu must not be null");
+        final int callingUserId = UserHandle.getCallingUserId();
+        if (callingUserId != UserHandle.USER_SYSTEM && mConcurrentMultiUserModeEnabled) {
+            // Skip registration for non-system user since multi-registration is not supported.
+            // TODO(b/477290989): remove skip logic with support of menu for concurrent multi-user.
+            Slog.w(TAG, "Attempting to register IME Switcher Menu for non-system user");
+            return;
+        }
         synchronized (ImfLock.class) {
             if (mIImeSwitcherMenu != null) {
                 throw new IllegalArgumentException("IME Switcher Menu already registered");
