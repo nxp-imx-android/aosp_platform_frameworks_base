@@ -1072,7 +1072,6 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP)
     fun testImmersiveRestoreButtonClick_exitsImmersiveMode() {
         val onClickListenerCaptor = argumentCaptor<View.OnClickListener>()
         val decor =
@@ -1096,7 +1095,6 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP)
     fun testMaximizeButtonClick_notRequestingImmersive_togglesDesktopTaskSize() {
         val onClickListenerCaptor = argumentCaptor<View.OnClickListener>()
         val decor =
@@ -1121,7 +1119,6 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP)
     fun testImmersiveMenuOptionClick_entersImmersiveMode() {
         val windowDecorationActions = createDefaultWindowActions()
         val decor =
@@ -1139,7 +1136,6 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP)
     fun testImmersiveMenuOptionClick_exitsTiling() {
         val windowDecorationActions = createDefaultWindowActions()
         val decor =

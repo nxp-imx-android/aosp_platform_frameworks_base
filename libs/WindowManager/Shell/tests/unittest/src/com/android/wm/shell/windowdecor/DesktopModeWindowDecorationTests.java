@@ -792,7 +792,6 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP)
     public void updateRelayoutParams_header_addsPaddingInFullImmersive() {
         final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(/* visible= */ true);
         taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_FREEFORM);
@@ -830,7 +829,6 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP)
     public void updateRelayoutParams_header_notAnInsetsSourceInFullyImmersive() {
         final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(/* visible= */ true);
         taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_FREEFORM);
@@ -858,38 +856,6 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 DEFAULT_OCCLUDING_ELEMENTS_CALCULATOR);
 
         assertThat(relayoutParams.mIsInsetSource).isFalse();
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP)
-    public void updateRelayoutParams_header_statusBarInvisible_captionVisible() {
-        final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(/* visible= */ true);
-        taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_FREEFORM);
-        final RelayoutParams relayoutParams = new RelayoutParams();
-
-        DesktopModeWindowDecoration.updateRelayoutParams(
-                relayoutParams,
-                mTestableContext,
-                taskInfo,
-                mMockSplitScreenController,
-                DEFAULT_APPLY_START_TRANSACTION_ON_DRAW,
-                DEFAULT_SHOULD_SET_TASK_POSITIONING_AND_CROP,
-                /* isStatusBarVisible */ false,
-                DEFAULT_IS_KEYGUARD_VISIBLE_AND_OCCLUDED,
-                DEFAULT_IS_IN_FULL_IMMERSIVE_MODE,
-                DEFAULT_IS_DRAGGING,
-                new InsetsState(),
-                DEFAULT_HAS_GLOBAL_FOCUS,
-                mExclusionRegion,
-                DEFAULT_SHOULD_IGNORE_CORNER_RADIUS,
-                DEFAULT_SHOULD_EXCLUDE_CAPTION_FROM_APP_BOUNDS,
-                mDesktopConfig,
-                DEFAULT_IN_SYNC_WITH_TRANSITION,
-                DEFAULT_IS_TASK_LOCKED,
-                DEFAULT_OCCLUDING_ELEMENTS_CALCULATOR);
-
-        // Header is always shown because it's assumed the status bar is always visible.
-        assertThat(relayoutParams.mIsCaptionVisible).isTrue();
     }
 
     @Test
@@ -1014,7 +980,6 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP)
     public void updateRelayoutParams_header_fullyImmersive_captionVisFollowsStatusBar() {
         final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(/* visible= */ true);
         taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_FREEFORM);
@@ -1099,7 +1064,6 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP)
     public void updateRelayoutParams_header_fullyImmersive_overKeyguard_captionNotVisible() {
         final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(/* visible= */ true);
         taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_FREEFORM);
@@ -1339,7 +1303,6 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP)
     public void createMaximizeMenu_taskRequestsImmersive_showsImmersiveOption() {
         final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(true /* visible */);
         taskInfo.requestedVisibleTypes = ~statusBars();
@@ -1360,7 +1323,6 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP)
     public void createMaximizeMenu_taskDoesNotRequestImmersive_hiddenImmersiveOption() {
         final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(true /* visible */);
         taskInfo.requestedVisibleTypes = statusBars();
@@ -1381,7 +1343,6 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP)
     public void createMaximizeMenu_taskResizable_showsSnapOptions() {
         final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(true /* visible */);
         taskInfo.isResizeable = true;
@@ -1402,7 +1363,6 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP)
     public void createMaximizeMenu_taskUnresizable_hiddenSnapOptions() {
         final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(true /* visible */);
         taskInfo.isResizeable = false;

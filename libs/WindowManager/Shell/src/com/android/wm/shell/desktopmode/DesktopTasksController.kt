@@ -3905,8 +3905,7 @@ class DesktopTasksController(
     /** Whether the given [change] in the [transition] is a known desktop change. */
     fun isDesktopChange(transition: IBinder, change: Change): Boolean {
         // Only the immersive controller is currently involved in mixed transitions.
-        return DesktopModeFlags.ENABLE_FULLY_IMMERSIVE_IN_DESKTOP.isTrue &&
-            desktopImmersiveController.isImmersiveChange(transition, change)
+        return desktopImmersiveController.isImmersiveChange(transition, change)
     }
 
     /**
@@ -3916,7 +3915,6 @@ class DesktopTasksController(
      */
     fun shouldPlayDesktopAnimation(info: TransitionRequestInfo): Boolean {
         // Only immersive mixed transition are currently supported.
-        if (!DesktopModeFlags.ENABLE_FULLY_IMMERSIVE_IN_DESKTOP.isTrue) return false
         val triggerTask = info.triggerTask ?: return false
         val userId = triggerTask.userId
         val repository = userRepositories.getProfile(userId)
@@ -6803,7 +6801,6 @@ class DesktopTasksController(
 
     /** Called when a task's info changes. */
     fun onTaskInfoChanged(taskInfo: RunningTaskInfo) {
-        if (!DesktopModeFlags.ENABLE_FULLY_IMMERSIVE_IN_DESKTOP.isTrue) return
         val repository = userRepositories.getProfile(taskInfo.userId)
         val inImmersive = repository.isTaskInFullImmersiveState(taskInfo.taskId)
         val requestingImmersive = taskInfo.requestingImmersive
