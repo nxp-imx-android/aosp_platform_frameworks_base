@@ -134,8 +134,7 @@ open class DesktopModeAppHelper(private val innerHelper: StandardAppHelper) :
         val endY = displayRect.centerY() / 2
 
         // drag the window to move to desktop
-        if (motionEventHelper.inputMethod == TOUCH
-            && DesktopModeFlags.ENABLE_HOLD_TO_DRAG_APP_HANDLE.isTrue) {
+        if (motionEventHelper.inputMethod == TOUCH) {
             // Touch requires hold-to-drag.
             motionEventHelper.holdToDrag(startX, startY, startX, endY, steps = 100)
         } else {
@@ -181,8 +180,7 @@ open class DesktopModeAppHelper(private val innerHelper: StandardAppHelper) :
         val steps = 100 // Number of move steps in the drag gesture.
 
         // Perform the drag action.
-        if (motionEventHelper.inputMethod == TOUCH
-            && DesktopModeFlags.ENABLE_HOLD_TO_DRAG_APP_HANDLE.isTrue) {
+        if (motionEventHelper.inputMethod == TOUCH) {
             // We need more sleep because we are waiting for the split screen indicator.
             motionEventHelper.holdToDrag(startX, startY, endX, endY, steps, sleepTimeBeforeDrop = 1000)
         } else {
