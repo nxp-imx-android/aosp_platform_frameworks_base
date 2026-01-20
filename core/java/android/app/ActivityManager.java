@@ -2879,6 +2879,16 @@ public class ActivityManager {
         public RecentTaskInfo() {
         }
 
+        /**
+         * @hide
+         */
+        public RecentTaskInfo(@NonNull RecentTaskInfo other) {
+            super(other);
+            id = other.id;
+            persistentId = other.persistentId;
+            // Ignore other fields in RecentTaskInfo as they are deprecated post-Q
+        }
+
         private RecentTaskInfo(Parcel source) {
             readFromParcel(source);
         }
@@ -3064,6 +3074,15 @@ public class ActivityManager {
         public int numRunning;
 
         public RunningTaskInfo() {
+        }
+
+        /**
+         * @hide
+         */
+        public RunningTaskInfo(@NonNull RunningTaskInfo other) {
+            super(other);
+            id = other.id;
+            // Ignore other fields in RunningTaskInfo as they are deprecated post-Q
         }
 
         private RunningTaskInfo(Parcel source) {
