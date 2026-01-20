@@ -28,7 +28,7 @@ import com.android.systemui.statusbar.disableflags.domain.interactor.DisableFlag
 import com.android.systemui.statusbar.pipeline.airplane.domain.interactor.AirplaneModeInteractor
 import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.CarrierConfigInteractor
 import com.android.systemui.statusbar.pipeline.shared.domain.model.StatusBarDisableFlagsVisibilityModel
-import com.android.systemui.statusbar.window.data.repository.StatusBarWindowStateRepositoryStore
+import com.android.systemui.statusbar.window.data.repository.StatusBarWindowStatePerDisplayRepository
 import com.android.systemui.statusbar.window.shared.model.StatusBarWindowState
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
@@ -51,7 +51,7 @@ class HomeStatusBarInteractor
 constructor(
     @DisplayId thisDisplayId: Int,
     @DisplayAware backgroundScope: CoroutineScope,
-    statusBarWindowStateRepositoryStore: StatusBarWindowStateRepositoryStore,
+    @DisplayAware statusBarWindowStateRepository: StatusBarWindowStatePerDisplayRepository,
     airplaneModeInteractor: AirplaneModeInteractor,
     carrierConfigInteractor: CarrierConfigInteractor,
     @DisplayAware disableFlagsInteractor: DisableFlagsInteractor,
@@ -59,8 +59,6 @@ constructor(
     keyguardOcclusionInteractor: KeyguardOcclusionInteractor,
     tableLoggerFactory: TableLogBufferFactory,
 ) {
-    private val statusBarWindowStateRepository =
-        statusBarWindowStateRepositoryStore.forDisplay(thisDisplayId)
     private val tableLogger =
         tableLoggerFactory.getOrCreate("HomeStatusBarInteractor[$thisDisplayId]", 100)
 

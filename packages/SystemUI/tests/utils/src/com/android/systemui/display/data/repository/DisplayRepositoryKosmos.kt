@@ -65,6 +65,8 @@ import com.android.systemui.statusbar.quickactions.av.domain.interactor.avContro
 import com.android.systemui.statusbar.ui.SystemBarUtilsState
 import com.android.systemui.statusbar.ui.systemBarUtilsState
 import com.android.systemui.statusbar.window.StatusBarWindowStateController
+import com.android.systemui.statusbar.window.data.repository.StatusBarWindowStatePerDisplayRepository
+import com.android.systemui.statusbar.window.data.repository.fakeStatusBarWindowStatePerDisplayRepository
 import com.android.systemui.util.mockito.mock
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking
@@ -110,6 +112,9 @@ fun Kosmos.createFakeDisplaySubcomponent(
     },
     systemStatusEventAnimationInteractor: () -> SystemStatusEventAnimationInteractor = {
         this.systemStatusEventAnimationInteractor
+    },
+    statusBarWindowStateRepository: () -> StatusBarWindowStatePerDisplayRepository = {
+        this.fakeStatusBarWindowStatePerDisplayRepository
     },
 ): ReferenceSysUIDisplaySubcomponent {
     return object : ReferenceSysUIDisplaySubcomponent {
@@ -183,6 +188,9 @@ fun Kosmos.createFakeDisplaySubcomponent(
 
         override val statusBarRootFactory: StatusBarRootFactory
             get() = statusBarRootFactory()
+
+        override val statusBarWindowStateRepository: StatusBarWindowStatePerDisplayRepository
+            get() = statusBarWindowStateRepository()
 
         override val avControlsChipInteractor: AvControlsChipInteractor
             get() = avControlsChipInteractor()

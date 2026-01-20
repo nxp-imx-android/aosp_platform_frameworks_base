@@ -40,8 +40,6 @@ import com.android.systemui.statusbar.phone.AutoHideControllerStore
 import com.android.systemui.statusbar.phone.CentralSurfacesCommandQueueCallbacks
 import com.android.systemui.statusbar.phone.MultiDisplayAutoHideControllerStore
 import com.android.systemui.statusbar.window.StatusBarWindowControllerStore
-import com.android.systemui.statusbar.window.data.repository.StatusBarWindowStateRepositoryStore
-import com.android.systemui.statusbar.window.data.repository.StatusBarWindowStateRepositoryStoreImpl
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -58,11 +56,6 @@ import dagger.multibindings.IntoMap
         ]
 )
 interface StatusBarPhoneModule {
-
-    @Binds
-    abstract fun windowStateRepoStore(
-        impl: StatusBarWindowStateRepositoryStoreImpl
-    ): StatusBarWindowStateRepositoryStore
 
     @Binds
     abstract fun commandQCallbacks(
