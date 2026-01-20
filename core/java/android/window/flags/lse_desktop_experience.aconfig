@@ -106,16 +106,6 @@ flag {
 }
 
 flag {
-    name: "enable_accessible_custom_headers"
-    namespace: "lse_desktop_experience"
-    description: "Enables a11y-friendly custom header input handling"
-    bug: "339302584"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_add_window_decoration_to_all_tasks"
     namespace: "lse_desktop_experience"
     description: "Adds window decorations to all tasks, even if caption is not being shown."
