@@ -19,7 +19,6 @@ package com.android.systemui.screencapture.record.domain.interactor
 import com.android.systemui.screencapture.common.ScreenCapture
 import com.android.systemui.screencapture.common.ScreenCaptureScope
 import com.android.systemui.screencapture.record.data.repository.ScreenCaptureRecordParametersRepository
-import com.android.systemui.screencapture.record.shared.model.ScreenCaptureRecordParametersModel
 import com.android.systemui.screenrecord.ScreenRecordingAudioSource
 import com.android.systemui.screenrecord.domain.interactor.ScreenRecordingServiceInteractor
 import com.android.systemui.screenrecord.shared.model.ScreenRecordingStatus
@@ -39,7 +38,30 @@ constructor(
     private val repository: ScreenCaptureRecordParametersRepository,
 ) {
 
-    val parameters: StateFlow<ScreenCaptureRecordParametersModel> = repository.parameters
+    var audioSource: ScreenRecordingAudioSource
+        set(value) {
+            if (canChangeAudioSource.value) {
+                repository.audioSource = value
+            }
+        }
+        get() = repository.audioSource
+
+    var shouldShowTaps: Boolean
+        set(value) {
+            serviceInteractor.updateShouldShowTaps(shouldShowTaps)
+            repository.shouldShowTaps = value
+        }
+        get() = repository.shouldShowTaps
+
+    var shouldShowFrontCamera: Boolean
+        set(value) {
+            if (value) {
+                audioSource = audioSource.withEnabledMic()
+            }
+            repository.shouldShowFrontCamera = value
+        }
+        get() = repository.shouldShowFrontCamera
+
     val canChangeAudioSource: StateFlow<Boolean> =
         serviceInteractor.status
             .map { it.canChangeAudioSource() }
@@ -48,27 +70,6 @@ constructor(
                 SharingStarted.Eagerly,
                 serviceInteractor.status.value.canChangeAudioSource(),
             )
-
-    fun setAudioSource(audioSource: ScreenRecordingAudioSource) {
-        if (canChangeAudioSource.value) {
-            repository.updateParameters { it.copy(audioSource = audioSource) }
-        }
-    }
-
-    fun setShouldShowTaps(shouldShowTaps: Boolean) {
-        serviceInteractor.updateShouldShowTaps(shouldShowTaps)
-        repository.updateParameters { it.copy(shouldShowTaps = shouldShowTaps) }
-    }
-
-    fun setShouldShowFrontCamera(shouldShowFrontCamera: Boolean) {
-        repository.updateParameters {
-            if (shouldShowFrontCamera) {
-                it.copy(audioSource = it.audioSource.withEnabledMic(), shouldShowFrontCamera = true)
-            } else {
-                it.copy(shouldShowFrontCamera = false)
-            }
-        }
-    }
 }
 
 private fun ScreenRecordingAudioSource.withEnabledMic(): ScreenRecordingAudioSource =

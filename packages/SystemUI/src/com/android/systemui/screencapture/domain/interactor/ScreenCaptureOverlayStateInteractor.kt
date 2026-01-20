@@ -16,6 +16,7 @@
 
 package com.android.systemui.screencapture.domain.interactor
 
+import androidx.compose.runtime.snapshotFlow
 import com.android.app.tracing.coroutines.flow.stateInTraced
 import com.android.systemui.screencapture.common.ScreenCapture
 import com.android.systemui.screencapture.common.ScreenCaptureScope
@@ -28,7 +29,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.map
 
 @ScreenCaptureScope
 class ScreenCaptureOverlayStateInteractor
@@ -44,7 +44,7 @@ constructor(
     val isCameraInUse: Flow<Boolean> =
         combine(
                 cameraInteractor.isCameraSupported,
-                parametersInteractor.parameters.map { it.shouldShowFrontCamera },
+                snapshotFlow { parametersInteractor.shouldShowFrontCamera },
             ) { isCameraSupported, shouldShowFrontCamera ->
                 isCameraSupported && shouldShowFrontCamera
             }

@@ -262,7 +262,7 @@ class PreCaptureToolbarViewModelTest : SysuiTestCase() {
         kosmos.runTest {
             assertThat(viewModel.recordParametersViewModel.shouldShowTaps).isFalse()
 
-            viewModel.recordParametersViewModel.setShouldShowTaps(true)
+            viewModel.recordParametersViewModel.shouldShowTaps = true
 
             assertThat(viewModel.recordParametersViewModel.shouldShowTaps).isTrue()
         }
