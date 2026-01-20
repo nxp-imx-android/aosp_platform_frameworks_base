@@ -1249,14 +1249,6 @@ flag {
 }
 
 flag {
-    name: "reparent_window_token_api"
-    namespace: "lse_desktop_experience"
-    description: "Allows to reparent a window token to a different display"
-    is_fixed_read_only: true
-    bug: "381258683"
-}
-
-flag {
     name: "repository_based_persistence"
     namespace: "lse_desktop_experience"
     description: "Persists the whole repository instead of just persisting a single desk per event"

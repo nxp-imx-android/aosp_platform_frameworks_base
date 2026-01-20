@@ -3312,9 +3312,6 @@ public class WindowManagerService extends IWindowManager.Stub
     @Override
     public boolean reparentWindowContextToDisplayArea(
             @NonNull IApplicationThread appThread, @NonNull IBinder clientToken, int displayId) {
-        if (!Flags.reparentWindowTokenApi()) {
-            return false;
-        }
         Objects.requireNonNull(appThread);
         Objects.requireNonNull(clientToken);
         final boolean callerCanManageAppTokens = checkCallingPermission(MANAGE_APP_TOKENS,
@@ -3361,9 +3358,6 @@ public class WindowManagerService extends IWindowManager.Stub
             @NonNull DisplayContent display,
             int callingPid,
             int callingUid) {
-        if (!Flags.reparentWindowTokenApi()) {
-            return false;
-        }
         final WindowContainer<?> container = mWindowContextListenerController.getContainer(
                 clientToken);
 
