@@ -33063,6 +33063,9 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
          */
         int mLeashedParentAccessibilityViewId;
 
+        /** The id of the window that embeds this view's window. */
+        int mEmbeddingHostWindowId = AccessibilityWindowInfo.UNDEFINED_WINDOW_ID;
+
         /**
          *
          */

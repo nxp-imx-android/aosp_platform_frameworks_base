@@ -28,7 +28,6 @@ import java.lang.ref.WeakReference;
 
 class RemoteAccessibilityController {
     private static final String TAG = "RemoteAccessibilityController";
-    private int mHostId;
     private RemoteAccessibilityEmbeddedConnection mConnectionWrapper;
     private Matrix mWindowMatrixForEmbeddedHierarchy = new Matrix();
     private final float[] mMatrixValues = new float[9];
@@ -47,20 +46,19 @@ class RemoteAccessibilityController {
         }
     }
 
-    void assosciateHierarchy(IAccessibilityEmbeddedConnection connection,
-        IBinder leashToken, int hostId) {
-        mHostId = hostId;
+    void associateHierarchy(IAccessibilityEmbeddedConnection connection,
+            IBinder leashToken, int hostViewId, int hostWindowId) {
 
         try {
             leashToken = connection.associateEmbeddedHierarchy(
-                leashToken, mHostId);
+                leashToken, hostViewId, hostWindowId);
             setRemoteAccessibilityEmbeddedConnection(connection, leashToken);
         } catch (RemoteException e) {
             Log.d(TAG, "Error in associateEmbeddedHierarchy " + e);
         }
     }
 
-    void disassosciateHierarchy() {
+    void disassociateHierarchy() {
         setRemoteAccessibilityEmbeddedConnection(null, null);
     }
 
