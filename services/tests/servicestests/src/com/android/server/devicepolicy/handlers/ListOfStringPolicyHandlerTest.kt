@@ -59,8 +59,7 @@ class ListOfStringPolicyHandlerTest {
         val metadata =
             ListPolicyMetadata(
                 /* id= */ id,
-                /* elementMetadata= */
-                StringPolicyMetadata(
+                /* elementMetadata= */ StringPolicyMetadata(
                     /* id= */ PolicyIdentifier<String>(name + "#elements"),
                     /* allowedScopes= */ setOf(POLICY_SCOPE_USER, POLICY_SCOPE_DEVICE),
                     /* affectedResource= */ RESOURCE_PER_USER,
