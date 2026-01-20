@@ -55,6 +55,8 @@ public class BrightnessPluginModifier implements BrightnessStateModifier,
     // unique displayId for PluginChangeListener subscription
     private String mRegisteredUniqueDisplayId;
     private float mMaxBrightnessCap = PowerManager.BRIGHTNESS_MAX;
+    @BrightnessReason.Modifier
+    private int mReasonModifier = BrightnessReason.MODIFIER_NONE;
     private float mTransitionRate = CUSTOM_ANIMATION_RATE_NOT_SET;
 
     BrightnessPluginModifier(Handler handler, Context context, DisplayManagerFlags flags,
@@ -82,7 +84,7 @@ public class BrightnessPluginModifier implements BrightnessStateModifier,
             stateBuilder.setMaxBrightness(mMaxBrightnessCap);
             stateBuilder.setCustomAnimationRate(mTransitionRate);
             stateBuilder.setBrightnessMaxReason(BrightnessInfo.BRIGHTNESS_MAX_REASON_PLUGIN);
-            stateBuilder.getBrightnessReason().addModifier(BrightnessReason.MODIFIER_PLUGIN);
+            stateBuilder.getBrightnessReason().addModifier(mReasonModifier);
 
         }
     }
@@ -91,6 +93,7 @@ public class BrightnessPluginModifier implements BrightnessStateModifier,
     public void dump(PrintWriter pw) {
         pw.println("BrightnessPluginModifier:");
         pw.println("  mMaxBrightnessCap=" + mMaxBrightnessCap);
+        pw.println("  mReasonModifier=" + mReasonModifier);
         pw.println("  mRegisteredUniqueDisplayId=" + mRegisteredUniqueDisplayId);
     }
 
@@ -141,8 +144,11 @@ public class BrightnessPluginModifier implements BrightnessStateModifier,
             maxBrightnessCapOverride) {
         if (maxBrightnessCapOverride != null) {
             float newMaxBrightnessCap = maxBrightnessCapOverride.maxBrightnessCap();
-            if (mMaxBrightnessCap != newMaxBrightnessCap) {
+            @BrightnessReason.Modifier
+            int reasonModifier = maxBrightnessCapOverride.reasonModifier();
+            if (mMaxBrightnessCap != newMaxBrightnessCap || reasonModifier != mReasonModifier) {
                 mMaxBrightnessCap = newMaxBrightnessCap;
+                mReasonModifier = reasonModifier;
                 mTransitionRate = maxBrightnessCapOverride.customTransitionRate();
                 mClamperChangeListener.onChanged();
             }

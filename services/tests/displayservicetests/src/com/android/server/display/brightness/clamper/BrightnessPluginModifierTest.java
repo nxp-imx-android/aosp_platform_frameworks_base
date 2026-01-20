@@ -37,7 +37,6 @@ import androidx.test.platform.app.InstrumentationRegistry;
 import com.android.internal.display.BrightnessSynchronizer;
 import com.android.server.display.DisplayBrightnessState;
 import com.android.server.display.DisplayDeviceConfig;
-import com.android.server.display.brightness.BrightnessReason;
 import com.android.server.display.plugin.PluginManager;
 import com.android.server.display.plugin.types.MaxBrightnessCapOverride;
 import com.android.server.testutils.TestHandler;
@@ -212,11 +211,9 @@ public class BrightnessPluginModifierTest {
         assertWithMessage("DisplayBrightnessState has different brightnessMaxReason")
                 .that(stateBuilder.getBrightnessMaxReason())
                 .isEqualTo(maxBrightnessReason);
-
-        int modifier = isActive ? BrightnessReason.MODIFIER_PLUGIN : NO_MODIFIER;
         assertWithMessage("DisplayBrightnessState has different brightnessReason modifier")
                 .that(stateBuilder.getBrightnessReason().getModifier())
-                .isEqualTo(modifier);
+                .isEqualTo(NO_MODIFIER);
     }
 
     private static class TestInjector extends BrightnessPluginModifier.Injector {

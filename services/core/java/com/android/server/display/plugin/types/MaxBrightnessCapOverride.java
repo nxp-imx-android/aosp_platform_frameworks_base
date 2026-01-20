@@ -20,6 +20,7 @@ import android.annotation.FloatRange;
 import android.os.PowerManager;
 
 import com.android.internal.annotations.Keep;
+import com.android.server.display.brightness.BrightnessReason;
 
 /**
  * Max Brightness Cap override value.
@@ -38,5 +39,9 @@ import com.android.internal.annotations.Keep;
 public record MaxBrightnessCapOverride(
         @FloatRange(from = PowerManager.BRIGHTNESS_MIN, to = PowerManager.BRIGHTNESS_MAX)
         float maxBrightnessCap,
-        float customTransitionRate) {
+        float customTransitionRate,
+        @BrightnessReason.Modifier int reasonModifier) {
+    public MaxBrightnessCapOverride(float maxBrightnessCap, float customTransitionRate) {
+        this(maxBrightnessCap, customTransitionRate, BrightnessReason.MODIFIER_NONE);
+    }
 }
