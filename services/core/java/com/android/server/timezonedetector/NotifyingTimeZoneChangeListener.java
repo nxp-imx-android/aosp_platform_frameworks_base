@@ -362,18 +362,10 @@ public class NotifyingTimeZoneChangeListener implements TimeZoneChangeListener {
         }
 
         switch (lastTimeZoneChangeRecord.getEvent().getOrigin()) {
-            case ORIGIN_TELEPHONY:
-                mRejectedTelephonyChanges += 1;
-                break;
-            case ORIGIN_LOCATION:
-                mRejectedLocationChanges += 1;
-                break;
-            case ORIGIN_FUSED:
-                mRejectedFusedChanges += 1;
-                break;
-            default:
-                mRejectedUnknownChanges += 1;
-                break;
+            case ORIGIN_TELEPHONY -> mRejectedTelephonyChanges += 1;
+            case ORIGIN_LOCATION -> mRejectedLocationChanges += 1;
+            case ORIGIN_FUSED -> mRejectedFusedChanges += 1;
+            default -> mRejectedUnknownChanges += 1;
         }
     }
 
@@ -391,6 +383,8 @@ public class NotifyingTimeZoneChangeListener implements TimeZoneChangeListener {
 
         int source;
         switch (autoEvent.getOrigin()) {
+            // Disable lint check (line length) for generated long constant name.
+            // CHECKSTYLE:OFF Generated code
             case ORIGIN_LOCATION:
                 source =
                         AUTOMATIC_TIME_ZONE_CHANGE_REVERTED_BY_USER_REPORTED__SOURCE__TIME_ZONE_SOURCE_LOCATION;
@@ -403,6 +397,7 @@ public class NotifyingTimeZoneChangeListener implements TimeZoneChangeListener {
                 source =
                         AUTOMATIC_TIME_ZONE_CHANGE_REVERTED_BY_USER_REPORTED__SOURCE__TIME_ZONE_SOURCE_FUSED_SIGNALS;
                 break;
+            // CHECKSTYLE:ON Generated code
             default:
                 source = AUTOMATIC_TIME_ZONE_CHANGE_REVERTED_BY_USER_REPORTED__SOURCE__UNSPECIFIED;
                 break;

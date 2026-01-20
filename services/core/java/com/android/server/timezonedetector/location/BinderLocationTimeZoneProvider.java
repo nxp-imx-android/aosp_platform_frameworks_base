@@ -93,41 +93,33 @@ class BinderLocationTimeZoneProvider extends LocationTimeZoneProvider {
                 case PROVIDER_STATE_STARTED_INITIALIZING:
                 case PROVIDER_STATE_STARTED_CERTAIN:
                 case PROVIDER_STATE_STARTED_UNCERTAIN:
-                    {
-                        debugLog(
-                                "handleOnProviderBound mProviderName="
-                                        + mProviderName
-                                        + ", currentState="
-                                        + currentState
-                                        + ": Provider is started.");
-                        break;
-                    }
+                    debugLog(
+                            "handleOnProviderBound mProviderName="
+                                    + mProviderName
+                                    + ", currentState="
+                                    + currentState
+                                    + ": Provider is started.");
+                    break;
                 case PROVIDER_STATE_STOPPED:
-                    {
-                        debugLog(
-                                "handleOnProviderBound mProviderName="
-                                        + mProviderName
-                                        + ", currentState="
-                                        + currentState
-                                        + ": Provider is stopped.");
-                        break;
-                    }
+                    debugLog(
+                            "handleOnProviderBound mProviderName="
+                                    + mProviderName
+                                    + ", currentState="
+                                    + currentState
+                                    + ": Provider is stopped.");
+                    break;
                 case PROVIDER_STATE_PERM_FAILED:
                 case PROVIDER_STATE_DESTROYED:
-                    {
-                        debugLog(
-                                "handleOnProviderBound"
-                                        + ", mProviderName="
-                                        + mProviderName
-                                        + ", currentState="
-                                        + currentState
-                                        + ": No state change required, provider is terminated.");
-                        break;
-                    }
+                    debugLog(
+                            "handleOnProviderBound"
+                                    + ", mProviderName="
+                                    + mProviderName
+                                    + ", currentState="
+                                    + currentState
+                                    + ": No state change required, provider is terminated.");
+                    break;
                 default:
-                    {
-                        throw new IllegalStateException("Unknown currentState=" + currentState);
-                    }
+                    throw new IllegalStateException("Unknown currentState=" + currentState);
             }
         }
     }

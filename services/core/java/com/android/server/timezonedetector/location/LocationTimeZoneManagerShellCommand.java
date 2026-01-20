@@ -95,20 +95,14 @@ class LocationTimeZoneManagerShellCommand extends ShellCommand {
             return handleDefaultCommands(cmd);
         }
 
-        switch (cmd) {
-            case SHELL_COMMAND_START:
-                return runStart();
-            case SHELL_COMMAND_START_WITH_TEST_PROVIDERS:
-                return runStartWithTestProviders();
-            case SHELL_COMMAND_STOP:
-                return runStop();
-            case SHELL_COMMAND_CLEAR_RECORDED_PROVIDER_STATES:
-                return runClearRecordedProviderStates();
-            case SHELL_COMMAND_DUMP_STATE:
-                return runDumpControllerState();
-            default:
-                return handleDefaultCommands(cmd);
-        }
+        return switch (cmd) {
+            case SHELL_COMMAND_START -> runStart();
+            case SHELL_COMMAND_START_WITH_TEST_PROVIDERS -> runStartWithTestProviders();
+            case SHELL_COMMAND_STOP -> runStop();
+            case SHELL_COMMAND_CLEAR_RECORDED_PROVIDER_STATES -> runClearRecordedProviderStates();
+            case SHELL_COMMAND_DUMP_STATE -> runDumpControllerState();
+            default -> handleDefaultCommands(cmd);
+        };
     }
 
     @Override
@@ -328,25 +322,18 @@ class LocationTimeZoneManagerShellCommand extends ShellCommand {
     }
 
     private static int convertControllerStateToProtoEnum(@State String state) {
-        switch (state) {
-            case STATE_PROVIDERS_INITIALIZING:
-                return LocationTimeZoneManagerProto.CONTROLLER_STATE_PROVIDERS_INITIALIZING;
-            case STATE_STOPPED:
-                return LocationTimeZoneManagerProto.CONTROLLER_STATE_STOPPED;
-            case STATE_INITIALIZING:
-                return LocationTimeZoneManagerProto.CONTROLLER_STATE_INITIALIZING;
-            case STATE_UNCERTAIN:
-                return LocationTimeZoneManagerProto.CONTROLLER_STATE_UNCERTAIN;
-            case STATE_CERTAIN:
-                return LocationTimeZoneManagerProto.CONTROLLER_STATE_CERTAIN;
-            case STATE_FAILED:
-                return LocationTimeZoneManagerProto.CONTROLLER_STATE_FAILED;
-            case STATE_DESTROYED:
-                return LocationTimeZoneManagerProto.CONTROLLER_STATE_DESTROYED;
-            case STATE_UNKNOWN:
-            default:
-                return LocationTimeZoneManagerProto.CONTROLLER_STATE_UNKNOWN;
-        }
+        return switch (state) {
+            case STATE_PROVIDERS_INITIALIZING ->
+                    LocationTimeZoneManagerProto.CONTROLLER_STATE_PROVIDERS_INITIALIZING;
+            case STATE_STOPPED -> LocationTimeZoneManagerProto.CONTROLLER_STATE_STOPPED;
+            case STATE_INITIALIZING -> LocationTimeZoneManagerProto.CONTROLLER_STATE_INITIALIZING;
+            case STATE_UNCERTAIN -> LocationTimeZoneManagerProto.CONTROLLER_STATE_UNCERTAIN;
+            case STATE_CERTAIN -> LocationTimeZoneManagerProto.CONTROLLER_STATE_CERTAIN;
+            case STATE_FAILED -> LocationTimeZoneManagerProto.CONTROLLER_STATE_FAILED;
+            case STATE_DESTROYED -> LocationTimeZoneManagerProto.CONTROLLER_STATE_DESTROYED;
+            case STATE_UNKNOWN -> LocationTimeZoneManagerProto.CONTROLLER_STATE_UNKNOWN;
+            default -> LocationTimeZoneManagerProto.CONTROLLER_STATE_UNKNOWN;
+        };
     }
 
     private static void writeProviderStates(
@@ -365,40 +352,38 @@ class LocationTimeZoneManagerShellCommand extends ShellCommand {
     }
 
     private static int convertProviderStateEnumToProtoEnum(@ProviderStateEnum int stateEnum) {
-        switch (stateEnum) {
-            case PROVIDER_STATE_UNKNOWN:
-                return LocationTimeZoneManagerProto.TIME_ZONE_PROVIDER_STATE_UNKNOWN;
-            case PROVIDER_STATE_STARTED_INITIALIZING:
-                return LocationTimeZoneManagerProto.TIME_ZONE_PROVIDER_STATE_INITIALIZING;
-            case PROVIDER_STATE_STARTED_CERTAIN:
-                return LocationTimeZoneManagerProto.TIME_ZONE_PROVIDER_STATE_CERTAIN;
-            case PROVIDER_STATE_STARTED_UNCERTAIN:
-                return LocationTimeZoneManagerProto.TIME_ZONE_PROVIDER_STATE_UNCERTAIN;
-            case PROVIDER_STATE_STOPPED:
-                return LocationTimeZoneManagerProto.TIME_ZONE_PROVIDER_STATE_DISABLED;
-            case PROVIDER_STATE_PERM_FAILED:
-                return LocationTimeZoneManagerProto.TIME_ZONE_PROVIDER_STATE_PERM_FAILED;
-            case PROVIDER_STATE_DESTROYED:
-                return LocationTimeZoneManagerProto.TIME_ZONE_PROVIDER_STATE_DESTROYED;
-            default:
-                throw new IllegalArgumentException("Unknown stateEnum=" + stateEnum);
-        }
+        return switch (stateEnum) {
+            case PROVIDER_STATE_UNKNOWN ->
+                    LocationTimeZoneManagerProto.TIME_ZONE_PROVIDER_STATE_UNKNOWN;
+            case PROVIDER_STATE_STARTED_INITIALIZING ->
+                    LocationTimeZoneManagerProto.TIME_ZONE_PROVIDER_STATE_INITIALIZING;
+            case PROVIDER_STATE_STARTED_CERTAIN ->
+                    LocationTimeZoneManagerProto.TIME_ZONE_PROVIDER_STATE_CERTAIN;
+            case PROVIDER_STATE_STARTED_UNCERTAIN ->
+                    LocationTimeZoneManagerProto.TIME_ZONE_PROVIDER_STATE_UNCERTAIN;
+            case PROVIDER_STATE_STOPPED ->
+                    LocationTimeZoneManagerProto.TIME_ZONE_PROVIDER_STATE_DISABLED;
+            case PROVIDER_STATE_PERM_FAILED ->
+                    LocationTimeZoneManagerProto.TIME_ZONE_PROVIDER_STATE_PERM_FAILED;
+            case PROVIDER_STATE_DESTROYED ->
+                    LocationTimeZoneManagerProto.TIME_ZONE_PROVIDER_STATE_DESTROYED;
+            default -> throw new IllegalArgumentException("Unknown stateEnum=" + stateEnum);
+        };
     }
 
     private static int convertDetectionAlgorithmStatusToEnumToProtoEnum(
             @DetectionAlgorithmStatus int statusEnum) {
-        switch (statusEnum) {
-            case DETECTION_ALGORITHM_STATUS_UNKNOWN:
-                return TimeZoneDetectorProto.DETECTION_ALGORITHM_STATUS_UNKNOWN;
-            case DETECTION_ALGORITHM_STATUS_NOT_SUPPORTED:
-                return TimeZoneDetectorProto.DETECTION_ALGORITHM_STATUS_NOT_SUPPORTED;
-            case DETECTION_ALGORITHM_STATUS_NOT_RUNNING:
-                return TimeZoneDetectorProto.DETECTION_ALGORITHM_STATUS_NOT_RUNNING;
-            case DETECTION_ALGORITHM_STATUS_RUNNING:
-                return TimeZoneDetectorProto.DETECTION_ALGORITHM_STATUS_RUNNING;
-            default:
-                throw new IllegalArgumentException("Unknown statusEnum=" + statusEnum);
-        }
+        return switch (statusEnum) {
+            case DETECTION_ALGORITHM_STATUS_UNKNOWN ->
+                    TimeZoneDetectorProto.DETECTION_ALGORITHM_STATUS_UNKNOWN;
+            case DETECTION_ALGORITHM_STATUS_NOT_SUPPORTED ->
+                    TimeZoneDetectorProto.DETECTION_ALGORITHM_STATUS_NOT_SUPPORTED;
+            case DETECTION_ALGORITHM_STATUS_NOT_RUNNING ->
+                    TimeZoneDetectorProto.DETECTION_ALGORITHM_STATUS_NOT_RUNNING;
+            case DETECTION_ALGORITHM_STATUS_RUNNING ->
+                    TimeZoneDetectorProto.DETECTION_ALGORITHM_STATUS_RUNNING;
+            default -> throw new IllegalArgumentException("Unknown statusEnum=" + statusEnum);
+        };
     }
 
     private void reportError(@NonNull Throwable e) {

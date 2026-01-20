@@ -16,7 +16,6 @@
 package com.android.server.timezonedetector;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Represents a time zone suggestion from an origin that disagrees with the current fused time zone.

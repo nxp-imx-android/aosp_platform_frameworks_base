@@ -220,15 +220,8 @@ class TimeZoneDetectorShellCommand extends ShellCommand {
         String opt;
         while ((opt = cmd.getNextArg()) != null) {
             switch (opt) {
-                case "--zone_id":
-                    {
-                        zoneId = cmd.getNextArgRequired();
-                        break;
-                    }
-                default:
-                    {
-                        throw new IllegalArgumentException("Unknown option: " + opt);
-                    }
+                case "--zone_id" -> zoneId = cmd.getNextArgRequired();
+                default -> throw new IllegalArgumentException("Unknown option: " + opt);
             }
         }
 
