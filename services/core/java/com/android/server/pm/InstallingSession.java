@@ -269,7 +269,7 @@ class InstallingSession {
                     pkgLite, mRequiredInstalledVersionCode, mInstallFlags);
             mRet = ret.first;
             if (mRet != INSTALL_SUCCEEDED) {
-                request.setError(mRet, "Failed to verify version code");
+                request.setError(mRet, "Failed to verify version code: " + ret.second);
                 return;
             }
         }
