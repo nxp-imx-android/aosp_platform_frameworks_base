@@ -565,6 +565,8 @@ android_library {
         "androidx.media3.media3-session",
         "androidx.graphics_graphics-core",
         "com.google.android.material_material",
+        // Unlike most pods, this module is directly included into GlobalModule
+        "com.android.systemui.util.time_dagger",
         "device_state_flags_lib",
         "kotlinx_coroutines_android",
         "kotlinx_coroutines",
@@ -690,7 +692,7 @@ java_library {
         "tests/utils/src/com/android/systemui/util/time/FakeSystemClock.java",
     ],
     static_libs: [
-        "com.android.systemui.util.time-api",
+        "com.android.systemui.util.time_api",
     ],
     libs: [
         "androidx.annotation_annotation",

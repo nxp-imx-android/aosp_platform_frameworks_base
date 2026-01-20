@@ -25,7 +25,7 @@ java_library {
     ],
     libs: ["//frameworks/libs/systemui:tracinglib-platform"],
     static_libs: [
-        "com.android.systemui.util.time-api",
+        "com.android.systemui.util.time_api",
         "kotlin-stdlib",
         "kotlinx_coroutines",
     ],

@@ -19,30 +19,33 @@ package {
 }
 
 java_library {
-    name: "com.android.systemui.util.time-api",
-    srcs: ["src/api/**/*.java"],
+    name: "com.android.systemui.util.time_api",
+    defaults: ["sysui_api"],
+
     libs: [
         "androidx.annotation_annotation",
-    ],
-    defaults: [
-        "SystemUI_pod_defaults_api",
     ],
 }
 
 java_library {
-    name: "com.android.systemui.util.time-impl",
-    srcs: [
-        "src/main/**/*.java",
-        "src/main/**/*.kt",
-    ],
+    name: "com.android.systemui.util.time_main",
+    defaults: ["sysui_main"],
     libs: [
         "SystemUISharedLib",
-        "dagger2",
     ],
     static_libs: [
-        "com.android.systemui.util.time-api",
+        "com.android.systemui.util.time_api",
     ],
-    defaults: [
-        "SystemUI_pod_defaults_impl",
+}
+
+java_library {
+    name: "com.android.systemui.util.time_dagger",
+    defaults: ["sysui_dagger"],
+    static_libs: [
+        "com.android.systemui.util.time_main",
+    ],
+    visibility: [
+        // Unlike most pods, this module is directly included into GlobalModule
+        "//frameworks/base/packages/SystemUI",
     ],
 }

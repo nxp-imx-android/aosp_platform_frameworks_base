@@ -101,7 +101,7 @@ java_library {
         "com.android.systemui.util.kotlin",
         "com.android.systemui.util.policy-api",
         "com.android.systemui.util.settings_api",
-        "com.android.systemui.util.time-api",
+        "com.android.systemui.util.time_api",
     ],
     visibility: ["//frameworks/base/packages/SystemUI:__pkg__"],
 }
