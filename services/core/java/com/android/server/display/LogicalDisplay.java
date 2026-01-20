@@ -16,6 +16,8 @@
 
 package com.android.server.display;
 
+import static android.view.Display.Mode.FLAG_ANISOTROPY_CORRECTION;
+import static android.view.Display.Mode.FLAG_SIZE_OVERRIDE;
 import static android.view.Display.Mode.INVALID_MODE_ID;
 
 import static com.android.server.display.DisplayDeviceInfo.FLAG_ALLOWS_CONTENT_MODE_SWITCH;
@@ -659,7 +661,7 @@ final class LogicalDisplay {
             // we will try to find corresponding anisotropy corrected mode
             for (Display.Mode mode : modes) {
                 if (selectedModeId == mode.getParentModeId()
-                        && (mode.getFlags() & Display.Mode.FLAG_ANISOTROPY_CORRECTION) != 0) {
+                        && (mode.getFlags() & FLAG_ANISOTROPY_CORRECTION) != 0) {
                     return mode;
                 }
             }
@@ -673,20 +675,7 @@ final class LogicalDisplay {
             return null;
         }
 
-        Display.Mode userPreferredMode = null;
-        for (Display.Mode mode : modes) {
-            if (userPreferredModeId == mode.getModeId()) {
-                userPreferredMode = mode;
-                break;
-            }
-        }
-
-        if (userPreferredMode != null
-                && (userPreferredMode.getFlags() & Display.Mode.FLAG_SIZE_OVERRIDE) != 0) {
-            return userPreferredMode;
-        }
-
-        return null;
+        return deviceInfo.getDisplayModeForSizeOverride();
     }
 
     private void updateFrameRateOverrides(DisplayDeviceInfo deviceInfo) {
@@ -833,8 +822,9 @@ final class LogicalDisplay {
         // For size override modes we want to scale logical width and height to physical/user mode
         // width and height ratio
         Display.Mode userMode = getUserPreferredModeForSizeOverrideLocked(displayDeviceInfo);
+        int overrideSizeFlags = FLAG_SIZE_OVERRIDE | FLAG_ANISOTROPY_CORRECTION;
         if (displayDeviceInfo.type == Display.TYPE_EXTERNAL && userMode != null
-                && (userMode.getFlags() & Display.Mode.FLAG_SIZE_OVERRIDE) != 0) {
+                && (userMode.getFlags() & overrideSizeFlags) != 0) {
             int userWidth = rotated ? userMode.getPhysicalHeight() : userMode.getPhysicalWidth();
             int userHeight = rotated ? userMode.getPhysicalWidth() : userMode.getPhysicalHeight();
             displayLogicalWidth = displayLogicalWidth * physWidth / userWidth;

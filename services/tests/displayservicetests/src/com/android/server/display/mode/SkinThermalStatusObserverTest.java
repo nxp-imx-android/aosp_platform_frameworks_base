@@ -43,10 +43,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
-import java.util.Arrays;
-import java.util.List;
-
-
 /**
  * Tests for DisplayModeDirector.SkinThermalStatusObserver. Comply with changes described in
  * b/266789924
@@ -118,16 +114,15 @@ public class SkinThermalStatusObserverTest {
 
         Vote vote = displayVotes.get(Vote.PRIORITY_SKIN_TEMPERATURE);
 
-        assertThat(vote).isInstanceOf(CombinedVote.class);
-        CombinedVote expectedVote = new CombinedVote(Arrays.asList(
-                new RefreshRateVote.RenderVote(0, 60)));
+        assertThat(vote).isInstanceOf(RefreshRateVote.RenderVote.class);
+        Vote expectedVote = new RefreshRateVote.RenderVote(0, 60);
         assertEquals(expectedVote, vote);
 
         SparseArray<Vote> otherDisplayVotes = mStorage.getVotes(DISPLAY_ID_OTHER);
         assertEquals(1, otherDisplayVotes.size());
 
         vote = otherDisplayVotes.get(Vote.PRIORITY_SKIN_TEMPERATURE);
-        assertThat(vote).isInstanceOf(CombinedVote.class);
+        assertThat(vote).isInstanceOf(RefreshRateVote.RenderVote.class);
         assertEquals(expectedVote, vote);
     }
 
@@ -184,7 +179,7 @@ public class SkinThermalStatusObserverTest {
         SparseArray<Vote> displayVotes = mStorage.getVotes(DISPLAY_ID);
         assertEquals(1, displayVotes.size());
         Vote vote = displayVotes.get(Vote.PRIORITY_SKIN_TEMPERATURE);
-        Vote expectedVote = new CombinedVote(List.of(new RefreshRateVote.RenderVote(90, 120)));
+        Vote expectedVote = new RefreshRateVote.RenderVote(90, 120);
         assertEquals(expectedVote, vote);
         assertEquals(0, mStorage.getVotes(DISPLAY_ID_OTHER).size());
     }
@@ -206,9 +201,8 @@ public class SkinThermalStatusObserverTest {
         SparseArray<Vote> displayVotes = mStorage.getVotes(DISPLAY_ID_ADDED);
 
         Vote vote = displayVotes.get(Vote.PRIORITY_SKIN_TEMPERATURE);
-        assertThat(vote).isInstanceOf(CombinedVote.class);
-        CombinedVote expectedVote = new CombinedVote(Arrays.asList(
-                new RefreshRateVote.RenderVote(0, 60)));
+        assertThat(vote).isInstanceOf(RefreshRateVote.RenderVote.class);
+        Vote expectedVote = new RefreshRateVote.RenderVote(0, 60);
         assertEquals(expectedVote, vote);
     }
 

@@ -49,8 +49,8 @@ interface Vote {
     // It votes [minRefreshRate, Float.POSITIVE_INFINITY]
     int PRIORITY_USER_SETTING_MIN_RENDER_FRAME_RATE = 3;
 
-    // User setting preferred display resolution, for external displays also includes refresh rate.
-    int PRIORITY_USER_SETTING_DISPLAY_PREFERRED_SIZE = 4;
+    // User setting preferred display mode
+    int PRIORITY_USER_SETTING_DISPLAY_PREFERRED_OPTIONS = 4;
 
     // APP_REQUEST_RENDER_FRAME_RATE_RANGE is used to for internal apps to limit the render
     // frame rate in certain cases, mostly to preserve power.
@@ -160,7 +160,7 @@ interface Vote {
             PRIORITY_FLICKER_REFRESH_RATE,
             PRIORITY_HIGH_BRIGHTNESS_MODE,
             PRIORITY_USER_SETTING_MIN_RENDER_FRAME_RATE,
-            PRIORITY_USER_SETTING_DISPLAY_PREFERRED_SIZE,
+            PRIORITY_USER_SETTING_DISPLAY_PREFERRED_OPTIONS,
             PRIORITY_APP_REQUEST_RENDER_FRAME_RATE_RANGE,
             PRIORITY_APP_REQUEST_BASE_MODE_REFRESH_RATE,
             PRIORITY_APP_REQUEST_SIZE,
@@ -201,6 +201,10 @@ interface Vote {
 
     void updateSummary(@NonNull VoteSummary summary);
 
+    static Vote forPhysicalRefreshRates(float refreshRate) {
+        return forPhysicalRefreshRates(refreshRate, refreshRate);
+    }
+
     static Vote forPhysicalRefreshRates(float minRefreshRate, float maxRefreshRate) {
         return new CombinedVote(
                 List.of(
@@ -208,6 +212,10 @@ interface Vote {
                         new DisableRefreshRateSwitchingVote(minRefreshRate == maxRefreshRate)
                 )
         );
+    }
+
+    static Vote forRenderFrameRates(float renderRate) {
+        return forRenderFrameRates(renderRate, renderRate);
     }
 
     static Vote forRenderFrameRates(float minFrameRate, float maxFrameRate) {
@@ -269,7 +277,7 @@ interface Vote {
         return new RejectedModesVote(modeIds);
     }
 
-    static CombinedVote forVotes(List<Vote> votes) {
+    static Vote forVotes(List<Vote> votes) {
         List<Vote> combinedVotes = new ArrayList<>();
         for (Vote vote : votes) {
             if (vote != null) {
@@ -279,6 +287,10 @@ interface Vote {
         if (combinedVotes.isEmpty()) {
             return null;
         }
+        if (combinedVotes.size() == 1) {
+            return combinedVotes.getFirst();
+        }
+
         return new CombinedVote(combinedVotes);
     }
 
@@ -312,8 +324,8 @@ interface Vote {
                 return "PRIORITY_UDFPS";
             case PRIORITY_USER_SETTING_MIN_RENDER_FRAME_RATE:
                 return "PRIORITY_USER_SETTING_MIN_RENDER_FRAME_RATE";
-            case PRIORITY_USER_SETTING_DISPLAY_PREFERRED_SIZE:
-                return "PRIORITY_USER_SETTING_DISPLAY_PREFERRED_SIZE";
+            case PRIORITY_USER_SETTING_DISPLAY_PREFERRED_OPTIONS:
+                return "PRIORITY_USER_SETTING_DISPLAY_PREFERRED_MODE";
             case PRIORITY_LIMIT_MODE:
                 return "PRIORITY_LIMIT_MODE";
             case PRIORITY_SYNCHRONIZED_REFRESH_RATE:

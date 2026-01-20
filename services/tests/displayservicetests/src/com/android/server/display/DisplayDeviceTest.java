@@ -110,11 +110,10 @@ public class DisplayDeviceTest {
         mDisplayDeviceInfo.type = Display.TYPE_EXTERNAL;
         mDisplayDeviceInfo.xDpi = 0.5f;
         mDisplayDeviceInfo.yDpi = 1.0f;
+        setUserPreferredMode(TestUtilsKt.createDisplayMode(
+                /* id= */ 1, /* parentId= */ 2, /* flags= */ 0, OTHER_WIDTH, OTHER_HEIGHT));
         FakeDisplayDevice displayDevice = new FakeDisplayDevice(mDisplayDeviceInfo,
                 mMockDisplayAdapter);
-        displayDevice.mUserPreferredMode = TestUtilsKt.createDisplayMode(
-                /* id= */ 1, /* parentId= */ 2, /* flags= */ 0, OTHER_WIDTH, OTHER_HEIGHT);
-
         assertThat(displayDevice.getDisplaySurfaceDefaultSizeLocked()).isEqualTo(PORTRAIT_SIZE);
     }
 
@@ -123,10 +122,11 @@ public class DisplayDeviceTest {
         mDisplayDeviceInfo.type = Display.TYPE_EXTERNAL;
         mDisplayDeviceInfo.xDpi = 0.5f;
         mDisplayDeviceInfo.yDpi = 1.0f;
+        setUserPreferredMode(TestUtilsKt.createDisplayMode(
+                /* id= */ 1, /* parentId= */ 2, FLAG_SIZE_OVERRIDE, OTHER_WIDTH, OTHER_HEIGHT));
+
         FakeDisplayDevice displayDevice = new FakeDisplayDevice(mDisplayDeviceInfo,
                 mMockDisplayAdapter);
-        displayDevice.mUserPreferredMode = TestUtilsKt.createDisplayMode(
-                /* id= */ 1, /* parentId= */ 2, FLAG_SIZE_OVERRIDE, OTHER_WIDTH, OTHER_HEIGHT);
 
         assertThat(displayDevice.getDisplaySurfaceDefaultSizeLocked())
                 .isEqualTo(PORTRAIT_OTHER_SIZE);
@@ -166,12 +166,12 @@ public class DisplayDeviceTest {
         mDisplayDeviceInfo.type = Display.TYPE_EXTERNAL;
         mDisplayDeviceInfo.xDpi = 0.5f;
         mDisplayDeviceInfo.yDpi = 1.0f;
+        setUserPreferredMode(TestUtilsKt.createDisplayMode(
+                /* id= */ 1, /* parentId= */ 2, /* flags= */ 0, OTHER_WIDTH, OTHER_HEIGHT));
         FakeDisplayDevice displayDevice = new FakeDisplayDevice(mDisplayDeviceInfo,
                 mMockDisplayAdapter);
         displayDevice.setProjectionLocked(mMockTransaction, ROTATION_90, new Rect(), new Rect(),
                 DEBUG_TRANSACTION_DETAILS);
-        displayDevice.mUserPreferredMode = TestUtilsKt.createDisplayMode(
-                /* id= */ 1, /* parentId= */ 2, /* flags= */ 0, OTHER_WIDTH, OTHER_HEIGHT);
 
         assertThat(displayDevice.getDisplaySurfaceDefaultSizeLocked()).isEqualTo(LANDSCAPE_SIZE);
     }
@@ -181,12 +181,12 @@ public class DisplayDeviceTest {
         mDisplayDeviceInfo.type = Display.TYPE_EXTERNAL;
         mDisplayDeviceInfo.xDpi = 0.5f;
         mDisplayDeviceInfo.yDpi = 1.0f;
+        setUserPreferredMode(TestUtilsKt.createDisplayMode(
+                /* id= */ 1, /* parentId= */ 2, FLAG_SIZE_OVERRIDE, OTHER_WIDTH, OTHER_HEIGHT));
         FakeDisplayDevice displayDevice = new FakeDisplayDevice(mDisplayDeviceInfo,
                 mMockDisplayAdapter);
         displayDevice.setProjectionLocked(mMockTransaction, ROTATION_90, new Rect(), new Rect(),
                 DEBUG_TRANSACTION_DETAILS);
-        displayDevice.mUserPreferredMode = TestUtilsKt.createDisplayMode(
-                /* id= */ 1, /* parentId= */ 2, FLAG_SIZE_OVERRIDE, OTHER_WIDTH, OTHER_HEIGHT);
 
         assertThat(displayDevice.getDisplaySurfaceDefaultSizeLocked())
                 .isEqualTo(LANDSCAPE_OTHER_SIZE);
@@ -278,10 +278,13 @@ public class DisplayDeviceTest {
         verify(mMockTransaction).setDisplaySize(isNull(), eq(400), eq(300));
     }
 
+    private void setUserPreferredMode(Display.Mode mode) {
+        mDisplayDeviceInfo.supportedModes = new Display.Mode[] { mode };
+        mDisplayDeviceInfo.userPreferredModeId = mode.getModeId();
+    }
+
     private static class FakeDisplayDevice extends DisplayDevice {
         private final DisplayDeviceInfo mDisplayDeviceInfo;
-        private Display.Mode mUserPreferredMode = new Display.Mode.Builder().build();
-
 
         FakeDisplayDevice(DisplayDeviceInfo displayDeviceInfo, DisplayAdapter displayAdapter) {
             super(displayAdapter, /* displayToken= */ null, /* uniqueId= */ "",
@@ -297,11 +300,6 @@ public class DisplayDeviceTest {
         @Override
         public DisplayDeviceInfo getDisplayDeviceInfoLocked() {
             return mDisplayDeviceInfo;
-        }
-
-        @Override
-        public Display.Mode getUserPreferredDisplayModeLocked() {
-            return mUserPreferredMode;
         }
     }
 }

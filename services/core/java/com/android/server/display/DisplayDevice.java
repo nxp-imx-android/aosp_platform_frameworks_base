@@ -156,11 +156,10 @@ abstract class DisplayDevice {
         DisplayDeviceInfo displayDeviceInfo = getDisplayDeviceInfoLocked();
         var width = displayDeviceInfo.width;
         var height = displayDeviceInfo.height;
-        Display.Mode userMode = getUserPreferredDisplayModeLocked();
-        if (displayDeviceInfo.type == Display.TYPE_EXTERNAL && userMode != null
-                && (userMode.getFlags() & Display.Mode.FLAG_SIZE_OVERRIDE) != 0) {
-            width = userMode.getPhysicalWidth();
-            height = userMode.getPhysicalHeight();
+        Display.Mode sizeOverrideMode = displayDeviceInfo.getDisplayModeForSizeOverride();
+        if (sizeOverrideMode != null) {
+            width = sizeOverrideMode.getPhysicalWidth();
+            height = sizeOverrideMode.getPhysicalHeight();
         }
         return isRotatedLocked() ? new Point(height, width) : new Point(width, height);
     }
