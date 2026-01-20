@@ -462,6 +462,40 @@ public class LocalDisplayAdapterTest {
         assertArrayEquals(new int[]{2, 3}, supportedModes[0].getSupportedHdrTypes());
     }
 
+    @Test
+    public void testSupportedDisplayModesUpdate_sfModeIdChanges()
+            throws InterruptedException {
+        SurfaceControl.DisplayMode displayMode = createFakeDisplayMode(0, 1920, 1080, 0);
+        FakeDisplay display = new FakeDisplay(PORT_A, new SurfaceControl.DisplayMode[]{displayMode},
+                0, 0);
+        setUpDisplay(display);
+        updateAvailableDisplays();
+        mAdapter.registerLocked();
+        waitForHandlerToComplete(mHandler, HANDLER_WAIT_MS);
+
+        DisplayDevice displayDevice = mListener.addedDisplays.get(0);
+        displayDevice.applyPendingDisplayDeviceInfoChangesLocked();
+        Display.Mode[] supportedModes = displayDevice.getDisplayDeviceInfoLocked().supportedModes;
+        Assert.assertEquals(1, supportedModes.length);
+        Assert.assertEquals(0, supportedModes[0].getSfModeId());
+
+        // Create a new display with the same mode properties but with a new SF mode id (0 -> 99)
+        SurfaceControl.DisplayMode newDisplayMode = createFakeDisplayMode(99, 1920, 1080, 0);
+        display.dynamicInfo.supportedDisplayModes =
+                        new SurfaceControl.DisplayMode[]{newDisplayMode};
+        display.dynamicInfo.activeDisplayModeId = 99;
+        setUpDisplay(display);
+        mInjector.getTransmitter().sendHotplug(display, true);
+        waitForHandlerToComplete(mHandler, HANDLER_WAIT_MS);
+
+        displayDevice = mListener.changedDisplays.get(0);
+        displayDevice.applyPendingDisplayDeviceInfoChangesLocked();
+        supportedModes = displayDevice.getDisplayDeviceInfoLocked().supportedModes;
+
+        Assert.assertEquals(1, supportedModes.length);
+        Assert.assertEquals(99, supportedModes[0].getSfModeId());
+    }
+
     /**
      * Confirm that all local displays are public when config_localPrivateDisplayPorts is empty.
      */

@@ -16,6 +16,8 @@
 
 package com.android.server.display;
 
+import static android.view.Display.Mode.INVALID_MODE_ID;
+
 import static com.android.server.display.DisplayDeviceConfig.DEFAULT_LOW_REFRESH_RATE;
 
 import android.annotation.Nullable;
@@ -57,7 +59,7 @@ public class DisplayModeFactory {
 
     static Display.Mode createMode(int width, int height, float refreshRate) {
         return new Display.Mode(NEXT_DISPLAY_MODE_ID.getAndIncrement(),
-                Display.Mode.INVALID_MODE_ID, 0,
+                INVALID_MODE_ID, INVALID_MODE_ID, 0,
                 width, height, refreshRate, refreshRate,
                 new float[0], new int[0]
         );
@@ -76,7 +78,7 @@ public class DisplayModeFactory {
         }
 
         return new Display.Mode(NEXT_DISPLAY_MODE_ID.getAndIncrement(),
-                Display.Mode.INVALID_MODE_ID, flags,
+                INVALID_MODE_ID, mode.id, flags,
                 mode.width, mode.height, mode.peakRefreshRate, mode.vsyncRate,
                 alternativeRefreshRates, mode.supportedHdrTypes
         );
@@ -119,7 +121,7 @@ public class DisplayModeFactory {
         for (Display.Mode mode : modesForArrSyntheticMode) {
             syntheticModes.add(new DisplayModeRecord(
                     new Display.Mode(NEXT_DISPLAY_MODE_ID.getAndIncrement(),
-                            mode.getModeId(), Display.Mode.FLAG_ARR_RENDER_RATE,
+                            mode.getModeId(), INVALID_MODE_ID, Display.Mode.FLAG_ARR_RENDER_RATE,
                             mode.getPhysicalWidth(), mode.getPhysicalHeight(),
                             SYNTHETIC_MODE_REFRESH_RATE, SYNTHETIC_MODE_REFRESH_RATE,
                             new float[0], mode.getSupportedHdrTypes()
@@ -184,7 +186,7 @@ public class DisplayModeFactory {
                         (int) (mode.getPhysicalHeight() * sfMode.xDpi / sfMode.yDpi + 0.5);
                 syntheticModes.add(new DisplayModeRecord(
                         new Display.Mode(NEXT_DISPLAY_MODE_ID.getAndIncrement(),
-                                mode.getModeId(), modeFlag,
+                                mode.getModeId(), INVALID_MODE_ID, modeFlag,
                                 mode.getPhysicalWidth(), correctedHeight,
                                 mode.getRefreshRate(), mode.getVsyncRate(),
                                 mode.getAlternativeRefreshRates(), mode.getSupportedHdrTypes()
@@ -207,7 +209,7 @@ public class DisplayModeFactory {
                         (int) (mode.getPhysicalWidth() * sfMode.yDpi / sfMode.xDpi + 0.5);
                 syntheticModes.add(new DisplayModeRecord(
                         new Display.Mode(NEXT_DISPLAY_MODE_ID.getAndIncrement(),
-                                mode.getModeId(), modeFlag,
+                                mode.getModeId(), INVALID_MODE_ID, modeFlag,
                                 correctedWidth, mode.getPhysicalHeight(),
                                 mode.getRefreshRate(), mode.getVsyncRate(),
                                 mode.getAlternativeRefreshRates(), mode.getSupportedHdrTypes()

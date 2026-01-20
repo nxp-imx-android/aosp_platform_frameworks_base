@@ -3625,10 +3625,10 @@ public class DisplayModeDirectorTest {
 
         DisplayListener displayListener = displayListenerCaptor.getAllValues().get(0);
         mInjector.mDisplayInfo.supportedModes = new Display.Mode[] {
-                new Display.Mode(1, -1, Display.Mode.FLAG_SIZE_OVERRIDE,
+                new Display.Mode(1, -1, -1, Display.Mode.FLAG_SIZE_OVERRIDE,
                         1000, 1000, 60f, 60f, new float[]{},
                         new int[]{}),
-                new Display.Mode(2, -1, Display.Mode.FLAG_SIZE_OVERRIDE,
+                new Display.Mode(2, -1, -1, Display.Mode.FLAG_SIZE_OVERRIDE,
                         2000, 2000, 60f, 60f, new float[]{},
                         new int[]{}),
         };
@@ -3655,10 +3655,10 @@ public class DisplayModeDirectorTest {
 
         DisplayListener displayListener = displayListenerCaptor.getAllValues().get(0);
         mInjector.mDisplayInfo.supportedModes = new Display.Mode[] {
-                new Display.Mode(1, -1, Display.Mode.FLAG_ARR_RENDER_RATE,
+                new Display.Mode(1, -1, -1, Display.Mode.FLAG_ARR_RENDER_RATE,
                         1000, 1000, 60f, 60f, new float[]{},
                         new int[]{}),
-                new Display.Mode(2, -1, Display.Mode.FLAG_ARR_RENDER_RATE,
+                new Display.Mode(2, -1, -1, Display.Mode.FLAG_ARR_RENDER_RATE,
                         2000, 2000, 60f, 60f, new float[]{},
                         new int[]{}),
         };
@@ -3697,10 +3697,10 @@ public class DisplayModeDirectorTest {
 
         DisplayListener displayListener = displayListenerCaptor.getAllValues().get(0);
         mInjector.mDisplayInfo.supportedModes = new Display.Mode[] {
-                new Display.Mode(1, 2, Display.Mode.FLAG_ANISOTROPY_CORRECTION,
+                new Display.Mode(1, 2, -1, Display.Mode.FLAG_ANISOTROPY_CORRECTION,
                         1000, 1000, 60f, 60f, new float[]{},
                         new int[]{}),
-                new Display.Mode(2, -1, 0,
+                new Display.Mode(2, -1, -1, 0,
                         2000, 2000, 60f, 60f, new float[]{},
                         new int[]{}),
         };
@@ -3736,10 +3736,10 @@ public class DisplayModeDirectorTest {
 
         DisplayListener displayListener = displayListenerCaptor.getAllValues().get(0);
         mInjector.mDisplayInfo.supportedModes = new Display.Mode[] {
-                new Display.Mode(1, -1, 0,
+                new Display.Mode(1, -1, -1, 0,
                         1000, 1000, 60f, 60f, new float[]{},
                         new int[]{}),
-                new Display.Mode(2, -1, 0,
+                new Display.Mode(2, -1, -1, 0,
                         2000, 2000, 60f, 60f, new float[]{},
                         new int[]{}),
         };
