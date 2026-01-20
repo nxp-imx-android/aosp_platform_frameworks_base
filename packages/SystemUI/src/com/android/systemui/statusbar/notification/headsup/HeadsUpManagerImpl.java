@@ -90,6 +90,8 @@ public class HeadsUpManagerImpl
     private static final String SETTING_HEADS_UP_SNOOZE_LENGTH_MS = "heads_up_snooze_length_ms";
     @VisibleForTesting
     static final String REASON_REORDER_ALLOWED = "mOnReorderingAllowedListener";
+    @VisibleForTesting
+    static final String REASON_ON_EXPANDING_FINISHED = "onExpandingFinished";
     private final ListenerSet<OnHeadsUpChangedListener> mListeners = new ListenerSet<>();
 
     private final Context mContext;
@@ -132,7 +134,8 @@ public class HeadsUpManagerImpl
     private final MutableStateFlow<Boolean> mTrackingHeadsUp =
             StateFlowKt.MutableStateFlow(false);
     private final HashSet<String> mSwipedOutKeys = new HashSet<>();
-    private final HashSet<NotificationEntry> mEntriesToRemoveAfterExpand = new HashSet<>();
+    @VisibleForTesting
+    final HashSet<NotificationEntry> mEntriesToRemoveAfterExpand = new HashSet<>();
     @VisibleForTesting
     final ArraySet<NotificationEntry> mEntriesToRemoveWhenReorderingAllowed
             = new ArraySet<>();
@@ -406,7 +409,7 @@ public class HeadsUpManagerImpl
     @Override
     public void onExpandingFinished() {
         if (mReleaseOnExpandFinish) {
-            releaseAllImmediately("onExpandingFinished");
+            releaseAllImmediately(REASON_ON_EXPANDING_FINISHED);
             mReleaseOnExpandFinish = false;
         } else {
             for (NotificationEntry entry : getAllEntries().toList()) {
@@ -415,7 +418,7 @@ public class HeadsUpManagerImpl
             for (NotificationEntry entry : mEntriesToRemoveAfterExpand) {
                 if (isHeadsUpEntry(entry.getKey())) {
                     // Maybe the heads-up was removed already
-                    removeEntry(entry.getKey(), "onExpandingFinished");
+                    removeEntry(entry.getKey(), REASON_ON_EXPANDING_FINISHED);
                 }
             }
         }
@@ -653,6 +656,9 @@ public class HeadsUpManagerImpl
             if (!reason.equals(REASON_REORDER_ALLOWED)) {
                 mEntriesToRemoveWhenReorderingAllowed.remove(headsUpEntry.mEntry);
             }
+        }
+        if (!reason.equals(REASON_ON_EXPANDING_FINISHED)) {
+            mEntriesToRemoveAfterExpand.remove(entry);
         }
     }
 
