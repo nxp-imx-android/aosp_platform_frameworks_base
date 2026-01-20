@@ -21,6 +21,7 @@ import android.app.ActivityOptions
 import android.media.projection.IAppContentProjectionCallback
 import android.media.projection.IAppContentProjectionSession
 import android.media.projection.IMediaProjection
+import android.media.projection.MediaProjectionConfig
 import android.media.projection.ReviewGrantedConsentResult
 import android.media.projection.StopReason
 import android.os.RemoteException
@@ -65,6 +66,9 @@ constructor(
 
     private var initialDisplayId: Int = -1
 
+    var config: MediaProjectionConfig? = null
+        private set
+
     fun initialize(
         projection: IMediaProjection,
         reviewGrantedConsentRequired: Boolean,
@@ -72,6 +76,7 @@ constructor(
         uid: Int,
         packageName: String,
         initialDisplayId: Int,
+        config: MediaProjectionConfig?,
     ) {
         this.projection = projection
         this.reviewGrantedConsentRequired = reviewGrantedConsentRequired
@@ -79,6 +84,7 @@ constructor(
         this.uid = uid
         this.packageName = packageName
         this.initialDisplayId = initialDisplayId
+        this.config = config
     }
 
     /**

@@ -19,7 +19,9 @@ package com.android.systemui.screencapture.ui
 import android.content.Intent
 import android.media.projection.IMediaProjection
 import android.media.projection.IMediaProjectionManager.EXTRA_USER_REVIEW_GRANTED_CONSENT
+import android.media.projection.MediaProjectionConfig
 import android.media.projection.MediaProjectionManager.EXTRA_MEDIA_PROJECTION
+import android.media.projection.MediaProjectionManager.EXTRA_MEDIA_PROJECTION_CONFIG
 import android.os.Bundle
 import android.os.UserHandle
 import android.util.Log
@@ -81,7 +83,13 @@ constructor(
         val reviewGrantedConsentRequired =
             intent.getBooleanExtra(EXTRA_USER_REVIEW_GRANTED_CONSENT, false)
         val projectionBinder = intent.extras?.getBinder(EXTRA_MEDIA_PROJECTION)
-        val hostUserHandle: UserHandle? = intent.getParcelableExtra(EXTRA_HOST_APP_USER_HANDLE)
+        val hostUserHandle: UserHandle? =
+            intent.getParcelableExtra(EXTRA_HOST_APP_USER_HANDLE, UserHandle::class.java)
+        val config: MediaProjectionConfig? =
+            intent.getParcelableExtra(
+                EXTRA_MEDIA_PROJECTION_CONFIG,
+                MediaProjectionConfig::class.java,
+            )
 
         if (
             uid == -1 || hostUserHandle == null || packageName == null || projectionBinder == null
@@ -118,6 +126,7 @@ constructor(
                                         uid,
                                         packageName,
                                         display!!.displayId,
+                                        config,
                                     )
                                 }
                         ui
