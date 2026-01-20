@@ -2394,8 +2394,7 @@ public class UserManagerService extends IUserManager.Stub {
     private void showConfirmCredentialToDisableQuietMode(
             @UserIdInt int userId, @Nullable IntentSender target, @Nullable String callingPackage) {
         if (android.app.admin.flags.Flags.quietModeCredentialBugFix()) {
-            if (!android.multiuser.Flags.restrictQuietModeCredentialBugFixToManagedProfiles()
-                    || getUserInfo(userId).isManagedProfile()) {
+            if (getUserInfo(userId).isManagedProfile()) {
                 // TODO (b/308121702) It may be brittle to rely on user states to check managed
                 //  profile state
                 int state;
