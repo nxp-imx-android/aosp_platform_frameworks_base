@@ -21,6 +21,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
 
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyString;
@@ -271,7 +272,7 @@ public class PowerNotificationWarningsTest extends SysuiTestCase {
 
         mReceiver.onReceive(mContext, intent);
 
-        verify(mDialogTransitionAnimator, never()).show(any(), any());
+        verify(mDialogTransitionAnimator, never()).show(any(), any(), anyBoolean());
 
         verify(mPowerNotificationWarnings.getSaverConfirmationDialog()).show();
         mPowerNotificationWarnings.getSaverConfirmationDialog().dismiss();
