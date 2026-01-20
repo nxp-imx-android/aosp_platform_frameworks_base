@@ -19,6 +19,8 @@ package com.android.server.display.plugin.types;
 import android.annotation.FloatRange;
 import android.os.PowerManager;
 
+import com.android.internal.annotations.Keep;
+
 /**
  * Max Brightness Cap override value.
  * Works with existing brightness clamping system in
@@ -32,6 +34,7 @@ import android.os.PowerManager;
  *                                 If not used should be set to
  *                                 DisplayBrightnessState.CUSTOM_ANIMATION_RATE_NOT_SET
  */
+@Keep
 public record MaxBrightnessCapOverride(
         @FloatRange(from = PowerManager.BRIGHTNESS_MIN, to = PowerManager.BRIGHTNESS_MAX)
         float maxBrightnessCap,
