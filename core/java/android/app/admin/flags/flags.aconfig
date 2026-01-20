@@ -656,3 +656,10 @@ flag {
   description: "Enable the multi user management device provisioning APIs."
   bug: "390162247"
 }
+
+flag {
+  name: "push_dpc_packages_to_system_services"
+  namespace: "enterprise"
+  description: "Update the methods that push the device/profile owner packages to system services to use more generic names."
+  bug: "481619042"
+}

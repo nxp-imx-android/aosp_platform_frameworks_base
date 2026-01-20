@@ -145,9 +145,21 @@ class Owners {
         for (int i = mData.mProfileOwners.size() - 1; i >= 0; i--) {
             po.put(mData.mProfileOwners.keyAt(i), mData.mProfileOwners.valueAt(i).packageName);
         }
-        final String doPackage = mData.mDeviceOwner != null ? mData.mDeviceOwner.packageName : null;
-        mPackageManagerInternal.setDeviceAndProfileOwnerPackages(
-                mData.mDeviceOwnerUserId, doPackage, po);
+        if (android.app.admin.flags.Flags.pushDpcPackagesToSystemServices()) {
+            // TODO(b/481619042): Rename po to dpcPackages during flag clean-up.
+            final SparseArray<String> dpcPackages = po;
+            if (mData.mDeviceOwner != null) {
+                dpcPackages.put(mData.mDeviceOwnerUserId, mData.mDeviceOwner.packageName);
+            }
+            mPackageManagerInternal.setDevicePolicyControllerPackages(dpcPackages);
+        } else {
+            final String doPackage =
+                    mData.mDeviceOwner != null ? mData.mDeviceOwner.packageName : null;
+            // TODO(b/481619042): Remove PackageManagerInternal.setDeviceAndProfileOwnerPackages
+            //  during flag clean-up. This is the only usage of the method.
+            mPackageManagerInternal.setDeviceAndProfileOwnerPackages(mData.mDeviceOwnerUserId,
+                    doPackage, po);
+        }
     }
 
     @GuardedBy("mData")

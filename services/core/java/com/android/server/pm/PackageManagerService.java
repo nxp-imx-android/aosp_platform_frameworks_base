@@ -3273,10 +3273,14 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
             return;
         }
 
-        final String ownerPackage =
-                mProtectedPackages.getDeviceOwnerOrProfileOwnerPackage(targetUserId);
-        if (ownerPackage != null) {
-            final int ownerUid = snapshot.getPackageUid(ownerPackage, 0, targetUserId);
+        String dpcPackage;
+        if (android.app.admin.flags.Flags.pushDpcPackagesToSystemServices()) {
+            dpcPackage = mProtectedPackages.getDevicePolicyControllerPackage(targetUserId);
+        } else {
+            dpcPackage = mProtectedPackages.getDeviceOwnerOrProfileOwnerPackage(targetUserId);
+        }
+        if (dpcPackage != null) {
+            final int ownerUid = snapshot.getPackageUid(dpcPackage, 0, targetUserId);
             if (ownerUid == callingUid) {
                 return;
             }
@@ -7221,10 +7225,28 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
             if (deviceOwnerPackage != null) {
                 usersWithPoOrDo.add(deviceOwnerUserId);
             }
+            if (profileOwnerPackages == null) {
+                return;
+            }
             final int sz = profileOwnerPackages.size();
             for (int i = 0; i < sz; i++) {
                 if (profileOwnerPackages.valueAt(i) != null) {
                     removeAllNonSystemPackageSuspensions(profileOwnerPackages.keyAt(i));
+                }
+            }
+        }
+
+        @Override
+        public void setDevicePolicyControllerPackages(
+                @Nullable SparseArray<String> devicePolicyControllerPackages) {
+            mProtectedPackages.setDevicePolicyControllerPackages(devicePolicyControllerPackages);
+            if (devicePolicyControllerPackages == null) {
+                return;
+            }
+            final int sz = devicePolicyControllerPackages.size();
+            for (int i = 0; i < sz; i++) {
+                if (devicePolicyControllerPackages.valueAt(i) != null) {
+                    removeAllNonSystemPackageSuspensions(devicePolicyControllerPackages.keyAt(i));
                 }
             }
         }
