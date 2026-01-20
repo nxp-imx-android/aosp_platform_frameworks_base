@@ -23,7 +23,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -49,7 +48,6 @@ import com.android.systemui.statusbar.ui.viewmodel.KeyguardStatusBarViewModel
 import com.android.systemui.util.Utils
 import dagger.Lazy
 import javax.inject.Inject
-import kotlin.collections.List
 
 @SysUISingleton
 class StatusBarElementProvider

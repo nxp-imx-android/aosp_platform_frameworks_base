@@ -19,8 +19,6 @@ package com.android.systemui.keyguard.ui.composable.elements
 import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.HorizontalAlignmentLine
@@ -169,8 +167,7 @@ object LockIconAlignmentLines {
     val Bottom =
         HorizontalAlignmentLine(
             merger = { old, new ->
-                // When two bottom alignment line values are provided, choose the bottommost
-                // one:
+                // When two bottom alignment line values are provided, choose the bottommost one:
                 max(old, new)
             }
         )
@@ -185,7 +182,7 @@ object LockIconAlignmentLines {
  * Notes about some non-obvious behaviors:
  * - [LockIcon] is drawn according to the [LockIconAlignmentLines] that it must supply. The layout
  *   logic uses those alignment lines to make sure other elements don't overlap with the lock icon
- *   as it may be drawn on top of the UDFPS (under display fingerprint sensor)
+ *   as it may be drawn on top of the UDFPS (under display fingerprint sensor).
  */
 @Composable
 private fun LockscreenScope<ContentScope>.LockscreenSceneLayout(
@@ -265,7 +262,7 @@ private fun LockscreenScope<ContentScope>.LockscreenSceneLayout(
                 )
             )
 
-        val settingsMenuPleaceable = settingsMenuMeasurable.measure(constraints)
+        val settingsMenuPlaceable = settingsMenuMeasurable.measure(constraints)
 
         layout(constraints.maxWidth, constraints.maxHeight) {
             statusBarPlaceable.place(0, 0)
@@ -273,13 +270,13 @@ private fun LockscreenScope<ContentScope>.LockscreenSceneLayout(
             lockIconPlaceable.place(lockIconBounds.left, lockIconBounds.top)
 
             if (isUdfpsSupported) {
-                // Place below UDFPS icon
+                // Place below UDFPS icon.
                 ambientIndicationPlaceable.placeRelative(
                     0,
                     lockIconBounds.top + lockIconPlaceable.measuredHeight,
                 )
             } else {
-                // Place above lock icon
+                // Place above lock icon.
                 ambientIndicationPlaceable.placeRelative(
                     0,
                     lockIconBounds.top - ambientIndicationPlaceable.measuredHeight,
@@ -291,9 +288,9 @@ private fun LockscreenScope<ContentScope>.LockscreenSceneLayout(
                 constraints.maxHeight - lowerRegionPlaceable.measuredHeight,
             )
 
-            settingsMenuPleaceable.placeRelative(
-                (constraints.maxWidth - settingsMenuPleaceable.measuredWidth) / 2,
-                constraints.maxHeight - settingsMenuPleaceable.measuredHeight,
+            settingsMenuPlaceable.placeRelative(
+                (constraints.maxWidth - settingsMenuPlaceable.measuredWidth) / 2,
+                constraints.maxHeight - settingsMenuPlaceable.measuredHeight,
             )
         }
     }
