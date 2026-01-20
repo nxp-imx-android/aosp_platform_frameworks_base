@@ -289,7 +289,6 @@ class DesktopImmersiveControllerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP)
     fun exitImmersiveIfApplicable_inImmersive_addsPendingExit() {
         val task = createFreeformTask()
         whenever(mockShellTaskOrganizer.getRunningTaskInfo(task.taskId)).thenReturn(task)
@@ -312,7 +311,6 @@ class DesktopImmersiveControllerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP)
     fun exitImmersiveIfApplicable_notInImmersive_doesNotAddPendingExit() {
         val task = createFreeformTask()
         whenever(mockShellTaskOrganizer.getRunningTaskInfo(task.taskId)).thenReturn(task)
@@ -335,7 +333,6 @@ class DesktopImmersiveControllerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP)
     fun exitImmersiveIfApplicable_byDisplay_inImmersive_changesTaskBounds() {
         val task = createFreeformTask()
         whenever(mockShellTaskOrganizer.getRunningTaskInfo(task.taskId)).thenReturn(task)
@@ -353,7 +350,6 @@ class DesktopImmersiveControllerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP)
     fun exitImmersiveIfApplicable_byDisplay_notInImmersive_doesNotChangeTaskBounds() {
         val task = createFreeformTask()
         whenever(mockShellTaskOrganizer.getRunningTaskInfo(task.taskId)).thenReturn(task)
@@ -371,7 +367,6 @@ class DesktopImmersiveControllerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP)
     fun exitImmersiveIfApplicable_byDisplay_withExcludeTask_doesNotExit() {
         val task = createFreeformTask()
         whenever(mockShellTaskOrganizer.getRunningTaskInfo(task.taskId)).thenReturn(task)
@@ -403,7 +398,6 @@ class DesktopImmersiveControllerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP)
     fun exitImmersiveIfApplicable_byTask_inImmersive_changesTaskBounds() {
         val task = createFreeformTask()
         whenever(mockShellTaskOrganizer.getRunningTaskInfo(task.taskId)).thenReturn(task)
@@ -420,7 +414,6 @@ class DesktopImmersiveControllerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP)
     fun exitImmersiveIfApplicable_byTask_notInImmersive_doesNotChangeTaskBounds() {
         val task = createFreeformTask()
         whenever(mockShellTaskOrganizer.getRunningTaskInfo(task.taskId)).thenReturn(task)
@@ -437,7 +430,6 @@ class DesktopImmersiveControllerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP)
     fun exitImmersiveIfApplicable_byTask_inImmersive_addsPendingExitOnRun() {
         val task = createFreeformTask()
         whenever(mockShellTaskOrganizer.getRunningTaskInfo(task.taskId)).thenReturn(task)
@@ -464,7 +456,6 @@ class DesktopImmersiveControllerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP)
     fun exitImmersiveIfApplicable_byTask_notInImmersive_doesNotExit() {
         val task = createFreeformTask()
         whenever(mockShellTaskOrganizer.getRunningTaskInfo(task.taskId)).thenReturn(task)
@@ -481,7 +472,6 @@ class DesktopImmersiveControllerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP)
     fun exitImmersiveIfApplicable_byDisplay_notInImmersive_doesNotExit() {
         val task = createFreeformTask()
         whenever(mockShellTaskOrganizer.getRunningTaskInfo(task.taskId)).thenReturn(task)
@@ -504,7 +494,6 @@ class DesktopImmersiveControllerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP)
     fun onTransitionReady_pendingExit_removesPendingExitOnFinish() {
         val task = createFreeformTask()
         whenever(mockShellTaskOrganizer.getRunningTaskInfo(task.taskId)).thenReturn(task)
@@ -534,7 +523,6 @@ class DesktopImmersiveControllerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP)
     fun onTransitionReady_pendingExit_withMerge_removesPendingExitOnFinish() {
         val task = createFreeformTask()
         whenever(mockShellTaskOrganizer.getRunningTaskInfo(task.taskId)).thenReturn(task)
@@ -572,7 +560,6 @@ class DesktopImmersiveControllerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP)
     fun onTransitionReady_pendingExit_updatesRepository() {
         val task = createFreeformTask()
         whenever(mockShellTaskOrganizer.getRunningTaskInfo(task.taskId)).thenReturn(task)
@@ -596,10 +583,7 @@ class DesktopImmersiveControllerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP,
-        Flags.FLAG_ENABLE_RESTORE_TO_PREVIOUS_SIZE_FROM_DESKTOP_IMMERSIVE,
-    )
+    @EnableFlags(Flags.FLAG_ENABLE_RESTORE_TO_PREVIOUS_SIZE_FROM_DESKTOP_IMMERSIVE)
     fun onTransitionReady_pendingExit_removesBoundsBeforeImmersive() {
         val task = createFreeformTask()
         whenever(mockShellTaskOrganizer.getRunningTaskInfo(task.taskId)).thenReturn(task)
@@ -624,7 +608,6 @@ class DesktopImmersiveControllerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP)
     @DisableFlags(Flags.FLAG_ENABLE_RESTORE_TO_PREVIOUS_SIZE_FROM_DESKTOP_IMMERSIVE)
     fun exitImmersiveIfApplicable_changesBoundsToMaximize() {
         val task = createFreeformTask()
@@ -645,10 +628,7 @@ class DesktopImmersiveControllerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP,
-        Flags.FLAG_ENABLE_RESTORE_TO_PREVIOUS_SIZE_FROM_DESKTOP_IMMERSIVE,
-    )
+    @EnableFlags(Flags.FLAG_ENABLE_RESTORE_TO_PREVIOUS_SIZE_FROM_DESKTOP_IMMERSIVE)
     fun exitImmersiveIfApplicable_preImmersiveBoundsSaved_changesBoundsToPreImmersiveBounds() {
         val task = createFreeformTask()
         whenever(mockShellTaskOrganizer.getRunningTaskInfo(task.taskId)).thenReturn(task)
@@ -667,10 +647,7 @@ class DesktopImmersiveControllerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP,
-        Flags.FLAG_ENABLE_RESTORE_TO_PREVIOUS_SIZE_FROM_DESKTOP_IMMERSIVE,
-    )
+    @EnableFlags(Flags.FLAG_ENABLE_RESTORE_TO_PREVIOUS_SIZE_FROM_DESKTOP_IMMERSIVE)
     fun exitImmersiveIfApplicable_preImmersiveBoundsNotSaved_changesBoundsToInitialBounds() {
         val task = createFreeformTask()
         whenever(mockShellTaskOrganizer.getRunningTaskInfo(task.taskId)).thenReturn(task)
@@ -688,7 +665,6 @@ class DesktopImmersiveControllerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP)
     fun exitImmersive_pendingExit_doesNotExitAgain() {
         val task = createFreeformTask()
         whenever(mockShellTaskOrganizer.getRunningTaskInfo(task.taskId)).thenReturn(task)
@@ -710,7 +686,6 @@ class DesktopImmersiveControllerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP)
     fun exitImmersiveIfApplicable_inImmersive_isImmersiveChange() {
         val task = createFreeformTask()
         whenever(mockShellTaskOrganizer.getRunningTaskInfo(task.taskId)).thenReturn(task)
@@ -729,7 +704,6 @@ class DesktopImmersiveControllerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP)
     fun externalAnimateResizeChange_doesNotRemovePendingTransition() {
         val task = createFreeformTask()
         val mockBinder = mock(IBinder::class.java)
@@ -759,7 +733,6 @@ class DesktopImmersiveControllerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP)
     fun startAnimation_missingChange_removesPendingTransition() {
         val task = createFreeformTask()
         val mockBinder = mock(IBinder::class.java)

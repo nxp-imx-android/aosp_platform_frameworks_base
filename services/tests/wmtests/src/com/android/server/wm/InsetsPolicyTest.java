@@ -53,8 +53,6 @@ import android.graphics.Insets;
 import android.graphics.Rect;
 import android.os.Binder;
 import android.os.RemoteException;
-import android.platform.test.annotations.DisableFlags;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.view.DisplayCutout;
 import android.view.IDisplayWindowInsetsController;
@@ -68,7 +66,6 @@ import android.view.WindowInsets.Type.InsetsType;
 import androidx.test.filters.SmallTest;
 
 import com.android.server.statusbar.StatusBarManagerInternal;
-import com.android.window.flags.Flags;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -118,22 +115,6 @@ public class InsetsPolicyTest extends WindowTestsBase {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP)
-    public void testControlsForDispatch_freeformTaskVisible() {
-        addStatusBar();
-        addNavigationBar();
-
-        final WindowState win = newWindowBuilder("app", TYPE_APPLICATION).setActivityType(
-                ACTIVITY_TYPE_STANDARD).setWindowingMode(WINDOWING_MODE_FREEFORM).setDisplay(
-                mDisplayContent).build();
-        final InsetsSourceControl[] controls = addWindowAndGetControlsForDispatch(win);
-
-        // The app must not control any system bars.
-        assertNull(controls);
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP)
     public void testControlsForDispatch_fullscreenFreeformTaskVisible() {
         addStatusBar();
         addNavigationBar();
@@ -150,7 +131,6 @@ public class InsetsPolicyTest extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP)
     public void testControlsForDispatch_nonFullscreenFreeformTaskVisible() {
         addStatusBar();
         addNavigationBar();

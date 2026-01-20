@@ -163,7 +163,6 @@ import android.view.SurfaceControl;
 import android.view.WindowInsets;
 import android.view.WindowManager;
 import android.window.DesktopExperienceFlags;
-import android.window.DesktopModeFlags;
 import android.window.ITaskOrganizer;
 import android.window.StartingWindowInfo;
 import android.window.TaskFragmentParentInfo;
@@ -3525,7 +3524,7 @@ class Task extends TaskFragment {
         final WindowState windowState = top != null
                 ? top.findMainWindow(/* includeStartingApp= */ false) : null;
         info.requestedVisibleTypes =
-                (windowState != null && DesktopModeFlags.ENABLE_FULLY_IMMERSIVE_IN_DESKTOP.isTrue())
+                windowState != null
                         ? windowState.getRequestedVisibleTypes()
                         : WindowInsets.Type.defaultVisible();
         AppCompatUtils.fillAppCompatTaskInfo(this, info, top);

@@ -720,7 +720,7 @@ constructor(
             // If the task is being dragged, the caption should not be hidden so that it continues
             // receiving input
             showCaption = true
-        } else if (DesktopModeFlags.ENABLE_FULLY_IMMERSIVE_IN_DESKTOP.isTrue && inFullImmersive) {
+        } else if (inFullImmersive) {
             showCaption = isStatusBarVisible && !isKeyguardVisibleAndOccluded
 
             if (!taskInfo.isFreeform) {

@@ -699,13 +699,6 @@ flag {
 }
 
 flag {
-    name: "enable_fully_immersive_in_desktop"
-    namespace: "lse_desktop_experience"
-    description: "Enabled the fully immersive experience from desktop"
-    bug: "359523924"
-}
-
-flag {
     name: "enable_game_controls_entry_in_handle_menu"
     namespace: "lse_desktop_experience"
     description: "Enables the game controls menu item in the app's handle menu"

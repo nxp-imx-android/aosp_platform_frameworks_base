@@ -1112,28 +1112,13 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             // If the task is being dragged, the caption should not be hidden so that it continues
             // receiving input
             showCaption = true;
-        } else if (DesktopModeFlags.ENABLE_FULLY_IMMERSIVE_IN_DESKTOP.isTrue()) {
+        } else {
             if (inFullImmersiveMode) {
                 showCaption = (isStatusBarVisible && !isKeyguardVisibleAndOccluded);
             } else {
                 showCaption = taskInfo.isFreeform()
                         || (isStatusBarVisible && !isKeyguardVisibleAndOccluded);
             }
-
-            if (!taskInfo.isFreeform()) {
-                showCaption = showCaption && !isTaskLocked;
-            }
-        } else {
-            // Caption should always be visible in freeform mode. When not in freeform,
-            // align with the status bar except when showing over keyguard (where it should not
-            // shown).
-            //  TODO(b/356405803): Investigate how it's possible for the status bar visibility to
-            //   be false while a freeform window is open if the status bar is always
-            //   forcibly-shown. It may be that the InsetsState (from which |mIsStatusBarVisible|
-            //   is set) still contains an invisible insets source in immersive cases even if the
-            //   status bar is shown?
-            showCaption = taskInfo.isFreeform()
-                    || (isStatusBarVisible && !isKeyguardVisibleAndOccluded);
 
             if (!taskInfo.isFreeform()) {
                 showCaption = showCaption && !isTaskLocked;
@@ -1191,8 +1176,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                     relayoutParams.mInsetSourceFlags |= FLAG_FORCE_CONSUMING_OPAQUE_CAPTION_BAR;
                 }
             }
-            if (DesktopModeFlags.ENABLE_FULLY_IMMERSIVE_IN_DESKTOP.isTrue()
-                    && inFullImmersiveMode) {
+            if (inFullImmersiveMode) {
                 final Rect taskBounds = taskInfo.getConfiguration().windowConfiguration.getBounds();
                 final Insets systemBarInsets = displayInsetsState.calculateInsets(
                         taskBounds, taskBounds,
@@ -1534,12 +1518,10 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
 
         mMaximizeMenu.show(
                 /* isTaskInImmersiveMode= */
-                DesktopModeFlags.ENABLE_FULLY_IMMERSIVE_IN_DESKTOP.isTrue()
-                        && mDesktopUserRepositories.getProfile(mTaskInfo.userId)
+                mDesktopUserRepositories.getProfile(mTaskInfo.userId)
                             .isTaskInFullImmersiveState(mTaskInfo.taskId),
                 /* showImmersiveOption= */
-                DesktopModeFlags.ENABLE_FULLY_IMMERSIVE_IN_DESKTOP.isTrue()
-                        && TaskInfoKt.getRequestingImmersive(mTaskInfo),
+                TaskInfoKt.getRequestingImmersive(mTaskInfo),
                 /* showSnapOptions= */ mTaskInfo.isResizeable,
                 hovered -> {
                     mIsMaximizeMenuHovered = hovered;
@@ -2126,9 +2108,6 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     }
 
     private boolean canOpenMaximizeMenu(boolean animatingTaskResizeOrReposition) {
-        if (!DesktopModeFlags.ENABLE_FULLY_IMMERSIVE_IN_DESKTOP.isTrue()) {
-            return !animatingTaskResizeOrReposition;
-        }
         final boolean inImmersiveAndRequesting =
                 mDesktopUserRepositories.getProfile(mTaskInfo.userId)
                         .isTaskInFullImmersiveState(mTaskInfo.taskId)
