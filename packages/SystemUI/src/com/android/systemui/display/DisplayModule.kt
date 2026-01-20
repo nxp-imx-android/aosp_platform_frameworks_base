@@ -51,9 +51,7 @@ import com.android.systemui.display.domain.interactor.DisplayStateInteractor
 import com.android.systemui.display.domain.interactor.DisplayWindowPropertiesInteractorModule
 import com.android.systemui.display.domain.interactor.RearDisplayStateInteractor
 import com.android.systemui.display.domain.interactor.RearDisplayStateInteractorImpl
-import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 import dagger.Binds
-import dagger.Lazy
 import dagger.Module
 import dagger.Provides
 import dagger.multibindings.ClassKey
@@ -111,26 +109,20 @@ interface DisplayModule {
     @DisplayLibMainThread
     fun bindDisplayLibMainThread(@Main mainContext: CoroutineContext): CoroutineContext
 
+    @Binds
+    @SysUISingleton
+    @IntoMap
+    @ClassKey(DisplayWindowPropertiesRepository::class)
+    fun displayWindowPropertiesRepoAsCoreStartable(
+        repo: DisplayWindowPropertiesRepositoryImpl
+    ): CoreStartable
+
     companion object {
         @Provides
         fun displayStateInteractor(
             displayComponentRepo: PerDisplayRepository<SystemUIDisplaySubcomponent>
         ): DisplayStateInteractor {
             return displayComponentRepo[Display.DEFAULT_DISPLAY]!!.displayStateInteractor
-        }
-
-        @Provides
-        @SysUISingleton
-        @IntoMap
-        @ClassKey(DisplayWindowPropertiesRepository::class)
-        fun displayWindowPropertiesRepoAsCoreStartable(
-            repoLazy: Lazy<DisplayWindowPropertiesRepositoryImpl>
-        ): CoreStartable {
-            return if (StatusBarConnectedDisplays.isEnabled) {
-                return repoLazy.get()
-            } else {
-                CoreStartable.NOP
-            }
         }
     }
 }

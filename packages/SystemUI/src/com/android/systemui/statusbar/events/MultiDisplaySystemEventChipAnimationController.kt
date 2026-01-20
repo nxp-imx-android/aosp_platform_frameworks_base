@@ -20,7 +20,6 @@ import androidx.core.animation.Animator
 import androidx.core.animation.AnimatorSet
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.display.data.repository.DisplayRepository
-import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 import com.android.systemui.statusbar.data.repository.SystemEventChipAnimationControllerStore
 import javax.inject.Inject
 
@@ -35,10 +34,6 @@ constructor(
     private val displayRepository: DisplayRepository,
     private val controllerStore: SystemEventChipAnimationControllerStore,
 ) : SystemEventChipAnimationController {
-
-    init {
-        StatusBarConnectedDisplays.unsafeAssertInNewMode()
-    }
 
     override fun prepareChipAnimation(viewCreator: ViewCreator) {
         forEachController { it.prepareChipAnimation(viewCreator) }

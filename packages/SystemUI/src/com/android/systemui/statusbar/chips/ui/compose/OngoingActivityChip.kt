@@ -61,7 +61,6 @@ import com.android.systemui.statusbar.StatusBarIconView
 import com.android.systemui.statusbar.chips.StatusBarChipsReturnAnimations
 import com.android.systemui.statusbar.chips.ui.model.ColorsModel
 import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel
-import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 import com.android.systemui.statusbar.notification.icon.ui.viewbinder.NotificationIconContainerViewBinder
 
 @Composable
@@ -72,7 +71,6 @@ fun OngoingActivityChip(
 ) {
     val contentDescription =
         when (val icon = model.icon) {
-            is OngoingActivityChipModel.ChipIcon.StatusBarView -> icon.contentDescription.load()
             is OngoingActivityChipModel.ChipIcon.StatusBarNotificationIcon ->
                 icon.contentDescription.load()
             is OngoingActivityChipModel.ChipIcon.SingleColorIcon,
@@ -240,12 +238,7 @@ private fun ChipIcon(
     val context = LocalContext.current
 
     when (viewModel) {
-        is OngoingActivityChipModel.ChipIcon.StatusBarView -> {
-            StatusBarConnectedDisplays.assertInLegacyMode()
-            StatusBarIcon(colors, viewModel.impl.notification?.key, modifier) { viewModel.impl }
-        }
         is OngoingActivityChipModel.ChipIcon.StatusBarNotificationIcon -> {
-            StatusBarConnectedDisplays.unsafeAssertInNewMode()
             check(iconViewStore != null)
 
             StatusBarIcon(colors, viewModel.notificationKey, modifier) {

@@ -30,7 +30,6 @@ import com.android.systemui.activity.data.repository.fake
 import com.android.systemui.animation.ActivityTransitionAnimator
 import com.android.systemui.animation.Expandable
 import com.android.systemui.common.shared.model.ContentDescription.Companion.loadContentDescription
-import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.keyguard.data.repository.FakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
 import com.android.systemui.kosmos.Kosmos
@@ -38,8 +37,6 @@ import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
-import com.android.systemui.res.R
-import com.android.systemui.statusbar.StatusBarIconView
 import com.android.systemui.statusbar.chips.StatusBarChipsReturnAnimations
 import com.android.systemui.statusbar.chips.notification.domain.interactor.statusBarNotificationChipsInteractor
 import com.android.systemui.statusbar.chips.ui.model.Chronometer
@@ -47,7 +44,6 @@ import com.android.systemui.statusbar.chips.ui.model.ColorsModel
 import com.android.systemui.statusbar.chips.ui.model.EventTime
 import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel
 import com.android.systemui.statusbar.chips.ui.view.ChipBackgroundContainer
-import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 import com.android.systemui.statusbar.notification.data.repository.UnconfinedFakeHeadsUpRowRepository
 import com.android.systemui.statusbar.notification.headsup.PinnedStatus
 import com.android.systemui.statusbar.notification.stack.data.repository.headsUpNotificationRepository
@@ -404,8 +400,7 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(StatusBarConnectedDisplays.FLAG_NAME)
-    fun chip_positiveStartTime_connectedDisplaysFlagOn_iconIsNotifIcon() =
+    fun chip_positiveStartTime_iconIsNotifIcon() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chip)
 
@@ -424,39 +419,13 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(StatusBarConnectedDisplays.FLAG_NAME)
-    fun chip_zeroStartTime_cdFlagOff_iconIsNotifIcon_withContentDescription() =
-        kosmos.runTest {
-            val latest by collectLastValue(underTest.chip)
-
-            val notifIcon = createStatusBarIconViewOrNull()
-            addOngoingCallState(
-                startTimeMs = 0,
-                statusBarChipIconView = notifIcon,
-                appName = "Fake app name",
-            )
-
-            assertThat((latest as OngoingActivityChipModel.Active).icon)
-                .isInstanceOf(OngoingActivityChipModel.ChipIcon.StatusBarView::class.java)
-            val actualIcon =
-                (latest as OngoingActivityChipModel.Active).icon
-                    as OngoingActivityChipModel.ChipIcon.StatusBarView
-            assertThat(actualIcon.impl).isEqualTo(notifIcon)
-            assertThat(actualIcon.contentDescription.loadContentDescription(context))
-                .contains("Ongoing call")
-            assertThat(actualIcon.contentDescription.loadContentDescription(context))
-                .contains("Fake app name")
-        }
-
-    @Test
-    @EnableFlags(StatusBarConnectedDisplays.FLAG_NAME)
-    fun chip_zeroStartTime_cdFlagOn_iconIsNotifKeyIcon_withContentDescription() =
+    fun chip_zeroStartTime_iconIsNotifKeyIcon_withContentDescription() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chip)
 
             addOngoingCallState(
                 key = "notifKey",
-                statusBarChipIconView = createStatusBarIconViewOrNull(),
+                statusBarChipIconView = null,
                 appName = "Fake app name",
             )
 
@@ -475,26 +444,7 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(StatusBarConnectedDisplays.FLAG_NAME)
-    fun chip_notifIconFlagOn_butNullNotifIcon_cdFlagOff_iconIsPhone() =
-        kosmos.runTest {
-            val latest by collectLastValue(underTest.chip)
-
-            addOngoingCallState(statusBarChipIconView = null)
-
-            assertThat((latest as OngoingActivityChipModel.Active).icon)
-                .isInstanceOf(OngoingActivityChipModel.ChipIcon.SingleColorIcon::class.java)
-            val icon =
-                (((latest as OngoingActivityChipModel.Active).icon)
-                        as OngoingActivityChipModel.ChipIcon.SingleColorIcon)
-                    .impl as Icon.Resource
-            assertThat(icon.resId).isEqualTo(com.android.internal.R.drawable.ic_phone)
-            assertThat(icon.contentDescription).isNotNull()
-        }
-
-    @Test
-    @EnableFlags(StatusBarConnectedDisplays.FLAG_NAME)
-    fun chip_notifIconFlagOn_butNullNotifIcon_cdFlagOn_iconIsNotifKeyIcon_withContentDescription() =
+    fun chip_notifIconFlagOn_butNullNotifIcon_iconIsNotifKeyIcon_withContentDescription() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chip)
 
@@ -1065,13 +1015,6 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     companion object {
-        fun createStatusBarIconViewOrNull(): StatusBarIconView? =
-            if (StatusBarConnectedDisplays.isEnabled) {
-                null
-            } else {
-                mock<StatusBarIconView>()
-            }
-
         private const val NOTIFICATION_KEY = "testKey"
         private const val NOTIFICATION_UID = 12345
         private const val PACKAGE_NAME = "testApp.package.name"

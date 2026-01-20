@@ -38,7 +38,6 @@ import com.android.systemui.res.R
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
 import com.android.systemui.statusbar.StatusBarIconView
-import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 import com.android.systemui.statusbar.notification.InflationException
 import com.android.systemui.statusbar.notification.collection.BundleEntry
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
@@ -94,12 +93,10 @@ constructor(
         ConcurrentHashMap<String, Job>()
 
     fun addIconsUpdateListener(listener: OnIconUpdateRequiredListener) {
-        StatusBarConnectedDisplays.unsafeAssertInNewMode()
         onIconUpdateRequiredListeners += listener
     }
 
     fun removeIconsUpdateListener(listener: OnIconUpdateRequiredListener) {
-        StatusBarConnectedDisplays.unsafeAssertInNewMode()
         onIconUpdateRequiredListeners -= listener
     }
 
@@ -144,8 +141,6 @@ constructor(
      */
     fun createSbIconView(context: Context, entry: NotificationEntry): StatusBarIconView =
         traceSection("IconManager.createSbIconView") {
-            StatusBarConnectedDisplays.unsafeAssertInNewMode()
-
             val sbIcon = iconBuilder.createIconView(entry, context)
             sbIcon.scaleType = ImageView.ScaleType.CENTER_INSIDE
             val (normalIconDescriptor, _) = getIconDescriptors(entry)
@@ -165,13 +160,6 @@ constructor(
             // Construct the status bar icon view.
             val sbIcon = iconBuilder.createIconView(entry)
             sbIcon.scaleType = ImageView.ScaleType.CENTER_INSIDE
-            val sbChipIcon: StatusBarIconView?
-            if (!StatusBarConnectedDisplays.isEnabled) {
-                sbChipIcon = iconBuilder.createIconView(entry)
-                sbChipIcon.scaleType = ImageView.ScaleType.CENTER_INSIDE
-            } else {
-                sbChipIcon = null
-            }
 
             // Construct the shelf icon view.
             val shelfIcon =
@@ -203,14 +191,16 @@ constructor(
                     Log.i(TAG, "EXTRA_HIDE_STATUS_BAR_NOTIFICATION set, hiding the icon.")
                     sbIcon.visibility = View.GONE
                 }
-
-                if (sbChipIcon != null) {
-                    setIcon(entry, normalIconDescriptor, sbChipIcon)
-                }
                 setIcon(entry, sensitiveIconDescriptor, shelfIcon)
                 setIcon(entry, sensitiveIconDescriptor, aodIcon)
                 entry.icons =
-                    IconPack.buildPack(sbIcon, sbChipIcon, shelfIcon, aodIcon, entry.icons)
+                    IconPack.buildPack(
+                        sbIcon,
+                        /* statusBarChipIcon= */ null,
+                        shelfIcon,
+                        aodIcon,
+                        entry.icons,
+                    )
             } catch (e: InflationException) {
                 entry.icons = IconPack.buildEmptyPack(entry.icons)
                 throw e
@@ -220,8 +210,6 @@ constructor(
     /** Update the [StatusBarIconView] for the given [NotificationEntry]. */
     fun updateSbIcon(entry: NotificationEntry, iconView: StatusBarIconView) =
         traceSection("IconManager.updateSbIcon") {
-            StatusBarConnectedDisplays.unsafeAssertInNewMode()
-
             val (normalIconDescriptor, _) = getIconDescriptors(entry)
             val notificationContentDescription =
                 entry.sbn.notification?.let { iconBuilder.getIconContentDescription(it) }
@@ -248,9 +236,7 @@ constructor(
                 entry.icons.peopleAvatarDescriptor = null
             }
 
-            if (StatusBarConnectedDisplays.isEnabled) {
-                onIconUpdateRequiredListeners.onEach { it.onIconUpdateRequired(entry) }
-            }
+            onIconUpdateRequiredListeners.onEach { it.onIconUpdateRequired(entry) }
 
             val (normalIconDescriptor, sensitiveIconDescriptor) = getIconDescriptors(entry)
             val notificationContentDescription =
@@ -290,13 +276,6 @@ constructor(
             // Construct the status bar icon view.
             val sbIcon = iconBuilder.createIconView(entry)
             sbIcon.scaleType = ImageView.ScaleType.CENTER_INSIDE
-            val sbChipIcon: StatusBarIconView?
-            if (!StatusBarConnectedDisplays.isEnabled) {
-                sbChipIcon = iconBuilder.createIconView(entry)
-                sbChipIcon.scaleType = ImageView.ScaleType.CENTER_INSIDE
-            } else {
-                sbChipIcon = null
-            }
 
             // Construct the shelf icon view.
             val shelfIcon =
@@ -318,13 +297,16 @@ constructor(
 
             try {
                 setIcon(entry, normalIconDescriptor, sbIcon)
-                if (sbChipIcon != null) {
-                    setIcon(entry, normalIconDescriptor, sbChipIcon)
-                }
                 setIcon(entry, sensitiveIconDescriptor, shelfIcon)
                 setIcon(entry, sensitiveIconDescriptor, aodIcon)
                 entry.icons =
-                    IconPack.buildPack(sbIcon, sbChipIcon, shelfIcon, aodIcon, entry.icons)
+                    IconPack.buildPack(
+                        sbIcon,
+                        /* statusBarChipIcon= */ null,
+                        shelfIcon,
+                        aodIcon,
+                        entry.icons,
+                    )
             } catch (e: InflationException) {
                 entry.icons = IconPack.buildEmptyPack(entry.icons)
                 throw e

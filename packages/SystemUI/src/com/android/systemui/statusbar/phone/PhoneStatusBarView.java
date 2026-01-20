@@ -40,9 +40,7 @@ import com.android.internal.policy.SystemBarUtils;
 import com.android.systemui.Gefingerpoken;
 import com.android.systemui.res.R;
 import com.android.systemui.shade.StatusBarLongPressGestureDetector;
-import com.android.systemui.statusbar.core.StatusBarConnectedDisplays;
 import com.android.systemui.statusbar.phone.userswitcher.StatusBarUserSwitcherContainer;
-import com.android.systemui.statusbar.window.StatusBarWindowControllerStore;
 import com.android.systemui.user.ui.binder.StatusBarUserChipViewBinder;
 import com.android.systemui.user.ui.viewmodel.StatusBarUserChipViewModel;
 import com.android.systemui.util.leak.RotationUtils;
@@ -53,8 +51,6 @@ import java.util.function.BooleanSupplier;
 public class PhoneStatusBarView extends FrameLayout {
     private static final String TAG = "PhoneStatusBarView";
 
-    private StatusBarWindowControllerStore mStatusBarWindowControllerStore;
-    private boolean mShouldUpdateStatusBarHeightWhenControllerSet = false;
     private int mRotationOrientation = -1;
     @Nullable
     private View mCutoutSpace;
@@ -132,7 +128,6 @@ public class PhoneStatusBarView extends FrameLayout {
         super.onAttachedToWindow();
         if (updateDisplayParameters()) {
             updateLayoutForCutout();
-            updateWindowHeight();
         }
     }
 
@@ -155,7 +150,6 @@ public class PhoneStatusBarView extends FrameLayout {
             updateLayoutForCutout();
             requestLayout();
         }
-        updateWindowHeight();
     }
 
     @Override
@@ -286,25 +280,6 @@ public class PhoneStatusBarView extends FrameLayout {
         updateStatusBarHeight();
     }
 
-    /**
-     * Sets the store responsible for managing the status bar window controller.
-     *
-     * <p>This setter is used to facilitate dependency injection for the
-     * {@link PhoneStatusBarViewController}, which receives the store via Dagger. This avoids
-     * using the legacy {@link com.android.systemui.Dependency} pattern directly in the constructor.
-     *
-     * @param statusBarWindowControllerStore The {@link StatusBarWindowControllerStore} instance
-     * to set
-     */
-    public void setStatusBarWindowControllerStore(
-            StatusBarWindowControllerStore statusBarWindowControllerStore) {
-        mStatusBarWindowControllerStore = statusBarWindowControllerStore;
-        if (mShouldUpdateStatusBarHeightWhenControllerSet) {
-            mShouldUpdateStatusBarHeightWhenControllerSet = false;
-            updateWindowHeight();
-        }
-    }
-
     private void updateStatusBarHeight() {
         final int waterfallTopInset =
                 mDisplayCutout == null ? 0 : mDisplayCutout.getWaterfallInsets().top;
@@ -396,19 +371,6 @@ public class PhoneStatusBarView extends FrameLayout {
                 insets.top,
                 insets.right,
                 getPaddingBottom());
-    }
-
-    private void updateWindowHeight() {
-        if (StatusBarConnectedDisplays.isEnabled()) {
-            // Handled directly from StatusBarWindowControllerImpl (for each display)
-            return;
-        }
-        if (mStatusBarWindowControllerStore != null) {
-            mStatusBarWindowControllerStore.getDefaultDisplay().refreshStatusBarHeight();
-        } else {
-            Log.e(TAG, "mStatusBarWindowControllerStore unexpectedly null");
-            mShouldUpdateStatusBarHeightWhenControllerSet = true;
-        }
     }
 
     interface HasCornerCutoutFetcher {

@@ -49,7 +49,6 @@ import com.android.systemui.statusbar.chips.ui.viewmodel.ChipTransitionHelper.Co
 import com.android.systemui.statusbar.chips.ui.viewmodel.ChipTransitionHelper.Companion.shouldChipBeHidden
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipViewModel.Companion.createNotificationToggleClickBehavior
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipViewModel.Companion.isShowingHeadsUpFromChipTap
-import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 import com.android.systemui.statusbar.notification.domain.interactor.HeadsUpNotificationInteractor
 import com.android.systemui.statusbar.notification.domain.model.TopPinnedState
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
@@ -356,20 +355,10 @@ constructor(
         // Note: ResolvedBasicCompactContent has an option for SOURCE_APP_ICON, but it's not used by
         // AOSP and not choosable by apps. So for now we only behave as if it's SOURCE_SMALL_ICON.
         val icon =
-            if (this.statusBarChipIconView != null) {
-                StatusBarConnectedDisplays.assertInLegacyMode()
-                OngoingActivityChipModel.ChipIcon.StatusBarView(
-                    this.statusBarChipIconView,
-                    contentDescription,
-                )
-            } else {
-                StatusBarConnectedDisplays.unsafeAssertInNewMode()
-
-                OngoingActivityChipModel.ChipIcon.StatusBarNotificationIcon(
-                    this.key,
-                    contentDescription,
-                )
-            }
+            OngoingActivityChipModel.ChipIcon.StatusBarNotificationIcon(
+                this.key,
+                contentDescription,
+            )
 
         val colors =
             if (NotificationChipFromCompactContent.isEnabled && this.semanticStyle != null) {

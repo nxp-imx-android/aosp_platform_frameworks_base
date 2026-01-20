@@ -25,14 +25,11 @@ import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
 import com.android.systemui.display.data.repository.DisplayRepository
 import com.android.systemui.display.data.repository.DisplayWindowPropertiesRepository
 import com.android.systemui.display.data.repository.PerDisplayStore
-import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 import com.android.systemui.statusbar.events.SystemEventChipAnimationController
 import com.android.systemui.statusbar.events.SystemEventChipAnimationControllerImpl
 import com.android.systemui.statusbar.window.StatusBarWindowControllerStore
 import dagger.Binds
-import dagger.Lazy
 import dagger.Module
-import dagger.Provides
 import dagger.multibindings.ClassKey
 import dagger.multibindings.IntoMap
 import javax.inject.Inject
@@ -58,10 +55,6 @@ constructor(
         backgroundApplicationScope,
         displayRepository,
     ) {
-
-    init {
-        StatusBarConnectedDisplays.unsafeAssertInNewMode()
-    }
 
     override fun createInstanceForDisplay(displayId: Int): SystemEventChipAnimationController? {
         val displaySubcomponent = perDisplaySubcomponentRepo[displayId] ?: return null
@@ -92,19 +85,9 @@ interface SystemEventChipAnimationControllerStoreModule {
         impl: SystemEventChipAnimationControllerStoreImpl
     ): SystemEventChipAnimationControllerStore
 
-    companion object {
-        @Provides
-        @SysUISingleton
-        @IntoMap
-        @ClassKey(SystemEventChipAnimationControllerStore::class)
-        fun storeAsCoreStartable(
-            implLazy: Lazy<SystemEventChipAnimationControllerStoreImpl>
-        ): CoreStartable {
-            return if (StatusBarConnectedDisplays.isEnabled) {
-                implLazy.get()
-            } else {
-                CoreStartable.NOP
-            }
-        }
-    }
+    @Binds
+    @SysUISingleton
+    @IntoMap
+    @ClassKey(SystemEventChipAnimationControllerStore::class)
+    fun storeAsCoreStartable(impl: SystemEventChipAnimationControllerStoreImpl): CoreStartable
 }

@@ -22,7 +22,6 @@ import com.android.systemui.activity.data.repository.activityManagerRepository
 import com.android.systemui.activity.data.repository.fake
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.statusbar.StatusBarIconView
-import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 import com.android.systemui.statusbar.notification.data.model.activeNotificationModel
 import com.android.systemui.statusbar.notification.data.repository.activeNotificationListRepository
 import com.android.systemui.statusbar.notification.data.repository.addNotif
@@ -31,7 +30,6 @@ import com.android.systemui.statusbar.notification.promoted.shared.model.Promote
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModels
 import com.android.systemui.statusbar.notification.shared.CallType
-import org.mockito.kotlin.mock
 
 /** Helper for building [OngoingCallModel.InCall] instances in tests. */
 fun inCallModel(
@@ -77,7 +75,7 @@ object OngoingCallTestHelper {
     fun Kosmos.addOngoingCallState(
         key: String = DEFAULT_KEY,
         startTimeMs: Long = 1000L,
-        statusBarChipIconView: StatusBarIconView? = createStatusBarIconViewOrNull(),
+        statusBarChipIconView: StatusBarIconView? = null,
         requestedPromotion: Boolean = false,
         promotedContent: PromotedContentInput = PromotedContentInput.Default,
         contentIntent: PendingIntent? = null,
@@ -121,13 +119,6 @@ object OngoingCallTestHelper {
         data class OverrideToValue(val value: PromotedNotificationContentModels) :
             PromotedContentInput
     }
-
-    private fun createStatusBarIconViewOrNull(): StatusBarIconView? =
-        if (StatusBarConnectedDisplays.isEnabled) {
-            null
-        } else {
-            mock<StatusBarIconView>()
-        }
 
     /**
      * Creates a starting point for [PromotedNotificationContentBuilder] that should be used

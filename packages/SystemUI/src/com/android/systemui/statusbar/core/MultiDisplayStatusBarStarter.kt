@@ -45,10 +45,6 @@ constructor(
     private val lightBarControllerStore: LightBarControllerStore,
 ) : CoreStartable {
 
-    init {
-        StatusBarConnectedDisplays.unsafeAssertInNewMode()
-    }
-
     override fun start() {
         applicationScope.launch {
             displayRepository.displayIdsWithSystemDecorations

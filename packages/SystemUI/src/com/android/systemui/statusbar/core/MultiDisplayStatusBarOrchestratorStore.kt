@@ -50,10 +50,6 @@ constructor(
         displayRepository,
     ) {
 
-    init {
-        StatusBarConnectedDisplays.unsafeAssertInNewMode()
-    }
-
     override fun createInstanceForDisplay(displayId: Int): StatusBarOrchestrator? {
         val statusBarModeRepository =
             statusBarModeRepositoryStore.forDisplay(displayId) ?: return null

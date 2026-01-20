@@ -40,15 +40,12 @@ import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
-import com.android.systemui.statusbar.StatusBarIconView
 import com.android.systemui.statusbar.chips.StatusBarChipsReturnAnimations
-import com.android.systemui.statusbar.chips.call.ui.viewmodel.CallChipViewModelTest.Companion.createStatusBarIconViewOrNull
 import com.android.systemui.statusbar.chips.notification.domain.interactor.statusBarNotificationChipsInteractor
 import com.android.systemui.statusbar.chips.ui.model.Chronometer
 import com.android.systemui.statusbar.chips.ui.model.ColorsModel
 import com.android.systemui.statusbar.chips.ui.model.EventTime
 import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel
-import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 import com.android.systemui.statusbar.notification.data.model.activeNotificationModel
 import com.android.systemui.statusbar.notification.data.repository.ActiveNotificationsStore
 import com.android.systemui.statusbar.notification.data.repository.UnconfinedFakeHeadsUpRowRepository
@@ -135,7 +132,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                 listOf(
                     activeNotificationModel(
                         key = "notif",
-                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        statusBarChipIcon = null,
                         promotedContent = newPromotedNotificationContentBuilder("notif").build(),
                     )
                 )
@@ -147,27 +144,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(StatusBarConnectedDisplays.FLAG_NAME)
-    fun chips_notifMissingStatusBarChipIconView_cdFlagDisabled_empty() =
-        kosmos.runTest {
-            val latest by collectLastValue(underTest.chips)
-
-            setNotifs(
-                listOf(
-                    activeNotificationModel(
-                        key = "notif",
-                        statusBarChipIcon = null,
-                        promotedContent = newPromotedNotificationContentBuilder("notif").build(),
-                    )
-                )
-            )
-
-            assertThat(latest).isEmpty()
-        }
-
-    @Test
-    @EnableFlags(StatusBarConnectedDisplays.FLAG_NAME)
-    fun chips_notifMissingStatusBarChipIconView_cdFlagEnabled_notEmpty() =
+    fun chips_notifMissingStatusBarChipIconView_notEmpty() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
 
@@ -189,13 +166,11 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
 
-            val icon = createStatusBarIconViewOrNull()
             setNotifs(
                 listOf(
                     activeNotificationModel(
                         key = "notif",
                         appName = "Fake App Name",
-                        statusBarChipIcon = icon,
                         promotedContent = newPromotedNotificationContentBuilder("notif").build(),
                     )
                 )
@@ -206,15 +181,13 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
             assertIsNotifChip(
                 chip,
                 context,
-                icon,
                 expectedNotificationKey = "notif",
                 expectedContentDescriptionSubstrings = listOf("Ongoing", "Fake App Name"),
             )
         }
 
     @Test
-    @EnableFlags(StatusBarConnectedDisplays.FLAG_NAME)
-    fun chips_onePromotedNotif_connectedDisplaysFlagEnabled_statusBarIconMatches() =
+    fun chips_onePromotedNotif_statusBarIconMatches() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
 
@@ -235,7 +208,6 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
             assertIsNotifChip(
                 chip,
                 context,
-                expectedIcon = null,
                 expectedNotificationKey = "notif",
                 expectedContentDescriptionSubstrings = listOf("Ongoing", "Fake App Name"),
             )
@@ -258,7 +230,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                 listOf(
                     activeNotificationModel(
                         key = "notif",
-                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        statusBarChipIcon = null,
                         promotedContent = promotedContentBuilder.build(),
                     )
                 )
@@ -293,7 +265,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                 listOf(
                     activeNotificationModel(
                         key = "notif",
-                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        statusBarChipIcon = null,
                         promotedContent = promotedContentBuilder.build(),
                     )
                 )
@@ -326,7 +298,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                 listOf(
                     activeNotificationModel(
                         key = "notif",
-                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        statusBarChipIcon = null,
                         contentIntent = pendingIntent,
                         promotedContent = promotedContentBuilder.build(),
                     )
@@ -355,7 +327,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                 listOf(
                     activeNotificationModel(
                         key = "notif",
-                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        statusBarChipIcon = null,
                         contentIntent = pendingIntent,
                         promotedContent = promotedContentBuilder.build(),
                     )
@@ -371,71 +343,25 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
 
-            val firstIcon = createStatusBarIconViewOrNull()
-            val secondIcon = createStatusBarIconViewOrNull()
             setNotifs(
                 listOf(
                     activeNotificationModel(
                         key = "notif1",
                         packageName = "notif1",
-                        statusBarChipIcon = firstIcon,
                         promotedContent = newPromotedNotificationContentBuilder("notif1").build(),
                     ),
                     activeNotificationModel(
                         key = "notif2",
                         packageName = "notif2",
-                        statusBarChipIcon = secondIcon,
                         promotedContent = newPromotedNotificationContentBuilder("notif2").build(),
                     ),
-                    activeNotificationModel(
-                        key = "notif3",
-                        packageName = "notif3",
-                        statusBarChipIcon = createStatusBarIconViewOrNull(),
-                        promotedContent = null,
-                    ),
+                    activeNotificationModel(key = "notif3", packageName = "notif3"),
                 )
             )
 
             assertThat(latest).hasSize(2)
-            assertIsNotifChip(latest!![0], context, firstIcon, "notif1")
-            assertIsNotifChip(latest!![1], context, secondIcon, "notif2")
-        }
-
-    @Test
-    @EnableFlags(StatusBarConnectedDisplays.FLAG_NAME)
-    fun chips_connectedDisplaysFlagEnabled_onlyForPromotedNotifs() =
-        kosmos.runTest {
-            val latest by collectLastValue(underTest.chips)
-
-            val firstKey = "notif1"
-            val secondKey = "notif2"
-            val thirdKey = "notif3"
-            setNotifs(
-                listOf(
-                    activeNotificationModel(
-                        key = firstKey,
-                        packageName = firstKey,
-                        statusBarChipIcon = null,
-                        promotedContent = newPromotedNotificationContentBuilder(firstKey).build(),
-                    ),
-                    activeNotificationModel(
-                        key = secondKey,
-                        packageName = secondKey,
-                        statusBarChipIcon = null,
-                        promotedContent = newPromotedNotificationContentBuilder(secondKey).build(),
-                    ),
-                    activeNotificationModel(
-                        key = thirdKey,
-                        packageName = thirdKey,
-                        statusBarChipIcon = null,
-                        promotedContent = null,
-                    ),
-                )
-            )
-
-            assertThat(latest).hasSize(2)
-            assertIsNotifKey(latest!![0], firstKey)
-            assertIsNotifKey(latest!![1], secondKey)
+            assertIsNotifChip(latest!![0], context, "notif1")
+            assertIsNotifChip(latest!![1], context, "notif2")
         }
 
     @Test
@@ -449,7 +375,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                     key = "notif1",
                     packageName = "samePackage",
                     uid = 10,
-                    statusBarChipIcon = createStatusBarIconViewOrNull(),
+                    statusBarChipIcon = null,
                     promotedContent = newPromotedNotificationContentBuilder("notif1").build(),
                 )
             )
@@ -460,7 +386,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                     key = "notif2",
                     packageName = "samePackage",
                     uid = 20,
-                    statusBarChipIcon = createStatusBarIconViewOrNull(),
+                    statusBarChipIcon = null,
                     promotedContent = newPromotedNotificationContentBuilder("notif2").build(),
                 )
             )
@@ -480,7 +406,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                     key = "notif1",
                     packageName = "onePackage",
                     uid = 10,
-                    statusBarChipIcon = createStatusBarIconViewOrNull(),
+                    statusBarChipIcon = null,
                     promotedContent = newPromotedNotificationContentBuilder("notif1").build(),
                 )
             )
@@ -491,7 +417,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                     key = "notif2",
                     packageName = "anotherPackage",
                     uid = 10,
-                    statusBarChipIcon = createStatusBarIconViewOrNull(),
+                    statusBarChipIcon = null,
                     promotedContent = newPromotedNotificationContentBuilder("notif2").build(),
                 )
             )
@@ -511,7 +437,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                     key = "notif1",
                     packageName = "samePackage",
                     uid = 3,
-                    statusBarChipIcon = createStatusBarIconViewOrNull(),
+                    statusBarChipIcon = null,
                     promotedContent = newPromotedNotificationContentBuilder("notif1").build(),
                 )
             )
@@ -522,7 +448,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                     key = "notif2",
                     packageName = "samePackage",
                     uid = 3,
-                    statusBarChipIcon = createStatusBarIconViewOrNull(),
+                    statusBarChipIcon = null,
                     promotedContent = newPromotedNotificationContentBuilder("notif2").build(),
                 )
             )
@@ -543,7 +469,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                     key = "firstPackage.1",
                     packageName = "firstPackage",
                     uid = 1,
-                    statusBarChipIcon = createStatusBarIconViewOrNull(),
+                    statusBarChipIcon = null,
                     promotedContent =
                         newPromotedNotificationContentBuilder("firstPackage.1").build(),
                 )
@@ -555,7 +481,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                     key = "firstPackage.2",
                     packageName = "firstPackage",
                     uid = 1,
-                    statusBarChipIcon = createStatusBarIconViewOrNull(),
+                    statusBarChipIcon = null,
                     promotedContent =
                         newPromotedNotificationContentBuilder("firstPackage.2").build(),
                 )
@@ -568,7 +494,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                     key = "secondPackage.1",
                     packageName = "secondPackage",
                     uid = 2,
-                    statusBarChipIcon = createStatusBarIconViewOrNull(),
+                    statusBarChipIcon = null,
                     promotedContent =
                         newPromotedNotificationContentBuilder("secondPackage.1").build(),
                 )
@@ -580,7 +506,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                     key = "secondPackage.2",
                     packageName = "secondPackage",
                     uid = 20,
-                    statusBarChipIcon = createStatusBarIconViewOrNull(),
+                    statusBarChipIcon = null,
                     promotedContent =
                         newPromotedNotificationContentBuilder("secondPackage.2").build(),
                 )
@@ -592,7 +518,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                     key = "secondPackage.3",
                     packageName = "secondPackage",
                     uid = 200,
-                    statusBarChipIcon = createStatusBarIconViewOrNull(),
+                    statusBarChipIcon = null,
                     promotedContent =
                         newPromotedNotificationContentBuilder("secondPackage.3").build(),
                 )
@@ -616,7 +542,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                 newPromotedNotificationContentBuilder("notif").applyToShared {
                     this.time = When.Time(currentTime)
                 }
-            val icon = createStatusBarIconViewOrNull()
+            val icon = null
             setNotifs(
                 listOf(
                     activeNotificationModel(
@@ -662,7 +588,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                 newPromotedNotificationContentBuilder("notif").applyToShared {
                     this.subText = "Old subtext"
                 }
-            val icon = createStatusBarIconViewOrNull()
+            val icon = null
             setNotifs(
                 listOf(
                     activeNotificationModel(
@@ -710,7 +636,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                     activeNotificationModel(
                         key = "notif",
                         uid = uid,
-                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        statusBarChipIcon = null,
                         promotedContent = newPromotedNotificationContentBuilder("notif").build(),
                     )
                 )
@@ -733,7 +659,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                     activeNotificationModel(
                         key = "notif",
                         uid = uid,
-                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        statusBarChipIcon = null,
                         promotedContent = newPromotedNotificationContentBuilder("notif").build(),
                     )
                 )
@@ -756,7 +682,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                     activeNotificationModel(
                         key = "notif",
                         uid = uid,
-                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        statusBarChipIcon = null,
                         promotedContent = newPromotedNotificationContentBuilder("notif").build(),
                     )
                 )
@@ -793,7 +719,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                 listOf(
                     activeNotificationModel(
                         key = "notif",
-                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        statusBarChipIcon = null,
                         promotedContent = promotedContentBuilder.build(),
                     )
                 )
@@ -823,7 +749,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                 listOf(
                     activeNotificationModel(
                         key = "notif",
-                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        statusBarChipIcon = null,
                         promotedContent = promotedContentBuilder.build(),
                     )
                 )
@@ -850,7 +776,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                 listOf(
                     activeNotificationModel(
                         key = "notif",
-                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        statusBarChipIcon = null,
                         promotedContent = promotedContentBuilder.build(),
                         instanceId = instanceId,
                     )
@@ -873,7 +799,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                 listOf(
                     activeNotificationModel(
                         key = "notif",
-                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        statusBarChipIcon = null,
                         promotedContent = promotedContentBuilder.build(),
                     )
                 )
@@ -901,7 +827,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                 listOf(
                     activeNotificationModel(
                         key = "notif",
-                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        statusBarChipIcon = null,
                         promotedContent = promotedContentBuilder.build(),
                     )
                 )
@@ -946,7 +872,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                     activeNotificationModel(
                         key = "notif",
                         uid = 3,
-                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        statusBarChipIcon = null,
                         promotedContent = promotedContentBuilder.build(),
                     )
                 )
@@ -983,7 +909,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                 listOf(
                     activeNotificationModel(
                         key = "notif",
-                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        statusBarChipIcon = null,
                         promotedContent = promotedContentBuilder.build(),
                     )
                 )
@@ -1010,7 +936,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                 listOf(
                     activeNotificationModel(
                         key = "notif",
-                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        statusBarChipIcon = null,
                         promotedContent = promotedContentBuilder.build(),
                     )
                 )
@@ -1037,7 +963,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                 listOf(
                     activeNotificationModel(
                         key = "notif",
-                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        statusBarChipIcon = null,
                         promotedContent = promotedContentBuilder.build(),
                     )
                 )
@@ -1066,7 +992,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                 listOf(
                     activeNotificationModel(
                         key = "notif",
-                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        statusBarChipIcon = null,
                         promotedContent = promotedContentBuilder.build(),
                     )
                 )
@@ -1106,7 +1032,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                 listOf(
                     activeNotificationModel(
                         key = "notif",
-                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        statusBarChipIcon = null,
                         promotedContent = promotedContentBuilder.build(),
                     )
                 )
@@ -1162,7 +1088,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                     activeNotificationModel(
                         key = "notif",
                         uid = uid,
-                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        statusBarChipIcon = null,
                         promotedContent = promotedContentBuilder.build(),
                     )
                 )
@@ -1215,7 +1141,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                 listOf(
                     activeNotificationModel(
                         key = "notif",
-                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        statusBarChipIcon = null,
                         promotedContent = promotedContentBuilder.build(),
                     )
                 )
@@ -1253,7 +1179,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                 listOf(
                     activeNotificationModel(
                         key = "notif",
-                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        statusBarChipIcon = null,
                         promotedContent = promotedContentBuilder.build(),
                         instanceId = instanceId,
                     )
@@ -1294,7 +1220,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                 listOf(
                     activeNotificationModel(
                         key = "notif",
-                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        statusBarChipIcon = null,
                         promotedContent = promotedContentBuilder.build(),
                     )
                 )
@@ -1336,7 +1262,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                 listOf(
                     activeNotificationModel(
                         key = "notif",
-                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        statusBarChipIcon = null,
                         promotedContent = promotedContentBuilder.build(),
                     )
                 )
@@ -1386,7 +1312,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                 listOf(
                     activeNotificationModel(
                         key = "notif",
-                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        statusBarChipIcon = null,
                         promotedContent = promotedContentBuilder.build(),
                     )
                 )
@@ -1428,7 +1354,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                 listOf(
                     activeNotificationModel(
                         key = "notif",
-                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        statusBarChipIcon = null,
                         promotedContent = promotedContentBuilder.build(),
                     )
                 )
@@ -1478,7 +1404,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                 listOf(
                     activeNotificationModel(
                         key = "notif",
-                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        statusBarChipIcon = null,
                         promotedContent = promotedContentBuilder.build(),
                     )
                 )
@@ -1526,7 +1452,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                 listOf(
                     activeNotificationModel(
                         key = "notif",
-                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        statusBarChipIcon = null,
                         promotedContent = promotedContentBuilder.build(),
                     )
                 )
@@ -1576,7 +1502,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                 listOf(
                     activeNotificationModel(
                         key = "notif",
-                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        statusBarChipIcon = null,
                         promotedContent = promotedContentBuilder.build(),
                     )
                 )
@@ -1624,7 +1550,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                 listOf(
                     activeNotificationModel(
                         key = "notif",
-                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        statusBarChipIcon = null,
                         promotedContent = promotedContentBuilder.build(),
                     )
                 )
@@ -1674,7 +1600,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                 listOf(
                     activeNotificationModel(
                         key = "notif",
-                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        statusBarChipIcon = null,
                         promotedContent = promotedContentBuilder.build(),
                     )
                 )
@@ -1722,7 +1648,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                 listOf(
                     activeNotificationModel(
                         key = "notif",
-                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        statusBarChipIcon = null,
                         promotedContent = promotedContentBuilder.build(),
                     )
                 )
@@ -1772,7 +1698,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                 listOf(
                     activeNotificationModel(
                         key = "notif",
-                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        statusBarChipIcon = null,
                         promotedContent = promotedContentBuilder.build(),
                     )
                 )
@@ -1820,7 +1746,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                 listOf(
                     activeNotificationModel(
                         key = "notif",
-                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        statusBarChipIcon = null,
                         promotedContent = promotedContentBuilder.build(),
                     )
                 )
@@ -1870,7 +1796,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                 listOf(
                     activeNotificationModel(
                         key = "notif",
-                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        statusBarChipIcon = null,
                         promotedContent = promotedContentBuilder.build(),
                     )
                 )
@@ -1917,7 +1843,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                 listOf(
                     activeNotificationModel(
                         key = "notif",
-                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        statusBarChipIcon = null,
                         promotedContent = promotedContentBuilder.build(),
                     )
                 )
@@ -1985,18 +1911,14 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                         this.time = When.Time(currentTime + 10.minutes.inWholeMilliseconds)
                     }
                 }
-            val icon = createStatusBarIconViewOrNull()
-            val otherIcon = createStatusBarIconViewOrNull()
             setNotifs(
                 listOf(
                     activeNotificationModel(
                         key = "notif",
-                        statusBarChipIcon = icon,
                         promotedContent = promotedContentBuilder.build(),
                     ),
                     activeNotificationModel(
                         key = "other notif",
-                        statusBarChipIcon = otherIcon,
                         promotedContent = otherPromotedContentBuilder.build(),
                     ),
                 )
@@ -2018,7 +1940,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                         OngoingActivityChipModel.Content.Timer::class.java
                     else OngoingActivityChipModel.Content.ShortTimeDelta::class.java
                 )
-            assertIsNotifChip(chip, context, icon, "notif")
+            assertIsNotifChip(chip, context, "notif")
         }
 
     @Test
@@ -2036,7 +1958,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                 listOf(
                     activeNotificationModel(
                         key = "notif",
-                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        statusBarChipIcon = null,
                         promotedContent = promotedContentBuilder.build(),
                     )
                 )
@@ -2069,7 +1991,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                 listOf(
                     activeNotificationModel(
                         key,
-                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        statusBarChipIcon = null,
                         promotedContent = newPromotedNotificationContentBuilder(key).build(),
                     )
                 )
@@ -2096,7 +2018,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                 listOf(
                     activeNotificationModel(
                         "notif",
-                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        statusBarChipIcon = null,
                         promotedContent = newPromotedNotificationContentBuilder("notif").build(),
                     )
                 )
@@ -2119,7 +2041,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                 listOf(
                     activeNotificationModel(
                         "notif",
-                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        statusBarChipIcon = null,
                         promotedContent = newPromotedNotificationContentBuilder("notif").build(),
                     )
                 )
@@ -2147,7 +2069,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                 listOf(
                     activeNotificationModel(
                         "notif",
-                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        statusBarChipIcon = null,
                         promotedContent = newPromotedNotificationContentBuilder("notif").build(),
                     )
                 )
@@ -2175,7 +2097,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                 listOf(
                     activeNotificationModel(
                         "notif",
-                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        statusBarChipIcon = null,
                         promotedContent = newPromotedNotificationContentBuilder("notif").build(),
                     )
                 )
@@ -2224,7 +2146,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                     key = notifKey,
                     packageName = notifKey,
                     uid = uid,
-                    statusBarChipIcon = createStatusBarIconViewOrNull(),
+                    statusBarChipIcon = null,
                     contentIntent = pendingIntent,
                     promotedContent = newPromotedNotificationContentBuilder(notifKey).build(),
                 )
@@ -2275,7 +2197,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                     key = notifKey,
                     packageName = notifKey,
                     uid = uid,
-                    statusBarChipIcon = createStatusBarIconViewOrNull(),
+                    statusBarChipIcon = null,
                     contentIntent = pendingIntent,
                     promotedContent = newPromotedNotificationContentBuilder(notifKey).build(),
                 )
@@ -2312,7 +2234,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                     key = notifKey,
                     packageName = notifKey,
                     uid = uid,
-                    statusBarChipIcon = createStatusBarIconViewOrNull(),
+                    statusBarChipIcon = null,
                     contentIntent = pendingIntent,
                     promotedContent = newPromotedNotificationContentBuilder(notifKey).build(),
                 )
@@ -2391,32 +2313,20 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         fun assertIsNotifChip(
             latest: OngoingActivityChipModel?,
             context: Context,
-            expectedIcon: StatusBarIconView?,
             expectedNotificationKey: String,
             expectedContentDescriptionSubstrings: List<String> = emptyList(),
         ) {
             val active = latest as OngoingActivityChipModel.Active
             assertThat(active.isImportantForPrivacy).isFalse()
-            if (StatusBarConnectedDisplays.isEnabled) {
-                assertThat(active.icon)
-                    .isInstanceOf(
-                        OngoingActivityChipModel.ChipIcon.StatusBarNotificationIcon::class.java
-                    )
-                val icon =
-                    active.icon as OngoingActivityChipModel.ChipIcon.StatusBarNotificationIcon
+            assertThat(active.icon)
+                .isInstanceOf(
+                    OngoingActivityChipModel.ChipIcon.StatusBarNotificationIcon::class.java
+                )
+            val icon = active.icon as OngoingActivityChipModel.ChipIcon.StatusBarNotificationIcon
 
-                assertThat(icon.notificationKey).isEqualTo(expectedNotificationKey)
-                expectedContentDescriptionSubstrings.forEach {
-                    assertThat(icon.contentDescription.loadContentDescription(context)).contains(it)
-                }
-            } else {
-                assertThat(active.icon)
-                    .isInstanceOf(OngoingActivityChipModel.ChipIcon.StatusBarView::class.java)
-                val icon = active.icon as OngoingActivityChipModel.ChipIcon.StatusBarView
-                assertThat(icon.impl).isEqualTo(expectedIcon!!)
-                expectedContentDescriptionSubstrings.forEach {
-                    assertThat(icon.contentDescription.loadContentDescription(context)).contains(it)
-                }
+            assertThat(icon.notificationKey).isEqualTo(expectedNotificationKey)
+            expectedContentDescriptionSubstrings.forEach {
+                assertThat(icon.contentDescription.loadContentDescription(context)).contains(it)
             }
         }
 

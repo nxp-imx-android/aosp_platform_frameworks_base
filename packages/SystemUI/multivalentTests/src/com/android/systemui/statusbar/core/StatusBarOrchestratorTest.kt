@@ -16,7 +16,6 @@
 
 package com.android.systemui.statusbar.core
 
-import android.platform.test.annotations.EnableFlags
 import android.view.View
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -60,7 +59,6 @@ import org.mockito.kotlin.reset
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 
-@EnableFlags(StatusBarConnectedDisplays.FLAG_NAME)
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class StatusBarOrchestratorTest : SysuiTestCase() {

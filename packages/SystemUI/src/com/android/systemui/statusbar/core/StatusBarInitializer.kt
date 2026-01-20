@@ -119,10 +119,7 @@ constructor(
                             component.phoneStatusBarViewController,
                             component.phoneStatusBarTransitions,
                         )
-
-                        if (StatusBarConnectedDisplays.isEnabled) {
-                            statusBarModePerDisplayRepository.onStatusBarViewInitialized(component)
-                        }
+                        statusBarModePerDisplayRepository.onStatusBarViewInitialized(component)
                         lifecycleListeners.forEach { listener ->
                             listener.onStatusBarViewInitialized(component)
                         }
@@ -136,7 +133,6 @@ constructor(
     }
 
     override fun stop() {
-        StatusBarConnectedDisplays.unsafeAssertInNewMode()
         val component = this.component ?: return
         lifecycleListeners.forEach { it.onStatusBarViewDestroyed(component) }
     }

@@ -48,7 +48,6 @@ import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipView
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipViewModel.Companion.createNotificationToggleClickBehavior
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipViewModel.Companion.isShowingHeadsUpFromChipTap
 import com.android.systemui.statusbar.chips.uievents.StatusBarChipsUiEventLogger
-import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 import com.android.systemui.statusbar.notification.domain.interactor.HeadsUpNotificationInteractor
 import com.android.systemui.statusbar.notification.domain.model.TopPinnedState
 import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCallModel
@@ -210,20 +209,10 @@ constructor(
         val key = "$KEY_PREFIX${newState.notificationKey}"
         val contentDescription = getContentDescription(newState.appName)
         val icon =
-            if (newState.notificationIconView != null) {
-                StatusBarConnectedDisplays.assertInLegacyMode()
-                OngoingActivityChipModel.ChipIcon.StatusBarView(
-                    newState.notificationIconView,
-                    contentDescription,
-                )
-            } else if (StatusBarConnectedDisplays.isEnabled) {
-                OngoingActivityChipModel.ChipIcon.StatusBarNotificationIcon(
-                    newState.notificationKey,
-                    contentDescription,
-                )
-            } else {
-                OngoingActivityChipModel.ChipIcon.SingleColorIcon(phoneIcon)
-            }
+            OngoingActivityChipModel.ChipIcon.StatusBarNotificationIcon(
+                newState.notificationKey,
+                contentDescription,
+            )
 
         val colors = ColorsModel.AccentThemed
         val intent = newState.intent
