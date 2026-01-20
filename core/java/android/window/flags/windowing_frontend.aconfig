@@ -476,3 +476,13 @@ flag {
     description: "Only cache low resolution task snapshot in system server."
     bug: "238206323"
 }
+
+flag {
+    name: "use_transition_for_screenshot_window_additions"
+    namespace: "web_apps_on_chromeos_and_android"
+    description: "Use shell transitions to synchronize screenshot window additions."
+    bug: "476223353"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

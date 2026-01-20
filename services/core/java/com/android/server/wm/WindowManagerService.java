@@ -1972,10 +1972,19 @@ public class WindowManagerService extends IWindowManager.Stub
             final boolean hideSystemAlertWindows = shouldHideNonSystemOverlayWindow(win);
             win.setForceHideNonSystemOverlayWindowIfNeeded(hideSystemAlertWindows);
 
-            // Only a presentation window needs a transition because its visibility affects the
-            // lifecycle of apps below (b/390481865).
-            if (ENABLE_PRESENTATION_FOR_CONNECTED_DISPLAYS.isTrue() && win.isPresentation()) {
-                final ActionChain chain = mAtmService.mChainTracker.startTransit("addPresoWin");
+            // A presentation window needs a transition because its visibility affects the lifecycle
+            // apps below (b/390481865).
+            final boolean isPresentationWindow =
+                    ENABLE_PRESENTATION_FOR_CONNECTED_DISPLAYS.isTrue() && win.isPresentation();
+            // WindowContainer#assignLayers() is blocked for the majority of window containers if
+            // a transition is playing. If there are multiple children in the display area for
+            // screenshot windows, we could miss the chance to set correct z-orders on layers
+            // without any synchronization (b/476223353).
+            final boolean isScreenshotWindow =
+                    Flags.useTransitionForScreenshotWindowAdditions()
+                            && win.mAttrs.type == WindowManager.LayoutParams.TYPE_SCREENSHOT;
+            if (isPresentationWindow || isScreenshotWindow) {
+                final ActionChain chain = mAtmService.mChainTracker.startTransit("addWin");
                 final boolean wasTransitionOnDisplay = chain.isCollectingOnDisplay(displayContent);
                 Transition newlyCreatedTransition = null;
                 if (!chain.isCollecting()) {
