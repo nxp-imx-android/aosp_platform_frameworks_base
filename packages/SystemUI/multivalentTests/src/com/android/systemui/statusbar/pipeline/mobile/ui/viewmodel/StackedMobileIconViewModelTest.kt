@@ -17,7 +17,9 @@
 package com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel
 
 import android.content.Context
+import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
+import android.platform.test.flag.junit.SetFlagsRule
 import android.telephony.SubscriptionManager.PROFILE_CLASS_UNSET
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -32,6 +34,7 @@ import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.statusbar.connectivity.ui.mobileContextProvider
 import com.android.systemui.statusbar.core.NewStatusBarIcons
 import com.android.systemui.statusbar.pipeline.mobile.NewSatelliteIcon
+import com.android.systemui.statusbar.pipeline.mobile.StatusBarMobileIconKairos
 import com.android.systemui.statusbar.pipeline.mobile.data.model.SubscriptionModel
 import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.fakeMobileIconsInteractor
 import com.android.systemui.statusbar.pipeline.mobile.domain.model.SignalIconModel
@@ -40,6 +43,7 @@ import com.android.systemui.statusbar.pipeline.shared.data.model.DataActivityMod
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito.mock
@@ -49,7 +53,11 @@ import org.mockito.kotlin.whenever
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
+@DisableFlags(StatusBarMobileIconKairos.FLAG_NAME)
 class StackedMobileIconViewModelTest : SysuiTestCase() {
+
+    @get:Rule val setFlagsRule = SetFlagsRule()
+
     private val kosmos =
         testKosmos().useUnconfinedTestDispatcher().apply {
             connectivityConstants.shouldShowActivityConfig = true

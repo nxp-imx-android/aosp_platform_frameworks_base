@@ -91,6 +91,19 @@ fun interface KairosActivatable {
     fun BuildScope.activate()
 }
 
+/**
+ * Convenience method to [activate][KairosActivatable.activate] a [KairosActivatable] within
+ * [kairosNetwork].
+ *
+ * Shorthand for:
+ * ```
+ *     kairosNetwork.activateSpec { this@activateIn.run { activate() } }
+ * ```
+ */
+suspend fun KairosActivatable.activateIn(kairosNetwork: KairosNetwork) {
+    kairosNetwork.activateSpec { activate() }
+}
+
 /** Constructs [KairosActivatable] instances. */
 fun interface KairosActivatableFactory<T : KairosActivatable> {
     fun BuildScope.create(): T

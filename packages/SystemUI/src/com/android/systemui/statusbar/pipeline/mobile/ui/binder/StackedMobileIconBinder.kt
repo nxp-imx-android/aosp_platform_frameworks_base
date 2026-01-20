@@ -25,29 +25,39 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.systemui.kairos.KairosNetwork
+import com.android.systemui.kairos.toColdConflatedFlow
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.statusbar.pipeline.mobile.StatusBarMobileIconKairos
 import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.MobileIconsViewModel
+import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.MobileIconsViewModelKairos
 import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.StackedMobileIconViewModel
 import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.StackedMobileIconViewModelImpl
 import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.StackedMobileIconViewModelKairos
 import com.android.systemui.statusbar.pipeline.shared.ui.binder.ModernStatusBarViewBinding
 import com.android.systemui.statusbar.pipeline.shared.ui.composable.StackedMobileIcon
 import com.android.systemui.statusbar.pipeline.shared.ui.view.SingleBindableStatusBarComposeIconView
-import com.android.systemui.util.composable.kairos.rememberKairosActivatable
+import dagger.Lazy
+import kotlinx.coroutines.flow.Flow
 
 object StackedMobileIconBinder {
     fun bind(
         view: SingleBindableStatusBarComposeIconView,
-        mobileIconsViewModel: MobileIconsViewModel,
+        mobileIconsViewModel: Lazy<MobileIconsViewModel>,
+        mobileIconsViewModelKairos: Lazy<MobileIconsViewModelKairos>,
         viewModelFactory: StackedMobileIconViewModelImpl.Factory,
         kairosViewModelFactory: StackedMobileIconViewModelKairos.Factory,
         kairosNetwork: KairosNetwork,
     ): ModernStatusBarViewBinding {
+        val shouldBeVisible: Flow<Boolean> =
+            if (StatusBarMobileIconKairos.isEnabled) {
+                mobileIconsViewModelKairos.get().isStackable.toColdConflatedFlow(kairosNetwork)
+            } else {
+                mobileIconsViewModel.get().isStackable
+            }
         return SingleBindableStatusBarComposeIconView.withDefaultBinding(
             view = view,
-            shouldBeVisible = { mobileIconsViewModel.isStackable.value },
+            shouldBeVisible = shouldBeVisible,
         ) { _, tintFlow ->
             view.composeView.apply {
                 setViewCompositionStrategy(
@@ -59,12 +69,10 @@ object StackedMobileIconBinder {
                 )
                 setContent {
                     val viewModel: StackedMobileIconViewModel =
-                        if (StatusBarMobileIconKairos.isEnabled) {
-                            rememberKairosActivatable("StackedMobileIconBinder", kairosNetwork) {
+                        rememberViewModel("StackedMobileIconBinder") {
+                            if (StatusBarMobileIconKairos.isEnabled) {
                                 kairosViewModelFactory.create()
-                            }
-                        } else {
-                            rememberViewModel("StackedMobileIconBinder") {
+                            } else {
                                 viewModelFactory.create()
                             }
                         }
