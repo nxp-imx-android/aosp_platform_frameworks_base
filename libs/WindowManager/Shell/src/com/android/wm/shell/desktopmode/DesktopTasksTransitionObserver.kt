@@ -54,7 +54,6 @@ class DesktopTasksTransitionObserver(
     private val desktopMixedTransitionHandler: DesktopMixedTransitionHandler,
     private val desktopWallpaperActivityTokenProvider: DesktopWallpaperActivityTokenProvider,
     private val displayController: DisplayController,
-    private val desktopImmersiveController: DesktopImmersiveController,
     desktopState: DesktopState,
     shellInit: ShellInit,
 ) : Transitions.TransitionObserver {
@@ -64,6 +63,7 @@ class DesktopTasksTransitionObserver(
     private var transitionToCloseWallpaper: CloseWallpaperTransition? = null
     private var closingTransitionToTransitionInfo = HashMap<IBinder, TransitionInfo>()
     private var currentProfileId: Int
+    private val pendingUserBoundsChangeTransitions = mutableSetOf<IBinder>()
 
     init {
         if (desktopState.canEnterDesktopMode) {
@@ -96,7 +96,7 @@ class DesktopTasksTransitionObserver(
             closingTransitionToTransitionInfo.put(transition, info)
         }
         removeWallpaperOnLastTaskClosingIfNeeded(transition, info)
-        updateLastPackageStateChange(info, transition)
+        updateRememberedBoundsIfNeeded(info, transition)
     }
 
     private fun containsClosingTaskInDesktop(info: TransitionInfo): Boolean {
@@ -268,10 +268,13 @@ class DesktopTasksTransitionObserver(
         }
     }
 
-    private fun updateLastPackageStateChange(info: TransitionInfo, transition: IBinder) {
+    private fun updateRememberedBoundsIfNeeded(info: TransitionInfo, transition: IBinder) {
         if (!Flags.enableRememberedBounds()) {
             return
         }
+        if (!pendingUserBoundsChangeTransitions.contains(transition)) return
+        pendingUserBoundsChangeTransitions.remove(transition)
+
         run forEachLoop@{
             info.changes.forEach { change ->
                 change.taskInfo?.let { taskInfo ->
@@ -285,11 +288,6 @@ class DesktopTasksTransitionObserver(
                     if (desktopRepository.isTaskInFullImmersiveState(taskInfo.taskId)) {
                         // We don't update the remembered bounds while the task is in full immersive
                         // state.
-                        return@forEachLoop
-                    }
-                    if (desktopImmersiveController.isImmersiveChange(transition, change)) {
-                        // We don't update the remembered bounds on enter/exit immersive
-                        // transitions.
                         return@forEachLoop
                     }
 
@@ -322,6 +320,13 @@ class DesktopTasksTransitionObserver(
                 }
             }
         }
+    }
+
+    fun addPendingUserBoundsChangeTransition(transition: IBinder) {
+        if (!Flags.enableRememberedBounds()) {
+            return
+        }
+        pendingUserBoundsChangeTransitions.add(transition)
     }
 
     private fun logV(msg: String, vararg arguments: Any?) {

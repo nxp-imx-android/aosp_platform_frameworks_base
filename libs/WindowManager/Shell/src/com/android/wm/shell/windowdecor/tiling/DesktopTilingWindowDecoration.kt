@@ -209,7 +209,12 @@ class DesktopTilingWindowDecoration(
         )
         if (isTiled) {
             val wct = WindowContainerTransaction().setBounds(taskInfo.token, destinationBounds)
-            toggleResizeDesktopTaskTransitionHandler.startTransition(wct, currentBounds, callback)
+            toggleResizeDesktopTaskTransitionHandler.startTransition(
+                wct,
+                currentBounds,
+                callback,
+                isUserResize = true,
+            )
         } else {
             // Handle the case where we attempt to snap resize when already snap resized: the task
             // position won't need to change but we want to animate the surface going back to the

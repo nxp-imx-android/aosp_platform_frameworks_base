@@ -280,6 +280,7 @@ class DesktopTasksController(
     private val launcherApps: LauncherApps,
     private val transitionStateHolder: TransitionStateHolder,
     private val desksController: DesksController,
+    private val desktopTasksTransitionObserver: DesktopTasksTransitionObserver,
 ) :
     RemoteCallable<DesktopTasksController>,
     TransitionHandler,
@@ -2825,9 +2826,9 @@ class DesktopTasksController(
         transitionHandler: TransitionHandler? = null,
         enterReason: EnterReason,
         captionInsets: Int = 0,
-    ) {
+    ): IBinder? {
         val wct = WindowContainerTransaction()
-        addMoveToDisplayChanges(
+        return addMoveToDisplayChanges(
                 wct = wct,
                 task = task,
                 displayId = displayId,
@@ -2843,6 +2844,7 @@ class DesktopTasksController(
                         transitionHandler ?: moveToDisplayTransitionHandler,
                     )
                 runOnTransitStart.invoke(transition)
+                return transition
             }
     }
 
@@ -3130,6 +3132,7 @@ class DesktopTasksController(
         toggleResizeDesktopTaskTransitionHandler.startTransition(
             wct,
             interaction.animationStartBounds,
+            isUserResize = true,
         )
     }
 
@@ -3302,7 +3305,11 @@ class DesktopTasksController(
         updateTaskBarAndWallpaperDim(taskInfo.displayId, true)
         val wct = WindowContainerTransaction().setBounds(taskInfo.token, destinationBounds)
 
-        toggleResizeDesktopTaskTransitionHandler.startTransition(wct, currentDragBounds)
+        toggleResizeDesktopTaskTransitionHandler.startTransition(
+            wct,
+            currentDragBounds,
+            isUserResize = true,
+        )
     }
 
     /**
@@ -6450,6 +6457,7 @@ class DesktopTasksController(
                 val prevCaptionInsets =
                     prevDisplayLayout?.let { taskInfo.freeformCaptionInsets(prevDisplayLayout) }
                         ?: 0
+                var transition: IBinder? = null
                 if (isCrossDisplayDrag) {
                     val captionInsetsDp = prevDisplayLayout?.pxToDp(prevCaptionInsets)?.toInt() ?: 0
                     val destDisplayLayout = displayController.getDisplayLayout(newDisplayId)
@@ -6463,14 +6471,15 @@ class DesktopTasksController(
                             captionInsets,
                         )
 
-                    moveToDisplay(
-                        taskInfo,
-                        newDisplayId,
-                        constrainedBounds,
-                        windowDragTransitionHandler,
-                        enterReason = EnterReason.APP_HANDLE_DRAG,
-                        captionInsets = captionInsets,
-                    )
+                    transition =
+                        moveToDisplay(
+                            taskInfo,
+                            newDisplayId,
+                            constrainedBounds,
+                            windowDragTransitionHandler,
+                            enterReason = EnterReason.APP_HANDLE_DRAG,
+                            captionInsets = captionInsets,
+                        )
                 } else {
                     // Update task bounds so that the task position will match the position of its
                     // leash
@@ -6481,7 +6490,15 @@ class DesktopTasksController(
                             Rect(destinationBounds).apply { this.top += prevCaptionInsets }
                         wct.setAppBounds(taskInfo.token, appBounds)
                     }
-                    transitions.startTransition(TRANSIT_CHANGE, wct, windowDragTransitionHandler)
+                    transition =
+                        transitions.startTransition(
+                            TRANSIT_CHANGE,
+                            wct,
+                            windowDragTransitionHandler,
+                        )
+                }
+                transition?.let {
+                    desktopTasksTransitionObserver.addPendingUserBoundsChangeTransition(it)
                 }
                 releaseVisualIndicator()
                 needDragIndicatorCleanup = false
@@ -6597,6 +6614,15 @@ class DesktopTasksController(
             }
         }
         return indicatorType
+    }
+
+    /**
+     * Notifies the controller that a transition for a drag resize operation has started.
+     *
+     * @param transition the transition of a drag resize operation.
+     */
+    fun onDragResizeTransitionStarted(transition: IBinder) {
+        desktopTasksTransitionObserver.addPendingUserBoundsChangeTransition(transition)
     }
 
     /** Update the exclusion region for a specified task */
