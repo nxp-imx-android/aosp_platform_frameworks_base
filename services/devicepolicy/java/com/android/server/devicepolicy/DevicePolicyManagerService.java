@@ -33,7 +33,7 @@ import static android.Manifest.permission.MANAGE_DEVICE_POLICY_FACTORY_RESET;
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_INPUT_METHODS;
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_KEYGUARD;
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_LOCK;
-import static android.Manifest.permission.MANAGE_DEVICE_POLICY_LOCKSCREEN_INFO;
+import static android.Manifest.permission.MANAGE_DEVICE_POLICY_LOCKSCREEN_MESSAGE;
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_LOCK_CREDENTIALS;
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_LOCK_TASK;
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_MANAGED_SUBSCRIPTIONS;
@@ -9572,19 +9572,19 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
     private void setDeviceOwnerLockScreenInfoCoexistence(ComponentName who,
             String callerPackageName, CharSequence info) {
         final CallerIdentity caller = getCallerIdentity(who, callerPackageName);
-        mPermissions.enforce(MANAGE_DEVICE_POLICY_LOCKSCREEN_INFO, caller, UserHandle.USER_ALL);
+        mPermissions.enforce(MANAGE_DEVICE_POLICY_LOCKSCREEN_MESSAGE, caller, UserHandle.USER_ALL);
 
         synchronized (getLockObject()) {
             final EnforcingAdmin admin = getEnforcingAdmin(caller);
             if (info != null && !info.isEmpty()) {
                 final CompletableFuture<Integer> unused = mDevicePolicyEngine.setGlobalPolicy(
-                        PolicyDefinition.LOCKSCREEN_INFO,
+                        PolicyDefinition.LOCKSCREEN_MESSAGE,
                         admin,
                         new StringPolicyValue(info.toString())
                 );
             } else {
                 final CompletableFuture<Integer> unused = mDevicePolicyEngine.removeGlobalPolicy(
-                        PolicyDefinition.LOCKSCREEN_INFO,
+                        PolicyDefinition.LOCKSCREEN_MESSAGE,
                         admin);
             }
         }
@@ -9605,9 +9605,9 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
 
     private CharSequence getDeviceOwnerLockScreenInfoCoexistence() {
         final CallerIdentity caller = getCallerIdentity();
-        mPermissions.enforce(MANAGE_DEVICE_POLICY_LOCKSCREEN_INFO, caller, UserHandle.USER_ALL);
+        mPermissions.enforce(MANAGE_DEVICE_POLICY_LOCKSCREEN_MESSAGE, caller, UserHandle.USER_ALL);
         return mDevicePolicyEngine.getResolvedPolicy(
-                PolicyDefinition.LOCKSCREEN_INFO, UserHandle.USER_ALL);
+                PolicyDefinition.LOCKSCREEN_MESSAGE, UserHandle.USER_ALL);
     }
 
     private void clearUserPoliciesLocked(int userId) {

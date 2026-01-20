@@ -630,7 +630,7 @@ public class PolicyMigrator {
             );
 
             final CompletableFuture<Integer> unused = mDevicePolicyEngine.setGlobalPolicy(
-                    PolicyDefinition.LOCKSCREEN_INFO,
+                    PolicyDefinition.LOCKSCREEN_MESSAGE,
                     enforcingAdmin,
                     new StringPolicyValue(lockScreenInfo)
             );
