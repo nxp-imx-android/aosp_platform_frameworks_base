@@ -19,11 +19,8 @@ package {
 }
 
 java_library {
-    name: "com.android.systemui.util.settings-api",
-    srcs: [
-        "src/api/**/*.java",
-        "src/api/**/*.kt",
-    ],
+    name: "com.android.systemui.util.settings_api",
+    defaults: ["sysui_api"],
     libs: [
         "//frameworks/libs/systemui:tracinglib-platform",
         "SystemUICommon",
@@ -31,22 +28,21 @@ java_library {
         "androidx.annotation_annotation",
         "kotlinx_coroutines_android",
     ],
-    defaults: [
-        "SystemUI_pod_defaults_api",
+}
+
+java_library {
+    name: "com.android.systemui.util.settings_main",
+    defaults: ["sysui_main"],
+    static_libs: [
+        "com.android.systemui.util.settings_api",
+        "kotlinx_coroutines_android",
     ],
 }
 
 java_library {
-    name: "com.android.systemui.util.settings-impl",
-    srcs: [
-        "src/main/**/*.java",
-        "src/main/**/*.kt",
-    ],
+    name: "com.android.systemui.util.settings_dagger",
+    defaults: ["sysui_dagger"],
     static_libs: [
-        "com.android.systemui.util.settings-api",
-        "kotlinx_coroutines_android",
-    ],
-    defaults: [
-        "SystemUI_pod_defaults_impl",
+        "com.android.systemui.util.settings_main",
     ],
 }

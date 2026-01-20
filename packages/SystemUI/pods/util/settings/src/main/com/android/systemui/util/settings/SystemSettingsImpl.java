@@ -14,15 +14,12 @@
  * limitations under the License.
  */
 
-package com.android.systemui.util.settings.impl;
+package com.android.systemui.util.settings;
 
 import android.annotation.NonNull;
 import android.content.ContentResolver;
 import android.net.Uri;
 import android.provider.Settings;
-
-import com.android.systemui.util.settings.SettingsSingleThreadBackground;
-import com.android.systemui.util.settings.SystemSettings;
 
 import kotlinx.coroutines.CoroutineScope;
 

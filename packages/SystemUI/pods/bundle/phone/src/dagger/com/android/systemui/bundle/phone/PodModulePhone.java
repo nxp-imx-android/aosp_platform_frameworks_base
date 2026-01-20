@@ -20,6 +20,7 @@ import com.android.systemui.brightness.BrightnessModule;
 import com.android.systemui.graphics.ImageLoaderModule;
 import com.android.systemui.notifications.intelligence.rules.NotificationRulesModule;
 import com.android.systemui.notifications.intelligence.rules.ui.NotificationRulesUiModule;
+import com.android.systemui.util.settings.SettingsUtilModule;
 
 import dagger.Module;
 
@@ -31,6 +32,7 @@ import dagger.Module;
         ImageLoaderModule.class,
         NotificationRulesModule.class,
         NotificationRulesUiModule.class,
+        SettingsUtilModule.class,
 })
 public interface PodModulePhone {
     // Leave this empty

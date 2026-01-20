@@ -186,7 +186,6 @@ import com.android.systemui.util.policy.impl.PolicyRestrictionModule;
 import com.android.systemui.util.reference.ReferenceModule;
 import com.android.systemui.util.sensors.SensorModule;
 import com.android.systemui.util.settings.SettingsProxy;
-import com.android.systemui.util.settings.impl.SettingsUtilModule;
 import com.android.systemui.wallet.dagger.WalletModule;
 import com.android.systemui.wmshell.BubblesManager;
 import com.android.wm.shell.bubbles.Bubbles;
@@ -290,7 +289,6 @@ import javax.inject.Named;
         SensorModule.class,
         SecurityRepositoryModule.class,
         ScreenRecordModule.class,
-        SettingsUtilModule.class,
         SmartRepliesInflationModule.class,
         SmartspaceModule.class,
         StatusBarEventsModule.class,

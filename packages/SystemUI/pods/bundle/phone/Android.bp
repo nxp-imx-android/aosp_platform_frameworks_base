@@ -19,10 +19,13 @@ java_library {
     defaults: ["sysui_dagger"],
 
     static_libs: [
+        // go/keep-sorted start
         "com.android.systemui.brightness_dagger",
         "com.android.systemui.graphics_dagger",
-        "com.android.systemui.notifications.intelligence.rules_dagger",
         "com.android.systemui.notifications.intelligence.rules.ui_dagger",
+        "com.android.systemui.notifications.intelligence.rules_dagger",
+        "com.android.systemui.util.settings_dagger",
+        // go/keep-sorted end
     ],
 
     visibility: [
