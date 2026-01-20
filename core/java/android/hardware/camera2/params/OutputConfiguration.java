@@ -36,6 +36,7 @@ import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.MultiResolutionImageReader;
+import android.hardware.camera2.extension.IOnActiveOutputSurfaceCallback;
 import android.hardware.camera2.utils.HashCodeHelpers;
 import android.hardware.camera2.utils.ListUtils;
 import android.hardware.camera2.utils.SurfaceUtils;
@@ -1697,6 +1698,7 @@ public final class OutputConfiguration implements Parcelable {
         this.mReadoutTimestampEnabled = other.mReadoutTimestampEnabled;
         this.mUsage = other.mUsage;
         this.mMultiResolutionReader = other.mMultiResolutionReader;
+        this.mOnActiveOutputSurfaceCallback = other.mOnActiveOutputSurfaceCallback;
     }
 
     /**
@@ -1939,6 +1941,46 @@ public final class OutputConfiguration implements Parcelable {
         return mMultiResolutionReader;
     }
 
+    /**
+     * Get the remote {@link IOnActiveOutputSurfaceCallback} associated with this
+     * OutputConfiguration.
+     *
+     * @return The remote {@link IOnActiveOutputSurfaceCallback} or {@code null} if not set.
+     * @hide
+     */
+    public @Nullable IOnActiveOutputSurfaceCallback getOnActiveOutputSurfaceCallback() {
+        if (!Flags.multiResolutionConcurrentReaders()) {
+            return null;
+        }
+
+        return mOnActiveOutputSurfaceCallback;
+    }
+
+    /**
+     * Set the remote {@link IOnActiveOutputSurfaceCallback} to be notified when the output
+     * surface becomes active.
+     *
+     * @param onActiveOutputSurfaceCallback The callback to set.
+     * @hide
+     */
+    public void setOnActiveOutputSurfaceCallback(
+            @Nullable IOnActiveOutputSurfaceCallback onActiveOutputSurfaceCallback) {
+        if (!Flags.multiResolutionConcurrentReaders()) {
+            return;
+        }
+
+        if (mMultiResolutionReader != null) {
+            throw new IllegalStateException("MultiResolutionImageReader already set");
+        }
+        mOnActiveOutputSurfaceCallback = onActiveOutputSurfaceCallback;
+
+        if (mOnActiveOutputSurfaceCallback != null) {
+            mMultiResMode = MULTI_RES_ON_CONCURRENT;
+        } else {
+            mMultiResMode = MULTI_RES_OFF;
+        }
+    }
+
     public static final @android.annotation.NonNull Parcelable.Creator<OutputConfiguration> CREATOR =
             new Parcelable.Creator<OutputConfiguration>() {
         @Override
@@ -2060,6 +2102,11 @@ public final class OutputConfiguration implements Parcelable {
                 if (!Objects.equals(mMultiResolutionReader, other.mMultiResolutionReader)) {
                     return false;
                 }
+
+                if (!Objects.equals(mOnActiveOutputSurfaceCallback,
+                        other.mOnActiveOutputSurfaceCallback)) {
+                    return false;
+                }
             }
 
             return true;
@@ -2095,7 +2142,8 @@ public final class OutputConfiguration implements Parcelable {
                     mTimestampBase, mMirrorMode,
                     HashCodeHelpers.hashCode(mMirrorModeForSurfaces.toArray()),
                     mReadoutTimestampEnabled ? 1 : 0, Long.hashCode(mUsage),
-                    Objects.hashCode(mMultiResolutionReader));
+                    Objects.hashCode(mMultiResolutionReader),
+                    Objects.hashCode(mOnActiveOutputSurfaceCallback));
         }
 
         return HashCodeHelpers.hashCode(
@@ -2107,7 +2155,8 @@ public final class OutputConfiguration implements Parcelable {
                 mDynamicRangeProfile, mColorSpace, mStreamUseCase, mTimestampBase,
                 mMirrorMode, HashCodeHelpers.hashCode(mMirrorModeForSurfaces.toArray()),
                 mReadoutTimestampEnabled ? 1 : 0,
-                Long.hashCode(mUsage), Objects.hashCode(mMultiResolutionReader));
+                Long.hashCode(mUsage), Objects.hashCode(mMultiResolutionReader),
+                Objects.hashCode(mOnActiveOutputSurfaceCallback));
     }
 
     private static final String TAG = "OutputConfiguration";
@@ -2163,4 +2212,6 @@ public final class OutputConfiguration implements Parcelable {
     // The parent multiResolutionImageReader if this OutputConfiguration is generated from it.
     private MultiResolutionImageReader mMultiResolutionReader;
 
+    // Remote multiResolutionImageReader callback to be notified instead of the local instance.
+    private IOnActiveOutputSurfaceCallback mOnActiveOutputSurfaceCallback;
 }

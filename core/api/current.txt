@@ -21205,6 +21205,7 @@ package android.hardware.camera2 {
     method public void close();
     method protected void finalize();
     method public void flush();
+    method @FlaggedApi("com.android.internal.camera.flags.multi_resolution_concurrent_readers") @Nullable public android.hardware.camera2.MultiResolutionImageReader.OnActiveOutputSurfacesListener getOnActiveOutputSurfacesListener();
     method @NonNull public android.hardware.camera2.params.MultiResolutionStreamInfo getStreamInfoForImageReader(@NonNull android.media.ImageReader);
     method @NonNull public android.view.Surface getSurface();
     method @FlaggedApi("com.android.internal.camera.flags.multi_resolution_concurrent_readers") public void setOnActiveOutputSurfacesListener(@NonNull java.util.concurrent.Executor, @NonNull android.hardware.camera2.MultiResolutionImageReader.OnActiveOutputSurfacesListener);

@@ -20,6 +20,7 @@ import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.SystemApi;
+import android.hardware.camera2.MultiResolutionImageReader;
 import android.hardware.camera2.params.DynamicRangeProfiles;
 
 import com.android.internal.camera.flags.Flags;
@@ -40,6 +41,7 @@ public class ExtensionOutputConfiguration {
     private final String mPhysicalCameraId;
     private final int mOutputConfigId;
     private final int mSurfaceGroupId;
+    private MultiResolutionImageReader mMultiResolutionImageReader;
 
     /**
      * Initialize an extension output configuration instance
@@ -62,6 +64,27 @@ public class ExtensionOutputConfiguration {
         mPhysicalCameraId = physicalCameraId;
         mOutputConfigId = outputConfigId;
         mSurfaceGroupId = surfaceGroupId;
+    }
+
+    /**
+     * Get the {@link MultiResolutionImageReader} associated with this output configuration.
+     *
+     * @return The {@link MultiResolutionImageReader} instance, or {@code null} if not set.
+     */
+    @FlaggedApi(Flags.FLAG_MULTI_RESOLUTION_CONCURRENT_READERS)
+    public @Nullable MultiResolutionImageReader getMultiResolutionImageReader() {
+        return mMultiResolutionImageReader;
+    }
+
+    /**
+     * Set the {@link MultiResolutionImageReader} for this output configuration.
+     *
+     * @param multiResolutionImageReader The {@link MultiResolutionImageReader} to set.
+     */
+    @FlaggedApi(Flags.FLAG_MULTI_RESOLUTION_CONCURRENT_READERS)
+    public void setMultiResolutionImageReader(
+            @Nullable MultiResolutionImageReader multiResolutionImageReader) {
+        mMultiResolutionImageReader = multiResolutionImageReader;
     }
 
     private void initializeOutputConfig(@NonNull CameraOutputConfig config,
@@ -95,6 +118,11 @@ public class ExtensionOutputConfiguration {
                 initializeOutputConfig(sharedConfig, mSurfaces.get(i));
                 ret.sharedSurfaceConfigs.add(sharedConfig);
             }
+        } else if (Flags.multiResolutionConcurrentReaders() &&
+                mMultiResolutionImageReader != null &&
+                mMultiResolutionImageReader.isConcurrencyEnabled()) {
+            ret.onActiveOutputSurfaceCallback =
+                    mMultiResolutionImageReader.getIOnActiveOutputSurfaceCallback();
         }
 
         return ret;

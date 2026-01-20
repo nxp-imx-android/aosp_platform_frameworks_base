@@ -5727,6 +5727,8 @@ package android.hardware.camera2.extension {
 
   public class ExtensionOutputConfiguration {
     ctor public ExtensionOutputConfiguration(@NonNull java.util.List<android.hardware.camera2.extension.CameraOutputSurface>, int, @Nullable String, int);
+    method @FlaggedApi("com.android.internal.camera.flags.multi_resolution_concurrent_readers") @Nullable public android.hardware.camera2.MultiResolutionImageReader getMultiResolutionImageReader();
+    method @FlaggedApi("com.android.internal.camera.flags.multi_resolution_concurrent_readers") public void setMultiResolutionImageReader(@Nullable android.hardware.camera2.MultiResolutionImageReader);
   }
 
   public final class RequestProcessor {
