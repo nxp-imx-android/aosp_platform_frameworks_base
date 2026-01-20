@@ -133,6 +133,20 @@ class PreferencesApiScreenTest {
     }
 
     @Test
+    fun createPreferencesApiScreenWithSpaRoutePrefix_succeeds() {
+        val spaRoutePrefix = "spa_route_prefix"
+        val preferenceScreen = object : PreferencesApiScreen(
+            key = SCREEN_KEY,
+            topLevelSettingsCategory = Category.SYSTEM,
+            spaRoutePrefix = spaRoutePrefix,
+            purpose = R.string.preference_screen_purpose,
+        ) {}
+
+        assertThat(preferenceScreen.spaRoutePrefix).isEqualTo(spaRoutePrefix)
+        assertThat(preferenceScreen.fragment).isNull()
+    }
+
+    @Test
     fun createPreferencesApiScreenWithGetters_succeeds() {
         val preferenceValue1 = false
         val preferenceKey1 = "ApiPreference1"
