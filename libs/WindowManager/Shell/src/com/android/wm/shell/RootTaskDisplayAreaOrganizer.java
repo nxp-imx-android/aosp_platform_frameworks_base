@@ -27,6 +27,7 @@ import android.content.res.Configuration;
 import android.hardware.display.DisplayManager;
 import android.os.Binder;
 import android.os.IBinder;
+import android.util.Pair;
 import android.util.SparseArray;
 import android.view.Display;
 import android.view.SurfaceControl;
@@ -86,6 +87,20 @@ public class RootTaskDisplayAreaOrganizer extends DisplayAreaOrganizer {
         for (int i = infos.size() - 1; i >= 0; --i) {
             onDisplayAreaAppeared(infos.get(i).getDisplayAreaInfo(), infos.get(i).getLeash());
         }
+    }
+
+    /**
+     * Returns the initial set of task display areas.
+     * This can be removed once we have a synchronizing transition for the initial state when SysUI
+     * starts up.
+     */
+    @NonNull
+    public List<Pair<DisplayAreaInfo, SurfaceControl>> getInitialTaskDisplayAreas() {
+        final ArrayList<Pair<DisplayAreaInfo, SurfaceControl>> displayAreas = new ArrayList<>();
+        for (int i = mDisplayAreasInfo.size() - 1; i >= 0; --i) {
+            displayAreas.add(new Pair<>(mDisplayAreasInfo.valueAt(i), mLeashes.valueAt(i)));
+        }
+        return displayAreas;
     }
 
     public void registerListener(int displayId, RootTaskDisplayAreaListener listener) {
