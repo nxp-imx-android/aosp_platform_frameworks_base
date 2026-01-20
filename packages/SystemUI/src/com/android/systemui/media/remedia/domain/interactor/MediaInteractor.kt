@@ -28,6 +28,7 @@ import com.android.internal.jank.Cuj
 import com.android.internal.logging.InstanceId
 import com.android.settingslib.media.LocalMediaManager.MediaDeviceState
 import com.android.systemui.ActivityIntentHelper
+import com.android.systemui.Flags
 import com.android.systemui.animation.DialogCuj
 import com.android.systemui.animation.DialogTransitionAnimator
 import com.android.systemui.animation.Expandable
@@ -37,6 +38,8 @@ import com.android.systemui.common.shared.model.asIcon
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryInteractor
+import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor
+import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.media.controls.domain.pipeline.MediaDataProcessor
 import com.android.systemui.media.controls.domain.pipeline.getNotificationActions
 import com.android.systemui.media.controls.shared.model.MediaAction
@@ -60,6 +63,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 
 /**
  * Defines interface for classes that can provide business logic in the domain of the media controls
@@ -122,6 +126,7 @@ constructor(
     private val lockscreenUserManager: NotificationLockscreenUserManager,
     private val mediaOutputDialogManager: MediaOutputDialogManager,
     private val deviceEntryInteractor: DeviceEntryInteractor,
+    private val keyguardTransitionInteractor: KeyguardTransitionInteractor,
 ) : MediaInteractor {
 
     override val sessions: List<MediaSessionModel>
@@ -158,15 +163,29 @@ constructor(
     override val isOnLockscreen: Flow<Boolean> = deviceEntryInteractor.isDeviceEntered.map { !it }
 
     init {
-        repository.visualStabilityListenerFlow
-            .onEach {
-                repository.keysNeedRemoval.forEach { key ->
-                    hide(key, delayMs = 0, repository.isUserInitiatedRemovalQueued)
+        if (Flags.mediaControlsInCompose() && !Flags.sceneContainer()) {
+            applicationScope.launch {
+                keyguardTransitionInteractor.isFinishedIn(KeyguardState.LOCKSCREEN).collect {
+                    currentlyInLockscreen ->
+                    if (!currentlyInLockscreen && repository.isReorderingAllowed) {
+                        resetState()
+                    }
                 }
-                repository.cleanKeysNeedRemoval()
-                reorderMedia()
             }
-            .launchIn(applicationScope)
+        }
+        repository.visualStabilityListenerFlow.onEach { resetState() }.launchIn(applicationScope)
+    }
+
+    /**
+     * Clear players that are due for removal and reset the carousel state. This method is intended
+     * to happen off screen.
+     */
+    private fun resetState() {
+        repository.keysNeedRemoval.forEach { key ->
+            hide(key, delayMs = 0, repository.isUserInitiatedRemovalQueued)
+        }
+        repository.cleanKeysNeedRemoval()
+        reorderMedia()
     }
 
     override fun seek(sessionKey: InstanceId, to: Long) {
