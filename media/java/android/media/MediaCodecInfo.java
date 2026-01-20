@@ -25,6 +25,7 @@ import static android.media.codec.Flags.FLAG_REGION_OF_INTEREST;
 import static android.media.codec.Flags.FLAG_APV_SUPPORT;
 import static android.media.codec.Flags.FLAG_VVC_SUPPORT;
 import static android.media.codec.Flags.FLAG_TEMPORAL_LAYER_ENCODING;
+import static android.media.codec.Flags.FLAG_FORMAT_400_444_SUPPORT;
 import static android.media.Utils.intersectSortedDistinctRanges;
 import static android.media.Utils.sortDistinctRanges;
 import static android.media.MediaCodec.GetFlag;
@@ -4262,6 +4263,14 @@ public final class MediaCodecInfo {
                             case CodecProfileLevel.HEVCProfileMain10HDR10:
                             case CodecProfileLevel.HEVCProfileMain10HDR10Plus:
                                 break;
+                            case CodecProfileLevel.HEVCProfileMain400:
+                            case CodecProfileLevel.HEVCProfileMain444:
+                                if (GetFlag(() ->
+                                        android.media.codec.Flags.format400444Support())) {
+                                    break;
+                                }
+                            // fall-through
+
                             default:
                                 Log.w(TAG, "Unrecognized profile "
                                         + profileLevel.profile + " for " + mime);
@@ -5562,6 +5571,17 @@ public final class MediaCodecInfo {
         public static final int HEVCProfileMainStill   = 0x04;
         public static final int HEVCProfileMain10HDR10 = 0x1000;
         public static final int HEVCProfileMain10HDR10Plus = 0x2000;
+
+        /** HEVC Monochrome (Main 4:0:0 8-bit) Profile */
+        @SuppressLint("AllUpper")
+        @FlaggedApi(FLAG_FORMAT_400_444_SUPPORT)
+        public static final int HEVCProfileMain400 = 0x08;
+
+        /** HEVC Main 4:4:4 (8-bit) Profile */
+        @SuppressLint("AllUpper")
+        @FlaggedApi(FLAG_FORMAT_400_444_SUPPORT)
+        public static final int HEVCProfileMain444 = 0x10;
+
 
         public static final int HEVCMainTierLevel1  = 0x1;
         public static final int HEVCHighTierLevel1  = 0x2;
