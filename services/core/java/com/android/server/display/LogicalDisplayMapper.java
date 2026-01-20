@@ -1620,7 +1620,7 @@ class LogicalDisplayMapper implements DisplayDeviceRepository.Listener {
         }
         DisplayInfo displayInfo = display.getDisplayInfoLocked();
         return displayInfo.type != Display.TYPE_INTERNAL && display.isEnabledLocked()
-                && display.canHostTasksLocked() && mIsDisplayAllowedInTopology.test(displayInfo)
+                && mIsDisplayAllowedInTopology.test(displayInfo)
                 && (device.getDisplayDeviceInfoLocked().flags & FLAG_ALLOWED_TO_BE_DEFAULT_DISPLAY)
                 != 0;
     }
