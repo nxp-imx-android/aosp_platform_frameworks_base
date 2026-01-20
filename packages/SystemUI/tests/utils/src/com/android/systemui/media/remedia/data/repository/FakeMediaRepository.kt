@@ -54,6 +54,7 @@ constructor(
     override var isGutsVisible = false
     override val allowMediaOnLockscreen = true
     override val visualStabilityListenerFlow: Flow<Unit> = emptyFlow()
+    override val isReorderingAllowed = true
 
     override fun seek(sessionKey: InstanceId, to: Long) = Unit
 
