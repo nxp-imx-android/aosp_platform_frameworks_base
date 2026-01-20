@@ -33,6 +33,7 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.when;
 import static com.android.window.flags.Flags.FLAG_ENABLE_PRESENTATION_FOR_CONNECTED_DISPLAYS;
+import static com.android.window.flags.Flags.FLAG_ENABLE_PRESENTATION_STOPS_TOP_TASK_BUGFIX;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -77,12 +78,16 @@ public class PresentationControllerTests extends WindowTestsBase {
         mPlayer = registerTestTransitionPlayer();
     }
 
-    @EnableFlags(FLAG_ENABLE_PRESENTATION_FOR_CONNECTED_DISPLAYS)
+    @EnableFlags({
+            FLAG_ENABLE_PRESENTATION_FOR_CONNECTED_DISPLAYS,
+            FLAG_ENABLE_PRESENTATION_STOPS_TOP_TASK_BUGFIX
+    })
     @Test
     public void testPresentationShowAndHide() {
         final DisplayContent dc = createPresentationDisplay();
         final ActivityRecord activity = createActivityRecord(createTask(dc));
         assertTrue(activity.isVisible());
+        assertTrue(activity.getTask().isFocusableAndVisible());
         // Finish WAKE transition (adding task to empty display wakes it up)
         mPlayer.flush();
 
@@ -98,6 +103,7 @@ public class PresentationControllerTests extends WindowTestsBase {
         // Completing the transition makes the activity invisible.
         completeTransition(addTransition, /*abortSync=*/ true);
         assertFalse(activity.isVisible());
+        assertFalse(activity.getTask().isFocusableAndVisible());
 
         // Remove a Presentation window, which requests the activity to be resumed back.
         window.removeIfPossible();

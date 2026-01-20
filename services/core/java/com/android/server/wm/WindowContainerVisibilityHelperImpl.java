@@ -60,6 +60,11 @@ final class WindowContainerVisibilityHelperImpl implements WindowContainerVisibi
             return TASK_FRAGMENT_VISIBILITY_INVISIBLE;
         }
 
+        if (Flags.enablePresentationStopsTopTaskBugfix() && current.mWmService
+                .mPresentationController.shouldOccludeActivities(current.getDisplayId())) {
+            return TASK_FRAGMENT_VISIBILITY_INVISIBLE;
+        }
+
         if (isTopActivityLaunchedBehind(current)) {
             return TASK_FRAGMENT_VISIBILITY_VISIBLE;
         }
