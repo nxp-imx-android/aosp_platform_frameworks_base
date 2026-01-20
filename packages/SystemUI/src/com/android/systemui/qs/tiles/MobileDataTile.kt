@@ -45,6 +45,7 @@ import com.android.systemui.qs.tiles.impl.cell.domain.interactor.MobileDataTileD
 import com.android.systemui.qs.tiles.impl.cell.domain.interactor.MobileDataTileUserActionInteractor
 import com.android.systemui.qs.tiles.impl.cell.domain.model.MobileDataTileModel
 import com.android.systemui.qs.tiles.impl.cell.ui.mapper.MobileDataTileMapper
+import com.android.systemui.user.data.repository.UserRepository
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 
@@ -56,6 +57,7 @@ constructor(
     private val uiEventLogger: QsEventLogger,
     @Background private val backgroundLooper: Looper,
     @Main private val mainHandler: Handler,
+    private val userRepository: UserRepository,
     private val falsingManager: FalsingManager,
     private val metricsLogger: MetricsLogger,
     private val statusBarStateController: StatusBarStateController,
@@ -137,7 +139,7 @@ constructor(
     }
 
     override fun isAvailable(): Boolean {
-        return dataInteractor.isAvailable()
+        return dataInteractor.isTileSupported() && currentTileUser == userRepository.mainUserId
     }
 
     companion object {

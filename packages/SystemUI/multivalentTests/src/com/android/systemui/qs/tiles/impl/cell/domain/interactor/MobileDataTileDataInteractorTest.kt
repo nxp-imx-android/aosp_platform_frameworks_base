@@ -51,9 +51,12 @@ import com.android.systemui.statusbar.pipeline.mobile.data.repository.fake
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.mobileConnectionsRepository
 import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.MobileIconsInteractor
 import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.MobileIconsInteractorImpl
+import com.android.systemui.statusbar.pipeline.shared.connectivityConstants
 import com.android.systemui.statusbar.pipeline.shared.data.repository.connectivityRepository
 import com.android.systemui.statusbar.policy.data.repository.userSetupRepository
 import com.android.systemui.testKosmos
+import com.android.systemui.user.data.repository.fakeUserRepository
+import com.android.systemui.user.data.repository.userRepository
 import com.android.systemui.util.CarrierConfigTracker
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
@@ -81,6 +84,8 @@ class MobileDataTileDataInteractorTest(flags: FlagsParameterization) : SysuiTest
     private val testScope = kosmos.testScope
 
     // Fakes needed for MobileIconsInteractorImpl
+    private val userRepository = kosmos.fakeUserRepository
+    private val connectivityConstants = kosmos.connectivityConstants
     private val connectivityRepository = kosmos.connectivityRepository
     private val mobileConnectionsRepository = kosmos.mobileConnectionsRepository
     private val userSetupRepo = kosmos.userSetupRepository
@@ -105,7 +110,13 @@ class MobileDataTileDataInteractorTest(flags: FlagsParameterization) : SysuiTest
     }
 
     private var underTest: MobileDataTileDataInteractor =
-        MobileDataTileDataInteractor(context, mobileIconsInteractor, mobileContextProvider)
+        MobileDataTileDataInteractor(
+            context,
+            userRepository,
+            mobileIconsInteractor,
+            mobileContextProvider,
+            connectivityConstants,
+        )
 
     @Before
     fun setUp() {
@@ -193,9 +204,11 @@ class MobileDataTileDataInteractorTest(flags: FlagsParameterization) : SysuiTest
 
     @Test
     @EnableFlags(QsSplitInternetTile.FLAG_NAME)
-    fun availability_flagEnabled_isTrue() =
+    fun availability_flagEnabledDataSupportedMainUser_isTrue() =
         kosmos.runTest {
             assertThat(QsSplitInternetTile.isEnabled).isTrue()
+            connectivityConstants.hasDataCapabilities = true
+            fakeUserRepository.mainUserId = USER.identifier
 
             val availability by collectLastValue(underTest.availability(USER))
             assertThat(availability).isTrue()
@@ -206,6 +219,30 @@ class MobileDataTileDataInteractorTest(flags: FlagsParameterization) : SysuiTest
     fun availability_flagDisabled_isFalse() =
         kosmos.runTest {
             assertThat(QsSplitInternetTile.isEnabled).isFalse()
+            val availability by collectLastValue(underTest.availability(USER))
+            assertThat(availability).isFalse()
+        }
+
+    @Test
+    @EnableFlags(QsSplitInternetTile.FLAG_NAME)
+    fun availability_dataNotSupported_isFalse() =
+        kosmos.runTest {
+            assertThat(QsSplitInternetTile.isEnabled).isTrue()
+            connectivityConstants.hasDataCapabilities = false
+            fakeUserRepository.mainUserId = USER.identifier
+
+            val availability by collectLastValue(underTest.availability(USER))
+            assertThat(availability).isFalse()
+        }
+
+    @Test
+    @EnableFlags(QsSplitInternetTile.FLAG_NAME)
+    fun availability_notMainUser_isFalse() =
+        kosmos.runTest {
+            assertThat(QsSplitInternetTile.isEnabled).isTrue()
+            connectivityConstants.hasDataCapabilities = true
+            fakeUserRepository.mainUserId = USER.identifier + 1
+
             val availability by collectLastValue(underTest.availability(USER))
             assertThat(availability).isFalse()
         }
