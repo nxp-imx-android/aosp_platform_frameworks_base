@@ -496,6 +496,9 @@
     <!-- Extra spacing before and after images in messaging style -->
     <dimen name="messaging_image_extra_spacing">8dp</dimen>
 
+    <!-- The max fraction for the value of the single Notification.MetricStyle -->
+    <item type="fraction" name="notification_single_metric_value_max_fraction">72%</item>
+
     <!-- The max fraction for the value of the single promoted Notification.MetricStyle -->
     <item type="fraction" name="notification_single_promoted_metric_value_max_fraction">60%</item>
 

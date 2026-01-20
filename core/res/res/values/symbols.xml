@@ -227,6 +227,7 @@
   <java-symbol type="id" name="metric_value_0" />
   <java-symbol type="id" name="metric_value_1" />
   <java-symbol type="id" name="metric_value_2" />
+  <java-symbol type="fraction" name="notification_single_metric_value_max_fraction" />
   <java-symbol type="fraction" name="notification_single_promoted_metric_value_max_fraction" />
   <java-symbol type="id" name="metric_value_container" />
   <java-symbol type="id" name="metric_chronometer_0" />
