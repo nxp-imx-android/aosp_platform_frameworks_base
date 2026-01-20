@@ -177,16 +177,6 @@ flag {
 }
 
 flag {
-    name: "syncmanager_off_main_thread"
-    namespace: "backstage_power"
-    description: "Move broadcast receivers off the main thread to reduce ANR chances"
-    bug: "409177829"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_long_method_tracing_on_anr_timer"
     namespace: "stability"
     description: "Enable Long Method Tracing for ANR Timer"
