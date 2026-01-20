@@ -90,7 +90,6 @@ public final class VirtualCameraConfig implements Parcelable {
      * @see #getSensorOrientation
      */
     public static final int SENSOR_ORIENTATION_270 = 270;
-
     /** @hide */
     @IntDef(prefix = {"SENSOR_ORIENTATION_"}, value = {
             SENSOR_ORIENTATION_0,
@@ -133,7 +132,6 @@ public final class VirtualCameraConfig implements Parcelable {
     private final int mLensFacing;
     private final boolean mPerFrameCameraMetadataEnabled;
     private final CameraCharacteristics mCameraCharacteristics;
-    private final boolean mIsMultiStreamEnabled;
 
     private VirtualCameraConfig(
             @NonNull String name,
@@ -143,8 +141,7 @@ public final class VirtualCameraConfig implements Parcelable {
             @SensorOrientation int sensorOrientation,
             int lensFacing,
             boolean perFrameCameraMetadataEnabled,
-            @Nullable CameraCharacteristics cameraCharacteristics,
-            boolean isMultiStreamEnabled) {
+            @Nullable CameraCharacteristics cameraCharacteristics) {
         mName = requireNonNull(name, "Missing name");
         if (cameraCharacteristics != null) {
             Integer characteristicsLensFacing = cameraCharacteristics.get(
@@ -174,7 +171,6 @@ public final class VirtualCameraConfig implements Parcelable {
         mSensorOrientation = sensorOrientation;
         mPerFrameCameraMetadataEnabled = perFrameCameraMetadataEnabled;
         mCameraCharacteristics = cameraCharacteristics;
-        mIsMultiStreamEnabled = isMultiStreamEnabled;
     }
 
     private VirtualCameraConfig(@NonNull Parcel in) {
@@ -195,7 +191,6 @@ public final class VirtualCameraConfig implements Parcelable {
         } else {
             mCameraCharacteristics = null;
         }
-        mIsMultiStreamEnabled = in.readBoolean();
     }
 
     @Override
@@ -217,7 +212,6 @@ public final class VirtualCameraConfig implements Parcelable {
         } else {
             dest.writeTypedObject(null, flags);
         }
-        dest.writeBoolean(mIsMultiStreamEnabled);
     }
 
     /**
@@ -287,33 +281,6 @@ public final class VirtualCameraConfig implements Parcelable {
         return mCameraCharacteristics;
     }
 
-    /**
-     * By default, when the client camera application requests multiple output streams, the
-     * virtual camera service will try to pick a single {@link VirtualCameraStreamConfig} which
-     * can honor all requested outputs. It will then create a {@link Surface} matching the
-     * picked configuration and pass it in a single
-     * {@link VirtualCameraCallback#onStreamConfigured(int, Surface, int, int, int)} call.
-     * <p>
-     * In case it can't find a single config to match the output, the configuration will fail
-     * on the client side and the virtual camera owner won't be notified.
-     * <p>
-     * With {@code isConcurrentStreamConfigSupported} enabled, the virtual camera service will
-     * call
-     * VirtualCameraCallback#onStreamConfigured(int, Surface, int, int, int) with a different
-     * {@link Surface} for each opened
-     * {@link android.hardware.camera2.params.OutputConfiguration}, allowing the virtual camera
-     * owner to write different data for each stream.
-     * <p>
-     * Enabling this will ensure that {@link CaptureRequest} for different configuration can be
-     * submitted concurrently.
-     *
-     * @return true if this virtual camera has been configured to support multiple input streams.
-     */
-    @FlaggedApi(Flags.FLAG_CAMERA_MULTIPLE_INPUT_STREAMS)
-    public boolean isConcurrentStreamConfigSupported() {
-        return mIsMultiStreamEnabled;
-    }
-
     @Override
     public String toString() {
         return "VirtualCameraConfig("
@@ -343,7 +310,6 @@ public final class VirtualCameraConfig implements Parcelable {
         private boolean mPerFrameCameraMetadataEnabled = false;
         private CameraCharacteristics mCameraCharacteristics = null;
         private int mStreamIndex = 0;
-        private boolean mIsMultiStreamEnabled = false;
 
         /**
          * Creates a new instance of {@link Builder}.
@@ -520,40 +486,6 @@ public final class VirtualCameraConfig implements Parcelable {
         }
 
         /**
-         * Set whether this virtual camera supports opening multiple
-         * {@link VirtualCameraStreamConfig} concurrently.
-         * <p>
-         * By default, when the client camera application requests multiple output streams, the
-         * virtual camera service will try to pick a single {@link VirtualCameraStreamConfig} which
-         * can honor all requested outputs. It will then create a {@link Surface} matching the
-         * picked configuration and pass it in a single
-         * {@link VirtualCameraCallback#onStreamConfigured(int, Surface, int, int, int)} call.
-         * <p>
-         * In case it can't find a single config to match the output, the configuration will fail
-         * on the client side and the virtual camera owner won't be notified.
-         * <p>
-         * With {@code setConcurrentStreamConfigSupported} enabled, the virtual camera service will
-         * call
-         * VirtualCameraCallback#onStreamConfigured(int, Surface, int, int, int) with a different
-         * {@link Surface} for each opened
-         * {@link android.hardware.camera2.params.OutputConfiguration}, allowing the virtual camera
-         * owner to write different data for each stream.
-         * <p>
-         * Enabling this will ensure that {@link CaptureRequest} for different configuration can be
-         * submitted concurrently.
-         */
-        @FlaggedApi(Flags.FLAG_CAMERA_MULTIPLE_INPUT_STREAMS)
-        @NonNull
-        public Builder setConcurrentStreamConfigSupported(boolean supported) {
-            if (!Flags.cameraMultipleInputStreams()) {
-                throw new UnsupportedOperationException("Flag %s is not enabled".formatted(
-                        Flags.FLAG_CAMERA_MULTIPLE_INPUT_STREAMS));
-            }
-            mIsMultiStreamEnabled = supported;
-            return this;
-        }
-
-        /**
          * Builds a new instance of {@link VirtualCameraConfig}
          *
          * @throws NullPointerException if some required parameters are missing.
@@ -563,8 +495,7 @@ public final class VirtualCameraConfig implements Parcelable {
         public VirtualCameraConfig build() {
             return new VirtualCameraConfig(
                     mName, mStreamConfigurations, mCallbackExecutor, mCallback, mSensorOrientation,
-                    mLensFacing, mPerFrameCameraMetadataEnabled, mCameraCharacteristics,
-                    mIsMultiStreamEnabled);
+                    mLensFacing, mPerFrameCameraMetadataEnabled, mCameraCharacteristics);
         }
     }
 
