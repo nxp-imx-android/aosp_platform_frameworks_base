@@ -251,6 +251,7 @@ public abstract class ClientTransactionHandler {
      * @param preserveWindow Whether the activity should try to reuse the window it created,
      *                        including the decor view after the relaunch.
      * @param activityWindowInfo Window information about the relaunched Activity.
+     * @param displayId The id of the display where the Activity is currently hosted.
      * @return An initialized instance of {@link ActivityThread.ActivityClientRecord} to use during
      *         relaunch, or {@code null} if relaunch cancelled.
      */
@@ -258,7 +259,7 @@ public abstract class ClientTransactionHandler {
             @Nullable List<ResultInfo> pendingResults,
             @Nullable List<ReferrerIntent> pendingNewIntents, int configChanges,
             @NonNull MergedConfiguration config, boolean preserveWindow,
-            @NonNull ActivityWindowInfo activityWindowInfo);
+            @NonNull ActivityWindowInfo activityWindowInfo, int displayId);
 
     /**
      * Perform activity relaunch.

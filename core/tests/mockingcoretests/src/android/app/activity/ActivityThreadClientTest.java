@@ -534,7 +534,8 @@ public class ActivityThreadClientTest {
                     null /* activityOptions */, true /* isForward */, null /* profilerInfo */,
                     mThread /* client */, null /* asssitToken */, null /* shareableActivityToken */,
                     false /* launchedFromBubble */, null /* taskfragmentToken */,
-                    null /* initialCallerInfoAccessToken */, new ActivityWindowInfo());
+                    null /* initialCallerInfoAccessToken */, new ActivityWindowInfo(),
+                    0 /* displayId */);
         }
 
         @Override
