@@ -630,23 +630,19 @@ class LocationTimeZoneProviderController implements Dumpable {
         }
 
         switch (event.getType()) {
-            case EVENT_TYPE_PERMANENT_FAILURE:
-                // This shouldn't happen. A provider cannot be started and have this event type.
-                warnLog("Provider=" + provider + " is started, but event suggests it shouldn't be");
-                break;
-            case EVENT_TYPE_UNCERTAIN:
-                long uncertaintyStartedElapsedMillis = event.getCreationElapsedMillis();
-                handleProviderUncertainty(
-                        provider,
-                        uncertaintyStartedElapsedMillis,
-                        "provider=" + provider + ", explicit uncertainty. event=" + event);
-                break;
-            case EVENT_TYPE_SUGGESTION:
-                handleProviderSuggestion(provider, event);
-                break;
-            default:
-                warnLog("Unknown eventType=" + event.getType());
-                break;
+            // This shouldn't happen. A provider cannot be started and have this event type.
+            case EVENT_TYPE_PERMANENT_FAILURE ->
+                    warnLog(
+                            "Provider="
+                                    + provider
+                                    + " is started, but event suggests it shouldn't be");
+            case EVENT_TYPE_UNCERTAIN ->
+                    handleProviderUncertainty(
+                            provider,
+                            /* uncertaintyStartedElapsedMillis= */ event.getCreationElapsedMillis(),
+                            "provider=" + provider + ", explicit uncertainty. event=" + event);
+            case EVENT_TYPE_SUGGESTION -> handleProviderSuggestion(provider, event);
+            default -> warnLog("Unknown eventType=" + event.getType());
         }
     }
 

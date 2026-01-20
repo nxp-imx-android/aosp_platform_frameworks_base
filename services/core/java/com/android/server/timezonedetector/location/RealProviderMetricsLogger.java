@@ -59,22 +59,22 @@ final class RealProviderMetricsLogger implements ProviderMetricsLogger {
     }
 
     private static int metricsProviderState(@ProviderStateEnum int stateEnum) {
-        switch (stateEnum) {
-            case PROVIDER_STATE_STARTED_INITIALIZING:
-                return LOCATION_TIME_ZONE_PROVIDER_STATE_CHANGED__STATE__INITIALIZING;
-            case PROVIDER_STATE_STARTED_UNCERTAIN:
-                return LOCATION_TIME_ZONE_PROVIDER_STATE_CHANGED__STATE__UNCERTAIN;
-            case PROVIDER_STATE_STARTED_CERTAIN:
-                return LOCATION_TIME_ZONE_PROVIDER_STATE_CHANGED__STATE__CERTAIN;
-            case PROVIDER_STATE_STOPPED:
-                return LOCATION_TIME_ZONE_PROVIDER_STATE_CHANGED__STATE__STOPPED;
-            case PROVIDER_STATE_DESTROYED:
-                return LOCATION_TIME_ZONE_PROVIDER_STATE_CHANGED__STATE__DESTROYED;
-            case PROVIDER_STATE_PERM_FAILED:
-                return LOCATION_TIME_ZONE_PROVIDER_STATE_CHANGED__STATE__PERM_FAILED;
-            case PROVIDER_STATE_UNKNOWN:
-            default:
-                return LOCATION_TIME_ZONE_PROVIDER_STATE_CHANGED__STATE__UNKNOWN;
-        }
+        return switch (stateEnum) {
+            case PROVIDER_STATE_STARTED_INITIALIZING ->
+                    LOCATION_TIME_ZONE_PROVIDER_STATE_CHANGED__STATE__INITIALIZING;
+            case PROVIDER_STATE_STARTED_UNCERTAIN ->
+                    LOCATION_TIME_ZONE_PROVIDER_STATE_CHANGED__STATE__UNCERTAIN;
+            case PROVIDER_STATE_STARTED_CERTAIN ->
+                    LOCATION_TIME_ZONE_PROVIDER_STATE_CHANGED__STATE__CERTAIN;
+            case PROVIDER_STATE_STOPPED ->
+                    LOCATION_TIME_ZONE_PROVIDER_STATE_CHANGED__STATE__STOPPED;
+            case PROVIDER_STATE_DESTROYED ->
+                    LOCATION_TIME_ZONE_PROVIDER_STATE_CHANGED__STATE__DESTROYED;
+            case PROVIDER_STATE_PERM_FAILED ->
+                    LOCATION_TIME_ZONE_PROVIDER_STATE_CHANGED__STATE__PERM_FAILED;
+            case PROVIDER_STATE_UNKNOWN ->
+                    LOCATION_TIME_ZONE_PROVIDER_STATE_CHANGED__STATE__UNKNOWN;
+            default -> LOCATION_TIME_ZONE_PROVIDER_STATE_CHANGED__STATE__UNKNOWN;
+        };
     }
 }

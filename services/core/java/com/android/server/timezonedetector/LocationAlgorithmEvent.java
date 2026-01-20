@@ -133,16 +133,12 @@ public final class LocationAlgorithmEvent {
         String opt;
         while ((opt = cmd.getNextArg()) != null) {
             switch (opt) {
-                case "--status":
-                    algorithmStatus =
-                            LocationTimeZoneAlgorithmStatus.parseCommandlineArg(
-                                    cmd.getNextArgRequired());
-                    break;
-                case "--suggestion":
-                    suggestionString = cmd.getNextArgRequired();
-                    break;
-                default:
-                    throw new IllegalArgumentException("Unknown option: " + opt);
+                case "--status" ->
+                        algorithmStatus =
+                                LocationTimeZoneAlgorithmStatus.parseCommandlineArg(
+                                        cmd.getNextArgRequired());
+                case "--suggestion" -> suggestionString = cmd.getNextArgRequired();
+                default -> throw new IllegalArgumentException("Unknown option: " + opt);
             }
         }
 
