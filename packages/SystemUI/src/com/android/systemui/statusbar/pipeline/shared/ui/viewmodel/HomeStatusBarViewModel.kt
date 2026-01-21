@@ -73,7 +73,6 @@ import com.android.systemui.statusbar.notification.icon.domain.interactor.Status
 import com.android.systemui.statusbar.phone.domain.interactor.DarkIconInteractor
 import com.android.systemui.statusbar.phone.domain.interactor.IsAreaDark
 import com.android.systemui.statusbar.phone.domain.interactor.LightsOutInteractor
-import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.BatteryNextToPercentViewModel
 import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.BatteryViewModel
 import com.android.systemui.statusbar.pipeline.shared.StatusBarShowIconsInSecureCamera
 import com.android.systemui.statusbar.pipeline.shared.domain.interactor.HomeStatusBarIconBlockListInteractor
@@ -119,8 +118,6 @@ import kotlinx.coroutines.launch
  * so that it's all in one place and easily testable outside of the fragment.
  */
 interface HomeStatusBarViewModel : Activatable {
-    /** Factory to create the view model for the battery icon with the percentage alongside */
-    val batteryNextToPercentViewModel: BatteryNextToPercentViewModel.Factory
     /** Factory for the unified (percent embedded) battery view model */
     val unifiedBatteryViewModel: BatteryViewModel.BasedOnUserSetting.Factory
 
@@ -263,7 +260,6 @@ class HomeStatusBarViewModelImpl
 @AssistedInject
 constructor(
     @field:DisplayId @DisplayId private val thisDisplayId: Int,
-    override val batteryNextToPercentViewModel: BatteryNextToPercentViewModel.Factory,
     override val unifiedBatteryViewModel: BatteryViewModel.BasedOnUserSetting.Factory,
     override val systemStatusIconsViewModelFactory: SystemStatusIconsViewModel.Factory,
     override val statusBarBoundsViewModelFactory: StatusBarBoundsViewModel.Factory,
