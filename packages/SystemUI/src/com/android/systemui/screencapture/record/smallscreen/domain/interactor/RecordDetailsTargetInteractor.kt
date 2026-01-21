@@ -114,7 +114,12 @@ constructor(
                 "RecordDetailsTargetInteractor#items",
                 coroutineScope,
                 SharingStarted.Eagerly,
-                emptyList(),
+                listOf(
+                    RecordDetailsTargetModel.EntireScreen(
+                        display = display,
+                        label = Text.Resource(R.string.screen_record_entire_screen),
+                    )
+                ),
             )
 
     val canChangeTarget: StateFlow<Boolean> =
@@ -127,43 +132,26 @@ constructor(
                 recordingServiceInteractor.status.value.canChangeTarget(),
             )
 
-    val model: StateFlow<SmallScreenRecordTargetsModel?> =
+    val model: StateFlow<SmallScreenRecordTargetsModel> =
         combine(items, selectedIndex) { items, selectedIndex ->
                 SmallScreenRecordTargetsModel(
                     items = items,
                     selectedIndex =
-                        if (items.isEmpty()) {
-                            selectedIndex
-                        } else {
-                            val result = selectedIndex.coerceIn(items.indices)
-                            if (!items[result].isSelectable) {
-                                items.indexOfFirst { it is RecordDetailsTargetModel.EntireScreen }
-                            } else {
-                                result
-                            }
-                        },
+                        selectedIndex.coerceIn(items.indices).takeIf { items[it].isSelectable }
+                            ?: items.indexOfFirst { it is RecordDetailsTargetModel.EntireScreen },
                 )
             }
             .stateInTraced(
                 "RecordDetailsTargetInteractor#model",
                 coroutineScope,
                 SharingStarted.Eagerly,
-                SmallScreenRecordTargetsModel(
-                    items =
-                        listOf(
-                            RecordDetailsTargetModel.EntireScreen(
-                                display = display,
-                                label = Text.Resource(R.string.screen_record_entire_screen),
-                            )
-                        ),
-                    selectedIndex = 0,
-                ),
+                SmallScreenRecordTargetsModel(items = items.value, selectedIndex = 0),
             )
 
     init {
         model
             .onEach {
-                val selectedTask = it?.currentTargetModel ?: return@onEach
+                val selectedTask = it.currentTargetModel
                 if (!selectedTask.canUseCamera) {
                     parametersInteractor.shouldShowFrontCamera = false
                     cameraInteractor.stopStream()
