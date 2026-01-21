@@ -114,12 +114,17 @@ class ParameterizationConfig {
  * Container for all information and preferences on a Settings screen which is intended to be
  * exposed via API using 2026 "Lightweight" way.
  */
-abstract class PreferencesApiScreen(
+abstract class PreferencesApiScreen private constructor(
     override val key: String,
     val topLevelSettingsCategory: Category,
-    val fragment: KClass<out Fragment>,
+    val fragment: KClass<out Fragment>?,
     override val purpose: Int,
     val alreadyPartiallyMigrated: KClass<*>? = null,
+    /**
+     * The route prefix for screens implemented using the Settings Platform Architecture (SPA).
+     * This is only relevant if this screen's UI is implemented using SPA.
+     */
+    val spaRoutePrefix: String?,
 ) : PreferenceScreenMetadata, ProvidesParametersNonStatically {
     init {
         if (alreadyPartiallyMigrated != null) {
@@ -129,7 +134,29 @@ abstract class PreferencesApiScreen(
         }
     }
 
-    override fun fragmentClass(): Class<out Fragment>? = fragment.java
+    /**
+     * Constructor for screens implemented using a traditional Android [Fragment].
+     */
+    constructor(
+        key: String,
+        topLevelSettingsCategory: Category,
+        fragment: KClass<out Fragment>,
+        purpose: Int,
+        alreadyPartiallyMigrated: KClass<*>? = null,
+    ) : this(key, topLevelSettingsCategory, fragment, purpose, alreadyPartiallyMigrated, null)
+
+    /**
+     * Constructor for screens implemented using the Settings Platform Architecture (SPA).
+     */
+    constructor(
+        key: String,
+        topLevelSettingsCategory: Category,
+        spaRoutePrefix: String,
+        purpose: Int,
+        alreadyPartiallyMigrated: KClass<*>? = null,
+    ) : this(key, topLevelSettingsCategory, null, purpose, alreadyPartiallyMigrated, spaRoutePrefix)
+
+    override fun fragmentClass(): Class<out Fragment>? = fragment?.java
 
     override fun isFlagEnabled(context: Context): Boolean =
         flag?.check() ?: super.isFlagEnabled(context)
