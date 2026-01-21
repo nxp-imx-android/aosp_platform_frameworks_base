@@ -518,7 +518,7 @@ android_library {
     defaults: ["SystemUI-srcs-defaults"],
     static_libs: [
         "//frameworks/libs/systemui:compilelib",
-        "com.android.systemui.pods-api-aosp-handheld",
+        "com.android.systemui.bundle.phone_api",
         "SystemUI-res",
         "WifiTrackerLib",
         "WindowManager-Shell",
@@ -623,8 +623,6 @@ android_library {
     defaults: ["SystemUI-srcs-defaults"],
     static_libs: [
         "SystemUI-core",
-        "com.android.systemui.pods-api-aosp-handheld",
-        "com.android.systemui.pods-impl-aosp-handheld",
         "com.android.systemui.bundle.phone_dagger",
         "dagger2",
     ],
@@ -819,8 +817,6 @@ android_library {
     ],
     static_libs: [
         "//frameworks/libs/systemui:compilelib",
-        "com.android.systemui.pods-api-aosp-handheld",
-        "com.android.systemui.pods-impl-aosp-handheld",
         "com.android.systemui.bundle.phone_dagger",
         "SystemUI_test_fixtures",
         "SystemUI-tests-base",

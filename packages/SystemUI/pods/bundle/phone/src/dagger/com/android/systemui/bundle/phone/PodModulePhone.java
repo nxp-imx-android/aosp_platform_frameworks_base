@@ -20,6 +20,10 @@ import com.android.systemui.brightness.BrightnessModule;
 import com.android.systemui.graphics.ImageLoaderModule;
 import com.android.systemui.notifications.intelligence.rules.NotificationRulesModule;
 import com.android.systemui.notifications.intelligence.rules.ui.NotificationRulesUiModule;
+import com.android.systemui.retail.impl.RetailModeModule;
+import com.android.systemui.statusbar.pipeline.airplane.data.repository.impl.AirplaneModeDataLayerModule;
+import com.android.systemui.statusbar.pipeline.airplane.shared.impl.AirplaneModeSharedModule;
+import com.android.systemui.util.policy.impl.PolicyRestrictionModule;
 import com.android.systemui.util.settings.SettingsUtilModule;
 
 import dagger.Module;
@@ -28,10 +32,14 @@ import dagger.Module;
 // skip the slower kotlin compilation process for this module.
 
 @Module(includes = {
+        AirplaneModeDataLayerModule.class,
+        AirplaneModeSharedModule.class,
         BrightnessModule.class,
         ImageLoaderModule.class,
         NotificationRulesModule.class,
         NotificationRulesUiModule.class,
+        PolicyRestrictionModule.class,
+        RetailModeModule.class,
         SettingsUtilModule.class,
 })
 public interface PodModulePhone {
