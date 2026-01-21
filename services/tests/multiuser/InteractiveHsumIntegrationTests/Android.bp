@@ -35,4 +35,12 @@ android_test {
     host_required: [
         "MultiUserTestsTradefedLibrary",
     ],
+    // NOTE: host_common_data seems redundant (as host_required already defined it), but without it
+    // the module would pass locally with atest, but fail in the cloud testing infra.
+    host_common_data: [
+        ":MultiUserTestsTradefedLibrary",
+    ],
+    test_suites: [
+        "general-tests",
+    ],
 }
