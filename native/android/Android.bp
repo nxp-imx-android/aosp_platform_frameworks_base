@@ -29,6 +29,10 @@ ndk_library {
     unversioned_until: "current",
 }
 
+all_artless_denylists {
+    name: "libandroid_native_denylist",
+}
+
 cc_defaults {
     name: "libandroid_defaults",
     cflags: [
