@@ -11,7 +11,7 @@ import static com.android.server.flags.Flags.resetKeyguardFirstStateDispatchOnSe
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.UserIdInt;
-import android.app.ActivityManager;
+import android.app.ActivityManagerInternal;
 import android.app.ActivityTaskManager;
 import android.content.ComponentName;
 import android.content.Context;
@@ -89,6 +89,9 @@ public class KeyguardServiceDelegate {
 
     @NonNull
     private final LockPatternUtils mLockPatternUtils;
+
+    @NonNull
+    private final ActivityManagerInternal mActivityManagerInternal;
 
     /** Last system-determined state sent to KeyguardService. */
     @NonNull
@@ -217,6 +220,7 @@ public class KeyguardServiceDelegate {
     public KeyguardServiceDelegate(@NonNull Context context, @NonNull StateCallback callback) {
         mCallback = callback;
         mLockPatternUtils = new LockPatternUtils(context);
+        mActivityManagerInternal = LocalServices.getService(ActivityManagerInternal.class);
     }
 
     public void onShowingStateChanged(boolean showing) {
@@ -259,7 +263,7 @@ public class KeyguardServiceDelegate {
         public void onServiceConnected(ComponentName name, IBinder service) {
             if (DEBUG) Log.v(TAG, "*** Keyguard connected (yay!)");
 
-            mKeyguardState.currentUser = ActivityManager.getCurrentUser();
+            mKeyguardState.currentUser = mActivityManagerInternal.getCurrentUserId();
 
             if (resetKeyguardFirstStateDispatchOnServiceConnected()) {
                 mCallback.onKeyguardServiceConnected();

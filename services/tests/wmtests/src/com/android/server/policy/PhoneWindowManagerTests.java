@@ -62,6 +62,7 @@ import static org.mockito.Mockito.times;
 
 import android.annotation.NonNull;
 import android.app.ActivityManager;
+import android.app.ActivityManagerInternal;
 import android.app.ActivityTaskManager;
 import android.app.AppOpsManager;
 import android.bluetooth.BluetoothProfile;
@@ -186,6 +187,8 @@ public class PhoneWindowManagerTests {
     @Mock
     private SystemServiceManager mSystemServiceManager;
     @Mock
+    private ActivityManagerInternal mActivityManagerInternal;
+    @Mock
     private PackageManager mPackageManager;
 
     private static final int INTERCEPT_SYSTEM_KEY_NOT_CONSUMED_DELAY = 0;
@@ -229,6 +232,9 @@ public class PhoneWindowManagerTests {
         mLocalServiceKeeperRule.overrideLocalService(SystemServiceManager.class,
                 mSystemServiceManager);
         when(mSystemServiceManager.isBootCompleted()).thenReturn(true);
+        mLocalServiceKeeperRule.overrideLocalService(ActivityManagerInternal.class,
+                mActivityManagerInternal);
+        when(mActivityManagerInternal.getCurrentUserId()).thenReturn(0);
 
         mPhoneWindowManager.mKeyguardDelegate = mKeyguardServiceDelegate;
         doNothing().when(mInputManager).registerKeyGestureEventHandler(anyList(), any());
