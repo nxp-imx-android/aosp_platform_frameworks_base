@@ -41,7 +41,6 @@ import java.util.Objects;
  * @hide
  */
 @SystemApi
-@FlaggedApi(Flags.FLAG_SECURITY_ALGORITHMS_UPDATE_INDICATIONS)
 public final class SecurityAlgorithmUpdate implements Parcelable {
     private static final String TAG = "SecurityAlgorithmUpdate";
 

@@ -1906,7 +1906,6 @@ public class TelephonyCallback {
      * @hide
      */
     @SystemApi
-    @FlaggedApi(Flags.FLAG_SECURITY_ALGORITHMS_UPDATE_INDICATIONS)
     public interface SecurityAlgorithmsListener {
         /**
          * Callback invoked when the most recently reported security algorithms has changed,
@@ -2466,8 +2465,6 @@ public class TelephonyCallback {
         }
 
         public void onSecurityAlgorithmsChanged(SecurityAlgorithmUpdate update) {
-            if (!Flags.securityAlgorithmsUpdateIndications()) return;
-
             SecurityAlgorithmsListener listener =
                     (SecurityAlgorithmsListener) mTelephonyCallbackWeakRef.get();
             if (listener == null) return;
