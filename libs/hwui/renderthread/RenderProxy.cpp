@@ -197,6 +197,10 @@ void RenderProxy::setOpaque(bool opaque) {
     mRenderThread.queue().post([=, this]() { mContext->setOpaque(opaque); });
 }
 
+void RenderProxy::setHintSessionEnabled(bool enabled) {
+    mRenderThread.queue().post([=, this]() { mContext->setHintSessionEnabled(enabled); });
+}
+
 float RenderProxy::setColorMode(ColorMode mode) {
     // We only need to figure out what the renderer supports for HDR, otherwise this can stay
     // an async call since we already know the return value

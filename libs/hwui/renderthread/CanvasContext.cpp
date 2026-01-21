@@ -1291,7 +1291,20 @@ void CanvasContext::setSyncDelayDuration(nsecs_t duration) {
 }
 
 void CanvasContext::startHintSession() {
-    mHintSessionWrapper->init();
+    if (mIsHintSessionEnabled) {
+        mHintSessionWrapper->init();
+    }
+}
+
+void CanvasContext::setHintSessionEnabled(bool enabled) {
+    mIsHintSessionEnabled = enabled;
+    if (mIsHintSessionEnabled) {
+        if (!mHintSessionWrapper->alive() && hasOutputTarget()) {
+            startHintSession();
+        }
+    } else {
+        mHintSessionWrapper->destroy();
+    }
 }
 
 bool CanvasContext::shouldDither() {

@@ -344,6 +344,12 @@ static void android_view_ThreadedRenderer_setOpaque(JNIEnv* env, jobject clazz,
     proxy->setOpaque(opaque);
 }
 
+static void android_view_ThreadedRenderer_setHintSessionEnabled(JNIEnv* env, jobject clazz,
+                                                                jlong proxyPtr, jboolean enabled) {
+    RenderProxy* proxy = reinterpret_cast<RenderProxy*>(proxyPtr);
+    proxy->setHintSessionEnabled(enabled);
+}
+
 static jfloat android_view_ThreadedRenderer_setColorMode(JNIEnv* env, jobject clazz, jlong proxyPtr,
                                                          jint colorMode) {
     RenderProxy* proxy = reinterpret_cast<RenderProxy*>(proxyPtr);
@@ -1101,6 +1107,8 @@ static const JNINativeMethod gMethods[] = {
         {"nSetLightAlpha", "(JFF)V", (void*)android_view_ThreadedRenderer_setLightAlpha},
         {"nSetLightGeometry", "(JFFFF)V", (void*)android_view_ThreadedRenderer_setLightGeometry},
         {"nSetOpaque", "(JZ)V", (void*)android_view_ThreadedRenderer_setOpaque},
+        {"nSetHintSessionEnabled", "(JZ)V",
+         (void*)android_view_ThreadedRenderer_setHintSessionEnabled},
         {"nSetColorMode", "(JI)F", (void*)android_view_ThreadedRenderer_setColorMode},
         {"nSetTargetSdrHdrRatio", "(JF)V",
          (void*)android_view_ThreadedRenderer_setTargetSdrHdrRatio},
@@ -1208,8 +1216,7 @@ static const JNINativeMethod gMethods[] = {
         {"nGatherPendingTransactions", "(JJ)Landroid/view/SurfaceControl$Transaction;",
          (void*)android_view_ThreadedRenderer_gatherPendingTransactions},
         {"nUpdateRenderTargetSize", "(JJJ)V",
-         (void*)android_view_ThreadedRenderer_updateRenderTargetSize}
-};
+         (void*)android_view_ThreadedRenderer_updateRenderTargetSize}};
 
 static JavaVM* mJvm = nullptr;
 
