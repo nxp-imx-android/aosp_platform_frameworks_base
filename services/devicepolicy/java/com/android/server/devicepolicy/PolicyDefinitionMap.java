@@ -31,7 +31,7 @@ import static com.android.server.devicepolicy.PolicyDefinition.GENERIC_PERMISSIO
 import static com.android.server.devicepolicy.PolicyDefinition.GENERIC_PERSISTENT_PREFERRED_ACTIVITY;
 import static com.android.server.devicepolicy.PolicyDefinition.KEYGUARD_DISABLED_FEATURES;
 import static com.android.server.devicepolicy.PolicyDefinition.LOCK_TASK;
-import static com.android.server.devicepolicy.PolicyDefinition.LOCKSCREEN_INFO;
+import static com.android.server.devicepolicy.PolicyDefinition.LOCKSCREEN_MESSAGE;
 import static com.android.server.devicepolicy.PolicyDefinition.MEMORY_TAGGING;
 import static com.android.server.devicepolicy.PolicyDefinition.PACKAGES_SUSPENDED;
 import static com.android.server.devicepolicy.PolicyDefinition.PASSWORD_COMPLEXITY;
@@ -185,7 +185,7 @@ public class PolicyDefinitionMap {
         policyDefinitions.put(
                 DevicePolicyIdentifiers.COMMON_CRITERIA_MODE_POLICY, COMMON_CRITERIA_MODE);
         policyDefinitions.put(
-                DevicePolicyIdentifiers.LOCKSCREEN_INFO_POLICY, LOCKSCREEN_INFO);
+                DevicePolicyIdentifiers.LOCKSCREEN_MESSAGE_POLICY, LOCKSCREEN_MESSAGE);
 
         // User Restriction Policies
         Map<String, Integer> userRestrictionFlags = new HashMap<>();

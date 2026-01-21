@@ -17,7 +17,7 @@
 package android.app.admin;
 
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS;
-import static android.Manifest.permission.MANAGE_DEVICE_POLICY_LOCKSCREEN_INFO;
+import static android.Manifest.permission.MANAGE_DEVICE_POLICY_LOCKSCREEN_MESSAGE;
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_SCREEN_CAPTURE;
 import static android.Manifest.permission.SET_TIME;
 import static android.app.admin.DevicePolicyManager.POLICY_SCOPE_DEVICE;
@@ -260,7 +260,7 @@ public final class PolicyIdentifier<T> {
                     @PolicyDefinition(
                             allowedScopes = {POLICY_SCOPE_DEVICE},
                             affectedResource = RESOURCE_DEVICE_WIDE,
-                            requiredPermission = MANAGE_DEVICE_POLICY_LOCKSCREEN_INFO,
+                            requiredPermission = MANAGE_DEVICE_POLICY_LOCKSCREEN_MESSAGE,
                             requiredCrossUserPermission = MANAGE_DEVICE_POLICY_ACROSS_USERS,
                             allowedDpcTypes =
                             @AllowedDpcTypes(

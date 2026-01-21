@@ -243,7 +243,7 @@ public final class DevicePolicyIdentifiers {
      * String identifier for {@link DevicePolicyManager#setDeviceOwnerLockScreenInfo}
      */
     @FlaggedApi(android.app.admin.flags.Flags.FLAG_LOCKSCREEN_INFO_COEXISTENCE)
-    public static final String LOCKSCREEN_INFO_POLICY = "lockScreenInfo";
+    public static final String LOCKSCREEN_MESSAGE_POLICY = "lockscreenMessage";
 
     /**
      * @hide

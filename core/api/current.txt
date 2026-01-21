@@ -185,7 +185,7 @@ package android {
     field public static final String MANAGE_DEVICE_POLICY_LOCALE = "android.permission.MANAGE_DEVICE_POLICY_LOCALE";
     field public static final String MANAGE_DEVICE_POLICY_LOCATION = "android.permission.MANAGE_DEVICE_POLICY_LOCATION";
     field public static final String MANAGE_DEVICE_POLICY_LOCK = "android.permission.MANAGE_DEVICE_POLICY_LOCK";
-    field @FlaggedApi("android.app.admin.flags.lockscreen_info_coexistence") public static final String MANAGE_DEVICE_POLICY_LOCKSCREEN_INFO = "android.permission.MANAGE_DEVICE_POLICY_LOCKSCREEN_INFO";
+    field @FlaggedApi("android.app.admin.flags.lockscreen_info_coexistence") public static final String MANAGE_DEVICE_POLICY_LOCKSCREEN_MESSAGE = "android.permission.MANAGE_DEVICE_POLICY_LOCKSCREEN_MESSAGE";
     field public static final String MANAGE_DEVICE_POLICY_LOCK_CREDENTIALS = "android.permission.MANAGE_DEVICE_POLICY_LOCK_CREDENTIALS";
     field public static final String MANAGE_DEVICE_POLICY_LOCK_TASK = "android.permission.MANAGE_DEVICE_POLICY_LOCK_TASK";
     field public static final String MANAGE_DEVICE_POLICY_MANAGED_SUBSCRIPTIONS = "android.permission.MANAGE_DEVICE_POLICY_MANAGED_SUBSCRIPTIONS";
@@ -8456,7 +8456,7 @@ package android.app.admin {
     field @FlaggedApi("android.view.contentprotection.flags.manage_device_policy_enabled") public static final String CONTENT_PROTECTION_POLICY = "contentProtection";
     field @FlaggedApi("android.app.admin.flags.cross_profile_widget_provider_bulk_apis") public static final String CROSS_PROFILE_WIDGET_PROVIDER_POLICY = "crossProfileWidgetProvider";
     field public static final String KEYGUARD_DISABLED_FEATURES_POLICY = "keyguardDisabledFeatures";
-    field @FlaggedApi("android.app.admin.flags.lockscreen_info_coexistence") public static final String LOCKSCREEN_INFO_POLICY = "lockScreenInfo";
+    field @FlaggedApi("android.app.admin.flags.lockscreen_info_coexistence") public static final String LOCKSCREEN_MESSAGE_POLICY = "lockscreenMessage";
     field public static final String LOCK_TASK_POLICY = "lockTask";
     field @FlaggedApi("android.app.admin.flags.set_mte_policy_coexistence") public static final String MEMORY_TAGGING_POLICY = "memoryTagging";
     field public static final String PACKAGES_SUSPENDED_POLICY = "packagesSuspended";

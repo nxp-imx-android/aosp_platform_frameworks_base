@@ -403,10 +403,10 @@ public final class PolicyDefinition<V> {
                     new IntegerPolicySerializer()
             );
 
-    public static final PolicyDefinition<String> LOCKSCREEN_INFO =
+    public static final PolicyDefinition<String> LOCKSCREEN_MESSAGE =
             new PolicyDefinition<>(
                     new NoArgsPolicyKey(
-                            DevicePolicyIdentifiers.LOCKSCREEN_INFO_POLICY),
+                            DevicePolicyIdentifiers.LOCKSCREEN_MESSAGE_POLICY),
                     new MostRecent<>(), // TODO(b/457343029): Replace with DPC priority.
                     POLICY_FLAG_GLOBAL_ONLY_POLICY,
                     PolicyEnforcerCallbacks::setLockScreenInfoPolicy,
