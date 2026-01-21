@@ -62,6 +62,9 @@ class HelpPreference : PreferenceMetadata, PreferenceAvailabilityProvider {
         return context.packageManager.queryIntentActivities(intent, 0).isNotEmpty()
     }
 
+    override val indexable: Boolean
+        get() = false
+
     companion object {
         const val KEY = "pref_help"
     }
