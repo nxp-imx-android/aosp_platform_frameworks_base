@@ -64,14 +64,9 @@ class AppCompatConfigurationRobot {
                 .isCameraCompatForceRotateTreatmentEnabledAtBuildTime();
     }
 
-    void enableCameraCompatSimulateRequestedOrientationTreatment(boolean enabled) {
+    void enableCameraCompatSimReqOrientationTreatment(boolean enabled) {
         doReturn(enabled).when(mAppCompatConfiguration)
-                .isCameraCompatSimulateRequestedOrientationTreatmentEnabled();
-    }
-
-    void forceEnableCameraCompatSimReqOrientation(boolean enabled) {
-        doReturn(enabled).when(mAppCompatConfiguration)
-                .isCameraCompatSimReqOrientationTreatmentForceEnabled();
+                .isCameraCompatSimReqOrientationTreatmentEnabled();
     }
 
     void enableCameraCompatLandscapeToPortraitTreatment(boolean enabled) {

@@ -35,17 +35,15 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import java.util.concurrent.Executor
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 
 /**
@@ -81,16 +79,11 @@ constructor(
     private val statusBarRegionSamplingInteractor: StatusBarRegionSamplingInteractor,
     @Main private val mainExecutor: Executor,
     @Background private val backgroundExecutor: Executor,
-    @Background private val backgroundScope: CoroutineScope,
 ) : ExclusiveActivatable() {
     private val hydrator = Hydrator(traceName = "StatusBarRegionSamplingViewModel.hydrator")
 
     private val isRegionSamplingEnabled =
-        statusBarRegionSamplingInteractor.isRegionSamplingEnabled.stateIn(
-            scope = backgroundScope,
-            started = SharingStarted.WhileSubscribed(),
-            initialValue = false,
-        )
+        statusBarRegionSamplingInteractor.isRegionSamplingEnabled.onStart { emit(false) }
 
     private data class Bounds(val sampling: Rect, val appearanceRegion: Rect)
 
@@ -115,11 +108,7 @@ constructor(
                 startSideContainerView.addOnLayoutChangeListener(layoutListener)
                 awaitClose { startSideContainerView.removeOnLayoutChangeListener(layoutListener) }
             }
-            .stateIn(
-                backgroundScope,
-                SharingStarted.WhileSubscribed(),
-                initialValue = Bounds(Rect(), Rect()),
-            )
+            .onStart { emit(Bounds(Rect(), Rect())) }
 
     private val startSideSamplingBounds: Rect by
         hydrator.hydratedStateOf(
@@ -154,11 +143,7 @@ constructor(
                 endSideContainerView.addOnLayoutChangeListener(layoutListener)
                 awaitClose { endSideContainerView.removeOnLayoutChangeListener(layoutListener) }
             }
-            .stateIn(
-                backgroundScope,
-                SharingStarted.WhileSubscribed(),
-                initialValue = Bounds(Rect(), Rect()),
-            )
+            .onStart { emit(Bounds(Rect(), Rect())) }
 
     private val endSideSamplingBounds: Rect by
         hydrator.hydratedStateOf(

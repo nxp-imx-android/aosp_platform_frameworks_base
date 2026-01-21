@@ -42,7 +42,7 @@ constructor(@ShadeDisplayAware private val context: Context) : LockscreenElement
 
         @Composable
         override fun LockscreenScope<ElementContentScope>.LockscreenElement() {
-            // This is the AOSP implementation, this is intentionally empty
+            // This is the AOSP implementation, this is intentionally empty.
         }
 
         override val context = this@AmbientIndicationAreaProvider.context

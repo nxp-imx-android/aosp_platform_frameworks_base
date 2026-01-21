@@ -41,7 +41,6 @@ import com.android.systemui.shade.display.domain.interactor.ShadeExpansionTarget
 import com.android.systemui.shade.domain.interactor.PanelExpansionInteractor
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
-import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 import com.android.systemui.statusbar.core.StatusBarEventForwardingModernization
 import com.android.systemui.statusbar.data.repository.StatusBarConfigurationController
 import com.android.systemui.statusbar.layout.StatusBarContentInsetsProvider
@@ -191,9 +190,7 @@ private constructor(
 
         addDarkReceivers()
 
-        if (
-            StatusBarConnectedDisplays.isEnabled && mView.context.getDisplayId() != DEFAULT_DISPLAY
-        ) {
+        if (mView.context.getDisplayId() != DEFAULT_DISPLAY) {
             // With the StatusBarConnectedDisplays changes, external status bar elements are not
             // interactive when the shade window can't change displays.
             mView.setIsStatusBarInteractiveSupplier {
@@ -210,9 +207,6 @@ private constructor(
 
         progressProvider?.setReadyToHandleTransition(true)
         configurationController.addCallback(configurationListener)
-        if (!StatusBarConnectedDisplays.isEnabled) {
-            mView.setStatusBarWindowControllerStore(statusBarWindowControllerStore)
-        }
     }
 
     private fun addCursorSupportToIconContainers() {

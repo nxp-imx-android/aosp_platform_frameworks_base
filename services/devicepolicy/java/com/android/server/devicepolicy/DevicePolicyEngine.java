@@ -363,6 +363,26 @@ final class DevicePolicyEngine {
                                 RESULT_POLICY_SET : RESULT_FAILURE_UNKNOWN);
     }
 
+    /**
+     * Sets or removes any previously set policy for the provided {@code policyDefinition} in the
+     * local scope (see {@link PolicyDefinition}) and {@code enforcingAdmin}.
+     *
+     * @return a completable future that resolves to the policy update result as defined in
+     *         `PolicyUpdateResult`.
+     */
+    <V> CompletableFuture<Integer> setOrRemoveLocalPolicy(
+            @NonNull PolicyDefinition<V> policyDefinition,
+            @NonNull EnforcingAdmin enforcingAdmin,
+            int userId,
+            @Nullable PolicyValue<V> policyValue) {
+        if (policyValue == null) {
+            return removeLocalPolicy(policyDefinition, enforcingAdmin, userId);
+        } else {
+            return setLocalPolicy(policyDefinition, enforcingAdmin, policyValue, userId);
+        }
+    }
+
+
     // TODO: add more documentation on broadcasts/callbacks to use to get current enforced values
 
     /**
@@ -548,6 +568,24 @@ final class DevicePolicyEngine {
         sendDevicePolicyChangedToSystem(userId);
 
         return policyEnforcementFuture;
+    }
+
+    /**
+     * Removes any previously set policy for the provided {@code policyDefinition} in the global
+     * scope (see {@link PolicyDefinition}) and {@code enforcingAdmin}.
+     *
+     * @return a completable future that resolves to the policy update result as defined in
+     *         `PolicyUpdateResult`.
+     */
+    <V> CompletableFuture<Integer> setOrRemoveGlobalPolicy(
+            @NonNull PolicyDefinition<V> policyDefinition,
+            @NonNull EnforcingAdmin enforcingAdmin,
+            @Nullable PolicyValue<V> policyValue) {
+        if (policyValue == null) {
+            return removeGlobalPolicy(policyDefinition, enforcingAdmin);
+        } else {
+            return setGlobalPolicy(policyDefinition, enforcingAdmin, policyValue);
+        }
     }
 
     /**

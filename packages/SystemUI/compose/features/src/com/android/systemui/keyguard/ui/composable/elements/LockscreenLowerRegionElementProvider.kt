@@ -57,7 +57,7 @@ import javax.inject.Inject
 import javax.inject.Named
 
 @SysUISingleton
-/** Provides a combined element for all lockscreen ui above the lock icon */
+/** Provides a combined element for lockscreen ui elements at the bottom of the screen. */
 class LockscreenLowerRegionElementProvider
 @Inject
 constructor(
@@ -120,8 +120,8 @@ constructor(
                     initialValue = KeyguardQuickAffordanceViewModel(slotId = "")
                 )
 
-            // If neither shortcut is visible, do not display anything to allow indication area
-            // and other features to take the full width of the device.
+            // If neither shortcut is visible, do not display anything to allow indication area and
+            // other features to take the full width of the device.
             if (!startButton.isVisible && !endButton.isVisible) {
                 return
             }
@@ -130,8 +130,8 @@ constructor(
                 key,
                 Modifier.graphicsLayer {
                         translationX =
-                            // unfoldTranslations may be updated every frame, so only read value
-                            // in the draw phase.
+                            // unfoldTranslations may be updated every frame, so only read value in
+                            // the draw phase.
                             when (key) {
                                 Shortcuts.Start -> {
                                     viewModel.unfoldTranslations.start

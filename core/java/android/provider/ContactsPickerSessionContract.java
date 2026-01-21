@@ -58,7 +58,12 @@ public final class ContactsPickerSessionContract {
      * To use this intent, create an {@link android.content.Intent} with this action and launch it
      * using {@link android.app.Activity#startActivityForResult(android.content.Intent, int)}.
      * The system Contacts Picker UI will be displayed, allowing the user to select one or more
-     * contacts.
+     * contacts. This contacts picker UI will:
+     * <ul>
+     *     <li>Have eligible contacts displayed as a scrollable list to the user.</li>
+     *     <li>Enable users to select single/multiple contacts.</li>
+     *     <li>Enable users to search for contacts using display name.</li>
+     * </ul>
      *
      * <p>
      * The display and selection behavior can be customized using the following extras:
@@ -80,8 +85,8 @@ public final class ContactsPickerSessionContract {
      * </ul>
      *
      * <p>
-     * Upon successful selection, the {@link android.app.Activity#onActivityResult(int, int,
-     * android.content.Intent)} callback will be invoked with
+     * Upon successful contact(s) selection, the {@link android.app.Activity#onActivityResult(int,
+     * int, android.content.Intent)} callback will be invoked with
      * {@link android.app.Activity#RESULT_OK}. The returned {@link android.content.Intent}
      * will contain a session URI in its data field (see {@link Session#CONTENT_URI}), which
      * should be used to query the selected contact data. For example:
@@ -93,7 +98,7 @@ public final class ContactsPickerSessionContract {
      *
      * <p>
      * Starting from Android 17, this intent is handled by a system application by default.
-     * Third-party applications should generally not handle this intent as they will be ignored
+     * Third-party applications should not handle this intent as they will be ignored
      * when the system attempts to resolve it.
      */
     @FlaggedApi(Flags.FLAG_ENABLE_SYSTEM_CONTACTS_PICKER)

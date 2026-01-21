@@ -31,7 +31,6 @@ import com.android.systemui.keyguard.ui.view.KeyguardIndicationArea
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardIndicationAreaViewModel
 import com.android.systemui.plugins.keyguard.ui.composable.elements.BaseLockscreenElement.ElementSource
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElement
-import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementContext
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementProvider
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenScope
@@ -57,15 +56,12 @@ constructor(
 
         @Composable
         override fun LockscreenScope<ElementContentScope>.LockscreenElement() {
-            IndicationArea(context)
+            IndicationArea()
         }
     }
 
     @Composable
-    fun IndicationArea(
-        lockscreenElementContext: LockscreenElementContext?,
-        modifier: Modifier = Modifier,
-    ) {
+    fun IndicationArea(modifier: Modifier = Modifier) {
         val (disposable, setDisposable) = remember { mutableStateOf<DisposableHandle?>(null) }
 
         AndroidView(
@@ -83,10 +79,10 @@ constructor(
                 view
             },
             onRelease = { disposable?.dispose() },
-            // lockscreenElementContext.burnInModifier is intentionally not used below;
-            // burn-in is directly applied in KeyguardIndicationAreaBinder/ViewModel
-            // since this UI has custom burn-in amounts that aren't the same as the burn-in
-            // offsets used for other LockscreenContent
+            // lockscreenElementContext.burnInModifier is intentionally not used below; burn-in is
+            // directly applied in KeyguardIndicationAreaBinder/ViewModel since this UI has custom
+            // burn-in amounts that aren't the same as the burn-in offsets used for other
+            // LockscreenContent.
             modifier = modifier.fillMaxSize(),
         )
     }

@@ -26,6 +26,7 @@ import com.android.systemui.statusbar.systemstatusicons.datasaver.ui.viewmodel.d
 import com.android.systemui.statusbar.systemstatusicons.devicesatellite.ui.viewmodel.deviceBasedSatelliteIconViewModelFactory
 import com.android.systemui.statusbar.systemstatusicons.domain.interactor.externalSystemStatusIconInteractor
 import com.android.systemui.statusbar.systemstatusicons.ethernet.ui.viewmodel.ethernetIconViewModelFactory
+import com.android.systemui.statusbar.systemstatusicons.headset.ui.viewmodel.headsetIconViewModelFactory
 import com.android.systemui.statusbar.systemstatusicons.hotspot.ui.viewmodel.hotspotIconViewModelFactory
 import com.android.systemui.statusbar.systemstatusicons.mobile.ui.viewmodel.mobileSystemStatusIconsViewModelFactory
 import com.android.systemui.statusbar.systemstatusicons.profile.ui.viewmodel.managedProfileIconViewModelFactory
@@ -51,6 +52,7 @@ val Kosmos.systemStatusIconsViewModelFactory by
                     deviceBasedSatelliteIconViewModelFactory =
                         deviceBasedSatelliteIconViewModelFactory,
                     ethernetIconViewModelFactory = ethernetIconViewModelFactory,
+                    headsetIconsViewModelFactory = headsetIconViewModelFactory,
                     hotspotIconViewModelFactory = hotspotIconViewModelFactory,
                     managedProfileIconViewModelFactory = managedProfileIconViewModelFactory,
                     mobileSystemStatusIconsViewModelFactory =

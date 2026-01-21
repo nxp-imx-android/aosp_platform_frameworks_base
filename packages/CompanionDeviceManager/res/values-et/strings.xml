@@ -35,7 +35,6 @@
     <string name="profile_name_medical" msgid="5617160509499466400">"meditsiiniseade"</string>
     <string name="title_app_streaming" msgid="237666000400427614">"Kas lubada rakendusel &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; teie seadmete <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> ja &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; vahel rakendusi ja süsteemifunktsioone voogedastada?"</string>
     <string name="summary_app_streaming" msgid="8346968726357732862">"Rakendusele <xliff:g id="APP_NAME">%1$s</xliff:g> antakse järgmised load."</string>
-    <string name="summary_app_streaming_legacy" msgid="8994180646987541606">"<xliff:g id="APP_NAME_0">%1$s</xliff:g> saab juurdepääsu kõigele, mida teie seadmes <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> saab kuvada või esitada, sh helile, fotodele, makseteabele, paroolidele ja sõnumitele.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME_1">%1$s</xliff:g> saab rakendusi seadmesse <xliff:g id="DEVICE_NAME">%3$s</xliff:g> voogesitada seni, kuni juurdepääsu sellele loale eemaldate."</string>
     <string name="helper_summary_app_streaming" msgid="160149899100957545">"<xliff:g id="APP_NAME">%1$s</xliff:g> taotleb seadme <xliff:g id="DEVICE_NAME">%2$s</xliff:g> nimel luba teie seadmete vahel rakenduste ja süsteemifunktsioonide edastamiseks"</string>
     <string name="title_automotive_projection" msgid="3296005598978412847"></string>
     <string name="summary_automotive_projection" msgid="8683801274662496164"></string>
@@ -43,7 +42,6 @@
     <string name="helper_summary_computer" msgid="2298803016482139668">"Rakendus <xliff:g id="APP_NAME">%1$s</xliff:g> taotleb teie seadme <xliff:g id="DEVICE_NAME">%2$s</xliff:g> nimel luba pääseda juurde fotodele, meediale ja märguannetele, mille asukoht on teie <xliff:g id="DEVICE_TYPE">%3$s</xliff:g>"</string>
     <string name="title_nearby_device_streaming" msgid="5342768208699657581">"Kas lubada rakendusel &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; teie seadmete <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> ja &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; vahel rakendusi ja süsteemifunktsioone voogedastada?"</string>
     <string name="summary_nearby_device_streaming" msgid="7940640272770197219">"Rakendusele <xliff:g id="APP_NAME">%1$s</xliff:g> antakse järgmised load."</string>
-    <string name="summary_nearby_device_streaming_legacy" msgid="4306665203887990326">"<xliff:g id="APP_NAME_0">%1$s</xliff:g> saab juurdepääsu kõigele, mida teie seadmes <xliff:g id="DEVICE_NAME_1">%3$s</xliff:g> saab kuvada või esitada, sh helile, fotodele, makseteabele, paroolidele ja sõnumitele.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME_2">%1$s</xliff:g> saab rakendusi seadmesse <xliff:g id="DEVICE_NAME_3">%3$s</xliff:g> voogesitada seni, kuni juurdepääsu sellele loale eemaldate."</string>
     <string name="helper_summary_nearby_device_streaming" msgid="4712712177819370967">"Rakendus <xliff:g id="APP_NAME">%1$s</xliff:g> taotleb teie seadme <xliff:g id="DEVICE_NAME">%2$s</xliff:g> nimel luba rakenduste voogesitamiseks teie seadmest <xliff:g id="DEVICE_TYPE">%3$s</xliff:g>"</string>
     <string name="title_virtual_device" msgid="6556338763070329395">"Kas lubada rakendusel &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; teie seadmete <xliff:g id="DEVICE_TYPE">%3$s</xliff:g> ja &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt; vahel heli ja süsteemifunktsioone voogedastada?"</string>
     <string name="summary_virtual_device" msgid="1062189396947962635">"Rakendusele <xliff:g id="APP_NAME">%2$s</xliff:g> antakse järgmised load."</string>
@@ -70,6 +68,8 @@
     <string name="permission_media_routing_control" msgid="5498639511586715253">"Meediaväljundi muutmine"</string>
     <string name="permission_storage" msgid="6831099350839392343">"Fotod ja meedia"</string>
     <string name="permission_notifications" msgid="4099418516590632909">"Märguanded"</string>
+    <!-- no translation found for permission_app_streaming (4488910074894929222) -->
+    <skip />
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"Andmete voogesitamine seadmesse <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"Ekraanikuva peegeldamine"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"Voogesitusrakendused"</string>
@@ -84,8 +84,11 @@
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"Läheduses olevate seadmete leidmine, nendega ühenduse loomine ja nende suhtelise asendi määramine"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"Kõikide märguannete, sh sellise teabe nagu kontaktid, sõnumid ja fotod lugemine"</string>
     <string name="permission_notifications_summary" msgid="6819393427371255636">"• Kõikide märguannete, sh sellise teabe nagu kontaktid, sõnumid ja fotod lugemine&lt;br/&gt;• Märguannete saatmine&lt;br/&gt;&lt;br/&gt;Saate selle rakenduse võimalusi märguannete lugemiseks ja saatmiseks igal ajal hallata jaotises Seaded &gt; Märguanded."</string>
-    <string name="permission_storage_summary" msgid="3918240895519506417"></string>
+    <!-- no translation found for permission_storage_summary (3779040306012319942) -->
+    <skip />
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"Märguannete saatmine"</string>
+    <!-- no translation found for permission_app_streaming_summary (4114223538437344105) -->
+    <skip />
     <string name="permission_create_virtual_device_summary" msgid="3570256456647725172">"Mikrofoni, kaamera ja muude anduri andmete voogesitamine seadmest &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; seadmesse <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>."</string>
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"Seadme <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> ekraanikuva salvestamine, ülekandmine või jagamine seadmega &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt; Rakendus saab <xliff:g id="APP_NAME">%1$s</xliff:g> juurdepääsu kõigele, mis on seadmes <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g> nähtav või mida seal esitatakse, sh heli, fotod, makseteave, paroolid ja sõnumid."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"Seadme <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> rakenduste voogesitamine seadmesse &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> saab juurdepääsu kõigele, mida teie seadmes <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g> saab kuvada või esitada, sh helile, fotodele, makseteabele, paroolidele ja sõnumitele, isegi kui seade <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> on lukus."</string>

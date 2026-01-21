@@ -165,7 +165,7 @@ constructor(
             .onEach {
                 val selectedTask = it?.currentTargetModel ?: return@onEach
                 if (!selectedTask.canUseCamera) {
-                    parametersInteractor.setShouldShowFrontCamera(false)
+                    parametersInteractor.shouldShowFrontCamera = false
                     cameraInteractor.stopStream()
                 }
                 if (!selectedTask.canUseMarkup) {

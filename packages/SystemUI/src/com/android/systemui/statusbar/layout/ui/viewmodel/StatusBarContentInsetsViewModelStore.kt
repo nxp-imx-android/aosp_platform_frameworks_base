@@ -24,11 +24,9 @@ import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
 import com.android.systemui.display.data.repository.DisplayRepository
 import com.android.systemui.display.data.repository.PerDisplayStore
 import com.android.systemui.display.data.repository.SingleDisplayStore
-import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 import com.android.systemui.statusbar.data.repository.StatusBarPerDisplayStoreImpl
-import dagger.Lazy
+import dagger.Binds
 import dagger.Module
-import dagger.Provides
 import dagger.multibindings.ClassKey
 import dagger.multibindings.IntoMap
 import javax.inject.Inject
@@ -70,31 +68,18 @@ constructor(statusBarContentInsetsViewModel: StatusBarContentInsetsViewModel) :
     )
 
 @Module
-object StatusBarContentInsetsViewModelStoreModule {
-    @Provides
+interface StatusBarContentInsetsViewModelStoreModule {
+    @Binds
     @SysUISingleton
     @IntoMap
     @ClassKey(StatusBarContentInsetsViewModelStore::class)
     fun storeAsCoreStartable(
-        multiDisplayLazy: Lazy<MultiDisplayStatusBarContentInsetsViewModelStore>
-    ): CoreStartable {
-        return if (StatusBarConnectedDisplays.isEnabled) {
-            return multiDisplayLazy.get()
-        } else {
-            CoreStartable.NOP
-        }
-    }
+        multiDisplay: MultiDisplayStatusBarContentInsetsViewModelStore
+    ): CoreStartable
 
-    @Provides
+    @Binds
     @SysUISingleton
     fun store(
-        singleDisplayLazy: Lazy<SingleDisplayStatusBarContentInsetsViewModelStore>,
-        multiDisplayLazy: Lazy<MultiDisplayStatusBarContentInsetsViewModelStore>,
-    ): StatusBarContentInsetsViewModelStore {
-        return if (StatusBarConnectedDisplays.isEnabled) {
-            multiDisplayLazy.get()
-        } else {
-            singleDisplayLazy.get()
-        }
-    }
+        multiDisplay: MultiDisplayStatusBarContentInsetsViewModelStore
+    ): StatusBarContentInsetsViewModelStore
 }

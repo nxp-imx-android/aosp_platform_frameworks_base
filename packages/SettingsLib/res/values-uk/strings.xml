@@ -132,7 +132,7 @@
     <string name="bluetooth_battery_level_untethered_right_lea_support" msgid="8941549024377771038">"Підключено (підтримує надсилання аудіо). Правий: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> заряду акумулятора."</string>
     <string name="bluetooth_no_battery_level_lea_support" msgid="5721725041048434075">"Підключено (підтримує надсилання аудіо)"</string>
     <string name="bluetooth_guest_battery_level_lea_support" msgid="8098327939585013928">"Гостьовий пристрій (підтримує надсилання аудіо). <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> заряду акумулятора."</string>
-    <string name="bluetooth_guest_battery_level_untethered_lea_support" msgid="3701035025565668360">"Гостьовий пристрій (підтримує надсилання аудіо). Лівий: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g>, правий: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g> заряду акумулятора."</string>
+    <string name="bluetooth_guest_battery_level_untethered_lea_support" msgid="3701035025565668360">"Гостьовий пристрій (підтримує надсилання аудіо). Рівень заряду: лівий <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g>, правий <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g>."</string>
     <string name="bluetooth_guest_no_battery_level_lea_support" msgid="2977038548753103470">"Гостьовий пристрій (підтримує надсилання аудіо)"</string>
     <string name="bluetooth_active_media_only_no_battery_level" msgid="71106861912593126">"Активно (лише для мультимедіа)"</string>
     <string name="bluetooth_guest_no_battery_level" msgid="9122974160381136920">"Гостьовий пристрій"</string>

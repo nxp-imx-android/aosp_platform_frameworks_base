@@ -1997,7 +1997,7 @@ public class TaskLaunchParamsModifierTests extends
                 .createRootTask(display.getWindowingMode(), ACTIVITY_TYPE_STANDARD, true);
         rootTask.setWindowingMode(WINDOWING_MODE_FREEFORM);
         final Task task = new TaskBuilder(mSupervisor).setParentTask(rootTask)
-                .setCreateActivity(true).build();
+                .setDisplay(display).setCreateActivity(true).build();
         task.getRootActivity().setVisibility(isVisible);
         // Just work around the unnecessary adjustments for bounds.
         task.getWindowConfiguration().setBounds(bounds);

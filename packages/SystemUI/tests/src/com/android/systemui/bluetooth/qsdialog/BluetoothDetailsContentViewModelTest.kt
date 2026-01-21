@@ -190,7 +190,7 @@ class BluetoothDetailsContentViewModelTest(flags: FlagsParameterization) : Sysui
             bluetoothDetailsContentViewModel.showDialog(null)
             runCurrent()
 
-            verify(mDialogTransitionAnimator, never()).show(any(), any(), any())
+            verify(mDialogTransitionAnimator, never()).show(any(), any(), any(), anyBoolean())
         }
     }
 

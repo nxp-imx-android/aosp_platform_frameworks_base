@@ -52,6 +52,7 @@ import android.view.FrameRateCategoryRate;
 import android.view.RoundedCorners;
 import android.view.SurfaceControl;
 
+import com.android.graphics.surfaceflinger.flags.Flags;
 import com.android.internal.R;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.display.BrightnessSynchronizer;
@@ -335,6 +336,7 @@ final class LocalDisplayAdapter extends DisplayAdapter {
             SurfaceControl.DisplayMode preferredSfDisplayMode =
                         getModeById(displayModes, preferredSfDisplayModeId);
 
+            boolean sizeOverrideEnabled = !isInternal && !Flags.syncedResolutionSwitch();
             // Build an updated list of all existing modes.
             ArrayList<DisplayModeRecord> records = new ArrayList<>();
             SparseArray<SurfaceControl.DisplayMode> modeIdToSfMode = new SparseArray<>();
@@ -379,7 +381,7 @@ final class LocalDisplayAdapter extends DisplayAdapter {
                         alternativeRates[j] = alternativeRefreshRates.get(j);
                     }
                     Display.Mode displayMode = DisplayModeFactory.createMode(mode, alternativeRates,
-                            hasArrSupport, !isInternal);
+                            hasArrSupport, sizeOverrideEnabled);
                     record = new DisplayModeRecord(displayMode);
                     modesAdded = true;
                 }
@@ -458,8 +460,8 @@ final class LocalDisplayAdapter extends DisplayAdapter {
             syntheticModes.addAll(DisplayModeFactory
                     .createArrSyntheticModes(records, hasArrSupport));
             if (!isInternal) {
-                syntheticModes.addAll(DisplayModeFactory
-                        .createAnisotropyCorrectedModes(records, modeIdToSfMode));
+                syntheticModes.addAll(DisplayModeFactory.createAnisotropyCorrectedModes(
+                        records, modeIdToSfMode, sizeOverrideEnabled));
             }
             records.addAll(syntheticModes);
 
@@ -541,9 +543,12 @@ final class LocalDisplayAdapter extends DisplayAdapter {
             if (mUserPreferredMode == null || mUserPreferredModeId == INVALID_MODE_ID) {
                 return mDefaultModeId;
             }
-            if (mUserPreferredMode.getParentModeId() != INVALID_MODE_ID
-                    || (mUserPreferredMode.getFlags() & FLAG_SIZE_OVERRIDE) != 0) {
+            // userPreferredMode should not trigger real mode switch
+            if ((mUserPreferredMode.getFlags() & FLAG_SIZE_OVERRIDE) != 0) {
                 return mDefaultModeId;
+            }
+            if (mUserPreferredMode.getParentModeId() != INVALID_MODE_ID) {
+                return mUserPreferredMode.getParentModeId();
             }
             return mUserPreferredModeId;
         }

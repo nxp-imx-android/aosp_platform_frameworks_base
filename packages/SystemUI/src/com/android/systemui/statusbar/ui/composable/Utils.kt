@@ -22,7 +22,6 @@ import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.sp
 import com.android.systemui.res.R
-import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 
 /**
  * Calculates the size of a status bar item in Dp.
@@ -34,13 +33,6 @@ import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 @Composable
 fun getStatusBarItemSize(): Dp {
     val scaleFactor = LocalResources.current.getFloat(R.dimen.status_bar_icon_scale_factor)
-    val iconSize =
-        with(LocalDensity.current) {
-            if (StatusBarConnectedDisplays.isEnabled) {
-                (13 * scaleFactor).sp.toDp()
-            } else {
-                13.sp.toDp()
-            }
-        }
+    val iconSize = with(LocalDensity.current) { (13 * scaleFactor).sp.toDp() }
     return iconSize
 }

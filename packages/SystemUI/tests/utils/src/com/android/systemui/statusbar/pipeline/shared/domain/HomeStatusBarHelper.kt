@@ -17,7 +17,6 @@
 package com.android.systemui.statusbar.pipeline.shared.domain
 
 import android.app.StatusBarManager.CAMERA_LAUNCH_SOURCE_POWER_DOUBLE_TAP
-import android.content.applicationContext
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.data.repository.keyguardOcclusionRepository
 import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
@@ -28,14 +27,12 @@ import com.android.systemui.scene.SceneHelper.setDeviceEntered
 import com.android.systemui.scene.data.repository.sceneContainerRepository
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Scenes
-import com.android.systemui.statusbar.window.data.repository.fakeStatusBarWindowStateRepositoryStore
+import com.android.systemui.statusbar.window.data.repository.fakeStatusBarWindowStatePerDisplayRepository
 import com.android.systemui.statusbar.window.shared.model.StatusBarWindowState
 
 object HomeStatusBarHelper {
     fun Kosmos.setStatusBarWindowState(state: StatusBarWindowState) {
-        fakeStatusBarWindowStateRepositoryStore
-            .forDisplay(applicationContext.displayId)
-            .setWindowState(state)
+        fakeStatusBarWindowStatePerDisplayRepository.setWindowState(state)
     }
 
     suspend fun Kosmos.launchSecureCamera() {

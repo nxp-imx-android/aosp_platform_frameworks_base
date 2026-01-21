@@ -1842,7 +1842,7 @@
     <string name="leave_accessibility_shortcut_on" msgid="6543362062336990814">"ဖြတ်လမ်းလင့်ခ်ကို သုံးရန်"</string>
     <string name="color_inversion_feature_name" msgid="2672824491933264951">"အရောင်ပြောင်းပြန်ပြုလုပ်ခြင်း"</string>
     <string name="color_correction_feature_name" msgid="7975133554160979214">"အရောင် အမှန်ပြင်ခြင်း"</string>
-    <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"လက်တစ်ဖက်သုံးမုဒ်"</string>
+    <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"လက်တစ်ဖက်မုဒ်"</string>
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"ပိုမှိန်ခြင်း"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"နားကြားကိရိယာ"</string>
     <string name="autoclick_feature_name" msgid="4056260617171267864">"အော်တိုနှိပ်ခြင်း (စောင့်ဆိုင်းချိန်)"</string>
@@ -2111,8 +2111,52 @@
     <string name="app_suspended_default_message" msgid="6451215678552004172">"<xliff:g id="APP_NAME_0">%1$s</xliff:g> ကို လောလောဆယ် မရနိုင်ပါ။ ၎င်းကို <xliff:g id="APP_NAME_1">%2$s</xliff:g> က စီမံထားပါသည်။"</string>
     <string name="app_suspended_more_details" msgid="211260942831587014">"ပိုလေ့လာရန်"</string>
     <string name="app_suspended_unsuspend_message" msgid="1665438589450555459">"အက်ပ်ကို ခဏမရပ်တော့ရန်"</string>
+    <string name="app_lock_add_screen_lock_button_text" msgid="9209013414563206600">"စခရင်လော့ခ် ထည့်ရန်"</string>
+    <string name="app_lock_add_screen_lock_message" msgid="6107009360675769892">"စခရင်လော့ခ်သည် ပင်နံပါတ်၊ ပုံဖော်ခြင်း (သို့) စကားဝှက် ဖြစ်နိုင်သည်။ သင့်စက်လော့ခ်ဖွင့်ရန်နှင့် လော့ခ်ချထားသောအက်ပ်များ သုံးရန် ၎င်းကို အသုံးပြုပါမည်။"</string>
+    <string name="app_lock_add_screen_lock_title" msgid="6905612843620128689">"ဦးစွာ စခရင်လော့ခ် ထည့်ပါ"</string>
+    <!-- no translation found for enable_app_lock_success_toast_message (3339622779190529987) -->
+    <skip />
+    <!-- no translation found for enable_app_lock_failure_toast_message (1055838896510445566) -->
+    <skip />
+    <!-- no translation found for disable_app_lock_success_toast_message (70733620589071266) -->
+    <skip />
     <string name="locked_app_biometric_prompt_description" msgid="6853122652400451464">"<xliff:g id="APP_NAME">%1$s</xliff:g> ကို လော့ခ်ချထားသည်"</string>
-    <!-- no translation found for locked_app_external_display_message (5483884799685545338) -->
+    <string name="locked_app_external_display_message" msgid="5483884799685545338">"ဤဖန်သားပြင်တွင် အက်ပ်သုံးရန်အတွက် သင်၏အခြားစက်တွင် သင်ဖြစ်ကြောင်း ဦးစွာအတည်ပြုပါ"</string>
+    <!-- no translation found for app_lock_edu_dialog_enable_app_lock_title (283314042336592322) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_description (8176807243219769518) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_description_template (8563718120753342530) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_description_template_no_biometrics (7122017109150633691) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_info_header (5876120209204270990) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_info_notifications (1124438392204873305) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_info_widgets (8809009414650740872) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_button_lock (3914687128135704801) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_face (1348151645996748654) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_fingerprint (5206107469561561455) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_fingerprint_and_face (7895807411323811641) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_lockscreen_password_name (8487096457702445059) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_lockscreen_pattern_name (991436996281983547) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_lockscreen_pin_name (6458607126966304795) -->
+    <skip />
+    <!-- no translation found for app_lock_permission_review_dialog_title (5030286398974840579) -->
+    <skip />
+    <!-- no translation found for app_lock_permission_review_dialog_sub_title (310758587817184145) -->
+    <skip />
+    <!-- no translation found for app_lock_permission_review_expand_app_list_button (3214809707125223273) -->
+    <skip />
+    <!-- no translation found for app_lock_permission_review_continue_button (4045066724173414043) -->
     <skip />
     <string name="work_mode_off_title" msgid="6367463960165135829">"အလုပ်သုံးအက်ပ် ပြန်ဖွင့်မလား။"</string>
     <string name="work_mode_turn_on" msgid="5316648862401307800">"ပြန်ဖွင့်ရန်"</string>

@@ -16,7 +16,6 @@
 
 package com.android.systemui.statusbar.events
 
-import android.platform.test.annotations.EnableFlags
 import android.view.Display
 import androidx.core.animation.AnimatorSet
 import androidx.core.animation.ValueAnimator
@@ -24,7 +23,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.display.data.repository.displayRepository
-import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 import com.android.systemui.statusbar.data.repository.systemEventChipAnimationControllerStore
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
@@ -38,7 +36,6 @@ import org.mockito.kotlin.whenever
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@EnableFlags(StatusBarConnectedDisplays.FLAG_NAME)
 class MultiDisplaySystemEventChipAnimationControllerTest : SysuiTestCase() {
 
     private val kosmos = testKosmos()

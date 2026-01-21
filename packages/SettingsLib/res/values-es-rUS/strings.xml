@@ -131,14 +131,14 @@
     <string name="bluetooth_battery_level_untethered_left_lea_support" msgid="7707464334346454950">"Conectado (admite el uso compartido de audio). Izquierdo: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> de batería."</string>
     <string name="bluetooth_battery_level_untethered_right_lea_support" msgid="8941549024377771038">"Conectado (admite el uso compartido de audio). Derecho: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> de batería."</string>
     <string name="bluetooth_no_battery_level_lea_support" msgid="5721725041048434075">"Conectado (admite el uso compartido de audio)"</string>
-    <string name="bluetooth_guest_battery_level_lea_support" msgid="8098327939585013928">"Dispositivo de invitado (admite el uso compartido de audio). <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> de batería."</string>
-    <string name="bluetooth_guest_battery_level_untethered_lea_support" msgid="3701035025565668360">"Dispositivo de invitado (admite el uso compartido de audio). I: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g>; D: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g> de batería."</string>
-    <string name="bluetooth_guest_no_battery_level_lea_support" msgid="2977038548753103470">"Dispositivo de invitado (admite el uso compartido de audio)"</string>
+    <string name="bluetooth_guest_battery_level_lea_support" msgid="8098327939585013928">"Dispositivo de invitado (admite la función de compartir audio). <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g> de batería."</string>
+    <string name="bluetooth_guest_battery_level_untethered_lea_support" msgid="3701035025565668360">"Dispositivo de invitado (admite la función de compartir audio). I: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g>; D: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g> de batería."</string>
+    <string name="bluetooth_guest_no_battery_level_lea_support" msgid="2977038548753103470">"Dispositivo de invitado (admite la función de compartir audio)"</string>
     <string name="bluetooth_active_media_only_no_battery_level" msgid="71106861912593126">"Activo (solo para contenido multimedia)"</string>
     <string name="bluetooth_guest_no_battery_level" msgid="9122974160381136920">"Dispositivo de invitado"</string>
     <string name="bluetooth_guest_media_only_no_battery_level" msgid="7666347601796705721">"Dispositivo de invitado (solo para contenido multimedia)"</string>
     <string name="bluetooth_saved_device_lea_support" msgid="7231323139968285768">"Admite el uso compartido de audio"</string>
-    <string name="bluetooth_guest_saved_device_lea_support" msgid="5621291599518569876">"Dispositivo de invitado. Admite el uso compartido de audio"</string>
+    <string name="bluetooth_guest_saved_device_lea_support" msgid="5621291599518569876">"Dispositivo de invitado. Admite la función de compartir audio"</string>
     <string name="bluetooth_hearing_aid_media_only_left_active" msgid="1632152540901488645">"Activo (solo para contenido multimedia); solo izquierdo"</string>
     <string name="bluetooth_hearing_aid_media_only_right_active" msgid="3854140683042617230">"Activo (solo para contenido multimedia); solo derecho"</string>
     <string name="bluetooth_hearing_aid_media_only_left_and_right_active" msgid="1299913413062528417">"Activo (solo para contenido multimedia); izquierdo y derecho"</string>
@@ -676,7 +676,7 @@
     <string name="user_add_user_type_title" msgid="551279664052914497">"Agregar"</string>
     <string name="user_new_user_name" msgid="60979820612818840">"Usuario nuevo"</string>
     <string name="user_new_profile_name" msgid="2405500423304678841">"Perfil nuevo"</string>
-    <string name="user_info_settings_title" msgid="6351390762733279907">"Datos de usuario"</string>
+    <string name="user_info_settings_title" msgid="6351390762733279907">"Datos del usuario"</string>
     <string name="profile_info_settings_title" msgid="105699672534365099">"Datos del perfil"</string>
     <string name="user_need_lock_message" msgid="4311424336209509301">"Para poder crear un perfil restringido, debes configurar un bloqueo de pantalla que proteja tus aplicaciones y datos personales."</string>
     <string name="user_set_lock_button" msgid="1427128184982594856">"Configurar bloqueo"</string>

@@ -46,10 +46,8 @@
     <string name="usb_accessory_confirm_prompt" msgid="5728408382798643421">"هل تريد فتح تطبيق \"<xliff:g id="APPLICATION">%1$s</xliff:g>\" لإدارة <xliff:g id="USB_ACCESSORY">%2$s</xliff:g>؟"</string>
     <string name="usb_accessory_uri_prompt" msgid="6756649383432542382">"‏لا يعمل أي تطبيق مثبت مع ملحق UEB هذا. مزيد من المعلومات عن هذا الملحق على <xliff:g id="URL">%1$s</xliff:g>."</string>
     <string name="title_usb_accessory" msgid="1236358027511638648">"‏ملحق USB"</string>
-    <!-- no translation found for usb_device_dialog_allow_only_this_time_button (3653881633944232491) -->
-    <skip />
-    <!-- no translation found for usb_device_dialog_cancel_button (9050554648474787233) -->
-    <skip />
+    <string name="usb_device_dialog_allow_only_this_time_button" msgid="3653881633944232491">"هذه المرّة فقط"</string>
+    <string name="usb_device_dialog_cancel_button" msgid="9050554648474787233">"إلغاء"</string>
     <string name="label_view" msgid="6815442985276363364">"عرض"</string>
     <string name="always_use_device" msgid="210535878779644679">"فتح تطبيق \"<xliff:g id="APPLICATION">%1$s</xliff:g>\" دائمًا عند توصيل <xliff:g id="USB_DEVICE">%2$s</xliff:g>"</string>
     <string name="always_use_accessory" msgid="1977225429341838444">"فتح تطبيق \"<xliff:g id="APPLICATION">%1$s</xliff:g>\" دائمًا عند توصيل <xliff:g id="USB_ACCESSORY">%2$s</xliff:g>"</string>
@@ -158,10 +156,8 @@
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"عرض كاميرا السيلفي"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"عرض أماكن اللمس"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"يُرجى اختيار تطبيق لتسجيل محتوى شاشته"</string>
-    <!-- no translation found for screen_record_settings (2377267679200139285) -->
-    <skip />
-    <!-- no translation found for screen_record_markup (5583986085046693669) -->
-    <skip />
+    <string name="screen_record_settings" msgid="2377267679200139285">"إعدادات تسجيل الشاشة"</string>
+    <string name="screen_record_markup" msgid="5583986085046693669">"وضع علامات"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"تم حفظ الفيديو"</string>
     <string name="screen_record_video_deleted" msgid="30786214839944540">"تم حذف الفيديو"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"تراجع"</string>
@@ -174,8 +170,7 @@
     <string name="screen_record_pause" msgid="1715012292444967776">"إيقاف مؤقت"</string>
     <string name="screen_record_mute" msgid="8111682249858638168">"كتم الصوت"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"إعادة الصوت"</string>
-    <!-- no translation found for screen_record_video_preview_elapsed_time_a11y_template (969599623785875798) -->
-    <skip />
+    <string name="screen_record_video_preview_elapsed_time_a11y_template" formatted="false" msgid="969599623785875798">"‫<xliff:g id="ELAPSED_TIME">%1$s</xliff:g> من <xliff:g id="DURATION">%2$s</xliff:g>"</string>
     <string name="screen_capture_blocked_by_admin" msgid="1751756953683506644">"حظرَ مشرف تكنولوجيا المعلومات إمكانية تصوير الشاشة"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"أخْذ لقطة للشاشة بأكملها"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"تسجيل الشاشة بأكملها"</string>
@@ -189,10 +184,13 @@
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"نافذة \"مشاركة التطبيق\""</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"مشاركة علامة التبويب"</string>
     <string name="screen_share_entire_screen_sharing_title" msgid="9093580141248337998">"مشاركة الشاشة بأكملها"</string>
-    <string name="screen_share_disclaimer_app_sharing" msgid="4191319837838590771">"‏بعد مشاركة تطبيق، سيتمكّن \"[APP NAME]\" من رؤية أي محتوى معروض أو مشغَّل عليه، لذا يُرجى توخي الحذر بشأن معلوماتك الخاصة، مثل كلمات المرور وتفاصيل الدفع والرسائل والصور والمقاطع الصوتية والفيديوهات."</string>
-    <string name="screen_share_disclaimer_full_screen_sharing" msgid="6445373139864031364">"‏بعد مشاركة شاشتك بأكملها، سيتمكّن \"[APP NAME]\" من رؤية أي محتوى معروض عليها، لذا يُرجى توخي الحذر بشأن معلوماتك الخاصة، مثل كلمات المرور وتفاصيل الدفع والرسائل والصور والمقاطع الصوتية والفيديوهات."</string>
-    <!-- no translation found for screen_share_a11y_announcement (8938007210094494367) -->
+    <!-- no translation found for screen_share_disclaimer_app_sharing (1839029004749224549) -->
     <skip />
+    <!-- no translation found for screen_share_disclaimer_tab_sharing (3811486274577713101) -->
+    <skip />
+    <!-- no translation found for screen_share_disclaimer_full_screen_sharing (5173795016606926338) -->
+    <skip />
+    <string name="screen_share_a11y_announcement" msgid="8938007210094494367">"لمشاركة علامات تبويب أو تطبيقات أو الشاشة بأكملها، يجب اختيارها ثم الضغط على \"مشاركة\"."</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"أخْذ لقطة شاشة للنافذة"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"تسجيل النافذة"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"أخْذ لقطة شاشة للمنطقة المحدّدة"</string>
@@ -394,8 +392,7 @@
     <string name="accessibility_clear_all" msgid="970525598287244592">"محو جميع الإشعارات."</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"الإشعارات"</string>
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"‏مساعد Google"</string>
-    <!-- no translation found for accessibility_status_bar_input_method_indicator (4911669064186093506) -->
-    <skip />
+    <string name="accessibility_status_bar_input_method_indicator" msgid="4911669064186093506">"لوحة المفاتيح"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{إشعار واحد آخر بداخل المجموعة.}zero{# إشعار آخر بداخل المجموعة.}two{إشعاران آخران بداخل المجموعة.}few{# إشعارات أخرى بداخل المجموعة.}many{# إشعارًا آخر بداخل المجموعة.}other{# إشعار آخر بداخل المجموعة.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"تم قفل الشاشة في الاتجاه الأفقي."</string>
@@ -945,8 +942,7 @@
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"النشرات الإخبارية والوسائط المقترَحة والمزيد"</string>
     <string name="notification_onboarding_summaries_turn_on" msgid="3831339570984683297">"يمكنك تفعيل الميزة من خلال \"الإعدادات\""</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"يمكن الآن تلخيص المحادثات الطويلة لتقديم ملخّصات سريعة"</string>
-    <!-- no translation found for notification_onboarding_summaries_message_with_apps (5320980333818238465) -->
-    <skip />
+    <string name="notification_onboarding_summaries_message_with_apps" msgid="5320980333818238465">"يمكن لجهازك وتطبيقاتك الآن تلخيص المحادثات الطويلة لتقديم ملخّصات سريعة"</string>
     <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"تعمل ميزة \"منظّم الإشعارات\" على جمع الإشعارات ذات الأولوية المنخفضة وكتم صوتها. ويمكنك إضافة المزيد من الفئات في \"الإعدادات\"."</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{إشعار واحد}zero{‫# إشعار}two{إشعاران}few{‫# إشعارات}many{‫# إشعارًا}other{‫# إشعار}}"</string>
     <string name="notification_bundle_header_joined_description" msgid="4517556837418088139">"<xliff:g id="NAME">%1$s</xliff:g>، <xliff:g id="NUM_NOTIFICATIONS">%2$s</xliff:g>"</string>
@@ -1234,7 +1230,7 @@
     <string name="lockscreen_shortcut_right" msgid="4138414674531853719">"اختصار اليمين"</string>
     <string name="lockscreen_unlock_left" msgid="1417801334370269374">"اختصار اليسار يلغي أيضًا تأمين"</string>
     <string name="lockscreen_unlock_right" msgid="4658008735541075346">"اختصار اليمين يلغي أيضًا تأمين"</string>
-    <string name="lockscreen_none" msgid="4710862479308909198">"بدون"</string>
+    <string name="lockscreen_none" msgid="4710862479308909198">"بدون اختصار"</string>
     <string name="tuner_launch_app" msgid="3906265365971743305">"تشغيل <xliff:g id="APP">%1$s</xliff:g>"</string>
     <string name="tuner_other_apps" msgid="7767462881742291204">"تطبيقات أخرى"</string>
     <string name="tuner_circle" msgid="5270591778160525693">"دائرة"</string>

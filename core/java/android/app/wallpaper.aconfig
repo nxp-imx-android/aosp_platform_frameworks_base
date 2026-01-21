@@ -20,13 +20,6 @@ flag {
 }
 
 flag {
-  name: "enable_connected_displays_wallpaper"
-  namespace: "lse_desktop_experience"
-  description: "Enable wallpaper support in connected displays"
-  bug: "366461618"
-}
-
-flag {
   name: "enable_wallpaper_description_set_component"
   namespace: "systemui"
   description: "Expose setComponent method in WallpaperDescription"

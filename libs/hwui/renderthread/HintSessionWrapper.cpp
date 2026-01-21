@@ -19,6 +19,7 @@
 #include <dlfcn.h>
 #include <private/performance_hint_private.h>
 #include <utils/Log.h>
+#include <utils/Trace.h>
 
 #include <algorithm>
 #include <chrono>
@@ -26,6 +27,7 @@
 
 #include "../Properties.h"
 #include "RenderThread.h"
+#include "cutils/trace.h"
 #include "thread/CommonPool.h"
 
 using namespace std::chrono_literals;
@@ -168,6 +170,7 @@ void HintSessionWrapper::setActiveFunctorThreads(std::vector<pid_t> threadIds) {
 }
 
 void HintSessionWrapper::sendCpuLoadResetHint() {
+    ATRACE_CALL();
     static constexpr int kMaxResetsSinceLastReport = 2;
     if (!init()) return;
     nsecs_t now = systemTime();
@@ -175,6 +178,7 @@ void HintSessionWrapper::sendCpuLoadResetHint() {
         mResetsSinceLastReport <= kMaxResetsSinceLastReport) {
         ++mResetsSinceLastReport;
         mBinding->sendHint(mHintSession, static_cast<int32_t>(SessionHint::CPU_LOAD_RESET));
+        ATRACE_INSTANT("CPU_LOAD_RESET hint sent");
     }
     mLastFrameNotification = now;
 }

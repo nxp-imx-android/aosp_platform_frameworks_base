@@ -17,11 +17,11 @@
 package android.app.admin;
 
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS;
+import static android.Manifest.permission.MANAGE_DEVICE_POLICY_LOCKSCREEN_INFO;
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_SCREEN_CAPTURE;
 import static android.Manifest.permission.SET_TIME;
 import static android.app.admin.DevicePolicyManager.POLICY_SCOPE_DEVICE;
 import static android.app.admin.DevicePolicyManager.POLICY_SCOPE_USER;
-import static android.app.admin.DevicePolicyManager.RESOURCE_DEVICE_WIDE;
 import static android.app.admin.DevicePolicyManager.RESOURCE_DEVICE_WIDE;
 import static android.app.admin.DevicePolicyManager.RESOURCE_PER_USER;
 import static android.app.admin.flags.Flags.FLAG_POLICY_STREAMLINING;
@@ -33,10 +33,13 @@ import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.TestApi;
+import android.content.Intent;
 import android.os.UserManager;
 import android.processor.devicepolicy.AllowedDpcTypes;
 import android.processor.devicepolicy.EnumPolicyDefinition;
 import android.processor.devicepolicy.PolicyDefinition;
+import android.processor.devicepolicy.StringPolicyDefinition;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
@@ -232,4 +235,40 @@ public final class PolicyIdentifier<T> {
             intDef = AutoTimeValue.class,
             defaultValue = AUTO_TIME_USER_CHOICE)
     public static final PolicyIdentifier<Integer> AUTO_TIME = new PolicyIdentifier<>("AUTO_TIME");
+
+    /**
+     * Policy that sets a custom message to be shown on the lock screen. This message is displayed
+     * on the device screen when locked, and is useful for a lost or stolen device.
+     * <p>
+     * The message set using this method overrides any owner information manually set by the user
+     * and prevents the user from further changing it.
+     * <p>
+     * If the message is {@code null} then the device owner info is cleared and the user
+     * owner info is shown on the lock screen if it is set.
+     * <p>
+     * If the message contains only whitespaces then the message on the lock screen will be blank
+     * and the user will not be allowed to change it.
+     * <p>
+     * If the message needs to be localized, it is the responsibility of the
+     * {@link DeviceAdminReceiver} to listen to the {@link Intent#ACTION_LOCALE_CHANGED} broadcast
+     * and set a new version of this string accordingly.
+     */
+    @FlaggedApi(FLAG_POLICY_STREAMLINING)
+    @NonNull
+    @StringPolicyDefinition(
+            base =
+                    @PolicyDefinition(
+                            allowedScopes = {POLICY_SCOPE_DEVICE},
+                            affectedResource = RESOURCE_DEVICE_WIDE,
+                            requiredPermission = MANAGE_DEVICE_POLICY_LOCKSCREEN_INFO,
+                            requiredCrossUserPermission = MANAGE_DEVICE_POLICY_ACROSS_USERS,
+                            allowedDpcTypes =
+                            @AllowedDpcTypes(
+                                    deviceOwner = ALLOWED,
+                                    managedProfileOwnerOfOrganizationOwnedDevice = ALLOWED,
+                                    managedProfileOwnerOfPersonalOwnedDevice = DISALLOWED,
+                                    unaffiliatedFullUserProfileOwner = DISALLOWED)),
+            emptyStringAllowed = false)
+    public static final PolicyIdentifier<String> LOCKSCREEN_MESSAGE =
+            new PolicyIdentifier<>("LOCKSCREEN_MESSAGE");
 }

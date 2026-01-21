@@ -105,7 +105,7 @@ class AppFunctionMetadataReaderTest {
 
     @Test
     fun searchAppFunctions_multiplePages_succeeds() = doBlocking {
-        val testFutureSearchResults =
+        val testFutureStaticSearchResults =
             object : FutureSearchResults {
                 var pageNumber = 0
 
@@ -123,10 +123,18 @@ class AppFunctionMetadataReaderTest {
 
                 override fun close() {}
             }
-        val futureGlobalSearchSession = mock<FutureGlobalSearchSession>()
+        val testFutureTopLevelSearchResults =
+            object : FutureSearchResults {
+                override fun getNextPage(): AndroidFuture<List<SearchResult?>?> {
+                    return AndroidFuture.completedFuture(listOf(TEST_TOP_LEVEL_SEARCH_RESULT))
+                }
 
+                override fun close() {}
+            }
+        val futureGlobalSearchSession = mock<FutureGlobalSearchSession>()
         whenever(futureGlobalSearchSession.search(any(), any()))
-            .thenReturn(AndroidFuture.completedFuture(testFutureSearchResults))
+            .thenReturn(AndroidFuture.completedFuture(testFutureStaticSearchResults))
+            .thenReturn(AndroidFuture.completedFuture(testFutureTopLevelSearchResults))
 
         val result =
             appFunctionMetadataReader.searchAppFunctions(
@@ -140,7 +148,10 @@ class AppFunctionMetadataReaderTest {
             .containsExactly(
                 AppFunctionMetadata.Builder(
                         STATIC_METADATA_DOCUMENT,
-                        AppFunctionPackageMetadata.create("testPackage", listOf()),
+                        AppFunctionPackageMetadata.create(
+                            "testPackage",
+                            listOf(TEST_TOP_LEVEL_DOCUMENT),
+                        ),
                     )
                     .setEnabled(true)
                     .build()
@@ -149,7 +160,10 @@ class AppFunctionMetadataReaderTest {
             .containsExactly(
                 AppFunctionMetadata.Builder(
                         STATIC_METADATA_DOCUMENT_2,
-                        AppFunctionPackageMetadata.create("testPackage", listOf()),
+                        AppFunctionPackageMetadata.create(
+                            "testPackage",
+                            listOf(TEST_TOP_LEVEL_DOCUMENT),
+                        ),
                     )
                     .setEnabled(false)
                     .build()
@@ -158,7 +172,7 @@ class AppFunctionMetadataReaderTest {
 
     @Test
     fun searchAppFunctions_multipleResults_succeedsAndSkipsInvalidResult() = doBlocking {
-        val testFutureSearchResults =
+        val testFutureStaticSearchResults =
             object : FutureSearchResults {
                 var pageNumber = -1
 
@@ -181,10 +195,18 @@ class AppFunctionMetadataReaderTest {
 
                 override fun close() {}
             }
-        val futureGlobalSearchSession = mock<FutureGlobalSearchSession>()
+        val testFutureTopLevelSearchResults =
+            object : FutureSearchResults {
+                override fun getNextPage(): AndroidFuture<List<SearchResult?>?> {
+                    return AndroidFuture.completedFuture(listOf(TEST_TOP_LEVEL_SEARCH_RESULT))
+                }
 
+                override fun close() {}
+            }
+        val futureGlobalSearchSession = mock<FutureGlobalSearchSession>()
         whenever(futureGlobalSearchSession.search(any(), any()))
-            .thenReturn(AndroidFuture.completedFuture(testFutureSearchResults))
+            .thenReturn(AndroidFuture.completedFuture(testFutureStaticSearchResults))
+            .thenReturn(AndroidFuture.completedFuture(testFutureTopLevelSearchResults))
 
         val result =
             appFunctionMetadataReader.searchAppFunctions(
@@ -198,7 +220,10 @@ class AppFunctionMetadataReaderTest {
             .containsExactly(
                 AppFunctionMetadata.Builder(
                         STATIC_METADATA_DOCUMENT,
-                        AppFunctionPackageMetadata.create("testPackage", listOf()),
+                        AppFunctionPackageMetadata.create(
+                            "testPackage",
+                            listOf(TEST_TOP_LEVEL_DOCUMENT),
+                        ),
                     )
                     .setEnabled(true)
                     .build()
@@ -211,15 +236,17 @@ class AppFunctionMetadataReaderTest {
         whenever(metadataCache.isDynamicFunction(any(), any(), any())).thenReturn(true)
         whenever(dynamicRegistry.isAppFunctionRegistered(any(), any(), any())).thenReturn(false)
 
+        val packageMetadata = AppFunctionPackageMetadata.create("testPackage", listOf())
         val result =
-            appFunctionMetadataReader.buildAppFunctionMetadata(TEST_SEARCH_RESULT_VALID_DISABLED, 0)
+            appFunctionMetadataReader.buildAppFunctionMetadata(
+                TEST_SEARCH_RESULT_VALID_DISABLED,
+                packageMetadata,
+                0,
+            )
 
         assertThat(result)
             .isEqualTo(
-                AppFunctionMetadata.Builder(
-                        STATIC_METADATA_DOCUMENT,
-                        AppFunctionPackageMetadata.create("testPackage", listOf()),
-                    )
+                AppFunctionMetadata.Builder(STATIC_METADATA_DOCUMENT, packageMetadata)
                     .setEnabled(false)
                     .build()
             )
@@ -230,14 +257,17 @@ class AppFunctionMetadataReaderTest {
         whenever(metadataCache.isDynamicFunction(any(), any(), any())).thenReturn(true)
         whenever(dynamicRegistry.isAppFunctionRegistered(any(), any(), any())).thenReturn(false)
 
-        val result = appFunctionMetadataReader.buildAppFunctionMetadata(TEST_SEARCH_RESULT_VALID, 0)
+        val packageMetadata = AppFunctionPackageMetadata.create("testPackage", listOf())
+        val result =
+            appFunctionMetadataReader.buildAppFunctionMetadata(
+                TEST_SEARCH_RESULT_VALID,
+                packageMetadata,
+                0,
+            )
 
         assertThat(result)
             .isEqualTo(
-                AppFunctionMetadata.Builder(
-                        STATIC_METADATA_DOCUMENT,
-                        AppFunctionPackageMetadata.create("testPackage", listOf()),
-                    )
+                AppFunctionMetadata.Builder(STATIC_METADATA_DOCUMENT, packageMetadata)
                     .setEnabled(false)
                     .build()
             )
@@ -248,15 +278,17 @@ class AppFunctionMetadataReaderTest {
         whenever(metadataCache.isDynamicFunction(any(), any(), any())).thenReturn(true)
         whenever(dynamicRegistry.isAppFunctionRegistered(any(), any(), any())).thenReturn(true)
 
+        val packageMetadata = AppFunctionPackageMetadata.create("testPackage", listOf())
         val result =
-            appFunctionMetadataReader.buildAppFunctionMetadata(TEST_SEARCH_RESULT_VALID_DISABLED, 0)
+            appFunctionMetadataReader.buildAppFunctionMetadata(
+                TEST_SEARCH_RESULT_VALID_DISABLED,
+                packageMetadata,
+                0,
+            )
 
         assertThat(result)
             .isEqualTo(
-                AppFunctionMetadata.Builder(
-                        STATIC_METADATA_DOCUMENT,
-                        AppFunctionPackageMetadata.create("testPackage", listOf()),
-                    )
+                AppFunctionMetadata.Builder(STATIC_METADATA_DOCUMENT, packageMetadata)
                     .setEnabled(false)
                     .build()
             )
@@ -267,14 +299,17 @@ class AppFunctionMetadataReaderTest {
         whenever(metadataCache.isDynamicFunction(any(), any(), any())).thenReturn(true)
         whenever(dynamicRegistry.isAppFunctionRegistered(any(), any(), any())).thenReturn(true)
 
-        val result = appFunctionMetadataReader.buildAppFunctionMetadata(TEST_SEARCH_RESULT_VALID, 0)
+        val packageMetadata = AppFunctionPackageMetadata.create("testPackage", listOf())
+        val result =
+            appFunctionMetadataReader.buildAppFunctionMetadata(
+                TEST_SEARCH_RESULT_VALID,
+                packageMetadata,
+                0,
+            )
 
         assertThat(result)
             .isEqualTo(
-                AppFunctionMetadata.Builder(
-                        STATIC_METADATA_DOCUMENT,
-                        AppFunctionPackageMetadata.create("testPackage", listOf()),
-                    )
+                AppFunctionMetadata.Builder(STATIC_METADATA_DOCUMENT, packageMetadata)
                     .setEnabled(true)
                     .build()
             )
@@ -284,14 +319,17 @@ class AppFunctionMetadataReaderTest {
     fun buildAppFunctionMetadata_staticAppFunctionEnabled() {
         whenever(metadataCache.isDynamicFunction(any(), any(), any())).thenReturn(false)
 
-        val result = appFunctionMetadataReader.buildAppFunctionMetadata(TEST_SEARCH_RESULT_VALID, 0)
+        val packageMetadata = AppFunctionPackageMetadata.create("testPackage", listOf())
+        val result =
+            appFunctionMetadataReader.buildAppFunctionMetadata(
+                TEST_SEARCH_RESULT_VALID,
+                packageMetadata,
+                0,
+            )
 
         assertThat(result)
             .isEqualTo(
-                AppFunctionMetadata.Builder(
-                        STATIC_METADATA_DOCUMENT,
-                        AppFunctionPackageMetadata.create("testPackage", listOf()),
-                    )
+                AppFunctionMetadata.Builder(STATIC_METADATA_DOCUMENT, packageMetadata)
                     .setEnabled(false)
                     .build()
             )
@@ -301,15 +339,17 @@ class AppFunctionMetadataReaderTest {
     fun buildAppFunctionMetadata_staticAppFunctionDisabled() {
         whenever(metadataCache.isDynamicFunction(any(), any(), any())).thenReturn(false)
 
+        val packageMetadata = AppFunctionPackageMetadata.create("testPackage", listOf())
         val result =
-            appFunctionMetadataReader.buildAppFunctionMetadata(TEST_SEARCH_RESULT_VALID_2, 0)
+            appFunctionMetadataReader.buildAppFunctionMetadata(
+                TEST_SEARCH_RESULT_VALID_2,
+                packageMetadata,
+                0,
+            )
 
         assertThat(result)
             .isEqualTo(
-                AppFunctionMetadata.Builder(
-                        STATIC_METADATA_DOCUMENT_2,
-                        AppFunctionPackageMetadata.create("testPackage", listOf()),
-                    )
+                AppFunctionMetadata.Builder(STATIC_METADATA_DOCUMENT_2, packageMetadata)
                     .setEnabled(true)
                     .build()
             )
@@ -317,9 +357,12 @@ class AppFunctionMetadataReaderTest {
 
     @Test
     fun buildAppFunctionMetadata_noRuntimeMetadata_returnsNull() {
+        val packageMetadata = AppFunctionPackageMetadata.create("testPackage", listOf())
+
         val result =
             appFunctionMetadataReader.buildAppFunctionMetadata(
                 TEST_SEARCH_RESULT_MISSING_RUNTIME_METADATA,
+                packageMetadata,
                 0,
             )
 
@@ -335,31 +378,9 @@ class AppFunctionMetadataReaderTest {
                 .addJoinedResult(JOINED_RESULT)
                 .build()
 
-        val result = appFunctionMetadataReader.buildAppFunctionMetadata(searchResult, 0)
-
-        assertThat(result).isNull()
-    }
-
-    @Test
-    fun buildAppFunctionMetadata_missingPackageName_returnsNull() {
-        val runtimeMetadataDocumentNoPackageName =
-            GenericDocument.Builder<GenericDocument.Builder<*>>("", "", "")
-                .setPropertyLong(
-                    PROPERTY_ENABLED,
-                    AppFunctionManager.APP_FUNCTION_STATE_DEFAULT.toLong(),
-                )
-                .build()
-        val joinedResultNoPackageName =
-            SearchResult.Builder("", "")
-                .setGenericDocument(runtimeMetadataDocumentNoPackageName)
-                .build()
-        val searchResult =
-            SearchResult.Builder("", "")
-                .setGenericDocument(STATIC_METADATA_DOCUMENT)
-                .addJoinedResult(joinedResultNoPackageName)
-                .build()
-
-        val result = appFunctionMetadataReader.buildAppFunctionMetadata(searchResult, 0)
+        val packageMetadata = AppFunctionPackageMetadata.create("testPackage", listOf())
+        val result =
+            appFunctionMetadataReader.buildAppFunctionMetadata(searchResult, packageMetadata, 0)
 
         assertThat(result).isNull()
     }
@@ -389,6 +410,7 @@ class AppFunctionMetadataReaderTest {
                     "testPackage/testFunctionId",
                     "",
                 )
+                .setPropertyString(PROPERTY_PACKAGE_NAME, "testPackage")
                 .setPropertyString(PROPERTY_SCHEMA_CATEGORY, "testCategory")
                 .setPropertyString(PROPERTY_SCHEMA_NAME, "testName")
                 .setPropertyLong(PROPERTY_SCHEMA_VERSION, 1L)
@@ -403,6 +425,7 @@ class AppFunctionMetadataReaderTest {
                     "testPackage/testFunctionId2",
                     "",
                 )
+                .setPropertyString(PROPERTY_PACKAGE_NAME, "testPackage")
                 .setPropertyString(PROPERTY_SCHEMA_CATEGORY, "testCategory")
                 .setPropertyString(PROPERTY_SCHEMA_NAME, "testName")
                 .setPropertyLong(PROPERTY_SCHEMA_VERSION, 1L)
@@ -445,6 +468,17 @@ class AppFunctionMetadataReaderTest {
                 .setGenericDocument(STATIC_METADATA_DOCUMENT_2)
                 .addJoinedResult(JOINED_RESULT)
                 .build()
+
+        val TEST_TOP_LEVEL_DOCUMENT =
+            GenericDocument.Builder<GenericDocument.Builder<*>>(
+                    "",
+                    "testPackage/testTopLevelDocument",
+                    "",
+                )
+                .setPropertyString("customTopLevelProperty", "value1")
+                .build()
+        val TEST_TOP_LEVEL_SEARCH_RESULT =
+            SearchResult.Builder("", "").setGenericDocument(TEST_TOP_LEVEL_DOCUMENT).build()
         val TEST_SEARCH_RESULT_VALID_DISABLED =
             SearchResult.Builder("", "")
                 .setGenericDocument(STATIC_METADATA_DOCUMENT)

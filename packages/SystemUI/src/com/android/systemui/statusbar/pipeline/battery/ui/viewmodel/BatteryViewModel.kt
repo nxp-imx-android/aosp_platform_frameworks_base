@@ -29,7 +29,6 @@ import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.res.R
-import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 import com.android.systemui.statusbar.pipeline.battery.domain.interactor.BatteryAttributionModel.Charging
 import com.android.systemui.statusbar.pipeline.battery.domain.interactor.BatteryAttributionModel.Defend
 import com.android.systemui.statusbar.pipeline.battery.domain.interactor.BatteryAttributionModel.PowerSave
@@ -305,11 +304,7 @@ sealed class BatteryViewModel(
          * icon properly scales when the font size changes (consistent with other status bar icons)
          */
         fun getStatusBarBatteryHeight(context: Context): TextUnit {
-            return if (StatusBarConnectedDisplays.isEnabled) {
-                (13 * getScaleFactor(context)).sp
-            } else {
-                13.sp
-            }
+            return (13 * getScaleFactor(context)).sp
         }
 
         /**

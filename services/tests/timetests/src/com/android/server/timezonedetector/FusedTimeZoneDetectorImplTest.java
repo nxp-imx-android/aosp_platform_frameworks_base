@@ -50,6 +50,8 @@ import android.app.timezonedetector.TelephonyTimeZoneSuggestion;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.os.HandlerThread;
+import android.platform.test.annotations.EnableFlags;
+import android.platform.test.flag.junit.SetFlagsRule;
 import android.service.timezone.TimeZoneProviderStatus;
 import android.util.IndentingPrintWriter;
 
@@ -57,8 +59,9 @@ import com.android.server.SystemTimeZone.TimeZoneConfidence;
 import com.android.server.timezonedetector.ftzd.FusedSignals;
 
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -74,7 +77,13 @@ import java.util.Set;
 import java.util.TimeZone;
 
 @RunWith(MockitoJUnitRunner.class)
+@EnableFlags({
+    android.timezone.flags.Flags.FLAG_ENABLE_TIME_ZONE_TRANSITION_TELEMETRY_LOGGING,
+    android.timezone.flags.Flags.FLAG_ENABLE_PERMANENT_TIME_ZONE_CORRECTNESS_TELEMETRY_LOGGING
+})
 public class FusedTimeZoneDetectorImplTest {
+    @ClassRule public static final SetFlagsRule.ClassRule mClassRule = new SetFlagsRule.ClassRule();
+    @Rule public final SetFlagsRule mSetFlagsRule = mClassRule.createSetFlagsRule();
 
     public static final TimeZoneProviderStatus ARBITRARY_PROVIDER_STATUS =
             new TimeZoneProviderStatus.Builder()

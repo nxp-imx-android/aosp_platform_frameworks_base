@@ -143,8 +143,12 @@ public class DisplayModeFactory {
      */
     @SuppressWarnings("MixedMutabilityReturnType")
     static List<DisplayModeRecord> createAnisotropyCorrectedModes(List<DisplayModeRecord> records,
-            SparseArray<SurfaceControl.DisplayMode> modeIdToSfMode) {
-        int modeFlag = Display.Mode.FLAG_SIZE_OVERRIDE | Display.Mode.FLAG_ANISOTROPY_CORRECTION;
+            SparseArray<SurfaceControl.DisplayMode> modeIdToSfMode, boolean sizeOverrideEnabled) {
+        int modeFlag = Display.Mode.FLAG_ANISOTROPY_CORRECTION;
+
+        if (sizeOverrideEnabled) {
+            modeFlag |= Display.Mode.FLAG_SIZE_OVERRIDE;
+        }
 
         // used for filtering anisotropic modes with size similar to isotropic
         List<Display.Mode> isotropicModes = new ArrayList<>();

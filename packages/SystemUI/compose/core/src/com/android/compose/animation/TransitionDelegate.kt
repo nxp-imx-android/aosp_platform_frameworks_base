@@ -131,7 +131,7 @@ class TransitionDelegate(
     fun dialogController(cuj: DialogCuj?): DialogTransitionAnimator.Controller {
         return object : DialogTransitionAnimator.Controller {
             override val viewRoot: ViewRootImpl? = composeViewRoot.viewRootImpl
-            override val sourceIdentity: Any = this@TransitionDelegate
+            override val dialogIdentity: Any = this@TransitionDelegate
             override val cuj: DialogCuj? = cuj
 
             override fun startDrawingInOverlayOf(viewGroup: ViewGroup) {

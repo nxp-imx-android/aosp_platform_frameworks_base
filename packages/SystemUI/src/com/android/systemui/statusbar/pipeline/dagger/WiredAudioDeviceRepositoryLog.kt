@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 The Android Open Source Project
+ * Copyright (C) 2026 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,13 @@
  * limitations under the License.
  */
 
-package com.android.internal.inputmethod;
+package com.android.systemui.statusbar.pipeline.dagger
 
-parcelable InputMethodSubtypeHandle;
+import com.android.systemui.statusbar.pipeline.audio.data.repository.WiredAudioDeviceRepository
+import javax.inject.Qualifier
+
+/** Logs for [WiredAudioDeviceRepository] */
+@Qualifier
+@MustBeDocumented
+@Retention(AnnotationRetention.RUNTIME)
+annotation class WiredAudioDeviceRepositoryLog

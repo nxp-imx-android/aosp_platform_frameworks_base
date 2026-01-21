@@ -37,13 +37,12 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Default
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
 import com.android.systemui.res.R
-import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 import com.android.systemui.statusbar.layout.StatusBarContentInsetsChangedListener
 import com.android.systemui.statusbar.layout.StatusBarContentInsetsProvider
 import com.android.systemui.statusbar.window.StatusBarWindowController
 import com.android.systemui.statusbar.window.StatusBarWindowControllerStore
 import com.android.systemui.util.animation.AnimationUtil.Companion.frames
-import dagger.Lazy
+import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.assisted.Assisted
@@ -480,6 +479,12 @@ private const val RIGHT = 2
 @Module
 interface SystemEventChipAnimationControllerModule {
 
+    @Binds
+    @SysUISingleton
+    fun controller(
+        multiDisplay: MultiDisplaySystemEventChipAnimationController
+    ): SystemEventChipAnimationController
+
     companion object {
         @Provides
         @Default
@@ -496,19 +501,6 @@ interface SystemEventChipAnimationControllerModule {
                 statusBarWindowControllerStore.defaultDisplay,
                 displaySubcomponent.statusBarContentInsetsProvider,
             )
-        }
-
-        @Provides
-        @SysUISingleton
-        fun controller(
-            @Default defaultLazy: Lazy<SystemEventChipAnimationController>,
-            multiDisplayLazy: Lazy<MultiDisplaySystemEventChipAnimationController>,
-        ): SystemEventChipAnimationController {
-            return if (StatusBarConnectedDisplays.isEnabled) {
-                multiDisplayLazy.get()
-            } else {
-                defaultLazy.get()
-            }
         }
     }
 }

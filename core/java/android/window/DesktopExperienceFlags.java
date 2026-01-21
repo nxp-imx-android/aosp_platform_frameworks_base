@@ -79,10 +79,6 @@ public enum DesktopExperienceFlags {
     ENABLE_CAMERA_COMPAT_EXTERNAL_DISPLAY_ROTATION_BUGFIX(
             Flags::enableCameraCompatExternalDisplayRotationBugfix, false,
             Flags.FLAG_ENABLE_CAMERA_COMPAT_EXTERNAL_DISPLAY_ROTATION_BUGFIX),
-    ENABLE_CONNECTED_DISPLAYS_WALLPAPER(android.app.Flags::enableConnectedDisplaysWallpaper, true,
-            android.app.Flags.FLAG_ENABLE_CONNECTED_DISPLAYS_WALLPAPER),
-    ENABLE_CONNECTED_DISPLAYS_WINDOW_DRAG(Flags::enableConnectedDisplaysWindowDrag, true,
-            Flags.FLAG_ENABLE_CONNECTED_DISPLAYS_WINDOW_DRAG),
     ENABLE_DEFAULT_DESK_WITHOUT_WARMUP_MIGRATION(Flags::defaultDeskWithoutWarmupMigration, false,
             Flags.FLAG_DEFAULT_DESK_WITHOUT_WARMUP_MIGRATION),
     ENABLE_DEFAULT_DISPLAY_IN_TOPOLOGY_SWITCH(
@@ -198,8 +194,6 @@ public enum DesktopExperienceFlags {
             true, Flags.FLAG_EXCLUDE_DESK_ROOTS_FROM_DESKTOP_TASKS),
     FORM_FACTOR_BASED_DESKTOP_FIRST_SWITCH(Flags::formFactorBasedDesktopFirstSwitch, true,
             Flags.FLAG_FORM_FACTOR_BASED_DESKTOP_FIRST_SWITCH),
-    REPARENT_WINDOW_TOKEN_API(Flags::reparentWindowTokenApi, true,
-            Flags.FLAG_REPARENT_WINDOW_TOKEN_API),
     REPOSITORY_BASED_PERSISTENCE(Flags::repositoryBasedPersistence, false,
             Flags.FLAG_REPOSITORY_BASED_PERSISTENCE),
     SKIP_DEACTIVATION_OF_DESK_WITH_NOTHING_IN_FRONT(

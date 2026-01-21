@@ -22,6 +22,24 @@ import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
 import static android.content.pm.ActivityInfo.OVERRIDE_SANDBOX_VIEW_BOUNDS_APIS;
 import static android.graphics.HardwareRenderer.SYNC_CONTEXT_IS_STOPPED;
 import static android.graphics.HardwareRenderer.SYNC_LOST_SURFACE_REWARD_IF_FOUND;
+import static android.internal.perfetto.protos.Inputmethodeditor.InputMethodClientsTraceProto.ClientSideProto.IME_FOCUS_CONTROLLER;
+import static android.internal.perfetto.protos.Inputmethodeditor.InputMethodClientsTraceProto.ClientSideProto.INSETS_CONTROLLER;
+import static android.internal.perfetto.protos.Viewrootimpl.ViewRootImplProto.ADDED;
+import static android.internal.perfetto.protos.Viewrootimpl.ViewRootImplProto.APP_VISIBLE;
+import static android.internal.perfetto.protos.Viewrootimpl.ViewRootImplProto.CUR_SCROLL_Y;
+import static android.internal.perfetto.protos.Viewrootimpl.ViewRootImplProto.DISPLAY_ID;
+import static android.internal.perfetto.protos.Viewrootimpl.ViewRootImplProto.HEIGHT;
+import static android.internal.perfetto.protos.Viewrootimpl.ViewRootImplProto.IS_ANIMATING;
+import static android.internal.perfetto.protos.Viewrootimpl.ViewRootImplProto.IS_DRAWING;
+import static android.internal.perfetto.protos.Viewrootimpl.ViewRootImplProto.LAST_WINDOW_INSETS;
+import static android.internal.perfetto.protos.Viewrootimpl.ViewRootImplProto.REMOVED;
+import static android.internal.perfetto.protos.Viewrootimpl.ViewRootImplProto.SCROLL_Y;
+import static android.internal.perfetto.protos.Viewrootimpl.ViewRootImplProto.SOFT_INPUT_MODE;
+import static android.internal.perfetto.protos.Viewrootimpl.ViewRootImplProto.VIEW;
+import static android.internal.perfetto.protos.Viewrootimpl.ViewRootImplProto.VISIBLE_RECT;
+import static android.internal.perfetto.protos.Viewrootimpl.ViewRootImplProto.WIDTH;
+import static android.internal.perfetto.protos.Viewrootimpl.ViewRootImplProto.WINDOW_ATTRIBUTES;
+import static android.internal.perfetto.protos.Viewrootimpl.ViewRootImplProto.WIN_FRAME;
 import static android.os.Trace.TRACE_TAG_VIEW;
 import static android.util.SequenceUtils.getInitSeq;
 import static android.util.SequenceUtils.isIncomingSeqStale;
@@ -59,22 +77,6 @@ import static android.view.View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
 import static android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
 import static android.view.View.SYSTEM_UI_FLAG_LOW_PROFILE;
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
-import static android.internal.perfetto.protos.Viewrootimpl.ViewRootImplProto.ADDED;
-import static android.internal.perfetto.protos.Viewrootimpl.ViewRootImplProto.APP_VISIBLE;
-import static android.internal.perfetto.protos.Viewrootimpl.ViewRootImplProto.CUR_SCROLL_Y;
-import static android.internal.perfetto.protos.Viewrootimpl.ViewRootImplProto.DISPLAY_ID;
-import static android.internal.perfetto.protos.Viewrootimpl.ViewRootImplProto.HEIGHT;
-import static android.internal.perfetto.protos.Viewrootimpl.ViewRootImplProto.IS_ANIMATING;
-import static android.internal.perfetto.protos.Viewrootimpl.ViewRootImplProto.IS_DRAWING;
-import static android.internal.perfetto.protos.Viewrootimpl.ViewRootImplProto.LAST_WINDOW_INSETS;
-import static android.internal.perfetto.protos.Viewrootimpl.ViewRootImplProto.REMOVED;
-import static android.internal.perfetto.protos.Viewrootimpl.ViewRootImplProto.SCROLL_Y;
-import static android.internal.perfetto.protos.Viewrootimpl.ViewRootImplProto.SOFT_INPUT_MODE;
-import static android.internal.perfetto.protos.Viewrootimpl.ViewRootImplProto.VIEW;
-import static android.internal.perfetto.protos.Viewrootimpl.ViewRootImplProto.VISIBLE_RECT;
-import static android.internal.perfetto.protos.Viewrootimpl.ViewRootImplProto.WIDTH;
-import static android.internal.perfetto.protos.Viewrootimpl.ViewRootImplProto.WINDOW_ATTRIBUTES;
-import static android.internal.perfetto.protos.Viewrootimpl.ViewRootImplProto.WIN_FRAME;
 import static android.view.ViewTreeObserver.InternalInsetsInfo.TOUCHABLE_INSETS_REGION;
 import static android.view.WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS;
 import static android.view.WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS;
@@ -130,10 +132,8 @@ import static android.view.flags.Flags.toolkitFrameRateTouchBoost25q1;
 import static android.view.flags.Flags.toolkitInitialTouchBoost;
 import static android.view.flags.Flags.toolkitMetricsForFrameRateDecision;
 import static android.view.flags.Flags.toolkitSetFrameRateReadOnly;
-import static android.internal.perfetto.protos.Inputmethodeditor.InputMethodClientsTraceProto.ClientSideProto.IME_FOCUS_CONTROLLER;
-import static android.internal.perfetto.protos.Inputmethodeditor.InputMethodClientsTraceProto.ClientSideProto.INSETS_CONTROLLER;
-import static android.window.DesktopModeFlags.ENABLE_CAPTION_COMPAT_INSET_FORCE_CONSUMPTION;
 import static android.window.DesktopExperienceFlags.DEFER_RESUME_FOCUS_IN_NON_FOCUSED_WINDOW;
+import static android.window.DesktopModeFlags.ENABLE_CAPTION_COMPAT_INSET_FORCE_CONSUMPTION;
 
 import static com.android.graphics.surfaceflinger.flags.Flags.setClientDrawnCornerRadii;
 import static com.android.internal.annotations.VisibleForTesting.Visibility.PACKAGE;
@@ -293,6 +293,8 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.graphics.drawable.BackgroundBlurDrawable;
 import com.android.internal.inputmethod.ImeTracing;
 import com.android.internal.inputmethod.InputMethodDebug;
+import com.android.internal.jank.Cuj;
+import com.android.internal.jank.InteractionJankMonitor;
 import com.android.internal.os.IResultReceiver;
 import com.android.internal.os.SomeArgs;
 import com.android.internal.policy.DecorView;
@@ -323,6 +325,7 @@ import java.util.Queue;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
@@ -472,6 +475,10 @@ public final class ViewRootImpl implements ViewParent,
     private static final int IDLE_TIME_MILLIS = 750;
 
     private static final long NANOS_PER_MILLI = 1_000_000;
+
+    // Timeout used for the drag-resizing CUJ, this is longer than the default timeout to avoid
+    // timing out in the middle of the action.
+    private static final long LONG_CUJ_TIMEOUT_MS = TimeUnit.SECONDS.toMillis(10L);
 
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
     static final ThreadLocal<HandlerActionQueue> sRunQueues = new ThreadLocal<HandlerActionQueue>();
@@ -668,6 +675,7 @@ public final class ViewRootImpl implements ViewParent,
     private boolean mUseMTRenderer;
     private boolean mPendingDragResizing;
     private boolean mDragResizing;
+    private boolean mDragResizingCujBegun;
     private boolean mInvalidateRootRequested;
     private int mCanvasOffsetX;
     private int mCanvasOffsetY;
@@ -12550,6 +12558,12 @@ public final class ViewRootImpl implements ViewParent,
     private void startDragResizing() {
         if (!mDragResizing) {
             mDragResizing = true;
+            if (mWindowAttributes.type == TYPE_BASE_APPLICATION && mView != null) {
+                mDragResizingCujBegun = InteractionJankMonitor.getInstance().begin(
+                        InteractionJankMonitor.Configuration.Builder
+                                .withView(Cuj.CUJ_CLIENT_DRAG_RESIZING, mView)
+                                .setTimeout(LONG_CUJ_TIMEOUT_MS));
+            }
             if (mUseMTRenderer) {
                 for (int i = mWindowCallbacks.size() - 1; i >= 0; i--) {
                     mWindowCallbacks.get(i).onWindowDragResizeStart();
@@ -12565,6 +12579,10 @@ public final class ViewRootImpl implements ViewParent,
     private void endDragResizing() {
         if (mDragResizing) {
             mDragResizing = false;
+            if (mDragResizingCujBegun) {
+                mDragResizingCujBegun = false;
+                InteractionJankMonitor.getInstance().end(Cuj.CUJ_CLIENT_DRAG_RESIZING);
+            }
             if (mUseMTRenderer) {
                 for (int i = mWindowCallbacks.size() - 1; i >= 0; i--) {
                     mWindowCallbacks.get(i).onWindowDragResizeEnd();

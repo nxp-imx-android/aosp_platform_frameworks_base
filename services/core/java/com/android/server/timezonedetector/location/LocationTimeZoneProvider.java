@@ -365,23 +365,20 @@ abstract class LocationTimeZoneProvider implements Dumpable {
         }
 
         private static String prettyPrintStateEnum(@ProviderStateEnum int state) {
-            switch (state) {
-                case PROVIDER_STATE_STOPPED:
-                    return "Stopped (" + PROVIDER_STATE_STOPPED + ")";
-                case PROVIDER_STATE_STARTED_INITIALIZING:
-                    return "Started initializing (" + PROVIDER_STATE_STARTED_INITIALIZING + ")";
-                case PROVIDER_STATE_STARTED_CERTAIN:
-                    return "Started certain (" + PROVIDER_STATE_STARTED_CERTAIN + ")";
-                case PROVIDER_STATE_STARTED_UNCERTAIN:
-                    return "Started uncertain (" + PROVIDER_STATE_STARTED_UNCERTAIN + ")";
-                case PROVIDER_STATE_PERM_FAILED:
-                    return "Perm failure (" + PROVIDER_STATE_PERM_FAILED + ")";
-                case PROVIDER_STATE_DESTROYED:
-                    return "Destroyed (" + PROVIDER_STATE_DESTROYED + ")";
-                case PROVIDER_STATE_UNKNOWN:
-                default:
-                    return "Unknown (" + state + ")";
-            }
+            return switch (state) {
+                case PROVIDER_STATE_STOPPED -> "Stopped (" + PROVIDER_STATE_STOPPED + ")";
+                case PROVIDER_STATE_STARTED_INITIALIZING ->
+                        "Started initializing (" + PROVIDER_STATE_STARTED_INITIALIZING + ")";
+                case PROVIDER_STATE_STARTED_CERTAIN ->
+                        "Started certain (" + PROVIDER_STATE_STARTED_CERTAIN + ")";
+                case PROVIDER_STATE_STARTED_UNCERTAIN ->
+                        "Started uncertain (" + PROVIDER_STATE_STARTED_UNCERTAIN + ")";
+                case PROVIDER_STATE_PERM_FAILED ->
+                        "Perm failure (" + PROVIDER_STATE_PERM_FAILED + ")";
+                case PROVIDER_STATE_DESTROYED -> "Destroyed (" + PROVIDER_STATE_DESTROYED + ")";
+                case PROVIDER_STATE_UNKNOWN -> "Unknown (" + state + ")";
+                default -> "Unknown (" + state + ")";
+            };
         }
     }
 

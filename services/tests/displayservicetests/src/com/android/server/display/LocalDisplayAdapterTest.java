@@ -52,6 +52,8 @@ import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.util.Spline;
 import android.view.Display;
@@ -65,6 +67,7 @@ import androidx.test.filters.SmallTest;
 import androidx.test.runner.AndroidJUnit4;
 
 import com.android.dx.mockito.inline.extended.StaticMockitoSession;
+import com.android.graphics.surfaceflinger.flags.Flags;
 import com.android.internal.R;
 import com.android.internal.util.test.LocalServiceKeeperRule;
 import com.android.server.display.LocalDisplayAdapter.BacklightAdapter;
@@ -1715,7 +1718,7 @@ public class LocalDisplayAdapterTest {
 
 
     @Test
-    public void testDefaultDisplayMode_withSyntheticModes_defaultModeDoesNotChange()
+    public void testDefaultDisplayMode_withArrRenderFlag_defaultModeChanges()
             throws Exception {
         SurfaceControl.DisplayMode displayMode1 = createFakeDisplayMode(0, 1920, 1080, 100f, 60f);
         // system preferred mode
@@ -1750,11 +1753,12 @@ public class LocalDisplayAdapterTest {
         displayDeviceInfo = mListener.addedDisplays.get(
                 0).getDisplayDeviceInfoLocked();
         defaultMode = getModeById(displayDeviceInfo, displayDeviceInfo.defaultModeId);
-        assertThat(matches(defaultMode, displayMode1)).isTrue();
+        assertThat(matches(defaultMode, displayMode3)).isTrue();
     }
 
 
     @Test
+    @DisableFlags(Flags.FLAG_SYNCED_RESOLUTION_SWITCH)
     public void testDefaultDisplayMode_sizeOverride_defaultModeDoesNotChange()
             throws Exception {
         SurfaceControl.DisplayMode displayMode1 = createFakeDisplayMode(0, 1920, 1080, 60f);
@@ -1791,6 +1795,86 @@ public class LocalDisplayAdapterTest {
                 0).getDisplayDeviceInfoLocked();
         defaultMode = getModeById(displayDeviceInfo, displayDeviceInfo.defaultModeId);
         assertThat(matches(defaultMode, displayMode1)).isTrue();
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_SYNCED_RESOLUTION_SWITCH)
+    public void testDefaultDisplayMode_defaultModeChanges()
+            throws Exception {
+        SurfaceControl.DisplayMode displayMode1 = createFakeDisplayMode(0, 1920, 1080, 60f);
+        // system preferred mode
+        SurfaceControl.DisplayMode displayMode2 = createFakeDisplayMode(1, 3840, 2160, 60f);
+        // user preferred mode
+        SurfaceControl.DisplayMode displayMode3 = createFakeDisplayMode(2, 1920, 1080, 30f);
+
+        SurfaceControl.DisplayMode[] modes =
+                new SurfaceControl.DisplayMode[]{displayMode1, displayMode2, displayMode3};
+        FakeDisplay display = new FakeDisplay(PORT_A, modes, 0, 1);
+        setUpDisplay(display);
+        display.info.isInternal = false;
+        updateAvailableDisplays();
+        mAdapter.registerLocked();
+        waitForHandlerToComplete(mHandler, HANDLER_WAIT_MS);
+
+        assertThat(mListener.addedDisplays.size()).isEqualTo(1);
+        assertThat(mListener.changedDisplays).isEmpty();
+
+        DisplayDeviceInfo displayDeviceInfo = mListener.addedDisplays.get(
+                0).getDisplayDeviceInfoLocked();
+        assertThat(displayDeviceInfo.supportedModes.length).isEqualTo(modes.length);
+        Display.Mode defaultMode = getModeById(displayDeviceInfo, displayDeviceInfo.defaultModeId);
+        assertThat(matches(defaultMode, displayMode1)).isTrue();
+
+        // Set the user preferred display mode
+        mListener.addedDisplays.get(0).setUserPreferredDisplayModeLocked(
+                new Display.Mode(
+                        displayMode3.width, displayMode3.height, displayMode3.peakRefreshRate));
+        updateAvailableDisplays();
+        waitForHandlerToComplete(mHandler, HANDLER_WAIT_MS);
+        displayDeviceInfo = mListener.addedDisplays.get(
+                0).getDisplayDeviceInfoLocked();
+        defaultMode = getModeById(displayDeviceInfo, displayDeviceInfo.defaultModeId);
+        assertThat(matches(defaultMode, displayMode3)).isTrue();
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_SYNCED_RESOLUTION_SWITCH)
+    public void testDefaultDisplayMode_anisotropyCorrected_defaultModeChanges()
+            throws Exception {
+        SurfaceControl.DisplayMode displayMode1 = createFakeDisplayMode(0, 1920, 1080, 60f);
+        // system preferred mode
+        SurfaceControl.DisplayMode displayMode2 = createFakeDisplayMode(1, 3840, 2160, 60f);
+        // anisotropic mode, corresponding isotropic (upscaled) (200 x 100)@60
+        SurfaceControl.DisplayMode displayMode3 = TestUtilsKt
+                .createSfDisplayMode(2, 100, 100, 1f, 2f, 60f);
+
+        SurfaceControl.DisplayMode[] modes =
+                new SurfaceControl.DisplayMode[]{displayMode1, displayMode2, displayMode3};
+        FakeDisplay display = new FakeDisplay(PORT_A, modes, 0, 1);
+        setUpDisplay(display);
+        display.info.isInternal = false;
+        updateAvailableDisplays();
+        mAdapter.registerLocked();
+        waitForHandlerToComplete(mHandler, HANDLER_WAIT_MS);
+
+        assertThat(mListener.addedDisplays.size()).isEqualTo(1);
+        assertThat(mListener.changedDisplays).isEmpty();
+
+        DisplayDeviceInfo displayDeviceInfo = mListener.addedDisplays.get(
+                0).getDisplayDeviceInfoLocked();
+        assertThat(displayDeviceInfo.supportedModes.length).isEqualTo(modes.length + 1);
+        Display.Mode defaultMode = getModeById(displayDeviceInfo, displayDeviceInfo.defaultModeId);
+        assertThat(matches(defaultMode, displayMode1)).isTrue();
+
+        // Set the user preferred display mode
+        mListener.addedDisplays.get(0).setUserPreferredDisplayModeLocked(
+                new Display.Mode(200, 100, 60f));
+        updateAvailableDisplays();
+        waitForHandlerToComplete(mHandler, HANDLER_WAIT_MS);
+        displayDeviceInfo = mListener.addedDisplays.get(
+                0).getDisplayDeviceInfoLocked();
+        defaultMode = getModeById(displayDeviceInfo, displayDeviceInfo.defaultModeId);
+        assertThat(matches(defaultMode, displayMode3)).isTrue();
     }
 
     private void initDisplayOffloadSession() {

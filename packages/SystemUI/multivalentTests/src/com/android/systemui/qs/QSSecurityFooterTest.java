@@ -869,7 +869,8 @@ public class QSSecurityFooterTest extends SysuiTestCase {
         ArgumentCaptor<AlertDialog> dialogCaptor = ArgumentCaptor.forClass(AlertDialog.class);
 
         mTestableLooper.processAllMessages();
-        verify(mDialogTransitionAnimator).show(dialogCaptor.capture(), any());
+        verify(mDialogTransitionAnimator)
+                .show(dialogCaptor.capture(), any(DialogTransitionAnimator.Controller.class));
 
         AlertDialog dialog = dialogCaptor.getValue();
         dialog.create();

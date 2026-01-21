@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 The Android Open Source Project
+ * Copyright (C) 2026 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,10 @@
  * limitations under the License.
  */
 
-package com.android.systemui.screencapture.record.shared.model
+package com.android.systemui.statusbar.pipeline.audio.domain.interactor
 
-import com.android.systemui.screenrecord.ScreenRecordingAudioSource
+import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.statusbar.pipeline.audio.data.repository.wiredAudioDeviceRepository
 
-/** Models a set of parameters necessary to start a screen recording. */
-data class ScreenCaptureRecordParametersModel(
-    val audioSource: ScreenRecordingAudioSource,
-    val shouldShowTaps: Boolean,
-    val shouldShowFrontCamera: Boolean,
-)
+val Kosmos.wiredAudioDeviceInteractor: WiredAudioDeviceInteractor by
+    Kosmos.Fixture { WiredAudioDeviceInteractor(repo = wiredAudioDeviceRepository) }

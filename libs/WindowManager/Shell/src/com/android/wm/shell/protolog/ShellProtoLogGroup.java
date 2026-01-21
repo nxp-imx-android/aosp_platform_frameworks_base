@@ -53,6 +53,7 @@ public enum ShellProtoLogGroup implements IProtoLogGroup {
     WM_SHELL_BUBBLES(Consts.ENABLE_DEBUG, true, Consts.TAG_WM_BUBBLES),
     WM_SHELL_COMPAT_UI(Consts.ENABLE_DEBUG, true, Consts.TAG_WM_COMPAT_UI),
     WM_SHELL_APP_COMPAT(Consts.ENABLE_DEBUG, true, Consts.TAG_WM_APP_COMPAT),
+    WM_SHELL_DESKTOP_AI(Consts.ENABLE_DEBUG, true, Consts.TAG_WM_DESKTOP_AI),
     WM_SHELL_APP_HANDLES(Consts.ENABLE_DEBUG, false, Consts.TAG_WM_APP_HANDLES),
     WM_SHELL_WINDOWING_LAYER(Consts.ENABLE_DEBUG, false, Consts.TAG_WM_WINDOWING_LAYER),
     WM_SHELL_PACKAGE_UPDATE(Consts.ENABLE_DEBUG, true, Consts.TAG_WM_PACKAGE_UPDATE),
@@ -107,6 +108,7 @@ public enum ShellProtoLogGroup implements IProtoLogGroup {
         private static final String TAG_WM_WINDOW_DECORATION = "ShellWindowDecoration";
         private static final String TAG_WM_COMPAT_UI = "CompatUi";
         private static final String TAG_WM_APP_COMPAT = "AppCompat";
+        private static final String TAG_WM_DESKTOP_AI = "DesktopAi";
         private static final String TAG_WM_BUBBLES = "Bubbles";
         private static final String TAG_WM_APP_HANDLES = "AppHandles";
         private static final String TAG_WM_WINDOWING_LAYER = "WindowingLayer";

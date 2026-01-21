@@ -46,7 +46,6 @@ import com.android.systemui.shade.data.repository.fakeShadeDisplaysRepository
 import com.android.systemui.shade.domain.interactor.shadeDisplaysInteractor
 import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.shade.shadeTestUtil
-import com.android.systemui.shared.Flags.FLAG_STATUS_BAR_CONNECTED_DISPLAYS
 import com.android.systemui.statusbar.FakeStatusBarStateController
 import com.android.systemui.statusbar.StatusBarState.KEYGUARD
 import com.android.systemui.statusbar.StatusBarState.SHADE
@@ -345,7 +344,7 @@ class PrivacyDotViewControllerTest(flags: FlagsParameterization) : SysuiTestCase
     }
 
     @Test
-    @EnableFlags(FLAG_STATUS_BAR_CONNECTED_DISPLAYS, FLAG_SHADE_WINDOW_GOES_AROUND)
+    @EnableFlags(FLAG_SHADE_WINDOW_GOES_AROUND)
     fun init_shadeExpandedOnDifferentDisplay_doesNotChangeShadeExpandedState() =
         kosmos.runTest {
             fakeShadeDisplaysRepository.setDisplayId(Display.DEFAULT_DISPLAY)
@@ -360,7 +359,7 @@ class PrivacyDotViewControllerTest(flags: FlagsParameterization) : SysuiTestCase
         }
 
     @Test
-    @EnableFlags(FLAG_STATUS_BAR_CONNECTED_DISPLAYS, FLAG_SHADE_WINDOW_GOES_AROUND)
+    @EnableFlags(FLAG_SHADE_WINDOW_GOES_AROUND)
     fun init_shadeExpandedOnThisDisplay_doesChangeShadeExpandedState() =
         kosmos.runTest {
             fakeShadeDisplaysRepository.setDisplayId(Display.DEFAULT_DISPLAY)

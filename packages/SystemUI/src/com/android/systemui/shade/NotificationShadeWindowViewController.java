@@ -68,7 +68,6 @@ import com.android.systemui.statusbar.NotificationInsetsController;
 import com.android.systemui.statusbar.NotificationShadeDepthController;
 import com.android.systemui.statusbar.NotificationShadeWindowController;
 import com.android.systemui.statusbar.SysuiStatusBarStateController;
-import com.android.systemui.statusbar.core.StatusBarConnectedDisplays;
 import com.android.systemui.statusbar.notification.domain.interactor.NotificationLaunchAnimationInteractor;
 import com.android.systemui.statusbar.notification.stack.AmbientState;
 import com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayout;
@@ -760,17 +759,8 @@ public class NotificationShadeWindowViewController implements Dumpable {
         }
     }
 
-    public void setStatusBarViewController(PhoneStatusBarViewController statusBarViewController) {
-        StatusBarConnectedDisplays.assertInLegacyMode();
-        mStatusBarViewController = statusBarViewController;
-    }
-
     private PhoneStatusBarViewController statusBarViewController() {
-        if (StatusBarConnectedDisplays.isEnabled()) {
-            return mShadeStatusBarComponentsInteractor.getPhoneStatusBarViewController().getValue();
-        } else {
-            return mStatusBarViewController;
-        }
+        return mShadeStatusBarComponentsInteractor.getPhoneStatusBarViewController().getValue();
     }
 
     @VisibleForTesting

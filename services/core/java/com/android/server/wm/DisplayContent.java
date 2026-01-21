@@ -1738,15 +1738,6 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         }
         if (token.asActivityRecord() == null) {
             // Setting the mDisplayContent to the token is not needed: it is done by da.addChild
-            // below, that also calls onDisplayChanged once moved.
-            if (!Flags.reparentWindowTokenApi()) {
-                // Set displayContent for non-app token to prevent same token will add twice after
-                // onDisplayChanged.
-                // TODO: Check if it's fine that super.onDisplayChanged of WindowToken
-                //  (WindowsContainer#onDisplayChanged) may skipped when token.mDisplayContent
-                //  assigned.
-                token.mDisplayContent = this;
-            }
             // Add non-app token to container hierarchy on the display. App tokens are added through
             // the parent container managing them (e.g. Tasks).
             final DisplayArea.Tokens da = findAreaForToken(token).asTokens();

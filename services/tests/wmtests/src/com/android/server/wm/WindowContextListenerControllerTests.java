@@ -46,7 +46,6 @@ import android.app.servertransaction.WindowContextInfoChangeItem;
 import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.os.Bundle;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.view.Display;
 import android.view.DisplayInfo;
@@ -351,7 +350,6 @@ public class WindowContextListenerControllerTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_REPARENT_WINDOW_TOKEN_API)
     public void assertCallerCanReparentListener_returnsTrueWhenExpected() {
         mController.registerWindowContainerListener(mWpc, mClientToken, mContainer,
                 TYPE_APPLICATION_OVERLAY, false /* callerCanManageAppTokens */,

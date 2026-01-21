@@ -70,7 +70,7 @@ public class AppCompatCameraOverridesTest extends WindowTestsBase {
     public void testShouldRefreshActivityForCameraCompat_flagIsDisabled_returnsFalse() {
         runTestScenario((robot) -> {
             robot.conf().enableCameraCompatForceRotateTreatment(false);
-            robot.conf().enableCameraCompatSimulateRequestedOrientationTreatment(false);
+            robot.conf().enableCameraCompatSimReqOrientationTreatment(false);
             robot.activity().createActivityWithComponentInNewTask();
 
             robot.checkShouldRefreshActivityForCameraCompat(false);
@@ -128,7 +128,7 @@ public class AppCompatCameraOverridesTest extends WindowTestsBase {
     public void testShouldRefreshActivityViaPauseForCameraCompat_flagIsDisabled_returnsFalse() {
         runTestScenario((robot) -> {
             robot.conf().enableCameraCompatForceRotateTreatment(false);
-            robot.conf().enableCameraCompatSimulateRequestedOrientationTreatment(false);
+            robot.conf().enableCameraCompatSimReqOrientationTreatment(false);
             robot.activity().createActivityWithComponentInNewTask();
 
             robot.checkShouldRefreshActivityViaPauseForCameraCompat(false);
@@ -277,7 +277,7 @@ public class AppCompatCameraOverridesTest extends WindowTestsBase {
     public void testShouldApplyCameraCompatFreeformTreatment_disabledViaConfig_returnsFalse() {
         runTestScenario((robot) -> {
             robot.conf().enableCameraCompatForceRotateTreatment(true);
-            robot.conf().enableCameraCompatSimulateRequestedOrientationTreatment(false);
+            robot.conf().enableCameraCompatSimReqOrientationTreatment(false);
             robot.applyOnActivity((a) -> {
                 a.createActivityWithComponentInNewTask();
                 robot.prop().enable(PROPERTY_CAMERA_COMPAT_ALLOW_SIMULATE_REQUESTED_ORIENTATION);
@@ -293,9 +293,9 @@ public class AppCompatCameraOverridesTest extends WindowTestsBase {
     public void testShouldApplyCameraCompatTreatment_forceRotateOptedOutViaOverride_returnsFalse() {
         runTestScenario((robot) -> {
             robot.conf().enableCameraCompatForceRotateTreatment(true);
-            robot.conf().enableCameraCompatSimulateRequestedOrientationTreatment(true);
+            robot.conf().enableCameraCompatSimReqOrientationTreatment(false);
 
-            robot.prop().disable(PROPERTY_CAMERA_COMPAT_ALLOW_FORCE_ROTATION);
+            robot.prop().enable(PROPERTY_CAMERA_COMPAT_ALLOW_FORCE_ROTATION);
             robot.activity().createActivityWithComponentInNewTask();
 
             robot.checkShouldApplyFreeformTreatmentForCameraCompat(false);
@@ -309,7 +309,7 @@ public class AppCompatCameraOverridesTest extends WindowTestsBase {
     public void testShouldApplyCameraCompatTreatment_forceRotateOptedOutViaManifest_returnsFalse() {
         runTestScenario((robot) -> {
             robot.conf().enableCameraCompatForceRotateTreatment(true);
-            robot.conf().enableCameraCompatSimulateRequestedOrientationTreatment(false);
+            robot.conf().enableCameraCompatSimReqOrientationTreatment(true);
             robot.applyOnActivity((a) -> {
                 a.createActivityWithComponentInNewTask();
                 robot.prop().disable(PROPERTY_CAMERA_COMPAT_ALLOW_FORCE_ROTATION);
@@ -321,22 +321,10 @@ public class AppCompatCameraOverridesTest extends WindowTestsBase {
 
     @Test
     @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
-    public void testShouldApplyCameraCompatFreeformTreatment_enabledByShellCommand_returnsTrue() {
-        runTestScenario((robot) -> {
-            robot.activity().createActivityWithComponentInNewTask();
-
-            robot.setCameraCompatTreatmentEnabledViaShellCommand(true);
-
-            robot.checkShouldApplyFreeformTreatmentForCameraCompat(true);
-        });
-    }
-
-    @Test
-    @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
     @DisableFlags(FLAG_CAMERA_COMPAT_LANDSCAPE_CAMERA_SUPPORT)
     public void testShouldApplyCameraCompatLandscapeTreatment_flagDisabled_returnsFalse() {
         runTestScenario((robot) -> {
-            robot.conf().enableCameraCompatSimulateRequestedOrientationTreatment(true);
+            robot.conf().enableCameraCompatSimReqOrientationTreatment(true);
             robot.conf().enableCameraCompatLandscapeToPortraitTreatment(true);
             robot.activity().createActivityWithComponentInNewTask();
 
@@ -349,7 +337,7 @@ public class AppCompatCameraOverridesTest extends WindowTestsBase {
             FLAG_CAMERA_COMPAT_LANDSCAPE_CAMERA_SUPPORT})
     public void testShouldApplyCameraCompatLandscapeTreatment_disabledViaConfig_returnsFalse() {
         runTestScenario((robot) -> {
-            robot.conf().enableCameraCompatSimulateRequestedOrientationTreatment(true);
+            robot.conf().enableCameraCompatSimReqOrientationTreatment(true);
             robot.conf().enableCameraCompatLandscapeToPortraitTreatment(false);
             robot.activity().createActivityWithComponentInNewTask();
 
@@ -363,7 +351,7 @@ public class AppCompatCameraOverridesTest extends WindowTestsBase {
     @DisableCompatChanges({OVERRIDE_CAMERA_LANDSCAPE_TO_PORTRAIT})
     public void testShouldApplyCameraCompatLandscapeTreatment_perAppOverrideDisabled_returnFalse() {
         runTestScenario((robot) -> {
-            robot.conf().enableCameraCompatSimulateRequestedOrientationTreatment(true);
+            robot.conf().enableCameraCompatSimReqOrientationTreatment(true);
             robot.conf().enableCameraCompatLandscapeToPortraitTreatment(true);
             robot.activity().createActivityWithComponentInNewTask();
 
@@ -376,7 +364,7 @@ public class AppCompatCameraOverridesTest extends WindowTestsBase {
             FLAG_CAMERA_COMPAT_LANDSCAPE_CAMERA_SUPPORT})
     public void testShouldApplyCameraCompatLandscapeTreatment_manifestOptOut_returnsFalse() {
         runTestScenario((robot) -> {
-            robot.conf().enableCameraCompatSimulateRequestedOrientationTreatment(true);
+            robot.conf().enableCameraCompatSimReqOrientationTreatment(true);
             robot.conf().enableCameraCompatLandscapeToPortraitTreatment(true);
             robot.applyOnActivity((a) -> {
                 a.createActivityWithComponentInNewTask();
@@ -392,7 +380,7 @@ public class AppCompatCameraOverridesTest extends WindowTestsBase {
             FLAG_CAMERA_COMPAT_LANDSCAPE_CAMERA_SUPPORT})
     public void testShouldApplyCameraCompatLandscapeTreatment_simReqOrientDisabled_returnsFalse() {
         runTestScenario((robot) -> {
-            robot.conf().enableCameraCompatSimulateRequestedOrientationTreatment(false);
+            robot.conf().enableCameraCompatSimReqOrientationTreatment(false);
             robot.conf().enableCameraCompatLandscapeToPortraitTreatment(true);
             robot.activity().createActivityWithComponentInNewTask();
 
@@ -405,23 +393,8 @@ public class AppCompatCameraOverridesTest extends WindowTestsBase {
             FLAG_CAMERA_COMPAT_LANDSCAPE_CAMERA_SUPPORT})
     public void testShouldApplyCameraCompatLandscapeTreatment_enabled_returnsTrue() {
         runTestScenario((robot) -> {
-            robot.conf().enableCameraCompatSimulateRequestedOrientationTreatment(true);
+            robot.conf().enableCameraCompatSimReqOrientationTreatment(true);
             robot.conf().enableCameraCompatLandscapeToPortraitTreatment(true);
-            robot.activity().createActivityWithComponentInNewTask();
-
-            robot.checkShouldApplyLandscapeTreatmentForCameraCompat(true);
-        });
-    }
-
-    @Test
-    @EnableFlags(FLAG_CAMERA_COMPAT_LANDSCAPE_CAMERA_SUPPORT)
-    public void testShouldApplyCameraCompatLandscapeTreatment_forceEnabled_returnsTrue() {
-        runTestScenario((robot) -> {
-            // Run-time config is enabled.
-            robot.conf().forceEnableCameraCompatSimReqOrientation(true);
-            // Build-time configs are disabled.
-            robot.conf().enableCameraCompatLandscapeToPortraitTreatment(false);
-            robot.conf().enableCameraCompatSimulateRequestedOrientationTreatment(false);
             robot.activity().createActivityWithComponentInNewTask();
 
             robot.checkShouldApplyLandscapeTreatmentForCameraCompat(true);
@@ -442,6 +415,41 @@ public class AppCompatCameraOverridesTest extends WindowTestsBase {
             });
 
             robot.checkShouldApplyFreeformTreatmentForCameraCompat(true);
+        });
+    }
+
+    @Test
+    @EnableCompatChanges({OVERRIDE_ORIENTATION_ONLY_FOR_CAMERA})
+    public void shouldOverrideOrientationForCamera_overrideEnabled_returnsTrue() {
+        runTestScenario((robot) -> {
+            robot.activity().createActivityWithComponent();
+
+            robot.checkIsOverrideOrientationForCameraEnabled(/* expected */ true);
+        });
+    }
+
+    @Test
+    @DisableFlags(FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES)
+    @EnableCompatChanges({OVERRIDE_ORIENTATION_ONLY_FOR_CAMERA})
+    public void shouldOverrideOrientationForCamera_forceRotate_overrideEnabled_returnsTrue() {
+        runTestScenario((robot) -> {
+            robot.conf().enableCameraCompatForceRotateTreatment(true);
+            robot.activity().createActivityWithComponent();
+
+            robot.checkIsOverrideOrientationForCameraEnabled(/* expected */ true);
+        });
+    }
+
+    @Test
+    @EnableFlags({FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES,
+            FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING})
+    @EnableCompatChanges({OVERRIDE_ORIENTATION_ONLY_FOR_CAMERA})
+    public void shouldOverrideOrientationForCamera_simReqOrientation_overrideEnabled_returnsTrue() {
+        runTestScenario((robot) -> {
+            robot.conf().enableCameraCompatSimReqOrientationTreatment(true);
+            robot.activity().createActivityWithComponent();
+
+            robot.checkIsOverrideOrientationForCameraEnabled(/* expected */ true);
         });
     }
 
@@ -529,11 +537,6 @@ public class AppCompatCameraOverridesTest extends WindowTestsBase {
             spyOn(displayContent.mAppCompatCameraPolicy);
         }
 
-        void setCameraCompatTreatmentEnabledViaShellCommand(boolean enabled) {
-            activity().top().mWmService.mAppCompatConfiguration
-                    .setIsCameraCompatSimReqOrientationTreatmentForceEnabled(enabled);
-        }
-
         void checkShouldRefreshActivityForCameraCompat(boolean expected) {
             Assert.assertEquals(getAppCompatCameraOverrides()
                     .shouldRefreshActivityForCameraCompat(), expected);
@@ -563,6 +566,11 @@ public class AppCompatCameraOverridesTest extends WindowTestsBase {
         void checkIsOverrideMinAspectRatioForCameraEnabled(boolean expected) {
             Assert.assertEquals(getAppCompatCameraOverrides()
                     .isOverrideMinAspectRatioForCameraEnabled(), expected);
+        }
+
+        void checkIsOverrideOrientationForCameraEnabled(boolean expected) {
+            Assert.assertEquals(getAppCompatCameraOverrides()
+                    .isOverrideOrientationOnlyForCameraEnabled(), expected);
         }
 
         private AppCompatCameraOverrides getAppCompatCameraOverrides() {

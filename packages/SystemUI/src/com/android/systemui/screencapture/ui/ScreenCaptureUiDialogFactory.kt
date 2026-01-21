@@ -42,6 +42,7 @@ import com.android.systemui.screencapture.common.ScreenCaptureUiComponent
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiState
+import com.android.systemui.screencapture.ui.viewmodel.ScreenCaptureUiDialogViewModel
 import com.android.systemui.screencapture.ui.viewmodel.ScreenCaptureUiViewModel
 import com.android.systemui.statusbar.phone.EdgeToEdgeDialogDelegate
 import com.android.systemui.statusbar.phone.SystemUIDialog
@@ -57,6 +58,7 @@ class ScreenCaptureUiDialogFactory
 @Inject
 constructor(
     @Application private val appContext: Context,
+    private val dialogViewModel: ScreenCaptureUiDialogViewModel,
     private val viewModelFactory: ScreenCaptureUiViewModel.Factory,
     private val componentBuilders:
         Map<
@@ -80,14 +82,18 @@ constructor(
                         /* options= */ null,
                     ),
                 theme = R.style.Theme_SystemUI_Dialog_ScreenCapture,
-                dialogDelegate = EdgeToEdgeDialogDelegate(),
+                dialogDelegate =
+                    EdgeToEdgeDialogDelegate(touchEvent = dialogViewModel::onTouchEvent),
                 dismissOnDeviceLock = true,
-                isTransient = true,
+                isTransient = !dialogViewModel.isLargeScreen,
             ) { dialog: SystemUIDialog ->
+                LaunchedEffect(dialogViewModel) { dialogViewModel.activate() }
                 dialog.DialogContent(visibleState = visibleState, type = type, display = display)
             }
             .apply {
                 setupWindow(window!!)
+                setCancelable(false)
+                setCanceledOnTouchOutside(false)
                 setDismissOverride { visibleState.targetState = false }
             }
     }
@@ -98,12 +104,7 @@ constructor(
                 title = "ScreenCaptureUi" // Not the same as Window#setTitle
             }
         with(window) {
-            addFlags(
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-                    WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
-                    WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH or
-                    WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED
-            )
+            addFlags(WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED)
             addPrivateFlags(WindowManager.LayoutParams.PRIVATE_FLAG_TRUSTED_OVERLAY)
             setType(WINDOW_TYPE)
             setWindowAnimations(-1)
@@ -126,10 +127,6 @@ constructor(
         }
         // Wait until parameters are passed down to Compose
         val parameters = parametersState ?: return
-        SideEffect {
-            setCancelable(viewModel.cancelOnTouchOutside)
-            setCanceledOnTouchOutside(viewModel.cancelOnTouchOutside)
-        }
 
         if (!visibleState.targetState && visibleState.isIdle) {
             SideEffect {

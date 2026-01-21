@@ -45,7 +45,6 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.SysuiTestableContext
 import com.android.systemui.res.R
 import com.android.systemui.shade.StatusBarLongPressGestureDetector
-import com.android.systemui.shared.Flags.FLAG_STATUS_BAR_CONNECTED_DISPLAYS
 import com.android.systemui.statusbar.window.StatusBarWindowController
 import com.android.systemui.statusbar.window.StatusBarWindowControllerStore
 import com.android.window.flags.Flags.FLAG_ENABLE_REMOVE_STATUS_BAR_INPUT_LAYER
@@ -250,77 +249,6 @@ class PhoneStatusBarViewTest : SysuiTestCase() {
     fun onTouchEvent_noListener_noCrash() {
         view.onTouchEvent(MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 0f, 0f, 0))
         // No assert needed, just testing no crash
-    }
-
-    @Test
-    @DisableFlags(FLAG_STATUS_BAR_CONNECTED_DISPLAYS)
-    fun onAttachedToWindow_connectedDisplayFlagOff_updatesWindowHeight() {
-        view.setStatusBarWindowControllerStore(windowControllerStore)
-
-        view.onAttachedToWindow()
-
-        verify(windowController).refreshStatusBarHeight()
-    }
-
-    @Test
-    @DisableFlags(FLAG_STATUS_BAR_CONNECTED_DISPLAYS)
-    fun onAttachedToWindow_connectedDisplayFlagOff_updatesWindowHeightAfterControllerStoreSet() {
-        // windowControllerStore is not yet set in the view
-        view.onAttachedToWindow()
-
-        view.setStatusBarWindowControllerStore(windowControllerStore)
-
-        verify(windowController).refreshStatusBarHeight()
-    }
-
-    @Test
-    @DisableFlags(FLAG_STATUS_BAR_CONNECTED_DISPLAYS)
-    fun onAttachedToWindow_connectedDisplayFlagOff_updatesWindowHeightOnceAfterControllerStoreSet() {
-        // windowControllerStore is not yet set in the view
-        view.onAttachedToWindow()
-
-        view.setStatusBarWindowControllerStore(windowControllerStore)
-        view.setStatusBarWindowControllerStore(windowControllerStore)
-        view.setStatusBarWindowControllerStore(windowControllerStore)
-        view.setStatusBarWindowControllerStore(windowControllerStore)
-
-        verify(windowController, times(1)).refreshStatusBarHeight()
-    }
-
-    @Test
-    @EnableFlags(FLAG_STATUS_BAR_CONNECTED_DISPLAYS)
-    fun onAttachedToWindow_connectedDisplayFlagOn_doesNotUpdateWindowHeight() {
-        view.setStatusBarWindowControllerStore(windowControllerStore)
-
-        view.onAttachedToWindow()
-
-        verify(windowController, never()).refreshStatusBarHeight()
-    }
-
-    @Test
-    @DisableFlags(FLAG_STATUS_BAR_CONNECTED_DISPLAYS)
-    fun onConfigurationChanged_connectedDisplayFlagOff_updatesWindowHeight() {
-        view.setStatusBarWindowControllerStore(windowControllerStore)
-
-        view.onConfigurationChanged(Configuration())
-        view.onConfigurationChanged(Configuration())
-        view.onConfigurationChanged(Configuration())
-        view.onConfigurationChanged(Configuration())
-
-        verify(windowController, times(4)).refreshStatusBarHeight()
-    }
-
-    @Test
-    @EnableFlags(FLAG_STATUS_BAR_CONNECTED_DISPLAYS)
-    fun onConfigurationChanged_connectedDisplayFlagOn_neverUpdatesWindowHeight() {
-        view.setStatusBarWindowControllerStore(windowControllerStore)
-
-        view.onConfigurationChanged(Configuration())
-        view.onConfigurationChanged(Configuration())
-        view.onConfigurationChanged(Configuration())
-        view.onConfigurationChanged(Configuration())
-
-        verify(windowController, never()).refreshStatusBarHeight()
     }
 
     @Test

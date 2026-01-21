@@ -79,8 +79,8 @@ fun CaptureSettingsMenu(viewModel: PreCaptureToolbarViewModel, screenRecordingSe
                 SettingsMenuItem(
                     text = stringResource(R.string.screen_capture_show_clicks_and_keys),
                     leadingIcon = { icons?.showClicks?.let { Icon(icon = it) } },
-                    checked = recordParameters.shouldShowTaps ?: false,
-                    onCheckedChange = { recordParameters.setShouldShowTaps(it) },
+                    checked = recordParameters.shouldShowTaps,
+                    onCheckedChange = { recordParameters.shouldShowTaps = it },
                     enabled = screenRecordingSelected,
                 )
             }
@@ -104,8 +104,8 @@ fun CaptureSettingsMenu(viewModel: PreCaptureToolbarViewModel, screenRecordingSe
                 SettingsMenuItem(
                     text = stringResource(R.string.screen_capture_front_camera),
                     leadingIcon = { icons?.frontCamera?.let { Icon(icon = it) } },
-                    checked = recordParameters.shouldShowFrontCamera ?: false,
-                    onCheckedChange = { recordParameters.setShouldShowFrontCamera(it) },
+                    checked = recordParameters.shouldShowFrontCamera,
+                    onCheckedChange = { recordParameters.shouldShowFrontCamera = it },
                     enabled = screenRecordingSelected,
                 )
             }

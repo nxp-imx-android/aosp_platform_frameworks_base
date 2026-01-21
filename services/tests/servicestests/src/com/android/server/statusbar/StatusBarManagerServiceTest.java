@@ -85,7 +85,6 @@ import com.android.internal.statusbar.IStatusBar;
 import com.android.server.LocalServices;
 import com.android.server.policy.GlobalActionsProvider;
 import com.android.server.wm.ActivityTaskManagerInternal;
-import com.android.systemui.shared.Flags;
 
 import libcore.junit.util.compat.CoreCompatChangeRule;
 
@@ -768,7 +767,6 @@ public class StatusBarManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_STATUS_BAR_CONNECTED_DISPLAYS)
     public void testDisableForAllDisplays() throws Exception {
         int user1Id = 0;
         mockUidCheck();
@@ -893,7 +891,6 @@ public class StatusBarManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_STATUS_BAR_CONNECTED_DISPLAYS)
     public void testDisable2ForAllDisplays() throws Exception {
         int user1Id = 0;
         mockUidCheck();

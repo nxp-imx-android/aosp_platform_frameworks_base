@@ -1013,9 +1013,7 @@ private fun BoxScope.CommunalHubLazyGrid(
 
             // Resizing is only supported for widgets in edit mode.
             val resizeableItemFrameViewModel =
-                if (
-                    viewModel is CommunalEditModeViewModel && communalEditModeAccessibilityResize()
-                ) {
+                if (viewModel is CommunalEditModeViewModel) {
                     rememberViewModel(
                         key =
                             if (communalEditModeAccessibilityResize()) item.key

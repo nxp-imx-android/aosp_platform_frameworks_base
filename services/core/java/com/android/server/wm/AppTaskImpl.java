@@ -469,6 +469,14 @@ class AppTaskImpl extends IAppTask.Stub {
                             callback);
                     return;
                 }
+                if (layer != WINDOWING_LAYER_NORMAL_APP && !task.isFocused()) {
+                    Slog.w(TAG, "Task is not focused, therefore the pinned windowing layer request "
+                            + "is rejected.");
+                    sendWindowingLayerResult(
+                            TaskWindowingLayerRequestHandler.RESULT_FAILED_BAD_STATE,
+                            callback);
+                    return;
+                }
 
                 final TransitionController controller = mService.getTransitionController();
                 final Transition transition = new Transition(TRANSIT_CHANGE, 0, controller,

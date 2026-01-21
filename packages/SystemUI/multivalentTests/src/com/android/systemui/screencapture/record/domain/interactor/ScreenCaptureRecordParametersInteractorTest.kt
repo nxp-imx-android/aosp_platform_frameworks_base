@@ -20,15 +20,13 @@ import android.view.Display
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
-import com.android.systemui.screencapture.record.data.repository.screenCaptureRecordParametersRepository
 import com.android.systemui.screenrecord.ScreenRecordingAudioSource
 import com.android.systemui.screenrecord.domain.interactor.screenRecordingServiceInteractor
 import com.android.systemui.screenrecord.shared.model.ScreenRecordingParameters
+import com.android.systemui.screenrecord.shared.model.ScreenRecordingParametersFactory.screenRecordingParameters
 import com.android.systemui.testKosmosNew
 import com.google.common.truth.Truth.assertThat
-import kotlinx.coroutines.flow.map
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -44,12 +42,11 @@ class ScreenCaptureRecordParametersInteractorTest : SysuiTestCase() {
     fun changingAudioSource() =
         kosmos.runTest {
             val newAudioSource = ScreenRecordingAudioSource.MIC_AND_INTERNAL
-            val audioSource by collectLastValue(underTest.parameters.map { it.audioSource })
-            assertThat(audioSource).isNotEqualTo(newAudioSource)
+            assertThat(underTest.audioSource).isNotEqualTo(newAudioSource)
 
-            underTest.setAudioSource(newAudioSource)
+            underTest.audioSource = newAudioSource
 
-            assertThat(audioSource).isEqualTo(newAudioSource)
+            assertThat(underTest.audioSource).isEqualTo(newAudioSource)
         }
 
     @Test
@@ -64,76 +61,79 @@ class ScreenCaptureRecordParametersInteractorTest : SysuiTestCase() {
                 )
             )
             val newAudioSource = ScreenRecordingAudioSource.MIC_AND_INTERNAL
-            val audioSource by collectLastValue(underTest.parameters.map { it.audioSource })
-            assertThat(audioSource).isNotEqualTo(newAudioSource)
+            assertThat(underTest.audioSource).isNotEqualTo(newAudioSource)
 
-            underTest.setAudioSource(newAudioSource)
+            underTest.audioSource = newAudioSource
 
-            assertThat(audioSource).isNotEqualTo(newAudioSource)
+            assertThat(underTest.audioSource).isNotEqualTo(newAudioSource)
         }
 
     @Test
     fun changingShouldShowTaps() =
         kosmos.runTest {
             val newShouldShowTaps = true
-            val shouldShowTaps by collectLastValue(underTest.parameters.map { it.shouldShowTaps })
-            assertThat(shouldShowTaps).isNotEqualTo(newShouldShowTaps)
+            assertThat(underTest.shouldShowTaps).isNotEqualTo(newShouldShowTaps)
 
-            underTest.setShouldShowTaps(newShouldShowTaps)
+            underTest.shouldShowTaps = newShouldShowTaps
 
-            assertThat(shouldShowTaps).isEqualTo(newShouldShowTaps)
+            assertThat(underTest.shouldShowTaps).isEqualTo(newShouldShowTaps)
         }
 
     @Test
     fun changingShouldShowFrontCamera() =
         kosmos.runTest {
             val newShouldShowFrontCamera = true
-            val shouldShowFrontCamera by
-                collectLastValue(underTest.parameters.map { it.shouldShowFrontCamera })
-            assertThat(shouldShowFrontCamera).isNotEqualTo(newShouldShowFrontCamera)
+            assertThat(underTest.shouldShowFrontCamera).isNotEqualTo(newShouldShowFrontCamera)
 
-            underTest.setShouldShowFrontCamera(newShouldShowFrontCamera)
+            underTest.shouldShowFrontCamera = newShouldShowFrontCamera
 
-            assertThat(shouldShowFrontCamera).isEqualTo(newShouldShowFrontCamera)
+            assertThat(underTest.shouldShowFrontCamera).isEqualTo(newShouldShowFrontCamera)
         }
 
     @Test
     fun setShouldShowFrontCamera_nowNone_enablesMic() =
         kosmos.runTest {
-            val parameters by collectLastValue(screenCaptureRecordParametersRepository.parameters)
-            underTest.setAudioSource(ScreenRecordingAudioSource.NONE)
+            underTest.audioSource = ScreenRecordingAudioSource.NONE
 
-            underTest.setShouldShowFrontCamera(true)
+            underTest.shouldShowFrontCamera = true
 
-            assertThat(parameters!!.shouldShowFrontCamera).isTrue()
-            assertThat(parameters!!.audioSource).isEqualTo(ScreenRecordingAudioSource.MIC)
+            assertThat(underTest.shouldShowFrontCamera).isTrue()
+            assertThat(underTest.audioSource).isEqualTo(ScreenRecordingAudioSource.MIC)
         }
 
     @Test
     fun setShouldShowFrontCamera_nowInternal_enablesMic() =
         kosmos.runTest {
-            val parameters by collectLastValue(screenCaptureRecordParametersRepository.parameters)
-            underTest.setAudioSource(ScreenRecordingAudioSource.INTERNAL)
+            underTest.audioSource = ScreenRecordingAudioSource.INTERNAL
 
-            underTest.setShouldShowFrontCamera(true)
+            underTest.shouldShowFrontCamera = true
 
-            assertThat(parameters!!.shouldShowFrontCamera).isTrue()
-            assertThat(parameters!!.audioSource)
-                .isEqualTo(ScreenRecordingAudioSource.MIC_AND_INTERNAL)
+            assertThat(underTest.shouldShowFrontCamera).isTrue()
+            assertThat(underTest.audioSource).isEqualTo(ScreenRecordingAudioSource.MIC_AND_INTERNAL)
+        }
+
+    @Test
+    fun setShouldShowFrontCamera_recordingWithInternal_doesntChangeMic() =
+        kosmos.runTest {
+            underTest.audioSource = ScreenRecordingAudioSource.INTERNAL
+            screenRecordingServiceInteractor.startRecording(screenRecordingParameters())
+
+            underTest.shouldShowFrontCamera = true
+
+            assertThat(underTest.shouldShowFrontCamera).isTrue()
+            assertThat(underTest.audioSource).isEqualTo(ScreenRecordingAudioSource.INTERNAL)
         }
 
     @Test
     fun setShouldNotShowFrontCamera_doesntChangeMic() =
         kosmos.runTest {
             ScreenRecordingAudioSource.entries.forEach { source ->
-                val parameters by
-                    collectLastValue(screenCaptureRecordParametersRepository.parameters)
-                underTest.setAudioSource(source)
+                underTest.audioSource = source
 
-                underTest.setShouldShowFrontCamera(false)
+                underTest.shouldShowFrontCamera = false
 
-                assertThat(parameters!!.shouldShowFrontCamera).isFalse()
-                assertThat(parameters!!.audioSource).isEqualTo(source)
+                assertThat(underTest.shouldShowFrontCamera).isFalse()
+                assertThat(underTest.audioSource).isEqualTo(source)
             }
         }
 }

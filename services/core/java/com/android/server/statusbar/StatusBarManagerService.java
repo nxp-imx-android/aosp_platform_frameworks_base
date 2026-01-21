@@ -106,7 +106,6 @@ import android.view.WindowInsets;
 import android.view.WindowInsets.Type.InsetsType;
 import android.view.WindowInsetsController.Appearance;
 import android.view.WindowInsetsController.Behavior;
-import android.window.DesktopExperienceFlags.DesktopExperienceFlag;
 
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
@@ -138,7 +137,6 @@ import com.android.server.policy.GlobalActionsProvider;
 import com.android.server.power.ShutdownCheckPoints;
 import com.android.server.power.ShutdownThread;
 import com.android.server.wm.ActivityTaskManagerInternal;
-import com.android.systemui.shared.Flags;
 
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
@@ -187,12 +185,6 @@ public class StatusBarManagerService extends IStatusBarService.Stub implements D
     @ChangeId
     @EnabledAfter(targetSdkVersion = Build.VERSION_CODES.TIRAMISU)
     static final long REQUEST_LISTENING_OTHER_USER_NOOP = 242194868L;
-
-    private static final DesktopExperienceFlag STATUS_BAR_CONNECTED_DISPLAYS =
-            new DesktopExperienceFlag(
-                    Flags::statusBarConnectedDisplays,
-                    /* shouldOverrideByDevOption= */ true,
-                    Flags.FLAG_STATUS_BAR_CONNECTED_DISPLAYS);
 
     private final Context mContext;
 

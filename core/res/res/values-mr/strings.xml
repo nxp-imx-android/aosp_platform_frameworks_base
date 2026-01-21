@@ -2111,8 +2111,52 @@
     <string name="app_suspended_default_message" msgid="6451215678552004172">"<xliff:g id="APP_NAME_0">%1$s</xliff:g> आत्ता उपलब्ध नाही. हे <xliff:g id="APP_NAME_1">%2$s</xliff:g> कडून व्यवस्थापित केले जाते."</string>
     <string name="app_suspended_more_details" msgid="211260942831587014">"अधिक जाणून घ्या"</string>
     <string name="app_suspended_unsuspend_message" msgid="1665438589450555459">"अ‍ॅप पुन्हा सुरू करा"</string>
+    <string name="app_lock_add_screen_lock_button_text" msgid="9209013414563206600">"स्क्रीन लॉक जोडा"</string>
+    <string name="app_lock_add_screen_lock_message" msgid="6107009360675769892">"तुमचे स्क्रीन लॉक हे पिन, पॅटर्न किंवा पासवर्ड असू शकते. तुम्ही तुमचे डिव्हाइस अनलॉक करण्यासाठी आणि लॉक केलेली अ‍ॅप्स अ‍ॅक्सेस करण्यासाठी हे वापराल."</string>
+    <string name="app_lock_add_screen_lock_title" msgid="6905612843620128689">"सर्वप्रथम, स्क्रीन लॉक जोडा"</string>
+    <!-- no translation found for enable_app_lock_success_toast_message (3339622779190529987) -->
+    <skip />
+    <!-- no translation found for enable_app_lock_failure_toast_message (1055838896510445566) -->
+    <skip />
+    <!-- no translation found for disable_app_lock_success_toast_message (70733620589071266) -->
+    <skip />
     <string name="locked_app_biometric_prompt_description" msgid="6853122652400451464">"<xliff:g id="APP_NAME">%1$s</xliff:g> लॉक केले आहे"</string>
-    <!-- no translation found for locked_app_external_display_message (5483884799685545338) -->
+    <string name="locked_app_external_display_message" msgid="5483884799685545338">"या डिस्प्लेवर अ‍ॅप अ‍ॅक्सेस करण्यासाठी, सर्वप्रथम तुमच्या दुसऱ्या डिव्हाइसवर हे तुम्हीच असल्याची पडताळणी करा"</string>
+    <!-- no translation found for app_lock_edu_dialog_enable_app_lock_title (283314042336592322) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_description (8176807243219769518) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_description_template (8563718120753342530) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_description_template_no_biometrics (7122017109150633691) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_info_header (5876120209204270990) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_info_notifications (1124438392204873305) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_info_widgets (8809009414650740872) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_button_lock (3914687128135704801) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_face (1348151645996748654) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_fingerprint (5206107469561561455) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_fingerprint_and_face (7895807411323811641) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_lockscreen_password_name (8487096457702445059) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_lockscreen_pattern_name (991436996281983547) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_lockscreen_pin_name (6458607126966304795) -->
+    <skip />
+    <!-- no translation found for app_lock_permission_review_dialog_title (5030286398974840579) -->
+    <skip />
+    <!-- no translation found for app_lock_permission_review_dialog_sub_title (310758587817184145) -->
+    <skip />
+    <!-- no translation found for app_lock_permission_review_expand_app_list_button (3214809707125223273) -->
+    <skip />
+    <!-- no translation found for app_lock_permission_review_continue_button (4045066724173414043) -->
     <skip />
     <string name="work_mode_off_title" msgid="6367463960165135829">"वर्क ॲप्स पुन्हा सुरू करायची?"</string>
     <string name="work_mode_turn_on" msgid="5316648862401307800">"पुन्हा सुरू करा"</string>

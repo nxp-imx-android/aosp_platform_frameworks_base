@@ -19,6 +19,8 @@ package com.android.server.display.mode;
 import static android.hardware.display.DisplayManager.DISPLAY_CATEGORY_ALL_INCLUDING_DISABLED;
 import static android.hardware.display.DisplayManagerInternal.REFRESH_RATE_LIMIT_HIGH_BRIGHTNESS_MODE;
 import static android.os.PowerManager.BRIGHTNESS_INVALID_FLOAT;
+import static android.view.Display.Mode.FLAG_ANISOTROPY_CORRECTION;
+import static android.view.Display.Mode.FLAG_ARR_RENDER_RATE;
 import static android.view.Display.Mode.FLAG_SIZE_OVERRIDE;
 import static android.view.Display.Mode.INVALID_MODE_ID;
 
@@ -1464,7 +1466,7 @@ public class DisplayModeDirector {
             updateDisplayModes(displayId, displayInfo);
             updateHasArrSupport(displayId, displayInfo);
             updateLayoutLimitedFrameRate(displayId, displayInfo);
-            updateUserSettingDisplayPreferredSize(displayInfo);
+            updateUserSettingDisplayPreferredMode(displayInfo);
             updateDisplaysPeakRefreshRateAndResolution(displayInfo);
         }
 
@@ -1501,7 +1503,7 @@ public class DisplayModeDirector {
             updateHasArrSupport(displayId, displayInfo);
             updateDisplayModes(displayId, displayInfo);
             updateLayoutLimitedFrameRate(displayId, displayInfo);
-            updateUserSettingDisplayPreferredSize(displayInfo);
+            updateUserSettingDisplayPreferredMode(displayInfo);
         }
 
         private void registerExternalDisplay(DisplayInfo displayInfo) {
@@ -1551,51 +1553,73 @@ public class DisplayModeDirector {
         }
 
         private void removeUserSettingDisplayPreferredSize(int displayId) {
-            mVotesStorage.updateVote(displayId, Vote.PRIORITY_USER_SETTING_DISPLAY_PREFERRED_SIZE,
-                    null);
+            mVotesStorage.updateVote(displayId,
+                    Vote.PRIORITY_USER_SETTING_DISPLAY_PREFERRED_OPTIONS, null);
         }
 
-        private void updateUserSettingDisplayPreferredSize(@Nullable DisplayInfo info) {
+        private void updateUserSettingDisplayPreferredMode(@Nullable DisplayInfo info) {
             if (info == null) {
                 return;
             }
 
-            var preferredMode = findDisplayPreferredMode(info);
+            Display.Mode preferredMode = findMode(info, info.userPreferredModeId);
+
             if (preferredMode == null) {
                 removeUserSettingDisplayPreferredSize(info.displayId);
                 return;
             }
 
-            if (info.type == Display.TYPE_EXTERNAL && !isRefreshRateSynchronizationEnabled()) {
-                mVotesStorage.updateVote(info.displayId,
-                        Vote.PRIORITY_USER_SETTING_DISPLAY_PREFERRED_SIZE,
-                        Vote.forSizeAndPhysicalRefreshRatesRange(
-                                /* minWidth */ preferredMode.getPhysicalWidth(),
-                                /* minHeight */ preferredMode.getPhysicalHeight(),
-                                /* width */ preferredMode.getPhysicalWidth(),
-                                /* height */ preferredMode.getPhysicalHeight(),
-                                /* minRefreshRate */ preferredMode.getRefreshRate(),
-                                /* maxRefreshRate */ preferredMode.getRefreshRate()));
+            Vote sizeVote = null;
+            Vote renderRateVote = null;
+            Vote refreshRateVote = null;
+
+            if ((preferredMode.getFlags() & (FLAG_SIZE_OVERRIDE)) != 0) {
+                // no mode switch, only limit render rate
+                renderRateVote = Vote.forRenderFrameRates(0f, preferredMode.getRefreshRate());
+            } else if ((preferredMode.getFlags() & (FLAG_ANISOTROPY_CORRECTION)) != 0) {
+                // find parent mode
+                preferredMode = findMode(info, preferredMode.getParentModeId());
+                if (preferredMode != null) {
+                    // switch set parent mode
+                    refreshRateVote = Vote.forPhysicalRefreshRates(preferredMode.getRefreshRate());
+                    sizeVote = Vote.forSize(
+                            preferredMode.getPhysicalWidth(), preferredMode.getPhysicalHeight());
+                }
+            } else if ((preferredMode.getFlags() & (FLAG_ARR_RENDER_RATE)) != 0) {
+                // switch resolution and verify render rate is achievable
+                renderRateVote = Vote.forRequestedRefreshRate(preferredMode.getRefreshRate());
+                sizeVote = Vote.forSize(
+                        preferredMode.getPhysicalWidth(), preferredMode.getPhysicalHeight());
             } else {
-                mVotesStorage.updateVote(info.displayId,
-                        Vote.PRIORITY_USER_SETTING_DISPLAY_PREFERRED_SIZE,
-                        Vote.forSize(/* width */ preferredMode.getPhysicalWidth(),
-                                /* height */ preferredMode.getPhysicalHeight()));
+                refreshRateVote = Vote.forPhysicalRefreshRates(preferredMode.getRefreshRate());
+                sizeVote = Vote.forSize(
+                        preferredMode.getPhysicalWidth(), preferredMode.getPhysicalHeight());
             }
+
+            // switch only resolution for external display if rr sync is on
+            if (isRefreshRateSynchronizationEnabled() && info.type == Display.TYPE_EXTERNAL) {
+                refreshRateVote = null;
+                renderRateVote = null;
+            }
+
+            // rr switch for other than external display is handled separately
+            if (info.type != Display.TYPE_EXTERNAL) {
+                refreshRateVote = null;
+            }
+
+            mVotesStorage.updateVote(info.displayId,
+                    Vote.PRIORITY_USER_SETTING_DISPLAY_PREFERRED_OPTIONS,
+                    Vote.forVotes(Arrays.asList(sizeVote, renderRateVote, refreshRateVote)));
+
         }
 
-        @Nullable
-        private Display.Mode findDisplayPreferredMode(@NonNull DisplayInfo info) {
-            if (info.userPreferredModeId == INVALID_MODE_ID) {
+        private Display.Mode findMode(@NonNull DisplayInfo info, int modeId) {
+            if (modeId == INVALID_MODE_ID) {
                 return null;
             }
             for (var mode : info.supportedModes) {
-                if (mode.getModeId() == info.userPreferredModeId) {
-                    if ((mode.getFlags() & FLAG_SIZE_OVERRIDE) != 0) {
-                        return null;
-                    } else {
-                        return mode;
-                    }
+                if (mode.getModeId() == modeId) {
+                    return mode;
                 }
             }
             return null;

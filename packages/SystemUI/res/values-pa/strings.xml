@@ -46,10 +46,8 @@
     <string name="usb_accessory_confirm_prompt" msgid="5728408382798643421">"ਕੀ <xliff:g id="USB_ACCESSORY">%2$s</xliff:g> ਨੂੰ ਵਰਤਣ ਲਈ <xliff:g id="APPLICATION">%1$s</xliff:g> ਖੋਲ੍ਹਣੀ ਹੈ?"</string>
     <string name="usb_accessory_uri_prompt" msgid="6756649383432542382">"ਕੋਈ ਇੰਸਟੌਲ ਕੀਤੇ ਐਪਸ ਇਸ USB ਐਕਸੈਸਰੀ ਨਾਲ ਕੰਮ ਨਹੀਂ ਕਰਦੇ। <xliff:g id="URL">%1$s</xliff:g> ਤੇ ਇਸ ਐਕਸੈਸਰੀ ਬਾਰੇ ਹੋਰ ਜਾਣੋ"</string>
     <string name="title_usb_accessory" msgid="1236358027511638648">"USB ਐਕਸੈਸਰੀ"</string>
-    <!-- no translation found for usb_device_dialog_allow_only_this_time_button (3653881633944232491) -->
-    <skip />
-    <!-- no translation found for usb_device_dialog_cancel_button (9050554648474787233) -->
-    <skip />
+    <string name="usb_device_dialog_allow_only_this_time_button" msgid="3653881633944232491">"ਸਿਰਫ਼ ਇਸ ਵਾਰ"</string>
+    <string name="usb_device_dialog_cancel_button" msgid="9050554648474787233">"ਰੱਦ ਕਰੋ"</string>
     <string name="label_view" msgid="6815442985276363364">"ਦੇਖੋ"</string>
     <string name="always_use_device" msgid="210535878779644679">"ਹਮੇਸ਼ਾਂ <xliff:g id="APPLICATION">%1$s</xliff:g> ਨੂੰ ਉਦੋਂ ਹੀ ਖੋਲ੍ਹੋ ਜਦੋਂ <xliff:g id="USB_DEVICE">%2$s</xliff:g> ਕਨੈਕਟ ਹੋਵੇ"</string>
     <string name="always_use_accessory" msgid="1977225429341838444">"ਹਮੇਸ਼ਾਂ <xliff:g id="APPLICATION">%1$s</xliff:g> ਨੂੰ ਉਦੋਂ ਹੀ ਖੋਲ੍ਹੋ ਜਦੋਂ <xliff:g id="USB_ACCESSORY">%2$s</xliff:g> ਕਨੈਕਟ ਹੋਵੇ"</string>
@@ -159,7 +157,7 @@
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"ਸਪਰਸ਼ ਦਿਖਾਓ"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"ਰਿਕਾਰਡ ਕਰਨ ਲਈ ਕੋਈ ਐਪ ਚੁਣੋ"</string>
     <string name="screen_record_settings" msgid="2377267679200139285">"ਸਕ੍ਰੀਨ ਰਿਕਾਰਡਿੰਗ ਸੈਟਿੰਗਾਂ"</string>
-    <string name="screen_record_markup" msgid="5583986085046693669">"ਨਿਸ਼ਾਨਬੱਧ"</string>
+    <string name="screen_record_markup" msgid="5583986085046693669">"ਮਾਰਕਅੱਪ"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"ਵੀਡੀਓ ਨੂੰ ਰੱਖਿਅਤ ਕੀਤਾ ਗਿਆ"</string>
     <string name="screen_record_video_deleted" msgid="30786214839944540">"ਵੀਡੀਓ ਮਿਟਾਇਆ ਗਿਆ"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"ਅਣਕੀਤਾ ਕਰੋ"</string>
@@ -186,10 +184,13 @@
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"ਐਪ ਵਿੰਡੋ ਨੂੰ ਸਾਂਝਾ ਕਰੋ"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"ਟੈਬ ਸਾਂਝੀ ਕਰੋ"</string>
     <string name="screen_share_entire_screen_sharing_title" msgid="9093580141248337998">"ਪੂਰੀ ਸਕ੍ਰੀਨ ਸਾਂਝੀ ਕਰੋ"</string>
-    <string name="screen_share_disclaimer_app_sharing" msgid="4191319837838590771">"ਕਿਸੇ ਐਪ ਨੂੰ ਸਾਂਝਾ ਕਰਨ ਦੌਰਾਨ, ਉਸ ਐਪ \'ਤੇ ਦਿਖ ਰਹੀ ਜਾਂ ਚਲਾਈ ਗਈ ਹਰੇਕ ਚੀਜ਼ [APP NAME] ਨੂੰ ਦਿਖਣਯੋਗ ਹੁੰਦੀ ਹੈ। ਇਸ ਲਈ ਪਾਸਵਰਡਾਂ, ਭੁਗਤਾਨ ਵੇਰਵਿਆਂ, ਸੁਨੇਹਿਆਂ, ਫ਼ੋਟੋਆਂ ਅਤੇ ਆਡੀਓ ਅਤੇ ਵੀਡੀਓ ਵਰਗੀਆਂ ਚੀਜ਼ਾਂ ਵਾਸਤੇ ਸਾਵਧਾਨ ਰਹੋ।"</string>
-    <string name="screen_share_disclaimer_full_screen_sharing" msgid="6445373139864031364">"ਪੂਰੀ ਸਕ੍ਰੀਨ ਨੂੰ ਸਾਂਝਾ ਕਰਨ ਦੌਰਾਨ, ਤੁਹਾਡੀ ਸਕ੍ਰੀਨ \'ਤੇ ਦਿਖ ਰਹੀ ਹਰੇਕ ਚੀਜ਼ [APP NAME] \'ਤੇ ਵੀ ਦਿਖਣਯੋਗ ਹੁੰਦੀ ਹੈ। ਇਸ ਲਈ ਪਾਸਵਰਡਾਂ, ਭੁਗਤਾਨ ਵੇਰਵਿਆਂ, ਸੁਨੇਹਿਆਂ, ਫ਼ੋਟੋਆਂ ਅਤੇ ਆਡੀਓ ਅਤੇ ਵੀਡੀਓ ਵਰਗੀਆਂ ਚੀਜ਼ਾਂ ਵਾਸਤੇ ਸਾਵਧਾਨ ਰਹੋ।"</string>
-    <!-- no translation found for screen_share_a11y_announcement (8938007210094494367) -->
+    <!-- no translation found for screen_share_disclaimer_app_sharing (1839029004749224549) -->
     <skip />
+    <!-- no translation found for screen_share_disclaimer_tab_sharing (3811486274577713101) -->
+    <skip />
+    <!-- no translation found for screen_share_disclaimer_full_screen_sharing (5173795016606926338) -->
+    <skip />
+    <string name="screen_share_a11y_announcement" msgid="8938007210094494367">"ਇਹ ਚੁਣੋ ਕਿ ਕੀ ਸਾਂਝਾ ਕਰਨਾ ਹੈ। ਟੈਬ, ਐਪ ਜਾਂ ਪੂਰੀ ਸਕ੍ਰੀਨ ਚੁਣੋ। ਫਿਰ ਸਾਂਝਾ ਕਰੋ ਦਬਾਓ।"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"ਵਿੰਡੋ ਦਾ ਸਕ੍ਰੀਨਸ਼ਾਟ ਲਓ"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"ਵਿੰਡੋ ਰਿਕਾਰਡ ਕਰੋ"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"ਚੁਣੇ ਹੋਏ ਖੇਤਰ ਦਾ ਸਕ੍ਰੀਨਸ਼ਾਟ ਲਓ"</string>
@@ -391,8 +392,7 @@
     <string name="accessibility_clear_all" msgid="970525598287244592">"ਸਾਰੀਆਂ ਸੂਚਨਾਵਾਂ ਹਟਾਓ।"</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"ਸੂਚਨਾਵਾਂ"</string>
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Assistant"</string>
-    <!-- no translation found for accessibility_status_bar_input_method_indicator (4911669064186093506) -->
-    <skip />
+    <string name="accessibility_status_bar_input_method_indicator" msgid="4911669064186093506">"ਕੀ-ਬੋਰਡ"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{ਗਰੁੱਪ ਵਿੱਚ # ਹੋਰ ਸੂਚਨਾ ਹੈ।}one{ਗਰੁੱਪ ਵਿੱਚ # ਹੋਰ ਸੂਚਨਾ ਹੈ।}other{ਗਰੁੱਪ ਵਿੱਚ # ਹੋਰ ਸੂਚਨਾਵਾਂ ਹਨ।}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"ਸਕ੍ਰੀਨ ਲੈਂਡਸਕੇਪ ਅਨੁਕੂਲਨ ਵਿੱਚ  ਲਾਕ  ਕੀਤੀ ਹੈ।"</string>
@@ -421,7 +421,7 @@
     <string name="quick_settings_bluetooth_audio_sharing_button_sharing" msgid="3069309588231072128">"ਆਡੀਓ ਨੂੰ ਸਾਂਝਾ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ"</string>
     <string name="quick_settings_bluetooth_audio_sharing_button_accessibility" msgid="7604615019302091708">"ਆਡੀਓ ਸਾਂਝਾਕਰਨ ਸੈਟਿੰਗਾਂ ਦਾਖਲ ਕਰੋ"</string>
     <string name="quick_settings_bluetooth_audio_sharing_dialog_message" msgid="4251807313264307426">"ਇਸ ਡੀਵਾਈਸ ਦਾ ਸੰਗੀਤ ਅਤੇ ਵੀਡੀਓ ਹੈੱਡਫ਼ੋਨਾਂ ਦੇ ਦੋਵਾਂ ਜੋੜਿਆਂ \'ਤੇ ਚੱਲਣਗੇ"</string>
-    <string name="quick_settings_bluetooth_audio_sharing_dialog_title" msgid="4406818346036286793">"ਆਪਣਾ ਆਡੀਓ ਸਾਂਝਾ ਕਰੋ"</string>
+    <string name="quick_settings_bluetooth_audio_sharing_dialog_title" msgid="4406818346036286793">"ਆਪਣੀ ਆਡੀਓ ਸਾਂਝੀ ਕਰੋ"</string>
     <string name="quick_settings_bluetooth_audio_sharing_dialog_subtitle" msgid="3014906864710059236">"<xliff:g id="AVAILABLE_DEVICE_NAME">%1$s</xliff:g> ਅਤੇ <xliff:g id="ACTIVE_DEVICE_NAME">%2$s</xliff:g>"</string>
     <string name="quick_settings_bluetooth_audio_sharing_dialog_switch_to_button" msgid="7546825655978203773">"<xliff:g id="AVAILABLE_DEVICE_NAME">%1$s</xliff:g> \'ਤੇ ਸਵਿੱਚ ਕਰੋ"</string>
     <string name="quick_settings_bluetooth_secondary_label_battery_level" msgid="4182034939479344093">"<xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%s</xliff:g> ਬੈਟਰੀ"</string>
@@ -942,7 +942,7 @@
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"ਸੂਚਨਾ-ਪੱਤਰ, ਸਿਫ਼ਾਰਸ਼ੀ ਮੀਡੀਆ ਅਤੇ ਹੋਰ ਬਹੁਤ ਕੁਝ"</string>
     <string name="notification_onboarding_summaries_turn_on" msgid="3831339570984683297">"ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਚਾਲੂ ਕਰੋ"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"ਹੁਣ ਤੁਹਾਡੀਆਂ ਲੰਬੀਆਂ ਗੱਲਾਂਬਾਤਾਂ ਦਾ ਸਾਰਾਂਸ਼ ਤਿਆਰ ਕੀਤਾ ਜਾ ਸਕਦਾ ਹੈ, ਤਾਂ ਜੋ ਤੁਹਾਨੂੰ ਤੁਰੰਤ ਰੀਕੈਪ ਮਿਲ ਸਕੇ"</string>
-    <string name="notification_onboarding_summaries_message_with_apps" msgid="5320980333818238465">"ਤੁਹਾਡਾ ਡੀਵਾਈਸ ਅਤੇ ਐਪਾਂ ਹੁਣ ਤੁਹਾਨੂੰ ਤੁਰੰਤ ਰੀਕੈਪ ਦੇਣ ਲਈ ਲੰਬੀਆਂ ਗੱਲਾਂਬਾਤਾਂ ਦਾ ਸਾਰਾਂਸ਼ ਦੇ ਸਕਦੀਆਂ ਹਨ"</string>
+    <string name="notification_onboarding_summaries_message_with_apps" msgid="5320980333818238465">"ਤੁਹਾਡਾ ਡੀਵਾਈਸ ਅਤੇ ਐਪਾਂ ਹੁਣ ਤੁਹਾਨੂੰ ਤਤਕਾਲ ਰੀਕੈਪ ਦੇਣ ਲਈ ਲੰਬੀਆਂ ਗੱਲਾਂਬਾਤਾਂ ਦਾ ਸਾਰਾਂਸ਼ ਦੇ ਸਕਦੀਆਂ ਹਨ"</string>
     <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"ਸੂਚਨਾ ਪ੍ਰਬੰਧਕ ਘੱਟ ਤਰਜੀਹ ਵਾਲੀਆਂ ਸੂਚਨਾਵਾਂ ਨੂੰ ਬੰਡਲ ਅਤੇ ਸ਼ਾਂਤ ਕਰਦਾ ਹੈ। ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਜਾ ਕੇ ਹੋਰ ਸ਼੍ਰੇਣੀਆਂ ਸ਼ਾਮਲ ਕਰੋ।"</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# ਸੂਚਨਾ}one{# ਸੂਚਨਾ}other{# ਸੂਚਨਾਵਾਂ}}"</string>
     <string name="notification_bundle_header_joined_description" msgid="4517556837418088139">"<xliff:g id="NAME">%1$s</xliff:g>, <xliff:g id="NUM_NOTIFICATIONS">%2$s</xliff:g>"</string>
@@ -1796,62 +1796,33 @@
     <string name="location_button_text_use_precise_location" msgid="3499475231656390476">"ਸਟੀਕ ਟਿਕਾਣਾ ਵਰਤੋ"</string>
     <string name="location_button_text_near_precise_location" msgid="3607275724182981412">"ਸਟੀਕ ਟਿਕਾਣੇ ਦੇ ਨਜ਼ਦੀਕ"</string>
     <string name="location_button_text_precise_location" msgid="4441259889842542799">"ਸਟੀਕ ਟਿਕਾਣਾ"</string>
-    <!-- no translation found for privacy_chip_use_string (979159484631969073) -->
-    <skip />
-    <!-- no translation found for privacy_chip_use_string_with_app (6807216002072346877) -->
-    <skip />
-    <!-- no translation found for privacy_chip_camera_and_mic_text (6254449489859255607) -->
-    <skip />
-    <!-- no translation found for av_panel_title (455230832870768515) -->
-    <skip />
-    <!-- no translation found for sensor_activity_header (2145727448786698035) -->
-    <skip />
-    <!-- no translation found for sensor_activity_see_all_access_button (8005330122289549048) -->
-    <skip />
-    <!-- no translation found for sensor_activity_camera_label (4260675418606211259) -->
-    <skip />
-    <!-- no translation found for sensor_activity_microphone_label (4012136402420177411) -->
-    <skip />
-    <!-- no translation found for sensor_activity_manage_access_button (1275701280501357102) -->
-    <skip />
-    <!-- no translation found for sensor_activity_close_app_button (6907314738150753330) -->
-    <skip />
-    <!-- no translation found for sensor_activity_back_button_cd (6894532284650291222) -->
-    <skip />
-    <!-- no translation found for privacy_chip_apps_using_sensor_suffix (527247786536767096) -->
-    <skip />
-    <!-- no translation found for privacy_chip_camera_in_use (5163494654848590528) -->
-    <skip />
-    <!-- no translation found for privacy_chip_mic_in_use (1586091297556363367) -->
-    <skip />
-    <!-- no translation found for privacy_chip_camera_mic_in_use (5179267787210197484) -->
-    <skip />
-    <!-- no translation found for av_camera_portrait_touch_up (5191856296212427203) -->
-    <skip />
-    <!-- no translation found for av_mic_label (5427348054144789879) -->
-    <skip />
-    <!-- no translation found for av_camera_label (7719772172590702343) -->
-    <skip />
-    <!-- no translation found for av_camera_blur_drill_in_title (2250600375798981511) -->
-    <skip />
-    <!-- no translation found for av_camera_blur_off (3170334995799202022) -->
-    <skip />
-    <!-- no translation found for av_camera_blur_light (5666055368940059418) -->
-    <skip />
-    <!-- no translation found for av_camera_blur_full (3276351992811619332) -->
-    <skip />
-    <!-- no translation found for av_camera_improve_lighting (1540549414296669133) -->
-    <skip />
-    <!-- no translation found for av_camera_framing (5108462267843042492) -->
-    <skip />
-    <!-- no translation found for av_studio_mic (2614843492629357766) -->
-    <skip />
-    <!-- no translation found for av_studio_look (621893522645557619) -->
-    <skip />
-    <!-- no translation found for av_studio_look_effects (4105109585851068415) -->
-    <skip />
-    <!-- no translation found for av_blur (405131343487260171) -->
-    <skip />
-    <!-- no translation found for av_live_captions (7819416886586903077) -->
-    <skip />
+    <string name="privacy_chip_use_string" msgid="979159484631969073">"<xliff:g id="SENSOR">%1$s</xliff:g> ਵਰਤੋਂ ਵਿੱਚ ਹੈ"</string>
+    <string name="privacy_chip_use_string_with_app" msgid="6807216002072346877">"<xliff:g id="APP">%2$s</xliff:g> ਵੱਲੋਂ <xliff:g id="SENSOR">%1$s</xliff:g> ਦੀ ਵਰਤੋਂ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ"</string>
+    <string name="privacy_chip_camera_and_mic_text" msgid="6254449489859255607">"ਕੈਮਰਾ ਅਤੇ ਮਾਈਕ"</string>
+    <string name="av_panel_title" msgid="455230832870768515">"ਪਰਦੇਦਾਰੀ"</string>
+    <string name="sensor_activity_header" msgid="2145727448786698035">"ਉਨ੍ਹਾਂ ਐਪਾਂ ਨੂੰ ਦੇਖੋ, ਜੋ ਸਰਗਰਮੀ ਨਾਲ ਜਾਂ ਹਾਲ ਹੀ ਵਿੱਚ ਇਨ੍ਹਾਂ ਇਜਾਜ਼ਤਾਂ ਦੀ ਵਰਤੋਂ ਕਰ ਰਹੀਆਂ ਹਨ।"</string>
+    <string name="sensor_activity_see_all_access_button" msgid="8005330122289549048">"ਸਾਰੀ ਪਹੁੰਚ ਦੇਖੋ"</string>
+    <string name="sensor_activity_camera_label" msgid="4260675418606211259">"ਕੈਮਰਾ"</string>
+    <string name="sensor_activity_microphone_label" msgid="4012136402420177411">"ਮਾਈਕ੍ਰੋਫ਼ੋਨ"</string>
+    <string name="sensor_activity_manage_access_button" msgid="1275701280501357102">"ਪਹੁੰਚ ਦਾ ਪ੍ਰਬੰਧਨ ਕਰੋ"</string>
+    <string name="sensor_activity_close_app_button" msgid="6907314738150753330">"ਐਪ ਬੰਦ ਕਰੋ"</string>
+    <string name="sensor_activity_back_button_cd" msgid="6894532284650291222">"ਪਿੱਛੇ"</string>
+    <string name="privacy_chip_apps_using_sensor_suffix" msgid="527247786536767096">"+<xliff:g id="COUNT">%1$d</xliff:g> ਹੋਰ"</string>
+    <string name="privacy_chip_camera_in_use" msgid="5163494654848590528">"ਕੈਮਰਾ ਵਰਤੋਂ ਵਿੱਚ ਹੈ"</string>
+    <string name="privacy_chip_mic_in_use" msgid="1586091297556363367">"ਮਾਈਕ ਵਰਤੋਂ ਵਿੱਚ ਹੈ"</string>
+    <string name="privacy_chip_camera_mic_in_use" msgid="5179267787210197484">"ਕੈਮਰਾ, ਮਾਈਕ ਵਰਤੋਂ ਵਿੱਚ ਹਨ"</string>
+    <string name="av_camera_portrait_touch_up" msgid="5191856296212427203">"ਪੋਰਟਰੇਟ ਟੱਚ-ਅੱਪ"</string>
+    <string name="av_mic_label" msgid="5427348054144789879">"ਮਾਈਕ੍ਰੋਫ਼ੋਨ"</string>
+    <string name="av_camera_label" msgid="7719772172590702343">"ਕੈਮਰਾ"</string>
+    <string name="av_camera_blur_drill_in_title" msgid="2250600375798981511">"ਧੁੰਦਲਾ ਬੈਕਗ੍ਰਾਊਂਡ"</string>
+    <string name="av_camera_blur_off" msgid="3170334995799202022">"ਬੰਦ"</string>
+    <string name="av_camera_blur_light" msgid="5666055368940059418">"ਹਲਕਾ"</string>
+    <string name="av_camera_blur_full" msgid="3276351992811619332">"ਪੂਰੀ"</string>
+    <string name="av_camera_improve_lighting" msgid="1540549414296669133">"ਬਿਹਤਰ ਲਾਈਟਿੰਗ"</string>
+    <string name="av_camera_framing" msgid="5108462267843042492">"ਕੈਮਰਾ ਫ੍ਰੇਮਿੰਗ"</string>
+    <string name="av_studio_mic" msgid="2614843492629357766">"Studio ਮਾਈਕ"</string>
+    <string name="av_studio_look" msgid="621893522645557619">"ਸਟੂਡੀਓ ਲੁੱਕ"</string>
+    <string name="av_studio_look_effects" msgid="4105109585851068415">"%d ਪ੍ਰਭਾਵ"</string>
+    <string name="av_blur" msgid="405131343487260171">"ਧੁੰਦਲਾ ਕਰੋ"</string>
+    <string name="av_live_captions" msgid="7819416886586903077">"ਲਾਈਵ ਸੁਰਖੀਆਂ"</string>
 </resources>

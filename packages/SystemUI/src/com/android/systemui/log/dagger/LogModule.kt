@@ -30,6 +30,7 @@ import com.android.systemui.log.table.TableLogBufferFactory
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockMessageBuffers
 import com.android.systemui.qs.pipeline.shared.QSPipelineFlagsRepository
 import com.android.systemui.qs.pipeline.shared.TileSpec
+import com.android.systemui.statusbar.pipeline.dagger.WiredAudioDeviceRepositoryLog
 import com.android.systemui.util.wakelock.WakeLockLog
 import dagger.Binds
 import dagger.Lazy
@@ -641,6 +642,14 @@ abstract class LogModule {
         @RearDisplayLog
         fun providesRearDisplayLog(factory: LogBufferFactory): LogBuffer {
             return factory.create("RearDisplayLog", 50)
+        }
+
+        /** Provides a [LogBuffer] for [WiredAudioDeviceRepository] */
+        @Provides
+        @SysUISingleton
+        @WiredAudioDeviceRepositoryLog
+        fun providesWiredAudioDeviceRepositoryLog(factory: LogBufferFactory): LogBuffer {
+            return factory.create("WiredAudioDeviceRepositoryLog", 50)
         }
     }
 }

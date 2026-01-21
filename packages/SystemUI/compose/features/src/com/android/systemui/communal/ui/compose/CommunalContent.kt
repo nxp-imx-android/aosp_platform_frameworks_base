@@ -137,7 +137,6 @@ constructor(
 
                         with(indicationAreaElement) {
                             IndicationArea(
-                                null,
                                 Modifier.element(Communal.Elements.IndicationArea)
                                     .fillMaxWidth()
                                     .padding(
@@ -145,7 +144,7 @@ constructor(
                                             dimensionResource(
                                                 R.dimen.keyguard_indication_margin_bottom
                                             )
-                                    ),
+                                    )
                             )
                         }
                     }

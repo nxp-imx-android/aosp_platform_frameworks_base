@@ -46,10 +46,8 @@
     <string name="usb_accessory_confirm_prompt" msgid="5728408382798643421">"要開啟「<xliff:g id="APPLICATION">%1$s</xliff:g>」處理「<xliff:g id="USB_ACCESSORY">%2$s</xliff:g>」嗎？"</string>
     <string name="usb_accessory_uri_prompt" msgid="6756649383432542382">"已安裝的應用程式均無法存取這個 USB 配件，如要進一步瞭解這個配件，請瀏覽 <xliff:g id="URL">%1$s</xliff:g>"</string>
     <string name="title_usb_accessory" msgid="1236358027511638648">"USB 配件"</string>
-    <!-- no translation found for usb_device_dialog_allow_only_this_time_button (3653881633944232491) -->
-    <skip />
-    <!-- no translation found for usb_device_dialog_cancel_button (9050554648474787233) -->
-    <skip />
+    <string name="usb_device_dialog_allow_only_this_time_button" msgid="3653881633944232491">"僅限這次"</string>
+    <string name="usb_device_dialog_cancel_button" msgid="9050554648474787233">"取消"</string>
     <string name="label_view" msgid="6815442985276363364">"觀看"</string>
     <string name="always_use_device" msgid="210535878779644679">"連接「<xliff:g id="USB_DEVICE">%2$s</xliff:g>」時一律開啟「<xliff:g id="APPLICATION">%1$s</xliff:g>」"</string>
     <string name="always_use_accessory" msgid="1977225429341838444">"連接「<xliff:g id="USB_ACCESSORY">%2$s</xliff:g>」時一律開啟「<xliff:g id="APPLICATION">%1$s</xliff:g>」"</string>
@@ -158,10 +156,8 @@
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"顯示自拍鏡頭"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"顯示觸控回應"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"選擇要錄影的應用程式"</string>
-    <!-- no translation found for screen_record_settings (2377267679200139285) -->
-    <skip />
-    <!-- no translation found for screen_record_markup (5583986085046693669) -->
-    <skip />
+    <string name="screen_record_settings" msgid="2377267679200139285">"螢幕錄影設定"</string>
+    <string name="screen_record_markup" msgid="5583986085046693669">"添加效果"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"已儲存影片"</string>
     <string name="screen_record_video_deleted" msgid="30786214839944540">"影片已刪除"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"復原"</string>
@@ -174,8 +170,7 @@
     <string name="screen_record_pause" msgid="1715012292444967776">"暫停"</string>
     <string name="screen_record_mute" msgid="8111682249858638168">"靜音"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"取消靜音"</string>
-    <!-- no translation found for screen_record_video_preview_elapsed_time_a11y_template (969599623785875798) -->
-    <skip />
+    <string name="screen_record_video_preview_elapsed_time_a11y_template" formatted="false" msgid="969599623785875798">"<xliff:g id="ELAPSED_TIME">%1$s</xliff:g>/<xliff:g id="DURATION">%2$s</xliff:g>"</string>
     <string name="screen_capture_blocked_by_admin" msgid="1751756953683506644">"IT 管理員已封鎖螢幕截圖功能"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"擷取整個畫面的螢幕截圖"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"錄影整個螢幕畫面"</string>
@@ -189,10 +184,13 @@
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"分享應用程式視窗"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"分享分頁"</string>
     <string name="screen_share_entire_screen_sharing_title" msgid="9093580141248337998">"分享整個螢幕畫面"</string>
-    <string name="screen_share_disclaimer_app_sharing" msgid="4191319837838590771">"當你分享應用程式時，「[應用程式名稱]」可看到該應用程式中顯示或播放的任何內容。因此，請謹慎處理密碼、付款資料、訊息、相片、音訊和影片等。"</string>
-    <string name="screen_share_disclaimer_full_screen_sharing" msgid="6445373139864031364">"當你分享整個螢幕畫面時，「[應用程式名稱]」可看到你畫面上的任何內容。因此，請謹慎處理密碼、付款資料、訊息、相片、音訊和影片等。"</string>
-    <!-- no translation found for screen_share_a11y_announcement (8938007210094494367) -->
+    <!-- no translation found for screen_share_disclaimer_app_sharing (1839029004749224549) -->
     <skip />
+    <!-- no translation found for screen_share_disclaimer_tab_sharing (3811486274577713101) -->
+    <skip />
+    <!-- no translation found for screen_share_disclaimer_full_screen_sharing (5173795016606926338) -->
+    <skip />
+    <string name="screen_share_a11y_announcement" msgid="8938007210094494367">"揀要分享啲咩內容揀分頁、應用程式或者全個螢幕然後㩒 [分享]"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"擷取視窗的螢幕截圖"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"錄影視窗"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"擷取所選範圍的螢幕截圖"</string>
@@ -394,8 +392,7 @@
     <string name="accessibility_clear_all" msgid="970525598287244592">"清除所有通知。"</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"通知"</string>
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Google 助理"</string>
-    <!-- no translation found for accessibility_status_bar_input_method_indicator (4911669064186093506) -->
-    <skip />
+    <string name="accessibility_status_bar_input_method_indicator" msgid="4911669064186093506">"鍵盤"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{裡面還有 # 個通知。}other{裡面還有 # 個通知。}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"螢幕已鎖定為橫向模式。"</string>
@@ -945,8 +942,7 @@
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"通訊、推薦媒體和其他"</string>
     <string name="notification_onboarding_summaries_turn_on" msgid="3831339570984683297">"在「設定」中開啟"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"現在系統可撮要較長的對話，方便你快速掌握重點"</string>
-    <!-- no translation found for notification_onboarding_summaries_message_with_apps (5320980333818238465) -->
-    <skip />
+    <string name="notification_onboarding_summaries_message_with_apps" msgid="5320980333818238465">"現在裝置和應用程式可摘要較長的對話，方便你快速掌握重點"</string>
     <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"「通知整理工具」會將優先順序較低的通知分類，並設定為靜音。前往「設定」新增更多分類。"</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# 則通知}other{# 則通知}}"</string>
     <string name="notification_bundle_header_joined_description" msgid="4517556837418088139">"<xliff:g id="NAME">%1$s</xliff:g>，<xliff:g id="NUM_NOTIFICATIONS">%2$s</xliff:g>"</string>
@@ -1800,62 +1796,33 @@
     <string name="location_button_text_use_precise_location" msgid="3499475231656390476">"使用精確位置"</string>
     <string name="location_button_text_near_precise_location" msgid="3607275724182981412">"精確位置附近"</string>
     <string name="location_button_text_precise_location" msgid="4441259889842542799">"精確位置"</string>
-    <!-- no translation found for privacy_chip_use_string (979159484631969073) -->
-    <skip />
-    <!-- no translation found for privacy_chip_use_string_with_app (6807216002072346877) -->
-    <skip />
-    <!-- no translation found for privacy_chip_camera_and_mic_text (6254449489859255607) -->
-    <skip />
-    <!-- no translation found for av_panel_title (455230832870768515) -->
-    <skip />
-    <!-- no translation found for sensor_activity_header (2145727448786698035) -->
-    <skip />
-    <!-- no translation found for sensor_activity_see_all_access_button (8005330122289549048) -->
-    <skip />
-    <!-- no translation found for sensor_activity_camera_label (4260675418606211259) -->
-    <skip />
-    <!-- no translation found for sensor_activity_microphone_label (4012136402420177411) -->
-    <skip />
-    <!-- no translation found for sensor_activity_manage_access_button (1275701280501357102) -->
-    <skip />
-    <!-- no translation found for sensor_activity_close_app_button (6907314738150753330) -->
-    <skip />
-    <!-- no translation found for sensor_activity_back_button_cd (6894532284650291222) -->
-    <skip />
-    <!-- no translation found for privacy_chip_apps_using_sensor_suffix (527247786536767096) -->
-    <skip />
-    <!-- no translation found for privacy_chip_camera_in_use (5163494654848590528) -->
-    <skip />
-    <!-- no translation found for privacy_chip_mic_in_use (1586091297556363367) -->
-    <skip />
-    <!-- no translation found for privacy_chip_camera_mic_in_use (5179267787210197484) -->
-    <skip />
-    <!-- no translation found for av_camera_portrait_touch_up (5191856296212427203) -->
-    <skip />
-    <!-- no translation found for av_mic_label (5427348054144789879) -->
-    <skip />
-    <!-- no translation found for av_camera_label (7719772172590702343) -->
-    <skip />
-    <!-- no translation found for av_camera_blur_drill_in_title (2250600375798981511) -->
-    <skip />
-    <!-- no translation found for av_camera_blur_off (3170334995799202022) -->
-    <skip />
-    <!-- no translation found for av_camera_blur_light (5666055368940059418) -->
-    <skip />
-    <!-- no translation found for av_camera_blur_full (3276351992811619332) -->
-    <skip />
-    <!-- no translation found for av_camera_improve_lighting (1540549414296669133) -->
-    <skip />
-    <!-- no translation found for av_camera_framing (5108462267843042492) -->
-    <skip />
-    <!-- no translation found for av_studio_mic (2614843492629357766) -->
-    <skip />
-    <!-- no translation found for av_studio_look (621893522645557619) -->
-    <skip />
-    <!-- no translation found for av_studio_look_effects (4105109585851068415) -->
-    <skip />
-    <!-- no translation found for av_blur (405131343487260171) -->
-    <skip />
-    <!-- no translation found for av_live_captions (7819416886586903077) -->
-    <skip />
+    <string name="privacy_chip_use_string" msgid="979159484631969073">"正在使用<xliff:g id="SENSOR">%1$s</xliff:g>"</string>
+    <string name="privacy_chip_use_string_with_app" msgid="6807216002072346877">"「<xliff:g id="APP">%2$s</xliff:g>」正在使用<xliff:g id="SENSOR">%1$s</xliff:g>"</string>
+    <string name="privacy_chip_camera_and_mic_text" msgid="6254449489859255607">"相機和麥克風"</string>
+    <string name="av_panel_title" msgid="455230832870768515">"私隱"</string>
+    <string name="sensor_activity_header" msgid="2145727448786698035">"查看正在使用或最近曾使用這些權限的應用程式。"</string>
+    <string name="sensor_activity_see_all_access_button" msgid="8005330122289549048">"查看所有存取權"</string>
+    <string name="sensor_activity_camera_label" msgid="4260675418606211259">"相機"</string>
+    <string name="sensor_activity_microphone_label" msgid="4012136402420177411">"麥克風"</string>
+    <string name="sensor_activity_manage_access_button" msgid="1275701280501357102">"管理存取權"</string>
+    <string name="sensor_activity_close_app_button" msgid="6907314738150753330">"關閉應用程式"</string>
+    <string name="sensor_activity_back_button_cd" msgid="6894532284650291222">"返回"</string>
+    <string name="privacy_chip_apps_using_sensor_suffix" msgid="527247786536767096">"+ 另外 <xliff:g id="COUNT">%1$d</xliff:g> 個"</string>
+    <string name="privacy_chip_camera_in_use" msgid="5163494654848590528">"相機使用中"</string>
+    <string name="privacy_chip_mic_in_use" msgid="1586091297556363367">"正在使用麥克風"</string>
+    <string name="privacy_chip_camera_mic_in_use" msgid="5179267787210197484">"正在使用相機和麥克風"</string>
+    <string name="av_camera_portrait_touch_up" msgid="5191856296212427203">"人像修飾"</string>
+    <string name="av_mic_label" msgid="5427348054144789879">"麥克風"</string>
+    <string name="av_camera_label" msgid="7719772172590702343">"相機"</string>
+    <string name="av_camera_blur_drill_in_title" msgid="2250600375798981511">"背景模糊處理"</string>
+    <string name="av_camera_blur_off" msgid="3170334995799202022">"關閉"</string>
+    <string name="av_camera_blur_light" msgid="5666055368940059418">"輕度"</string>
+    <string name="av_camera_blur_full" msgid="3276351992811619332">"完全"</string>
+    <string name="av_camera_improve_lighting" msgid="1540549414296669133">"改善光線"</string>
+    <string name="av_camera_framing" msgid="5108462267843042492">"相機取景"</string>
+    <string name="av_studio_mic" msgid="2614843492629357766">"錄音室麥克風"</string>
+    <string name="av_studio_look" msgid="621893522645557619">"製作室影效"</string>
+    <string name="av_studio_look_effects" msgid="4105109585851068415">"%d 種效果"</string>
+    <string name="av_blur" msgid="405131343487260171">"模糊處理"</string>
+    <string name="av_live_captions" msgid="7819416886586903077">"即時字幕"</string>
 </resources>

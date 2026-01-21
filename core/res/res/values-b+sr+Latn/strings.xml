@@ -282,12 +282,12 @@
     <string name="global_action_power_options" msgid="1185286119330160073">"Napajanje"</string>
     <string name="global_action_restart" msgid="4678451019561687074">"Restartuj"</string>
     <string name="global_action_emergency" msgid="1387617624177105088">"Hitan poziv"</string>
-    <string name="global_action_bug_report" msgid="5127867163044170003">"Javi grešku"</string>
+    <string name="global_action_bug_report" msgid="5127867163044170003">"Izveštaj o grešci"</string>
     <string name="global_action_feedback" msgid="3480836834202300036">"Povratne informacije"</string>
     <string name="global_action_logout" msgid="6093581310002476511">"Završi sesiju"</string>
     <string name="global_action_screenshot" msgid="2610053466156478564">"Snimak ekrana"</string>
     <string name="global_action_standby" msgid="6786920589970257642">"Stanje pripravnosti"</string>
-    <string name="bugreport_title" msgid="8549990811777373050">"Javi grešku"</string>
+    <string name="bugreport_title" msgid="8549990811777373050">"Izveštaj o grešci"</string>
     <string name="bugreport_message" msgid="5212529146119624326">"Ovim će se prikupiti informacije o trenutnom stanju uređaja kako bi bile poslate u poruci e-pošte. Od započinjanja izveštaja o grešci do trenutka za njegovo slanje proći će neko vreme; budite strpljivi."</string>
     <string name="bugreport_option_interactive_title" msgid="7968287837902871289">"Interaktiv. izveštaj"</string>
     <string name="bugreport_option_interactive_summary" msgid="8493795476325339542">"Koristite ovo u većini slučajeva. To vam omogućava da pratite napredak izveštaja, da unosite dodatne detalje o problemu i da snimate snimke ekrana. Verovatno će izostaviti neke manje korišćene odeljke za koje pravljenje izveštaja dugo traje."</string>
@@ -2112,8 +2112,53 @@
     <string name="app_suspended_default_message" msgid="6451215678552004172">"Aplikacija <xliff:g id="APP_NAME_0">%1$s</xliff:g> trenutno nije dostupna. <xliff:g id="APP_NAME_1">%2$s</xliff:g> upravlja dostupnošću."</string>
     <string name="app_suspended_more_details" msgid="211260942831587014">"Saznajte više"</string>
     <string name="app_suspended_unsuspend_message" msgid="1665438589450555459">"Opozovi pauziranje aplikacije"</string>
+    <string name="app_lock_add_screen_lock_button_text" msgid="9209013414563206600">"Dodaj otključavanje ekrana"</string>
+    <string name="app_lock_add_screen_lock_message" msgid="6107009360675769892">"Ekran može da se otključa pomoću PIN-a, šablona ili lozinke. Njih koristite za otključavanje uređaja i pristup zaključanim aplikacijama."</string>
+    <string name="app_lock_add_screen_lock_title" msgid="6905612843620128689">"Prvo dodajte otključavanje ekrana"</string>
+    <!-- no translation found for enable_app_lock_success_toast_message (3339622779190529987) -->
+    <skip />
+    <!-- no translation found for enable_app_lock_failure_toast_message (1055838896510445566) -->
+    <skip />
+    <!-- no translation found for disable_app_lock_success_toast_message (70733620589071266) -->
+    <skip />
     <string name="locked_app_biometric_prompt_description" msgid="6853122652400451464">"Aplikacija <xliff:g id="APP_NAME">%1$s</xliff:g> je zaključana"</string>
     <string name="locked_app_external_display_message" msgid="5483884799685545338">"Da biste pristupili aplikaciji na ovom ekranu, prvo potvrdite identitet na drugom uređaju"</string>
+    <!-- no translation found for app_lock_edu_dialog_enable_app_lock_title (283314042336592322) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_description (8176807243219769518) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_description_template (8563718120753342530) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_description_template_no_biometrics (7122017109150633691) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_info_header (5876120209204270990) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_info_notifications (1124438392204873305) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_info_widgets (8809009414650740872) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_button_lock (3914687128135704801) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_face (1348151645996748654) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_fingerprint (5206107469561561455) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_fingerprint_and_face (7895807411323811641) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_lockscreen_password_name (8487096457702445059) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_lockscreen_pattern_name (991436996281983547) -->
+    <skip />
+    <!-- no translation found for app_lock_edu_dialog_lockscreen_pin_name (6458607126966304795) -->
+    <skip />
+    <!-- no translation found for app_lock_permission_review_dialog_title (5030286398974840579) -->
+    <skip />
+    <!-- no translation found for app_lock_permission_review_dialog_sub_title (310758587817184145) -->
+    <skip />
+    <!-- no translation found for app_lock_permission_review_expand_app_list_button (3214809707125223273) -->
+    <skip />
+    <!-- no translation found for app_lock_permission_review_continue_button (4045066724173414043) -->
+    <skip />
     <string name="work_mode_off_title" msgid="6367463960165135829">"Uključiti poslovne aplikacije?"</string>
     <string name="work_mode_turn_on" msgid="5316648862401307800">"Ponovo aktiviraj"</string>
     <string name="work_mode_emergency_call_button" msgid="6818855962881612322">"Hitan slučaj"</string>

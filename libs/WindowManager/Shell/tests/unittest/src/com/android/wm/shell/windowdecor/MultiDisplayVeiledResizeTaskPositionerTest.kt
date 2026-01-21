@@ -104,6 +104,7 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
     private val mockDesktopTasksController = mock<DesktopTasksController>()
     private val mockDesktopUserRepositories = mock<DesktopUserRepositories>()
     private val mockDesktopRepository = mock<DesktopRepository>()
+    private val mockResizeBinder = mock<IBinder>()
     private lateinit var resources: TestableResources
     private lateinit var spyDisplayLayout0: DisplayLayout
     private lateinit var spyDisplayLayout1: DisplayLayout
@@ -167,6 +168,7 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
         whenever(mockWindowDecoration.display).thenReturn(mockDisplay)
         whenever(mockDisplay.displayId).thenAnswer { DISPLAY_ID_0 }
         whenever(mockDesktopUserRepositories.getProfile(anyInt())).thenReturn(mockDesktopRepository)
+        whenever(mockTransitions.startTransition(any(), any(), any())).thenReturn(mockResizeBinder)
 
         taskPositioner =
             MultiDisplayVeiledResizeTaskPositioner(
@@ -514,9 +516,6 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
         whenever(mockDesktopRepository.hasBoundsBeforeSnapOrMaximize(any())).thenReturn(true)
         whenever(mockDesktopRepository.getBoundsBeforeSnapOrMaximize(TASK_ID))
             .thenReturn(prevBounds)
-
-        val mockResizeBinder = mock<IBinder>()
-        whenever(mockTransitions.startTransition(any(), any(), any())).thenReturn(mockResizeBinder)
 
         val dragStartX = 150f
         val dragStartY = 150f

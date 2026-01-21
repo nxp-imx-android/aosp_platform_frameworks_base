@@ -46,10 +46,8 @@
     <string name="usb_accessory_confirm_prompt" msgid="5728408382798643421">"<xliff:g id="USB_ACCESSORY">%2$s</xliff:g> හැසිරවීමට <xliff:g id="APPLICATION">%1$s</xliff:g> විවෘත කරන්නද?"</string>
     <string name="usb_accessory_uri_prompt" msgid="6756649383432542382">"මෙම USB මෙවලම සමග ක්‍රියා කරන ස්ථාපිත යෙදුම් නොමැත. <xliff:g id="URL">%1$s</xliff:g> වලින් මෙම මෙවලම ගැන තව දැනගන්න"</string>
     <string name="title_usb_accessory" msgid="1236358027511638648">"USB මෙවලම"</string>
-    <!-- no translation found for usb_device_dialog_allow_only_this_time_button (3653881633944232491) -->
-    <skip />
-    <!-- no translation found for usb_device_dialog_cancel_button (9050554648474787233) -->
-    <skip />
+    <string name="usb_device_dialog_allow_only_this_time_button" msgid="3653881633944232491">"මෙම වතාවේ පමණි"</string>
+    <string name="usb_device_dialog_cancel_button" msgid="9050554648474787233">"අවලංගු කරන්න"</string>
     <string name="label_view" msgid="6815442985276363364">"පෙනුම"</string>
     <string name="always_use_device" msgid="210535878779644679">"<xliff:g id="USB_DEVICE">%2$s</xliff:g> සම්බන්ධ විට <xliff:g id="APPLICATION">%1$s</xliff:g> සැම විටම විවෘත කරන්න"</string>
     <string name="always_use_accessory" msgid="1977225429341838444">"<xliff:g id="USB_ACCESSORY">%2$s</xliff:g> සම්බන්ධ විට <xliff:g id="APPLICATION">%1$s</xliff:g> සැම විටම විවෘත කරන්න"</string>
@@ -158,10 +156,8 @@
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"සෙල්ෆි කැමරාව පෙන්වන්න"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"ස්පර්ශ පෙන්වන්න"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"පටිගත කිරීමට යෙදුමක් තෝරා ගන්න"</string>
-    <!-- no translation found for screen_record_settings (2377267679200139285) -->
-    <skip />
-    <!-- no translation found for screen_record_markup (5583986085046693669) -->
-    <skip />
+    <string name="screen_record_settings" msgid="2377267679200139285">"තිර පටිගත කිරීමේ සැකසීම්"</string>
+    <string name="screen_record_markup" msgid="5583986085046693669">"සලකුණු"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"වීඩියෝව සුරැකිණි"</string>
     <string name="screen_record_video_deleted" msgid="30786214839944540">"වීඩියෝව මැකිණි"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"අස් කරන්න"</string>
@@ -174,8 +170,7 @@
     <string name="screen_record_pause" msgid="1715012292444967776">"විරාම කරන්න"</string>
     <string name="screen_record_mute" msgid="8111682249858638168">"නිහඬ කරන්න"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"නිහඬ නොකරන්න"</string>
-    <!-- no translation found for screen_record_video_preview_elapsed_time_a11y_template (969599623785875798) -->
-    <skip />
+    <string name="screen_record_video_preview_elapsed_time_a11y_template" formatted="false" msgid="969599623785875798">"<xliff:g id="DURATION">%2$s</xliff:g>න් <xliff:g id="ELAPSED_TIME">%1$s</xliff:g>"</string>
     <string name="screen_capture_blocked_by_admin" msgid="1751756953683506644">"ඔබේ IT පරිපාලක විසින් තිර ග්‍රහණය අවහිර කර ඇත"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"මුළු තිරයේම තිර රුවක් ගන්න"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"සම්පූර්ණ තිරය පටිගත කරන්න"</string>
@@ -189,10 +184,13 @@
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"යෙදුම් කවුළුව බෙදා ගන්න"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"පටිත්ත බෙදා ගන්න"</string>
     <string name="screen_share_entire_screen_sharing_title" msgid="9093580141248337998">"සම්පූර්ණ තිරය බෙදා ගන්න"</string>
-    <string name="screen_share_disclaimer_app_sharing" msgid="4191319837838590771">"ඔබ යෙදුමක් බෙදා ගන්නා විට, එම යෙදුමේ පෙන්වන හෝ වාදනය කරන ඕනෑම දෙයක් [APP NAME] වෙත දෘශ්‍යමාන වේ. එබැවින් මුරපද, ගෙවීම් විස්තර, පණිවිඩ, ඡායාරූප සහ ශ්‍රව්‍ය සහ වීඩියෝ වැනි දේවල් සමග ප්‍රවේශම් වන්න."</string>
-    <string name="screen_share_disclaimer_full_screen_sharing" msgid="6445373139864031364">"ඔබ ඔබේ සම්පූර්ණ තිරය බෙදා ගන්නා විට, ඔබේ තිරයේ ඇති ඕනෑම දෙයක් [APP NAME] වෙත දෘශ්‍යමාන වේ. එබැවින් මුරපද, ගෙවීම් විස්තර, පණිවිඩ, ඡායාරූප, සහ ශ්‍රව්‍ය සහ දෘශ්‍ය වැනි දේවල් සමග ප්‍රවේශම් වන්න."</string>
-    <!-- no translation found for screen_share_a11y_announcement (8938007210094494367) -->
+    <!-- no translation found for screen_share_disclaimer_app_sharing (1839029004749224549) -->
     <skip />
+    <!-- no translation found for screen_share_disclaimer_tab_sharing (3811486274577713101) -->
+    <skip />
+    <!-- no translation found for screen_share_disclaimer_full_screen_sharing (5173795016606926338) -->
+    <skip />
+    <string name="screen_share_a11y_announcement" msgid="8938007210094494367">"බෙදා ගන්නා දේ තෝරා ගන්න. පටිත්ත, යෙදුම, හෝ සම්පූර්ණ තිරය තෝරන්න. ඉන්පසු බෙදා ගන්න ඔබන්න."</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"කවුළුවේ තිර රුවක් ගන්න"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"පටිගත කිරීමේ කවුළුව"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"තෝරා ගත් ප්‍රදේශයේ තිර රුවක් ගන්න"</string>
@@ -394,8 +392,7 @@
     <string name="accessibility_clear_all" msgid="970525598287244592">"සියලු දැනුම්දීම් හිස් කරන්න."</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"දැනුම්දීම්"</string>
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"සහායක"</string>
-    <!-- no translation found for accessibility_status_bar_input_method_indicator (4911669064186093506) -->
-    <skip />
+    <string name="accessibility_status_bar_input_method_indicator" msgid="4911669064186093506">"යතුරු පුවරුව"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{ඇතුළත තව # දැනුම්දීමක් ඇත.}one{ඇතුළත තව දැනුම්දීම් #ක් ඇත.}other{ඇතුළත තව දැනුම්දීම් #ක් ඇත.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"තිරය තිරස් දිශානතියෙහි අගුළු දමා ඇත."</string>
@@ -945,8 +942,7 @@
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"පුවත් පත්‍රිකා, නිර්දේශිත මාධ්‍ය, සහ තවත් දේ"</string>
     <string name="notification_onboarding_summaries_turn_on" msgid="3831339570984683297">"සැකසීම් තුළ ක්‍රියාත්මක කරන්න"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"ඔබේ දීර්ඝ සංවාද දැන් සාරාංශගත කර ඔබට ඉක්මන් සාරාංශ ලබා දිය හැක"</string>
-    <!-- no translation found for notification_onboarding_summaries_message_with_apps (5320980333818238465) -->
-    <skip />
+    <string name="notification_onboarding_summaries_message_with_apps" msgid="5320980333818238465">"ඔබේ උපාංගයට සහ යෙදුම්වලට දැන් ඔබට ඉක්මන් සාරාංශ ලබා දීමට දිගු සංවාද සාරාංශ කළ හැක"</string>
     <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"දැනුම්දීම් සංවිධායක අඩු ප්‍රමුඛතා දැනුම්දීම් පොදි කර නිහඬ කරයි. සැකසීම් තුළ තවත් ප්‍රවර්ග එක් කරන්න."</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# දැනුම්දීමක්}one{දැනුම්දීම් #ක්}other{දැනුම්දීම් #ක්}}"</string>
     <string name="notification_bundle_header_joined_description" msgid="4517556837418088139">"<xliff:g id="NAME">%1$s</xliff:g>, <xliff:g id="NUM_NOTIFICATIONS">%2$s</xliff:g>"</string>
@@ -1800,62 +1796,33 @@
     <string name="location_button_text_use_precise_location" msgid="3499475231656390476">"ඉතා නිවැරදි ස්ථානය භාවිතා කරන්න"</string>
     <string name="location_button_text_near_precise_location" msgid="3607275724182981412">"නිශ්චිත ස්ථානය ආසන්නයේ"</string>
     <string name="location_button_text_precise_location" msgid="4441259889842542799">"ඉතා නිවැරදි ස්ථානය"</string>
-    <!-- no translation found for privacy_chip_use_string (979159484631969073) -->
-    <skip />
-    <!-- no translation found for privacy_chip_use_string_with_app (6807216002072346877) -->
-    <skip />
-    <!-- no translation found for privacy_chip_camera_and_mic_text (6254449489859255607) -->
-    <skip />
-    <!-- no translation found for av_panel_title (455230832870768515) -->
-    <skip />
-    <!-- no translation found for sensor_activity_header (2145727448786698035) -->
-    <skip />
-    <!-- no translation found for sensor_activity_see_all_access_button (8005330122289549048) -->
-    <skip />
-    <!-- no translation found for sensor_activity_camera_label (4260675418606211259) -->
-    <skip />
-    <!-- no translation found for sensor_activity_microphone_label (4012136402420177411) -->
-    <skip />
-    <!-- no translation found for sensor_activity_manage_access_button (1275701280501357102) -->
-    <skip />
-    <!-- no translation found for sensor_activity_close_app_button (6907314738150753330) -->
-    <skip />
-    <!-- no translation found for sensor_activity_back_button_cd (6894532284650291222) -->
-    <skip />
-    <!-- no translation found for privacy_chip_apps_using_sensor_suffix (527247786536767096) -->
-    <skip />
-    <!-- no translation found for privacy_chip_camera_in_use (5163494654848590528) -->
-    <skip />
-    <!-- no translation found for privacy_chip_mic_in_use (1586091297556363367) -->
-    <skip />
-    <!-- no translation found for privacy_chip_camera_mic_in_use (5179267787210197484) -->
-    <skip />
-    <!-- no translation found for av_camera_portrait_touch_up (5191856296212427203) -->
-    <skip />
-    <!-- no translation found for av_mic_label (5427348054144789879) -->
-    <skip />
-    <!-- no translation found for av_camera_label (7719772172590702343) -->
-    <skip />
-    <!-- no translation found for av_camera_blur_drill_in_title (2250600375798981511) -->
-    <skip />
-    <!-- no translation found for av_camera_blur_off (3170334995799202022) -->
-    <skip />
-    <!-- no translation found for av_camera_blur_light (5666055368940059418) -->
-    <skip />
-    <!-- no translation found for av_camera_blur_full (3276351992811619332) -->
-    <skip />
-    <!-- no translation found for av_camera_improve_lighting (1540549414296669133) -->
-    <skip />
-    <!-- no translation found for av_camera_framing (5108462267843042492) -->
-    <skip />
-    <!-- no translation found for av_studio_mic (2614843492629357766) -->
-    <skip />
-    <!-- no translation found for av_studio_look (621893522645557619) -->
-    <skip />
-    <!-- no translation found for av_studio_look_effects (4105109585851068415) -->
-    <skip />
-    <!-- no translation found for av_blur (405131343487260171) -->
-    <skip />
-    <!-- no translation found for av_live_captions (7819416886586903077) -->
-    <skip />
+    <string name="privacy_chip_use_string" msgid="979159484631969073">"<xliff:g id="SENSOR">%1$s</xliff:g> භාවිතයේ ඇත"</string>
+    <string name="privacy_chip_use_string_with_app" msgid="6807216002072346877">"<xliff:g id="SENSOR">%1$s</xliff:g> <xliff:g id="APP">%2$s</xliff:g> භාවිත කරයි"</string>
+    <string name="privacy_chip_camera_and_mic_text" msgid="6254449489859255607">"කැමරාව සහ මයික්"</string>
+    <string name="av_panel_title" msgid="455230832870768515">"රහස්‍යතාව"</string>
+    <string name="sensor_activity_header" msgid="2145727448786698035">"මෙම අවසර ක්‍රියාකාරීව හෝ මෑතක දී භාවිත කරන යෙදුම් බලන්න."</string>
+    <string name="sensor_activity_see_all_access_button" msgid="8005330122289549048">"සියලු ප්‍රවේශය බලන්න"</string>
+    <string name="sensor_activity_camera_label" msgid="4260675418606211259">"කැමරාව"</string>
+    <string name="sensor_activity_microphone_label" msgid="4012136402420177411">"මයික්‍රෆෝනය"</string>
+    <string name="sensor_activity_manage_access_button" msgid="1275701280501357102">"ප්‍රවේශය කළමනාකරණය කරන්න"</string>
+    <string name="sensor_activity_close_app_button" msgid="6907314738150753330">"යෙදුම වසන්න"</string>
+    <string name="sensor_activity_back_button_cd" msgid="6894532284650291222">"ආපසු"</string>
+    <string name="privacy_chip_apps_using_sensor_suffix" msgid="527247786536767096">"තව +<xliff:g id="COUNT">%1$d</xliff:g>"</string>
+    <string name="privacy_chip_camera_in_use" msgid="5163494654848590528">"කැමරාව භාවිතයේ ඇත"</string>
+    <string name="privacy_chip_mic_in_use" msgid="1586091297556363367">"මයික් භාවිතයේ ඇත"</string>
+    <string name="privacy_chip_camera_mic_in_use" msgid="5179267787210197484">"කැමරාව, මයික් භාවිතයේ ඇත"</string>
+    <string name="av_camera_portrait_touch_up" msgid="5191856296212427203">"ප්‍රතිමූර්තියේ ගුණත්වය වැඩි කිරීම"</string>
+    <string name="av_mic_label" msgid="5427348054144789879">"මයික්‍රෆෝනය"</string>
+    <string name="av_camera_label" msgid="7719772172590702343">"කැමරාව"</string>
+    <string name="av_camera_blur_drill_in_title" msgid="2250600375798981511">"පසුබිම නොපැහැදිලි බව"</string>
+    <string name="av_camera_blur_off" msgid="3170334995799202022">"ක්‍රියාවිරහිතයි"</string>
+    <string name="av_camera_blur_light" msgid="5666055368940059418">"සැහැල්ලු"</string>
+    <string name="av_camera_blur_full" msgid="3276351992811619332">"පූර්ණ"</string>
+    <string name="av_camera_improve_lighting" msgid="1540549414296669133">"ආලෝකකරණය වැඩි දියුණු කිරීම"</string>
+    <string name="av_camera_framing" msgid="5108462267843042492">"කැමරා රාමුව"</string>
+    <string name="av_studio_mic" msgid="2614843492629357766">"ස්ටූඩියෝ මයික්‍රොෆෝනය"</string>
+    <string name="av_studio_look" msgid="621893522645557619">"ස්ටූඩියෝ පෙනුම"</string>
+    <string name="av_studio_look_effects" msgid="4105109585851068415">"ප්‍රයෝග %dක්"</string>
+    <string name="av_blur" msgid="405131343487260171">"නොපැහැදිලි"</string>
+    <string name="av_live_captions" msgid="7819416886586903077">"සජීවී සිරස්තල"</string>
 </resources>

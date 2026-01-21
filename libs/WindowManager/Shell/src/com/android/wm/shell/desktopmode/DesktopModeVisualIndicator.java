@@ -269,8 +269,7 @@ public class DesktopModeVisualIndicator {
      */
     @NonNull
     IndicatorType calculateIndicatorType(int displayId, PointF inputCoordinates) {
-        if (DesktopExperienceFlags.ENABLE_CONNECTED_DISPLAYS_WINDOW_DRAG.isTrue()
-                && mTaskInfo.displayId != displayId) {
+        if (mTaskInfo.displayId != displayId) {
             // TODO(b/411292927): Allow indicator to show on the target display (`displayId`)
             // even if it differs from the task's original display.
             return NO_INDICATOR;

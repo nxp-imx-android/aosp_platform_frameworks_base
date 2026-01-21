@@ -132,6 +132,7 @@ message PreferenceProto {
       KeyParametersProto key_parameters = 4;
     }
   }
+  optional int32 purpose = 21;
 }
 
 // Proto of permissions

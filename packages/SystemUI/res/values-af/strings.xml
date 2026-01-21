@@ -46,10 +46,8 @@
     <string name="usb_accessory_confirm_prompt" msgid="5728408382798643421">"Hanteer <xliff:g id="USB_ACCESSORY">%2$s</xliff:g> met <xliff:g id="APPLICATION">%1$s</xliff:g>?"</string>
     <string name="usb_accessory_uri_prompt" msgid="6756649383432542382">"Geen geïnstalleerde programme werk met hierdie USB-toebehoorsel nie. Vind meer uit oor hierdie toebehoorsel by <xliff:g id="URL">%1$s</xliff:g>"</string>
     <string name="title_usb_accessory" msgid="1236358027511638648">"USB-toebehoorsel"</string>
-    <!-- no translation found for usb_device_dialog_allow_only_this_time_button (3653881633944232491) -->
-    <skip />
-    <!-- no translation found for usb_device_dialog_cancel_button (9050554648474787233) -->
-    <skip />
+    <string name="usb_device_dialog_allow_only_this_time_button" msgid="3653881633944232491">"Net hierdie keer"</string>
+    <string name="usb_device_dialog_cancel_button" msgid="9050554648474787233">"Kanselleer"</string>
     <string name="label_view" msgid="6815442985276363364">"Sien"</string>
     <string name="always_use_device" msgid="210535878779644679">"Maak <xliff:g id="APPLICATION">%1$s</xliff:g> altyd oop wanneer <xliff:g id="USB_DEVICE">%2$s</xliff:g> gekoppel is"</string>
     <string name="always_use_accessory" msgid="1977225429341838444">"Maak <xliff:g id="APPLICATION">%1$s</xliff:g> altyd oop wanneer <xliff:g id="USB_ACCESSORY">%2$s</xliff:g> gekoppel is"</string>
@@ -66,7 +64,7 @@
     <string name="share_wifi_button_text" msgid="1285273973812029240">"Deel wi-fi"</string>
     <string name="add_network_button_text" msgid="4046392140897987570">"Voeg netwerk by"</string>
     <string name="wifi_debugging_title" msgid="7300007687492186076">"Laat draadlose ontfouting op hierdie netwerk toe?"</string>
-    <string name="wifi_debugging_message" msgid="5461204211731802995">"Netwerknaam (SSID)\n<xliff:g id="SSID_0">%1$s</xliff:g>\n\nWi‑Fi-adres (BSSID)\n<xliff:g id="BSSID_1">%2$s</xliff:g>"</string>
+    <string name="wifi_debugging_message" msgid="5461204211731802995">"Netwerknaam (SSID)\n<xliff:g id="SSID_0">%1$s</xliff:g>\n\nWi‑fi-adres (BSSID)\n<xliff:g id="BSSID_1">%2$s</xliff:g>"</string>
     <string name="wifi_debugging_always" msgid="2968383799517975155">"Laat altyd toe op hierdie netwerk"</string>
     <string name="wifi_debugging_allow" msgid="4573224609684957886">"Laat toe"</string>
     <string name="wifi_debugging_secondary_user_title" msgid="2493201475880517725">"Draadlose ontfouting word nie toegelaat nie"</string>
@@ -158,10 +156,8 @@
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"Wys selfiekamera"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Wys aanrakings"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Kies ’n app om op te neem"</string>
-    <!-- no translation found for screen_record_settings (2377267679200139285) -->
-    <skip />
-    <!-- no translation found for screen_record_markup (5583986085046693669) -->
-    <skip />
+    <string name="screen_record_settings" msgid="2377267679200139285">"Skermopname-instellings"</string>
+    <string name="screen_record_markup" msgid="5583986085046693669">"Uitleg"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Video is gestoor"</string>
     <string name="screen_record_video_deleted" msgid="30786214839944540">"Video is uitgevee"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"Ontdoen"</string>
@@ -174,8 +170,7 @@
     <string name="screen_record_pause" msgid="1715012292444967776">"Onderbreek"</string>
     <string name="screen_record_mute" msgid="8111682249858638168">"Demp"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"Ontdemp"</string>
-    <!-- no translation found for screen_record_video_preview_elapsed_time_a11y_template (969599623785875798) -->
-    <skip />
+    <string name="screen_record_video_preview_elapsed_time_a11y_template" formatted="false" msgid="969599623785875798">"<xliff:g id="ELAPSED_TIME">%1$s</xliff:g> van <xliff:g id="DURATION">%2$s</xliff:g>"</string>
     <string name="screen_capture_blocked_by_admin" msgid="1751756953683506644">"Skermskoot word deur jou IT-admin geblokkeer"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"Neem ’n skermskoot van die hele skerm"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"Neem hele skerm op"</string>
@@ -189,10 +184,13 @@
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"Deel appvenster"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"Deel oortjie"</string>
     <string name="screen_share_entire_screen_sharing_title" msgid="9093580141248337998">"Deel hele skerm"</string>
-    <string name="screen_share_disclaimer_app_sharing" msgid="4191319837838590771">"Wanneer jy ’n app deel, is enigiets wat in die app wys of speel sigbaar aan [APP NAME]. Oppas dus met dinge soos wagwoorde, betalingbesonderhede, boodskappe, foto’s en oudio en video."</string>
-    <string name="screen_share_disclaimer_full_screen_sharing" msgid="6445373139864031364">"Wanneer jy jou hele skerm deel, is enigiets op jou skerm sigbaar aan [APP NAME]. Oppas dus met dinge soos wagwoorde, betalingbesonderhede, boodskappe, foto’s, en oudio en video."</string>
-    <!-- no translation found for screen_share_a11y_announcement (8938007210094494367) -->
+    <!-- no translation found for screen_share_disclaimer_app_sharing (1839029004749224549) -->
     <skip />
+    <!-- no translation found for screen_share_disclaimer_tab_sharing (3811486274577713101) -->
+    <skip />
+    <!-- no translation found for screen_share_disclaimer_full_screen_sharing (5173795016606926338) -->
+    <skip />
+    <string name="screen_share_a11y_announcement" msgid="8938007210094494367">"Kies wat om te deel. Kies oortjie, app of hele skerm. Druk dan deel."</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Neem skermskoot van venster"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Neem venster op"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Neem ’n skermskoot van die geselekteerde area"</string>
@@ -394,8 +392,7 @@
     <string name="accessibility_clear_all" msgid="970525598287244592">"Verwyder alle kennisgewings."</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"Kennisgewings"</string>
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Assistent"</string>
-    <!-- no translation found for accessibility_status_bar_input_method_indicator (4911669064186093506) -->
-    <skip />
+    <string name="accessibility_status_bar_input_method_indicator" msgid="4911669064186093506">"Sleutelbord"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{nog # kennisgewing binne.}other{nog # kennisgewings binne.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"Skerm is in landskapsoriëntasie gesluit."</string>
@@ -945,8 +942,7 @@
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"Nuusbriewe, aanbevole media en meer"</string>
     <string name="notification_onboarding_summaries_turn_on" msgid="3831339570984683297">"Skakel aan in Instellings"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"Jou langer gesprekke kan nou opgesom word om vir jou vinnige samevattings te gee"</string>
-    <!-- no translation found for notification_onboarding_summaries_message_with_apps (5320980333818238465) -->
-    <skip />
+    <string name="notification_onboarding_summaries_message_with_apps" msgid="5320980333818238465">"Jou toestel en apps kan nou langer gesprekke opsom om vir jou vinnige samevattings te gee"</string>
     <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"Kennisgewingorganiseerder bondel en demp kennisgewings met laer prioritieit. Voeg nog kategorieë in Instellings by."</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# kennisgewing}other{# kennisgewings}}"</string>
     <string name="notification_bundle_header_joined_description" msgid="4517556837418088139">"<xliff:g id="NAME">%1$s</xliff:g>, <xliff:g id="NUM_NOTIFICATIONS">%2$s</xliff:g>"</string>
@@ -1800,62 +1796,33 @@
     <string name="location_button_text_use_precise_location" msgid="3499475231656390476">"Gebruik presiese ligging"</string>
     <string name="location_button_text_near_precise_location" msgid="3607275724182981412">"Naby presiese ligging"</string>
     <string name="location_button_text_precise_location" msgid="4441259889842542799">"Presiese ligging"</string>
-    <!-- no translation found for privacy_chip_use_string (979159484631969073) -->
-    <skip />
-    <!-- no translation found for privacy_chip_use_string_with_app (6807216002072346877) -->
-    <skip />
-    <!-- no translation found for privacy_chip_camera_and_mic_text (6254449489859255607) -->
-    <skip />
-    <!-- no translation found for av_panel_title (455230832870768515) -->
-    <skip />
-    <!-- no translation found for sensor_activity_header (2145727448786698035) -->
-    <skip />
-    <!-- no translation found for sensor_activity_see_all_access_button (8005330122289549048) -->
-    <skip />
-    <!-- no translation found for sensor_activity_camera_label (4260675418606211259) -->
-    <skip />
-    <!-- no translation found for sensor_activity_microphone_label (4012136402420177411) -->
-    <skip />
-    <!-- no translation found for sensor_activity_manage_access_button (1275701280501357102) -->
-    <skip />
-    <!-- no translation found for sensor_activity_close_app_button (6907314738150753330) -->
-    <skip />
-    <!-- no translation found for sensor_activity_back_button_cd (6894532284650291222) -->
-    <skip />
-    <!-- no translation found for privacy_chip_apps_using_sensor_suffix (527247786536767096) -->
-    <skip />
-    <!-- no translation found for privacy_chip_camera_in_use (5163494654848590528) -->
-    <skip />
-    <!-- no translation found for privacy_chip_mic_in_use (1586091297556363367) -->
-    <skip />
-    <!-- no translation found for privacy_chip_camera_mic_in_use (5179267787210197484) -->
-    <skip />
-    <!-- no translation found for av_camera_portrait_touch_up (5191856296212427203) -->
-    <skip />
-    <!-- no translation found for av_mic_label (5427348054144789879) -->
-    <skip />
-    <!-- no translation found for av_camera_label (7719772172590702343) -->
-    <skip />
-    <!-- no translation found for av_camera_blur_drill_in_title (2250600375798981511) -->
-    <skip />
-    <!-- no translation found for av_camera_blur_off (3170334995799202022) -->
-    <skip />
-    <!-- no translation found for av_camera_blur_light (5666055368940059418) -->
-    <skip />
-    <!-- no translation found for av_camera_blur_full (3276351992811619332) -->
-    <skip />
-    <!-- no translation found for av_camera_improve_lighting (1540549414296669133) -->
-    <skip />
-    <!-- no translation found for av_camera_framing (5108462267843042492) -->
-    <skip />
-    <!-- no translation found for av_studio_mic (2614843492629357766) -->
-    <skip />
-    <!-- no translation found for av_studio_look (621893522645557619) -->
-    <skip />
-    <!-- no translation found for av_studio_look_effects (4105109585851068415) -->
-    <skip />
-    <!-- no translation found for av_blur (405131343487260171) -->
-    <skip />
-    <!-- no translation found for av_live_captions (7819416886586903077) -->
-    <skip />
+    <string name="privacy_chip_use_string" msgid="979159484631969073">"<xliff:g id="SENSOR">%1$s</xliff:g> word tans gebruik"</string>
+    <string name="privacy_chip_use_string_with_app" msgid="6807216002072346877">"<xliff:g id="SENSOR">%1$s</xliff:g> word deur <xliff:g id="APP">%2$s</xliff:g> gebruik"</string>
+    <string name="privacy_chip_camera_and_mic_text" msgid="6254449489859255607">"Kamera en mikrofoon"</string>
+    <string name="av_panel_title" msgid="455230832870768515">"Privaatheid"</string>
+    <string name="sensor_activity_header" msgid="2145727448786698035">"Sien apps wat aktief hierdie toestemmings gebruik, of onlangs gebruik het."</string>
+    <string name="sensor_activity_see_all_access_button" msgid="8005330122289549048">"Sien alle toegang"</string>
+    <string name="sensor_activity_camera_label" msgid="4260675418606211259">"Kamera"</string>
+    <string name="sensor_activity_microphone_label" msgid="4012136402420177411">"Mikrofoon"</string>
+    <string name="sensor_activity_manage_access_button" msgid="1275701280501357102">"Bestuur toegang"</string>
+    <string name="sensor_activity_close_app_button" msgid="6907314738150753330">"Maak app toe"</string>
+    <string name="sensor_activity_back_button_cd" msgid="6894532284650291222">"Terug"</string>
+    <string name="privacy_chip_apps_using_sensor_suffix" msgid="527247786536767096">"+ nog <xliff:g id="COUNT">%1$d</xliff:g>"</string>
+    <string name="privacy_chip_camera_in_use" msgid="5163494654848590528">"Kamera word tans gebruik"</string>
+    <string name="privacy_chip_mic_in_use" msgid="1586091297556363367">"Mikrofoon word tans gebruik"</string>
+    <string name="privacy_chip_camera_mic_in_use" msgid="5179267787210197484">"Kamera, mikrofoon word tans gebruik"</string>
+    <string name="av_camera_portrait_touch_up" msgid="5191856296212427203">"Portretopknapping"</string>
+    <string name="av_mic_label" msgid="5427348054144789879">"Mikrofoon"</string>
+    <string name="av_camera_label" msgid="7719772172590702343">"Kamera"</string>
+    <string name="av_camera_blur_drill_in_title" msgid="2250600375798981511">"Agtergrondwasigheid"</string>
+    <string name="av_camera_blur_off" msgid="3170334995799202022">"Af"</string>
+    <string name="av_camera_blur_light" msgid="5666055368940059418">"Lig"</string>
+    <string name="av_camera_blur_full" msgid="3276351992811619332">"Vol"</string>
+    <string name="av_camera_improve_lighting" msgid="1540549414296669133">"Verbeter beligting"</string>
+    <string name="av_camera_framing" msgid="5108462267843042492">"Kameraomraming"</string>
+    <string name="av_studio_mic" msgid="2614843492629357766">"Ateljeemikrofoon"</string>
+    <string name="av_studio_look" msgid="621893522645557619">"Ateljeegehalte"</string>
+    <string name="av_studio_look_effects" msgid="4105109585851068415">"%d effekte"</string>
+    <string name="av_blur" msgid="405131343487260171">"Maak wasig"</string>
+    <string name="av_live_captions" msgid="7819416886586903077">"Intydse Onderskrifte"</string>
 </resources>

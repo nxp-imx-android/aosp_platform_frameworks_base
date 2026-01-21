@@ -8410,7 +8410,8 @@
         @FlaggedApi(android.app.supervision.flags.Flags.FLAG_ENABLE_SUPERVISION_MANAGER_POLICY_APIS)
     -->
     <permission android:name="android.permission.MANAGE_SUPERVISION"
-        android:protectionLevel="internal|role" />
+        android:protectionLevel="internal|role"
+        android:featureFlag="android.app.supervision.flags.enable_supervision_manager_policy_apis" />
 
     <!-- Must be required by system/priv apps to run sound trigger recognition sessions while in
          battery saver mode.

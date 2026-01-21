@@ -45,4 +45,8 @@ class GraphNode {
     boolean isProcessRunning() {
         return mProc.isProcessRunning();
     }
+
+    boolean hasActiveInstrumentation() {
+        return mProc.hasActiveInstrumentation();
+    }
 }

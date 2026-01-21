@@ -37,6 +37,8 @@ import com.android.systemui.screenrecord.shared.model.ScreenRecordingParametersF
 import com.android.systemui.testKosmosNew
 import com.google.common.truth.Truth.assertThat
 import kotlin.time.Duration.Companion.days
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.launch
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -64,10 +66,12 @@ class ScreenCaptureCameraTransformationViewModelTest : SysuiTestCase() {
     @Test
     fun isTransforming_isPropagated() =
         kosmos.runTest {
-            underTest.onTransformationStarted()
+            val transform = CompletableDeferred<Unit>()
+
+            testScope.launch { underTest.state.transform { transform.await() } }
             assertThat(screenCaptureCameraTransformationInteractor.isTransforming).isTrue()
 
-            underTest.onTransformationEnded()
+            transform.complete(Unit)
             assertThat(screenCaptureCameraTransformationInteractor.isTransforming).isFalse()
         }
 

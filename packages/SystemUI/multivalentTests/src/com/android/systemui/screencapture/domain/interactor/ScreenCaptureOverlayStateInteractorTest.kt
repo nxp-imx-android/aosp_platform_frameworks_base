@@ -52,9 +52,7 @@ class ScreenCaptureOverlayStateInteractorTest : SysuiTestCase() {
             val isOverlayVisible by collectLastValue(underTest.isVisible)
 
             screenRecordCameraRepository.connect()
-            screenCaptureRecordParametersRepository.updateParameters {
-                it.copy(shouldShowFrontCamera = true)
-            }
+            screenCaptureRecordParametersRepository.shouldShowFrontCamera = true
 
             assertThat(isOverlayVisible).isTrue()
         }

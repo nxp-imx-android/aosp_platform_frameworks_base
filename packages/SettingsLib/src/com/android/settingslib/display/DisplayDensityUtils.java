@@ -27,6 +27,7 @@ import android.os.UserHandle;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.MathUtils;
+import android.util.Slog;
 import android.view.Display;
 import android.view.DisplayInfo;
 import android.view.IWindowManager;
@@ -378,6 +379,9 @@ public class DisplayDensityUtils {
         mEntries = entries;
         mValues = values;
         mFloatValues = valuesFloat;
+        Slog.i(LOG_TAG, "mDefaultDensity: " + mDefaultDensity + ", mCurrentIndex: " + mCurrentIndex
+                + ", mEntries: " + Arrays.toString(mEntries) + ", mValues: " + Arrays.toString(
+                mValues) + ", mFloatValues: " + Arrays.toString(mFloatValues));
     }
 
     @Nullable

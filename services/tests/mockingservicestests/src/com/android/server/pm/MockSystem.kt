@@ -325,6 +325,7 @@ class MockSystem(withSession: (StaticMockitoSessionBuilder) -> Unit = {}) {
         whenever(mocks.systemConfig.hiddenApiWhitelistedApps).thenReturn(ArraySet())
         whenever(mocks.systemConfig.appMetadataFilePaths).thenReturn(ArrayMap())
         whenever(mocks.systemConfig.oemDefinedUids).thenReturn(ArrayMap())
+        whenever(mocks.systemConfig.preventUserDisablePackages).thenReturn(ArraySet())
         wheneverStatic { SystemProperties.set(anyString(), anyString()) }.thenDoNothing()
         wheneverStatic { SystemProperties.getBoolean("fw.free_cache_v2", true) }.thenReturn(true)
         wheneverStatic { Environment.getApexDirectory() }.thenReturn(apexDirectory)

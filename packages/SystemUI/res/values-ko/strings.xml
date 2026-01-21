@@ -46,10 +46,8 @@
     <string name="usb_accessory_confirm_prompt" msgid="5728408382798643421">"<xliff:g id="APPLICATION">%1$s</xliff:g> 앱을 열어 <xliff:g id="USB_ACCESSORY">%2$s</xliff:g>을(를) 처리하시겠습니까?"</string>
     <string name="usb_accessory_uri_prompt" msgid="6756649383432542382">"이 USB와 호환되는 설치 앱이 없습니다. <xliff:g id="URL">%1$s</xliff:g>에서 세부정보를 참조하세요."</string>
     <string name="title_usb_accessory" msgid="1236358027511638648">"USB 액세서리"</string>
-    <!-- no translation found for usb_device_dialog_allow_only_this_time_button (3653881633944232491) -->
-    <skip />
-    <!-- no translation found for usb_device_dialog_cancel_button (9050554648474787233) -->
-    <skip />
+    <string name="usb_device_dialog_allow_only_this_time_button" msgid="3653881633944232491">"이번만 허용"</string>
+    <string name="usb_device_dialog_cancel_button" msgid="9050554648474787233">"취소"</string>
     <string name="label_view" msgid="6815442985276363364">"보기"</string>
     <string name="always_use_device" msgid="210535878779644679">"<xliff:g id="USB_DEVICE">%2$s</xliff:g>이(가) 연결되면 항상 <xliff:g id="APPLICATION">%1$s</xliff:g> 열기"</string>
     <string name="always_use_accessory" msgid="1977225429341838444">"<xliff:g id="USB_ACCESSORY">%2$s</xliff:g>이(가) 연결되면 항상 <xliff:g id="APPLICATION">%1$s</xliff:g> 열기"</string>
@@ -158,10 +156,8 @@
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"셀피 카메라 표시"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"터치한 항목 표시"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"녹화할 앱 선택"</string>
-    <!-- no translation found for screen_record_settings (2377267679200139285) -->
-    <skip />
-    <!-- no translation found for screen_record_markup (5583986085046693669) -->
-    <skip />
+    <string name="screen_record_settings" msgid="2377267679200139285">"화면 녹화 설정"</string>
+    <string name="screen_record_markup" msgid="5583986085046693669">"마크업"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"동영상 저장됨"</string>
     <string name="screen_record_video_deleted" msgid="30786214839944540">"동영상 삭제됨"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"실행취소"</string>
@@ -174,8 +170,7 @@
     <string name="screen_record_pause" msgid="1715012292444967776">"일시중지"</string>
     <string name="screen_record_mute" msgid="8111682249858638168">"음소거"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"음소거 해제"</string>
-    <!-- no translation found for screen_record_video_preview_elapsed_time_a11y_template (969599623785875798) -->
-    <skip />
+    <string name="screen_record_video_preview_elapsed_time_a11y_template" formatted="false" msgid="969599623785875798">"<xliff:g id="ELAPSED_TIME">%1$s</xliff:g>/<xliff:g id="DURATION">%2$s</xliff:g>"</string>
     <string name="screen_capture_blocked_by_admin" msgid="1751756953683506644">"IT 관리자가 화면 캡처를 차단했습니다."</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"전체 화면 스크린샷 찍기"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"전체 화면 녹화"</string>
@@ -189,10 +184,13 @@
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"앱 창 공유"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"탭 공유"</string>
     <string name="screen_share_entire_screen_sharing_title" msgid="9093580141248337998">"전체 화면 공유"</string>
-    <string name="screen_share_disclaimer_app_sharing" msgid="4191319837838590771">"앱을 공유하면 앱에서 표시되거나 재생되는 모든 항목이 [APP NAME]에 표시됩니다. 비밀번호, 결제 세부정보, 메시지, 사진, 오디오/동영상 등이 노출되지 않도록 주의하세요."</string>
-    <string name="screen_share_disclaimer_full_screen_sharing" msgid="6445373139864031364">"전체 화면을 공유하면 화면에 있는 모든 항목이 [APP NAME]에 표시됩니다. 비밀번호, 결제 세부정보, 메시지, 사진, 오디오/동영상 등이 노출되지 않도록 주의하세요."</string>
-    <!-- no translation found for screen_share_a11y_announcement (8938007210094494367) -->
+    <!-- no translation found for screen_share_disclaimer_app_sharing (1839029004749224549) -->
     <skip />
+    <!-- no translation found for screen_share_disclaimer_tab_sharing (3811486274577713101) -->
+    <skip />
+    <!-- no translation found for screen_share_disclaimer_full_screen_sharing (5173795016606926338) -->
+    <skip />
+    <string name="screen_share_a11y_announcement" msgid="8938007210094494367">"공유할 정보를 선택합니다. 탭, 앱 또는 전체 화면을 선택합니다. 그런 다음 공유를 누릅니다."</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"창 스크린샷 찍기"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"창 녹화"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"선택한 영역 스크린샷 찍기"</string>
@@ -394,8 +392,7 @@
     <string name="accessibility_clear_all" msgid="970525598287244592">"모든 알림 지우기"</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"알림"</string>
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"어시스턴트"</string>
-    <!-- no translation found for accessibility_status_bar_input_method_indicator (4911669064186093506) -->
-    <skip />
+    <string name="accessibility_status_bar_input_method_indicator" msgid="4911669064186093506">"키보드"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"<xliff:g id="NUMBER">%s</xliff:g>개 더보기"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{그룹에 알림이 #개 더 있습니다.}other{그룹에 알림이 #개 더 있습니다.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"화면이 가로 방향으로 잠겨 있습니다."</string>
@@ -945,8 +942,7 @@
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"뉴스레터, 추천 미디어 등"</string>
     <string name="notification_onboarding_summaries_turn_on" msgid="3831339570984683297">"설정에서 켜기"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"이제 긴 대화를 요약하여 빠르게 내용을 확인할 수 있습니다."</string>
-    <!-- no translation found for notification_onboarding_summaries_message_with_apps (5320980333818238465) -->
-    <skip />
+    <string name="notification_onboarding_summaries_message_with_apps" msgid="5320980333818238465">"이제 기기와 앱에서 긴 대화를 요약하여 빠르게 내용을 확인할 수 있습니다."</string>
     <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"알림 정리 도구는 우선순위가 낮은 알림을 번들로 묶고 무음 처리합니다. 설정에서 더 많은 카테고리를 추가하세요."</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{알림 #개}other{알림 #개}}"</string>
     <string name="notification_bundle_header_joined_description" msgid="4517556837418088139">"<xliff:g id="NAME">%1$s</xliff:g>, <xliff:g id="NUM_NOTIFICATIONS">%2$s</xliff:g>"</string>
@@ -1800,62 +1796,33 @@
     <string name="location_button_text_use_precise_location" msgid="3499475231656390476">"정확한 위치 사용"</string>
     <string name="location_button_text_near_precise_location" msgid="3607275724182981412">"정확한 위치 근처"</string>
     <string name="location_button_text_precise_location" msgid="4441259889842542799">"정확한 위치"</string>
-    <!-- no translation found for privacy_chip_use_string (979159484631969073) -->
-    <skip />
-    <!-- no translation found for privacy_chip_use_string_with_app (6807216002072346877) -->
-    <skip />
-    <!-- no translation found for privacy_chip_camera_and_mic_text (6254449489859255607) -->
-    <skip />
-    <!-- no translation found for av_panel_title (455230832870768515) -->
-    <skip />
-    <!-- no translation found for sensor_activity_header (2145727448786698035) -->
-    <skip />
-    <!-- no translation found for sensor_activity_see_all_access_button (8005330122289549048) -->
-    <skip />
-    <!-- no translation found for sensor_activity_camera_label (4260675418606211259) -->
-    <skip />
-    <!-- no translation found for sensor_activity_microphone_label (4012136402420177411) -->
-    <skip />
-    <!-- no translation found for sensor_activity_manage_access_button (1275701280501357102) -->
-    <skip />
-    <!-- no translation found for sensor_activity_close_app_button (6907314738150753330) -->
-    <skip />
-    <!-- no translation found for sensor_activity_back_button_cd (6894532284650291222) -->
-    <skip />
-    <!-- no translation found for privacy_chip_apps_using_sensor_suffix (527247786536767096) -->
-    <skip />
-    <!-- no translation found for privacy_chip_camera_in_use (5163494654848590528) -->
-    <skip />
-    <!-- no translation found for privacy_chip_mic_in_use (1586091297556363367) -->
-    <skip />
-    <!-- no translation found for privacy_chip_camera_mic_in_use (5179267787210197484) -->
-    <skip />
-    <!-- no translation found for av_camera_portrait_touch_up (5191856296212427203) -->
-    <skip />
-    <!-- no translation found for av_mic_label (5427348054144789879) -->
-    <skip />
-    <!-- no translation found for av_camera_label (7719772172590702343) -->
-    <skip />
-    <!-- no translation found for av_camera_blur_drill_in_title (2250600375798981511) -->
-    <skip />
-    <!-- no translation found for av_camera_blur_off (3170334995799202022) -->
-    <skip />
-    <!-- no translation found for av_camera_blur_light (5666055368940059418) -->
-    <skip />
-    <!-- no translation found for av_camera_blur_full (3276351992811619332) -->
-    <skip />
-    <!-- no translation found for av_camera_improve_lighting (1540549414296669133) -->
-    <skip />
-    <!-- no translation found for av_camera_framing (5108462267843042492) -->
-    <skip />
-    <!-- no translation found for av_studio_mic (2614843492629357766) -->
-    <skip />
-    <!-- no translation found for av_studio_look (621893522645557619) -->
-    <skip />
-    <!-- no translation found for av_studio_look_effects (4105109585851068415) -->
-    <skip />
-    <!-- no translation found for av_blur (405131343487260171) -->
-    <skip />
-    <!-- no translation found for av_live_captions (7819416886586903077) -->
-    <skip />
+    <string name="privacy_chip_use_string" msgid="979159484631969073">"<xliff:g id="SENSOR">%1$s</xliff:g> 사용 중"</string>
+    <string name="privacy_chip_use_string_with_app" msgid="6807216002072346877">"<xliff:g id="APP">%2$s</xliff:g>에서 <xliff:g id="SENSOR">%1$s</xliff:g> 사용 중"</string>
+    <string name="privacy_chip_camera_and_mic_text" msgid="6254449489859255607">"카메라 및 마이크"</string>
+    <string name="av_panel_title" msgid="455230832870768515">"개인 정보 보호"</string>
+    <string name="sensor_activity_header" msgid="2145727448786698035">"이러한 권한을 적극 사용 중이거나 최근에 사용 중인 앱을 확인하세요"</string>
+    <string name="sensor_activity_see_all_access_button" msgid="8005330122289549048">"모든 액세스 권한 보기"</string>
+    <string name="sensor_activity_camera_label" msgid="4260675418606211259">"카메라"</string>
+    <string name="sensor_activity_microphone_label" msgid="4012136402420177411">"마이크"</string>
+    <string name="sensor_activity_manage_access_button" msgid="1275701280501357102">"액세스 권한 관리"</string>
+    <string name="sensor_activity_close_app_button" msgid="6907314738150753330">"앱 닫기"</string>
+    <string name="sensor_activity_back_button_cd" msgid="6894532284650291222">"뒤로"</string>
+    <string name="privacy_chip_apps_using_sensor_suffix" msgid="527247786536767096">"외 <xliff:g id="COUNT">%1$d</xliff:g>개"</string>
+    <string name="privacy_chip_camera_in_use" msgid="5163494654848590528">"카메라 사용 중"</string>
+    <string name="privacy_chip_mic_in_use" msgid="1586091297556363367">"마이크 사용 중"</string>
+    <string name="privacy_chip_camera_mic_in_use" msgid="5179267787210197484">"카메라, 마이크 사용 중"</string>
+    <string name="av_camera_portrait_touch_up" msgid="5191856296212427203">"인물 보정"</string>
+    <string name="av_mic_label" msgid="5427348054144789879">"마이크"</string>
+    <string name="av_camera_label" msgid="7719772172590702343">"카메라"</string>
+    <string name="av_camera_blur_drill_in_title" msgid="2250600375798981511">"배경 흐리게 처리"</string>
+    <string name="av_camera_blur_off" msgid="3170334995799202022">"사용 안 함"</string>
+    <string name="av_camera_blur_light" msgid="5666055368940059418">"약하게"</string>
+    <string name="av_camera_blur_full" msgid="3276351992811619332">"전체"</string>
+    <string name="av_camera_improve_lighting" msgid="1540549414296669133">"조명 개선"</string>
+    <string name="av_camera_framing" msgid="5108462267843042492">"카메라 프레이밍"</string>
+    <string name="av_studio_mic" msgid="2614843492629357766">"스튜디오 마이크"</string>
+    <string name="av_studio_look" msgid="621893522645557619">"스튜디오 화질"</string>
+    <string name="av_studio_look_effects" msgid="4105109585851068415">"효과 %d개"</string>
+    <string name="av_blur" msgid="405131343487260171">"흐리게 처리"</string>
+    <string name="av_live_captions" msgid="7819416886586903077">"실시간 자막"</string>
 </resources>

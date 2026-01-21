@@ -22,6 +22,7 @@ import com.android.systemui.animation.ActivityTransitionAnimator
 import com.android.systemui.animation.DialogCuj
 import com.android.systemui.animation.DialogTransitionAnimator
 import com.android.systemui.animation.Expandable
+import com.android.systemui.animation.TransitionAnimator
 import com.android.systemui.animation.TransitionSource
 
 private fun ActivityTransitionAnimator.Controller.withStateAwareness(
@@ -66,6 +67,44 @@ private fun DialogTransitionAnimator.Controller.withStateAwareness(
     }
 }
 
+// Helper function to contain the wrapping logic.
+private fun TransitionSource.stateAwareTransitionSource(
+    onDialogDrawingStart: () -> Unit,
+    onDialogDrawingEnd: () -> Unit,
+    onActivityLaunchTransitionStart: () -> Unit,
+    onActivityLaunchTransitionEnd: () -> Unit,
+): TransitionSource {
+
+    val source = this
+    return object : TransitionSource {
+        override fun dialogTransitionController(
+            cuj: DialogCuj?
+        ): DialogTransitionAnimator.Controller? {
+            return source
+                .dialogTransitionController(cuj)
+                ?.withStateAwareness(onDialogDrawingStart, onDialogDrawingEnd)
+        }
+
+        override fun activityTransitionController(
+            launchCujType: Int?,
+            cookie: ActivityTransitionAnimator.TransitionCookie?,
+            component: ComponentName?,
+            returnCujType: Int?,
+            isEphemeral: Boolean,
+        ): ActivityTransitionAnimator.Controller? {
+            return source
+                .activityTransitionController(
+                    launchCujType,
+                    cookie,
+                    component,
+                    returnCujType,
+                    isEphemeral,
+                )
+                ?.withStateAwareness(onActivityLaunchTransitionStart, onActivityLaunchTransitionEnd)
+        }
+    }
+}
+
 fun Expandable.withStateAwareness(
     onDialogDrawingStart: () -> Unit,
     onDialogDrawingEnd: () -> Unit,
@@ -73,40 +112,64 @@ fun Expandable.withStateAwareness(
     onActivityLaunchTransitionEnd: () -> Unit,
 ): Expandable {
     val delegate = this
+    return if (TransitionAnimator.dynamicTargetResolutionEnabled()) {
+        /*
+         * Create an object that implements a live, wrapping of the delegate's set when it is accessed.
+         *
+         * Instead of creating a static copy, this uses a **Lazy Proxy pattern**. It wraps the
+         * underlying transition sources dynamically as they are accessed, ensuring that
+         * any sources added to the original [Expandable] later are automatically intercepted.
+         */
+        val liveWrappingSet =
+            object : AbstractMutableSet<TransitionSource>() {
+                // This is the original set that we will be proxying.
+                private val originalSet = delegate.transitionSources
 
-    val transitionSources: MutableSet<TransitionSource> =
-        delegate.transitionSources.mapTo(mutableSetOf()) { source ->
-            object : TransitionSource {
-                override fun dialogTransitionController(
-                    cuj: DialogCuj?
-                ): DialogTransitionAnimator.Controller? {
-                    return source
-                        .dialogTransitionController(cuj)
-                        ?.withStateAwareness(onDialogDrawingStart, onDialogDrawingEnd)
+                override val size: Int
+                    get() = originalSet.size
+
+                override fun iterator(): MutableIterator<TransitionSource> {
+                    val originalIterator = originalSet.iterator()
+
+                    return object : MutableIterator<TransitionSource> {
+                        override fun hasNext(): Boolean = originalIterator.hasNext()
+
+                        override fun next(): TransitionSource {
+                            // Get the original source and wrap it with state-aware logic.
+                            val originalSource = originalIterator.next()
+                            return originalSource.stateAwareTransitionSource(
+                                onDialogDrawingStart,
+                                onDialogDrawingEnd,
+                                onActivityLaunchTransitionStart,
+                                onActivityLaunchTransitionEnd,
+                            )
+                        }
+
+                        override fun remove() {
+                            // Delegate the remove operation directly to the original iterator.
+                            originalIterator.remove()
+                        }
+                    }
                 }
 
-                override fun activityTransitionController(
-                    launchCujType: Int?,
-                    cookie: ActivityTransitionAnimator.TransitionCookie?,
-                    component: ComponentName?,
-                    returnCujType: Int?,
-                    isEphemeral: Boolean,
-                ): ActivityTransitionAnimator.Controller? {
-                    return source
-                        .activityTransitionController(
-                            launchCujType,
-                            cookie,
-                            component,
-                            returnCujType,
-                            isEphemeral,
-                        )
-                        ?.withStateAwareness(
-                            onActivityLaunchTransitionStart,
-                            onActivityLaunchTransitionEnd,
-                        )
+                // Mutations should happen on the source set directly.
+                override fun add(element: TransitionSource): Boolean {
+                    throw UnsupportedOperationException(
+                        "Cannot add to a state-aware expandable view. Mutate the original."
+                    )
                 }
             }
-        }
-
-    return Expandable(transitionSources)
+        Expandable(liveWrappingSet)
+    } else {
+        val transitionSources =
+            delegate.transitionSources.mapTo(mutableSetOf()) { source ->
+                source.stateAwareTransitionSource(
+                    onDialogDrawingStart,
+                    onDialogDrawingEnd,
+                    onActivityLaunchTransitionStart,
+                    onActivityLaunchTransitionEnd,
+                )
+            }
+        Expandable(transitionSources)
+    }
 }
