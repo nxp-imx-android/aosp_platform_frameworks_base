@@ -24,7 +24,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
-import androidx.compose.ui.unit.Density
 import androidx.compose.ui.util.fastMap
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.animation.scene.ContentScope
@@ -42,7 +41,6 @@ fun ContentScope.QuickQuickSettings(
     viewModel: QuickQuickSettingsViewModel,
     modifier: Modifier = Modifier,
     listening: () -> Boolean,
-    tension: Density.() -> Int = { 0 },
 ) {
     val columns = viewModel.columns
     val sizedTiles = viewModel.tileViewModels
@@ -70,7 +68,6 @@ fun ContentScope.QuickQuickSettings(
                     tile = it.tile,
                     iconOnly = it.isIcon,
                     squishiness = { squishiness },
-                    tension = tension,
                     coroutineScope = scope,
                     bounceableInfo =
                         bounceables.bounceableInfo(
