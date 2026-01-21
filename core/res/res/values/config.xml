@@ -3411,6 +3411,14 @@
          with admin privileges and admin privileges can be granted/revoked from existing users. -->
     <bool name="config_enableMultipleAdmins">false</bool>
 
+    <!-- Enables or disables multi-user management capabilities.
+         This is checked by DevicePolicyManager during provisioning. If set to false, provisioning
+         for multi-user managed device and users will fail.
+         Multi user management capabilities are only possible on Headless System User Mode (HSUM)
+         devices. -->
+    <bool name="config_enableMultiUserManagement">false</bool>
+
+
     <!-- Whether to start stopped users before their scheduled alarms. If set to true, users will be
          started in background before the alarm time so that it can go off. If false, alarms of
          stopped users will not go off and users will remain stopped. -->
