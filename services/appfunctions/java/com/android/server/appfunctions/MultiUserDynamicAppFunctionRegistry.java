@@ -63,12 +63,15 @@ public final class MultiUserDynamicAppFunctionRegistry {
      *
      * <p>This will create registry for this {@code user}.
      */
-    public void onUserUnlocked(@NonNull SystemService.TargetUser user) {
+    public void onUserUnlocked(
+            @NonNull AppFunctionMetadataObserver metadataObserver,
+            @NonNull SystemService.TargetUser user) {
         maybePrintDebugLog("onUserUnlocked: " + user.getUserIdentifier(), null);
         synchronized (mCrossUserLock) {
             if (!mPerUserRegistrations.contains(user.getUserIdentifier())) {
                 mPerUserRegistrations.put(
-                        user.getUserIdentifier(), new DynamicAppFunctionRegistry());
+                        user.getUserIdentifier(),
+                        new DynamicAppFunctionRegistry(metadataObserver, user.getUserHandle()));
             }
         }
     }
@@ -87,7 +90,7 @@ public final class MultiUserDynamicAppFunctionRegistry {
 
     /**
      * Registers one or more app functions, making them available for execution for a specific user
-     *  as a single atomic operation.
+     * as a single atomic operation.
      *
      * <p>This method associates the provided function identifiers with the client's execution
      * session. As long as the registration is active, calls to execute these functions will be
@@ -95,12 +98,12 @@ public final class MultiUserDynamicAppFunctionRegistry {
      *
      * @param packageName Name of the package that owns the app functions.
      * @param functionIdentifiers A list of unique identifiers for the app functions to register.
-     * @param executor The client's executor, an {@link IAppFunctionExecutor} binder used
-     *     to invoke the function implementation in the client's process.
+     * @param executor The client's executor, an {@link IAppFunctionExecutor} binder used to invoke
+     *     the function implementation in the client's process.
      * @param userHandle The user for whom the app functions are being registered.
      * @throws IllegalStateException if any of the function identifiers are already registered for
-     *     this package and user, or if the specified user has not been unlocked. No
-     *     function identifiers from the list will be registered in this case.
+     *     this package and user, or if the specified user has not been unlocked. No function
+     *     identifiers from the list will be registered in this case.
      */
     public void registerAppFunctions(
             String packageName,
@@ -121,8 +124,8 @@ public final class MultiUserDynamicAppFunctionRegistry {
      *
      * @param packageName Name of the package that owns the app functions.
      * @param functionIdentifiers A list of identifiers for the app functions to unregister.
-     * @param executor The client's executor that was used for registration. The system
-     *     verifies this to ensure that only the original registrant can unregister the function.
+     * @param executor The client's executor that was used for registration. The system verifies
+     *     this to ensure that only the original registrant can unregister the function.
      * @param userHandle The user for whom the app functions should be unregistered.
      * @throws IllegalStateException if the specified {@code userHandle} has not been unlocked.
      */
@@ -138,6 +141,7 @@ public final class MultiUserDynamicAppFunctionRegistry {
 
     /**
      * Checks if dynamic app function is registered.
+     *
      * @param packageName Name of the package containing the app function.
      * @param functionIdentifier Identifier of the app function.
      * @param userHandle Handle of the user to register the app function for.
@@ -152,6 +156,7 @@ public final class MultiUserDynamicAppFunctionRegistry {
 
     /**
      * Executes an app function.
+     *
      * @param request Request to execute.
      * @param safeExecuteAppFunctionCallback Callback to report results to.
      * @param cancellationTransport The cancellation signal.
@@ -180,8 +185,7 @@ public final class MultiUserDynamicAppFunctionRegistry {
     }
 
     private static void maybePrintDebugLog(
-            @NonNull String message, @Nullable List<String> identifiers
-    ) {
+            @NonNull String message, @Nullable List<String> identifiers) {
         if (DEBUG) {
             if (identifiers == null) {
                 Log.d(TAG, message);

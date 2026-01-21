@@ -111,7 +111,23 @@ class InternalObserverCallbackRouter {
         }
     }
 
-    private void onPackagesChanged(@NonNull Set<String> changedPackageNames) {
+    /**
+     * Notifies observers of a change to the enabled state of an app function.
+     *
+     * <p>This is used for the runtime enabled state changes, which do not originate from app
+     * search.
+     */
+    // TODO(b/438413081): Consider batching enabled state updates. Their frequency can be high for
+    //  example in case of dynamic app functions that are registered/unregistered in a composable.
+    public void onEnabledStateChanged(@NonNull AppFunctionName changedFunctionName) {
+        try {
+            var unused = mExecutor.submit(() -> onAppFunctionsChanged(Set.of(changedFunctionName)));
+        } catch (RejectedExecutionException ex) {
+            Slog.w(TAG, "Failed to run onEnabledStateChanged due to executor shutdown.", ex);
+        }
+    }
+
+    void onPackagesChanged(@NonNull Set<String> changedPackageNames) {
         Set<InternalCallbackWrapper> callbacksToNotify;
         synchronized (mInternalCallbacksLock) {
             // Make a copy before iterating over the callbacks to prevent deadlocks.

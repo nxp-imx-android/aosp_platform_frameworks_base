@@ -20,6 +20,7 @@ import static com.android.server.appfunctions.AppFunctionExecutors.THREAD_POOL_E
 import static java.util.Objects.requireNonNull;
 
 import android.annotation.NonNull;
+import android.app.appfunctions.AppFunctionName;
 import android.app.appfunctions.AppFunctionSearchSpec;
 import android.app.appfunctions.IObserveAppFunctionChangesCallback;
 import android.app.appsearch.AppSearchManager;
@@ -139,6 +140,7 @@ public class AppFunctionMetadataObserver {
         requireNonNull(searchSpec);
         requireNonNull(proxyCallback);
         InternalObserverCallbackRouter router;
+
         synchronized (mRoutersLock) {
             router = mInternalCallbackRouters.get(userHandle.getIdentifier());
         }
@@ -155,5 +157,25 @@ public class AppFunctionMetadataObserver {
             return;
         }
         router.addCallback(proxyCallback, searchSpec);
+    }
+
+    /** Notifies observers of a change to an app function's enabled state. */
+    void onEnabledStateChanged(
+            @NonNull UserHandle userHandle,
+            @NonNull String packageName,
+            @NonNull String functionIdentifier) {
+        requireNonNull(userHandle);
+        requireNonNull(packageName);
+        requireNonNull(functionIdentifier);
+
+        InternalObserverCallbackRouter router;
+
+        synchronized (mRoutersLock) {
+            router = mInternalCallbackRouters.get(userHandle.getIdentifier());
+        }
+
+        if (router != null) {
+            router.onEnabledStateChanged(new AppFunctionName(packageName, functionIdentifier));
+        }
     }
 }

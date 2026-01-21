@@ -18,6 +18,7 @@ package com.android.server.appfunctions;
 
 import android.annotation.NonNull;
 import android.app.appfunctions.AppFunctionException;
+import android.app.appfunctions.AppFunctionName;
 import android.app.appfunctions.AppFunctionRuntimeMetadata;
 import android.app.appfunctions.ExecuteAppFunctionRequest;
 import android.app.appfunctions.IAppFunctionExecutor;
@@ -29,6 +30,7 @@ import android.os.IBinder;
 import android.os.ICancellationSignal;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
+import android.os.UserHandle;
 import android.util.ArrayMap;
 import android.util.ArraySet;
 import android.util.Log;
@@ -58,32 +60,46 @@ final class DynamicAppFunctionRegistry {
      * A list of remote IAppFunctionExecutor callbacks. This is used primarily to detect when a
      * client process dies so we can clean up its registrations.
      */
-    private final RemoteCallbackList<IAppFunctionExecutor> mCallbacks =
-            new RemoteCallbackList<>() {
-                @Override
-                public void onCallbackDied(IAppFunctionExecutor callback, Object cookie) {
-                    if (DEBUG) {
-                        Log.d(TAG, "onCallbackDied for " + callback.toString());
-                    }
-                    synchronized (mLock) {
-                        ArraySet<String> registrationIds =
-                                mExecutorToRegistrations.remove(callback.asBinder());
-                        if (registrationIds == null) {
-                            return;
+    private final RemoteCallbackList<IAppFunctionExecutor> mCallbacks;
+
+    // TODO(b/478843950): Decouple AppFunctionMetadataObserver from registry. Pass an onDeath
+    // callback instead.
+    DynamicAppFunctionRegistry(
+            @NonNull AppFunctionMetadataObserver metadataObserver, @NonNull UserHandle userHandle) {
+        mCallbacks =
+                new RemoteCallbackList<>() {
+                    @Override
+                    public void onCallbackDied(IAppFunctionExecutor callback, Object cookie) {
+                        if (DEBUG) {
+                            Log.d(TAG, "onCallbackDied for " + callback.toString());
+                        }
+                        ArraySet<String> registrationIds;
+                        synchronized (mLock) {
+                            registrationIds = mExecutorToRegistrations.remove(callback.asBinder());
+                            if (registrationIds == null) {
+                                return;
+                            }
+                            for (String id : registrationIds) {
+                                if (DEBUG) {
+                                    Log.d(TAG, "Removing due to process death: " + id);
+                                }
+                                mRegistrations.remove(id);
+                            }
                         }
                         for (String id : registrationIds) {
-                            if (DEBUG) {
-                                Log.d(TAG, "Removing due to process death: " + id);
-                            }
-                            mRegistrations.remove(id);
+                            AppFunctionName appFunctionName = AppFunctionName.fromQualifiedId(id);
+                            metadataObserver.onEnabledStateChanged(
+                                    userHandle,
+                                    appFunctionName.getPackageName(),
+                                    appFunctionName.getFunctionId());
                         }
                     }
-                }
-            };
+                };
+    }
 
     /**
-     * Registers one or more app functions, making them available for execution as a single
-     * atomic operation.
+     * Registers one or more app functions, making them available for execution as a single atomic
+     * operation.
      *
      * @param packageName Name of the package containing the app function.
      * @param functionIdentifiers A list of identifiers of the app functions.
@@ -166,9 +182,10 @@ final class DynamicAppFunctionRegistry {
     }
 
     /**
-     * Executes an app function. Calls
-     * {@link SafeOneTimeExecuteAppFunctionCallback#onError(AppFunctionException)} if the function
-     * was not registered.
+     * Executes an app function. Calls {@link
+     * SafeOneTimeExecuteAppFunctionCallback#onError(AppFunctionException)} if the function was not
+     * registered.
+     *
      * @param request Request to execute.
      * @param safeExecuteAppFunctionCallback Callback to report results to.
      * @param cancellationTransport Transport to report cancellation to.
@@ -191,9 +208,9 @@ final class DynamicAppFunctionRegistry {
             safeExecuteAppFunctionCallback.onError(
                     new AppFunctionException(
                             AppFunctionException.ERROR_DISABLED,
-                            "Function with ID: " + request.getFunctionIdentifier() + " is disabled"
-                    )
-            );
+                            "Function with ID: "
+                                    + request.getFunctionIdentifier()
+                                    + " is disabled"));
             return;
         }
 
@@ -213,6 +230,7 @@ final class DynamicAppFunctionRegistry {
 
     /**
      * Checks if dynamic app function is registered.
+     *
      * @param packageName Name of the package containing the app function.
      * @param functionIdentifier Identifier of the app function.
      * @return True if the app function is registered, false otherwise.
