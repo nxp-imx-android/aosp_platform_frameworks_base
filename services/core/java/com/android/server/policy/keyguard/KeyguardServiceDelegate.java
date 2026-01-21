@@ -5,11 +5,19 @@ import static android.internal.perfetto.protos.Windowmanagerservice.KeyguardServ
 import static android.internal.perfetto.protos.Windowmanagerservice.KeyguardServiceDelegateProto.SCREEN_STATE;
 import static android.internal.perfetto.protos.Windowmanagerservice.KeyguardServiceDelegateProto.SHOWING;
 
-import static com.android.internal.policy.IKeyguardService.SCREEN_TURNING_ON_REASON_UNKNOWN;
+import static com.android.internal.policy.KeyguardState.INTERACTIVE_STATE_AWAKE;
+import static com.android.internal.policy.KeyguardState.INTERACTIVE_STATE_GOING_TO_SLEEP;
+import static com.android.internal.policy.KeyguardState.INTERACTIVE_STATE_SLEEP;
+import static com.android.internal.policy.KeyguardState.INTERACTIVE_STATE_WAKING;
+import static com.android.internal.policy.KeyguardState.SCREEN_STATE_OFF;
+import static com.android.internal.policy.KeyguardState.SCREEN_STATE_ON;
+import static com.android.internal.policy.KeyguardState.SCREEN_STATE_TURNING_OFF;
+import static com.android.internal.policy.KeyguardState.SCREEN_STATE_TURNING_ON;
 import static com.android.server.flags.Flags.resetKeyguardFirstStateDispatchOnServiceConnected;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.UptimeMillisLong;
 import android.annotation.UserIdInt;
 import android.app.ActivityManagerInternal;
 import android.app.ActivityTaskManager;
@@ -34,6 +42,7 @@ import com.android.internal.policy.IKeyguardDrawnCallback;
 import com.android.internal.policy.IKeyguardExitCallback;
 import com.android.internal.policy.IKeyguardService;
 import com.android.internal.policy.IKeyguardStateCallback;
+import com.android.internal.policy.KeyguardState;
 import com.android.internal.widget.LockPatternUtils;
 import com.android.server.LocalServices;
 import com.android.server.wm.EventLogTags;
@@ -68,16 +77,6 @@ public class KeyguardServiceDelegate {
         void onKeyguardServiceConnected();
     }
 
-    private static final int SCREEN_STATE_OFF = 0;
-    private static final int SCREEN_STATE_TURNING_ON = 1;
-    private static final int SCREEN_STATE_ON = 2;
-    private static final int SCREEN_STATE_TURNING_OFF = 3;
-
-    private static final int INTERACTIVE_STATE_SLEEP = 0;
-    private static final int INTERACTIVE_STATE_WAKING = 1;
-    private static final int INTERACTIVE_STATE_AWAKE = 2;
-    private static final int INTERACTIVE_STATE_GOING_TO_SLEEP = 3;
-
     /**
      * Binder connection to the KeyguardService.
      *
@@ -104,8 +103,19 @@ public class KeyguardServiceDelegate {
     @NonNull
     private final StateCallback mCallback;
 
-    /** Options for a deferred call to doKeyguardTimeout. */
+    /**
+     * Whether the Keyguard timeout was reached but not handled yet. This is an inactivity
+     * timeout while the device is unlocked, after which Keyguard should be shown.
+     *
+     * @see #doKeyguardTimeout
+     */
     private boolean doKeyguardTimeoutRequested;
+
+    /**
+     * The options for the Keyguard timeout.
+     *
+     * @see #doKeyguardTimeout
+     */
     @Nullable
     private Bundle doKeyguardTimeoutRequestedOptions;
 
@@ -125,79 +135,59 @@ public class KeyguardServiceDelegate {
     /** Callbacks for KeyguardService to report state changes. */
     private final IKeyguardStateCallback mKeyguardStateCallback =
             new IKeyguardStateCallback.Stub() {
-        @Override
-        public void onShowingStateChanged(boolean showing, @UserIdInt int userId) {
-            if (userId != mKeyguardState.currentUser) return;
-            KeyguardServiceDelegate.this.onShowingStateChanged(showing);
-        }
+                @Override
+                public void onShowingStateChanged(boolean showing, @UserIdInt int userId) {
+                    if (userId != mKeyguardState.userId) return;
+                    KeyguardServiceDelegate.this.onShowingStateChanged(showing);
+                }
 
-        @Override
-        public void onSimSecureStateChanged(boolean simSecure) {
-            mKeyguardReportedState.simSecure = simSecure;
-        }
+                @Override
+                public void onSimSecureStateChanged(boolean simSecure) {
+                    mKeyguardReportedState.simSecure = simSecure;
+                }
 
-        @Override
-        public void onInputRestrictedStateChanged(boolean inputRestricted) {
-            mKeyguardReportedState.inputRestricted = inputRestricted;
-        }
+                @Override
+                public void onInputRestrictedStateChanged(boolean inputRestricted) {
+                    mKeyguardReportedState.inputRestricted = inputRestricted;
+                }
 
-        @Override
-        public void onTrustedChanged(boolean trusted) {
-            mKeyguardReportedState.trusted = trusted;
-            mCallback.onTrustedChanged();
-        }
-    };
+                @Override
+                public void onTrustedChanged(boolean trusted) {
+                    mKeyguardReportedState.trusted = trusted;
+                    mCallback.onTrustedChanged();
+                }
+            };
 
-    // A delegate class to map a particular invocation with a ShowListener object.
-    private final IKeyguardDrawnCallback mKeyguardShowDelegate = new IKeyguardDrawnCallback.Stub() {
-        @Override
-        public void onDrawn() throws RemoteException {
-            if (DEBUG) Log.v(TAG, "**** SHOWN CALLED ****");
-            KeyguardServiceDelegate.this.mCallback.onDrawn();
-        }
-    };
-
-    /**
-     * Data that has a source of truth in the system server and is pushed to KeyguardService.
-     *
-     * <p>When KeyguardService dies, this data is preserved and pushed to the new
-     * KeyguardService instance, in order to keep the keyguard state consistent.
-     */
-    private static final class KeyguardState {
-        public volatile boolean occluded;
-        public boolean dreaming;
-        public boolean systemIsReady;
-        public boolean enabled = true;
-        public volatile @UserIdInt int currentUser = UserHandle.USER_NULL;
-        public boolean bootCompleted;
-        public int screenState;
-        public int interactiveState;
-
-        KeyguardState() {
-            reset();
-        }
-
-        private void reset() {
-            occluded = false;
-        }
-    }
+    private final IKeyguardDrawnCallback mKeyguardDrawnCallback =
+            new IKeyguardDrawnCallback.Stub() {
+                @Override
+                public void onDrawn() {
+                    if (DEBUG) Log.v(TAG, "**** SHOWN CALLED ****");
+                    KeyguardServiceDelegate.this.mCallback.onDrawn();
+                }
+            };
 
     /**
      * Data that has a source of truth in the KeyguardService and is reported over Binder via
      * {@link IKeyguardStateCallback} for the system server's decision-making.
      */
     private static final class KeyguardReportedState {
+        /** Whether Keyguard is currently showing. */
         volatile boolean showing;
+        /** Whether input is currently restricted by Keyguard. */
         volatile boolean inputRestricted;
+        /** Whether the device has Keyguard. */
         volatile boolean deviceHasKeyguard;
+        /** Whether the SIM card is currently secure, requiring an unlock. */
         volatile boolean simSecure;
+        /** Whether the device is currently trusted. */
         volatile boolean trusted;
 
         KeyguardReportedState() {
             reset();
         }
 
-        private void reset() {
+        void reset() {
             // Assume keyguard is showing and secure until we know for sure. This is here in
             // the event something checks before the service is actually started.
             // KeyguardService itself should default to this state until the real state is known.
@@ -208,7 +198,7 @@ public class KeyguardServiceDelegate {
             trusted = false;
         }
 
-        private void disable() {
+        void disable() {
             showing = false;
             inputRestricted = false;
             deviceHasKeyguard = false;
@@ -221,6 +211,7 @@ public class KeyguardServiceDelegate {
         mCallback = callback;
         mLockPatternUtils = new LockPatternUtils(context);
         mActivityManagerInternal = LocalServices.getService(ActivityManagerInternal.class);
+        initializeKeyguardState();
     }
 
     public void onShowingStateChanged(boolean showing) {
@@ -263,7 +254,7 @@ public class KeyguardServiceDelegate {
         public void onServiceConnected(ComponentName name, IBinder service) {
             if (DEBUG) Log.v(TAG, "*** Keyguard connected (yay!)");
 
-            mKeyguardState.currentUser = mActivityManagerInternal.getCurrentUserId();
+            mKeyguardState.userId = mActivityManagerInternal.getCurrentUserId();
 
             if (resetKeyguardFirstStateDispatchOnServiceConnected()) {
                 mCallback.onKeyguardServiceConnected();
@@ -272,47 +263,13 @@ public class KeyguardServiceDelegate {
             // Replay the previous KeyguardState for the new KeyguardService.
             mKeyguardService = IKeyguardService.Stub.asInterface(service);
             try {
-                mKeyguardService.addStateMonitorCallback(mKeyguardStateCallback);
-
-                if (mKeyguardState.systemIsReady) {
-                    // If the system is ready, it means keyguard crashed and restarted.
-                    mKeyguardService.onSystemReady();
-                    mKeyguardService.setCurrentUser(mKeyguardState.currentUser);
-                    // This is used to hide the scrim once keyguard displays.
-                    if (mKeyguardState.interactiveState == INTERACTIVE_STATE_AWAKE
-                            || mKeyguardState.interactiveState == INTERACTIVE_STATE_WAKING) {
-                        mKeyguardService.onStartedWakingUp(PowerManager.WAKE_REASON_UNKNOWN,
-                                false /* powerButtonLaunchGestureTriggered */);
-                    }
-                    if (mKeyguardState.interactiveState == INTERACTIVE_STATE_AWAKE) {
-                        mKeyguardService.onFinishedWakingUp();
-                    }
-                    if (mKeyguardState.screenState == SCREEN_STATE_ON
-                            || mKeyguardState.screenState == SCREEN_STATE_TURNING_ON) {
-                        mKeyguardService.onScreenTurningOn(SCREEN_TURNING_ON_REASON_UNKNOWN,
-                                mKeyguardShowDelegate);
-                    }
-                    if (mKeyguardState.screenState == SCREEN_STATE_ON) {
-                        mKeyguardService.onScreenTurnedOn();
-                    }
-                }
-                if (mKeyguardState.bootCompleted) {
-                    mKeyguardService.onBootCompleted();
-                }
-                if (mKeyguardState.occluded) {
-                    mKeyguardService.setOccluded(mKeyguardState.occluded);
-                }
-                if (!mKeyguardState.enabled) {
-                    mKeyguardService.setKeyguardEnabled(mKeyguardState.enabled);
-                }
-                if (mKeyguardState.dreaming) {
-                    mKeyguardService.onDreamingStarted();
-                }
+                mKeyguardService.restoreKeyguardState(mKeyguardState, mKeyguardStateCallback,
+                        mKeyguardDrawnCallback, doKeyguardTimeoutRequested,
+                        doKeyguardTimeoutRequestedOptions);
                 if (doKeyguardTimeoutRequested) {
-                    if (isSecure(mKeyguardState.currentUser)) {
-                        onShowingStateChanged(true);
+                    if (isSecure(mKeyguardState.userId)) {
+                        onShowingStateChanged(true /* showing */);
                     }
-                    mKeyguardService.doKeyguardTimeout(doKeyguardTimeoutRequestedOptions);
                     doKeyguardTimeoutRequested = false;
                     doKeyguardTimeoutRequestedOptions = null;
                 }
@@ -325,7 +282,7 @@ public class KeyguardServiceDelegate {
         public void onServiceDisconnected(ComponentName name) {
             if (DEBUG) Log.v(TAG, "*** Keyguard disconnected (boo!)");
             mKeyguardService = null;
-            mKeyguardState.reset();
+            resetKeyguardState();
             mKeyguardReportedState.reset();
             try {
                 ActivityTaskManager.getService().setLockScreenShown(true /* showingKeyguard */,
@@ -336,22 +293,47 @@ public class KeyguardServiceDelegate {
         }
     };
 
+    private void initializeKeyguardState() {
+        mKeyguardState.userId = UserHandle.USER_NULL;
+    }
+
+    private void resetKeyguardState() {
+        mKeyguardState.occluded = false;
+    }
+
+    /**
+     * Whether Keyguard is currently showing.
+     */
     public boolean isShowing() {
         return mKeyguardReportedState.showing;
     }
 
+    /**
+     * Whether the device is currently trusted.
+     */
     public boolean isTrusted() {
         return mKeyguardReportedState.trusted;
     }
 
+    /**
+     * Whether the device has Keyguard.
+     */
     public boolean hasKeyguard() {
         return mKeyguardReportedState.deviceHasKeyguard;
     }
 
+    /**
+     * Whether input is currently restricted by Keyguard.
+     */
     public boolean isInputRestricted() {
         return mKeyguardReportedState.inputRestricted;
     }
 
+    /**
+     * Verifies whether Keyguard is unlocked and notifies the given callback.
+     *
+     * @param onKeyguardExitResult the callback to be informed about the result.
+     */
     public void verifyUnlock(@NonNull final Consumer<Boolean> onKeyguardExitResult) {
         final var keyguardService = mKeyguardService;
         if (keyguardService == null) {
@@ -360,7 +342,7 @@ public class KeyguardServiceDelegate {
         try {
             keyguardService.verifyUnlock(new IKeyguardExitCallback.Stub() {
                 @Override
-                public void onKeyguardExitResult(boolean success) throws RemoteException {
+                public void onKeyguardExitResult(boolean success) {
                     if (DEBUG) Log.v(TAG, "**** onKeyguardExitResult(" + success + ") CALLED ****");
                     onKeyguardExitResult.accept(success);
                 }
@@ -370,6 +352,11 @@ public class KeyguardServiceDelegate {
         }
     }
 
+    /**
+     * Sets whether Keyguard is occluded by another window.
+     *
+     * @param isOccluded the new occluded state.
+     */
     public void setOccluded(boolean isOccluded) {
         if (mKeyguardService != null) {
             if (DEBUG) Log.v(TAG, "setOccluded(" + isOccluded + ")");
@@ -387,11 +374,21 @@ public class KeyguardServiceDelegate {
         mKeyguardState.occluded = isOccluded;
     }
 
+    /**
+     * Returns whether Keyguard is occluded by another window.
+     */
     public boolean isOccluded() {
         return mKeyguardState.occluded;
     }
 
-    public void dismiss(IKeyguardDismissCallback callback, CharSequence message) {
+    /**
+     * Dismisses Keyguard, if it is currently shown.
+     *
+     * @param callback the callback to be informed about the result.
+     * @param message  the message that should be displayed in Keyguard.
+     */
+    public void dismiss(@Nullable IKeyguardDismissCallback callback,
+            @Nullable CharSequence message) {
         if (mKeyguardService != null) {
             try {
                 mKeyguardService.dismiss(callback, message);
@@ -401,6 +398,13 @@ public class KeyguardServiceDelegate {
         }
     }
 
+    /**
+     * Returns whether Keyguard is currently secure for the given user, requiring an unlock.
+     *
+     * @param userId the ID of the user to check.
+     *
+     * @see android.app.KeyguardManager#isKeyguardSecure
+     */
     public boolean isSecure(@UserIdInt int userId) {
         if (mKeyguardReportedState.simSecure) {
             return true;
@@ -411,6 +415,9 @@ public class KeyguardServiceDelegate {
         return mLockPatternUtils.isSecure(userId);
     }
 
+    /**
+     * Called when dreaming has started.
+     */
     public void onDreamingStarted() {
         if (mKeyguardService != null) {
             try {
@@ -422,6 +429,9 @@ public class KeyguardServiceDelegate {
         mKeyguardState.dreaming = true;
     }
 
+    /**
+     * Called when dreaming has stopped.
+     */
     public void onDreamingStopped() {
         if (mKeyguardService != null) {
             try {
@@ -433,6 +443,13 @@ public class KeyguardServiceDelegate {
         mKeyguardState.dreaming = false;
     }
 
+    /**
+     * Called when the device has started waking up.
+     *
+     * @param pmWakeReason                      the reason the device started waking up.
+     * @param powerButtonLaunchGestureTriggered whether the device is waking up due to a power
+     *                                          button double tap gesture.
+     */
     public void onStartedWakingUp(
             @PowerManager.WakeReason int pmWakeReason, boolean powerButtonLaunchGestureTriggered) {
         if (mKeyguardService != null) {
@@ -446,6 +463,9 @@ public class KeyguardServiceDelegate {
         mKeyguardState.interactiveState = INTERACTIVE_STATE_WAKING;
     }
 
+    /**
+     * Called when the device has finished waking up.
+     */
     public void onFinishedWakingUp() {
         if (mKeyguardService != null) {
             if (DEBUG) Log.v(TAG, "onFinishedWakingUp()");
@@ -458,6 +478,9 @@ public class KeyguardServiceDelegate {
         mKeyguardState.interactiveState = INTERACTIVE_STATE_AWAKE;
     }
 
+    /**
+     * Called when the device screen has started turning off.
+     */
     public void onScreenTurningOff() {
         if (mKeyguardService != null) {
             if (DEBUG) Log.v(TAG, "onScreenTurningOff()");
@@ -470,6 +493,9 @@ public class KeyguardServiceDelegate {
         mKeyguardState.screenState = SCREEN_STATE_TURNING_OFF;
     }
 
+    /**
+     * Called when the device screen has finished turning off.
+     */
     public void onScreenTurnedOff() {
         if (mKeyguardService != null) {
             if (DEBUG) Log.v(TAG, "onScreenTurnedOff()");
@@ -483,15 +509,15 @@ public class KeyguardServiceDelegate {
     }
 
     /**
-     * Notify Keyguard that the screen started turning on.
+     * Called when the device screen has started turning on.
      *
-     * @param reason one of the SCREEN_TURNING_ON_REASON constants in IKeyguardService.aidl.
+     * @param reason the reason for the screen turning on.
      */
     public void onScreenTurningOn(int reason) {
         if (mKeyguardService != null) {
             if (DEBUG) Log.v(TAG, "onScreenTurnedOn(reason = " + reason + ")");
             try {
-                mKeyguardService.onScreenTurningOn(reason, mKeyguardShowDelegate);
+                mKeyguardService.onScreenTurningOn(reason, mKeyguardDrawnCallback);
             } catch (RemoteException e) {
                 Slog.w(TAG, "Remote Exception", e);
             }
@@ -502,6 +528,9 @@ public class KeyguardServiceDelegate {
         mKeyguardState.screenState = SCREEN_STATE_TURNING_ON;
     }
 
+    /**
+     * Called when the device screen has finished turning on.
+     */
     public void onScreenTurnedOn() {
         if (mKeyguardService != null) {
             if (DEBUG) Log.v(TAG, "onScreenTurnedOn()");
@@ -514,6 +543,11 @@ public class KeyguardServiceDelegate {
         mKeyguardState.screenState = SCREEN_STATE_ON;
     }
 
+    /**
+     * Called when the device has started going to sleep.
+     *
+     * @param pmSleepReason the reason the device started going to sleep.
+     */
     public void onStartedGoingToSleep(@PowerManager.GoToSleepReason int pmSleepReason) {
         if (mKeyguardService != null) {
             try {
@@ -525,6 +559,15 @@ public class KeyguardServiceDelegate {
         mKeyguardState.interactiveState = INTERACTIVE_STATE_GOING_TO_SLEEP;
     }
 
+    /**
+     * Called when the device has finished going to sleep.
+     *
+     * @param pmSleepReason                     the reason the device went to sleep.
+     * @param powerButtonLaunchGestureTriggered whether the power button double tap gesture was
+     *                                          triggered between {@link #onStartedGoingToSleep} and
+     *                                          this method; if it's been triggered, we shouldn't
+     *                                          lock the device.
+     */
     public void onFinishedGoingToSleep(
             @PowerManager.GoToSleepReason int pmSleepReason,
             boolean powerButtonLaunchGestureTriggered) {
@@ -539,6 +582,16 @@ public class KeyguardServiceDelegate {
         mKeyguardState.interactiveState = INTERACTIVE_STATE_SLEEP;
     }
 
+    /**
+     * Sets whether Keyguard is enabled. While disabled it is prevented from showing.
+     *
+     * <p>If disabled while it is currently showing, it will be hidden. If disabling lead to a hide,
+     * re-enabling will show it again.
+     *
+     * <p>This has no effect if it {@link #isSecure}.
+     *
+     * @param enabled the new enabled state.
+     */
     public void setKeyguardEnabled(boolean enabled) {
         if (mKeyguardService != null) {
             try {
@@ -550,6 +603,9 @@ public class KeyguardServiceDelegate {
         mKeyguardState.enabled = enabled;
     }
 
+    /**
+     * Called when the system is mostly done booting.
+     */
     public void onSystemReady() {
         if (mKeyguardService != null) {
             try {
@@ -558,13 +614,19 @@ public class KeyguardServiceDelegate {
                 Slog.w(TAG, "Remote Exception", e);
             }
         } else {
-            mKeyguardState.systemIsReady = true;
+            mKeyguardState.systemReady = true;
         }
     }
 
-    public void doKeyguardTimeout(Bundle options) {
+    /**
+     * Handle the inactivity timeout while the device is unlocked, after which Keyguard should be
+     * shown.
+     *
+     * @param options the Keyguard timeout options.
+     */
+    public void doKeyguardTimeout(@Nullable Bundle options) {
         if (mKeyguardService != null) {
-            if (isSecure(mKeyguardState.currentUser)) {
+            if (isSecure(mKeyguardState.userId)) {
                 // Preemptively inform the cache that the keyguard will soon be showing, as calls to
                 // doKeyguardTimeout are a signal to lock the device as soon as possible.
                 onShowingStateChanged(true);
@@ -583,7 +645,8 @@ public class KeyguardServiceDelegate {
     }
 
     /**
-     * Request to show the keyguard immediately without immediately locking the device.
+     * Requests to show Keyguard immediately without locking the device. It will show regardless
+     * whether a screen lock was configured or not (including if screen lock is SWIPE or NONE).
      */
     public void showDismissibleKeyguard() {
         if (mKeyguardService != null) {
@@ -595,17 +658,27 @@ public class KeyguardServiceDelegate {
         }
     }
 
-    public void setCurrentUser(int newUserId) {
+    /**
+     * Sets the current user (or user profile) to the given one.
+     *
+     * @param userId the ID of the new user.
+     */
+    public void setCurrentUser(@UserIdInt int userId) {
         if (mKeyguardService != null) {
             try {
-                mKeyguardService.setCurrentUser(newUserId);
+                mKeyguardService.setCurrentUser(userId);
             } catch (RemoteException e) {
                 Slog.w(TAG, "Remote Exception", e);
             }
         }
-        mKeyguardState.currentUser = newUserId;
+        mKeyguardState.userId = userId;
     }
 
+    /**
+     * Sets whether a user switch is in progress.
+     *
+     * @param switching the new switching state.
+     */
     public void setSwitchingUser(boolean switching) {
         if (mKeyguardService != null) {
             try {
@@ -616,7 +689,13 @@ public class KeyguardServiceDelegate {
         }
     }
 
-    public void startKeyguardExitAnimation(long startTime) {
+    /**
+     * Notifies that the activity behind has now been drawn and it's safe to remove the wallpaper
+     * and Keyguard flag.
+     *
+     * @param startTime the start time of the animation in uptime milliseconds
+     */
+    public void startKeyguardExitAnimation(@UptimeMillisLong long startTime) {
         if (mKeyguardService != null) {
             try {
                 mKeyguardService.startKeyguardExitAnimation(startTime, 0);
@@ -626,6 +705,9 @@ public class KeyguardServiceDelegate {
         }
     }
 
+    /**
+     * Called when the system is fully done booting.
+     */
     public void onBootCompleted() {
         if (mKeyguardService != null) {
             try {
@@ -637,6 +719,11 @@ public class KeyguardServiceDelegate {
         mKeyguardState.bootCompleted = true;
     }
 
+    /**
+     * Notifies Keyguard that the power key was pressed while locked and launched Home rather than
+     * putting the device to sleep or waking up. Note that it's called only if the device is
+     * interactive.
+     */
     public void onShortPowerPressedGoHome() {
         if (mKeyguardService != null) {
             try {
@@ -647,16 +734,28 @@ public class KeyguardServiceDelegate {
         }
     }
 
-    public void dismissKeyguardToLaunch(Intent intentToLaunch) {
+    /**
+     * Notifies Keyguard that it needs to bring up a bouncer and then launch the intent as soon as
+     * user unlocks the watch.
+     *
+     * @param intent the Intent to launch.
+     */
+    public void dismissKeyguardToLaunch(@NonNull Intent intent) {
         if (mKeyguardService != null) {
             try {
-                mKeyguardService.dismissKeyguardToLaunch(intentToLaunch);
+                mKeyguardService.dismissKeyguardToLaunch(intent);
             } catch (RemoteException e) {
                 Slog.w(TAG, "Remote Exception", e);
             }
         }
     }
 
+    /**
+     * Notifies Keyguard that a key was pressed while locked so Keyguard can handle it. Note that
+     * it's called only if the device is interactive.
+     *
+     * @param keycode the key that was pressed.
+     */
     public void onSystemKeyPressed(int keycode) {
         if (mKeyguardService != null) {
             try {
@@ -685,43 +784,45 @@ public class KeyguardServiceDelegate {
         pw.println(prefix + "trusted=" + mKeyguardReportedState.trusted);
         pw.println(prefix + "simSecure=" + mKeyguardReportedState.simSecure);
         pw.println(prefix + "dreaming=" + mKeyguardState.dreaming);
-        pw.println(prefix + "systemIsReady=" + mKeyguardState.systemIsReady);
+        pw.println(prefix + "systemReady=" + mKeyguardState.systemReady);
         pw.println(prefix + "deviceHasKeyguard=" + mKeyguardReportedState.deviceHasKeyguard);
         pw.println(prefix + "enabled=" + mKeyguardState.enabled);
-        pw.println(prefix + "currentUser=" + mKeyguardState.currentUser);
+        pw.println(prefix + "userId=" + mKeyguardState.userId);
         pw.println(prefix + "bootCompleted=" + mKeyguardState.bootCompleted);
         pw.println(prefix + "screenState=" + screenStateToString(mKeyguardState.screenState));
         pw.println(prefix + "interactiveState=" +
                 interactiveStateToString(mKeyguardState.interactiveState));
     }
 
-    private static String screenStateToString(int screen) {
-        switch (screen) {
-            case SCREEN_STATE_OFF:
-                return "SCREEN_STATE_OFF";
-            case SCREEN_STATE_TURNING_ON:
-                return "SCREEN_STATE_TURNING_ON";
-            case SCREEN_STATE_ON:
-                return "SCREEN_STATE_ON";
-            case SCREEN_STATE_TURNING_OFF:
-                return "SCREEN_STATE_TURNING_OFF";
-            default:
-                return Integer.toString(screen);
-        }
+    /**
+     * Returns the string representation of the given screen state.
+     *
+     * @param screenState the screen state to convert to a string.
+     */
+    @NonNull
+    private static String screenStateToString(int screenState) {
+        return switch (screenState) {
+            case SCREEN_STATE_OFF -> "SCREEN_STATE_OFF";
+            case SCREEN_STATE_TURNING_ON -> "SCREEN_STATE_TURNING_ON";
+            case SCREEN_STATE_ON -> "SCREEN_STATE_ON";
+            case SCREEN_STATE_TURNING_OFF -> "SCREEN_STATE_TURNING_OFF";
+            default -> Integer.toString(screenState);
+        };
     }
 
-    private static String interactiveStateToString(int interactive) {
-        switch (interactive) {
-            case INTERACTIVE_STATE_SLEEP:
-                return "INTERACTIVE_STATE_SLEEP";
-            case INTERACTIVE_STATE_WAKING:
-                return "INTERACTIVE_STATE_WAKING";
-            case INTERACTIVE_STATE_AWAKE:
-                return "INTERACTIVE_STATE_AWAKE";
-            case INTERACTIVE_STATE_GOING_TO_SLEEP:
-                return "INTERACTIVE_STATE_GOING_TO_SLEEP";
-            default:
-                return Integer.toString(interactive);
-        }
+    /**
+     * Returns the string representation of the given interactive state.
+     *
+     * @param interactiveState the interactive state to convert to a string.
+     */
+    @NonNull
+    private static String interactiveStateToString(int interactiveState) {
+        return switch (interactiveState) {
+            case INTERACTIVE_STATE_SLEEP -> "INTERACTIVE_STATE_SLEEP";
+            case INTERACTIVE_STATE_WAKING -> "INTERACTIVE_STATE_WAKING";
+            case INTERACTIVE_STATE_AWAKE -> "INTERACTIVE_STATE_AWAKE";
+            case INTERACTIVE_STATE_GOING_TO_SLEEP -> "INTERACTIVE_STATE_GOING_TO_SLEEP";
+            default -> Integer.toString(interactiveState);
+        };
     }
 }
