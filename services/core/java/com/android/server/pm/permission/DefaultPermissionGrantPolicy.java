@@ -664,6 +664,14 @@ final class DefaultPermissionGrantPolicy {
                 getDefaultProviderAuthorityPackage(MediaStore.AUTHORITY, userId), userId,
                 STORAGE_PERMISSIONS, NOTIFICATION_PERMISSIONS);
 
+        // Provide Camera and Microphone permission for Android System Photopicker for it's
+        // camera feature.
+        grantSystemFixedPermissionsToSystemPackage(pm,
+                getDefaultSystemHandlerActivityPackage(pm, MediaStore.ACTION_PICK_IMAGES, userId),
+                userId,
+                CAMERA_PERMISSIONS,
+                MICROPHONE_PERMISSIONS);
+
         // Downloads provider
         grantSystemFixedPermissionsToSystemPackage(pm,
                 getDefaultProviderAuthorityPackage("downloads", userId), userId,
