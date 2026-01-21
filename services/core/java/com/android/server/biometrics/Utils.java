@@ -156,19 +156,13 @@ public class Utils {
      * @return true if Identity Check requirements should be applied depending on the authenticators
      */
     static boolean shouldApplyIdentityCheck(@Authenticators.Types int authenticators) {
-        final boolean isIdentityCheckAllSurfacesEnabled =
-                Flags.identityCheckAllSurfaces();
         final boolean isMandatoryOrBiometricRequested =
                 isMandatoryBiometricsRequested(authenticators)
                         || isBiometricRequested(authenticators);
         final boolean isOnlyStrongBiometricRequested =
                 isOnlyStrongBiometricRequested(authenticators);
 
-        if (isIdentityCheckAllSurfacesEnabled) {
-            return isMandatoryOrBiometricRequested && !isOnlyStrongBiometricRequested;
-        }
-
-        return isMandatoryBiometricsRequested(authenticators);
+        return isMandatoryOrBiometricRequested && !isOnlyStrongBiometricRequested;
     }
 
     private static boolean isOnlyStrongBiometricRequested(

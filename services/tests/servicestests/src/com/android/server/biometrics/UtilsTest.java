@@ -39,7 +39,6 @@ import android.hardware.biometrics.BiometricPrompt;
 import android.hardware.biometrics.Flags;
 import android.hardware.biometrics.PromptInfo;
 import android.platform.test.annotations.Presubmit;
-import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 
@@ -336,14 +335,12 @@ public class UtilsTest {
     }
 
     @Test
-    @RequiresFlagsEnabled({Flags.FLAG_IDENTITY_CHECK_ALL_SURFACES})
     public void testShouldApplyIdentityCheck_singleAuthenticator_returnsTrue() {
         assertThat(Utils.shouldApplyIdentityCheck(Authenticators.IDENTITY_CHECK)).isTrue();
         assertThat(Utils.shouldApplyIdentityCheck(Authenticators.BIOMETRIC_WEAK)).isTrue();
     }
 
     @Test
-    @RequiresFlagsEnabled({Flags.FLAG_IDENTITY_CHECK_ALL_SURFACES})
     public void testShouldApplyIdentityCheck_combinationAuthenticators_returnsTrue() {
         assertThat(Utils.shouldApplyIdentityCheck(Authenticators.IDENTITY_CHECK
                 | Authenticators.DEVICE_CREDENTIAL)).isTrue();
@@ -356,7 +353,6 @@ public class UtilsTest {
     }
 
     @Test
-    @RequiresFlagsEnabled({Flags.FLAG_IDENTITY_CHECK_ALL_SURFACES})
     public void testShouldApplyIdentityCheck_returnsFalse() {
         assertThat(Utils.shouldApplyIdentityCheck(Authenticators.BIOMETRIC_STRONG
                 | Authenticators.IDENTITY_CHECK)).isFalse();
