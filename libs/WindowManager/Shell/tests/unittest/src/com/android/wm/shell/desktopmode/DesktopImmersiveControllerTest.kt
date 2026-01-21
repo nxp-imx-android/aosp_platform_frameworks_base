@@ -21,8 +21,6 @@ import android.app.WindowConfiguration.WINDOW_CONFIG_BOUNDS
 import android.graphics.Rect
 import android.os.Binder
 import android.os.IBinder
-import android.platform.test.annotations.DisableFlags
-import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import android.testing.TestableLooper
 import android.view.Display.DEFAULT_DISPLAY
@@ -36,7 +34,6 @@ import android.window.WindowContainerToken
 import android.window.WindowContainerTransaction
 import androidx.test.filters.SmallTest
 import com.android.testing.wm.util.StubTransaction
-import com.android.window.flags.Flags
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.TestShellExecutor
@@ -160,7 +157,6 @@ class DesktopImmersiveControllerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_RESTORE_TO_PREVIOUS_SIZE_FROM_DESKTOP_IMMERSIVE)
     fun enterImmersive_savesPreImmersiveBounds() {
         val task = createFreeformTask()
         val mockBinder = mock(IBinder::class.java)
@@ -208,7 +204,6 @@ class DesktopImmersiveControllerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_RESTORE_TO_PREVIOUS_SIZE_FROM_DESKTOP_IMMERSIVE)
     fun exitImmersive_onTransitionReady_removesBoundsBeforeImmersive() {
         val task = createFreeformTask()
         val mockBinder = mock(IBinder::class.java)
@@ -583,7 +578,6 @@ class DesktopImmersiveControllerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_RESTORE_TO_PREVIOUS_SIZE_FROM_DESKTOP_IMMERSIVE)
     fun onTransitionReady_pendingExit_removesBoundsBeforeImmersive() {
         val task = createFreeformTask()
         whenever(mockShellTaskOrganizer.getRunningTaskInfo(task.taskId)).thenReturn(task)
@@ -608,27 +602,6 @@ class DesktopImmersiveControllerTest : ShellTestCase() {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_ENABLE_RESTORE_TO_PREVIOUS_SIZE_FROM_DESKTOP_IMMERSIVE)
-    fun exitImmersiveIfApplicable_changesBoundsToMaximize() {
-        val task = createFreeformTask()
-        whenever(mockShellTaskOrganizer.getRunningTaskInfo(task.taskId)).thenReturn(task)
-        val wct = WindowContainerTransaction()
-        desktopRepository.setTaskInFullImmersiveState(
-            displayId = DEFAULT_DISPLAY,
-            taskId = task.taskId,
-            immersive = true,
-        )
-
-        controller.exitImmersiveIfApplicable(wct = wct, taskInfo = task, reason = USER_INTERACTION)
-
-        assertThat(
-                wct.hasBoundsChange(task.token, calculateMaximizeBounds(mockDisplayLayout, task))
-            )
-            .isTrue()
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_RESTORE_TO_PREVIOUS_SIZE_FROM_DESKTOP_IMMERSIVE)
     fun exitImmersiveIfApplicable_preImmersiveBoundsSaved_changesBoundsToPreImmersiveBounds() {
         val task = createFreeformTask()
         whenever(mockShellTaskOrganizer.getRunningTaskInfo(task.taskId)).thenReturn(task)
@@ -647,7 +620,6 @@ class DesktopImmersiveControllerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_RESTORE_TO_PREVIOUS_SIZE_FROM_DESKTOP_IMMERSIVE)
     fun exitImmersiveIfApplicable_preImmersiveBoundsNotSaved_changesBoundsToInitialBounds() {
         val task = createFreeformTask()
         whenever(mockShellTaskOrganizer.getRunningTaskInfo(task.taskId)).thenReturn(task)

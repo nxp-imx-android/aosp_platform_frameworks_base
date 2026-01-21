@@ -931,13 +931,6 @@ flag {
 }
 
 flag {
-    name: "enable_restore_to_previous_size_from_desktop_immersive"
-    namespace: "lse_desktop_experience"
-    description: "Restores the window bounds to their previous size when exiting desktop immersive"
-    bug: "372318163"
-}
-
-flag {
     name: "enable_see_through_task_fragments"
     namespace: "lse_desktop_experience"
     description: "Let see-through TaskFragments keep their siblings (in lower Z order) resumed"
