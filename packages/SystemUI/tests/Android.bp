@@ -19,16 +19,6 @@ package {
     default_applicable_licenses: ["frameworks_base_packages_SystemUI_license"],
 }
 
-filegroup {
-    name: "systemui_tests_base_manifest",
-    srcs: ["AndroidManifest-base.xml"],
-}
-
-filegroup {
-    name: "systemui_tests_additional_manifest",
-    srcs: ["AndroidManifest.xml"],
-}
-
 java_defaults {
     name: "SystemUITests_defaults",
     use_resource_processor: true,
@@ -57,8 +47,7 @@ java_defaults {
     // UI it doesn't own. This is necessary to allow screenshots to be taken
     certificate: "platform",
 
-    additional_manifests: [":systemui_tests_additional_manifest"],
-    manifest: ":systemui_tests_base_manifest",
+    manifest: "AndroidManifest.xml",
 }
 
 android_test {
@@ -91,10 +80,10 @@ test_module_config {
 
 android_library {
     name: "SystemUI_test_fixtures",
+    package_name: "com.android.systemui.tests.fixtures",
     resource_dirs: [],
 
     use_resource_processor: true,
-    manifest: "AndroidManifest-base.xml",
 
     srcs: [
         "utils/src/**/*.java",
