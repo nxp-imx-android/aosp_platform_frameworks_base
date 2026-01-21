@@ -1174,6 +1174,16 @@ flag {
 }
 
 flag {
+    name: "move_task_to_front_on_drag_resizing_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Moving a drag resized task to front"
+    bug: "444424101"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "nested_tasks_with_independent_bounds_bugfix"
     namespace: "lse_desktop_experience"
     description: "Allows tasks under a root task to be have independent (non-inherited) bounds"
