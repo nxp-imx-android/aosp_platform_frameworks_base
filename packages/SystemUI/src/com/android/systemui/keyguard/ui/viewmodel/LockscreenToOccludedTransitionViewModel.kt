@@ -27,11 +27,13 @@ import com.android.systemui.keyguard.shared.model.KeyguardState.OCCLUDED
 import com.android.systemui.keyguard.ui.KeyguardTransitionAnimationFlow
 import com.android.systemui.keyguard.ui.transitions.DeviceEntryIconTransition
 import com.android.systemui.res.R
+import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.ShadeDisplayAware
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flatMapLatest
 
 /**
@@ -78,18 +80,24 @@ constructor(
 
     /** Lockscreen views y-translation */
     val lockscreenTranslationY: Flow<Float> =
-        configurationInteractor
-            .dimensionPixelSize(R.dimen.lockscreen_to_occluded_transition_lockscreen_translation_y)
-            .flatMapLatest { translatePx ->
-                transitionAnimation.sharedFlow(
-                    duration = TO_OCCLUDED_DURATION,
-                    onStep = { value -> value * translatePx },
-                    // Reset on cancel or finish
-                    onFinish = { 0f },
-                    onCancel = { 0f },
-                    interpolator = EMPHASIZED_ACCELERATE,
+        if (SceneContainerFlag.isEnabled) {
+            emptyFlow()
+        } else {
+            configurationInteractor
+                .dimensionPixelSize(
+                    R.dimen.lockscreen_to_occluded_transition_lockscreen_translation_y
                 )
-            }
+                .flatMapLatest { translatePx ->
+                    transitionAnimation.sharedFlow(
+                        duration = TO_OCCLUDED_DURATION,
+                        onStep = { value -> value * translatePx },
+                        // Reset on cancel or finish
+                        onFinish = { 0f },
+                        onCancel = { 0f },
+                        interpolator = EMPHASIZED_ACCELERATE,
+                    )
+                }
+        }
 
     override val deviceEntryParentViewAlpha: Flow<Float> =
         transitionAnimation.sharedFlowWithShade(
