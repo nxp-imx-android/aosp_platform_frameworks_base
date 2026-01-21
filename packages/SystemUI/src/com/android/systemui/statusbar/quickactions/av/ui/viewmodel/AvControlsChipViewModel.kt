@@ -29,7 +29,6 @@ import com.android.systemui.statusbar.quickactions.av.shared.model.SensorActivit
 import com.android.systemui.statusbar.quickactions.popups.ui.viewmodel.StatusBarPopupChipViewModel
 import com.android.systemui.statusbar.quickactions.ui.compose.ChipColors
 import com.android.systemui.statusbar.quickactions.ui.viewmodel.ChipIcon
-import com.android.systemui.statusbar.quickactions.ui.viewmodel.HoverBehavior
 import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipId
 import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipUiState
 import dagger.assisted.AssistedFactory
@@ -69,9 +68,8 @@ constructor(
                 QuickActionChipUiState.PopupChip(
                     chipId = chipId,
                     icons = icons(sensorActivityModel = sensorActivityModel),
-                    chipText = null,
+                    chipContent = null,
                     colors = ChipColors.AvControlsTheme,
-                    hoverBehavior = HoverBehavior.None,
                     contentDescription =
                         contentDescription(sensorActivityModel = sensorActivityModel),
                     popupViewModelFactory = popupViewModelFactory,

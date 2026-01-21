@@ -55,7 +55,7 @@ constructor(
             QuickActionChipUiState.PopupChip(
                 chipId = QuickActionChipId.ShareScreenPrivacyIndicator,
                 icons = listOf(ChipIcon(Icon.Resource(R.drawable.ic_share_screen, null))),
-                chipText = null,
+                chipContent = null,
                 // TODO(b/444293568) Finalize and update the colors of this chip.
                 colors = ChipColors.AvControlsTheme,
                 popupViewModelFactory = popupViewModelFactory,

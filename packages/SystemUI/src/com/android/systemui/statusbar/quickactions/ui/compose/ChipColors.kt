@@ -39,10 +39,11 @@ sealed interface ChipColors {
     @Composable fun chipOutline(isSelected: Boolean, colorScheme: ColorScheme): Color
 
     /** The color to use for the icon */
-    @Composable fun icon(isSelected: Boolean, isHovered: Boolean, colorScheme: ColorScheme): Color
+    @Composable
+    fun icon(isSelected: Boolean, isHighlighted: Boolean, colorScheme: ColorScheme): Color
 
-    /** The background color applied to the icon area when it is hovered. */
-    @Composable fun iconBackgroundOnHover(isSelected: Boolean, colorScheme: ColorScheme): Color
+    /** The background color applied to the icon area when it is hovered/highlighted */
+    @Composable fun iconBackground(isSelected: Boolean, colorScheme: ColorScheme): Color
 
     /** The default system themed chip colors, changing based on the popup state. */
     data object SystemTheme : ChipColors {
@@ -61,17 +62,17 @@ sealed interface ChipColors {
         @Composable
         override fun icon(
             isSelected: Boolean,
-            isHovered: Boolean,
+            isHighlighted: Boolean,
             colorScheme: ColorScheme,
         ): Color =
-            if (isHovered) {
+            if (isHighlighted) {
                 chipBackground(isSelected = isSelected, colorScheme = colorScheme)
             } else {
                 chipContent(isSelected = isSelected, colorScheme = colorScheme)
             }
 
         @Composable
-        override fun iconBackgroundOnHover(isSelected: Boolean, colorScheme: ColorScheme): Color =
+        override fun iconBackground(isSelected: Boolean, colorScheme: ColorScheme): Color =
             if (isSelected) colorScheme.onPrimary else colorScheme.onSurface
     }
 
@@ -94,12 +95,12 @@ sealed interface ChipColors {
         @Composable
         override fun icon(
             isSelected: Boolean,
-            isHovered: Boolean,
+            isHighlighted: Boolean,
             colorScheme: ColorScheme,
         ): Color = colorScheme.onPrimary
 
         @Composable
-        override fun iconBackgroundOnHover(isSelected: Boolean, colorScheme: ColorScheme): Color =
+        override fun iconBackground(isSelected: Boolean, colorScheme: ColorScheme): Color =
             colorScheme.onPrimary
     }
 }

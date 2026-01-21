@@ -37,16 +37,22 @@ sealed class QuickActionChipId(val value: String) {
     data object ImeIndicator : QuickActionChipId("ImeIndicator")
 }
 
-/** Model for an optionally clickable icon that is displayed on the chip. */
-data class ChipIcon(val icon: Icon, val onClick: (() -> Unit)? = null)
+/**
+ * Model for an optionally clickable icon that is displayed on the chip.
+ *
+ * @param isHighlighted shows a highlighted background around this icon
+ */
+data class ChipIcon(
+    val icon: Icon,
+    val onClick: (() -> Unit)? = null,
+    val isHighlighted: Boolean = false,
+)
 
-/** Defines the behavior of the chip when hovered over. */
-sealed interface HoverBehavior {
-    /** No specific hover behavior. The default icon will be shown. */
-    data object None : HoverBehavior
+/** Content displayed to the right of the popup chip icons */
+sealed class ChipContent {
+    data class Text(val text: String) : ChipContent()
 
-    /** Shows a list of buttons on hover with the given [icons] */
-    data class Buttons(val icons: List<ChipIcon>) : HoverBehavior
+    data class SideIcon(val icon: Icon) : ChipContent()
 }
 
 /** Model for individual status bar quick action chips. */
@@ -63,13 +69,12 @@ sealed class QuickActionChipUiState {
         override val chipId: QuickActionChipId,
         /** Icons shown on the chip when no specific hover behavior. */
         val icons: List<ChipIcon>,
-        val chipText: String?,
+        val chipContent: ChipContent? = null,
         /** Determines the colors used for the chip. Defaults to system themed colors. */
         val colors: ChipColors = ChipColors.SystemTheme,
         val isPopupShown: Boolean = false,
         val showPopup: () -> Unit = {},
         val hidePopup: () -> Unit = {},
-        val hoverBehavior: HoverBehavior = HoverBehavior.None,
         val contentDescription: ContentDescription? = null,
         val popupViewModelFactory: StatusBarPopupViewModel.Factory? = null,
     ) : QuickActionChipUiState() {
