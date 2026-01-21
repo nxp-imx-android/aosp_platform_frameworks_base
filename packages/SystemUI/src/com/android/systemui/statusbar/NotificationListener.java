@@ -40,10 +40,13 @@ import com.android.systemui.statusbar.phone.NotificationListenerWithPlugins;
 import com.android.systemui.util.time.SystemClock;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Deque;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.Executor;
+import java.util.function.Predicate;
 
 import javax.inject.Inject;
 
@@ -136,12 +139,22 @@ public class NotificationListener extends NotificationListenerWithPlugins implem
     public void onNotificationPosted(final StatusBarNotification sbn,
             final RankingMap rankingMap) {
         if (DEBUG) Log.d(TAG, "onNotificationPosted: " + sbn);
+        String key = sbn.getKey();
+        if (!isKeyInRankingMap(key, rankingMap)) {
+            Log.wtf(TAG, "Got bad rankingMap in onNotificationPosted for "
+                    + key);
+        }
         if (sbn != null && !onPluginNotificationPosted(sbn, rankingMap)) {
+            if (!isKeyInRankingMap(key, rankingMap)) {
+                Log.wtf(TAG, "Missing ranking after plugins for " + key);
+            }
             mMainExecutor.execute(() -> {
                 for (NotificationHandler handler : mNotificationHandlers) {
                     handler.onNotificationPosted(sbn, rankingMap);
                 }
             });
+        } else if (isKeyInRankingMap(key, rankingMap)) {
+            Log.wtf(TAG, "Plugin prevented post but left ranking " + key);
         }
     }
 
@@ -149,18 +162,26 @@ public class NotificationListener extends NotificationListenerWithPlugins implem
     public void onNotificationRemoved(StatusBarNotification sbn, RankingMap rankingMap,
             int reason) {
         if (DEBUG) Log.d(TAG, "onNotificationRemoved: " + sbn + " reason: " + reason);
+        String key = sbn.getKey();
+        if (isKeyInRankingMap(key, rankingMap)) {
+            Log.wtf(TAG, "Got bad rankingMap in onNotificationRemoved for "
+                    + key + " reason " + reason);
+        }
         if (sbn != null && !onPluginNotificationRemoved(sbn, rankingMap)) {
+            if (isKeyInRankingMap(key, rankingMap)) {
+                Log.wtf(TAG, "Extra ranking in removal after plugins for " + key
+                        + " reason " + reason);
+            }
             mMainExecutor.execute(() -> {
                 for (NotificationHandler handler : mNotificationHandlers) {
                     handler.onNotificationRemoved(sbn, rankingMap, reason);
                 }
             });
-        }
-    }
+        } else if (!isKeyInRankingMap(key, rankingMap)) {
+            Log.wtf(TAG, "Plugin prevented removal but removed ranking " + key
+                    + " reason " + reason);
 
-    @Override
-    public void onNotificationRemoved(StatusBarNotification sbn, RankingMap rankingMap) {
-        onNotificationRemoved(sbn, rankingMap, NotifCollection.REASON_UNKNOWN);
+        }
     }
 
     @Override
@@ -176,6 +197,11 @@ public class NotificationListener extends NotificationListenerWithPlugins implem
             //  events.
             mMainExecutor.execute(mDispatchRankingUpdateRunnable);
         }
+    }
+
+    private boolean isKeyInRankingMap(String key, RankingMap rankingMap) {
+        return Arrays.stream(rankingMap.getOrderedKeys()).filter(s -> Objects.equals(s, key))
+                .count() > 0;
     }
 
     /**
@@ -229,15 +255,6 @@ public class NotificationListener extends NotificationListenerWithPlugins implem
     @Override
     public void onSilentStatusBarIconsVisibilityChanged(boolean hideSilentStatusIcons) {
         mStatusIconInteractor.setHideSilentStatusIcons(hideSilentStatusIcons);
-    }
-
-    public final void unsnoozeNotification(@NonNull String key) {
-        if (!isBound()) return;
-        try {
-            getNotificationInterface().unsnoozeNotificationFromSystemListener(mWrapper, key);
-        } catch (android.os.RemoteException ex) {
-            Log.v(TAG, "Unable to contact notification manager", ex);
-        }
     }
 
     public void registerAsSystemService() {
