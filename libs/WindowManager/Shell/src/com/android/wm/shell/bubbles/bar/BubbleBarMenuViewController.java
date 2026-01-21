@@ -86,16 +86,19 @@ class BubbleBarMenuViewController {
             setupMenu();
         }
         runOnMenuIsMeasured(() -> {
-            mMenuView.setVisibility(View.VISIBLE);
-            mScrimView.setVisibility(View.VISIBLE);
             if (mListener != null) {
                 mListener.onMenuVisibilityChanged(true /* isShown */);
             }
-            Runnable endActions = () -> mMenuView.getChildAt(0).requestAccessibilityFocus();
+            mScrimView.setVisibility(View.VISIBLE);
+            Runnable onCompleteActions = () -> {
+                mMenuView.setVisibility(View.VISIBLE);
+                mHandleView.setVisibility(View.GONE);
+                mMenuView.getChildAt(0).requestAccessibilityFocus();
+            };
             if (animated) {
-                animateTransition(true /* show */, endActions);
+                animateTransition(true /* show */, onCompleteActions);
             } else {
-                endActions.run();
+                onCompleteActions.run();
             }
         });
     }
@@ -107,7 +110,7 @@ class BubbleBarMenuViewController {
     void hideMenu(boolean animated) {
         if (mMenuView == null || mScrimView == null) return;
         runOnMenuIsMeasured(() -> {
-            Runnable endActions = () -> {
+            Runnable onCompleteActions = () -> {
                 mHandleView.restoreAnimationDefaults();
                 mMenuView.setVisibility(View.GONE);
                 mScrimView.setVisibility(View.GONE);
@@ -117,9 +120,9 @@ class BubbleBarMenuViewController {
                 }
             };
             if (animated) {
-                animateTransition(false /* show */, endActions);
+                animateTransition(false /* show */, onCompleteActions);
             } else {
-                endActions.run();
+                onCompleteActions.run();
             }
         });
     }
@@ -136,9 +139,9 @@ class BubbleBarMenuViewController {
     /**
      * Animate show/hide menu transition
      * @param show if should show or hide the menu
-     * @param endActions will be called when animation ends
+     * @param onCompleteActions will be called when animation ends
      */
-    private void animateTransition(boolean show, Runnable endActions) {
+    private void animateTransition(boolean show, Runnable onCompleteActions) {
         if (mMenuView == null) return;
         float startValue = show ? 0 : 1;
         if (mMenuAnimator != null && mMenuAnimator.isRunning()) {
@@ -149,10 +152,19 @@ class BubbleBarMenuViewController {
         showMenuAnimation.setDuration(MENU_ANIMATION_DURATION);
         showMenuAnimation.setInterpolator(Interpolators.EMPHASIZED);
         showMenuAnimation.addListener(new AnimatorListenerAdapter() {
+            boolean mCancelled = false;
+
+            @Override
+            public void onAnimationCancel(Animator animator) {
+                mCancelled = true;
+            }
+
             @Override
             public void onAnimationEnd(Animator animation) {
                 mMenuAnimator = null;
-                endActions.run();
+                if (!mCancelled) {
+                    onCompleteActions.run();
+                }
             }
         });
         mMenuAnimator = showMenuAnimation;
