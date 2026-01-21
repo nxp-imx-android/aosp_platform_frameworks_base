@@ -152,7 +152,8 @@ public final class PersonalContextManager {
             @NonNull ContextHint hint, @Nullable List<ContextHint> attributionHints) {
         try {
             return mService.signHint(
-                    new ContextHintWrapper(hint), ContextHintWrapper.wrapList(attributionHints));
+                    new ContextHintWrapper(hint), ContextHintWrapper.wrapList(attributionHints))
+                    .getContextHintWithSignature();
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
