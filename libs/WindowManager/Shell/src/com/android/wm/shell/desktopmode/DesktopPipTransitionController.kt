@@ -242,6 +242,9 @@ class DesktopPipTransitionController(
             deskId,
         )
         desktopTasksController.addMoveToDeskTaskChanges(wct = wct, task = taskInfo, deskId = deskId)
+        // A Desk could be active but still behind the Wallpaper (and is therefore not visible).
+        // When we expand PiP, we always want the Desk to be brought to front along with the task.
+        wct.reorder(taskInfo.token, /* onTop= */ true, /* includingParents= */ true)
 
         return runOnTransitStart
     }
