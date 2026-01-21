@@ -722,6 +722,54 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
         verify(finishT).show(deskChild2Leash);
     }
 
+    @Test
+    @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    public void testMerge_openingNewTaskInPausedDesk_usesIdLogicCorrectly() {
+        final int deskId = 100;
+        final int taskId = 200;
+        ActivityManager.RunningTaskInfo deskRootTask =
+                new TestRunningTaskInfoBuilder().setTaskId(deskId).build();
+
+        ActivityManager.RunningTaskInfo deskChildTask =
+                new TestRunningTaskInfoBuilder().setTaskId(taskId).setParentTaskId(deskId).build();
+
+        when(mDesksOrganizer.isDeskChange(any())).thenReturn(true);
+        when(mDesksOrganizer.getDeskAtEnd(any())).thenReturn(deskId);
+
+        TransitionInfo startInfo = new TransitionInfoBuilder(TRANSIT_START_RECENTS_TRANSITION)
+                .addChange(TRANSIT_TO_BACK, deskChildTask)
+                .addChange(TRANSIT_TO_BACK, deskRootTask)
+                .build();
+        IBinder transition = startRecentsTransition(/* synthetic= */ false);
+
+        SurfaceControl.Transaction finishT = mock(SurfaceControl.Transaction.class);
+        mRecentsTransitionHandler.setFinishTransactionSupplier(() -> finishT);
+
+        mRecentsTransitionHandler.startAnimation(
+                transition, startInfo, new StubTransaction(), new StubTransaction(),
+                mock(Transitions.TransitionFinishCallback.class));
+
+        TransitionInfo mergeInfo = new TransitionInfoBuilder(TRANSIT_OPEN)
+                .addChange(TRANSIT_OPEN, deskRootTask)
+                .addChange(TRANSIT_OPEN, deskChildTask)
+                .build();
+
+        mRecentsTransitionHandler.findController(transition).merge(
+                mergeInfo,
+                new StubTransaction(),
+                finishT,
+                mock(Transitions.TransitionFinishCallback.class));
+
+        mRecentsTransitionHandler.findController(transition).finish(
+                /* toHome= */ false,
+                /* sendUserLeaveHint= */ false,
+                mock(IResultReceiver.class));
+
+        mMainExecutor.flushAll();
+
+        verify(mTransitions).startTransition(eq(TRANSIT_END_RECENTS_TRANSITION), any(), any());
+    }
+
     private void startTransitionAndMergeThenVerifyCanceled(TransitionInfo mergeTransition)
             throws Exception {
         final IRecentsAnimationRunner animationRunner = mock(IRecentsAnimationRunner.class);

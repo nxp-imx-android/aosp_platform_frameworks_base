@@ -6292,6 +6292,25 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
+    fun onRecentsInDesktopAnimationFinishing_launchOccurred_skipsDeactivation() {
+        val activeDeskId = 1
+        recentsTransitionStateListener.onTransitionStateChanged(TRANSITION_STATE_ANIMATING)
+
+        val task = setUpFreeformTask()
+        val request = createTransition(task, type = TRANSIT_OPEN)
+        controller.handleRequest(Binder(), request)
+
+        controller.onRecentsInDesktopAnimationFinishing(
+            transition = Binder(),
+            finishWct = WindowContainerTransaction(),
+            returnToApp = false,
+            activeDeskIdOnRecentsStart = activeDeskId,
+        )
+
+        verify(desksOrganizer, never()).deactivateDesk(any(), eq(activeDeskId), anyBoolean())
+    }
+
+    @Test
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun handleRequest_recentsAnimationRunning_relaunchActiveTask_tracksDeskDeactivation() {
         // Set up a visible freeform task
