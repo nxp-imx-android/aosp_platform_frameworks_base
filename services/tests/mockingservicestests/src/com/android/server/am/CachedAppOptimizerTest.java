@@ -1243,39 +1243,6 @@ public final class CachedAppOptimizerTest {
         assertTrue(mFreezeCounter.await(5, TimeUnit.SECONDS));
     }
 
-    @Test
-    public void shouldNotFreezeIgnored() throws InterruptedException {
-        mProcessDependencies.setRss(new long[] {
-                0 /*total_rss*/,
-                0 /*file*/,
-                0 /*anon*/,
-                0 /*swap*/,
-                0 /*shmem*/
-        });
-        mUseFreezer = true;
-        // Force the system to use the freezer
-        DeviceConfig.setProperty(DeviceConfig.NAMESPACE_ACTIVITY_MANAGER_NATIVE_BOOT,
-                CachedAppOptimizer.KEY_USE_FREEZER, "true", false);
-        mCachedAppOptimizerUnderTest.init();
-        initActivityManagerService();
-
-        int pid = 10000;
-        int uid = 2;
-        int pkgUid = 3;
-        final ProcessRecord app = makeProcessRecord(pid, uid, pkgUid, "p1", "app1");
-        app.setShouldNotFreeze(true, false, 0, 0);
-
-        assertNotNull(app.mOptRecord);
-        assertFalse(app.mOptRecord.isFrozen());
-
-        mFreezeCounter = new CountDownLatch(1);
-        mCachedAppOptimizerUnderTest.forceFreezeForTest(app, true);
-        waitForHandler();
-
-        assertTrue(mFreezeCounter.await(0, TimeUnit.SECONDS));
-        assertTrue(app.mOptRecord.isFrozen());
-    }
-
     private void setFlag(String key, String value, boolean defaultValue) throws Exception {
         mCountDown = new CountDownLatch(1);
         DeviceConfig.setProperty(DeviceConfig.NAMESPACE_ACTIVITY_MANAGER, key, value, defaultValue);

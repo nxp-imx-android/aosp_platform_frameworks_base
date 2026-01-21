@@ -44,7 +44,6 @@ import android.util.TimeUtils;
 
 import com.android.internal.annotations.CompositeRWLock;
 import com.android.internal.annotations.GuardedBy;
-import com.android.server.am.ProcessCachedOptimizerRecord.ShouldNotFreezeReason;
 import com.android.server.am.psc.PlatformCompatCache.CachedCompatChangeId;
 
 import java.io.PrintWriter;
@@ -151,22 +150,6 @@ public abstract class ProcessRecordInternal {
 
     /** Returns whether this process has been scheduled for freezing. */
     public abstract boolean isPendingFreeze();
-
-    /**
-     * Returns the OOM adjustment sequence number when this process's
-     * {@link #shouldNotFreeze()} state was last updated.
-     */
-    public abstract int shouldNotFreezeAdjSeq();
-
-    /** Returns whether this process should be exempt from freezing. */
-    public abstract boolean shouldNotFreeze();
-
-    /** Sets whether this process should be exempt from freezing and records the reason. */
-    public abstract boolean setShouldNotFreeze(boolean shouldNotFreeze, boolean dryRun,
-            @ShouldNotFreezeReason int reason, int adjSeq);
-
-    /** Returns the aggregated reasons why this process is currently exempt from freezing. */
-    public abstract @ShouldNotFreezeReason int shouldNotFreezeReason();
 
     /** Sets whether we would like to clean-up UI resources for this process. */
     public abstract void setPendingUiClean(boolean pendingUiClean);
