@@ -144,6 +144,13 @@ flag {
 }
 
 flag {
+    name: "enable_shell_modes"
+    namespace: "multitasking"
+    description: "Shell hierarchy and modes infrastructure"
+    bug: "463244845"
+}
+
+flag {
     name: "enable_gsf"
     namespace: "multitasking"
     description: "Applies GSF font styles to multitasking."
