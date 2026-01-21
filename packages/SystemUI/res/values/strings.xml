@@ -452,6 +452,8 @@
     <string name="screen_share_disclaimer_full_screen_sharing">When you’re sharing your entire screen, anything on your screen is visible to <xliff:g id="app_name">%1$s</xliff:g>. So be careful with sensitive information.</string>
     <!-- Accessibility announcement for the screen share UI [CHAR LIMIT=NONE] -->
     <string name="screen_share_a11y_announcement">Choose what to share. Select tab, app, or entire screen. Then press share.</string>
+    <!-- Accessibility announcement for when the screen share UI is dismissed without sharing [CHAR LIMIT=NONE] -->
+    <string name="screen_share_cancel_announcement">Screen sharing initiation ended. Screen not shared with anyone.</string>
     <!-- Content description for the app window screenshot button in the toolbar, when the capture mode is set to "screenshot". [CHAR LIMIT=NONE] -->
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y">Take screenshot of window</string>
     <!-- Content description for the app window screenshot button in the toolbar, when the capture mode is set to "record". [CHAR LIMIT=NONE] -->
