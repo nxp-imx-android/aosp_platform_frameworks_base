@@ -219,6 +219,7 @@ flag {
     namespace: "input"
     description: "Enables desktop entrypoints for contextual search"
     bug: "442915863"
+    is_exported: true
 }
 
 flag {

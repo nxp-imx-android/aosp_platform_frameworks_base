@@ -88,6 +88,7 @@ flag {
     namespace: "media_better_together"
     description: "Enables a new API to obtain the provider package name from MediaRoute2Info."
     bug: "378788958"
+    is_exported: true
 }
 
 flag {
@@ -95,6 +96,7 @@ flag {
     namespace: "media_better_together"
     description: "Enables support for mirroring routes in the MediaRouter2 framework, allowing Output Switcher to offer mirroring routes."
     bug: "362507305"
+    is_exported: true
 }
 
 flag {
@@ -271,6 +273,7 @@ flag {
     namespace: "telecom"
     description: "Flag for unhiding ringtone APIs"
     bug: "450092456"
+    is_exported: true
 }
 
 # Removed exported flags below this line.

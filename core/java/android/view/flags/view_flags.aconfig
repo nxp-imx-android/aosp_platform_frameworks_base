@@ -95,6 +95,7 @@ flag {
     description: "Deprecate SurfaceView z order control APIs."
     bug: "341021569"
     is_fixed_read_only: true
+    is_exported: true
 }
 
 flag {
@@ -119,6 +120,7 @@ flag {
     description: "Implement listener pattern for WindowInspector#getGlobalWindowViews."
     bug: "394397033"
     is_fixed_read_only: false
+    is_exported: true
 }
 
 flag {

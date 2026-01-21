@@ -157,6 +157,7 @@ flag {
     name: "device_engagement_mode"
     description: "Track and report device engagement modes, indicating the device's current interaction capabilities (e.g. audio-only)."
     bug: "423990404"
+    is_exported: true
 }
 
 flag {

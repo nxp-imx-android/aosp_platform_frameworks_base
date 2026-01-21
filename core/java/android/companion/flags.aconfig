@@ -133,6 +133,7 @@ flag {
     namespace: "companion"
     description: "Enables unified association extra permissions"
     bug: "440175468"
+    is_exported: true
 }
 
 flag {

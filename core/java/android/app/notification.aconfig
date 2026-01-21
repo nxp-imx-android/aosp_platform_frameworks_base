@@ -236,6 +236,7 @@ flag {
   metadata {
     purpose: PURPOSE_FEATURE
   }
+  is_exported: true
 }
 
 flag {

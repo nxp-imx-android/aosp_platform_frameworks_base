@@ -6,6 +6,7 @@ flag {
   namespace: "media_solutions"
   description: "Deprecate platform MediaSession2 APIs"
   bug: "436849846"
+  is_exported: true
 }
 
 flag {
@@ -36,6 +37,7 @@ flag {
   namespace: "media_solutions"
   description: "Allow applications with permission to register media session on behalf of other apps."
   bug: "422078108"
+  is_exported: true
 }
 
 flag {
@@ -44,4 +46,5 @@ flag {
   description: "Allow media applications to fetch their media controllers. Also allow media apps"
                "to add and remove listener for change in their controllers."
   bug: "422078108"
+  is_exported: true
 }

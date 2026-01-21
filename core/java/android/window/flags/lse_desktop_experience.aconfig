@@ -1240,6 +1240,7 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Enable API changes for runtime density resolution for ActivityInfo.WindowLayout"
     bug: "438420596"
+    is_exported: true
 }
 
 flag {

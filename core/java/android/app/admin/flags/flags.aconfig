@@ -545,6 +545,7 @@ flag {
   namespace: "enterprise"
   description: "Add a generic provisioning error for forward compatibility."
   bug: "458352522"
+  is_exported: true
 }
 
 flag {

@@ -48,7 +48,7 @@ flag {
 flag {
   name: "vpn_type_oem_service_and_legacy"
   namespace: "android_core_networking"
-  is_exported: false
+  is_exported: true
   description: "Flags the TYPE_VPN_OEM_SERVICE and TYPE_VPN_OEM_LEGACY VpnManager API constants"
   bug: "389829981"
 }
@@ -80,7 +80,7 @@ flag {
 flag {
   name: "make_app_specific_network_permission_api"
   namespace: "android_core_networking"
-  is_exported: false
+  is_exported: true
   description: "Flag for making CREATE_APP_SPECIFIC_NETWORK permission API"
   bug: "435313135"
 }
