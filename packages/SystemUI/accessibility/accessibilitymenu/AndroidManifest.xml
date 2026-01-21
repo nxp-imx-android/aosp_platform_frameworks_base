@@ -28,13 +28,15 @@
         android:restoreAnyVersion="true">
 
         <!-- Provide data for searching in the Settings app -->
+        <!-- Temporarily disable search until it pass the SystemHealth's review -->
         <provider
             android:name=".search.SearchIndexablesProvider"
             android:authorities="${applicationId}"
             android:exported="true"
             android:grantUriPermissions="true"
             android:multiprocess="false"
-            android:permission="android.permission.READ_SEARCH_INDEXABLES">
+            android:permission="android.permission.READ_SEARCH_INDEXABLES"
+            android:enabled="false">
             <intent-filter>
                 <action android:name="android.content.action.SEARCH_INDEXABLES_PROVIDER" />
             </intent-filter>
