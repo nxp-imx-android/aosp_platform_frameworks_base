@@ -17,14 +17,15 @@ use anyhow::{bail, Context, Result};
 use log::debug;
 use native_activity_thread_bindgen::{
     android_create_namespace, android_dlextinfo, android_dlopen_ext,
-    android_get_exported_namespace, android_link_namespaces, android_namespace_t, dlclose, dlsym,
-    ANDROID_DLEXT_USE_NAMESPACE, ANDROID_NAMESPACE_TYPE_EXEMPT_LIST_ENABLED,
-    ANDROID_NAMESPACE_TYPE_ISOLATED, ANDROID_NAMESPACE_TYPE_SHARED, RTLD_LOCAL,
+    android_get_exported_namespace, android_link_namespaces, android_namespace_t, dlclose, dlopen,
+    dlsym, ANDROID_DLEXT_USE_NAMESPACE, ANDROID_NAMESPACE_TYPE_EXEMPT_LIST_ENABLED,
+    ANDROID_NAMESPACE_TYPE_ISOLATED, ANDROID_NAMESPACE_TYPE_SHARED, RTLD_GLOBAL, RTLD_LOCAL,
+    RTLD_NOW,
 };
 use std::{
     ffi::{c_void, CString},
     ptr::NonNull,
-    sync::{Mutex, OnceLock},
+    sync::{Mutex, Once, OnceLock},
 };
 
 mod public_libraries;
@@ -277,6 +278,25 @@ impl NamespaceFactory {
         Mutex::new(Self { serial: 0 })
     }
 
+    /// Ensure the denylist is loaded, which overrides unsupported NDK APIs with abort().
+    /// It does so by RTLD_GLOBAL, DF_1_GLOBAL and ELF symbol interposition.
+    fn load_denylist_once() {
+        static LOAD_DENYLIST_ONCE: Once = Once::new();
+        LOAD_DENYLIST_ONCE.call_once(|| {
+            // SAFETY: `libandroid_native_denylist.so` is a system library, and
+            //         remains loaded for the lifetime of the process.
+            let library_handle = unsafe {
+                dlopen(
+                    c"libandroid_native_denylist.so".as_ptr(),
+                    RTLD_GLOBAL as i32 | RTLD_NOW as i32,
+                )
+            };
+            if library_handle.is_null() {
+                panic!("Failed to preload the denylist library");
+            }
+        });
+    }
+
     /// Create a linker namespace. Basically this is equivalent to `LibraryNamespaces::Create` in
     /// art/libnativeloader.
     pub fn create_linker_namespace(
@@ -287,6 +307,8 @@ impl NamespaceFactory {
         permitted_libs_dir: &str,
         uses_library_list: &str,
     ) -> Result<LinkerNamespace> {
+        Self::load_denylist_once();
+
         let api_domain = ApiDomain::try_from_path_list(dex_paths)?;
         let mut final_library_path = vec![library_paths.to_string()];
         let mut permitted_path = vec![ALWAYS_PERMITTED_DIRECTORIES.to_string()];
