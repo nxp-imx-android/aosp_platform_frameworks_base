@@ -242,11 +242,17 @@ public final class AppLockLocalService implements AppLockInternal,
     @Override
     public boolean isPackageLocked(@NonNull String packageName, int userId) {
         Trace.beginSection(TAG + ".isPackageLocked");
+        if (DEBUG) {
+            Slog.d(TAG, "isPackageLocked for " + packageName + " and user: " + userId);
+        }
         try {
             Objects.requireNonNull(packageName);
 
             // 1. Check if App Lock is enabled.
             if (!isPackageAppLockEnabled(packageName, userId)) {
+                if (DEBUG) {
+                    Slog.d(TAG, "isPackageLocked: App Lock is disabled, returning false");
+                }
                 return false;
             }
 
@@ -254,6 +260,10 @@ public final class AppLockLocalService implements AppLockInternal,
             //    the grace period associated with the package's last visibility in the foreground
             //    is checked below with pending locked jobs.
             if (isLastAuthWithinGracePeriod(packageName, userId)) {
+                if (DEBUG) {
+                    Slog.d(TAG, "isPackageLocked: last successful auth is within grace period,"
+                            + " returning false");
+                }
                 return false;
             }
 
@@ -266,6 +276,10 @@ public final class AppLockLocalService implements AppLockInternal,
                 // 3. Check pending jobs. If there is a pending job to lock the package, the package
                 //    must be unlocked.
                 if (packageHasQueuedAppLockedJob(userId, packageName)) {
+                    if (DEBUG) {
+                        Slog.d(TAG, "isPackageLocked: there is a pending job to lock the package,"
+                                + " returning false");
+                    }
                     return false;
                 }
 
@@ -287,8 +301,16 @@ public final class AppLockLocalService implements AppLockInternal,
                                 userId);
                         if (info != null
                                 && (info.flags & ActivityInfo.FLAG_SHOW_WHEN_LOCKED) == 0) {
+                            if (DEBUG) {
+                                Slog.d(TAG, "isPackageLocked: there are visible tasks with"
+                                        + " showWhenLocked=false, returning false");
+                            }
                             return false;
                         }
+                    }
+                    if (DEBUG) {
+                        Slog.d(TAG, "isPackageLocked: there are no visible tasks with"
+                                + " showWhenLocked=false, returning true");
                     }
                     // If all visible tasks have showWhenLocked=true, the package is locked.
                     return true;
@@ -297,7 +319,13 @@ public final class AppLockLocalService implements AppLockInternal,
                 // 5. Check if the package is in the foreground: at least one process belonging to
                 //    the package should have a PROCESS_STATE_TOP state (includes the notification
                 //    shade being pulled down while the app is in the foreground).
-                return !anyProcessInPackageIsInForegroundLocked(packageName, userId);
+                final boolean isPackageInBackground =
+                        !anyProcessInPackageIsInForegroundLocked(packageName, userId);
+                if (DEBUG) {
+                    Slog.d(TAG, "isPackageLocked: returning isPackageInBackground="
+                            + isPackageInBackground);
+                }
+                return isPackageInBackground;
             }
         } finally {
             Trace.endSection();
@@ -395,6 +423,9 @@ public final class AppLockLocalService implements AppLockInternal,
             // 3. Iterate over App Lock enabled packages and schedule listener updates.
             for (int i = 0; i < packageSet.size(); i++) {
                 final String packageName = packageSet.valueAt(i);
+                if (DEBUG) {
+                    Slog.d(TAG, "handleUidChangeLocked: packageName: " + packageName);
+                }
                 // isPackageLocked should be called outside of this synchronized block because it
                 // acquires the outer lock (mAmService).
                 final boolean isCurrentlyLocked = procState != PROCESS_STATE_TOP && isPackageLocked(
@@ -405,13 +436,14 @@ public final class AppLockLocalService implements AppLockInternal,
                             userId).mLastSentLockedState;
 
                     if (lastSentLockedState != null && lastSentLockedState == isCurrentlyLocked) {
+                        if (DEBUG) {
+                            Slog.d(TAG, "handleUidChangeLocked: lastSentLockedState is the same");
+                        }
                         // No change since last listener update.
                         if (!isCurrentlyLocked) {
                             // If the update that the package is locked hasn't been sent yet, but
-                            // the
-                            // package was moved off of the top (and now back to the top), cancel
-                            // the
-                            // queued lock update
+                            // the package was moved off of the top (and now back to the top),
+                            // cancel the queued lock update
                             cancelPackageAppLockedJobLocked(packageName, userId);
                         }
                         continue;
@@ -437,6 +469,10 @@ public final class AppLockLocalService implements AppLockInternal,
             Slog.d(TAG, "handleUnlockedState for " + packageName + " in user: " + userId);
         }
         mInjector.getHandler().post(() -> {
+            if (DEBUG) {
+                Slog.d(TAG, "handleUnlockedState's runnable for " + packageName + " and user: "
+                        + userId);
+            }
             synchronized (AppLockLocalService.this.mLock) {
                 for (int i = 0; i < mPackageLockedStateListeners.size(); i++) {
                     mPackageLockedStateListeners.get(i).onPackageLockedStateChanged(packageName,
@@ -466,6 +502,10 @@ public final class AppLockLocalService implements AppLockInternal,
 
         if (isPackageLocked(packageName, userId)) {
             mInjector.getHandler().post(() -> {
+                if (DEBUG) {
+                    Slog.d(TAG, "handleAppLockEnabled's runnable for " + packageName + " and user: "
+                            + userId);
+                }
                 synchronized (AppLockLocalService.this.mLock) {
                     for (int j = 0; j < mPackageLockedStateListeners.size(); j++) {
                         mPackageLockedStateListeners.get(j).onPackageLockedStateChanged(packageName,
@@ -488,6 +528,10 @@ public final class AppLockLocalService implements AppLockInternal,
 
         if (!lockImmediately && getOrCreateAppLockLockedStateLocked(packageName,
                 userId).mLockedUpdateRunnable != null) {
+            if (DEBUG) {
+                Slog.d(TAG, "handleLockedState: there is already a job to lock the package,"
+                        + " returning early");
+            }
             // This shouldn't happen, but if there's already a job to lock the package, don't
             // schedule a new one and let the existing one run. If we're locking immediately, do
             // that instead.
@@ -498,6 +542,10 @@ public final class AppLockLocalService implements AppLockInternal,
             if (!isPackageAppLockEnabled(packageName, userId)) {
                 // Ensure the package still has App Lock enabled.
                 return;
+            }
+            if (DEBUG) {
+                Slog.d(TAG, "handleLockedState's runnable for " + packageName + " and user: "
+                        + userId);
             }
             synchronized (AppLockLocalService.this.mLock) {
                 for (int i = 0; i < mPackageLockedStateListeners.size(); i++) {
@@ -625,8 +673,15 @@ public final class AppLockLocalService implements AppLockInternal,
 
     @GuardedBy("mLock")
     private void cancelPackageAppLockedJobLocked(String packageName, int userId) {
+        if (DEBUG) {
+            Slog.d(TAG, "cancelPackageAppLockedJobLocked for " + packageName + " and user: "
+                    + userId);
+        }
         final AppLockLockedState state = getOrCreateAppLockLockedStateLocked(packageName, userId);
         if (state.mLockedUpdateRunnable == null) {
+            if (DEBUG) {
+                Slog.d(TAG, "cancelPackageAppLockedJobLocked: no job to cancel");
+            }
             return;
         }
         mInjector.getHandler().removeCallbacks(state.mLockedUpdateRunnable);
@@ -715,6 +770,10 @@ public final class AppLockLocalService implements AppLockInternal,
             final int userId = getChangingUserId();
 
             mService.mInjector.getHandler().post(() -> {
+                if (DEBUG) {
+                    Slog.d(TAG, "updateMapAndListenersPackageNoLongerAppLockEnabled's runnable for "
+                            + packageName);
+                }
                 synchronized (mService.mLock) {
                     final ArrayMap<String, AppLockLockedState> map =
                             mService.mAppLockLockedStatesForUser.get(userId);
