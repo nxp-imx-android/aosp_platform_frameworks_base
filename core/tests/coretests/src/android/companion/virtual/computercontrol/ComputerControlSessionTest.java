@@ -399,8 +399,36 @@ public class ComputerControlSessionTest {
     }
 
     @Test
-    public void requestScreenshot_notActive_fails() throws RemoteException {
+    public void requestScreenshot_sessionActive_succeeds() throws RemoteException {
         var callback = Mockito.mock(ScreenshotCallback.class);
+        mLifecycle.onActive();
+
+        when(mMockSession.requestScreenshot()).thenReturn(true);
+        mSession.requestScreenshot(mExecutor, callback, null);
+
+        verify(mMockSession).requestScreenshot();
+        verify(callback, never()).onError(any());
+    }
+
+    @Test
+    public void requestScreenshot_sessionBlocked_succeeds() throws RemoteException {
+        var callback = Mockito.mock(ScreenshotCallback.class);
+        mLifecycle.onBlocked(ComputerControlSession.BLOCK_REASON_UNKNOWN, "ABC");
+
+        when(mMockSession.requestScreenshot()).thenReturn(true);
+        mSession.requestScreenshot(mExecutor, callback, null);
+
+        verify(mMockSession).requestScreenshot();
+        verify(callback, never()).onError(any());
+    }
+
+    @Test
+    public void requestScreenshot_sessionClosed_fails() throws RemoteException {
+        var callback = Mockito.mock(ScreenshotCallback.class);
+        mSession.close();
+        mLifecycle.onClosed(ComputerControlSession.CLOSE_REASON_CALLER_INITIATED);
+
+        when(mMockSession.requestScreenshot()).thenReturn(true);
         mSession.requestScreenshot(mExecutor, callback, null);
 
         verify(mMockSession, never()).requestScreenshot();
