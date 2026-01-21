@@ -3977,10 +3977,6 @@ public class TelephonyRegistry extends ITelephonyRegistry.Stub {
      */
     public void notifySecurityAlgorithmsChanged(int phoneId, int subId,
             SecurityAlgorithmUpdate update) {
-        if (!Flags.securityAlgorithmsUpdateIndications()) {
-            log("Not available due to securityAlgorithmsUpdateIndications() flag");
-            return;
-        }
         if (!checkNotifyPermission("notifySecurityAlgorithmChanged()")) {
             return;
         }

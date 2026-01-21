@@ -3740,7 +3740,7 @@ package android.telephony {
     ctor @Deprecated public PreciseDataConnectionState(int, int, int, @NonNull String, @Nullable android.net.LinkProperties, int);
   }
 
-  @FlaggedApi("com.android.internal.telephony.flags.security_algorithms_update_indications") public final class SecurityAlgorithmUpdate implements android.os.Parcelable {
+  public final class SecurityAlgorithmUpdate implements android.os.Parcelable {
     ctor public SecurityAlgorithmUpdate(int, int, int, boolean);
   }
 

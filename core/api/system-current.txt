@@ -16453,7 +16453,7 @@ package android.telephony {
     field public static final int USER_NOT_MEMBER_OF_CUG = 87; // 0x57
   }
 
-  @FlaggedApi("com.android.internal.telephony.flags.security_algorithms_update_indications") public final class SecurityAlgorithmUpdate implements android.os.Parcelable {
+  public final class SecurityAlgorithmUpdate implements android.os.Parcelable {
     method public int describeContents();
     method public int getConnectionEvent();
     method public int getEncryption();
@@ -16853,7 +16853,7 @@ package android.telephony {
     method @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE) public void onRadioPowerStateChanged(int);
   }
 
-  @FlaggedApi("com.android.internal.telephony.flags.security_algorithms_update_indications") public static interface TelephonyCallback.SecurityAlgorithmsListener {
+  public static interface TelephonyCallback.SecurityAlgorithmsListener {
     method public void onSecurityAlgorithmsChanged(@NonNull android.telephony.SecurityAlgorithmUpdate);
   }
 
