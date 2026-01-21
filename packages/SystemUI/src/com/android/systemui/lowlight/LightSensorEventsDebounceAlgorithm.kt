@@ -20,14 +20,12 @@ import android.util.Log
 import com.android.internal.annotations.GuardedBy
 import com.android.internal.util.RingBuffer
 import com.android.systemui.Dumpable
-import com.android.systemui.Flags.lowLightDreamHysteresis
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.dump.DumpManager
-import com.android.systemui.lowlight.AmbientLightModeMonitor
+import com.android.systemui.lowlight.dagger.LowLightModule
 import com.android.systemui.lowlightclock.LowLightLogger
 import com.android.systemui.util.concurrency.DelayableExecutor
-import com.android.systemui.lowlight.dagger.LowLightModule
 import java.io.PrintWriter
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -53,7 +51,8 @@ constructor(
     @Named(LowLightModule.DARK_MODE_THRESHOLD) private val darkModeThreshold: Float,
     @Named(LowLightModule.LIGHT_MODE_SAMPLING_SPAN) private val lightSamplingSpanMillis: Int,
     @Named(LowLightModule.DARK_MODE_SAMPLING_SPAN) private val darkSamplingSpanMillis: Int,
-    @Named(LowLightModule.LIGHT_MODE_SAMPLING_FREQUENCY) private val lightSamplingFrequencyMillis: Int,
+    @Named(LowLightModule.LIGHT_MODE_SAMPLING_FREQUENCY)
+    private val lightSamplingFrequencyMillis: Int,
     @Named(LowLightModule.DARK_MODE_SAMPLING_FREQUENCY) private val darkSamplingFrequencyMillis: Int,
 ) : Dumpable, AmbientLightModeMonitor.DebounceAlgorithm {
     companion object {
@@ -123,23 +122,6 @@ constructor(
         }
 
     private fun updateMode() {
-        if (lowLightDreamHysteresis()) {
-            updateModeWithHysteresis()
-        } else {
-            updateModeLegacy()
-        }
-    }
-
-    private fun updateModeLegacy() {
-        mode =
-            when {
-                isDarkMode -> AmbientLightModeMonitor.AMBIENT_LIGHT_MODE_DARK
-                isLightMode -> AmbientLightModeMonitor.AMBIENT_LIGHT_MODE_LIGHT
-                else -> AmbientLightModeMonitor.AMBIENT_LIGHT_MODE_UNDECIDED
-            }
-    }
-
-    private fun updateModeWithHysteresis() {
         val newMode =
             when (mode) {
                 AmbientLightModeMonitor.AMBIENT_LIGHT_MODE_DARK ->
