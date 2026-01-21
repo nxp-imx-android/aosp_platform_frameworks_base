@@ -588,7 +588,8 @@ public final class Trace {
      * @hide
      */
     public static void registerWithPerfetto() {
-        PerfettoTrace.register(false /* isBackendInProcess */);
+        com.android.internal.dev.perfetto.sdk.PerfettoTrace.register(
+                false /* isBackendInProcess */);
 
         if (android.os.Flags.perfettoSdkTracingV3()) {
             PerfettoCategories.registerCategories();

@@ -16,10 +16,11 @@
 
 package com.android.internal.util;
 
-import android.os.PerfettoTrace;
 import android.os.SystemClock;
 import android.util.Log;
 import android.util.SparseLongArray;
+
+import com.android.internal.dev.perfetto.sdk.PerfettoTrace;
 
 import java.io.IOException;
 
