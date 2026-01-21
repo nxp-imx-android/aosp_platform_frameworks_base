@@ -28,6 +28,8 @@ import android.window.TransitionInfo
 import android.window.WindowContainerTransaction
 import androidx.test.filters.SmallTest
 import androidx.test.internal.runner.junit4.statement.UiThreadStatement.runOnUiThread
+import com.android.internal.jank.Cuj
+import com.android.internal.jank.InteractionJankMonitor
 import com.android.window.flags.Flags
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.common.DisplayController
@@ -41,6 +43,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
 import org.mockito.kotlin.clearInvocations
+import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
@@ -68,6 +71,7 @@ class ResizeTaskPositionerTest : ShellTestCase() {
     private val mockDesktopUserRepositories = mock<DesktopUserRepositories>()
     private val mockDesktopRepository = mock<DesktopRepository>()
     private val mockDragEventListener = mock<DragPositioningCallbackUtility.DragEventListener>()
+    private val mockInteractionJankMonitor = mock<InteractionJankMonitor>()
 
     private val mainHandler = Handler(Looper.getMainLooper())
     private lateinit var taskPositioner: ResizeTaskPositioner
@@ -104,6 +108,7 @@ class ResizeTaskPositionerTest : ShellTestCase() {
                 mainHandler,
                 mockDesktopTasksController,
                 mockDesktopUserRepositories,
+                mockInteractionJankMonitor,
             )
         taskPositioner.addDragEventListener(mockDragEventListener)
     }
@@ -120,7 +125,14 @@ class ResizeTaskPositionerTest : ShellTestCase() {
         )
         verify(mockTaskResizer).onResizeStart(any())
 
-        // First Move
+        // First Move, simulate a bounds change in the mock.
+        doAnswer { invocation ->
+                val session = invocation.getArgument<DragSession>(0)
+                session.repositionTaskBounds.set(mock<Rect>())
+            }
+            .whenever(mockTaskResizer)
+            .onResizeUpdate(any(), any(), any())
+
         taskPositioner.onDragPositioningMove(0, 200f, 200f)
         verify(mockTaskResizer).onResizeUpdate(any(), eq(200f), eq(200f))
         verify(mockDesktopTasksController).updateTaskbarRoundingOnTaskResize(any(), any(), any())
@@ -146,6 +158,44 @@ class ResizeTaskPositionerTest : ShellTestCase() {
         verify(mockTaskResizer).cleanup(any())
 
         verifyNoInteractions(mockTaskMover)
+    }
+
+    @Test
+    fun testResizeCuj_beginsAndEnds() = runOnUiThread {
+        // Start
+        taskPositioner.onDragPositioningStart(
+            DragPositioningCallback.CTRL_TYPE_RIGHT,
+            0,
+            100f,
+            100f,
+            DragPositioningCallback.INPUT_METHOD_TYPE_UNKNOWN,
+        )
+        verify(mockInteractionJankMonitor)
+            .begin(any<InteractionJankMonitor.Configuration.Builder>())
+
+        // First Move, simulate a bounds change in the mock.
+        doAnswer { invocation ->
+                val session = invocation.getArgument<DragSession>(0)
+                session.repositionTaskBounds.set(mock<Rect>())
+            }
+            .whenever(mockTaskResizer)
+            .onResizeUpdate(any(), any(), any())
+        taskPositioner.onDragPositioningMove(0, 200f, 200f)
+
+        // End
+        taskPositioner.onDragPositioningEnd(0, 50f, 50f)
+
+        // Start animation
+        taskPositioner.startAnimation(
+            mockTransitionBinder,
+            mock<TransitionInfo>(),
+            mock<SurfaceControl.Transaction>(),
+            mock<SurfaceControl.Transaction>(),
+            mock<Transitions.TransitionFinishCallback>(),
+        )
+        verify(mockInteractionJankMonitor).end(Cuj.CUJ_DESKTOP_MODE_RESIZE_WINDOW)
+
+        verify(mockInteractionJankMonitor, never()).end(Cuj.CUJ_DESKTOP_MODE_DRAG_WINDOW)
     }
 
     @Test
@@ -184,6 +234,29 @@ class ResizeTaskPositionerTest : ShellTestCase() {
         )
 
         verifyNoInteractions(mockTaskResizer)
+    }
+
+    @Test
+    fun testMoveCuj_beginsAndEnds() = runOnUiThread {
+        // Start
+        taskPositioner.onDragPositioningStart(
+            DragPositioningCallback.CTRL_TYPE_UNDEFINED,
+            0,
+            100f,
+            100f,
+            DragPositioningCallback.INPUT_METHOD_TYPE_UNKNOWN,
+        )
+
+        // First Move
+        taskPositioner.onDragPositioningMove(1, 200f, 200f)
+        verify(mockInteractionJankMonitor)
+            .begin(any<InteractionJankMonitor.Configuration.Builder>())
+
+        // End
+        taskPositioner.onDragPositioningEnd(2, 50f, 50f)
+        verify(mockInteractionJankMonitor, never()).end(Cuj.CUJ_DESKTOP_MODE_DRAG_WINDOW)
+
+        verify(mockInteractionJankMonitor, never()).end(Cuj.CUJ_DESKTOP_MODE_RESIZE_WINDOW)
     }
 
     @Test
