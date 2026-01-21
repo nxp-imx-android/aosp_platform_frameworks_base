@@ -1089,6 +1089,34 @@ class HeadsUpManagerImplTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
+    fun testOnEntryRemoved_reasonOnExpandingFinished_doesNotRemoveFromList() {
+        // GIVEN entry is in the list to remove after expand
+        val entry = HeadsUpManagerTestUtil.createEntry(/* id= */ 0, mContext)
+        val headsUpEntry = underTest.HeadsUpEntry(entry)
+        underTest.mEntriesToRemoveAfterExpand.add(entry)
+
+        // WHEN the entry is removed with the specific reason used during iteration
+        underTest.onEntryRemoved(headsUpEntry, HeadsUpManagerImpl.REASON_ON_EXPANDING_FINISHED)
+
+        // THEN it is NOT removed from the list
+        assertThat(underTest.mEntriesToRemoveAfterExpand).contains(entry)
+    }
+
+    @Test
+    fun testOnEntryRemoved_otherReason_removesFromList() {
+        // GIVEN entry is in the list
+        val entry = HeadsUpManagerTestUtil.createEntry(/* id= */ 0, mContext)
+        val headsUpEntry = underTest.HeadsUpEntry(entry)
+        underTest.mEntriesToRemoveAfterExpand.add(entry)
+
+        // WHEN the entry is removed with a different reason
+        underTest.onEntryRemoved(headsUpEntry, "user_dismiss")
+
+        // THEN it IS removed from the list
+        assertThat(underTest.mEntriesToRemoveAfterExpand).doesNotContain(entry)
+    }
+
+    @Test
     @EnableFlags(NotificationThrottleHun.FLAG_NAME)
     fun testDropWhileAvalanche_clearsTrackedEntries() {
         // GIVEN three notifications arrive in succession
