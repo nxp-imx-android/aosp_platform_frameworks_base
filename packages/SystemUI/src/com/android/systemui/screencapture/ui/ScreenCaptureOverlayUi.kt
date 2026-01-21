@@ -30,19 +30,25 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.dp
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.res.R
@@ -142,6 +148,7 @@ constructor(
                 rememberViewModel("ScreenCaptureCameraTransformationViewModel") {
                     cameraTransformationViewModel.create()
                 }
+            var windowBounds: Rect by remember { mutableStateOf(Rect.Zero) }
             LaunchedEffect(
                 transformationViewModel.offsetX,
                 transformationViewModel.offsetY,
@@ -156,6 +163,9 @@ constructor(
                 modifier =
                     modifier
                         .fillMaxSize()
+                        .onGloballyPositioned { layoutCoordinates ->
+                            windowBounds = layoutCoordinates.boundsInWindow()
+                        }
                         .selfieTransformableModifier(
                             viewModel = transformationViewModel,
                             isEverywhere = true,
@@ -170,16 +180,15 @@ constructor(
                     surfaceSize = surfaceSize,
                     isOpaque = false,
                     modifier =
-                        Modifier.fillMaxWidth()
+                        Modifier.fillMaxSmallDimension(windowBounds)
                             .aspectRatio(surfaceSize.height.toFloat() / surfaceSize.width)
                             .selfieTransformableModifier(
                                 viewModel = transformationViewModel,
                                 isEverywhere = false,
                             )
                             .onGloballyPositioned { layoutCoordinates ->
-                                transformationViewModel.onCameraScreenBoundsUpdated(
-                                    layoutCoordinates.boundsInWindow(false)
-                                )
+                                val boundsInWindow = layoutCoordinates.boundsInWindow(false)
+                                transformationViewModel.onCameraScreenBoundsUpdated(boundsInWindow)
                                 transformationViewModel.fillCameraInteractableRegion(
                                     outTouchableRegion
                                 )
@@ -210,6 +219,11 @@ constructor(
                 }
             }
         }
+    }
+
+    private fun Modifier.fillMaxSmallDimension(bounds: Rect): Modifier {
+        return widthIn(max = 414.dp)
+            .then(if (bounds.width > bounds.height) fillMaxHeight() else fillMaxWidth())
     }
 
     private fun Modifier.selfieTransformableModifier(
