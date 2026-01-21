@@ -46,7 +46,7 @@ public class PipBoundsAlgorithm implements PipDisplayLayoutState.DisplayIdListen
     @NonNull private final Context mContext;
     @NonNull private final PipBoundsState mPipBoundsState;
     @NonNull protected final PipDisplayLayoutState mPipDisplayLayoutState;
-    private final PipDesktopState mPipDesktopState;
+    @Nullable private final PipDesktopState mPipDesktopState;
     @NonNull protected final SizeSpecSource mSizeSpecSource;
     private final PipSnapAlgorithm mSnapAlgorithm;
     private final PipKeepClearAlgorithmInterface mPipKeepClearAlgorithm;
@@ -60,7 +60,7 @@ public class PipBoundsAlgorithm implements PipDisplayLayoutState.DisplayIdListen
             @NonNull PipSnapAlgorithm pipSnapAlgorithm,
             @NonNull PipKeepClearAlgorithmInterface pipKeepClearAlgorithm,
             @NonNull PipDisplayLayoutState pipDisplayLayoutState,
-            PipDesktopState pipDesktopState,
+            @Nullable PipDesktopState pipDesktopState,
             @NonNull SizeSpecSource sizeSpecSource) {
         mContext = context;
         mPipBoundsState = pipBoundsState;
@@ -305,7 +305,7 @@ public class PipBoundsAlgorithm implements PipDisplayLayoutState.DisplayIdListen
         final int top = (int) (stackBounds.centerY() - size.getHeight() / 2f);
         stackBounds.set(left, top, left + size.getWidth(), top + size.getHeight());
         // If PiP is allowed to free-float, don't apply the snap fraction
-        if (mPipDesktopState.isFreeFloatingPipEnabled()) {
+        if (mPipDesktopState != null && mPipDesktopState.isFreeFloatingPipEnabled()) {
             return;
         }
         mSnapAlgorithm.applySnapFraction(stackBounds, getMovementBounds(stackBounds), snapFraction);
