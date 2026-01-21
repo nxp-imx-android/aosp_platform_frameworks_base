@@ -303,10 +303,13 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
 
     @Override
     public void onAdvancedProtectionChanged(boolean enabled) {
-        if (!isAvailable() && enabled) {
+        // In AAPM API v2, the feature will no longer gate the feature availability in the hook,
+        // instead the feature will be gated in the service.
+        if (!Flags.aapmApiV2() && !isAvailable() && enabled) {
             Slog.w(TAG, "AAPM USB data protection feature is disabled");
             return;
         }
+
         Slog.i(TAG, "onAdvancedProtectionChanged: " + enabled);
         if(Flags.aapmFeatureUsbDataProtectionDelayRetry()) {
             mDelayedDisableHandler.post(() -> {

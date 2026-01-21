@@ -281,7 +281,7 @@ public class UsbDataAdvancedProtectionHookTest {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION)
+    @DisableFlags({Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION, Flags.FLAG_AAPM_API_V2})
     public void isAvailable_whenFeatureFlagDisabled_doesNothing() throws RemoteException {
         setupAndEnableFeature(false, false, true);
 
@@ -307,10 +307,29 @@ public class UsbDataAdvancedProtectionHookTest {
         assertTrue(mUsbDataHook.isAvailable());
     }
 
+    @Test
+    @EnableFlags(Flags.FLAG_AAPM_API_V2)
+    @DisableFlags({Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION,
+                Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_DISABLE_AUTO_ONLY,
+                Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_RETRY})
+    public void isAvailable_whenFeatureFlagDisabled_setupAndEnableFeatureAnyways() throws RemoteException {
+        clearAllUsbConnections();
+        when(mKeyguardManager.isKeyguardLocked()).thenReturn(true);
+        setupAndEnableFeature(false, false, true);
+
+        verifyAdvancedProtectionChanged_registersReceiverRegisterReceiverBehavior();
+        verify(mKeyguardManager)
+                .addKeyguardLockedStateListener(
+                        any(ExecutorService.class), any(KeyguardLockedStateListener.class));
+        verify(mUsbManagerInternal).enableUsbDataSignal(eq(false), eq(USB_DISABLE_REASON_APM));
+    }
+
+
     // For bootup of Advanced Protection mode and enablement of Advanced Protection mode through ADB
     @Test
     @EnableFlags(Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION)
-    @DisableFlags(Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_DISABLE_AUTO_ONLY)
+    @DisableFlags({Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_DISABLE_AUTO_ONLY,
+                Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_RETRY })
     public void onAdvancedProtectionChanged_whenEnabled_registersReceiverAndDisablesUsb()
             throws RemoteException {
         clearAllUsbConnections();
@@ -327,6 +346,7 @@ public class UsbDataAdvancedProtectionHookTest {
     // For enablement of Advanced Protection mode through Settings page.
     @Test
     @EnableFlags(Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION)
+    @DisableFlags(Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_RETRY)
     public void
             onAdvancedProtectionChanged_whenEnabledInUnlockedState_registersReceiverAndNotDisableUsb()
                     throws RemoteException {
@@ -420,7 +440,8 @@ public class UsbDataAdvancedProtectionHookTest {
 
     @Test
     @EnableFlags(Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION)
-    @DisableFlags(Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_DISABLE_AUTO_ONLY)
+    @DisableFlags({Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_DISABLE_AUTO_ONLY,
+                Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_RETRY})
     public void onAdvancedProtectionChanged_whenDisabled_unregistersReceiverAndEnablesUsb()
             throws RemoteException {
         setupAndEnableFeature(false, false, true);
@@ -433,7 +454,8 @@ public class UsbDataAdvancedProtectionHookTest {
 
     @Test
     @EnableFlags(Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION)
-    @DisableFlags(Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_DISABLE_AUTO_ONLY)
+    @DisableFlags({Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_DISABLE_AUTO_ONLY,
+                Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_RETRY })
     public void userPresentAndUnlocked_enablesUsbAndClearsTasks() throws RemoteException {
         setupAndEnableFeature(false, false, true);
         UserInfo mockUserInfo = mock(UserInfo.class);
@@ -449,8 +471,8 @@ public class UsbDataAdvancedProtectionHookTest {
 
     @Test
     @EnableFlags(Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION)
-    @DisableFlags({ Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_RETRY,
-                Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_DISABLE_AUTO_ONLY })
+    @DisableFlags({Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_DISABLE_AUTO_ONLY,
+                Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_RETRY })
     public void onFirstBoot_disablesUsbRegardlessOfConnectionState() throws RemoteException {
         setupAndEnableFeature(false, false, false);
         when(mUsbManagerInternal.enableUsbDataSignal(anyBoolean(), anyInt())).thenReturn(true);
@@ -487,7 +509,8 @@ public class UsbDataAdvancedProtectionHookTest {
 
     @Test
     @EnableFlags(Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION)
-    @DisableFlags(Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_DISABLE_AUTO_ONLY)
+    @DisableFlags({Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_DISABLE_AUTO_ONLY,
+                Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_RETRY })
     public void userPresentAndUnlocked_butUserIsGuest_keepsUsbDisabled() throws RemoteException {
         setupAndEnableFeature(false, false, true);
         UserInfo mockUserInfo = mock(UserInfo.class);
@@ -532,7 +555,8 @@ public class UsbDataAdvancedProtectionHookTest {
 
     @Test
     @EnableFlags(Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION)
-    @DisableFlags(Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_DISABLE_AUTO_ONLY)
+    @DisableFlags({Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_DISABLE_AUTO_ONLY,
+                Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_RETRY })
     public void screenOffAndLocked_withNoConnectedDevice_disablesUsb() throws RemoteException {
         setupAndEnableFeature(false, false, true);
         clearAllUsbConnections();
@@ -552,7 +576,8 @@ public class UsbDataAdvancedProtectionHookTest {
 
     @Test
     @EnableFlags(Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION)
-    @DisableFlags(Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_DISABLE_AUTO_ONLY)
+    @DisableFlags({Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_DISABLE_AUTO_ONLY,
+                Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_RETRY })
     public void screenOffAndLocked_withConnectedDevice_doesNothing() throws RemoteException {
         setupAndEnableFeature(false, false, true);
         when(mKeyguardManager.isKeyguardLocked()).thenReturn(true);
@@ -567,7 +592,8 @@ public class UsbDataAdvancedProtectionHookTest {
 
     @Test
     @EnableFlags(Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION)
-    @DisableFlags(Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_DISABLE_AUTO_ONLY)
+    @DisableFlags({Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_DISABLE_AUTO_ONLY,
+                Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_RETRY })
     public void usbPortChanged_disconnected_clearsNotifications() throws RemoteException {
         setupAndEnableFeature(false, false, true);
         BroadcastReceiver receiver = getAndCaptureReceiver();
@@ -584,7 +610,8 @@ public class UsbDataAdvancedProtectionHookTest {
 
     @Test
     @EnableFlags(Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION)
-    @DisableFlags(Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_DISABLE_AUTO_ONLY)
+    @DisableFlags({Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_DISABLE_AUTO_ONLY,
+                Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_RETRY })
     public void usbPortChanged_lockedAndDisconnected_delaysDisableUsb() throws RemoteException {
         setupAndEnableFeature(false, false, true);
         setupUsbDisconnectReceiverEvent();
@@ -612,7 +639,8 @@ public class UsbDataAdvancedProtectionHookTest {
 
     @Test
     @EnableFlags(Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION)
-    @DisableFlags(Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_DISABLE_AUTO_ONLY)
+    @DisableFlags({Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_DISABLE_AUTO_ONLY,
+                Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_RETRY })
     public void
             usbPortChanged_lockedAndPowerBrickConnectedAndPdCompliant_dataRequiredForHighPowerCharge_sendsChargeNotification()
                     throws RemoteException {
@@ -671,7 +699,8 @@ public class UsbDataAdvancedProtectionHookTest {
 
     @Test
     @EnableFlags(Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION)
-    @DisableFlags(Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_DISABLE_AUTO_ONLY)
+    @DisableFlags({Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_DISABLE_AUTO_ONLY,
+                Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_RETRY })
     public void usbPortChanged_lockedAndPdCompliant_sendsDataNotification() throws RemoteException {
         setupAndEnableFeature(false, false, true); // Data NOT required for high power charge
         when(mContext.getString(R.string.usb_apm_usb_plugged_in_when_locked_notification_title))
@@ -717,7 +746,8 @@ public class UsbDataAdvancedProtectionHookTest {
 
     @Test
     @EnableFlags(Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION)
-    @DisableFlags(Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_DISABLE_AUTO_ONLY)
+    @DisableFlags({Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_DISABLE_AUTO_ONLY,
+                Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_RETRY })
     public void usbPortChanged_notPowerBrickConnectedOrPdCompliant_sendsChargeDataNotification()
             throws RemoteException {
         setupAndEnableFeature(false, false, true);
@@ -775,7 +805,8 @@ public class UsbDataAdvancedProtectionHookTest {
 
     @Test
     @EnableFlags(Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION)
-    @DisableFlags(Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_DISABLE_AUTO_ONLY)
+    @DisableFlags({Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_DISABLE_AUTO_ONLY,
+                Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_RETRY })
     public void usbPortChanged_pendingChecks_postsDelayedNotification() throws RemoteException {
         setupAndEnableFeature(false, false, true);
         doReturn(TEST_TIMEOUT_MS)
@@ -824,7 +855,8 @@ public class UsbDataAdvancedProtectionHookTest {
 
     @Test
     @EnableFlags(Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION)
-    @DisableFlags(Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_DISABLE_AUTO_ONLY)
+    @DisableFlags({Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_DISABLE_AUTO_ONLY,
+                Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_RETRY })
     public void setUsbDataSignal_retriesOnFailure() throws Exception {
         setupAndEnableFeature(false, false, true);
         when(mKeyguardManager.isKeyguardLocked()).thenReturn(true);
@@ -880,7 +912,8 @@ public class UsbDataAdvancedProtectionHookTest {
 
     @Test
     @EnableFlags(Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION)
-    @DisableFlags(Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_DISABLE_AUTO_ONLY)
+    @DisableFlags({Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_DISABLE_AUTO_ONLY,
+                Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_RETRY })
     public void notification_replugRequired_showsCorrectText() throws RemoteException {
         setupAndEnableFeature(true, true, true); // Replug required
         String expectedTitle = "Replug Title";
@@ -927,7 +960,8 @@ public class UsbDataAdvancedProtectionHookTest {
 
     @Test
     @EnableFlags(Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION)
-    @DisableFlags(Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_DISABLE_AUTO_ONLY)
+    @DisableFlags({Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_DISABLE_AUTO_ONLY,
+                Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_RETRY })
     public void notificationSilenceReceiver_silencesNotifications() throws RemoteException {
         setupAndEnableFeature(false, false, true);
         String expectedTitle = "Silenced Title";
@@ -990,7 +1024,8 @@ public class UsbDataAdvancedProtectionHookTest {
 
     @Test
     @EnableFlags(Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION)
-    @DisableFlags(Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_DISABLE_AUTO_ONLY)
+    @DisableFlags({Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_DISABLE_AUTO_ONLY,
+                Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_RETRY })
     public void helpIntent_isCreatedAndAddedToNotification() throws RemoteException {
         setupAndEnableFeature(false, true, true);
 
@@ -1051,7 +1086,8 @@ public class UsbDataAdvancedProtectionHookTest {
 
     @Test
     @EnableFlags(Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION)
-    @DisableFlags(Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_DISABLE_AUTO_ONLY)
+    @DisableFlags({Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_DISABLE_AUTO_ONLY,
+                Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_RETRY })
     public void unexpectedUsbEvent_logsError() throws RemoteException {
         setupAndEnableFeature(false, true, true);
         mApmRequestedUsbDataStatusBoolean.set(false);
@@ -1090,6 +1126,7 @@ public class UsbDataAdvancedProtectionHookTest {
     @Test
     @EnableFlags({Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION,
                 Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_DISABLE_AUTO_ONLY})
+    @DisableFlags(Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_RETRY)
     public void verifyAdvancedProtectionChanged_registersCarProjectionModeListener() throws RemoteException {
         setupAndEnableFeature(false, true, true);
 
@@ -1104,6 +1141,7 @@ public class UsbDataAdvancedProtectionHookTest {
     @Test
     @EnableFlags({ Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION,
                 Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_DISABLE_AUTO_ONLY })
+    @DisableFlags(Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_RETRY)
     public void verifyCarProjectionModeListener_onProjectionStateChanged_extendsDisableDelay() throws RemoteException {
         setupAndEnableFeature(false, true, true);
         UsbAccessory mockUsbAccessory = mock(UsbAccessory.class);

@@ -16,6 +16,8 @@
 
 package com.android.server.security.advancedprotection;
 
+import static android.security.advancedprotection.AdvancedProtectionManager.FEATURE_ID_DISALLOW_USB;
+
 import android.annotation.NonNull;
 import android.annotation.SuppressLint;
 import android.os.RemoteException;
@@ -102,8 +104,13 @@ class AdvancedProtectionShellCommand extends ShellCommand {
     @SuppressLint("AndroidFrameworkRequiresPermission")
     private int setUsbDataProtectedEnabled() throws RemoteException {
         if (android.security.Flags.aapmFeatureUsbDataProtection()) {
-            String protectionMode = getNextArgRequired();
-            mService.setUsbDataProtectionEnabled(Boolean.parseBoolean(protectionMode));
+            String rawProtectionMode = getNextArgRequired();
+            boolean protectionMode = Boolean.parseBoolean(rawProtectionMode);
+            if(android.security.Flags.aapmApiV2()) {
+                mService.setAdbProvisioned(FEATURE_ID_DISALLOW_USB, protectionMode);
+            } else {
+                mService.setUsbDataProtectionEnabled(protectionMode);
+            }
         }
         return 0;
     }
@@ -111,8 +118,14 @@ class AdvancedProtectionShellCommand extends ShellCommand {
     @SuppressLint("AndroidFrameworkRequiresPermission")
     private int isUsbDataProtectedEnabled(@NonNull PrintWriter pw) throws RemoteException {
         if (android.security.Flags.aapmFeatureUsbDataProtection()) {
-            boolean protectionMode = mService.isUsbDataProtectionEnabled();
-            pw.println(protectionMode);
+            if (android.security.Flags.aapmApiV2()) {
+                Boolean protectionMode =
+                    mService.retrieveFeatureAdbProvisioned(FEATURE_ID_DISALLOW_USB);
+                pw.println(protectionMode == null ? "Unset" : protectionMode);
+            } else {
+                boolean protectionMode = mService.isUsbDataProtectionEnabled();
+                pw.println(protectionMode);
+            }
         }
         return 0;
     }
