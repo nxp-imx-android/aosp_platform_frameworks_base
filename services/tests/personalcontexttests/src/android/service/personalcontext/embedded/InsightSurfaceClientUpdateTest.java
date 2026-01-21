@@ -44,6 +44,7 @@ public class InsightSurfaceClientUpdateTest {
         final Color backgroundColor = Color.valueOf(Color.BLUE);
         final int nestedScrollAxes = SCROLL_AXIS_HORIZONTAL;
         final boolean nestedScrollAxisLocked = true;
+        final boolean shouldBlur = true;
         final Configuration configuration = mock(Configuration.class);
         final BundleHint hint = new BundleHint.Builder().build();
 
@@ -54,6 +55,7 @@ public class InsightSurfaceClientUpdateTest {
                         .setBackgroundColor(backgroundColor)
                         .setNestedScrollAxes(nestedScrollAxes)
                         .setNestedScrollAxisLocked(nestedScrollAxisLocked)
+                        .setShouldBlur(shouldBlur)
                         .setConfiguration(configuration)
                         .addHint(hint)
                         .build();
@@ -64,6 +66,7 @@ public class InsightSurfaceClientUpdateTest {
         assertThat(update.hasUpdate(InsightSurfaceClientUpdate.KEY_NESTED_SCROLL_AXES)).isTrue();
         assertThat(update.hasUpdate(InsightSurfaceClientUpdate.KEY_NESTED_SCROLL_AXIS_LOCKED))
                 .isTrue();
+        assertThat(update.hasUpdate(InsightSurfaceClientUpdate.KEY_SHOULD_BLUR)).isTrue();
         assertThat(update.hasUpdate(InsightSurfaceClientUpdate.KEY_CONFIGURATION)).isTrue();
         assertThat(update.hasUpdate(InsightSurfaceClientUpdate.KEY_HINTS)).isTrue();
 
@@ -71,6 +74,7 @@ public class InsightSurfaceClientUpdateTest {
         assertThat(update.getMeasureSpecHeight()).isEqualTo(measureSpecHeight);
         assertThat(update.getNestedScrollAxes()).isEqualTo(nestedScrollAxes);
         assertThat(update.isNestedScrollAxisLocked()).isEqualTo(nestedScrollAxisLocked);
+        assertThat(update.shouldBlur()).isEqualTo(shouldBlur);
         assertThat(update.getBackgroundColor()).isEqualTo(backgroundColor);
         assertThat(update.getHints()).contains(hint);
     }
@@ -91,6 +95,7 @@ public class InsightSurfaceClientUpdateTest {
         assertThat(update.getMeasureSpecHeight()).isEqualTo(View.MeasureSpec.UNSPECIFIED);
         assertThat(update.getNestedScrollAxes()).isEqualTo(SCROLL_AXIS_NONE);
         assertThat(update.isNestedScrollAxisLocked()).isEqualTo(false);
+        assertThat(update.shouldBlur()).isEqualTo(false);
         assertThat(update.getBackgroundColor()).isNull();
         assertThat(update.getHints()).isEmpty();
     }

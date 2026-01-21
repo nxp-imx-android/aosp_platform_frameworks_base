@@ -55,6 +55,7 @@ public final class InsightSurfaceClientInfo implements Parcelable {
     private final Color mBackgroundColor;
     private final int mNestedScrollAxes;
     private final boolean mNestedScrollAxisLocked;
+    private final boolean mShouldBlur;
     private final Configuration mConfiguration;
     private final IInsightSurfaceClient mClient;
 
@@ -77,6 +78,7 @@ public final class InsightSurfaceClientInfo implements Parcelable {
             @NonNull Color backgroundColor,
             int nestedScrollAxes,
             boolean nestedScrollAxisLocked,
+            boolean shouldBlur,
             @NonNull Configuration configuration,
             @NonNull IInsightSurfaceClient client) {
         mId = UUID.randomUUID();
@@ -86,6 +88,7 @@ public final class InsightSurfaceClientInfo implements Parcelable {
         mBackgroundColor = backgroundColor;
         mNestedScrollAxes = nestedScrollAxes;
         mNestedScrollAxisLocked = nestedScrollAxisLocked;
+        mShouldBlur = shouldBlur;
         mConfiguration = configuration;
         mClient = client;
     }
@@ -98,6 +101,7 @@ public final class InsightSurfaceClientInfo implements Parcelable {
         mBackgroundColor = Color.valueOf(in.readInt());
         mNestedScrollAxes = in.readInt();
         mNestedScrollAxisLocked = in.readBoolean();
+        mShouldBlur = in.readBoolean();
         mConfiguration =
                 in.readParcelable(Configuration.class.getClassLoader(), Configuration.class);
         mClient = IInsightSurfaceClient.Stub.asInterface(in.readStrongBinder());
@@ -173,6 +177,13 @@ public final class InsightSurfaceClientInfo implements Parcelable {
      */
     public boolean getNestedScrollAxisLocked() {
         return mNestedScrollAxisLocked;
+    }
+
+    /**
+     * Return whether the embedded surface should apply a blur to match the client's blur.
+     */
+    public boolean shouldBlur() {
+        return mShouldBlur;
     }
 
     /**
@@ -279,6 +290,7 @@ public final class InsightSurfaceClientInfo implements Parcelable {
         dest.writeInt(mBackgroundColor.toArgb());
         dest.writeInt(mNestedScrollAxes);
         dest.writeBoolean(mNestedScrollAxisLocked);
+        dest.writeBoolean(mShouldBlur);
         dest.writeParcelable(mConfiguration, flags);
         dest.writeStrongInterface(mClient);
     }
@@ -300,6 +312,8 @@ public final class InsightSurfaceClientInfo implements Parcelable {
                         ? update.getNestedScrollAxes() : mNestedScrollAxes,
                 update.hasUpdate(InsightSurfaceClientUpdate.KEY_NESTED_SCROLL_AXIS_LOCKED)
                         ? update.isNestedScrollAxisLocked() : mNestedScrollAxisLocked,
+                update.hasUpdate(InsightSurfaceClientUpdate.KEY_SHOULD_BLUR)
+                        ? update.isNestedScrollAxisLocked() : mShouldBlur,
                 update.hasUpdate(InsightSurfaceClientUpdate.KEY_CONFIGURATION)
                         ? update.getConfiguration() : mConfiguration,
                 mClient);
