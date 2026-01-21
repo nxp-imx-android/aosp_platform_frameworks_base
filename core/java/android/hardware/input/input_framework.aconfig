@@ -261,7 +261,7 @@ flag {
 }
 
 flag {
-    name: "enable_assistive_input_trigger"
+    name: "enable_contextual_input_trigger"
     namespace: "input"
     description: "Enables keyboard triggers (shortcut and dedicated key) for assistive input"
     bug: "469890315"
