@@ -43,6 +43,7 @@ import android.companion.CompanionDeviceManager;
 import android.compat.Compatibility;
 import android.compat.annotation.ChangeId;
 import android.compat.annotation.EnabledAfter;
+import android.compat.annotation.EnabledSince;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.content.Context;
 import android.content.pm.PackageInfo;
@@ -1808,6 +1809,17 @@ public final class SmsManager {
     @ChangeId
     @EnabledAfter(targetSdkVersion = Build.VERSION_CODES.P)
     private static final long GET_TARGET_SDK_VERSION_CODE_CHANGE = 145147528L;
+
+    /**
+     * Generic OTP Protection SDK Gating, for app compatibility of Generic OTP Protection.
+     * For packages that target SDK >= CINNAMON_BUN, generic OTP protection is strictly enforced.
+     * Otherwise, we will still allow packages that do not target CINNAMON_BUN (or above) to
+     * receive and read generic OTP SMS.
+     * @hide
+     */
+    @ChangeId
+    @EnabledSince(targetSdkVersion = Build.VERSION_CODES.CINNAMON_BUN)
+    public static final long FILTER_GENERIC_OTP = 437043173L;
 
     private void sendResolverResult(SubscriptionResolverResult resolverResult, int subId,
             boolean pickActivityShown) {

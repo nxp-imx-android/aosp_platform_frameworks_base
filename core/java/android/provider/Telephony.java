@@ -493,10 +493,16 @@ public final class Telephony {
         public static final String CREATOR = "creator";
 
         /**
-         * Bit shift for the OTP subtype information.
+         * A helper constant bit shift for the OTP subtype information.
          * @hide
          */
         public static final int OTP_SUBTYPE_SHIFT = 8;
+
+        /**
+         * Mask for OTP type information.
+         * @hide
+         */
+        public static final int OTP_TYPE_MASK = 0xFF;
 
         /**
          * Mask for OTP subtype information.
@@ -507,6 +513,22 @@ public final class Telephony {
         /**
          * The body of the message contains an otp code. This should only be applied by the SMS
          * provider itself.
+         *
+         * <p>The integer value represents bit fields indicating whether the body contains an OTP
+         * and if so, what type of OTP message it contains.
+         *
+         * <p>Bit 0-7 are reserved for high-level OTP status:
+         * <ul>
+         *   <li>Bit 0: Set if the body contains an OTP code, unset otherwise.
+         *   <li>Bit 1: Set if the determination of the presence of an OTP is still pending.
+         * </ul>
+         *
+         * <p>Bit 8-15 are reserved for indicating the subtype of the OTP:
+         * <ul>
+         *   <li>Bit 0: Set for SMS Retriever OTP.
+         *   <li>Bit 1: Set for Web OTP.
+         * </ul>
+         * Note that if all the subtype field is unset, then it is regarded as a Generic OTP.
          *
          * <P>Type: INTEGER</P>
          * @hide
@@ -540,7 +562,13 @@ public final class Telephony {
         public static final int OTP_TYPE_PENDING = 2;
 
         /**
-         * The message is SMS Retriever OTP.
+         * The message does not have any OTP subtype (e.g. a generic OTP).
+         * @hide
+         */
+        public static final int OTP_SUBTYPE_NONE = 0 << OTP_SUBTYPE_SHIFT;
+
+        /**
+         * The message is an SMS Retriever OTP.
          * @hide
          */
         @FlaggedApi(android.view.flags.Flags.FLAG_REDACT_OTP_APP_COMPAT_API)
