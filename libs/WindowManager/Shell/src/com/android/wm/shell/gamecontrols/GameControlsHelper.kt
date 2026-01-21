@@ -49,7 +49,8 @@ object GameControlsHelper {
     fun shouldShowGameControlsButton(context: Context, taskInfo: TaskInfo): Boolean {
         return gameControlsButtonFlagEnabled() &&
             isCategoryGame(taskInfo) &&
-            hasGameControlsSystemFeature(context)
+            hasGameControlsSystemFeature(context) &&
+            canResolveGameControlsIntent(context, taskInfo)
     }
 
     /**
@@ -63,6 +64,21 @@ object GameControlsHelper {
      */
     @JvmStatic
     fun onLaunchGameControls(context: Context, taskInfo: TaskInfo) {
+        val intent = createLaunchGameControlsIntent(context, taskInfo)
+        if (intent == null) {
+            return
+        }
+        ProtoLog.i(
+            WM_SHELL_WINDOW_DECORATION,
+            "GameControlsHelper: Sending the game controls intent %s to %s with task id %s",
+            intent,
+            intent.getPackage(),
+            intent.getStringExtra(Intent.EXTRA_TASK_ID),
+        )
+        context.sendBroadcast(intent)
+    }
+
+    private fun createLaunchGameControlsIntent(context: Context, taskInfo: TaskInfo): Intent? {
         val intentReceiverPackage =
             context.resources.getString(R.string.config_gameControlsIntentReceiverPackage)
         val intentAction = context.resources.getString(R.string.config_gameControlsIntentAction)
@@ -71,17 +87,21 @@ object GameControlsHelper {
                 WM_SHELL_WINDOW_DECORATION,
                 "GameControlsHelper: Intent receiver package or action is not defined.",
             )
-            return
+            return null
         }
-
         val intent = Intent(intentAction)
         intent.setPackage(intentReceiverPackage)
-        ProtoLog.i(
-            WM_SHELL_WINDOW_DECORATION,
-            "GameControlsHelper: Sending the game controls intent %s to %s",
-            intentAction, intentReceiverPackage
-        )
-        context.sendBroadcast(intent)
+        intent.putExtra(Intent.EXTRA_TASK_ID, taskInfo.taskId)
+        return intent
+    }
+
+    private fun canResolveGameControlsIntent(context: Context, taskInfo: TaskInfo): Boolean {
+        val intent = createLaunchGameControlsIntent(context, taskInfo)
+        if (intent == null) {
+            return false
+        }
+        return context.packageManager.queryBroadcastReceivers(intent, /* flags= */ 0)
+            .isNotEmpty()
     }
 
     private fun gameControlsButtonFlagEnabled(): Boolean {
