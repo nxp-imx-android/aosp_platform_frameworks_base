@@ -124,6 +124,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
@@ -1312,6 +1313,7 @@ private fun CardGuts(
                 color = Color.White,
                 style = MaterialTheme.typography.labelMedium,
                 fontSize = 14.sp,
+                textAlign = TextAlign.Center,
             )
 
             Row(
