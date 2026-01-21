@@ -21,6 +21,7 @@ import android.content.res.Configuration
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.VisibleForTesting
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.platform.ComposeView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -98,9 +99,11 @@ constructor(
             }
         }
 
-    private var isMediaVisibleOnLockscreen = false
+    private val _isMediaVisibleOnLockscreen = mutableStateOf(false)
+    private var isMediaVisibleOnLockscreen: Boolean
+        get() = _isMediaVisibleOnLockscreen.value
         set(value) {
-            field = value
+            _isMediaVisibleOnLockscreen.value = value
             onMediaHostVisibilityChanged(value)
         }
 
