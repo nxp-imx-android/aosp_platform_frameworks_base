@@ -18,10 +18,11 @@ package com.android.systemui.accessibility.shortcutchooser.ui.composable
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
@@ -30,6 +31,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.CollectionInfo
+import androidx.compose.ui.semantics.CollectionItemInfo
+import androidx.compose.ui.semantics.collectionInfo
+import androidx.compose.ui.semantics.collectionItemInfo
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.android.systemui.accessibility.shortcutchooser.shared.model.AccessibilityTargetModel
 
@@ -56,10 +62,28 @@ fun ShortcutTargetsList(
     Box {
         LazyColumn(
             state = listState,
-            modifier = modifier.fillMaxWidth(),
+            modifier =
+                modifier.fillMaxWidth().semantics {
+                    collectionInfo = CollectionInfo(rowCount = targets.size, columnCount = 1)
+                },
             verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
-            items(targets, key = { target -> target.targetName }, itemContent = itemContent)
+            itemsIndexed(targets, key = { index, target -> target.targetName }) { index, target ->
+                Row(
+                    modifier =
+                        Modifier.semantics {
+                            collectionItemInfo =
+                                CollectionItemInfo(
+                                    rowIndex = index,
+                                    rowSpan = 1,
+                                    columnIndex = 0,
+                                    columnSpan = 1,
+                                )
+                        }
+                ) {
+                    itemContent(target)
+                }
+            }
         }
 
         ScrollBorder(canScrollUp, Modifier.align(Alignment.TopCenter))
