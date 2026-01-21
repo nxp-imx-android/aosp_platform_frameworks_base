@@ -1130,7 +1130,7 @@ public class AuthSessionTest {
         final PreAuthInfo preAuthInfo = createPreAuthInfo(sensors, userId, promptInfo,
                 checkDevicePolicyManager);
         final WatchRangingHelper watchRangingHelper = new WatchRangingHelper(requestId,
-                mAuthenticationPolicyManager, mHandler, watchRangingState -> {
+                mAuthenticationPolicyManager, mHandler, (watchRangingState, errorCode) -> {
         });
         return new AuthSession(mContext, mBiometricContext, mStatusBarService, mSysuiReceiver,
                 mKeyStoreAuthorization, mRandom, mClientDeathReceiver, preAuthInfo, mToken,
@@ -1151,7 +1151,7 @@ public class AuthSessionTest {
         final PreAuthInfo preAuthInfo = createPreAuthInfo(sensors, userId, promptInfo,
                 checkDevicePolicyManager);
         final WatchRangingHelper watchRangingHelper = new WatchRangingHelper(requestId,
-                mAuthenticationPolicyManager, mHandler, watchRangingState -> {
+                mAuthenticationPolicyManager, mHandler, (watchRangingState, errorCode) -> {
         });
         return new AuthSession(mContext, mBiometricContext, mStatusBarService, mSysuiReceiver,
                 mKeyStoreAuthorization, mRandom, mClientDeathReceiver, preAuthInfo, mToken,

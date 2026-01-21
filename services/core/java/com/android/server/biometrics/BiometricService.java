@@ -79,6 +79,7 @@ import android.os.ServiceManager;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.provider.Settings;
+import android.proximity.ProximityResultCode;
 import android.security.GateKeeper;
 import android.security.KeyStoreAuthorization;
 import android.security.authenticationpolicy.AuthenticationPolicyManager;
@@ -1999,10 +2000,10 @@ public class BiometricService extends SystemService {
         return null;
     }
 
-    private void onWatchRangingStateChange(int state) {
+    private void onWatchRangingStateChange(int state, @ProximityResultCode int errorCode) {
         for (int i = 0; i < mIdentityCheckStateListeners.size(); i++) {
             try {
-                mIdentityCheckStateListeners.get(i).onWatchRangingStateChanged(state);
+                mIdentityCheckStateListeners.get(i).onWatchRangingStateChanged(state, errorCode);
             } catch (RemoteException e) {
                 Slog.e(TAG, "RemoteException", e);
             }
