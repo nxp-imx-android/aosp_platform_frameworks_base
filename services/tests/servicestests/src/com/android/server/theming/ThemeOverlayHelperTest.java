@@ -77,7 +77,7 @@ public class ThemeOverlayHelperTest {
         ThemeStatePair.OverlaySnapshot snapshot = statePair.commitAndGetOverlayData();
 
         // Action: Pass true because this is simulating the Foreground User
-        mThemeOverlayHelper.applyCurrentStateOverlays(snapshot, true /* applyToSystem */);
+        mThemeOverlayHelper.applyCurrentStateOverlays(snapshot, true, true);
 
         // Verification
         verify(mOverlayManager).commit(mTransactionCaptor.capture());
@@ -86,9 +86,10 @@ public class ThemeOverlayHelperTest {
         final List<String> overlayNames = List.of("neutral", "accent", "dynamic");
         for (String overlayName : overlayNames) {
             // Check that overlays are enabled for the primary user, their profile, and system.
-            assertSetEnabled(transactionString, overlayName, PRIMARY_USER_ID);
-            assertSetEnabled(transactionString, overlayName, PROFILE_USER_ID);
-            assertSetEnabled(transactionString, overlayName, SYSTEM_USER_ID);
+            // The overlay itself is named with the PRIMARY_USER_ID suffix.
+            assertSetEnabled(transactionString, overlayName, PRIMARY_USER_ID, PRIMARY_USER_ID);
+            assertSetEnabled(transactionString, overlayName, PRIMARY_USER_ID, PROFILE_USER_ID);
+            assertSetEnabled(transactionString, overlayName, PRIMARY_USER_ID, SYSTEM_USER_ID);
         }
     }
 
@@ -100,7 +101,7 @@ public class ThemeOverlayHelperTest {
         ThemeStatePair.OverlaySnapshot snapshot = statePair.commitAndGetOverlayData();
 
         // Action: Pass false because this is simulating a Background User
-        mThemeOverlayHelper.applyCurrentStateOverlays(snapshot, false /* applyToSystem */);
+        mThemeOverlayHelper.applyCurrentStateOverlays(snapshot, false, true);
 
         // Verification
         verify(mOverlayManager).commit(mTransactionCaptor.capture());
@@ -109,9 +110,9 @@ public class ThemeOverlayHelperTest {
         final List<String> overlayNames = List.of("neutral", "accent", "dynamic");
         for (String overlayName : overlayNames) {
             // Should be enabled for the user themselves
-            assertSetEnabled(transactionString, overlayName, PRIMARY_USER_ID);
+            assertSetEnabled(transactionString, overlayName, PRIMARY_USER_ID, PRIMARY_USER_ID);
             // Should NOT be enabled for the system user
-            assertNotSetEnabled(transactionString, overlayName, SYSTEM_USER_ID);
+            assertNotSetEnabled(transactionString, overlayName, PRIMARY_USER_ID, SYSTEM_USER_ID);
         }
     }
 
@@ -123,7 +124,7 @@ public class ThemeOverlayHelperTest {
         ThemeStatePair.OverlaySnapshot snapshot = statePair.commitAndGetOverlayData();
 
         // Is does not matter if we pass true/false here.
-        mThemeOverlayHelper.applyCurrentStateOverlays(snapshot, true);
+        mThemeOverlayHelper.applyCurrentStateOverlays(snapshot, true, true);
 
         // Verification
         verify(mOverlayManager).commit(mTransactionCaptor.capture());
@@ -132,9 +133,37 @@ public class ThemeOverlayHelperTest {
         final List<String> overlayNames = List.of("neutral", "accent", "dynamic");
         for (String overlayName : overlayNames) {
             // It should be enabled for the system user exactly once.
-            String expectedSubstring = getSetEnabledSubstring(overlayName, SYSTEM_USER_ID);
+            // Overlay owner is SYSTEM_USER_ID, target is SYSTEM_USER_ID.
+            String expectedSubstring = getSetEnabledSubstring(overlayName, SYSTEM_USER_ID,
+                    SYSTEM_USER_ID);
             int count = countOccurrences(transactionString, expectedSubstring);
             assertThat(count).isEqualTo(1);
+        }
+    }
+
+    @Test
+    public void applyCurrentStateOverlays_skipRegistration_enablesWithoutRegistering() {
+        // Setup: A primary user.
+        ThemeStatePair statePair = new ThemeStatePair(PRIMARY_USER_ID, true, SEED_COLOR_VALID,
+                CONTRAST_DEFAULT, STYLE_VALID);
+        ThemeStatePair.OverlaySnapshot snapshot = statePair.commitAndGetOverlayData();
+
+        // Action: Pass true for applyToSystem, but FALSE for shouldRegister.
+        mThemeOverlayHelper.applyCurrentStateOverlays(snapshot, true, false);
+
+        // Verification
+        verify(mOverlayManager).commit(mTransactionCaptor.capture());
+        String transactionString = mTransactionCaptor.getValue().toString();
+
+        final List<String> overlayNames = List.of("neutral", "accent", "dynamic");
+        for (String overlayName : overlayNames) {
+            // Check that REGISTER request is NOT present.
+            String registerRequest = "TYPE_REGISTER_FABRICATED";
+            assertThat(transactionString).doesNotContain(registerRequest);
+
+            // Check that ENABLE requests ARE present for user and system.
+            assertSetEnabled(transactionString, overlayName, PRIMARY_USER_ID, PRIMARY_USER_ID);
+            assertSetEnabled(transactionString, overlayName, PRIMARY_USER_ID, SYSTEM_USER_ID);
         }
     }
 
@@ -147,7 +176,7 @@ public class ThemeOverlayHelperTest {
         ThemeStatePair.OverlaySnapshot snapshot = statePair.commitAndGetOverlayData();
 
         // Action & Verification (should not crash)
-        mThemeOverlayHelper.applyCurrentStateOverlays(snapshot, true);
+        mThemeOverlayHelper.applyCurrentStateOverlays(snapshot, true, true);
 
         // Verify commit was still attempted
         verify(mOverlayManager).commit(any(OverlayManagerTransaction.class));
@@ -157,29 +186,32 @@ public class ThemeOverlayHelperTest {
      * Builds the expected substring for a SET_ENABLED request to find in the
      * transaction's string representation.
      */
-    private String getSetEnabledSubstring(String overlayName, int userId) {
+    private String getSetEnabledSubstring(String overlayName, int overlayUserId,
+            int targetUserId) {
         // Based on OverlayManager.Request.toString()
-        String overlayId = "com.android.systemui:" + overlayName;
+        String overlayId = "com.android.systemui:" + overlayName + "_" + overlayUserId;
         // The format must match OverlayManagerTransaction.Request.toString()
         // e.g., "Request{type=0x00 (TYPE_SET_ENABLED), overlay=com.android.systemui:neutral,
         // userId=10, ...}"
         return String.format("Request{type=0x00 (TYPE_SET_ENABLED), overlay=%s, userId=%d",
-                overlayId, userId);
+                overlayId, targetUserId);
     }
 
     /**
      * Asserts that a specific SET_ENABLED request is present in the transaction string.
      */
-    private void assertSetEnabled(String transactionString, String overlayName, int userId) {
-        String expectedSubstring = getSetEnabledSubstring(overlayName, userId);
+    private void assertSetEnabled(String transactionString, String overlayName, int overlayUserId,
+            int targetUserId) {
+        String expectedSubstring = getSetEnabledSubstring(overlayName, overlayUserId, targetUserId);
         assertThat(transactionString).contains(expectedSubstring);
     }
 
     /**
      * Asserts that a specific SET_ENABLED request is NOT present in the transaction string.
      */
-    private void assertNotSetEnabled(String transactionString, String overlayName, int userId) {
-        String expectedSubstring = getSetEnabledSubstring(overlayName, userId);
+    private void assertNotSetEnabled(String transactionString, String overlayName,
+            int overlayUserId, int targetUserId) {
+        String expectedSubstring = getSetEnabledSubstring(overlayName, overlayUserId, targetUserId);
         assertThat(transactionString).doesNotContain(expectedSubstring);
     }
 

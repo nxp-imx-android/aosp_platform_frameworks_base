@@ -286,8 +286,7 @@ public class ThemeStateManager {
 
                 for (int profileId : profiles) {
                     if (profileId != userId) {
-                        Slog.d(TAG,
-                                "Full user " + userId + " found existing profile " + profileId);
+                        Slog.d(TAG, "Full user " + userId + " found existing profile " + profileId);
                         newState.addProfile(profileId);
                     }
                 }
@@ -413,18 +412,26 @@ public class ThemeStateManager {
                 }
 
                 int currentUserId;
+                boolean localIsBooting;
                 synchronized (mLock) {
                     currentUserId = mCurrentUserId;
+                    localIsBooting = mIsBooting;
                 }
+
+                // Whenever to updated existing (register) overlays or just turn them on.
+                boolean shouldRegister = overlaySnapshot.contentChanged()
+                        || (localIsBooting && !statePair.isColorSchemeApplied(mContext));
 
                 mThemeOverlayHelper.applyCurrentStateOverlays(
                         /*statePair     */ overlaySnapshot,
-                        /*applyToSystem */ overlaySnapshot.userId() == currentUserId);
+                        /*applyToSystem */ overlaySnapshot.userId() == currentUserId,
+                        /*shouldRegister*/ shouldRegister);
 
                 statePair.clearTimer();
 
-                Slog.d(TAG, "Overlay application for user " + statePair.userId + " completed in "
-                        + (System.currentTimeMillis() - beginT) + "ms");
+                Slog.d(TAG,
+                        "Overlay application for user " + statePair.userId + " completed in " + (
+                                System.currentTimeMillis() - beginT) + "ms");
 
             }, DEBOUNCE_MS, TimeUnit.MILLISECONDS);
 

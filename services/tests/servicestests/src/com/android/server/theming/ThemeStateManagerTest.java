@@ -214,7 +214,7 @@ public class ThemeStateManagerTest {
         assertThat(pair.shouldUpdate(/* isBooting */ false)).isFalse();
 
         // Verify that the overlays were actually applied.
-        verify(mThemeOverlayHelper).applyCurrentStateOverlays(any(), anyBoolean());
+        verify(mThemeOverlayHelper).applyCurrentStateOverlays(any(), anyBoolean(), anyBoolean());
     }
 
     @Test
@@ -245,7 +245,7 @@ public class ThemeStateManagerTest {
         assertThat(pair.shouldUpdate(/* isBooting */ false)).isFalse();
 
         // Verify that the overlays were actually applied.
-        verify(mThemeOverlayHelper).applyCurrentStateOverlays(any(), anyBoolean());
+        verify(mThemeOverlayHelper).applyCurrentStateOverlays(any(), anyBoolean(), anyBoolean());
     }
 
     @Test
@@ -269,7 +269,7 @@ public class ThemeStateManagerTest {
         assertThat(pair.shouldUpdate(/* isBooting */ false)).isFalse();
 
         // Verify that the overlays were actually applied.
-        verify(mThemeOverlayHelper).applyCurrentStateOverlays(any(), anyBoolean());
+        verify(mThemeOverlayHelper).applyCurrentStateOverlays(any(), anyBoolean(), anyBoolean());
     }
 
     @Test
@@ -301,7 +301,7 @@ public class ThemeStateManagerTest {
         assertThat(pair.shouldUpdate(/* isBooting */ false)).isFalse();
 
         // Verify that the overlays were actually applied.
-        verify(mThemeOverlayHelper).applyCurrentStateOverlays(any(), anyBoolean());
+        verify(mThemeOverlayHelper).applyCurrentStateOverlays(any(), anyBoolean(), anyBoolean());
     }
 
     @Test
@@ -327,7 +327,7 @@ public class ThemeStateManagerTest {
         assertThat(pair.shouldUpdate(/* isBooting */ false)).isFalse();
 
         // Verify that the overlays were actually applied.
-        verify(mThemeOverlayHelper).applyCurrentStateOverlays(any(), anyBoolean());
+        verify(mThemeOverlayHelper).applyCurrentStateOverlays(any(), anyBoolean(), anyBoolean());
     }
 
     @Test
@@ -362,7 +362,7 @@ public class ThemeStateManagerTest {
         assertThat(pair.shouldUpdate(/* isBooting */ false)).isFalse();
 
         // Verify that the overlays were actually applied.
-        verify(mThemeOverlayHelper).applyCurrentStateOverlays(any(), anyBoolean());
+        verify(mThemeOverlayHelper).applyCurrentStateOverlays(any(), anyBoolean(), anyBoolean());
     }
 
     @Test
@@ -382,7 +382,7 @@ public class ThemeStateManagerTest {
         assertThat(pair.getPendingState()).isNull();
 
         // Verify that the overlays were actually applied.
-        verify(mThemeOverlayHelper).applyCurrentStateOverlays(any(), anyBoolean());
+        verify(mThemeOverlayHelper).applyCurrentStateOverlays(any(), anyBoolean(), anyBoolean());
     }
 
     @Test
@@ -402,7 +402,7 @@ public class ThemeStateManagerTest {
         assertThat(pair.getCurrentState().childProfiles()).contains(profileId);
 
         // Verify that the overlays were actually applied.
-        verify(mThemeOverlayHelper).applyCurrentStateOverlays(any(), anyBoolean());
+        verify(mThemeOverlayHelper).applyCurrentStateOverlays(any(), anyBoolean(), anyBoolean());
     }
 
     @Test
@@ -434,7 +434,7 @@ public class ThemeStateManagerTest {
         assertThat(pair.shouldUpdate(/* isBooting */ false)).isFalse();
 
         // Verify that the overlays were actually applied.
-        verify(mThemeOverlayHelper).applyCurrentStateOverlays(any(), anyBoolean());
+        verify(mThemeOverlayHelper).applyCurrentStateOverlays(any(), anyBoolean(), anyBoolean());
     }
 
     @Test
@@ -482,7 +482,7 @@ public class ThemeStateManagerTest {
         assertThat(pair.getPendingState()).isNull();
 
         // Verify that the overlays were actually applied.
-        verify(mThemeOverlayHelper).applyCurrentStateOverlays(any(), anyBoolean());
+        verify(mThemeOverlayHelper).applyCurrentStateOverlays(any(), anyBoolean(), anyBoolean());
     }
 
     @Test
