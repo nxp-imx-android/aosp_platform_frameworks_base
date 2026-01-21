@@ -20,10 +20,12 @@
 #include <jni.h>
 
 class SkPath;
+class SkPathBuilder;
 
 namespace android {
 
 SkPath* AsSkPath(jlong pathHandle);
+SkPathBuilder* AsSkPathBuilder(jlong pathHandle);
 
 }  // namespace android
 

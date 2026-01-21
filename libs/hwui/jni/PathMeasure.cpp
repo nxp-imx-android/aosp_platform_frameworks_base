@@ -122,7 +122,7 @@ public:
     static jboolean getSegment(JNIEnv* env, jobject clazz, jlong pairHandle, jfloat startF,
                                jfloat stopF, jlong dstHandle, jboolean startWithMoveTo) {
         PathMeasurePair* pair = reinterpret_cast<PathMeasurePair*>(pairHandle);
-        SkPath* dst = AsSkPath(dstHandle);
+        SkPathBuilder* dst = AsSkPathBuilder(dstHandle);
         bool result = pair->fMeasure.getSegment(startF, stopF, dst, startWithMoveTo);
         return result ? JNI_TRUE : JNI_FALSE;
     }
