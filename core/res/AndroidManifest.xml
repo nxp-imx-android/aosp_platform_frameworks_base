@@ -9220,7 +9220,7 @@
     <!-- @SystemApi Allows an application to query AppFunction metadata stored within platform.
          @hide
          @FlaggedApi(android.app.appfunctions.flags.Flags.FLAG_ENABLE_APP_FUNCTION_PERMISSION_V2) -->
-    <permission android:name="android.permission.READ_APP_FUNCTION_METADATA"
+    <permission android:name="android.permission.DISCOVER_APP_FUNCTIONS"
         android:protectionLevel="internal|role"
         android:featureFlag="android.app.appfunctions.flags.enable_app_function_permission_v2" />
 
@@ -9266,6 +9266,16 @@
     <permission android:name="android.permission.EXECUTE_APP_FUNCTIONS"
         android:featureFlag="android.permission.flags.app_function_access_api_enabled"
         android:protectionLevel="normal" />
+
+     <!-- @SystemApi Allows recents component and certain roles to perform actions on behalf of
+         users inside of applications.
+         <p>Protection level: internal|recents|role
+         @hide
+         @FlaggedApi(android.app.appfunctions.flags.Flags.FLAG_ENABLE_APP_FUNCTION_PERMISSION_V2)
+         -->
+    <permission android:name="android.permission.EXECUTE_APP_FUNCTIONS_SYSTEM"
+        android:featureFlag="android.app.appfunctions.flags.enable_app_function_permission_v2"
+        android:protectionLevel="internal|recents|role" />
 
     <!-- Allows an application to perform actions on behalf of users inside of
          applications.

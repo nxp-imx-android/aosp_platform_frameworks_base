@@ -129,7 +129,7 @@ public final class VisibilityHelperImpl implements VisibilityHelper {
     private boolean hasPermissionsToQueryRuntimeMetadata(int callingUid, int callingPid) {
         if (Flags.enableAppFunctionPermissionV2()
                 && mContext.checkPermission(
-                                Manifest.permission.READ_APP_FUNCTION_METADATA,
+                                Manifest.permission.DISCOVER_APP_FUNCTIONS,
                                 callingPid,
                                 callingUid)
                         == PackageManager.PERMISSION_GRANTED) {

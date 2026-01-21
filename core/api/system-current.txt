@@ -163,6 +163,7 @@ package android {
     field @FlaggedApi("android.content.pm.verification_service") public static final String DEVELOPER_VERIFICATION_AGENT = "android.permission.DEVELOPER_VERIFICATION_AGENT";
     field public static final String DEVICE_POWER = "android.permission.DEVICE_POWER";
     field public static final String DISABLE_SYSTEM_SOUND_EFFECTS = "android.permission.DISABLE_SYSTEM_SOUND_EFFECTS";
+    field @FlaggedApi("android.app.appfunctions.flags.enable_app_function_permission_v2") public static final String DISCOVER_APP_FUNCTIONS = "android.permission.DISCOVER_APP_FUNCTIONS";
     field public static final String DISPATCH_PROVISIONING_MESSAGE = "android.permission.DISPATCH_PROVISIONING_MESSAGE";
     field public static final String DOMAIN_VERIFICATION_AGENT = "android.permission.DOMAIN_VERIFICATION_AGENT";
     field @FlaggedApi("android.app.enable_motion_cues") public static final String DRAW_MOTION_CUES = "android.permission.DRAW_MOTION_CUES";
@@ -170,6 +171,7 @@ package android {
     field @FlaggedApi("com.android.window.flags.untrusted_embedding_any_app_permission") public static final String EMBED_ANY_APP_IN_UNTRUSTED_MODE = "android.permission.EMBED_ANY_APP_IN_UNTRUSTED_MODE";
     field @FlaggedApi("android.content.pm.emergency_install_permission") public static final String EMERGENCY_INSTALL_PACKAGES = "android.permission.EMERGENCY_INSTALL_PACKAGES";
     field public static final String ENTER_CAR_MODE_PRIORITIZED = "android.permission.ENTER_CAR_MODE_PRIORITIZED";
+    field @FlaggedApi("android.app.appfunctions.flags.enable_app_function_permission_v2") public static final String EXECUTE_APP_FUNCTIONS_SYSTEM = "android.permission.EXECUTE_APP_FUNCTIONS_SYSTEM";
     field public static final String EXEMPT_FROM_AUDIO_RECORD_RESTRICTIONS = "android.permission.EXEMPT_FROM_AUDIO_RECORD_RESTRICTIONS";
     field @FlaggedApi("android.xr.xr_manifest_entries") public static final String EYE_CALIBRATION = "android.permission.EYE_CALIBRATION";
     field @FlaggedApi("android.xr.xr_manifest_entries") public static final String FACE_TRACKING_CALIBRATION = "android.permission.FACE_TRACKING_CALIBRATION";
@@ -346,7 +348,6 @@ package android {
     field public static final String QUERY_USERS = "android.permission.QUERY_USERS";
     field public static final String RADIO_SCAN_WITHOUT_LOCATION = "android.permission.RADIO_SCAN_WITHOUT_LOCATION";
     field public static final String READ_ACTIVE_EMERGENCY_SESSION = "android.permission.READ_ACTIVE_EMERGENCY_SESSION";
-    field @FlaggedApi("android.app.appfunctions.flags.enable_app_function_permission_v2") public static final String READ_APP_FUNCTION_METADATA = "android.permission.READ_APP_FUNCTION_METADATA";
     field @FlaggedApi("android.app.appfunctions.flags.enable_app_interaction_api") public static final String READ_APP_INTERACTION = "android.permission.READ_APP_INTERACTION";
     field public static final String READ_APP_SPECIFIC_LOCALES = "android.permission.READ_APP_SPECIFIC_LOCALES";
     field @FlaggedApi("com.android.server.telecom.flags.telecom_resolve_hidden_dependencies") public static final String READ_BLOCKED_NUMBERS = "android.permission.READ_BLOCKED_NUMBERS";
