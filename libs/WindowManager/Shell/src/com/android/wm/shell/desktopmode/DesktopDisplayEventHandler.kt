@@ -219,7 +219,7 @@ class DesktopDisplayEventHandler(
         when {
             config == null -> {}
             dpiChangedAndInsetsReadyForDisplay(displayId) -> {
-                desktopTasksController.onDisplayDpiChanging(
+                desktopTasksController.onDisplayResolutionOrSizeChanging(
                     displayId,
                     config,
                     oldDpiLayoutByDisplayId[displayId],
@@ -228,7 +228,7 @@ class DesktopDisplayEventHandler(
                 stableBoundsChangedByDisplayId.remove(displayId)
             }
             resolutionChangedAndInsetsReadyForDisplay(displayId, boundsChangeReady) -> {
-                desktopTasksController.onDisplayDpiChanging(
+                desktopTasksController.onDisplayResolutionOrSizeChanging(
                     displayId,
                     config,
                     oldDpiLayoutByDisplayId[displayId],
