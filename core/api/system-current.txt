@@ -19690,7 +19690,9 @@ package android.telephony.satellite {
     field public static final int EMERGENCY_CALL_TO_SATELLITE_HANDOVER_TYPE_SOS = 1; // 0x1
     field public static final int EMERGENCY_CALL_TO_SATELLITE_HANDOVER_TYPE_T911 = 2; // 0x2
     field public static final int NT_RADIO_TECHNOLOGY_EMTC_NTN = 3; // 0x3
+    field @FlaggedApi("com.android.internal.telephony.flags.satellite_26q2_apis") public static final int NT_RADIO_TECHNOLOGY_LTE_DTC = 5; // 0x5
     field public static final int NT_RADIO_TECHNOLOGY_NB_IOT_NTN = 1; // 0x1
+    field @FlaggedApi("com.android.internal.telephony.flags.satellite_26q2_apis") public static final int NT_RADIO_TECHNOLOGY_NR_DTC = 6; // 0x6
     field public static final int NT_RADIO_TECHNOLOGY_NR_NTN = 2; // 0x2
     field public static final int NT_RADIO_TECHNOLOGY_PROPRIETARY = 4; // 0x4
     field public static final int NT_RADIO_TECHNOLOGY_UNKNOWN = 0; // 0x0
