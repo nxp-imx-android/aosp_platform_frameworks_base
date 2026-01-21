@@ -53,7 +53,6 @@ import static org.mockito.Mockito.verify;
 
 import android.app.IServiceConnection;
 import android.content.Intent;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 
 import com.android.server.am.psc.OomAdjuster;
@@ -108,27 +107,19 @@ public final class ServiceBindingOomAdjPolicyTest extends BaseServiceTest {
     @Test
     public void testServiceSelfBindingOomAdj() throws Exception {
         // Verify that there should be 0 oom adj updates.
-        performTestServiceSelfBindingOomAdj(never(), never(), /*isNativeService=*/ false);
-    }
-
-    @Test
-    @EnableFlags(android.os.Flags.FLAG_NATIVE_APP_ZYGOTE)
-    public void testServiceSelfBindingOomAdjNative() throws Exception {
-        // Verify that there should be 0 oom adj updates.
-        performTestServiceSelfBindingOomAdj(never(), never(), /*isNativeService=*/ true);
+        performTestServiceSelfBindingOomAdj(never(), never());
     }
 
     @SuppressWarnings("GuardedBy")
     private void performTestServiceSelfBindingOomAdj(VerificationMode bindMode,
-            VerificationMode unbindMode, boolean isNativeService) throws Exception {
+            VerificationMode unbindMode) throws Exception {
         final ProcessRecord app = addProcessRecord(
                 TEST_APP1_PID,           // pid
                 TEST_APP1_UID,           // uid
                 PROCESS_STATE_SERVICE,   // procstate
                 SERVICE_ADJ,             // adj
                 PROCESS_CAPABILITY_NONE, // capabilities
-                TEST_APP1_NAME,          // packageName
-                isNativeService
+                TEST_APP1_NAME          // packageName
         );
         final Intent serviceIntent = createServiceIntent(TEST_APP1_NAME, TEST_SERVICE1_NAME,
                 TEST_APP1_UID);
@@ -160,17 +151,6 @@ public final class ServiceBindingOomAdjPolicyTest extends BaseServiceTest {
 
     @Test
     public void testServiceDistinctBindingOomAdjMoreImportant() throws Exception {
-        testServiceDistinctBindingOomAdjMoreImportantVariant(/*isNativeService=*/ false);
-    }
-
-    @Test
-    @EnableFlags(android.os.Flags.FLAG_NATIVE_APP_ZYGOTE)
-    public void testServiceDistinctBindingOomAdjMoreImportantNative() throws Exception {
-        testServiceDistinctBindingOomAdjMoreImportantVariant(/*isNativeService=*/ true);
-    }
-
-    private void testServiceDistinctBindingOomAdjMoreImportantVariant(boolean isNativeService)
-            throws Exception {
         // Verify that there should be at least 1 oom adj update
         // because the client is more important.
         performTestServiceDistinctBindingOomAdj(TEST_APP1_PID, TEST_APP1_UID,
@@ -181,22 +161,11 @@ public final class ServiceBindingOomAdjPolicyTest extends BaseServiceTest {
                 HOME_APP_ADJ, PROCESS_CAPABILITY_NONE, TEST_APP2_NAME, TEST_SERVICE2_NAME,
                 this::setHomeProcess,
                 BIND_AUTO_CREATE,
-                atLeastOnce(), atLeastOnce(), isNativeService);
+                atLeastOnce(), atLeastOnce());
     }
 
     @Test
     public void testServiceDistinctBindingOomAdjLessImportant() throws Exception {
-        testServiceDistinctBindingOomAdjLessImportantVariant(/*isNativeService=*/ false);
-    }
-
-    @Test
-    @EnableFlags(android.os.Flags.FLAG_NATIVE_APP_ZYGOTE)
-    public void testServiceDistinctBindingOomAdjLessImportantNative() throws Exception {
-        testServiceDistinctBindingOomAdjLessImportantVariant(/*isNativeService=*/ true);
-    }
-
-    private void testServiceDistinctBindingOomAdjLessImportantVariant(boolean isNativeService)
-            throws Exception {
         // Verify that there should be 0 oom adj update
         performTestServiceDistinctBindingOomAdj(TEST_APP1_PID, TEST_APP1_UID,
                 PROCESS_STATE_HOME, HOME_APP_ADJ, PROCESS_CAPABILITY_NONE, TEST_APP1_NAME,
@@ -205,25 +174,11 @@ public final class ServiceBindingOomAdjPolicyTest extends BaseServiceTest {
                 PERCEPTIBLE_APP_ADJ, PROCESS_CAPABILITY_NONE, TEST_APP2_NAME, TEST_SERVICE2_NAME,
                 this::setHasForegroundServices,
                 BIND_AUTO_CREATE,
-                never(), never(), isNativeService);
+                never(), never());
     }
 
     @Test
     public void testServiceDistinctBindingOomAdj_propagateCpuTimeCapability() throws Exception {
-        testServiceDistinctBindingOomAdj_propagateCpuTimeCapabilityVariant(
-                /*isNativeService=*/ false);
-    }
-
-    @Test
-    @EnableFlags(android.os.Flags.FLAG_NATIVE_APP_ZYGOTE)
-    public void testServiceDistinctBindingOomAdj_propagateCpuTimeCapabilityNative()
-            throws Exception {
-        testServiceDistinctBindingOomAdj_propagateCpuTimeCapabilityVariant(
-                /*isNativeService=*/ true);
-    }
-
-    private void testServiceDistinctBindingOomAdj_propagateCpuTimeCapabilityVariant(
-            boolean isNativeService) throws Exception {
         // Note that PROCESS_CAPABILITY_CPU_TIME is special and should be propagated even when
         // BIND_INCLUDE_CAPABILITIES is not present.
         performTestServiceDistinctBindingOomAdj(TEST_APP1_PID, TEST_APP1_UID,
@@ -233,7 +188,7 @@ public final class ServiceBindingOomAdjPolicyTest extends BaseServiceTest {
                 PERCEPTIBLE_APP_ADJ, PROCESS_CAPABILITY_NONE, TEST_APP2_NAME, TEST_SERVICE2_NAME,
                 this::setHasForegroundServices,
                 BIND_AUTO_CREATE,
-                atLeastOnce(), atLeastOnce(), isNativeService);
+                atLeastOnce(), atLeastOnce());
 
         // BIND_WAIVE_PRIORITY should not affect propagation of capability CPU_TIME
         performTestServiceDistinctBindingOomAdj(TEST_APP1_PID, TEST_APP1_UID,
@@ -244,7 +199,7 @@ public final class ServiceBindingOomAdjPolicyTest extends BaseServiceTest {
                 PROCESS_CAPABILITY_NONE, TEST_APP2_NAME, TEST_SERVICE2_NAME,
                 this::setHomeProcess,
                 BIND_AUTO_CREATE | BIND_WAIVE_PRIORITY,
-                atLeastOnce(), atLeastOnce(), isNativeService);
+                atLeastOnce(), atLeastOnce());
 
         // If both process have the capability, the bind should not need an update but the unbind
         // is not safe to skip.
@@ -258,22 +213,11 @@ public final class ServiceBindingOomAdjPolicyTest extends BaseServiceTest {
                 PROCESS_CAPABILITY_CPU_TIME, TEST_APP2_NAME, TEST_SERVICE2_NAME,
                 this::setHomeProcess,
                 BIND_AUTO_CREATE,
-                never(), atLeastOnce(), isNativeService);
+                never(), atLeastOnce());
     }
 
     @Test
     public void testServiceDistinctBindingOomAdjNoIncludeCapabilities() throws Exception {
-        testServiceDistinctBindingOomAdjNoIncludeCapabilitiesVariant(/*isNativeService=*/ false);
-    }
-
-    @Test
-    @EnableFlags(android.os.Flags.FLAG_NATIVE_APP_ZYGOTE)
-    public void testServiceDistinctBindingOomAdjNoIncludeCapabilitiesNative() throws Exception {
-        testServiceDistinctBindingOomAdjNoIncludeCapabilitiesVariant(/*isNativeService=*/ true);
-    }
-
-    private void testServiceDistinctBindingOomAdjNoIncludeCapabilitiesVariant(
-            boolean isNativeService) throws Exception {
         // Note that some capabilities like PROCESS_CAPABILITY_CPU_TIME are special and propagated
         // regardless of BIND_INCLUDE_CAPABILITIES. We don't test for them here.
 
@@ -287,22 +231,11 @@ public final class ServiceBindingOomAdjPolicyTest extends BaseServiceTest {
                 PERCEPTIBLE_APP_ADJ, PROCESS_CAPABILITY_NONE, TEST_APP2_NAME, TEST_SERVICE2_NAME,
                 this::setHasForegroundServices,
                 BIND_AUTO_CREATE,
-                never(), never(), isNativeService);
+                never(), never());
     }
 
     @Test
     public void testServiceDistinctBindingOomAdjWithIncludeCapabilities() throws Exception {
-        testServiceDistinctBindingOomAdjWithIncludeCapabilitiesVariant(/*isNativeService=*/ false);
-    }
-
-    @Test
-    @EnableFlags(android.os.Flags.FLAG_NATIVE_APP_ZYGOTE)
-    public void testServiceDistinctBindingOomAdjWithIncludeCapabilitiesNative() throws Exception {
-        testServiceDistinctBindingOomAdjWithIncludeCapabilitiesVariant(/*isNativeService=*/ true);
-    }
-
-    private void testServiceDistinctBindingOomAdjWithIncludeCapabilitiesVariant(
-            boolean isNativeService) throws Exception {
         // Verify that there should be at least 1 oom adj update
         // because we use the "BIND_INCLUDE_CAPABILITIES"
         performTestServiceDistinctBindingOomAdj(TEST_APP1_PID, TEST_APP1_UID,
@@ -313,22 +246,11 @@ public final class ServiceBindingOomAdjPolicyTest extends BaseServiceTest {
                 PERCEPTIBLE_APP_ADJ, PROCESS_CAPABILITY_NONE, TEST_APP2_NAME, TEST_SERVICE2_NAME,
                 this::setHasForegroundServices,
                 BIND_AUTO_CREATE | BIND_INCLUDE_CAPABILITIES,
-                atLeastOnce(), atLeastOnce(), isNativeService);
+                atLeastOnce(), atLeastOnce());
     }
 
     @Test
     public void testServiceDistinctBindingOomAdjFreezeCaller() throws Exception {
-        testServiceDistinctBindingOomAdjFreezeCallerVariant(/*isNativeService=*/ false);
-    }
-
-    @Test
-    @EnableFlags(android.os.Flags.FLAG_NATIVE_APP_ZYGOTE)
-    public void testServiceDistinctBindingOomAdjFreezeCallerNative() throws Exception {
-        testServiceDistinctBindingOomAdjFreezeCallerVariant(/*isNativeService=*/ true);
-    }
-
-    private void testServiceDistinctBindingOomAdjFreezeCallerVariant(boolean isNativeService)
-            throws Exception {
         // Verify that there should be 0 oom adj update
         performTestServiceDistinctBindingOomAdj(TEST_APP1_PID, TEST_APP1_UID,
                 PROCESS_STATE_CACHED_EMPTY, CACHED_APP_MIN_ADJ, PROCESS_CAPABILITY_NONE,
@@ -337,22 +259,11 @@ public final class ServiceBindingOomAdjPolicyTest extends BaseServiceTest {
                 PERCEPTIBLE_APP_ADJ, PROCESS_CAPABILITY_NONE, TEST_APP2_NAME, TEST_SERVICE2_NAME,
                 this::setHasForegroundServices,
                 BIND_AUTO_CREATE,
-                never(), never(), isNativeService);
+                never(), never());
     }
 
     @Test
     public void testServiceDistinctBindingOomAdjCpuTime() throws Exception {
-        testServiceDistinctBindingOomAdjCpuTimeVariant(/*isNativeService=*/ false);
-    }
-
-    @Test
-    @EnableFlags(android.os.Flags.FLAG_NATIVE_APP_ZYGOTE)
-    public void testServiceDistinctBindingOomAdjCpuTimeNative() throws Exception {
-        testServiceDistinctBindingOomAdjCpuTimeVariant(/*isNativeService=*/ true);
-    }
-
-    private void testServiceDistinctBindingOomAdjCpuTimeVariant(boolean isNativeService)
-            throws Exception {
         // Verify the CPU_TIME capability triggers an update.
         performTestServiceDistinctBindingOomAdj(TEST_APP1_PID, TEST_APP1_UID,
                 PROCESS_STATE_CACHED_EMPTY, CACHED_APP_MIN_ADJ, PROCESS_CAPABILITY_CPU_TIME,
@@ -361,22 +272,11 @@ public final class ServiceBindingOomAdjPolicyTest extends BaseServiceTest {
                 CACHED_APP_MIN_ADJ, PROCESS_CAPABILITY_NONE, TEST_APP2_NAME, TEST_SERVICE2_NAME,
                 null,
                 BIND_AUTO_CREATE,
-                atLeastOnce(), atLeastOnce(), isNativeService);
+                atLeastOnce(), atLeastOnce());
     }
 
     @Test
     public void testServiceDistinctBindingOomAdjCpuTime_hostHasCpuTime() throws Exception {
-        testServiceDistinctBindingOomAdjCpuTime_hostHasCpuTimeVariant(/*isNativeService=*/ false);
-    }
-
-    @Test
-    @EnableFlags(android.os.Flags.FLAG_NATIVE_APP_ZYGOTE)
-    public void testServiceDistinctBindingOomAdjCpuTime_hostHasCpuTimeNative() throws Exception {
-        testServiceDistinctBindingOomAdjCpuTime_hostHasCpuTimeVariant(/*isNativeService=*/ true);
-    }
-
-    private void testServiceDistinctBindingOomAdjCpuTime_hostHasCpuTimeVariant(
-            boolean isNativeService) throws Exception {
         // Verify the CPU_TIME capability does not trigger an update if the host has already it.
         performTestServiceDistinctBindingOomAdj(TEST_APP1_PID, TEST_APP1_UID,
                 PROCESS_STATE_CACHED_EMPTY, CACHED_APP_MIN_ADJ, PROCESS_CAPABILITY_CPU_TIME,
@@ -385,25 +285,11 @@ public final class ServiceBindingOomAdjPolicyTest extends BaseServiceTest {
                 CACHED_APP_MIN_ADJ, PROCESS_CAPABILITY_CPU_TIME, TEST_APP2_NAME, TEST_SERVICE2_NAME,
                 null,
                 BIND_AUTO_CREATE,
-                never(), atLeastOnce(), isNativeService);
+                never(), atLeastOnce());
     }
 
     @Test
     public void testServiceDistinctBindingOomAdjCpuTime_hostHasImplicitCpuTime() throws Exception {
-        testServiceDistinctBindingOomAdjCpuTime_hostHasImplicitCpuTimeVariant(
-                /*isNativeService=*/ false);
-    }
-
-    @Test
-    @EnableFlags(android.os.Flags.FLAG_NATIVE_APP_ZYGOTE)
-    public void testServiceDistinctBindingOomAdjCpuTime_hostHasImplicitCpuTimeNative()
-            throws Exception {
-        testServiceDistinctBindingOomAdjCpuTime_hostHasImplicitCpuTimeVariant(
-                /*isNativeService=*/ true);
-    }
-
-    private void testServiceDistinctBindingOomAdjCpuTime_hostHasImplicitCpuTimeVariant(
-            boolean isNativeService) throws Exception {
         // Verify the CPU_TIME capability still triggers an update even if the host has the
         // IMPLICIT_CPU_TIME.
         performTestServiceDistinctBindingOomAdj(TEST_APP1_PID, TEST_APP1_UID,
@@ -414,22 +300,11 @@ public final class ServiceBindingOomAdjPolicyTest extends BaseServiceTest {
                 TEST_SERVICE2_NAME,
                 null,
                 BIND_AUTO_CREATE,
-                atLeastOnce(), atLeastOnce(), isNativeService);
+                atLeastOnce(), atLeastOnce());
     }
 
     @Test
     public void testServiceDistinctBindingOomAdjImplicitCpuTime() throws Exception {
-        testServiceDistinctBindingOomAdjImplicitCpuTimeVariant(/*isNativeService=*/ false);
-    }
-
-    @Test
-    @EnableFlags(android.os.Flags.FLAG_NATIVE_APP_ZYGOTE)
-    public void testServiceDistinctBindingOomAdjImplicitCpuTimeNative() throws Exception {
-        testServiceDistinctBindingOomAdjImplicitCpuTimeVariant(/*isNativeService=*/ true);
-    }
-
-    private void testServiceDistinctBindingOomAdjImplicitCpuTimeVariant(boolean isNativeService)
-            throws Exception {
         // Verify the IMPLICIT_CPU_TIME capability triggers an update.
         performTestServiceDistinctBindingOomAdj(TEST_APP1_PID, TEST_APP1_UID,
                 PROCESS_STATE_CACHED_EMPTY, CACHED_APP_MIN_ADJ,
@@ -439,25 +314,11 @@ public final class ServiceBindingOomAdjPolicyTest extends BaseServiceTest {
                 CACHED_APP_MIN_ADJ, PROCESS_CAPABILITY_NONE, TEST_APP2_NAME, TEST_SERVICE2_NAME,
                 null,
                 BIND_AUTO_CREATE,
-                atLeastOnce(), atLeastOnce(), isNativeService);
+                atLeastOnce(), atLeastOnce());
     }
 
     @Test
     public void testServiceDistinctBindingOomAdjImplicitCpuTime_hostHasCpuTime() throws Exception {
-        testServiceDistinctBindingOomAdjImplicitCpuTime_hostHasCpuTimeVariant(
-                /*isNativeService=*/ false);
-    }
-
-    @Test
-    @EnableFlags(android.os.Flags.FLAG_NATIVE_APP_ZYGOTE)
-    public void testServiceDistinctBindingOomAdjImplicitCpuTime_hostHasCpuTimeNative()
-            throws Exception {
-        testServiceDistinctBindingOomAdjImplicitCpuTime_hostHasCpuTimeVariant(
-                /*isNativeService=*/ true);
-    }
-
-    private void testServiceDistinctBindingOomAdjImplicitCpuTime_hostHasCpuTimeVariant(
-            boolean isNativeService) throws Exception {
         // Verify the IMPLICIT_CPU_TIME capability still triggers an update even if the host has the
         // CPU_TIME.
         performTestServiceDistinctBindingOomAdj(TEST_APP1_PID, TEST_APP1_UID,
@@ -468,26 +329,12 @@ public final class ServiceBindingOomAdjPolicyTest extends BaseServiceTest {
                 CACHED_APP_MIN_ADJ, PROCESS_CAPABILITY_CPU_TIME, TEST_APP2_NAME, TEST_SERVICE2_NAME,
                 null,
                 BIND_AUTO_CREATE,
-                atLeastOnce(), atLeastOnce(), isNativeService);
+                atLeastOnce(), atLeastOnce());
     }
 
     @Test
     public void testServiceDistinctBindingOomAdjImplicitCpuTime_hostHasImplicitCpuTime()
             throws Exception {
-        testServiceDistinctBindingOomAdjImplicitCpuTime_hostHasImplicitCpuTimeVariant(
-                /*isNativeService=*/ false);
-    }
-
-    @Test
-    @EnableFlags(android.os.Flags.FLAG_NATIVE_APP_ZYGOTE)
-    public void testServiceDistinctBindingOomAdjImplicitCpuTime_hostHasImplicitCpuTimeNative()
-            throws Exception {
-        testServiceDistinctBindingOomAdjImplicitCpuTime_hostHasImplicitCpuTimeVariant(
-                /*isNativeService=*/ true);
-    }
-
-    private void testServiceDistinctBindingOomAdjImplicitCpuTime_hostHasImplicitCpuTimeVariant(
-            boolean isNativeService) throws Exception {
         // Verify the IMPLICIT_CPU_TIME capability does not trigger an update if the host has
         // already it.
         performTestServiceDistinctBindingOomAdj(TEST_APP1_PID, TEST_APP1_UID,
@@ -499,7 +346,7 @@ public final class ServiceBindingOomAdjPolicyTest extends BaseServiceTest {
                 TEST_SERVICE2_NAME,
                 null,
                 BIND_AUTO_CREATE,
-                never(), atLeastOnce(), isNativeService);
+                never(), atLeastOnce());
     }
 
     @SuppressWarnings("GuardedBy")
@@ -509,7 +356,7 @@ public final class ServiceBindingOomAdjPolicyTest extends BaseServiceTest {
             int servicePid, int serviceUid, int serviceProcState, int serviceAdj,
             int serviceCap, String servicePackageName, String serviceName,
             Consumer<ProcessRecord> serviceAppFixer, int bindingFlags,
-            VerificationMode bindMode, VerificationMode unbindMode, boolean isNativeService)
+            VerificationMode bindMode, VerificationMode unbindMode)
             throws Exception {
         final ProcessRecord clientApp = addProcessRecord(
                 clientPid,
@@ -517,8 +364,7 @@ public final class ServiceBindingOomAdjPolicyTest extends BaseServiceTest {
                 clientProcState,
                 clientAdj,
                 clientCap,
-                clientPackageName,
-                isNativeService
+                clientPackageName
         );
         final ProcessRecord serviceApp = addProcessRecord(
                 servicePid,
@@ -526,8 +372,7 @@ public final class ServiceBindingOomAdjPolicyTest extends BaseServiceTest {
                 serviceProcState,
                 serviceAdj,
                 serviceCap,
-                servicePackageName,
-                isNativeService
+                servicePackageName
         );
         final Intent serviceIntent = createServiceIntent(servicePackageName, serviceName,
                 serviceUid);
@@ -587,9 +432,7 @@ public final class ServiceBindingOomAdjPolicyTest extends BaseServiceTest {
 
     @SuppressWarnings("GuardedBy")
     private ProcessRecord addProcessRecord(int pid, int uid, int procState, int adj, int cap,
-                String packageName, boolean isNativeService) {
-        // TODO: b/467131711 - remove Native tests. Tests in this file are not affected by
-        //  isNativeService state.
+                String packageName) {
         final ProcessRecord app = makeProcessRecord(pid, uid, procState, adj, cap, packageName,
                 packageName, mAms);
 
