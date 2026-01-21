@@ -6402,6 +6402,7 @@
 
   <!-- Device CMF Theming Settings -->
   <java-symbol type="array" name="theming_defaults" />
+  <java-symbol type="array" name="theming_legacy_overlays" />
 
   <java-symbol type="string" name="config_help_url_action_disabled_by_advanced_protection" />
 

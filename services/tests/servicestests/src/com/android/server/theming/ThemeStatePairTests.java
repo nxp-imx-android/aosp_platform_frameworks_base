@@ -28,6 +28,9 @@ import androidx.test.runner.AndroidJUnit4;
 
 import com.android.systemui.monet.ColorScheme;
 
+import com.google.ux.material.libmonet.dynamiccolor.ColorSpec.SpecVersion;
+import com.google.ux.material.libmonet.dynamiccolor.DynamicScheme.Platform;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -44,8 +47,7 @@ public class ThemeStatePairTests {
     private static final int USER_ID = 0;
 
     private ThemeStatePair mStatePair = new ThemeStatePair(USER_ID, true, SEED_COLOR_VALID,
-            CONTRAST_DEFAULT,
-            STYLE_VALID);
+            CONTRAST_DEFAULT, STYLE_VALID, SpecVersion.SPEC_2025, Platform.PHONE);
 
     @Test
     public void testShouldUpdateOverlays_noChanges() {
@@ -150,7 +152,7 @@ public class ThemeStatePairTests {
     @Test
     public void testShouldUpdate_userNotSetup_shouldNotUpdate() {
         mStatePair = new ThemeStatePair(USER_ID, false, SEED_COLOR_VALID, CONTRAST_DEFAULT,
-                STYLE_VALID);
+                STYLE_VALID, SpecVersion.SPEC_2025, Platform.PHONE);
         assertFalse(mStatePair.shouldUpdate(false));
     }
 
@@ -184,7 +186,7 @@ public class ThemeStatePairTests {
     public void testShouldUpdate_booting_shouldUpdateEvenIfNotSetup() {
         mStatePair = new ThemeStatePair(USER_ID, false /* isSetup */, SEED_COLOR_VALID,
                 CONTRAST_DEFAULT,
-                STYLE_VALID);
+                STYLE_VALID, SpecVersion.SPEC_2025, Platform.PHONE);
         // Apply a change so pending != current, but do NOT use forceUpdate() because
         // that bypasses the setup check.
         mStatePair.applySeedColor(SEED_COLOR_RED);

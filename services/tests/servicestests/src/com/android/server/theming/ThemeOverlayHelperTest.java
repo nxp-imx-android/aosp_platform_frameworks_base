@@ -16,22 +16,34 @@
 
 package com.android.server.theming;
 
+import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentation;
+
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+import android.content.om.OverlayIdentifier;
+import android.content.om.OverlayInfo;
 import android.content.om.OverlayManagerTransaction;
 import android.content.theming.ThemeStyle;
 import android.graphics.Color;
 import android.os.UserHandle;
+import android.testing.TestableContext;
+import android.testing.TestableResources;
 
 import androidx.test.runner.AndroidJUnit4;
 
+import com.android.internal.R;
 import com.android.server.om.OverlayManagerInternal;
 
+import com.google.ux.material.libmonet.dynamiccolor.ColorSpec.SpecVersion;
+import com.google.ux.material.libmonet.dynamiccolor.DynamicScheme.Platform;
+
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -39,6 +51,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -59,6 +72,10 @@ public class ThemeOverlayHelperTest {
     @Captor
     private ArgumentCaptor<OverlayManagerTransaction> mTransactionCaptor;
 
+    @Rule
+    public final TestableContext mContext = new TestableContext(getInstrumentation().getContext(),
+            null);
+
     private ThemeOverlayHelper mThemeOverlayHelper;
 
     @Before
@@ -66,13 +83,26 @@ public class ThemeOverlayHelperTest {
         // This initializes all fields annotated with @Mock and @Captor
         MockitoAnnotations.initMocks(this);
         mThemeOverlayHelper = new ThemeOverlayHelper(mOverlayManager);
+
+        TestableResources resources = mContext.getOrCreateTestableResources();
+        resources.addOverride(R.array.theming_legacy_overlays, new String[]{
+                "com.android.systemui|neutral",
+                "com.android.systemui|accent",
+                "com.android.systemui|dynamic",
+                "com.android.systemui|neutral1",
+                "com.android.systemui|accent1",
+                "com.google.android.apps.wearable.systemui|neutral",
+                "com.google.android.apps.wearable.systemui|accent",
+                "com.google.android.apps.wearable.systemui|dynamic"
+        });
     }
+
 
     @Test
     public void applyCurrentStateOverlays_foregroundUser_enablesForSelfAndSystemAndProfiles() {
         // Setup: A primary user with an associated profile.
         ThemeStatePair statePair = new ThemeStatePair(PRIMARY_USER_ID, true, SEED_COLOR_VALID,
-                CONTRAST_DEFAULT, STYLE_VALID);
+                CONTRAST_DEFAULT, STYLE_VALID, SpecVersion.SPEC_2025, Platform.PHONE);
         statePair.addProfile(PROFILE_USER_ID);
         ThemeStatePair.OverlaySnapshot snapshot = statePair.commitAndGetOverlayData();
 
@@ -97,7 +127,7 @@ public class ThemeOverlayHelperTest {
     public void applyCurrentStateOverlays_backgroundUser_doesNotEnableForSystem() {
         // Setup: A background user (simulated by passing false to the helper)
         ThemeStatePair statePair = new ThemeStatePair(PRIMARY_USER_ID, true, SEED_COLOR_VALID,
-                CONTRAST_DEFAULT, STYLE_VALID);
+                CONTRAST_DEFAULT, STYLE_VALID, SpecVersion.SPEC_2025, Platform.PHONE);
         ThemeStatePair.OverlaySnapshot snapshot = statePair.commitAndGetOverlayData();
 
         // Action: Pass false because this is simulating a Background User
@@ -120,7 +150,7 @@ public class ThemeOverlayHelperTest {
     public void applyCurrentStateOverlays_whenUserIsSystem_enablesOnce() {
         // Setup: The user is the system user.
         ThemeStatePair statePair = new ThemeStatePair(SYSTEM_USER_ID, true, SEED_COLOR_VALID,
-                CONTRAST_DEFAULT, STYLE_VALID);
+                CONTRAST_DEFAULT, STYLE_VALID, SpecVersion.SPEC_2025, Platform.PHONE);
         ThemeStatePair.OverlaySnapshot snapshot = statePair.commitAndGetOverlayData();
 
         // Is does not matter if we pass true/false here.
@@ -145,7 +175,7 @@ public class ThemeOverlayHelperTest {
     public void applyCurrentStateOverlays_skipRegistration_enablesWithoutRegistering() {
         // Setup: A primary user.
         ThemeStatePair statePair = new ThemeStatePair(PRIMARY_USER_ID, true, SEED_COLOR_VALID,
-                CONTRAST_DEFAULT, STYLE_VALID);
+                CONTRAST_DEFAULT, STYLE_VALID, SpecVersion.SPEC_2025, Platform.PHONE);
         ThemeStatePair.OverlaySnapshot snapshot = statePair.commitAndGetOverlayData();
 
         // Action: Pass true for applyToSystem, but FALSE for shouldRegister.
@@ -172,7 +202,7 @@ public class ThemeOverlayHelperTest {
         // Setup a commit failure
         doThrow(new SecurityException("Test Exception")).when(mOverlayManager).commit(any());
         ThemeStatePair statePair = new ThemeStatePair(PRIMARY_USER_ID, true, SEED_COLOR_VALID,
-                CONTRAST_DEFAULT, STYLE_VALID);
+                CONTRAST_DEFAULT, STYLE_VALID, SpecVersion.SPEC_2025, Platform.PHONE);
         ThemeStatePair.OverlaySnapshot snapshot = statePair.commitAndGetOverlayData();
 
         // Action & Verification (should not crash)
@@ -182,6 +212,47 @@ public class ThemeOverlayHelperTest {
         verify(mOverlayManager).commit(any(OverlayManagerTransaction.class));
     }
 
+    @Test
+    public void cleanupLegacyOverlays_unregistersCorrectOverlays() {
+        when(mOverlayManager.getOverlayInfo(any(OverlayIdentifier.class), any(UserHandle.class)))
+                .thenReturn(new OverlayInfo("com.dummy", "dummy_overlay", "android", null, null,
+                        "/path", 0, 0, 0, true, true));
+
+        String[] legacyOverlays = mContext.getResources().getStringArray(
+                R.array.theming_legacy_overlays);
+
+        mThemeOverlayHelper.cleanupLegacyOverlays(Arrays.asList(legacyOverlays));
+
+        verify(mOverlayManager).commit(mTransactionCaptor.capture());
+        String transactionString = mTransactionCaptor.getValue().toString();
+
+        // Verify unregistration of legacy Mobile SystemUI overlays
+        assertUnregister(transactionString, "com.android.systemui", "neutral");
+        assertUnregister(transactionString, "com.android.systemui", "accent");
+        assertUnregister(transactionString, "com.android.systemui", "dynamic");
+        assertUnregister(transactionString, "com.android.systemui", "neutral1");
+        assertUnregister(transactionString, "com.android.systemui", "accent1");
+
+        // Verify unregistration of legacy Wear SystemUI overlays
+        assertUnregister(transactionString, "com.google.android.apps.wearable.systemui", "neutral");
+        assertUnregister(transactionString, "com.google.android.apps.wearable.systemui", "accent");
+        assertUnregister(transactionString, "com.google.android.apps.wearable.systemui", "dynamic");
+    }
+
+    /**
+     * Asserts that a specific UNREGISTER request is present in the transaction string.
+     */
+    private void assertUnregister(String transactionString, String packageName,
+            String overlayName) {
+        String overlayId = packageName + ":" + overlayName;
+        // Expected format based on OverlayManagerTransaction.toString()
+        // Request{type=0x03 (TYPE_UNREGISTER_FABRICATED), overlay=package:name, ...}
+        // We match a subset to be robust.
+        String expectedSubstring = String.format("overlay=%s", overlayId);
+        assertThat(transactionString).contains("TYPE_UNREGISTER_FABRICATED");
+        assertThat(transactionString).contains(expectedSubstring);
+    }
+
     /**
      * Builds the expected substring for a SET_ENABLED request to find in the
      * transaction's string representation.
@@ -189,9 +260,9 @@ public class ThemeOverlayHelperTest {
     private String getSetEnabledSubstring(String overlayName, int overlayUserId,
             int targetUserId) {
         // Based on OverlayManager.Request.toString()
-        String overlayId = "com.android.systemui:" + overlayName + "_" + overlayUserId;
+        String overlayId = "android:" + overlayName + "_" + overlayUserId; // Owner is now android
         // The format must match OverlayManagerTransaction.Request.toString()
-        // e.g., "Request{type=0x00 (TYPE_SET_ENABLED), overlay=com.android.systemui:neutral,
+        // e.g., "Request{type=0x00 (TYPE_SET_ENABLED), overlay=android:neutral,
         // userId=10, ...}"
         return String.format("Request{type=0x00 (TYPE_SET_ENABLED), overlay=%s, userId=%d",
                 overlayId, targetUserId);

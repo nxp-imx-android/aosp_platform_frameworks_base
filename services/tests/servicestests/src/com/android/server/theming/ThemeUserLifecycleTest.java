@@ -49,6 +49,9 @@ import com.android.server.om.OverlayManagerInternal;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.wallpaper.WallpaperManagerInternal;
 
+import com.google.ux.material.libmonet.dynamiccolor.ColorSpec.SpecVersion;
+import com.google.ux.material.libmonet.dynamiccolor.DynamicScheme.Platform;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -107,7 +110,8 @@ public class ThemeUserLifecycleTest {
         when(mUserManagerInternal.getProfileParentId(anyInt()))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
-        mThemeStateManager = new ThemeStateManager(mContext, new FakeScheduledExecutorService());
+        mThemeStateManager = new ThemeStateManager(mContext, new FakeScheduledExecutorService(),
+                Platform.PHONE, SpecVersion.SPEC_2025);
         mThemeStateManager.onServicesReady();
 
         mThemeUserLifecycle = new ThemeUserLifecycle(mContext, mThemeStateManager,

@@ -50,7 +50,9 @@ import com.android.server.om.OverlayManagerInternal;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.wallpaper.WallpaperManagerInternal;
 
+import com.google.ux.material.libmonet.dynamiccolor.ColorSpec.SpecVersion;
 import com.google.ux.material.libmonet.dynamiccolor.DynamicScheme;
+import com.google.ux.material.libmonet.dynamiccolor.DynamicScheme.Platform;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -138,10 +140,12 @@ public class ThemeBinderServiceTests {
             }
         };
         mSchedulerExecutor = new FakeScheduledExecutorService();
-        mThemeStateManager = new ThemeStateManager(context, mSchedulerExecutor);
+        mThemeStateManager = new ThemeStateManager(context, mSchedulerExecutor,
+                Platform.PHONE, SpecVersion.SPEC_2025);
         mThemeStateManager.onServicesReady();
         mInternal = new ThemeManagerInternal(context, themeSettingsManager,
-                systemPropertiesReader, mThemeStateManager, mOverlayHelper);
+                systemPropertiesReader, mThemeStateManager, mOverlayHelper,
+                Platform.PHONE, SpecVersion.SPEC_2025);
         mUnderTest = new ThemeBinderService(context, mInternal);
         mDefaultSettings = themeSettingsManager.createDefaultThemeSettings(context.getResources(),
                 systemPropertiesReader, mUserId);

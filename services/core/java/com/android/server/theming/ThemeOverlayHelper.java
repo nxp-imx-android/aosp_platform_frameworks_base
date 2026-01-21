@@ -48,7 +48,6 @@ import java.util.stream.Collectors;
 public class ThemeOverlayHelper {
     private static final String TAG = "ThemeOverlayHelper";
     private static final String ANDROID_PACKAGE = "android";
-    private static final String SYSUI_PACKAGE = "com.android.systemui";
 
     private static final String OVERLAY_NAME_NEUTRAL = "neutral";
     private static final String OVERLAY_NAME_ACCENT = "accent";
@@ -99,7 +98,7 @@ public class ThemeOverlayHelper {
                 new OverlayManagerTransaction.Builder();
 
         for (String overlayName : OVERLAY_NAMES) {
-            final OverlayIdentifier identifier = new OverlayIdentifier(SYSUI_PACKAGE,
+            final OverlayIdentifier identifier = new OverlayIdentifier(ANDROID_PACKAGE,
                     overlayName + "_" + userId);
             addToTransaction(transaction, identifier, userId, /* applyToSystem */ true,
                     snapshot.profiles());
@@ -157,8 +156,50 @@ public class ThemeOverlayHelper {
             mOverlayManager.commit(transaction.build());
             return true;
         } catch (SecurityException | IllegalStateException e) {
-            Slog.e(TAG, "Could not commit overlays to OverlayManager", e);
+            Slog.w(TAG, "Could not commit overlays to OverlayManager");
             return false;
+        }
+    }
+
+    /**
+     * Cleans up legacy overlays from previous controllers.
+     * This ensures we don't have duplicate or orphaned overlays persisting.
+     *
+     * @param legacyOverlays A list of legacy overlay identifiers in the format
+     *                       "packageName:overlayName".
+     */
+    public void cleanupLegacyOverlays(List<String> legacyOverlays) {
+        if (legacyOverlays == null || legacyOverlays.isEmpty()) {
+            return;
+        }
+
+        final OverlayManagerTransaction.Builder transaction =
+                new OverlayManagerTransaction.Builder();
+        boolean hasRemovals = false;
+
+        for (String overlay : legacyOverlays) {
+            String[] split = overlay.split("\\|");
+            if (split.length != 2) {
+                Slog.w(TAG, "Invalid legacy overlay format: " + overlay);
+                continue;
+            }
+
+            OverlayIdentifier identifier = new OverlayIdentifier(split[0], split[1]);
+            if (mOverlayManager.getOverlayInfo(identifier, UserHandle.SYSTEM) != null) {
+                Slog.d(TAG, "Cleaning up legacy overlay: " + overlay);
+                transaction.unregisterFabricatedOverlay(identifier);
+                hasRemovals = true;
+            }
+        }
+
+        if (!hasRemovals) {
+            return;
+        }
+
+        try {
+            mOverlayManager.commit(transaction.build());
+        } catch (SecurityException | IllegalStateException e) {
+            Slog.w(TAG, "Failed to cleanup legacy overlays (this is likely harmless): " + e);
         }
     }
 
@@ -193,14 +234,20 @@ public class ThemeOverlayHelper {
         FabricatedOverlay overlay = newFabricatedOverlay(OVERLAY_NAME_DYNAMIC, userId);
 
         //Themed Colors
-        assignColorsToOverlay(overlay, DynamicColors.getAllDynamicColorsMapped(), false,
-                lightColorScheme, darkColorScheme);
+        assignColorsToOverlay(overlay, DynamicColors.getAllDynamicColorsMapped(),
+                false, lightColorScheme, darkColorScheme);
+
         // Fixed colors intentionally use only the lightscheme, hence the "fixed" in name.
-        assignColorsToOverlay(overlay, DynamicColors.getFixedColorsMapped(), true, lightColorScheme,
-                lightColorScheme);
+        // However, on Wear, legacy behavior used the dark scheme. We expect the caller to pass
+        // the dark scheme as lightColorScheme if this is desired.
+        ColorScheme fixedScheme = lightColorScheme;
+        assignColorsToOverlay(overlay, DynamicColors.getFixedColorsMapped(), true,
+                fixedScheme, fixedScheme);
+
         //Custom Colors
         assignColorsToOverlay(overlay, DynamicColors.getCustomColorsMapped(), false,
                 lightColorScheme, darkColorScheme);
+
         return overlay;
     }
 
@@ -222,7 +269,7 @@ public class ThemeOverlayHelper {
     }
 
     private FabricatedOverlay newFabricatedOverlay(String name, int userId) {
-        return new FabricatedOverlay.Builder(SYSUI_PACKAGE, name + "_" + userId,
+        return new FabricatedOverlay.Builder(ANDROID_PACKAGE, name + "_" + userId,
                 ANDROID_PACKAGE).build();
     }
 

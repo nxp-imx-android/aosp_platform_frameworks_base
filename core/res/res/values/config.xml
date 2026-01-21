@@ -2727,6 +2727,18 @@
         <item>*|TONAL_SPOT|home_wallpaper</item>
     </string-array>
 
+    <!-- A list of legacy theme overlays that ThemeManagerService removes during the boot process.
+         Previously, these overlays were managed SystemUI but, because their ownership has moved to
+         the Android System, cleaning previous overlays up is necessary to prevent duplicate or
+         conflicting overlays from being active at the same time. If not removed, the system might
+         try to apply both the old and new overlays, leading to undefined color behavior.
+         Each item should be in the format "packageName|overlayName". -->
+    <string-array name="theming_legacy_overlays">
+        <item>com.android.systemui|neutral</item>
+        <item>com.android.systemui|accent</item>
+        <item>com.android.systemui|dynamic</item>
+    </string-array>
+
     <!-- National Language Identifier codes for the following two config items.
          (from 3GPP TS 23.038 V9.1.1 Table 6.2.1.2.4.1):
           0  - reserved
