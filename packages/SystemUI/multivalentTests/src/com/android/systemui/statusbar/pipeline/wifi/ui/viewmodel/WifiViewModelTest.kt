@@ -21,7 +21,6 @@ import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.settingslib.AccessibilityContentDescriptions.WIFI_OTHER_DEVICE_CONNECTION
-import com.android.systemui.Flags.FLAG_STATUS_BAR_STATIC_INOUT_INDICATORS
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.common.shared.model.ContentDescription.Companion.loadContentDescription
 import com.android.systemui.coroutines.collectLastValue
@@ -48,6 +47,8 @@ import com.android.systemui.statusbar.pipeline.wifi.shared.WifiConstants
 import com.android.systemui.statusbar.pipeline.wifi.shared.model.WifiNetworkModel
 import com.android.systemui.statusbar.pipeline.wifi.ui.model.WifiIcon
 import com.android.systemui.statusbar.pipeline.wifi.ui.viewmodel.LocationBasedWifiViewModel.Companion.viewModelForLocation
+import com.android.systemui.statusbar.systemstatusicons.flags.DisableSystemStatusIconsInCompose
+import com.android.systemui.statusbar.systemstatusicons.flags.EnableSystemStatusIconsInCompose
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -177,8 +178,8 @@ class WifiViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(FLAG_STATUS_BAR_STATIC_INOUT_INDICATORS)
-    fun activity_nullSsid_outputsFalse_staticFlagOff() =
+    @DisableSystemStatusIconsInCompose
+    fun activity_nullSsid_outputsFalse_iconsInComposeFlagOff() =
         testScope.runTest {
             whenever(connectivityConstants.shouldShowActivityConfig).thenReturn(true)
             createAndSetViewModel()
@@ -200,8 +201,8 @@ class WifiViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(FLAG_STATUS_BAR_STATIC_INOUT_INDICATORS)
-    fun activity_nullSsid_outputsFalse_staticFlagOn() =
+    @EnableSystemStatusIconsInCompose
+    fun activity_nullSsid_outputsFalse_iconsInComposeFlagOn() =
         testScope.runTest {
             whenever(connectivityConstants.shouldShowActivityConfig).thenReturn(true)
             createAndSetViewModel()
@@ -353,8 +354,8 @@ class WifiViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(FLAG_STATUS_BAR_STATIC_INOUT_INDICATORS)
-    fun activityContainer_inAndOutFalse_outputsTrue_staticFlagOff() =
+    @DisableSystemStatusIconsInCompose
+    fun activityContainer_inAndOutFalse_outputsTrue_iconsInComposeFlagOff() =
         testScope.runTest {
             whenever(connectivityConstants.shouldShowActivityConfig).thenReturn(true)
             createAndSetViewModel()
@@ -369,8 +370,8 @@ class WifiViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(FLAG_STATUS_BAR_STATIC_INOUT_INDICATORS)
-    fun activityContainer_inAndOutFalse_outputsTrue_staticFlagOn() =
+    @EnableSystemStatusIconsInCompose
+    fun activityContainer_inAndOutFalse_outputsTrue_iconsInComposeFlagOn() =
         testScope.runTest {
             whenever(connectivityConstants.shouldShowActivityConfig).thenReturn(true)
             createAndSetViewModel()
