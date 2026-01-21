@@ -458,8 +458,9 @@ public final class PermissionsUtils {
         }
 
         for (String setKey : permissionSetKeys) {
-            if (setKey != null) {
-                extraPermissionIds.add(EXTRA_PERM_SET_TO_ID.get(setKey));
+            Integer permId = EXTRA_PERM_SET_TO_ID.get(setKey);
+            if (setKey != null && permId != null) {
+                extraPermissionIds.add(permId);
             }
         }
         return extraPermissionIds;

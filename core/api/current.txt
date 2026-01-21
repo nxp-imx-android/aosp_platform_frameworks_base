@@ -10749,6 +10749,7 @@ package android.companion {
     method @FlaggedApi("android.companion.association_extra_permission") @NonNull public java.util.Set<java.lang.String> getExtraPermissions();
     method public int getId();
     method public int getSystemDataSyncFlags();
+    method @FlaggedApi("android.companion.support_ai_agent") public boolean isRemoteAiAgentSupported();
     method public boolean isSelfManaged();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.companion.AssociationInfo> CREATOR;
@@ -10761,6 +10762,7 @@ package android.companion {
     method @Nullable public CharSequence getDisplayName();
     method @FlaggedApi("android.companion.association_extra_permission") @NonNull public java.util.Set<java.lang.String> getExtraPermissions();
     method public boolean isForceConfirmation();
+    method @FlaggedApi("android.companion.support_ai_agent") public boolean isRemoteAiAgentSupported();
     method public boolean isSelfManaged();
     method public boolean isSingleDevice();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
@@ -10786,6 +10788,7 @@ package android.companion {
     method @NonNull public android.companion.AssociationRequest.Builder setDisplayName(@NonNull CharSequence);
     method @FlaggedApi("android.companion.association_extra_permission") @NonNull public android.companion.AssociationRequest.Builder setExtraPermissions(@NonNull java.util.Set<java.lang.String>);
     method @NonNull @RequiresPermission(android.Manifest.permission.REQUEST_COMPANION_SELF_MANAGED) public android.companion.AssociationRequest.Builder setForceConfirmation(boolean);
+    method @FlaggedApi("android.companion.support_ai_agent") @NonNull public android.companion.AssociationRequest.Builder setRemoteAiAgentSupported(boolean);
     method @NonNull @RequiresPermission(android.Manifest.permission.REQUEST_COMPANION_SELF_MANAGED) public android.companion.AssociationRequest.Builder setSelfManaged(boolean);
     method @NonNull public android.companion.AssociationRequest.Builder setSingleDevice(boolean);
   }

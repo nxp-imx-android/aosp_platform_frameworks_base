@@ -362,7 +362,7 @@ public class CompanionDeviceManagerService extends SystemService {
                         request.getDeviceProfile(), /* associatedDevice= */ null,
                         request.isSelfManaged(), callback, /* resultReceiver= */ null,
                         request.getDeviceIcon(), /* skipRoleGrant= */ true,
-                        request.getExtraPermissions());
+                        request.getExtraPermissions(), request.isRemoteAiAgentSupported());
             } else {
                 mAssociationRequestsProcessor.processNewAssociationRequest(
                         request, packageName, userId, callback);
@@ -815,7 +815,7 @@ public class CompanionDeviceManagerService extends SystemService {
 
             final MacAddress macAddressObj = MacAddress.fromString(macAddress);
             mAssociationRequestsProcessor.createAssociation(userId, packageName, macAddressObj,
-                    null, null, null, false, null, null, null, false, new HashSet<>());
+                    null, null, null, false, null, null, null, false, new HashSet<>(), false);
         }
 
         private void checkCanCallNotificationApi(String callingPackage, int userId) {

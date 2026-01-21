@@ -99,12 +99,8 @@ class CompanionDeviceShellCommand extends ShellCommand {
                             mAssociationStore.getActiveAssociationsByUser(userId);
                     final int maxId = mAssociationStore.getMaxId();
                     out.println("Max ID: " + maxId);
-                    out.println("Association ID | Package Name | Mac Address");
                     for (AssociationInfo association : associationsForUser) {
-                        // TODO(b/212535524): use AssociationInfo.toShortString(), once it's not
-                        //  longer referenced in tests.
-                        out.println(association.getId() + " | " + association.getPackageName()
-                                + " | " + association.getDeviceMacAddress());
+                        out.println(association.toString() + "\n");
                     }
                 }
                 break;
@@ -113,20 +109,22 @@ class CompanionDeviceShellCommand extends ShellCommand {
                     int userId = getNextIntArgRequired();
                     String packageName = getNextArgRequired();
                     String address = getNextArgRequired();
+                    final MacAddress macAddress = MacAddress.fromString(address);
                     String deviceProfile = Optional.ofNullable(getNextArg())
                             .filter(arg -> !"null".equalsIgnoreCase(arg))
                             .orElse(null);
                     boolean selfManaged = getNextBooleanArg();
                     String permissionsArg = getNextArg();
-                    Set<String> permissions = new HashSet<>();
-                    if (permissionsArg != null) {
-                        permissions.addAll(Arrays.asList(permissionsArg.split(",")));
-                    }
-                    final MacAddress macAddress = MacAddress.fromString(address);
+                    Set<String> permissions = ("null".equalsIgnoreCase(permissionsArg))
+                            ? new HashSet<>()
+                            : new HashSet<>(Arrays.asList(permissionsArg.split(",")));
+                    boolean isRemoteAiAgentSupported = getNextBooleanArg();
+
                     mAssociationRequestsProcessor.createAssociation(userId, packageName, macAddress,
                             deviceProfile, deviceProfile, /* associatedDevice= */ null, selfManaged,
                             /* callback= */ null, /* resultReceiver= */ null,
-                            /* deviceIcon= */ null, /* skipRoleGrant= */ false, permissions);
+                            /* deviceIcon= */ null, /* skipRoleGrant= */ false, permissions,
+                            isRemoteAiAgentSupported);
                 }
                 break;
 
@@ -568,7 +566,8 @@ class CompanionDeviceShellCommand extends ShellCommand {
         pw.println("      Print this help text.");
         pw.println("  list USER_ID");
         pw.println("      List all Associations for a user.");
-        pw.println("  associate USER_ID PACKAGE MAC_ADDRESS [DEVICE_PROFILE] [SELF_MANAGED]");
+        pw.println("  associate USER_ID PACKAGE MAC_ADDRESS [DEVICE_PROFILE] [SELF_MANAGED]"
+                + " [PERMISSIONS] [SUPPORT_AI_AGENT]");
         pw.println("      Create a new Association.");
         pw.println("  disassociate USER_ID PACKAGE MAC_ADDRESS");
         pw.println("      Remove an existing Association.");
