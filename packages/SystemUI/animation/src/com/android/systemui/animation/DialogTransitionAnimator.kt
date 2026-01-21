@@ -35,6 +35,7 @@ import android.view.WindowInsets
 import android.view.WindowManager
 import android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS
 import com.android.app.animation.Interpolators
+import com.android.internal.annotations.VisibleForTesting
 import com.android.internal.jank.Cuj.CujType
 import com.android.internal.jank.InteractionJankMonitor
 import com.android.systemui.Flags
@@ -231,7 +232,7 @@ constructor(
      * The set of dialogs that were animated using this animator and that are still opened (not
      * dismissed, but can be hidden).
      */
-    private val openedDialogs = hashSetOf<AnimatedDialog>()
+    @VisibleForTesting val openedDialogs = hashSetOf<AnimatedDialog>()
 
     /**
      * Show [dialog] by expanding it from [view]. If [view] is a view inside another dialog that was
@@ -588,7 +589,8 @@ constructor(
  */
 data class DialogCuj(@CujType val cujType: Int, val tag: String? = null)
 
-private class AnimatedDialog(
+@VisibleForTesting
+class AnimatedDialog(
     private val transitionAnimator: TransitionAnimator,
     private val callback: DialogTransitionAnimator.Callback,
     private val interactionJankMonitor: InteractionJankMonitor,
@@ -684,6 +686,8 @@ private class AnimatedDialog(
     private var hasInstrumentedJank = false
 
     private var startController: DialogTransitionAnimator.Controller? = null
+
+    @VisibleForTesting var animation: TransitionAnimator.Animation? = null
 
     fun start() {
         // Create the dialog so that its onCreate() method is called, which usually sets the dialog
@@ -1139,20 +1143,21 @@ private class AnimatedDialog(
                 }
             }
 
-        transitionAnimator.startAnimation(
-            controller,
-            { endController.createAnimatorState() },
-            originalDialogBackgroundColor,
-            startVelocity =
-                if (Flags.enableDialogSpringAnimation()) {
-                    // initial speed would be 0, if flag is set
-                    PointF(0f, 0f)
-                } else {
-                    null
-                },
-            springParams = if (isLaunching) LAUNCH_SPRING_PARAMS else COLLAPSE_SPRING_PARAMS,
-            useDynamicPivot = true,
-        )
+        animation =
+            transitionAnimator.startAnimation(
+                controller,
+                { endController.createAnimatorState() },
+                originalDialogBackgroundColor,
+                startVelocity =
+                    if (Flags.enableDialogSpringAnimation()) {
+                        // initial speed would be 0, if flag is set
+                        PointF(0f, 0f)
+                    } else {
+                        null
+                    },
+                springParams = if (isLaunching) LAUNCH_SPRING_PARAMS else COLLAPSE_SPRING_PARAMS,
+                useDynamicPivot = true,
+            )
     }
 
     private fun updateTouchInterceptorViewConstraints(state: TransitionAnimator.State) {
