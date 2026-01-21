@@ -89,6 +89,8 @@ public:
     void mergeWithNextTransaction(SurfaceComposerClient::Transaction* t,
                                   uint64_t frameNumber) override;
     void applyPendingTransactions(uint64_t frameNumber) override;
+    void clearSyncTransaction() override;
+    SurfaceComposerClient::Transaction* gatherPendingTransactions(uint64_t frameNumber) override;
     bool syncNextTransaction(std::function<void(SurfaceComposerClient::Transaction*)> callback,
                              bool acquireSingleBuffer) override;
 

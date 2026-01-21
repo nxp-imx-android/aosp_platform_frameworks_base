@@ -288,6 +288,26 @@ static void android_view_ThreadedRenderer_applyPendingTransactions(JNIEnv* env, 
 #endif
 }
 
+static void android_view_ThreadedRenderer_clearSyncTransaction(JNIEnv* env, jclass clazz,
+                                                               jlong ptr) {
+#ifdef __ANDROID__
+    RenderProxy* proxy = reinterpret_cast<RenderProxy*>(ptr);
+    proxy->clearSyncTransaction();
+#endif
+}
+
+static jobject android_view_ThreadedRenderer_gatherPendingTransactions(JNIEnv* env, jclass clazz,
+                                                                       jlong ptr, jlong frameNum) {
+#ifdef __ANDROID__
+    RenderProxy* proxy = reinterpret_cast<RenderProxy*>(ptr);
+    SurfaceComposerClient::Transaction* transaction = proxy->gatherPendingTransactions(frameNum);
+    return env->NewObject(gTransactionClassInfo.clazz, gTransactionClassInfo.ctor,
+                          reinterpret_cast<jlong>(transaction));
+#else
+    return nullptr;
+#endif
+}
+
 static void android_view_ThreadedRenderer_updateRenderTargetSize(JNIEnv* env, jclass clazz, jlong ptr,
                                                                  jlong width, jlong height) {
     RenderProxy* proxy = reinterpret_cast<RenderProxy*>(ptr);
@@ -1183,6 +1203,10 @@ static const JNINativeMethod gMethods[] = {
          (void*)android_view_ThreadedRenderer_mergeWithNextTransaction},
         {"nApplyPendingTransactions", "(JJ)V",
          (void*)android_view_ThreadedRenderer_applyPendingTransactions},
+        {"nClearSyncTransaction", "(J)V",
+         (void*)android_view_ThreadedRenderer_clearSyncTransaction},
+        {"nGatherPendingTransactions", "(JJ)Landroid/view/SurfaceControl$Transaction;",
+         (void*)android_view_ThreadedRenderer_gatherPendingTransactions},
         {"nUpdateRenderTargetSize", "(JJJ)V",
          (void*)android_view_ThreadedRenderer_updateRenderTargetSize}
 };

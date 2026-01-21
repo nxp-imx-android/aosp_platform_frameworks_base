@@ -301,6 +301,15 @@ void CanvasContext::mergeWithNextTransaction(SurfaceComposerClient::Transaction*
 void CanvasContext::applyPendingTransactions(uint64_t frameNumber) {
     mRenderPipeline->applyPendingTransactions(frameNumber);
 }
+
+void CanvasContext::clearSyncTransaction() {
+    mRenderPipeline->clearSyncTransaction();
+}
+
+SurfaceComposerClient::Transaction* CanvasContext::gatherPendingTransactions(
+        uint64_t frameNumber) {
+    return mRenderPipeline->gatherPendingTransactions(frameNumber);
+}
 #endif
 
 void CanvasContext::updateRenderTargetSize(uint64_t width, uint64_t height) {

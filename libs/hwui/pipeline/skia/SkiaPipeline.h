@@ -97,6 +97,19 @@ public:
             mBLASTBufferQueue->applyPendingTransactions(frameNumber);
         }
     }
+
+    void clearSyncTransaction() override {
+        if (mBLASTBufferQueue != nullptr) {
+            mBLASTBufferQueue->clearSyncTransaction();
+        }
+    }
+
+    SurfaceComposerClient::Transaction* gatherPendingTransactions(uint64_t frameNumber) override {
+        if (mBLASTBufferQueue != nullptr) {
+            return mBLASTBufferQueue->gatherPendingTransactions(frameNumber);
+        }
+        return new SurfaceComposerClient::Transaction();
+    }
 #endif
 
     uint64_t getFrameNumber() override;

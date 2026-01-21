@@ -148,6 +148,8 @@ public:
     bool syncNextTransaction(std::function<void(SurfaceComposerClient::Transaction*)>, bool);
     void mergeWithNextTransaction(SurfaceComposerClient::Transaction*, uint64_t);
     void applyPendingTransactions(uint64_t);
+    void clearSyncTransaction();
+    SurfaceComposerClient::Transaction* gatherPendingTransactions(uint64_t);
 #endif
     void updateRenderTargetSize(uint64_t width, uint64_t height);
 

@@ -96,6 +96,10 @@ public:
     bool syncNextTransaction(std::function<void(SurfaceComposerClient::Transaction*)>, bool);
     // Called only from RenderThread frame drawing callbacks.
     void applyPendingTransactions(uint64_t);
+    // Called only from RenderThread frame drawing callbacks.
+    void clearSyncTransaction();
+    // Called only from RenderThread frame drawing callbacks.
+    SurfaceComposerClient::Transaction* gatherPendingTransactions(uint64_t);
 #endif
     void updateRenderTargetSize(uint64_t width, uint64_t height);
 
