@@ -55,13 +55,13 @@ public interface CallerIdentityInjector {
         @Override
         public int resolveUserId(@UserIdInt int userId, String debugName) {
             return ActivityManager.handleIncomingUser(
-                    Binder.getCallingPid(),
-                    Binder.getCallingUid(),
-                    userId,
-                    false,
-                    false,
-                    debugName,
-                    null);
+                    /* callingPid= */ Binder.getCallingPid(),
+                    /* callingUid= */ Binder.getCallingUid(),
+                    /* userId= */ userId,
+                    /* allowAll= */ false,
+                    /* requireFull= */ false,
+                    /* name= */ debugName,
+                    /* callerPackage= */ null);
         }
 
         @Override
