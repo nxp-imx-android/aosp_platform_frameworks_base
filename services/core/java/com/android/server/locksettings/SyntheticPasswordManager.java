@@ -335,7 +335,14 @@ class SyntheticPasswordManager {
          * Re-creates a synthetic password from its raw bytes.
          */
         public void recreateDirectly(byte[] syntheticPassword) {
-            this.mSyntheticPassword = Arrays.copyOf(syntheticPassword, syntheticPassword.length);
+            this.mSyntheticPassword =
+                    ArrayUtils.copyOfArrayNonMovable(syntheticPassword, syntheticPassword.length);
+        }
+
+        /** Zeroizes a synthetic password. */
+        public void zeroize() {
+            ArrayUtils.zeroize(mSyntheticPassword);
+            mSyntheticPassword = null;
         }
 
         /**
@@ -1819,6 +1826,7 @@ class SyntheticPasswordManager {
         if (blob.mProtectorType != expectedProtectorType) {
             throw new IllegalArgumentException("Invalid protector type: " + blob.mProtectorType);
         }
+        SyntheticPassword result = new SyntheticPassword(blob.mVersion);
         final byte[] spSecret;
         if (blob.mVersion == SYNTHETIC_PASSWORD_VERSION_V1) {
             spSecret =
@@ -1831,20 +1839,23 @@ class SyntheticPasswordManager {
             spSecret = decryptSpBlob(getProtectorKeyAlias(protectorId), blob.mContent,
                     protectorSecret);
         }
-        if (spSecret == null) {
-            Slog.e(TAG, "Fail to decrypt SP for user " + userId);
-            return null;
-        }
-        SyntheticPassword result = new SyntheticPassword(blob.mVersion);
-        if (blob.mProtectorType == PROTECTOR_TYPE_STRONG_TOKEN_BASED
-                || blob.mProtectorType == PROTECTOR_TYPE_WEAK_TOKEN_BASED) {
-            if (!loadEscrowData(result, userId)) {
-                Slog.e(TAG, "User is not escrowable: " + userId);
+        try {
+            if (spSecret == null) {
+                Slog.e(TAG, "Fail to decrypt SP for user " + userId);
                 return null;
             }
-            result.recreateFromEscrow(spSecret);
-        } else {
-            result.recreateDirectly(spSecret);
+            if (blob.mProtectorType == PROTECTOR_TYPE_STRONG_TOKEN_BASED
+                    || blob.mProtectorType == PROTECTOR_TYPE_WEAK_TOKEN_BASED) {
+                if (!loadEscrowData(result, userId)) {
+                    Slog.e(TAG, "User is not escrowable: " + userId);
+                    return null;
+                }
+                result.recreateFromEscrow(spSecret);
+            } else {
+                result.recreateDirectly(spSecret);
+            }
+        } finally {
+            ArrayUtils.zeroize(spSecret);
         }
         if (blob.mVersion == SYNTHETIC_PASSWORD_VERSION_V1) {
             Slog.i(TAG, "Upgrading v1 SP blob for user " + userId + ", protectorType = "
@@ -2177,7 +2188,7 @@ class SyntheticPasswordManager {
             if (key.length < mWeaverConfig.keySize) {
                 throw new IllegalArgumentException("weaver key length too small");
             }
-            return Arrays.copyOf(key, mWeaverConfig.keySize);
+            return ArrayUtils.copyOfArrayNonMovable(key, mWeaverConfig.keySize);
         } finally {
             ArrayUtils.zeroize(key);
         }

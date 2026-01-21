@@ -2620,69 +2620,85 @@ public class LockSettingsService extends ILockSettings.Stub {
         }
         Slogf.i(TAG, "Verifying lockscreen credential for user %d", userId);
 
-        final AuthenticationResult authResult;
+        AuthenticationResult authResult = null;
         VerifyCredentialResponse response;
 
-        synchronized (mSpManager) {
-            final long protectorId =
-                    isSpecialUserId(userId)
-                            ? SyntheticPasswordManager.NULL_PROTECTOR_ID
-                            : getCurrentLskfBasedProtectorId(userId);
-            final LskfIdentifier lskfId = new LskfIdentifier(userId, protectorId);
-            SoftwareRateLimiterResult res = mSoftwareRateLimiter.apply(lskfId, credential);
-            switch (res.code) {
-                case SoftwareRateLimiterResult.CONTINUE_TO_HARDWARE:
-                    break;
-                case SoftwareRateLimiterResult.RATE_LIMITED:
-                    return VerifyCredentialResponse.fromTimeout(res.timeout);
-                case SoftwareRateLimiterResult.CREDENTIAL_TOO_SHORT:
-                    return VerifyCredentialResponse.credTooShort();
-                case SoftwareRateLimiterResult.DUPLICATE_WRONG_GUESS:
-                    return VerifyCredentialResponse.credAlreadyTried();
-                default:
-                    return VerifyCredentialResponse.fromError();
-            }
-            if (isSpecialUserId(userId)) {
-                response =
-                        mSpManager.verifySpecialUserCredential(
-                                userId, getGateKeeperService(), credential, progressCallback);
-                if (response.isMatched() && userId == USER_FRP) {
-                    mStorage.deactivateFactoryResetProtectionWithoutSecret();
+        try {
+            synchronized (mSpManager) {
+                final long protectorId =
+                        isSpecialUserId(userId)
+                                ? SyntheticPasswordManager.NULL_PROTECTOR_ID
+                                : getCurrentLskfBasedProtectorId(userId);
+                final LskfIdentifier lskfId = new LskfIdentifier(userId, protectorId);
+                SoftwareRateLimiterResult res = mSoftwareRateLimiter.apply(lskfId, credential);
+                switch (res.code) {
+                    case SoftwareRateLimiterResult.CONTINUE_TO_HARDWARE:
+                        break;
+                    case SoftwareRateLimiterResult.RATE_LIMITED:
+                        return VerifyCredentialResponse.fromTimeout(res.timeout);
+                    case SoftwareRateLimiterResult.CREDENTIAL_TOO_SHORT:
+                        return VerifyCredentialResponse.credTooShort();
+                    case SoftwareRateLimiterResult.DUPLICATE_WRONG_GUESS:
+                        return VerifyCredentialResponse.credAlreadyTried();
+                    default:
+                        return VerifyCredentialResponse.fromError();
                 }
-                return reportResultToSoftwareRateLimiter(response, lskfId, credential);
-            }
-            authResult = mSpManager.unlockLskfBasedProtector(
-                    getGateKeeperService(), protectorId, credential, userId, progressCallback);
-            response = reportResultToSoftwareRateLimiter(authResult.response, lskfId, credential);
-
-            if (response.isMatched()) {
-                if ((flags & VERIFY_FLAG_WRITE_REPAIR_MODE_PW) != 0) {
-                    if (!mSpManager.writeRepairModeCredentialLocked(protectorId, userId)) {
-                        Slog.e(TAG, "Failed to write repair mode credential");
-                        return VerifyCredentialResponse.OTHER_ERROR;
+                if (isSpecialUserId(userId)) {
+                    response =
+                            mSpManager.verifySpecialUserCredential(
+                                    userId, getGateKeeperService(), credential, progressCallback);
+                    if (response.isMatched() && userId == USER_FRP) {
+                        mStorage.deactivateFactoryResetProtectionWithoutSecret();
                     }
+                    return reportResultToSoftwareRateLimiter(response, lskfId, credential);
                 }
-                // credential has matched
-                mBiometricDeferredQueue.addPendingLockoutResetForUser(userId,
-                        authResult.syntheticPassword.deriveGkPassword());
+                authResult =
+                        mSpManager.unlockLskfBasedProtector(
+                                getGateKeeperService(),
+                                protectorId,
+                                credential,
+                                userId,
+                                progressCallback);
+                response =
+                        reportResultToSoftwareRateLimiter(authResult.response, lskfId, credential);
+
+                if (response.isMatched()) {
+                    if ((flags & VERIFY_FLAG_WRITE_REPAIR_MODE_PW) != 0) {
+                        if (!mSpManager.writeRepairModeCredentialLocked(protectorId, userId)) {
+                            Slog.e(TAG, "Failed to write repair mode credential");
+                            return VerifyCredentialResponse.OTHER_ERROR;
+                        }
+                    }
+                    // credential has matched
+                    mBiometricDeferredQueue.addPendingLockoutResetForUser(
+                            userId, authResult.syntheticPassword.deriveGkPassword());
+                }
+            }
+            if (response.isMatched()) {
+                Slogf.i(TAG, "Successfully verified lockscreen credential for user %d", userId);
+                onCredentialVerified(
+                        authResult.syntheticPassword,
+                        PasswordMetrics.computeForCredential(credential),
+                        userId);
+                if ((flags & VERIFY_FLAG_REQUEST_GK_PW_HANDLE) != 0) {
+                    final long gkHandle =
+                            storeGatekeeperPasswordTemporarily(
+                                    authResult.syntheticPassword.deriveGkPassword());
+                    response =
+                            new VerifyCredentialResponse.Builder()
+                                    .setGatekeeperPasswordHandle(gkHandle)
+                                    .build();
+                }
+                sendCredentialsOnUnlockIfRequired(credential, userId);
+            } else if (response.hasTimeout() && response.getTimeoutAsDuration().isPositive()) {
+                requireStrongAuth(STRONG_AUTH_REQUIRED_AFTER_LOCKOUT, userId);
+            }
+            notifyLockSettingsStateListeners(response.isMatched(), userId);
+        } finally {
+            if (authResult != null && authResult.syntheticPassword != null) {
+                authResult.syntheticPassword.zeroize();
             }
         }
-        if (response.isMatched()) {
-            Slogf.i(TAG, "Successfully verified lockscreen credential for user %d", userId);
-            onCredentialVerified(authResult.syntheticPassword,
-                    PasswordMetrics.computeForCredential(credential), userId);
-            if ((flags & VERIFY_FLAG_REQUEST_GK_PW_HANDLE) != 0) {
-                final long gkHandle = storeGatekeeperPasswordTemporarily(
-                        authResult.syntheticPassword.deriveGkPassword());
-                response = new VerifyCredentialResponse.Builder()
-                        .setGatekeeperPasswordHandle(gkHandle)
-                        .build();
-            }
-            sendCredentialsOnUnlockIfRequired(credential, userId);
-        } else if (response.hasTimeout() && response.getTimeoutAsDuration().isPositive()) {
-            requireStrongAuth(STRONG_AUTH_REQUIRED_AFTER_LOCKOUT, userId);
-        }
-        notifyLockSettingsStateListeners(response.isMatched(), userId);
         return response;
     }
 
