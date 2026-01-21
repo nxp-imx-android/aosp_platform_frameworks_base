@@ -21,6 +21,7 @@ import android.annotation.NonNull;
 import android.annotation.SuppressLint;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -56,6 +57,7 @@ import java.util.regex.Pattern;
  */
 @FlaggedApi(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
 @SuppressLint("ParcelNotFinal")
+@RavenwoodKeepWholeClass
 public final class PccTarget extends OperationTarget {
     /**
      * Pattern to detect "suspicious" characters in file paths. Matches Unicode categories: - \p{C}:

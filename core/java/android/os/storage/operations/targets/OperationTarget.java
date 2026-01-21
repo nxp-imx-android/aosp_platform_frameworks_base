@@ -19,10 +19,12 @@ package android.os.storage.operations.targets;
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.os.Parcelable;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 
 /** Abstract base class for the target of a file operation. */
 @FlaggedApi(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
 @SuppressWarnings({"ParcelCreator", "ParcelNotFinal"})
+@RavenwoodKeepWholeClass
 public abstract class OperationTarget implements Parcelable {
     OperationTarget() {}
 
