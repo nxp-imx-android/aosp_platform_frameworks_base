@@ -32,6 +32,7 @@ import android.os.Bundle;
 import android.os.UserHandle;
 import android.view.Gravity;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -245,6 +246,24 @@ public class BrightnessDialog extends ComponentActivity {
         }
 
         return super.onKeyDown(keyCode, event);
+    }
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        if (triggeredByBrightnessKey()) {
+            final int action = ev.getActionMasked();
+            if (action == MotionEvent.ACTION_DOWN) {
+                // Cancel timeout if active
+                if (mCancelTimeoutRunnable != null) {
+                    mCancelTimeoutRunnable.run();
+                    mCancelTimeoutRunnable = null;
+                }
+            } else if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL) {
+                // Schedule timeout when done
+                scheduleTimeout();
+            }
+        }
+        return super.dispatchTouchEvent(ev);
     }
 
     protected void requestFinish() {
