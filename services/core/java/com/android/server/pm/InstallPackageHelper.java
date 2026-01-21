@@ -1109,11 +1109,11 @@ final class InstallPackageHelper {
     void doPostDexopt(List<ReconciledPackage> reconciledPackages,
             List<InstallRequest> requests, Map<String, Boolean> createdAppId,
             MoveInfo moveInfo, long acquireTime) {
-        boolean isDexoptSuccess = true;
+        boolean isDexoptCompleted = true;
         for (InstallRequest request : requests) {
             request.onWaitDexoptFinished();
             if (request.getReturnCode() != PackageManager.INSTALL_SUCCEEDED) {
-                isDexoptSuccess = false;
+                isDexoptCompleted = false;
             }
         }
 
@@ -1125,7 +1125,7 @@ final class InstallPackageHelper {
                 releaseWakeLock(acquireTime, requests.size());
             };
 
-            if (!isDexoptSuccess) {
+            if (!isDexoptCompleted) {
                 postCommitActions.accept(false);
                 return;
             }
@@ -1134,7 +1134,7 @@ final class InstallPackageHelper {
         } else {
             boolean success = false;
             try {
-                if (isDexoptSuccess && commitInstallPackages(reconciledPackages)) {
+                if (isDexoptCompleted && commitInstallPackages(reconciledPackages)) {
                     success = true;
                 }
             } finally {
