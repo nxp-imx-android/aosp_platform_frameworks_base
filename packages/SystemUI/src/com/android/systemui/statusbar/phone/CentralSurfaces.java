@@ -17,13 +17,8 @@
 package com.android.systemui.statusbar.phone;
 
 import android.annotation.Nullable;
-import android.app.ActivityOptions;
-import android.os.Bundle;
 import android.view.MotionEvent;
-import android.view.RemoteAnimationAdapter;
 import android.view.View;
-import android.window.RemoteTransition;
-import android.window.SplashScreen;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.Lifecycle;
@@ -34,7 +29,6 @@ import com.android.keyguard.AuthKeyguardMessageArea;
 import com.android.systemui.CoreStartable;
 import com.android.systemui.Dumpable;
 import com.android.systemui.animation.ActivityTransitionAnimator;
-import com.android.systemui.animation.RemoteAnimationRunnerCompat;
 import com.android.systemui.display.data.repository.DisplayMetricsRepository;
 import com.android.systemui.navigationbar.views.NavigationBarView;
 import com.android.systemui.plugins.ActivityStarter.OnDismissAction;
@@ -93,62 +87,6 @@ public interface CentralSurfaces extends Dumpable, LifecycleOwner, CoreStartable
         } else {
             pw.println("Unknown");
         }
-    }
-
-    /**
-     * Returns an ActivityOptions bundle created using the given parameters.
-     *
-     * @param displayId        The ID of the display to launch the activity in. Typically this would
-     *                         be the display the status bar is on.
-     * @param animationAdapter The animation adapter used to start this activity, or {@code null}
-     *                         for the default animation.
-     */
-    static Bundle getActivityOptions(int displayId,
-            @Nullable RemoteAnimationAdapter animationAdapter) {
-        ActivityOptions options = getDefaultActivityOptions(animationAdapter);
-        options.setLaunchDisplayId(displayId);
-        options.setCallerDisplayId(displayId);
-        options.setPendingIntentBackgroundActivityLaunchAllowed(true);
-        return options.toBundle();
-    }
-
-    /**
-     * Returns an ActivityOptions bundle created using the given parameters.
-     *
-     * @param displayId         The ID of the display to launch the activity in. Typically this
-     *                          would be the
-     *                          display the status bar is on.
-     * @param animationAdapter  The animation adapter used to start this activity, or {@code null}
-     *                          for the default animation.
-     * @param isKeyguardShowing Whether keyguard is currently showing.
-     * @param eventTime         The event time in milliseconds since boot, not including sleep. See
-     *                          {@link ActivityOptions#setSourceInfo}.
-     */
-    static Bundle getActivityOptions(int displayId,
-            @Nullable RemoteAnimationAdapter animationAdapter, boolean isKeyguardShowing,
-            long eventTime) {
-        ActivityOptions options = getDefaultActivityOptions(animationAdapter);
-        options.setSourceInfo(isKeyguardShowing ? ActivityOptions.SourceInfo.TYPE_LOCKSCREEN
-                : ActivityOptions.SourceInfo.TYPE_NOTIFICATION, eventTime);
-        options.setLaunchDisplayId(displayId);
-        options.setCallerDisplayId(displayId);
-        options.setPendingIntentBackgroundActivityLaunchAllowed(true);
-        return options.toBundle();
-    }
-
-    static ActivityOptions getDefaultActivityOptions(
-            @Nullable RemoteAnimationAdapter animationAdapter) {
-        ActivityOptions options;
-        if (animationAdapter != null) {
-            options = ActivityOptions.makeRemoteTransition(
-                    new RemoteTransition(
-                            RemoteAnimationRunnerCompat.wrap(animationAdapter.getRunner()),
-                            animationAdapter.getCallingApplication(), "SysUILaunch"));
-        } else {
-            options = ActivityOptions.makeBasic();
-        }
-        options.setSplashScreenStyle(SplashScreen.SPLASH_SCREEN_STYLE_SOLID_COLOR);
-        return options;
     }
 
     /** Default impl for CoreStartable. */
