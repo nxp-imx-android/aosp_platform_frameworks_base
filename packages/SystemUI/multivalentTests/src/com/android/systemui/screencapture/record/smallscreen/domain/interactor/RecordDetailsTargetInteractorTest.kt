@@ -77,7 +77,6 @@ class RecordDetailsTargetInteractorTest : SysuiTestCase() {
     @Test
     @EnableFlags(
         Flags.FLAG_MEDIA_PROJECTION_CONNECTED_DISPLAY,
-        Flags.FLAG_MEDIA_PROJECTION_CONNECTED_DISPLAY_SCREEN_SHARING,
         Flags.FLAG_MEDIA_PROJECTION_CONNECTED_DISPLAY_NO_VIRTUAL_DEVICE,
     )
     fun hasConnectedDisplays_returnsAllOptions() =
