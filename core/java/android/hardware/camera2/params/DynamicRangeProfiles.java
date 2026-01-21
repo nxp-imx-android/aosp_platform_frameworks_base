@@ -20,10 +20,8 @@ import android.annotation.FlaggedApi;
 import android.annotation.LongDef;
 import android.annotation.NonNull;
 
-import android.annotation.SystemApi;
 import android.annotation.TestApi;
 import android.hardware.camera2.CameraMetadata;
-import android.hardware.camera2.CameraMetadata.*;
 
 import com.android.internal.camera.flags.Flags;
 
@@ -159,7 +157,7 @@ public final class DynamicRangeProfiles {
      * <p>8-bit SDR profile with adaptive global tone mapping SMPTE 2094-50 per-frame metadata.
      */
     @FlaggedApi(Flags.FLAG_NEW_DYNAMIC_RANGE_PROFILES)
-    public static final long STANDARD_AGTM =
+    public static final long STANDARD_SMPTE_2094_50 =
             CameraMetadata.REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_STANDARD_SMPTE_2094_50;
 
     /**
@@ -168,7 +166,7 @@ public final class DynamicRangeProfiles {
      *
      */
     @FlaggedApi(Flags.FLAG_NEW_DYNAMIC_RANGE_PROFILES)
-    public static final long HLG10_AGTM  =
+    public static final long HLG10_SMPTE_2094_50 =
             CameraMetadata.REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_HLG10_SMPTE_2094_50;
 
     /**
@@ -179,7 +177,7 @@ public final class DynamicRangeProfiles {
      * </p>
      */
     @FlaggedApi(Flags.FLAG_NEW_DYNAMIC_RANGE_PROFILES)
-    public static final long HDR10_AGTM  =
+    public static final long HDR10_SMPTE_2094_50 =
             CameraMetadata.REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_HDR10_SMPTE_2094_50;
 
     /**
@@ -190,7 +188,7 @@ public final class DynamicRangeProfiles {
      * SMPTE 2094-50 per-frame metadata.</p>
      */
     @FlaggedApi(Flags.FLAG_NEW_DYNAMIC_RANGE_PROFILES)
-    public static final long HDR10_PLUS_AGTM =
+    public static final long HDR10_PLUS_SMPTE_2094_50 =
             CameraMetadata.REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_HDR10_PLUS_SMPTE_2094_50;
 
     /**
@@ -200,7 +198,7 @@ public final class DynamicRangeProfiles {
      * also includes adaptive global tone mapping SMPTE 2094-50 per-frame metadata.</p>
      */
     @FlaggedApi(Flags.FLAG_NEW_DYNAMIC_RANGE_PROFILES)
-    public static final long DOLBY_VISION_10B_HDR_REF_AGTM =
+    public static final long DOLBY_VISION_10B_HDR_REF_SMPTE_2094_50 =
             CameraMetadata.REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_DOLBY_VISION_10B_HDR_REF_SMPTE_2094_50;
 
     /**
@@ -208,7 +206,7 @@ public final class DynamicRangeProfiles {
      * includes adaptive global tone mapping SMPTE 2094-50 per-frame metadata..</p>
      */
     @FlaggedApi(Flags.FLAG_NEW_DYNAMIC_RANGE_PROFILES)
-    public static final long DOLBY_VISION_10B_HDR_REF_PO_AGTM =
+    public static final long DOLBY_VISION_10B_HDR_REF_PO_SMPTE_2094_50 =
             CameraMetadata.REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_DOLBY_VISION_10B_HDR_REF_PO_SMPTE_2094_50;
 
     /**
@@ -220,7 +218,7 @@ public final class DynamicRangeProfiles {
      * SMPTE 2094-50 per-frame metadata.</p>
      */
     @FlaggedApi(Flags.FLAG_NEW_DYNAMIC_RANGE_PROFILES)
-    public static final long DOLBY_VISION_10B_HDR_OEM_AGTM =
+    public static final long DOLBY_VISION_10B_HDR_OEM_SMPTE_2094_50 =
             CameraMetadata.REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_DOLBY_VISION_10B_HDR_OEM_SMPTE_2094_50;
 
     /**
@@ -228,7 +226,7 @@ public final class DynamicRangeProfiles {
      * Mode and also includes adaptive global tone mapping SMPTE 2094-50 per-frame metadata.</p>
      */
     @FlaggedApi(Flags.FLAG_NEW_DYNAMIC_RANGE_PROFILES)
-    public static final long DOLBY_VISION_10B_HDR_OEM_PO_AGTM =
+    public static final long DOLBY_VISION_10B_HDR_OEM_PO_SMPTE_2094_50 =
             CameraMetadata.REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_DOLBY_VISION_10B_HDR_OEM_PO_SMPTE_2094_50;
 
     /**
@@ -237,7 +235,7 @@ public final class DynamicRangeProfiles {
      * metadata.</p>
      */
     @FlaggedApi(Flags.FLAG_NEW_DYNAMIC_RANGE_PROFILES)
-    public static final long DOLBY_VISION_8B_HDR_REF_AGTM =
+    public static final long DOLBY_VISION_8B_HDR_REF_SMPTE_2094_50 =
             CameraMetadata.REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_DOLBY_VISION_8B_HDR_REF_SMPTE_2094_50;
 
     /**
@@ -245,7 +243,7 @@ public final class DynamicRangeProfiles {
      * also includes adaptive global tone mapping SMPTE 2094-50 per-frame metadata.</p>
      */
     @FlaggedApi(Flags.FLAG_NEW_DYNAMIC_RANGE_PROFILES)
-    public static final long DOLBY_VISION_8B_HDR_REF_PO_AGTM =
+    public static final long DOLBY_VISION_8B_HDR_REF_PO_SMPTE_2094_50 =
             CameraMetadata.REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_DOLBY_VISION_8B_HDR_REF_PO_SMPTE_2094_50;
 
     /**
@@ -254,7 +252,7 @@ public final class DynamicRangeProfiles {
      * </p>
      */
     @FlaggedApi(Flags.FLAG_NEW_DYNAMIC_RANGE_PROFILES)
-    public static final long DOLBY_VISION_8B_HDR_OEM_AGTM =
+    public static final long DOLBY_VISION_8B_HDR_OEM_SMPTE_2094_50 =
             CameraMetadata.REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_DOLBY_VISION_8B_HDR_OEM_SMPTE_2094_50;
 
     /**
@@ -263,7 +261,7 @@ public final class DynamicRangeProfiles {
      * </p>
      */
     @FlaggedApi(Flags.FLAG_NEW_DYNAMIC_RANGE_PROFILES)
-    public static final long DOLBY_VISION_8B_HDR_OEM_PO_AGTM =
+    public static final long DOLBY_VISION_8B_HDR_OEM_PO_SMPTE_2094_50 =
             CameraMetadata.REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_DOLBY_VISION_8B_HDR_OEM_PO_SMPTE_2094_50;
 
     /** @hide */
@@ -287,18 +285,18 @@ public final class DynamicRangeProfiles {
              DOLBY_VISION_8B_HDR_REF_PO,
              DOLBY_VISION_8B_HDR_OEM,
              DOLBY_VISION_8B_HDR_OEM_PO,
-             STANDARD_AGTM,
-             HLG10_AGTM,
-             HDR10_AGTM,
-             HDR10_PLUS_AGTM,
-             DOLBY_VISION_10B_HDR_REF_AGTM,
-             DOLBY_VISION_10B_HDR_REF_PO_AGTM,
-             DOLBY_VISION_10B_HDR_OEM_AGTM,
-             DOLBY_VISION_10B_HDR_OEM_PO_AGTM,
-             DOLBY_VISION_8B_HDR_REF_AGTM,
-             DOLBY_VISION_8B_HDR_REF_PO_AGTM,
-             DOLBY_VISION_8B_HDR_OEM_AGTM,
-             DOLBY_VISION_8B_HDR_OEM_PO_AGTM})
+             STANDARD_SMPTE_2094_50,
+             HLG10_SMPTE_2094_50,
+             HDR10_SMPTE_2094_50,
+             HDR10_PLUS_SMPTE_2094_50,
+             DOLBY_VISION_10B_HDR_REF_SMPTE_2094_50,
+             DOLBY_VISION_10B_HDR_REF_PO_SMPTE_2094_50,
+             DOLBY_VISION_10B_HDR_OEM_SMPTE_2094_50,
+             DOLBY_VISION_10B_HDR_OEM_PO_SMPTE_2094_50,
+             DOLBY_VISION_8B_HDR_REF_SMPTE_2094_50,
+             DOLBY_VISION_8B_HDR_REF_PO_SMPTE_2094_50,
+             DOLBY_VISION_8B_HDR_OEM_SMPTE_2094_50,
+             DOLBY_VISION_8B_HDR_OEM_PO_SMPTE_2094_50})
     public @interface Profile {
     }
 
@@ -392,15 +390,17 @@ public final class DynamicRangeProfiles {
                 || profile == DOLBY_VISION_8B_HDR_OEM_PO) {//No-op
         } else {
             if (Flags.newDynamicRangeProfiles()) {
-                if (profile == STANDARD_AGTM || profile == HLG10_AGTM || profile == HDR10_AGTM
-                        || profile == HDR10_PLUS_AGTM || profile == DOLBY_VISION_10B_HDR_REF_AGTM
-                        || profile == DOLBY_VISION_10B_HDR_REF_PO_AGTM
-                        || profile == DOLBY_VISION_10B_HDR_OEM_AGTM
-                        || profile == DOLBY_VISION_10B_HDR_OEM_PO_AGTM
-                        || profile == DOLBY_VISION_8B_HDR_REF_AGTM
-                        || profile == DOLBY_VISION_8B_HDR_REF_PO_AGTM
-                        || profile == DOLBY_VISION_8B_HDR_OEM_AGTM
-                        || profile == DOLBY_VISION_8B_HDR_OEM_PO_AGTM) {
+                if (profile == STANDARD_SMPTE_2094_50 || profile == HLG10_SMPTE_2094_50
+                        || profile == HDR10_SMPTE_2094_50
+                        || profile == HDR10_PLUS_SMPTE_2094_50
+                        || profile == DOLBY_VISION_10B_HDR_REF_SMPTE_2094_50
+                        || profile == DOLBY_VISION_10B_HDR_REF_PO_SMPTE_2094_50
+                        || profile == DOLBY_VISION_10B_HDR_OEM_SMPTE_2094_50
+                        || profile == DOLBY_VISION_10B_HDR_OEM_PO_SMPTE_2094_50
+                        || profile == DOLBY_VISION_8B_HDR_REF_SMPTE_2094_50
+                        || profile == DOLBY_VISION_8B_HDR_REF_PO_SMPTE_2094_50
+                        || profile == DOLBY_VISION_8B_HDR_OEM_SMPTE_2094_50
+                        || profile == DOLBY_VISION_8B_HDR_OEM_PO_SMPTE_2094_50) {
                     // No-op
                     return;
                 }

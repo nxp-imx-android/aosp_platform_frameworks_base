@@ -21305,30 +21305,30 @@ package android.hardware.camera2.params {
     method @NonNull public java.util.Set<java.lang.Long> getSupportedProfiles();
     method public boolean isExtraLatencyPresent(long);
     field public static final long DOLBY_VISION_10B_HDR_OEM = 64L; // 0x40L
-    field @FlaggedApi("com.android.internal.camera.flags.new_dynamic_range_profiles") public static final long DOLBY_VISION_10B_HDR_OEM_AGTM = 524288L; // 0x80000L
     field public static final long DOLBY_VISION_10B_HDR_OEM_PO = 128L; // 0x80L
-    field @FlaggedApi("com.android.internal.camera.flags.new_dynamic_range_profiles") public static final long DOLBY_VISION_10B_HDR_OEM_PO_AGTM = 1048576L; // 0x100000L
+    field @FlaggedApi("com.android.internal.camera.flags.new_dynamic_range_profiles") public static final long DOLBY_VISION_10B_HDR_OEM_PO_SMPTE_2094_50 = 1048576L; // 0x100000L
+    field @FlaggedApi("com.android.internal.camera.flags.new_dynamic_range_profiles") public static final long DOLBY_VISION_10B_HDR_OEM_SMPTE_2094_50 = 524288L; // 0x80000L
     field public static final long DOLBY_VISION_10B_HDR_REF = 16L; // 0x10L
-    field @FlaggedApi("com.android.internal.camera.flags.new_dynamic_range_profiles") public static final long DOLBY_VISION_10B_HDR_REF_AGTM = 131072L; // 0x20000L
     field public static final long DOLBY_VISION_10B_HDR_REF_PO = 32L; // 0x20L
-    field @FlaggedApi("com.android.internal.camera.flags.new_dynamic_range_profiles") public static final long DOLBY_VISION_10B_HDR_REF_PO_AGTM = 262144L; // 0x40000L
+    field @FlaggedApi("com.android.internal.camera.flags.new_dynamic_range_profiles") public static final long DOLBY_VISION_10B_HDR_REF_PO_SMPTE_2094_50 = 262144L; // 0x40000L
+    field @FlaggedApi("com.android.internal.camera.flags.new_dynamic_range_profiles") public static final long DOLBY_VISION_10B_HDR_REF_SMPTE_2094_50 = 131072L; // 0x20000L
     field public static final long DOLBY_VISION_8B_HDR_OEM = 1024L; // 0x400L
-    field @FlaggedApi("com.android.internal.camera.flags.new_dynamic_range_profiles") public static final long DOLBY_VISION_8B_HDR_OEM_AGTM = 8388608L; // 0x800000L
     field public static final long DOLBY_VISION_8B_HDR_OEM_PO = 2048L; // 0x800L
-    field @FlaggedApi("com.android.internal.camera.flags.new_dynamic_range_profiles") public static final long DOLBY_VISION_8B_HDR_OEM_PO_AGTM = 16777216L; // 0x1000000L
+    field @FlaggedApi("com.android.internal.camera.flags.new_dynamic_range_profiles") public static final long DOLBY_VISION_8B_HDR_OEM_PO_SMPTE_2094_50 = 16777216L; // 0x1000000L
+    field @FlaggedApi("com.android.internal.camera.flags.new_dynamic_range_profiles") public static final long DOLBY_VISION_8B_HDR_OEM_SMPTE_2094_50 = 8388608L; // 0x800000L
     field public static final long DOLBY_VISION_8B_HDR_REF = 256L; // 0x100L
-    field @FlaggedApi("com.android.internal.camera.flags.new_dynamic_range_profiles") public static final long DOLBY_VISION_8B_HDR_REF_AGTM = 2097152L; // 0x200000L
     field public static final long DOLBY_VISION_8B_HDR_REF_PO = 512L; // 0x200L
-    field @FlaggedApi("com.android.internal.camera.flags.new_dynamic_range_profiles") public static final long DOLBY_VISION_8B_HDR_REF_PO_AGTM = 4194304L; // 0x400000L
+    field @FlaggedApi("com.android.internal.camera.flags.new_dynamic_range_profiles") public static final long DOLBY_VISION_8B_HDR_REF_PO_SMPTE_2094_50 = 4194304L; // 0x400000L
+    field @FlaggedApi("com.android.internal.camera.flags.new_dynamic_range_profiles") public static final long DOLBY_VISION_8B_HDR_REF_SMPTE_2094_50 = 2097152L; // 0x200000L
     field public static final long HDR10 = 4L; // 0x4L
-    field @FlaggedApi("com.android.internal.camera.flags.new_dynamic_range_profiles") public static final long HDR10_AGTM = 32768L; // 0x8000L
     field public static final long HDR10_PLUS = 8L; // 0x8L
-    field @FlaggedApi("com.android.internal.camera.flags.new_dynamic_range_profiles") public static final long HDR10_PLUS_AGTM = 65536L; // 0x10000L
+    field @FlaggedApi("com.android.internal.camera.flags.new_dynamic_range_profiles") public static final long HDR10_PLUS_SMPTE_2094_50 = 65536L; // 0x10000L
+    field @FlaggedApi("com.android.internal.camera.flags.new_dynamic_range_profiles") public static final long HDR10_SMPTE_2094_50 = 32768L; // 0x8000L
     field public static final long HLG10 = 2L; // 0x2L
-    field @FlaggedApi("com.android.internal.camera.flags.new_dynamic_range_profiles") public static final long HLG10_AGTM = 16384L; // 0x4000L
+    field @FlaggedApi("com.android.internal.camera.flags.new_dynamic_range_profiles") public static final long HLG10_SMPTE_2094_50 = 16384L; // 0x4000L
     field public static final long PUBLIC_MAX = 4096L; // 0x1000L
     field public static final long STANDARD = 1L; // 0x1L
-    field @FlaggedApi("com.android.internal.camera.flags.new_dynamic_range_profiles") public static final long STANDARD_AGTM = 8192L; // 0x2000L
+    field @FlaggedApi("com.android.internal.camera.flags.new_dynamic_range_profiles") public static final long STANDARD_SMPTE_2094_50 = 8192L; // 0x2000L
   }
 
   public final class ExtensionSessionConfiguration {
