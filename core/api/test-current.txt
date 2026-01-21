@@ -396,6 +396,16 @@ package android.app {
     method public boolean allowPriorityChannels();
   }
 
+  @FlaggedApi("android.app.nm_contextual_display_launch") public final class NotificationRule implements android.os.Parcelable {
+    method public boolean canBeDisabled();
+    method @Nullable public String getEditIntentAction();
+  }
+
+  public static final class NotificationRule.Builder {
+    method @NonNull public android.app.NotificationRule.Builder setCanBeDisabled(boolean);
+    method @NonNull public android.app.NotificationRule.Builder setEditIntentAction(@Nullable String);
+  }
+
   public final class PendingIntent implements android.os.Parcelable {
     method public boolean addCancelListener(@NonNull java.util.concurrent.Executor, @NonNull android.app.PendingIntent.CancelListener);
     method @RequiresPermission("android.permission.GET_INTENT_SENDER_INTENT") public boolean intentFilterEquals(@Nullable android.app.PendingIntent);
