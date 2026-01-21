@@ -26,6 +26,17 @@ flag {
 }
 
 flag {
+    name: "enable_device_and_interface_filter_separation"
+    is_exported: false
+    namespace: "usb"
+    description: "Feature flag to enable device and interface filter separation"
+    bug: "464179952"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "expose_usb_speed_system_api"
     namespace: "usb"
     description: "Feature flag to enable exposing usb speed system api"
