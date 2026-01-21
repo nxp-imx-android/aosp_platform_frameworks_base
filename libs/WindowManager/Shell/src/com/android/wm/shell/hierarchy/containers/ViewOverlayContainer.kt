@@ -58,11 +58,7 @@ class ViewOverlayContainer(
         val parent = this.parent!!
 
         val display = HierarchyUtils.getAncestorDisplay(this)!!
-        val displayMgr = context.getSystemService(DisplayManager::class.java)
-        // FUTURE: Move the context to the display container
-        val displayContext = context.createDisplayContext(
-            displayMgr.getDisplay(display.props<DisplayContainerProperties>().displayId)
-        )
+        val displayContext = display.props<DisplayContainerProperties>().getDisplayContext(context)
         rootView =
             rootViewSupplier(displayContext.createConfigurationContext(parent.props.config), this)
 
