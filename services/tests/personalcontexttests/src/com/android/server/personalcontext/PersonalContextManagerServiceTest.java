@@ -177,9 +177,10 @@ public class PersonalContextManagerServiceTest {
         BundleHint hint = new BundleHint.Builder().build();
         ContextHintWrapper hintWrapper = new ContextHintWrapper(hint);
         List<ContextHintWrapper> hints = List.of(hintWrapper);
-        binderService.publishTriggeringHint(hints, List.of(), USER_ID_1);
+        binderService.publishTriggeringHint(hints, List.of(), List.of(), USER_ID_1);
 
-        verify(mService).startRefinerWorkflow(eq(USER_ID_1), anyInt(), eq(Set.of(hint)), any());
+        verify(mService).startRefinerWorkflow(
+                eq(USER_ID_1), anyInt(), eq(Set.of(hint)), any(), any());
     }
 
     @Test
@@ -190,10 +191,10 @@ public class PersonalContextManagerServiceTest {
         BundleHint hint = new BundleHint.Builder().build();
         ContextHintWrapper hintWrapper = new ContextHintWrapper(hint);
         List<ContextHintWrapper> hints = List.of(hintWrapper);
-        // publishTriggeringHint accepts null for the renderTokens argument
-        binderService.publishTriggeringHint(hints, null, USER_ID_1);
+        binderService.publishTriggeringHint(hints, List.of(), List.of(), USER_ID_1);
 
-        verify(mService).startRefinerWorkflow(eq(USER_ID_1), anyInt(), eq(Set.of(hint)), any());
+        verify(mService)
+                .startRefinerWorkflow(eq(USER_ID_1), anyInt(), eq(Set.of(hint)), any(), any());
     }
 
     @Test
@@ -202,7 +203,7 @@ public class PersonalContextManagerServiceTest {
         hints.add(new BundleHint.Builder().build());
         mLocalService.publishTriggeringHint(hints, null, USER_ID_1);
 
-        verify(mService).startRefinerWorkflow(eq(USER_ID_1), anyInt(), eq(hints), any());
+        verify(mService).startRefinerWorkflow(eq(USER_ID_1), anyInt(), eq(hints), any(), any());
     }
 
     private void mockUserContext(UserHandle userHandle) {

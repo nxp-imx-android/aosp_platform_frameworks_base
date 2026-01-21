@@ -77,9 +77,34 @@ public final class PersonalContextManager {
             requiresPermissionIfNotCaller = android.Manifest.permission.INTERACT_ACROSS_USERS)
     public void publishTriggeringHint(
             @NonNull List<ContextHint> hints, @Nullable List<RenderToken> renderTokens) {
+        publishTriggeringHint(hints, renderTokens, null);
+    }
+
+    /**
+     * Triggers a Personal Context service flow with raw data in the form of hints.
+     *
+     * <p>Each hint in {@code hints} will be attributed to each hint in {@code attributionHints}.
+     *
+     * @param hints raw data to be injected into the context flow
+     * @param renderTokens optional tokens indicating which renderers should be used to render
+     *     results of this flow to the user; if {@code null} or empty, then this flow can be
+     *     rendered by any Personal Context renderer
+     * @param attributionHints optional hints to use as attribution for {@code hints}
+     * @hide
+     */
+    @SystemApi
+    @UserHandleAware(
+            requiresPermissionIfNotCaller = android.Manifest.permission.INTERACT_ACROSS_USERS)
+    public void publishTriggeringHint(
+            @NonNull List<ContextHint> hints,
+            @Nullable List<RenderToken> renderTokens,
+            @Nullable List<ContextHint> attributionHints) {
         try {
             mService.publishTriggeringHint(
-                    ContextHintWrapper.wrapList(hints), renderTokens, mContext.getUserId());
+                    ContextHintWrapper.wrapList(hints),
+                    renderTokens,
+                    ContextHintWrapper.wrapList(attributionHints),
+                    mContext.getUserId());
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
@@ -111,17 +136,22 @@ public final class PersonalContextManager {
      * Takes a {@link ContextHint}, attaches this application's package name, and signs it.
      *
      * <p>This can be used to sign a hint that your application has created, in order to attach it
-     * to a new {@link ContextInsight}.
+     * to a new {@link ContextInsight}. Each hint in {@code hints} will be attributed to each
+     * hint in {@code attributionHints}.
      *
      * @param hint raw data to be signed
+     * @param attributionHints optional hints to use as attribution for {@code hint}
      * @return signed version of hint annotated with caller's package
+     *
      * @hide
      */
     @SystemApi
     @NonNull
-    public ContextHintWithSignature signHint(@NonNull ContextHint hint) {
+    public ContextHintWithSignature signHint(
+            @NonNull ContextHint hint, @Nullable List<ContextHint> attributionHints) {
         try {
-            return mService.signHint(new ContextHintWrapper(hint));
+            return mService.signHint(
+                    new ContextHintWrapper(hint), ContextHintWrapper.wrapList(attributionHints));
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
