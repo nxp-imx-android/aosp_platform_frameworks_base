@@ -847,9 +847,6 @@
     <!-- Component names of allowed communal widgets -->
     <string-array name="config_communalWidgetAllowlist" translatable="false" />
 
-    <!-- Component name of communal source service -->
-    <string name="config_communalSourceComponent" translatable="false">@null</string>
-
     <!-- This value is used when calculating whether the device is in ambient light mode. It is
         light mode when the light sensor sample value exceeds above this value. -->
     <item name="config_ambientLightModeThreshold" translatable="false" format="float" type="dimen">
@@ -919,9 +916,6 @@
 
     <!-- Flag to enable privacy chip animation, it shall be true for normal case -->
     <bool name="config_enablePrivacyChipAnimation">true</bool>
-
-    <!-- Class for the communal source connector to be used -->
-    <string name="config_communalSourceConnector" translatable="false"></string>
 
     <!-- How often in milliseconds to jitter the dream overlay in order to avoid burn-in. -->
     <integer name="config_dreamOverlayBurnInProtectionUpdateIntervalMillis">1000</integer>
