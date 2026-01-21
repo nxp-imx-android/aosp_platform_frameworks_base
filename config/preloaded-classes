@@ -4771,7 +4771,6 @@ android.icu.text.SpoofChecker$ScriptSet
 android.icu.text.SpoofChecker$SpoofData$DefaultData
 android.icu.text.SpoofChecker$SpoofData$IsAcceptable
 android.icu.text.SpoofChecker$SpoofData
-android.icu.text.SpoofChecker
 android.icu.text.StringCharacterIterator
 android.icu.text.StringMatcher
 android.icu.text.StringPrep$Values

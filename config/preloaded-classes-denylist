@@ -1,4 +1,5 @@
 android.content.AsyncTaskLoader$LoadTask
+android.icu.text.SpoofChecker
 android.net.ConnectivityThread$Singleton
 android.os.FileObserver
 android.os.NullVibrator
