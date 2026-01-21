@@ -119,8 +119,8 @@ public enum DesktopExperienceFlags {
             Flags.FLAG_ENABLE_FREEFORM_BOX_SHADOWS_V2),
     ENABLE_FULLSCREEN_WINDOW_CONTROLS(Flags::enableFullscreenWindowControls, false,
             Flags.FLAG_ENABLE_FULLSCREEN_WINDOW_CONTROLS),
-    ENABLE_GAME_CONTROLS_ENTRY_IN_HANDLE_MENU(Flags::enableGameControlsEntryInHandleMenu, false,
-            Flags.FLAG_ENABLE_GAME_CONTROLS_ENTRY_IN_HANDLE_MENU),
+    ENABLE_GAME_CONTROLS_HANDLE_MENU_ENTRY(Flags::enableGameControlsHandleMenuEntry, false,
+            Flags.FLAG_ENABLE_GAME_CONTROLS_HANDLE_MENU_ENTRY),
     ENABLE_INTERACTION_DEPENDENT_TAB_TEARING_BOUNDS(
             Flags::enableInteractionDependentTabTearingBounds, false,
             Flags.FLAG_ENABLE_INTERACTION_DEPENDENT_TAB_TEARING_BOUNDS),
