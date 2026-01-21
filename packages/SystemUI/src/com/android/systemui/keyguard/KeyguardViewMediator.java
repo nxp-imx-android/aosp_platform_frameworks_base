@@ -3189,18 +3189,26 @@ public class KeyguardViewMediator implements CoreStartable,
             setUnlockAndWakeFromDream(false, WakeAndUnlockUpdateReason.SHOW);
             setPendingLock(false);
 
-            final boolean hidingOrGoingAway =
-                    mHiding || mKeyguardStateController.isKeyguardGoingAway();
-            if (hidingOrGoingAway) {
-                Log.d(TAG, "Forcing setShowingLocked because one of these is true:"
-                        + "mHiding=" + mHiding
-                        + ", keyguardGoingAway=" + mKeyguardStateController.isKeyguardGoingAway()
-                        + ", which means we're showing in the middle of hiding.");
+            final boolean forceCallback;
+            if (ENABLE_NEW_KEYGUARD_SHELL_TRANSITIONS) {
+                // Always update to the future showing state before the transaction.
+                forceCallback = true;
+            } else {
+                final boolean hidingOrGoingAway =
+                        mHiding || mKeyguardStateController.isKeyguardGoingAway();
+                if (hidingOrGoingAway) {
+                    Log.d(TAG, "Forcing setShowingLocked because one of these is true:"
+                            + "mHiding=" + mHiding
+                            + ", keyguardGoingAway="
+                            + mKeyguardStateController.isKeyguardGoingAway()
+                            + ", which means we're showing in the middle of hiding.");
+                }
+                forceCallback = hidingOrGoingAway;
             }
 
             // Force if we're showing in the middle of unlocking, to ensure we end up in the
             // correct state.
-            setShowingLocked(true, hidingOrGoingAway /* force */, "handleShowInner");
+            setShowingLocked(true, forceCallback /* force */, "handleShowInner");
             mHiding = false;
 
             // Any valid exit animation will set this to false before proceeding
@@ -3659,7 +3667,11 @@ public class KeyguardViewMediator implements CoreStartable,
             playSounds(false);
         }
 
-        setShowingLocked(false, "onKeyguardExitFinished: " + reason);
+        if (!ENABLE_NEW_KEYGUARD_SHELL_TRANSITIONS) {
+            // The new keyguard transition is setting the lock status together with starting of the
+            // transition. Do not set it again after the animation finished.
+            setShowingLocked(false, "onKeyguardExitFinished: " + reason);
+        }
         mWakeAndUnlocking = false;
 
         if (!KeyguardWmStateRefactor.isEnabled()) {
