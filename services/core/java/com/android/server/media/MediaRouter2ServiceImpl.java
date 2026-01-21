@@ -94,6 +94,7 @@ import android.util.Slog;
 import android.util.SparseArray;
 
 import com.android.internal.annotations.GuardedBy;
+import com.android.internal.content.PackageMonitor;
 import com.android.internal.util.function.pooled.PooledLambda;
 import com.android.media.flags.Flags;
 import com.android.server.LocalServices;
@@ -214,6 +215,23 @@ class MediaRouter2ServiceImpl {
                 }
             };
 
+    private final PackageMonitor mPackageMonitor =
+            new PackageMonitor() {
+                @Override
+                public void onPackageRemoved(String packageName, int uid) {
+                    int userId = UserHandle.getUserId(uid);
+                    Slog.i(
+                            TAG,
+                            "PackageMonitor: onPackageRemoved for package: "
+                                    + packageName
+                                    + ", userId: "
+                                    + userId);
+                    synchronized (mLock) {
+                        invalidateManagersTargetingAppLocked(packageName, userId);
+                    }
+                }
+            };
+
     @RequiresPermission(
             allOf = {
                 Manifest.permission.OBSERVE_GRANT_REVOKE_PERMISSIONS,
@@ -240,6 +258,10 @@ class MediaRouter2ServiceImpl {
                 AppOpsManager.OP_MEDIA_ROUTING_CONTROL,
                 /* packageName */ null,
                 mOnOpChangedListener);
+        if (Flags.enableMr2ProxyInvalidationOnTargetUninstall()) {
+            mPackageMonitor.register(
+                    mContext, mLooper, UserHandle.ALL, /* externalStorage= */ true);
+        }
 
         mContext.getPackageManager().addOnPermissionsChangeListener(this::onPermissionsChanged);
     }
@@ -1329,13 +1351,28 @@ class MediaRouter2ServiceImpl {
                 continue;
             }
 
-            Slog.w(TAG, "Revoking access for " + manager.getDebugString());
-            unregisterManagerLocked(manager.mManager, /* died */ false);
-            try {
-                manager.mManager.invalidateInstance();
-            } catch (RemoteException ex) {
-                manager.logRemoteException("invalidateInstance", ex);
-            }
+            manager.unregisterAndInvalidateLocked(/* reason= */ "permission revocation");
+        }
+    }
+
+    @GuardedBy("mLock")
+    private void invalidateManagersTargetingAppLocked(@NonNull String packageName, int userId) {
+        UserRecord userRecord = mUserRecords.get(userId);
+        if (userRecord == null) {
+            return;
+        }
+
+        List<ManagerRecord> managersToInvalidate =
+                userRecord.mManagerRecords.stream()
+                        .filter(record -> packageName.equals(record.mTargetPackageName))
+                        .toList();
+
+        if (managersToInvalidate.isEmpty()) {
+            return;
+        }
+
+        for (ManagerRecord manager : managersToInvalidate) {
+            manager.unregisterAndInvalidateLocked(/* reason= */ "app uninstallation");
         }
     }
 
@@ -3369,6 +3406,18 @@ class MediaRouter2ServiceImpl {
                     mUserRecord.mUserHandle.getIdentifier(),
                     mOwnerUid,
                     mTargetPackageName);
+        }
+
+        private void unregisterAndInvalidateLocked(String reason) {
+            Slog.w(
+                    TAG,
+                    "Revoking proxy router access for " + getDebugString() + " due to " + reason);
+            unregisterManagerLocked(mManager, /* died= */ false);
+            try {
+                mManager.invalidateInstance();
+            } catch (RemoteException ex) {
+                logRemoteException("invalidateInstance", ex);
+            }
         }
     }
 
