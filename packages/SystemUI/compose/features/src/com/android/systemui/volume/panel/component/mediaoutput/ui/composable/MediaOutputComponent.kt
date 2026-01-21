@@ -58,8 +58,6 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.animation.Expandable
-import com.android.compose.modifiers.thenIf
-import com.android.systemui.Flags
 import com.android.systemui.common.ui.compose.Icon
 import com.android.systemui.common.ui.compose.toColor
 import com.android.systemui.compose.modifiers.sysuiResTag
@@ -101,7 +99,7 @@ class MediaOutputComponent @Inject constructor(private val viewModel: MediaOutpu
                         CornerSize(TileDetailsEntryTightCornerRadius),
                     )
                     .fillMaxWidth()
-                    .height(if (Flags.volumeRedesign()) 56.dp else 80.dp)
+                    .height(56.dp)
                     .semantics {
                         liveRegion = LiveRegionMode.Polite
                         this.onClick(label = clickLabel) {
@@ -110,14 +108,7 @@ class MediaOutputComponent @Inject constructor(private val viewModel: MediaOutpu
                         }
                     },
             color = style.backgroundColor,
-            shape =
-                RoundedCornerShape(
-                    if (Flags.volumeRedesign()) {
-                        12.dp
-                    } else {
-                        28.dp
-                    }
-                ),
+            shape = RoundedCornerShape(12.dp),
             useModifierBasedImplementation = true,
             onClick =
                 if (enabled) {
@@ -127,10 +118,7 @@ class MediaOutputComponent @Inject constructor(private val viewModel: MediaOutpu
                 },
         ) { _ ->
             Row(
-                modifier =
-                    Modifier.fillMaxHeight().thenIf(!Flags.volumeRedesign()) {
-                        Modifier.padding(start = 24.dp, end = 16.dp)
-                    },
+                modifier = Modifier.fillMaxHeight(),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 connectedDeviceViewModel?.let {
@@ -186,7 +174,7 @@ class MediaOutputComponent @Inject constructor(private val viewModel: MediaOutpu
             }
         Box(
             modifier =
-                modifier.size(if (Flags.volumeRedesign()) 56.dp else 48.dp).motionTestValues {
+                modifier.size(56.dp).motionTestValues {
                     isTransitionIdle exportAs
                         MediaOutputComponentMotionTestKeys.isIconTransitionIdle
                 },
