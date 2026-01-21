@@ -2147,10 +2147,22 @@ class TransitionController {
         @Override
         public void requestStartTransition(IBinder transitionToken, TransitionRequestInfo request)
                 throws RemoteException {
+            ProtoLog.v(WM_DEBUG_WINDOW_TRANSITIONS_MIN,
+                    "Transition requested [FALLBACK] (#%d): %s %s", request.getDebugId(),
+                    transitionToken, request);
+            // This is often wasted work; however, Fallback is only active during exceptional
+            // situations so debugging is more valuable than micro-optimization at this point.
+            final Throwable requestTrace = new Throwable();
             mAtm.mH.post(() -> {
                 try {
+                    final Transition transit = Transition.fromBinder(transitionToken);
+                    if (transit == null) {
+                        Slog.wtf(TAG, "Transition was lost (controller isn't tracking it). Stack "
+                                + "trace from original request:", requestTrace);
+                        return;
+                    }
                     ProtoLog.v(WM_DEBUG_WINDOW_TRANSITIONS_MIN,
-                            "Transition requested [FALLBACK] (#%d): %s %s", request.getDebugId(),
+                            "Starting transition [FALLBACK] (#%d): %s %s", request.getDebugId(),
                             transitionToken, request);
                     mAtm.getWindowOrganizerController().startTransition(transitionToken,
                             null /* wct */);
