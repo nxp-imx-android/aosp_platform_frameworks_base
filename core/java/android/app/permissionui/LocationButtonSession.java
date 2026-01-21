@@ -49,23 +49,26 @@ import java.lang.annotation.RetentionPolicy;
 public interface LocationButtonSession extends AutoCloseable {
     /** The button displays no text. */
     int TEXT_TYPE_NONE = 0;
-    /** The button displays the text as "Near precise location". */
-    int TEXT_TYPE_NEAR_PRECISE_LOCATION = 1;
     /** The button displays the text as "Precise location". */
-    int TEXT_TYPE_PRECISE_LOCATION = 2;
+    int TEXT_TYPE_PRECISE_LOCATION = 1;
+    /** The button displays the text as "Use precise location". */
+    int TEXT_TYPE_USE_PRECISE_LOCATION = 2;
     /** The button displays the text as "Share precise location". */
     int TEXT_TYPE_SHARE_PRECISE_LOCATION = 3;
-    /** The button displays the text as "Use precise location". */
-    int TEXT_TYPE_USE_PRECISE_LOCATION = 4;
+    /** The button displays the text as "Near my precise location". */
+    int TEXT_TYPE_NEAR_MY_PRECISE_LOCATION = 4;
+    /** The button displays the text as "Near your precise location". */
+    int TEXT_TYPE_NEAR_YOUR_PRECISE_LOCATION = 5;
 
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
     @IntDef(prefix = "TEXT_TYPE_", value = {
             TEXT_TYPE_NONE,
-            TEXT_TYPE_NEAR_PRECISE_LOCATION,
             TEXT_TYPE_PRECISE_LOCATION,
+            TEXT_TYPE_USE_PRECISE_LOCATION,
             TEXT_TYPE_SHARE_PRECISE_LOCATION,
-            TEXT_TYPE_USE_PRECISE_LOCATION
+            TEXT_TYPE_NEAR_MY_PRECISE_LOCATION,
+            TEXT_TYPE_NEAR_YOUR_PRECISE_LOCATION
     })
     @interface TextType {}
 
