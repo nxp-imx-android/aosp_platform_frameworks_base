@@ -3355,6 +3355,14 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
         return RemoteToken.fromBinder(binder).getContainer();
     }
 
+    @NonNull
+    RemoteToken getOrCreateRemoteToken() {
+        if (mRemoteToken == null) {
+            mRemoteToken = new RemoteToken(this);
+        }
+        return mRemoteToken;
+    }
+
     static class RemoteToken extends IWindowContainerToken.Stub {
 
         final WeakReference<WindowContainer> mWeakRef;
