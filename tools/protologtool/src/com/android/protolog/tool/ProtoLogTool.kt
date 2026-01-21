@@ -73,7 +73,7 @@ object ProtoLogTool {
     private const val PROTOLOG_CLASS_NAME = "ProtoLog"
     // ProtoLog::class.java.simpleName
 
-    private val PARSER_CONFIG =
+    val PARSER_CONFIG =
         ParserConfiguration().setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_21)
 
     data class LogCall(
@@ -571,6 +571,7 @@ object ProtoLogTool {
                         "${ANSI_RED}ERROR: CodeProcessingException$ANSI_RESET " +
                             "(${index + 1}/${injector.processingErrors.size}): \n${it.message}\n"
                     )
+                    it.printStackTrace(System.out)
                 }
                 exitProcess(1)
             }
