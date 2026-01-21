@@ -335,7 +335,7 @@ public final class ActivityThread extends ClientTransactionHandler
     // It will be replaced by a sharding config in the future.
     private static final Set<String> PERFETTO_TRACING_ALLOWLIST = new ArraySet<>(Arrays.asList(
             "com.google.android.youtube",
-            "com.whatsapp"
+            "com.google.android.googlequicksearchbox"
     ));
 
     static final boolean localLOGV = false;
