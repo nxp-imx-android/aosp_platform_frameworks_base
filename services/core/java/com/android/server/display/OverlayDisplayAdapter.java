@@ -161,7 +161,7 @@ final class OverlayDisplayAdapter extends DisplayAdapter {
 
     private static final Pattern DISPLAY_PATTERN = Pattern.compile("([^,]+)(,[,_a-z]+)*");
     private static final Pattern MODE_PATTERN =
-            Pattern.compile("(\\d+)x(\\d+)/(\\d+)(?:@(\\d+))?");
+            Pattern.compile("(\\d+)x(\\d+)/(\\d+)(?:@(\\d+(?:\\.\\d+)?))?");
 
     // Unique id prefix for overlay displays.
     private static final String UNIQUE_ID_PREFIX = "overlay:";
