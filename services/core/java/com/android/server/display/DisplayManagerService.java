@@ -25,7 +25,6 @@ import static android.Manifest.permission.CONTROL_DISPLAY_BRIGHTNESS;
 import static android.Manifest.permission.INTERNAL_SYSTEM_WINDOW;
 import static android.Manifest.permission.MANAGE_DISPLAYS;
 import static android.Manifest.permission.MODIFY_HDR_CONVERSION_MODE;
-import static android.Manifest.permission.READ_FRAME_BUFFER;
 import static android.Manifest.permission.RESTRICT_DISPLAY_MODES;
 import static android.Manifest.permission.WRITE_SETTINGS;
 import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_CACHED;
@@ -1949,10 +1948,6 @@ public final class DisplayManagerService extends SystemService {
         return false;
     }
 
-    private boolean checkCallingPermissionWithoutLog(String permission) {
-        return mContext.checkCallingPermission(permission) == PackageManager.PERMISSION_GRANTED;
-    }
-
     private int createVirtualDisplayInternal(VirtualDisplayConfig virtualDisplayConfig,
             IVirtualDisplayCallback callback, IMediaProjection projection,
             IVirtualDevice virtualDevice, DisplayWindowPolicyController dwpc, String packageName,
@@ -2198,9 +2193,6 @@ public final class DisplayManagerService extends SystemService {
             throw new SecurityException("Requires INTERNAL_SYSTEM_WINDOW permission");
         }
 
-        boolean includeEmbeddedContent = shouldIncludeEmbeddedContent(callingUid, flags,
-                waitForPermissionConsent);
-
         final long secondToken = Binder.clearCallingIdentity();
         try {
             final int displayId;
@@ -2246,8 +2238,7 @@ public final class DisplayManagerService extends SystemService {
                                 dwpc,
                                 surface,
                                 flags,
-                                virtualDisplayConfig,
-                                includeEmbeddedContent);
+                                virtualDisplayConfig);
                 if (displayId != Display.INVALID_DISPLAY && virtualDevice != null && dwpc != null) {
                     mDisplayWindowPolicyControllers.put(
                             displayId, Pair.create(virtualDevice, dwpc));
@@ -2338,20 +2329,6 @@ public final class DisplayManagerService extends SystemService {
         }
     }
 
-
-    private boolean shouldIncludeEmbeddedContent(int callingUid, int flags,
-            boolean userConsentPending) {
-        if (callingUid == Process.SYSTEM_UID) {
-            return true;
-        }
-        if ((flags & VIRTUAL_DISPLAY_FLAG_PRESENTATION) != 0) {
-            // VIRTUAL_DISPLAY_FLAG_PRESENTATION doesn't ask for user consent.
-            return checkCallingPermissionWithoutLog(CAPTURE_VIDEO_OUTPUT)
-                    || checkCallingPermissionWithoutLog(CAPTURE_SECURE_VIDEO_OUTPUT)
-                    || checkCallingPermissionWithoutLog(READ_FRAME_BUFFER);
-        }
-        return !userConsentPending;
-    }
     private int createVirtualDisplayLocked(
             IVirtualDisplayCallback callback,
             IMediaProjection projection,
@@ -2362,8 +2339,7 @@ public final class DisplayManagerService extends SystemService {
             DisplayWindowPolicyController dwpc,
             Surface surface,
             int flags,
-            VirtualDisplayConfig virtualDisplayConfig,
-            boolean includeEmbeddedContent) {
+            VirtualDisplayConfig virtualDisplayConfig) {
         if (mVirtualDisplayAdapter == null) {
             Slog.w(
                     TAG,
@@ -2375,7 +2351,7 @@ public final class DisplayManagerService extends SystemService {
         Slog.d(TAG, "Virtual Display: creating DisplayDevice with VirtualDisplayAdapter");
         DisplayDevice device = mVirtualDisplayAdapter.createVirtualDisplayLocked(
                 callback, projection, callingUid, packageName, uniqueId, surface, flags,
-                virtualDisplayConfig, includeEmbeddedContent);
+                virtualDisplayConfig);
         if (device == null) {
             Slog.w(TAG, "Virtual Display: VirtualDisplayAdapter failed to create DisplayDevice");
             return -1;
