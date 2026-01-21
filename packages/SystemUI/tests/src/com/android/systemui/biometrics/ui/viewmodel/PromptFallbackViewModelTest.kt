@@ -76,25 +76,28 @@ class PromptFallbackViewModelTest : SysuiTestCase() {
             val listener = identityCheckStateListenerCaptor.value
 
             // WATCH_RANGING_IDLE - Button disabled, footer, no subtitle
-            listener.onWatchRangingStateChanged(WatchRangingState.WATCH_RANGING_IDLE.ordinal)
+            listener.onWatchRangingStateChanged(WatchRangingState.WATCH_RANGING_IDLE.ordinal, -1)
             assertThat(isEnabled).isFalse()
             assertThat(subtitle).isNull()
             assertThat(showFooter).isTrue()
 
             // WATCH_RANGING_STARTED - Button disabled, no footer, ranging subtitle
-            listener.onWatchRangingStateChanged(WatchRangingState.WATCH_RANGING_STARTED.ordinal)
+            listener.onWatchRangingStateChanged(WatchRangingState.WATCH_RANGING_STARTED.ordinal, -1)
             assertThat(isEnabled).isFalse()
             assertThat(subtitle).isEqualTo(R.string.biometric_dialog_identity_check_watch_ranging)
             assertThat(showFooter).isFalse()
 
             // WATCH_RANGING_SUCCESSFUL - Button enabled, no footer, no subtitle
-            listener.onWatchRangingStateChanged(WatchRangingState.WATCH_RANGING_SUCCESSFUL.ordinal)
+            listener.onWatchRangingStateChanged(
+                WatchRangingState.WATCH_RANGING_SUCCESSFUL.ordinal,
+                -1,
+            )
             assertThat(isEnabled).isTrue()
             assertThat(subtitle).isNull()
             assertThat(showFooter).isFalse()
 
             // WATCH_RANGING_STOPPED - Button disabled, footer, disabled subtitle
-            listener.onWatchRangingStateChanged(WatchRangingState.WATCH_RANGING_STOPPED.ordinal)
+            listener.onWatchRangingStateChanged(WatchRangingState.WATCH_RANGING_STOPPED.ordinal, -1)
             assertThat(isEnabled).isFalse()
             assertThat(subtitle).isEqualTo(R.string.biometric_dialog_unavailable)
             assertThat(showFooter).isTrue()

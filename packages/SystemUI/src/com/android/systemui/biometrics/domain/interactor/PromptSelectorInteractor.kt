@@ -209,7 +209,7 @@ constructor(
 
     override val watchRangingState: Flow<WatchRangingState> =
         callbackFlow {
-                val updateWatchRangingState = { state: Int ->
+                val updateWatchRangingState = { state: Int, errorCode: Int ->
                     Log.d(TAG, "authenticationState updated: $state")
                     when (state) {
                         WatchRangingState.WATCH_RANGING_STARTED.ordinal -> {
@@ -221,7 +221,8 @@ constructor(
                         WatchRangingState.WATCH_RANGING_STOPPED.ordinal -> {
                             logEvent(
                                 SysUiStatsLog
-                                    .BIOMETRIC_PROMPT_EVENT__EVENT__EVENT_TYPE_WATCH_RANGING_ENDED
+                                    .BIOMETRIC_PROMPT_EVENT__EVENT__EVENT_TYPE_WATCH_RANGING_ENDED,
+                                errorCode,
                             )
                         }
                         WatchRangingState.WATCH_RANGING_SUCCESSFUL.ordinal -> {
@@ -240,12 +241,15 @@ constructor(
 
                 val identityCheckStateListener =
                     object : IIdentityCheckStateListener.Stub() {
-                        override fun onWatchRangingStateChanged(state: Int) {
-                            updateWatchRangingState(state)
+                        override fun onWatchRangingStateChanged(state: Int, errorCode: Int) {
+                            updateWatchRangingState(state, errorCode)
                         }
                     }
 
-                updateWatchRangingState(WatchRangingState.WATCH_RANGING_IDLE.ordinal)
+                updateWatchRangingState(
+                    WatchRangingState.WATCH_RANGING_IDLE.ordinal,
+                    WATCH_RANGING_ERROR_CODE_NONE,
+                )
                 biometricManager?.registerIdentityCheckStateListener(identityCheckStateListener)
                 awaitClose {
                     biometricManager?.unregisterIdentityCheckStateListener(
@@ -406,15 +410,17 @@ constructor(
         promptRepository.unsetPrompt(requestId)
     }
 
-    fun logEvent(event: Int) {
+    fun logEvent(event: Int, errorCode: Int = WATCH_RANGING_ERROR_CODE_NONE) {
         biometricPromptLogger.logPromptEvent(
             sessionTracker.getSessionId(SESSION_BIOMETRIC_PROMPT),
             event,
+            errorCode,
         )
     }
 
     companion object {
         private const val TAG = "PromptSelectorInteractor"
+        private const val WATCH_RANGING_ERROR_CODE_NONE = -1
     }
 }
 
