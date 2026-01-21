@@ -18,6 +18,7 @@ package com.android.wm.shell.common.pip;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.when;
 
 import android.graphics.Rect;
 import android.testing.AndroidTestingRunner;
@@ -592,6 +593,70 @@ public class PipBoundsAlgorithmTest extends ShellTestCase {
                 bounds.right, mPipDisplayLayoutState.getInsetBounds(displayLayout).right);
         assertEquals("Bounds top edge is moved to movement bounds bottom",
                 bounds.top, movementBounds.bottom);
+    }
+
+    @Test
+    public void snapToMovementBoundsEdge_freeFloatingPip_notOffscreen_boundsUnchanged() {
+        when(mPipDesktopState.isFreeFloatingPipEnabled()).thenReturn(true);
+        final Rect bounds = new Rect(400, 200, 600, 480);
+        final Rect originalBounds = new Rect(bounds);
+
+        mPipBoundsAlgorithm.snapToMovementBoundsEdge(bounds);
+
+        assertEquals("Bounds left edge is unchanged", bounds.left, originalBounds.left);
+        assertEquals("Bounds top edge is unchanged", bounds.top, originalBounds.top);
+    }
+
+    @Test
+    public void snapToMovementBoundsEdge_freeFloatingPip_offscreenLeft_boundsSnappedToLeft() {
+        when(mPipDesktopState.isFreeFloatingPipEnabled()).thenReturn(true);
+        final Rect bounds = new Rect(10, 200, 210, 480);
+        final Rect originalBounds = new Rect(bounds);
+
+        mPipBoundsAlgorithm.snapToMovementBoundsEdge(bounds);
+
+        assertEquals("Bounds are snapped to left edge of movement bounds",
+                bounds.left, mPipDisplayLayoutState.getInsetBounds().left);
+        assertEquals("Bounds top edge is unchanged", bounds.top, originalBounds.top);
+    }
+
+    @Test
+    public void snapToMovementBoundsEdge_freeFloatingPip_offscreenRight_boundsSnappedToRight() {
+        when(mPipDesktopState.isFreeFloatingPipEnabled()).thenReturn(true);
+        final Rect bounds = new Rect(900, 200, 1100, 480);
+        final Rect originalBounds = new Rect(bounds);
+
+        mPipBoundsAlgorithm.snapToMovementBoundsEdge(bounds);
+
+        assertEquals("Bounds are snapped to right edge of movement bounds",
+                bounds.right, mPipDisplayLayoutState.getInsetBounds().right);
+        assertEquals("Bounds top edge is unchanged", bounds.top, originalBounds.top);
+    }
+
+    @Test
+    public void snapToMovementBoundsEdge_freeFloatingPip_offscreenTop_boundsSnappedToTop() {
+        when(mPipDesktopState.isFreeFloatingPipEnabled()).thenReturn(true);
+        final Rect bounds = new Rect(100, -100, 300, 100);
+        final Rect originalBounds = new Rect(bounds);
+
+        mPipBoundsAlgorithm.snapToMovementBoundsEdge(bounds);
+
+        assertEquals("Bounds left edge is unchanged", bounds.left, originalBounds.left);
+        assertEquals("Bounds top edge is moved to movement bounds top",
+                bounds.top, mPipDisplayLayoutState.getInsetBounds().top);
+    }
+
+    @Test
+    public void snapToMovementBoundsEdge_freeFloatingPip_offscreenBottom_boundsSnappedToBottom() {
+        when(mPipDesktopState.isFreeFloatingPipEnabled()).thenReturn(true);
+        final Rect bounds = new Rect(100, 1300, 300, 1500);
+        final Rect originalBounds = new Rect(bounds);
+
+        mPipBoundsAlgorithm.snapToMovementBoundsEdge(bounds);
+
+        assertEquals("Bounds left edge is unchanged", bounds.left, originalBounds.left);
+        assertEquals("Bounds top edge is moved to movement bounds bottom",
+                bounds.bottom, mPipDisplayLayoutState.getInsetBounds().bottom);
     }
 
     private void overrideDefaultAspectRatio(float aspectRatio) {

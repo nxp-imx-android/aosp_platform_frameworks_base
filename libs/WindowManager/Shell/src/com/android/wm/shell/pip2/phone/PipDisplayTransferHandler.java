@@ -41,6 +41,7 @@ import com.android.wm.shell.common.DisplayLayout;
 import com.android.wm.shell.common.MultiDisplayDragMoveBoundsCalculator;
 import com.android.wm.shell.common.pip.PipBoundsAlgorithm;
 import com.android.wm.shell.common.pip.PipBoundsState;
+import com.android.wm.shell.common.pip.PipDesktopState;
 import com.android.wm.shell.common.pip.PipDisplayLayoutState;
 import com.android.wm.shell.pip2.PipSurfaceTransactionHelper;
 import com.android.wm.shell.pip2.animation.PipResizeAnimator;
@@ -69,6 +70,7 @@ public class PipDisplayTransferHandler implements
     private final Context mContext;
     private final PipDisplayLayoutState mPipDisplayLayoutState;
     private final PipBoundsAlgorithm mPipBoundsAlgorithm;
+    private final PipDesktopState mPipDesktopState;
 
     @VisibleForTesting boolean mWaitingForDisplayTransfer;
     @VisibleForTesting boolean mPipRemovedMidDisplayTransfer = false;
@@ -81,7 +83,8 @@ public class PipDisplayTransferHandler implements
             PipScheduler pipScheduler, RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer,
             PipBoundsState pipBoundsState, DisplayController displayController,
             PipDisplayLayoutState pipDisplayLayoutState, PipBoundsAlgorithm pipBoundsAlgorithm,
-            PipSurfaceTransactionHelper pipSurfaceTransactionHelper) {
+            PipSurfaceTransactionHelper pipSurfaceTransactionHelper,
+            PipDesktopState pipDesktopState) {
         mContext = context;
         mPipTransitionState = pipTransitionState;
         mPipTransitionState.addPipTransitionStateChangedListener(this);
@@ -94,6 +97,7 @@ public class PipDisplayTransferHandler implements
         mDisplayController = displayController;
         mPipDisplayLayoutState = pipDisplayLayoutState;
         mPipBoundsAlgorithm = pipBoundsAlgorithm;
+        mPipDesktopState = pipDesktopState;
         mPipResizeAnimatorSupplier = PipResizeAnimator::new;
     }
 
@@ -126,8 +130,8 @@ public class PipDisplayTransferHandler implements
     }
 
     /**
-     * Restricts {@code bounds} to the allowed min/max size constraints and snaps bounds to the
-     * correct edge based on the snap fraction.
+     * Restricts {@code bounds} to the allowed min/max size constraints, and, if PiP is not
+     * allowed to free-float, snaps bounds to the correct edge based on the snap fraction.
      */
     private void snapBoundsWithinMinMaxSize(Rect bounds) {
         final float snapFraction = mPipBoundsAlgorithm.getSnapAlgorithm().getSnapFraction(
@@ -148,13 +152,16 @@ public class PipDisplayTransferHandler implements
             newHeight = maxSize.y;
         }
 
-        bounds.set(0, 0, newWidth, newHeight);
-
-        mPipBoundsAlgorithm.getSnapAlgorithm().applySnapFraction(bounds,
-                mPipBoundsAlgorithm.getMovementBounds(bounds), snapFraction,
-                mPipBoundsState.getStashedState(), mPipBoundsState.getStashOffset(),
-                mPipDisplayLayoutState.getDisplayBounds(),
-                mPipDisplayLayoutState.getDisplayLayout().stableInsets());
+        if (mPipDesktopState.isFreeFloatingPipEnabled()) {
+            bounds.set(bounds.left, bounds.top, bounds.left + newWidth, bounds.top + newHeight);
+        } else {
+            bounds.set(0, 0, newWidth, newHeight);
+            mPipBoundsAlgorithm.getSnapAlgorithm().applySnapFraction(bounds,
+                    mPipBoundsAlgorithm.getMovementBounds(bounds), snapFraction,
+                    mPipBoundsState.getStashedState(), mPipBoundsState.getStashOffset(),
+                    mPipDisplayLayoutState.getDisplayBounds(),
+                    mPipDisplayLayoutState.getDisplayLayout().stableInsets());
+        }
     }
 
     @Override

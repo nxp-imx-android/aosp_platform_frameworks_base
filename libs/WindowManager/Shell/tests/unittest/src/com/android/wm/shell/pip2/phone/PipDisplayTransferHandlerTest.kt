@@ -43,6 +43,7 @@ import com.android.wm.shell.common.MultiDisplayDragMoveBoundsCalculator
 import com.android.wm.shell.common.MultiDisplayTestUtil.TestDisplay
 import com.android.wm.shell.common.pip.PipBoundsAlgorithm
 import com.android.wm.shell.common.pip.PipBoundsState
+import com.android.wm.shell.common.pip.PipDesktopState
 import com.android.wm.shell.common.pip.PipDisplayLayoutState
 import com.android.wm.shell.common.pip.PipSnapAlgorithm
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
@@ -97,6 +98,7 @@ class PipDisplayTransferHandlerTest : ShellTestCase() {
     private val mockFactory = mock<PipSurfaceTransactionHelper.SurfaceControlTransactionFactory>()
     private val mockSurfaceTransactionHelper = mock<PipSurfaceTransactionHelper>()
     private val mockPipResizeAnimator = mock<PipResizeAnimator>()
+    private val mockPipDesktopState = mock<PipDesktopState>()
 
     private lateinit var testableResources: TestableResources
     private lateinit var resources: Resources
@@ -179,6 +181,7 @@ class PipDisplayTransferHandlerTest : ShellTestCase() {
                 mockPipDisplayLayoutState,
                 mockPipBoundsAlgorithm,
                 mockSurfaceTransactionHelper,
+                mockPipDesktopState,
             )
         pipDisplayTransferHandler.setSurfaceControlTransactionFactory(mockFactory)
         pipDisplayTransferHandler.setSurfaceTransactionHelper(mockSurfaceTransactionHelper)

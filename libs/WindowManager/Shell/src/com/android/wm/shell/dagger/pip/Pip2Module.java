@@ -231,11 +231,12 @@ public abstract class Pip2Module {
             PipScheduler pipScheduler, RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer,
             PipBoundsState pipBoundsState, DisplayController displayController,
             PipDisplayLayoutState pipDisplayLayoutState, PipBoundsAlgorithm pipBoundsAlgorithm,
-            PipSurfaceTransactionHelper pipSurfaceTransactionHelper
+            PipSurfaceTransactionHelper pipSurfaceTransactionHelper, PipDesktopState pipDesktopState
     ) {
         return new PipDisplayTransferHandler(context, pipTransitionState, pipScheduler,
                 rootTaskDisplayAreaOrganizer, pipBoundsState, displayController,
-                pipDisplayLayoutState, pipBoundsAlgorithm, pipSurfaceTransactionHelper);
+                pipDisplayLayoutState, pipBoundsAlgorithm, pipSurfaceTransactionHelper,
+                pipDesktopState);
     }
 
     @WMSingleton
