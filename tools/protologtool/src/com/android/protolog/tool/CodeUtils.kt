@@ -22,6 +22,7 @@ import com.github.javaparser.ast.ImportDeclaration
 import com.github.javaparser.ast.expr.BinaryExpr
 import com.github.javaparser.ast.expr.Expression
 import com.github.javaparser.ast.expr.StringLiteralExpr
+import com.github.javaparser.ast.expr.TextBlockLiteralExpr
 import java.util.UUID
 
 object CodeUtils {
@@ -73,6 +74,7 @@ object CodeUtils {
     fun concatMultilineString(expr: Expression, context: ParsingContext): String {
         return when (expr) {
             is StringLiteralExpr -> expr.asString()
+            is TextBlockLiteralExpr -> expr.value
             is BinaryExpr ->
                 when {
                     expr.operator == BinaryExpr.Operator.PLUS ->
@@ -80,14 +82,14 @@ object CodeUtils {
                             concatMultilineString(expr.right, context)
                     else ->
                         throw InvalidProtoLogCallException(
-                            "expected a string literal " +
+                            "expected a string literal, text block, " +
                                 "or concatenation of string literals, got: $expr",
                             context,
                         )
                 }
             else ->
                 throw InvalidProtoLogCallException(
-                    "expected a string literal " +
+                    "expected a string literal, text block, " +
                         "or concatenation of string literals, got: $expr",
                     context,
                 )

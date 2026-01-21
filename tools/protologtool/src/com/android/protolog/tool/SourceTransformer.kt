@@ -202,7 +202,17 @@ class SourceTransformer(
         // Append blank lines to preserve line numbering in file (to allow debugging)
         val parentRange = parentStmt.range.get()
         val newLines = parentRange.end.line - parentRange.begin.line
-        val newStmt = printedBlockStmt.substringBeforeLast('}') + ("\n".repeat(newLines)) + '}'
+
+        val contentBeforeBrace = printedBlockStmt.substringBeforeLast('}')
+
+        // Trim the trailing space only if the original statement spanned multiple lines.
+        val trimmedContent = if (newLines > 0) {
+            contentBeforeBrace.trimEnd()
+        } else {
+            contentBeforeBrace
+        }
+
+        val newStmt = trimmedContent + ("\n".repeat(newLines)) + '}'
         // pre-workaround code, see explanation below
 
         /**
