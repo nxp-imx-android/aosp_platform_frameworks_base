@@ -71,9 +71,6 @@ class WallpaperController {
     // If non-null, this is the currently visible window that is associated
     // with the wallpaper.
     private WindowState mWallpaperTarget = null;
-    // If non-null, we are in the middle of animating from one wallpaper target
-    // to another, and this is the previous wallpaper target.
-    private WindowState mPrevWallpaperTarget = null;
 
     private float mLastWallpaperZoomOut = 0;
 
@@ -235,10 +232,6 @@ class WallpaperController {
         return mWallpaperTarget;
     }
 
-    WindowState getPrevWallpaperTarget() {
-        return mPrevWallpaperTarget;
-    }
-
     boolean isWallpaperTarget(WindowState win) {
         return win == mWallpaperTarget;
     }
@@ -255,8 +248,7 @@ class WallpaperController {
     }
 
     void hideWallpapers(final WindowState winGoingAway) {
-        if (mWallpaperTarget != null
-                && (mWallpaperTarget != winGoingAway || mPrevWallpaperTarget != null)) {
+        if (mWallpaperTarget != null && mWallpaperTarget != winGoingAway) {
             return;
         }
         if (mFindResults.useTopWallpaperAsTarget) {
@@ -268,8 +260,8 @@ class WallpaperController {
             final WallpaperWindowToken token = mWallpaperTokens.get(i);
             if (token.isVisible()) {
                 ProtoLog.d(WM_DEBUG_WALLPAPER,
-                        "Hiding wallpaper %s from %s target=%s prev=%s callers=%s",
-                        token, winGoingAway, mWallpaperTarget, mPrevWallpaperTarget,
+                        "Hiding wallpaper %s from %s target=%s callers=%s",
+                        token, winGoingAway, mWallpaperTarget,
                         Debug.getCallers(5));
             }
             token.setVisibility(false);
@@ -579,29 +571,14 @@ class WallpaperController {
 
     /** Updates the target wallpaper if needed and returns true if an update happened. */
     private void updateWallpaperWindowsTarget(FindWallpaperTargetResult result) {
-
         WindowState wallpaperTarget = result.wallpaperTarget;
 
-        if (mWallpaperTarget == wallpaperTarget
-                || (mPrevWallpaperTarget != null && mPrevWallpaperTarget == wallpaperTarget)) {
-
-            if (mPrevWallpaperTarget == null) {
-                return;
-            }
-
-            // Is it time to stop animating?
-            if (!mPrevWallpaperTarget.isAnimatingLw()) {
-                ProtoLog.v(WM_DEBUG_WALLPAPER, "No longer animating wallpaper targets!");
-                mPrevWallpaperTarget = null;
-                mWallpaperTarget = wallpaperTarget;
-            }
+        if (mWallpaperTarget == wallpaperTarget) {
             return;
         }
 
         ProtoLog.v(WM_DEBUG_WALLPAPER, "New wallpaper target: %s prevTarget: %s caller=%s",
                 wallpaperTarget, mWallpaperTarget, Debug.getCallers(5));
-
-        mPrevWallpaperTarget = null;
 
         final WindowState prevWallpaperTarget = mWallpaperTarget;
         mWallpaperTarget = wallpaperTarget;
@@ -609,44 +586,6 @@ class WallpaperController {
         if (prevWallpaperTarget == null && wallpaperTarget != null) {
             updateWallpaperOffsetLocked(mWallpaperTarget);
         }
-        if (wallpaperTarget == null || prevWallpaperTarget == null) {
-            return;
-        }
-
-        // Now what is happening...  if the current and new targets are animating,
-        // then we are in our super special mode!
-        boolean oldAnim = prevWallpaperTarget.isAnimatingLw();
-        boolean foundAnim = wallpaperTarget.isAnimatingLw();
-        ProtoLog.v(WM_DEBUG_WALLPAPER, "New animation: %s old animation: %s",
-                foundAnim, oldAnim);
-
-        if (!foundAnim || !oldAnim) {
-            return;
-        }
-
-        if (mDisplayContent.getWindow(w -> w == prevWallpaperTarget) == null) {
-            return;
-        }
-
-        final boolean newTargetHidden = wallpaperTarget.mActivityRecord != null
-                && !wallpaperTarget.mActivityRecord.isVisibleRequested();
-        final boolean oldTargetHidden = prevWallpaperTarget.mActivityRecord != null
-                && !prevWallpaperTarget.mActivityRecord.isVisibleRequested();
-
-        ProtoLog.v(WM_DEBUG_WALLPAPER, "Animating wallpapers: "
-                + "old: %s hidden=%b new: %s hidden=%b",
-                prevWallpaperTarget, oldTargetHidden, wallpaperTarget, newTargetHidden);
-
-        mPrevWallpaperTarget = prevWallpaperTarget;
-
-        if (newTargetHidden && !oldTargetHidden) {
-            ProtoLog.v(WM_DEBUG_WALLPAPER, "Old wallpaper still the target.");
-            // Use the old target if new target is hidden but old target
-            // is not. If they're both hidden, still use the new target.
-            mWallpaperTarget = prevWallpaperTarget;
-        }
-
-        result.setWallpaperTarget(wallpaperTarget);
     }
 
     /**
@@ -714,8 +653,7 @@ class WallpaperController {
                     /* x= */ 0, /* y= */ 0, /* z= */ 0, /* extras= */ null);
         }
 
-        ProtoLog.d(WM_DEBUG_WALLPAPER, "Wallpaper target=%s prev=%s",
-                mWallpaperTarget, mPrevWallpaperTarget);
+        ProtoLog.d(WM_DEBUG_WALLPAPER, "Wallpaper target=%s", mWallpaperTarget);
         Trace.traceEnd(Trace.TRACE_TAG_WINDOW_MANAGER);
     }
 
@@ -885,9 +823,6 @@ class WallpaperController {
         pw.print(prefix); pw.print("displayId="); pw.println(mDisplayContent.getDisplayId());
         pw.print(prefix); pw.print("mWallpaperTarget="); pw.println(mWallpaperTarget);
         pw.print(prefix); pw.print("mLastWallpaperZoomOut="); pw.println(mLastWallpaperZoomOut);
-        if (mPrevWallpaperTarget != null) {
-            pw.print(prefix); pw.print("mPrevWallpaperTarget="); pw.println(mPrevWallpaperTarget);
-        }
 
         for (int i = mWallpaperTokens.size() - 1; i >= 0; i--) {
             final WallpaperWindowToken t = mWallpaperTokens.get(i);
