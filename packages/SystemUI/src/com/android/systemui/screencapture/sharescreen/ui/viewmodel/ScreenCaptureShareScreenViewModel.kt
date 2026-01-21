@@ -35,7 +35,6 @@ import com.android.systemui.screencapture.common.ui.viewmodel.DisplaysViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.RecentTasksViewModel
 import com.android.systemui.screencapture.sharescreen.domain.interactor.ShareScreenUiInteractor
-import com.android.systemui.statusbar.quickactions.sharescreen.domain.interactor.ShareScreenPrivacyIndicatorInteractor
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -47,7 +46,6 @@ constructor(
     private val packageManager: PackageManager,
     private val drawableLoaderViewModel: DrawableLoaderViewModel,
     private val shareScreenUiInteractor: ShareScreenUiInteractor,
-    private val shareScreenPrivacyIndicatorInteractor: ShareScreenPrivacyIndicatorInteractor,
     private val mediaProjectionMetricsLogger: MediaProjectionMetricsLogger,
     @Assisted("thumbnailWidthPx") private val thumbnailWidthPx: Int,
     @Assisted("thumbnailHeightPx") private val thumbnailHeightPx: Int,
@@ -171,7 +169,6 @@ constructor(
             }
             else -> throw IllegalStateException("Unsupported TargetsViewModel type: $currentModel")
         }
-        shareScreenPrivacyIndicatorInteractor.showChip()
     }
 
     fun onCloseClicked() {
