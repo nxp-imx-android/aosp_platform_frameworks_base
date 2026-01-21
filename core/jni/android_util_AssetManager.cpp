@@ -645,11 +645,11 @@ static jlong NativeOpenXmlAsset(JNIEnv* env, jobject /*clazz*/, jlong ptr, jint 
       return 0;
   }
 
-  auto xml_tree = util::make_unique<ResXMLTree>(assetmanager->GetDynamicRefTableForCookie(cookie));
-  status_t err = xml_tree->setTo(buffer.unsafe_ptr(), length, true);
-  if (err != NO_ERROR) {
-    jniThrowException(env, "java/io/FileNotFoundException", "Corrupt XML binary file");
-    return 0;
+  auto xml_tree = ResXMLTree::fromAsset(std::move(asset),
+                                        assetmanager->GetDynamicRefTableForCookie(cookie));
+  if (!xml_tree) {
+      jniThrowException(env, "java/io/FileNotFoundException", "Corrupt XML binary file");
+      return 0;
   }
   return reinterpret_cast<jlong>(xml_tree.release());
 }
