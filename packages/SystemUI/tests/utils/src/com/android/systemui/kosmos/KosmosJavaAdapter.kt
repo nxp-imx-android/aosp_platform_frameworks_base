@@ -38,6 +38,7 @@ import com.android.systemui.communal.domain.interactor.communalSceneInteractor
 import com.android.systemui.communal.domain.interactor.communalSettingsInteractor
 import com.android.systemui.communal.ui.viewmodel.communalTransitionViewModel
 import com.android.systemui.concurrency.fakeExecutor
+import com.android.systemui.data.repository.brightnessMirrorShowingRepository
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryFingerprintAuthInteractor
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryInteractor
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryUdfpsInteractor
@@ -74,7 +75,6 @@ import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.ui.view.mockWindowRootViewProvider
 import com.android.systemui.securelockdevice.data.repository.fakeSecureLockDeviceRepository
 import com.android.systemui.securelockdevice.domain.interactor.secureLockDeviceInteractor
-import com.android.systemui.settings.brightness.data.repository.brightnessMirrorShowingRepository
 import com.android.systemui.settings.displayTracker
 import com.android.systemui.shade.data.repository.fakeFocusedDisplayRepository
 import com.android.systemui.shade.data.repository.fakeShadeDisplaysRepository
