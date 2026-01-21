@@ -111,16 +111,16 @@ constructor(
     private fun expandFractionDuringSceneChange(sceneChange: ChangeScene): Flow<Float> =
         with(sceneChange) {
             when {
+                // Follow expandFraction when collapsing the Shade over Lockscreen, but keep the
+                // shade "fully expanded" during other Lockscreen transitions to avoid flickering.
                 isTransitioning(from = Scenes.Shade, to = Scenes.Lockscreen) ->
                     shadeInteractor.shadeExpansion
-
-                // The lockscreen stack is visible during all transitions away from the lockscreen,
-                // so keep the stack expanded until those transitions finish.
-                isTransitioning(from = Scenes.Lockscreen) -> flowOf(1f)
+                isTransitioningFromOrTo(Scenes.Lockscreen) -> flowOf(1f)
 
                 // When the stack in visible on both scenes, keep it expanded throughout.
                 fromScene.showsNotifications() && toScene.showsNotifications() -> flowOf(1f)
 
+                // Follow the expansion fraction for all other Shade transitions.
                 isTransitioningFromOrTo(Scenes.Shade) -> shadeInteractor.shadeExpansion
 
                 isTransitioningBetween(Scenes.Gone, Scenes.QuickSettings) ->
