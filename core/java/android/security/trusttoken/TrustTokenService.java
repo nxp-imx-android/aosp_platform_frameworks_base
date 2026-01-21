@@ -23,6 +23,7 @@ import android.annotation.SystemApi;
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
+import android.os.OutcomeReceiver;
 import android.os.RemoteException;
 import android.security.Flags;
 import android.util.Log;
@@ -32,10 +33,10 @@ import android.util.Log;
  * the system.
  *
  * <p>To implement a trust token service, you must extend this class and implement the {@link
- * #onRequestTrustTokens(TrustTokenRequest, TrustTokenCallback)} method. The system will call this
+ * #onRequestTrustTokens(TrustTokenRequest, OutcomeReceiver)} method. The system will call this
  * method to communicate its current need for trust tokens. Your service is responsible for
  * satisfying these needs by fetching trust tokens and returning them back to the system by calling
- * the {@link TrustTokenCallback} you were given.
+ * the {@link OutcomeReceiver} you were given.
  *
  * <p>For transient errors, you should retry internally until timeout. For permanent errors, you
  * should immediately report the error to the system via the callback.
@@ -73,9 +74,9 @@ public abstract class TrustTokenService extends Service {
                         TrustTokenRequest request, ITrustTokenCallback callback) {
                     TrustTokenService.this.onRequestTrustTokens(
                             request,
-                            new TrustTokenCallback() {
+                            new OutcomeReceiver<>() {
                                 @Override
-                                public void onSuccess(@NonNull TrustTokenResponse response) {
+                                public void onResult(@NonNull TrustTokenResponse response) {
                                     try {
                                         callback.onSuccess(response);
                                     } catch (RemoteException e) {
@@ -84,11 +85,11 @@ public abstract class TrustTokenService extends Service {
                                 }
 
                                 @Override
-                                public void onFailure(int code) {
+                                public void onError(@NonNull TrustTokenServiceException e) {
                                     try {
-                                        callback.onFailure(code);
-                                    } catch (RemoteException e) {
-                                        Log.e(TAG, "Failed to call onFailure", e);
+                                        callback.onFailure(e.getErrorCode());
+                                    } catch (RemoteException re) {
+                                        Log.e(TAG, "Failed to call onFailure", re);
                                     }
                                 }
                             });
@@ -117,10 +118,11 @@ public abstract class TrustTokenService extends Service {
      * a background thread to avoid blocking the main thread.
      *
      * @param request The request to fetch trust tokens and other data from the remote server.
-     * @param callback The callback to invoke. Call {@link TrustTokenCallback#onSuccess} when the
-     *     trust tokens and other data are available, or {@link TrustTokenCallback#onFailure} if a
-     *     remote error occurred.
+     * @param callback The callback to invoke. Call {@link OutcomeReceiver#onResult} when the trust
+     *     tokens and other data are available, or {@link OutcomeReceiver#onError} if a remote error
+     *     occurred.
      */
     public abstract void onRequestTrustTokens(
-            @NonNull TrustTokenRequest request, @NonNull TrustTokenCallback callback);
+            @NonNull TrustTokenRequest request,
+            @NonNull OutcomeReceiver<TrustTokenResponse, TrustTokenServiceException> callback);
 }
