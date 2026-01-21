@@ -456,4 +456,14 @@ oneway interface ISatellite {
       */
      void updateSystemSelectionChannels(in List<SystemSelectionSpecifier> systemSelectionSpecifiers,
             in IIntegerConsumer resultCallback);
+
+     /**
+     * Request to suspend or resume satellite mode.
+     *
+     * @param enabled  {@code true} to enable suspension while satellite mode is on
+     * and {@code false} to resume satellite mode
+     * @param resultCallback The callback to receive the error code result of the operation.
+     */
+    void requestSatelliteSuspended(in boolean enabled,
+        in IIntegerConsumer errorCallback);
 }
