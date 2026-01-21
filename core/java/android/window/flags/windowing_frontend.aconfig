@@ -241,15 +241,7 @@ flag {
     is_exported: true
 }
 
-flag {
-    name: "handle_repeated_display_switches"
-    namespace: "windowing_frontend"
-    description: "Ensures that we wait for the last transition when doing repeated fold/unfolds"
-    bug: "416255987"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
+
 
 flag {
     name: "reduce_changed_exclusion_rects_msgs"
