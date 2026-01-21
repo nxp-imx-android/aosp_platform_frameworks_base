@@ -1976,8 +1976,6 @@ public final class OutputConfiguration implements Parcelable {
 
         if (mOnActiveOutputSurfaceCallback != null) {
             mMultiResMode = MULTI_RES_ON_CONCURRENT;
-        } else {
-            mMultiResMode = MULTI_RES_OFF;
         }
     }
 
