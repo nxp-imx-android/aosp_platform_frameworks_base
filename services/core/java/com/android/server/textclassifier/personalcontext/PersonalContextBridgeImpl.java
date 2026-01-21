@@ -1,0 +1,146 @@
+/*
+ * Copyright (C) 2025 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.android.server.textclassifier.personalcontext;
+
+import android.annotation.NonNull;
+import android.app.RemoteAction;
+import android.os.Bundle;
+import android.os.OutcomeReceiver;
+import android.os.RemoteException;
+import android.service.textclassifier.ITextClassifierCallback;
+import android.service.textclassifier.TextClassifierService;
+import android.util.Log;
+import android.util.Slog;
+import android.view.textclassifier.TextClassification;
+
+import com.android.server.LocalServices;
+import com.android.server.personalcontext.PersonalContextManagerInternal;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeoutException;
+
+public class PersonalContextBridgeImpl extends PersonalContextBridge {
+    private static final String TAG = "PersonalContextBridge";
+    private final ScheduledExecutorService mScheduledExecutorService =
+            Executors.newSingleThreadScheduledExecutor();
+    private final PersonalContextAsyncReceiver mReceiver =
+            new PersonalContextAsyncReceiver(mScheduledExecutorService);
+
+    @Override
+    public void trigger(int userId, String sessionId, TextClassification.Request request) {
+        PersonalContextManagerInternal pcmi =
+                LocalServices.getService(PersonalContextManagerInternal.class);
+        if (pcmi == null) {
+            Log.w(TAG, "Did not find PersonalContextManagerInternal system service");
+            return;
+        }
+        pcmi.onTextClassifyRequest(userId, sessionId, request);
+    }
+
+    @Override
+    public void merge(@NonNull String sessionId, TextClassification response) {
+        mReceiver.put(sessionId, response);
+    }
+
+    @Override
+    public ITextClassifierCallback wrap(
+            @NonNull String sessionId, @NonNull ITextClassifierCallback callback) {
+        if (!isPersonalContextEnabled()) {
+            return callback;
+        }
+        return new MergeCallback(sessionId, callback);
+    }
+
+    @Override
+    public void clearSession(@NonNull String sessionId) {
+        mReceiver.clearSession(sessionId);
+    }
+
+    private class MergeCallback extends ITextClassifierCallback.Stub {
+        private final String mSessionId;
+        private final ITextClassifierCallback mWrappedCallback;
+
+        MergeCallback(String sessionId, @NonNull ITextClassifierCallback wrappedCallback) {
+            mSessionId = sessionId;
+            mWrappedCallback = Objects.requireNonNull(wrappedCallback);
+        }
+
+        @Override
+        public void onSuccess(Bundle result) {
+            merge(result);
+        }
+
+        @Override
+        public void onFailure() {
+            try {
+                mWrappedCallback.onFailure();
+            } catch (RemoteException e) {
+                Slog.e(TAG, "Failed to forward failure callback.");
+            }
+        }
+
+        private void merge(Bundle result) {
+            TextClassification originalResult = TextClassifierService.getResponse(result);
+            mReceiver.getAsync(
+                    mSessionId,
+                    new OutcomeReceiver<>() {
+                        @Override
+                        public void onResult(TextClassification personalContextResult) {
+                            // TODO: b/461931986 - Make ordering of personal context result
+                            // configurable.
+                            List<RemoteAction> mergedActions =
+                                    new ArrayList<>(personalContextResult.getActions());
+                            final List<RemoteAction> originalActions = originalResult.getActions();
+                            for (RemoteAction action : originalActions) {
+                                if (personalContextResult.getActions().contains(action)) {
+                                    continue;
+                                }
+                                mergedActions.add(action);
+                            }
+                            try {
+                                TextClassifierService.putResponse(
+                                        result,
+                                        originalResult.toBuilder()
+                                                .clearActions()
+                                                .addActions(mergedActions)
+                                                .build());
+                                mWrappedCallback.onSuccess(result);
+                            } catch (RemoteException e) {
+                                Slog.e(TAG, "Failed to forward success callback.");
+                            }
+                        }
+
+                        @Override
+                        public void onError(@NonNull TimeoutException exception) {
+                            Slog.d(TAG, "Timed out waiting for personal context results.");
+                            try {
+                                // Pass through original text classification result
+                                mWrappedCallback.onSuccess(result);
+                            } catch (RemoteException e) {
+                                Slog.e(TAG, "Failed to forward success callback.");
+                            }
+                        }
+                    });
+        }
+    }
+
+    public PersonalContextBridgeImpl() {}
+}

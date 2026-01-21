@@ -56,6 +56,7 @@ import com.android.server.personalcontext.notifications.ContextActionResolver;
 import com.android.server.personalcontext.notifications.NotificationActionFactory;
 import com.android.server.personalcontext.notifications.NotificationActionRenderer;
 import com.android.server.personalcontext.textclassifier.TextClassificationActionRenderer;
+import com.android.server.textclassifier.personalcontext.PersonalContextBridge;
 
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
@@ -151,12 +152,25 @@ public class PersonalContextManagerService extends SystemService {
                                     userContext,
                                     userContext.getPackageManager(),
                                     new ContextActionResolver(userContext)));
-
-            TextClassificationActionRenderer textClassificationActionRenderer =
-                    new TextClassificationActionRenderer();
             final EmbeddedInsightRenderer embeddedInsightRenderer = new EmbeddedInsightRenderer(
                     userContext, Executors.newSingleThreadExecutor());
-            mUserStates.put(userId,
+
+            TextClassificationActionRenderer textClassificationActionRenderer;
+            PersonalContextBridge tcPersonalContextBridge =
+                    getLocalService(PersonalContextBridge.class);
+            if (tcPersonalContextBridge != null) {
+                textClassificationActionRenderer =
+                        new TextClassificationActionRenderer(tcPersonalContextBridge);
+            } else {
+                Slog.w(
+                        TAG,
+                        "TextClassificationManagerService not found. Skip creating "
+                                + "TextClassificationActionRenderer");
+                textClassificationActionRenderer = null;
+            }
+
+            mUserStates.put(
+                    userId,
                     new UserState(
                             componentManager,
                             monitor,
@@ -188,7 +202,9 @@ public class PersonalContextManagerService extends SystemService {
         }
         componentManager.register(userState.notificationActionRenderer());
         componentManager.register(userState.embeddedInsightRenderer());
-        componentManager.register(userState.textClassificationActionRenderer());
+        if (userState.textClassificationActionRenderer != null) {
+            componentManager.register(userState.textClassificationActionRenderer());
+        }
 
         userState.embeddedInsightRenderer().onRegistered();
 
@@ -472,11 +488,13 @@ public class PersonalContextManagerService extends SystemService {
 
             // TODO(b/450547433): Add security checks.
             Binder.withCleanCallingIdentity(
-                    () -> getService().publishInsightSurfaceHints(
-                            userId,
-                            callingPid,
-                            ContextHintWrapper.unwrapInto(hints, new HashSet<>()),
-                            clientInfo));
+                    () ->
+                            getService()
+                                    .publishInsightSurfaceHints(
+                                            userId,
+                                            callingPid,
+                                            ContextHintWrapper.unwrapInto(hints, new HashSet<>()),
+                                            clientInfo));
         }
 
         @PermissionManuallyEnforced

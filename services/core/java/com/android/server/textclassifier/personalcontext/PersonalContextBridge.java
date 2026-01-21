@@ -14,22 +14,19 @@
  * limitations under the License.
  */
 
-package com.android.server.textclassifier;
+package com.android.server.textclassifier.personalcontext;
 
 import static android.service.personalcontext.Flags.enablePersonalContextService;
 import static android.service.personalcontext.Flags.enableTextClassifier;
 
-import android.util.Log;
+import android.annotation.NonNull;
+import android.service.textclassifier.ITextClassifierCallback;
 import android.view.textclassifier.TextClassification;
 
-import com.android.server.LocalServices;
 import com.android.server.personalcontext.PersonalContextManagerInternal;
 
 /** Local bridge service to trigger and receive insights from Personal Context Service */
 public abstract class PersonalContextBridge {
-
-    private static final String TAG = "PersonalContextBridge";
-
     /**
      * Sends a {@link TextClassification.Request} to the Personal Context service to trigger
      * TextClassification insight generation. {@link
@@ -38,22 +35,28 @@ public abstract class PersonalContextBridge {
      */
     public abstract void trigger(int userId, String sessionId, TextClassification.Request request);
 
-    static boolean isPersonalContextEnabled() {
+    /**
+     * Queues up the TextClassification response from {@link TextClassificationActionRenderer} so
+     * that {@link PersonalContextBridgeImpl.MergeCallback} can merge the results.
+     */
+    public abstract void merge(@NonNull String sessionId, TextClassification response);
+
+    /**
+     * Wraps callback with a {@link ITextClassifierCallback} that will merge personal context
+     * results with the {@link TextClassification} returned to the original callback. If
+     * PersonalContext service is not enabled, returns the original callback without wrapping.
+     */
+    public abstract ITextClassifierCallback wrap(
+            @NonNull String sessionId, @NonNull ITextClassifierCallback callback);
+
+    /**
+     * Clears any pending personal context results for the session. Must be called from {@link
+     * TextClassificationManagerService#onDestroyTextClassificationSession}.
+     */
+    public abstract void clearSession(@NonNull String sessionId);
+
+    /** Checks that personal context is enabled. */
+    public static boolean isPersonalContextEnabled() {
         return enablePersonalContextService() && enableTextClassifier();
-    }
-
-    static class LocalService extends PersonalContextBridge {
-        LocalService() {}
-
-        @Override
-        public void trigger(int userId, String sessionId, TextClassification.Request request) {
-            PersonalContextManagerInternal pcmi =
-                    LocalServices.getService(PersonalContextManagerInternal.class);
-            if (pcmi == null) {
-                Log.w(TAG, "Did not find PersonalContextManagerInternal system service");
-                return;
-            }
-            pcmi.onTextClassifyRequest(userId, sessionId, request);
-        }
     }
 }
