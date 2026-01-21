@@ -235,10 +235,7 @@ class DesktopModeKeyGestureHandler(
     //  will pick a wrong task when a user quickly perform other actions with keyboard shortcuts
     //  after moveToNextDisplay, and move this to FocusTransitionObserver class.
     private fun getGloballyFocusedDesktopTask(): RunningTaskInfo? {
-        if (
-            !DesktopExperienceFlags.EXCLUDE_DESK_ROOTS_FROM_DESKTOP_TASKS.isTrue ||
-                !DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue
-        ) {
+        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             return shellTaskOrganizer.getRunningTasks().find { taskInfo ->
                 taskInfo.windowingMode == WINDOWING_MODE_FREEFORM &&
                     focusTransitionObserver.hasGlobalFocus(taskInfo)

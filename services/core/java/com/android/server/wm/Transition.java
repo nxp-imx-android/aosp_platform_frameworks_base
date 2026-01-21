@@ -116,7 +116,6 @@ import android.view.SurfaceControl;
 import android.view.WindowManager;
 import android.window.ActivityTransitionInfo;
 import android.window.AppCompatTransitionInfo;
-import android.window.DesktopExperienceFlags;
 import android.window.ScreenCapture.ScreenCaptureParams;
 import android.window.ScreenCaptureInternal;
 import android.window.StartingWindowRemovalInfo;
@@ -2477,8 +2476,6 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
         ArrayList<Task> onTopTasksEnd = new ArrayList<>();
         final DisplayContent onTopDisplayEnd =
                 mController.mAtm.mRootWindowContainer.getTopFocusedDisplayContent();
-        final boolean includeChildrenOfReportingTasks =
-                DesktopExperienceFlags.EXCLUDE_DESK_ROOTS_FROM_DESKTOP_TASKS.isTrue();
         for (int d = 0; d < mTargetDisplays.size(); ++d) {
             addOnTopTasks(mTargetDisplays.get(d), onTopTasksEnd);
             final int displayId = mTargetDisplays.get(d).mDisplayId;
@@ -2491,7 +2488,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
                 final boolean isParentInToTopTasksToReport = task.getParent() != null
                         && toTopTasksToReport.contains(task.getParent());
                 if (Objects.requireNonNullElse(reportedOnTop, mOnTopTasksStart).contains(task)) {
-                    if (!(includeChildrenOfReportingTasks && isParentInToTopTasksToReport)) {
+                    if (!isParentInToTopTasksToReport) {
                         // Don't report it if:
                         // -It didn't change since the last report, AND
                         // -It's not a child of a to-top task that did change since the last report.

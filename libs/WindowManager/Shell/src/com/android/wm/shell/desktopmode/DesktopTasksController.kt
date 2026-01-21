@@ -616,13 +616,8 @@ class DesktopTasksController(
         return shellTaskOrganizer.getRunningTasks(displayId).filter { taskInfo ->
             val focused = taskInfo.isFocused
             val isNotDesktop =
-                if (DesktopExperienceFlags.EXCLUDE_DESK_ROOTS_FROM_DESKTOP_TASKS.isTrue) {
-                    !repository.isActiveTask(taskInfo.taskId) &&
-                        !repository.getAllDeskIds().contains(taskInfo.taskId)
-                } else {
-                    taskInfo.windowingMode == WINDOWING_MODE_FULLSCREEN ||
-                        taskInfo.windowingMode == WINDOWING_MODE_MULTI_WINDOW
-                }
+                !repository.isActiveTask(taskInfo.taskId) &&
+                    !repository.getAllDeskIds().contains(taskInfo.taskId)
             val isHome = taskInfo.activityType == ACTIVITY_TYPE_HOME
             return@filter focused && isNotDesktop && !isHome
         }
@@ -6114,10 +6109,7 @@ class DesktopTasksController(
     }
 
     private fun getFocusedDesktopTask(displayId: Int, userId: Int): RunningTaskInfo? {
-        if (
-            !DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue ||
-                !DesktopExperienceFlags.EXCLUDE_DESK_ROOTS_FROM_DESKTOP_TASKS.isTrue
-        ) {
+        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             return shellTaskOrganizer.getRunningTasks(displayId).find { taskInfo ->
                 taskInfo.isFocused && taskInfo.windowingMode == WINDOWING_MODE_FREEFORM
             }
