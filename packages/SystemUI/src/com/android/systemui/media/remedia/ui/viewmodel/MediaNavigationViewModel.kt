@@ -56,7 +56,7 @@ sealed interface MediaNavigationViewModel {
          * A callback to invoke once the user finishes "scrubbing" (e.g. stopped moving the thumb of
          * the seek bar). The position/progress should be committed.
          */
-        val onScrubFinished: ((delta: Offset) -> Unit)?,
+        val onScrubFinished: ((delta: Offset, isVelocityValid: Boolean) -> Unit)?,
         /** Accessibility string to attach to the seekbar UI element. */
         val contentDescription: String,
     ) : MediaNavigationViewModel
