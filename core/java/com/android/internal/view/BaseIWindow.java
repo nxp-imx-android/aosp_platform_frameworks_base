@@ -23,7 +23,6 @@ import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
 import android.view.DragEvent;
 import android.view.IScrollCaptureResponseListener;
-import android.view.IWindow;
 import android.view.IWindowSession;
 import android.view.InsetsSourceControl;
 import android.view.InsetsState;
@@ -36,7 +35,7 @@ import com.android.internal.os.IResultReceiver;
 
 import java.io.IOException;
 
-public class BaseIWindow extends IWindow.Stub {
+public class BaseIWindow extends WindowClientTransactionHandler {
 
     @UnsupportedAppUsage(maxTargetSdk = android.os.Build.VERSION_CODES.P)
     public BaseIWindow() {}
