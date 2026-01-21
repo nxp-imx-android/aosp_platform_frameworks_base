@@ -603,12 +603,17 @@ constructor(
                                             to = Overlays.Bouncer,
                                         )
                                 ) {
+                                    // Do not snap to scene here or this will break the notification
+                                    // animation, but instantly hide the bouncer to prevent any
+                                    // unwanted overlap
+                                    sceneInteractor.instantlyHideOverlay(
+                                        Overlays.Bouncer,
+                                        "Instant hide bouncer for animation",
+                                    )
                                     SwitchSceneCommand.SwitchToScene(
                                         targetSceneKey = Scenes.Gone,
                                         hideOverlays = HideOverlayCommand.HideAll,
                                         loggingReason = loggingReason,
-                                        // Do not snap to scene here or this will break the
-                                        // notification animation
                                         instantlySnapScenes = false,
                                     )
                                 } else {
