@@ -63,8 +63,6 @@ public class TaskSyncControllerCache extends MultiUserResourceCache<TaskSyncCont
                         mActivityTaskManagerInternal,
                         mAppOps,
                         mPackageManager),
-                new RemoteTaskStore(),
-                new RemoteTaskListenerHolder(),
                 mActivityTaskManager,
                 mActivityTaskManagerInternal,
                 new RemoteTaskFactory(userId, mContext, mPackageManager));
