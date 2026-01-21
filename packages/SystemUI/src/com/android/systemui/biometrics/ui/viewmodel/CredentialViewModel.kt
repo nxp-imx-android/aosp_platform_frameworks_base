@@ -325,7 +325,7 @@ private fun Context.asLockIcon(userId: Int): Drawable {
         if (Utils.isManagedProfile(this, userId)) {
             R.drawable.auth_dialog_enterprise
         } else if (Utils.isSupervisingProfile(this, userId)) {
-            R.drawable.ic_account_child_invert
+            com.android.internal.R.drawable.ic_account_child_invert
         } else {
             R.drawable.auth_dialog_lock
         }
