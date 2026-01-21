@@ -136,6 +136,15 @@ public final class VisibilityHelperImpl implements VisibilityHelper {
             return true;
         }
 
+        if (Flags.enableAppFunctionPermissionV2()
+                && mContext.checkPermission(
+                                Manifest.permission.EXECUTE_APP_FUNCTIONS_SYSTEM,
+                                callingPid,
+                                callingUid)
+                        == PackageManager.PERMISSION_GRANTED) {
+            return true;
+        }
+
         return mContext.checkPermission(
                         Manifest.permission.EXECUTE_APP_FUNCTIONS, callingPid, callingUid)
                 == PackageManager.PERMISSION_GRANTED;
