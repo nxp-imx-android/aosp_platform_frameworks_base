@@ -4181,8 +4181,8 @@ public class MockingOomAdjusterTests {
                 MOCKAPP_PACKAGENAME, false);
         ProcessRecord app2 = makeDefaultProcessRecord(MOCKAPP2_PID, MOCKAPP2_UID,
                 MOCKAPP2_PROCESSNAME, MOCKAPP2_PACKAGENAME, false);
-        app1.mProviders.setLastProviderTime(SystemClock.uptimeMillis());
-        app2.mProviders.setLastProviderTime(SystemClock.uptimeMillis() + 2000);
+        mProcessStateController.setLastProviderTime(app1, SystemClock.uptimeMillis());
+        mProcessStateController.setLastProviderTime(app2, SystemClock.uptimeMillis() + 2000);
         setWakefulness(PowerManagerInternal.WAKEFULNESS_AWAKE);
         setProcessesToLru(app1, app2);
         mProcessStateController.runFullUpdate(OOM_ADJ_REASON_NONE);
@@ -5016,7 +5016,7 @@ public class MockingOomAdjusterTests {
             for (int i = 0; i < mNumOfExecutingServices; i++) {
                 services.startExecutingService(makeServiceRecord());
             }
-            providers.setLastProviderTime(mLastProviderTime);
+            mProcessStateController.setLastProviderTime(app, mLastProviderTime);
 
             UidRecord uidRec = (UidRecord) mActiveUids.get(mUid);
             if (uidRec == null) {
