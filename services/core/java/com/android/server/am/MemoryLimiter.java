@@ -33,11 +33,14 @@ import android.os.Process;
 import android.os.ProfilingServiceHelper;
 import android.os.ProfilingTrigger;
 import android.os.Trace;
+import android.system.Os;
+import android.system.OsConstants;
 import android.util.Slog;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.os.BackgroundThread;
+import com.android.internal.util.FrameworkStatsLog;
 import com.android.internal.util.MemInfoReader;
 import com.android.server.am.memorylimiter.config.MemoryLimiterConfig;
 import com.android.server.am.memorylimiter.config.XmlParser;
@@ -51,6 +54,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.time.Duration;
 import java.util.Objects;
 
 import javax.xml.datatype.DatatypeConfigurationException;
@@ -94,9 +98,22 @@ class MemoryLimiter implements AutoCloseable {
      */
     static String limitTypeToString(int type) {
         return switch (type) {
-            case 0 -> "unknown";
-            case 1 -> "memory.high";
+            case UNKNOWN_LIMIT_TYPE -> "unknown";
+            case MEMORY_LIMIT_TYPE -> "memory.high";
             default -> "unexpected";
+        };
+    }
+
+    /**
+     * A convenience function that maps a limit type to a statsd enum.
+     */
+    static int limitTypeToAtom(int type) {
+        return switch (type) {
+            case UNKNOWN_LIMIT_TYPE ->
+                    FrameworkStatsLog.MEMORY_LIMITER_OVER_LIMIT_EVENT__TYPE__UNKNOWN;
+            case MEMORY_LIMIT_TYPE ->
+                    FrameworkStatsLog.MEMORY_LIMITER_OVER_LIMIT_EVENT__TYPE__HIGH;
+            default -> FrameworkStatsLog.MEMORY_LIMITER_OVER_LIMIT_EVENT__TYPE__UNKNOWN;
         };
     }
 
@@ -157,7 +174,7 @@ class MemoryLimiter implements AutoCloseable {
 
         // The callback when an over-limit event occurs.
         @UsedByNative
-        void onLimitExceeded(int pid, int uid, int limit, @Nullable String pkg);
+        void onLimitExceeded(int pid, int uid, int type, long limit, @Nullable String pkg);
 
         // Block or unblock the limiter from monitoring/configuring the UID.
         void ignoreUid(int uid, boolean ignore);
@@ -189,7 +206,7 @@ class MemoryLimiter implements AutoCloseable {
         }
 
         @Override
-        public void onLimitExceeded(int pid, int uid, int limit, @Nullable String pkg) {
+        public void onLimitExceeded(int pid, int uid, int type, long limit, @Nullable String pkg) {
         }
 
         @Override
@@ -305,11 +322,12 @@ class MemoryLimiter implements AutoCloseable {
             MemInfoReader memInfo = new MemInfoReader();
             memInfo.readMemInfo();
             long vmem = memInfo.getTotalSize();
+            long pageSize = Os.sysconf(OsConstants._SC_PAGE_SIZE);
 
             // Note that getConfiguration() accepts a null input.
             Configuration cfg = getConfiguration(configFile);
-            mMemoryVisible = memLimit(vmem, cfg.visible);
-            mMemoryNotVisible = memLimit(vmem, cfg.notVisible);
+            mMemoryVisible = memLimit(vmem, pageSize, cfg.visible);
+            mMemoryNotVisible = memLimit(vmem, pageSize, cfg.notVisible);
         }
 
         /**
@@ -321,14 +339,17 @@ class MemoryLimiter implements AutoCloseable {
 
         // A helper function that returns the correct memory limit given a total memory size and a
         // percentage.  If the percentage is 100, then MAX_MEMORY is returned.  A non-positive
-        // percentage should not be seen but if it is, the function returns zero.
-        private static long memLimit(long total, int percentage) {
+        // percentage should not be seen but if it is, the function returns zero.  Return values
+        // are truncated to the kernel page size.
+        private static long memLimit(long total, long pageSize, int percentage) {
             if (percentage >= 100) {
                 return MAX_MEMORY;
             } else if (percentage <= 0) {
                 return 0;
             } else {
-                return (percentage * total) / 100;
+                long limit = (percentage * total) / 100;
+                limit = (limit / pageSize) * pageSize;
+                return limit;
             }
         }
 
@@ -375,11 +396,61 @@ class MemoryLimiter implements AutoCloseable {
             }
         }
 
+        // Allow burst of up to MAX_TOKENS reports in any period.
+        static final int MAX_TOKENS = 4;
+
+        // A period is one hour.
+        static final long TOKEN_PERIOD_MS = Duration.ofHours(1).toMillis();
+
+        // A lock that ensures the token bucket is updated atomically.
+        private final Object mBucketLock = new Object();
+
+        // The last time the token bucket was updated.
+        @GuardedBy("mBucketLock")
+        private long mLastBucketUpdate = 0;
+
+        // The tokens available.
+        @GuardedBy("mBucketLock")
+        private int mAvailableTokens = MAX_TOKENS;
+
+        // The token bucket rate limiter with a supplied current-time, for testing.
+        @VisibleForTesting
+        final boolean shouldLogAtom(long now) {
+            synchronized (mBucketLock) {
+                // 1. Compute the number of available tokens, as of the last period.
+                now = (now / TOKEN_PERIOD_MS) * TOKEN_PERIOD_MS;
+                long accumulated = (now - mLastBucketUpdate) / TOKEN_PERIOD_MS;
+                mLastBucketUpdate = now;
+                // Just in case the clocks glitch, never accept a negative accumulated value.
+                accumulated = Math.max(0, accumulated);
+                mAvailableTokens += accumulated;
+                mAvailableTokens = Math.min(mAvailableTokens, MAX_TOKENS);
+                if (mAvailableTokens > 0) {
+                    mAvailableTokens--;
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        }
+
+        // The token bucket rate limiter that uses the system clock.
+        final boolean shouldLogAtom() {
+            return shouldLogAtom(System.currentTimeMillis());
+        }
+
         @UsedByNative
         @Override
-        public void onLimitExceeded(int pid, int uid, int limit, @Nullable String pkg) {
-            Slog.i(TAG, formatSimple("limits exceeded: pid=%d uid=%d limit=%s pkg=%s",
-                                pid, uid, limitTypeToString(limit), pkg));
+        public void onLimitExceeded(int pid, int uid, int type, long limit, @Nullable String pkg) {
+            Slog.i(TAG, formatSimple("onLimitExceeded: pid=%d uid=%d type=%s limit=%d pkg=%s",
+                    pid, uid, limitTypeToString(type), limit, pkg));
+
+            // statsd logging is throttled to at most 28 events per day.
+            if (shouldLogAtom()) {
+                FrameworkStatsLog.write(FrameworkStatsLog.MEMORY_LIMITER_OVER_LIMIT_EVENT,
+                        uid, limitTypeToAtom(type), limit);
+            }
+
             if (pkg == null) {
                 // A null package cannot be reported.
                 return;
@@ -579,6 +650,10 @@ class MemoryLimiter implements AutoCloseable {
         void setPid(int pid) {
             if (!mController.isEnabled()) return;
 
+            if (pid == 0) {
+                // The upper layers tend to use 0 as "invalid".  Convert the pid now.
+                pid = INVALID_PID;
+            }
             if (pid == mPid) {
                 return;
             }
