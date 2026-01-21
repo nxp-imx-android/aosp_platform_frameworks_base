@@ -662,6 +662,7 @@ public class DisplayContentDeferredUpdateTests extends WindowTestsBase {
     private void signalKeyguardIsDrawn() {
         // waitForTransition call signals that keyguard is drawn
         mDisplayContent.mDisplayUpdater.waitForTransition(mScreenUnblocker);
+        mTestHandler.flush();
     }
 
     private void startCollectingTheLastTransition() {
