@@ -6825,12 +6825,12 @@ public abstract class Context {
 
     /**
      * Use with {@link #getSystemService(String)} to retrieve an
-     * {@link android.security.talisman.TalismanManager}.
+     * {@link android.security.talisman.TrustTokenManager}.
      * @see #getSystemService(String)
-     * @see android.security.talisman.TalismanManager
+     * @see android.security.talisman.TrustTokenManager
      * @hide
      */
-    public static final String TALISMAN_SERVICE = "talisman";
+    public static final String TRUST_TOKEN_SERVICE = "trust_token";
 
     /**
      * Use with {@link #getSystemService(String)} to retrieve an
