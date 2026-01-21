@@ -60,13 +60,13 @@ constructor(
 
     val isAppContentSharingEnabled: Boolean
         get() =
-            shareScreenUiInteractor.config?.isSourceEnabled(PROJECTION_SOURCE_APP_CONTENT) ?: true
+            shareScreenUiInteractor.config?.isSourceEnabled(PROJECTION_SOURCE_APP_CONTENT) ?: false
 
     val isAppSharingEnabled: Boolean
-        get() = shareScreenUiInteractor.config?.isSourceEnabled(PROJECTION_SOURCE_APP) ?: true
+        get() = shareScreenUiInteractor.config?.isSourceEnabled(PROJECTION_SOURCE_APP) ?: false
 
     val isEntireScreenSharingEnabled: Boolean
-        get() = shareScreenUiInteractor.config?.isSourceEnabled(PROJECTION_SOURCE_DISPLAY) ?: true
+        get() = shareScreenUiInteractor.config?.isSourceEnabled(PROJECTION_SOURCE_DISPLAY) ?: false
 
     val isAudioRequested: Boolean
         get() = shareScreenUiInteractor.config?.isAudioRequested ?: false
