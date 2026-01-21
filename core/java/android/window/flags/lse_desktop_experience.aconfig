@@ -1119,16 +1119,6 @@ flag {
 }
 
 flag {
-  name: "exclude_desk_roots_from_desktop_tasks"
-  namespace: "lse_desktop_experience"
-  description: "Do not include desk root tasks in freeform/desktop tasks"
-  bug: "417876539"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
     name: "form_factor_based_desktop_first_switch"
     namespace: "lse_desktop_experience"
     description: "Enables the desktop-first mode switching logic based on its form factor."

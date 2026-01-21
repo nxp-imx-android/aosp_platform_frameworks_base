@@ -34,7 +34,6 @@ import android.util.ArraySet;
 import android.util.IndentingPrintWriter;
 import android.util.Slog;
 import android.util.SparseArray;
-import android.window.DesktopExperienceFlags;
 import android.window.TransitionInfo;
 
 import com.android.wm.shell.shared.FocusTransitionListener;
@@ -102,10 +101,7 @@ public class FocusTransitionObserver {
             final TransitionInfo.Change change = changes.get(i);
 
             final RunningTaskInfo task = change.getTaskInfo();
-            final boolean updateTaskFocus =
-                    DesktopExperienceFlags.EXCLUDE_DESK_ROOTS_FROM_DESKTOP_TASKS.isTrue()
-                            ? (task != null && leafTasks.contains(task.taskId))
-                            : task != null;
+            final boolean updateTaskFocus = task != null && leafTasks.contains(task.taskId);
             if (updateTaskFocus) {
                 if (ENABLE_INTERACTIVE_PICTURE_IN_PICTURE.isTrue() && task.isFocused) {
                     // With ENABLE_INTERACTIVE_PICTURE_IN_PICTURE enabled, transitions include
