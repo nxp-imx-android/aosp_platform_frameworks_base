@@ -97,9 +97,7 @@ class SyntheticPasswordCrypto {
     }
 
     public static byte[] encrypt(byte[] keyBytes, byte[] personalization, byte[] message) {
-        byte[] keyHash = personalizedHash(personalization, keyBytes);
-        SecretKeySpec key = new SecretKeySpec(Arrays.copyOf(keyHash, AES_GCM_KEY_SIZE),
-                KeyProperties.KEY_ALGORITHM_AES);
+        SecretKeySpec key = deriveAesGcmKey(keyBytes, personalization);
         try {
             return encrypt(key, message);
         } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException
@@ -111,9 +109,7 @@ class SyntheticPasswordCrypto {
     }
 
     public static byte[] decrypt(byte[] keyBytes, byte[] personalization, byte[] ciphertext) {
-        byte[] keyHash = personalizedHash(personalization, keyBytes);
-        SecretKeySpec key = new SecretKeySpec(Arrays.copyOf(keyHash, AES_GCM_KEY_SIZE),
-                KeyProperties.KEY_ALGORITHM_AES);
+        SecretKeySpec key = deriveAesGcmKey(keyBytes, personalization);
         try {
             return decrypt(key, ciphertext);
         } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException
@@ -240,6 +236,16 @@ class SyntheticPasswordCrypto {
             Slog.i(TAG, "Deleted SP protector key " + keyAlias);
         } catch (KeyStoreException e) {
             Slog.e(TAG, "Failed to delete SP protector key " + keyAlias, e);
+        }
+    }
+
+    private static SecretKeySpec deriveAesGcmKey(byte[] parentKey, byte[] personalization) {
+        byte[] derivedKeyMaterial = personalizedHash(personalization, parentKey);
+        try {
+            return new SecretKeySpec(
+                    derivedKeyMaterial, 0, AES_GCM_KEY_SIZE, KeyProperties.KEY_ALGORITHM_AES);
+        } finally {
+            ArrayUtils.zeroize(derivedKeyMaterial);
         }
     }
 
