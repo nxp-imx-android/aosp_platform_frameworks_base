@@ -53,6 +53,8 @@ java_library {
 filegroup {
     name: "PlatformAnimationLib-client-srcs",
     srcs: [
+        "src/com/android/systemui/animation/IOriginTransitionCallback.java",
+        "src/com/android/systemui/animation/IPreLaunchAnimationFinishedCallback.java",
         "src/com/android/systemui/animation/OriginRemoteTransition.java",
         "src/com/android/systemui/animation/OriginTransitionSession.java",
         "src/com/android/systemui/animation/SurfaceUIComponent.java",

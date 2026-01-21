@@ -14,20 +14,18 @@
  * limitations under the License.
  */
 
-package com.android.systemui.animation.shared;
+package com.android.systemui.animation;
 
-import com.android.systemui.animation.shared.IPreLaunchAnimationFinishedCallback;
+/**
+ * Callback interface for origin transition clients to use when signaling the end of an optional
+ * pre-launch animation on the client side before proceeding with the system-provided launch
+ * transition.
+ */
+public interface IPreLaunchAnimationFinishedCallback {
 
-/* TODO(b/476129821): investigate whether or not we may just want to make this a local java interface */
-oneway interface IOriginTransitionCallback {
+    /**
+     * Callback to signal end of pre-launch animation.
+     */
+    void onFinishPreLaunchAnimation();
 
-    void onRunPreLaunchAnimation(in IPreLaunchAnimationFinishedCallback finishCallback);
-
-    void onLaunchAnimationStarted();
-
-    void onLaunchAnimationFinished();
-
-    void onReturnAnimationStarted();
-
-    void onReturnAnimationFinished();
 }
