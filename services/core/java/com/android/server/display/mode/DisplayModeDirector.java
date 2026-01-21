@@ -84,6 +84,7 @@ import com.android.internal.display.BrightnessSynchronizer;
 import com.android.internal.os.BackgroundThread;
 import com.android.server.LocalServices;
 import com.android.server.display.DisplayDeviceConfig;
+import com.android.server.display.ModeRequestManager;
 import com.android.server.display.config.IdleScreenRefreshRateTimeoutLuxThresholdPoint;
 import com.android.server.display.config.RefreshRateData;
 import com.android.server.display.config.SupportedModeData;
@@ -193,16 +194,18 @@ public class DisplayModeDirector {
     private final DisplayDeviceConfigProvider mDisplayDeviceConfigProvider;
 
     public DisplayModeDirector(@NonNull Context context, @NonNull Handler handler,
-            @NonNull DisplayManagerFlags displayManagerFlags,
-            @NonNull DisplayDeviceConfigProvider displayDeviceConfigProvider) {
-        this(context, handler, new RealInjector(context),
-                displayManagerFlags, displayDeviceConfigProvider);
+                               @NonNull DisplayManagerFlags displayManagerFlags,
+                               @NonNull DisplayDeviceConfigProvider displayDeviceConfigProvider,
+                               ModeRequestManager modeRequestManager) {
+        this(context, handler, new RealInjector(context), displayManagerFlags,
+                displayDeviceConfigProvider, modeRequestManager);
     }
 
     public DisplayModeDirector(@NonNull Context context, @NonNull Handler handler,
-            @NonNull Injector injector,
-            @NonNull DisplayManagerFlags displayManagerFlags,
-            @NonNull DisplayDeviceConfigProvider displayDeviceConfigProvider) {
+                               @NonNull Injector injector,
+                               @NonNull DisplayManagerFlags displayManagerFlags,
+                               @NonNull DisplayDeviceConfigProvider displayDeviceConfigProvider,
+                               ModeRequestManager modeRequestManager) {
         mHasArrSupportFlagEnabled = displayManagerFlags.hasArrSupportFlag();
         mDisplayManagerFlags = displayManagerFlags;
         mDisplayDeviceConfigProvider = displayDeviceConfigProvider;
@@ -223,7 +226,8 @@ public class DisplayModeDirector {
         mUdfpsObserver = new UdfpsObserver();
         mVotesStorage = new VotesStorage(this::notifyDesiredDisplayModeSpecsChangedLocked,
                 mVotesStatsReporter);
-        mDisplayObserver = new DisplayObserver(context, handler, mVotesStorage, injector);
+        mDisplayObserver = new DisplayObserver(context, handler, mVotesStorage, injector,
+                modeRequestManager);
         mSensorObserver = new ProximitySensorObserver(mVotesStorage, injector);
         mSkinThermalStatusObserver = new SkinThermalStatusObserver(injector, mVotesStorage,
                 mDisplayDeviceConfigProvider);
@@ -1465,8 +1469,10 @@ public class DisplayModeDirector {
         private final boolean mRefreshRateSynchronizationEnabled;
         private int mDefaultDisplayType = Display.TYPE_INTERNAL;
 
+        private final ModeRequestManager mModeRequestManager;
+
         DisplayObserver(Context context, Handler handler, VotesStorage votesStorage,
-                Injector injector) {
+                Injector injector, ModeRequestManager modeRequestManager) {
             mContext = context;
             mHandler = handler;
             mVotesStorage = votesStorage;
@@ -1478,6 +1484,7 @@ public class DisplayModeDirector {
                         R.integer.config_externalDisplayPeakHeight);
             mRefreshRateSynchronizationEnabled = mContext.getResources().getBoolean(
                         R.bool.config_refreshRateSynchronizationEnabled);
+            mModeRequestManager = modeRequestManager;
         }
 
         private boolean isExternalDisplayLimitModeEnabled() {
@@ -1665,6 +1672,7 @@ public class DisplayModeDirector {
                     Vote.PRIORITY_USER_SETTING_DISPLAY_PREFERRED_OPTIONS,
                     Vote.forVotes(Arrays.asList(sizeVote, renderRateVote, refreshRateVote)));
 
+            mModeRequestManager.votesReady(info.displayId, info.userPreferredModeId);
         }
 
         private void updateUserSettingAllowedHdrMode(DisplayInfo info) {

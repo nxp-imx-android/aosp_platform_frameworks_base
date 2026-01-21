@@ -139,6 +139,8 @@ abstract class DisplayAdapter {
         }
     }
 
+    public void applyBatchDisplayModeUpdatesLocked() {}
+
     public interface Listener {
         void onDisplayDeviceEvent(DisplayDevice device, int event);
         void onTraversalRequested();

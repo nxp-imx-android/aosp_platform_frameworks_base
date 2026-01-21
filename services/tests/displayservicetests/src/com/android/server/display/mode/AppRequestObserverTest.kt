@@ -26,6 +26,7 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.filters.SmallTest
 import androidx.test.platform.app.InstrumentationRegistry
 import com.android.internal.R
+import com.android.server.display.ModeRequestManager
 import com.android.server.display.feature.DisplayManagerFlags
 import com.android.server.display.feature.flags.Flags
 import com.android.server.display.mode.DisplayModeDirector.DisplayDeviceConfigProvider
@@ -50,6 +51,7 @@ class AppRequestObserverTest {
     private val mockInjector = mock<DisplayModeDirector.Injector>()
     private val mockFlags = mock<DisplayManagerFlags>()
     private val mockDisplayDeviceConfigProvider = mock<DisplayDeviceConfigProvider>()
+    private val mockModeRequestManager = mock<ModeRequestManager>()
 
     @get:Rule
     val mContext: TestableContext = TestableContext(
@@ -70,7 +72,8 @@ class AppRequestObserverTest {
             false
         )
         val displayModeDirector = DisplayModeDirector(
-            mContext, testHandler, mockInjector, mockFlags, mockDisplayDeviceConfigProvider)
+            mContext, testHandler, mockInjector, mockFlags,
+            mockDisplayDeviceConfigProvider, mockModeRequestManager)
         val modes = arrayOf(
             Display.Mode(1, 1000, 1000, 60f),
             Display.Mode(2, 1000, 1000, 90f),
@@ -110,7 +113,8 @@ class AppRequestObserverTest {
     @Test
     fun testAppRequestVote_externalDisplay() {
         val displayModeDirector = DisplayModeDirector(
-            context, testHandler, mockInjector, mockFlags, mockDisplayDeviceConfigProvider)
+            context, testHandler, mockInjector, mockFlags,
+            mockDisplayDeviceConfigProvider, mockModeRequestManager)
         val modes = arrayOf(
             Display.Mode(1, 1000, 1000, 60f),
             Display.Mode(2, 1000, 1000, 90f),
@@ -147,7 +151,8 @@ class AppRequestObserverTest {
             R.bool.config_appResolutionSwitchVoteDisabled,
             false)
         val displayModeDirector = DisplayModeDirector(
-            mContext, testHandler, mockInjector, mockFlags, mockDisplayDeviceConfigProvider)
+            mContext, testHandler, mockInjector, mockFlags,
+            mockDisplayDeviceConfigProvider, mockModeRequestManager)
         val modes = arrayOf(
             Display.Mode(1, 1000, 1000, 60f),
             Display.Mode(2, 2000, 2000, 90f),
@@ -175,7 +180,8 @@ class AppRequestObserverTest {
             R.bool.config_appResolutionSwitchVoteDisabled,
             true)
         val displayModeDirector = DisplayModeDirector(
-            mContext, testHandler, mockInjector, mockFlags, mockDisplayDeviceConfigProvider)
+            mContext, testHandler, mockInjector, mockFlags,
+            mockDisplayDeviceConfigProvider, mockModeRequestManager)
         val modes = arrayOf(
             Display.Mode(1, 1000, 1000, 60f),
             Display.Mode(2, 2000, 2000, 90f),

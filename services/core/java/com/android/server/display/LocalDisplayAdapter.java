@@ -30,9 +30,9 @@ import android.content.res.Resources;
 import android.hardware.display.DisplayManagerInternal.DisplayOffloadSession;
 import android.hardware.sidekick.SidekickInternal;
 import android.media.MediaDrm;
+import android.os.Binder;
 import android.os.Build;
 import android.os.Handler;
-import android.os.Binder;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.PowerManager;
@@ -71,7 +71,9 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -108,6 +110,8 @@ final class LocalDisplayAdapter extends DisplayAdapter {
     private ColorDisplayService.ColorDisplayServiceInternal mCdsi;
     private Spline mNitsToEvenDimmerStrength;
     private final boolean mStableEdidsFlag;
+    private final Map<LocalDisplayDevice, SurfaceControl.DesiredDisplayModeSpecs>
+            mDisplayModeUpdateItems = new HashMap<>();
 
     // Called with SyncRoot lock held.
     LocalDisplayAdapter(DisplayManagerService.SyncRoot syncRoot, Context context,
@@ -1127,7 +1131,7 @@ final class LocalDisplayAdapter extends DisplayAdapter {
         }
 
         @Override
-        public void setUserPreferredDisplayModeLocked(Display.Mode mode) {
+        public boolean setUserPreferredDisplayModeLocked(Display.Mode mode) {
             final int oldModeId = getPreferredModeId();
             mUserPreferredMode = mode;
             // When clearing the user preferred mode we need to also reset the default mode. This is
@@ -1149,21 +1153,14 @@ final class LocalDisplayAdapter extends DisplayAdapter {
             mUserPreferredModeId = findUserPreferredModeIdLocked(mUserPreferredMode);
 
             if (oldModeId == getPreferredModeId()) {
-                return;
+                return false;
             }
             updateDeviceInfoLocked();
 
-            if (!mIsBootDisplayModeSupported) {
-                return;
+            if (mIsBootDisplayModeSupported) {
+                updateBootDisplayMode();
             }
-            if (mUserPreferredModeId == INVALID_MODE_ID) {
-                mSurfaceControlProxy.clearBootDisplayMode(getDisplayTokenLocked());
-            } else {
-                int preferredSfDisplayModeId = findSfDisplayModeIdLocked(
-                        mUserPreferredMode, mDefaultModeGroup);
-                mSurfaceControlProxy.setBootDisplayMode(getDisplayTokenLocked(),
-                        preferredSfDisplayModeId);
-            }
+            return true;
         }
 
         @Override
@@ -1184,6 +1181,12 @@ final class LocalDisplayAdapter extends DisplayAdapter {
         @Override
         public void setDesiredDisplayModeSpecsLocked(
                 DisplayModeDirector.DesiredDisplayModeSpecs displayModeSpecs) {
+            setDesiredDisplayModeSpecsLocked(displayModeSpecs, false);
+        }
+
+        @Override
+        public void setDesiredDisplayModeSpecsLocked(
+                DisplayModeDirector.DesiredDisplayModeSpecs displayModeSpecs, boolean isInBatch) {
             if (displayModeSpecs.baseModeId == 0) {
                 // Bail if the caller is requesting a null mode. We'll get called again shortly with
                 // a valid mode.
@@ -1226,17 +1229,21 @@ final class LocalDisplayAdapter extends DisplayAdapter {
                             + "DesiredDisplayModeSpecs to SF: baseMode = " + modeDescription + ", "
                             + "sfModeId = " + baseSfModeId);
                 }
-                getHandler().sendMessage(PooledLambda.obtainMessage(
-                        LocalDisplayDevice::setDesiredDisplayModeSpecsAsync, this,
-                        applyToken,
-                        new SurfaceControl.DesiredDisplayModeSpecs[] {
-                            new SurfaceControl.DesiredDisplayModeSpecs(
+                SurfaceControl.DesiredDisplayModeSpecs spec =
+                        new SurfaceControl.DesiredDisplayModeSpecs(
                                 getDisplayTokenLocked(), baseSfModeId,
                                 mDisplayModeSpecs.allowGroupSwitching,
                                 mDisplayModeSpecs.primary,
                                 mDisplayModeSpecs.appRequest,
                                 mDisplayModeSpecs.mIdleScreenRefreshRateConfig,
-                                    mDisplayModeSpecs.workDurationsData)}));
+                                mDisplayModeSpecs.workDurationsData);
+                if (isInBatch) {
+                    mDisplayModeUpdateItems.put(this, spec);
+                } else {
+                    getHandler().sendMessage(PooledLambda.obtainMessage(
+                            LocalDisplayDevice::setDesiredDisplayModeSpecsAsync, this, applyToken,
+                            new SurfaceControl.DesiredDisplayModeSpecs[] {spec}));
+                }
             }
         }
 
@@ -1371,6 +1378,17 @@ final class LocalDisplayAdapter extends DisplayAdapter {
             // TODO(b/202378408) set game content type only if it's supported once we have a
             // separate API for disabling on-device processing.
             mSurfaceControlProxy.setGameContentType(getDisplayTokenLocked(), on);
+        }
+
+        private void updateBootDisplayMode() {
+            if (mUserPreferredModeId == INVALID_MODE_ID) {
+                mSurfaceControlProxy.clearBootDisplayMode(getDisplayTokenLocked());
+            } else {
+                int preferredSfDisplayModeId = findSfDisplayModeIdLocked(
+                        mUserPreferredMode, mDefaultModeGroup);
+                mSurfaceControlProxy.setBootDisplayMode(getDisplayTokenLocked(),
+                        preferredSfDisplayModeId);
+            }
         }
 
         @Override
@@ -1572,6 +1590,18 @@ final class LocalDisplayAdapter extends DisplayAdapter {
             mOverlayContext = ActivityThread.currentActivityThread().getSystemUiContext();
         }
         return mOverlayContext;
+    }
+
+    @Override
+    public void applyBatchDisplayModeUpdatesLocked() {
+        IBinder applyToken = new Binder();
+        for (LocalDisplayDevice device : mDisplayModeUpdateItems.keySet()) {
+            SurfaceControl.DesiredDisplayModeSpecs specs = mDisplayModeUpdateItems.get(device);
+            getHandler().sendMessage(PooledLambda.obtainMessage(
+                    LocalDisplayDevice::setDesiredDisplayModeSpecsAsync, device, applyToken,
+                    new SurfaceControl.DesiredDisplayModeSpecs[] {specs}));
+        }
+        mDisplayModeUpdateItems.clear();
     }
 
     /**

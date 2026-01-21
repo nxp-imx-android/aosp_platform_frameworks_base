@@ -201,6 +201,7 @@ import com.android.server.SystemService;
 import com.android.server.UiThread;
 import com.android.server.companion.virtual.VirtualDeviceManagerInternal;
 import com.android.server.display.LogicalDisplay.CachedDisplayInfo;
+import com.android.server.display.ModeRequestManager.RequestStatus;
 import com.android.server.display.config.SensorData;
 import com.android.server.display.feature.DeviceConfigParameterProvider;
 import com.android.server.display.feature.DisplayManagerFlags;
@@ -392,6 +393,8 @@ public final class DisplayManagerService extends SystemService {
      */
     private final HighBrightnessModeMetadataMapper mHighBrightnessModeMetadataMapper =
             new HighBrightnessModeMetadataMapper();
+
+    private final ModeRequestManager mModeRequestManager;
 
     // List of all currently registered display adapters.
     private final ArrayList<DisplayAdapter> mDisplayAdapters = new ArrayList<>();
@@ -712,11 +715,12 @@ public final class DisplayManagerService extends SystemService {
                 displayId -> getDisplayInfoInternal(displayId, Process.myUid()));
         Predicate<DisplayInfo> isDisplayAllowedInTopoogy =
                 mDisplayTopologyCoordinator::isDisplayAllowedInTopology;
+        mModeRequestManager = new ModeRequestManager();
         mLogicalDisplayMapper = new LogicalDisplayMapper(mContext, foldSettingProvider,
                 mDisplayDeviceRepo, new LogicalDisplayListener(), mSyncRoot, mHandler, mFlags,
                 isDisplayAllowedInTopoogy, mStableEdidsFlag, mDisplayInfoCache);
         mDisplayModeDirector = new DisplayModeDirector(
-                context, mHandler, mFlags, mDisplayDeviceConfigProvider);
+                context, mHandler, mFlags, mDisplayDeviceConfigProvider, mModeRequestManager);
         mBrightnessSynchronizer = new BrightnessSynchronizer(mContext, displayThreadLooper);
         Resources resources = mContext.getResources();
         mDefaultDisplayDefaultColorMode = mContext.getResources().getInteger(
@@ -3096,10 +3100,64 @@ public final class DisplayManagerService extends SystemService {
         }
     }
 
-    private void setUserPreferredModeForDisplayLocked(int displayId, Display.Mode mode) {
+    private boolean setUserPreferredModeForDisplayLocked(int displayId, Display.Mode mode) {
         DisplayDevice displayDevice = getDeviceForDisplayLocked(displayId);
         if (displayDevice != null) {
-            displayDevice.setUserPreferredDisplayModeLocked(mode);
+            return displayDevice.setUserPreferredDisplayModeLocked(mode);
+        }
+        return false;
+    }
+
+    void setUserPreferredDisplayModesInternal(
+            @NonNull ModeRequestManager.UserPreferredModeRequest[] requests) {
+        if (mModeRequestManager.isDisabled()) {
+            return;
+        }
+
+        // return if there are already other requests in progress
+        if (mModeRequestManager.hasActiveRequests()) {
+            Slog.w(ModeRequestManager.TAG, "There is an ongoing mode change request. "
+                    + "Requests ignored.");
+            return;
+        }
+        synchronized (mSyncRoot) {
+            boolean requestSuccessful =
+                    mModeRequestManager.onUserPreferredModesRequestedLocked(requests);
+            if (requestSuccessful) {
+                boolean changed = false;
+                for (ModeRequestManager.UserPreferredModeRequest request : requests) {
+                    boolean storeMode = request.mStoreMode;
+
+                    DisplayDevice displayDevice = getDeviceForDisplayLocked(request.mDisplayId);
+                    if (displayDevice == null) {
+                        Slog.w(ModeRequestManager.TAG, "Device not found for at least one"
+                                + " of the requested displays in a mode change. Requests cleared.");
+                        mModeRequestManager.clearRequests();
+                        return;
+                    }
+                    mModeRequestManager.waitingForDeviceInfo(request.mDisplayId);
+
+                    if (storeMode) {
+                        storeModeLocked(request.mDisplayId, request.mMode);
+                    }
+                    if (displayDevice.setUserPreferredDisplayModeLocked(request.mMode)) {
+                        changed = true;
+                    }
+                    mModeRequestManager.storeMode(request.mDisplayId,
+                            displayDevice.getUserPreferredDisplayModeLocked());
+                }
+
+                if (changed) {
+                    mLogicalDisplayMapper.updateLogicalDisplaysLocked();
+                    for (ModeRequestManager.UserPreferredModeRequest request : requests) {
+                        DisplayInfo displayInfo = getDisplayInfoInternal(request.mDisplayId,
+                                Process.myUid());
+                        mModeRequestManager.infoUpdated(request.mDisplayId, displayInfo);
+                    }
+                } else {
+                    mModeRequestManager.clearRequests();
+                }
+            }
         }
     }
 
@@ -3407,13 +3465,20 @@ public final class DisplayManagerService extends SystemService {
 
         // Configure each display device.
         mLogicalDisplayMapper.forEachLocked((LogicalDisplay display) -> {
+            boolean isInBatch =
+                    mModeRequestManager.isRequestInProgress(display.getDisplayIdLocked());
             final DisplayDevice device = display.getPrimaryDisplayDeviceLocked();
             final SurfaceControl.Transaction displayTransaction =
                     displayTransactions.get(display.getDisplayIdLocked(), t);
             if (device != null) {
-                configureDisplayLocked(displayTransaction, device);
+                configureDisplayLocked(displayTransaction, device, isInBatch);
             }
         });
+
+        if (mModeRequestManager.allDisplaysReachedStatus(RequestStatus.MODE_SPECS_SET)) {
+            mDisplayAdapters.forEach(DisplayAdapter::applyBatchDisplayModeUpdatesLocked);
+            mModeRequestManager.clearRequests();
+        }
 
         // Tell the input system about these new viewports.
         if (mInputManagerInternal != null) {
@@ -3742,7 +3807,8 @@ public final class DisplayManagerService extends SystemService {
         return Optional.empty();
     }
 
-    private void configureDisplayLocked(SurfaceControl.Transaction t, DisplayDevice device) {
+    private void configureDisplayLocked(SurfaceControl.Transaction t, DisplayDevice device,
+                                        boolean isInBatch) {
         final DisplayDeviceInfo info = device.getDisplayDeviceInfoLocked();
 
         // Find the logical display that the display device is showing.
@@ -3757,7 +3823,7 @@ public final class DisplayManagerService extends SystemService {
             return;
         }
         display.configureDisplayLocked(t, device, info.state == Display.STATE_OFF,
-                mHandlerExecutor);
+                mHandlerExecutor, isInBatch);
         final Optional<Integer> viewportType = getViewportType(info);
         if (viewportType.isPresent()) {
             populateViewportLocked(viewportType.get(), display.getDisplayIdLocked(), device, info);
@@ -7022,6 +7088,7 @@ public final class DisplayManagerService extends SystemService {
                 display.setDesiredDisplayModeSpecsLocked(desiredDisplayModeSpecs);
                 mChanged = true;
             }
+            mModeRequestManager.onSpecsSet(displayId);
         };
 
         @GuardedBy("mSyncRoot")
