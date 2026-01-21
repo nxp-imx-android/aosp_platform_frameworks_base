@@ -29,6 +29,7 @@ import android.content.pm.verify.domain.DomainVerificationUserState
 import android.net.Uri
 import android.view.Display
 import com.android.internal.protolog.ProtoLog
+import com.android.window.flags.Flags
 import com.android.wm.shell.protolog.ShellProtoLogGroup
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
 import com.android.wm.shell.shared.desktopmode.DesktopState
@@ -92,6 +93,10 @@ fun getBrowserIntent(uri: Uri, packageManager: PackageManager, userId: Int): Int
  */
 fun getAppIntent(uri: Uri, packageManager: PackageManager, userId: Int): Intent? {
     val intent = Intent(ACTION_VIEW, uri).addFlags(FLAG_ACTIVITY_NEW_TASK)
+    if (Flags.enableEnhancedAppToWebTransition()) {
+        // We explicitly requires a non-browser app so that the first-run prompt will not get shown.
+        intent.addFlags(Intent.FLAG_ACTIVITY_REQUIRE_NON_BROWSER)
+    }
     val resolveInfo =
         packageManager.resolveActivityAsUser(intent, /* flags= */ 0, userId) ?: return null
     // If there is a non-browser application available to handle the intent, return the intent.
