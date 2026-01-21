@@ -51,6 +51,7 @@ import static com.android.server.pm.UserJourneyLogger.ERROR_CODE_INVALID_SESSION
 import static com.android.server.pm.UserJourneyLogger.EVENT_STATE_BEGIN;
 import static com.android.server.pm.UserJourneyLogger.EVENT_STATE_FINISH;
 import static com.android.server.pm.UserJourneyLogger.EVENT_STATE_NONE;
+import static com.android.server.pm.UserJourneyLogger.USER_JOURNEY_USER_LOGOUT;
 import static com.android.server.pm.UserJourneyLogger.USER_JOURNEY_USER_START;
 import static com.android.server.pm.UserJourneyLogger.USER_JOURNEY_USER_STOP;
 import static com.android.server.pm.UserJourneyLogger.USER_JOURNEY_USER_SWITCH_FG;
@@ -1208,6 +1209,7 @@ class UserController implements Handler.Callback {
                 shouldSwitchUser = true;
             }
         }
+        logUserJourneyBegin(userId, USER_JOURNEY_USER_LOGOUT);
 
         if (shouldSwitchUser) {
             if (!switchUser(UserHandle.USER_SYSTEM)) {
