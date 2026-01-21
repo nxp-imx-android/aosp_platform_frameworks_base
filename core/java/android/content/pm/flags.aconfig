@@ -375,3 +375,10 @@ flag {
     description: "Protect system required packages from being disabled, hidden, or uninstalled"
     bug: "476068582"
 }
+
+flag {
+    name: "trust_system_apk_signatures"
+    namespace: "package_manager_service"
+    description: "When enabled, signature verification will be skipped when recollecting signatures from a disabled system package during boot."
+    bug: "477359598"
+}
