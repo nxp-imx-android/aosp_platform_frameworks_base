@@ -39,10 +39,6 @@ import android.util.LongSparseArray;
 import android.view.ViewRootImpl;
 import android.view.ViewTreeObserver;
 
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Arrays;
-
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
@@ -453,28 +449,14 @@ public final class BackgroundBlurDrawable extends Drawable {
             }
 
             if (DEBUG) {
-                Log.d(TAG, "Might dispatch " + blurRegionsForFrame.length + " blur regions:");
-            }
-            List<BlurRegion> filteredBlurRegionsForFrameList = new ArrayList<>();
-            for (BlurRegion blurRegion : blurRegionsForFrame) {
-                if (!blurRegion.rect.isEmpty()) {
-                    filteredBlurRegionsForFrameList.add(blurRegion);
-                }
-            }
-            BlurRegion[] filteredBlurRegionsForFrame = filteredBlurRegionsForFrameList
-                    .toArray(BlurRegion[]::new);
-            if (DEBUG) {
                 Log.d(TAG, "Dispatching " + blurRegionsForFrame.length + " blur regions:");
             }
 
-            if (filteredBlurRegionsForFrame.length == 0) {
-                return null;
-            }
-            final float[][] blurRegionsArray = new float[filteredBlurRegionsForFrame.length][];
+            final float[][] blurRegionsArray = new float[blurRegionsForFrame.length][];
             for (int i = 0; i < blurRegionsArray.length; i++) {
-                blurRegionsArray[i] = filteredBlurRegionsForFrame[i].toFloatArray();
+                blurRegionsArray[i] = blurRegionsForFrame[i].toFloatArray();
                 if (DEBUG) {
-                    Log.d(TAG, "Region: " + filteredBlurRegionsForFrame[i].toString());
+                    Log.d(TAG, blurRegionsForFrame[i].toString());
                 }
             }
             return blurRegionsArray;
