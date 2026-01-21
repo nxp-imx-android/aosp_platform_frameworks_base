@@ -1600,7 +1600,7 @@ public class SubscriptionManager {
      * <p>This source is used to retrieve the phone number (MSISDN) from the Entitlement
      * Configuration Server as defined in GSMA TS.43.
      * <p>Note: Access to {@link #PHONE_NUMBER_SOURCE_TS43} is restricted to
-     * privileged system components (e.g., Settings).
+     * privileged system components (e.g., Settings) or carrier privileged apps.
      */
     @FlaggedApi(Flags.FLAG_GET_PHONE_NUMBER_TS43_API)
     public static final int PHONE_NUMBER_SOURCE_TS43 = 4;
@@ -4722,7 +4722,7 @@ public class SubscriptionManager {
      * security-related or other sensitive scenarios.
      *
      * <p>Note:Access to {@link #PHONE_NUMBER_SOURCE_TS43} is restricted to privileged system
-     * components (e.g., Settings).
+     * components (e.g., Settings) or carrier privileged apps.
      *
      * @param subscriptionId the subscription ID, or {@link #DEFAULT_SUBSCRIPTION_ID}
      * for the default one.
@@ -4793,7 +4793,7 @@ public class SubscriptionManager {
      * security-related or other sensitive scenarios.
      *
      * <p>Note:Access to {@link #PHONE_NUMBER_SOURCE_TS43} is restricted to privileged system
-     * components (e.g., Settings).
+     * components (e.g., Settings) or carrier privileged apps.
      *
      * @param subscriptionId the subscription ID, or {@link #DEFAULT_SUBSCRIPTION_ID}
      *                       for the default one.
