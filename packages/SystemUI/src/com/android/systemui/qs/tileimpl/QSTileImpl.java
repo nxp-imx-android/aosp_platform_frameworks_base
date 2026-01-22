@@ -479,10 +479,11 @@ public abstract class QSTileImpl<TState extends State> implements QSTile, Lifecy
 
     private void maybeUpdateHandlesLongClick() {
         if (!Flags.hsuQsChanges()) return;
-
-        if (mHost.isCurrentUserHeadlessSystemUser() && !mShouldResetHandlesLongClick) {
-            mPreviousHandlesLongClick = mTmpState.handlesLongClick;
-            mShouldResetHandlesLongClick = true;
+        if (mHost.isCurrentUserHeadlessSystemUser()) {
+            if (!mShouldResetHandlesLongClick) {
+                mPreviousHandlesLongClick = mTmpState.handlesLongClick;
+                mShouldResetHandlesLongClick = true;
+            }
             mTmpState.handlesLongClick = false;
             if (DEBUG) Log.d(TAG, "Setting handlesLongClick to false for HSU");
         } else if (!mHost.isCurrentUserHeadlessSystemUser() && mShouldResetHandlesLongClick) {
