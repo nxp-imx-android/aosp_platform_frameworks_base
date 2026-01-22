@@ -55,6 +55,12 @@
       ]
     },
     {
+      "name": "FunctionalTestsDesktopMode-drag-DragAppWindowMultiWindowTest",
+      "keywords": [
+        "desktop"
+      ]
+    },
+    {
       "name": "FunctionalTestsDesktopMode-drag-DragAppWindowSingleWindowTest",
       "keywords": [
         "desktop"
@@ -212,6 +218,12 @@
     },
     {
       "name": "FunctionalTestsDesktopMode-fundamentals-exit-ExitDesktopWithDragToTopDragZoneTest",
+      "keywords": [
+        "desktop"
+      ]
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-fundamentals-focus-FocusAppByDragResizeTest",
       "keywords": [
         "desktop"
       ]
