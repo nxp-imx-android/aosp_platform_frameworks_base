@@ -2096,7 +2096,12 @@ public final class SystemServer implements Dumpable {
                 Slog.d(TAG, "Not starting WearableSensingService");
             }
             startOnDeviceIntelligenceService(t);
-            startContentSafetyManagerService(t);
+            if (android.app.contentsafety.flags.Flags.enableContentsafety()) {
+                startContentSafetyManagerService(t);
+            } else {
+                Slog.d(TAG,
+                        "ContentSafetyManagerService not defined by OEM or disabled by flag");
+            }
 
             if (deviceHasConfigString(
                     context, R.string.config_defaultAmbientContextDetectionService)) {
