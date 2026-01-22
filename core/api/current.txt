@@ -44136,15 +44136,30 @@ package android.service.personalcontext.hint {
     method @NonNull public android.service.personalcontext.hint.CapturedText.Builder setViewNodeText(@NonNull String);
   }
 
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class ChatMessageContentCaptureData implements android.os.Parcelable {
+    method public int describeContents();
+    method @NonNull public android.view.autofill.AutofillId getAutofillId();
+    method @NonNull public String getRawParsedDateString();
+    method @NonNull public String getRawParsedTimeString();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.service.personalcontext.hint.ChatMessageContentCaptureData> CREATOR;
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class ChatMessageContentCaptureData.Builder {
+    ctor public ChatMessageContentCaptureData.Builder();
+    method @NonNull public android.service.personalcontext.hint.ChatMessageContentCaptureData build();
+    method @NonNull public android.service.personalcontext.hint.ChatMessageContentCaptureData.Builder setAutofillId(@NonNull android.view.autofill.AutofillId);
+    method @NonNull public android.service.personalcontext.hint.ChatMessageContentCaptureData.Builder setRawParsedDateString(@NonNull String);
+    method @NonNull public android.service.personalcontext.hint.ChatMessageContentCaptureData.Builder setRawParsedTimeString(@NonNull String);
+  }
+
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class ChatMessageData implements android.os.Parcelable {
     method public int describeContents();
     method @NonNull public String getAuthor();
-    method @NonNull public android.view.autofill.AutofillId getAutofillId();
+    method @Nullable public android.service.personalcontext.hint.ChatMessageContentCaptureData getContentCaptureData();
     method @Nullable public String getContentDescription();
-    method @NonNull public String getDateText();
     method @NonNull public java.time.Instant getReferenceTime();
     method @NonNull public String getText();
-    method @NonNull public String getTimeText();
     method public boolean isOutgoingMessage();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.service.personalcontext.hint.ChatMessageData> CREATOR;
@@ -44154,13 +44169,11 @@ package android.service.personalcontext.hint {
     ctor public ChatMessageData.Builder();
     method @NonNull public android.service.personalcontext.hint.ChatMessageData build();
     method @NonNull public android.service.personalcontext.hint.ChatMessageData.Builder setAuthor(@NonNull String);
-    method @NonNull public android.service.personalcontext.hint.ChatMessageData.Builder setAutofillId(@NonNull android.view.autofill.AutofillId);
-    method @NonNull public android.service.personalcontext.hint.ChatMessageData.Builder setContentDescription(@Nullable String);
-    method @NonNull public android.service.personalcontext.hint.ChatMessageData.Builder setDateText(@NonNull String);
+    method @NonNull public android.service.personalcontext.hint.ChatMessageData.Builder setContentCaptureData(@NonNull android.service.personalcontext.hint.ChatMessageContentCaptureData);
+    method @NonNull public android.service.personalcontext.hint.ChatMessageData.Builder setContentDescription(@NonNull String);
     method @NonNull public android.service.personalcontext.hint.ChatMessageData.Builder setOutgoingMessage(boolean);
     method @NonNull public android.service.personalcontext.hint.ChatMessageData.Builder setReferenceTime(@NonNull java.time.Instant);
     method @NonNull public android.service.personalcontext.hint.ChatMessageData.Builder setText(@NonNull String);
-    method @NonNull public android.service.personalcontext.hint.ChatMessageData.Builder setTimeText(@NonNull String);
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public abstract class ContextHint {
@@ -44258,6 +44271,18 @@ package android.service.personalcontext.hint {
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class InsightReferenceHint extends android.service.personalcontext.hint.ContextHint {
     method @NonNull public java.util.UUID getInsightId();
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class MessagesHint extends android.service.personalcontext.hint.ContextHint {
+    method @NonNull public java.util.List<android.service.personalcontext.hint.ChatMessageData> getChatMessages();
+    method @NonNull public String getPackageName();
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class MessagesHint.Builder {
+    ctor public MessagesHint.Builder(@NonNull String);
+    method @NonNull public android.service.personalcontext.hint.MessagesHint.Builder addToken(@NonNull android.service.personalcontext.Token);
+    method @NonNull public android.service.personalcontext.hint.MessagesHint build();
+    method @NonNull public android.service.personalcontext.hint.MessagesHint.Builder setChatMessages(@NonNull java.util.List<android.service.personalcontext.hint.ChatMessageData>);
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public abstract class NotificationEvent {

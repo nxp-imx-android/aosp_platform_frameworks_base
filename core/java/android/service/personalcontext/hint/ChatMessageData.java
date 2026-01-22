@@ -16,24 +16,23 @@
 
 package android.service.personalcontext.hint;
 
+import static java.util.Objects.requireNonNull;
+
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.service.personalcontext.Flags;
-import android.view.autofill.AutofillId;
-
-import static java.util.Objects.requireNonNull;
 
 import java.time.Instant;
 import java.util.Objects;
 
 /**
- * Data for a single message within a conversation snapshot.
+ * Data for a single message within a conversation.
  *
- * <p>This class represents the semantic information extracted from a single message view on screen,
- * such as a message bubble. It includes the text content, author, and relevant timestamps.
+ * <p>If this chat message originated from the Content Capture API, it will contain additional
+ * metadata in {@link #getContentCaptureData()}.
  */
 @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
 public final class ChatMessageData implements Parcelable {
@@ -42,28 +41,22 @@ public final class ChatMessageData implements Parcelable {
     private final @NonNull String mAuthor;
     private final @NonNull Instant mReferenceTime;
     private final boolean mIsOutgoingMessage;
-    private final @NonNull String mTimeText;
-    private final @NonNull String mDateText;
-    private final @NonNull AutofillId mAutofillId;
     private final @Nullable String mContentDescription;
+    private final @Nullable ChatMessageContentCaptureData mContentCaptureData;
 
     private ChatMessageData(
             @NonNull String text,
             @NonNull String author,
             @NonNull Instant referenceTime,
             boolean isOutgoingMessage,
-            @NonNull String timeText,
-            @NonNull String dateText,
-            @NonNull AutofillId autofillId,
-            @Nullable String contentDescription) {
+            @Nullable String contentDescription,
+            @Nullable ChatMessageContentCaptureData contentCaptureData) {
         mText = text;
         mAuthor = author;
         mReferenceTime = referenceTime;
         mIsOutgoingMessage = isOutgoingMessage;
-        mTimeText = timeText;
-        mDateText = dateText;
-        mAutofillId = autofillId;
         mContentDescription = contentDescription;
+        mContentCaptureData = contentCaptureData;
     }
 
     private ChatMessageData(Parcel in) {
@@ -71,10 +64,8 @@ public final class ChatMessageData implements Parcelable {
         mAuthor = in.readString8();
         mReferenceTime = Instant.ofEpochMilli(in.readLong());
         mIsOutgoingMessage = in.readBoolean();
-        mTimeText = in.readString8();
-        mDateText = in.readString8();
-        mAutofillId = in.readTypedObject(AutofillId.CREATOR);
         mContentDescription = in.readString8();
+        mContentCaptureData = in.readTypedObject(ChatMessageContentCaptureData.CREATOR);
     }
 
     /** Returns the text of the message. */
@@ -100,24 +91,6 @@ public final class ChatMessageData implements Parcelable {
         return mIsOutgoingMessage;
     }
 
-    /** Returns a user-friendly string representing the time of the message (e.g., "10:00 AM"). */
-    @NonNull
-    public String getTimeText() {
-        return mTimeText;
-    }
-
-    /** Returns a user-friendly string representing the date of the message (e.g., "Today"). */
-    @NonNull
-    public String getDateText() {
-        return mDateText;
-    }
-
-    /** Returns the {@link AutofillId} of the view that this message corresponds to. */
-    @NonNull
-    public AutofillId getAutofillId() {
-        return mAutofillId;
-    }
-
     /**
      * Returns the content description of the view that this message corresponds to. This may be
      * {@code null} if the view does not have a content description.
@@ -127,16 +100,20 @@ public final class ChatMessageData implements Parcelable {
         return mContentDescription;
     }
 
+    /** Returns the content capture metadata associated with this message, if any. */
+    @Nullable
+    public ChatMessageContentCaptureData getContentCaptureData() {
+        return mContentCaptureData;
+    }
+
     @Override
     public void writeToParcel(@NonNull Parcel dest, int flags) {
         dest.writeString8(mText);
         dest.writeString8(mAuthor);
         dest.writeLong(mReferenceTime.toEpochMilli());
         dest.writeBoolean(mIsOutgoingMessage);
-        dest.writeString8(mTimeText);
-        dest.writeString8(mDateText);
-        dest.writeTypedObject(mAutofillId, flags);
         dest.writeString8(mContentDescription);
+        dest.writeTypedObject(mContentCaptureData, flags);
     }
 
     @Override
@@ -153,10 +130,8 @@ public final class ChatMessageData implements Parcelable {
                 && Objects.equals(mText, that.mText)
                 && Objects.equals(mAuthor, that.mAuthor)
                 && Objects.equals(mReferenceTime, that.mReferenceTime)
-                && Objects.equals(mTimeText, that.mTimeText)
-                && Objects.equals(mDateText, that.mDateText)
-                && Objects.equals(mAutofillId, that.mAutofillId)
-                && Objects.equals(mContentDescription, that.mContentDescription);
+                && Objects.equals(mContentDescription, that.mContentDescription)
+                && Objects.equals(mContentCaptureData, that.mContentCaptureData);
     }
 
     @Override
@@ -166,10 +141,8 @@ public final class ChatMessageData implements Parcelable {
                 mAuthor,
                 mReferenceTime,
                 mIsOutgoingMessage,
-                mTimeText,
-                mDateText,
-                mAutofillId,
-                mContentDescription);
+                mContentDescription,
+                mContentCaptureData);
     }
 
     @Override
@@ -185,17 +158,11 @@ public final class ChatMessageData implements Parcelable {
                 + mReferenceTime
                 + ", mIsOutgoingMessage="
                 + mIsOutgoingMessage
-                + ", mTimeText='"
-                + mTimeText
-                + "'"
-                + ", mDateText='"
-                + mDateText
-                + "'"
-                + ", mAutofillId="
-                + mAutofillId
                 + ", mContentDescription='"
                 + mContentDescription
                 + "'"
+                + ", mContentCaptureData="
+                + mContentCaptureData
                 + "}";
     }
 
@@ -205,11 +172,9 @@ public final class ChatMessageData implements Parcelable {
         private @Nullable String mText;
         private @Nullable String mAuthor;
         private @Nullable Instant mReferenceTime;
-        private @Nullable AutofillId mAutofillId;
         private @Nullable Boolean mIsOutgoingMessage;
-        private @Nullable String mTimeText;
-        private @Nullable String mDateText;
         private @Nullable String mContentDescription;
+        private @Nullable ChatMessageContentCaptureData mContentCaptureData;
 
         public Builder() {}
 
@@ -223,49 +188,36 @@ public final class ChatMessageData implements Parcelable {
         /** Sets the text of the message. */
         @NonNull
         public Builder setText(@NonNull String text) {
-            mText = text;
+            mText = requireNonNull(text);
             return this;
         }
 
         /** Sets the author of the message. */
         @NonNull
         public Builder setAuthor(@NonNull String author) {
-            mAuthor = author;
+            mAuthor = requireNonNull(author);
             return this;
         }
 
         /** Sets the reference timestamp of the message. */
         @NonNull
         public Builder setReferenceTime(@NonNull Instant referenceTime) {
-            mReferenceTime = referenceTime;
-            return this;
-        }
-
-        /** Sets the {@link AutofillId} of the view that this message corresponds to. */
-        @NonNull
-        public Builder setAutofillId(@NonNull AutofillId autofillId) {
-            mAutofillId = autofillId;
-            return this;
-        }
-
-        /** Sets a user-friendly string representing the time of the message (e.g., "10:00 AM"). */
-        @NonNull
-        public Builder setTimeText(@NonNull String timeText) {
-            mTimeText = timeText;
-            return this;
-        }
-
-        /** Sets a user-friendly string representing the date of the message (e.g., "Today"). */
-        @NonNull
-        public Builder setDateText(@NonNull String dateText) {
-            mDateText = dateText;
+            mReferenceTime = requireNonNull(referenceTime);
             return this;
         }
 
         /** Sets the content description of the view that this message corresponds to. */
         @NonNull
-        public Builder setContentDescription(@Nullable String contentDescription) {
-            mContentDescription = contentDescription;
+        public Builder setContentDescription(@NonNull String contentDescription) {
+            mContentDescription = requireNonNull(contentDescription);
+            return this;
+        }
+
+        /** Sets the content capture metadata associated with this message. */
+        @NonNull
+        public Builder setContentCaptureData(
+                @NonNull ChatMessageContentCaptureData contentCaptureData) {
+            mContentCaptureData = requireNonNull(contentCaptureData);
             return this;
         }
 
@@ -277,10 +229,8 @@ public final class ChatMessageData implements Parcelable {
                     requireNonNull(mAuthor),
                     requireNonNull(mReferenceTime),
                     requireNonNull(mIsOutgoingMessage),
-                    requireNonNull(mTimeText),
-                    requireNonNull(mDateText),
-                    requireNonNull(mAutofillId),
-                    mContentDescription);
+                    mContentDescription,
+                    mContentCaptureData);
         }
     }
 
