@@ -68,7 +68,10 @@ constructor(
             when (event.keyCode) {
                 KeyEvent.KEYCODE_MENU -> return dispatchMenuKeyEvent()
             }
-            if (Flags.pressAnyKeyToAccessBouncer() && isDeviceAwake()) {
+            if (
+                (Flags.pressAnyKeyToAccessBouncer() || Flags.pressAnyKeyToAccessBouncer2()) &&
+                    isDeviceAwake()
+            ) {
                 return collapseShadeLockedOrShowPrimaryBouncer(loggingReason = "Key pressed")
             }
         }

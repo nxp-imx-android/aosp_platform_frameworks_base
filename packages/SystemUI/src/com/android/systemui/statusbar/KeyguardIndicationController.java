@@ -697,7 +697,7 @@ public class KeyguardIndicationController {
     }
 
     private void updateClickToUnlockMsg() {
-        if (Flags.addNewUnlockHintOnKeyguard()
+        if ((Flags.addNewUnlockHintOnKeyguard() || Flags.addNewUnlockHintOnKeyguard2())
                 && mBouncerInteractor.isImproveLargeScreenInteractionEnabled()) {
             mRotateTextViewController.updateIndication(
                     INDICATION_TYPE_CLICK_TO_UNLOCK_HINT,
@@ -714,7 +714,7 @@ public class KeyguardIndicationController {
     }
 
     private void updatePressKeyToUnlockMsg() {
-        if (Flags.addNewUnlockHintOnKeyguard()
+        if ((Flags.addNewUnlockHintOnKeyguard() || Flags.addNewUnlockHintOnKeyguard2())
                 && mBouncerInteractor.isImproveLargeScreenInteractionEnabled()) {
             mRotateTextViewController.updateIndication(
                     INDICATION_TYPE_KEY_TO_UNLOCK_HINT,

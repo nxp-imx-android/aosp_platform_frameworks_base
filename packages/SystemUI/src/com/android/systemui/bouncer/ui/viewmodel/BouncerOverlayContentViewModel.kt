@@ -159,7 +159,8 @@ constructor(
      * these typically don't rely on touch gestures to go back.
      */
     val showBackButton =
-        Flags.backButtonOnBouncerFix() && bouncerInteractor.isImproveLargeScreenInteractionEnabled
+        (Flags.backButtonOnBouncerFix() || Flags.backButtonOnBouncerFix2()) &&
+            bouncerInteractor.isImproveLargeScreenInteractionEnabled
 
     /** Whether to show the accessibility button on the bouncer. */
     val showAccessibilityButton =
@@ -458,7 +459,7 @@ constructor(
         // Swap of layout columns on double click should be disabled to improve interaction on
         // large-screen form factor, e.g. desktop, kiosk
         val disableDoubleClickSwap =
-            Flags.disableDoubleClickSwapOnBouncer() &&
+            (Flags.disableDoubleClickSwapOnBouncer() || Flags.disableDoubleClickSwapOnBouncer2()) &&
                 bouncerInteractor.isImproveLargeScreenInteractionEnabled
         if (disableDoubleClickSwap) return
         if (!wasEventOnNonInputHalfOfScreen) return

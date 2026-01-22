@@ -79,7 +79,8 @@ constructor(
 
     val isMoreIndicatorsAndButtonsEnabled: Boolean
         get() =
-            Flags.moreIndicatorsAndButtonsOnPasswordBouncer() &&
+            (Flags.moreIndicatorsAndButtonsOnPasswordBouncer() ||
+                Flags.moreIndicatorsAndButtonsOnPasswordBouncer2()) &&
                 interactor.isImproveLargeScreenInteractionEnabled
 
     /**
