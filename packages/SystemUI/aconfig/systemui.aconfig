@@ -1890,16 +1890,6 @@ flag {
 }
 
 flag {
-    name: "update_user_switcher_background"
-    namespace: "systemui"
-    description: "Decide whether to update user switcher in background thread."
-    bug: "322745650"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
   name: "upright_charging_dreams_setup"
   namespace: "systemui"
   description: "Trigger a setup component based on the first time the user is upright + charging"
