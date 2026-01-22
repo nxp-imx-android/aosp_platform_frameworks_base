@@ -43,19 +43,6 @@ public final class BundleHint extends ContextHint {
     private final String mHintTypeName;
 
     /**
-     * DO NOT USE - This constructor will be removed before API finalization.
-     *
-     * @deprecated Use {@link BundleHint.Builder} instead.
-     */
-    @Deprecated
-    public BundleHint() {
-        this(
-                new ConstructorParams.Builder().build(),
-                new Bundle(),
-                BundleHint.class.getCanonicalName());
-    }
-
-    /**
      * Internal constructor only for use by {@link ContextHint#createHintFromBundle(Bundle)}.
      */
     BundleHint(@NonNull ConstructorParams baseParams, @NonNull Bundle bundle) {
