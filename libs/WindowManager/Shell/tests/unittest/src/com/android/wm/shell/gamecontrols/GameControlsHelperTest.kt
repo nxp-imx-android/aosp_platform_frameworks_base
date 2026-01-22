@@ -23,6 +23,7 @@ import android.content.pm.ActivityInfo
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
+import android.os.Bundle
 import android.content.res.Resources
 import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
@@ -77,6 +78,8 @@ class GameControlsHelperTest : ShellTestCase() {
             .thenReturn("com.test.package")
         whenever(mockResources.getString(R.string.config_gameControlsIntentAction))
             .thenReturn("com.test.ACTION")
+        whenever(mockResources.getString(R.string.config_gameControlsOptOutMetadataKey))
+            .thenReturn("GameControlsOptOut")
     }
 
     @Test
@@ -139,6 +142,30 @@ class GameControlsHelperTest : ShellTestCase() {
     @Test
     fun shouldShowGameControlsButton_returnsFalse_whenActionEmpty() {
         whenever(mockResources.getString(R.string.config_gameControlsIntentAction)).thenReturn("")
+
+        assertThat(GameControlsHelper.shouldShowGameControlsButton(mockContext, mockTaskInfo))
+            .isFalse()
+    }
+
+    @Test
+    fun shouldShowGameControlsButton_returnsTrue_whenNoOptOutData() {
+        val OPT_OUT_METADATA_KEY = ""
+        whenever(mockResources.getString(R.string.config_gameControlsOptOutMetadataKey))
+            .thenReturn(OPT_OUT_METADATA_KEY)
+        // mockApplicationInfo.metaData is null by default, simulating no metadata.
+
+        assertThat(GameControlsHelper.shouldShowGameControlsButton(mockContext, mockTaskInfo))
+            .isTrue()
+    }
+
+    @Test
+    fun shouldShowGameControlsButton_returnsFalse_whenOptOutTagIsTrue() {
+        val OPT_OUT_METADATA_KEY = "GameControlsOptOut"
+        whenever(mockResources.getString(R.string.config_gameControlsOptOutMetadataKey))
+            .thenReturn(OPT_OUT_METADATA_KEY)
+
+        mockApplicationInfo.metaData = Bundle()
+        mockApplicationInfo.metaData.putBoolean(OPT_OUT_METADATA_KEY, true)
 
         assertThat(GameControlsHelper.shouldShowGameControlsButton(mockContext, mockTaskInfo))
             .isFalse()

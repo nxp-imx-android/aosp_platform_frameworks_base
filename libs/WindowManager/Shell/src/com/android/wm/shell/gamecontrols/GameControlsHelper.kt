@@ -50,6 +50,7 @@ object GameControlsHelper {
         return gameControlsButtonFlagEnabled() &&
             isCategoryGame(taskInfo) &&
             hasGameControlsSystemFeature(context) &&
+            !hasGameControlsOptOutTag(context, taskInfo) &&
             canResolveGameControlsIntent(context, taskInfo)
     }
 
@@ -128,5 +129,19 @@ object GameControlsHelper {
             return false
         }
         return context.packageManager.hasSystemFeature(gameControlsFeatureName)
+    }
+
+    private fun hasGameControlsOptOutTag(context: Context, taskInfo: TaskInfo): Boolean {
+        // The opt-out is set in Android manifest file meta-data tag.
+
+        val appInfo = taskInfo.topActivityInfo?.applicationInfo ?: return false
+
+        val gameControlsOptOutMetadataKey =
+            context.resources.getString(R.string.config_gameControlsOptOutMetadataKey)
+        if (gameControlsOptOutMetadataKey.isEmpty()) {
+            return false
+        }
+
+        return appInfo.metaData?.getBoolean(gameControlsOptOutMetadataKey) ?: false
     }
 }
