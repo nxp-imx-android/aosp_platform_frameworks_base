@@ -19,7 +19,7 @@ package com.android.systemui.statusbar.phone;
 import static android.app.StatusBarManager.DISABLE2_SYSTEM_ICONS;
 import static android.app.StatusBarManager.DISABLE_SYSTEM_INFO;
 
-import static com.android.systemui.Flags.updateUserSwitcherBackground;
+
 import static com.android.systemui.statusbar.StatusBarState.KEYGUARD;
 import static com.android.systemui.util.kotlin.JavaAdapterKt.collectFlow;
 
@@ -755,18 +755,13 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
      * Updates visibility of the user switcher button based on {@link android.os.UserManager} state.
      */
     private void updateUserSwitcher() {
-        if (updateUserSwitcherBackground()) {
-            mBackgroundExecutor.execute(() -> {
-                final boolean isUserSwitcherEnabled = mUserManager.isUserSwitcherEnabled(
-                        getResources().getBoolean(R.bool.qs_show_user_switcher_for_single_user));
-                mMainExecutor.execute(() -> {
-                    mView.setUserSwitcherEnabled(isUserSwitcherEnabled);
-                });
+        mBackgroundExecutor.execute(() -> {
+            final boolean isUserSwitcherEnabled = mUserManager.isUserSwitcherEnabled(
+                    getResources().getBoolean(R.bool.qs_show_user_switcher_for_single_user));
+            mMainExecutor.execute(() -> {
+                mView.setUserSwitcherEnabled(isUserSwitcherEnabled);
             });
-        } else {
-            mView.setUserSwitcherEnabled(mUserManager.isUserSwitcherEnabled(
-                    getResources().getBoolean(R.bool.qs_show_user_switcher_for_single_user)));
-        }
+        });
     }
 
     @VisibleForTesting
