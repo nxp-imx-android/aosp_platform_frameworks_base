@@ -4567,6 +4567,8 @@ public class AudioService extends IAudioService.Stub
 
         boolean isAbsoluteVolume = unifyAbsoluteVolumeManagement() ? isAbsoluteVolumeDevice(ada)
                 : isAbsoluteVolumeDevice(deviceType);
+
+        int btContextualStreamAlias = sStreamVolumeAlias.get(getBluetoothContextualVolumeStream());
         if (isAbsoluteVolume && (flags & AudioManager.FLAG_ABSOLUTE_VOLUME) == 0) {
             final AbsoluteVolumeDeviceInfo info;
             if (unifyAbsoluteVolumeManagement()) {
@@ -4575,8 +4577,8 @@ public class AudioService extends IAudioService.Stub
                 info = getAbsoluteVolumeDeviceInfo(deviceType);
             }
             if (info != null) {
-                if (streamType == getBluetoothContextualVolumeStream()) {
-                    dispatchAbsoluteVolumeChanged(streamType, info, newIndex, muted);
+                if (streamTypeAlias == btContextualStreamAlias) {
+                    dispatchAbsoluteVolumeChanged(streamTypeAlias, info, newIndex, muted);
                 }
                 registeredAsAbsoluteVolume = true;
                 volumeHandled = true;
@@ -4585,52 +4587,56 @@ public class AudioService extends IAudioService.Stub
 
         if (!registeredAsAbsoluteVolume) {
             if (muted) {
-                newIndex = getVssForStreamOrDefault(streamType).getMinIndex();
+                newIndex = getVssForStreamOrDefault(streamTypeAlias).getMinIndex();
             }
-            if (streamTypeAlias == getBluetoothContextualVolumeStream()
+            if (streamTypeAlias == btContextualStreamAlias
                     && AudioSystem.DEVICE_OUT_ALL_A2DP_SET.contains(deviceType)
                     && (flags & AudioManager.FLAG_BLUETOOTH_ABS_VOLUME) == 0) {
                 // the AVRCP index is always in the range of STREAM_MUSIC
                 int avrcpIndex = newIndex / 10;
-                if (streamType != AudioSystem.STREAM_MUSIC) {
-                    avrcpIndex = rescaleIndex(avrcpIndex, streamType, AudioSystem.STREAM_MUSIC);
+                if (streamTypeAlias != AudioSystem.STREAM_MUSIC) {
+                    avrcpIndex = rescaleIndex(avrcpIndex, streamTypeAlias,
+                            AudioSystem.STREAM_MUSIC);
                 }
                 if (DEBUG_VOL) {
                     Slog.d(TAG, "adjustStreamVolume: postSetAvrcpAbsoluteVolumeIndex index="
-                            + newIndex + "stream=" + streamType + "avrcpIndex=" + avrcpIndex);
+                            + newIndex + "streamTypeAlias=" + streamTypeAlias + "avrcpIndex="
+                            + avrcpIndex);
                 }
                 mDeviceBroker.postSetAvrcpAbsoluteVolumeIndex(avrcpIndex);
                 volumeHandled = true;
             }
 
-            if (streamType == getBluetoothContextualVolumeStream()
+            if (streamTypeAlias == btContextualStreamAlias
                     && AudioSystem.isBluetoothLeOutDevice(deviceType)
                     && (flags & AudioManager.FLAG_BLUETOOTH_ABS_VOLUME) == 0) {
                 if (DEBUG_VOL) {
                     Slog.d(TAG, "adjustStreamVolume postSetLeAudioVolumeIndex index="
-                            + newIndex + " stream=" + streamType);
+                            + newIndex + " stream=" + streamType + " alias=" + streamTypeAlias);
                 }
+
                 mDeviceBroker.postSetLeAudioVolumeIndex(newIndex,
-                        getVssForStreamOrDefault(streamType).getMaxIndex(), streamType);
+                        getVssForStreamOrDefault(streamTypeAlias).getMaxIndex(), streamTypeAlias);
                 volumeHandled = true;
             }
 
             // Check if volume update should be send to Hearing Aid.
             // Only modify the hearing aid attenuation when the stream to modify matches
             // the one expected by the hearing aid.
-            if (streamType == getBluetoothContextualVolumeStream()
+            if (streamTypeAlias == btContextualStreamAlias
                     && deviceType == AudioSystem.DEVICE_OUT_HEARING_AID) {
                 int haIndex = newIndex;
-                final VolumeStreamState vss = getVssForStreamOrDefault(streamType);
+                final VolumeStreamState vss = getVssForStreamOrDefault(streamTypeAlias);
                 synchronized (mVolumeStateLock) {
-                    haIndex = (int) (vss.getMinIndex() + (newIndex - vss.getMinIndex())
+                    haIndex = (int) (vss.getMinIndex() + (haIndex - vss.getMinIndex())
                             / vss.getIndexStepFactor());
                 }
                 if (DEBUG_VOL) {
                     Slog.d(TAG, "adjustStreamVolume postSetHearingAidVolumeIndex index="
-                            + newIndex + " stream=" + streamType + " haIndex=" + haIndex);
+                            + newIndex + " stream=" + streamType + " haIndex=" + haIndex + " alias="
+                            + streamTypeAlias);
                 }
-                mDeviceBroker.postSetHearingAidVolumeIndex(haIndex, streamType);
+                mDeviceBroker.postSetHearingAidVolumeIndex(haIndex, streamTypeAlias);
                 volumeHandled = true;
             }
         }
@@ -5769,17 +5775,21 @@ public class AudioService extends IAudioService.Stub
                 new AudioDeviceAttributes[0])[0];
         final Pair<Integer, Boolean> volumePair = getVolumeForDevice(streamType,
                 device.getInternalType());
-        final int index = (volumePair.first + 5) / 10;
+        int index = (volumePair.first + 5) / 10;
         final boolean muted = volumePair.second;
 
+        final int streamTypeAlias = sStreamVolumeAlias.get(streamType, /*valueIfKeyNotFound*/
+                streamType);
+        if (streamType != streamTypeAlias) {
+            index = rescaleIndex(index, streamType, streamTypeAlias);
+        }
         if (DEBUG_VOL) {
             Slog.i(TAG, "onUpdateContextualVolumes streamType: " + streamType
+                    + ", streamTypeAlias: " + streamTypeAlias
                     + ", device: " + device
                     + ", index: " + index);
         }
 
-        final int streamTypeAlias = sStreamVolumeAlias.get(streamType, /*valueIfKeyNotFound*/
-                streamType);
         if (!handleAbsoluteVolume(streamType, streamTypeAlias, device, index * 10, muted, /*flags=*/
                 0, /*hasModifyAudioSettings=*/true)) {
             return;
