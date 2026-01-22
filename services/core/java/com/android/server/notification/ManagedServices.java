@@ -24,7 +24,6 @@ import static android.content.Context.BIND_FOREGROUND_SERVICE;
 import static android.content.Context.DEVICE_POLICY_SERVICE;
 import static android.os.UserHandle.USER_ALL;
 import static android.os.UserHandle.USER_SYSTEM;
-import static android.service.notification.Flags.reportNlsStartAndEnd;
 import static android.service.notification.NotificationListenerService.META_DATA_DEFAULT_AUTOBIND;
 
 import static com.android.server.notification.Flags.FLAG_MANAGED_SERVICES_CONCURRENT_MULTIUSER;
@@ -1951,15 +1950,9 @@ abstract public class ManagedServices {
                         mServicesRebinding.remove(servicesBindingTag);
                         try {
                             mService = asInterface(binder);
-                            if (reportNlsStartAndEnd()) {
-                                info = new ManagedServiceInfo(mService, name, userid, isSystem,
-                                        this, targetSdkVersion, uid, binderSession);
-                            } else {
-                                info = new ManagedServiceInfo(mService, name, userid, isSystem,
-                                        this, targetSdkVersion, uid);
-                            }
+                            info = new ManagedServiceInfo(mService, name, userid, isSystem,
+                                    this, targetSdkVersion, uid, binderSession);
                             binder.linkToDeath(info, 0);
-
                             ManagedServiceInfo previousBinding = getService(name, userid);
                             if (previousBinding != null) {
                                 Slog.wtfStack(TAG,
