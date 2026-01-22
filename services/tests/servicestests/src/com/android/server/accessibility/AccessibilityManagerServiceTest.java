@@ -2163,8 +2163,7 @@ public class AccessibilityManagerServiceTest {
     }
 
     @Test
-    @EnableFlags({com.android.hardware.input.Flags.FLAG_ENABLE_TALKBACK_AND_MAGNIFIER_KEY_GESTURES,
-            Flags.FLAG_MANAGER_LIFECYCLE_USER_CHANGE})
+    @EnableFlags(Flags.FLAG_MANAGER_LIFECYCLE_USER_CHANGE)
     public void handleKeyGestureEvent_toggleMagnifier() {
         mFakePermissionEnforcer.grant(Manifest.permission.MANAGE_ACCESSIBILITY);
         assertThat(ShortcutUtils.getShortcutTargetsFromSettings(mTestableContext, KEY_GESTURE,

@@ -48,7 +48,6 @@ import com.android.compose.PlatformButton
 import com.android.compose.PlatformOutlinedButton
 import com.android.compose.dialog.AlertDialogContent
 import com.android.compose.theme.PlatformTheme
-import com.android.hardware.input.Flags
 import com.android.internal.accessibility.util.AccessibilityUtils
 import com.android.internal.accessibility.util.TtsPrompt
 import com.android.internal.annotations.VisibleForTesting
@@ -205,15 +204,6 @@ constructor(
     }
 
     override fun start() {
-        if (
-            !Flags.enableTalkbackAndMagnifierKeyGestures() &&
-                !Flags.enableSelectToSpeakKeyGestures() &&
-                !Flags.enableTalkbackKeyGestures() &&
-                !Flags.enableVoiceAccessKeyGestures()
-        ) {
-            return
-        }
-
         mainScope.launch {
             interactor.keyGestureConfirmDialogRequest.collectLatest { requestPair ->
                 processDialogRequest(requestPair)

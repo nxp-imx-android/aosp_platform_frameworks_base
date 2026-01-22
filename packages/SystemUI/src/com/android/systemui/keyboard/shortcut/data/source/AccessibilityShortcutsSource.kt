@@ -30,7 +30,6 @@ import android.view.KeyEvent.META_META_ON
 import android.view.KeyboardShortcutGroup
 import android.view.KeyboardShortcutInfo
 import com.android.hardware.input.Flags.enableSelectToSpeakKeyGestures
-import com.android.hardware.input.Flags.enableTalkbackAndMagnifierKeyGestures
 import com.android.hardware.input.Flags.enableTalkbackKeyGestures
 import com.android.hardware.input.Flags.enableVoiceAccessKeyGestures
 import com.android.systemui.dagger.qualifiers.Main
@@ -102,17 +101,13 @@ class AccessibilityShortcutsSource @Inject constructor(@Main private val resourc
             )
         }
 
-        if (enableTalkbackAndMagnifierKeyGestures()) {
-            shortcuts.add(
-                // Toggle magnification:
-                //  - Meta + Alt + M
-                shortcutInfo(
-                    resources.getString(R.string.group_accessibility_toggle_magnification)
-                ) {
-                    command(META_META_ON or META_ALT_ON, KEYCODE_M)
-                }
-            )
-        }
+        shortcuts.add(
+            // Toggle magnification:
+            //  - Meta + Alt + M
+            shortcutInfo(resources.getString(R.string.group_accessibility_toggle_magnification)) {
+                command(META_META_ON or META_ALT_ON, KEYCODE_M)
+            }
+        )
 
         if (enableSelectToSpeakKeyGestures()) {
             shortcuts.add(
