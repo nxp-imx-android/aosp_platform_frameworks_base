@@ -469,11 +469,11 @@ constructor(
 
             logger.logAsyncTaskProgress(entry.logKey, "loading RON images")
             inflationProgress.rowImageInflater.loadImagesSynchronously(packageContext)
-
             logger.logAsyncTaskProgress(
                 entry.logKey,
-                "getting row image resolver (on wrong thread!)",
+                "loaded RON images: ${inflationProgress.rowImageInflater.toDebugString()}",
             )
+
             val imageResolver = row.imageResolver
             // wait for image resolver to finish preloading
             logger.logAsyncTaskProgress(entry.logKey, "waiting for preloaded images")
