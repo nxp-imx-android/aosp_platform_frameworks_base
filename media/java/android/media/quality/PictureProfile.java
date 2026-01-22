@@ -78,18 +78,90 @@ public final class PictureProfile implements Parcelable {
      */
     public static final int TYPE_APPLICATION = 2;
 
-    /**
-     * Default profile name
-     * @hide
-     */
-    public static final String NAME_DEFAULT = "default";
-
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
     @StringDef(prefix = "NAME_", value = {
-            NAME_DEFAULT
+            NAME_DEFAULT,
+            NAME_STANDARD,
+            NAME_VIVID,
+            NAME_SPORTS,
+            NAME_GAME,
+            NAME_MOVIE,
+            NAME_ENERGY_SAVING,
+            NAME_USER
     })
     public @interface ProfileName {}
+
+    /**
+     * Name for the default picture profile.
+     *
+     * <p>This profile represents the system's baseline configuration and is used when no
+     * specific profile is selected.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String NAME_DEFAULT = "default";
+
+    /**
+     * Name for the standard picture profile.
+     *
+     * <p>This profile is typically optimized for general viewing conditions and standard
+     * content types.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String NAME_STANDARD = "standard";
+
+    /**
+     * Name for the vivid picture profile.
+     *
+     * <p>This profile typically emphasizes color saturation and contrast to create a more
+     * vibrant image.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String NAME_VIVID = "vivid";
+
+    /**
+     * Name for the sports picture profile.
+     *
+     * <p>This profile is typically optimized for fast-motion content, such as sporting events,
+     * to reduce motion blur.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String NAME_SPORTS = "sports";
+
+    /**
+     * Name for the game picture profile.
+     *
+     * <p>This profile is typically optimized for gaming, often prioritizing low latency
+     * and minimizing post-processing effects.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String NAME_GAME = "game";
+
+    /**
+     * Name for the movie picture profile.
+     *
+     * <p>This profile is typically optimized for cinematic content, often aligning with
+     * standard cinema color temperatures and gamma curves.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String NAME_MOVIE = "movie";
+
+    /**
+     * Name for the energy saving picture profile.
+     *
+     * <p>This profile is optimized to reduce power consumption, often by lowering backlight
+     * intensity or brightness.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String NAME_ENERGY_SAVING = "energy_saving";
+
+    /**
+     * Name for the user-defined picture profile.
+     *
+     * <p>This profile represents custom settings configured by the user.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String NAME_USER = "user";
 
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
@@ -234,21 +306,6 @@ public final class PictureProfile implements Parcelable {
      * @hide
      */
     public static final String STATUS_FMM_HDR_VIVID = "FMM_HDR_VIVID";
-
-    /** @hide */
-    public static final String NAME_STANDARD = "standard";
-    /** @hide */
-    public static final String NAME_VIVID = "vivid";
-    /** @hide */
-    public static final String NAME_SPORTS = "sports";
-    /** @hide */
-    public static final String NAME_GAME = "game";
-    /** @hide */
-    public static final String NAME_MOVIE = "movie";
-    /** @hide */
-    public static final String NAME_ENERGY_SAVING = "energy_saving";
-    /** @hide */
-    public static final String NAME_USER = "user";
 
     private PictureProfile(@NonNull Parcel in) {
         mId = in.readString();

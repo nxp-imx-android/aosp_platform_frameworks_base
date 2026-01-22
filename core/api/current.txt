@@ -28698,6 +28698,14 @@ package android.media.quality {
     field public static final int ERROR_NOT_ALLOWLISTED = 4; // 0x4
     field public static final int ERROR_NO_PERMISSION = 1; // 0x1
     field public static final int ERROR_UNKNOWN = 0; // 0x0
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String NAME_DEFAULT = "default";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String NAME_ENERGY_SAVING = "energy_saving";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String NAME_GAME = "game";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String NAME_MOVIE = "movie";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String NAME_SPORTS = "sports";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String NAME_STANDARD = "standard";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String NAME_USER = "user";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String NAME_VIVID = "vivid";
     field public static final int TYPE_APPLICATION = 2; // 0x2
     field public static final int TYPE_SYSTEM = 1; // 0x1
   }
@@ -28725,6 +28733,14 @@ package android.media.quality {
     field public static final int ERROR_NOT_ALLOWLISTED = 4; // 0x4
     field public static final int ERROR_NO_PERMISSION = 1; // 0x1
     field public static final int ERROR_UNKNOWN = 0; // 0x0
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String NAME_DEFAULT = "default";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String NAME_MOVIE = "movie";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String NAME_MUSIC = "music";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String NAME_NEWS = "news";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String NAME_SPORTS = "sports";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String NAME_STANDARD = "standard";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String NAME_USER = "user";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String NAME_VIVID = "vivid";
     field public static final int TYPE_APPLICATION = 2; // 0x2
     field public static final int TYPE_SYSTEM = 1; // 0x1
   }
