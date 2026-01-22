@@ -3,6 +3,16 @@ container: "system"
 
 # go/keep-sorted start block=yes newline_separated=yes
 flag {
+    name: "allow_drag_and_drop_when_interactive_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Changes display's drag&drop eligibility based on the home interactivity."
+    bug: "463648549"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "better_desk_deactivation_in_recents_transition"
     namespace: "lse_desktop_experience"
     description: "Improves desk deactivation using real Overview state and better recents signaling"
