@@ -1357,11 +1357,9 @@ public abstract class WindowManagerInternal {
             long timeoutMs, Consumer<Boolean> callback, @CallbackExecutor Executor executor);
 
     /**
-     * Disable the SystemPerformanceHinter for the given display.
-     *
-     * @param displayId
+     * Optimizes the display for power instead of the default policy of optimizing for performance.
      */
-    public abstract void disableSystemPerformanceHinter(int displayId);
+    public abstract void enablePowerOptimizations(int displayId, boolean enable);
 
     /**
      * Attempts to limit the rendering of client windows by turning down the frame rate and
