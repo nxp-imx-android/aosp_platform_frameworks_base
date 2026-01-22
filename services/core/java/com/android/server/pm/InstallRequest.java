@@ -151,6 +151,8 @@ final class InstallRequest {
 
     private int mDexoptStatus;
 
+    private int mAppImportance;
+
     @NonNull
     private int[] mFirstTimeBroadcastUserIds = EMPTY_INT_ARRAY;
     @NonNull
@@ -691,6 +693,10 @@ final class InstallRequest {
         return mDexoptStatus;
     }
 
+    public int getAppImportance() {
+        return mAppImportance;
+    }
+
     public boolean isAllNewUsers() {
         return mOrigUsers == null || mOrigUsers.length == 0;
     }
@@ -800,6 +806,10 @@ final class InstallRequest {
 
     public void setAppId(int appId) {
         mAppId = appId;
+    }
+
+    public void setAppImportance(int importance) {
+        mAppImportance = importance;
     }
 
     public void setNewUsers(int[] newUsers) {
