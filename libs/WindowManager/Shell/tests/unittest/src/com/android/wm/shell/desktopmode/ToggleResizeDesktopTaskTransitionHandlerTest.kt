@@ -39,7 +39,9 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.kotlin.any
+import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.stub
 import org.mockito.kotlin.whenever
 
 @SmallTest
@@ -52,6 +54,7 @@ class ToggleResizeDesktopTaskTransitionHandlerTest : ShellTestCase() {
     private val transactionSupplier = mock<Supplier<SurfaceControl.Transaction>>()
     private val interactionJankMonitor = mock<InteractionJankMonitor>()
     private val desktopTasksTransitionObserver = mock<DesktopTasksTransitionObserver>()
+    private val onTaskResizeAnimationListener = mock<OnTaskResizeAnimationListener>()
     private val transitionHandler =
         ToggleResizeDesktopTaskTransitionHandler(
             transitions,
@@ -62,7 +65,11 @@ class ToggleResizeDesktopTaskTransitionHandlerTest : ShellTestCase() {
 
     @Before
     fun setUp() {
-        transitionHandler.setOnTaskResizeAnimationListener(mock<OnTaskResizeAnimationListener>())
+        onTaskResizeAnimationListener.stub {
+            on { onAnimationStart(any(), any(), any()) } doReturn true
+            on { onBoundsChange(any(), any(), any()) } doReturn true
+        }
+        transitionHandler.setOnTaskResizeAnimationListener(onTaskResizeAnimationListener)
         whenever(transactionSupplier.get()).thenReturn(transaction)
         whenever(transaction.setPosition(any(), any(), any())).thenReturn(transaction)
         whenever(transaction.setWindowCrop(any(), any(), any())).thenReturn(transaction)

@@ -119,11 +119,15 @@ class ToggleResizeDesktopTaskTransitionHandler(
                                 )
                                 .setWindowCrop(leash, startBounds.width(), startBounds.height())
                                 .show(leash)
-                            onTaskResizeAnimationListener.onAnimationStart(
-                                taskId,
-                                startTransaction,
-                                startBounds,
-                            )
+                            val applied =
+                                onTaskResizeAnimationListener.onAnimationStart(
+                                    taskId,
+                                    startTransaction,
+                                    startBounds,
+                                )
+                            if (!applied) {
+                                startTransaction.apply()
+                            }
                         },
                         onEnd = {
                             finishTransaction
@@ -151,7 +155,10 @@ class ToggleResizeDesktopTaskTransitionHandler(
                             .setWindowCrop(leash, rect.width(), rect.height())
                             .show(leash)
                             .setFrameTimeline(Choreographer.getInstance().getVsyncId())
-                        onTaskResizeAnimationListener.onBoundsChange(taskId, tx, rect)
+                        val applied = onTaskResizeAnimationListener.onBoundsChange(taskId, tx, rect)
+                        if (!applied) {
+                            tx.apply()
+                        }
                     }
                     start()
                 }

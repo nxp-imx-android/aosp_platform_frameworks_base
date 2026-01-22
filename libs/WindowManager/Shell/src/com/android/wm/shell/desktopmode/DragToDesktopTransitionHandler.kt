@@ -1325,12 +1325,15 @@ constructor(
         // Accept the merge by applying the merging transaction (applied by #showResizeVeil)
         // and finish callback. Show the veil and position the task at the first frame before
         // starting the final animation.
-        onTaskResizeAnimationListener.onAnimationStart(
-            state.draggedTaskId,
-            startTransaction,
-            startBoundsWithOffset,
-        )
-
+        val startTransactionApplied =
+            onTaskResizeAnimationListener.onAnimationStart(
+                state.draggedTaskId,
+                startTransaction,
+                startBoundsWithOffset,
+            )
+        if (!startTransactionApplied) {
+            startTransaction.apply()
+        }
         val tx: SurfaceControl.Transaction = transactionSupplier.get()
         PhysicsAnimator.getInstance(startBoundsWithOffset)
             .spring(
@@ -1394,7 +1397,15 @@ constructor(
                         setAlpha(it.leash, freeformAnimFraction)
                     }
                 }
-                onTaskResizeAnimationListener.onBoundsChange(state.draggedTaskId, tx, animBounds)
+                val updateTransactionApplied =
+                    onTaskResizeAnimationListener.onBoundsChange(
+                        state.draggedTaskId,
+                        tx,
+                        animBounds,
+                    )
+                if (!updateTransactionApplied) {
+                    tx.apply()
+                }
             }
             .withEndActions({
                 onTaskResizeAnimationListener.onAnimationEnd(state.draggedTaskId)

@@ -37,10 +37,10 @@ import org.mockito.Mock
 import org.mockito.Mockito.atLeastOnce
 import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
+import org.mockito.Mockito.`when` as whenever
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.stub
-import org.mockito.Mockito.`when` as whenever
 
 /**
  * Unit tests against [PinnedLayerAnimator]
@@ -143,6 +143,35 @@ class PinnedLayerAnimatorTests : ShellTestCase() {
         verify(finishTransaction, never()).setPosition(any(), any(), any())
         verify(finishTransaction, never()).setWindowCrop(any(), any(), any())
         verify(finishCallback, never()).onTransitionFinished(any())
+    }
+
+    @Test
+    fun createPinAnimator_listenerReturnsFalse_appliesTransactions() {
+        val startBounds = Rect(0, 0, 100, 100)
+        val endBounds = Rect(100, 100, 300, 400)
+        whenever(change.startAbsBounds).thenReturn(startBounds)
+        whenever(change.endAbsBounds).thenReturn(endBounds)
+        val animator =
+            PinnedLayerAnimator.createPinAnimator(
+                change,
+                startTransaction,
+                finishTransaction,
+                finishCallback,
+                sctFactory = { intermediateTransaction },
+                onAnimationStart = { _, _, _ -> false },
+                onAnimationUpdate = { _, _, _ -> false },
+            ) as ValueAnimator
+
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            animator.start()
+            animator.setCurrentPlayTime(150) // Halfway through 300ms duration
+            animator.end()
+        }
+
+        // Then onAnimationStart applies the start state to startTransaction.
+        verify(startTransaction).apply()
+        // And intermediate transactions are applied.
+        verify(intermediateTransaction, atLeastOnce()).apply()
     }
 
     private fun createTask(taskId: Int): RunningTaskInfo {
