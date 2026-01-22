@@ -117,6 +117,9 @@ public final class Display {
     private DisplayInfo mDisplayInfo; // never null
     private boolean mIsValid;
 
+    private List<FrameRateVelocityPoint> mCachedFrameRateVelocityMapping;
+    private DisplayInfo mLastCachedDisplayInfo;
+
     // Temporary display metrics structure used for compatibility mode.
     private final DisplayMetrics mTempMetrics = new DisplayMetrics();
 
@@ -1461,8 +1464,21 @@ public final class Display {
     public List<FrameRateVelocityPoint> getFrameRateVelocityMapping() {
         synchronized (mLock) {
             updateDisplayInfoLocked();
-            // Return an unmodifiable view of the list
-            return Collections.unmodifiableList(mDisplayInfo.frameRateVelocityMapping);
+            if (mCachedFrameRateVelocityMapping != null
+                    && mLastCachedDisplayInfo == mDisplayInfo) {
+                return mCachedFrameRateVelocityMapping;
+            }
+
+            // 1. check the value from the display info
+            if (!mDisplayInfo.frameRateVelocityMapping.isEmpty()) {
+                mCachedFrameRateVelocityMapping = Collections.unmodifiableList(
+                        mDisplayInfo.frameRateVelocityMapping);
+            } else {
+                // Should not happen as FrameRateVelocityData ensures a default is always present
+                mCachedFrameRateVelocityMapping = Collections.emptyList();
+            }
+            mLastCachedDisplayInfo = mDisplayInfo;
+            return mCachedFrameRateVelocityMapping;
         }
     }
 
