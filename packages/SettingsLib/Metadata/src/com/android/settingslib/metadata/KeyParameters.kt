@@ -58,6 +58,16 @@ open class KeyParameters(
      * The format is `[key1=value1,key2=value2,...]`.
      */
     fun toParametersString() = values.toSerializableString()
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is KeyParameters) return false
+        return values == other.values
+    }
+
+    override fun hashCode(): Int {
+        return values.hashCode()
+    }
 }
 
 /**
