@@ -79,7 +79,7 @@ public final class RoundedRectBlurRegion extends BlurRegion {
      * @param other region to copy, must not be {@code null}
      * @throws IllegalArgumentException if {@code other} is {@code null}
      */
-    public RoundedRectBlurRegion(@NonNull RoundedRectBlurRegion other) {
+    private RoundedRectBlurRegion(@NonNull RoundedRectBlurRegion other) {
         super(other);
         if (other == null) {
             throw new IllegalArgumentException("RoundedRectBlurRegion is null");
@@ -88,10 +88,6 @@ public final class RoundedRectBlurRegion extends BlurRegion {
         this.mCornerRadius = Arrays.copyOf(other.mCornerRadius, 8);
     }
 
-    /**
-    * @return deep copy of this region
-    * @hide
-    */
     @Override
     @NonNull
     public RoundedRectBlurRegion copy() {
