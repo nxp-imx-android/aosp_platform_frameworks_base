@@ -52,6 +52,7 @@ class PackageUpdateController(
     private val userProfileContexts: UserProfileContexts,
     private val taskResourceLoader: WindowDecorTaskResourceLoader,
     private val desktopModeWindowDecorViewModel: Optional<DesktopModeWindowDecorViewModel>,
+    private val packageUpdateTransitionHandler: PackageUpdateTransitionHandler,
     @ShellMainThreadImmediate private val mainImmediateScope: CoroutineScope,
 ) : ShellTaskOrganizer.PackageUpdateListener {
     init {
@@ -91,7 +92,7 @@ class PackageUpdateController(
             }
 
             ProtoLog.d(WM_SHELL_PACKAGE_UPDATE, "PackageUpdateController: Starting transition")
-            transitions.startTransition(TRANSIT_OPEN, wct, null)
+            transitions.startTransition(TRANSIT_OPEN, wct, packageUpdateTransitionHandler)
             ProtoLog.d(WM_SHELL_PACKAGE_UPDATE, "PackageUpdateController: Started transition")
         }
     }
@@ -121,7 +122,7 @@ class PackageUpdateController(
                 wct.removeTask(task.token, /* removeFromRecents= */ false)
             }
         }
-        transitions.startTransition(TRANSIT_CHANGE, wct, null)
+        transitions.startTransition(TRANSIT_CHANGE, wct, packageUpdateTransitionHandler)
     }
 
     private fun launchPlaceholderInTask(

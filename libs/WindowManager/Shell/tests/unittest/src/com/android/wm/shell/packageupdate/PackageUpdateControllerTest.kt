@@ -53,7 +53,6 @@ import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.ArgumentMatchers.eq
 import org.mockito.ArgumentMatchers.isA
 import org.mockito.Mockito.verify
-import org.mockito.kotlin.isNull
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 
@@ -68,6 +67,7 @@ class PackageUpdateControllerTest : ShellTestCase() {
     private val userProfileContexts = mock<UserProfileContexts>()
     private val taskResourceLoader = mock<WindowDecorTaskResourceLoader>()
     private val viewModel = mock<DesktopModeWindowDecorViewModel>()
+    private val transitionHandler = mock<PackageUpdateTransitionHandler>()
     private val testScope = TestScope()
     private val testDispatcher = StandardTestDispatcher(testScope.testScheduler)
     private lateinit var packageUpdateController: PackageUpdateController
@@ -82,6 +82,7 @@ class PackageUpdateControllerTest : ShellTestCase() {
                 userProfileContexts,
                 taskResourceLoader,
                 Optional.of(viewModel),
+                transitionHandler,
                 testScope,
             )
 
@@ -185,15 +186,11 @@ class PackageUpdateControllerTest : ShellTestCase() {
         }
 
     private fun getLatestWct(
-        @WindowManager.TransitionType type: Int = TRANSIT_OPEN,
-        handlerClass: Class<out Transitions.TransitionHandler>? = null,
+        @WindowManager.TransitionType type: Int = TRANSIT_OPEN
     ): WindowContainerTransaction {
         val arg = ArgumentCaptor.forClass(WindowContainerTransaction::class.java)
-        if (handlerClass == null) {
-            verify(transitions).startTransition(eq(type), arg.capture(), isNull())
-        } else {
-            verify(transitions).startTransition(eq(type), arg.capture(), isA(handlerClass))
-        }
+        verify(transitions)
+            .startTransition(eq(type), arg.capture(), isA(transitionHandler::class.java))
         return arg.value
     }
 
