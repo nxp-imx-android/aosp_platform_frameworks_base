@@ -991,6 +991,14 @@ java_system_features_srcs {
     visibility: ["//visibility:private"],
 }
 
+filegroup {
+    name: "systemfeatures-gen-proguard",
+    srcs: [":systemfeatures-gen-srcs{.proguardFlagsFiles}"],
+    // TODO(b/203143243): Adjust visibility and apply these rules by default for
+    // `platform_apis: true` targets.
+    visibility: ["//frameworks/base/services"],
+}
+
 aidl_interface {
     name: "activitymanager_structured_aidl",
     unstable: true,
