@@ -84,6 +84,7 @@ public class MetadataSyncAdapter {
     // by permissions.
     public static final int EXECUTE_APP_FUNCTIONS = 9;
     private static final int SET_SCHEMA_REQUEST_DISCOVER_APP_FUNCTIONS = 13;
+    private static final int SET_SCHEMA_REQUEST_EXECUTE_APP_FUNCTIONS_SYSTEM = 14;
 
     public MetadataSyncAdapter(
             @NonNull PackageManager packageManager, @NonNull AppSearchManager appSearchManager) {
@@ -312,6 +313,9 @@ public class MetadataSyncAdapter {
                 setSchemaRequestBuilder.addRequiredPermissionsForSchemaTypeVisibility(
                         runtimeMetadataSchema.getSchemaType(),
                         Set.of(SET_SCHEMA_REQUEST_DISCOVER_APP_FUNCTIONS));
+                setSchemaRequestBuilder.addRequiredPermissionsForSchemaTypeVisibility(
+                        runtimeMetadataSchema.getSchemaType(),
+                        Set.of(SET_SCHEMA_REQUEST_EXECUTE_APP_FUNCTIONS_SYSTEM));
             }
         }
         return setSchemaRequestBuilder.build();
