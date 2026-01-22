@@ -29,6 +29,7 @@ import android.text.BidiFormatter
 import android.text.TextUtils
 import android.view.KeyEvent
 import android.view.accessibility.AccessibilityManager
+import com.android.internal.R as RI
 import com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType
 import com.android.internal.accessibility.dialog.AccessibilityServiceTarget
 import com.android.internal.accessibility.dialog.AccessibilityTarget
@@ -147,6 +148,12 @@ interface AccessibilityShortcutsRepository {
      *   otherwise.
      */
     fun getAccessibilityServiceInfo(target: AccessibilityTargetModel): AccessibilityServiceInfo?
+
+    /**
+     * The list of accessibility targets that are excluded from showing up in the accessibility
+     * shortcut chooser dialog when the current user is the Headless System User.
+     */
+    val hsuExcludedTargets: List<String>
 }
 
 @SysUISingleton
@@ -404,6 +411,10 @@ constructor(
         AccessibilityTargetHelper.getInstalledTargets(context, target.shortcutType)
             .find { it.id == target.targetName }
             ?.let { (it as? AccessibilityServiceTarget)?.accessibilityServiceInfo }
+
+    override val hsuExcludedTargets: List<String> by lazy {
+        resources.getStringArray(RI.array.hsu_accessibility_targets_blocklist).toList()
+    }
 
     private fun AccessibilityTarget.toAccessibilityTargetModel() =
         AccessibilityTargetModel(
