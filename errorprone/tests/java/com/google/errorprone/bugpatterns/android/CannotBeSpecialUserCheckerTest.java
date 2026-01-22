@@ -36,7 +36,6 @@ public class CannotBeSpecialUserCheckerTest {
     @Test
     public void testInvalid() {
         compilationHelper
-                .addSourceFile("/android/annotation/SpecialUsers.java")
                 .addSourceFile("/android/os/UserHandle.java")
                 .addSourceLines("Test.java",
                         "import android.annotation.SpecialUsers.CannotBeSpecialUser;",
@@ -69,7 +68,6 @@ public class CannotBeSpecialUserCheckerTest {
     @Test
     public void testValid() {
         compilationHelper
-                .addSourceFile("/android/annotation/SpecialUsers.java")
                 .addSourceFile("/android/os/UserHandle.java")
                 .addSourceLines("Test.java",
                         "import android.annotation.SpecialUsers.CannotBeSpecialUser;",
@@ -87,7 +85,6 @@ public class CannotBeSpecialUserCheckerTest {
     @Test
     public void testNoAnnotation() {
         compilationHelper
-                .addSourceFile("/android/annotation/SpecialUsers.java")
                 .addSourceFile("/android/os/UserHandle.java")
                 .addSourceLines("Test.java",
                         "import android.annotation.SpecialUsers.CannotBeSpecialUser;",
@@ -112,7 +109,6 @@ public class CannotBeSpecialUserCheckerTest {
     @Test
     public void testMixed() {
         compilationHelper
-                .addSourceFile("/android/annotation/SpecialUsers.java")
                 .addSourceFile("/android/os/UserHandle.java")
                 .addSourceLines("Test.java",
                         "import android.annotation.SpecialUsers.CannotBeSpecialUser;",
