@@ -23,6 +23,7 @@ import android.service.personalcontext.embedded.InsightSurfaceClientInfo;
 import android.service.personalcontext.hint.ContextHintWithSignature;
 import android.service.personalcontext.hint.ContextHintWrapper;
 import android.service.personalcontext.insight.ContextInsightWrapper;
+import android.service.personalcontext.insight.interaction.InsightEvent;
 
 /**
  * {@link IPersonalContextManager} is the internal interface for accessing the
@@ -53,4 +54,6 @@ interface IPersonalContextManager {
 
     oneway void publishInsightSurfaceHints(
         in List<ContextHintWrapper> hints, in InsightSurfaceClientInfo clientInfo, int userId);
+
+    oneway void reportEvent(in InsightEvent event, int userId);
 }

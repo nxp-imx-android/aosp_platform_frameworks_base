@@ -25,11 +25,13 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.os.ParcelUuid;
 import android.os.RemoteException;
+import android.service.personalcontext.ComponentIdProvider;
 import android.service.personalcontext.Flags;
 import android.service.personalcontext.PersonalContextManager;
 import android.service.personalcontext.hint.ContextHint;
 import android.service.personalcontext.hint.ContextHintWithSignature;
 import android.service.personalcontext.insight.ContextInsight;
+import android.service.personalcontext.insight.interaction.InsightEvent;
 import android.service.personalcontext.refiner.HintFilter;
 import android.service.personalcontext.refiner.IGetFilterCallback;
 import android.service.personalcontext.refiner.IRefineCallback;
@@ -70,13 +72,21 @@ public abstract class ContextUnderstanderService extends Service {
         onConnected();
     }
 
-    /** @hide */
     @NonNull
     public final UUID getComponentId() {
         if (mComponentId == null) {
             throw new IllegalStateException("Service has not been configured yet");
         }
         return mComponentId;
+    }
+
+    /** Returns a {@link ComponentIdProvider} for this component. */
+    @NonNull
+    public final ComponentIdProvider getComponentIdProvider() {
+        if (mComponentId == null) {
+            throw new IllegalStateException("Service has not been configured yet");
+        }
+        return () -> mComponentId;
     }
 
     @Override
@@ -146,6 +156,11 @@ public abstract class ContextUnderstanderService extends Service {
         understood(List.of(insight));
     }
 
+    /** Override this method to receive logging events for actions taken on the insight. */
+    public void onHandleEvent(@NonNull String packageName, @NonNull InsightEvent event) {
+        // Do nothing by default.
+    }
+
     private static final class Binder extends IRefiner.Stub {
         private final WeakReference<ContextUnderstanderService> mService;
 
@@ -180,6 +195,11 @@ public abstract class ContextUnderstanderService extends Service {
         @Override
         public void getFilter(IGetFilterCallback callback) throws RemoteException {
             callback.updateFilter(getServiceOrThrow().onInitializeFilter());
+        }
+
+        @Override
+        public void handleEvent(String packageName, InsightEvent event) throws RemoteException {
+            getServiceOrThrow().onHandleEvent(packageName, event);
         }
     }
 }

@@ -142,6 +142,11 @@ class ContextComponentManager
     }
 
     @Nullable
+    Refiner getRefinerById(UUID id) {
+        return mRefiners.get(id);
+    }
+
+    @Nullable
     @Override
     public Renderer getRendererById(UUID id) {
         return mRenderers.get(id);

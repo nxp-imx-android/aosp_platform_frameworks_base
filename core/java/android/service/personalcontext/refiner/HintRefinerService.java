@@ -28,6 +28,7 @@ import android.service.personalcontext.Flags;
 import android.service.personalcontext.hint.ContextHint;
 import android.service.personalcontext.hint.ContextHintWithSignature;
 import android.service.personalcontext.hint.ContextHintWrapper;
+import android.service.personalcontext.insight.interaction.InsightEvent;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -154,6 +155,11 @@ public abstract class HintRefinerService extends Service {
         @Override
         public void getFilter(IGetFilterCallback callback) throws RemoteException {
             callback.updateFilter(getServiceOrThrow().onInitializeFilter());
+        }
+
+        @Override
+        public void handleEvent(String packageName, InsightEvent event) {
+            throw new UnsupportedOperationException("Can not handle insight events in a refiner");
         }
     }
 }
