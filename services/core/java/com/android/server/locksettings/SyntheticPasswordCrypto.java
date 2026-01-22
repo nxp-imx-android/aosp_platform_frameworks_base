@@ -27,6 +27,7 @@ import android.util.Slog;
 import com.android.internal.util.ArrayUtils;
 
 import java.io.IOException;
+import java.security.DigestException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyStore;
@@ -52,6 +53,8 @@ class SyntheticPasswordCrypto {
     private static final int AES_GCM_KEY_SIZE = 32; // AES-256-GCM
     private static final int AES_GCM_IV_SIZE = 12;
     private static final int AES_GCM_TAG_SIZE = 16;
+    private static final int SHA512_DIGEST_SIZE = 64;
+    private static final int SHA512_BLOCK_SIZE = 128;
     private static final byte[] PROTECTOR_SECRET_PERSONALIZATION = "application-id".getBytes();
     // Time between the user credential is verified with GK and the decryption of synthetic password
     // under the auth-bound key. This should always happen one after the other, but give it 15
@@ -251,21 +254,24 @@ class SyntheticPasswordCrypto {
 
     protected static byte[] personalizedHash(byte[] personalization, byte[]... message) {
         try {
-            final int PADDING_LENGTH = 128;
             MessageDigest digest = MessageDigest.getInstance("SHA-512");
-            if (personalization.length > PADDING_LENGTH) {
+            if (personalization.length > SHA512_BLOCK_SIZE) {
                 throw new IllegalArgumentException("Personalization too long");
             }
             // Personalize the hash
             // Pad it to the block size of the hash function
-            personalization = Arrays.copyOf(personalization, PADDING_LENGTH);
+            personalization = Arrays.copyOf(personalization, SHA512_BLOCK_SIZE);
             digest.update(personalization);
             for (byte[] data : message) {
                 digest.update(data);
             }
-            return digest.digest();
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException("NoSuchAlgorithmException for SHA-512", e);
+            byte[] output = ArrayUtils.newNonMovableByteArray(SHA512_DIGEST_SIZE);
+            if (digest.digest(output, 0, SHA512_DIGEST_SIZE) != SHA512_DIGEST_SIZE) {
+                throw new IllegalStateException("Unexpected SHA-512 output length");
+            }
+            return output;
+        } catch (NoSuchAlgorithmException | DigestException e) {
+            throw new IllegalStateException("SHA-512 hashing failed", e);
         }
     }
 
