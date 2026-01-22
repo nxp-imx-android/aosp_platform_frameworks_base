@@ -8160,15 +8160,30 @@ public class TelephonyManager {
     }
 
     /**
-     * Generate a radio modem reset. Used for device configuration by some carriers.
+     * Reboot and re-initialize the cellular modem and related subsystems below the OS.
+     *
+     * Used for device provisioning and reconfiguration by some carriers.
+     *
+     * <p>Device-specific and App-specific support information:
+     * <ul>
+     * <li>This method is required to be supported on devices that launch with hardware support for
+     * {@link Build.VERSION_CODES#CINNAMON_BUN} and which declare
+     * {@link PackageManager#FEATURE_TELEPHONY_RADIO_ACCESS}.
+     * <li>On other devices which either do not include hardware support for
+     * {@link Build.VERSION_CODES#CINNAMON_BUN} or do not declare
+     * {@link PackageManager#FEATURE_TELEPHONY_RADIO_ACCESS}, support is likely but not
+     * guaranteed.
+     * <li>For applications targeting {@link Build.VERSION_CODES#BAKLAVA} or lower, if this method
+     * is not supported, it may fail silently.
+     * </ul>
      *
      * <p>Requires Permission:
      * {@link android.Manifest.permission#MODIFY_PHONE_STATE MODIFY_PHONE_STATE} or that the calling
      * app has carrier privileges (see {@link #hasCarrierPrivileges}).
+     *
      * @throws IllegalStateException if the Telephony process is not currently available.
      * @throws RuntimeException
-     * @throws UnsupportedOperationException If the device does not have
-     *          {@link PackageManager#FEATURE_TELEPHONY_RADIO_ACCESS}.
+     * @throws UnsupportedOperationException If the method is unsupported.
      */
     @RequiresPermission(Manifest.permission.MODIFY_PHONE_STATE)
     @RequiresFeature(PackageManager.FEATURE_TELEPHONY_RADIO_ACCESS)
