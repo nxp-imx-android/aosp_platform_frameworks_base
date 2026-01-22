@@ -299,14 +299,6 @@ flag {
 }
 
 flag {
-    name: "request_rectangle_with_source"
-    namespace: "accessibility"
-    description: "Request rectangle on screen with source parameter"
-    bug: "391877896"
-    is_exported: true
-}
-
-flag {
     name: "restrict_viewgroup_accessibility_event_population"
     namespace: "accessibility"
     description: "Impose additional restrictions on which ViewGroup children may populate AccessibilityEvents based on accessibility importance and data sensitivity"

@@ -37,7 +37,6 @@ import static android.view.accessibility.AccessibilityEvent.CONTENT_CHANGE_TYPE_
 import static android.view.accessibility.Flags.a11yExtraRenderingInfoColorAdditions;
 import static android.view.accessibility.Flags.a11ySequentialFocusStartingPoint;
 import static android.view.accessibility.Flags.FLAG_DEPRECATE_ACCESSIBILITY_ANNOUNCEMENT_APIS;
-import static android.view.accessibility.Flags.FLAG_REQUEST_RECTANGLE_WITH_SOURCE;
 import static android.view.accessibility.Flags.FLAG_SUPPLEMENTAL_DESCRIPTION;
 import static android.view.accessibility.Flags.removeChildHoverCheckForTouchExploration;
 import static android.view.accessibility.Flags.supplementalDescription;
@@ -5987,7 +5986,6 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
      * RECTANGLE_ON_SCREEN_REQUEST_SOURCE_UNDEFINED should be reserved for backward
      * compatibility and should only be provided from calls to the original API.
      */
-    @FlaggedApi(FLAG_REQUEST_RECTANGLE_WITH_SOURCE)
     public static final int RECTANGLE_ON_SCREEN_REQUEST_SOURCE_UNDEFINED = 0x00000000;
 
     /**
@@ -5995,21 +5993,18 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
      * only to scroll the View on screen, and the rectangle is not associated with a text cursor or
      * keyboard focus.
      */
-    @FlaggedApi(FLAG_REQUEST_RECTANGLE_WITH_SOURCE)
     public static final int RECTANGLE_ON_SCREEN_REQUEST_SOURCE_SCROLL_ONLY = 0x00000001;
 
     /**
      * Represents that the user interaction that is requesting a rectangle on screen is
      * doing so because the View contains a text cursor (caret).
      */
-    @FlaggedApi(FLAG_REQUEST_RECTANGLE_WITH_SOURCE)
     public static final int RECTANGLE_ON_SCREEN_REQUEST_SOURCE_TEXT_CURSOR = 0x00000002;
 
     /**
      * Represents that the user interaction that is requesting a rectangle on screen is
      * doing so because the View has input/keyboard focus.
      */
-    @FlaggedApi(FLAG_REQUEST_RECTANGLE_WITH_SOURCE)
     public static final int RECTANGLE_ON_SCREEN_REQUEST_SOURCE_INPUT_FOCUS = 0x00000003;
 
     /**
@@ -8737,7 +8732,6 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
      * @param source The type of user interaction that requested this rectangle
      * @return Whether any parent scrolled.
      */
-    @FlaggedApi(FLAG_REQUEST_RECTANGLE_WITH_SOURCE)
     public boolean requestRectangleOnScreen(@NonNull Rect rectangle, boolean immediate,
             @RectangleOnScreenRequestSource int source) {
         if (mParent == null) {
@@ -8985,13 +8979,11 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
                 }
             }
 
-            if (android.view.accessibility.Flags.requestRectangleWithSource()) {
-                if (mAttachInfo != null) {
-                    final Rect r = mAttachInfo.mTmpInvalRect;
-                    getLocalVisibleRect(r);
-                    requestRectangleOnScreen(r, false,
-                            RECTANGLE_ON_SCREEN_REQUEST_SOURCE_INPUT_FOCUS);
-                }
+            if (mAttachInfo != null) {
+                final Rect r = mAttachInfo.mTmpInvalRect;
+                getLocalVisibleRect(r);
+                requestRectangleOnScreen(r, false,
+                        RECTANGLE_ON_SCREEN_REQUEST_SOURCE_INPUT_FOCUS);
             }
         }
 
