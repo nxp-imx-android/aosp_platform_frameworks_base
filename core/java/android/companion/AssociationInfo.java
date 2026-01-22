@@ -662,9 +662,8 @@ public final class AssociationInfo implements Parcelable {
         private boolean mTrusted;
         private long mTimeApprovedMs = System.currentTimeMillis();
         private long mLastTimeConnectedMs = Long.MAX_VALUE; // Never connected.
-        // By default, only call metadata sync and task continuity sync is enabled.
-        private int mSystemDataSyncFlags = CompanionDeviceManager.FLAG_CALL_METADATA
-                | CompanionDeviceManager.FLAG_TASK_CONTINUITY;
+        // By default, only call metadata sync is enabled.
+        private int mSystemDataSyncFlags = CompanionDeviceManager.FLAG_CALL_METADATA;
         private int mTransportFlags;
         private Icon mDeviceIcon;
         private DeviceId mDeviceId;
