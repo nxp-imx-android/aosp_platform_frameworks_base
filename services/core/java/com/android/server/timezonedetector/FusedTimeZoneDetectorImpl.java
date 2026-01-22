@@ -185,17 +185,14 @@ public final class FusedTimeZoneDetectorImpl implements FusedTimeZoneDetector {
     public static FusedTimeZoneDetectorImpl create(
             @NonNull Context context,
             @NonNull ServiceConfigAccessor serviceConfigAccessor,
+            @NonNull TimeZoneDetectorTelemetry telemetry,
             @NonNull Handler handler) {
         FusedTimeZoneDetectorImpl fusedTimeZoneDetector =
                 new FusedTimeZoneDetectorImpl(
                         context,
                         serviceConfigAccessor,
                         DeviceActivityMonitorImpl.create(context, handler),
-                        new TimeZoneDetectorTelemetryImpl(
-                                context,
-                                new EnvironmentImpl(handler),
-                                new TimeZoneDetectorStatsdLogger(),
-                                context.getPackageManager()),
+                        telemetry,
                         handler);
         fusedTimeZoneDetector.init();
 

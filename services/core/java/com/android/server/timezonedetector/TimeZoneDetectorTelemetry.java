@@ -19,6 +19,8 @@ package com.android.server.timezonedetector;
 import android.annotation.NonNull;
 import android.app.timezonedetector.TelephonyTimeZoneSuggestion;
 
+import com.android.server.timezonedetector.TimeZoneDetectorStrategy.Origin;
+
 interface TimeZoneDetectorTelemetry {
     /**
      * Processes a new Telephony suggestion.
@@ -50,4 +52,19 @@ interface TimeZoneDetectorTelemetry {
      * @param timeZoneId The new Fused time zone ID.
      */
     public void onFusedTimeZoneChanged(String timeZoneId);
+
+    /**
+     * Logs a rejected time zone change.
+     *
+     * <p>It is called from {@link FusedTimeZoneDetectorImpl} when a time zone change is rejected.
+     *
+     * @param oldZoneId Time zone ID before the rejected change.
+     * @param rejectedZoneId Time zone ID which was rejected.
+     * @param newZoneId Time zone ID which was set manually by the user.
+     */
+    public void logRejectedTimeZoneChange(
+            @Origin int origin,
+            @NonNull String oldZoneId,
+            @NonNull String rejectedZoneId,
+            @NonNull String newZoneId);
 }

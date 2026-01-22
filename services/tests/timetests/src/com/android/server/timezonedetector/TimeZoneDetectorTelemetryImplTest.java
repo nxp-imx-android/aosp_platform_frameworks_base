@@ -19,7 +19,6 @@ package com.android.server.timezonedetector;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 
-import android.annotation.NonNull;
 import android.app.timezonedetector.NitzSignal;
 import android.app.timezonedetector.TelephonySignal;
 import android.app.timezonedetector.TelephonyTimeZoneSuggestion;
@@ -45,7 +44,6 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -137,17 +135,18 @@ public class TimeZoneDetectorTelemetryImplTest {
         assertEquals(0, mFakeEnvironment.getDelayedRunnableCount());
 
         assertEquals(1, mFakeStatsdLogger.getDiscrepancyLogCount());
-        DiscrepancyLog discrepancyLog = mFakeStatsdLogger.getDiscrepancyLog(0);
-        assertEquals(ZONE_A, discrepancyLog.locationTimeZoneId);
-        assertEquals(ZONE_B, discrepancyLog.telephonyTimeZoneId);
-        assertEquals(MCC, discrepancyLog.mcc);
-        assertEquals(MNC, discrepancyLog.mnc);
-        assertEquals(NITZ_OFFSET_SECONDS, discrepancyLog.nitzOffsetSeconds);
-        assertEquals(NITZ_DST_OFFSET_SECONDS, discrepancyLog.nitzDstOffsetSeconds);
-        assertEquals(TimeZone.getTZDataVersion(), discrepancyLog.tzdbVersion);
+        FakeTimeZoneDetectorLogger.DiscrepancyLog discrepancyLog =
+                mFakeStatsdLogger.getDiscrepancyLog(0);
+        assertEquals(ZONE_A, discrepancyLog.locationTimeZoneId());
+        assertEquals(ZONE_B, discrepancyLog.telephonyTimeZoneId());
+        assertEquals(MCC, discrepancyLog.mcc());
+        assertEquals(MNC, discrepancyLog.mnc());
+        assertEquals(NITZ_OFFSET_SECONDS, discrepancyLog.nitzOffsetSeconds());
+        assertEquals(NITZ_DST_OFFSET_SECONDS, discrepancyLog.nitzDstOffsetSeconds());
+        assertEquals(TimeZone.getTZDataVersion(), discrepancyLog.tzdbVersion());
         assertEquals(
                 PRIMARY_LOCATION_TIME_ZONE_PROVIDER_UID,
-                discrepancyLog.locationTimeZoneProviderUid);
+                discrepancyLog.locationTimeZoneProviderUid());
     }
 
     @Test
@@ -169,17 +168,18 @@ public class TimeZoneDetectorTelemetryImplTest {
         assertEquals(0, mFakeEnvironment.getDelayedRunnableCount());
 
         assertEquals(1, mFakeStatsdLogger.getDiscrepancyLogCount());
-        DiscrepancyLog discrepancyLog = mFakeStatsdLogger.getDiscrepancyLog(0);
-        assertEquals(ZONE_B, discrepancyLog.locationTimeZoneId);
-        assertEquals(ZONE_A, discrepancyLog.telephonyTimeZoneId);
-        assertEquals(MCC, discrepancyLog.mcc);
-        assertEquals(MNC, discrepancyLog.mnc);
-        assertEquals(NITZ_OFFSET_SECONDS, discrepancyLog.nitzOffsetSeconds);
-        assertEquals(NITZ_DST_OFFSET_SECONDS, discrepancyLog.nitzDstOffsetSeconds);
-        assertEquals(TimeZone.getTZDataVersion(), discrepancyLog.tzdbVersion);
+        FakeTimeZoneDetectorLogger.DiscrepancyLog discrepancyLog =
+                mFakeStatsdLogger.getDiscrepancyLog(0);
+        assertEquals(ZONE_B, discrepancyLog.locationTimeZoneId());
+        assertEquals(ZONE_A, discrepancyLog.telephonyTimeZoneId());
+        assertEquals(MCC, discrepancyLog.mcc());
+        assertEquals(MNC, discrepancyLog.mnc());
+        assertEquals(NITZ_OFFSET_SECONDS, discrepancyLog.nitzOffsetSeconds());
+        assertEquals(NITZ_DST_OFFSET_SECONDS, discrepancyLog.nitzDstOffsetSeconds());
+        assertEquals(TimeZone.getTZDataVersion(), discrepancyLog.tzdbVersion());
         assertEquals(
                 PRIMARY_LOCATION_TIME_ZONE_PROVIDER_UID,
-                discrepancyLog.locationTimeZoneProviderUid);
+                discrepancyLog.locationTimeZoneProviderUid());
     }
 
     @Test
@@ -199,20 +199,22 @@ public class TimeZoneDetectorTelemetryImplTest {
         assertEquals(0, mFakeEnvironment.getDelayedRunnableCount());
         assertEquals(1, mFakeStatsdLogger.getTransitionLogCount());
 
-        TransitionLog transitionLog = mFakeStatsdLogger.getTransitionLog(0);
-        assertEquals(ZONE_A, transitionLog.previousTimeZoneId);
-        assertEquals(ZONE_B, transitionLog.timeZoneId);
-        assertEquals(telTime, transitionLog.telephonyTimeZoneChangedTimestamp);
-        assertEquals(-1, transitionLog.geoTimeZoneChangedTimestamp);
-        assertEquals(-1, transitionLog.fusedTimeZoneChangedTimestamp);
-        assertEquals(MCC, transitionLog.mcc);
-        assertEquals(MNC, transitionLog.mnc);
-        assertEquals(NITZ_OFFSET_SECONDS, transitionLog.nitzOffsetSeconds);
-        assertEquals(NITZ_DST_OFFSET_SECONDS, transitionLog.nitzDstOffsetSeconds);
-        assertEquals(true, transitionLog.transitionAborted);
-        assertEquals(TimeZone.getTZDataVersion(), transitionLog.tzdbVersion);
+        FakeTimeZoneDetectorLogger.TransitionLog transitionLog =
+                mFakeStatsdLogger.getTransitionLog(0);
+        assertEquals(ZONE_A, transitionLog.previousTimeZoneId());
+        assertEquals(ZONE_B, transitionLog.timeZoneId());
+        assertEquals(telTime, transitionLog.telephonyTimeZoneChangedTimestamp());
+        assertEquals(-1, transitionLog.geoTimeZoneChangedTimestamp());
+        assertEquals(-1, transitionLog.fusedTimeZoneChangedTimestamp());
+        assertEquals(MCC, transitionLog.mcc());
+        assertEquals(MNC, transitionLog.mnc());
+        assertEquals(NITZ_OFFSET_SECONDS, transitionLog.nitzOffsetSeconds());
+        assertEquals(NITZ_DST_OFFSET_SECONDS, transitionLog.nitzDstOffsetSeconds());
+        assertEquals(true, transitionLog.transitionAborted());
+        assertEquals(TimeZone.getTZDataVersion(), transitionLog.tzdbVersion());
         assertEquals(
-                PRIMARY_LOCATION_TIME_ZONE_PROVIDER_UID, transitionLog.locationTimeZoneProviderUid);
+                PRIMARY_LOCATION_TIME_ZONE_PROVIDER_UID,
+                transitionLog.locationTimeZoneProviderUid());
     }
 
     @Test
@@ -240,20 +242,22 @@ public class TimeZoneDetectorTelemetryImplTest {
         assertEquals(0, mFakeEnvironment.getDelayedRunnableCount());
         assertEquals(1, mFakeStatsdLogger.getTransitionLogCount());
 
-        TransitionLog transitionLog = mFakeStatsdLogger.getTransitionLog(0);
-        assertEquals(ZONE_A, transitionLog.previousTimeZoneId);
-        assertEquals(ZONE_B, transitionLog.timeZoneId);
-        assertEquals(telTime, transitionLog.telephonyTimeZoneChangedTimestamp);
-        assertEquals(geoTime, transitionLog.geoTimeZoneChangedTimestamp);
-        assertEquals(fusedTime, transitionLog.fusedTimeZoneChangedTimestamp);
-        assertEquals(MCC, transitionLog.mcc);
-        assertEquals(MNC, transitionLog.mnc);
-        assertEquals(NITZ_OFFSET_SECONDS, transitionLog.nitzOffsetSeconds);
-        assertEquals(NITZ_DST_OFFSET_SECONDS, transitionLog.nitzDstOffsetSeconds);
-        assertEquals(false, transitionLog.transitionAborted);
-        assertEquals(TimeZone.getTZDataVersion(), transitionLog.tzdbVersion);
+        FakeTimeZoneDetectorLogger.TransitionLog transitionLog =
+                mFakeStatsdLogger.getTransitionLog(0);
+        assertEquals(ZONE_A, transitionLog.previousTimeZoneId());
+        assertEquals(ZONE_B, transitionLog.timeZoneId());
+        assertEquals(telTime, transitionLog.telephonyTimeZoneChangedTimestamp());
+        assertEquals(geoTime, transitionLog.geoTimeZoneChangedTimestamp());
+        assertEquals(fusedTime, transitionLog.fusedTimeZoneChangedTimestamp());
+        assertEquals(MCC, transitionLog.mcc());
+        assertEquals(MNC, transitionLog.mnc());
+        assertEquals(NITZ_OFFSET_SECONDS, transitionLog.nitzOffsetSeconds());
+        assertEquals(NITZ_DST_OFFSET_SECONDS, transitionLog.nitzDstOffsetSeconds());
+        assertEquals(false, transitionLog.transitionAborted());
+        assertEquals(TimeZone.getTZDataVersion(), transitionLog.tzdbVersion());
         assertEquals(
-                PRIMARY_LOCATION_TIME_ZONE_PROVIDER_UID, transitionLog.locationTimeZoneProviderUid);
+                PRIMARY_LOCATION_TIME_ZONE_PROVIDER_UID,
+                transitionLog.locationTimeZoneProviderUid());
     }
 
     @Test
@@ -292,20 +296,22 @@ public class TimeZoneDetectorTelemetryImplTest {
         assertEquals(0, mFakeEnvironment.getDelayedRunnableCount());
 
         assertEquals(1, mFakeStatsdLogger.getTransitionLogCount());
-        TransitionLog transitionLog = mFakeStatsdLogger.getTransitionLog(0);
-        assertEquals(ZONE_A, transitionLog.previousTimeZoneId);
-        assertEquals(ZONE_B, transitionLog.timeZoneId);
-        assertEquals(telTime, transitionLog.telephonyTimeZoneChangedTimestamp);
-        assertEquals(-1, transitionLog.geoTimeZoneChangedTimestamp);
-        assertEquals(-1, transitionLog.fusedTimeZoneChangedTimestamp);
-        assertEquals(MCC, transitionLog.mcc);
-        assertEquals(MNC, transitionLog.mnc);
-        assertEquals(NITZ_OFFSET_SECONDS, transitionLog.nitzOffsetSeconds);
-        assertEquals(NITZ_DST_OFFSET_SECONDS, transitionLog.nitzDstOffsetSeconds);
-        assertEquals(true, transitionLog.transitionAborted);
-        assertEquals(TimeZone.getTZDataVersion(), transitionLog.tzdbVersion);
+        FakeTimeZoneDetectorLogger.TransitionLog transitionLog =
+                mFakeStatsdLogger.getTransitionLog(0);
+        assertEquals(ZONE_A, transitionLog.previousTimeZoneId());
+        assertEquals(ZONE_B, transitionLog.timeZoneId());
+        assertEquals(telTime, transitionLog.telephonyTimeZoneChangedTimestamp());
+        assertEquals(-1, transitionLog.geoTimeZoneChangedTimestamp());
+        assertEquals(-1, transitionLog.fusedTimeZoneChangedTimestamp());
+        assertEquals(MCC, transitionLog.mcc());
+        assertEquals(MNC, transitionLog.mnc());
+        assertEquals(NITZ_OFFSET_SECONDS, transitionLog.nitzOffsetSeconds());
+        assertEquals(NITZ_DST_OFFSET_SECONDS, transitionLog.nitzDstOffsetSeconds());
+        assertEquals(true, transitionLog.transitionAborted());
+        assertEquals(TimeZone.getTZDataVersion(), transitionLog.tzdbVersion());
         assertEquals(
-                PRIMARY_LOCATION_TIME_ZONE_PROVIDER_UID, transitionLog.locationTimeZoneProviderUid);
+                PRIMARY_LOCATION_TIME_ZONE_PROVIDER_UID,
+                transitionLog.locationTimeZoneProviderUid());
 
         // Ensure no new runnable was posted after re-agreement
         assertEquals(0, mFakeEnvironment.getDelayedRunnableCount());
@@ -333,20 +339,22 @@ public class TimeZoneDetectorTelemetryImplTest {
         assertEquals(0, mFakeEnvironment.getDelayedRunnableCount());
 
         assertEquals(1, mFakeStatsdLogger.getTransitionLogCount());
-        TransitionLog transitionLog = mFakeStatsdLogger.getTransitionLog(0);
-        assertEquals(ZONE_A, transitionLog.previousTimeZoneId);
-        assertEquals(ZONE_B, transitionLog.timeZoneId);
-        assertEquals(telTime, transitionLog.telephonyTimeZoneChangedTimestamp);
-        assertEquals(-1, transitionLog.geoTimeZoneChangedTimestamp);
-        assertEquals(fusedTime, transitionLog.fusedTimeZoneChangedTimestamp);
-        assertEquals(MCC, transitionLog.mcc);
-        assertEquals(MNC, transitionLog.mnc);
-        assertEquals(NITZ_OFFSET_SECONDS, transitionLog.nitzOffsetSeconds);
-        assertEquals(NITZ_DST_OFFSET_SECONDS, transitionLog.nitzDstOffsetSeconds);
-        assertEquals(true, transitionLog.transitionAborted);
-        assertEquals(TimeZone.getTZDataVersion(), transitionLog.tzdbVersion);
+        FakeTimeZoneDetectorLogger.TransitionLog transitionLog =
+                mFakeStatsdLogger.getTransitionLog(0);
+        assertEquals(ZONE_A, transitionLog.previousTimeZoneId());
+        assertEquals(ZONE_B, transitionLog.timeZoneId());
+        assertEquals(telTime, transitionLog.telephonyTimeZoneChangedTimestamp());
+        assertEquals(-1, transitionLog.geoTimeZoneChangedTimestamp());
+        assertEquals(fusedTime, transitionLog.fusedTimeZoneChangedTimestamp());
+        assertEquals(MCC, transitionLog.mcc());
+        assertEquals(MNC, transitionLog.mnc());
+        assertEquals(NITZ_OFFSET_SECONDS, transitionLog.nitzOffsetSeconds());
+        assertEquals(NITZ_DST_OFFSET_SECONDS, transitionLog.nitzDstOffsetSeconds());
+        assertEquals(true, transitionLog.transitionAborted());
+        assertEquals(TimeZone.getTZDataVersion(), transitionLog.tzdbVersion());
         assertEquals(
-                PRIMARY_LOCATION_TIME_ZONE_PROVIDER_UID, transitionLog.locationTimeZoneProviderUid);
+                PRIMARY_LOCATION_TIME_ZONE_PROVIDER_UID,
+                transitionLog.locationTimeZoneProviderUid());
 
         // Ensure no new runnable was posted after re-agreement
         assertEquals(0, mFakeEnvironment.getDelayedRunnableCount());
@@ -376,20 +384,22 @@ public class TimeZoneDetectorTelemetryImplTest {
         mTelemetry.onFusedTimeZoneChanged(ZONE_A);
 
         assertEquals(1, mFakeStatsdLogger.getTransitionLogCount());
-        TransitionLog transitionLog = mFakeStatsdLogger.getTransitionLog(0);
-        assertEquals(ZONE_A, transitionLog.previousTimeZoneId);
-        assertEquals(ZONE_C, transitionLog.timeZoneId);
-        assertEquals(telTime, transitionLog.telephonyTimeZoneChangedTimestamp);
-        assertEquals(-1, transitionLog.geoTimeZoneChangedTimestamp);
-        assertEquals(-1, transitionLog.fusedTimeZoneChangedTimestamp);
-        assertEquals(MCC, transitionLog.mcc);
-        assertEquals(MNC, transitionLog.mnc);
-        assertEquals(NITZ_OFFSET_SECONDS, transitionLog.nitzOffsetSeconds);
-        assertEquals(NITZ_DST_OFFSET_SECONDS, transitionLog.nitzDstOffsetSeconds);
-        assertEquals(true, transitionLog.transitionAborted);
-        assertEquals(TimeZone.getTZDataVersion(), transitionLog.tzdbVersion);
+        FakeTimeZoneDetectorLogger.TransitionLog transitionLog =
+                mFakeStatsdLogger.getTransitionLog(0);
+        assertEquals(ZONE_A, transitionLog.previousTimeZoneId());
+        assertEquals(ZONE_C, transitionLog.timeZoneId());
+        assertEquals(telTime, transitionLog.telephonyTimeZoneChangedTimestamp());
+        assertEquals(-1, transitionLog.geoTimeZoneChangedTimestamp());
+        assertEquals(-1, transitionLog.fusedTimeZoneChangedTimestamp());
+        assertEquals(MCC, transitionLog.mcc());
+        assertEquals(MNC, transitionLog.mnc());
+        assertEquals(NITZ_OFFSET_SECONDS, transitionLog.nitzOffsetSeconds());
+        assertEquals(NITZ_DST_OFFSET_SECONDS, transitionLog.nitzDstOffsetSeconds());
+        assertEquals(true, transitionLog.transitionAborted());
+        assertEquals(TimeZone.getTZDataVersion(), transitionLog.tzdbVersion());
         assertEquals(
-                PRIMARY_LOCATION_TIME_ZONE_PROVIDER_UID, transitionLog.locationTimeZoneProviderUid);
+                PRIMARY_LOCATION_TIME_ZONE_PROVIDER_UID,
+                transitionLog.locationTimeZoneProviderUid());
         // Ensure no new runnable was posted after re-agreement
         assertEquals(0, mFakeEnvironment.getDelayedRunnableCount());
     }
@@ -422,20 +432,22 @@ public class TimeZoneDetectorTelemetryImplTest {
         mTelemetry.onFusedTimeZoneChanged(ZONE_A);
 
         assertEquals(1, mFakeStatsdLogger.getTransitionLogCount());
-        TransitionLog transitionLog = mFakeStatsdLogger.getTransitionLog(0);
-        assertEquals(ZONE_A, transitionLog.previousTimeZoneId);
-        assertEquals(ZONE_C, transitionLog.timeZoneId);
-        assertEquals(telTime, transitionLog.telephonyTimeZoneChangedTimestamp);
-        assertEquals(geoTime, transitionLog.geoTimeZoneChangedTimestamp);
-        assertEquals(-1, transitionLog.fusedTimeZoneChangedTimestamp);
-        assertEquals(MCC, transitionLog.mcc);
-        assertEquals(MNC, transitionLog.mnc);
-        assertEquals(NITZ_OFFSET_SECONDS, transitionLog.nitzOffsetSeconds);
-        assertEquals(NITZ_DST_OFFSET_SECONDS, transitionLog.nitzDstOffsetSeconds);
-        assertEquals(true, transitionLog.transitionAborted);
-        assertEquals(TimeZone.getTZDataVersion(), transitionLog.tzdbVersion);
+        FakeTimeZoneDetectorLogger.TransitionLog transitionLog =
+                mFakeStatsdLogger.getTransitionLog(0);
+        assertEquals(ZONE_A, transitionLog.previousTimeZoneId());
+        assertEquals(ZONE_C, transitionLog.timeZoneId());
+        assertEquals(telTime, transitionLog.telephonyTimeZoneChangedTimestamp());
+        assertEquals(geoTime, transitionLog.geoTimeZoneChangedTimestamp());
+        assertEquals(-1, transitionLog.fusedTimeZoneChangedTimestamp());
+        assertEquals(MCC, transitionLog.mcc());
+        assertEquals(MNC, transitionLog.mnc());
+        assertEquals(NITZ_OFFSET_SECONDS, transitionLog.nitzOffsetSeconds());
+        assertEquals(NITZ_DST_OFFSET_SECONDS, transitionLog.nitzDstOffsetSeconds());
+        assertEquals(true, transitionLog.transitionAborted());
+        assertEquals(TimeZone.getTZDataVersion(), transitionLog.tzdbVersion());
         assertEquals(
-                PRIMARY_LOCATION_TIME_ZONE_PROVIDER_UID, transitionLog.locationTimeZoneProviderUid);
+                PRIMARY_LOCATION_TIME_ZONE_PROVIDER_UID,
+                transitionLog.locationTimeZoneProviderUid());
 
         assertEquals(0, mFakeEnvironment.getDelayedRunnableCount());
     }
@@ -471,112 +483,4 @@ public class TimeZoneDetectorTelemetryImplTest {
         return GeolocationTimeZoneSuggestion.createCertainSuggestion(
                 mFakeEnvironment.currentTimeMillis(), List.of(zoneId));
     }
-
-    private static final class FakeTimeZoneDetectorLogger implements TimeZoneDetectorLogger {
-        List<TransitionLog> transitionLogsList = new ArrayList<>();
-        List<DiscrepancyLog> discrepancyLogsList = new ArrayList<>();
-
-        @Override
-        public void logTimeZoneDiscrepancy(
-                @NonNull String geoLocationTimeZoneId,
-                @NonNull String telephonyTimeZoneId,
-                @NonNull String mcc,
-                @NonNull String mnc,
-                int nitzOffsetSeconds,
-                int nitzDstOffsetSeconds,
-                @NonNull String geolocationCountryCode,
-                @NonNull String tzdbVersion,
-                int locationTimeZoneProviderUid,
-                @NonNull String fusedTimeZoneId) {
-            discrepancyLogsList.add(
-                    new DiscrepancyLog(
-                            geoLocationTimeZoneId,
-                            telephonyTimeZoneId,
-                            mcc,
-                            mnc,
-                            nitzOffsetSeconds,
-                            nitzDstOffsetSeconds,
-                            geolocationCountryCode,
-                            tzdbVersion,
-                            locationTimeZoneProviderUid,
-                            fusedTimeZoneId));
-        }
-
-        @Override
-        public void logTimeZoneTransition(
-                String previousTimeZoneId,
-                String timeZoneId,
-                long geoTimeZoneChangedTimestamp,
-                long telephonyTimeZoneChangedTimestamp,
-                long fusedTimeZoneChangedTimestamp,
-                boolean transitionAborted,
-                String mcc,
-                String mnc,
-                int nitzOffsetSeconds,
-                int nitzDstOffsetSeconds,
-                String geolocationCountryCode,
-                String tzdbVersion,
-                int locationTimeZoneProviderUid) {
-            transitionLogsList.add(
-                    new TransitionLog(
-                            previousTimeZoneId,
-                            timeZoneId,
-                            geoTimeZoneChangedTimestamp,
-                            telephonyTimeZoneChangedTimestamp,
-                            fusedTimeZoneChangedTimestamp,
-                            transitionAborted,
-                            mcc,
-                            mnc,
-                            nitzOffsetSeconds,
-                            nitzDstOffsetSeconds,
-                            geolocationCountryCode,
-                            tzdbVersion,
-                            locationTimeZoneProviderUid));
-        }
-
-        int getDiscrepancyLogCount() {
-            return discrepancyLogsList.size();
-        }
-
-        int getTransitionLogCount() {
-            return transitionLogsList.size();
-        }
-
-        DiscrepancyLog getDiscrepancyLog(int index) {
-            return discrepancyLogsList.get(index);
-        }
-
-        TransitionLog getTransitionLog(int index) {
-            return transitionLogsList.get(index);
-        }
-    }
-
-    record TransitionLog(
-            String previousTimeZoneId,
-            String timeZoneId,
-            long geoTimeZoneChangedTimestamp,
-            long telephonyTimeZoneChangedTimestamp,
-            long fusedTimeZoneChangedTimestamp,
-            boolean transitionAborted,
-            String mcc,
-            String mnc,
-            int nitzOffsetSeconds,
-            int nitzDstOffsetSeconds,
-            String geolocationCountryCode,
-            String tzdbVersion,
-            int locationTimeZoneProviderUid) {}
-    ;
-
-    record DiscrepancyLog(
-            String locationTimeZoneId,
-            String telephonyTimeZoneId,
-            String mcc,
-            String mnc,
-            int nitzOffsetSeconds,
-            int nitzDstOffsetSeconds,
-            String geolocationCountryCode,
-            String tzdbVersion,
-            int locationTimeZoneProviderUid,
-            String fusedTimeZoneId) {}
-    ;
 }
