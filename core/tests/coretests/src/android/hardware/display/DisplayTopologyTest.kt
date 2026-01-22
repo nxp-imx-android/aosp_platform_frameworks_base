@@ -336,15 +336,15 @@ class DisplayTopologyTest {
 
         val actualDisplay2 = actualDisplay1.children[0]
         verifyDisplay(actualDisplay2, id = 2, width = 600, height = 200, density = 160,
-            POSITION_RIGHT, offset = 600f, noOfChildren = 1)
+            POSITION_RIGHT, offset = 599f, noOfChildren = 1)
 
         val actualDisplay3 = actualDisplay1.children[1]
         verifyDisplay(actualDisplay3, id = 3, width = 600, height = 200, density = 160,
-            POSITION_LEFT, offset = -200f, noOfChildren = 0)
+            POSITION_LEFT, offset = -199f, noOfChildren = 0)
 
         val actualDisplay4 = actualDisplay2.children[0]
         verifyDisplay(actualDisplay4, id = 4, width = 200, height = 600, density = 160,
-            POSITION_TOP, offset = 600f, noOfChildren = 0)
+            POSITION_TOP, offset = 599f, noOfChildren = 0)
     }
 
     @Test
@@ -618,7 +618,7 @@ class DisplayTopologyTest {
                 offset = 0f, noOfChildren = 0)
         verifyDisplay(
                 node.children[1], id = 3, width = 100, height = 100, density = 160, POSITION_LEFT,
-                offset = 100f, noOfChildren = 0)
+                offset = 99f, noOfChildren = 0)
     }
 
     @Test
@@ -677,7 +677,7 @@ class DisplayTopologyTest {
                 offset = 10f, noOfChildren = 1)
         verifyDisplay(
                 root.children[0].children[0], id = 2, width = 295, height = 300, density = 1600,
-                POSITION_RIGHT, offset = 30f, noOfChildren = 0)
+                POSITION_RIGHT, offset = 29f, noOfChildren = 0)
     }
 
     @Test
@@ -717,7 +717,7 @@ class DisplayTopologyTest {
                 offset = 10f, noOfChildren = 0)
         verifyDisplay(
                 root.children[1], id = 2, width = 30, height = 30, density = 160, POSITION_LEFT,
-                offset = 0f, noOfChildren = 0)
+                offset = 1f, noOfChildren = 0)
     }
 
     @Test
@@ -893,10 +893,10 @@ class DisplayTopologyTest {
         verifyDisplay(root, id = 0, width = 30, height = 30, density = 160, noOfChildren = 1)
         val dis1 = root.children[0]
         verifyDisplay(dis1, id = 1, width = 30, height = 30, density = 160,
-                POSITION_RIGHT, offset = 30f, noOfChildren = 1)
+                POSITION_RIGHT, offset = 29f, noOfChildren = 1)
         val dis2 = dis1.children[0]
         verifyDisplay(dis2, id = 2, width = 30, height = 30, density = 160,
-                POSITION_RIGHT, offset = -30f, noOfChildren = 0)
+                POSITION_RIGHT, offset = -29f, noOfChildren = 0)
     }
 
     @Test
