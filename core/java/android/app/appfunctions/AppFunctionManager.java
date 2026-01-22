@@ -470,7 +470,7 @@ public final class AppFunctionManager {
      * <p>The calling app can search for:
      * <li>Functions in its own package (no permission required).
      * <li>When holding the {@link Manifest.permission#EXECUTE_APP_FUNCTIONS} or {@link
-     *     Manifest.permission#READ_APP_FUNCTION_METADATA} permission - functions in other packages
+     *     Manifest.permission#DISCOVER_APP_FUNCTIONS} permission - functions in other packages
      *     that it is allowed to query via {@link
      *     android.content.pm.PackageManager#canPackageQuery}.
      *
@@ -482,7 +482,7 @@ public final class AppFunctionManager {
     @RequiresPermission(
             anyOf = {
                 Manifest.permission.EXECUTE_APP_FUNCTIONS,
-                Manifest.permission.READ_APP_FUNCTION_METADATA
+                Manifest.permission.DISCOVER_APP_FUNCTIONS
             },
             conditional = true)
     @UserHandleAware
@@ -533,7 +533,7 @@ public final class AppFunctionManager {
      * <p>This method can only check app functions owned by the caller, or those where the caller
      * has visibility to the owner package and holds the {@link
      * Manifest.permission#EXECUTE_APP_FUNCTIONS} or {@link
-     * Manifest.permission#READ_APP_FUNCTION_METADATA} permission.
+     * Manifest.permission#DISCOVER_APP_FUNCTIONS} permission.
      *
      * <p>If the operation fails, the callback's {@link OutcomeReceiver#onError} is called with
      * errors:
@@ -554,7 +554,7 @@ public final class AppFunctionManager {
     @RequiresPermission(
             anyOf = {
                 Manifest.permission.EXECUTE_APP_FUNCTIONS,
-                Manifest.permission.READ_APP_FUNCTION_METADATA
+                Manifest.permission.DISCOVER_APP_FUNCTIONS
             },
             conditional = true)
     public void isAppFunctionEnabled(

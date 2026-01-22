@@ -1007,8 +1007,11 @@
     <!-- Permissions required for CTS test - AppFunctionManagerTest -->
     <uses-permission android:name="android.permission.EXECUTE_APP_FUNCTIONS" />
 
+    <!-- Permissions required for CTS test - AppFunctionManagerTest -->
+    <uses-permission android:name="android.permission.EXECUTE_APP_FUNCTIONS_SYSTEM" />
+
     <!-- Permission required for CTS test - AppFunctionManagerTest -->
-    <uses-permission android:name="android.permission.READ_APP_FUNCTION_METADATA" />
+    <uses-permission android:name="android.permission.DISCOVER_APP_FUNCTIONS" />
 
     <!-- Permission required for CTS test - CtsNfcTestCases -->
     <uses-permission android:name="android.permission.NFC_SET_CONTROLLER_ALWAYS_ON" />
