@@ -24,7 +24,7 @@ package com.android.systemui.animation;
  * <ul>
  *   <li/>Apps that want to run a coordinated, in-app animation immediately prior to the system
  *       provided launch animation should override
- *       {@link #onRunPreLaunchAnimation(IPreLaunchAnimationFinishedCallback)}.
+ *       {@link #onPreLaunchAnimationReady(IPreLaunchAnimationFinishedCallback)}.
  *       Upon receiving this callback, the app can safely run the pre-launch animation. Once the
  *       animation is complete, the app should invoke the `onDone.run()` runnable to signal the
  *       system to proceed with the launch animation. If the pre-launch animation runs beyond
@@ -45,13 +45,14 @@ public interface IOriginTransitionCallback {
      * method if they want to run a *pre* app launch animation in coordination with the actual
      * app launch transition/animation provided by the framework. The client should run its
      * animation and then immediately invoke the finishCallback which will signal the framework to
-     * start the app launch animation. If the pre-launch animation runs for too long, it will be
-     * truncated and the system will proceed with the launch animation.
+     * start the app launch animation. If the duration of the pre-launch animation exceeds the
+     * system timeout (default is 500ms), it will be truncated and the system will proceed with the
+     * launch animation.
      *
      * @param finishCallback the finish callback  to indicate that the prelaunch animation is
      *     complete and the system should start the launch animation.
      */
-    void onRunPreLaunchAnimation(IPreLaunchAnimationFinishedCallback finishCallback);
+    void onPreLaunchAnimationReady(IPreLaunchAnimationFinishedCallback finishCallback);
 
     /** Notify the client that the app launch animation has started. */
     void onLaunchAnimationStarted();
