@@ -33,7 +33,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
-import android.animation.Animator;
 import android.animation.ValueAnimator;
 import android.app.ActivityManager.RunningTaskInfo;
 import android.content.Context;
@@ -66,8 +65,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.util.ArrayList;
 
 /**
  * Tests for the default animation handler that is used if no other special-purpose handler picks
@@ -227,14 +224,14 @@ public class DefaultTransitionHandlerTest extends ShellTestCase {
 
     @Test
     public void testBuildSurfaceAnimation() {
-        final ArrayList<Animator> animators = new ArrayList<>();
         final AlphaAnimation animation = new AlphaAnimation(0, 1);
         final long durationMs = 500;
         animation.setDuration(durationMs);
         final long[] lastCurrentPlayTime = new long[1];
         final int[] finishCount = new int[1];
         final Runnable finishCallback = () -> finishCount[0]++;
-        DefaultSurfaceAnimator.buildSurfaceAnimation(animators, animation, finishCallback,
+        final ValueAnimator animator = DefaultSurfaceAnimator.buildSurfaceAnimation(
+                animation, finishCallback,
                 mTransactionPool, mMainExecutor,
                 new DefaultSurfaceAnimator.AnimationAdapter(mock(SurfaceControl.class)) {
                     @Override
@@ -242,7 +239,6 @@ public class DefaultTransitionHandlerTest extends ShellTestCase {
                         lastCurrentPlayTime[0] = currentPlayTime;
                     }
                 });
-        final ValueAnimator animator = (ValueAnimator) animators.get(0);
         mAnimExecutor.execute(() -> {
             animator.start();
             animator.end();
@@ -274,7 +270,7 @@ public class DefaultTransitionHandlerTest extends ShellTestCase {
     @Test
     public void startAnimation_freeformMinimizeChange_underFullscreenChange_doesntReparentTask() {
         final TransitionInfo.Change openChange = new ChangeBuilder(createTaskInfo(
-                        /* taskId= */ 1, /* windowingMode= */ WINDOWING_MODE_FULLSCREEN),
+                /* taskId= */ 1, /* windowingMode= */ WINDOWING_MODE_FULLSCREEN),
                 TRANSIT_OPEN).build();
         final TransitionInfo.Change toBackChange = new ChangeBuilder(createTaskInfo(
                 /* taskId= */ 2, /* windowingMode= */ WINDOWING_MODE_FREEFORM), TRANSIT_TO_BACK)
