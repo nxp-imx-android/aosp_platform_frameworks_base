@@ -119,8 +119,8 @@ public class OriginRemoteTransition extends IRemoteTransition.Stub implements
             logD("Posting pre-launch timeout for " + PRE_LAUNCH_ANIMATION_TIMEOUT_MS + "ms");
             mHandler.postDelayed(oneShotStartAnim, PRE_LAUNCH_ANIMATION_TIMEOUT_MS);
 
-            logD("Calling onRunPreLaunchAnimation");
-            mClientCallback.onRunPreLaunchAnimation(preLaunchCallback);
+            logD("Calling onPreLaunchAnimationReady");
+            mClientCallback.onPreLaunchAnimationReady(preLaunchCallback);
         } else {
             // Not an entry animation or no observer, run the start animation logic directly.
             mHandler.post(startAnimRunnable);
