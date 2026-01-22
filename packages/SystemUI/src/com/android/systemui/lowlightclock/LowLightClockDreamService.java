@@ -27,7 +27,6 @@ import android.widget.TextClock;
 import android.widget.TextView;
 
 import com.android.dream.lowlight.LowLightTransitionCoordinator;
-import com.android.systemui.Flags;
 import com.android.systemui.res.R;
 
 import java.util.Optional;
@@ -35,11 +34,9 @@ import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Provider;
 
-/**
- * A dark themed text clock dream to be shown when the device is in a low light environment.
- */
-public class LowLightClockDreamService extends DreamService implements
-        LowLightTransitionCoordinator.LowLightExitListener {
+/** A dark themed text clock dream to be shown when the device is in a low light environment. */
+public class LowLightClockDreamService extends DreamService
+        implements LowLightTransitionCoordinator.LowLightExitListener {
     private static final String TAG = "LowLightClockDreamService";
 
     private final ChargingStatusProvider mChargingStatusProvider;
@@ -50,10 +47,8 @@ public class LowLightClockDreamService extends DreamService implements
 
     private TextView mChargingStatusTextView;
     private TextClock mTextClock;
-    @Nullable
-    private Animator mAnimationIn;
-    @Nullable
-    private Animator mAnimationOut;
+    @Nullable private Animator mAnimationIn;
+    @Nullable private Animator mAnimationOut;
 
     @Inject
     public LowLightClockDreamService(
@@ -76,8 +71,9 @@ public class LowLightClockDreamService extends DreamService implements
         setInteractive(false);
         setFullscreen(true);
 
-        setContentView(LayoutInflater.from(getApplicationContext()).inflate(
-                R.layout.low_light_clock_dream, null));
+        setContentView(
+                LayoutInflater.from(getApplicationContext())
+                        .inflate(R.layout.low_light_clock_dream, null));
 
         mTextClock = findViewById(R.id.low_light_text_clock);
 
@@ -100,14 +96,8 @@ public class LowLightClockDreamService extends DreamService implements
                 Log.v(TAG, "setting dim brightness state");
                 mDisplayController.setDisplayBrightnessModeEnabled(true);
             } else {
-                if (Flags.lowlightClockSetBrightness()) {
-                    Log.v(TAG,
-                            "dim brightness not supported. setting screen brightness to minimum");
-                    setScreenBrightness(0f);
-                } else {
-                    Log.v(TAG, "dim brightness not supported.");
-
-                }
+                Log.v(TAG, "dim brightness not supported. setting screen brightness to minimum");
+                setScreenBrightness(0f);
             }
         }
     }
@@ -126,12 +116,13 @@ public class LowLightClockDreamService extends DreamService implements
             mAnimationIn.cancel();
         }
         mAnimationOut = mAnimationProvider.provideAnimationOut(mTextClock, mChargingStatusTextView);
-        mAnimationOut.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animator) {
-                LowLightClockDreamService.super.onWakeUp();
-            }
-        });
+        mAnimationOut.addListener(
+                new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(Animator animator) {
+                        LowLightClockDreamService.super.onWakeUp();
+                    }
+                });
         mAnimationOut.start();
     }
 
