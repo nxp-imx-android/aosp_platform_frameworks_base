@@ -425,6 +425,7 @@ public class MediaProjectionPermissionActivity extends Activity {
 
     private void grantMediaProjectionPermissionForLargeScreen() {
         try {
+            final MediaProjectionConfig config = getMediaProjectionConfig();
             final IMediaProjection projection =
                     MediaProjectionServiceHelper.createOrReuseProjection(
                             mUid, mPackageName, mReviewGrantedConsentRequired, getDisplayId());
@@ -435,6 +436,7 @@ public class MediaProjectionPermissionActivity extends Activity {
             intent.putExtra(ShareScreenActivity.EXTRA_PACKAGE_NAME, mPackageName);
             intent.putExtra(ShareScreenActivity.EXTRA_HOST_APP_UID, getLaunchedFromUid());
             intent.putExtra(EXTRA_USER_REVIEW_GRANTED_CONSENT, mReviewGrantedConsentRequired);
+            intent.putExtra(MediaProjectionManager.EXTRA_MEDIA_PROJECTION_CONFIG, config);
             intent.setFlags(Intent.FLAG_ACTIVITY_FORWARD_RESULT);
 
             mUserSelectingTask = true;

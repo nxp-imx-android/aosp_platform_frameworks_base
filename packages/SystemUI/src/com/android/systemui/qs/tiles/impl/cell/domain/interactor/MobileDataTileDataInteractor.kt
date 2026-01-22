@@ -35,6 +35,8 @@ import com.android.systemui.statusbar.connectivity.ui.MobileContextProvider
 import com.android.systemui.statusbar.pipeline.mobile.NewSatelliteIcon
 import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.MobileIconsInteractor
 import com.android.systemui.statusbar.pipeline.mobile.domain.model.SignalIconModel
+import com.android.systemui.statusbar.pipeline.shared.ConnectivityConstants
+import com.android.systemui.user.data.repository.UserRepository
 import com.android.systemui.utils.coroutines.flow.mapLatestConflated
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -49,8 +51,10 @@ class MobileDataTileDataInteractor
 @Inject
 constructor(
     @Application private val context: Context,
+    private val userRepository: UserRepository,
     private val mobileIconsInteractor: MobileIconsInteractor,
     mobileContextProvider: MobileContextProvider,
+    private val connectivityConstants: ConnectivityConstants,
 ) : QSTileDataInteractor<MobileDataTileModel> {
     private val mobileDataLabel: String =
         context.getString(R.string.quick_settings_cellular_detail_title)
@@ -263,9 +267,11 @@ constructor(
                 }
         }
 
-    override fun availability(user: UserHandle): Flow<Boolean> = flowOf(isAvailable())
+    override fun availability(user: UserHandle): Flow<Boolean> {
+        return flowOf(isTileSupported() && user.identifier == userRepository.mainUserId)
+    }
 
-    fun isAvailable(): Boolean {
-        return QsSplitInternetTile.isEnabled
+    fun isTileSupported(): Boolean {
+        return QsSplitInternetTile.isEnabled && connectivityConstants.hasDataCapabilities
     }
 }

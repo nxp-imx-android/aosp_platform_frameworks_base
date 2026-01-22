@@ -3126,6 +3126,19 @@ public class DevicePolicyManager {
     public static final int STATUS_NON_DEFAULT_DEVICE_POLICY_MANAGEMENT_ROLE_HOLDER_EXISTS = 23;
 
     /**
+     * Result code for {@link #checkProvisioningPreCondition}.
+     *
+     * <p>Returned for {@link #ACTION_PROVISION_MULTI_USER_DEVICE} and
+     * {@link #ACTION_PROVISION_MULTI_USER_MANAGED_USER} when the device doesn't support multi user
+     * management.
+     *
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_MULTI_USER_MANAGEMENT_DEVICE_PROVISIONING)
+    public static final int STATUS_MULTI_USER_MANAGEMENT_NOT_SUPPORTED = 23;
+
+    /**
      * Result codes for {@link #checkProvisioningPrecondition} indicating all the provisioning pre
      * conditions.
      *

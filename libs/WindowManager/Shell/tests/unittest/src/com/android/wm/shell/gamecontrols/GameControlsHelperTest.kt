@@ -22,6 +22,7 @@ import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
+import android.content.pm.ResolveInfo
 import android.content.res.Resources
 import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
@@ -47,7 +48,7 @@ import org.mockito.kotlin.whenever
  */
 @SmallTest
 @RunWith(AndroidTestingRunner::class)
-@EnableFlags(com.android.window.flags.Flags.FLAG_ENABLE_GAME_CONTROLS_ENTRY_IN_HANDLE_MENU)
+@EnableFlags(com.android.window.flags.Flags.FLAG_ENABLE_GAME_CONTROLS_HANDLE_MENU_ENTRY)
 class GameControlsHelperTest : ShellTestCase() {
 
     private val mockContext = mock<Context>()
@@ -56,6 +57,7 @@ class GameControlsHelperTest : ShellTestCase() {
     private val mockTaskInfo = mock<TaskInfo>()
     private val mockActivityInfo = mock<ActivityInfo>()
     private val mockApplicationInfo = mock<ApplicationInfo>()
+    private val mockResolveInfo = mock<ResolveInfo>()
     private var intentCaptor = argumentCaptor<Intent>()
 
     @Before
@@ -64,14 +66,21 @@ class GameControlsHelperTest : ShellTestCase() {
         whenever(mockContext.resources).thenReturn(mockResources)
         mockTaskInfo.topActivityInfo = mockActivityInfo
         mockActivityInfo.applicationInfo = mockApplicationInfo
-    }
 
-    @Test
-    fun shouldShowGameControlsButton_returnsTrue_whenAllConditionsMet() {
         mockApplicationInfo.category = ApplicationInfo.CATEGORY_GAME
         whenever(mockResources.getString(R.string.config_gameControlsSystemFeature))
             .thenReturn("some.feature")
         whenever(mockPackageManager.hasSystemFeature("some.feature")).thenReturn(true)
+        whenever(mockPackageManager.queryBroadcastReceivers(any<Intent>(), any<Int>()))
+            .thenReturn(listOf(mockResolveInfo))
+        whenever(mockResources.getString(R.string.config_gameControlsIntentReceiverPackage))
+            .thenReturn("com.test.package")
+        whenever(mockResources.getString(R.string.config_gameControlsIntentAction))
+            .thenReturn("com.test.ACTION")
+    }
+
+    @Test
+    fun shouldShowGameControlsButton_returnsTrue_whenAllConditionsMet() {
 
         assertThat(GameControlsHelper.shouldShowGameControlsButton(mockContext, mockTaskInfo))
             .isTrue()
@@ -80,9 +89,6 @@ class GameControlsHelperTest : ShellTestCase() {
     @Test
     fun shouldShowGameControlsButton_returnsFalse_whenNotGame() {
         mockApplicationInfo.category = ApplicationInfo.CATEGORY_UNDEFINED
-        whenever(mockResources.getString(R.string.config_gameControlsSystemFeature))
-            .thenReturn("some.feature")
-        whenever(mockPackageManager.hasSystemFeature("some.feature")).thenReturn(true)
 
         assertThat(GameControlsHelper.shouldShowGameControlsButton(mockContext, mockTaskInfo))
             .isFalse()
@@ -90,9 +96,6 @@ class GameControlsHelperTest : ShellTestCase() {
 
     @Test
     fun shouldShowGameControlsButton_returnsFalse_whenNoSystemFeature() {
-        mockApplicationInfo.category = ApplicationInfo.CATEGORY_GAME
-        whenever(mockResources.getString(R.string.config_gameControlsSystemFeature))
-            .thenReturn("some.feature")
         whenever(mockPackageManager.hasSystemFeature("some.feature")).thenReturn(false)
 
         assertThat(GameControlsHelper.shouldShowGameControlsButton(mockContext, mockTaskInfo))
@@ -101,7 +104,6 @@ class GameControlsHelperTest : ShellTestCase() {
 
     @Test
     fun shouldShowGameControlsButton_returnsFalse_whenSystemFeatureIsEmpty() {
-        mockApplicationInfo.category = ApplicationInfo.CATEGORY_GAME
         whenever(mockResources.getString(R.string.config_gameControlsSystemFeature)).thenReturn("")
 
         assertThat(GameControlsHelper.shouldShowGameControlsButton(mockContext, mockTaskInfo))
@@ -112,9 +114,31 @@ class GameControlsHelperTest : ShellTestCase() {
     fun shouldShowGameControlsButton_returnsFalse_whenAppInfoIsNull() {
         mockTaskInfo.topActivityInfo = null
 
-        whenever(mockResources.getString(R.string.config_gameControlsSystemFeature))
-            .thenReturn("some.feature")
-        whenever(mockPackageManager.hasSystemFeature("some.feature")).thenReturn(true)
+        assertThat(GameControlsHelper.shouldShowGameControlsButton(mockContext, mockTaskInfo))
+            .isFalse()
+    }
+
+    @Test
+    fun shouldShowGameControlsButton_returnsFalse_whenNoBroadcastReceiver() {
+        whenever(mockPackageManager.queryBroadcastReceivers(any<Intent>(), any<Int>()))
+            .thenReturn(emptyList())
+
+        assertThat(GameControlsHelper.shouldShowGameControlsButton(mockContext, mockTaskInfo))
+            .isFalse()
+    }
+
+    @Test
+    fun shouldShowGameControlsButton_returnsFalse_whenPackageEmpty() {
+        whenever(mockResources.getString(R.string.config_gameControlsIntentReceiverPackage))
+            .thenReturn("")
+
+        assertThat(GameControlsHelper.shouldShowGameControlsButton(mockContext, mockTaskInfo))
+            .isFalse()
+    }
+
+    @Test
+    fun shouldShowGameControlsButton_returnsFalse_whenActionEmpty() {
+        whenever(mockResources.getString(R.string.config_gameControlsIntentAction)).thenReturn("")
 
         assertThat(GameControlsHelper.shouldShowGameControlsButton(mockContext, mockTaskInfo))
             .isFalse()
@@ -122,10 +146,6 @@ class GameControlsHelperTest : ShellTestCase() {
 
     @Test
     fun onLaunchGameControls_sendsBroadcast() {
-        whenever(mockResources.getString(R.string.config_gameControlsIntentReceiverPackage))
-            .thenReturn("com.test.package")
-        whenever(mockResources.getString(R.string.config_gameControlsIntentAction))
-            .thenReturn("com.test.ACTION")
 
         GameControlsHelper.onLaunchGameControls(mockContext, mockTaskInfo)
 
@@ -139,8 +159,6 @@ class GameControlsHelperTest : ShellTestCase() {
     fun onLaunchGameControls_noBroadcast_whenPackageEmpty() {
         whenever(mockResources.getString(R.string.config_gameControlsIntentReceiverPackage))
             .thenReturn("")
-        whenever(mockResources.getString(R.string.config_gameControlsIntentAction))
-            .thenReturn("com.test.ACTION")
 
         GameControlsHelper.onLaunchGameControls(mockContext, mockTaskInfo)
 
@@ -149,8 +167,6 @@ class GameControlsHelperTest : ShellTestCase() {
 
     @Test
     fun onLaunchGameControls_noBroadcast_whenActionEmpty() {
-        whenever(mockResources.getString(R.string.config_gameControlsIntentReceiverPackage))
-            .thenReturn("com.test.package")
         whenever(mockResources.getString(R.string.config_gameControlsIntentAction)).thenReturn("")
 
         GameControlsHelper.onLaunchGameControls(mockContext, mockTaskInfo)

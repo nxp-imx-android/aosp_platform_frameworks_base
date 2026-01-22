@@ -25,6 +25,9 @@ import static org.mockito.Mockito.when;
 
 import android.app.assist.AssistStructure;
 import android.content.ComponentName;
+import android.text.InputType;
+import android.view.View;
+import android.widget.EditText;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
@@ -46,7 +49,7 @@ public class AutofillNoiseInjectorTest {
             new ComponentName("com.example", "com.example.TestActivity");
     private static final int FIXED_LENGTH_BYTES = 32;
 
-    private static final int BITS_TO_RETAIN = 2;
+    private static final int BITS_TO_RETAIN = 4;
 
     @Mock private AssistStructure.ViewNode mMockViewNode;
     private AutofillId mTestAutofillId;
@@ -168,5 +171,32 @@ public class AutofillNoiseInjectorTest {
         assertFalse(
                 Arrays.equals(
                         result1.getNoiseInjectedPayload(), result2.getNoiseInjectedPayload()));
+    }
+
+    @Test
+    public void testInjectNoise_autofillTypeNotNone() {
+        when(mMockViewNode.getText()).thenReturn("Test");
+        when(mMockViewNode.getAutofillType()).thenReturn(View.AUTOFILL_TYPE_TEXT);
+        AutofillNoiseInjector injector = new AutofillNoiseInjector(MASTER_SEED1, TEST_COMPONENT);
+        AutofillNoiseInjectedData result = injector.injectNoise(mMockViewNode);
+        assertNull(result);
+    }
+
+    @Test
+    public void testInjectNoise_editTextClass() {
+        when(mMockViewNode.getText()).thenReturn("Test");
+        when(mMockViewNode.getClassName()).thenReturn(EditText.class.getName());
+        AutofillNoiseInjector injector = new AutofillNoiseInjector(MASTER_SEED1, TEST_COMPONENT);
+        AutofillNoiseInjectedData result = injector.injectNoise(mMockViewNode);
+        assertNull(result);
+    }
+
+    @Test
+    public void testInjectNoise_inputTypeNotNone() {
+        when(mMockViewNode.getText()).thenReturn("Test");
+        when(mMockViewNode.getInputType()).thenReturn(InputType.TYPE_CLASS_TEXT);
+        AutofillNoiseInjector injector = new AutofillNoiseInjector(MASTER_SEED1, TEST_COMPONENT);
+        AutofillNoiseInjectedData result = injector.injectNoise(mMockViewNode);
+        assertNull(result);
     }
 }

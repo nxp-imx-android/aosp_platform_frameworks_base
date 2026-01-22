@@ -15,25 +15,13 @@
 
 package com.android.systemui.statusbar.systemstatusicons.ui.viewmodel
 
-import android.app.AlarmManager
-import android.app.AutomaticZenRule
-import android.app.PendingIntent
-import android.bluetooth.BluetoothProfile
 import android.content.testableContext
-import android.media.AudioDeviceInfo
-import android.media.AudioManager
-import android.view.Display.TYPE_EXTERNAL
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
-import com.android.settingslib.bluetooth.CachedBluetoothDevice
-import com.android.settingslib.notification.modes.TestModeBuilder
-import com.android.settingslib.volume.shared.model.RingerMode
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.authentication.data.repository.fakeAuthenticationRepository
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
 import com.android.systemui.deviceentry.data.repository.fakeDeviceEntryRepository
-import com.android.systemui.display.data.repository.display
-import com.android.systemui.display.data.repository.displayRepository
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.audio.audioManager
 import com.android.systemui.kosmos.runTest
@@ -43,36 +31,31 @@ import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.domain.startable.sceneContainerStartable
 import com.android.systemui.scene.shared.model.Scenes
-import com.android.systemui.statusbar.getCommandQueueCallback
-import com.android.systemui.statusbar.pipeline.airplane.data.repository.airplaneModeRepository
-import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.fakeMobileIconsInteractor
-import com.android.systemui.statusbar.pipeline.satellite.data.repository.deviceBasedSatelliteRepository
-import com.android.systemui.statusbar.pipeline.satellite.shared.model.SatelliteConnectionState
-import com.android.systemui.statusbar.pipeline.shared.data.repository.connectivityRepository
-import com.android.systemui.statusbar.pipeline.shared.data.repository.fake
-import com.android.systemui.statusbar.pipeline.wifi.data.repository.fakeWifiRepository
-import com.android.systemui.statusbar.pipeline.wifi.shared.model.WifiNetworkModel
-import com.android.systemui.statusbar.policy.bluetooth.data.repository.bluetoothRepository
-import com.android.systemui.statusbar.policy.data.repository.fakeZenModeRepository
-import com.android.systemui.statusbar.policy.domain.interactor.fakeTtyStatusInteractor
-import com.android.systemui.statusbar.policy.fakeDataSaverController
-import com.android.systemui.statusbar.policy.fakeHotspotController
-import com.android.systemui.statusbar.policy.fakeNextAlarmController
-import com.android.systemui.statusbar.policy.profile.data.repository.managedProfileRepository
-import com.android.systemui.statusbar.policy.profile.shared.model.ProfileInfo
-import com.android.systemui.statusbar.policy.vpn.data.repository.vpnRepository
-import com.android.systemui.statusbar.policy.vpn.shared.model.VpnState
-import com.android.systemui.statusbar.systemstatusicons.data.repository.ExternalSystemStatusIconRepositoryTest.Companion.createStatusBarIcon
 import com.android.systemui.statusbar.systemstatusicons.data.repository.statusBarConfigIconSlotNames
 import com.android.systemui.statusbar.systemstatusicons.flags.EnableSystemStatusIconsInCompose
+import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.SystemStatusIconsViewModelHelper.hideAirplaneMode
+import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.SystemStatusIconsViewModelHelper.showAirplaneMode
+import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.SystemStatusIconsViewModelHelper.showBluetooth
+import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.SystemStatusIconsViewModelHelper.showConnectedDisplay
+import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.SystemStatusIconsViewModelHelper.showDataSaver
+import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.SystemStatusIconsViewModelHelper.showEthernet
+import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.SystemStatusIconsViewModelHelper.showExternalIcon
+import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.SystemStatusIconsViewModelHelper.showHeadset
+import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.SystemStatusIconsViewModelHelper.showHotspot
+import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.SystemStatusIconsViewModelHelper.showManagedProfile
+import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.SystemStatusIconsViewModelHelper.showMute
+import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.SystemStatusIconsViewModelHelper.showNextAlarm
+import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.SystemStatusIconsViewModelHelper.showSatelliteIcon
+import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.SystemStatusIconsViewModelHelper.showTty
+import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.SystemStatusIconsViewModelHelper.showVibrate
+import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.SystemStatusIconsViewModelHelper.showVpn
+import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.SystemStatusIconsViewModelHelper.showWifi
+import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.SystemStatusIconsViewModelHelper.showZenMode
 import com.android.systemui.testKosmos
-import com.android.systemui.volume.data.repository.fakeAudioRepository
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.whenever
 
 @EnableSystemStatusIconsInCompose
 @SmallTest
@@ -315,113 +298,4 @@ class SystemStatusIconsViewModelTest : SysuiTestCase() {
 
     private val SystemStatusIconsViewModel.activeSlotNames: List<String>
         get() = this.iconViewModels.filter { it.visible }.map { it.slotName }
-
-    private suspend fun Kosmos.showAirplaneMode() {
-        airplaneModeRepository.setIsAirplaneMode(true)
-    }
-
-    private suspend fun Kosmos.hideAirplaneMode() {
-        airplaneModeRepository.setIsAirplaneMode(false)
-    }
-
-    private fun Kosmos.showBluetooth() {
-        bluetoothRepository.setConnectedDevices(
-            listOf(
-                mock<CachedBluetoothDevice>().apply {
-                    whenever(isConnected).thenReturn(true)
-                    whenever(maxConnectionState).thenReturn(BluetoothProfile.STATE_CONNECTED)
-                }
-            )
-        )
-    }
-
-    private suspend fun Kosmos.showConnectedDisplay() {
-        displayRepository.addDisplay(display(type = TYPE_EXTERNAL, id = 1))
-    }
-
-    private fun Kosmos.showEthernet() {
-        connectivityRepository.fake.setEthernetConnected(default = true, validated = true)
-    }
-
-    private fun Kosmos.showMute() {
-        fakeAudioRepository.setRingerMode(RingerMode(AudioManager.RINGER_MODE_SILENT))
-    }
-
-    private fun Kosmos.showNextAlarm() {
-        val alarmClockInfo = AlarmManager.AlarmClockInfo(1L, mock<PendingIntent>())
-        fakeNextAlarmController.setNextAlarm(alarmClockInfo)
-    }
-
-    private fun Kosmos.showVibrate() {
-        fakeAudioRepository.setRingerMode(RingerMode(AudioManager.RINGER_MODE_VIBRATE))
-    }
-
-    private fun Kosmos.showWifi() {
-        fakeWifiRepository.setIsWifiEnabled(true)
-        val testNetwork =
-            WifiNetworkModel.Active.of(isValidated = true, level = 4, ssid = "TestWifi")
-        fakeWifiRepository.setWifiNetwork(testNetwork)
-        connectivityRepository.fake.setWifiConnected()
-    }
-
-    private fun Kosmos.showZenMode() {
-        val modeId = "zenModeTestRule"
-        val modeName = "Test Zen Mode"
-        val mode =
-            TestModeBuilder()
-                .setId(modeId)
-                .setName(modeName)
-                .setType(AutomaticZenRule.TYPE_DRIVING)
-                .setActive(true)
-                .build()
-        fakeZenModeRepository.clearModes()
-        fakeZenModeRepository.addMode(mode)
-    }
-
-    private fun Kosmos.showHotspot() {
-        fakeHotspotController.isHotspotEnabled = true
-    }
-
-    private fun Kosmos.showDataSaver() {
-        fakeDataSaverController.setDataSaverEnabled(true)
-    }
-
-    private fun Kosmos.showVpn() {
-        vpnRepository.vpnState.value = VpnState(isEnabled = true)
-    }
-
-    private fun Kosmos.showManagedProfile() {
-        managedProfileRepository.currentProfileInfo.value =
-            ProfileInfo(userId = 10, iconResId = 12345, contentDescription = "Work profile")
-    }
-
-    private fun Kosmos.showTty() {
-        fakeTtyStatusInteractor.isEnabled.value = true
-    }
-
-    private suspend fun Kosmos.showSatelliteIcon() {
-        hideAirplaneMode()
-        fakeWifiRepository.setIsWifiEnabled(false)
-        fakeWifiRepository.setWifiNetwork(WifiNetworkModel.Inactive())
-        val mobileInteractor = fakeMobileIconsInteractor.getMobileConnectionInteractorForSubId(1)
-        mobileInteractor.isInService.value = false
-        mobileInteractor.isEmergencyOnly.value = false
-
-        deviceBasedSatelliteRepository.isSatelliteProvisioned.value = true
-        deviceBasedSatelliteRepository.isSatelliteAllowedForCurrentLocation.value = true
-        deviceBasedSatelliteRepository.connectionState.value = SatelliteConnectionState.Connected
-    }
-
-    private fun Kosmos.showHeadset() {
-        val device =
-            mock<AudioDeviceInfo>().also {
-                whenever(it.type).thenReturn(AudioDeviceInfo.TYPE_WIRED_HEADSET)
-            }
-        audioManager.setDevices(arrayOf(device))
-    }
-
-    private fun Kosmos.showExternalIcon(slotName: String) {
-        val icon = createStatusBarIcon()
-        getCommandQueueCallback().setIcon(slotName, icon)
-    }
 }

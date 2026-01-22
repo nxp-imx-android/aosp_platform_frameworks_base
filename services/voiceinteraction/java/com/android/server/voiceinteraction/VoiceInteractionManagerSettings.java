@@ -21,6 +21,7 @@ import android.util.AtomicFile;
 import android.util.Slog;
 import android.util.Xml;
 
+import com.android.internal.os.BackgroundThread;
 import com.android.internal.util.XmlUtils;
 import com.android.modules.utils.TypedXmlPullParser;
 import com.android.modules.utils.TypedXmlSerializer;
@@ -72,7 +73,9 @@ class VoiceInteractionManagerSettings {
             return;
         }
         mAssistMigrationComplete = true;
-        saveSettings();
+        BackgroundThread.getHandler().post(() -> {
+            saveSettings();
+        });
     }
 
     private void loadSettings() {

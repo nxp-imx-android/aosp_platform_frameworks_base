@@ -26,7 +26,6 @@ import static com.android.server.wm.ActivityTaskManagerService.POWER_MODE_REASON
 import static com.android.server.wm.utils.DisplayInfoOverrides.WM_OVERRIDE_FIELDS;
 import static com.android.server.wm.utils.DisplayInfoOverrides.copyDisplayInfoFields;
 import static com.android.window.flags.Flags.ensureWallpaperDrawnOnDisplaySwitch;
-import static com.android.window.flags.Flags.handleRepeatedDisplaySwitches;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -142,6 +141,12 @@ class DeferredDisplayUpdater {
      */
     private boolean mPendingKeyguardDrawing;
     private final List<ReadyCondition> mWaitingForKeyguardDrawnConditions = new ArrayList<>();
+    private final Runnable mMeetKeyguardDrawnConditions = () -> {
+        for (int i = 0; i < mWaitingForKeyguardDrawnConditions.size(); i++) {
+            mWaitingForKeyguardDrawnConditions.get(i).meet();
+        }
+        mWaitingForKeyguardDrawnConditions.clear();
+    };
 
     /** The message to notify PhoneWindowManager#finishWindowsDrawn. */
     @Nullable
@@ -247,9 +252,7 @@ class DeferredDisplayUpdater {
         if (physicalDisplayUpdated) {
             mPhysicalDisplayChangeTransition = transition;
 
-            if (handleRepeatedDisplaySwitches()) {
-                mDisplayContent.mTransitionController.removeDisplayChangesFromQueue();
-            }
+            mDisplayContent.mTransitionController.removeDisplayChangesFromQueue();
         }
 
         mDisplayContent.mTransitionController.startCollectOrQueue(transition, deferred -> {
@@ -436,6 +439,14 @@ class DeferredDisplayUpdater {
     /**
      * Called with {@code true} when physical display is going to switch. And {@code false} when
      * the display is turned on or the device goes to sleep.
+     * <p>
+     * This method must be called synchronously, which will ensure that we update the state
+     * before both waitForTransition (onScreenTurningOn) and updateDisplayInfo (onDisplayChanged).
+     * These two events could come in any order from the DisplayManager, and
+     * onDisplaySwitching(true) indicates that we should expect to receive these calls.
+     * <p>
+     * This event is invoked from DisplayManager and guarded by
+     * the {@link DisplayManagerService.SyncRoot} lock. Do not invoke code that holds WM lock here.
      */
     void onDisplaySwitching(boolean switching) {
         mShouldWaitForTransitionWhenScreenOn = switching;
@@ -479,10 +490,7 @@ class DeferredDisplayUpdater {
 
     private void onKeyguardDrawn() {
         mPendingKeyguardDrawing = false;
-        for (int i = 0; i < mWaitingForKeyguardDrawnConditions.size(); i++) {
-            mWaitingForKeyguardDrawnConditions.get(i).meet();
-        }
-        mWaitingForKeyguardDrawnConditions.clear();
+        mHandler.post(mMeetKeyguardDrawnConditions);
     }
 
     /**
@@ -492,18 +500,16 @@ class DeferredDisplayUpdater {
      */
     private void continueScreenUnblocking(@Nullable Transition fromTransition) {
         synchronized (mDisplayContent.mWmService.mGlobalLock) {
-            if (handleRepeatedDisplaySwitches()) {
-                // Do not proceed with unblocking in case if the ready transition doesn't match
-                // the current mPhysicalDisplayChangeTransition, this means that while we were
-                // waiting for a transition, another one was requested. We want to unblock only
-                // when the last transition is ready.
-                final boolean isTimeout = fromTransition == null;
-                final boolean isTransitionMatching = isTimeout
-                        || fromTransition == mPhysicalDisplayChangeTransition;
+            // Do not proceed with unblocking in case if the ready transition doesn't match
+            // the current mPhysicalDisplayChangeTransition, this means that while we were
+            // waiting for a transition, another one was requested. We want to unblock only
+            // when the last transition is ready.
+            final boolean isTimeout = fromTransition == null;
+            final boolean isTransitionMatching = isTimeout
+                    || fromTransition == mPhysicalDisplayChangeTransition;
 
-                if (!isTransitionMatching) {
-                    return;
-                }
+            if (!isTransitionMatching) {
+                return;
             }
 
             mPhysicalDisplayChangeTransition = null;

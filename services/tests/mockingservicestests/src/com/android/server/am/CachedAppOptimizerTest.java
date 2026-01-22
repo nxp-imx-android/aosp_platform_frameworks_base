@@ -789,9 +789,12 @@ public final class CachedAppOptimizerTest {
     @Test
     public void zramWritebackNotInitiatedDueToGpuMemory() throws Exception {
         final int pid = 1;
+        final int gpuMemThreshold =
+                CachedAppOptimizer.DEFAULT_ZRAM_WRITEBACK_GPU_MEM_THRESHOLD_KB;
         KernelAllocationStats.ProcessGpuMem[] gpuAllocations =
                 new KernelAllocationStats.ProcessGpuMem[1];
-        gpuAllocations[0] = new KernelAllocationStats.ProcessGpuMem(pid, 1024);
+        gpuAllocations[0] = new KernelAllocationStats.ProcessGpuMem(
+                pid, gpuMemThreshold + 1);
         doReturn(gpuAllocations).when(mKernelAllocProvider).getGpuAllocations();
 
         long[] rssAfter =
@@ -806,7 +809,9 @@ public final class CachedAppOptimizerTest {
     @Test
     public void zramWritebackNotInitiatedDueToDmaBuf() throws Exception {
         final int pid = 1;
-        doReturn(1024L).when(mKernelAllocProvider).getDmabufSizeForProcessKb(pid);
+        doReturn(CachedAppOptimizer.DEFAULT_ZRAM_WRITEBACK_DMABUF_MEM_THRESHOLD_KB + 1L)
+                .when(mKernelAllocProvider)
+                .getDmabufSizeForProcessKb(pid);
 
         long[] rssAfter =
                 new long[]{/*totalRSS*/ 9000, /*fileRSS*/ 9000, /*anonRSS*/ 11000, /*swap*/9000};

@@ -2879,6 +2879,16 @@ public class ActivityManager {
         public RecentTaskInfo() {
         }
 
+        /**
+         * @hide
+         */
+        public RecentTaskInfo(@NonNull RecentTaskInfo other) {
+            super(other);
+            id = other.id;
+            persistentId = other.persistentId;
+            // Ignore other fields in RecentTaskInfo as they are deprecated post-Q
+        }
+
         private RecentTaskInfo(Parcel source) {
             readFromParcel(source);
         }
@@ -3064,6 +3074,15 @@ public class ActivityManager {
         public int numRunning;
 
         public RunningTaskInfo() {
+        }
+
+        /**
+         * @hide
+         */
+        public RunningTaskInfo(@NonNull RunningTaskInfo other) {
+            super(other);
+            id = other.id;
+            // Ignore other fields in RunningTaskInfo as they are deprecated post-Q
         }
 
         private RunningTaskInfo(Parcel source) {
@@ -3343,7 +3362,7 @@ public class ActivityManager {
      *
      * @throws IllegalArgumentException if there is no display with given display ID
      */
-    @FlaggedApi(com.android.window.flags.Flags.FLAG_ENABLE_WINDOW_REPOSITIONING_API)
+    @FlaggedApi(com.android.window.flags.Flags.FLAG_ENABLE_IS_TASK_MOVE_ALLOWED_ON_DISPLAY_API)
     @SuppressLint("RequiresPermission")
     public boolean isTaskMoveAllowedOnDisplay(int displayId) {
         try {

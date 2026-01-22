@@ -729,9 +729,7 @@ class AppHeaderViewHolder(
     private fun shouldShowExitFullImmersiveOrMaximizeIcon(
         isTaskMaximized: Boolean,
         inFullImmersiveState: Boolean,
-    ): Boolean =
-        (DesktopModeFlags.ENABLE_FULLY_IMMERSIVE_IN_DESKTOP.isTrue && inFullImmersiveState) ||
-            isTaskMaximized
+    ): Boolean = inFullImmersiveState || isTaskMaximized
 
     private fun getHeaderStyle(header: Header): HeaderStyle {
         return HeaderStyle(

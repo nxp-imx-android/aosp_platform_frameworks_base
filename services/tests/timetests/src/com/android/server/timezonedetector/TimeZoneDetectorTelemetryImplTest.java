@@ -27,11 +27,15 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.icu.util.TimeZone;
+import android.platform.test.annotations.EnableFlags;
+import android.platform.test.flag.junit.SetFlagsRule;
 
 import androidx.test.core.app.ApplicationProvider;
-import androidx.test.platform.app.InstrumentationRegistry;
+
+import com.android.internal.R;
 
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -47,9 +51,15 @@ import java.util.HashSet;
 import java.util.List;
 
 @RunWith(JUnit4.class)
+@EnableFlags({
+    android.timezone.flags.Flags.FLAG_ENABLE_TIME_ZONE_TRANSITION_TELEMETRY_LOGGING,
+    android.timezone.flags.Flags.FLAG_ENABLE_PERMANENT_TIME_ZONE_CORRECTNESS_TELEMETRY_LOGGING
+})
 public class TimeZoneDetectorTelemetryImplTest {
 
     @Rule public final MockitoRule mockito = MockitoJUnit.rule();
+    @ClassRule public static final SetFlagsRule.ClassRule mClassRule = new SetFlagsRule.ClassRule();
+    @Rule public final SetFlagsRule mSetFlagsRule = mClassRule.createSetFlagsRule();
 
     private static final String ZONE_A = "America/Los_Angeles";
     private static final String ZONE_B = "America/New_York";
@@ -74,16 +84,11 @@ public class TimeZoneDetectorTelemetryImplTest {
                 /* elapsedRealtimeMillis= */ 1700000000000L);
         mFakeStatsdLogger = new FakeTimeZoneDetectorLogger();
         // Set up the primary location time zone provider uid.
-        Resources resources =
-                InstrumentationRegistry.getInstrumentation().getTargetContext().getResources();
+        Resources resources = ApplicationProvider.getApplicationContext().getResources();
         String packageName = null;
         try {
-            int resId =
-                    resources.getIdentifier(
-                            "config_primaryLocationTimeZoneProviderPackageName",
-                            "string",
-                            "android");
-            packageName = resources.getString(resId);
+            packageName =
+                    resources.getString(R.string.config_primaryLocationTimeZoneProviderPackageName);
         } catch (Resources.NotFoundException e) {
             // Do nothing. Location time zone provider is not set on the test device.
         }

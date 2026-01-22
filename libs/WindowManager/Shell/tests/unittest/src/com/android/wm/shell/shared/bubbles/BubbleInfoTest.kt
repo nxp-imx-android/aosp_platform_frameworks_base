@@ -50,6 +50,7 @@ class BubbleInfoTest : ShellTestCase() {
                     "message",
                 ),
                 false,
+                false,
                 UserType.MAIN,
             )
         val parcel = Parcel.obtain()
@@ -74,6 +75,7 @@ class BubbleInfoTest : ShellTestCase() {
             assertThat(message).isEqualTo("message")
         }
         assertThat(bubbleInfo.isApp).isFalse()
+        assertThat(bubbleInfo.isChat).isFalse()
         assertThat(bubbleInfo.userType).isEqualTo(UserType.MAIN)
     }
 }

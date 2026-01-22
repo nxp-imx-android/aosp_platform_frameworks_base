@@ -93,7 +93,7 @@ import static com.android.server.wm.WindowManagerService.UPDATE_FOCUS_NORMAL;
 import static com.android.window.flags.Flags.FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES;
 import static com.android.window.flags.Flags.FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING;
 import static com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE;
-import static com.android.window.flags.Flags.FLAG_ENABLE_WINDOW_REPOSITIONING_API;
+import static com.android.window.flags.Flags.FLAG_ENABLE_IS_TASK_MOVE_ALLOWED_ON_DISPLAY_API;
 import static com.android.window.flags.Flags.FLAG_FIX_TF_ADJACENT_FOCUS;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -3495,7 +3495,7 @@ public class DisplayContentTests extends WindowTestsBase {
         assertEquals(320, dc.mBaseDisplayDensity);
     }
 
-    @EnableFlags(FLAG_ENABLE_WINDOW_REPOSITIONING_API)
+    @EnableFlags(FLAG_ENABLE_IS_TASK_MOVE_ALLOWED_ON_DISPLAY_API)
     @Test
     public void testIsTaskMoveAllowedOnDisplay_eagerCalculation() {
         final TaskDisplayArea taskDisplayArea = mDisplayContent.getDefaultTaskDisplayArea();

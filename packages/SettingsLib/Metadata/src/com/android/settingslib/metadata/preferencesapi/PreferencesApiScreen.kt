@@ -17,6 +17,7 @@
 package com.android.settingslib.metadata.preferencesapi
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import androidx.annotation.StringRes
 import androidx.fragment.app.Fragment
@@ -25,6 +26,7 @@ import com.android.settingslib.datastore.and
 import com.android.settingslib.datastore.or
 import com.android.settingslib.metadata.KeyParametersSchema
 import com.android.settingslib.metadata.PreferenceHierarchy
+import com.android.settingslib.metadata.PreferenceMetadata
 import com.android.settingslib.metadata.PreferenceScreenMetadata
 import com.android.settingslib.metadata.preferencesapi.Utils.getExceptionMessageMultipleDefines
 import com.android.settingslib.metadata.preferencesapi.Utils.getExceptionMessageWrongOrder
@@ -32,13 +34,15 @@ import com.android.settingslib.metadata.preferencesapi.category.Category
 import com.android.settingslib.metadata.ValidatedKeyParameters
 import com.android.settingslib.metadata.preferencesapi.Utils.EXCEPTION_MESSAGE_NO_PARAMETER_DEFINED
 import com.android.settingslib.metadata.preferencesapi.Utils.getExceptionMessageMultipleParametersDefined
+import com.android.settingslib.metadata.preferencesapi.preconditions.Allowed
 import com.android.settingslib.metadata.preferencesapi.preconditions.ApiPreconditions
 import com.android.settingslib.metadata.preferencesapi.types.ApiType
-import com.android.settingslib.metadata.preferenceHierarchy
 import com.android.settingslib.metadata.preferencesapi.types.FiniteOptionsType
+import com.android.settingslib.metadata.preferenceHierarchy
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.runBlocking
 import kotlin.collections.mutableListOf
 import kotlin.reflect.KClass
 
@@ -110,12 +114,17 @@ class ParameterizationConfig {
  * Container for all information and preferences on a Settings screen which is intended to be
  * exposed via API using 2026 "Lightweight" way.
  */
-abstract class PreferencesApiScreen(
+abstract class PreferencesApiScreen private constructor(
     override val key: String,
     val topLevelSettingsCategory: Category,
-    val fragment: KClass<out Fragment>,
+    val fragment: KClass<out Fragment>?,
     override val purpose: Int,
     val alreadyPartiallyMigrated: KClass<*>? = null,
+    /**
+     * The route prefix for screens implemented using the Settings Platform Architecture (SPA).
+     * This is only relevant if this screen's UI is implemented using SPA.
+     */
+    val spaRoutePrefix: String?,
 ) : PreferenceScreenMetadata, ProvidesParametersNonStatically {
     init {
         if (alreadyPartiallyMigrated != null) {
@@ -125,7 +134,29 @@ abstract class PreferencesApiScreen(
         }
     }
 
-    override fun fragmentClass(): Class<out Fragment>? = fragment.java
+    /**
+     * Constructor for screens implemented using a traditional Android [Fragment].
+     */
+    constructor(
+        key: String,
+        topLevelSettingsCategory: Category,
+        fragment: KClass<out Fragment>,
+        purpose: Int,
+        alreadyPartiallyMigrated: KClass<*>? = null,
+    ) : this(key, topLevelSettingsCategory, fragment, purpose, alreadyPartiallyMigrated, null)
+
+    /**
+     * Constructor for screens implemented using the Settings Platform Architecture (SPA).
+     */
+    constructor(
+        key: String,
+        topLevelSettingsCategory: Category,
+        spaRoutePrefix: String,
+        purpose: Int,
+        alreadyPartiallyMigrated: KClass<*>? = null,
+    ) : this(key, topLevelSettingsCategory, null, purpose, alreadyPartiallyMigrated, spaRoutePrefix)
+
+    override fun fragmentClass(): Class<out Fragment>? = fragment?.java
 
     override fun isFlagEnabled(context: Context): Boolean =
         flag?.check() ?: super.isFlagEnabled(context)
@@ -141,6 +172,23 @@ abstract class PreferencesApiScreen(
                 }
             }
         }
+
+    override fun getLaunchIntent(context: Context, metadata: PreferenceMetadata?): Intent? {
+        val opContext = ApiOperationContext(
+            context = context,
+            parameters = keyParameters ?: ValidatedKeyParameters.EMPTY,
+        )
+
+        // TODO(b/469317113): This should run asynchronously
+        val checkScreenPreconditions =
+            runBlocking { screenPreconditions?.check(opContext) } ?: Allowed
+
+        if (checkScreenPreconditions != Allowed) {
+            return null
+        }
+
+        return super.getLaunchIntent(context, metadata)
+    }
 
     var flag: FlagConfig? = null
     var parametersSchema: KeyParametersSchema? = null

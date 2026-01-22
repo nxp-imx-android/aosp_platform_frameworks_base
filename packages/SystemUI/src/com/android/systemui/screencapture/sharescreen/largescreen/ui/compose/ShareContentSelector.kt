@@ -95,7 +95,7 @@ fun ShareContentSelector(shareScreenViewModel: ScreenCaptureShareScreenViewModel
                 )
             }
             DisclaimerText(targetsViewModel, shareScreenViewModel.requestingAppName)
-            if (targetsViewModel is AppContentsViewModel) {
+            if (targetsViewModel is AppContentsViewModel && shareScreenViewModel.isAudioRequested) {
                 AudioSwitch(targetsViewModel)
             }
         }

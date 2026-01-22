@@ -17,11 +17,12 @@ package com.android.server.audio;
 
 import static android.media.AudioDeviceInfo.TYPE_BUILTIN_MIC;
 import static android.media.AudioManager.GET_DEVICES_INPUTS;
+import static android.media.audiopolicy.AudioProductStrategy.DEFAULT_ZONE_ID;
 
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.after;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -33,11 +34,11 @@ import android.content.Context;
 import android.media.AudioDeviceAttributes;
 import android.media.AudioSystem;
 import android.os.IpcDataCache;
-import android.os.Looper;
 import android.os.PermissionEnforcer;
 import android.os.UserHandle;
 import android.os.test.TestLooper;
 import android.platform.test.annotations.EnableFlags;
+import android.platform.test.flag.junit.SetFlagsRule;
 import android.util.IntArray;
 import android.util.Log;
 
@@ -67,6 +68,9 @@ public class AudioServiceTest {
 
     @Rule
     public final MockitoRule mockito = MockitoJUnit.rule();
+
+    @Rule
+    public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
     private Context mContext;
     private AudioSystemAdapter mSpyAudioSystem;
@@ -266,5 +270,88 @@ public class AudioServiceTest {
 
         mAudioService.setRttEnabled(false);
         Assert.assertFalse(mAudioService.isRttEnabled());
+    }
+
+    @Test
+    @EnableFlags(android.media.audiopolicy.Flags.FLAG_MULTI_ZONE_AUDIO)
+    public void testSetProductStrategiesZoneIdForUser() {
+        int userId = 11;
+        UserHandle userHandle = UserHandle.of(userId);
+        int zoneId = DEFAULT_ZONE_ID + 1;
+
+        int status = mAudioService.setProductStrategiesZoneIdForUser(userHandle, zoneId);
+
+        verify(mSpyAudioSystem).setProductStrategiesZoneIdForUserId(eq(userId), eq(zoneId));
+        Assert.assertEquals("Status for set product strategies mapping for zone " + zoneId,
+                AudioSystem.AUDIO_STATUS_OK, status);
+        Assert.assertEquals("User should be mapped for zone " + zoneId, userHandle,
+                mAudioService.getUserHandleForZoneId(zoneId));
+    }
+
+    @Test
+    @EnableFlags(android.media.audiopolicy.Flags.FLAG_MULTI_ZONE_AUDIO)
+    public void testSetProductStrategiesZoneIdForUser_withAudioSystemFailure() {
+        int userId = 11;
+        UserHandle userHandle = UserHandle.of(userId);
+        int zoneId = DEFAULT_ZONE_ID + 1;
+        NoOpAudioSystemAdapter testAudioSystem = (NoOpAudioSystemAdapter) mSpyAudioSystem;
+        testAudioSystem.configureFailOnSetProductStrategiesZoneIdForUserId(true);
+
+        int status = mAudioService.setProductStrategiesZoneIdForUser(userHandle, zoneId);
+
+        verify(mSpyAudioSystem).setProductStrategiesZoneIdForUserId(eq(userId), eq(zoneId));
+        Assert.assertEquals("Error status for set product strategies mapping for zone " + zoneId,
+                AudioSystem.AUDIO_STATUS_ERROR, status);
+        Assert.assertEquals("User should not be mapped for zone " + zoneId,
+                UserHandle.of(UserHandle.USER_NULL), mAudioService.getUserHandleForZoneId(zoneId));
+    }
+
+    @Test
+    @EnableFlags(android.media.audiopolicy.Flags.FLAG_MULTI_ZONE_AUDIO)
+    public void testgetUserHandleForZoneId_withoutMapping() {
+        int zoneId = DEFAULT_ZONE_ID + 1;
+
+        Assert.assertEquals("Zone should be mapped to current user",
+                UserHandle.of(UserHandle.USER_NULL), mAudioService.getUserHandleForZoneId(zoneId));
+    }
+
+    @Test
+    @EnableFlags(android.media.audiopolicy.Flags.FLAG_MULTI_ZONE_AUDIO)
+    public void testgetUserHandleForZoneId_afterUserToZoneReset() {
+        int userId = 11;
+        UserHandle userHandle = UserHandle.of(userId);
+        int zoneId = DEFAULT_ZONE_ID + 1;
+        mAudioService.setProductStrategiesZoneIdForUser(userHandle, zoneId);
+        mAudioService.resetProductStrategiesZoneIdForUser(userHandle);
+
+        Assert.assertEquals("Unset zone should not be mapped to current user",
+                UserHandle.of(UserHandle.USER_NULL), mAudioService.getUserHandleForZoneId(zoneId));
+    }
+
+    @Test
+    @EnableFlags(android.media.audiopolicy.Flags.FLAG_MULTI_ZONE_AUDIO)
+    public void testResetProductStrategiesZoneIdForUser() {
+        int userId = 11;
+        UserHandle userHandle = UserHandle.of(userId);
+        int zoneId = DEFAULT_ZONE_ID + 1;
+        mAudioService.setProductStrategiesZoneIdForUser(userHandle, zoneId);
+
+        int status = mAudioService.resetProductStrategiesZoneIdForUser(userHandle);
+
+        verify(mSpyAudioSystem).resetProductStrategiesZoneIdForUserId(eq(userId));
+        Assert.assertEquals("Status for reset zone " + zoneId, AudioSystem.AUDIO_STATUS_OK,
+                status);
+    }
+
+    @Test
+    @EnableFlags(android.media.audiopolicy.Flags.FLAG_MULTI_ZONE_AUDIO)
+    public void testResetProductStrategiesZoneIdForUser_forUnsetUser() {
+        int userId = 11;
+        UserHandle userHandle = UserHandle.of(userId);
+
+        int status = mAudioService.resetProductStrategiesZoneIdForUser(userHandle);
+
+        Assert.assertEquals("Status for reset zone for unset user",
+                AudioSystem.AUDIO_STATUS_ERROR, status);
     }
 }

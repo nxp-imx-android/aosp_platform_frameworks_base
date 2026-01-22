@@ -80,7 +80,6 @@ import com.android.compose.animation.Expandable
 import com.android.compose.animation.bounceable
 import com.android.compose.animation.rememberExpandableController
 import com.android.compose.animation.scene.ContentScope
-import com.android.compose.modifiers.padding
 import com.android.compose.modifiers.thenIf
 import com.android.compose.theme.LocalAndroidColorScheme
 import com.android.mechanics.compose.modifier.verticalFadeContentReveal
@@ -157,8 +156,6 @@ private val TileViewModel.traceName
  * @param isVisible Whether the tile is currently visible. Defaults to true.
  * @param requestToggleTextFeedback A lambda function that is invoked when a toggleable icon only
  *   tile is clicked, used to request the feedback text.
- * @param tension A lambda providing a vertical pixel offset. This adds elastic vertical spacing and
- *   scales the [squishiness] to create a physical "stretching" effect during expansion.
  * @param detailsViewModel An optional [DetailsViewModel] used to handle navigation to a detailed
  *   view when a tile is clicked, if applicable.
  * @param enableRevealEffect If `true`, the tiles will animate using the reveal animation.
@@ -174,7 +171,6 @@ fun ContentScope.Tile(
     modifier: Modifier = Modifier,
     isVisible: () -> Boolean = { true },
     requestToggleTextFeedback: (TileSpec) -> Unit = {},
-    tension: Density.() -> Int = { 0 },
     detailsViewModel: DetailsViewModel?,
     enableRevealEffect: Boolean = false,
 ) {
@@ -248,7 +244,6 @@ fun ContentScope.Tile(
             color = { animatedColor },
             shape = tileShape,
             squishiness = squishiness,
-            tension = tension,
             hapticsViewModel = hapticsViewModel,
             modifier =
                 modifier
@@ -378,31 +373,21 @@ private fun TileExpandable(
     color: () -> Color,
     shape: Shape,
     squishiness: () -> Float,
-    tension: Density.() -> Int = { 0 },
     hapticsViewModel: TileHapticsViewModel?,
     modifier: Modifier = Modifier,
     content: @Composable (Expandable) -> Unit,
 ) {
-    val density = LocalDensity.current
-    val tileHeight = TileHeight
-    // This lambda is automatically remembered by the compiler, staying stable and preventing
-    // unnecessary recompositions while still reacting to tension changes.
-    val squishinessWithTension = { squishiness() + with(density) { tension() / tileHeight.toPx() } }
-
     Expandable(
         expandable = expandable,
         controller = rememberExpandableController(color = color, shape = shape),
-        modifier = modifier.padding(bottom = tension),
+        modifier =
+            modifier
+                .clip(shape)
+                .motionTestValues { squishiness() exportAs TileMotionTestKeys.Squishness }
+                .verticalSquish(squishiness),
         useModifierBasedImplementation = true,
     ) {
-        Box(
-            Modifier.motionTestValues {
-                    squishinessWithTension() exportAs TileMotionTestKeys.Squishness
-                }
-                .verticalSquish(squishinessWithTension)
-        ) {
-            content(hapticsViewModel?.createStateAwareExpandable(it) ?: it)
-        }
+        content(hapticsViewModel?.createStateAwareExpandable(it) ?: it)
     }
 }
 

@@ -3411,6 +3411,14 @@
          with admin privileges and admin privileges can be granted/revoked from existing users. -->
     <bool name="config_enableMultipleAdmins">false</bool>
 
+    <!-- Enables or disables multi-user management capabilities.
+         This is checked by DevicePolicyManager during provisioning. If set to false, provisioning
+         for multi-user managed device and users will fail.
+         Multi user management capabilities are only possible on Headless System User Mode (HSUM)
+         devices. -->
+    <bool name="config_enableMultiUserManagement">false</bool>
+
+
     <!-- Whether to start stopped users before their scheduled alarms. If set to true, users will be
          started in background before the alarm time so that it can go off. If false, alarms of
          stopped users will not go off and users will remain stopped. -->
@@ -7850,10 +7858,10 @@
          and displaying other apps separately. -->
     <bool name="config_resolverActivityFilterLastUsed">true</bool>
 
-    <!--For App Function, this configuration lists package names grouped as "Device Settings".
-        Packages in this list share the same App Function access settings. In the UI, they are
-        presented as a single "Device Settings" item rather than individually. -->
-    <string-array name="config_appFunctionDeviceSettingsPackages" translatable="false">
+    <!--For App Interaction, this configuration lists package names grouped as "Device assistance".
+        Packages in this list share the same App Interaction history settings. In the UI, they are
+        presented as a single "Device assistance" item rather than individually. -->
+    <string-array name="config_appInteractionDeviceAssistancePackages" translatable="false">
     </string-array>
 
     <!-- Defines the default allowlist of package names for preloaded agents authorized to use App

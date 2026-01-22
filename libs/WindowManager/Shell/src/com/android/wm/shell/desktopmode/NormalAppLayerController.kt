@@ -171,6 +171,11 @@ class NormalAppLayerController(
                     transitionSource = LAYER_SWITCH,
                     targetTransition = transition,
                 )
+                if (taskInfo.isFocused) {
+                    // If task is focused, we need to propagate the reorder to parents to ensure
+                    // the focus is kept.
+                    wct.reorder(taskInfo.token, /* onTop= */ true, /* includingParents= */ true)
+                }
             } else {
                 logV(
                     "Couldn't find an active desk on displayId=%s for the normal layer " +

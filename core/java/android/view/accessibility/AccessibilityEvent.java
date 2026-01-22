@@ -1804,6 +1804,7 @@ public final class AccessibilityEvent extends AccessibilityRecord implements Par
         record.mParcelableData = parcel.readParcelable(null);
         parcel.readList(record.mText, null, java.lang.CharSequence.class);
         record.mSourceWindowId = parcel.readInt();
+        record.mEmbeddingHostWindowId = parcel.readInt();
         record.mSourceNodeId = parcel.readLong();
         record.mSourceDisplayId = parcel.readInt();
         record.mSealed = (parcel.readInt() == 1);
@@ -1875,6 +1876,7 @@ public final class AccessibilityEvent extends AccessibilityRecord implements Par
         parcel.writeParcelable(record.mParcelableData, flags);
         parcel.writeList(record.mText);
         parcel.writeInt(record.mSourceWindowId);
+        parcel.writeInt(record.mEmbeddingHostWindowId);
         parcel.writeLong(record.mSourceNodeId);
         parcel.writeInt(record.mSourceDisplayId);
         parcel.writeInt(record.mSealed ? 1 : 0);

@@ -823,7 +823,10 @@ private class AnimatedDialog(
         startController?.let { moveSourceDrawingToDialog(it) }
     }
 
-    private fun moveSourceDrawingToDialog(controller: DialogTransitionAnimator.Controller) {
+    private fun moveSourceDrawingToDialog(
+        controller: DialogTransitionAnimator.Controller,
+        isLaunch: Boolean = true,
+    ) {
         if (decorView.viewRootImpl == null) {
             // Make sure that we have access to the dialog view root to move the drawing to the
             // dialog overlay.
@@ -839,7 +842,9 @@ private class AnimatedDialog(
             controller,
             then = {
                 isSourceDrawnInDialog = true
-                maybeStartLaunchAnimation(controller)
+                if (isLaunch) {
+                    maybeStartLaunchAnimation(controller)
+                }
             },
         )
     }
@@ -993,6 +998,7 @@ private class AnimatedDialog(
             return
         }
 
+        moveSourceDrawingToDialog(endController, false)
         startAnimation(
             controller = endController,
             isLaunching = false,

@@ -33,7 +33,6 @@ import android.view.View
 import android.view.View.OnLongClickListener
 import android.view.WindowInsets
 import android.window.DesktopExperienceFlags
-import android.window.DesktopModeFlags
 import android.window.TaskSnapshot
 import android.window.WindowContainerTransaction
 import com.android.app.tracing.traceSection
@@ -394,9 +393,7 @@ class AppHeaderController(
                 .apply {
                     show(
                         isTaskInImmersiveMode = inFullImmersive,
-                        showImmersiveOption =
-                            DesktopModeFlags.ENABLE_FULLY_IMMERSIVE_IN_DESKTOP.isTrue &&
-                                taskInfo.requestingImmersive,
+                        showImmersiveOption = taskInfo.requestingImmersive,
                         showSnapOptions = taskInfo.isResizeable,
                         onHoverListener = { hovered: Boolean ->
                             isMaximizeMenuHovered = hovered
@@ -465,13 +462,10 @@ class AppHeaderController(
             )
     }
 
-    private fun canOpenMaximizeMenu(animatingTaskResizeOrReposition: Boolean): Boolean =
-        if (!DesktopModeFlags.ENABLE_FULLY_IMMERSIVE_IN_DESKTOP.isTrue) {
-            !animatingTaskResizeOrReposition
-        } else {
-            val inImmersiveAndRequesting = inFullImmersive && taskInfo.requestingImmersive
-            !animatingTaskResizeOrReposition && !inImmersiveAndRequesting
-        }
+    private fun canOpenMaximizeMenu(animatingTaskResizeOrReposition: Boolean): Boolean {
+        val inImmersiveAndRequesting = inFullImmersive && taskInfo.requestingImmersive
+        return !animatingTaskResizeOrReposition && !inImmersiveAndRequesting
+    }
 
     /**
      * Called when there is a [MotionEvent.ACTION_HOVER_EXIT] on the maximize window button.
@@ -524,7 +518,8 @@ class AppHeaderController(
             multiInstanceHelper.supportsMultiInstanceSplit(taskInfo.baseActivity, taskInfo.userId)
         val shouldShowManageWindowsButton = supportsMultiInstance && minimumInstancesFound
         val shouldShowChangeAspectRatioButton = shouldShowChangeAspectRatioButton(taskInfo)
-        val shouldShowGameControlsButton = shouldShowGameControlsButton(decorWindowContext, taskInfo)
+        val shouldShowGameControlsButton =
+            shouldShowGameControlsButton(decorWindowContext, taskInfo)
         val shouldShowRestartButton = shouldShowRestartButton(taskInfo)
         viewHolder.onHandleMenuOpened()
         handleMenu =

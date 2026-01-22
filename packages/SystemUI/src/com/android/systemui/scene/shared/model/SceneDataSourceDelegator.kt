@@ -25,7 +25,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 
@@ -100,33 +99,5 @@ class SceneDataSourceDelegator(applicationScope: CoroutineScope, config: SceneCo
      */
     fun setDelegate(delegate: SceneDataSource?) {
         delegateMutable.value = delegate ?: noOpDelegate
-    }
-
-    private class NoOpSceneDataSource(initialSceneKey: SceneKey) : SceneDataSource {
-        override val currentScene: StateFlow<SceneKey> =
-            MutableStateFlow(initialSceneKey).asStateFlow()
-
-        override val currentSceneAsState: SceneKey = initialSceneKey
-
-        override val currentOverlays: StateFlow<Set<OverlayKey>> =
-            MutableStateFlow(emptySet<OverlayKey>()).asStateFlow()
-
-        override fun changeScene(toScene: SceneKey, transitionKey: TransitionKey?) = Unit
-
-        override fun showOverlay(overlay: OverlayKey, transitionKey: TransitionKey?) = Unit
-
-        override fun hideOverlay(overlay: OverlayKey, transitionKey: TransitionKey?) = Unit
-
-        override fun replaceOverlay(
-            from: OverlayKey,
-            to: OverlayKey,
-            transitionKey: TransitionKey?,
-        ) = Unit
-
-        override fun freezeAndAnimateToCurrentState() = Unit
-
-        override fun instantlyTransitionTo(scene: SceneKey?, overlays: Set<OverlayKey>?) = Unit
-
-        override fun startTransitionImmediately(transition: TransitionState.Transition) = Unit
     }
 }

@@ -1037,7 +1037,8 @@ public class UsbProfileGroupSettingsManager {
         mSettingsManager
                 .mUsbService
                 .getPermissionsForUser(UserHandle.getUserId(appInfo.uid))
-                .grantDevicePermission(device, packageName, appInfo.uid, /* isPersistent= */ false);
+                .grantDevicePermission(device, /* fingerprint= */null, packageName,
+                        appInfo.uid, /* isPersistent= */ false);
 
         Intent activityIntent = new Intent(intent);
         activityIntent.setComponent(component);
@@ -1125,6 +1126,7 @@ public class UsbProfileGroupSettingsManager {
             if (device != null) {
                 defaultRIUserPermissions.grantDevicePermission(
                         device,
+                        /* fingerprint= */null,
                         packageName,
                         defaultActivity.applicationInfo.uid,
                         /* isPersistent= */ false);

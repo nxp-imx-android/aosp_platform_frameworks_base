@@ -260,6 +260,37 @@ public class ResolverListControllerTest {
         assertThat(result.size(), is(1));
     }
 
+    @Test
+    public void getResolversForIntent_marksPreferredActivity() {
+        mockStats();
+        List<ResolveInfo> infos = new ArrayList<>();
+        infos.add(ResolverDataProvider.createResolveInfo(0, UserHandle.USER_CURRENT,
+                PERSONAL_USER_HANDLE));
+        ResolveInfo preferredInfo = ResolverDataProvider.createResolveInfo(1,
+                UserHandle.USER_CURRENT, PERSONAL_USER_HANDLE);
+        infos.add(preferredInfo);
+        when(mMockPackageManager.queryIntentActivitiesAsUser(any(), anyInt(),
+                any(UserHandle.class))).thenReturn(infos);
+        when(mMockPackageManager.resolveActivity(any(), anyInt())).thenReturn(preferredInfo);
+
+        mController = new ResolverListController(mMockContext, mMockPackageManager,
+                createSendImageIntent("test"), null, UserHandle.USER_CURRENT,
+                /* userHandle= */ UserHandle.SYSTEM, UserHandle.SYSTEM);
+        List<Intent> intents = new ArrayList<>();
+        intents.add(createActionMainIntent());
+
+        List<ResolvedComponentInfo> resolvers = mController
+                .getResolversForIntent(
+                        /* shouldGetResolvedFilter= */ true,
+                        /* shouldGetActivityMetadata= */ true,
+                        /* shouldGetOnlyDefaultActivities= */ true,
+                        intents);
+
+        assertThat(resolvers, hasSize(2));
+        assertThat(resolvers.get(0).isPreferredActivity(), is(false));
+        assertThat(resolvers.get(1).isPreferredActivity(), is(true));
+    }
+
     private int containsFlag(int flag) {
         return intThat(new FlagMatcher(flag, /* contains= */ true));
     }

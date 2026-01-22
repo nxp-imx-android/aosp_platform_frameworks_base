@@ -21,7 +21,6 @@ import android.annotation.UserIdInt;
 import android.app.role.RoleManager;
 import android.app.supervision.SupervisionManager;
 import android.content.Context;
-import android.content.pm.Flags;
 import android.os.Binder;
 import android.os.UserHandle;
 import android.text.TextUtils;
@@ -140,7 +139,7 @@ public class ProtectedPackages {
                 || isOwnerProtectedPackage(userId, packageName)) {
             return true;
         }
-        if (Flags.protectSupervisionPackages() && isSupervisionPackage(userId, packageName)) {
+        if (isSupervisionPackage(userId, packageName)) {
             return true;
         }
         return false;

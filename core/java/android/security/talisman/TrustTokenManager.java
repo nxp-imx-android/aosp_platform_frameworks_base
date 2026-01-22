@@ -143,7 +143,7 @@ import java.util.List;
  *
  * @hide
  */
-@SystemService(Context.TALISMAN_SERVICE)
+@SystemService(Context.TRUST_TOKEN_SERVICE)
 public class TrustTokenManager {
     private final ITrustTokenManager mService;
 

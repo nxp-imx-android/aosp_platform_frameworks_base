@@ -9998,6 +9998,25 @@ public class CarrierConfigManager {
             "satellite_supported_disaster_plmn_string_array";
 
     /**
+     * Indicates the list of satellite technology types of a satellite provider.
+     * This key is used to configure the satellite technology types of the satellite providers in
+     * the config {@link #KEY_SATELLITE_CONFIGS_PER_PLMN_BUNDLE}.
+     * Possible values are:
+     * <ul>
+     * <li>1 =
+     * {@link android.telephony.satellite.SatelliteManager#NT_RADIO_TECHNOLOGY_NB_IOT_NTN}</li>
+     * <li>2 = {@link android.telephony.satellite.SatelliteManager#NT_RADIO_TECHNOLOGY_NR_NTN}</li>
+     * <li>5 = {@link android.telephony.satellite.SatelliteManager#NT_RADIO_TECHNOLOGY_LTE_DTC}</li>
+     * <li>6 = {@link android.telephony.satellite.SatelliteManager#NT_RADIO_TECHNOLOGY_NR_DTC}</li>
+     * A PLMN supporting DTC technology must be distinct from terrestrial networks;
+     * therefore, it will be classified as an NTN.
+     * </ul>
+     */
+    @FlaggedApi(Flags.FLAG_SATELLITE_26Q2_APIS)
+    public static final String KEY_SATELLITE_TECHNOLOGY_INT_ARRAY =
+            "satellite_technology_type_int_array";
+
+    /**
      * A PersistableBundle that contains a list of key-value pairs, where keys are satellite
      * provider PLMNs and values are bundles containing satellite configurations for that PLMN.
      * This allows for per-provider settings within a single carrier, which is necessary for
@@ -10013,6 +10032,7 @@ public class CarrierConfigManager {
      * <ul>
      * <li>{@link #KEY_CARRIER_ROAMING_NTN_EMERGENCY_CALL_TO_SATELLITE_HANDOVER_TYPE_INT}</li>
      * <li>{@link #KEY_CARRIER_ROAMING_NTN_CONNECT_TYPE_INT}</li>
+     * <li>{@link #KEY_SATELLITE_TECHNOLOGY_INT_ARRAY}</li>
      * </ul>
      * <p>
      * An example config for a hybrid carrier supporting two PLMNs (lets say "XXXXXX" is the PLMN of
@@ -10026,6 +10046,10 @@ public class CarrierConfigManager {
      *              value="2" />
      *         <!-- CarrierConfigManager#CARRIER_ROAMING_NTN_CONNECT_AUTOMATIC -->
      *         <int name="carrier_roaming_ntn_connect_type_int" value="0" />
+     *         <!-- SatelliteManager#NT_RADIO_TECHNOLOGY_NR_NTN -->
+     *         <int-array name="satellite_technology_type_int_array" num="1">
+     *             <item value="2" />
+     *         </int-array>
      *     </pbundle_as_map>
      *     <!-- Skylo PLMN's satellite configurations -->
      *     <pbundle_as_map name="YYYYYY">
@@ -10034,6 +10058,10 @@ public class CarrierConfigManager {
      *              value="1" />
      *         <!-- CarrierConfigManager#CARRIER_ROAMING_NTN_CONNECT_MANUAL -->
      *         <int name="carrier_roaming_ntn_connect_type_int" value="1" />
+     *         <!-- SatelliteManager#NT_RADIO_TECHNOLOGY_NB_IOT_NTN -->
+     *         <int-array name="satellite_technology_type_int_array" num="1">
+     *             <item value="1" />
+     *         </int-array>
      *     </pbundle_as_map>
      * </pbundle_as_map>
      * }</pre>
@@ -12288,10 +12316,8 @@ public class CarrierConfigManager {
         sDefaults.putInt(KEY_CARRIER_ROAMING_NTN_EMERGENCY_CALL_TO_SATELLITE_HANDOVER_TYPE_INT,
                 SatelliteManager.EMERGENCY_CALL_TO_SATELLITE_HANDOVER_TYPE_T911);
         sDefaults.putInt(KEY_CARRIER_SUPPORTED_SATELLITE_NOTIFICATION_HYSTERESIS_SEC_INT, 180);
-        if (Flags.starlinkDataBugfix()) {
-            sDefaults.putLong(KEY_SATELLITE_CONNECTED_NOTIFICATION_THROTTLE_MILLIS_INT,
-                    TimeUnit.DAYS.toMillis(7));
-        }
+        sDefaults.putLong(KEY_SATELLITE_CONNECTED_NOTIFICATION_THROTTLE_MILLIS_INT,
+                TimeUnit.DAYS.toMillis(7));
         sDefaults.putInt(KEY_SATELLITE_ROAMING_SCREEN_OFF_INACTIVITY_TIMEOUT_SEC_INT, 30);
         sDefaults.putInt(KEY_SATELLITE_ROAMING_P2P_SMS_INACTIVITY_TIMEOUT_SEC_INT, 180);
         sDefaults.putInt(KEY_SATELLITE_ROAMING_ESOS_INACTIVITY_TIMEOUT_SEC_INT, 600);

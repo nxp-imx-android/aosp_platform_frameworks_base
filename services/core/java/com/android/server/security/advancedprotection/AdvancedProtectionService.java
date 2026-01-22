@@ -38,6 +38,7 @@ import android.os.Message;
 import android.os.ParcelFileDescriptor;
 import android.os.PermissionEnforcer;
 import android.os.RemoteException;
+import android.os.SystemProperties;
 import android.os.UserHandle;
 import android.security.advancedprotection.AdvancedProtectionFeature;
 import android.security.advancedprotection.AdvancedProtectionFeature.ProvisioningMode;
@@ -74,6 +75,7 @@ import java.io.FileDescriptor;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -85,6 +87,10 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
     private static final int CALLBACK_ADDED = 1;
     private static final int FEATURE_CALLBACK_ADDED = 2;
     private static final long MILLIS_PER_HOUR = 60 * 60 * 1000;
+    private static final Set<Integer> ADB_PROVISIONING_MODES =
+            Set.of(
+                    AdvancedProtectionFeature.PROVISIONING_MODE_PROVISIONED_BY_ADB,
+                    AdvancedProtectionFeature.PROVISIONING_MODE_DEPROVISIONED_BY_ADB);
 
     // Features which were launched before the provisioning API was introduced and are thus
     // provisioned by default
@@ -149,19 +155,14 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
                 Slog.e(TAG, "Failed to add hook for DisallowCellular2G", e);
             }
         }
-        if (canAddHook(
-                FEATURE_ID_DISALLOW_USB,
-                /* featureFlagEnabled= */ android.security.Flags.aapmFeatureUsbDataProtection()
-                        // Usb data protection is enabled by default
-                        && mStore.retrieveUsbDataProtectionEnabled())) {
+
+        boolean isUsbDataProtectionSupported =
+                SystemProperties.getBoolean(
+                        "ro.usb.data_protection.disable_when_locked.supported", false);
+        if (canAddHook(FEATURE_ID_DISALLOW_USB, /* featureFlagEnabled= */ true)
+                || isUsbDataProtectionSupported) {
             try {
-                if (android.security.Flags.aapmApiV2()) {
-                    if (isFeatureIdAvailableInConfig(FEATURE_ID_DISALLOW_USB)) {
-                        mHooks.add(new UsbDataAdvancedProtectionHook(mContext, enabled, this));
-                    }
-                } else {
-                    mHooks.add(new UsbDataAdvancedProtectionHook(mContext, enabled, this));
-                }
+                mHooks.add(new UsbDataAdvancedProtectionHook(mContext, enabled, this));
             } catch (Exception e) {
                 Slog.e(TAG, "Failed to add hook for UsbDataAdvancedProtectionHook", e);
             }
@@ -181,7 +182,10 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
             return false;
         }
         if (android.security.Flags.aapmApiV2() && !isFeatureIdAvailableInConfig(featureId)) {
-            return false;
+            // Features can be forced on even if they are not in the config, using adb shell.
+            // This is done for testing purposes, and is not a supported public use case.
+            Boolean adbProvisioned = mStore.retrieveFeatureAdbProvisioned(featureId);
+            return adbProvisioned != null && adbProvisioned;
         }
         return true;
     }
@@ -382,7 +386,6 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
         }
 
         boolean isProvisionedByDefault = PROVISIONED_BY_DEFAULT.contains(featureId);
-        mStore.saveFeatureAdminProvisioned(featureId, isProvisionedByDefault);
 
         // TODO(b/475513456): These are provisioned for 26Q2 early testing. Remove when provisioning
         // via Feature Admin is ready.
@@ -403,6 +406,10 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
 
     public void removeAdbProvisioning(int featureId) {
         mStore.removeFeatureAdbProvisioning(featureId);
+    }
+
+    public boolean retrieveFeatureAdbProvisioned(int featureId) {
+        return mStore.retrieveFeatureAdbProvisioned(featureId);
     }
 
     public void setUsbDataProtectionEnabled(boolean enabled) {
@@ -561,20 +568,33 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
         if (android.security.Flags.aapmApiV2()) {
             @ProvisioningMode int provisioningMode = getProvisioningMode(featureId);
             boolean isFeatureIdAvailableInConfig = isFeatureIdAvailableInConfig(featureId);
+            // TODO:Remove this once the feature is fully rolled out.
+            if (featureId == AdvancedProtectionManager.FEATURE_ID_DISALLOW_USB) {
+                isFeatureIdAvailableInConfig =
+                        isFeatureIdAvailableInConfig
+                                || SystemProperties.getBoolean(
+                                        "ro.usb.data_protection.disable_when_locked.supported",
+                                        false);
+            }
+
             boolean isFeatureEnabled =
                     isAdvancedProtectionEnabledInternal()
-                            && isFeatureIdAvailableInConfig
-                            && provisioningMode
-                                    < AdvancedProtectionFeature
-                                            .PROVISIONING_MODE_DEPROVISIONED_BY_DEFAULT;
+                            && ((isFeatureIdAvailableInConfig
+                                            && provisioningMode
+                                                    < AdvancedProtectionFeature
+                                                            .PROVISIONING_MODE_DEPROVISIONED_BY_DEFAULT)
+                                    || provisioningMode
+                                            == AdvancedProtectionFeature
+                                                    .PROVISIONING_MODE_PROVISIONED_BY_ADB);
             return new AdvancedProtectionFeature(featureId, isFeatureEnabled, provisioningMode);
+
         } else {
             return new AdvancedProtectionFeature(featureId);
         }
     }
 
     private @FeatureId int[] getAvailableFeatureIds() {
-        ArrayList<Integer> featureIds = new ArrayList<>();
+        Set<Integer> featureIds = new LinkedHashSet<>();
         for (int i = 0; i < mProviders.size(); i++) {
             // TODO (b/438957900): Remove filtering of providers in getAdvancedProtectionFeatures
             //  once initFeatures filters mProviders.
@@ -597,7 +617,34 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
                 featureIds.add(hook.getFeatureId());
             }
         }
+        if (android.security.Flags.aapmApiV2()) {
+            // Add all feature IDs that has specified ADB provisioned or deprovisioned status.
+            for (int featureId : AdvancedProtectionManager.ALL_FEATURE_IDS) {
+                int provisioningMode = getProvisioningMode(featureId);
+                if (provisioningMode
+                        == AdvancedProtectionFeature.PROVISIONING_MODE_PROVISIONED_BY_ADB) {
+                    featureIds.add(featureId);
+                } else if (provisioningMode
+                        == AdvancedProtectionFeature.PROVISIONING_MODE_DEPROVISIONED_BY_ADB) {
+                    featureIds.remove(featureId);
+                }
+            }
+        }
         return featureIds.stream().mapToInt(Integer::intValue).toArray();
+    }
+
+    private boolean getHookAvailabilityOrAdbProvisionedStatus(AdvancedProtectionHook hook) {
+        if (android.security.Flags.aapmApiV2()) {
+            int provisioningMode = getProvisioningMode(hook.getFeatureId());
+            switch (provisioningMode) {
+                case AdvancedProtectionFeature.PROVISIONING_MODE_PROVISIONED_BY_ADB:
+                    return true;
+                case AdvancedProtectionFeature.PROVISIONING_MODE_DEPROVISIONED_BY_ADB:
+                    return false;
+                default:
+            }
+        }
+        return hook.isAvailable();
     }
 
     private void enforceAdminUser(UserHandle user) {
@@ -654,7 +701,9 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
                                     "    "
                                             + hook.getClass().getSimpleName()
                                             + " available: "
-                                            + hook.isAvailable());
+                                            + hook.isAvailable()
+                                            + " provisioning status: "
+                                            + getProvisioningMode(hook.getFeatureId()));
                         });
         writer.println("  Providers: ");
         mProviders.stream()
@@ -789,7 +838,7 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
             for (int i = 0; i < mHooks.size(); i++) {
                 AdvancedProtectionHook hook = mHooks.get(i);
                 try {
-                    if (hook.isAvailable()) {
+                    if (getHookAvailabilityOrAdbProvisionedStatus(hook)) {
                         AdvancedProtectionFeature feature = featureMap.get(hook.getFeatureId());
                         boolean isProvisioned = feature != null && feature.isProvisioned();
                         hook.onAdvancedProtectionChanged(enabled && isProvisioned);

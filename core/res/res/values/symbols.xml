@@ -387,6 +387,7 @@
   <java-symbol type="bool" name="config_experimental_designateMainUser"/>
   <java-symbol type="bool" name="config_canSwitchToHeadlessSystemUser"/>
   <java-symbol type="bool" name="config_hideUserSwitchingUiDuringSetup"/>
+  <java-symbol type="bool" name="config_enableMultiUserManagement"/>
   <java-symbol type="bool" name="config_enableMultiUserUI"/>
   <java-symbol type="bool" name="config_enableMultipleAdmins"/>
   <java-symbol type="bool" name="config_allowAlarmsOnStoppedUsers"/>
@@ -3377,6 +3378,9 @@
   <java-symbol type="layout" name="work_widget_mask_view" />
   <java-symbol type="id" name="work_widget_app_icon" />
   <java-symbol type="id" name="work_widget_badge_icon" />
+
+  <java-symbol type="layout" name="disabled_widget_mask_view" />
+  <java-symbol type="id" name="inner_frameLayout" />
 
   <java-symbol type="id" name="aerr_report" />
   <java-symbol type="id" name="aerr_restart" />
@@ -6463,8 +6467,10 @@
   <java-symbol type="bool" name="config_allowPartialSleepWakeLocks" />
   <java-symbol type="integer" name="config_maximumPartialSleepWakeLockDuration" />
 
+  <!-- For App Interaction -->
+  <java-symbol type="array" name="config_appInteractionDeviceAssistancePackages" />
+
   <!-- For App Functions -->
-  <java-symbol type="array" name="config_appFunctionDeviceSettingsPackages" />
   <java-symbol type="array" name="config_defaultAppFunctionAgentAllowlist" />
 
   <!-- Action for opening trusted location settings page -->

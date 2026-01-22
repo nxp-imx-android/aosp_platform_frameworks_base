@@ -360,11 +360,6 @@ private fun ContentScope.SingleShade(
                                         qqsViewModel,
                                         listening = { listening },
                                         modifier = Modifier.sysuiResTag("quick_qs_panel"),
-                                        tension = {
-                                            // 10% tension when the shade is being dragged down.
-                                            val down = visualOffsetProvider().fastCoerceAtLeast(0)
-                                            (down * 0.1f).toInt()
-                                        },
                                     )
                                 }
                             }

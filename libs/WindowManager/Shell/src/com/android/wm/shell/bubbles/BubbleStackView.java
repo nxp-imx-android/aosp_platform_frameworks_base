@@ -2139,17 +2139,22 @@ public class BubbleStackView extends FrameLayout
             if (titleStr == null) {
                 titleStr = getResources().getString(R.string.notification_bubble_title);
             }
-
             if (bubble.getIconView() != null) {
+                String contentDescription;
                 if (mIsExpanded || i > 0) {
-                    bubble.getIconView().setContentDescription(getResources().getString(
-                            R.string.bubble_content_description_single, titleStr, appName));
+                    if (bubble.isChat()) {
+                        contentDescription = getResources().getString(
+                                R.string.bubble_content_description_single, titleStr, appName);
+                    } else {
+                        contentDescription = appName;
+                    }
                 } else {
                     final int moreCount = getBubbleCount();
-                    bubble.getIconView().setContentDescription(getResources().getString(
+                    contentDescription = getResources().getString(
                             R.string.bubble_content_description_stack,
-                            titleStr, appName, moreCount));
+                            titleStr, appName, moreCount);
                 }
+                bubble.getIconView().setContentDescription(contentDescription);
             }
         }
     }

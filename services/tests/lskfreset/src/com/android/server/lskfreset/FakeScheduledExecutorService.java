@@ -29,11 +29,13 @@ import java.util.concurrent.DelayQueue;
 import java.util.concurrent.Delayed;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Fake implementation of ScheduledExecutorService for use in testing. Implementation only covers
@@ -43,12 +45,24 @@ import java.util.concurrent.TimeoutException;
 class FakeScheduledExecutorService implements ScheduledExecutorService {
     private long mElapsedMillis = 0;
 
+    // Indicator if the executor is currently running tasks. Note that this absolutely cannot be
+    // used as a general synchronization primitive as there's no way to guarantee that the state
+    // of the boolean does not change immediately after checking it. There's one exception to
+    // this: if the future queue is shut down and empty and this is false then you can safely
+    // assume that it will never go back to being true again.
+    private AtomicBoolean mIsRunningTasks = new AtomicBoolean(false);
+
     // Helper wrapper that combines queuing of futures with a semaphore. For tracking futures and
     // future timeouts we mostly just need a DelayQueue, but adding in the semaphore functionality
     // allows us to implement useful "wait for X things to be in the queue" operations that are
     // necessary to correctly (and efficiently) implement multi-threaded tests.
     private static class DelayQueueSemaphore<E extends Delayed> extends Semaphore {
         private final DelayQueue<E> mQueue = new DelayQueue<E>();
+
+        // Indicates that the queue has been shut down and no new items can be added. This does not
+        // prevent tasks from being removed or drained.
+        @GuardedBy("this")
+        private boolean mShutdown = false;
 
         DelayQueueSemaphore() {
             super(0);
@@ -59,6 +73,11 @@ class FakeScheduledExecutorService implements ScheduledExecutorService {
         }
 
         void put(E e) {
+            synchronized (this) {
+                if (mShutdown) {
+                    throw new RejectedExecutionException("Executor has been shut down");
+                }
+            }
             mQueue.put(e);
             release();
         }
@@ -77,6 +96,28 @@ class FakeScheduledExecutorService implements ScheduledExecutorService {
             mQueue.drainTo(drained);
             reducePermits(drained.size());
             return drained;
+        }
+
+        void shutdown() {
+            synchronized (this) {
+                mShutdown = true;
+            }
+        }
+
+        boolean isShutdown() {
+            synchronized (this) {
+                return mShutdown;
+            }
+        }
+
+        /* Returns the entire contents of the queue without removing any elements. */
+        List<E> toList() {
+            Object[] array = mQueue.toArray();
+            List<E> list = new ArrayList<>(array.length);
+            for (Object e : array) {
+                list.add((E) e);
+            }
+            return list;
         }
     }
 
@@ -154,15 +195,28 @@ class FakeScheduledExecutorService implements ScheduledExecutorService {
     int fastForwardMillis(long millis) {
         assertExecutionThread();
         mElapsedMillis += millis;
-        List<FakeScheduledFuture<?>> readyFutures = mFutureQueue.drain();
-        for (FakeScheduledFuture<?> future : readyFutures) {
-            future.execute();
+
+        int executedCount = 0;
+        if (mFutureQueue.size() > 0) {
+            // Technically the size check is redundant as we can just call drain() and it will
+            // return an empty list but we want to avoid setting the is-running bit specifically
+            // in the case of "shut down and no tasks to run".
+            mIsRunningTasks.set(true);
+            try {
+                List<FakeScheduledFuture<?>> readyFutures = mFutureQueue.drain();
+                for (FakeScheduledFuture<?> future : readyFutures) {
+                    future.execute();
+                    executedCount += 1;
+                }
+            } finally {
+                mIsRunningTasks.set(false);
+            }
         }
         List<FakeScheduledFuture<?>.WaitForTimeout> readyTimeouts = mTimeoutQueue.drain();
         for (FakeScheduledFuture<?>.WaitForTimeout waiter : readyTimeouts) {
             waiter.signal();
         }
-        return readyFutures.size();
+        return executedCount;
     }
 
     @Override
@@ -193,22 +247,50 @@ class FakeScheduledExecutorService implements ScheduledExecutorService {
 
     @Override
     public void shutdown() {
-        throw new UnsupportedOperationException();
+        // Shut down the future queue. Note that we do not shut down the timeout queue as new
+        // timeouts on existing futures can still be created.
+        mFutureQueue.shutdown();
     }
 
     @Override
     public List<Runnable> shutdownNow() {
-        throw new UnsupportedOperationException();
+        shutdown();
+        // Try to cancel as many tasks as possible.
+        List<Runnable> cancelledTasks = new ArrayList<>();
+        for (FakeScheduledFuture<?> future : mFutureQueue.toList()) {
+            if (future.cancel(false)) {
+                if (future.mRunnable != null) {
+                    // Add the underlying runnable to the cancelled tasks list.
+                    cancelledTasks.add(future.mRunnable);
+                } else {
+                    // Convert the underlying callable to a runnable that discards the result and
+                    // ignores any thrown exceptions.
+                    final Callable<?> callable = future.mCallable;
+                    cancelledTasks.add(
+                            () -> {
+                                try {
+                                    callable.call();
+                                } catch (Exception e) {
+                                    // Ignore exceptions, Runnable can't throw them.
+                                }
+                            });
+                }
+            }
+        }
+        return cancelledTasks;
     }
 
     @Override
     public boolean isShutdown() {
-        return false;
+        return mFutureQueue.isShutdown();
     }
 
     @Override
     public boolean isTerminated() {
-        return false;
+        // The executor is terminated once it has been shut down and there are no remaining tasks
+        // either in the queue or currently being executed. Note that the order of the checks here
+        // is important for avoiding race conditions.
+        return isShutdown() && mFutureQueue.size() == 0 && !mIsRunningTasks.get();
     }
 
     @Override

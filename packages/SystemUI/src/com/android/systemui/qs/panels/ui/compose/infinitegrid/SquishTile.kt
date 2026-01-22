@@ -34,7 +34,7 @@ import kotlin.math.roundToInt
  */
 fun Modifier.verticalSquish(squishiness: () -> Float): Modifier {
     return approachLayout(
-        isMeasurementApproachInProgress = { squishiness() != 1f },
+        isMeasurementApproachInProgress = { squishiness() < 1 },
         approachMeasure = { measurable, constraints ->
             val squishinessValue = if (isLookingAhead) 1f else squishiness()
 

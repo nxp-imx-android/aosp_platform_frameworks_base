@@ -241,15 +241,7 @@ flag {
     is_exported: true
 }
 
-flag {
-    name: "handle_repeated_display_switches"
-    namespace: "windowing_frontend"
-    description: "Ensures that we wait for the last transition when doing repeated fold/unfolds"
-    bug: "416255987"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
+
 
 flag {
     name: "reduce_changed_exclusion_rects_msgs"
@@ -470,3 +462,11 @@ flag {
     description: "Improve the performance during fluid resizing."
     bug: "429960813"
 }
+
+flag {
+    name: "transit_mixpatcher_base"
+    namespace: "windowing_frontend"
+    description: "Foundation for shell-side transition Mixpatcher."
+    bug: "469422564"
+}
+

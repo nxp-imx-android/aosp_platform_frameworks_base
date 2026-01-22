@@ -191,7 +191,7 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
         handler.onTransitionReady(mock(), info, mock(), mock())
 
         verify(mockDesktopTasksController, never())
-            .onDisplayDpiChanging(any(), anyOrNull(), anyOrNull())
+            .onDisplayResolutionOrSizeChanging(any(), anyOrNull(), anyOrNull())
         verify(transitions, never()).unregisterObserver(any())
     }
 
@@ -205,7 +205,7 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
         handler.onTransitionReady(mock(), info, mock(), mock())
 
         verify(mockDesktopTasksController, never())
-            .onDisplayDpiChanging(any(), anyOrNull(), anyOrNull())
+            .onDisplayResolutionOrSizeChanging(any(), anyOrNull(), anyOrNull())
         verify(transitions, never()).unregisterObserver(any())
     }
 

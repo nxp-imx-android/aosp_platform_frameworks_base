@@ -124,14 +124,14 @@ public final class AdvancedProtectionManager {
     public static final int FEATURE_ID_DISALLOW_INSECURE_WIFI_AUTOJOIN = 5;
 
     /**
-     * Feature identifier for restricting the use of the {@code AccessibilityService} API
-     * to only applications designated as accessibility tools when Advanced Protection Mode
-     * (AAPM) is enabled.
+     * Feature identifier for restricting the use of the {@code AccessibilityService} API to only
+     * applications designated as accessibility tools when Advanced Protection Mode (AAPM) is
+     * enabled.
      *
-     * <p>When this protection is active, services not declaring themselves as an
-     * {@link android.accessibilityservice.AccessibilityServiceInfo#isAccessibilityTool} are
-     * disabled and blocked from running. Accessibility tools intended for users
-     * with disabilities are unaffected by this restriction.
+     * <p>When this protection is active, services not declaring themselves as an {@link
+     * android.accessibilityservice.AccessibilityServiceInfo#isAccessibilityTool} are disabled and
+     * blocked from running. Accessibility tools intended for users with disabilities are unaffected
+     * by this restriction.
      *
      * @hide
      */
@@ -154,18 +154,19 @@ public final class AdvancedProtectionManager {
     @IntDef(
             prefix = {"FEATURE_ID_"},
             value = {
-                    FEATURE_ID_DISALLOW_CELLULAR_2G,
-                    FEATURE_ID_DISALLOW_INSTALL_UNKNOWN_SOURCES,
-                    FEATURE_ID_DISALLOW_USB,
-                    FEATURE_ID_DISALLOW_WEP,
-                    FEATURE_ID_ENABLE_MTE,
-                    FEATURE_ID_DISALLOW_INSECURE_WIFI_AUTOJOIN,
-                    FEATURE_ID_RESTRICT_NON_TOOL_A11Y_SERVICES,
+                FEATURE_ID_DISALLOW_CELLULAR_2G,
+                FEATURE_ID_DISALLOW_INSTALL_UNKNOWN_SOURCES,
+                FEATURE_ID_DISALLOW_USB,
+                FEATURE_ID_DISALLOW_WEP,
+                FEATURE_ID_ENABLE_MTE,
+                FEATURE_ID_DISALLOW_INSECURE_WIFI_AUTOJOIN,
+                FEATURE_ID_RESTRICT_NON_TOOL_A11Y_SERVICES,
             })
     @Retention(RetentionPolicy.SOURCE)
     public @interface FeatureId {}
 
     private static final ArrayMap<Integer, String> FEATURE_ID_TO_NAME = buildFeatureIdToNameMap();
+
     /** @hide */
     public static final Set<Integer> ALL_FEATURE_IDS = Set.copyOf(FEATURE_ID_TO_NAME.keySet());
 
@@ -180,7 +181,8 @@ public final class AdvancedProtectionManager {
             map.put(FEATURE_ID_DISALLOW_INSECURE_WIFI_AUTOJOIN, "DISALLOW_INSECURE_WIFI_AUTOJOIN");
         }
         if (Flags.extendAapmToA11yServices()) {
-            map.put(FEATURE_ID_RESTRICT_NON_TOOL_A11Y_SERVICES,
+            map.put(
+                    FEATURE_ID_RESTRICT_NON_TOOL_A11Y_SERVICES,
                     "DISALLOW_NON_TOOL_ACCESSIBILITY_SERVICES");
         }
         return map;
@@ -413,6 +415,14 @@ public final class AdvancedProtectionManager {
     /**
      * Returns the list of advanced protection features which are available on this device.
      *
+     * <p>A feature is considered available if it is supported by the device's hardware and software
+     * configuration.
+     *
+     * <p>Note that this method may return features that are not enabled. To get the current state
+     * of a feature, use {@link AdvancedProtectionFeature#isEnabled()}.
+     *
+     * @return A list of {@link AdvancedProtectionFeature} objects representing the available
+     *     features.
      * @hide
      */
     @SystemApi
@@ -427,10 +437,17 @@ public final class AdvancedProtectionManager {
     }
 
     /**
-     * Returns the list of advanced protection features which are available on this device for the
-     * given feature IDs.
+     * Returns the list of advanced protection features for the given feature IDs.
+     *
+     * <p>Note that this may return features that are not available on the device if explicitly
+     * requested in {@code featureIds}.
+     *
+     * <p>Note that this method may return features that are not enabled. To get the current state
+     * of a feature, use {@link AdvancedProtectionFeature#isEnabled()}.
      *
      * @param featureIds The list of feature identifiers to query.
+     * @return A list of {@link AdvancedProtectionFeature} objects corresponding to the requested
+     *     IDs.
      * @hide
      */
     @FlaggedApi(android.security.Flags.FLAG_AAPM_API_V2)
@@ -451,6 +468,10 @@ public final class AdvancedProtectionManager {
 
     /**
      * Updates the provisioning state of advanced protection features.
+     *
+     * <p>Provisioning controls whether a feature is authorized for use. A provisioned feature will
+     * become enabled when Advanced Protection is active, provided it is also available on the
+     * device.
      *
      * @param featuresToProvision The list of features to provision.
      * @param featuresToDeprovision The list of features to deprovision.
@@ -473,11 +494,12 @@ public final class AdvancedProtectionManager {
     }
 
     /**
-     * Registers a {@link Consumer} to be notified of changes to the Advanced Protection state of the
-     * given features.
+     * Registers a {@link Consumer} to be notified of changes to the Advanced Protection state of
+     * the given features.
      *
-     * <p>The provided callback will be called on the specified executor with the updated state.
-     * Methods are called when the state changes, as well as once on initial registration.
+     * <p>The provided callback will be called on the specified {@code executor} with the updated state. The
+     * {@code callback} is called when the provisioning or enabled state changes, as well as once on initial
+     * registration.
      *
      * @param featureIds The list of feature identifiers to register the callback for.
      * @param executor The executor of where the callback will execute.
@@ -656,5 +678,4 @@ public final class AdvancedProtectionManager {
          */
         void onAdvancedProtectionChanged(boolean enabled);
     }
-
 }

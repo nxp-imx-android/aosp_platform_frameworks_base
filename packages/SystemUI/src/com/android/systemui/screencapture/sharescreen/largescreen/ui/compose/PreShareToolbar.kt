@@ -69,39 +69,50 @@ fun PreShareToolbar(
             contentDescription =
                 ContentDescription.Resource(R.string.screen_share_entire_screen_sharing_title),
         )
-    val shareTargetButtonItems =
-        listOf(
-            RadioButtonGroupItem(
-                icon = tabIcon,
-                modifier = Modifier.testTag("ShareTabOption"),
-                isSelected = shareScreenViewModel.currentTargetsModel is AppContentsViewModel,
-                onClick = {
-                    shareScreenViewModel.setTargetViewModel(
-                        ScreenCaptureTarget.AppContent(contentId = 0)
-                    )
-                },
-            ),
-            RadioButtonGroupItem(
-                icon = windowIcon,
-                modifier = Modifier.testTag("ShareAppWindowOption"),
-                isSelected = shareScreenViewModel.currentTargetsModel is RecentTasksViewModel,
-                onClick = {
-                    shareScreenViewModel.setTargetViewModel(
-                        ScreenCaptureTarget.App(displayId = 0, taskId = 0)
-                    )
-                },
-            ),
-            RadioButtonGroupItem(
-                icon = fullscreenIcon,
-                modifier = Modifier.testTag("ShareEntireScreenOption"),
-                isSelected = shareScreenViewModel.currentTargetsModel is DisplaysViewModel,
-                onClick = {
-                    shareScreenViewModel.setTargetViewModel(
-                        ScreenCaptureTarget.Fullscreen(displayId = 0)
-                    )
-                },
-            ),
-        )
+    val shareTargetButtonItems = buildList {
+        if (shareScreenViewModel.isAppContentSharingEnabled) {
+            add(
+                RadioButtonGroupItem(
+                    icon = tabIcon,
+                    modifier = Modifier.testTag("ShareTabOption"),
+                    isSelected = shareScreenViewModel.currentTargetsModel is AppContentsViewModel,
+                    onClick = {
+                        shareScreenViewModel.setTargetViewModel(
+                            ScreenCaptureTarget.AppContent(contentId = 0)
+                        )
+                    },
+                )
+            )
+        }
+        if (shareScreenViewModel.isAppSharingEnabled) {
+            add(
+                RadioButtonGroupItem(
+                    icon = windowIcon,
+                    modifier = Modifier.testTag("ShareAppWindowOption"),
+                    isSelected = shareScreenViewModel.currentTargetsModel is RecentTasksViewModel,
+                    onClick = {
+                        shareScreenViewModel.setTargetViewModel(
+                            ScreenCaptureTarget.App(displayId = 0, taskId = 0)
+                        )
+                    },
+                )
+            )
+        }
+        if (shareScreenViewModel.isEntireScreenSharingEnabled) {
+            add(
+                RadioButtonGroupItem(
+                    icon = fullscreenIcon,
+                    modifier = Modifier.testTag("ShareEntireScreenOption"),
+                    isSelected = shareScreenViewModel.currentTargetsModel is DisplaysViewModel,
+                    onClick = {
+                        shareScreenViewModel.setTargetViewModel(
+                            ScreenCaptureTarget.Fullscreen(displayId = 0)
+                        )
+                    },
+                )
+            )
+        }
+    }
 
     Toolbar(expanded = expanded, onCloseClick = onCloseClick, modifier = modifier) {
         Row {

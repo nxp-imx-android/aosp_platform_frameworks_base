@@ -2448,7 +2448,7 @@ public:
 
         constexpr int kNoneReportedJankMask = JankType::None | JankType::BufferStuffing |
                 JankType::SurfaceFlingerStuffing | JankType::Dropped | JankType::NonAnimating |
-                JankType::DisplayNotOn;
+                JankType::DisplayNotOn | JankType::DisplayModeChangeInProgress;
 
         constexpr int kAllHandledJankMask =
                 kComposerJankMask | kApplicationJankMask | kNoneReportedJankMask;

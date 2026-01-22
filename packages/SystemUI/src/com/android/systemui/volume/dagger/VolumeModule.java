@@ -17,10 +17,8 @@
 package com.android.systemui.volume.dagger;
 
 import android.content.BroadcastReceiver;
-import android.media.AudioManager;
 
 import com.android.systemui.CoreStartable;
-import com.android.systemui.Flags;
 import com.android.systemui.plugins.VolumeDialog;
 import com.android.systemui.statusbar.policy.ConfigurationController;
 import com.android.systemui.volume.VolumeComponent;
@@ -35,7 +33,6 @@ import com.android.systemui.volume.panel.dagger.VolumePanelComponent;
 import com.android.systemui.volume.panel.dagger.factory.VolumePanelComponentFactory;
 
 import dagger.Binds;
-import dagger.Lazy;
 import dagger.Module;
 import dagger.Provides;
 import dagger.multibindings.ClassKey;
@@ -99,20 +96,6 @@ public interface VolumeModule {
         return true;
     }
 
-    /**  */
-    @Provides
-    static VolumeDialog provideVolumeDialog(
-            Lazy<VolumeDialogPlugin> volumeDialogProvider,
-            Lazy<VolumeDialogImpl> volumeDialogImplLazy
-    ) {
-        if (Flags.volumeRedesign()) {
-            return volumeDialogProvider.get();
-        } else {
-            VolumeDialogImpl impl = volumeDialogImplLazy.get();
-            impl.setStreamImportant(AudioManager.STREAM_SYSTEM, false);
-            impl.setAutomute(true);
-            impl.setSilentMode(false);
-            return impl;
-        }
-    }
+    @Binds
+    VolumeDialog bindVolumeDialog(VolumeDialogPlugin impl);
 }

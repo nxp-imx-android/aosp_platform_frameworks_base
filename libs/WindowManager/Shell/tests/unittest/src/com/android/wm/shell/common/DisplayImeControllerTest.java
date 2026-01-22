@@ -144,6 +144,24 @@ public class DisplayImeControllerTest extends ShellTestCase {
         verify(mockPp).onImeRequested(anyInt(), eq(false));
     }
 
+    @Test
+    public void setImeInsetsUpdatesPaused_dispatchUpdatesOnUnpause() {
+        Looper.prepare();
+        mPerDisplay.setImeInsetsUpdatesPaused(true /* paused */);
+
+        InsetsState state = insetsStateWithIme(true /* visible */);
+        InsetsSourceControl[] controls = insetsSourceControl();
+        mPerDisplay.insetsControlChanged(state, controls);
+
+        // State not updated yet
+        assertNull(mPerDisplay.mImeSourceControl);
+
+        mPerDisplay.setImeInsetsUpdatesPaused(false /* paused */);
+
+        // Updates after unpause
+        assertNotNull(mPerDisplay.mImeSourceControl);
+    }
+
     private InsetsSourceControl[] insetsSourceControl() {
         return new InsetsSourceControl[]{
                 new InsetsSourceControl(

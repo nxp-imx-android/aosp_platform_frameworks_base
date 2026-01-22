@@ -16,6 +16,8 @@
 
 package com.android.server.personalcontext.textclassifier;
 
+import static java.util.Objects.requireNonNull;
+
 import android.os.Bundle;
 import android.service.personalcontext.RenderToken;
 import android.service.personalcontext.hint.ContextHintWithSignature;
@@ -30,6 +32,7 @@ import android.view.textclassifier.TextClassification;
 import androidx.annotation.NonNull;
 
 import com.android.server.personalcontext.component.Renderer;
+import com.android.server.textclassifier.personalcontext.PersonalContextBridge;
 
 import java.util.UUID;
 
@@ -38,9 +41,13 @@ public class TextClassificationActionRenderer implements Renderer {
     private static final boolean DEBUG = Log.isLoggable(TAG, Log.DEBUG);
 
     private final UUID mComponentId = UUID.randomUUID();
+    private final PersonalContextBridge mTcPersonalContextBridge;
 
-    public TextClassificationActionRenderer() {
+    public TextClassificationActionRenderer(
+            @NonNull PersonalContextBridge tcPersonalContextBridge) {
         super();
+        requireNonNull(tcPersonalContextBridge);
+        mTcPersonalContextBridge = tcPersonalContextBridge;
     }
 
     /**
@@ -54,15 +61,15 @@ public class TextClassificationActionRenderer implements Renderer {
 
     @Override
     public void render(@NonNull ContextInsight insight, RenderToken renderToken) {
-        ActionableInsight actionableInsight = getIfActionableInsight(insight);
+        final ActionableInsight actionableInsight = getIfActionableInsight(insight);
         if (actionableInsight == null) {
             if (DEBUG) {
                 Slog.d(TAG, "Insight is not ActionableInsight");
             }
             return;
         }
-        TextClassificationHint textClassificationHint =
-                getIfTextClassificationHint(actionableInsight);
+        final TextClassificationHint textClassificationHint =
+                getFirstTextClassificationHintIfPresent(actionableInsight);
         if (textClassificationHint == null) {
             if (DEBUG) {
                 Slog.d(TAG, "Hint is not TextClassificationHint");
@@ -81,7 +88,7 @@ public class TextClassificationActionRenderer implements Renderer {
                         .build();
         Bundle result = new Bundle();
         TextClassifierService.putResponse(result, textClassification);
-        // TODO(b/461931982): Implement merge back into PersonalContextBridge.
+        mTcPersonalContextBridge.merge(textClassificationHint.getSessionId(), textClassification);
     }
 
     private ActionableInsight getIfActionableInsight(ContextInsight insight) {
@@ -91,7 +98,7 @@ public class TextClassificationActionRenderer implements Renderer {
         return null;
     }
 
-    private TextClassificationHint getIfTextClassificationHint(ContextInsight insight) {
+    private TextClassificationHint getFirstTextClassificationHintIfPresent(ContextInsight insight) {
         for (ContextHintWithSignature hint : insight.getOriginHints()) {
             if (hint.getContextHint() instanceof TextClassificationHint textClassificationHint) {
                 return textClassificationHint;

@@ -28,9 +28,11 @@ import android.graphics.ImageFormat;
 import android.graphics.ImageFormat.Format;
 import android.hardware.HardwareBuffer;
 import android.hardware.HardwareBuffer.Usage;
+import android.hardware.camera2.extension.IOnActiveOutputSurfaceCallback;
 import android.hardware.camera2.params.MultiResolutionStreamInfo;
 import android.media.Image;
 import android.media.ImageReader;
+import android.os.RemoteException;
 import android.util.Size;
 import android.view.Surface;
 
@@ -387,6 +389,19 @@ public class MultiResolutionImageReader implements AutoCloseable {
     }
 
     /**
+     * Get the {@link OnActiveOutputSurfacesListener} currently registered for this
+     * MultiResolutionImageReader.
+     *
+     * @return The listener, or {@code null} if no listener is currently registered.
+     */
+    @FlaggedApi(Flags.FLAG_MULTI_RESOLUTION_CONCURRENT_READERS)
+    public @Nullable OnActiveOutputSurfacesListener getOnActiveOutputSurfacesListener() {
+        synchronized (mListenerLock) {
+            return mOutputSurfacesListener;
+        }
+    }
+
+    /**
      * Register a listener to be notified of active output surfaces for a
      * concurrency-enabled MultiResolutionImageReader.
      *
@@ -659,6 +674,15 @@ public class MultiResolutionImageReader implements AutoCloseable {
         return mConcurrencyEnabled;
     }
 
+    /**
+     * Returns the MultiResolutionImageReader's IOnActiveOutputSurfaceCallback.
+     *
+     * @hide
+     */
+    public @NonNull IOnActiveOutputSurfaceCallback getIOnActiveOutputSurfaceCallback() {
+        return mIOnActiveOutputSurfaceCallback;
+    }
+
     // mReaders and mStreamInfo has the same length, and their entries are 1:1 mapped.
     private final ImageReader[] mReaders;
     private final MultiResolutionStreamInfo[] mStreamInfo;
@@ -670,4 +694,12 @@ public class MultiResolutionImageReader implements AutoCloseable {
     private final Object mListenerLock = new Object();
     private Executor mListenerExecutor;
     private OnActiveOutputSurfacesListener mOutputSurfacesListener;
+    private final IOnActiveOutputSurfaceCallback mIOnActiveOutputSurfaceCallback =
+            new IOnActiveOutputSurfaceCallback.Stub() {
+        @Override
+        public void onActiveOutputSurfacesCallback(List<Surface> activeOutputSurfaces,
+                long timestamp, long frameNumber) throws RemoteException {
+            postOnActiveOutputSurfacesCallback(activeOutputSurfaces, timestamp, frameNumber);
+        }
+    };
 }

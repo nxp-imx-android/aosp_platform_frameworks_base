@@ -28,6 +28,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.os.UserHandle;
+import android.service.notification.NotificationListenerService;
 import android.service.notification.NotificationListenerService.Ranking;
 import android.service.notification.NotificationListenerService.RankingMap;
 import android.service.notification.StatusBarNotification;
@@ -84,6 +85,7 @@ public class NotificationListenerTest extends SysuiTestCase {
 
     @Test
     public void testNotificationAddCallsAddNotification() {
+        mRanking = new RankingMap(new Ranking[]{new RankingBuilder(mSbn).build()});
         mListener.onNotificationPosted(mSbn, mRanking);
         mFakeExecutor.runAllReady();
         verify(mNotificationHandler).onNotificationPosted(mSbn, mRanking);
@@ -91,7 +93,8 @@ public class NotificationListenerTest extends SysuiTestCase {
 
     @Test
     public void testNotificationRemovalCallsRemoveNotification() {
-        mListener.onNotificationRemoved(mSbn, mRanking);
+        mListener.onNotificationRemoved(
+                mSbn, mRanking, NotificationListenerService.REASON_APP_CANCEL);
         mFakeExecutor.runAllReady();
         verify(mNotificationHandler).onNotificationRemoved(eq(mSbn), eq(mRanking), anyInt());
     }

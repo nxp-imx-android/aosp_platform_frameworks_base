@@ -52,8 +52,22 @@ flag {
 }
 
 flag {
+    name: "grant_system_alert_window_permission"
+    namespace: "sysui_integrations"
+    description: "Grant the SYSTEM_ALERT_WINDOW permission to the Contextual Search app."
+    bug: "474440047"
+}
+
+flag {
     name: "enable_vis_assist_structure_ui_hint"
     namespace: "sysui_integrations"
     description: "This flags a feature for enabling or disabling AssistStructure fetching through setUiHints"
     bug: "420404310"
+}
+
+flag {
+    name: "on_demand_screenshot_and_assist_state"
+    namespace: "sysui_integrations"
+    description: "Allow the Circle to Search companion to request and receive fresh screenshot and assist state."
+    bug: "474429707"
 }

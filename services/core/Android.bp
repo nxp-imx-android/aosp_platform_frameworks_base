@@ -217,6 +217,7 @@ java_library_static {
         "android.hardware.rebootescrow-V1-java",
         "android.hardware.power.stats-V2-java",
         "android.hidl.manager-V1.2-java",
+        "android.media.audiopolicy-aconfig-java",
         "cbor-java",
         "com.android.media.audio-aconfig-java",
         "statsd_audio_java_gen",
@@ -263,6 +264,7 @@ java_library_static {
         "lights_flags_lib",
         "android.bpfprogs.flags-aconfig-java",
         "services.signal-collector-manager-internal",
+        "android.content.flags-aconfig-java",
     ],
     javac_shard_size: 50,
     javacflags: [

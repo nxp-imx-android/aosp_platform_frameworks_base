@@ -33,7 +33,6 @@ import static org.testng.Assert.assertThrows;
 
 import android.companion.virtual.computercontrol.ComputerControlSession.ScreenshotException;
 import android.content.ComponentName;
-import android.content.Context;
 import android.graphics.Canvas;
 import android.hardware.display.DisplayManagerGlobal;
 import android.hardware.display.IDisplayManager;
@@ -45,23 +44,23 @@ import android.os.SystemClock;
 import android.util.Size;
 import android.view.DisplayInfo;
 import android.view.Surface;
-import android.view.accessibility.AccessibilityManager;
-import android.view.accessibility.IAccessibilityManager;
+import android.view.accessibility.AccessibilityDisplayProxy;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
-import androidx.test.platform.app.InstrumentationRegistry;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import java.time.Duration;
 import java.util.concurrent.Executor;
+import java.util.function.Consumer;
 
 @RunWith(AndroidJUnit4.class)
 public class ComputerControlSessionTest {
@@ -69,6 +68,7 @@ public class ComputerControlSessionTest {
     private static final int DISPLAY_ID = 42;
     private static final int WIDTH = 1920;
     private static final int HEIGHT = 1080;
+    private static final int FRAME_PROCESSING_DELAY_MS = 100;
     private static final String TARGET_PACKAGE = "com.android.foo";
     private static final String TARGET_CLASS = "com.android.foo.FooActivity";
 
@@ -77,17 +77,25 @@ public class ComputerControlSessionTest {
     @Mock
     private IDisplayManager mDisplayManager;
     @Mock
-    private IAccessibilityManager mAccessibilityManager;
-    @Mock
     private IInteractiveMirror mMockInteractiveMirror;
     @Mock
     private Runnable mMockOnClosedRunnable;
     @Mock
     private ComputerControlSession.StabilityListener mMockStabilityListener;
+    @Mock
+    private Consumer<AccessibilityDisplayProxy> mRegisterProxy;
+
+    @Captor
+    private ArgumentCaptor<AccessibilityDisplayProxy> mProxyCaptor;
+    @Captor
+    private ArgumentCaptor<Surface> mSurfaceCaptor;
+    @Captor
+    private ArgumentCaptor<IComputerControlLifecycleCallback> mLifecycleCaptor;
 
     private ComputerControlSession mSession;
     private IComputerControlLifecycleCallback mLifecycle;
     private Surface mSurface;
+    private AccessibilityDisplayProxy mAccessibilityProxy;
 
     private AutoCloseable mMockitoSession;
 
@@ -101,21 +109,17 @@ public class ComputerControlSessionTest {
         displayInfo.logicalHeight = HEIGHT;
         when(mDisplayManager.getDisplayInfo(DISPLAY_ID)).thenReturn(displayInfo);
 
-        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        AccessibilityManager accessibilityManager = new AccessibilityManager(
-                context, context.getMainThreadHandler(), mAccessibilityManager, 0, true);
-
-        mSession = new ComputerControlSession(DISPLAY_ID, mMockSession, accessibilityManager,
+        mSession = new ComputerControlSession(DISPLAY_ID, mMockSession, mRegisterProxy,
                 mMockOnClosedRunnable, new DisplayManagerGlobal(mDisplayManager));
 
         // Capture session initialization args from constructor.
-        final var surfaceCaptor = ArgumentCaptor.forClass(Surface.class);
-        final var lifecycleCaptor =
-                ArgumentCaptor.forClass(IComputerControlLifecycleCallback.class);
-        verify(mMockSession).initialize(lifecycleCaptor.capture(), surfaceCaptor.capture());
-        mLifecycle = lifecycleCaptor.getValue();
+        verify(mRegisterProxy).accept(mProxyCaptor.capture());
+        mAccessibilityProxy = mProxyCaptor.getValue();
+        assertThat(mAccessibilityProxy).isNotNull();
+        verify(mMockSession).initialize(mLifecycleCaptor.capture(), mSurfaceCaptor.capture());
+        mLifecycle = mLifecycleCaptor.getValue();
         assertThat(mLifecycle).isNotNull();
-        mSurface = surfaceCaptor.getValue();
+        mSurface = mSurfaceCaptor.getValue();
         assertThat(mSurface).isNotNull();
         clearInvocations(mMockSession);
     }
@@ -306,20 +310,92 @@ public class ComputerControlSessionTest {
 
         drawFrame(mSurface);
 
-        verify(mMockStabilityListener, Mockito.timeout(5000)).onSessionStable();
+        verify(mMockStabilityListener, timeout(FRAME_PROCESSING_DELAY_MS)).onSessionStable();
+    }
+
+    @Test
+    public void setStabilityListener_waitsForFirstFrame_afterAccessibilityEvent() {
+        mSession.setStabilityListener(Duration.ofMillis(0), mExecutor, mMockStabilityListener);
+        // Tap to reset the idle state.
+        mSession.tap(0, 0);
+        verify(mMockStabilityListener, Mockito.after(100).never()).onSessionStable();
+
+        // Verify listener is NOT called after accessibility event
+        mAccessibilityProxy.onAccessibilityEvent(null);
+        verify(mMockStabilityListener, Mockito.after(100).never()).onSessionStable();
+
+        drawFrame(mSurface);
+
+        verify(mMockStabilityListener, timeout(FRAME_PROCESSING_DELAY_MS)).onSessionStable();
+    }
+
+    @Test
+    public void setStabilityListener_accessibilityEvent_extendsTimeout() {
+        drawFrame(mSurface);
+
+        mSession.setStabilityListener(Duration.ofMillis(100), mExecutor, mMockStabilityListener);
+        // Tap to reset the idle state.
+        mSession.tap(0, 0);
+
+        for (int i = 0; i < 4; i++) {
+            SystemClock.sleep(60);
+            mAccessibilityProxy.onAccessibilityEvent(null);
+        }
+        verify(mMockStabilityListener, never()).onSessionStable();
+
+        verify(mMockStabilityListener, timeout(2 * 100)).onSessionStable();
+    }
+
+    @Test
+    public void setStabilityListener_additionalInteractions_extendsTimeout() {
+        drawFrame(mSurface);
+
+        mSession.setStabilityListener(Duration.ofMillis(100), mExecutor, mMockStabilityListener);
+        // Tap to reset the idle state.
+        mSession.tap(0, 0);
+
+        for (int i = 0; i < 4; i++) {
+            SystemClock.sleep(60);
+            mSession.tap(0, 0);
+        }
+        verify(mMockStabilityListener, never()).onSessionStable();
+
+        verify(mMockStabilityListener, timeout(2 * 100)).onSessionStable();
+    }
+
+    @Test
+    public void setStabilityListener_frameAvailableWithNoInteractions_noCallback() {
+        mSession.setStabilityListener(Duration.ofMillis(0), mExecutor, mMockStabilityListener);
+
+        drawFrame(mSurface);
+        SystemClock.sleep(FRAME_PROCESSING_DELAY_MS);
+
+        verify(mMockStabilityListener, never()).onSessionStable();
     }
 
     @Test
     public void setStabilityListener_frameAlreadyAvailable_firesImmediately() throws Exception {
         drawFrame(mSurface);
-        // Wait for frame to be processed.
-        SystemClock.sleep(100);
+        SystemClock.sleep(FRAME_PROCESSING_DELAY_MS);
 
         mSession.setStabilityListener(Duration.ofMillis(0), mExecutor, mMockStabilityListener);
         // Tap to reset the idle state.
         mSession.tap(0, 0);
 
-        verify(mMockStabilityListener, Mockito.timeout(5000)).onSessionStable();
+        verify(mMockStabilityListener, timeout(100)).onSessionStable();
+    }
+
+    @Test
+    public void setStabilityListener_frameAlreadyAvailable_firesAfterAccessibilityEvent() {
+        drawFrame(mSurface);
+        SystemClock.sleep(FRAME_PROCESSING_DELAY_MS);
+
+        mSession.setStabilityListener(Duration.ofMillis(100), mExecutor, mMockStabilityListener);
+        // Tap to reset the idle state.
+        mSession.tap(0, 0);
+        mAccessibilityProxy.onAccessibilityEvent(null);
+
+        verify(mMockStabilityListener, timeout(2 * 100)).onSessionStable();
     }
 
     @Test
@@ -392,7 +468,7 @@ public class ComputerControlSessionTest {
 
         drawFrame(mSurface);
 
-        verify(callback, timeout(100)).onResult(notNull());
+        verify(callback, timeout(FRAME_PROCESSING_DELAY_MS)).onResult(notNull());
     }
 
     @Test
@@ -401,8 +477,7 @@ public class ComputerControlSessionTest {
         mLifecycle.onActive();
         when(mMockSession.requestScreenshot()).thenAnswer((inv) -> {
             drawFrame(mSurface);
-            // Wait for the new frame to be processed.
-            SystemClock.sleep(100);
+            SystemClock.sleep(FRAME_PROCESSING_DELAY_MS);
             return true;
         });
 
@@ -421,8 +496,7 @@ public class ComputerControlSessionTest {
         // ImageReader still happens to get a new frame within that time.
         when(mMockSession.requestScreenshot()).thenAnswer((inv) -> {
             drawFrame(mSurface);
-            // Wait for the new frame callback to be processed.
-            SystemClock.sleep(100);
+            SystemClock.sleep(FRAME_PROCESSING_DELAY_MS);
             return false;
         });
 

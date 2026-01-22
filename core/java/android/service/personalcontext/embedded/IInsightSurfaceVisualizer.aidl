@@ -30,6 +30,6 @@ interface IInsightSurfaceVisualizer {
     oneway void createVisualizationForClient(
         in List<ContextInsightWrapper> insights,
         in InsightSurfaceClientInfo clientInfo,
-        in IVisualizationResult callback);
+        in IVisualizationResult result);
     oneway void onClientDisconnected(in InsightSurfaceClientInfo clientInfo);
 }

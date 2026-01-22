@@ -22,9 +22,13 @@ import com.android.compose.animation.scene.TransitionBuilder
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
 
 fun TransitionBuilder.lockscreenToOccludedTransition(durationScale: Double = 1.0) {
-    spec = tween(durationMillis = 550, easing = Easings.Linear)
+    spec = tween(durationMillis = 633, easing = Easings.Linear)
 
-    fractionRange(end = 0.7f) { fade(LockscreenElementKeys.Root) }
+    fractionRange(end = 0.52f) {
+        fade(LockscreenElementKeys.Root)
+        fade(LockscreenElementKeys.Notifications.Stack)
+    }
+
     fractionRange(easing = Easings.EmphasizedDecelerate) {
         translate(LockscreenElementKeys.Region.Upper, y = -40.dp)
         translate(LockscreenElementKeys.Notifications.Stack, y = -40.dp)

@@ -1072,7 +1072,7 @@ class DesktopTasksController(
         }
     }
 
-    fun onDisplayDpiChanging(
+    fun onDisplayResolutionOrSizeChanging(
         displayId: Int,
         newConfig: Configuration,
         oldDisplayLayout: DisplayLayout?,
@@ -3905,8 +3905,7 @@ class DesktopTasksController(
     /** Whether the given [change] in the [transition] is a known desktop change. */
     fun isDesktopChange(transition: IBinder, change: Change): Boolean {
         // Only the immersive controller is currently involved in mixed transitions.
-        return DesktopModeFlags.ENABLE_FULLY_IMMERSIVE_IN_DESKTOP.isTrue &&
-            desktopImmersiveController.isImmersiveChange(transition, change)
+        return desktopImmersiveController.isImmersiveChange(transition, change)
     }
 
     /**
@@ -3916,7 +3915,6 @@ class DesktopTasksController(
      */
     fun shouldPlayDesktopAnimation(info: TransitionRequestInfo): Boolean {
         // Only immersive mixed transition are currently supported.
-        if (!DesktopModeFlags.ENABLE_FULLY_IMMERSIVE_IN_DESKTOP.isTrue) return false
         val triggerTask = info.triggerTask ?: return false
         val userId = triggerTask.userId
         val repository = userRepositories.getProfile(userId)
@@ -4751,11 +4749,7 @@ class DesktopTasksController(
             }
         }
 
-        if (
-            DesktopExperienceFlags.ENABLE_DESKTOP_FIRST_FULLSCREEN_REFOCUS_BUGFIX.isTrue &&
-                isDesktopFirst &&
-                isFullscreenRelaunch(openingTask, requestType)
-        ) {
+        if (isDesktopFirst && isFullscreenRelaunch(openingTask, requestType)) {
             logV(
                 "shouldForceEnterDesktopByDesktopFirstPolicy: no switch as fullscreen relaunch on" +
                     " desktop-first display#%s",
@@ -6803,7 +6797,6 @@ class DesktopTasksController(
 
     /** Called when a task's info changes. */
     fun onTaskInfoChanged(taskInfo: RunningTaskInfo) {
-        if (!DesktopModeFlags.ENABLE_FULLY_IMMERSIVE_IN_DESKTOP.isTrue) return
         val repository = userRepositories.getProfile(taskInfo.userId)
         val inImmersive = repository.isTaskInFullImmersiveState(taskInfo.taskId)
         val requestingImmersive = taskInfo.requestingImmersive
@@ -7267,8 +7260,7 @@ class DesktopTasksController(
 
     companion object {
         // Timeout used for CUJ_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG_HOLD/RELEASE, this is longer than
-        // the
-        // default timeout to avoid timing out in the middle of a drag action.
+        // the default timeout to avoid timing out in the middle of a drag action.
         private val APP_HANDLE_DRAG_CUJ_TIMEOUT_MS: Long = TimeUnit.SECONDS.toMillis(10L)
 
         private const val TAG = "DesktopTasksController"

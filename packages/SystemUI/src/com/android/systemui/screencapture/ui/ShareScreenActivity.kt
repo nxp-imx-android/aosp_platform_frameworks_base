@@ -19,11 +19,16 @@ package com.android.systemui.screencapture.ui
 import android.content.Intent
 import android.media.projection.IMediaProjection
 import android.media.projection.IMediaProjectionManager.EXTRA_USER_REVIEW_GRANTED_CONSENT
+import android.media.projection.MediaProjectionConfig
 import android.media.projection.MediaProjectionManager.EXTRA_MEDIA_PROJECTION
+import android.media.projection.MediaProjectionManager.EXTRA_MEDIA_PROJECTION_CONFIG
 import android.os.Bundle
 import android.os.UserHandle
 import android.util.Log
 import android.view.WindowManager
+import android.view.accessibility.AccessibilityEvent
+import android.view.accessibility.AccessibilityManager
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
@@ -49,6 +54,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import com.android.compose.theme.PlatformTheme
 import com.android.systemui.mediaprojection.MediaProjectionMetricsLogger
+import com.android.systemui.res.R
 import com.android.systemui.screencapture.common.ScreenCaptureComponent
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters
@@ -66,10 +72,12 @@ class ShareScreenActivity
 constructor(
     private val builder: ScreenCaptureComponent.Builder,
     private val mediaProjectionMetricsLogger: MediaProjectionMetricsLogger,
+    private val accessibilityManager: AccessibilityManager,
 ) : ComponentActivity() {
 
     // Controls the visibility and animation state of the Compose UI.
     private val visibleState = MutableTransitionState(false)
+    private var interactor: ShareScreenUiInteractor? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -81,7 +89,13 @@ constructor(
         val reviewGrantedConsentRequired =
             intent.getBooleanExtra(EXTRA_USER_REVIEW_GRANTED_CONSENT, false)
         val projectionBinder = intent.extras?.getBinder(EXTRA_MEDIA_PROJECTION)
-        val hostUserHandle: UserHandle? = intent.getParcelableExtra(EXTRA_HOST_APP_USER_HANDLE)
+        val hostUserHandle: UserHandle? =
+            intent.getParcelableExtra(EXTRA_HOST_APP_USER_HANDLE, UserHandle::class.java)
+        val config: MediaProjectionConfig? =
+            intent.getParcelableExtra(
+                EXTRA_MEDIA_PROJECTION_CONFIG,
+                MediaProjectionConfig::class.java,
+            )
 
         if (
             uid == -1 || hostUserHandle == null || packageName == null || projectionBinder == null
@@ -118,12 +132,14 @@ constructor(
                                         uid,
                                         packageName,
                                         display!!.displayId,
+                                        config,
                                     )
                                 }
                         ui
                     }
 
                 val shareScreenUiInteractor = uiComponent.shareScreenUiInteractor
+                interactor = shareScreenUiInteractor
                 BackHandler { shareScreenUiInteractor.onClose() }
                 LaunchedEffect(shareScreenUiInteractor) {
                     shareScreenUiInteractor.sharingState
@@ -189,6 +205,27 @@ constructor(
                 }
             }
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        if (interactor?.sharingState?.value is ShareScreenUiInteractor.SharingState.Approved) {
+            return
+        }
+
+        if (!accessibilityManager.isEnabled) {
+            return
+        }
+
+        val announcement = getString(R.string.screen_share_cancel_announcement)
+        val event =
+            AccessibilityEvent(AccessibilityEvent.TYPE_NOTIFICATION_STATE_CHANGED).apply {
+                className = Toast::class.java.name
+                packageName = this@ShareScreenActivity.packageName
+                text.add(announcement)
+            }
+        accessibilityManager.sendAccessibilityEvent(event)
     }
 
     private fun createSuccessIntent(projection: IMediaProjection): Intent {

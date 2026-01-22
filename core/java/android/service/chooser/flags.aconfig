@@ -67,3 +67,10 @@ flag {
   description: "Enables Tap to Share feature."
   bug: "461778971"
 }
+
+flag {
+    name: "resolver_respect_auto_launch_single_choice"
+    namespace: "documentsui"
+    description: "ResolverActivity will respect Intent.EXTRA_AUTO_LAUNCH_SINGLE_CHOICE"
+    bug: "459640815"
+}

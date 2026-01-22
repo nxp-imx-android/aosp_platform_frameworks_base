@@ -230,14 +230,11 @@ public class DesktopModeTouchEventListener
             //  should shared with the maximize menu's maximize/restore actions.
             final DesktopRepository desktopRepository = mDesktopUserRepositories.getProfile(
                     decoration.getTaskInfo().userId);
-            if (DesktopModeFlags.ENABLE_FULLY_IMMERSIVE_IN_DESKTOP.isTrue()
-                    && desktopRepository.isTaskInFullImmersiveState(
-                    decoration.getTaskInfo().taskId)) {
+            if (desktopRepository.isTaskInFullImmersiveState(decoration.getTaskInfo().taskId)) {
                 // Task is in immersive and should exit.
                 mWindowDecorationActions.onImmersiveOrRestore(decoration.getTaskInfo());
             } else {
-                // Full immersive is disabled or task doesn't request/support it, so just
-                // toggle between maximize/restore states.
+                // Just toggle between maximize/restore states.
                 mWindowDecorationActions.onMaximizeOrRestore(decoration.getTaskInfo().taskId,
                         ToggleTaskSizeInteraction.AmbiguousSource.HEADER_BUTTON,
                         getInputMethod(mMotionEvent));

@@ -19,6 +19,7 @@
 package com.android.systemui.media.remedia.ui.compose
 
 import android.util.Log
+import android.view.ViewConfiguration
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateColorAsState
@@ -94,7 +95,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.scale
@@ -114,6 +114,7 @@ import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.util.VelocityTracker
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.layout
@@ -123,6 +124,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
@@ -983,6 +985,12 @@ private fun ContentScope.Navigation(
                             }
                         }
                         val isEnabled = viewModel.onScrubChange != null
+                        val velocityTracker = remember { VelocityTracker() }
+                        val context = LocalContext.current
+                        val flingVelocity =
+                            remember(context) {
+                                ViewConfiguration.get(context).scaledMinimumFlingVelocity * 10
+                            }
                         Slider(
                             interactionSource = interactionSource,
                             value = viewModel.progress,
@@ -991,7 +999,11 @@ private fun ContentScope.Navigation(
                                 viewModel.onScrubChange?.invoke(progress)
                             },
                             onValueChangeFinished = {
-                                viewModel.onScrubFinished?.invoke(sliderDragDelta.value)
+                                val velocity = velocityTracker.calculateVelocity().x
+                                viewModel.onScrubFinished?.invoke(
+                                    sliderDragDelta.value,
+                                    abs(velocity) < abs(flingVelocity),
+                                )
                             },
                             colors = colors,
                             thumb = {
@@ -1027,11 +1039,18 @@ private fun ContentScope.Navigation(
                                             while (true) {
                                                 val event =
                                                     awaitPointerEvent(PointerEventPass.Initial)
+
+                                                event.changes.forEach { change ->
+                                                    // Feed the velocity tracker to detect flings
+                                                    velocityTracker.addPosition(
+                                                        change.uptimeMillis,
+                                                        change.position,
+                                                    )
+                                                }
                                                 when (event.type) {
                                                     PointerEventType.Press -> {
-                                                        // A new gesture has begun. Record the
-                                                        // initial
-                                                        // down input change.
+                                                        // A new gesture has begun.
+                                                        // Record the initial down input change.
                                                         down = event.changes.last()
                                                     }
 
@@ -1294,6 +1313,7 @@ private fun CardGuts(
                 color = Color.White,
                 style = MaterialTheme.typography.labelMedium,
                 fontSize = 14.sp,
+                textAlign = TextAlign.Center,
             )
 
             Row(

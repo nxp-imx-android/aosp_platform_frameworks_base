@@ -110,7 +110,6 @@ import com.android.window.flags.Flags
 import com.android.window.flags.Flags.FLAG_CLOSE_FULLSCREEN_AND_SPLITSCREEN_KEYBOARD_SHORTCUT
 import com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE
 import com.android.window.flags.Flags.FLAG_ENABLE_DISPLAY_DISCONNECT_INTERACTION
-import com.android.window.flags.Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP
 import com.android.window.flags.Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND
 import com.android.window.flags.Flags.FLAG_ENABLE_PER_DISPLAY_DESKTOP_WALLPAPER_ACTIVITY
 import com.android.wm.shell.R
@@ -7138,10 +7137,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_DESKTOP_FIRST_FULLSCREEN_REFOCUS_BUGFIX,
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-    )
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun handleRequest_fullscreenTaskRelaunch_desktopFirst_returnNull() {
         val tda = rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(DEFAULT_DISPLAY)!!
         tda.configuration.windowConfiguration.windowingMode = WINDOWING_MODE_FREEFORM
@@ -7156,7 +7152,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
     @Test
     @EnableFlags(
-        Flags.FLAG_ENABLE_DESKTOP_FIRST_FULLSCREEN_REFOCUS_BUGFIX,
         Flags.FLAG_ENABLE_DESKTOP_FIRST_BASED_DEFAULT_TO_DESKTOP_BUGFIX,
         Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
     )
@@ -7171,10 +7166,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_DESKTOP_FIRST_FULLSCREEN_REFOCUS_BUGFIX,
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-    )
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun handleRequest_fullscreenTaskRelaunch_touchFirst_returnNull() {
         val tda = rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(DEFAULT_DISPLAY)!!
         tda.configuration.windowConfiguration.windowingMode = WINDOWING_MODE_FULLSCREEN
@@ -7188,10 +7180,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_DESKTOP_FIRST_FULLSCREEN_REFOCUS_BUGFIX,
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-    )
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun handleRequest_backgroundFullscreenTaskRelaunch_touchFirst_moveToDesk() {
         val tda = rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(DEFAULT_DISPLAY)!!
         tda.configuration.windowConfiguration.windowingMode = WINDOWING_MODE_FULLSCREEN
@@ -9857,7 +9846,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP)
     fun onTaskInfoChanged_inImmersiveUnrequestsImmersive_exits() {
         val task = setUpFreeformTask(DEFAULT_DISPLAY)
         taskRepository.setTaskInFullImmersiveState(DEFAULT_DISPLAY, task.taskId, immersive = true)
@@ -9869,7 +9857,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP)
     fun onTaskInfoChanged_notInImmersiveUnrequestsImmersive_noReExit() {
         val task = setUpFreeformTask(DEFAULT_DISPLAY)
         taskRepository.setTaskInFullImmersiveState(DEFAULT_DISPLAY, task.taskId, immersive = false)
@@ -9881,7 +9868,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP)
     fun onTaskInfoChanged_inImmersiveUnrequestsImmersive_inRecentsTransition_noExit() {
         val task = setUpFreeformTask(DEFAULT_DISPLAY)
         taskRepository.setTaskInFullImmersiveState(DEFAULT_DISPLAY, task.taskId, immersive = true)
@@ -10103,7 +10089,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP)
     fun shouldPlayDesktopAnimation_notShowingDesktop_doesNotPlay() {
         taskRepository.setDeskInactive(deskId = 0)
         val triggerTask = setUpFullscreenTask(displayId = DEFAULT_DISPLAY)
@@ -10122,7 +10107,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP)
     fun shouldPlayDesktopAnimation_notOpening_doesNotPlay() {
         val triggerTask = setUpFreeformTask(displayId = DEFAULT_DISPLAY)
         taskRepository.setTaskInFullImmersiveState(
@@ -10140,7 +10124,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP)
     fun shouldPlayDesktopAnimation_notImmersive_doesNotPlay() {
         val triggerTask = setUpFreeformTask(displayId = DEFAULT_DISPLAY)
         taskRepository.setTaskInFullImmersiveState(
@@ -10158,7 +10141,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP)
     fun shouldPlayDesktopAnimation_fullscreenEntersDesktop_plays() {
         // At least one freeform task to be in a desktop.
         val existingTask = setUpFreeformTask(displayId = DEFAULT_DISPLAY)
@@ -10179,7 +10161,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP)
     fun shouldPlayDesktopAnimation_fullscreenStaysFullscreen_doesNotPlay() {
         val triggerTask = setUpFullscreenTask(displayId = DEFAULT_DISPLAY)
         taskRepository.setDeskInactive(deskId = 0)
@@ -10194,7 +10175,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP)
     fun shouldPlayDesktopAnimation_freeformStaysInDesktop_plays() {
         // At least one freeform task to be in a desktop.
         val existingTask = setUpFreeformTask(displayId = DEFAULT_DISPLAY)
@@ -10215,7 +10195,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP)
     fun shouldPlayDesktopAnimation_freeformExitsDesktop_doesNotPlay() {
         val triggerTask = setUpFreeformTask(displayId = DEFAULT_DISPLAY, active = false)
         taskRepository.setDeskInactive(deskId = 0)

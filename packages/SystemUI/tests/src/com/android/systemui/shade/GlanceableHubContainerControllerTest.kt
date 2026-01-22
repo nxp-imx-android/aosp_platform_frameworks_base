@@ -44,6 +44,7 @@ import com.android.systemui.communal.domain.interactor.communalSettingsInteracto
 import com.android.systemui.communal.domain.interactor.setCommunalAvailable
 import com.android.systemui.communal.domain.interactor.setCommunalV2ConfigEnabled
 import com.android.systemui.communal.shared.model.CommunalScenes
+import com.android.systemui.communal.shared.model.communalSceneDataSourceDelegator
 import com.android.systemui.communal.ui.compose.CommunalContent
 import com.android.systemui.communal.ui.compose.section.AmbientStatusBarSection
 import com.android.systemui.communal.ui.viewmodel.CommunalViewModel
@@ -68,7 +69,6 @@ import com.android.systemui.log.logcatLogBuffer
 import com.android.systemui.media.controls.controller.keyguardMediaController
 import com.android.systemui.power.data.repository.fakePowerRepository
 import com.android.systemui.res.R
-import com.android.systemui.scene.shared.model.sceneDataSourceDelegator
 import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.statusbar.lockscreen.lockscreenSmartspaceController
 import com.android.systemui.statusbar.notification.stack.notificationStackScrollLayoutController
@@ -138,7 +138,7 @@ class GlanceableHubContainerControllerTest : SysuiTestCase() {
                 mock<CommunalColors>(),
                 ambientTouchComponentFactory,
                 mock<CommunalContent>(),
-                sceneDataSourceDelegator,
+                communalSceneDataSourceDelegator,
                 notificationStackScrollLayoutController,
                 keyguardMediaController,
                 lockscreenSmartspaceController,
@@ -182,7 +182,7 @@ class GlanceableHubContainerControllerTest : SysuiTestCase() {
                     mock<CommunalColors>(),
                     ambientTouchComponentFactory,
                     mock<CommunalContent>(),
-                    sceneDataSourceDelegator,
+                    communalSceneDataSourceDelegator,
                     notificationStackScrollLayoutController,
                     keyguardMediaController,
                     lockscreenSmartspaceController,
@@ -215,7 +215,7 @@ class GlanceableHubContainerControllerTest : SysuiTestCase() {
                     mock<CommunalColors>(),
                     ambientTouchComponentFactory,
                     mock<CommunalContent>(),
-                    sceneDataSourceDelegator,
+                    communalSceneDataSourceDelegator,
                     notificationStackScrollLayoutController,
                     keyguardMediaController,
                     lockscreenSmartspaceController,
@@ -244,7 +244,7 @@ class GlanceableHubContainerControllerTest : SysuiTestCase() {
                     mock<CommunalColors>(),
                     ambientTouchComponentFactory,
                     mock<CommunalContent>(),
-                    sceneDataSourceDelegator,
+                    communalSceneDataSourceDelegator,
                     notificationStackScrollLayoutController,
                     keyguardMediaController,
                     lockscreenSmartspaceController,

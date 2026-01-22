@@ -70,6 +70,8 @@ import com.android.internal.util.FunctionalUtils.ThrowingRunnable;
 import com.android.internal.util.IndentingPrintWriter;
 import com.android.internal.util.Preconditions;
 import com.android.server.SystemService;
+import com.android.server.textclassifier.personalcontext.PersonalContextBridge;
+import com.android.server.textclassifier.personalcontext.PersonalContextBridgeImpl;
 
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
@@ -194,7 +196,7 @@ public final class TextClassificationManagerService extends ITextClassifierServi
         mSystemTextClassifierPackage = packageManager.getSystemTextClassifierPackageName();
         mSessionCache = new SessionCache(mLock);
         mPackageMonitor = new MyPackageMonitor();
-        mPersonalContextBridge = new PersonalContextBridge.LocalService();
+        mPersonalContextBridge = new PersonalContextBridgeImpl();
     }
 
     private void startListenSettings() {
@@ -270,20 +272,23 @@ public final class TextClassificationManagerService extends ITextClassifierServi
         Objects.requireNonNull(request);
         Objects.requireNonNull(request.getSystemTextClassifierMetadata());
 
+        final ITextClassifierCallback wrappedCallback =
+                (sessionId != null && PersonalContextBridge.isPersonalContextEnabled())
+                        ? mPersonalContextBridge.wrap(
+                                sessionId.getValue(), wrap(callback, Binder.getCallingUid()))
+                        : wrap(callback, Binder.getCallingUid());
         handleRequest(
                 request.getSystemTextClassifierMetadata(),
                 /* verifyCallingPackage= */ true,
                 /* attemptToBind= */ true,
-                service -> service.onClassifyText(
-                        sessionId, request, wrap(callback, Binder.getCallingUid())),
+                service -> service.onClassifyText(sessionId, request, wrappedCallback),
                 "onClassifyText",
                 callback);
         if (sessionId != null && PersonalContextBridge.isPersonalContextEnabled()) {
             mPersonalContextBridge.trigger(
                     request.getSystemTextClassifierMetadata().getUserId(),
                     sessionId.getValue(),
-                    request
-            );
+                    request);
         }
     }
 
@@ -423,6 +428,7 @@ public final class TextClassificationManagerService extends ITextClassifierServi
                     },
                     "onDestroyTextClassificationSession",
                     NO_OP_CALLBACK);
+            mPersonalContextBridge.clearSession(sessionId.getValue());
         }
     }
 

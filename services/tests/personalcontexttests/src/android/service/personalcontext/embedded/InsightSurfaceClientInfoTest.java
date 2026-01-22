@@ -41,6 +41,7 @@ import org.mockito.MockitoAnnotations;
 @RunWith(AndroidJUnit4.class)
 public class InsightSurfaceClientInfoTest {
     @Mock private IInsightSurfaceClient mClient;
+    @Mock private IInsightSurfaceSession mSession;
     @Mock private SurfacePackage mSurfacePackage;
 
     @Before
@@ -90,8 +91,8 @@ public class InsightSurfaceClientInfoTest {
                         false,
                         new Configuration(),
                         mClient);
-        clientInfo.onSurfaceCreated(mSurfacePackage);
-        verify(mClient).onSurfaceCreated(mSurfacePackage);
+        clientInfo.onSurfaceCreated(mSurfacePackage, mSession);
+        verify(mClient).onSurfaceCreated(mSurfacePackage, mSession);
     }
 
     @Test

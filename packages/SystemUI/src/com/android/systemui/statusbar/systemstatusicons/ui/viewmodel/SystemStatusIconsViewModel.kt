@@ -56,7 +56,16 @@ import kotlinx.coroutines.launch
  * This ViewModel is responsible for orchestrating the display of various system status icons.
  * Exposes a consolidated list of icons.
  */
-class SystemStatusIconsViewModel
+interface SystemStatusIconsViewModel {
+    /** A list of view models for all system status icons. Should be a hydrated value. */
+    val iconViewModels: List<SystemStatusIconViewModel>
+
+    interface Factory {
+        fun create(context: Context): SystemStatusIconsViewModel
+    }
+}
+
+class SystemStatusIconsViewModelImpl
 @AssistedInject
 constructor(
     @Assisted context: Context,
@@ -79,7 +88,7 @@ constructor(
     vpnIconViewModelFactory: VpnIconViewModel.Factory,
     wifiIconViewModelFactory: WifiIconViewModel.Factory,
     zenModeIconViewModelFactory: ZenModeIconViewModel.Factory,
-) : ExclusiveActivatable() {
+) : ExclusiveActivatable(), SystemStatusIconsViewModel {
 
     init {
         SystemStatusIconsInCompose.expectInNewMode()
@@ -151,7 +160,7 @@ constructor(
             sortViewModelsBySlotNames(slotNames.toSet())
         }
 
-    val iconViewModels by
+    override val iconViewModels by
         hydrator.hydratedStateOf(
             traceName = "iconViewModels",
             initialValue = emptyList(),
@@ -203,7 +212,7 @@ constructor(
     }
 
     @AssistedFactory
-    interface Factory {
-        fun create(context: Context): SystemStatusIconsViewModel
+    interface Factory : SystemStatusIconsViewModel.Factory {
+        override fun create(context: Context): SystemStatusIconsViewModelImpl
     }
 }

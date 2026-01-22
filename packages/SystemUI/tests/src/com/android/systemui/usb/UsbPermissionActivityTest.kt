@@ -61,7 +61,7 @@ class UsbPermissionActivityTest :
 
     @Test
     @DisableFlags(FLAG_ENABLE_PERSISTENT_USB_DEVICE_PERMISSIONS)
-    fun testUsbAccessoryDialogTitleAndMessage() {
+    fun testUsbAccessoryDialogTitle() {
         deviceConfiguration(isUsbDevice = false)
 
         checkNewUiIsNotInitialized()
@@ -74,13 +74,8 @@ class UsbPermissionActivityTest :
             )
         assertThat(mAlertParams.mTitle).isEqualTo(expectedTitle)
 
-        val expectedMessage: String =
-            context.getString(
-                R.string.usb_accessory_permission_prompt,
-                mAppName,
-                USB_ACCESSORY_DESCRIPTION,
-            )
-        assertThat(mAlertParams.mMessage).isEqualTo(expectedMessage)
+        // Usb Accessory shouldn't have a message.
+        assertThat(mAlertParams.mMessage).isNull()
 
         // Dialog shouldn't have a checkbox, if it can't be default.
         assertThat(mAlertParams.mView).isNull()
@@ -101,13 +96,8 @@ class UsbPermissionActivityTest :
             )
         assertThat(mAlertParams.mTitle).isEqualTo(expectedTitle)
 
-        val expectedMessage: String =
-            context.getString(
-                R.string.usb_accessory_permission_prompt,
-                mAppName,
-                USB_ACCESSORY_DESCRIPTION,
-            )
-        assertThat(mAlertParams.mMessage).isEqualTo(expectedMessage)
+        // Usb Accessory shouldn't have a message.
+        assertThat(mAlertParams.mMessage).isNull()
 
         val alwaysUseView: CheckBox? =
             mAlertParams.mView.findViewById(com.android.internal.R.id.alwaysUse)
@@ -201,7 +191,7 @@ class UsbPermissionActivityTest :
 
     @Test
     @EnableFlags(FLAG_ENABLE_PERSISTENT_USB_DEVICE_PERMISSIONS)
-    fun testUsbAccessoryNewDialogTitleAndMessage() {
+    fun testUsbAccessoryNewDialogTitle() {
         deviceConfiguration(isUsbDevice = false)
 
         checkOldUiIsNotInitialized()
@@ -217,14 +207,9 @@ class UsbPermissionActivityTest :
         assertThat(dialogView.findViewById<TextView>(R.id.usb_device_dialog_title).text)
             .isEqualTo(expectedTitle)
 
-        val expectedMessage: String =
-            context.getString(
-                R.string.usb_accessory_permission_prompt,
-                mAppName,
-                USB_ACCESSORY_DESCRIPTION,
-            )
-        assertThat(dialogView.findViewById<TextView>(R.id.usb_device_dialog_message).text)
-            .isEqualTo(expectedMessage)
+        // Usb Accessory shouldn't have a message.
+        assertThat(dialogView.findViewById<TextView>(R.id.usb_device_dialog_message).visibility)
+            .isEqualTo(View.GONE)
 
         // Dialog shouldn't have a checkbox, if it can't be default.
         assertThat(
@@ -253,14 +238,9 @@ class UsbPermissionActivityTest :
         assertThat(dialogView.findViewById<TextView>(R.id.usb_device_dialog_title).text)
             .isEqualTo(expectedTitle)
 
-        val expectedMessage: String =
-            context.getString(
-                R.string.usb_accessory_permission_prompt,
-                mAppName,
-                USB_ACCESSORY_DESCRIPTION,
-            )
-        assertThat(dialogView.findViewById<TextView>(R.id.usb_device_dialog_message).text)
-            .isEqualTo(expectedMessage)
+        // Usb Accessory shouldn't have a message.
+        assertThat(dialogView.findViewById<TextView>(R.id.usb_device_dialog_message).visibility)
+            .isEqualTo(View.GONE)
 
         assertThat(
                 dialogView

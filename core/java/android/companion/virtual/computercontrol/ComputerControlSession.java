@@ -44,6 +44,7 @@ import android.util.Size;
 import android.view.Display;
 import android.view.DisplayInfo;
 import android.view.SurfaceControl;
+import android.view.accessibility.AccessibilityDisplayProxy;
 import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.AccessibilityWindowInfo;
 import android.view.inputmethod.InputConnection;
@@ -275,9 +276,9 @@ public final class ComputerControlSession implements AutoCloseable {
     /** @hide */
     public ComputerControlSession(int displayId,
             @NonNull IComputerControlSession session,
-            @NonNull AccessibilityManager accessibilityManager,
+            @NonNull Consumer<AccessibilityDisplayProxy> registerA11yDisplayProxy,
             @NonNull Runnable onClosedRunnable) {
-        this(displayId, session, accessibilityManager, onClosedRunnable,
+        this(displayId, session, registerA11yDisplayProxy, onClosedRunnable,
                 DisplayManagerGlobal.getInstance());
     }
 
@@ -285,7 +286,7 @@ public final class ComputerControlSession implements AutoCloseable {
     @VisibleForTesting
     public ComputerControlSession(int displayId,
             @NonNull IComputerControlSession session,
-            @NonNull AccessibilityManager accessibilityManager,
+            @NonNull Consumer<AccessibilityDisplayProxy> registerA11yDisplayProxy,
             @NonNull Runnable onClosedRunnable,
             @NonNull DisplayManagerGlobal displayManagerGlobal) {
         mHandlerThread = new HandlerThread("ComputerControlSession");
@@ -312,7 +313,7 @@ public final class ComputerControlSession implements AutoCloseable {
         }
 
         mAccessibilityProxy = new ComputerControlAccessibilityProxy(displayId, mHandler);
-        accessibilityManager.registerDisplayProxy(mAccessibilityProxy);
+        registerA11yDisplayProxy.accept(mAccessibilityProxy);
     }
 
     /**
@@ -1010,8 +1011,10 @@ public final class ComputerControlSession implements AutoCloseable {
 
         @Override
         public void onSessionCreated(int displayId, IComputerControlSession session) {
+            final var a11yManager = Objects.requireNonNull(
+                    mContext.getSystemService(AccessibilityManager.class));
             mSession = new ComputerControlSession(displayId, session,
-                    mContext.getSystemService(AccessibilityManager.class), this::onSessionClosed);
+                    a11yManager::registerDisplayProxy, this::onSessionClosed);
             Binder.withCleanCallingIdentity(() ->
                     mExecutor.execute(() -> mCallback.onSessionCreated(mSession)));
         }

@@ -1514,6 +1514,14 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
         int resolvedUserId;
 
         synchronized (mLock) {
+            if (android.view.accessibility.Flags.embeddedUiUsesHostWindowId()
+                    && mA11yWindowManager.isEmbeddedHierarchyWindowsLocked(
+                            event.getRealWindowId())) {
+                int hostWindowId =
+                        mA11yWindowManager.resolveParentWindowIdLocked(event.getRealWindowId());
+                event.setEmbeddingHostWindowId(hostWindowId);
+            }
+
             if (event.getRealWindowId()
                     == AccessibilityWindowInfo.PICTURE_IN_PICTURE_ACTION_REPLACER_WINDOW_ID) {
                 // The replacer window isn't shown to services. Move its events into the pip.

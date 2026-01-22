@@ -30,7 +30,6 @@ import android.graphics.Color;
 import android.os.RemoteException;
 import android.service.personalcontext.PersonalContextManager;
 import android.service.personalcontext.hint.BundleHint;
-import android.service.personalcontext.hint.ContextHint;
 import android.view.Display;
 import android.view.SurfaceControlViewHost.SurfacePackage;
 import android.view.View;
@@ -46,7 +45,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.Executor;
 
 @SmallTest
@@ -59,6 +57,7 @@ public class InsightSurfaceClientTest {
     @Mock private SurfacePackage mSurfacePackage;
     @Mock private PersonalContextManager mPersonalContextManager;
     @Mock private InsightSurfaceClient.ClientCallback mClientCallbacks;
+    @Mock private IInsightSurfaceSession mSession;
     private final Executor mExecutor = Runnable::run;
     private final BundleHint mHint = new BundleHint.Builder().build();
     private InsightSurfaceClient mClient;
@@ -89,8 +88,8 @@ public class InsightSurfaceClientTest {
                 clientInfoCaptor.capture(), eq(List.of(mHint)));
 
         final IInsightSurfaceClient client = clientInfoCaptor.getValue().getClient();
-        client.onSurfaceCreated(mSurfacePackage);
-        verify(mClientCallbacks).onSurfaceCreated(mSurfacePackage);
+        client.onSurfaceCreated(mSurfacePackage, mSession);
+        verify(mClientCallbacks).onSessionCreated(any(InsightSurfaceSession.class));
     }
 
     @Test
@@ -184,18 +183,5 @@ public class InsightSurfaceClientTest {
                         .build();
 
         assertThat(client.getReceivers()).containsExactly(receiver);
-    }
-
-    @Test
-    public void testPublishHints() {
-        final InsightSurfaceClient client =
-                new InsightSurfaceClient.Builder(mContext, mClientCallbacks).build();
-        final Set<ContextHint> hints = Set.of(mHint);
-
-        client.register();
-        client.publishHints(hints);
-
-        verify(mPersonalContextManager).publishInsightSurfaceHints(
-                eq(hints), any(InsightSurfaceClientInfo.class));
     }
 }

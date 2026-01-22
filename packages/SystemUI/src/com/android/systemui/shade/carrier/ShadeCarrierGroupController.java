@@ -96,7 +96,7 @@ public class ShadeCarrierGroupController {
     // Non final for testing
     private H mMainHandler;
     private final Callback mCallback;
-    private final MobileIconsViewModel mMobileIconsViewModel;
+    private final Lazy<MobileIconsViewModel> mMobileIconsViewModel;
     private final MobileContextProvider mMobileContextProvider;
     private final StatusBarPipelineFlags mStatusBarPipelineFlags;
     private boolean mListening;
@@ -226,7 +226,7 @@ public class ShadeCarrierGroupController {
                 mobileUiAdapterKairos.get().setShadeCarrierGroupController(this);
             } else {
                 mobileUiAdapter.setShadeCarrierGroupController(this);
-                MobileIconsBinder.bind(view, mMobileIconsViewModel);
+                MobileIconsBinder.bind(view, mMobileIconsViewModel.get());
             }
         }
 
@@ -312,10 +312,10 @@ public class ShadeCarrierGroupController {
                         ModernShadeCarrierGroupMobileView
                                 .constructAndBind(
                                         mobileContext,
-                                        mMobileIconsViewModel.getLogger(),
+                                        mMobileIconsViewModel.get().getLogger(),
                                         "mobile_carrier_shade_group",
                                         (ShadeCarrierGroupMobileIconViewModel) mMobileIconsViewModel
-                                                .viewModelForSub(iconData.subId,
+                                                .get().viewModelForSub(iconData.subId,
                                                         StatusBarLocation.SHADE_CARRIER_GROUP)
                                 );
                 carrier.addModernMobileView(modernMobileView);

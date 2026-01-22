@@ -88,7 +88,10 @@ public class HeadsUpManagerImpl
         implements HeadsUpManager, HeadsUpRepository, OnHeadsUpChangedListener {
     private static final String TAG = "BaseHeadsUpManager";
     private static final String SETTING_HEADS_UP_SNOOZE_LENGTH_MS = "heads_up_snooze_length_ms";
-    private static final String REASON_REORDER_ALLOWED = "mOnReorderingAllowedListener";
+    @VisibleForTesting
+    static final String REASON_REORDER_ALLOWED = "mOnReorderingAllowedListener";
+    @VisibleForTesting
+    static final String REASON_ON_EXPANDING_FINISHED = "onExpandingFinished";
     private final ListenerSet<OnHeadsUpChangedListener> mListeners = new ListenerSet<>();
 
     private final Context mContext;
@@ -131,7 +134,8 @@ public class HeadsUpManagerImpl
     private final MutableStateFlow<Boolean> mTrackingHeadsUp =
             StateFlowKt.MutableStateFlow(false);
     private final HashSet<String> mSwipedOutKeys = new HashSet<>();
-    private final HashSet<NotificationEntry> mEntriesToRemoveAfterExpand = new HashSet<>();
+    @VisibleForTesting
+    final HashSet<NotificationEntry> mEntriesToRemoveAfterExpand = new HashSet<>();
     @VisibleForTesting
     final ArraySet<NotificationEntry> mEntriesToRemoveWhenReorderingAllowed
             = new ArraySet<>();
@@ -188,6 +192,7 @@ public class HeadsUpManagerImpl
         mUiEventLogger = uiEventLogger;
         mAvalancheController = avalancheController;
         mAvalancheController.setBaseEntryMapStr(this::getEntryMapStr);
+        mAvalancheController.setOnCleanup(this::onAvalancheCleanup);
         mBypassController = bypassController;
         mGroupMembershipManager = groupMembershipManager;
         mVisualStabilityProvider = visualStabilityProvider;
@@ -404,7 +409,7 @@ public class HeadsUpManagerImpl
     @Override
     public void onExpandingFinished() {
         if (mReleaseOnExpandFinish) {
-            releaseAllImmediately("onExpandingFinished");
+            releaseAllImmediately(REASON_ON_EXPANDING_FINISHED);
             mReleaseOnExpandFinish = false;
         } else {
             for (NotificationEntry entry : getAllEntries().toList()) {
@@ -413,7 +418,7 @@ public class HeadsUpManagerImpl
             for (NotificationEntry entry : mEntriesToRemoveAfterExpand) {
                 if (isHeadsUpEntry(entry.getKey())) {
                     // Maybe the heads-up was removed already
-                    removeEntry(entry.getKey(), "onExpandingFinished");
+                    removeEntry(entry.getKey(), REASON_ON_EXPANDING_FINISHED);
                 }
             }
         }
@@ -652,6 +657,9 @@ public class HeadsUpManagerImpl
                 mEntriesToRemoveWhenReorderingAllowed.remove(headsUpEntry.mEntry);
             }
         }
+        if (!reason.equals(REASON_ON_EXPANDING_FINISHED)) {
+            mEntriesToRemoveAfterExpand.remove(entry);
+        }
     }
 
     private void updateTopHeadsUpFlow() {
@@ -883,6 +891,13 @@ public class HeadsUpManagerImpl
     private void onQsFullscreen(Boolean isQsFullscreen) {
         if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return;
         if (isQsFullscreen != mIsQsFullscreen) mIsQsFullscreen = isQsFullscreen;
+    }
+
+    private void onAvalancheCleanup(HeadsUpEntry headsUpEntry, String reason) {
+        // Skip removal if we are currently iterating in these listeners
+        if (!reason.contains(REASON_REORDER_ALLOWED)) {
+            mEntriesToRemoveWhenReorderingAllowed.remove(headsUpEntry.mEntry);
+        }
     }
 
     @Override

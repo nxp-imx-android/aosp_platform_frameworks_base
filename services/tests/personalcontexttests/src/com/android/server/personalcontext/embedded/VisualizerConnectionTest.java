@@ -86,8 +86,7 @@ public class VisualizerConnectionTest {
         MockitoAnnotations.openMocks(this);
 
         mVisualizerConnection = new VisualizerConnection(mComponentName, mTestInjector);
-        when(IInsightSurfaceVisualizer.Stub.asInterface(mBinder))
-                .thenReturn(mVisualizer);
+        when(IInsightSurfaceVisualizer.Stub.asInterface(mBinder)).thenReturn(mVisualizer);
     }
 
     @Test

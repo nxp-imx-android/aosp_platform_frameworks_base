@@ -123,6 +123,7 @@ import android.window.StartingWindowRemovalInfo;
 import android.window.TaskFragmentAnimationParams;
 import android.window.TransitionInfo;
 import android.window.TransitionRequestInfo;
+import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
 
 import com.android.internal.annotations.VisibleForTesting;
@@ -3274,16 +3275,23 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
         for (int i = 0; i < count; ++i) {
             final ChangeInfo info = sortedTargets.get(i);
             final WindowContainer target = info.mContainer;
-            final TransitionInfo.Change change = new TransitionInfo.Change(
-                    target.mRemoteToken != null ? target.mRemoteToken.toWindowContainerToken()
-                            : null, getLeashSurface(target, startT));
+            final WindowContainerToken token = Flags.transitMixpatcherBase()
+                    ? target.getOrCreateRemoteToken().toWindowContainerToken()
+                    : (target.mRemoteToken != null
+                            ? target.mRemoteToken.toWindowContainerToken() : null);
+            final TransitionInfo.Change change = new TransitionInfo.Change(token,
+                    getLeashSurface(target, startT));
             // TODO(shell-transitions): Use leash for non-organized windows.
             if (info.mEndParent != null) {
                 change.setParent(info.mEndParent.mRemoteToken.toWindowContainerToken());
             }
-            if (info.mStartParent != null && info.mStartParent.mRemoteToken != null
-                    && target.getParent() != info.mStartParent) {
-                change.setLastParent(info.mStartParent.mRemoteToken.toWindowContainerToken());
+            if (info.mStartParent != null && target.getParent() != info.mStartParent) {
+                if (Flags.transitMixpatcherBase()) {
+                    change.setLastParent(
+                            info.mStartParent.getOrCreateRemoteToken().toWindowContainerToken());
+                } else if (info.mStartParent.mRemoteToken != null) {
+                    change.setLastParent(info.mStartParent.mRemoteToken.toWindowContainerToken());
+                }
             }
             change.setMode(info.getTransitMode(target));
             info.mReadyMode = change.getMode();

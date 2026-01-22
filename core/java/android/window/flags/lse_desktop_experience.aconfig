@@ -106,16 +106,6 @@ flag {
 }
 
 flag {
-    name: "enable_accessible_custom_headers"
-    namespace: "lse_desktop_experience"
-    description: "Enables a11y-friendly custom header input handling"
-    bug: "339302584"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_add_window_decoration_to_all_tasks"
     namespace: "lse_desktop_experience"
     description: "Adds window decorations to all tasks, even if caption is not being shown."
@@ -220,16 +210,6 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Introduces a developer API to opt-out of Camera Compat treatment for fixed-orientation apps in desktop windowing mode"
     bug: "397165621"
-}
-
-flag {
-    name: "enable_camera_compat_track_task_and_app_bugfix"
-    namespace: "lse_desktop_experience"
-    description: "Whether to use taskId and app process to track camera apps, and notify the policies only on first camera open and final close"
-    bug: "380840084"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
 }
 
 flag {
@@ -340,16 +320,6 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Fixes desktop-first policy for the case where the source task is fullscreen but exempted from desktop."
     bug: "443065273"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "enable_desktop_first_fullscreen_refocus_bugfix"
-    namespace: "lse_desktop_experience"
-    description: "Fix windowing mode handling for the existing fullscreen tasks on desktop-first."
-    bug: "421801240"
     metadata {
         purpose: PURPOSE_BUGFIX
     }
@@ -699,15 +669,8 @@ flag {
 }
 
 flag {
-    name: "enable_fully_immersive_in_desktop"
-    namespace: "lse_desktop_experience"
-    description: "Enabled the fully immersive experience from desktop"
-    bug: "359523924"
-}
-
-flag {
-    name: "enable_game_controls_entry_in_handle_menu"
-    namespace: "lse_desktop_experience"
+    name: "enable_game_controls_handle_menu_entry"
+    namespace: "web_apps_on_chromeos_and_android"
     description: "Enables the game controls menu item in the app's handle menu"
     bug: "460164391"
 }
@@ -766,6 +729,7 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Enables the API to allow browsers to learn task-move-allowed states of displays."
     bug: "400407139"
+    is_exported: true
 }
 
 flag {
@@ -879,6 +843,16 @@ flag {
 }
 
 flag {
+    name: "enable_presentation_stops_top_task_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Fix the bug where the top task is sometimes not stopped below a presentation"
+    bug: "477099884"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_prevent_desktop_in_locktaskmode_bugfix"
     namespace: "lse_desktop_experience"
     description: "Fix the bug to unexpectedly enter desktop mode when in lock task mode."
@@ -893,13 +867,6 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Enable Desktop Mode on Projected Mode devices but constrained to the external display."
     bug: "384568161"
-}
-
-flag {
-    name: "enable_reject_home_transition"
-    namespace: "lse_desktop_experience"
-    description: "Enable the reject home transition, which runs if home is invoked on a display which lacks a home."
-    bug: "378443899"
 }
 
 flag {
@@ -952,13 +919,6 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Whether to enable log collection for task resizing in desktop windowing mode"
     bug: "341319100"
-}
-
-flag {
-    name: "enable_restore_to_previous_size_from_desktop_immersive"
-    namespace: "lse_desktop_experience"
-    description: "Restores the window bounds to their previous size when exiting desktop immersive"
-    bug: "372318163"
 }
 
 flag {
@@ -1192,6 +1152,16 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Flags bounds changes to/from filling as EFFECTS_LIFECYCLE"
     bug: "452347446"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "move_task_to_front_on_drag_resizing_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Moving a drag resized task to front"
+    bug: "444424101"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

@@ -24,7 +24,6 @@ import android.annotation.RequiresPermission;
 import android.app.admin.DevicePolicyManager;
 import android.app.admin.DevicePolicyManager.AppFunctionsPolicy;
 import android.app.appfunctions.AppFunctionAccessServiceInterface;
-import android.app.appfunctions.AppFunctionManager;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Binder;
@@ -42,8 +41,6 @@ class CallerValidatorImpl implements CallerValidator {
     private final Context mContext;
     private final AppFunctionAccessServiceInterface mAppFunctionAccessService;
 
-    private final DeviceSettingHelper mDeviceSettingHelper;
-
     private final UserManager mUserManager;
 
     CallerValidatorImpl(
@@ -52,7 +49,6 @@ class CallerValidatorImpl implements CallerValidator {
             @NonNull UserManager userManager) {
         mContext = Objects.requireNonNull(context);
         mAppFunctionAccessService = Objects.requireNonNull(appFunctionAccessService);
-        mDeviceSettingHelper = new DeviceSettingHelperImpl(context);
         mUserManager = Objects.requireNonNull(userManager);
     }
 
@@ -94,38 +90,6 @@ class CallerValidatorImpl implements CallerValidator {
 
     @RequiresPermission(Manifest.permission.EXECUTE_APP_FUNCTIONS)
     @CanExecuteAppFunctionResult
-    private AndroidFuture<Integer> verifyCallerCanExecuteAppFunctionWithAccessService(
-            int callingUid,
-            int callingPid,
-            @NonNull UserHandle targetUser,
-            @NonNull String callerPackageName,
-            @NonNull String targetPackageName) {
-
-        boolean hasExecutionPermission =
-                mContext.checkPermission(
-                                Manifest.permission.EXECUTE_APP_FUNCTIONS, callingPid, callingUid)
-                        == PackageManager.PERMISSION_GRANTED;
-
-        boolean isSamePackage = callerPackageName.equals(targetPackageName);
-        int requestState =
-                mAppFunctionAccessService.getAccessRequestState(
-                        callerPackageName,
-                        UserHandle.getUserId(callingUid),
-                        mDeviceSettingHelper.getPermissionOwnerPackage(targetPackageName),
-                        targetUser.getIdentifier());
-        boolean hasAccessPermission =
-                requestState == AppFunctionManager.ACCESS_REQUEST_STATE_GRANTED;
-        if (hasExecutionPermission && hasAccessPermission) {
-            return AndroidFuture.completedFuture(CAN_EXECUTE_APP_FUNCTIONS_ALLOWED_HAS_PERMISSION);
-        }
-        if (isSamePackage) {
-            return AndroidFuture.completedFuture(CAN_EXECUTE_APP_FUNCTIONS_ALLOWED_SAME_PACKAGE);
-        }
-        return AndroidFuture.completedFuture(CAN_EXECUTE_APP_FUNCTIONS_DENIED);
-    }
-
-    @RequiresPermission(Manifest.permission.EXECUTE_APP_FUNCTIONS)
-    @CanExecuteAppFunctionResult
     private AndroidFuture<Integer> verifyCallerCanExecuteAppFunctionHelper(
             int callingUid,
             int callingPid,
@@ -158,11 +122,6 @@ class CallerValidatorImpl implements CallerValidator {
             // Bypass any validation if calling from ROOT_ID since it is not an actual package
             // to verify.
             return AndroidFuture.completedFuture(CAN_EXECUTE_APP_FUNCTIONS_ALLOWED_HAS_PERMISSION);
-        }
-
-        if (Flags.appFunctionAccessApiEnabled() && Flags.appFunctionAccessServiceEnabled()) {
-            return verifyCallerCanExecuteAppFunctionWithAccessService(
-                    callingUid, callingPid, targetUser, callerPackageName, targetPackageName);
         }
         return verifyCallerCanExecuteAppFunctionHelper(
                 callingUid, callingPid, callerPackageName, targetPackageName);

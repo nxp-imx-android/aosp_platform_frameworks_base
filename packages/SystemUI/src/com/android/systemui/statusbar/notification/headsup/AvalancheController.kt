@@ -28,6 +28,7 @@ import com.android.systemui.statusbar.notification.headsup.HeadsUpManagerImpl.He
 import com.android.systemui.statusbar.notification.shared.AvalancheReplaceHunWhenCritical
 import com.android.systemui.statusbar.notification.shared.NotificationThrottleHun
 import java.io.PrintWriter
+import java.util.function.BiConsumer
 import javax.inject.Inject
 
 /*
@@ -51,6 +52,7 @@ constructor(
     private val tag = "AvalancheController"
     private val debug = false // Compile.IS_DEBUG && Log.isLoggable(tag, Log.DEBUG)
     var baseEntryMapStr: () -> String = { "baseEntryMapStr not initialized" }
+    var onCleanup: BiConsumer<HeadsUpEntry, String> = BiConsumer { _, _ -> }
 
     var enableAtRuntime = true
         set(value) {
@@ -323,6 +325,7 @@ constructor(
         }
         val outcome: String
         if (entry in nextMap) {
+            onCleanup.accept(entry, caller)
             if (entry in nextMap) nextMap.remove(entry)
             if (entry in nextList) nextList.remove(entry)
             uiEventLogger.log(ThrottleEvent.AVALANCHE_THROTTLING_HUN_REMOVED)
@@ -333,7 +336,7 @@ constructor(
             // onHeadsUpPinnedModeChanged, which causes
             // NotificationPanelViewController.updateTouchableRegion to hide the window while the
             // HUN is animating out, resulting in a flicker.
-            showNext()
+            showNext(caller)
             runnable.run()
             outcome = "remove showing. ${getStateStr()}"
         } else {
@@ -563,7 +566,7 @@ constructor(
         }
     }
 
-    private fun showNext() {
+    private fun showNext(reason: String = "") {
         headsUpManagerLogger.logAvalancheStage("show next", key = "")
         headsUpEntryShowing = null
 
@@ -578,8 +581,11 @@ constructor(
         headsUpEntryShowing = nextList[0]
         headsUpEntryShowingRunnableList = nextMap[headsUpEntryShowing]!!
 
-        // Remove runnable labels for dropped huns
         val listToDrop = nextList.subList(1, nextList.size)
+        for (entry in listToDrop) {
+            // Remove NotificationEntry to prevent memory leak
+            onCleanup.accept(entry, reason)
+        }
         logDroppedHunsInBackground(listToDrop.size)
 
         if (debug) {

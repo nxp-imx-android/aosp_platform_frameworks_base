@@ -94,6 +94,8 @@ interface MediaRepository {
 
     val visualStabilityListenerFlow: Flow<Unit>
 
+    val isReorderingAllowed: Boolean
+
     /** Seek to [to], in milliseconds on the media session with the given [sessionKey]. */
     fun seek(sessionKey: InstanceId, to: Long)
 
@@ -171,6 +173,9 @@ constructor(
         visualStabilityProvider.addPersistentReorderingAllowedListener(listener)
         awaitClose { visualStabilityProvider.removeReorderingAllowedListener(listener) }
     }
+
+    override val isReorderingAllowed: Boolean
+        get() = visualStabilityProvider.isReorderingAllowed
 
     override fun addCurrentUserMediaEntry(data: MediaData): UpdateArtInfoModel? {
         return super.addCurrentUserMediaEntry(data).also { updateModel ->

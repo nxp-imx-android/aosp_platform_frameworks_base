@@ -1063,6 +1063,13 @@ public final class AccessibilityInteractionController {
                 mViewRootImpl.mAttachInfo.mLeashedParentAccessibilityViewId);
     }
 
+    private void associateEmbeddingHostWindowId(AccessibilityNodeInfo info) {
+        if (info == null) {
+            return;
+        }
+        info.setEmbeddingHostWindowId(mViewRootImpl.mAttachInfo.mEmbeddingHostWindowId);
+    }
+
     private boolean shouldBypassAssociateLeashedParent() {
         return (mViewRootImpl.mAttachInfo.mLeashedParentToken == null
                 && mViewRootImpl.mAttachInfo.mLeashedParentAccessibilityViewId == View.NO_ID);
@@ -1083,6 +1090,9 @@ public final class AccessibilityInteractionController {
     private void updateInfoForViewPort(AccessibilityNodeInfo info, MagnificationSpec spec,
             float[] matrixValues, Region interactiveRegion) {
         associateLeashedParentIfNeeded(info);
+        if (android.view.accessibility.Flags.embeddedUiUsesHostWindowId()) {
+            associateEmbeddingHostWindowId(info);
+        }
 
         applyHostWindowMatrixIfNeeded(info);
         // Transform view bounds from window coordinates to screen coordinates.

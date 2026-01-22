@@ -26,7 +26,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.android.internal.logging.UiEventLogger
-import com.android.systemui.Flags
 import com.android.systemui.compose.modifiers.sysUiResTagContainer
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
@@ -132,13 +131,7 @@ constructor(
             isDraggable = false,
             // TODO(b/337205027) change maxWidth
             maxWidth = 800.dp,
-            containerColorProvider = {
-                if (Flags.volumeRedesign()) {
-                    MaterialTheme.colorScheme.surface
-                } else {
-                    MaterialTheme.colorScheme.surfaceContainer
-                }
-            },
+            containerColorProvider = { MaterialTheme.colorScheme.surface },
         )
     }
 }

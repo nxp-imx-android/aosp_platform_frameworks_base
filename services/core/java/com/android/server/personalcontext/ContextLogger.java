@@ -169,6 +169,14 @@ public class ContextLogger
         fout.write("Recent Hint Workflows\n");
         fout.write("=====================\n");
         dumpTimelines(fout, mRecentRefinerTimelines);
+
+        fout.write("Active Render Workflows\n");
+        fout.write("=====================\n");
+        dumpTimelines(fout, mActiveRendererTimelines.values());
+
+        fout.write("Recent Render Workflows\n");
+        fout.write("=====================\n");
+        dumpTimelines(fout, mRecentRendererTimelines);
     }
 
     private void dumpTimelines(PrintWriter fout, Collection<Timeline> timelines) {

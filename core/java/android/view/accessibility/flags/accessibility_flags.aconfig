@@ -144,6 +144,16 @@ flag {
 }
 
 flag {
+    name: "embedded_ui_uses_host_window_id"
+    namespace: "accessibility"
+    description: "Updates A11yNodeInfos & A11yEvents from embedded windows to return the ID of their host window from getWindowId()"
+    bug: "452744032"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_a11y_top_row_shortcut"
     namespace: "accessibility"
     description: "Support physical keyboard top row accessibility key shortcut"
@@ -300,6 +310,16 @@ flag {
     description: "Request rectangle on screen with source parameter"
     bug: "391877896"
     is_exported: true
+}
+
+flag {
+    name: "restrict_viewgroup_accessibility_event_population"
+    namespace: "accessibility"
+    description: "Impose additional restrictions on which ViewGroup children may populate AccessibilityEvents based on accessibility importance and data sensitivity"
+    bug: "455971973"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }
 
 flag {

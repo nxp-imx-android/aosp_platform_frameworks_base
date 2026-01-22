@@ -22,6 +22,7 @@ import com.github.javaparser.ast.CompilationUnit
 import com.github.javaparser.ast.expr.MethodCallExpr
 import com.google.common.truth.Truth
 import org.junit.Assert.assertEquals
+import org.junit.BeforeClass
 import org.junit.Test
 import org.mockito.Mockito
 
@@ -43,9 +44,23 @@ class SourceTransformerTest {
 
             class Test {
                 void test() {
-                    ProtoLog.w(TEST_GROUP, "test %d %f " + 
+                    ProtoLog.w(TEST_GROUP, "test %d %f " +
                     "abc %s\n test", 100,
                      0.1, "test");
+                }
+            }
+            """.trimIndent()
+
+        private val TEST_CODE_BLOCK_STRING = """
+            package org.example;
+
+            class Test {
+                void test() {
+                    ProtoLog.w(TEST_GROUP, ${"\"\"\""}
+            test %d %f
+            abc %s
+            test${"\"\"\""},
+                     100, 0.1, "test");
                 }
             }
             """.trimIndent()
@@ -86,8 +101,22 @@ class SourceTransformerTest {
 
             class Test {
                 void test() {
-                    if (org.example.ProtoLogImpl.Cache.TEST_GROUP_enabled[3]) {  long protoLogParam0 = 100;  double protoLogParam1 = 0.1;  String protoLogParam2 = String.valueOf("test");  org.example.ProtoLogImpl.w(TEST_GROUP, -4447034859795564700L, 9, protoLogParam0, protoLogParam1, protoLogParam2); 
-            
+                    if (org.example.ProtoLogImpl.Cache.TEST_GROUP_enabled[3]) {  long protoLogParam0 = 100;  double protoLogParam1 = 0.1;  String protoLogParam2 = String.valueOf("test");  org.example.ProtoLogImpl.w(TEST_GROUP, -4447034859795564700L, 9, protoLogParam0, protoLogParam1, protoLogParam2);
+
+            }
+                }
+            }
+            """.trimIndent()
+
+        private val TRANSFORMED_CODE_BLOCK_TEXT = """
+            package org.example;
+
+            class Test {
+                void test() {
+                    if (org.example.ProtoLogImpl.Cache.TEST_GROUP_enabled[3]) {  long protoLogParam0 = 100;  double protoLogParam1 = 0.1;  String protoLogParam2 = String.valueOf("test");  org.example.ProtoLogImpl.w(TEST_GROUP, 4940069191137245365L, 9, protoLogParam0, protoLogParam1, protoLogParam2);
+
+
+
             }
                 }
             }
@@ -129,14 +158,20 @@ class SourceTransformerTest {
 
             class Test {
                 void test() {
-                    if (org.example.ProtoLogImpl.Cache.TEST_GROUP_enabled[3]) {  long protoLogParam0 = 100;  double protoLogParam1 = 0.1;  String protoLogParam2 = String.valueOf("test");  org.example.ProtoLogImpl.w(TEST_GROUP, -4447034859795564700L, 9, protoLogParam0, protoLogParam1, protoLogParam2); 
-            
+                    if (org.example.ProtoLogImpl.Cache.TEST_GROUP_enabled[3]) {  long protoLogParam0 = 100;  double protoLogParam1 = 0.1;  String protoLogParam2 = String.valueOf("test");  org.example.ProtoLogImpl.w(TEST_GROUP, -4447034859795564700L, 9, protoLogParam0, protoLogParam1, protoLogParam2);
+
             }
                 }
             }
             """.trimIndent()
 
         private const val PATH = "com.example.Test.java"
+
+        @BeforeClass
+        @JvmStatic
+        fun setParserConfig() {
+            StaticJavaParser.setConfiguration(ProtoLogTool.PARSER_CONFIG)
+        }
     }
 
     private val processor: ProtoLogCallProcessor = Mockito.mock(ProtoLogCallProcessor::class.java)
@@ -258,6 +293,57 @@ class SourceTransformerTest {
         assertEquals("protoLogParam1", methodCall.arguments[4].toString())
         assertEquals("protoLogParam2", methodCall.arguments[5].toString())
         assertEquals(TRANSFORMED_CODE_MULTILINE_TEXT_ENABLED, out)
+    }
+
+    @Test
+    fun processClass_textEnabledMultiline_BlockString() {
+        var code = StaticJavaParser.parse(TEST_CODE_BLOCK_STRING)
+
+        Mockito.`when`(processor.process(
+            any(CompilationUnit::class.java),
+            any(ProtoLogCallVisitor::class.java),
+            any(MethodCallVisitor::class.java),
+            any(String::class.java))
+        ).thenAnswer { invocation ->
+            val cu = invocation.arguments[0] as CompilationUnit
+            val visitor = invocation.arguments[1] as ProtoLogCallVisitor
+
+            val methodCallExpr = cu.findAll(MethodCallExpr::class.java)[0]
+            val messageExpr = methodCallExpr.arguments[1]
+
+            val dummyContext = ParsingContext("BLOCK_STRING_TEST", methodCallExpr)
+            val extractedMessage = CodeUtils.concatMultilineString(messageExpr, dummyContext)
+
+            assertEquals("test %d %f\nabc %s\ntest", extractedMessage)
+
+            visitor.processCall(
+                methodCallExpr,
+                extractedMessage,
+                LogLevel.WARN,
+                LogGroup("TEST_GROUP", true, true, "WM_TEST", 1),
+                123
+            )
+
+            listOf<CodeProcessingException>()
+        }
+
+        val (out, _) = sourceJarWriter.processClass(TEST_CODE_BLOCK_STRING, PATH, PATH, code)
+        code = StaticJavaParser.parse(out)
+
+        val protoLogCalls = code.findAll(MethodCallExpr::class.java).filter {
+            it.scope.orElse(null)?.toString() == implName
+        }
+        Truth.assertThat(protoLogCalls).hasSize(1)
+        val methodCall = protoLogCalls[0] as MethodCallExpr
+        assertEquals("w", methodCall.name.asString())
+        assertEquals(6, methodCall.arguments.size)
+        assertEquals("TEST_GROUP", methodCall.arguments[0].toString())
+        assertEquals("4940069191137245365L", methodCall.arguments[1].toString())
+        assertEquals(0b001001.toString(), methodCall.arguments[2].toString())
+        assertEquals("protoLogParam0", methodCall.arguments[3].toString())
+        assertEquals("protoLogParam1", methodCall.arguments[4].toString())
+        assertEquals("protoLogParam2", methodCall.arguments[5].toString())
+        assertEquals(TRANSFORMED_CODE_BLOCK_TEXT, out)
     }
 
     @Test

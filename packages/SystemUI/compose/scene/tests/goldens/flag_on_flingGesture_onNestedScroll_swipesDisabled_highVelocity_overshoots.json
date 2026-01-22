@@ -1,0 +1,362 @@
+{
+  "frame_ids": [
+    0,
+    16,
+    32,
+    48,
+    64,
+    80,
+    96,
+    112,
+    128,
+    144,
+    160,
+    176,
+    192,
+    208,
+    224,
+    240,
+    256
+  ],
+  "features": [
+    {
+      "name": "offset",
+      "type": "offset",
+      "data_points": [
+        {
+          "x": -25,
+          "y": 0
+        },
+        {
+          "x": -24,
+          "y": 0
+        },
+        {
+          "x": 7,
+          "y": 0
+        },
+        {
+          "x": 25,
+          "y": 0
+        },
+        {
+          "x": 47,
+          "y": 0
+        },
+        {
+          "x": 47,
+          "y": 0
+        },
+        {
+          "x": 47,
+          "y": 0
+        },
+        {
+          "x": 47,
+          "y": 0
+        },
+        {
+          "x": 64,
+          "y": 0
+        },
+        {
+          "x": 70,
+          "y": 0
+        },
+        {
+          "x": 70,
+          "y": 0
+        },
+        {
+          "x": 66,
+          "y": 0
+        },
+        {
+          "x": 60,
+          "y": 0
+        },
+        {
+          "x": 52,
+          "y": 0
+        },
+        {
+          "x": 45,
+          "y": 0
+        },
+        {
+          "x": 38,
+          "y": 0
+        },
+        {
+          "x": 31,
+          "y": 0
+        }
+      ]
+    },
+    {
+      "name": "position",
+      "type": "dpOffset",
+      "data_points": [
+        {
+          "x": 10,
+          "y": 20
+        },
+        {
+          "x": 10.4,
+          "y": 20
+        },
+        {
+          "x": 22.8,
+          "y": 20
+        },
+        {
+          "x": 30,
+          "y": 20
+        },
+        {
+          "x": 38.8,
+          "y": 20
+        },
+        {
+          "x": 38.8,
+          "y": 20
+        },
+        {
+          "x": 38.8,
+          "y": 20
+        },
+        {
+          "x": 38.8,
+          "y": 20
+        },
+        {
+          "x": 45.6,
+          "y": 20
+        },
+        {
+          "x": 48,
+          "y": 20
+        },
+        {
+          "x": 48,
+          "y": 20
+        },
+        {
+          "x": 46.4,
+          "y": 20
+        },
+        {
+          "x": 44,
+          "y": 20
+        },
+        {
+          "x": 40.8,
+          "y": 20
+        },
+        {
+          "x": 38,
+          "y": 20
+        },
+        {
+          "x": 35.2,
+          "y": 20
+        },
+        {
+          "x": 32.4,
+          "y": 20
+        }
+      ]
+    },
+    {
+      "name": "overscrollDistance",
+      "data_points": [
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        }
+      ]
+    },
+    {
+      "name": "scrollValue",
+      "type": "int",
+      "data_points": [
+        25,
+        24,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "progress",
+      "data_points": [
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        }
+      ]
+    },
+    {
+      "name": "dragOffset",
+      "data_points": [
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        },
+        {
+          "type": "not_found"
+        }
+      ]
+    }
+  ]
+}

@@ -21,7 +21,6 @@ import static android.service.notification.NotificationListenerService.REASON_CL
 
 import static com.android.systemui.statusbar.phone.ActivityStarterUtilsKt.addCookieIfNeeded;
 import static com.android.systemui.statusbar.phone.ActivityStarterUtilsKt.createActivityOptions;
-import static com.android.systemui.statusbar.phone.CentralSurfaces.getActivityOptions;
 
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
@@ -592,12 +591,12 @@ public class StatusBarNotificationActivityStarter implements NotificationActivit
                         (adapter) -> {
                             long eventTime = row.getAndResetLastActionUpTime();
                             Bundle options = eventTime > 0
-                                    ? getActivityOptions(
+                                    ? createActivityOptions(
                                     displayId,
                                     adapter,
                                     mKeyguardStateController.isShowing(),
                                     eventTime)
-                                    : getActivityOptions(displayId, adapter);
+                                    : createActivityOptions(displayId, adapter);
                             int result = intent.sendAndReturnResult(mContext, 0, fillInIntent, null,
                                     null, null, options);
                             mLogger.logSendPendingIntent(entry, intent, result);
@@ -658,7 +657,7 @@ public class StatusBarNotificationActivityStarter implements NotificationActivit
                                 (adapter) -> TaskStackBuilder.create(mContext)
                                         .addNextIntentWithParentStack(intent)
                                         .startActivities(
-                                                getActivityOptions(displayId, adapter),
+                                                createActivityOptions(displayId, adapter),
                                                 new UserHandle(UserHandle.getUserId(appUid))));
                     }
                 });
@@ -705,7 +704,7 @@ public class StatusBarNotificationActivityStarter implements NotificationActivit
                     mActivityTransitionAnimator.startIntentWithAnimation(
                             animationController, animate, intentInfo.getTargetIntent().getPackage(),
                             (adapter) -> tsb.startActivities(
-                                    getActivityOptions(displayId, adapter),
+                                    createActivityOptions(displayId, adapter),
                                     mUserTracker.getUserHandle()));
                 });
                 return true;

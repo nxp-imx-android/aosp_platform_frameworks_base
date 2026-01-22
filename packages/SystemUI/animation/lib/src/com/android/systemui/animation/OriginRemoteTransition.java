@@ -36,8 +36,6 @@ import android.window.TransitionInfo.Change;
 import android.window.WindowAnimationState;
 
 import com.android.internal.policy.ScreenDecorationsUtils;
-import com.android.systemui.animation.shared.IOriginTransitionCallback;
-import com.android.systemui.animation.shared.IPreLaunchAnimationFinishedCallback;
 import com.android.wm.shell.shared.TransitionUtil;
 
 import java.util.ArrayList;
@@ -109,28 +107,20 @@ public class OriginRemoteTransition extends IRemoteTransition.Stub implements
 
             // Create the pre launch app animation callback implementation.
             IPreLaunchAnimationFinishedCallback preLaunchCallback =
-                    new IPreLaunchAnimationFinishedCallback.Stub() {
-                        @Override
-                        public void onFinishPreLaunchAnimation() {
-                            logD("onFinishPreLaunchAnimation called");
-                            // Remove the timeout runnable as the callback was invoked.
-                            mHandler.removeCallbacks(oneShotStartAnim);
-                            // Post the animation start to the handler.
-                            mHandler.post(oneShotStartAnim);
-                        }
+                    () -> {
+                        logD("onFinishPreLaunchAnimation called");
+                        // Remove the timeout runnable as the callback was invoked.
+                        mHandler.removeCallbacks(oneShotStartAnim);
+                        // Post the animation start to the handler.
+                        mHandler.post(oneShotStartAnim);
                     };
 
             // Post the timeout.
             logD("Posting pre-launch timeout for " + PRE_LAUNCH_ANIMATION_TIMEOUT_MS + "ms");
             mHandler.postDelayed(oneShotStartAnim, PRE_LAUNCH_ANIMATION_TIMEOUT_MS);
 
-            try {
-                logD("Calling onRunPreLaunchAnimation");
-                mClientCallback.onRunPreLaunchAnimation(preLaunchCallback);
-            } catch (RemoteException e) {
-                logE("Failed to call onRunPreLaunchAnimation, timeout will trigger start", e);
-                // If the call fails, the timeout posted above will ensure the anim still starts.
-            }
+            logD("Calling onRunPreLaunchAnimation");
+            mClientCallback.onRunPreLaunchAnimation(preLaunchCallback);
         } else {
             // Not an entry animation or no observer, run the start animation logic directly.
             mHandler.post(startAnimRunnable);
@@ -191,15 +181,11 @@ public class OriginRemoteTransition extends IRemoteTransition.Stub implements
 
         // Notify the observer.
         if (mClientCallback != null) {
-            try {
-                if (mIsEntry) {
-                    mClientCallback.onLaunchAnimationStarted();
-                } else {
-                    // This path is not expected if onLaunchTransitionReady was available
-                    mClientCallback.onReturnAnimationStarted();
-                }
-            } catch (RemoteException e) {
-                logW("Failed to signal observer for animation start " + e);
+            if (mIsEntry) {
+                mClientCallback.onLaunchAnimationStarted();
+            } else {
+                // This path is not expected if onLaunchTransitionReady was available
+                mClientCallback.onReturnAnimationStarted();
             }
         }
 
@@ -397,14 +383,10 @@ public class OriginRemoteTransition extends IRemoteTransition.Stub implements
 
         // notify observer.
         if (mClientCallback != null) {
-            try {
-                if (mIsEntry) {
-                    mClientCallback.onLaunchAnimationFinished();
-                } else {
-                    mClientCallback.onReturnAnimationFinished();
-                }
-            } catch (RemoteException e) {
-                Log.w(TAG, "Failed to signal observer that animation finished " + e);
+            if (mIsEntry) {
+                mClientCallback.onLaunchAnimationFinished();
+            } else {
+                mClientCallback.onReturnAnimationFinished();
             }
         }
 

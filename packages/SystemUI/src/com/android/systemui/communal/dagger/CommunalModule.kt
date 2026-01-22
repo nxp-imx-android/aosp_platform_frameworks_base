@@ -32,6 +32,7 @@ import com.android.systemui.communal.domain.interactor.CommunalSceneTransitionIn
 import com.android.systemui.communal.domain.suppression.dagger.CommunalSuppressionModule
 import com.android.systemui.communal.shared.log.CommunalMetricsLogger
 import com.android.systemui.communal.shared.log.CommunalStatsLogProxyImpl
+import com.android.systemui.communal.shared.model.CommunalSceneDataSourceDelegator
 import com.android.systemui.communal.shared.model.CommunalScenes
 import com.android.systemui.communal.shared.model.GlanceableHubMultiUserHelper
 import com.android.systemui.communal.shared.model.GlanceableHubMultiUserHelperImpl
@@ -46,8 +47,6 @@ import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.res.R
 import com.android.systemui.scene.shared.model.SceneContainerConfig
-import com.android.systemui.scene.shared.model.SceneDataSource
-import com.android.systemui.scene.shared.model.SceneDataSourceDelegator
 import com.android.systemui.scene.ui.composable.ConstantSceneContainerTransitionsBuilder
 import dagger.Binds
 import dagger.Module
@@ -80,10 +79,6 @@ interface CommunalModule {
         starter: EditWidgetsActivityStarterImpl
     ): EditWidgetsActivityStarter
 
-    @Binds
-    @Communal
-    fun bindCommunalSceneDataSource(@Communal delegator: SceneDataSourceDelegator): SceneDataSource
-
     @Binds fun bindCommunalColors(impl: CommunalColorsImpl): CommunalColors
 
     @Binds
@@ -113,11 +108,10 @@ interface CommunalModule {
         const val TOUCH_NOTIFIFCATION_RATE_LIMIT_MS = 100
 
         @Provides
-        @Communal
         @SysUISingleton
         fun providesCommunalSceneDataSourceDelegator(
             @Application applicationScope: CoroutineScope
-        ): SceneDataSourceDelegator {
+        ): CommunalSceneDataSourceDelegator {
             val config =
                 SceneContainerConfig(
                     sceneKeys = listOf(CommunalScenes.Blank, CommunalScenes.Communal),
@@ -126,7 +120,7 @@ interface CommunalModule {
                         mapOf(CommunalScenes.Blank to 0, CommunalScenes.Communal to 1),
                     transitionsBuilder = ConstantSceneContainerTransitionsBuilder(sceneTransitions),
                 )
-            return SceneDataSourceDelegator(applicationScope, config)
+            return CommunalSceneDataSourceDelegator(applicationScope, config)
         }
 
         @Provides

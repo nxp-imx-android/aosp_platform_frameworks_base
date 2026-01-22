@@ -133,6 +133,20 @@ class PreferencesApiScreenTest {
     }
 
     @Test
+    fun createPreferencesApiScreenWithSpaRoutePrefix_succeeds() {
+        val spaRoutePrefix = "spa_route_prefix"
+        val preferenceScreen = object : PreferencesApiScreen(
+            key = SCREEN_KEY,
+            topLevelSettingsCategory = Category.SYSTEM,
+            spaRoutePrefix = spaRoutePrefix,
+            purpose = R.string.preference_screen_purpose,
+        ) {}
+
+        assertThat(preferenceScreen.spaRoutePrefix).isEqualTo(spaRoutePrefix)
+        assertThat(preferenceScreen.fragment).isNull()
+    }
+
+    @Test
     fun createPreferencesApiScreenWithGetters_succeeds() {
         val preferenceValue1 = false
         val preferenceKey1 = "ApiPreference1"
@@ -1511,6 +1525,42 @@ class PreferencesApiScreenTest {
         }
 
         assertThat(exception.message).isEqualTo("The key 'screen_key' must start with 'api_' because it has an already migrated class.")
+    }
+
+    @Test
+    fun createPreferencesApiScreen_screenPreconditionsFail_launchIntentIsNull() {
+        val preferenceScreen = object : PreferencesApiScreen(
+            key = SCREEN_KEY,
+            topLevelSettingsCategory = Category.SYSTEM,
+            fragment = PreferenceFragment::class,
+            purpose = R.string.preference_screen_purpose
+        ) {
+            init {
+                preconditions(R.string.preconditions_description1) {
+                    Custom(R.string.preconditions_custom_message)
+                }
+            }
+        }
+
+        assertThat(preferenceScreen.getLaunchIntent(context, null)).isNull()
+    }
+
+    @Test
+    fun createPreferencesApiScreen_screenPreconditionsMet_launchIntentIsNotNull() {
+        val preferenceScreen = object : PreferencesApiScreen(
+            key = SCREEN_KEY,
+            topLevelSettingsCategory = Category.SYSTEM,
+            fragment = PreferenceFragment::class,
+            purpose = R.string.preference_screen_purpose
+        ) {
+            init {
+                preconditions(R.string.preconditions_description1) {
+                    Allowed
+                }
+            }
+        }
+
+        assertThat(preferenceScreen.getLaunchIntent(context, null)).isNotNull()
     }
 
     companion object {

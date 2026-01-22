@@ -65,7 +65,7 @@ public final class InsightSurfaceClientInfo implements Parcelable {
      * @param measureSpecWidth the width MeasureSpec of the client surface
      * @param measureSpecHeight the height MeasureSpec of the client surface
      * @param configuration resource configuration from the client's local context
-     * @param client interface used to pass surfaces and insights back to the client
+     * @param client interface used to pass sessions and insights back to the client
      *
      * @hide
      */
@@ -201,10 +201,15 @@ public final class InsightSurfaceClientInfo implements Parcelable {
      * The given {@link SurfaceControlViewHost.SurfacePackage} has been created.
      *
      * @param surfacePackage the created {@link SurfaceControlViewHost.SurfacePackage}
+     * @param session the {@link IInsightSurfaceSession} for the surface
+     *
+     * @hide
      */
-    public void onSurfaceCreated(@NonNull SurfaceControlViewHost.SurfacePackage surfacePackage) {
+    public void onSurfaceCreated(
+            @NonNull SurfaceControlViewHost.SurfacePackage surfacePackage,
+            @NonNull IInsightSurfaceSession session) {
         try {
-            mClient.onSurfaceCreated(surfacePackage);
+            mClient.onSurfaceCreated(surfacePackage, session);
         } catch (RemoteException e) {
             Log.e(TAG, "Error creating SurfacePackage", e);
             throw e.rethrowFromSystemServer();
@@ -215,6 +220,8 @@ public final class InsightSurfaceClientInfo implements Parcelable {
      * The given {@link SurfaceControlViewHost.SurfacePackage} has been released.
      *
      * @param surfacePackage the released {@link SurfaceControlViewHost.SurfacePackage}
+     *
+     * @hide
      */
     public void onSurfaceReleased(@NonNull SurfaceControlViewHost.SurfacePackage surfacePackage) {
         try {
@@ -242,6 +249,22 @@ public final class InsightSurfaceClientInfo implements Parcelable {
         }
     }
 
+    /**
+     * Called by a visualizer in order to inform the client that the embedded surface size has
+     * changed.
+     *
+     * @param width the new width of the surface in pixels
+     * @param height the new height of the surface in pixels
+     */
+    public void onSizeChanged(int width, int height) {
+        try {
+            mClient.onSizeChanged(width, height);
+        } catch (RemoteException e) {
+            Log.e(TAG, "Error sending insight to client", e);
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -258,6 +281,28 @@ public final class InsightSurfaceClientInfo implements Parcelable {
         dest.writeBoolean(mNestedScrollAxisLocked);
         dest.writeParcelable(mConfiguration, flags);
         dest.writeStrongInterface(mClient);
+    }
+
+    /**
+     * Returns a new {@link InsightSurfaceClientInfo} from this info and the updated values in the
+     * given {@link InsightSurfaceClientUpdate}.
+     */
+    InsightSurfaceClientInfo createInfoFromUpdate(InsightSurfaceClientUpdate update) {
+        return new InsightSurfaceClientInfo(
+                mDisplayId,
+                update.hasUpdate(InsightSurfaceClientUpdate.KEY_MEASURE_SPEC_WIDTH)
+                        ? update.getMeasureSpecWidth() : mMeasureSpecWidth,
+                update.hasUpdate(InsightSurfaceClientUpdate.KEY_MEASURE_SPEC_HEIGHT)
+                        ? update.getMeasureSpecHeight() : mMeasureSpecHeight,
+                update.hasUpdate(InsightSurfaceClientUpdate.KEY_BACKGROUND_COLOR)
+                        ? update.getBackgroundColor() : mBackgroundColor,
+                update.hasUpdate(InsightSurfaceClientUpdate.KEY_NESTED_SCROLL_AXES)
+                        ? update.getNestedScrollAxes() : mNestedScrollAxes,
+                update.hasUpdate(InsightSurfaceClientUpdate.KEY_NESTED_SCROLL_AXIS_LOCKED)
+                        ? update.isNestedScrollAxisLocked() : mNestedScrollAxisLocked,
+                update.hasUpdate(InsightSurfaceClientUpdate.KEY_CONFIGURATION)
+                        ? update.getConfiguration() : mConfiguration,
+                mClient);
     }
 
     @NonNull

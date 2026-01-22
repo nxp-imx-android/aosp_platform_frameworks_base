@@ -153,7 +153,7 @@ public class PolicyHandler<T> {
         HANDLERS.add(
                 new PolicyHandler<Integer>(PolicyIdentifier.AUTO_TIME, PolicyDefinition.AUTO_TIME));
         HANDLERS.add(new PolicyHandler<String>(PolicyIdentifier.LOCKSCREEN_MESSAGE,
-                PolicyDefinition.LOCKSCREEN_INFO));
+                PolicyDefinition.LOCKSCREEN_MESSAGE));
     }
 
     static Integer booleanToEnum(int trueValue, int falseValue, Boolean value) {

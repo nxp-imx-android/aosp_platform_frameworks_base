@@ -24,9 +24,11 @@ import com.android.systemui.statusbar.pipeline.icons.shared.model.BindableIcon
 import com.android.systemui.statusbar.pipeline.icons.shared.model.ModernStatusBarViewCreator
 import com.android.systemui.statusbar.pipeline.mobile.ui.binder.StackedMobileIconBinder
 import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.MobileIconsViewModel
+import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.MobileIconsViewModelKairos
 import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.StackedMobileIconViewModelImpl
 import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.StackedMobileIconViewModelKairos
 import com.android.systemui.statusbar.pipeline.shared.ui.view.SingleBindableStatusBarComposeIconView
+import dagger.Lazy
 import javax.inject.Inject
 
 @SysUISingleton
@@ -34,7 +36,8 @@ class StackedMobileBindableIcon
 @Inject
 constructor(
     context: Context,
-    mobileIconsViewModel: MobileIconsViewModel,
+    mobileIconsViewModel: Lazy<MobileIconsViewModel>,
+    mobileIconsViewModelKairos: Lazy<MobileIconsViewModelKairos>,
     viewModelFactory: StackedMobileIconViewModelImpl.Factory,
     kairosViewModelFactory: StackedMobileIconViewModelKairos.Factory,
     kairosNetwork: KairosNetwork,
@@ -48,6 +51,7 @@ constructor(
                 StackedMobileIconBinder.bind(
                     view,
                     mobileIconsViewModel,
+                    mobileIconsViewModelKairos,
                     viewModelFactory,
                     kairosViewModelFactory,
                     kairosNetwork,

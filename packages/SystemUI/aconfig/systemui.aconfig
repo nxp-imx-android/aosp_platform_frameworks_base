@@ -985,16 +985,6 @@ flag {
 }
 
 flag {
-    name: "low_light_dream_hysteresis"
-    namespace: "systemui"
-    description: "Enables hysteresis in the low light dream debounce algorithm to prevent rapid switching."
-    bug: "447857169"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "lowlight_clock_set_brightness"
     namespace: "systemui"
     description: "Sets brightness to minimum when using lowlight clock"
@@ -1413,6 +1403,16 @@ flag {
    metadata {
      purpose: PURPOSE_BUGFIX
    }
+}
+
+flag {
+    name: "remove_launch_display_id_override"
+    namespace: "systemui"
+    description: "Remove the launchDisplayId override when launching pending intents, allowing launches on secondary displays"
+    bug: "467894356"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }
 
 flag {
@@ -1919,13 +1919,6 @@ flag {
     namespace: "permissions"
     description: "Use the views moved into system ui from the framework for the system selection toolbar."
     bug: "450977221"
-}
-
-flag {
-    name: "volume_redesign"
-    namespace: "systemui"
-    description: "Enables Volume visuals update"
-    bug: "368308908"
 }
 
 flag {
