@@ -16,11 +16,13 @@
 
 package com.android.server.display.mode
 
+import android.platform.test.flag.junit.SetFlagsRule
 import android.view.Display
 import androidx.test.filters.SmallTest
 import com.google.common.truth.Truth.assertThat
 import com.google.testing.junit.testparameterinjector.TestParameter
 import com.google.testing.junit.testparameterinjector.TestParameterInjector
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -29,6 +31,10 @@ private const val FLOAT_TOLERANCE = 0.001f
 @SmallTest
 @RunWith(TestParameterInjector::class)
 class VoteSummaryTest {
+
+    @get:Rule
+    val checkFlagsRule = SetFlagsRule()
+
     enum class SupportedRefreshRatesTestCase(
             val supportedModesVoteEnabled: Boolean,
             internal val summaryRefreshRates: List<SupportedRefreshRatesVote.RefreshRates>?,
@@ -271,16 +277,230 @@ class VoteSummaryTest {
 
         assertThat(result.map {it.modeId}).containsExactlyElementsIn(testCase.expectedModeIds)
     }
+
+    enum class HdrPreferenceVoteTestCase(
+        val isUserPreferredHdrModeAllowed: Boolean,
+        val allowHdr: Boolean,
+        val modesToFilter: Array<Display.Mode>,
+        val expectedModeIds: List<Int>
+    ) {
+        // User-preferred HDR disallowed: allowHdr is ignored, all pass
+        FEATURE_DISABLED(
+            isUserPreferredHdrModeAllowed = false, allowHdr = true, modesToFilter = arrayOf(
+                createMode(1, 60f, 60f), createMode(2, 60f, 60f, intArrayOf(1))
+            ), expectedModeIds = listOf(1, 2)
+        ),
+
+        // HDR disallowed: Only SDR passes
+        FEATURE_ENABLED_ALLOW_HDR_FALSE(
+            isUserPreferredHdrModeAllowed = true, allowHdr = false, modesToFilter = arrayOf(
+                createMode(1, 60f, 60f), // SDR
+                createMode(2, 60f, 60f, intArrayOf(1)), createMode(3, 60f, 60f, intArrayOf(2))
+            ), expectedModeIds = listOf(1)
+        ),
+
+        // HDR allowed: all pass
+        FEATURE_ENABLED_ALLOW_HDR_TRUE(
+            isUserPreferredHdrModeAllowed = true, allowHdr = true, modesToFilter = arrayOf(
+                createMode(1, 60f, 60f), createMode(2, 60f, 60f, intArrayOf(1))
+            ), expectedModeIds = listOf(1, 2)
+        ),
+    }
+
+    @Test
+    fun testFiltersModes_hdrTypes(@TestParameter testCase: HdrPreferenceVoteTestCase) {
+        val summary = createSummary(
+            isUserPreferredHdrModeAllowed = testCase.isUserPreferredHdrModeAllowed
+        )
+        summary.allowHdr = testCase.allowHdr
+
+        val result = summary.filterModes(testCase.modesToFilter)
+
+        assertThat(result.map { it.modeId }).containsExactlyElementsIn(testCase.expectedModeIds)
+    }
+
+    enum class SelectBaseModeTestCase(
+        val isUserPreferredHdrModeAllowed: Boolean,
+        val allowHdr: Boolean,
+        val appRequestBaseModeRefreshRate: Float,
+        val availableModes: Array<Display.Mode>,
+        val expectedModeId: Int
+    ) {
+        // Choose matching refresh rate (default is set to 60Hz in this test)
+        MATCHING_DEFAULT_MODE_REFRESH_RATE(
+            isUserPreferredHdrModeAllowed = false,
+            allowHdr = true,
+            appRequestBaseModeRefreshRate = 0f,
+            availableModes = arrayOf(
+                createMode(1, 90f, 90f), createMode(2, 60f, 60f)
+            ),
+            expectedModeId = 2
+        ),
+        // Choose matching refresh rate based on appRequestedMode
+        MATCHING_APP_REQUESTED_REFRESH_RATE(
+            isUserPreferredHdrModeAllowed = false,
+            allowHdr = true,
+            appRequestBaseModeRefreshRate = 90f,
+            availableModes = arrayOf(
+                createMode(1, 90f, 90f), createMode(2, 60f, 60f)
+            ),
+            expectedModeId = 1
+        ),
+        // Select matching refresh rate and HDR-capable mode
+        USER_PREFERRED_HDR_ALLOWED_VOTE_ALLOW_HDR_SELECT_MATCHING_HDR(
+            isUserPreferredHdrModeAllowed = true,
+            allowHdr = true,
+            appRequestBaseModeRefreshRate = 90f,
+            availableModes = arrayOf(
+                createMode(1, 60f, 60f),
+                createMode(2, 90f, 90f, intArrayOf(1)),
+                createMode(3, 90f, 90f)
+            ),
+            expectedModeId = 2
+        ),
+        // Select matching refresh rate even though it's SDR
+        USER_PREFERRED_HDR_ALLOWED_VOTE_ALLOW_HDR_NO_MATCHING_HDR_SELECT_SDR(
+            isUserPreferredHdrModeAllowed = true,
+            allowHdr = true,
+            appRequestBaseModeRefreshRate = 90f,
+            availableModes = arrayOf(
+                createMode(1, 90f, 90f),
+                createMode(2, 60f, 60f, intArrayOf(1)),
+                createMode(3, 60f, 60f)
+            ),
+            expectedModeId = 1
+        ),
+        // No matching refresh rate, vote allowHdr, select HDR if possible
+        USER_PREFERRED_HDR_ALLOWED_VOTE_ALLOW_HDR_NO_MATCHING_REFRESH_RATE_SELECT_HDR(
+            isUserPreferredHdrModeAllowed = true,
+            allowHdr = true,
+            appRequestBaseModeRefreshRate = 90f,
+            availableModes = arrayOf(
+                createMode(1, 60f, 60f), createMode(2, 60f, 60f, intArrayOf(1))
+            ),
+            expectedModeId = 2
+        ),
+        // No matching refresh rate or HDR mode, select first available mode
+        USER_PREFERRED_HDR_ALLOWED_VOTE_ALLOW_HDR_NO_MATCHING_REFRESH_RATE_AND_HDR_SELECT_ANY(
+            isUserPreferredHdrModeAllowed = true,
+            allowHdr = true,
+            appRequestBaseModeRefreshRate = 90f,
+            availableModes = arrayOf(
+                createMode(1, 60f, 60f), createMode(2, 60f, 60f)
+            ),
+            expectedModeId = 1
+        ),
+        // Select matching refresh rate and SDR-only mode
+        USER_PREFERRED_HDR_ALLOWED_VOTE_FORCE_SDR_SELECT_MATCHING_SDR(
+            isUserPreferredHdrModeAllowed = true,
+            allowHdr = false,
+            appRequestBaseModeRefreshRate = 90f,
+            availableModes = arrayOf(
+                createMode(1, 90f, 90f, intArrayOf(1)), createMode(2, 90f, 90f)
+            ),
+            expectedModeId = 2
+        ),
+        // No matching refresh rate, select first available mode. Note that if there's no matching
+        // refresh rate with SDR mode, there will be no matching refresh rate with HDR-capable mode
+        // either
+        USER_PREFERRED_HDR_ALLOWED_VOTE_FORCE_SDR_NO_MATCHING_REFRESH_RATE_SELECT_ANY_SDR(
+            isUserPreferredHdrModeAllowed = true,
+            allowHdr = false,
+            appRequestBaseModeRefreshRate = 90f,
+            availableModes = arrayOf(
+                createMode(1, 60f, 60f), createMode(2, 60f, 60f)
+            ),
+            expectedModeId = 1
+        )
+    }
+
+    @Test
+    fun testSelectBaseMode(@TestParameter testCase: SelectBaseModeTestCase) {
+        val summary =
+            createSummary(isUserPreferredHdrModeAllowed = testCase.isUserPreferredHdrModeAllowed)
+        summary.allowHdr = testCase.allowHdr
+        summary.appRequestBaseModeRefreshRate = testCase.appRequestBaseModeRefreshRate
+
+        val defaultMode = createMode(0, 60f, 60f)
+        val result = summary.selectBaseMode(testCase.availableModes.toList(), defaultMode)
+
+        assertThat(result?.modeId).isEqualTo(testCase.expectedModeId)
+    }
+
+    enum class BaseModeSelectionIsModeBetterTestCase(
+        val currentMode: Display.Mode?,
+        val newMode: Display.Mode,
+        val allowHdr: Boolean,
+        val preferredRefreshRate: Float,
+        val expectedResult: Boolean
+    ) {
+        CURRENT_MODE_NULL(
+            null, createMode(1, 60f, 60f), /* allowHdr= */ true, 60f, /* expectedResult= */ true
+        ),
+        NEW_MODE_MATCHES_RR_CURRENT_MODE_DOES_NOT(
+            createMode(1, 60f, 60f),
+            createMode(2, 90f, 90f),
+            /* allowHdr= */ true, 90f, /* expectedResult= */ true
+        ),
+        NEW_MODE_HDR_BUT_DOES_NOT_MATCH_RR(
+            createMode(1, 90f, 90f), // Matches RR
+            createMode(2, 60f, 60f, intArrayOf(1)), // HDR, but wrong RR
+            /* allowHdr= */ true, 90f, /* expectedResult= */ false
+        ),
+        HDR_ALLOWED_PREFER_HDR_OVER_SDR(
+            createMode(1, 60f, 60f), // SDR
+            createMode(2, 60f, 60f, intArrayOf(1)), // HDR
+            /* allowHdr= */ true, 60f, /* expectedResult= */ true
+        ),
+        HDR_ALLOWED_KEEP_HDR_OVER_SDR(
+            createMode(1, 60f, 60f, intArrayOf(1)), // HDR
+            createMode(2, 60f, 60f), // SDR
+            /* allowHdr= */ true, 60f, /* expectedResult= */ false
+        ),
+        HDR_DISALLOWED_SWITCH_FROM_HDR_TO_SDR(
+            createMode(1, 60f, 60f, intArrayOf(1)), // HDR
+            createMode(2, 60f, 60f), // SDR
+            /* allowHdr= */ false, 60f, /* expectedResult= */ true
+        ),
+        HDR_DISALLOWED_KEEP_SDR_OVER_HDR(
+            createMode(1, 60f, 60f), // SDR
+            createMode(2, 60f, 60f, intArrayOf(1)), // HDR
+            /* allowHdr= */ false, 60f, /* expectedResult= */ false
+        ),
+
+        SAME_MODE_ATTRIBUTES_KEEP_CURRENT(
+            createMode(1, 60f, 60f),
+            createMode(2, 60f, 60f),
+            /* allowHdr= */ true, 60f, /* expectedResult= */ false
+        ),
+    }
+
+    @Test
+    fun isNewModeBetterForBaseMode(@TestParameter testCase: BaseModeSelectionIsModeBetterTestCase) {
+        val result = VoteSummary.isNewModeBetterForBaseMode(
+            testCase.currentMode, testCase.newMode, testCase.allowHdr, testCase.preferredRefreshRate
+        )
+        assertThat(result).isEqualTo(testCase.expectedResult)
+    }
 }
 
-
-private fun createMode(modeId: Int, refreshRate: Float, vsyncRate: Float): Display.Mode {
-    return Display.Mode(modeId, -1, 0, 600, 800, refreshRate, vsyncRate,
-            FloatArray(0), IntArray(0))
+private fun createMode(
+    modeId: Int, refreshRate: Float, vsyncRate: Float, hdrTypes: IntArray = IntArray(0)
+): Display.Mode {
+    return Display.Mode(
+        modeId, -1, 0, 600, 800, refreshRate, vsyncRate, FloatArray(0), hdrTypes
+    )
 }
 
-private fun createSummary(supportedModesVoteEnabled: Boolean = false): VoteSummary {
-    val summary = createVotesSummary(supportedModesVoteEnabled = supportedModesVoteEnabled)
+private fun createSummary(
+    supportedModesVoteEnabled: Boolean = false,
+    isUserPreferredHdrModeAllowed: Boolean = false
+): VoteSummary {
+    val summary =
+        createVotesSummary(
+            supportedModesVoteEnabled = supportedModesVoteEnabled,
+            isUserPreferredHdrModeAllowed = isUserPreferredHdrModeAllowed
+        )
     summary.width = 600
     summary.height = 800
     summary.maxPhysicalRefreshRate = Float.POSITIVE_INFINITY

@@ -26,6 +26,9 @@ import static android.hardware.display.DisplayManager.DeviceConfig.KEY_REFRESH_R
 import static android.hardware.display.DisplayManager.DeviceConfig.KEY_REFRESH_RATE_IN_HBM_SUNLIGHT;
 import static android.hardware.display.DisplayManager.DeviceConfig.KEY_REFRESH_RATE_IN_HIGH_ZONE;
 import static android.hardware.display.DisplayManager.DeviceConfig.KEY_REFRESH_RATE_IN_LOW_ZONE;
+import static android.hardware.display.DisplayManager.HDR_PREFERENCE_HDR_ALLOWED;
+import static android.hardware.display.DisplayManager.HDR_PREFERENCE_SDR_ONLY;
+import static android.view.Display.HdrCapabilities.HDR_TYPE_HDR10;
 
 import static com.android.server.display.TestUtilsKt.createSensor;
 import static com.android.server.display.TestUtilsKt.createSensorEvent;
@@ -228,6 +231,39 @@ public class DisplayModeDirectorTest {
                                         0, 64.99f))}});
 
         return appRequestedSizeTestCases;
+    }
+
+    public static Object[] getHdrPreferenceTestCases() {
+        return new Object[][] {
+            {
+                Display.TYPE_EXTERNAL,
+                /* isUserPreferredHdrModeAllowed= */ true,
+                HDR_PREFERENCE_SDR_ONLY,
+                /* expectVote= */ true,
+                /* expectedAllowHdr= */ false
+            },
+            {
+                Display.TYPE_EXTERNAL,
+                /* isUserPreferredHdrModeAllowed= */ true,
+                HDR_PREFERENCE_HDR_ALLOWED,
+                /* expectVote= */ true,
+                /* expectedAllowHdr= */ true
+            },
+            {
+                Display.TYPE_EXTERNAL,
+                /* isUserPreferredHdrModeAllowed= */ false,
+                HDR_PREFERENCE_HDR_ALLOWED,
+                /* expectVote= */ false,
+                /* expectedAllowHdr= */ false
+            },
+            {
+                Display.TYPE_INTERNAL,
+                /* isUserPreferredHdrModeAllowed= */ true,
+                HDR_PREFERENCE_HDR_ALLOWED,
+                /* expectVote= */ false,
+                /* expectedAllowHdr= */ false
+            }
+        };
     }
 
     private static final String TAG = "DisplayModeDirectorTest";
@@ -3717,13 +3753,107 @@ public class DisplayModeDirectorTest {
     }
 
     @Test
+    @Parameters(method = "getHdrPreferenceTestCases")
+    public void testHdrPreferenceVote_Parameterized(
+            int displayType,
+            boolean isUserPreferredHdrModeAllowed,
+            int userPreference,
+            boolean expectVote,
+            boolean expectedAllowHdr) {
+
+        when(mInjector.isUserPreferredHdrModeAllowed()).thenReturn(isUserPreferredHdrModeAllowed);
+
+        mInjector.setEnabledDisplays(Map.of(DISPLAY_ID, displayType));
+
+        DisplayModeDirector director = createDirectorFromFpsRange(60, 90);
+        director.start(createMockSensorManager());
+
+        when(mInjector.getUserPreferredHdrMode(DISPLAY_ID)).thenReturn(userPreference);
+        director.setUserPreferredHdrMode(DISPLAY_ID, userPreference);
+        waitForIdleSync();
+
+        Vote vote = director.getVote(DISPLAY_ID, Vote.PRIORITY_USER_SETTING_HDR_MODE);
+
+        if (expectVote) {
+            assertVoteForHdrPreferenceVote(vote, expectedAllowHdr);
+        } else {
+            assertThat(vote).isNull();
+        }
+    }
+
+    @Test
+    public void testHdrPreferenceVote_selectModeAccordingToVote() {
+        Display.Mode hdrMode =
+                new Display.Mode(0, 1920, 1080, 60f, new float[0], new int[] {HDR_TYPE_HDR10});
+        Display.Mode sdrMode = new Display.Mode(1, 1920, 1080, 60f, new float[0], new int[0]);
+        Display.Mode[] modes = new Display.Mode[] {hdrMode, sdrMode};
+
+        mInjector.mDisplayInfo.supportedModes = modes;
+        mInjector.setEnabledDisplays(Map.of(DISPLAY_ID, Display.TYPE_EXTERNAL));
+
+        DisplayModeDirector director = createDirectorFromModeArray(modes, sdrMode);
+        director.start(createMockSensorManager());
+        assertThat(director.getDesiredDisplayModeSpecs(DISPLAY_ID).baseModeId).isEqualTo(0);
+
+        // Set preference to SDR_ONLY
+        int sdrOnly = HDR_PREFERENCE_SDR_ONLY;
+        when(mInjector.getUserPreferredHdrMode(DISPLAY_ID)).thenReturn(sdrOnly);
+        director.setUserPreferredHdrMode(DISPLAY_ID, sdrOnly);
+        waitForIdleSync();
+
+        assertThat(director.getDesiredDisplayModeSpecs(DISPLAY_ID).baseModeId).isEqualTo(1);
+
+        // Set preference to allow both HDR and SDR mode
+        int allowHdrSdr = HDR_PREFERENCE_HDR_ALLOWED;
+        when(mInjector.getUserPreferredHdrMode(DISPLAY_ID)).thenReturn(allowHdrSdr);
+        director.setUserPreferredHdrMode(DISPLAY_ID, allowHdrSdr);
+        waitForIdleSync();
+
+        assertThat(director.getDesiredDisplayModeSpecs(DISPLAY_ID).baseModeId).isEqualTo(0);
+    }
+
+    @Test
+    public void testHdrPreferenceVote_summaryAccumulation() {
+        Display.Mode hdrMode = new Display.Mode(2, 1920, 1080, 60f, new float[0],
+                new int[] {HDR_TYPE_HDR10});
+        Display.Mode sdrMode = new Display.Mode(1, 1920, 1080, 60f, new float[0], new int[0]);
+        Display.Mode[] modes = new Display.Mode[] {hdrMode, sdrMode};
+
+        mInjector.mDisplayInfo.supportedModes = modes;
+        mInjector.setEnabledDisplays(Map.of(DISPLAY_ID, Display.TYPE_EXTERNAL));
+
+        DisplayModeDirector director = createDirectorFromModeArray(modes, hdrMode);
+        director.start(createMockSensorManager());
+
+        SparseArray<Vote> votes = new SparseArray<>();
+        // Inject a vote that allows HDR
+        votes.put(Vote.PRIORITY_USER_SETTING_HDR_MODE, new HdrPreferenceVote(true));
+        // Inject a higher priority vote that limits HDR
+        votes.put(Vote.PRIORITY_USER_SETTING_HDR_MODE + 1, new HdrPreferenceVote(false));
+
+        SparseArray<SparseArray<Vote>> votesByDisplay = new SparseArray<>();
+        votesByDisplay.put(DISPLAY_ID, votes);
+        director.injectVotesByDisplay(votesByDisplay);
+
+        // Assert SDR because another vote has set allowHdr=false
+        DesiredDisplayModeSpecs specs = director.getDesiredDisplayModeSpecs(DISPLAY_ID);
+        assertThat(specs.baseModeId).isEqualTo(sdrMode.getModeId());
+
+        // Verify that removing the restrictive vote allows HDR
+        votes.remove(Vote.PRIORITY_USER_SETTING_HDR_MODE + 1);
+        director.injectVotesByDisplay(votesByDisplay);
+        specs = director.getDesiredDisplayModeSpecs(DISPLAY_ID);
+        assertThat(specs.baseModeId).isEqualTo(hdrMode.getModeId());
+    }
+
+    @Test
     public void testWorkDurations_defaultValuesSetInDesiredDisplayModeSpecs() {
         // Set up DisplayDeviceConfig and DisplayModeDirector mocks.
         WorkDuration workDurations = new WorkDuration(10500000,
                 16600000, 16600000);
         DisplayDeviceConfig ddcMock = mock(DisplayDeviceConfig.class);
         RefreshRateData rrd = new RefreshRateData(60, 65, 65, 75,
-        /* defaultWorkDurations= */ workDurations, List.of(), List.of(), null);
+                /* defaultWorkDurations= */ workDurations, List.of(), List.of(), null);
         when(ddcMock.getRefreshRateData()).thenReturn(rrd);
         SparseArray<DisplayDeviceConfig> configs = new SparseArray<>();
         configs.put(DISPLAY_ID, ddcMock);
@@ -3877,6 +4007,13 @@ public class DisplayModeDirectorTest {
         } else {
             assertThat(renderVote.mMaxRefreshRate).isWithin(FLOAT_TOLERANCE).of(frameRateHigh);
         }
+    }
+
+    private void assertVoteForHdrPreferenceVote(Vote vote, boolean allowHdr) {
+        assertThat(vote).isNotNull();
+        assertThat(vote).isInstanceOf(HdrPreferenceVote.class);
+        HdrPreferenceVote hdrVote = (HdrPreferenceVote) vote;
+        assertThat(hdrVote.mAllowHdr).isEqualTo(allowHdr);
     }
 
     public static class FakeDeviceConfig extends FakeDeviceConfigInterface {
@@ -4157,6 +4294,11 @@ public class DisplayModeDirectorTest {
         }
 
         @Override
+        public int getUserPreferredHdrMode(int displayId) {
+            return HDR_PREFERENCE_HDR_ALLOWED;
+        }
+
+        @Override
         public boolean registerThermalEventListener(IThermalEventListener listener) {
             return true;
         }
@@ -4167,6 +4309,11 @@ public class DisplayModeDirectorTest {
 
         @Override
         public boolean supportsFrameRateOverride() {
+            return true;
+        }
+
+        @Override
+        public boolean isUserPreferredHdrModeAllowed() {
             return true;
         }
 
