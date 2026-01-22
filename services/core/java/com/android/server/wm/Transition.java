@@ -1876,7 +1876,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
         if (mState != STATE_COLLECTING && mState != STATE_STARTED) {
             throw new IllegalStateException("Too late to abort. state=" + mState);
         }
-        ProtoLog.v(WmProtoLogGroups.WM_DEBUG_WINDOW_TRANSITIONS,
+        ProtoLog.v(WmProtoLogGroups.WM_DEBUG_WINDOW_TRANSITIONS_MIN,
                 "Aborting Transition: %d", mSyncId);
         mState = STATE_ABORT;
         mLogger.mAbortTimeNs = SystemClock.elapsedRealtimeNanos();
@@ -1993,7 +1993,12 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
                 }
                 mConfigAtEndActivities = null;
             }
-            ensureParticipantSurfaceVisibility();
+            for (int i = mChanges.size() - 1; i >= 0; --i) {
+                final ChangeInfo ci = mChanges.valueAt(i);
+                if (ci.mVisible != ci.mContainer.isVisibleRequested()) {
+                    mWmService.mAnimator.addSurfaceVisibilityUpdate(ci.mContainer);
+                }
+            }
             primaryDisplay.getPendingTransaction().merge(transaction);
             primaryDisplay.scheduleAnimation();
             mSyncId = -1;
