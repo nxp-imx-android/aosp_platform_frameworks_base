@@ -337,6 +337,10 @@ public final class BackgroundBlurDrawable extends Drawable {
             if (mOnPreDrawListener == null && mViewRoot.getView() != null
                     && hasRegions()) {
                 registerPreDrawListener();
+
+                if (mHasUiUpdates) {
+                    mViewRoot.getView().invalidate();
+                }
             }
         }
 
