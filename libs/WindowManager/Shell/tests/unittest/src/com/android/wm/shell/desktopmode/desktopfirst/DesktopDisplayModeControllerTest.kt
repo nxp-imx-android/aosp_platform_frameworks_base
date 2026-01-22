@@ -21,6 +21,8 @@ import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
 import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
 import android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED
 import android.content.ContentResolver
+import android.hardware.devicestate.DeviceState
+import android.hardware.devicestate.DeviceStateManager
 import android.hardware.input.InputManager
 import android.os.Binder
 import android.os.Handler
@@ -48,6 +50,7 @@ import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.TestRunningTaskInfoBuilder
 import com.android.wm.shell.common.DisplayController
+import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpaperActivityTokenProvider
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.sysui.ShellCommandHandler
@@ -63,6 +66,7 @@ import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.isNull
 import org.mockito.Mockito.anyInt
 import org.mockito.Mockito.times
@@ -97,6 +101,8 @@ class DesktopDisplayModeControllerTest(
     private val inputManager = mock<InputManager>()
     private val displayController = mock<DisplayController>()
     private val mainHandler = mock<Handler>()
+    private val mainExecutor = mock<ShellExecutor>()
+    private val deviceStateManager = mock<DeviceStateManager>()
 
     private lateinit var controller: DesktopDisplayModeController
 
@@ -145,7 +151,9 @@ class DesktopDisplayModeControllerTest(
                 inputManager,
                 displayController,
                 mainHandler,
+                mainExecutor,
                 desktopState,
+                deviceStateManager,
             )
         runningTasks.add(freeformTask)
         runningTasks.add(fullscreenTask)
@@ -382,6 +390,33 @@ class DesktopDisplayModeControllerTest(
         assertThat(arg.firstValue.changes[externalTDA.token.asBinder()]?.windowingMode)
             .isEqualTo(WINDOWING_MODE_FREEFORM)
         arg.firstValue.assertTaskMoveAllowed(externalTDA.token, allowed = true)
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DISPLAY_WINDOWING_MODE_SWITCHING,
+        Flags.FLAG_FORM_FACTOR_BASED_DESKTOP_FIRST_SWITCH,
+        Flags.FLAG_ENABLE_DESKTOP_FIRST_LAPTOP_STATE_BUGFIX,
+    )
+    fun lidClosed_overridesNoPeripherals() {
+        val callbackCaptor =
+            ArgumentCaptor.forClass(DeviceStateManager.DeviceStateCallback::class.java)
+        verify(deviceStateManager).registerCallback(any(), callbackCaptor.capture())
+        val callback = callbackCaptor.value
+        val state = mock<DeviceState>()
+        whenever(state.hasProperty(DeviceState.PROPERTY_LAPTOP_HARDWARE_CONFIGURATION_LID_CLOSED))
+            .thenReturn(true)
+
+        // No touchpad/keyboard connected
+        setTouchpadConnected(false)
+        setKeyboardConnected(false)
+        setExtendedMode(true)
+        desktopState.overrideDesktopModeSupportPerDisplay[DEFAULT_DISPLAY] = true
+        connectExternalDisplay()
+        callback.onDeviceStateChanged(state)
+
+        assertThat(controller.getTargetWindowingModeForDefaultDisplay())
+            .isEqualTo(WINDOWING_MODE_FREEFORM)
     }
 
     private fun connectExternalDisplay() {

@@ -28,6 +28,7 @@ import android.app.KeyguardManager;
 import android.content.Context;
 import android.content.pm.LauncherApps;
 import android.content.pm.PackageManager;
+import android.hardware.devicestate.DeviceStateManager;
 import android.hardware.input.InputManager;
 import android.os.Handler;
 import android.os.UserManager;
@@ -2110,7 +2111,9 @@ public abstract class WMShellModule {
             InputManager inputManager,
             DisplayController displayController,
             @ShellMainThread Handler mainHandler,
-            DesktopState desktopState
+            @ShellMainThread ShellExecutor mainExecutor,
+            DesktopState desktopState,
+            DeviceStateManager deviceStateManager
     ) {
         if (!desktopState.canEnterDesktopMode()) {
             return Optional.empty();
@@ -2128,7 +2131,9 @@ public abstract class WMShellModule {
                         inputManager,
                         displayController,
                         mainHandler,
-                        desktopState));
+                        mainExecutor,
+                        desktopState,
+                        deviceStateManager));
     }
 
     @WMSingleton
