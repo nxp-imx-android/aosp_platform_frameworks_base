@@ -752,7 +752,10 @@ public class SliderPreference extends Preference {
 
         iconFrame.setOnClickListener((view) -> {
             if (mSliderValue > mMin) {
-                setValue(mSliderValue - mSliderIncrement);
+                final int newValue = mSliderValue - mSliderIncrement;
+                if (callChangeListener(newValue)) {
+                    setValue(newValue);
+                }
             }
         });
 
@@ -786,7 +789,10 @@ public class SliderPreference extends Preference {
 
         iconFrame.setOnClickListener((view) -> {
             if (mSliderValue < mMax) {
-                setValue(mSliderValue + mSliderIncrement);
+                final int newValue = mSliderValue + mSliderIncrement;
+                if (callChangeListener(newValue)) {
+                    setValue(newValue);
+                }
             }
         });
 
