@@ -728,12 +728,7 @@ public class SyncManager {
 
         IntentFilter intentFilter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
 
-        if (com.android.server.am.Flags.syncmanagerOffMainThread()) {
-            context.registerReceiver(mConnectivityIntentReceiver, intentFilter, null,
-                    mSyncHandler);
-        } else {
-            context.registerReceiver(mConnectivityIntentReceiver, intentFilter);
-        }
+        context.registerReceiver(mConnectivityIntentReceiver, intentFilter, null, mSyncHandler);
 
         intentFilter = new IntentFilter(Intent.ACTION_SHUTDOWN);
         intentFilter.setPriority(IntentFilter.SYSTEM_HIGH_PRIORITY);
@@ -744,9 +739,7 @@ public class SyncManager {
         intentFilter.addAction(Intent.ACTION_USER_UNLOCKED);
         intentFilter.addAction(Intent.ACTION_USER_STOPPED);
         mContext.registerReceiverAsUser(
-                mUserIntentReceiver, UserHandle.ALL, intentFilter, null,
-                com.android.server.am.Flags.syncmanagerOffMainThread() ? mSyncHandler : null);
-
+                mUserIntentReceiver, UserHandle.ALL, intentFilter, null, mSyncHandler);
 
         mPackageMonitor = new PackageMonitorImpl();
         mPackageMonitor.register(mContext, null /* thread */, UserHandle.ALL,
