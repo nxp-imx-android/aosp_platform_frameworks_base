@@ -3747,18 +3747,24 @@ public final class SystemServer implements Dumpable {
     private void startAttentionService(@NonNull Context context, @NonNull TimingsTraceAndSlog t) {
         // We start service only if either AttentionManager service is configured on the device or
         // InteractionProviderService is enabled.
-        if (!com.android.input.flags.Flags.enableAttentionServiceApis()
-                && !AttentionManagerService.isServiceConfigured(context)) {
+        boolean startService = false;
+        if (AttentionManagerService.isServiceConfigured(context)) {
+            startService = true;
+        } else {
             Slog.d(TAG, "AttentionService is not configured on this device");
-            return;
-        } else if (!AttentionManagerService.isInteractionProviderServiceEnabled(context)) {
+        }
+        if (com.android.input.flags.Flags.enableAttentionServiceApis()
+                && AttentionManagerService.isInteractionProviderServiceEnabled(context)) {
+            startService = true;
+        } else {
             Slog.d(TAG, "InteractionProviderService is not enabled on this device");
-            return;
         }
 
-        t.traceBegin("StartAttentionManagerService");
-        mSystemServiceManager.startService(AttentionManagerService.class);
-        t.traceEnd();
+        if (startService) {
+            t.traceBegin("StartAttentionManagerService");
+            mSystemServiceManager.startService(AttentionManagerService.class);
+            t.traceEnd();
+        }
     }
 
     private void startRotationResolverService(@NonNull Context context,
