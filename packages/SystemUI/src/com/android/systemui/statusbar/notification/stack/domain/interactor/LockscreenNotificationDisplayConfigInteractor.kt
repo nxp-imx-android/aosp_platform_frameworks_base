@@ -24,6 +24,7 @@ import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import javax.inject.Inject
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -47,6 +48,7 @@ constructor(
     private val sharedNotificationContainerInteractor: SharedNotificationContainerInteractor,
     private val notificationStackAppearanceInteractor: NotificationStackAppearanceInteractor,
 ) {
+    @OptIn(ExperimentalCoroutinesApi::class)
     private val showOnlyFullHeightNotifications: Flow<Boolean> =
         sceneInteractor.transitionStateFlow.flatMapLatest { transitionState ->
             when (transitionState) {
@@ -56,17 +58,24 @@ constructor(
                             Overlays.NotificationsShade !in transitionState.currentOverlays
                     )
 
-                is Transition.ChangeScene ->
-                    if (transitionState.fromScene in keyguardScenes) {
+                is Transition.ChangeScene -> {
+                    val fromKeyguard = transitionState.fromScene in keyguardScenes
+                    val toKeyguard = transitionState.toScene in keyguardScenes
+                    val isShadeInvolved =
+                        transitionState.fromScene == Scenes.Shade ||
+                            transitionState.toScene == Scenes.Shade
+
+                    if (fromKeyguard && transitionState.toScene == Scenes.Shade) {
                         combine(transitionState.isUserInputOngoing, transitionState.progress) {
                             userInput,
                             progress ->
                             userInput || progress < EXPANSION_FOR_DELAYED_STACK_FADE_IN
                         }
                     } else {
-                        flowOf(false)
+                        // true throughout Keyguard transitions where the shade is NOT involved
+                        flowOf((fromKeyguard || toKeyguard) && !isShadeInvolved)
                     }
-
+                }
                 is Transition.OverlayTransition ->
                     flowOf(
                         transitionState.currentScene in keyguardScenes &&

@@ -238,6 +238,32 @@ class LockscreenNotificationDisplayConfigInteractorTest : SysuiTestCase() {
             assertShowOnlyFullHeight(lockScreenConfig)
         }
 
+    @Test
+    fun singleShade_TransitionFromCommunalToLockscreen_showOnlyFullHeight() =
+        kosmos.runTest {
+            enableSingleShade()
+
+            val lockScreenConfig by
+                collectLastValue(underTest.getLockscreenDisplayConfig(calculateMaxNotifications))
+
+            val expectedFraction = 0.5f
+            setTransitionState(
+                ObservableTransitionState.Transition.ChangeScene(
+                    fromScene = Scenes.Communal,
+                    toScene = Scenes.Lockscreen,
+                    currentScene = flowOf(Scenes.Communal),
+                    currentOverlays = emptySet(),
+                    progress = MutableStateFlow(expectedFraction),
+                    isInitiatedByUserInput = true,
+                    isUserInputOngoing = flowOf(true),
+                    previewProgress = flowOf(0f),
+                    isInPreviewStage = flowOf(false),
+                )
+            )
+
+            assertShowOnlyFullHeight(lockScreenConfig)
+        }
+
     private fun Kosmos.setTransitionState(transitionState: ObservableTransitionState) {
         sceneContainerRepository.setTransitionState(flowOf(transitionState))
         // workaround to wait for the transition
