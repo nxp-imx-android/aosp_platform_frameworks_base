@@ -115,14 +115,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-            >
+                android:layout_marginTop="@dimen/notification_2025_additional_margin"
+                >
                 <include layout="@layout/notification_2025_collapsed_metric" />
-                <include
-                    layout="@layout/notification_template_progress"
-                    android:layout_width="match_parent"
-                    android:layout_height="@dimen/notification_headerless_line_height"
-                    android:layout_marginEnd="@dimen/notification_2025_margin"
-                    />
             </LinearLayout>
 
         </LinearLayout>

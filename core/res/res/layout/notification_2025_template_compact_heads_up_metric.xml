@@ -71,17 +71,12 @@
                 android:textAppearance="@style/TextAppearance.DeviceDefault.Notification.Title"
                 />
             <include layout="@layout/notification_2025_top_line_views" />
-            <LinearLayout
+            <include layout="@layout/notification_2025_collapsed_metric"
                 android:id="@+id/extra_topline_content"
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent">
-                <include layout="@layout/notification_2025_collapsed_metric"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:layout_centerVertical="true"
-                    android:layout_marginStart="@dimen/notification_header_separating_margin"
-                    android:layout_marginEnd="@dimen/notification_header_separating_margin"/>
-            </LinearLayout>
+                android:layout_height="match_parent"
+                android:layout_marginStart="@dimen/notification_header_separating_margin"
+                android:layout_marginEnd="@dimen/notification_header_separating_margin"/>
         </NotificationTopLineView>
         <FrameLayout
             android:id="@+id/expand_button_touch_container"
