@@ -204,6 +204,8 @@ public final class CachedAppOptimizerTest {
                     CachedAppOptimizer.DEFAULT_COMPACT_THROTTLE_MIN_OOM_ADJ);
             assertThat(mCachedAppOptimizerUnderTest.mCompactThrottleMaxOomAdj).isEqualTo(
                     CachedAppOptimizer.DEFAULT_COMPACT_THROTTLE_MAX_OOM_ADJ);
+            assertThat(mCachedAppOptimizerUnderTest.mZramWritebackEnabled).isEqualTo(
+                    CachedAppOptimizer.DEFAULT_ZRAM_WRITEBACK_ENABLED);
         }
 
 
@@ -273,6 +275,8 @@ public final class CachedAppOptimizerTest {
         DeviceConfig.setProperty(DeviceConfig.NAMESPACE_ACTIVITY_MANAGER_NATIVE_BOOT,
                 CachedAppOptimizer.KEY_USE_FREEZER, CachedAppOptimizer.DEFAULT_USE_FREEZER
                         ? "false" : "true", false);
+        DeviceConfig.setProperty(DeviceConfig.NAMESPACE_ACTIVITY_MANAGER,
+                CachedAppOptimizer.KEY_ZRAM_WRITEBACK_ENABLED, "true", false);
 
         // Then calling init will read and set that flag.
         mCachedAppOptimizerUnderTest.init();
@@ -300,6 +304,7 @@ public final class CachedAppOptimizerTest {
         assertThat(mCachedAppOptimizerUnderTest.mFullAnonRssThrottleKb).isEqualTo(
                 CachedAppOptimizer.DEFAULT_COMPACT_FULL_RSS_THROTTLE_KB + 1);
         assertThat(mCachedAppOptimizerUnderTest.mProcStateThrottle).containsExactly(1, 2, 3);
+        assertThat(mCachedAppOptimizerUnderTest.mZramWritebackEnabled).isTrue();
 
         Assume.assumeTrue(mAms.isAppFreezerSupported());
         if (mAms.isAppFreezerSupported()) {
@@ -764,6 +769,7 @@ public final class CachedAppOptimizerTest {
     @Test
     public void zramWritebackInitiated() throws Exception {
         initActivityManagerService();
+        setFlag(CachedAppOptimizer.KEY_ZRAM_WRITEBACK_ENABLED, "true", true);
         long[] rssAfter =
                 new long[]{/*totalRSS*/ 9000, /*fileRSS*/ 9000, /*anonRSS*/ 11000, /*swap*/9000};
         verifyZramWriteback(rssAfter, /*hasActivities*/ true, /*supportsZramOps*/ true,
@@ -775,6 +781,8 @@ public final class CachedAppOptimizerTest {
             com.android.server.am.Flags.FLAG_LOG_ZRAM_WRITEBACK_EVENTS})
     @Test
     public void zramWritebackNotInitiatedDueToSwapSize() throws Exception {
+        initActivityManagerService();
+        setFlag(CachedAppOptimizer.KEY_ZRAM_WRITEBACK_ENABLED, "true", true);
         // 200MB swap size
         long[] rssAfter =
                 new long[]{/*totalRSS*/ 9000, /*fileRSS*/ 9000, /*anonRSS*/ 11000, /*swap*/
@@ -788,6 +796,8 @@ public final class CachedAppOptimizerTest {
             com.android.server.am.Flags.FLAG_LOG_ZRAM_WRITEBACK_EVENTS})
     @Test
     public void zramWritebackNotInitiatedDueToGpuMemory() throws Exception {
+        initActivityManagerService();
+        setFlag(CachedAppOptimizer.KEY_ZRAM_WRITEBACK_ENABLED, "true", true);
         final int pid = 1;
         final int gpuMemThreshold =
                 CachedAppOptimizer.DEFAULT_ZRAM_WRITEBACK_GPU_MEM_THRESHOLD_KB;
@@ -808,6 +818,8 @@ public final class CachedAppOptimizerTest {
             com.android.server.am.Flags.FLAG_LOG_ZRAM_WRITEBACK_EVENTS})
     @Test
     public void zramWritebackNotInitiatedDueToDmaBuf() throws Exception {
+        initActivityManagerService();
+        setFlag(CachedAppOptimizer.KEY_ZRAM_WRITEBACK_ENABLED, "true", true);
         final int pid = 1;
         doReturn(CachedAppOptimizer.DEFAULT_ZRAM_WRITEBACK_DMABUF_MEM_THRESHOLD_KB + 1L)
                 .when(mKernelAllocProvider)
@@ -824,6 +836,8 @@ public final class CachedAppOptimizerTest {
             com.android.server.am.Flags.FLAG_LOG_ZRAM_WRITEBACK_EVENTS})
     @Test
     public void zramWritebackNotInitiatedNoActivities() throws Exception {
+        initActivityManagerService();
+        setFlag(CachedAppOptimizer.KEY_ZRAM_WRITEBACK_ENABLED, "true", true);
         long[] rssAfter =
                 new long[]{/*totalRSS*/ 9000, /*fileRSS*/ 9000, /*anonRSS*/ 11000, /*swap*/9000};
         verifyZramWriteback(rssAfter, /*hasActivities*/ false, /*supportsZramOps*/ true,
@@ -835,9 +849,24 @@ public final class CachedAppOptimizerTest {
             com.android.server.am.Flags.FLAG_LOG_ZRAM_WRITEBACK_EVENTS})
     @Test
     public void zramWritebackNotInitiatedNoZramOpsSupport() throws Exception {
+        initActivityManagerService();
+        setFlag(CachedAppOptimizer.KEY_ZRAM_WRITEBACK_ENABLED, "true", true);
         long[] rssAfter =
                 new long[]{/*totalRSS*/ 9000, /*fileRSS*/ 9000, /*anonRSS*/ 11000, /*swap*/9000};
         verifyZramWriteback(rssAfter, /*hasActivities*/ true, /*supportsZramOps*/ false,
+                /*shouldBeCalled*/ false);
+    }
+
+    @EnableFlags({
+            com.android.server.am.Flags.FLAG_ENABLE_ZRAM_WRITEBACK,
+            com.android.server.am.Flags.FLAG_LOG_ZRAM_WRITEBACK_EVENTS})
+    @Test
+    public void zramWritebackDisabledByDeviceConfig() throws Exception {
+        initActivityManagerService();
+        setFlag(CachedAppOptimizer.KEY_ZRAM_WRITEBACK_ENABLED, "false", true);
+        long[] rssAfter =
+                new long[]{/*totalRSS*/ 9000, /*fileRSS*/ 9000, /*anonRSS*/ 11000, /*swap*/9000};
+        verifyZramWriteback(rssAfter, /*hasActivities*/ true, /*supportsZramOps*/ true,
                 /*shouldBeCalled*/ false);
     }
 
