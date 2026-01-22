@@ -27,7 +27,6 @@ import android.content.Intent;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.UserHandle;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.util.Log;
 
@@ -105,13 +104,11 @@ public final class NotificationListenerWrapperTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_REPORT_NLS_START_AND_END)
     public void onListenerConnectedCallsDispatchCompletion() throws Exception {
         connectAndVerifyListener();
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_REPORT_NLS_START_AND_END)
     public void onNotificationPostedCallsDispatchCompletion() throws Exception {
         connectAndVerifyListener();
         final long token = generateToken();
@@ -122,7 +119,6 @@ public final class NotificationListenerWrapperTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_REPORT_NLS_START_AND_END)
     public void onStatusBarIconsBehaviorChangedCallsDispatchCompletion() throws Exception {
         connectAndVerifyListener();
         final long token = generateToken();
@@ -132,7 +128,6 @@ public final class NotificationListenerWrapperTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_REPORT_NLS_START_AND_END)
     public void onNotificationRemovedCallsDispatchCompletion() throws Exception {
         connectAndVerifyListener();
         final long token = generateToken();
@@ -144,7 +139,6 @@ public final class NotificationListenerWrapperTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_REPORT_NLS_START_AND_END)
     public void onNotificationRankingUpdateCallsDispatchCompletion() throws Exception {
         connectAndVerifyListener();
         final long token = generateToken();
@@ -154,7 +148,6 @@ public final class NotificationListenerWrapperTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_REPORT_NLS_START_AND_END)
     public void onListenerHintsChangedCallsDispatchCompletion() throws Exception {
         connectAndVerifyListener();
         final long token = generateToken();
@@ -164,7 +157,6 @@ public final class NotificationListenerWrapperTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_REPORT_NLS_START_AND_END)
     public void onInterruptionFilterChangedCallsDispatchCompletion() throws Exception {
         connectAndVerifyListener();
         final long token = generateToken();
@@ -174,7 +166,6 @@ public final class NotificationListenerWrapperTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_REPORT_NLS_START_AND_END)
     public void onNotificationChannelModificationCallsDispatchCompletion() throws Exception {
         connectAndVerifyListener();
         final long token = generateToken();
@@ -185,7 +176,6 @@ public final class NotificationListenerWrapperTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_REPORT_NLS_START_AND_END)
     public void onNotificationChannelGroupModificationCallsDispatchCompletion() throws Exception {
         connectAndVerifyListener();
         final long token = generateToken();

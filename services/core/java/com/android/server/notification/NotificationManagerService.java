@@ -16,7 +16,6 @@
 
 package com.android.server.notification;
 
-import static android.app.NotificationManager.Policy.ALLOWED_INTERRUPTION_TYPE_UNSET;
 import static android.Manifest.permission.CONTROL_KEYGUARD_SECURE_NOTIFICATIONS;
 import static android.Manifest.permission.POST_PROMOTED_NOTIFICATIONS;
 import static android.Manifest.permission.RECEIVE_SENSITIVE_NOTIFICATIONS;
@@ -76,6 +75,7 @@ import static android.app.NotificationManager.IMPORTANCE_LOW;
 import static android.app.NotificationManager.IMPORTANCE_MIN;
 import static android.app.NotificationManager.IMPORTANCE_NONE;
 import static android.app.NotificationManager.INTERRUPTION_FILTER_PRIORITY;
+import static android.app.NotificationManager.Policy.ALLOWED_INTERRUPTION_TYPE_UNSET;
 import static android.app.NotificationManager.Policy.SUPPRESSED_EFFECTS_UNSET;
 import static android.app.NotificationManager.Policy.SUPPRESSED_EFFECT_AMBIENT;
 import static android.app.NotificationManager.Policy.SUPPRESSED_EFFECT_BADGE;
@@ -133,7 +133,6 @@ import static android.service.notification.Flags.notificationBitmapOffloading;
 import static android.service.notification.Flags.notificationRegroupOnClassification;
 import static android.service.notification.Flags.redactSensitiveNotificationsBigTextStyle;
 import static android.service.notification.Flags.redactSensitiveNotificationsFromUntrustedListeners;
-import static android.service.notification.Flags.reportNlsStartAndEnd;
 import static android.service.notification.Flags.splitSoundVibrationForNotificationBreakthrough;
 import static android.service.notification.NotificationListenerService.FLAG_FILTER_TYPE_ALERTING;
 import static android.service.notification.NotificationListenerService.FLAG_FILTER_TYPE_CONVERSATIONS;
@@ -14211,10 +14210,7 @@ public class NotificationManagerService extends SystemService {
 
         @Override
         protected long getBindFlags() {
-            long freezeFlags = 0;
-            if (reportNlsStartAndEnd()) {
-                freezeFlags = BIND_SIMULATE_ALLOW_FREEZE;
-            }
+            long freezeFlags = BIND_SIMULATE_ALLOW_FREEZE;
             if (Flags.allowFreezingIdleNls()) {
                 freezeFlags |= BIND_ALLOW_FREEZE;
             }
@@ -14289,7 +14285,7 @@ public class NotificationManagerService extends SystemService {
             }
             final IDispatchCompletionListener completionListener;
             final long token;
-            if ((info.mBinderSession != null && reportNlsStartAndEnd())) {
+            if (info.mBinderSession != null) {
                 final IBinderSession session = info.mBinderSession;
                 token = reportBinderTransactionStarting(session, BINDER_TAG_ON_LISTENER_CONNECTED);
                 completionListener = new IDispatchCompletionListener.Stub() {
@@ -14613,7 +14609,7 @@ public class NotificationManagerService extends SystemService {
         }
 
         private long getDispatchReportingToken(ManagedServiceInfo info, String input) {
-            if (info.mBinderSession != null && reportNlsStartAndEnd()) {
+            if (info.mBinderSession != null) {
                 return reportBinderTransactionStarting(info.mBinderSession, input);
             } else {
                 return 0; // Will be unused because dispatch completion is disabled.
