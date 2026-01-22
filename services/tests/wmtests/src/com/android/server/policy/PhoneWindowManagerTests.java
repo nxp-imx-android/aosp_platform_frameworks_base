@@ -273,7 +273,8 @@ public class PhoneWindowManagerTests {
 
     @Test
     public void testScreenTurnedOff() {
-        doNothing().when(mPhoneWindowManager).updateSettings(any());
+        doNothing().when(mPhoneWindowManager).postUpdateSettings();
+        doNothing().when(mPhoneWindowManager).updateSettings();
         doNothing().when(mPhoneWindowManager).initializeHdmiState();
         final boolean[] isScreenTurnedOff = {false};
         doAnswer(invocation -> isScreenTurnedOff[0] = true).when(mDisplayPolicy).screenTurnedOff(
@@ -306,7 +307,8 @@ public class PhoneWindowManagerTests {
     @Test
     @RequiresFlagsEnabled(com.android.server.display.feature.flags.Flags.FLAG_SEPARATE_TIMEOUTS)
     public void testScreenTurnedOff_forNonAdjacentDisplayGroup() {
-        doNothing().when(mPhoneWindowManager).updateSettings(any());
+        doNothing().when(mPhoneWindowManager).postUpdateSettings();
+        doNothing().when(mPhoneWindowManager).updateSettings();
         doNothing().when(mPhoneWindowManager).initializeHdmiState();
         initPhoneWindowManager();
 
@@ -322,7 +324,8 @@ public class PhoneWindowManagerTests {
     @Test
     @RequiresFlagsEnabled(com.android.server.display.feature.flags.Flags.FLAG_SEPARATE_TIMEOUTS)
     public void testScreenTurnedOff_forAdjacentDisplayGroup() {
-        doNothing().when(mPhoneWindowManager).updateSettings(any());
+        doNothing().when(mPhoneWindowManager).postUpdateSettings();
+        doNothing().when(mPhoneWindowManager).updateSettings();
         doNothing().when(mPhoneWindowManager).initializeHdmiState();
         initPhoneWindowManager();
 
@@ -341,7 +344,8 @@ public class PhoneWindowManagerTests {
     @Test
     @RequiresFlagsEnabled(com.android.server.display.feature.flags.Flags.FLAG_SEPARATE_TIMEOUTS)
     public void testScreenTurnedOn_forNonAdjacentDisplayGroup() {
-        doNothing().when(mPhoneWindowManager).updateSettings(any());
+        doNothing().when(mPhoneWindowManager).postUpdateSettings();
+        doNothing().when(mPhoneWindowManager).updateSettings();
         doNothing().when(mPhoneWindowManager).initializeHdmiState();
         initPhoneWindowManager();
 
@@ -357,7 +361,8 @@ public class PhoneWindowManagerTests {
     @Test
     @RequiresFlagsEnabled(com.android.server.display.feature.flags.Flags.FLAG_SEPARATE_TIMEOUTS)
     public void testScreenTurnedOn_forAdjacentDisplayGroup() {
-        doNothing().when(mPhoneWindowManager).updateSettings(any());
+        doNothing().when(mPhoneWindowManager).postUpdateSettings();
+        doNothing().when(mPhoneWindowManager).updateSettings();
         doNothing().when(mPhoneWindowManager).initializeHdmiState();
         initPhoneWindowManager();
 
@@ -424,7 +429,7 @@ public class PhoneWindowManagerTests {
         // Set power button behavior.
         Settings.Global.putInt(mContext.getContentResolver(),
                 Settings.Global.POWER_BUTTON_SHORT_PRESS, SHORT_PRESS_POWER_HUB_OR_DREAM_OR_SLEEP);
-        mPhoneWindowManager.updateSettings(null);
+        mPhoneWindowManager.updateSettings();
 
         // Device is dreaming.
         when(mDreamManagerInternal.isDreaming()).thenReturn(true);
@@ -449,7 +454,7 @@ public class PhoneWindowManagerTests {
         // Set power button behavior.
         Settings.Global.putInt(mContext.getContentResolver(),
                 Settings.Global.POWER_BUTTON_SHORT_PRESS, SHORT_PRESS_POWER_HUB_OR_DREAM_OR_SLEEP);
-        mPhoneWindowManager.updateSettings(null);
+        mPhoneWindowManager.updateSettings();
 
         // Power button pressed. Make sure no crash occurs
         int eventTime = 0;
@@ -467,7 +472,7 @@ public class PhoneWindowManagerTests {
         // Set power button behavior.
         Settings.Global.putInt(mContext.getContentResolver(),
                 Settings.Global.POWER_BUTTON_SHORT_PRESS, SHORT_PRESS_POWER_HUB_OR_DREAM_OR_SLEEP);
-        mPhoneWindowManager.updateSettings(null);
+        mPhoneWindowManager.updateSettings();
 
         // Set up hub prerequisites.
         Settings.Secure.putInt(mContext.getContentResolver(),
@@ -494,7 +499,7 @@ public class PhoneWindowManagerTests {
         // Set power button behavior.
         Settings.Global.putInt(mContext.getContentResolver(),
                 Settings.Global.POWER_BUTTON_SHORT_PRESS, SHORT_PRESS_POWER_HUB_OR_DREAM_OR_SLEEP);
-        mPhoneWindowManager.updateSettings(null);
+        mPhoneWindowManager.updateSettings();
 
         // Hub is not available.
         Settings.Secure.putInt(mContext.getContentResolver(),
@@ -518,7 +523,7 @@ public class PhoneWindowManagerTests {
         Settings.Global.putInt(mContext.getContentResolver(),
                 Settings.Global.POWER_BUTTON_SHORT_PRESS,
                 SHORT_PRESS_POWER_DREAM_OR_AWAKE_OR_SLEEP);
-        mPhoneWindowManager.updateSettings(null);
+        mPhoneWindowManager.updateSettings();
 
         // Can not dream when device is dreaming.
         when(mDreamManagerInternal.canStartDreaming(any(Boolean.class))).thenReturn(false);
@@ -543,7 +548,7 @@ public class PhoneWindowManagerTests {
         Settings.Global.putInt(mContext.getContentResolver(),
                 Settings.Global.POWER_BUTTON_SHORT_PRESS,
                 SHORT_PRESS_POWER_DREAM_OR_AWAKE_OR_SLEEP);
-        mPhoneWindowManager.updateSettings(null);
+        mPhoneWindowManager.updateSettings();
 
         // Can not dream for other reasons.
         when(mDreamManagerInternal.canStartDreaming(any(Boolean.class))).thenReturn(false);
@@ -567,7 +572,7 @@ public class PhoneWindowManagerTests {
         Settings.Global.putInt(mContext.getContentResolver(),
                 Settings.Global.POWER_BUTTON_SHORT_PRESS,
                 SHORT_PRESS_POWER_DREAM_OR_AWAKE_OR_SLEEP);
-        mPhoneWindowManager.updateSettings(null);
+        mPhoneWindowManager.updateSettings();
 
         // Can dream when active.
         when(mDreamManagerInternal.canStartDreaming(any(Boolean.class))).thenReturn(true);
@@ -651,7 +656,7 @@ public class PhoneWindowManagerTests {
         Settings.Global.putInt(mContext.getContentResolver(),
                 Settings.Global.POWER_BUTTON_TRIPLE_PRESS, MULTI_PRESS_POWER_BRIGHTNESS_BOOST);
         initPhoneWindowManager();
-        mPhoneWindowManager.updateSettings(null);
+        mPhoneWindowManager.updateSettings();
 
         final long time = 3L;
         final int displayId = 5;
@@ -746,7 +751,7 @@ public class PhoneWindowManagerTests {
         initPhoneWindowManager();
         when(mPowerManagerInternal.getLastWakeup()).thenReturn(wakeData);
         when(mDisplayPolicy.isAwake()).thenReturn(true);
-        mPhoneWindowManager.updateSettings(null);
+        mPhoneWindowManager.updateSettings();
 
         mOffsettableClock.fastForward(powerButtonPressEventTimeMillis);
         mPhoneWindowManager.powerPress(powerButtonPressEventTimeMillis, 1, DEFAULT_DISPLAY);
@@ -773,7 +778,7 @@ public class PhoneWindowManagerTests {
         initPhoneWindowManager();
         when(mPowerManagerInternal.getLastWakeup()).thenReturn(wakeData);
         when(mDisplayPolicy.isAwake()).thenReturn(true);
-        mPhoneWindowManager.updateSettings(null);
+        mPhoneWindowManager.updateSettings();
 
         mOffsettableClock.fastForward(powerButtonPressEventTimeMillis);
         mPhoneWindowManager.powerPress(powerButtonPressEventTimeMillis, 1, DEFAULT_DISPLAY);
