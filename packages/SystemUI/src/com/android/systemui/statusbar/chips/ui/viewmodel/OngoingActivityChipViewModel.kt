@@ -21,6 +21,7 @@ import com.android.internal.logging.InstanceId
 import com.android.systemui.animation.DialogCuj
 import com.android.systemui.animation.DialogTransitionAnimator
 import com.android.systemui.animation.Expandable
+import com.android.systemui.animation.TransitionAnimator
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.core.LogLevel
@@ -67,7 +68,15 @@ interface OngoingActivityChipViewModel {
                 val viewContext = controller?.viewRoot?.view?.context
                 if (viewContext != null) {
                     val dialog = dialogDelegateCreator(viewContext).createDialog()
-                    dialogTransitionAnimator.show(dialog, controller)
+                    if (TransitionAnimator.dynamicTargetResolutionEnabled()) {
+                        dialogTransitionAnimator.show(
+                            dialog,
+                            expandable::dialogTransitionController,
+                            controller.cuj,
+                        )
+                    } else {
+                        dialogTransitionAnimator.show(dialog, controller)
+                    }
                 }
             }
         }

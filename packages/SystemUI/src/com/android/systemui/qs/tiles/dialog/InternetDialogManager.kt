@@ -20,6 +20,7 @@ import com.android.internal.jank.InteractionJankMonitor
 import com.android.systemui.animation.DialogCuj
 import com.android.systemui.animation.DialogTransitionAnimator
 import com.android.systemui.animation.Expandable
+import com.android.systemui.animation.TransitionAnimator
 import com.android.systemui.coroutines.newTracingContext
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
@@ -84,11 +85,20 @@ constructor(
                     DialogCuj(InteractionJankMonitor.CUJ_SHADE_DIALOG_OPEN, INTERACTION_JANK_TAG)
                 )
             controller?.let {
-                dialogTransitionAnimator.show(
-                    dialog!!,
-                    controller,
-                    animateBackgroundBoundsChange = true,
-                )
+                if (TransitionAnimator.dynamicTargetResolutionEnabled()) {
+                    dialogTransitionAnimator.show(
+                        dialog!!,
+                        expandable::dialogTransitionController,
+                        it.cuj,
+                        animateBackgroundBoundsChange = true,
+                    )
+                } else {
+                    dialogTransitionAnimator.show(
+                        dialog!!,
+                        it,
+                        animateBackgroundBoundsChange = true,
+                    )
+                }
             } ?: dialog?.show()
         }
     }

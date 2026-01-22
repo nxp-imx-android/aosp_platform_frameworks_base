@@ -34,6 +34,7 @@ import com.android.systemui.Flags
 import com.android.systemui.animation.DialogCuj
 import com.android.systemui.animation.DialogTransitionAnimator
 import com.android.systemui.animation.Expandable
+import com.android.systemui.animation.TransitionAnimator
 import com.android.systemui.bluetooth.qsdialog.AudioSharingInteractor
 import com.android.systemui.bluetooth.qsdialog.BluetoothAutoOnInteractor
 import com.android.systemui.bluetooth.qsdialog.BluetoothDetailsContentManager
@@ -152,11 +153,20 @@ constructor(
                 var showDialog = true
                 controller?.let {
                     showDialog =
-                        dialogTransitionAnimator.show(
-                            dialog,
-                            it,
-                            animateBackgroundBoundsChange = true,
-                        )
+                        if (TransitionAnimator.dynamicTargetResolutionEnabled()) {
+                            dialogTransitionAnimator.show(
+                                dialog,
+                                expandable::dialogTransitionController,
+                                it.cuj,
+                                animateBackgroundBoundsChange = true,
+                            )
+                        } else {
+                            dialogTransitionAnimator.show(
+                                dialog,
+                                it,
+                                animateBackgroundBoundsChange = true,
+                            )
+                        }
                 } ?: dialog.show()
 
                 // contentManager is created after dialog.show and dialog is shown

@@ -21,6 +21,7 @@ import android.content.Intent
 import android.provider.Settings
 import com.android.systemui.animation.DialogTransitionAnimator
 import com.android.systemui.animation.Expandable
+import com.android.systemui.animation.TransitionAnimator
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.qs.tiles.base.domain.actions.QSTileIntentUserInputHandler
 import com.android.systemui.qs.tiles.base.domain.interactor.QSTileUserActionInteractor
@@ -102,7 +103,15 @@ constructor(
         val controller = expandable?.dialogTransitionController()
         if (controller != null) {
             // If we have a controller, show the dialog using the animator.
-            dialogTransitionAnimator.show(dialog, controller)
+            if (TransitionAnimator.dynamicTargetResolutionEnabled()) {
+                dialogTransitionAnimator.show(
+                    dialog,
+                    expandable::dialogTransitionController,
+                    controller.cuj,
+                )
+            } else {
+                dialogTransitionAnimator.show(dialog, controller)
+            }
         } else {
             // Otherwise, show the dialog without the custom animation.
             dialog.show()
