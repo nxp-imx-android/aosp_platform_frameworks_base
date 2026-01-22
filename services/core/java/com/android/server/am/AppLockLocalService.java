@@ -24,14 +24,12 @@ import android.app.AppLockInternal;
 import android.app.KeyguardManager;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
-import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManagerInternal;
 import android.content.pm.UserInfo;
 import android.os.Binder;
 import android.os.Build;
 import android.os.Handler;
-import android.os.Process;
 import android.os.Trace;
 import android.os.UserHandle;
 import android.util.ArrayMap;
@@ -150,25 +148,18 @@ public final class AppLockLocalService implements AppLockInternal,
                 }
 
                 final int userId = userInfo.id;
-                final List<ApplicationInfo> appInfos =
-                        getPackageManagerInternal().getInstalledApplications(
-                                PackageManager.GET_APP_LOCK_INFO, userId, Process.myUid());
-                if (appInfos == null) {
-                    Slog.w(TAG, "Unable to retrieve appInfos for user " + userId);
-                    continue;
-                }
+                final List<String> appLockEnabledPackages =
+                        getPackageManagerInternal().getAppLockEnabledPackagesForUser(userId);
                 synchronized (mLock) {
                     ArrayMap<String, AppLockLockedState> map = mAppLockLockedStatesForUser.get(
                             userId);
 
-                    for (ApplicationInfo appInfo : appInfos) {
-                        if (appInfo != null && appInfo.isAppLockEnabled) {
-                            if (map == null) {
-                                map = new ArrayMap<>();
-                                mAppLockLockedStatesForUser.put(userId, map);
-                            }
-                            map.put(appInfo.packageName, new AppLockLockedState());
+                    for (int i = appLockEnabledPackages.size() - 1; i >= 0; i--) {
+                        if (map == null) {
+                            map = new ArrayMap<>();
+                            mAppLockLockedStatesForUser.put(userId, map);
                         }
+                        map.put(appLockEnabledPackages.get(i), new AppLockLockedState());
                     }
                 }
             }

@@ -434,10 +434,15 @@ public abstract class PackageManagerInternal {
             @UserIdInt int userId, @Nullable List<String> packageNames);
 
     /**
-     * Returns {@code true} if a given package has app lock enabled. Otherwise, returns {@code
+     * Returns {@code true} if a given package has App Lock enabled. Otherwise, returns {@code
      * false}.
      */
     public abstract boolean isPackageAppLockEnabled(String packageName, int userId);
+
+    /**
+     * Returns a list of package names that have App Lock enabled for the given user.
+     */
+    public abstract @NonNull List<String> getAppLockEnabledPackagesForUser(int userId);
 
     /**
      * Returns {@code true} if a given package can't be wiped. Otherwise, returns {@code false}.
