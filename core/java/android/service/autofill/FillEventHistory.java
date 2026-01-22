@@ -24,6 +24,7 @@ import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.TestApi;
 import android.content.IntentSender;
 import android.os.Bundle;
 import android.os.Parcel;
@@ -120,8 +121,15 @@ public final class FillEventHistory implements Parcelable {
     }
 
     /**
+     * Constructs an instance of {@link FillEventHistory}.
+     *
+     * @param sessionId the session ID this class tracks event history for
+     * @param clientState a optional client state bundle to include, deprcated in favor of {@link
+     *     #addEvent(Event)}
      * @hide
      */
+    @TestApi
+    @FlaggedApi(android.service.personalcontext.Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
     public FillEventHistory(int sessionId, @Nullable Bundle clientState) {
         mClientState = clientState;
         mSessionId = sessionId;

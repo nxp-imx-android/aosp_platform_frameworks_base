@@ -21,6 +21,7 @@ import static android.service.personalcontext.hint.ContextHintTestUtils.assertPa
 import static com.google.common.truth.Truth.assertThat;
 
 import android.content.ComponentName;
+import android.service.autofill.FillEventHistory;
 import android.util.Size;
 import android.view.autofill.AutofillId;
 import android.view.autofill.AutofillValue;
@@ -53,6 +54,23 @@ public class AutofillInlineRequestHintTest {
         final AutofillValue autofillValue = AutofillValue.forText("test");
         final InlineSuggestionsRequest inlineSuggestionsRequest =
                 new InlineSuggestionsRequest.Builder(List.of(INLINE_PRESENTATION_SPEC)).build();
+        FillEventHistory.Event event = new FillEventHistory.Event(
+                FillEventHistory.Event.TYPE_AUTHENTICATION_SELECTED,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                0,
+                0,
+                focusedId);
+        final FillEventHistory fillEventHistory = new FillEventHistory(sessionId, null);
+        fillEventHistory.addEvent(event);
 
         final AutofillInlineRequestHint hint =
                 new AutofillInlineRequestHint.Builder()
@@ -63,6 +81,7 @@ public class AutofillInlineRequestHintTest {
                         .setFocusedId(focusedId)
                         .setAutofillValue(autofillValue)
                         .setInlineSuggestionsRequest(inlineSuggestionsRequest)
+                        .setFillEventHistory(fillEventHistory)
                         .build();
 
         final ContextHint outputHint = assertParcelUnparcel(hint);
@@ -77,6 +96,9 @@ public class AutofillInlineRequestHintTest {
         assertThat(outputAutofillHint.getAutofillValue()).isEqualTo(autofillValue);
         assertThat(outputAutofillHint.getInlineSuggestionsRequest())
                 .isEqualTo(inlineSuggestionsRequest);
+        // FillEventHistory.Event does not implement equals, compare strings instead.
+        assertThat(outputAutofillHint.getFillEventHistory().getEvents().getFirst().toString())
+                .isEqualTo(fillEventHistory.getEvents().getFirst().toString());
 
         assertThat(outputAutofillHint).isEqualTo(hint);
         assertThat(outputAutofillHint.hashCode()).isEqualTo(hint.hashCode());
