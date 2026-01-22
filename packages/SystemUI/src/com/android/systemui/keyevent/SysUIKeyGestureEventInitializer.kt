@@ -38,7 +38,6 @@ import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.screencapture.domain.interactor.ScreenCaptureKeyboardShortcutInteractor
 import com.android.systemui.shade.display.domain.interactor.ShadeExpansionTargetDisplayInteractor
 import com.android.systemui.statusbar.CommandQueue
-import com.android.window.flags.Flags.enableKeyGestureHandlerForSysui
 import com.android.wm.shell.shared.desktopmode.DesktopState
 import java.util.concurrent.Executor
 import javax.inject.Inject
@@ -67,9 +66,7 @@ constructor(
 
     private fun registerKeyGestureEventHandlers() {
         val supportedGestures = mutableListOf<Int>()
-        if (enableKeyGestureHandlerForSysui()) {
-            supportedGestures.add(KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL)
-        }
+        supportedGestures.add(KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL)
         if (enableQuickSettingsPanelShortcut()) {
             supportedGestures.add(KEY_GESTURE_TYPE_TOGGLE_QUICK_SETTINGS_PANEL)
         }
