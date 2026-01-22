@@ -168,5 +168,22 @@
     {
       "name": "SystemUITests_presubmit"
     }
+  ],
+  "ravenwood-postsubmit": [
+    {
+      "name": "SystemUiRavenTests",
+      "host": true,
+      "options": [
+        {
+          "include-annotation": "com.android.systemui.ravenwood.SysUiRavenwoodPresubmit"
+        },
+        {
+          "exclude-annotation": "androidx.test.filters.FlakyTest"
+        },
+        {
+          "exclude-annotation": "android.platform.test.annotations.FlakyTest"
+        }
+      ]
+    }
   ]
 }

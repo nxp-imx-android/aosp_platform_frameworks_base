@@ -18,11 +18,13 @@ package com.android.systemui
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.systemui.ravenwood.SysUiRavenwoodPresubmit
 import com.google.common.truth.Truth
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @SmallTest
+@SysUiRavenwoodPresubmit(neverDisable = true)
 @RunWith(AndroidJUnit4::class)
 class SysuiTestCaseSelfTest : SysuiTestCase() {
     private val contextBeforeSetup = context
