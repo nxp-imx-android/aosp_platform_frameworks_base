@@ -60,6 +60,7 @@ import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.UiObject2
 import com.android.launcher3.tapl.LauncherInstrumentation
 import com.android.launcher3.tapl.TestHelpers
+import com.android.settings.flags.Flags as SettingsFlags
 import com.android.window.flags.Flags
 import com.android.wm.shell.shared.desktopmode.DesktopState
 import java.time.Duration
@@ -152,14 +153,37 @@ class ConnectedDisplayCujSmokeTests {
         resetTopology(externalDisplayId)
 
         // Navigate to display topology settings in Settings app
-        DeviceHelpers.waitForObj(By.text(CONNECTED_DEVICES_TEXT), timeout = UIAUTOMATOR_TIMEOUT) {
-                "Can't find a connected device on setting"
-            }
-            .click()
-        DeviceHelpers.waitForObj(By.text(EXTERNAL_DISPLAY_TEXT), timeout = UIAUTOMATOR_TIMEOUT) {
-                "Can't find a external display on setting"
-            }
-            .click()
+        if (shouldShowTopLevelDeviceCategory()) {
+            DeviceHelpers.waitForObj(By.text(DEVICE_TEXT), timeout = UIAUTOMATOR_TIMEOUT) {
+                    "Can't find a device on setting"
+                }
+                .click()
+            DeviceHelpers.waitForObj(By.text(DISPLAY_TEXT), timeout = UIAUTOMATOR_TIMEOUT) {
+                    "Can't find a display on setting"
+                }
+                .click()
+
+            // The new external display section is a list of available external displays.
+            val externalDisplay = displayManager.getDisplay(externalDisplayId)
+            DeviceHelpers.waitForObj(By.text(externalDisplay.name), timeout = UIAUTOMATOR_TIMEOUT) {
+                    "Can't find an external display on setting"
+                }
+                .click()
+        } else {
+            DeviceHelpers.waitForObj(
+                    By.text(CONNECTED_DEVICES_TEXT),
+                    timeout = UIAUTOMATOR_TIMEOUT
+                ) {
+                    "Can't find a connected device on setting"
+                }
+                .click()
+            DeviceHelpers.waitForObj(
+                    By.text(EXTERNAL_DISPLAY_TEXT),
+                    timeout = UIAUTOMATOR_TIMEOUT) {
+                    "Can't find an external display on setting"
+                }
+                .click()
+        }
 
         // Modify the topology.
         val paneObject =
@@ -754,6 +778,12 @@ class ConnectedDisplayCujSmokeTests {
         return externalDisplayId
     }
 
+    private fun shouldShowTopLevelDeviceCategory(): Boolean {
+        val flagValue = SettingsFlags.showTopLevelDeviceCategory()
+        val showCategory = Utils.getSettingsBoolean(CONFIG_SHOW_TOP_LEVEL_DEVICE) ?: false
+        return flagValue && showCategory
+    }
+
     private companion object {
         const val TASKBAR_RES_ID = "taskbar_view"
         const val STATUS_BAR_CONTAINER_RES_ID = "status_bar_container"
@@ -767,6 +797,9 @@ class ConnectedDisplayCujSmokeTests {
         const val DISPLAY_TOPOLOGY_PANE_CONTENT_RES_ID = "display_topology_pane_content"
         const val EXTERNAL_DISPLAY_TEXT = "External displays"
         const val CONNECTED_DEVICES_TEXT = "Connected devices"
+        const val CONFIG_SHOW_TOP_LEVEL_DEVICE = "config_show_top_level_device_category"
+        const val DEVICE_TEXT = "Device"
+        const val DISPLAY_TEXT = "Display"
         const val SETTINGS_PACKAGE = "com.android.settings"
         const val SCROLL_RETRY_MAX = 5
 
