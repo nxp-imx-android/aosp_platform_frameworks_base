@@ -16,10 +16,15 @@
 
 package com.android.systemui.statusbar.quickactions.sharescreen.domain.interactor
 
+import android.content.Context
 import android.content.res.Resources
 import android.media.projection.StopReason
+import android.view.accessibility.AccessibilityEvent
+import android.view.accessibility.AccessibilityManager
+import android.widget.Toast
 import com.android.systemui.common.ui.data.repository.ConfigurationRepository
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.mediaprojection.data.model.MediaProjectionState
@@ -43,7 +48,19 @@ constructor(
     configurationRepository: ConfigurationRepository,
     @Background private val scope: CoroutineScope,
     private val mediaProjectionRepository: MediaProjectionRepository,
+    private val accessibilityManager: AccessibilityManager,
+    @Application private val context: Context,
 ) {
+    enum class SharingType {
+        APP,
+        TAB,
+        DISPLAY,
+    }
+
+    private data class SharingInfo(val type: SharingType, val label: String)
+
+    private var lastSharingInfo: SharingInfo? = null
+
     // The projection is active if the state is any subtype of MediaProjectionState.Projecting.
     private val isMediaProjecting: StateFlow<Boolean> =
         mediaProjectionRepository.mediaProjectionState
@@ -67,7 +84,46 @@ constructor(
                 initialValue = false,
             )
 
+    init {
+        scope.launch {
+            var wasProjecting = false
+            isMediaProjecting.collect { isProjecting ->
+                if (wasProjecting && !isProjecting) {
+                    announceStoppedSharing()
+                }
+                wasProjecting = isProjecting
+            }
+        }
+    }
+
     fun stopShare() {
         scope.launch { mediaProjectionRepository.stopProjecting(StopReason.STOP_PRIVACY_CHIP) }
+    }
+
+    fun assignSharingInfo(type: SharingType, label: String) {
+        lastSharingInfo = SharingInfo(type, label)
+    }
+
+    private fun announceStoppedSharing() {
+        val info = lastSharingInfo ?: return
+
+        if (accessibilityManager.isEnabled) {
+            val resId =
+                when (info.type) {
+                    SharingType.APP -> R.string.screen_share_a11y_stopped_sharing_app
+                    SharingType.TAB -> R.string.screen_share_a11y_stopped_sharing_tab
+                    SharingType.DISPLAY -> R.string.screen_share_a11y_stopped_sharing_display
+                }
+
+            accessibilityManager.sendAccessibilityEvent(
+                AccessibilityEvent(AccessibilityEvent.TYPE_NOTIFICATION_STATE_CHANGED).apply {
+                    packageName = context.packageName
+                    className = Toast::class.java.name
+                    text.add(resources.getString(resId, info.label))
+                }
+            )
+        }
+
+        lastSharingInfo = null
     }
 }
