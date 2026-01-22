@@ -21483,6 +21483,7 @@ package android.hardware.camera2.params {
     method public int getMaxSharedSurfaceCount();
     method public int getMirrorMode();
     method @FlaggedApi("com.android.internal.camera.flags.mirror_mode_shared_surfaces") public int getMirrorMode(@NonNull android.view.Surface);
+    method @FlaggedApi("com.android.internal.camera.flags.output_configuration_get_physical_camera_id") @Nullable public String getPhysicalCameraId();
     method public long getStreamUseCase();
     method @Nullable public android.view.Surface getSurface();
     method public int getSurfaceGroupId();

@@ -1923,9 +1923,8 @@ public final class OutputConfiguration implements Parcelable {
      * multi-camera, this function returns {@code null}.</p>
      *
      * @return The physical camera Id associated with this {@link OutputConfiguration}.
-     *
-     * @hide
      */
+    @FlaggedApi(Flags.FLAG_OUTPUT_CONFIGURATION_GET_PHYSICAL_CAMERA_ID)
     public @Nullable String getPhysicalCameraId() {
         return mPhysicalCameraId;
     }
