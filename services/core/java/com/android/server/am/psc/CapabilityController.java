@@ -39,6 +39,7 @@ import static com.android.server.am.psc.Constants.FOREGROUND_APP_ADJ;
 import static com.android.server.am.psc.OomAdjuster.ALL_CPU_TIME_CAPABILITIES;
 import static com.android.server.am.psc.OomAdjuster.CPU_TIME_REASON_ALLOW_LIST;
 import static com.android.server.am.psc.OomAdjuster.CPU_TIME_REASON_OTHER;
+import static com.android.server.am.psc.OomAdjusterImpl.Connection.CPU_TIME_TRANSMISSION_NONE;
 
 import android.annotation.NonNull;
 import android.app.ActivityManager.ProcessCapability;
@@ -265,7 +266,7 @@ class CapabilityController {
      */
     static @ProcessCapability int evaluateFilter(@NonNull ServiceBindingEdge edge) {
         // TODO: b/476905700 - Add more policies.
-        return evaluateBfslPolicy(edge) | evaluateAudioPolicy(edge);
+        return evaluateBfslPolicy(edge) | evaluateAudioPolicy(edge) | evaluateCpuTimePolicy(edge);
     }
 
     /** Evaluates whether a {@link ServiceBindingEdge} propagates BFSL. */
@@ -278,6 +279,14 @@ class CapabilityController {
     private static @ProcessCapability int evaluateAudioPolicy(@NonNull ServiceBindingEdge unused) {
         // Always propagate audio control.
         return PROCESS_CAPABILITY_FOREGROUND_AUDIO_CONTROL;
+    }
+
+    /** Evaluates whether a {@link ServiceBindingEdge} propagates CPU time capabilities. */
+    private static @ProcessCapability int evaluateCpuTimePolicy(@NonNull ServiceBindingEdge edge) {
+        // LINT.IfChange(getCpuTimeFilterFromTransmissionType)
+        return edge.getCpuTimeTransmissionType() == CPU_TIME_TRANSMISSION_NONE
+                ? PROCESS_CAPABILITY_NONE : ALL_CPU_TIME_CAPABILITIES;
+        // LINT.ThenChange(OomAdjuster.java:getCpuCapabilitiesFromTransmissionType)
     }
 
     /** Performs a partial update from a list of edges. */

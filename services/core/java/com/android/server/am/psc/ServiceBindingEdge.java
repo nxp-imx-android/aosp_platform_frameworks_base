@@ -21,6 +21,8 @@ import android.app.ActivityManager.ProcessCapability;
 import android.content.pm.ServiceInfo;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 
+import com.android.server.am.psc.OomAdjusterImpl.Connection.CpuTimeTransmissionType;
+
 import java.util.Objects;
 
 /**
@@ -64,6 +66,11 @@ class ServiceBindingEdge extends GraphEdge {
 
         // The client must be non-null.
         mSource = client.getGraphNode();
+    }
+
+    @CpuTimeTransmissionType
+    int getCpuTimeTransmissionType() {
+        return mConn.cpuTimeTransmissionType();
     }
 
     @Override

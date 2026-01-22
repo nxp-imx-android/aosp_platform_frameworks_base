@@ -2238,11 +2238,8 @@ public abstract class OomAdjuster {
      */
     protected static int getCpuCapabilitiesFromClient(ProcessRecordInternal app,
             ProcessRecordInternal client, OomAdjusterImpl.Connection conn) {
+        // LINT.IfChange(getCpuCapabilitiesFromTransmissionType)
         final int clientCpuCaps = client.getCurCapability() & ALL_CPU_TIME_CAPABILITIES;
-        final @CpuTimeReasons int clientCpuReasons = client.getCurCpuTimeReasons();
-        final @ImplicitCpuTimeReasons int clientImplicitCpuReasons =
-                client.getCurImplicitCpuTimeReasons();
-
         final @OomAdjusterImpl.Connection.CpuTimeTransmissionType int transmissionType =
                 (conn != null) ? conn.cpuTimeTransmissionType() : CPU_TIME_TRANSMISSION_NONE;
 
@@ -2250,7 +2247,11 @@ public abstract class OomAdjuster {
             // The binding does not transmit CPU_TIME capabilities in any way.
             return 0;
         }
+        // LINT.ThenChange(CapabilityController.java:getCpuTimeFilterFromTransmissionType)
 
+        final @CpuTimeReasons int clientCpuReasons = client.getCurCpuTimeReasons();
+        final @ImplicitCpuTimeReasons int clientImplicitCpuReasons =
+                client.getCurImplicitCpuTimeReasons();
         @CpuTimeReasons int cpuReasons = CPU_TIME_REASON_NONE;
         @ImplicitCpuTimeReasons int implicitCpuReasons = IMPLICIT_CPU_TIME_REASON_NONE;
 
