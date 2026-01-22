@@ -2622,17 +2622,16 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
                 || (isVisible() && mActivityRecord != null && mActivityRecord.isVisible());
     }
 
-    void openInputChannel(@NonNull InputChannel outInputChannel) {
+    InputChannel openInputChannel() {
         if (mInputChannelToken != null) {
             throw new IllegalStateException("Window already has an input channel token.");
         }
         String name = getName();
-        InputChannel channel = mWmService.mInputManager.createInputChannel(name);
+        final InputChannel channel = mWmService.mInputManager.createInputChannel(name);
         mInputChannelToken = channel.getToken();
         mInputWindowHandle.setToken(mInputChannelToken);
         mWmService.mInputToWindowMap.put(mInputChannelToken, this);
-        channel.copyTo(outInputChannel);
-        channel.dispose();
+        return channel;
     }
 
     /**
