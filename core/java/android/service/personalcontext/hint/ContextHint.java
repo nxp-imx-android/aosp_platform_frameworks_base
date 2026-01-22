@@ -33,6 +33,7 @@ import com.android.internal.annotations.VisibleForTesting;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -135,11 +136,13 @@ public abstract class ContextHint {
     private static final String KEY_HINT_ID = "key_hint_id";
     private static final String KEY_HINT_TOKENS = "key_hint_tokens";
     private static final String KEY_HINT_DATA = "key_hint_data";
+    private static final String KEY_CREATION_TIME = "key_creation_time";
     private static final String KEY_HINT_TYPE_NAME = "key_hint_type_name";
 
     /** Unique identifier for this hint. */
     private final UUID mId;
     private final Set<Token> mTokens;
+    private final Instant mCreationTime;
 
     /**
      * Internal constructor for generating a new hint. This should be called by subclasses in their
@@ -150,6 +153,7 @@ public abstract class ContextHint {
     ContextHint(ConstructorParams params) {
         mId = params.mId;
         mTokens = Collections.unmodifiableSet(new HashSet<>(params.mTokens));
+        mCreationTime = params.mCreationTime;
     }
 
     /**
@@ -180,6 +184,12 @@ public abstract class ContextHint {
         return mTokens;
     }
 
+    /** Gets the time this hint was created. */
+    @NonNull
+    public final Instant getCreationTime() {
+        return mCreationTime;
+    }
+
     @NonNull
     abstract Bundle toBundleImpl();
 
@@ -208,6 +218,7 @@ public abstract class ContextHint {
         b.putString(KEY_HINT_ID, mId.toString());
         b.putParcelableArrayList(KEY_HINT_TOKENS, new ArrayList<>(mTokens));
         b.putBundle(KEY_HINT_DATA, toBundleImpl());
+        b.putLong(KEY_CREATION_TIME, mCreationTime.toEpochMilli());
         b.putString(KEY_HINT_TYPE_NAME, getHintTypeName());
         return b;
     }
@@ -237,7 +248,8 @@ public abstract class ContextHint {
         final Bundle data = bundle.getBundle(KEY_HINT_DATA);
         final ConstructorParams constructorParams = new ConstructorParams(
                 UUID.fromString(bundle.getString(KEY_HINT_ID)),
-                bundle.getParcelableArrayList(KEY_HINT_TOKENS, Token.class));
+                bundle.getParcelableArrayList(KEY_HINT_TOKENS, Token.class),
+                Instant.ofEpochMilli(bundle.getLong(KEY_CREATION_TIME)));
 
         try {
             return switch (bundle.getInt(KEY_HINT_TYPE, HINT_TYPE_ERROR)) {
@@ -281,14 +293,16 @@ public abstract class ContextHint {
     static class ConstructorParams {
         private final UUID mId;
         private final Collection<Token> mTokens;
+        private final Instant mCreationTime;
 
         private ConstructorParams(Collection<Token> tokens) {
-            this(UUID.randomUUID(), tokens);
+            this(UUID.randomUUID(), tokens, Instant.now());
         }
 
-        private ConstructorParams(UUID id, Collection<Token> tokens) {
+        private ConstructorParams(UUID id, Collection<Token> tokens, Instant creationTime) {
             mId = id;
             mTokens = tokens;
+            mCreationTime = creationTime;
         }
 
         static final class Builder {
