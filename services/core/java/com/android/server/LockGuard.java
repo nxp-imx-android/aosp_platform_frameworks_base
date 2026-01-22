@@ -68,6 +68,7 @@ public class LockGuard {
      * Well-known locks ordered by fixed index. Locks with a specific index
      * should never be acquired while holding a lock of a lower index.
      */
+    // LINT.IfChange
     public static final int INDEX_APP_OPS = 0;
     public static final int INDEX_POWER = 1;
     public static final int INDEX_USER = 2;
@@ -77,6 +78,7 @@ public class LockGuard {
     public static final int INDEX_PROC = 6;
     public static final int INDEX_ACTIVITY = 7;
     public static final int INDEX_DPMS = 8;
+    // LINT.ThenChange(/frameworks/libs/modules-utils/java/com/android/internal/annotations/SystemServerLock.java)
 
     private static Object[] sKnownFixed = new Object[INDEX_DPMS + 1];
 
