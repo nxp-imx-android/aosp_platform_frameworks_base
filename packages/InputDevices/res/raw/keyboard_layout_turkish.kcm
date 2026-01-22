@@ -155,6 +155,7 @@ key T {
     base:                               't'
     shift, capslock:                    'T'
     shift+capslock:                     't'
+    ralt:                               '\u20ba'
 }
 
 key Y {
