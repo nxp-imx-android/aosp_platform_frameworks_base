@@ -453,19 +453,19 @@ public class StatusBarKeyguardViewManagerTest extends SysuiTestCase {
         clearInvocations(mKeyguardStateController);
         clearInvocations(mKeyguardUpdateMonitor);
 
-        mStatusBarKeyguardViewManager.setOccluded(false /* occluded */, false /* animated */);
+        mStatusBarKeyguardViewManager.setOccluded(false /* occluded */);
         verify(mKeyguardStateController).notifyKeyguardState(true, false);
 
         clearInvocations(mKeyguardUpdateMonitor);
         clearInvocations(mKeyguardStateController);
 
-        mStatusBarKeyguardViewManager.setOccluded(true /* occluded */, false /* animated */);
+        mStatusBarKeyguardViewManager.setOccluded(true /* occluded */);
         verify(mKeyguardStateController).notifyKeyguardState(true, true);
 
         clearInvocations(mKeyguardUpdateMonitor);
         clearInvocations(mKeyguardStateController);
 
-        mStatusBarKeyguardViewManager.setOccluded(false /* occluded */, false /* animated */);
+        mStatusBarKeyguardViewManager.setOccluded(false /* occluded */);
         verify(mKeyguardStateController).notifyKeyguardState(true, false);
     }
 
@@ -473,7 +473,7 @@ public class StatusBarKeyguardViewManagerTest extends SysuiTestCase {
     public void setOccluded_isInLaunchTransition_onKeyguardOccludedChangedCalled() {
         mStatusBarKeyguardViewManager.show(null);
 
-        mStatusBarKeyguardViewManager.setOccluded(true /* occluded */, false /* animated */);
+        mStatusBarKeyguardViewManager.setOccluded(true /* occluded */);
         verify(mKeyguardStateController).notifyKeyguardState(true, true);
     }
 
@@ -482,7 +482,7 @@ public class StatusBarKeyguardViewManagerTest extends SysuiTestCase {
         when(mCentralSurfaces.isLaunchingActivityOverLockscreen()).thenReturn(true);
         mStatusBarKeyguardViewManager.show(null);
 
-        mStatusBarKeyguardViewManager.setOccluded(true /* occluded */, false /* animated */);
+        mStatusBarKeyguardViewManager.setOccluded(true /* occluded */);
         verify(mKeyguardStateController).notifyKeyguardState(true, true);
     }
 

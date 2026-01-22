@@ -82,10 +82,9 @@ public interface KeyguardViewController {
     /**
      * Sets whether the keyguard is occluded by another window.
      *
-     * @param occluded
-     * @param animate
+     * @param occluded the new occluded state.
      */
-    void setOccluded(boolean occluded, boolean animate);
+    void setOccluded(boolean occluded);
 
     /**
      * Dismisses the keyguard by going to the next screen or making it gone.

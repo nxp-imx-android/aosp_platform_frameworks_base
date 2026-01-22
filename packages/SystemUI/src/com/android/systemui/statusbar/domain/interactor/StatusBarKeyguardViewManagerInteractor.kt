@@ -32,15 +32,9 @@ import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
-
-/**
- * Whether to set the status bar keyguard view occluded or not, and whether to animate that change.
- */
-data class OccludedState(val occluded: Boolean, val animate: Boolean = false)
 
 /** Handles logic around calls to [StatusBarKeyguardViewManager] in legacy code. */
 @Deprecated("Will be removed once all of SBKVM's responsibilies are refactored.")
@@ -57,7 +51,7 @@ constructor(
     sceneInteractor: Lazy<SceneInteractor>,
 ) {
     /** Occlusion state to apply whenever a keyguard transition is STARTED, if any. */
-    private val occlusionStateFromStartedStep: Flow<OccludedState> =
+    private val occlusionStateFromStartedStep: Flow<Boolean> =
         keyguardTransitionInteractor.startedKeyguardTransitionStep
             .map { startedStep ->
                 val wakefulness = powerInteractor.detailedWakefulness.value
@@ -79,7 +73,7 @@ constructor(
                     // Set occluded upon STARTED, *unless* we're transitioning from the power
                     // button, in which case we're going to play an animation over the lockscreen UI
                     // and need to remain unoccluded until the transition finishes.
-                    return@map OccludedState(occluded = true, animate = false)
+                    return@map true
                 }
 
                 if (
@@ -90,7 +84,7 @@ constructor(
                     // since we need the views visible to animate them back down. This is a special
                     // case due to the way unocclusion remote animations are run. We can remove this
                     // once the unocclude animation uses the return animation framework.
-                    return@map OccludedState(occluded = false, animate = false)
+                    return@map false
                 }
 
                 // Otherwise, wait for the transition to FINISH to decide.
@@ -115,17 +109,12 @@ constructor(
                 // and we're in any state other than GONE. This is necessary, for example, when we
                 // transition from OCCLUDED to a bouncer state. Otherwise, we should not be
                 // occluded.
-                val occluded = isOnOccluded || (showWhenLockedOnTop && !isOnGone)
-                OccludedState(occluded = occluded, animate = false)
+                return@map isOnOccluded || (showWhenLockedOnTop && !isOnGone)
             }
 
     /** Occlusion state to apply to SBKVM's setOccluded call. */
     val keyguardViewOcclusionState =
-        merge(occlusionStateFromStartedStep, occlusionStateFromFinishedStep)
-            .distinctUntilChangedBy {
-                // Don't switch 'animate' values mid-transition.
-                it.occluded
-            }
+        merge(occlusionStateFromStartedStep, occlusionStateFromFinishedStep).distinctUntilChanged()
 
     /** Visibility state to apply to SBKVM via show() and hide(). */
     val keyguardViewVisibility =

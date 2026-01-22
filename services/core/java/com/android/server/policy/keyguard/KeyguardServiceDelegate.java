@@ -300,7 +300,7 @@ public class KeyguardServiceDelegate {
                     mKeyguardService.onBootCompleted();
                 }
                 if (mKeyguardState.occluded) {
-                    mKeyguardService.setOccluded(mKeyguardState.occluded, false /* animate */);
+                    mKeyguardService.setOccluded(mKeyguardState.occluded);
                 }
                 if (!mKeyguardState.enabled) {
                     mKeyguardService.setKeyguardEnabled(mKeyguardState.enabled);
@@ -379,7 +379,7 @@ public class KeyguardServiceDelegate {
                     0 /* transit */,
                     "setOccluded");
             try {
-                mKeyguardService.setOccluded(isOccluded, false /* animate */);
+                mKeyguardService.setOccluded(isOccluded);
             } catch (RemoteException e) {
                 Slog.w(TAG, "Remote Exception", e);
             }
