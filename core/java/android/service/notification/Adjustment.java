@@ -15,12 +15,17 @@
  */
 package android.service.notification;
 
+import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.StringDef;
 import android.annotation.SystemApi;
+import android.annotation.TestApi;
+import android.app.Flags;
 import android.app.Notification;
+import android.app.NotificationRule;
+import android.app.modes.ContextualMode;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Parcel;
@@ -50,6 +55,8 @@ public final class Adjustment implements Parcelable {
     private final Bundle mSignals;
     private final int mUser;
     @Nullable private String mIssuer;
+    private int mRuleId;
+    private int mRuleOrder;
 
     /** @hide */
     @StringDef (prefix = { "KEY_" }, value = {
@@ -232,6 +239,50 @@ public final class Adjustment implements Parcelable {
     public static final String KEY_SUMMARIZATION = "key_summarization";
 
     /**
+     * Data type: A List of Integers, where each string is a {@link NotificationRule#getId()} of a
+     * rule that this notification currently matches.
+     */
+    @FlaggedApi(Flags.FLAG_NM_CONTEXTUAL_DISPLAY_LAUNCH)
+    public static final String KEY_NOTIFICATION_RULES = "notification_rules";
+
+    /**
+     * Data type: Uri that points to the sound/vibration that should be played for this notification
+     * if this adjustment arrives before the notification has alerted.
+     * @hide
+     */
+    @TestApi
+    @FlaggedApi(Flags.FLAG_NM_CONTEXTUAL_DISPLAY_LAUNCH)
+    public static final String KEY_SOUND = "sound";
+
+    /**
+     * Data type: A List of Strings, where each string is a {@link ContextualMode#getId()} of a
+     * mode this notification should be allowed to bypass.
+     * @hide
+     */
+    @TestApi
+    @FlaggedApi(Flags.FLAG_NM_CONTEXTUAL_DISPLAY_LAUNCH)
+    public static final String KEY_MODE_BREAKTHROUGHS = "mode_breakthrough";
+
+    /**
+     * Data type: Boolean, true if the notification should be highlighted, false otherwise.
+     * @hide
+     */
+    @TestApi
+    @FlaggedApi(Flags.FLAG_NM_CONTEXTUAL_DISPLAY_LAUNCH)
+    public static final String KEY_HIGHLIGHT = "highlight";
+
+    /**
+     * Data type: a {@link android.annotation.ColorInt integer} that represents the notification
+     * light color that should flash if this adjustment arrives before the notification has alerted.
+     *
+     * @hide
+     */
+    @TestApi
+    @FlaggedApi(Flags.FLAG_NM_CONTEXTUAL_DISPLAY_LAUNCH)
+    public static final String KEY_LIGHT = "light";
+
+
+    /**
      * Create a notification adjustment.
      *
      * @param pkg The package of the notification.
@@ -303,6 +354,8 @@ public final class Adjustment implements Parcelable {
         mSignals = in.readBundle();
         mUser = in.readInt();
         mIssuer = in.readString();
+        mRuleOrder = in.readInt();
+        mRuleId = in.readInt();
     }
 
     public static final @android.annotation.NonNull Creator<Adjustment> CREATOR = new Creator<Adjustment>() {
@@ -371,6 +424,8 @@ public final class Adjustment implements Parcelable {
         dest.writeBundle(mSignals);
         dest.writeInt(mUser);
         dest.writeString(mIssuer);
+        dest.writeInt(mRuleOrder);
+        dest.writeInt(mRuleId);
     }
 
     @NonNull
@@ -378,6 +433,9 @@ public final class Adjustment implements Parcelable {
     public String toString() {
         return "Adjustment{"
                 + "mSignals=" + mSignals
+                + ", mUser=" + mUser
+                + ", mRuleId=" + mRuleId
+                + ", mRuleOrder=" + mRuleOrder
                 + '}';
     }
 
@@ -389,5 +447,46 @@ public final class Adjustment implements Parcelable {
     /** @hide */
     public @Nullable String getIssuer() {
         return mIssuer;
+    }
+
+    /**
+     * @hide
+     */
+    @TestApi
+    @FlaggedApi(Flags.FLAG_NM_CONTEXTUAL_DISPLAY_LAUNCH)
+    public void setOriginatingRuleId(int ruleId) {
+        mRuleId = ruleId;
+    }
+
+    /**
+     * When {@link #KEY_NOTIFICATION_RULES} is split into behavioral Adjustments, carry over the
+     * rule id that Adjustment originated from.
+     * @hide
+     */
+    @TestApi
+    @FlaggedApi(Flags.FLAG_NM_CONTEXTUAL_DISPLAY_LAUNCH)
+    public int getOriginatingRuleId() {
+        return mRuleId;
+    }
+
+    /**
+     * @hide
+     */
+    @TestApi
+    @FlaggedApi(Flags.FLAG_NM_CONTEXTUAL_DISPLAY_LAUNCH)
+    public void setOriginatingRuleOrder(int ruleOrder) {
+        mRuleOrder = ruleOrder;
+    }
+
+    /**
+     * When {@link #KEY_NOTIFICATION_RULES} is split into behavioral Adjustments, carry over the
+     * index of the rule id that Adjustment originated from, so rules can be applied in priority
+     * order.
+     * @hide
+     */
+    @TestApi
+    @FlaggedApi(Flags.FLAG_NM_CONTEXTUAL_DISPLAY_LAUNCH)
+    public int getOriginatingRuleOrder() {
+        return mRuleOrder;
     }
 }
