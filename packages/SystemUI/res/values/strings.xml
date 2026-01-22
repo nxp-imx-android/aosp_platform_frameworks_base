@@ -4795,6 +4795,8 @@
     <string name="av_camera_blur_full">Full</string>
     <!-- Title for portrait relight button [CHAR LIMIT=NONE] -->
     <string name="av_camera_improve_lighting">Improve lighting</string>
+    <!-- Title for portrait retouch button [CHAR LIMIT=NONE] -->
+    <string name="av_camera_face_retouch">Portrait touch-up</string>
     <!-- Title for camera framing button [CHAR LIMIT=NONE] -->
     <string name="av_camera_framing">Camera Framing</string>
     <!-- Title for studio mic button [CHAR LIMIT=NONE] -->

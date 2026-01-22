@@ -34,7 +34,7 @@ constructor(private val desktopEffectInteractor: DesktopEffectInteractor) :
                 ButtonUiState(
                     isEnabled = it.portraitRelight,
                     mainTitle = com.android.systemui.res.R.string.av_camera_improve_lighting,
-                    image = com.android.systemui.res.R.drawable.gs_portrait_lighting,
+                    image = com.android.systemui.res.R.drawable.ic_lightbulb,
                 )
             }
             .hydratedStateOf(initialValue = ButtonUiState())

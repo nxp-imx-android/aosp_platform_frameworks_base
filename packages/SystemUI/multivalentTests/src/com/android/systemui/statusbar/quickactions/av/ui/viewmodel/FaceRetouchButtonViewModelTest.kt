@@ -57,7 +57,7 @@ class FaceRetouchButtonViewModelTest : SysuiTestCase() {
     fun titleAndIcon() =
         kosmos.runTest {
             assertThat(underTest.state.mainTitle)
-                .isEqualTo(com.android.systemui.res.R.string.av_camera_portrait_touch_up)
+                .isEqualTo(com.android.systemui.res.R.string.av_camera_face_retouch)
             assertThat(underTest.state.image)
                 .isEqualTo(com.android.systemui.res.R.drawable.gs_face_retouch)
         }
