@@ -18,6 +18,7 @@ package android.service.ondeviceintelligence;
 
 import static android.app.ondeviceintelligence.OnDeviceIntelligenceManager.AUGMENT_REQUEST_CONTENT_BUNDLE_KEY;
 import static android.app.ondeviceintelligence.flags.Flags.FLAG_ON_DEVICE_INTELLIGENCE_25Q4;
+import static android.app.ondeviceintelligence.flags.Flags.FLAG_ON_DEVICE_INTELLIGENCE_26Q2;
 
 import static com.android.internal.util.function.pooled.PooledLambda.obtainMessage;
 
@@ -46,6 +47,12 @@ import android.app.ondeviceintelligence.ProcessingCallback;
 import android.app.ondeviceintelligence.ProcessingSignal;
 import android.app.ondeviceintelligence.StreamingProcessingCallback;
 import android.app.ondeviceintelligence.TokenInfo;
+import android.app.ondeviceintelligence.embedding.EmbeddingRequest;
+import android.app.ondeviceintelligence.embedding.EmbeddingResponse;
+import android.app.ondeviceintelligence.embedding.IEmbeddingCallback;
+import android.app.ondeviceintelligence.imagedescription.ImageDescriptionRequest;
+import android.app.ondeviceintelligence.imagedescription.ImageDescriptionResponse;
+import android.app.ondeviceintelligence.imagedescription.IImageDescriptionCallback;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -336,6 +343,76 @@ public abstract class OnDeviceSandboxedInferenceService extends Service {
                         wrapLifecycleListener(listener));
                     mHandler.executeOrSendMessage(msg);
                 }
+
+                @Override
+                public void generateEmbeddings(
+                        int callerUid,
+                        Feature feature,
+                        EmbeddingRequest request,
+                        AndroidFuture cancellationSignalFuture,
+                        IEmbeddingCallback callback) {
+                    Objects.requireNonNull(feature);
+                    Objects.requireNonNull(request);
+                    Objects.requireNonNull(callback);
+                    ICancellationSignal transport = null;
+                    if (cancellationSignalFuture != null) {
+                        transport =
+                                new ICancellationSignal.Stub() {
+                                    @Override
+                                    public void cancel() {
+                                        // Handled by CancellationSignal.fromTransport
+                                    }
+                                };
+                        cancellationSignalFuture.complete(transport);
+                    }
+                    final ICancellationSignal finalTransport = transport;
+                    mHandler.executeOrSendMessage(
+                            obtainMessage(
+                                    OnDeviceSandboxedInferenceService::onGenerateEmbeddings,
+                                    OnDeviceSandboxedInferenceService.this,
+                                    callerUid,
+                                    feature,
+                                    request,
+                                    cancellationSignalFuture != null
+                                            ? CancellationSignal.fromTransport(finalTransport)
+                                            : null,
+                                    wrapEmbeddingCallback(callback)));
+                }
+
+                @Override
+                public void generateImageDescription(
+                        int callerUid,
+                        Feature feature,
+                        ImageDescriptionRequest request,
+                        AndroidFuture cancellationSignalFuture,
+                        IImageDescriptionCallback callback) {
+                    Objects.requireNonNull(feature);
+                    Objects.requireNonNull(request);
+                    Objects.requireNonNull(callback);
+                    ICancellationSignal transport = null;
+                    if (cancellationSignalFuture != null) {
+                        transport =
+                                new ICancellationSignal.Stub() {
+                                    @Override
+                                    public void cancel() {
+                                        // Handled by CancellationSignal.fromTransport
+                                    }
+                                };
+                        cancellationSignalFuture.complete(transport);
+                    }
+                    final ICancellationSignal finalTransport = transport;
+                    mHandler.executeOrSendMessage(
+                            obtainMessage(
+                                    OnDeviceSandboxedInferenceService::onGenerateImageDescription,
+                                    OnDeviceSandboxedInferenceService.this,
+                                    callerUid,
+                                    feature,
+                                    request,
+                                    cancellationSignalFuture != null
+                                            ? CancellationSignal.fromTransport(finalTransport)
+                                            : null,
+                                    wrapImageDescriptionCallback(callback)));
+                }
             };
         }
         Slog.w(TAG, "Incorrect service interface, returning null.");
@@ -446,6 +523,112 @@ public abstract class OnDeviceSandboxedInferenceService extends Service {
             @NonNull LifecycleListener listener) {
     }
 
+    /**
+     * Invoked when a caller provides a request to generate embeddings for a particular feature.
+     * The expectation from the implementation is to process the {@link EmbeddingRequest} and
+     * provide the result via the provided {@link OutcomeReceiver}.
+     *
+     * @param callerUid          UID of the caller that initiated this call chain.
+     * @param feature            The feature associated with the request.
+     * @param request            The embedding request.
+     * @param cancellationSignal Cancellation Signal to receive cancellation events from the client.
+     * @param callback           The callback to populate with the {@link EmbeddingResponse} or
+     *                           an {@link OnDeviceIntelligenceException} on failure.
+     */
+    @FlaggedApi(FLAG_ON_DEVICE_INTELLIGENCE_26Q2)
+    public void onGenerateEmbeddings(
+            int callerUid,
+            @NonNull Feature feature,
+            @NonNull EmbeddingRequest request,
+            @Nullable CancellationSignal cancellationSignal,
+            @NonNull OutcomeReceiver<EmbeddingResponse, OnDeviceIntelligenceException> callback) {
+        // The default implementation is to return an error, as the remote service can choose to not
+        // implement this method or the device is still containing an old version of the APK.
+        callback.onError(new OnDeviceIntelligenceException(
+                OnDeviceIntelligenceException.PROCESSING_ERROR_SERVICE_UNAVAILABLE,
+                "onGenerateEmbeddings is not implemented."));
+    }
+
+    /**
+     * Invoked when a caller provides a request to generate an image description for a particular
+     * feature. The expectation from the implementation is to process the
+     * {@link ImageDescriptionRequest} and provide the result via the provided
+     * {@link OutcomeReceiver}.
+     *
+     * @param callerUid          UID of the caller that initiated this call chain.
+     * @param feature            The feature associated with the request.
+     * @param request            The image description request.
+     * @param cancellationSignal Cancellation Signal to receive cancellation events from the client.
+     * @param callback           The callback to populate with the {@link ImageDescriptionResponse}
+     *                           or an {@link OnDeviceIntelligenceException} on failure.
+     */
+    @FlaggedApi(FLAG_ON_DEVICE_INTELLIGENCE_26Q2)
+    public void onGenerateImageDescription(
+            int callerUid,
+            @NonNull Feature feature,
+            @NonNull ImageDescriptionRequest request,
+            @Nullable CancellationSignal cancellationSignal,
+            @NonNull
+                    OutcomeReceiver<ImageDescriptionResponse, OnDeviceIntelligenceException>
+                            callback) {
+        // The default implementation is to return an error, as the remote service can choose to not
+        // implement this method or the device is still containing an old version of the APK.
+        callback.onError(new OnDeviceIntelligenceException(
+                OnDeviceIntelligenceException.PROCESSING_ERROR_SERVICE_UNAVAILABLE,
+                "onGenerateImageDescription is not implemented."));
+    }
+
+    private OutcomeReceiver<EmbeddingResponse, OnDeviceIntelligenceException> wrapEmbeddingCallback(
+            IEmbeddingCallback callback) {
+        return new OutcomeReceiver<>() {
+            @Override
+            public void onResult(EmbeddingResponse result) {
+                try {
+                    callback.onSuccess(result);
+                } catch (RemoteException e) {
+                    Slog.e(TAG, "Error sending result: " + e);
+                }
+            }
+
+            @Override
+            public void onError(OnDeviceIntelligenceException exception) {
+                try {
+                    callback.onFailure(
+                            exception.getErrorCode(),
+                            exception.getMessage(),
+                            exception.getErrorParams());
+                } catch (RemoteException e) {
+                    Slog.e(TAG, "Error sending failure: " + e);
+                }
+            }
+        };
+    }
+
+    private OutcomeReceiver<ImageDescriptionResponse, OnDeviceIntelligenceException>
+            wrapImageDescriptionCallback(IImageDescriptionCallback callback) {
+        return new OutcomeReceiver<>() {
+            @Override
+            public void onResult(ImageDescriptionResponse result) {
+                try {
+                    callback.onSuccess(result);
+                } catch (RemoteException e) {
+                    Slog.e(TAG, "Error sending result: " + e);
+                }
+            }
+
+            @Override
+            public void onError(OnDeviceIntelligenceException exception) {
+                try {
+                    callback.onFailure(
+                            exception.getErrorCode(),
+                            exception.getMessage(),
+                            exception.getErrorParams());
+                } catch (RemoteException e) {
+                    Slog.e(TAG, "Error sending failure: " + e);
+                }
+            }
+        };
+    }
     /**
      * Overrides {@link Context#openFileInput} to read files with the given file names under the
      * internal app storage of the {@link OnDeviceIntelligenceService}, i.e., only files stored in
