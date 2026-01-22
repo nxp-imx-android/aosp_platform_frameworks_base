@@ -18,7 +18,6 @@ package android.app.contentrestriction;
 
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
-import android.annotation.SystemApi;
 import android.annotation.SystemService;
 import android.app.contentrestriction.flags.Flags;
 import android.content.Context;
@@ -28,20 +27,17 @@ import java.util.function.Consumer;
 
 /**
  * Service for handling content restrictions.
- *
- * @hide
  */
 @SystemService(Context.CONTENT_RESTRICTION_SERVICE)
-@SystemApi
 @FlaggedApi(Flags.FLAG_CONTENT_RESTRICTION_API)
 public class ContentRestrictionManager {
     private final Context mContext;
     private final IContentRestrictionManager mService;
 
-    /**
-     * @hide
-     */
-    public ContentRestrictionManager(Context context, IContentRestrictionManager service) {
+    /** @hide */
+    public ContentRestrictionManager(
+            @NonNull Context context,
+            @NonNull IContentRestrictionManager service) {
         mContext = context;
         mService = service;
     }
@@ -58,11 +54,9 @@ public class ContentRestrictionManager {
      *
      * @param content the content to be classified
      * @param callback the callback for whether the content is allowed
-     *
-     * @hide
      */
     @FlaggedApi(Flags.FLAG_CONTENT_RESTRICTION_API)
-    public void isContentAllowed(Content content, @NonNull Consumer<Boolean> callback) {
+    public void isContentAllowed(@NonNull Content content, @NonNull Consumer<Boolean> callback) {
         if (!isContentRestrictionEnabled()) {
             callback.accept(true);
             return;
@@ -83,8 +77,6 @@ public class ContentRestrictionManager {
 
     /**
      * Returns whether content restriction is currently enabled for the user.
-     *
-     * @hide
      */
     @FlaggedApi(Flags.FLAG_CONTENT_RESTRICTION_API)
     public boolean isContentRestrictionEnabled() {

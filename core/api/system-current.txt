@@ -2321,13 +2321,6 @@ package android.app.compat {
 
 }
 
-package android.app.contentrestriction {
-
-  @FlaggedApi("android.app.contentrestriction.flags.content_restriction_api") public class ContentRestrictionManager {
-  }
-
-}
-
 package android.app.contentsafety {
 
   @FlaggedApi("android.app.contentsafety.flags.enable_contentsafety") public final class ContentSafetyManager {

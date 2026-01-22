@@ -65,8 +65,6 @@ import java.util.function.Consumer;
 
 /**
  * System service for handling content restrictions.
- *
- * @hide
  */
 public class ContentRestrictionService extends IContentRestrictionManager.Stub {
 
