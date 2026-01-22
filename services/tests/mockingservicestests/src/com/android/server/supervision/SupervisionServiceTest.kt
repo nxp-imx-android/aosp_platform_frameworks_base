@@ -18,6 +18,7 @@ package com.android.server.supervision
 
 import android.Manifest.permission.BYPASS_ROLE_QUALIFICATION
 import android.Manifest.permission.MANAGE_SUPERVISION
+import android.Manifest.permission.MANAGE_ROLE_HOLDERS
 import android.app.Activity
 import android.app.KeyguardManager
 import android.app.Notification
@@ -686,67 +687,34 @@ class SupervisionServiceTest {
     }
 
     @Test
-    fun shouldAllowBypassingSupervisionRoleQualification_returnsTrue() {
-        assertThat(service.isSupervisionEnabledForUser(USER_ID)).isFalse()
-        assertThat(service.shouldAllowBypassingSupervisionRoleQualification()).isTrue()
-
-        addDefaultAndTestUsers()
-        assertThat(service.shouldAllowBypassingSupervisionRoleQualification()).isTrue()
+    fun shouldAllowBypassingSupervisionRoleQualification_noPermission_throwsException() {
+        injector.setCallingUid(1234)
+        context.permissions[MANAGE_ROLE_HOLDERS] = PERMISSION_DENIED
+        assertFailsWith<SecurityException> {
+            service.shouldAllowBypassingSupervisionRoleQualification()
+        }
     }
 
     @Test
-    fun shouldAllowBypassingSupervisionRoleQualification_returnsFalse() {
-        setSupervisionEnabledForUser(USER_ID, false)
-        assertThat(service.isSupervisionEnabledForUser(USER_ID)).isFalse()
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_SUPERVISION_MANAGER_POLICY_APIS)
+    fun setShouldAllowBypassingSupervisionRoleQualification_succeeds() {
+        context.permissions[MANAGE_ROLE_HOLDERS] = PERMISSION_GRANTED
+
+        service.setShouldAllowBypassingSupervisionRoleQualification(true)
         assertThat(service.shouldAllowBypassingSupervisionRoleQualification()).isTrue()
 
-        addDefaultAndTestUsers()
-        assertThat(service.shouldAllowBypassingSupervisionRoleQualification()).isTrue()
-
-        // Enabling supervision on any user will disallow bypassing
-        setSupervisionEnabledForUser(USER_ID, true)
-        assertThat(service.isSupervisionEnabledForUser(USER_ID)).isTrue()
-        assertThat(service.shouldAllowBypassingSupervisionRoleQualification()).isFalse()
-
-        // Adding non-default users should also disallow bypassing
-        addDefaultAndFullUsers()
-        assertThat(service.shouldAllowBypassingSupervisionRoleQualification()).isFalse()
-
-        // Turning off supervision with non-default users should still disallow bypassing
-        setSupervisionEnabledForUser(USER_ID, false)
+        service.setShouldAllowBypassingSupervisionRoleQualification(false)
         assertThat(service.shouldAllowBypassingSupervisionRoleQualification()).isFalse()
     }
 
     @Test
-    fun shouldAllowBypassingSupervisionRoleQualification_hsum_returnsTrue() {
-        assertThat(service.isSupervisionEnabledForUser(USER_ID)).isFalse()
-        assertThat(service.shouldAllowBypassingSupervisionRoleQualification()).isTrue()
-
-        addDefaultAndTestUsersHsum()
-        assertThat(service.shouldAllowBypassingSupervisionRoleQualification()).isTrue()
-    }
-
-    @Test
-    fun shouldAllowBypassingSupervisionRoleQualification_hsum_returnsFalse() {
-        setSupervisionEnabledForUser(USER_ID, false)
-        assertThat(service.isSupervisionEnabledForUser(USER_ID)).isFalse()
-        assertThat(service.shouldAllowBypassingSupervisionRoleQualification()).isTrue()
-
-        addDefaultAndTestUsersHsum()
-        assertThat(service.shouldAllowBypassingSupervisionRoleQualification()).isTrue()
-
-        // Enabling supervision on any user will disallow bypassing
-        setSupervisionEnabledForUser(USER_ID, true)
-        assertThat(service.isSupervisionEnabledForUser(USER_ID)).isTrue()
-        assertThat(service.shouldAllowBypassingSupervisionRoleQualification()).isFalse()
-
-        // Adding non-default users should also disallow bypassing
-        addDefaultAndFullUsers()
-        assertThat(service.shouldAllowBypassingSupervisionRoleQualification()).isFalse()
-
-        // Turning off supervision with non-default users should still disallow bypassing
-        setSupervisionEnabledForUser(USER_ID, false)
-        assertThat(service.shouldAllowBypassingSupervisionRoleQualification()).isFalse()
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_SUPERVISION_MANAGER_POLICY_APIS)
+    fun setShouldAllowBypassingSupervisionRoleQualification_noPermission_throwsException() {
+        injector.setCallingUid(1234)
+        context.permissions[BYPASS_ROLE_QUALIFICATION] = PERMISSION_DENIED
+        assertFailsWith<SecurityException> {
+            service.setShouldAllowBypassingSupervisionRoleQualification(true)
+        }
     }
 
     @Test
