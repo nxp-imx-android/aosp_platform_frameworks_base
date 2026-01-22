@@ -259,8 +259,8 @@ public class Typeface {
                     "Do not call this method other than placeholder Typeface.");
         }
         if (!mPendingTypeface.compareAndSet(null, initializedTypeface)) {
-            throw new IllegalStateException("The pending Typeface is already initialized."
-                    + " Do not call this method multiple times.");
+            Log.w(TAG, "The initialized pending Typeface (" + mSystemFontFamilyName
+                    + ") is replaced with another Typeface.");
         }
     }
 
