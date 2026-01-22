@@ -28,7 +28,6 @@ import com.android.settingslib.devicestate.PostureDeviceStateConverter
 import com.android.settingslib.devicestate.SecureSettings
 import com.android.settingslib.notification.modes.ZenIconLoader
 import com.android.systemui.CoreStartable
-import com.android.systemui.Flags
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
@@ -49,7 +48,6 @@ import com.android.systemui.statusbar.policy.BluetoothController
 import com.android.systemui.statusbar.policy.BluetoothControllerImpl
 import com.android.systemui.statusbar.policy.CastController
 import com.android.systemui.statusbar.policy.CastControllerImpl
-import com.android.systemui.statusbar.policy.CastControllerLegacyImpl
 import com.android.systemui.statusbar.policy.ConfigurationController
 import com.android.systemui.statusbar.policy.DataSaverController
 import com.android.systemui.statusbar.policy.DeviceControlsController
@@ -96,7 +94,6 @@ import com.android.systemui.supervision.data.repository.SupervisionRepositoryMod
 import com.android.systemui.util.wrapper.CameraRotationSettingProvider
 import com.android.systemui.util.wrapper.CameraRotationSettingProviderImpl
 import dagger.Binds
-import dagger.Lazy
 import dagger.Module
 import dagger.Provides
 import dagger.multibindings.ClassKey
@@ -118,10 +115,8 @@ interface StatusBarPolicyModule {
     /**  */
     @Binds fun provideVpnRepository(impl: VpnRepositoryImpl): VpnRepository
 
-    @Binds
-    @IntoMap
-    @ClassKey(CastControllerImpl::class)
-    fun bindCastControllerCoreStarteable(startable: CastControllerImpl): CoreStartable
+    /**  */
+    @Binds fun provideCastController(controllerImpl: CastControllerImpl): CastController
 
     /**
      * @deprecated: unscoped configuration controller shouldn't be injected as it might lead to
@@ -354,21 +349,6 @@ interface StatusBarPolicyModule {
             @UiBackground backgroundExecutorService: ExecutorService
         ): ZenIconLoader {
             return ZenIconLoader(backgroundExecutorService)
-        }
-
-        /**  */
-        @JvmStatic
-        @Provides
-        @SysUISingleton
-        fun provideCastController(
-            legacyControllerImpl: dagger.Lazy<CastControllerLegacyImpl>,
-            newControllerImpl: Lazy<CastControllerImpl>,
-        ): CastController {
-            return if (Flags.castControllerMediaRouterInBg()) {
-                newControllerImpl.get()
-            } else {
-                legacyControllerImpl.get()
-            }
         }
 
         const val DEVICE_STATE_ROTATION_LOCK_DEFAULTS: String =
