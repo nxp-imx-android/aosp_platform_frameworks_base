@@ -797,7 +797,6 @@ public class ViewConfiguration {
      *
      * @return the duration in milliseconds of the text cursor blink interval
      */
-    @FlaggedApi(android.view.accessibility.Flags.FLAG_TEXT_CURSOR_BLINK_INTERVAL)
     public int getTextCursorBlinkIntervalMillis() {
         int value = getSettingValue(Settings.Secure.ACCESSIBILITY_TEXT_CURSOR_BLINK_INTERVAL_MS,
                 sResourceCache.getDefaultTextCursorBlinkInterval());

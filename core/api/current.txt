@@ -55762,7 +55762,7 @@ package android.view {
     method @FlaggedApi("android.companion.virtualdevice.flags.viewconfiguration_apis") public float getScrollFrictionAmount();
     method public static int getTapTimeout();
     method @FlaggedApi("android.companion.virtualdevice.flags.viewconfiguration_apis") public int getTapTimeoutMillis();
-    method @FlaggedApi("android.view.accessibility.text_cursor_blink_interval") public int getTextCursorBlinkIntervalMillis();
+    method public int getTextCursorBlinkIntervalMillis();
     method @Deprecated public static int getTouchSlop();
     method @Deprecated public static int getWindowTouchSlop();
     method public static long getZoomControlsTimeout();

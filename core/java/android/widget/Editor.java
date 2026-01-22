@@ -526,10 +526,8 @@ public class Editor {
                 TypedValue.COMPLEX_UNIT_DIP, LINE_CHANGE_SLOP_MIN_DP,
                 mTextView.getContext().getResources().getDisplayMetrics());
 
-        if (android.view.accessibility.Flags.textCursorBlinkInterval()) {
-            mBlinkInterval = ViewConfiguration.get(mTextView.getContext())
+        mBlinkInterval = ViewConfiguration.get(mTextView.getContext())
                     .getTextCursorBlinkIntervalMillis();
-        }
     }
 
     @VisibleForTesting
@@ -1124,10 +1122,8 @@ public class Editor {
             mBlink.uncancel();
         }
 
-        if (android.view.accessibility.Flags.textCursorBlinkInterval()) {
-            mBlinkInterval = ViewConfiguration.get(mTextView.getContext())
+        mBlinkInterval = ViewConfiguration.get(mTextView.getContext())
                     .getTextCursorBlinkIntervalMillis();
-        }
 
         // Moving makeBlink outside of the null check block ensures that mBlink object gets
         // instantiated when the view is added to the window if mBlink is still null.
