@@ -56,8 +56,6 @@ interface IWindowSession {
     int addToDisplayAsUser(IWindow window, in WindowManager.LayoutParams attrs,
             in int viewVisibility, in int layerStackId, in int userId, int requestedVisibleTypes,
             out InputChannel outInputChannel, out WindowRelayoutResult result);
-    int addToDisplayWithoutInputChannel(IWindow window, in WindowManager.LayoutParams attrs,
-            in int viewVisibility, in int layerStackId, out WindowRelayoutResult result);
 
     /**
      * Removes a clientToken from WMS, which includes unlinking the input channel.

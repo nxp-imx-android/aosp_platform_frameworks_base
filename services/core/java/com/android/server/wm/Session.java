@@ -278,14 +278,6 @@ class Session extends IWindowSession.Stub implements IBinder.DeathRecipient {
     }
 
     @Override
-    public int addToDisplayWithoutInputChannel(IWindow window, WindowManager.LayoutParams attrs,
-            int viewVisibility, int displayId, WindowRelayoutResult result) {
-        return mService.addWindow(this, window, attrs, viewVisibility, displayId,
-                UserHandle.getUserId(mUid), WindowInsets.Type.defaultVisible(),
-                null /* outInputChannel */, result);
-    }
-
-    @Override
     public void remove(IBinder clientToken) {
         mService.removeClientToken(this, clientToken);
     }
