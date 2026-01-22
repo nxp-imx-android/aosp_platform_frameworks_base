@@ -1125,6 +1125,10 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
                 }
                 boolean useDisabledPreviewWhenMasked = widget.options.getBoolean(
                         "useDisabledPreviewWhenMasked", false);
+                if (DEBUG) {
+                    Slog.i(TAG, "useDisabledPreviewWhenMasked: " + useDisabledPreviewWhenMasked
+                            + " widget: " + widget);
+                }
                 if (useDisabledPreviewWhenMasked) {
                     views = new RemoteViews(provider.id.componentName.getPackageName(),
                             R.layout.disabled_widget_mask_view);
@@ -1164,6 +1168,10 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
 
     private void applyWidgetWithGeneratedPreviewLocked(RemoteViews maskedView,
             RemoteViews generatedPreview, Widget widget) {
+        if (DEBUG) {
+            Slog.i(TAG, "applyWidgetWithGeneratedPreviewLocked: " + generatedPreview + " widget: "
+                    + widget);
+        }
         if (generatedPreview != null) {
             synchronized (mLock) {
                 if (widget.maskPending) {
