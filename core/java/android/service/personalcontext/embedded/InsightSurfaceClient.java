@@ -250,6 +250,7 @@ public class InsightSurfaceClient implements AutoCloseable {
             @NonNull Color backgroundColor,
             int nestedScrollAxes,
             boolean nestedScrollAxisLocked,
+            boolean shouldBlur,
             @NonNull ClientCallback callbacks,
             @NonNull Executor callbacksExecutor,
             @NonNull List<ContextHint> hints,
@@ -268,6 +269,7 @@ public class InsightSurfaceClient implements AutoCloseable {
                 backgroundColor,
                 nestedScrollAxes,
                 nestedScrollAxisLocked,
+                shouldBlur,
                 mContext.getResources().getConfiguration(),
                 mClient);
     }
@@ -357,6 +359,13 @@ public class InsightSurfaceClient implements AutoCloseable {
     }
 
     /**
+     * Return whether the embedded surface should apply a blur to match the client.
+     */
+    public boolean shouldBlur() {
+        return mClientInfo.shouldBlur();
+    }
+
+    /**
      * Register with the personal context engine. Once registered, the client can receive a
      * {@link SurfaceControlViewHost.SurfacePackage} via {@link ClientCallback}.
      *
@@ -384,6 +393,7 @@ public class InsightSurfaceClient implements AutoCloseable {
                 mClientInfo.getBackgroundColor(),
                 mClientInfo.getNestedScrollAxes(),
                 mClientInfo.getNestedScrollAxisLocked(),
+                mClientInfo.shouldBlur(),
                 mClientInfo.getConfiguration(),
                 mClient);
         register();
@@ -478,6 +488,7 @@ public class InsightSurfaceClient implements AutoCloseable {
         private Color mBackgroundColor = Color.valueOf(Color.TRANSPARENT);
         private int mNestedScrollAxes = View.SCROLL_AXIS_NONE;
         private boolean mNestedScrollAxisLocked = false;
+        private boolean mShouldBlur = false;
 
         /**
          * Construct a new builder.
@@ -600,6 +611,16 @@ public class InsightSurfaceClient implements AutoCloseable {
         }
 
         /**
+         * Set whether the embedded surface should apply a blur to match the client.
+         * @param shouldBlur whether to apply a blur
+         */
+        @NonNull
+        public Builder setShouldBlur(boolean shouldBlur) {
+            mShouldBlur = shouldBlur;
+            return this;
+        }
+
+        /**
          * Sets whether nested scrolling is locked (based on the bitmask past to
          * {@link #setNestedScrollAxes(int)}). A value of {@code true} is typical for Android UIs
          * where scroll axes are locked during a gesture, while a value of {@code false} can be
@@ -630,6 +651,7 @@ public class InsightSurfaceClient implements AutoCloseable {
                     mBackgroundColor,
                     mNestedScrollAxes,
                     mNestedScrollAxisLocked,
+                    mShouldBlur,
                     mCallbacks,
                     mCallbacksExecutor,
                     mHints,

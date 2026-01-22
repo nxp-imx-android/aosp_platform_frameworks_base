@@ -104,6 +104,7 @@ public class EmbeddedInsightRendererTest {
                 Color.valueOf(Color.RED),
                 View.SCROLL_AXIS_NONE,
                 false,
+                false,
                 new Configuration(),
                 client);
     }

@@ -14758,6 +14758,7 @@ package android.service.personalcontext.embedded {
     method public boolean isNestedScrollAxisLocked();
     method @Deprecated public void register(int, int);
     method public void register();
+    method public boolean shouldBlur();
     method public void unregister();
   }
 
@@ -14772,6 +14773,7 @@ package android.service.personalcontext.embedded {
     method @NonNull public android.service.personalcontext.embedded.InsightSurfaceClient.Builder setMeasureSpecs(int, int);
     method @NonNull public android.service.personalcontext.embedded.InsightSurfaceClient.Builder setNestedScrollAxes(int);
     method @NonNull public android.service.personalcontext.embedded.InsightSurfaceClient.Builder setNestedScrollAxisLocked(boolean);
+    method @NonNull public android.service.personalcontext.embedded.InsightSurfaceClient.Builder setShouldBlur(boolean);
   }
 
   public static interface InsightSurfaceClient.ClientCallback {
@@ -14800,6 +14802,7 @@ package android.service.personalcontext.embedded {
     method public boolean getNestedScrollAxisLocked();
     method public void onReceiveInsight(@NonNull android.service.personalcontext.insight.ContextInsight);
     method public void onSizeChanged(int, int);
+    method public boolean shouldBlur();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.service.personalcontext.embedded.InsightSurfaceClientInfo> CREATOR;
   }
@@ -14814,6 +14817,7 @@ package android.service.personalcontext.embedded {
     method public int getNestedScrollAxes();
     method public boolean hasUpdate(@NonNull String);
     method public boolean isNestedScrollAxisLocked();
+    method public boolean shouldBlur();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.service.personalcontext.embedded.InsightSurfaceClientUpdate> CREATOR;
     field public static final String KEY_BACKGROUND_COLOR = "key_background_color";
@@ -14823,6 +14827,7 @@ package android.service.personalcontext.embedded {
     field public static final String KEY_MEASURE_SPEC_WIDTH = "key_measure_spec_width";
     field public static final String KEY_NESTED_SCROLL_AXES = "key_nested_scroll_axes";
     field public static final String KEY_NESTED_SCROLL_AXIS_LOCKED = "key_nested_scroll_axis_locked";
+    field public static final String KEY_SHOULD_BLUR = "key_should_blur";
   }
 
   public static final class InsightSurfaceClientUpdate.Builder {
@@ -14835,6 +14840,7 @@ package android.service.personalcontext.embedded {
     method @NonNull public android.service.personalcontext.embedded.InsightSurfaceClientUpdate.Builder setMeasureSpecWidth(int);
     method @NonNull public android.service.personalcontext.embedded.InsightSurfaceClientUpdate.Builder setNestedScrollAxes(int);
     method @NonNull public android.service.personalcontext.embedded.InsightSurfaceClientUpdate.Builder setNestedScrollAxisLocked(boolean);
+    method @NonNull public android.service.personalcontext.embedded.InsightSurfaceClientUpdate.Builder setShouldBlur(boolean);
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public class InsightSurfaceSession implements java.lang.AutoCloseable {
