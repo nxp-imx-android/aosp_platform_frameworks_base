@@ -32,7 +32,6 @@ import android.widget.TextView
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.media.projection.flags.Flags.FLAG_MEDIA_PROJECTION_CONNECTED_DISPLAY
-import com.android.media.projection.flags.Flags.FLAG_MEDIA_PROJECTION_CONNECTED_DISPLAY_SCREEN_SHARING
 import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.kosmos.testScope
@@ -200,10 +199,7 @@ class SystemCastPermissionDialogDelegateTest : SysuiTestCase() {
     }
 
     @Test
-    @RequiresFlagsEnabled(
-        FLAG_MEDIA_PROJECTION_CONNECTED_DISPLAY,
-        FLAG_MEDIA_PROJECTION_CONNECTED_DISPLAY_SCREEN_SHARING,
-    )
+    @RequiresFlagsEnabled(FLAG_MEDIA_PROJECTION_CONNECTED_DISPLAY)
     fun connectedDisplayShown() {
         testScope.runTest {
             context.addMockSystemService(DisplayManager::class.java, displayManager)

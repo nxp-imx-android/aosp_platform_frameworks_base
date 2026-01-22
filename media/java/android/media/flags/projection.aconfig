@@ -49,13 +49,6 @@ flag {
 }
 
 flag {
-  name: "media_projection_connected_display_screen_sharing"
-  namespace: "media_projection"
-  description: "Enable sharing and casting connected display"
-  bug: "406217983"
-}
-
-flag {
     namespace: "media_projection"
     name: "recording_overlay"
     description: "Allows overlay recordings via MediaProjection"

@@ -84,9 +84,6 @@ object MediaProjectionPermissionUtils {
         if (!Flags.mediaProjectionConnectedDisplay()) {
             return emptyList()
         }
-        if (!Flags.mediaProjectionConnectedDisplayScreenSharing()) {
-            return emptyList()
-        }
         return displays.filter {
             it.displayId != Display.DEFAULT_DISPLAY &&
                 (!filterDeviceTypeFlag || it.type in RECORDABLE_DISPLAY_TYPES)
