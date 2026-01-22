@@ -21,15 +21,11 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.dimensionResource
 import com.android.compose.animation.scene.ElementContentScope
 import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.keyguard.ui.composable.elements.LockscreenUpperRegionElementProvider.Companion.LayoutType
-import com.android.systemui.keyguard.ui.composable.elements.LockscreenUpperRegionElementProvider.Companion.getLayoutType
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardMediaViewModel
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.media.remedia.ui.compose.Media
@@ -39,7 +35,6 @@ import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenEl
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementProvider
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenScope
-import com.android.systemui.res.R
 import com.android.systemui.shade.ShadeDisplayAware
 import javax.inject.Inject
 import kotlin.collections.List
@@ -63,14 +58,6 @@ constructor(
             val viewModel =
                 rememberViewModel("MediaCarouselElement") { mediaViewModelFactory.create() }
 
-            val horizontalPadding =
-                when (getLayoutType(viewModel.shadeMode)) {
-                    LayoutType.WIDE -> dimensionResource(R.dimen.notification_side_paddings)
-                    LayoutType.NARROW ->
-                        dimensionResource(R.dimen.notification_side_paddings) +
-                            dimensionResource(R.dimen.notification_panel_margin_horizontal)
-                }
-
             AnimatedVisibility(
                 viewModel.isMediaVisible && !viewModel.isDozing,
                 enter = expandVertically(expandFrom = Alignment.Top),
@@ -81,7 +68,7 @@ constructor(
                     presentationStyle = MediaPresentationStyle.Default,
                     behavior = viewModel.mediaUiBehavior,
                     onDismissed = viewModel::onSwipeToDismiss,
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = horizontalPadding),
+                    modifier = Modifier.fillMaxWidth(),
                     location = Media.Location.LOCKSCREEN,
                 )
             }
