@@ -14876,10 +14876,13 @@ package android.service.persistentdata {
 package android.service.personalcontext {
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class PersonalContextManager {
+    method public boolean isEnabled();
     method @NonNull public android.service.personalcontext.Token mintToken();
     method public void publishTriggeringHint(@NonNull java.util.List<android.service.personalcontext.hint.ContextHint>, @Nullable java.util.List<android.service.personalcontext.RenderToken>);
     method public void publishTriggeringHint(@NonNull java.util.List<android.service.personalcontext.hint.ContextHint>, @Nullable java.util.List<android.service.personalcontext.RenderToken>, @Nullable java.util.List<android.service.personalcontext.hint.ContextHint>);
+    method public void setEnabled(boolean);
     method @NonNull public android.service.personalcontext.hint.ContextHintWithSignature signHint(@NonNull android.service.personalcontext.hint.ContextHint, @Nullable java.util.List<android.service.personalcontext.hint.ContextHint>);
+    field public static final String ACTION_PERSONAL_CONTEXT_ENABLED_CHANGED = "android.service.personalcontext.action.PERSONAL_CONTEXT_ENABLED_CHANGED";
     field public static final String PERSONAL_CONTEXT_SERVICE = "personal_context";
   }
 
