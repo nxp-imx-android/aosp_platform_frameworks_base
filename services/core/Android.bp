@@ -331,3 +331,22 @@ prebuilt_etc {
     name: "core.protolog.pb",
     src: ":gen-core.protolog.pb",
 }
+
+cc_library {
+    name: "libmediametrics_allowlist",
+    srcs: [
+        // java/com/android/server/media/metrics/Allowlist.java is #included
+        // into mediametrics_allowlist.cpp and the dependency is discovered automatically.
+        "mediametrics_allowlist.cpp",
+    ],
+    local_include_dirs: [
+        "include",
+    ],
+    export_include_dirs: [
+        "include",
+    ],
+    cflags: [
+        // The polyglot approach relies on multi-line // comments
+        "-Wno-comment",
+    ],
+}

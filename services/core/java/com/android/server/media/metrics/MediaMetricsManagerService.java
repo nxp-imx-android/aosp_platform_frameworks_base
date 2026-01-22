@@ -16,8 +16,6 @@
 
 package com.android.server.media.metrics;
 
-import com.android.media.editing.flags.Flags;
-
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.hardware.DataSpace;
@@ -44,11 +42,14 @@ import android.util.StatsEvent;
 import android.util.StatsLog;
 
 import com.android.internal.annotations.GuardedBy;
+import com.android.media.editing.flags.Flags;
 import com.android.server.SystemService;
 
 import java.security.SecureRandom;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
@@ -90,6 +91,8 @@ public final class MediaMetricsManagerService extends SystemService {
     private static final int DURATION_BUCKETS_COUNT = 13;
     private static final String AUDIO_MIME_TYPE_PREFIX = "audio/";
     private static final String VIDEO_MIME_TYPE_PREFIX = "video/";
+    private static final Set<String> AUDIO_MEDIA_TYPES_ALLOWLIST_SET =
+            new HashSet<>(Arrays.asList(Allowlist.AUDIO_MEDIA_TYPES));
     private final SecureRandom mSecureRandom;
 
     @GuardedBy("mLock")
@@ -810,27 +813,6 @@ public final class MediaMetricsManagerService extends SystemService {
                             "video/x-flv",
                             "video/dolby-vision",
                             "video/raw",
-                            "audio/mp4",
-                            "audio/mp4a-latm",
-                            "audio/x-matroska",
-                            "audio/webm",
-                            "audio/mpeg",
-                            "audio/mpeg-L1",
-                            "audio/mpeg-L2",
-                            "audio/ac3",
-                            "audio/eac3",
-                            "audio/eac3-joc",
-                            "audio/av4",
-                            "audio/true-hd",
-                            "audio/vnd.dts",
-                            "audio/vnd.dts.hd",
-                            "audio/vorbis",
-                            "audio/opus",
-                            "audio/flac",
-                            "audio/ogg",
-                            "audio/wav",
-                            "audio/midi",
-                            "audio/raw",
                             "application/mp4",
                             "application/webm",
                             "application/x-matroska",
@@ -838,8 +820,15 @@ public final class MediaMetricsManagerService extends SystemService {
                             "application/x-mpegURL",
                             "application/vnd.ms-sstr+xml" ->
                     mimeType;
-            default -> "";
+            default -> getFilteredAudioMediaType(mimeType);
         };
+    }
+
+    private static String getFilteredAudioMediaType(String mimeType) {
+        if (AUDIO_MEDIA_TYPES_ALLOWLIST_SET.contains(mimeType)) {
+            return mimeType;
+        }
+        return "";
     }
 
     private static int getCodecEnum(String mimeType) {
