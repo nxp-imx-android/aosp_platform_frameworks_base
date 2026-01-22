@@ -9903,6 +9903,8 @@ package android.app.job {
     field public static final int STOP_REASON_CONSTRAINT_DEVICE_IDLE = 8; // 0x8
     field public static final int STOP_REASON_CONSTRAINT_STORAGE_NOT_LOW = 9; // 0x9
     field public static final int STOP_REASON_DEVICE_STATE = 4; // 0x4
+    field @FlaggedApi("android.app.job.enhanced_pending_and_stop_reasons_api") public static final int STOP_REASON_DEVICE_STATE_BATTERY_SAVER = 18; // 0x12
+    field @FlaggedApi("android.app.job.enhanced_pending_and_stop_reasons_api") public static final int STOP_REASON_DEVICE_STATE_THERMAL = 17; // 0x11
     field public static final int STOP_REASON_ESTIMATED_APP_LAUNCH_TIME_CHANGED = 15; // 0xf
     field public static final int STOP_REASON_PREEMPT = 2; // 0x2
     field public static final int STOP_REASON_QUOTA = 10; // 0xa
@@ -9943,6 +9945,8 @@ package android.app.job {
     field public static final int PENDING_JOB_REASON_CONSTRAINT_PREFETCH = 10; // 0xa
     field public static final int PENDING_JOB_REASON_CONSTRAINT_STORAGE_NOT_LOW = 11; // 0xb
     field public static final int PENDING_JOB_REASON_DEVICE_STATE = 12; // 0xc
+    field @FlaggedApi("android.app.job.enhanced_pending_and_stop_reasons_api") public static final int PENDING_JOB_REASON_DEVICE_STATE_BATTERY_SAVER = 18; // 0x12
+    field @FlaggedApi("android.app.job.enhanced_pending_and_stop_reasons_api") public static final int PENDING_JOB_REASON_DEVICE_STATE_THERMAL = 17; // 0x11
     field public static final int PENDING_JOB_REASON_EXECUTING = -1; // 0xffffffff
     field public static final int PENDING_JOB_REASON_INVALID_JOB_ID = -2; // 0xfffffffe
     field public static final int PENDING_JOB_REASON_JOB_SCHEDULER_OPTIMIZATION = 13; // 0xd

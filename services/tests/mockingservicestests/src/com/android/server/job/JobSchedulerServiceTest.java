@@ -26,6 +26,7 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.doNothing;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.mock;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.mockitoSession;
+import static com.android.dx.mockito.inline.extended.ExtendedMockito.spy;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 import static com.android.server.job.Flags.FLAG_BATCH_ACTIVE_BUCKET_JOBS;
 import static com.android.server.job.Flags.FLAG_BATCH_CONNECTIVITY_JOBS_PER_NETWORK;
@@ -54,6 +55,8 @@ import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_
 import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_SOURCE_UID;
 import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_STANDBY_BUCKET;
 import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_STATE;
+
+import static com.google.common.truth.Truth.assertThat;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -2717,6 +2720,74 @@ public class JobSchedulerServiceTest {
     }
 
     /**
+     * Test that a non-running job gets the correct thermal pending reason
+     * when it's restricted by thermal conditions.
+     */
+    @EnableFlags({
+            android.app.job.Flags.FLAG_ENHANCED_PENDING_AND_STOP_REASONS_API
+    })
+    @Test
+    public void testPendingReason_Thermal() {
+        final JobStatus job = JobStatus.createFromJobInfo(
+                new JobInfo.Builder(1, new ComponentName("foo", "bar")).build(),
+                1000, "foo", 0, "test", "test");
+        final JobStatus jobSpy = spy(job);
+
+        ThermalStatusRestriction mockThermalStatusRestriction =
+                mock(ThermalStatusRestriction.class);
+
+        when(mockThermalStatusRestriction.isJobRestricted(any(), anyInt()))
+                .thenReturn(true);
+        when(mockThermalStatusRestriction.getPendingReason())
+                .thenReturn(JobScheduler.PENDING_JOB_REASON_DEVICE_STATE_THERMAL);
+
+        synchronized (mService.mLock) {
+            mService.getJobStore().add(jobSpy);
+
+            mService.mJobRestrictions.clear();
+            mService.mJobRestrictions.add(mockThermalStatusRestriction);
+
+            assertThat(mService.getPendingJobReasons(jobSpy))
+                    .asList()
+                    .contains(JobScheduler.PENDING_JOB_REASON_DEVICE_STATE_THERMAL);
+        }
+    }
+
+
+    /**
+     * Test that a non-running job gets the correct thermal stop reason
+     * when it's restricted by thermal conditions.
+     */
+    @EnableFlags({
+            android.app.job.Flags.FLAG_ENHANCED_PENDING_AND_STOP_REASONS_API
+    })
+    @Test
+    public void testStopReason_DeviceStateThermal() {
+        final JobStatus job = JobStatus.createFromJobInfo(
+                new JobInfo.Builder(1, new ComponentName("foo", "bar")).build(),
+                1000, "foo", 0, "test", "test");
+        final JobStatus jobSpy = spy(job);
+
+        final ThermalStatusRestriction mockThermalRestriction =
+                mock(ThermalStatusRestriction.class);
+        mService.mJobRestrictions.add(mockThermalRestriction);
+
+        when(mockThermalRestriction.isJobRestricted(jobSpy, JobInfo.BIAS_DEFAULT))
+                .thenReturn(true);
+        when(mockThermalRestriction.getStopReason())
+                .thenReturn(JobParameters.STOP_REASON_DEVICE_STATE_THERMAL);
+
+        final JobRestriction restriction;
+        synchronized (mService.mLock) {
+            restriction = mService.checkIfRestricted(jobSpy);
+        }
+
+        assertNotNull("Job should be restricted", restriction);
+        assertEquals("Incorrect stop reason for thermal restriction",
+                JobParameters.STOP_REASON_DEVICE_STATE_THERMAL, restriction.getStopReason());
+    }
+
+    /**
      * Unit tests {@link JobSchedulerService#checkIfRestricted(JobStatus)} with multiple {@link
      * JobRestriction} registered.
      */
@@ -2990,6 +3061,4 @@ public class JobSchedulerServiceTest {
                 .addField(eq((long) PERFETTO_TRACE_FIELD_JOB_STATE_FLAGS), eq(expectedFlags));
         verify(mMockPerfettoTracer).emit();
     }
-
-
 }

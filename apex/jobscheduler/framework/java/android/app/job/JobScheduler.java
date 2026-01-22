@@ -220,9 +220,15 @@ public abstract class JobScheduler {
      */
     public static final int PENDING_JOB_REASON_CONSTRAINT_STORAGE_NOT_LOW = 11;
     /**
-     * The job is being deferred due to the device state (eg. Doze, battery saver, memory usage,
+     * The job is being deferred due to the device state (e.g., Doze, battery saver, memory usage,
      * thermal status, etc.).
+     * <p>
+     * Starting in a version of Android following
+     * {@link android.os.Build.VERSION_CODES#CINNAMON_BUN}, the system will provide more specific
+     * pending reasons when possible, such as {@link #PENDING_JOB_REASON_DEVICE_STATE_THERMAL} or
+     * {@link #PENDING_JOB_REASON_DEVICE_STATE_BATTERY_SAVER}
      */
+    // TODO: b/477457908 - Update to the correct android VERSION_CODES when 26Q4 is defined.
     public static final int PENDING_JOB_REASON_DEVICE_STATE = 12;
     /**
      * JobScheduler thinks it can defer this job to a more optimal running time.
@@ -248,6 +254,22 @@ public abstract class JobScheduler {
     @FlaggedApi(Flags.FLAG_GET_PENDING_JOB_REASONS_API)
     public static final int PENDING_JOB_REASON_CONSTRAINT_DEADLINE = 16;
 
+    /**
+     * The device is under thermal restriction.
+     * <p>
+     * This is a more specific version of {@link #PENDING_JOB_REASON_DEVICE_STATE}.
+     */
+    @FlaggedApi(Flags.FLAG_ENHANCED_PENDING_AND_STOP_REASONS_API)
+    public static final int PENDING_JOB_REASON_DEVICE_STATE_THERMAL = 17;
+
+    /**
+     * The device is under battery saver mode.
+     * <p>
+     * This is a more specific version of {@link #PENDING_JOB_REASON_DEVICE_STATE}.
+     */
+    @FlaggedApi(Flags.FLAG_ENHANCED_PENDING_AND_STOP_REASONS_API)
+    public static final int PENDING_JOB_REASON_DEVICE_STATE_BATTERY_SAVER = 18;
+
     /** @hide */
     @IntDef(prefix = {"PENDING_JOB_REASON_"}, value = {
             PENDING_JOB_REASON_UNDEFINED,
@@ -269,6 +291,8 @@ public abstract class JobScheduler {
             PENDING_JOB_REASON_QUOTA,
             PENDING_JOB_REASON_USER,
             PENDING_JOB_REASON_CONSTRAINT_DEADLINE,
+            PENDING_JOB_REASON_DEVICE_STATE_THERMAL,
+            PENDING_JOB_REASON_DEVICE_STATE_BATTERY_SAVER,
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface PendingJobReason {

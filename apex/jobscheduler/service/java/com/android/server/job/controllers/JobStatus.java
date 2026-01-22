@@ -32,6 +32,7 @@ import android.annotation.LongDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.AppGlobals;
+import android.app.compat.CompatChanges;
 import android.app.job.JobInfo;
 import android.app.job.JobParameters;
 import android.app.job.JobScheduler;
@@ -39,6 +40,7 @@ import android.app.job.JobWorkItem;
 import android.app.job.PendingJobReasonsInfo;
 import android.app.job.UserVisibleJobSummary;
 import android.app.usage.UsageStatsManager;
+import android.compat.annotation.ChangeId;
 import android.content.ClipData;
 import android.content.ComponentName;
 import android.net.Network;
@@ -171,6 +173,22 @@ public final class JobStatus {
 
     public static final long NO_LATEST_RUNTIME = Long.MAX_VALUE;
     public static final long NO_EARLIEST_RUNTIME = 0L;
+
+    /**
+     * Introduces more specific pending and stop reasons for jobs.
+     * JobScheduler will now return
+     * {@link JobScheduler#PENDING_JOB_REASON_DEVICE_STATE_BATTERY_SAVER}
+     * if the job is pending because of battery saver or
+     * {@link JobScheduler#PENDING_JOB_REASON_DEVICE_STATE_THERMAL} if the job is pending because of
+     * thermal instead of {@link JobScheduler#PENDING_JOB_REASON_DEVICE_STATE}.
+     * JobScheduler will also now return
+     * {@link JobParameters#STOP_REASON_DEVICE_STATE_BATTERY_SAVER}
+     * if the job is stopped because of battery saver or
+     * {@link JobParameters#STOP_REASON_DEVICE_STATE_THERMAL} if the job is stopped because of
+     * thermal instead of {@link JobParameters#STOP_REASON_DEVICE_STATE}.
+     */
+    @ChangeId
+    public static final long INTRODUCE_NEW_PENDING_AND_STOP_DEVICE_STATE_REASONS = 430347691L;
 
     public static final int CONSTRAINT_CHARGING = JobInfo.CONSTRAINT_FLAG_CHARGING; // 1 < 0
     public static final int CONSTRAINT_IDLE = JobInfo.CONSTRAINT_FLAG_DEVICE_IDLE;  // 1 << 2
@@ -2367,6 +2385,14 @@ public final class JobStatus {
                 if (mIsUserBgRestricted) {
                     return JobParameters.STOP_REASON_BACKGROUND_RESTRICTION;
                 }
+                // Uses the new specific stop reason code as
+                // STOP_REASON_DEVICE_STATE_BATTERY_SAVER when flag is enabled,
+                // otherwise fall back to the generic reason stop code STOP_REASON_DEVICE_STATE.
+                if (android.app.job.Flags.enhancedPendingAndStopReasonsApi()
+                        && CompatChanges.isChangeEnabled(
+                                INTRODUCE_NEW_PENDING_AND_STOP_DEVICE_STATE_REASONS)) {
+                    return JobParameters.STOP_REASON_DEVICE_STATE_BATTERY_SAVER;
+                }
                 return JobParameters.STOP_REASON_DEVICE_STATE;
             case CONSTRAINT_DEVICE_NOT_DOZING:
                 return JobParameters.STOP_REASON_DEVICE_STATE;
@@ -2415,6 +2441,15 @@ public final class JobStatus {
             if (mIsUserBgRestricted) {
                 return JobScheduler.PENDING_JOB_REASON_BACKGROUND_RESTRICTION;
             } else {
+                // Uses the new specific pending reason code as
+                // PENDING_JOB_REASON_DEVICE_STATE_BATTERY_SAVER when flag is enabled,
+                // otherwise fall back to the generic pending reason code
+                // PENDING_JOB_REASON_DEVICE_STATE.
+                if (android.app.job.Flags.enhancedPendingAndStopReasonsApi()
+                                && CompatChanges.isChangeEnabled(
+                        INTRODUCE_NEW_PENDING_AND_STOP_DEVICE_STATE_REASONS)) {
+                    return JobScheduler.PENDING_JOB_REASON_DEVICE_STATE_BATTERY_SAVER;
+                }
                 return JobScheduler.PENDING_JOB_REASON_DEVICE_STATE;
             }
         }
@@ -2493,7 +2528,17 @@ public final class JobStatus {
             if (mIsUserBgRestricted) {
                 reasons.addLast(JobScheduler.PENDING_JOB_REASON_BACKGROUND_RESTRICTION);
             } else {
-                reasons.addLast(JobScheduler.PENDING_JOB_REASON_DEVICE_STATE);
+                // Uses the new specific pending reason code as
+                // PENDING_JOB_REASON_DEVICE_STATE_BATTERY_SAVER when flag is enabled,
+                // otherwise fall back to the generic pending reason code
+                // PENDING_JOB_REASON_DEVICE_STATE.
+                if (android.app.job.Flags.enhancedPendingAndStopReasonsApi()
+                        && CompatChanges.isChangeEnabled(
+                                INTRODUCE_NEW_PENDING_AND_STOP_DEVICE_STATE_REASONS)) {
+                    reasons.addLast(JobScheduler.PENDING_JOB_REASON_DEVICE_STATE_BATTERY_SAVER);
+                } else {
+                    reasons.addLast(JobScheduler.PENDING_JOB_REASON_DEVICE_STATE);
+                }
             }
         }
         if (hasConstraintFlag(unsatisfiedConstraints, CONSTRAINT_DEVICE_NOT_DOZING)) {
