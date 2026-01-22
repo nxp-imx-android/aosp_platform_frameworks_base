@@ -53,13 +53,13 @@ class DesktopTasksLimiter(
     private val shellTaskOrganizer: ShellTaskOrganizer,
     private val desksOrganizer: DesksOrganizer,
     private val desktopMixedTransitionHandler: DesktopMixedTransitionHandler,
+    private val snapEventHandler: SnapEventHandler,
     private val maxTasksLimit: Int?,
 ) {
     private val minimizeTransitionObserver = MinimizeTransitionObserver()
     @VisibleForTesting val leftoverMinimizedTasksRemover = LeftoverMinimizedTasksRemover()
 
     private var userId: Int
-    lateinit var snapEventHandler: SnapEventHandler
 
     init {
         maxTasksLimit?.let {

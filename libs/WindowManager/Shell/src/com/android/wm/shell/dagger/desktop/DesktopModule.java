@@ -22,6 +22,7 @@ import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.dagger.DynamicOverride;
 import com.android.wm.shell.dagger.WMSingleton;
 import com.android.wm.shell.desktopmode.DesktopUserRepositories;
+import com.android.wm.shell.desktopmode.SnapController;
 import com.android.wm.shell.desktopmode.multidesks.DesksController;
 import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer;
 import com.android.wm.shell.shared.desktopmode.DesktopConfig;
@@ -49,5 +50,11 @@ public class DesktopModule {
     ) {
         return new DesksController(shellController, userRepositories,
                 desktopConfig, desktopState, displayController, desksOrganizer);
+    }
+
+    @WMSingleton
+    @Provides
+    static SnapController provideSnapController() {
+        return new SnapController();
     }
 }

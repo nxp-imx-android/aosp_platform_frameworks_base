@@ -138,9 +138,9 @@ class DesktopTasksLimiterTest : ShellTestCase() {
                 shellTaskOrganizer,
                 desksOrganizer,
                 desktopMixedTransitionHandler,
+                snapEventHandler,
                 MAX_TASK_LIMIT,
             )
-        desktopTasksLimiter.snapEventHandler = snapEventHandler
     }
 
     @After
@@ -157,6 +157,7 @@ class DesktopTasksLimiterTest : ShellTestCase() {
                 shellTaskOrganizer,
                 desksOrganizer,
                 desktopMixedTransitionHandler,
+                snapEventHandler,
                 0,
             )
         }
@@ -171,6 +172,7 @@ class DesktopTasksLimiterTest : ShellTestCase() {
                 shellTaskOrganizer,
                 desksOrganizer,
                 desktopMixedTransitionHandler,
+                snapEventHandler,
                 -5,
             )
         }
@@ -185,6 +187,7 @@ class DesktopTasksLimiterTest : ShellTestCase() {
             shellTaskOrganizer,
             desksOrganizer,
             desktopMixedTransitionHandler,
+            snapEventHandler,
             maxTasksLimit = null,
         )
     }
@@ -579,6 +582,7 @@ class DesktopTasksLimiterTest : ShellTestCase() {
                 shellTaskOrganizer,
                 desksOrganizer,
                 desktopMixedTransitionHandler,
+                snapEventHandler,
                 MAX_TASK_LIMIT2,
             )
         val tasks = (1..MAX_TASK_LIMIT2 + 1).map { setUpFreeformTask() }
