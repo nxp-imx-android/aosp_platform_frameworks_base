@@ -14,13 +14,10 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.shared.bubbles;
+package com.android.wm.shell.shared.bubbles
 
-import android.annotation.NonNull;
-import android.os.Parcel;
-import android.os.Parcelable;
+import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 
 /** Represents a removed bubble, defining the key and reason the bubble was removed. */
-@Parcelize
-data class RemovedBubble(val key: String, val removalReason: Int) : Parcelable
+@Parcelize data class RemovedBubble(val key: String, val removalReason: Int) : Parcelable

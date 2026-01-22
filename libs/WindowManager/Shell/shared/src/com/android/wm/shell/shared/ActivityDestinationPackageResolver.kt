@@ -25,13 +25,17 @@ class ActivityDestinationPackageResolver {
         private const val TAG = "PackageResolver"
 
         @JvmStatic
-        fun getDestinationPackage(activityTaskManager: IActivityTaskManager,
-            originalPackageName: String): String {
+        fun getDestinationPackage(
+            activityTaskManager: IActivityTaskManager,
+            originalPackageName: String,
+        ): String {
             return try {
                 activityTaskManager.getDestinationPackage(originalPackageName)
             } catch (e: RemoteException) {
-                Log.w(TAG, "Unable to get destination package for $originalPackageName:" +
-                        " ${e.message}")
+                Log.w(
+                    TAG,
+                    "Unable to get destination package for $originalPackageName:" + " ${e.message}",
+                )
                 originalPackageName
             }
         }

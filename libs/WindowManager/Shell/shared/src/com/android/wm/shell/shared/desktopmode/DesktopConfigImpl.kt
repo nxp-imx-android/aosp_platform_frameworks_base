@@ -28,10 +28,8 @@ import com.android.wm.shell.shared.desktopmode.DesktopConfigImpl.Companion.WINDO
 import java.io.PrintWriter
 
 @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
-class DesktopConfigImpl(
-    private val context: Context,
-    private val desktopState: DesktopState,
-) : DesktopConfig {
+class DesktopConfigImpl(private val context: Context, private val desktopState: DesktopState) :
+    DesktopConfig {
 
     constructor(context: Context) : this(context, DesktopState.fromContext(context))
 
@@ -160,8 +158,7 @@ class DesktopConfigImpl(
         /**
          * Sysprop declaring whether to enable drag-to-maximize for desktop windows.
          *
-         * If it is not defined, then `R.integer.config_dragToMaximizeInDesktopMode`
-         * is used.
+         * If it is not defined, then `R.integer.config_dragToMaximizeInDesktopMode` is used.
          */
         private const val ENABLE_DRAG_TO_MAXIMIZE_SYS_PROP =
             "persist.wm.debug.enable_drag_to_maximize"

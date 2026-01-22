@@ -22,8 +22,5 @@ import kotlinx.parcelize.Parcelize
 
 /** The contents of the flyout message to be passed to launcher for rendering in the bubble bar. */
 @Parcelize
-class ParcelableFlyoutMessage(
-    val icon: Icon?,
-    val title: String?,
-    val message: String?,
-) : Parcelable
+class ParcelableFlyoutMessage(val icon: Icon?, val title: String?, val message: String?) :
+    Parcelable

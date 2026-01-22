@@ -68,8 +68,8 @@ class DesktopStateImpl(context: Context) : DesktopState {
     override val canEnterDesktopMode: Boolean = run {
         val isEligibleForDesktopMode =
             isDeviceEligibleForDesktopMode &&
-                    (DesktopExperienceFlags.ENABLE_PROJECTED_DISPLAY_DESKTOP_MODE.isTrue ||
-                            canInternalDisplayHostDesktops)
+                (DesktopExperienceFlags.ENABLE_PROJECTED_DISPLAY_DESKTOP_MODE.isTrue ||
+                    canInternalDisplayHostDesktops)
         val desktopModeEnabled =
             isEligibleForDesktopMode && DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_MODE.isTrue
         desktopModeEnabled || isDesktopModeEnabledByDevOption
@@ -83,13 +83,13 @@ class DesktopStateImpl(context: Context) : DesktopState {
 
     override val enterDesktopByDefaultOnFreeformDisplay: Boolean =
         DesktopExperienceFlags.ENABLE_DESKTOP_FIRST_BASED_DEFAULT_TO_DESKTOP_BUGFIX.isTrue ||
-        DesktopExperienceFlags.ENTER_DESKTOP_BY_DEFAULT_ON_FREEFORM_DISPLAYS.isTrue &&
-            SystemProperties.getBoolean(
-                ENTER_DESKTOP_BY_DEFAULT_ON_FREEFORM_DISPLAY_SYS_PROP,
-                context
-                    .getResources()
-                    .getBoolean(R.bool.config_enterDesktopByDefaultOnFreeformDisplay),
-            )
+            DesktopExperienceFlags.ENTER_DESKTOP_BY_DEFAULT_ON_FREEFORM_DISPLAYS.isTrue &&
+                SystemProperties.getBoolean(
+                    ENTER_DESKTOP_BY_DEFAULT_ON_FREEFORM_DISPLAY_SYS_PROP,
+                    context
+                        .getResources()
+                        .getBoolean(R.bool.config_enterDesktopByDefaultOnFreeformDisplay),
+                )
 
     override val isDeviceEligibleForDesktopMode: Boolean
         get() {
@@ -116,7 +116,8 @@ class DesktopStateImpl(context: Context) : DesktopState {
     override fun isProjectedMode(): Boolean = projectedModeState.isProjectedMode
 
     private val deviceHasLargeScreen =
-        displayManager?.getDisplays(DisplayManager.DISPLAY_CATEGORY_ALL_INCLUDING_DISABLED)
+        displayManager
+            ?.getDisplays(DisplayManager.DISPLAY_CATEGORY_ALL_INCLUDING_DISABLED)
             ?.filter { display -> display.type == Display.TYPE_INTERNAL }
             ?.any { display ->
                 display.minSizeDimensionDp >= WindowManager.LARGE_SCREEN_SMALLEST_SCREEN_WIDTH_DP
@@ -132,14 +133,16 @@ class DesktopStateImpl(context: Context) : DesktopState {
         Settings.Global.getInt(
             context.getContentResolver(),
             Settings.Global.DEVELOPMENT_ENABLE_FREEFORM_WINDOWS_SUPPORT,
-            0
+            0,
         ) != 0
     override val isFreeformEnabled: Boolean = hasFreeformFeature || hasFreeformDevOption
 
     override val shouldShowHomeBehindDesktop: Boolean =
-        Flags.showHomeBehindDesktop() && SystemProperties.getBoolean(
-            SHOW_HOME_BEHIND_DESKTOP_SYS_PROP,
-            context.resources.getBoolean(R.bool.config_showHomeBehindDesktop))
+        Flags.showHomeBehindDesktop() &&
+            SystemProperties.getBoolean(
+                SHOW_HOME_BEHIND_DESKTOP_SYS_PROP,
+                context.resources.getBoolean(R.bool.config_showHomeBehindDesktop),
+            )
 
     companion object {
         @VisibleForTesting
@@ -153,8 +156,7 @@ class DesktopStateImpl(context: Context) : DesktopState {
         private const val SHOW_HOME_BEHIND_DESKTOP_SYS_PROP =
             "persist.wm.debug.show_home_behind_desktop"
 
-        @Volatile
-        private var instance: DesktopState? = null
+        @Volatile private var instance: DesktopState? = null
 
         /**
          * Get or create the [DesktopState] singleton.
@@ -162,12 +164,13 @@ class DesktopStateImpl(context: Context) : DesktopState {
          * This method should not be used if Dagger is used to inject the singleton.
          */
         fun getInstance(context: Context): DesktopState {
-            return instance ?: synchronized(this) {
-                if (instance == null) {
-                    instance = DesktopStateImpl(context)
+            return instance
+                ?: synchronized(this) {
+                    if (instance == null) {
+                        instance = DesktopStateImpl(context)
+                    }
+                    instance!!
                 }
-                instance!!
-            }
         }
     }
 }
