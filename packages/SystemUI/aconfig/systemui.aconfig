@@ -520,6 +520,13 @@ flag {
 }
 
 flag {
+    name: "enable_note_hsum_dev_option_fix"
+    namespace: "note"
+    description: "Enables a fix to ensure notes developer option works for HSUM users."
+    bug: "462400157"
+}
+
+flag {
     name: "enable_note_in_action_corner"
     namespace: "note"
     description: "Enables note as a selectable option in the action corner customization."
