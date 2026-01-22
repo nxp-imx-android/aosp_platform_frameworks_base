@@ -125,15 +125,6 @@ interface IAppFunctionManager {
         int targetUserId
     );
 
-    @EnforcePermission("MANAGE_APP_FUNCTION_ACCESS")
-    List<SignedPackage> getAgentAllowlist();
-
-    @EnforcePermission("MANAGE_APP_FUNCTION_ACCESS")
-    List<SignedPackageParcel> getAgentAllowlistLegacy();
-
-    @EnforcePermission("MANAGE_APP_FUNCTION_ACCESS")
-    void clearAccessHistory(int userId);
-
     Intent createRequestAccessIntent(in String targetPackageName);
 
     void addOnAccessChangedListener(IOnAppFunctionAccessChangeListener listener, int userId);
