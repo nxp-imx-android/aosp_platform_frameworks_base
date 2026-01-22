@@ -26,10 +26,10 @@ import android.util.Slog;
 import com.android.internal.annotations.GuardedBy;
 import com.android.server.companion.datatransfer.continuity.FeatureController;
 import com.android.server.companion.datatransfer.continuity.connectivity.TaskContinuityMessenger;
+import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskInfo;
 import com.android.server.companion.datatransfer.continuity.messages.TaskStackBroadcastMessage;
 import com.android.server.wm.ActivityTaskManagerInternal;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
@@ -39,14 +39,16 @@ import java.util.Objects;
  * <p>This class is responsible for broadcasting task changes to connected devices and maintaining a
  * local store of tasks from connected devices.
  */
-public class TaskSyncController extends FeatureController implements RemoteTaskStore.Listener {
+public class TaskSyncController extends FeatureController {
 
     @GuardedBy("this")
     private boolean mIsRegistered = false;
 
+    @GuardedBy("mRemoteTaskListenerHolder")
+    private final RemoteTaskListenerHolder mRemoteTaskListenerHolder =
+            new RemoteTaskListenerHolder();
+
     private final TaskBroadcaster mTaskBroadcaster;
-    private final RemoteTaskStore mRemoteTaskStore;
-    private final RemoteTaskListenerHolder mRemoteTaskListenerHolder;
     private final ActivityTaskManager mActivityTaskManager;
     private final ActivityTaskManagerInternal mActivityTaskManagerInternal;
     private final RemoteTaskFactory mRemoteTaskFactory;
@@ -55,15 +57,11 @@ public class TaskSyncController extends FeatureController implements RemoteTaskS
             int userId,
             @NonNull TaskContinuityMessenger messenger,
             @NonNull TaskBroadcaster taskBroadcaster,
-            @NonNull RemoteTaskStore remoteTaskStore,
-            @NonNull RemoteTaskListenerHolder remoteTaskListenerHolder,
             @NonNull ActivityTaskManager activityTaskManager,
             @NonNull ActivityTaskManagerInternal activityTaskManagerInternal,
             @NonNull RemoteTaskFactory remoteTaskFactory) {
         super(userId, Objects.requireNonNull(messenger));
         mTaskBroadcaster = Objects.requireNonNull(taskBroadcaster);
-        mRemoteTaskStore = Objects.requireNonNull(remoteTaskStore);
-        mRemoteTaskListenerHolder = Objects.requireNonNull(remoteTaskListenerHolder);
         mActivityTaskManager = Objects.requireNonNull(activityTaskManager);
         mActivityTaskManagerInternal = Objects.requireNonNull(activityTaskManagerInternal);
         mRemoteTaskFactory = Objects.requireNonNull(remoteTaskFactory);
@@ -71,17 +69,23 @@ public class TaskSyncController extends FeatureController implements RemoteTaskS
 
     public void registerTaskListener(@NonNull IRemoteTaskListener listener) {
         Slog.v(getTag(), "Registering task listener");
-        mRemoteTaskListenerHolder.addListener(Objects.requireNonNull(listener));
+        synchronized (mRemoteTaskListenerHolder) {
+            mRemoteTaskListenerHolder.addListener(Objects.requireNonNull(listener));
+        }
     }
 
     public void unregisterTaskListener(@NonNull IRemoteTaskListener listener) {
         Slog.v(getTag(), "Unregistering task listener");
-        mRemoteTaskListenerHolder.removeListener(Objects.requireNonNull(listener));
+        synchronized (mRemoteTaskListenerHolder) {
+            mRemoteTaskListenerHolder.removeListener(Objects.requireNonNull(listener));
+        }
     }
 
     public void removeTask(int associationId, int taskId) {
         Slog.v(getTag(), "Removing task " + taskId + " from association " + associationId);
-        mRemoteTaskStore.removeTask(associationId, taskId);
+        synchronized (mRemoteTaskListenerHolder) {
+            mRemoteTaskListenerHolder.notifyTaskHandedOff(associationId, taskId);
+        }
     }
 
     @Override
@@ -93,16 +97,16 @@ public class TaskSyncController extends FeatureController implements RemoteTaskS
     public void onEnabled() {
         Slog.v(getTag(), "Registering listeners from ActivityTaskManager");
         maybeListenToActivityTaskManager();
-        mRemoteTaskStore.addListener(this);
     }
 
     @Override
     public void onDisabled() {
         Slog.v(getTag(), "Unregistering listeners from ActivityTaskManager");
         unlistenFromActivityTaskManager();
-        mRemoteTaskStore.removeListener(this);
         Slog.v(getTag(), "Clearing all tasks from RemoteTaskStore");
-        mRemoteTaskStore.clear();
+        synchronized (mRemoteTaskListenerHolder) {
+            mRemoteTaskListenerHolder.notifyAllRemoteTasksChanged(null);
+        }
     }
 
     @Override
@@ -116,7 +120,10 @@ public class TaskSyncController extends FeatureController implements RemoteTaskS
     @Override
     public void onAssociationDisconnected(int associationId) {
         Slog.v(getTag(), "Association disconnected: " + associationId);
-        mRemoteTaskStore.removeAssociation(associationId);
+        synchronized (mRemoteTaskListenerHolder) {
+            mRemoteTaskListenerHolder.notifyRemoteTasksChangedForAssociation(associationId, null);
+        }
+
         synchronized (this) {
             if (mTaskContinuityMessenger
                     .getConnectedAssociationStore()
@@ -132,30 +139,28 @@ public class TaskSyncController extends FeatureController implements RemoteTaskS
             int associationId, @NonNull TaskStackBroadcastMessage taskStackBroadcastMessage) {
         Trace.traceBegin(Trace.TRACE_TAG_SYSTEM_SERVER, "onTaskStackBroadcastMessageReceived");
         Slog.v(getTag(), "Received task stack broadcast message from association " + associationId);
-        mRemoteTaskStore.setTasks(
-                associationId, Objects.requireNonNull(taskStackBroadcastMessage).remoteTasks());
-        Trace.traceEnd(Trace.TRACE_TAG_SYSTEM_SERVER);
-    }
-
-    @Override
-    public void onRemoteTasksChanged(@NonNull Collection<RemoteTaskStore.Task> tasks) {
-        List<RemoteTask> remoteTasks = new ArrayList<>();
-        for (RemoteTaskStore.Task task : Objects.requireNonNull(tasks)) {
-            AssociationInfo associationInfo =
-                    mTaskContinuityMessenger.getAssociationInfo(task.associationId());
-            if (associationInfo != null) {
+        AssociationInfo associationInfo =
+                mTaskContinuityMessenger.getAssociationInfo(associationId);
+        if (associationInfo != null) {
+            List<RemoteTask> remoteTasks = new ArrayList<>();
+            for (RemoteTaskInfo taskInfo :
+                    Objects.requireNonNull(taskStackBroadcastMessage).remoteTasks()) {
                 RemoteTask remoteTask =
                         mRemoteTaskFactory.create(
                                 associationInfo.getId(),
                                 associationInfo.getDisplayName().toString(),
-                                task.taskInfo());
+                                taskInfo);
                 if (remoteTask != null) {
                     remoteTasks.add(remoteTask);
                 }
             }
-        }
 
-        mRemoteTaskListenerHolder.notifyListeners(remoteTasks);
+            synchronized (mRemoteTaskListenerHolder) {
+                mRemoteTaskListenerHolder.notifyRemoteTasksChangedForAssociation(
+                        associationId, remoteTasks);
+            }
+        }
+        Trace.traceEnd(Trace.TRACE_TAG_SYSTEM_SERVER);
     }
 
     private void maybeListenToActivityTaskManager() {

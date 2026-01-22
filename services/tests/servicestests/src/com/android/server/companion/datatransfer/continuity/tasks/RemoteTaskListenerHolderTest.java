@@ -16,9 +16,6 @@
 
 package com.android.server.companion.datatransfer.continuity.tasks;
 
-import static com.google.common.truth.Truth.assertThat;
-
-import android.companion.datatransfer.continuity.IRemoteTaskListener;
 import android.companion.datatransfer.continuity.RemoteTask;
 import android.platform.test.annotations.Presubmit;
 import android.testing.AndroidTestingRunner;
@@ -31,23 +28,6 @@ import org.junit.runner.RunWith;
 @RunWith(AndroidTestingRunner.class)
 public class RemoteTaskListenerHolderTest {
 
-    private final static class FakeRemoteTaskListener extends IRemoteTaskListener.Stub {
-        List<List<RemoteTask>> remoteTasksReportedToListener = new ArrayList<>();
-
-        @Override
-        public void onRemoteTasksChanged(List<RemoteTask> remoteTasks) {
-            remoteTasksReportedToListener.add(remoteTasks);
-        }
-
-        private void verifyListenerEvents(List<RemoteTask>... expectedEvents) {
-            assertThat(remoteTasksReportedToListener).hasSize(expectedEvents.length);
-            for (int i = 0; i < expectedEvents.length; i++) {
-                assertThat(remoteTasksReportedToListener.get(i))
-                        .containsExactlyElementsIn(expectedEvents[i]);
-            }
-        }
-    }
-
     private RemoteTaskListenerHolder mRemoteTaskListenerHolder = new RemoteTaskListenerHolder();
 
     @Test
@@ -59,39 +39,91 @@ public class RemoteTaskListenerHolderTest {
 
     @Test
     public void addListener_notifiesWithLastBroadcastedTasks() {
-        List<RemoteTask> tasks = List.of(createRemoteTask(1));
+        List<RemoteTask> tasks = List.of(createRemoteTask(1, 1));
         FakeRemoteTaskListener listener = new FakeRemoteTaskListener();
-        mRemoteTaskListenerHolder.notifyListeners(tasks);
+        mRemoteTaskListenerHolder.notifyAllRemoteTasksChanged(tasks);
         mRemoteTaskListenerHolder.addListener(listener);
         listener.verifyListenerEvents(tasks);
     }
 
     @Test
-    public void notifyListeners_notifiesAllListeners() {
-        List<RemoteTask> tasks = List.of(createRemoteTask(1));
+    public void notifyAllRemoteTasksChanged_notifiesAllListeners() {
+        List<RemoteTask> tasks = List.of(createRemoteTask(1, 1));
         FakeRemoteTaskListener listener1 = new FakeRemoteTaskListener();
         FakeRemoteTaskListener listener2 = new FakeRemoteTaskListener();
         mRemoteTaskListenerHolder.addListener(listener1);
         mRemoteTaskListenerHolder.addListener(listener2);
-        mRemoteTaskListenerHolder.notifyListeners(tasks);
+        mRemoteTaskListenerHolder.notifyAllRemoteTasksChanged(tasks);
         listener1.verifyListenerEvents(List.of(), tasks);
         listener2.verifyListenerEvents(List.of(), tasks);
     }
 
     @Test
+    public void
+            notifyRemoteTasksChangedForAssociation_replacesTaskForAssociationAndNotifiesAllListeners() {
+        int associationId1 = 1;
+        int associationId2 = 2;
+        List<RemoteTask> firstAssociationTasks = List.of(createRemoteTask(associationId1, 1));
+        List<RemoteTask> secondAssociationTasks = List.of(createRemoteTask(associationId2, 1));
+        List<RemoteTask> initialTasks = new ArrayList<>();
+        initialTasks.addAll(firstAssociationTasks);
+        initialTasks.addAll(secondAssociationTasks);
+        FakeRemoteTaskListener listener1 = new FakeRemoteTaskListener();
+        FakeRemoteTaskListener listener2 = new FakeRemoteTaskListener();
+        mRemoteTaskListenerHolder.addListener(listener1);
+        mRemoteTaskListenerHolder.addListener(listener2);
+        mRemoteTaskListenerHolder.notifyAllRemoteTasksChanged(initialTasks);
+        firstAssociationTasks =
+                List.of(createRemoteTask(associationId1, 2), createRemoteTask(associationId1, 3));
+        mRemoteTaskListenerHolder.notifyRemoteTasksChangedForAssociation(
+                associationId1, firstAssociationTasks);
+        List<RemoteTask> updatedTasks = new ArrayList<>();
+        updatedTasks.addAll(firstAssociationTasks);
+        updatedTasks.addAll(secondAssociationTasks);
+        listener1.verifyListenerEvents(List.of(), initialTasks, updatedTasks);
+        listener2.verifyListenerEvents(List.of(), initialTasks, updatedTasks);
+    }
+
+    @Test
     public void removeListener_doesNotNotifyRemovedListener() {
-        List<RemoteTask> tasks = List.of(createRemoteTask(1));
+        List<RemoteTask> tasks = List.of(createRemoteTask(1, 1));
         FakeRemoteTaskListener listener1 = new FakeRemoteTaskListener();
         FakeRemoteTaskListener listener2 = new FakeRemoteTaskListener();
         mRemoteTaskListenerHolder.addListener(listener1);
         mRemoteTaskListenerHolder.addListener(listener2);
         mRemoteTaskListenerHolder.removeListener(listener1);
-        mRemoteTaskListenerHolder.notifyListeners(tasks);
+        mRemoteTaskListenerHolder.notifyAllRemoteTasksChanged(tasks);
         listener1.verifyListenerEvents(List.of());
-        listener2.verifyListenerEvents(List.of(), List.of(createRemoteTask(1)));
+        listener2.verifyListenerEvents(List.of(), List.of(createRemoteTask(1, 1)));
     }
 
-    private RemoteTask createRemoteTask(int id) {
-        return new RemoteTask.Builder(id, 100).build();
+    @Test
+    public void notifyTaskHandedOff_removesTaskAndNotifiesAllListeners() {
+        List<RemoteTask> tasks = List.of(createRemoteTask(1, 1), createRemoteTask(2, 1));
+        FakeRemoteTaskListener listener1 = new FakeRemoteTaskListener();
+        FakeRemoteTaskListener listener2 = new FakeRemoteTaskListener();
+        mRemoteTaskListenerHolder.addListener(listener1);
+        mRemoteTaskListenerHolder.addListener(listener2);
+        mRemoteTaskListenerHolder.notifyAllRemoteTasksChanged(tasks);
+        mRemoteTaskListenerHolder.notifyTaskHandedOff(1, 1);
+        listener1.verifyListenerEvents(List.of(), tasks, List.of(createRemoteTask(2, 1)));
+        listener2.verifyListenerEvents(List.of(), tasks, List.of(createRemoteTask(2, 1)));
+    }
+
+    @Test
+    public void notifyTaskHandedOff_doesNotNotifyIfTaskNotFound() {
+        List<RemoteTask> tasks = List.of(createRemoteTask(1, 1), createRemoteTask(2, 1));
+        FakeRemoteTaskListener listener1 = new FakeRemoteTaskListener();
+        FakeRemoteTaskListener listener2 = new FakeRemoteTaskListener();
+        mRemoteTaskListenerHolder.addListener(listener1);
+        mRemoteTaskListenerHolder.addListener(listener2);
+        mRemoteTaskListenerHolder.notifyAllRemoteTasksChanged(tasks);
+        mRemoteTaskListenerHolder.notifyTaskHandedOff(1, 2);
+        listener1.verifyListenerEvents(List.of(), tasks);
+        listener2.verifyListenerEvents(List.of(), tasks);
+    }
+
+    private RemoteTask createRemoteTask(int associationId, int taskId) {
+        return new RemoteTask.Builder(associationId, taskId).build();
     }
 }
