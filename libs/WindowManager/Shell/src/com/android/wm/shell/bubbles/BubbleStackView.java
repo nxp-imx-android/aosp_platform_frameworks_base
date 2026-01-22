@@ -2162,7 +2162,7 @@ public class BubbleStackView extends FrameLayout
     /**
      * Update bubbles' icon views accessibility states.
      */
-    public void updateBubblesAcessibillityStates() {
+    public void updateBubblesAccessibilityStates() {
         for (int i = 0; i < mBubbleData.getBubbles().size(); i++) {
             Bubble prevBubble = i > 0 ? mBubbleData.getBubbles().get(i - 1) : null;
             Bubble bubble = mBubbleData.getBubbles().get(i);
@@ -2175,17 +2175,18 @@ public class BubbleStackView extends FrameLayout
             if (mIsExpanded) {
                 // when stack is expanded all bubbles are important for accessibility
                 bubbleIconView.setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_YES);
-            } else {
-                // when stack is collapsed, only the top bubble is important for accessibility,
-                bubbleIconView.setImportantForAccessibility(i == 0
-                        ? IMPORTANT_FOR_ACCESSIBILITY_YES : IMPORTANT_FOR_ACCESSIBILITY_NO);
-            }
-
-            if (bubbleIconView.getImportantForAccessibility() == IMPORTANT_FOR_ACCESSIBILITY_YES) {
-                View prevBubbleIconView =
-                        (mIsExpanded && prevBubble != null) ? prevBubble.getIconView() : null;
+                BadgedImageView prevIcon = prevBubble != null ? prevBubble.getIconView() : null;
                 bubbleIconView.setAccessibilityDelegate(
-                        new BubbleAccessibilityDelegate(prevBubbleIconView));
+                        new BubbleIconAccessibilityDelegate(true /* allowDismiss */, prevIcon));
+            } else {
+                if (i == 0) {
+                    // when stack is collapsed, only the first bubble is important for accessibility
+                    bubbleIconView.setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_YES);
+                    bubbleIconView.setAccessibilityDelegate(new BubbleStackAccessibilityDelegate());
+                } else {
+                    bubbleIconView.setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO);
+                    bubbleIconView.setAccessibilityDelegate(null);
+                }
             }
         }
 
@@ -2200,7 +2201,8 @@ public class BubbleStackView extends FrameLayout
                 View lastBubbleIconView = lastBubble.getIconView();
                 if (lastBubbleIconView != null) {
                     bubbleOverflowIconView.setAccessibilityDelegate(
-                            new BubbleAccessibilityDelegate(lastBubbleIconView));
+                            new BubbleIconAccessibilityDelegate(false /* allowDismiss */,
+                                    lastBubbleIconView));
                 }
             }
         }
@@ -4381,12 +4383,32 @@ public class BubbleStackView extends FrameLayout
         }
     }
 
-    private class BubbleAccessibilityDelegate extends View.AccessibilityDelegate {
+    private class BubbleStackAccessibilityDelegate extends AccessibilityDelegate {
+        @Override
+        public void onInitializeAccessibilityNodeInfo(@NonNull View host,
+                @NonNull AccessibilityNodeInfo info) {
+            super.onInitializeAccessibilityNodeInfo(host, info);
+            setupLocalMenu(info);
+        }
 
+        @Override
+        public boolean performAccessibilityAction(@NonNull View host, int action,
+                @Nullable Bundle args) {
+            if (super.performAccessibilityAction(host, action, args)) {
+                return true;
+            }
+            return BubbleStackView.this.performAccessibilityAction(action, args);
+        }
+    }
+
+    private class BubbleIconAccessibilityDelegate extends AccessibilityDelegate {
+        private final boolean mAllowDismiss;
         /** The view that precedes the current one in the accessibility traversal order. */
         private final @Nullable View mPreviousBubbleIcon;
 
-        private BubbleAccessibilityDelegate(@Nullable View lastBubbleIconView) {
+        private BubbleIconAccessibilityDelegate(boolean allowDismiss,
+                @Nullable View lastBubbleIconView) {
+            mAllowDismiss = allowDismiss;
             mPreviousBubbleIcon = lastBubbleIconView;
         }
 
@@ -4397,15 +4419,39 @@ public class BubbleStackView extends FrameLayout
             if (mPreviousBubbleIcon != null) {
                 info.setTraversalAfter(mPreviousBubbleIcon);
             }
-            setupLocalMenu(info);
+            if (mAllowDismiss) {
+                info.addAction(AccessibilityAction.ACTION_DISMISS);
+            }
+            if (mExpandedBubble != null && mExpandedBubble.getIconView() == v) {
+                info.addAction(AccessibilityAction.ACTION_COLLAPSE);
+            } else {
+                info.addAction(AccessibilityAction.ACTION_EXPAND);
+            }
         }
 
         @Override
-        public boolean performAccessibilityAction(@NonNull View host, int action, Bundle args) {
+        public boolean performAccessibilityAction(@NonNull View host, int action,
+                @Nullable Bundle args) {
             if (super.performAccessibilityAction(host, action, args)) {
                 return true;
             }
-            return BubbleStackView.this.performAccessibilityAction(action, args);
+            return switch (action) {
+                case AccessibilityNodeInfo.ACTION_DISMISS -> {
+                    dismissBubbleIfExists(mBubbleData.getBubbleInStackWithView(host));
+                    yield true;
+                }
+                case AccessibilityNodeInfo.ACTION_COLLAPSE -> {
+                    mBubbleData.setExpanded(false);
+                    yield true;
+                }
+                case AccessibilityNodeInfo.ACTION_EXPAND -> {
+                    // Rely on click handler logic on the icon to handle expanding.
+                    // But go through callOnClick to skip reporting an additional a11y events.
+                    host.callOnClick();
+                    yield true;
+                }
+                default -> false;
+            };
         }
     }
 }

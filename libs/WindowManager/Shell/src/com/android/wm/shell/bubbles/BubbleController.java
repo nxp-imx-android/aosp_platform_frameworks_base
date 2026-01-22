@@ -2993,7 +2993,7 @@ public class BubbleController implements ConfigurationChangeListener,
 
         if (mStackView != null) {
             mStackView.updateContentDescription();
-            mStackView.updateBubblesAcessibillityStates();
+            mStackView.updateBubblesAccessibilityStates();
         } else if (mLayerView != null) {
             // TODO(b/273313561): handle a11y for BubbleBarLayerView
         }
