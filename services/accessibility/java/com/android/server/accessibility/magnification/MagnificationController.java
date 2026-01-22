@@ -50,7 +50,6 @@ import android.util.SparseIntArray;
 import android.util.SparseLongArray;
 import android.util.TypedValue;
 import android.view.Display;
-import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.accessibility.MagnificationAnimationCallback;
 
@@ -799,13 +798,7 @@ public class MagnificationController implements MagnificationConnectionManager.C
             delegate = mAccessibilityCallbacksDelegateArray.get(displayId);
         }
         if (delegate != null) {
-            if (android.view.accessibility.Flags.requestRectangleWithSource()) {
-                delegate.onRectangleOnScreenRequested(displayId, left, top, right, bottom, source);
-            } else {
-                delegate.onRectangleOnScreenRequested(displayId, left, top, right, bottom,
-                        View.RECTANGLE_ON_SCREEN_REQUEST_SOURCE_UNDEFINED);
-            }
-
+            delegate.onRectangleOnScreenRequested(displayId, left, top, right, bottom, source);
         }
     }
 
