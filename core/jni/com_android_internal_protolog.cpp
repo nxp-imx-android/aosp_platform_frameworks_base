@@ -154,6 +154,11 @@ public:
 
 private:
     bool checkType(int requestedType) {
+        // If there is a pending exception (e.g. from a previous reportArgumentError), we must
+        // return early to prevent further JNI calls which would crash the VM.
+        if (mEnv->ExceptionCheck()) {
+            return false;
+        }
         if (mArgIndex >= mArgCount) {
             reportArgumentError("Too few arguments");
             return false;
@@ -180,7 +185,15 @@ private:
         return true;
     }
 
+    // Only first error is reported, execution continues after reporting so handle appropriately.
+    // The first reported exception will only be thrown when returning back to Java after execution
+    // of the entire JNI function.
+    // WARN: Most JNI functions cannot be called while an exception is pending. The caller is
+    // responsible for checking for pending exceptions to avoid VM crashes.
     void reportArgumentError(const char* errorMsg) {
+        if (mEnv->ExceptionCheck()) {
+            return;
+        }
         jniThrowException(mEnv, "java/lang/IllegalArgumentException", errorMsg);
     }
 
@@ -209,6 +222,14 @@ static void com_android_internal_protolog_log_string(JNIEnv* env, jclass clazz, 
     const char* groupStr = env->GetStringUTFChars(group, nullptr);
     const char* messageStr = env->GetStringUTFChars(message, nullptr);
 
+    if (groupStr == nullptr || messageStr == nullptr) {
+        // OOM or other error, GetStringUTFChars threw an exception.
+        // We just return to allow the exception to propagate.
+        if (groupStr) env->ReleaseStringUTFChars(group, groupStr);
+        if (messageStr) env->ReleaseStringUTFChars(message, messageStr);
+        return;
+    }
+
     JniArgumentProvider argumentProvider(env, paramsMask, argCount, primitiveArgs, stringArgs);
     Log(static_cast<ProtoLogLevel>(level), groupStr, messageStr, argumentProvider);
 
@@ -226,6 +247,12 @@ static void com_android_internal_protolog_log_hash(JNIEnv* env, jclass clazz, ji
     }
 
     const char* groupStr = env->GetStringUTFChars(group, nullptr);
+
+    if (groupStr == nullptr) {
+        // OOM or other error, GetStringUTFChars threw an exception.
+        // We just return to allow the exception to propagate.
+        return;
+    }
 
     JniArgumentProvider argumentProvider(env, paramsMask, argCount, primitiveArgs, stringArgs);
 
