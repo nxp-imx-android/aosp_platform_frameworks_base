@@ -37,6 +37,7 @@ import static android.view.WindowManager.LayoutParams.INVALID_WINDOW_TYPE;
 import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_INTERCEPT_GLOBAL_DRAG_AND_DROP;
 import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_IS_ROUNDED_CORNERS_OVERLAY;
 import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_TRUSTED_OVERLAY;
+import static android.view.WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY;
 import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION;
 import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION_ATTACHED_DIALOG;
 import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
@@ -44,6 +45,7 @@ import static android.view.WindowManager.LayoutParams.TYPE_BASE_APPLICATION;
 import static android.view.WindowManager.LayoutParams.TYPE_INPUT_METHOD;
 import static android.view.WindowManager.LayoutParams.TYPE_INPUT_METHOD_DIALOG;
 import static android.view.WindowManager.LayoutParams.TYPE_NOTIFICATION_SHADE;
+import static android.view.WindowManager.LayoutParams.TYPE_SCREENSHOT;
 import static android.view.WindowManager.LayoutParams.TYPE_TOAST;
 import static android.view.flags.Flags.FLAG_SENSITIVE_CONTENT_APP_PROTECTION;
 import static android.window.DisplayAreaOrganizer.FEATURE_VENDOR_FIRST;
@@ -72,6 +74,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.description;
 import static org.mockito.Mockito.mock;
@@ -706,6 +709,68 @@ public class WindowManagerServiceTests extends WindowTestsBase {
                 clientToken, windowToken, TYPE_INPUT_METHOD,
                 true /* callerCanManageAppTokens */, windowToken.mOptions,
                 false /* shouldDispatchConfigWhenRegistering */);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_USE_TRANSITION_FOR_SCREENSHOT_WINDOW_ADDITIONS)
+    public void testScreenshotOverlayIsBehindAccessibilityOverlay_AddedWhenPlayingTransition() {
+        TestTransitionPlayer player = registerTestTransitionPlayer();
+
+        final Session session = createTestSession(mAtm, 1234 /* pid */, Process.SYSTEM_UID);
+
+        final Binder accessibilityToken = new Binder();
+        mWm.addWindowToken(accessibilityToken, TYPE_ACCESSIBILITY_OVERLAY, DEFAULT_DISPLAY, null);
+
+        final WindowManager.LayoutParams accessibilityParams =
+                new WindowManager.LayoutParams(TYPE_ACCESSIBILITY_OVERLAY);
+        accessibilityParams.token = accessibilityToken;
+        final IWindow accessibilityWindow = new TestIWindow();
+        mWm.addWindow(session, accessibilityWindow, accessibilityParams, View.VISIBLE,
+                DEFAULT_DISPLAY, UserHandle.USER_SYSTEM, WindowInsets.Type.defaultVisible(), null,
+                new WindowRelayoutResult());
+
+        // Generate an activity launch transition
+        final ActivityRecord activity = new ActivityBuilder(mAtm)
+                .setCreateTask(true).setVisible(false).build();
+        requestTransition(activity, WindowManager.TRANSIT_OPEN);
+        mWm.mRoot.resumeFocusedTasksTopActivities();
+        final Transition transition = activity.mTransitionController.getCollectingTransition();
+        assertNotNull(transition);
+        mWm.mAnimator.ready();
+        activity.mTransitionController.requestStartTransition(
+                transition, activity.getTask(), null, null);
+        assertEquals(transition, player.mLastTransit);
+        player.startTransition();
+
+        final WindowManager.LayoutParams screenshotParams =
+                new WindowManager.LayoutParams(TYPE_SCREENSHOT);
+        final IWindow screenshotWindow = new TestIWindow();
+        mWm.addWindow(session, screenshotWindow, screenshotParams, View.VISIBLE, DEFAULT_DISPLAY,
+                UserHandle.USER_SYSTEM, WindowInsets.Type.defaultVisible(), null,
+                new WindowRelayoutResult());
+
+        final WindowState screenshotWindowState = mWm.windowForClient(session, screenshotWindow);
+        assertTrue(player.mLastTransit.isInTransition(screenshotWindowState));
+
+        final ActionChain chain = ActionChain.testFinish(player.mLastTransit);
+        player.mLastTransit.onTransactionReady(player.mLastTransit.getSyncId(), mTransaction);
+        player.mLastTransit.finishTransition(chain);
+
+        final ArgumentCaptor<Integer> screenshotLayerCaptor =
+                ArgumentCaptor.forClass(Integer.class);
+        verify(mTransaction, atLeastOnce()).setLayer(
+                eq(screenshotWindowState.getParentSurfaceControl()),
+                screenshotLayerCaptor.capture());
+
+        final ArgumentCaptor<Integer> accessibilityLayerCaptor =
+                ArgumentCaptor.forClass(Integer.class);
+        final WindowState accessibilityWindowState =
+                mWm.windowForClient(session, accessibilityWindow);
+        verify(mTransaction, atLeastOnce()).setLayer(
+                eq(accessibilityWindowState.getParentSurfaceControl()),
+                accessibilityLayerCaptor.capture());
+
+        assertTrue(screenshotLayerCaptor.getValue() < accessibilityLayerCaptor.getValue());
     }
 
     @Test
