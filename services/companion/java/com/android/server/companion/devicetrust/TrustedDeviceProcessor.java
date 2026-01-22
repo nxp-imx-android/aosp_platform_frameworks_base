@@ -24,6 +24,7 @@ import static com.android.server.companion.utils.Utils.bitwiseOr;
 
 import android.annotation.NonNull;
 import android.annotation.RequiresNoPermission;
+import android.annotation.UserIdInt;
 import android.companion.AssociationInfo;
 import android.companion.IOnMessageReceivedListener;
 import android.companion.IOnTransportEventListener;
@@ -101,6 +102,17 @@ public class TrustedDeviceProcessor {
      */
     public void removePskProvider(@NonNull String name) {
         mPskProviders.removeIf(provider -> name.equals(provider.getProviderName()));
+    }
+
+    /**
+     * Loads persisted keys for user.
+     * @param userId User ID
+     */
+    public void loadKeysForUser(@UserIdInt int userId) {
+        mTrustedDeviceStore.readSessionKeysForUser(userId);
+        for (PskProvider provider : mPskProviders) {
+            provider.load(userId);
+        }
     }
 
     @NonNull

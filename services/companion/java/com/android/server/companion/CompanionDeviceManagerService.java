@@ -123,6 +123,7 @@ import com.android.server.companion.devicepresence.CompanionAppBinder;
 import com.android.server.companion.devicepresence.DevicePresenceProcessor;
 import com.android.server.companion.devicepresence.ObservableUuid;
 import com.android.server.companion.devicepresence.ObservableUuidStore;
+import com.android.server.companion.devicetrust.BluetoothPasskeyProvider;
 import com.android.server.companion.devicetrust.RandomKeyProvider;
 import com.android.server.companion.devicetrust.TrustedDeviceProcessor;
 import com.android.server.companion.devicetrust.TrustedDeviceStore;
@@ -227,6 +228,8 @@ public class CompanionDeviceManagerService extends SystemService {
 
         mTrustedDeviceProcessor = new TrustedDeviceProcessor(context, mAssociationStore,
                 mTrustedDeviceStore, mTransportManager);
+        mTrustedDeviceProcessor.addPskProvider(
+                new BluetoothPasskeyProvider(context, mAssociationStore));
 
         // TODO(b/279663946): move context sync to a dedicated system service
         mCrossDeviceSyncController = new CrossDeviceSyncController(getContext(), mTransportManager);
@@ -291,7 +294,7 @@ public class CompanionDeviceManagerService extends SystemService {
 
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.execute(() -> {
-            mTrustedDeviceStore.readSessionKeysForUser(userId); // Load user's session keys.
+            mTrustedDeviceProcessor.loadKeysForUser(userId);
             mCompanionExemptionProcessor.updateAutoRevokeExemptions(userId);
         });
     }
