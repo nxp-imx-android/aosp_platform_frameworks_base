@@ -76,7 +76,6 @@ import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderView
 import com.android.systemui.screencapture.record.smallscreen.ui.PostRecordSnackbarDialogs
 import com.android.systemui.screencapture.record.smallscreen.ui.viewmodel.PostRecordingActionsViewModel
 import com.android.systemui.screencapture.record.smallscreen.ui.viewmodel.PostRecordingImmediateVideoViewModel
-import com.android.systemui.statusbar.phone.EdgeToEdgeDialogDelegate
 import com.android.systemui.statusbar.phone.SystemUIDialog
 import com.android.systemui.statusbar.phone.SystemUIDialog.DIALOG_WINDOW_TYPE
 import com.android.systemui.statusbar.phone.SystemUIDialogFactory
@@ -109,14 +108,11 @@ constructor(
             .create(
                 context.createWindowContext(display, DIALOG_WINDOW_TYPE, null),
                 theme = R.style.Theme_SystemUI_Dialog,
-                dialogDelegate = EdgeToEdgeDialogDelegate(),
             ) { dialogInstance ->
                 DialogContent(uri = uri, thumbnail = thumbnail, window = dialogInstance.window)
             }
             .apply {
                 setupWindow(window!!)
-                setCancelable(false)
-                setCanceledOnTouchOutside(false)
                 setOnDismissListener { visibleState.targetState = false }
             }
 
@@ -278,7 +274,10 @@ constructor(
             }
 
         Box(
-            modifier = Modifier.fillMaxSize().safeDrawingPadding(),
+            modifier =
+                Modifier.fillMaxSize()
+                    .clickable(onClick = { hide() }, indication = null, interactionSource = null)
+                    .safeDrawingPadding(),
             contentAlignment = Alignment.BottomStart,
         ) {
             AnimatedVisibility(
