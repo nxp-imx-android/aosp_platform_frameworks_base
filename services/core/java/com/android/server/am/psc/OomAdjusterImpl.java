@@ -615,6 +615,12 @@ public class OomAdjusterImpl extends OomAdjuster {
             ProcessRecordNode.NODE_TYPE_ADJ, ADJ_SLOT_VALUES.length);
     private final OomAdjusterArgs mTmpOomAdjusterArgs = new OomAdjusterArgs();
 
+    private final CapabilityController mCapabilityController =
+            Flags.enableCapabilityControllerComputation() ? new CapabilityController() : null;
+    /** A list of edges for partial graph updates in {@link #partialUpdateProcessGraphLSP}. */
+    private final ArrayList<GraphEdge> mEdgesToUpdate =
+            Flags.enableCapabilityControllerComputation() ? new ArrayList<>() : null;
+
     void unlinkProcessRecordFromList(@NonNull ProcessRecordInternal app) {
         mProcessRecordProcStateNodes.unlink(app);
         mProcessRecordAdjNodes.unlink(app);
@@ -834,6 +840,13 @@ public class OomAdjusterImpl extends OomAdjuster {
             }
         }
 
+        // Capability computation needs updated process state values, so this should be after
+        // computeConnectionsLSP, where the process state computation is done. It also needs to
+        // be before updateAppUidRecIfNecessaryLSP because updated capabilities are read there.
+        if (Flags.enableCapabilityControllerComputation()) {
+            partialUpdateProcessGraphLSP(targets);
+        }
+
         // If all processes have an assigned adj, no need to calculate and assign cached adjs.
         if (needLruAdjust) {
             // TODO: b/319163103 - optimize cache adj assignment to not require the whole lru list.
@@ -851,6 +864,25 @@ public class OomAdjusterImpl extends OomAdjuster {
         }
 
         postUpdateOomAdjInnerLSP(oomAdjReason, activeUids, now, nowElapsed, oldTime, false);
+    }
+
+    /** Performs a partial update to the process graph from a set of target processes. */
+    @GuardedBy({"mServiceLock", "mProcLock"})
+    private void partialUpdateProcessGraphLSP(ArraySet<ProcessRecordInternal> targets) {
+        if (!mEdgesToUpdate.isEmpty()) {
+            Slog.e(TAG, "mEdgesToUpdate is not empty at the beginning of a partial update");
+            mEdgesToUpdate.clear();
+        }
+
+        for (int i = 0, size = targets.size(); i < size; i++) {
+            final ProcessRecordInternal target = targets.valueAt(i);
+            // TODO(b/466961280): Add other incoming service/provider binding edges.
+            mEdgesToUpdate.add(target.getProcessEdge());
+        }
+
+        // Only triggers computation without using its result.
+        mCapabilityController.update(mEdgesToUpdate);
+        mEdgesToUpdate.clear();
     }
 
     @GuardedBy({"mServiceLock", "mProcLock"})
