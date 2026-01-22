@@ -10091,6 +10091,7 @@ package android.app.permissionui {
     method public int getPaddingLeft();
     method public int getPaddingRight();
     method public int getPaddingTop();
+    method public float getPressedCornerRadius();
     method @ColorInt public int getStrokeColor();
     method public int getStrokeWidth();
     method @ColorInt public int getTextColor();
@@ -10113,6 +10114,7 @@ package android.app.permissionui {
     method @NonNull public android.app.permissionui.LocationButtonRequest.Builder setPaddingLeft(int);
     method @NonNull public android.app.permissionui.LocationButtonRequest.Builder setPaddingRight(int);
     method @NonNull public android.app.permissionui.LocationButtonRequest.Builder setPaddingTop(int);
+    method @NonNull public android.app.permissionui.LocationButtonRequest.Builder setPressedCornerRadius(float);
     method @NonNull public android.app.permissionui.LocationButtonRequest.Builder setStrokeColor(@ColorInt int);
     method @NonNull public android.app.permissionui.LocationButtonRequest.Builder setStrokeWidth(int);
     method @NonNull public android.app.permissionui.LocationButtonRequest.Builder setTextColor(@ColorInt int);
