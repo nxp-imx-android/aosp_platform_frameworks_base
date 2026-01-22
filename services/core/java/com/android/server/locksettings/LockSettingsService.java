@@ -73,6 +73,7 @@ import android.app.admin.DevicePolicyManager;
 import android.app.admin.DevicePolicyManagerInternal;
 import android.app.admin.DeviceStateCache;
 import android.app.admin.PasswordMetrics;
+import android.app.supervision.SupervisionManagerInternal;
 import android.app.trust.IStrongAuthTracker;
 import android.app.trust.TrustManager;
 import android.content.BroadcastReceiver;
@@ -289,6 +290,7 @@ public class LockSettingsService extends ILockSettings.Stub {
     private final StorageManagerInternal mStorageManagerInternal;
     private final IActivityManager mActivityManager;
     private final SyntheticPasswordManager mSpManager;
+    private final SupervisionManagerInternal mSupervisionManagerInternal;
 
     private final KeyStore mKeyStore;
     private final KeyStoreAuthorization mKeyStoreAuthorization;
@@ -682,6 +684,10 @@ public class LockSettingsService extends ILockSettings.Stub {
         public void invalidateLockoutEndTimeCache() {
             LockPatternUtils.invalidateLockoutEndTimeCache();
         }
+
+        public SupervisionManagerInternal getSupervisionManagerInternal() {
+            return LocalServices.getService(SupervisionManagerInternal.class);
+        }
     }
 
     private class SoftwareRateLimiterInjector implements SoftwareRateLimiter.Injector {
@@ -761,6 +767,7 @@ public class LockSettingsService extends ILockSettings.Stub {
         mUserManager = injector.getUserManager();
         mStorageManager = injector.getStorageManager();
         mStorageManagerInternal = mInjector.getStorageManagerInternal();
+        mSupervisionManagerInternal = injector.getSupervisionManagerInternal();
         mStrongAuthTracker = injector.getStrongAuthTracker();
         mStrongAuthTracker.register(mStrongAuth);
         mGatekeeperPasswords = new LongSparseArray<>();
@@ -3899,6 +3906,10 @@ public class LockSettingsService extends ILockSettings.Stub {
         try {
             if (mInjector.getDeviceStateCache().isUserOrganizationManaged(userId)) {
                 Slog.i(TAG, "Organization managed users can have escrow token");
+                return;
+            }
+            if (mSupervisionManagerInternal.isEscrowTokenRequired(userId)) {
+                Slog.i(TAG, "Supervised users can have escrow token");
                 return;
             }
         } finally {

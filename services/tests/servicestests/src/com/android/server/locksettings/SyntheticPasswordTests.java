@@ -399,9 +399,26 @@ public class SyntheticPasswordTests extends BaseLockSettingsServiceTests {
     }
 
     @Test
+    public void testEscrowDataRetainedWhenIsEscrowTokenRequiredVerifiesCredential() throws
+            RemoteException {
+
+        when(mDeviceStateCache.isUserOrganizationManaged(anyInt())).thenReturn(false);
+        when(mSupervisionManagerInternal.isEscrowTokenRequired(anyInt())).thenReturn(true);
+
+        LockscreenCredential password = newPassword("password");
+        initSpAndSetCredential(PRIMARY_USER_ID, password);
+
+        mService.verifyCredential(password, PRIMARY_USER_ID, 0 /* flags */);
+
+        assertTrue("Escrow data was destroyed", mSpManager.hasEscrowData(PRIMARY_USER_ID));
+    }
+
+    @Test
     public void testEscrowDataRetainedWhenUnmanagedTestUserVerifiesCredential()
             throws RemoteException {
         when(mDeviceStateCache.isUserOrganizationManaged(anyInt())).thenReturn(false);
+        when(mSupervisionManagerInternal.isEscrowTokenRequired(anyInt())).thenReturn(false);
+
         UserInfo userInfo = mUserManagerInternal.getUserInfo(PRIMARY_USER_ID);
         userInfo.flags |= FLAG_FOR_TESTING;
 
@@ -416,6 +433,7 @@ public class SyntheticPasswordTests extends BaseLockSettingsServiceTests {
     @Test
     public void testEscrowDataDeletedWhenUnmanagedUserVerifiesCredential() throws RemoteException {
         when(mDeviceStateCache.isUserOrganizationManaged(anyInt())).thenReturn(false);
+        when(mSupervisionManagerInternal.isEscrowTokenRequired(anyInt())).thenReturn(false);
 
         LockscreenCredential password = newPassword("password");
         initSpAndSetCredential(PRIMARY_USER_ID, password);
@@ -501,6 +519,7 @@ public class SyntheticPasswordTests extends BaseLockSettingsServiceTests {
         byte[] token = "some-high-entropy-secure-token".getBytes();
         when(mDeviceStateCache.isUserOrganizationManaged(anyInt())).thenReturn(false);
         when(mDeviceStateCache.isDeviceProvisioned()).thenReturn(true);
+        when(mSupervisionManagerInternal.isEscrowTokenRequired(anyInt())).thenReturn(false);
 
         mService.initializeSyntheticPassword(PRIMARY_USER_ID);
         try {

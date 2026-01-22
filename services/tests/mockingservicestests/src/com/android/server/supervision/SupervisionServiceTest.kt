@@ -629,6 +629,24 @@ class SupervisionServiceTest {
     }
 
     @Test
+    @RequiresFlagsEnabled(Flags.FLAG_VERIFY_SUPERVISION_ROLE_HOLDERS_BEFORE_DESTROYING_ESCROW_TOKEN)
+    fun isEscrowTokenRequired() {
+        injector.setRoleHoldersAsUser(
+            RoleManager.ROLE_SUPERVISION,
+            UserHandle.of(USER_ID),
+            listOf(),
+        )
+        assertThat(service.mInternal.isEscrowTokenRequired(USER_ID)).isFalse()
+
+        injector.setRoleHoldersAsUser(
+            RoleManager.ROLE_SUPERVISION,
+            UserHandle.of(USER_ID),
+            listOf("com.example.supervisionapp1"),
+        )
+        assertThat(service.mInternal.isEscrowTokenRequired(USER_ID)).isTrue()
+    }
+
+    @Test
     fun createConfirmSupervisionCredentialsIntent() {
         service.mInternal.setSupervisionEnabledForUser(context.getUserId(), true)
         whenever(mockUserManagerInternal.getSupervisingProfileId()).thenReturn(SUPERVISING_USER_ID)
