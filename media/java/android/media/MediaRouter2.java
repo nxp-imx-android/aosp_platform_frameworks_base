@@ -3060,7 +3060,7 @@ public final class MediaRouter2 {
 
         void setDeviceSuggestions(@Nullable List<SuggestedDeviceInfo> suggestedDeviceInfo);
 
-        @Nullable
+        @NonNull
         Map<String, List<SuggestedDeviceInfo>> getDeviceSuggestions();
 
         void notifyDeviceSuggestionRequested();
@@ -3341,6 +3341,7 @@ public final class MediaRouter2 {
         }
 
         @Override
+        @NonNull
         public Map<String, List<SuggestedDeviceInfo>> getDeviceSuggestions() {
             synchronized (mLock) {
                 try {
@@ -4434,7 +4435,7 @@ public final class MediaRouter2 {
         }
 
         @Override
-        @Nullable
+        @NonNull
         public Map<String, List<SuggestedDeviceInfo>> getDeviceSuggestions() {
             synchronized (mLock) {
                 try {
