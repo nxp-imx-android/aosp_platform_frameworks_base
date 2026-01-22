@@ -201,11 +201,18 @@ public final class TimeZoneDetectorStrategyImpl
             @NonNull Handler handler,
             @NonNull ServiceConfigAccessor serviceConfigAccessor) {
         Environment environment = new EnvironmentImpl(handler);
+        TimeZoneDetectorTelemetry telemetry =
+                new TimeZoneDetectorTelemetryImpl(
+                        context,
+                        environment,
+                        new TimeZoneDetectorStatsdLogger(),
+                        context.getPackageManager());
         TimeZoneChangeListener changeEventTracker =
                 NotifyingTimeZoneChangeListener.create(
-                        handler, context, serviceConfigAccessor, environment);
+                        handler, context, serviceConfigAccessor, telemetry, environment);
         FusedTimeZoneDetector fusedTimeZoneDetector =
-                FusedTimeZoneDetectorImpl.create(context, serviceConfigAccessor, handler);
+                FusedTimeZoneDetectorImpl.create(
+                        context, serviceConfigAccessor, telemetry, handler);
         TimeZoneOffsetChangeListener timeZoneOffsetChangeListener =
                 NotifyingTimeZoneOffsetChangeListener.create(context, serviceConfigAccessor);
 
@@ -909,37 +916,17 @@ public final class TimeZoneDetectorStrategyImpl
         TimeZoneChangeListener.TimeZoneChangeEvent changeEvent;
         QualifiedTelephonyTimeZoneSuggestion bestTelephonySuggestion =
                 findBestTelephonySuggestion();
-        if (android.timezone.flags.Flags.enableFusedTimeZoneDetector()
-                && android.timezone.flags.Flags.enableAutomaticTimeZoneRejectionLogging()
-                && bestTelephonySuggestion != null) {
-            TelephonyTimeZoneSuggestion suggestion = bestTelephonySuggestion.suggestion();
-
-            changeEvent =
-                    new TimeZoneChangeListener.TimeZoneChangeEvent(
-                            mEnvironment.elapsedRealtimeMillis(),
-                            mEnvironment.currentTimeMillis(),
-                            origin,
-                            userId,
-                            currentZoneId,
-                            newZoneId,
-                            currentConfidence,
-                            newConfidence,
-                            suggestion,
-                            cause);
-        } else {
-            changeEvent =
-                    new TimeZoneChangeListener.TimeZoneChangeEvent(
-                            mEnvironment.elapsedRealtimeMillis(),
-                            mEnvironment.currentTimeMillis(),
-                            origin,
-                            userId,
-                            currentZoneId,
-                            newZoneId,
-                            currentConfidence,
-                            newConfidence,
-                            null,
-                            cause);
-        }
+        changeEvent =
+                new TimeZoneChangeListener.TimeZoneChangeEvent(
+                        mEnvironment.elapsedRealtimeMillis(),
+                        mEnvironment.currentTimeMillis(),
+                        origin,
+                        userId,
+                        currentZoneId,
+                        newZoneId,
+                        currentConfidence,
+                        newConfidence,
+                        cause);
         mChangeTracker.process(changeEvent);
     }
 

@@ -75,4 +75,33 @@ final class TimeZoneDetectorStatsdLogger implements TimeZoneDetectorLogger {
                 tzdbVersion,
                 locationTimeZoneProviderUid);
     }
+
+    @Override
+    public void logAutomaticTimeZoneChangeRejection(
+            int source,
+            @NonNull String mcc,
+            @NonNull String mnc,
+            int nitzOffsetSeconds,
+            int nitzDstOffsetSeconds,
+            @NonNull String previousTimeZoneId,
+            @NonNull String rejectedAutomaticTimeZone,
+            @NonNull String manualTimeZone,
+            @NonNull String geolocationCountryCode,
+            @NonNull String tzdbVersion,
+            int locationTimeZoneProviderUid) {
+        FrameworkStatsLog.write(
+                /* atomId= */ FrameworkStatsLog
+                        .AUTOMATIC_TIME_ZONE_CHANGE_REVERTED_BY_USER_REPORTED,
+                source,
+                mcc,
+                mnc,
+                nitzOffsetSeconds,
+                nitzDstOffsetSeconds,
+                previousTimeZoneId,
+                rejectedAutomaticTimeZone,
+                manualTimeZone,
+                geolocationCountryCode,
+                tzdbVersion,
+                locationTimeZoneProviderUid);
+    }
 }
