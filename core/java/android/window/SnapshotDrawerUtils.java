@@ -213,7 +213,7 @@ public class SnapshotDrawerUtils {
             Rect windowBounds, Runnable reportDrawn) {
         new SnapshotSurface(rootSurface, snapshot, windowBounds, lp.getTitle())
                 .drawSnapshot(reportDrawn, !com.android.window.flags.Flags
-                        .respectRequestedTaskSnapshotResolution() /* releaseAfterDraw */);
+                        .onlyCacheLowResTaskSnapshot() /* releaseAfterDraw */);
     }
 
     /**

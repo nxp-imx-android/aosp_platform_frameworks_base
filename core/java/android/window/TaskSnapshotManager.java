@@ -263,7 +263,7 @@ public class TaskSnapshotManager {
         final boolean isLowRes = snapshot.isLowResolution();
         if (isLowRes) {
             return retrieveResolution == TaskSnapshotManager.RESOLUTION_LOW;
-        } else if (Flags.respectRequestedTaskSnapshotResolution()) {
+        } else if (Flags.onlyCacheLowResTaskSnapshot()) {
             return retrieveResolution == TaskSnapshotManager.RESOLUTION_HIGH;
         }
         return true;

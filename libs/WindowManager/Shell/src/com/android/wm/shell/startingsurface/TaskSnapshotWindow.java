@@ -183,7 +183,7 @@ public class TaskSnapshotWindow {
 
         SnapshotDrawerUtils.drawSnapshotOnSurface(layoutParams, surfaceControl, snapshot,
                 info.taskBounds,
-                !Flags.respectRequestedTaskSnapshotResolution() /* releaseAfterDraw */);
+                !Flags.onlyCacheLowResTaskSnapshot() /* releaseAfterDraw */);
         snapshotSurface.mHasDrawn = true;
         snapshotSurface.mRootSurface = surfaceControl;
         snapshotSurface.reportDrawn();
