@@ -271,8 +271,52 @@ constructor(
                 fromContent.isLockscreenOrNull() && toContent.isLockscreenOrNull()
             val isTransitioningBetweenDesiredScenes =
                 sceneInteractor.transitionStateFlow.value.isTransitioning(fromContent, toContent)
-            val isSnapToTransitionBetweenDesiredScenes =
+
+            // We need special treatment for snap to transitions as in STL the transition state
+            // will just immediately change value to Idle(snapToDestination). In KTF this is not
+            // possible so we need to make sure that the transitionStates that get emitted as a
+            // consequence of a snapTo (coming from LockscreenSceneTransitionInteractor) are not
+            // filtered out. This is easy for the Idle(A) -> Idle(B) case since we can check the
+            // previousValue therefore all KTF transitions step.from = A && step.to = B are
+            // properly passed through.
+            // Special Note: Even though the following conditions are aiming at fixing the snapTo
+            // cases that are common and therefore surfaced this issue, in STL there is no guarantee
+            // that there is any "state continuity". Therefore, these cases can also apply and work
+            // correctly in scenarios where no snapTo is involved (e.g. device hanging). The cases
+            // have always been considered by `LockscreenSceneTransitionInteractor`, see the
+            // documentation and test cases there for further details. Instant flipping from any
+            // state to a transition has always been covered "out of the box" by
+            // `isTransitioningBetweenDesiredScenes`. There are just the Idle cases that need more
+            // treatment here because KTF doesn't have the concept of Idle and instead needs to
+            // wrap up all running transitions with a FINISHED step.
+            val isSnapToBetweenDesiredScenes =
                 sceneTransitionPair.value.previousValue.isIdle(fromContent) &&
+                    sceneInteractor.transitionStateFlow.value.isIdle(toContent)
+
+            // We can also call snapTo while running a transition. This gives us 3 scenarios:
+            // 1) A -> B; snapTo(B); Idle(B)
+            // 2) B -> A; snapTo(B); Idle(B)
+            // 3) A -> C; snapTo(B); Idle(B)
+            // Case 1) is the "normal" case, we essentially just finish in B early. Handling the
+            // terminal cases will be handled by `terminalStepBelongsToPreviousTransition` as it
+            // does for any other FINISHED/CANCELED step.
+            // Case 2) is handled by `belongsToInstantReversedTransition`. From the perspective
+            // of the `edge` filter, a transition to the reversed transition (to => from) was
+            // running just prior to when we ended up in `toContent`. This can't happen in KTF
+            // organically in conjunction with the checked STL states, so we know this is either a
+            // snapTo, or an "intantReveresedTransition" which are commonly used by LSTI to sync up
+            // KTF to wherever STL just landed on (for any reason).
+            // Case 3) is handled here. We snapped to an Idle state that is unrelated to the
+            // previous transition. In this case the only thing we can observe is that in
+            // order for KTF to catch up to the STL state LSTI needs to interrupt the previous
+            // transition (A -> C) and then start emitting new steps to land on (B), these steps
+            // have to be (C -> B), since we just canceled a transition to C. The CANCELED step
+            // itself will be passed through by `terminalStepBelongsToPreviousTransition`, while
+            // this condition will pass through the (C -> B) steps.
+            // To summarize: We know we previously had to transition TO (C) what has now become the
+            // `fromContent` and we know we end up in Idle(toContent).
+            val isSnapToToUnrelatedState =
+                sceneTransitionPair.value.previousValue.isTransitioning(to = fromContent) &&
                     sceneInteractor.transitionStateFlow.value.isIdle(toContent)
 
             // When in STL A -> B settles in A we can't do the same in KTF as KTF requires us to
@@ -295,7 +339,8 @@ constructor(
                     sceneTransitionPair.value.previousValue.isTransitioning(fromContent, toContent)
 
             return@filterTraced isTransitioningBetweenLockscreenStates ||
-                isSnapToTransitionBetweenDesiredScenes ||
+                isSnapToBetweenDesiredScenes ||
+                isSnapToToUnrelatedState ||
                 isTransitioningBetweenDesiredScenes ||
                 terminalStepBelongsToPreviousTransition ||
                 belongsToInstantReversedTransition

@@ -47,6 +47,7 @@ import com.android.systemui.scene.data.repository.Idle
 import com.android.systemui.scene.data.repository.ShowOverlay
 import com.android.systemui.scene.data.repository.Transition
 import com.android.systemui.scene.data.repository.setSceneTransition
+import com.android.systemui.scene.data.repository.unlockDevice
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
@@ -1315,6 +1316,100 @@ class KeyguardTransitionInteractorTest : SysuiTestCase() {
             sendSteps(sendStep3, sendStep4)
 
             assertEquals(listOf(sendStep3, sendStep4), currentStatesMapped)
+        }
+
+    @Test
+    @EnableSceneContainer
+    fun transition_filter_isSnapToBetweenDesiredScenes_snap_out_of_lockscreen() =
+        testScope.runTest {
+            val currentStatesMapped by
+                collectValues(underTest.transition(Edge.create(LOCKSCREEN, Scenes.Gone)))
+
+            kosmos.setSceneTransition(Idle(Scenes.Lockscreen))
+            kosmos.unlockDevice()
+
+            val sendStep1 = TransitionStep(UNDEFINED, LOCKSCREEN, 0f, STARTED)
+            kosmos.setSceneTransition(Idle(Scenes.Gone))
+            val sendStep2 = TransitionStep(UNDEFINED, LOCKSCREEN, 0.6f, CANCELED)
+            sendSteps(sendStep1, sendStep2)
+            val sendStep3 = TransitionStep(LOCKSCREEN, UNDEFINED, 0f, STARTED)
+            val sendStep4 = TransitionStep(LOCKSCREEN, UNDEFINED, 1f, FINISHED)
+            sendSteps(sendStep3, sendStep4)
+
+            assertEquals(listOf(sendStep3, sendStep4), currentStatesMapped)
+        }
+
+    @Test
+    @EnableSceneContainer
+    fun transition_filter_isSnapToBetweenDesiredScenes_snap_into_lockscreen() =
+        testScope.runTest {
+            val currentStatesMapped by
+                collectValues(underTest.transition(Edge.create(Scenes.Gone, LOCKSCREEN)))
+
+            kosmos.unlockDevice()
+            kosmos.setSceneTransition(Idle(Scenes.Gone))
+
+            val sendStep1 = TransitionStep(LOCKSCREEN, UNDEFINED, 0f, STARTED)
+            kosmos.setSceneTransition(Idle(Scenes.Lockscreen))
+            val sendStep2 = TransitionStep(LOCKSCREEN, UNDEFINED, 0.6f, CANCELED)
+            sendSteps(sendStep1, sendStep2)
+            val sendStep3 = TransitionStep(UNDEFINED, LOCKSCREEN, 0f, STARTED)
+            val sendStep4 = TransitionStep(UNDEFINED, LOCKSCREEN, 1f, FINISHED)
+            sendSteps(sendStep3, sendStep4)
+
+            assertEquals(listOf(sendStep3, sendStep4), currentStatesMapped)
+        }
+
+    @Test
+    @EnableSceneContainer
+    fun transition_filter_isSnapToToUnrelatedState_snap_out_of_lockscreen() =
+        testScope.runTest {
+            val lsToShade by
+                collectValues(underTest.transition(Edge.create(LOCKSCREEN, Scenes.Shade)))
+            val shadeToLs by
+                collectValues(underTest.transition(Edge.create(Scenes.Shade, LOCKSCREEN)))
+            val lsToGone by
+                collectValues(underTest.transition(Edge.create(LOCKSCREEN, Scenes.Gone)))
+
+            kosmos.unlockDevice()
+            kosmos.setSceneTransition(Transition(Scenes.Shade, Scenes.Lockscreen))
+
+            val sendStep1 = TransitionStep(UNDEFINED, LOCKSCREEN, 0f, STARTED)
+            sendSteps(sendStep1)
+
+            kosmos.setSceneTransition(Idle(Scenes.Gone))
+            val sendStep2 = TransitionStep(UNDEFINED, LOCKSCREEN, 0.6f, CANCELED)
+            val sendStep3 = TransitionStep(LOCKSCREEN, UNDEFINED, 0f, STARTED)
+            val sendStep4 = TransitionStep(LOCKSCREEN, UNDEFINED, 1f, FINISHED)
+            sendSteps(sendStep2, sendStep3, sendStep4)
+
+            assertEquals(listOf(sendStep1, sendStep2), shadeToLs)
+            assertEquals(listOf(sendStep3, sendStep4), lsToGone)
+            assertEquals(emptyList<TransitionStep>(), lsToShade)
+        }
+
+    @Test
+    @EnableSceneContainer
+    fun transition_filter_isSnapToToUnrelatedState_snap_into_lockscreen() =
+        testScope.runTest {
+            val shadeToLs by
+                collectValues(underTest.transition(Edge.create(Scenes.Shade, LOCKSCREEN)))
+            val goneToLs by
+                collectValues(underTest.transition(Edge.create(Scenes.Gone, LOCKSCREEN)))
+
+            kosmos.unlockDevice()
+            kosmos.setSceneTransition(Transition(Scenes.Gone, Scenes.Shade))
+
+            val sendStep1 = TransitionStep(LOCKSCREEN, UNDEFINED, 0f, STARTED)
+            kosmos.setSceneTransition(Idle(Scenes.Lockscreen))
+            val sendStep2 = TransitionStep(LOCKSCREEN, UNDEFINED, 0.6f, CANCELED)
+            sendSteps(sendStep1, sendStep2)
+            val sendStep3 = TransitionStep(UNDEFINED, LOCKSCREEN, 0f, STARTED)
+            val sendStep4 = TransitionStep(UNDEFINED, LOCKSCREEN, 1f, FINISHED)
+            sendSteps(sendStep3, sendStep4)
+
+            assertEquals(listOf(sendStep3, sendStep4), shadeToLs)
+            assertEquals(emptyList<TransitionStep>(), goneToLs)
         }
 
     private suspend fun sendSteps(vararg steps: TransitionStep) {
