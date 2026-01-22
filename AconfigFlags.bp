@@ -2181,10 +2181,8 @@ aconfig_declarations {
 java_aconfig_library {
     name: "android.bluetooth.platform.flags-aconfig-java",
     aconfig_declarations: "android.bluetooth.platform.flags-aconfig",
-    min_sdk_version: "33",
-    apex_available: [
-        "//apex_available:platform",
-    ],
+    min_sdk_version: "36",
+    apex_available: ["//apex_available:platform"],
     defaults: ["framework-minus-apex-aconfig-java-defaults"],
 }
 
@@ -2192,23 +2190,9 @@ java_aconfig_library {
     name: "android.bluetooth.platform.flags-aconfig-java-export",
     aconfig_declarations: "android.bluetooth.platform.flags-aconfig",
     defaults: ["framework-minus-apex-aconfig-java-defaults"],
-    min_sdk_version: "33",
-    apex_available: [
-        "//apex_available:platform",
-        "com.android.bt",
-    ],
+    min_sdk_version: "36",
+    apex_available: ["com.android.bt"],
     mode: "exported",
-}
-
-cc_aconfig_library {
-    name: "android.bluetooth.platform.flags-aconfig-cc",
-    aconfig_declarations: "android.bluetooth.platform.flags-aconfig",
-    min_sdk_version: "33",
-    apex_available: [
-        "//apex_available:platform",
-        "com.android.bt",
-    ],
-    host_supported: true,
 }
 
 // Wifi
