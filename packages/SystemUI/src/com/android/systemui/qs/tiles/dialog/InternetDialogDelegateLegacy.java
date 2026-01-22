@@ -79,6 +79,7 @@ import com.android.systemui.shade.domain.interactor.ShadeDialogContextInteractor
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor;
 import com.android.systemui.statusbar.phone.SystemUIDialog;
 import com.android.systemui.statusbar.policy.KeyguardStateController;
+import com.android.systemui.user.data.repository.UserRepository;
 import com.android.wifitrackerlib.WifiEntry;
 
 import dagger.assisted.Assisted;
@@ -213,7 +214,8 @@ public class InternetDialogDelegateLegacy implements
             SystemUIDialog.Factory systemUIDialogFactory,
             ShadeDialogContextInteractor shadeDialogContextInteractor,
             ShadeModeInteractor shadeModeInteractor,
-            RetailModeInteractor retailModeInteractor) {
+            RetailModeInteractor retailModeInteractor,
+            UserRepository userRepository) {
         // TODO (b/393628355): remove this after the details view is supported for single shade.
         if (shadeModeInteractor.isDualShade() && !retailModeInteractor.isInRetailMode()) {
             // If `QsDetailedView` is enabled, it should show the details view.
@@ -241,7 +243,8 @@ public class InternetDialogDelegateLegacy implements
         mCoroutineScope = coroutineScope;
         mUiEventLogger = uiEventLogger;
         mDialogTransitionAnimator = dialogTransitionAnimator;
-        mAdapter = new InternetAdapter(mInternetDetailsContentController, coroutineScope);
+        mAdapter = new InternetAdapter(
+                mInternetDetailsContentController, coroutineScope, false, userRepository);
     }
 
     @Override

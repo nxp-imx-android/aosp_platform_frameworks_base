@@ -25,6 +25,8 @@ import com.android.systemui.user.data.model.UserSwitcherSettingsModel
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 
 /**
  * Acts as source of truth for user related data.
@@ -56,6 +58,11 @@ public interface UserRepository {
 
     /** Whether the device is configured to always have a guest user available. */
     public val isGuestUserAutoCreated: Boolean
+
+    /** Whether there is more than one full user */
+    public val hasMultipleFullUsers: Flow<Boolean>
+        get() =
+            userInfos.map { it.count { userInfo -> userInfo.isFull } > 1 }.distinctUntilChanged()
 
     /** Whether the guest user is currently being reset. */
     public var isGuestUserResetting: Boolean
