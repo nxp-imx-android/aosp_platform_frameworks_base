@@ -942,16 +942,6 @@ flag {
 }
 
 flag {
-    name: "enable_see_through_task_fragments"
-    namespace: "lse_desktop_experience"
-    description: "Let see-through TaskFragments keep their siblings (in lower Z order) resumed"
-    bug: "407602007"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_shell_thread_lint_check"
     namespace: "lse_desktop_experience"
     description: "Enables annotation to check invoking thread in Shell."
