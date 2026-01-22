@@ -18,13 +18,12 @@ package com.android.settingslib.metadata
 
 import android.content.Context
 import android.os.Bundle
-import android.platform.test.annotations.DisableFlags
-import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.SetFlagsRule
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.android.settingslib.catalyst.flags.Flags
 import com.google.common.truth.Truth.assertThat
+import org.junit.After
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -49,6 +48,24 @@ class PreferenceHierarchyTest {
     private val testScreenMetadata = mock<PreferenceScreenMetadata>()
     private val preferenceScreenMetadataParameterizedFactory =
         mock<PreferenceScreenMetadataParameterizedFactory>()
+
+    private lateinit var originalProvider: CatalystFlagProvider
+
+    @Before
+    fun setUp() {
+        originalProvider = CatalystFlagProviderFactory.getInstance()
+    }
+
+    @After
+    fun tearDown() {
+        CatalystFlagProviderFactory.setProvider(originalProvider)
+    }
+
+    private fun setCatalystUseKeyParameters(value: Boolean) {
+        CatalystFlagProviderFactory.setProvider(object : CatalystFlagProvider {
+            override fun catalystUseKeyParameters() = value
+        })
+    }
 
     @Test
     fun addMetadata() {
@@ -85,8 +102,8 @@ class PreferenceHierarchyTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_CATALYST_USE_KEY_PARAMETERS)
     fun addParameterizedScreenWithKeyParameters_addsScreen() {
+        setCatalystUseKeyParameters(true)
         PreferenceScreenRegistry.preferenceScreenMetadataFactories =
             FixedArrayMap(1) { it.put(TEST_SCREEN_KEY, preferenceScreenMetadataParameterizedFactory) }
         val keyParameters = ValidatedKeyParameters(KeyParametersSchema { }, mock())
@@ -101,8 +118,8 @@ class PreferenceHierarchyTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_CATALYST_USE_KEY_PARAMETERS)
     fun withParameters_addsScreen() {
+        setCatalystUseKeyParameters(true)
         PreferenceScreenRegistry.preferenceScreenMetadataFactories =
             FixedArrayMap(1) { it.put(TEST_SCREEN_KEY, preferenceScreenMetadataParameterizedFactory) }
         val keyParameters = ValidatedKeyParameters(KeyParametersSchema { }, mock())
@@ -117,8 +134,8 @@ class PreferenceHierarchyTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_CATALYST_USE_KEY_PARAMETERS)
     fun unaryPlus_withKeyParametersFlagEnabled_addsScreen() {
+        setCatalystUseKeyParameters(true)
         PreferenceScreenRegistry.preferenceScreenMetadataFactories =
             FixedArrayMap(1) { it.put(TEST_SCREEN_KEY, preferenceScreenMetadataParameterizedFactory) }
         whenever(preferenceScreenMetadataParameterizedFactory.acceptEmptyArguments()).thenReturn(true)
@@ -133,8 +150,8 @@ class PreferenceHierarchyTest {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_CATALYST_USE_KEY_PARAMETERS)
     fun args_addsScreen() {
+        setCatalystUseKeyParameters(false)
         PreferenceScreenRegistry.preferenceScreenMetadataFactories =
             FixedArrayMap(1) { it.put(TEST_SCREEN_KEY, preferenceScreenMetadataParameterizedFactory) }
         val args = mock<Bundle>()
@@ -149,8 +166,8 @@ class PreferenceHierarchyTest {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_CATALYST_USE_KEY_PARAMETERS)
     fun unaryPlus_withKeyParametersFlagDisabled_addsScreen() {
+        setCatalystUseKeyParameters(false)
         PreferenceScreenRegistry.preferenceScreenMetadataFactories =
             FixedArrayMap(1) { it.put(TEST_SCREEN_KEY, preferenceScreenMetadataParameterizedFactory) }
         whenever(preferenceScreenMetadataParameterizedFactory.acceptEmptyArguments()).thenReturn(true)
