@@ -377,12 +377,13 @@ class TestPhoneWindowManager {
         doNothing().when(mPhoneWindowManager).initializeHdmiState();
         if (supportSettingsUpdate) {
             doAnswer(inv -> {
-                // Make any call to updateSettings run synchronously for tests.
-                mPhoneWindowManager.updateSettings(null);
+                // Make any call to postUpdateSettings run synchronously for tests.
+                mPhoneWindowManager.updateSettings();
                 return null;
-            }).when(mPhoneWindowManager).updateSettings(any(Handler.class));
+            }).when(mPhoneWindowManager).postUpdateSettings();
         } else {
-            doNothing().when(mPhoneWindowManager).updateSettings(any());
+            doNothing().when(mPhoneWindowManager).postUpdateSettings();
+            doNothing().when(mPhoneWindowManager).updateSettings();
         }
         doNothing().when(mPhoneWindowManager).screenTurningOn(anyInt(), any());
         doNothing().when(mPhoneWindowManager).screenTurnedOn(anyInt());
