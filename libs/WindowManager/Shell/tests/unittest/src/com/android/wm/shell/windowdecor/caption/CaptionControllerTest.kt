@@ -16,7 +16,6 @@
 
 package com.android.wm.shell.windowdecor.caption
 
-import android.app.ActivityManager
 import android.content.Context
 import android.testing.AndroidTestingRunner
 import android.view.Display
@@ -89,12 +88,19 @@ class CaptionControllerTest : ShellTestCase() {
         testScope.runTest {
             val taskInfo = createFreeformTask()
 
-            val target = TestCaptionController(taskInfo)
+            val target =
+                TestCaptionController(
+                    captionType = CaptionController.CaptionType.APP_HEADER,
+                    taskInfo = taskInfo,
+                    windowDecorViewHostSupplier = mockViewHostSupplier,
+                    taskOrganizer = mockTaskOrganizer,
+                    testScope = testScope,
+                )
 
             val params =
                 WindowDecoration2.RelayoutParams(
                     runningTaskInfo = taskInfo,
-                    captionType = CaptionController.CaptionType.NO_CAPTION,
+                    captionType = CaptionController.CaptionType.APP_HEADER,
                 )
             target.relayout(
                 params = params,
@@ -115,12 +121,19 @@ class CaptionControllerTest : ShellTestCase() {
         testScope.runTest {
             val taskInfo = createFreeformTask()
 
-            val target = TestCaptionController(taskInfo)
+            val target =
+                TestCaptionController(
+                    captionType = CaptionController.CaptionType.APP_HEADER,
+                    taskInfo = taskInfo,
+                    windowDecorViewHostSupplier = mockViewHostSupplier,
+                    taskOrganizer = mockTaskOrganizer,
+                    testScope = testScope,
+                )
 
             val params =
                 WindowDecoration2.RelayoutParams(
                     runningTaskInfo = taskInfo,
-                    captionType = CaptionController.CaptionType.NO_CAPTION,
+                    captionType = CaptionController.CaptionType.APP_HEADER,
                 )
             target.relayout(
                 params = params,
@@ -139,28 +152,5 @@ class CaptionControllerTest : ShellTestCase() {
 
     private class TestCaptionView(context: Context) : View(context), TaskFocusStateConsumer {
         override fun setTaskFocusState(focused: Boolean) {}
-    }
-
-    private inner class TestCaptionController(taskInfo: ActivityManager.RunningTaskInfo) :
-        CaptionController<TestCaptionView>(
-            taskInfo,
-            mockViewHostSupplier,
-            mockTaskOrganizer,
-            testScope,
-        ) {
-        override val captionType = CaptionType.NO_CAPTION
-        override val occludingElements = listOf<OccludingElement>()
-
-        override fun createCaptionView(): WindowDecorationViewHolder<*> {
-            return mockWindowDecorViewHolder
-        }
-
-        override fun getCaptionHeight(): Int {
-            return 32
-        }
-
-        override fun getCaptionWidth(): Int {
-            return 32
-        }
     }
 }
