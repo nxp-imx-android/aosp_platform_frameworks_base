@@ -341,5 +341,6 @@ public class SecureSettings {
         Settings.Secure.IDENTITY_CHECK_WATCH_NOTIFICATION_VIEW_DETAILS_CLICKED,
         Settings.Secure.TEXT_SHOW_PASSWORD_TOUCH,
         Settings.Secure.TEXT_SHOW_PASSWORD_PHYSICAL,
+        Settings.Secure.PERSONAL_CONTEXT_ENABLED,
     };
 }

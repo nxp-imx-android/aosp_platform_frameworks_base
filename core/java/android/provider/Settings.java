@@ -14098,6 +14098,15 @@ public final class Settings {
         @Readable
         @FlaggedApi(com.android.text.flags.Flags.FLAG_SPLIT_SHOW_PASSWORDS_TO_TOUCH_AND_PHYSICAL)
         public static final String TEXT_SHOW_PASSWORD_PHYSICAL = "show_passwords_physical";
+
+        /**
+         * Whether personal context is enabled.
+         * 1 = On, 0 = Off
+         * @hide
+         */
+        @Readable
+        @FlaggedApi(android.service.personalcontext.Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
+        public static final String PERSONAL_CONTEXT_ENABLED = "personal_context_enabled";
     }
 
     /**
