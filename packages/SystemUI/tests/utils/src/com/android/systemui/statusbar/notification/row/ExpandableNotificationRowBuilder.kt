@@ -25,7 +25,6 @@ import android.app.PendingIntent.FLAG_IMMUTABLE
 import android.content.Context
 import android.content.Intent
 import android.content.pm.LauncherApps
-import android.graphics.drawable.Drawable
 import android.os.UserHandle
 import androidx.core.os.bundleOf
 import com.android.internal.logging.MetricsLogger
@@ -33,7 +32,6 @@ import com.android.internal.logging.UiEventLogger
 import com.android.internal.statusbar.IStatusBarService
 import com.android.systemui.TestableDependency
 import com.android.systemui.classifier.FalsingManagerFake
-import com.android.systemui.dump.dumpManager
 import com.android.systemui.flags.FakeFeatureFlagsClassic
 import com.android.systemui.flags.FeatureFlagsClassic
 import com.android.systemui.flags.Flags
@@ -82,7 +80,7 @@ import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow.OnExpandClickListener
 import com.android.systemui.statusbar.notification.row.NotificationRowContentBinder.FLAG_CONTENT_VIEW_ALL
 import com.android.systemui.statusbar.notification.row.NotificationRowContentBinder.InflationFlag
-import com.android.systemui.statusbar.notification.row.icon.NotificationRowIconViewInflaterFactory
+import com.android.systemui.statusbar.notification.row.icon.FakeNotificationPackage
 import com.android.systemui.statusbar.notification.row.icon.notificationRowIconViewInflaterFactory
 import com.android.systemui.statusbar.notification.stack.NotificationChildrenContainerLogger
 import com.android.systemui.statusbar.phone.KeyguardBypassController
@@ -94,7 +92,6 @@ import com.android.systemui.statusbar.policy.SmartReplyStateInflaterImpl
 import com.android.systemui.statusbar.policy.dagger.RemoteInputViewSubcomponent
 import com.android.systemui.util.Assert.runWithCurrentThreadAsMainThread
 import com.android.systemui.util.concurrency.FakeExecutor
-import com.android.systemui.util.time.FakeSystemClock
 import com.android.systemui.util.time.fakeSystemClock
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executor
@@ -105,8 +102,6 @@ import org.junit.Assert.assertTrue
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito
-import org.mockito.kotlin.anyOrNull
-import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 
 class ExpandableNotificationRowBuilder(
@@ -331,15 +326,21 @@ class ExpandableNotificationRowBuilder(
         )
     }
 
-    fun createCompactHUN(notification: Notification): ExpandableNotificationRow {
+    fun createCompactHUN(
+        notification: Notification,
+        fakePackage: FakeNotificationPackage? = null,
+    ): ExpandableNotificationRow {
         whenever(mHeadsUpStyleProvider.shouldApplyCompactStyle(context.displayId)).thenReturn(true)
-        val row = createRow(notification)
+        val row = createRow(notification, fakePackage)
         row.isHeadsUp = true
         Mockito.reset(mHeadsUpStyleProvider)
         return row
     }
 
-    fun createRow(notification: Notification): ExpandableNotificationRow {
+    fun createRow(
+        notification: Notification,
+        fakePackage: FakeNotificationPackage? = null,
+    ): ExpandableNotificationRow {
         val channel =
             NotificationChannel(
                 notification.channelId,
@@ -349,10 +350,11 @@ class ExpandableNotificationRowBuilder(
         channel.isBlockable = true
 
         val promoted = notification.isOngoingEvent && notification.isRequestPromotedOngoing
+        val packageName = fakePackage?.packageName ?: PKG
         val entry =
             NotificationEntryBuilder()
-                .setPkg(PKG)
-                .setOpPkg(PKG)
+                .setPkg(packageName)
+                .setOpPkg(packageName)
                 .setId(123321)
                 .setUid(UID)
                 .setInitialPid(2000)
@@ -371,7 +373,7 @@ class ExpandableNotificationRowBuilder(
             entry.ranking = rb.build()
         }
 
-        return generateRow(entry, INFLATION_FLAGS)
+        return generateRow(entry, INFLATION_FLAGS, fakePackage)
     }
 
     fun createRow(entry: NotificationEntry): ExpandableNotificationRow {
@@ -382,7 +384,10 @@ class ExpandableNotificationRowBuilder(
         return generateRow(BundleEntry(spec))
     }
 
-    private fun initRow(entry: PipelineEntry): ExpandableNotificationRow {
+    private fun initRow(
+        entry: PipelineEntry,
+        fakePackage: FakeNotificationPackage? = null,
+    ): ExpandableNotificationRow {
         val userTracker = Mockito.mock(UserTracker::class.java, STUB_ONLY)
         whenever(userTracker.userHandle).thenReturn(context.user)
 
@@ -395,10 +400,11 @@ class ExpandableNotificationRowBuilder(
             )
         val row = rowInflaterTask.inflateSynchronously(context, null, entry)
         val entryAdapter = kosmos.entryAdapterFactory.create(entry)
+        val appName = fakePackage?.label ?: APP_NAME
         row.initialize(
             entryAdapter,
             Mockito.mock(RemoteInputViewSubcomponent.Factory::class.java, STUB_ONLY),
-            APP_NAME,
+            appName,
             entry.key,
             mMockLogger,
             mKeyguardBypassController,
@@ -431,11 +437,12 @@ class ExpandableNotificationRowBuilder(
     private fun generateRow(
         entry: NotificationEntry,
         @InflationFlag extraInflationFlags: Int,
+        fakePackage: FakeNotificationPackage? = null,
     ): ExpandableNotificationRow {
         // NOTE: This flag is read when the ExpandableNotificationRow is inflated, so it needs to be
         //  set, but we do not want to override an existing value that is needed by a specific test.
 
-        val row = initRow(entry)
+        val row = initRow(entry, fakePackage)
         entry.row = row
         if (createStatusBarIcons) {
             mIconManager.createIcons(entry)

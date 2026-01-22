@@ -24,8 +24,9 @@ import android.content.pm.PackageManager.MATCH_UNINSTALLED_PACKAGES
 import android.content.pm.PackageManager.NameNotFoundException
 import android.graphics.Color
 import android.graphics.drawable.Drawable
+import android.graphics.drawable.GradientDrawable
+import android.graphics.drawable.LayerDrawable
 import android.os.UserHandle
-import androidx.annotation.VisibleForTesting
 import com.android.internal.R
 import com.android.launcher3.icons.BaseIconFactory
 import com.android.launcher3.icons.BaseIconFactory.IconOptions
@@ -34,14 +35,17 @@ import com.android.launcher3.icons.mono.MonoIconThemeController
 import com.android.launcher3.util.UserIconInfo
 import com.android.settingslib.Utils
 import com.android.systemui.Dumpable
+import com.android.systemui.Flags
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.util.asIndenting
+import com.android.systemui.util.dpToPx
 import com.android.systemui.util.printSection
 import com.android.systemui.util.time.SystemClock
 import java.io.PrintWriter
 import javax.inject.Inject
+import kotlin.math.ceil
 
 /** A provider used to cache and fetch app icons used by notifications. */
 interface AppIconProvider {
@@ -60,13 +64,6 @@ interface AppIconProvider {
     /**
      * Loads the skeleton (black and white)-themed icon corresponding to [packageName] into cache,
      * or fetches it from there if already present. This should only be called from the background.
-     *
-     * @param packageName the name of the app's package
-     * @param context the app's context (NOT SystemUI)
-     *
-     * TODO: b/416215382 - if we get the SystemUI context here instead of the app's, and the package
-     *   is not installed on the main profile, this will throw a [NameNotFoundException]. We should
-     *   update the API to take a userId directly to avoid such issues.
      */
     @Throws(NameNotFoundException::class)
     @WorkerThread
@@ -80,8 +77,10 @@ interface AppIconProvider {
     fun purgeCache(wantedPackages: Collection<String>)
 }
 
+// TODO: b/476412775 - This class shouldn't be open, instead the open methods should be moved to
+//  an interface we can inject.
 @SysUISingleton
-class AppIconProviderImpl
+open class AppIconProviderImpl
 @Inject
 constructor(
     @ShadeDisplayAware private val sysuiContext: Context,
@@ -148,9 +147,8 @@ constructor(
                         shouldForceThemeIcon = true,
                         colorProvider = { _ ->
                             intArrayOf(
-                                /* background */ Color.BLACK, /* icon */
-                                Color.WHITE,
-
+                                /* background */ Color.BLACK,
+                                /* icon */ Color.WHITE,
                                 /* adaptive background */ Color.BLACK,
                             )
                         },
@@ -189,7 +187,9 @@ constructor(
             packageName = packageName,
             userHandle = null, // these aren't badged, so they don't need to be sharded by user
             drawableInstanceKey = "SKELETON",
-            createDrawable = { it.createIconDrawable(themed = true) },
+            createDrawable = {
+                it.createIconDrawable(themed = true, outlined = Flags.aodNotifIconOutline())
+            },
         ) {
             fetchAppIconBitmapInfo(
                 skeletonIconFactory,
@@ -199,6 +199,18 @@ constructor(
             )
         }
 
+    /**
+     * Get the unstyled, unbadged icon corresponding to the given package and user. By default this
+     * calls directly into PackageManager, but it can be overridden if a different approach is
+     * needed (e.g. in tests).
+     */
+    protected open fun getRawIcon(packageName: String, userHandle: UserHandle): Drawable? {
+        val pm = sysuiContext.packageManager
+        val userId = userHandle.identifier
+        return pm.getApplicationInfoAsUser(packageName, MATCH_UNINSTALLED_PACKAGES, userId)
+            .loadUnbadgedIcon(pm)
+    }
+
     @WorkerThread
     private fun fetchAppIconBitmapInfo(
         iconFactory: BaseIconFactory,
@@ -206,31 +218,47 @@ constructor(
         userHandle: UserHandle,
         allowProfileBadge: Boolean,
     ): BitmapInfo {
-        val pm = sysuiContext.packageManager
-        val userId = userHandle.identifier
-        val icon =
-            pm.getApplicationInfoAsUser(packageName, MATCH_UNINSTALLED_PACKAGES, userId)
-                .loadUnbadgedIcon(pm)
-        val options = iconOptions(userHandle, allowProfileBadge = allowProfileBadge)
+        val icon = getRawIcon(packageName, userHandle)
+        val options =
+            iconOptions(getUserIconInfo(userHandle, allowProfileBadge = allowProfileBadge))
         return iconFactory.createBadgedIconBitmap(icon, options)
     }
 
-    @VisibleForTesting
-    fun createAppIconForTest(packageName: String, @UserIconInfo.UserType userType: Int): Drawable {
-        val pm = sysuiContext.packageManager
-        val userHandle = UserHandle.of(pm.userId)
-        val icon = pm.getApplicationInfo(packageName, 0).loadUnbadgedIcon(pm)
-        val options = iconOptions(UserIconInfo(userHandle, userType))
-        val bitmapInfo = standardIconFactory.createBadgedIconBitmap(icon, options)
-        return bitmapInfo.createIconDrawable(themed = false)
+    private fun BitmapInfo.createIconDrawable(
+        themed: Boolean,
+        outlined: Boolean = false,
+    ): Drawable {
+        val icon =
+            newIcon(
+                    context = sysuiContext,
+                    creationFlags = if (themed) BitmapInfo.FLAG_THEMED else 0,
+                )
+                .apply { isAnimationEnabled = false }
+
+        if (outlined) {
+            val outline =
+                GradientDrawable().apply {
+                    shape = GradientDrawable.OVAL
+                    setStroke(
+                        // This should look similar to the Compose border from
+                        // AODPromotedNotification, so we're using ceil to emulate how Compose
+                        // makes this conversion.
+                        ceil(0.5.dpToPx(sysuiContext)).toInt().coerceAtLeast(1),
+                        Color.argb((255 * 0.32f).toInt(), 255, 255, 255),
+                    )
+                }
+            val outlinedIcon = LayerDrawable(arrayOf(outline, icon))
+
+            // Add a 1dp inset to the ring so that it better matches the size of the app icon
+            // circle. Launcher adds a bit of space around the icon we need to account for.
+            val padding = 1.dpToPx(sysuiContext).toInt()
+            // The outline is at index 0, so set the inset on the right layer.
+            outlinedIcon.setLayerInset(0, padding, padding, padding, padding)
+            return outlinedIcon
+        } else {
+            return icon
+        }
     }
-
-    private fun BitmapInfo.createIconDrawable(themed: Boolean): Drawable =
-        newIcon(context = sysuiContext, creationFlags = if (themed) BitmapInfo.FLAG_THEMED else 0)
-            .apply { isAnimationEnabled = false }
-
-    private fun iconOptions(userHandle: UserHandle, allowProfileBadge: Boolean): IconOptions =
-        iconOptions(userIconInfo(userHandle, allowProfileBadge = allowProfileBadge))
 
     private fun iconOptions(userIconInfo: UserIconInfo): IconOptions {
         return IconOptions().apply {
@@ -243,7 +271,10 @@ constructor(
         }
     }
 
-    private fun userIconInfo(userHandle: UserHandle, allowProfileBadge: Boolean): UserIconInfo =
+    protected open fun getUserIconInfo(
+        userHandle: UserHandle,
+        allowProfileBadge: Boolean,
+    ): UserIconInfo =
         if (allowProfileBadge) {
             // Look up the user to determine if it is a profile, and if so which badge to use
             Utils.fetchUserIconInfo(sysuiContext, userHandle)
