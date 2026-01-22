@@ -92,6 +92,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -992,19 +993,29 @@ private fun ContentScope.Navigation(
                             remember(context) {
                                 ViewConfiguration.get(context).scaledMinimumFlingVelocity * 10
                             }
+                        var isDrag by remember { mutableStateOf(false) }
+                        var isDragStartedOnThumb by remember { mutableStateOf(false) }
+                        val currentProgress by rememberUpdatedState(viewModel.progress)
                         Slider(
                             interactionSource = interactionSource,
                             value = viewModel.progress,
                             enabled = isEnabled,
                             onValueChange = { progress ->
-                                viewModel.onScrubChange?.invoke(progress)
+                                if (!isDrag || isDragStartedOnThumb) {
+                                    viewModel.onScrubChange?.invoke(progress)
+                                }
                             },
                             onValueChangeFinished = {
                                 val velocity = velocityTracker.calculateVelocity().x
-                                viewModel.onScrubFinished?.invoke(
-                                    sliderDragDelta.value,
-                                    abs(velocity) < abs(flingVelocity),
-                                )
+                                if (!isDrag || isDragStartedOnThumb) {
+                                    viewModel.onScrubFinished?.invoke(
+                                        sliderDragDelta.value,
+                                        abs(velocity) < abs(flingVelocity),
+                                    )
+                                }
+
+                                isDragStartedOnThumb = false
+                                isDrag = false
                             },
                             colors = colors,
                             thumb = {
@@ -1050,6 +1061,7 @@ private fun ContentScope.Navigation(
                                                         // A new gesture has begun.
                                                         // Record the initial down input change.
                                                         down = event.changes.last()
+                                                        isDrag = false
                                                     }
 
                                                     PointerEventType.Move -> {
@@ -1057,9 +1069,22 @@ private fun ContentScope.Navigation(
                                                         // pointer as the latest down, calculate and
                                                         // report the drag delta.
                                                         val change = event.changes.last()
+
                                                         if (change.id == down?.id) {
-                                                            sliderDragDelta.value =
-                                                                change.position - down.position
+                                                            if (!isDrag) {
+                                                                val thumbX =
+                                                                    size.width * currentProgress
+                                                                // Add some forgiveness to hit
+                                                                // target by 20dp radius
+                                                                isDragStartedOnThumb =
+                                                                    abs(down.position.x - thumbX) <
+                                                                        20.dp.toPx()
+                                                            }
+                                                            isDrag = true
+                                                            if (isDragStartedOnThumb) {
+                                                                sliderDragDelta.value =
+                                                                    change.position - down.position
+                                                            }
                                                         }
                                                     }
                                                 }
