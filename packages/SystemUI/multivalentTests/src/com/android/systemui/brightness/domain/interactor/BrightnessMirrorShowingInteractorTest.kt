@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.settings.brightness.domain.interactor
+package com.android.systemui.brightness.domain.interactor
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest

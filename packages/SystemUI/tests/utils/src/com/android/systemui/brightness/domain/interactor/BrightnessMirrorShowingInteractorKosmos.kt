@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.settings.brightness.domain.interactor
+package com.android.systemui.brightness.domain.interactor
 
 import com.android.systemui.data.repository.brightnessMirrorShowingRepository
 import com.android.systemui.kosmos.Kosmos
