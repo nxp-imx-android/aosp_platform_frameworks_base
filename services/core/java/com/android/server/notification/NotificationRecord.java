@@ -406,7 +406,7 @@ public final class NotificationRecord {
             if (useDefaultVibrate) {
                 return helper.createDefaultVibration(insistent);
             }
-            return  helper.createWaveformVibration(notification.vibrate, insistent);
+            return helper.createWaveformVibration(notification.vibrate, insistent);
         }
         return getVibrationForChannel(getChannel(), helper, insistent);
     }
@@ -514,13 +514,30 @@ public final class NotificationRecord {
         // Don't copy importance information or mGlobalSortKey, recompute them.
     }
 
-    public Notification getNotification() { return getSbn().getNotification(); }
-    public int getFlags() { return getSbn().getNotification().flags; }
-    public UserHandle getUser() { return getSbn().getUser(); }
-    public String getKey() { return getSbn().getKey(); }
+    public Notification getNotification() {
+        return getSbn().getNotification();
+    }
+
+    public int getFlags() {
+        return getSbn().getNotification().flags;
+    }
+
+    public UserHandle getUser() {
+        return getSbn().getUser();
+    }
+
+    public String getKey() {
+        return getSbn().getKey();
+    }
+
     /** @deprecated Use {@link #getUser()} instead. */
-    public int getUserId() { return getSbn().getUserId(); }
-    public int getUid() { return getSbn().getUid(); }
+    public int getUserId() {
+        return getSbn().getUserId();
+    }
+
+    public int getUid() {
+        return getSbn().getUid();
+    }
 
     void dump(ProtoOutputStream proto, long fieldId, boolean redact, int state) {
         final long token = proto.start(fieldId);
@@ -550,10 +567,11 @@ public final class NotificationRecord {
     String formatRemoteViews(RemoteViews rv) {
         if (rv == null) return "null";
         return String.format("%s/0x%08x (%d bytes): %s",
-            rv.getPackage(), rv.getLayoutId(), rv.estimateMemoryUsage(), rv.toString());
+                rv.getPackage(), rv.getLayoutId(), rv.estimateMemoryUsage(), rv.toString());
     }
 
-    @NeverCompile // Avoid size overhead of debugging code.
+    // Avoid size overhead of debugging code.
+    @NeverCompile
     void dump(PrintWriter pw, String prefix, Context baseContext, boolean redact) {
         final Notification notification = getSbn().getNotification();
         pw.println(prefix + this);
@@ -648,7 +666,7 @@ public final class NotificationRecord {
             final String ticker = notification.tickerText.toString();
             if (redact) {
                 // if the string is long enough, we allow ourselves a few bytes for debugging
-                pw.print(ticker.length() > 16 ? ticker.substring(0,8) : "");
+                pw.print(ticker.length() > 16 ? ticker.substring(0, 8) : "");
                 pw.println("...");
             } else {
                 pw.println(ticker);
@@ -1201,12 +1219,12 @@ public final class NotificationRecord {
 
     /**
      * @param previousRankingTimeMs for updated notifications, {@link #getRankingTimeMs()}
-     *     of the previous notification record, 0 otherwise
+     *                              of the previous notification record, 0 otherwise
      */
     private long calculateRankingTimeMs(long previousRankingTimeMs) {
         Notification n = getNotification();
         // Take developer provided 'when', unless it's in the future.
-        if (n.hasAppProvidedWhen() && n.getWhen() <= getSbn().getPostTime()){
+        if (n.hasAppProvidedWhen() && n.getWhen() <= getSbn().getPostTime()) {
             return n.getWhen();
         }
         // If we've ranked a previous instance with a timestamp, inherit it. This case is
@@ -1541,8 +1559,8 @@ public final class NotificationRecord {
 
     /**
      * @return all {@link Uri} that should have permission granted to whoever
-     *         will be rendering it. This list has already been vetted to only
-     *         include {@link Uri} that the enqueuing app can grant.
+     * will be rendering it. This list has already been vetted to only
+     * include {@link Uri} that the enqueuing app can grant.
      */
     public @Nullable ArraySet<Uri> getGrantableUris() {
         return mGrantableUris;
@@ -1646,7 +1664,7 @@ public final class NotificationRecord {
         // Log Assistant override if present, whether or not importance calculation is complete.
         if (mAssistantImportance != IMPORTANCE_UNSPECIFIED) {
             lm.addTaggedData(MetricsEvent.FIELD_NOTIFICATION_IMPORTANCE_ASST,
-                        mAssistantImportance);
+                    mAssistantImportance);
         }
         // Log the issuer of any adjustments that may have affected this notification. We only log
         // the hash here as NotificationItem events are frequent, and the number of NAS
@@ -1670,7 +1688,7 @@ public final class NotificationRecord {
         Notification notification = getNotification();
         boolean hasDecoratedStyle =
                 notification.isStyle(Notification.DecoratedCustomViewStyle.class)
-                || notification.isStyle(Notification.DecoratedMediaCustomViewStyle.class);
+                        || notification.isStyle(Notification.DecoratedMediaCustomViewStyle.class);
         boolean hasCustomRemoteView = notification.contentView != null
                 || notification.bigContentView != null
                 || notification.headsUpContentView != null;
@@ -1746,7 +1764,7 @@ public final class NotificationRecord {
             // some non-msgStyle notifs can temporarily appear in the conversation space if category
             // is right
             if (mPkgAllowedAsConvo && mTargetSdkVersion < Build.VERSION_CODES.R
-                && Notification.CATEGORY_MESSAGE.equals(getNotification().category)) {
+                    && Notification.CATEGORY_MESSAGE.equals(getNotification().category)) {
                 return true;
             }
             return false;
@@ -1802,7 +1820,8 @@ public final class NotificationRecord {
         return mBridgedAppUid;
     }
 
-    /** If the record is for a bridged notification, return the bridged package name,
+    /**
+     * If the record is for a bridged notification, return the bridged package name,
      * or {@code null} otherwise.
      */
     @Nullable
