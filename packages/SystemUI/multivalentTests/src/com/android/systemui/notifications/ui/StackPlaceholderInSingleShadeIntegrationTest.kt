@@ -73,7 +73,6 @@ import kotlinx.coroutines.DisposableHandle
 import kotlinx.coroutines.cancelChildren
 import org.junit.After
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -95,7 +94,6 @@ import platform.test.screenshot.Displays.Phone
  * 1. The actual on-screen position and bounds of the [NotificationScrim] UI element.
  * 2. The stack placeholder's position reported to its view models.
  */
-@Ignore("b/462706428") // Re-enable this test, once the test config issues are resolved.
 @RunWith(AndroidJUnit4::class)
 @MotionTest
 @LargeTest
