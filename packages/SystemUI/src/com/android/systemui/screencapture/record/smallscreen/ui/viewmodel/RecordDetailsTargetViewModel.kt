@@ -31,17 +31,16 @@ class RecordDetailsTargetViewModel
 constructor(private val interactor: RecordDetailsTargetInteractor) : HydratedActivatable() {
 
     private val model by interactor.model.hydratedStateOf("RecordDetailsTargetViewModel#model")
-    val items: List<RecordDetailsTargetModel> by derivedStateOf { model?.items ?: emptyList() }
-    val selectedIndex: Int by derivedStateOf { model?.selectedIndex ?: 0 }
+    val items: List<RecordDetailsTargetModel> by derivedStateOf { model.items }
+    val selectedIndex: Int by derivedStateOf { model.selectedIndex ?: 0 }
     val shouldShowAppSelector: Boolean by derivedStateOf {
-        model?.currentTargetModel?.shouldShowAppSelector ?: false
+        model.currentTargetModel.shouldShowAppSelector
     }
-    val canShowTouches: Boolean by derivedStateOf {
-        model?.currentTargetModel?.canShowTouches ?: false
-    }
+    val canShowTouches: Boolean by derivedStateOf { model.currentTargetModel.canShowTouches }
     val selectedAppLabel: CharSequence? by derivedStateOf {
-        (model?.currentTargetModel as? RecordDetailsTargetModel.SingleApp)?.appLabel
+        (model.currentTargetModel as? RecordDetailsTargetModel.SingleApp)?.appLabel
     }
+    val warningMessageRes: Int by derivedStateOf { model.currentTargetModel.warningMessageRes }
 
     val canChangeTarget by
         interactor.canChangeTarget.hydratedStateOf("RecordDetailsTargetViewModel#canChangeTarget")

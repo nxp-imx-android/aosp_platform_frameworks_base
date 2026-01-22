@@ -31,6 +31,7 @@ sealed interface RecordDetailsTargetModel {
     val canUseMarkup: Boolean
     val canUseCamera: Boolean
     val shouldShowAppSelector: Boolean
+    val warningMessageRes: Int
 
     data class EntireScreen(
         override val screenCaptureTarget: ScreenCaptureTarget,
@@ -47,6 +48,8 @@ sealed interface RecordDetailsTargetModel {
         override val canUseMarkup: Boolean = true
         override val canUseCamera: Boolean = true
         override val shouldShowAppSelector: Boolean = false
+        override val warningMessageRes: Int =
+            R.string.screenrecord_permission_dialog_warning_entire_screen
     }
 
     data class SingleApp(val task: ScreenCaptureRecentTask, val appLabel: CharSequence?) :
@@ -61,6 +64,8 @@ sealed interface RecordDetailsTargetModel {
         override val canUseMarkup: Boolean = false
         override val canUseCamera: Boolean = false
         override val shouldShowAppSelector: Boolean = true
+        override val warningMessageRes: Int =
+            R.string.screenrecord_permission_dialog_warning_single_app
     }
 
     data object SingleAppNoRecents : RecordDetailsTargetModel {
@@ -72,8 +77,7 @@ sealed interface RecordDetailsTargetModel {
         override val canUseMarkup: Boolean = false
         override val canUseCamera: Boolean = false
         override val shouldShowAppSelector: Boolean = false
+        override val warningMessageRes: Int =
+            R.string.screenrecord_permission_dialog_warning_single_app
     }
 }
-
-val SmallScreenRecordTargetsModel.currentTargetModel: RecordDetailsTargetModel?
-    get() = items.getOrNull(selectedIndex)

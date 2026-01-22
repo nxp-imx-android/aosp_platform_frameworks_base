@@ -19,4 +19,12 @@ package com.android.systemui.screencapture.record.smallscreen.shared.model
 data class SmallScreenRecordTargetsModel(
     val items: List<RecordDetailsTargetModel>,
     val selectedIndex: Int,
-)
+) {
+    init {
+        require(items.isNotEmpty()) { "items can't be empty" }
+        require(selectedIndex in items.indices) { "selectedIndex is out of items bounds" }
+    }
+}
+
+val SmallScreenRecordTargetsModel.currentTargetModel: RecordDetailsTargetModel
+    get() = items[selectedIndex]

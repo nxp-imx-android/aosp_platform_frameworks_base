@@ -19,13 +19,15 @@ package com.android.systemui.screencapture.record.smallscreen.ui.compose
 import android.content.res.Resources
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -154,6 +156,15 @@ fun RecordDetailsSettings(
                     modifier = Modifier,
                 )
             }
+            SettingsRow(modifier = Modifier.padding(top = 4.dp)) {
+                Crossfade(targetViewModel.warningMessageRes) { warningMessageRes ->
+                    Text(
+                        text = stringResource(warningMessageRes),
+                        color = MaterialTheme.colorScheme.onSurface,
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+            }
         }
     }
 }
@@ -266,7 +277,11 @@ private fun SettingsRow(modifier: Modifier = Modifier, content: @Composable RowS
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier =
-            modifier.height(64.dp).padding(horizontal = 20.dp, vertical = 12.dp).fillMaxWidth(),
+            modifier
+                .heightIn(min = 64.dp)
+                .padding(horizontal = 20.dp)
+                .fillMaxWidth()
+                .animateContentSize(),
         content = content,
     )
 }
