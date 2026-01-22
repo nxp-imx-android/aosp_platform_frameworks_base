@@ -123,7 +123,7 @@ public class TaskSnapshotCacheTest extends TaskSnapshotPersisterTestBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_RESPECT_REQUESTED_TASK_SNAPSHOT_RESOLUTION)
+    @EnableFlags(Flags.FLAG_ONLY_CACHE_LOW_RES_TASK_SNAPSHOT)
     public void testRestoreFromDiskDeferRemove() {
         spyOn(mCache.mDeferRemoveCache);
         final WindowState window = newWindowBuilder("window", FIRST_APPLICATION_WINDOW).build();

@@ -43,7 +43,7 @@ class TaskSnapshotCache extends SnapshotCache<Task> {
     TaskSnapshotCache(AppSnapshotLoader loader, Handler handler) {
         super("Task");
         mLoader = loader;
-        mDeferRemoveCache = Flags.respectRequestedTaskSnapshotResolution()
+        mDeferRemoveCache = Flags.onlyCacheLowResTaskSnapshot()
                 ? new DeferRemoveHighResCache(handler) : null;
     }
 
