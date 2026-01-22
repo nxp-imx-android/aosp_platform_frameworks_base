@@ -659,6 +659,11 @@ public class AmbientState implements Dumpable {
         mShowingStackOnLockscreen = showingStackOnLockscreen;
     }
 
+    public boolean isLockscreenStackFadingIn() {
+        if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return false;
+        return mLockscreenStackFadeInProgress > 0f && mLockscreenStackFadeInProgress < 1f;
+    }
+
     public float getLockscreenStackFadeInProgress() {
         if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return 0f;
         return mLockscreenStackFadeInProgress;
