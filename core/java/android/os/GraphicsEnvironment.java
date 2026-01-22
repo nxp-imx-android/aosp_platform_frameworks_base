@@ -17,7 +17,6 @@
 package android.os;
 
 import android.app.Activity;
-import android.app.ActivityManager;
 import android.app.GameManager;
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
@@ -28,6 +27,7 @@ import android.content.pm.IPackageManager;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.content.res.Resources;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
@@ -538,36 +538,27 @@ public class GraphicsEnvironment {
                     }
                 }
             }
-            if (android.os.Flags.enableAngleForGames()
-                    && applicationInfoWithMetaData.category == ApplicationInfo.CATEGORY_GAME) {
-                final boolean shouldRunAngleForGame;
-                if (SystemProperties.getInt("debug.graphics.angle.force_enable_angle_for_games", 0)
+            if (applicationInfoWithMetaData.category == ApplicationInfo.CATEGORY_GAME) {
+                if (SystemProperties.getInt("debug.graphics.angle.force_enable_angle_for_games",
+                        0)
                         == 1) {
-                    shouldRunAngleForGame = true;
+                    // Force-enable ANGLE for games through local adb commands
                     if (DEBUG) {
                         Log.v(TAG, "Force enabling ANGLE for game " + packageName
                                 + " on debug.graphics.angle.force_enable_angle_for_games = 1");
                     }
-                } else {
-                    if (ActivityManager.isLowRamDeviceStatic()) {
-                        shouldRunAngleForGame = false;
-                        if (DEBUG) {
-                            Log.v(TAG, "Skip enabling ANGLE for game " + packageName
-                                    + " on low ram device");
-                        }
-                    } else if (SystemProperties.getInt("ro.vendor.api_level", 0) < 202604) {
-                        shouldRunAngleForGame = false;
-                        if (DEBUG) {
-                            Log.v(TAG,
-                                    "Skip enabling ANGLE for game " + packageName
-                                            + " on device where ro.vendor.api_level < 202604");
-                        }
-                    } else {
-                        shouldRunAngleForGame = true;
-                    }
-                }
-                if (shouldRunAngleForGame) {
                     return ANGLE_GL_DRIVER_CHOICE_ANGLE;
+                }
+                try {
+                    if (context.getResources().getBoolean(R.bool.config_angleForGamesEnabled)) {
+                        if (DEBUG) {
+                            Log.v(TAG, "Enable ANGLE for game on config_angleForGamesEnabled=true");
+                        }
+                    }
+                } catch (Resources.NotFoundException e) {
+                    if (DEBUG) {
+                        Log.v(TAG, "config_angleForGamesEnabled not set");
+                    }
                 }
             }
         }
