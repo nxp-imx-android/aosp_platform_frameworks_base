@@ -21,8 +21,8 @@ package com.android.wm.shell.desktopai.api
  * that can be registered in the [CujHandlerRegistry].
  */
 sealed class CujHandlerId(val id: String) {
-    object SendContextHint : CujHandlerId("SEND_CONTEXT_HINT_HANDLER")
+    object PersonalContextCujHandler : CujHandlerId("CONTEXT_ENGINE_HINT_HANDLER")
 
-    object ProcessShellContext : CujHandlerId("PROCESS_SHELL_CONTEXT_HANDLER")
+    object ShellCujHandler : CujHandlerId("SHELL_CONTEXT_HANDLER")
     // Add new handler identifiers here as needed.
 }

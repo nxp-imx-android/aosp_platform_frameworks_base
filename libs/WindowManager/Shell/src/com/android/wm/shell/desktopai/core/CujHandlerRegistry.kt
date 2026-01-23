@@ -20,6 +20,7 @@ import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.dagger.WMSingleton
 import com.android.wm.shell.desktopai.api.CujHandler
 import com.android.wm.shell.desktopai.api.CujHandlerId
+import com.android.wm.shell.desktopai.extensions.ace.ContextEngineCujHandler
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_AI
 import com.android.wm.shell.repository.GenericRepository
 import com.android.wm.shell.repository.MemoryRepositoryImpl
@@ -31,13 +32,19 @@ import javax.inject.Inject
  * enabling flexible and extensible event handling.
  */
 @WMSingleton
-class CujHandlerRegistry @Inject constructor(shellCujHandler: ShellCujHandler) :
+class CujHandlerRegistry
+@Inject
+constructor(
+    shellCujHandler: ShellCujHandler,
+    personalContextEngineCujHandler: ContextEngineCujHandler,
+) :
     GenericRepository<CujHandlerId, CujHandler> by MemoryRepositoryImpl(
         logger = { msg -> ProtoLog.v(WM_SHELL_DESKTOP_AI, "$TAG: CujHandlerRegistry: %s", msg) }
     ) {
 
     init {
-        register(CujHandlerId.ProcessShellContext, shellCujHandler)
+        register(CujHandlerId.ShellCujHandler, shellCujHandler)
+        register(CujHandlerId.PersonalContextCujHandler, personalContextEngineCujHandler)
     }
 
     /**

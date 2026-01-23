@@ -74,7 +74,7 @@ class DesktopAiOrchestratorTest : ShellTestCase() {
     @Test
     fun onTriggerReceived_invokesHandlers() {
         val strategy = TriggerStrategy.SystemEvent("TEST_EVENT")
-        val handlerId = CujHandlerId.ProcessShellContext
+        val handlerId = CujHandlerId.ShellCujHandler
         val config =
             CujConfiguration(
                 cujId = "TEST_CUJ",
