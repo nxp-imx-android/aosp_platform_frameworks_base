@@ -54,7 +54,7 @@ constructor(
             if (Utils.isManagedProfile(context, userId)) {
                 R.drawable.auth_dialog_enterprise
             } else if (Utils.isSupervisingProfile(context, userId)) {
-                R.drawable.ic_account_child_invert
+                com.android.internal.R.drawable.ic_account_child_invert
             } else {
                 R.drawable.auth_dialog_lock
             }
