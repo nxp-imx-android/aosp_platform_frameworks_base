@@ -28537,18 +28537,23 @@ package android.media.quality {
   }
 
   public static final class MediaQualityContract.SoundQuality {
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String PARAMETER_AD_HEADPHONE_ENABLE = "ad_headphone_enable";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String PARAMETER_AD_SPEAKER_ENABLE = "ad_speaker_enable";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String PARAMETER_AD_VOLUME = "ad_volume";
     field public static final String PARAMETER_AUTO_VOLUME_CONTROL = "auto_volume_control";
     field public static final String PARAMETER_BALANCE = "balance";
     field public static final String PARAMETER_BASS = "bass";
     field public static final String PARAMETER_DIALOGUE_ENHANCER = "dialogue_enhancer";
     field public static final String PARAMETER_DIGITAL_OUTPUT_DELAY_MILLIS = "digital_output_delay_millis";
     field public static final String PARAMETER_DIGITAL_OUTPUT_MODE = "digital_output_mode";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String PARAMETER_DOLBY_AUDIO_PROCESSING = "dolby_audio_processing";
     field public static final String PARAMETER_DOLBY_AUDIO_PROCESSING_DOLBY_ATMOS = "dolby_audio_processing_dolby_atmos";
     field public static final String PARAMETER_DOLBY_AUDIO_PROCESSING_SOUND_MODE = "dolby_audio_processing_sound_mode";
     field public static final String PARAMETER_DOLBY_AUDIO_PROCESSING_SURROUND_VIRTUALIZER = "dolby_audio_processing_surround_virtualizer";
     field public static final String PARAMETER_DOLBY_AUDIO_PROCESSING_VOLUME_LEVELER = "dolby_audio_processing_volume_leveler";
     field public static final String PARAMETER_DOWN_MIX_MODE = "down_mix_mode";
     field public static final String PARAMETER_DTS_DRC = "dts_drc";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String PARAMETER_DTS_VIRTUAL_X = "dts_virtual_x";
     field public static final String PARAMETER_DTS_VIRTUAL_X_DEFINITION = "dts_virtual_x_definition";
     field public static final String PARAMETER_DTS_VIRTUAL_X_DIALOG_CLARITY = "dts_virtual_x_dialog_clarity";
     field public static final String PARAMETER_DTS_VIRTUAL_X_HEIGHT = "dts_virtual_x_height";
@@ -28557,6 +28562,8 @@ package android.media.quality {
     field public static final String PARAMETER_DTS_VIRTUAL_X_TRU_SURROUND_X = "dts_virtual_x_tru_surround_x";
     field public static final String PARAMETER_DTS_VIRTUAL_X_TRU_VOLUME_HD = "dts_virtual_x_tru_volume_hd";
     field public static final String PARAMETER_EARC = "earc";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String PARAMETER_PAN_FADE_ENABLE = "pan_fade_enable";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String PARAMETER_SOUND_STYLE = "sound_style";
     field public static final String PARAMETER_SPEAKERS = "speakers";
     field public static final String PARAMETER_SPEAKERS_DELAY_MILLIS = "speakers_delay_millis";
     field public static final String PARAMETER_SURROUND_SOUND = "surround_sound";
