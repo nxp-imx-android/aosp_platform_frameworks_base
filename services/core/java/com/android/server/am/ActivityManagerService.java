@@ -94,8 +94,8 @@ import static android.os.IServiceManager.DUMP_FLAG_PRIORITY_HIGH;
 import static android.os.IServiceManager.DUMP_FLAG_PRIORITY_NORMAL;
 import static android.os.IServiceManager.DUMP_FLAG_PROTO;
 import static android.os.InputConstants.DEFAULT_DISPATCHING_TIMEOUT_MILLIS;
-import static android.os.PerfettoTrace.BIG_LOCKS_V3;
-import static android.os.PerfettoTrace.PROC_STATE_CATEGORY;
+import static android.os.PerfettoCategories.BIG_LOCKS_CATEGORY;
+import static android.os.PerfettoCategories.PROC_LIFECYCLE_CATEGORY;
 import static android.os.PowerExemptionManager.REASON_ACTIVITY_VISIBILITY_GRACE_PERIOD;
 import static android.os.PowerExemptionManager.REASON_BACKGROUND_ACTIVITY_PERMISSION;
 import static android.os.PowerExemptionManager.REASON_BOOT_COMPLETED;
@@ -469,7 +469,6 @@ import com.android.internal.app.SystemUserHomeActivity;
 import com.android.internal.app.procstats.ProcessState;
 import com.android.internal.app.procstats.ProcessStats;
 import com.android.internal.content.InstallLocationUtils;
-import com.android.internal.dev.perfetto.sdk.PerfettoTrace;
 import com.android.internal.messages.nano.SystemMessageProto.SystemMessage;
 import com.android.internal.notification.SystemNotificationChannels;
 import com.android.internal.os.ApplicationSharedMemory;
@@ -922,42 +921,58 @@ public class ActivityManagerService extends IActivityManager.Stub
      * Emits a trace event indicating the start of an attempt to acquire the main AMS lock.
      */
     public static void traceBeforeAmsLock() {
-        PerfettoTrace.instant(BIG_LOCKS_V3, "ams_lock_acquire").emit();
+        if (android.os.Flags.perfettoSdkTracingV3()) {
+            com.android.internal.dev.perfetto.sdk.PerfettoTrace.instant(BIG_LOCKS_CATEGORY,
+                    "ams_lock_acquire").emit();
+        }
     }
 
     /**
      * Emits a trace event indicating that the main AMS lock has been acquired and is now held.
      */
     public static void traceAfterAmsLock() {
-        PerfettoTrace.begin(BIG_LOCKS_V3, "ams_lock_held").emit();
+        if (android.os.Flags.perfettoSdkTracingV3()) {
+            com.android.internal.dev.perfetto.sdk.PerfettoTrace.begin(BIG_LOCKS_CATEGORY,
+                    "ams_lock_held").emit();
+        }
     }
 
     /**
      * Emits a trace event indicating the end of the critical section protected by the AMS lock.
      */
     public static void traceAfterAmsUnlock() {
-        PerfettoTrace.end(BIG_LOCKS_V3).emit();
+        if (android.os.Flags.perfettoSdkTracingV3()) {
+            com.android.internal.dev.perfetto.sdk.PerfettoTrace.end(BIG_LOCKS_CATEGORY).emit();
+        }
     }
 
     /**
      * Emits a trace event indicating the start of an attempt to acquire the process lock.
      */
     public static void traceBeforeProcLock() {
-        PerfettoTrace.instant(BIG_LOCKS_V3, "proc_lock_acquire").emit();
+        if (android.os.Flags.perfettoSdkTracingV3()) {
+            com.android.internal.dev.perfetto.sdk.PerfettoTrace.instant(BIG_LOCKS_CATEGORY,
+                    "proc_lock_acquire").emit();
+        }
     }
 
     /**
      * Emits a trace event indicating that the process lock has been acquired and is now held.
      */
     public static void traceAfterProcLock() {
-        PerfettoTrace.begin(BIG_LOCKS_V3, "proc_lock_held").emit();
+        if (android.os.Flags.perfettoSdkTracingV3()) {
+            com.android.internal.dev.perfetto.sdk.PerfettoTrace.begin(BIG_LOCKS_CATEGORY,
+                    "proc_lock_held").emit();
+        }
     }
 
     /**
      * Emits a trace event indicating the end of the critical section protected by the process lock.
      */
     public static void traceAfterProcUnlock() {
-        PerfettoTrace.end(BIG_LOCKS_V3).emit();
+        if (android.os.Flags.perfettoSdkTracingV3()) {
+            com.android.internal.dev.perfetto.sdk.PerfettoTrace.end(BIG_LOCKS_CATEGORY).emit();
+        }
     }
 
     static void boostPriorityForProcLockedSection() {
@@ -3962,7 +3977,8 @@ public class ActivityManagerService extends IActivityManager.Stub
         if (app.getPid() == pid && (appThread = app.getThread()) != null
                 && appThread.asBinder() == thread.asBinder()) {
             if (android.os.Flags.perfettoSdkTracingV3()) {
-                PerfettoTrace.instant(PROC_STATE_CATEGORY, "binder_died")
+                com.android.internal.dev.perfetto.sdk.PerfettoTrace
+                        .instant(PROC_LIFECYCLE_CATEGORY, "binder_died")
                         .beginProto()
                         .beginNested(BINDER_DIED_EVENT)
                         .addField(AndroidBinderDiedEvent.UID, app.info.uid)
@@ -5163,7 +5179,8 @@ public class ActivityManagerService extends IActivityManager.Stub
 
         EventLogTags.writeAmProcBound(app.userId, pid, app.processName);
         if (android.os.Flags.perfettoSdkTracingV3()) {
-            PerfettoTrace.instant(PROC_STATE_CATEGORY, "process_bound")
+            com.android.internal.dev.perfetto.sdk.PerfettoTrace
+                    .instant(PROC_LIFECYCLE_CATEGORY, "process_bound")
                     .beginProto()
                     .beginNested(PROCESS_START_EVENT)
                     .addField(UID, app.info.uid)
@@ -5562,7 +5579,8 @@ public class ActivityManagerService extends IActivityManager.Stub
             final long startDelay = SystemClock.uptimeMillis() - app.getStartUptime();
 
             if (android.os.Flags.perfettoSdkTracingV3()) {
-                PerfettoTrace.instant(PROC_STATE_CATEGORY, "process_start")
+                com.android.internal.dev.perfetto.sdk.PerfettoTrace
+                        .instant(PROC_LIFECYCLE_CATEGORY, "process_start")
                         .beginProto()
                         .beginNested(PROCESS_START_EVENT)
                         .addField(UID, app.info.uid)

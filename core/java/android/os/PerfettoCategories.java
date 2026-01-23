@@ -57,6 +57,10 @@ public final class PerfettoCategories {
             new PerfettoTrace.Category("big_locks");
 
     @NonNull
+    public static final PerfettoTrace.Category PROC_LIFECYCLE_CATEGORY =
+            new PerfettoTrace.Category("proc_lifecycle");
+
+    @NonNull
     public static final PerfettoTrace.Category PROC_STATE_CATEGORY =
             new PerfettoTrace.Category("proc_state");
 
@@ -83,6 +87,7 @@ public final class PerfettoCategories {
                     GFX_CATEGORY,
                     JOB_SCHEDULER_CATEGORY,
                     MQ_CATEGORY,
+                    PROC_LIFECYCLE_CATEGORY,
                     PROC_STATE_CATEGORY,
                     PROC_STATE_COUNTER_CATEGORY
                     // go/keep-sorted end
