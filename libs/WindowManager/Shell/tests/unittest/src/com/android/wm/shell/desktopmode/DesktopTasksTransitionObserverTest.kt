@@ -444,6 +444,62 @@ class DesktopTasksTransitionObserverTest : ShellTestCase() {
         verify(taskRepository, never()).setRememberedBoundsRatio(any(), any())
     }
 
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_REMEMBERED_BOUNDS)
+    fun onTransitionReady_changeTransition_doesNotUpdateRememberedBounds_unresizable() {
+        val startBounds = Rect(0, 0, 100, 100)
+        val endBounds = Rect(10, 20, 120, 130)
+        val stableBounds = Rect(0, 0, 200, 200)
+        val packageName = "package"
+        val task =
+            createTaskInfo(1, WINDOWING_MODE_FREEFORM).apply {
+                baseActivity = ComponentName(packageName, "component.name")
+                configuration.windowConfiguration.bounds.set(endBounds)
+                isResizeable = false
+            }
+        val displayLayout = mock<DisplayLayout>()
+        whenever(displayLayout.getStableBoundsForDesktopMode(any())).thenAnswer {
+            (it.arguments[0] as Rect).set(stableBounds)
+        }
+        whenever(displayController.getDisplayLayout(task.displayId)).thenReturn(displayLayout)
+
+        transitionObserver.onTransitionReady(
+            transition = mock(),
+            info = createChangeTransition(task, startBounds, endBounds),
+            startTransaction = mock(),
+            finishTransaction = mock(),
+        )
+        verify(taskRepository, never()).setRememberedBoundsRatio(any(), any())
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_REMEMBERED_BOUNDS)
+    fun onTransitionReady_changeTransition_doesNotUpdateRememberedBounds_excludeCaptionInsets() {
+        val startBounds = Rect(0, 0, 100, 100)
+        val endBounds = Rect(10, 20, 120, 130)
+        val stableBounds = Rect(0, 0, 200, 200)
+        val packageName = "package"
+        val task =
+            createTaskInfo(1, WINDOWING_MODE_FREEFORM).apply {
+                baseActivity = ComponentName(packageName, "component.name")
+                configuration.windowConfiguration.bounds.set(endBounds)
+                appCompatTaskInfo.setIsExcludeCaptionInsets(true)
+            }
+        val displayLayout = mock<DisplayLayout>()
+        whenever(displayLayout.getStableBoundsForDesktopMode(any())).thenAnswer {
+            (it.arguments[0] as Rect).set(stableBounds)
+        }
+        whenever(displayController.getDisplayLayout(task.displayId)).thenReturn(displayLayout)
+
+        transitionObserver.onTransitionReady(
+            transition = mock(),
+            info = createChangeTransition(task, startBounds, endBounds),
+            startTransaction = mock(),
+            finishTransaction = mock(),
+        )
+        verify(taskRepository, never()).setRememberedBoundsRatio(any(), any())
+    }
+
     private fun createBackNavigationTransition(
         task: RunningTaskInfo?,
         type: Int = TRANSIT_TO_BACK,
@@ -592,6 +648,7 @@ class DesktopTasksTransitionObserverTest : ShellTestCase() {
             configuration.windowConfiguration.windowingMode = windowingMode
             token = WindowContainerToken(Mockito.mock(IWindowContainerToken::class.java))
             baseIntent = Intent().apply { component = ComponentName("package", "component.name") }
+            isResizeable = true
         }
 
     private fun createWallpaperTaskInfo() =
