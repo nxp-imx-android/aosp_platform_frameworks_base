@@ -16,7 +16,6 @@
 
 package com.android.server;
 
-import static android.app.Flags.enableNightModeBinderCache;
 import static android.app.UiModeManager.ContrastUtils.CONTRAST_DEFAULT_VALUE;
 import static android.app.UiModeManager.DEFAULT_PRIORITY;
 import static android.app.UiModeManager.FORCE_INVERT_TYPE_DARK;
@@ -173,9 +172,7 @@ final class UiModeManagerService extends SystemService {
         public void set(int mode) {
             if (mNightModeValue != mode) {
                 mNightModeValue = mode;
-                if (enableNightModeBinderCache()) {
-                    UiModeManager.invalidateNightModeCache();
-                }
+                UiModeManager.invalidateNightModeCache();
             }
         }
     };
