@@ -23,6 +23,7 @@ import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.RequiresPermission;
 import android.annotation.SystemApi;
+import android.app.compat.CompatChanges;
 import android.compat.annotation.ChangeId;
 import android.os.Binder;
 import android.os.Build;
@@ -113,6 +114,24 @@ public class TelephonyCallback {
      */
     @ChangeId
     public static final long PHONE_STATE_LISTENER_LIMIT_CHANGE_ID = 150880553L;
+
+    /**
+     * This change prevents re-registration of TelephonyCallback without previous de-registration.
+     *
+     * Without this change, re-registration of the callback has a few surprising and negative
+     * behaviors. It will silently leak the previous callback, meaning that any expected code will
+     * continue to be invoked when events occur. But, this will only occur until garbage collection
+     * at which point the events will silently drop. In addition, re-registration of the callback
+     * will re-invoke the "initial" callbacks for each listener.
+     *
+     * With this change enabled, re-registration of an already-registered listener will result in
+     * an {@link IllegalStateException}.
+     *
+     * @hide
+     */
+    @ChangeId
+    public static final long PREVENT_CALLBACK_REREGISTRATION = 433336412L;
+
 
     /**
      * Event for changes to the network service state (cellular).
@@ -827,12 +846,34 @@ public class TelephonyCallback {
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
     public IPhoneStateListener callback;
 
+    // Lock to prevent race conditions during registration/unregistration.
+    private final Object mLock = new Object();
+
     /**
      * @hide
      */
+    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
     public void init(@NonNull @CallbackExecutor Executor executor) {
         Objects.requireNonNull(executor, "TelephonyCallback Executor must be non-null");
-        callback = new IPhoneStateListenerStub(this, executor);
+
+        synchronized (mLock) {
+            if (CompatChanges.isChangeEnabled(PREVENT_CALLBACK_REREGISTRATION)
+                    && callback != null) {
+                throw new IllegalStateException(
+                        "TelephonyCallback: re-registering an already registered callback!");
+            }
+            callback = new IPhoneStateListenerStub(this, executor);
+        }
+    }
+
+    /**
+     * @hide
+     */
+    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
+    public void close() {
+        synchronized (mLock) {
+            if (callback != null) callback = null;
+        }
     }
 
     /**
