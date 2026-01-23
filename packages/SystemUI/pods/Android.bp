@@ -88,6 +88,7 @@ java_library {
         "com.android.systemui.lifecycle_api",
         "com.android.systemui.log-api",
         "com.android.systemui.log.table-api",
+        "com.android.systemui.notifications.intelligence.rules_api",
         "com.android.systemui.retail.data-api",
         "com.android.systemui.retail.domain-api",
         "com.android.systemui.statusbar.pipeline.airplane.data-api",
@@ -123,6 +124,7 @@ java_library {
 
     static_libs: [
         "com.android.systemui.brightness_testlib",
+        "com.android.systemui.notifications.intelligence.rules_testlib",
     ],
 
     visibility: ["//frameworks/base/packages/SystemUI:__pkg__"],

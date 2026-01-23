@@ -15,19 +15,19 @@
 
 package {
     default_applicable_licenses: ["frameworks_base_packages_SystemUI_license"],
-    default_visibility: ["//frameworks/base/packages/SystemUI/pods/notifications/intelligence/rules/ui:__subpackages__"],
 }
 
 java_library {
     name: "com.android.systemui.notifications.intelligence.rules.ui_main",
     defaults: ["sysui_main"],
     visibility: [
-        // TODO: b/478225883 - For now, this pod is only used in the Gallery app. The visibility
-        // will be modified later.
+        "//frameworks/base/packages/SystemUI/pods/bundle/phone",
         "//vendor:__subpackages__",
     ],
     static_libs: [
+        "com.android.systemui.lifecycle_api",
         "com.android.systemui.notifications.intelligence.rules_api",
+        "com.android.systemui.notifications.intelligence.rules_main",
         "PlatformComposeCore",
         "androidx.compose.foundation_foundation",
         "androidx.compose.foundation_foundation-layout",
