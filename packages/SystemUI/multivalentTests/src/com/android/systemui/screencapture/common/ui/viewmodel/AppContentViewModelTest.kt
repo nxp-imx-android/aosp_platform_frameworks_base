@@ -16,6 +16,7 @@
 
 package com.android.systemui.screencapture.common.ui.viewmodel
 
+import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Icon
 import androidx.compose.ui.graphics.Color
 import androidx.core.graphics.createBitmap
@@ -30,6 +31,8 @@ import com.android.systemui.testKosmosNew
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
@@ -88,7 +91,37 @@ class AppContentViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun onActivated_noIcon_returnsFailure() =
+    fun onActivated_noIcon_fallsBackToApplicationIcon() =
+        kosmos.runTest {
+            // Arrange
+            val packageName = "FakePackage"
+            val fakeAppIconBitmap = createBitmap(10, 10)
+            val fakeAppIcon = BitmapDrawable(mContext.resources, fakeAppIconBitmap)
+
+            val mockPackageManager = mock<android.content.pm.PackageManager>()
+            whenever(mockPackageManager.getApplicationIcon(packageName)).thenReturn(fakeAppIcon)
+            mContext.setMockPackageManager(mockPackageManager)
+
+            val fakeAppContent =
+                ScreenCaptureAppContent(
+                    packageName = packageName,
+                    contentId = 1,
+                    label = "FakeLabel",
+                    thumbnail = null,
+                    icon = null,
+                )
+            val viewModel = AppContentViewModel(fakeAppContent, mContext)
+
+            // Act
+            viewModel.activateIn(testScope)
+
+            // Assert
+            assertThat(viewModel.icon?.isSuccess).isTrue()
+            assertThat(viewModel.icon?.getOrNull()?.sameAs(fakeAppIconBitmap)).isTrue()
+        }
+
+    @Test
+    fun onActivated_noIcon_noFallback_returnsFailure() =
         kosmos.runTest {
             // Arrange
             val fakeAppContent =
@@ -107,6 +140,6 @@ class AppContentViewModelTest : SysuiTestCase() {
             // Assert
             assertThat(viewModel.icon?.isFailure).isTrue()
             assertThat(viewModel.icon?.exceptionOrNull())
-                .isInstanceOf(IllegalArgumentException::class.java)
+                .isInstanceOf(IllegalStateException::class.java)
         }
 }

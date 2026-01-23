@@ -30,6 +30,7 @@ import com.android.systemui.screencapture.common.domain.model.ScreenCaptureAppCo
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.coroutineScope
 
 /** Data for a UI to display app content. */
@@ -58,28 +59,27 @@ constructor(
     override suspend fun onActivated() {
         coroutineScope {
             launchTraced("AppContentViewModel#icon") {
-                model.icon?.let { iconDrawable ->
+                val drawable =
                     try {
-                        val drawable = iconDrawable.loadDrawable(context)
-                        icon =
-                            if (drawable != null) {
-                                Result.success(drawable.toBitmap())
-                            } else {
-                                Result.failure(
-                                    IllegalStateException(
-                                        "Failed to load icon for ${model.packageName}"
-                                    )
-                                )
-                            }
+                        model.icon?.loadDrawable(context)
                     } catch (e: Exception) {
-                        icon = Result.failure(e)
+                        if (e is CancellationException) throw e
+                        null
                     }
-                }
-                    ?: run {
-                        icon =
-                            Result.failure(
-                                IllegalArgumentException("App content does not have an icon")
-                            )
+                        ?: try {
+                            context.packageManager.getApplicationIcon(model.packageName)
+                        } catch (e: Exception) {
+                            if (e is CancellationException) throw e
+                            null
+                        }
+
+                icon =
+                    if (drawable != null) {
+                        Result.success(drawable.toBitmap())
+                    } else {
+                        Result.failure(
+                            IllegalStateException("No icon available for ${model.packageName}")
+                        )
                     }
             }
         }
