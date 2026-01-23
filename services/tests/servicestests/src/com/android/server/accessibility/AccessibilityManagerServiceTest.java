@@ -2357,7 +2357,6 @@ public class AccessibilityManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(com.android.hardware.input.Flags.FLAG_ENABLE_VOICE_ACCESS_KEY_GESTURES)
     public void handleKeyGestureEvent_activateVoiceAccess_trustedService() {
         setupAccessibilityServiceConnection(FLAG_REQUEST_ACCESSIBILITY_BUTTON);
         mFakePermissionEnforcer.grant(Manifest.permission.MANAGE_ACCESSIBILITY);
@@ -2506,7 +2505,6 @@ public class AccessibilityManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(com.android.hardware.input.Flags.FLAG_ENABLE_VOICE_ACCESS_KEY_GESTURES)
     public void handleKeyGestureEvent_toggleVoiceAccess_noDefault_doesNothing() {
         mFakePermissionEnforcer.grant(Manifest.permission.MANAGE_ACCESSIBILITY);
 
@@ -2522,7 +2520,6 @@ public class AccessibilityManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(com.android.hardware.input.Flags.FLAG_ENABLE_VOICE_ACCESS_KEY_GESTURES)
     public void handleKeyGestureEvent_toggleVoiceAccess_emptyDefault_doesNothing() {
         mFakePermissionEnforcer.grant(Manifest.permission.MANAGE_ACCESSIBILITY);
         mTestableContext.getOrCreateTestableResources().addOverride(
