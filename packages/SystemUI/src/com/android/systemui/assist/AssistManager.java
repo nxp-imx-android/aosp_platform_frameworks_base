@@ -441,7 +441,8 @@ public class AssistManager {
         intent.setComponent(assistComponent);
         intent.putExtras(args);
 
-        if (structureEnabled && AssistUtils.isDisclosureEnabled(mContext)) {
+        if (!android.permission.flags.Flags.assistSettingsPrivacyImprovementsEnabled()
+                && structureEnabled && AssistUtils.isDisclosureEnabled(mContext)) {
             showDisclosure();
         }
 
