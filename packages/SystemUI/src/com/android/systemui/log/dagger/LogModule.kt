@@ -651,5 +651,13 @@ abstract class LogModule {
         fun providesWiredAudioDeviceRepositoryLog(factory: LogBufferFactory): LogBuffer {
             return factory.create("WiredAudioDeviceRepositoryLog", 50)
         }
+
+        /** Provides a [LogBuffer] for Multi Display related events on Status Bar. */
+        @Provides
+        @SysUISingleton
+        @MultiDisplayStatusBarLog
+        fun providesMultiDisplayStatusBarLog(factory: LogBufferFactory): LogBuffer {
+            return factory.create(name = "MultiDisplayStatusBarLog", maxSize = 50)
+        }
     }
 }

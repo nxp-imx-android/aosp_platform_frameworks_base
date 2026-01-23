@@ -25,6 +25,7 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.fragments.FragmentHostManager
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.statusbar.data.repository.fakeStatusBarModePerDisplayRepository
+import com.android.systemui.statusbar.multiDisplayStatusBarLogger
 import com.android.systemui.statusbar.phone.fragment.dagger.HomeStatusBarComponent
 import com.android.systemui.statusbar.pipeline.shared.ui.composable.StatusBarRootFactory
 import com.android.systemui.statusbar.window.StatusBarWindowController
@@ -66,11 +67,13 @@ class StatusBarInitializerTest : SysuiTestCase() {
 
     val underTest =
         StatusBarInitializerImpl(
+            displayId = context.displayId,
             statusBarWindowController = windowController,
             statusBarModePerDisplayRepository = statusBarModePerDisplayRepository,
             statusBarRootFactory = mock(StatusBarRootFactory::class.java),
             componentFactory = mock(HomeStatusBarComponent.Factory::class.java),
             lifecycleListeners = setOf(),
+            logger = kosmos.multiDisplayStatusBarLogger,
         )
 
     @Test
