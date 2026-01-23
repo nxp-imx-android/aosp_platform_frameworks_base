@@ -157,6 +157,27 @@ object Utils {
         }
     }
 
+    /**
+     * Returns the boolean value of the given settings resource.
+     *
+     * @param resName the name of the settings resource to retrieve
+     * @return the boolean value of the settings resource, or null if the resource is not found
+     */
+    fun getSettingsBoolean(resName: String): Boolean? {
+        val identifier = settingsResources.getIdentifier(resName, "bool", SETTINGS_PACKAGE_NAME)
+        if (identifier == 0) {
+            Log.w("TestUtils", "Boolean setting resource not found for '$resName'.")
+            return null
+        }
+
+        return try {
+            settingsResources.getBoolean(identifier)
+        } catch (e: android.content.res.Resources.NotFoundException) {
+            Log.w("TestUtils", "Boolean setting not found for '$resName'.", e)
+            null
+        }
+    }
+
     private fun getSettingsString(resName: String): String {
         val identifier = settingsResources.getIdentifier(resName, "string", SETTINGS_PACKAGE_NAME)
         return settingsResources.getString(identifier)
