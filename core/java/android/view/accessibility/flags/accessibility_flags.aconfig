@@ -193,7 +193,7 @@ flag {
     name: "global_action_media_play_pause"
     namespace: "accessibility"
     description: "Allow AccessibilityService to perform GLOBAL_ACTION_MEDIA_PLAY_PAUSE"
-    bug: "334954140"
+    bug: "333881343"
     is_exported: true
 }
 
@@ -201,7 +201,7 @@ flag {
     name: "global_action_menu"
     namespace: "accessibility"
     description: "Allow AccessibilityService to perform GLOBAL_ACTION_MENU"
-    bug: "334954140"
+    bug: "333881343"
     is_exported: true
 }
 
