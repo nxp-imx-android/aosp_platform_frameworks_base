@@ -26,6 +26,8 @@ import android.util.ArraySet;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
+import com.android.internal.dev.perfetto.sdk.PerfettoTrace;
+
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -64,8 +66,8 @@ public class PerfettoTraceV3InitializationTest {
 
     @BeforeClass
     public static void setUpClass() {
-        PerfettoTrace.register(true);
-        PerfettoTrace.registerCategories();
+        com.android.internal.dev.perfetto.sdk.PerfettoTrace.register(true);
+        PerfettoCategories.registerCategories();
     }
 
     @Before

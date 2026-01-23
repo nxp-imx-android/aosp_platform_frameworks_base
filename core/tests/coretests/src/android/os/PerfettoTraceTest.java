@@ -16,7 +16,7 @@
 
 package android.os;
 
-import static android.os.PerfettoTrace.Category;
+import static com.android.internal.dev.perfetto.sdk.PerfettoTrace.Category;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -24,7 +24,6 @@ import static perfetto.protos.ChromeLatencyInfoOuterClass.ChromeLatencyInfo.Late
 import static perfetto.protos.ChromeLatencyInfoOuterClass.ChromeLatencyInfo.LatencyComponentType.COMPONENT_INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL;
 
 import android.platform.test.annotations.DisabledOnRavenwood;
-import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.util.ArraySet;
@@ -32,13 +31,12 @@ import android.util.ArraySet;
 import androidx.test.InstrumentationRegistry;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
+import com.android.internal.dev.perfetto.sdk.PerfettoTrace;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.util.List;
-import java.util.Set;
 
 import perfetto.protos.ChromeLatencyInfoOuterClass.ChromeLatencyInfo;
 import perfetto.protos.ChromeLatencyInfoOuterClass.ChromeLatencyInfo.ComponentInfo;
@@ -58,6 +56,9 @@ import perfetto.protos.TrackDescriptorOuterClass.TrackDescriptor;
 import perfetto.protos.TrackEventConfigOuterClass.TrackEventConfig;
 import perfetto.protos.TrackEventOuterClass.EventCategory;
 import perfetto.protos.TrackEventOuterClass.TrackEvent;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * This class is used to test the native tracing support. Run this test
