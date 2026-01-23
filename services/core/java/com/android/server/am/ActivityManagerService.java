@@ -177,7 +177,6 @@ import static com.android.server.am.Flags.FLAG_FGS_DELEGATE_SYSTEM_API;
 import static com.android.server.am.Flags.FLAG_GET_PACKAGE_NAMES_FOR_PID_API;
 import static com.android.server.am.LogcatFetcher.LOGCAT_TIMEOUT_SEC;
 import static com.android.server.am.LogcatFetcher.RESERVED_BYTES_PER_LOGCAT_LINE;
-import static com.android.server.am.MemoryStatUtil.hasMemcg;
 import static com.android.server.am.ProcessList.ProcStartHandler;
 import static com.android.server.am.ProcessList.TAG_PROCESS_OBSERVERS;
 import static com.android.server.am.psc.Constants.BACKUP_APP_ADJ;
@@ -3940,12 +3939,6 @@ public class ActivityManagerService extends IActivityManager.Stub
         } else if (DEBUG_PROCESSES) {
             Slog.d(TAG_PROCESSES, "Received spurious death notification for thread "
                     + thread.asBinder());
-        }
-
-        // On the device which doesn't have Cgroup, log LmkStateChanged which is used as a signal
-        // for pulling memory stats of other running processes when this process died.
-        if (!hasMemcg()) {
-            FrameworkStatsLog.write(FrameworkStatsLog.APP_DIED, SystemClock.elapsedRealtime());
         }
     }
     @Override
