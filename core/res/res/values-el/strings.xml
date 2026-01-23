@@ -2114,50 +2114,29 @@
     <string name="app_lock_add_screen_lock_button_text" msgid="9209013414563206600">"Προσθήκη κλειδώματος οθόνης"</string>
     <string name="app_lock_add_screen_lock_message" msgid="6107009360675769892">"Το κλείδωμα οθόνης μπορεί να είναι PIN, μοτίβο ή κωδικός πρόσβασης. Θα το χρησιμοποιείτε για να ξεκλειδώνετε τη συσκευή σας και να αποκτάτε πρόσβαση σε κλειδωμένες εφαρμογές."</string>
     <string name="app_lock_add_screen_lock_title" msgid="6905612843620128689">"Αρχικά, προσθέστε ένα κλείδωμα οθόνης"</string>
-    <!-- no translation found for enable_app_lock_success_toast_message (3339622779190529987) -->
-    <skip />
-    <!-- no translation found for enable_app_lock_failure_toast_message (1055838896510445566) -->
-    <skip />
-    <!-- no translation found for disable_app_lock_success_toast_message (70733620589071266) -->
-    <skip />
+    <string name="enable_app_lock_success_toast_message" msgid="3339622779190529987">"Η εφαρμογή <xliff:g id="APP_NAME">%1$s</xliff:g> είναι κλειδωμένη"</string>
+    <string name="enable_app_lock_failure_toast_message" msgid="1055838896510445566">"Δεν είναι δυνατό το κλείδωμα της εφαρμογής <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
+    <string name="disable_app_lock_success_toast_message" msgid="70733620589071266">"Το Κλείδωμα εφαρμογών καταργήθηκε από την εφαρμογή <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="locked_app_biometric_prompt_description" msgid="6853122652400451464">"Η εφαρμογή <xliff:g id="APP_NAME">%1$s</xliff:g> είναι κλειδωμένη"</string>
     <string name="locked_app_external_display_message" msgid="5483884799685545338">"Για να αποκτήσετε πρόσβαση στην εφαρμογή σε αυτή την οθόνη, επαληθεύστε πρώτα την ταυτότητά σας στην άλλη συσκευή"</string>
-    <!-- no translation found for app_lock_edu_dialog_enable_app_lock_title (283314042336592322) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_description (8176807243219769518) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_description_template (8563718120753342530) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_description_template_no_biometrics (7122017109150633691) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_info_header (5876120209204270990) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_info_notifications (1124438392204873305) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_info_widgets (8809009414650740872) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_button_lock (3914687128135704801) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_face (1348151645996748654) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_fingerprint (5206107469561561455) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_fingerprint_and_face (7895807411323811641) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_lockscreen_password_name (8487096457702445059) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_lockscreen_pattern_name (991436996281983547) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_lockscreen_pin_name (6458607126966304795) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_dialog_title (5030286398974840579) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_dialog_sub_title (310758587817184145) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_expand_app_list_button (3214809707125223273) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_continue_button (4045066724173414043) -->
-    <skip />
+    <string name="app_lock_edu_dialog_enable_app_lock_title" msgid="283314042336592322">"Προσθήκη κλειδώματος εφαρμογής στην εφαρμογή <xliff:g id="APP_NAME">%1$s</xliff:g>;"</string>
+    <string name="app_lock_edu_dialog_description" msgid="8176807243219769518">"Για λόγους ασφάλειας, μόνο εσείς μπορείτε να αποκτήσετε πρόσβαση σε αυτή την εφαρμογή με το Ξεκλείδωμα με δακτυλικό αποτύπωμα και το Ξεκλείδωμα με το πρόσωπο ή με το PIN σας"</string>
+    <string name="app_lock_edu_dialog_description_template" msgid="8563718120753342530">"Για λόγους ασφάλειας, μόνο εσείς μπορείτε να αποκτήσετε πρόσβαση σε αυτή την εφαρμογή με %1$s ή %2$s"</string>
+    <string name="app_lock_edu_dialog_description_template_no_biometrics" msgid="7122017109150633691">"Για λόγους ασφάλειας, μόνο εσείς μπορείτε να αποκτήσετε πρόσβαση σε αυτή την εφαρμογή με %1$s"</string>
+    <string name="app_lock_edu_dialog_info_header" msgid="5876120209204270990">"Με κλείδωμα εφαρμογής"</string>
+    <string name="app_lock_edu_dialog_info_notifications" msgid="1124438392204873305">"Θα γίνει απόκρυψη του περιεχομένου της ειδοποίησης"</string>
+    <string name="app_lock_edu_dialog_info_widgets" msgid="8809009414650740872">"Τα γραφικά στοιχεία και οι συντομεύσεις θα καταργηθούν"</string>
+    <string name="app_lock_edu_dialog_button_lock" msgid="3914687128135704801">"Προσ. κλειδ. εφαρμ."</string>
+    <string name="app_lock_edu_dialog_biometric_description_has_face" msgid="1348151645996748654">"Ξεκλ. με το πρόσωπο"</string>
+    <string name="app_lock_edu_dialog_biometric_description_has_fingerprint" msgid="5206107469561561455">"Ξεκλείδωμα με δακτυλικό αποτύπωμα"</string>
+    <string name="app_lock_edu_dialog_biometric_description_has_fingerprint_and_face" msgid="7895807411323811641">"Ξεκλ. με δακ. αποτ. ή με το πρόσωπο"</string>
+    <string name="app_lock_edu_dialog_lockscreen_password_name" msgid="8487096457702445059">"Κωδικός πρόσβασης"</string>
+    <string name="app_lock_edu_dialog_lockscreen_pattern_name" msgid="991436996281983547">"Μοτίβο"</string>
+    <string name="app_lock_edu_dialog_lockscreen_pin_name" msgid="6458607126966304795">"PIN"</string>
+    <string name="app_lock_permission_review_dialog_title" msgid="5030286398974840579">"Οι φωτογραφίες μπορεί να εμφανίζονται σε άλλες εφαρμογές"</string>
+    <string name="app_lock_permission_review_dialog_sub_title" msgid="310758587817184145">"Εφαρμογές με πρόσβαση στις φωτογραφίες"</string>
+    <string name="app_lock_permission_review_expand_app_list_button" msgid="3214809707125223273">"Προβολή όλων"</string>
+    <string name="app_lock_permission_review_continue_button" msgid="4045066724173414043">"Συνέχεια"</string>
     <string name="work_mode_off_title" msgid="6367463960165135829">"Αναίρ. παύσης εφαρμ. εργασιών;"</string>
     <string name="work_mode_turn_on" msgid="5316648862401307800">"Αναίρεση παύσης"</string>
     <string name="work_mode_emergency_call_button" msgid="6818855962881612322">"Έκτακτη ανάγκη"</string>

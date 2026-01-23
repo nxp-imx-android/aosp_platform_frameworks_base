@@ -2114,50 +2114,29 @@
     <string name="app_lock_add_screen_lock_button_text" msgid="9209013414563206600">"Ekran kilidi ekle"</string>
     <string name="app_lock_add_screen_lock_message" msgid="6107009360675769892">"Ekran kilidiniz PIN, desen veya şifre olabilir. Ekran kilidiyle cihazınızın kilidini açabilir ve kilitli uygulamalara erişebilirsiniz."</string>
     <string name="app_lock_add_screen_lock_title" msgid="6905612843620128689">"Önce ekran kilidi ekleyin"</string>
-    <!-- no translation found for enable_app_lock_success_toast_message (3339622779190529987) -->
-    <skip />
-    <!-- no translation found for enable_app_lock_failure_toast_message (1055838896510445566) -->
-    <skip />
-    <!-- no translation found for disable_app_lock_success_toast_message (70733620589071266) -->
-    <skip />
+    <string name="enable_app_lock_success_toast_message" msgid="3339622779190529987">"<xliff:g id="APP_NAME">%1$s</xliff:g> kilitli"</string>
+    <string name="enable_app_lock_failure_toast_message" msgid="1055838896510445566">"<xliff:g id="APP_NAME">%1$s</xliff:g> kilitlenemiyor"</string>
+    <string name="disable_app_lock_success_toast_message" msgid="70733620589071266">"Uygulama kilidi, <xliff:g id="APP_NAME">%1$s</xliff:g> uygulamasından kaldırıldı"</string>
     <string name="locked_app_biometric_prompt_description" msgid="6853122652400451464">"<xliff:g id="APP_NAME">%1$s</xliff:g> kilitli"</string>
     <string name="locked_app_external_display_message" msgid="5483884799685545338">"Uygulamaya bu ekranda erişmek için öncelikle diğer cihazınızda kimliğinizi doğrulayın"</string>
-    <!-- no translation found for app_lock_edu_dialog_enable_app_lock_title (283314042336592322) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_description (8176807243219769518) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_description_template (8563718120753342530) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_description_template_no_biometrics (7122017109150633691) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_info_header (5876120209204270990) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_info_notifications (1124438392204873305) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_info_widgets (8809009414650740872) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_button_lock (3914687128135704801) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_face (1348151645996748654) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_fingerprint (5206107469561561455) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_fingerprint_and_face (7895807411323811641) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_lockscreen_password_name (8487096457702445059) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_lockscreen_pattern_name (991436996281983547) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_lockscreen_pin_name (6458607126966304795) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_dialog_title (5030286398974840579) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_dialog_sub_title (310758587817184145) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_expand_app_list_button (3214809707125223273) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_continue_button (4045066724173414043) -->
-    <skip />
+    <string name="app_lock_edu_dialog_enable_app_lock_title" msgid="283314042336592322">"<xliff:g id="APP_NAME">%1$s</xliff:g> uygulamasına uygulama kilidi eklensin mi?"</string>
+    <string name="app_lock_edu_dialog_description" msgid="8176807243219769518">"Güvenliğiniz için bu uygulamaya Parmak İzi ve Yüz Tanıma Kilidi veya PIN\'inizle yalnızca siz erişebilirsiniz."</string>
+    <string name="app_lock_edu_dialog_description_template" msgid="8563718120753342530">"Güvenliğiniz için bu uygulamaya %1$s veya %2$s ile yalnızca siz erişebilirsiniz."</string>
+    <string name="app_lock_edu_dialog_description_template_no_biometrics" msgid="7122017109150633691">"Güvenliğiniz için bu uygulamaya %1$s ile yalnızca siz erişebilirsiniz."</string>
+    <string name="app_lock_edu_dialog_info_header" msgid="5876120209204270990">"Uygulama kilidiyle"</string>
+    <string name="app_lock_edu_dialog_info_notifications" msgid="1124438392204873305">"Bildirim içerikleri gizlenir"</string>
+    <string name="app_lock_edu_dialog_info_widgets" msgid="8809009414650740872">"Widget\'lar ve kısayollar kaldırılır"</string>
+    <string name="app_lock_edu_dialog_button_lock" msgid="3914687128135704801">"Uygulama kilidi ekle"</string>
+    <string name="app_lock_edu_dialog_biometric_description_has_face" msgid="1348151645996748654">"Yüz Tanıma Kilidi"</string>
+    <string name="app_lock_edu_dialog_biometric_description_has_fingerprint" msgid="5206107469561561455">"Parmak İzi Kilidi"</string>
+    <string name="app_lock_edu_dialog_biometric_description_has_fingerprint_and_face" msgid="7895807411323811641">"Parmak İzi veya Yüz Tanıma Kilidi"</string>
+    <string name="app_lock_edu_dialog_lockscreen_password_name" msgid="8487096457702445059">"Şifre"</string>
+    <string name="app_lock_edu_dialog_lockscreen_pattern_name" msgid="991436996281983547">"Desen"</string>
+    <string name="app_lock_edu_dialog_lockscreen_pin_name" msgid="6458607126966304795">"PIN"</string>
+    <string name="app_lock_permission_review_dialog_title" msgid="5030286398974840579">"Fotoğraflarınız diğer uygulamalarda gösterilebilir"</string>
+    <string name="app_lock_permission_review_dialog_sub_title" msgid="310758587817184145">"Fotoğraflarınıza erişen uygulamalar"</string>
+    <string name="app_lock_permission_review_expand_app_list_button" msgid="3214809707125223273">"Tümünü göster"</string>
+    <string name="app_lock_permission_review_continue_button" msgid="4045066724173414043">"Devam"</string>
     <string name="work_mode_off_title" msgid="6367463960165135829">"İş uygulamaları devam ettirilsin mi?"</string>
     <string name="work_mode_turn_on" msgid="5316648862401307800">"Devam ettir"</string>
     <string name="work_mode_emergency_call_button" msgid="6818855962881612322">"Acil durum"</string>

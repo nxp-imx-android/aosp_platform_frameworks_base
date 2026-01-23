@@ -2114,50 +2114,29 @@
     <string name="app_lock_add_screen_lock_button_text" msgid="9209013414563206600">"സ്‌ക്രീൻ ലോക്ക് ചേർക്കുക"</string>
     <string name="app_lock_add_screen_lock_message" msgid="6107009360675769892">"നിങ്ങളുടെ സ്ക്രീൻ ലോക്ക് ഒരു പിൻ, പാറ്റേൺ അല്ലെങ്കിൽ പാസ്‌വേഡ് ആകാം. ഉപകരണം അൺലോക്ക് ചെയ്യാനും ലോക്ക് ചെയ്ത ആപ്പുകൾ ആക്‌സസ് ചെയ്യാനും നിങ്ങൾ ഇത് ഉപയോഗിക്കും."</string>
     <string name="app_lock_add_screen_lock_title" msgid="6905612843620128689">"ആദ്യം ഒരു സ്ക്രീൻ ലോക്ക് ചേർക്കുക"</string>
-    <!-- no translation found for enable_app_lock_success_toast_message (3339622779190529987) -->
-    <skip />
-    <!-- no translation found for enable_app_lock_failure_toast_message (1055838896510445566) -->
-    <skip />
-    <!-- no translation found for disable_app_lock_success_toast_message (70733620589071266) -->
-    <skip />
+    <string name="enable_app_lock_success_toast_message" msgid="3339622779190529987">"<xliff:g id="APP_NAME">%1$s</xliff:g> ലോക്ക് ചെയ്തിരിക്കുന്നു"</string>
+    <string name="enable_app_lock_failure_toast_message" msgid="1055838896510445566">"<xliff:g id="APP_NAME">%1$s</xliff:g> ലോക്ക് ചെയ്യാനാകുന്നില്ല"</string>
+    <string name="disable_app_lock_success_toast_message" msgid="70733620589071266">"<xliff:g id="APP_NAME">%1$s</xliff:g> എന്നതിൽ നിന്ന് ആപ്പ് ലോക്ക് നീക്കം ചെയ്തു"</string>
     <string name="locked_app_biometric_prompt_description" msgid="6853122652400451464">"<xliff:g id="APP_NAME">%1$s</xliff:g> ലോക്ക് ചെയ്തിരിക്കുന്നു"</string>
     <string name="locked_app_external_display_message" msgid="5483884799685545338">"ഈ ഡിസ്പ്ലേയിൽ ആപ്പ് ആക്സസ് ചെയ്യാൻ, ആദ്യം നിങ്ങളുടെ മറ്റ് ഉപകരണത്തിൽ ഇത് നിങ്ങൾ തന്നെയാണെന്ന് പരിശോധിച്ചുറപ്പിക്കുക"</string>
-    <!-- no translation found for app_lock_edu_dialog_enable_app_lock_title (283314042336592322) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_description (8176807243219769518) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_description_template (8563718120753342530) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_description_template_no_biometrics (7122017109150633691) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_info_header (5876120209204270990) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_info_notifications (1124438392204873305) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_info_widgets (8809009414650740872) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_button_lock (3914687128135704801) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_face (1348151645996748654) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_fingerprint (5206107469561561455) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_fingerprint_and_face (7895807411323811641) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_lockscreen_password_name (8487096457702445059) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_lockscreen_pattern_name (991436996281983547) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_lockscreen_pin_name (6458607126966304795) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_dialog_title (5030286398974840579) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_dialog_sub_title (310758587817184145) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_expand_app_list_button (3214809707125223273) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_continue_button (4045066724173414043) -->
-    <skip />
+    <string name="app_lock_edu_dialog_enable_app_lock_title" msgid="283314042336592322">"<xliff:g id="APP_NAME">%1$s</xliff:g> എന്നതിലേക്ക് ആപ്പ് ലോക്ക് ചേർക്കണോ?"</string>
+    <string name="app_lock_edu_dialog_description" msgid="8176807243219769518">"നിങ്ങളുടെ സുരക്ഷയ്ക്കായി, ഫിംഗർപ്രിന്റ് അൺലോക്ക്, ഫെയ്‌സ് അൺലോക്ക് അല്ലെങ്കിൽ നിങ്ങളുടെ പിൻ ഉപയോഗിച്ച് നിങ്ങൾക്ക് മാത്രമേ ഈ ആപ്പ് ആക്‌സസ് ചെയ്യാനാകൂ"</string>
+    <string name="app_lock_edu_dialog_description_template" msgid="8563718120753342530">"നിങ്ങളുടെ സുരക്ഷയ്ക്കായി, %1$s അല്ലെങ്കിൽ നിങ്ങളുടെ %2$s ഉപയോഗിച്ച് നിങ്ങൾക്ക് മാത്രമേ ഈ ആപ്പ് ആക്‌സസ് ചെയ്യാനാകൂ"</string>
+    <string name="app_lock_edu_dialog_description_template_no_biometrics" msgid="7122017109150633691">"നിങ്ങളുടെ സുരക്ഷയ്ക്കായി, %1$s ഉപയോഗിച്ച് നിങ്ങൾക്ക് മാത്രമേ ഈ ആപ്പ് ആക്‌സസ് ചെയ്യാനാകൂ"</string>
+    <string name="app_lock_edu_dialog_info_header" msgid="5876120209204270990">"ആപ്പ് ലോക്ക് ഉപയോഗിച്ച്"</string>
+    <string name="app_lock_edu_dialog_info_notifications" msgid="1124438392204873305">"അറിയിപ്പ് ഉള്ളടക്കം മറയ്ക്കും"</string>
+    <string name="app_lock_edu_dialog_info_widgets" msgid="8809009414650740872">"വിജറ്റുകളും കുറുക്കുവഴികളും നീക്കം ചെയ്യും"</string>
+    <string name="app_lock_edu_dialog_button_lock" msgid="3914687128135704801">"ആപ്പ് ലോക്ക് ചേർക്കൂ"</string>
+    <string name="app_lock_edu_dialog_biometric_description_has_face" msgid="1348151645996748654">"ഫെയ്‌സ് അൺലോക്ക്"</string>
+    <string name="app_lock_edu_dialog_biometric_description_has_fingerprint" msgid="5206107469561561455">"ഫിംഗർപ്രിന്റ് അൺലോക്ക്"</string>
+    <string name="app_lock_edu_dialog_biometric_description_has_fingerprint_and_face" msgid="7895807411323811641">"ഫിംഗർപ്രിന്റ് അല്ലെങ്കിൽ ഫെയ്സ് അൺലോക്ക്"</string>
+    <string name="app_lock_edu_dialog_lockscreen_password_name" msgid="8487096457702445059">"പാസ്‌വേഡ്"</string>
+    <string name="app_lock_edu_dialog_lockscreen_pattern_name" msgid="991436996281983547">"പാറ്റേൺ"</string>
+    <string name="app_lock_edu_dialog_lockscreen_pin_name" msgid="6458607126966304795">"പിൻ"</string>
+    <string name="app_lock_permission_review_dialog_title" msgid="5030286398974840579">"നിങ്ങളുടെ ഫോട്ടോകൾ മറ്റ് ആപ്പുകളിൽ തുടർന്നും കാണിച്ചേക്കാം"</string>
+    <string name="app_lock_permission_review_dialog_sub_title" msgid="310758587817184145">"ഫോട്ടോകളിലേക്ക് ആക്‌സസുള്ള ആപ്പുകൾ"</string>
+    <string name="app_lock_permission_review_expand_app_list_button" msgid="3214809707125223273">"എല്ലാം കാണുക"</string>
+    <string name="app_lock_permission_review_continue_button" msgid="4045066724173414043">"തുടരുക"</string>
     <string name="work_mode_off_title" msgid="6367463960165135829">"വർക്ക് ആപ്പുകൾ പുനരാരംഭിക്കണോ?"</string>
     <string name="work_mode_turn_on" msgid="5316648862401307800">"പുനരാരംഭിക്കുക"</string>
     <string name="work_mode_emergency_call_button" msgid="6818855962881612322">"അടിയന്തരം"</string>

@@ -2114,50 +2114,29 @@
     <string name="app_lock_add_screen_lock_button_text" msgid="9209013414563206600">"තිර අගුල එක් කරන්න"</string>
     <string name="app_lock_add_screen_lock_message" msgid="6107009360675769892">"ඔබේ තිර අගුල PIN අංකයක්, රටාවක් හෝ මුරපදයක් විය හැක. ඔබ ඔබේ උපාංගය අගුළු හැරීමට සහ අගුළු දැමූ යෙදුම් වෙත ප්‍රවේශ වීමට මෙය භාවිතා කරනු ඇත."</string>
     <string name="app_lock_add_screen_lock_title" msgid="6905612843620128689">"පළමුව, තිර අගුලක් එක් කරන්න"</string>
-    <!-- no translation found for enable_app_lock_success_toast_message (3339622779190529987) -->
-    <skip />
-    <!-- no translation found for enable_app_lock_failure_toast_message (1055838896510445566) -->
-    <skip />
-    <!-- no translation found for disable_app_lock_success_toast_message (70733620589071266) -->
-    <skip />
+    <string name="enable_app_lock_success_toast_message" msgid="3339622779190529987">"<xliff:g id="APP_NAME">%1$s</xliff:g> අගුළු දමා ඇත"</string>
+    <string name="enable_app_lock_failure_toast_message" msgid="1055838896510445566">"<xliff:g id="APP_NAME">%1$s</xliff:g> අගුළු දැමිය නොහැක"</string>
+    <string name="disable_app_lock_success_toast_message" msgid="70733620589071266">"යෙදුම් අගුල <xliff:g id="APP_NAME">%1$s</xliff:g> වෙතින් ඉවත් කර ඇත"</string>
     <string name="locked_app_biometric_prompt_description" msgid="6853122652400451464">"<xliff:g id="APP_NAME">%1$s</xliff:g> අගුළු දමා ඇත"</string>
     <string name="locked_app_external_display_message" msgid="5483884799685545338">"මෙම සංදර්ශකය මත යෙදුමට ප්‍රවේශ වීමට, පළමුව ඔබේ අනෙක් උපාංගයෙහි ඔබ බව සත්‍යාපනය කරන්න"</string>
-    <!-- no translation found for app_lock_edu_dialog_enable_app_lock_title (283314042336592322) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_description (8176807243219769518) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_description_template (8563718120753342530) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_description_template_no_biometrics (7122017109150633691) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_info_header (5876120209204270990) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_info_notifications (1124438392204873305) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_info_widgets (8809009414650740872) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_button_lock (3914687128135704801) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_face (1348151645996748654) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_fingerprint (5206107469561561455) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_fingerprint_and_face (7895807411323811641) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_lockscreen_password_name (8487096457702445059) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_lockscreen_pattern_name (991436996281983547) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_lockscreen_pin_name (6458607126966304795) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_dialog_title (5030286398974840579) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_dialog_sub_title (310758587817184145) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_expand_app_list_button (3214809707125223273) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_continue_button (4045066724173414043) -->
-    <skip />
+    <string name="app_lock_edu_dialog_enable_app_lock_title" msgid="283314042336592322">"<xliff:g id="APP_NAME">%1$s</xliff:g> වෙත යෙදුම් අගුල එක් කරන්න ද?"</string>
+    <string name="app_lock_edu_dialog_description" msgid="8176807243219769518">"ඔබේ ආරක්ෂාව සඳහා, ඇඟිලි සලකුණ සහ මුහුණෙන් අගුළු හැරීම හෝ ඔබේ PIN සමග මෙම යෙදුමට ප්‍රවේශ විය හැක්කේ ඔබට පමණි"</string>
+    <string name="app_lock_edu_dialog_description_template" msgid="8563718120753342530">"ඔබේ ආරක්ෂාව සඳහා, ඔබට පමණක් %1$s හෝ ඔබේ %2$s සමග මෙම යෙදුමට ප්‍රවේශ විය හැක"</string>
+    <string name="app_lock_edu_dialog_description_template_no_biometrics" msgid="7122017109150633691">"ඔබේ ආරක්ෂාව සඳහා, ඔබට පමණක් ඔබේ %1$s සමග මෙම යෙදුමට ප්‍රවේශ විය හැක"</string>
+    <string name="app_lock_edu_dialog_info_header" msgid="5876120209204270990">"යෙදුම් අගුල සමග"</string>
+    <string name="app_lock_edu_dialog_info_notifications" msgid="1124438392204873305">"දැනුම්දීම් අන්තර්ගතය සඟවනු ඇත"</string>
+    <string name="app_lock_edu_dialog_info_widgets" msgid="8809009414650740872">"විජට් සහ කෙටිමං ඉවත් කරනු ලැබේ"</string>
+    <string name="app_lock_edu_dialog_button_lock" msgid="3914687128135704801">"යෙදුම් අගුල එක් කරන්න"</string>
+    <string name="app_lock_edu_dialog_biometric_description_has_face" msgid="1348151645996748654">"මුහුණෙන් අගුළු හැරීම"</string>
+    <string name="app_lock_edu_dialog_biometric_description_has_fingerprint" msgid="5206107469561561455">"ඇඟිලි සලකුණු අගුළු හැරීම"</string>
+    <string name="app_lock_edu_dialog_biometric_description_has_fingerprint_and_face" msgid="7895807411323811641">"ඇඟිලි සලකුණ හෝ මුහුණෙන් අගුළු හැරීම"</string>
+    <string name="app_lock_edu_dialog_lockscreen_password_name" msgid="8487096457702445059">"මුරපදය"</string>
+    <string name="app_lock_edu_dialog_lockscreen_pattern_name" msgid="991436996281983547">"රටාව"</string>
+    <string name="app_lock_edu_dialog_lockscreen_pin_name" msgid="6458607126966304795">"PIN"</string>
+    <string name="app_lock_permission_review_dialog_title" msgid="5030286398974840579">"ඔබේ ඡායාරූප තවමත් වෙනත් යෙදුම්වල පෙන්විය හැක"</string>
+    <string name="app_lock_permission_review_dialog_sub_title" msgid="310758587817184145">"ඔබේ ඡායාරූප වෙත ප්‍රවේශය සහිත යෙදුම්"</string>
+    <string name="app_lock_permission_review_expand_app_list_button" msgid="3214809707125223273">"සියල්ල බලන්න"</string>
+    <string name="app_lock_permission_review_continue_button" msgid="4045066724173414043">"ඉදිරියට යන්න"</string>
     <string name="work_mode_off_title" msgid="6367463960165135829">"කාර්ය යෙදුම් විරාම නොකරන්න ද?"</string>
     <string name="work_mode_turn_on" msgid="5316648862401307800">"විරාම නොකරන්න"</string>
     <string name="work_mode_emergency_call_button" msgid="6818855962881612322">"හදිසි අවස්ථාව"</string>
