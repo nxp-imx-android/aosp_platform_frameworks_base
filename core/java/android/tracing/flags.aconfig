@@ -51,3 +51,10 @@ flag {
     description: "Fine-grained tracing configuration (client, IMS, IMMS)"
     bug: "470926070"
 }
+
+flag {
+    name: "perfetto_ime_service_tracing_aot"
+    namespace: "windowing_tools"
+    description: "Always-on IME service (IMS) tracing"
+    bug: "470926070"
+}
