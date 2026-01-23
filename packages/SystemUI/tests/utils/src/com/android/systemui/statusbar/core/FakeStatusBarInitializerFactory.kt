@@ -23,6 +23,7 @@ import com.android.systemui.statusbar.window.StatusBarWindowController
 
 class FakeStatusBarInitializerFactory : StatusBarInitializer.Factory {
     override fun create(
+        displayId: Int,
         statusBarWindowController: StatusBarWindowController,
         statusBarModePerDisplayRepository: StatusBarModePerDisplayRepository,
         statusBarRootFactory: StatusBarRootFactory,

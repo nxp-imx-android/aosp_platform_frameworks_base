@@ -18,6 +18,7 @@ package com.android.systemui.statusbar.core
 import android.view.ViewGroup
 import androidx.annotation.VisibleForTesting
 import com.android.systemui.CoreStartable
+import com.android.systemui.log.MultiDisplayStatusBarLogger
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.core.StatusBarInitializer.OnStatusBarViewUpdatedListener
 import com.android.systemui.statusbar.core.StatusBarInitializer.StatusBarViewLifecycleListener
@@ -67,6 +68,7 @@ interface StatusBarInitializer : CoreStartable {
 
     interface Factory {
         fun create(
+            displayId: Int,
             statusBarWindowController: StatusBarWindowController,
             statusBarModePerDisplayRepository: StatusBarModePerDisplayRepository,
             statusBarRootFactory: StatusBarRootFactory,
@@ -78,11 +80,13 @@ interface StatusBarInitializer : CoreStartable {
 class StatusBarInitializerImpl
 @AssistedInject
 constructor(
+    @Assisted private val displayId: Int,
     @Assisted private val statusBarWindowController: StatusBarWindowController,
     @Assisted private val statusBarModePerDisplayRepository: StatusBarModePerDisplayRepository,
     @Assisted private val statusBarRootFactory: StatusBarRootFactory,
     @Assisted private val componentFactory: HomeStatusBarComponent.Factory,
     private val lifecycleListeners: Set<@JvmSuppressWildcards StatusBarViewLifecycleListener>,
+    private val logger: MultiDisplayStatusBarLogger,
 ) : StatusBarInitializer {
     private var component: HomeStatusBarComponent? = null
 
@@ -105,6 +109,7 @@ constructor(
     /** Stand up the [PhoneStatusBarView] in a compose root */
     override fun start() {
         initialized = true
+        logger.logCreatingStatusBarRootView(displayId)
         val statusBarRoot =
             statusBarRootFactory.create(statusBarWindowController.backgroundView as ViewGroup) { cv
                 ->
@@ -125,11 +130,13 @@ constructor(
                         }
                     }
             }
+        logger.logCreatedStatusBarRootView(displayId)
 
         // Add the new compose view to the hierarchy because we don't use fragment transactions
         // anymore
         val windowBackgroundView = statusBarWindowController.backgroundView as ViewGroup
         windowBackgroundView.addView(statusBarRoot)
+        logger.logStatusBarRootViewAddedToWindow(displayId)
     }
 
     override fun stop() {
@@ -140,6 +147,7 @@ constructor(
     @AssistedFactory
     interface Factory : StatusBarInitializer.Factory {
         override fun create(
+            displayId: Int,
             statusBarWindowController: StatusBarWindowController,
             statusBarModePerDisplayRepository: StatusBarModePerDisplayRepository,
             statusBarRootFactory: StatusBarRootFactory,
