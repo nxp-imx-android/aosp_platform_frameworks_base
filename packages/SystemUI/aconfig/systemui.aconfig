@@ -58,13 +58,6 @@ flag {
 }
 
 flag {
-  name: "app_clips_backlinks"
-  namespace: "systemui"
-  description: "Enables Backlinks improvement feature in App Clips"
-  bug: "300307759"
-}
-
-flag {
     name: "av_controls_chip_per_display"
     namespace: "systemui"
     description: "Makes Av Controls Chip related code per display."
