@@ -26,6 +26,7 @@ import static android.app.ProcessMemoryState.HOSTING_COMPONENT_TYPE_BROADCAST_RE
 import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_OOM_ADJ;
 import static com.android.server.am.psc.Constants.SCHED_GROUP_UNDEFINED;
 
+import android.annotation.ElapsedRealtimeLong;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.UserIdInt;
@@ -599,6 +600,74 @@ public class ProcessStateController {
     @GuardedBy("mLock")
     public void setUidTempAllowlistStateLSP(int uid, boolean allowList) {
         mOomAdjuster.setUidTempAllowlistStateLSP(uid, allowList);
+    }
+
+    /**
+     * Set whether the given UID is currently idle.
+     */
+    @GuardedBy({"mLock", "mProcLock"})
+    public void setUidIdle(@NonNull UidRecordInternal uidRec, boolean idle) {
+        uidRec.setIdle(idle);
+    }
+
+    /**
+     * Set whether the given UID is idle at the last round of computation.
+     */
+    @GuardedBy({"mLock", "mProcLock"})
+    public void setUidSetIdle(@NonNull UidRecordInternal uidRec, boolean idle) {
+        uidRec.setSetIdle(idle);
+    }
+
+    /**
+     * Set the last time the given UID became idle.
+     */
+    @GuardedBy({"mLock", "mProcLock"})
+    public void setUidLastIdleTime(@NonNull UidRecordInternal uidRec,
+            @ElapsedRealtimeLong long lastIdleTime) {
+        uidRec.setLastIdleTime(lastIdleTime);
+    }
+
+    /**
+     * Set the current process state for a UID.
+     */
+    @VisibleForTesting
+    @GuardedBy({"mLock", "mProcLock"})
+    public void setUidCurProcState(@NonNull UidRecordInternal uidRec, int curProcState) {
+        uidRec.setCurProcState(curProcState);
+    }
+
+    /**
+     * Set the last round's process state for a UID.
+     */
+    @VisibleForTesting
+    @GuardedBy({"mLock", "mProcLock"})
+    public void setUidSetProcState(@NonNull UidRecordInternal uidRec, int setProcState) {
+        uidRec.setSetProcState(setProcState);
+    }
+
+    /**
+     * Set the current process state sequence number for a UID.
+     */
+    @VisibleForTesting
+    @GuardedBy({"mLock", "mProcLock"})
+    public void setUidCurProcStateSeq(@NonNull UidRecordInternal uidRec, long curProcStateSeq) {
+        uidRec.setCurProcStateSeq(curProcStateSeq);
+    }
+
+    /**
+     * Set whether the given UID is currently on the allow list.
+     */
+    @GuardedBy({"mLock", "mProcLock"})
+    public void setUidCurAllowListed(@NonNull UidRecordInternal uidRec, boolean allowListed) {
+        uidRec.setCurAllowListed(allowListed);
+    }
+
+    /**
+     * Set whether the given UID is on the allow list at the last round of computation.
+     */
+    @GuardedBy({"mLock", "mProcLock"})
+    public void setUidSetAllowListed(@NonNull UidRecordInternal uidRec, boolean allowListed) {
+        uidRec.setSetAllowListed(allowListed);
     }
 
     /*********************** Process Miscellaneous Events **********************/

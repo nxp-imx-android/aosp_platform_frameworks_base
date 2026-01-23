@@ -16112,8 +16112,8 @@ public class ActivityManagerService extends IActivityManager.Stub
                                         || userId == UserHandle.getUserId(uid)) {
                                     EventLogTags.writeAmUidIdle(uid);
                                     synchronized (mProcLock) {
-                                        uidRec.setIdle(true);
-                                        uidRec.setSetIdle(true);
+                                        mProcessStateController.setUidIdle(uidRec, true);
+                                        mProcessStateController.setUidSetIdle(uidRec, true);
                                     }
                                     Slog.w(TAG, "Idling uid " + UserHandle.formatUid(uid)
                                             + " from package " + packageName + " user " + userId);
@@ -16174,9 +16174,9 @@ public class ActivityManagerService extends IActivityManager.Stub
                 if (bgTime <= maxBgTime) {
                     EventLogTags.writeAmUidIdle(uidRec.getUid());
                     synchronized (mProcLock) {
-                        uidRec.setIdle(true);
-                        uidRec.setSetIdle(true);
-                        uidRec.setLastIdleTime(nowElapsed);
+                        mProcessStateController.setUidIdle(uidRec, true);
+                        mProcessStateController.setUidSetIdle(uidRec, true);
+                        mProcessStateController.setUidLastIdleTime(uidRec, nowElapsed);
                     }
                     doStopUidLocked(uidRec.getUid(), uidRec);
                 } else {

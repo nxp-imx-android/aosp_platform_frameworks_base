@@ -3197,7 +3197,7 @@ public class MockingOomAdjusterTests {
             setServiceMap(s2, MOCKAPP2_UID, cn2);
             setServiceMap(s3, MOCKAPP5_UID, cn3);
             setServiceMap(c2s, MOCKAPP3_UID, cn4);
-            app2UidRecord.setIdle(false);
+            mProcessStateController.setUidIdle(app2UidRecord, false);
             updateOomAdj();
 
             assertProcStates(app1, PROCESS_STATE_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
@@ -3225,10 +3225,10 @@ public class MockingOomAdjusterTests {
             app2UidRecord.reset();
             app3UidRecord.reset();
             clientUidRecord.reset();
-            app1UidRecord.setIdle(true);
-            app2UidRecord.setIdle(true);
-            app3UidRecord.setIdle(true);
-            clientUidRecord.setIdle(true);
+            mProcessStateController.setUidIdle(app1UidRecord, true);
+            mProcessStateController.setUidIdle(app2UidRecord, true);
+            mProcessStateController.setUidIdle(app3UidRecord, true);
+            mProcessStateController.setUidIdle(clientUidRecord, true);
             doReturn(ActivityManager.APP_START_MODE_DELAYED).when(mService)
                     .getAppStartModeLOSP(anyInt(), any(String.class), anyInt(),
                             anyInt(), anyBoolean(), anyBoolean(), anyBoolean());
@@ -4574,7 +4574,7 @@ public class MockingOomAdjusterTests {
 
         // add to the allow list
         final UidRecordInternal uidRec = app.getUidRecord();
-        uidRec.setCurAllowListed(true);
+        mProcessStateController.setUidCurAllowListed(uidRec, true);
 
         // trigger again
         updateOomAdj(app);
@@ -4583,7 +4583,7 @@ public class MockingOomAdjusterTests {
         assertThatProcess(app).hasCpuTimeCapability().withExactReasons(CPU_TIME_REASON_ALLOW_LIST);
 
         // remove from the allow list
-        uidRec.setCurAllowListed(false);
+        mProcessStateController.setUidCurAllowListed(uidRec, false);
 
         // trigger again
         updateOomAdj(app);
