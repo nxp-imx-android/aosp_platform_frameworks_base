@@ -14905,6 +14905,13 @@ public final class Settings {
         public static final String SECURE_FRP_MODE = "secure_frp_mode";
 
         /**
+         * Whether to enable the WebApp minter in webapp mainline module.
+         * @hide
+         */
+        @Readable
+        public static final String ENABLE_WEBAPP_MINTER = "enable_webapp_minter";
+
+        /**
          * Whether bypassing the device policy management role holder qualification is allowed,
          * (0 = false, 1 = true).
          *
