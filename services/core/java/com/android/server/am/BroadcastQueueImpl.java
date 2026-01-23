@@ -59,6 +59,8 @@ import android.app.BroadcastOptions;
 import android.app.IApplicationThread;
 import android.app.UidObserver;
 import android.app.usage.UsageEvents.Event;
+import android.compat.annotation.ChangeId;
+import android.compat.annotation.Overridable;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Intent;
@@ -140,6 +142,15 @@ import java.util.function.Predicate;
  * </ol>
  */
 class BroadcastQueueImpl extends BroadcastQueue {
+    /**
+     * Enforce a limit on the number of enqueued broadcasts per UID and terminate the
+     * sender if this limit is exceeded.
+     */
+    @VisibleForTesting
+    @Overridable
+    @ChangeId
+    static final long ENFORCE_ENQUEUED_BROADCAST_LIMITS_FOR_SENDER = 469109889L;
+
     BroadcastQueueImpl(ActivityManagerService service, Handler handler,
             BroadcastConstants fgConstants, BroadcastConstants bgConstants) {
         this(service, handler, fgConstants, bgConstants, new BroadcastSkipPolicy(service),
@@ -819,7 +830,8 @@ class BroadcastQueueImpl extends BroadcastQueue {
                             .append(".");
                     mHistory.appendPendingBroadcastsSummaryForUid(sb, r.callingUid);
                     Slog.wtf(TAG, sb.toString());
-                    if (!UserHandle.isCore(r.callingUid) && r.callerApp != null) {
+                    if (!UserHandle.isCore(r.callingUid) && r.callerApp != null
+                            && shouldEnforceBroadcastSenderLimits(r.callerApp.info)) {
                         r.callerApp.killLocked("Too many enqueued broadcasts",
                                 ApplicationExitInfo.REASON_EXCESSIVE_RESOURCE_USAGE,
                                 ApplicationExitInfo.SUBREASON_EXCESSIVE_ENQUEUED_BROADCASTS_COUNT,
@@ -901,6 +913,15 @@ class BroadcastQueueImpl extends BroadcastQueue {
         }
 
         traceEnd(cookie);
+    }
+
+    /**
+     * Checks if the calling app is subject to pending broadcast limits.
+     */
+    @GuardedBy("mService")
+    private boolean shouldEnforceBroadcastSenderLimits(@NonNull ApplicationInfo info) {
+        return mService.mPlatformCompat.isChangeEnabledInternalNoLogging(
+                ENFORCE_ENQUEUED_BROADCAST_LIMITS_FOR_SENDER, info);
     }
 
     @GuardedBy("mService")

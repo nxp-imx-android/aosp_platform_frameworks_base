@@ -24,6 +24,7 @@ import static android.os.UserHandle.USER_SYSTEM;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 import static com.android.server.am.ActivityManagerDebugConfig.LOG_WRITER_INFO;
 import static com.android.server.am.BroadcastProcessQueue.reasonToString;
+import static com.android.server.am.BroadcastQueueImpl.ENFORCE_ENQUEUED_BROADCAST_LIMITS_FOR_SENDER;
 import static com.android.server.am.BroadcastRecord.deliveryStateToString;
 import static com.android.server.am.BroadcastRecord.isReceiverEquals;
 import static com.android.server.am.psc.Constants.SCHED_GROUP_UNDEFINED;
@@ -2504,6 +2505,42 @@ public class BroadcastQueueTest extends BaseBroadcastQueueTest {
                     BroadcastRecord.DELIVERY_SKIPPED,
                     record.getDeliveryState(0));
         }
+    }
+
+    @EnableFlags(Flags.FLAG_LIMIT_PENDING_BROADCASTS_PER_SENDER_UID)
+    @Test
+    public void testEnqueueBroadcast_killAppWithTooManyEnqueuedBroadcasts_withChangeIdDisabled()
+            throws Exception {
+        doReturn(false).when(mPlatformCompat).isChangeEnabledInternalNoLogging(
+                eq(ENFORCE_ENQUEUED_BROADCAST_LIMITS_FOR_SENDER), any(ApplicationInfo.class));
+
+        mConstants.EXCESSIVE_PENDING_BROADCASTS =
+                mConstants.MAX_PENDING_BROADCASTS_PER_SENDER_UID * 2;
+        final ProcessRecord callerApp = new ActiveProcBuilder(PACKAGE_GREEN).build();
+        ExtendedMockito.doNothing().when(callerApp).killLocked(anyString(),
+                anyInt(), anyInt(), anyBoolean());
+        final Intent timeTick = new Intent(Intent.ACTION_TIME_TICK);
+        for (int i = 0; i <= mConstants.MAX_PENDING_BROADCASTS_PER_SENDER_UID; ++i) {
+            final BroadcastRecord timeTickRecord = new BroadcastRecordBuilder()
+                    .setIntent(timeTick)
+                    .setReceivers(List.of(makeManifestReceiver(PACKAGE_RED, CLASS_RED)))
+                    .setCallerApp(callerApp)
+                    .setCallingUid(callerApp.uid)
+                    .setCallerPackage(callerApp.info.packageName)
+                    .build();
+            timeTickRecord.enqueueTime = SystemClock.uptimeMillis();
+            enqueueBroadcast(timeTickRecord);
+        }
+        waitForIdle();
+        verify(callerApp, times(0)).killLocked(anyString(),
+                anyInt(),
+                anyInt(),
+                anyBoolean());
+        final ProcessRecord receiverRedApp = mAms.getProcessRecordLocked(PACKAGE_RED,
+                getUidForPackage(PACKAGE_RED));
+        assertNotNull(receiverRedApp);
+        verifyScheduleReceiver(times(mConstants.MAX_PENDING_BROADCASTS_PER_SENDER_UID + 1),
+                receiverRedApp, timeTick);
     }
 
     @DisableFlags(Flags.FLAG_LIMIT_PENDING_BROADCASTS_PER_SENDER_UID)

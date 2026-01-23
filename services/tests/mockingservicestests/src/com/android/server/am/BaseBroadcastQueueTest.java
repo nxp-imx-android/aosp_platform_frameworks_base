@@ -18,6 +18,7 @@ package com.android.server.am;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doNothing;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
+import static com.android.server.am.BroadcastQueueImpl.ENFORCE_ENQUEUED_BROADCAST_LIMITS_FOR_SENDER;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -216,6 +217,9 @@ public abstract class BaseBroadcastQueueTest {
         mSkipPolicy = createBroadcastSkipPolicy();
 
         doReturn(mAppStartInfoTracker).when(mProcessList).getAppStartInfoTracker();
+
+        doReturn(true).when(mPlatformCompat).isChangeEnabledInternalNoLogging(
+                eq(ENFORCE_ENQUEUED_BROADCAST_LIMITS_FOR_SENDER), any(ApplicationInfo.class));
     }
 
     public void tearDown() throws Exception {
@@ -272,6 +276,11 @@ public abstract class BaseBroadcastQueueTest {
         @Override
         public BroadcastQueue getBroadcastQueue(ActivityManagerService service) {
             return null;
+        }
+
+        @Override
+        public PlatformCompat getPlatformCompat() {
+            return mPlatformCompat;
         }
 
         @Override

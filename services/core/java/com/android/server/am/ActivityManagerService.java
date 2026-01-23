@@ -2553,7 +2553,7 @@ public class ActivityManagerService extends IActivityManager.Stub
         mConstants = new ActivityManagerConstants(mContext, this, mHandler);
         final OomAdjuster.Constants oomConstants = mConstants.createOomConstants();
         final ActiveUids activeUids = new ActiveUids(null);
-        mPlatformCompat = null;
+        mPlatformCompat = injector.getPlatformCompat();
         mProcessList = injector.getProcessList(this);
         mProcessList.init(this, activeUids, mPlatformCompat);
         mAppProfiler = new AppProfiler(this, BackgroundThread.getHandler().getLooper(), null);
@@ -19787,6 +19787,10 @@ public class ActivityManagerService extends IActivityManager.Stub
 
             return new BroadcastQueueImpl(service, service.mHandler,
                         foreConstants, backConstants);
+        }
+
+        public PlatformCompat getPlatformCompat() {
+            return null;
         }
 
         /** @see Binder#getCallingUid */
