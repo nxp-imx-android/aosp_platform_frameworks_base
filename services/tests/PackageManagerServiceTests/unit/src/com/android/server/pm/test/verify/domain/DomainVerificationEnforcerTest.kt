@@ -24,6 +24,8 @@ import android.content.pm.verify.domain.DomainVerificationManager
 import android.content.pm.verify.domain.DomainVerificationState
 import android.os.Build
 import android.os.Process
+import android.platform.test.annotations.EnableFlags
+import android.platform.test.flag.junit.SetFlagsRule
 import android.util.ArraySet
 import android.util.IndentingPrintWriter
 import android.util.SparseArray
@@ -45,6 +47,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.test.assertFailsWith
 import kotlin.test.fail
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
@@ -59,6 +62,8 @@ import org.mockito.Mockito.verifyNoMoreInteractions
 
 @RunWith(Parameterized::class)
 class DomainVerificationEnforcerTest {
+    @get:Rule
+    val mSetFlagsRule = SetFlagsRule()
 
     val context: Context = InstrumentationRegistry.getInstrumentation().context
 
@@ -372,6 +377,7 @@ class DomainVerificationEnforcerTest {
         whenever(sendBroadcastForPackages(any()))
     }
 
+    @EnableFlags(android.view.flags.Flags.FLAG_REDACT_WEB_OTP_SMS_API)
     @Test
     fun verify() {
         when (params.type) {
