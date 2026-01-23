@@ -22,9 +22,8 @@ import static com.android.input.flags.Flags.FLAG_FIX_INPUT_ANR_BY_SEND_MESSAGE_E
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.when;
 
 import android.os.HandlerThread;
 import android.os.Looper;
@@ -147,15 +146,6 @@ public class BatchedInputEventReceiverTest {
 
     @Before
     public void setUp() {
-        // Set up frame times in the choreographer to increment on each request.
-        // NOTE: These timestamps are used to determine whether batched events need to be processed.
-        // Time stamps for events sent by tests need to be tweaked to account for choreographer time
-        // frames.
-        when(mMockChoreographer.getFrameTimeNanos()).thenAnswer(invocation -> {
-            lastChoreographerFrameTimeMs += 5;
-            return lastChoreographerFrameTimeMs * 1000000L;
-        });
-
         mChannels = InputChannel.openInputChannelPair("TestChannel");
         mReceiverThread = new HandlerThread("Process input events");
         mSenderThread = new HandlerThread("Send input events");
@@ -195,15 +185,13 @@ public class BatchedInputEventReceiverTest {
     public void testKeepConsumingEventsAfterBatchingRestart() {
         // Mocking Choreographer to run the posted callback immediately on the HandlerThread.
         doAnswer(invocation -> {
-            mReceiverThread.getThreadHandler().post((Runnable) invocation.getArgument(1));
+            mReceiverThread.getThreadHandler().post(() -> {
+                lastChoreographerFrameTimeMs += 5;
+                ((Choreographer.VsyncCallback) invocation.getArgument(1)).onVsync(
+                    new Choreographer.FrameData(lastChoreographerFrameTimeMs * 1000000L));
+            });
             return null;
-        }).when(mMockChoreographer).postCallback(anyInt(), any(), any());
-
-        doAnswer(invocation -> {
-            mReceiverThread.getThreadHandler()
-                    .removeCallbacks((Runnable) invocation.getArgument(1));
-            return null;
-        }).when(mMockChoreographer).removeCallbacks(anyInt(), any(), any());
+        }).when(mMockChoreographer).postVsyncCallback(eq(Choreographer.CALLBACK_INPUT), any());
 
         int seq = 12;
         // Send ACTION_DOWN, and verify it gets handled by the receiver without batching.
