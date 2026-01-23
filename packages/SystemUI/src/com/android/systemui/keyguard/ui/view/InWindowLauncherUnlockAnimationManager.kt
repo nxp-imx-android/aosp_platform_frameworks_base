@@ -116,7 +116,7 @@ constructor(
                         false,
                         Rect(),
                         0,
-                    ) // TODO(b/293894758): Add smartspace animation support.
+                    ) // Smartspace animation is not supported. See b/293894758 for context.
                 } catch (e: DeadObjectException) {
                     Log.e(TAG, "Failed to call launcher.prepareForUnlock()", e)
                     return
