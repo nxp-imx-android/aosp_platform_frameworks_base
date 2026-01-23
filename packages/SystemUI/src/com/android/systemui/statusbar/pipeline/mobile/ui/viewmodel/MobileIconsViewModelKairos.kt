@@ -29,6 +29,7 @@ import com.android.systemui.kairos.BuildScope
 import com.android.systemui.kairos.BuildSpec
 import com.android.systemui.kairos.Incremental
 import com.android.systemui.kairos.State
+import com.android.systemui.kairos.allOf
 import com.android.systemui.kairos.buildSpec
 import com.android.systemui.kairos.combine
 import com.android.systemui.kairos.flatMap
@@ -105,8 +106,12 @@ constructor(
             .flatten()
     }
 
-    val isStackable: State<Boolean>
-        get() = interactor.isStackable
+    private val iconsAreAllVisible: State<Boolean> =
+        icons.flatMap { icons ->
+            icons.map { (_, icon) -> icon.isVisible }.combine { visStates -> visStates.all { it } }
+        }
+
+    val isStackable: State<Boolean> = allOf(iconsAreAllVisible, interactor.isStackable)
 
     @SuppressLint("FlowExposedFromViewModel") // not consumed by compose
     val isStackableFlow: Flow<Boolean> = buildColdConflatedFlow(isStackable)

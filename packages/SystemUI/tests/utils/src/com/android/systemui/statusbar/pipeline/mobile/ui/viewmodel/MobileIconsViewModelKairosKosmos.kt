@@ -24,6 +24,7 @@ import com.android.systemui.log.table.tableLogBufferFactory
 import com.android.systemui.statusbar.pipeline.airplane.domain.interactor.airplaneModeInteractor
 import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.mobileIconsInteractorKairos
 import com.android.systemui.statusbar.pipeline.mobile.ui.mobileViewLogger
+import com.android.systemui.statusbar.pipeline.shared.connectivityConstants
 import com.android.systemui.util.mockito.mock
 
 val Kosmos.mobileIconsViewModelKairos by ActivatedKairosFixture {
@@ -32,7 +33,7 @@ val Kosmos.mobileIconsViewModelKairos by ActivatedKairosFixture {
         verboseLogger = mock(),
         interactor = mobileIconsInteractorKairos,
         airplaneModeInteractor = airplaneModeInteractor,
-        constants = mock(),
+        constants = connectivityConstants,
         logFactory = tableLogBufferFactory,
         context = applicationContext,
     )
