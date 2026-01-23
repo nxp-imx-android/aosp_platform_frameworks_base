@@ -43,7 +43,6 @@ import com.android.systemui.statusbar.notification.icon.domain.interactor.status
 import com.android.systemui.statusbar.phone.domain.interactor.darkIconInteractor
 import com.android.systemui.statusbar.phone.domain.interactor.lightsOutInteractor
 import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.batteryViewModelBasedOnSettingFactory
-import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.batteryWithPercentViewModelFactory
 import com.android.systemui.statusbar.pipeline.shared.domain.interactor.homeStatusBarIconBlockListInteractor
 import com.android.systemui.statusbar.pipeline.shared.domain.interactor.homeStatusBarInteractor
 import com.android.systemui.statusbar.pipeline.shared.ui.binder.HomeStatusBarViewBinder
@@ -74,7 +73,6 @@ var Kosmos.homeStatusBarViewModelFactory: (Int) -> HomeStatusBarViewModel by
         { displayId ->
             HomeStatusBarViewModelImpl(
                 displayId,
-                batteryWithPercentViewModelFactory,
                 batteryViewModelBasedOnSettingFactory,
                 systemStatusIconsViewModelFactory,
                 statusBarBoundsViewModelFactory,
