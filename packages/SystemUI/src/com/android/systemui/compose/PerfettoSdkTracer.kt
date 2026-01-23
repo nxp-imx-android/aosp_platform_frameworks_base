@@ -16,9 +16,9 @@
 
 package com.android.systemui.compose
 
-import android.os.PerfettoTrace
-import android.os.PerfettoTrackEventExtra
 import androidx.compose.runtime.InternalComposeTracingApi
+import com.android.internal.dev.perfetto.sdk.PerfettoTrace
+import com.android.internal.dev.perfetto.sdk.PerfettoTrackEventBuilder
 
 // rc = recomposition tracing
 private val RECOMPOSITION_CATEGORY: PerfettoTrace.Category = PerfettoTrace.Category("rc")
@@ -32,7 +32,9 @@ object PerfettoSdkTracer : RecompositionStateTracingObserver.Tracer {
 
     /** Register the [RECOMPOSITION_CATEGORY] with the Perfetto sdk. */
     fun register() {
-        RECOMPOSITION_CATEGORY.register()
+        if (android.os.Flags.perfettoSdkTracingV3()) {
+            RECOMPOSITION_CATEGORY.register()
+        }
     }
 
     override fun beginSection(
@@ -41,9 +43,11 @@ object PerfettoSdkTracer : RecompositionStateTracingObserver.Tracer {
         flowIds: LongArray,
         terminatingFlowIds: LongArray,
     ) {
-        PerfettoTrace.begin(RECOMPOSITION_CATEGORY, sectionName)
-            .with(flowIds, terminatingFlowIds, debugInfo)
-            .emit()
+        if (android.os.Flags.perfettoSdkTracingV3()) {
+            PerfettoTrace.begin(RECOMPOSITION_CATEGORY, sectionName)
+                .with(flowIds, terminatingFlowIds, debugInfo)
+                .emit()
+        }
     }
 
     override fun instantEvent(
@@ -52,25 +56,30 @@ object PerfettoSdkTracer : RecompositionStateTracingObserver.Tracer {
         flowIds: LongArray,
         terminatingFlowIds: LongArray,
     ) {
-        PerfettoTrace.instant(RECOMPOSITION_CATEGORY, sectionName)
-            .with(flowIds, terminatingFlowIds, debugInfo)
-            .emit()
+        if (android.os.Flags.perfettoSdkTracingV3()) {
+            PerfettoTrace.instant(RECOMPOSITION_CATEGORY, sectionName)
+                .with(flowIds, terminatingFlowIds, debugInfo)
+                .emit()
+        }
     }
 
     override fun endSection() {
-        PerfettoTrace.end(RECOMPOSITION_CATEGORY).emit()
+        if (android.os.Flags.perfettoSdkTracingV3()) {
+            PerfettoTrace.end(RECOMPOSITION_CATEGORY).emit()
+        }
     }
 
-    private fun PerfettoTrackEventExtra.Builder.with(
+    private fun PerfettoTrackEventBuilder.with(
         flowIds: LongArray,
         terminatingFlowIds: LongArray,
         debugInfo: String,
-    ): PerfettoTrackEventExtra.Builder {
+    ): PerfettoTrackEventBuilder {
         flowIds.forEach { addFlow(it) }
         terminatingFlowIds.forEach { addTerminatingFlow(it) }
         addArg("debugInfo", debugInfo)
         return this
     }
 
-    override fun isEnabled(): Boolean = RECOMPOSITION_CATEGORY.isEnabled
+    override fun isEnabled(): Boolean =
+        android.os.Flags.perfettoSdkTracingV3() && RECOMPOSITION_CATEGORY.isEnabled
 }
