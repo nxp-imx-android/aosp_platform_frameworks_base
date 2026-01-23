@@ -787,6 +787,23 @@ public final class Choreographer {
     }
 
     /**
+     * Removes a previously posted vsync callback.
+     *
+     * @param callbackType The callback type.
+     * @param callback The vsync callback to remove.
+     *
+     * @see #postVsyncCallback
+     * @hide
+     */
+    public void removeVsyncCallback(int callbackType, @Nullable VsyncCallback callback) {
+        if (callback == null) {
+            throw new IllegalArgumentException("callback must not be null");
+        }
+
+        removeCallbacksInternal(callbackType, callback, VSYNC_CALLBACK_TOKEN);
+    }
+
+    /**
      * Gets the time when the current frame started.
      * <p>
      * This method provides the time in milliseconds when the frame started being rendered.
