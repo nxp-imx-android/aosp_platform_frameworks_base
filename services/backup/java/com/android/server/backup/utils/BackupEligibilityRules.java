@@ -16,6 +16,9 @@
 
 package com.android.server.backup.utils;
 
+import static android.app.backup.BackupAgent.FLAG_CLIENT_SIDE_ENCRYPTION_ENABLED;
+import static android.app.backup.BackupAgent.FLAG_DEVICE_TO_DEVICE_TRANSFER;
+
 import static com.android.server.backup.BackupManagerService.TAG;
 import static com.android.server.backup.UserBackupManagerService.PACKAGE_MANAGER_SENTINEL;
 import static com.android.server.backup.UserBackupManagerService.SETTINGS_PACKAGE;
@@ -453,6 +456,17 @@ public class BackupEligibilityRules {
      */
     public boolean appIsStopped(ApplicationInfo app) {
         return ((app.flags & ApplicationInfo.FLAG_STOPPED) != 0);
+    }
+
+    /**
+     * Checks if backup agent running in PCC is allowed to run based on the transport flags.
+     * PCC backup agent is allowed to run only if client side encryption enabled in case of cloud
+     * backups or it is a d2d transfer.
+     * See {@link ApplicationInfo#BACKUP_AGENT_PROCESS_PCC}
+     */
+    public boolean pccBackupAgentAllowed(int transportFlags) {
+        return (transportFlags
+                & (FLAG_CLIENT_SIDE_ENCRYPTION_ENABLED | FLAG_DEVICE_TO_DEVICE_TRANSFER)) != 0;
     }
 
     /**

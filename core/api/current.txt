@@ -572,6 +572,7 @@ package android {
     field public static final int backgroundTint = 16843883; // 0x101046b
     field public static final int backgroundTintMode = 16843884; // 0x101046c
     field public static final int backupAgent = 16843391; // 0x101027f
+    field @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public static final int backupAgentProcess;
     field public static final int backupInForeground = 16844058; // 0x101051a
     field public static final int banner = 16843762; // 0x10103f2
     field public static final int baseline = 16843548; // 0x101031c

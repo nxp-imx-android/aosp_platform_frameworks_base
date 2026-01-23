@@ -2142,6 +2142,12 @@ public class ParsingPackageUtils {
                         .setRestoreAnyVersion(bool(false,
                                 R.styleable.AndroidManifestApplication_restoreAnyVersion, sa));
 
+                if (android.app.privatecompute.flags.Flags.enablePccFrameworkSupport()) {
+                    pkg.setBackupAgentProcess(
+                            sa.getInt(R.styleable.AndroidManifestApplication_backupAgentProcess,
+                                    ApplicationInfo.BACKUP_AGENT_PROCESS_MAIN));
+                }
+
                 TypedValue v = sa.peekValue(
                         R.styleable.AndroidManifestApplication_fullBackupContent);
                 int fullBackupContent = 0;
@@ -2348,6 +2354,13 @@ public class ParsingPackageUtils {
             if (result.isError()) {
                 return input.error(result);
             }
+        }
+
+        if (!pkg.hasPccComponents()
+                && pkg.getBackupAgentProcess() == ApplicationInfo.BACKUP_AGENT_PROCESS_PCC) {
+            return input.error("Application has private compute core backup agent "
+                    + "without other private compute core components"
+                    + "(activities, services, providers, receivers)");
         }
 
         if (TextUtils.isEmpty(pkg.getStaticSharedLibraryName()) && TextUtils.isEmpty(
