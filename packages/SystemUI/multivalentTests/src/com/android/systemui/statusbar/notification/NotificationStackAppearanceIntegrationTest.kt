@@ -24,6 +24,8 @@ import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.animation.scene.SceneKey
 import com.android.systemui.Flags.FLAG_DUAL_SHADE
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.deviceentry.data.repository.deviceEntryRepository
+import com.android.systemui.deviceentry.shared.model.DeviceUnlockStatus
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.flags.Flags
 import com.android.systemui.flags.fakeFeatureFlagsClassic
@@ -378,6 +380,40 @@ class NotificationStackAppearanceIntegrationTest : SysuiTestCase() {
             fakeSceneDataSource.unpause(expectedScene = Scenes.QuickSettings)
             assertThat(expandFraction).isEqualTo(1f)
             assertThat(isScrollable).isFalse()
+        }
+
+    @Test
+    fun shadeExpansion_goneToLockscreen() =
+        kosmos.runTest {
+            val expandFraction by collectLastValue(notificationScrollViewModel.expandFraction)
+
+            enableSingleShade()
+            driveSceneTransition(
+                currentScene = Scenes.Gone,
+                targetScene = Scenes.Lockscreen,
+                verifyIdleOnCurrentScene = { assertThat(expandFraction).isEqualTo(0f) },
+                verifyTransitionStep = { _ -> assertThat(expandFraction).isEqualTo(0f) },
+                verifyIdleOnTargetScene = { assertThat(expandFraction).isEqualTo(1f) },
+            )
+        }
+
+    @Test
+    fun shadeExpansion_lockscreenToGone() =
+        kosmos.runTest {
+            val expandFraction by collectLastValue(notificationScrollViewModel.expandFraction)
+
+            // Setup: Unlock the device to allow a Lockscreen -> Gone transition
+            deviceEntryRepository.deviceUnlockStatus.value =
+                DeviceUnlockStatus(isUnlocked = true, deviceUnlockSource = null)
+
+            enableSingleShade()
+            driveSceneTransition(
+                currentScene = Scenes.Lockscreen,
+                targetScene = Scenes.Gone,
+                verifyIdleOnCurrentScene = { assertThat(expandFraction).isEqualTo(1f) },
+                verifyTransitionStep = { _ -> assertThat(expandFraction).isEqualTo(1f) },
+                verifyIdleOnTargetScene = { assertThat(expandFraction).isEqualTo(0f) },
+            )
         }
 
     @Test
