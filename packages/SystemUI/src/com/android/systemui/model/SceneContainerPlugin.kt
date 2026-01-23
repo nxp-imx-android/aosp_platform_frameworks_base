@@ -94,19 +94,31 @@ constructor(
         }
         val transitionState = sceneInteractor.get().transitionStateFlow.value
         val idleTransitionStateOrNull = transitionState as? ObservableTransitionState.Idle
-        val sceneBehind = sceneBackInteractor.get().backStack.value.peek()
-        val shadeMode = shadeModeInteractor.get().shadeMode.value
-        return idleTransitionStateOrNull?.let { idleState ->
-            EvaluatorByFlag[flag]?.invoke(
-                SceneContainerPlugin.SceneContainerPluginState(
-                    scene = idleState.currentScene,
-                    sceneBehind = sceneBehind,
-                    overlays = idleState.currentOverlays,
-                    isVisible = sceneInteractor.get().isVisibleFlow.value,
-                    shadeMode = shadeMode,
+        if (idleTransitionStateOrNull != null) {
+            val sceneBehind = sceneBackInteractor.get().backStack.value.peek()
+            val shadeMode = shadeModeInteractor.get().shadeMode.value
+            return idleTransitionStateOrNull.let { idleState ->
+                EvaluatorByFlag[flag]?.invoke(
+                    SceneContainerPlugin.SceneContainerPluginState(
+                        scene = idleState.currentScene,
+                        sceneBehind = sceneBehind,
+                        overlays = idleState.currentOverlays,
+                        isVisible = sceneInteractor.get().isVisibleFlow.value,
+                        shadeMode = shadeMode,
+                    )
                 )
-            )
+            }
+        } else if (
+            flag == SYSUI_STATE_NOTIFICATION_PANEL_EXPANDED &&
+                transitionState is ObservableTransitionState.Transition
+        ) {
+            // The one scene container state that activates at the start of a transition instead of
+            // an Idle scene is that the SYSUI_STATE_NOTIFICATION_PANEL_EXPANDED flag should be set
+            // as soon at the notification shade (note: does not include QS) starts expanding
+            return transitionState.toContent == Overlays.NotificationsShade ||
+                transitionState.toContent == Scenes.Shade
         }
+        return false
     }
 
     companion object {
