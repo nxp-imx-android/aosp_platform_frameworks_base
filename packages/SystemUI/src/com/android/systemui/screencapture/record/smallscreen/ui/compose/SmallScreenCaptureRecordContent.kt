@@ -36,6 +36,8 @@ import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -56,6 +58,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -166,8 +169,11 @@ constructor(
                         ),
                 ) {
                     Row(
-                        modifier = Modifier.height(64.dp).padding(horizontal = 12.dp),
                         verticalAlignment = Alignment.CenterVertically,
+                        modifier =
+                            Modifier.height(64.dp)
+                                .padding(horizontal = 12.dp)
+                                .horizontalScroll(state = rememberScrollState()),
                     ) {
                         PlatformIconButton(
                             onClick = { viewModel.dismiss() },
@@ -414,47 +420,44 @@ private fun ToolbarPrimaryButton(
     modifier: Modifier = Modifier,
 ) {
     AnimatedContent(targetState = recording) { isRecording ->
-        if (isRecording) {
-            PrimaryButton(
-                onClick = onClick,
-                text = stringResource(R.string.screenrecord_stop_label),
-                icon =
-                    loadIcon(
-                            viewModel = viewModel,
-                            resId = R.drawable.ic_stop,
-                            contentDescription = null,
-                        )
-                        .value,
-                contentPadding = PaddingValues(horizontal = 14.dp),
-                iconPadding = 4.dp,
-                colors =
+        PrimaryButton(
+            onClick = onClick,
+            text =
+                stringResource(
+                    if (isRecording) {
+                        R.string.screenrecord_stop_label
+                    } else {
+                        R.string.screenrecord_continue
+                    }
+                ),
+            icon =
+                loadIcon(
+                        viewModel = viewModel,
+                        resId =
+                            if (isRecording) {
+                                R.drawable.ic_stop
+                            } else {
+                                R.drawable.ic_screenrecord
+                            },
+                        contentDescription = null,
+                    )
+                    .value,
+            contentPadding = PaddingValues(horizontal = 14.dp),
+            iconPadding = 4.dp,
+            colors =
+                if (isRecording) {
                     ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.error,
                         contentColor = MaterialTheme.colorScheme.onError,
-                    ),
-                modifier = modifier,
-            )
-        } else {
-            PrimaryButton(
-                onClick = onClick,
-                text = stringResource(R.string.screenrecord_continue),
-                icon =
-                    loadIcon(
-                            viewModel = viewModel,
-                            resId = R.drawable.ic_screenrecord,
-                            contentDescription = null,
-                        )
-                        .value,
-                contentPadding = PaddingValues(horizontal = 14.dp),
-                iconPadding = 4.dp,
-                colors =
+                    )
+                } else {
                     ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.primary,
                         contentColor = MaterialTheme.colorScheme.onPrimary,
-                    ),
-                modifier = modifier,
-            )
-        }
+                    )
+                },
+            modifier = modifier.basicMarquee(),
+        )
     }
 }
 
