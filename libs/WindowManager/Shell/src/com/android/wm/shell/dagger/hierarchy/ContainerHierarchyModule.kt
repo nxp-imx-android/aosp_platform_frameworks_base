@@ -78,12 +78,14 @@ abstract class ContainerHierarchyModule {
         @WMSingleton
         @Provides
         fun provideHierarchyUpdateRequester(
+            displayController: DisplayController,
             transitions: Transitions,
             hierarchy: ContainerHierarchy,
             updater: HierarchyUpdater,
             shellTaskOrganizer: ShellTaskOrganizer,
         ): HierarchyUpdateRequester {
             return HierarchyUpdateRequesterImpl(
+                displayController,
                 transitions,
                 hierarchy,
                 updater,
@@ -135,6 +137,7 @@ abstract class ContainerHierarchyModule {
         fun provideContainerHierarchyController(
             shellInit: ShellInit,
             shellCommandHandler: ShellCommandHandler,
+            displayController: DisplayController,
             hierarchy: ContainerHierarchy,
         ): Optional<ContainerHierarchyController> {
             if (!Flags.enableShellModes()) {
@@ -144,6 +147,7 @@ abstract class ContainerHierarchyModule {
                 ContainerHierarchyController(
                     shellInit,
                     shellCommandHandler,
+                    displayController,
                     hierarchy,
                 )
             )

@@ -238,6 +238,14 @@ class HierarchyUtils {
                     return root
                 }
 
+                is DisplayAreaContainerProperties -> {
+                    // Display areas are rooted to the display
+                    // NOTE: We need this for now because a transition can result in an intermediate
+                    // temporary DA being reported which is technically the parent of the TDA.
+                    // We should
+                    return getDisplay(root, displayId)
+                }
+
                 is TaskContainerProperties -> {
                     // TODO: Remove this once we always set a valid parent token in the
                     //  TransitionInfo

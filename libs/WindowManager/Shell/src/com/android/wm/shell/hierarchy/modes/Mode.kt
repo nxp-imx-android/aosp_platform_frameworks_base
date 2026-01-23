@@ -18,6 +18,7 @@ package com.android.wm.shell.hierarchy.modes
 import android.view.SurfaceControl
 import android.window.WindowContainerTransaction
 import com.android.wm.shell.hierarchy.containers.Container
+import com.android.wm.shell.hierarchy.properties.DisplayContainerProperties
 import com.android.wm.shell.hierarchy.updates.HierarchySnapshot
 import java.io.PrintWriter
 
@@ -97,6 +98,28 @@ interface Mode {
     fun detachFromContainer(
         updateContext: UpdateContext,
         container: Container
+    ) {}
+
+    /**
+     * Notification that the display is changing and allows this mode to update the given
+     * {@param wct} to ensure that its associated containers are updated before the display change
+     * completes (ie. sets up tasks in new bounds post-rotation, etc).
+     *
+     * This is called with the directly assigned container for this given mode for containers that
+     * are direct ancestors or descendants of the display, and the change tracker provides
+     * change information.
+     *
+     * The caller is expected to apply the transaction.
+     *
+     * FUTURE: Revisit to see if we need intermediate containers to be updated as well (ie. if there
+     *         are roots who are built within parent containers, updating the display may require
+     *         the parents to be updated before the roots themselves can be properly/easily updated.
+     */
+    fun displayChanging(
+        directlyAssignedContainer: Container,
+        curDisplayProps: DisplayContainerProperties,
+        newDisplayProps: DisplayContainerProperties,
+        wct: WindowContainerTransaction
     ) {}
 
     //

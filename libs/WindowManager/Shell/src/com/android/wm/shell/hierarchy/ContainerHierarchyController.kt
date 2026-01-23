@@ -15,7 +15,11 @@
  */
 package com.android.wm.shell.hierarchy
 
+import android.window.DisplayAreaInfo
+import android.window.WindowContainerTransaction
 import com.android.wm.shell.Flags
+import com.android.wm.shell.common.DisplayChangeController
+import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.hierarchy.utils.HierarchyDebugUtils
 import com.android.wm.shell.sysui.ShellCommandHandler
 import com.android.wm.shell.sysui.ShellInit
@@ -28,8 +32,9 @@ import java.io.PrintWriter
 class ContainerHierarchyController(
     shellInit: ShellInit,
     private val shellCommandHandler: ShellCommandHandler,
+    private val displayController: DisplayController,
     private val hierarchy: ContainerHierarchy,
-) {
+) : DisplayChangeController.OnDisplayChangingListener {
 
     init {
         if (Flags.enableShellModes()) {
@@ -39,6 +44,17 @@ class ContainerHierarchyController(
 
     private fun onInit() {
         shellCommandHandler.addDumpCallback(this::dump, this)
+        displayController.addDisplayChangingController(this)
+    }
+
+    override fun onDisplayChange(
+        displayId: Int,
+        fromRotation: Int,
+        toRotation: Int,
+        newDisplayAreaInfo: DisplayAreaInfo?,
+        outWct: WindowContainerTransaction?
+    ) {
+        hierarchy.update.updateDisplay(displayId, outWct!!)
     }
 
     private fun dump(pw: PrintWriter, prefix: String) {

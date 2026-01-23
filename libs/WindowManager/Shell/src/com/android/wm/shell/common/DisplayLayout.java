@@ -82,6 +82,7 @@ public class DisplayLayout {
     private RectF mGlobalBoundsDp;
     @Nullable
     private DisplayCutout mCutout;
+    @Surface.Rotation
     private int mRotation;
     private int mDensityDpi;
     private final Rect mNonDecorInsets = new Rect();
@@ -354,6 +355,7 @@ public class DisplayLayout {
     }
 
     /** Get this layout's display rotation. */
+    @Surface.Rotation
     public int rotation() {
         return mRotation;
     }
