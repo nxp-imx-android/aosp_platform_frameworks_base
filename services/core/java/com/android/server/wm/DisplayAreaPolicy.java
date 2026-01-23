@@ -43,6 +43,7 @@ import static com.android.server.wm.DisplayAreaPolicyBuilder.HierarchyBuilder;
 import android.annotation.Nullable;
 import android.content.res.Resources;
 import android.os.Bundle;
+import android.os.SystemProperties;
 import android.text.TextUtils;
 
 import com.android.tools.r8.keepanno.annotations.KeepItemKind;
@@ -153,13 +154,15 @@ public abstract class DisplayAreaPolicy {
             if (content.isDefaultDisplay) {
                 // Only default display can have cutout.
                 // See LocalDisplayAdapter.LocalDisplayDevice#getDisplayDeviceInfoLocked.
-                rootHierarchy.addFeature(new Feature.Builder(wmService.mPolicy, "HideDisplayCutout",
-                        FEATURE_HIDE_DISPLAY_CUTOUT)
-                        .all()
-                        .except(TYPE_NAVIGATION_BAR, TYPE_NAVIGATION_BAR_PANEL, TYPE_STATUS_BAR,
-                                TYPE_NOTIFICATION_SHADE)
-                        .build())
-                        .addFeature(new Feature.Builder(wmService.mPolicy, "OneHanded",
+                if (SystemProperties.getBoolean("ro.support_hide_display_cutout", false)) {
+                    rootHierarchy.addFeature(new Feature.Builder(wmService.mPolicy,
+                            "HideDisplayCutout", FEATURE_HIDE_DISPLAY_CUTOUT)
+                            .all()
+                            .except(TYPE_NAVIGATION_BAR, TYPE_NAVIGATION_BAR_PANEL, TYPE_STATUS_BAR,
+                                    TYPE_NOTIFICATION_SHADE)
+                            .build());
+                }
+                rootHierarchy.addFeature(new Feature.Builder(wmService.mPolicy, "OneHanded",
                                 FEATURE_ONE_HANDED)
                                 .all()
                                 .except(TYPE_NAVIGATION_BAR, TYPE_NAVIGATION_BAR_PANEL,
