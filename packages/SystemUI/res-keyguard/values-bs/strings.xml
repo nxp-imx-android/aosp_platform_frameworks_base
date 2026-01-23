@@ -86,7 +86,7 @@
     <string name="kg_fp_locked_out" msgid="6228277682396768830">"Nije moguće otključati otiskom. Previše pokušaja."</string>
     <string name="kg_trust_agent_disabled" msgid="5400691179958727891">"Pouzdani agent nije dostupan"</string>
     <string name="kg_primary_auth_locked_out_pin" msgid="5492230176361601475">"Previše pokušaja s pogrešnim PIN-om"</string>
-    <string name="kg_primary_auth_duplicate_guess_pin" msgid="5834891656916692329">"Već ste pokušali s tim PIN-om. Pokušajte s drugim."</string>
+    <string name="kg_primary_auth_duplicate_guess_pin" msgid="5834891656916692329">"Već ste isprobali taj PIN. Pokušajte s drugim."</string>
     <string name="kg_primary_auth_duplicate_guess_pattern" msgid="3827593245962385968">"Već ste pokušali s tim uzorkom. Pokušajte s drugim."</string>
     <string name="kg_primary_auth_duplicate_guess_password" msgid="3153406042812407458">"Već ste pokušali s tom lozinkom. Pokušajte s drugom."</string>
     <string name="kg_primary_auth_locked_out_pattern" msgid="8266214607346180952">"Previše pokušaja s pogrešnim uzorkom"</string>
