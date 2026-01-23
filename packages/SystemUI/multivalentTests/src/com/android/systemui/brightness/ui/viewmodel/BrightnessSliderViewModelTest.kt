@@ -23,6 +23,7 @@ import com.android.settingslib.display.BrightnessUtils
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.brightness.data.model.LinearBrightness
 import com.android.systemui.brightness.data.repository.fakeScreenBrightnessRepository
+import com.android.systemui.brightness.domain.interactor.brightnessMirrorShowingInteractor
 import com.android.systemui.brightness.domain.interactor.brightnessPolicyEnforcementInteractor
 import com.android.systemui.brightness.domain.interactor.screenBrightnessInteractor
 import com.android.systemui.brightness.domain.model.GammaBrightness
@@ -35,7 +36,6 @@ import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.res.R
-import com.android.systemui.settings.brightness.domain.interactor.brightnessMirrorShowingInteractor
 import com.android.systemui.settings.brightness.ui.brightnessWarningToast
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat

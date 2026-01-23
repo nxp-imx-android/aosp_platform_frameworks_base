@@ -14,18 +14,11 @@
  * limitations under the License.
  */
 
-package com.android.systemui.settings.brightness.domain.interactor
+package com.android.systemui.brightness.domain.interactor
 
 import com.android.systemui.brightness.data.repository.BrightnessMirrorShowingRepository
 import com.android.systemui.dagger.SysUISingleton
 import javax.inject.Inject
-import kotlinx.coroutines.flow.StateFlow
-
-interface BrightnessMirrorShowingInteractor {
-    val isShowing: StateFlow<Boolean>
-
-    fun setMirrorShowing(showing: Boolean)
-}
 
 /** This interactor is just a passthrough of the [BrightnessMirrorShowingRepository]. */
 @SysUISingleton
