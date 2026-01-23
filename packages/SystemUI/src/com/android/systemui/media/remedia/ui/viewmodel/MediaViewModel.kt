@@ -82,6 +82,8 @@ constructor(
     /** Whether media carousel should scroll to the first card in the list after composition */
     val scrollToFirst: Boolean by derivedStateOf { interactor.shouldScrollToFirst }
 
+    var cardMaxWidth: Int by mutableIntStateOf(0)
+
     private var latestVersion = emptyList<MediaCardViewModel>()
     private var isVisible: () -> Boolean = { true }
 
