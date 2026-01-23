@@ -470,8 +470,8 @@ public final class ComputerControlSession implements AutoCloseable {
                 new ScreenshotCallbackRecord(mTraceTrack, executor, receiver, cancellationSignal);
 
         synchronized (mLifecycle) {
-            if (!(mLifecycle.getCurrentState() instanceof LifecycleState.Active)) {
-                Log.w(TAG, "Cannot request screenshot: Agent interaction is not available");
+            if (mLifecycle.getCurrentState() instanceof LifecycleState.Closed) {
+                Log.e(TAG, "Cannot request screenshot: Session is closed");
                 callback.fire(it -> it.onError(
                         new ScreenshotException(ScreenshotException.ERROR_PROHIBITED)));
                 return;
