@@ -384,7 +384,7 @@ public final class NotificationRecord {
 
         if (com.android.server.notification.Flags.notificationVibrationInSoundUriForChannel()) {
             final VibrationEffect vibrationEffectFromSoundUri =
-                    helper.createVibrationEffectFromSoundUri(channel.getSound());
+                    helper.createVibrationEffectFromSoundUri(channel.getSound(), insistent);
             if (vibrationEffectFromSoundUri != null) {
                 return vibrationEffectFromSoundUri;
             }
