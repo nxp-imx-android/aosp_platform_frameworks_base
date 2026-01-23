@@ -304,6 +304,13 @@ public final class SatelliteManager {
             "selected_nb_iot_satellite_subscription_id";
 
     /**
+     * Bundle key to get the response from
+     * {@link #requestIsEnabled(EnableRequestAttributes, Executor, Consumer)}.
+     * @hide
+     */
+    public static final String KEY_ENABLE_RESPONSE = "enable_response";
+
+    /**
      * The request was successfully processed.
      * @hide
      */
@@ -386,7 +393,7 @@ public final class SatelliteManager {
     public static final int SATELLITE_RESULT_RADIO_NOT_AVAILABLE = 10;
 
     /**
-     * The request is not supported by either the satellite modem or the network.
+     * The request is not supported by either the satellite framework, modem or the network.
      * @hide
      */
     @SystemApi
@@ -573,6 +580,82 @@ public final class SatelliteManager {
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface SatelliteResult {}
+
+    /**
+     * The reason for satellite enablement request is unknown.
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_SATELLITE_UPSELL)
+    public static final int SATELLITE_ENABLEMENT_REQUEST_REASON_UNKNOWN = 0;
+
+    /**
+     * The reason for satellite enablement request is to allow the user to purchase a satellite
+     * plan.
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_SATELLITE_UPSELL)
+    public static final int SATELLITE_ENABLEMENT_REQUEST_REASON_PURCHASE = 1;
+
+    /**
+     * The reason for satellite enablement request is that user enabled satellite functionality.
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_SATELLITE_UPSELL)
+    public static final int SATELLITE_ENABLEMENT_REQUEST_REASON_USER = 2;
+
+    /**
+     * The reason for enabling satellite on a power optimized device, like wearable devices.
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_SATELLITE_UPSELL)
+    public static final int SATELLITE_ENABLEMENT_REQUEST_REASON_POWER = 3;
+
+    /**
+     * The reason for satellite enablement request is due to carrier config was updated.
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_SATELLITE_UPSELL)
+    public static final int SATELLITE_ENABLEMENT_REQUEST_REASON_CARRIER_CONFIG_UPDATE = 4;
+
+    /**
+     * The reason for satellite enablement request is due to entitlement.
+     *
+     * <p>
+     * Entitlement is the process of determining whether a user is entitled to use a service
+     * associated with their subscription.
+     *
+     * For example, usually when user purchases a satellite service plan, carrier performs
+     * entitlement to enable satellite services for the user's respective subscription.
+     * </p>
+     *
+     * <p>
+     * Typically Telephony looks up latest entitlement status periodically. And also, applications
+     * could initiate on demand entitlement through
+     * {@link TelephonyManager#notifyEntitlementStatusChanged} on need basis.
+     * </p>
+     *
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_SATELLITE_UPSELL)
+    public static final int SATELLITE_ENABLEMENT_REQUEST_REASON_ENTITLEMENT = 5;
+
+    /** @hide */
+    @IntDef(prefix = {"SATELLITE_ENABLEMENT_REQUEST_REASON_"}, value = {
+        SATELLITE_ENABLEMENT_REQUEST_REASON_UNKNOWN,
+        SATELLITE_ENABLEMENT_REQUEST_REASON_PURCHASE,
+        SATELLITE_ENABLEMENT_REQUEST_REASON_USER,
+        SATELLITE_ENABLEMENT_REQUEST_REASON_POWER,
+        SATELLITE_ENABLEMENT_REQUEST_REASON_CARRIER_CONFIG_UPDATE,
+        SATELLITE_ENABLEMENT_REQUEST_REASON_ENTITLEMENT
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface SatelliteEnablementRequestReason {}
 
     /**
      * Unknown Non-Terrestrial radio technology. This generic radio technology should be used
@@ -922,6 +1005,9 @@ public final class SatelliteManager {
     }
 
     /**
+     * Handles the request to enable or disable the satellite modem to be enabled or disabled
+     * in case of {@link CarrierConfigManager#CARRIER_ROAMING_NTN_CONNECT_MANUAL} mode.
+     *
      * Request to enable or disable the satellite modem and demo mode.
      * If satellite modem and cellular modem cannot work concurrently,
      * then this will disable the cellular modem if satellite modem is enabled,
@@ -940,9 +1026,13 @@ public final class SatelliteManager {
      * @throws SecurityException if the caller doesn't have required permission.
      *
      * @hide
+     * @deprecated Use {@link #requestEnabled(int, int, EnableRequestAttributes, Executor,
+     *              OutcomeReceiver)} instead.
      */
     @SystemApi
     @RequiresPermission(Manifest.permission.SATELLITE_COMMUNICATION)
+    @FlaggedApi(Flags.FLAG_SATELLITE_UPSELL)
+    @Deprecated
     public void requestEnabled(@NonNull EnableRequestAttributes attributes,
             @NonNull @CallbackExecutor Executor executor,
             @SatelliteResult @NonNull Consumer<Integer> resultListener) {
@@ -975,6 +1065,58 @@ public final class SatelliteManager {
     }
 
     /**
+     * Request to enable or disable satellite connectivity.
+     *
+     * To know the current state of satellite connectivity, use {@link #requestIsEnabled(int, int,
+     * Executor, OutcomeReceiver)}
+     *
+     * @param subId The subscription ID of the SIM to use.
+     * @param attributes The attributes of the enable request.
+     * @param executor The executor on which the callback will be called.
+     * @param resultListener Listener for the {@link SatelliteResult} result of the operation.
+     *
+     * @throws SecurityException if the caller doesn't have required permission.
+     *
+     * @hide
+     */
+    @SystemApi
+    @RequiresPermission(Manifest.permission.SATELLITE_COMMUNICATION)
+    @FlaggedApi(Flags.FLAG_SATELLITE_UPSELL)
+    public void requestEnabled(int subId,
+            @NonNull EnableRequestAttributes attributes,
+            @NonNull @CallbackExecutor Executor executor,
+            @SatelliteResult @NonNull Consumer<Integer> resultListener) {
+        Objects.requireNonNull(attributes);
+        Objects.requireNonNull(executor);
+        Objects.requireNonNull(resultListener);
+
+        try {
+            ITelephony telephony = getITelephony();
+            if (telephony != null) {
+                IIntegerConsumer errorCallback = new IIntegerConsumer.Stub() {
+                    @Override
+                    public void accept(int result) {
+                        executor.execute(() -> Binder.withCleanCallingIdentity(
+                                () -> resultListener.accept(result)));
+                    }
+                };
+                Rlog.d(TAG, "requestEnabled() calling new requestEnableSatellite with "
+                        + "attributes: " + attributes);
+                telephony.requestEnableSatellite(subId, attributes, errorCallback);
+            } else {
+                Rlog.e(TAG, "requestEnabled() invalid telephony");
+                executor.execute(() -> Binder.withCleanCallingIdentity(
+                        () -> resultListener.accept(SATELLITE_RESULT_ILLEGAL_STATE)));
+            }
+        } catch (RemoteException ex) {
+            Rlog.e(TAG, "requestEnabled() exception: ", ex);
+            executor.execute(() -> Binder.withCleanCallingIdentity(
+                    () -> resultListener.accept(SATELLITE_RESULT_ILLEGAL_STATE)));
+        }
+
+    }
+
+    /**
      * Request to get whether the satellite modem is enabled.
      *
      * @param executor The executor on which the callback will be called.
@@ -988,9 +1130,13 @@ public final class SatelliteManager {
      * @throws SecurityException if the caller doesn't have required permission.
      *
      * @hide
+     * @deprecated Use {@link #requestIsEnabled(int, int, Executor,
+     *              OutcomeReceiver)} instead.
      */
     @SystemApi
     @RequiresPermission(Manifest.permission.SATELLITE_COMMUNICATION)
+    @FlaggedApi(Flags.FLAG_SATELLITE_UPSELL)
+    @Deprecated
     public void requestIsEnabled(@NonNull @CallbackExecutor Executor executor,
             @NonNull OutcomeReceiver<Boolean, SatelliteException> callback) {
         Objects.requireNonNull(executor);
@@ -1021,6 +1167,70 @@ public final class SatelliteManager {
                     }
                 };
                 telephony.requestIsSatelliteEnabled(receiver);
+            } else {
+                loge("requestIsEnabled() invalid telephony");
+                executor.execute(() -> Binder.withCleanCallingIdentity(() -> callback.onError(
+                        new SatelliteException(SATELLITE_RESULT_ILLEGAL_STATE))));
+            }
+        } catch (RemoteException ex) {
+            loge("requestIsEnabled() RemoteException: " + ex);
+            executor.execute(() -> Binder.withCleanCallingIdentity(() -> callback.onError(
+                    new SatelliteException(SATELLITE_RESULT_ILLEGAL_STATE))));
+        }
+    }
+
+    /**
+     * Request to get whether the satellite is enabled.
+     *
+     * @param subId The subscription ID of the SIM to use.
+     * @param connectType The type of satellite connection to request.
+     * @param executor The executor on which the callback will be called.
+     * @param callback The callback object to which the result will be delivered.
+     *                 If the request is successful, {@link OutcomeReceiver#onResult(Object)}
+     *                 will return a {@link IsEnabledResult}.
+     *                 If the request is not successful, {@link OutcomeReceiver#onError(Throwable)}
+     *                 will return a {@link SatelliteException} with the {@link SatelliteResult}.
+     *
+     * @throws SecurityException if the caller doesn't have required permission.
+     *
+     * @hide
+     */
+    @SystemApi
+    @RequiresPermission(Manifest.permission.SATELLITE_COMMUNICATION)
+    @FlaggedApi(Flags.FLAG_SATELLITE_UPSELL)
+    public void requestIsEnabled(int subId,
+            @CarrierConfigManager.CARRIER_ROAMING_NTN_CONNECT_TYPE int connectType,
+            @NonNull @CallbackExecutor Executor executor,
+            @NonNull OutcomeReceiver<EnableResponse, SatelliteException> callback) {
+        Objects.requireNonNull(executor);
+        Objects.requireNonNull(callback);
+
+        try {
+            ITelephony telephony = getITelephony();
+            if (telephony != null) {
+                ResultReceiver resultReceiver = new ResultReceiver(null) {
+                    @Override
+                    protected void onReceiveResult(int resultCode, Bundle resultData) {
+                        if (resultCode == SATELLITE_RESULT_SUCCESS) {
+                            if (resultData.containsKey(KEY_ENABLE_RESPONSE)) {
+                                EnableResponse enableResult = resultData.getParcelable(
+                                        KEY_ENABLE_RESPONSE,
+                                        EnableResponse.class);
+                                executor.execute(() -> Binder.withCleanCallingIdentity(() ->
+                                        callback.onResult(enableResult)));
+                            } else {
+                                loge("KEY_ENABLE_RESPONSE does not exist.");
+                                executor.execute(() -> Binder.withCleanCallingIdentity(() ->
+                                        callback.onError(new SatelliteException(
+                                                SATELLITE_RESULT_REQUEST_FAILED))));
+                            }
+                        } else {
+                            executor.execute(() -> Binder.withCleanCallingIdentity(() ->
+                                    callback.onError(new SatelliteException(resultCode))));
+                        }
+                    }
+                };
+                telephony.requestEnableSatelliteStatus(subId, connectType, resultReceiver);
             } else {
                 loge("requestIsEnabled() invalid telephony");
                 executor.execute(() -> Binder.withCleanCallingIdentity(() -> callback.onError(

@@ -71,6 +71,7 @@ import android.telephony.ims.aidl.IImsRcsFeature;
 import android.telephony.ims.aidl.IImsRegistration;
 import android.telephony.ims.aidl.IImsRegistrationCallback;
 import android.telephony.ims.aidl.IRcsConfigCallback;
+import android.telephony.satellite.EnableRequestAttributes;
 import android.telephony.satellite.INtnSignalStrengthCallback;
 import android.telephony.satellite.ISatelliteCapabilitiesCallback;
 import android.telephony.satellite.ISatelliteCommunicationAccessStateCallback;
@@ -2538,6 +2539,9 @@ interface ITelephony {
      *                    otherwise. When disabling satellite, {@code isEmergency} is always
      *                    considered as {@code false} by Telephony.
      * @param callback The callback to get the result of the request.
+     *
+     * @deprecated Use {@link #requestEnableSatellite(int, int, EnableRequestAttributes, IIntegerConsumer)}
+     *             instead.
      */
     @JavaPassthrough(annotation = "@android.annotation.RequiresPermission("
                     + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
@@ -2550,6 +2554,9 @@ interface ITelephony {
      *
      * @param receiver Result receiver to get the error code of the request and whether the
      *                 satellite modem is enabled.
+     *
+     * @deprecated Use {@link #requestEnableSatelliteStatus(int, int, EnableRequestAttributes,
+     *             ResultReceiver)} instead.
      */
     @JavaPassthrough(annotation = "@android.annotation.RequiresPermission("
                     + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
@@ -2577,6 +2584,33 @@ interface ITelephony {
                     + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
     void
     requestIsEmergencyModeEnabled(in ResultReceiver receiver);
+
+    /**
+     * Request to enable or disable the satellite.
+     *
+     * @param subId The subscription ID of the satellite service.
+     * @param attributes The attributes of the enable request.
+     * @param callback The callback to get the result of the request.
+     */
+    @JavaPassthrough(annotation = "@android.annotation.RequiresPermission("
+                    + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
+    void
+    requestEnableSatellite(int subId, in EnableRequestAttributes attributes,
+            in IIntegerConsumer callback);
+
+    /**
+     * Request to get the satellite enablement status.
+     *
+     * @param subId The subscription ID of the satellite service.
+     * @param connectType The connect type of satellite service to be enabled.
+     *                    See {@link CarrierConfigManager#KEY_CARRIER_ROAMING_NTN_CONNECT_TYPE}.
+     * @param receiver Result receiver to get {@link EnableResponseAttributes} part of the
+     *                 response and {@link SatelliteException} in case of an error.
+     */
+    @JavaPassthrough(annotation = "@android.annotation.RequiresPermission("
+                    + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
+    void
+    requestEnableSatelliteStatus(int subId, int connectType, in ResultReceiver receiver);
 
     /**
      * Request to get whether the satellite service is supported on the device.
