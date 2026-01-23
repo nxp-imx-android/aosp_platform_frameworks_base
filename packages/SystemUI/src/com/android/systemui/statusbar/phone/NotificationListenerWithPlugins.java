@@ -17,6 +17,7 @@ package com.android.systemui.statusbar.phone;
 import static com.android.systemui.statusbar.notification.collection.NotifCollection.REASON_PLUGIN;
 import static com.android.systemui.statusbar.notification.collection.NotifCollection.REASON_UNKNOWN;
 
+import android.annotation.NonNull;
 import android.app.NotificationChannel;
 import android.content.ComponentName;
 import android.content.Context;
@@ -25,11 +26,15 @@ import android.os.UserHandle;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
 
+import android.util.Log;
 import com.android.systemui.plugins.NotificationListenerController;
 import com.android.systemui.plugins.NotificationListenerController.NotificationProvider;
 import com.android.systemui.plugins.PluginListener;
 import com.android.systemui.plugins.PluginManager;
+import com.android.systemui.statusbar.notification.collection.PipelineDumpable;
+import com.android.systemui.statusbar.notification.collection.PipelineDumper;
 
+import com.android.systemui.util.Compile;
 import java.util.ArrayList;
 
 import javax.inject.Inject;
@@ -40,10 +45,14 @@ import javax.inject.Inject;
  * any incoming callbacks or to trigger new ones.
  */
 public class NotificationListenerWithPlugins extends NotificationListenerService implements
-        PluginListener<NotificationListenerController> {
+        PluginListener<NotificationListenerController>, PipelineDumpable {
+
+    private static final String TAG = "NotificationListenerWithPlugins";
+    private static final boolean DEBUG = Compile.IS_DEBUG;
 
     private ArrayList<NotificationListenerController> mPlugins = new ArrayList<>();
     private boolean mConnected;
+    private int mPluginConnectCount = 0;
     private PluginManager mPluginManager;
 
     @Inject
@@ -135,6 +144,7 @@ public class NotificationListenerWithPlugins extends NotificationListenerService
 
     @Override
     public void onPluginConnected(NotificationListenerController plugin, Context pluginContext) {
+        mPluginConnectCount++;
         mPlugins.add(plugin);
         if (mConnected) {
             plugin.onListenerConnected(getProvider());
@@ -146,10 +156,18 @@ public class NotificationListenerWithPlugins extends NotificationListenerService
         mPlugins.remove(plugin);
     }
 
+    @Override
+    public void dumpPipeline(@NonNull PipelineDumper d) {
+        d.dump("connected", mConnected);
+        d.dump("pluginConnectCount", mPluginConnectCount);
+        d.dump("plugins", mPlugins);
+    }
+
     private NotificationProvider getProvider() {
         return new NotificationProvider() {
             @Override
             public StatusBarNotification[] getActiveNotifications() {
+                if (DEBUG) Log.d(TAG, "NotificationProvider.getActiveNotifications");
                 return NotificationListenerWithPlugins.super.getActiveNotifications();
             }
 
@@ -160,16 +178,19 @@ public class NotificationListenerWithPlugins extends NotificationListenerService
 
             @Override
             public void addNotification(StatusBarNotification sbn) {
+                if (DEBUG) Log.d(TAG, "NotificationProvider.addNotification: " + sbn.getKey());
                 onNotificationPosted(sbn, getRankingMap());
             }
 
             @Override
             public void removeNotification(StatusBarNotification sbn) {
+                if (DEBUG) Log.d(TAG, "NotificationProvider.removeNotification: " + sbn.getKey());
                 onNotificationRemoved(sbn, getRankingMap(), REASON_PLUGIN);
             }
 
             @Override
             public void updateRanking() {
+                if (DEBUG) Log.d(TAG, "NotificationProvider.updateRanking");
                 onNotificationRankingUpdate(getRankingMap());
             }
         };
