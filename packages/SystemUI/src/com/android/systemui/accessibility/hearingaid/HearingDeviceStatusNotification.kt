@@ -176,7 +176,7 @@ constructor(
                 .setContentTitle(device.name)
                 .setContentText(getBatteryMessage(device))
                 .setSubText(getStatusMessage(device))
-                .setVisibility(Notification.VISIBILITY_PUBLIC)
+                .setVisibility(Notification.VISIBILITY_PRIVATE)
                 .setCategory(Notification.CATEGORY_SYSTEM)
                 .setOnlyAlertOnce(true)
                 .setWhen(System.currentTimeMillis())
@@ -216,7 +216,7 @@ constructor(
                     ),
                     NotificationManager.IMPORTANCE_HIGH,
                 )
-                .apply { lockscreenVisibility = Notification.VISIBILITY_PUBLIC }
+                .apply { lockscreenVisibility = Notification.VISIBILITY_PRIVATE }
         // NotificationManager.createNotificationChannel will only create a new channel if it's not
         // already present. Repeated calls with the same CHANNEL_ID are ignored.
         notificationManager.createNotificationChannel(channel)
@@ -353,8 +353,8 @@ constructor(
     }
 
     companion object {
-        private const val TAG = "HearingDevicesBatteryNotification"
-        private const val CHANNEL_ID = "hearing_devices_battery_1"
+        private const val TAG = "HearingDeviceStatusNotification"
+        private const val CHANNEL_ID = "hearing_device_status"
         private const val NOTIFICATION_ID = 101
         private const val EXTRA_SHOW_FRAGMENT_ARGUMENTS = ":settings:show_fragment_args"
         private const val ACTION_BLUETOOTH_DEVICE_DETAILS =
