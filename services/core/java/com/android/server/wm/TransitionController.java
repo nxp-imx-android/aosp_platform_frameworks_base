@@ -2179,7 +2179,7 @@ class TransitionController {
                             + "finished #%d @%d", info.getDebugId(), info.getTrack());
                     mAtm.getWindowOrganizerController().finishTransition(transitionToken,
                             null /* wct */);
-                } catch (RemoteException e) {
+                } catch (Exception e) {
                     Slog.e(TAG, "Error finishing transition from fallback", e);
                 }
             });
@@ -2207,7 +2207,7 @@ class TransitionController {
                             transitionToken, request);
                     mAtm.getWindowOrganizerController().startTransition(transitionToken,
                             null /* wct */);
-                } catch (RemoteException e) {
+                } catch (Exception e) {
                     Slog.e(TAG, "Error starting transition from fallback", e);
                 }
             });
