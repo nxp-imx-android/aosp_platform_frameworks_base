@@ -959,16 +959,14 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                     // changes.
                     effects |= TRANSACT_EFFECTS_LIFECYCLE;
                 }
-                if (Flags.makeFillingBoundsChangeEffectLifecycle()) {
-                    final boolean hasBoundsConfigChange =
-                            (windowMask & WindowConfiguration.WINDOW_CONFIG_BOUNDS) != 0;
-                    final boolean wasFillingParent = prevRequestedBounds.isEmpty();
-                    final boolean isFillingParent = change.getConfiguration()
-                            .windowConfiguration.getBounds().isEmpty();
-                    if (hasBoundsConfigChange && (wasFillingParent || isFillingParent)) {
-                        // Changing bounds to fill or from filling may result in lifecycle changes.
-                        effects |= TRANSACT_EFFECTS_LIFECYCLE;
-                    }
+                final boolean hasBoundsConfigChange =
+                        (windowMask & WindowConfiguration.WINDOW_CONFIG_BOUNDS) != 0;
+                final boolean wasFillingParent = prevRequestedBounds.isEmpty();
+                final boolean isFillingParent = change.getConfiguration()
+                        .windowConfiguration.getBounds().isEmpty();
+                if (hasBoundsConfigChange && (wasFillingParent || isFillingParent)) {
+                    // Changing bounds to fill or from filling may result in lifecycle changes.
+                    effects |= TRANSACT_EFFECTS_LIFECYCLE;
                 }
             }
         }

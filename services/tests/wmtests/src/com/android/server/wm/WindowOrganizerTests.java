@@ -2468,7 +2468,6 @@ public class WindowOrganizerTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_MAKE_FILLING_BOUNDS_CHANGE_EFFECT_LIFECYCLE)
     public void testBoundsChange_fillsParent_effectsLifecycle() {
         final Task rootTask = new TaskBuilder(mSupervisor)
                 .setCreatedByOrganizer(true)
@@ -2491,7 +2490,6 @@ public class WindowOrganizerTests extends WindowTestsBase {
 
 
     @Test
-    @EnableFlags(Flags.FLAG_MAKE_FILLING_BOUNDS_CHANGE_EFFECT_LIFECYCLE)
     public void testBoundsChange_stopsFillingParent_effectsLifecycle() {
         final Task rootTask = new TaskBuilder(mSupervisor)
                 .setCreatedByOrganizer(true)
@@ -2513,7 +2511,6 @@ public class WindowOrganizerTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_MAKE_FILLING_BOUNDS_CHANGE_EFFECT_LIFECYCLE)
     public void testBoundsChange_noFillingParentChange_doesNotEffectLifecycle() {
         final Task rootTask = new TaskBuilder(mSupervisor)
                 .setCreatedByOrganizer(true)
