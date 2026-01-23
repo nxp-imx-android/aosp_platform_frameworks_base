@@ -27,6 +27,7 @@ import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Parcel;
+import android.text.TextUtils;
 import android.util.Printer;
 
 /**
@@ -44,7 +45,7 @@ public class ComponentInfo extends PackageItemInfo {
      * part of.
      */
     public ApplicationInfo applicationInfo;
-    
+
     /**
      * The name of the process this component should run in.
      * From the "android:process" attribute or, if not set, the same
@@ -83,7 +84,7 @@ public class ComponentInfo extends PackageItemInfo {
      * attribute or, if not set, 0.
      */
     public int descriptionRes;
-    
+
     /**
      * Indicates whether or not this component may be instantiated.  Note that this value can be
      * overridden by the one in its parent {@link ApplicationInfo}.
@@ -104,6 +105,14 @@ public class ComponentInfo extends PackageItemInfo {
      * pattern or PIN).
      */
     public boolean directBootAware = false;
+
+    private static final int FLAG_ENABLED = 1 << 0;
+    private static final int FLAG_EXPORTED = 1 << 1;
+    private static final int FLAG_DIRECT_BOOT_AWARE = 1 << 2;
+    private static final int FLAG_IS_ARCHIVED = 1 << 3;
+    private static final int FLAG_INHERIT_PACKAGE_NAME = 1 << 4;
+    private static final int FLAG_INHERIT_PROCESS_NAME = 1 << 5;
+    private static final int FLAG_INHERIT_META_DATA = 1 << 6;
 
     public ComponentInfo() {
     }
@@ -151,12 +160,12 @@ public class ComponentInfo extends PackageItemInfo {
     public boolean isEnabled() {
         return enabled && applicationInfo.enabled;
     }
-    
+
     /**
      * Return the icon resource identifier to use for this component.  If
      * the component defines an icon, that is used; else, the application
      * icon is used.
-     * 
+     *
      * @return The icon associated with this component.
      */
     public final int getIconResource() {
@@ -173,7 +182,7 @@ public class ComponentInfo extends PackageItemInfo {
     public final int getLogoResource() {
         return logo != 0 ? logo : applicationInfo.logo;
     }
-    
+
     /**
      * Return the banner resource identifier to use for this component. If the
      * component defines a banner, that is used; else, the application banner is
@@ -210,6 +219,7 @@ public class ComponentInfo extends PackageItemInfo {
         return new ComponentName(packageName, name);
     }
 
+    @Override
     protected void dumpFront(Printer pw, String prefix) {
         super.dumpFront(pw, prefix);
         if (processName != null && !packageName.equals(processName)) {
@@ -234,6 +244,7 @@ public class ComponentInfo extends PackageItemInfo {
         }
     }
 
+    @Override
     protected void dumpBack(Printer pw, String prefix) {
         dumpBack(pw, prefix, DUMP_FLAG_ALL);
     }
@@ -250,29 +261,188 @@ public class ComponentInfo extends PackageItemInfo {
         super.dumpBack(pw, prefix);
     }
 
+    // LINT.IfChange(parcel)
+    @Override
     public void writeToParcel(Parcel dest, int parcelableFlags) {
-        super.writeToParcel(dest, parcelableFlags);
+        // Optimized writeToParcel replacing PackageItemInfo.writeToParcel.
+        // If you add fields to PackageItemInfo, you MUST update this method and the constructor.
+        // PackageItemInfo fields
+        dest.writeString8(name);
+
+        int flags = 0;
+        if (enabled) {
+            flags |= FLAG_ENABLED;
+        }
+        if (exported) {
+            flags |= FLAG_EXPORTED;
+        }
+        if (directBootAware) {
+            flags |= FLAG_DIRECT_BOOT_AWARE;
+        }
+        if (isArchived) {
+            flags |= FLAG_IS_ARCHIVED;
+        }
+
+        // We optimize the parcel size by avoiding writing data that is already present
+        // in the parent ApplicationInfo. This is especially important for fields that
+        // are often duplicated across many components in a package, such as the package name,
+        // process name, and especially the meta-data bundle.
+        boolean inheritPackageName = applicationInfo != null && packageName != null
+                && packageName.equals(applicationInfo.packageName);
+        if (inheritPackageName) {
+            flags |= FLAG_INHERIT_PACKAGE_NAME;
+        }
+
+        boolean inheritProcessName = applicationInfo != null && processName != null
+                && processName.equals(applicationInfo.processName);
+        if (inheritProcessName) {
+            flags |= FLAG_INHERIT_PROCESS_NAME;
+        }
+
+        // We use reference equality here because we want to know if it's the exact same
+        // Bundle object instance. This is efficient and catches the common case where
+        // the PackageParser assigns the same Bundle to all components.
+        boolean inheritMetaData = applicationInfo != null && metaData != null
+                && metaData == applicationInfo.metaData;
+        if (inheritMetaData) {
+            flags |= FLAG_INHERIT_META_DATA;
+        }
+
+        dest.writeInt(flags);
+
+        if (!inheritPackageName) {
+            dest.writeString8(packageName);
+        }
+
+        // Optimization: if the label resource ID matches the application's label resource ID,
+        // and we don't have a non-localized label override, we can skip writing the ID.
+        // We write 0 (invalid resource ID) instead. The getters (loadLabel/loadUnsafeLabel)
+        // are already designed to fallback to the ApplicationInfo if the component's
+        // labelRes is 0.
+        int labelResToWrite = labelRes;
+        if (applicationInfo != null && labelRes != 0 && labelRes == applicationInfo.labelRes
+                && nonLocalizedLabel == null && applicationInfo.nonLocalizedLabel == null) {
+            labelResToWrite = 0;
+        }
+        dest.writeInt(labelResToWrite);
+
+        TextUtils.writeToParcel(nonLocalizedLabel, dest, parcelableFlags);
+
+        // Optimization: similar to labelRes, if the icon resource ID matches the application's,
+        // write 0. getIconResource() handles the fallback.
+        int iconToWrite = icon;
+        if (applicationInfo != null && icon != 0 && icon == applicationInfo.icon) {
+            iconToWrite = 0;
+        }
+        dest.writeInt(iconToWrite);
+
+        // Optimization: same for logo. getLogoResource() handles fallback.
+        int logoToWrite = logo;
+        if (applicationInfo != null && logo != 0 && logo == applicationInfo.logo) {
+            logoToWrite = 0;
+        }
+        dest.writeInt(logoToWrite);
+
+        if (!inheritMetaData) {
+            dest.writeBundle(metaData);
+        }
+
+        // Optimization: same for banner. getBannerResource() handles fallback.
+        int bannerToWrite = banner;
+        if (applicationInfo != null && banner != 0 && banner == applicationInfo.banner) {
+            bannerToWrite = 0;
+        }
+        dest.writeInt(bannerToWrite);
+
+        dest.writeInt(showUserIcon);
+        // isArchived is in flags
+
+        // ComponentInfo fields
         applicationInfo.writeToParcel(dest, parcelableFlags);
-        dest.writeString8(processName);
+
+        if (!inheritProcessName) {
+            dest.writeString8(processName);
+        }
+
         dest.writeString8(splitName);
         dest.writeString8Array(attributionTags);
         dest.writeInt(descriptionRes);
-        dest.writeInt(enabled ? 1 : 0);
-        dest.writeInt(exported ? 1 : 0);
-        dest.writeInt(directBootAware ? 1 : 0);
+        // enabled, exported, directBootAware are in flags
     }
-    
+
     protected ComponentInfo(Parcel source) {
-        super(source);
+        super(); // Use default constructor, manually read PackageItemInfo fields
+
+        // PackageItemInfo reading
+        name = source.readString8();
+        int flags = source.readInt();
+
+        enabled = (flags & FLAG_ENABLED) != 0;
+        exported = (flags & FLAG_EXPORTED) != 0;
+        directBootAware = (flags & FLAG_DIRECT_BOOT_AWARE) != 0;
+        isArchived = (flags & FLAG_IS_ARCHIVED) != 0;
+        boolean inheritPackageName = (flags & FLAG_INHERIT_PACKAGE_NAME) != 0;
+        boolean inheritProcessName = (flags & FLAG_INHERIT_PROCESS_NAME) != 0;
+        boolean inheritMetaData = (flags & FLAG_INHERIT_META_DATA) != 0;
+
+        if (!inheritPackageName) {
+            packageName = source.readString8();
+        }
+
+        labelRes = source.readInt();
+        nonLocalizedLabel = TextUtils.CHAR_SEQUENCE_CREATOR.createFromParcel(source);
+        icon = source.readInt();
+        logo = source.readInt();
+
+        if (!inheritMetaData) {
+            metaData = source.readBundle();
+        }
+
+        banner = source.readInt();
+        showUserIcon = source.readInt();
+
+        // ComponentInfo reading
         applicationInfo = ApplicationInfo.CREATOR.createFromParcel(source);
-        processName = source.readString8();
+
+        if (!inheritProcessName) {
+            processName = source.readString8();
+        }
+
         splitName = source.readString8();
         attributionTags = source.createString8Array();
         descriptionRes = source.readInt();
-        enabled = (source.readInt() != 0);
-        exported = (source.readInt() != 0);
-        directBootAware = (source.readInt() != 0);
+
+        // Fixups
+        if (inheritPackageName && applicationInfo != null) {
+            packageName = applicationInfo.packageName;
+        }
+        if (inheritProcessName && applicationInfo != null) {
+            processName = applicationInfo.processName;
+        }
+        if (inheritMetaData && applicationInfo != null) {
+            metaData = applicationInfo.metaData;
+        }
+
+        if (applicationInfo != null) {
+            // Restore the fields that we optimized out by writing 0.
+            // This ensures that code accessing fields directly (instead of using getters)
+            // sees the correct inherited value, preserving compatibility.
+            if (labelRes == 0 && nonLocalizedLabel == null
+                    && applicationInfo.nonLocalizedLabel == null) {
+                labelRes = applicationInfo.labelRes;
+            }
+            if (icon == 0) {
+                icon = applicationInfo.icon;
+            }
+            if (logo == 0) {
+                logo = applicationInfo.logo;
+            }
+            if (banner == 0) {
+                banner = applicationInfo.banner;
+            }
+        }
     }
+    // LINT.ThenChange(PackageItemInfo.java:parcel)
 
     /**
      * @hide
@@ -282,7 +452,7 @@ public class ComponentInfo extends PackageItemInfo {
     public Drawable loadDefaultIcon(PackageManager pm) {
         return applicationInfo.loadIcon(pm);
     }
-    
+
     /**
      * @hide
      */
@@ -299,7 +469,7 @@ public class ComponentInfo extends PackageItemInfo {
     protected Drawable loadDefaultLogo(PackageManager pm) {
         return applicationInfo.loadLogo(pm);
     }
-    
+
     /**
      * @hide
      */
