@@ -144,7 +144,7 @@ public class AuthenticationPolicyService extends SystemService {
             mWatchRangingService = Objects.requireNonNull(LocalServices.getService(
                     WatchRangingServiceInternal.class));
         }
-        mAgentAuthService = Flags.agentAuthApi() ? Objects.requireNonNull(
+        mAgentAuthService = android.companion.Flags.supportAiAgent() ? Objects.requireNonNull(
                 LocalServices.getService(AgentAuthServiceInternal.class)) : null;
 
         // settings / config for policy services

@@ -2801,7 +2801,7 @@ public final class SystemServer implements Dumpable {
                     mSystemServiceManager.startService(WatchRangingService.Lifecycle.class);
                     t.traceEnd();
                 }
-                if (android.hardware.biometrics.Flags.agentAuthApi()) {
+                if (android.companion.Flags.supportAiAgent()) {
                     t.traceBegin("AgentAuthService.Lifecycle");
                     mSystemServiceManager.startService(AgentAuthService.Lifecycle.class);
                     t.traceEnd();
