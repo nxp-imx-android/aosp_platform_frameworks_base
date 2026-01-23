@@ -590,5 +590,11 @@ public final class Trace {
     public static void registerWithPerfetto() {
         PerfettoTrace.register(false /* isBackendInProcess */);
         PerfettoTrace.registerCategories();
+
+        if (android.os.Flags.perfettoSdkTracingV3()) {
+            // TODO(475548318): Once all categories are migrated, replace with
+            // PerfettoCategories.registerCategories()
+            PerfettoCategories.MQ_CATEGORY.register();
+        }
     }
 }

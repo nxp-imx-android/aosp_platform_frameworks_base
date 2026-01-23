@@ -19,7 +19,6 @@ package android.os;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.platform.test.annotations.DisabledOnRavenwood;
-import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.platform.test.flag.junit.FlagsParameterization;
@@ -126,10 +125,10 @@ public class PerfettoTraceMessageQueueTest {
         // Assert we initialize the correct API version.
         if (mPerfettoV3FlagWhenRunning) {
             assertThat(PerfettoTrace.MQ_CATEGORY.isRegistered()).isFalse();
-            assertThat(PerfettoTrace.MQ_CATEGORY_V3.isRegistered()).isTrue();
+            assertThat(PerfettoCategories.MQ_CATEGORY.isRegistered()).isTrue();
         } else {
             assertThat(PerfettoTrace.MQ_CATEGORY.isRegistered()).isTrue();
-            assertThat(PerfettoTrace.MQ_CATEGORY_V3.isRegistered()).isFalse();
+            assertThat(PerfettoCategories.MQ_CATEGORY.isRegistered()).isFalse();
         }
 
         final String mqReceiverThreadName = "mq_test_thread";
