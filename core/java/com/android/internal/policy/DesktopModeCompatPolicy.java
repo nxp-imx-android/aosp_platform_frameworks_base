@@ -258,14 +258,9 @@ public class DesktopModeCompatPolicy {
                     userId
             );
             if (packageInfo != null && packageInfo.requestedPermissions != null) {
-                for (int i = 0; i < packageInfo.requestedPermissions.length; i++) {
-                    if (Objects.equals(
-                            packageInfo.requestedPermissions[i],
-                            Manifest.permission.SYSTEM_ALERT_WINDOW)) {
-                        if ((packageInfo.requestedPermissionsFlags[i]
-                                & PackageInfo.REQUESTED_PERMISSION_GRANTED) != 0) {
-                            hasPermission = true;
-                        }
+                for (String permission : packageInfo.requestedPermissions) {
+                    if (Objects.equals(permission, Manifest.permission.SYSTEM_ALERT_WINDOW)) {
+                        hasPermission = true;
                         break;
                     }
                 }
