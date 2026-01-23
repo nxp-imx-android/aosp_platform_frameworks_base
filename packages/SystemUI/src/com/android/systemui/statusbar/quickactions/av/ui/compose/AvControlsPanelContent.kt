@@ -17,11 +17,14 @@
 package com.android.systemui.statusbar.quickactions.av.ui.compose
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
@@ -36,9 +39,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.android.compose.ui.graphics.painter.DrawablePainter
 import com.android.systemui.lifecycle.rememberViewModel
+import com.android.systemui.res.R
 import com.android.systemui.statusbar.quickactions.av.ui.viewmodel.AvControlsPanelContentViewModel
 import com.android.systemui.statusbar.quickactions.av.ui.viewmodel.ButtonViewModel
 import com.android.systemui.statusbar.quickactions.av.ui.viewmodel.PageType
@@ -56,43 +63,61 @@ fun AvControlsPanelContent(
     setCurrentPage: (PageType) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-
     val viewModel =
         rememberViewModel("MainPage.viewModel", key = setCurrentPage) {
             viewModelFactory.create(setCurrentPage = setCurrentPage)
         }
-    Column(modifier = modifier) {
-        Row(modifier = Modifier.padding(10.dp).fillMaxWidth()) {
-            SensorAccessButton(
-                viewModelFactory = viewModel.sensorActivityViewModelFactory,
-                setCurrentPage = setCurrentPage,
-            )
-        }
+    Column(
+        verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.Top),
+        horizontalAlignment = Alignment.Start,
+        modifier = modifier,
+    ) {
+        SensorAccessButton(
+            viewModelFactory = viewModel.sensorActivityViewModelFactory,
+            setCurrentPage = setCurrentPage,
+        )
+        ControlsGrid(viewModel = viewModel, setCurrentPage = setCurrentPage)
+    }
+}
+
+@Composable
+private fun ControlsGrid(
+    viewModel: AvControlsPanelContentViewModel,
+    setCurrentPage: (PageType) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.Top),
+        horizontalAlignment = Alignment.Start,
+        modifier = modifier,
+    ) {
         if (viewModel.showBlurControls || viewModel.showStudioLookControls) {
-            Row(modifier = Modifier.padding(4.dp).fillMaxWidth()) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.Start),
+                verticalAlignment = Alignment.Top,
+                modifier = Modifier.height(IntrinsicSize.Max),
+            ) {
                 if (viewModel.showStudioLookControls) {
-                    Box(modifier = Modifier.weight(0.5f)) {
-                        SectionButton(
-                            buttonViewModelFactory = {
-                                viewModel.studioLookButtonViewModelFactory.create(
-                                    setCurrentPage = setCurrentPage
-                                )
-                            },
-                            traceName = "StudioLookSectionButton",
-                        )
-                    }
+                    SectionButton(
+                        buttonViewModelFactory = {
+                            viewModel.studioLookButtonViewModelFactory.create(
+                                setCurrentPage = setCurrentPage
+                            )
+                        },
+                        traceName = "StudioLookSectionButton",
+                        modifier = Modifier.weight(1f).fillMaxHeight(),
+                    )
                 }
-                Box(modifier = Modifier.weight(0.5f)) {
-                    if (viewModel.showBlurControls) {
-                        SectionButton(
-                            buttonViewModelFactory = {
-                                viewModel.blurButtonViewModelFactory.create(
-                                    setCurrentPage = setCurrentPage
-                                )
-                            },
-                            traceName = "BlurSectionButton",
-                        )
-                    }
+                if (viewModel.showBlurControls) {
+                    SectionButton(
+                        buttonViewModelFactory = {
+                            viewModel.blurButtonViewModelFactory.create(
+                                setCurrentPage = setCurrentPage
+                            )
+                        },
+                        traceName = "BlurSectionButton",
+                        modifier = Modifier.weight(1f).fillMaxHeight(),
+                    )
                 }
             }
         }
@@ -101,7 +126,11 @@ fun AvControlsPanelContent(
                 viewModel.showStudioMicButton ||
                 viewModel.showCameraFramingButton
         ) {
-            Row(modifier = Modifier.padding(4.dp).fillMaxWidth()) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.Start),
+                verticalAlignment = Alignment.Top,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
                 if (viewModel.showCameraFramingButton) {
                     Box(modifier = Modifier.weight(1f)) {
                         SimpleButton(
@@ -148,20 +177,38 @@ private fun SimpleButton(
     val scope = rememberCoroutineScope()
     val viewModel: ButtonViewModel =
         rememberViewModel("MainPage.$traceName") { buttonViewModelFactory() }
-    Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
-        Row {
-            ToggleButton(
-                modifier = Modifier.padding(4.dp).fillMaxWidth(),
-                checked = viewModel.state.isEnabled,
-                onCheckedChange = { scope.launch { viewModel.onClick() } },
-            ) {
-                viewModel.state.image?.let {
-                    Icon(painter = painterResource(id = it), contentDescription = null)
-                }
+
+    val contentDescription = viewModel.state.subText?.let { stringResource(it) }
+    val semanticsModifier =
+        if (contentDescription != null) {
+            Modifier.semantics { this.contentDescription = contentDescription }
+        } else {
+            Modifier
+        }
+
+    Column(
+        modifier = modifier.then(semanticsModifier),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        ToggleButton(
+            modifier = Modifier.fillMaxWidth(),
+            checked = viewModel.state.isEnabled,
+            onCheckedChange = { scope.launch { viewModel.onClick() } },
+        ) {
+            viewModel.state.image?.let {
+                Icon(painter = painterResource(id = it), contentDescription = null)
             }
         }
         viewModel.state.subText?.let {
-            Row { Text(text = stringResource(it), style = MaterialTheme.typography.labelSmall) }
+            Row {
+                Text(
+                    text = stringResource(it),
+                    style = MaterialTheme.typography.labelSmall,
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
         }
     }
 }
@@ -178,8 +225,8 @@ private fun SectionButton(
         rememberViewModel("MainPage.$traceName") { buttonViewModelFactory() }
     ListItem(
         modifier =
-            Modifier.padding(4.dp)
-                .clip(shape = RoundedCornerShape(16.dp))
+            modifier
+                .clip(shape = RoundedCornerShape(if (viewModel.state.isEnabled) 16.dp else 360.dp))
                 .fillMaxWidth()
                 .clickable(onClick = { scope.launch { viewModel.onClick() } }),
         leadingContent = {
@@ -189,14 +236,16 @@ private fun SectionButton(
         },
         headlineContent = { viewModel.state.mainTitle?.let { Text(text = stringResource(it)) } },
         supportingContent = {
-            viewModel.state.subTitle?.let {
-                val text =
-                    if (viewModel.state.subTitleArg != null) {
-                        stringResource(it, viewModel.state.subTitleArg!!)
-                    } else {
-                        stringResource(it)
-                    }
-                Text(text = text)
+            if (viewModel.state.isEnabled) {
+                viewModel.state.subTitle?.let {
+                    val text =
+                        if (viewModel.state.subTitleArg != null) {
+                            stringResource(it, viewModel.state.subTitleArg!!)
+                        } else {
+                            stringResource(it)
+                        }
+                    Text(text = text)
+                }
             }
         },
         colors = itemColors(viewModel.state.isEnabled),
@@ -224,13 +273,19 @@ private fun SensorAccessButton(
         ListItem(
             modifier =
                 modifier
-                    .padding(4.dp)
                     .clip(shape = RoundedCornerShape(22.dp))
                     .clickable(onClick = { viewModel.enterDedicatedPage() }),
-            leadingContent = if(ICONS_ENABLED)
-                viewModel.activeAppsIconDrawable?.let {
-                    { Icon(painter = DrawablePainter(drawable = it), contentDescription = null) }
-                } else null,
+            leadingContent =
+                if (ICONS_ENABLED)
+                    viewModel.activeAppsIconDrawable?.let {
+                        {
+                            Icon(
+                                painter = DrawablePainter(drawable = it),
+                                contentDescription = null,
+                            )
+                        }
+                    }
+                else null,
             headlineContent = {
                 viewModel.activeAppsSensorSectionSummary?.let { summary ->
                     Text(
@@ -247,6 +302,13 @@ private fun SensorAccessButton(
                 viewModel.activeAppsSensorSectionSupportText?.let {
                     { Text(text = stringResource(it)) }
                 },
+            trailingContent = {
+                Icon(
+                    painter = painterResource(id = R.drawable.gs_keyboard_arrow_right),
+                    contentDescription = null,
+                )
+            },
+            colors = itemColors(false),
         )
     }
 }

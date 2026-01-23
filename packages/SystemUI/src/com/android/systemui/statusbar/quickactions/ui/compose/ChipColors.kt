@@ -78,7 +78,9 @@ sealed interface ChipColors {
 
     /** The colors for the AvControls (Privacy Indicator) Chip */
     data object AvControlsTheme : ChipColors {
-        @Composable private fun privacyGreen() = colorResource(R.color.privacy_chip_background)
+        @Composable private fun privacyGreen() = colorResource(R.color.av_controls_chip_background)
+
+        @Composable private fun privacyBlack() = colorResource(R.color.av_controls_chip_icon_fill)
 
         @Composable
         override fun chipBackground(isSelected: Boolean, colorScheme: ColorScheme): Color =
@@ -90,17 +92,18 @@ sealed interface ChipColors {
 
         @Composable
         override fun chipContent(isSelected: Boolean, colorScheme: ColorScheme): Color =
-            colorScheme.onPrimary
+            privacyBlack()
+
+        /** The background color applied to the icon area when it is hovered/highlighted */
+        @Composable
+        override fun iconBackground(isSelected: Boolean, colorScheme: ColorScheme): Color =
+            privacyBlack()
 
         @Composable
         override fun icon(
             isSelected: Boolean,
             isHighlighted: Boolean,
             colorScheme: ColorScheme,
-        ): Color = colorScheme.onPrimary
-
-        @Composable
-        override fun iconBackground(isSelected: Boolean, colorScheme: ColorScheme): Color =
-            colorScheme.onPrimary
+        ): Color = privacyBlack()
     }
 }
