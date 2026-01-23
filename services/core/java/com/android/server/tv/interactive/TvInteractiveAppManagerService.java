@@ -56,6 +56,7 @@ import android.media.tv.interactive.ITvInteractiveAppService;
 import android.media.tv.interactive.ITvInteractiveAppServiceCallback;
 import android.media.tv.interactive.ITvInteractiveAppSession;
 import android.media.tv.interactive.ITvInteractiveAppSessionCallback;
+import android.media.tv.interactive.TvInteractiveAppInfo;
 import android.media.tv.interactive.TvInteractiveAppService;
 import android.media.tv.interactive.TvInteractiveAppServiceInfo;
 import android.net.Uri;
@@ -4285,6 +4286,24 @@ public class TvInteractiveAppManagerService extends SystemService {
                     mSessionState.mClient.onSessionStateChanged(state, err, mSessionState.mSeq);
                 } catch (RemoteException e) {
                     Slogf.e(TAG, "error in onSessionStateChanged", e);
+                }
+            }
+        }
+
+        @Override
+        public void onInteractiveAppInfoChanged(TvInteractiveAppInfo appInfo) {
+            synchronized (mLock) {
+                if (DEBUG) {
+                    Slogf.d(TAG,
+                            "onInteractiveAppInfoChanged");
+                }
+                if (mSessionState.mSession == null || mSessionState.mClient == null) {
+                    return;
+                }
+                try {
+                    mSessionState.mClient.onInteractiveAppInfoChanged(appInfo, mSessionState.mSeq);
+                } catch (RemoteException e) {
+                    Slogf.e(TAG, "error in onInteractiveAppInfoChanged", e);
                 }
             }
         }

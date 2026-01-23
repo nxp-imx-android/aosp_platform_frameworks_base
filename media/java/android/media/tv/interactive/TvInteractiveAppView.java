@@ -1201,6 +1201,17 @@ public class TvInteractiveAppView extends ViewGroup {
         }
 
         /**
+         * This is called when any interactive app's metadata has changed.
+         *
+         * @param iAppServiceId The ID of the TV interactive app service bound to this view.
+         * @param appInfo the interactive app info.
+         * @hide
+         */
+        public void onInteractiveAppInfoChanged(@NonNull String iAppServiceId,
+                TvInteractiveAppInfo appInfo) {
+        }
+
+        /**
          * This is called when broadcast-independent (BI) interactive app is created.
          *
          * @param iAppServiceId The ID of the TV interactive app service bound to this view.
@@ -1662,6 +1673,33 @@ public class TvInteractiveAppView extends ViewGroup {
                         synchronized (mCallbackLock) {
                             if (mCallback != null) {
                                 mCallback.onStateChanged(mIAppServiceId, state, err);
+                            }
+                        }
+                    });
+                }
+            }
+        }
+
+        /**
+         * This is called when the state of any interactive app metadata changed.
+         *
+         * @param appInfo the interactive app info.
+         */
+        @Override
+        public void onInteractiveAppInfoChanged(Session session, TvInteractiveAppInfo appInfo) {
+            if (DEBUG) {
+                Log.d(TAG, "onInteractiveAppStateChanged");
+            }
+            if (this != mSessionCallback) {
+                Log.w(TAG, "onInteractiveAppStateChanged - session not created");
+                return;
+            }
+            synchronized (mCallbackLock) {
+                if (mCallbackExecutor != null) {
+                    mCallbackExecutor.execute(() -> {
+                        synchronized (mCallbackLock) {
+                            if (mCallback != null) {
+                                mCallback.onInteractiveAppInfoChanged(mIAppServiceId, appInfo);
                             }
                         }
                     });

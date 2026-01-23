@@ -2065,6 +2065,38 @@ public abstract class TvInteractiveAppService extends Service {
         }
 
         /**
+         * Notify when there is a change with app metadata of an interactive app.
+         *
+         * <p> This is used for AppCatUI feature defined in ABNT NBR 15606-2:2023 Section 9.3.2.
+         * For example, in the context of the Ginga-NCL, this is to list the applications in the
+         * structure that can be launched by the user, as well as allow them to add and remove the
+         * apps.
+         * </p>
+         *
+         * @param appInfo The interactive application info.
+         *
+         * @hide
+         */
+        public void notifyInteractiveAppInfoChanged(TvInteractiveAppInfo appInfo) {
+            executeOrPostRunnableOnMainThread(new Runnable() {
+                @MainThread
+                @Override
+                public void run() {
+                    try {
+                        if (DEBUG) {
+                            Log.d(TAG, "notifyInteractiveAppInfo changed");
+                        }
+                        if (mSessionCallback != null) {
+                            mSessionCallback.onInteractiveAppInfoChanged(appInfo);
+                        }
+                    } catch (RemoteException e) {
+                        Log.w(TAG, "error in notifyBroadcastInteractiveAppState", e);
+                    }
+                }
+            });
+        }
+
+        /**
          * Notifies the broadcast-independent(BI) interactive application has been created.
          *
          * @param biIAppId BI interactive app ID, which can be used to destroy the BI interactive

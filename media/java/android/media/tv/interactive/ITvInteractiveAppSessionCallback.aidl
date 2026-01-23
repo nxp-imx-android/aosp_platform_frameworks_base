@@ -22,6 +22,7 @@ import android.media.tv.AdRequest;
 import android.media.tv.BroadcastInfoRequest;
 import android.media.tv.TvRecordingInfo;
 import android.media.tv.interactive.ITvInteractiveAppSession;
+import android.media.tv.interactive.TvInteractiveAppInfo;
 import android.net.Uri;
 import android.os.Bundle;
 
@@ -36,6 +37,7 @@ oneway interface ITvInteractiveAppSessionCallback {
     void onBroadcastInfoRequest(in BroadcastInfoRequest request);
     void onRemoveBroadcastInfo(int id);
     void onSessionStateChanged(int state, int err);
+    void onInteractiveAppInfoChanged(in TvInteractiveAppInfo appInfo);
     void onBiInteractiveAppCreated(in Uri biIAppUri, in String biIAppId);
     void onTeletextAppStateChanged(int state);
     void onAdBufferReady(in AdBuffer buffer);
