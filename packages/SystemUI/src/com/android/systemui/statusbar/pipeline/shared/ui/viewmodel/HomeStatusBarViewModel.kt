@@ -754,7 +754,8 @@ constructor(
 
     override val isSignOutButtonVisible: Boolean by
         if (
-                Flags.signOutButtonOnKeyguardStatusBar() &&
+                (Flags.signOutButtonOnKeyguardStatusBar() ||
+                    Flags.signOutButtonOnKeyguardStatusBar2()) &&
                     keyguardInteractor.isSignOutButtonOnStatusBarEnabled
             ) {
                 combine(

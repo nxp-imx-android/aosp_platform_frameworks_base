@@ -36,7 +36,7 @@ fun calculateLayout(isOneHandedModeSupported: Boolean): BouncerOverlayLayout {
 
 @Composable
 fun shouldBeContainerized(): Boolean {
-    if (!Flags.containerizeBouncerOnLargeScreens()) {
+    if (!Flags.containerizeBouncerOnLargeScreens() && !Flags.containerizeBouncerOnLargeScreens2()) {
         return false
     }
     val useLowerBreakpoint =
