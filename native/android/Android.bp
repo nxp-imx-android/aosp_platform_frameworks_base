@@ -106,7 +106,6 @@ cc_library_shared {
         "dynamic_instrumentation_manager_aidl-cpp",
         "libnativedisplay",
         "libfmq",
-        "libperformancehint",
     ],
 
     static_libs: [
