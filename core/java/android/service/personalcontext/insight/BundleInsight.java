@@ -16,6 +16,8 @@
 
 package android.service.personalcontext.insight;
 
+import static java.util.Objects.requireNonNull;
+
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -33,7 +35,11 @@ import android.service.personalcontext.hint.ContextHintWithSignature;
  */
 @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
 public final class BundleInsight extends ContextInsight {
+    private static final String KEY_DATA = "data";
+    private static final String KEY_TYPE = "type";
+
     private final Bundle mDataBundle;
+    private final String mInsightTypeName;
 
     /**
      * Internal constructor only for use by {@link ContextInsight#createInsightFromBundle(Bundle)}
@@ -42,8 +48,19 @@ public final class BundleInsight extends ContextInsight {
     BundleInsight(
             @NonNull ContextInsight.ConstructorParams baseParams,
             @NonNull Bundle bundle) {
+        this(
+                baseParams,
+                requireNonNull(bundle.getBundle(KEY_DATA)),
+                requireNonNull(bundle.getString(KEY_TYPE)));
+    }
+
+    private BundleInsight(
+            @NonNull ContextInsight.ConstructorParams baseParams,
+            @NonNull Bundle data,
+            @NonNull String insightTypeName) {
         super(baseParams);
-        mDataBundle = bundle;
+        mDataBundle = data;
+        mInsightTypeName = insightTypeName;
     }
 
     /** @hide */
@@ -51,6 +68,13 @@ public final class BundleInsight extends ContextInsight {
     @InsightType
     public int getInsightType() {
         return INSIGHT_TYPE_BUNDLE;
+    }
+
+    /** Provides the insightTypeName used when creating the BundleInsight. */
+    @Override
+    @NonNull
+    public String getInsightTypeName() {
+        return mInsightTypeName;
     }
 
     /** @hide */
@@ -68,7 +92,15 @@ public final class BundleInsight extends ContextInsight {
     @Override
     @NonNull
     Bundle toBundleImpl() {
-        return mDataBundle;
+        Bundle result = new Bundle();
+        result.putString(KEY_TYPE, getInsightTypeName());
+        result.putBundle(KEY_DATA, mDataBundle);
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return super.toString() + ";" + getInsightTypeName();
     }
 
     /**
@@ -78,6 +110,27 @@ public final class BundleInsight extends ContextInsight {
     public static final class Builder {
         private final ConstructorParams.Builder mBaseBuilder = new ConstructorParams.Builder();
         private final Bundle mDataBundle = new Bundle();
+        private String mInsightTypeName = BundleInsight.class.getCanonicalName();
+
+        /**
+         * Creates a new builder for {@link BundleInsight}.
+         *
+         * The {@code insightTypeName} provided should be namespaced, and should be unique enough
+         * that code can interpret the contents of the Bundle inside this insight without ambiguity.
+         * e.g. "com.mycompany.personalcontext.insight.MyAction". An {@link InsightFilter} can
+         * filter insights based on this type name with
+         * {@link InsightFilter.Builder#addInsightType(String)}. If no type name is set,
+         * {@code "android.service.personalcontext.insight.BundleInsight"} will be used as the type
+         * name for this insight. An {@link InsightFilter} can filter for {@link BundleInsight}s
+         * without an explicit type name with
+         * {@code InsightFilter.addInsightType(BundleInsight.class}.
+         */
+        @NonNull
+        public Builder setInsightTypeName(@Nullable String insightTypeName) {
+            mInsightTypeName = insightTypeName == null
+                    ? BundleInsight.class.getCanonicalName() : insightTypeName;
+            return this;
+        }
 
         /**
          * Adds an origin {@link ContextHint} to the resulting {@link BundleInsight}.
@@ -133,7 +186,7 @@ public final class BundleInsight extends ContextInsight {
         /** Create and return a new {@link BundleInsight}. */
         @NonNull
         public BundleInsight build() {
-            return new BundleInsight(mBaseBuilder.build(), mDataBundle);
+            return new BundleInsight(mBaseBuilder.build(), mDataBundle, mInsightTypeName);
         }
     }
 }

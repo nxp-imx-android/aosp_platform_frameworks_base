@@ -20,6 +20,7 @@ import static android.service.personalcontext.hint.ContextHintTestUtils.assertPa
 
 import static com.google.common.truth.Truth.assertThat;
 
+import android.annotation.NonNull;
 import android.os.Bundle;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -31,6 +32,8 @@ import org.junit.runner.RunWith;
 @SmallTest
 @RunWith(AndroidJUnit4.class)
 public class BundleHintTest {
+    @NonNull
+    private static final String BUNDLE_TYPE = BundleHintTest.class.getCanonicalName();
 
     @Test
     public void testBundleHintParcelUnparcel() {
@@ -39,11 +42,13 @@ public class BundleHintTest {
         final Bundle data = new Bundle();
         data.putInt(dataKey, inputValue);
 
-        final BundleHint hint = new BundleHint.Builder().build();
-        hint.getDataBundle().putAll(data);
+        final BundleHint hint = new BundleHint.Builder().setHintTypeName(BUNDLE_TYPE)
+                .setDataBundle(data)
+                .build();
 
         final ContextHint outputHint = assertParcelUnparcel(hint);
         assertThat(outputHint).isInstanceOf(BundleHint.class);
+        assertThat(outputHint.getHintTypeName()).isEqualTo(BUNDLE_TYPE);
         final int outputValue = ((BundleHint) outputHint).getDataBundle().getInt(dataKey);
 
         assertThat(outputValue).isEqualTo(inputValue);

@@ -31,10 +31,10 @@ import android.service.personalcontext.insight.DisplayInsight
 import android.service.personalcontext.insight.InsightActionDetails
 import android.service.personalcontext.insight.InsightCollection
 import android.service.personalcontext.insight.InsightDisplayDetails
+import android.service.personalcontext.insight.InsightFilter
 import android.service.personalcontext.insight.InsightTraverser
 import android.service.personalcontext.insight.InsightVisitor
 import android.service.personalcontext.renderer.InsightRendererService
-import android.service.personalcontext.renderer.RendererFilter
 import android.util.Log
 import android.view.autofill.AutofillManager
 import android.view.autofill.AutofillValue
@@ -55,14 +55,14 @@ class AutofillRendererService
 constructor(private val context: Context, private val autofillManager: AutofillManager?) :
     InsightRendererService() {
 
-    override fun onInitializeFilter(): RendererFilter {
-        return RendererFilter.Builder()
+    override fun onInitializeFilter(): InsightFilter {
+        return InsightFilter.Builder()
             // Display insight is allowed for plain autofill results.
-            .addAllowedInsightClass(DisplayInsight::class.java)
+            .addInsightType(DisplayInsight::class.java)
             // Actionable insights can be used to attach a click action to the autofill result.
-            .addAllowedInsightClass(ActionableInsight::class.java)
+            .addInsightType(ActionableInsight::class.java)
             // Multiple insights allowed, will result in multiple datasets.
-            .addAllowedInsightClass(InsightCollection::class.java)
+            .addInsightType(InsightCollection::class.java)
             .build()
     }
 

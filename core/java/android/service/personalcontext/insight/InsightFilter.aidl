@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package android.service.personalcontext.renderer;
+package android.service.personalcontext.insight;
 
 /** @hide */
-parcelable RendererFilter;
+parcelable InsightFilter;

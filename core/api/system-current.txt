@@ -14914,6 +14914,23 @@ package android.service.personalcontext.hint {
     method @NonNull public android.service.personalcontext.hint.ConversationData.Builder setActivityId(@Nullable android.app.assist.ActivityId);
   }
 
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class HintFilter implements android.os.Parcelable {
+    method public int describeContents();
+    method @NonNull public java.util.Set<java.lang.String> getHintTypes();
+    method @NonNull public java.util.Set<java.lang.String> getPackages();
+    method @NonNull public java.util.Set<java.lang.String> getRequiredHintTypes();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.service.personalcontext.hint.HintFilter> CREATOR;
+  }
+
+  public static final class HintFilter.Builder {
+    ctor public HintFilter.Builder();
+    method @NonNull public android.service.personalcontext.hint.HintFilter.Builder addHintType(@NonNull String, boolean);
+    method @NonNull public android.service.personalcontext.hint.HintFilter.Builder addHintType(@NonNull Class<? extends android.service.personalcontext.hint.ContextHint>, boolean);
+    method @NonNull public android.service.personalcontext.hint.HintFilter.Builder addPackage(@NonNull String);
+    method @NonNull public android.service.personalcontext.hint.HintFilter build();
+  }
+
 }
 
 package android.service.personalcontext.insight {
@@ -14936,6 +14953,21 @@ package android.service.personalcontext.insight {
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class InsightCollection.Builder {
     method @NonNull public android.service.personalcontext.insight.InsightCollection.Builder setOriginatingComponentId(@Nullable android.service.personalcontext.ComponentIdProvider);
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class InsightFilter implements android.os.Parcelable {
+    method public int describeContents();
+    method @NonNull public java.util.Set<java.lang.String> getInsightTypes();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.service.personalcontext.insight.InsightFilter> CREATOR;
+    field public static final android.service.personalcontext.insight.InsightFilter REQUIRE_RENDER_TOKEN;
+  }
+
+  public static final class InsightFilter.Builder {
+    ctor public InsightFilter.Builder();
+    method @NonNull public android.service.personalcontext.insight.InsightFilter.Builder addInsightType(@NonNull String);
+    method @NonNull public android.service.personalcontext.insight.InsightFilter.Builder addInsightType(@NonNull Class<? extends android.service.personalcontext.insight.ContextInsight>);
+    method @NonNull public android.service.personalcontext.insight.InsightFilter build();
   }
 
 }
@@ -14965,30 +14997,11 @@ package android.service.personalcontext.insight.interaction {
 
 package android.service.personalcontext.refiner {
 
-  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class HintFilter implements android.os.Parcelable {
-    method public int describeContents();
-    method @NonNull public java.util.Set<java.lang.String> getHintClasses();
-    method @NonNull public java.util.Set<android.service.personalcontext.Token> getHintTokens();
-    method @NonNull public java.util.Set<java.lang.String> getPackages();
-    method @NonNull public java.util.Set<java.lang.String> getRequiredHintClasses();
-    method @NonNull public java.util.Set<android.service.personalcontext.Token> getRequiredHintTokens();
-    method public void writeToParcel(@NonNull android.os.Parcel, int);
-    field @NonNull public static final android.os.Parcelable.Creator<android.service.personalcontext.refiner.HintFilter> CREATOR;
-  }
-
-  public static final class HintFilter.Builder {
-    ctor public HintFilter.Builder();
-    method @NonNull public android.service.personalcontext.refiner.HintFilter.Builder addHintClass(@NonNull Class<? extends android.service.personalcontext.hint.ContextHint>, boolean);
-    method @NonNull public android.service.personalcontext.refiner.HintFilter.Builder addHintToken(@NonNull android.service.personalcontext.Token, boolean);
-    method @NonNull public android.service.personalcontext.refiner.HintFilter.Builder addPackage(@NonNull String);
-    method @NonNull public android.service.personalcontext.refiner.HintFilter build();
-  }
-
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public abstract class HintRefinerService extends android.app.Service {
     ctor public HintRefinerService();
     method @Nullable public final android.os.IBinder onBind(@Nullable android.content.Intent);
     method public void onConnected();
-    method @NonNull public abstract android.service.personalcontext.refiner.HintFilter onInitializeFilter();
+    method @NonNull public abstract android.service.personalcontext.hint.HintFilter onInitializeFilter();
     method public abstract void onRefine(@NonNull java.util.List<android.service.personalcontext.hint.ContextHint>, @NonNull java.util.function.Consumer<java.util.List<android.service.personalcontext.hint.ContextHint>>);
   }
 
@@ -15001,24 +15014,9 @@ package android.service.personalcontext.renderer {
     method @NonNull public final android.service.personalcontext.RenderToken mintRenderToken();
     method @Nullable public final android.os.IBinder onBind(@Nullable android.content.Intent);
     method public void onConnected();
-    method @NonNull public abstract android.service.personalcontext.renderer.RendererFilter onInitializeFilter();
+    method @NonNull public abstract android.service.personalcontext.insight.InsightFilter onInitializeFilter();
     method public abstract void onRender(@NonNull android.service.personalcontext.insight.ContextInsight, @NonNull android.service.personalcontext.RenderToken);
     field public static final String SERVICE_INTERFACE = "android.service.personalcontext.renderer.InsightRendererService";
-  }
-
-  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class RendererFilter implements android.os.Parcelable {
-    method public int describeContents();
-    method public void writeToParcel(@NonNull android.os.Parcel, int);
-    field @NonNull public static final android.os.Parcelable.Creator<android.service.personalcontext.renderer.RendererFilter> CREATOR;
-    field public static final android.service.personalcontext.renderer.RendererFilter REQUIRE_RENDER_TOKEN;
-  }
-
-  public static final class RendererFilter.Builder {
-    ctor public RendererFilter.Builder();
-    method @NonNull public android.service.personalcontext.renderer.RendererFilter.Builder addAllowedInsightClass(@NonNull Class<? extends android.service.personalcontext.insight.ContextInsight>);
-    method @NonNull public android.service.personalcontext.renderer.RendererFilter.Builder addAllowedInsightToken(@NonNull android.service.personalcontext.Token);
-    method @NonNull public android.service.personalcontext.renderer.RendererFilter.Builder addRequiredInsightToken(@NonNull android.service.personalcontext.Token);
-    method @NonNull public android.service.personalcontext.renderer.RendererFilter build();
   }
 
 }
@@ -15032,7 +15030,7 @@ package android.service.personalcontext.understander {
     method @Nullable public final android.os.IBinder onBind(@Nullable android.content.Intent);
     method public void onConnected();
     method public void onHandleEvent(@NonNull String, @NonNull android.service.personalcontext.insight.interaction.InsightEvent);
-    method @NonNull public abstract android.service.personalcontext.refiner.HintFilter onInitializeFilter();
+    method @NonNull public abstract android.service.personalcontext.hint.HintFilter onInitializeFilter();
     method public abstract void onUnderstand(@NonNull java.util.List<android.service.personalcontext.hint.ContextHintWithSignature>);
     method @Deprecated public final void understood(@NonNull java.util.List<android.service.personalcontext.insight.ContextInsight>);
     method public final void understood(@NonNull android.service.personalcontext.insight.ContextInsight);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 The Android Open Source Project
+ * Copyright (C) 2026 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,9 @@
  * limitations under the License.
  */
 
-package android.service.personalcontext.refiner;
+package android.service.personalcontext.hint;
 
 import static com.google.common.truth.Truth.assertThat;
-
-import android.service.personalcontext.Token;
-import android.service.personalcontext.hint.BundleHint;
-import android.service.personalcontext.hint.ContextHintTestUtils;
-import android.service.personalcontext.hint.ContextHintWithSignature;
 
 import androidx.test.filters.SmallTest;
 import androidx.test.runner.AndroidJUnit4;
@@ -32,35 +27,40 @@ import org.junit.runner.RunWith;
 import java.security.GeneralSecurityException;
 import java.util.Collections;
 import java.util.Set;
-import java.util.function.Function;
 
 @SmallTest
 @RunWith(AndroidJUnit4.class)
 public class HintFilterTest {
+    private static final String HINT_CLASS_A =
+            "android.service.personalcontext.hint.HintFilterTest.A";
+    private static final String HINT_CLASS_B =
+            "android.service.personalcontext.hint.HintFilterTest.B";
+    private static final String HINT_CLASS_C =
+            "android.service.personalcontext.hint.HintFilterTest.C";
+    private static final String HINT_CLASS_D =
+            "android.service.personalcontext.hint.HintFilterTest.D";
+    private static final String HINT_CLASS_E =
+            "android.service.personalcontext.hint.HintFilterTest.E";
 
-    private static ContextHintWithSignature makeHint(
-            Function<BundleHint.Builder, BundleHint.Builder> hintTuner)
+    private static ContextHintWithSignature makeHint(String hintClass)
             throws GeneralSecurityException {
         return new ContextHintWithSignature.Builder(
-                hintTuner.apply(new BundleHint.Builder()).build(),
+                new BundleHint.Builder().setHintTypeName(hintClass).build(),
                 ContextHintTestUtils.generateSignedHintKey())
             .build();
     }
 
     @Test
     public void testHintFilterRequireAll() throws GeneralSecurityException {
-        final Token tokenA = new Token();
-        final Token tokenB = new Token();
-        final Token tokenC = new Token();
-        ContextHintWithSignature hintA = makeHint(b -> b.addToken(tokenA));
-        ContextHintWithSignature hintB = makeHint(b -> b.addToken(tokenB));
-        ContextHintWithSignature hintC = makeHint(b -> b.addToken(tokenC));
+        ContextHintWithSignature hintA = makeHint(HINT_CLASS_A);
+        ContextHintWithSignature hintB = makeHint(HINT_CLASS_B);
+        ContextHintWithSignature hintC = makeHint(HINT_CLASS_C);
 
         final Set<ContextHintWithSignature> interestedHintSet =
                 new HintFilter.Builder()
-                        .addHintToken(tokenA, true)
-                        .addHintToken(tokenB, true)
-                        .addHintToken(tokenC, true)
+                        .addHintType(HINT_CLASS_A, true)
+                        .addHintType(HINT_CLASS_B, true)
+                        .addHintType(HINT_CLASS_C, true)
                         .build()
                         .getInterestedHintClusters(
                                 Set.of(hintA, hintB, hintC), Collections.emptySet());
@@ -70,17 +70,14 @@ public class HintFilterTest {
 
     @Test
     public void testHintFilterRequireSome() throws GeneralSecurityException {
-        final Token tokenA = new Token();
-        final Token tokenB = new Token();
-        final Token tokenC = new Token();
-        ContextHintWithSignature hintA = makeHint(b -> b.addToken(tokenA));
-        ContextHintWithSignature hintB = makeHint(b -> b.addToken(tokenB));
-        ContextHintWithSignature hintC = makeHint(b -> b.addToken(tokenC));
+        ContextHintWithSignature hintA = makeHint(HINT_CLASS_A);
+        ContextHintWithSignature hintB = makeHint(HINT_CLASS_B);
+        ContextHintWithSignature hintC = makeHint(HINT_CLASS_C);
 
         final Set<ContextHintWithSignature> interestedHintSet =
                 new HintFilter.Builder()
-                        .addHintToken(tokenA, true)
-                        .addHintToken(tokenB, true)
+                        .addHintType(HINT_CLASS_A, true)
+                        .addHintType(HINT_CLASS_B, true)
                         .build()
                         .getInterestedHintClusters(
                                 Set.of(hintA, hintB, hintC), Collections.emptySet());
@@ -90,20 +87,17 @@ public class HintFilterTest {
 
     @Test
     public void testHintFilterRequireMissingSome() throws GeneralSecurityException {
-        final Token tokenA = new Token();
-        final Token tokenB = new Token();
-        final Token tokenC = new Token();
-        ContextHintWithSignature hintA = makeHint(b -> b.addToken(tokenA));
-        ContextHintWithSignature hintB = makeHint(b -> b.addToken(tokenB));
-        ContextHintWithSignature hintC = makeHint(b -> b.addToken(tokenC));
+        ContextHintWithSignature hintA = makeHint(HINT_CLASS_A);
+        ContextHintWithSignature hintB = makeHint(HINT_CLASS_B);
+        ContextHintWithSignature hintC = makeHint(HINT_CLASS_C);
 
         final Set<ContextHintWithSignature> interestedHintSet =
                 new HintFilter.Builder()
-                        .addHintToken(tokenA, true)
-                        .addHintToken(tokenB, true)
-                        .addHintToken(tokenC, true)
-                        .addHintToken(new Token(), true)
-                        .addHintToken(new Token(), true)
+                        .addHintType(HINT_CLASS_A, true)
+                        .addHintType(HINT_CLASS_B, true)
+                        .addHintType(HINT_CLASS_C, true)
+                        .addHintType(HINT_CLASS_D, true)
+                        .addHintType(HINT_CLASS_E, true)
                         .build()
                         .getInterestedHintClusters(
                                 Set.of(hintA, hintB, hintC), Collections.emptySet());
@@ -113,17 +107,14 @@ public class HintFilterTest {
 
     @Test
     public void testHintFilterRequireNone() throws GeneralSecurityException {
-        final Token tokenA = new Token();
-        final Token tokenB = new Token();
-        final Token tokenC = new Token();
-        ContextHintWithSignature hintA = makeHint(b -> b.addToken(tokenA));
-        ContextHintWithSignature hintB = makeHint(b -> b.addToken(tokenB));
-        ContextHintWithSignature hintC = makeHint(b -> b.addToken(tokenC));
+        ContextHintWithSignature hintA = makeHint(HINT_CLASS_A);
+        ContextHintWithSignature hintB = makeHint(HINT_CLASS_B);
+        ContextHintWithSignature hintC = makeHint(HINT_CLASS_C);
 
         final Set<ContextHintWithSignature> interestedHintSet =
                 new HintFilter.Builder()
-                        .addHintToken(new Token(), true)
-                        .addHintToken(new Token(), true)
+                        .addHintType(HINT_CLASS_D, true)
+                        .addHintType(HINT_CLASS_E, true)
                         .build()
                         .getInterestedHintClusters(
                                 Set.of(hintA, hintB, hintC), Collections.emptySet());
@@ -133,17 +124,14 @@ public class HintFilterTest {
 
     @Test
     public void testHintFilterAllowOne() throws GeneralSecurityException {
-        final Token tokenA = new Token();
-        final Token tokenB = new Token();
-        final Token tokenC = new Token();
-        ContextHintWithSignature hintA = makeHint(b -> b.addToken(tokenA));
-        ContextHintWithSignature hintB = makeHint(b -> b.addToken(tokenB));
-        ContextHintWithSignature hintC = makeHint(b -> b.addToken(tokenC));
+        ContextHintWithSignature hintA = makeHint(HINT_CLASS_A);
+        ContextHintWithSignature hintB = makeHint(HINT_CLASS_B);
+        ContextHintWithSignature hintC = makeHint(HINT_CLASS_C);
 
         final Set<ContextHintWithSignature> interestedHintSet =
                 new HintFilter.Builder()
-                        .addHintToken(tokenA, false)
-                        .addHintToken(new Token(), false)
+                        .addHintType(HINT_CLASS_A, false)
+                        .addHintType(HINT_CLASS_D, false)
                         .build()
                         .getInterestedHintClusters(
                                 Set.of(hintA, hintB, hintC), Collections.emptySet());
@@ -153,18 +141,15 @@ public class HintFilterTest {
 
     @Test
     public void testHintFilterAllowMany() throws GeneralSecurityException {
-        final Token tokenA = new Token();
-        final Token tokenB = new Token();
-        final Token tokenC = new Token();
-        ContextHintWithSignature hintA = makeHint(b -> b.addToken(tokenA));
-        ContextHintWithSignature hintB = makeHint(b -> b.addToken(tokenB));
-        ContextHintWithSignature hintC = makeHint(b -> b.addToken(tokenC));
+        ContextHintWithSignature hintA = makeHint(HINT_CLASS_A);
+        ContextHintWithSignature hintB = makeHint(HINT_CLASS_B);
+        ContextHintWithSignature hintC = makeHint(HINT_CLASS_C);
 
         final Set<ContextHintWithSignature> interestedHintSet =
                 new HintFilter.Builder()
-                        .addHintToken(tokenA, false)
-                        .addHintToken(tokenB, false)
-                        .addHintToken(tokenC, false)
+                        .addHintType(HINT_CLASS_A, false)
+                        .addHintType(HINT_CLASS_B, false)
+                        .addHintType(HINT_CLASS_C, false)
                         .build()
                         .getInterestedHintClusters(
                                 Set.of(hintA, hintB, hintC), Collections.emptySet());
@@ -174,17 +159,14 @@ public class HintFilterTest {
 
     @Test
     public void testHintFilterAllowSome() throws GeneralSecurityException {
-        final Token tokenA = new Token();
-        final Token tokenB = new Token();
-        final Token tokenC = new Token();
-        ContextHintWithSignature hintA = makeHint(b -> b.addToken(tokenA));
-        ContextHintWithSignature hintB = makeHint(b -> b.addToken(tokenB));
-        ContextHintWithSignature hintC = makeHint(b -> b.addToken(tokenC));
+        ContextHintWithSignature hintA = makeHint(HINT_CLASS_A);
+        ContextHintWithSignature hintB = makeHint(HINT_CLASS_B);
+        ContextHintWithSignature hintC = makeHint(HINT_CLASS_C);
 
         final Set<ContextHintWithSignature> interestedHintSet =
                 new HintFilter.Builder()
-                        .addHintToken(tokenA, false)
-                        .addHintToken(tokenB, false)
+                        .addHintType(HINT_CLASS_A, false)
+                        .addHintType(HINT_CLASS_B, false)
                         .build()
                         .getInterestedHintClusters(
                                 Set.of(hintA, hintB, hintC), Collections.emptySet());
