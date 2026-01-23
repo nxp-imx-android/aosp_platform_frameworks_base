@@ -2879,13 +2879,17 @@ public abstract class Connection extends Conferenceable {
     }
 
     /**
-     * Sets the supported audio routes.
+     * Sets the supported audio routes during initialization of a connection based on the supported
+     * audio route.
      *
      * @param supportedAudioRoutes the supported audio routes as a bitmask.
      *                             See {@link CallAudioState}
      * @hide
      */
-    public final void setSupportedAudioRoutes(int supportedAudioRoutes) {
+    @SystemApi
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_TELECOM_MAINLINE_API)
+    public final void setSupportedAudioRoutes(
+            @CallAudioState.CallAudioRoute int supportedAudioRoutes) {
         if ((supportedAudioRoutes
                 & (CallAudioState.ROUTE_EARPIECE | CallAudioState.ROUTE_SPEAKER)) == 0) {
             throw new IllegalArgumentException(
