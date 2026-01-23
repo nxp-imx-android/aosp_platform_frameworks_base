@@ -20,8 +20,8 @@ import androidx.compose.animation.core.FastOutSlowInEasing
 import com.android.compose.animation.scene.TransitionBuilder
 import com.android.systemui.communal.ui.compose.Communal
 
-fun TransitionBuilder.communalToSingleShadeTransition() {
-    toShadeSceneTransition()
+fun TransitionBuilder.communalToSingleShadeTransition(singleShadeMarginHorizontalPx: Float) {
+    toSingleShadeTransition(singleShadeMarginHorizontalPx)
 
     // Fade out communal
     timestampRange(easing = FastOutSlowInEasing) {

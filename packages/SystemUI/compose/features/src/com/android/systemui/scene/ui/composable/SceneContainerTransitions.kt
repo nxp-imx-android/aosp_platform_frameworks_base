@@ -85,6 +85,9 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
             val lockscreenToShadeTransitionDistancePx =
                 resources.getDimension(R.dimen.lockscreen_shade_full_transition_distance)
 
+            val singleShadeMarginHorizontalPx =
+                resources.getDimension(R.dimen.notification_panel_margin_horizontal)
+
             // Scene transitions
 
             from(Scenes.Dream, to = Scenes.Communal) { dreamToCommunalTransition() }
@@ -95,7 +98,7 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
                 cuj = Cuj.CUJ_NOTIFICATION_SHADE_EXPAND_COLLAPSE,
                 cujTag = TAG_EXPAND,
             ) {
-                dreamToSingleShadeTransition()
+                dreamToSingleShadeTransition(singleShadeMarginHorizontalPx = singleShadeMarginHorizontalPx,)
             }
             from(
                 Scenes.Dream,
@@ -120,7 +123,7 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
                 cuj = Cuj.CUJ_NOTIFICATION_SHADE_EXPAND_COLLAPSE,
                 cujTag = TAG_EXPAND,
             ) {
-                goneToSingleShadeTransition()
+                goneToSingleShadeTransition(singleShadeMarginHorizontalPx = singleShadeMarginHorizontalPx,)
             }
             from(
                 Scenes.Gone,
@@ -138,7 +141,7 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
                 cuj = Cuj.CUJ_NOTIFICATION_SHADE_EXPAND_COLLAPSE,
                 cujTag = TAG_EXPAND,
             ) {
-                goneToSingleShadeTransition(durationScale = 0.9)
+                goneToSingleShadeTransition(singleShadeMarginHorizontalPx = singleShadeMarginHorizontalPx, durationScale = 0.9)
             }
             from(
                 Scenes.Gone,
@@ -173,6 +176,7 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
             ) {
                 lockscreenToSingleShadeTransition(
                     transitionDistancePx = lockscreenToShadeTransitionDistancePx,
+                    singleShadeMarginHorizontalPx = singleShadeMarginHorizontalPx,
                     seekAnimation = true,
                 )
             }
@@ -197,7 +201,9 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
             ) {
                 lockscreenToSingleShadeTransition(
                     transitionDistancePx = lockscreenToShadeTransitionDistancePx,
+                    singleShadeMarginHorizontalPx = singleShadeMarginHorizontalPx,
                     durationScale = 0.9,
+                    seekAnimation = true,
                 )
             }
             from(
@@ -271,7 +277,7 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
                 cuj = Cuj.CUJ_NOTIFICATION_SHADE_EXPAND_COLLAPSE,
                 cujTag = TAG_COLLAPSE,
             ) {
-                reversed { goneToSingleShadeTransition() }
+                reversed { goneToSingleShadeTransition(singleShadeMarginHorizontalPx = singleShadeMarginHorizontalPx,) }
             }
             from(
                 Scenes.Shade,
@@ -290,7 +296,8 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
             ) {
                 reversed {
                     lockscreenToSingleShadeTransition(
-                        transitionDistancePx = lockscreenToShadeTransitionDistancePx
+                        transitionDistancePx = lockscreenToShadeTransitionDistancePx,
+                        singleShadeMarginHorizontalPx = singleShadeMarginHorizontalPx,
                     )
                 }
                 sharedElement(Notifications.Elements.StackPlaceholder, enabled = false)
@@ -336,7 +343,7 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
                 cuj = Cuj.CUJ_NOTIFICATION_SHADE_EXPAND_COLLAPSE,
                 cujTag = TAG_EXPAND,
             ) {
-                communalToSingleShadeTransition()
+                communalToSingleShadeTransition(singleShadeMarginHorizontalPx = singleShadeMarginHorizontalPx)
             }
             from(
                 Scenes.Communal,
