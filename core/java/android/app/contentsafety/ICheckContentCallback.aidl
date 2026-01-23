@@ -3,14 +3,19 @@ package android.app.contentsafety;
 import android.os.Bundle;
 
 /**
-  * Interface for a ICheckContentCallback for receiving response from ContentSafetyService when CheckContent is executed against the provided feature.
+  * Callback for receiving the result of a content check.
+  * Interface for a ICheckContentCallback for receiving response from ContentSafetyService when
+  * CheckContent is executed against the provided feature.
   *
   * @hide
   */
-interface ICheckContentCallback {
+oneway interface ICheckContentCallback {
 
-    // returning a Bundle, where keys are FeatureType, and values are a list of status codes.
-    // Note that success and failure status codes are included in the same bundle.
+    /**
+     * Called with the result of the content check.
+     * @param result A bundle where keys are string representations of feature types, and values are
+     *     lists of {@link android.app.contentsafety.ContentSafetyManager.CheckContentStatus} codes.
+     */
     void onResult(in Bundle result) = 1;
 
 }
