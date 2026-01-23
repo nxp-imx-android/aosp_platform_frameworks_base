@@ -364,7 +364,7 @@ final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraSta
         return isCameraRunningAndWindowingModeEligible(activity);
     }
 
-    boolean shouldCameraCompatControlOrientation(@NonNull ActivityRecord activity) {
+    boolean isActivityEligibleForOrientationOverride(@NonNull ActivityRecord activity) {
         return isCameraRunningAndWindowingModeEligible(activity);
     }
 

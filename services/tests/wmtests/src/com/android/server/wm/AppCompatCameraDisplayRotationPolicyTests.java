@@ -710,8 +710,8 @@ public final class AppCompatCameraDisplayRotationPolicyTests extends WindowTests
         }
 
         private void assertShouldCameraCompatControlOrientation(boolean shouldControl) {
-            assertEquals(shouldControl,
-                    cameraCompatPolicy().shouldCameraCompatControlOrientation(activity().top()));
+            assertEquals(shouldControl, cameraCompatPolicy()
+                    .isActivityEligibleForOrientationOverride(activity().top()));
         }
 
         private void assertMultiWindowToastShown(boolean shown) {
