@@ -24,9 +24,9 @@ import static org.mockito.Mockito.verify;
 
 import android.content.ComponentName;
 import android.content.pm.ServiceInfo;
+import android.service.personalcontext.RenderToken;
 import android.service.personalcontext.embedded.InsightSurfaceClientInfo;
 import android.service.personalcontext.insight.BundleInsight;
-import android.service.personalcontext.insight.ContextInsight;
 
 import androidx.annotation.Nullable;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -45,6 +45,7 @@ import org.mockito.MockitoAnnotations;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Consumer;
 
 @SmallTest
@@ -153,15 +154,15 @@ public class VisualizerRegistryTest {
     @Test
     public void testCreateVisualizationForClient() {
         final BundleInsight insight = new BundleInsight.Builder().build();
-        final List<ContextInsight> insights = List.of(insight);
+        final RenderToken renderToken = new RenderToken(UUID.randomUUID());
 
         final ComponentName componentName =
                 new ComponentName(VISUALIZER_PACKAGE_NAME, VISUALIZER_SERVICE_NAME);
         mTestInjector.addInstalledService(componentName, mVisualizerConnection);
         mVisualizerRegistry.startRegisteringVisualizers();
-        mVisualizerRegistry.createVisualizationForClient(insights, mClient);
+        mVisualizerRegistry.createVisualizationForClient(insight, mClient, renderToken);
         verify(mVisualizerConnection).createVisualizationForClient(
-                eq(insights), eq(mClient), any(Consumer.class));
+                eq(insight), eq(mClient), eq(renderToken), any(Consumer.class));
     }
 
     private ServiceInfo createServiceInfo(String packageName, String serviceName) {

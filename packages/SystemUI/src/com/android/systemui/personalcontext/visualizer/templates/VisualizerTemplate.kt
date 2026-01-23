@@ -25,7 +25,7 @@ import androidx.compose.runtime.compositionLocalOf
 interface VisualizerTemplate {
 
     /** Validates the inputs. */
-    fun validate(insights: List<ContextInsight>): Boolean
+    fun validate(insights: ContextInsight): Boolean
 
     /**
      * The Composable UI content this template constructs for the given inputs.
@@ -33,7 +33,7 @@ interface VisualizerTemplate {
      * Implementations can access the [InsightSurfaceClientInfo] via
      * [LocalInsightSurfaceClientInfo].
      */
-    @Composable fun Content(insights: List<ContextInsight>)
+    @Composable fun Content(insights: ContextInsight)
 }
 
 /** Provides a [InsightSurfaceClientInfo] that can be used by the template. */

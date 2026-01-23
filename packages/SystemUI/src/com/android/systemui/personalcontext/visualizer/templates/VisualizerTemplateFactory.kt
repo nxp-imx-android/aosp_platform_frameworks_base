@@ -24,7 +24,7 @@ import javax.inject.Inject
 
 interface VisualizerTemplateFactory {
     fun createTemplate(
-        insights: List<ContextInsight>,
+        insight: ContextInsight,
         clientInfo: InsightSurfaceClientInfo,
     ): VisualizerTemplate?
 }
@@ -32,11 +32,11 @@ interface VisualizerTemplateFactory {
 @SysUISingleton
 class VisualizerTemplateFactoryImpl @Inject constructor() : VisualizerTemplateFactory {
     override fun createTemplate(
-        insights: List<ContextInsight>,
+        insight: ContextInsight,
         clientInfo: InsightSurfaceClientInfo,
     ): VisualizerTemplate? {
 
-        val cuj = findTriggerCuj(insights)
+        val cuj = findTriggerCuj(insight)
         if (cuj == null) {
             Log.w(TAG, "No appropriate cuj found for insights, client id: ${clientInfo.id}")
             return null
@@ -48,11 +48,11 @@ class VisualizerTemplateFactoryImpl @Inject constructor() : VisualizerTemplateFa
             return null
         }
 
-        val validated = template.validate(insights)
+        val validated = template.validate(insight)
         if (!validated) {
             Log.w(
                 TAG,
-                "Template failed validation for cuj $cuj, insights: $insights: ${clientInfo.id}",
+                "Template failed validation for cuj $cuj, insights: $insight: ${clientInfo.id}",
             )
             return null
         }
@@ -63,7 +63,7 @@ class VisualizerTemplateFactoryImpl @Inject constructor() : VisualizerTemplateFa
     companion object {
         const val TAG = "VisualizerTemplateImpl"
 
-        private fun findTriggerCuj(insights: List<ContextInsight>): String? = null
+        private fun findTriggerCuj(insights: ContextInsight): String? = null
 
         private fun findTemplate(cuj: String): VisualizerTemplate? = null
     }

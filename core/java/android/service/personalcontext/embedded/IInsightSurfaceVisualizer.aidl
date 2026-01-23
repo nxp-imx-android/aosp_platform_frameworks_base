@@ -19,6 +19,7 @@ package android.service.personalcontext.embedded;
 import android.service.personalcontext.embedded.IVisualizationResult;
 import android.service.personalcontext.embedded.InsightSurfaceClientInfo;
 import android.service.personalcontext.insight.ContextInsightWrapper;
+import android.service.personalcontext.RenderToken;
 import android.view.SurfaceControlViewHost;
 
 /**
@@ -28,8 +29,9 @@ import android.view.SurfaceControlViewHost;
  */
 interface IInsightSurfaceVisualizer {
     oneway void createVisualizationForClient(
-        in List<ContextInsightWrapper> insights,
+        in ContextInsightWrapper insight,
         in InsightSurfaceClientInfo clientInfo,
+        in RenderToken renderToken,
         in IVisualizationResult result);
     oneway void onClientDisconnected(in InsightSurfaceClientInfo clientInfo);
 }
