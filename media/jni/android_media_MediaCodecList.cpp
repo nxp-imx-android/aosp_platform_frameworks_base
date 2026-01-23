@@ -167,6 +167,17 @@ static jstring android_media_MediaCodecList_getCanonicalName(
     return env->NewStringUTF(name);
 }
 
+static jint android_media_MediaCodecList_getSecurityModel(
+        JNIEnv *env, jobject /* thiz */, jint index) {
+    JavaMediaCodecListWrapper::Info info = getCodecInfo(env, index);
+    if (info.info == NULL) {
+        // Runtime exception already pending.
+        return 0;
+    }
+
+    return info.info->getSecurityModel();
+}
+
 static jint android_media_MediaCodecList_findCodecByName(
         JNIEnv *env, jobject /* thiz */, jstring name) {
     if (name == NULL) {
@@ -389,6 +400,9 @@ static const JNINativeMethod gMethods[] = {
 
     { "getCanonicalName", "(I)Ljava/lang/String;",
       (void *)android_media_MediaCodecList_getCanonicalName },
+
+    { "getSecurityModel", "(I)I",
+      (void *)android_media_MediaCodecList_getSecurityModel },
 
     { "getCodecName", "(I)Ljava/lang/String;",
       (void *)android_media_MediaCodecList_getCodecName },

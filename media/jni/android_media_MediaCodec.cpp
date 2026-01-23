@@ -1052,11 +1052,24 @@ status_t JMediaCodec::getCodecInfo(JNIEnv *env, jobject *codecInfoObject) const 
             env->FindClass("android/media/MediaCodecInfo"));
     CHECK(codecInfoClazz.get() != NULL);
 
-    jmethodID codecInfoCtorID = env->GetMethodID(codecInfoClazz.get(), "<init>",
-            "(Ljava/lang/String;Ljava/lang/String;I[Landroid/media/MediaCodecInfo$CodecCapabilities;)V");
+    if (android::media::codec::provider_->in_process_sw_codec_lfi()) {
+        int securityModel = codecInfo->getSecurityModel();
 
-    *codecInfoObject = env->NewObject(codecInfoClazz.get(), codecInfoCtorID,
-            nameObject.get(), canonicalNameObject.get(), attributes, capsArrayObj.get());
+        jmethodID codecInfoCtorID = env->GetMethodID(codecInfoClazz.get(), "<init>",
+                "(Ljava/lang/String;Ljava/lang/String;I"
+                "[Landroid/media/MediaCodecInfo$CodecCapabilities;I)V");
+
+        *codecInfoObject = env->NewObject(
+                codecInfoClazz.get(), codecInfoCtorID, nameObject.get(), canonicalNameObject.get(),
+                attributes, capsArrayObj.get(), securityModel);
+    } else {
+        jmethodID codecInfoCtorID = env->GetMethodID(codecInfoClazz.get(), "<init>",
+                "(Ljava/lang/String;Ljava/lang/String;I"
+                "[Landroid/media/MediaCodecInfo$CodecCapabilities;)V");
+
+        *codecInfoObject = env->NewObject(codecInfoClazz.get(), codecInfoCtorID,
+                nameObject.get(), canonicalNameObject.get(), attributes, capsArrayObj.get());
+    }
 
     return OK;
 }
