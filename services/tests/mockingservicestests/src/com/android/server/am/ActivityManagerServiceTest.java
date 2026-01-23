@@ -1660,7 +1660,7 @@ public class ActivityManagerServiceTest {
         mAms.mUidObserverController.dispatchUidsChanged();
         for (int i = 0; i < pendingItemsForUids.size(); ++i) {
             final ChangeRecord item = pendingItemsForUids.get(i);
-            final UidRecord validateUidRecord =
+            final UidObserverController.ValidateUidRecord validateUidRecord =
                     mAms.mUidObserverController.getValidateUidsForTest().get(item.uid);
             if ((item.change & UidRecord.CHANGE_GONE) != 0) {
                 assertNull("validateUidRecord should be null since the change is either "
@@ -1669,11 +1669,8 @@ public class ActivityManagerServiceTest {
                 assertNotNull("validateUidRecord should not be null since the change is neither "
                         + "CHANGE_GONE nor CHANGE_GONE_IDLE", validateUidRecord);
                 assertEquals("processState: " + item.procState + " curProcState: "
-                        + validateUidRecord.getCurProcState() + " should have been equal",
-                        item.procState, validateUidRecord.getCurProcState());
-                assertEquals("processState: " + item.procState + " setProcState: "
-                        + validateUidRecord.getCurProcState() + " should have been equal",
-                        item.procState, validateUidRecord.getSetProcState());
+                        + validateUidRecord.getProcState() + " should have been equal",
+                        item.procState, validateUidRecord.getProcState());
                 if (item.change == UidRecord.CHANGE_IDLE) {
                     assertTrue("UidRecord.idle should be updated to true for CHANGE_IDLE",
                             validateUidRecord.isIdle());
