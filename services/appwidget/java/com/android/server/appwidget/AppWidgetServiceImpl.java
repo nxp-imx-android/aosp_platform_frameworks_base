@@ -1112,17 +1112,7 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
             for (int j = 0; j < widgetCount; j++) {
                 Widget widget = provider.widgets.get(j);
                 if (targetWidget != null && targetWidget != widget) continue;
-                // Identify the user in the host process since the intent will be invoked by
-                // the host app.
-                final Host host = widget.host;
-                final UserHandle hostUser;
-                if (host != null && host.id != null) {
-                    hostUser = UserHandle.getUserHandleForUid(host.id.uid);
-                } else {
-                    // Fallback to the parent profile if the host is null.
-                    Slog.w(TAG, "Host is null when masking widget: " + widget.appWidgetId);
-                    hostUser = mUserManager.getProfileParent(appUserId).getUserHandle();
-                }
+
                 boolean useDisabledPreviewWhenMasked = widget.options.getBoolean(
                         "useDisabledPreviewWhenMasked", false);
                 if (DEBUG) {
@@ -1130,35 +1120,21 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
                             + " widget: " + widget);
                 }
                 if (useDisabledPreviewWhenMasked) {
-                    views = new RemoteViews(provider.id.componentName.getPackageName(),
-                            R.layout.disabled_widget_mask_view);
-                    RemoteViews finalMaskedView = views;
-                    views.setBoolean(R.id.inner_frameLayout, "setEnabled", false);
                     AndroidFuture<RemoteViews> result = getGeneratedPreviewsAsync(provider,
                             widget.options.getInt(AppWidgetManager.OPTION_APPWIDGET_HOST_CATEGORY));
                     widget.setMaskPending(true);
+                    Intent clickIntent = onClickIntent;
                     result.thenAccept(generatedPreview -> {
-                        applyWidgetWithGeneratedPreviewLocked(finalMaskedView, generatedPreview,
-                                widget);
+                        if (DEBUG) {
+                            Slog.i(TAG,
+                                    "generatedPreview available: " + generatedPreview + " widget: "
+                                            + widget);
+                        }
+                        applyWidgetWithGeneratedPreviewLocked(generatedPreview, views, widget,
+                                provider, clickIntent);
                     });
-                }
-                if (provider.maskedByStoppedPackage) {
-                    Intent intent = createUpdateIntentLocked(provider,
-                            new int[]{widget.appWidgetId});
-                    views.setOnClickPendingIntent(android.R.id.background,
-                            PendingIntent.getBroadcastAsUser(mContext, widget.appWidgetId,
-                                    intent, PendingIntent.FLAG_UPDATE_CURRENT
-                                            | PendingIntent.FLAG_IMMUTABLE, hostUser));
-                } else if (onClickIntent != null) {
-                    views.setOnClickPendingIntent(android.R.id.background,
-                            PendingIntent.getActivityAsUser(mContext, widget.appWidgetId,
-                                    onClickIntent, PendingIntent.FLAG_UPDATE_CURRENT
-                                            | PendingIntent.FLAG_IMMUTABLE, null /* options */,
-                                    hostUser));
-                }
-                if (!useDisabledPreviewWhenMasked && widget.replaceWithMaskedViewsLocked(views)) {
-                    scheduleNotifyUpdateAppWidgetLocked(widget,
-                            widget.getEffectiveViewsLocked());
+                } else {
+                    applyMaskedViewsLocked(views, provider, onClickIntent, widget);
                 }
             }
         } finally {
@@ -1166,25 +1142,63 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
         }
     }
 
-    private void applyWidgetWithGeneratedPreviewLocked(RemoteViews maskedView,
-            RemoteViews generatedPreview, Widget widget) {
-        if (DEBUG) {
-            Slog.i(TAG, "applyWidgetWithGeneratedPreviewLocked: " + generatedPreview + " widget: "
-                    + widget);
+    private void applyMaskedViewsLocked(RemoteViews views, Provider provider, Intent onClickIntent,
+            Widget widget) {
+        // Identify the user in the host process since the intent will be invoked by
+        // the host app.
+        final Host host = widget.host;
+        final UserHandle hostUser;
+        if (host != null && host.id != null) {
+            hostUser = UserHandle.getUserHandleForUid(host.id.uid);
+        } else {
+            // Fallback to the parent profile if the host is null.
+            Slog.w(TAG, "Host is null when masking widget: " + widget.appWidgetId);
+            hostUser = mUserManager.getProfileParent(provider.getUserId()).getUserHandle();
         }
-        if (generatedPreview != null) {
-            synchronized (mLock) {
-                if (widget.maskPending) {
+        if (provider.maskedByStoppedPackage) {
+            Intent intent = createUpdateIntentLocked(provider,
+                    new int[]{widget.appWidgetId});
+            views.setOnClickPendingIntent(android.R.id.background,
+                    PendingIntent.getBroadcastAsUser(mContext,
+                            widget.appWidgetId,
+                            intent, PendingIntent.FLAG_UPDATE_CURRENT
+                                    | PendingIntent.FLAG_IMMUTABLE, hostUser));
+        } else if (onClickIntent != null) {
+            views.setOnClickPendingIntent(android.R.id.background,
+                    PendingIntent.getActivityAsUser(mContext,
+                            widget.appWidgetId,
+                            onClickIntent, PendingIntent.FLAG_UPDATE_CURRENT
+                                    | PendingIntent.FLAG_IMMUTABLE, null /* options */,
+                            hostUser));
+        }
+        if (widget.replaceWithMaskedViewsLocked(views)) {
+            scheduleNotifyUpdateAppWidgetLocked(widget, widget.getEffectiveViewsLocked());
+        }
+    }
+
+    private void applyWidgetWithGeneratedPreviewLocked(RemoteViews generatedPreview,
+            RemoteViews workWidgetMaskView, Widget widget, Provider provider, Intent clickIntent) {
+        synchronized (mLock) {
+            if (widget.maskPending) {
+                if (generatedPreview != null) {
+                    RemoteViews wrappedGeneratedpreview = new RemoteViews(
+                            provider.id.componentName.getPackageName(),
+                            R.layout.disabled_widget_mask_view);
+                    wrappedGeneratedpreview.setBoolean(R.id.inner_frameLayout, "setEnabled", false);
                     RemoteViews copyPreview = new RemoteViews(generatedPreview);
-                    maskedView.addView(R.id.inner_frameLayout, copyPreview);
-                    if (widget.replaceWithMaskedViewsLocked(maskedView)) {
-                        scheduleNotifyUpdateAppWidgetLocked(widget,
-                                widget.getEffectiveViewsLocked());
-                    }
+                    wrappedGeneratedpreview.addView(R.id.inner_frameLayout,
+                            copyPreview);
+                    applyMaskedViewsLocked(wrappedGeneratedpreview, provider,
+                            clickIntent, widget);
+                } else {
+                    // If generated preview is null, then we apply the
+                    // work_widget_mask_view as the final mask view.
+                    applyMaskedViewsLocked(workWidgetMaskView, provider, clickIntent, widget);
                 }
             }
         }
     }
+
 
     /**
      * Unmask widgets of the specified provider. Notify the host to remove the masked views
