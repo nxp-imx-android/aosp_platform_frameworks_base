@@ -364,6 +364,34 @@ class HearingDeviceStatusNotificationTest : SysuiTestCase() {
         verify(notificationManager).cancel(anyString(), anyInt())
     }
 
+    @Test
+    @EnableFlags(Flags.FLAG_HEARING_DEVICE_STATUS_NOTIFICATION)
+    fun updateNotification_verifyVisibilityAndLabel() {
+        notification.start()
+        mainExecutor.runAllReady()
+
+        val notificationCaptor = ArgumentCaptor.forClass(Notification::class.java)
+        verify(notificationManager).notify(anyString(), anyInt(), notificationCaptor.capture())
+
+        val notification = notificationCaptor.value
+        assertThat(notification.visibility).isEqualTo(Notification.VISIBILITY_PRIVATE)
+        assertThat(notification.extras.getString(Notification.EXTRA_SUBSTITUTE_APP_NAME))
+            .isEqualTo(context.getString(com.android.internal.R.string.android_system_label))
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_HEARING_DEVICE_STATUS_NOTIFICATION)
+    fun start_verifyChannelVisibility() {
+        notification.start()
+        mainExecutor.runAllReady()
+
+        val channelCaptor = ArgumentCaptor.forClass(android.app.NotificationChannel::class.java)
+        verify(notificationManager).createNotificationChannel(channelCaptor.capture())
+
+        val channel = channelCaptor.value
+        assertThat(channel.lockscreenVisibility).isEqualTo(Notification.VISIBILITY_PRIVATE)
+    }
+
     private fun getMemberDevice(): CachedBluetoothDevice {
         return mock<CachedBluetoothDevice> {
             on { name } doReturn TEST_MEMBER_DEVICE_NAME
