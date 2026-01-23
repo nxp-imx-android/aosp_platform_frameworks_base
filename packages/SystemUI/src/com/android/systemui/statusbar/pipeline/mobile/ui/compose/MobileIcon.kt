@@ -24,7 +24,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.LocalContentColor
@@ -50,11 +49,11 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.TextUnit
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.android.systemui.common.ui.compose.load
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.pipeline.mobile.domain.model.SignalIconModel
+import com.android.systemui.statusbar.pipeline.shared.ui.composable.ActivityIndicators
 import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.MobileIconState
 
 /** Composable for displaying a single mobile icon. */
@@ -89,8 +88,8 @@ fun MobileIcon(state: MobileIconState, modifier: Modifier = Modifier) {
         if (activityContainerVisible) {
             Column {
                 ActivityIndicators(
-                    activityInVisible = activityInVisible,
-                    activityOutVisible = activityOutVisible,
+                    isActivityInVisible = activityInVisible,
+                    isActivityOutVisible = activityOutVisible,
                     color = contentColor,
                 )
             }
@@ -131,36 +130,6 @@ fun MobileIcon(state: MobileIconState, modifier: Modifier = Modifier) {
                 contentScale = ContentScale.FillHeight,
             )
         }
-    }
-}
-
-/** Composable for activity indicators (data in/out arrows) */
-@Composable
-fun ActivityIndicators(
-    activityInVisible: Boolean,
-    activityOutVisible: Boolean,
-    color: Color,
-    modifier: Modifier = Modifier,
-) {
-    val activityIndicatorSize =
-        with(LocalDensity.current) { MobileIconDimensions.ActivityIndicatorSizeSp.toDp() }
-    Box(modifier = modifier.height(activityIndicatorSize + 8.dp).padding(bottom = 4.dp)) {
-        Image(
-            painter = painterResource(id = R.drawable.ic_activity_up),
-            contentDescription = null,
-            colorFilter = ColorFilter.tint(color, BlendMode.SrcIn),
-            contentScale = ContentScale.None,
-            alignment = Alignment.TopEnd,
-            alpha = if (activityInVisible) 1f else ACTIVITY_OFF_ALPHA
-        )
-        Image(
-            painter = painterResource(id = R.drawable.ic_activity_down),
-            contentDescription = null,
-            colorFilter = ColorFilter.tint(color, BlendMode.SrcIn),
-            contentScale = ContentScale.None,
-            alignment = Alignment.BottomEnd,
-            alpha = if (activityOutVisible) 1f else ACTIVITY_OFF_ALPHA
-        )
     }
 }
 
@@ -307,7 +276,4 @@ private object MobileIconDimensions {
     val IconSpacingSp = 2.sp
     val RoamingIconHeightSp = 10.sp
     val RoamingIconPaddingTopSp = 1.sp
-    val ActivityIndicatorSizeSp = 12.sp
 }
-
-private const val ACTIVITY_OFF_ALPHA = 0.3f
