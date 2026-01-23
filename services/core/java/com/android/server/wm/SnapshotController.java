@@ -336,6 +336,9 @@ class SnapshotController {
                 }
             }
         }
+        if (mSnapshotPersistQueue.isDeleting(taskId, task.mUserId)) {
+            return null;
+        }
         // Don't call this while holding the lock as this operation might hit the disk.
         return mTaskSnapshotController.getSnapshotFromDisk(taskId,
                 task.mUserId, requestLowResolution, TaskSnapshot.REFERENCE_WRITE_TO_PARCEL);
