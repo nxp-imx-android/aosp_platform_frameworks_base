@@ -164,7 +164,8 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
          */
         public SystemUIDialog create() {
             return create(new DialogDelegate<>() {
-            }, mContext, DEFAULT_THEME, true /* shouldAcsdDismissDialog */);
+            }, mContext, DEFAULT_THEME, DEFAULT_DISMISS_ON_DEVICE_LOCK,
+                    true /* shouldAcsdDismissDialog */);
         }
 
         /**
@@ -174,7 +175,8 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
          */
         public SystemUIDialog create(Context context) {
             return create(new DialogDelegate<>() {
-            }, context, DEFAULT_THEME, true /* shouldAcsdDismissDialog */);
+            }, context, DEFAULT_THEME, DEFAULT_DISMISS_ON_DEVICE_LOCK,
+                    true /* shouldAcsdDismissDialog */);
         }
 
         /**
@@ -196,24 +198,26 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
          */
         public SystemUIDialog create(Delegate delegate, Context context,
                 boolean shouldAcsdDismissDialog) {
-            return create(delegate, context, DEFAULT_THEME, shouldAcsdDismissDialog);
+            return create(delegate, context, DEFAULT_THEME, DEFAULT_DISMISS_ON_DEVICE_LOCK,
+                    shouldAcsdDismissDialog);
         }
 
         public SystemUIDialog create(Delegate delegate, Context context, @StyleRes int theme) {
             return create((DialogDelegate<SystemUIDialog>) delegate, context, theme,
-                    true /* shouldAcsdDismissDialog */);
+                    DEFAULT_DISMISS_ON_DEVICE_LOCK, true /* shouldAcsdDismissDialog */);
         }
 
         public SystemUIDialog create(Delegate delegate) {
             return create(delegate, mContext);
         }
 
-        private SystemUIDialog create(DialogDelegate<SystemUIDialog> dialogDelegate,
-                Context context, @StyleRes int theme, boolean shouldAcsdDismissDialog) {
+        public SystemUIDialog create(DialogDelegate<SystemUIDialog> dialogDelegate,
+                Context context, @StyleRes int theme, boolean dismissOnDeviceLock,
+                boolean shouldAcsdDismissDialog) {
             return new SystemUIDialog(
                     context,
                     theme,
-                    DEFAULT_DISMISS_ON_DEVICE_LOCK,
+                    dismissOnDeviceLock,
                     false /* refreshBackgroundOnThemeChange */,
                     mSystemUIDialogManager,
                     mBroadcastDispatcher,
@@ -457,6 +461,14 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
         }
     }
 
+    @Deprecated
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+
+        mDelegate.onBackPressed(this);
+    }
+
     public void setShowForAllUsers(boolean show) {
         setShowForAllUsers(this, show);
     }
@@ -553,7 +565,7 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
     }
 
     @Nullable
-    WindowRootViewBlurInteractor getBlurInteractor() {
+    public WindowRootViewBlurInteractor getBlurInteractor() {
         return mBlurInteractor;
     }
 
