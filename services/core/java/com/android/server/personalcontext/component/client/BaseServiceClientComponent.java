@@ -128,7 +128,10 @@ public abstract class BaseServiceClientComponent<C> implements Component {
             if (Log.isLoggable(TAG, Log.DEBUG)) {
                 Slog.d(TAG, this + " service is starting");
             }
-            mContext.bindService(mServiceIntent, mServiceConnection, Context.BIND_AUTO_CREATE);
+            mContext.bindService(
+                    mServiceIntent,
+                    mServiceConnection,
+                    Context.BIND_AUTO_CREATE | Context.BIND_ALLOW_ACTIVITY_STARTS);
         });
     }
 

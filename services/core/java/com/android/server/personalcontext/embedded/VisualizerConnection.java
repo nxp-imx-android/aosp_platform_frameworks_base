@@ -119,7 +119,10 @@ public class VisualizerConnection {
 
         @Override
         public boolean connectToService(Intent intent, ServiceConnection serviceConnection) {
-            return mContext.bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
+            return mContext.bindService(
+                    intent,
+                    serviceConnection,
+                    Context.BIND_AUTO_CREATE | Context.BIND_ALLOW_ACTIVITY_STARTS);
         }
 
         @Override
