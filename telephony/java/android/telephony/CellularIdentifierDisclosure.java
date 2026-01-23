@@ -170,7 +170,7 @@ public final class CellularIdentifierDisclosure implements Parcelable {
      */
     @FlaggedApi(Flags.FLAG_VENDOR_SPECIFIC_CELLULAR_IDENTIFIER_DISCLOSURE_INDICATIONS)
     public boolean isBenign() {
-        return mNasProtocolMessage == NAS_PROTOCOL_MESSAGE_THREAT_IDENTIFIER_FALSE;
+        return mNasProtocolMessage != NAS_PROTOCOL_MESSAGE_THREAT_IDENTIFIER_TRUE;
     }
 
     @Override
