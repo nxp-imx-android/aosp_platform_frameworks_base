@@ -16,7 +16,9 @@
 
 package com.android.systemui.screencapture.sharescreen.ui.viewmodel
 
+import android.content.applicationContext
 import android.content.pm.PackageManager
+import android.view.accessibility.accessibilityManager
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.mediaprojection.MediaProjectionMetricsLogger
@@ -43,6 +45,8 @@ val Kosmos.screenCaptureShareScreenViewModelFactory by Fixture {
                 appContentsViewModelFactory,
                 recentTasksViewModel,
                 displaysViewModel,
+                accessibilityManager,
+                applicationContext,
             )
         }
     }

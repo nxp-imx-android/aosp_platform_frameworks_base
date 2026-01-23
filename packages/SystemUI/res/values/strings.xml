@@ -454,6 +454,12 @@
     <string name="screen_share_a11y_announcement">Choose what to share. Select tab, app, or entire screen. Then press share.</string>
     <!-- Accessibility announcement for when the screen share UI is dismissed without sharing [CHAR LIMIT=NONE] -->
     <string name="screen_share_cancel_announcement">Screen sharing initiation ended. Screen not shared with anyone.</string>
+    <!-- Accessibility announcement when sharing an app [CHAR LIMIT=NONE] -->
+    <string name="screen_share_a11y_sharing_app">Now sharing app: <xliff:g id="app_name">%1$s</xliff:g>. Use privacy indicator to end sharing.</string>
+    <!-- Accessibility announcement when sharing a tab [CHAR LIMIT=NONE] -->
+    <string name="screen_share_a11y_sharing_tab">Now sharing tab: <xliff:g id="tab_title">%1$s</xliff:g>. Use privacy indicator to end sharing.</string>
+    <!-- Accessibility announcement when sharing a display [CHAR LIMIT=NONE] -->
+    <string name="screen_share_a11y_sharing_display">Now sharing display: <xliff:g id="display_name">%1$s</xliff:g>. Use privacy indicator to end sharing.</string>
     <!-- Content description for the app window screenshot button in the toolbar, when the capture mode is set to "screenshot". [CHAR LIMIT=NONE] -->
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y">Take screenshot of window</string>
     <!-- Content description for the app window screenshot button in the toolbar, when the capture mode is set to "record". [CHAR LIMIT=NONE] -->
