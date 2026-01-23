@@ -28,6 +28,7 @@ import static com.android.server.pm.GenericAllowlist.ALLOWLIST_MODE_ENABLED;
 import static com.android.server.pm.GenericAllowlist.ALLOWLIST_MODE_INVALID;
 import static com.android.server.pm.GenericAllowlist.LAST_STATUS_ALLOWED;
 import static com.android.server.pm.GenericAllowlist.STATUS_ALLOWED_ALLOWLISTING_DISABLED_BY_SHELL_CMD;
+import static com.android.server.pm.GenericAllowlist.STATUS_ALLOWED_ALLOWLISTING_DISABLED_WHILE_DEVICE_IS_PROVISIONING;
 import static com.android.server.pm.GenericAllowlist.STATUS_ALLOWED_BY_PERMANENT_LIST;
 import static com.android.server.pm.GenericAllowlist.STATUS_ALLOWED_BY_TEMPORARY_LIST;
 import static com.android.server.pm.GenericAllowlist.STATUS_ALLOWED_DISABLED_MODE;
@@ -735,6 +736,11 @@ abstract class GenericAllowlistTestCase<A extends GenericAllowlist<E>, E>
         expectWithMessage("allowlistStatusToString(ALLOWED_ALLOWLISTING_DISABLED_BY_SHELL_CMD)")
                 .that(allowlistStatusToString(STATUS_ALLOWED_ALLOWLISTING_DISABLED_BY_SHELL_CMD))
                 .isEqualTo("ALLOWED_ALLOWLISTING_DISABLED_BY_SHELL_CMD");
+        expectWithMessage("allowlistStatusToString("
+                + "ALLOWED_ALLOWLISTING_DISABLED_WHILE_DEVICE_IS_PROVISIONING)")
+                        .that(allowlistStatusToString(
+                                STATUS_ALLOWED_ALLOWLISTING_DISABLED_WHILE_DEVICE_IS_PROVISIONING))
+                        .isEqualTo("ALLOWED_ALLOWLISTING_DISABLED_WHILE_DEVICE_IS_PROVISIONING");
         expectWithMessage("allowlistStatusToString(666)")
                 .that(allowlistStatusToString(666))
                 .isEqualTo("STATUS_666");
@@ -784,12 +790,19 @@ abstract class GenericAllowlistTestCase<A extends GenericAllowlist<E>, E>
 
     private void testOverrideDisallowedStatusWithInvalidStatus(A allowlist,
             @AllowlistStatus int status) {
+        var statusBefore = allowlist.getOverriddenDisallowedStatus();
+
         var thrown = assertThrows(IllegalArgumentException.class,
                 () -> allowlist.overrideDisallowedStatus(status));
 
         expectWithMessage("exception message").that(thrown)
                 .hasMessageThat()
                 .contains(status + "(" + allowlistStatusToString(status) + ")");
+
+        expectWithMessage(
+                "getOverriddenDisallowedStatus() after trying to set with invalid status (%s)",
+                status).that(allowlist.getOverriddenDisallowedStatus())
+                        .isEqualTo(statusBefore);
     }
 
     @Test
@@ -802,6 +815,8 @@ abstract class GenericAllowlistTestCase<A extends GenericAllowlist<E>, E>
 
         for (var overriddenStatus : overridableStatuses) {
             allowlist.overrideDisallowedStatus(overriddenStatus);
+            expectWithMessage("getOverriddenDisallowedStatus() after setting it")
+                    .that(allowlist.getOverriddenDisallowedStatus()).isEqualTo(overriddenStatus);
             expectGetallowlistStatus(allowlist,
                     " after calling overrideDisallowedStatus(" + overriddenStatus + ") ", element,
                     overriddenStatus);
@@ -809,6 +824,8 @@ abstract class GenericAllowlistTestCase<A extends GenericAllowlist<E>, E>
             verifyLogged(allowlist, originalStatus, overriddenStatus, getNotAllowlistedName());
 
             allowlist.overrideDisallowedStatus(null);
+            expectWithMessage("getOverriddenDisallowedStatus() after resetting it")
+                    .that(allowlist.getOverriddenDisallowedStatus()).isNull();
             expectGetallowlistStatus(allowlist,
                     " after calling overrideDisallowedStatus(null) ", element,
                     originalStatus);
