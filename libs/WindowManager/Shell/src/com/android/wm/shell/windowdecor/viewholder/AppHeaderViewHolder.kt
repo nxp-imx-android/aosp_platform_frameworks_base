@@ -88,6 +88,7 @@ class AppHeaderViewHolder(
     private val context: Context,
     windowDecorationActions: WindowDecorationActions,
     onCaptionTouchListener: View.OnTouchListener,
+    onCaptionButtonClickListener: View.OnClickListener,
     private val onLongClickListener: OnLongClickListener,
     onCaptionGenericMotionListener: View.OnGenericMotionListener,
     onMaximizeHoverAnimationFinishedListener: () -> Unit,
@@ -165,20 +166,16 @@ class AppHeaderViewHolder(
         openMenuButton.setOnTouchListener(onCaptionTouchListener)
 
         closeWindowButton.throttleFirstClicks(CLICK_DELAY) { v ->
-            windowDecorationActions.onClose(currentTaskInfo)
+            onCaptionButtonClickListener.onClick(v)
         }
         maximizeWindowButton.throttleFirstClicks(CLICK_DELAY) { v ->
-            windowDecorationActions.onMaximizeOrRestore(
-                currentTaskInfo.taskId,
-                AmbiguousSource.HEADER_BUTTON,
-                InputMethod.MOUSE,
-            )
+            onCaptionButtonClickListener.onClick(v)
         }
         minimizeWindowButton.throttleFirstClicks(CLICK_DELAY) { v ->
-            windowDecorationActions.onMinimize(currentTaskInfo)
+            onCaptionButtonClickListener.onClick(v)
         }
         openMenuButton.throttleFirstClicks(CLICK_DELAY) { v ->
-            windowDecorationActions.onOpenHandleMenu(currentTaskInfo.taskId)
+            onCaptionButtonClickListener.onClick(v)
         }
 
         maximizeWindowButton.setOnGenericMotionListener(onCaptionGenericMotionListener)
@@ -958,6 +955,7 @@ class AppHeaderViewHolder(
             context: Context,
             windowDecorationActions: WindowDecorationActions,
             onCaptionTouchListener: View.OnTouchListener,
+            onCaptionButtonClickListener: View.OnClickListener,
             onLongClickListener: OnLongClickListener,
             onCaptionGenericMotionListener: View.OnGenericMotionListener,
             onMaximizeHoverAnimationFinishedListener: () -> Unit,
@@ -974,6 +972,7 @@ class AppHeaderViewHolder(
             context: Context,
             windowDecorationActions: WindowDecorationActions,
             onCaptionTouchListener: View.OnTouchListener,
+            onCaptionButtonClickListener: View.OnClickListener,
             onLongClickListener: OnLongClickListener,
             onCaptionGenericMotionListener: View.OnGenericMotionListener,
             onMaximizeHoverAnimationFinishedListener: () -> Unit,
@@ -986,6 +985,7 @@ class AppHeaderViewHolder(
                 context,
                 windowDecorationActions,
                 onCaptionTouchListener,
+                onCaptionButtonClickListener,
                 onLongClickListener,
                 onCaptionGenericMotionListener,
                 onMaximizeHoverAnimationFinishedListener,
