@@ -29,6 +29,7 @@ import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.RequiresPermission;
 import android.annotation.TestApi;
+import android.media.audio.DeviceIdentity;
 import android.media.audio.Flags;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import android.util.SparseIntArray;
