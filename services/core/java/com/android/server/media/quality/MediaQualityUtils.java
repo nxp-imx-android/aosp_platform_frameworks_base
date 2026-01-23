@@ -27,6 +27,7 @@ import android.hardware.tv.mediaquality.DolbyAudioProcessing;
 import android.hardware.tv.mediaquality.DownmixMode;
 import android.hardware.tv.mediaquality.DtsVirtualX;
 import android.hardware.tv.mediaquality.Gamma;
+import android.hardware.tv.mediaquality.PanelTechnologyType;
 import android.hardware.tv.mediaquality.ParameterDefaultValue;
 import android.hardware.tv.mediaquality.ParameterName;
 import android.hardware.tv.mediaquality.ParameterRange;
@@ -1859,6 +1860,24 @@ public final class MediaQualityUtils {
             }
         }
         return bundle;
+    }
+
+    /**
+     * Converts the framework panel technology int to the HAL PanelTechnology enum.
+     *
+     * @param frameworkPanelTechnology The framework panel technology, as defined in
+     *         {@link MediaQualityContract.PanelTechnology}.
+     * @return The corresponding HAL {@link PanelTechnologyType} enum.
+     * @throws IllegalArgumentException if the frameworkPanelTechnology is not a valid, known value.
+     */
+    public static int mapPanelTechnologyToHal(
+            @MediaQualityContract.PanelTechnology int frameworkPanelTechnology) {
+        return switch (frameworkPanelTechnology) {
+            case MediaQualityContract.PANEL_TECHNOLOGY_OLED -> PanelTechnologyType.OLED;
+            default ->
+                    throw new IllegalArgumentException(
+                            "Unknown panel technology: " + frameworkPanelTechnology);
+        };
     }
 
     /**

@@ -851,6 +851,32 @@ public class MediaQualityService extends SystemService {
             }
         }
 
+        @Override
+        public boolean usesDisplayTechnology(int panelTechnology, int userId) {
+            if (DEBUG) {
+                Slog.d(TAG, "usesDisplayTechnology");
+            }
+            int callingUid = Binder.getCallingUid();
+            int callingPid = Binder.getCallingPid();
+            if (!hasGlobalPictureQualityServicePermission(callingUid, callingPid)) {
+                Slog.e(TAG, "usesDisplayTechnology: "
+                        + "no permission to get support information.");
+                return false;
+            }
+
+            if (mMediaQuality != null) {
+                try {
+                    return mMediaQuality.isDisplayTechnologySupported(
+                            MediaQualityUtils.mapPanelTechnologyToHal(panelTechnology));
+                } catch (RemoteException e) {
+                    Slog.e(TAG, "Failed to call isDisplayTechnologySupported on HAL", e);
+                } catch (IllegalArgumentException e) {
+                    Slog.e(TAG, "Invalid panel technology type provided", e);
+                }
+            }
+            return false;
+        }
+
         @GuardedBy("mPictureProfileLock")
         @Override
         public List<String> getPictureProfilePackageNames(int userId) {

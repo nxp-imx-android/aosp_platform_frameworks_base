@@ -90,6 +90,7 @@ interface IMediaQualityManager {
     boolean isSuperResolutionEnabled(int userId);
     void setAutoSoundQualityEnabled(in boolean enabled, int userId);
     boolean isAutoSoundQualityEnabled(int userId);
+    boolean usesDisplayTechnology(in int panelTechnology, int userId);
 
     void setAmbientBacklightSettings(in AmbientBacklightSettings settings, int userId);
     void setAmbientBacklightEnabled(in boolean enabled, int userId);
