@@ -25,7 +25,6 @@ import com.android.settingslib.mobile.MobileMappings
 import com.android.settingslib.mobile.TelephonyIcons.G
 import com.android.settingslib.mobile.TelephonyIcons.THREE_G
 import com.android.settingslib.mobile.TelephonyIcons.UNKNOWN
-import com.android.systemui.Flags.FLAG_STATUS_BAR_STATIC_INOUT_INDICATORS
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.shared.model.Icon
@@ -65,6 +64,8 @@ import com.android.systemui.statusbar.pipeline.shared.data.model.ConnectivitySlo
 import com.android.systemui.statusbar.pipeline.shared.data.model.DataActivityModel
 import com.android.systemui.statusbar.pipeline.shared.data.repository.connectivityRepository
 import com.android.systemui.statusbar.pipeline.shared.data.repository.fake
+import com.android.systemui.statusbar.systemstatusicons.flags.DisableSystemStatusIconsInCompose
+import com.android.systemui.statusbar.systemstatusicons.flags.EnableSystemStatusIconsInCompose
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
@@ -639,8 +640,8 @@ class MobileIconViewModelKairosTest : SysuiTestCase() {
     }
 
     @Test
-    @DisableFlags(FLAG_STATUS_BAR_STATIC_INOUT_INDICATORS)
-    fun dataActivity_configOn_testIndicators_staticFlagOff() = runTest {
+    @DisableSystemStatusIconsInCompose
+    fun dataActivity_configOn_testIndicators_iconsInComposeFlagOff() = runTest {
         constants.stub { on { shouldShowActivityConfig } doReturn true }
 
         val inVisible by underTest.activityInVisible.collectLastValue()
@@ -677,8 +678,8 @@ class MobileIconViewModelKairosTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(FLAG_STATUS_BAR_STATIC_INOUT_INDICATORS)
-    fun dataActivity_configOn_testIndicators_staticFlagOn() = runTest {
+    @EnableSystemStatusIconsInCompose
+    fun dataActivity_configOn_testIndicators_iconsInComposeFlagOn() = runTest {
         constants.stub { on { shouldShowActivityConfig } doReturn true }
 
         val inVisible by underTest.activityInVisible.collectLastValue()

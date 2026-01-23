@@ -346,6 +346,11 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
         try {
             synchronized (mGlobalLock) {
                 Transition transition = Transition.fromBinder(transitionToken);
+                if (transition == null && transitionToken != null) {
+                    Slog.wtf(TAG, "Requested transition was lost (controller isn't tracking it): "
+                            + transitionToken + " " + t);
+                    return null;
+                }
                 if (mTransitionController.isFlushing() && transition == null) {
                     Slog.w(TAG, "Using shell transitions API for legacy transitions.");
                     if (t == null) {

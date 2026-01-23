@@ -16,6 +16,8 @@
 
 package android.security.net.config;
 
+import static com.android.org.conscrypt.net.flags.Flags.certificateTransparencyDefaultEnabled;
+
 import android.compat.annotation.UnsupportedAppUsage;
 
 import com.android.org.conscrypt.ConscryptNetworkSecurityPolicy;
@@ -156,7 +158,10 @@ public class RootTrustManager extends X509ExtendedTrustManager {
      * This interface is used by Conscrypt, do not modify without modifying those callers.
      */
     public ConscryptNetworkSecurityPolicy getNetworkSecurityPolicy() {
-        return new ConscryptNetworkSecurityPolicy(new ConfigNetworkSecurityPolicy(mConfig));
+        if (certificateTransparencyDefaultEnabled()) {
+            return new ConscryptNetworkSecurityPolicy(new ConfigNetworkSecurityPolicy(mConfig));
+        }
+        return null;
     }
 
     @Override

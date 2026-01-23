@@ -58,6 +58,7 @@ import com.android.systemui.Dumpable
 import com.android.systemui.animation.DialogCuj
 import com.android.systemui.animation.DialogTransitionAnimator
 import com.android.systemui.animation.Expandable
+import com.android.systemui.animation.TransitionAnimator
 import com.android.systemui.broadcast.BroadcastDispatcher
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
@@ -430,7 +431,15 @@ constructor(
                             )
                         )
                     if (controller != null) {
-                        dialogTransitionAnimator.show(dialog, controller)
+                        if (TransitionAnimator.dynamicTargetResolutionEnabled()) {
+                            dialogTransitionAnimator.show(
+                                dialog,
+                                expandable::dialogTransitionController,
+                                controller.cuj,
+                            )
+                        } else {
+                            dialogTransitionAnimator.show(dialog, controller)
+                        }
                     } else {
                         dialog.show()
                     }

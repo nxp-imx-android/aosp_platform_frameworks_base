@@ -408,6 +408,7 @@ public final class ViewRootImpl implements ViewParent,
     private static final String IPC_RENDERING_PACKAGES =
             SystemProperties.get("viewroot.ipc_rendering_packages", "");
     private boolean mIpcRenderingEnabled = false;
+    private boolean mPerfHintSessionDisabled = false;
 
     /**
      * Set this system property to true to force the view hierarchy to render
@@ -2156,6 +2157,11 @@ public final class ViewRootImpl implements ViewParent,
                 if (mIsHardwareRendererOutputDisabled) {
                     renderer.setRendererDrawingEnabled(false);
                 }
+
+                mPerfHintSessionDisabled = attrs.isPerfHintSessionDisabled();
+                if (mPerfHintSessionDisabled) {
+                    renderer.setHintSessionEnabled(false);
+                }
                 renderer.setSurfaceControl(mSurfaceControl, mBlastBufferQueue);
                 updateColorModeIfNeeded(attrs.getColorMode(), attrs.getDesiredHdrHeadroom());
                 mHdrRenderState.forceUpdateHdrSdrRatio();
@@ -2249,6 +2255,16 @@ public final class ViewRootImpl implements ViewParent,
                 invalidateWorld(mView);
             }
         }
+    }
+
+    private void updatePerformanceHintSession() {
+        if (mAttachInfo.mThreadedRenderer == null) return;
+        boolean disable = mWindowAttributes.isPerfHintSessionDisabled();
+        if (mPerfHintSessionDisabled == disable) {
+            return;
+        }
+        mPerfHintSessionDisabled = disable;
+        mAttachInfo.mThreadedRenderer.setHintSessionEnabled(!disable);
     }
 
     @UnsupportedAppUsage
@@ -4113,6 +4129,7 @@ public final class ViewRootImpl implements ViewParent,
                             mTransaction.setColorSpaceAgnostic(
                                     mSurfaceControl, colorSpaceAgnostic).applyAsyncUnsafe();
                         }
+                        updatePerformanceHintSession();
                     }
                 }
 
@@ -13494,7 +13511,8 @@ public final class ViewRootImpl implements ViewParent,
                 if ((syncResult
                         & (SYNC_LOST_SURFACE_REWARD_IF_FOUND | SYNC_CONTEXT_IS_STOPPED)) != 0) {
                     surfaceSyncGroup.addTransaction(
-                            mBlastBufferQueue.gatherPendingTransactions(frame));
+                            HardwareRenderer.SyncInterface.gatherPendingTransactions(
+                                    mAttachInfo.mThreadedRenderer, frame));
                     surfaceSyncGroup.markSyncReady();
                     return null;
                 }
@@ -13537,14 +13555,16 @@ public final class ViewRootImpl implements ViewParent,
                     // the next draw attempt. The next transaction and transaction complete callback
                     // were only set for the current draw attempt.
                     if (!didProduceBuffer) {
-                        mBlastBufferQueue.clearSyncTransaction();
+                        HardwareRenderer.SyncInterface.clearSyncTransaction(
+                                mAttachInfo.mThreadedRenderer);
 
                         // Gather the transactions that were sent to mergeWithNextTransaction
                         // since the frame didn't draw on this vsync. It's possible the frame will
                         // draw later, but it's better to not be sync than to block on a frame that
                         // may never come.
                         surfaceSyncGroup.addTransaction(
-                                mBlastBufferQueue.gatherPendingTransactions(frame));
+                                HardwareRenderer.SyncInterface.gatherPendingTransactions(
+                                        mAttachInfo.mThreadedRenderer, frame));
                         surfaceSyncGroup.markSyncReady();
                         return;
                     }

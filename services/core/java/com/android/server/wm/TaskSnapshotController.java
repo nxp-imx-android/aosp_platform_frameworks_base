@@ -83,7 +83,7 @@ class TaskSnapshotController extends AbsAppSnapshotController<Task, TaskSnapshot
                 mPersistInfoProvider,
                 shouldDisableSnapshots());
         initialize(new TaskSnapshotCache(new AppSnapshotLoader(mPersistInfoProvider), service.mH));
-        mOnlyCacheLowResSnapshot = Flags.respectRequestedTaskSnapshotResolution()
+        mOnlyCacheLowResSnapshot = Flags.onlyCacheLowResTaskSnapshot()
                 && mPersistInfoProvider.enableLowResSnapshots();
     }
 

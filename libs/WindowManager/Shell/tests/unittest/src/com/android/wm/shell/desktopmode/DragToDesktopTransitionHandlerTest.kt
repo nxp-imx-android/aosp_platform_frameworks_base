@@ -26,7 +26,6 @@ import com.android.dx.mockito.inline.extended.ExtendedMockito
 import com.android.internal.jank.Cuj.CUJ_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG_HOLD
 import com.android.internal.jank.Cuj.CUJ_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG_RELEASE
 import com.android.internal.jank.InteractionJankMonitor
-import com.android.window.flags.Flags
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.TestRunningTaskInfoBuilder
@@ -55,15 +54,16 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchers.anyFloat
 import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.ArgumentMatchers.anyLong
 import org.mockito.ArgumentMatchers.eq
 import org.mockito.Mock
+import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.argThat
 import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.times
@@ -905,7 +905,9 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
             springHandler.finishDragToDesktopTransition(WindowContainerTransaction())
         val startTransaction = mock<SurfaceControl.Transaction>()
         val endDragFinishCallback = mock<Transitions.TransitionFinishCallback>()
-        springHandler.onTaskResizeAnimationListener = mock()
+        springHandler.onTaskResizeAnimationListener = mock {
+            on { onAnimationStart(any(), any(), any()) } doReturn true
+        }
         mergeInterruptingTransition(mergeTarget = startTransition)
 
         val didAnimate =

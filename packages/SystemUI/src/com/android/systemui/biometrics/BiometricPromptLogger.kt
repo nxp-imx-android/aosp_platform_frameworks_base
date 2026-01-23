@@ -160,13 +160,18 @@ class BiometricPromptLogger @Inject constructor() {
     }
 
     /** Logs an event in Biometric Prompt */
-    fun logPromptEvent(sessionId: InstanceId?, event: Int) {
+    fun logPromptEvent(sessionId: InstanceId?, event: Int, watchRangingErrorCode: Int) {
         if (sessionId == null) {
             Log.d(TAG, "Failed to log PromptEvent - SessionId null")
             return
         }
 
-        SysUiStatsLog.write(SysUiStatsLog.BIOMETRIC_PROMPT_EVENT, sessionId.id, event)
+        SysUiStatsLog.write(
+            SysUiStatsLog.BIOMETRIC_PROMPT_EVENT,
+            sessionId.id,
+            event,
+            watchRangingErrorCode,
+        )
     }
 
     companion object {

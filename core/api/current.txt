@@ -9286,13 +9286,13 @@ package android.app.appfunctions {
 
   @FlaggedApi("android.app.appfunctions.flags.enable_app_function_manager") public final class AppFunctionManager {
     method @FlaggedApi("android.permission.flags.app_function_access_ui_enabled") @NonNull public android.content.Intent createRequestAccessIntent(@NonNull String);
-    method @RequiresPermission(value=android.Manifest.permission.EXECUTE_APP_FUNCTIONS, conditional=true) public void executeAppFunction(@NonNull android.app.appfunctions.ExecuteAppFunctionRequest, @NonNull java.util.concurrent.Executor, @NonNull android.os.CancellationSignal, @NonNull android.os.OutcomeReceiver<android.app.appfunctions.ExecuteAppFunctionResponse,android.app.appfunctions.AppFunctionException>);
+    method @FlaggedApi("android.app.appfunctions.flags.enable_app_function_permission_v2") @RequiresPermission(anyOf={android.Manifest.permission.EXECUTE_APP_FUNCTIONS, "android.permission.EXECUTE_APP_FUNCTIONS_SYSTEM"}, conditional=true) public void executeAppFunction(@NonNull android.app.appfunctions.ExecuteAppFunctionRequest, @NonNull java.util.concurrent.Executor, @NonNull android.os.CancellationSignal, @NonNull android.os.OutcomeReceiver<android.app.appfunctions.ExecuteAppFunctionResponse,android.app.appfunctions.AppFunctionException>);
     method @FlaggedApi("android.permission.flags.app_function_access_api_enabled") public int getAccessRequestState(@NonNull String);
-    method @FlaggedApi("android.app.appfunctions.flags.enable_app_function_permission_v2") @RequiresPermission(anyOf={android.Manifest.permission.EXECUTE_APP_FUNCTIONS, "android.permission.READ_APP_FUNCTION_METADATA"}, conditional=true) public void isAppFunctionEnabled(@NonNull String, @NonNull String, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.lang.Boolean,java.lang.Exception>);
+    method @FlaggedApi("android.app.appfunctions.flags.enable_app_function_permission_v2") @RequiresPermission(anyOf={android.Manifest.permission.EXECUTE_APP_FUNCTIONS, "android.permission.DISCOVER_APP_FUNCTIONS", "android.permission.EXECUTE_APP_FUNCTIONS_SYSTEM"}, conditional=true) public void isAppFunctionEnabled(@NonNull String, @NonNull String, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.lang.Boolean,java.lang.Exception>);
     method public void isAppFunctionEnabled(@NonNull String, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.lang.Boolean,java.lang.Exception>);
     method @FlaggedApi("android.app.appfunctions.flags.enable_dynamic_app_functions") @NonNull public android.app.appfunctions.AppFunctionRegistration registerAppFunction(@NonNull String, @NonNull java.util.concurrent.Executor, @NonNull android.app.appfunctions.AppFunction);
     method @FlaggedApi("android.permission.flags.app_function_access_api_enabled") public void revokeSelfAccess(@NonNull String);
-    method @FlaggedApi("android.app.appfunctions.flags.enable_dynamic_app_functions") @RequiresPermission(anyOf={android.Manifest.permission.EXECUTE_APP_FUNCTIONS, "android.permission.READ_APP_FUNCTION_METADATA"}, conditional=true) public void searchAppFunctions(@NonNull android.app.appfunctions.AppFunctionSearchSpec, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.util.List<android.app.appfunctions.AppFunctionMetadata>,java.lang.Exception>);
+    method @FlaggedApi("android.app.appfunctions.flags.enable_dynamic_app_functions") @RequiresPermission(anyOf={android.Manifest.permission.EXECUTE_APP_FUNCTIONS, "android.permission.DISCOVER_APP_FUNCTIONS", "android.permission.EXECUTE_APP_FUNCTIONS_SYSTEM"}, conditional=true) public void searchAppFunctions(@NonNull android.app.appfunctions.AppFunctionSearchSpec, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.util.List<android.app.appfunctions.AppFunctionMetadata>,java.lang.Exception>);
     method public void setAppFunctionEnabled(@NonNull String, int, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.lang.Void,java.lang.Exception>);
     field @FlaggedApi("android.permission.flags.app_function_access_api_enabled") public static final int ACCESS_REQUEST_STATE_DENIED = 1; // 0x1
     field @FlaggedApi("android.permission.flags.app_function_access_api_enabled") public static final int ACCESS_REQUEST_STATE_GRANTED = 0; // 0x0
@@ -10091,6 +10091,7 @@ package android.app.permissionui {
     method public int getPaddingLeft();
     method public int getPaddingRight();
     method public int getPaddingTop();
+    method public float getPressedCornerRadius();
     method @ColorInt public int getStrokeColor();
     method public int getStrokeWidth();
     method @ColorInt public int getTextColor();
@@ -10113,6 +10114,7 @@ package android.app.permissionui {
     method @NonNull public android.app.permissionui.LocationButtonRequest.Builder setPaddingLeft(int);
     method @NonNull public android.app.permissionui.LocationButtonRequest.Builder setPaddingRight(int);
     method @NonNull public android.app.permissionui.LocationButtonRequest.Builder setPaddingTop(int);
+    method @NonNull public android.app.permissionui.LocationButtonRequest.Builder setPressedCornerRadius(float);
     method @NonNull public android.app.permissionui.LocationButtonRequest.Builder setStrokeColor(@ColorInt int);
     method @NonNull public android.app.permissionui.LocationButtonRequest.Builder setStrokeWidth(int);
     method @NonNull public android.app.permissionui.LocationButtonRequest.Builder setTextColor(@ColorInt int);
@@ -57701,7 +57703,7 @@ package android.view.accessibility {
     field public static final int TYPE_MAGNIFICATION_OVERLAY = 6; // 0x6
     field public static final int TYPE_SPLIT_SCREEN_DIVIDER = 5; // 0x5
     field public static final int TYPE_SYSTEM = 3; // 0x3
-    field @FlaggedApi("android.view.accessibility.enable_type_window_control") public static final int TYPE_WINDOW_CONTROL = 7; // 0x7
+    field public static final int TYPE_WINDOW_CONTROL = 7; // 0x7
   }
 
   public class CaptioningManager {

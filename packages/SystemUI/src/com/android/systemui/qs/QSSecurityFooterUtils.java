@@ -75,6 +75,7 @@ import com.android.internal.jank.InteractionJankMonitor;
 import com.android.systemui.animation.DialogCuj;
 import com.android.systemui.animation.DialogTransitionAnimator;
 import com.android.systemui.animation.Expandable;
+import com.android.systemui.animation.TransitionAnimator;
 import com.android.systemui.common.shared.model.ContentDescription;
 import com.android.systemui.common.shared.model.Icon;
 import com.android.systemui.dagger.SysUISingleton;
@@ -489,7 +490,12 @@ public class QSSecurityFooterUtils implements DialogInterface.OnClickListener {
                                 InteractionJankMonitor.CUJ_SHADE_DIALOG_OPEN, INTERACTION_JANK_TAG))
                                 : null;
                 if (controller != null) {
-                    mDialogTransitionAnimator.show(mDialog, controller);
+                    if (TransitionAnimator.Companion.dynamicTargetResolutionEnabled()) {
+                        mDialogTransitionAnimator.show(mDialog,
+                                expandable::dialogTransitionController, controller.getCuj());
+                    } else {
+                        mDialogTransitionAnimator.show(mDialog, controller);
+                    }
                 } else {
                     mDialog.show();
                 }

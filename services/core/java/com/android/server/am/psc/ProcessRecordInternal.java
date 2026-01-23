@@ -44,7 +44,7 @@ import android.util.TimeUtils;
 
 import com.android.internal.annotations.CompositeRWLock;
 import com.android.internal.annotations.GuardedBy;
-import com.android.server.am.ProcessCachedOptimizerRecord.ShouldNotFreezeReason;
+import com.android.server.am.Flags;
 import com.android.server.am.psc.PlatformCompatCache.CachedCompatChangeId;
 
 import java.io.PrintWriter;
@@ -151,22 +151,6 @@ public abstract class ProcessRecordInternal {
 
     /** Returns whether this process has been scheduled for freezing. */
     public abstract boolean isPendingFreeze();
-
-    /**
-     * Returns the OOM adjustment sequence number when this process's
-     * {@link #shouldNotFreeze()} state was last updated.
-     */
-    public abstract int shouldNotFreezeAdjSeq();
-
-    /** Returns whether this process should be exempt from freezing. */
-    public abstract boolean shouldNotFreeze();
-
-    /** Sets whether this process should be exempt from freezing and records the reason. */
-    public abstract boolean setShouldNotFreeze(boolean shouldNotFreeze, boolean dryRun,
-            @ShouldNotFreezeReason int reason, int adjSeq);
-
-    /** Returns the aggregated reasons why this process is currently exempt from freezing. */
-    public abstract @ShouldNotFreezeReason int shouldNotFreezeReason();
 
     /** Sets whether we would like to clean-up UI resources for this process. */
     public abstract void setPendingUiClean(boolean pendingUiClean);
@@ -821,6 +805,17 @@ public abstract class ProcessRecordInternal {
     @CompositeRWLock({"mServiceLock", "mProcLock"})
     private long mLastActivityTime;
 
+    /**
+     * The node representation of this process in the process graph.
+     * This is {@code null} unless {@link Flags#enableCapabilityControllerComputation} is true.
+     */
+    private final GraphNode mGraphNode;
+    /**
+     * The intrinsic edge from the system to this process node in the process graph.
+     * This is {@code null} unless {@link Flags#enableCapabilityControllerComputation} is true.
+     */
+    private final ProcessEdge mProcessEdge;
+
     // TODO(b/425766486): Change to package-private after the OomAdjusterImpl class is moved to
     //                    the psc package.
     public final OomAdjusterImpl.ProcessRecordNode[] mLinkedNodes =
@@ -841,6 +836,14 @@ public abstract class ProcessRecordInternal {
         isolated = Process.isIsolatedUid(this.uid);
         mServiceLock = serviceLock;
         mProcLock = procLock;
+
+        if (Flags.enableCapabilityControllerComputation()) {
+            mGraphNode = new GraphNode(this);
+            mProcessEdge = new ProcessEdge(mGraphNode);
+        } else {
+            mGraphNode = null;
+            mProcessEdge = null;
+        }
     }
 
     /** Initializes the observers and the last time that the state of the process was changed. */
@@ -1678,6 +1681,14 @@ public abstract class ProcessRecordInternal {
         mIsZramWrittenBack = isZramWrittenBack;
     }
 
+    GraphNode getGraphNode() {
+        return mGraphNode;
+    }
+
+    /** Get the intrinsic edge from the system to this process node. */
+    ProcessEdge getProcessEdge() {
+        return mProcessEdge;
+    }
 
     /**
      * Lazily initiates and returns the track name for tracing.

@@ -279,10 +279,7 @@ class ScreenRecordPermissionDialogDelegateTest : SysuiTestCase() {
     }
 
     @Test
-    @RequiresFlagsEnabled(
-        Flags.FLAG_MEDIA_PROJECTION_CONNECTED_DISPLAY,
-        Flags.FLAG_MEDIA_PROJECTION_CONNECTED_DISPLAY_SCREEN_SHARING,
-    )
+    @RequiresFlagsEnabled(Flags.FLAG_MEDIA_PROJECTION_CONNECTED_DISPLAY)
     fun connectedDisplayShown() {
         val mainDisplay =
             mock<Display> {

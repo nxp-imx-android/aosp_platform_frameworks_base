@@ -31,11 +31,16 @@ import android.service.personalcontext.insight.ContextInsightWrapper;
  */
 interface IPersonalContextManager {
     oneway void publishTriggeringHint(
-            in List<ContextHintWrapper> hints, in List<RenderToken> renderTokens, int userId);
+            in List<ContextHintWrapper> hints,
+            in List<RenderToken> renderTokens,
+            in List<ContextHintWrapper> attributionHints,
+            int userId);
 
     oneway void publishInsight(in List<ContextInsightWrapper> insights, int userId);
 
-    ContextHintWithSignature signHint(in ContextHintWrapper hint);
+    ContextHintWithSignature signHint(
+            in ContextHintWrapper hint,
+            in List<ContextHintWrapper> attributionHints);
 
     oneway void registerInsightSurfaceClient(
             in List<ContextHintWrapper> clientHints,

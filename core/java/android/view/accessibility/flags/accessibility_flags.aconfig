@@ -72,6 +72,7 @@ flag {
     namespace: "accessibility"
     description: "Enables new APIs for an AccessibilityService to control selection across nodes."
     bug: "362782866"
+    is_exported: true
 }
 
 flag {
@@ -94,6 +95,7 @@ flag {
     namespace: "accessibility"
     description: "Enables new APIs to convey the sort direction applied to the data associated with this node."
     bug: "411187064"
+    is_exported: true
 }
 
 flag {
@@ -174,14 +176,6 @@ flag {
     description: "API that allows an app to enable its own accessibility service if that service is trusted."
     bug: "418057329"
     is_exported: true
-}
-
-flag {
-    name: "enable_type_window_control"
-    namespace: "accessibility"
-    is_exported: true
-    description: "adds new TYPE_WINDOW_CONTROL to AccessibilityWindowInfo for detecting Window Decorations"
-    bug: "320445550"
 }
 
 flag {
@@ -350,6 +344,7 @@ flag {
     namespace: "accessibility"
     description: "Configure the text cursor blink interval"
     bug: "402134144"
+    is_exported: true
 }
 
 flag {

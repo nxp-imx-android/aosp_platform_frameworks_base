@@ -5224,26 +5224,25 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
             mHandler.post(() -> {
                 final int id = verificationId >= 0 ? verificationId : -verificationId;
                 final PackageVerificationState state = mPendingVerification.get(id);
-                if (state == null || !state.extendTimeout(callingUid)) {
-                    // Invalid uid or already extended.
+                if (state == null || !state.extendTimeout(callingUid, millisecondsToDelay)) {
+                    // Invalid uid or (when flag not enabled) already extended.
                     return;
                 }
 
                 final PackageVerificationResponse response = new PackageVerificationResponse(
                         verificationCodeAtTimeout, callingUid);
 
-                long delay = millisecondsToDelay;
-                if (delay > PackageManager.MAXIMUM_VERIFICATION_TIMEOUT) {
-                    delay = PackageManager.MAXIMUM_VERIFICATION_TIMEOUT;
-                }
-                if (delay < 0) {
-                    delay = 0;
+                if (Flags.extendVerificationTimeoutMultipleTimes()) {
+                    // Remove previous messages in the queue. Since queue is small this won't be an
+                    // expensive operation so that previously scheduled response won't take effect
+                    // before the newly extended timeout.
+                    mHandler.removeEqualMessages(PackageManagerService.PACKAGE_VERIFIED, response);
                 }
 
                 final Message msg = mHandler.obtainMessage(PackageManagerService.PACKAGE_VERIFIED);
                 msg.arg1 = id;
                 msg.obj = response;
-                mHandler.sendMessageDelayed(msg, delay);
+                mHandler.sendMessageDelayed(msg, state.getTotalDelay(callingUid));
             });
         }
 
@@ -6159,11 +6158,9 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
                 return false;
             }
 
-            // Don't allow hiding "android" or SysUI as it makes device unusable.
-            if ("android".equals(packageName)
-                    || LocalServices.getService(PackageManagerInternal.class)
-                            .getSystemUiServiceComponent().getPackageName().equals(packageName)) {
-                Slog.w(TAG, "Cannot hide package: " + packageName);
+            // Don't allow hiding "android" package.
+            if ("android".equals(packageName)) {
+                Slog.w(TAG, "Cannot hide package: android");
                 return false;
             }
 

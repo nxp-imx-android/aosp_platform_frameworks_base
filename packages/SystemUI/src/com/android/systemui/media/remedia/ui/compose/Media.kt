@@ -122,8 +122,9 @@ import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.node.Ref
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
@@ -611,7 +612,7 @@ private fun ContentScope.CardForegroundContent(
                     onClick = { viewModel.onClick(expandable) },
                     onLongClick = viewModel.onLongClick,
                 )
-                .clearAndSetSemantics { contentDescription = viewModel.contentDescription }
+                .semantics { contentDescription = viewModel.contentDescription }
     ) {
         // Always add the first/top row, regardless of presentation style.
         Box(modifier = Modifier.fillMaxWidth()) {
@@ -843,7 +844,7 @@ private fun ContentScope.CompactCardForeground(
         modifier =
             modifier
                 .clickable(onClick = { viewModel.onClick(expandable) })
-                .clearAndSetSemantics { contentDescription = viewModel.contentDescription }
+                .semantics { contentDescription = viewModel.contentDescription }
                 .background(MaterialTheme.colorScheme.surfaceContainer)
                 .padding(16.dp),
     ) {
@@ -1025,15 +1026,12 @@ private fun ContentScope.Navigation(
                             },
                             modifier =
                                 Modifier.fillMaxWidth()
-                                    .clearAndSetSemantics {
-                                        contentDescription = viewModel.contentDescription
-                                    }
+                                    .semantics { stateDescription = viewModel.contentDescription }
                                     .pointerInput(Unit) {
                                         // Track and report the drag delta to the view-model so it
-                                        // can
-                                        // decide whether to accept the next onValueChangeFinished
-                                        // or
-                                        // reject it if the drag was overly vertical.
+                                        // can decide whether to accept the next
+                                        // onValueChangeFinished or reject it if the drag was overly
+                                        // vertical.
                                         awaitPointerEventScope {
                                             var down: PointerInputChange? = null
                                             while (true) {

@@ -8,6 +8,7 @@ flag {
     namespace: "location"
     description: "Turn time zone methods into system APIs for mainline modules"
     bug: "432239933"
+    is_exported: true
 }
 
 flag {
@@ -43,6 +44,7 @@ flag {
     namespace: "location"
     description: "Enable broadcast of intent for time zone offset changes."
     bug: "452947405"
+    is_exported: true
 }
 
 flag {

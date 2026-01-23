@@ -88,13 +88,25 @@ class CallerValidatorImpl implements CallerValidator {
         }
     }
 
-    @RequiresPermission(Manifest.permission.EXECUTE_APP_FUNCTIONS)
+    @RequiresPermission(
+            anyOf = {
+                Manifest.permission.EXECUTE_APP_FUNCTIONS,
+                Manifest.permission.EXECUTE_APP_FUNCTIONS_SYSTEM
+            })
     @CanExecuteAppFunctionResult
     private AndroidFuture<Integer> verifyCallerCanExecuteAppFunctionHelper(
             int callingUid,
             int callingPid,
             @NonNull String callerPackageName,
             @NonNull String targetPackageName) {
+        if (android.app.appfunctions.flags.Flags.enableAppFunctionPermissionV2()
+                && mContext.checkPermission(
+                                Manifest.permission.EXECUTE_APP_FUNCTIONS_SYSTEM,
+                                callingPid,
+                                callingUid)
+                        == PackageManager.PERMISSION_GRANTED) {
+            return AndroidFuture.completedFuture(CAN_EXECUTE_APP_FUNCTIONS_ALLOWED_HAS_PERMISSION);
+        }
         boolean hasExecutionPermission =
                 mContext.checkPermission(
                                 Manifest.permission.EXECUTE_APP_FUNCTIONS, callingPid, callingUid)

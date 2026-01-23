@@ -16,8 +16,8 @@
 
 package com.android.systemui.settings.brightness.domain.interactor
 
+import com.android.systemui.data.repository.brightnessMirrorShowingRepository
 import com.android.systemui.kosmos.Kosmos
-import com.android.systemui.settings.brightness.data.repository.brightnessMirrorShowingRepository
 
 val Kosmos.brightnessMirrorShowingInteractor by
     Kosmos.Fixture {

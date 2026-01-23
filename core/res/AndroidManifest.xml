@@ -6208,6 +6208,20 @@
     <permission android:name="android.permission.BIND_COMPANION_DEVICE_SERVICE"
                 android:protectionLevel="signature" />
 
+    <!-- Allows the caller to acquire verified device tokens from TrustTokenManager.
+         @hide -->
+    <permission
+        android:name="android.permission.ACQUIRE_VERIFIED_DEVICE_TOKEN"
+        android:protectionLevel="signature"
+        android:featureFlag="android.security.enable_talisman_service" />
+
+    <!-- Allows the caller to sign the challenge with the trust token keys.
+         @hide -->
+    <permission
+        android:name="android.permission.SIGN_WITH_TRUST_TOKEN"
+        android:protectionLevel="signature"
+        android:featureFlag="android.security.enable_talisman_service" />
+
     <!-- Must be required by {@link android.security.trusttoken.TrustTokenService}
          to ensure that only the system can bind to it.
          <p>Protection level: signature
@@ -9220,7 +9234,7 @@
     <!-- @SystemApi Allows an application to query AppFunction metadata stored within platform.
          @hide
          @FlaggedApi(android.app.appfunctions.flags.Flags.FLAG_ENABLE_APP_FUNCTION_PERMISSION_V2) -->
-    <permission android:name="android.permission.READ_APP_FUNCTION_METADATA"
+    <permission android:name="android.permission.DISCOVER_APP_FUNCTIONS"
         android:protectionLevel="internal|role"
         android:featureFlag="android.app.appfunctions.flags.enable_app_function_permission_v2" />
 
@@ -9266,6 +9280,16 @@
     <permission android:name="android.permission.EXECUTE_APP_FUNCTIONS"
         android:featureFlag="android.permission.flags.app_function_access_api_enabled"
         android:protectionLevel="normal" />
+
+     <!-- @SystemApi Allows recents component and certain roles to perform actions on behalf of
+         users inside of applications.
+         <p>Protection level: internal|recents|role
+         @hide
+         @FlaggedApi(android.app.appfunctions.flags.Flags.FLAG_ENABLE_APP_FUNCTION_PERMISSION_V2)
+         -->
+    <permission android:name="android.permission.EXECUTE_APP_FUNCTIONS_SYSTEM"
+        android:featureFlag="android.app.appfunctions.flags.enable_app_function_permission_v2"
+        android:protectionLevel="internal|recents|role" />
 
     <!-- Allows an application to perform actions on behalf of users inside of
          applications.

@@ -96,6 +96,10 @@ public:
     bool syncNextTransaction(std::function<void(SurfaceComposerClient::Transaction*)>, bool);
     // Called only from RenderThread frame drawing callbacks.
     void applyPendingTransactions(uint64_t);
+    // Called only from RenderThread frame drawing callbacks.
+    void clearSyncTransaction();
+    // Called only from RenderThread frame drawing callbacks.
+    SurfaceComposerClient::Transaction* gatherPendingTransactions(uint64_t);
 #endif
     void updateRenderTargetSize(uint64_t width, uint64_t height);
 
@@ -106,6 +110,7 @@ public:
     void setLightGeometry(const Vector3& lightCenter, float lightRadius);
     void setHardwareBufferRenderParams(const HardwareBufferRenderParams& params);
     void setOpaque(bool opaque);
+    void setHintSessionEnabled(bool enabled);
     float setColorMode(ColorMode mode);
     void setRenderSdrHdrRatio(float ratio);
     int64_t* frameInfo();

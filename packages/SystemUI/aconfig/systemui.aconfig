@@ -44,6 +44,13 @@ flag {
 }
 
 flag {
+    name: "aod_notif_icon_outline"
+    namespace: "systemui"
+    description: "Adds a hairline circle around the app icon for promoted notifications on AOD."
+    bug: "475234641"
+}
+
+flag {
   name: "aosp_posture_detection"
   namespace: "systemui"
   description: "Enables an AOSP-based posture detection algorithm using device accelerometer data"
@@ -1776,14 +1783,6 @@ flag {
     metadata {
       purpose: PURPOSE_BUGFIX
     }
-}
-
-flag {
-    name: "status_bar_static_inout_indicators"
-    namespace: "systemui"
-    description: "(Upstream request) Always show the network activity inout indicators and "
-        "prefer using alpha to distinguish network activity."
-    bug: "310715220"
 }
 
 flag {

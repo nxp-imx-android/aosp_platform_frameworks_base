@@ -28,7 +28,9 @@ import com.android.wm.shell.shared.bubbles.DragZoneFactory.SplitScreenModeChecke
 import kotlin.math.min
 
 /** A class for creating drag zones for dragging bubble objects or dragging into bubbles. */
-class DragZoneFactory @JvmOverloads constructor(
+class DragZoneFactory
+@JvmOverloads
+constructor(
     private val context: Context,
     private val deviceConfig: DeviceConfig,
     private val splitScreenModeChecker: SplitScreenModeChecker,
@@ -36,11 +38,12 @@ class DragZoneFactory @JvmOverloads constructor(
     private val bubbleBarPropertiesProvider: BubbleBarPropertiesProvider,
     private val dpToPxResolver: (Int, Context) -> Int = { dp, c ->
         TypedValue.applyDimension(
-            TypedValue.COMPLEX_UNIT_DIP,
-            dp.toFloat(),
-            c.resources.displayMetrics
-        ).toInt()
-    }
+                TypedValue.COMPLEX_UNIT_DIP,
+                dp.toFloat(),
+                c.resources.displayMetrics,
+            )
+            .toInt()
+    },
 ) {
 
     private val windowBounds: Rect
@@ -78,16 +81,17 @@ class DragZoneFactory @JvmOverloads constructor(
     private var dropTargetCornerRadius = 0f
 
     private val expandedViewDropTargetPaddingBottom: Int
-        get() = bubbleBarPropertiesProvider.getBubbleBarTopFromScreenBottom() +
+        get() =
+            bubbleBarPropertiesProvider.getBubbleBarTopFromScreenBottom() +
                 spacingBetweenExpandedViewAndBubble
 
     private val expandedViewDropTargetHeight: Int
         get() {
             val availableScreenHeight =
                 windowBounds.height() -
-                        expandedViewDropTargetPaddingBottom -
-                        deviceConfig.insets.top -
-                        spacingBetweenExpandedViewAndStatusBar
+                    expandedViewDropTargetPaddingBottom -
+                    deviceConfig.insets.top -
+                    spacingBetweenExpandedViewAndStatusBar
             return min(expandedViewDropTargetHeightLimit, availableScreenHeight)
         }
 
@@ -97,7 +101,7 @@ class DragZoneFactory @JvmOverloads constructor(
                 Rect(windowBounds).apply {
                     inset(fullScreenDropTargetPadding, fullScreenDropTargetPadding)
                 },
-                dropTargetCornerRadius
+                dropTargetCornerRadius,
             )
 
     private val desktopWindowDropTarget: DropTargetRect
@@ -107,16 +111,16 @@ class DragZoneFactory @JvmOverloads constructor(
                     if (deviceConfig.isLandscape) {
                         inset(
                             /* dx= */ desktopWindowDropTargetPaddingLarge,
-                            /* dy= */ desktopWindowDropTargetPaddingSmall
+                            /* dy= */ desktopWindowDropTargetPaddingSmall,
                         )
                     } else {
                         inset(
                             /* dx= */ desktopWindowDropTargetPaddingSmall,
-                            /* dy= */ desktopWindowDropTargetPaddingLarge
+                            /* dy= */ desktopWindowDropTargetPaddingLarge,
                         )
                     }
                 },
-                dropTargetCornerRadius
+                dropTargetCornerRadius,
             )
 
     private val expandedViewDropTargetLeft: DropTargetRect
@@ -128,9 +132,9 @@ class DragZoneFactory @JvmOverloads constructor(
                         expandedViewDropTargetPaddingBottom -
                         expandedViewDropTargetHeight,
                     expandedViewDropTargetWidth + expandedViewDropTargetPaddingHorizontal,
-                    windowBounds.bottom - expandedViewDropTargetPaddingBottom
+                    windowBounds.bottom - expandedViewDropTargetPaddingBottom,
                 ),
-                dropTargetCornerRadius
+                dropTargetCornerRadius,
             )
 
     private val expandedViewDropTargetRight: DropTargetRect
@@ -144,9 +148,9 @@ class DragZoneFactory @JvmOverloads constructor(
                         expandedViewDropTargetPaddingBottom -
                         expandedViewDropTargetHeight,
                     windowBounds.right - expandedViewDropTargetPaddingHorizontal,
-                    windowBounds.bottom - expandedViewDropTargetPaddingBottom
+                    windowBounds.bottom - expandedViewDropTargetPaddingBottom,
                 ),
-                dropTargetCornerRadius
+                dropTargetCornerRadius,
             )
 
     private val bubbleBarDropTargetLeft: DropTargetRect
@@ -158,7 +162,7 @@ class DragZoneFactory @JvmOverloads constructor(
                         bubbleBarPropertiesProvider.getBottomPadding() -
                         bubbleBarPropertiesProvider.getHeight(),
                     bubbleBarDropTargetPaddingHorizontal + bubbleBarPropertiesProvider.getWidth(),
-                    windowBounds.bottom - bubbleBarPropertiesProvider.getBottomPadding()
+                    windowBounds.bottom - bubbleBarPropertiesProvider.getBottomPadding(),
                 )
             return DropTargetRect(rect, rect.height() / 2f)
         }
@@ -174,7 +178,7 @@ class DragZoneFactory @JvmOverloads constructor(
                         bubbleBarPropertiesProvider.getBottomPadding() -
                         bubbleBarPropertiesProvider.getHeight(),
                     windowBounds.right - bubbleBarDropTargetPaddingHorizontal,
-                    windowBounds.bottom - bubbleBarPropertiesProvider.getBottomPadding()
+                    windowBounds.bottom - bubbleBarPropertiesProvider.getBottomPadding(),
                 )
             return DropTargetRect(rect, rect.height() / 2f)
         }
@@ -214,11 +218,13 @@ class DragZoneFactory @JvmOverloads constructor(
         spacingBetweenExpandedViewAndBubble = 32.dpToPx()
         dropTargetCornerRadius = 28.dpToPx().toFloat()
         spacingBetweenExpandedViewAndStatusBar = 60.dpToPx()
-        expandedViewDropTargetHeightLimit = if (deviceConfig.isSmallTablet) {
-            EXPANDED_VIEW_DROP_TARGET_HEIGHT_LIMIT_SMALL_TABLET_DP
-        } else {
-            EXPANDED_VIEW_DROP_TARGET_HEIGHT_LIMIT_TABLET_DP
-        }.dpToPx()
+        expandedViewDropTargetHeightLimit =
+            if (deviceConfig.isSmallTablet) {
+                    EXPANDED_VIEW_DROP_TARGET_HEIGHT_LIMIT_SMALL_TABLET_DP
+                } else {
+                    EXPANDED_VIEW_DROP_TARGET_HEIGHT_LIMIT_TABLET_DP
+                }
+                .dpToPx()
     }
 
     private fun Context.resolveDimension(@DimenRes dimension: Int) =
@@ -285,7 +291,7 @@ class DragZoneFactory @JvmOverloads constructor(
             if (isLeftSide) 0 else windowBounds.right - dragZoneSize,
             windowBounds.bottom - dragZoneSize,
             if (isLeftSide) dragZoneSize else windowBounds.right,
-            windowBounds.bottom
+            windowBounds.bottom,
         )
     }
 
@@ -295,26 +301,26 @@ class DragZoneFactory @JvmOverloads constructor(
                 CircleZone(
                     x = windowBounds.right / 2,
                     y = windowBounds.bottom - dismissDragZoneBottomMargin - dismissDragZoneRadius,
-                    radius = dismissDragZoneRadius
+                    radius = dismissDragZoneRadius,
                 )
         )
     }
 
     private fun createBubbleCornerDragZones(
         showDropTarget: Boolean = true,
-        showSecondDropTarget: Boolean = false
+        showSecondDropTarget: Boolean = false,
     ): List<DragZone> {
         return listOf(
             DragZone.Bubble.Left(
                 bounds = RectZone(getBubbleBarDropRect(isLeftSide = true)),
                 dropTarget = if (showDropTarget) expandedViewDropTargetLeft else null,
-                secondDropTarget = if (showSecondDropTarget) bubbleBarDropTargetLeft else null
+                secondDropTarget = if (showSecondDropTarget) bubbleBarDropTargetLeft else null,
             ),
             DragZone.Bubble.Right(
                 bounds = RectZone(getBubbleBarDropRect(isLeftSide = false)),
                 dropTarget = if (showDropTarget) expandedViewDropTargetRight else null,
-                secondDropTarget = if (showSecondDropTarget) bubbleBarDropTargetRight else null
-            )
+                secondDropTarget = if (showSecondDropTarget) bubbleBarDropTargetRight else null,
+            ),
         )
     }
 
@@ -328,16 +334,11 @@ class DragZoneFactory @JvmOverloads constructor(
             DragZone.Bubble.Right(
                 bounds =
                     RectZone(
-                        Rect(
-                            windowBounds.right / 2,
-                            0,
-                            windowBounds.right,
-                            windowBounds.bottom,
-                        ),
+                        Rect(windowBounds.right / 2, 0, windowBounds.right, windowBounds.bottom)
                     ),
                 dropTarget =
                     if (forBubbleBar) bubbleBarDropTargetRight else expandedViewDropTargetRight,
-            )
+            ),
         )
     }
 
@@ -349,10 +350,10 @@ class DragZoneFactory @JvmOverloads constructor(
                         windowBounds.right / 2 - fullScreenDragZoneWidth / 2,
                         0,
                         windowBounds.right / 2 + fullScreenDragZoneWidth / 2,
-                        fullScreenDragZoneHeight
-                    ),
+                        fullScreenDragZoneHeight,
+                    )
                 ),
-            dropTarget = fullScreenDropTarget
+            dropTarget = fullScreenDropTarget,
         )
     }
 
@@ -368,7 +369,7 @@ class DragZoneFactory @JvmOverloads constructor(
                             windowBounds.right / 2 - desktopWindowDragZoneWidth / 2,
                             windowBounds.bottom / 2 - desktopWindowDragZoneHeight / 2,
                             windowBounds.right / 2 + desktopWindowDragZoneWidth / 2,
-                            windowBounds.bottom / 2 + desktopWindowDragZoneHeight / 2
+                            windowBounds.bottom / 2 + desktopWindowDragZoneHeight / 2,
                         )
                     )
                 } else {
@@ -377,11 +378,11 @@ class DragZoneFactory @JvmOverloads constructor(
                             0,
                             windowBounds.bottom / 2 - desktopWindowDragZoneHeight / 2,
                             windowBounds.right,
-                            windowBounds.bottom / 2 + desktopWindowDragZoneHeight / 2
+                            windowBounds.bottom / 2 + desktopWindowDragZoneHeight / 2,
                         )
                     )
                 },
-            dropTarget = desktopWindowDropTarget
+            dropTarget = desktopWindowDropTarget,
         )
     }
 
@@ -391,14 +392,15 @@ class DragZoneFactory @JvmOverloads constructor(
                 RectZone(
                     Rect(
                         windowBounds.right / 2 - desktopWindowFromExpandedViewDragZoneWidth / 2,
-                        windowBounds.bottom / 2 - desktopWindowFromExpandedViewDragZoneHeight / 2 -
+                        windowBounds.bottom / 2 -
+                            desktopWindowFromExpandedViewDragZoneHeight / 2 -
                             desktopWindowFromExpandedViewDragZoneYOffset,
                         windowBounds.right / 2 + desktopWindowFromExpandedViewDragZoneWidth / 2,
                         windowBounds.bottom / 2 + desktopWindowFromExpandedViewDragZoneHeight / 2 -
-                            desktopWindowFromExpandedViewDragZoneYOffset
-                    ),
+                            desktopWindowFromExpandedViewDragZoneYOffset,
+                    )
                 ),
-            dropTarget = desktopWindowDropTarget
+            dropTarget = desktopWindowDropTarget,
         )
     }
 
@@ -414,7 +416,7 @@ class DragZoneFactory @JvmOverloads constructor(
                     listOf(
                         DragZone.Split.Top(
                             bounds =
-                                RectZone(Rect(0, 0, windowBounds.right, windowBounds.bottom / 2)),
+                                RectZone(Rect(0, 0, windowBounds.right, windowBounds.bottom / 2))
                         ),
                         DragZone.Split.Bottom(
                             bounds =
@@ -423,10 +425,10 @@ class DragZoneFactory @JvmOverloads constructor(
                                         0,
                                         windowBounds.bottom / 2,
                                         windowBounds.right,
-                                        windowBounds.bottom
-                                    ),
-                                ),
-                        )
+                                        windowBounds.bottom,
+                                    )
+                                )
+                        ),
                     )
                 SplitScreenMode.SPLIT_90_10 -> {
                     listOf(
@@ -437,9 +439,9 @@ class DragZoneFactory @JvmOverloads constructor(
                                         0,
                                         0,
                                         windowBounds.right,
-                                        windowBounds.bottom - splitFromBubbleDragZoneHeight
-                                    ),
-                                ),
+                                        windowBounds.bottom - splitFromBubbleDragZoneHeight,
+                                    )
+                                )
                         ),
                         DragZone.Split.Bottom(
                             bounds =
@@ -448,10 +450,10 @@ class DragZoneFactory @JvmOverloads constructor(
                                         0,
                                         windowBounds.bottom - splitFromBubbleDragZoneHeight,
                                         windowBounds.right,
-                                        windowBounds.bottom
-                                    ),
-                                ),
-                        )
+                                        windowBounds.bottom,
+                                    )
+                                )
+                        ),
                     )
                 }
                 SplitScreenMode.SPLIT_10_90 -> {
@@ -460,7 +462,7 @@ class DragZoneFactory @JvmOverloads constructor(
                             bounds =
                                 RectZone(
                                     Rect(0, 0, windowBounds.right, splitFromBubbleDragZoneHeight)
-                                ),
+                                )
                         ),
                         DragZone.Split.Bottom(
                             bounds =
@@ -469,10 +471,10 @@ class DragZoneFactory @JvmOverloads constructor(
                                         0,
                                         splitFromBubbleDragZoneHeight,
                                         windowBounds.right,
-                                        windowBounds.bottom
-                                    ),
-                                ),
-                        )
+                                        windowBounds.bottom,
+                                    )
+                                )
+                        ),
                     )
                 }
             }
@@ -484,7 +486,7 @@ class DragZoneFactory @JvmOverloads constructor(
                     listOf(
                         DragZone.Split.Left(
                             bounds =
-                                RectZone(Rect(0, 0, windowBounds.right / 2, windowBounds.bottom)),
+                                RectZone(Rect(0, 0, windowBounds.right / 2, windowBounds.bottom))
                         ),
                         DragZone.Split.Right(
                             bounds =
@@ -493,10 +495,10 @@ class DragZoneFactory @JvmOverloads constructor(
                                         windowBounds.right / 2,
                                         0,
                                         windowBounds.right,
-                                        windowBounds.bottom
-                                    ),
-                                ),
-                        )
+                                        windowBounds.bottom,
+                                    )
+                                )
+                        ),
                     )
                 SplitScreenMode.SPLIT_90_10 ->
                     listOf(
@@ -507,9 +509,9 @@ class DragZoneFactory @JvmOverloads constructor(
                                         0,
                                         0,
                                         windowBounds.right - splitFromBubbleDragZoneWidth,
-                                        windowBounds.bottom
-                                    ),
-                                ),
+                                        windowBounds.bottom,
+                                    )
+                                )
                         ),
                         DragZone.Split.Right(
                             bounds =
@@ -518,10 +520,10 @@ class DragZoneFactory @JvmOverloads constructor(
                                         windowBounds.right - splitFromBubbleDragZoneWidth,
                                         0,
                                         windowBounds.right,
-                                        windowBounds.bottom
-                                    ),
-                                ),
-                        )
+                                        windowBounds.bottom,
+                                    )
+                                )
+                        ),
                     )
                 SplitScreenMode.SPLIT_10_90 ->
                     listOf(
@@ -529,7 +531,7 @@ class DragZoneFactory @JvmOverloads constructor(
                             bounds =
                                 RectZone(
                                     Rect(0, 0, splitFromBubbleDragZoneWidth, windowBounds.bottom)
-                                ),
+                                )
                         ),
                         DragZone.Split.Right(
                             bounds =
@@ -538,10 +540,10 @@ class DragZoneFactory @JvmOverloads constructor(
                                         splitFromBubbleDragZoneWidth,
                                         0,
                                         windowBounds.right,
-                                        windowBounds.bottom
-                                    ),
-                                ),
-                        )
+                                        windowBounds.bottom,
+                                    )
+                                )
+                        ),
                     )
             }
         }
@@ -568,9 +570,9 @@ class DragZoneFactory @JvmOverloads constructor(
                                 fullScreenDragZoneHeight,
                                 splitZoneRight,
                                 fullScreenDragZoneHeight +
-                                    vSplitFromExpandedViewDragZoneHeightTablet
-                            ),
-                        ),
+                                    vSplitFromExpandedViewDragZoneHeightTablet,
+                            )
+                        )
                 ),
                 DragZone.Split.Bottom(
                     bounds =
@@ -579,10 +581,10 @@ class DragZoneFactory @JvmOverloads constructor(
                                 splitZoneLeft,
                                 bottomSplitZoneBottom - vSplitFromExpandedViewDragZoneHeightTablet,
                                 splitZoneRight,
-                                bottomSplitZoneBottom
-                            ),
-                        ),
-                )
+                                bottomSplitZoneBottom,
+                            )
+                        )
+                ),
             )
         }
     }
@@ -604,9 +606,9 @@ class DragZoneFactory @JvmOverloads constructor(
                                         fullScreenDragZoneHeight,
                                         splitZoneLeft + fullScreenDragZoneWidth,
                                         fullScreenDragZoneHeight +
-                                            vSplitFromExpandedViewDragZoneHeightFoldTall
-                                    ),
-                                ),
+                                            vSplitFromExpandedViewDragZoneHeightFoldTall,
+                                    )
+                                )
                         ),
                         DragZone.Split.Bottom(
                             bounds =
@@ -616,10 +618,10 @@ class DragZoneFactory @JvmOverloads constructor(
                                         windowBounds.bottom / 2,
                                         splitZoneLeft + fullScreenDragZoneWidth,
                                         windowBounds.bottom / 2 +
-                                            vSplitFromExpandedViewDragZoneHeightFoldTall
-                                    ),
-                                ),
-                        )
+                                            vSplitFromExpandedViewDragZoneHeightFoldTall,
+                                    )
+                                )
+                        ),
                     )
                 SplitScreenMode.SPLIT_10_90 ->
                     listOf(
@@ -630,9 +632,9 @@ class DragZoneFactory @JvmOverloads constructor(
                                         0,
                                         0,
                                         windowBounds.right,
-                                        vSplitFromExpandedViewDragZoneHeightFoldShort
-                                    ),
-                                ),
+                                        vSplitFromExpandedViewDragZoneHeightFoldShort,
+                                    )
+                                )
                         ),
                         DragZone.Split.Bottom(
                             bounds =
@@ -642,10 +644,10 @@ class DragZoneFactory @JvmOverloads constructor(
                                         vSplitFromExpandedViewDragZoneHeightFoldShort,
                                         splitZoneLeft + fullScreenDragZoneWidth,
                                         vSplitFromExpandedViewDragZoneHeightFoldShort +
-                                            vSplitFromExpandedViewDragZoneHeightFoldTall
-                                    ),
-                                ),
-                        )
+                                            vSplitFromExpandedViewDragZoneHeightFoldTall,
+                                    )
+                                )
+                        ),
                     )
                 SplitScreenMode.SPLIT_90_10 ->
                     listOf(
@@ -657,9 +659,9 @@ class DragZoneFactory @JvmOverloads constructor(
                                         fullScreenDragZoneHeight,
                                         splitZoneLeft + fullScreenDragZoneWidth,
                                         fullScreenDragZoneHeight +
-                                            vSplitFromExpandedViewDragZoneHeightFoldTall
-                                    ),
-                                ),
+                                            vSplitFromExpandedViewDragZoneHeightFoldTall,
+                                    )
+                                )
                         ),
                         DragZone.Split.Bottom(
                             bounds =
@@ -669,10 +671,10 @@ class DragZoneFactory @JvmOverloads constructor(
                                         windowBounds.bottom -
                                             vSplitFromExpandedViewDragZoneHeightFoldShort,
                                         windowBounds.right,
-                                        windowBounds.bottom
-                                    ),
-                                ),
-                        )
+                                        windowBounds.bottom,
+                                    )
+                                )
+                        ),
                     )
             }
         } else {
@@ -699,10 +701,10 @@ class DragZoneFactory @JvmOverloads constructor(
                             windowBounds.right - hSplitFromExpandedViewDragZoneWidth,
                             0,
                             windowBounds.right,
-                            bottomY
-                        ),
-                    ),
-            )
+                            bottomY,
+                        )
+                    )
+            ),
         )
     }
 
@@ -713,7 +715,7 @@ class DragZoneFactory @JvmOverloads constructor(
             SPLIT_50_50,
             SPLIT_10_90,
             SPLIT_90_10,
-            UNSUPPORTED
+            UNSUPPORTED,
         }
 
         fun getSplitScreenMode(): SplitScreenMode
@@ -736,10 +738,8 @@ class DragZoneFactory @JvmOverloads constructor(
     }
 
     companion object {
-        @VisibleForTesting
-        const val EXPANDED_VIEW_DROP_TARGET_HEIGHT_LIMIT_TABLET_DP = 578
+        @VisibleForTesting const val EXPANDED_VIEW_DROP_TARGET_HEIGHT_LIMIT_TABLET_DP = 578
 
-        @VisibleForTesting
-        const val EXPANDED_VIEW_DROP_TARGET_HEIGHT_LIMIT_SMALL_TABLET_DP = 625
+        @VisibleForTesting const val EXPANDED_VIEW_DROP_TARGET_HEIGHT_LIMIT_SMALL_TABLET_DP = 625
     }
 }

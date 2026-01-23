@@ -22,14 +22,15 @@ import com.android.systemui.common.ui.data.repository.ConfigurationRepository
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
+import com.android.systemui.mediaprojection.data.model.MediaProjectionState
 import com.android.systemui.mediaprojection.data.repository.MediaProjectionRepository
 import com.android.systemui.res.R
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -43,14 +44,22 @@ constructor(
     @Background private val scope: CoroutineScope,
     private val mediaProjectionRepository: MediaProjectionRepository,
 ) {
-    private val isSharingActive = MutableStateFlow(false)
+    // The projection is active if the state is any subtype of MediaProjectionState.Projecting.
+    private val isMediaProjecting: StateFlow<Boolean> =
+        mediaProjectionRepository.mediaProjectionState
+            .map { state -> state is MediaProjectionState.Projecting }
+            .stateIn(
+                scope = scope,
+                started = SharingStarted.WhileSubscribed(),
+                initialValue = false,
+            )
 
     val isChipVisible: StateFlow<Boolean> =
         combine(
                 configurationRepository.onAnyConfigurationChange.onStart { emit(Unit) },
-                isSharingActive,
-            ) { _, isSharing ->
-                resources.getBoolean(R.bool.config_largeScreenPrivacyIndicator) && isSharing
+                isMediaProjecting,
+            ) { _, isProjecting ->
+                resources.getBoolean(R.bool.config_largeScreenPrivacyIndicator) && isProjecting
             }
             .stateIn(
                 scope = scope,
@@ -58,16 +67,7 @@ constructor(
                 initialValue = false,
             )
 
-    fun showChip() {
-        isSharingActive.value = true
-    }
-
-    fun hideChip() {
-        isSharingActive.value = false
-    }
-
     fun stopShare() {
-        hideChip()
         scope.launch { mediaProjectionRepository.stopProjecting(StopReason.STOP_PRIVACY_CHIP) }
     }
 }

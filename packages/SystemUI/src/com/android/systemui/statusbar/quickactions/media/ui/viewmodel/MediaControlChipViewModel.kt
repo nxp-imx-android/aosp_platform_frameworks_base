@@ -23,11 +23,12 @@ import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
+import com.android.systemui.res.R
 import com.android.systemui.statusbar.quickactions.media.domain.interactor.MediaControlChipInteractor
 import com.android.systemui.statusbar.quickactions.media.shared.model.MediaControlChipModel
 import com.android.systemui.statusbar.quickactions.popups.ui.viewmodel.StatusBarPopupChipViewModel
+import com.android.systemui.statusbar.quickactions.ui.viewmodel.ChipContent
 import com.android.systemui.statusbar.quickactions.ui.viewmodel.ChipIcon
-import com.android.systemui.statusbar.quickactions.ui.viewmodel.HoverBehavior
 import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipId
 import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipUiState
 import dagger.assisted.AssistedFactory
@@ -72,10 +73,47 @@ constructor(
 
         val contentDescription = model.appName?.let { ContentDescription.Loaded(description = it) }
 
+        val waveformIcon =
+            Icon.Resource(
+                resId = R.drawable.ic_music_visualizer,
+                contentDescription = contentDescription,
+            )
+
+        return QuickActionChipUiState.PopupChip(
+            chipId = QuickActionChipId.MediaControl,
+            icons = listOf(model.createIcon()),
+            chipContent = ChipContent.SideIcon(waveformIcon),
+            popupViewModelFactory = popupViewModelFactory,
+        )
+    }
+
+    private fun MediaControlChipModel.createIcon(): ChipIcon {
+        val playOrPause = playOrPause ?: return getDefaultIcon()
+        val icon = playOrPause.icon ?: return getDefaultIcon()
+        val action = playOrPause.action ?: return getDefaultIcon()
+
+        // This creates a separate copy of the icon so it can be styled individually for the media
+        // chip
+        val copyIcon = icon.constantState?.newDrawable()?.mutate() ?: icon
+
+        val contentDescription =
+            ContentDescription.Loaded(description = playOrPause.contentDescription.toString())
+
+        return ChipIcon(
+            icon = Icon.Loaded(drawable = copyIcon, contentDescription = contentDescription),
+            onClick = { action.run() },
+            isHighlighted = true,
+        )
+    }
+
+    /** fallback in case [MediaControlChipModel.playOrPause] is incomplete */
+    private fun MediaControlChipModel.getDefaultIcon(): ChipIcon {
+        val contentDescription = appName?.let { ContentDescription.Loaded(description = it) }
+
         val defaultIcon =
-            when (model) {
+            when (this) {
                 is MediaControlChipModel.Legacy -> {
-                    model.appIcon?.loadDrawable(applicationContext)?.let {
+                    appIcon?.loadDrawable(applicationContext)?.let {
                         Icon.Loaded(drawable = it, contentDescription = contentDescription)
                     }
                         ?: Icon.Resource(
@@ -83,35 +121,11 @@ constructor(
                             contentDescription = contentDescription,
                         )
                 }
-                is MediaControlChipModel.Compose -> model.appIcon
+
+                is MediaControlChipModel.Compose -> appIcon
             }
-        return QuickActionChipUiState.PopupChip(
-            chipId = QuickActionChipId.MediaControl,
-            icons = listOf(ChipIcon(icon = defaultIcon)),
-            chipText = model.songName.toString(),
-            hoverBehavior = createHoverBehavior(model),
-            popupViewModelFactory = popupViewModelFactory,
-        )
-    }
 
-    private fun createHoverBehavior(model: MediaControlChipModel): HoverBehavior {
-        val playOrPause = model.playOrPause ?: return HoverBehavior.None
-        val icon = playOrPause.icon ?: return HoverBehavior.None
-        val action = playOrPause.action ?: return HoverBehavior.None
-
-        val contentDescription =
-            ContentDescription.Loaded(description = playOrPause.contentDescription.toString())
-
-        return HoverBehavior.Buttons(
-            icons =
-                listOf(
-                    ChipIcon(
-                        icon =
-                            Icon.Loaded(drawable = icon, contentDescription = contentDescription),
-                        onClick = { action.run() },
-                    )
-                )
-        )
+        return ChipIcon(icon = defaultIcon)
     }
 
     @AssistedFactory

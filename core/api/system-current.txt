@@ -163,6 +163,7 @@ package android {
     field @FlaggedApi("android.content.pm.verification_service") public static final String DEVELOPER_VERIFICATION_AGENT = "android.permission.DEVELOPER_VERIFICATION_AGENT";
     field public static final String DEVICE_POWER = "android.permission.DEVICE_POWER";
     field public static final String DISABLE_SYSTEM_SOUND_EFFECTS = "android.permission.DISABLE_SYSTEM_SOUND_EFFECTS";
+    field @FlaggedApi("android.app.appfunctions.flags.enable_app_function_permission_v2") public static final String DISCOVER_APP_FUNCTIONS = "android.permission.DISCOVER_APP_FUNCTIONS";
     field public static final String DISPATCH_PROVISIONING_MESSAGE = "android.permission.DISPATCH_PROVISIONING_MESSAGE";
     field public static final String DOMAIN_VERIFICATION_AGENT = "android.permission.DOMAIN_VERIFICATION_AGENT";
     field @FlaggedApi("android.app.enable_motion_cues") public static final String DRAW_MOTION_CUES = "android.permission.DRAW_MOTION_CUES";
@@ -170,6 +171,7 @@ package android {
     field @FlaggedApi("com.android.window.flags.untrusted_embedding_any_app_permission") public static final String EMBED_ANY_APP_IN_UNTRUSTED_MODE = "android.permission.EMBED_ANY_APP_IN_UNTRUSTED_MODE";
     field @FlaggedApi("android.content.pm.emergency_install_permission") public static final String EMERGENCY_INSTALL_PACKAGES = "android.permission.EMERGENCY_INSTALL_PACKAGES";
     field public static final String ENTER_CAR_MODE_PRIORITIZED = "android.permission.ENTER_CAR_MODE_PRIORITIZED";
+    field @FlaggedApi("android.app.appfunctions.flags.enable_app_function_permission_v2") public static final String EXECUTE_APP_FUNCTIONS_SYSTEM = "android.permission.EXECUTE_APP_FUNCTIONS_SYSTEM";
     field public static final String EXEMPT_FROM_AUDIO_RECORD_RESTRICTIONS = "android.permission.EXEMPT_FROM_AUDIO_RECORD_RESTRICTIONS";
     field @FlaggedApi("android.xr.xr_manifest_entries") public static final String EYE_CALIBRATION = "android.permission.EYE_CALIBRATION";
     field @FlaggedApi("android.xr.xr_manifest_entries") public static final String FACE_TRACKING_CALIBRATION = "android.permission.FACE_TRACKING_CALIBRATION";
@@ -346,7 +348,6 @@ package android {
     field public static final String QUERY_USERS = "android.permission.QUERY_USERS";
     field public static final String RADIO_SCAN_WITHOUT_LOCATION = "android.permission.RADIO_SCAN_WITHOUT_LOCATION";
     field public static final String READ_ACTIVE_EMERGENCY_SESSION = "android.permission.READ_ACTIVE_EMERGENCY_SESSION";
-    field @FlaggedApi("android.app.appfunctions.flags.enable_app_function_permission_v2") public static final String READ_APP_FUNCTION_METADATA = "android.permission.READ_APP_FUNCTION_METADATA";
     field @FlaggedApi("android.app.appfunctions.flags.enable_app_interaction_api") public static final String READ_APP_INTERACTION = "android.permission.READ_APP_INTERACTION";
     field public static final String READ_APP_SPECIFIC_LOCALES = "android.permission.READ_APP_SPECIFIC_LOCALES";
     field @FlaggedApi("com.android.server.telecom.flags.telecom_resolve_hidden_dependencies") public static final String READ_BLOCKED_NUMBERS = "android.permission.READ_BLOCKED_NUMBERS";
@@ -4090,6 +4091,7 @@ package android.companion.virtual.camera {
     method @NonNull public String getName();
     method public int getSensorOrientation();
     method @NonNull public java.util.Set<android.companion.virtual.camera.VirtualCameraStreamConfig> getStreamConfigs();
+    method @FlaggedApi("android.companion.virtualdevice.flags.camera_multiple_input_streams") public boolean isConcurrentStreamConfigSupported();
     method public boolean isPerFrameCameraMetadataEnabled();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.companion.virtual.camera.VirtualCameraConfig> CREATOR;
@@ -4105,6 +4107,7 @@ package android.companion.virtual.camera {
     method @NonNull public android.companion.virtual.camera.VirtualCameraConfig.Builder addStreamConfig(@IntRange(from=1) int, @IntRange(from=1) int, int, @IntRange(from=1) int);
     method @NonNull public android.companion.virtual.camera.VirtualCameraConfig build();
     method @NonNull public android.companion.virtual.camera.VirtualCameraConfig.Builder setCameraCharacteristics(@Nullable android.hardware.camera2.CameraCharacteristics);
+    method @FlaggedApi("android.companion.virtualdevice.flags.camera_multiple_input_streams") @NonNull public android.companion.virtual.camera.VirtualCameraConfig.Builder setConcurrentStreamConfigSupported(boolean);
     method @NonNull public android.companion.virtual.camera.VirtualCameraConfig.Builder setLensFacing(int);
     method @NonNull public android.companion.virtual.camera.VirtualCameraConfig.Builder setPerFrameCameraMetadataEnabled(boolean);
     method @NonNull public android.companion.virtual.camera.VirtualCameraConfig.Builder setSensorOrientation(int);
@@ -14732,7 +14735,8 @@ package android.service.personalcontext {
     method @NonNull public android.service.personalcontext.Token mintToken();
     method public void publishInsight(@NonNull java.util.List<android.service.personalcontext.insight.ContextInsight>);
     method public void publishTriggeringHint(@NonNull java.util.List<android.service.personalcontext.hint.ContextHint>, @Nullable java.util.List<android.service.personalcontext.RenderToken>);
-    method @NonNull public android.service.personalcontext.hint.ContextHintWithSignature signHint(@NonNull android.service.personalcontext.hint.ContextHint);
+    method public void publishTriggeringHint(@NonNull java.util.List<android.service.personalcontext.hint.ContextHint>, @Nullable java.util.List<android.service.personalcontext.RenderToken>, @Nullable java.util.List<android.service.personalcontext.hint.ContextHint>);
+    method @NonNull public android.service.personalcontext.hint.ContextHintWithSignature signHint(@NonNull android.service.personalcontext.hint.ContextHint, @Nullable java.util.List<android.service.personalcontext.hint.ContextHint>);
     field public static final String PERSONAL_CONTEXT_SERVICE = "personal_context";
   }
 
@@ -19723,6 +19727,7 @@ package android.telephony.satellite {
     field public static final int SATELLITE_MODEM_STATE_LISTENING = 1; // 0x1
     field public static final int SATELLITE_MODEM_STATE_NOT_CONNECTED = 6; // 0x6
     field public static final int SATELLITE_MODEM_STATE_OFF = 4; // 0x4
+    field @FlaggedApi("com.android.internal.telephony.flags.satellite_suspend") public static final int SATELLITE_MODEM_STATE_SUSPENSION = 10; // 0xa
     field public static final int SATELLITE_MODEM_STATE_UNAVAILABLE = 5; // 0x5
     field public static final int SATELLITE_MODEM_STATE_UNKNOWN = -1; // 0xffffffff
     field public static final int SATELLITE_RESULT_ACCESS_BARRED = 16; // 0x10

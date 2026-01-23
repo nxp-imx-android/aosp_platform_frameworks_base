@@ -30,6 +30,7 @@ import com.android.systemui.Flags.msdlFeedback
 import com.android.systemui.accessibility.domain.interactor.AccessibilityInteractor
 import com.android.systemui.animation.DialogTransitionAnimator
 import com.android.systemui.animation.Expandable
+import com.android.systemui.animation.TransitionAnimator
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.devicepolicy.areKeyguardShortcutsDisabled
@@ -396,7 +397,11 @@ constructor(
             SystemUIDialog.setShowForAllUsers(dialog, true)
             SystemUIDialog.registerDismissListener(dialog)
             SystemUIDialog.setDialogSize(dialog)
-            launchAnimator.show(dialog, controller)
+            if (TransitionAnimator.dynamicTargetResolutionEnabled()) {
+                launchAnimator.show(dialog, expandable::dialogTransitionController, controller.cuj)
+            } else {
+                launchAnimator.show(dialog, controller)
+            }
         }
     }
 

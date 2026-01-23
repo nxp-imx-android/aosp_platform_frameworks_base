@@ -97,6 +97,7 @@ import com.android.systemui.accessibility.floatingmenu.AccessibilityFloatingMenu
 import com.android.systemui.animation.ActivityTransitionAnimator;
 import com.android.systemui.assist.AssistManager;
 import com.android.systemui.bouncer.domain.interactor.AlternateBouncerInteractor;
+import com.android.systemui.brightness.data.repository.BrightnessMirrorShowingRepository;
 import com.android.systemui.broadcast.BroadcastDispatcher;
 import com.android.systemui.broadcast.BroadcastDispatcherCustomExecutor;
 import com.android.systemui.charging.WiredChargingRippleController;
@@ -130,7 +131,6 @@ import com.android.systemui.res.R;
 import com.android.systemui.scene.domain.interactor.WindowRootViewVisibilityInteractor;
 import com.android.systemui.scene.shared.flag.SceneContainerFlag;
 import com.android.systemui.settings.UserTracker;
-import com.android.systemui.settings.brightness.data.repository.BrightnessMirrorShowingRepository;
 import com.android.systemui.shade.CameraLauncher;
 import com.android.systemui.shade.GlanceableHubContainerController;
 import com.android.systemui.shade.NotificationPanelView;

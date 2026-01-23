@@ -212,6 +212,7 @@ flag {
     namespace: "crumpet"
     description: "Enable a flag taking screenshots of all displays in bugreport."
     bug: "364767133"
+    is_exported: true
 }
 
 flag {
@@ -219,6 +220,7 @@ flag {
     namespace: "system_performance"
     description: "Guards the new count instances of classes api"
     bug: "337354084"
+    is_exported: true
 }
 
 flag {
@@ -373,6 +375,7 @@ flag {
     namespace: "system_performance"
     description: "Enable support for the native framework prototype"
     bug: "406925781"
+    is_exported: true
 }
 
 flag {
@@ -448,7 +451,7 @@ flag {
 
 flag {
     name: "supplemental_security_patches"
-    is_exported: false
+    is_exported: true
     namespace: "dynamic_spl"
     description: "access supplemental security files of CVEs patched beyond the SPL"
     bug: "446032302"

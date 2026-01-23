@@ -22,6 +22,7 @@ import com.android.internal.jank.InteractionJankMonitor
 import com.android.systemui.animation.DialogCuj
 import com.android.systemui.animation.DialogTransitionAnimator
 import com.android.systemui.animation.Expandable
+import com.android.systemui.animation.TransitionAnimator
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
@@ -145,11 +146,20 @@ constructor(
                             )
                         )
                     controller?.let {
-                        dialogTransitionAnimator.show(
-                            dialog,
-                            controller,
-                            animateBackgroundBoundsChange = true,
-                        )
+                        if (TransitionAnimator.dynamicTargetResolutionEnabled()) {
+                            dialogTransitionAnimator.show(
+                                dialog,
+                                expandable::dialogTransitionController,
+                                it.cuj,
+                                animateBackgroundBoundsChange = true,
+                            )
+                        } else {
+                            dialogTransitionAnimator.show(
+                                dialog,
+                                it,
+                                animateBackgroundBoundsChange = true,
+                            )
+                        }
                     } ?: dialog.show()
                 } else {
                     dialog.show()

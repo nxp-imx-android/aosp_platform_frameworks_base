@@ -17,7 +17,6 @@
 package com.android.systemui.statusbar.pipeline.wifi.ui.viewmodel
 
 import android.content.Context
-import com.android.systemui.Flags.statusBarStaticInoutIndicators
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.log.table.TableLogBuffer
@@ -31,6 +30,7 @@ import com.android.systemui.statusbar.pipeline.wifi.domain.interactor.WifiIntera
 import com.android.systemui.statusbar.pipeline.wifi.shared.WifiConstants
 import com.android.systemui.statusbar.pipeline.wifi.shared.model.WifiNetworkModel
 import com.android.systemui.statusbar.pipeline.wifi.ui.model.WifiIcon
+import com.android.systemui.statusbar.systemstatusicons.SystemStatusIconsInCompose
 import java.util.function.Supplier
 import javax.inject.Inject
 import javax.inject.Named
@@ -121,7 +121,7 @@ constructor(
             .stateIn(scope, SharingStarted.WhileSubscribed(), false)
 
     override val isActivityContainerVisible: Flow<Boolean> =
-        if (statusBarStaticInoutIndicators()) {
+        if (SystemStatusIconsInCompose.isEnabled) {
                 flowOf(connectivityConstants.shouldShowActivityConfig)
             } else {
                 activity.map { it != null && (it.hasActivityIn || it.hasActivityOut) }

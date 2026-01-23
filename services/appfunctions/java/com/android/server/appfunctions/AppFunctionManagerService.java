@@ -24,22 +24,17 @@ import android.app.appfunctions.AppFunctionManagerConfiguration;
 import android.app.appfunctions.flags.Flags;
 import android.content.Context;
 import android.content.pm.PackageManagerInternal;
-import android.os.Environment;
 
-import com.android.internal.os.BackgroundThread;
 import com.android.server.LocalServices;
 import com.android.server.SystemService;
 import com.android.server.appinteraction.AppInteractionService;
 import com.android.server.appinteraction.AppInteractionServiceImpl;
 import com.android.server.uri.UriGrantsManagerInternal;
 
-import java.io.File;
 import java.util.Objects;
 
 /** Service that manages app functions. */
 public class AppFunctionManagerService extends SystemService {
-    private static final String AGENT_ALLOWLIST_FILE_NAME = "agent_allowlist.txt";
-    private static final String APP_FUNCTIONS_DIR = "appfunctions";
     private final AppFunctionManagerServiceImpl mServiceImpl;
 
     @Nullable private AppInteractionService mAppInteractionService = null;
@@ -57,15 +52,8 @@ public class AppFunctionManagerService extends SystemService {
                         UriGrantsManager.getService(),
                         LocalServices.getService(UriGrantsManagerInternal.class),
                         new AppFunctionsLoggerWrapper(context),
-                        new AppFunctionAgentAllowlistStorage(
-                                new File(
-                                        new File(
-                                                Environment.getDataSystemDirectory(),
-                                                APP_FUNCTIONS_DIR),
-                                        AGENT_ALLOWLIST_FILE_NAME)),
                         MultiUserDynamicAppFunctionRegistry.getInstance(),
                         mAppInteractionService,
-                        BackgroundThread.getExecutor(),
                         new AppFunctionMetadataReader(
                                 MultiUserDynamicAppFunctionRegistry.getInstance(),
                                 new AppFunctionsMetadataCache(context),
@@ -81,11 +69,6 @@ public class AppFunctionManagerService extends SystemService {
             publishLocalService(
                     AppInteractionService.class, Objects.requireNonNull(mAppInteractionService));
         }
-    }
-
-    @Override
-    public void onBootPhase(int phase) {
-        mServiceImpl.onBootPhase(phase);
     }
 
     @Override

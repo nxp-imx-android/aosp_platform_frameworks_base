@@ -3,6 +3,16 @@ container: "system"
 
 # go/keep-sorted start block=yes newline_separated=yes
 flag {
+    name: "allow_drag_and_drop_when_interactive_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Changes display's drag&drop eligibility based on the home interactivity."
+    bug: "463648549"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "better_desk_deactivation_in_recents_transition"
     namespace: "lse_desktop_experience"
     description: "Improves desk deactivation using real Overview state and better recents signaling"
@@ -320,6 +330,16 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Fixes desktop-first policy for the case where the source task is fullscreen but exempted from desktop."
     bug: "443065273"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "enable_desktop_first_laptop_state_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Enables a bugfix to make desktop-first triggered by laptop state."
+    bug: "451954795"
     metadata {
         purpose: PURPOSE_BUGFIX
     }
@@ -1072,16 +1092,6 @@ flag {
 }
 
 flag {
-  name: "exclude_desk_roots_from_desktop_tasks"
-  namespace: "lse_desktop_experience"
-  description: "Do not include desk root tasks in freeform/desktop tasks"
-  bug: "417876539"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
     name: "form_factor_based_desktop_first_switch"
     namespace: "lse_desktop_experience"
     description: "Enables the desktop-first mode switching logic based on its form factor."
@@ -1250,6 +1260,7 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Enable API changes for runtime density resolution for ActivityInfo.WindowLayout"
     bug: "438420596"
+    is_exported: true
 }
 
 flag {

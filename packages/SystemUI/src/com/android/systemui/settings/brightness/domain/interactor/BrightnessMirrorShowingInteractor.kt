@@ -16,8 +16,8 @@
 
 package com.android.systemui.settings.brightness.domain.interactor
 
+import com.android.systemui.brightness.data.repository.BrightnessMirrorShowingRepository
 import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.settings.brightness.data.repository.BrightnessMirrorShowingRepository
 import javax.inject.Inject
 import kotlinx.coroutines.flow.StateFlow
 

@@ -31,4 +31,9 @@ public interface BrightnessDataModule {
     public fun bindPolicyRepository(
         impl: BrightnessPolicyRepositoryImpl
     ): BrightnessPolicyRepository
+
+    @Binds
+    public fun bindBrightnessMirrorShowingRepository(
+        impl: BrightnessMirrorShowingRepositoryImpl
+    ): BrightnessMirrorShowingRepository
 }

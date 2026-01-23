@@ -22,8 +22,10 @@ import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
 import android.os.Binder
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
+import android.window.WindowContainerToken
 import android.window.WindowContainerTransaction
 import android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_REMOVE_TASK
+import android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_REORDER
 import androidx.test.filters.SmallTest
 import com.android.window.flags.Flags
 import com.android.window.flags.Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND
@@ -262,6 +264,8 @@ class DesktopPipTransitionControllerTest(flags: FlagsParameterization) : ShellTe
 
         verify(mockDesktopTasksController)
             .addMoveToDeskTaskChanges(wct = wct, task = freeformParentTask, deskId = DESK_ID)
+        assertThat(wct.hierarchyOps).hasSize(1)
+        wct.assertReorderAt(index = 0, freeformParentTask.token, toTop = true)
     }
 
     @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
@@ -285,6 +289,8 @@ class DesktopPipTransitionControllerTest(flags: FlagsParameterization) : ShellTe
 
         verify(mockDesktopTasksController)
             .addMoveToDeskTaskChanges(wct = wct, task = taskInfo, deskId = DESK_ID)
+        assertThat(wct.hierarchyOps).hasSize(1)
+        wct.assertReorderAt(index = 0, taskInfo.token, toTop = true)
     }
 
     @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
@@ -308,6 +314,8 @@ class DesktopPipTransitionControllerTest(flags: FlagsParameterization) : ShellTe
             )
         verify(mockDesktopTasksController)
             .addMoveToDeskTaskChanges(wct = wct, task = taskInfo, deskId = DESK_ID)
+        assertThat(wct.hierarchyOps).hasSize(1)
+        wct.assertReorderAt(index = 0, taskInfo.token, toTop = true)
     }
 
     @Test
@@ -327,6 +335,18 @@ class DesktopPipTransitionControllerTest(flags: FlagsParameterization) : ShellTe
         val taskRemoval = wct.hierarchyOps.find { op -> op.container == taskInfo.token.asBinder() }
         assertThat(taskRemoval).isNotNull()
         assertThat(taskRemoval!!.type).isEqualTo(HIERARCHY_OP_TYPE_REMOVE_TASK)
+    }
+
+    private fun WindowContainerTransaction.assertReorderAt(
+        index: Int,
+        token: WindowContainerToken,
+        toTop: Boolean,
+    ) {
+        assertThat(hierarchyOps.size).isGreaterThan(index)
+        val op = hierarchyOps[index]
+        assertThat(op.type).isEqualTo(HIERARCHY_OP_TYPE_REORDER)
+        assertThat(op.container).isEqualTo(token.asBinder())
+        assertThat(op.toTop).isEqualTo(toTop)
     }
 
     private companion object {

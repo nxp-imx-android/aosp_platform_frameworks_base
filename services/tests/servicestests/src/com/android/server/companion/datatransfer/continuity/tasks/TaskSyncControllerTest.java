@@ -17,7 +17,6 @@
 package com.android.server.companion.datatransfer.continuity.tasks;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -25,7 +24,6 @@ import static org.mockito.Mockito.when;
 
 import android.app.ActivityTaskManager;
 import android.companion.AssociationInfo;
-import android.companion.datatransfer.continuity.IRemoteTaskListener;
 import android.companion.datatransfer.continuity.RemoteTask;
 import android.platform.test.annotations.Presubmit;
 import android.testing.AndroidTestingRunner;
@@ -35,7 +33,6 @@ import com.android.server.companion.datatransfer.continuity.messages.HandoffOpti
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskInfo;
 import com.android.server.companion.datatransfer.continuity.messages.TaskStackBroadcastMessage;
 import com.android.server.wm.ActivityTaskManagerInternal;
-import java.util.ArrayList;
 import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
@@ -52,8 +49,6 @@ public class TaskSyncControllerTest {
 
     @Mock private TaskContinuityMessenger mMockTaskContinuityMessenger;
     @Mock private TaskBroadcaster mMockTaskBroadcaster;
-    @Mock private RemoteTaskStore mMockRemoteTaskStore;
-    @Mock private RemoteTaskListenerHolder mMockRemoteTaskListenerHolder;
     @Mock private ActivityTaskManager mMockActivityTaskManager;
     @Mock private ActivityTaskManagerInternal mMockActivityTaskManagerInternal;
     @Mock private RemoteTaskFactory mMockRemoteTaskFactory;
@@ -71,8 +66,6 @@ public class TaskSyncControllerTest {
                         USER_ID,
                         mMockTaskContinuityMessenger,
                         mMockTaskBroadcaster,
-                        mMockRemoteTaskStore,
-                        mMockRemoteTaskListenerHolder,
                         mMockActivityTaskManager,
                         mMockActivityTaskManagerInternal,
                         mMockRemoteTaskFactory);
@@ -112,33 +105,43 @@ public class TaskSyncControllerTest {
     }
 
     @Test
-    public void onDisable_clearsRemoteTaskStore() {
+    public void onDisable_notifiesOfTaskListChanged() {
         mTaskSyncController.enable();
-        mTaskSyncController.disable();
 
-        verify(mMockRemoteTaskStore).clear();
+        // Register a listener, verify it is notified.
+        FakeRemoteTaskListener fakeRemoteTaskListener = new FakeRemoteTaskListener();
+        mTaskSyncController.registerTaskListener(fakeRemoteTaskListener);
+        fakeRemoteTaskListener.verifyListenerEvents(List.of());
+
+        // Disable the controller, verify the listener was notified again.
+        mTaskSyncController.disable();
+        fakeRemoteTaskListener.verifyListenerEvents(List.of(), List.of());
     }
 
     @Test
     public void registerRemoteTaskListener_registersListener() {
-        IRemoteTaskListener mockRemoteTaskListener = mock(IRemoteTaskListener.class);
-        mTaskSyncController.registerTaskListener(mockRemoteTaskListener);
-        verify(mMockRemoteTaskListenerHolder).addListener(mockRemoteTaskListener);
+        FakeRemoteTaskListener fakeRemoteTaskListener = new FakeRemoteTaskListener();
+        mTaskSyncController.registerTaskListener(fakeRemoteTaskListener);
+
+        // Verify the listener was notified.
+        fakeRemoteTaskListener.verifyListenerEvents(List.of());
     }
 
     @Test
     public void unregisterRemoteTaskListener_unregistersListener() {
-        IRemoteTaskListener mockRemoteTaskListener = mock(IRemoteTaskListener.class);
-        mTaskSyncController.unregisterTaskListener(mockRemoteTaskListener);
-        verify(mMockRemoteTaskListenerHolder).removeListener(mockRemoteTaskListener);
-    }
+        // Register a listener, verify it is notified.
+        FakeRemoteTaskListener fakeRemoteTaskListener = new FakeRemoteTaskListener();
+        mTaskSyncController.registerTaskListener(fakeRemoteTaskListener);
+        fakeRemoteTaskListener.verifyListenerEvents(List.of());
 
-    @Test
-    public void removeTask_removesTask() {
-        int associationId = 1;
-        int taskId = 2;
-        mTaskSyncController.removeTask(associationId, taskId);
-        verify(mMockRemoteTaskStore).removeTask(associationId, taskId);
+        // Unregister the listener
+        mTaskSyncController.unregisterTaskListener(fakeRemoteTaskListener);
+
+        // Send a new task stack broadcast message, verify the listener was not notified.
+        TaskStackBroadcastMessage taskStackBroadcastMessage =
+                new TaskStackBroadcastMessage(List.of());
+        mTaskSyncController.onTaskStackBroadcastMessageReceived(1, taskStackBroadcastMessage);
+        fakeRemoteTaskListener.verifyListenerEvents(List.of());
     }
 
     @Test
@@ -183,10 +186,12 @@ public class TaskSyncControllerTest {
                         .build();
         when(mMockConnectedAssociationStore.getConnectedAssociations())
                 .thenReturn(List.of(associationInfo));
+        FakeRemoteTaskListener fakeRemoteTaskListener = new FakeRemoteTaskListener();
+        mTaskSyncController.registerTaskListener(fakeRemoteTaskListener);
         mTaskSyncController.onAssociationConnected(associationInfo);
         when(mMockConnectedAssociationStore.getConnectedAssociations()).thenReturn(List.of());
         mTaskSyncController.onAssociationDisconnected(associationId);
-        verify(mMockRemoteTaskStore).removeAssociation(associationId);
+        fakeRemoteTaskListener.verifyListenerEvents(List.of(), List.of());
         verify(mMockActivityTaskManager).unregisterTaskStackListener(mMockTaskBroadcaster);
         verify(mMockActivityTaskManagerInternal)
                 .unregisterHandoffEnablementListener(mMockTaskBroadcaster);
@@ -201,19 +206,10 @@ public class TaskSyncControllerTest {
                 .unregisterHandoffEnablementListener(mMockTaskBroadcaster);
     }
 
-
     @Test
     public void onTaskStackBroadcastMessageReceived_setsTasks() {
-        int associationId = 1;
-        TaskStackBroadcastMessage taskStackBroadcastMessage =
-                new TaskStackBroadcastMessage(new ArrayList<>());
-        mTaskSyncController.onTaskStackBroadcastMessageReceived(
-                associationId, taskStackBroadcastMessage);
-        verify(mMockRemoteTaskStore).setTasks(associationId, new ArrayList<>());
-    }
-
-    @Test
-    public void onRemoteTasksChanged_notifiesListener() {
+        FakeRemoteTaskListener fakeRemoteTaskListener = new FakeRemoteTaskListener();
+        mTaskSyncController.registerTaskListener(fakeRemoteTaskListener);
         int associationId = 1;
         String associationDisplayName = "test_device";
         when(mMockTaskContinuityMessenger.getAssociationInfo(associationId))
@@ -227,14 +223,15 @@ public class TaskSyncControllerTest {
                 new RemoteTask.Builder(1, 1).setAssociationDisplayName("test_device").build();
         when(mMockRemoteTaskFactory.create(associationId, associationDisplayName, remoteTaskInfo))
                 .thenReturn(remoteTask);
-        List<RemoteTaskStore.Task> tasks =
-                List.of(new RemoteTaskStore.Task(associationId, remoteTaskInfo));
         ArgumentCaptor<List<RemoteTask>> remoteTasksCaptor = ArgumentCaptor.forClass(List.class);
         ArgumentCaptor<Integer> associationIdCaptor = ArgumentCaptor.forClass(Integer.class);
         ArgumentCaptor<String> associationDisplayNameCaptor = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<RemoteTaskInfo> remoteTaskInfoCaptor =
                 ArgumentCaptor.forClass(RemoteTaskInfo.class);
-        mTaskSyncController.onRemoteTasksChanged(tasks);
+        TaskStackBroadcastMessage taskStackBroadcastMessage =
+                new TaskStackBroadcastMessage(List.of(remoteTaskInfo));
+        mTaskSyncController.onTaskStackBroadcastMessageReceived(
+                associationId, taskStackBroadcastMessage);
         verify(mMockRemoteTaskFactory)
                 .create(
                         associationIdCaptor.capture(),
@@ -243,8 +240,6 @@ public class TaskSyncControllerTest {
         assertThat(associationIdCaptor.getValue()).isEqualTo(associationId);
         assertThat(associationDisplayNameCaptor.getValue()).isEqualTo(associationDisplayName);
         assertThat(remoteTaskInfoCaptor.getValue()).isEqualTo(remoteTaskInfo);
-        verify(mMockRemoteTaskListenerHolder).notifyListeners(remoteTasksCaptor.capture());
-        assertThat(remoteTasksCaptor.getValue()).hasSize(1);
-        assertThat(remoteTasksCaptor.getValue().get(0)).isEqualTo(remoteTask);
+        fakeRemoteTaskListener.verifyListenerEvents(List.of(), List.of(remoteTask));
     }
 }

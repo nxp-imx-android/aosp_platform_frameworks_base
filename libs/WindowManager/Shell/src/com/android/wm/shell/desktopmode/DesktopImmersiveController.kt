@@ -322,8 +322,12 @@ class DesktopImmersiveController(
             .setPosition(leash, startBounds.left.toFloat(), startBounds.top.toFloat())
             .setWindowCrop(leash, startBounds.width(), startBounds.height())
             .show(leash)
-        onTaskResizeAnimationListener?.onAnimationStart(taskId, startTransaction, startBounds)
-            ?: startTransaction.apply()
+        val startTransactionApplied =
+            onTaskResizeAnimationListener?.onAnimationStart(taskId, startTransaction, startBounds)
+                ?: false
+        if (!startTransactionApplied) {
+            startTransaction.apply()
+        }
         val updateTransaction = transactionSupplier()
         ValueAnimator.ofObject(rectEvaluator, startBounds, endBounds).apply {
             duration = FULL_IMMERSIVE_ANIM_DURATION_MS
@@ -344,8 +348,12 @@ class DesktopImmersiveController(
                     .setPosition(leash, rect.left.toFloat(), rect.top.toFloat())
                     .setWindowCrop(leash, rect.width(), rect.height())
                     .apply()
-                onTaskResizeAnimationListener?.onBoundsChange(taskId, updateTransaction, rect)
-                    ?: updateTransaction.apply()
+                val updateTransactionApplied =
+                    onTaskResizeAnimationListener?.onBoundsChange(taskId, updateTransaction, rect)
+                        ?: false
+                if (!updateTransactionApplied) {
+                    updateTransaction.apply()
+                }
             }
             start()
         }

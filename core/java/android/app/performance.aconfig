@@ -22,6 +22,7 @@ flag {
     namespace: "system_performance"
     description: "Controls the onRestart callback in ActivityLifeCycleCallbacks"
     bug: "417520188"
+    is_exported: true
 }
 
 flag {

@@ -3381,6 +3381,12 @@ public interface WindowManager extends ViewManager {
         public int flags;
 
         /**
+         * Flag to indicate that this window disables the performance hint session.
+         * @hide
+         */
+        public static final int PRIVATE_FLAG_DISABLE_PERFORMANCE_HINT = 1 << 0;
+
+        /**
          * In the system process, we globally do not use hardware acceleration
          * because there are many threads doing UI there and they conflict.
          * If certain parts of the UI that really do want to use hardware
@@ -3655,6 +3661,7 @@ public interface WindowManager extends ViewManager {
          * @hide
          */
         @IntDef(flag = true, prefix="PRIVATE_FLAG_", value = {
+                PRIVATE_FLAG_DISABLE_PERFORMANCE_HINT,
                 PRIVATE_FLAG_FORCE_HARDWARE_ACCELERATED,
                 PRIVATE_FLAG_WANTS_OFFSET_NOTIFICATIONS,
                 SYSTEM_FLAG_SHOW_FOR_ALL_USERS,
@@ -3695,6 +3702,10 @@ public interface WindowManager extends ViewManager {
          */
         @UnsupportedAppUsage
         @ViewDebug.ExportedProperty(flagMapping = {
+                @ViewDebug.FlagToString(
+                        mask = PRIVATE_FLAG_DISABLE_PERFORMANCE_HINT,
+                        equals = PRIVATE_FLAG_DISABLE_PERFORMANCE_HINT,
+                        name = "DISABLE_PERFORMANCE_HINT"),
                 @ViewDebug.FlagToString(
                         mask = PRIVATE_FLAG_FORCE_HARDWARE_ACCELERATED,
                         equals = PRIVATE_FLAG_FORCE_HARDWARE_ACCELERATED,
@@ -4907,6 +4918,14 @@ public interface WindowManager extends ViewManager {
         public boolean isSystemApplicationOverlay() {
             return (privateFlags & PRIVATE_FLAG_SYSTEM_APPLICATION_OVERLAY)
                     == PRIVATE_FLAG_SYSTEM_APPLICATION_OVERLAY;
+        }
+
+        /**
+         * Returns if this window disables the performance hint session.
+         * @hide
+         */
+        public boolean isPerfHintSessionDisabled() {
+            return (privateFlags & PRIVATE_FLAG_DISABLE_PERFORMANCE_HINT) != 0;
         }
 
         /**

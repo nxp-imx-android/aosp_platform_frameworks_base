@@ -73,7 +73,7 @@ static struct {
 
 } gDisplayEventReceiverClassInfo;
 
-jobjectArray getFrameRateOverrides(std::vector<FrameRateOverride> overrides, JNIEnv* env) {
+jobjectArray getFrameRateOverrides(const std::vector<FrameRateOverride>& overrides, JNIEnv* env) {
     const auto frameRateOverrideClass =
             gDisplayEventReceiverClassInfo.frameRateOverrideClassInfo.clazz;
     const auto frameRateOverrideInit =
@@ -90,7 +90,7 @@ jobjectArray getFrameRateOverrides(std::vector<FrameRateOverride> overrides, JNI
     return frameRateOverrideArray;
 }
 
-jfloatArray getSupportedRefreshRates(std::vector<SupportedRefreshRate> supportedRefreshRates,
+jfloatArray getSupportedRefreshRates(const std::vector<SupportedRefreshRate>& supportedRefreshRates,
                                      JNIEnv* env) {
     jfloatArray floatArray = env->NewFloatArray(supportedRefreshRates.size());
     std::vector<jfloat> refreshRates(supportedRefreshRates.size());
@@ -125,8 +125,8 @@ private:
     void dispatchModeChangedWithFrameRateOverrides(
             nsecs_t timestamp, PhysicalDisplayId displayId, int32_t modeId, nsecs_t renderPeriod,
             nsecs_t appVsyncOffset, nsecs_t presentationDeadline,
-            std::vector<FrameRateOverride> overrides,
-            std::vector<SupportedRefreshRate> supportedRefreshRates) override;
+            const std::vector<FrameRateOverride>& overrides,
+            const std::vector<SupportedRefreshRate>& supportedRefreshRates) override;
     void dispatchModeRejected(PhysicalDisplayId displayId, int32_t modeId) override;
     void dispatchNullEvent(nsecs_t timestamp, PhysicalDisplayId displayId) override {}
     void dispatchHdcpLevelsChanged(PhysicalDisplayId displayId, int connectedLevel,
@@ -291,7 +291,8 @@ void NativeDisplayEventReceiver::dispatchHotplugConnectionError(nsecs_t timestam
 void NativeDisplayEventReceiver::dispatchModeChangedWithFrameRateOverrides(
         nsecs_t timestamp, PhysicalDisplayId displayId, int32_t modeId, nsecs_t renderPeriod,
         nsecs_t appVsyncOffset, nsecs_t presentationDeadline,
-        std::vector<FrameRateOverride> overrides, std::vector<SupportedRefreshRate> refreshRates) {
+        const std::vector<FrameRateOverride>& overrides,
+        const std::vector<SupportedRefreshRate>& refreshRates) {
     JNIEnv* env = AndroidRuntime::getJNIEnv();
     ScopedLocalRef<jobject> receiverObj(env, GetReferent(env, mReceiverWeakGlobal));
     if (receiverObj.get()) {

@@ -51,8 +51,6 @@ import com.android.systemui.util.concurrency.FakeExecutor;
 import com.android.systemui.util.time.FakeSystemClock;
 import com.android.wifitrackerlib.WifiEntry;
 
-import kotlinx.coroutines.CoroutineScope;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -60,6 +58,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.MockitoSession;
+import org.mockito.quality.Strictness;
 
 import java.util.List;
 
@@ -77,8 +76,6 @@ public class InternetDialogDelegateLegacyTest extends SysuiTestCase {
 
     @Mock
     private Handler mHandler;
-    @Mock
-    CoroutineScope mScope;
     @Mock
     private TelephonyManager mTelephonyManager;
     @Mock
@@ -144,6 +141,7 @@ public class InternetDialogDelegateLegacyTest extends SysuiTestCase {
         when(mInternetDetailsContentController.getActiveAutoSwitchNonDdsSubId()).thenReturn(
                 SubscriptionManager.INVALID_SUBSCRIPTION_ID);
         mMockitoSession = ExtendedMockito.mockitoSession()
+                .strictness(Strictness.LENIENT)
                 .spyStatic(WifiEnterpriseRestrictionUtils.class)
                 .startMocking();
         when(WifiEnterpriseRestrictionUtils.isChangeWifiStateAllowed(mContext)).thenReturn(true);
@@ -162,7 +160,7 @@ public class InternetDialogDelegateLegacyTest extends SysuiTestCase {
                 true,
                 true,
                 true,
-                mScope,
+                mKosmos.getTestScope(),
                 mock(UiEventLogger.class),
                 mDialogTransitionAnimator,
                 mHandler,
@@ -171,7 +169,8 @@ public class InternetDialogDelegateLegacyTest extends SysuiTestCase {
                 mSystemUIDialogFactory,
                 new FakeShadeDialogContextInteractor(mContext),
                 mKosmos.getShadeModeInteractor(),
-                mRetailModeInteractor);
+                mRetailModeInteractor,
+                mKosmos.getFakeUserRepository());
         mInternetDialogDelegateLegacy.createDialog();
         mInternetDialogDelegateLegacy.onCreate(mSystemUIDialog, null);
         mInternetDialogDelegateLegacy.mAdapter = mInternetAdapter;

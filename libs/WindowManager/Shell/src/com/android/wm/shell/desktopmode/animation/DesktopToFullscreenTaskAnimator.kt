@@ -64,11 +64,15 @@ class DesktopToFullscreenTaskAnimator(
         startTransaction
             .setPosition(leash, startBounds.left.toFloat(), startBounds.top.toFloat())
             .setWindowCrop(leash, startBounds.width(), startBounds.height())
-        onTaskResizeAnimationListener?.onAnimationStart(
-            taskId = task.taskId,
-            t = startTransaction,
-            bounds = startBounds,
-        ) ?: startTransaction.apply()
+        val startTransactionApplied =
+            onTaskResizeAnimationListener?.onAnimationStart(
+                taskId = task.taskId,
+                t = startTransaction,
+                bounds = startBounds,
+            ) ?: false
+        if (!startTransactionApplied) {
+            startTransaction.apply()
+        }
 
         val updateTransaction = transactionSupplier()
         ValueAnimator.ofObject(rectEvaluator, startBounds, endBounds).apply {
@@ -80,11 +84,15 @@ class DesktopToFullscreenTaskAnimator(
                     .setWindowCrop(leash, rect.width(), rect.height())
                     .show(leash)
                     .setFrameTimeline(Choreographer.getInstance().getVsyncId())
-                onTaskResizeAnimationListener?.onBoundsChange(
-                    taskId = task.taskId,
-                    t = updateTransaction,
-                    bounds = rect,
-                ) ?: updateTransaction.apply()
+                val updateTransactionApplied =
+                    onTaskResizeAnimationListener?.onBoundsChange(
+                        taskId = task.taskId,
+                        t = updateTransaction,
+                        bounds = rect,
+                    ) ?: false
+                if (!updateTransactionApplied) {
+                    updateTransaction.apply()
+                }
             }
             addListener(
                 onEnd = {

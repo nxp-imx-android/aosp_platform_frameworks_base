@@ -49,4 +49,5 @@ flag {
     namespace: "system_sw_usb"
     description: "Feature flag to enable power profile info and bc12 type reporting funtionality"
     bug: "450113925"
+    is_exported: true
 }

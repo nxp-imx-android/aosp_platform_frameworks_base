@@ -32,6 +32,7 @@ import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.res.R
+import com.android.systemui.statusbar.quickactions.ui.viewmodel.ChipContent
 import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipUiState
 import com.android.systemui.testKosmosNew
 import com.google.common.truth.Truth.assertThat
@@ -94,7 +95,7 @@ class ImeIndicatorChipViewModelTest : SysuiTestCase() {
             val loadedIcon = chip.icons[0].icon as Icon.Loaded
             assertThat(loadedIcon.resId).isEqualTo(subtypeIcon.resId)
             assertThat(loadedIcon.packageName).isEqualTo(subtypeIcon.packageName)
-            assertThat(chip.chipText).isNull()
+            assertThat(chip.chipContent).isNull()
             assertThat(chip.contentDescription)
                 .isEqualTo(
                     ContentDescription.Resource(
@@ -120,7 +121,7 @@ class ImeIndicatorChipViewModelTest : SysuiTestCase() {
             val chip = underTest.chip as QuickActionChipUiState.PopupChip
 
             assertThat(chip.icons).isEmpty()
-            assertThat(chip.chipText).isEqualTo("EN")
+            assertThat((chip.chipContent as ChipContent.Text).text).isEqualTo("EN")
         }
 
     @Test

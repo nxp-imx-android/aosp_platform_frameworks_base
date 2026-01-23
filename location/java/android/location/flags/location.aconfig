@@ -152,6 +152,7 @@ flag {
     namespace: "location"
     description: "Support TOA in GnssSatelliteAlmanac"
     bug: "409934786"
+    is_exported: true
 }
 
 flag {
@@ -184,6 +185,7 @@ flag {
     namespace: "location"
     description: "Support code type and elapsed real time in GnssStatus"
     bug: "361042865"
+    is_exported: true
 }
 
 flag {

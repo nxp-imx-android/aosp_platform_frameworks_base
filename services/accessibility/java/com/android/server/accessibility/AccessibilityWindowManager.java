@@ -22,7 +22,6 @@ import static android.view.WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY
 import static android.view.WindowManager.LayoutParams.TYPE_DOCK_DIVIDER;
 import static android.view.WindowManager.LayoutParams.TYPE_MAGNIFICATION_OVERLAY;
 import static android.view.accessibility.AccessibilityEvent.WINDOWS_CHANGE_ACCESSIBILITY_FOCUSED;
-import static android.view.accessibility.Flags.enableTypeWindowControl;
 
 import static com.android.internal.util.function.pooled.PooledLambda.obtainMessage;
 import static com.android.server.accessibility.AbstractAccessibilityServiceConnection.DISPLAY_TYPE_DEFAULT;
@@ -1038,10 +1037,7 @@ public class AccessibilityWindowManager {
                 }
 
                 case WindowManager.LayoutParams.TYPE_APPLICATION_CAPTION_BAR: {
-                    if (enableTypeWindowControl()) {
-                        return AccessibilityWindowInfo.TYPE_WINDOW_CONTROL;
-                    }
-                    return AccessibilityWindowInfo.TYPE_APPLICATION;
+                    return AccessibilityWindowInfo.TYPE_WINDOW_CONTROL;
                 }
 
                 default: {

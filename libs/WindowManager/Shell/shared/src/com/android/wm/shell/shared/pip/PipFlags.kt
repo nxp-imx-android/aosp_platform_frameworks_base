@@ -29,14 +29,11 @@ class PipFlags {
          */
         @JvmStatic
         val isPip2ExperimentEnabled: Boolean by lazy {
-            val isTv = AppGlobals.getPackageManager().hasSystemFeature(
-                PackageManager.FEATURE_LEANBACK, 0)
+            val isTv =
+                AppGlobals.getPackageManager().hasSystemFeature(PackageManager.FEATURE_LEANBACK, 0)
             Flags.enablePip2() && (!isTv || Flags.enablePip2OnTv())
         }
 
-        @JvmStatic
-        val isPipUmoExperienceEnabled: Boolean by lazy {
-            Flags.enablePipUmoExperience()
-        }
+        @JvmStatic val isPipUmoExperienceEnabled: Boolean by lazy { Flags.enablePipUmoExperience() }
     }
 }

@@ -335,6 +335,7 @@ class PromptSelectorInteractorImplTest : SysuiTestCase() {
                         SysUiStatsLog
                             .BIOMETRIC_PROMPT_EVENT__EVENT__EVENT_TYPE_CREDENTIAL_PASSWORD_VIEW_SHOWN
                     ),
+                    eq(-1),
                 )
 
             interactor.resetPrompt(REQUEST_ID)
@@ -362,6 +363,7 @@ class PromptSelectorInteractorImplTest : SysuiTestCase() {
                         SysUiStatsLog
                             .BIOMETRIC_PROMPT_EVENT__EVENT__EVENT_TYPE_CREDENTIAL_PIN_VIEW_SHOWN
                     ),
+                    eq(-1),
                 )
 
             interactor.resetPrompt(REQUEST_ID)
@@ -389,6 +391,7 @@ class PromptSelectorInteractorImplTest : SysuiTestCase() {
                         SysUiStatsLog
                             .BIOMETRIC_PROMPT_EVENT__EVENT__EVENT_TYPE_CREDENTIAL_PATTERN_VIEW_SHOWN
                     ),
+                    eq(-1),
                 )
 
             interactor.resetPrompt(REQUEST_ID)
@@ -413,6 +416,7 @@ class PromptSelectorInteractorImplTest : SysuiTestCase() {
                 .logPromptEvent(
                     eq(instanceId),
                     eq(SysUiStatsLog.BIOMETRIC_PROMPT_EVENT__EVENT__EVENT_TYPE_FALLBACK_VIEW_SHOWN),
+                    eq(-1),
                 )
 
             interactor.resetPrompt(REQUEST_ID)
@@ -436,7 +440,10 @@ class PromptSelectorInteractorImplTest : SysuiTestCase() {
             verify(biometricPromptLogger)
                 .logPromptEvent(
                     eq(instanceId),
-                    eq(SysUiStatsLog.BIOMETRIC_PROMPT_EVENT__EVENT__EVENT_TYPE_BIOMETRIC_VIEW_SHOWN),
+                    eq(
+                        SysUiStatsLog.BIOMETRIC_PROMPT_EVENT__EVENT__EVENT_TYPE_BIOMETRIC_VIEW_SHOWN
+                    ),
+                    eq(-1),
                 )
 
             interactor.resetPrompt(REQUEST_ID)

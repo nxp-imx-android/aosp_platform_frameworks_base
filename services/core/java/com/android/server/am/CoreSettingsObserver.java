@@ -31,14 +31,17 @@ import android.os.UserHandle;
 import android.provider.DeviceConfig;
 import android.provider.Settings;
 import android.util.IntArray;
+import android.util.SparseArray;
 import android.widget.WidgetFlags;
 
 import com.android.internal.R;
+import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.NamedLock;
 import com.android.server.utils.Slogf;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -50,16 +53,24 @@ import java.util.Objects;
  * propagates to application processes to avoid multiple lookups and potentially
  * disk I/O operations. Note: This class assumes that all core settings reside
  * in {@link Settings.Secure}.
- *
- * <p>This class is to be used via a subclass {@link CoreSettingsObserverMultiUser},
- * which fixes bug b/413694508, when a bugfix flag is enabled. Now that the flag is removed,
- * but the code structure is kept as-is, so we always use {@link CoreSettingsObserverMultiUser}.
  */
-abstract class CoreSettingsObserver extends ContentObserver {
+class CoreSettingsObserver extends ContentObserver {
     private static final String TAG = CoreSettingsObserver.class.getSimpleName();
     protected static final boolean DEBUG = false;
 
     protected final Object mLock = NamedLock.create("CoreSettingsObserverLock");
+
+    /**
+     * Holds the core settings for each running user. The key is the user ID.
+     * This ensures that settings for one user do not leak to another.
+     */
+    @GuardedBy("mLock")
+    private final SparseArray<Bundle> mCoreSettingsPerUser = new SparseArray<>();
+
+    @GuardedBy("mLock")
+    private final Bundle mGlobalSettingsBundle;
+    @GuardedBy("mLock")
+    private final Bundle mDeviceConfigBundle;
 
     private static class DeviceConfigEntry<T> {
         String namespace;
@@ -201,17 +212,22 @@ abstract class CoreSettingsObserver extends ContentObserver {
         }
 
         mActivityManagerService = activityManagerService;
+        mGlobalSettingsBundle = new Bundle(sGlobalSettingToTypeMap.size());
+        mDeviceConfigBundle = new Bundle(sDeviceConfigEntries.size());
+        updateGlobalSettings();
+
+        beginObserveCoreSettings(/* allUsers */ true);
+        sendCoreSettings();
     }
 
     /**
      * Factory method for creating a {@link CoreSettingsObserver} instance.
-     * This method returns a multi-user aware observer.
      *
      * @param activityManagerService The {@link ActivityManagerService} instance.
      * @return A new {@link CoreSettingsObserver} instance.
      */
     static CoreSettingsObserver create(ActivityManagerService activityManagerService) {
-        return new CoreSettingsObserverMultiUser(activityManagerService);
+        return new CoreSettingsObserver(activityManagerService);
     }
 
     private static void loadDeviceConfigContextEntries(Context context) {
@@ -228,25 +244,75 @@ abstract class CoreSettingsObserver extends ContentObserver {
      * @param userId The user ID for which to retrieve the settings.
      * @return A deep copy of the core settings {@link Bundle}.
      */
-    public abstract Bundle getCoreSettings(@UserIdInt int userId);
+    public Bundle getCoreSettings(@UserIdInt int userId) {
+        synchronized (mLock) {
+            Bundle settings = mCoreSettingsPerUser.get(userId);
+            if (settings == null) {
+                IntArray currentUsers = new IntArray(mCoreSettingsPerUser.size());
+                for (int i = 0; i < mCoreSettingsPerUser.size(); i++) {
+                    currentUsers.add(mCoreSettingsPerUser.keyAt(i));
+                }
+                Slogf.w(TAG, "No core settings found for user %d. Current users: %s",
+                        userId, currentUsers);
+                return Bundle.EMPTY;
+            }
+            return settings.deepCopy();
+        }
+    }
 
     /**
      * Called when a user is starting.
+     * This triggers a refresh of the core settings for the starting user to ensure the
+     * new user's settings are populated and sent to the relevant processes.
+     *
+     * <p>This method builds and dispatches core settings exclusively for the new user,
+     * avoiding redundant updates for already running users. The resulting {@link SparseArray}
+     * sent to {@link ActivityManagerService#onCoreSettingsChange} contains settings for only
+     * the starting user, which {@link com.android.server.os.ProcessList#updateCoreSettings}
+     * will then apply selectively.
      */
     public void onUserStarting(@UserIdInt int userId) {
+        if (DEBUG) {
+            Slogf.d(TAG, "onUserStarting %d", userId);
+        }
+        synchronized (mLock) {
+            if (mCoreSettingsPerUser.contains(userId)) {
+                // The boot process commonly calls this method for the system user,
+                // at which point this class has already been initialized for the same user.
+                if (DEBUG) {
+                    Slogf.d(TAG, "Core settings for user %d already exist.", userId);
+                }
+                return;
+            }
+        }
+        Bundle userSettings = buildSettingsForUser(userId);
+        synchronized (mLock) {
+            mCoreSettingsPerUser.put(userId, userSettings);
+        }
+        SparseArray<Bundle> settingsToSend = new SparseArray<>(1);
+        settingsToSend.put(userId, userSettings);
+        mActivityManagerService.onCoreSettingsChange(settingsToSend);
     }
 
     /**
      * Called when a user is stopping.
+     * This removes the stopped user's settings from the cache.
      */
     public void onUserStopping(@UserIdInt int userId) {
+        if (DEBUG) {
+            Slogf.d(TAG, "onUserStopping %d", userId);
+        }
+        synchronized (mLock) {
+            mCoreSettingsPerUser.remove(userId);
+        }
     }
 
     @Override
     public void onChange(boolean selfChange) {
         if (DEBUG) {
-            Slogf.d(TAG, "Core settings changed, selfChange: %b", selfChange);
+            Slogf.d(TAG, "onChange(%b)", selfChange);
         }
+        updateGlobalSettings();
         sendCoreSettings();
     }
 
@@ -270,8 +336,106 @@ abstract class CoreSettingsObserver extends ContentObserver {
     /**
      * Populates the core settings bundle with the latest values and sends them to app processes
      * via {@link ActivityThread}.
+     * This will send the latest settings to all running users.
      */
-    protected abstract void sendCoreSettings();
+    protected void sendCoreSettings() {
+        int[] runningUserIds = mActivityManagerService.getRunningUserIds();
+        if (DEBUG) {
+            Slogf.d(TAG, "sendCoreSettings for users: %s", Arrays.toString(runningUserIds));
+        }
+
+        SparseArray<Bundle> settingsToSendPerUser = new SparseArray<>(runningUserIds.length);
+        for (int userId : runningUserIds) {
+            settingsToSendPerUser.put(userId, buildSettingsForUser(userId));
+        }
+
+        synchronized (mLock) {
+            mCoreSettingsPerUser.clear();
+            for (int i = 0; i < settingsToSendPerUser.size(); i++) {
+                mCoreSettingsPerUser.put(settingsToSendPerUser.keyAt(i),
+                        settingsToSendPerUser.valueAt(i));
+            }
+        }
+
+        mActivityManagerService.onCoreSettingsChange(settingsToSendPerUser);
+    }
+
+    private void updateGlobalSettings() {
+        synchronized (mLock) {
+            mGlobalSettingsBundle.clear();
+            populateSettings(mActivityManagerService.mContext, UserHandle.USER_SYSTEM,
+                    mGlobalSettingsBundle, sGlobalSettingToTypeMap);
+            mDeviceConfigBundle.clear();
+            populateSettingsFromDeviceConfig(mDeviceConfigBundle);
+        }
+    }
+
+    /**
+     * Builds a Bundle containing all core settings for a specific user.
+     *
+     * <p>This includes user-specific settings (Secure and System) as well as cached global
+     * settings. It also handles device-aware settings by creating a nested structure if needed.
+     *
+     * @param userId The user to build the settings for.
+     * @return A {@link Bundle} containing the core settings.
+     */
+    private Bundle buildSettingsForUser(@UserIdInt int userId) {
+        Context context = mActivityManagerService.mContext;
+        Bundle globalSettingsBundle;
+        Bundle deviceConfigBundle;
+        synchronized (mLock) {
+            globalSettingsBundle = new Bundle(mGlobalSettingsBundle);
+            deviceConfigBundle = new Bundle(mDeviceConfigBundle);
+        }
+
+        Bundle userSettingsBundle;
+        if (android.companion.virtualdevice.flags.Flags.deviceAwareSettingsOverride()) {
+            IntArray deviceIds = getVirtualDeviceIds();
+            deviceIds.add(Context.DEVICE_ID_DEFAULT);
+            userSettingsBundle = new Bundle(deviceIds.size());
+
+            for (int i = 0; i < deviceIds.size(); i++) {
+                int deviceId = deviceIds.get(i);
+                Context deviceContext;
+                if (deviceId == Context.DEVICE_ID_DEFAULT) {
+                    deviceContext = context;
+                } else {
+                    try {
+                        deviceContext = context.createDeviceContext(deviceId);
+                    } catch (IllegalArgumentException e) {
+                        Slogf.e(TAG, e, "Exception during Context#createDeviceContext "
+                                + "for deviceId: %d", deviceId);
+                        continue;
+                    }
+                }
+
+                if (DEBUG) {
+                    Slogf.d(TAG, "Populating settings for userId: %d, deviceId: %d",
+                            userId, deviceId);
+                }
+                Bundle deviceBundle = new Bundle();
+                populateSettings(deviceContext, userId, deviceBundle, sSecureSettingToTypeMap);
+                populateSettings(deviceContext, userId, deviceBundle, sSystemSettingToTypeMap);
+
+                // Copy global settings and device config values.
+                deviceBundle.putAll(globalSettingsBundle);
+                deviceBundle.putAll(deviceConfigBundle);
+
+                userSettingsBundle.putBundle(String.valueOf(deviceId), deviceBundle);
+            }
+        } else {
+            if (DEBUG) {
+                Slogf.d(TAG, "Populating settings for userId: %d, default device", userId);
+            }
+            // For non-device-aware case, populate all settings into the single bundle.
+            userSettingsBundle = new Bundle();
+            populateSettings(context, userId, userSettingsBundle, sSecureSettingToTypeMap);
+            populateSettings(context, userId, userSettingsBundle, sSystemSettingToTypeMap);
+            userSettingsBundle.putAll(globalSettingsBundle);
+            userSettingsBundle.putAll(deviceConfigBundle);
+        }
+        return userSettingsBundle;
+    }
 
     protected final void beginObserveCoreSettings(boolean allUsers) {
         ContentResolver cr = mActivityManagerService.mContext.getContentResolver();

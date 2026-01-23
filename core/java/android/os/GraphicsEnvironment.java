@@ -28,6 +28,7 @@ import android.content.pm.IPackageManager;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.content.res.Resources;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
@@ -78,6 +79,7 @@ public class GraphicsEnvironment {
     private static final String PROPERTY_GFX_DRIVER_PRODUCTION = "ro.gfx.driver.0";
     private static final String PROPERTY_GFX_DRIVER_PRERELEASE = "ro.gfx.driver.1";
     private static final String PROPERTY_GFX_DRIVER_BUILD_TIME = "ro.gfx.driver_build_time";
+    private static final String PROPERTY_SOC_ET = "ro.soc.et";
 
     /// System properties related to EGL
     private static final String PROPERTY_RO_HARDWARE_EGL = "ro.hardware.egl";
@@ -89,6 +91,7 @@ public class GraphicsEnvironment {
             "com.android.graphics.developerdriver.enable";
     private static final String METADATA_INJECT_LAYERS_ENABLE =
             "com.android.graphics.injectLayers.enable";
+    private static final String METADATA_ANGLE_PREFER = "com.android.graphics.driver.prefer_angle";
 
     private static final String UPDATABLE_DRIVER_ALLOWLIST_ALL = "*";
     private static final String UPDATABLE_DRIVER_SPHAL_LIBRARIES_FILENAME = "sphal_libraries.txt";
@@ -538,37 +541,56 @@ public class GraphicsEnvironment {
                     }
                 }
             }
-            if (android.os.Flags.enableAngleForGames()
-                    && applicationInfoWithMetaData.category == ApplicationInfo.CATEGORY_GAME) {
-                final boolean shouldRunAngleForGame;
-                if (SystemProperties.getInt("debug.graphics.angle.force_enable_angle_for_games", 0)
+            if (applicationInfoWithMetaData.category == ApplicationInfo.CATEGORY_GAME) {
+                if (SystemProperties.getInt("debug.graphics.angle.force_enable_angle_for_games",
+                        0)
                         == 1) {
-                    shouldRunAngleForGame = true;
+                    // Force-enable ANGLE for games through local adb commands
                     if (DEBUG) {
                         Log.v(TAG, "Force enabling ANGLE for game " + packageName
                                 + " on debug.graphics.angle.force_enable_angle_for_games = 1");
                     }
-                } else {
-                    if (ActivityManager.isLowRamDeviceStatic()) {
-                        shouldRunAngleForGame = false;
-                        if (DEBUG) {
-                            Log.v(TAG, "Skip enabling ANGLE for game " + packageName
-                                    + " on low ram device");
-                        }
-                    } else if (SystemProperties.getInt("ro.vendor.api_level", 0) < 202604) {
-                        shouldRunAngleForGame = false;
-                        if (DEBUG) {
-                            Log.v(TAG,
-                                    "Skip enabling ANGLE for game " + packageName
-                                            + " on device where ro.vendor.api_level < 202604");
-                        }
-                    } else {
-                        shouldRunAngleForGame = true;
-                    }
-                }
-                if (shouldRunAngleForGame) {
                     return ANGLE_GL_DRIVER_CHOICE_ANGLE;
                 }
+                try {
+                    if (context.getResources().getBoolean(R.bool.config_angleForGamesEnabled)) {
+                        if (DEBUG) {
+                            Log.v(TAG, "Enable ANGLE for game on config_angleForGamesEnabled=true");
+                        }
+                    }
+                } catch (Resources.NotFoundException e) {
+                    if (DEBUG) {
+                        Log.v(TAG, "config_angleForGamesEnabled not set");
+                    }
+                }
+            }
+        }
+
+        if (applicationInfoWithMetaData.metaData != null
+                && applicationInfoWithMetaData.metaData.getBoolean(
+                METADATA_ANGLE_PREFER)) {
+            if (SystemProperties.getBoolean(PROPERTY_SOC_ET, false)) {
+                if (DEBUG) {
+                    Log.v(TAG, "Skip enabling ANGLE for essential tier device");
+                }
+            } else if (ActivityManager.isLowRamDeviceStatic()) {
+                if (DEBUG) {
+                    Log.v(TAG, "Skip enabling ANGLE for app " + packageName
+                            + " on low ram device");
+                }
+                // TODO(b/434014731): update to 202604 once we finished partner testing
+            } else if (SystemProperties.getInt("ro.vendor.api_level", 0) < 202504) {
+                if (DEBUG) {
+                    Log.v(TAG,
+                            "Skip enabling ANGLE for app " + packageName
+                                    + " on device where ro.vendor.api_level < 202604");
+                }
+            } else {
+                if (DEBUG) {
+                    Log.v(TAG, "Enable ANGLE for app " + packageName
+                            + " on app manifest opt-in");
+                }
+                return ANGLE_GL_DRIVER_CHOICE_ANGLE;
             }
         }
 

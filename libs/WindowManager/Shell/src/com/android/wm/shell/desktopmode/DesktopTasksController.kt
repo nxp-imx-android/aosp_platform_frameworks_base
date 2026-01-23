@@ -197,7 +197,6 @@ import com.android.wm.shell.windowdecor.extension.isFullscreen
 import com.android.wm.shell.windowdecor.extension.isMultiWindow
 import com.android.wm.shell.windowdecor.extension.requestingImmersive
 import com.android.wm.shell.windowdecor.tiling.DesktopTilingWindowDecoration.Companion.getDividerBoundsForZombieSession
-import com.android.wm.shell.windowdecor.tiling.SnapEventHandler
 import com.android.wm.shell.windowdecor.tiling.TilingDisplayReconnectEventHandler
 import java.io.PrintWriter
 import java.util.Optional
@@ -281,6 +280,7 @@ class DesktopTasksController(
     private val transitionStateHolder: TransitionStateHolder,
     private val desksController: DesksController,
     private val desktopTasksTransitionObserver: DesktopTasksTransitionObserver,
+    private val snapController: SnapController,
 ) :
     RemoteCallable<DesktopTasksController>,
     TransitionHandler,
@@ -301,7 +301,6 @@ class DesktopTasksController(
 
     private val wallpaperService: IWallpaperManager =
         IWallpaperManager.Stub.asInterface(ServiceManager.getService(Context.WALLPAPER_SERVICE))
-    private lateinit var snapEventHandler: SnapEventHandler
     private lateinit var mPipScheduler: PipScheduler
     private val dragToDesktopStateListener =
         object : DragToDesktopStateListener {
@@ -460,12 +459,6 @@ class DesktopTasksController(
         dragToDesktopTransitionHandler.setSplitScreenController(controller)
     }
 
-    /** Setter to handle snap events */
-    fun setSnapEventHandler(handler: SnapEventHandler) {
-        snapEventHandler = handler
-        desktopTasksLimiter.ifPresent { it.snapEventHandler = snapEventHandler }
-    }
-
     /** Setter for PiP scheduler */
     fun setPipScheduler(pipScheduler: PipScheduler) {
         mPipScheduler = pipScheduler
@@ -616,13 +609,8 @@ class DesktopTasksController(
         return shellTaskOrganizer.getRunningTasks(displayId).filter { taskInfo ->
             val focused = taskInfo.isFocused
             val isNotDesktop =
-                if (DesktopExperienceFlags.EXCLUDE_DESK_ROOTS_FROM_DESKTOP_TASKS.isTrue) {
-                    !repository.isActiveTask(taskInfo.taskId) &&
-                        !repository.getAllDeskIds().contains(taskInfo.taskId)
-                } else {
-                    taskInfo.windowingMode == WINDOWING_MODE_FULLSCREEN ||
-                        taskInfo.windowingMode == WINDOWING_MODE_MULTI_WINDOW
-                }
+                !repository.isActiveTask(taskInfo.taskId) &&
+                    !repository.getAllDeskIds().contains(taskInfo.taskId)
             val isHome = taskInfo.activityType == ACTIVITY_TYPE_HOME
             return@filter focused && isNotDesktop && !isHome
         }
@@ -647,7 +635,7 @@ class DesktopTasksController(
         displayId: Int,
         transitionSource: DesktopModeTransitionSource,
     ) {
-        snapEventHandler.removeTaskIfTiled(displayId, task.taskId)
+        snapController.removeTaskIfTiled(displayId, task.taskId)
         moveToFullscreenWithAnimation(task, task.positionInParent, transitionSource)
     }
 
@@ -710,7 +698,7 @@ class DesktopTasksController(
         if (returnToApp) {
             // Returning to the same desk, notify the snap event handler of recents animation
             // ending to the same desk.
-            snapEventHandler.onRecentsAnimationEndedToSameDesk()
+            snapController.onRecentsAnimationEndedToSameDesk()
             return
         }
         val repository = userRepositories.getProfile(userId)
@@ -914,7 +902,7 @@ class DesktopTasksController(
                     "destinationDisplayId=$destinationDisplayId"
             )
         }
-        snapEventHandler.onDisplayDisconnected(disconnectedDisplayId)
+        snapController.onDisplayDisconnected(disconnectedDisplayId)
         removeHomeTask(wct, disconnectedDisplayId)
         userRepositories.forAllRepositories { desktopRepository ->
             val userId = desktopRepository.userId
@@ -980,7 +968,7 @@ class DesktopTasksController(
                             tasks = emptySet(),
                             onDeskRemovedListener = onDeskRemovedListener,
                             exitReason = ExitReason.DISPLAY_DISCONNECTED,
-                            runOnTransitEnd = { snapEventHandler.onDeskRemoved(deskId) },
+                            runOnTransitEnd = { snapController.onDeskRemoved(deskId) },
                         )
                     )
                 }
@@ -1084,7 +1072,7 @@ class DesktopTasksController(
         oldDisplayLayout.getStableBounds(oldStableBounds)
         val newToOldDpiRatio =
             newDisplayLayout.densityDpi().toDouble() / oldDisplayLayout.densityDpi()
-        snapEventHandler.onDisplayLayoutChange(
+        snapController.onDisplayLayoutChange(
             displayId,
             newConfig,
             oldStableBounds,
@@ -1156,7 +1144,7 @@ class DesktopTasksController(
                         tasks = emptySet(),
                         onDeskRemovedListener = onDeskRemovedListener,
                         exitReason = ExitReason.DISPLAY_DISCONNECTED,
-                        runOnTransitEnd = { snapEventHandler.onDeskRemoved(deskId) },
+                        runOnTransitEnd = { snapController.onDeskRemoved(deskId) },
                     )
                 )
                 desksTransitionObserver.addPendingTransition(
@@ -1195,7 +1183,7 @@ class DesktopTasksController(
             val tilingReconnectHandler =
                 TilingDisplayReconnectEventHandler(
                     repository,
-                    snapEventHandler,
+                    snapController,
                     transitions,
                     displayId,
                 )
@@ -1817,7 +1805,7 @@ class DesktopTasksController(
             logW("onDesktopWindowClose: desk not found for task: $taskId")
             return null
         }
-        snapEventHandler.removeTaskIfTiled(displayId, taskId)
+        snapController.removeTaskIfTiled(displayId, taskId)
         val shouldExitDesktop =
             willExitDesktop(
                 triggerTaskId = taskId,
@@ -1907,7 +1895,7 @@ class DesktopTasksController(
             } else {
                 repository.isOnlyVisibleNonClosingTask(taskId = taskId, displayId = displayId)
             }
-        snapEventHandler.removeTaskIfTiled(displayId, taskId)
+        snapController.removeTaskIfTiled(displayId, taskId)
         val isMinimizingToPip =
             (taskInfo.pictureInPictureParams?.isAutoEnterEnabled ?: false) &&
                 isPipAllowedInAppOps(taskInfo)
@@ -2209,7 +2197,7 @@ class DesktopTasksController(
                     null
                 }
         taskInfo?.let { task ->
-            snapEventHandler.removeTaskIfTiled(task.displayId, taskId)
+            snapController.removeTaskIfTiled(task.displayId, taskId)
             moveToFullscreenWithAnimation(
                 task,
                 task.positionInParent,
@@ -2470,7 +2458,7 @@ class DesktopTasksController(
         logV("addMoveTaskToFrontChanges taskId=%s deskId=%s", taskInfo.taskId, deskId)
         // If a task is tiled, another task should be brought to foreground with it so let
         // tiling controller handle the request.
-        if (snapEventHandler.moveTaskToFrontIfTiled(taskInfo)) {
+        if (snapController.moveTaskToFrontIfTiled(taskInfo)) {
             return
         }
         if (deskId == null || !DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
@@ -2903,7 +2891,7 @@ class DesktopTasksController(
                 logW("addMoveToDisplayChanges: desk not found for display: $displayId")
                 return null
             }
-            snapEventHandler.removeTaskIfTiled(task.displayId, task.taskId)
+            snapController.removeTaskIfTiled(task.displayId, task.taskId)
             // TODO: b/393977830 and b/397437641 - do not assume that freeform==desktop.
             if (!task.isFreeform) {
                 if (desktopModeCompatPolicy.shouldDisableDesktopEntryPoints(task)) {
@@ -3097,7 +3085,7 @@ class DesktopTasksController(
         } else {
             // Save current bounds so that task can be restored back to original bounds if necessary
             // and toggle to the stable bounds.
-            snapEventHandler.removeTaskIfTiled(taskInfo.displayId, taskInfo.taskId)
+            snapController.removeTaskIfTiled(taskInfo.displayId, taskInfo.taskId)
             repository.saveBoundsBeforeSnapOrMaximize(taskInfo.taskId, currentTaskBounds)
             destinationBounds.set(calculateMaximizeBounds(displayLayout, taskInfo))
         }
@@ -3280,7 +3268,7 @@ class DesktopTasksController(
         }
 
         if (DesktopExperienceFlags.ENABLE_TILE_RESIZING.isTrue) {
-            val isTiled = snapEventHandler.snapToHalfScreen(taskInfo, currentDragBounds, position)
+            val isTiled = snapController.snapToHalfScreen(taskInfo, currentDragBounds, position)
             if (isTiled) {
                 updateTaskBarAndWallpaperDim(taskInfo.displayId, true)
             }
@@ -4900,7 +4888,7 @@ class DesktopTasksController(
                 deskId = deskId,
                 taskId = task.taskId,
             )
-            snapEventHandler.removeTaskIfTiled(task.displayId, task.taskId)
+            snapController.removeTaskIfTiled(task.displayId, task.taskId)
         }
 
         updateTaskBarAndWallpaperDimIfNeeded(task.displayId, task.userId, task.taskId)
@@ -5025,8 +5013,7 @@ class DesktopTasksController(
         destLayout.getStableBounds(destStableBounds)
         val boundsWithinDisplay =
             if (taskTilingState == DesktopTaskTilingState.LEFT) {
-                val dividerBounds =
-                    updatedDividerBounds ?: snapEventHandler.getDividerBounds(deskId)
+                val dividerBounds = updatedDividerBounds ?: snapController.getDividerBounds(deskId)
                 Rect(
                     destStableBounds.left,
                     destStableBounds.top,
@@ -5034,8 +5021,7 @@ class DesktopTasksController(
                     destStableBounds.bottom,
                 )
             } else if (taskTilingState == DesktopTaskTilingState.RIGHT) {
-                val dividerBounds =
-                    updatedDividerBounds ?: snapEventHandler.getDividerBounds(deskId)
+                val dividerBounds = updatedDividerBounds ?: snapController.getDividerBounds(deskId)
                 Rect(
                     dividerBounds.right,
                     destStableBounds.top,
@@ -5237,7 +5223,7 @@ class DesktopTasksController(
         val taskId = task.taskId
         val displayId = task.displayId
 
-        snapEventHandler.removeTaskIfTiled(displayId = displayId, taskId = taskId)
+        snapController.removeTaskIfTiled(displayId = displayId, taskId = taskId)
 
         if (desktopConfig.useDesktopOverrideDensity) {
             wct.setDensityDpi(task.token, getDefaultDensityDpi())
@@ -5537,7 +5523,7 @@ class DesktopTasksController(
                         deskId = deskId,
                         enterTaskId = newTaskIdInFront,
                         enterReason = enterReason,
-                        runOnTransitEnd = { snapEventHandler.onDeskActivated(deskId, displayId) },
+                        runOnTransitEnd = { snapController.onDeskActivated(deskId, displayId) },
                     )
                 } else {
                     DeskTransition.ActivateDesk(
@@ -5546,7 +5532,7 @@ class DesktopTasksController(
                         displayId = displayId,
                         deskId = deskId,
                         enterReason = enterReason,
-                        runOnTransitEnd = { snapEventHandler.onDeskActivated(deskId, displayId) },
+                        runOnTransitEnd = { snapController.onDeskActivated(deskId, displayId) },
                     )
                 }
             desksTransitionObserver.addPendingTransition(activateDeskTransition)
@@ -5769,7 +5755,7 @@ class DesktopTasksController(
             // so if the user selects a tiled task to be in front, tiling should handle this
             // to bring all tiled tasks to front.
             if (taskIdToReorderToFront != INVALID_TASK_ID && taskIdToReorderToFront != null) {
-                snapEventHandler.notifyTilingOfExplodedViewReorder(deskId, taskIdToReorderToFront)
+                snapController.notifyTilingOfExplodedViewReorder(deskId, taskIdToReorderToFront)
             }
             val transitionType = transitionType(remoteTransition)
             val handler =
@@ -5863,7 +5849,7 @@ class DesktopTasksController(
                         tasks = tasksToRemove,
                         onDeskRemovedListener = onDeskRemovedListener,
                         exitReason = exitReason,
-                        runOnTransitEnd = { snapEventHandler.onDeskRemoved(deskId) },
+                        runOnTransitEnd = { snapController.onDeskRemoved(deskId) },
                     )
                 )
             }
@@ -5900,7 +5886,7 @@ class DesktopTasksController(
                     displayId = displayId,
                     switchingUser = switchingUser,
                     exitReason = exitReason,
-                    runOnTransitEnd = { snapEventHandler.onDeskDeactivated(deskId) },
+                    runOnTransitEnd = { snapController.onDeskDeactivated(deskId) },
                 )
             )
         }
@@ -6114,10 +6100,7 @@ class DesktopTasksController(
     }
 
     private fun getFocusedDesktopTask(displayId: Int, userId: Int): RunningTaskInfo? {
-        if (
-            !DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue ||
-                !DesktopExperienceFlags.EXCLUDE_DESK_ROOTS_FROM_DESKTOP_TASKS.isTrue
-        ) {
+        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             return shellTaskOrganizer.getRunningTasks(displayId).find { taskInfo ->
                 taskInfo.isFocused && taskInfo.windowingMode == WINDOWING_MODE_FREEFORM
             }
@@ -6220,7 +6203,7 @@ class DesktopTasksController(
         taskBounds: Rect,
     ) {
         if (taskInfo.windowingMode != WINDOWING_MODE_FREEFORM) return
-        snapEventHandler.removeTaskIfTiled(taskInfo.displayId, taskInfo.taskId)
+        snapController.removeTaskIfTiled(taskInfo.displayId, taskInfo.taskId)
 
         val indicator =
             getOrCreateVisualIndicator(taskInfo, taskSurface, DragStartState.FROM_FREEFORM)
@@ -6278,7 +6261,7 @@ class DesktopTasksController(
                     rootTaskDisplayAreaOrganizer,
                     dragStartState,
                     bubbleController.getOrNull()?.bubbleDropTargetBoundsProvider,
-                    snapEventHandler,
+                    snapController,
                 )
         if (visualIndicator == null) visualIndicator = indicator
         return indicator
@@ -6790,9 +6773,7 @@ class DesktopTasksController(
     }
 
     private fun updateCurrentUser(newUserId: Int) {
-        if (this::snapEventHandler.isInitialized) {
-            snapEventHandler.onUserChange(newUserId)
-        }
+        snapController.onUserChange(newUserId)
     }
 
     /** Called when a task's info changes. */

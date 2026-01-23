@@ -29,7 +29,6 @@ import android.hardware.DataSpace;
 import android.hardware.HardwareBuffer;
 import android.hardware.OverlayProperties;
 import android.hardware.display.DisplayManager;
-import android.os.Debug;
 import android.os.IBinder;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
@@ -727,6 +726,17 @@ public class HardwareRenderer {
     }
 
     /**
+     * Sets whether the performance hint session is enabled. By default, the hint session
+     * is enabled.
+     *
+     * @param enabled true if the performance hint session is enabled, false otherwise.
+     * @hide
+     */
+    public void setHintSessionEnabled(boolean enabled) {
+        nSetHintSessionEnabled(mNativeProxy, enabled);
+    }
+
+    /**
      * Whether or not the renderer is set to be opaque. See {@link #setOpaque(boolean)}
      *
      * @return true if the renderer is opaque, false otherwise
@@ -1244,6 +1254,30 @@ public class HardwareRenderer {
         public static void applyTransactionInOrder(HardwareRenderer r, SurfaceControl.Transaction t) {
             nMergeWithNextTransaction(r.mNativeProxy, t.mNativeObject, 0);
         }
+
+        /**
+         * Clear the sync transaction. The callback will not be invoked when the next frame is
+         * acquired.
+         * @hide
+         */
+        public static void clearSyncTransaction(HardwareRenderer r) {
+            nClearSyncTransaction(r.mNativeProxy);
+        }
+
+        /**
+         * Get any transactions that were passed to {@link #mergeWithNextTransaction} with the
+         * specified frameNumber. This is intended to ensure transactions don't get stuck as pending
+         * if the specified frameNumber is never drawn.
+         *
+         * @param frameNumber The frameNumber used to determine which transactions to apply.
+         * @return a Transaction that contains the merge of all the transactions that were sent to
+         *         mergeWithNextTransaction
+         * @hide
+         */
+        public static SurfaceControl.Transaction gatherPendingTransactions(HardwareRenderer r,
+                long frameNumber) {
+            return nGatherPendingTransactions(r.mNativeProxy, frameNumber);
+        }
     }
 
     /**
@@ -1756,6 +1790,8 @@ public class HardwareRenderer {
 
     private static native void nSetOpaque(long nativeProxy, boolean opaque);
 
+    private static native void nSetHintSessionEnabled(long nativeProxy, boolean enabled);
+
     private static native float nSetColorMode(long nativeProxy, int colorMode);
 
     private static native void nSetTargetSdrHdrRatio(long nativeProxy, float ratio);
@@ -1888,5 +1924,8 @@ public class HardwareRenderer {
     private static native void nMergeWithNextTransaction(long ptr, long transactionPtr,
                                                               long frameNumber);
     private static native void nApplyPendingTransactions(long ptr, long frameNumber);
+    private static native void nClearSyncTransaction(long ptr);
+    private static native SurfaceControl.Transaction nGatherPendingTransactions(long ptr,
+            long frameNumber);
     private static native void nUpdateRenderTargetSize(long ptr, long width, long height);
 }

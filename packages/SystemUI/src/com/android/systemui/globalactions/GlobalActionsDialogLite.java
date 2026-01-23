@@ -41,8 +41,8 @@ import android.app.StatusBarManager;
 import android.app.WallpaperManager;
 import android.app.trust.TrustManager;
 import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -111,7 +111,6 @@ import com.android.internal.colorextraction.ColorExtractor;
 import com.android.internal.colorextraction.ColorExtractor.GradientColors;
 import com.android.internal.jank.InteractionJankMonitor;
 import com.android.internal.logging.MetricsLogger;
-import com.android.internal.logging.UiEvent;
 import com.android.internal.logging.UiEventLogger;
 import com.android.internal.logging.nano.MetricsProto.MetricsEvent;
 import com.android.internal.statusbar.IStatusBarService;
@@ -119,13 +118,13 @@ import com.android.internal.util.EmergencyAffordanceManager;
 import com.android.internal.util.ScreenshotHelper;
 import com.android.internal.widget.LockPatternUtils;
 import com.android.keyguard.KeyguardUpdateMonitor;
-import com.android.settingslib.Utils;
 import com.android.systemui.Flags;
 import com.android.systemui.FontStyles;
 import com.android.systemui.MultiListLayout.MultiListAdapter;
 import com.android.systemui.animation.DialogCuj;
 import com.android.systemui.animation.DialogTransitionAnimator;
 import com.android.systemui.animation.Expandable;
+import com.android.systemui.animation.TransitionAnimator;
 import com.android.systemui.broadcast.BroadcastDispatcher;
 import com.android.systemui.broadcast.BroadcastSender;
 import com.android.systemui.colorextraction.SysuiColorExtractor;
@@ -600,7 +599,12 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
                                 INTERACTION_JANK_TAG)) : null;
         mUserTracker.addCallback(mOnUserSwitched, mBackgroundExecutor);
         if (controller != null) {
-            mDialogTransitionAnimator.show(mDialog, controller);
+            if (TransitionAnimator.Companion.dynamicTargetResolutionEnabled()) {
+                mDialogTransitionAnimator.show(mDialog,
+                        expandable::dialogTransitionController, controller.getCuj());
+            } else {
+                mDialogTransitionAnimator.show(mDialog, controller);
+            }
         } else {
             mDialog.show();
         }

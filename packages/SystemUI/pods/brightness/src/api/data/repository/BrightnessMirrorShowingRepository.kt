@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 The Android Open Source Project
+ * Copyright (C) 2026 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,10 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.systemui.statusbar.pipeline.shared.ui.binder
 
-object StatusBarViewBinderConstants {
-    /** Opacity for the traffic indicator icons */
-    const val ALPHA_ACTIVE: Int = (1.0 * 255).toInt() // Fully opaque
-    const val ALPHA_INACTIVE: Int = (0.3 * 255).toInt() // 30% opaque -> 70% transparency
+package com.android.systemui.brightness.data.repository
+
+import kotlinx.coroutines.flow.StateFlow
+
+public interface BrightnessMirrorShowingRepository {
+    public val isShowing: StateFlow<Boolean>
+
+    public fun setMirrorShowing(showing: Boolean)
 }

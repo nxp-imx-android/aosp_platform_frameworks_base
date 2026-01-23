@@ -21,7 +21,6 @@ import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.service.dreams.Flags.dreamHandlesBeingObscured;
 import static android.service.dreams.Flags.dreamHandlesConfirmKeys;
 import static android.service.dreams.Flags.userSelectableMetadata;
-import static android.service.dreams.Flags.startAndStopDozingInBackground;
 
 import android.annotation.FlaggedApi;
 import android.annotation.IdRes;
@@ -947,15 +946,9 @@ public class DreamService extends Service implements Window.Callback {
             try {
                 Slog.v(mTag, "UpdateDoze mDozeScreenState=" + mDozeScreenState
                         + " mDozeScreenBrightness=" + mDozeScreenBrightness);
-                if (startAndStopDozingInBackground()) {
-                    mDreamManager.startDozingOneway(
-                            dreamToken, mDozeScreenState, mDozeScreenStateReason,
-                            mDozeScreenBrightness, mUseNormalBrightnessForDoze);
-                } else {
-                    mDreamManager.startDozing(
-                            dreamToken, mDozeScreenState, mDozeScreenStateReason,
-                            mDozeScreenBrightness, mUseNormalBrightnessForDoze);
-                }
+                mDreamManager.startDozingOneway(
+                        dreamToken, mDozeScreenState, mDozeScreenStateReason,
+                        mDozeScreenBrightness, mUseNormalBrightnessForDoze);
             } catch (RemoteException ex) {
                 // system server died
             }
@@ -1344,11 +1337,7 @@ public class DreamService extends Service implements Window.Callback {
         try {
             // finishSelf will unbind the dream controller from the dream service. This will
             // trigger DreamService.this.onDestroy and DreamService.this will die.
-            if (startAndStopDozingInBackground()) {
-                mDreamManager.finishSelfOneway(dreamToken, true /*immediate*/);
-            } else {
-                mDreamManager.finishSelf(dreamToken, true /*immediate*/);
-            }
+            mDreamManager.finishSelfOneway(dreamToken, true /*immediate*/);
         } catch (RemoteException ex) {
             // system server died
         }
@@ -1437,11 +1426,7 @@ public class DreamService extends Service implements Window.Callback {
                         final IBinder dreamToken = mDreamToken;
 
                         if (dreamToken != null) {
-                            if (startAndStopDozingInBackground()) {
-                                mDreamManager.finishSelfOneway(dreamToken, false /*immediate*/);
-                            } else {
-                                mDreamManager.finishSelf(dreamToken, false /*immediate*/);
-                            }
+                            mDreamManager.finishSelfOneway(dreamToken, false /*immediate*/);
                         }
                     } catch (RemoteException ex) {
                         // system server died
@@ -1602,11 +1587,7 @@ public class DreamService extends Service implements Window.Callback {
         if (mFinished || mWaking) {
             Slog.w(mTag, "attach() called after dream already finished");
             try {
-                if (startAndStopDozingInBackground()) {
-                    mDreamManager.finishSelfOneway(dreamToken, true /*immediate*/);
-                } else {
-                    mDreamManager.finishSelf(dreamToken, true /*immediate*/);
-                }
+                mDreamManager.finishSelfOneway(dreamToken, true /*immediate*/);
             } catch (RemoteException ex) {
                 // system server died
             }

@@ -175,7 +175,7 @@ public class ActivityManagerWrapper {
      */
     @NonNull
     public ThumbnailData takeTaskThumbnail(int taskId, boolean lowResolution) {
-        if (!com.android.window.flags.Flags.respectRequestedTaskSnapshotResolution()) {
+        if (!com.android.window.flags.Flags.onlyCacheLowResTaskSnapshot()) {
             return takeTaskThumbnail(taskId);
         }
         TaskSnapshot snapshot = null;

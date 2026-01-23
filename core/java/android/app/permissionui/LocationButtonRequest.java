@@ -49,6 +49,7 @@ public final class LocationButtonRequest implements Parcelable {
     private final int mStrokeColor;
     private final int mStrokeWidth;
     private final float mCornerRadius;
+    private final float mPressedCornerRadius;
     @ColorInt
     private final int mIconTint;
     private final @LocationButtonSession.TextType int mTextType;
@@ -63,7 +64,8 @@ public final class LocationButtonRequest implements Parcelable {
     private LocationButtonRequest(int width, int height, int paddingLeft, int paddingTop,
             int paddingRight, int paddingBottom, @ColorInt int backgroundColor,
             @ColorInt int strokeColor, int strokeWidth, float cornerRadius,
-            @ColorInt int iconTint, @LocationButtonSession.TextType int textType,
+            float pressedCornerRadius, @ColorInt int iconTint,
+            @LocationButtonSession.TextType int textType,
             @ColorInt int textColor, @NonNull Configuration configuration) {
         this.mWidth = width;
         this.mHeight = height;
@@ -75,6 +77,7 @@ public final class LocationButtonRequest implements Parcelable {
         this.mStrokeColor = strokeColor;
         this.mStrokeWidth = strokeWidth;
         this.mCornerRadius = cornerRadius;
+        this.mPressedCornerRadius = pressedCornerRadius;
         this.mIconTint = iconTint;
         this.mTextType = textType;
         this.mTextColor = textColor;
@@ -133,6 +136,11 @@ public final class LocationButtonRequest implements Parcelable {
         return mCornerRadius;
     }
 
+    /** Returns the corner radius of the button when pressed. */
+    public float getPressedCornerRadius() {
+        return mPressedCornerRadius;
+    }
+
     /** Returns the icon tint color as a {@link ColorInt}. */
     @ColorInt
     public int getIconTint() {
@@ -169,6 +177,7 @@ public final class LocationButtonRequest implements Parcelable {
                 + ", mStrokeColor=" + mStrokeColor
                 + ", mStrokeWidth=" + mStrokeWidth
                 + ", mCornerRadius=" + mCornerRadius
+                + ", mPressedCornerRadius=" + mPressedCornerRadius
                 + ", mIconTint=" + mIconTint
                 + ", mTextType=" + mTextType
                 + ", mTextColor=" + mTextColor
@@ -193,6 +202,7 @@ public final class LocationButtonRequest implements Parcelable {
         dest.writeInt(mStrokeColor);
         dest.writeInt(mStrokeWidth);
         dest.writeFloat(mCornerRadius);
+        dest.writeFloat(mPressedCornerRadius);
         dest.writeInt(mIconTint);
         dest.writeInt(mTextType);
         dest.writeInt(mTextColor);
@@ -205,8 +215,8 @@ public final class LocationButtonRequest implements Parcelable {
                 public LocationButtonRequest createFromParcel(Parcel in) {
                     return new LocationButtonRequest(in.readInt(), in.readInt(), in.readInt(),
                             in.readInt(), in.readInt(), in.readInt(), in.readInt(), in.readInt(),
-                            in.readInt(), in.readFloat(), in.readInt(), in.readInt(),
-                            in.readInt(),
+                            in.readInt(), in.readFloat(), in.readFloat(), in.readInt(),
+                            in.readInt(), in.readInt(),
                             Objects.requireNonNull(in.readTypedObject(Configuration.CREATOR)));
                 }
 
@@ -239,6 +249,8 @@ public final class LocationButtonRequest implements Parcelable {
         private static final int PROPERTY_TEXT_TYPE = 1 << 11;
         private static final int PROPERTY_TEXT_COLOR = 1 << 12;
         private static final int PROPERTY_CONFIGURATION = 1 << 13;
+        private static final int PROPERTY_PRESSED_CORNER_RADIUS = 1 << 14;
+
 
         private static final int MASK_ALL_PROPERTIES_SET =
                 PROPERTY_WIDTH | PROPERTY_HEIGHT | PROPERTY_PADDING_LEFT | PROPERTY_PADDING_TOP
@@ -246,7 +258,7 @@ public final class LocationButtonRequest implements Parcelable {
                         | PROPERTY_BACKGROUND_COLOR
                         | PROPERTY_STROKE_COLOR | PROPERTY_STROKE_WIDTH | PROPERTY_CORNER_RADIUS
                         | PROPERTY_ICON_TINT | PROPERTY_TEXT_TYPE | PROPERTY_TEXT_COLOR
-                        | PROPERTY_CONFIGURATION;
+                        | PROPERTY_CONFIGURATION | PROPERTY_PRESSED_CORNER_RADIUS;
 
         private int mBuilderFieldsSet = 0;
 
@@ -262,6 +274,7 @@ public final class LocationButtonRequest implements Parcelable {
         private int mStrokeColor;
         private int mStrokeWidth;
         private float mCornerRadius;
+        private float mPressedCornerRadius;
         @ColorInt
         private int mIconTint;
         private @LocationButtonSession.TextType int mTextType;
@@ -291,6 +304,7 @@ public final class LocationButtonRequest implements Parcelable {
             mStrokeColor = original.mStrokeColor;
             mStrokeWidth = original.mStrokeWidth;
             mCornerRadius = original.mCornerRadius;
+            mPressedCornerRadius = original.mPressedCornerRadius;
             mIconTint = original.mIconTint;
             mTextType = original.mTextType;
             mTextColor = original.mTextColor;
@@ -379,6 +393,14 @@ public final class LocationButtonRequest implements Parcelable {
             return this;
         }
 
+        /** Sets the corner radius of the button when pressed. */
+        @NonNull
+        public Builder setPressedCornerRadius(float cornerRadius) {
+            mPressedCornerRadius = cornerRadius;
+            mBuilderFieldsSet |= PROPERTY_PRESSED_CORNER_RADIUS;
+            return this;
+        }
+
         /** Sets the icon tint color. */
         @NonNull
         public Builder setIconTint(@ColorInt int iconTint) {
@@ -425,7 +447,8 @@ public final class LocationButtonRequest implements Parcelable {
 
             return new LocationButtonRequest(mWidth, mHeight, mPaddingLeft, mPaddingTop,
                     mPaddingRight, mPaddingBottom, mBackgroundColor, mStrokeColor, mStrokeWidth,
-                    mCornerRadius, mIconTint, mTextType, mTextColor, mConfiguration);
+                    mCornerRadius, mPressedCornerRadius, mIconTint, mTextType, mTextColor,
+                    mConfiguration);
         }
     }
 }

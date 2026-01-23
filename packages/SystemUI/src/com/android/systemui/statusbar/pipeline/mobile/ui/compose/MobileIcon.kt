@@ -52,7 +52,6 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.android.systemui.Flags
 import com.android.systemui.common.ui.compose.load
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.pipeline.mobile.domain.model.SignalIconModel
@@ -143,7 +142,6 @@ fun ActivityIndicators(
     color: Color,
     modifier: Modifier = Modifier,
 ) {
-    val useStaticIndicators = Flags.statusBarStaticInoutIndicators()
     val activityIndicatorSize =
         with(LocalDensity.current) { MobileIconDimensions.ActivityIndicatorSizeSp.toDp() }
     Box(modifier = modifier.height(activityIndicatorSize + 8.dp).padding(bottom = 4.dp)) {
@@ -153,11 +151,7 @@ fun ActivityIndicators(
             colorFilter = ColorFilter.tint(color, BlendMode.SrcIn),
             contentScale = ContentScale.None,
             alignment = Alignment.TopEnd,
-            alpha =
-                if (useStaticIndicators) (if (activityInVisible) 1f else 0.3f)
-                else if (activityInVisible) 1f else 0f,
-            modifier =
-                if (!useStaticIndicators && !activityInVisible) Modifier.size(0.dp) else Modifier,
+            alpha = if (activityInVisible) 1f else ACTIVITY_OFF_ALPHA
         )
         Image(
             painter = painterResource(id = R.drawable.ic_activity_down),
@@ -165,11 +159,7 @@ fun ActivityIndicators(
             colorFilter = ColorFilter.tint(color, BlendMode.SrcIn),
             contentScale = ContentScale.None,
             alignment = Alignment.BottomEnd,
-            alpha =
-                if (useStaticIndicators) (if (activityOutVisible) 1f else 0.3f)
-                else if (activityOutVisible) 1f else 0f,
-            modifier =
-                if (!useStaticIndicators && !activityOutVisible) Modifier.size(0.dp) else Modifier,
+            alpha = if (activityOutVisible) 1f else ACTIVITY_OFF_ALPHA
         )
     }
 }
@@ -319,3 +309,5 @@ private object MobileIconDimensions {
     val RoamingIconPaddingTopSp = 1.sp
     val ActivityIndicatorSizeSp = 12.sp
 }
+
+private const val ACTIVITY_OFF_ALPHA = 0.3f

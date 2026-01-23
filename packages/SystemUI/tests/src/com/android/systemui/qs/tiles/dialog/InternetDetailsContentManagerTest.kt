@@ -45,6 +45,7 @@ import com.android.systemui.kosmos.testScope
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.policy.KeyguardStateController
 import com.android.systemui.testKosmos
+import com.android.systemui.user.data.repository.fakeUserRepository
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor
 import com.android.systemui.user.domain.interactor.fakeHeadlessSystemUserMode
 import com.android.systemui.util.concurrency.FakeExecutor
@@ -83,6 +84,7 @@ class InternetDetailsContentManagerTest : SysuiTestCase() {
     private val selectedUserInteractor = mock<SelectedUserInteractor>()
     private val keyguard: KeyguardStateController = mock<KeyguardStateController>()
     private val bgExecutor = FakeExecutor(FakeSystemClock())
+    private val userRepository = kosmos.fakeUserRepository
     private lateinit var internetDetailsContentManager: InternetDetailsContentManager
     private var ethernet: LinearLayout? = null
     private var mobileDataLayout: LinearLayout? = null
@@ -145,6 +147,7 @@ class InternetDetailsContentManagerTest : SysuiTestCase() {
                 mainDispatcher = testDispatcher,
                 selectedUserInteractor = selectedUserInteractor,
                 hsum = kosmos.fakeHeadlessSystemUserMode,
+                userRepository = userRepository,
             )
 
         internetDetailsContentManager.bind(contentView, testScope)

@@ -36,6 +36,7 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.bouncer.domain.interactor.AlternateBouncerInteractor
 import com.android.systemui.bouncer.domain.interactor.PrimaryBouncerInteractor
 import com.android.systemui.bouncer.ui.binder.BouncerViewBinder
+import com.android.systemui.brightness.data.repository.BrightnessMirrorShowingRepositoryImpl
 import com.android.systemui.classifier.FalsingCollectorFake
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
 import com.android.systemui.dock.DockManager
@@ -61,7 +62,6 @@ import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.log.assertLogsWtf
 import com.android.systemui.res.R
 import com.android.systemui.scene.ui.view.WindowRootViewKeyEventHandler
-import com.android.systemui.settings.brightness.data.repository.BrightnessMirrorShowingRepository
 import com.android.systemui.settings.brightness.domain.interactor.BrightnessMirrorShowingInteractorPassThrough
 import com.android.systemui.shade.NotificationShadeWindowView.InteractionEventHandler
 import com.android.systemui.shade.data.repository.ShadeAnimationRepository
@@ -181,7 +181,7 @@ class NotificationShadeWindowViewControllerTest(flags: FlagsParameterization) : 
     private val notificationLaunchAnimationInteractor =
         NotificationLaunchAnimationInteractor(notificationLaunchAnimationRepository)
 
-    private val brightnessMirrorShowingRepository = BrightnessMirrorShowingRepository()
+    private val brightnessMirrorShowingRepository = BrightnessMirrorShowingRepositoryImpl()
     private val brightnessMirrorShowingInteractor =
         BrightnessMirrorShowingInteractorPassThrough(brightnessMirrorShowingRepository)
 

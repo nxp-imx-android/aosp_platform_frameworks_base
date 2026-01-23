@@ -39,29 +39,36 @@ val Kosmos.mockAppIconProvider by
         }
     }
 
-public data class FakeAppIcons(
-    @DrawableRes val colorAppIconRes: Int,
-    @DrawableRes val skeletonAppIconRes: Int,
-)
+data class FakeNotificationPackage(
+    /** The package name, e.g. "com.example" */
+    val packageName: String,
+    /** The app name, e.g. MyTestApp */
+    val label: String,
+    /** Resource ID for the app icon drawable */
+    @DrawableRes val iconRes: Int,
+) {
+    companion object {
+        val System: FakeNotificationPackage
+            get() =
+                FakeNotificationPackage(
+                    packageName = "android",
+                    label = "Android System",
+                    iconRes = android.R.drawable.sym_def_app_icon,
+                )
+    }
+}
 
-/** Sets up an [AppIconProvider] that returns the given fake app icons for all packages. */
-fun Kosmos.setupFakeAppIcons(context: Context, fakeAppIcons: FakeAppIcons) {
+/** Sets up an [AppIconProvider] that returns fake app icons based on the list of fake packages. */
+fun Kosmos.setupFakeAppIcons(context: Context, fakePackages: List<FakeNotificationPackage>) {
     appIconProvider =
-        object : AppIconProvider {
-            override fun getOrFetchAppIcon(
-                packageName: String,
-                userHandle: UserHandle,
-                instanceKey: String,
-            ): Drawable = context.getDrawable(fakeAppIcons.colorAppIconRes)!!
-
-            override fun getOrFetchSkeletonAppIcon(
-                packageName: String,
-                userHandle: UserHandle,
-            ): Drawable = context.getDrawable(fakeAppIcons.skeletonAppIconRes)!!
-
-            override fun purgeCache(wantedPackages: Collection<String>) {}
+        object : AppIconProviderImpl(applicationContext, dumpManager, fakeSystemClock) {
+            override fun getRawIcon(packageName: String, userHandle: UserHandle): Drawable? {
+                return context.getDrawable(
+                    fakePackages.find { it.packageName == packageName }?.iconRes
+                        ?: android.R.drawable.sym_def_app_icon
+                )
+            }
         }
-    notificationIconStyleProvider = alwaysShowNotificationIconStyleProvider
 }
 
 var Kosmos.realAppIconProvider: AppIconProviderImpl by

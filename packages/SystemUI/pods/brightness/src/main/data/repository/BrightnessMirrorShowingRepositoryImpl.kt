@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright (C) 2026 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,19 +14,21 @@
  * limitations under the License.
  */
 
-package com.android.systemui.settings.brightness.data.repository
+package com.android.systemui.brightness.data.repository
 
 import com.android.systemui.dagger.SysUISingleton
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 @SysUISingleton
-class BrightnessMirrorShowingRepository @Inject constructor() {
+public class BrightnessMirrorShowingRepositoryImpl @Inject constructor() :
+    BrightnessMirrorShowingRepository {
     private val _isShowing = MutableStateFlow(false)
-    val isShowing = _isShowing.asStateFlow()
+    override val isShowing: StateFlow<Boolean> = _isShowing.asStateFlow()
 
-    fun setMirrorShowing(showing: Boolean) {
+    override fun setMirrorShowing(showing: Boolean) {
         _isShowing.value = showing
     }
 }

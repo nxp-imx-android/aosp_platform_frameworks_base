@@ -155,6 +155,14 @@ bool RenderProxy::syncNextTransaction(std::function<void(SurfaceComposerClient::
 void RenderProxy::applyPendingTransactions(uint64_t frameNumber) {
     mContext->applyPendingTransactions(frameNumber);
 }
+
+void RenderProxy::clearSyncTransaction() {
+    mContext->clearSyncTransaction();
+}
+
+SurfaceComposerClient::Transaction* RenderProxy::gatherPendingTransactions(uint64_t frameNumber) {
+    return mContext->gatherPendingTransactions(frameNumber);
+}
 #endif
 
 void RenderProxy::updateRenderTargetSize(uint64_t width, uint64_t height) {
@@ -187,6 +195,10 @@ void RenderProxy::setLightGeometry(const Vector3& lightCenter, float lightRadius
 
 void RenderProxy::setOpaque(bool opaque) {
     mRenderThread.queue().post([=, this]() { mContext->setOpaque(opaque); });
+}
+
+void RenderProxy::setHintSessionEnabled(bool enabled) {
+    mRenderThread.queue().post([=, this]() { mContext->setHintSessionEnabled(enabled); });
 }
 
 float RenderProxy::setColorMode(ColorMode mode) {

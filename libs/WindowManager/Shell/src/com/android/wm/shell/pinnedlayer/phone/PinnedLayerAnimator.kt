@@ -42,9 +42,9 @@ class PinnedLayerAnimator {
          * @param sctFactory a [SurfaceControl.Transaction] factory used create a transaction for
          *   animation
          * @param onAnimationStart an animation listener that is called when the animation starts.
-         *   This listener must call [SurfaceControl.Transaction.apply].
+         *   This listener returns true if the transaction was applied.
          * @param onAnimationUpdate an animation listener that is called on animation updates. This
-         *   listener must call [SurfaceControl.Transaction.apply].
+         *   listener returns true if the transaction was applied.
          * @param onAnimationEnd an animation listener that is called when the animation ends.
          */
         fun createPinAnimator(
@@ -55,11 +55,13 @@ class PinnedLayerAnimator {
             sctFactory: () -> SurfaceControl.Transaction = {
                 SurfaceControl.Transaction()
             }, // for testing
-            onAnimationStart: (Int, SurfaceControl.Transaction, Rect) -> Unit = { _, t, _ ->
+            onAnimationStart: (Int, SurfaceControl.Transaction, Rect) -> Boolean = { _, t, _ ->
                 t.apply()
+                true
             },
-            onAnimationUpdate: (Int, SurfaceControl.Transaction, Rect) -> Unit = { _, t, _ ->
+            onAnimationUpdate: (Int, SurfaceControl.Transaction, Rect) -> Boolean = { _, t, _ ->
                 t.apply()
+                true
             },
             onAnimationEnd: (Int) -> Unit = {},
         ): Animator {
@@ -102,7 +104,10 @@ class PinnedLayerAnimator {
                     override fun onAnimationStart(animation: Animator) {
                         super.onAnimationStart(animation)
                         addTxWithBounds(startTransaction, startBounds)
-                        onAnimationStart(task.taskId, startTransaction, startBounds)
+                        val applied = onAnimationStart(task.taskId, startTransaction, startBounds)
+                        if (!applied) {
+                            startTransaction.apply()
+                        }
                     }
 
                     override fun onAnimationEnd(animation: Animator) {
@@ -132,7 +137,10 @@ class PinnedLayerAnimator {
                     bottom.roundToInt(),
                 )
                 addTxWithBounds(transaction, updateRect)
-                onAnimationUpdate(task.taskId, transaction, updateRect)
+                val applied = onAnimationUpdate(task.taskId, transaction, updateRect)
+                if (!applied) {
+                    transaction.apply()
+                }
             }
 
             return animator

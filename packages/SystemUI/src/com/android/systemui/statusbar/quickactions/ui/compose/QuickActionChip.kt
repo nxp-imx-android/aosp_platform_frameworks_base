@@ -58,11 +58,12 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.android.compose.modifiers.thenIf
 import com.android.systemui.common.shared.model.ContentDescription
+import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.common.ui.compose.Icon
 import com.android.systemui.common.ui.compose.load
 import com.android.systemui.res.R
+import com.android.systemui.statusbar.quickactions.ui.viewmodel.ChipContent
 import com.android.systemui.statusbar.quickactions.ui.viewmodel.ChipIcon
-import com.android.systemui.statusbar.quickactions.ui.viewmodel.HoverBehavior
 
 /**
  * A clickable chip that can show an anchored popup containing relevant system controls. The chip
@@ -72,18 +73,15 @@ import com.android.systemui.statusbar.quickactions.ui.viewmodel.HoverBehavior
 @Composable
 fun QuickActionChip(
     isSelected: Boolean,
-    text: String?,
+    chipContent: ChipContent?,
     icons: List<ChipIcon>,
     colors: ChipColors,
-    hoverBehavior: HoverBehavior,
     contentDescription: ContentDescription?,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
 ) {
-    val hasHoverBehavior = hoverBehavior !is HoverBehavior.None
     val hoveredState by interactionSource.collectIsHoveredAsState()
-    val isHovered = hasHoverBehavior && hoveredState
     val indication = if (hoveredState) null else LocalIndication.current
     val chipShape =
         RoundedCornerShape(dimensionResource(id = R.dimen.ongoing_activity_chip_corner_radius))
@@ -109,7 +107,7 @@ fun QuickActionChip(
     ) {
         // End padding should be symmetrical if the text is omitted.
         val startPadding = 4.dp
-        val endPadding = if (text != null) 8.dp else startPadding
+        val endPadding = if (chipContent is ChipContent.Text) 8.dp else startPadding
         Row(
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -129,91 +127,84 @@ fun QuickActionChip(
                     .indication(interactionSource, indication)
                     .padding(start = startPadding, end = endPadding),
         ) {
-            val chipIcons =
-                when {
-                    isHovered && hoverBehavior is HoverBehavior.Buttons -> hoverBehavior.icons
-                    else -> icons
-                }
+            ChipIcons(chipIcons = icons, colors = colors, isSelected = isSelected)
 
-            ChipIcons(
-                chipIcons = chipIcons,
-                colors = colors,
-                isSelected = isSelected,
-                isHovered = isHovered,
-            )
+            when (chipContent) {
+                is ChipContent.Text -> {
+                    val textStyle = MaterialTheme.typography.labelLarge
+                    val textMeasurer = rememberTextMeasurer()
+                    var textOverflow by remember { mutableStateOf(false) }
 
-            if (text != null) {
-                val textStyle = MaterialTheme.typography.labelLarge
-                val textMeasurer = rememberTextMeasurer()
-                var textOverflow by remember { mutableStateOf(false) }
+                    Text(
+                        text = chipContent.text,
+                        style = textStyle,
+                        softWrap = false,
+                        color =
+                            colors.chipContent(
+                                isSelected = isSelected,
+                                colorScheme = MaterialTheme.colorScheme,
+                            ),
+                        modifier =
+                            Modifier.widthIn(
+                                    max =
+                                        dimensionResource(
+                                            id = R.dimen.ongoing_activity_chip_max_text_width
+                                        )
+                                )
+                                .layout { measurables, constraints ->
+                                    val placeable = measurables.measure(constraints)
+                                    val intrinsicWidth =
+                                        textMeasurer
+                                            .measure(chipContent.text, textStyle, softWrap = false)
+                                            .size
+                                            .width
+                                    textOverflow = intrinsicWidth > constraints.maxWidth
 
-                Text(
-                    text = text,
-                    style = textStyle,
-                    softWrap = false,
-                    color =
-                        colors.chipContent(
-                            isSelected = isSelected,
-                            colorScheme = MaterialTheme.colorScheme,
-                        ),
-                    modifier =
-                        Modifier.widthIn(
-                                max =
-                                    dimensionResource(
-                                        id = R.dimen.ongoing_activity_chip_max_text_width
-                                    )
-                            )
-                            .layout { measurables, constraints ->
-                                val placeable = measurables.measure(constraints)
-                                val intrinsicWidth =
-                                    textMeasurer
-                                        .measure(text, textStyle, softWrap = false)
-                                        .size
-                                        .width
-                                textOverflow = intrinsicWidth > constraints.maxWidth
-
-                                layout(placeable.width, placeable.height) {
-                                    if (textOverflow) {
-                                        placeable.placeWithLayer(0, 0) {
-                                            compositingStrategy = CompositingStrategy.Offscreen
+                                    layout(placeable.width, placeable.height) {
+                                        if (textOverflow) {
+                                            placeable.placeWithLayer(0, 0) {
+                                                compositingStrategy = CompositingStrategy.Offscreen
+                                            }
+                                        } else {
+                                            placeable.place(0, 0)
                                         }
-                                    } else {
-                                        placeable.place(0, 0)
                                     }
                                 }
-                            }
-                            .overflowFadeOut(
-                                hasOverflow = { textOverflow },
-                                fadeLength =
-                                    dimensionResource(
-                                        id = R.dimen.ongoing_activity_chip_text_fading_edge_length
-                                    ),
+                                .overflowFadeOut(
+                                    hasOverflow = { textOverflow },
+                                    fadeLength =
+                                        dimensionResource(
+                                            id =
+                                                R.dimen
+                                                    .ongoing_activity_chip_text_fading_edge_length
+                                        ),
+                                ),
+                    )
+                }
+                is ChipContent.SideIcon -> {
+                    Icon(
+                        icon = chipContent.icon,
+                        modifier = Modifier.size(13.3.dp).clickable { onClick() },
+                        tint =
+                            colors.chipContent(
+                                isSelected = isSelected,
+                                colorScheme = MaterialTheme.colorScheme,
                             ),
-                )
+                    )
+                }
+                null -> {}
             }
         }
     }
 }
 
 @Composable
-private fun ChipIcons(
-    chipIcons: List<ChipIcon>,
-    colors: ChipColors,
-    isSelected: Boolean,
-    isHovered: Boolean,
-) {
-    val iconHoverBackgroundColor =
-        colors.iconBackgroundOnHover(
-            isSelected = isSelected,
-            colorScheme = MaterialTheme.colorScheme,
-        )
-    val iconColor =
-        colors.icon(
-            isSelected = isSelected,
-            isHovered = isHovered,
-            colorScheme = MaterialTheme.colorScheme,
-        )
+private fun ChipIcons(chipIcons: List<ChipIcon>, colors: ChipColors, isSelected: Boolean) {
+    val iconBackgroundColor =
+        colors.iconBackground(isSelected = isSelected, colorScheme = MaterialTheme.colorScheme)
+
     for (chipIcon in chipIcons) {
+
         Icon(
             icon = chipIcon.icon,
             modifier =
@@ -221,11 +212,16 @@ private fun ChipIcons(
                     .thenIf(chipIcon.onClick != null) {
                         Modifier.clickable(role = Role.Button, onClick = chipIcon.onClick!!)
                     }
-                    .thenIf(isHovered && iconHoverBackgroundColor != Color.Unspecified) {
-                        Modifier.background(color = iconHoverBackgroundColor, shape = CircleShape)
+                    .thenIf(chipIcon.isHighlighted && iconBackgroundColor != Color.Unspecified) {
+                        Modifier.background(color = iconBackgroundColor, shape = CircleShape)
                             .padding(2.dp)
                     },
-            tint = iconColor,
+            tint =
+                colors.icon(
+                    isSelected = isSelected,
+                    isHighlighted = chipIcon.isHighlighted,
+                    colorScheme = MaterialTheme.colorScheme,
+                ),
         )
     }
 }

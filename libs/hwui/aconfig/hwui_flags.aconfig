@@ -173,6 +173,7 @@ flag {
   namespace: "core_graphics"
   description: "Add two helper constants to SurfaceControl to improve @IntDef lint"
   bug: "413710706"
+  is_exported: true
 }
 
 flag {
@@ -200,6 +201,7 @@ flag {
   namespace: "core_graphics"
   description: "Add API for partial decoding of gainmap images with ImageDecoder"
   bug: "437807032"
+  is_exported: true
 }
 
 flag {

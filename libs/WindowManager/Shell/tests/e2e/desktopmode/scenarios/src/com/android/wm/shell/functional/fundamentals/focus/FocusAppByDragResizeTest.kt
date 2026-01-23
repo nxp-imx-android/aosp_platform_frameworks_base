@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright (C) 2026 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,16 @@
  * limitations under the License.
  */
 
-package com.android.systemui.settings.brightness.data.repository
+package com.android.wm.shell.functional.fundamentals.focus
 
-import com.android.systemui.kosmos.Kosmos
+import android.platform.test.annotations.Postsubmit
+import android.platform.test.rule.ScreenRecordRule
+import com.android.wm.shell.scenarios.FocusAppByDragResize
+import org.junit.runner.RunWith
+import org.junit.runners.BlockJUnit4ClassRunner
 
-val Kosmos.brightnessMirrorShowingRepository by
-    Kosmos.Fixture { BrightnessMirrorShowingRepository() }
+/* Functional test for [FocusAppByDragResize]. */
+@RunWith(BlockJUnit4ClassRunner::class)
+@Postsubmit
+@ScreenRecordRule.ScreenRecord
+class FocusAppByDragResizeTest : FocusAppByDragResize()

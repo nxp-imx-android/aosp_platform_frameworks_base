@@ -219,6 +219,23 @@
     <integer name="config_wait_for_satellite_enabling_response_timeout_millis">180000</integer>
     <java-symbol type="integer" name="config_wait_for_satellite_enabling_response_timeout_millis" />
 
+
+    <!-- Specifies the frequency at which the Telephony framework suspends satellite mode to
+         permit background tasks, such as refreshing the current location. This periodic suspension
+         is conditional and triggers only when the device is idle (i.e., no user activity
+         or ongoing operations)
+         -->
+    <integer name="config_satellite_suspension_interval_millis">600000</integer>
+    <java-symbol type="integer" name="config_satellite_suspension_interval_millis" />
+
+    <!-- Specifies the maximum duration, in milliseconds, that Telephony waits for a modem
+         response to a satellite suspend or resume request. If this threshold is exceeded,
+         Telephony initiates recovery procedures—such as reverting to the IDLE state or
+         disabling satellite mode—to ensure system state consistency.
+         -->
+    <integer name="config_wait_for_satellite_suspension_response_timeout_millis">180000</integer>
+    <java-symbol type="integer" name="config_wait_for_satellite_suspension_response_timeout_millis" />
+
     <!-- The time duration in millis after which Telephony will abort the datagram sending requests
          and send failure response to the client that has requested sending the datagrams. Telephony
          starts a timer after pushing down the datagram sending request to modem. Before expiry, the
@@ -542,6 +559,10 @@
     <!-- Whether to allow TN scanning during satellite session. -->
     <bool name="config_satellite_allow_tn_scanning_during_satellite_session">true</bool>
     <java-symbol type="bool" name="config_satellite_allow_tn_scanning_during_satellite_session" />
+
+    <!-- Whether to allow suspend during satellite session. -->
+    <bool name="config_satellite_allow_suspend_during_satellite_session">false</bool>
+    <java-symbol type="bool" name="config_satellite_allow_suspend_during_satellite_session" />
 
     <!-- List of integer tag Ids representing VZW satellite coverage. -->
     <integer-array name="config_verizon_satellite_enabled_tagids">

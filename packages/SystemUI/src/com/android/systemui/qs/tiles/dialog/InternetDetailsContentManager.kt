@@ -70,6 +70,7 @@ import com.android.systemui.qs.flags.QsWifiConfig
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.phone.SystemUIDialog
 import com.android.systemui.statusbar.policy.KeyguardStateController
+import com.android.systemui.user.data.repository.UserRepository
 import com.android.systemui.user.domain.interactor.HeadlessSystemUserMode
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor
 import com.android.wifitrackerlib.WifiEntry
@@ -101,6 +102,7 @@ constructor(
     @Main private val mainDispatcher: CoroutineDispatcher,
     private val selectedUserInteractor: SelectedUserInteractor,
     private val hsum: HeadlessSystemUserMode,
+    private val userRepository: UserRepository,
 ) {
     // Lifecycle
     private lateinit var lifecycleRegistry: LifecycleRegistry
@@ -191,6 +193,7 @@ constructor(
                 internetDetailsContentController,
                 coroutineScope,
                 /* isInDetailsView= */ true,
+                userRepository,
             )
         canChangeWifiState = WifiEnterpriseRestrictionUtils.isChangeWifiStateAllowed(context)
 
@@ -246,9 +249,10 @@ constructor(
         // Set wifi, mobile and ethernet layouts
         setWifiLayout()
         setMobileLayout()
-        ethernetLayout = contentView.requireViewById<LinearLayout>(R.id.ethernet_layout).apply {
-            setEntryMargins()
-        }
+        ethernetLayout =
+            contentView.requireViewById<LinearLayout>(R.id.ethernet_layout).apply {
+                setEntryMargins()
+            }
 
         // Share WiFi
         shareWifiButton = contentView.requireViewById(R.id.share_wifi_button)
@@ -316,10 +320,8 @@ constructor(
                 adapter = this@InternetDetailsContentManager.adapter
             }
 
-
-        val entryHeight = contentView.context.resources.getDimensionPixelSize(
-            R.dimen.tile_details_entry_height
-        )
+        val entryHeight =
+            contentView.context.resources.getDimensionPixelSize(R.dimen.tile_details_entry_height)
 
         turnWifiOnLayout.apply {
             setEntryMargins()
@@ -375,10 +377,11 @@ constructor(
             }
         )
 
-        seeAllLayout = contentView.requireViewById<LinearLayout>(R.id.see_all_layout).apply {
-            setEntryMargins()
-            layoutParams = layoutParams.apply { height = entryHeight }
-        }
+        seeAllLayout =
+            contentView.requireViewById<LinearLayout>(R.id.see_all_layout).apply {
+                setEntryMargins()
+                layoutParams = layoutParams.apply { height = entryHeight }
+            }
 
         // Set click listeners for Wi-Fi related views
         turnWifiOnLayout.setOnClickListener {

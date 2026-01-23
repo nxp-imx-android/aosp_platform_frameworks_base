@@ -15,6 +15,8 @@
  */
 package com.android.server.am.psc;
 
+import static android.app.ActivityManager.PROCESS_CAPABILITY_NONE;
+
 import android.app.ActivityManager.ProcessCapability;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 
@@ -34,6 +36,21 @@ import android.ravenwood.annotation.RavenwoodKeepWholeClass;
  */
 @RavenwoodKeepWholeClass
 abstract class GraphEdge {
+    /** The cached value of {@link #evaluateCapabilityFilter}. */
+    private @ProcessCapability int mCachedCapabilityFilter = PROCESS_CAPABILITY_NONE;
+
+    @ProcessCapability
+    int getCachedCapabilityFilter() {
+        return mCachedCapabilityFilter;
+    }
+
+    /**
+     * Updates the cached capability filter by evaluating the edge's properties.
+     */
+    void updateCachedCapabilityFilter() {
+        mCachedCapabilityFilter = evaluateCapabilityFilter();
+    }
+
     /**
      * Evaluates whether the edge propagates each capability.
      *

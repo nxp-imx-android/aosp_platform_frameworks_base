@@ -83,7 +83,8 @@ public class MetadataSyncAdapter {
     // Hidden constants in {@link SetSchemaRequest} that restricts runtime metadata visibility
     // by permissions.
     public static final int EXECUTE_APP_FUNCTIONS = 9;
-    private static final int SET_SCHEMA_REQUEST_READ_APP_FUNCTION_METADATA = 13;
+    private static final int SET_SCHEMA_REQUEST_DISCOVER_APP_FUNCTIONS = 13;
+    private static final int SET_SCHEMA_REQUEST_EXECUTE_APP_FUNCTIONS_SYSTEM = 14;
 
     public MetadataSyncAdapter(
             @NonNull PackageManager packageManager, @NonNull AppSearchManager appSearchManager) {
@@ -311,7 +312,10 @@ public class MetadataSyncAdapter {
             if (android.app.appfunctions.flags.Flags.enableAppFunctionPermissionV2()) {
                 setSchemaRequestBuilder.addRequiredPermissionsForSchemaTypeVisibility(
                         runtimeMetadataSchema.getSchemaType(),
-                        Set.of(SET_SCHEMA_REQUEST_READ_APP_FUNCTION_METADATA));
+                        Set.of(SET_SCHEMA_REQUEST_DISCOVER_APP_FUNCTIONS));
+                setSchemaRequestBuilder.addRequiredPermissionsForSchemaTypeVisibility(
+                        runtimeMetadataSchema.getSchemaType(),
+                        Set.of(SET_SCHEMA_REQUEST_EXECUTE_APP_FUNCTIONS_SYSTEM));
             }
         }
         return setSchemaRequestBuilder.build();

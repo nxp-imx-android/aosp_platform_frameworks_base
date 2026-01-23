@@ -28,6 +28,7 @@ import android.app.KeyguardManager;
 import android.content.Context;
 import android.content.pm.LauncherApps;
 import android.content.pm.PackageManager;
+import android.hardware.devicestate.DeviceStateManager;
 import android.hardware.input.InputManager;
 import android.os.Handler;
 import android.os.UserManager;
@@ -147,6 +148,7 @@ import com.android.wm.shell.desktopmode.OverviewToDesktopTransitionObserver;
 import com.android.wm.shell.desktopmode.ReturnToDragStartAnimator;
 import com.android.wm.shell.desktopmode.ShellDesktopState;
 import com.android.wm.shell.desktopmode.ShellDesktopStateImpl;
+import com.android.wm.shell.desktopmode.SnapController;
 import com.android.wm.shell.desktopmode.SpringDragToDesktopTransitionHandler;
 import com.android.wm.shell.desktopmode.ToggleResizeDesktopTaskTransitionHandler;
 import com.android.wm.shell.desktopmode.VisualIndicatorUpdateScheduler;
@@ -184,6 +186,7 @@ import com.android.wm.shell.freeform.FreeformTaskTransitionStarter;
 import com.android.wm.shell.freeform.FreeformTaskTransitionStarterInitializer;
 import com.android.wm.shell.freeform.TaskChangeListener;
 import com.android.wm.shell.fullscreen.FullscreenDisconnectHandler;
+import com.android.wm.shell.fullscreen.FullscreenReconnectHandler;
 import com.android.wm.shell.keyguard.KeyguardTransitionHandler;
 import com.android.wm.shell.onehanded.OneHandedController;
 import com.android.wm.shell.packageupdate.PackageUpdateController;
@@ -1068,7 +1071,8 @@ public abstract class WMShellModule {
             LauncherApps launcherApps,
             TransitionStateHolder transitionStateHolder,
             DesksController desksController,
-            Optional<DesktopTasksTransitionObserver> desktopTasksTransitionObserver) {
+            Optional<DesktopTasksTransitionObserver> desktopTasksTransitionObserver,
+            SnapController snapController) {
         return new DesktopTasksController(
                 context,
                 shellInit,
@@ -1127,7 +1131,8 @@ public abstract class WMShellModule {
                 launcherApps,
                 transitionStateHolder,
                 desksController,
-                desktopTasksTransitionObserver.get());
+                desktopTasksTransitionObserver.get(),
+                snapController);
     }
 
     @WMSingleton
@@ -1231,6 +1236,7 @@ public abstract class WMShellModule {
             DesksOrganizer desksOrganizer,
             DesktopConfig desktopConfig,
             DesktopState desktopState,
+            SnapController snapController,
             Optional<DesktopMixedTransitionHandler> desktopMixedTransitionHandler) {
         if (!desktopState.canEnterDesktopMode()) {
             return Optional.empty();
@@ -1243,6 +1249,7 @@ public abstract class WMShellModule {
                         shellTaskOrganizer,
                         desksOrganizer,
                         desktopMixedTransitionHandler.get(),
+                        snapController,
                         maxTaskLimit <= 0 ? null : maxTaskLimit));
     }
 
@@ -1333,15 +1340,36 @@ public abstract class WMShellModule {
     @Provides
     static Optional<FullscreenDisconnectHandler> provideFullscreenDisconnectHandler(
             ShellTaskOrganizer shellTaskOrganizer,
-            RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer
+            RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer,
+            FullscreenReconnectHandler fullscreenReconnectHandler
     ) {
         if (!com.android.window.flags.Flags.enableDisplayDisconnectFullscreen()) {
             return Optional.empty();
         } else {
             return Optional.of(
                     new FullscreenDisconnectHandler(shellTaskOrganizer,
-                            rootTaskDisplayAreaOrganizer));
+                            rootTaskDisplayAreaOrganizer, fullscreenReconnectHandler));
         }
+    }
+
+    @WMSingleton
+    @Provides
+    static FullscreenReconnectHandler provideFullscreenReconnectHandler(
+            KeyguardManager keyguardManager,
+            DisplayController displayController,
+            Transitions transitions,
+            ShellTaskOrganizer shellTaskOrganizer,
+            Optional<RecentTasksController> recentTasksController,
+            RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer,
+            DesktopState desktopState,
+            Optional<SplitScreenController> splitScreenController,
+            ShellController shellController,
+            ShellInit shellInit
+    ) {
+        return new FullscreenReconnectHandler(keyguardManager, displayController, transitions,
+                shellTaskOrganizer, recentTasksController.orElse(null),
+                rootTaskDisplayAreaOrganizer, desktopState, splitScreenController, shellController,
+                shellInit);
     }
 
     @WMSingleton
@@ -1441,7 +1469,6 @@ public abstract class WMShellModule {
             AssistContentRequester assistContentRequester,
             WindowDecorViewHostSupplier<WindowDecorViewHost> windowDecorViewHostSupplier,
             MultiInstanceHelper multiInstanceHelper,
-            Optional<DesktopTasksLimiter> desktopTasksLimiter,
             AppHandleEducationController appHandleEducationController,
             CaptionVisibilityHelper captionVisibilityHelper,
             WindowDecorCaptionRepository windowDecorCaptionRepository,
@@ -1464,7 +1491,8 @@ public abstract class WMShellModule {
             Optional<PinnedLayerUiState> pinnedLayerUiState,
             FluidTaskResizer fluidTaskResizer,
             VeiledTaskResizer veiledTaskResizer,
-            MultiDisplayTaskMover multiDisplayTaskMover
+            MultiDisplayTaskMover multiDisplayTaskMover,
+            SnapController snapController
     ) {
         if (!shelldesktopState.canEnterDesktopModeOrShowAppHandle()) {
             return Optional.empty();
@@ -1477,7 +1505,7 @@ public abstract class WMShellModule {
                 desktopImmersiveController.get(),
                 rootTaskDisplayAreaOrganizer, interactionJankMonitor, genericLinksParser,
                 appToWebRepository, assistContentRequester, windowDecorViewHostSupplier,
-                multiInstanceHelper, desktopTasksLimiter, appHandleEducationController,
+                multiInstanceHelper, appHandleEducationController,
                 captionVisibilityHelper, windowDecorCaptionRepository,
                 activityOrientationChangeHandler, focusTransitionObserver, desktopModeEventLogger,
                 desktopModeUiEventLogger, taskResourceLoader, recentsTransitionHandler,
@@ -1486,7 +1514,7 @@ public abstract class WMShellModule {
                 desksOrganizer, shelldesktopState, desktopConfig, userProfileContexts,
                 lockTaskChangeListener, pinnedLayerController.orElse(null),
                 pinnedLayerUiState.orElse(null), fluidTaskResizer, veiledTaskResizer,
-                multiDisplayTaskMover));
+                multiDisplayTaskMover, snapController));
     }
 
     @WMSingleton
@@ -2088,7 +2116,9 @@ public abstract class WMShellModule {
             InputManager inputManager,
             DisplayController displayController,
             @ShellMainThread Handler mainHandler,
-            DesktopState desktopState
+            @ShellMainThread ShellExecutor mainExecutor,
+            DesktopState desktopState,
+            DeviceStateManager deviceStateManager
     ) {
         if (!desktopState.canEnterDesktopMode()) {
             return Optional.empty();
@@ -2106,7 +2136,9 @@ public abstract class WMShellModule {
                         inputManager,
                         displayController,
                         mainHandler,
-                        desktopState));
+                        mainExecutor,
+                        desktopState,
+                        deviceStateManager));
     }
 
     @WMSingleton

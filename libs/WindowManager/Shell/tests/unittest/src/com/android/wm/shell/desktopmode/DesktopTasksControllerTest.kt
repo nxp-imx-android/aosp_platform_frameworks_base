@@ -348,6 +348,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     private lateinit var shellDesktopState: FakeShellDesktopState
     private lateinit var desktopConfig: FakeDesktopConfig
     private lateinit var desksController: DesksController
+    private lateinit var snapController: SnapController
 
     private val shellExecutor = TestShellExecutor()
     private val bgExecutor = TestShellExecutor()
@@ -415,6 +416,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 desktopState,
                 desktopConfig,
             )
+        snapController = SnapController()
         desktopTasksLimiter =
             DesktopTasksLimiter(
                 transitions,
@@ -422,6 +424,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 shellTaskOrganizer,
                 desksOrganizer,
                 desktopMixedTransitionHandler,
+                snapController,
                 MAX_TASK_LIMIT,
             )
         desktopModeCompatPolicy = spy(DesktopModeCompatPolicy(spyContext))
@@ -527,7 +530,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         recentsTransitionStateListener = captor.firstValue
 
         controller.taskbarDesktopTaskListener = taskbarDesktopTaskListener
-        controller.setSnapEventHandler(snapEventHandler)
+        snapController.start(snapEventHandler)
         controller.setPipScheduler(pipScheduler)
 
         taskRepository = userRepositories.current
@@ -599,6 +602,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             transitionStateHolder,
             desksController,
             desktopTasksTransitionObserver,
+            snapController,
         )
 
     @After
@@ -9807,7 +9811,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
     @Test
     @EnableFlags(
-        Flags.FLAG_EXCLUDE_DESK_ROOTS_FROM_DESKTOP_TASKS,
         Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
         Flags.FLAG_ENABLE_INTERACTION_DEPENDENT_TAB_TEARING_BOUNDS,
     )
@@ -9826,7 +9829,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_EXCLUDE_DESK_ROOTS_FROM_DESKTOP_TASKS)
     fun onUnhandledDrag_crossDisplayDrag_noOpOnFocusedNonDesktopTask() {
         taskRepository.addDesk(displayId = SECOND_DISPLAY, deskId = SECOND_DISPLAY)
         taskRepository.setActiveDesk(displayId = SECOND_DISPLAY, deskId = SECOND_DISPLAY)

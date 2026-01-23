@@ -1991,10 +1991,9 @@ class TaskFragment extends WindowContainer<WindowContainer> {
 
         if (prev != null) {
             prev.resumeKeyDispatchingLocked();
-            if (prev.isVisibleRequested()) {
-                mRootWindowContainer.ensureActivitiesVisible(resuming);
-            }
         }
+
+        mRootWindowContainer.ensureActivitiesVisible(resuming);
 
         // Notify when the task stack has changed, but only if visibilities changed (not just
         // focus). Also if there is an active root pinned task - we always want to notify it about

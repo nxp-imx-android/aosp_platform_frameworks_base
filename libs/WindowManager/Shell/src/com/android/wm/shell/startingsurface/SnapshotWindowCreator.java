@@ -53,7 +53,7 @@ class SnapshotWindowCreator {
                     taskId, mStartingWindowRecordManager);
             mStartingWindowRecordManager.addRecord(taskId, tView);
 
-            if (Flags.respectRequestedTaskSnapshotResolution() && snapshot.isLowResolution()) {
+            if (Flags.onlyCacheLowResTaskSnapshot() && snapshot.isLowResolution()) {
                 tView.scheduleRedrawSnapshot(mBgExecutor, () -> {
                     final TaskSnapshot replace;
                     try {
