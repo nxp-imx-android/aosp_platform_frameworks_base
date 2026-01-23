@@ -30,7 +30,6 @@ import com.android.keyguard.KeyguardDisplayManager;
 import com.android.keyguard.KeyguardUpdateMonitor;
 import com.android.keyguard.KeyguardViewController;
 import com.android.keyguard.ViewMediatorCallback;
-import com.android.keyguard.dagger.KeyguardDisplayModule;
 import com.android.keyguard.dagger.KeyguardQsUserSwitchComponent;
 import com.android.keyguard.dagger.KeyguardStatusBarViewComponent;
 import com.android.keyguard.logging.KeyguardLoggerStartable;
@@ -104,9 +103,9 @@ import dagger.Provides;
 import dagger.multibindings.ClassKey;
 import dagger.multibindings.IntoMap;
 
-import kotlinx.coroutines.CoroutineScope;
-
 import java.util.concurrent.Executor;
+
+import kotlinx.coroutines.CoroutineScope;
 
 /**
  * Dagger Module providing keyguard.
@@ -125,7 +124,6 @@ import java.util.concurrent.Executor;
             GlanceableHubTransitionModule.class,
             KeyguardConnectedDisplaysModule.class,
             KeyguardDataQuickAffordanceModule.class,
-            KeyguardDisplayModule.class,
             KeyguardEnabledInteractor.Module.class,
             KeyguardQuickAffordancesCombinedViewModelModule.class,
             KeyguardRepositoryModule.class,
