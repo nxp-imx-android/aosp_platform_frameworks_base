@@ -16,10 +16,6 @@
 
 #define LOG_TAG "PerformanceHintNativeTest"
 
-#include <adpf/api/PerformanceHintFeature.h>
-#include <adpf/api/PerformanceHintManager.h>
-#include <adpf/api/PerformanceHintSession.h>
-#include <adpf/api/SessionCreationConfig.h>
 #include <aidl/android/hardware/power/ChannelConfig.h>
 #include <aidl/android/hardware/power/SessionConfig.h>
 #include <aidl/android/hardware/power/SessionMode.h>
@@ -27,18 +23,22 @@
 #include <aidl/android/hardware/power/WorkDuration.h>
 #include <aidl/android/os/IHintManager.h>
 #include <aidl/android/os/SessionCreationConfig.h>
+#include <android/binder_manager.h>
+#include <android/binder_status.h>
+#include <android/performance_hint.h>
 #include <fmq/AidlMessageQueue.h>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <performance_hint_private.h>
 
 #include <memory>
 #include <vector>
 
 using namespace std::chrono_literals;
 namespace hal = aidl::android::hardware::power;
-namespace api = android::adpf::api;
 using aidl::android::os::IHintManager;
 using aidl::android::os::IHintSession;
+using aidl::android::os::SessionCreationConfig;
 using ndk::ScopedAStatus;
 using ndk::SpAIBinder;
 using HalChannelMessageContents = hal::ChannelMessage::ChannelMessageContents;
@@ -51,8 +51,16 @@ using namespace testing;
 
 constexpr int64_t DEFAULT_TARGET_NS = 16666666L;
 
-std::shared_ptr<api::SessionCreationConfig> createConfig() {
-    return std::make_shared<api::SessionCreationConfig>();
+template <class T, void (*D)(T*)>
+std::shared_ptr<T> wrapSP(T* incoming) {
+    return incoming == nullptr ? nullptr : std::shared_ptr<T>(incoming, [](T* ptr) { D(ptr); });
+}
+constexpr auto&& wrapSession = wrapSP<APerformanceHintSession, APerformanceHint_closeSession>;
+constexpr auto&& wrapConfig = wrapSP<ASessionCreationConfig, ASessionCreationConfig_release>;
+constexpr auto&& wrapWorkDuration = wrapSP<AWorkDuration, AWorkDuration_release>;
+
+std::shared_ptr<ASessionCreationConfig> createConfig() {
+    return wrapConfig(ASessionCreationConfig_create());
 }
 
 struct ConfigCreator {
@@ -77,22 +85,15 @@ struct SupportHelper {
     bool audioPerformance : 1;
 };
 
-SupportHelper getSupportHelper(api::PerformanceHintManager* manager) {
+SupportHelper getSupportHelper() {
     return {
-            .hintSessions =
-                    manager->isFeatureSupported(api::PerformanceHintFeature::APERF_HINT_SESSIONS),
-            .powerEfficiency = manager->isFeatureSupported(
-                    api::PerformanceHintFeature::APERF_HINT_POWER_EFFICIENCY),
-            .bindToSurface = manager->isFeatureSupported(
-                    api::PerformanceHintFeature::APERF_HINT_SURFACE_BINDING),
-            .graphicsPipeline = manager->isFeatureSupported(
-                    api::PerformanceHintFeature::APERF_HINT_GRAPHICS_PIPELINE),
-            .autoCpu =
-                    manager->isFeatureSupported(api::PerformanceHintFeature::APERF_HINT_AUTO_CPU),
-            .autoGpu =
-                    manager->isFeatureSupported(api::PerformanceHintFeature::APERF_HINT_AUTO_GPU),
-            .audioPerformance = manager->isFeatureSupported(
-                    api::PerformanceHintFeature::APERF_HINT_AUDIO_PERFORMANCE),
+            .hintSessions = APerformanceHint_isFeatureSupported(APERF_HINT_SESSIONS),
+            .powerEfficiency = APerformanceHint_isFeatureSupported(APERF_HINT_POWER_EFFICIENCY),
+            .bindToSurface = APerformanceHint_isFeatureSupported(APERF_HINT_SURFACE_BINDING),
+            .graphicsPipeline = APerformanceHint_isFeatureSupported(APERF_HINT_GRAPHICS_PIPELINE),
+            .autoCpu = APerformanceHint_isFeatureSupported(APERF_HINT_AUTO_CPU),
+            .autoGpu = APerformanceHint_isFeatureSupported(APERF_HINT_AUTO_GPU),
+            .audioPerformance = APerformanceHint_isFeatureSupported(APERF_HINT_AUDIO_PERFORMANCE),
     };
 }
 
@@ -107,24 +108,24 @@ SupportHelper getFullySupportedSupportHelper() {
     };
 }
 
-std::shared_ptr<api::SessionCreationConfig> configFromCreator(ConfigCreator&& creator) {
+std::shared_ptr<ASessionCreationConfig> configFromCreator(ConfigCreator&& creator) {
     auto config = createConfig();
-    config->tids = creator.tids;
-    config->targetWorkDurationNanos = creator.targetDuration;
-    config->setMode(api::SessionMode::POWER_EFFICIENCY, creator.powerEfficient);
-    config->setMode(api::SessionMode::GRAPHICS_PIPELINE, creator.graphicsPipeline);
-    api::helper::layersFromNativeSurfaces<wp<IBinder>>(creator.nativeWindows.size() > 0
-                                                               ? creator.nativeWindows.data()
-                                                               : nullptr,
-                                                       creator.nativeWindows.size(),
-                                                       creator.surfaceControls.size() > 0
-                                                               ? creator.surfaceControls.data()
-                                                               : nullptr,
-                                                       creator.surfaceControls.size(),
-                                                       config->layers);
-    config->setMode(api::SessionMode::AUTO_CPU, creator.autoCpu);
-    config->setMode(api::SessionMode::AUTO_GPU, creator.autoGpu);
-    config->setMode(api::SessionMode::AUDIO_PERFORMANCE, creator.audioPerformance);
+
+    ASessionCreationConfig_setTids(config.get(), creator.tids.data(), creator.tids.size());
+    ASessionCreationConfig_setTargetWorkDurationNanos(config.get(), creator.targetDuration);
+    ASessionCreationConfig_setPreferPowerEfficiency(config.get(), creator.powerEfficient);
+    ASessionCreationConfig_setGraphicsPipeline(config.get(), creator.graphicsPipeline);
+    ASessionCreationConfig_setNativeSurfaces(config.get(),
+                                             creator.nativeWindows.size() > 0
+                                                     ? creator.nativeWindows.data()
+                                                     : nullptr,
+                                             creator.nativeWindows.size(),
+                                             creator.surfaceControls.size() > 0
+                                                     ? creator.surfaceControls.data()
+                                                     : nullptr,
+                                             creator.surfaceControls.size());
+    ASessionCreationConfig_setUseAutoTiming(config.get(), creator.autoCpu, creator.autoGpu);
+    ASessionCreationConfig_setAudioPerformance(config.get(), creator.audioPerformance);
     return config;
 }
 
@@ -132,8 +133,8 @@ class MockIHintManager : public IHintManager {
 public:
     MOCK_METHOD(ScopedAStatus, createHintSessionWithConfig,
                 (const SpAIBinder& token, hal::SessionTag tag,
-                 const ::aidl::android::os::SessionCreationConfig& creationConfig,
-                 hal::SessionConfig* config, IHintManager::SessionCreationReturn* _aidl_return),
+                 const SessionCreationConfig& creationConfig, hal::SessionConfig* config,
+                 IHintManager::SessionCreationReturn* _aidl_return),
                 (override));
     MOCK_METHOD(ScopedAStatus, setHintSessionThreads,
                 (const std::shared_ptr<IHintSession>& hintSession,
@@ -194,9 +195,10 @@ class PerformanceHintTest : public Test {
 public:
     void SetUp() override {
         mMockIHintManager = ndk::SharedRefBase::make<NiceMock<MockIHintManager>>();
-        api::testing::getRateLimiterProperties(&mMaxLoadHintsPerInterval, &mLoadHintInterval);
-        api::testing::setIHintManager(&mMockIHintManager);
-        api::testing::setUseNewLoadHintBehavior(true);
+        APerformanceHint_getRateLimiterPropertiesForTesting(&mMaxLoadHintsPerInterval,
+                                                            &mLoadHintInterval);
+        APerformanceHint_setIHintManagerForTesting(&mMockIHintManager);
+        APerformanceHint_setUseNewLoadHintBehaviorForTesting(true);
         mTids.push_back(1);
         mTids.push_back(2);
     }
@@ -204,16 +206,16 @@ public:
     void TearDown() override {
         mMockIHintManager = nullptr;
         // Destroys MockIHintManager.
-        api::testing::setIHintManager(nullptr);
+        APerformanceHint_setIHintManagerForTesting(nullptr);
     }
 
-    api::PerformanceHintManager* createManager() {
-        api::testing::setUseFmq(mUsingFMQ);
+    APerformanceHintManager* createManager() {
+        APerformanceHint_setUseFMQForTesting(mUsingFMQ);
         ON_CALL(*mMockIHintManager, registerClient(_, _))
                 .WillByDefault(
                         DoAll(SetArgPointee<1>(mClientData), [] { return ScopedAStatus::ok(); }));
         ON_CALL(*mMockIHintManager, isRemote()).WillByDefault(Return(true));
-        return api::PerformanceHintManager::getInstance();
+        return APerformanceHint_getManager();
     }
 
     void prepareSessionMock(hal::SessionTag returnedTag = hal::SessionTag::APP) {
@@ -248,26 +250,34 @@ public:
         });
     }
 
-    std::shared_ptr<api::PerformanceHintSession> createSession(
-            api::PerformanceHintManager* manager, int64_t targetDuration = 56789L,
-            bool isHwui = false, hal::SessionTag returnedTag = hal::SessionTag::APP) {
+    std::shared_ptr<APerformanceHintSession> createSession(
+            APerformanceHintManager* manager, int64_t targetDuration = 56789L, bool isHwui = false,
+            hal::SessionTag returnedTag = hal::SessionTag::APP) {
         prepareSessionMock(returnedTag);
-        return std::shared_ptr<api::PerformanceHintSession>(
-                manager->createSession(mTids.data(), mTids.size(), targetDuration,
-                                       isHwui ? hal::SessionTag::HWUI : hal::SessionTag::APP));
+        if (isHwui) {
+            return wrapSession(APerformanceHint_createSessionInternal(manager, mTids.data(),
+                                                                      mTids.size(), targetDuration,
+                                                                      SessionTag::HWUI));
+        }
+        return wrapSession(APerformanceHint_createSession(manager, mTids.data(), mTids.size(),
+                                                          targetDuration));
     }
 
-    std::shared_ptr<api::PerformanceHintSession> createSessionUsingConfig(
-            api::PerformanceHintManager* manager,
-            std::shared_ptr<api::SessionCreationConfig>& config, bool isHwui = false) {
+    std::shared_ptr<APerformanceHintSession> createSessionUsingConfig(
+            APerformanceHintManager* manager, std::shared_ptr<ASessionCreationConfig>& config,
+            bool isHwui = false) {
         prepareSessionMock();
-        api::PerformanceHintSession* session;
+        APerformanceHintSession* session;
         int out = 0;
-        out = manager->createSessionUsingConfig(config.get(), &session,
-                                                isHwui ? hal::SessionTag::HWUI
-                                                       : hal::SessionTag::APP);
+        if (isHwui) {
+            out = APerformanceHint_createSessionUsingConfigInternal(manager, config.get(), &session,
+                                                                    SessionTag::HWUI);
+        }
+
+        out = APerformanceHint_createSessionUsingConfig(manager, config.get(), &session);
         EXPECT_EQ(out, 0);
-        return std::shared_ptr<api::PerformanceHintSession>(session);
+
+        return wrapSession(session);
     }
 
     void setFMQEnabled(bool enabled) {
@@ -339,17 +349,17 @@ bool equalsWithoutTimestamp(hal::WorkDuration lhs, hal::WorkDuration rhs) {
 }
 
 TEST_F(PerformanceHintTest, TestSession) {
-    api::PerformanceHintManager* manager = createManager();
+    APerformanceHintManager* manager = createManager();
     auto&& session = createSession(manager);
     ASSERT_TRUE(session);
 
     int64_t targetDurationNanos = 10;
     EXPECT_CALL(*mMockSession, updateTargetWorkDuration(Eq(targetDurationNanos))).Times(Exactly(1));
-    int result = session->updateTargetWorkDuration(targetDurationNanos);
+    int result = APerformanceHint_updateTargetWorkDuration(session.get(), targetDurationNanos);
     EXPECT_EQ(0, result);
 
     // subsequent call with same target should be ignored but return no error
-    result = session->updateTargetWorkDuration(targetDurationNanos);
+    result = APerformanceHint_updateTargetWorkDuration(session.get(), targetDurationNanos);
     EXPECT_EQ(0, result);
 
     Mock::VerifyAndClearExpectations(mMockSession.get());
@@ -360,60 +370,54 @@ TEST_F(PerformanceHintTest, TestSession) {
     actualDurations.push_back(20);
     EXPECT_CALL(*mMockSession, reportActualWorkDuration2(_)).Times(Exactly(1));
     EXPECT_CALL(*mMockSession, updateTargetWorkDuration(_)).Times(Exactly(1));
-    result = session->reportActualWorkDuration(actualDurationNanos);
+    result = APerformanceHint_reportActualWorkDuration(session.get(), actualDurationNanos);
     EXPECT_EQ(0, result);
-    result = session->reportActualWorkDuration(-1L);
+    result = APerformanceHint_reportActualWorkDuration(session.get(), -1L);
     EXPECT_EQ(EINVAL, result);
-    result = session->updateTargetWorkDuration(0);
+    result = APerformanceHint_updateTargetWorkDuration(session.get(), 0);
     EXPECT_EQ(0, result);
-    result = session->updateTargetWorkDuration(-2);
+    result = APerformanceHint_updateTargetWorkDuration(session.get(), -2);
     EXPECT_EQ(EINVAL, result);
-    result = session->reportActualWorkDuration(12L);
+    result = APerformanceHint_reportActualWorkDuration(session.get(), 12L);
     EXPECT_EQ(EINVAL, result);
 
-    hal::SessionHint hintId = hal::SessionHint::CPU_LOAD_RESET;
-    EXPECT_CALL(*mMockSession, sendHint(Eq(static_cast<int32_t>(hal::SessionHint::CPU_LOAD_RESET))))
-            .Times(Exactly(1));
-    result = session->sendHint(hintId, "Test hint");
+    SessionHint hintId = SessionHint::CPU_LOAD_RESET;
+    EXPECT_CALL(*mMockSession, sendHint(Eq(hintId))).Times(Exactly(1));
+    result = APerformanceHint_sendHint(session.get(), hintId);
     EXPECT_EQ(0, result);
-    EXPECT_CALL(*mMockSession, sendHint(Eq(static_cast<int32_t>(hal::SessionHint::CPU_LOAD_UP))))
-            .Times(Exactly(1));
-    result = session->notifyWorkloadIncrease(true, false, "Test hint");
+    EXPECT_CALL(*mMockSession, sendHint(Eq(SessionHint::CPU_LOAD_UP))).Times(Exactly(1));
+    result = APerformanceHint_notifyWorkloadIncrease(session.get(), true, false, "Test hint");
     EXPECT_EQ(0, result);
-    EXPECT_CALL(*mMockSession, sendHint(Eq(static_cast<int32_t>(hal::SessionHint::CPU_LOAD_RESET))))
-            .Times(Exactly(1));
-    EXPECT_CALL(*mMockSession, sendHint(Eq(static_cast<int32_t>(hal::SessionHint::GPU_LOAD_RESET))))
-            .Times(Exactly(1));
-    result = session->notifyWorkloadReset(true, true, "Test hint");
+    EXPECT_CALL(*mMockSession, sendHint(Eq(SessionHint::CPU_LOAD_RESET))).Times(Exactly(1));
+    EXPECT_CALL(*mMockSession, sendHint(Eq(SessionHint::GPU_LOAD_RESET))).Times(Exactly(1));
+    result = APerformanceHint_notifyWorkloadReset(session.get(), true, true, "Test hint");
     EXPECT_EQ(0, result);
-    EXPECT_CALL(*mMockSession, sendHint(Eq(static_cast<int32_t>(hal::SessionHint::CPU_LOAD_SPIKE))))
-            .Times(Exactly(1));
-    EXPECT_CALL(*mMockSession, sendHint(Eq(static_cast<int32_t>(hal::SessionHint::GPU_LOAD_SPIKE))))
-            .Times(Exactly(1));
-    result = session->notifyWorkloadSpike(true, true, "Test hint");
+    EXPECT_CALL(*mMockSession, sendHint(Eq(SessionHint::CPU_LOAD_SPIKE))).Times(Exactly(1));
+    EXPECT_CALL(*mMockSession, sendHint(Eq(SessionHint::GPU_LOAD_SPIKE))).Times(Exactly(1));
+    result = APerformanceHint_notifyWorkloadSpike(session.get(), true, true, "Test hint");
     EXPECT_EQ(0, result);
 
     EXPECT_DEATH(
-            { session->sendHint(static_cast<hal::SessionHint>(-1), "Test hint"); },
+            { APerformanceHint_sendHint(session.get(), static_cast<SessionHint>(-1)); },
             "invalid session hint");
 
     Mock::VerifyAndClearExpectations(mMockSession.get());
     for (int i = 0; i < mMaxLoadHintsPerInterval; ++i) {
-        session->sendHint(hintId, "Test hint");
+        APerformanceHint_sendHint(session.get(), hintId);
     }
 
     // Expect to get rate limited if we try to send faster than the limiter allows
     EXPECT_CALL(*mMockSession, sendHint(_)).Times(Exactly(0));
-    result = session->notifyWorkloadIncrease(true, true, "Test hint");
+    result = APerformanceHint_notifyWorkloadIncrease(session.get(), true, true, "Test hint");
     EXPECT_EQ(result, EBUSY);
     EXPECT_CALL(*mMockSession, sendHint(_)).Times(Exactly(0));
-    result = session->notifyWorkloadReset(true, true, "Test hint");
+    result = APerformanceHint_notifyWorkloadReset(session.get(), true, true, "Test hint");
     EXPECT_CALL(*mMockSession, close()).Times(Exactly(1));
 }
 
 TEST_F(PerformanceHintTest, TestUpdatedSessionCreation) {
     EXPECT_CALL(*mMockIHintManager, createHintSessionWithConfig(_, _, _, _, _)).Times(1);
-    api::PerformanceHintManager* manager = createManager();
+    APerformanceHintManager* manager = createManager();
     auto&& session = createSession(manager);
     ASSERT_TRUE(session);
 }
@@ -421,7 +425,7 @@ TEST_F(PerformanceHintTest, TestUpdatedSessionCreation) {
 TEST_F(PerformanceHintTest, TestSessionCreationUsingConfig) {
     EXPECT_CALL(*mMockIHintManager, createHintSessionWithConfig(_, _, _, _, _)).Times(1);
     auto&& config = configFromCreator({.tids = mTids});
-    api::PerformanceHintManager* manager = createManager();
+    APerformanceHintManager* manager = createManager();
     auto&& session = createSessionUsingConfig(manager, config);
     ASSERT_TRUE(session);
 }
@@ -429,7 +433,7 @@ TEST_F(PerformanceHintTest, TestSessionCreationUsingConfig) {
 TEST_F(PerformanceHintTest, TestHwuiSessionCreation) {
     EXPECT_CALL(*mMockIHintManager, createHintSessionWithConfig(_, hal::SessionTag::HWUI, _, _, _))
             .Times(1);
-    api::PerformanceHintManager* manager = createManager();
+    APerformanceHintManager* manager = createManager();
     auto&& session = createSession(manager, 56789L, true);
     ASSERT_TRUE(session);
 }
@@ -437,26 +441,26 @@ TEST_F(PerformanceHintTest, TestHwuiSessionCreation) {
 TEST_F(PerformanceHintTest, TestAudioPerformanceSessionCreation) {
     EXPECT_CALL(*mMockIHintManager, createHintSessionWithConfig(_, _, _, _, _)).Times(1);
     auto&& config = configFromCreator({.audioPerformance = true});
-    api::PerformanceHintManager* manager = createManager();
+    APerformanceHintManager* manager = createManager();
     auto&& session = createSessionUsingConfig(manager, config);
     ASSERT_TRUE(session);
 }
 
 TEST_F(PerformanceHintTest, SetThreads) {
-    api::PerformanceHintManager* manager = createManager();
+    APerformanceHintManager* manager = createManager();
 
     auto&& session = createSession(manager);
     ASSERT_TRUE(session);
 
     int32_t emptyTids[2];
-    int result = session->setThreads(emptyTids, 0);
+    int result = APerformanceHint_setThreads(session.get(), emptyTids, 0);
     EXPECT_EQ(EINVAL, result);
 
     std::vector<int32_t> newTids;
     newTids.push_back(1);
     newTids.push_back(3);
     EXPECT_CALL(*mMockIHintManager, setHintSessionThreads(_, Eq(newTids))).Times(Exactly(1));
-    result = session->setThreads(newTids.data(), newTids.size());
+    result = APerformanceHint_setThreads(session.get(), newTids.data(), newTids.size());
     EXPECT_EQ(0, result);
 
     testing::Mock::VerifyAndClearExpectations(mMockIHintManager.get());
@@ -466,26 +470,26 @@ TEST_F(PerformanceHintTest, SetThreads) {
     EXPECT_CALL(*mMockIHintManager, setHintSessionThreads(_, Eq(invalidTids)))
             .Times(Exactly(1))
             .WillOnce(Return(ByMove(ScopedAStatus::fromExceptionCode(EX_SECURITY))));
-    result = session->setThreads(invalidTids.data(), invalidTids.size());
+    result = APerformanceHint_setThreads(session.get(), invalidTids.data(), invalidTids.size());
     EXPECT_EQ(EPERM, result);
 }
 
 TEST_F(PerformanceHintTest, SetPowerEfficient) {
-    api::PerformanceHintManager* manager = createManager();
+    APerformanceHintManager* manager = createManager();
     auto&& session = createSession(manager);
     ASSERT_TRUE(session);
 
     EXPECT_CALL(*mMockSession, setMode(_, Eq(true))).Times(Exactly(1));
-    int result = session->setPreferPowerEfficiency(true);
+    int result = APerformanceHint_setPreferPowerEfficiency(session.get(), true);
     EXPECT_EQ(0, result);
 
     EXPECT_CALL(*mMockSession, setMode(_, Eq(false))).Times(Exactly(1));
-    result = session->setPreferPowerEfficiency(false);
+    result = APerformanceHint_setPreferPowerEfficiency(session.get(), false);
     EXPECT_EQ(0, result);
 }
 
 TEST_F(PerformanceHintTest, CreateZeroTargetDurationSession) {
-    api::PerformanceHintManager* manager = createManager();
+    APerformanceHintManager* manager = createManager();
     auto&& session = createSession(manager, 0);
     ASSERT_TRUE(session);
 }
@@ -510,13 +514,13 @@ MATCHER_P(WorkDurationEq, expected, "") {
 }
 
 TEST_F(PerformanceHintTest, TestAPerformanceHint_reportActualWorkDuration2) {
-    api::PerformanceHintManager* manager = createManager();
+    APerformanceHintManager* manager = createManager();
     auto&& session = createSession(manager);
     ASSERT_TRUE(session);
 
     int64_t targetDurationNanos = 10;
     EXPECT_CALL(*mMockSession, updateTargetWorkDuration(Eq(targetDurationNanos))).Times(Exactly(1));
-    int result = session->updateTargetWorkDuration(targetDurationNanos);
+    int result = APerformanceHint_updateTargetWorkDuration(session.get(), targetDurationNanos);
     EXPECT_EQ(0, result);
 
     usleep(2); // Sleep for longer than preferredUpdateRateNanos.
@@ -535,39 +539,52 @@ TEST_F(PerformanceHintTest, TestAPerformanceHint_reportActualWorkDuration2) {
 
         EXPECT_CALL(*mMockSession, reportActualWorkDuration2(WorkDurationEq(actualWorkDurations)))
                 .Times(Exactly(pair.expectedResult == OK));
-        result = session->reportActualWorkDuration(&pair.duration);
+        result = APerformanceHint_reportActualWorkDuration2(session.get(),
+                                                            reinterpret_cast<AWorkDuration*>(
+                                                                    &pair.duration));
         EXPECT_EQ(pair.expectedResult, result);
     }
 
     EXPECT_CALL(*mMockSession, close()).Times(Exactly(1));
 }
 
+TEST_F(PerformanceHintTest, TestAWorkDuration) {
+    // AWorkDuration* aWorkDuration = AWorkDuration_create();
+    auto&& aWorkDuration = wrapWorkDuration(AWorkDuration_create());
+    ASSERT_NE(aWorkDuration, nullptr);
+
+    AWorkDuration_setWorkPeriodStartTimestampNanos(aWorkDuration.get(), 1);
+    AWorkDuration_setActualTotalDurationNanos(aWorkDuration.get(), 20);
+    AWorkDuration_setActualCpuDurationNanos(aWorkDuration.get(), 13);
+    AWorkDuration_setActualGpuDurationNanos(aWorkDuration.get(), 8);
+}
+
 TEST_F(PerformanceHintTest, TestCreateUsingFMQ) {
     setFMQEnabled(true);
-    api::PerformanceHintManager* manager = createManager();
+    APerformanceHintManager* manager = createManager();
     auto&& session = createSession(manager);
     ASSERT_TRUE(session);
 }
 
 TEST_F(PerformanceHintTest, TestUpdateTargetWorkDurationUsingFMQ) {
     setFMQEnabled(true);
-    api::PerformanceHintManager* manager = createManager();
+    APerformanceHintManager* manager = createManager();
     auto&& session = createSession(manager);
-    session->updateTargetWorkDuration(456);
+    APerformanceHint_updateTargetWorkDuration(session.get(), 456);
     expectToReadFromFmq<HalChannelMessageContents::Tag::targetDuration>(456);
 }
 
 TEST_F(PerformanceHintTest, TestSendHintUsingFMQ) {
     setFMQEnabled(true);
-    api::PerformanceHintManager* manager = createManager();
+    APerformanceHintManager* manager = createManager();
     auto&& session = createSession(manager);
-    session->sendHint(hal::SessionHint::CPU_LOAD_UP, "Test Hint");
+    APerformanceHint_sendHint(session.get(), SessionHint::CPU_LOAD_UP);
     expectToReadFromFmq<HalChannelMessageContents::Tag::hint>(hal::SessionHint::CPU_LOAD_UP);
 }
 
 TEST_F(PerformanceHintTest, TestReportActualUsingFMQ) {
     setFMQEnabled(true);
-    api::PerformanceHintManager* manager = createManager();
+    APerformanceHintManager* manager = createManager();
     auto&& session = createSession(manager);
     hal::WorkDuration duration{.timeStampNanos = 3,
                                .durationNanos = 999999,
@@ -582,12 +599,13 @@ TEST_F(PerformanceHintTest, TestReportActualUsingFMQ) {
             .gpuDurationNanos = duration.gpuDurationNanos,
     };
 
-    session->reportActualWorkDuration(&duration);
+    APerformanceHint_reportActualWorkDuration2(session.get(),
+                                               reinterpret_cast<AWorkDuration*>(&duration));
     expectToReadFromFmq<HalChannelMessageContents::Tag::workDuration>(durationExpected);
 }
 
 TEST_F(PerformanceHintTest, TestReportActualWhenAppIsGame) {
-    api::PerformanceHintManager* manager = createManager();
+    APerformanceHintManager* manager = createManager();
     auto&& session = createSession(manager, 56789L, false, hal::SessionTag::OTHER);
     hal::WorkDuration duration{.timeStampNanos = 3,
                                .durationNanos = 999999,
@@ -595,9 +613,10 @@ TEST_F(PerformanceHintTest, TestReportActualWhenAppIsGame) {
                                .cpuDurationNanos = 999999,
                                .gpuDurationNanos = 999999};
 
-    session->reportActualWorkDuration(&duration);
+    APerformanceHint_reportActualWorkDuration2(session.get(),
+                                               reinterpret_cast<AWorkDuration*>(&duration));
 
-    EXPECT_CALL(*mMockSession, reportActualWorkDuration2(_)).Times(0);
+    EXPECT_CALL(*mMockSession, reportActualWorkDuration(_, _)).Times(0);
 }
 
 TEST_F(PerformanceHintTest, TestASessionCreationConfig) {
@@ -608,7 +627,7 @@ TEST_F(PerformanceHintTest, TestASessionCreationConfig) {
             .graphicsPipeline = true,
     });
 
-    api::PerformanceHintManager* manager = createManager();
+    APerformanceHintManager* manager = createManager();
     auto&& session = createSessionUsingConfig(manager, config);
 
     ASSERT_NE(session, nullptr);
@@ -619,7 +638,7 @@ TEST_F(PerformanceHintTest, TestSessionCreationWithNullLayers) {
     EXPECT_CALL(*mMockIHintManager, createHintSessionWithConfig(_, _, _, _, _)).Times(1);
     auto&& config = configFromCreator(
             {.tids = mTids, .nativeWindows = {nullptr}, .surfaceControls = {nullptr}});
-    api::PerformanceHintManager* manager = createManager();
+    APerformanceHintManager* manager = createManager();
     auto&& session = createSessionUsingConfig(manager, config);
     ASSERT_TRUE(session);
 }
@@ -630,7 +649,7 @@ TEST_F(PerformanceHintTest, TestSupportObject) {
     mClientData.supportInfo.sessionHints &= ~(1 << (int)hal::SessionHint::GPU_LOAD_UP);
     mClientData.supportInfo.sessionHints &= ~(1 << (int)hal::SessionHint::POWER_EFFICIENCY);
 
-    api::PerformanceHintManager* manager = createManager();
+    APerformanceHintManager* manager = createManager();
 
     union {
         int expectedSupportInt;
@@ -643,60 +662,16 @@ TEST_F(PerformanceHintTest, TestSupportObject) {
     };
 
     expectedSupport = getFullySupportedSupportHelper();
-    actualSupport = getSupportHelper(manager);
+    actualSupport = getSupportHelper();
 
     expectedSupport.autoGpu = false;
 
     EXPECT_EQ(expectedSupportInt, actualSupportInt);
 }
 
-TEST_F(PerformanceHintTest, TestCreatingAutoSession) {
-    // Disable GPU capability for testing
-    mClientData.supportInfo.sessionModes &= ~(1 << (int)hal::SessionMode::AUTO_GPU);
-    api::PerformanceHintManager* manager = createManager();
-
-    auto&& invalidConfig = configFromCreator({
-            .tids = mTids,
-            .targetDuration = 20,
-            .graphicsPipeline = false,
-            .autoCpu = true,
-            .autoGpu = true,
-    });
-
-    // Creating a session with auto timing but no graphics pipeline should die
-    // EXPECT_DEATH({ createSessionUsingConfig(manager, invalidConfig); }, "");
-
-    auto&& unsupportedConfig = configFromCreator({
-            .tids = mTids,
-            .targetDuration = 20,
-            .graphicsPipeline = true,
-            .autoCpu = true,
-            .autoGpu = true,
-    });
-
-    api::PerformanceHintSession* unsupportedSession = nullptr;
-
-    int out = manager->createSessionUsingConfig(unsupportedConfig.get(), &unsupportedSession);
-
-    std::shared_ptr<api::PerformanceHintSession> unsupportedSessionWrapped(unsupportedSession);
-    EXPECT_EQ(out, ENOTSUP);
-    EXPECT_EQ(unsupportedSessionWrapped, nullptr);
-
-    auto&& validConfig = configFromCreator({
-            .tids = mTids,
-            .targetDuration = 20,
-            .graphicsPipeline = true,
-            .autoCpu = true,
-            .autoGpu = false,
-    });
-
-    auto&& validSession = createSessionUsingConfig(manager, validConfig);
-    EXPECT_NE(validSession, nullptr);
-}
-
 TEST_F(PerformanceHintTest, TestReportActualOverflow) {
     mClientData.preferredRateNanos = 10000000L;
-    api::PerformanceHintManager* manager = createManager();
+    APerformanceHintManager* manager = createManager();
 
     auto&& config = configFromCreator({
             .tids = mTids,
@@ -713,34 +688,83 @@ TEST_F(PerformanceHintTest, TestReportActualOverflow) {
     EXPECT_CALL(*mMockSession, reportActualWorkDuration2(_)).Times(2);
 
     // Report a duration under the target, to signal the start of good behavior per the rate limiter
-    session->reportActualWorkDuration(&duration);
+    APerformanceHint_reportActualWorkDuration2(session.get(),
+                                               reinterpret_cast<AWorkDuration*>(&duration));
 
     // Sleep for longer than preferredUpdateRateNanos.
     usleep(12000);
 
     // Report a duration under the target, to signal continued good behavior per the rate limiter
-    session->reportActualWorkDuration(&duration);
+    APerformanceHint_reportActualWorkDuration2(session.get(),
+                                               reinterpret_cast<AWorkDuration*>(&duration));
 
     EXPECT_CALL(*mMockSession, reportActualWorkDuration2(SizeIs(Eq(30)))).Times(1);
 
-    api::testing::setReportBatchSizeCap(-1);
+    APerformanceHint_setReportBatchSizeCapForTesting(-1);
     for (int i = 0; i < 29; ++i) {
-        session->reportActualWorkDuration(&duration);
+        APerformanceHint_reportActualWorkDuration2(session.get(),
+                                                   reinterpret_cast<AWorkDuration*>(&duration));
     }
 
     // Sleep for longer than preferredUpdateRateNanos.
     usleep(12000);
-    session->reportActualWorkDuration(&duration);
+    APerformanceHint_reportActualWorkDuration2(session.get(),
+                                               reinterpret_cast<AWorkDuration*>(&duration));
 
     // Enforce that report spam gets capped
     EXPECT_CALL(*mMockSession, reportActualWorkDuration2(SizeIs(Eq(10)))).Times(1);
 
-    api::testing::setReportBatchSizeCap(10);
+    APerformanceHint_setReportBatchSizeCapForTesting(10);
     for (int i = 0; i < 29; ++i) {
-        session->reportActualWorkDuration(&duration);
+        APerformanceHint_reportActualWorkDuration2(session.get(),
+                                                   reinterpret_cast<AWorkDuration*>(&duration));
     }
 
     // Sleep for longer than preferredUpdateRateNanos.
     usleep(12000);
-    session->reportActualWorkDuration(&duration);
+    APerformanceHint_reportActualWorkDuration2(session.get(),
+                                               reinterpret_cast<AWorkDuration*>(&duration));
+}
+
+TEST_F(PerformanceHintTest, TestCreatingAutoSession) {
+    // Disable GPU capability for testing
+    mClientData.supportInfo.sessionModes &= ~(1 << (int)hal::SessionMode::AUTO_GPU);
+    APerformanceHintManager* manager = createManager();
+
+    auto&& invalidConfig = configFromCreator({
+            .tids = mTids,
+            .targetDuration = 20,
+            .graphicsPipeline = false,
+            .autoCpu = true,
+            .autoGpu = true,
+    });
+
+    EXPECT_DEATH({ createSessionUsingConfig(manager, invalidConfig); }, "");
+
+    auto&& unsupportedConfig = configFromCreator({
+            .tids = mTids,
+            .targetDuration = 20,
+            .graphicsPipeline = true,
+            .autoCpu = true,
+            .autoGpu = true,
+    });
+
+    APerformanceHintSession* unsupportedSession = nullptr;
+
+    // Creating a session with auto timing but no graphics pipeline should fail
+    int out = APerformanceHint_createSessionUsingConfig(manager, unsupportedConfig.get(),
+                                                        &unsupportedSession);
+    EXPECT_EQ(out, ENOTSUP);
+    EXPECT_EQ(wrapSession(unsupportedSession), nullptr);
+
+    auto&& validConfig = configFromCreator({
+            .tids = mTids,
+            .targetDuration = 20,
+            .graphicsPipeline = true,
+            .autoCpu = true,
+            .autoGpu = false,
+    });
+
+    auto&& validSession = createSessionUsingConfig(manager, validConfig);
+    EXPECT_NE(validSession, nullptr);
 }

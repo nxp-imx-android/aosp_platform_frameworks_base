@@ -427,7 +427,6 @@ cc_defaults_for_libandroid_runtime {
                 "libperfetto_framework_jni",
                 "libprotolog",
                 "pw_allocator",
-                "libperformancehint",
             ],
             export_shared_lib_headers: [
                 // our headers include libnativewindow's public headers
