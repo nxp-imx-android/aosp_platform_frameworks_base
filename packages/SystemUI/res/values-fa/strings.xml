@@ -184,13 +184,18 @@
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"هم‌رسانی پنجره برنامه"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"هم‌رسانی کردن زبانه"</string>
     <string name="screen_share_entire_screen_sharing_title" msgid="9093580141248337998">"هم‌رسانی کل صفحه‌نمایش"</string>
-    <!-- no translation found for screen_share_disclaimer_app_sharing (1839029004749224549) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer_tab_sharing (3811486274577713101) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer_full_screen_sharing (5173795016606926338) -->
-    <skip />
+    <string name="screen_share_disclaimer_app_sharing" msgid="1839029004749224549">"وقتی برنامه‌ای را هم‌رسانی می‌کنید، هر چیزی که در آن برنامه نمایش داده شود یا پخش شود برای <xliff:g id="APP_NAME">%1$s</xliff:g> قابل‌مشاهده خواهد بود. بنابراین درخصوص اطلاعات حساس احتیاط کنید."</string>
+    <string name="screen_share_disclaimer_tab_sharing" msgid="3811486274577713101">"وقتی برگه‌ای را هم‌رسانی می‌کنید، هر چیزی که در آن برگه باشد برای <xliff:g id="APP_NAME">%1$s</xliff:g> قابل‌مشاهده است. بنابراین درخصوص اطلاعات حساس احتیاط کنید."</string>
+    <string name="screen_share_disclaimer_full_screen_sharing" msgid="5173795016606926338">"وقتی کل صفحه‌نمایش را هم‌رسانی می‌کنید، هر چیزی که روی صفحه‌نمایش شما وجود داشته باشد برای <xliff:g id="APP_NAME">%1$s</xliff:g> قابل‌مشاهده خواهد بود. بنابراین درخصوص اطلاعات حساس احتیاط کنید."</string>
     <string name="screen_share_a11y_announcement" msgid="8938007210094494367">"انتخاب موارد برای هم‌رسانی برگه، برنامه، یا کل صفحه‌نمایش را انتخاب کنید. سپس روی «هم‌رسانی» فشار دهید."</string>
+    <!-- no translation found for screen_share_cancel_announcement (5940879227647436383) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_sharing_app (3445421300603336524) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_sharing_tab (2963542572740628746) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_sharing_display (5919924998949424031) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"نماگرفت پنجره"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"پنجره ضبط"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"گرفتن نماگرفت از ناحیه انتخاب شده"</string>
@@ -241,7 +246,7 @@
     <string name="immersive_cling_title" msgid="8372056499315585941">"درحال مشاهده در حالت تمام‌صفحه"</string>
     <string name="immersive_cling_description" msgid="2717426731830851921">"برای خروج، از بالای صفحه تند به پایین بکشید"</string>
     <string name="immersive_cling_positive" msgid="3076681691468978568">"متوجهم"</string>
-    <string name="accessibility_back" msgid="6530104400086152611">"برگشت"</string>
+    <string name="accessibility_back" msgid="6530104400086152611">"برگشتن"</string>
     <string name="accessibility_home" msgid="5430449841237966217">"صفحهٔ اصلی"</string>
     <string name="accessibility_menu" msgid="2701163794470513040">"منو"</string>
     <string name="accessibility_accessibility_button" msgid="4089042473497107709">"دسترس‌پذیری"</string>
@@ -1013,7 +1018,7 @@
     <string name="battery_detail_switch_title" msgid="6940976502957380405">"بهینه‌سازی باتری"</string>
     <string name="keyboard_key_button_template" msgid="8005673627272051429">"دکمه <xliff:g id="NAME">%1$s</xliff:g>"</string>
     <string name="keyboard_key_home" msgid="3734400625170020657">"ابتدا"</string>
-    <string name="keyboard_key_back" msgid="4185420465469481999">"برگشت"</string>
+    <string name="keyboard_key_back" msgid="4185420465469481999">"برگشتن"</string>
     <string name="keyboard_key_tab" msgid="4592772350906496730">"Tab"</string>
     <string name="keyboard_key_space" msgid="6980847564173394012">"فاصله"</string>
     <string name="keyboard_key_enter" msgid="8633362970109751646">"Enter"</string>
@@ -1037,7 +1042,7 @@
     <string name="keyboard_shortcut_group_system" msgid="1583416273777875970">"سیستم"</string>
     <string name="keyboard_shortcut_group_system_home" msgid="7465138628692109907">"صفحه اصلی"</string>
     <string name="keyboard_shortcut_group_system_recents" msgid="8628108256824616927">"موارد اخیر"</string>
-    <string name="keyboard_shortcut_group_system_back" msgid="1055709713218453863">"برگشت"</string>
+    <string name="keyboard_shortcut_group_system_back" msgid="1055709713218453863">"برگشتن"</string>
     <string name="keyboard_shortcut_group_system_notifications" msgid="3615971650562485878">"اعلان‌ها"</string>
     <string name="keyboard_shortcut_group_system_shortcuts_helper" msgid="4856808328618265589">"میان‌برهای صفحه‌کلید"</string>
     <string name="keyboard_shortcut_join" msgid="3578314570034512676">"یا"</string>
@@ -1792,10 +1797,13 @@
     <string name="accessibility_close_overlay_action" msgid="3581095146209387670">"برگشتن"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"تکمیل خودکار"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"ازهم باز کردن"</string>
-    <string name="location_button_text_share_precise_location" msgid="5341882050169860712">"هم‌رسانی مکان دقیق"</string>
-    <string name="location_button_text_use_precise_location" msgid="3499475231656390476">"استفاده از مکان دقیق"</string>
-    <string name="location_button_text_near_precise_location" msgid="3607275724182981412">"نزدیک مکان دقیق"</string>
     <string name="location_button_text_precise_location" msgid="4441259889842542799">"مکان دقیق"</string>
+    <string name="location_button_text_use_precise_location" msgid="3499475231656390476">"استفاده از مکان دقیق"</string>
+    <string name="location_button_text_share_precise_location" msgid="5341882050169860712">"هم‌رسانی مکان دقیق"</string>
+    <!-- no translation found for location_button_text_near_my_precise_location (7590342799002942963) -->
+    <skip />
+    <!-- no translation found for location_button_text_near_your_precise_location (3792598666253599055) -->
+    <skip />
     <string name="privacy_chip_use_string" msgid="979159484631969073">"<xliff:g id="SENSOR">%1$s</xliff:g>استفاده شده"</string>
     <string name="privacy_chip_use_string_with_app" msgid="6807216002072346877">"‫<xliff:g id="SENSOR">%1$s</xliff:g> از آن استفاده می‌کند.<xliff:g id="APP">%2$s</xliff:g>"</string>
     <string name="privacy_chip_camera_and_mic_text" msgid="6254449489859255607">"دوربین و میکروفون."</string>
@@ -1819,10 +1827,17 @@
     <string name="av_camera_blur_light" msgid="5666055368940059418">"روشن"</string>
     <string name="av_camera_blur_full" msgid="3276351992811619332">"کامل"</string>
     <string name="av_camera_improve_lighting" msgid="1540549414296669133">"بهبود نورپردازی"</string>
+    <!-- no translation found for av_camera_face_retouch (45890971969486224) -->
+    <skip />
     <string name="av_camera_framing" msgid="5108462267843042492">"قاب‌بندی دوربین."</string>
     <string name="av_studio_mic" msgid="2614843492629357766">"میکروفون استودیویی"</string>
     <string name="av_studio_look" msgid="621893522645557619">"ظاهر استودیویی"</string>
     <string name="av_studio_look_effects" msgid="4105109585851068415">"‏‫%d جلوه"</string>
     <string name="av_blur" msgid="405131343487260171">"محو کردن"</string>
     <string name="av_live_captions" msgid="7819416886586903077">"زیرنویس زنده"</string>
+    <string name="accessibility_hearing_device_battery_level" msgid="1032601787487328432">"‏باتری %s"</string>
+    <string name="accessibility_hearing_device_left_right_battery_level" msgid="5327672450604052979">"‏باتری چپ %1$s    باتری راست %2$s"</string>
+    <string name="accessibility_hearing_device_left_battery_level" msgid="327961080394238636">"‏باتری چپ %1$s"</string>
+    <string name="accessibility_hearing_device_right_battery_level" msgid="7598843215226414563">"‏باتری R‏ %1$s"</string>
+    <string name="accessibility_hearing_device_notification_channel_name" msgid="7365020777623709400">"وضعیت سمعک"</string>
 </resources>

@@ -184,13 +184,18 @@
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"Dijeljenje prozora aplikacije"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"Podijeli karticu"</string>
     <string name="screen_share_entire_screen_sharing_title" msgid="9093580141248337998">"Dijeljenje cijelog zaslona"</string>
-    <!-- no translation found for screen_share_disclaimer_app_sharing (1839029004749224549) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer_tab_sharing (3811486274577713101) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer_full_screen_sharing (5173795016606926338) -->
-    <skip />
+    <string name="screen_share_disclaimer_app_sharing" msgid="1839029004749224549">"Kada dijelite aplikaciju, sve što se prikazuje ili reproducira u toj aplikaciji bit će vidljivo aplikaciji <xliff:g id="APP_NAME">%1$s</xliff:g>. Stoga budite oprezni s osjetljivim podacima."</string>
+    <string name="screen_share_disclaimer_tab_sharing" msgid="3811486274577713101">"Kada dijelite karticu, sve što se nalazi na kartici bit će vidljivo aplikaciji <xliff:g id="APP_NAME">%1$s</xliff:g>. Stoga budite oprezni s osjetljivim podacima."</string>
+    <string name="screen_share_disclaimer_full_screen_sharing" msgid="5173795016606926338">"Kada dijelite cijeli zaslon, sve na zaslonu bit će vidljivo aplikaciji <xliff:g id="APP_NAME">%1$s</xliff:g>. Stoga budite oprezni s osjetljivim podacima."</string>
     <string name="screen_share_a11y_announcement" msgid="8938007210094494367">"Odaberite što želite dijeliti. Odaberite karticu, aplikaciju ili cijeli zaslon. Zatim pritisnite Dijeli."</string>
+    <!-- no translation found for screen_share_cancel_announcement (5940879227647436383) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_sharing_app (3445421300603336524) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_sharing_tab (2963542572740628746) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_sharing_display (5919924998949424031) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Snimi zaslon prozora"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Snimi prozor"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Snimi odabrani dio zaslona"</string>
@@ -283,7 +288,7 @@
     <string name="biometric_dialog_identity_check_footer" msgid="4176895548458429932">"Provjera identiteta je uključena i može potvrditi da ste to vi samo putem otiska prsta ili lica. %1$s"</string>
     <string name="biometric_dialog_identity_check_watch_ranging" msgid="2994378079915744485">"Procjena rizika…"</string>
     <string name="biometric_dialog_unavailable" msgid="8242160331783709764">"Nedostupno"</string>
-    <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"Koristite PIN"</string>
+    <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"Upotrijebite PIN"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"Koristite uzorak"</string>
     <string name="biometric_dialog_use_password" msgid="3445033859393474779">"Koristite zaporku"</string>
     <string name="biometric_dialog_enter_pin" msgid="8625265944863623975">"Unesite PIN"</string>
@@ -1792,10 +1797,13 @@
     <string name="accessibility_close_overlay_action" msgid="3581095146209387670">"povratak"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"automatsko popunjavanje"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"proširivanje"</string>
-    <string name="location_button_text_share_precise_location" msgid="5341882050169860712">"Podijeli točnu lokaciju"</string>
-    <string name="location_button_text_use_precise_location" msgid="3499475231656390476">"Koristi točnu lokaciju"</string>
-    <string name="location_button_text_near_precise_location" msgid="3607275724182981412">"U blizini točne lokacije"</string>
     <string name="location_button_text_precise_location" msgid="4441259889842542799">"Točna lokacija"</string>
+    <string name="location_button_text_use_precise_location" msgid="3499475231656390476">"Koristi točnu lokaciju"</string>
+    <string name="location_button_text_share_precise_location" msgid="5341882050169860712">"Podijeli točnu lokaciju"</string>
+    <!-- no translation found for location_button_text_near_my_precise_location (7590342799002942963) -->
+    <skip />
+    <!-- no translation found for location_button_text_near_your_precise_location (3792598666253599055) -->
+    <skip />
     <string name="privacy_chip_use_string" msgid="979159484631969073">"Upotrebljava se <xliff:g id="SENSOR">%1$s</xliff:g>"</string>
     <string name="privacy_chip_use_string_with_app" msgid="6807216002072346877">"Aplikacija <xliff:g id="APP">%2$s</xliff:g> upotrebljava senzor <xliff:g id="SENSOR">%1$s</xliff:g>"</string>
     <string name="privacy_chip_camera_and_mic_text" msgid="6254449489859255607">"Kamera i mikrofon"</string>
@@ -1819,10 +1827,17 @@
     <string name="av_camera_blur_light" msgid="5666055368940059418">"Lagano"</string>
     <string name="av_camera_blur_full" msgid="3276351992811619332">"Potpuno"</string>
     <string name="av_camera_improve_lighting" msgid="1540549414296669133">"Poboljšanje osvjetljenja"</string>
+    <!-- no translation found for av_camera_face_retouch (45890971969486224) -->
+    <skip />
     <string name="av_camera_framing" msgid="5108462267843042492">"Kadriranje kamere"</string>
     <string name="av_studio_mic" msgid="2614843492629357766">"Studijski mikrofon"</string>
     <string name="av_studio_look" msgid="621893522645557619">"Studijska slika"</string>
     <string name="av_studio_look_effects" msgid="4105109585851068415">"Broj efekata: %d"</string>
     <string name="av_blur" msgid="405131343487260171">"Zamućivanje"</string>
     <string name="av_live_captions" msgid="7819416886586903077">"Automatski titlovi"</string>
+    <string name="accessibility_hearing_device_battery_level" msgid="1032601787487328432">"Baterija %s"</string>
+    <string name="accessibility_hearing_device_left_right_battery_level" msgid="5327672450604052979">"Baterija lijeve slušalice %1$s    Baterija desne slušalice %2$s"</string>
+    <string name="accessibility_hearing_device_left_battery_level" msgid="327961080394238636">"Baterija lijeve slušalice %1$s"</string>
+    <string name="accessibility_hearing_device_right_battery_level" msgid="7598843215226414563">"Baterija desne slušalice %1$s"</string>
+    <string name="accessibility_hearing_device_notification_channel_name" msgid="7365020777623709400">"Status slušnog pomagala"</string>
 </resources>

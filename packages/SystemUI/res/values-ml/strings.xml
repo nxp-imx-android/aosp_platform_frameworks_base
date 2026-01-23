@@ -184,13 +184,18 @@
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"ആപ്പ് വിൻഡോ പങ്കിടുക"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"ടാബ് പങ്കിടുക"</string>
     <string name="screen_share_entire_screen_sharing_title" msgid="9093580141248337998">"സ്ക്രീൻ പൂർണമായും പങ്കിടുക"</string>
-    <!-- no translation found for screen_share_disclaimer_app_sharing (1839029004749224549) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer_tab_sharing (3811486274577713101) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer_full_screen_sharing (5173795016606926338) -->
-    <skip />
+    <string name="screen_share_disclaimer_app_sharing" msgid="1839029004749224549">"ആപ്പ് പങ്കിടുമ്പോൾ, ആപ്പിൽ കാണിക്കുന്ന/പ്ലേ ചെയ്യുന്നവ <xliff:g id="APP_NAME">%1$s</xliff:g>-ന് കാണാം. സെൻസിറ്റീവ് വിവരം നൽകുമ്പോൾ സൂക്ഷിക്കൂ."</string>
+    <string name="screen_share_disclaimer_tab_sharing" msgid="3811486274577713101">"ടാബ് പങ്കിടുമ്പോൾ, ടാബിലെ എല്ലാ കാര്യങ്ങളും <xliff:g id="APP_NAME">%1$s</xliff:g> എന്നതിന് കാണാം. സെൻസിറ്റീവ് വിവരം നൽകുമ്പോൾ സൂക്ഷിക്കൂ."</string>
+    <string name="screen_share_disclaimer_full_screen_sharing" msgid="5173795016606926338">"നിങ്ങളുടെ സ്ക്രീൻ മുഴുവനായി പങ്കിടുമ്പോൾ, സ്ക്രീനിലെ എല്ലാ കാര്യങ്ങളും <xliff:g id="APP_NAME">%1$s</xliff:g> എന്നതിന് ദൃശ്യമാകും സെൻസിറ്റീവ് വിവരം നൽകുമ്പോൾ സൂക്ഷിക്കൂ."</string>
     <string name="screen_share_a11y_announcement" msgid="8938007210094494367">"എന്ത് പങ്കിടണമെന്ന് തിരഞ്ഞെടുക്കുക. ടാബ്, ആപ്പ് അല്ലെങ്കിൽ മുഴുവൻ സ്ക്രീൻ തിരഞ്ഞെടുക്കുക. തുടർന്ന് പങ്കിടുക അമർത്തുക."</string>
+    <!-- no translation found for screen_share_cancel_announcement (5940879227647436383) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_sharing_app (3445421300603336524) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_sharing_tab (2963542572740628746) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_sharing_display (5919924998949424031) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"വിൻഡോയുടെ സ്ക്രീൻഷോട്ട് എടുക്കുക"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"വിൻഡോ റെക്കോർഡ് ചെയ്യുക"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"തിരഞ്ഞെടുത്ത ഭാഗത്തിന്റെ സ്ക്രീൻഷോട്ട് എടുക്കുക"</string>
@@ -1792,10 +1797,13 @@
     <string name="accessibility_close_overlay_action" msgid="3581095146209387670">"മടങ്ങുക"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"സ്വയമേവ പൂരിപ്പിക്കൽ"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"വികസിപ്പിക്കുക"</string>
-    <string name="location_button_text_share_precise_location" msgid="5341882050169860712">"കൃത്യമായ ലൊക്കേഷൻ പങ്കിടുക"</string>
-    <string name="location_button_text_use_precise_location" msgid="3499475231656390476">"കൃത്യമായ ലൊക്കേഷൻ ഉപയോഗിക്കുക"</string>
-    <string name="location_button_text_near_precise_location" msgid="3607275724182981412">"കൃത്യമായ ലൊക്കേഷന് സമീപം"</string>
     <string name="location_button_text_precise_location" msgid="4441259889842542799">"കൃത്യമായ ലൊക്കേഷൻ"</string>
+    <string name="location_button_text_use_precise_location" msgid="3499475231656390476">"കൃത്യമായ ലൊക്കേഷൻ ഉപയോഗിക്കുക"</string>
+    <string name="location_button_text_share_precise_location" msgid="5341882050169860712">"കൃത്യമായ ലൊക്കേഷൻ പങ്കിടുക"</string>
+    <!-- no translation found for location_button_text_near_my_precise_location (7590342799002942963) -->
+    <skip />
+    <!-- no translation found for location_button_text_near_your_precise_location (3792598666253599055) -->
+    <skip />
     <string name="privacy_chip_use_string" msgid="979159484631969073">"<xliff:g id="SENSOR">%1$s</xliff:g> ഉപയോഗത്തിലാണ്"</string>
     <string name="privacy_chip_use_string_with_app" msgid="6807216002072346877">"<xliff:g id="APP">%2$s</xliff:g>, <xliff:g id="SENSOR">%1$s</xliff:g> ഉപയോഗിക്കുന്നു"</string>
     <string name="privacy_chip_camera_and_mic_text" msgid="6254449489859255607">"ക്യാമറയും മൈക്കും"</string>
@@ -1819,10 +1827,17 @@
     <string name="av_camera_blur_light" msgid="5666055368940059418">"ലൈറ്റ്"</string>
     <string name="av_camera_blur_full" msgid="3276351992811619332">"ഫുൾ"</string>
     <string name="av_camera_improve_lighting" msgid="1540549414296669133">"ലൈറ്റിംഗ് മെച്ചപ്പെടുത്തുക"</string>
+    <!-- no translation found for av_camera_face_retouch (45890971969486224) -->
+    <skip />
     <string name="av_camera_framing" msgid="5108462267843042492">"ക്യാമറാ ഫ്രെയിമിംഗ്"</string>
     <string name="av_studio_mic" msgid="2614843492629357766">"Studio മൈക്ക്"</string>
     <string name="av_studio_look" msgid="621893522645557619">"സ്റ്റുഡിയോ ലുക്ക്"</string>
     <string name="av_studio_look_effects" msgid="4105109585851068415">"%d ഇഫക്റ്റുകൾ"</string>
     <string name="av_blur" msgid="405131343487260171">"മങ്ങിക്കൽ"</string>
     <string name="av_live_captions" msgid="7819416886586903077">"തത്സമയ ക്യാപ്ഷനുകൾ"</string>
+    <string name="accessibility_hearing_device_battery_level" msgid="1032601787487328432">"ബാറ്ററി %s"</string>
+    <string name="accessibility_hearing_device_left_right_battery_level" msgid="5327672450604052979">"L ബാറ്ററി %1$s    R ബാറ്ററി %2$s"</string>
+    <string name="accessibility_hearing_device_left_battery_level" msgid="327961080394238636">"L ബാറ്ററി %1$s"</string>
+    <string name="accessibility_hearing_device_right_battery_level" msgid="7598843215226414563">"R ബാറ്ററി %1$s"</string>
+    <string name="accessibility_hearing_device_notification_channel_name" msgid="7365020777623709400">"കേൾവിക്കുള്ള ഉപകരണത്തിന്റെ നില"</string>
 </resources>
