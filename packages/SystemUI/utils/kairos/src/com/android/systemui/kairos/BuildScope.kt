@@ -261,13 +261,6 @@ interface BuildScope : HasNetwork, StateScope {
         toStateFlow(name.toNameData("State.toStateFlow"), this)
 
     /**
-     * Returns a [SharedFlow] configured with a replay cache of size [replay] that emits the current
-     * [value][State.sample] of this [State] followed by all [changes].
-     */
-    fun <A> State<A>.toSharedFlow(replay: Int = 0, name: NameTag? = null): SharedFlow<A> =
-        toSharedFlow(nameTag("State.toSharedFlow").toNameData("State.toSharedFlow"), this, replay)
-
-    /**
      * Returns a [SharedFlow] configured with a replay cache of size [replay] that emits values
      * whenever this [Events] emits.
      */
@@ -1207,19 +1200,6 @@ internal fun <A> BuildScope.toStateFlow(nameData: NameData, state: State<A>): St
             innerStateFlow.collect { collector.emit(it.value) }
         }
     }
-}
-
-internal fun <A> BuildScope.toSharedFlow(
-    nameData: NameData,
-    state: State<A>,
-    replay: Int,
-): SharedFlow<A> {
-    val result = MutableSharedFlow<A>(replay, extraBufferCapacity = 1)
-    deferredBuildScope {
-        result.tryEmit(state.sample())
-        state.changes.observeSync(nameData) { a -> result.tryEmit(a) }
-    }
-    return result
 }
 
 internal fun <A> BuildScope.toSharedFlow(

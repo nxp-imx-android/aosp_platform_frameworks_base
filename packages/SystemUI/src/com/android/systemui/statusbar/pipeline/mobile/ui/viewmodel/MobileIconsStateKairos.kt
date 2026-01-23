@@ -20,9 +20,9 @@ import androidx.compose.runtime.getValue
 import com.android.systemui.activateIn
 import com.android.systemui.kairos.KairosNetwork
 import com.android.systemui.kairos.map
-import com.android.systemui.kairosBuilder
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.util.composable.kairos.hydratedComposeStateOf
+import com.android.systemui.util.lifecycle.kairos.kairosBuilder
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 
