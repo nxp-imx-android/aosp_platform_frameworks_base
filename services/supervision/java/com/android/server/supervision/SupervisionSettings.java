@@ -108,9 +108,7 @@ public class SupervisionSettings {
         loadUserData();
         maybePerformDataMigration();
 
-        if (Flags.supervisionRecoveryImprovements()) {
-            loadRecoveryInfo();
-        }
+        loadRecoveryInfo();
     }
 
     public static SupervisionSettings getInstance() {
@@ -262,9 +260,6 @@ public class SupervisionSettings {
      * @return The {@link SupervisionRecoveryInfo} if found, otherwise {@code null}.
      */
     public SupervisionRecoveryInfo getRecoveryInfo() {
-        if (!Flags.supervisionRecoveryImprovements()) {
-            loadRecoveryInfo();
-        }
         return mRecoveryInfo;
     }
 

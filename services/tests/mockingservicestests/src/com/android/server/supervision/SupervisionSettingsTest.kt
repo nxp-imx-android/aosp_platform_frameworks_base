@@ -206,23 +206,6 @@ class SupervisionSettingsTest {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_SUPERVISION_RECOVERY_IMPROVEMENTS)
-    fun saveAndGetRecoveryInfo_retrievesCorrectRecoveryInfo() {
-        // Save and get recovery info
-        mSupervisionSettings.saveRecoveryInfo(RECOVERY_INFO)
-        val retrievedRecoveryInfo = mSupervisionSettings.getRecoveryInfo()
-
-        // Check if recovery info was retrieved correctly
-        assertThat(retrievedRecoveryInfo).isNotNull()
-        assertThat(retrievedRecoveryInfo.accountType).isEqualTo(RECOVERY_INFO.accountType)
-        assertThat(retrievedRecoveryInfo.accountName).isEqualTo(RECOVERY_INFO.accountName)
-        assertThat(retrievedRecoveryInfo.accountData.getString("id"))
-            .isEqualTo(RECOVERY_INFO.accountData.getString("id"))
-        assertThat(retrievedRecoveryInfo.state).isEqualTo(RECOVERY_INFO.state)
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_SUPERVISION_RECOVERY_IMPROVEMENTS)
     fun saveAndLoadRecoveryInfo_retrievesCorrectRecoveryInfo() {
         // Save, load, and get recovery info
         mSupervisionSettings.saveRecoveryInfo(RECOVERY_INFO)
