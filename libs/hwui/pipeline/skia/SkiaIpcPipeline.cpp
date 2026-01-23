@@ -112,11 +112,17 @@ IRenderPipeline::DrawResult SkiaIpcPipeline::draw(
     std::function<void(SurfaceComposerClient::Transaction*)> transactionReadyCallback;
     LightingInfo::updateLighting(lightGeometry, lightInfo);
     SkCanvas* canvas = mIPCRecordingCanvas.get();
-    // draw all layers up front
-    mIPCRecordingCanvas->startRecording();
+
+    if (!mIPCRecordingCanvas->canRecord()) {
+        IRenderPipeline::DrawResult result;
+        result.success = false;
+        return result;
+    }
 
     // This should be the size plummed down from ViewRoot instead.
     mIPCRecordingCanvas->storeSize(mWidth, mHeight);
+    // draw all layers up front
+    mIPCRecordingCanvas->startRecording();
 
     renderLayersImpl(*layerUpdateQueue, opaque);
     layerUpdateQueue->clear();
