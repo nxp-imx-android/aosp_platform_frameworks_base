@@ -4253,6 +4253,25 @@ public class AudioService extends IAudioService.Stub
         ensureValidDirection(direction);
         ensureValidStreamType(streamType);
 
+        // use stream type alias here so that streams with same alias have the same behavior,
+        // including with regard to silent mode control (e.g the use of STREAM_RING below and in
+        // checkForRingerModeChange() in place of STREAM_RING or STREAM_NOTIFICATION)
+        int streamTypeAlias = sStreamVolumeAlias.get(streamType, /*valueIfKeyNotFound=*/-1);
+        if (streamTypeAlias == -1) {
+            Log.e(TAG,
+                    "adjustStreamVolume: no stream vol alias for stream type " + streamType);
+        }
+
+        if (mMode.get() == AudioSystem.MODE_ASSISTANT_CONVERSATION
+                && flagsContainsAbsoluteDevices(flags)  // external volume event
+                && streamType != AudioManager.STREAM_ASSISTANT) {
+            Slog.w(TAG,
+                    "MODE_ASSISTANT_CONVERSATION active, directing volume event to "
+                            + "STREAM_ASSISTANT");
+            streamType = AudioManager.STREAM_ASSISTANT;
+            streamTypeAlias = sStreamVolumeAlias.get(streamType, AudioManager.STREAM_ASSISTANT);
+        }
+
         boolean isMuteAdjust = isMuteAdjust(direction);
 
         if (isMuteAdjust && !isStreamAffectedByMute(streamType)) {
@@ -4288,17 +4307,7 @@ public class AudioService extends IAudioService.Stub
             }
         }
 
-        // use stream type alias here so that streams with same alias have the same behavior,
-        // including with regard to silent mode control (e.g the use of STREAM_RING below and in
-        // checkForRingerModeChange() in place of STREAM_RING or STREAM_NOTIFICATION)
-        int streamTypeAlias = sStreamVolumeAlias.get(streamType, /*valueIfKeyNotFound=*/-1);
-        if (streamTypeAlias == -1) {
-            Log.e(TAG,
-                    "adjustStreamVolume: no stream vol alias for stream type " + streamType);
-        }
-
         VolumeStreamState streamState = getVssForStreamOrDefault(streamTypeAlias);
-
 
         final AudioDeviceAttributes deviceAttr = ada != null ? ada : getDeviceAttributesForStream(
                 streamTypeAlias, flagsContainsAbsoluteDevices(flags));
@@ -4313,16 +4322,6 @@ public class AudioService extends IAudioService.Stub
         if (!AudioSystem.isBluetoothOutDevice(deviceType)
                 && (flags & AudioManager.FLAG_BLUETOOTH_ABS_VOLUME) != 0) {
             return;
-        }
-
-        if (mMode.get() == AudioSystem.MODE_ASSISTANT_CONVERSATION
-                && flagsContainsAbsoluteDevices(flags)  // external volume event
-                && streamType != AudioManager.STREAM_ASSISTANT) {
-            Slog.w(TAG,
-                    "MODE_ASSISTANT_CONVERSATION active, directing volume event to "
-                            + "STREAM_ASSISTANT");
-            streamType = AudioManager.STREAM_ASSISTANT;
-            streamTypeAlias = sStreamVolumeAlias.get(streamType, AudioManager.STREAM_ASSISTANT);
         }
 
         // If we are being called by the system (e.g. hardware keys) check for current user
@@ -5851,6 +5850,18 @@ public class AudioService extends IAudioService.Stub
             Log.e(TAG, "setStreamVolume: no stream vol alias for stream type " + streamType);
             return;
         }
+
+        if (mMode.get() == AudioSystem.MODE_ASSISTANT_CONVERSATION
+                && flagsContainsAbsoluteDevices(flags)  // external volume event
+                && streamType != AudioManager.STREAM_ASSISTANT) {
+            index = rescaleIndex(index * 10, streamType, AudioManager.STREAM_ASSISTANT) / 10;
+            streamType = AudioManager.STREAM_ASSISTANT;
+            streamTypeAlias = sStreamVolumeAlias.get(streamType, AudioManager.STREAM_ASSISTANT);
+            Slog.w(TAG,
+                    "MODE_ASSISTANT_CONVERSATION active, directing volume event to "
+                            + "STREAM_ASSISTANT with new index " + index);
+        }
+
         final VolumeStreamState streamState = getVssForStreamOrDefault(streamTypeAlias);
         final AudioDeviceAttributes deviceAttr = (ada == null)
                 ? getDeviceAttributesForStream(streamType, flagsContainsAbsoluteDevices(flags))
@@ -5863,17 +5874,6 @@ public class AudioService extends IAudioService.Stub
         if (!AudioSystem.isBluetoothOutDevice(deviceType)
                 && (flags & AudioManager.FLAG_BLUETOOTH_ABS_VOLUME) != 0) {
             return;
-        }
-
-        if (mMode.get() == AudioSystem.MODE_ASSISTANT_CONVERSATION
-                && flagsContainsAbsoluteDevices(flags)  // external volume event
-                && streamType != AudioManager.STREAM_ASSISTANT) {
-            index = rescaleIndex(index * 10, streamType, AudioManager.STREAM_ASSISTANT) / 10;
-            streamType = AudioManager.STREAM_ASSISTANT;
-            streamTypeAlias = sStreamVolumeAlias.get(streamType, AudioManager.STREAM_ASSISTANT);
-            Slog.w(TAG,
-                    "MODE_ASSISTANT_CONVERSATION active, directing volume event to "
-                            + "STREAM_ASSISTANT with new index " + index);
         }
 
         // If we are being called by the system (e.g. hardware keys) check for current user
