@@ -528,6 +528,11 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
             return mService.getPermittedAccessibilityServicePackages(adminPermittedServices,
                     userId);
         }
+
+        @Override
+        public AccessibilityFeatureRestrictedCounts getA11yFeatureRestrictedCounts(int userId) {
+            return mService.getA11yFeatureRestrictedCounts(userId);
+        }
     }
 
     public static final class Lifecycle extends SystemService {
@@ -1346,6 +1351,54 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
                 }
             }
         });
+    }
+
+    /**
+     * These counts are logged by AdvancedProtectionService before APM is actually enabled.
+     * At the time of logging any A11yServices that will be shut down are still enabled;
+     * those services will be shut down when we receive the signal that APM is actually enabled.
+     */
+    @VisibleForTesting
+    AccessibilityManagerInternal.AccessibilityFeatureRestrictedCounts
+            getA11yFeatureRestrictedCounts(int userId) {
+        final Set<String> currentPermittedSet = getPermittedAccessibilityServices(userId);
+        final List<String> currentPermittedList = currentPermittedSet != null
+                ? new ArrayList<>(currentPermittedSet) : null;
+
+        synchronized (mLock) {
+            final AccessibilityUserState userState = getUserStateLocked(userId);
+            final Set<String> finalAllowedPackages = getPermittedServicesStrictApm(
+                    currentPermittedList, userId);
+
+            return new AccessibilityManagerInternal.AccessibilityFeatureRestrictedCounts(
+                    getServicesDisabledByDevicePolicyCountLocked(userState, finalAllowedPackages),
+                    getShortcutsDisabledByDevicePolicyCountLocked(userState, finalAllowedPackages));
+        }
+    }
+
+    @GuardedBy("mLock")
+    private int getServicesDisabledByDevicePolicyCountLocked(AccessibilityUserState userState,
+            Set<String> finalAllowedPackages) {
+        int count = 0;
+        for (ComponentName component : userState.mEnabledServices) {
+            if (!finalAllowedPackages.contains(component.getPackageName())) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    @GuardedBy("mLock")
+    private int getShortcutsDisabledByDevicePolicyCountLocked(AccessibilityUserState userState,
+            Set<String> finalAllowedPackages) {
+        int count = 0;
+        final Set<String> targets = userState.getShortcutTargetsLocked(ALL);
+        for (String target : targets) {
+            if (!userState.isShortcutTargetPermittedLocked(target, finalAllowedPackages)) {
+                count++;
+            }
+        }
+        return count;
     }
 
     /**
