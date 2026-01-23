@@ -30,7 +30,6 @@ import android.service.personalcontext.insight.ContextInsight;
 import android.service.personalcontext.insight.ContextInsightWrapper;
 import android.util.Log;
 import android.view.SurfaceControlViewHost;
-import android.view.SurfaceView;
 import android.view.View;
 
 import androidx.annotation.NonNull;
@@ -92,25 +91,6 @@ public class InsightSurfaceClient implements AutoCloseable {
      * certain events have occurred.
      */
     public interface ClientCallback {
-        /**
-         * A {@link SurfaceControlViewHost.SurfacePackage} has been created for the
-         * client to embed in a SurfaceView. This callback will only be called after the client
-         * has been registered with the personal context engine by calling the {@link #register}
-         * method.
-         * @deprecated Use {@link #onSessionCreated(InsightSurfaceSession)} instead.
-         */
-        @Deprecated
-        void onSurfaceCreated(@NonNull SurfaceControlViewHost.SurfacePackage surfacePackage);
-
-        /**
-         * The {@link SurfaceControlViewHost.SurfacePackage} returned by onSurfaceCreated has been
-         * released. This is an opportunity for the client owner to release any resources
-         * associated with the surface.
-         * @deprecated Use {@link #onSessionDestroyed(InsightSurfaceSession)} instead.
-         */
-        @Deprecated
-        void onSurfaceReleased(@NonNull SurfaceControlViewHost.SurfacePackage surfacePackage);
-
         /**
          * The size of the embedded surface has changed. Subclasses can override this method to be
          * informed of the size change.
@@ -187,8 +167,6 @@ public class InsightSurfaceClient implements AutoCloseable {
                         mSession = new InsightSurfaceSession(
                                 InsightSurfaceClient.this, surfacePackage, session);
                         mCallbacks.onSessionCreated(mSession);
-
-                        mCallbacks.onSurfaceCreated(surfacePackage);
                     });
                 }
 
@@ -199,8 +177,6 @@ public class InsightSurfaceClient implements AutoCloseable {
                         Log.d(TAG, "onSurfaceReleased [" + surfacePackage + "]");
                     }
                     mCallbacksExecutor.execute(() -> {
-                        mCallbacks.onSurfaceReleased(surfacePackage);
-
                         if (mSession != null) {
                             Preconditions.checkState(
                                     mSession.getSurfacePackage() == surfacePackage);
@@ -368,40 +344,6 @@ public class InsightSurfaceClient implements AutoCloseable {
     /**
      * Register with the personal context engine. Once registered, the client can receive a
      * {@link SurfaceControlViewHost.SurfacePackage} via {@link ClientCallback}.
-     *
-     * @param widthMeasureSpec a width measure spec indicating the desired width of the embedded
-     *                         surface; the personal context engine will attempt to honor the spec
-     * @param heightMeasureSpec a height measure spec indicating the desired height of the
-     *                          embedded surface; the personal context engine will attempt to honor
-     *                          the spec
-     * @deprecated Use {@link #register()} instead.
-     */
-    @Deprecated
-    public void register(int widthMeasureSpec, int heightMeasureSpec) {
-        if (mIsRegistered) {
-            // Already registered.
-            Log.w(TAG, "client is already registered");
-            return;
-        }
-
-        // Re-create client info to update measure specs for backward compatibility. All other
-        // properties are preserved.
-        mClientInfo = new InsightSurfaceClientInfo(
-                mClientInfo.getDisplayId(),
-                widthMeasureSpec,
-                heightMeasureSpec,
-                mClientInfo.getBackgroundColor(),
-                mClientInfo.getNestedScrollAxes(),
-                mClientInfo.getNestedScrollAxisLocked(),
-                mClientInfo.shouldBlur(),
-                mClientInfo.getConfiguration(),
-                mClient);
-        register();
-    }
-
-    /**
-     * Register with the personal context engine. Once registered, the client can receive a
-     * {@link SurfaceControlViewHost.SurfacePackage} via {@link ClientCallback}.
      */
     public void register() {
         if (DEBUG) {
@@ -514,28 +456,6 @@ public class InsightSurfaceClient implements AutoCloseable {
             mContext = context;
             mCallbacksExecutor = callbacksExecutor;
             mCallbacks = callbacks;
-        }
-
-        /**
-         * Construct a new builder.
-         *
-         * @param context a {@link Context} used to fetch system services
-         * @param surfaceView the {@link SurfaceView} that this client wraps
-         * @deprecated Use {@link #Builder(Context, ClientCallback)} instead.
-         */
-        @Deprecated
-        public Builder(@NonNull Context context, @NonNull SurfaceView surfaceView) {
-            this(context, new ClientCallback() {
-                @Override
-                public void onSurfaceCreated(
-                        @NonNull SurfaceControlViewHost.SurfacePackage surfacePackage) {
-                }
-
-                @Override
-                public void onSurfaceReleased(
-                        @NonNull SurfaceControlViewHost.SurfacePackage surfacePackage) {
-                }
-            });
         }
 
         /**
