@@ -345,6 +345,14 @@ flag {
 }
 
 flag {
+    name: "virtual_displays_support_desktop_mode"
+    namespace: "lse_desktop_experience"
+    description: "Enable virtual displays to show desktop mode, allowing content mode switch between mirroring and desktop"
+    bug: "477860918"
+    is_exported: true
+}
+
+flag {
     name: "enable_null_display_info_cache"
     namespace: "display_manager"
     description: "Enable null DisplayInfo caching in DisplayManagerGlobal so subsequent calls with null avoid a binder call."
