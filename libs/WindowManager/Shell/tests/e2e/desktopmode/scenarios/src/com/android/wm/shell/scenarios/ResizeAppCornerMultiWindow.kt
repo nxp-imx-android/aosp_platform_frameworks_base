@@ -17,6 +17,7 @@
 package com.android.wm.shell.scenarios
 
 import android.app.Instrumentation
+import android.platform.test.annotations.WithDesktopTest
 import android.tools.Rotation
 import android.tools.traces.parsers.WindowManagerStateHelper
 import androidx.test.platform.app.InstrumentationRegistry
@@ -54,6 +55,7 @@ constructor(
         mailAppDesktopHelper.openTasks(wmHelper, numTasks = numWindows)
     }
 
+    @WithDesktopTest
     @Test
     open fun resizeAppWithCornerResize() {
         mailAppDesktopHelper.cornerResize(
