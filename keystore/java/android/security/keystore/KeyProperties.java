@@ -26,8 +26,10 @@ import android.hardware.security.keymint.TagType;
 import android.os.Process;
 import android.security.keymaster.KeymasterDefs;
 import android.security.keystore2.Flags;
+import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.security.spec.AlgorithmParameterSpec;
 import java.security.spec.ECParameterSpec;
 import java.security.spec.MGF1ParameterSpec;
@@ -193,6 +195,7 @@ public abstract class KeyProperties {
      * @hide
      */
     @Retention(RetentionPolicy.SOURCE)
+    @Target({ElementType.TYPE_USE})
     @StringDef(prefix = { "KEY_" }, value = {
         KEY_ALGORITHM_RSA,
         KEY_ALGORITHM_EC,
