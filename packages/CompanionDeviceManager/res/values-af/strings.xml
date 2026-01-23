@@ -68,8 +68,7 @@
     <string name="permission_media_routing_control" msgid="5498639511586715253">"Verander media-uitset"</string>
     <string name="permission_storage" msgid="6831099350839392343">"Foto\'s en media"</string>
     <string name="permission_notifications" msgid="4099418516590632909">"Kennisgewings"</string>
-    <!-- no translation found for permission_app_streaming (4488910074894929222) -->
-    <skip />
+    <string name="permission_app_streaming" msgid="4488910074894929222">"Weerspieël skerm en stroom apps"</string>
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"Stroom data na jou <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> toe"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"Weerspieël jou skerm"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"Stroom apps"</string>
@@ -84,11 +83,9 @@
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"Vind, koppel aan en bepaal die relatiewe posisie van toestelle in die omtrek"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"Lees alle kennisgewings, insluitend inligting soos kontakte, boodskappe en foto’s"</string>
     <string name="permission_notifications_summary" msgid="6819393427371255636">"• Lees alle kennisgewings, insluitend inligting soos kontakte, boodskappe en foto\'s&lt;br/&gt;• Stuur vir jou kennisgewings&lt;br/&gt;&lt;br/&gt;Jy kan hierdie app se vermoë om kennisgewings te lees en stuur enige tyd in Instellings &gt; Kennisgewings bestuur."</string>
-    <!-- no translation found for permission_storage_summary (3779040306012319942) -->
-    <skip />
+    <string name="permission_storage_summary" msgid="3779040306012319942">"Deel jou foon se foto’s en media met jou ander toestelle."</string>
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"Stuur vir jou kennisgewings"</string>
-    <!-- no translation found for permission_app_streaming_summary (4114223538437344105) -->
-    <skip />
+    <string name="permission_app_streaming_summary" msgid="4114223538437344105">"Deel jou foon se skerm, insluitend apps, na jou toestelle. Jou toestelle sal toegang hê tot enigiets wat op jou foon sigbaar is, insluitend oudio, foto’s, betaalinligting, wagwoorde en boodskappe, selfs wanneer jou foon gesluit is.&lt;br/&gt;&lt;br/&gt;Verskaf mikrofoon-, kamera- en ander sensordata vanaf jou toestelle terug na jou foon toe, insluitend interaksies soos raakgebare en muisklikke."</string>
     <string name="permission_create_virtual_device_summary" msgid="3570256456647725172">"Stroom mikrofoon, kamera, en ander sensordata vanaf &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; na jou <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> toe."</string>
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"Neem op, saai uit of deel jou <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> se skerm na &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> sal tot enigiets wat sigbaar of gespeel is op jou <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g> toegang hê, insluitend oudio, foto\'s, betalingsinligting, wagwoorde en boodskappe."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"Stroom jou <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> se apps na &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> sal tot enigiets wat sigbaar of gespeel is op jou <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g> toegang hê, insluitend oudio, foto\'s, betalingsinligting, wagwoorde en boodskappe, selfs wanneer jou <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> gesluit is."</string>

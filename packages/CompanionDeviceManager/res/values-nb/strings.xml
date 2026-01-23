@@ -68,8 +68,7 @@
     <string name="permission_media_routing_control" msgid="5498639511586715253">"Bytt medieutgang"</string>
     <string name="permission_storage" msgid="6831099350839392343">"Bilder og medier"</string>
     <string name="permission_notifications" msgid="4099418516590632909">"Varsler"</string>
-    <!-- no translation found for permission_app_streaming (4488910074894929222) -->
-    <skip />
+    <string name="permission_app_streaming" msgid="4488910074894929222">"Speil skjermen og strøm apper"</string>
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"Strøm data til <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"Speil skjermen"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"Strøm apper"</string>
@@ -84,11 +83,9 @@
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"finne, koble til og fastslå den relative posisjonen til enheter i nærheten"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"Les alle varsler, inkludert informasjon som kontakter, meldinger og bilder"</string>
     <string name="permission_notifications_summary" msgid="6819393427371255636">"• lese alle varsler, inkludert informasjon som kontakter, meldinger og bilder&lt;br/&gt;• sende deg varsler&lt;br/&gt;&lt;br/&gt;Du kan når som helst administrere om denne appen kan lese og sende varsler, i Innstillinger &gt; Varsler."</string>
-    <!-- no translation found for permission_storage_summary (3779040306012319942) -->
-    <skip />
+    <string name="permission_storage_summary" msgid="3779040306012319942">"Del bilder og medier fra telefonen med de andre enhetene dine."</string>
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"sende deg varsler"</string>
-    <!-- no translation found for permission_app_streaming_summary (4114223538437344105) -->
-    <skip />
+    <string name="permission_app_streaming_summary" msgid="4114223538437344105">"Del telefonskjermen, inkludert apper, til enhetene dine. Enhetene dine får tilgang til alt som er synlig på telefonen, deriblant lyd, bilder, betalingsopplysninger, passord og meldinger – selv når telefonen er låst.&lt;br/&gt;&lt;br/&gt;Gi mikrofon-, kamera- og andre sensordata fra enhetene dine tilbake til telefonen, deriblant interaksjoner som berøringsbevegelser og museklikk."</string>
     <string name="permission_create_virtual_device_summary" msgid="3570256456647725172">"Strøm mikrofon-, kamera- og andre sensordata fra &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; til <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>."</string>
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"Ta opp, cast eller del skjermen fra <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> til &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> får tilgang til alt som vises eller spilles av på <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g>, inkludert lyd, bilder, betalingsopplysninger, passord og meldinger."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"Strøm apper fra <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> til &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> kan se alt som vises eller spilles av på <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g>, inkludert lyd, bilder, betalingsopplysninger, passord og meldinger – selv når <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> er låst."</string>

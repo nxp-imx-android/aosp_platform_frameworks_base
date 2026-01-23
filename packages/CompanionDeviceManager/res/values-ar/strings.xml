@@ -68,8 +68,7 @@
     <string name="permission_media_routing_control" msgid="5498639511586715253">"تغيير تطبيق تشغيل الوسائط"</string>
     <string name="permission_storage" msgid="6831099350839392343">"الصور والوسائط"</string>
     <string name="permission_notifications" msgid="4099418516590632909">"الإشعارات"</string>
-    <!-- no translation found for permission_app_streaming (4488910074894929222) -->
-    <skip />
+    <string name="permission_app_streaming" msgid="4488910074894929222">"النسخ المطابق للشاشة وتطبيقات البث"</string>
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"بثّ البيانات إلى <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"مزامنة محتوى الشاشة على كلا الجهازَين"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"بثّ محتوى التطبيقات"</string>
@@ -84,11 +83,9 @@
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"يمكن العثور على الأجهزة المجاورة والربط بها وتحديد موقعها النسبي."</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"يمكن لهذا الملف الشخصي قراءة جميع الإشعارات، بما في ذلك المعلومات، مثل جهات الاتصال والرسائل والصور."</string>
     <string name="permission_notifications_summary" msgid="6819393427371255636">"‏• قراءة كل الإشعارات بما فيها المعلومات، مثل جهات الاتصال والرسائل والصور&lt;br/&gt;• إرسال الإشعارات إليك&lt;br/&gt;&lt;br/&gt;يمكن إدارة الإذن الممنوح لهذا التطبيق بقراءة الإشعارات وإرسالها في أي وقت من خلال \"الإعدادات\" &gt; \"الإشعارات\"."</string>
-    <!-- no translation found for permission_storage_summary (3779040306012319942) -->
-    <skip />
+    <string name="permission_storage_summary" msgid="3779040306012319942">"يمكنك مشاركة الصور والوسائط من هاتفك مع أجهزتك الأخرى."</string>
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"إرسال الإشعارات إليك"</string>
-    <!-- no translation found for permission_app_streaming_summary (4114223538437344105) -->
-    <skip />
+    <string name="permission_app_streaming_summary" msgid="4114223538437344105">"‏يمكنك مشاركة شاشة هاتفك، بما في ذلك التطبيقات، مع أجهزتك. وستتمكّن أجهزتك من الوصول إلى كل المحتوى المعروض على هاتفك، بما في ذلك المحتوى الصوتي والصور ومعلومات الدفع وكلمات المرور والرسائل، حتى عندما يكون هاتفك مقفلاً.&lt;br/&gt;&lt;br/&gt;يمكنك مشاركة بيانات الميكروفون والكاميرا وأجهزة الاستشعار الأخرى من أجهزتك مع هاتفك، بما في ذلك التفاعلات مثل إيماءات اللمس ونقرات الماوس."</string>
     <string name="permission_create_virtual_device_summary" msgid="3570256456647725172">"‏يمكن بثّ بيانات الميكروفون والكاميرا وأجهزة الاستشعار الأخرى من &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; إلى <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>."</string>
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"‏يمكن تسجيل محتوى شاشة <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> أو بثّه أو مشاركته مع &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;سيتمكن تطبيق <xliff:g id="APP_NAME">%1$s</xliff:g> من الوصول إلى كل المحتوى المعروض أو الذي يتم تشغيله على <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g>، بما في ذلك الملفات الصوتية والصور ومعلومات الدفع وكلمات المرور والرسائل."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"‏يمكن بثّ محتوى تطبيقات <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> إلى &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;سيتمكن تطبيق <xliff:g id="APP_NAME">%1$s</xliff:g> من الوصول إلى كل المحتوى المعروض أو الذي يتم تشغيله على <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g>، بما في ذلك الملفات الصوتية والصور ومعلومات الدفع وكلمات المرور والرسائل، حتى عندما يكون جهاز <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> مقفلاً."</string>

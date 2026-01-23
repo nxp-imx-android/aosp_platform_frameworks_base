@@ -68,8 +68,7 @@
     <string name="permission_media_routing_control" msgid="5498639511586715253">"මාධ්‍ය ප්‍රතිදානය වෙනස් කරන්න"</string>
     <string name="permission_storage" msgid="6831099350839392343">"ඡායාරූප සහ මාධ්‍ය"</string>
     <string name="permission_notifications" msgid="4099418516590632909">"දැනුම්දීම්"</string>
-    <!-- no translation found for permission_app_streaming (4488910074894929222) -->
-    <skip />
+    <string name="permission_app_streaming" msgid="4488910074894929222">"තිරය දර්පණය කර යෙදුම් ප්‍රවාහ කරන්න"</string>
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"ඔබේ <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> වෙත දත්ත ප්‍රවාහ කරන්න"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"ඔබේ තිරය පිළිබිඹු කරන්න"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"යෙදුම් ප්‍රවාහ කරන්න"</string>
@@ -84,11 +83,9 @@
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"අවට උපාංගවල සාපේක්ෂ පිහිටීම සොයා ගන්න, සම්බන්ධ වන්න, සහ තීරණය කරන්න"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"සම්බන්ධතා, පණිවිඩ, සහ ඡායාරූප වැනි තොරතුරු ඇතුළුව, සියලු දැනුම්දීම් කියවන්න"</string>
     <string name="permission_notifications_summary" msgid="6819393427371255636">"• සම්බන්ධතා, පණිවිඩ, සහ ඡායාරූප වැනි තතු ඇතුළුව, සියලු දැනුම්දීම් කියවන්න&lt;br/&gt;• ඔබට දැනුම්දීම් යවන්න&lt;br/&gt;&lt;br/&gt;ඔබට සැකසීම් &gt; දැනුම්දීම් තුළ ඕනෑම වේලාවක මෙම යෙදුමට දැනුම්දීම් කියවීමට සහ යැවීමට ඇති හැකියාව කළමනාකරණය කළ හැක."</string>
-    <!-- no translation found for permission_storage_summary (3779040306012319942) -->
-    <skip />
+    <string name="permission_storage_summary" msgid="3779040306012319942">"ඔබේ දුරකථනයේ ඡායාරූප සහ මාධ්‍ය ඔබේ අනෙකුත් උපාංග සමග බෙදා ගන්න."</string>
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"ඔබේ දැනුම්දීම් යවන්න"</string>
-    <!-- no translation found for permission_app_streaming_summary (4114223538437344105) -->
-    <skip />
+    <string name="permission_app_streaming_summary" msgid="4114223538437344105">"යෙදුම් ඇතුළුව, ඔබේ දුරකථනයේ තිරය ඔබේ උපාංග වෙත බෙදා ගන්න. ඔබේ දුරකථනය අගුළු දමා ඇති විට පවා, ශ්‍රව්‍ය, ඡායාරූප, ගෙවීම් තොරතුරු, මුරපද සහ පණිවිඩ ඇතුළුව, ඔබේ දුරකථනයේ දෘශ්‍යමාන ඕනෑම දෙයකට ඔබේ උපාංගවලට ප්‍රවේශය ඇත.&lt;br/&gt;&lt;br/&gt;ස්පර්ශ ඉංගිත සහ මූසික ක්ලික් කිරීම් වැනි අන්තර්ක්‍රියා ඇතුළුව, ඔබේ උපාංගවලින් මයික්‍රොෆෝනය, කැමරාව සහ අනෙකුත් සංවේදක දත්ත ඔබේ දුරකථනයට ආපසු ලබා දෙන්න."</string>
     <string name="permission_create_virtual_device_summary" msgid="3570256456647725172">"මයික්‍රෆෝනය, කැමරාව සහ අනෙකුත් සංවේදක දත්ත &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; සිට ඔබේ <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> වෙත ප්‍රවාහ කරන්න."</string>
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"ඔබේ <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> හි තිරය &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; වෙත පටිගත කරන්න, විකාශය කරන්න හෝ බෙදා ගන්න.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> හට ශ්‍රව්‍ය, ඡායාරූප, ගෙවීම් තතු, මුරපද සහ පණිවිඩ ඇතුළුව, ඔබේ <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g> හි දෘශ්‍යමාන හෝ වාදනය වන ඕනෑම දෙයකට ප්‍රවේශය ලැබෙනු ඇත."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"ඔබේ <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> හි යෙදුම් &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt; වෙත ප්‍රවාහය කරන්න.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> හට ඔබේ <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> අගුළු දමා තිබිය දී පවා, ශ්‍රව්‍ය, ඡායාරූප, ගෙවීම් තතු, මුරපද සහ පණිවිඩ ඇතුළුව, ඔබේ <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g> හි දෘශ්‍යමාන හෝ වාදනය වන ඕනෑම දෙයකට ප්‍රවේශය ලැබෙනු ඇත."</string>

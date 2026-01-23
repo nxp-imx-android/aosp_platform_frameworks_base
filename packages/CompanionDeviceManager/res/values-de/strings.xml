@@ -68,8 +68,7 @@
     <string name="permission_media_routing_control" msgid="5498639511586715253">"Medienausgabe ändern"</string>
     <string name="permission_storage" msgid="6831099350839392343">"Fotos und Medien"</string>
     <string name="permission_notifications" msgid="4099418516590632909">"Benachrichtigungen"</string>
-    <!-- no translation found for permission_app_streaming (4488910074894929222) -->
-    <skip />
+    <string name="permission_app_streaming" msgid="4488910074894929222">"Bildschirm spiegeln und Apps streamen"</string>
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"Daten auf dein Gerät (<xliff:g id="DEVICE_TYPE">%1$s</xliff:g>) streamen"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"Bildschirm spiegeln"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"Apps streamen"</string>
@@ -84,11 +83,9 @@
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"Geräte in der Nähe finden, eine Verbindung zu ihnen herstellen und ihren relativen Standort ermitteln"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"Alle Benachrichtigungen sehen, einschließlich Informationen wie Kontakten, Nachrichten und Fotos"</string>
     <string name="permission_notifications_summary" msgid="6819393427371255636">"• Alle Benachrichtigungen sehen, einschließlich Informationen wie Kontakte, Nachrichten und Fotos&lt;br/&gt;• Benachrichtigungen senden&lt;br/&gt;&lt;br/&gt;Du kannst die Berechtigungen dieser App zum Sehen und Senden von Benachrichtigungen jederzeit unter „Einstellungen &gt; Benachrichtigungen“ ändern."</string>
-    <!-- no translation found for permission_storage_summary (3779040306012319942) -->
-    <skip />
+    <string name="permission_storage_summary" msgid="3779040306012319942">"Teile Fotos und Medien von deinem Smartphone mit deinen anderen Geräten."</string>
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"Benachrichtigungen senden"</string>
-    <!-- no translation found for permission_app_streaming_summary (4114223538437344105) -->
-    <skip />
+    <string name="permission_app_streaming_summary" msgid="4114223538437344105">"Du kannst den Bildschirm deines Smartphones, einschließlich Apps, auf deinen Geräten teilen. Deine Geräte haben dann Zugriff auf alle Inhalte, die auf deinem Smartphone sichtbar sind, einschließlich Audioinhalten, Fotos, Zahlungsinformationen, Passwörtern und Nachrichten, selbst wenn dein Smartphone gesperrt ist.&lt;br/&gt;&lt;br/&gt;Mikrofon-, Kamera- und andere Sensordaten von deinen Geräten können an dein Smartphone zurückgegeben werden, einschließlich Interaktionen wie Touchgesten und Mausklicks."</string>
     <string name="permission_create_virtual_device_summary" msgid="3570256456647725172">"Mikrofon-, Kamera- und andere Sensordaten von &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; auf dein Gerät (<xliff:g id="DEVICE_TYPE">%2$s</xliff:g>) streamen."</string>
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"Bildschirm deines Geräts (<xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g>) aufzeichnen, streamen oder mit &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; teilen.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> hat dann Zugriff auf alles, was auf deinem Gerät (<xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g>) sichtbar ist oder abgespielt wird, einschließlich Audioinhalten, Fotos, Zahlungsinformationen, Passwörtern und Nachrichten."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"Apps von deinem <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> auf dein &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt; streamen.&lt;br/&gt;&lt;br/&gt;Die App „<xliff:g id="APP_NAME">%1$s</xliff:g>“ hat dann Zugriff auf alles, was auf deinem <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g> sichtbar ist oder abgespielt wird, einschließlich Audioinhalten, Fotos, Zahlungsinformationen, Passwörtern und Nachrichten, selbst wenn dein <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> gesperrt ist."</string>

@@ -68,8 +68,7 @@
     <string name="permission_media_routing_control" msgid="5498639511586715253">"Badilisha tokeo la maudhui"</string>
     <string name="permission_storage" msgid="6831099350839392343">"Picha na maudhui"</string>
     <string name="permission_notifications" msgid="4099418516590632909">"Arifa"</string>
-    <!-- no translation found for permission_app_streaming (4488910074894929222) -->
-    <skip />
+    <string name="permission_app_streaming" msgid="4488910074894929222">"Kuangalia skrini na kutiririsha programu"</string>
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"Kutiririsha data kwenye <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"Kuakisi skrini yako"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"Kutiririsha programu"</string>
@@ -84,11 +83,9 @@
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"Kutafuta, kuunganisha na kubaini umbali wa vifaa vilivyo karibu"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"Kusoma arifa zote, ikiwa ni pamoja na maelezo kama vile anwani, ujumbe na picha"</string>
     <string name="permission_notifications_summary" msgid="6819393427371255636">"• Kusoma arifa zote, ikiwa ni pamoja na maelezo kama vile anwani, ujumbe na picha&lt;br/&gt;• Kukutumia arifa&lt;br/&gt;&lt;br/&gt;Unaweza kudhibiti uwezo wa programu hii wa kusoma na kutuma arifa wakati wowote katika Mipangilio &gt; Arifa."</string>
-    <!-- no translation found for permission_storage_summary (3779040306012319942) -->
-    <skip />
+    <string name="permission_storage_summary" msgid="3779040306012319942">"Kutuma picha na maudhui yaliyo kwenye simu yako katika vifaa vyako vingine."</string>
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"Kukutumia arifa"</string>
-    <!-- no translation found for permission_app_streaming_summary (4114223538437344105) -->
-    <skip />
+    <string name="permission_app_streaming_summary" msgid="4114223538437344105">"Kuonyesha skrini ya simu yako, ikiwa ni pamoja na programu, kwenye vifaa vyako. Vifaa vyako vitafikia chochote kinachoonekana kwenye simu yako, ikiwa ni pamoja na sauti, picha, maelezo ya malipo, manenosiri na ujumbe, hata wakati umefunga simu yako.&lt;br/&gt;&lt;br/&gt;Kuruhusu data ya maikrofoni, kamera na vitambuzi vingine kutoka kwenye vifaa vyako ifikiwe na simu yako, ikiwa ni pamoja na matukio kama vile miguso na mibofyo ya kipanya."</string>
     <string name="permission_create_virtual_device_summary" msgid="3570256456647725172">"Tiririsha maikrofoni, kamera na data ya vitambuzi vingine kutoka &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; kwenda katika <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>."</string>
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"Rekodi, tuma au uruhusu ufikiaji wa skrini ya <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> kwenye &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> itafikia chochote kinachoonekana au kinachochezwa kwenye <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g>, ikiwa ni pamoja na sauti, picha, maelezo ya malipo, manenosiri na ujumbe."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"Tiririsha programu za <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> yako kwenye &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> itafikia chochote kinachoonekana au kinachochezwa kwenye <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g>, ikiwa ni pamoja na sauti, picha, maelezo ya malipo, manenosiri na ujumbe, hata wakati umefunga <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> yako."</string>
