@@ -30,24 +30,36 @@ import com.android.systemui.shade.ui.composable.Shade
 import com.android.systemui.shade.ui.composable.ShadeHeader
 import kotlin.time.Duration.Companion.milliseconds
 
-fun TransitionBuilder.toShadeSceneTransition(
+fun TransitionBuilder.toSingleShadeTransition(
+    singleShadeMarginHorizontalPx: Float,
     durationScale: Double = 1.0,
     seekAnimation: Boolean = false,
 ) {
     spec = tween(durationMillis = (DefaultDuration * durationScale).inWholeMilliseconds.toInt())
 
-    fractionRange(start = .58f) {
+    val isLargeScreenPortrait = singleShadeMarginHorizontalPx > 0
+
+    fractionRange(end = .5f) {
         fade(ShadeHeader.Elements.Clock)
         fade(ShadeHeader.Elements.CollapsedContentStart)
         fade(ShadeHeader.Elements.CollapsedContentEnd)
         fade(ShadeHeader.Elements.PrivacyChip)
+    }
+
+    fractionRange(start = .58f) {
+        fade(QuickSettings.Elements.QuickQuickSettingsAndMedia)
         fade(QuickSettings.Elements.SplitShadeQuickSettings)
         fade(QuickSettings.Elements.FooterActions)
+        if (isLargeScreenPortrait) {
+            fade(Notifications.Elements.NotificationScrim)
+        }
     }
 
     fade(Shade.Elements.BackgroundScrim)
 
-    translate(Notifications.Elements.NotificationScrim, Edge.Top, false)
+    if (!isLargeScreenPortrait) {
+        translate(Notifications.Elements.NotificationScrim, Edge.Top, false)
+    }
 
     if (seekAnimation) {
         seekSharedElementToOffsetUntilRelease(
