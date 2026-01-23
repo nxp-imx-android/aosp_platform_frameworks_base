@@ -102,6 +102,11 @@ public class BluetoothPasskeyProvider implements PskProvider {
             return null;
         }
         MacAddress address = association.getDeviceMacAddress();
+        if (address == null) {
+            // TODO: Support device matching by deviceID and other identifiers
+            return null;
+        }
+
         Passkey passkey = mPassKeys.get(address);
         if (passkey == null || passkey.isExpired()) {
             mPassKeys.remove(address);
