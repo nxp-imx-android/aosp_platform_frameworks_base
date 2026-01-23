@@ -74,7 +74,6 @@ object LegacyUserDataHelper {
             isGuest = actionType == UserActionModel.ENTER_GUEST_MODE,
             isAddUser = actionType == UserActionModel.ADD_USER,
             isAddSupervisedUser = actionType == UserActionModel.ADD_SUPERVISED_USER,
-            isSignOut = actionType == UserActionModel.SIGN_OUT,
             isRestricted = isRestricted,
             isSwitchToEnabled = isSwitchToEnabled,
             enforcedAdmin =
@@ -95,7 +94,6 @@ object LegacyUserDataHelper {
             record.isAddSupervisedUser -> UserActionModel.ADD_SUPERVISED_USER
             record.isGuest -> UserActionModel.ENTER_GUEST_MODE
             record.isManageUsers -> UserActionModel.NAVIGATE_TO_USER_MANAGEMENT
-            record.isSignOut -> UserActionModel.SIGN_OUT
             else -> error("Not a known action: $record")
         }
     }
@@ -107,14 +105,15 @@ object LegacyUserDataHelper {
     private fun getEnforcedAdmin(
         context: Context,
         selectedUserId: Int,
-        userRestrictionChecker: UserRestrictionChecker,
+        userRestrictionChecker: UserRestrictionChecker
     ): EnforcedAdmin? {
         val admin =
             userRestrictionChecker.checkIfRestrictionEnforced(
                 context,
                 UserManager.DISALLOW_ADD_USER,
                 selectedUserId,
-            ) ?: return null
+            )
+                ?: return null
 
         return if (
             !userRestrictionChecker.hasBaseUserRestriction(
@@ -146,6 +145,11 @@ object LegacyUserDataHelper {
         val unscaledOrNull = manager.getUserIcon(userInfo.id) ?: return null
 
         val avatarSize = context.resources.getDimensionPixelSize(R.dimen.max_avatar_size)
-        return Bitmap.createScaledBitmap(unscaledOrNull, avatarSize, avatarSize, /* filter= */ true)
+        return Bitmap.createScaledBitmap(
+            unscaledOrNull,
+            avatarSize,
+            avatarSize,
+            /* filter= */ true,
+        )
     }
 }

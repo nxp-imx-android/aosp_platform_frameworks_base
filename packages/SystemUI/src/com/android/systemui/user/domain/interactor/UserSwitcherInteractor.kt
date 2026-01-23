@@ -33,7 +33,6 @@ import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.internal.logging.UiEventLogger
 import com.android.keyguard.KeyguardUpdateMonitor
 import com.android.keyguard.KeyguardUpdateMonitorCallback
-import com.android.systemui.Flags.userSwitcherAddSignOutOption
 import com.android.systemui.SystemUISecondaryUserService
 import com.android.systemui.animation.Expandable
 import com.android.systemui.broadcast.BroadcastDispatcher
@@ -105,7 +104,6 @@ constructor(
     private val uiEventLogger: UiEventLogger,
     private val userRestrictionChecker: UserRestrictionChecker,
     private val processWrapper: ProcessWrapper,
-    private val userLogoutInteractor: UserLogoutInteractor,
 ) {
     /**
      * Defines interface for classes that can be notified when the state of users on the device is
@@ -237,12 +235,6 @@ constructor(
                         ) {
                             add(UserActionModel.NAVIGATE_TO_USER_MANAGEMENT)
                         }
-                        if (
-                            userSwitcherAddSignOutOption() &&
-                                userLogoutInteractor.isLogoutEnabled.value
-                        ) {
-                            add(UserActionModel.SIGN_OUT)
-                        }
                     }
                 }
                 .flowOn(backgroundDispatcher)
@@ -262,8 +254,7 @@ constructor(
                                 action = it,
                                 selectedUserId = selectedUserInfo.id,
                                 isRestricted =
-                                    it != UserActionModel.SIGN_OUT &&
-                                        it != UserActionModel.ENTER_GUEST_MODE &&
+                                    it != UserActionModel.ENTER_GUEST_MODE &&
                                         it != UserActionModel.NAVIGATE_TO_USER_MANAGEMENT &&
                                         !settings.isAddUsersFromLockscreen,
                             )
@@ -501,10 +492,6 @@ constructor(
                     Intent(Settings.ACTION_USER_SETTINGS),
                     /* dismissShade= */ true,
                 )
-            UserActionModel.SIGN_OUT -> {
-                dismissDialog()
-                applicationScope.launch { userLogoutInteractor.logOut() }
-            }
         }
     }
 
@@ -591,10 +578,9 @@ constructor(
             actionType = action,
             isRestricted = isRestricted,
             isSwitchToEnabled =
-                action == UserActionModel.SIGN_OUT ||
-                    (canSwitchUsers(selectedUserId = selectedUserId, isAction = true) &&
-                        // If the user is auto-created is must not be currently resetting.
-                        !(isGuestUserAutoCreated && isGuestUserResetting)),
+                canSwitchUsers(selectedUserId = selectedUserId, isAction = true) &&
+                    // If the user is auto-created is must not be currently resetting.
+                    !(isGuestUserAutoCreated && isGuestUserResetting),
             userRestrictionChecker = userRestrictionChecker,
         )
     }
