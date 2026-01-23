@@ -38,16 +38,6 @@ public abstract class ContentRestrictionManagerInternal {
     public abstract boolean isContentRestrictionEnabledForUser(@UserIdInt int userId);
 
     /**
-     * Set whether content restriction is enabled for a given user.
-     *
-     * @param userId the user to set the content restriction state for
-     * @param enabled whether content restriction should be enabled
-     *
-     */
-    public abstract void setContentRestrictionEnabledForUser(
-            @UserIdInt int userId, boolean enabled);
-
-    /**
      * Sets the content restriction packages for a given user.
      *
      * @param userId the user to set the content restriction packages for

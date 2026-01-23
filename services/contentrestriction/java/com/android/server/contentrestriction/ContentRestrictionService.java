@@ -178,14 +178,6 @@ public class ContentRestrictionService extends IContentRestrictionManager.Stub {
             });
     }
 
-    private void setContentRestrictionEnabledInternal(@UserIdInt int userId, boolean enabled) {
-        synchronized (mLock) {
-            ContentRestrictionUserData data = mContentRestrictionSettings.getUserData(userId);
-            data.contentRestrictionEnabled = enabled;
-            mContentRestrictionSettings.saveUserData();
-        }
-    }
-
     private void setContentRestrictionPackagesInternal(
             @UserIdInt int userId,
             @Nullable List<String> packageNames,
@@ -197,6 +189,7 @@ public class ContentRestrictionService extends IContentRestrictionManager.Stub {
             } else {
                 data.contentRestrictionPackages.put(systemEntity, new ArrayList<>(packageNames));
             }
+            data.contentRestrictionEnabled = !data.contentRestrictionPackages.isEmpty();
             mContentRestrictionSettings.saveUserData();
         }
         updateContentRestrictionRoleHolders(userId);
@@ -282,11 +275,6 @@ public class ContentRestrictionService extends IContentRestrictionManager.Stub {
         @Override
         public boolean isContentRestrictionEnabledForUser(@UserIdInt int userId) {
             return ContentRestrictionService.this.isContentRestrictionEnabledForUser(userId);
-        }
-
-        @Override
-        public void setContentRestrictionEnabledForUser(@UserIdInt int userId, boolean enabled) {
-            ContentRestrictionService.this.setContentRestrictionEnabledInternal(userId, enabled);
         }
 
         @Override
