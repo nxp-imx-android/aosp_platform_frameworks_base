@@ -4742,10 +4742,11 @@
     <string name="ambient_cue_expand_action">expand</string>
 
     <!-- Location button text -->
-    <string name="location_button_text_share_precise_location">Share precise location</string>
-    <string name="location_button_text_use_precise_location">Use precise location</string>
-    <string name="location_button_text_near_precise_location">Near precise location</string>
     <string name="location_button_text_precise_location">Precise location</string>
+    <string name="location_button_text_use_precise_location">Use precise location</string>
+    <string name="location_button_text_share_precise_location">Share precise location</string>
+    <string name="location_button_text_near_my_precise_location">Near my precise location</string>
+    <string name="location_button_text_near_your_precise_location">Near your precise location</string>
 
     <!-- Privacy chip "in use" string, where the parameter is the sensor name (e.g. "Camera in use") [CHAR LIMIT=NONE] -->
     <string name="privacy_chip_use_string"><xliff:g example="Camera" id="sensor">%1$s</xliff:g> in use</string>

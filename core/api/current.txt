@@ -10143,11 +10143,12 @@ package android.app.permissionui {
     method public void setStrokeWidth(int);
     method public void setTextColor(@ColorInt int);
     method public void setTextType(int);
-    field public static final int TEXT_TYPE_NEAR_PRECISE_LOCATION = 1; // 0x1
+    field public static final int TEXT_TYPE_NEAR_MY_PRECISE_LOCATION = 4; // 0x4
+    field public static final int TEXT_TYPE_NEAR_YOUR_PRECISE_LOCATION = 5; // 0x5
     field public static final int TEXT_TYPE_NONE = 0; // 0x0
-    field public static final int TEXT_TYPE_PRECISE_LOCATION = 2; // 0x2
+    field public static final int TEXT_TYPE_PRECISE_LOCATION = 1; // 0x1
     field public static final int TEXT_TYPE_SHARE_PRECISE_LOCATION = 3; // 0x3
-    field public static final int TEXT_TYPE_USE_PRECISE_LOCATION = 4; // 0x4
+    field public static final int TEXT_TYPE_USE_PRECISE_LOCATION = 2; // 0x2
   }
 
 }
