@@ -835,6 +835,11 @@ public class SupervisionService extends ISupervisionManager.Stub {
                     updateWebContentFilters(userId, false);
                     dispatchSupervisionEvent(
                             userId, listener -> listener.onSetSupervisionEnabled(userId, false));
+                    if (Flags.appBindingServiceRework()) {
+                        Objects.requireNonNull(mInjector.getAppBindingService())
+                                .unbindAndRemoveInvalidConnections(userId,
+                                        SupervisionAppServiceFinder.class);
+                    }
                     clearAllDevicePoliciesAndSuspendedPackages(userId);
                     clearAllPolicies(userId);
                 });

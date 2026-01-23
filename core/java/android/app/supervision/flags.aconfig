@@ -202,3 +202,13 @@ flag {
       purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+     name: "app_binding_service_rework"
+     namespace: "supervision"
+     description: "Enables improvements to the AppBinding service connection lifecycle"
+     bug: "475606763"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+ }

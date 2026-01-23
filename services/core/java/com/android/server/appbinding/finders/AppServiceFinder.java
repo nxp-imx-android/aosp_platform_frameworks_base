@@ -18,7 +18,6 @@ package com.android.server.appbinding.finders;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
-import android.app.supervision.flags.Flags;
 import android.content.Context;
 import android.content.pm.IPackageManager;
 import android.content.pm.ServiceInfo;
@@ -37,7 +36,6 @@ import com.android.server.appbinding.AppBindingUtils;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.BiConsumer;
@@ -204,8 +202,11 @@ public abstract class AppServiceFinder<TServiceType, TServiceInterfaceType exten
 
             if (!isEnabled(constants, userId)) {
                 final String message = "feature disabled";
-                currServiceInfo.put(targetPackage, new TargetServiceInfo(null, message));
+                currServiceInfo.put(null, new TargetServiceInfo(null, message));
                 Slog.i(TAG, getAppDescription() + " " + message);
+                return null;
+            }
+            if (!getTargetPackages(userId).contains(targetPackage)) {
                 return null;
             }
 
@@ -244,7 +245,7 @@ public abstract class AppServiceFinder<TServiceType, TServiceInterfaceType exten
     /**
      * Find the list of target service from the target apps on a given user.
      */
-    @Nullable
+    @NonNull
     public final List<ServiceInfo> findServices(int userId, IPackageManager ipm,
             AppBindingConstants constants) {
         final Set<String> targetPackages = getTargetPackages(userId);
