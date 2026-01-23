@@ -24,7 +24,6 @@ import static android.os.UserHandle.USER_SYSTEM;
 import static com.android.server.pm.GenericAllowlist.AllowlistStatus;
 import static com.android.server.pm.UserActivitiesAllowlist.ALLOWLIST_MODE_ENABLED;
 import static com.android.server.pm.UserActivitiesAllowlist.ALLOWLIST_MODE_DISABLED;
-import static com.android.server.pm.UserActivitiesAllowlist.ALLOWLIST_MODE_LOG_ONLY;
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.DEBUG_USER_VISIBILITY;
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.TAG_ATM;
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.TAG_WITH_CLASS_NAME;
@@ -60,15 +59,13 @@ final class UserHelper {
     private static final int ACTIVITY_LAUNCH_INTEGRATION_STATUS_DISABLED_NOT_HSUM = -1;
     private static final int ACTIVITY_LAUNCH_INTEGRATION_STATUS_DISABLED_NO_ALLOWLIST = -2;
     private static final int ACTIVITY_LAUNCH_INTEGRATION_STATUS_DISABLED_EXPLICITLY = -3;
-    private static final int ACTIVITY_LAUNCH_INTEGRATION_STATUS_DISABLED_LOG_ONLY = -4;
-    private static final int ACTIVITY_LAUNCH_INTEGRATION_STATUS_DISABLED_INVALID_MODE = -5;
+    private static final int ACTIVITY_LAUNCH_INTEGRATION_STATUS_DISABLED_INVALID_MODE = -4;
 
     @IntDef(prefix = { "ACTIVITY_LAUNCH_INTEGRATION_STATUS_" }, value = {
             ACTIVITY_LAUNCH_INTEGRATION_STATUS_ENABLED,
             ACTIVITY_LAUNCH_INTEGRATION_STATUS_DISABLED_NOT_HSUM,
             ACTIVITY_LAUNCH_INTEGRATION_STATUS_DISABLED_NO_ALLOWLIST,
             ACTIVITY_LAUNCH_INTEGRATION_STATUS_DISABLED_EXPLICITLY,
-            ACTIVITY_LAUNCH_INTEGRATION_STATUS_DISABLED_LOG_ONLY,
             ACTIVITY_LAUNCH_INTEGRATION_STATUS_DISABLED_INVALID_MODE
     })
     private @interface ActivityLaunchIntegrationStatus {}
@@ -96,7 +93,6 @@ final class UserHelper {
         return switch (mode) {
             case ALLOWLIST_MODE_ENABLED -> ACTIVITY_LAUNCH_INTEGRATION_STATUS_ENABLED;
             case ALLOWLIST_MODE_DISABLED -> ACTIVITY_LAUNCH_INTEGRATION_STATUS_DISABLED_EXPLICITLY;
-            case ALLOWLIST_MODE_LOG_ONLY -> ACTIVITY_LAUNCH_INTEGRATION_STATUS_DISABLED_LOG_ONLY;
             default -> {
                 Slogf.e(TAG, "invalid HSU activity allowlist mode: %d", mode);
                 yield ACTIVITY_LAUNCH_INTEGRATION_STATUS_DISABLED_INVALID_MODE;
@@ -111,10 +107,7 @@ final class UserHelper {
      */
     public int checkRequest(Request request) {
         int activityLaunchIntegrationStatus = getActivityLaunchIntegrationStatus();
-        boolean logOnly = activityLaunchIntegrationStatus
-                == ACTIVITY_LAUNCH_INTEGRATION_STATUS_DISABLED_LOG_ONLY;
-        if (activityLaunchIntegrationStatus != ACTIVITY_LAUNCH_INTEGRATION_STATUS_ENABLED
-                && !logOnly) {
+        if (activityLaunchIntegrationStatus != ACTIVITY_LAUNCH_INTEGRATION_STATUS_ENABLED) {
             if (DEBUG_USER_VISIBILITY) {
                 Slogf.d(TAG, "checkRequest(%s): skipping because status is %s", request,
                         activityLaunchIntegrationStatusToString(activityLaunchIntegrationStatus));
@@ -158,18 +151,17 @@ final class UserHelper {
 
         request.userAllowlistStatus = mHsuActivitiesAllowlist.getAllowlistStatus(compName);
         if (!UserActivitiesAllowlist.isAllowed(request.userAllowlistStatus)) {
-            String suffix = logOnly ? ", but allowing because it's log-only mode" : "";
             int userId = getUserId(aInfo);
             if (userId == USER_SYSTEM) {
-                Slogf.w(TAG, "Activity %s not allowed for system user%s",
-                        compName.flattenToShortString(), suffix);
+                Slogf.w(TAG, "Activity %s not allowed for system user",
+                        compName.flattenToShortString());
             } else {
                 Slogf.w(TAG, "Activity %s is intended for user %d, but it's not allowlisted for "
-                        + "USER_SYSTEM (which is the current user)%s",
-                        compName.flattenToShortString(), userId, suffix);
+                        + "USER_SYSTEM (which is the current user)",
+                        compName.flattenToShortString(), userId);
             }
             mUmi.logActivityLaunchStatus(compName, USER_SYSTEM, request.userAllowlistStatus);
-            return logOnly ? START_SUCCESS : START_NOT_ALLOWED_FOR_USER;
+            return START_NOT_ALLOWED_FOR_USER;
         }
 
         if (DEBUG_USER_VISIBILITY) {
@@ -241,7 +233,6 @@ final class UserHelper {
             case
                 ACTIVITY_LAUNCH_INTEGRATION_STATUS_DISABLED_NO_ALLOWLIST -> "DISABLED_NO_ALLOWLIST";
             case ACTIVITY_LAUNCH_INTEGRATION_STATUS_DISABLED_EXPLICITLY -> "DISABLED_EXPLICITLY";
-            case ACTIVITY_LAUNCH_INTEGRATION_STATUS_DISABLED_LOG_ONLY -> "DISABLED_LOG_ONLY";
             case
                 ACTIVITY_LAUNCH_INTEGRATION_STATUS_DISABLED_INVALID_MODE -> "DISABLED_INVALID_MODE";
             default -> "UNKNOWN_" + status;

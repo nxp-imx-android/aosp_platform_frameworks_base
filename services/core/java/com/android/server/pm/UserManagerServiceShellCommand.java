@@ -16,6 +16,10 @@
 
 package com.android.server.pm;
 
+import static com.android.server.pm.UserActivitiesAllowlist.ALLOWLIST_MODE_ENABLED;
+import static com.android.server.pm.UserActivitiesAllowlist.ALLOWLIST_MODE_DISABLED;
+import static com.android.server.pm.UserActivitiesAllowlist.STATUS_ALLOWED_ALLOWLISTING_DISABLED_BY_SHELL_CMD;
+
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
@@ -656,7 +660,7 @@ public class UserManagerServiceShellCommand extends ShellCommand {
             case "check" -> checkActivityAllowlisted(userType);
             case "reset" -> resetActivitiesAllowlist(userType);
             case "disable" -> disableActivitiesAllowlist(userType);
-            case "set-mode" -> setActivitiesAllowlistMode(userType);
+            case "set-mode" -> emulateActivitiesAllowlistMode(userType);
             case "get-mode" -> getActivitiesAllowlistMode(userType);
             default -> printAndReturnFailed("invalid action - %s", action);
         };
@@ -677,7 +681,7 @@ public class UserManagerServiceShellCommand extends ShellCommand {
         pw.println("      reset - resets the allowlist to the device's default");
         pw.println("      disable - disables allowlisting (so any activity can be launched)");
         pw.println("      set-mode <VALUE> - sets the mode. Valid values are: 0 (disabled), "
-                + "1 (enabled), 2 (log-only)");
+                + "1 (enabled)");
         pw.println("      get-mode [-v | --verbose] - gets the mode. By default returns just the "
                 + "int value, but returns the description as well with the verbose option");
 
@@ -768,7 +772,11 @@ public class UserManagerServiceShellCommand extends ShellCommand {
         return printAndReturnSuccess();
     }
 
-    private int setActivitiesAllowlistMode(String userType) {
+    // This is called "emulate" because we don't really set the mode to DISABLED as it wouldn't log
+    // disallowed activities that are launched - in that case, we override the disallowed status
+    // (which in practice behaves as setting the mode as DISABLED).
+    @SuppressWarnings({"StatementSwitchToExpressionSwitch"})
+  private int emulateActivitiesAllowlistMode(String userType) {
         final int mode;
         try {
             mode = Integer.parseInt(getNextArgRequired());
@@ -776,9 +784,25 @@ public class UserManagerServiceShellCommand extends ShellCommand {
             return printAndReturnFailed("Exception (%s) parsing mode argument", e);
         }
 
-        Slogf.i(LOG_TAG, "setActivitiesAllowlistMode(%s): setting mode to %d (%s)", userType, mode,
-                UserActivitiesAllowlist.allowlistModeToString(mode));
-        getActivitiesAllowlist(userType).setMode(mode);
+        final UserActivitiesAllowlist allowlist = getActivitiesAllowlist(userType);
+        switch (mode) {
+            case ALLOWLIST_MODE_DISABLED:
+                int overriddenStatus = STATUS_ALLOWED_ALLOWLISTING_DISABLED_BY_SHELL_CMD;
+                Slogf.i(LOG_TAG, "setActivitiesAllowlistMode(%s): overriding disallowed status on "
+                        + "allowlist %s to %d (%s)", userType, allowlist, overriddenStatus,
+                        UserActivitiesAllowlist.allowlistStatusToString(overriddenStatus));
+                allowlist.overrideDisallowedStatus(overriddenStatus);
+                break;
+            case ALLOWLIST_MODE_ENABLED:
+                Slogf.i(LOG_TAG, "setActivitiesAllowlistMode(%s): setting mode on allowlist %s to "
+                        + "%d (%s)", userType, allowlist, mode,
+                        UserActivitiesAllowlist.allowlistModeToString(mode));
+                allowlist.setMode(mode);
+                allowlist.overrideDisallowedStatus(null);
+                break;
+            default:
+                return printAndReturnFailed("invalid mode: %d", mode);
+        }
 
         return printAndReturnSuccess();
     }
