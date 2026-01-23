@@ -3725,7 +3725,7 @@ public class StageCoordinator extends StageCoordinatorAbstract {
 
                 // Record task moving out of {@code lastStage} unexpectedly.
                 if (lastStage != null && lastStage.containsTask(taskId)
-                        && (lastStage != nextStage || change.getMode() == TRANSIT_CLOSE)) {
+                        && (lastStage != nextStage || isClosingType(change.getMode()))) {
                     Log.w(TAG, "Expected onTaskVanished on " + lastStage + " to have been called"
                             + " with " + taskId + " before startAnimation().");
                     record.addRecord(lastStage, false, taskId);
