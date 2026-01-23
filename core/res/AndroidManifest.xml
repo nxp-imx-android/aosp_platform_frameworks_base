@@ -8416,9 +8416,11 @@
         android:permissionFlags="allowedInPrivateComputeCore" />
 
     <!--
-        Allows an application to manage supervision.
+        Allows the holder to manage supervision.
         <p>Protection level: internal|role
-        <p>Intended for use by the SYSTEM_SUPERVISION and SUPERVISION roles only.
+        <p>Intended for use by the {@link android.app.role.RoleManager#ROLE_SYSTEM_SUPERVISION} and
+        {@link android.app.role.RoleManager#ROLE_SUPERVISION} roles only. See
+        {@link android.app.supervision.SupervisionManager}.
         @SystemApi
         @hide
         @FlaggedApi(android.app.supervision.flags.Flags.FLAG_ENABLE_SUPERVISION_MANAGER_POLICY_APIS)
