@@ -20,6 +20,7 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.net.nsd.NsdManager;
 import android.net.nsd.NsdServiceInfo;
+import android.net.wifi.WifiManager;
 import android.os.SystemProperties;
 import android.provider.Settings;
 import android.util.Slog;
@@ -41,6 +42,9 @@ public class AdbdServicesManager {
     private final Map<String, AdbdRegistrationListener> mRegisteredServices = new HashMap<>();
 
     private final ContentResolver mContentResolver;
+
+    // To make sure the device keep on responding to mDNS probes even if the screen is off.
+    private final WifiManager.MulticastLock mAdbMulticastLock;
 
     /** Callback for service registration results. */
     interface RegistrationCallback {
@@ -65,9 +69,13 @@ public class AdbdServicesManager {
         void onServiceRegistered(NsdServiceInfo serviceInfo);
     }
 
-    AdbdServicesManager(Context context) {
+    AdbdServicesManager(Context context, String purpose) {
         mNsdManager = context.getSystemService(NsdManager.class);
         mContentResolver = context.getContentResolver();
+        WifiManager wifiManager =
+                context.getApplicationContext().getSystemService(WifiManager.class);
+        mAdbMulticastLock = wifiManager.createMulticastLock("AdbMulticastLock-" + purpose);
+        mAdbMulticastLock.setReferenceCounted(false);
     }
 
     private String keyForService(String instanceName, String serviceType) {
@@ -117,6 +125,7 @@ public class AdbdServicesManager {
         }
 
         mRegisteredServices.put(key, listener);
+        checkMulticastLock();
     }
 
     void unregisterService(String instanceName, String serviceType) {
@@ -133,6 +142,7 @@ public class AdbdServicesManager {
             Slog.e(TAG, "Unable to unregister " + key, e);
         }
         mRegisteredServices.remove(key);
+        checkMulticastLock();
     }
 
     void unregisterAll() {
@@ -150,6 +160,16 @@ public class AdbdServicesManager {
         }
         for (AdbdRegistrationListener service : services) {
             registerService(service.mInstanceName, service.mServiceType, service.mPort);
+        }
+    }
+
+    private void checkMulticastLock() {
+        if (mRegisteredServices.isEmpty()) {
+            Slog.d(TAG, "Released multicast lock");
+            mAdbMulticastLock.release();
+        } else {
+            Slog.d(TAG, "Acquired multicast lock");
+            mAdbMulticastLock.acquire();
         }
     }
 

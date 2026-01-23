@@ -32,7 +32,6 @@ import android.debug.IAdbTransport;
 import android.debug.PairDevice;
 import android.hardware.usb.UsbManager;
 import android.net.Uri;
-import android.net.wifi.WifiManager;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.ParcelFileDescriptor;
@@ -405,29 +404,6 @@ public class AdbService extends IAdbManager.Stub {
         }
     }
 
-    private WifiManager.MulticastLock mAdbMulticastLock = null;
-
-    private void acquireMulticastLock() {
-        if (mAdbMulticastLock == null) {
-            WifiManager wifiManager =
-                    (WifiManager)
-                            mContext.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-            mAdbMulticastLock = wifiManager.createMulticastLock("AdbMulticastLock");
-        }
-
-        if (!mAdbMulticastLock.isHeld()) {
-            mAdbMulticastLock.acquire();
-            Slog.d(TAG, "Acquired multicast lock");
-        }
-    }
-
-    private void releaseMulticastLock() {
-        if (mAdbMulticastLock != null && mAdbMulticastLock.isHeld()) {
-            mAdbMulticastLock.release();
-            Slog.d(TAG, "Released multicast lock");
-        }
-    }
-
     private void setAdbEnabled(boolean enable, byte transportType) {
         FgThread.getHandler()
                 .sendMessage(
@@ -475,11 +451,9 @@ public class AdbService extends IAdbManager.Stub {
                 if (mIsAdbWifiEnabled) {
                     // Start adb over WiFi.
                     enableADBdWifi();
-                    acquireMulticastLock();
                 } else {
                     // Stop adb over WiFi.
                     disableADBdWifi();
-                    releaseMulticastLock();
                 }
                 break;
             case AdbTransportType.VSOCK:
