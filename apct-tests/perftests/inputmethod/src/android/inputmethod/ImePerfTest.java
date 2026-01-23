@@ -509,7 +509,7 @@ public class ImePerfTest extends ImePerfTestBase
         // TODO(b/167947940): Consider a separate input_method atrace
         startAsyncAtrace("wm view");
 
-        if (android.tracing.Flags.perfettoImeFineGrainedConfig()) {
+        if (android.tracing.Flags.perfettoImeServiceTracingAot()) {
             if (mPerfettoTracingMonitor == null) {
                 mPerfettoTracingMonitor = PerfettoTraceMonitor.newBuilder()
                         // Currently, only IMS is suitable for always-on tracing
@@ -550,7 +550,7 @@ public class ImePerfTest extends ImePerfTestBase
     }
 
     private void stopPerfettoTrace() {
-        if (!android.tracing.Flags.perfettoImeFineGrainedConfig()) {
+        if (!android.tracing.Flags.perfettoImeServiceTracingAot()) {
             return;
         }
         if (mPerfettoTracingMonitor != null) {
