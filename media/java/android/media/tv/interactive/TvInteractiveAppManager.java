@@ -1218,6 +1218,18 @@ public final class TvInteractiveAppManager {
             }
         }
 
+        void startInteractiveApp(int handle) {
+            if (mToken == null) {
+                Log.w(TAG, "The session has been already released");
+                return;
+            }
+            try {
+                mService.startInteractiveAppWithHandle(mToken, mUserId, handle);
+            } catch (RemoteException e) {
+                throw e.rethrowFromSystemServer();
+            }
+        }
+
         void createBiInteractiveApp(Uri biIAppUri, Bundle params) {
             if (mToken == null) {
                 Log.w(TAG, "The session has been already released");

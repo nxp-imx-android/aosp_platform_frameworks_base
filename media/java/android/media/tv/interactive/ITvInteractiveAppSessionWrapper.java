@@ -105,6 +105,7 @@ public class ITvInteractiveAppSessionWrapper
     private static final int DO_SEND_SELECTED_TRACK_INFO = 48;
     private static final int DO_NOTIFY_VIDEO_FREEZE_UPDATED = 49;
     private static final int DO_SEND_CERTIFICATE = 50;
+    private static final int DO_START_INTERACTIVE_APP_WITH_HANDLE = 51;
 
     private final HandlerCaller mCaller;
     private Session mSessionImpl;
@@ -152,6 +153,10 @@ public class ITvInteractiveAppSessionWrapper
             }
             case DO_RESET_INTERACTIVE_APP: {
                 mSessionImpl.resetInteractiveApp();
+                break;
+            }
+            case DO_START_INTERACTIVE_APP_WITH_HANDLE: {
+                mSessionImpl.startInteractiveApp((Integer) msg.obj);
                 break;
             }
             case DO_CREATE_BI_INTERACTIVE_APP: {
@@ -407,6 +412,12 @@ public class ITvInteractiveAppSessionWrapper
     @Override
     public void resetInteractiveApp() {
         mCaller.executeOrSendMessage(mCaller.obtainMessage(DO_RESET_INTERACTIVE_APP));
+    }
+
+    @Override
+    public void startInteractiveAppWithHandle(int handle) {
+        mCaller.executeOrSendMessage(
+                mCaller.obtainMessageO(DO_START_INTERACTIVE_APP_WITH_HANDLE, handle));
     }
 
     @Override

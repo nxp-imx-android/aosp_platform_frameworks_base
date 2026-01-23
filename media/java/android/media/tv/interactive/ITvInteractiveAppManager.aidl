@@ -43,6 +43,7 @@ interface ITvInteractiveAppManager {
     void sendAppLinkCommand(String tiasId, in Bundle command, int userId);
     void startInteractiveApp(in IBinder sessionToken, int userId);
     void stopInteractiveApp(in IBinder sessionToken, int userId);
+    void startInteractiveAppWithHandle(in IBinder sessionToken, int userId, int handle);
     void resetInteractiveApp(in IBinder sessionToken, int userId);
     void createBiInteractiveApp(
             in IBinder sessionToken, in Uri biIAppUri, in Bundle params, int userId);
