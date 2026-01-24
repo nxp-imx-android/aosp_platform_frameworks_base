@@ -28,6 +28,8 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.app.privatecompute.IPccService;
@@ -499,6 +501,7 @@ public class PccSandboxManagerInternalTest {
                     allowed);
         }
     }
+
     @Test
     @RequiresFlagsEnabled(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
     public void testValidateAssociationAllowed_regularToPcc_Provider_isDenied()
@@ -530,7 +533,7 @@ public class PccSandboxManagerInternalTest {
 
     @Test
     @RequiresFlagsEnabled(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
-    public void testValidateAssociationAllowed_bundleWithBinder_isDenied() {
+    public void testValidateAssociationAllowed_receiver_bundleWithBinder_isDenied() {
         Bundle extras = new Bundle();
         extras.putBinder("binder", new Binder());
 
@@ -539,6 +542,7 @@ public class PccSandboxManagerInternalTest {
                 ActivityManagerService.ASSOCIATION_TYPE_RECEIVER, extras);
 
         assertFalse("Association with a Bundle containing a Binder should be denied", allowed);
+        verify(mMockPccSandboxManagerService, times(1)).isPrivateComputeServicesUid(REGULAR_UID);
     }
 
     @Test
@@ -553,6 +557,24 @@ public class PccSandboxManagerInternalTest {
 
         assertFalse("Service association with a Bundle containing a Binder should be denied",
                 allowed);
+        verify(mMockPccSandboxManagerService, times(1)).isPrivateComputeServicesUid(REGULAR_UID);
+    }
+
+    @Test
+    @RequiresFlagsEnabled(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public void testValidateAssociationAllowed_service_pccToTrustedPkg_binderBundle_isAllowed() {
+        mPccSandboxManagerInternal.populatePccTrustedPackages();
+        Bundle bundle = new Bundle();
+        bundle.putBinder("binder", new Binder());
+
+        for (String trustedPackage : mPccSandboxManagerInternal.mPccTrustedPackages) {
+            boolean allowed = mPccSandboxManagerInternal.validateAssociationAllowed(
+                    PCC_UID_1, PCC_PACKAGE_1, REGULAR_UID, trustedPackage,
+                    ActivityManagerService.ASSOCIATION_TYPE_SERVICE, bundle);
+            assertTrue("Association between a PCC UID and a trusted package with "
+                    + "binders should be allowed", allowed);
+            verify(mMockPccSandboxManagerService, times(0)).isPrivateComputeServicesUid(PCC_UID_1);
+        }
     }
 
     @Test
