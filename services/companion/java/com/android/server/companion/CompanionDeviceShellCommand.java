@@ -49,7 +49,6 @@ import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 class CompanionDeviceShellCommand extends ShellCommand {
@@ -110,15 +109,31 @@ class CompanionDeviceShellCommand extends ShellCommand {
                     String packageName = getNextArgRequired();
                     String address = getNextArgRequired();
                     final MacAddress macAddress = MacAddress.fromString(address);
-                    String deviceProfile = Optional.ofNullable(getNextArg())
-                            .filter(arg -> !"null".equalsIgnoreCase(arg))
-                            .orElse(null);
-                    boolean selfManaged = getNextBooleanArg();
-                    String permissionsArg = getNextArg();
-                    Set<String> permissions = ("null".equalsIgnoreCase(permissionsArg))
-                            ? new HashSet<>()
-                            : new HashSet<>(Arrays.asList(permissionsArg.split(",")));
-                    boolean isRemoteAiAgentSupported = getNextBooleanArg();
+
+                    // TODO(b/478509624): migrate to options
+                    String profileArg = getNextArg();
+                    String deviceProfile = ("null".equalsIgnoreCase(profileArg)
+                            || profileArg == null)
+                            ? null
+                            : profileArg;
+                    boolean selfManaged = Boolean.parseBoolean(getNextArg());
+
+                    // Optional fields
+                    Set<String> permissions = new HashSet<>();
+                    boolean isRemoteAiAgentSupported = false;
+
+                    String opt;
+                    while ((opt = getNextOption()) != null) {
+                        switch (opt) {
+                            case "--extra-permissions":
+                                permissions.addAll(Arrays.asList(getNextArgRequired().split(",")));
+                                break;
+                            case "--ai-agent":
+                                isRemoteAiAgentSupported = Boolean.parseBoolean(
+                                        getNextArgRequired());
+                                break;
+                        }
+                    }
 
                     mAssociationRequestsProcessor.createAssociation(userId, packageName, macAddress,
                             deviceProfile, deviceProfile, /* associatedDevice= */ null, selfManaged,
