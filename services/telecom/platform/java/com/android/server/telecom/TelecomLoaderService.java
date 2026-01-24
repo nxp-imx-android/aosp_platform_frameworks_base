@@ -23,23 +23,24 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManagerInternal;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.PackageTagsList;
+import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.os.UserHandle;
 import android.telecom.PhoneAccountHandle;
-import android.telecom.TelecomLoaderServiceConnection;
 import android.telecom.TelecomManager;
 import android.telephony.CarrierConfigManager;
 import android.telephony.SubscriptionManager;
 import android.util.IntArray;
 import android.util.Slog;
 
-import androidx.annotation.NonNull;
-
 import com.android.internal.annotations.GuardedBy;
+import com.android.internal.telecom.ITelecomLoader;
+import com.android.internal.telecom.ITelecomService;
 import com.android.internal.telephony.SmsApplication;
 import com.android.server.LocalServices;
 import com.android.server.SystemService;
@@ -57,19 +58,26 @@ import java.util.List;
 public class TelecomLoaderService extends SystemService {
     private static final String TAG = "TelecomLoaderService";
 
-    private class LoaderServiceConnection extends TelecomLoaderServiceConnection {
+    private class LoaderServiceConnection implements ServiceConnection {
 
         @Override
-        public void onConnected(@NonNull TelecomLoader service) {
+        public void onServiceConnected(ComponentName name, IBinder service) {
             // Normally, we would listen for death here, but since telecom runs in the same process
             // as this loader (process="system") that's redundant here.
-            PackageManagerInternal packageManagerInternal =
-                    LocalServices.getService(PackageManagerInternal.class);
-            IBinder telecomService = service.createTelecomService(
-                    packageManagerInternal.getSystemUiServiceComponent().getPackageName());
-
+            PackageManagerInternal packageManagerInternal = LocalServices.getService(
+                    PackageManagerInternal.class);
+            ITelecomLoader telecomLoaderService = ITelecomLoader.Stub.asInterface(service);
+            try {
+                ITelecomService telecomService = telecomLoaderService.createTelecomService(
+                        packageManagerInternal.getSystemUiServiceComponent().getPackageName());
+                if (telecomService != null) {
+                    service = telecomService.asBinder();
+                }
+            } catch (RemoteException e) {
+                Slog.e(TAG, "Caught remote exception while creating telecom service...", e);
+            }
             SmsApplication.getDefaultMmsApplication(mContext, false);
-            ServiceManager.addService(Context.TELECOM_SERVICE, telecomService);
+            ServiceManager.addService(Context.TELECOM_SERVICE, service);
 
             synchronized (mLock) {
                 final LegacyPermissionManagerInternal permissionManager =
@@ -96,7 +104,7 @@ public class TelecomLoaderService extends SystemService {
         }
 
         @Override
-        public void onDisconnected() {
+        public void onServiceDisconnected(ComponentName name) {
             connectToTelecom();
         }
     }
@@ -147,7 +155,7 @@ public class TelecomLoaderService extends SystemService {
 
     @Override
     public void onBootPhase(int phase) {
-        if (phase == PHASE_ACTIVITY_MANAGER_READY) {
+        if (phase == PHASE_THIRD_PARTY_APPS_CAN_START) {
             registerDefaultAppNotifier();
             registerCarrierConfigChangedReceiver();
             // core services will have already been loaded.
@@ -170,7 +178,9 @@ public class TelecomLoaderService extends SystemService {
                     | Context.BIND_AUTO_CREATE;
 
             // Bind to Telecom and register the service
+            Slog.i(TAG, "Binding to TelecomService...");
             if (mContext.bindServiceAsUser(intent, serviceConnection, flags, UserHandle.SYSTEM)) {
+                Slog.i(TAG, "Bound to TelecomService!");
                 mServiceConnection = serviceConnection;
             }
         }

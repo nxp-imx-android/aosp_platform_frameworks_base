@@ -832,6 +832,7 @@ filegroup {
 filegroup {
     name: "framework-telecom-core-shared-srcs",
     srcs: [
+        "android/util/IndentingPrintWriter.java",
         "com/android/internal/os/SomeArgs.java",
     ],
 }
