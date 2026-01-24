@@ -12,4 +12,7 @@
 
     <!-- Let google-java-format handle the { placement. -->
     <suppress files="services/core/java/com/android/server/adb/*,tests/AppJankTest" checks="LeftCurly" />
+
+    <!-- This is a polyglot source, must use C++ compatible syntax. -->
+    <suppress files="services/core/java/com/android/server/media/metrics/Allowlist.java" checks="ArrayTypeStyle" />
 </suppressions>
