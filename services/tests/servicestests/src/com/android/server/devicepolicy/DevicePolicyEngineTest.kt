@@ -597,6 +597,82 @@ class DevicePolicyEngineTest {
         assertThat(resolvedPolicy).isEqualTo(listValue.value)
     }
 
+    @Test
+    fun setOrRemoveLocalPolicy_withValue_setsPolicy() {
+        // Call setOrRemoveLocalPolicy with a non-null value, expecting it to set the policy.
+        val result =
+            devicePolicyEngine.setOrRemoveLocalPolicy(
+                PASSWORD_COMPLEXITY_POLICY,
+                DEVICE_OWNER_ADMIN,
+                SYSTEM_USER_ID,
+                HIGH_PASSWORD_COMPLEXITY,
+            )
+        assertThat(result.get()).isEqualTo(POLICY_SET)
+
+        // Verify that the policy was correctly set.
+        val resolvedPolicy =
+            devicePolicyEngine.getResolvedPolicy(PASSWORD_COMPLEXITY_POLICY, SYSTEM_USER_ID)
+        assertThat(resolvedPolicy).isEqualTo(HIGH_PASSWORD_COMPLEXITY.value)
+    }
+
+    @Test
+    fun setOrRemoveLocalPolicy_withNull_removesPolicy() {
+        // Pre-condition: A local policy is already set.
+        ensurePolicyIsSetLocally(PASSWORD_COMPLEXITY_POLICY, HIGH_PASSWORD_COMPLEXITY)
+
+        // Call setOrRemoveLocalPolicy with a null value, expecting it to remove the policy.
+        val result =
+            devicePolicyEngine.setOrRemoveLocalPolicy(
+                PASSWORD_COMPLEXITY_POLICY,
+                DEVICE_OWNER_ADMIN,
+                SYSTEM_USER_ID,
+                /* policyValue= */ null,
+            )
+        assertThat(result.get()).isEqualTo(POLICY_CLEARED)
+
+        // Verify that the policy was correctly removed.
+        val resolvedPolicy =
+            devicePolicyEngine.getResolvedPolicy(PASSWORD_COMPLEXITY_POLICY, SYSTEM_USER_ID)
+        assertThat(resolvedPolicy).isNull()
+    }
+
+    @Test
+    fun setOrRemoveGlobalPolicy_withValue_setsPolicy() {
+        // Call setOrRemoveGlobalPolicy with a non-null value, expecting it to set the policy.
+        val result =
+            devicePolicyEngine.setOrRemoveGlobalPolicy(
+                AUTO_TIME_ZONE_POLICY,
+                DEVICE_OWNER_ADMIN,
+                AUTO_TIME_ZONE_ENABLED,
+            )
+        assertThat(result.get()).isEqualTo(POLICY_SET)
+
+        // Verify that the policy was correctly set.
+        val resolvedPolicy =
+            devicePolicyEngine.getResolvedPolicy(AUTO_TIME_ZONE_POLICY, SYSTEM_USER_ID)
+        assertThat(resolvedPolicy).isEqualTo(AUTO_TIME_ZONE_ENABLED.value)
+    }
+
+    @Test
+    fun setOrRemoveGlobalPolicy_withNull_removesPolicy() {
+        // Pre-condition: A global policy is already set.
+        ensurePolicyIsSetGlobally(AUTO_TIME_ZONE_POLICY, AUTO_TIME_ZONE_ENABLED)
+
+        // Call setOrRemoveGlobalPolicy with a null value, expecting it to remove the policy.
+        val result =
+            devicePolicyEngine.setOrRemoveGlobalPolicy(
+                AUTO_TIME_ZONE_POLICY,
+                DEVICE_OWNER_ADMIN,
+                /* policyValue= */ null,
+            )
+        assertThat(result.get()).isEqualTo(POLICY_CLEARED)
+
+        // Verify that the policy was correctly removed.
+        val resolvedPolicy =
+            devicePolicyEngine.getResolvedPolicy(AUTO_TIME_ZONE_POLICY, SYSTEM_USER_ID)
+        assertThat(resolvedPolicy).isNull()
+    }
+
     companion object {
         private const val POLICY_SET = PolicyUpdateResult.RESULT_POLICY_SET
         private const val FAILURE_UNKNOWN = PolicyUpdateResult.RESULT_FAILURE_UNKNOWN
