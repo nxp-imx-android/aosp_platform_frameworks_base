@@ -16,6 +16,7 @@
 
 package com.android.systemui.screencapture.common.data.repository
 
+import android.Manifest
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -38,6 +39,8 @@ import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 
@@ -89,29 +92,79 @@ constructor(
         thumbnailWidthPx: Int,
         thumbnailHeightPx: Int,
     ): Flow<Result<RawAppContent>> =
-        conflatedCallbackFlow {
-                val serviceConnection =
-                    makeServiceConnection(thumbnailWidthPx, thumbnailHeightPx) { trySend(it) }
-
+        flow {
                 val intent =
                     Intent(AppContentProjectionService.SERVICE_INTERFACE).setPackage(packageName)
 
-                val bound =
-                    context.bindServiceAsUser(
-                        /* service= */ intent,
-                        /* conn= */ serviceConnection,
-                        /* flags= */ Context.BIND_AUTO_CREATE,
-                        /* user= */ user,
-                    )
+                val resolveInfo =
+                    context.packageManager.queryIntentServicesAsUser(intent, /* flags= */ 0, user)
 
-                if (!bound) {
-                    val errMsg = "Failed to bind service"
-                    Log.w(TAG, errMsg)
-                    context.unbindService(serviceConnection)
-                    send(Result.failure(IllegalStateException(errMsg)))
+                val serviceInfo = resolveInfo.firstOrNull { it.serviceInfo != null }?.serviceInfo
+
+                if (serviceInfo == null) {
+                    emit(
+                        Result.failure(
+                            IllegalStateException(
+                                "Package: $packageName does not declare an AppContentProjectionService"
+                            )
+                        )
+                    )
+                    return@flow
                 }
 
-                awaitClose { if (bound) context.unbindService(serviceConnection) }
+                if (!serviceInfo.exported) {
+                    emit(
+                        Result.failure(
+                            IllegalStateException(
+                                "Service ${serviceInfo.name} in $packageName is not exported"
+                            )
+                        )
+                    )
+                    return@flow
+                }
+
+                if (serviceInfo.permission != Manifest.permission.MANAGE_MEDIA_PROJECTION) {
+                    emit(
+                        Result.failure(
+                            IllegalStateException(
+                                "Service ${serviceInfo.name} in $packageName is not protected by MANAGE_MEDIA_PROJECTION"
+                            )
+                        )
+                    )
+                    return@flow
+                }
+
+                intent.setComponent(ComponentName(serviceInfo.packageName, serviceInfo.name))
+
+                emitAll(
+                    conflatedCallbackFlow {
+                        val serviceConnection =
+                            makeServiceConnection(thumbnailWidthPx, thumbnailHeightPx) {
+                                trySend(it)
+                            }
+                        val bound =
+                            context.bindServiceAsUser(
+                                /* service= */ intent,
+                                /* conn= */ serviceConnection,
+                                /* flags= */ Context.BIND_AUTO_CREATE,
+                                /* user= */ user,
+                            )
+
+                        if (!bound) {
+                            val errMsg = "Failed to bind service: $packageName"
+                            Log.w(TAG, errMsg)
+                            context.unbindService(serviceConnection)
+                            send(Result.failure(IllegalStateException(errMsg)))
+                            close()
+                        }
+
+                        awaitClose {
+                            if (bound) {
+                                context.unbindService(serviceConnection)
+                            }
+                        }
+                    }
+                )
             }
             .flowOn(bgContext)
 
