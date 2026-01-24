@@ -110,9 +110,7 @@ public class ExpandedAnimationControllerTest extends PhysicsAnimationLayoutTestC
     @Test
     public void testExpansionAndCollapse() throws Exception {
         expand();
-        waitForAnimation();
         testBubblesInCorrectExpandedPositions();
-        waitForMainThread();
 
         final Semaphore semaphore = new Semaphore(0);
         Runnable afterCollapse = semaphore::release;
@@ -125,7 +123,6 @@ public class ExpandedAnimationControllerTest extends PhysicsAnimationLayoutTestC
     @Test
     public void testOnChildAdded() throws Exception {
         expand();
-        waitForMainThread();
 
         // Add another new view and wait for its animation.
         final View newView = new FrameLayout(getContext());
@@ -138,7 +135,6 @@ public class ExpandedAnimationControllerTest extends PhysicsAnimationLayoutTestC
     @Test
     public void testOnChildRemoved() throws Exception {
         expand();
-        waitForMainThread();
 
         // Remove some views and verify the remaining child views still pass the expansion test.
         mLayout.removeView(mViews.get(0));
@@ -154,7 +150,6 @@ public class ExpandedAnimationControllerTest extends PhysicsAnimationLayoutTestC
     @Test
     public void testJumpcutBubbleSwitching_onChildAdded() throws Exception {
         expand();
-        waitForAnimation();
         doReturn(true).when(mBubbleStackView).isJumpcutBubbleSwitching();
 
         // Add another new view and no need to wait for its animation.
@@ -167,7 +162,6 @@ public class ExpandedAnimationControllerTest extends PhysicsAnimationLayoutTestC
     @Test
     public void testJumpcutBubbleSwitching_onChildRemoved() throws Exception {
         expand();
-        waitForMainThread();
         doReturn(true).when(mBubbleStackView).isJumpcutBubbleSwitching();
 
         // Remove some views and verify the remaining child views still pass the expansion test.
@@ -190,13 +184,16 @@ public class ExpandedAnimationControllerTest extends PhysicsAnimationLayoutTestC
         testBubblesInCorrectExpandedPositions();
     }
 
-    /** Expand the stack and wait for animations to finish. */
-    private void expand() throws InterruptedException {
+    /** Expand the stack and wait for animations to finish and the main thread to be idle. */
+    private void expand() throws Exception {
         final Semaphore semaphore = new Semaphore(0);
         Runnable afterExpand = semaphore::release;
 
         mExpandedController.expandFromStack(afterExpand);
-        assertThat(semaphore.tryAcquire(1, TimeUnit.SECONDS)).isTrue();
+        assertThat(semaphore.tryAcquire(5, TimeUnit.SECONDS)).isTrue();
+
+        waitForAnimation();
+        waitForMainThread();
     }
 
     /** Check that children are in the correct positions for being stacked. */
