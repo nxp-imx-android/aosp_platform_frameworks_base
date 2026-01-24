@@ -18,6 +18,7 @@ package com.android.server.companion.association;
 
 import static com.android.server.companion.utils.MetricUtils.logCreateAssociation;
 import static com.android.server.companion.utils.MetricUtils.logRemoveAssociation;
+import static com.android.server.companion.utils.PermissionsUtils.checkCallerCanManageTrustedAssociations;
 import static com.android.server.companion.utils.PermissionsUtils.enforceCallerCanManageAssociationsForPackage;
 
 import android.annotation.IntDef;
@@ -514,6 +515,9 @@ public class AssociationStore {
             throw new IllegalArgumentException(
                     "getAssociationWithCallerChecks() Association id=[" + associationId
                             + "] doesn't exist.");
+        }
+        if (checkCallerCanManageTrustedAssociations(mContext) && association.isTrusted()) {
+            return association;
         }
         enforceCallerCanManageAssociationsForPackage(mContext, association.getUserId(),
                 association.getPackageName(), null);

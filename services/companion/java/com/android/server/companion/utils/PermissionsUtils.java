@@ -106,7 +106,6 @@ import android.Manifest;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.UserIdInt;
-import android.companion.AssociationInfo;
 import android.companion.AssociationRequest;
 import android.companion.CompanionDeviceManager;
 import android.companion.Flags;
@@ -389,63 +388,32 @@ public final class PermissionsUtils {
     }
 
     /**
-     * Enforce caller must have either ACCESS_COMPANION_MESSAGE_PCC or USE_COMPANION_TRANSPORTS
-     * permission. For the app holds ACCESS_COMPANION_MESSAGE_PCC permission,
-     * we must verify that all associations are trusted. This method also enforce non system caller
-     * must use their own app's name as the serviceName.
+     * Enforce that caller must use their own app's name as the serviceName.
      */
-    public static void enforceRequestActionPermissions(@NonNull Context context,
-            @NonNull List<AssociationInfo> associations,
-            @NonNull String serviceName, @NonNull String callingPackageName) {
-        if (Binder.getCallingUid() == SYSTEM_UID) return;
-
-        boolean hasTransportsPermission =
-                context.checkCallingPermission(USE_COMPANION_TRANSPORTS)
-                        == PERMISSION_GRANTED;
-        if (hasTransportsPermission) return;
-
-        boolean hasPccPermission = checkPccPermissionAndTrustedAssociations(context, associations);
-
-        if (!hasPccPermission) {
-            throw new SecurityException(
-                    "Caller (uid=" + getCallingUid() + ") must have either "
-                            + ACCESS_COMPANION_MESSAGE_PCC + " or "
-                            + USE_COMPANION_TRANSPORTS + " permission."
-            );
-        }
-
+    public static void enforceValidServiceName(@NonNull String serviceName,
+            @NonNull String callingPackageName) {
         if (!serviceName.equals(callingPackageName)) {
-            throw new SecurityException("None system caller must"
-                    + " use their own app's name as the serviceName");
+            throw new SecurityException("Caller must use their own app's name as "
+                    + "the serviceName");
         }
     }
 
     /**
-     * Checks if the calling app holds the PCC permission and validates
-     * that all associations are marked as trusted.
+     * Check that the caller has necessary permissions to manage trusted associations.
      */
-    public static boolean checkPccPermissionAndTrustedAssociations(
-            @NonNull Context context,
-            @NonNull List<AssociationInfo> associations) {
-
-        final boolean hasPccPermission = Flags.trustedDevices()
+    public static boolean checkCallerCanManageTrustedAssociations(@NonNull Context context) {
+        return Flags.trustedDevices()
                 && context.checkCallingPermission(ACCESS_COMPANION_MESSAGE_PCC)
+                        == PERMISSION_GRANTED;
+    }
+
+    /**
+     * Check that the caller has necessary permissions to use system data transports.
+     */
+    public static boolean checkCallerCanUseSystemDataTransports(@NonNull Context context) {
+        return UserHandle.getCallingAppId() == SYSTEM_UID
+                || context.checkCallingPermission(USE_COMPANION_TRANSPORTS)
                 == PERMISSION_GRANTED;
-
-        if (hasPccPermission) {
-            // If the caller has the PCC permission, we must ensure the association is trusted.
-            for (AssociationInfo association : associations) {
-                if (!association.isTrusted()) {
-                    throw new SecurityException(String.format(
-                            "Caller with %s permission can only operate on"
-                                    + " trusted associations."
-                                    + " Association ID %d is not trusted.",
-                            ACCESS_COMPANION_MESSAGE_PCC, association.getId()));
-                }
-            }
-        }
-
-        return hasPccPermission;
     }
 
     /**
@@ -483,9 +451,7 @@ public final class PermissionsUtils {
      * Enforce permissions for sending messages.
      */
     public static void enforceMessagePermissions(Context context, int messageType) {
-        if (UserHandle.getAppId(Binder.getCallingUid()) == SYSTEM_UID
-                || context.checkCallingPermission(USE_COMPANION_TRANSPORTS)
-                == PERMISSION_GRANTED) {
+        if (checkCallerCanUseSystemDataTransports(context)) {
             return;
         }
         switch (messageType) {
@@ -495,8 +461,8 @@ public final class PermissionsUtils {
                     throw new SecurityException("sendMessage(PCC) permission denied");
                 }
             }
-            default -> throw new SecurityException("sendMessage(" + messageType
-                    + ") permission denied");
+            default -> throw new SecurityException("sendMessage(0x"
+                    + Integer.toHexString(messageType) + ") permission denied");
         }
     }
 
