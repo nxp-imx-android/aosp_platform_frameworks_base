@@ -1234,10 +1234,7 @@ class DesksTransitionObserverTest : ShellTestCase() {
         }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-        Flags.FLAG_KEEP_DESK_ACTIVE_ON_KEYGUARD_APPEAR,
-    )
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun independentDeskTransition_wallpaperToBackWithoutDeskWhileKeyguardAppears_keepsDeskActive() =
         testScope.runTest {
             val deskId = 5
