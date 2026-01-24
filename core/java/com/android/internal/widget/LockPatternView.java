@@ -44,7 +44,6 @@ import android.os.SystemClock;
 import android.util.AttributeSet;
 import android.util.IntArray;
 import android.util.Log;
-import android.util.SparseArray;
 import android.util.TypedValue;
 import android.view.HapticFeedbackConstants;
 import android.view.InputDevice;
@@ -56,6 +55,7 @@ import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction;
+import android.view.accessibility.AccessibilityNodeProvider;
 import android.view.animation.AnimationUtils;
 import android.view.animation.Interpolator;
 
@@ -577,7 +577,7 @@ public class LockPatternView extends View {
     }
 
     /**
-     * Set the pattern explicitely (rather than waiting for the user to input
+     * Set the pattern explicitly (rather than waiting for the user to input
      * a pattern).
      * @param displayMode How to display the pattern.
      * @param pattern The pattern.
@@ -753,13 +753,9 @@ public class LockPatternView extends View {
     }
 
     private void notifyCellAdded() {
-        // sendAccessEvent(R.string.lockscreen_access_pattern_cell_added);
         if (mOnPatternListener != null) {
             mOnPatternListener.onPatternCellAdded(new ArrayList(mPattern), mInputMode);
         }
-        // Disable used cells for accessibility as they get added
-        if (DEBUG_A11Y) Log.v(TAG, "invalidating root because cell was added.");
-        mExploreByTouchHelper.invalidateRoot();
     }
 
     private void notifyPatternStarted() {
@@ -822,6 +818,7 @@ public class LockPatternView extends View {
         updateFocusable();
         notifyPatternCleared();
         invalidate();
+        mExploreByTouchHelper.invalidateRoot();
     }
 
     private void resetPatternCellSize() {
@@ -863,20 +860,34 @@ public class LockPatternView extends View {
     /**
      * Disable input (for instance when displaying a message that will
      * time out so user doesn't get view into messy state).
+     * @deprecated use {@link #setEnableInput(boolean)}
      */
     @UnsupportedAppUsage
     public void disableInput() {
-        mInputEnabled = false;
-        updateFocusable();
+        setEnableInput(false);
     }
 
     /**
      * Enable input.
+     * @deprecated use {@link #setEnableInput(boolean)}
      */
     @UnsupportedAppUsage
     public void enableInput() {
-        mInputEnabled = true;
-        updateFocusable();
+        setEnableInput(true);
+    }
+
+    /**
+     * Enable or disable input (for instance when displaying a message that will
+     * time out so user doesn't get view into messy state).
+     * @param newState New input enablement state
+     */
+    public void setEnableInput(boolean newState) {
+        final boolean oldState = mInputEnabled;
+        if (oldState != newState) {
+            mInputEnabled = newState;
+            updateFocusable();
+            mExploreByTouchHelper.invalidateRoot();
+        }
     }
 
     @Override
@@ -1010,14 +1021,22 @@ public class LockPatternView extends View {
         }
     }
 
-    private void addCellToPattern(Cell newCell) {
-        mPatternDrawLookup[newCell.getRow()][newCell.getColumn()] = true;
-        mPattern.add(newCell);
+    private void addCellToPattern(Cell cell) {
+        mPatternDrawLookup[cell.getRow()][cell.getColumn()] = true;
+        mPattern.add(cell);
         updateFocusable();
         if (!mInStealthMode) {
-            startCellActivatedAnimation(newCell);
+            startCellActivatedAnimation(cell);
         }
         notifyCellAdded();
+        // Disable used cells for accessibility click as they get added
+        if (DEBUG_A11Y) Log.v(TAG, "addCellToPattern invalidating cell because cell was added.");
+        mExploreByTouchHelper.invalidateRoot();
+        if (mClickInputSupported) {
+            final int virtualViewId = VIRTUAL_BASE_VIEW_ID + cell.row * 3 + cell.column;
+            mExploreByTouchHelper.sendEventForVirtualView(virtualViewId,
+                    AccessibilityEvent.TYPE_VIEW_SELECTED);
+        }
     }
 
     private void startFadePatternAnimation() {
@@ -1301,6 +1320,7 @@ public class LockPatternView extends View {
         }
 
         if (gainFocus) {
+            mExploreByTouchHelper.invalidateRoot();
             int next;
             switch (direction) {
                 // Gain focus from bottom right. Search backwards
@@ -1324,9 +1344,13 @@ public class LockPatternView extends View {
                 Log.v(TAG, "Gained dir " + direction + " newIndex " + mFocusedCellIndex
                         + " visible " + mFocusVisible);
             }
+            final int virtualViewId = VIRTUAL_BASE_VIEW_ID + mFocusedCellIndex;
+            mExploreByTouchHelper.sendEventForVirtualView(virtualViewId,
+                    AccessibilityEvent.TYPE_VIEW_HOVER_ENTER);
         } else {
-            Log.v(TAG, "Lost   dir " + direction);
+            if (DEBUG_A11Y) Log.v(TAG, "Lost   dir " + direction);
             mFocusVisible = false;
+            mExploreByTouchHelper.invalidateRoot();
         }
         invalidate();
     }
@@ -1348,6 +1372,9 @@ public class LockPatternView extends View {
                 if (DEBUG_A11Y) Log.v(TAG, "TabArrow index " + mFocusedCellIndex + " shown");
                 mFocusVisible = true;
                 invalidate();
+                final int virtualViewId = VIRTUAL_BASE_VIEW_ID + mFocusedCellIndex;
+                mExploreByTouchHelper.sendEventForVirtualView(virtualViewId,
+                        AccessibilityEvent.TYPE_VIEW_HOVER_ENTER);
                 return true;
             }
 
@@ -1376,9 +1403,15 @@ public class LockPatternView extends View {
 
             if (isCellIndexInRange(next)) {
                 if (DEBUG_A11Y) Log.v(TAG, "TabArrow index " + next);
+                final int oldIndex = mFocusedCellIndex;
                 mFocusedCellIndex = next;
                 mFocusVisible = true;
                 invalidate();
+                final int virtualViewId = VIRTUAL_BASE_VIEW_ID + mFocusedCellIndex;
+                mExploreByTouchHelper.sendEventForVirtualView(virtualViewId,
+                        AccessibilityEvent.TYPE_VIEW_HOVER_ENTER);
+                mExploreByTouchHelper.sendEventForVirtualView(VIRTUAL_BASE_VIEW_ID + oldIndex,
+                        AccessibilityEvent.TYPE_VIEW_HOVER_EXIT);
                 return true;
             } else {
                 if (DEBUG_A11Y) {
@@ -1397,7 +1430,13 @@ public class LockPatternView extends View {
             }
             if (DEBUG_A11Y) Log.v(TAG, "Num index" + index + " visible " + mFocusVisible);
             if (handleActionKeyboard(index)) {
+                final int oldIndex = mFocusedCellIndex;
                 mFocusedCellIndex = index;
+                final int virtualViewId = VIRTUAL_BASE_VIEW_ID + mFocusedCellIndex;
+                mExploreByTouchHelper.sendEventForVirtualView(virtualViewId,
+                        AccessibilityEvent.TYPE_VIEW_HOVER_ENTER);
+                mExploreByTouchHelper.sendEventForVirtualView(VIRTUAL_BASE_VIEW_ID + oldIndex,
+                        AccessibilityEvent.TYPE_VIEW_HOVER_EXIT);
                 return true;
             }
         } else if (keyCode == KeyEvent.KEYCODE_ENTER || keyCode == KeyEvent.KEYCODE_DPAD_CENTER) {
@@ -1454,7 +1493,7 @@ public class LockPatternView extends View {
 
         if (mInputMode == InputMode.Click) {
             return switch (event.getAction()) {
-                // Handle ACTION_DOWN event. Otherwise the ACTION_UP event wouldn't be received
+                // Handle ACTION_DOWN event. Otherwise, the ACTION_UP event wouldn't be received
                 case MotionEvent.ACTION_DOWN, MotionEvent.ACTION_MOVE -> true;
                 case MotionEvent.ACTION_UP -> {
                     handleActionMouseUp(event.getX(), event.getY());
@@ -1543,7 +1582,9 @@ public class LockPatternView extends View {
 
     private void setPatternInProgress(boolean progress) {
         mPatternInProgress = progress;
-        mExploreByTouchHelper.invalidateRoot();
+        if (!mClickInputSupported) {
+            mExploreByTouchHelper.invalidateRoot();
+        }
     }
 
     private void handleActionMove(MotionEvent event) {
@@ -2244,8 +2285,8 @@ public class LockPatternView extends View {
     }
 
     private final class PatternExploreByTouchHelper extends ExploreByTouchHelper {
+        private AccessibilityNodeProvider mAccessibilityNodeProvider = null;
         private Rect mTempRect = new Rect();
-        private final SparseArray<VirtualViewContainer> mItems = new SparseArray<>();
 
         class VirtualViewContainer {
             public VirtualViewContainer(CharSequence description) {
@@ -2256,8 +2297,54 @@ public class LockPatternView extends View {
 
         public PatternExploreByTouchHelper(View forView) {
             super(forView);
-            for (int i = VIRTUAL_BASE_VIEW_ID; i < VIRTUAL_BASE_VIEW_ID + 9; i++) {
-                mItems.put(i, new VirtualViewContainer(getTextForVirtualView(i)));
+        }
+
+        @Override
+        public AccessibilityNodeProvider getAccessibilityNodeProvider(View host) {
+            if (!mClickInputSupported) {
+                return super.getAccessibilityNodeProvider(host);
+            }
+            if (mAccessibilityNodeProvider != null) {
+                return mAccessibilityNodeProvider;
+            }
+            final AccessibilityNodeProvider provider = super.getAccessibilityNodeProvider(host);
+            mAccessibilityNodeProvider = new AccessibilityNodeProvider() {
+                @Override
+                public AccessibilityNodeInfo createAccessibilityNodeInfo(int virtualViewId) {
+                    return provider.createAccessibilityNodeInfo(virtualViewId);
+                }
+
+                @Override
+                public boolean performAction(int virtualViewId, int action, Bundle arguments) {
+                    boolean handled = provider.performAction(virtualViewId, action, arguments);
+                    // Move focus ring together with accessibility focus frame in case user
+                    // moves focus using left/right swipe
+                    if (handled && action == AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS) {
+                        int index = virtualViewId - VIRTUAL_BASE_VIEW_ID;
+                        if (isCellIndexInRange(index)) {
+                            final int oldIndex = mFocusedCellIndex;
+                            mFocusedCellIndex = index;
+                            mFocusVisible = mInputEnabled && isEnabled()
+                                    && !isCellIndexPartOfPattern(index);
+                            invalidate();
+                            invalidateVirtualView(VIRTUAL_BASE_VIEW_ID + oldIndex);
+                            invalidateVirtualView(VIRTUAL_BASE_VIEW_ID + mFocusedCellIndex);
+                        }
+                    } else if (handled && action
+                            == AccessibilityNodeInfo.ACTION_CLEAR_ACCESSIBILITY_FOCUS) {
+                        mFocusVisible = false;
+                        invalidate();
+                    }
+                    return handled;
+                }
+            };
+            return mAccessibilityNodeProvider;
+        }
+
+        @Override
+        public void invalidateRoot() {
+            for (int i = 0; i < DOT_COUNT; ++i) {
+                invalidateVirtualView(VIRTUAL_BASE_VIEW_ID + i);
             }
         }
 
@@ -2271,7 +2358,7 @@ public class LockPatternView extends View {
         @Override
         protected void getVisibleVirtualViews(IntArray virtualViewIds) {
             if (DEBUG_A11Y) Log.v(TAG, "getVisibleVirtualViews(len=" + virtualViewIds.size() + ")");
-            if (!mPatternInProgress) {
+            if (!mPatternInProgress && !mClickInputSupported) {
                 return;
             }
             for (int i = VIRTUAL_BASE_VIEW_ID; i < VIRTUAL_BASE_VIEW_ID + 9; i++) {
@@ -2284,17 +2371,17 @@ public class LockPatternView extends View {
         @Override
         protected void onPopulateEventForVirtualView(int virtualViewId, AccessibilityEvent event) {
             if (DEBUG_A11Y) Log.v(TAG, "onPopulateEventForVirtualView(" + virtualViewId + ")");
-            // Announce this view
-            VirtualViewContainer container = mItems.get(virtualViewId);
-            if (container != null) {
-                event.getText().add(container.description);
+            if (!isCellIndexInRange(virtualViewId - VIRTUAL_BASE_VIEW_ID)) {
+                return;
             }
+            // Announce this view
+            event.getText().add(getTextForVirtualView(virtualViewId));
         }
 
         @Override
         public void onPopulateAccessibilityEvent(View host, AccessibilityEvent event) {
             super.onPopulateAccessibilityEvent(host, event);
-            if (!mPatternInProgress) {
+            if (!mPatternInProgress && !mClickInputSupported) {
                 CharSequence contentDescription = getContext().getText(
                         com.android.internal.R.string.lockscreen_access_pattern_area);
                 event.setContentDescription(contentDescription);
@@ -2307,16 +2394,19 @@ public class LockPatternView extends View {
 
             // Node and event text and content descriptions are usually
             // identical, so we'll use the exact same string as before.
-            node.setText(getTextForVirtualView(virtualViewId));
-            node.setContentDescription(getTextForVirtualView(virtualViewId));
+            CharSequence text = getTextForVirtualView(virtualViewId);
+            node.setText(text);
+            node.setContentDescription(text);
 
-            if (mPatternInProgress) {
+            if (mPatternInProgress || mClickInputSupported) {
                 node.setFocusable(true);
+                node.setFocused(virtualViewId - VIRTUAL_BASE_VIEW_ID == mFocusedCellIndex);
+                node.setVisibleToUser(true);
 
                 if (isClickable(virtualViewId)) {
                     // Mark this node as of interest by making it clickable.
                     node.addAction(AccessibilityAction.ACTION_CLICK);
-                    node.setClickable(isClickable(virtualViewId));
+                    node.setClickable(true);
                 }
             }
 
@@ -2327,13 +2417,13 @@ public class LockPatternView extends View {
         }
 
         private boolean isClickable(int virtualViewId) {
+            if (!isEnabled() || !mInputEnabled) {
+                return false;
+            }
             // Dots are clickable if they're not part of the current pattern.
-            if (virtualViewId != ExploreByTouchHelper.INVALID_ID) {
-                int row = (virtualViewId - VIRTUAL_BASE_VIEW_ID) / 3;
-                int col = (virtualViewId - VIRTUAL_BASE_VIEW_ID) % 3;
-                if (row < 3) {
-                    return !mPatternDrawLookup[row][col];
-                }
+            final int virtualId = virtualViewId - VIRTUAL_BASE_VIEW_ID;
+            if (virtualViewId != ExploreByTouchHelper.INVALID_ID && isCellIndexInRange(virtualId)) {
+                return !isCellIndexPartOfPattern(virtualId);
             }
             return false;
         }
@@ -2343,35 +2433,43 @@ public class LockPatternView extends View {
                 Bundle arguments) {
             if (DEBUG_A11Y) Log.v(TAG, "onPerformActionForVirtualView(id=" + virtualViewId
                     + ", action=" + action);
-            switch (action) {
-                case AccessibilityNodeInfo.ACTION_CLICK:
+            return switch (action) {
+                case AccessibilityNodeInfo.ACTION_CLICK ->
                     // Click handling should be consistent with
                     // onTouchEvent(). This ensures that the view works the
                     // same whether accessibility is turned on or off.
-                    return onItemClicked(virtualViewId);
-                default:
-                    if (DEBUG_A11Y) Log.v(TAG, "*** action not handled in "
-                            + "onPerformActionForVirtualView(viewId="
-                            + virtualViewId + "action=" + action + ")");
-            }
-            return false;
+                    onItemClicked(virtualViewId);
+                default -> {
+                    if (DEBUG_A11Y) {
+                        Log.v(TAG, "*** action not handled in "
+                                + "onPerformActionForVirtualView(viewId="
+                                + virtualViewId + "action=" + action + ")");
+                    }
+                    yield false;
+                }
+            };
         }
 
         boolean onItemClicked(int index) {
             if (DEBUG_A11Y) Log.v(TAG, "onItemClicked(" + index + ")");
 
-            // Since the item's checked state is exposed to accessibility
-            // services through its AccessibilityNodeInfo, we need to invalidate
-            // the item's virtual view. At some point in the future, the
-            // framework will obtain an updated version of the virtual view.
-            invalidateVirtualView(index);
+            if (!mClickInputSupported) {
+                // Since the item's checked state is exposed to accessibility
+                // services through its AccessibilityNodeInfo, we need to invalidate
+                // the item's virtual view. At some point in the future, the
+                // framework will obtain an updated version of the virtual view.
+                invalidateVirtualView(index);
 
-            // We need to let the framework know what type of event
-            // happened. Accessibility services may use this event to provide
-            // appropriate feedback to the user.
-            sendEventForVirtualView(index, AccessibilityEvent.TYPE_VIEW_CLICKED);
+                // We need to let the framework know what type of event
+                // happened. Accessibility services may use this event to provide
+                // appropriate feedback to the user.
+                sendEventForVirtualView(index, AccessibilityEvent.TYPE_VIEW_CLICKED);
 
-            return true;
+                return true;
+            } else {
+                final int cellIndex = index - VIRTUAL_BASE_VIEW_ID;
+                return handleActionKeyboard(cellIndex);
+            }
         }
 
         private Rect getBoundsForVirtualView(int virtualViewId) {
@@ -2391,8 +2489,15 @@ public class LockPatternView extends View {
 
         private CharSequence getTextForVirtualView(int virtualViewId) {
             final Resources res = getResources();
-            return res.getString(R.string.lockscreen_access_pattern_cell_added_verbose,
-                    virtualViewId);
+            final int virtualId = virtualViewId - VIRTUAL_BASE_VIEW_ID;
+            if (!mClickInputSupported || (virtualViewId != ExploreByTouchHelper.INVALID_ID
+                    && isCellIndexInRange(virtualId) && isCellIndexPartOfPattern(virtualId))) {
+                return res.getString(R.string.lockscreen_access_pattern_cell_added_verbose,
+                        virtualViewId);
+            } else {
+                return res.getString(R.string.lockscreen_access_pattern_cell_verbose,
+                        virtualViewId);
+            }
         }
 
         /**
@@ -2407,12 +2512,11 @@ public class LockPatternView extends View {
             if (cellHit == null) {
                 return ExploreByTouchHelper.INVALID_ID;
             }
-            boolean dotAvailable = mPatternDrawLookup[cellHit.row][cellHit.column];
             int dotId = (cellHit.row * 3 + cellHit.column) + VIRTUAL_BASE_VIEW_ID;
-            int view = dotAvailable ? dotId : ExploreByTouchHelper.INVALID_ID;
+            boolean dotAvailable = mPatternDrawLookup[cellHit.row][cellHit.column];
             if (DEBUG_A11Y) Log.v(TAG, "getVirtualViewIdForHit(" + x + "," + y + ") => "
-                    + view + "avail =" + dotAvailable);
-            return view;
+                    + dotId + " avail=" + dotAvailable);
+            return dotId;
         }
     }
 }
