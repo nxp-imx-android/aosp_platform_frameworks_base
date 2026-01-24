@@ -69,6 +69,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
@@ -4431,6 +4432,342 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         assertShortcutExists(CALLING_PACKAGE_2, "s0_2", USER_10);
         assertShortcutExists(CALLING_PACKAGE_1, "s10_1", USER_11);
         assertShortcutExists(CALLING_PACKAGE_2, "s10_2", USER_11);
+    }
+
+    @Test
+    @EnableFlags(android.content.pm.Flags.FLAG_APP_LOCK_SHORTCUT_REMOVAL)
+    public void testGetLauncherDynamicShortcuts_flagEnabled_appLockEnabled_removesDynamicShortcuts()
+        throws Exception{
+        // --- Setup Phase ---
+        // Set up shortcuts for 2 packages (CALLING_PACKAGE_1, CALLING_PACKAGE_2)
+        // and 2 users (USER_10, USER_11), pinned by 2 launchers (LAUNCHER_1, LAUNCHER_2).
+
+        // Setup for USER_10
+        runWithCaller(CALLING_PACKAGE_1, USER_10, () -> {
+            assertTrue(mManager.setDynamicShortcuts(list(makeShortcut("s0_1"))));
+        });
+        runWithCaller(CALLING_PACKAGE_2, USER_10, () -> {
+            assertTrue(mManager.setDynamicShortcuts(list(makeShortcut("s0_2"))));
+        });
+        runWithCaller(LAUNCHER_1, USER_10, () -> {
+            mLauncherApps.pinShortcuts(CALLING_PACKAGE_1, list("s0_1"), HANDLE_USER_10);
+            mLauncherApps.pinShortcuts(CALLING_PACKAGE_2, list("s0_2"), HANDLE_USER_10);
+        });
+        runWithCaller(LAUNCHER_2, USER_10, () -> {
+            mLauncherApps.pinShortcuts(CALLING_PACKAGE_1, list("s0_1"), HANDLE_USER_10);
+            mLauncherApps.pinShortcuts(CALLING_PACKAGE_2, list("s0_2"), HANDLE_USER_10);
+        });
+
+        // Setup for USER_11
+        mRunningUsers.put(USER_11, true);
+        runWithCaller(CALLING_PACKAGE_1, USER_11, () -> {
+            assertTrue(mManager.setDynamicShortcuts(list(makeShortcut("s10_1"))));
+        });
+        runWithCaller(CALLING_PACKAGE_2, USER_11, () -> {
+            assertTrue(mManager.setDynamicShortcuts(list(makeShortcut("s10_2"))));
+        });
+        runWithCaller(LAUNCHER_1, USER_11, () -> {
+            mLauncherApps.pinShortcuts(CALLING_PACKAGE_1, list("s10_1"), HANDLE_USER_11);
+            mLauncherApps.pinShortcuts(CALLING_PACKAGE_2, list("s10_2"), HANDLE_USER_11);
+        });
+        runWithCaller(LAUNCHER_2, USER_11, () -> {
+            mLauncherApps.pinShortcuts(CALLING_PACKAGE_1, list("s10_1"), HANDLE_USER_11);
+            mLauncherApps.pinShortcuts(CALLING_PACKAGE_2, list("s10_2"), HANDLE_USER_11);
+        });
+
+        mService.saveDirtyInfo();
+
+        // --- Action Phase ---
+        // This is the call to your new, testable method.
+        // We simulate app lock being enabled for CALLING_PACKAGE_1 on USER_10.
+
+        doAnswer(invocation -> {
+                return true;
+            }).when(mMockPackageManagerInternal).isPackageAppLockEnabled(
+                eq(CALLING_PACKAGE_1), eq(USER_10));
+
+        // --- Post-Action Verification ---
+        dumpsysOnLogcat(); // Good for debugging if the test fails
+
+        // Check USER_10:
+        // Launchers should no longer have dynamic shortcuts for CALLING_PACKAGE_1 ("s0_1").
+        assertShortcutIds(getLauncherShortcuts(LAUNCHER_1, USER_10,
+                ShortcutQuery.FLAG_GET_DYNAMIC), "s0_2");
+        assertShortcutIds(getLauncherShortcuts(LAUNCHER_2, USER_10,
+                ShortcutQuery.FLAG_GET_DYNAMIC), "s0_2");
+
+        // Check USER_11:
+        // This user should be completely unaffected by the lock on USER_10.
+        assertShortcutIds(getLauncherShortcuts(LAUNCHER_1, USER_11,
+                ShortcutQuery.FLAG_GET_DYNAMIC), "s10_1", "s10_2");
+        assertShortcutIds(getLauncherShortcuts(LAUNCHER_2, USER_11,
+                ShortcutQuery.FLAG_GET_DYNAMIC), "s10_1", "s10_2");
+        assertShortcutExists(CALLING_PACKAGE_1, "s10_1", USER_11);
+        assertShortcutExists(CALLING_PACKAGE_2, "s10_2", USER_11);
+
+        // Now we simulate app lock being enabled for CALLING_PACKAGE_2 on USER_11.
+        doAnswer(invocation -> {
+                return true;
+            }).when(mMockPackageManagerInternal).isPackageAppLockEnabled(
+                eq(CALLING_PACKAGE_2), eq(USER_11));
+
+        // Check USER_11:
+        assertShortcutIds(getLauncherShortcuts(LAUNCHER_1, USER_11,
+                ShortcutQuery.FLAG_GET_DYNAMIC), "s10_1");
+        assertShortcutIds(getLauncherShortcuts(LAUNCHER_2, USER_11,
+                ShortcutQuery.FLAG_GET_DYNAMIC), "s10_1");
+    }
+
+    @Test
+    @EnableFlags(android.content.pm.Flags.FLAG_APP_LOCK_SHORTCUT_REMOVAL)
+    public void testGetLauncherDynamicShortcuts_flagEnabled_appLockDisabled_returnsDynamicShortcuts()
+        throws Exception{
+        // --- Setup Phase ---
+        // Set up shortcuts for 2 packages (CALLING_PACKAGE_1, CALLING_PACKAGE_2)
+        // and 2 users (USER_10, USER_11), pinned by 2 launchers (LAUNCHER_1, LAUNCHER_2).
+
+        // Setup for USER_10
+        runWithCaller(CALLING_PACKAGE_1, USER_10, () -> {
+            assertTrue(mManager.setDynamicShortcuts(list(makeShortcut("s0_1"))));
+        });
+        runWithCaller(CALLING_PACKAGE_2, USER_10, () -> {
+            assertTrue(mManager.setDynamicShortcuts(list(makeShortcut("s0_2"))));
+        });
+        runWithCaller(LAUNCHER_1, USER_10, () -> {
+            mLauncherApps.pinShortcuts(CALLING_PACKAGE_1, list("s0_1"), HANDLE_USER_10);
+            mLauncherApps.pinShortcuts(CALLING_PACKAGE_2, list("s0_2"), HANDLE_USER_10);
+        });
+        runWithCaller(LAUNCHER_2, USER_10, () -> {
+            mLauncherApps.pinShortcuts(CALLING_PACKAGE_1, list("s0_1"), HANDLE_USER_10);
+            mLauncherApps.pinShortcuts(CALLING_PACKAGE_2, list("s0_2"), HANDLE_USER_10);
+        });
+
+        // Setup for USER_11
+        mRunningUsers.put(USER_11, true);
+        runWithCaller(CALLING_PACKAGE_1, USER_11, () -> {
+            assertTrue(mManager.setDynamicShortcuts(list(makeShortcut("s10_1"))));
+        });
+        runWithCaller(CALLING_PACKAGE_2, USER_11, () -> {
+            assertTrue(mManager.setDynamicShortcuts(list(makeShortcut("s10_2"))));
+        });
+        runWithCaller(LAUNCHER_1, USER_11, () -> {
+            mLauncherApps.pinShortcuts(CALLING_PACKAGE_1, list("s10_1"), HANDLE_USER_11);
+            mLauncherApps.pinShortcuts(CALLING_PACKAGE_2, list("s10_2"), HANDLE_USER_11);
+        });
+        runWithCaller(LAUNCHER_2, USER_11, () -> {
+            mLauncherApps.pinShortcuts(CALLING_PACKAGE_1, list("s10_1"), HANDLE_USER_11);
+            mLauncherApps.pinShortcuts(CALLING_PACKAGE_2, list("s10_2"), HANDLE_USER_11);
+        });
+
+        mService.saveDirtyInfo();
+
+        // --- Action Phase ---
+        // This is the call to your new, testable method.
+        // We simulate app lock being enabled for CALLING_PACKAGE_1 on USER_10.
+
+        doAnswer(invocation -> {
+                return false;
+            }).when(mMockPackageManagerInternal).isPackageAppLockEnabled(
+                eq(CALLING_PACKAGE_1), eq(USER_10));
+
+        // --- Post-Action Verification ---
+        dumpsysOnLogcat(); // Good for debugging if the test fails
+
+        // Check USER_10:
+        // Launchers should return dynamic shortcuts for CALLING_PACKAGE_1 ("s0_1").
+        assertShortcutIds(getLauncherShortcuts(LAUNCHER_1, USER_10,
+                ShortcutQuery.FLAG_GET_DYNAMIC), "s0_1", "s0_2");
+        assertShortcutIds(getLauncherShortcuts(LAUNCHER_2, USER_10,
+                ShortcutQuery.FLAG_GET_DYNAMIC), "s0_1", "s0_2");
+
+        // Check USER_11:
+        // This user should be completely unaffected by the lock on USER_10.
+        assertShortcutIds(getLauncherShortcuts(LAUNCHER_1, USER_11,
+                ShortcutQuery.FLAG_GET_DYNAMIC), "s10_1", "s10_2");
+        assertShortcutIds(getLauncherShortcuts(LAUNCHER_2, USER_11,
+                ShortcutQuery.FLAG_GET_DYNAMIC), "s10_1", "s10_2");
+        assertShortcutExists(CALLING_PACKAGE_1, "s10_1", USER_11);
+        assertShortcutExists(CALLING_PACKAGE_2, "s10_2", USER_11);
+
+        // Now we simulate app lock being enabled for CALLING_PACKAGE_2 on USER_11.
+        doAnswer(invocation -> {
+                return false;
+            }).when(mMockPackageManagerInternal).isPackageAppLockEnabled(
+                eq(CALLING_PACKAGE_2), eq(USER_11));
+
+        // Check USER_11:
+        assertShortcutIds(getLauncherShortcuts(LAUNCHER_1, USER_11,
+                ShortcutQuery.FLAG_GET_DYNAMIC), "s10_1", "s10_2");
+        assertShortcutIds(getLauncherShortcuts(LAUNCHER_2, USER_11,
+                ShortcutQuery.FLAG_GET_DYNAMIC), "s10_1", "s10_2");
+    }
+
+    @Test
+    @DisableFlags(android.content.pm.Flags.FLAG_APP_LOCK_SHORTCUT_REMOVAL)
+    public void testGetLauncherDynamicShortcuts_flagDisabled_appLockEnabled_returnsDynamicShortcuts()
+        throws Exception{
+        // --- Setup Phase ---
+        // Set up shortcuts for 2 packages (CALLING_PACKAGE_1, CALLING_PACKAGE_2)
+        // and 2 users (USER_10, USER_11), pinned by 2 launchers (LAUNCHER_1, LAUNCHER_2).
+
+        // Setup for USER_10
+        runWithCaller(CALLING_PACKAGE_1, USER_10, () -> {
+            assertTrue(mManager.setDynamicShortcuts(list(makeShortcut("s0_1"))));
+        });
+        runWithCaller(CALLING_PACKAGE_2, USER_10, () -> {
+            assertTrue(mManager.setDynamicShortcuts(list(makeShortcut("s0_2"))));
+        });
+        runWithCaller(LAUNCHER_1, USER_10, () -> {
+            mLauncherApps.pinShortcuts(CALLING_PACKAGE_1, list("s0_1"), HANDLE_USER_10);
+            mLauncherApps.pinShortcuts(CALLING_PACKAGE_2, list("s0_2"), HANDLE_USER_10);
+        });
+        runWithCaller(LAUNCHER_2, USER_10, () -> {
+            mLauncherApps.pinShortcuts(CALLING_PACKAGE_1, list("s0_1"), HANDLE_USER_10);
+            mLauncherApps.pinShortcuts(CALLING_PACKAGE_2, list("s0_2"), HANDLE_USER_10);
+        });
+
+        // Setup for USER_11
+        mRunningUsers.put(USER_11, true);
+        runWithCaller(CALLING_PACKAGE_1, USER_11, () -> {
+            assertTrue(mManager.setDynamicShortcuts(list(makeShortcut("s10_1"))));
+        });
+        runWithCaller(CALLING_PACKAGE_2, USER_11, () -> {
+            assertTrue(mManager.setDynamicShortcuts(list(makeShortcut("s10_2"))));
+        });
+        runWithCaller(LAUNCHER_1, USER_11, () -> {
+            mLauncherApps.pinShortcuts(CALLING_PACKAGE_1, list("s10_1"), HANDLE_USER_11);
+            mLauncherApps.pinShortcuts(CALLING_PACKAGE_2, list("s10_2"), HANDLE_USER_11);
+        });
+        runWithCaller(LAUNCHER_2, USER_11, () -> {
+            mLauncherApps.pinShortcuts(CALLING_PACKAGE_1, list("s10_1"), HANDLE_USER_11);
+            mLauncherApps.pinShortcuts(CALLING_PACKAGE_2, list("s10_2"), HANDLE_USER_11);
+        });
+
+        mService.saveDirtyInfo();
+
+        // --- Action Phase ---
+        // This is the call to your new, testable method.
+        // We simulate app lock being enabled for CALLING_PACKAGE_1 on USER_10.
+
+        doAnswer(invocation -> {
+                return true;
+            }).when(mMockPackageManagerInternal).isPackageAppLockEnabled(
+                eq(CALLING_PACKAGE_1), eq(USER_10));
+
+        // --- Post-Action Verification ---
+        dumpsysOnLogcat(); // Good for debugging if the test fails
+
+        // Check USER_10:
+        // Launchers should return dynamic shortcuts for CALLING_PACKAGE_1 ("s0_1").
+        assertShortcutIds(getLauncherShortcuts(LAUNCHER_1, USER_10,
+                ShortcutQuery.FLAG_GET_DYNAMIC), "s0_1", "s0_2");
+        assertShortcutIds(getLauncherShortcuts(LAUNCHER_2, USER_10,
+                ShortcutQuery.FLAG_GET_DYNAMIC), "s0_1", "s0_2");
+
+        // Check USER_11:
+        // This user should be completely unaffected by the lock on USER_10.
+        assertShortcutIds(getLauncherShortcuts(LAUNCHER_1, USER_11,
+                ShortcutQuery.FLAG_GET_DYNAMIC), "s10_1", "s10_2");
+        assertShortcutIds(getLauncherShortcuts(LAUNCHER_2, USER_11,
+                ShortcutQuery.FLAG_GET_DYNAMIC), "s10_1", "s10_2");
+        assertShortcutExists(CALLING_PACKAGE_1, "s10_1", USER_11);
+        assertShortcutExists(CALLING_PACKAGE_2, "s10_2", USER_11);
+
+        // Now we simulate app lock being enabled for CALLING_PACKAGE_2 on USER_11.
+        doAnswer(invocation -> {
+                return true;
+            }).when(mMockPackageManagerInternal).isPackageAppLockEnabled(
+                eq(CALLING_PACKAGE_2), eq(USER_11));
+
+        // Check USER_11:
+        assertShortcutIds(getLauncherShortcuts(LAUNCHER_1, USER_11,
+                ShortcutQuery.FLAG_GET_DYNAMIC), "s10_1", "s10_2");
+        assertShortcutIds(getLauncherShortcuts(LAUNCHER_2, USER_11,
+                ShortcutQuery.FLAG_GET_DYNAMIC), "s10_1", "s10_2");
+    }
+
+    @Test
+    @DisableFlags(android.content.pm.Flags.FLAG_APP_LOCK_SHORTCUT_REMOVAL)
+    public void testGetLauncherDynamicShortcuts_flagDisabled_appLockDisabled_returnsDynamicShortcuts()
+        throws Exception{
+        // --- Setup Phase ---
+        // Set up shortcuts for 2 packages (CALLING_PACKAGE_1, CALLING_PACKAGE_2)
+        // and 2 users (USER_10, USER_11), pinned by 2 launchers (LAUNCHER_1, LAUNCHER_2).
+
+        // Setup for USER_10
+        runWithCaller(CALLING_PACKAGE_1, USER_10, () -> {
+            assertTrue(mManager.setDynamicShortcuts(list(makeShortcut("s0_1"))));
+        });
+        runWithCaller(CALLING_PACKAGE_2, USER_10, () -> {
+            assertTrue(mManager.setDynamicShortcuts(list(makeShortcut("s0_2"))));
+        });
+        runWithCaller(LAUNCHER_1, USER_10, () -> {
+            mLauncherApps.pinShortcuts(CALLING_PACKAGE_1, list("s0_1"), HANDLE_USER_10);
+            mLauncherApps.pinShortcuts(CALLING_PACKAGE_2, list("s0_2"), HANDLE_USER_10);
+        });
+        runWithCaller(LAUNCHER_2, USER_10, () -> {
+            mLauncherApps.pinShortcuts(CALLING_PACKAGE_1, list("s0_1"), HANDLE_USER_10);
+            mLauncherApps.pinShortcuts(CALLING_PACKAGE_2, list("s0_2"), HANDLE_USER_10);
+        });
+
+        // Setup for USER_11
+        mRunningUsers.put(USER_11, true);
+        runWithCaller(CALLING_PACKAGE_1, USER_11, () -> {
+            assertTrue(mManager.setDynamicShortcuts(list(makeShortcut("s10_1"))));
+        });
+        runWithCaller(CALLING_PACKAGE_2, USER_11, () -> {
+            assertTrue(mManager.setDynamicShortcuts(list(makeShortcut("s10_2"))));
+        });
+        runWithCaller(LAUNCHER_1, USER_11, () -> {
+            mLauncherApps.pinShortcuts(CALLING_PACKAGE_1, list("s10_1"), HANDLE_USER_11);
+            mLauncherApps.pinShortcuts(CALLING_PACKAGE_2, list("s10_2"), HANDLE_USER_11);
+        });
+        runWithCaller(LAUNCHER_2, USER_11, () -> {
+            mLauncherApps.pinShortcuts(CALLING_PACKAGE_1, list("s10_1"), HANDLE_USER_11);
+            mLauncherApps.pinShortcuts(CALLING_PACKAGE_2, list("s10_2"), HANDLE_USER_11);
+        });
+
+        mService.saveDirtyInfo();
+
+        // --- Action Phase ---
+        // This is the call to your new, testable method.
+        // We simulate app lock being enabled for CALLING_PACKAGE_1 on USER_10.
+
+        doAnswer(invocation -> {
+                return false;
+            }).when(mMockPackageManagerInternal).isPackageAppLockEnabled(
+                eq(CALLING_PACKAGE_1), eq(USER_10));
+
+        // --- Post-Action Verification ---
+        dumpsysOnLogcat(); // Good for debugging if the test fails
+
+        // Check USER_10:
+        // Launchers should return dynamic shortcuts for CALLING_PACKAGE_1 ("s0_1").
+        assertShortcutIds(getLauncherShortcuts(LAUNCHER_1, USER_10,
+                ShortcutQuery.FLAG_GET_DYNAMIC), "s0_1", "s0_2");
+        assertShortcutIds(getLauncherShortcuts(LAUNCHER_2, USER_10,
+                ShortcutQuery.FLAG_GET_DYNAMIC), "s0_1", "s0_2");
+
+        // Check USER_11:
+        // This user should be completely unaffected by the lock on USER_10.
+        assertShortcutIds(getLauncherShortcuts(LAUNCHER_1, USER_11,
+                ShortcutQuery.FLAG_GET_DYNAMIC), "s10_1", "s10_2");
+        assertShortcutIds(getLauncherShortcuts(LAUNCHER_2, USER_11,
+                ShortcutQuery.FLAG_GET_DYNAMIC), "s10_1", "s10_2");
+        assertShortcutExists(CALLING_PACKAGE_1, "s10_1", USER_11);
+        assertShortcutExists(CALLING_PACKAGE_2, "s10_2", USER_11);
+
+        // Now we simulate app lock being enabled for CALLING_PACKAGE_2 on USER_11.
+        doAnswer(invocation -> {
+                return false;
+            }).when(mMockPackageManagerInternal).isPackageAppLockEnabled(
+                eq(CALLING_PACKAGE_2), eq(USER_11));
+
+        // Check USER_11:
+        assertShortcutIds(getLauncherShortcuts(LAUNCHER_1, USER_11,
+                ShortcutQuery.FLAG_GET_DYNAMIC), "s10_1", "s10_2");
+        assertShortcutIds(getLauncherShortcuts(LAUNCHER_2, USER_11,
+                ShortcutQuery.FLAG_GET_DYNAMIC), "s10_1", "s10_2");
     }
 
     public void disabled_testCleanupPackage() {
