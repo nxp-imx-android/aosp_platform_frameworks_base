@@ -227,7 +227,7 @@ public final class CompanionDeviceManager {
     /**
      * Used by {@link #enableSystemDataSyncForTypes(int, int)}}.
      * Synchronize task continuity data like open tasks, and enable this transport for Handoff.
-     * Enabled by default.
+     * Disabled by default.
      */
     @FlaggedApi(Flags.FLAG_TASK_CONTINUITY)
     public static final int FLAG_TASK_CONTINUITY = 1 << 1;

@@ -17,9 +17,9 @@
 package com.android.systemui.util.composable.kairos
 
 import androidx.compose.runtime.mutableStateOf
-import com.android.systemui.KairosBuilder
 import com.android.systemui.kairos.State
 import com.android.systemui.kairos.util.nameTag
+import com.android.systemui.util.lifecycle.kairos.KairosBuilder
 
 fun <T> KairosBuilder.hydratedComposeStateOf(
     name: String,

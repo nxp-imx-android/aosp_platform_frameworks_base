@@ -23,6 +23,7 @@ import android.os.Binder;
 import android.os.binder.BinderCallsStats;
 import android.os.binder.BinderSpamStats;
 import android.os.binder.IBinderStatsConsumerService;
+import android.os.binder.SingleSecondBinderStats;
 import android.util.Slog;
 
 import com.android.internal.util.FrameworkStatsLog;
@@ -97,6 +98,51 @@ public class BinderStatsConsumerService extends IBinderStatsConsumerService.Stub
         }
         if (android.os.profiling.anomaly.flags.Flags.anomalyDetectorCore()) {
             reportToSignalCollector(spamStatsArray);
+        }
+    }
+
+    @Override
+    @RequiresNoPermission
+    public void reportSecondGranularityStats(SingleSecondBinderStats[] singleSecondStatsArray) {
+        if (DEBUG) {
+            Slog.d(TAG, "reportSecondGranularityStats");
+        }
+        if (singleSecondStatsArray.length > 256) {
+            Slog.wtf(TAG,
+                    "Too many stats received in reportSecondGranularityStats. Count: "
+                            + singleSecondStatsArray.length);
+            return;
+        }
+        int callingUid = Binder.getCallingUid();
+        for (SingleSecondBinderStats stats : singleSecondStatsArray) {
+            if (stats.interfaceDescriptor.length() > 256 || stats.aidlMethod.length() > 256) {
+                Slog.wtf(TAG, "Interface descriptor or AIDL method too long.");
+                continue;
+            }
+            if (stats.callCount > 125) {
+                FrameworkStatsLog.write(FrameworkStatsLog.BINDER_SPAM_REPORTED,
+                                        stats.clientUid,
+                                        callingUid,
+                                        stats.interfaceDescriptor,
+                                        stats.aidlMethod,
+                                        stats.callCount >= 125 ? 1 : 0,
+                                        stats.callCount >= 250 ? 1 : 0);
+            }
+            if (stats.durationCount > 0) {
+                FrameworkStatsLog.write(FrameworkStatsLog.BINDER_CALLS_REPORTED,
+                                        stats.clientUid,
+                                        callingUid,
+                                        stats.interfaceDescriptor,
+                                        stats.aidlMethod,
+                                        stats.callCount,
+                                        stats.durationMicrosSum,
+                                        stats.durationCount > 10 ? 1 : 0,
+                                        stats.durationCount > 50 ? 1 : 0,
+                                        stats.durationMicrosSquaredSum,
+                                        stats.cpuTimeCount,
+                                        stats.cpuTimeMicrosSum,
+                                        stats.cpuTimeMicrosSquaredSum);
+            }
         }
     }
 

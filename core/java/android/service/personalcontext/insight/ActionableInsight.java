@@ -19,8 +19,10 @@ package android.service.personalcontext.insight;
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.SystemApi;
 import android.content.Intent;
 import android.os.Bundle;
+import android.service.personalcontext.ComponentIdProvider;
 import android.service.personalcontext.Flags;
 import android.service.personalcontext.Token;
 import android.service.personalcontext.hint.ContextHint;
@@ -137,7 +139,9 @@ public final class ActionableInsight extends ContextInsight {
         visitor.visit(this);
     }
 
-    /** Builder for {@link ActionableInsight}. */
+    /**
+     * Builder for {@link ActionableInsight}.
+     */
     @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
     public static final class Builder {
         private final ConstructorParams.Builder mBaseBuilder = new ConstructorParams.Builder();
@@ -176,6 +180,22 @@ public final class ActionableInsight extends ContextInsight {
         @NonNull
         public Builder addToken(@NonNull Token token) {
             mBaseBuilder.addToken(token);
+            return this;
+        }
+
+        /**
+         * Sets the originating component in the resulting {@link ContextInsight}, allowing events
+         * to be routed back to the understander that created this {@link ContextInsight}.
+         *
+         * @param originatingComponent the component that is creating this insight
+         *
+         * @hide
+         */
+        @SystemApi
+        @NonNull
+        public Builder setOriginatingComponentId(
+                @Nullable ComponentIdProvider originatingComponent) {
+            mBaseBuilder.setOriginatingComponentId(originatingComponent);
             return this;
         }
 

@@ -56,6 +56,7 @@ import android.media.tv.interactive.ITvInteractiveAppService;
 import android.media.tv.interactive.ITvInteractiveAppServiceCallback;
 import android.media.tv.interactive.ITvInteractiveAppSession;
 import android.media.tv.interactive.ITvInteractiveAppSessionCallback;
+import android.media.tv.interactive.TvInteractiveAppInfo;
 import android.media.tv.interactive.TvInteractiveAppService;
 import android.media.tv.interactive.TvInteractiveAppServiceInfo;
 import android.net.Uri;
@@ -2069,6 +2070,31 @@ public class TvInteractiveAppManagerService extends SystemService {
                         getSessionLocked(sessionState).resetInteractiveApp();
                     } catch (RemoteException | SessionNotFoundException e) {
                         Slogf.e(TAG, "error in reset", e);
+                    }
+                }
+            } finally {
+                Binder.restoreCallingIdentity(identity);
+            }
+        }
+
+        @Override
+        public void startInteractiveAppWithHandle(IBinder sessionToken, int userId, int handle) {
+            if (DEBUG) {
+                Slogf.d(TAG, "BinderService#start(userId=%d)", userId);
+            }
+            final int callingUid = Binder.getCallingUid();
+            final int resolvedUserId = resolveCallingUserId(Binder.getCallingPid(), callingUid,
+                    userId, "startInteractiveAppWithHandle");
+            SessionState sessionState = null;
+            final long identity = Binder.clearCallingIdentity();
+            try {
+                synchronized (mLock) {
+                    try {
+                        sessionState = getSessionStateLocked(sessionToken, callingUid,
+                                resolvedUserId);
+                        getSessionLocked(sessionState).startInteractiveAppWithHandle(handle);
+                    } catch (RemoteException | SessionNotFoundException e) {
+                        Slogf.e(TAG, "error in start", e);
                     }
                 }
             } finally {
@@ -4285,6 +4311,24 @@ public class TvInteractiveAppManagerService extends SystemService {
                     mSessionState.mClient.onSessionStateChanged(state, err, mSessionState.mSeq);
                 } catch (RemoteException e) {
                     Slogf.e(TAG, "error in onSessionStateChanged", e);
+                }
+            }
+        }
+
+        @Override
+        public void onInteractiveAppInfoChanged(TvInteractiveAppInfo appInfo) {
+            synchronized (mLock) {
+                if (DEBUG) {
+                    Slogf.d(TAG,
+                            "onInteractiveAppInfoChanged");
+                }
+                if (mSessionState.mSession == null || mSessionState.mClient == null) {
+                    return;
+                }
+                try {
+                    mSessionState.mClient.onInteractiveAppInfoChanged(appInfo, mSessionState.mSeq);
+                } catch (RemoteException e) {
+                    Slogf.e(TAG, "error in onInteractiveAppInfoChanged", e);
                 }
             }
         }

@@ -242,6 +242,7 @@ class ContentRestrictionServiceTest {
     }
 
     private fun setServiceEnabled(enabled: Boolean) {
-        service.mInternal.setContentRestrictionEnabledForUser(userId, enabled)
+        val packages = if (enabled) listOf("com.example.filterapp") else null
+        service.mInternal.setContentRestrictionPackages(userId, packages, "test_source")
     }
 }

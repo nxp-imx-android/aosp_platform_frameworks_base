@@ -284,9 +284,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
     /** Set the Supervision Recovery Info. */
     @Override
     public void setSupervisionRecoveryInfo(SupervisionRecoveryInfo recoveryInfo) {
-        if (Flags.supervisionRecoveryImprovements()) {
-            checkCallAuthorization(isCallerSystem());
-        }
+        checkCallAuthorization(isCallerSystem());
 
         synchronized (getLockObject()) {
             mSupervisionSettings.saveRecoveryInfo(recoveryInfo);
@@ -298,14 +296,11 @@ public class SupervisionService extends ISupervisionManager.Stub {
     /** Returns the Supervision Recovery Info or null if recovery is not set. */
     @Override
     public SupervisionRecoveryInfo getSupervisionRecoveryInfo() {
-        if (Flags.supervisionRecoveryImprovements()) {
-            checkCallAuthorization(isCallerSystem());
+        checkCallAuthorization(isCallerSystem());
 
-            synchronized (getLockObject()) {
-                return mSupervisionSettings.getRecoveryInfo();
-            }
+        synchronized (getLockObject()) {
+            return mSupervisionSettings.getRecoveryInfo();
         }
-        return mSupervisionSettings.getRecoveryInfo();
     }
 
     @Override

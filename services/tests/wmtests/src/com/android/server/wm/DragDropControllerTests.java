@@ -190,8 +190,8 @@ public class DragDropControllerTests extends WindowTestsBase {
         }
 
         // Use a new TestIWindow so we don't collect events for other windows
-        InputChannel channel = new InputChannel();
-        window.openInputChannel(channel);
+        final InputChannel channel = window.openInputChannel();
+        channel.dispose();
         window.mHasSurface = true;
         mWm.mWindowMap.put(window.mClient.asBinder(), window);
         return window;

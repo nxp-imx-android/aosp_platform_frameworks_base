@@ -17,6 +17,7 @@
 package androidx.window.extensions.embedding;
 
 import static android.content.pm.ActivityInfo.OVERRIDE_ENABLE_VIRTUAL_GAMEPAD;
+import static android.content.res.Configuration.TOUCHSCREEN_FINGER;
 import static android.util.TypedValue.COMPLEX_UNIT_DIP;
 import static android.view.WindowManager.PROPERTY_ACTIVITY_EMBEDDING_SPLITS_ENABLED;
 
@@ -92,7 +93,8 @@ public class AppCompatEmbeddingRuleController {
         return new SplitPlaceholderRule.Builder(
                 placeholderIntent,
                 (androidx.window.extensions.core.util.function.Predicate<Activity>)
-                        activity -> true,
+                        activity -> activity.getResources().getConfiguration().touchscreen
+                                == TOUCHSCREEN_FINGER,
                 intent -> true,
                 parentMetrics -> parentMetrics.getBounds().height() >= minSizePx
                         && parentMetrics.getBounds().width() >= minSizePx)

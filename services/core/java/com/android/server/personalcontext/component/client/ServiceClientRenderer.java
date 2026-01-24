@@ -25,9 +25,9 @@ import android.os.RemoteException;
 import android.service.personalcontext.RenderToken;
 import android.service.personalcontext.insight.ContextInsight;
 import android.service.personalcontext.insight.ContextInsightWrapper;
+import android.service.personalcontext.insight.InsightFilter;
 import android.service.personalcontext.renderer.IGetFilterCallback;
 import android.service.personalcontext.renderer.IInsightRenderer;
-import android.service.personalcontext.renderer.RendererFilter;
 import android.util.Slog;
 
 import androidx.annotation.NonNull;
@@ -43,7 +43,7 @@ import java.util.UUID;
  */
 public class ServiceClientRenderer
         extends BaseServiceClientComponent<IInsightRenderer> implements Renderer {
-    private RendererFilter mFilter = RendererFilter.REQUIRE_RENDER_TOKEN;
+    private InsightFilter mFilter = InsightFilter.REQUIRE_RENDER_TOKEN;
 
     public ServiceClientRenderer(Context context, UUID componentId, ServiceInfo serviceInfo) {
         super(context, componentId, serviceInfo);
@@ -53,7 +53,7 @@ public class ServiceClientRenderer
                 binder.getFilter(new IGetFilterCallback.Stub() {
                     @PermissionManuallyEnforced
                     @Override
-                    public void updateFilter(RendererFilter filter) {
+                    public void updateFilter(InsightFilter filter) {
                         mFilter = filter;
                     }
                 });

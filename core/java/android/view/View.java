@@ -66,6 +66,7 @@ import static android.view.inputmethod.Flags.initiationWithoutInputConnection;
 
 import static com.android.hardware.input.Flags.pointerCaptureModes;
 import static com.android.hardware.input.Flags.relativeCaptureModeByDefault;
+import static com.android.server.display.feature.flags.Flags.frameRateMappingApi;
 import static com.android.internal.util.FrameworkStatsLog.TOUCH_GESTURE_CLASSIFIED__CLASSIFICATION__DEEP_PRESS;
 import static com.android.internal.util.FrameworkStatsLog.TOUCH_GESTURE_CLASSIFIED__CLASSIFICATION__LONG_PRESS;
 import static com.android.internal.util.FrameworkStatsLog.TOUCH_GESTURE_CLASSIFIED__CLASSIFICATION__SINGLE_TAP;
@@ -35006,6 +35007,19 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
     }
 
     private float convertVelocityToFrameRate(float velocityPps) {
+        float density = mAttachInfo.mDensity;
+
+        if (frameRateMappingApi()) {
+            // Getting the frame rate / velocity mapping values
+            // from Display#getFrameRateVelocityMapping.
+            Display display = getDisplay();
+            List<FrameRateVelocityPoint> mapping = display != null
+                    ? display.getFrameRateVelocityMapping() : Collections.emptyList();
+            if (!mapping.isEmpty()) {
+                return getFrameRateByVelocity(mapping, velocityPps / density);
+            }
+        }
+
         if (sFrameRateMappings != null && sFrameRateMappings.length > 0) {
             return getFrameRateByVelocity(sFrameRateMappings, (int) velocityPps);
         }
@@ -35013,7 +35027,6 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
         // above 300dp/s => 120fps
         // between 300dp/s and 125fps => 80fps
         // below 125dp/s => 60fps
-        float density = mAttachInfo.mDensity;
         float velocityDps = velocityPps / density;
         float frameRate;
         if (velocityDps > 300f) {
@@ -35172,6 +35185,19 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
             return null;
         }
         return rootView.getJankTracker();
+    }
+
+    private float getFrameRateByVelocity(
+            @NonNull @Size(min = 1) List<FrameRateVelocityPoint> mappings,
+            float velocity) {
+
+        float frameRate = mappings.get(0).getFramePerSecond();
+        for (FrameRateVelocityPoint point : mappings) {
+            if (velocity >= point.getDpPerSecond()) {
+                frameRate = point.getFramePerSecond();
+            }
+        }
+        return frameRate;
     }
 
     private int getFrameRateByVelocity(int[][] mappings, int velocity) {

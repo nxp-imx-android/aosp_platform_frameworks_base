@@ -37,11 +37,13 @@ import android.content.Context;
 import android.hardware.display.DisplayManagerGlobal.DisplayIdsCache;
 import android.os.Handler;
 import android.os.RemoteException;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.annotations.RequiresFlagsDisabled;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
+import android.platform.test.flag.junit.SetFlagsRule;
 import android.view.Display;
 import android.view.DisplayInfo;
 
@@ -82,6 +84,8 @@ public class DisplayManagerGlobalTest {
     @Rule
     public final CheckFlagsRule mCheckFlagsRule =
             DeviceFlagsValueProvider.createCheckFlagsRule();
+    @Rule
+    public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
     private static final long DISPLAY_CHANGE_EVENTS =
             DisplayManagerGlobal.INTERNAL_EVENT_FLAG_DISPLAY_BASIC_CHANGED
@@ -124,6 +128,7 @@ public class DisplayManagerGlobalTest {
 
     @Test
     public void testDisplayListenerIsCalled_WhenDisplayEventOccurs() throws RemoteException {
+        mDisplayManagerGlobal.disableLocalDisplayInfoCaches();
         mDisplayManagerGlobal.registerDisplayListener(mDisplayListener, mHandler,
                 ALL_DISPLAY_EVENTS,
                 /* packageName= */ null,
@@ -640,6 +645,25 @@ public class DisplayManagerGlobalTest {
         assertExpectedCache(cache, new int[] { 0, 1, 2 }, null);
         cache.evictLocked(1);
         assertExpectedCache(cache, new int[] { 0, 2 }, null);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_NULL_DISPLAY_INFO_CACHE)
+    public void getDisplayInfo_cachesNullResultsFromService() throws Exception {
+        int testDisplayId = 123;
+
+        doReturn(null).when(mDisplayManager).getDisplayInfo(testDisplayId);
+
+        // First call, triggers the binder call.
+        DisplayInfo info1 = mDisplayManagerGlobal.getDisplayInfo(testDisplayId);
+        assertNull("First call should return null as mocked", info1);
+        verify(mDisplayManager, times(1)).getDisplayInfo(testDisplayId);
+
+        // Second call to getDisplayInfo, should retrieve the cached null value.
+        DisplayInfo info2 = mDisplayManagerGlobal.getDisplayInfo(testDisplayId);
+        assertNull("Second call should also return null", info2);
+        // no additional binder calls to getDisplayInfo
+        verify(mDisplayManager, times(1)).getDisplayInfo(testDisplayId);
     }
 
     private void assertExpectedCache(DisplayIdsCache cache, @Nullable int[] connectedIds,

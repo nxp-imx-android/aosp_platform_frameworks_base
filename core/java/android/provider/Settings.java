@@ -3118,6 +3118,23 @@ public final class Settings {
     public static final String ACTION_SUPERVISION_SETTINGS =
             "android.settings.SUPERVISION_SETTINGS";
 
+    /**
+     * Activity Action: Show settings to allow configuration of personal context.
+     * <p>
+     * In some cases, a matching Activity may not exist, so ensure you
+     * safeguard against this.
+     * <p>
+     * Input: Nothing.
+     * <p>
+     * Output: Nothing.
+     *
+     * @hide
+     */
+    @FlaggedApi("android.service.personalcontext.enable_personal_context_service")
+    @SdkConstant(SdkConstantType.ACTIVITY_INTENT_ACTION)
+    public static final String ACTION_PERSONAL_CONTEXT_SETTINGS =
+            "android.settings.PERSONAL_CONTEXT_SETTINGS";
+
     // End of Intent actions for Settings
 
     /**
@@ -14098,6 +14115,15 @@ public final class Settings {
         @Readable
         @FlaggedApi(com.android.text.flags.Flags.FLAG_SPLIT_SHOW_PASSWORDS_TO_TOUCH_AND_PHYSICAL)
         public static final String TEXT_SHOW_PASSWORD_PHYSICAL = "show_passwords_physical";
+
+        /**
+         * Whether personal context is enabled.
+         * 1 = On, 0 = Off
+         * @hide
+         */
+        @Readable
+        @FlaggedApi(android.service.personalcontext.Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
+        public static final String PERSONAL_CONTEXT_ENABLED = "personal_context_enabled";
     }
 
     /**

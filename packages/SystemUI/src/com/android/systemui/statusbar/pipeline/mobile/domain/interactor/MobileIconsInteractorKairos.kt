@@ -22,7 +22,6 @@ import android.telephony.SubscriptionManager
 import android.telephony.SubscriptionManager.PROFILE_CLASS_PROVISIONING
 import com.android.settingslib.SignalIcon.MobileIconGroup
 import com.android.systemui.KairosActivatable
-import com.android.systemui.KairosBuilder
 import com.android.systemui.activated
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.flags.FeatureFlagsClassic
@@ -40,7 +39,6 @@ import com.android.systemui.kairos.map
 import com.android.systemui.kairos.mapValues
 import com.android.systemui.kairos.stateOf
 import com.android.systemui.kairos.util.nameTag
-import com.android.systemui.kairosBuilder
 import com.android.systemui.log.table.TableLogBuffer
 import com.android.systemui.log.table.logDiffsForTable
 import com.android.systemui.statusbar.core.NewStatusBarIcons
@@ -54,6 +52,8 @@ import com.android.systemui.statusbar.pipeline.shared.data.model.ConnectivitySlo
 import com.android.systemui.statusbar.pipeline.shared.data.repository.ConnectivityRepository
 import com.android.systemui.statusbar.policy.data.repository.UserSetupRepository
 import com.android.systemui.util.CarrierConfigTracker
+import com.android.systemui.util.lifecycle.kairos.KairosBuilder
+import com.android.systemui.util.lifecycle.kairos.kairosBuilder
 import dagger.Binds
 import dagger.Provides
 import dagger.multibindings.ElementsIntoSet
@@ -300,9 +300,9 @@ constructor(
                         // - They are cellular
                         // - There's exactly two
                         // - They have the same number of levels
-                        signalLevelIcons.filterIsInstance<SignalIconModel.CellularTypeIconModel.Cellular>().let {
-                            it.size == 2 && it[0].numberOfLevels == it[1].numberOfLevels
-                        }
+                        signalLevelIcons
+                            .filterIsInstance<SignalIconModel.CellularTypeIconModel.Cellular>()
+                            .let { it.size == 2 && it[0].numberOfLevels == it[1].numberOfLevels }
                     }
             }
         } else {

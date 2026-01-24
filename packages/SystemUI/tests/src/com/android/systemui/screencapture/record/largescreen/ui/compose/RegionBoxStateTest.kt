@@ -1218,6 +1218,127 @@ class RegionBoxStateTest : SysuiTestCase() {
         assertThat(state.rect).isEqualTo(initial)
     }
 
+    @Test
+    fun adjustZone_withNoRect_doesNothing() {
+        state.rect = null
+        state.adjustZone(ResizeZone.Corner.TopLeft, Offset(10f, 0f))
+        assertThat(state.rect).isNull()
+    }
+
+    @Test
+    fun adjustZone_topLeft_directionLeft_expandsLeft() {
+        val initial = Rect(100f, 100f, 200f, 200f)
+        state.rect = initial
+        val offset = Offset(-10f, 0f) // DirectionLeft
+
+        state.adjustZone(ResizeZone.Corner.TopLeft, offset)
+
+        assertThat(state.rect).isEqualTo(Rect(90f, 100f, 200f, 200f))
+    }
+
+    @Test
+    fun adjustZone_topLeft_directionUp_expandsTop() {
+        val initial = Rect(100f, 100f, 200f, 200f)
+        state.rect = initial
+        val offset = Offset(0f, -10f) // DirectionUp
+
+        state.adjustZone(ResizeZone.Corner.TopLeft, offset)
+
+        assertThat(state.rect).isEqualTo(Rect(100f, 90f, 200f, 200f))
+    }
+
+    @Test
+    fun adjustZone_topLeft_directionRight_shrinksLeft() {
+        val initial = Rect(100f, 100f, 200f, 200f)
+        state.rect = initial
+        val offset = Offset(10f, 0f) // DirectionRight
+
+        state.adjustZone(ResizeZone.Corner.TopLeft, offset)
+
+        assertThat(state.rect).isEqualTo(Rect(110f, 100f, 200f, 200f))
+    }
+
+    @Test
+    fun adjustZone_topLeft_directionDown_shrinksTop() {
+        val initial = Rect(100f, 100f, 200f, 200f)
+        state.rect = initial
+        val offset = Offset(0f, 10f) // DirectionDown
+
+        state.adjustZone(ResizeZone.Corner.TopLeft, offset)
+
+        assertThat(state.rect).isEqualTo(Rect(100f, 110f, 200f, 200f))
+    }
+
+    @Test
+    fun adjustZone_bottomRight_directionRight_expandsRight() {
+        val initial = Rect(100f, 100f, 200f, 200f)
+        state.rect = initial
+        val offset = Offset(10f, 0f) // DirectionRight
+
+        state.adjustZone(ResizeZone.Corner.BottomRight, offset)
+
+        assertThat(state.rect).isEqualTo(Rect(100f, 100f, 210f, 200f))
+    }
+
+    @Test
+    fun adjustZone_bottomRight_directionDown_expandsBottom() {
+        val initial = Rect(100f, 100f, 200f, 200f)
+        state.rect = initial
+        val offset = Offset(0f, 10f) // DirectionDown
+
+        state.adjustZone(ResizeZone.Corner.BottomRight, offset)
+
+        assertThat(state.rect).isEqualTo(Rect(100f, 100f, 200f, 210f))
+    }
+
+    @Test
+    fun adjustZone_bottomRight_directionLeft_shrinksRight() {
+        val initial = Rect(100f, 100f, 200f, 200f)
+        state.rect = initial
+        val offset = Offset(-10f, 0f) // DirectionLeft
+
+        state.adjustZone(ResizeZone.Corner.BottomRight, offset)
+
+        assertThat(state.rect).isEqualTo(Rect(100f, 100f, 190f, 200f))
+    }
+
+    @Test
+    fun adjustZone_bottomRight_directionUp_shrinksBottom() {
+        val initial = Rect(100f, 100f, 200f, 200f)
+        state.rect = initial
+        val offset = Offset(0f, -10f) // DirectionUp
+
+        state.adjustZone(ResizeZone.Corner.BottomRight, offset)
+
+        assertThat(state.rect).isEqualTo(Rect(100f, 100f, 200f, 190f))
+    }
+
+    @Test
+    fun adjustZone_respectsMinSize() {
+        val initial = Rect(100f, 100f, 100f + MIN_SIZE_PX, 100f + MIN_SIZE_PX)
+        state.rect = initial
+
+        // Try to shrink TopLeft further (Down or Right)
+        state.adjustZone(ResizeZone.Corner.TopLeft, Offset(10f, 0f))
+        assertThat(state.rect!!.width).isEqualTo(MIN_SIZE_PX)
+
+        state.adjustZone(ResizeZone.Corner.TopLeft, Offset(0f, 10f))
+        assertThat(state.rect!!.height).isEqualTo(MIN_SIZE_PX)
+    }
+
+    @Test
+    fun adjustZone_respectsScreenBounds() {
+        val initial = Rect(0f, 0f, 100f, 100f)
+        state.rect = initial
+
+        // Try to expand TopLeft further (Up or Left)
+        state.adjustZone(ResizeZone.Corner.TopLeft, Offset(-10f, 0f))
+        assertThat(state.rect!!.left).isEqualTo(0f)
+
+        state.adjustZone(ResizeZone.Corner.TopLeft, Offset(0f, -10f))
+        assertThat(state.rect!!.top).isEqualTo(0f)
+    }
+
     companion object {
         private const val DENSITY = 1f
         private const val MIN_SIZE_PX = 50f

@@ -53,6 +53,7 @@ import com.android.internal.policy.SystemBarUtils;
 import com.android.systemui.animation.ActivityTransitionAnimator;
 import com.android.systemui.animation.DelegateTransitionAnimatorController;
 import com.android.systemui.log.LogBuffer;
+import com.android.systemui.log.MultiDisplayStatusBarLogger;
 import com.android.systemui.log.core.LogLevel;
 import com.android.systemui.res.R;
 import com.android.systemui.statusbar.data.repository.StatusBarConfigurationController;
@@ -81,6 +82,7 @@ public class StatusBarWindowControllerImpl implements StatusBarWindowController 
     private final IWindowManager mIWindowManager;
     private final StatusBarContentInsetsProvider mContentInsetsProvider;
     private final LogBuffer mLogBuffer;
+    private final MultiDisplayStatusBarLogger mMultiDisplayLogger;
     private final int mDisplayId;
     private int mBarHeight = -1;
     private final State mCurrentState = new State();
@@ -112,7 +114,8 @@ public class StatusBarWindowControllerImpl implements StatusBarWindowController 
             @Assisted StatusBarContentInsetsProvider contentInsetsProvider,
             Optional<UnfoldTransitionProgressProvider> unfoldTransitionProgressProvider,
             @StatusBarWindowLog LogBuffer logBuffer,
-            @Assisted int displayId) {
+            @Assisted int displayId,
+            MultiDisplayStatusBarLogger multiDisplayLogger) {
         mContext = context;
         mDisplayId = displayId;
         mWindowManager = windowManager;
@@ -120,6 +123,7 @@ public class StatusBarWindowControllerImpl implements StatusBarWindowController 
         mIWindowManager = iWindowManager;
         mContentInsetsProvider = contentInsetsProvider;
         mLogBuffer = logBuffer;
+        mMultiDisplayLogger = multiDisplayLogger;
         mStatusBarWindowView = statusBarWindowViewInflater.inflate(context);
         mLaunchAnimationContainer = mStatusBarWindowView.findViewById(
                 R.id.status_bar_launch_animation_container);
@@ -168,7 +172,9 @@ public class StatusBarWindowControllerImpl implements StatusBarWindowController 
 
         try {
             mWindowManager.addView(mStatusBarWindowView, mLp);
+            mMultiDisplayLogger.logStatusBarWindowAdded(mDisplayId);
         } catch (WindowManager.InvalidDisplayException e) {
+            mMultiDisplayLogger.logStatusBarWindowAddFailure(mDisplayId);
             // Wrapping this in a try/catch to avoid crashes when a display is instantly removed
             // after being added, and initialization hasn't finished yet.
             Log.e(
@@ -192,7 +198,9 @@ public class StatusBarWindowControllerImpl implements StatusBarWindowController 
     public void stop() {
         try {
             mWindowManager.removeView(mStatusBarWindowView);
+            mMultiDisplayLogger.logStatusBarWindowRemoved(mDisplayId);
         } catch (IllegalArgumentException e) {
+            mMultiDisplayLogger.logStatusBarWindowRemoveFailure(mDisplayId);
             // Wrapping this in a try/catch to avoid crashes when a display is instantly removed
             // after being added, and initialization hasn't finished yet.
             // When that happens, adding the View to WindowManager fails, and therefore removing

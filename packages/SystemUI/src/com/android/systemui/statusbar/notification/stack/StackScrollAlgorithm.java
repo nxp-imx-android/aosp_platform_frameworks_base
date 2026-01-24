@@ -180,8 +180,8 @@ public class StackScrollAlgorithm {
                     // AOD=>lockscreen transition
                     viewState.setAlpha(1f - ambientState.getDozeAmount(), "keyguard notif");
                 }
-            } else if (SceneContainerFlag.isEnabled()
-                    && ambientState.isShowingStackOnLockscreen()) {
+            } else if (SceneContainerFlag.isEnabled() && (ambientState.isShowingStackOnLockscreen()
+                    || ambientState.isLockscreenStackFadingIn())) {
                     // Adjust alpha for wakeup to lockscreen.
                 if (view.isHeadsUpState()) {
                     // Pulsing HUN should be visible on AOD and stay visible during

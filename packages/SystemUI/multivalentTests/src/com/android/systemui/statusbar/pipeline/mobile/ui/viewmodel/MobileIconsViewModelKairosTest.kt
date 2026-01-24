@@ -29,6 +29,7 @@ import com.android.systemui.kairos.KairosTestScope
 import com.android.systemui.kairos.runKairosTest
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
+import com.android.systemui.statusbar.pipeline.airplane.domain.interactor.airplaneModeInteractor
 import com.android.systemui.statusbar.pipeline.mobile.data.model.DataConnectionState
 import com.android.systemui.statusbar.pipeline.mobile.data.model.ResolvedNetworkType.DefaultNetworkType
 import com.android.systemui.statusbar.pipeline.mobile.data.model.ResolvedNetworkType.UnknownNetworkType
@@ -69,11 +70,7 @@ class MobileIconsViewModelKairosTest : SysuiTestCase() {
         subList: List<SubscriptionModel>,
         activeSubId: Int = subList.getOrNull(0)?.subscriptionId ?: INVALID_SUBSCRIPTION_ID,
     ) {
-        println("setSubscriptions: mobileConnectionsRepositoryKairos.fake.subscriptions")
         mobileConnectionsRepositoryKairos.fake.subscriptions.setValue(subList)
-        println(
-            "setSubscriptions: mobileConnectionsRepositoryKairos.fake.setActiveMobileDataSubscriptionId"
-        )
         mobileConnectionsRepositoryKairos.fake.setActiveMobileDataSubscriptionId(activeSubId)
     }
 
@@ -330,6 +327,32 @@ class MobileIconsViewModelKairosTest : SysuiTestCase() {
 
         // THEN the flow updates
         assertThat(latest).isEqualTo(true)
+    }
+
+    @Test
+    fun isStackable_apmEnabled_false() = runTest {
+        val latest by underTest.isStackable.collectLastValue()
+
+        // Two subscriptions, both cellular, with equal number of levels
+        setSubscriptions(listOf(SUB_1, SUB_2))
+
+        // Enable APM
+        airplaneModeInteractor.setIsAirplaneMode(true)
+
+        assertThat(latest).isFalse()
+    }
+
+    @Test
+    fun isStackable_apmDisabled_true() = runTest {
+        val latest by underTest.isStackable.collectLastValue()
+
+        // Two subscriptions, both cellular, with equal number of levels
+        setSubscriptions(listOf(SUB_1, SUB_2))
+
+        // Disable APM
+        airplaneModeInteractor.setIsAirplaneMode(false)
+
+        assertThat(latest).isTrue()
     }
 
     companion object {

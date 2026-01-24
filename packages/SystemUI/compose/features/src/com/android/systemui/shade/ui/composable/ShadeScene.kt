@@ -409,7 +409,7 @@ private fun ContentScope.SingleShade(
                     onEmptySpaceClick =
                         viewModel::onEmptySpaceClicked.takeIf { viewModel.isEmptySpaceClickable },
                     modifier = Modifier.padding(horizontal = shadeHorizontalPadding),
-                    onStackHeightChanged = { onContentHeightChanged.invoke(it) },
+                    onStackHeightChanged = onContentHeightChanged,
                 )
             },
             cutoutInsetsProvider = {

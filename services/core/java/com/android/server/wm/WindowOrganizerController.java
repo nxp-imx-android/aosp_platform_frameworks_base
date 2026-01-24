@@ -869,6 +869,7 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
         final int windowMask = change.getWindowSetMask() & CONTROLLABLE_WINDOW_CONFIGS;
         int effects = TRANSACT_EFFECTS_NONE;
         final int windowingMode = change.getWindowingMode();
+        int pendingBoundsChangeDiff = BOUNDS_CHANGE_NONE;
         if (configMask != 0) {
             // Save a copy before the configuration is updated.
             final Rect prevRequestedBounds = new Rect(container.getRequestedOverrideConfiguration()
@@ -879,14 +880,10 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                 // need it called right now. Additionally, some logic requires everything in the
                 // configuration to change at the same time (ie. surface-freezer requires bounds
                 // and mode to change at the same time).
-                final int boundsChange = container.diffRequestedOverrideBounds(
+                pendingBoundsChangeDiff = container.diffRequestedOverrideBounds(
                         change.getConfiguration().windowConfiguration.getBounds());
                 final Configuration c = container.getRequestedOverrideConfiguration();
                 c.setTo(change.getConfiguration(), configMask, windowMask);
-                // TODO: b/474212387 - Remove this workaround.
-                // Because we directly apply the bounds above, we here manually calls bounds change
-                // callbacks which are usually triggered by onRequestedOverrideConfigurationChanged.
-                container.dispatchBoundsChangeCallbacksIfNeeded(boundsChange);
             } else {
                 final Configuration c =
                         new Configuration(container.getRequestedOverrideConfiguration());
@@ -959,16 +956,14 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                     // changes.
                     effects |= TRANSACT_EFFECTS_LIFECYCLE;
                 }
-                if (Flags.makeFillingBoundsChangeEffectLifecycle()) {
-                    final boolean hasBoundsConfigChange =
-                            (windowMask & WindowConfiguration.WINDOW_CONFIG_BOUNDS) != 0;
-                    final boolean wasFillingParent = prevRequestedBounds.isEmpty();
-                    final boolean isFillingParent = change.getConfiguration()
-                            .windowConfiguration.getBounds().isEmpty();
-                    if (hasBoundsConfigChange && (wasFillingParent || isFillingParent)) {
-                        // Changing bounds to fill or from filling may result in lifecycle changes.
-                        effects |= TRANSACT_EFFECTS_LIFECYCLE;
-                    }
+                final boolean hasBoundsConfigChange =
+                        (windowMask & WindowConfiguration.WINDOW_CONFIG_BOUNDS) != 0;
+                final boolean wasFillingParent = prevRequestedBounds.isEmpty();
+                final boolean isFillingParent = change.getConfiguration()
+                        .windowConfiguration.getBounds().isEmpty();
+                if (hasBoundsConfigChange && (wasFillingParent || isFillingParent)) {
+                    // Changing bounds to fill or from filling may result in lifecycle changes.
+                    effects |= TRANSACT_EFFECTS_LIFECYCLE;
                 }
             }
         }
@@ -1009,6 +1004,12 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                 container.asTask().setRootTaskWindowingMode(windowingMode);
             } else {
                 container.setWindowingMode(windowingMode);
+            }
+            if (pendingBoundsChangeDiff != BOUNDS_CHANGE_NONE) {
+                // TODO: b/474212387 - Remove this workaround.
+                // Because we directly apply the bounds above, we here manually calls bounds change
+                // callbacks which are usually triggered by onRequestedOverrideConfigurationChanged.
+                container.dispatchBoundsChangeCallbacksIfNeeded(pendingBoundsChangeDiff);
             }
             if (prevMode != container.getWindowingMode()) {
                 // The activity in the container may become focusable or non-focusable due to

@@ -66,23 +66,23 @@
     </style>
 
     <style name="DesktopModeHandleMenuActionButtonImage">
-       <item name="android:layout_width">20dp</item>
-       <item name="android:layout_height">20dp</item>
-       <item name="android:layout_marginEnd">16dp</item>
-   </style>
+        <item name="android:layout_width">20dp</item>
+        <item name="android:layout_height">20dp</item>
+        <item name="android:layout_marginEnd">16dp</item>
+    </style>
 
     <style name="DesktopModeHandleMenuActionButtonTextView">
-       <item name="android:layout_width">0dp</item>
-       <item name="android:layout_height">wrap_content</item>
-       <item name="android:layout_weight">1</item>
-       <item name="android:textSize">14sp</item>
-       <item name="android:lineHeight">20sp</item>
-       <item name="android:textFontWeight">500</item>
-       <item name="android:textColor">@color/materialColorOnSurface</item>
-       <item name="android:ellipsize">marquee</item>
-       <item name="android:scrollHorizontally">true</item>
-       <item name="android:singleLine">true</item>
-   </style>
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:lineHeight">20sp</item>
+        <item name="android:textColor">@color/materialColorOnSurface</item>
+        <item name="android:ellipsize">marquee</item>
+        <item name="android:scrollHorizontally">true</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:fontFamily">@*android:string/config_headlineFontFamilyMedium</item>
+    </style>
 
     <style name="DesktopModeHandleMenuWindowingButton">
         <item name="android:layout_width">48dp</item>

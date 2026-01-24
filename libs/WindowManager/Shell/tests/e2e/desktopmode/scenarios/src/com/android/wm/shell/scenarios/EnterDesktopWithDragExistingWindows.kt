@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.scenarios
 
+import android.platform.test.annotations.WithDesktopTest
 import android.tools.Rotation
 import com.android.server.wm.flicker.helpers.DesktopModeAppHelper
 import com.android.server.wm.flicker.helpers.MailAppHelper
@@ -47,6 +48,7 @@ constructor(
         mailAppDesktopHelper.exitDesktopModeToFullScreenViaKeyboard(wmHelper)
     }
 
+    @WithDesktopTest
     @Test
     open fun reenterDesktopWithDrag() {
         // By default this method uses drag to desktop

@@ -396,8 +396,8 @@
     <string name="screen_record_video_deleted">Video deleted</string>
     <!-- Snackbar shows after the screen recording is deleted. Undo action label [CHAR LIMIT=20] -->
     <string name="screen_record_undo">Undo</string>
-    <!-- Button to retake a screen recording [CHAR LIMIT=20] -->
-    <string name="screen_record_take_another">Take another</string>
+    <!-- Button to take a new screen recording without deleting an old one [CHAR LIMIT=8] -->
+    <string name="screen_record_take_another">New</string>
     <!-- Button to edit a screen recording [CHAR LIMIT=20] -->
     <string name="screen_record_edit">Edit</string>
     <!-- Button to delete a screen recording [CHAR LIMIT=20] -->
@@ -454,6 +454,12 @@
     <string name="screen_share_a11y_announcement">Choose what to share. Select tab, app, or entire screen. Then press share.</string>
     <!-- Accessibility announcement for when the screen share UI is dismissed without sharing [CHAR LIMIT=NONE] -->
     <string name="screen_share_cancel_announcement">Screen sharing initiation ended. Screen not shared with anyone.</string>
+    <!-- Accessibility announcement when sharing an app [CHAR LIMIT=NONE] -->
+    <string name="screen_share_a11y_sharing_app">Now sharing app: <xliff:g id="app_name">%1$s</xliff:g>. Use privacy indicator to end sharing.</string>
+    <!-- Accessibility announcement when sharing a tab [CHAR LIMIT=NONE] -->
+    <string name="screen_share_a11y_sharing_tab">Now sharing tab: <xliff:g id="tab_title">%1$s</xliff:g>. Use privacy indicator to end sharing.</string>
+    <!-- Accessibility announcement when sharing a display [CHAR LIMIT=NONE] -->
+    <string name="screen_share_a11y_sharing_display">Now sharing display: <xliff:g id="display_name">%1$s</xliff:g>. Use privacy indicator to end sharing.</string>
     <!-- Content description for the app window screenshot button in the toolbar, when the capture mode is set to "screenshot". [CHAR LIMIT=NONE] -->
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y">Take screenshot of window</string>
     <!-- Content description for the app window screenshot button in the toolbar, when the capture mode is set to "record". [CHAR LIMIT=NONE] -->
@@ -4742,10 +4748,11 @@
     <string name="ambient_cue_expand_action">expand</string>
 
     <!-- Location button text -->
-    <string name="location_button_text_share_precise_location">Share precise location</string>
-    <string name="location_button_text_use_precise_location">Use precise location</string>
-    <string name="location_button_text_near_precise_location">Near precise location</string>
     <string name="location_button_text_precise_location">Precise location</string>
+    <string name="location_button_text_use_precise_location">Use precise location</string>
+    <string name="location_button_text_share_precise_location">Share precise location</string>
+    <string name="location_button_text_near_my_precise_location">Near my precise location</string>
+    <string name="location_button_text_near_your_precise_location">Near your precise location</string>
 
     <!-- Privacy chip "in use" string, where the parameter is the sensor name (e.g. "Camera in use") [CHAR LIMIT=NONE] -->
     <string name="privacy_chip_use_string"><xliff:g example="Camera" id="sensor">%1$s</xliff:g> in use</string>

@@ -19,6 +19,7 @@ package com.android.wm.shell.windowdecor
 import android.app.ActivityManager.RunningTaskInfo
 import android.content.Context
 import android.content.pm.ActivityInfo.CONFIG_ASSETS_PATHS
+import android.content.pm.ActivityInfo.CONFIG_FONT_WEIGHT_ADJUSTMENT
 import android.content.pm.ActivityInfo.CONFIG_UI_MODE
 import android.content.res.Configuration
 import android.content.res.Resources
@@ -467,6 +468,7 @@ abstract class WindowDecoration2<T>(
             val newNightMode = newConfig.uiMode and Configuration.UI_MODE_NIGHT_MASK
             val diff = newConfig.diff(oldConfig)
             val themeChanged = (diff and CONFIG_ASSETS_PATHS) != 0 || (diff and CONFIG_UI_MODE) != 0
+            val fontWeightChanged = (diff and CONFIG_FONT_WEIGHT_ADJUSTMENT) != 0
             windowDecorConfig = newConfig
 
             if (
@@ -477,7 +479,8 @@ abstract class WindowDecoration2<T>(
                     !windowDecorConfigInitialized ||
                     fontScaleChanged ||
                     localeListChanged ||
-                    themeChanged
+                    themeChanged ||
+                    fontWeightChanged
             ) {
                 releaseViews(wct)
                 if (!obtainDisplayOrRegisterListener()) {

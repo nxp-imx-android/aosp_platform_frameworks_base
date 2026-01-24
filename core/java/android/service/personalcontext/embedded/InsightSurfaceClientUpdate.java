@@ -62,6 +62,9 @@ public final class InsightSurfaceClientUpdate implements Parcelable {
     /** Key for a nested axis locked update. */
     public static final String KEY_NESTED_SCROLL_AXIS_LOCKED = "key_nested_scroll_axis_locked";
 
+    /** Key for should blur update. */
+    public static final String KEY_SHOULD_BLUR = "key_should_blur";
+
     /** Key for a {@link Configuration} update. */
     public static final String KEY_CONFIGURATION = "key_configuration";
 
@@ -162,6 +165,14 @@ public final class InsightSurfaceClientUpdate implements Parcelable {
     }
 
     /**
+     * Return the should blur value for this update, or false if the update doesn't
+     * contain such a value.
+     */
+    public boolean shouldBlur() {
+        return hasUpdate(KEY_SHOULD_BLUR) && mUpdateValues.getBoolean(KEY_SHOULD_BLUR);
+    }
+
+    /**
      * Return the {@link Configuration} for this update, or null if the update doesn't contain a
      * configuration.
      */
@@ -234,6 +245,16 @@ public final class InsightSurfaceClientUpdate implements Parcelable {
         @NonNull
         public Builder setNestedScrollAxisLocked(boolean isLocked) {
             mValues.putBoolean(KEY_NESTED_SCROLL_AXIS_LOCKED, isLocked);
+            return this;
+        }
+
+        /**
+         * Set whether the embedded surface should blur to match client blurring.
+         * @param shouldBlur whether the embedded surface should blur
+         */
+        @NonNull
+        public Builder setShouldBlur(boolean shouldBlur) {
+            mValues.putBoolean(KEY_SHOULD_BLUR, shouldBlur);
             return this;
         }
 

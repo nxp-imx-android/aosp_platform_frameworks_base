@@ -98,7 +98,6 @@ import android.os.RemoteException;
 import android.os.UserHandle;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
-import android.service.notification.Flags;
 import android.service.notification.INotificationListener;
 import android.service.notification.NotificationListenerFilter;
 import android.service.notification.NotificationListenerService;
@@ -526,7 +525,6 @@ public class NotificationListenersTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_REPORT_NLS_START_AND_END)
     public void testBindFlagsIncludesSimulateAllowFreeze() {
         assertThat(mListeners.getBindFlags() & BIND_SIMULATE_ALLOW_FREEZE).isEqualTo(
                 BIND_SIMULATE_ALLOW_FREEZE);
@@ -545,7 +543,6 @@ public class NotificationListenersTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_REPORT_NLS_START_AND_END)
     public void testOnServiceAddedCallsBinderTransactionStarting() throws RemoteException {
         final IBinderSession iBinderSession = mock(IBinderSession.class);
         final ManagedServices.ManagedServiceInfo info = getNewManagedServiceInfo(iBinderSession);
@@ -554,7 +551,6 @@ public class NotificationListenersTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_REPORT_NLS_START_AND_END)
     public void testNotifyPostedCallsBinderTransactionStarting() throws RemoteException {
         final IBinderSession iBinderSession = mock(IBinderSession.class);
         final ManagedServices.ManagedServiceInfo info = getNewManagedServiceInfo(iBinderSession);
@@ -565,7 +561,6 @@ public class NotificationListenersTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_REPORT_NLS_START_AND_END)
     public void testOnStatusBarIconsBehaviorChangedCallsBinderTransactionStarting()
             throws RemoteException {
         final IBinderSession iBinderSession1 = mock(IBinderSession.class);
@@ -591,7 +586,6 @@ public class NotificationListenersTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_REPORT_NLS_START_AND_END)
     public void testNotifyRemovedCallsBinderTransactionStarting() throws RemoteException {
         final IBinderSession iBinderSession = mock(IBinderSession.class);
         final ManagedServices.ManagedServiceInfo info = getNewManagedServiceInfo(iBinderSession);
@@ -604,7 +598,6 @@ public class NotificationListenersTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_REPORT_NLS_START_AND_END)
     public void testNotifyRankingUpdateCallsBinderTransactionStarting() throws RemoteException {
         final IBinderSession iBinderSession = mock(IBinderSession.class);
         final ManagedServices.ManagedServiceInfo info = getNewManagedServiceInfo(iBinderSession);
@@ -614,7 +607,6 @@ public class NotificationListenersTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_REPORT_NLS_START_AND_END)
     public void testNotifyListenerHintsChangedCallsBinderTransactionStarting()
             throws RemoteException {
         final IBinderSession iBinderSession = mock(IBinderSession.class);
@@ -625,7 +617,6 @@ public class NotificationListenersTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_REPORT_NLS_START_AND_END)
     public void testNotifyInterruptionFilterChangedCallsBinderTransactionStarting()
             throws RemoteException {
         final IBinderSession iBinderSession = mock(IBinderSession.class);
@@ -636,7 +627,6 @@ public class NotificationListenersTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_REPORT_NLS_START_AND_END)
     public void testNotifyNotificationChannelChangedCallsBinderTransactionStarting()
             throws RemoteException {
         final IBinderSession iBinderSession = mock(IBinderSession.class);
@@ -653,7 +643,6 @@ public class NotificationListenersTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_REPORT_NLS_START_AND_END)
     public void testNotifyNotificationChannelGroupChangedCallsBinderTransactionStarting()
             throws RemoteException {
         final IBinderSession iBinderSession = mock(IBinderSession.class);

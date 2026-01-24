@@ -135,7 +135,6 @@ import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.InputMe
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.MinimizeReason
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.ResizeTrigger
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.UnminimizeReason
-import com.android.wm.shell.desktopmode.DesktopTasksController.DesktopModeEntryExitTransitionListener
 import com.android.wm.shell.desktopmode.DesktopTasksController.SnapPosition
 import com.android.wm.shell.desktopmode.DesktopTasksController.TaskbarDesktopTaskListener
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFreeformTask
@@ -305,7 +304,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @Mock private lateinit var bubbleController: BubbleController
     @Mock private lateinit var resources: Resources
     @Mock
-    lateinit var desktopModeEnterExitTransitionListener: DesktopModeEntryExitTransitionListener
+    lateinit var desktopModeEnterExitTransitionListener: DesktopModeEnterExitTransitionListener
     @Mock private lateinit var userManager: UserManager
     @Mock
     private lateinit var desktopWallpaperActivityTokenProvider:
@@ -511,7 +510,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         controller = createController()
         controller.setSplitScreenController(splitScreenController)
         controller.freeformTaskTransitionStarter = freeformTaskTransitionStarter
-        controller.desktopModeEnterExitTransitionListener = desktopModeEnterExitTransitionListener
 
         displayDisconnectTransitionHandler =
             DisplayDisconnectTransitionHandler(
@@ -603,6 +601,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             desksController,
             desktopTasksTransitionObserver,
             snapController,
+            desktopModeEnterExitTransitionListener,
         )
 
     @After
@@ -6419,6 +6418,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
         val packageInfo = org.mockito.kotlin.mock<PackageInfo>()
         packageInfo.requestedPermissions = arrayOf(SYSTEM_ALERT_WINDOW)
+        packageInfo.requestedPermissionsFlags = intArrayOf(PackageInfo.REQUESTED_PERMISSION_GRANTED)
         whenever(
                 packageManager.getPackageInfoAsUser(
                     anyString(),

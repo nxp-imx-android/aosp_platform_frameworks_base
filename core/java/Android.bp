@@ -899,6 +899,7 @@ filegroup {
         "android/os/binder/IBinderStatsConsumerService.aidl",
         "android/os/binder/BinderCallsStats.aidl",
         "android/os/binder/BinderSpamStats.aidl",
+        "android/os/binder/SingleSecondBinderStats.aidl",
     ],
     visibility: ["//frameworks/native/libs/binder"],
 }
@@ -989,6 +990,14 @@ java_system_features_srcs {
     name: "systemfeatures-gen-srcs",
     full_class_name: "com.android.internal.pm.RoSystemFeatures",
     visibility: ["//visibility:private"],
+}
+
+filegroup {
+    name: "systemfeatures-gen-proguard",
+    srcs: [":systemfeatures-gen-srcs{.proguardFlagsFiles}"],
+    // TODO(b/203143243): Adjust visibility and apply these rules by default for
+    // `platform_apis: true` targets.
+    visibility: ["//frameworks/base/services"],
 }
 
 aidl_interface {

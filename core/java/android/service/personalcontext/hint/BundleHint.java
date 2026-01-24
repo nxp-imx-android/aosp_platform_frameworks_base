@@ -16,9 +16,13 @@
 
 package android.service.personalcontext.hint;
 
+import static java.util.Objects.requireNonNull;
+
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.os.Bundle;
+import android.os.Parcel;
 import android.service.personalcontext.Flags;
 import android.service.personalcontext.Token;
 
@@ -28,10 +32,15 @@ import android.service.personalcontext.Token;
  */
 @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
 public final class BundleHint extends ContextHint {
+    private static final String KEY_DATA = "data";
+    private static final String KEY_TYPE = "type";
+
     /**
      * {@link Bundle} of arbitrary data provided to the personal context engine.
      */
     private final Bundle mDataBundle;
+
+    private final String mHintTypeName;
 
     /**
      * DO NOT USE - This constructor will be removed before API finalization.
@@ -40,15 +49,29 @@ public final class BundleHint extends ContextHint {
      */
     @Deprecated
     public BundleHint() {
-        this(new ConstructorParams.Builder().build(), new Bundle());
+        this(
+                new ConstructorParams.Builder().build(),
+                new Bundle(),
+                BundleHint.class.getCanonicalName());
     }
 
     /**
      * Internal constructor only for use by {@link ContextHint#createHintFromBundle(Bundle)}.
      */
     BundleHint(@NonNull ConstructorParams baseParams, @NonNull Bundle bundle) {
+        this(
+                baseParams,
+                requireNonNull(bundle.getBundle(KEY_DATA)),
+                requireNonNull(bundle.getString(KEY_TYPE)));
+    }
+
+    private BundleHint(
+            @NonNull ConstructorParams baseParams,
+            @NonNull Bundle data,
+            @NonNull String typeName) {
         super(baseParams);
-        mDataBundle = bundle;
+        mDataBundle = data;
+        mHintTypeName = typeName;
     }
 
     /** @hide */
@@ -56,6 +79,13 @@ public final class BundleHint extends ContextHint {
     @HintType
     public int getHintType() {
         return HINT_TYPE_BUNDLE;
+    }
+
+    /** Provides the hintTypeName used when creating the BundleHint. */
+    @Override
+    @NonNull
+    public String getHintTypeName() {
+        return mHintTypeName;
     }
 
     /**
@@ -69,7 +99,21 @@ public final class BundleHint extends ContextHint {
     @NonNull
     @Override
     Bundle toBundleImpl() {
-        return mDataBundle;
+        Bundle result = new Bundle();
+        result.putString(KEY_TYPE, getHintTypeName());
+        result.putBundle(KEY_DATA, mDataBundle);
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return super.toString() + ";" + getHintTypeName();
+    }
+
+    /** @hide */
+    @Override
+    public void writeToSignatureParcel(@NonNull Parcel dest) {
+        dest.writeString(mHintTypeName);
     }
 
     /**
@@ -79,6 +123,26 @@ public final class BundleHint extends ContextHint {
     public static final class Builder {
         private final ConstructorParams.Builder mBaseBuilder = new ConstructorParams.Builder();
         private final Bundle mBundle = new Bundle();
+        private String mHintTypeName = BundleHint.class.getCanonicalName();
+
+        /**
+         * Creates a new builder for {@link BundleHint}.
+         *
+         * The {@code hintTypeName} provided should be namespaced, and should be unique enough that
+         * code can interpret the contents of the Bundle inside this hint without ambiguity.
+         * e.g. "com.mycompany.personalcontext.hint.MyData". A {@link HintFilter} can filter hints
+         * based on this type name with {@link HintFilter.Builder#addHintType(String, boolean)}. If
+         * no type name is set, {@code "android.service.personalcontext.hint.BundleHint"} will be
+         * used as the type name for this insight. A {@link HintFilter} can filter for
+         * {@link BundleHint}s without an explicit type name with
+         * {@code HintFilter.addHintType(BundleHint.class}.
+         */
+        @NonNull
+        public Builder setHintTypeName(@Nullable String hintTypeName) {
+            mHintTypeName =
+                    hintTypeName == null ? BundleHint.class.getCanonicalName() : hintTypeName;
+            return this;
+        }
 
         /**
          * Adds a token to the resulting {@link BundleHint}.
@@ -107,7 +171,7 @@ public final class BundleHint extends ContextHint {
          */
         @NonNull
         public BundleHint build() {
-            return new BundleHint(mBaseBuilder.build(), mBundle);
+            return new BundleHint(mBaseBuilder.build(), mBundle, mHintTypeName);
         }
     }
 }

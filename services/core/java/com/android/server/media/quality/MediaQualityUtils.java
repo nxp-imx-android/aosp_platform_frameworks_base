@@ -27,6 +27,7 @@ import android.hardware.tv.mediaquality.DolbyAudioProcessing;
 import android.hardware.tv.mediaquality.DownmixMode;
 import android.hardware.tv.mediaquality.DtsVirtualX;
 import android.hardware.tv.mediaquality.Gamma;
+import android.hardware.tv.mediaquality.PanelTechnologyType;
 import android.hardware.tv.mediaquality.ParameterDefaultValue;
 import android.hardware.tv.mediaquality.ParameterName;
 import android.hardware.tv.mediaquality.ParameterRange;
@@ -179,7 +180,11 @@ public final class MediaQualityUtils {
             SoundQuality.PARAMETER_DTS_VIRTUAL_X,
             SoundQuality.PARAMETER_DIGITAL_OUTPUT_DELAY_MILLIS,
             SoundQuality.PARAMETER_DIGITAL_OUTPUT_MODE,
-            SoundQuality.PARAMETER_SOUND_STYLE
+            SoundQuality.PARAMETER_SOUND_STYLE,
+            SoundQuality.PARAMETER_AD_SPEAKER_ENABLE,
+            SoundQuality.PARAMETER_AD_HEADPHONE_ENABLE,
+            SoundQuality.PARAMETER_AD_VOLUME,
+            SoundQuality.PARAMETER_PAN_FADE_ENABLE
     ));
 
     private static final Set<String> VALID_STREAM_STATUS = new HashSet<>(Arrays.asList(
@@ -1522,6 +1527,21 @@ public final class MediaQualityUtils {
                                 false);
                     }
                     break;
+                case SoundParameter.adSpeakerEnable:
+                    bundle.putBoolean(SoundQuality.PARAMETER_AD_SPEAKER_ENABLE,
+                            sp.getAdSpeakerEnable());
+                    break;
+                case SoundParameter.adHeadphoneEnable:
+                    bundle.putBoolean(SoundQuality.PARAMETER_AD_HEADPHONE_ENABLE,
+                            sp.getAdHeadphoneEnable());
+                    break;
+                case SoundParameter.adVolume:
+                    bundle.putInt(SoundQuality.PARAMETER_AD_VOLUME, sp.getAdVolume());
+                    break;
+                case SoundParameter.panFadeEnable:
+                    bundle.putBoolean(SoundQuality.PARAMETER_PAN_FADE_ENABLE,
+                            sp.getPanFadeEnable());
+                    break;
                 default:
                     Log.e(TAG, "Invalid sound parameter tag: " + tag);
                     break;
@@ -1781,6 +1801,26 @@ public final class MediaQualityUtils {
             }
             soundParams.add(SoundParameter.dtsVirtualX(dts));
         }
+        if (params.containsKey(SoundQuality.PARAMETER_AD_SPEAKER_ENABLE)) {
+            soundParams.add(SoundParameter.adSpeakerEnable(params.getBoolean(
+                    SoundQuality.PARAMETER_AD_SPEAKER_ENABLE)));
+            params.remove(SoundQuality.PARAMETER_AD_SPEAKER_ENABLE);
+        }
+        if (params.containsKey(SoundQuality.PARAMETER_AD_HEADPHONE_ENABLE)) {
+            soundParams.add(SoundParameter.adHeadphoneEnable(params.getBoolean(
+                    SoundQuality.PARAMETER_AD_HEADPHONE_ENABLE)));
+            params.remove(SoundQuality.PARAMETER_AD_HEADPHONE_ENABLE);
+        }
+        if (params.containsKey(SoundQuality.PARAMETER_AD_VOLUME)) {
+            soundParams.add(SoundParameter.adVolume(params.getInt(
+                    SoundQuality.PARAMETER_AD_VOLUME)));
+            params.remove(SoundQuality.PARAMETER_AD_VOLUME);
+        }
+        if (params.containsKey(SoundQuality.PARAMETER_PAN_FADE_ENABLE)) {
+            soundParams.add(SoundParameter.panFadeEnable(params.getBoolean(
+                    SoundQuality.PARAMETER_PAN_FADE_ENABLE)));
+            params.remove(SoundQuality.PARAMETER_PAN_FADE_ENABLE);
+        }
         return soundParams.toArray(new SoundParameter[0]);
     }
 
@@ -1859,6 +1899,24 @@ public final class MediaQualityUtils {
             }
         }
         return bundle;
+    }
+
+    /**
+     * Converts the framework panel technology int to the HAL PanelTechnology enum.
+     *
+     * @param frameworkPanelTechnology The framework panel technology, as defined in
+     *         {@link MediaQualityContract.PanelTechnology}.
+     * @return The corresponding HAL {@link PanelTechnologyType} enum.
+     * @throws IllegalArgumentException if the frameworkPanelTechnology is not a valid, known value.
+     */
+    public static int mapPanelTechnologyToHal(
+            @MediaQualityContract.PanelTechnology int frameworkPanelTechnology) {
+        return switch (frameworkPanelTechnology) {
+            case MediaQualityContract.PANEL_TECHNOLOGY_OLED -> PanelTechnologyType.OLED;
+            default ->
+                    throw new IllegalArgumentException(
+                            "Unknown panel technology: " + frameworkPanelTechnology);
+        };
     }
 
     /**
@@ -2267,6 +2325,18 @@ public final class MediaQualityUtils {
         if (nameMap.contains(SoundQuality.PARAMETER_SOUND_STYLE)) {
             bytes.add(ParameterName.SOUND_STYLE);
         }
+        if (nameMap.contains(SoundQuality.PARAMETER_AD_HEADPHONE_ENABLE)) {
+            bytes.add(ParameterName.AD_HEADPHONE_ENABLE);
+        }
+        if (nameMap.contains(SoundQuality.PARAMETER_AD_SPEAKER_ENABLE)) {
+            bytes.add(ParameterName.AD_SPEAKER_ENABLE);
+        }
+        if (nameMap.contains(SoundQuality.PARAMETER_AD_VOLUME)) {
+            bytes.add(ParameterName.AD_VOLUME);
+        }
+        if (nameMap.contains(SoundQuality.PARAMETER_PAN_FADE_ENABLE)) {
+            bytes.add(ParameterName.PAN_FADE_ENABLE);
+        }
 
         byte[] byteArray = new byte[bytes.size()];
         for (int i = 0; i < bytes.size(); i++) {
@@ -2460,6 +2530,12 @@ public final class MediaQualityUtils {
         parameterNameMap.put(ParameterName.DIGITAL_OUTPUT_DELAY_MS,
                 SoundQuality.PARAMETER_DIGITAL_OUTPUT_DELAY_MILLIS);
         parameterNameMap.put(ParameterName.SOUND_STYLE, SoundQuality.PARAMETER_SOUND_STYLE);
+        parameterNameMap.put(ParameterName.AD_HEADPHONE_ENABLE,
+                SoundQuality.PARAMETER_AD_HEADPHONE_ENABLE);
+        parameterNameMap.put(ParameterName.AD_SPEAKER_ENABLE,
+                SoundQuality.PARAMETER_AD_SPEAKER_ENABLE);
+        parameterNameMap.put(ParameterName.AD_VOLUME, SoundQuality.PARAMETER_AD_VOLUME);
+        parameterNameMap.put(ParameterName.PAN_FADE_ENABLE, SoundQuality.PARAMETER_PAN_FADE_ENABLE);
 
         return parameterNameMap.get(pn);
     }

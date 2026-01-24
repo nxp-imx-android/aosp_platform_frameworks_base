@@ -302,8 +302,7 @@ public class PreAuthInfoTest {
     }
 
     @Test
-    @RequiresFlagsEnabled({Flags.FLAG_IDENTITY_CHECK_TEST_API,
-            Flags.FLAG_IDENTITY_CHECK_ALL_SURFACES})
+    @RequiresFlagsEnabled(Flags.FLAG_IDENTITY_CHECK_TEST_API)
     public void testIdentityCheckStatus_whenAllRequirementsSatisfiedAndSensorAvailable_biometricStrongAndDeviceCredential()
             throws Exception {
         when(mSettingObserver.isIdentityCheckActive(any(), anyInt())).thenReturn(true);
@@ -323,8 +322,7 @@ public class PreAuthInfoTest {
     }
 
     @Test
-    @RequiresFlagsEnabled({Flags.FLAG_IDENTITY_CHECK_TEST_API,
-            Flags.FLAG_IDENTITY_CHECK_ALL_SURFACES})
+    @RequiresFlagsEnabled(Flags.FLAG_IDENTITY_CHECK_TEST_API)
     public void testIdentityCheckStatus_whenAllRequirementsSatisfiedAndSensorAvailable_biometricStrong()
             throws Exception {
         when(mSettingObserver.isIdentityCheckActive(any(), anyInt())).thenReturn(true);
@@ -345,8 +343,7 @@ public class PreAuthInfoTest {
     }
 
     @Test
-    @RequiresFlagsEnabled({Flags.FLAG_IDENTITY_CHECK_TEST_API,
-            Flags.FLAG_IDENTITY_CHECK_ALL_SURFACES})
+    @RequiresFlagsEnabled(Flags.FLAG_IDENTITY_CHECK_TEST_API)
     public void testIdentityCheckStatus_whenRequirementsNotSatisfied_biometricStrongAndDeviceCredential()
             throws Exception {
         when(mSettingObserver.isIdentityCheckActive(any(), anyInt())).thenReturn(false);
@@ -366,8 +363,7 @@ public class PreAuthInfoTest {
     }
 
     @Test
-    @RequiresFlagsEnabled({Flags.FLAG_IDENTITY_CHECK_TEST_API,
-            Flags.FLAG_IDENTITY_CHECK_ALL_SURFACES})
+    @RequiresFlagsEnabled(Flags.FLAG_IDENTITY_CHECK_TEST_API)
     public void testIdentityCheckStatus_whenRequirementsNotSatisfiedAndSensorAvailable_biometricStrongAndDeviceCredential()
             throws Exception {
         when(mSettingObserver.isIdentityCheckActive(any(), anyInt())).thenReturn(false);

@@ -52,7 +52,8 @@ public:
     bool swapBuffers(const renderthread::Frame& frame, IRenderPipeline::DrawResult& drawResult,
                      const SkRect& screenDirty, FrameInfo* currentFrameInfo,
                      bool* requireSwap) override {
-        return false;
+        *requireSwap = drawResult.success;
+        return *requireSwap;
     }
     DeferredLayerUpdater* createTextureLayer() override { return nullptr; }
     bool setSurface(ANativeWindow* surface, renderthread::SwapBehavior swapBehavior) override;

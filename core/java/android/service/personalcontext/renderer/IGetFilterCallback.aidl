@@ -16,7 +16,7 @@
 
 package android.service.personalcontext.renderer;
 
-import android.service.personalcontext.renderer.RendererFilter;
+import android.service.personalcontext.insight.InsightFilter;
 
 /**
  * Callback for IRenderer#getFilter.
@@ -24,5 +24,5 @@ import android.service.personalcontext.renderer.RendererFilter;
  * @hide
  */
 interface IGetFilterCallback {
-    oneway void updateFilter(in RendererFilter filter);
+    oneway void updateFilter(in InsightFilter filter);
 }

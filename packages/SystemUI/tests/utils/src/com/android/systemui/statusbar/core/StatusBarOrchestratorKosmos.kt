@@ -38,6 +38,7 @@ import com.android.systemui.statusbar.data.repository.statusBarModeRepository
 import com.android.systemui.statusbar.domain.interactor.StatusBarIconRefreshInteractor
 import com.android.systemui.statusbar.domain.interactor.StatusBarIconRefreshInteractorImpl
 import com.android.systemui.statusbar.mockNotificationRemoteInputManager
+import com.android.systemui.statusbar.multiDisplayStatusBarLogger
 import com.android.systemui.statusbar.phone.fakeAutoHideControllerStore
 import com.android.systemui.statusbar.phone.mockAutoHideController
 import com.android.systemui.statusbar.phone.ui.statusBarIconController
@@ -117,5 +118,6 @@ val Kosmos.multiDisplayStatusBarStarter by
             statusBarInitializerStore,
             privacyDotWindowControllerStore,
             lightBarControllerStore,
+            multiDisplayStatusBarLogger,
         )
     }

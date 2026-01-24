@@ -17,9 +17,11 @@
 package android.service.personalcontext.hint;
 
 import android.annotation.FlaggedApi;
+import android.annotation.Nullable;
 import android.content.ComponentName;
 import android.os.Bundle;
 import android.os.Parcel;
+import android.service.autofill.FillEventHistory;
 import android.service.autofill.augmented.FillRequest;
 import android.service.personalcontext.Flags;
 import android.service.personalcontext.Token;
@@ -45,6 +47,7 @@ public class AutofillInlineRequestHint extends ContextHint {
     private static final String KEY_FOCUSED_ID = "focused_id";
     private static final String KEY_AUTOFILL_VALUE = "autofill_value";
     private static final String KEY_INLINE_SUGGESTIONS_REQUEST = "inline_suggestions_request";
+    private static final String KEY_FILL_EVENT_HISTORY = "fill_event_history";
 
     private final int mSessionId;
     private final int mTaskId;
@@ -53,6 +56,7 @@ public class AutofillInlineRequestHint extends ContextHint {
     private final AutofillId mFocusedId;
     private final AutofillValue mAutofillValue;
     private final InlineSuggestionsRequest mInlineSuggestionsRequest;
+    @Nullable private final FillEventHistory mFillEventHistory;
 
     /** Internal constructor only for use by {@link Builder}. */
     private AutofillInlineRequestHint(
@@ -63,7 +67,8 @@ public class AutofillInlineRequestHint extends ContextHint {
             @NonNull ComponentName activityComponent,
             @NonNull AutofillId focusedId,
             @NonNull AutofillValue autofillValue,
-            @NonNull InlineSuggestionsRequest inlineSuggestionsRequest) {
+            @NonNull InlineSuggestionsRequest inlineSuggestionsRequest,
+            @Nullable FillEventHistory fillEventHistory) {
         super(baseParams);
         mSessionId = sessionId;
         mTaskId = taskId;
@@ -72,6 +77,7 @@ public class AutofillInlineRequestHint extends ContextHint {
         mFocusedId = Objects.requireNonNull(focusedId);
         mAutofillValue = Objects.requireNonNull(autofillValue);
         mInlineSuggestionsRequest = Objects.requireNonNull(inlineSuggestionsRequest);
+        mFillEventHistory = fillEventHistory;
     }
 
     /**
@@ -89,8 +95,7 @@ public class AutofillInlineRequestHint extends ContextHint {
         mActivityComponent =
                 Objects.requireNonNull(
                         bundle.getParcelable(KEY_ACTIVITY_COMPONENT, ComponentName.class));
-        mFocusedId =
-                Objects.requireNonNull(bundle.getParcelable(KEY_FOCUSED_ID, AutofillId.class));
+        mFocusedId = Objects.requireNonNull(bundle.getParcelable(KEY_FOCUSED_ID, AutofillId.class));
         mAutofillValue =
                 Objects.requireNonNull(
                         bundle.getParcelable(KEY_AUTOFILL_VALUE, AutofillValue.class));
@@ -98,6 +103,7 @@ public class AutofillInlineRequestHint extends ContextHint {
                 Objects.requireNonNull(
                         bundle.getParcelable(
                                 KEY_INLINE_SUGGESTIONS_REQUEST, InlineSuggestionsRequest.class));
+        mFillEventHistory = bundle.getParcelable(KEY_FILL_EVENT_HISTORY, FillEventHistory.class);
     }
 
     /** @hide */
@@ -155,6 +161,15 @@ public class AutofillInlineRequestHint extends ContextHint {
         return mInlineSuggestionsRequest;
     }
 
+    /**
+     * Returns the {@link FillEventHistory} for the most recent fill request that personal context
+     * was used to fulfill, if any.
+     */
+    @Nullable
+    public FillEventHistory getFillEventHistory() {
+        return mFillEventHistory;
+    }
+
     /** @hide */
     @Override
     public void writeToSignatureParcel(@NonNull Parcel dest) {
@@ -175,6 +190,7 @@ public class AutofillInlineRequestHint extends ContextHint {
     public boolean equals(Object o) {
         if (!(o instanceof AutofillInlineRequestHint that)) return false;
         if (!super.equals(o)) return false;
+        // mFillEventHistory is omitted as FillEventHistory does not implement equals.
         return mSessionId == that.mSessionId
                 && mTaskId == that.mTaskId
                 && Objects.equals(mRequestTimestamp, that.mRequestTimestamp)
@@ -186,6 +202,7 @@ public class AutofillInlineRequestHint extends ContextHint {
 
     @Override
     public int hashCode() {
+        // mFillEventHistory is omitted as FillEventHistory does not implement hashCode.
         return Objects.hash(
                 super.hashCode(),
                 mSessionId,
@@ -214,6 +231,8 @@ public class AutofillInlineRequestHint extends ContextHint {
                 + mAutofillValue
                 + ", mInlineSuggestionsRequest="
                 + mInlineSuggestionsRequest
+                + ", mFillEventHistory="
+                + mFillEventHistory
                 + '}';
     }
 
@@ -228,6 +247,7 @@ public class AutofillInlineRequestHint extends ContextHint {
         bundle.putParcelable(KEY_FOCUSED_ID, mFocusedId);
         bundle.putParcelable(KEY_AUTOFILL_VALUE, mAutofillValue);
         bundle.putParcelable(KEY_INLINE_SUGGESTIONS_REQUEST, mInlineSuggestionsRequest);
+        bundle.putParcelable(KEY_FILL_EVENT_HISTORY, mFillEventHistory);
         return bundle;
     }
 
@@ -241,6 +261,7 @@ public class AutofillInlineRequestHint extends ContextHint {
         private AutofillId mFocusedId;
         private AutofillValue mAutofillValue;
         private InlineSuggestionsRequest mInlineSuggestionsRequest;
+        private FillEventHistory mFillEventHistory;
 
         /** Creates an instance of {@link AutofillInlineRequestHint.Builder}. */
         public Builder() {}
@@ -327,6 +348,18 @@ public class AutofillInlineRequestHint extends ContextHint {
         }
 
         /**
+         * Sets the {@link FillEventHistory} for the most recent fill request that personal context
+         * was used to fulfill.
+         *
+         * @param fillEventHistory fill event history for the previous request
+         */
+        @NonNull
+        public Builder setFillEventHistory(@Nullable FillEventHistory fillEventHistory) {
+            mFillEventHistory = fillEventHistory;
+            return this;
+        }
+
+        /**
          * Adds a token to the resulting {@link AutofillInlineRequestHint}.
          *
          * @param token the token to add
@@ -348,7 +381,8 @@ public class AutofillInlineRequestHint extends ContextHint {
                     Objects.requireNonNull(mActivityComponent),
                     Objects.requireNonNull(mFocusedId),
                     Objects.requireNonNull(mAutofillValue),
-                    Objects.requireNonNull(mInlineSuggestionsRequest));
+                    Objects.requireNonNull(mInlineSuggestionsRequest),
+                    mFillEventHistory);
         }
     }
 }

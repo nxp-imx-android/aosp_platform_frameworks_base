@@ -232,9 +232,13 @@ public final class DisplayManagerGlobal {
 
     private PropertyInvalidatedCache<Integer, DisplayInfo> mDisplayCache =
             new PropertyInvalidatedCache<>(
-                new PropertyInvalidatedCache.Args(MODULE_SYSTEM)
-                .maxEntries(8).api(CACHE_KEY_DISPLAY_INFO_API).isolateUids(false),
-                CACHE_KEY_DISPLAY_INFO_API, null) {
+                    new PropertyInvalidatedCache
+                            .Args(MODULE_SYSTEM)
+                            .maxEntries(8)
+                            .api(CACHE_KEY_DISPLAY_INFO_API)
+                            .isolateUids(false)
+                            .cacheNulls(Flags.enableNullDisplayInfoCache()),
+                    CACHE_KEY_DISPLAY_INFO_API, null) {
 
                 @Override
                 public DisplayInfo recompute(Integer id) {

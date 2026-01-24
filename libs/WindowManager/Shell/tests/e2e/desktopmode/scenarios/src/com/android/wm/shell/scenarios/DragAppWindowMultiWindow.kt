@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.scenarios
 
+import android.platform.test.annotations.WithDesktopTest
 import android.tools.PlatformConsts.DEFAULT_DISPLAY
 import com.android.server.wm.flicker.helpers.DesktopModeAppHelper
 import com.android.server.wm.flicker.helpers.MailAppHelper
@@ -47,6 +48,7 @@ abstract class DragAppWindowMultiWindow : DragAppWindowScenarioTestBase() {
     }
 
     @Test
+    @WithDesktopTest
     override fun dragAppWindow() {
         val (startX, startY) = getWindowDragStartCoordinate(mailAppHelper)
 

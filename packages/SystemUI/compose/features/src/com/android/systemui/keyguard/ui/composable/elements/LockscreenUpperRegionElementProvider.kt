@@ -271,8 +271,8 @@ constructor(
                 logDecision("WideLayout: TwoColumn") {
                     when {
                         clockSize == ClockSize.SMALL -> Decision(true, "clockSize == SMALL")
-                        !viewModel.isDozing && viewModel.isNotificationStackActive ->
-                            Decision(true, "!isDozing && isNotificationStackActive")
+                        !viewModel.isDozing && (viewModel.isNotificationStackActive || viewModel.isMediaVisible) ->
+                            Decision(true, "!isDozing && (isNotificationStackActive || isMediaVisible)")
                         viewModel.isDozing && viewModel.isHeadsUpNotificationActive ->
                             Decision(true, "isDozing && isHeadsUpNotificationActive")
                         viewModel.isDozing && viewModel.isPromotedNotificationActive ->

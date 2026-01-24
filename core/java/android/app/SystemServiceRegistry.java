@@ -45,6 +45,8 @@ import android.app.appsearch.AppSearchManagerFrameworkInitializer;
 import android.app.blob.BlobStoreManagerFrameworkInitializer;
 import android.app.contentrestriction.ContentRestrictionManager;
 import android.app.contentrestriction.IContentRestrictionManager;
+import android.app.contentsafety.ContentSafetyManager;
+import android.app.contentsafety.IContentSafetyManager;
 import android.app.contentsuggestions.ContentSuggestionsManager;
 import android.app.contentsuggestions.IContentSuggestionsManager;
 import android.app.contextualsearch.ContextualSearchManager;
@@ -445,6 +447,22 @@ public final class SystemServiceRegistry {
             public AudioDeviceVolumeManager createService(ContextImpl ctx) {
                 return new AudioDeviceVolumeManager(ctx);
             }});
+
+        if (android.app.contentsafety.flags.Flags.enableContentsafety()) {
+            registerService(Context.CONTENT_SAFETY_SERVICE, ContentSafetyManager.class,
+                    new CachedServiceFetcher<ContentSafetyManager>() {
+                        @Override
+                        public ContentSafetyManager createService(ContextImpl ctx)
+                                throws ServiceNotFoundException {
+
+                            IBinder b = ServiceManager.getServiceOrThrow(
+                                    Context.CONTENT_SAFETY_SERVICE);
+                            IContentSafetyManager service = IContentSafetyManager.Stub.asInterface(
+                                    b);
+                            return new ContentSafetyManager(ctx, service);
+                        }
+                    });
+        }
 
         registerService(Context.MEDIA_ROUTER_SERVICE, MediaRouter.class,
                 new CachedServiceFetcher<MediaRouter>() {

@@ -98,14 +98,22 @@ public final class MediaCodecInfo {
     private int mFlags;
     private String mName;
     private String mCanonicalName;
+    private int mSecurityModel;
     private Map<String, CodecCapabilities> mCaps;
 
     /* package private */ MediaCodecInfo(
             String name, String canonicalName, int flags, CodecCapabilities[] caps) {
+        this(name, canonicalName, flags, caps, SECURITY_MODEL_SANDBOXED);
+    }
+
+    /* package private */ MediaCodecInfo(
+            String name, String canonicalName, int flags, CodecCapabilities[] caps,
+            int securityModel) {
         mName = name;
         mCanonicalName = canonicalName;
         mFlags = flags;
         mCaps = new HashMap<String, CodecCapabilities>();
+        mSecurityModel = securityModel;
 
         for (CodecCapabilities c: caps) {
             mCaps.put(c.getMimeType(), c);
@@ -2474,8 +2482,7 @@ public final class MediaCodecInfo {
     @FlaggedApi(FLAG_IN_PROCESS_SW_AUDIO_CODEC)
     @SecurityModel
     public int getSecurityModel() {
-        // TODO b/297922713 --- detect security model of out-of-sandbox codecs
-        return SECURITY_MODEL_SANDBOXED;
+        return mSecurityModel;
     }
 
     /**
@@ -6386,9 +6393,15 @@ public final class MediaCodecInfo {
             return this;
         }
 
-        return new MediaCodecInfo(
-                mName, mCanonicalName, mFlags,
-                caps.toArray(new CodecCapabilities[caps.size()]));
+        if (GetFlag(() -> android.media.codec.Flags.inProcessSwCodecLfi())) {
+            return new MediaCodecInfo(
+                    mName, mCanonicalName, mFlags,
+                    caps.toArray(new CodecCapabilities[caps.size()]), mSecurityModel);
+        } else {
+            return new MediaCodecInfo(
+                    mName, mCanonicalName, mFlags,
+                    caps.toArray(new CodecCapabilities[caps.size()]));
+        }
     }
 
     /* package private */ class GenericHelper {

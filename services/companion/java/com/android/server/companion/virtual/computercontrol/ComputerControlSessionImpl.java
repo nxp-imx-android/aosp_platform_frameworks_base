@@ -53,7 +53,6 @@ import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.ResolveInfoFlags;
 import android.content.pm.ResolveInfo;
-import android.graphics.PixelFormat;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.DisplayManagerGlobal;
 import android.hardware.display.VirtualDisplay;
@@ -64,7 +63,6 @@ import android.hardware.input.VirtualKeyEvent;
 import android.hardware.input.VirtualTouchEvent;
 import android.hardware.input.VirtualTouchscreen;
 import android.hardware.input.VirtualTouchscreenConfig;
-import android.media.ImageReader;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -202,7 +200,6 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     private final ViewConfiguration mViewConfiguration;
     private final long mGlobalSessionTimeoutDurationMs;
     private final Supplier<SurfaceControl.Transaction> mTransactionSupplier;
-    private final ImageReader mBlockedStateImageReader;
     private final ComputerControlAllowlistController mAllowlistController;
     private final ComputerControlStatsController mStatsController;
     @Nullable private final AppInteractionService mAppInteractionService;
@@ -216,7 +213,6 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             new ComputerControlSession.LifecycleCallback() {
                 @Override
                 public void onActive() {
-                    mVirtualDisplay.setSurface(mClientSurface);
                     mStatsController.onSessionActive();
                 }
 
@@ -225,9 +221,6 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                         @Nullable String blockingPackage) {
                     cancelOngoingKeyGestures();
                     cancelOngoingTouchGestures();
-                    // Prevent the client from being able to see the display by disconnecting
-                    // the client surface from the display.
-                    mVirtualDisplay.setSurface(mBlockedStateImageReader.getSurface());
                     mStatsController.onSessionBlocked(reason);
                 }
 
@@ -358,9 +351,6 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                 mDisplayManagerGlobal.getDisplayInfo(mMainDisplayId));
         final int displayWidth = virtualDisplayConfig.getWidth();
         final int displayHeight = virtualDisplayConfig.getHeight();
-
-        mBlockedStateImageReader = ImageReader.newInstance(displayWidth, displayHeight,
-                PixelFormat.RGBA_8888, /* maxImages= */ 1);
 
         try {
             mVirtualDevice = virtualDeviceFactory.createVirtualDevice(mAppToken, attributionSource,
@@ -493,6 +483,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             throw new IllegalStateException("Client surface is already initialized");
         }
         mClientSurface = clientSurface;
+        mVirtualDisplay.setSurface(mClientSurface);
 
         mLifecycle.initializeWithRemoteCallback(callback);
     }
@@ -792,8 +783,8 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
 
     @Override
     public boolean requestScreenshot() {
-        if (!(mLifecycle.getCurrentState() instanceof LifecycleState.Active)) {
-            Slog.w(TAG, "Cannot request screenshot: Agent interaction is not available");
+        if (mLifecycle.getCurrentState() instanceof LifecycleState.Closed) {
+            Slog.e(TAG, "Cannot request screenshot: Session is closed");
             return false;
         }
         synchronized (mWindowDrawLock) {

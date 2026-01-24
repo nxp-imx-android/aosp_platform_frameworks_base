@@ -444,9 +444,9 @@ public class CompanionTransportManager {
         }
 
         @Override
-        protected void sendMessage(int messageType, int sequence, @NonNull byte[] data)
+        protected void enqueueMessage(int message, int sequence, @NonNull byte[] data)
                 throws IOException {
-            Slog.e(TAG, "Black-holing emulated message type 0x" + Integer.toHexString(messageType)
+            Slog.e(TAG, "Black-holing emulated message type 0x" + Integer.toHexString(message)
                     + " sequence " + sequence + " length " + data.length
                     + " to association " + mAssociationId);
         }

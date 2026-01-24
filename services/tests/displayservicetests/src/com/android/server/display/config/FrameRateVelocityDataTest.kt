@@ -96,4 +96,66 @@ class FrameRateVelocityDataTest {
             FrameRateVelocityData.load(displayConfiguration)
         }
     }
+
+    @Test
+    fun testParseFrameRateVelocityMapping_EmptyString() {
+        val result = FrameRateVelocityData.parseFrameRateVelocityMapping("")
+        assertThat(result).isNotNull()
+        assertThat(result.size).isEqualTo(0)
+    }
+
+    @Test
+    fun testParseFrameRateVelocityMapping_ValidAscending() {
+        val ascendingMapping = "60@0:80@125:120@300"
+        val result = FrameRateVelocityData.parseFrameRateVelocityMapping(ascendingMapping)
+        assertThat(result).isNotNull()
+        assertThat(result.size).isEqualTo(3)
+        assertThat(result[0].getFramePerSecond()).isEqualTo(60f)
+        assertThat(result[0].getDpPerSecond()).isEqualTo(0f)
+        assertThat(result[1].getFramePerSecond()).isEqualTo(80f)
+        assertThat(result[1].getDpPerSecond()).isEqualTo(125f)
+        assertThat(result[2].getFramePerSecond()).isEqualTo(120f)
+        assertThat(result[2].getDpPerSecond()).isEqualTo(300f)
+    }
+
+    @Test
+    fun testParseFrameRateVelocityMapping_ValidDescending() {
+        // reordered to ascending by method
+        val descendingMapping = "120@300:80@125:60@0"
+        val result = FrameRateVelocityData.parseFrameRateVelocityMapping(descendingMapping)
+        assertThat(result).isNotNull()
+        assertThat(result.size).isEqualTo(3)
+        assertThat(result[0].getFramePerSecond()).isEqualTo(60f)
+        assertThat(result[0].getDpPerSecond()).isEqualTo(0f)
+        assertThat(result[1].getFramePerSecond()).isEqualTo(80f)
+        assertThat(result[1].getDpPerSecond()).isEqualTo(125f)
+        assertThat(result[2].getFramePerSecond()).isEqualTo(120f)
+        assertThat(result[2].getDpPerSecond()).isEqualTo(300f)
+    }
+
+    @Test
+    fun testParseFrameRateVelocityMapping_ValidWithExtraDelimiters() {
+        val result = FrameRateVelocityData.parseFrameRateVelocityMapping(":120@@300:::60@0::80@@@125:")
+        assertThat(result).isNotNull()
+        assertThat(result.size).isEqualTo(3)
+        assertThat(result[0].getFramePerSecond()).isEqualTo(60f)
+        assertThat(result[0].getDpPerSecond()).isEqualTo(0f)
+        assertThat(result[1].getFramePerSecond()).isEqualTo(80f)
+        assertThat(result[1].getDpPerSecond()).isEqualTo(125f)
+        assertThat(result[2].getFramePerSecond()).isEqualTo(120f)
+        assertThat(result[2].getDpPerSecond()).isEqualTo(300f)
+    }
+
+    @Test
+    fun testParseFrameRateVelocityMapping_InvalidFormats() {
+        // Malformed pair (missing velocity)
+        var result = FrameRateVelocityData.parseFrameRateVelocityMapping("60@0:80")
+        assertThat(result).isNotNull()
+        assertThat(result.size).isEqualTo(0)
+
+        // Malformed pair (missing framerate)
+        result = FrameRateVelocityData.parseFrameRateVelocityMapping("@0:80@125")
+        assertThat(result).isNotNull()
+        assertThat(result.size).isEqualTo(0)
+    }
 }

@@ -16,7 +16,7 @@
 
 package android.service.personalcontext.refiner;
 
-import android.service.personalcontext.refiner.HintFilter;
+import android.service.personalcontext.hint.HintFilter;
 
 /**
  * Callback for IRefiner#getFilter.

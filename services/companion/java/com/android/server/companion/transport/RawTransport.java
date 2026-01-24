@@ -40,6 +40,24 @@ class RawTransport extends Transport {
         if (DEBUG) {
             Slog.d(TAG, "Starting raw transport.");
         }
+        mStopped = false;
+
+        // Start sending enqueued messages
+        new Thread(() -> {
+            try {
+                while (!mStopped) {
+                    sendMessage(mMessageQueue.take());
+                }
+            } catch (Exception e) {
+                if (!mStopped) {
+                    Slog.e(TAG, "Trouble during transport.", e);
+                    eventCallback(translateError(e));
+                    close();
+                }
+            }
+        }).start();
+
+        // Start listening to incoming messages
         new Thread(() -> {
             try {
                 while (!mStopped) {
@@ -48,6 +66,7 @@ class RawTransport extends Transport {
             } catch (IOException e) {
                 if (!mStopped) {
                     Slog.w(TAG, "Trouble during transport", e);
+                    eventCallback(translateError(e));
                     close();
                 }
             }
@@ -85,31 +104,12 @@ class RawTransport extends Transport {
         return "PARTICIPANT";
     }
 
-    @Override
-    protected void sendMessage(int message, int sequence, @NonNull byte[] data)
+    private void sendMessage(@NonNull byte[] data)
             throws IOException {
-        if (DEBUG) {
-            Slog.e(TAG, "Sending message 0x" + Integer.toHexString(message)
-                    + " sequence " + sequence + " length " + data.length
-                    + " to association " + mAssociationId);
-        }
-
         synchronized (mRemoteOut) {
-            final ByteBuffer header = ByteBuffer.allocate(HEADER_LENGTH)
-                    .putInt(message)
-                    .putInt(sequence)
-                    .putInt(data.length);
-            mRemoteOut.write(header.array());
             mRemoteOut.write(data);
             mRemoteOut.flush();
         }
-    }
-
-    @Override
-    public String toString() {
-        return "RawTransport{"
-                + "mAssociationId=" + mAssociationId
-                + '}';
     }
 
     private void receiveMessage() throws IOException {
@@ -125,5 +125,12 @@ class RawTransport extends Transport {
 
             handleMessage(message, sequence, data);
         }
+    }
+
+    @Override
+    public String toString() {
+        return "RawTransport{"
+                + "mAssociationId=" + mAssociationId
+                + '}';
     }
 }

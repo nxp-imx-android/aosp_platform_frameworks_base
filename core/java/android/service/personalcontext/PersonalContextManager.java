@@ -19,6 +19,7 @@ package android.service.personalcontext;
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.RequiresNoPermission;
 import android.annotation.SystemApi;
 import android.annotation.SystemService;
 import android.annotation.UserHandleAware;
@@ -31,6 +32,7 @@ import android.service.personalcontext.hint.ContextHintWithSignature;
 import android.service.personalcontext.hint.ContextHintWrapper;
 import android.service.personalcontext.insight.ContextInsight;
 import android.service.personalcontext.insight.ContextInsightWrapper;
+import android.service.personalcontext.insight.interaction.InsightEvent;
 import android.util.Log;
 
 import java.util.List;
@@ -121,7 +123,6 @@ public final class PersonalContextManager {
      * @param insights new insights to be injected into the context flow
      * @hide
      */
-    @SystemApi
     @UserHandleAware(
             requiresPermissionIfNotCaller = android.Manifest.permission.INTERACT_ACROSS_USERS)
     public void publishInsight(@NonNull List<ContextInsight> insights) {
@@ -227,6 +228,20 @@ public final class PersonalContextManager {
         try {
             mService.publishInsightSurfaceHints(
                     ContextHintWrapper.wrapList(hints), clientInfo, mContext.getUserId());
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Reports an InsightEvent back to the Understander that generated the Insight.
+     *
+     * @hide
+     */
+    @RequiresNoPermission
+    public void reportEvent(@NonNull InsightEvent event) {
+        try {
+            mService.reportEvent(event, mContext.getUserId());
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

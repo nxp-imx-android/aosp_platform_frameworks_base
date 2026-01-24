@@ -32,8 +32,6 @@ import static androidx.constraintlayout.widget.ConstraintSet.START;
 import static androidx.constraintlayout.widget.ConstraintSet.TOP;
 import static androidx.constraintlayout.widget.ConstraintSet.WRAP_CONTENT;
 
-import static com.android.systemui.Flags.bouncerUiRevamp2;
-import static com.android.systemui.Flags.disableDoubleClickSwapOnBouncer;
 import static com.android.systemui.plugins.FalsingManager.LOW_PENALTY;
 
 import static java.lang.Integer.max;
@@ -965,8 +963,10 @@ public class KeyguardSecurityContainer extends ConstraintLayout {
                     leftAlignedByDefault ? Settings.Global.ONE_HANDED_KEYGUARD_SIDE_LEFT
                             : Settings.Global.ONE_HANDED_KEYGUARD_SIDE_RIGHT;
             mBouncerInteractor = bouncerInteractor;
-            mDisableDoubleClickSwap = disableDoubleClickSwapOnBouncer()
-                    && mBouncerInteractor.isImproveLargeScreenInteractionEnabled();
+            mDisableDoubleClickSwap =
+                    (Flags.disableDoubleClickSwapOnBouncer()
+                                    || Flags.disableDoubleClickSwapOnBouncer2())
+                            && mBouncerInteractor.isImproveLargeScreenInteractionEnabled();
         }
 
         /**
@@ -1417,7 +1417,7 @@ public class KeyguardSecurityContainer extends ConstraintLayout {
                     true);
             mUserSwitcherViewGroup = mView.findViewById(R.id.keyguard_bouncer_user_switcher);
             mUserSwitcher = mView.findViewById(R.id.user_switcher_header);
-            if (bouncerUiRevamp2()) {
+            if (Flags.bouncerUiRevamp2()) {
                 mUserSwitcher.setTypeface(
                         Typeface.create(FontStyles.GSF_LABEL_MEDIUM, Typeface.NORMAL));
             }

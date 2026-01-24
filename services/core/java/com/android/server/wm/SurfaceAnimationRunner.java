@@ -29,6 +29,7 @@ import android.hardware.power.Boost;
 import android.os.Handler;
 import android.os.PowerManagerInternal;
 import android.util.ArrayMap;
+import android.util.TimeUtils;
 import android.view.Choreographer;
 import android.view.SurfaceControl;
 import android.view.SurfaceControl.Transaction;
@@ -186,15 +187,15 @@ class SurfaceAnimationRunner {
     }
 
     @GuardedBy("mLock")
-    private void startPendingAnimationsLocked() {
+    private void startPendingAnimationsLocked(long frameTimeNanos) {
         for (int i = mPendingAnimations.size() - 1; i >= 0; i--) {
-            startAnimationLocked(mPendingAnimations.valueAt(i));
+            startAnimationLocked(frameTimeNanos, mPendingAnimations.valueAt(i));
         }
         mPendingAnimations.clear();
     }
 
     @GuardedBy("mLock")
-    private void startAnimationLocked(RunningAnimation a) {
+    private void startAnimationLocked(long frameTimeNanos, RunningAnimation a) {
         final ValueAnimator anim = mAnimatorFactory.makeAnimator();
 
         // Animation length is already expected to be scaled.
@@ -253,7 +254,7 @@ class SurfaceAnimationRunner {
 
         // Immediately start the animation by manually applying an animation frame. Otherwise, the
         // start time would only be set in the next frame, leading to a delay.
-        anim.doAnimationFrame(mChoreographer.getFrameTime());
+        anim.doAnimationFrame(frameTimeNanos / TimeUtils.NANOS_PER_MS);
     }
 
     private void applyTransformation(RunningAnimation a, Transaction t, long currentPlayTime) {
@@ -270,7 +271,7 @@ class SurfaceAnimationRunner {
                 // ones have finished (see b/227449117).
                 return;
             }
-            startPendingAnimationsLocked();
+            startPendingAnimationsLocked(frameTimeNanos);
         }
         mPowerManagerInternal.setPowerBoost(Boost.INTERACTION, 0);
     }

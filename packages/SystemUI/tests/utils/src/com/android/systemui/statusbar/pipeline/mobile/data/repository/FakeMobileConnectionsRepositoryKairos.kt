@@ -22,7 +22,6 @@ import android.telephony.TelephonyManager
 import com.android.settingslib.SignalIcon
 import com.android.settingslib.mobile.MobileMappings
 import com.android.settingslib.mobile.TelephonyIcons
-import com.android.systemui.KairosBuilder
 import com.android.systemui.kairos.MutableEvents
 import com.android.systemui.kairos.MutableState
 import com.android.systemui.kairos.State
@@ -31,11 +30,12 @@ import com.android.systemui.kairos.buildSpec
 import com.android.systemui.kairos.combine
 import com.android.systemui.kairos.map
 import com.android.systemui.kairos.mapValues
-import com.android.systemui.kairosBuilder
 import com.android.systemui.log.table.TableLogBuffer
 import com.android.systemui.statusbar.pipeline.mobile.data.model.SubscriptionModel
 import com.android.systemui.statusbar.pipeline.mobile.util.FakeMobileMappingsProxy
 import com.android.systemui.statusbar.pipeline.mobile.util.MobileMappingsProxy
+import com.android.systemui.util.lifecycle.kairos.KairosBuilder
+import com.android.systemui.util.lifecycle.kairos.kairosBuilder
 
 // TODO(b/261632894): remove this in favor of the real impl or DemoMobileConnectionsRepositoryKairos
 class FakeMobileConnectionsRepositoryKairos(

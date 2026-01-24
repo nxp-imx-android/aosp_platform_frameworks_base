@@ -22,6 +22,7 @@ import android.view.windowManagerService
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.log.logcatLogBuffer
 import com.android.systemui.statusbar.layout.statusBarContentInsetsProvider
+import com.android.systemui.statusbar.multiDisplayStatusBarLogger
 import com.android.systemui.statusbar.policy.mockStatusBarConfigurationController
 import java.util.Optional
 
@@ -41,6 +42,7 @@ val Kosmos.statusBarWindowControllerImpl by
             Optional.empty(),
             logcatLogBuffer(name = "StatusBarWindowControllerImpl"),
             statusBarWindowControllerImplDisplayId,
+            multiDisplayStatusBarLogger,
         )
     }
 

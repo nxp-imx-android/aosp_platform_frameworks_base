@@ -830,14 +830,12 @@ class SupervisionServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_SUPERVISION_RECOVERY_IMPROVEMENTS)
     fun setSupervisionRecoveryInfo_noPermission_throwsException() {
         injector.setCallingUid(9876)
         assertFailsWith<SecurityException> { service.setSupervisionRecoveryInfo(null) }
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_SUPERVISION_RECOVERY_IMPROVEMENTS)
     fun getSupervisionRecoveryInfo_noPermission_throwsException() {
         injector.setCallingUid(9876)
         assertFailsWith<SecurityException> { service.getSupervisionRecoveryInfo() }

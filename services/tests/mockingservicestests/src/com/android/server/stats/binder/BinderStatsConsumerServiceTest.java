@@ -26,6 +26,7 @@ import android.os.Process;
 import android.os.RemoteException;
 import android.os.binder.BinderCallsStats;
 import android.os.binder.BinderSpamStats;
+import android.os.binder.SingleSecondBinderStats;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
@@ -102,6 +103,34 @@ public class BinderStatsConsumerServiceTest {
         builder.writeString(stat.interfaceDescriptor);
         builder.writeString(stat.aidlMethod);
         builder.writeLong(stat.secondsWithAtLeast125Calls);
+        return builder.usePooledBuffer().build();
+    }
+
+    private StatsEvent buildSingleSecondBinderCallsStats(SingleSecondBinderStats stat) {
+        StatsEvent.Builder builder = StatsEvent.newBuilder().setAtomId(CALL_STATS_ATOM_ID);
+        builder.writeLong(stat.clientUid);
+        builder.writeLong(Process.myUid());
+        builder.writeString(stat.interfaceDescriptor);
+        builder.writeString(stat.aidlMethod);
+        builder.writeLong(stat.callCount);
+        builder.writeLong(stat.durationMicrosSum);
+        builder.writeLong(stat.durationCount > 10 ? 1 : 0);
+        builder.writeLong(stat.durationCount > 50 ? 1 : 0);
+        builder.writeLong(stat.durationMicrosSquaredSum);
+        builder.writeLong(stat.cpuTimeCount);
+        builder.writeLong(stat.cpuTimeMicrosSum);
+        builder.writeLong(stat.cpuTimeMicrosSquaredSum);
+        return builder.usePooledBuffer().build();
+    }
+
+    private StatsEvent buildSingleSecondBinderSpamStats(SingleSecondBinderStats stat) {
+        StatsEvent.Builder builder = StatsEvent.newBuilder().setAtomId(SPAM_STATS_ATOM_ID);
+        builder.writeLong(stat.clientUid);
+        builder.writeLong(Process.myUid());
+        builder.writeString(stat.interfaceDescriptor);
+        builder.writeString(stat.aidlMethod);
+        builder.writeLong(stat.callCount >= 125 ? 1 : 0);
+        builder.writeLong(stat.callCount >= 250 ? 1 : 0);
         return builder.usePooledBuffer().build();
     }
 
@@ -276,5 +305,154 @@ public class BinderStatsConsumerServiceTest {
         AtomsProto.Atom actualAtom2 = StatsEventTestUtils.convertToAtom(actualEvents.get(1));
         assertEquals(expectedAtom1, actualAtom1);
         assertEquals(expectedAtom2, actualAtom2);
+    }
+
+    @Test
+    public void testReportSingleSecondStats_binderCallsReported()
+            throws RemoteException, InvalidProtocolBufferException {
+        SingleSecondBinderStats[] stats = new SingleSecondBinderStats[1];
+        stats[0] = new SingleSecondBinderStats();
+        stats[0].clientUid = 1000;
+        stats[0].interfaceDescriptor = "com.example.IFoo";
+        stats[0].aidlMethod = "bar";
+        stats[0].callCount = 10;
+        stats[0].durationCount = 1;
+        stats[0].durationMicrosSum = 100;
+        stats[0].durationMicrosSquaredSum = 112;
+        stats[0].cpuTimeCount = 5;
+        stats[0].cpuTimeMicrosSum = 50;
+        stats[0].cpuTimeMicrosSquaredSum = 250;
+        StatsEvent expectedEvent = buildSingleSecondBinderCallsStats(stats[0]);
+
+        mService.reportSecondGranularityStats(stats);
+
+        verify(() -> StatsLog.write(mStatsEventCaptor.capture()));
+
+        AtomsProto.Atom expectedAtom = StatsEventTestUtils.convertToAtom(expectedEvent);
+        AtomsProto.Atom actualAtom =
+                StatsEventTestUtils.convertToAtom(mStatsEventCaptor.getValue());
+        assertEquals(expectedAtom, actualAtom);
+    }
+
+    @Test
+    public void testReportSingleSecondStats_spamReported125()
+            throws RemoteException, InvalidProtocolBufferException {
+        SingleSecondBinderStats[] stats = new SingleSecondBinderStats[1];
+        stats[0] = new SingleSecondBinderStats();
+        stats[0].clientUid = 1000;
+        stats[0].interfaceDescriptor = "com.example.IFoo";
+        stats[0].aidlMethod = "bar";
+        stats[0].callCount = 130;
+        stats[0].durationCount = 1;
+        StatsEvent expectedEvent = buildSingleSecondBinderSpamStats(stats[0]);
+
+        mService.reportSecondGranularityStats(stats);
+
+        verify(() -> StatsLog.write(mStatsEventCaptor.capture()), times(2));
+
+        AtomsProto.Atom expectedAtom = StatsEventTestUtils.convertToAtom(expectedEvent);
+        List<StatsEvent> actualEvents = mStatsEventCaptor.getAllValues();
+        AtomsProto.Atom actualAtom = StatsEventTestUtils.convertToAtom(actualEvents.get(0));
+        assertEquals(expectedAtom, actualAtom);
+    }
+
+    @Test
+    public void testReportSingleSecondStats_spamReported250()
+            throws RemoteException, InvalidProtocolBufferException {
+        SingleSecondBinderStats[] stats = new SingleSecondBinderStats[1];
+        stats[0] = new SingleSecondBinderStats();
+        stats[0].clientUid = 1000;
+        stats[0].interfaceDescriptor = "com.example.IFoo";
+        stats[0].aidlMethod = "bar";
+        stats[0].callCount = 260;
+        stats[0].durationCount = 1;
+        StatsEvent expectedEvent = buildSingleSecondBinderSpamStats(stats[0]);
+
+        mService.reportSecondGranularityStats(stats);
+
+        verify(() -> StatsLog.write(mStatsEventCaptor.capture()), times(2));
+
+        AtomsProto.Atom expectedAtom = StatsEventTestUtils.convertToAtom(expectedEvent);
+        List<StatsEvent> actualEvents = mStatsEventCaptor.getAllValues();
+        AtomsProto.Atom actualAtom = StatsEventTestUtils.convertToAtom(actualEvents.get(0));
+        assertEquals(expectedAtom, actualAtom);
+    }
+
+    @Test
+    public void testReportSingleSecondStats_multipleStats()
+            throws RemoteException, InvalidProtocolBufferException {
+        SingleSecondBinderStats[] stats = new SingleSecondBinderStats[2];
+        stats[0] = new SingleSecondBinderStats();
+        stats[0].clientUid = 1000;
+        stats[0].interfaceDescriptor = "com.example.IFoo";
+        stats[0].aidlMethod = "bar";
+        stats[0].callCount = 10;
+        stats[0].durationCount = 1;
+        stats[0].durationMicrosSum = 100;
+
+        stats[1] = new SingleSecondBinderStats();
+        stats[1].clientUid = 1001;
+        stats[1].interfaceDescriptor = "com.example.IBar";
+        stats[1].aidlMethod = "foo";
+        stats[1].callCount = 20;
+        stats[1].durationCount = 1;
+        stats[1].durationMicrosSum = 200;
+
+        StatsEvent expectedEvent1 = buildSingleSecondBinderCallsStats(stats[0]);
+        StatsEvent expectedEvent2 = buildSingleSecondBinderCallsStats(stats[1]);
+
+        mService.reportSecondGranularityStats(stats);
+
+        verify(() -> StatsLog.write(mStatsEventCaptor.capture()), times(2));
+
+        AtomsProto.Atom expectedAtom1 = StatsEventTestUtils.convertToAtom(expectedEvent1);
+        AtomsProto.Atom expectedAtom2 = StatsEventTestUtils.convertToAtom(expectedEvent2);
+        List<StatsEvent> actualEvents = mStatsEventCaptor.getAllValues();
+        AtomsProto.Atom actualAtom1 = StatsEventTestUtils.convertToAtom(actualEvents.get(0));
+        AtomsProto.Atom actualAtom2 = StatsEventTestUtils.convertToAtom(actualEvents.get(1));
+        assertEquals(expectedAtom1, actualAtom1);
+        assertEquals(expectedAtom2, actualAtom2);
+    }
+
+    @Test
+    public void testReportSingleSecondStats_tooManyStats() throws RemoteException {
+        SingleSecondBinderStats[] stats = new SingleSecondBinderStats[257];
+        for (int i = 0; i < 257; ++i) {
+            stats[i] = new SingleSecondBinderStats();
+        }
+
+        mService.reportSecondGranularityStats(stats);
+
+        verify(() -> StatsLog.write(mStatsEventCaptor.capture()), times(0));
+    }
+
+    @Test
+    public void testReportSingleSecondStats_interfaceTooLong() throws RemoteException {
+        SingleSecondBinderStats[] stats = new SingleSecondBinderStats[1];
+        stats[0] = new SingleSecondBinderStats();
+        stats[0].clientUid = 1000;
+        stats[0].interfaceDescriptor = new String(new char[257]);
+        stats[0].aidlMethod = "bar";
+        stats[0].callCount = 10;
+        stats[0].durationCount = 1;
+
+        mService.reportSecondGranularityStats(stats);
+
+        verify(() -> StatsLog.write(mStatsEventCaptor.capture()), times(0));
+    }
+
+    @Test
+    public void testReportSingleSecondStats_methodTooLong() throws RemoteException {
+        SingleSecondBinderStats[] stats = new SingleSecondBinderStats[1];
+        stats[0] = new SingleSecondBinderStats();
+        stats[0].clientUid = 1000;
+        stats[0].interfaceDescriptor = "com.example.IFoo";
+        stats[0].aidlMethod = new String(new char[257]);
+        stats[0].callCount = 10;
+        stats[0].durationCount = 1;
+
+        mService.reportSecondGranularityStats(stats);
+
+        verify(() -> StatsLog.write(mStatsEventCaptor.capture()), times(0));
     }
 }

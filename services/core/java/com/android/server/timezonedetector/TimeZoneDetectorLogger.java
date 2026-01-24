@@ -81,4 +81,17 @@ interface TimeZoneDetectorLogger {
             @NonNull String geolocationCountryCode,
             @NonNull String tzdbVersion,
             int locationTimeZoneProviderUid);
+
+    public void logAutomaticTimeZoneChangeRejection(
+            int source,
+            @NonNull String mcc,
+            @NonNull String mnc,
+            int nitzOffsetSeconds,
+            int nitzDstOffsetSeconds,
+            @NonNull String previousTimeZoneId,
+            @NonNull String rejectedAutomaticTimeZone,
+            @NonNull String manualTimeZone,
+            @NonNull String geolocationCountryCode,
+            @NonNull String tzdbVersion,
+            int locationTimeZoneProviderUid);
 }

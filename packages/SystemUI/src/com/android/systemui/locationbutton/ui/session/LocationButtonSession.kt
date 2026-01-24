@@ -306,14 +306,17 @@ class LocationButtonSession(
             android.app.permissionui.LocationButtonSession.TEXT_TYPE_PRECISE_LOCATION ->
                 R.string.location_button_text_precise_location
 
-            android.app.permissionui.LocationButtonSession.TEXT_TYPE_SHARE_PRECISE_LOCATION ->
-                R.string.location_button_text_share_precise_location
-
             android.app.permissionui.LocationButtonSession.TEXT_TYPE_USE_PRECISE_LOCATION ->
                 R.string.location_button_text_use_precise_location
 
-            android.app.permissionui.LocationButtonSession.TEXT_TYPE_NEAR_PRECISE_LOCATION ->
-                R.string.location_button_text_near_precise_location
+            android.app.permissionui.LocationButtonSession.TEXT_TYPE_SHARE_PRECISE_LOCATION ->
+                R.string.location_button_text_share_precise_location
+
+            android.app.permissionui.LocationButtonSession.TEXT_TYPE_NEAR_MY_PRECISE_LOCATION ->
+                R.string.location_button_text_near_my_precise_location
+
+            android.app.permissionui.LocationButtonSession.TEXT_TYPE_NEAR_YOUR_PRECISE_LOCATION ->
+                R.string.location_button_text_near_your_precise_location
 
             android.app.permissionui.LocationButtonSession.TEXT_TYPE_NONE -> null
             else -> {

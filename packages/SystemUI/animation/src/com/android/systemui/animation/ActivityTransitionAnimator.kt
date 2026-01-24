@@ -78,6 +78,7 @@ import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 import kotlin.math.roundToInt
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 
@@ -942,6 +943,9 @@ constructor(
             lifecycleListener,
             cleanUp,
             transitionHelper,
+            mainExecutor,
+            disableWmTimeout,
+            skipReparentTransaction,
         )
     }
 
@@ -1189,7 +1193,7 @@ constructor(
      * events to the passed [delegate].
      */
     @VisibleForTesting
-    inner class DelegatingAnimationCompletionListener(
+    private class DelegatingAnimationCompletionListener(
         private val delegate: Listener?,
         private val onAnimationComplete: () -> Unit,
     ) : Listener {
@@ -1218,13 +1222,88 @@ constructor(
     }
 
     /**
+     * A wrapper around [OriginTransition] used for launch and return animation. This wrapper is
+     * required due to:
+     * 1. This class must implement [RemoteTransitionDelegate] APIs as its signature differs from
+     *    [OriginTransition].
+     * 2. It's preferable to keep [OriginTransition] implementation private in
+     *    [ActivityTransitionAnimator]
+     */
+    class DelegateOriginTransition private constructor(private val internal: OriginTransition?) :
+        RemoteTransitionDelegate<IRemoteTransitionFinishedCallback> {
+
+        override fun startAnimation(
+            transition: IBinder?,
+            info: TransitionInfo?,
+            transaction: SurfaceControl.Transaction?,
+            finishedCallback: IRemoteTransitionFinishedCallback?,
+        ) {
+            internal?.startAnimation(transition, info, transaction, finishedCallback)
+        }
+
+        override fun mergeAnimation(
+            transition: IBinder?,
+            info: TransitionInfo?,
+            transaction: SurfaceControl.Transaction?,
+            mergeTarget: IBinder?,
+            finishedCallback: IRemoteTransitionFinishedCallback?,
+        ) {
+            internal?.mergeAnimation(transition, info, transaction, mergeTarget, finishedCallback)
+        }
+
+        override fun takeOverAnimation(
+            transition: IBinder?,
+            info: TransitionInfo?,
+            transaction: SurfaceControl.Transaction?,
+            finishedCallback: IRemoteTransitionFinishedCallback?,
+            windowStates: Array<out WindowAnimationState>?,
+        ) {
+            windowStates?.let {
+                internal?.takeOverAnimation(transition, info, transaction, finishedCallback, it)
+            }
+        }
+
+        override fun onTransitionConsumed(transition: IBinder?, aborted: Boolean) {
+            internal?.onTransitionConsumed(transition, aborted)
+        }
+
+        companion object {
+
+            @JvmStatic
+            @JvmOverloads
+            fun fromView(
+                controller: Controller?,
+                callback: Callback,
+                listener: Listener?,
+                mainExecutor: Executor,
+                cleanUp: (() -> Unit)? = {},
+            ): DelegateOriginTransition? {
+                return controller?.let {
+                    DelegateOriginTransition(
+                        OriginTransition(
+                            createController = suspend { controller },
+                            callback = callback,
+                            transitionAnimator = defaultTransitionAnimator(mainExecutor),
+                            listener = listener,
+                            cleanUp = cleanUp,
+                            transitionHelper = DefaultTransitionHelper(),
+                            mainExecutor = mainExecutor,
+                            scope = CoroutineScope(mainExecutor.asCoroutineDispatcher()),
+                        )
+                    )
+                }
+            }
+        }
+    }
+
+    /**
      * An [IRemoteTransition] capable of running an activity launch or return animation.
      *
      * The logic to animate the expandable that the activity originates from / minimizes to is
      * contained inside the [Controller] returned by [createController]. [scope] must be a valid
      * [CoroutineScope] which [createController] will use to provide the [Controller].
      */
-    private inner class OriginTransition(
+    private class OriginTransition(
         private val createController: suspend () -> Controller,
         private val scope: CoroutineScope,
         private val callback: Callback,
@@ -1232,7 +1311,11 @@ constructor(
         private val listener: Listener?,
         private val cleanUp: (() -> Unit)? = null,
         private val transitionHelper: RemoteTransitionHelper,
+        private val mainExecutor: Executor,
+        private val disableWmTimeout: Boolean = false,
+        private val skipReparentTransaction: Boolean = false,
     ) : RemoteTransitionStub() {
+
         private val timeoutHandler =
             if (disableWmTimeout) {
                 null

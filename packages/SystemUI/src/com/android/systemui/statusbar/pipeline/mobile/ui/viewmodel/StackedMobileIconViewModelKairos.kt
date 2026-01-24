@@ -26,7 +26,6 @@ import com.android.systemui.kairos.combine
 import com.android.systemui.kairos.flatMap
 import com.android.systemui.kairos.map
 import com.android.systemui.kairos.stateOf
-import com.android.systemui.kairosBuilder
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.statusbar.connectivity.ui.MobileContextProvider
@@ -34,6 +33,7 @@ import com.android.systemui.statusbar.pipeline.mobile.ui.model.DualSim
 import com.android.systemui.statusbar.pipeline.mobile.ui.model.MobileContentDescription
 import com.android.systemui.statusbar.pipeline.mobile.ui.model.tryParseDualSim
 import com.android.systemui.util.composable.kairos.hydratedComposeStateOf
+import com.android.systemui.util.lifecycle.kairos.kairosBuilder
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 

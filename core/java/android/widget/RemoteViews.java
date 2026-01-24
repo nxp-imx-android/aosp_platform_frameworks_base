@@ -3317,24 +3317,25 @@ public class RemoteViews implements Parcelable, Filter {
                         break;
                     case SHORT:
                         value = (short) values.get(RemoteViewsProto.ReflectionAction.SHORT_VALUE,
-                                0);
+                                (short) 0);
                         break;
                     case INT:
                         value = (int) values.get(RemoteViewsProto.ReflectionAction.INT_VALUE, 0);
                         break;
                     case LONG:
-                        value = (long) values.get(RemoteViewsProto.ReflectionAction.LONG_VALUE, 0);
+                        value = (long) values.get(RemoteViewsProto.ReflectionAction.LONG_VALUE, 0L);
                         break;
                     case FLOAT:
                         value = (float) values.get(RemoteViewsProto.ReflectionAction.FLOAT_VALUE,
-                                0);
+                                0F);
                         break;
                     case DOUBLE:
                         value = (double) values.get(RemoteViewsProto.ReflectionAction.DOUBLE_VALUE,
-                                0);
+                                0D);
                         break;
                     case CHAR:
-                        value = (char) values.get(RemoteViewsProto.ReflectionAction.CHAR_VALUE, 0);
+                        value = (char) values.get(RemoteViewsProto.ReflectionAction.CHAR_VALUE,
+                                (char) 0);
                         break;
                     case STRING:
                         value = (String) values.get(RemoteViewsProto.ReflectionAction.STRING_VALUE);
@@ -3862,7 +3863,7 @@ public class RemoteViews implements Parcelable, Filter {
                         (float) values.get(
                                 RemoteViewsProto
                                         .ComplexUnitDimensionReflectionAction.DIMENSION_VALUE,
-                                0),
+                                0F),
                         (int) values.get(RemoteViewsProto.ComplexUnitDimensionReflectionAction.UNIT,
                                 0));
             };
@@ -5167,7 +5168,7 @@ public class RemoteViews implements Parcelable, Filter {
                         RemoteViewsProto.TextViewSizeAction.VIEW_ID);
                 return new TextViewSizeAction(viewId,
                         (int) values.get(RemoteViewsProto.TextViewSizeAction.UNITS, 0),
-                        (float) values.get(RemoteViewsProto.TextViewSizeAction.SIZE, 0));
+                        (float) values.get(RemoteViewsProto.TextViewSizeAction.SIZE, 0F));
             };
         }
     }
@@ -5307,10 +5308,10 @@ public class RemoteViews implements Parcelable, Filter {
                 int viewId = getAsIdentifier(resources, values,
                         RemoteViewsProto.ViewPaddingAction.VIEW_ID);
                 return new ViewPaddingAction(viewId,
-                        (float) values.get(RemoteViewsProto.ViewPaddingAction.LEFT, 0),
-                        (float) values.get(RemoteViewsProto.ViewPaddingAction.TOP, 0),
-                        (float) values.get(RemoteViewsProto.ViewPaddingAction.RIGHT, 0),
-                        (float) values.get(RemoteViewsProto.ViewPaddingAction.BOTTOM, 0),
+                        (float) values.get(RemoteViewsProto.ViewPaddingAction.LEFT, 0F),
+                        (float) values.get(RemoteViewsProto.ViewPaddingAction.TOP, 0F),
+                        (float) values.get(RemoteViewsProto.ViewPaddingAction.RIGHT, 0F),
+                        (float) values.get(RemoteViewsProto.ViewPaddingAction.BOTTOM, 0F),
                         (int) values.get(RemoteViewsProto.ViewPaddingAction.UNITS,
                                 COMPLEX_UNIT_PX));
             };

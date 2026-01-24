@@ -58,13 +58,6 @@ flag {
 }
 
 flag {
-  name: "app_clips_backlinks"
-  namespace: "systemui"
-  description: "Enables Backlinks improvement feature in App Clips"
-  bug: "300307759"
-}
-
-flag {
     name: "av_controls_chip_per_display"
     namespace: "systemui"
     description: "Makes Av Controls Chip related code per display."
@@ -517,6 +510,13 @@ flag {
     namespace: "systemui"
     description: "Enables MinMode feature"
     bug: "411746510"
+}
+
+flag {
+    name: "enable_note_hsum_dev_option_fix"
+    namespace: "note"
+    description: "Enables a fix to ensure notes developer option works for HSUM users."
+    bug: "462400157"
 }
 
 flag {
@@ -992,16 +992,6 @@ flag {
 }
 
 flag {
-    name: "lowlight_clock_set_brightness"
-    namespace: "systemui"
-    description: "Sets brightness to minimum when using lowlight clock"
-    bug: "419096438"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
   name: "media_controls_button_media3"
   namespace: "systemui"
   description: "Enable media action buttons updates using media3"
@@ -1227,6 +1217,16 @@ flag {
     description: "Move the NotificationShade window to a new UI thread, which is separate from "
         "the main thread."
     bug: "374159657"
+}
+
+flag {
+  name: "notification_smart_replies_edit_before_sending"
+  namespace: "systemui"
+  description: "This flag enables the tap-to-send behavior on smart replies."
+  bug: "450898813"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
 }
 
 flag {
@@ -1887,16 +1887,6 @@ flag {
     description: "Updates the touchpad gesture tutorial to reflect the latest gesture and "
             "animation changes"
     bug: "456784841"
-}
-
-flag {
-    name: "update_user_switcher_background"
-    namespace: "systemui"
-    description: "Decide whether to update user switcher in background thread."
-    bug: "322745650"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
 }
 
 flag {

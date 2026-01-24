@@ -19,6 +19,7 @@ package com.android.server.job;
 import static android.Manifest.permission.INTERACT_ACROSS_USERS_FULL;
 import static android.Manifest.permission.MANAGE_ACTIVITY_TASKS;
 import static android.app.job.JobParameters.OVERRIDE_HANDLE_ABANDONED_JOBS;
+import static android.app.privatecompute.flags.Flags.enablePccFrameworkSupport;
 import static android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DISABLED;
 import static android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DISABLED_USER;
 import static android.text.format.DateUtils.HOUR_IN_MILLIS;
@@ -4999,7 +5000,9 @@ public class JobSchedulerService extends com.android.server.SystemService
                 if (si == null) {
                     throw new IllegalArgumentException("No such service " + service);
                 }
-                if (si.applicationInfo.uid != uid) {
+                final int serviceUid = enablePccFrameworkSupport() ? si.getUid() :
+                        si.applicationInfo.uid;
+                if (serviceUid != uid) {
                     throw new IllegalArgumentException("uid " + uid +
                             " cannot schedule job in " + service.getPackageName());
                 }

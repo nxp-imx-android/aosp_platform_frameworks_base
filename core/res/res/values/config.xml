@@ -5213,6 +5213,17 @@
         -->
     <integer name="config_maxWearableSensingServiceConcurrentConnections">5</integer>
 
+    <!-- Component name for the default ContentSafetyService implementation. -->
+    <string name="config_defaultContentSafetyService" translatable="false"></string>
+
+    <!-- Component name for the default ContentSafetySandboxedService as an isolated service.-->
+    <string name="config_defaultContentSafetyIsolatedService" translatable="false"></string>
+
+    <!-- Component name for the default ContentSafetySandboxedService as a PCC service.-->
+    <string name="config_defaultContentSafetyPccService" translatable="false"></string>
+
+    <!-- Component name for the default ContentSafetySettingsService implementation. -->
+    <string name="config_defaultContentSafetySettingsService" translatable="false"></string>
 
     <!-- The component name for the default system on-device intelligence service, -->
     <string name="config_defaultOnDeviceIntelligenceService" translatable="false"></string>

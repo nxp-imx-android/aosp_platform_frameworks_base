@@ -1268,7 +1268,9 @@ public class TvView extends ViewGroup {
          *
          * @param inputId The ID of the TV input bound to this view.
          * @param eventType The type of the event.
-         * @param eventArgs Optional arguments of the event.
+         * @param eventArgs Optional arguments of the event; eventArgs must include
+         *                  {@link TvInputService#EXTRA_SESSION_ID} when eventType is
+         *                  {@link TvInputService#EVENT_SESSION_ID_SYNC}.
          * @hide
          */
         @SystemApi

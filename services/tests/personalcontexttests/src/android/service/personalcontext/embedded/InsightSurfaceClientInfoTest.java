@@ -57,6 +57,7 @@ public class InsightSurfaceClientInfoTest {
         final Color backgroundColor = Color.valueOf(Color.RED);
         final int nestedScrollingAxes = View.SCROLL_AXIS_HORIZONTAL | View.SCROLL_AXIS_VERTICAL;
         final boolean nestedScrollAxisLocked = true;
+        final boolean shouldBlur = true;
         final Configuration configuration = new Configuration();
 
         final InsightSurfaceClientInfo clientInfo =
@@ -67,6 +68,7 @@ public class InsightSurfaceClientInfoTest {
                         backgroundColor,
                         nestedScrollingAxes,
                         nestedScrollAxisLocked,
+                        shouldBlur,
                         configuration,
                         mClient);
 
@@ -76,6 +78,7 @@ public class InsightSurfaceClientInfoTest {
         assertThat(clientInfo.getConfiguration()).isEqualTo(configuration);
         assertThat(clientInfo.getBackgroundColor()).isEqualTo(backgroundColor);
         assertThat(clientInfo.getNestedScrollAxes()).isEqualTo(nestedScrollingAxes);
+        assertThat(clientInfo.shouldBlur()).isEqualTo(shouldBlur);
         assertThat(clientInfo.getNestedScrollAxisLocked()).isEqualTo(nestedScrollAxisLocked);
     }
 
@@ -88,6 +91,7 @@ public class InsightSurfaceClientInfoTest {
                         0,
                         Color.valueOf(Color.BLACK),
                         View.SCROLL_AXIS_NONE,
+                        false,
                         false,
                         new Configuration(),
                         mClient);
@@ -104,6 +108,7 @@ public class InsightSurfaceClientInfoTest {
                         0,
                         Color.valueOf(Color.BLACK),
                         View.SCROLL_AXIS_NONE,
+                        false,
                         false,
                         new Configuration(),
                         mClient);

@@ -16,6 +16,7 @@
 
 package com.android.server.job.restrictions;
 
+import android.app.compat.CompatChanges;
 import android.app.job.JobInfo;
 import android.app.job.JobParameters;
 import android.app.job.JobScheduler;
@@ -42,8 +43,11 @@ public class ThermalStatusRestriction extends JobRestriction {
     private volatile int mThermalStatus = PowerManager.THERMAL_STATUS_NONE;
 
     public ThermalStatusRestriction(JobSchedulerService service) {
-        super(service, JobParameters.STOP_REASON_DEVICE_STATE,
-                JobScheduler.PENDING_JOB_REASON_DEVICE_STATE,
+        // Uses the new specific stop reason code as STOP_REASON_DEVICE_STATE_THERMAL and
+        // pending reason code as PENDING_JOB_REASON_DEVICE_STATE_THERMAL, when flag is enabled,
+        // otherwise fall back to the generic stop reason code STOP_REASON_DEVICE_STATE and pending
+        // reason code as PENDING_JOB_REASON_DEVICE_STATE.
+        super(service, maybeGetEnhancedStopReason(), maybeGetEnhancedPendingReason(),
                 JobParameters.INTERNAL_STOP_REASON_DEVICE_THERMAL);
     }
 
@@ -142,5 +146,50 @@ public class ThermalStatusRestriction extends JobRestriction {
     public void dumpConstants(IndentingPrintWriter pw) {
         pw.print("Thermal status: ");
         pw.println(mThermalStatus);
+    }
+
+    /**
+     * Returns the appropriate pending reason to use when a job is restricted due to
+     * device thermal status.
+     *
+     * <p>If the {@link android.app.job.Flags#enhancedPendingAndStopReasonsApi()} flag is enabled
+     * and the app has the {@link JobStatus#INTRODUCE_NEW_PENDING_AND_STOP_DEVICE_STATE_REASONS}
+     * compatibility change enabled, this will return the specific
+     * {@link JobScheduler#PENDING_JOB_REASON_DEVICE_STATE_THERMAL}. Otherwise, it returns the
+     * generic {@link JobScheduler#PENDING_JOB_REASON_DEVICE_STATE}.
+     *
+     * @return The pending reason to be reported to the system and developers.
+     */
+    private static int maybeGetEnhancedPendingReason() {
+        if (android.app.job.Flags.enhancedPendingAndStopReasonsApi()
+                && CompatChanges.isChangeEnabled(
+                        JobStatus.INTRODUCE_NEW_PENDING_AND_STOP_DEVICE_STATE_REASONS)) {
+            return JobScheduler.PENDING_JOB_REASON_DEVICE_STATE_THERMAL;
+        }
+        return JobScheduler.PENDING_JOB_REASON_DEVICE_STATE;
+    }
+
+    /**
+     * Returns the appropriate stop reason to use when a job is stopped due to
+     * device thermal status.
+     *
+     * <p>These improved response codes help developers better understand system behavior
+     * and application code, leading to more accurate and user-friendly experiences.
+     *
+     * <p>If the {@link android.app.job.Flags#enhancedPendingAndStopReasonsApi()} flag is enabled
+     * and the app has the {@link JobStatus#INTRODUCE_NEW_PENDING_AND_STOP_DEVICE_STATE_REASONS}
+     * compatibility change enabled, this will return the specific
+     * {@link JobParameters#STOP_REASON_DEVICE_STATE_THERMAL}. Otherwise, it returns the
+     * generic {@link JobParameters#STOP_REASON_DEVICE_STATE}.
+     *
+     * @return The stop reason to be reported to the system and developers.
+     */
+    private static int maybeGetEnhancedStopReason() {
+        if (android.app.job.Flags.enhancedPendingAndStopReasonsApi()
+                && CompatChanges.isChangeEnabled(
+                        JobStatus.INTRODUCE_NEW_PENDING_AND_STOP_DEVICE_STATE_REASONS)) {
+            return JobParameters.STOP_REASON_DEVICE_STATE_THERMAL;
+        }
+        return JobParameters.STOP_REASON_DEVICE_STATE;
     }
 }

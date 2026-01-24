@@ -4474,8 +4474,7 @@ public final class DisplayManagerService extends SystemService {
             }
             if (mPersistentDataStore.setUserPreferredHdrMode(displayDevice, preference)) {
                 mPersistentDataStore.saveIfNeeded();
-                // TODO(b/460304742): Implement HDR mode voting in DisplayModeDirector. displayId
-                //   param will be used in the voting summary
+                mDisplayModeDirector.setUserPreferredHdrMode(displayId, preference);
             }
         }
     }

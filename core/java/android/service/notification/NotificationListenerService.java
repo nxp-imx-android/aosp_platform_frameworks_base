@@ -1589,7 +1589,7 @@ public abstract class NotificationListenerService extends Service {
         @Override
         public void onListenerConnected(NotificationRankingUpdate update,
                 IDispatchCompletionListener completionListener, long dispatchToken) {
-            if (Flags.reportNlsStartAndEnd() && completionListener == null) {
+            if (completionListener == null) {
                 Log.e(TAG, "No completion listener supplied for this service!");
             }
 
@@ -2433,7 +2433,7 @@ public abstract class NotificationListenerService extends Service {
 
     private void notifyDispatchCompletion(long token) {
         synchronized (mLock) {
-            if (!Flags.reportNlsStartAndEnd() || mCompletionListener == null) {
+            if (mCompletionListener == null) {
                 // System listeners are not bound so we don't supply them a mCompletionListener.
                 return;
             }

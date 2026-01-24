@@ -514,6 +514,15 @@ public abstract class TvInteractiveAppService extends Service {
         }
 
         /**
+         * Callback when starts an interactive app using its handle id.
+         * @param handle the handle id of the interactive app.
+         *
+         * @hide
+         */
+        public void onStartInteractiveApp(int handle) {
+        }
+
+        /**
          * Creates broadcast-independent(BI) interactive application.
          *
          * <p>The implementation should call {@link #notifyBiInteractiveAppCreated(Uri, String)},
@@ -1763,6 +1772,10 @@ public abstract class TvInteractiveAppService extends Service {
             onResetInteractiveApp();
         }
 
+        void startInteractiveApp(int handle) {
+            onStartInteractiveApp(handle);
+        }
+
         void createBiInteractiveApp(@NonNull Uri biIAppUri, @Nullable Bundle params) {
             onCreateBiInteractiveAppRequest(biIAppUri, params);
         }
@@ -2059,6 +2072,38 @@ public abstract class TvInteractiveAppService extends Service {
                         }
                     } catch (RemoteException e) {
                         Log.w(TAG, "error in notifySessionStateChanged", e);
+                    }
+                }
+            });
+        }
+
+        /**
+         * Notify when there is a change with app metadata of an interactive app.
+         *
+         * <p> This is used for AppCatUI feature defined in ABNT NBR 15606-2:2023 Section 9.3.2.
+         * For example, in the context of the Ginga-NCL, this is to list the applications in the
+         * structure that can be launched by the user, as well as allow them to add and remove the
+         * apps.
+         * </p>
+         *
+         * @param appInfo The interactive application info.
+         *
+         * @hide
+         */
+        public void notifyInteractiveAppInfoChanged(TvInteractiveAppInfo appInfo) {
+            executeOrPostRunnableOnMainThread(new Runnable() {
+                @MainThread
+                @Override
+                public void run() {
+                    try {
+                        if (DEBUG) {
+                            Log.d(TAG, "notifyInteractiveAppInfo changed");
+                        }
+                        if (mSessionCallback != null) {
+                            mSessionCallback.onInteractiveAppInfoChanged(appInfo);
+                        }
+                    } catch (RemoteException e) {
+                        Log.w(TAG, "error in notifyBroadcastInteractiveAppState", e);
                     }
                 }
             });

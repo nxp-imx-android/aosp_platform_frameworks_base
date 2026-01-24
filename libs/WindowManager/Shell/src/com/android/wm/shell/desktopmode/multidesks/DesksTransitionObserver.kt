@@ -392,8 +392,7 @@ class DesksTransitionObserver(
                                     // (2) When a task is going full-immersive, this task is
                                     // considered "in" the desk, it just happens to occlude/stop
                                     // everything behind it.
-                                    Flags.makeFillingBoundsChangeEffectLifecycle() &&
-                                        hasFullImmersiveTask -> false
+                                    hasFullImmersiveTask -> false
                                     // Otherwise deactivate.
                                     else -> true
                                 }

@@ -91,6 +91,7 @@ import com.android.systemui.shade.ui.viewmodel.notificationShadeWindowModel
 import com.android.systemui.statusbar.data.repository.fakeStatusBarModePerDisplayRepository
 import com.android.systemui.statusbar.disableflags.data.repository.fakeDisableFlagsRepository
 import com.android.systemui.statusbar.disableflags.domain.interactor.disableFlagsInteractor
+import com.android.systemui.statusbar.multiDisplayStatusBarLogger
 import com.android.systemui.statusbar.notification.collection.BundleSpec
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder
@@ -270,6 +271,7 @@ class KosmosJavaAdapter() {
     val keyguardSurfaceBehindInteractor by lazy { kosmos.keyguardSurfaceBehindInteractor }
     val fakeUserRepository by lazy { kosmos.fakeUserRepository }
     val userRepository by lazy { kosmos.userRepository }
+    val multiDisplayStatusBarLogger by lazy { kosmos.multiDisplayStatusBarLogger }
 
     /** Use if you need a unique or mutate-able row */
     fun createRow(): ExpandableNotificationRow {

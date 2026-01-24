@@ -762,7 +762,7 @@ private val DEBUG_BOX_COLOR = Color(0f, 1f, 0f, 0.2f)
  * This is different from [boundsInWindow], which clips the bounds to the window. Unclipped bounds
  * are needed when a layout is positioned off-screen, for example during a scene transition.
  */
-private fun LayoutCoordinates.rawBoundsInWindow(): YSpace {
+internal fun LayoutCoordinates.rawBoundsInWindow(): YSpace {
     val root = findRootCoordinates()
 
     // Explicitly set clipBounds=false to ensure we get the raw, unclipped bounds, as the default

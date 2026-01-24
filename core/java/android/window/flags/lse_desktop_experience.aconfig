@@ -1158,16 +1158,6 @@ flag {
 }
 
 flag {
-    name: "make_filling_bounds_change_effect_lifecycle"
-    namespace: "lse_desktop_experience"
-    description: "Flags bounds changes to/from filling as EFFECTS_LIFECYCLE"
-    bug: "452347446"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "move_task_to_front_on_drag_resizing_bugfix"
     namespace: "lse_desktop_experience"
     description: "Moving a drag resized task to front"

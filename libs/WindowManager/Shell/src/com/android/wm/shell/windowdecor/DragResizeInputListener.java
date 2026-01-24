@@ -463,7 +463,7 @@ class DragResizeInputListener implements AutoCloseable {
         private final InputManager mInputManager;
         @NonNull private final DragPositioningCallback mCallback;
         @NonNull private final Choreographer mChoreographer;
-        @NonNull private final Runnable mConsumeBatchEventRunnable;
+        @NonNull private final Choreographer.VsyncCallback mConsumeBatchEventCallback;
         @NonNull private final DragDetector mDragDetector;
         @NonNull private final Supplier<Size> mDisplayLayoutSizeSupplier;
         @NonNull private final Consumer<Region> mTouchRegionConsumer;
@@ -493,9 +493,9 @@ class DragResizeInputListener implements AutoCloseable {
             mCallback = callback;
             mChoreographer = choreographer;
 
-            mConsumeBatchEventRunnable = () -> {
+            mConsumeBatchEventCallback = frameData -> {
                 mConsumeBatchEventScheduled = false;
-                if (consumeBatchedInputEvents(mChoreographer.getFrameTimeNanos())) {
+                if (consumeBatchedInputEvents(frameData.getFrameTimeNanos())) {
                     // If we consumed a batch here, we want to go ahead and schedule the
                     // consumption of batched input events on the next frame. Otherwise, we would
                     // wait until we have more input events pending and might get starved by other
@@ -557,8 +557,8 @@ class DragResizeInputListener implements AutoCloseable {
             if (mConsumeBatchEventScheduled) {
                 return;
             }
-            mChoreographer.postCallback(
-                    Choreographer.CALLBACK_INPUT, mConsumeBatchEventRunnable, null);
+            mChoreographer.postVsyncCallback(
+                    Choreographer.CALLBACK_INPUT, mConsumeBatchEventCallback);
             mConsumeBatchEventScheduled = true;
         }
 

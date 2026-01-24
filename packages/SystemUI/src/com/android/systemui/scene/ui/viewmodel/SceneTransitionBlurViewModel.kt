@@ -82,13 +82,6 @@ constructor(
     private val ambientModeSupported: Boolean by
         wallpaperInteractor.wallpaperSupportsAmbientMode.hydratedStateOf(false)
 
-    private val windowRootViewBlurSupported: Boolean by
-        windowRootViewBlurInteractor.isBlurCurrentlySupported.hydratedStateOf()
-
-    private fun onBlurApplied(blurEffect: BlurEffect) {
-        windowRootViewBlurInteractor.onBlurApplied(blurEffect.radius.toInt())
-    }
-
     private val isPersistentEarlyWakeupRequired: Flow<Boolean> =
         windowRootViewBlurInteractor.isBlurCurrentlySupported
             .flatMapLatest { blurSupported ->
@@ -107,7 +100,10 @@ constructor(
             .distinctUntilChanged()
 
     override suspend fun onActivated() {
-        blurChoreographer.registerOnBlurAppliedListener(::onBlurApplied)
+        blurChoreographer.registerOnBlurAppliedListener { blurEffect ->
+            windowRootViewBlurInteractor.onBlurApplied(blurEffect.radius.toInt())
+        }
+
         windowRootViewBlurInteractor.registerShadeBlurChangedListener {
             v("Applying blur requested by shade", it.radius, it.scale)
             applyBlur(it)
@@ -217,11 +213,13 @@ constructor(
     }
 
     private fun applyBlur(blurEffect: BlurEffect) {
-        if (windowRootViewBlurSupported) {
-            blurChoreographer.applyBlur(blurEffect)
-        } else {
-            blurChoreographer.applyBlur(BlurEffect(0f, 1f))
-        }
+        blurChoreographer.applyBlur(
+            if (windowRootViewBlurInteractor.isBlurCurrentlySupported.value) {
+                blurEffect
+            } else {
+                BlurEffect(0f, 1f)
+            }
+        )
     }
 
     private fun TransitionState.Transition.ShowOrHideOverlay.toBlurRadius(

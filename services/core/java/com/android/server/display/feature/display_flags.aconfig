@@ -399,3 +399,13 @@ flag {
     description: "Enable Connected Display features on virtual displays with proper configuration"
     bug: "459987054"
 }
+
+flag {
+    name: "enable_null_display_info_cache"
+    namespace: "display_manager"
+    description: "Enable null DisplayInfo caching in DisplayManagerGlobal so subsequent calls with null avoid a binder call."
+    bug: "475776125"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

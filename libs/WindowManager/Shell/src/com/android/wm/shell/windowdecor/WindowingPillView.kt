@@ -30,7 +30,6 @@ import android.view.View.OnClickListener
 import android.view.accessibility.AccessibilityNodeInfo
 import android.widget.ImageButton
 import android.widget.LinearLayout
-import android.widget.Space
 import androidx.compose.ui.graphics.toArgb
 import androidx.core.view.ViewCompat
 import androidx.core.view.accessibility.AccessibilityNodeInfoCompat
@@ -100,11 +99,8 @@ class WindowingPillView(private val context: Context, attrs: AttributeSet) :
 
     private val fullscreenBtn: ImageButton
     private val splitscreenBtn: ImageButton
-    private val splitscreenBtnSpace: Space
     private val floatingBtn: ImageButton
-    private val floatingBtnSpace: Space
     private val desktopBtn: ImageButton
-    private val desktopBtnSpace: Space
 
     private lateinit var taskInfo: RunningTaskInfo
     private lateinit var windowDecorationActions: WindowDecorationActions
@@ -119,11 +115,8 @@ class WindowingPillView(private val context: Context, attrs: AttributeSet) :
 
         fullscreenBtn = requireViewById<ImageButton>(R.id.fullscreen_button)
         splitscreenBtn = requireViewById<ImageButton>(R.id.split_screen_button)
-        splitscreenBtnSpace = requireViewById<Space>(R.id.split_screen_button_space)
         floatingBtn = requireViewById<ImageButton>(R.id.floating_button)
-        floatingBtnSpace = requireViewById<Space>(R.id.floating_button_space)
         desktopBtn = requireViewById<ImageButton>(R.id.desktop_button)
-        desktopBtnSpace = requireViewById<Space>(R.id.desktop_button_space)
     }
 
     /**
@@ -269,12 +262,10 @@ class WindowingPillView(private val context: Context, attrs: AttributeSet) :
 
         if (!BubbleAnythingFlagHelper.enableBubbleToFullscreen() || taskInfo.isFreeform) {
             floatingBtn.visibility = View.GONE
-            floatingBtnSpace.visibility = View.GONE
         }
 
         if (!Flags.enableNonDefaultDisplaySplitBugfix() && taskInfo.displayId != DEFAULT_DISPLAY) {
             splitscreenBtn.visibility = View.GONE
-            splitscreenBtnSpace.visibility = View.GONE
         }
 
         fullscreenBtn.isSelected = taskInfo.isFullscreen
@@ -287,7 +278,6 @@ class WindowingPillView(private val context: Context, attrs: AttributeSet) :
         floatingBtn.isEnabled = !taskInfo.isPinned
         floatingBtn.imageTintList = style.buttonColor
         desktopBtn.isGone = !shouldShowDesktopModeButton
-        desktopBtnSpace.isGone = !shouldShowDesktopModeButton
         desktopBtn.isSelected = taskInfo.isFreeform
         desktopBtn.isEnabled = !taskInfo.isFreeform
         desktopBtn.imageTintList = style.buttonColor

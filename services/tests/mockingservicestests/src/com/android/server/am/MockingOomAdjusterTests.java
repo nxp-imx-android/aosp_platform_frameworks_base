@@ -98,7 +98,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyBoolean;
 import static org.mockito.Mockito.anyInt;
@@ -142,6 +141,7 @@ import android.util.SparseIntArray;
 
 import com.android.server.LocalServices;
 import com.android.server.am.psc.ActiveUidsInternal;
+import com.android.server.am.psc.MockUtils;
 import com.android.server.am.psc.OomAdjuster;
 import com.android.server.am.psc.ProcessRecordInternal;
 import com.android.server.am.psc.ProcessStateController;
@@ -829,8 +829,8 @@ public class MockingOomAdjusterTests {
         ServiceRecord s = ServiceRecord.newEmptyInstanceForTest(mService);
         s.appInfo = new ApplicationInfo();
         mProcessStateController.setStartRequested(s, true);
-        s.setIsForeground(true);
-        s.setForegroundServiceType(FOREGROUND_SERVICE_TYPE_SHORT_SERVICE);
+        mProcessStateController.setIsForegroundService(s, true);
+        mProcessStateController.setForegroundServiceType(s, FOREGROUND_SERVICE_TYPE_SHORT_SERVICE);
         s.setShortFgsInfo(SystemClock.uptimeMillis());
 
         // SHORT_SERVICE FGS will get IMP_FG and a slightly different recent-adjustment.
@@ -874,8 +874,8 @@ public class MockingOomAdjusterTests {
         s.appInfo = new ApplicationInfo();
 
         mProcessStateController.setStartRequested(s, true);
-        s.setIsForeground(true);
-        s.setForegroundServiceType(FOREGROUND_SERVICE_TYPE_SHORT_SERVICE);
+        mProcessStateController.setIsForegroundService(s, true);
+        mProcessStateController.setForegroundServiceType(s, FOREGROUND_SERVICE_TYPE_SHORT_SERVICE);
         s.setShortFgsInfo(SystemClock.uptimeMillis()
                 - mOomConstants.mShortFgsTimeoutDuration
                 - mOomConstants.mShortFgsProcStateExtraWaitDuration);
@@ -2326,8 +2326,8 @@ public class MockingOomAdjusterTests {
         ServiceRecord s = ServiceRecord.newEmptyInstanceForTest(mService);
         s.appInfo = new ApplicationInfo();
         mProcessStateController.setStartRequested(s, true);
-        s.setIsForeground(true);
-        s.setForegroundServiceType(FOREGROUND_SERVICE_TYPE_SHORT_SERVICE);
+        mProcessStateController.setIsForegroundService(s, true);
+        mProcessStateController.setForegroundServiceType(s, FOREGROUND_SERVICE_TYPE_SHORT_SERVICE);
         s.setShortFgsInfo(SystemClock.uptimeMillis());
         client.mServices.startService(s);
         client.setLastTopTime(SystemClock.uptimeMillis());
@@ -4631,23 +4631,17 @@ public class MockingOomAdjusterTests {
     private ServiceRecord makeServiceRecord() {
         final ServiceRecord record = mock(ServiceRecord.class);
         // Don't mock getter/setter methods at ServiceRecordInternal.
+        MockUtils.passThroughServiceRecordInternal(record);
         doCallRealMethod().when(record).isStartRequested();
-        doCallRealMethod().when(record).setStartRequested(any(boolean.class));
         doCallRealMethod().when(record).isForeground();
-        doCallRealMethod().when(record).setIsForeground(any(boolean.class));
         doCallRealMethod().when(record).isKeepWarming();
         doCallRealMethod().when(record).updateKeepWarmLocked();
         doCallRealMethod().when(record).getLastActivity();
-        doCallRealMethod().when(record).setLastActivity(any(long.class));
         doCallRealMethod().when(record).getForegroundServiceType();
-        doCallRealMethod().when(record).setForegroundServiceType(any(int.class));
         doCallRealMethod().when(record).getHostProcess();
         doCallRealMethod().when(record).getHostProcessInternal();
-        doCallRealMethod().when(record).setHostProcess(nullable(ProcessRecordInternal.class));
         doCallRealMethod().when(record).getIsolationHostProcess();
         doCallRealMethod().when(record).getLastTopAlmostPerceptibleBindRequestUptimeMs();
-        doCallRealMethod().when(record).setLastTopAlmostPerceptibleBindRequestUptimeMs(
-                any(long.class));
 
         setFieldValue(ServiceRecord.class, record, "connections",
                 new ArrayMap<IBinder, ArrayList<ConnectionRecord>>());

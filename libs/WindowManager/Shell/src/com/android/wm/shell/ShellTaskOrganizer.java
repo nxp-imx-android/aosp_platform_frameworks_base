@@ -744,7 +744,7 @@ public class ShellTaskOrganizer extends TaskOrganizer {
             int displayId, IOverviewOverlayLeashInvalidationCallback callback) {
         if (!isOverviewOverlayEnabled(displayId)) {
             ProtoLog.v(WM_SHELL_TASK_ORG,
-                    "registerOverviewOverlayLeashInvalidationCallback: "
+                    "unregisterOverviewOverlayLeashInvalidationCallback: "
                             + "overview overlay is not enabled on displayId=%d",
                     displayId);
             return;

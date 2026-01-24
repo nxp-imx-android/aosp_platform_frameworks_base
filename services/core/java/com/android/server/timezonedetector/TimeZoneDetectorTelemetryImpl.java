@@ -16,6 +16,14 @@
 
 package com.android.server.timezonedetector;
 
+import static com.android.internal.util.FrameworkStatsLog.AUTOMATIC_TIME_ZONE_CHANGE_REVERTED_BY_USER_REPORTED__SOURCE__TIME_ZONE_SOURCE_FUSED_SIGNALS;
+import static com.android.internal.util.FrameworkStatsLog.AUTOMATIC_TIME_ZONE_CHANGE_REVERTED_BY_USER_REPORTED__SOURCE__TIME_ZONE_SOURCE_LOCATION;
+import static com.android.internal.util.FrameworkStatsLog.AUTOMATIC_TIME_ZONE_CHANGE_REVERTED_BY_USER_REPORTED__SOURCE__TIME_ZONE_SOURCE_TELEPHONY;
+import static com.android.internal.util.FrameworkStatsLog.AUTOMATIC_TIME_ZONE_CHANGE_REVERTED_BY_USER_REPORTED__SOURCE__UNSPECIFIED;
+import static com.android.server.timezonedetector.TimeZoneDetectorStrategy.ORIGIN_FUSED;
+import static com.android.server.timezonedetector.TimeZoneDetectorStrategy.ORIGIN_LOCATION;
+import static com.android.server.timezonedetector.TimeZoneDetectorStrategy.ORIGIN_TELEPHONY;
+
 import android.annotation.NonNull;
 import android.app.timezonedetector.TelephonyTimeZoneSuggestion;
 import android.content.Context;
@@ -27,6 +35,7 @@ import android.util.Log;
 
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
+import com.android.server.timezonedetector.TimeZoneDetectorStrategy.Origin;
 
 import java.time.DateTimeException;
 import java.time.Duration;
@@ -92,6 +101,13 @@ public final class TimeZoneDetectorTelemetryImpl implements TimeZoneDetectorTele
      */
     private String mDestinationTimeZoneId;
 
+    /**
+     * This is used only for logging of automatic time zone change rejection. It prevents
+     * accidentally logging telephony suggestions which could be received after automatic time zone
+     * change, but before automatic time zone change was rejected.
+     */
+    private TelephonyTimeZoneSuggestion mTelephonySuggestionAtLastTimeZoneChange;
+
     private final TimeZoneDetectorLogger mTimeZoneDetectorLogger;
 
     /** Creates a new instance of {@link TimeZoneDetectorTelemetryImpl}. */
@@ -133,12 +149,73 @@ public final class TimeZoneDetectorTelemetryImpl implements TimeZoneDetectorTele
     @Override
     public synchronized void onFusedTimeZoneChanged(String timeZoneId) {
         mLastFusedTimeZoneId = timeZoneId;
+        mTelephonySuggestionAtLastTimeZoneChange = mLastTelephonyTimeZoneSuggestion;
         boolean currentlyAgree = doLastSuggestionsAgree();
         if (currentlyAgree && !mPreviouslyAgree) {
             // Both suggestions are now agreeing and fused time zone detector has reported a change
             mFusedTimeZoneChangeTimeMillis = mEnvironment.currentTimeMillis();
             handleReagreement();
         }
+    }
+
+    @Override
+    public synchronized void logRejectedTimeZoneChange(
+            @Origin int origin,
+            @NonNull String oldZoneId,
+            @NonNull String rejectedZoneId,
+            @NonNull String newZoneId) {
+
+        TelephonyTimeZoneSuggestion telephonySuggestion = mTelephonySuggestionAtLastTimeZoneChange;
+
+        int source =
+                switch (origin) {
+                    // Generated code - impossible to fit into 100 columns
+                    case ORIGIN_LOCATION ->
+                            AUTOMATIC_TIME_ZONE_CHANGE_REVERTED_BY_USER_REPORTED__SOURCE__TIME_ZONE_SOURCE_LOCATION;
+                    case ORIGIN_TELEPHONY ->
+                            AUTOMATIC_TIME_ZONE_CHANGE_REVERTED_BY_USER_REPORTED__SOURCE__TIME_ZONE_SOURCE_TELEPHONY;
+                    case ORIGIN_FUSED ->
+                            AUTOMATIC_TIME_ZONE_CHANGE_REVERTED_BY_USER_REPORTED__SOURCE__TIME_ZONE_SOURCE_FUSED_SIGNALS;
+                    default ->
+                            AUTOMATIC_TIME_ZONE_CHANGE_REVERTED_BY_USER_REPORTED__SOURCE__UNSPECIFIED;
+                };
+        int locationTimeZoneProviderUid =
+                getPrimaryLocationTimeZoneProviderPackageUid(mContext, mPackageManager);
+        mTimeZoneDetectorLogger.logAutomaticTimeZoneChangeRejection(
+                /* source= */ source,
+                /* mcc= */ getMcc(telephonySuggestion),
+                /* mnc= */ getMnc(telephonySuggestion),
+                /* nitz_offset_seconds= */ getNitzOffsetSeconds(telephonySuggestion),
+                /* nitz_dst_offset_seconds= */ getNitzDstOffsetSeconds(telephonySuggestion),
+                /* previous_time_zone= */ oldZoneId,
+                /* rejected_automatic_time_zone= */ rejectedZoneId,
+                /* manual_time_zone= */ newZoneId,
+                /* country_code= */ "", // not available yet
+                /* tzdb_version= */ TimeZone.getTZDataVersion(),
+                /* location_time_zone_provider_uid= */ locationTimeZoneProviderUid);
+        Log.i(
+                TAG,
+                "Time zone change rejected: source="
+                        + source
+                        + ", previous_time_zone="
+                        + oldZoneId
+                        + ", rejected_automatic_time_zone="
+                        + rejectedZoneId
+                        + ", manual_time_zone="
+                        + newZoneId
+                        + ", location_time_zone_provider='"
+                        + locationTimeZoneProviderUid
+                        + "'"
+                        + ", mcc="
+                        + getMcc(telephonySuggestion)
+                        + ", mnc="
+                        + getMnc(telephonySuggestion)
+                        + ", nitz_offset_seconds="
+                        + getNitzOffsetSeconds(telephonySuggestion)
+                        + ", nitz_dst_offset_seconds="
+                        + getNitzDstOffsetSeconds(telephonySuggestion)
+                        + ", tzdb_version="
+                        + TimeZone.getTZDataVersion());
     }
 
     @GuardedBy("this")
@@ -285,14 +362,8 @@ public final class TimeZoneDetectorTelemetryImpl implements TimeZoneDetectorTele
         if (!Flags.enableTimeZoneTransitionTelemetryLogging()) {
             return;
         }
-        String mcc =
-                telephonySuggestion.getTelephonySignal() == null
-                        ? ""
-                        : telephonySuggestion.getTelephonySignal().getMcc();
-        String mnc =
-                telephonySuggestion.getTelephonySignal() == null
-                        ? ""
-                        : telephonySuggestion.getTelephonySignal().getMnc();
+        String mcc = getMcc(telephonySuggestion);
+        String mnc = getMnc(telephonySuggestion);
         boolean flipFlop =
                 isFlipFlop(
                         timeZoneIdBeforeDisagreement,
@@ -380,14 +451,8 @@ public final class TimeZoneDetectorTelemetryImpl implements TimeZoneDetectorTele
         if (!Flags.enablePermanentTimeZoneCorrectnessTelemetryLogging()) {
             return;
         }
-        String mcc =
-                telephonySuggestion.getTelephonySignal() == null
-                        ? ""
-                        : telephonySuggestion.getTelephonySignal().getMcc();
-        String mnc =
-                telephonySuggestion.getTelephonySignal() == null
-                        ? ""
-                        : telephonySuggestion.getTelephonySignal().getMnc();
+        String mcc = getMcc(telephonySuggestion);
+        String mnc = getMnc(telephonySuggestion);
         String telephonyZoneId = telephonySuggestion == null ? "" : telephonySuggestion.getZoneId();
         mTimeZoneDetectorLogger.logTimeZoneDiscrepancy(
                 /* geoLocationTimeZoneId= */ locationTimeZoneId == null ? "" : locationTimeZoneId,
@@ -444,5 +509,25 @@ public final class TimeZoneDetectorTelemetryImpl implements TimeZoneDetectorTele
             return NITZ_OFFSET_NOT_AVAILABLE;
         }
         return telephonySuggestion.getTelephonySignal().getNitzSignal().getZoneOffset() / 1000;
+    }
+
+    @NonNull
+    private static String getMcc(TelephonyTimeZoneSuggestion suggestion) {
+        if (suggestion == null
+                || suggestion.getTelephonySignal() == null
+                || suggestion.getTelephonySignal().getMcc() == null) {
+            return "";
+        }
+        return suggestion.getTelephonySignal().getMcc();
+    }
+
+    @NonNull
+    private static String getMnc(TelephonyTimeZoneSuggestion suggestion) {
+        if (suggestion == null
+                || suggestion.getTelephonySignal() == null
+                || suggestion.getTelephonySignal().getMnc() == null) {
+            return "";
+        }
+        return suggestion.getTelephonySignal().getMnc();
     }
 }

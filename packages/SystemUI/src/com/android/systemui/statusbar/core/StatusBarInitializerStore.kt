@@ -56,6 +56,7 @@ constructor(
         val statusBarModePerDisplayRepository =
             statusBarModeRepositoryStore.forDisplay(displayId) ?: return null
         return factory.create(
+            displayId,
             statusBarWindowController,
             statusBarModePerDisplayRepository,
             displaySubComponent.statusBarRootFactory,

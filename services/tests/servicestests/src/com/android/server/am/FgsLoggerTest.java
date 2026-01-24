@@ -28,6 +28,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
@@ -43,6 +44,7 @@ import androidx.test.filters.SmallTest;
 
 import com.android.server.am.psc.OomAdjuster;
 import com.android.server.am.psc.ProcessStateController;
+import com.android.server.am.psc.ServiceRecordInternal;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -69,6 +71,17 @@ public class FgsLoggerTest {
         doNothing().when(mFgsLogger)
                 .logFgsApiEventWithNoFgs(anyInt(),
                         anyInt(), anyInt(), anyLong());
+
+    }
+
+    private void setForegroundServiceType(ServiceRecord record, int type) {
+        // The ServiceRecordInternal class's setter methods is supposed to be called only from the
+        // ProcessStateController. Here we use a mock ProcessStateController and doCallRealMethod to
+        // execute the real setter method.
+        ProcessStateController processStateController = mock(ProcessStateController.class);
+        doCallRealMethod().when(processStateController).setForegroundServiceType(
+                any(ServiceRecordInternal.class), anyInt());
+        processStateController.setForegroundServiceType(record, type);
     }
 
     private static ActivityManagerService createMockActivityManagerService() {
@@ -81,7 +94,7 @@ public class FgsLoggerTest {
     @Test
     public void testFgsStartThenApiStart() {
         ServiceRecord record = ServiceRecord.newEmptyInstanceForTest(null);
-        record.setForegroundServiceType(ServiceInfo.FOREGROUND_SERVICE_TYPE_CAMERA);
+        setForegroundServiceType(record, ServiceInfo.FOREGROUND_SERVICE_TYPE_CAMERA);
         mFgsLogger.logForegroundServiceStart(1, 1, record);
         mFgsLogger.logForegroundServiceApiEventBegin(1, 1, 1, "aPackageHasNoName");
         int expectedTypes = 1;
@@ -102,7 +115,7 @@ public class FgsLoggerTest {
     @Test
     public void testApiStartThenFgsStart() {
         ServiceRecord record = ServiceRecord.newEmptyInstanceForTest(null);
-        record.setForegroundServiceType(ServiceInfo.FOREGROUND_SERVICE_TYPE_CAMERA);
+        setForegroundServiceType(record, ServiceInfo.FOREGROUND_SERVICE_TYPE_CAMERA);
         mFgsLogger.logForegroundServiceApiEventBegin(1, 1, 1, "aPackageHasNoName");
 
         resetAndVerifyZeroInteractions();
@@ -126,7 +139,7 @@ public class FgsLoggerTest {
     @Test
     public void testFgsStartApiStartFgsStopApiStop() {
         ServiceRecord record = ServiceRecord.newEmptyInstanceForTest(null);
-        record.setForegroundServiceType(ServiceInfo.FOREGROUND_SERVICE_TYPE_CAMERA);
+        setForegroundServiceType(record, ServiceInfo.FOREGROUND_SERVICE_TYPE_CAMERA);
         reset(mFgsLogger);
         mFgsLogger.logForegroundServiceApiEventBegin(FOREGROUND_SERVICE_API_TYPE_CAMERA,
                 1, 1, "aPackageHasNoName");
@@ -165,7 +178,7 @@ public class FgsLoggerTest {
     @Test
     public void testApiStartStopFgs() throws InterruptedException {
         ServiceRecord record = ServiceRecord.newEmptyInstanceForTest(null);
-        record.setForegroundServiceType(ServiceInfo.FOREGROUND_SERVICE_TYPE_CAMERA);
+        setForegroundServiceType(record, ServiceInfo.FOREGROUND_SERVICE_TYPE_CAMERA);
 
         mFgsLogger.logForegroundServiceApiEventBegin(FOREGROUND_SERVICE_API_TYPE_CAMERA,
                 1, 1, "aPackageHasNoName");
@@ -185,7 +198,7 @@ public class FgsLoggerTest {
     @Test
     public void testFgsStartStopApiStartStop() throws InterruptedException {
         ServiceRecord record = ServiceRecord.newEmptyInstanceForTest(null);
-        record.setForegroundServiceType(ServiceInfo.FOREGROUND_SERVICE_TYPE_CAMERA);
+        setForegroundServiceType(record, ServiceInfo.FOREGROUND_SERVICE_TYPE_CAMERA);
 
         mFgsLogger.logForegroundServiceStart(1, 1, record);
 
@@ -209,7 +222,7 @@ public class FgsLoggerTest {
     @Test
     public void testMultipleStartStopApis() throws InterruptedException {
         ServiceRecord record = ServiceRecord.newEmptyInstanceForTest(null);
-        record.setForegroundServiceType(ServiceInfo.FOREGROUND_SERVICE_TYPE_CAMERA);
+        setForegroundServiceType(record, ServiceInfo.FOREGROUND_SERVICE_TYPE_CAMERA);
         long timeStamp = mFgsLogger.logForegroundServiceApiEventBegin(
                 FOREGROUND_SERVICE_API_TYPE_CAMERA,
                 1, 1, "aPackageHasNoName");
@@ -266,7 +279,7 @@ public class FgsLoggerTest {
     @Test
     public void testMultipleStartStops() throws InterruptedException {
         ServiceRecord record = ServiceRecord.newEmptyInstanceForTest(null);
-        record.setForegroundServiceType(ServiceInfo.FOREGROUND_SERVICE_TYPE_CAMERA);
+        setForegroundServiceType(record, ServiceInfo.FOREGROUND_SERVICE_TYPE_CAMERA);
         long timeStamp = mFgsLogger.logForegroundServiceApiEventBegin(
                 FOREGROUND_SERVICE_API_TYPE_CAMERA,
                 1, 1, "aPackageHasNoName");
@@ -334,7 +347,7 @@ public class FgsLoggerTest {
     @Test
     public void testMultiStartStopThroughout() throws InterruptedException {
         ServiceRecord record = ServiceRecord.newEmptyInstanceForTest(null);
-        record.setForegroundServiceType(ServiceInfo.FOREGROUND_SERVICE_TYPE_CAMERA);
+        setForegroundServiceType(record, ServiceInfo.FOREGROUND_SERVICE_TYPE_CAMERA);
         long timeStamp = mFgsLogger.logForegroundServiceApiEventBegin(
                 FOREGROUND_SERVICE_API_TYPE_CAMERA, 1, 1, "aPackageHasNoName");
         Thread.sleep(1000);
@@ -403,10 +416,10 @@ public class FgsLoggerTest {
     @Test
     public void testMultipleFGS() throws InterruptedException {
         ServiceRecord record = ServiceRecord.newEmptyInstanceForTest(null);
-        record.setForegroundServiceType(ServiceInfo.FOREGROUND_SERVICE_TYPE_CAMERA);
+        setForegroundServiceType(record, ServiceInfo.FOREGROUND_SERVICE_TYPE_CAMERA);
         final ActivityManagerService ams = createMockActivityManagerService();
         ServiceRecord record2 = ServiceRecord.newEmptyInstanceForTest(ams);
-        record2.setForegroundServiceType(ServiceInfo.FOREGROUND_SERVICE_TYPE_CAMERA);
+        setForegroundServiceType(record2, ServiceInfo.FOREGROUND_SERVICE_TYPE_CAMERA);
         long timeStamp = mFgsLogger.logForegroundServiceApiEventBegin(
                 FOREGROUND_SERVICE_API_TYPE_CAMERA, 1, 1, "aPackageHasNoName");
         Thread.sleep(1000);
@@ -476,10 +489,10 @@ public class FgsLoggerTest {
     public void testMultipleUid() throws InterruptedException {
         int expectedTypes = 1;
         ServiceRecord record = ServiceRecord.newEmptyInstanceForTest(null);
-        record.setForegroundServiceType(ServiceInfo.FOREGROUND_SERVICE_TYPE_CAMERA);
+        setForegroundServiceType(record, ServiceInfo.FOREGROUND_SERVICE_TYPE_CAMERA);
         final ActivityManagerService ams = createMockActivityManagerService();
         ServiceRecord record2 = ServiceRecord.newEmptyInstanceForTest(ams);
-        record2.setForegroundServiceType(ServiceInfo.FOREGROUND_SERVICE_TYPE_CAMERA);
+        setForegroundServiceType(record2, ServiceInfo.FOREGROUND_SERVICE_TYPE_CAMERA);
         long timeStamp = mFgsLogger.logForegroundServiceApiEventBegin(1, 1, 1, "aPackageHasNoName");
         Thread.sleep(1000);
         mFgsLogger.logForegroundServiceApiEventBegin(FOREGROUND_SERVICE_API_TYPE_CAMERA, 1, 1,
@@ -497,9 +510,9 @@ public class FgsLoggerTest {
         mFgsLogger.logForegroundServiceApiEventEnd(FOREGROUND_SERVICE_API_TYPE_CAMERA, 1, 1);
 
         ServiceRecord recordUid2 = ServiceRecord.newEmptyInstanceForTest(null);
-        recordUid2.setForegroundServiceType(ServiceInfo.FOREGROUND_SERVICE_TYPE_CAMERA);
+        setForegroundServiceType(recordUid2, ServiceInfo.FOREGROUND_SERVICE_TYPE_CAMERA);
         ServiceRecord recordUid22 = ServiceRecord.newEmptyInstanceForTest(ams);
-        recordUid22.setForegroundServiceType(ServiceInfo.FOREGROUND_SERVICE_TYPE_CAMERA);
+        setForegroundServiceType(recordUid22, ServiceInfo.FOREGROUND_SERVICE_TYPE_CAMERA);
         long timeStamp2 = mFgsLogger.logForegroundServiceApiEventBegin(1, 2, 1,
                 "aPackageHasNoName");
         Thread.sleep(1000);
@@ -581,7 +594,7 @@ public class FgsLoggerTest {
     @Test
     public void testMultipleStartStopWithinFgsWindow() throws InterruptedException {
         ServiceRecord record = ServiceRecord.newEmptyInstanceForTest(null);
-        record.setForegroundServiceType(ServiceInfo.FOREGROUND_SERVICE_TYPE_CAMERA);
+        setForegroundServiceType(record, ServiceInfo.FOREGROUND_SERVICE_TYPE_CAMERA);
 
         resetAndVerifyZeroInteractions();
 
@@ -657,7 +670,7 @@ public class FgsLoggerTest {
     @Test
     public void multipleTypesOneFgsTest() {
         ServiceRecord record = ServiceRecord.newEmptyInstanceForTest(null);
-        record.setForegroundServiceType(ServiceInfo.FOREGROUND_SERVICE_TYPE_CAMERA
+        setForegroundServiceType(record, ServiceInfo.FOREGROUND_SERVICE_TYPE_CAMERA
                 | ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE);
 
         long timestamp1 = mFgsLogger.logForegroundServiceApiEventBegin(

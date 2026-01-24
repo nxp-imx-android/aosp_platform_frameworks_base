@@ -17,6 +17,7 @@
 package android.media.quality;
 
 import android.annotation.CallbackExecutor;
+import android.annotation.ColorInt;
 import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
@@ -24,7 +25,6 @@ import android.annotation.Nullable;
 import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
 import android.annotation.SystemService;
-import android.annotation.ColorInt;
 import android.content.Context;
 import android.media.tv.flags.Flags;
 import android.os.Bundle;
@@ -425,6 +425,28 @@ public final class MediaQualityManager {
             throw e.rethrowFromSystemServer();
         }
     }
+
+    /**
+     * Checks if a specific display panel technology is supported by the device.
+     * <p>
+     * This is a blocking call and should not be called on the main thread.
+     *
+     * @param panelTechnology The type of display panel technology to query. This must
+     * be one of the constants from {@code MediaQualityContract.PanelTechnology}.
+     * @return {@code true} if the specified panel technology is supported,
+     * {@code false} otherwise.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public boolean usesDisplayTechnology(
+            @MediaQualityContract.PanelTechnology int panelTechnology) {
+        try {
+            return mService.usesDisplayTechnology(panelTechnology,
+                    mUserHandle.getIdentifier());
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
 
     /**
      * Gets all package names whose picture profiles are available.

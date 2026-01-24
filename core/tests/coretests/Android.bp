@@ -69,6 +69,7 @@ android_test {
         "androidx.core_core",
         "androidx.core_core-ktx",
         "androidx.test.core",
+        "apct-perftests-utils",
         "androidx.test.espresso.core",
         "androidx.test.espresso.intents",
         "androidx.test.ext.junit",

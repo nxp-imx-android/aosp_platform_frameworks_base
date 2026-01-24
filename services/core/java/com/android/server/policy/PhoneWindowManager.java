@@ -2922,19 +2922,17 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         }
     }
 
-    private void updateSettings() {
-        updateSettings(null);
+    /**
+     * Update provider Setting values on mHandler.
+     */
+    void postUpdateSettings() {
+        mHandler.post(this::updateSettings);
     }
 
     /**
-     * Update provider Setting values on a given {@code handler}, or synchronously if {@code null}
-     * is passed for handler.
+     * Update provider Setting values synchronously.
      */
-    void updateSettings(Handler handler) {
-        if (handler != null) {
-            handler.post(() -> updateSettings(null));
-            return;
-        }
+    void updateSettings() {
         ContentResolver resolver = mContext.getContentResolver();
         boolean updateRotation = false;
         boolean updateKidsModeSettings = false;
@@ -5943,7 +5941,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         mDefaultDisplayRotation.updateOrientationListener();
         synchronized (mLock) {
             mSystemReady = true;
-            updateSettings(mHandler);
+            postUpdateSettings();
             // If this happens, for whatever reason, systemReady came later than systemBooted.
             // And keyguard should be already bound from systemBooted
             if (mSystemBooted) {

@@ -41,7 +41,6 @@ import static com.google.common.truth.Truth.assertThat;
 
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.AdditionalMatchers.not;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -1096,25 +1095,26 @@ public class ComputerControlSessionImplTest {
     }
 
     @Test
-    public void notifyActivityListener_beforeInitialization_setsNullSurface()
+    public void notifyActivityListener_beforeInitialization_doesNotSetSurface()
             throws RemoteException {
         createComputerControlSessionWithoutInitializing(mDefaultParams, GLOBAL_TIMEOUT_MILLIS);
         verify(mVirtualDevice).addActivityListener(any(),
                 mActivityListenerArgumentCaptor.capture());
 
         mActivityListenerArgumentCaptor.getValue().onDisplayEmpty(VIRTUAL_DISPLAY_ID);
-        verify(mVirtualDisplay).setSurface(isNull());
+        verify(mVirtualDisplay, never()).setSurface(any());
     }
 
     @Test
-    public void blockedState_updatesDisplaySurface() throws Exception {
+    public void blockedState_doesNotUpdateDisplaySurface() throws Exception {
         createComputerControlSession(mDefaultParams);
         clearInvocations(mVirtualDisplay);
 
         try (InBlockedState inBlockedState = new InBlockedState()) {
-            verify(mVirtualDisplay).setSurface(not(eq(mClientSurface)));
+            // Entering the blocked state should not trigger a new surface update
+            verify(mVirtualDisplay, never()).setSurface(any());
         }
-        verify(mVirtualDisplay).setSurface(eq(mClientSurface));
+        verify(mVirtualDisplay, never()).setSurface(any());
     }
 
     @Test
@@ -1220,14 +1220,17 @@ public class ComputerControlSessionImplTest {
     }
 
     @Test
-    public void requestScreenshot_notActive_returnsFalse() throws Exception {
+    public void requestScreenshot_inBlockedState_returnsTrue() throws Exception {
         createComputerControlSession(mDefaultParams);
+
+        when(mWindowManagerInternal.requestHardwareRendererOutputEnabled(
+                anyInt(), anyLong(), any(), any())).thenReturn(true);
 
         try (InBlockedState inBlockedState = new InBlockedState()) {
             boolean result = mSession.requestScreenshot();
-            assertThat(result).isFalse();
-            verify(mWindowManagerInternal, never()).requestHardwareRendererOutputEnabled(
-                    anyInt(), anyLong(), any(), any());
+            assertThat(result).isTrue();
+            verify(mWindowManagerInternal).requestHardwareRendererOutputEnabled(
+                    eq(VIRTUAL_DISPLAY_ID), anyLong(), any(), any());
         }
     }
 

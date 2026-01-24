@@ -130,6 +130,7 @@ interface StatusBarPhoneModule {
         ): StatusBarInitializerImpl {
             val systemUIDisplaySubcomponent = displayComponentRepo[Display.DEFAULT_DISPLAY]!!
             return implFactory.create(
+                Display.DEFAULT_DISPLAY,
                 statusBarWindowControllerStore.defaultDisplay,
                 statusBarModeRepositoryStore.defaultDisplay,
                 systemUIDisplaySubcomponent.statusBarRootFactory,

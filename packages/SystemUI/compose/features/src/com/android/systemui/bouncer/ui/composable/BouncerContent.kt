@@ -1000,7 +1000,10 @@ private fun UserSwitcher(viewModel: BouncerOverlayContentViewModel, modifier: Mo
                 modifier = Modifier.size(userSwitcherIconSize).sysuiResTag("user_icon"),
             )
         }
-        if (Flags.disableUserSwitcherDropdownOnBouncer() && dropdownItems.size <= 1) {
+        if (
+            (Flags.disableUserSwitcherDropdownOnBouncer() ||
+                Flags.disableUserSwitcherDropdownOnBouncer2()) && dropdownItems.size <= 1
+        ) {
             Spacer(modifier = Modifier.height(24.dp))
             UserNamePill(viewModel = viewModel, maxWidth = maxUserSwitcherWidth)
         } else {
