@@ -309,7 +309,8 @@ public class AssociationRequestsProcessor {
             createAssociation(userId, packageName, macAddress, request.getDisplayName(),
                     request.getDeviceProfile(), request.getAssociatedDevice(),
                     request.isSelfManaged(), callback, resultReceiver, request.getDeviceIcon(),
-                    /* skipRoleGrant= */ false, request.getExtraPermissions());
+                    /* skipRoleGrant= */ false, request.getExtraPermissions(),
+                    request.isRemoteAiAgentSupported());
         });
     }
 
@@ -321,7 +322,8 @@ public class AssociationRequestsProcessor {
             @Nullable String deviceProfile, @Nullable AssociatedDevice associatedDevice,
             boolean selfManaged, @Nullable IAssociationRequestCallback callback,
             @Nullable ResultReceiver resultReceiver, @Nullable Icon deviceIcon,
-            boolean skipRoleGrant, @NonNull Set<String> extraPermissions) {
+            boolean skipRoleGrant, @NonNull Set<String> extraPermissions,
+            boolean isRemoteAiAgentSupported) {
         final int id = mAssociationStore.getNextId();
         final long timestamp = System.currentTimeMillis();
 
@@ -351,6 +353,7 @@ public class AssociationRequestsProcessor {
                         .setPackagesToNotify(null)
                         .setMetadata(new PersistableBundle())
                         .setExtraPermissions(extraPermissions)
+                        .setRemoteAiAgentSupported(isRemoteAiAgentSupported)
                         .build();
 
         if (skipRoleGrant) {

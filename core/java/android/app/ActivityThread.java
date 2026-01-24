@@ -5421,8 +5421,11 @@ public final class ActivityThread extends ClientTransactionHandler
         try {
             PackageInfo requestedPackage = getPackageManager().getPackageInfo(
                     data.appInfo.packageName, 0, UserHandle.myUserId());
-            if (requestedPackage.applicationInfo.uid != Process.myUid()) {
-                Slog.w(TAG, "Asked to instantiate non-matching package "
+            int backupAgentUid = enablePccFrameworkSupport()
+                    ? requestedPackage.applicationInfo.getBackupAgentUid()
+                    : requestedPackage.applicationInfo.uid;
+            if (backupAgentUid != Process.myUid()) {
+                Slog.w(TAG, "Asked to instantiate non-matching package or UID "
                         + data.appInfo.packageName);
                 return;
             }

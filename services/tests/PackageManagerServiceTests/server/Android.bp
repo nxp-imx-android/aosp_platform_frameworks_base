@@ -114,6 +114,10 @@ android_test {
         ":PackageParserTestPcc",
         ":PackageParserTestPccAndIsolatedService",
         ":PackageParserTestAllowComponentAccess",
+        ":PackageParserTestBackupAgentProcessPcc",
+        ":PackageParserTestBackupAgentProcessPccNoPccComponents",
+        ":PackageParserTestBackupAgentProcessMain",
+        ":PackageParserTestBackupAgentProcessNotSpecified",
     ],
     resource_zips: [":PackageManagerServiceServerTests_apks_as_resources"],
 

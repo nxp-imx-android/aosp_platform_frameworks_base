@@ -22,8 +22,13 @@ import static org.mockito.Mockito.when;
 
 import android.companion.datatransfer.continuity.IHandoffFeatureStateListener;
 import android.companion.datatransfer.continuity.TaskContinuityManager;
+import android.os.Bundle;
+import android.os.UserManager;
 import android.platform.test.annotations.Presubmit;
 import android.testing.AndroidTestingRunner;
+import com.android.server.LocalServices;
+import com.android.server.pm.UserManagerInternal;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -49,7 +54,7 @@ public class HandoffSettingsManagerTest {
     }
 
     @Mock private HandoffPreferenceStore mHandoffPreferenceStore;
-    @Mock private HandoffPolicyManager mHandoffPolicyManager;
+    @Mock private UserManagerInternal mMockUserManagerInternal;
 
     private HandoffSettingsManager mHandoffSettingsManager;
 
@@ -57,13 +62,21 @@ public class HandoffSettingsManagerTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
 
-        mHandoffSettingsManager =
-                new HandoffSettingsManager(mHandoffPreferenceStore, mHandoffPolicyManager);
+        LocalServices.addService(UserManagerInternal.class, mMockUserManagerInternal);
+
+        mHandoffSettingsManager = new HandoffSettingsManager(mHandoffPreferenceStore);
+    }
+
+    @After
+    public void tearDown() {
+        LocalServices.removeServiceForTest(UserManagerInternal.class);
     }
 
     @Test
     public void isHandoffActiveForUser_enabledByPolicy_callsPreferenceStore() {
-        when(mHandoffPolicyManager.isHandoffAllowedForUser(USER_ID)).thenReturn(true);
+        when(mMockUserManagerInternal.getUserRestriction(
+                        USER_ID, UserManager.DISALLOW_TASK_CONTINUITY_HANDOFF))
+                .thenReturn(false);
         when(mHandoffPreferenceStore.isHandoffEnabledForUser(USER_ID)).thenReturn(true);
         assertThat(mHandoffSettingsManager.isHandoffActiveForUser(USER_ID)).isTrue();
         verify(mHandoffPreferenceStore).isHandoffEnabledForUser(USER_ID);
@@ -71,7 +84,9 @@ public class HandoffSettingsManagerTest {
 
     @Test
     public void setHandoffEnabledForUser_callsPreferenceStoreAndNotifiesListeners() {
-        when(mHandoffPolicyManager.isHandoffAllowedForUser(USER_ID)).thenReturn(true);
+        when(mMockUserManagerInternal.getUserRestriction(
+                        USER_ID, UserManager.DISALLOW_TASK_CONTINUITY_HANDOFF))
+                .thenReturn(false);
         FakeHandoffEnabledListener listener = new FakeHandoffEnabledListener();
         mHandoffSettingsManager.registerHandoffFeatureStateListener(USER_ID, listener);
         mHandoffSettingsManager.setHandoffEnabledForUser(USER_ID, false);
@@ -84,7 +99,9 @@ public class HandoffSettingsManagerTest {
 
     @Test
     public void isHandoffActiveForUser_disabledByPolicy_returnsFalseByDefault() {
-        when(mHandoffPolicyManager.isHandoffAllowedForUser(USER_ID)).thenReturn(false);
+        when(mMockUserManagerInternal.getUserRestriction(
+                        USER_ID, UserManager.DISALLOW_TASK_CONTINUITY_HANDOFF))
+                .thenReturn(true);
         when(mHandoffPreferenceStore.isHandoffEnabledForUser(USER_ID)).thenReturn(true);
         assertThat(mHandoffSettingsManager.isHandoffActiveForUser(USER_ID)).isFalse();
     }
@@ -94,7 +111,9 @@ public class HandoffSettingsManagerTest {
             setHandoffEnabledForUser_disabledByPolicy_doesNotActivateHandoffButNotifiesListeners() {
         FakeHandoffEnabledListener listener = new FakeHandoffEnabledListener();
         mHandoffSettingsManager.registerHandoffFeatureStateListener(USER_ID, listener);
-        when(mHandoffPolicyManager.isHandoffAllowedForUser(USER_ID)).thenReturn(false);
+        when(mMockUserManagerInternal.getUserRestriction(
+                        USER_ID, UserManager.DISALLOW_TASK_CONTINUITY_HANDOFF))
+                .thenReturn(true);
         when(mHandoffPreferenceStore.isHandoffEnabledForUser(USER_ID)).thenReturn(false);
         mHandoffSettingsManager.setHandoffEnabledForUser(USER_ID, true);
         assertThat(mHandoffSettingsManager.isHandoffActiveForUser(USER_ID)).isFalse();
@@ -108,8 +127,15 @@ public class HandoffSettingsManagerTest {
     public void onHandoffPolicyChanged_notifiesListeners() {
         FakeHandoffEnabledListener listener = new FakeHandoffEnabledListener();
         mHandoffSettingsManager.registerHandoffFeatureStateListener(USER_ID, listener);
-        when(mHandoffPolicyManager.isHandoffAllowedForUser(USER_ID)).thenReturn(false);
-        mHandoffSettingsManager.onHandoffPolicyChanged(USER_ID);
+        Bundle prevRestrictions = new Bundle();
+        prevRestrictions.putBoolean(UserManager.DISALLOW_TASK_CONTINUITY_HANDOFF, false);
+        Bundle newRestrictions = new Bundle();
+        newRestrictions.putBoolean(UserManager.DISALLOW_TASK_CONTINUITY_HANDOFF, true);
+        when(mMockUserManagerInternal.getUserRestriction(
+                        USER_ID, UserManager.DISALLOW_TASK_CONTINUITY_HANDOFF))
+                .thenReturn(true);
+        mHandoffSettingsManager.onUserRestrictionsChanged(
+                USER_ID, newRestrictions, prevRestrictions);
         assertThat(listener.mCallCount).isEqualTo(2);
         assertThat(listener.mAvailability)
                 .isEqualTo(TaskContinuityManager.HANDOFF_AVAILABILITY_STATUS_DISABLED_BY_POLICY);

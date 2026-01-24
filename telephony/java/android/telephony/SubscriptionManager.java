@@ -503,7 +503,7 @@ public class SubscriptionManager {
      * The slot-index for Bluetooth Remote-SIM subscriptions
      * @hide
      */
-    public static final int SLOT_INDEX_FOR_REMOTE_SIM_SUB = INVALID_SIM_SLOT_INDEX;
+    public static final int SLOT_INDEX_FOR_REMOTE_SIM_SUB = -2;
 
     /**
      * TelephonyProvider column name Subscription-type.
@@ -1600,7 +1600,7 @@ public class SubscriptionManager {
      * <p>This source is used to retrieve the phone number (MSISDN) from the Entitlement
      * Configuration Server as defined in GSMA TS.43.
      * <p>Note: Access to {@link #PHONE_NUMBER_SOURCE_TS43} is restricted to
-     * privileged system components (e.g., Settings).
+     * privileged system components (e.g., Settings) or carrier privileged apps.
      */
     @FlaggedApi(Flags.FLAG_GET_PHONE_NUMBER_TS43_API)
     public static final int PHONE_NUMBER_SOURCE_TS43 = 4;
@@ -2725,7 +2725,7 @@ public class SubscriptionManager {
     @Deprecated
     @Nullable
     public int[] getSubscriptionIds(int slotIndex) {
-        if (!isValidSlotIndex(slotIndex)) {
+        if (!isValidOrRemoteSlotIndex(slotIndex)) {
             return null;
         }
         return new int[]{getSubscriptionId(slotIndex)};
@@ -2747,7 +2747,7 @@ public class SubscriptionManager {
      */
     @Deprecated
     public static int[] getSubId(int slotIndex) {
-        if (!isValidSlotIndex(slotIndex)) {
+        if (!isValidOrRemoteSlotIndex(slotIndex)) {
             return null;
         }
         return new int[]{getSubscriptionId(slotIndex)};
@@ -2762,7 +2762,7 @@ public class SubscriptionManager {
      * inserted remote SIM subscription id will be returned.
      */
     public static int getSubscriptionId(int slotIndex) {
-        if (!isValidSlotIndex(slotIndex)) {
+        if (!isValidOrRemoteSlotIndex(slotIndex)) {
             return SubscriptionManager.INVALID_SUBSCRIPTION_ID;
         }
 
@@ -3014,6 +3014,10 @@ public class SubscriptionManager {
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023)
     public static boolean isValidSlotIndex(int slotIndex) {
         return slotIndex >= 0 && slotIndex < TelephonyManager.getDefault().getActiveModemCount();
+    }
+
+    private static boolean isValidOrRemoteSlotIndex(int slotIndex) {
+        return slotIndex == SLOT_INDEX_FOR_REMOTE_SIM_SUB || isValidSlotIndex(slotIndex);
     }
 
     /** @hide */
@@ -4722,7 +4726,7 @@ public class SubscriptionManager {
      * security-related or other sensitive scenarios.
      *
      * <p>Note:Access to {@link #PHONE_NUMBER_SOURCE_TS43} is restricted to privileged system
-     * components (e.g., Settings).
+     * components (e.g., Settings) or carrier privileged apps.
      *
      * @param subscriptionId the subscription ID, or {@link #DEFAULT_SUBSCRIPTION_ID}
      * for the default one.
@@ -4793,7 +4797,7 @@ public class SubscriptionManager {
      * security-related or other sensitive scenarios.
      *
      * <p>Note:Access to {@link #PHONE_NUMBER_SOURCE_TS43} is restricted to privileged system
-     * components (e.g., Settings).
+     * components (e.g., Settings) or carrier privileged apps.
      *
      * @param subscriptionId the subscription ID, or {@link #DEFAULT_SUBSCRIPTION_ID}
      *                       for the default one.

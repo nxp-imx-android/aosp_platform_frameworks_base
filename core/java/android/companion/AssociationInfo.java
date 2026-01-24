@@ -22,7 +22,6 @@ import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
 import android.annotation.TestApi;
 import android.annotation.UserIdInt;
-import android.companion.CompanionDeviceManager;
 import android.companion.CompanionDeviceManager.FeatureName;
 import android.graphics.drawable.Icon;
 import android.net.MacAddress;
@@ -126,6 +125,8 @@ public final class AssociationInfo implements Parcelable {
     @NonNull
     private final Set<String> mExtraPermissions;
 
+    private final boolean mRemoteAiAgentSupported;
+
     /**
      * Creates a new Association.
      *
@@ -162,6 +163,7 @@ public final class AssociationInfo implements Parcelable {
         mMetadata = builder.mMetadata;
         mTimeMetadataSentMs = builder.mTimeMetadataSentMs;
         mExtraPermissions = builder.mExtraPermissions;
+        mRemoteAiAgentSupported = builder.mRemoteAiAgentSupported;
     }
 
     /**
@@ -426,6 +428,14 @@ public final class AssociationInfo implements Parcelable {
     }
 
     /**
+     * @see AssociationRequest.Builder#setRemoteAiAgentSupported(boolean)
+     */
+    @FlaggedApi(Flags.FLAG_SUPPORT_AI_AGENT)
+    public boolean isRemoteAiAgentSupported() {
+        return mRemoteAiAgentSupported;
+    }
+
+    /**
      * Utility method for checking if the association represents a device with the given MAC
      * address.
      *
@@ -500,6 +510,7 @@ public final class AssociationInfo implements Parcelable {
                 + ", mMetadata=" + mMetadata
                 + ", mTimeMetadataSentMs=" + new Date(mTimeMetadataSentMs)
                 + ", mExtraPermissions=" + mExtraPermissions
+                + ", mRemoteAiAgentSupported=" + mRemoteAiAgentSupported
                 + '}';
     }
 
@@ -530,7 +541,8 @@ public final class AssociationInfo implements Parcelable {
                 && Objects.equals(mPackagesToNotify, that.mPackagesToNotify)
                 && BaseBundle.kindofEquals(mMetadata, that.mMetadata)
                 && mTimeMetadataSentMs == that.mTimeMetadataSentMs
-                && Objects.equals(mExtraPermissions, that.mExtraPermissions);
+                && Objects.equals(mExtraPermissions, that.mExtraPermissions)
+                && mRemoteAiAgentSupported == that.mRemoteAiAgentSupported;
     }
 
     private boolean isSameIcon(Icon iconA, Icon iconB) {
@@ -546,7 +558,7 @@ public final class AssociationInfo implements Parcelable {
                 mDeviceProfile, mAssociatedDevice, mSelfManaged, mNotifyOnDeviceNearby, mRevoked,
                 mPending, mTrusted, mTimeApprovedMs, mLastTimeConnectedMs, mSystemDataSyncFlags,
                 mTransportFlags, mDeviceIcon, mDeviceId, mPackagesToNotify, mMetadata,
-                mExtraPermissions);
+                mExtraPermissions, mRemoteAiAgentSupported);
     }
 
     @Override
@@ -590,6 +602,7 @@ public final class AssociationInfo implements Parcelable {
         dest.writePersistableBundle(mMetadata);
         dest.writeLong(mTimeMetadataSentMs);
         dest.writeStringList(new ArrayList<>(mExtraPermissions));
+        dest.writeBoolean(mRemoteAiAgentSupported);
     }
 
     private AssociationInfo(@NonNull Parcel in) {
@@ -625,6 +638,7 @@ public final class AssociationInfo implements Parcelable {
         mMetadata = in.readPersistableBundle();
         mTimeMetadataSentMs = in.readLong();
         mExtraPermissions = new HashSet<>(in.createStringArrayList());
+        mRemoteAiAgentSupported = in.readBoolean();
     }
 
     @NonNull
@@ -671,6 +685,7 @@ public final class AssociationInfo implements Parcelable {
         private PersistableBundle mMetadata = new PersistableBundle(); // Empty bundle by default.
         private long mTimeMetadataSentMs;
         private Set<String> mExtraPermissions = new HashSet<>();
+        private boolean mRemoteAiAgentSupported;
 
         /** @hide */
         @TestApi
@@ -715,6 +730,7 @@ public final class AssociationInfo implements Parcelable {
             mMetadata = info.mMetadata;
             mTimeMetadataSentMs = info.mTimeMetadataSentMs;
             mExtraPermissions = info.mExtraPermissions;
+            mRemoteAiAgentSupported = info.mRemoteAiAgentSupported;
         }
 
         /** @hide */
@@ -896,6 +912,16 @@ public final class AssociationInfo implements Parcelable {
         @FlaggedApi(Flags.FLAG_ASSOCIATION_EXTRA_PERMISSION)
         public Builder setExtraPermissions(@NonNull Set<String> extraPermissions) {
             mExtraPermissions = extraPermissions;
+            return this;
+        }
+
+        /** @hide */
+        @TestApi
+        @NonNull
+        @SuppressLint("MissingGetterMatchingBuilder")
+        @FlaggedApi(Flags.FLAG_SUPPORT_AI_AGENT)
+        public Builder setRemoteAiAgentSupported(boolean remoteAiAgentSupported) {
+            mRemoteAiAgentSupported = remoteAiAgentSupported;
             return this;
         }
 

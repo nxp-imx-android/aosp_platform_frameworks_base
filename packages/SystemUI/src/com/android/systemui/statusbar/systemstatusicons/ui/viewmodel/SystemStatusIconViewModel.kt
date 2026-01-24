@@ -38,6 +38,21 @@ sealed interface SystemStatusIconViewModel {
         val icon: Icon?
     }
 
+    /** Model for the wifi icon, which could also contain activity in/out indicators. */
+    interface Wifi : SystemStatusIconViewModel {
+        /**
+         * [Icon] to be displayed on the right side of the status bar. This should be implemented as
+         * a hydrated value.
+         */
+        val icon: Icon?
+        /** True if we should always reserve space for the activity in/out indicators. */
+        val isActivityContainerVisible: Boolean
+        /** True if the activity in arrow should be visible. */
+        val isActivityInVisible: Boolean
+        /** True if the activity out arrow should be visible. */
+        val isActivityOutVisible: Boolean
+    }
+
     interface MobileIcons : SystemStatusIconViewModel, Activatable {
         val mobileIcons: MobileIconsState
         val stackedMobileIconViewModel: StackedMobileIconViewModel

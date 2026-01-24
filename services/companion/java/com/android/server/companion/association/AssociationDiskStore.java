@@ -217,6 +217,7 @@ public final class AssociationDiskStore {
     private static final String XML_ATTR_METADATA = "metadata";
     private static final String XML_ATTR_TIME_METADATA_SENT = "time_metadata_sent";
     private static final String XML_ATTR_EXTRA_PERMISSIONS = "extra_permissions";
+    private static final String XML_ATTR_AI_AGENT_SUPPORTED = "support_ai_agent";
 
     private static final String LEGACY_XML_ATTR_DEVICE = "device";
 
@@ -558,6 +559,8 @@ public final class AssociationDiskStore {
         final String permissionsString = readStringAttribute(parser, XML_ATTR_EXTRA_PERMISSIONS);
         final Set<String> extraPermissions = deserializeExtraPermissions(permissionsString);
         final long timeMetadataSent = readLongAttribute(parser, XML_ATTR_TIME_METADATA_SENT, 0L);
+        final boolean isRemoteAiAgentSupported = readBooleanAttribute(parser,
+                XML_ATTR_AI_AGENT_SUPPORTED, false);
 
         // Read nested tags
         DeviceId deviceId = null;
@@ -599,6 +602,7 @@ public final class AssociationDiskStore {
                 .setMetadata(metadata)
                 .setTimeMetadataSent(timeMetadataSent)
                 .setExtraPermissions(extraPermissions)
+                .setRemoteAiAgentSupported(isRemoteAiAgentSupported)
                 .build();
     }
 
@@ -682,6 +686,8 @@ public final class AssociationDiskStore {
             writeStringAttribute(serializer, XML_ATTR_EXTRA_PERMISSIONS,
                     String.join(DELIMITER, extraPermissions));
         }
+        writeBooleanAttribute(serializer, XML_ATTR_AI_AGENT_SUPPORTED,
+                a.isRemoteAiAgentSupported());
 
         if (a.getDeviceId() != null) {
             writeDeviceId(serializer, a);

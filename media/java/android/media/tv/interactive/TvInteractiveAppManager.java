@@ -796,6 +796,16 @@ public final class TvInteractiveAppManager {
                     record.postAdBufferReady(buffer);
                 }
             }
+
+            @Override
+            public void onSendWebServiceClientList(List<WebServiceClientInfo> clients, int seq) {
+                synchronized (mSessionCallbackRecordMap) {
+                    SessionCallbackRecord record = mSessionCallbackRecordMap.get(seq);
+                    if (record != null) {
+                        record.postWebServiceClientList(clients);
+                    }
+                }
+            }
         };
         ITvInteractiveAppManagerCallback managerCallback =
                 new ITvInteractiveAppManagerCallback.Stub() {
@@ -2048,6 +2058,42 @@ public final class TvInteractiveAppManager {
         }
 
         /**
+         * Requests TIAS to send the list of the web service clients to the client app.
+         */
+        public void requestWebServiceClients() {
+            try {
+                mService.requestWebServiceClients(mToken, mUserId);
+            } catch (RemoteException e) {
+                throw e.rethrowFromSystemServer();
+            }
+        }
+
+        /**
+         * Updates the state of the web service client.
+         * @param handle identification of the web service client.
+         * @param state new state of the web service client.
+         */
+        public void updateWebServiceClientState(int handle, int state) {
+            try {
+                mService.updateWebServiceClientState(mToken, handle, state, mUserId);
+            } catch (RemoteException e) {
+                throw e.rethrowFromSystemServer();
+            }
+        }
+
+        /**
+         * Removes the web service client.
+         * @param handle the identification of the web service client to be removed.
+         */
+        public void removeWebServiceClient(int handle) {
+            try {
+                mService.removeWebServiceClient(mToken, handle, mUserId);
+            } catch (RemoteException e) {
+                throw e.rethrowFromSystemServer();
+            }
+        }
+
+        /**
          * Callback that is invoked when an input event that was dispatched to this session has been
          * finished.
          *
@@ -2455,6 +2501,15 @@ public final class TvInteractiveAppManager {
                 }
             });
         }
+
+        void postWebServiceClientList(final List<WebServiceClientInfo> clients) {
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    mSessionCallback.onSendWebServiceClientList(mSession, clients);
+                }
+            });
+        }
     }
 
     /**
@@ -2794,6 +2849,14 @@ public final class TvInteractiveAppManager {
          */
         public void onTeletextAppStateChanged(
                 Session session, @TvInteractiveAppManager.TeletextAppState int state) {
+        }
+
+        /**
+         * Called when the web service client list is sent.
+         * @param clients web service client list.
+         * @hide
+         */
+        public void onSendWebServiceClientList(Session session, List<WebServiceClientInfo> clients){
         }
     }
 }

@@ -35,11 +35,9 @@ import com.android.systemui.statusbar.pipeline.battery.domain.interactor.Battery
 import com.android.systemui.statusbar.pipeline.battery.domain.interactor.BatteryAttributionModel.Unknown
 import com.android.systemui.statusbar.pipeline.battery.domain.interactor.BatteryInteractor
 import com.android.systemui.statusbar.pipeline.battery.shared.ui.BatteryColors
-import com.android.systemui.statusbar.pipeline.battery.shared.ui.BatteryFrame
 import com.android.systemui.statusbar.pipeline.battery.shared.ui.BatteryGlyph
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-import java.text.NumberFormat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -54,10 +52,6 @@ sealed class BatteryViewModel(
     @Application context: Context,
 ) : ExclusiveActivatable() {
     protected val hydrator: Hydrator = Hydrator("BatteryViewModel.hydrator")
-
-    val batteryFrame = BatteryFrame.pathSpec
-    val innerWidth = BatteryFrame.innerWidth
-    val innerHeight = BatteryFrame.innerHeight
 
     val level by
         hydrator.hydratedStateOf(traceName = "level", initialValue = 0, source = interactor.level)
@@ -74,13 +68,6 @@ sealed class BatteryViewModel(
             traceName = "isCharging",
             initialValue = false,
             source = interactor.isCharging,
-        )
-
-    val isBatteryPercentSettingEnabled: Boolean by
-        hydrator.hydratedStateOf(
-            traceName = "isBatteryPercentSettingEnabled",
-            initialValue = interactor.isBatteryPercentSettingEnabled.value,
-            source = interactor.isBatteryPercentSettingEnabled,
         )
 
     /** A [List<BatteryGlyph>] representation of the current [level] */
@@ -341,45 +328,6 @@ sealed class BatteryViewModel(
                 '9' -> BatteryGlyph.Nine
                 else -> throw IllegalArgumentException("cannot make glyph from char ($this)")
             }
-    }
-}
-
-/**
- * BatteryViewModel that only exposes the attribution as a glyph. The percentage is expected to be
- * displayed next to it in a text view
- */
-class BatteryNextToPercentViewModel
-@AssistedInject
-constructor(interactor: BatteryInteractor, @Application context: Context) :
-    BatteryViewModel(interactor = interactor, shouldShowPercent = flowOf(true), context = context) {
-
-    val batteryPercent: String? by
-        hydrator.hydratedStateOf(
-            traceName = "batteryPercent",
-            initialValue = null,
-            source =
-                interactor.level.map { level ->
-                    if (level == null) {
-                        null
-                    } else {
-                        NumberFormat.getPercentInstance().format(level / 100f)
-                    }
-                },
-        )
-
-    private val _attributionAsList: Flow<List<BatteryGlyph>> =
-        attributionGlyph.map { it?.let { listOf(it) } ?: emptyList() }
-
-    override val glyphList: List<BatteryGlyph> by
-        hydrator.hydratedStateOf(
-            traceName = "glyphList",
-            initialValue = emptyList(),
-            source = _attributionAsList,
-        )
-
-    @AssistedFactory
-    interface Factory : BatteryViewModel.Factory {
-        override fun create(): BatteryNextToPercentViewModel
     }
 }
 

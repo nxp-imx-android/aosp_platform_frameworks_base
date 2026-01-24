@@ -155,6 +155,7 @@ flag {
 flag {
     name: "support_ai_agent"
     namespace: "companion"
+    is_exported: true
     description: "Add a new field in AssociationRequest to indicate if the device supports AI agent automation."
     bug: "474639153"
 }

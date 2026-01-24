@@ -205,8 +205,6 @@ class SystemModalsTransitionHandlerTest : ShellTestCase() {
     fun allowOverlayPermissionForAllUsers(permissions: Array<String>) {
         val packageInfo = mock<PackageInfo>()
         packageInfo.requestedPermissions = permissions
-        packageInfo.requestedPermissionsFlags =
-            IntArray(permissions.size) { PackageInfo.REQUESTED_PERMISSION_GRANTED }
         whenever(
                 packageManager.getPackageInfoAsUser(
                     anyString(),

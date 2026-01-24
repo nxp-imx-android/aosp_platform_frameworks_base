@@ -19,30 +19,30 @@ package com.android.server.companion.datatransfer.continuity.settings;
 import android.annotation.NonNull;
 import android.companion.datatransfer.continuity.IHandoffFeatureStateListener;
 import android.companion.datatransfer.continuity.TaskContinuityManager;
+import android.os.Bundle;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
+import android.os.UserManager;
 import android.util.Slog;
-import com.android.internal.annotations.GuardedBy;
+import com.android.server.LocalServices;
+import com.android.server.pm.UserManagerInternal;
+import com.android.server.pm.UserManagerInternal.UserRestrictionsListener;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 
 /** Manages settings for Handoff across all users on a device. */
-public class HandoffSettingsManager implements HandoffPolicyManager.Listener {
+public class HandoffSettingsManager implements UserRestrictionsListener {
 
     private static final String TAG = HandoffSettingsManager.class.getSimpleName();
 
     private final HandoffPreferenceStore mHandoffPreferenceStore;
-    private final HandoffPolicyManager mHandoffPolicyManager;
 
-    @GuardedBy("mHandoffFeatureStateListeners")
-    private final RemoteCallbackList<IHandoffFeatureStateListener> mHandoffFeatureStateListeners =
-            new RemoteCallbackList<>();
+    private AtomicReference<RemoteCallbackList<IHandoffFeatureStateListener>>
+            mHandoffFeatureStateListeners = new AtomicReference<>(null);
 
-    public HandoffSettingsManager(
-            @NonNull HandoffPreferenceStore handoffPreferenceStore,
-            @NonNull HandoffPolicyManager handoffPolicyManager) {
+    public HandoffSettingsManager(@NonNull HandoffPreferenceStore handoffPreferenceStore) {
         mHandoffPreferenceStore = Objects.requireNonNull(handoffPreferenceStore);
-        mHandoffPolicyManager = handoffPolicyManager;
-        mHandoffPolicyManager.addListener(this);
+        LocalServices.getService(UserManagerInternal.class).addUserRestrictionsListener(this);
     }
 
     /**
@@ -73,52 +73,84 @@ public class HandoffSettingsManager implements HandoffPolicyManager.Listener {
 
     public void registerHandoffFeatureStateListener(
             int userId, @NonNull IHandoffFeatureStateListener listener) {
-        synchronized (mHandoffFeatureStateListeners) {
-            mHandoffFeatureStateListeners.register(Objects.requireNonNull(listener), userId);
-            try {
-                listener.onHandoffFeatureStateChanged(
-                        getHandoffAvailabilityForUser(userId),
-                        mHandoffPreferenceStore.isHandoffEnabledForUser(userId));
-            } catch (RemoteException e) {
-                Slog.e(TAG, "Failed to notify handoff feature state change", e);
-            }
+        if (!mHandoffFeatureStateListeners
+                .updateAndGet(
+                        listeners -> {
+                            if (listeners == null) {
+                                return new RemoteCallbackList<>();
+                            }
+                            return listeners;
+                        })
+                .register(Objects.requireNonNull(listener), userId)) {
+            Slog.e(TAG, "Failed to register handoff feature state listener");
+            return;
+        }
+
+        try {
+            listener.onHandoffFeatureStateChanged(
+                    getHandoffAvailabilityForUser(userId),
+                    mHandoffPreferenceStore.isHandoffEnabledForUser(userId));
+        } catch (RemoteException e) {
+            Slog.e(TAG, "Failed to notify handoff feature state change", e);
         }
     }
 
     public void unregisterHandoffFeatureStateListener(
             int userId, @NonNull IHandoffFeatureStateListener listener) {
-        synchronized (mHandoffFeatureStateListeners) {
-            mHandoffFeatureStateListeners.unregister(Objects.requireNonNull(listener));
+        RemoteCallbackList<IHandoffFeatureStateListener> listeners =
+                mHandoffFeatureStateListeners.get();
+        if (listeners == null) {
+            return;
+        }
+
+        if (listeners.unregister(Objects.requireNonNull(listener))) {
+            Slog.i(TAG, "Successfully unregistered handoff feature state listener");
+        } else {
+            Slog.e(TAG, "Failed to unregister handoff feature state listener");
         }
     }
 
-    @Override
-    public void onHandoffPolicyChanged(int userId) {
-        notifyHandoffFeatureStateChanged(userId);
-    }
-
     private int getHandoffAvailabilityForUser(int userId) {
-        if (!mHandoffPolicyManager.isHandoffAllowedForUser(userId)) {
+        if (LocalServices.getService(UserManagerInternal.class)
+                .getUserRestriction(userId, UserManager.DISALLOW_TASK_CONTINUITY_HANDOFF)) {
             return TaskContinuityManager.HANDOFF_AVAILABILITY_STATUS_DISABLED_BY_POLICY;
         }
 
         return TaskContinuityManager.HANDOFF_AVAILABILITY_STATUS_AVAILABLE;
     }
 
-    private void notifyHandoffFeatureStateChanged(int userId) {
-        synchronized (mHandoffFeatureStateListeners) {
-            mHandoffFeatureStateListeners.broadcast(
-                    (listener, token) -> {
-                        if ((int) token == userId) {
-                            try {
-                                listener.onHandoffFeatureStateChanged(
-                                        getHandoffAvailabilityForUser(userId),
-                                        mHandoffPreferenceStore.isHandoffEnabledForUser(userId));
-                            } catch (RemoteException e) {
-                                Slog.e(TAG, "Failed to notify handoff feature state change", e);
-                            }
-                        }
-                    });
+    @Override
+    public void onUserRestrictionsChanged(
+            int userId, Bundle newRestrictions, Bundle prevRestrictions) {
+
+        boolean wasRestricted =
+                prevRestrictions.getBoolean(UserManager.DISALLOW_TASK_CONTINUITY_HANDOFF, false);
+        boolean isRestricted =
+                newRestrictions.getBoolean(UserManager.DISALLOW_TASK_CONTINUITY_HANDOFF, false);
+
+        if (wasRestricted != isRestricted) {
+            notifyHandoffFeatureStateChanged(userId);
         }
+    }
+
+    private void notifyHandoffFeatureStateChanged(int userId) {
+        RemoteCallbackList<IHandoffFeatureStateListener> listeners =
+                mHandoffFeatureStateListeners.get();
+        if (listeners == null) {
+            return;
+        }
+
+        listeners.broadcast(
+                (listener, token) -> {
+                    if ((int) token == userId) {
+                        try {
+                            listener.onHandoffFeatureStateChanged(
+                                    getHandoffAvailabilityForUser(userId),
+                                    mHandoffPreferenceStore.isHandoffEnabledForUser(userId));
+                        } catch (RemoteException e) {
+                            Slog.e(TAG, "Failed to notify handoff feature state change", e);
+                        }
+                    }
+                });
     }
 }

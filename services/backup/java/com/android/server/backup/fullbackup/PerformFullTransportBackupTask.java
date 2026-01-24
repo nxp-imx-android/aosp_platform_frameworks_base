@@ -28,7 +28,6 @@ import android.app.backup.BackupProgress;
 import android.app.backup.BackupTransport;
 import android.app.backup.IBackupManagerMonitor;
 import android.app.backup.IBackupObserver;
-import android.app.backup.IFullBackupRestoreObserver;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
@@ -201,7 +200,9 @@ public class PerformFullTransportBackupTask implements BackupRestoreTask, Runnab
         }
 
         for (String pkg : whichPackages) {
-            PackageInfo packageInfo = getPackageInfoIfEligibleOrNull(pkg);
+            // We do not have a transport connection yet and can't use the flags
+            PackageInfo packageInfo = getPackageInfoIfEligibleOrNull(pkg,
+                    /* checkEligibilityBasedOnTransportFlags= */ false, /* transportFlags= */ 0);
             if (packageInfo == null) {
                 continue;
             }
@@ -345,12 +346,15 @@ public class PerformFullTransportBackupTask implements BackupRestoreTask, Runnab
                 chunkSizeInBytes = 64 * 1024; // 64KB
             }
             final byte[] buffer = new byte[chunkSizeInBytes];
+            final int transportFlags = transport.getTransportFlags();
             for (int i = 0; i < N; i++) {
                 mBackupRunner = null;
                 String packageName = mPackages.get(i).packageName;
-                PackageInfo currentPackage = getPackageInfoIfEligibleOrNull(packageName);
                 // The package could have updated since the backup task started so we check
-                // eligibility once again.
+                // eligibility once again. We have a transport connection now and can use
+                // transport flags.
+                PackageInfo currentPackage = getPackageInfoIfEligibleOrNull(packageName,
+                        /* checkEligibilityBasedOnTransportFlags= */ true, transportFlags);
                 if (currentPackage == null) {
                     continue;
                 }
@@ -380,7 +384,7 @@ public class PerformFullTransportBackupTask implements BackupRestoreTask, Runnab
                         mBackupRunner =
                                 new SinglePackageBackupRunner(enginePipes[1], currentPackage,
                                         mTransportConnection, quota, mBackupRunnerOpToken,
-                                        transport.getTransportFlags());
+                                        transportFlags);
                         // The runner dup'd the pipe half, so we close it here
                         enginePipes[1].close();
                         enginePipes[1] = null;
@@ -694,7 +698,8 @@ public class PerformFullTransportBackupTask implements BackupRestoreTask, Runnab
     }
 
     @Nullable
-    private PackageInfo getPackageInfoIfEligibleOrNull(String packageName) {
+    private PackageInfo getPackageInfoIfEligibleOrNull(String packageName,
+            boolean checkEligibilityBasedOnTransportFlags, int transportFlags) {
         try {
             PackageManager pm = mUserBackupManagerService.getPackageManager();
             PackageInfo packageInfo = pm.getPackageInfoAsUser(packageName,
@@ -738,6 +743,23 @@ public class PerformFullTransportBackupTask implements BackupRestoreTask, Runnab
                 BackupObserverUtils.sendBackupOnPackageResult(mBackupObserver, packageName,
                         BackupManager.ERROR_BACKUP_NOT_ALLOWED);
                 return null;
+            }
+            if (checkEligibilityBasedOnTransportFlags) {
+                if (packageInfo.applicationInfo.shouldBackupAgentRunInPccProcess()
+                        && !mBackupEligibilityRules.pccBackupAgentAllowed(transportFlags)) {
+                    if (DEBUG) {
+                        Slog.d(TAG, "Package " + packageName
+                                + " not eligible for PCC backup, skipping");
+                    }
+                    mBackupManagerMonitorEventSender.monitorEvent(
+                            BackupManagerMonitor.LOG_EVENT_ID_PACKAGE_INELIGIBLE,
+                            packageInfo,
+                            BackupManagerMonitor.LOG_EVENT_CATEGORY_BACKUP_MANAGER_POLICY,
+                            /* extras= */ null);
+                    BackupObserverUtils.sendBackupOnPackageResult(mBackupObserver, packageName,
+                            BackupManager.ERROR_BACKUP_NOT_ALLOWED);
+                    return null;
+                }
             }
             return packageInfo;
         } catch (NameNotFoundException e) {

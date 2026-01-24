@@ -39,6 +39,7 @@ import com.android.systemui.common.ui.compose.Icon
 import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.statusbar.pipeline.mobile.ui.compose.MobileIcons
+import com.android.systemui.statusbar.pipeline.wifi.ui.compose.WifiIcon
 import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.SystemStatusIconViewModel
 import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.SystemStatusIconsViewModel
 
@@ -80,12 +81,15 @@ fun SystemStatusIcons(
                         is SystemStatusIconViewModel.External -> {
                             ExternalSystemStatusIcon(iconViewModel, modifier = defaultSizeModifier)
                         }
+                        is SystemStatusIconViewModel.Wifi -> {
+                            WifiIcon(iconViewModel, modifier = defaultSizeModifier)
+                        }
 
                         is SystemStatusIconViewModel.MobileIcons -> {
                             MobileIcons(
                                 iconViewModel.mobileIcons,
                                 iconViewModel.stackedMobileIconViewModel,
-                                modifier = Modifier.height(iconHeightDp),
+                                modifier = defaultSizeModifier,
                             )
                         }
                     }

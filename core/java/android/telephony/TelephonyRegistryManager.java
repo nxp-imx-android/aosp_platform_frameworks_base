@@ -1623,15 +1623,20 @@ public class TelephonyRegistryManager {
         Objects.requireNonNull(executor, "registerTelephonyCallback: executor cannot be null.");
         Objects.requireNonNull(callback, "registerTelephonyCallback: callback cannot be null.");
 
-        callback.init(executor);
         final int[] events = getEventsFromCallback(callback).stream().mapToInt(i -> i).toArray();
         if (events.length == 0) {
             throw new IllegalArgumentException(
                     "registerTelephonyCallback(): callback must implement at least one listener.");
         }
 
-        listenFromCallback(renounceFineLocationAccess, renounceCoarseLocationAccess, subId,
-                pkgName, attributionTag, callback, events, notifyNow);
+        callback.init(executor);
+        try {
+            listenFromCallback(renounceFineLocationAccess, renounceCoarseLocationAccess, subId,
+                    pkgName, attributionTag, callback, events, notifyNow);
+        } catch (Throwable t) {
+            callback.close();
+            throw t;
+        }
     }
 
     /**
@@ -1642,8 +1647,12 @@ public class TelephonyRegistryManager {
      */
     public void unregisterTelephonyCallback(int subId, String pkgName, String attributionTag,
             @NonNull TelephonyCallback callback, boolean notifyNow) {
-        listenFromCallback(false, false, subId,
-                pkgName, attributionTag, callback, new int[0], notifyNow);
+        try {
+            listenFromCallback(false, false, subId,
+                    pkgName, attributionTag, callback, new int[0], notifyNow);
+        } finally {
+            callback.close();
+        }
     }
 
     @NonNull

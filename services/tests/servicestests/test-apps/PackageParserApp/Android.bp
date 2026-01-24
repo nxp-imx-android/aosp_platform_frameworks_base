@@ -220,3 +220,55 @@ android_test_helper_app {
     ],
     manifest: "AndroidManifestAllowComponentAccess.xml",
 }
+
+android_test_helper_app {
+    name: "PackageParserTestBackupAgentProcessPcc",
+    sdk_version: "current",
+    srcs: ["**/*.java"],
+    dex_preopt: {
+        enabled: false,
+    },
+    optimize: {
+        enabled: false,
+    },
+    manifest: "AndroidManifestBackupAgentProcessPcc.xml",
+}
+
+android_test_helper_app {
+    name: "PackageParserTestBackupAgentProcessPccNoPccComponents",
+    sdk_version: "current",
+    srcs: ["**/*.java"],
+    dex_preopt: {
+        enabled: false,
+    },
+    optimize: {
+        enabled: false,
+    },
+    manifest: "AndroidManifestBackupAgentProcessPccNoPccComponents.xml",
+}
+
+android_test_helper_app {
+    name: "PackageParserTestBackupAgentProcessMain",
+    sdk_version: "current",
+    srcs: ["**/*.java"],
+    dex_preopt: {
+        enabled: false,
+    },
+    optimize: {
+        enabled: false,
+    },
+    manifest: "AndroidManifestBackupAgentProcessMain.xml",
+}
+
+android_test_helper_app {
+    name: "PackageParserTestBackupAgentProcessNotSpecified",
+    sdk_version: "current",
+    srcs: ["**/*.java"],
+    dex_preopt: {
+        enabled: false,
+    },
+    optimize: {
+        enabled: false,
+    },
+    manifest: "AndroidManifestBackupAgentProcessNotSpecified.xml",
+}

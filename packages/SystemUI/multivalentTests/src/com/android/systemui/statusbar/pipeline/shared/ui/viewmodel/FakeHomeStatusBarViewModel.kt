@@ -32,7 +32,6 @@ import com.android.systemui.statusbar.events.shared.model.SystemEventAnimationSt
 import com.android.systemui.statusbar.layout.ui.viewmodel.AppHandlesViewModel
 import com.android.systemui.statusbar.layout.ui.viewmodel.StatusBarBoundsViewModel
 import com.android.systemui.statusbar.phone.domain.interactor.IsAreaDark
-import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.BatteryNextToPercentViewModel
 import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.BatteryViewModel
 import com.android.systemui.statusbar.pipeline.shared.ui.model.ChipsVisibilityModel
 import com.android.systemui.statusbar.pipeline.shared.ui.model.SystemInfoCombinedVisibilityModel
@@ -75,12 +74,6 @@ class FakeHomeStatusBarViewModel(
     override val isHomeStatusBarAllowed = MutableStateFlow(false)
 
     override val canShowOngoingActivityChips: Flow<Boolean> = MutableStateFlow(false)
-
-    override val batteryNextToPercentViewModel: BatteryNextToPercentViewModel.Factory =
-        object : BatteryNextToPercentViewModel.Factory {
-            override fun create(): BatteryNextToPercentViewModel =
-                mock(BatteryNextToPercentViewModel::class.java)
-        }
 
     override val unifiedBatteryViewModel: BatteryViewModel.BasedOnUserSetting.Factory =
         BatteryViewModel.BasedOnUserSetting.Factory {

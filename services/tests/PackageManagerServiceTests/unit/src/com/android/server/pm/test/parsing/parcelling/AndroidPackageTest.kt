@@ -299,6 +299,7 @@ class AndroidPackageTest : ParcelableComponentTest(AndroidPackage::class, Packag
         AndroidPackage::isAllowCrossUidActivitySwitchFromBelow,
         AndroidPackage::getIntentMatchingFlags,
         AndroidPackage::getPageSizeAppCompatFlags,
+        AndroidPackage::getBackupAgentProcess,
     )
 
     override fun extraParams() = listOf(

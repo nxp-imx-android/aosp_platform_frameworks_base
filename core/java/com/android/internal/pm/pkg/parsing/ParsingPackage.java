@@ -259,6 +259,13 @@ public interface ParsingPackage {
 
     ParsingPackage setBackupAgentName(String backupAgentName);
 
+    /**
+     * Sets the process that the backup agent will run in.
+     * @see android.R.styleable#AndroidManifestApplication_BackupAgentProcess
+     */
+    ParsingPackage setBackupAgentProcess(
+            @ApplicationInfo.BackupAgentProcess int backupAgentProcess);
+
     ParsingPackage setBannerResourceId(int banner);
 
     ParsingPackage setCategory(int category);
@@ -596,6 +603,22 @@ public interface ParsingPackage {
     boolean isNormalScreensSupported();
 
     boolean isSmallScreensSupported();
+
+    /**
+     * Returns true if this application has any component that should run in
+     * the Private Compute Core sandbox.
+     *
+     * @see R.styleable#AndroidManifestPrivateCompute
+     */
+    boolean hasPccComponents();
+
+    /**
+     * Returns the process that the backup agent will run in.
+     * @see R.styleable#AndroidManifestApplication_backupAgentProcess
+     * @hide
+     */
+    @ApplicationInfo.BackupAgentProcess
+    int getBackupAgentProcess();
 
     /**
      * Sets the intent matching flags. This value is intended to be set from the "application" tag.

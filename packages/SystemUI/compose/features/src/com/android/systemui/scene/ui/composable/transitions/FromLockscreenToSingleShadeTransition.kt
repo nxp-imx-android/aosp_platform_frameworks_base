@@ -20,11 +20,12 @@ import com.android.compose.animation.scene.UserActionDistance
 
 fun TransitionBuilder.lockscreenToSingleShadeTransition(
     transitionDistancePx: Float,
+    singleShadeMarginHorizontalPx: Float,
     durationScale: Double = 1.0,
     seekAnimation: Boolean = false,
 ) {
     distance = UserActionDistance { _, _, _ -> transitionDistancePx }
 
     lockscreenFadeOutTransition(durationScale = durationScale)
-    toShadeSceneTransition(durationScale = durationScale, seekAnimation = seekAnimation)
+    toSingleShadeTransition(singleShadeMarginHorizontalPx = singleShadeMarginHorizontalPx, durationScale = durationScale, seekAnimation = seekAnimation)
 }

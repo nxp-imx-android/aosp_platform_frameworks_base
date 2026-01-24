@@ -289,6 +289,7 @@ public class KeyValueBackupTask implements BackupRestoreTask, Runnable {
     // empty backups.
     private boolean mHasDataToBackup;
     private boolean mNonIncremental;
+    private int mTransportFlags;
 
     /**
      * This {@link ConditionVariable} is used to signal that the cancel operation has been
@@ -633,6 +634,7 @@ public class KeyValueBackupTask implements BackupRestoreTask, Runnable {
                 // Temporary code for EiTF POC. Only supports non-incremental backups.
                 mNonIncremental = true;
             }
+            mTransportFlags = transport.getTransportFlags();
 
             getReporter().onTransportReady(transportName);
 
@@ -750,6 +752,12 @@ public class KeyValueBackupTask implements BackupRestoreTask, Runnable {
         if (mBackupEligibilityRules.appIsStopped(applicationInfo)) {
             getReporter().onPackageStopped(packageName);
             throw AgentException.permanent();
+        }
+        if (applicationInfo.shouldBackupAgentRunInPccProcess()) {
+            if (!mBackupEligibilityRules.pccBackupAgentAllowed(mTransportFlags)) {
+                getReporter().onPackageNotEligibleForPccBackup(packageName);
+                throw AgentException.permanent();
+            }
         }
         return packageInfo;
     }
@@ -953,7 +961,6 @@ public class KeyValueBackupTask implements BackupRestoreTask, Runnable {
             BackupTransportClient transport = mTransportConnection.connectOrThrow(
                     "KVBT.extractAgentData()");
             long quota = transport.getBackupQuota(packageName, /* isFullBackup */ false);
-            int transportFlags = transport.getTransportFlags();
 
             callingAgent = true;
             agentResult =
@@ -965,7 +972,7 @@ public class KeyValueBackupTask implements BackupRestoreTask, Runnable {
                                             mNewState,
                                             quota,
                                             callback,
-                                            transportFlags),
+                                            mTransportFlags),
                             mAgentTimeoutParameters.getKvBackupAgentTimeoutMillis(),
                             "doBackup()");
         } catch (Exception e) {
