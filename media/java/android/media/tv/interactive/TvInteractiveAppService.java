@@ -1042,6 +1042,33 @@ public abstract class TvInteractiveAppService extends Service {
         }
 
         /**
+         * Callback for updating a Web Service client state using its handle id.
+         * @param handle the handle id of the Web Service client.
+         * @param state the new state of the Web Service client.
+         * @hide
+         */
+        public void onUpdateWebServiceClientState(int handle,
+                @WebServiceClientInfo.WebServiceClientState int state) {
+        }
+
+        /**
+         * Callback for removing a Web Service client.
+         *
+         * @param handle the handle id of the Web Service client to be removed.
+         * @hide
+         */
+        public void onRemoveWebServiceClient(int handle) {
+        }
+
+        /**
+         * Callback for requesting a list of Web Service clients.
+         * This API should call sendWebServiceClientList after obtaining the list.
+         * @hide
+         */
+        public void onRequestWebServiceClients() {
+        }
+
+        /**
          * Assigns a size and position to the surface passed in {@link #onSetSurface}. The position
          * is relative to the overlay view that sits on top of this surface.
          *
@@ -1830,6 +1857,49 @@ public abstract class TvInteractiveAppService extends Service {
 
         void sendSigningResult(String signingId, byte[] result) {
             onSigningResult(signingId, result);
+        }
+
+        /**
+         * Update a Web Service client state using its handle id.
+         * @param handle the handle id of the Web Service client.
+         * @param state the new state of the Web Service client.
+         * @hide
+         */
+        public void updateWebServiceClientState(int handle,
+                @WebServiceClientInfo.WebServiceClientState int state) {
+            onUpdateWebServiceClientState(handle, state);
+        }
+
+        /**
+         * Removes a Web Service Client.
+         * @param handle the handle id of the Web Service client to be removed.
+         * @hide
+         */
+        public void removeWebServiceClient(int handle) {
+            onRemoveWebServiceClient(handle);
+        }
+
+        /**
+         * Requests the list of Web Service Clients.
+         * @hide
+         */
+        public void requestWebServiceClients() {
+            onRequestWebServiceClients();
+        }
+
+        /**
+         * Sends the list of Web Service Clients to the application.
+         * @param clients the list of Web Service Clients.
+         * @hide
+         */
+        public final void sendWebServiceClientList(@NonNull List<WebServiceClientInfo> clients) {
+            if (mSessionCallback != null) {
+                try {
+                    mSessionCallback.onSendWebServiceClientList(clients);
+                } catch (RemoteException e) {
+                    Log.e(TAG, "error in sendWebServiceClientList", e);
+                }
+            }
         }
 
         void sendCertificate(String host, int port, Bundle certBundle) {
