@@ -4317,10 +4317,13 @@ public class AudioService extends IAudioService.Stub
         boolean adjustVolume = true;
         int step;
 
-        // skip absolute volume control request when the device is neither an a2dp device nor BLE
-        // device nor SCO out device and the absolute volume flag is set
-        if (!AudioSystem.isBluetoothOutDevice(deviceType)
-                && (flags & AudioManager.FLAG_BLUETOOTH_ABS_VOLUME) != 0) {
+        boolean isAbsoluteVolumeDevice = unifyAbsoluteVolumeManagement() ? isAbsoluteVolumeDevice(
+                deviceAttr) : isAbsoluteVolumeDevice(deviceType);
+        // skip absolute volume control request when the device is not absolute volume and the
+        // absolute volume flag is set
+        if (!isAbsoluteVolumeDevice && flagsContainsAbsoluteDevices(flags)) {
+            Slog.w(TAG,
+                    "adjustStreamVolume with abs vol flag for non abs vol device: " + deviceAttr);
             return;
         }
 
@@ -4399,8 +4402,6 @@ public class AudioService extends IAudioService.Stub
         int oldIndex = getVssForStreamOrDefault(streamType).getIndex(deviceType);
 
         // Check if the volume adjustment should be handled by an absolute volume controller instead
-        boolean isAbsoluteVolumeDevice = unifyAbsoluteVolumeManagement() ? isAbsoluteVolumeDevice(
-                deviceAttr) : isAbsoluteVolumeDevice(deviceType);
         if (isAbsoluteVolumeDevice && (flags & AudioManager.FLAG_ABSOLUTE_VOLUME) == 0) {
             final AbsoluteVolumeDeviceInfo info;
             if (unifyAbsoluteVolumeManagement()) {
@@ -4607,7 +4608,7 @@ public class AudioService extends IAudioService.Stub
                 : isAbsoluteVolumeDevice(deviceType);
 
         int btContextualStreamAlias = sStreamVolumeAlias.get(getBluetoothContextualVolumeStream());
-        if (isAbsoluteVolume && (flags & AudioManager.FLAG_ABSOLUTE_VOLUME) == 0) {
+        if (isAbsoluteVolume && !flagsContainsAbsoluteDevices(flags)) {
             final AbsoluteVolumeDeviceInfo info;
             if (unifyAbsoluteVolumeManagement()) {
                 info = getAbsoluteVolumeDeviceInfo(ada);
@@ -5879,10 +5880,13 @@ public class AudioService extends IAudioService.Stub
         final int deviceType = deviceAttr.getInternalType();
         int oldIndex;
 
-        // skip absolute volume control request when the device is neither an a2dp device nor BLE
-        // device nor SCO out device and the absolute volume flag is set
-        if (!AudioSystem.isBluetoothOutDevice(deviceType)
-                && (flags & AudioManager.FLAG_BLUETOOTH_ABS_VOLUME) != 0) {
+        boolean isAbsoluteVolumeDevice = unifyAbsoluteVolumeManagement() ? isAbsoluteVolumeDevice(
+                deviceAttr) : isAbsoluteVolumeDevice(deviceType);
+        // skip absolute volume control request when the device is not absolute volume and the
+        // absolute volume flag is set
+        if (!isAbsoluteVolumeDevice && flagsContainsAbsoluteDevices(flags)) {
+            Slog.w(TAG,
+                    "setStreamVolume with abs vol flag for non abs vol device: " + deviceAttr);
             return;
         }
 
