@@ -211,6 +211,9 @@ public class Transitions implements RemoteCallable<Transitions>,
     /** Transition type for converting a floating bubble to a bar bubble. */
     public static final int TRANSIT_BUBBLE_CONVERT_FLOATING_TO_BAR = TRANSIT_FIRST_CUSTOM + 25;
 
+    /** Transition type for cancelling split-screen. */
+    public static final int TRANSIT_SPLIT_CANCEL = TRANSIT_FIRST_CUSTOM + 26;
+
     /** Transition type for desktop mode transitions. */
     public static final int TRANSIT_DESKTOP_MODE_TYPES =
             WindowManager.TRANSIT_FIRST_CUSTOM + 100;
