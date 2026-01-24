@@ -362,6 +362,8 @@ public final class AssociationRequest implements Parcelable {
     @NonNull
     private final Set<String> mExtraPermissions;
 
+    private final boolean mRemoteAiAgentSupported;
+
     private static final int DISPLAY_NAME_LENGTH_LIMIT = 1024;
 
     private static final Set<String> ALLOWED_EXTRA_PERMISSIONS = Set.of(
@@ -379,6 +381,7 @@ public final class AssociationRequest implements Parcelable {
         mCreationTime = System.currentTimeMillis();
         mDeviceIcon = builder.mDeviceIcon;
         mExtraPermissions = builder.mExtraPermissions;
+        mRemoteAiAgentSupported = builder.mRemoteAiAgentSupported;
     }
 
     /**
@@ -452,6 +455,14 @@ public final class AssociationRequest implements Parcelable {
     @Nullable
     public Icon getDeviceIcon() {
         return mDeviceIcon;
+    }
+
+    /**
+     * @see Builder#setRemoteAiAgentSupported(boolean)
+     */
+    @FlaggedApi(Flags.FLAG_SUPPORT_AI_AGENT)
+    public boolean isRemoteAiAgentSupported() {
+        return mRemoteAiAgentSupported;
     }
 
     /** @hide */
@@ -594,6 +605,7 @@ public final class AssociationRequest implements Parcelable {
                 + ", skipPrompt = " + mSkipPrompt
                 + ", requestedPerms = " + mRequestedPerms
                 + ", extraPermissions = " + mExtraPermissions
+                + ", remoteAiAgentSupported = " + mRemoteAiAgentSupported
                 + " }";
     }
 
@@ -619,7 +631,8 @@ public final class AssociationRequest implements Parcelable {
                 && Objects.equals(mRequestedPerms, that.mRequestedPerms)
                 && Objects.equals(mExtraPermissions, that.mExtraPermissions)
                 && (mDeviceIcon == null ? that.mDeviceIcon == null
-                : mDeviceIcon.sameAs(that.mDeviceIcon));
+                : mDeviceIcon.sameAs(that.mDeviceIcon))
+                && mRemoteAiAgentSupported == that.mRemoteAiAgentSupported;
     }
 
     @Override
@@ -660,6 +673,7 @@ public final class AssociationRequest implements Parcelable {
             dest.writeInt(0);
         }
         dest.writeStringList(new ArrayList<>(mExtraPermissions));
+        dest.writeBoolean(mRemoteAiAgentSupported);
     }
 
     @Override
@@ -713,6 +727,7 @@ public final class AssociationRequest implements Parcelable {
             in.readList(mRequestedPerms, Integer.class.getClassLoader(), Integer.class);
         }
         mExtraPermissions =  new HashSet<>(in.createStringArrayList());
+        mRemoteAiAgentSupported = in.readBoolean();
     }
 
     @NonNull
@@ -749,6 +764,7 @@ public final class AssociationRequest implements Parcelable {
         private boolean mSkipRoleGrant = false;
         private Icon mDeviceIcon = null;
         private Set<String> mExtraPermissions = new HashSet<>();
+        private boolean mRemoteAiAgentSupported = false;
 
         public Builder() {
         }
@@ -905,6 +921,24 @@ public final class AssociationRequest implements Parcelable {
                 );
             }
             mExtraPermissions.addAll(permissions);
+            return this;
+        }
+
+        /**
+         * Indicates whether the device is capable of interacting with a remote AI agent.
+         *
+         * <p>Default value is {@code false}. When set to {@code true}, this allows the device
+         * (e.g., a microphone or a smart wearable) to act as an input/output source for a remote
+         * AI agent.
+         *
+         * <p>Setting this flag to {@code true} modifies the user-facing association dialog to
+         * include relevant AI usage disclosures.
+         */
+        @FlaggedApi(Flags.FLAG_SUPPORT_AI_AGENT)
+        @NonNull
+        public Builder setRemoteAiAgentSupported(boolean remoteAiAgentSupported) {
+            checkNotUsed();
+            mRemoteAiAgentSupported = remoteAiAgentSupported;
             return this;
         }
 
