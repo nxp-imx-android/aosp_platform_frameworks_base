@@ -1113,17 +1113,6 @@ public class ProcessStateController {
         return cr.setOngoingCalls(ongoing);
     }
 
-    /**
-     * Note whether a process has bound to a service with
-     * {@link android.content.Context.BIND_ABOVE_CLIENT} or not.
-     */
-    @GuardedBy("mLock")
-    @RequiresEnclosingBatchSession
-    public void setHasAboveClient(@NonNull ProcessServiceRecordInternal psr,
-            boolean hasAboveClient) {
-        psr.setHasAboveClient(hasAboveClient);
-    }
-
     /** Note the last group set by a connection. */
     @GuardedBy("mLock")
     public void setConnectionGroup(@NonNull ProcessServiceRecordInternal psr, int connectionGroup) {
@@ -1135,16 +1124,6 @@ public class ProcessStateController {
     public void setConnectionImportance(@NonNull ProcessServiceRecordInternal psr,
             int connectionImportance) {
         psr.setConnectionImportance(connectionImportance);
-    }
-
-    /**
-     * Recompute whether a process has bound to a service with
-     * {@link android.content.Context.BIND_ABOVE_CLIENT} or not.
-     */
-    @GuardedBy("mLock")
-    @RequiresEnclosingBatchSession
-    public void updateHasAboveClientLocked(@NonNull ProcessServiceRecordInternal psr) {
-        psr.updateHasAboveClient();
     }
 
     /**

@@ -572,6 +572,7 @@ public abstract class OomAdjuster {
      * Holds various constant values used by the OomAdjuster, which are duplicated from
      * {@link com.android.server.am.ActivityManagerConstants}.
      */
+    @android.ravenwood.annotation.RavenwoodKeepWholeClass
     public static final class Constants {
         /**
          * The timeout duration (in milliseconds) for a service binding to be considered

@@ -20,7 +20,11 @@ import android.annotation.Nullable;
 import android.content.Context;
 import android.content.pm.ServiceInfo;
 import android.os.SystemClock;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import android.util.ArraySet;
+import android.util.Slog;
+
+import com.android.server.am.Flags;
 
 import java.util.ArrayList;
 
@@ -29,7 +33,10 @@ import java.util.ArrayList;
  * This class provides common fields and methods for managing service-related properties
  * that influence process importance and OOM adjustment.
  */
+@RavenwoodKeepWholeClass
 public class ProcessServiceRecordInternal {
+    public static final String TAG = "ProcessServiceRecordInternal";
+
     /** Controls whether argument validation checks are performed. */
     private static final boolean DEBUG_FGS_ARGS = false;
 
@@ -53,6 +60,8 @@ public class ProcessServiceRecordInternal {
     private boolean mTreatLikeActivity;
     /** Whether this process has bound to a service with the BIND_ABOVE_CLIENT flag. */
     private boolean mHasAboveClient;
+    /** The number of connections from this process with the BIND_ABOVE_CLIENT flag. */
+    private int mBindAboveClientCount;
     /** Whether this process has any client services with activities. */
     private boolean mHasClientActivities;
     /** Do we need to be executing services in the foreground? */
@@ -135,6 +144,7 @@ public class ProcessServiceRecordInternal {
     void onCleanupApplicationRecord() {
         setTreatLikeActivity(false);
         setHasAboveClient(false);
+        mBindAboveClientCount = 0;
         setHasClientActivities(false);
     }
 
@@ -378,8 +388,19 @@ public class ProcessServiceRecordInternal {
      * This also handles the special logic for connections to services running in an SDK sandbox.
      */
     void addConnection(ConnectionRecordInternal connection) {
-        mConnections.add(connection);
-        addSdkSandboxConnectionIfNecessary(connection);
+        if (mConnections.add(connection)) {
+            addSdkSandboxConnectionIfNecessary(connection);
+
+            // Update internal state for connections with the BIND_ABOVE_CLIENT flag set.
+            if (connection.hasFlag(Context.BIND_ABOVE_CLIENT) && !connection.isBindingToSelf()) {
+                setHasAboveClient(true);
+                // Shadow verification for incremental reference counting.
+                if (Flags.incrementalHasAboveClient()) {
+                    mBindAboveClientCount++;
+                    verifyBindAboveClient("addConnection", connection.getAttributedClient());
+                }
+            }
+        }
     }
 
     /**
@@ -387,8 +408,24 @@ public class ProcessServiceRecordInternal {
      * This also handles the necessary cleanup for connections to services in an SDK sandbox.
      */
     void removeConnection(ConnectionRecordInternal connection) {
-        mConnections.remove(connection);
-        removeSdkSandboxConnectionIfNecessary(connection);
+        if (mConnections.remove(connection)) {
+            removeSdkSandboxConnectionIfNecessary(connection);
+
+            // Update internal state for connections with the BIND_ABOVE_CLIENT flag set.
+            if (connection.hasFlag(Context.BIND_ABOVE_CLIENT) && !connection.isBindingToSelf()) {
+                updateHasAboveClient();
+                // Shadow verification for incremental reference counting.
+                if (Flags.incrementalHasAboveClient()) {
+                    mBindAboveClientCount--;
+                    if (mBindAboveClientCount < 0) { // Defensive check.
+                        Slog.wtf(TAG, "mBindAboveClientCount went below 0 for "
+                                + connection.getAttributedClient());
+                        mBindAboveClientCount = 0;
+                    }
+                    verifyBindAboveClient("removeConnection", connection.getAttributedClient());
+                }
+            }
+        }
     }
 
     /**
@@ -401,6 +438,8 @@ public class ProcessServiceRecordInternal {
             removeSdkSandboxConnectionIfNecessary(mConnections.valueAt(i));
         }
         mConnections.clear();
+        setHasAboveClient(false);
+        mBindAboveClientCount = 0;
     }
 
     private void addSdkSandboxConnectionIfNecessary(ConnectionRecordInternal connection) {
@@ -466,5 +505,13 @@ public class ProcessServiceRecordInternal {
             }
         }
         return false;
+    }
+
+    private void verifyBindAboveClient(String op, ProcessRecordInternal processRecordInternal) {
+        if ((mBindAboveClientCount > 0) != mHasAboveClient) {
+            Slog.wtf(TAG, "hasAboveClient inconsistency during " + op
+                    + "! NewCount=" + mBindAboveClientCount
+                    + " LegacyBoolean=" + mHasAboveClient + " for " + processRecordInternal);
+        }
     }
 }

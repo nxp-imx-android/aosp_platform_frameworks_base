@@ -115,6 +115,16 @@ public abstract class ConnectionRecordInternal implements OomAdjusterImpl.Connec
         return updatedFlags != 0;
     }
 
+    /** Checks if this connection is binding to the same process. */
+    public boolean isBindingToSelf() {
+        final ProcessRecordInternal host = getService().getHostProcessInternal();
+        if (host == null) {
+            return false;
+        }
+        // Check if the host process is the same as the client process.
+        return host == getClient();
+    }
+
     public boolean getOngoingCalls() {
         return mOngoingCalls;
     }

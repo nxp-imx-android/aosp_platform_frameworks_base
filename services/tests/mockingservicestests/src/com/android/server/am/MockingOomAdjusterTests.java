@@ -2112,7 +2112,6 @@ public class MockingOomAdjusterTests {
         bindService(app, client, null, null, Context.BIND_NOT_PERCEPTIBLE, mock(IBinder.class));
         bindService(service, app, null, null, Context.BIND_ABOVE_CLIENT, mock(IBinder.class));
         mProcessStateController.setRunningRemoteAnimation(client, true);
-        mProcessStateController.updateHasAboveClientLocked(app.mServices);
         setWakefulness(PowerManagerInternal.WAKEFULNESS_AWAKE);
         updateOomAdj(client, app, service);
 
@@ -3773,7 +3772,6 @@ public class MockingOomAdjusterTests {
         // Simulate binding to a service in the same process using BIND_ABOVE_CLIENT and
         // verify that its OOM adjustment level is unaffected.
         bindService(service, app, null, null, Context.BIND_ABOVE_CLIENT, mock(IBinder.class));
-        mProcessStateController.updateHasAboveClientLocked(app.mServices);
         assertTrue(app.mServices.isHasAboveClient());
 
         updateOomAdj(app);
@@ -3795,7 +3793,6 @@ public class MockingOomAdjusterTests {
         // Simulate binding to a service in the same process using BIND_ABOVE_CLIENT and
         // verify that its OOM adjustment level is unaffected.
         bindService(app, app, null, null, Context.BIND_ABOVE_CLIENT, mock(IBinder.class));
-        mProcessStateController.updateHasAboveClientLocked(app.mServices);
         assertFalse(app.mServices.isHasAboveClient());
 
         updateOomAdj(app);
@@ -3850,7 +3847,6 @@ public class MockingOomAdjusterTests {
 
         // Since sr.app is null, this service cannot be in the same process as the
         // client so we expect the BIND_ABOVE_CLIENT adjustment to take effect.
-        mProcessStateController.updateHasAboveClientLocked(app.mServices);
         updateOomAdj(app);
         assertTrue(app.mServices.isHasAboveClient());
         assertNotEquals(FOREGROUND_APP_ADJ, app.getSetAdj());
@@ -5028,7 +5024,6 @@ public class MockingOomAdjusterTests {
             mProcessStateController.setHasClientActivities(services, mHasClientActivities);
             mProcessStateController.setHasForegroundServices(services, mHasForegroundServices,
                     mFgServiceTypes, /* hasNoneType=*/false);
-            mProcessStateController.setHasAboveClient(services, mHasAboveClient);
             mProcessStateController.setTreatLikeActivity(services, mTreatLikeActivity);
             mProcessStateController.setExecServicesFg(services, mExecServicesFg);
             for (int i = 0; i < mNumOfExecutingServices; i++) {
