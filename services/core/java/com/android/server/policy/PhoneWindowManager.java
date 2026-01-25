@@ -90,7 +90,6 @@ import static android.view.WindowManagerGlobal.ADD_OKAY;
 import static android.view.WindowManagerGlobal.ADD_PERMISSION_DENIED;
 import static android.view.contentprotection.flags.Flags.createAccessibilityOverlayAppOpEnabled;
 
-import static com.android.hardware.input.Flags.enableNew25q2Keycodes;
 import static com.android.hardware.input.Flags.useEventDisplayIdForKeyWakeup;
 import static com.android.internal.policy.IKeyguardService.SCREEN_TURNING_ON_REASON_DISPLAY_SWITCH;
 import static com.android.internal.policy.IKeyguardService.SCREEN_TURNING_ON_REASON_UNKNOWN;
@@ -4905,26 +4904,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             case KeyEvent.KEYCODE_MACRO_3:
             case KeyEvent.KEYCODE_MACRO_4:
                 result &= ~ACTION_PASS_TO_USER;
-                break;
-            case KeyEvent.KEYCODE_DICTATE:
-            case KeyEvent.KEYCODE_NEW:
-            case KeyEvent.KEYCODE_CLOSE:
-            case KeyEvent.KEYCODE_PRINT:
-            case KeyEvent.KEYCODE_F13:
-            case KeyEvent.KEYCODE_F14:
-            case KeyEvent.KEYCODE_F15:
-            case KeyEvent.KEYCODE_F16:
-            case KeyEvent.KEYCODE_F17:
-            case KeyEvent.KEYCODE_F18:
-            case KeyEvent.KEYCODE_F19:
-            case KeyEvent.KEYCODE_F20:
-            case KeyEvent.KEYCODE_F21:
-            case KeyEvent.KEYCODE_F22:
-            case KeyEvent.KEYCODE_F23:
-            case KeyEvent.KEYCODE_F24:
-                if (!enableNew25q2Keycodes()) {
-                    result &= ~ACTION_PASS_TO_USER;
-                }
                 break;
         }
 
