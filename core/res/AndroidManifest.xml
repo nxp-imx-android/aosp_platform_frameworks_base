@@ -7067,8 +7067,7 @@
         @FlaggedApi(android.companion.Flags.FLAG_TRUSTED_DEVICES)
          @hide -->
     <permission android:name="android.permission.ACCESS_COMPANION_MESSAGE_PCC"
-        android:protectionLevel="signature|knownSigner"
-        android:knownCerts="@array/config_cdmKnownSignersPCC"
+        android:protectionLevel="signature|role"
         android:featureFlag="android.companion.trusted_devices"
         android:permissionFlags="allowedInPrivateComputeCore" />
 
