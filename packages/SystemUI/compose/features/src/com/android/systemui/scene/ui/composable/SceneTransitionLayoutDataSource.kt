@@ -44,8 +44,8 @@ class SceneTransitionLayoutDataSource(
      */
     private val coroutineScope: CoroutineScope,
 ) : SceneDataSource {
-    override val currentSceneAsState: SceneKey
-        get() = state.currentScene
+    override val transitionState: TransitionState
+        get() = state.transitionState
 
     override val currentScene: StateFlow<SceneKey> =
         state

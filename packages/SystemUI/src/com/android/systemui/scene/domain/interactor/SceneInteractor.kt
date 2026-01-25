@@ -103,7 +103,7 @@ constructor(
     val currentScene: StateFlow<SceneKey> = repository.currentScene
 
     val currentSceneAsState: SceneKey
-        get() = repository.currentSceneAsState
+        get() = repository.transitionState.currentScene
 
     /**
      * The current set of overlays to be shown (may be empty).
