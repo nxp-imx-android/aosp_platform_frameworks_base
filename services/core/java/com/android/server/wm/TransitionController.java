@@ -28,6 +28,7 @@ import static android.window.DesktopExperienceFlags.ENABLE_PARALLEL_CD_TRANSITIO
 import static android.window.TransitionInfo.FLAGS_IS_NON_APP_WINDOW;
 import static android.window.TransitionInfo.FLAG_IS_WALLPAPER;
 
+import static com.android.graphics.surfaceflinger.flags.Flags.setClientDrawnCornerRadii;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_WINDOW_TRANSITIONS_MIN;
 import static com.android.server.wm.ActivityTaskManagerService.POWER_MODE_REASON_CHANGE_DISPLAY;
 
@@ -71,6 +72,7 @@ import com.android.server.FgThread;
 import com.android.window.flags.Flags;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.function.Consumer;
 import java.util.function.LongConsumer;
 
@@ -179,6 +181,13 @@ class TransitionController {
      * is finished and the windows are no longer animating, their surfaces will be destroyed.
      */
     final ArrayList<WindowState> mAnimatingExitWindows = new ArrayList<>();
+
+    /**
+     * List of tasks which were marked for disabling client-drawn rounded corners optimization
+     * in SurfaceFlinger. This is to prevent state-errors in clipping rounded corners when the
+     * corner radius is changing during a transition.
+     */
+    final HashSet<Task> mRoundedCornerOptTasks = new HashSet<>();
 
     final Lock mRunningLock = new Lock();
 
@@ -302,6 +311,30 @@ class TransitionController {
         return mTransitionPlayers.isEmpty();
     }
 
+    void cleanupRoundedCornerDisableOptTasks() {
+        if (!setClientDrawnCornerRadii()) {
+            return;
+        }
+
+        for (Task task: mRoundedCornerOptTasks) {
+            if (task == null || isCollecting(task)
+                             || isParticipantOfPlayingTransition(task)) {
+                continue;
+            }
+
+            SurfaceControl sc = task.getSurfaceControl();
+            if (sc == null || !sc.isValid()) continue;
+
+            SurfaceControl.Transaction t = task.getSyncTransaction();
+            t.toggleClientDrawnRoundedCornersOpt(sc, /*enable = */ true);
+        }
+        mRoundedCornerOptTasks.clear();
+    }
+
+    void onRoundedCornerOptDisabled(Task task) {
+        mRoundedCornerOptTasks.add(task);
+    }
+
     private static void tryAbort(Transition transit, String stage) {
         // Need to be very defensive here. This often happens during "broken" periods of time
         // already (eg. sysui crashing) so there is chance that unrelated state is bad.
@@ -367,6 +400,8 @@ class TransitionController {
             // Restore the rest of the player stack
             mTransitionPlayers.addAll(temp);
         }
+
+        cleanupRoundedCornerDisableOptTasks();
     }
 
     /** @see #createTransition(int, int) */
@@ -1198,6 +1233,7 @@ class TransitionController {
         if (!inTransition()) {
             validateStates();
             mAtm.mWindowManager.onAnimationFinished();
+            cleanupRoundedCornerDisableOptTasks();
         }
 
         // Make sure the surface visibility respects the hierarchy state (updateAnimatingState
@@ -1589,6 +1625,7 @@ class TransitionController {
                 mLatestOnTopTasksReported.clear();
             }
         }
+        cleanupRoundedCornerDisableOptTasks();
         // This is called during Transition.abort whose codepath will eventually check the queue
         // via sync-engine idle.
     }
