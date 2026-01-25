@@ -145,6 +145,12 @@ public class MemoryLimiterTest {
             this(expected, null);
         }
 
+        // Enable event monitoring
+        @Override
+        boolean enableMonitoring() {
+            return true;
+        }
+
         // The instance is created with the expected number of events.  The supplied configuration
         // file is parsed.  To simplify life, this method accepts the basename of the
         // configuration file.  It quietly prepends the path component.
@@ -460,7 +466,8 @@ public class MemoryLimiterTest {
      * checked.
      */
     @RequiresFlagsEnabled({Flags.FLAG_MEMORY_LIMITER_ENABLE,
-            Flags.FLAG_MEMORY_LIMITER_DEFAULT_APP_LIMITS})
+            Flags.FLAG_MEMORY_LIMITER_DEFAULT_APP_LIMITS,
+            Flags.FLAG_MEMORY_LIMITER_TRIGGER})
     @Test
     public void testOperation() throws Exception {
         // Use the default "enabled" controller to fetch the limit.  There is no need for a full
