@@ -536,7 +536,7 @@ class SceneInteractorTest : SysuiTestCase() {
     @Test
     fun isVisible() =
         kosmos.runTest {
-            val isVisible by collectLastValue(underTest.isVisible)
+            val isVisible by collectLastValue(underTest.isVisibleFlow)
             assertThat(isVisible).isTrue()
 
             underTest.setVisible(false, "reason")
@@ -550,7 +550,7 @@ class SceneInteractorTest : SysuiTestCase() {
     fun isVisible_duringRemoteUserInteraction_forcedVisible() =
         kosmos.runTest {
             underTest.setVisible(false, "reason")
-            val isVisible by collectLastValue(underTest.isVisible)
+            val isVisible by collectLastValue(underTest.isVisibleFlow)
             assertThat(isVisible).isFalse()
             underTest.onRemoteUserInputStarted("reason")
             assertThat(isVisible).isTrue()
@@ -681,7 +681,7 @@ class SceneInteractorTest : SysuiTestCase() {
     @Test
     fun transitionAnimations() =
         kosmos.runTest {
-            val isVisible by collectLastValue(underTest.isVisible)
+            val isVisible by collectLastValue(underTest.isVisibleFlow)
             assertThat(isVisible).isTrue()
 
             underTest.setVisible(false, "test")

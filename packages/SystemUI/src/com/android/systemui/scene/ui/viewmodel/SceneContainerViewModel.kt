@@ -110,7 +110,7 @@ constructor(
     val blurViewModel: SceneTransitionBlurViewModel = sceneTransitionBlurViewModelFactory.create()
 
     /** Whether the container is visible. */
-    val isVisible: Boolean by hydrator.hydratedStateOf("isVisible", sceneInteractor.isVisible)
+    val isVisible: Boolean by hydrator.hydratedStateOf("isVisible", sceneInteractor.isVisibleFlow)
 
     val hapticsViewModel: SceneContainerHapticsViewModel = hapticsViewModelFactory.create()
 

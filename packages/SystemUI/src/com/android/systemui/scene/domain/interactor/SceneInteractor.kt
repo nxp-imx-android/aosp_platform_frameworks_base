@@ -174,7 +174,7 @@ constructor(
             )
 
     /** Whether the scene container is visible. */
-    val isVisible: StateFlow<Boolean> =
+    val isVisibleFlow: StateFlow<Boolean> =
         combine(
                 repository.isVisible,
                 repository.isRemoteUserInputOngoing,
