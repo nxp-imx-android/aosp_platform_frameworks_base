@@ -79,7 +79,8 @@ public abstract class ContextInsight {
                 INSIGHT_TYPE_BUNDLE,
                 INSIGHT_TYPE_ACTIONABLE,
                 INSIGHT_TYPE_DISPLAY,
-                INSIGHT_TYPE_COLLECTION
+                INSIGHT_TYPE_COLLECTION,
+                INSIGHT_TYPE_HINT_INVALIDATION,
             })
     @Retention(RetentionPolicy.SOURCE)
     public @interface InsightType {}
@@ -103,6 +104,9 @@ public abstract class ContextInsight {
 
     /** Type identifier for {@link InsightCollection}. */
     static final int INSIGHT_TYPE_COLLECTION = 4;
+
+    /** Type identifier for {@link InsightCollection}. */
+    static final int INSIGHT_TYPE_HINT_INVALIDATION = 5;
 
     /**
      * Object returned when there is an unparcelling error.
@@ -308,6 +312,8 @@ public abstract class ContextInsight {
                 case INSIGHT_TYPE_ACTIONABLE -> new ActionableInsight(constructorParams, data);
                 case INSIGHT_TYPE_DISPLAY -> new DisplayInsight(constructorParams, data);
                 case INSIGHT_TYPE_COLLECTION -> new InsightCollection(constructorParams, data);
+                case INSIGHT_TYPE_HINT_INVALIDATION -> new HintInvalidationInsight(
+                        constructorParams, data);
                 default -> ERROR_INSIGHT;
             };
         } catch (Exception e) {

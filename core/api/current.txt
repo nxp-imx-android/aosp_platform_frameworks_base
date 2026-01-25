@@ -44084,6 +44084,17 @@ package android.service.personalcontext.hint {
     method @NonNull public android.service.personalcontext.hint.ConversationHint build();
   }
 
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class HintInvalidationHint extends android.service.personalcontext.hint.ContextHint {
+    method @NonNull public java.util.UUID getInvalidatedHintId();
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class HintInvalidationHint.Builder {
+    ctor public HintInvalidationHint.Builder(@NonNull java.util.UUID);
+    ctor public HintInvalidationHint.Builder(@NonNull android.service.personalcontext.hint.ContextHint);
+    method @NonNull public android.service.personalcontext.hint.HintInvalidationHint.Builder addToken(@NonNull android.service.personalcontext.Token);
+    method @NonNull public android.service.personalcontext.hint.HintInvalidationHint build();
+  }
+
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public abstract class NotificationEvent {
   }
 
@@ -44223,6 +44234,11 @@ package android.service.personalcontext.insight {
     method @NonNull public android.service.personalcontext.insight.DisplayInsight.Builder addOriginHint(@NonNull android.service.personalcontext.hint.ContextHintWithSignature);
     method @NonNull public android.service.personalcontext.insight.DisplayInsight.Builder addToken(@NonNull android.service.personalcontext.Token);
     method @NonNull public android.service.personalcontext.insight.DisplayInsight build();
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class HintInvalidationInsight extends android.service.personalcontext.insight.ContextInsight {
+    method @NonNull public java.util.UUID getInvalidatedHintId();
+    method public boolean isHintInvalidated(@NonNull android.service.personalcontext.hint.ContextHintWithSignature);
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class InsightActionDetails implements android.os.Parcelable {
