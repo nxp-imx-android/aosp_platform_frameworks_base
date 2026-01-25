@@ -20,7 +20,6 @@ import static java.util.Objects.requireNonNull;
 
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
-import android.annotation.Nullable;
 import android.annotation.RequiresNoPermission;
 import android.annotation.SdkConstant;
 import android.annotation.SystemApi;
@@ -44,8 +43,8 @@ import android.service.personalcontext.insight.interaction.ReturnHintReport;
 import android.util.Log;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Client facing access to the PersonalContext service.
@@ -113,43 +112,38 @@ public final class PersonalContextManager {
     /**
      * Triggers a Personal Context service flow with raw data in the form of hints.
      *
+     * <p>Each hint in {@code hints} will be attributed to each hint in {@code attributionHints},
+     * and resulting insights will be delivered to all renderers represented in
+     * {@code renderTokens}, or to the default renderers if {@code renderTokens} is empty.
+     *
+     * @throws IllegalArgumentException if hints is empty
+     *
      * @param hints raw data to be injected into the context flow
-     * @param renderTokens optional tokens indicating which renderers should be used to render
-     *                     results of this flow to the user; if empty, then this flow can be
-     *                     rendered by any Personal Context renderer
+     * @param renderTokens tokens indicating which renderers should be used to render results of
+     *                     this flow to the user; if empty, then this flow can be rendered by any
+     *                     Personal Context renderer
+     * @param attributionHints hints to use as attribution for {@code hints}
      * @hide
      */
     @SystemApi
     @UserHandleAware(
             requiresPermissionIfNotCaller = android.Manifest.permission.INTERACT_ACROSS_USERS)
     public void publishTriggeringHint(
-            @NonNull List<ContextHint> hints, @Nullable List<RenderToken> renderTokens) {
-        publishTriggeringHint(hints, renderTokens, null);
-    }
+            @NonNull Collection<ContextHint> hints,
+            @NonNull Collection<RenderToken> renderTokens,
+            @NonNull Collection<ContextHint> attributionHints) {
+        requireNonNull(hints, "hints must not be null");
+        requireNonNull(renderTokens, "renderTokens must not be null");
+        requireNonNull(attributionHints, "attributionHints must not be null");
 
-    /**
-     * Triggers a Personal Context service flow with raw data in the form of hints.
-     *
-     * <p>Each hint in {@code hints} will be attributed to each hint in {@code attributionHints}.
-     *
-     * @param hints raw data to be injected into the context flow
-     * @param renderTokens optional tokens indicating which renderers should be used to render
-     *     results of this flow to the user; if {@code null} or empty, then this flow can be
-     *     rendered by any Personal Context renderer
-     * @param attributionHints optional hints to use as attribution for {@code hints}
-     * @hide
-     */
-    @SystemApi
-    @UserHandleAware(
-            requiresPermissionIfNotCaller = android.Manifest.permission.INTERACT_ACROSS_USERS)
-    public void publishTriggeringHint(
-            @NonNull List<ContextHint> hints,
-            @Nullable List<RenderToken> renderTokens,
-            @Nullable List<ContextHint> attributionHints) {
+        if (hints.isEmpty()) {
+            throw new IllegalArgumentException("hints must not be empty");
+        }
+
         try {
             mService.publishTriggeringHint(
                     ContextHintWrapper.wrapList(hints),
-                    renderTokens,
+                    new ArrayList<>(renderTokens),
                     ContextHintWrapper.wrapList(attributionHints),
                     mContext.getUserId());
         } catch (RemoteException e) {
@@ -186,18 +180,20 @@ public final class PersonalContextManager {
      * Triggers a Personal Context service flow with data that has been understood in the form of
      * insights.
      *
-     * <p>This method may deliver multiple new insights at once. All insights must be derived from
-     * hints previously supplied. All hints used to generate an insight must have the same {@link
-     * RenderToken}, or a {@code null} {@link RenderToken}; non-confirming insights will be ignored.
+     * <p>This insight must be derived from hints previously supplied. All hints used to generate
+     * an insight must have the same set of {@link RenderToken}s, or a {@code null}
+     * {@link RenderToken}; non-conforming insights will be ignored.
      *
-     * @param insights new insights to be injected into the context flow
+     * @param insight new insight to be injected into the context flow
+     *
      * @hide
      */
     @UserHandleAware(
             requiresPermissionIfNotCaller = android.Manifest.permission.INTERACT_ACROSS_USERS)
-    public void publishInsight(@NonNull List<ContextInsight> insights) {
+    public void publishInsight(@NonNull ContextInsight insight) {
         try {
-            mService.publishInsight(ContextInsightWrapper.wrapList(insights), mContext.getUserId());
+            mService.publishInsight(
+                    List.of(new ContextInsightWrapper(insight)), mContext.getUserId());
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
@@ -207,8 +203,8 @@ public final class PersonalContextManager {
      * Takes a {@link ContextHint}, attaches this application's package name, and signs it.
      *
      * <p>This can be used to sign a hint that your application has created, in order to attach it
-     * to a new {@link ContextInsight}. Each hint in {@code hints} will be attributed to each
-     * hint in {@code attributionHints}.
+     * to a new {@link ContextInsight}. {@code hint} will be attributed to each hint in
+     * {@code attributionHints}.
      *
      * @param hint raw data to be signed
      * @param attributionHints optional hints to use as attribution for {@code hint}
@@ -219,7 +215,10 @@ public final class PersonalContextManager {
     @SystemApi
     @NonNull
     public ContextHintWithSignature signHint(
-            @NonNull ContextHint hint, @Nullable List<ContextHint> attributionHints) {
+            @NonNull ContextHint hint, @NonNull Collection<ContextHint> attributionHints) {
+        requireNonNull(hint, "hint must not be null");
+        requireNonNull(attributionHints, "attributionHints must not be null");
+
         try {
             return mService.signHint(
                     new ContextHintWrapper(hint), ContextHintWrapper.wrapList(attributionHints))
@@ -240,9 +239,8 @@ public final class PersonalContextManager {
      */
     @UserHandleAware(
             requiresPermissionIfNotCaller = android.Manifest.permission.INTERACT_ACROSS_USERS)
-    @Nullable
     public void registerInsightSurfaceClient(
-            @NonNull InsightSurfaceClientInfo clientInfo, @NonNull List<ContextHint> hints) {
+            @NonNull InsightSurfaceClientInfo clientInfo, @NonNull Collection<ContextHint> hints) {
         try {
             mService.registerInsightSurfaceClient(
                     ContextHintWrapper.wrapList(hints), clientInfo, mContext.getUserId());
@@ -288,14 +286,15 @@ public final class PersonalContextManager {
     /**
      * Publish hints from an embedded insight surface.
      *
-     * @param clientInfo of the client to be unregistered
+     * @param hints hints to publish
+     * @param clientInfo of the client publishing the hints
      *
      * @hide
      */
     @UserHandleAware(
             requiresPermissionIfNotCaller = android.Manifest.permission.INTERACT_ACROSS_USERS)
     public void publishInsightSurfaceHints(
-            @NonNull Set<ContextHint> hints, @NonNull InsightSurfaceClientInfo clientInfo) {
+            @NonNull Collection<ContextHint> hints, @NonNull InsightSurfaceClientInfo clientInfo) {
         try {
             mService.publishInsightSurfaceHints(
                     ContextHintWrapper.wrapList(hints), clientInfo, mContext.getUserId());
