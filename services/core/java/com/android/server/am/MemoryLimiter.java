@@ -287,7 +287,7 @@ class MemoryLimiter implements AutoCloseable {
                         synchronized (mLock) {
                             switch (op) {
                                 case MESSAGE_START -> {
-                                    if (uid != mIgnoredUid) {
+                                    if (enableMonitoring() && (uid != mIgnoredUid)) {
                                         String pkg = (String) msg.obj;
                                         onProcessStarted(mNative, pid, uid, pkg);
                                     }
@@ -335,6 +335,12 @@ class MemoryLimiter implements AutoCloseable {
          */
         ControllerEnabled() {
             this(CONFIG_PATH);
+        }
+
+        // Return true if the controller should monitor for over-limit events.  Test instances can
+        // override this.
+        boolean enableMonitoring() {
+            return Flags.memoryLimiterTrigger();
         }
 
         // A helper function that returns the correct memory limit given a total memory size and a
@@ -453,11 +459,6 @@ class MemoryLimiter implements AutoCloseable {
 
             if (pkg == null) {
                 // A null package cannot be reported.
-                return;
-            }
-
-            if (!Flags.memoryLimiterTrigger()) {
-                // The feature is disabled locally.
                 return;
             }
 
