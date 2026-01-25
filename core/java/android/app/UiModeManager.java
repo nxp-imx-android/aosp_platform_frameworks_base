@@ -16,8 +16,6 @@
 
 package android.app;
 
-import static android.app.Flags.enableNightModeBinderCache;
-
 import android.annotation.CallbackExecutor;
 import android.annotation.FlaggedApi;
 import android.annotation.FloatRange;
@@ -1218,7 +1216,6 @@ public class UiModeManager {
      *
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_ENABLE_NIGHT_MODE_BINDER_CACHE)
     public static void invalidateNightModeCache() {
         IpcDataCache.invalidateCache(IpcDataCache.MODULE_SYSTEM,
                 NIGHT_MODE_API);
@@ -1240,11 +1237,7 @@ public class UiModeManager {
      * @see #setNightMode(int)
      */
     public @NightMode int getNightMode() {
-        if (enableNightModeBinderCache()) {
-            return mNightModeCache.query(getDisplayId());
-        } else {
-            return getNightModeFromServer(getDisplayId());
-        }
+        return mNightModeCache.query(getDisplayId());
     }
 
     /**

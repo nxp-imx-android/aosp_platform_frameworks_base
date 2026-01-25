@@ -1314,69 +1314,50 @@ public class KeyEvent extends InputEvent implements Parcelable {
      */
     public static final int KEYCODE_SCREENSHOT = 318;
     /** Key code constant: To start dictate to an input field */
-    @FlaggedApi(Flags.FLAG_ENABLE_NEW_25Q2_KEYCODES)
     public static final int KEYCODE_DICTATE = 319;
     /**
      * Key code constant: AC New.
      * <p>
      * e.g. To create a new instance of a window, open a new tab, etc.
      */
-    @FlaggedApi(Flags.FLAG_ENABLE_NEW_25Q2_KEYCODES)
     public static final int KEYCODE_NEW = 320;
     /**
      * Key code constant: AC Close.
      * <p>
      * e.g. To close current instance of the application window, close the current tab, etc.
      */
-    @FlaggedApi(Flags.FLAG_ENABLE_NEW_25Q2_KEYCODES)
     public static final int KEYCODE_CLOSE = 321;
     /** Key code constant: To toggle 'Do Not Disturb' mode. */
-    @FlaggedApi(Flags.FLAG_ENABLE_NEW_25Q2_KEYCODES)
     public static final int KEYCODE_DO_NOT_DISTURB = 322;
     /** Key code constant: To print. */
-    @FlaggedApi(Flags.FLAG_ENABLE_NEW_25Q2_KEYCODES)
     public static final int KEYCODE_PRINT = 323;
     /** Key code constant: To lock the screen. */
-    @FlaggedApi(Flags.FLAG_ENABLE_NEW_25Q2_KEYCODES)
     public static final int KEYCODE_LOCK = 324;
     /** Key code constant: To toggle fullscreen mode (on the current application). */
-    @FlaggedApi(Flags.FLAG_ENABLE_NEW_25Q2_KEYCODES)
     public static final int KEYCODE_FULLSCREEN = 325;
     /** Key code constant: F13 key. */
-    @FlaggedApi(Flags.FLAG_ENABLE_NEW_25Q2_KEYCODES)
     public static final int KEYCODE_F13 = 326;
     /** Key code constant: F14 key. */
-    @FlaggedApi(Flags.FLAG_ENABLE_NEW_25Q2_KEYCODES)
     public static final int KEYCODE_F14 = 327;
     /** Key code constant: F15 key. */
-    @FlaggedApi(Flags.FLAG_ENABLE_NEW_25Q2_KEYCODES)
     public static final int KEYCODE_F15 = 328;
     /** Key code constant: F16 key. */
-    @FlaggedApi(Flags.FLAG_ENABLE_NEW_25Q2_KEYCODES)
     public static final int KEYCODE_F16 = 329;
     /** Key code constant: F17 key. */
-    @FlaggedApi(Flags.FLAG_ENABLE_NEW_25Q2_KEYCODES)
     public static final int KEYCODE_F17 = 330;
     /** Key code constant: F18 key. */
-    @FlaggedApi(Flags.FLAG_ENABLE_NEW_25Q2_KEYCODES)
     public static final int KEYCODE_F18 = 331;
     /** Key code constant: F19 key. */
-    @FlaggedApi(Flags.FLAG_ENABLE_NEW_25Q2_KEYCODES)
     public static final int KEYCODE_F19 = 332;
     /** Key code constant: F20 key. */
-    @FlaggedApi(Flags.FLAG_ENABLE_NEW_25Q2_KEYCODES)
     public static final int KEYCODE_F20 = 333;
     /** Key code constant: F21 key. */
-    @FlaggedApi(Flags.FLAG_ENABLE_NEW_25Q2_KEYCODES)
     public static final int KEYCODE_F21 = 334;
     /** Key code constant: F22 key. */
-    @FlaggedApi(Flags.FLAG_ENABLE_NEW_25Q2_KEYCODES)
     public static final int KEYCODE_F22 = 335;
     /** Key code constant: F23 key. */
-    @FlaggedApi(Flags.FLAG_ENABLE_NEW_25Q2_KEYCODES)
     public static final int KEYCODE_F23 = 336;
     /** Key code constant: F24 key. */
-    @FlaggedApi(Flags.FLAG_ENABLE_NEW_25Q2_KEYCODES)
     public static final int KEYCODE_F24 = 337;
     /**
      * Key code constant: System Accessibility key.

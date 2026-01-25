@@ -29,7 +29,6 @@ import static android.view.WindowManager.ScreenshotSource.SCREENSHOT_KEY_OTHER;
 import static android.view.WindowManagerPolicyConstants.FLAG_INTERACTIVE;
 import static android.window.DesktopExperienceFlags.TOGGLE_FULLSCREEN_STATE_VIA_FULLSCREEN_KEY;
 
-import static com.android.hardware.input.Flags.enableNew25q2Keycodes;
 import static com.android.hardware.input.Flags.enableNew26q2Keycodes;
 import static com.android.hardware.input.Flags.keyboardBacklightShortcuts;
 import static com.android.hardware.input.Flags.fixSearchModifierFallbacks;
@@ -812,29 +811,25 @@ final class KeyGestureController {
                 }
                 break;
             case KeyEvent.KEYCODE_LOCK:
-                if (enableNew25q2Keycodes()) {
-                    if (firstDown && !hasModifiers) {
-                        handleKeyGesture(deviceId, new int[]{KeyEvent.KEYCODE_LOCK},
-                                /* modifierState = */0,
-                                KeyGestureEvent.KEY_GESTURE_TYPE_LOCK_SCREEN,
-                                KeyGestureEvent.ACTION_GESTURE_COMPLETE, displayId,
-                                focusedToken, /* flags = */0, /* appLaunchData = */null);
-                        return true;
-                    }
+                if (firstDown && !hasModifiers) {
+                    handleKeyGesture(deviceId, new int[]{KeyEvent.KEYCODE_LOCK},
+                            /* modifierState = */0,
+                            KeyGestureEvent.KEY_GESTURE_TYPE_LOCK_SCREEN,
+                            KeyGestureEvent.ACTION_GESTURE_COMPLETE, displayId,
+                            focusedToken, /* flags = */0, /* appLaunchData = */null);
+                    return true;
                 }
                 break;
             case KeyEvent.KEYCODE_FULLSCREEN:
-                if (enableNew25q2Keycodes()) {
-                    if (firstDown && !hasModifiers) {
-                        handleKeyGesture(deviceId, new int[]{KeyEvent.KEYCODE_FULLSCREEN},
-                                /* modifierState = */0,
-                                TOGGLE_FULLSCREEN_STATE_VIA_FULLSCREEN_KEY.isTrue()
-                                        ? KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_FULLSCREEN
-                                        : KeyGestureEvent.KEY_GESTURE_TYPE_MULTI_WINDOW_NAVIGATION,
-                                KeyGestureEvent.ACTION_GESTURE_COMPLETE, displayId,
-                                focusedToken, /* flags = */0, /* appLaunchData = */null);
-                        return true;
-                    }
+                if (firstDown && !hasModifiers) {
+                    handleKeyGesture(deviceId, new int[]{KeyEvent.KEYCODE_FULLSCREEN},
+                            /* modifierState = */0,
+                            TOGGLE_FULLSCREEN_STATE_VIA_FULLSCREEN_KEY.isTrue()
+                                    ? KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_FULLSCREEN
+                                    : KeyGestureEvent.KEY_GESTURE_TYPE_MULTI_WINDOW_NAVIGATION,
+                            KeyGestureEvent.ACTION_GESTURE_COMPLETE, displayId,
+                            focusedToken, /* flags = */0, /* appLaunchData = */null);
+                    return true;
                 }
                 break;
             case KeyEvent.KEYCODE_ESCAPE:
@@ -884,15 +879,13 @@ final class KeyGestureController {
                         + " interceptKeyBeforeQueueing");
                 return true;
             case KeyEvent.KEYCODE_DO_NOT_DISTURB:
-                if (enableNew25q2Keycodes()) {
-                    if (firstDown && !hasModifiers) {
-                        handleKeyGesture(deviceId, new int[]{KeyEvent.KEYCODE_DO_NOT_DISTURB},
-                                /* modifierState = */0,
-                                KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_DO_NOT_DISTURB,
-                                KeyGestureEvent.ACTION_GESTURE_COMPLETE, displayId,
-                                focusedToken, /* flags = */0, /* appLaunchData = */null);
-                        return true;
-                    }
+                if (firstDown && !hasModifiers) {
+                    handleKeyGesture(deviceId, new int[]{KeyEvent.KEYCODE_DO_NOT_DISTURB},
+                            /* modifierState = */0,
+                            KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_DO_NOT_DISTURB,
+                            KeyGestureEvent.ACTION_GESTURE_COMPLETE, displayId,
+                            focusedToken, /* flags = */0, /* appLaunchData = */null);
+                    return true;
                 }
                 break;
             case KeyEvent.KEYCODE_ACCESSIBILITY:

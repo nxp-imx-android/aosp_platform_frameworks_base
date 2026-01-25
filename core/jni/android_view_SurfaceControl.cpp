@@ -1248,6 +1248,14 @@ static void nativeSetShadowRadius(JNIEnv* env, jclass clazz, jlong transactionOb
     transaction->setShadowRadius(ctrl, shadowRadius);
 }
 
+static void nativeToggleRoundedCornerOpt(JNIEnv* env, jclass clazz, jlong transactionObj,
+                                         jlong nativeObject, jboolean enable) {
+    auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
+
+    const auto ctrl = SpFromRawPtr<SurfaceControl>(nativeObject);
+    transaction->setRoundedCornerOpt(ctrl, enable);
+}
+
 static void nativeSetBoxShadowSettings(JNIEnv* env, jclass clazz, jlong transactionObj,
                                        jlong nativeObject, jobject settingsObj) {
     Parcel* settingsParcel = parcelForJavaObject(env, settingsObj);
@@ -2809,6 +2817,8 @@ static const JNINativeMethod sSurfaceControlMethods[] = {
             (void*) nativeSetEdgeExtensionEffect },
     {"nativeSetShadowRadius", "(JJF)V",
             (void*)nativeSetShadowRadius },
+    {"nativeToggleRoundedCornerOpt", "(JJZ)V",
+            (void*)nativeToggleRoundedCornerOpt},
     {"nativeSetBoxShadowSettings", "(JJLandroid/os/Parcel;)V",
             (void*)nativeSetBoxShadowSettings },
     {"nativeSetBorderSettings", "(JJLandroid/os/Parcel;)V",

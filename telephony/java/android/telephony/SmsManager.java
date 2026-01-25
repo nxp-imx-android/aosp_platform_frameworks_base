@@ -21,6 +21,8 @@ import static android.Manifest.permission.MANAGE_ROLE_HOLDERS;
 import static android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE;
 import static android.Manifest.permission.RECEIVE_SENSITIVE_NOTIFICATIONS;
 
+import static com.android.internal.telephony.flags.Flags.FLAG_MESSAGE_PROMOTION;
+
 import android.Manifest;
 import android.annotation.CallbackExecutor;
 import android.annotation.FlaggedApi;
@@ -849,6 +851,104 @@ public final class SmsManager {
         sendTextMessageInternal(destinationAddress, scAddress, text, sentIntent, deliveryIntent,
                 false /* persistMessage */, getOpPackageName(),
                 getAttributionTag(), 0L /* messageId */);
+    }
+
+    /**
+     * Send a stored text based SMS.
+     *
+     * <p class="note"><strong>Note:</strong> This method is intended for internal use by privileged
+     * applications like Bluetooth etc. Caller should write the message into the SMS Provider and
+     * pass the {@code contentUri} of the message to this method. If message upgrade is supported,
+     * the Telephony framework will try to send this message to the default SMS app via
+     * {@link android.service.messaging.AlternativeMessageTransportService}. If default SMS app has
+     * accepted the upgrade request, message will be sent by the SMS app otherwise message will be
+     * sent by the Telephony framework.
+     * </p>
+     *
+     * @throws UnsupportedOperationException If the device does not have
+     *  {@link PackageManager#FEATURE_TELEPHONY_MESSAGING}.
+     *
+     * @param contentUri the uri of the stored message.
+     * @param sentIntent if not null this <code>PendingIntent</code> is broadcast when the message
+     *                   is successfully sent, or failed. The result code will be
+     *                   <code>Activity.RESULT_OK</code> for success, or the relevant error for
+     *                   failure.<br>
+     * @param deliveryIntent if not null this <code>PendingIntent</code> is broadcast when the
+     *                       message is delivered to the recipient. The raw pdu of the status
+     *                       report is in the extended data ("pdu").
+     * @hide
+     */
+    // TODO(b/475112104): make this a system api
+    @RequiresPermission(allOf = {
+            android.Manifest.permission.MODIFY_PHONE_STATE,
+            android.Manifest.permission.SEND_SMS
+    })
+    @RequiresFeature(PackageManager.FEATURE_TELEPHONY_MESSAGING)
+    @FlaggedApi(FLAG_MESSAGE_PROMOTION)
+    public void sendStoredTextMessage(
+            @NonNull Uri contentUri,
+            @Nullable PendingIntent sentIntent,
+            @Nullable PendingIntent deliveryIntent) {
+        Objects.requireNonNull(contentUri, "contentUri cannot be null");
+
+        try {
+            ISms iSms = getISmsServiceOrThrow();
+            iSms.sendStoredText(getSubscriptionId(), getOpPackageName(), getAttributionTag(),
+                    contentUri, null /* scAddress*/, sentIntent, deliveryIntent);
+        } catch (RemoteException e) {
+            Log.e(TAG, "sendStoredTextMessage: Couldn't send SMS - "
+                    + e.getMessage() + " " + formatCrossStackMessageId(0L));
+            notifySmsError(sentIntent, RESULT_REMOTE_EXCEPTION);
+        }
+    }
+
+    /**
+     * Send a stored multi-part text based SMS.
+     *
+     * <p class="note"><strong>Note:</strong> This method is intended for internal use by privileged
+     * applications like Bluetooth etc. Caller should write the message into the SMS Provider and
+     * pass the {@code contentUri} of the message to this method. If message upgrade is supported,
+     * the Telephony framework will try to send this message to the default SMS app via
+     * {@link android.service.messaging.AlternativeMessageTransportService}. If default SMS app has
+     * accepted the upgrade request, message will be sent by the SMS app otherwise message will be
+     * sent by the Telephony framework.
+     * </p>
+     *
+     * @throws UnsupportedOperationException If the device does not have
+     *  {@link PackageManager#FEATURE_TELEPHONY_MESSAGING}.
+     *
+     * @param contentUri the uri of the stored message.
+     * @param sentIntents if not null, a <code>List</code> of <code>PendingIntent</code>s (one for
+     *                    each message part) that is broadcast when the corresponding message part
+     *                    has been sent.
+     * @param deliveryIntents if not null, a <code>List</code> of <code>PendingIntent</code>s
+     *                        (one for each message part) that is broadcast when the corresponding
+     *                        message part has been delivered to the recipient.
+     * @hide
+     */
+    // TODO(b/475112104): make this a system api
+    @RequiresPermission(allOf = {
+            android.Manifest.permission.MODIFY_PHONE_STATE,
+            android.Manifest.permission.SEND_SMS
+    })
+    @RequiresFeature(PackageManager.FEATURE_TELEPHONY_MESSAGING)
+    @FlaggedApi(FLAG_MESSAGE_PROMOTION)
+    public void sendStoredMultipartTextMessage(
+            @NonNull Uri contentUri,
+            @Nullable List<PendingIntent> sentIntents,
+            @Nullable List<PendingIntent> deliveryIntents) {
+        Objects.requireNonNull(contentUri, "contentUri cannot be null");
+
+        try {
+            ISms iSms = getISmsServiceOrThrow();
+            iSms.sendStoredMultipartText(getSubscriptionId(), getOpPackageName(),
+                    getAttributionTag(), contentUri, null /* scAddress */, sentIntents,
+                    deliveryIntents);
+        } catch (RemoteException e) {
+            Log.e(TAG, "sendStoredMultipartTextMessage: Couldn't send SMS - "
+                    + e.getMessage() + " " + formatCrossStackMessageId(0L));
+            notifySmsError(sentIntents, RESULT_REMOTE_EXCEPTION);
+        }
     }
 
     private void sendTextMessageInternal(

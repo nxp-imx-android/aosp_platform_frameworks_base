@@ -355,4 +355,10 @@ public class StubTransaction extends SurfaceControl.Transaction {
             @NonNull BoxShadowSettings settings) {
         return this;
     }
+
+    @Override
+    public SurfaceControl.Transaction toggleClientDrawnRoundedCornersOpt(SurfaceControl sc,
+            boolean enable) {
+        return this;
+    }
 }
