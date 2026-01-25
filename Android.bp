@@ -506,6 +506,27 @@ java_defaults {
     },
 }
 
+soong_config_module_type {
+    name: "telecom_framework_minus_apex_visibility_defaults",
+    module_type: "java_defaults",
+    config_namespace: "ANDROID",
+    bool_variables: [
+        "release_telecom_mainline_module",
+    ],
+    properties: [
+        "visibility",
+    ],
+}
+
+telecom_framework_minus_apex_visibility_defaults {
+    name: "telecom_framework_minus_apex_visibility_default",
+    soong_config_variables: {
+        release_telecom_mainline_module: {
+            visibility: ["//packages/services/Telecomm"],
+        },
+    },
+}
+
 // we are unfortunately building the turbine jar twice, but more efficient and less complex
 // than generating a similar set of stubs with metalava
 java_library {
@@ -537,6 +558,7 @@ java_library {
     defaults: [
         "framework-minus-apex-with-libs-defaults",
         "framework-non-updatable-lint-defaults",
+        "telecom_framework_minus_apex_visibility_default",
     ],
     installable: true,
     // For backwards compatibility.
