@@ -81,9 +81,7 @@ public class EmbeddedInsightRenderer implements Renderer {
         mExecutor.execute(() -> {
             logDebug("registering insight surface client, id=" + clientInfo.getId());
 
-            final RenderToken clientRenderToken = new RenderToken.RenderTokenBuilder()
-                    .setRendererComponentId(mComponentId)
-                    .build();
+            final RenderToken clientRenderToken = new RenderToken(mComponentId);
 
             mClientRegistry.addClient(clientInfo, clientRenderToken);
 

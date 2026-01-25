@@ -92,7 +92,7 @@ class AutofillRendererServiceTest : SysuiTestCase() {
                             .build()
                     )
                     .build(),
-                RenderToken.RenderTokenBuilder().setRendererComponentId(UUID.randomUUID()).build(),
+                RenderToken(UUID.randomUUID()),
             )
 
             val datasetCaptor = argumentCaptor<MutableList<Dataset>>()

@@ -35,8 +35,6 @@ public interface Renderer extends Component {
 
     /** Mints a RenderToken for this renderer. */
     default RenderToken mintRenderToken() {
-        return new RenderToken.RenderTokenBuilder()
-                .setRendererComponentId(getComponentId())
-                .build();
+        return new RenderToken(getComponentId());
     }
 }

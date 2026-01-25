@@ -44,12 +44,8 @@ public class ContextHintWithSignatureTest {
         final BundleHint hint = new BundleHint.Builder().build();
         final BundleHint attributedHint1 = new BundleHint.Builder().build();
         final BundleHint attributedHint2 = new BundleHint.Builder().build();
-        final RenderToken renderToken1 = new RenderToken.RenderTokenBuilder()
-                .setRendererComponentId(UUID.randomUUID())
-                .build();
-        final RenderToken renderToken2 = new RenderToken.RenderTokenBuilder()
-                .setRendererComponentId(UUID.randomUUID())
-                .build();
+        final RenderToken renderToken1 = new RenderToken(UUID.randomUUID());
+        final RenderToken renderToken2 = new RenderToken(UUID.randomUUID());
 
         final ContextHintWithSignature signedAttributedHint1 =
                 new ContextHintWithSignature.Builder(attributedHint1, key)
@@ -95,9 +91,7 @@ public class ContextHintWithSignatureTest {
         final BundleHint hint = new BundleHint.Builder().build();
         final BundleHint attributedHint1 = new BundleHint.Builder().build();
         final BundleHint attributedHint2 = new BundleHint.Builder().build();
-        final RenderToken renderToken = new RenderToken.RenderTokenBuilder()
-                .setRendererComponentId(UUID.randomUUID())
-                .build();
+        final RenderToken renderToken = new RenderToken(UUID.randomUUID());
 
         final ContextHintWithSignature signedAttributedHint1 =
                 new ContextHintWithSignature.Builder(attributedHint1, key)
@@ -179,9 +173,7 @@ public class ContextHintWithSignatureTest {
         final SecretKeySpec key = ContextHintTestUtils.generateSignedHintKey();
         final ComponentName origin = new ComponentName("com.whatever", "com.whatever.Code");
         final BundleHint hint = new BundleHint.Builder().build();
-        final RenderToken renderToken = new RenderToken.RenderTokenBuilder()
-                .setRendererComponentId(UUID.randomUUID())
-                .build();
+        final RenderToken renderToken = new RenderToken(UUID.randomUUID());
 
         final Parcel parcel = Parcel.obtain();
         parcel.writeParcelable(new ContextHintWithSignature.Builder(hint, key)

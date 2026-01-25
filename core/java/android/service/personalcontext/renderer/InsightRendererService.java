@@ -106,7 +106,7 @@ public abstract class InsightRendererService extends Service {
             throw new IllegalStateException(
                     "RenderTokens can not be minted until after onConnected has been called");
         }
-        return new RenderToken.RenderTokenBuilder().setRendererComponentId(mComponentId).build();
+        return new RenderToken(mComponentId);
     }
 
     private void configure(UUID componentId) {
