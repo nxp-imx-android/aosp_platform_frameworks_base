@@ -40421,6 +40421,7 @@ package android.provider {
     field public static final String SUBJECT = "subject";
     field public static final String SUBSCRIPTION_ID = "sub_id";
     field public static final String THREAD_ID = "thread_id";
+    field @FlaggedApi("com.android.internal.telephony.flags.message_promotion") public static final String TRANSACTION_ID = "tr_id";
     field public static final String TYPE = "type";
   }
 
