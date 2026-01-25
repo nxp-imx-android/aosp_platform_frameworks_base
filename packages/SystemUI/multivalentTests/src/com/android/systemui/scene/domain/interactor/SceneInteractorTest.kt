@@ -328,7 +328,7 @@ class SceneInteractorTest : SysuiTestCase() {
                 )
             sceneContainerRepository.setTransitionState(transitionState)
             val reflectedTransitionState by
-                collectLastValue(sceneContainerRepository.transitionState)
+                collectLastValue(sceneContainerRepository.transitionStateFlow)
             assertThat(reflectedTransitionState).isEqualTo(transitionState.value)
 
             val progress = MutableStateFlow(1f)

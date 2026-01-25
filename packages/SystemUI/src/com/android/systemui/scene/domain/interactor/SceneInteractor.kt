@@ -122,13 +122,13 @@ constructor(
      * 3. When transitioning, what the progress of the transition is.
      */
     val transitionStateFlow: StateFlow<ObservableTransitionState> =
-        repository.transitionState
+        repository.transitionStateFlow
             .onEach { logger.logSceneTransition(it) }
             .stateInTraced(
                 name = "transitionState",
                 scope = applicationScope,
                 started = SharingStarted.Eagerly,
-                initialValue = repository.transitionState.value,
+                initialValue = repository.transitionStateFlow.value,
             )
 
     /**
