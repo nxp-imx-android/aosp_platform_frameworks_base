@@ -45,6 +45,7 @@ public class InsightSurfaceClientUpdateTest {
         final int nestedScrollAxes = SCROLL_AXIS_HORIZONTAL;
         final boolean nestedScrollAxisLocked = true;
         final boolean shouldBlur = true;
+        final String themeResourceName = "theme";
         final Configuration configuration = mock(Configuration.class);
         final BundleHint hint = new BundleHint.Builder().build();
 
@@ -56,6 +57,7 @@ public class InsightSurfaceClientUpdateTest {
                         .setNestedScrollAxes(nestedScrollAxes)
                         .setNestedScrollAxisLocked(nestedScrollAxisLocked)
                         .setShouldBlur(shouldBlur)
+                        .setThemeResourceName(themeResourceName)
                         .setConfiguration(configuration)
                         .addHint(hint)
                         .build();
@@ -67,6 +69,7 @@ public class InsightSurfaceClientUpdateTest {
         assertThat(update.hasUpdate(InsightSurfaceClientUpdate.KEY_NESTED_SCROLL_AXIS_LOCKED))
                 .isTrue();
         assertThat(update.hasUpdate(InsightSurfaceClientUpdate.KEY_SHOULD_BLUR)).isTrue();
+        assertThat(update.hasUpdate(InsightSurfaceClientUpdate.KEY_THEME_RESOURCE_NAME)).isTrue();
         assertThat(update.hasUpdate(InsightSurfaceClientUpdate.KEY_CONFIGURATION)).isTrue();
         assertThat(update.hasUpdate(InsightSurfaceClientUpdate.KEY_HINTS)).isTrue();
 
@@ -75,6 +78,7 @@ public class InsightSurfaceClientUpdateTest {
         assertThat(update.getNestedScrollAxes()).isEqualTo(nestedScrollAxes);
         assertThat(update.isNestedScrollAxisLocked()).isEqualTo(nestedScrollAxisLocked);
         assertThat(update.shouldBlur()).isEqualTo(shouldBlur);
+        assertThat(update.getThemeResourceName()).isEqualTo(themeResourceName);
         assertThat(update.getBackgroundColor()).isEqualTo(backgroundColor);
         assertThat(update.getHints()).contains(hint);
     }
@@ -88,6 +92,7 @@ public class InsightSurfaceClientUpdateTest {
         assertThat(update.hasUpdate(InsightSurfaceClientUpdate.KEY_NESTED_SCROLL_AXES)).isFalse();
         assertThat(update.hasUpdate(InsightSurfaceClientUpdate.KEY_NESTED_SCROLL_AXIS_LOCKED))
                 .isFalse();
+        assertThat(update.hasUpdate(InsightSurfaceClientUpdate.KEY_THEME_RESOURCE_NAME)).isFalse();
         assertThat(update.hasUpdate(InsightSurfaceClientUpdate.KEY_CONFIGURATION)).isFalse();
         assertThat(update.hasUpdate(InsightSurfaceClientUpdate.KEY_HINTS)).isFalse();
 
@@ -96,6 +101,7 @@ public class InsightSurfaceClientUpdateTest {
         assertThat(update.getNestedScrollAxes()).isEqualTo(SCROLL_AXIS_NONE);
         assertThat(update.isNestedScrollAxisLocked()).isEqualTo(false);
         assertThat(update.shouldBlur()).isEqualTo(false);
+        assertThat(update.getThemeResourceName()).isNull();
         assertThat(update.getBackgroundColor()).isNull();
         assertThat(update.getHints()).isEmpty();
     }
