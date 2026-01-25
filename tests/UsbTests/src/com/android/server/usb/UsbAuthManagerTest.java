@@ -27,6 +27,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -48,6 +49,7 @@ import android.hardware.usb.UsbAuthDeviceInfo;
 import android.hardware.usb.UsbAuthorizationSystemState;
 import android.hardware.usb.UsbConfiguration;
 import android.hardware.usb.UsbDevice;
+import android.hardware.usb.UsbManager;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.UserHandle;
@@ -211,6 +213,24 @@ public class UsbAuthManagerTest {
         doReturn(mock(Intent.class))
                 .when(mContext)
                 .registerReceiver(mDismissNotificationCaptor.capture(), any(), anyInt());
+
+        // If we started the authorization activity, just respond with authorized for the device.
+        // Replace this before using if you want different behavior.
+        doAnswer(
+                        (invocation) -> {
+                            Intent intent = invocation.getArgument(0);
+                            UsbDevice device =
+                                    intent.getParcelableExtra(
+                                            UsbManager.EXTRA_DEVICE, UsbDevice.class);
+                            if (device != null) {
+                                mUsbAuthManager.setAuthorizationResponse(device, AUTHORIZED, true);
+                            }
+
+                            return null;
+                        })
+                .when(mContext)
+                .startActivityAsUser(any(), any());
+        doReturn(mContext).when(mContext).createContextAsUser(any(), anyInt());
 
         when(mService.asBinder()).thenReturn(mBinder);
 
@@ -407,11 +427,16 @@ public class UsbAuthManagerTest {
         TestData fake0 = mTestData.get(FAKE0);
         TestData fake1 = mTestData.get(FAKE1);
 
+        // Intercept the start dialog activity and do nothing.
+        doNothing().when(mContext).startActivityAsUser(any(), any());
+
         // First add the device and then send an Ask request.
         // This should result in the ask being handled right away on the event.
         addConnectedDevice(fake0);
         mUsbAuthManager.usbDeviceAdded(fake0.deviceAddress);
 
+        // Let the first one be authorized.
+        mUsbAuthManager.addFingerprintToPersistedForTest(fake0.fingerprint);
         verify(mService, never()).setAuthorizationStatus(fake0.deviceInfo, AUTHORIZED);
         mUsbAuthManager.getEventsListenerForTest().onDeviceAskForAuthorization(fake0.deviceInfo);
         verify(mService).setAuthorizationStatus(fake0.deviceInfo, AUTHORIZED);
@@ -419,9 +444,12 @@ public class UsbAuthManagerTest {
         // Now try the other order. The Ask result won't occur until the device is added.
         mUsbAuthManager.getEventsListenerForTest().onDeviceAskForAuthorization(fake1.deviceInfo);
         verify(mService, never()).setAuthorizationStatus(fake1.deviceInfo, AUTHORIZED);
-
         addConnectedDevice(fake1);
         mUsbAuthManager.usbDeviceAdded(fake1.deviceAddress);
+
+        // This device won't be authorized until after we set the authorization response.
+        verify(mService, never()).setAuthorizationStatus(fake1.deviceInfo, AUTHORIZED);
+        mUsbAuthManager.setAuthorizationResponse(fake1.device, AUTHORIZED, true);
         verify(mService).setAuthorizationStatus(fake1.deviceInfo, AUTHORIZED);
     }
 

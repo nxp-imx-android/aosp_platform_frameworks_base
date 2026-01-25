@@ -23,7 +23,9 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -35,6 +37,7 @@ import android.hardware.usb.UsbAuthDeviceInfo;
 import android.hardware.usb.UsbAuthorizationStatus;
 import android.hardware.usb.UsbAuthorizationSystemState;
 import android.hardware.usb.UsbDevice;
+import android.hardware.usb.UsbManager;
 import android.os.Binder;
 import android.os.Environment;
 import android.os.Handler;
@@ -85,6 +88,10 @@ public class UsbAuthManager implements IBinder.DeathRecipient {
 
     // Name of notification channel for Usb authorization notifications.
     private static final String USB_AUTHORIZATION_CHANNEL = "usb_authorization";
+
+    // Extra field in Intent we send to UsbAuthorizationActivity to indicate
+    // whether we are in Booted (untrusted) or LoggedIn (trusted) state.
+    private static final String AUTH_ACTIVITY_EXTRA_UNTRUSTED = "untrusted";
 
     @VisibleForTesting
     // Broadcast sent when auth notifications are dismissed.
@@ -625,6 +632,7 @@ public class UsbAuthManager implements IBinder.DeathRecipient {
         boolean sendAskRequest = false;
         int status = UsbAuthorizationStatus.DENIED;
         UsbAuthDeviceInfo deviceInfo = null;
+        boolean isLoggedIn = false;
 
         UsbDeviceFingerprint fingerprint =
                 mHostManager.getConnectedDeviceFingerprintForAddress(deviceAddress);
@@ -638,6 +646,7 @@ public class UsbAuthManager implements IBinder.DeathRecipient {
                 return;
             }
 
+            isLoggedIn = mCurrentState == UsbAuthorizationSystemState.LOGGED_IN;
             // Send a persisted result directly or queue up a user dialog.
             if (fingerprint != null && mPersistedAuthorizedDevices.contains(fingerprint)) {
                 sendAuthorization = true;
@@ -653,11 +662,41 @@ public class UsbAuthManager implements IBinder.DeathRecipient {
         }
 
         if (sendAskRequest && device != null) {
-            // TODO(b/432527670) - Send this up to UsbAuthorizationActivity for user interaction.
-            //
-            // For now, always respond with a persisted "authorized".
-            setAuthorizationResponse(
-                    device, UsbAuthorizationStatus.AUTHORIZED, /* isPersistent= */ true);
+            startAuthorizationAlertActivity(device, isLoggedIn);
+        }
+    }
+
+    // Start a new authorization alert activity or update the existing one to display
+    // a prompt to allow a new device.
+    private void startAuthorizationAlertActivity(UsbDevice device, boolean isLoggedIn) {
+        Slog.d(TAG, TextUtils.formatSimple("Starting alert for device %s", device.getDeviceName()));
+
+        final long token = Binder.clearCallingIdentity();
+        try {
+            UserHandle userHandle;
+            synchronized (mLock) {
+                userHandle = UserHandle.of(mCurrentUserId);
+            }
+
+            Context userContext = mContext.createContextAsUser(userHandle, 0);
+            Intent intent = new Intent();
+            intent.putExtra(UsbManager.EXTRA_DEVICE, device);
+            intent.putExtra(AUTH_ACTIVITY_EXTRA_UNTRUSTED, !isLoggedIn);
+            intent.setComponent(
+                    ComponentName.unflattenFromString(
+                            userContext
+                                    .getResources()
+                                    .getString(
+                                            com.android.internal.R.string
+                                                    .config_usbAuthorizationActivity)));
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+
+            userContext.startActivityAsUser(intent, userHandle);
+            Slog.d(TAG, "Started alert");
+        } catch (ActivityNotFoundException e) {
+            Slog.e(TAG, "unable to start UsbAuthorizationActivity");
+        } finally {
+            Binder.restoreCallingIdentity(token);
         }
     }
 
