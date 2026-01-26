@@ -28,6 +28,8 @@ import androidx.test.filters.SmallTest;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.time.Instant;
+
 @SmallTest
 @RunWith(AndroidJUnit4.class)
 public class ContextHintTest {
@@ -51,6 +53,9 @@ public class ContextHintTest {
         assertThat(outputHint).isInstanceOf(BundleHint.class);
         assertThat(hint.getHintId()).isEqualTo(outputHint.getHintId());
         assertThat(hint.getTokens()).containsExactly(tokenA, tokenB);
+        assertThat(hint.getCreationTime()).isGreaterThan(Instant.ofEpochMilli(0));
+        assertThat(hint.getCreationTime().toEpochMilli())
+                .isEqualTo(outputHint.getCreationTime().toEpochMilli());
     }
 
     // Tests parceling and unparceling fields on the base ContextHint.
@@ -63,5 +68,8 @@ public class ContextHintTest {
         assertThat(outputHint).isInstanceOf(BundleHint.class);
         assertThat(hint.getHintId()).isEqualTo(outputHint.getHintId());
         assertThat(hint.getTokens()).isEmpty();
+        assertThat(hint.getCreationTime()).isGreaterThan(Instant.ofEpochMilli(0));
+        assertThat(hint.getCreationTime().toEpochMilli())
+                .isEqualTo(outputHint.getCreationTime().toEpochMilli());
     }
 }

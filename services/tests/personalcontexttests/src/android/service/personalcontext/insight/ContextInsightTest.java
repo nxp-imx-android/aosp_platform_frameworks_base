@@ -39,6 +39,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 
+import java.time.Instant;
 import java.util.UUID;
 
 @SmallTest
@@ -63,6 +64,9 @@ public class ContextInsightTest {
         ContextInsight outputInsight = assertParcelUnparcel(insight);
         assertThat(insight.getInsightId()).isEqualTo(outputInsight.getInsightId());
         assertThat(insight.getOriginatingComponentId()).isEqualTo(componentId);
+        assertThat(insight.getCreationTime()).isGreaterThan(Instant.ofEpochMilli(0));
+        assertThat(insight.getCreationTime().toEpochMilli())
+                .isEqualTo(outputInsight.getCreationTime().toEpochMilli());
     }
 
     @Test

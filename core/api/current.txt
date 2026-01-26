@@ -44001,6 +44001,7 @@ package android.service.personalcontext.hint {
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public abstract class ContextHint {
+    method @NonNull public final java.time.Instant getCreationTime();
     method @NonNull public final java.util.UUID getHintId();
     method @NonNull public String getHintTypeName();
     method @NonNull public final java.util.Set<android.service.personalcontext.Token> getTokens();
@@ -44215,6 +44216,7 @@ package android.service.personalcontext.insight {
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public abstract class ContextInsight {
+    method @NonNull public final java.time.Instant getCreationTime();
     method @NonNull public final java.util.UUID getInsightId();
     method @NonNull public String getInsightTypeName();
     method @NonNull public java.util.Set<android.service.personalcontext.hint.ContextHintWithSignature> getOriginHints();
