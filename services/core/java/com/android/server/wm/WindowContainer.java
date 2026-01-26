@@ -761,7 +761,7 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
 
     /** Called when {@link #mSurfaceControl} is recreated. */
     void migrateChildrenToNewSurfaceControl(SurfaceControl.Transaction t) {
-        final boolean useSyncTransaction = t == getSyncTransaction();
+        final boolean useSyncTransaction = t == mSyncTransaction;
         for (int i = 0; i < mChildren.size(); i++)  {
             final WindowContainer<?> child = mChildren.get(i);
             final SurfaceControl sc = child.mSurfaceControl;
