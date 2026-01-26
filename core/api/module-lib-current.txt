@@ -176,6 +176,7 @@ package android.media {
   public class AudioManager {
     method public void adjustStreamVolumeForUid(int, int, int, @NonNull String, int, int, int);
     method public void adjustSuggestedStreamVolumeForUid(int, int, int, @NonNull String, int, int, int);
+    method @FlaggedApi("android.media.audio.bt_device_category_api") @RequiresPermission(android.Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED) public int getBluetoothAudioDeviceCategory(@NonNull String);
     method @NonNull public java.util.List<android.bluetooth.BluetoothCodecConfig> getHwOffloadFormatsSupportedForA2dp();
     method @NonNull public java.util.List<android.bluetooth.BluetoothLeAudioCodecConfig> getHwOffloadFormatsSupportedForLeAudio();
     method @NonNull public java.util.List<android.bluetooth.BluetoothLeAudioCodecConfig> getHwOffloadFormatsSupportedForLeBroadcast();
