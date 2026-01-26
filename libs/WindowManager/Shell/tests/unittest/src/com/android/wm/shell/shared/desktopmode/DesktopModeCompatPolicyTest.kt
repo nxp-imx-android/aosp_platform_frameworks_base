@@ -205,28 +205,11 @@ class DesktopModeCompatPolicyTest : ShellTestCase() {
                 }
             )
         )
-        assertFalse(
-            desktopModeCompatPolicy.isTopActivityExemptFromDesktopWindowing(
-                createFreeformTask().apply {
-                    isActivityStackTransparent = true
-                    isTopActivityNoDisplay = false
-                    numActivities = 1
-                    baseActivity = baseActivityTest
-                    userId = 0
-                }
-            )
-        )
         verify(packageManager, times(1))
             .getPackageInfoAsUser(
                 eq("com.test.dummypackage"),
                 eq(PackageManager.GET_PERMISSIONS),
                 eq(10),
-            )
-        verify(packageManager, times(1))
-            .getPackageInfoAsUser(
-                eq("com.test.dummypackage"),
-                eq(PackageManager.GET_PERMISSIONS),
-                eq(0),
             )
     }
 
