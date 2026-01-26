@@ -613,8 +613,10 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         if (mirror == null) {
             return null;
         }
+        final boolean foregroundMirroringStarted;
         synchronized (mInteractiveMirrors) {
-            if (mInteractiveMirrors.isEmpty()) {
+            foregroundMirroringStarted = mInteractiveMirrors.isEmpty();
+            if (foregroundMirroringStarted) {
                 // Automation is no longer running in the background. Show touches.
                 mInputManagerInternal.setForceShowTouchesOnDisplay(mVirtualDisplayId,
                         true /* enabled */);
@@ -629,6 +631,9 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         }
         outMirrorSurface.copyFrom(mirror.getMirrorLeash(),
                 "ComputerControlSessionImpl#createInteractiveMirrorDisplay");
+        if (foregroundMirroringStarted) {
+            mStatsController.onMirroringStarted();
+        }
         mStatsController.onMirrorViewCreated();
         return mirror;
     }
@@ -672,11 +677,13 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     }
 
     private void removeInteractiveMirror(InteractiveMirrorImpl interactiveMirror) {
+        final boolean foregroundMirroringStopped;
         synchronized (mInteractiveMirrors) {
             if (!mInteractiveMirrors.remove(interactiveMirror)) {
                 return;
             }
-            if (mInteractiveMirrors.isEmpty()) {
+            foregroundMirroringStopped = mInteractiveMirrors.isEmpty();
+            if (foregroundMirroringStopped) {
                 // Automation is fully running in the background. No need to show touches.
                 mInputManagerInternal.setForceShowTouchesOnDisplay(mVirtualDisplayId,
                         false /* enabled */);
@@ -695,6 +702,9 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         try (var transaction = mTransactionSupplier.get()) {
             interactiveMirror.closeWithTransaction(transaction);
             transaction.apply();
+        }
+        if (foregroundMirroringStopped) {
+            mStatsController.onMirroringStopped();
         }
     }
 
