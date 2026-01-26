@@ -10253,6 +10253,7 @@ package android.app.privatecompute {
   }
 
   @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public final class PccSandboxManager {
+    method @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public boolean isPccTrustedSystemComponent(int, @Nullable String);
     method public boolean isPrivateComputeServicesUid(int);
     method @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public void startNonPccProcessForDataMigration(@NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<android.app.privatecompute.MigrationRequestResult,android.app.privatecompute.MigrationException>);
     method public void writeToAuditLog(@NonNull android.os.PersistableBundle);

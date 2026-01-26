@@ -3088,7 +3088,8 @@ public class ActivityManagerService extends IActivityManager.Stub
                 PccSandboxManagerInternal pccInternal =
                         LocalServices.getService(PccSandboxManagerInternal.class);
 
-                if (pccInternal != null && pccInternal.isPccTrustedApp(targetUid, targetPkg)) {
+                if (pccInternal != null
+                        && pccInternal.isPccTrustedSystemComponent(targetUid, targetPkg)) {
                     return true;
                 }
             }

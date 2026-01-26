@@ -544,7 +544,8 @@ public class ActivityManagerServiceTest {
                 anyInt(), anyString(), anyInt(), anyString(), anyInt(), nullable(Bundle.class)))
                 .thenReturn(true);
 
-        when(mMockPccSandboxManagerInternal.isPccTrustedApp(TEST_TARGET_UID, TEST_TARGET_PKG))
+        when(mMockPccSandboxManagerInternal.isPccTrustedSystemComponent(
+                TEST_TARGET_UID, TEST_TARGET_PKG))
                 .thenReturn(true);
 
         boolean result = mAms.validateAssociationAllowedLocked(
@@ -569,7 +570,8 @@ public class ActivityManagerServiceTest {
                 .thenReturn(true);
 
         // Trusted App check fails -> Fallback to manifest (Denied)
-        when(mMockPccSandboxManagerInternal.isPccTrustedApp(TEST_TARGET_UID, TEST_TARGET_PKG))
+        when(mMockPccSandboxManagerInternal.isPccTrustedSystemComponent(
+                TEST_TARGET_UID, TEST_TARGET_PKG))
                 .thenReturn(false);
 
         boolean result = mAms.validateAssociationAllowedLocked(
@@ -603,7 +605,8 @@ public class ActivityManagerServiceTest {
                 .thenReturn(true);
 
         // Trusted App check fails -> Fallback to manifest (Allowed)
-        when(mMockPccSandboxManagerInternal.isPccTrustedApp(TEST_TARGET_UID, TEST_TARGET_PKG))
+        when(mMockPccSandboxManagerInternal.isPccTrustedSystemComponent(
+                TEST_TARGET_UID, TEST_TARGET_PKG))
                 .thenReturn(false);
 
         boolean result = mAms.validateAssociationAllowedLocked(
