@@ -178,6 +178,8 @@ class PipDesktopState(
     /** Returns the id associated with the display where PiP window is in. */
     fun getCurrentDisplayId(): Int = pipDisplayLayoutState.displayId
 
+    // TODO(b/478792808): Remove suppression
+    @SuppressWarnings("ProtoLogNonConstantFormat")
     private fun logD(msg: String, vararg arguments: Any?) {
         ProtoLog.d(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE, "%s: $msg", TAG, *arguments)
     }

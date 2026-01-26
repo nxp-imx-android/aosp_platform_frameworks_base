@@ -76,8 +76,7 @@ object PipUtils {
         } catch (e: RemoteException) {
             ProtoLog.w(
                 ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
-                "%s: Unable to get pinned stack.",
-                TAG,
+                "$TAG: Unable to get pinned stack.",
             )
         }
         return Pair(null, 0)
