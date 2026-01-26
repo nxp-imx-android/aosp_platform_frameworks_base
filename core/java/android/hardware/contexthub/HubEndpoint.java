@@ -121,7 +121,7 @@ public class HubEndpoint {
     @NonNull private final Executor mLifecycleCallbackExecutor;
     @NonNull private final Executor mMessageCallbackExecutor;
     @NonNull private final Executor mDataFlowCallbackExecutor;
-    @NonNull private final Looper mLooper;
+    @NonNull private final Looper mEpollLooper;
 
     @GuardedBy("mLock")
     private final SparseArray<HubEndpointSession> mActiveSessions = new SparseArray<>();
@@ -721,7 +721,7 @@ public class HubEndpoint {
         mMessageCallbackExecutor = messageCallbackExecutor;
         mDataFlowCallback = endpointDataFlowCallback;
         mDataFlowCallbackExecutor = dataFlowCallbackExecutor;
-        mLooper = looper;
+        mEpollLooper = looper;
     }
 
     /** @hide */
@@ -739,7 +739,7 @@ public class HubEndpoint {
             if (Flags.fmcqImplementation()) {
                 mNativeHandle =
                         native_init(
-                                mLooper.getQueue(),
+                                mEpollLooper.getQueue(),
                                 mJniCallback,
                                 mAssignedHubEndpointInfo.getIdentifier().getHub());
             } else {
@@ -1004,8 +1004,8 @@ public class HubEndpoint {
     /** Returns the {@link android.os.Looper} for epoll relating to data flow alerts. */
     @FlaggedApi(Flags.FLAG_FMCQ_API)
     @NonNull
-    public Looper getLooper() {
-        return mLooper;
+    public Looper getEpollLooper() {
+        return mEpollLooper;
     }
 
     /** Builder for a {@link HubEndpoint} object. */
@@ -1021,7 +1021,7 @@ public class HubEndpoint {
         @Nullable private DataFlowCallback mDataFlowCallback;
         @Nullable private Executor mDataFlowCallbackExecutor;
 
-        @Nullable private Looper mLooper;
+        @Nullable private Looper mEpollLooper;
 
         @NonNull private final Executor mMainExecutor;
 
@@ -1163,9 +1163,9 @@ public class HubEndpoint {
          */
         @FlaggedApi(Flags.FLAG_FMCQ_API)
         @NonNull
-        public Builder setLooper(@NonNull Looper looper) {
+        public Builder setEpollLooper(@NonNull Looper looper) {
             Objects.requireNonNull(looper);
-            mLooper = looper;
+            mEpollLooper = looper;
             return this;
         }
 
@@ -1180,7 +1180,7 @@ public class HubEndpoint {
                     mMessageCallbackExecutor != null ? mMessageCallbackExecutor : mMainExecutor,
                     mDataFlowCallback,
                     mDataFlowCallbackExecutor != null ? mDataFlowCallbackExecutor : mMainExecutor,
-                    mLooper != null ? mLooper : Looper.getMainLooper());
+                    mEpollLooper != null ? mEpollLooper : Looper.getMainLooper());
         }
     }
 
