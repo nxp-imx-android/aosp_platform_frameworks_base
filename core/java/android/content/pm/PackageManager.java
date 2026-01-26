@@ -5946,11 +5946,6 @@ public abstract class PackageManager {
             super(value);
         }
         @NonNull
-        @FlaggedApi(android.content.pm.Flags.FLAG_PREVENT_UNINTENDED_SIGN_EXTENSION)
-        public static PackageInfoFlags of(int value) {
-            return new PackageInfoFlags(Integer.toUnsignedLong(value));
-        }
-        @NonNull
         public static PackageInfoFlags of(@PackageInfoFlagsBits long value) {
             return new PackageInfoFlags(value);
         }
@@ -5960,15 +5955,9 @@ public abstract class PackageManager {
      * Specific flags used for retrieving application info.
      */
     @RavenwoodKeepWholeClass
-    @SuppressWarnings("HiddenSuperclass")
     public final static class ApplicationInfoFlags extends Flags {
         private ApplicationInfoFlags(@ApplicationInfoFlagsBits long value) {
             super(value);
-        }
-        @NonNull
-        @FlaggedApi(android.content.pm.Flags.FLAG_PREVENT_UNINTENDED_SIGN_EXTENSION)
-        public static ApplicationInfoFlags of(int value) {
-            return new ApplicationInfoFlags(Integer.toUnsignedLong(value));
         }
         @NonNull
         public static ApplicationInfoFlags of(@ApplicationInfoFlagsBits long value) {
@@ -5980,15 +5969,9 @@ public abstract class PackageManager {
      * Specific flags used for retrieving component info.
      */
     @RavenwoodKeepWholeClass
-    @SuppressWarnings("HiddenSuperclass")
     public final static class ComponentInfoFlags extends Flags {
         private ComponentInfoFlags(@ComponentInfoFlagsBits long value) {
             super(value);
-        }
-        @NonNull
-        @FlaggedApi(android.content.pm.Flags.FLAG_PREVENT_UNINTENDED_SIGN_EXTENSION)
-        public static ComponentInfoFlags of(int value) {
-            return new ComponentInfoFlags(Integer.toUnsignedLong(value));
         }
         @NonNull
         public static ComponentInfoFlags of(@ComponentInfoFlagsBits long value) {
@@ -6000,15 +5983,9 @@ public abstract class PackageManager {
      * Specific flags used for retrieving resolve info.
      */
     @RavenwoodKeepWholeClass
-    @SuppressWarnings("HiddenSuperclass")
     public final static class ResolveInfoFlags extends Flags {
         private ResolveInfoFlags(@ResolveInfoFlagsBits long value) {
             super(value);
-        }
-        @NonNull
-        @FlaggedApi(android.content.pm.Flags.FLAG_PREVENT_UNINTENDED_SIGN_EXTENSION)
-        public static ResolveInfoFlags of(int value) {
-            return new ResolveInfoFlags(Integer.toUnsignedLong(value));
         }
         @NonNull
         public static ResolveInfoFlags of(@ResolveInfoFlagsBits long value) {
