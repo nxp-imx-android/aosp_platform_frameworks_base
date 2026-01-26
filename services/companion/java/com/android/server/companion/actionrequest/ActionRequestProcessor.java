@@ -30,6 +30,7 @@ import android.companion.ActionRequest;
 import android.companion.ActionResult;
 import android.companion.AssociationInfo;
 import android.companion.IOnActionResultListener;
+import android.os.Binder;
 import android.os.RemoteException;
 import android.os.Trace;
 import android.util.Slog;
@@ -167,15 +168,18 @@ public class ActionRequestProcessor implements AssociationStore.OnChangeListener
             Slog.w(TAG, "Action " + action + " is not a supported action.");
             return;
         }
-        for (int id : associationIds) {
-            final AssociationInfo association = mAssociationStore.getAssociationById(id);
-            if (association == null) {
-                Slog.w(TAG, "Skipping requestAction for non-existent association " + id);
-                continue;
-            }
 
-            handleActionRequest(association, request, serviceName);
-        }
+        Binder.withCleanCallingIdentity(() -> {
+            for (int id : associationIds) {
+                final AssociationInfo association = mAssociationStore.getAssociationById(id);
+                if (association == null) {
+                    Slog.w(TAG, "Skipping requestAction for non-existent association " + id);
+                    continue;
+                }
+
+                handleActionRequest(association, request, serviceName);
+            }
+        });
     }
 
     /**
