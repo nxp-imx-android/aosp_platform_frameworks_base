@@ -58,13 +58,8 @@ public final class SupportedTypesResult implements Parcelable {
 
     private SupportedTypesResult(Parcel in) {
         this.mIsResultAvailable = in.readBoolean();
-        ArrayList<String> input = in.readArrayList(null /* classLoader */, String.class);
-        if (input != null) {
-            this.mSupportedTypes = new ArrayList<>(input);
-        } else {
-            this.mSupportedTypes = new ArrayList<>();
-        }
-
+        this.mSupportedTypes = new ArrayList<>();
+        in.readStringList(this.mSupportedTypes);
     }
 
     @Override

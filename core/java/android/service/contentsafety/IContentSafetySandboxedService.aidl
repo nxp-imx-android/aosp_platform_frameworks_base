@@ -30,8 +30,8 @@ import android.service.contentsafety.ILoadFeatureCallback;
   oneway interface IContentSafetySandboxedService {
 
    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.CHECK_CONTENT_SAFETY)")
-   void checkContent(in int featureType, in Bundle input, in AndroidFuture cancellationSignal, in ICheckContentCallback remoteCallback) = 1;
+   oneway void checkContent(in int featureType, in Bundle input, in AndroidFuture cancellationSignal, in ICheckContentCallback remoteCallback) = 1;
 
    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.CHECK_CONTENT_SAFETY)")
-   void loadFeature(in Bundle feature, in AndroidFuture cancellationSignal, in ILoadFeatureCallback callback ) = 2;
+   oneway void loadFeature(in Bundle feature, in AndroidFuture cancellationSignal, in ILoadFeatureCallback callback ) = 2;
  }
