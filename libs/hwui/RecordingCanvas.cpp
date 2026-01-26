@@ -1206,8 +1206,6 @@ void DisplayListData::reset() {
 
     // Leave fBytes and fReserved alone.
     fUsed = 0;
-
-    // TODO(b/372558459): reset here only?
     mColorArea.reset();
 }
 
@@ -1297,8 +1295,6 @@ void RecordingCanvas::reset(DisplayListData* dl, const SkIRect& bounds) {
     fDL = dl;
     mClipMayBeComplex = false;
     mSaveCount = mComplexSaveCount = 0;
-
-    // TODO(b/372558459) - Check if dl->reset() should be called here
     dl->setBounds(bounds);
 }
 
