@@ -35,6 +35,7 @@ import android.service.personalcontext.Token;
 import android.service.personalcontext.embedded.InsightSurfaceClientInfo;
 import android.service.personalcontext.hint.ContextHint;
 import android.service.personalcontext.hint.ContextHintWithSignature;
+import android.service.personalcontext.hint.ContextHintWithSignatureWrapper;
 import android.service.personalcontext.hint.ContextHintWrapper;
 import android.service.personalcontext.hint.NotificationEvent;
 import android.service.personalcontext.hint.NotificationHint;
@@ -476,7 +477,7 @@ public class PersonalContextManagerService extends SystemService {
 
         @RequiresNoPermission
         @Override
-        public ContextHintWithSignature signHint(
+        public ContextHintWithSignatureWrapper signHint(
                 ContextHintWrapper hint, List<ContextHintWrapper> attributionHints) {
             final int callingPid = Binder.getCallingPid();
 
@@ -494,11 +495,11 @@ public class PersonalContextManagerService extends SystemService {
                             }
                         }
 
-                        return getService().signHint(
+                        return new ContextHintWithSignatureWrapper(getService().signHint(
                                 hint.getContextHint(),
                                 callingPid,
                                 emptySet(),
-                                signedAttributionHints);
+                                signedAttributionHints));
                     });
         }
 

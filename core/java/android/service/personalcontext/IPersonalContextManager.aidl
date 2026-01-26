@@ -20,7 +20,7 @@ import android.os.ParcelUuid;
 import android.service.personalcontext.RenderToken;
 import android.service.personalcontext.Token;
 import android.service.personalcontext.embedded.InsightSurfaceClientInfo;
-import android.service.personalcontext.hint.ContextHintWithSignature;
+import android.service.personalcontext.hint.ContextHintWithSignatureWrapper;
 import android.service.personalcontext.hint.ContextHintWrapper;
 import android.service.personalcontext.insight.ContextInsightWrapper;
 import android.service.personalcontext.insight.interaction.InsightEvent;
@@ -39,7 +39,7 @@ interface IPersonalContextManager {
 
     oneway void publishInsight(in List<ContextInsightWrapper> insights, int userId);
 
-    ContextHintWithSignature signHint(
+    ContextHintWithSignatureWrapper signHint(
             in ContextHintWrapper hint,
             in List<ContextHintWrapper> attributionHints);
 

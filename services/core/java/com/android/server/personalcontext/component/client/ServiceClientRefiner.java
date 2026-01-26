@@ -24,6 +24,7 @@ import android.os.ParcelUuid;
 import android.os.RemoteException;
 import android.service.personalcontext.hint.ContextHint;
 import android.service.personalcontext.hint.ContextHintWithSignature;
+import android.service.personalcontext.hint.ContextHintWithSignatureWrapper;
 import android.service.personalcontext.hint.ContextHintWrapper;
 import android.service.personalcontext.hint.HintFilter;
 import android.service.personalcontext.insight.interaction.InsightEvent;
@@ -36,7 +37,6 @@ import androidx.annotation.NonNull;
 
 import com.android.server.personalcontext.component.Refiner;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -96,8 +96,6 @@ public class ServiceClientRefiner extends BaseServiceClientComponent<IRefiner> i
     public void refine(
             @NonNull Set<ContextHintWithSignature> inputHints,
             @NonNull Consumer<Set<ContextHint>> callback) {
-        final List<ContextHintWithSignature> hints = new ArrayList<>(inputHints);
-
         final IRefineCallback.Stub binderCallback = new IRefineCallback.Stub() {
             @PermissionManuallyEnforced
             @Override
@@ -105,6 +103,9 @@ public class ServiceClientRefiner extends BaseServiceClientComponent<IRefiner> i
                 callback.accept(ContextHintWrapper.unwrapInto(hints, new HashSet<>()));
             }
         };
+
+        final List<ContextHintWithSignatureWrapper> hints =
+                ContextHintWithSignatureWrapper.wrapList(inputHints);
 
         runWithBinder(binder -> {
             try {

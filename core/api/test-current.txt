@@ -3550,7 +3550,7 @@ package android.service.personalcontext.hint {
     method @NonNull public android.os.Bundle toBundle();
   }
 
-  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class ContextHintWithSignature implements android.os.Parcelable {
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class ContextHintWithSignature {
     method public boolean isSignatureValid(@NonNull javax.crypto.spec.SecretKeySpec) throws java.security.GeneralSecurityException;
     field public static final String HMAC_ALGORITHM = "HmacSHA256";
   }
@@ -3562,6 +3562,16 @@ package android.service.personalcontext.hint {
     method @NonNull public android.service.personalcontext.hint.ContextHintWithSignature.Builder addRenderTokens(@NonNull java.util.Collection<android.service.personalcontext.RenderToken>);
     method @NonNull public android.service.personalcontext.hint.ContextHintWithSignature build() throws java.security.GeneralSecurityException;
     method @NonNull public android.service.personalcontext.hint.ContextHintWithSignature.Builder setOriginatingPackage(@Nullable String);
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class ContextHintWithSignatureWrapper implements android.os.Parcelable {
+    ctor public ContextHintWithSignatureWrapper(@NonNull android.service.personalcontext.hint.ContextHintWithSignature);
+    method public int describeContents();
+    method @NonNull public android.service.personalcontext.hint.ContextHintWithSignature getContextHintWithSignature();
+    method @NonNull public static <T extends java.util.Collection<android.service.personalcontext.hint.ContextHintWithSignature>> T unwrapInto(@NonNull java.util.Collection<android.service.personalcontext.hint.ContextHintWithSignatureWrapper>, @NonNull T);
+    method @NonNull public static java.util.List<android.service.personalcontext.hint.ContextHintWithSignatureWrapper> wrapList(@NonNull java.util.Collection<android.service.personalcontext.hint.ContextHintWithSignature>);
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.service.personalcontext.hint.ContextHintWithSignatureWrapper> CREATOR;
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class HintFilter implements android.os.Parcelable {

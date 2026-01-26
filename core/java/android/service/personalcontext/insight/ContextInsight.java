@@ -31,6 +31,7 @@ import android.service.personalcontext.RenderToken;
 import android.service.personalcontext.Token;
 import android.service.personalcontext.hint.ContextHint;
 import android.service.personalcontext.hint.ContextHintWithSignature;
+import android.service.personalcontext.hint.ContextHintWithSignatureWrapper;
 import android.service.personalcontext.insight.interaction.InsightEvent;
 import android.util.Log;
 
@@ -252,7 +253,9 @@ public abstract class ContextInsight {
         b.putString(KEY_INSIGHT_ID, mId.toString());
         b.putString(KEY_ORIGINATING_COMPONENT_ID,
                 mOriginatingComponentId == null ? null : mOriginatingComponentId.toString());
-        b.putParcelableArrayList(KEY_ORIGIN_HINTS, new ArrayList<>(mOriginHints));
+        b.putParcelableArrayList(
+                KEY_ORIGIN_HINTS, new ArrayList<>(
+                        ContextHintWithSignatureWrapper.wrapList(mOriginHints)));
         b.putParcelableArrayList(KEY_TOKENS, new ArrayList<>(mTokens));
         b.putBundle(KEY_INSIGHT_DATA, toBundleImpl());
         return b;
@@ -303,7 +306,9 @@ public abstract class ContextInsight {
         final ConstructorParams constructorParams = new ConstructorParams(
                 UUID.fromString(bundle.getString(KEY_INSIGHT_ID)),
                 originatingComponentId == null ? null : UUID.fromString(originatingComponentId),
-                bundle.getParcelableArrayList(KEY_ORIGIN_HINTS, ContextHintWithSignature.class),
+                ContextHintWithSignatureWrapper.unwrapList(
+                        bundle.getParcelableArrayList(
+                                KEY_ORIGIN_HINTS, ContextHintWithSignatureWrapper.class)),
                 bundle.getParcelableArrayList(KEY_TOKENS, Token.class));
 
         try {

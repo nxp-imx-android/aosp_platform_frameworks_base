@@ -27,6 +27,7 @@ import android.os.RemoteException;
 import android.service.personalcontext.Flags;
 import android.service.personalcontext.hint.ContextHint;
 import android.service.personalcontext.hint.ContextHintWithSignature;
+import android.service.personalcontext.hint.ContextHintWithSignatureWrapper;
 import android.service.personalcontext.hint.ContextHintWrapper;
 import android.service.personalcontext.hint.HintFilter;
 import android.service.personalcontext.insight.interaction.InsightEvent;
@@ -140,10 +141,12 @@ public abstract class HintRefinerService extends Service {
         }
 
         @Override
-        public void refine(List<ContextHintWithSignature> inputHints, IRefineCallback callback)
+        public void refine(
+                List<ContextHintWithSignatureWrapper> inputHints, IRefineCallback callback)
                 throws RemoteException {
             getServiceOrThrow().onRefine(
-                    ContextHintWithSignature.unwrapList(inputHints),
+                    ContextHintWithSignature.unwrapList(
+                            ContextHintWithSignatureWrapper.unwrapList(inputHints)),
                     hints -> {
                         try {
                             callback.onHintsRefined(ContextHintWrapper.wrapList(hints));
