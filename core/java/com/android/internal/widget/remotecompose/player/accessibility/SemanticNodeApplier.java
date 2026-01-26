@@ -16,6 +16,7 @@
 package com.android.internal.widget.remotecompose.player.accessibility;
 
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 
 import com.android.internal.widget.remotecompose.core.operations.layout.Component;
 import com.android.internal.widget.remotecompose.core.semantics.AccessibilitySemantics;
@@ -55,12 +56,14 @@ public interface SemanticNodeApplier<N> {
      * @param component The component that this semantic information corresponds to.
      * @param semantics A list of {@link AccessibilitySemantics} objects representing the semantic
      *     properties and actions to apply.
+     * @param parentId The parent according to semantic tree.
      */
     void applyComponent(
             @NonNull RemoteComposeDocumentAccessibility remoteComposeAccessibility,
             @NonNull N nodeInfo,
             @NonNull Component component,
-            @NonNull List<AccessibilitySemantics> semantics);
+            @NonNull List<AccessibilitySemantics> semantics,
+            @Nullable Integer parentId);
 
     /** add children to the node */
     void addChildren(@NonNull N nodeInfo, @NonNull List<Integer> childIds);
