@@ -29,14 +29,15 @@ import android.annotation.SdkConstant;
 import android.annotation.SystemApi;
 import android.app.Service;
 import android.app.contentsafety.ContentSafetyManager;
+import android.app.contentsafety.FeatureException;
 import android.app.contentsafety.IIsFeatureEnabledCallback;
-import android.app.contentsafety.IsFeatureEnabledCallback;
 import android.content.Intent;
 import android.os.CancellationSignal;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.ICancellationSignal;
 import android.os.Looper;
+import android.os.OutcomeReceiver;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.util.Slog;
@@ -129,11 +130,11 @@ public abstract class ContentSafetySettingsService extends Service {
         return null;
     }
 
-    private IsFeatureEnabledCallback wrapIsFeatureEnabledCallback(IIsFeatureEnabledCallback
-            callback) {
-        return new IsFeatureEnabledCallback() {
+    private OutcomeReceiver<Boolean, FeatureException> wrapIsFeatureEnabledCallback(
+            IIsFeatureEnabledCallback callback) {
+        return new OutcomeReceiver<>() {
             @Override
-            public void onSuccess(boolean result) {
+            public void onResult(Boolean result) {
                 try {
                     callback.onSuccess(result);
                 } catch (RemoteException e) {
@@ -143,9 +144,9 @@ public abstract class ContentSafetySettingsService extends Service {
             }
 
             @Override
-            public void onFailure(int failureStatus) {
+            public void onError(@NonNull FeatureException exception) {
                 try {
-                    callback.onFailure(failureStatus);
+                    callback.onFailure(exception.getErrorCode());
                 } catch (RemoteException e) {
                     Slog.e(TAG, "Error Sending isFeatureEnabledCallback: "
                             + e);
@@ -162,7 +163,7 @@ public abstract class ContentSafetySettingsService extends Service {
      * @param userId user id on device, not related to any account.
      * @param cancellationSignal Cancellation Signal to receive cancellation events from client and
      *     configure a listener to.
-     * @param callback to populate the result of the isFeatureEnabled at
+     * @param isFeatureEnabledCallback to populate the result of the isFeatureEnabled at
      *     success case or failure status at Failure case.
      */
     @RequiresPermission(android.Manifest.permission.CHECK_CONTENT_SAFETY)
@@ -170,6 +171,6 @@ public abstract class ContentSafetySettingsService extends Service {
             int featureType,
             @NonNull UserHandle userId,
             @Nullable CancellationSignal cancellationSignal,
-            @NonNull IsFeatureEnabledCallback callback);
+            @NonNull OutcomeReceiver<Boolean, FeatureException> isFeatureEnabledCallback);
 }
 

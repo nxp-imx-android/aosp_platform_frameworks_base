@@ -33,6 +33,7 @@ import android.os.Bundle;
 import android.os.CancellationSignal;
 import android.os.IBinder;
 import android.os.ICancellationSignal;
+import android.os.OutcomeReceiver;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
 import android.util.Log;
@@ -356,7 +357,7 @@ public final class ContentSafetyManager {
      * @param featureType The safety {@link FeatureType} to check.
      * @param cancellationSignal signal to invoke cancellation or
      * @param callbackExecutor executor to run the callback on.
-     * @param isFeatureEnabledCallback to populate either feature is enabled or failure
+     * @param isFeatureEnabledOutcomeReceiver to populate either feature is enabled or failure
      *     status code .
      */
     @RequiresPermission(Manifest.permission.CHECK_CONTENT_SAFETY)
@@ -364,20 +365,22 @@ public final class ContentSafetyManager {
             @FeatureType int featureType,
             @Nullable CancellationSignal cancellationSignal,
             @NonNull @CallbackExecutor Executor callbackExecutor,
-            @NonNull IsFeatureEnabledCallback
-                    isFeatureEnabledCallback) {
+            @NonNull OutcomeReceiver<Boolean, FeatureException>
+                    isFeatureEnabledOutcomeReceiver) {
         try {
             IIsFeatureEnabledCallback callback = new IIsFeatureEnabledCallback.Stub() {
                 @Override
                 public void onSuccess(boolean isFeatureEnabledResult) {
                     Binder.withCleanCallingIdentity(() -> callbackExecutor.execute(
-                            () -> isFeatureEnabledCallback.onSuccess(isFeatureEnabledResult)));
+                            () -> isFeatureEnabledOutcomeReceiver
+                                    .onResult(isFeatureEnabledResult)));
                 }
 
                 @Override
-                public void onFailure(int failureStatus) {
+                public void onFailure(int errorCode) {
                     Binder.withCleanCallingIdentity(() -> callbackExecutor.execute(
-                            () -> isFeatureEnabledCallback.onFailure(failureStatus)));
+                            () -> isFeatureEnabledOutcomeReceiver
+                                    .onError(new FeatureException(errorCode))));
                 }
             };
 

@@ -16,12 +16,13 @@
 
 package android.app.contentsafety;
 
-
 import static android.app.contentsafety.flags.Flags.FLAG_ENABLE_CONTENTSAFETY;
 
 import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.SystemApi;
+import android.annotation.SystemService;
+import android.content.Context;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -29,27 +30,28 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Callback functions used for isFeatureEnabled via
- * {@link ContentSafetyManager#isFeatureEnabled}.
+ * Exception type to be used for errors related to the API
+ * {@link android.app.contentsafety.ContentSafetyManager#isFeatureEnabled}
  *
  * @hide
  */
 @SystemApi
+@SystemService(Context.CONTENT_SAFETY_SERVICE)
 @FlaggedApi(FLAG_ENABLE_CONTENTSAFETY)
-public interface IsFeatureEnabledCallback {
-    int FEATURE_SETTINGS_ERROR_UNKNOWN = 0;
+public class FeatureException extends Exception {
+    public static final int FEATURE_SETTINGS_ERROR_UNKNOWN = 0;
 
     /**
      * Sent when the remote service failed to fetch feature settings status due to an internal
      * error.
      */
-    int FEATURE_SETTINGS_ERROR = 1;
+    public static final int FEATURE_SETTINGS_ERROR = 1;
 
     /**
      * Sent when the remote {@link android.service.contentsafety.ContentSafetySettingsService}
      * is unavailable.
      */
-    int FEATURE_SETTINGS_SERVICE_UNAVAILABLE = 2;
+    public static final int FEATURE_SETTINGS_SERVICE_UNAVAILABLE = 2;
 
     /**
      * @hide
@@ -65,18 +67,20 @@ public interface IsFeatureEnabledCallback {
     @Retention(RetentionPolicy.SOURCE)
     @interface FeatureSettingsFailureStatus{ }
 
-    /**
-     * Called when calling to the remote settings service is successful
-     * regardless the feature is enabled or not.
-     *
-     * @param result true if the feature setting is enabled and false otherwise.
-     */
-    void onSuccess(boolean result);
+    private final int mErrorCode;
 
     /**
-     * Called when calling the remote settings service failed.
-     *
-     * @param failureStatus the failure status.
+     * Creates a new FeatureException with the specified error code.
+     * @param errorCode the error code value.
      */
-    void onFailure(@FeatureSettingsFailureStatus int failureStatus);
+    public FeatureException(@FeatureSettingsFailureStatus int errorCode) {
+        mErrorCode = errorCode;
+    }
+
+    /** Returns the error code of the exception. */
+    public @FeatureSettingsFailureStatus int getErrorCode() {
+        return mErrorCode;
+    }
 }
+
+
