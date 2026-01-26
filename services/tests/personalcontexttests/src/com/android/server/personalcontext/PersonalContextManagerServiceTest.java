@@ -16,6 +16,10 @@
 
 package com.android.server.personalcontext;
 
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
+
+import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentation;
+
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -27,23 +31,31 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import android.Manifest;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.content.pm.PackageManagerInternal;
 import android.content.pm.UserInfo;
 import android.database.ContentObserver;
+import android.os.Process;
+import android.os.RemoteException;
 import android.os.UserHandle;
 import android.provider.Settings;
 import android.service.personalcontext.hint.BundleHint;
 import android.service.personalcontext.hint.ContextHint;
 import android.service.personalcontext.hint.ContextHintWrapper;
+import android.testing.TestableContext;
+import android.util.ArrayMap;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
+import com.android.internal.util.test.LocalServiceKeeperRule;
 import com.android.server.SystemService;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -59,14 +71,22 @@ public class PersonalContextManagerServiceTest {
     private static final int USER_ID_1 = 10;
     private static final int USER_ID_2 = 11;
 
+    private static final String TEST_PACKAGE_NAME = "test.package";
+
     private static final UserInfo USER_INFO_1 = new UserInfo(USER_ID_1, "user1", 0);
     private static final UserInfo USER_INFO_2 = new UserInfo(USER_ID_2, "user2", 0);
     private static final UserInfo SYSTEM_USER_INFO =
             new UserInfo(UserHandle.USER_SYSTEM, "system", 0);
 
-    @Mock private Context mMockContext;
+    @Rule public LocalServiceKeeperRule mLocalServiceKeeperRule = new LocalServiceKeeperRule();
+
+    @Rule
+    public final PersonalContextTestableContext mContext =
+            new PersonalContextTestableContext(getInstrumentation().getContext());
+
     @Mock private PackageManager mPackageManager;
     @Mock private ContentResolver mContentResolver;
+    @Mock private PackageManagerInternal mPackageManagerInternal;
 
     private PersonalContextManagerService mService;
     private PersonalContextManagerInternal mLocalService;
@@ -78,14 +98,19 @@ public class PersonalContextManagerServiceTest {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
 
-        when(mMockContext.getPackageManager()).thenReturn(mPackageManager);
-        when(mMockContext.getPackageName()).thenReturn("android");
+        mLocalServiceKeeperRule.overrideLocalService(
+                PackageManagerInternal.class, mPackageManagerInternal);
 
-        mockUserContext(UserHandle.of(USER_ID_1));
-        mockUserContext(UserHandle.of(USER_ID_2));
-        mockUserContext(UserHandle.SYSTEM);
+        mContext.setMockPackageManager(mPackageManager);
 
-        mService = spy(new PersonalContextManagerService(mMockContext));
+        mContext.addMockUserContext(UserHandle.of(USER_ID_1), mPackageManager);
+        mContext.addMockUserContext(UserHandle.of(USER_ID_2), mPackageManager);
+        mContext.addMockUserContext(UserHandle.SYSTEM, mPackageManager);
+
+        mContext.getTestablePermissions()
+                .setPermission(Manifest.permission.INTERACT_ACROSS_USERS, PERMISSION_GRANTED);
+
+        mService = spy(new PersonalContextManagerService(mContext));
         mLocalService = mService.new LocalService();
 
         mUser1 = new SystemService.TargetUser(USER_INFO_1);
@@ -105,11 +130,12 @@ public class PersonalContextManagerServiceTest {
         mService.onUserStarting(mUser1);
         mService.onUserUnlocked(mUser1);
 
-        verify(mContentResolver).registerContentObserver(
-                eq(Settings.Secure.getUriFor(Settings.Secure.PERSONAL_CONTEXT_ENABLED)),
-                eq(false),
-                any(ContentObserver.class),
-                eq(UserHandle.USER_ALL));
+        verify(mContentResolver)
+                .registerContentObserver(
+                        eq(Settings.Secure.getUriFor(Settings.Secure.PERSONAL_CONTEXT_ENABLED)),
+                        eq(false),
+                        any(ContentObserver.class),
+                        eq(UserHandle.USER_ALL));
     }
 
     @Test
@@ -187,23 +213,100 @@ public class PersonalContextManagerServiceTest {
     }
 
     @Test
+    public void testIsPersonalContextModeEnabled_modeUnset_returnsTrue() throws RemoteException {
+        PersonalContextManagerService.BinderService binderService =
+                new PersonalContextManagerService.BinderService(mService, mPackageManagerInternal);
+
+        when(mPackageManagerInternal.getPersonalContextMode(any(), anyInt(), anyInt()))
+                .thenReturn(PackageManager.PERSONAL_CONTEXT_MODE_UNSET);
+
+        boolean result = binderService.isPersonalContextModeEnabled(TEST_PACKAGE_NAME, USER_ID_1);
+        assertThat(result).isTrue();
+
+        verify(mPackageManagerInternal)
+                .getPersonalContextMode(TEST_PACKAGE_NAME, Process.myUid(), USER_ID_1);
+    }
+
+    @Test
+    public void testIsPersonalContextModeEnabled_modeOn_returnsTrue() throws RemoteException {
+        PersonalContextManagerService.BinderService binderService =
+                new PersonalContextManagerService.BinderService(mService, mPackageManagerInternal);
+
+        when(mPackageManagerInternal.getPersonalContextMode(any(), anyInt(), anyInt()))
+                .thenReturn(PackageManager.PERSONAL_CONTEXT_MODE_USER_ON);
+
+        boolean result = binderService.isPersonalContextModeEnabled(TEST_PACKAGE_NAME, USER_ID_1);
+        assertThat(result).isTrue();
+
+        verify(mPackageManagerInternal)
+                .getPersonalContextMode(TEST_PACKAGE_NAME, Process.myUid(), USER_ID_1);
+    }
+
+    @Test
+    public void testIsPersonalContextModeEnabled_modeOff_returnsFalse() throws RemoteException {
+        PersonalContextManagerService.BinderService binderService =
+                new PersonalContextManagerService.BinderService(mService, mPackageManagerInternal);
+
+        when(mPackageManagerInternal.getPersonalContextMode(any(), anyInt(), anyInt()))
+                .thenReturn(PackageManager.PERSONAL_CONTEXT_MODE_USER_OFF);
+
+        boolean result = binderService.isPersonalContextModeEnabled(TEST_PACKAGE_NAME, USER_ID_1);
+        assertThat(result).isFalse();
+
+        verify(mPackageManagerInternal)
+                .getPersonalContextMode(TEST_PACKAGE_NAME, Process.myUid(), USER_ID_1);
+    }
+
+    @Test
+    public void testSetPersonalContextModeEnabled_enabled_sendsOn() throws RemoteException {
+        PersonalContextManagerService.BinderService binderService =
+                new PersonalContextManagerService.BinderService(mService, mPackageManagerInternal);
+
+        binderService.setPersonalContextModeEnabled(
+                TEST_PACKAGE_NAME, USER_ID_1, /* enabled= */ true);
+
+        verify(mPackageManagerInternal)
+                .setPersonalContextMode(
+                        TEST_PACKAGE_NAME,
+                        Process.myUid(),
+                        USER_ID_1,
+                        PackageManager.PERSONAL_CONTEXT_MODE_USER_ON);
+    }
+
+    @Test
+    public void testSetPersonalContextModeEnabled_disabled_sendsOff() throws RemoteException {
+        PersonalContextManagerService.BinderService binderService =
+                new PersonalContextManagerService.BinderService(mService, mPackageManagerInternal);
+
+        binderService.setPersonalContextModeEnabled(
+                TEST_PACKAGE_NAME, USER_ID_1, /* enabled= */ false);
+
+        verify(mPackageManagerInternal)
+                .setPersonalContextMode(
+                        TEST_PACKAGE_NAME,
+                        Process.myUid(),
+                        USER_ID_1,
+                        PackageManager.PERSONAL_CONTEXT_MODE_USER_OFF);
+    }
+
+    @Test
     public void testPublishTriggeringHint() {
         PersonalContextManagerService.BinderService binderService =
-                new PersonalContextManagerService.BinderService(mService);
+                new PersonalContextManagerService.BinderService(mService, mPackageManagerInternal);
 
         BundleHint hint = new BundleHint.Builder().build();
         ContextHintWrapper hintWrapper = new ContextHintWrapper(hint);
         List<ContextHintWrapper> hints = List.of(hintWrapper);
         binderService.publishTriggeringHint(hints, List.of(), List.of(), USER_ID_1);
 
-        verify(mService).startRefinerWorkflow(
-                eq(USER_ID_1), anyInt(), eq(Set.of(hint)), any(), any());
+        verify(mService)
+                .startRefinerWorkflow(eq(USER_ID_1), anyInt(), eq(Set.of(hint)), any(), any());
     }
 
     @Test
     public void testPublishTriggeringHint_nullRenderTokens() {
         PersonalContextManagerService.BinderService binderService =
-                new PersonalContextManagerService.BinderService(mService);
+                new PersonalContextManagerService.BinderService(mService, mPackageManagerInternal);
 
         BundleHint hint = new BundleHint.Builder().build();
         ContextHintWrapper hintWrapper = new ContextHintWrapper(hint);
@@ -223,11 +326,24 @@ public class PersonalContextManagerServiceTest {
         verify(mService).startRefinerWorkflow(eq(USER_ID_1), anyInt(), eq(hints), any(), any());
     }
 
-    private void mockUserContext(UserHandle userHandle) {
-        Context userContext = mock(Context.class);
-        when(mMockContext.createContextAsUser(eq(userHandle), anyInt())).thenReturn(userContext);
-        when(userContext.getPackageManager()).thenReturn(mPackageManager);
-        when(userContext.getContentResolver()).thenReturn(mContentResolver);
-        when(userContext.getUser()).thenReturn(userHandle);
+    private final class PersonalContextTestableContext extends TestableContext {
+        private final ArrayMap<UserHandle, Context> mMockUserContexts = new ArrayMap<>();
+
+        PersonalContextTestableContext(Context base) {
+            super(base);
+        }
+
+        private void addMockUserContext(UserHandle userHandle, PackageManager packageManager) {
+            Context userContext = mock(Context.class);
+            when(userContext.getPackageManager()).thenReturn(packageManager);
+            when(userContext.getContentResolver()).thenReturn(mContentResolver);
+            when(userContext.getUser()).thenReturn(userHandle);
+            mMockUserContexts.put(userHandle, userContext);
+        }
+
+        @Override
+        public Context createContextAsUser(UserHandle user, int flags) {
+            return mMockUserContexts.get(user);
+        }
     }
 }

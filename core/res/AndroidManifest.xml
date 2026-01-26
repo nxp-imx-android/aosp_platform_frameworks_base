@@ -864,6 +864,7 @@
     <protected-broadcast android:name="android.app.action.ALLOWED_NAS_ADJUSTMENT_KEYS_CHANGED" />
     <protected-broadcast android:name="android.app.action.SUPPORTED_NAS_ADJUSTMENT_KEYS_CHANGED" />
     <protected-broadcast android:name="android.telephony.action.STK_SETUP_EVENT_LIST" />
+    <protected-broadcast android:name="android.intent.action.PERSONAL_CONTEXT_MODE_CHANGED" />
 
     <!-- Added in 26Q4 -->
     <protected-broadcast android:name="android.app.action.DYNAMIC_BUNDLE_MODIFIED" />
@@ -3088,6 +3089,20 @@
         android:name="android.permission.MANAGE_READ_SCREEN_CONTEXT_REQUEST"
         android:protectionLevel="signature|installer"
         android:featureFlag="android.permission.flags.assist_settings_privacy_improvements_enabled" />
+
+    <!-- Allows an application to change an application's personal context mode setting.
+
+        <p>This permission is needed to enable or disable personal context data for an application
+        through the {@link android.service.personalcontext.PersonalContextManager
+        #setPersonalContextModeEnabled(String, boolean)} API.
+
+         <p>Protection level: signature
+         @FlaggedApi(android.service.personalcontext.Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
+     -->
+    <permission
+        android:name="android.permission.CHANGE_PERSONAL_CONTEXT_MODE"
+        android:protectionLevel="signature"
+        android:featureFlag="android.service.personalcontext.enable_personal_context_service" />
 
     <!-- ======================================== -->
     <!-- Permissions for factory reset protection -->

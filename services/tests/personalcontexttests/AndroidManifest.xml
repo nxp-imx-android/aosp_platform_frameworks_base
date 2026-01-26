@@ -23,6 +23,8 @@
     <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" />
     -->
     <uses-permission android:name="android.permission.GET_INTENT_SENDER_INTENT" />
+    <!-- CHANGE_PERSONAL_CONTEXT_MODE is a signature permission and must be granted in manifest -->
+    <uses-permission android:name="android.permission.CHANGE_PERSONAL_CONTEXT_MODE" />
 
     <application android:debuggable="true"
                  android:testOnly="true">

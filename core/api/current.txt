@@ -90,6 +90,7 @@ package android {
     field public static final String CHANGE_COMPONENT_ENABLED_STATE = "android.permission.CHANGE_COMPONENT_ENABLED_STATE";
     field public static final String CHANGE_CONFIGURATION = "android.permission.CHANGE_CONFIGURATION";
     field public static final String CHANGE_NETWORK_STATE = "android.permission.CHANGE_NETWORK_STATE";
+    field @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final String CHANGE_PERSONAL_CONTEXT_MODE = "android.permission.CHANGE_PERSONAL_CONTEXT_MODE";
     field public static final String CHANGE_WIFI_MULTICAST_STATE = "android.permission.CHANGE_WIFI_MULTICAST_STATE";
     field public static final String CHANGE_WIFI_STATE = "android.permission.CHANGE_WIFI_STATE";
     field public static final String CLEAR_APP_CACHE = "android.permission.CLEAR_APP_CACHE";
@@ -12421,6 +12422,7 @@ package android.content {
     field public static final String ACTION_PACKAGE_UNSTOPPED = "android.intent.action.PACKAGE_UNSTOPPED";
     field public static final String ACTION_PACKAGE_VERIFIED = "android.intent.action.PACKAGE_VERIFIED";
     field public static final String ACTION_PASTE = "android.intent.action.PASTE";
+    field @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final String ACTION_PERSONAL_CONTEXT_MODE_CHANGED = "android.intent.action.PERSONAL_CONTEXT_MODE_CHANGED";
     field public static final String ACTION_PICK = "android.intent.action.PICK";
     field public static final String ACTION_PICK_ACTIVITY = "android.intent.action.PICK_ACTIVITY";
     field public static final String ACTION_POWER_CONNECTED = "android.intent.action.ACTION_POWER_CONNECTED";
@@ -44058,6 +44060,7 @@ package android.service.personalcontext {
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class PersonalContextManager {
+    method @RequiresPermission(android.Manifest.permission.QUERY_ALL_PACKAGES) public boolean isPersonalContextModeEnabled(@NonNull String);
     method public void publishTriggeringHint(@NonNull android.service.personalcontext.insight.interaction.ReturnHintReport, @NonNull java.util.List<android.service.personalcontext.hint.ContextHint>);
     method public void reportUserFeedback(@NonNull android.service.personalcontext.insight.ContextInsight, @Nullable android.os.Bundle);
     field public static final String ACTION_PERSONAL_CONTEXT_ENABLED_CHANGED = "android.service.personalcontext.action.PERSONAL_CONTEXT_ENABLED_CHANGED";
