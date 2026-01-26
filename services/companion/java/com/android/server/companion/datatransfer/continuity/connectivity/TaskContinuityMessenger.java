@@ -22,15 +22,14 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.companion.AssociationInfo;
 import android.companion.CompanionDeviceManager;
+import android.util.ArraySet;
 import android.util.Slog;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.util.FrameworkStatsLog;
 import com.android.server.companion.datatransfer.continuity.messages.Proto;
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
 import java.io.IOException;
-import java.util.HashSet;
 import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.function.BiConsumer;
 
@@ -47,7 +46,7 @@ public class TaskContinuityMessenger implements ConnectedAssociationStore.Listen
     private final Executor mExecutor;
 
     @GuardedBy("mListeners")
-    private final Set<Listener> mListeners = new HashSet<>();
+    private final ArraySet<Listener> mListeners = new ArraySet<>(0);
 
     private BiConsumer<Integer, byte[]> mIncomingMessageConsumer;
 

@@ -18,25 +18,21 @@ package com.android.server.companion.datatransfer.continuity.settings;
 
 import android.annotation.NonNull;
 import android.os.Environment;
+import android.util.ArraySet;
 import android.util.AtomicFile;
 import android.util.Slog;
 import android.util.Xml;
-
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.util.XmlUtils;
 import com.android.modules.utils.TypedXmlPullParser;
 import com.android.modules.utils.TypedXmlSerializer;
-
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
-
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.File;
-import java.util.HashSet;
 import java.util.Objects;
-import java.util.Set;
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
 
 /** Cross-user preferences file for user Handoff settings. */
 public class HandoffPreferenceStore {
@@ -50,7 +46,7 @@ public class HandoffPreferenceStore {
     private static final String XML_ATTR_USER_ID = "userId";
 
     @GuardedBy("this")
-    private final Set<Integer> mHandoffDisabledUserIds = new HashSet<>();
+    private final ArraySet<Integer> mHandoffDisabledUserIds = new ArraySet<>();
 
     @GuardedBy("this")
     private final AtomicFile mPreferencesFile;
