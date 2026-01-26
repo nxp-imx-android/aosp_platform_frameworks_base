@@ -313,7 +313,8 @@ public final class PackageMetrics {
                 false /* is_staged */,
                 mInstallRequest
                         .isDependencyInstallerEnabled() /* is_install_dependencies_enabled */,
-                mInstallRequest.getMissingSharedLibraryCount() /* missing_dependencies_count */
+                mInstallRequest.getMissingSharedLibraryCount() /* missing_dependencies_count */,
+                mInstallRequest.getAppImportance() /* app_importance */
         );
     }
 
@@ -465,7 +466,8 @@ public final class PackageMetrics {
                 false /* is_move_install */,
                 verifyingSession.isStaged() /* is_staged */,
                 false /* is_install_dependencies_enabled */,
-                0 /* missing_dependencies_count */
+                0 /* missing_dependencies_count */,
+                0 /* app_importance */
         );
     }
 
@@ -509,7 +511,8 @@ public final class PackageMetrics {
                 false /* is_move_install */,
                 params.isStaged /* is_staged */,
                 true /* is_install_dependencies_enabled */,
-                missingDependenciesCount /* missing_dependencies_count */
+                missingDependenciesCount /* missing_dependencies_count */,
+                0 /* app_importance */
         );
     }
 

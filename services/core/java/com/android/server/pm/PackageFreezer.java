@@ -20,7 +20,9 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.SpecialUsers.CanBeALL;
 import android.annotation.UserIdInt;
+import android.app.ActivityManager;
 import android.content.pm.PackageManager;
+import android.os.UserHandle;
 
 import dalvik.system.CloseGuard;
 
@@ -93,6 +95,7 @@ final class PackageFreezer implements AutoCloseable {
             ps = mPm.mSettings.getPackageLPr(mPackageName);
         }
         if (ps != null) {
+            fetchAndSaveAppState(ps.getAppId(), userId);
             if (waitAppStopped) {
                 mPm.stopAndKillApplication(ps.getPackageName(), ps.getAppId(), userId, killReason,
                         exitInfoReason);
@@ -105,6 +108,23 @@ final class PackageFreezer implements AutoCloseable {
             }
         }
         mCloseGuard.open("close");
+    }
+
+    @SuppressWarnings("AndroidFrameworkRequiresPermission")
+    private void fetchAndSaveAppState(int appId, int userId) {
+        if (mInstallRequest == null) {
+            return;
+        }
+        int targetUserId = userId;
+        if (targetUserId == UserHandle.USER_ALL) {
+            targetUserId = ActivityManager.getCurrentUser();
+        }
+        int uid = UserHandle.getUid(targetUserId, appId);
+
+        ActivityManager am = mPm.mContext.getSystemService(ActivityManager.class);
+        if (am != null) {
+            mInstallRequest.setAppImportance(am.getUidImportance(uid));
+        }
     }
 
     @Override
