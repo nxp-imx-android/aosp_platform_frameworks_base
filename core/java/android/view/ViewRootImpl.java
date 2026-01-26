@@ -1318,20 +1318,16 @@ public final class ViewRootImpl implements ViewParent,
                     if (!setClientDrawnCornerRadii()) {
                         return;
                     }
-                    if (cornerRadii != null && cornerRadii.length == 4) {
+                    // Post to main thread
+                    mHandler.post(() -> {
                         CornerRadii newCornerRadii = new CornerRadii();
                         newCornerRadii.topLeft = cornerRadii[0];
                         newCornerRadii.topRight = cornerRadii[1];
                         newCornerRadii.bottomLeft = cornerRadii[2];
                         newCornerRadii.bottomRight = cornerRadii[3];
-                        if (!mCornerRadii.equals(newCornerRadii)) {
-                            mCornerRadii = newCornerRadii;
-                            invalidate();
-                        }
-                    } else {
-                        Log.wtf(TAG, "Corner radii received is null or invalid"
-                                + (cornerRadii == null ? "null" : "length " + cornerRadii.length));
-                    }
+                        mCornerRadii = newCornerRadii;
+                        invalidate();
+                    });
                 }
             };
 
