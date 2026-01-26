@@ -121,7 +121,7 @@ open class DesktopFullscreenRequestHandler(
             } ?: false
         val deskIdFromTaskInfo = desksOrganizer.getDeskIdFromTaskInfo(task)
         logV(
-            "handleEnterFullscreen taskId=%d displayId=%d winMode=%d activeDesk=%d " +
+            "handleEnterFullscreen taskId=%d displayId=%d winMode=%s activeDesk=%d " +
                 "isActiveTaskInDesk=%b deskIdFromTaskInfo=%d",
             task.taskId,
             task.displayId,
@@ -165,7 +165,7 @@ open class DesktopFullscreenRequestHandler(
         val activeDesk = repository.getActiveDeskId(task.displayId)
         val deskIdFromTaskInfo = desksOrganizer.getDeskIdFromTaskInfo(task)
         logV(
-            "handleExitFullscreen taskId=%d displayId=%d winMode=%d activeDesk=%d " +
+            "handleExitFullscreen taskId=%d displayId=%d winMode=%s activeDesk=%d " +
                 "deskIdFromTaskInfo=%d restorableState=%s",
             task.taskId,
             task.displayId,
@@ -264,7 +264,7 @@ open class DesktopFullscreenRequestHandler(
             } ?: false
         val deskIdFromTaskInfo = desksOrganizer.getDeskIdFromTaskInfo(task)
         logV(
-            "shouldHandleRequest type=%s taskId=%d displayId=%d winMode=%d activeDesk=%d " +
+            "shouldHandleRequest type=%s taskId=%d displayId=%d winMode=%s activeDesk=%d " +
                 "isActiveTask=%b isActiveTaskInDesk=%b deskIdFromTaskInfo=%d",
             Transitions.transitTypeToString(type),
             task.taskId,
@@ -377,7 +377,7 @@ open class DesktopFullscreenRequestHandler(
                 )
             }
             else -> {
-                logE("Unsupported mode=${task.windowingMode}")
+                logE("Unsupported mode=%d", task.windowingMode)
                 return null
             }
         }
@@ -522,18 +522,26 @@ open class DesktopFullscreenRequestHandler(
 
     private fun isWallpaper(change: Change) = TransitionUtil.isWallpaper(change)
 
+    // TODO(b/478792808): Remove suppression
+    @SuppressWarnings("ProtoLogNonConstantFormat")
     private fun logV(msg: String, vararg arguments: Any?) {
         ProtoLog.v(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
     }
 
+    // TODO(b/478792808): Remove suppression
+    @SuppressWarnings("ProtoLogNonConstantFormat")
     private fun logI(msg: String, vararg arguments: Any?) {
         ProtoLog.i(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
     }
 
+    // TODO(b/478792808): Remove suppression
+    @SuppressWarnings("ProtoLogNonConstantFormat")
     private fun logW(msg: String, vararg arguments: Any?) {
         ProtoLog.w(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
     }
 
+    // TODO(b/478792808): Remove suppression
+    @SuppressWarnings("ProtoLogNonConstantFormat")
     private fun logE(msg: String, vararg arguments: Any?) {
         ProtoLog.e(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
     }

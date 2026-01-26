@@ -29,7 +29,6 @@ import android.window.TransitionInfo.FLAG_MOVED_TO_TOP
 import android.window.WindowContainerTransaction
 import com.android.app.tracing.traceSection
 import com.android.internal.protolog.ProtoLog
-import com.android.window.flags.Flags
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.EnterReason
@@ -670,10 +669,14 @@ class DesksTransitionObserver(
             token != null && c.container == token
         }
 
+    // TODO(b/478792808): Remove suppression
+    @SuppressWarnings("ProtoLogNonConstantFormat")
     private fun logD(msg: String, vararg arguments: Any?) {
         ProtoLog.d(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
     }
 
+    // TODO(b/478792808): Remove suppression
+    @SuppressWarnings("ProtoLogNonConstantFormat")
     private fun logW(msg: String, vararg arguments: Any?) {
         ProtoLog.w(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
     }

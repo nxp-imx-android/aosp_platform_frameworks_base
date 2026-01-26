@@ -75,7 +75,7 @@ class DesktopModeImpl(
         displayId: Int,
         transitionSource: DesktopModeTransitionSource,
     ) {
-        ProtoLog.v(WM_SHELL_DESKTOP_MODE, "%s: moveFocusedTaskToDesktop", TAG)
+        ProtoLog.v(WM_SHELL_DESKTOP_MODE, "$TAG: moveFocusedTaskToDesktop")
         mainExecutor.execute {
             desktopTasksController
                 .getOrNull()
@@ -90,7 +90,7 @@ class DesktopModeImpl(
         displayId: Int,
         transitionSource: DesktopModeTransitionSource,
     ) {
-        ProtoLog.v(WM_SHELL_DESKTOP_MODE, "%s: moveFocusedTaskToFullscreen", TAG)
+        ProtoLog.v(WM_SHELL_DESKTOP_MODE, "$TAG: moveFocusedTaskToFullscreen")
         mainExecutor.execute {
             desktopTasksController
                 .getOrNull()
@@ -99,7 +99,7 @@ class DesktopModeImpl(
     }
 
     override fun moveFocusedTaskToStageSplit(displayId: Int, leftOrTop: Boolean) {
-        ProtoLog.v(WM_SHELL_DESKTOP_MODE, "%s: moveFocusedTaskToStageSplit", TAG)
+        ProtoLog.v(WM_SHELL_DESKTOP_MODE, "$TAG: moveFocusedTaskToStageSplit")
         mainExecutor.execute {
             desktopTasksController
                 .getOrNull()
@@ -111,7 +111,7 @@ class DesktopModeImpl(
         displayId: Int,
         transitionSource: DesktopModeTransitionSource,
     ) {
-        ProtoLog.v(WM_SHELL_DESKTOP_MODE, "%s: toggleFocusedTaskFullscreenState", TAG)
+        ProtoLog.v(WM_SHELL_DESKTOP_MODE, "$TAG: toggleFocusedTaskFullscreenState")
         mainExecutor.execute {
             desktopTasksController
                 .getOrNull()
@@ -123,7 +123,7 @@ class DesktopModeImpl(
     }
 
     override fun registerDesktopFirstListener(listener: DesktopFirstListener) {
-        ProtoLog.v(WM_SHELL_DESKTOP_MODE, "%s: registerDesktopFirstListener", TAG)
+        ProtoLog.v(WM_SHELL_DESKTOP_MODE, "$TAG: registerDesktopFirstListener")
         if (desktopFirstListenerManager.isEmpty) {
             throw UnsupportedOperationException(
                 "DesktopFirstListenerManager is not available on this device"
@@ -133,7 +133,7 @@ class DesktopModeImpl(
     }
 
     override fun unregisterDesktopFirstListener(listener: DesktopFirstListener) {
-        ProtoLog.v(WM_SHELL_DESKTOP_MODE, "%s: unregisterDesktopFirstListener", TAG)
+        ProtoLog.v(WM_SHELL_DESKTOP_MODE, "$TAG: unregisterDesktopFirstListener")
         if (desktopFirstListenerManager.isEmpty) {
             throw UnsupportedOperationException(
                 "DesktopFirstListenerManager is not available on this device"

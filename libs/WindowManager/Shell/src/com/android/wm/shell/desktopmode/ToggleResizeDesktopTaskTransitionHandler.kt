@@ -190,6 +190,8 @@ class ToggleResizeDesktopTaskTransitionHandler(
     private fun isValidTaskChange(change: TransitionInfo.Change): Boolean =
         change.taskInfo != null && change.taskInfo?.taskId != -1
 
+    // TODO(b/478792808): Remove suppression
+    @SuppressWarnings("ProtoLogNonConstantFormat")
     private fun logE(msg: String, vararg arguments: Any?) {
         ProtoLog.e(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
     }

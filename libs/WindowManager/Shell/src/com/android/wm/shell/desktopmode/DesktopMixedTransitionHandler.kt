@@ -298,7 +298,7 @@ class DesktopMixedTransitionHandler(
             logW("Should have closing desktop task")
             return false
         }
-        logV("Animating mixed close transition task#%s", closeChange.taskInfo?.taskId)
+        logV("Animating mixed close transition task#%s", closeChange.taskInfo?.taskId.toString())
         if (isWallpaperActivityClosing(info)) {
             // If the wallpaper activity is closing then the desktop is closing, animate the closing
             // desktop by dispatching to other transition handlers.
@@ -356,8 +356,8 @@ class DesktopMixedTransitionHandler(
             "Animating mixed launch transition task#%d, " +
                 "closingTopTransparentTask#%s immersiveExitTask#%s",
             launchChange.taskInfo!!.taskId,
-            closeTopTransparentFullscreenTaskChange?.taskInfo?.taskId,
-            immersiveExitChange?.taskInfo?.taskId,
+            closeTopTransparentFullscreenTaskChange?.taskInfo?.taskId.toString(),
+            immersiveExitChange?.taskInfo?.taskId.toString(),
         )
         if (pending.dragEvent != null) {
             return desktopModeDragAndDropTransitionHandler.startAnimation(
@@ -370,8 +370,8 @@ class DesktopMixedTransitionHandler(
         if (closeTopTransparentFullscreenTaskChange != null) {
             systemModalsTransitionHandler.ifPresent { handler ->
                 logV(
-                    "Animating system modal close: taskId=%d",
-                    closeTopTransparentFullscreenTaskChange.taskInfo?.taskId,
+                    "Animating system modal close: taskId=%s",
+                    closeTopTransparentFullscreenTaskChange.taskInfo?.taskId.toString(),
                 )
                 topTransparentAnimationCount = 1
                 // Animate the modal closure separately.
@@ -486,7 +486,7 @@ class DesktopMixedTransitionHandler(
 
         logV(
             "Animating mixed client exit fullscreen transition task#%d, " +
-                "closingTopTransparentTask#%s",
+                "closingTopTransparentTask#%d",
             toDesktopChange.taskInfo!!.taskId,
             closeTopTransparentFullscreenTaskChange?.taskInfo?.taskId,
         )
@@ -547,7 +547,7 @@ class DesktopMixedTransitionHandler(
             logW("Should have minimizing desktop task")
             return false
         }
-        logV("Animating mixed minimize transition task#%s", minimizeChange.taskInfo?.taskId)
+        logV("Animating mixed minimize transition task#%d", minimizeChange.taskInfo?.taskId)
         if (pending.isLastTask) {
             // Dispatch close desktop task animation to the default transition handlers.
             return dispatchToLeftoverHandler(
@@ -579,7 +579,7 @@ class DesktopMixedTransitionHandler(
         desksTransitionObserver.findDeskToDeskTransition(transition)?.let { deskToDesk ->
             with(deskToDesk) {
                 logV(
-                    "Animating mixed desk switch transition from desk=%s to desk%s",
+                    "Animating mixed desk switch transition from desk=%d to desk%d",
                     fromDeskId,
                     toDeskId,
                 )
@@ -741,10 +741,14 @@ class DesktopMixedTransitionHandler(
         ) : PendingMixedTransition()
     }
 
+    // TODO(b/478792808): Remove suppression
+    @SuppressWarnings("ProtoLogNonConstantFormat")
     private fun logV(msg: String, vararg arguments: Any?) {
         ProtoLog.v(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
     }
 
+    // TODO(b/478792808): Remove suppression
+    @SuppressWarnings("ProtoLogNonConstantFormat")
     private fun logW(msg: String, vararg arguments: Any?) {
         ProtoLog.w(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
     }

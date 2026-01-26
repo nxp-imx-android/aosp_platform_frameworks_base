@@ -158,10 +158,14 @@ class DesktopUserRepositories(
     fun forAllRepositories(repositoryCallback: (DesktopRepository) -> Unit) =
         desktopRepoByUserId.forEach { _, repository -> repositoryCallback(repository) }
 
+    // TODO(b/478792808): Remove suppression
+    @SuppressWarnings("ProtoLogNonConstantFormat")
     private fun logD(msg: String, vararg arguments: Any?) {
         ProtoLog.d(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
     }
 
+    // TODO(b/478792808): Remove suppression
+    @SuppressWarnings("ProtoLogNonConstantFormat")
     private fun logE(msg: String, vararg arguments: Any?) {
         ProtoLog.e(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
     }
