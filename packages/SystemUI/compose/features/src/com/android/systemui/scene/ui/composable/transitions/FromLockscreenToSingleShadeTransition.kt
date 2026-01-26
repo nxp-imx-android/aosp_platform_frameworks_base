@@ -27,5 +27,9 @@ fun TransitionBuilder.lockscreenToSingleShadeTransition(
     distance = UserActionDistance { _, _, _ -> transitionDistancePx }
 
     lockscreenFadeOutTransition(durationScale = durationScale)
-    toSingleShadeTransition(singleShadeMarginHorizontalPx = singleShadeMarginHorizontalPx, durationScale = durationScale, seekAnimation = seekAnimation)
+    toSingleShadeTransition(
+        singleShadeMarginHorizontalPx = singleShadeMarginHorizontalPx,
+        durationScale = durationScale,
+        seekAnimation = seekAnimation,
+    )
 }
