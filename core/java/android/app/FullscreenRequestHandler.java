@@ -30,6 +30,7 @@ import com.android.internal.annotations.VisibleForTesting;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.concurrent.Executor;
 
 /**
  * @hide
@@ -113,15 +114,17 @@ public class FullscreenRequestHandler {
 
     /** Handles the fullscreen mode request. */
     public void requestFullscreenMode(@Activity.FullscreenModeRequest int request,
-            @Nullable OutcomeReceiver<Void, Throwable> approvalCallback, IBinder token) {
+            @Nullable OutcomeReceiver<Void, Throwable> approvalCallback, IBinder token,
+            @NonNull Executor executor) {
         try {
             if (approvalCallback != null) {
                 mActivityClient.requestMultiwindowFullscreen(token, request,
                         new IRemoteCallback.Stub() {
                             @Override
                             public void sendResult(Bundle res) {
-                                notifyFullscreenRequestResult(
-                                        approvalCallback, res.getInt(REMOTE_CALLBACK_RESULT_KEY));
+                                executor.execute(() -> notifyFullscreenRequestResult(
+                                        approvalCallback,
+                                        res.getInt(REMOTE_CALLBACK_RESULT_KEY)));
                             }
                         });
             } else {
@@ -129,7 +132,7 @@ public class FullscreenRequestHandler {
             }
         } catch (Throwable e) {
             if (approvalCallback != null) {
-                approvalCallback.onError(e);
+                executor.execute(() -> approvalCallback.onError(e));
             }
         }
     }

@@ -3336,14 +3336,16 @@ public class Activity extends ContextThemeWrapper
      * @param approvalCallback Optional callback, use {@code null} when not necessary. When the
      *                         request is approved or rejected, the callback will be triggered. This
      *                         will happen before any configuration change. The callback will be
-     *                         dispatched on the main thread. If the request is rejected, the
-     *                         Throwable provided will be an {@link IllegalStateException} with a
-     *                         detailed message can be retrieved by {@link Throwable#getMessage()}.
+     *                         dispatched on the main thread except on devices with API level 36.1
+     *                         or lower, where the behavior is undefined. If the request is
+     *                         rejected, the Throwable provided will be an
+     *                         {@link IllegalStateException} with a detailed message can be
+     *                         retrieved by {@link Throwable#getMessage()}.
      */
     public void requestFullscreenMode(@FullscreenModeRequest int request,
             @Nullable OutcomeReceiver<Void, Throwable> approvalCallback) {
         FullscreenRequestHandler.getInstance().requestFullscreenMode(
-                request, approvalCallback , getActivityToken());
+                request, approvalCallback, getActivityToken(), getMainExecutor());
     }
 
     /**
