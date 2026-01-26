@@ -98,17 +98,17 @@ std::string getDispatchInputEventTraceDescription(const InputEvent& inputEvent) 
     switch (inputEvent.getType()) {
         case InputEventType::KEY: {
             const KeyEvent& keyEvent = static_cast<const KeyEvent&>(inputEvent);
-            return StringPrintf("dispatchInputEvent KeyEvent %s deviceId=%d",
+            return StringPrintf("dispatchInputEvent KeyEvent %s deviceId=%d id=%d",
                                 KeyEvent::actionToString(keyEvent.getAction()),
-                                keyEvent.getDeviceId());
+                                keyEvent.getDeviceId(), keyEvent.getId());
         }
         case InputEventType::MOTION: {
             const MotionEvent& motionEvent = static_cast<const MotionEvent&>(inputEvent);
             return StringPrintf("dispatchInputEvent MotionEvent %s deviceId=%d "
-                                "source=0x%" PRIx32 ", historySize=%zu",
+                                "source=0x%" PRIx32 ", historySize=%zu id=%d",
                                 MotionEvent::actionToString(motionEvent.getAction()).c_str(),
                                 motionEvent.getDeviceId(), motionEvent.getSource(),
-                                motionEvent.getHistorySize());
+                                motionEvent.getHistorySize(), motionEvent.getId());
         }
         default: {
             std::ostringstream description;
