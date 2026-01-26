@@ -471,6 +471,16 @@ flag {
 }
 
 flag {
+    name: "no_pause_task_snapshot_persister"
+    namespace: "windowing_frontend"
+    description: "The system server does not use render thread anymore, allow the persis thread to continuously execute in the background."
+    bug: "238206323"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "only_cache_low_res_task_snapshot"
     namespace: "windowing_frontend"
     description: "Only cache low resolution task snapshot in system server."
