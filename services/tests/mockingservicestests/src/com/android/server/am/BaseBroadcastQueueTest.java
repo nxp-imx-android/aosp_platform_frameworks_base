@@ -151,6 +151,8 @@ public abstract class BaseBroadcastQueueTest {
 
     @Mock
     AppStartInfoTracker mAppStartInfoTracker;
+    @Mock
+    AppErrors mAppErrors;
 
     Context mContext;
     ActivityManagerService mAms;
@@ -278,6 +280,11 @@ public abstract class BaseBroadcastQueueTest {
         @Override
         public ProcessList getProcessList(ActivityManagerService service) {
             return mProcessList;
+        }
+
+        @Override
+        public AppErrors getAppErrors() {
+            return mAppErrors;
         }
 
         @Override

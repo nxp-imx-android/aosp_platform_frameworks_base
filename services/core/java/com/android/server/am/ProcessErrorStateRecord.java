@@ -29,6 +29,7 @@ import android.app.ActivityManager;
 import android.app.AnrController;
 import android.app.ApplicationErrorReport;
 import android.app.ApplicationExitInfo;
+import android.app.ApplicationExitInfo.SubReason;
 import android.app.Flags;
 import android.content.ComponentName;
 import android.content.ContentResolver;
@@ -155,6 +156,13 @@ class ProcessErrorStateRecord {
     @CompositeRWLock({"mService", "mProcLock"})
     private Runnable mCrashHandler;
 
+    /**
+     * Pending crash subreason, will be used when the app actually crashes.
+     */
+    @GuardedBy("mService")
+    @SubReason
+    private int mPendingCrashSubReason = ApplicationExitInfo.SUBREASON_UNKNOWN;
+
     @GuardedBy(anyOf = {"mService", "mProcLock"})
     boolean isBad() {
         return mBad;
@@ -205,6 +213,25 @@ class ProcessErrorStateRecord {
     @GuardedBy({"mService", "mProcLock"})
     void setCrashHandler(Runnable crashHandler) {
         mCrashHandler = crashHandler;
+    }
+
+    /**
+     * @return the pending crash subreason.
+     */
+    @GuardedBy("mService")
+    @SubReason
+    int getPendingCrashSubReason() {
+        return mPendingCrashSubReason;
+    }
+
+    /**
+     * Set the pending crash subreason.
+     *
+     * @param subReason the subreason for the crash.
+     */
+    @GuardedBy("mService")
+    void setPendingCrashSubReason(@SubReason int subReason) {
+        mPendingCrashSubReason = subReason;
     }
 
     @GuardedBy(anyOf = {"mService", "mProcLock"})
@@ -857,6 +884,7 @@ class ProcessErrorStateRecord {
 
         setCrashing(false);
         setNotResponding(false);
+        setPendingCrashSubReason(ApplicationExitInfo.SUBREASON_UNKNOWN);
     }
 
     void dump(PrintWriter pw, String prefix, long nowUptime) {

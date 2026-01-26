@@ -57,6 +57,7 @@ import android.app.AnrTypes;
 import android.app.ApplicationExitInfo;
 import android.app.BroadcastOptions;
 import android.app.IApplicationThread;
+import android.app.RemoteServiceException;
 import android.app.UidObserver;
 import android.app.usage.UsageEvents.Event;
 import android.compat.annotation.ChangeId;
@@ -835,13 +836,17 @@ class BroadcastQueueImpl extends BroadcastQueue {
                             .append(r.callingUid)
                             .append(".");
                     mHistory.appendPendingBroadcastsSummaryForUid(sb, r.callingUid);
-                    Slog.wtf(TAG, sb.toString());
+                    final String errorMsg = sb.toString();
+                    Slog.wtf(TAG, errorMsg);
                     if (!UserHandle.isCore(r.callingUid) && r.callerApp != null
                             && shouldEnforceBroadcastSenderLimits(r.callerApp.info)) {
-                        r.callerApp.killLocked("Too many enqueued broadcasts",
-                                ApplicationExitInfo.REASON_EXCESSIVE_RESOURCE_USAGE,
-                                ApplicationExitInfo.SUBREASON_EXCESSIVE_ENQUEUED_BROADCASTS_COUNT,
-                                true /* noisy */);
+                        mService.crashApplicationWithTypeWithExtrasLocked(r.callingUid,
+                                r.callerApp.getPid(), r.callerApp.info.packageName,
+                                r.callerApp.userId, errorMsg,
+                                true /* force */,
+                                RemoteServiceException.ExcessiveEnqueuedBroadcastsException.TYPE_ID,
+                                null /* extras */,
+                                ApplicationExitInfo.SUBREASON_EXCESSIVE_ENQUEUED_BROADCASTS_COUNT);
                         forEachMatchingBroadcast(QUEUE_PREDICATE_ANY,
                                 (testRecord, testIndex) -> r.callingUid == testRecord.callingUid,
                                 mBroadcastConsumerSkipDueToExcessiveCount, true);

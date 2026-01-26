@@ -47,6 +47,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doAnswer;
@@ -67,6 +68,7 @@ import android.app.ApplicationExitInfo;
 import android.app.BackgroundStartPrivileges;
 import android.app.BroadcastOptions;
 import android.app.IApplicationThread;
+import android.app.RemoteServiceException;
 import android.app.UidObserver;
 import android.app.usage.UsageEvents.Event;
 import android.content.ComponentName;
@@ -2583,10 +2585,13 @@ public class BroadcastQueueTest extends BaseBroadcastQueueTest {
             enqueuedBroadcasts.add(timeTickRecord);
         }
         waitForIdle();
-        verify(callerApp).killLocked(anyString(),
-                eq(ApplicationExitInfo.REASON_EXCESSIVE_RESOURCE_USAGE),
-                eq(ApplicationExitInfo.SUBREASON_EXCESSIVE_ENQUEUED_BROADCASTS_COUNT),
-                anyBoolean());
+        verify(mAms).crashApplicationWithTypeWithExtrasLocked(eq(callerApp.uid),
+                eq(callerApp.mPid), eq(callerApp.info.packageName),
+                eq(callerApp.userId), anyString(),
+                eq(true),
+                eq(RemoteServiceException.ExcessiveEnqueuedBroadcastsException.TYPE_ID),
+                isNull(),
+                eq(ApplicationExitInfo.SUBREASON_EXCESSIVE_ENQUEUED_BROADCASTS_COUNT));
         // Verify that broadcasts have been dropped
         verify(mAms, times(0)).startProcessLocked(eq(PACKAGE_RED), any(), anyBoolean(), anyInt(),
                 any(), anyInt(), anyBoolean(), anyBoolean());
@@ -2625,10 +2630,9 @@ public class BroadcastQueueTest extends BaseBroadcastQueueTest {
             enqueueBroadcast(timeTickRecord);
         }
         waitForIdle();
-        verify(callerApp, times(0)).killLocked(anyString(),
-                anyInt(),
-                anyInt(),
-                anyBoolean());
+        verify(mAms, times(0)).crashApplicationWithTypeWithExtrasLocked(eq(callerApp.uid),
+                anyInt(), anyString(), anyInt(), anyString(), anyBoolean(), anyInt(), any(),
+                anyInt());
         final ProcessRecord receiverRedApp = mAms.getProcessRecordLocked(PACKAGE_RED,
                 getUidForPackage(PACKAGE_RED));
         assertNotNull(receiverRedApp);
@@ -2690,10 +2694,9 @@ public class BroadcastQueueTest extends BaseBroadcastQueueTest {
             enqueueBroadcast(timeTickRecord);
         }
         waitForIdle();
-        verify(systemCallerApp, times(0)).killLocked(anyString(),
-                anyInt(),
-                anyInt(),
-                anyBoolean());
+        verify(mAms, times(0)).crashApplicationWithTypeWithExtrasLocked(eq(systemCallerApp.uid),
+                anyInt(), anyString(), anyInt(), anyString(), anyBoolean(), anyInt(), any(),
+                anyInt());
         final ProcessRecord receiverRedApp = mAms.getProcessRecordLocked(PACKAGE_RED,
                 getUidForPackage(PACKAGE_RED));
         assertNotNull(receiverRedApp);
