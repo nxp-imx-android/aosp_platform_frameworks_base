@@ -26,6 +26,7 @@ import android.graphics.PixelFormat
 import android.graphics.Rect
 import android.os.Binder
 import android.util.Slog
+import android.view.Display
 import android.view.IWindow
 import android.view.SurfaceControl
 import android.view.SurfaceControlViewHost
@@ -35,6 +36,7 @@ import android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
 import android.view.WindowManager.LayoutParams.TYPE_APPLICATION_PANEL
 import android.view.WindowlessWindowManager
 import android.window.TaskConstants
+import androidx.annotation.VisibleForTesting
 import com.android.window.flags.Flags
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.compatui.DialogAnimationController
@@ -48,8 +50,11 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
+typealias SurfaceControlViewHostFactory =
+    (Context, Display, WindowlessWindowManager, String) -> SurfaceControlViewHost
+
 /** Base window manager for the open by default settings dialog */
-internal abstract class BaseOpenByDefaultDialog<T>(
+abstract class BaseOpenByDefaultDialog<T>(
     protected val context: Context,
     private val userContext: Context,
     protected val transitions: Transitions,
@@ -60,8 +65,12 @@ internal abstract class BaseOpenByDefaultDialog<T>(
     private val surfaceControlTransactionSupplier: Supplier<SurfaceControl.Transaction>,
     @ShellMainThread private val mainScope: CoroutineScope,
     private val listener: DialogLifecycleListener,
+    animationController: DialogAnimationController<T>? = null,
+    private val surfaceControlViewHostFactory: SurfaceControlViewHostFactory = { c, d, wwm, s ->
+        SurfaceControlViewHost(c, d, wwm, s)
+    },
 ) where T : DialogContainerSupplier, T : View {
-    private lateinit var viewHost: SurfaceControlViewHost
+    @get:VisibleForTesting var viewHost: SurfaceControlViewHost? = null
     private lateinit var dialogWindowManager: DialogWindowManager
 
     protected val domainVerificationManager =
@@ -74,7 +83,8 @@ internal abstract class BaseOpenByDefaultDialog<T>(
     private var loadAppInfoJob: Job? = null
 
     protected lateinit var dialog: T
-    private val animationController = DialogAnimationController<T>(context, dialogName)
+    private val animationController =
+        animationController ?: DialogAnimationController<T>(context, dialogName)
 
     protected abstract val dialogName: String
 
@@ -82,7 +92,7 @@ internal abstract class BaseOpenByDefaultDialog<T>(
         createDialog()
         listener.onDialogCreated()
         if (Flags.useInputReportedFocusForAccessibility()) {
-            viewHost.requestInputFocus(true)
+            viewHost?.requestInputFocus(true)
         }
         loadAppInfoJob =
             mainScope.launch {
@@ -111,9 +121,9 @@ internal abstract class BaseOpenByDefaultDialog<T>(
 
         dialogWindowManager = DialogWindowManager(taskInfo.configuration)
         viewHost =
-            SurfaceControlViewHost(context, display, dialogWindowManager, "Dialog").apply {
-                setView(dialog, lp)
-            }
+            surfaceControlViewHostFactory
+                .invoke(context, display, dialogWindowManager, "Dialog")
+                .apply { setView(dialog, lp) }
 
         animationController.startEnterAnimation(dialog, this::onAnimationEnded)
     }
@@ -131,12 +141,12 @@ internal abstract class BaseOpenByDefaultDialog<T>(
 
     protected fun closeMenu() {
         if (Flags.useInputReportedFocusForAccessibility()) {
-            viewHost.requestInputFocus(false)
+            viewHost?.requestInputFocus(false)
         }
         loadAppInfoJob?.cancel()
         animationController.startExitAnimation(dialog) {
             // Release the host and manager after the exit animation
-            viewHost.release()
+            viewHost?.release()
             dialogWindowManager.release()
             listener.onDialogDismissed()
         }
@@ -147,7 +157,7 @@ internal abstract class BaseOpenByDefaultDialog<T>(
         if (!::dialogWindowManager.isInitialized) return
         val taskBounds = taskInfo.configuration.windowConfiguration.bounds
         dialogWindowManager.relayout(taskBounds)
-        viewHost.relayout(taskBounds.width(), taskBounds.height())
+        viewHost?.relayout(taskBounds.width(), taskBounds.height())
     }
 
     /** Dismiss dialog and set it to null, so it that it will be re-created on the next opening. */
