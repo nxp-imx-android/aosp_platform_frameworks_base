@@ -391,3 +391,11 @@ flag {
     description: "PackageManagerService.extendVerificationTimeout() API allowed to be called by same id multiple times"
     bug: "402455304"
 }
+
+flag {
+    name: "prevent_unintended_sign_extension"
+    namespace: "package_manager_service"
+    description: "Prevent unintended sign extension by properly converting int to long in flags"
+    is_exported: true
+    bug: "462489669"
+}
