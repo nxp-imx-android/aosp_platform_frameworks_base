@@ -35,6 +35,14 @@ import android.app.ondeviceintelligence.IStreamingResponseCallback;
 import android.app.ondeviceintelligence.IProcessingSignal;
 import android.app.ondeviceintelligence.ITokenInfoCallback;
 import android.app.ondeviceintelligence.ILifecycleListener;
+import android.app.ondeviceintelligence.embedding.IEmbeddingCallback;
+import android.app.ondeviceintelligence.embedding.IEmbeddingModelCallback;
+import android.app.ondeviceintelligence.embedding.IEmbeddingModelListCallback;
+import android.app.ondeviceintelligence.imagedescription.IImageDescriptionCallback;
+import android.app.ondeviceintelligence.imagedescription.IImageDescriptionModelCallback;
+import android.app.ondeviceintelligence.imagedescription.IImageDescriptionModelListCallback;
+import android.app.ondeviceintelligence.embedding.EmbeddingRequest;
+import android.app.ondeviceintelligence.imagedescription.ImageDescriptionRequest;
 
 
 /**
@@ -42,7 +50,7 @@ import android.app.ondeviceintelligence.ILifecycleListener;
   *
   * @hide
   */
-// Next available field id: 14
+// Next available field id: 20
 interface IOnDeviceIntelligenceManager {
       @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.USE_ON_DEVICE_INTELLIGENCE)")
       void getVersion(in RemoteCallback remoteCallback) = 1;
@@ -91,4 +99,24 @@ interface IOnDeviceIntelligenceManager {
       @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.USE_ON_DEVICE_INTELLIGENCE)")
       @JavaPassthrough(annotation="@android.annotation.FlaggedApi(android.app.ondeviceintelligence.flags.Flags.FLAG_ON_DEVICE_INTELLIGENCE_25Q4)")
       void unregisterInferenceServiceLifecycleListener(in ILifecycleListener listener) = 13;
+
+      @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.USE_ON_DEVICE_INTELLIGENCE)")
+      @JavaPassthrough(annotation="@android.annotation.FlaggedApi(android.app.ondeviceintelligence.flags.Flags.FLAG_ON_DEVICE_INTELLIGENCE_26Q2)")
+      void listEmbeddingModels(in IEmbeddingModelListCallback callback) = 14;
+
+      @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.USE_ON_DEVICE_INTELLIGENCE)")
+      @JavaPassthrough(annotation="@android.annotation.FlaggedApi(android.app.ondeviceintelligence.flags.Flags.FLAG_ON_DEVICE_INTELLIGENCE_26Q2)")
+      void fetchEmbeddingModel(in String modelSignature, in IEmbeddingModelCallback callback) = 15;
+
+      @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.USE_ON_DEVICE_INTELLIGENCE)")
+      @JavaPassthrough(annotation="@android.annotation.FlaggedApi(android.app.ondeviceintelligence.flags.Flags.FLAG_ON_DEVICE_INTELLIGENCE_26Q2)")
+      void fetchImageDescriptionModel(in IImageDescriptionModelCallback callback) = 16;
+
+      @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.USE_ON_DEVICE_INTELLIGENCE)")
+      @JavaPassthrough(annotation="@android.annotation.FlaggedApi(android.app.ondeviceintelligence.flags.Flags.FLAG_ON_DEVICE_INTELLIGENCE_26Q2)")
+      void generateEmbeddings(in Feature feature, in EmbeddingRequest request, in AndroidFuture cancellationSignalFuture, in IEmbeddingCallback callback) = 17;
+
+      @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.USE_ON_DEVICE_INTELLIGENCE)")
+      @JavaPassthrough(annotation="@android.annotation.FlaggedApi(android.app.ondeviceintelligence.flags.Flags.FLAG_ON_DEVICE_INTELLIGENCE_26Q2)")
+      void generateImageDescription(in Feature feature, in ImageDescriptionRequest request, in AndroidFuture cancellationSignalFuture, in IImageDescriptionCallback callback) = 18;
  }
