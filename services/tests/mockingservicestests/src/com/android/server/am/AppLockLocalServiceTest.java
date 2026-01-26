@@ -64,6 +64,7 @@ import androidx.annotation.Nullable;
 import androidx.test.filters.SmallTest;
 
 import com.android.server.LocalServices;
+import com.android.server.am.psc.MockUtils;
 import com.android.server.appop.AppOpsService;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.wm.ActivityAssistInfo;
@@ -859,7 +860,7 @@ public class AppLockLocalServiceTest {
         info.processName = TEST_PACKAGE_1;
         info.uid = TEST_UID;
         final ProcessRecord appRec = new ProcessRecord(mAms, info, info.processName, TEST_UID);
-        appRec.setCurProcState(processState);
+        MockUtils.setCurProcState(appRec, processState);
         final UidRecord record = new UidRecord(TEST_UID, mAms);
         mAms.mProcessStateController.setUidCurProcState(record, processState);
         record.addProcess(appRec);

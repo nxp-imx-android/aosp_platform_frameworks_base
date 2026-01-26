@@ -56,6 +56,7 @@ import com.android.modules.utils.testing.ExtendedMockitoRule;
 import com.android.modules.utils.testing.TestableDeviceConfig;
 import com.android.server.LocalServices;
 import com.android.server.ServiceThread;
+import com.android.server.am.psc.MockUtils;
 import com.android.server.appop.AppOpsService;
 import com.android.server.wm.ActivityTaskManagerService;
 
@@ -173,9 +174,9 @@ public final class CachedAppOptimizerTest {
         app.setPid(pid);
         app.info.uid = packageUid;
         // Exact value does not mater, it can be any state for which compaction is allowed.
-        app.setSetProcState(PROCESS_STATE_BOUND_FOREGROUND_SERVICE);
-        app.setSetAdj(940);
-        app.setCurAdj(940);
+        MockUtils.setSetProcState(app, PROCESS_STATE_BOUND_FOREGROUND_SERVICE);
+        MockUtils.setSetAdj(app, 940);
+        MockUtils.setCurAdj(app, 940);
         return app;
     }
 
@@ -1103,8 +1104,8 @@ public final class CachedAppOptimizerTest {
         mProcessDependencies.setRssAfterCompaction(rssAfter);
 
         // Use an OOM Adjust value that usually avoids compaction
-        processRecord.setSetAdj(100);
-        processRecord.setCurAdj(100);
+        MockUtils.setSetAdj(processRecord, 100);
+        MockUtils.setCurAdj(processRecord, 100);
 
         // Compact process full
         mCachedAppOptimizerUnderTest.compactApp(processRecord,
@@ -1124,8 +1125,8 @@ public final class CachedAppOptimizerTest {
         assertThat(mCachedAppOptimizerUnderTest.mCompactStatsManager
                 .getLastCompactionStats(pid)).isNull();
 
-        processRecord.setSetAdj(100);
-        processRecord.setCurAdj(100);
+        MockUtils.setSetAdj(processRecord, 100);
+        MockUtils.setCurAdj(processRecord, 100);
 
         // We force a full compaction
         mCachedAppOptimizerUnderTest.compactApp(processRecord,

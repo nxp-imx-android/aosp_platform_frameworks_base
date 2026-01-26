@@ -63,6 +63,7 @@ import android.util.Pair;
 import com.android.internal.util.ArrayUtils;
 import com.android.server.LocalServices;
 import com.android.server.ServiceThread;
+import com.android.server.am.psc.MockUtils;
 import com.android.server.appop.AppOpsService;
 import com.android.server.wm.ActivityTaskManagerService;
 
@@ -1319,7 +1320,7 @@ public class ApplicationExitInfoTest {
                     INVALID_UID /* callerUid */, null /* callerProcessName */));
         }
         ams.mProcessStateController.setConnectionGroup(app.mServices, connectionGroup);
-        app.setReportedProcState(procState);
+        MockUtils.setReportedProcState(app, procState);
         app.mProfile.setLastMemInfo(spy(new Debug.MemoryInfo()));
         app.mProfile.setLastPss(pss);
         app.mProfile.setLastRss(rss);

@@ -895,7 +895,7 @@ public abstract class ProcessRecordInternal {
 
     /** Sets the current raw OOM adjustment for this process, and notifies the observer. */
     @GuardedBy({"mServiceLock", "mProcLock"})
-    public void setCurRawAdj(@OomAdjust int curRawAdj) {
+    void setCurRawAdj(@OomAdjust int curRawAdj) {
         mCurRawAdj = curRawAdj;
         mObserver.onCurRawAdjChanged(mCurRawAdj);
     }
@@ -910,7 +910,7 @@ public abstract class ProcessRecordInternal {
      * if it was a real run.
      */
     @GuardedBy({"mServiceLock", "mProcLock"})
-    public boolean setCurRawAdj(@OomAdjust int curRawAdj, boolean dryRun) {
+    boolean setCurRawAdj(@OomAdjust int curRawAdj, boolean dryRun) {
         if (dryRun) {
             return mCurRawAdj > curRawAdj;
         }
@@ -924,7 +924,7 @@ public abstract class ProcessRecordInternal {
     }
 
     @GuardedBy({"mServiceLock", "mProcLock"})
-    public void setSetRawAdj(@OomAdjust int setRawAdj) {
+    void setSetRawAdj(@OomAdjust int setRawAdj) {
         mSetRawAdj = setRawAdj;
     }
 
@@ -935,7 +935,7 @@ public abstract class ProcessRecordInternal {
 
     /** Sets the current OOM adjustment for this process, and notifies the observer. */
     @GuardedBy({"mServiceLock", "mProcLock"})
-    public void setCurAdj(@OomAdjust int curAdj) {
+    void setCurAdj(@OomAdjust int curAdj) {
         mCurAdj = curAdj;
         mObserver.onCurAdjChanged(mCurAdj);
     }
@@ -946,7 +946,7 @@ public abstract class ProcessRecordInternal {
     }
 
     @GuardedBy({"mServiceLock", "mProcLock"})
-    public void setSetAdj(@OomAdjust int setAdj) {
+    void setSetAdj(@OomAdjust int setAdj) {
         mSetAdj = setAdj;
     }
 
@@ -1006,7 +1006,7 @@ public abstract class ProcessRecordInternal {
     }
 
     @GuardedBy({"mServiceLock", "mProcLock"})
-    public void setSetCpuTimeReasons(@OomAdjuster.CpuTimeReasons int setCpuTimeReasons) {
+    void setSetCpuTimeReasons(@OomAdjuster.CpuTimeReasons int setCpuTimeReasons) {
         mSetCpuTimeReasons = setCpuTimeReasons;
     }
 
@@ -1029,7 +1029,7 @@ public abstract class ProcessRecordInternal {
     }
 
     @GuardedBy({"mServiceLock", "mProcLock"})
-    public void setSetImplicitCpuTimeReasons(
+    void setSetImplicitCpuTimeReasons(
             @OomAdjuster.ImplicitCpuTimeReasons int setImplicitCpuTimeReasons) {
         mSetImplicitCpuTimeReasons = setImplicitCpuTimeReasons;
     }
@@ -1077,7 +1077,7 @@ public abstract class ProcessRecordInternal {
 
     /** Sets the current process state, and notifies the observer. */
     @GuardedBy({"mServiceLock", "mProcLock"})
-    public void setCurProcState(int curProcState) {
+    void setCurProcState(int curProcState) {
         mCurProcState = curProcState;
         mObserver.onCurProcStateChanged(mCurProcState);
     }
@@ -1088,7 +1088,7 @@ public abstract class ProcessRecordInternal {
     }
 
     @GuardedBy({"mServiceLock", "mProcLock"})
-    public void setCurRawProcState(int curRawProcState) {
+    void setCurRawProcState(int curRawProcState) {
         mCurRawProcState = curRawProcState;
     }
 
@@ -1102,7 +1102,7 @@ public abstract class ProcessRecordInternal {
      * if it was a real run.
      */
     @GuardedBy({"mServiceLock", "mProcLock"})
-    public boolean setCurRawProcState(int curRawProcState, boolean dryRun) {
+    boolean setCurRawProcState(int curRawProcState, boolean dryRun) {
         if (dryRun) {
             return mCurRawProcState > curRawProcState;
         }
@@ -1117,7 +1117,7 @@ public abstract class ProcessRecordInternal {
 
     /** Sets the last reported process state, and notifies the observer. */
     @GuardedBy({"mServiceLock", "mProcLock"})
-    public void setReportedProcState(int repProcState) {
+    void setReportedProcState(int repProcState) {
         mRepProcState = repProcState;
         mObserver.onReportedProcStateChanged(mRepProcState);
     }
@@ -1129,7 +1129,7 @@ public abstract class ProcessRecordInternal {
 
     /** Sets the last set process state in the process tracker. */
     @GuardedBy({"mServiceLock", "mProcLock"})
-    public void setSetProcState(int setProcState) {
+    void setSetProcState(int setProcState) {
         if (ActivityManager.isProcStateCached(mSetProcState)
                 && !ActivityManager.isProcStateCached(setProcState)) {
             mCacheOomRankerUseCount++;
@@ -1143,7 +1143,7 @@ public abstract class ProcessRecordInternal {
     }
 
     @GuardedBy({"mServiceLock", "mProcLock"})
-    public void setLastStateTime(long lastStateTime) {
+    void setLastStateTime(long lastStateTime) {
         mLastStateTime = lastStateTime;
     }
 
@@ -1153,7 +1153,7 @@ public abstract class ProcessRecordInternal {
     }
 
     @GuardedBy({"mServiceLock", "mProcLock"})
-    public void setSavedPriority(int savedPriority) {
+    void setSavedPriority(int savedPriority) {
         mSavedPriority = savedPriority;
     }
 
@@ -1173,7 +1173,7 @@ public abstract class ProcessRecordInternal {
     }
 
     @GuardedBy({"mServiceLock", "mProcLock"})
-    public void setServiceHighRam(boolean serviceHighRam) {
+    void setServiceHighRam(boolean serviceHighRam) {
         mServiceHighRam = serviceHighRam;
     }
 
@@ -1182,7 +1182,7 @@ public abstract class ProcessRecordInternal {
      * observer.
      */
     @GuardedBy("mProcLock")
-    public void setHasStartedServices(boolean hasStartedServices) {
+    void setHasStartedServices(boolean hasStartedServices) {
         mHasStartedServices = hasStartedServices;
         mStartedServiceObserver.onHasStartedServicesChanged(mHasStartedServices);
     }
@@ -1203,7 +1203,7 @@ public abstract class ProcessRecordInternal {
     }
 
     @GuardedBy({"mServiceLock", "mProcLock"})
-    public void setRepForegroundActivities(boolean repForegroundActivities) {
+    void setRepForegroundActivities(boolean repForegroundActivities) {
         mRepForegroundActivities = repForegroundActivities;
     }
 
@@ -1267,7 +1267,7 @@ public abstract class ProcessRecordInternal {
     }
 
     @GuardedBy("mServiceLock")
-    public void setAdjSeq(int adjSeq) {
+    void setAdjSeq(int adjSeq) {
         mAdjSeq = adjSeq;
     }
 
@@ -1277,7 +1277,7 @@ public abstract class ProcessRecordInternal {
     }
 
     @GuardedBy("mServiceLock")
-    public void setCompletedAdjSeq(int completedAdjSeq) {
+    void setCompletedAdjSeq(int completedAdjSeq) {
         mCompletedAdjSeq = completedAdjSeq;
     }
 
@@ -1346,7 +1346,7 @@ public abstract class ProcessRecordInternal {
     }
 
     @GuardedBy({"mServiceLock", "mProcLock"})
-    public void setAdjTypeCode(int adjTypeCode) {
+    void setAdjTypeCode(int adjTypeCode) {
         mAdjTypeCode = adjTypeCode;
     }
 
@@ -1356,7 +1356,7 @@ public abstract class ProcessRecordInternal {
     }
 
     @GuardedBy({"mServiceLock", "mProcLock"})
-    public void setAdjSource(Object adjSource) {
+    void setAdjSource(Object adjSource) {
         mAdjSource = adjSource;
     }
 
@@ -1366,7 +1366,7 @@ public abstract class ProcessRecordInternal {
     }
 
     @GuardedBy({"mServiceLock", "mProcLock"})
-    public void setAdjSourceProcState(int adjSourceProcState) {
+    void setAdjSourceProcState(int adjSourceProcState) {
         mAdjSourceProcState = adjSourceProcState;
     }
 
@@ -1376,7 +1376,7 @@ public abstract class ProcessRecordInternal {
     }
 
     @GuardedBy({"mServiceLock", "mProcLock"})
-    public void setAdjTarget(Object adjTarget) {
+    void setAdjTarget(Object adjTarget) {
         mAdjTarget = adjTarget;
     }
 
@@ -1475,7 +1475,7 @@ public abstract class ProcessRecordInternal {
     }
 
     @GuardedBy("mServiceLock")
-    public void setCachedAdj(@OomAdjust int cachedAdj) {
+    void setCachedAdj(@OomAdjust int cachedAdj) {
         mCachedAdj = cachedAdj;
     }
 
@@ -1485,7 +1485,7 @@ public abstract class ProcessRecordInternal {
     }
 
     @GuardedBy("mServiceLock")
-    public void setCachedForegroundActivities(boolean cachedForegroundActivities) {
+    void setCachedForegroundActivities(boolean cachedForegroundActivities) {
         mCachedForegroundActivities = cachedForegroundActivities;
     }
 
@@ -1495,7 +1495,7 @@ public abstract class ProcessRecordInternal {
     }
 
     @GuardedBy("mServiceLock")
-    public void setCachedProcState(int cachedProcState) {
+    void setCachedProcState(int cachedProcState) {
         mCachedProcState = cachedProcState;
     }
 
@@ -1505,7 +1505,7 @@ public abstract class ProcessRecordInternal {
     }
 
     @GuardedBy("mServiceLock")
-    public void setCachedSchedGroup(@SchedGroup int cachedSchedGroup) {
+    void setCachedSchedGroup(@SchedGroup int cachedSchedGroup) {
         mCachedSchedGroup = cachedSchedGroup;
     }
 
@@ -1515,7 +1515,7 @@ public abstract class ProcessRecordInternal {
     }
 
     @GuardedBy("mServiceLock")
-    public void setCachedAdjType(String cachedAdjType) {
+    void setCachedAdjType(String cachedAdjType) {
         mCachedAdjType = cachedAdjType;
     }
 
@@ -1525,7 +1525,7 @@ public abstract class ProcessRecordInternal {
     }
 
     @GuardedBy("mServiceLock")
-    public void setScheduleLikeTopApp(boolean scheduleLikeTopApp) {
+    void setScheduleLikeTopApp(boolean scheduleLikeTopApp) {
         mScheduleLikeTopApp = scheduleLikeTopApp;
     }
 
@@ -1535,7 +1535,7 @@ public abstract class ProcessRecordInternal {
     }
 
     @GuardedBy("mServiceLock")
-    public void setFollowupUpdateUptimeMs(long updateUptimeMs) {
+    void setFollowupUpdateUptimeMs(long updateUptimeMs) {
         mFollowupUpdateUptimeMs = updateUptimeMs;
     }
 
@@ -1591,7 +1591,7 @@ public abstract class ProcessRecordInternal {
     }
 
     @GuardedBy("mServiceLock")
-    public void setCurBoundByNonBgRestrictedApp(boolean bound) {
+    void setCurBoundByNonBgRestrictedApp(boolean bound) {
         mCurBoundByNonBgRestrictedApp = bound;
     }
 
@@ -1601,7 +1601,7 @@ public abstract class ProcessRecordInternal {
     }
 
     @GuardedBy("mServiceLock")
-    public void setSetBoundByNonBgRestrictedApp(boolean bound) {
+    void setSetBoundByNonBgRestrictedApp(boolean bound) {
         mSetBoundByNonBgRestrictedApp = bound;
     }
 
@@ -1626,7 +1626,7 @@ public abstract class ProcessRecordInternal {
     }
 
     @GuardedBy("mServiceLock")
-    public void setSetCached(boolean cached) {
+    void setSetCached(boolean cached) {
         mSetCached = cached;
     }
 
@@ -1636,7 +1636,7 @@ public abstract class ProcessRecordInternal {
     }
 
     @GuardedBy("mServiceLock")
-    public void setLastCachedTime(@ElapsedRealtimeLong long now) {
+    void setLastCachedTime(@ElapsedRealtimeLong long now) {
         mLastCachedTime = now;
     }
 
