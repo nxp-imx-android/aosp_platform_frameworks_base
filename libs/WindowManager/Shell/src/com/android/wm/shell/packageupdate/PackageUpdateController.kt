@@ -74,15 +74,8 @@ class PackageUpdateController(
         mainImmediateScope.launch {
             val wct = WindowContainerTransaction()
             updatingTasks.forEach { task ->
-                if (task.isVisible || task.isVisibleRequested) {
-                    ProtoLog.d(
-                        WM_SHELL_PACKAGE_UPDATE,
-                        "PackageUpdateController: task %d is visible, launching placeholder. ",
-                        task.taskId,
-                    )
-                    val icon = getIcon(task)
-                    launchPlaceholderInTask(wct, task, icon)
-                }
+                val icon = getIcon(task)
+                launchPlaceholderInTask(wct, task, icon)
                 ProtoLog.d(
                     WM_SHELL_PACKAGE_UPDATE,
                     "PackageUpdateController: Setting continue package update for task %d.",
@@ -106,21 +99,12 @@ class PackageUpdateController(
 
         val wct = WindowContainerTransaction()
         updatedTasks.forEach { task ->
-            if (task.isVisible || task.isVisibleRequested) {
-                ProtoLog.d(
-                    WM_SHELL_PACKAGE_UPDATE,
-                    "PackageUpdateController: task %d is visible, launching the base intent and removing placeholder. ",
-                    task.taskId,
-                )
-                launchBaseIntent(wct, task)
-            } else {
-                ProtoLog.d(
-                    WM_SHELL_PACKAGE_UPDATE,
-                    "PackageUpdateController: Task is not visible, removing task %d.",
-                    task.taskId,
-                )
-                wct.removeTask(task.token, /* removeFromRecents= */ false)
-            }
+            ProtoLog.d(
+                WM_SHELL_PACKAGE_UPDATE,
+                "PackageUpdateController: task %d, launching the base intent and removing placeholder. ",
+                task.taskId,
+            )
+            launchBaseIntent(wct, task)
         }
         transitions.startTransition(TRANSIT_CHANGE, wct, packageUpdateTransitionHandler)
     }
@@ -154,6 +138,10 @@ class PackageUpdateController(
         wct.sendPendingIntent(pendingIntent, intent, options.toBundle())
     }
 
+    /**
+     * Launches the base intent of the task. The placeholder activity is removed by launching the
+     * base intent with [Intent.FLAG_ACTIVITY_CLEAR_TASK].
+     */
     private fun launchBaseIntent(
         wct: WindowContainerTransaction,
         task: ActivityManager.RunningTaskInfo,
@@ -162,7 +150,7 @@ class PackageUpdateController(
         val userHandle = UserHandle.of(userId)
         val userContext = userProfileContexts[userId]
 
-        task.baseIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+        task.baseIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
 
         val options =
             ActivityOptions.makeBasic().apply {
