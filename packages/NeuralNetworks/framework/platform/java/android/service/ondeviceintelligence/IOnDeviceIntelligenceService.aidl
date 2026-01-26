@@ -27,9 +27,6 @@ import android.app.ondeviceintelligence.IListFeaturesCallback;
 import android.app.ondeviceintelligence.IFeatureDetailsCallback;
 import com.android.internal.infra.AndroidFuture;
 import android.service.ondeviceintelligence.IRemoteProcessingService;
-import android.app.ondeviceintelligence.embedding.IEmbeddingModelListCallback;
-import android.app.ondeviceintelligence.embedding.IEmbeddingModelCallback;
-import android.app.ondeviceintelligence.imagedescription.IImageDescriptionModelCallback;
 
 
 /**
@@ -54,7 +51,4 @@ oneway interface IOnDeviceIntelligenceService {
     void notifyInferenceServiceDisconnected();
     void ready();
     void getFeatureMetadata(in Feature feature, in RemoteCallback remoteCallback);
-    void listEmbeddingModels(int callerUid, in IEmbeddingModelListCallback callback);
-    void fetchEmbeddingModel(int callerUid, in String modelSignature, in IEmbeddingModelCallback callback);
-    void fetchImageDescriptionModel(int callerUid, in IImageDescriptionModelCallback callback);
 }
