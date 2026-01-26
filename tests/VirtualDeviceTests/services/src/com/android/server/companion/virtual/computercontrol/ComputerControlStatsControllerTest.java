@@ -37,9 +37,9 @@ import androidx.test.runner.AndroidJUnit4;
 
 import com.android.modules.utils.testing.ExtendedMockitoRule;
 import com.android.os.AttributionNode;
+import com.android.os.computercontrol.ComputercontrolExtensionAtoms;
 import com.android.os.computercontrol.ComputercontrolExtensionAtoms.ComputerControlFailedSessionReported;
 import com.android.os.computercontrol.ComputercontrolExtensionAtoms.ComputerControlSessionReported;
-import com.android.os.computercontrol.ComputercontrolExtensionAtoms;
 
 import com.google.protobuf.ExtensionRegistryLite;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -303,6 +303,68 @@ public class ComputerControlStatsControllerTest {
                                         ComputerControlSessionReported.Action.ACTION_UNKNOWN)
                                 .addPerformedActions(ComputerControlSessionReported.Action.GO_BACK)
                                 .setPerformedActionCount(3)
+                                .build());
+    }
+
+    @Test
+    public void onSessionClosed_onMirroringStartedButNotStopped_logsMirroringDuration() {
+        mNow = Instant.ofEpochMilli(100);
+        mController.onMirroringStarted();
+        mNow = Instant.ofEpochMilli(300); // +200ms
+
+        mController.onSessionClosed(DEFAULT_CLOSE_REASON);
+
+        assertThat(getReportedSession())
+                .isEqualTo(
+                        mDefaultReported.toBuilder()
+                                .setMirroringTotalDurationMillis(200) // 300 - 100
+                                .build());
+    }
+
+    @Test
+    public void onSessionClosed_onMirroringStartedAndStopped_logsMirroringDuration() {
+        mNow = Instant.ofEpochMilli(100);
+        mController.onMirroringStarted();
+        mNow = Instant.ofEpochMilli(300);
+        mController.onMirroringStopped();
+        mNow = Instant.ofEpochMilli(1000); // This time is not logged.
+
+        mController.onSessionClosed(DEFAULT_CLOSE_REASON);
+
+        assertThat(getReportedSession())
+                .isEqualTo(
+                        mDefaultReported.toBuilder()
+                                .setMirroringTotalDurationMillis(200) // 300 - 100
+                                .build());
+    }
+
+    @Test
+    public void onMirroringStopped_withoutStarted_doesNotLogMirroringDuration() {
+        mNow = Instant.ofEpochMilli(100); // This time is not logged.
+        mController.onMirroringStopped();
+        mNow = Instant.ofEpochMilli(200); // This time is not logged.
+
+        mController.onSessionClosed(DEFAULT_CLOSE_REASON);
+
+        assertThat(getReportedSession()).isEqualTo(mDefaultReported);
+    }
+
+    @Test
+    public void onSessionClosed_onMirroringStartedMultipleTimes_logsTotalMirroringDuration() {
+        mNow = Instant.ofEpochMilli(100);
+        mController.onMirroringStarted();
+        mNow = Instant.ofEpochMilli(200); // +100ms
+        mController.onMirroringStopped();
+        mNow = Instant.ofEpochMilli(1000); // +800ms - not counted.
+        mController.onMirroringStarted();
+        mNow = Instant.ofEpochMilli(1200); // +200ms
+        mController.onSessionClosed(DEFAULT_CLOSE_REASON);
+
+        assertThat(getReportedSession())
+                .isEqualTo(
+                        mDefaultReported.toBuilder()
+                                // (200 - 100) + (1200 - 1000)
+                                .setMirroringTotalDurationMillis(300)
                                 .build());
     }
 
