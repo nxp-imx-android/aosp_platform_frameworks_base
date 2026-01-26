@@ -284,7 +284,6 @@ public class AppCompatAspectRatioOverridesTest extends WindowTestsBase {
         runTestScenario((robot)-> {
             robot.applyOnConf((c) -> {
                 c.enableCameraCompatForceRotateTreatment(/* enabled */ true);
-                c.enableCameraCompatForceRotateTreatmentAtBuildTime(/* enabled */ true);
                 c.enableCameraCompatSplitScreenAspectRatio(/* enabled */ true);
                 c.enableDisplayAspectRatioEnabledForFixedOrientationLetterbox(/* enabled */ false);
                 c.setFixedOrientationLetterboxAspectRatio(/* aspectRatio */ 1.5f);
