@@ -69,7 +69,7 @@ constructor(
 
     init {
         if (appCompatRefactoring()) {
-            ProtoLog.v(WM_SHELL_APP_COMPAT, "%s: %s", TAG, "Initializing...")
+            ProtoLog.v(WM_SHELL_APP_COMPAT, "$TAG: Initializing...")
             shellInit.addInitCallback({ transitions.addHandler(this) }, this)
         }
     }
