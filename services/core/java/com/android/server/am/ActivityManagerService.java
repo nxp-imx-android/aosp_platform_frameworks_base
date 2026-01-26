@@ -2822,9 +2822,8 @@ public class ActivityManagerService extends IActivityManager.Stub
      * <p>This method validates the association against <b>both</b> the system's security rules and
      * the applications' own manifest restrictions (the {@code <allow-component-access>} tag).
      *
-     * <p>If the calling package is running as part of the core system, the association is
-     * implicitly allowed. However, if the target is a system component, manifest restrictions
-     * are still enforced.
+     * <p>If the calling or target package is running as part of the core system, the association is
+     * implicitly allowed.
      */
     boolean validateAssociationAllowedLocked(String pkg1, int uid1,
             String pkg2, int uid2, @AssociationType int associationType, @Nullable Bundle extras) {
@@ -3050,7 +3049,8 @@ public class ActivityManagerService extends IActivityManager.Stub
      *
      * <p>Performs bidirectional checks (Ingress and Egress) to ensure mutual trust. If either app
      * has added the tag in the manifest, it must explicitly allow the other.
-     * If the calling package is the System UID, this check is bypassed.
+     * If the calling package OR the target package is the System UID, this check is bypassed.
+     * The System is implicitly trusted to access apps and to be accessed by apps.
      */
     private boolean validateAssociationAllowedPerAppManifestLocked(
             String sourcePkg, int sourceUid, String targetPkg, int targetUid) {
@@ -3073,9 +3073,9 @@ public class ActivityManagerService extends IActivityManager.Stub
             if (sourceUid == targetUid || sourcePkg.equals(targetPkg)) {
                 return true;
             }
-            // The system is trusted to access any component. This bypasses both egress
-            // and ingress manifest checks when the system is the source of the request.
-            if (UserHandle.getAppId(sourceUid) == Process.SYSTEM_UID) {
+            // All system associations are allowed.
+            if (UserHandle.getAppId(sourceUid) == Process.SYSTEM_UID
+                    || UserHandle.getAppId(targetUid) == Process.SYSTEM_UID) {
                 return true;
             }
 
