@@ -601,6 +601,22 @@ public class ProcessStateController {
 
     /*********************** Process Miscellaneous Events **********************/
     /**
+     * Note whether the given process has been killed.
+     */
+    @GuardedBy({"mLock", "mProcLock"})
+    public void setKilled(@NonNull ProcessRecordInternal proc, boolean killed) {
+        proc.setKilled(killed);
+    }
+
+    /**
+     * Note whether the given process was killed by the activity manager.
+     */
+    @GuardedBy({"mLock", "mProcLock"})
+    public void setKilledByAm(@NonNull ProcessRecordInternal proc, boolean killedByAm) {
+        proc.setKilledByAm(killedByAm);
+    }
+
+    /**
      * Set the maximum adj score a process can be assigned.
      */
     @GuardedBy("mLock")

@@ -179,7 +179,7 @@ public class BroadcastQueueTest extends BaseBroadcastQueueTest {
                     // Create a different process that will be linked to the
                     // returned process via a predecessor/successor relationship
                     mActiveProcesses.remove(res);
-                    res.setKilled(true);
+                    mAms.mProcessStateController.setKilled(res, true);
                     deliverRes = new ActiveProcBuilder(ai)
                             .setProcessName(processName)
                             .setBehavior(ProcessBehavior.NORMAL)
@@ -211,7 +211,7 @@ public class BroadcastQueueTest extends BaseBroadcastQueueTest {
                             break;
                         case KILLED_WITHOUT_NOTIFY:
                             mActiveProcesses.remove(res);
-                            res.setKilled(true);
+                            mAms.mProcessStateController.setKilled(res, true);
                             break;
                         case MISSING_RESPONSE:
                             res.setPendingStart(true);
@@ -1259,7 +1259,7 @@ public class BroadcastQueueTest extends BaseBroadcastQueueTest {
         doAnswer(invocation -> {
             final ProcessRecord app = invocation.getArgument(0);
             if (app == receiverBlueApp) {
-                app.setKilled(true);
+                mAms.mProcessStateController.setKilled(app, true);
                 mActiveProcesses.remove(app);
             }
             return null;
@@ -1267,7 +1267,7 @@ public class BroadcastQueueTest extends BaseBroadcastQueueTest {
         doAnswer(invocation -> {
             final ProcessRecord app = invocation.getArgument(0);
             if (app == receiverBlueApp) {
-                app.setKilled(true);
+                mAms.mProcessStateController.setKilled(app, true);
                 mActiveProcesses.remove(app);
             }
             return null;

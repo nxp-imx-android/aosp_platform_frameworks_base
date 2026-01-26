@@ -1343,8 +1343,8 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
             }
             if (!mPersistent) {
                 synchronized (mProcLock) {
-                    setKilled(true);
-                    setKilledByAm(true);
+                    mService.mProcessStateController.setKilled(this, true);
+                    mService.mProcessStateController.setKilledByAm(this, true);
                     mKillTime = SystemClock.uptimeMillis();
                 }
             }
