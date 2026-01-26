@@ -158,7 +158,7 @@ class ClientFullscreenRequestController(
         try {
             callback.sendResult(bundle)
         } catch (e: RemoteException) {
-            logW("Failed to send result to client: $e")
+            logW("Failed to send result to client: %s", e)
         }
     }
 
@@ -198,10 +198,14 @@ class ClientFullscreenRequestController(
         return taskToRestorableState.remove(taskId)
     }
 
+    // TODO(b/478792808): Remove suppression
+    @SuppressWarnings("ProtoLogNonConstantFormat")
     private fun logV(msg: String, vararg arguments: Any?) {
         ProtoLog.v(ShellProtoLogGroup.WM_SHELL, "%s: $msg", TAG, *arguments)
     }
 
+    // TODO(b/478792808): Remove suppression
+    @SuppressWarnings("ProtoLogNonConstantFormat")
     private fun logW(msg: String, vararg arguments: Any?) {
         ProtoLog.w(ShellProtoLogGroup.WM_SHELL, "%s: $msg", TAG, *arguments)
     }
@@ -445,6 +449,8 @@ class ClientFullscreenRequestController(
             return changes.filter { it.taskInfo?.taskId == taskId }
         }
 
+        // TODO(b/478792808): Remove suppression
+        @SuppressWarnings("ProtoLogNonConstantFormat")
         private fun logV(msg: String, vararg arguments: Any?) {
             ProtoLog.v(ShellProtoLogGroup.WM_SHELL, "%s: $msg", TAG, *arguments)
         }

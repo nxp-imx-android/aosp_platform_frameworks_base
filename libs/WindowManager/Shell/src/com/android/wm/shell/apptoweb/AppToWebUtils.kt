@@ -121,8 +121,7 @@ fun getDomainVerificationUserState(
     } catch (e: PackageManager.NameNotFoundException) {
         ProtoLog.w(
             ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE,
-            "%s: Failed to get domain verification user state: %s",
-            TAG,
+            "$TAG: Failed to get domain verification user state: %s",
             e.message!!,
         )
         return null

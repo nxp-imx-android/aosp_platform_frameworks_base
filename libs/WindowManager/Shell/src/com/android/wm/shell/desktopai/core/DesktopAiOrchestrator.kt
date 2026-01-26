@@ -51,7 +51,7 @@ class DesktopAiOrchestrator(private val triggerManager: ITriggerManager) {
      *   file).
      */
     private fun onTriggerReceived(config: CujConfiguration, triggerEvent: TriggerEvent) {
-        ProtoLog.v(WM_SHELL_DESKTOP_AI, "%s: Processing triggerEvent: %s", TAG, triggerEvent)
+        ProtoLog.v(WM_SHELL_DESKTOP_AI, "$TAG: Processing triggerEvent: %s", triggerEvent)
     }
 
     companion object {

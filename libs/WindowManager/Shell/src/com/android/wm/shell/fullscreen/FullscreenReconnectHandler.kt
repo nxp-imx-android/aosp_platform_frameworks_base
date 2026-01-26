@@ -118,7 +118,8 @@ class FullscreenReconnectHandler(
         if (preservedDisplay == null) {
             logV(
                 "handlePotentialReconnect: No preserved display found for " +
-                    "uniqueDisplayId=$uniqueDisplayId; aborting."
+                    "uniqueDisplayId=%s; aborting.",
+                uniqueDisplayId,
             )
             return
         }
@@ -220,6 +221,8 @@ class FullscreenReconnectHandler(
         val preservedDisplaysByUniqueId: MutableMap<String, PreservedDisplay> = mutableMapOf()
     )
 
+    // TODO(b/478792808): Remove suppression
+    @SuppressWarnings("ProtoLogNonConstantFormat")
     private fun logV(msg: String, vararg arguments: Any?) {
         ProtoLog.v(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
     }

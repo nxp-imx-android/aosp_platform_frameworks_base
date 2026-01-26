@@ -25,16 +25,22 @@ import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_WINDOWING_LAYER
 internal object PinnedLayerLogs {
     private const val TAG = "PinnedLayer"
 
+    // TODO(b/478792808): Remove suppression
+    @SuppressWarnings("ProtoLogNonConstantFormat")
     @JvmStatic
     internal fun logV(message: String, vararg args: Any?) {
         ProtoLog.v(WM_SHELL_WINDOWING_LAYER, "%s: $message", TAG, *args)
     }
 
+    // TODO(b/478792808): Remove suppression
+    @SuppressWarnings("ProtoLogNonConstantFormat")
     @JvmStatic
     internal fun logD(message: String, vararg args: Any?) {
         ProtoLog.d(WM_SHELL_WINDOWING_LAYER, "%s: $message", TAG, *args)
     }
 
+    // TODO(b/478792808): Remove suppression
+    @SuppressWarnings("ProtoLogNonConstantFormat")
     @JvmStatic
     internal fun logW(message: String, vararg args: Any?) {
         ProtoLog.w(WM_SHELL_WINDOWING_LAYER, "%s: $message", TAG, *args)
