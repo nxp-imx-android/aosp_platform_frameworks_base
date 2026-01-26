@@ -35,6 +35,7 @@ import com.android.wm.shell.compatui.DialogContainerSupplier
 import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoader
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlinx.coroutines.test.TestScope
 import org.junit.Before
 import org.junit.Test
@@ -101,6 +102,15 @@ class BaseOpenByDefaultDialogTest : ShellTestCase() {
         testDialog.show()
 
         assertNotNull(testDialog.viewHost)
+    }
+
+    @Test
+    fun showDialogWindow_afterCloseMenu_doesNotShow() {
+        testDialog.close()
+
+        testDialog.show()
+
+        assertNull(testDialog.viewHost)
     }
 
     private inner class TestableOpenByDefaultDialog :

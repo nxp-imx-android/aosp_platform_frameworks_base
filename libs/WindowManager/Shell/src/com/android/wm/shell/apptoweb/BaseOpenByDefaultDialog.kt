@@ -88,6 +88,8 @@ abstract class BaseOpenByDefaultDialog<T>(
 
     protected abstract val dialogName: String
 
+    private var isCloseRequested = false
+
     init {
         createDialog()
         listener.onDialogCreated()
@@ -103,6 +105,11 @@ abstract class BaseOpenByDefaultDialog<T>(
     }
 
     protected fun showDialogWindow() {
+        if (isCloseRequested) {
+            // This dialog was already requested to be closed before being created.
+            Slog.w(TAG, "showDialogWindow: Dialog was already requested to be closed.")
+            return
+        }
         val display = displayController.getDisplay(taskInfo.displayId)
         val taskBounds = taskInfo.configuration.windowConfiguration.bounds
         val lp =
@@ -140,6 +147,7 @@ abstract class BaseOpenByDefaultDialog<T>(
     }
 
     protected fun closeMenu() {
+        isCloseRequested = true
         if (Flags.useInputReportedFocusForAccessibility()) {
             viewHost?.requestInputFocus(false)
         }
