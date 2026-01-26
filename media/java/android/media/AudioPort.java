@@ -85,8 +85,7 @@ public class AudioPort {
     protected final int mRole;
     private final String mName;
     private final int[] mSamplingRates;
-    private final int[] mChannelMasks;
-    private final int[] mChannelIndexMasks;
+    private final AudioFormat.ChannelMasksArray mChannelMasks;
     private final int[] mFormats;
     private final List<AudioProfile> mProfiles;
     private final List<AudioDescriptor> mDescriptors;
@@ -99,20 +98,26 @@ public class AudioPort {
     AudioPort(AudioHandle handle, int role, String name,
             int[] samplingRates, int[] channelMasks, int[] channelIndexMasks,
             int[] formats, AudioGain[] gains) {
+        this(handle, role, name, samplingRates,
+                new AudioFormat.ChannelMasksArray(channelMasks, channelIndexMasks),
+                formats, gains);
+    }
+
+    AudioPort(AudioHandle handle, int role, String name,
+            int[] samplingRates, AudioFormat.ChannelMasksArray channelMasks,
+            int[] formats, AudioGain[] gains) {
         mHandle = handle;
         mRole = role;
         mName = name;
         mSamplingRates = samplingRates;
-        mChannelMasks = channelMasks;
-        mChannelIndexMasks = channelIndexMasks;
+        mChannelMasks = channelMasks != null ? channelMasks : new AudioFormat.ChannelMasksArray();
         mFormats = formats;
         mGains = gains;
         mProfiles = new ArrayList<>();
         if (mFormats != null) {
             for (int format : mFormats) {
-                mProfiles.add(new AudioProfile(
-                        format, samplingRates, channelMasks, channelIndexMasks,
-                        AudioProfile.AUDIO_ENCAPSULATION_TYPE_NONE));
+                mProfiles.add(new AudioProfile(format, samplingRates, channelMasks,
+                                               AudioProfile.AUDIO_ENCAPSULATION_TYPE_NONE));
             }
         }
         mDescriptors = new ArrayList<>();
@@ -129,20 +134,15 @@ public class AudioPort {
         mGains = gains;
         Set<Integer> formats = new HashSet<>();
         Set<Integer> samplingRates = new HashSet<>();
-        Set<Integer> channelMasks = new HashSet<>();
-        Set<Integer> channelIndexMasks = new HashSet<>();
         for (AudioProfile profile : profiles) {
             formats.add(profile.getFormat());
             samplingRates.addAll(Arrays.stream(profile.getSampleRates()).boxed()
                     .collect(Collectors.toList()));
-            channelMasks.addAll(Arrays.stream(profile.getChannelMasks()).boxed()
-                    .collect(Collectors.toList()));
-            channelIndexMasks.addAll(Arrays.stream(profile.getChannelIndexMasks()).boxed()
-                    .collect(Collectors.toList()));
         }
         mSamplingRates = samplingRates.stream().mapToInt(Number::intValue).toArray();
-        mChannelMasks = channelMasks.stream().mapToInt(Number::intValue).toArray();
-        mChannelIndexMasks = channelIndexMasks.stream().mapToInt(Number::intValue).toArray();
+        mChannelMasks = AudioFormat.ChannelMasksArray.mergeLists(
+                profiles.stream().map(AudioProfile::getChannelMasksArray).collect(
+                        Collectors.toList()));
         mFormats = formats.stream().mapToInt(Number::intValue).toArray();
     }
 
@@ -189,7 +189,7 @@ public class AudioPort {
      * Empty array if channel mask is not relevant for this audio port
      */
     public int[] channelMasks() {
-        return mChannelMasks;
+        return mChannelMasks.getPositionMasks();
     }
 
     /**
@@ -198,7 +198,15 @@ public class AudioPort {
      * Empty array if channel index mask is not relevant for this audio port
      */
     public int[] channelIndexMasks() {
-        return mChannelIndexMasks;
+        return mChannelMasks.getIndexMasks();
+    }
+
+    /**
+     * Get the channel masks.
+     * @hide
+     */
+    public AudioFormat.ChannelMasksArray getChannelMasks() {
+        return mChannelMasks;
     }
 
     /**

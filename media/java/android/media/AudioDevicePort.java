@@ -91,10 +91,19 @@ public class AudioDevicePort extends AudioPort {
             int[] samplingRates, int[] channelMasks, int[] channelIndexMasks,
             int[] formats, AudioGain[] gains, int type, String address, int[] encapsulationModes,
             @AudioTrack.EncapsulationMetadataType int[] encapsulationMetadataTypes) {
+        this(handle, deviceName, samplingRates,
+                new AudioFormat.ChannelMasksArray(channelMasks, channelIndexMasks),
+                formats, gains, type, address, encapsulationModes, encapsulationMetadataTypes);
+    }
+
+    AudioDevicePort(AudioHandle handle, String deviceName,
+            int[] samplingRates, AudioFormat.ChannelMasksArray channelMasks,
+            int[] formats, AudioGain[] gains, int type, String address, int[] encapsulationModes,
+            @AudioTrack.EncapsulationMetadataType int[] encapsulationMetadataTypes) {
         super(handle,
              (AudioManager.isInputDevice(type) == true)  ?
                         AudioPort.ROLE_SOURCE : AudioPort.ROLE_SINK,
-             deviceName, samplingRates, channelMasks, channelIndexMasks, formats, gains);
+                deviceName, samplingRates, channelMasks, formats, gains);
         mType = type;
         mAddress = address;
         mSpeakerLayoutChannelMask = AudioFormat.CHANNEL_INVALID;

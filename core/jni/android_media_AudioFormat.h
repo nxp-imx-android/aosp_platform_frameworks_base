@@ -312,6 +312,26 @@ struct ChannelMasks {
     }
 };
 
+struct ChannelMasksArray {
+    struct fields_t {
+        jclass clazz;
+        jmethodID constructID;
+
+        void init(JNIEnv* env) {
+            jclass lclazz = env->FindClass("android/media/AudioFormat$ChannelMasksArray");
+            if (lclazz == NULL) return;
+            clazz = (jclass)env->NewGlobalRef(lclazz);
+            if (clazz == NULL) return;
+            constructID = env->GetMethodID(clazz, "<init>", "([I[I)V");
+        }
+
+        void exit(JNIEnv* env) {
+            env->DeleteGlobalRef(clazz);
+            clazz = NULL;
+        }
+    };
+};
+
 static inline audio_channel_mask_t outChannelMaskToNative(int channelMask)
 {
     switch (channelMask) {
@@ -356,22 +376,8 @@ static inline int inChannelMaskFromNative(audio_channel_mask_t nativeMask)
 // This function converts Java channel masks to a native channel mask using a separate indicator.
 // This will prioritize the channelIndexMask, if set, or use [in|out]ChannelMaskToNative to convert
 // the channel mask based on the isInput value.
-static inline audio_channel_mask_t channelMasksToNative(jint channelPositionMask,
-                                                        jint channelIndexMask, jboolean isInput) {
-    // 0 is the java android.media.AudioFormat.CHANNEL_INVALID value
-    if (channelIndexMask != 0) { // channel index mask takes priority
-        // To convert to a native channel mask, the Java channel index mask
-        // requires adding the index representation.
-        return audio_channel_mask_from_representation_and_bits(AUDIO_CHANNEL_REPRESENTATION_INDEX,
-                                                               channelIndexMask);
-    }
-    // Haptic channels should be preserved between java and native masks.
-    uint32_t audioChannels = (channelPositionMask & ~AUDIO_CHANNEL_HAPTIC_ALL);
-    uint32_t hapticChannels = (channelPositionMask & AUDIO_CHANNEL_HAPTIC_ALL);
-    uint32_t convertedAudioChannels =
-            isInput ? inChannelMaskToNative(audioChannels) : outChannelMaskToNative(audioChannels);
-    return (audio_channel_mask_t)(convertedAudioChannels | hapticChannels);
-}
+audio_channel_mask_t channelMasksToNative(jint channelPositionMask, jint channelIndexMask,
+                                          jboolean isInput);
 
 static inline audio_channel_mask_t nativeChannelMaskFromJavaChannelMasks(
         JNIEnv* env, const ChannelMasks::fields_t fields, jobject jChannelMasks, jboolean isInput) {
@@ -380,24 +386,20 @@ static inline audio_channel_mask_t nativeChannelMaskFromJavaChannelMasks(
     return channelMasksToNative(channelMasks.positionMask, channelMasks.indexMask, isInput);
 }
 
-static inline ScopedLocalRef<jobject> javaChannelMasksFromNativeChannelMask(
-        JNIEnv* env, const ChannelMasks::fields_t fields, audio_channel_mask_t nMask,
-        jboolean isInput) {
-    jint positionMask = CHANNEL_INVALID;
-    jint indexMask = CHANNEL_INVALID;
-    if (audio_channel_mask_get_representation(nMask) == AUDIO_CHANNEL_REPRESENTATION_INDEX) {
-        indexMask = audio_channel_mask_get_bits(nMask);
-    } else {
-        positionMask = isInput ? inChannelMaskFromNative(nMask) : outChannelMaskFromNative(nMask);
-    }
-    return ScopedLocalRef<jobject>(env,
-                                   env->NewObject(fields.clazz, fields.constructID, positionMask,
-                                                  indexMask));
-}
+ScopedLocalRef<jobject> javaChannelMasksFromNativeChannelMask(JNIEnv* env,
+                                                              const ChannelMasks::fields_t fields,
+                                                              audio_channel_mask_t nMask,
+                                                              jboolean isInput);
 
 static inline ScopedLocalRef<jobject> javaChannelMasksDefault(JNIEnv* env,
                                                               const ChannelMasks::fields_t fields) {
     return ScopedLocalRef<jobject>(env, env->NewObject(fields.clazz, fields.defaultConstructID));
 }
+
+ScopedLocalRef<jobject> javaChannelMasksArrayFromNative(JNIEnv* env,
+                                                        const ChannelMasksArray::fields_t& fields,
+                                                        unsigned int num_channel_masks,
+                                                        const audio_channel_mask_t* channel_masks,
+                                                        jboolean useInMask);
 
 #endif // ANDROID_MEDIA_AUDIOFORMAT_H
