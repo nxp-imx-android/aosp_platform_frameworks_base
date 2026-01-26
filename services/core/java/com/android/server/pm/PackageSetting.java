@@ -72,6 +72,7 @@ import com.android.server.pm.pkg.PackageUserStateInternal;
 import com.android.server.pm.pkg.SharedLibrary;
 import com.android.server.pm.pkg.SharedLibraryWrapper;
 import com.android.server.pm.pkg.SuspendParams;
+import com.android.server.pm.PackageManagerServiceUtils;
 import com.android.server.pm.verify.developer.DeveloperVerificationStatusInternal;
 import com.android.server.utils.SnapshotCache;
 import com.android.server.utils.WatchedArraySet;
@@ -1561,7 +1562,7 @@ public class PackageSetting extends SettingBase implements PackageStateInternal 
      * @return True if package is still being loaded, false if the package is fully loaded.
      */
     public boolean isLoading() {
-        return Math.abs(1.0f - mLoadingProgress) >= 0.00000001f;
+        return PackageManagerServiceUtils.isLoading(mLoadingProgress);
     }
 
     public PackageSetting setLoadingProgress(float progress) {
