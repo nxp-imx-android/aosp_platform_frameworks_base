@@ -2257,6 +2257,21 @@ public final class ViewRootImpl implements ViewParent,
         }
     }
 
+    private void recalculatePerformanceHintSessionNeeded() {
+        // For now, disable performance hint sessions for this window whenever
+        // view animations are requested to be disabled.
+        final boolean shouldDisablePerfHint = mIsDisablingViewAnimationsRequested;
+
+        if (shouldDisablePerfHint) {
+            mWindowAttributes.privateFlags |=
+                    WindowManager.LayoutParams.PRIVATE_FLAG_DISABLE_PERFORMANCE_HINT;
+        } else {
+            mWindowAttributes.privateFlags &=
+                    ~WindowManager.LayoutParams.PRIVATE_FLAG_DISABLE_PERFORMANCE_HINT;
+        }
+        updatePerformanceHintSession();
+    }
+
     private void updatePerformanceHintSession() {
         if (mAttachInfo.mThreadedRenderer == null) return;
         boolean disable = mWindowAttributes.isPerfHintSessionDisabled();
@@ -7538,6 +7553,7 @@ public final class ViewRootImpl implements ViewParent,
                     mIsDisablingViewAnimationsRequested = disabled;
                     WindowManagerGlobal.getInstance()
                             .onAnimationDisableRequestChangedForViewRoot();
+                    recalculatePerformanceHintSessionNeeded();
                     break;
                 }
             }
