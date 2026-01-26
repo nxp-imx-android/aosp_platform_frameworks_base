@@ -2267,6 +2267,11 @@ class PackageManagerShellCommand extends ShellCommand {
                 if (LocalServices.getService(UserManagerInternal.class)
                         .getUsers(UserManagerInternal.USER_FILTER_WITH_ALL_COMPLETE_USERS)
                         .size() > 1) {
+                    if (Binder.getCallingUid() != Process.ROOT_UID) {
+                        pw.println("Failure [only root can delete system app for a "
+                                + "particular user]");
+                        return 1;
+                    }
                     // If we are being asked to delete a system app for just one user, set flag so
                     // it disables rather than reverting to system version of the app.
                     flags |= PackageManager.DELETE_SYSTEM_APP;
