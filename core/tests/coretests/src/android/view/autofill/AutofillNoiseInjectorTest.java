@@ -47,9 +47,6 @@ public class AutofillNoiseInjectorTest {
     private static final String MASTER_SEED2 = "anotherMasterSeed456";
     private static final ComponentName TEST_COMPONENT =
             new ComponentName("com.example", "com.example.TestActivity");
-    private static final int FIXED_LENGTH_BYTES = 32;
-
-    private static final int BITS_TO_RETAIN = 4;
 
     @Mock private AssistStructure.ViewNode mMockViewNode;
     private AutofillId mTestAutofillId;
@@ -83,7 +80,8 @@ public class AutofillNoiseInjectorTest {
         AutofillNoiseInjector injector = new AutofillNoiseInjector(MASTER_SEED1, TEST_COMPONENT);
         AutofillNoiseInjectedData result = injector.injectNoise(mMockViewNode);
         assertNotNull(result);
-        assertEquals(FIXED_LENGTH_BYTES, result.getNoiseInjectedPayload().length);
+        assertEquals(
+                AutofillNoiseInjector.FIXED_LENGTH_BYTES, result.getNoiseInjectedPayload().length);
     }
 
     @Test
@@ -91,12 +89,15 @@ public class AutofillNoiseInjectorTest {
         String longString = "ThisIsAVeryLongStringThatExceedsTheThirtyTwoByteLimit";
         when(mMockViewNode.getText()).thenReturn(longString);
         // UTF-16BE bytes
-        assertTrue(longString.getBytes(StandardCharsets.UTF_16BE).length > FIXED_LENGTH_BYTES);
+        assertTrue(
+                longString.getBytes(StandardCharsets.UTF_16BE).length
+                        > AutofillNoiseInjector.FIXED_LENGTH_BYTES);
 
         AutofillNoiseInjector injector = new AutofillNoiseInjector(MASTER_SEED1, TEST_COMPONENT);
         AutofillNoiseInjectedData result = injector.injectNoise(mMockViewNode);
         assertNotNull(result);
-        assertEquals(FIXED_LENGTH_BYTES, result.getNoiseInjectedPayload().length);
+        assertEquals(
+                AutofillNoiseInjector.FIXED_LENGTH_BYTES, result.getNoiseInjectedPayload().length);
     }
 
     @Test
@@ -144,7 +145,11 @@ public class AutofillNoiseInjectorTest {
         byte[] payload = result.getNoiseInjectedPayload();
         byte retainedBitMask = result.getRetainedBitMask();
 
-        assertEquals(BITS_TO_RETAIN, Integer.bitCount(retainedBitMask & 0xFF));
+        // Verify that the retained bit mask is either all odd or all even bits.
+        assertTrue(
+                (retainedBitMask & 0xFF) == AutofillNoiseInjector.ODD_BITS_MASK
+                        || (retainedBitMask & 0xFF) == AutofillNoiseInjector.EVEN_BITS_MASK);
+
         for (byte b : payload) {
             for (int i = 0; i < 8; i++) {
                 if ((retainedBitMask & (1 << i)) == 0) {

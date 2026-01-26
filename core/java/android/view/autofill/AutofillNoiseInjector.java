@@ -25,6 +25,8 @@ import android.text.TextUtils;
 import android.view.View;
 import android.widget.EditText;
 
+import com.android.internal.annotations.VisibleForTesting;
+
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -37,8 +39,12 @@ import java.util.Random;
  * @hide
  */
 public final class AutofillNoiseInjector {
-    private static final int FIXED_LENGTH_BYTES = 32;
-    private static final int BITS_TO_RETAIN = 4;
+    @VisibleForTesting
+    static final int FIXED_LENGTH_BYTES = 32;
+    @VisibleForTesting
+    static final int ODD_BITS_MASK = 0xAA;
+    @VisibleForTesting
+    static final int EVEN_BITS_MASK = 0x55;
 
     private final String mMasterSeed;
     private final ComponentName mActivityComponent;
@@ -67,27 +73,8 @@ public final class AutofillNoiseInjector {
             return;
         }
 
-        // Randomly pick BITS_TO_RETAIN bits out of a byte to retain.
-        int retainedBitMask = 0;
-        for (int i = 0; i < BITS_TO_RETAIN; i++) {
-            // Generate a random index for which *available* bit to set.
-            // There are (8 - i) bits not yet set.
-            int nthAvailableBit = random.nextInt(8 - i);
-
-            int availableBitCount = 0;
-            for (int j = 0; j < 8; j++) {
-                // Check if the j-th bit is NOT already set in retainedBitMask
-                if ((retainedBitMask & (1 << j)) == 0) {
-                    if (availableBitCount == nthAvailableBit) {
-                        // This is the nth available bit we want to set.
-                        retainedBitMask |= (1 << j);
-                        break; // Move to the next iteration of the outer loop
-                    }
-                    availableBitCount++;
-                }
-            }
-        }
-        mRetainedBitMask = (byte) retainedBitMask;
+        // Randomly pick either all odd or even bits to retain.
+        mRetainedBitMask = (byte) (random.nextBoolean() ? EVEN_BITS_MASK : ODD_BITS_MASK);
     }
 
     // Helper hash function for a single string
