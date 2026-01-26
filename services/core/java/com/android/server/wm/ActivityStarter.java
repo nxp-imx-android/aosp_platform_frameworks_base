@@ -881,12 +881,9 @@ class ActivityStarter {
                 }
             }
 
-            if (mRequest.intent != null && Build.isDebuggable()) {
+            if (Build.isDebuggable()) {
                 // For lab debug device usages.
-                ProtoLog.d(WM_DEBUG_ACTIVITY_START_INTENT,
-                        "Execute activity start request:\nIntent=%s\nIsExported=%s",
-                        mRequest.intent.toUri(URI_INTENT_SCHEME),
-                        mRequest.activityInfo != null && mRequest.activityInfo.exported);
+                logStartActivityIntent(mRequest);
             }
 
             int res = START_CANCELED;
@@ -972,6 +969,25 @@ class ActivityStarter {
         mRequest.logMessage.append(" result code=").append(res);
         Slog.i(TAG, mRequest.logMessage.toString());
         mRequest.logMessage.setLength(0);
+    }
+
+    private static void logStartActivityIntent(@NonNull Request request) {
+        if (request.intent == null) {
+            return;
+        }
+        final String intentUriString;
+        try {
+            intentUriString = request.intent.toUri(URI_INTENT_SCHEME);
+        } catch (Exception e) {
+            ProtoLog.e(WM_DEBUG_ACTIVITY_START_INTENT,
+                    "Failed to parse activity start request Intent:\nError=%s",
+                    e);
+            return;
+        }
+        final boolean isExported = request.activityInfo != null && request.activityInfo.exported;
+        ProtoLog.d(WM_DEBUG_ACTIVITY_START_INTENT,
+                "Execute activity start request:\nIntent=%s\nIsExported=%s",
+                intentUriString, isExported);
     }
 
     /**
