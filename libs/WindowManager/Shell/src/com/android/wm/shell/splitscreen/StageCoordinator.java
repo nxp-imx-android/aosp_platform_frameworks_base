@@ -2546,7 +2546,8 @@ public class StageCoordinator extends StageCoordinatorAbstract {
 
         if (mSplitLayout == null) {
             int parallaxType =
-                    enableFlexibleTwoAppSplit() ? PARALLAX_FLEX_HYBRID : PARALLAX_ALIGN_CENTER;
+                    enableFlexibleTwoAppSplit() && taskInfo.displayId == DEFAULT_DISPLAY
+                            ? PARALLAX_FLEX_HYBRID : PARALLAX_ALIGN_CENTER;
             mSplitLayout = new SplitLayout(TAG + "SplitDivider", mContext,
                     mSplitRootTaskInfo.configuration, this, mParentContainerCallbacks,
                     mDisplayController, mDisplayImeController, mTaskOrganizer, parallaxType,
