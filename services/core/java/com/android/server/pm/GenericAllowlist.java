@@ -33,6 +33,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -172,7 +173,7 @@ public abstract class GenericAllowlist<E> {
     private final String[] mPermanentAllowlist;
 
     /** Mode of the allowlist - see {@link AllowlistMode} */
-    private @AllowlistMode int mMode;
+    private final @AllowlistMode AtomicInteger mMode;
 
     /**
      * List of elements that are temporarily allowed (i.e., until reboot or set back to
@@ -190,13 +191,14 @@ public abstract class GenericAllowlist<E> {
     protected GenericAllowlist(@AllowlistMode int mode, String singularName, String pluralName,
             String[] permanentNormalizedNames) {
         mId = ++sNextId;
+        int validatedMode = ALLOWLIST_MODE_INVALID;
         try {
-            mMode = validateMode(mode);
+            validatedMode = validateMode(mode);
         } catch (Exception e) {
             Slogf.wtf(mTag, e, "Invalid mode (%d) on constructor; using ALLOWLIST_MODE_INVALID (%d)"
                     + " instead", mode, ALLOWLIST_MODE_INVALID);
-            mMode = ALLOWLIST_MODE_INVALID;
         }
+        mMode = new AtomicInteger(validatedMode);
         mSingularName = singularName;
         mPluralName = pluralName;
         mPermanentAllowlist = getValidElements(permanentNormalizedNames);
@@ -209,15 +211,16 @@ public abstract class GenericAllowlist<E> {
     protected abstract String toNormalizedName(E element);
 
     public final @AllowlistMode int getMode() {
-        return mMode;
+        return mMode.get();
     }
 
     final void setMode(@AllowlistMode int mode) {
-        int oldMode = mMode;
-        mMode = validateMode(mode);
+        int newMode = validateMode(mode);
+        int oldMode = mMode.getAndSet(newMode);
         if (DEBUG) {
             Slogf.d(mTag, "setMode(): changed from %d (%s) to %d (%s)",
-                    oldMode, allowlistModeToString(oldMode), mode, allowlistModeToString(mode));
+                    oldMode, allowlistModeToString(oldMode),
+                    newMode, allowlistModeToString(newMode));
         }
     }
 
@@ -258,14 +261,15 @@ public abstract class GenericAllowlist<E> {
         Objects.requireNonNull(element, "element cannot be null");
         String normalizedName = toNormalizedName(element);
 
-        if (mMode == ALLOWLIST_MODE_DISABLED || mMode == ALLOWLIST_MODE_INVALID) {
-            int status = mMode == ALLOWLIST_MODE_DISABLED
+        int mode = mMode.get();
+        if (mode == ALLOWLIST_MODE_DISABLED || mode == ALLOWLIST_MODE_INVALID) {
+            int status = mode == ALLOWLIST_MODE_DISABLED
                     ? STATUS_ALLOWED_DISABLED_MODE
                     : STATUS_ALLOWED_INVALID_MODE;
             if (DEBUG) {
                 Slogf.d(mTag, "getAllowlistStatus(%s): returning %d (%s) because mode is (%d) %s",
-                        normalizedName, status, statusToString(status), mMode,
-                        allowlistModeToString(mMode));
+                        normalizedName, status, statusToString(status), mode,
+                        allowlistModeToString(mode));
             }
             return status;
         }
@@ -322,9 +326,10 @@ public abstract class GenericAllowlist<E> {
             }
             return status;
         }
-        if (mMode == ALLOWLIST_MODE_LOG_ONLY) {
+        int mode = mMode.get();
+        if (mode == ALLOWLIST_MODE_LOG_ONLY) {
             Slogf.w(mTag, ALLOWED_BY_LOG_ONLY_MESSAGE_TEMPLATE, normalizedName,
-                    allowlistModeToString(mMode));
+                    allowlistModeToString(mode));
             return permanentAllowlist
                     ? STATUS_ALLOWED_NOT_IN_PERMANENT_LIST_BUT_LOG_ONLY_MODE
                     : STATUS_ALLOWED_NOT_IN_TEMPORARY_LIST_BUT_LOG_ONLY_MODE;
@@ -383,20 +388,21 @@ public abstract class GenericAllowlist<E> {
         writer.increaseIndent();
 
         writer.printf("id: %s\n", toString());
-        writer.printf("mode: %d (%s)\n", mMode, allowlistModeToString(mMode));
+        int mode = mMode.get();
+        writer.printf("mode: %d (%s)\n", mode, allowlistModeToString(mode));
         writer.printf("DEBUG: %b\n", DEBUG);
 
-        dumpAllowlistStatus(writer);
+        dumpAllowlistStatus(writer, mode);
         dumpPermanentAllowlist(writer);
         dumpTemporaryAllowlist(writer);
 
         writer.decreaseIndent();
     }
 
-    private void dumpAllowlistStatus(IndentingPrintWriter writer) {
+    private void dumpAllowlistStatus(IndentingPrintWriter writer, @AllowlistMode int mode) {
         writer.printf("%s allowlist status: ", mPluralName);
 
-        switch (mMode) {
+        switch (mode) {
             case ALLOWLIST_MODE_DISABLED -> {
                 writer.println("disabled (by config)");
                 return;
