@@ -41,6 +41,7 @@ public class DevicePolicyRestrictionsController implements SettingController<Set
     public static final String TAG = "DevicePolicyController";
     private static final boolean DEBUG = Log.isLoggable(TAG, Log.DEBUG);
     static final String DEVICE_POLICY_RESTRICTIONS_KEY = "device_policy_restrictions";
+    private static final String XML_TAG_SETTING_ORIGINAL_VALUE = "setting-original-value";
     static final String DEVICE_POLICY_ELEMENT_KEY = "restriction";
     private final Set<String> mSkipDuringTest = Set.of(DISALLOW_USB_FILE_TRANSFER,
             DISALLOW_DEBUGGING_FEATURES);
@@ -119,7 +120,14 @@ public class DevicePolicyRestrictionsController implements SettingController<Set
     @Override
     public Set<String> deserializeOriginalValue(@NonNull TypedXmlPullParser parser,
             @NonNull String settingKey) throws IOException, XmlPullParserException {
-        HashSet<String> hashSet = XmlUtils.readThisSetXml(parser, "set", null);
+        parser.next();
+        String[] setTag = new String[1];
+        HashSet<String> hashSet = XmlUtils.readThisSetXml(parser,
+                XML_TAG_SETTING_ORIGINAL_VALUE, setTag);
+        if (!setTag[0].equals(DEVICE_POLICY_RESTRICTIONS_KEY)) {
+            Slog.w(TAG, "Tag mismatch. Expected " + DEVICE_POLICY_ELEMENT_KEY + ", but got "
+                    + setTag[0]);
+        }
         return hashSet;
     }
 
