@@ -1609,12 +1609,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                 .setContainerLayer()
                 .setCallsite("DisplayContent");
         mSurfaceControl = b.setName(getName()).build();
-        for (int i = getChildCount() - 1; i >= 0; i--)  {
-            final SurfaceControl sc = getChildAt(i).mSurfaceControl;
-            if (sc != null) {
-                transaction.reparent(sc, mSurfaceControl);
-            }
-        }
+        migrateChildrenToNewSurfaceControl(transaction);
 
         if (mOverlayLayer == null) {
             mOverlayLayer = b.setName("Display Overlays").setParent(mSurfaceControl).build();
