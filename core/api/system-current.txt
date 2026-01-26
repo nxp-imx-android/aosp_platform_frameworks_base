@@ -2443,7 +2443,6 @@ package android.app.contentsafety {
     method @NonNull @RequiresPermission(android.Manifest.permission.CHECK_CONTENT_SAFETY) public String getRemoteSandboxedServicePackageName();
     method @NonNull @RequiresPermission(android.Manifest.permission.CHECK_CONTENT_SAFETY) public String getRemoteServicePackageName();
     method @NonNull @RequiresPermission(android.Manifest.permission.CHECK_CONTENT_SAFETY) public String getRemoteSettingsServicePackageName();
-    method @NonNull @RequiresPermission(android.Manifest.permission.CHECK_CONTENT_SAFETY) public android.app.contentsafety.SupportedTypesResult getSupportedInputTypes(int);
     method @RequiresPermission(android.Manifest.permission.CHECK_CONTENT_SAFETY) public void isFeatureEnabled(int, @Nullable android.os.CancellationSignal, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.lang.Boolean,android.app.contentsafety.FeatureException>);
     field public static final int CONTENT_SAFETY_UNKNOWN = 0; // 0x0
   }
@@ -2454,15 +2453,6 @@ package android.app.contentsafety {
     field public static final int FEATURE_SETTINGS_ERROR = 1; // 0x1
     field public static final int FEATURE_SETTINGS_ERROR_UNKNOWN = 0; // 0x0
     field public static final int FEATURE_SETTINGS_SERVICE_UNAVAILABLE = 2; // 0x2
-  }
-
-  @FlaggedApi("android.app.contentsafety.flags.enable_contentsafety") public final class SupportedTypesResult implements android.os.Parcelable {
-    ctor public SupportedTypesResult(boolean, @Nullable java.util.List<java.lang.String>);
-    method public int describeContents();
-    method @NonNull public java.util.List<java.lang.String> getSupportedTypes();
-    method public boolean isResultAvailable();
-    method public void writeToParcel(@NonNull android.os.Parcel, int);
-    field @NonNull public static final android.os.Parcelable.Creator<android.app.contentsafety.SupportedTypesResult> CREATOR;
   }
 
 }
@@ -14416,7 +14406,6 @@ package android.service.contentsafety {
     ctor public ContentSafetyService();
     method @Nullable public final android.os.IBinder onBind(@Nullable android.content.Intent);
     method public abstract void onGetFeature(int, @Nullable android.os.CancellationSignal, @NonNull android.os.OutcomeReceiver<java.util.Map<java.lang.String,android.os.ParcelFileDescriptor>,android.service.contentsafety.ContentSafetyException>);
-    method @NonNull public abstract android.app.contentsafety.SupportedTypesResult onGetSupportedInputTypes(int);
     method public abstract void onNotifySandboxedServiceConnected();
     method public abstract void onNotifySandboxedServiceDisconnected();
     method public abstract void onNotifySettingsServiceConnected();
