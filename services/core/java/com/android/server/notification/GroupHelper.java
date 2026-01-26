@@ -27,7 +27,6 @@ import static android.app.Notification.VISIBILITY_PUBLIC;
 import static android.app.NotificationManager.IMPORTANCE_MAX;
 import static android.service.notification.Flags.notificationRegroupOnClassification;
 
-import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -250,6 +249,12 @@ public class GroupHelper {
         boolean sbnToBeAutogrouped = false;
         try {
             final StatusBarNotification sbn = record.getSbn();
+            if (android.app.Flags.bridgedNotifications()) {
+                if (record.getBridgedPackageName() != null) {
+                    // Bypass autogrouping for bridged notifications.
+                    return false;
+                }
+            }
             if (!sbn.isAppGroup()) {
                 sbnToBeAutogrouped = maybeGroupWithSections(record, autogroupSummaryExists);
             } else {
@@ -680,6 +685,11 @@ public class GroupHelper {
         // update grouping
         onGroupSummaryAdded(record, notificationList);
 
+        // If the record is for a bridged notification, opt out of any autogrouping logic.
+        if (record.getBridgedPackageName() != null) {
+            return;
+        }
+
         final NotificationSectioner sectioner = getSection(record);
         if (sectioner == null) {
             if (DEBUG) {
@@ -1066,6 +1076,10 @@ public class GroupHelper {
             final ArrayMap<String, Integer> regroupingReasonMap = new ArrayMap<>();
             ArrayMap<String, NotificationRecord> notificationsToCheck = new ArrayMap<>();
             for (NotificationRecord r : notificationList) {
+                // If the record is for a bridged notification, opt out of any autogrouping logic.
+                if (r.getBridgedPackageName() != null) {
+                    continue;
+                }
                 if (r.getChannel().getId().equals(channel.getId())
                     && r.getSbn().getPackageName().equals(pkgName)
                     && r.getUserId() == userId) {
@@ -1097,6 +1111,10 @@ public class GroupHelper {
      */
     public void onChannelUpdated(final NotificationRecord record) {
         synchronized (mAggregatedNotifications) {
+            // If the record is for a bridged notification, opt out of any autogrouping logic.
+            if (record.getBridgedPackageName() != null) {
+                return;
+            }
             ArrayMap<String, NotificationRecord> notificationsToCheck = new ArrayMap<>();
             notificationsToCheck.put(record.getKey(), record);
             ArrayMap<String, Integer> regroupReasons = new ArrayMap<>();
