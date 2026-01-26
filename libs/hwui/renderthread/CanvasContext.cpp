@@ -977,6 +977,15 @@ FrameInfo* CanvasContext::getFrameInfoFromLastFew(uint64_t frameNumber, uint32_t
     return nullptr;
 }
 
+static int64_t calculateExpectedDuration(const int64_t current, const int64_t previous) {
+    if (previous == -1) {
+        return current;
+    }
+
+    static const float kAlpha = 0.8f;
+    return (1 - kAlpha) * previous + kAlpha * current;
+}
+
 void CanvasContext::onSurfaceStatsAvailable(void* context, int32_t surfaceControlId,
                                             const SurfaceStats& stats) {
 #ifdef __ANDROID__
@@ -1007,9 +1016,11 @@ void CanvasContext::onSurfaceStatsAvailable(void* context, int32_t surfaceContro
                 frameInfo->get(FrameInfoIndex::SwapBuffersCompleted));
         frameInfo->set(FrameInfoIndex::GpuCompleted) = std::max(
                 gpuCompleteTime, frameInfo->get(FrameInfoIndex::CommandSubmissionCompleted));
-        instance->mExpectedFrameCallbackDuration =
-                std::chrono::nanoseconds(frameInfo->get(FrameInfoIndex::FrameCompleted) -
-                                         frameInfo->get(FrameInfoIndex::SyncStart));
+
+        const auto currentDuration = frameInfo->get(FrameInfoIndex::FrameCompleted) -
+                                     frameInfo->get(FrameInfoIndex::SyncStart);
+        instance->mExpectedFrameCallbackDuration = calculateExpectedDuration(
+                currentDuration, instance->mExpectedFrameCallbackDuration);
         instance->mJankTracker.finishFrame(*frameInfo, instance->mFrameMetricsReporter, frameNumber,
                                            surfaceControlId);
     }
@@ -1026,13 +1037,13 @@ void CanvasContext::doFrame() {
 
 std::chrono::nanoseconds CanvasContext::getExpectedDuration() {
     std::scoped_lock lock(mFrameInfoMutex);
-    if (mExpectedFrameCallbackDuration == std::chrono::nanoseconds(-1)) {
+    if (mExpectedFrameCallbackDuration == -1) {
         const TimeLord& timeLord = mRenderThread.timeLord();
         return std::chrono::nanoseconds((timeLord.lastFrameDeadline() - timeLord.latestVsync()) /
                                         2);
     }
 
-    return mExpectedFrameCallbackDuration;
+    return std::chrono::nanoseconds(mExpectedFrameCallbackDuration);
 }
 
 SkISize CanvasContext::getNextFrameSize() const {

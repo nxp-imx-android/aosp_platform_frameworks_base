@@ -437,7 +437,7 @@ private:
      */
     void determineColors(const RenderNode* target);
 
-    std::chrono::nanoseconds mExpectedFrameCallbackDuration;
+    int64_t mExpectedFrameCallbackDuration;
 };
 
 } /* namespace renderthread */
