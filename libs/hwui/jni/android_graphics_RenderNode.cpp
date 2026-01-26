@@ -726,17 +726,23 @@ static void android_view_RenderNode_requestPositionUpdates(JNIEnv* env, jobject,
                     auto parentWidth = parentBounds.width();
                     auto parentHeight = parentBounds.height();
                     float normalized;
-                    normalized = targetBounds.top / parentHeight;
-                    targetBounds.top = effect->computeStretchedPositionY(normalized) * parentHeight;
-                    normalized = targetBounds.bottom / parentHeight;
+                    normalized = (targetBounds.top - parentBounds.top()) / parentHeight;
+                    targetBounds.top =
+                            effect->computeStretchedPositionY(normalized) * parentHeight +
+                            parentBounds.top();
+                    normalized = (targetBounds.bottom - parentBounds.top()) / parentHeight;
                     targetBounds.bottom =
-                            effect->computeStretchedPositionY(normalized) * parentHeight;
+                            effect->computeStretchedPositionY(normalized) * parentHeight +
+                            parentBounds.top();
 
-                    normalized = targetBounds.left / parentWidth;
-                    targetBounds.left = effect->computeStretchedPositionX(normalized) * parentWidth;
-                    normalized = targetBounds.right / parentWidth;
+                    normalized = (targetBounds.left - parentBounds.left()) / parentWidth;
+                    targetBounds.left =
+                            effect->computeStretchedPositionX(normalized) * parentWidth +
+                            parentBounds.left();
+                    normalized = (targetBounds.right - parentBounds.left()) / parentWidth;
                     targetBounds.right =
-                            effect->computeStretchedPositionX(normalized) * parentWidth;
+                            effect->computeStretchedPositionX(normalized) * parentWidth +
+                            parentBounds.left();
                 } else {
                     // Compute the number of pixels that the stretching container
                     // scales by.
