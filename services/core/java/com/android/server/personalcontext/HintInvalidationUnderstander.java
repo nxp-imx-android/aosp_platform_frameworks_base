@@ -16,6 +16,7 @@
 
 package com.android.server.personalcontext;
 
+import android.os.Bundle;
 import android.service.personalcontext.hint.ContextHint;
 import android.service.personalcontext.hint.ContextHintWithSignature;
 import android.service.personalcontext.hint.HintFilter;
@@ -74,6 +75,11 @@ public class HintInvalidationUnderstander implements Refiner {
 
     @Override
     public void handleEvent(@NonNull String packageName, @NonNull InsightEvent event) {
+        // Do nothing.
+    }
+
+    @Override
+    public void handleFeedback(@NonNull ContextInsight insight, Bundle feedback) {
         // Do nothing.
     }
 

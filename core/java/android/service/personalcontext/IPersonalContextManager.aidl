@@ -16,6 +16,7 @@
 
 package android.service.personalcontext;
 
+import android.os.Bundle;
 import android.os.ParcelUuid;
 import android.service.personalcontext.RenderToken;
 import android.service.personalcontext.Token;
@@ -56,4 +57,7 @@ interface IPersonalContextManager {
         in List<ContextHintWrapper> hints, in InsightSurfaceClientInfo clientInfo, int userId);
 
     oneway void reportEvent(in InsightEvent event, int userId);
+
+    oneway void reportFeedback(
+        in ContextInsightWrapper insight, in Bundle partialFeedback, int userId);
 }

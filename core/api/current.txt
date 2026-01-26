@@ -44041,6 +44041,7 @@ package android.service.personalcontext {
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class PersonalContextManager {
     method public void publishTriggeringHint(@NonNull android.service.personalcontext.insight.interaction.ReturnHintReport, @NonNull java.util.List<android.service.personalcontext.hint.ContextHint>);
+    method public void reportUserFeedback(@NonNull android.service.personalcontext.insight.ContextInsight, @Nullable android.os.Bundle);
     field public static final String ACTION_PERSONAL_CONTEXT_ENABLED_CHANGED = "android.service.personalcontext.action.PERSONAL_CONTEXT_ENABLED_CHANGED";
     field public static final String PERSONAL_CONTEXT_SERVICE = "personal_context";
   }
@@ -44397,6 +44398,7 @@ package android.service.personalcontext.insight {
     method @NonNull public android.service.personalcontext.insight.ActionableInsight.Builder addOriginHint(@NonNull android.service.personalcontext.hint.ContextHintWithSignature);
     method @NonNull public android.service.personalcontext.insight.ActionableInsight.Builder addToken(@NonNull android.service.personalcontext.Token);
     method @NonNull public android.service.personalcontext.insight.ActionableInsight build();
+    method @NonNull public android.service.personalcontext.insight.ActionableInsight.Builder setUserFeedbackRequest(@Nullable android.service.personalcontext.insight.interaction.FeedbackRequest);
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class BundleInsight extends android.service.personalcontext.insight.ContextInsight {
@@ -44410,6 +44412,7 @@ package android.service.personalcontext.insight {
     method @NonNull public android.service.personalcontext.insight.BundleInsight build();
     method @NonNull public android.service.personalcontext.insight.BundleInsight.Builder setDataBundle(@NonNull android.os.Bundle);
     method @NonNull public android.service.personalcontext.insight.BundleInsight.Builder setInsightTypeName(@Nullable String);
+    method @NonNull public android.service.personalcontext.insight.BundleInsight.Builder setUserFeedbackRequest(@Nullable android.service.personalcontext.insight.interaction.FeedbackRequest);
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public abstract class ContextInsight {
@@ -44418,6 +44421,7 @@ package android.service.personalcontext.insight {
     method @NonNull public String getInsightTypeName();
     method @NonNull public java.util.Set<android.service.personalcontext.hint.ContextHintWithSignature> getOriginHints();
     method @NonNull public java.util.Set<android.service.personalcontext.Token> getTokens();
+    method @Nullable public android.service.personalcontext.insight.interaction.FeedbackRequest getUserFeedbackRequest();
     method public void reportEvent(@NonNull android.content.Context, int, @NonNull android.service.personalcontext.RenderToken, @Nullable android.os.Bundle);
   }
 
@@ -44430,6 +44434,7 @@ package android.service.personalcontext.insight {
     method @NonNull public android.service.personalcontext.insight.DisplayInsight.Builder addOriginHint(@NonNull android.service.personalcontext.hint.ContextHintWithSignature);
     method @NonNull public android.service.personalcontext.insight.DisplayInsight.Builder addToken(@NonNull android.service.personalcontext.Token);
     method @NonNull public android.service.personalcontext.insight.DisplayInsight build();
+    method @NonNull public android.service.personalcontext.insight.DisplayInsight.Builder setUserFeedbackRequest(@Nullable android.service.personalcontext.insight.interaction.FeedbackRequest);
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class HintInvalidationInsight extends android.service.personalcontext.insight.ContextInsight {
@@ -44466,6 +44471,7 @@ package android.service.personalcontext.insight {
     ctor public InsightCollection.Builder(@NonNull java.util.Collection<android.service.personalcontext.insight.ContextInsight>);
     method @NonNull public android.service.personalcontext.insight.InsightCollection.Builder addInsight(@NonNull android.service.personalcontext.insight.ContextInsight);
     method @NonNull public android.service.personalcontext.insight.InsightCollection build();
+    method @NonNull public android.service.personalcontext.insight.InsightCollection.Builder setUserFeedbackRequest(@Nullable android.service.personalcontext.insight.interaction.FeedbackRequest);
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class InsightDisplayDetails implements android.os.Parcelable {
@@ -44490,6 +44496,31 @@ package android.service.personalcontext.insight {
 }
 
 package android.service.personalcontext.insight.interaction {
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class FeedbackRequest implements android.os.Parcelable {
+    ctor public FeedbackRequest(@NonNull java.util.Collection<android.service.personalcontext.insight.interaction.FeedbackRequest.FeedbackField>);
+    method public int describeContents();
+    method @NonNull public java.util.List<android.service.personalcontext.insight.interaction.FeedbackRequest.FeedbackField> getFields();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field public static final int APPROVAL_VALUE_APPROVE = 1; // 0x1
+    field public static final int APPROVAL_VALUE_DISAPPROVE = 2; // 0x2
+    field public static final int APPROVAL_VALUE_UNKNOWN = 0; // 0x0
+    field @NonNull public static final android.os.Parcelable.Creator<android.service.personalcontext.insight.interaction.FeedbackRequest> CREATOR;
+    field public static final int FEEDBACK_TYPE_APPROVAL = 1; // 0x1
+    field public static final int FEEDBACK_TYPE_DESCRIPTION = 2; // 0x2
+    field public static final int FEEDBACK_TYPE_UNKNOWN = 0; // 0x0
+  }
+
+  public static final class FeedbackRequest.FeedbackField implements android.os.Parcelable {
+    ctor public FeedbackRequest.FeedbackField(int, @NonNull String, @NonNull CharSequence, @Nullable CharSequence);
+    method public int describeContents();
+    method @Nullable public CharSequence getDescription();
+    method @NonNull public String getKey();
+    method @NonNull public CharSequence getTitle();
+    method public int getType();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.service.personalcontext.insight.interaction.FeedbackRequest.FeedbackField> CREATOR;
+  }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class ReturnHintReport implements android.os.Parcelable {
     method public int describeContents();
