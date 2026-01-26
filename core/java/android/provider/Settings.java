@@ -21661,6 +21661,14 @@ public final class Settings {
                     "gesture_primary_action_user_preference";
 
             /**
+             * Whether the "always on media" gesture is enabled.
+             *
+             * @hide
+             */
+            public static final String GESTURE_ALWAYS_ON_MEDIA_ENABLED =
+                    "gesture_always_on_media_enabled";
+
+            /**
              * Setting indicating whether the dismiss gesture input action has been enabled by the
              * user.
              *

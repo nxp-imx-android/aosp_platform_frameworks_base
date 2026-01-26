@@ -123,6 +123,7 @@ public class GlobalSettings {
         Settings.Global.Wearable.AUTO_BEDTIME_MODE,
         Settings.Global.Wearable.BEDTIME_MODE_WATCHFACE,
         Settings.Global.Wearable.GESTURE_PRIMARY_ACTION_USER_PREFERENCE,
+        Settings.Global.Wearable.GESTURE_ALWAYS_ON_MEDIA_ENABLED,
         Settings.Global.Wearable.GESTURE_DISMISS_ACTION_USER_PREFERENCE,
         Settings.Global.Wearable.GESTURE_HINT_PERIOD_DAYS,
         Settings.Global.Wearable.GESTURE_CUSTOMIZE_MEDIA_CONTROLS_PRIMARY_ACTION,
