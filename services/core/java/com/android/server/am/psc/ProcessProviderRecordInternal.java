@@ -42,7 +42,7 @@ public class ProcessProviderRecordInternal {
         return mLastProviderTime;
     }
 
-    public void setLastProviderTime(long lastProviderTime) {
+    void setLastProviderTime(long lastProviderTime) {
         mLastProviderTime = lastProviderTime;
     }
 
@@ -75,7 +75,7 @@ public class ProcessProviderRecordInternal {
     }
 
     /** Adds a new published content provider to this process. */
-    public void installProvider(String name, ContentProviderRecordInternal provider) {
+    void installProvider(String name, ContentProviderRecordInternal provider) {
         mPubProviders.put(name, provider);
     }
 
@@ -93,7 +93,7 @@ public class ProcessProviderRecordInternal {
      * Ensures that the internal map for published providers can hold at least the given
      * number of items.
      */
-    public void ensureProviderCapacity(int capacity) {
+    void ensureProviderCapacity(int capacity) {
         mPubProviders.ensureCapacity(capacity);
     }
 
@@ -116,7 +116,7 @@ public class ProcessProviderRecordInternal {
     }
 
     /** Removes a content provider connection from this process's list of connections. */
-    public boolean removeProviderConnection(ContentProviderConnectionInternal connection) {
+    boolean removeProviderConnection(ContentProviderConnectionInternal connection) {
         return mConProviders.remove(connection);
     }
 

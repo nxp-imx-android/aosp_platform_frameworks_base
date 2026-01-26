@@ -776,6 +776,17 @@ public class ProcessStateController {
     }
 
     /**
+     * Note that a process is expected to host at least the given number of content providers.
+     *
+     * @param proc The process record.
+     * @param capacity The minimum number of content providers the process is expected to host.
+     */
+    @GuardedBy("mLock")
+    public void ensurePublishedProviderCapacity(@NonNull ProcessRecordInternal proc, int capacity) {
+        proc.getProviders().ensureProviderCapacity(capacity);
+    }
+
+    /**
      * Sets the state indicating whether the given content provider has clients from external
      * processes.
      */
@@ -804,11 +815,13 @@ public class ProcessStateController {
 
     /**
      * Note that a process is no longer connected to a content provider.
+     *
+     * @return {@code true} if the connection was found and removed, {@code false} otherwise.
      */
     @GuardedBy("mLock")
-    public void removeProviderConnection(@NonNull ProcessRecordInternal client,
+    public boolean removeProviderConnection(@NonNull ProcessRecordInternal client,
             ContentProviderConnectionInternal cpc) {
-        client.getProviders().removeProviderConnection(cpc);
+        return client.getProviders().removeProviderConnection(cpc);
     }
 
     /*************************** Service State Events **************************/
