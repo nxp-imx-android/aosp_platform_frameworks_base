@@ -219,6 +219,10 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
             mAsyncInitInProgress = true;
         }
 
+        if (android.tracing.Flags.javaNativeProtolog()) {
+            ProtoLogNative.init();
+        }
+
         final IProtoLogGroup[] groups;
         synchronized (mLogGroupsLock) {
             // Get the values on the caller thread before another task is posted
@@ -228,7 +232,7 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
         }
 
         final Runnable backgroundTasks = () -> {
-            if (async) {
+            if (async && !android.tracing.Flags.javaNativeProtolog()) {
                 Producer.init(InitArguments.DEFAULTS);
                 DataSourceParams params =
                         new DataSourceParams.Builder()
@@ -278,7 +282,7 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
                 }
             }
 
-            if (async) {
+            if (async && !android.tracing.Flags.javaNativeProtolog()) {
                 // A datasource instance has 5 seconds to report starting before we process the
                 // rest of the queue. We block here because it's possible that a datasource instance
                 // is already running and takes a bit of time to report the onTracingInstanceStart,
@@ -586,6 +590,16 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
 
     private void log(@NonNull LogLevel logLevel, @NonNull IProtoLogGroup group,
             @NonNull Message message, @Nullable Object[] args) {
+        if (android.tracing.Flags.javaNativeProtolog()) {
+            logToProtoNative(logLevel, group, message, args);
+
+            if (group.isLogToLogcat()) {
+                logToLogcat(group.getTag(), logLevel, message, args);
+            }
+
+            return;
+        }
+
         if (isProtoEnabled() || mAsyncInitInProgress) {
             long tsNanos = SystemClock.elapsedRealtimeNanos();
             final String stacktrace;
@@ -634,6 +648,18 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
         }
         if (group.isLogToLogcat()) {
             logToLogcat(group.getTag(), logLevel, message, args);
+        }
+    }
+
+    private void logToProtoNative(@NonNull LogLevel logLevel, @NonNull IProtoLogGroup group,
+            @NonNull Message message, @Nullable Object[] args) {
+        final int level = logLevel.ordinal() + 1;
+        final Object[] argsSafety = args == null ? new Object[0] : args;
+        if (message.mMessageHash != null) {
+            ProtoLogNative.log(level, group.getTag(), message.mMessageHash,
+                    message.getMessageMask(), argsSafety);
+        } else {
+            ProtoLogNative.log(level, group.getTag(), message.getMessage(), argsSafety);
         }
     }
 
@@ -1214,13 +1240,12 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
      * done. Because unit tests are sensitive to concurrent accesses.
      */
     @VisibleForTesting
-    public static void waitForInitialization() {
-        final IProtoLog currentInstance = ProtoLog.getSingleInstance();
-        if (!(currentInstance instanceof PerfettoProtoLogImpl protoLog)) {
-            return;
-        }
+    public void waitForInitialization() {
+        waitForExistingBackgroundTasksToComplete();
 
-        protoLog.waitForExistingBackgroundTasksToComplete();
+        if (android.tracing.Flags.javaNativeProtolog()) {
+            mConfigurationClient.waitForRegistration();
+        }
     }
 }
 

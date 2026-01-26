@@ -79,7 +79,6 @@ import android.view.SurfaceControl;
 
 import com.android.dx.mockito.inline.extended.StaticMockitoSession;
 import com.android.internal.os.BackgroundThread;
-import com.android.internal.protolog.PerfettoProtoLogImpl;
 import com.android.internal.protolog.ProtoLog;
 import com.android.internal.protolog.WmProtoLogGroups;
 import com.android.server.AnimationThread;
@@ -193,7 +192,7 @@ public class SystemServicesTestRule implements TestRule {
     private void setUp() {
         if (ProtoLog.getSingleInstance() == null) {
             ProtoLog.init(WmProtoLogGroups.values());
-            PerfettoProtoLogImpl.waitForInitialization();
+            ProtoLog.waitForInitialization();
         }
 
         if (mOnBeforeServicesCreated != null) {

@@ -312,6 +312,20 @@ public class ProtoLog {
         return true;
     }
 
+    /**
+     * This is only used by unit tests to wait until {@link #connectToConfigurationServiceAsync} is
+     * done. Because unit tests are sensitive to concurrent accesses.
+     */
+    @VisibleForTesting
+    public static void waitForInitialization() {
+        final IProtoLog currentInstance = getSingleInstance();
+        if (!(currentInstance instanceof PerfettoProtoLogImpl protoLog)) {
+            return;
+        }
+
+        protoLog.waitForInitialization();
+    }
+
     private static final IProtoLogGroup PROTOLOG_GROUP = new IProtoLogGroup() {
         private volatile boolean mLogToLogcat = true;
 
