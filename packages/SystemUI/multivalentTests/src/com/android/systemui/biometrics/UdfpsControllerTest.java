@@ -188,12 +188,14 @@ public class UdfpsControllerTest extends SysuiTestCase {
                         mock(FalsingCollector.class),
                         mock(ScreenOffAnimationController.class),
                         mStatusBarStateController,
-                        mCameraGestureHelper);
+                        mCameraGestureHelper,
+                        () -> null);
         mPowerRepository.updateWakefulness(
                 WakefulnessState.AWAKE,
                 WakeSleepReason.POWER_BUTTON,
                 WakeSleepReason.OTHER,
-                /* powerButtonLaunchGestureTriggered */ false);
+                /* powerButtonLaunchGestureTriggered */ false,
+                false);
         mContext.getOrCreateTestableResources()
                 .addOverride(com.android.internal.R.bool.config_ignoreUdfpsVote, false);
 

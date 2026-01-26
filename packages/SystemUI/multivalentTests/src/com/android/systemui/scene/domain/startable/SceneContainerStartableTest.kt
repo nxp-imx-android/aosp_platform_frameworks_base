@@ -881,16 +881,15 @@ class SceneContainerStartableTest : SysuiTestCase() {
             fakePowerRepository.updateWakefulness(
                 rawState = WakefulnessState.STARTING_TO_SLEEP,
                 lastSleepReason = WakeSleepReason.POWER_BUTTON,
-                powerButtonLaunchGestureTriggered = false,
+                powerButtonLaunchGestureTriggered = true,
+                asleepOrWakingFromPreviouslyEnteredDevice = true,
             )
+
             transitionStateFlow.value = Transition(from = Scenes.Gone, to = Scenes.Lockscreen)
             assertThat(currentSceneKey).isEqualTo(Scenes.Lockscreen)
 
-            fakePowerRepository.updateWakefulness(
-                rawState = WakefulnessState.STARTING_TO_WAKE,
-                lastSleepReason = WakeSleepReason.POWER_BUTTON,
-                powerButtonLaunchGestureTriggered = true,
-            )
+            kosmos.powerInteractor.onCameraLaunchGestureDetected()
+
             assertThat(currentSceneKey).isEqualTo(Scenes.Gone)
             assertThat(isUnlocked).isTrue()
         }
@@ -925,6 +924,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
                 reason = PowerManager.WAKE_REASON_POWER_BUTTON,
                 powerButtonGestureTriggered = true,
             )
+            kosmos.powerInteractor.onCameraLaunchGestureDetected()
             runCurrent()
 
             assertThat(currentSceneKey).isEqualTo(Scenes.Occluded)

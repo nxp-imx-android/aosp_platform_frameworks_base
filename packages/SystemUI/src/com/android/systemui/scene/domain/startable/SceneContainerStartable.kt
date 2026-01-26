@@ -68,8 +68,8 @@ import com.android.systemui.model.StateChange
 import com.android.systemui.model.SysUiState
 import com.android.systemui.plugins.FalsingManager
 import com.android.systemui.plugins.FalsingManager.FalsingBeliefListener
+import com.android.systemui.power.data.model.PowerButtonLaunchEvent
 import com.android.systemui.power.domain.interactor.PowerInteractor
-import com.android.systemui.power.shared.model.WakeSleepReason
 import com.android.systemui.scene.data.model.asIterable
 import com.android.systemui.scene.data.model.peek
 import com.android.systemui.scene.domain.SceneFrameworkTableLog
@@ -739,37 +739,28 @@ constructor(
 
     private fun handlePowerState() {
         applicationScope.launch {
-            powerInteractor.detailedWakefulness.collect { wakefulness ->
-                // Detect a double-tap-power-button gesture that was started while the device was
-                // still awake.
-                if (wakefulness.isAsleep()) return@collect
-                if (!wakefulness.powerButtonLaunchGestureTriggered) return@collect
-                if (wakefulness.lastSleepReason != WakeSleepReason.POWER_BUTTON) return@collect
-
-                // If we're mid-transition from Gone to Lockscreen due to the first power button
-                // press, then unlock the device if needed and return to Gone.
-                val transition: ObservableTransitionState.Transition? =
-                    sceneInteractor.transitionStateFlow.value
-                        as? ObservableTransitionState.Transition
-
+            powerInteractor.powerButtonLaunchEvents.collect {
+                // If we were entered when the gesture started, we can unlock and return to Gone. We
+                // also should do this if we launched while not entered, but can wake directly to
+                // Gone (we should never end up Occluded in this case).
                 if (
-                    transition != null &&
-                        transition.fromContent == Scenes.Gone &&
-                        transition.toContent == Scenes.Lockscreen
+                    it == PowerButtonLaunchEvent.LAUNCH_FROM_ENTERED ||
+                        wakeDirectlyToGoneInteractor.canWakeDirectlyToGone.value
                 ) {
-                    // Immediately re-unlock the device - this is the first authoritative signal
-                    // that we've decided this is a power button launch gesture from Gone.
                     deviceUnlockedInteractor.unlockNowForPowerButtonGesture(
-                        "double-tap power gesture while coming from gone"
+                        "double-tap power gesture arrived and we were asleep/waking from " +
+                            "entered"
                     )
                     switchToScene(
                         targetSceneKey = Scenes.Gone,
                         loggingReason = "double-tap power gesture",
+                        instantlySnapScenes = true,
+                        forDoubleTapPowerGesture = true,
                     )
-                } else if (occlusionInteractor.shouldTransitionFromPowerButtonGesture()) {
+                } else if (it == PowerButtonLaunchEvent.LAUNCH_FROM_NOT_ENTERED) {
                     switchToScene(
                         Scenes.Occluded,
-                        "double tap power while not doing gone -> lockscreen",
+                        "double tap power while not entered when going to sleep",
                     )
                 }
             }
@@ -1180,6 +1171,7 @@ constructor(
         freezeAndAnimateToCurrentState: Boolean = false,
         hideOverlays: HideOverlayCommand = HideOverlayCommand.HideAll,
         instantlySnapScenes: Boolean = false,
+        forDoubleTapPowerGesture: Boolean = false,
     ) {
         if (hideOverlays is HideSome) {
             hideOverlays.overlays.fastForEach { overlay ->
@@ -1188,12 +1180,22 @@ constructor(
         }
 
         if (instantlySnapScenes) {
-            sceneInteractor.snapToScene(
-                toScene = targetSceneKey,
-                keyguardState = keyguardState,
-                loggingReason = loggingReason,
-                hideAllOverlays = hideOverlays == HideOverlayCommand.HideAll,
-            )
+            if (forDoubleTapPowerGesture) {
+                // Special case to skip validation, since unlock flows may not emit by the time the
+                // scene transition starts.
+                sceneInteractor.snapToGoneForUnlockedPowerLaunchGesture(
+                    keyguardState = keyguardState,
+                    loggingReason = loggingReason,
+                    hideAllOverlays = hideOverlays == HideOverlayCommand.HideAll,
+                )
+            } else {
+                sceneInteractor.snapToScene(
+                    toScene = targetSceneKey,
+                    keyguardState = keyguardState,
+                    loggingReason = loggingReason,
+                    hideAllOverlays = hideOverlays == HideOverlayCommand.HideAll,
+                )
+            }
         } else {
             sceneInteractor.changeScene(
                 toScene = targetSceneKey,
