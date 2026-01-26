@@ -367,6 +367,7 @@ public class DisplayImeController implements DisplayController.OnDisplaysChanged
             if (hadImeSourceControl != hasImeSourceControl) {
                 dispatchImeControlTargetChanged(mDisplayId, hasImeSourceControl);
             }
+            final boolean hadImeLeash = hadImeSourceControl && mImeSourceControl.getLeash() != null;
             final boolean hasImeLeash = hasImeSourceControl && imeSourceControl.getLeash() != null;
 
             boolean pendingImeStartAnimation = false;
@@ -407,6 +408,16 @@ public class DisplayImeController implements DisplayController.OnDisplaysChanged
                 }
             }
             mImeSourceControl = imeSourceControl;
+
+            if (com.android.wm.shell.Flags.retryImeAnimationOnLeashReady()) {
+                final boolean shouldRetry = mAnimationDirection == DIRECTION_NONE
+                        && mImeRequestedVisible && !hadImeLeash && hasImeLeash;
+                if (shouldRetry) {
+                    ProtoLog.i(WM_SHELL_IME_CONTROLLER,
+                            "IME leash was null but became non-null, retrying startAnimation");
+                    pendingImeStartAnimation = true;
+                }
+            }
 
             if (pendingImeStartAnimation) {
                 startAnimation(mImeRequestedVisible, true /* forceRestart */);
