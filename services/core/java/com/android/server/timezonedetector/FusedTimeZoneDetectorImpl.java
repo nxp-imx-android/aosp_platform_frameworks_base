@@ -593,6 +593,10 @@ public final class FusedTimeZoneDetectorImpl implements FusedTimeZoneDetector {
     @Override
     public void replay() {
         synchronized (this) {
+            if (mCurrentFusedSignals.hasNoOrigins(QUALITY_LOW)) {
+                return;
+            }
+
             setDeviceTimeZoneIfRequired(mCurrentFusedSignals, "replay");
         }
     }
