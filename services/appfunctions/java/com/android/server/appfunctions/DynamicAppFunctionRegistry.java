@@ -17,9 +17,9 @@
 package com.android.server.appfunctions;
 
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.app.appfunctions.AppFunctionException;
 import android.app.appfunctions.AppFunctionName;
-import android.app.appfunctions.AppFunctionRuntimeMetadata;
 import android.app.appfunctions.ExecuteAppFunctionRequest;
 import android.app.appfunctions.IAppFunctionExecutor;
 import android.app.appfunctions.ICancellationCallback;
@@ -35,9 +35,11 @@ import android.util.ArraySet;
 import android.util.Log;
 
 import com.android.internal.annotations.GuardedBy;
+import com.android.server.appfunctions.MultiUserDynamicAppFunctionRegistry.ActivitySourceId;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -51,10 +53,12 @@ final class DynamicAppFunctionRegistry {
     private final Object mLock = new Object();
 
     @GuardedBy("mLock")
-    private final ArrayMap<String, IAppFunctionExecutor> mRegistrations = new ArrayMap<>();
+    private final ArrayMap<AppFunctionName, ArrayMap<ActivitySourceId, IAppFunctionExecutor>>
+            mRegistrations = new ArrayMap<>();
 
     @GuardedBy("mLock")
-    private final ArrayMap<IBinder, ArraySet<String>> mExecutorToRegistrations = new ArrayMap<>();
+    private final ArrayMap<IBinder, ArraySet<AppFunctionRegistrationId>> mExecutorToRegistrations =
+            new ArrayMap<>();
 
     /**
      * A list of remote IAppFunctionExecutor callbacks. This is used primarily to detect when a
@@ -70,25 +74,33 @@ final class DynamicAppFunctionRegistry {
                         if (DEBUG) {
                             Log.d(TAG, "onCallbackDied for " + callback.toString());
                         }
-                        ArraySet<String> registrationIds;
                         synchronized (mLock) {
-                            registrationIds = mExecutorToRegistrations.remove(callback.asBinder());
+                            ArraySet<AppFunctionRegistrationId> registrationIds =
+                                    mExecutorToRegistrations.remove(callback.asBinder());
                             if (registrationIds == null) {
                                 return;
                             }
-                            for (String id : registrationIds) {
+                            Set<AppFunctionName> unregisteredFunctionNames = new ArraySet<>();
+                            for (AppFunctionRegistrationId registrationId : registrationIds) {
                                 if (DEBUG) {
-                                    Log.d(TAG, "Removing due to process death: " + id);
+                                    Log.d(TAG, "Removing due to process death: " + registrationId);
                                 }
-                                mRegistrations.remove(id);
+                                AppFunctionName removedName = registrationId.getFunctionName();
+                                if (!mRegistrations.containsKey(removedName)) {
+                                    Log.w(TAG, "Couldn't find registration " + registrationId);
+                                } else {
+                                    Objects.requireNonNull(mRegistrations.get(removedName))
+                                            .remove(registrationId.getActivityToken());
+                                    if (Objects.requireNonNull(mRegistrations.get(removedName))
+                                            .isEmpty()) {
+                                        mRegistrations.remove(removedName);
+                                        unregisteredFunctionNames.add(removedName);
+                                    }
+                                }
                             }
-                        }
-                        Set<AppFunctionName> unregisteredFunctionNames = new ArraySet<>();
-                        for (String id : registrationIds) {
-                            unregisteredFunctionNames.add(AppFunctionName.fromQualifiedId(id));
-                        }
-                        if (!unregisteredFunctionNames.isEmpty()) {
-                            onBinderDeathCleanupCallback.run(unregisteredFunctionNames);
+                            if (!unregisteredFunctionNames.isEmpty()) {
+                                onBinderDeathCleanupCallback.run(unregisteredFunctionNames);
+                            }
                         }
                     }
                 };
@@ -101,30 +113,50 @@ final class DynamicAppFunctionRegistry {
      * @param packageName Name of the package containing the app function.
      * @param functionIdentifiers A list of identifiers of the app functions.
      * @param executor Executor of the app function.
+     * @param activityTokens Identifiers of the source activities corresponding to each
+     *     functionIdentifier. Null for global scoped functions.
      * @throws IllegalStateException If the app function is already registered.
      */
     public void registerAppFunctions(
             @NonNull String packageName,
             @NonNull List<String> functionIdentifiers,
-            @NonNull IAppFunctionExecutor executor) {
+            @NonNull IAppFunctionExecutor executor,
+            @NonNull List<ActivitySourceId> activityTokens) {
+        if (functionIdentifiers.size() != activityTokens.size()) {
+            throw new IllegalArgumentException(
+                    "Activity identifiers list must be same size as function identifiers");
+        }
         synchronized (mLock) {
-            List<String> registrationIds = new ArrayList<>(functionIdentifiers.size());
-            for (String functionIdentifier : functionIdentifiers) {
-                String registrationId = getRegistrationId(packageName, functionIdentifier);
-                if (mRegistrations.containsKey(registrationId)) {
+            ArrayList<AppFunctionRegistrationId> registrationIds =
+                    new ArrayList<>(functionIdentifiers.size());
+            for (int index = 0; index < functionIdentifiers.size(); index++) {
+                AppFunctionName name =
+                        new AppFunctionName(packageName, functionIdentifiers.get(index));
+                ActivitySourceId source = activityTokens.get(index);
+                if (mRegistrations.containsKey(name)
+                        && Objects.requireNonNull(mRegistrations.get(name)).containsKey(source)) {
                     throw new IllegalStateException(
-                            "App function already registered for ID: " + registrationId);
+                            "App function already registered: "
+                                    + name
+                                    + " with activity token: "
+                                    + source);
                 }
-                registrationIds.add(registrationId);
+                registrationIds.add(new AppFunctionRegistrationId(name, source));
             }
-            for (String registrationId : registrationIds) {
-                mRegistrations.put(registrationId, executor);
+
+            for (AppFunctionRegistrationId registrationId : registrationIds) {
+                mRegistrations.putIfAbsent(registrationId.getFunctionName(), new ArrayMap<>());
+                Objects.requireNonNull(mRegistrations.get(registrationId.getFunctionName()))
+                        .put(registrationId.getActivityToken(), executor);
 
                 if (!mExecutorToRegistrations.containsKey(executor.asBinder())) {
-                    mExecutorToRegistrations.put(executor.asBinder(), new ArraySet<>());
+                    mExecutorToRegistrations.put(
+                            executor.asBinder(), new ArraySet<>(registrationIds));
                     mCallbacks.register(executor);
                 }
-                mExecutorToRegistrations.get(executor.asBinder()).add(registrationId);
+                Objects.requireNonNull(mExecutorToRegistrations.get(executor.asBinder()))
+                        .add(registrationId);
+
                 if (DEBUG) {
                     Log.d(TAG, "registerAppFunction with ID:" + registrationId);
                 }
@@ -142,29 +174,50 @@ final class DynamicAppFunctionRegistry {
      * @param packageName Name of the package containing the app function.
      * @param functionIdentifiers List of identifier of the app functions.
      * @param executor Executor of the app function.
+     * @param activityTokens Identifiers of the source activities corresponding to each
+     *     functionIdentifier. Null for global scoped functions.
      */
     public void unregisterAppFunctions(
             @NonNull String packageName,
             @NonNull List<String> functionIdentifiers,
-            @NonNull IAppFunctionExecutor executor) {
+            @NonNull IAppFunctionExecutor executor,
+            @NonNull List<ActivitySourceId> activityTokens) {
+        if (functionIdentifiers.size() != activityTokens.size()) {
+            throw new IllegalArgumentException(
+                    "Activity identifiers list must be same size as function identifiers");
+        }
         synchronized (mLock) {
-            for (String functionIdentifier : functionIdentifiers) {
-                String registrationId = getRegistrationId(packageName, functionIdentifier);
-                if (DEBUG) {
-                    Log.d(TAG, "unregisterAppFunction with ID:" + registrationId);
-                }
+            for (int index = 0; index < functionIdentifiers.size(); index++) {
+                AppFunctionName name =
+                        new AppFunctionName(packageName, functionIdentifiers.get(index));
+                ActivitySourceId activityToken = activityTokens.get(index);
+                AppFunctionRegistrationId registrationId =
+                        new AppFunctionRegistrationId(name, activityToken);
 
                 // Ensure the registration being removed actually belongs to the calling
                 // executor.
-                IAppFunctionExecutor registeredExecutor = mRegistrations.get(registrationId);
-                if (registeredExecutor == null
-                        || !registeredExecutor.asBinder().equals(executor.asBinder())) {
+                if (!mRegistrations.containsKey(name)
+                        || !mRegistrations.get(name).containsKey(activityToken)) {
+                    if (DEBUG) {
+                        Log.d(TAG, "Skip unregistering function with ID:" + registrationId);
+                    }
                     continue;
                 }
+                IAppFunctionExecutor registeredExecutor =
+                        mRegistrations.get(name).get(activityToken);
+                if (registeredExecutor == null
+                        || !registeredExecutor.asBinder().equals(executor.asBinder())) {
+                    if (DEBUG) {
+                        Log.d(TAG, "Skip unregistering function with ID:" + registrationId);
+                    }
+                    continue;
+                }
+                Objects.requireNonNull(mRegistrations.get(name)).remove(activityToken);
+                if (Objects.requireNonNull(mRegistrations.get(name)).isEmpty()) {
+                    mRegistrations.remove(name);
+                }
 
-                mRegistrations.remove(registrationId);
-
-                ArraySet<String> executorRegistrations =
+                ArraySet<AppFunctionRegistrationId> executorRegistrations =
                         mExecutorToRegistrations.get(executor.asBinder());
                 if (executorRegistrations != null) {
                     executorRegistrations.remove(registrationId);
@@ -173,6 +226,9 @@ final class DynamicAppFunctionRegistry {
                         // This was the last registration for this executor.
                         mCallbacks.unregister(executor);
                     }
+                }
+                if (DEBUG) {
+                    Log.d(TAG, "unregisterAppFunction with ID:" + registrationId);
                 }
             }
         }
@@ -191,14 +247,19 @@ final class DynamicAppFunctionRegistry {
             @NonNull ExecuteAppFunctionRequest request,
             @NonNull SafeOneTimeExecuteAppFunctionCallback safeExecuteAppFunctionCallback,
             @NonNull ICancellationSignal cancellationTransport) {
-        String registrationId =
-                getRegistrationId(request.getTargetPackageName(), request.getFunctionIdentifier());
+        AppFunctionName name =
+                new AppFunctionName(
+                        request.getTargetPackageName(), request.getFunctionIdentifier());
+        // TODO(b/478873466): support execute with activityId
+        ActivitySourceId sourceId = new ActivitySourceId(null);
         if (DEBUG) {
-            Log.d(TAG, "executeAppFunction with ID:" + registrationId);
+            Log.d(TAG, "executeAppFunction with ID:" + name + " with activity token: " + sourceId);
         }
-        IAppFunctionExecutor executor;
+        IAppFunctionExecutor executor = null;
         synchronized (mLock) {
-            executor = mRegistrations.get(registrationId);
+            if (mRegistrations.containsKey(name)) {
+                executor = Objects.requireNonNull(mRegistrations.get(name)).get(sourceId);
+            }
         }
 
         if (executor == null) {
@@ -234,14 +295,61 @@ final class DynamicAppFunctionRegistry {
      */
     public boolean isAppFunctionRegistered(String packageName, String functionIdentifier) {
         synchronized (mLock) {
-            return mRegistrations.containsKey(getRegistrationId(packageName, functionIdentifier));
+            return mRegistrations.containsKey(new AppFunctionName(packageName, functionIdentifier));
         }
     }
 
-    // TODO(b/447127837): switch to function name once submitted, use per package mappings and locks
-    private String getRegistrationId(String packageName, String functionIdentifier) {
-        return AppFunctionRuntimeMetadata.getDocumentIdForAppFunction(
-                packageName, functionIdentifier);
+    static class AppFunctionRegistrationId {
+        @Nullable private final ActivitySourceId mActivityToken;
+
+        @NonNull private final AppFunctionName mName;
+
+        AppFunctionRegistrationId(
+                @NonNull AppFunctionName name, @Nullable ActivitySourceId activityToken) {
+            mName = name;
+            mActivityToken = activityToken;
+        }
+
+        AppFunctionRegistrationId(
+                @NonNull String packageName,
+                @NonNull String functionIdentifier,
+                @Nullable ActivitySourceId activityToken) {
+            mActivityToken = activityToken;
+            mName = new AppFunctionName(packageName, functionIdentifier);
+        }
+
+        @NonNull
+        AppFunctionName getFunctionName() {
+            return mName;
+        }
+
+        @Nullable
+        ActivitySourceId getActivityToken() {
+            return mActivityToken;
+        }
+
+        @Override
+        public String toString() {
+            return "AppFunctionRegistrationId{" + mName + ":activityToken(" + mActivityToken + ")}";
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(mName, mActivityToken);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (!(o instanceof AppFunctionRegistrationId)) {
+                return false;
+            }
+            if (this == o) {
+                return true;
+            }
+            AppFunctionRegistrationId that = (AppFunctionRegistrationId) o;
+            return Objects.equals(mName, that.mName)
+                    && Objects.equals(mActivityToken, that.mActivityToken);
+        }
     }
 
     @NonNull
