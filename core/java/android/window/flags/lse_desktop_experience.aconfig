@@ -930,7 +930,7 @@ flag {
     name: "enable_require_movable_task_api"
     namespace: "lse_desktop_experience"
     description: "Enables the API for apps to request movable tasks for new activities via ActivityOptions."
-    bug: "400407139"
+    bug: "407594924"
     is_exported: true
 }
 
@@ -1058,7 +1058,7 @@ flag {
     name: "enable_window_repositioning_api"
     namespace: "lse_desktop_experience"
     description: "Enables the API to allow default browsers to reposition their windows."
-    bug: "400407139"
+    bug: "407594924"
     is_exported: true
 }
 
