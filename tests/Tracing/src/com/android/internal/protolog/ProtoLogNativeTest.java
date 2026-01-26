@@ -344,6 +344,26 @@ public class ProtoLogNativeTest {
     }
 
     @Test
+    public void testLogString_multipleArgumentTypeMismatches_reportsFirstError() {
+        final String format = "Mismatch 1: %d, Mismatch 2: %f";
+        final String stringArg = "I am not a number";
+        final boolean boolArg = true; // Mismatch for %f
+
+        IllegalArgumentException thrown = assertThrows(
+                IllegalArgumentException.class,
+                () -> logAndReadTrace(() -> {
+                    Object[] args = {stringArg, boolArg};
+                    ProtoLogNative.log(
+                            ProtoLogNative.PROTO_LOG_LEVEL_WARN, "TEST_TAG", format, args);
+                })
+        );
+
+        // Verifies that only the first error is reported, and the second mismatch is ignored.
+        Truth.assertThat(thrown).hasMessageThat()
+                .contains("Cannot apply argument at index 0 to ProtoLog format string");
+    }
+
+    @Test
     public void testLogString_invalidFormatSpecifier_isLogged() throws IOException {
         final String format = "Invalid specifier: %z";
         final String expectedMessage = "Invalid specifier: %z";
