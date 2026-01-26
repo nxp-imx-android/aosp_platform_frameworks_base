@@ -24,6 +24,7 @@ import static android.os.UserManager.isHeadlessSystemUserMode;
 import android.Manifest;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.RequiresPermission;
 import android.app.AppCompatTaskInfo;
 import android.app.TaskInfo;
 import android.app.WindowConfiguration;
@@ -128,7 +129,6 @@ public class DesktopModeCompatPolicy {
         if (topActivityType == ACTIVITY_TYPE_DREAM) {
             return true;
         }
-        // TODO: b/434943016 - Replace with permission.
         // If activity belongs to package exempt via device config, force out of desktop.
         if (isPackageExemptViaConfig(packageName) && !isActivityStackTransparent) {
             return true;
@@ -144,9 +144,12 @@ public class DesktopModeCompatPolicy {
         // If all activities in task stack are transparent AND package has the relevant
         // fullscreen transparent permission OR is signed with platform key, safe to force out
         // of desktop.
+        // TODO: b/458693972 - Replace with permission and manifest check.
         return isTransparentTask(isActivityStackTransparent, numActivities)
                 && (hasFullscreenTransparentPermission(packageName, userId)
-                || hasPlatformSignature(info));
+                    || hasPlatformSignature(info)
+                    || (Flags.enablePrivilegedAppTransparentWindowingExemptions()
+                        && isPrivilegedApp(info)));
     }
 
     /** @see #shouldDisableDesktopEntryPoints(String, int, boolean, boolean, int, int) */
@@ -195,7 +198,6 @@ public class DesktopModeCompatPolicy {
         if (isPartOfDefaultHomePackageOrNoHomeAvailable(packageName, userId)) {
             return true;
         }
-        // TODO: b/434943016 - Replace with permission.
         // If activity belongs to package exempt via device config, hide desktop entry point.
         if (isPackageExemptViaConfig(packageName)) {
             return true;
@@ -283,6 +285,14 @@ public class DesktopModeCompatPolicy {
         return info != null
                 && info.applicationInfo != null
                 && info.applicationInfo.isSignedWithPlatformKey();
+    }
+
+    // Checks if the app is a privileged application.
+    @RequiresPermission(Manifest.permission.INSTALL_PACKAGES)
+    private boolean isPrivilegedApp(@Nullable ActivityInfo info) {
+        return info != null
+                && info.applicationInfo != null
+                && info.applicationInfo.isPrivilegedApp();
     }
 
     /**
