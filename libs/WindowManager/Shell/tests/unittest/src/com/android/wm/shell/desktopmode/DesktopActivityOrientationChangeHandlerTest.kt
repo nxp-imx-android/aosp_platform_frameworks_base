@@ -32,6 +32,7 @@ import androidx.test.filters.SmallTest
 import com.android.dx.mockito.inline.extended.ExtendedMockito.mockitoSession
 import com.android.dx.mockito.inline.extended.ExtendedMockito.never
 import com.android.dx.mockito.inline.extended.StaticMockitoSession
+import com.android.window.flags.Flags
 import com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase
@@ -294,7 +295,7 @@ class DesktopActivityOrientationChangeHandlerTest : ShellTestCase() {
         assertEquals(
             oldBounds.height().toFloat() / oldBounds.width(),
             finalWidth.toFloat() / finalHeight,
-            FLOAT_TOLERANCE
+            FLOAT_TOLERANCE,
         )
         // Anchor point for resizing is at the center.
         assertEquals(oldBounds.centerX(), finalBounds.centerX())
@@ -331,13 +332,14 @@ class DesktopActivityOrientationChangeHandlerTest : ShellTestCase() {
         assertEquals(
             oldBounds.width().toFloat() / oldBounds.height(),
             finalHeight.toFloat() / finalWidth,
-            FLOAT_TOLERANCE
+            FLOAT_TOLERANCE,
         )
         // Anchor point for resizing is at the center.
         assertEquals(oldBounds.centerX(), finalBounds.centerX())
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_REFACTOR_CAPTION_SANDBOXING_TO_CORE)
     fun handleActivityOrientationChange_withCaptionInsets_respectsContentAspectRatio() {
         userRepositories.current.addDesk(displayId = DEFAULT_DISPLAY, deskId = 0)
         userRepositories.current.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = 0)
@@ -351,13 +353,15 @@ class DesktopActivityOrientationChangeHandlerTest : ShellTestCase() {
                 isResizeable = false,
                 orientation = SCREEN_ORIENTATION_LANDSCAPE,
                 bounds = oldBounds,
-                appBounds = appBounds
+                appBounds = appBounds,
             )
+        newTask.appCompatTaskInfo.setIsExcludeCaptionInsets(true)
         whenever(displayLayout.height()).thenReturn(800)
         whenever(displayLayout.width()).thenReturn(2000)
         whenever(displayLayout.getStableBounds(any())).thenAnswer { i ->
             (i.arguments.first() as Rect).set(Rect(0, 0, 2000, 800))
         }
+        whenever(displayLayout.captionBarHeight()).thenReturn(captionHeight)
 
         handler.handleActivityOrientationChange(task, newTask)
 
