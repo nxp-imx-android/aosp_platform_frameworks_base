@@ -1404,7 +1404,7 @@ public class TransitionTests extends WindowTestsBase {
         assertTrue(mDisplayContent.hasTopFixedRotationLaunchingApp());
 
         // The bar was invisible so it is not handled by the controller. But if it becomes visible
-        // and drawn before the transition starts,
+        // and drawn before the transition starts, it should be hidden and fade in later.
         assertFalse(asyncRotationController.isTargetToken(navBar.mToken));
         navBar.finishDrawing(null /* postDrawTransaction */, Integer.MAX_VALUE);
         assertTrue(asyncRotationController.isTargetToken(navBar.mToken));
@@ -1415,6 +1415,8 @@ public class TransitionTests extends WindowTestsBase {
         assertFalse(mDisplayContent.mTransitionController.isCollecting(statusBar.mToken));
         // Avoid DeviceStateController disturbing the test by triggering another rotation change.
         doReturn(false).when(mDisplayContent).updateRotationUnchecked();
+        // Wait for the display change due to transition.shouldApplyOnDisplayThread().
+        waitHandlerIdle(mWm.mH);
 
         clearInvocations(mTransaction);
         onRotationTransactionReady(player, mTransaction).onTransactionCommitted();
@@ -1423,6 +1425,8 @@ public class TransitionTests extends WindowTestsBase {
         spyOn(navBarInsetsProvider);
         player.finish();
 
+        // An unrelated transition should not affect the controller.
+        requestTransition(app, TRANSIT_CHANGE);
         // The controller should be cleared if the target windows are drawn.
         statusBar.finishDrawing(mWm.mTransactionFactory.get(), Integer.MAX_VALUE);
         assertNull(mDisplayContent.getAsyncRotationController());
