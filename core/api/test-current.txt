@@ -2618,6 +2618,7 @@ package android.os {
     field @Nullable public static final String MANUFACTURER_FOR_ATTESTATION;
     field @Nullable public static final String MODEL_FOR_ATTESTATION;
     field @Nullable public static final String PRODUCT_FOR_ATTESTATION;
+    field @NonNull public static final String VBMETA_PUBLIC_KEY_DIGEST;
   }
 
   public static class Build.VERSION {
