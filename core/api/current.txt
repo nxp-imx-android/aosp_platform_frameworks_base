@@ -19848,7 +19848,7 @@ package android.hardware {
 
   @FlaggedApi("android.hardware.flags.overlayproperties_class_api") public final class OverlayProperties implements android.os.Parcelable {
     method @FlaggedApi("android.hardware.flags.overlayproperties_class_api") public int describeContents();
-    method @FlaggedApi("android.hardware.flags.luts_api") @NonNull public android.hardware.LutProperties[] getLutProperties();
+    method @FlaggedApi("android.hardware.flags.luts_api") @Nullable public android.hardware.LutProperties[] getLutProperties();
     method @FlaggedApi("android.hardware.flags.overlayproperties_class_api") public boolean isCombinationSupported(int, int);
     method @FlaggedApi("android.hardware.flags.overlayproperties_class_api") public boolean isMixedColorSpacesSupported();
     method @FlaggedApi("android.hardware.flags.overlayproperties_class_api") public void writeToParcel(@NonNull android.os.Parcel, int);
