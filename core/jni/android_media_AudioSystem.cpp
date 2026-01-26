@@ -148,7 +148,7 @@ static jmethodID gAudioGainConfigCstor;
 static struct {
     jfieldID mIndex;
     jfieldID mMode;
-    jfieldID mChannelMask;
+    jfieldID mChannelMasks;
     jfieldID mValues;
     jfieldID mRampDurationMs;
     // other fields unused by JNI
@@ -1013,16 +1013,11 @@ static void convertAudioGainConfigToNative(JNIEnv *env,
     nAudioGainConfig->mode = static_cast<audio_gain_mode_t>(
             env->GetIntField(jAudioGainConfig, gAudioGainConfigFields.mMode));
     ALOGV("convertAudioGainConfigToNative got gain index %d", nAudioGainConfig->index);
-    jint jMask = env->GetIntField(jAudioGainConfig, gAudioGainConfigFields.mChannelMask);
-    audio_channel_mask_t nMask;
-    if (useInMask) {
-        nMask = inChannelMaskToNative(jMask);
-        ALOGV("convertAudioGainConfigToNative IN mask java %x native %x", jMask, nMask);
-    } else {
-        nMask = outChannelMaskToNative(jMask);
-        ALOGV("convertAudioGainConfigToNative OUT mask java %x native %x", jMask, nMask);
-    }
-    nAudioGainConfig->channel_mask = nMask;
+    jobject jChannelMasks =
+            env->GetObjectField(jAudioGainConfig, gAudioGainConfigFields.mChannelMasks);
+    nAudioGainConfig->channel_mask =
+            nativeChannelMaskFromJavaChannelMasks(env, gAudioChannelMasksFields, jChannelMasks,
+                                                  useInMask);
     nAudioGainConfig->ramp_duration_ms = env->GetIntField(jAudioGainConfig,
                                                        gAudioGainConfigFields.mRampDurationMs);
     jintArray jValues = static_cast<jintArray>(
@@ -1193,15 +1188,16 @@ static jint convertAudioPortConfigFromNative(JNIEnv *env, ScopedLocalRef<jobject
             ? nAudioPortConfig->gain.index
             : -1;
     if (gainIndex >= 0) {
-        jint jMask;
         ALOGV("convertAudioPortConfigFromNative gain found with index %d mode %x",
               gainIndex, nAudioPortConfig->gain.mode);
         if (audioportCreated) {
             ALOGV("convertAudioPortConfigFromNative creating gain");
-            jAudioGain.reset(env->NewObject(gAudioGainClass, gAudioGainCstor, gainIndex, 0 /*mode*/,
-                                            0 /*channelMask*/, 0 /*minValue*/, 0 /*maxValue*/,
-                                            0 /*defaultValue*/, 0 /*stepValue*/,
-                                            0 /*rampDurationMinMs*/, 0 /*rampDurationMaxMs*/));
+            jAudioGain.reset(
+                    env->NewObject(gAudioGainClass, gAudioGainCstor, gainIndex, 0 /*mode*/,
+                                   javaChannelMasksDefault(env, gAudioChannelMasksFields).release(),
+                                   0 /*minValue*/, 0 /*maxValue*/, 0 /*defaultValue*/,
+                                   0 /*stepValue*/, 0 /*rampDurationMinMs*/,
+                                   0 /*rampDurationMaxMs*/));
             if (jAudioGain == NULL) {
                 ALOGV("convertAudioPortConfigFromNative creating gain FAILED");
                 return AUDIO_JAVA_ERROR;
@@ -1237,18 +1233,15 @@ static jint convertAudioPortConfigFromNative(JNIEnv *env, ScopedLocalRef<jobject
                                nAudioPortConfig->gain.values);
 
         nMask = nAudioPortConfig->gain.channel_mask;
-        if (useInMask) {
-            jMask = inChannelMaskFromNative(nMask);
-            ALOGV("convertAudioPortConfigFromNative IN mask java %x native %x", jMask, nMask);
-        } else {
-            jMask = outChannelMaskFromNative(nMask);
-            ALOGV("convertAudioPortConfigFromNative OUT mask java %x native %x", jMask, nMask);
-        }
-
-        jAudioGainConfig.reset(env->NewObject(gAudioGainConfigClass, gAudioGainConfigCstor,
-                                              gainIndex, jAudioGain.get(),
-                                              nAudioPortConfig->gain.mode, jMask, jGainValues,
-                                              nAudioPortConfig->gain.ramp_duration_ms));
+        ALOGV("convertAudioPortConfigFromNative %s mask native %x", useInMask ? "IN" : "OUT",
+              nMask);
+        jAudioGainConfig.reset(
+                env->NewObject(gAudioGainConfigClass, gAudioGainConfigCstor, gainIndex,
+                               jAudioGain.get(), nAudioPortConfig->gain.mode,
+                               javaChannelMasksFromNativeChannelMask(env, gAudioChannelMasksFields,
+                                                                     nMask, useInMask)
+                                       .release(),
+                               jGainValues, nAudioPortConfig->gain.ramp_duration_ms));
         env->DeleteLocalRef(jGainValues);
         if (jAudioGainConfig == NULL) {
             ALOGV("convertAudioPortConfigFromNative could not create gain config");
@@ -1543,25 +1536,16 @@ static jint convertAudioPortFromNative(JNIEnv *env, ScopedLocalRef<jobject> *jAu
 
     for (size_t j = 0; j < nAudioPort->num_gains; j++) {
         audio_channel_mask_t nMask = nAudioPort->gains[j].channel_mask;
-        jint jMask;
-        if (useInMask) {
-            jMask = inChannelMaskFromNative(nMask);
-            ALOGV("convertAudioPortConfigFromNative IN mask java %x native %x", jMask, nMask);
-        } else {
-            jMask = outChannelMaskFromNative(nMask);
-            ALOGV("convertAudioPortConfigFromNative OUT mask java %x native %x", jMask, nMask);
-        }
-
-        jobject jGain = env->NewObject(gAudioGainClass, gAudioGainCstor,
-                                                 j,
-                                                 nAudioPort->gains[j].mode,
-                                                 jMask,
-                                                 nAudioPort->gains[j].min_value,
-                                                 nAudioPort->gains[j].max_value,
-                                                 nAudioPort->gains[j].default_value,
-                                                 nAudioPort->gains[j].step_value,
-                                                 nAudioPort->gains[j].min_ramp_ms,
-                                                 nAudioPort->gains[j].max_ramp_ms);
+        ALOGV("convertAudioPortConfigFromNative %s mask native %x", useInMask ? "IN" : "OUT",
+              nMask);
+        jobject jGain =
+                env->NewObject(gAudioGainClass, gAudioGainCstor, j, nAudioPort->gains[j].mode,
+                               javaChannelMasksFromNativeChannelMask(env, gAudioChannelMasksFields,
+                                                                     nMask, useInMask)
+                                       .release(),
+                               nAudioPort->gains[j].min_value, nAudioPort->gains[j].max_value,
+                               nAudioPort->gains[j].default_value, nAudioPort->gains[j].step_value,
+                               nAudioPort->gains[j].min_ramp_ms, nAudioPort->gains[j].max_ramp_ms);
         if (jGain == NULL) {
             return AUDIO_JAVA_ERROR;
         }
@@ -3842,16 +3826,19 @@ int register_android_media_AudioSystem(JNIEnv *env)
 
     jclass audioGainClass = FindClassOrDie(env, "android/media/AudioGain");
     gAudioGainClass = MakeGlobalRefOrDie(env, audioGainClass);
-    gAudioGainCstor = GetMethodIDOrDie(env, audioGainClass, "<init>", "(IIIIIIIII)V");
+    gAudioGainCstor = GetMethodIDOrDie(env, audioGainClass, "<init>",
+                                       "(IILandroid/media/AudioFormat$ChannelMasks;IIIIII)V");
 
     jclass audioGainConfigClass = FindClassOrDie(env, "android/media/AudioGainConfig");
     gAudioGainConfigClass = MakeGlobalRefOrDie(env, audioGainConfigClass);
     gAudioGainConfigCstor = GetMethodIDOrDie(env, audioGainConfigClass, "<init>",
-                                             "(ILandroid/media/AudioGain;II[II)V");
+                                             "(ILandroid/media/AudioGain;ILandroid/media/"
+                                             "AudioFormat$ChannelMasks;[II)V");
     gAudioGainConfigFields.mIndex = GetFieldIDOrDie(env, gAudioGainConfigClass, "mIndex", "I");
     gAudioGainConfigFields.mMode = GetFieldIDOrDie(env, audioGainConfigClass, "mMode", "I");
-    gAudioGainConfigFields.mChannelMask = GetFieldIDOrDie(env, audioGainConfigClass, "mChannelMask",
-                                                          "I");
+    gAudioGainConfigFields.mChannelMasks =
+            GetFieldIDOrDie(env, audioGainConfigClass, "mChannelMasks",
+                            "Landroid/media/AudioFormat$ChannelMasks;");
     gAudioGainConfigFields.mValues = GetFieldIDOrDie(env, audioGainConfigClass, "mValues", "[I");
     gAudioGainConfigFields.mRampDurationMs = GetFieldIDOrDie(env, audioGainConfigClass,
                                                              "mRampDurationMs", "I");
