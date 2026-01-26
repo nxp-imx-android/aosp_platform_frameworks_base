@@ -3291,7 +3291,10 @@ public class AudioManager {
      *   <li> {@link #SCO_AUDIO_STATE_CONNECTED}, </li>
      * </ul>
      * @see #startBluetoothSco()
+     * @deprecated Use {@link #addOnCommunicationDeviceChangedListener} instead.
      */
+    @FlaggedApi(FLAG_AMSCO_AVAILABLE_API)
+    @Deprecated
     @SdkConstant(SdkConstantType.BROADCAST_INTENT_ACTION)
     public static final String ACTION_SCO_AUDIO_STATE_UPDATED =
             "android.media.ACTION_SCO_AUDIO_STATE_UPDATED";
@@ -3299,36 +3302,54 @@ public class AudioManager {
     /**
      * Extra for intent {@link #ACTION_SCO_AUDIO_STATE_CHANGED} or
      * {@link #ACTION_SCO_AUDIO_STATE_UPDATED} containing the new bluetooth SCO connection state.
+     * @deprecated Use {@link #addOnCommunicationDeviceChangedListener} instead.
      */
+    @FlaggedApi(FLAG_AMSCO_AVAILABLE_API)
+    @Deprecated
     public static final String EXTRA_SCO_AUDIO_STATE =
             "android.media.extra.SCO_AUDIO_STATE";
 
     /**
      * Extra for intent {@link #ACTION_SCO_AUDIO_STATE_UPDATED} containing the previous
      * bluetooth SCO connection state.
+     * @deprecated Use {@link #addOnCommunicationDeviceChangedListener} instead.
      */
+    @FlaggedApi(FLAG_AMSCO_AVAILABLE_API)
+    @Deprecated
     public static final String EXTRA_SCO_AUDIO_PREVIOUS_STATE =
             "android.media.extra.SCO_AUDIO_PREVIOUS_STATE";
 
     /**
      * Value for extra EXTRA_SCO_AUDIO_STATE or EXTRA_SCO_AUDIO_PREVIOUS_STATE
      * indicating that the SCO audio channel is not established
+     * @deprecated Use {@link #addOnCommunicationDeviceChangedListener} instead.
      */
+    @FlaggedApi(FLAG_AMSCO_AVAILABLE_API)
+    @Deprecated
     public static final int SCO_AUDIO_STATE_DISCONNECTED = 0;
     /**
      * Value for extra {@link #EXTRA_SCO_AUDIO_STATE} or {@link #EXTRA_SCO_AUDIO_PREVIOUS_STATE}
      * indicating that the SCO audio channel is established
+     * @deprecated Use {@link #addOnCommunicationDeviceChangedListener} instead.
      */
+    @FlaggedApi(FLAG_AMSCO_AVAILABLE_API)
+    @Deprecated
     public static final int SCO_AUDIO_STATE_CONNECTED = 1;
     /**
      * Value for extra EXTRA_SCO_AUDIO_STATE or EXTRA_SCO_AUDIO_PREVIOUS_STATE
      * indicating that the SCO audio channel is being established
+     * @deprecated Use {@link #addOnCommunicationDeviceChangedListener} instead.
      */
+    @FlaggedApi(FLAG_AMSCO_AVAILABLE_API)
+    @Deprecated
     public static final int SCO_AUDIO_STATE_CONNECTING = 2;
     /**
      * Value for extra EXTRA_SCO_AUDIO_STATE indicating that
      * there was an error trying to obtain the state
+     * @deprecated Use {@link #addOnCommunicationDeviceChangedListener} instead.
      */
+    @FlaggedApi(FLAG_AMSCO_AVAILABLE_API)
+    @Deprecated
     public static final int SCO_AUDIO_STATE_ERROR = -1;
 
 
@@ -3340,7 +3361,10 @@ public class AudioManager {
      * @return true if bluetooth SCO can be used for audio when not in call
      *         false otherwise
      * @see #startBluetoothSco()
-    */
+     * @deprecated This method is no longer necessary, the framework always supports SCO off call
+     */
+    @FlaggedApi(FLAG_AMSCO_AVAILABLE_API)
+    @Deprecated
     public boolean isBluetoothScoAvailableOffCall() {
         return getContext().getResources().getBoolean(
                com.android.internal.R.bool.config_bluetooth_sco_off_call);
@@ -3417,7 +3441,10 @@ public class AudioManager {
      * @see #startBluetoothSco()
      * @see #stopBluetoothSco()
      * @see #ACTION_SCO_AUDIO_STATE_UPDATED
+     * @deprecated Use {@link AudioManager#setCommunicationDevice(AudioDeviceInfo)} instead.
      */
+    @FlaggedApi(FLAG_AMSCO_AVAILABLE_API)
+    @Deprecated
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
     public void startBluetoothScoVirtualCall() {
         final IAudioService service = getService();
@@ -3454,9 +3481,15 @@ public class AudioManager {
      * This method should only be used by applications that replace the platform-wide
      * management of audio settings or the main telephony application.
      *
+     * This method has been a no-op for applications for several releases, and should
+     * not be used by any clients.
+     *
      * @param on set <var>true</var> to use bluetooth SCO for communications;
      *               <var>false</var> to not use bluetooth SCO for communications
+     * @deprecated Use {@link AudioManager#setCommunicationDevice()} instead.
      */
+    @FlaggedApi(FLAG_AMSCO_AVAILABLE_API)
+    @Deprecated
     public void setBluetoothScoOn(boolean on){
         final IAudioService service = getService();
         try {
@@ -3619,7 +3652,10 @@ public class AudioManager {
      *
      * <p>The intent has no extra values, use {@link #isSpeakerphoneOn} to check whether the
      * speakerphone functionality is enabled or not.
+     * @deprecated Use {@link #addOnCommunicationDeviceChangedListener} instead.
      */
+    @FlaggedApi(FLAG_AMSCO_AVAILABLE_API)
+    @Deprecated
     @SdkConstant(SdkConstantType.BROADCAST_INTENT_ACTION)
     public static final String ACTION_SPEAKERPHONE_STATE_CHANGED =
             "android.media.action.SPEAKERPHONE_STATE_CHANGED";

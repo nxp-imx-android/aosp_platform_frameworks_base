@@ -22801,7 +22801,7 @@ package android.media {
     method @Deprecated public int getVibrateSetting(int);
     method public int getVolumeGroupIdForAttributes(@NonNull android.media.AudioAttributes);
     method @Deprecated public boolean isBluetoothA2dpOn();
-    method public boolean isBluetoothScoAvailableOffCall();
+    method @Deprecated @FlaggedApi("android.media.audio.amsco_available_api") public boolean isBluetoothScoAvailableOffCall();
     method @Deprecated public boolean isBluetoothScoOn();
     method public boolean isCallScreeningModeSupported();
     method public static boolean isHapticPlaybackSupported();
@@ -22832,7 +22832,7 @@ package android.media {
     method public int requestAudioFocus(@NonNull android.media.AudioFocusRequest);
     method public void setAllowedCapturePolicy(int);
     method @Deprecated public void setBluetoothA2dpOn(boolean);
-    method public void setBluetoothScoOn(boolean);
+    method @Deprecated @FlaggedApi("android.media.audio.amsco_available_api") public void setBluetoothScoOn(boolean);
     method public boolean setCommunicationDevice(@NonNull android.media.AudioDeviceInfo);
     method @RequiresPermission(android.Manifest.permission.WRITE_SETTINGS) public boolean setEncodedSurroundMode(int);
     method public void setMicrophoneMute(boolean);
@@ -22864,8 +22864,8 @@ package android.media {
     field public static final String ACTION_HEADSET_PLUG = "android.intent.action.HEADSET_PLUG";
     field public static final String ACTION_MICROPHONE_MUTE_CHANGED = "android.media.action.MICROPHONE_MUTE_CHANGED";
     field @Deprecated public static final String ACTION_SCO_AUDIO_STATE_CHANGED = "android.media.SCO_AUDIO_STATE_CHANGED";
-    field public static final String ACTION_SCO_AUDIO_STATE_UPDATED = "android.media.ACTION_SCO_AUDIO_STATE_UPDATED";
-    field public static final String ACTION_SPEAKERPHONE_STATE_CHANGED = "android.media.action.SPEAKERPHONE_STATE_CHANGED";
+    field @Deprecated @FlaggedApi("android.media.audio.amsco_available_api") public static final String ACTION_SCO_AUDIO_STATE_UPDATED = "android.media.ACTION_SCO_AUDIO_STATE_UPDATED";
+    field @Deprecated @FlaggedApi("android.media.audio.amsco_available_api") public static final String ACTION_SPEAKERPHONE_STATE_CHANGED = "android.media.action.SPEAKERPHONE_STATE_CHANGED";
     field public static final int ADJUST_LOWER = -1; // 0xffffffff
     field public static final int ADJUST_MUTE = -100; // 0xffffff9c
     field public static final int ADJUST_RAISE = 1; // 0x1
@@ -22899,8 +22899,8 @@ package android.media {
     field public static final String EXTRA_ENCODINGS = "android.media.extra.ENCODINGS";
     field public static final String EXTRA_MAX_CHANNEL_COUNT = "android.media.extra.MAX_CHANNEL_COUNT";
     field public static final String EXTRA_RINGER_MODE = "android.media.EXTRA_RINGER_MODE";
-    field public static final String EXTRA_SCO_AUDIO_PREVIOUS_STATE = "android.media.extra.SCO_AUDIO_PREVIOUS_STATE";
-    field public static final String EXTRA_SCO_AUDIO_STATE = "android.media.extra.SCO_AUDIO_STATE";
+    field @Deprecated @FlaggedApi("android.media.audio.amsco_available_api") public static final String EXTRA_SCO_AUDIO_PREVIOUS_STATE = "android.media.extra.SCO_AUDIO_PREVIOUS_STATE";
+    field @Deprecated @FlaggedApi("android.media.audio.amsco_available_api") public static final String EXTRA_SCO_AUDIO_STATE = "android.media.extra.SCO_AUDIO_STATE";
     field @Deprecated public static final String EXTRA_VIBRATE_SETTING = "android.media.EXTRA_VIBRATE_SETTING";
     field @Deprecated public static final String EXTRA_VIBRATE_TYPE = "android.media.EXTRA_VIBRATE_TYPE";
     field public static final int FLAG_ALLOW_RINGER_MODES = 2; // 0x2
@@ -22952,10 +22952,10 @@ package android.media {
     field @Deprecated public static final int ROUTE_EARPIECE = 1; // 0x1
     field @Deprecated public static final int ROUTE_HEADSET = 8; // 0x8
     field @Deprecated public static final int ROUTE_SPEAKER = 2; // 0x2
-    field public static final int SCO_AUDIO_STATE_CONNECTED = 1; // 0x1
-    field public static final int SCO_AUDIO_STATE_CONNECTING = 2; // 0x2
-    field public static final int SCO_AUDIO_STATE_DISCONNECTED = 0; // 0x0
-    field public static final int SCO_AUDIO_STATE_ERROR = -1; // 0xffffffff
+    field @Deprecated @FlaggedApi("android.media.audio.amsco_available_api") public static final int SCO_AUDIO_STATE_CONNECTED = 1; // 0x1
+    field @Deprecated @FlaggedApi("android.media.audio.amsco_available_api") public static final int SCO_AUDIO_STATE_CONNECTING = 2; // 0x2
+    field @Deprecated @FlaggedApi("android.media.audio.amsco_available_api") public static final int SCO_AUDIO_STATE_DISCONNECTED = 0; // 0x0
+    field @Deprecated @FlaggedApi("android.media.audio.amsco_available_api") public static final int SCO_AUDIO_STATE_ERROR = -1; // 0xffffffff
     field public static final int STREAM_ACCESSIBILITY = 10; // 0xa
     field public static final int STREAM_ALARM = 4; // 0x4
     field @FlaggedApi("android.media.audio.stream_assistant_public") public static final int STREAM_ASSISTANT = 11; // 0xb
