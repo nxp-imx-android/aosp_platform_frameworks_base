@@ -30,11 +30,10 @@ import android.annotation.Nullable;
 import android.annotation.PermissionManuallyEnforced;
 import android.annotation.SuppressLint;
 import android.app.contentsafety.ContentSafetyManager;
+import android.app.contentsafety.FeatureException;
 import android.app.contentsafety.ICheckContentCallback;
 import android.app.contentsafety.IContentSafetyManager;
 import android.app.contentsafety.IIsFeatureEnabledCallback;
-import android.app.contentsafety.IsFeatureEnabledCallback;
-import android.app.contentsafety.IsFeatureEnabledCallback.FeatureSettingsFailureStatus;
 import android.app.contentsafety.SupportedTypesResult;
 import android.content.ComponentName;
 import android.content.Context;
@@ -415,7 +414,7 @@ public class ContentSafetyManagerService extends SystemService {
         if (!mIsServiceEnabled) {
             Slog.w(TAG, "Service not available");
             callback.onFailure(
-                    IsFeatureEnabledCallback.FEATURE_SETTINGS_SERVICE_UNAVAILABLE);
+                    FeatureException.FEATURE_SETTINGS_SERVICE_UNAVAILABLE);
             return;
         }
 
@@ -567,7 +566,7 @@ public class ContentSafetyManagerService extends SystemService {
 
             @Override
             @PermissionManuallyEnforced
-            public void onFailure(@FeatureSettingsFailureStatus int failureStatus)
+            public void onFailure(int failureStatus)
                     throws RemoteException {
                 mContext.enforceCallingPermission(Manifest.permission.CHECK_CONTENT_SAFETY, TAG);
                 callback.onFailure(failureStatus);
