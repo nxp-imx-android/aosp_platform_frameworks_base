@@ -98,7 +98,9 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
                 cuj = Cuj.CUJ_NOTIFICATION_SHADE_EXPAND_COLLAPSE,
                 cujTag = TAG_EXPAND,
             ) {
-                dreamToSingleShadeTransition(singleShadeMarginHorizontalPx = singleShadeMarginHorizontalPx,)
+                dreamToSingleShadeTransition(
+                    singleShadeMarginHorizontalPx = singleShadeMarginHorizontalPx
+                )
             }
             from(
                 Scenes.Dream,
@@ -123,7 +125,9 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
                 cuj = Cuj.CUJ_NOTIFICATION_SHADE_EXPAND_COLLAPSE,
                 cujTag = TAG_EXPAND,
             ) {
-                goneToSingleShadeTransition(singleShadeMarginHorizontalPx = singleShadeMarginHorizontalPx,)
+                goneToSingleShadeTransition(
+                    singleShadeMarginHorizontalPx = singleShadeMarginHorizontalPx
+                )
             }
             from(
                 Scenes.Gone,
@@ -141,7 +145,10 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
                 cuj = Cuj.CUJ_NOTIFICATION_SHADE_EXPAND_COLLAPSE,
                 cujTag = TAG_EXPAND,
             ) {
-                goneToSingleShadeTransition(singleShadeMarginHorizontalPx = singleShadeMarginHorizontalPx, durationScale = 0.9)
+                goneToSingleShadeTransition(
+                    singleShadeMarginHorizontalPx = singleShadeMarginHorizontalPx,
+                    durationScale = 0.9,
+                )
             }
             from(
                 Scenes.Gone,
@@ -277,7 +284,11 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
                 cuj = Cuj.CUJ_NOTIFICATION_SHADE_EXPAND_COLLAPSE,
                 cujTag = TAG_COLLAPSE,
             ) {
-                reversed { goneToSingleShadeTransition(singleShadeMarginHorizontalPx = singleShadeMarginHorizontalPx,) }
+                reversed {
+                    goneToSingleShadeTransition(
+                        singleShadeMarginHorizontalPx = singleShadeMarginHorizontalPx
+                    )
+                }
             }
             from(
                 Scenes.Shade,
@@ -343,7 +354,9 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
                 cuj = Cuj.CUJ_NOTIFICATION_SHADE_EXPAND_COLLAPSE,
                 cujTag = TAG_EXPAND,
             ) {
-                communalToSingleShadeTransition(singleShadeMarginHorizontalPx = singleShadeMarginHorizontalPx)
+                communalToSingleShadeTransition(
+                    singleShadeMarginHorizontalPx = singleShadeMarginHorizontalPx
+                )
             }
             from(
                 Scenes.Communal,

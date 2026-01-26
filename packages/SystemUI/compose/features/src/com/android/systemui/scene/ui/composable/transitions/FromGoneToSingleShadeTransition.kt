@@ -18,6 +18,12 @@ package com.android.systemui.scene.ui.composable.transitions
 
 import com.android.compose.animation.scene.TransitionBuilder
 
-fun TransitionBuilder.goneToSingleShadeTransition(singleShadeMarginHorizontalPx: Float, durationScale: Double = 1.0) {
-    toSingleShadeTransition(singleShadeMarginHorizontalPx = singleShadeMarginHorizontalPx, durationScale = durationScale)
+fun TransitionBuilder.goneToSingleShadeTransition(
+    singleShadeMarginHorizontalPx: Float,
+    durationScale: Double = 1.0,
+) {
+    toSingleShadeTransition(
+        singleShadeMarginHorizontalPx = singleShadeMarginHorizontalPx,
+        durationScale = durationScale,
+    )
 }
