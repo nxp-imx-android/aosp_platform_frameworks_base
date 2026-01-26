@@ -238,7 +238,6 @@ import com.android.server.LocalServices;
 import com.android.server.SystemService;
 import com.android.server.SystemServiceManager;
 import com.android.server.health.HealthServiceWrapper;
-import com.android.server.net.Flags;
 import com.android.server.notification.NotificationManagerService;
 import com.android.server.pinner.PinnerService;
 import com.android.server.pinner.PinnerService.PinnedFileStats;
@@ -1725,7 +1724,8 @@ public class StatsPullAtomService extends SystemService {
         }
 
         // Use 0 for flags to avoid redundant polling, as forceUpdate() is already called above.
-        final android.app.usage.NetworkStats queryNonTaggedStats = Flags.useNetstatsPerQueryFlags()
+        final android.app.usage.NetworkStats queryNonTaggedStats =
+                android.net.platform.flags.Flags.useNetstatsPerQueryFlags()
                 ? getNetworkStatsManager().querySummary(template, startTime, endTime, 0)
                 : getNetworkStatsManager().querySummary(template, startTime, endTime);
 
@@ -1734,7 +1734,8 @@ public class StatsPullAtomService extends SystemService {
         queryNonTaggedStats.close();
         if (!includeTags) return nonTaggedStats;
 
-        final android.app.usage.NetworkStats queryTaggedStats = Flags.useNetstatsPerQueryFlags()
+        final android.app.usage.NetworkStats queryTaggedStats =
+                android.net.platform.flags.Flags.useNetstatsPerQueryFlags()
                 ? getNetworkStatsManager().queryTaggedSummary(template, startTime, endTime, 0)
                 : getNetworkStatsManager().queryTaggedSummary(template, startTime, endTime);
         final NetworkStats taggedStats =

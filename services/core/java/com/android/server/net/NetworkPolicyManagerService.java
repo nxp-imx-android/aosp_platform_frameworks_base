@@ -872,7 +872,7 @@ public class NetworkPolicyManagerService extends INetworkPolicyManager.Stub {
         Dependencies(Context context) {
             mContext = context;
             mNetworkStatsManager = mContext.getSystemService(NetworkStatsManager.class);
-            mUseNetstatsPerQueryFlags = Flags.useNetstatsPerQueryFlags();
+            mUseNetstatsPerQueryFlags = android.net.platform.flags.Flags.useNetstatsPerQueryFlags();
             // Query stats from NetworkStatsService will trigger a poll by default.
             // But since NPMS listens stats updated event, and will query stats
             // after the event. A polling -> updated -> query -> polling loop will be introduced
@@ -4337,8 +4337,8 @@ public class NetworkPolicyManagerService extends INetworkPolicyManager.Stub {
                         + mUseDifferentDelaysForBackgroundChain);
                 fout.println(Flags.FLAG_NEVER_APPLY_RULES_TO_CORE_UIDS + ": "
                         + mNeverApplyRulesToCoreUids);
-                fout.println(Flags.FLAG_USE_NETSTATS_PER_QUERY_FLAGS + ": "
-                        + mDeps.mUseNetstatsPerQueryFlags);
+                fout.println(android.net.platform.flags.Flags.FLAG_USE_NETSTATS_PER_QUERY_FLAGS
+                        + ": " + mDeps.mUseNetstatsPerQueryFlags);
 
                 fout.println();
                 fout.println("mRestrictBackgroundLowPowerMode: " + mRestrictBackgroundLowPowerMode);
