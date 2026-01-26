@@ -421,3 +421,10 @@ flag {
      description: "Perform authentication in the login app on desktop before switching to a user"
      bug: "448603243"
 }
+
+flag {
+    name: "hsu_app_management"
+    namespace: "multiuser"
+    description: "Enables managing apps installed on the headless system user (User 0) from the Settings app"
+    bug: "369617679"
+}

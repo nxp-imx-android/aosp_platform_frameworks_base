@@ -5514,6 +5514,14 @@
     -->
     <string name="private_profile_label_badge">Private <xliff:g id="label" example="Messenger">%1$s</xliff:g></string>
 
+    <!--
+        Label to show for apps running on the Headless System User (User 0).
+        The Headless System User is a background user that runs system services.
+        This label distinguishes apps running on User 0 from apps running on the current user.
+        [CHAR LIMIT=20]
+    -->
+    <string name="hsu_label_badge">System <xliff:g id="label" example="Settings">%1$s</xliff:g></string>
+
     <!-- DO NOT TRANSLATE -->
     <string name="time_placeholder">--</string>
 
