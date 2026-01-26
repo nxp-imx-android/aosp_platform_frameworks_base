@@ -447,39 +447,36 @@ public class GraphicsEnvironment {
         Log.v(TAG, "  angle_gl_driver_selection_values=" + optInValues);
 
         // Make sure we have valid settings, if any provided
-        if (optInPackages.size() != optInValues.size()) {
-            Log.v(TAG,
-                    "Global.Settings values are invalid: "
-                        + "number of packages: "
-                            + optInPackages.size() + ", "
-                        + "number of values: "
-                            + optInValues.size());
-            return ANGLE_GL_DRIVER_CHOICE_DEFAULT;
-        }
+        if (optInPackages.size() == optInValues.size()) {
+            // See if this application is listed in the per-application settings list
+            final int pkgIndex = getPackageIndex(packageName, optInPackages);
+            if (pkgIndex >= 0) {
+                mAngleOptInIndex = pkgIndex;
 
-        // See if this application is listed in the per-application settings list
-        final int pkgIndex = getPackageIndex(packageName, optInPackages);
-        if (pkgIndex >= 0) {
-            mAngleOptInIndex = pkgIndex;
-
-            // The application IS listed in the per-application settings list; and so use the
-            // setting--choosing the current system driver if the setting is "default"
-            String optInValue = optInValues.get(pkgIndex);
-            Log.v(
-                    TAG,
-                    "ANGLE Developer option for '"
-                            + packageName
-                            + "' "
-                            + "set to: '"
-                            + optInValue
-                            + "'");
-            if (optInValue.equals(ANGLE_GL_DRIVER_CHOICE_ANGLE)) {
-                return ANGLE_GL_DRIVER_CHOICE_ANGLE;
-            } else if (optInValue.equals(ANGLE_GL_DRIVER_CHOICE_NATIVE)) {
-                return ANGLE_GL_DRIVER_CHOICE_NATIVE;
+                // The application IS listed in the per-application settings list; and so use the
+                // setting--choosing the current system driver if the setting is "default"
+                String optInValue = optInValues.get(pkgIndex);
+                Log.v(
+                        TAG,
+                        "ANGLE Developer option for '"
+                                + packageName
+                                + "' "
+                                + "set to: '"
+                                + optInValue
+                                + "'");
+                if (optInValue.equals(ANGLE_GL_DRIVER_CHOICE_ANGLE)) {
+                    return ANGLE_GL_DRIVER_CHOICE_ANGLE;
+                } else if (optInValue.equals(ANGLE_GL_DRIVER_CHOICE_NATIVE)) {
+                    return ANGLE_GL_DRIVER_CHOICE_NATIVE;
+                }
             }
+            Log.v(TAG, packageName + " is not listed in per-application setting");
+        } else {
+            Log.e(TAG, "Global settings angle_gl_driver_selection_pkgs size does not equal to "
+                    + "size of angle_gl_driver_selection_values, which will be ignored: "
+                    + "number of packages: " + optInPackages.size() + ", "
+                    + "number of values: " + optInValues.size());
         }
-        Log.v(TAG, packageName + " is not listed in per-application setting");
 
         // Check the per-device allowlist shipped in the platform
         final String[] angleAllowListPackages =
