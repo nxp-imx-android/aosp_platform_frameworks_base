@@ -596,6 +596,7 @@ public final class AssociationDiskStore {
                 .setTimeApproved(timeApproved)
                 .setLastTimeConnected(lastTimeConnected)
                 .setSystemDataSyncFlags(systemDataSyncFlags)
+                .setTransportFlags(transportFlags)
                 .setDeviceIcon(deviceIcon)
                 .setDeviceId(deviceId)
                 .setPackagesToNotify(packagesToNotify)
