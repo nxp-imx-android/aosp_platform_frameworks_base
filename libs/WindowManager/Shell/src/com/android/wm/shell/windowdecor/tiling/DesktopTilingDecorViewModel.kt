@@ -297,10 +297,14 @@ class DesktopTilingDecorViewModel(
     fun getCurrentActiveDeskForDisplay(displayId: Int): Int? =
         desktopUserRepositories.current.getActiveDeskId(displayId)
 
+    // TODO(b/478792808): Remove suppression
+    @SuppressWarnings("ProtoLogNonConstantFormat")
     private fun logW(msg: String, vararg arguments: Any?) {
         ProtoLog.w(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
     }
 
+    // TODO(b/478792808): Remove suppression
+    @SuppressWarnings("ProtoLogNonConstantFormat")
     private fun logE(msg: String, vararg arguments: Any?) {
         ProtoLog.e(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
     }
