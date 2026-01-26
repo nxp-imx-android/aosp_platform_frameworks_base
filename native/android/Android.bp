@@ -110,6 +110,7 @@ cc_library_shared {
         "dynamic_instrumentation_manager_aidl-cpp",
         "libnativedisplay",
         "libfmq",
+        "libcom.android.tethering.connectivity_native",
     ],
 
     static_libs: [
@@ -153,7 +154,10 @@ cc_library_shared {
     },
     srcs: ["net.c"],
 
-    shared_libs: ["libnetd_client"],
+    shared_libs: [
+        "libnetd_client",
+        "libcom.android.tethering.connectivity_native",
+    ],
 
     include_dirs: ["bionic/libc/dns/include"],
 }
