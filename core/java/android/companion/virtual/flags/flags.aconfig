@@ -220,7 +220,7 @@ flag {
     name: "device_aware_touch_mode"
     namespace: "virtual_devices"
     description: "API for setting the touch mode for a virtual display"
-    bug: "434903682"
+    bug: "461824207"
     is_exported: true
 }
 
@@ -228,7 +228,7 @@ flag {
     name: "virtual_input_view_behavior"
     namespace: "virtual_devices"
     description: "API for setting the view behavior for virtual input devices"
-    bug: "434903682"
+    bug: "434658418"
 }
 
 flag {
