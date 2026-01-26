@@ -17,11 +17,12 @@
 package com.android.systemui.qs.composefragment.viewmodel
 
 import android.content.res.Resources
-import android.graphics.Rect
 import androidx.annotation.FloatRange
 import androidx.annotation.VisibleForTesting
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
@@ -159,7 +160,7 @@ constructor(
     // This can only be negative if undefined (in which case it will be -1f), else it will be
     // in [0, 1]. In some cases, it could be set back to -1f internally to indicate that it's
     // different to every value in [0, 1].
-    private var qsExpansion by mutableStateOf(-1f)
+    private var qsExpansion by mutableFloatStateOf(-1f)
 
     fun setQsExpansionValue(value: Float) {
         if (value < 0f) {
@@ -171,9 +172,9 @@ constructor(
 
     val isQsFullyCollapsed by derivedStateOf { qsExpansion <= 0f }
 
-    var panelExpansionFraction by mutableStateOf(0f)
+    var panelExpansionFraction by mutableFloatStateOf(0f)
 
-    var squishinessFraction by mutableStateOf(1f)
+    var squishinessFraction by mutableFloatStateOf(1f)
 
     val qqsHeaderHeight by
         hydrator.hydratedStateOf(
@@ -198,16 +199,16 @@ constructor(
 
     // Starting with a non-zero value makes it so that it has a non-zero height on first expansion
     // This is important for `QuickSettingsControllerImpl.mMinExpansionHeight` to detect a "change".
-    var qqsHeight by mutableStateOf(1)
+    var qqsHeight by mutableIntStateOf(1)
 
-    var qsScrollHeight by mutableStateOf(0)
+    var qsScrollHeight by mutableIntStateOf(0)
 
     val heightDiff: Int
         get() = qsScrollHeight - qqsHeight + qqsBottomPadding
 
     var isStackScrollerOverscrolling by mutableStateOf(false)
 
-    var proposedTranslation by mutableStateOf(0f)
+    var proposedTranslation by mutableFloatStateOf(0f)
 
     /**
      * Whether QS is enabled by policy. This is normally true, except when it's disabled by some
@@ -226,11 +227,11 @@ constructor(
 
     var isTransitioningToFullShade by mutableStateOf(false)
 
-    var lockscreenToShadeProgress by mutableStateOf(0f)
+    var lockscreenToShadeProgress by mutableFloatStateOf(0f)
 
     var isSmallScreen by mutableStateOf(false)
 
-    var heightOverride by mutableStateOf(-1)
+    var heightOverride by mutableIntStateOf(-1)
 
     var isPanelExpanded by mutableStateOf(false)
 
@@ -268,7 +269,7 @@ constructor(
      */
     var collapseExpandAccessibilityAction: Runnable? = null
 
-    var overScrollAmount by mutableStateOf(0)
+    var overScrollAmount by mutableIntStateOf(0)
 
     val viewTranslationY: Float
         get() =
@@ -388,12 +389,8 @@ constructor(
         }
     }
 
-    private var qsBounds by mutableStateOf(Rect())
-
     private val constrainedSquishinessFraction: Float
         get() = squishinessFraction.constrainSquishiness()
-
-    private var _headerAnimating by mutableStateOf(false)
 
     /**
      * Tracks the current [StatusBarState]. It will switch early if the upcoming state is
@@ -427,8 +424,6 @@ constructor(
 
     private val isKeyguardState: Boolean
         get() = statusBarState == StatusBarState.KEYGUARD
-
-    private var viewHeight by mutableStateOf(0)
 
     private val isBypassEnabled by
         hydrator.hydratedStateOf(
@@ -629,7 +624,7 @@ constructor(
     companion object {
         private const val EARLY_EXPANSION = 1.0E-6F
 
-        val QS_LISTENING_THRESHOLD = EARLY_EXPANSION * 2
+        const val QS_LISTENING_THRESHOLD = EARLY_EXPANSION * 2
     }
 }
 
