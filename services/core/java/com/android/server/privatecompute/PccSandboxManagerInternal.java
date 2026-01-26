@@ -259,7 +259,10 @@ public final class PccSandboxManagerInternal implements OnRoleHoldersChangedList
     @Nullable
     private String resolveProviderPackageName(String authority) {
         final PackageManager pm = mContext.getPackageManager();
-        ProviderInfo providerInfo = pm.resolveContentProvider(authority, 0);
+        int flags = PackageManager.MATCH_DIRECT_BOOT_AWARE
+                | PackageManager.MATCH_DIRECT_BOOT_UNAWARE
+                | PackageManager.MATCH_SYSTEM_ONLY;
+        ProviderInfo providerInfo = pm.resolveContentProvider(authority, flags);
         return providerInfo != null ? providerInfo.packageName : null;
     }
 
