@@ -127,6 +127,22 @@ public class EditorInfoTest {
                 cloneViaParcel(editorInfo).targetDevicePolicyUser);
     }
 
+    @Test
+    public void testCloneViaParcelWithNonAsciiStrings() {
+        final EditorInfo info = new EditorInfo();
+        info.privateImeOptions = "キー=値";
+        info.hintText = "検索";
+        info.label = "ユーザー名";
+        info.fieldName = "フィールド名";
+
+        final EditorInfo clone = cloneViaParcel(info);
+
+        assertEquals(info.privateImeOptions, clone.privateImeOptions);
+        assertEquals(info.hintText.toString(), clone.hintText.toString());
+        assertEquals(info.label.toString(), clone.label.toString());
+        assertEquals(info.fieldName.toString(), clone.fieldName.toString());
+    }
+
     private static EditorInfo cloneViaParcel(EditorInfo original) {
         Parcel parcel = null;
         try {
