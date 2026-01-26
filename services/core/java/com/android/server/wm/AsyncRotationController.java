@@ -339,7 +339,7 @@ class AsyncRotationController extends FadeAnimationController implements Consume
             }
             return false;
         }
-        if (mTransitionOp == OP_APP_SWITCH && token.mTransitionController.inTransition()) {
+        if (mTransitionOp == OP_APP_SWITCH && mDisplayContent.inTransition()) {
             final Operation op = mTargetWindowTokens.get(token);
             if (op != null && op.mActions == Operation.ACTION_FADE) {
                 // Defer showing to onTransitionFinished().
