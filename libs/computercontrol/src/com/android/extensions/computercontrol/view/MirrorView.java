@@ -19,9 +19,13 @@ package com.android.extensions.computercontrol.view;
 import android.annotation.MainThread;
 import android.companion.virtual.computercontrol.InteractiveMirror;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.os.HandlerThread;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.util.Size;
+import android.view.Display;
+import android.view.DisplayInfo;
 import android.view.Gravity;
 import android.view.SurfaceControl;
 import android.view.SurfaceHolder;
@@ -45,6 +49,11 @@ import java.util.Objects;
  */
 @MainThread
 public class MirrorView extends FrameLayout {
+
+    private static final String TAG = MirrorView.class.getSimpleName();
+
+    // MirrorView should only be used on secure and trusted displays.
+    private static final int REQUIRED_DISPLAY_FLAGS = Display.FLAG_SECURE | Display.FLAG_TRUSTED;
 
     private final HandlerThread mHandlerThread = new HandlerThread("mirrorHelper");
 
@@ -117,20 +126,23 @@ public class MirrorView extends FrameLayout {
      * auxiliary thread.
      */
     private void updateInteractiveMirrorOnAuxThread(
-            @Nullable ComputerControlSession computerControlSession, boolean isInteractive) {
+            @Nullable ComputerControlSession requestedSession, boolean isInteractive) {
+        final var session = isMirrorViewAllowedOnDisplay(getDisplay())
+                ? requestedSession : null;
+
         mHandlerThread.getThreadExecutor().execute(() -> {
             if (mInteractiveMirror != null) {
                 mInteractiveMirror.close();
             }
-            final var interactiveMirror = computerControlSession != null
-                    ? computerControlSession.createInteractiveMirror() : null;
+            final var interactiveMirror = session != null
+                    ? session.createInteractiveMirror() : null;
             mInteractiveMirror = interactiveMirror;
 
             final SurfaceControl mirrorSurface;
             final Size size;
-            if (computerControlSession != null && interactiveMirror != null) {
+            if (session != null && interactiveMirror != null) {
                 mirrorSurface = interactiveMirror.getMirrorSurfaceControl();
-                size = computerControlSession.getDisplaySize();
+                size = session.getDisplaySize();
                 if (isInteractive != InteractiveMirror.DEFAULT_INTERACTIVE) {
                     interactiveMirror.setInteractive(isInteractive);
                 }
@@ -141,6 +153,19 @@ public class MirrorView extends FrameLayout {
 
             post(() -> mMirrorSurface.setMirrorSurfaceControl(mirrorSurface, size));
         });
+    }
+
+    private static boolean isMirrorViewAllowedOnDisplay(@Nullable Display display) {
+        if (display == null) {
+            return false;
+        }
+        final DisplayInfo displayInfo = new DisplayInfo();
+        display.getDisplayInfo(displayInfo);
+        if ((displayInfo.flags & REQUIRED_DISPLAY_FLAGS) != REQUIRED_DISPLAY_FLAGS) {
+            Log.e(TAG, "MirrorView cannot be used on this display - displayInfo: " + displayInfo);
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -166,6 +191,14 @@ public class MirrorView extends FrameLayout {
      */
     public void setCornerRadius(int cornerRadius) {
         mMirrorSurface.setCornerRadius(cornerRadius);
+    }
+
+    @Override
+    public void onMovedToDisplay(int displayId, Configuration config) {
+        if (mIsMirrorSurfaceCreated) {
+            // Attempt to recreate the interactive mirror based on the new display.
+            updateInteractiveMirrorOnAuxThread(mComputerControlSession, mIsInteractive);
+        }
     }
 
     private void init() {
