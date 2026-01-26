@@ -1020,6 +1020,16 @@ flag {
 }
 
 flag {
+    name: "enable_trampoline_task_affinity_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Use task base package instead of activity package for trampoline task detection."
+    bug: "475747784"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_transient_gesture_in_system_ui"
     namespace: "lse_desktop_experience"
     description: "Enable transient gesture handling in system UI"

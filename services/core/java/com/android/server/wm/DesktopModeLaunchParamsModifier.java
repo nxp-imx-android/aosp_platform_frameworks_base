@@ -525,9 +525,17 @@ class DesktopModeLaunchParamsModifier extends DefaultLaunchParamsModifier {
             @NonNull ActivityRecord activityToCheck,
             @NonNull ActivityRecord launchingActivity,
             @NonNull Task launchingTask) {
-        if (!Objects.equals(activityToCheck.packageName, launchingActivity.packageName)) {
-            // Activities are not from the same package so do not inherit.
-            return false;
+        if (Flags.enableTrampolineTaskAffinityBugfix()) {
+            if (!Objects.equals(activityToCheck.getTask().getBasePackageName(),
+                    launchingTask.getBasePackageName())) {
+                // Tasks belong to different packages so do not inherit.
+                return false;
+            }
+        } else {
+            if (!Objects.equals(activityToCheck.packageName, launchingActivity.packageName)) {
+                // Activities are not from the same package so do not inherit.
+                return false;
+            }
         }
         if (activityToCheck.mUserId != launchingTask.mUserId) {
             // Activities belong to different users so do not inherit.
