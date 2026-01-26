@@ -1691,6 +1691,7 @@ public class VirtualDeviceManagerServiceTest {
                         new AttributionSource(
                                 ownerUid, VIRTUAL_DEVICE_OWNER_PACKAGE, "virtualdevice"),
                         virtualDeviceId,
+                        "DEVICE_PROFILE_TEST",
                         mInputController,
                         mCameraAccessController,
                         mPendingTrampolineCallback,

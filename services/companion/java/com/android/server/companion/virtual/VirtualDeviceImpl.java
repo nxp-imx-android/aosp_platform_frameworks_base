@@ -207,6 +207,8 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
     @NonNull
     private final AttributionSource mAttributionSource;
     private final int mDeviceId;
+    @NonNull
+    private final String mDeviceProfile;
     @Nullable
     private final String mPersistentDeviceId;
     @NonNull
@@ -466,6 +468,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
             @NonNull IBinder token,
             @NonNull AttributionSource attributionSource,
             int deviceId,
+            String deviceProfile,
             @Nullable CameraAccessController cameraAccessController,
             @NonNull PendingTrampolineCallback pendingTrampolineCallback,
             @NonNull IVirtualDeviceActivityListener activityListener,
@@ -479,6 +482,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
                 token,
                 attributionSource,
                 deviceId,
+                deviceProfile,
                 /* inputController= */ null,
                 cameraAccessController,
                 pendingTrampolineCallback,
@@ -505,6 +509,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
             @NonNull IBinder token,
             @NonNull AttributionSource attributionSource,
             int deviceId,
+            String deviceProfile,
             @Nullable InputController inputController,
             @Nullable CameraAccessController cameraAccessController,
             @NonNull PendingTrampolineCallback pendingTrampolineCallback,
@@ -530,6 +535,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
         mSoundEffectListener = soundEffectListener;
         mOwnerUid = attributionSource.getUid();
         mDeviceId = deviceId;
+        mDeviceProfile = deviceProfile;
         mAppToken = token;
         mParams = params;
         mDevicePolicies = params.getDevicePolicies();
@@ -583,7 +589,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
             throw e.rethrowFromSystemServer();
         }
         Slog.d(TAG, "Creating virtual device with deviceId: " + deviceId);
-        mVirtualDeviceLog.logCreated(deviceId, mOwnerUid);
+        mVirtualDeviceLog.logCreated(deviceId, mOwnerUid, mDeviceProfile);
 
         mPublicVirtualDeviceObject = new VirtualDevice(
                 this, getDeviceId(), getPersistentDeviceId(), mParams.getName(), getDisplayName());
@@ -899,7 +905,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
         }
 
         Slog.d(TAG, "Closing virtual device with deviceId: " + mDeviceId);
-        mVirtualDeviceLog.logClosed(mDeviceId, mOwnerUid);
+        mVirtualDeviceLog.logClosed(mDeviceId, mOwnerUid, mDeviceProfile);
 
         final long ident = Binder.clearCallingIdentity();
         try {
@@ -1371,6 +1377,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
         fout.println("  VirtualDevice: ");
         fout.println(indent + "mDeviceId: " + mDeviceId);
         fout.println(indent + "mAssociationId: " + getAssociationId());
+        fout.println(indent + "mDeviceProfile: " + mDeviceProfile);
         fout.println(indent + "mOwnerPackageName: " + mOwnerPackageName);
         fout.println(indent + "mParams: ");
         mParams.dump(fout, indent + indent);

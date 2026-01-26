@@ -45,19 +45,21 @@ final class VirtualDeviceLog {
         mContext = context;
     }
 
-    void logCreated(int deviceId, int ownerUid) {
+    void logCreated(int deviceId, int ownerUid, String deviceProfile) {
         final long token = Binder.clearCallingIdentity();
         try {
-            addEntry(new LogEntry(TYPE_CREATED, deviceId, System.currentTimeMillis(), ownerUid));
+            addEntry(new LogEntry(TYPE_CREATED, deviceId, deviceProfile, System.currentTimeMillis(),
+                    ownerUid));
         } finally {
             Binder.restoreCallingIdentity(token);
         }
     }
 
-    void logClosed(int deviceId, int ownerUid) {
+    void logClosed(int deviceId, int ownerUid, String deviceProfile) {
         final long token = Binder.clearCallingIdentity();
         try {
-            addEntry(new LogEntry(TYPE_CLOSED, deviceId, System.currentTimeMillis(), ownerUid));
+            addEntry(new LogEntry(TYPE_CLOSED, deviceId, deviceProfile, System.currentTimeMillis(),
+                    ownerUid));
         } finally {
             Binder.restoreCallingIdentity(token);
         }
@@ -88,12 +90,14 @@ final class VirtualDeviceLog {
     static class LogEntry {
         private final int mType;
         private final int mDeviceId;
+        private final String mDeviceProfile;
         private final long mTimestamp;
         private final int mOwnerUid;
 
-        LogEntry(int type, int deviceId, long timestamp, int ownerUid) {
+        LogEntry(int type, int deviceId, String deviceProfile, long timestamp, int ownerUid) {
             this.mType = type;
             this.mDeviceId = deviceId;
+            this.mDeviceProfile = deviceProfile;
             this.mTimestamp = timestamp;
             this.mOwnerUid = ownerUid;
         }
@@ -110,6 +114,8 @@ final class VirtualDeviceLog {
             sb.append(" (");
             sb.append(packageNameCache.getPackageName(mOwnerUid));
             sb.append(")");
+            sb.append(" Profile: ");
+            sb.append(mDeviceProfile);
             pw.println(sb);
         }
     }
