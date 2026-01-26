@@ -267,3 +267,10 @@ flag {
     description: "Enables HID APIs"
     bug: "390701065"
 }
+
+flag {
+    name: "enable_poem_input_customization"
+    namespace: "input"
+    description: "Adds an API for peripheral OEMs to build customization apps"
+    bug: "433405394"
+}
