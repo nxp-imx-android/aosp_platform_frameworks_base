@@ -414,7 +414,11 @@ fun ContentScope.NestedScrollingNotificationPanel(
         ) {
             PriorityNestedScrollConnection(
                 orientation = Orientation.Vertical,
-                canStartPreScroll = { _, _, _ -> false },
+                // Enable preScroll for nested connection while expanding notification
+                // so that the scrim does not consume the scroll event.
+                canStartPreScroll = { offsetAvailable, _, _ ->
+                    offsetAvailable < 0 && viewModel.isCurrentGestureExpandingNotification
+                },
                 canStartPostScroll = { _, _, _ -> viewModel.isCurrentGestureExpandingNotification },
                 onStart = { _ ->
                     object : ScrollController {
