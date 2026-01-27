@@ -4,7 +4,6 @@ import android.os.Bundle;
 import com.android.internal.infra.AndroidFuture;
 import android.app.contentsafety.ICheckContentCallback;
 import android.app.contentsafety.IIsFeatureEnabledCallback;
-import android.app.contentsafety.SupportedTypesResult;
 
 /**
 * Interface for ContentSafetyManager for managing ContentSafetyService.
@@ -28,7 +27,5 @@ interface IContentSafetyManager {
     @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.CHECK_CONTENT_SAFETY)")
     String getRemoteSettingsServicePackageName() = 5;
 
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.CHECK_CONTENT_SAFETY)")
-     SupportedTypesResult getSupportedInputTypes(in int featureType) = 6;
 
 }
