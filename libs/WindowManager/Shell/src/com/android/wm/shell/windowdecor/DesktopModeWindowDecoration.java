@@ -158,7 +158,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     private static final String TAG = "DesktopModeWindowDecoration";
 
     @VisibleForTesting
-    static final long CLOSE_MAXIMIZE_MENU_DELAY_MS = 150L;
+    static final long CLOSE_LAYOUT_MENU_DELAY_MS = 150L;
 
     private final @ShellMainThread Handler mHandler;
     private final @ShellMainThread ShellExecutor mMainExecutor;
@@ -219,12 +219,12 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
 
     // Hover state for the layout menu and button. The menu will remain open as long as either of
     // these is true. See {@link #onMaximizeHoverStateChanged()}.
-    private boolean mIsAppHeaderMaximizeButtonHovered = false;
+    private boolean mIsHeaderMaximizeButtonHovered = false;
     private boolean mIsLayoutMenuHovered = false;
     // Used to schedule the closing of the layout menu when neither of the button or menu are
     // being hovered. There's a small delay after stopping the hover, to allow a quick reentry
     // to cancel the close.
-    private final Runnable mCloseMaximizeWindowRunnable = this::closeLayoutMenu;
+    private final Runnable mCloseLayoutMenuRunnable = this::closeLayoutMenu;
     private final MultiInstanceHelper mMultiInstanceHelper;
     private final WindowDecorCaptionRepository mWindowDecorCaptionRepository;
     private final DesktopUserRepositories mDesktopUserRepositories;
@@ -491,11 +491,11 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             }
         }
 
-        // If we get a relayout call while hovering over maximize button in the app header but the
-        // task has lost focus, explicitly cancel the hover (since we don't get a HOVER_EXIT signal
-        // in this case).
-        if (!taskInfo.isFocused && mIsAppHeaderMaximizeButtonHovered) {
-            setAppHeaderMaximizeButtonHovered(false);
+        // If we get a relayout call while hovering over maximize button in the app header but
+        // the task has lost focus, explicitly cancel the hover (since we don't get a HOVER_EXIT
+        // signal in this case).
+        if (!taskInfo.isFocused && mIsHeaderMaximizeButtonHovered) {
+            setHeaderMaximizeButtonHovered(false);
             onLayoutButtonHoverExit();
         }
 
@@ -1289,7 +1289,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         return Resources.ID_NULL;
     }
 
-    private Point calculateMaximizeMenuPosition(int menuWidth, int menuHeight) {
+    private Point calculateLayoutMenuPosition(int menuWidth, int menuHeight) {
         final Point position = new Point();
         final Resources resources = mContext.getResources();
         final DisplayLayout displayLayout =
@@ -1504,7 +1504,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                 DesktopUiEventEnum.DESKTOP_WINDOW_MAXIMIZE_BUTTON_REVEAL_MENU);
         mLayoutMenu = mLayoutMenuFactory.create(mSyncQueue, mRootTaskDisplayAreaOrganizer,
                 mDisplayController, mWindowDecorationActions, mTaskInfo, mDecorWindowContext,
-                (width, height) -> calculateMaximizeMenuPosition(width, height),
+                (width, height) -> calculateLayoutMenuPosition(width, height),
                 mSurfaceControlTransactionSupplier, mDesktopModeUiEventLogger);
 
         mLayoutMenu.show(
@@ -1520,32 +1520,32 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                     return null;
                 },
                 /* onOutsideTouchListener= */ mCloseLayoutMenuFunction,
-                /* onMaximizeMenuClickedListener= */ mCloseLayoutMenuFunction
+                /* onLayoutMenuClickedListener= */ mCloseLayoutMenuFunction
         );
     }
 
-    /** Set whether the app header's maximize button is hovered. */
+    /** Set whether the header's maximize menu button is hovered. */
     @Override
-    public void setAppHeaderMaximizeButtonHovered(boolean hovered) {
-        mIsAppHeaderMaximizeButtonHovered = hovered;
+    public void setHeaderMaximizeButtonHovered(boolean hovered) {
+        mIsHeaderMaximizeButtonHovered = hovered;
         onLayoutButtonHoverStateChanged();
     }
 
     /**
-     * Called when either one of the maximize button in the app header or the layout menu has
+     * Called when either one of the maximize menu button in the header or the layout menu has
      * changed its hover state.
      */
     @Override
     public void onLayoutButtonHoverStateChanged() {
-        if (!mIsLayoutMenuHovered && !mIsAppHeaderMaximizeButtonHovered) {
+        if (!mIsLayoutMenuHovered && !mIsHeaderMaximizeButtonHovered) {
             // Neither is hovered, close the menu.
             if (isLayoutMenuActive()) {
-                mHandler.postDelayed(mCloseMaximizeWindowRunnable, CLOSE_MAXIMIZE_MENU_DELAY_MS);
+                mHandler.postDelayed(mCloseLayoutMenuRunnable, CLOSE_LAYOUT_MENU_DELAY_MS);
             }
             return;
         }
         // At least one of the two is hovered, cancel the close if needed.
-        mHandler.removeCallbacks(mCloseMaximizeWindowRunnable);
+        mHandler.removeCallbacks(mCloseLayoutMenuRunnable);
     }
 
     /**

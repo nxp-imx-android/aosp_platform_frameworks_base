@@ -37,5 +37,5 @@ interface LayoutMenuController {
     fun closeLayoutMenu()
 
     /** Updates on whether the maximize button is being hovered over. */
-    fun setAppHeaderMaximizeButtonHovered(hovered: Boolean)
+    fun setHeaderMaximizeButtonHovered(hovered: Boolean)
 }

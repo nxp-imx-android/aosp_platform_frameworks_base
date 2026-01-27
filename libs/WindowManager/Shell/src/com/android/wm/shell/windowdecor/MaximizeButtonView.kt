@@ -35,7 +35,7 @@ import androidx.core.animation.doOnEnd
 import androidx.core.animation.doOnStart
 import com.android.wm.shell.R
 
-private const val OPEN_MAXIMIZE_MENU_DELAY_ON_HOVER_MS = 350
+private const val OPEN_LAYOUT_MENU_DELAY_ON_HOVER_MS = 350
 private const val MAX_DRAWABLE_ALPHA = 255
 
 class MaximizeButtonView(context: Context, attrs: AttributeSet) : FrameLayout(context, attrs) {
@@ -69,7 +69,7 @@ class MaximizeButtonView(context: Context, attrs: AttributeSet) : FrameLayout(co
                 addUpdateListener { maximizeWindow.background.alpha = animatedValue as Int }
             },
             ObjectAnimator.ofInt(progressBar, "progress", 100)
-                .setDuration(OPEN_MAXIMIZE_MENU_DELAY_ON_HOVER_MS.toLong())
+                .setDuration(OPEN_LAYOUT_MENU_DELAY_ON_HOVER_MS.toLong())
                 .apply {
                     doOnStart {
                         progressBar.setProgress(0, false)

@@ -656,7 +656,7 @@ class AppHeaderViewHolder(
             if (enableMaximizeLongClick) {
                 onLongClickListener
             } else {
-                // Disable long-click to open maximize menu when in immersive.
+                // Disable long-click to open layout menu when in immersive.
                 null
             }
     }
