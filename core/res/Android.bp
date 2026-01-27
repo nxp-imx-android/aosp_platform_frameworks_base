@@ -157,6 +157,7 @@ android_app {
 
     flags_packages: [
         "android.aiseal.flags-aconfig",
+        "backup_flags",
         "android.systemserver.flags-aconfig",
         "android.app.appfunctions.flags-aconfig",
         "android.app.contentrestriction.flags-aconfig",

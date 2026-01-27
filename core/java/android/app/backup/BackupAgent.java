@@ -21,6 +21,7 @@ import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.SystemApi;
 import android.app.IBackupAgent;
 import android.app.QueuedWork;
 import android.app.backup.BackupAnnotations.BackupDestination;
@@ -1214,6 +1215,96 @@ public abstract class BackupAgent extends ContextWrapper {
         }
     }
 
+    /**
+     * Callback for a delayed restore for key-value backup app, when a requested condition has been
+     * met.
+     *
+     * <p>The application is being restored due to the request condition in {@link
+     * DelayedRestoreRequest} being met. This request was put in by the application previously via
+     * {@link BackupManager#scheduleDelayedRestore(DelayedRestoreRequest)}. The input backup data is
+     * same as the one used for restore via {@link #onRestore(BackupDataInput, int,
+     * ParcelFileDescriptor)}. The application should apply the contents of the backup as a result
+     * of the request condition being met. The backup data is provided through the {@code input}
+     * parameter.
+     *
+     * <p>Once the restore is finished, the application should write a representation of the final
+     * state to the {@code newState} file descriptor.
+     *
+     * <p>The application is responsible for deciding which parts of the data in {@code input}
+     * should be restored based on the request condition that has been met.
+     *
+     * <p class="note">Unlike {@link #onRestore(BackupDataInput, int, ParcelFileDescriptor)}, if
+     * this method throws an exception, the operating system will <b>not</b> automatically clear the
+     * application's data.
+     *
+     * <p>The default implementation of this method calls {@link #onRestore(BackupDataInput, int,
+     * ParcelFileDescriptor)} with the provided {@code input}, {@code appVersionCode}, and {@code
+     * newState}.
+     *
+     * <p class="note">Application implementing backup agent by extending {@link
+     * android.app.backup.BackupAgentHelper} can handle the delayed restore differently through
+     * {@link android.app.backup.BackupHelper} or its subclasses by overriding {@link
+     * android.app.backup.BackupHelper#delayedRestoreEntity(BackupDataInputStream,
+     * DelayedRestoreRequest)} or the appropriate delayed restore method in predefined {@link
+     * android.app.backup.BackupHelper} subclasses.
+     *
+     * <p>{@link #onRestoreFinished()} is not invoked by the Android Backup Manager after {@link
+     * #onDelayedRestore(DelayedRestoreRequest, BackupDataInput, long, ParcelFileDescriptor)}.
+     *
+     * @param request The {@link DelayedRestoreRequest} request requested by this application, whose
+     *     condition has been met.
+     * @param data The {@link BackupDataInput} containing the backup data to restore. The
+     *     application should consume entities from this stream.
+     * @param appVersionCode The value of the <a
+     *     href="{@docRoot}guide/topics/manifest/manifest-element.html#vcode">{@code
+     *     android:versionCode}</a> manifest attribute, from the application that backed up this
+     *     particular data set. This makes it possible for an application's agent to distinguish
+     *     among any possible older data versions when asked to perform the restore operation.
+     * @param newState An open, read/write ParcelFileDescriptor pointing to an empty file. The
+     *     application should record the final backup state here after restoring its data from the
+     *     <code>data</code> stream.
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_DELAYED_RESTORE_API)
+    @SystemApi
+    public void onDelayedRestore(
+            @NonNull DelayedRestoreRequest request,
+            @NonNull BackupDataInput data,
+            long appVersionCode,
+            @NonNull ParcelFileDescriptor newState)
+            throws IOException {
+        onRestore(data, appVersionCode, newState);
+    }
+
+    /**
+     * Callback for a delayed restore for Auto backup app, when a requested condition has been met.
+     *
+     * <p>This method is called when a condition specified by a {@link DelayedRestoreRequest}
+     * (passed during a previous restore operation) has been met. It indicates that the
+     * application can now proceed with any remaining restore steps that were waiting for this
+     * condition.
+     *
+     * <p>Unlike key/value delayed restores, this callback does not provide a data stream. This is
+     * because in a full backup scenario, all file data was already delivered and potentially stored
+     * by the application (or the system) during the initial restore pass. The application is
+     * responsible for managing its own data: it must store any necessary intermediate state or
+     * files during the initial restore and is responsible for cleaning them up after this delayed
+     * restore phase completes.
+     *
+     * <p>{@link #onRestoreFinished()} is not invoked by the Android Backup Manager after {@link
+     * #onDelayedFullRestore(DelayedRestoreRequest)}.
+     *
+     * @param request The {@link DelayedRestoreRequest} request requested by this application, whose
+     *     condition has been met.
+     *
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_DELAYED_RESTORE_API)
+    @SystemApi
+    public void onDelayedFullRestore(@NonNull DelayedRestoreRequest request) {
+        // To be implemented by subclasses supporting delayed restore
+    }
+
     // ----- Core implementation -----
 
     /** @hide */
@@ -1634,6 +1725,63 @@ public abstract class BackupAgent extends ContextWrapper {
                 throw e;
             } finally {
                 Binder.restoreCallingIdentity(ident);
+            }
+        }
+
+        @Override
+        public void doDelayedRestore(
+                DelayedRestoreRequest request,
+                ParcelFileDescriptor newState,
+                IBackupManager callbackBinder,
+                long appVersionCode,
+                int token) {
+            final long ident = Binder.clearCallingIdentity();
+            try {
+                // TODO: Add fetching of the delayed restore cache here.
+                BackupAgent.this.onDelayedRestore(request, null, appVersionCode, newState);
+            } catch (Exception e) {
+                Log.d(
+                        TAG,
+                        "onDelayedRestore (" + BackupAgent.this.getClass().getName() + ") threw",
+                        e);
+                throw new RuntimeException(e);
+            } finally {
+                Binder.restoreCallingIdentity(ident);
+
+                try {
+                    callbackBinder.opCompleteForUser(getBackupUserId(), token, 0);
+                } catch (RemoteException e) {
+                    // we'll time out anyway, so we're safe
+                }
+
+                if (Binder.getCallingPid() != Process.myPid()) {
+                    IoUtils.closeQuietly(newState);
+                }
+            }
+        }
+
+        @Override
+        public void doDelayedFullRestore(
+                DelayedRestoreRequest request,
+                IBackupManager callbackBinder,
+                int token) {
+            final long ident = Binder.clearCallingIdentity();
+            try {
+                BackupAgent.this.onDelayedFullRestore(request);
+            } catch (Exception e) {
+                Log.d(
+                        TAG,
+                        "onDelayedFullRestore (" + BackupAgent.this.getClass().getName() + ") threw"
+                        , e);
+                throw new RuntimeException(e);
+            } finally {
+                Binder.restoreCallingIdentity(ident);
+
+                try {
+                    callbackBinder.opCompleteForUser(getBackupUserId(), token, 0);
+                } catch (RemoteException e) {
+                    // we'll time out anyway, so we're safe
+                }
             }
         }
     }
