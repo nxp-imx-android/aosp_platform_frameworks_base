@@ -340,7 +340,9 @@ class BubbleOverflowAdapter extends RecyclerView.Adapter<BubbleOverflowAdapter.V
 
         vh.iconView.setRenderedBubble(b);
         vh.iconView.removeDotSuppressionFlag(BadgedImageView.SuppressionFlag.FLYOUT_VISIBLE);
-        vh.iconView.setOnClickListener(view -> {
+        vh.iconView.setClickable(false);
+        vh.iconView.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+        vh.overflowItem.setOnClickListener(view -> {
             mBubbles.remove(b);
             notifyDataSetChanged();
             mPromoteBubbleFromOverflow.accept(b);
@@ -350,10 +352,10 @@ class BubbleOverflowAdapter extends RecyclerView.Adapter<BubbleOverflowAdapter.V
         if (titleStr == null) {
             titleStr = mContext.getResources().getString(R.string.notification_bubble_title);
         }
-        vh.iconView.setContentDescription(mContext.getResources().getString(
+        vh.overflowItem.setContentDescription(mContext.getResources().getString(
                 R.string.bubble_content_description_single, titleStr, b.getAppName()));
 
-        vh.iconView.setAccessibilityDelegate(
+        vh.overflowItem.setAccessibilityDelegate(
                 new View.AccessibilityDelegate() {
                     @Override
                     public void onInitializeAccessibilityNodeInfo(View host,
@@ -381,11 +383,13 @@ class BubbleOverflowAdapter extends RecyclerView.Adapter<BubbleOverflowAdapter.V
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
+        public LinearLayout overflowItem;
         public BadgedImageView iconView;
         public TextView textView;
 
         ViewHolder(LinearLayout v, BubblePositioner positioner) {
             super(v);
+            overflowItem = v;
             iconView = v.findViewById(R.id.bubble_view);
             iconView.initialize(positioner);
             textView = v.findViewById(R.id.bubble_view_name);
