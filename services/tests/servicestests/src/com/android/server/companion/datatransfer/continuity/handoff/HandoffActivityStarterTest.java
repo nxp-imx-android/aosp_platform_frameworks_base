@@ -228,6 +228,22 @@ public class HandoffActivityStarterTest {
         verifyActivityStartAttempted(attempts.get(1), List.of(handoffActivityData.get(1)));
     }
 
+    @Test
+    public void start_webFallbackOnly_usesFallbackURI() throws Exception {
+        Uri fallbackUri = Uri.parse("https://www.example.com");
+        HandoffActivityData handoffActivityData = HandoffActivityData.createWebHandoff(fallbackUri);
+        // Create a test HandoffActivityData with no component name, but a fallback URI.
+        HandoffActivityDataMessage handoffActivityDataMessage =
+                new HandoffActivityDataMessage(handoffActivityData, List.of());
+        boolean result =
+                HandoffActivityStarter.start(mMockContext, List.of(handoffActivityDataMessage));
+
+        // Verify only one launch attempt was made, and it is for the fallback URI.
+        assertThat(result).isTrue();
+        List<Intent[]> attempts = getActivityStartAttempts(1);
+        verifyActivityStartAttempted(attempts.get(0), fallbackUri);
+    }
+
     private static void verifyActivityStartAttempted(Intent[] actual, Uri expectedUri) {
         assertThat(actual).hasLength(1);
         assertThat(actual[0].getAction()).isEqualTo(Intent.ACTION_VIEW);
