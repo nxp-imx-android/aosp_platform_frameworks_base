@@ -6348,6 +6348,11 @@ public final class DisplayManagerService extends SystemService {
     }
 
     @VisibleForTesting
+    SyncRoot getSyncRoot() {
+        return mSyncRoot;
+    }
+
+    @VisibleForTesting
     final class LocalService extends DisplayManagerInternal {
 
         @Override
