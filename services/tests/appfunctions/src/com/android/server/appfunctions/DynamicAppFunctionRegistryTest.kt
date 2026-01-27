@@ -16,6 +16,7 @@
 package com.android.server.appfunctions
 
 import android.app.appfunctions.AppFunctionException
+import android.app.appfunctions.AppFunctionName
 import android.app.appfunctions.ExecuteAppFunctionRequest
 import android.app.appfunctions.ExecuteAppFunctionResponse
 import android.app.appfunctions.IAppFunctionExecutor
@@ -24,7 +25,6 @@ import android.app.appfunctions.SafeOneTimeExecuteAppFunctionCallback
 import android.os.IBinder
 import android.os.ICancellationSignal
 import android.os.RemoteException
-import android.os.UserHandle
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
 import java.util.concurrent.CountDownLatch
@@ -51,12 +51,14 @@ import org.mockito.kotlin.whenever
 @RunWith(AndroidJUnit4::class)
 class DynamicAppFunctionRegistryTest {
     private lateinit var registry: DynamicAppFunctionRegistry
-    private lateinit var mockMetadataObserver: AppFunctionMetadataObserver
+    private lateinit var mMockOnBinderDeathCleanupCallback:
+        DynamicAppFunctionRegistry.OnBinderDeathCleanupCallback
 
     @Before
     fun setUp() {
-        mockMetadataObserver = mock<AppFunctionMetadataObserver>()
-        registry = DynamicAppFunctionRegistry(mockMetadataObserver, mock<UserHandle>())
+        mMockOnBinderDeathCleanupCallback =
+            mock<DynamicAppFunctionRegistry.OnBinderDeathCleanupCallback>()
+        registry = DynamicAppFunctionRegistry(mMockOnBinderDeathCleanupCallback)
     }
 
     @Test
@@ -209,8 +211,9 @@ class DynamicAppFunctionRegistryTest {
         deathRecipientCaptor.lastValue.binderDied(binder)
         assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION)).isFalse()
 
-        verify(mockMetadataObserver, times(1))
-            .onEnabledStateChanged(any(), eq(TEST_PACKAGE), eq(TEST_FUNCTION))
+        verify(mMockOnBinderDeathCleanupCallback, times(1))
+            .run(eq(setOf(AppFunctionName(TEST_PACKAGE, TEST_FUNCTION))))
+        verifyNoMoreInteractions(mMockOnBinderDeathCleanupCallback)
     }
 
     @Test
@@ -225,11 +228,16 @@ class DynamicAppFunctionRegistryTest {
         assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION)).isFalse()
         assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION2)).isFalse()
 
-        verify(mockMetadataObserver)
-            .onEnabledStateChanged(any(), eq(TEST_PACKAGE), eq(TEST_FUNCTION))
-        verify(mockMetadataObserver)
-            .onEnabledStateChanged(any(), eq(TEST_PACKAGE), eq(TEST_FUNCTION2))
-        verifyNoMoreInteractions(mockMetadataObserver)
+        verify(mMockOnBinderDeathCleanupCallback, times(1))
+            .run(
+                eq(
+                    setOf(
+                        AppFunctionName(TEST_PACKAGE, TEST_FUNCTION),
+                        AppFunctionName(TEST_PACKAGE, TEST_FUNCTION2),
+                    )
+                )
+            )
+        verifyNoMoreInteractions(mMockOnBinderDeathCleanupCallback)
     }
 
     @Test
@@ -244,7 +252,7 @@ class DynamicAppFunctionRegistryTest {
         deathRecipientCaptor.lastValue.binderDied(binder)
         assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION)).isFalse()
 
-        verifyNoInteractions(mockMetadataObserver)
+        verifyNoInteractions(mMockOnBinderDeathCleanupCallback)
     }
 
     @Test
@@ -282,11 +290,16 @@ class DynamicAppFunctionRegistryTest {
         assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION)).isFalse()
         assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION2)).isFalse()
 
-        verify(mockMetadataObserver)
-            .onEnabledStateChanged(any(), eq(TEST_PACKAGE), eq(TEST_FUNCTION))
-        verify(mockMetadataObserver)
-            .onEnabledStateChanged(any(), eq(TEST_PACKAGE), eq(TEST_FUNCTION2))
-        verifyNoMoreInteractions(mockMetadataObserver)
+        verify(mMockOnBinderDeathCleanupCallback, times(1))
+            .run(
+                eq(
+                    setOf(
+                        AppFunctionName(TEST_PACKAGE, TEST_FUNCTION),
+                        AppFunctionName(TEST_PACKAGE, TEST_FUNCTION2),
+                    )
+                )
+            )
+        verifyNoMoreInteractions(mMockOnBinderDeathCleanupCallback)
     }
 
     @Test
