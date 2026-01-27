@@ -56,3 +56,9 @@ java_aconfig_library {
     name: "usb_flags_lib",
     aconfig_declarations: "usb_flags",
 }
+
+rust_aconfig_library {
+    name: "libusb_flags_lib_rust",
+    crate_name: "usb_flags_lib_rust",
+    aconfig_declarations: "usb_flags",
+}
