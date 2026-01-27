@@ -180,3 +180,14 @@ flag {
       purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "verify_supervision_role_holders_before_destroying_escrow_token"
+    is_exported: false
+    namespace: "supervision"
+    description: "Verifies supervision role holders before destroying escrow token"
+    bug: "444713915"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
