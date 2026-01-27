@@ -102,6 +102,8 @@ public class BatteryStatsImplTest {
     private PowerProfile mPowerProfile;
     @Mock
     private KernelWakelockReader mKernelWakelockReader;
+    @Mock
+    private PackageManager mPackageManager;
     private KernelWakelockStats mKernelWakelockStats = new KernelWakelockStats();
 
     private static final int NUM_CPU_FREQS = 5;
@@ -120,6 +122,7 @@ public class BatteryStatsImplTest {
     private Handler mHandler;
     private PowerStatsStore mPowerStatsStore;
     private BatteryUsageStatsProvider mBatteryUsageStatsProvider;
+    private PowerStatsUidResolver mPowerStatsUidResolver = new PowerStatsUidResolver();
 
     @Before
     public void setUp() throws IOException {
@@ -133,7 +136,11 @@ public class BatteryStatsImplTest {
         HandlerThread bgThread = new HandlerThread("bg thread");
         bgThread.start();
         mHandler = new Handler(bgThread.getLooper());
-        mBatteryStatsImpl = new MockBatteryStatsImpl(mMockClock, null, mHandler, mPowerProfile)
+        mPowerStatsUidResolver.setPackageManager(mPackageManager);
+        mBatteryStatsImpl = new MockBatteryStatsImpl(MockBatteryStatsImpl.DEFAULT_CONFIG,
+                mMockClock, new MonotonicClock(/*monotonicTime=*/ 0, mMockClock),
+                /*historyDirectory=*/ null, mHandler, mPowerProfile,
+                mPowerStatsUidResolver)
                 .setCpuScalingPolicies(mCpuScalingPolicies)
                 .setKernelCpuUidFreqTimeReader(mKernelUidCpuFreqTimeReader)
                 .setKernelSingleUidTimeReader(mKernelSingleUidTimeReader)
@@ -442,11 +449,7 @@ public class BatteryStatsImplTest {
         mMockClock.realtime = 1000;
         mMockClock.uptime = 1000;
 
-        Context testCtx = mock(Context.class);
-        PackageManager pkgMgr = mock(PackageManager.class);
-        when(pkgMgr.getAppUidForPrivateComputeCoreUid(eq(30032))).thenReturn(10032);
-        when(testCtx.getPackageManager()).thenReturn(pkgMgr);
-        mBatteryStatsImpl.setTestContext(testCtx);
+        when(mPackageManager.getAppUidForPrivateComputeCoreUid(eq(30032))).thenReturn(10032);
 
         final int[] testUids = {10032, /* pccUid=*/ 30032};
         final int[] parentUids = {10032, 10032};
@@ -456,7 +459,7 @@ public class BatteryStatsImplTest {
         };
 
         for (int i = 0; i < testUids.length; ++i) {
-            if (mBatteryStatsImpl.mapUid(testUids[i]) != testUids[i]) {
+            if (mBatteryStatsImpl.mPowerStatsUidResolver.getOwnerUid(testUids[i]) != testUids[i]) {
                 continue;
             }
             BatteryStatsImpl.Uid uid = mBatteryStatsImpl.getUidStatsLocked(testUids[i]);
@@ -480,7 +483,8 @@ public class BatteryStatsImplTest {
                 {29874567, 1987489887, 87647, 98765, 17465},
         };
         for (int i = 0; i < testUids.length; ++i) {
-            mockKernelSingleUidTimeReader(mBatteryStatsImpl.mapUid(testUids[i]),
+            mockKernelSingleUidTimeReader(mBatteryStatsImpl
+                            .mPowerStatsUidResolver.getOwnerUid(testUids[i]),
                     mockCpuTimes[i]);
         }
 
@@ -498,7 +502,7 @@ public class BatteryStatsImplTest {
         final long[] timeInFreqs = new long[NUM_CPU_FREQS];
 
         for (int i = 0; i < testUids.length; ++i) {
-            final int parentUid = mBatteryStatsImpl.mapUid(testUids[i]);
+            final int parentUid = mBatteryStatsImpl.mPowerStatsUidResolver.getOwnerUid(testUids[i]);
             assertEquals(parentUids[i], parentUid);
             final BatteryStats.Uid u = mBatteryStatsImpl.getUidStats().get(parentUid);
             for (int procState = 0; procState < NUM_PROCESS_STATE; ++procState) {
@@ -778,11 +782,7 @@ public class BatteryStatsImplTest {
     public void testGetWakeLockStats_pccUidAcquiresWakeLock_statsAttributedToParentApp() {
         mBatteryStatsImpl.updateTimeBasesLocked(true, Display.STATE_OFF, 0, 0);
 
-        Context testCtx = mock(Context.class);
-        PackageManager pkgMgr = mock(PackageManager.class);
-        when(pkgMgr.getAppUidForPrivateComputeCoreUid(eq(30100))).thenReturn(10100);
-        when(testCtx.getPackageManager()).thenReturn(pkgMgr);
-        mBatteryStatsImpl.setTestContext(testCtx);
+        when(mPackageManager.getAppUidForPrivateComputeCoreUid(eq(30100))).thenReturn(10100);
 
         // First wakelock, acquired once, not currently held
         mMockClock.realtime = 1000;
@@ -837,7 +837,7 @@ public class BatteryStatsImplTest {
         mBatteryStatsImpl.noteStopWakeLocked(
                 10400, 104, null, "wakeLock5", null, BatteryStats.WAKE_TYPE_PARTIAL);
 
-        when(pkgMgr.getAppUidForPrivateComputeCoreUid(eq(30400))).thenReturn(10400);
+        when(mPackageManager.getAppUidForPrivateComputeCoreUid(eq(30400))).thenReturn(10400);
         // PCC UID Stats roll up in parent UID - 10400
         mMockClock.realtime = 11200;
         mBatteryStatsImpl.noteStartWakeLocked(
@@ -1029,11 +1029,7 @@ public class BatteryStatsImplTest {
         mBatteryStatsImpl.setOnBatteryInternal(true);
         mBatteryStatsImpl.updateTimeBasesLocked(true, Display.STATE_OFF, 0, 0);
 
-        Context testCtx = mock(Context.class);
-        PackageManager pkgMgr = mock(PackageManager.class);
-        when(pkgMgr.getAppUidForPrivateComputeCoreUid(eq(30042))).thenReturn(10042);
-        when(testCtx.getPackageManager()).thenReturn(pkgMgr);
-        mBatteryStatsImpl.setTestContext(testCtx);
+        when(mPackageManager.getAppUidForPrivateComputeCoreUid(eq(30042))).thenReturn(10042);
 
         final WorkSource ws = new WorkSource(10042);
         mBatteryStatsImpl.noteBluetoothScanStartedFromSourceLocked(ws, false, 1000, 1000);
@@ -1153,12 +1149,8 @@ public class BatteryStatsImplTest {
         when(mPowerProfile.getAveragePower(
                 PowerProfile.POWER_BLUETOOTH_CONTROLLER_OPERATING_VOLTAGE)).thenReturn(3.0);
 
-        Context testCtx = mock(Context.class);
-        PackageManager pkgMgr = mock(PackageManager.class);
-        when(pkgMgr.getAppUidForPrivateComputeCoreUid(eq(30042))).thenReturn(10042);
-        when(pkgMgr.getAppUidForPrivateComputeCoreUid(eq(30043))).thenReturn(10043);
-        when(testCtx.getPackageManager()).thenReturn(pkgMgr);
-        mBatteryStatsImpl.setTestContext(testCtx);
+        when(mPackageManager.getAppUidForPrivateComputeCoreUid(eq(30042))).thenReturn(10042);
+        when(mPackageManager.getAppUidForPrivateComputeCoreUid(eq(30043))).thenReturn(10043);
 
         mBatteryStatsImpl.setOnBatteryInternal(true);
         mBatteryStatsImpl.updateTimeBasesLocked(true, Display.STATE_OFF, 0, 0);
