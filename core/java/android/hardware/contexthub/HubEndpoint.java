@@ -530,11 +530,46 @@ public class HubEndpoint {
                     mSinks.put(context.id.id, sink);
 
                     Log.d(TAG, "onDataFlowHostSinkRegistered: sink = " + sink);
-                    mDataFlowCallbackExecutor.execute(
-                            () -> {
-                                mDataFlowCallback.onReceivedDataFlowSink(
-                                        sink, source, getActiveSession(sessionId), msg);
-                            });
+
+                    if (Flags.fmcqShareDataFlowMessageFix()) {
+                        HubEndpointSession activeSession = null;
+                        if (sessionId != IContextHubEndpoint.SESSION_ID_INVALID) {
+                            activeSession = getActiveSession(sessionId);
+                            if (activeSession == null) {
+                                Log.w(
+                                        TAG,
+                                        "onDataFlowHostSinkRegistered: session not active, id="
+                                                + sessionId);
+                                return;
+                            }
+                            if (msg == null) {
+                                Log.w(
+                                        TAG,
+                                        "onDataFlowHostSinkRegistered: message is null for"
+                                                + " session"
+                                                + " id="
+                                                + sessionId);
+                                return;
+                            }
+                        } else {
+                            msg = null;
+                        }
+
+                        final HubEndpointSession finalActiveSession = activeSession;
+                        final HubMessage finalMsg = msg;
+                        mDataFlowCallbackExecutor.execute(
+                                () -> {
+                                    mDataFlowCallback.onReceivedDataFlowSink(
+                                            sink, source, finalActiveSession, finalMsg);
+                                });
+                    } else {
+                        final HubMessage finalMsg = msg;
+                        mDataFlowCallbackExecutor.execute(
+                                () -> {
+                                    mDataFlowCallback.onReceivedDataFlowSink(
+                                            sink, source, getActiveSession(sessionId), finalMsg);
+                                });
+                    }
                 }
 
                 @Override
@@ -585,12 +620,6 @@ public class HubEndpoint {
                                                 sink, DataFlowCallback.SINK_EVENT_STOPPED);
                                     });
                         }
-                    }
-                }
-
-                private HubEndpointSession getActiveSession(int sessionId) {
-                    synchronized (mLock) {
-                        return mActiveSessions.get(sessionId);
                     }
                 }
 
@@ -1209,6 +1238,14 @@ public class HubEndpoint {
         } else if (offloadSinkValues.length != NATIVE_ADD_OFFLOAD_SINK_ARRAY_SIZE) {
             throw new IllegalStateException(
                     "Incorrect offload sink values length: " + offloadSinkValues.length);
+        } else if (Flags.fmcqShareDataFlowMessageFix() && ((session == null) != (msg == null))) {
+            throw new IllegalArgumentException(
+                    "Session and message must either be both null or both non-null.");
+        } else if (Flags.fmcqShareDataFlowMessageFix()
+                && session != null
+                && getActiveSession(session.getId()) == null) {
+            throw new IllegalArgumentException(
+                    "Session with ID: " + session.getId() + " is not active.");
         }
 
         DataFlowSinkContext context = new DataFlowSinkContext();
@@ -1431,5 +1468,11 @@ public class HubEndpoint {
     /** package */
     Executor getDataFlowCallbackExecutor() {
         return mDataFlowCallbackExecutor;
+    }
+
+    private HubEndpointSession getActiveSession(int sessionId) {
+        synchronized (mLock) {
+            return mActiveSessions.get(sessionId);
+        }
     }
 }
