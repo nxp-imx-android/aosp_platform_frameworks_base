@@ -21,9 +21,6 @@ import static android.integration.multiuser.InstrumentationHelper.getInstrumenta
 import static android.integration.multiuser.InstrumentationHelper.runShellCommand;
 import static android.os.UserManager.USER_TYPE_SYSTEM_HEADLESS;
 
-import static org.junit.Assume.assumeFalse;
-import static org.junit.Assume.assumeTrue;
-
 import android.annotation.Nullable;
 import android.content.ComponentName;
 import android.content.Context;
@@ -53,8 +50,13 @@ public final class HsuActivitiesAllowlistTest {
 
     private static final String TAG = HsuActivitiesAllowlistTest.class.getSimpleName();
 
-    // Copied from GenericAllowlist (which is package protected)
+    // Copied from GenericAllowlist
+    private static final int ALLOWLIST_MODE_INVALID = -1;
+    private static final int ALLOWLIST_MODE_DISABLED = 0;
     private static final int ALLOWLIST_MODE_ENABLED = 1;
+    private static final int ALLOWLIST_MODE_LOG_ONLY = 2;
+
+    private static final ComponentName[] NULL_ALLOWLIST = null;
 
     @Rule(order = 0)
     public final RequiresRootRule requiresRoot = new RequiresRootRule(
@@ -67,35 +69,50 @@ public final class HsuActivitiesAllowlistTest {
 
     private final UserManager mUm = mContext.getSystemService(UserManager.class);
 
+    private int mPreviousAllowlistMode = ALLOWLIST_MODE_INVALID;
+
     @Before
+    public void saveAllowlistInfo() throws Exception {
+        mPreviousAllowlistMode = getAllowlistMode();
+        Log.d(TAG, "saveAllowlistInfo(): saving previous allowlist mode to "
+                + mPreviousAllowlistMode);
+        setTemporaryAllowlist(NULL_ALLOWLIST);
+    }
+
     @After
-    public void resetAllowlist() throws Exception {
-        setTemporaryAllowlist((ComponentName[]) null);
+    public void restoreAllowlistInfo() throws Exception {
+        Log.d(TAG, "restoreAllowlistInfo(): restoring allowlist mode to " + mPreviousAllowlistMode);
+        setAllowlistMode(mPreviousAllowlistMode);
+        setTemporaryAllowlist(NULL_ALLOWLIST);
     }
 
     @Test
-    public void testActivityLaunchIsAllowed_whenAllowlistIsDisabledByDefault() throws Exception {
-        assumeAllowlistDisabled();
+    public void testActivityLaunchIsAllowed_whenAllowlistModeIsDisabled() throws Exception {
+        setAllowlistMode(ALLOWLIST_MODE_DISABLED);
 
         assertCanLaunchActivity(Activity1.class);
+        assertCanLaunchActivity(Activity2.class);
     }
 
     @Test
-    public void testActivityLaunchIsDisallowed_whenAllowlistIsEnabledByDefault() throws Exception {
-        assumeAllowlistEnabled();
-
-        assertCannotLaunchActivity(Activity1.class);
-    }
-
-    @Test
-    public void testActivityLaunchIsAllowed_whenAllowlistIsExplicitlyDisabled() throws Exception {
-        disableAllowlist();
+    public void testActivityLaunchIsAllowed_whenAllowlistModeIsLogOnly() throws Exception {
+        setAllowlistMode(ALLOWLIST_MODE_LOG_ONLY);
 
         assertCanLaunchActivity(Activity1.class);
+        assertCanLaunchActivity(Activity2.class);
     }
 
     @Test
-    public void testActivityLaunch_whenAllowlistIsExplicitlySet() throws Exception {
+    public void testActivityLaunchIsAllowed_whenTemporaryAllowlistIsEmpty() throws Exception {
+        setAllowlistMode(ALLOWLIST_MODE_ENABLED);
+        setTemporaryAllowlist();
+
+        assertCanLaunchActivity(Activity1.class);
+        assertCanLaunchActivity(Activity2.class);
+    }
+
+    @Test
+    public void testActivityLaunchDepends_whenAllowlistIsExplicitlySet() throws Exception {
         setAllowlistMode(ALLOWLIST_MODE_ENABLED);
         setTemporaryAllowlist(new ComponentName(mContext, Activity1.class));
 
@@ -119,25 +136,8 @@ public final class HsuActivitiesAllowlistTest {
         }
     }
 
-    private void disableAllowlist() throws IOException {
-        setTemporaryAllowlist();
-    }
-
-    private void assumeAllowlistEnabled() throws IOException {
-        assumeTrue("allowlist is enabled", isAllowlistEnabled());
-    }
-
-    private void assumeAllowlistDisabled() throws IOException {
-        assumeFalse("allowlist is disabled", isAllowlistEnabled());
-    }
-
-    private boolean isAllowlistEnabled() throws IOException {
-        String dump = runShellCommand("dumpsys user --activities-allowlist");
-
-        boolean result = !dump.contains("mode: 0 (DISABLED)");
-        Log.d(TAG, "isAllowlistEnabled(): returning " + result);
-
-        return result;
+    private int getAllowlistMode() throws IOException {
+        return Integer.parseInt(runHamCmd("get-mode"));
     }
 
     private void setAllowlistMode(int mode) throws IOException {
@@ -145,8 +145,8 @@ public final class HsuActivitiesAllowlistTest {
     }
 
     // Run "Hsu Allowlist Manager" cmd...
-    private static void runHamCmd(String cmd) throws IOException {
-        runShellCommand("cmd user activities-allowlist android.os.usertype.system.HEADLESS %s",
-                cmd);
+    private static String runHamCmd(String cmd) throws IOException {
+        return runShellCommand(
+                "cmd user activities-allowlist android.os.usertype.system.HEADLESS %s", cmd);
     }
 }
