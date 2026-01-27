@@ -17,6 +17,7 @@
 package com.android.server.wm;
 
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_PACKAGE_UPDATE;
+import static com.android.server.wm.RootWindowContainer.MATCH_ATTACHED_TASK_ONLY;
 
 import android.annotation.Nullable;
 import android.os.PersistableBundle;
@@ -171,7 +172,8 @@ class PackageUpdateManager extends PackageMonitor implements RecentTasks.Callbac
             ProtoLog.d(WM_DEBUG_PACKAGE_UPDATE, "Package update finished for pkg= %s", packageName);
             ArrayList<Task> updatedTasks = new ArrayList<>();
             for (int i = 0; i < updatingTasks.size(); i++) {
-                Task task = mService.mRootWindowContainer.anyTaskForId(updatingTasks.get(i));
+                Task task = mService.mRootWindowContainer.anyTaskForId(updatingTasks.get(i),
+                        MATCH_ATTACHED_TASK_ONLY);
                 if (task != null) {
                     ProtoLog.d(WM_DEBUG_PACKAGE_UPDATE, "Notifying for task: %d", task.mTaskId);
                     updatedTasks.add(task);
