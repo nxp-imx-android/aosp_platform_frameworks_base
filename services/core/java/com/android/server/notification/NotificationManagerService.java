@@ -724,12 +724,14 @@ public class NotificationManagerService extends SystemService {
                 @Override
                 public void onPackageLockedStateChanged(@NonNull String packageName, int userId,
                         boolean locked) {
+                    Trace.beginSection(TAG + ".onPackageLockedStateChanged");
                     synchronized (mNotificationLock) {
                         if (locked == isPackageLockedByAppLockLocked(packageName, userId)) {
                             // Shouldn't happen, but this means it didn't change.
                             Slog.w(TAG,
                                     "onPackageLockedStateChanged called when the lock state "
                                             + "didn't change");
+                            Trace.endSection();
                             return;
                         }
                         // Cache the new value
@@ -739,6 +741,7 @@ public class NotificationManagerService extends SystemService {
                                 findAppNotificationByListLocked(mNotificationList, packageName,
                                         userId));
                     }
+                    Trace.endSection();
                 }
             };
 
@@ -3595,6 +3598,7 @@ public class NotificationManagerService extends SystemService {
         } else if (phase == SystemService.PHASE_ACTIVITY_MANAGER_READY) {
             mSnoozeHelper.scheduleRepostsForPersistedNotifications(System.currentTimeMillis());
             if (android.security.Flags.appLockCore()) {
+                Trace.beginSection(TAG + ".onBootPhase_AMReady_appLock");
                 // App Lock services gets registered by the ActivityManagerService, and then needs
                 // to initialize the map of App Lock locked states. Wait until it's ready.
                 mAppLockInternal = LocalServices.getService(AppLockInternal.class);
@@ -3611,6 +3615,7 @@ public class NotificationManagerService extends SystemService {
                     }
                 }
                 mAppLockInternal.registerPackageLockedStateListener(mPackageLockedStateListener);
+                Trace.endSection();
             }
         } else if (phase == SystemService.PHASE_DEVICE_SPECIFIC_SERVICES_READY) {
             mPreferencesHelper.updateFixedImportance(mUm.getUsers());
@@ -14861,19 +14866,24 @@ public class NotificationManagerService extends SystemService {
          * @return A new, redacted {@link StatusBarNotification}.
          */
         StatusBarNotification redactSbnForAppLock(StatusBarNotification sbn) {
-            if (!android.security.Flags.appLockCore()) {
-                Slog.wtf(TAG, "redactSbnForAppLock called while flag is off");
-                return sbn;
+            Trace.beginSection(TAG + ".redactSbnForAppLock");
+            try {
+                if (!android.security.Flags.appLockCore()) {
+                    Slog.wtf(TAG, "redactSbnForAppLock called while flag is off");
+                    return sbn;
+                }
+
+                String redactedText = sbn.getNotification().isStyle(MessagingStyle.class)
+                        ? mContext.getString(R.string.app_locked_notification_message)
+                        : mContext.getString(R.string.app_locked_new_notification);
+                Notification.Builder redactedNotifBuilder = createBaseRedactedNotification(sbn,
+                        redactedText, /* isAppLocked= */ true);
+
+                Notification redacted = redactedNotifBuilder.build();
+                return sbn.cloneShallow(redacted);
+            } finally {
+                Trace.endSection();
             }
-
-            String redactedText = sbn.getNotification().isStyle(MessagingStyle.class)
-                    ? mContext.getString(R.string.app_locked_notification_message)
-                    : mContext.getString(R.string.app_locked_new_notification);
-            Notification.Builder redactedNotifBuilder = createBaseRedactedNotification(sbn,
-                    redactedText, /* isAppLocked= */ true);
-
-            Notification redacted = redactedNotifBuilder.build();
-            return sbn.cloneShallow(redacted);
         }
 
         /**
