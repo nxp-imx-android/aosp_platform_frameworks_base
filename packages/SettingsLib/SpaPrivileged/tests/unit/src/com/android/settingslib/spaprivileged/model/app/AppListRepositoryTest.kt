@@ -44,6 +44,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.After
+import org.junit.Assume
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -396,6 +397,30 @@ class AppListRepositoryTest {
         val showSystemPredicate = getShowSystemPredicate(showSystem = false)
 
         assertThat(showSystemPredicate(IN_LAUNCHER_APP)).isTrue()
+    }
+
+    @Test
+    @EnableFlags(android.multiuser.Flags.FLAG_HSU_APP_MANAGEMENT)
+    fun showSystemPredicate_hsum_systemUser_notShowSystem() = runTest {
+        Assume.assumeTrue("Feature supported only on Headless System User Mode devices",
+                UserManager.isHeadlessSystemUserMode())
+        val app = SYSTEM_APP
+
+        val showSystemPredicate = getShowSystemPredicate(showSystem = false)
+
+        assertThat(showSystemPredicate(app)).isFalse()
+    }
+
+    @Test
+    @EnableFlags(android.multiuser.Flags.FLAG_HSU_APP_MANAGEMENT)
+    fun showSystemPredicate_hsum_systemUser_showSystem() = runTest {
+        Assume.assumeTrue("Feature supported only on Headless System User Mode devices",
+                UserManager.isHeadlessSystemUserMode())
+        val app = SYSTEM_APP
+
+        val showSystemPredicate = getShowSystemPredicate(showSystem = true)
+
+        assertThat(showSystemPredicate(app)).isTrue()
     }
 
     @Test

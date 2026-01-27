@@ -24,6 +24,8 @@ import android.content.pm.PackageManager
 import android.content.pm.PackageManager.ApplicationInfoFlags
 import android.content.pm.ResolveInfo
 import android.os.Build
+import android.os.UserHandle
+import android.os.UserManager
 import android.util.Log
 import com.android.internal.R
 import com.android.settingslib.spaprivileged.framework.common.userManager
@@ -333,6 +335,10 @@ class AppListRepositoryImpl(context: Context) : AppListRepository {
         showSystem: Boolean,
     ): (app: ApplicationInfo) -> Boolean {
         if (showSystem) return { true }
+        // In HSUM, hide system user apps by default unless "Show System" is enabled.
+        if (android.multiuser.Flags.hsuAppManagement() && UserManager.isHeadlessSystemUserMode() && userId == UserHandle.USER_SYSTEM) {
+            return { false }
+        }
         val homeOrLauncherPackages = loadHomeOrLauncherPackages(userId)
         return { app -> !isSystemApp(app, homeOrLauncherPackages) }
     }
