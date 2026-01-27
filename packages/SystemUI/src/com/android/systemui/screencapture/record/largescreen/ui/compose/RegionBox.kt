@@ -65,15 +65,15 @@ import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.role
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Density
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.android.systemui.common.shared.model.Icon
+import com.android.systemui.res.R
 import com.android.systemui.screencapture.common.ui.compose.PrimaryButton
 import com.android.systemui.screencapture.common.ui.compose.ScreenCaptureColors
 import kotlin.math.floor
@@ -762,8 +762,6 @@ fun RegionBox(
 
                     val (topLeftHandle, topRightHandle, bottomLeftHandle, bottomRightHandle) =
                         subcompose("resizeHandles") {
-                                val handleSize = 20.dp
-
                                 fun handleResize(zone: ResizeZone, offset: Offset) {
                                     state.adjustZone(zone, offset)
                                     notifyRegionSelected()
@@ -772,7 +770,11 @@ fun RegionBox(
                                 // Top left
                                 ResizeHandle(
                                     rotation = 0f,
-                                    size = handleSize,
+                                    contentDescription =
+                                        stringResource(
+                                            R.string
+                                                .screen_capture_region_box_top_left_handle_description
+                                        ),
                                     onResize = {
                                         handleResize(zone = ResizeZone.Corner.TopLeft, offset = it)
                                     },
@@ -780,7 +782,11 @@ fun RegionBox(
                                 // Top right
                                 ResizeHandle(
                                     rotation = 90f,
-                                    size = handleSize,
+                                    contentDescription =
+                                        stringResource(
+                                            R.string
+                                                .screen_capture_region_box_top_right_handle_description
+                                        ),
                                     onResize = {
                                         handleResize(zone = ResizeZone.Corner.TopRight, offset = it)
                                     },
@@ -788,7 +794,11 @@ fun RegionBox(
                                 // Bottom left
                                 ResizeHandle(
                                     rotation = 270f,
-                                    size = handleSize,
+                                    contentDescription =
+                                        stringResource(
+                                            R.string
+                                                .screen_capture_region_box_bottom_left_handle_description
+                                        ),
                                     onResize = {
                                         handleResize(
                                             zone = ResizeZone.Corner.BottomLeft,
@@ -799,7 +809,11 @@ fun RegionBox(
                                 // Bottom right
                                 ResizeHandle(
                                     rotation = 180f,
-                                    size = handleSize,
+                                    contentDescription =
+                                        stringResource(
+                                            R.string
+                                                .screen_capture_region_box_bottom_right_handle_description
+                                        ),
                                     onResize = {
                                         handleResize(
                                             zone = ResizeZone.Corner.BottomRight,
@@ -831,18 +845,39 @@ fun RegionBox(
 
                         // Show resize handles only when not interacting with the box.
                         if (state.dragMode == DragMode.NONE) {
-                            topLeftHandle.place(0, 0)
-                            topRightHandle.place(
-                                selectionBoxPlaceable.width - topRightHandle.width,
-                                0,
+                            val handleSizePx = with(density) { 48.dp.toPx() }
+                            val handleCenterOffsetPx = handleSizePx / 2
+                            val borderCenterPx = with(density) { 1.dp.toPx() }
+
+                            // Handles should be ordered in clockwise direction which specifies the
+                            // tab focus direction.
+                            topLeftHandle.place(
+                                (-handleCenterOffsetPx + borderCenterPx).roundToInt(),
+                                (-handleCenterOffsetPx + borderCenterPx).roundToInt(),
                             )
-                            bottomLeftHandle.place(
-                                0,
-                                selectionBoxPlaceable.height - bottomLeftHandle.height,
+                            topRightHandle.place(
+                                (selectionBoxPlaceable.width -
+                                        handleCenterOffsetPx -
+                                        borderCenterPx)
+                                    .roundToInt(),
+                                (-handleCenterOffsetPx + borderCenterPx).roundToInt(),
                             )
                             bottomRightHandle.place(
-                                selectionBoxPlaceable.width - bottomRightHandle.width,
-                                selectionBoxPlaceable.height - bottomRightHandle.height,
+                                (selectionBoxPlaceable.width -
+                                        handleCenterOffsetPx -
+                                        borderCenterPx)
+                                    .roundToInt(),
+                                (selectionBoxPlaceable.height -
+                                        handleCenterOffsetPx -
+                                        borderCenterPx)
+                                    .roundToInt(),
+                            )
+                            bottomLeftHandle.place(
+                                (-handleCenterOffsetPx + borderCenterPx).roundToInt(),
+                                (selectionBoxPlaceable.height -
+                                        handleCenterOffsetPx -
+                                        borderCenterPx)
+                                    .roundToInt(),
                             )
                         }
 
@@ -857,23 +892,24 @@ fun RegionBox(
 @Composable
 private fun ResizeHandle(
     rotation: Float,
-    size: Dp,
+    contentDescription: String,
     onResize: (Offset) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val handleSize = 48.dp
     val handleColor = MaterialTheme.colorScheme.primary
+    val focusColor = MaterialTheme.colorScheme.secondary
     val density = LocalDensity.current
     val stepSize = 10.dp
     val stepSizePx = remember(density) { with(density) { stepSize.toPx() } }
 
-    // TODO(b/430364645) Update focused state UI
     val interactionSource = remember { MutableInteractionSource() }
     val isFocused by interactionSource.collectIsFocusedAsState()
 
     Canvas(
         modifier =
             modifier
-                .size(size)
+                .size(handleSize)
                 .graphicsLayer { rotationZ = rotation }
                 .focusable(interactionSource = interactionSource)
                 .onKeyEvent { event ->
@@ -893,25 +929,45 @@ private fun ResizeHandle(
                     }
                     false
                 }
-                .semantics {
-                    // TODO(b/430364645): Figure out what the correct role should be.
-                    this.role = Role.Button
-                }
+                .semantics { this.contentDescription = contentDescription }
     ) {
-        val strokeWidth = 6.dp.toPx()
-        val canvasSize = this.size.width
-        val path =
-            Path().apply {
-                moveTo(canvasSize - strokeWidth / 2, strokeWidth / 2)
-                lineTo(strokeWidth / 2, strokeWidth / 2)
-                lineTo(strokeWidth / 2, canvasSize - strokeWidth / 2)
-            }
+        val centerX = this.size.width / 2
+        val centerY = this.size.height / 2
 
-        drawPath(
-            path = path,
-            color = handleColor,
-            style = Stroke(width = strokeWidth, join = StrokeJoin.Round, cap = StrokeCap.Round),
-        )
+        if (isFocused) {
+            // Draw a solid circle handle when focused.
+            val circleHandleRadius = 8.dp.toPx()
+            drawCircle(
+                color = handleColor,
+                radius = circleHandleRadius,
+                center = Offset(centerX, centerY),
+            )
+
+            // Draw the focus ring around the circle handle.
+            val focusRingRadius = 14.dp.toPx()
+            val focusRingStrokeWidth = 3.dp.toPx()
+            drawCircle(
+                color = focusColor,
+                radius = focusRingRadius,
+                center = Offset(centerX, centerY),
+                style = Stroke(width = focusRingStrokeWidth),
+            )
+        } else {
+            val strokeWidth = 6.dp.toPx()
+            val handleLength = 20.dp.toPx()
+            val path =
+                Path().apply {
+                    moveTo(centerX + handleLength, centerY)
+                    lineTo(centerX, centerY)
+                    lineTo(centerX, centerY + handleLength)
+                }
+
+            drawPath(
+                path = path,
+                color = handleColor,
+                style = Stroke(width = strokeWidth, join = StrokeJoin.Round, cap = StrokeCap.Round),
+            )
+        }
     }
 }
 

@@ -436,6 +436,14 @@
     <string name="screen_capture_toolbar_screenshot_button">Screenshot</string>
     <!-- Button text in the toolbar for choosing the screen recording type. [CHAR LIMIT=35] -->
     <string name="screen_capture_toolbar_record_button">Record</string>
+    <!-- Content description for the top-left handle of the region box. [CHAR_LIMIT=NONE] -->
+    <string name="screen_capture_region_box_top_left_handle_description">Top-left handle - Use arrow keys to resize</string>
+    <!-- Content description for the top-right handle of the region box. [CHAR_LIMIT=NONE] -->
+    <string name="screen_capture_region_box_top_right_handle_description">Top-right handle - Use arrow keys to resize</string>
+    <!-- Content description for the bottom-right handle of the region box. [CHAR_LIMIT=NONE] -->
+    <string name="screen_capture_region_box_bottom_right_handle_description">Bottom-right handle - Use arrow keys to resize</string>
+    <!-- Content description for the bottom-left handle of the region box. [CHAR_LIMIT=NONE] -->
+    <string name="screen_capture_region_box_bottom_left_handle_description">Bottom-left handle - Use arrow keys to resize</string>
     <!-- Button text for screen sharing [CHAR LIMIT=35] -->
     <string name="screen_share_toolbar_share_button">Share</string>
     <!-- Text for app screen sharing thumbnail when no app is selected. [CHAR LIMIT=35] -->
