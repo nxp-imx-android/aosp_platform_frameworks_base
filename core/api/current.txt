@@ -22670,6 +22670,7 @@ package android.media {
 
   public final class AudioFormat implements android.os.Parcelable {
     method public int describeContents();
+    method @FlaggedApi("android.media.audio.ambisonics_support_api") public int getChannelAcnMask();
     method public int getChannelCount();
     method public int getChannelIndexMask();
     method public int getChannelMask();
@@ -22677,6 +22678,37 @@ package android.media {
     method @IntRange(from=1) public int getFrameSizeInBytes();
     method public int getSampleRate();
     method public void writeToParcel(android.os.Parcel, int);
+    field @FlaggedApi("android.media.audio.ambisonics_support_api") public static final int CHANNEL_ACN_HORIZONTAL = 512; // 0x200
+    field @FlaggedApi("android.media.audio.ambisonics_support_api") public static final int CHANNEL_ACN_ORDER_0 = 1; // 0x1
+    field @FlaggedApi("android.media.audio.ambisonics_support_api") public static final int CHANNEL_ACN_ORDER_0_HRZ = 513; // 0x201
+    field @FlaggedApi("android.media.audio.ambisonics_support_api") public static final int CHANNEL_ACN_ORDER_1 = 4; // 0x4
+    field @FlaggedApi("android.media.audio.ambisonics_support_api") public static final int CHANNEL_ACN_ORDER_10 = 121; // 0x79
+    field @FlaggedApi("android.media.audio.ambisonics_support_api") public static final int CHANNEL_ACN_ORDER_10_HRZ = 533; // 0x215
+    field @FlaggedApi("android.media.audio.ambisonics_support_api") public static final int CHANNEL_ACN_ORDER_11 = 144; // 0x90
+    field @FlaggedApi("android.media.audio.ambisonics_support_api") public static final int CHANNEL_ACN_ORDER_11_HRZ = 535; // 0x217
+    field @FlaggedApi("android.media.audio.ambisonics_support_api") public static final int CHANNEL_ACN_ORDER_12 = 169; // 0xa9
+    field @FlaggedApi("android.media.audio.ambisonics_support_api") public static final int CHANNEL_ACN_ORDER_12_HRZ = 537; // 0x219
+    field @FlaggedApi("android.media.audio.ambisonics_support_api") public static final int CHANNEL_ACN_ORDER_13 = 196; // 0xc4
+    field @FlaggedApi("android.media.audio.ambisonics_support_api") public static final int CHANNEL_ACN_ORDER_13_HRZ = 539; // 0x21b
+    field @FlaggedApi("android.media.audio.ambisonics_support_api") public static final int CHANNEL_ACN_ORDER_14 = 225; // 0xe1
+    field @FlaggedApi("android.media.audio.ambisonics_support_api") public static final int CHANNEL_ACN_ORDER_14_HRZ = 541; // 0x21d
+    field @FlaggedApi("android.media.audio.ambisonics_support_api") public static final int CHANNEL_ACN_ORDER_1_HRZ = 515; // 0x203
+    field @FlaggedApi("android.media.audio.ambisonics_support_api") public static final int CHANNEL_ACN_ORDER_2 = 9; // 0x9
+    field @FlaggedApi("android.media.audio.ambisonics_support_api") public static final int CHANNEL_ACN_ORDER_2_HRZ = 517; // 0x205
+    field @FlaggedApi("android.media.audio.ambisonics_support_api") public static final int CHANNEL_ACN_ORDER_3 = 16; // 0x10
+    field @FlaggedApi("android.media.audio.ambisonics_support_api") public static final int CHANNEL_ACN_ORDER_3_HRZ = 519; // 0x207
+    field @FlaggedApi("android.media.audio.ambisonics_support_api") public static final int CHANNEL_ACN_ORDER_4 = 25; // 0x19
+    field @FlaggedApi("android.media.audio.ambisonics_support_api") public static final int CHANNEL_ACN_ORDER_4_HRZ = 521; // 0x209
+    field @FlaggedApi("android.media.audio.ambisonics_support_api") public static final int CHANNEL_ACN_ORDER_5 = 36; // 0x24
+    field @FlaggedApi("android.media.audio.ambisonics_support_api") public static final int CHANNEL_ACN_ORDER_5_HRZ = 523; // 0x20b
+    field @FlaggedApi("android.media.audio.ambisonics_support_api") public static final int CHANNEL_ACN_ORDER_6 = 49; // 0x31
+    field @FlaggedApi("android.media.audio.ambisonics_support_api") public static final int CHANNEL_ACN_ORDER_6_HRZ = 525; // 0x20d
+    field @FlaggedApi("android.media.audio.ambisonics_support_api") public static final int CHANNEL_ACN_ORDER_7 = 64; // 0x40
+    field @FlaggedApi("android.media.audio.ambisonics_support_api") public static final int CHANNEL_ACN_ORDER_7_HRZ = 527; // 0x20f
+    field @FlaggedApi("android.media.audio.ambisonics_support_api") public static final int CHANNEL_ACN_ORDER_8 = 81; // 0x51
+    field @FlaggedApi("android.media.audio.ambisonics_support_api") public static final int CHANNEL_ACN_ORDER_8_HRZ = 529; // 0x211
+    field @FlaggedApi("android.media.audio.ambisonics_support_api") public static final int CHANNEL_ACN_ORDER_9 = 100; // 0x64
+    field @FlaggedApi("android.media.audio.ambisonics_support_api") public static final int CHANNEL_ACN_ORDER_9_HRZ = 531; // 0x213
     field @Deprecated public static final int CHANNEL_CONFIGURATION_DEFAULT = 1; // 0x1
     field @Deprecated public static final int CHANNEL_CONFIGURATION_INVALID = 0; // 0x0
     field @Deprecated public static final int CHANNEL_CONFIGURATION_MONO = 2; // 0x2
@@ -22795,6 +22827,7 @@ package android.media {
     ctor public AudioFormat.Builder();
     ctor public AudioFormat.Builder(android.media.AudioFormat);
     method public android.media.AudioFormat build();
+    method @FlaggedApi("android.media.audio.ambisonics_support_api") @NonNull public android.media.AudioFormat.Builder setChannelAcnMask(int);
     method @NonNull public android.media.AudioFormat.Builder setChannelIndexMask(int);
     method @NonNull public android.media.AudioFormat.Builder setChannelMask(int);
     method public android.media.AudioFormat.Builder setEncoding(int) throws java.lang.IllegalArgumentException;

@@ -60,9 +60,7 @@ public class AudioPortConfig {
     @UnsupportedAppUsage
     AudioPortConfig(AudioPort port, int samplingRate, int channelMask, int format,
             AudioGainConfig gain) {
-        this(port, samplingRate,
-                new AudioFormat.ChannelMasks(channelMask, AudioFormat.CHANNEL_INVALID),
-                format, gain);
+        this(port, samplingRate, new AudioFormat.ChannelMasks(channelMask), format, gain);
     }
 
     @UnsupportedAppUsage

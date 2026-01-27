@@ -2192,6 +2192,7 @@ package android.media {
   }
 
   public final class AudioFormat implements android.os.Parcelable {
+    method @FlaggedApi("android.media.audio.ambisonics_support_api") public static int channelCountFromAcnChannelMask(int);
     method public static int channelCountFromInChannelMask(int);
     method public static int channelCountFromOutChannelMask(int);
     method public static int getBytesPerSample(int);

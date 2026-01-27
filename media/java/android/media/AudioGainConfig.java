@@ -45,9 +45,7 @@ public class AudioGainConfig {
     @UnsupportedAppUsage
     AudioGainConfig(int index, AudioGain gain, int mode, int channelMask,
             int[] values, int rampDurationMs) {
-        this(index, gain, mode,
-                new AudioFormat.ChannelMasks(channelMask, AudioFormat.CHANNEL_INVALID),
-                values, rampDurationMs);
+        this(index, gain, mode, new AudioFormat.ChannelMasks(channelMask), values, rampDurationMs);
     }
 
     @UnsupportedAppUsage

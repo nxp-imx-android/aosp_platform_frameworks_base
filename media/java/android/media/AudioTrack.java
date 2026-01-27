@@ -626,7 +626,7 @@ public class AudioTrack extends PlayerBase
      * The audio channel masks used for calling native AudioTrack.
      */
     private AudioFormat.ChannelMasks mChannelMasks = new AudioFormat.ChannelMasks(
-            AudioFormat.CHANNEL_OUT_MONO, AudioFormat.CHANNEL_INVALID /*0*/);
+            AudioFormat.CHANNEL_OUT_MONO);
     /**
      * The encoding of the audio samples.
      * @see AudioFormat#ENCODING_PCM_8BIT
@@ -889,6 +889,11 @@ public class AudioTrack extends PlayerBase
             rate = 0;
         }
 
+        int channelAcnMask = 0;
+        if ((format.getPropertySetMask()
+                & AudioFormat.AUDIO_FORMAT_HAS_PROPERTY_CHANNEL_ACN_MASK) != 0) {
+            channelAcnMask = format.getChannelAcnMask();
+        }
         int channelIndexMask = 0;
         if ((format.getPropertySetMask()
                 & AudioFormat.AUDIO_FORMAT_HAS_PROPERTY_CHANNEL_INDEX_MASK) != 0) {
@@ -898,7 +903,7 @@ public class AudioTrack extends PlayerBase
         if ((format.getPropertySetMask()
                 & AudioFormat.AUDIO_FORMAT_HAS_PROPERTY_CHANNEL_MASK) != 0) {
             channelMask = format.getChannelMask();
-        } else if (channelIndexMask == 0) { // if no masks at all, use stereo
+        } else if (channelIndexMask == 0 && channelAcnMask == 0) { // if no masks at all, use stereo
             channelMask = AudioFormat.CHANNEL_OUT_FRONT_LEFT
                     | AudioFormat.CHANNEL_OUT_FRONT_RIGHT;
         }
@@ -906,7 +911,7 @@ public class AudioTrack extends PlayerBase
         if ((format.getPropertySetMask() & AudioFormat.AUDIO_FORMAT_HAS_PROPERTY_ENCODING) != 0) {
             encoding = format.getEncoding();
         }
-        audioParamCheck(rate, channelMask, channelIndexMask, encoding, mode);
+        audioParamCheck(rate, channelMask, channelIndexMask, channelAcnMask, encoding, mode);
         mOffloaded = offload;
         mStreamType = AudioSystem.STREAM_DEFAULT;
 
@@ -1960,7 +1965,7 @@ public class AudioTrack extends PlayerBase
     //    mSampleRate is valid
     //    mDataLoadMode is valid
     private void audioParamCheck(int sampleRateInHz, int channelConfig, int channelIndexMask,
-                                 int audioFormat, int mode) {
+                                 int channelAcnMask, int audioFormat, int mode) {
         //--------------
         // sample rate, note these values are subject to change
         if ((sampleRateInHz < AudioFormat.SAMPLE_RATE_HZ_MIN ||
@@ -2017,8 +2022,10 @@ public class AudioTrack extends PlayerBase
                         + " for encoding " + audioFormat);
             }
         }
-        mChannelMasks = new AudioFormat.ChannelMasks(channelConfig, channelIndexMask);
-        if (channelIndexMask != 0 && mChannelMasks.getChannelCount() == 0) {
+        mChannelMasks = new AudioFormat.ChannelMasks(
+                channelConfig, channelIndexMask, channelAcnMask);
+        if ((channelIndexMask != 0 || channelAcnMask != 0)
+                && mChannelMasks.getChannelCount() == 0) {
             throw new IllegalArgumentException("Channel count must match");
         }
 
@@ -2303,6 +2310,9 @@ public class AudioTrack extends PlayerBase
         }
         if (mChannelMasks.getIndexMask() != AudioFormat.CHANNEL_INVALID /* 0 */) {
             builder.setChannelIndexMask(mChannelMasks.getIndexMask());
+        }
+        if (mChannelMasks.getAcnMask() != AudioFormat.CHANNEL_INVALID /* 0 */) {
+            builder.setChannelAcnMask(mChannelMasks.getAcnMask());
         }
         return builder.build();
     }

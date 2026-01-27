@@ -440,6 +440,11 @@ public class AudioRecord implements AudioRouting, MicrophoneDirection,
 
         int positionMask = AudioFormat.CHANNEL_INVALID;
         int indexMask = AudioFormat.CHANNEL_INVALID;
+        int acnMask = AudioFormat.CHANNEL_INVALID;
+        if ((format.getPropertySetMask()
+                & AudioFormat.AUDIO_FORMAT_HAS_PROPERTY_CHANNEL_ACN_MASK) != 0) {
+            acnMask = format.getChannelAcnMask();
+        }
         if ((format.getPropertySetMask()
                 & AudioFormat.AUDIO_FORMAT_HAS_PROPERTY_CHANNEL_INDEX_MASK) != 0) {
             indexMask = format.getChannelIndexMask();
@@ -447,10 +452,11 @@ public class AudioRecord implements AudioRouting, MicrophoneDirection,
         if ((format.getPropertySetMask()
                 & AudioFormat.AUDIO_FORMAT_HAS_PROPERTY_CHANNEL_MASK) != 0) {
             positionMask = getChannelMaskFromLegacyConfig(format.getChannelMask(), false);
-        } else if (indexMask == AudioFormat.CHANNEL_INVALID) {
+        } else if (indexMask == AudioFormat.CHANNEL_INVALID
+                && acnMask == AudioFormat.CHANNEL_INVALID) {
             positionMask = getChannelMaskFromLegacyConfig(AudioFormat.CHANNEL_IN_DEFAULT, false);
         }
-        mChannelMasks = new AudioFormat.ChannelMasks(positionMask, indexMask);
+        mChannelMasks = new AudioFormat.ChannelMasks(positionMask, indexMask, acnMask);
 
         audioBuffSizeCheck(bufferSizeInBytes);
 
@@ -998,7 +1004,8 @@ public class AudioRecord implements AudioRouting, MicrophoneDirection,
                             .build();
                 }
                 if (mFormat.getChannelMask() == AudioFormat.CHANNEL_INVALID
-                        && mFormat.getChannelIndexMask() == AudioFormat.CHANNEL_INVALID) {
+                        && mFormat.getChannelIndexMask() == AudioFormat.CHANNEL_INVALID
+                        && mFormat.getChannelAcnMask() == AudioFormat.CHANNEL_INVALID) {
                     mFormat = new AudioFormat.Builder(mFormat)
                             .setChannelMask(AudioFormat.CHANNEL_IN_MONO)
                             .build();
@@ -1286,8 +1293,11 @@ public class AudioRecord implements AudioRouting, MicrophoneDirection,
         if (mChannelMasks.getPositionMask() != AudioFormat.CHANNEL_INVALID) {
             builder.setChannelMask(mChannelMasks.getPositionMask());
         }
-        if (mChannelMasks.getIndexMask() != AudioFormat.CHANNEL_INVALID  /* 0 */) {
+        if (mChannelMasks.getIndexMask() != AudioFormat.CHANNEL_INVALID /* 0 */) {
             builder.setChannelIndexMask(mChannelMasks.getIndexMask());
+        }
+        if (mChannelMasks.getAcnMask() != AudioFormat.CHANNEL_INVALID) {
+            builder.setChannelAcnMask(mChannelMasks.getAcnMask());
         }
         return builder.build();
     }

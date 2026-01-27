@@ -414,6 +414,15 @@ public class AidlConversion {
                     }
                 }
                 return AudioFormat.CHANNEL_INVALID;
+            case AudioChannelLayout.acnMask:
+                int aidlAcn = aidlMask.getAcnMask();
+                int channelCount = aidlAcn & AudioChannelLayout.ACN_CHANNEL_COUNT_BIT_MASK;
+                int layout = (aidlAcn & AudioChannelLayout.ACN_SOURCE_LAYOUT_BIT_MASK)
+                        >> AudioChannelLayout.ACN_SOURCE_LAYOUT_BIT_SHIFT;
+                if (layout == AudioChannelLayout.Ambisonics.SourceLayout.HORIZONTAL) {
+                    return channelCount | AudioFormat.CHANNEL_ACN_HORIZONTAL;
+                }
+                return channelCount;
             default:
                 return AudioFormat.CHANNEL_INVALID;
         }
@@ -431,12 +440,16 @@ public class AidlConversion {
             @NonNull AudioConfigBase aidl, boolean isInput) {
         AudioFormat.Builder apiBuilder = new AudioFormat.Builder();
         apiBuilder.setSampleRate(aidl.sampleRate);
-        if (aidl.channelMask.getTag() != AudioChannelLayout.indexMask) {
+
+        if (aidl.channelMask.getTag() == AudioChannelLayout.acnMask) {
+            apiBuilder.setChannelAcnMask(aidl2api_AudioChannelLayout_AudioFormatChannelMask(
+                    aidl.channelMask, isInput));
+        } else if (aidl.channelMask.getTag() != AudioChannelLayout.indexMask) {
             apiBuilder.setChannelMask(aidl2api_AudioChannelLayout_AudioFormatChannelMask(
-                            aidl.channelMask, isInput));
+                    aidl.channelMask, isInput));
         } else {
             apiBuilder.setChannelIndexMask(aidl2api_AudioChannelLayout_AudioFormatChannelMask(
-                            aidl.channelMask, isInput));
+                    aidl.channelMask, isInput));
         }
         apiBuilder.setEncoding(aidl2api_AudioFormat_AudioFormatEncoding(aidl.format));
         return apiBuilder.build();
