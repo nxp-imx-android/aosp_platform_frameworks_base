@@ -35,6 +35,7 @@ import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.shade.data.repository.ShadeRepository
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.shade.domain.interactor.ShadeLockscreenInteractor
+import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.row.ExpandableView
@@ -82,6 +83,7 @@ constructor(
     private val shadeRepository: ShadeRepository,
     private val shadeInteractor: ShadeInteractor,
     private val splitShadeStateController: SplitShadeStateController,
+    private val shadeModeInteractor: ShadeModeInteractor,
     private val shadeLockscreenInteractorLazy: Lazy<ShadeLockscreenInteractor>,
     private val deviceEntryInteractor: DeviceEntryInteractor,
     naturalScrollingSettingObserver: NaturalScrollingSettingObserver,
@@ -92,7 +94,12 @@ constructor(
     var fractionToShade: Float = 0f
         private set
 
-    private var useSplitShade: Boolean = false
+    private var useSplitShadeLegacy: Boolean = false
+    private val useSplitShade: Boolean
+        get() =
+            if (SceneContainerFlag.isEnabled) shadeModeInteractor.isSplitShade
+            else useSplitShadeLegacy
+
     private lateinit var nsslController: NotificationStackScrollLayoutController
     lateinit var centralSurfaces: CentralSurfaces
 
@@ -278,7 +285,10 @@ constructor(
                 R.dimen.lockscreen_shade_status_bar_transition_distance
             )
 
-        useSplitShade = splitShadeStateController.shouldUseSplitNotificationShade(context.resources)
+        if (!SceneContainerFlag.isEnabled) {
+            useSplitShadeLegacy =
+                splitShadeStateController.shouldUseSplitNotificationShade(context.resources)
+        }
     }
 
     fun setStackScroller(nsslController: NotificationStackScrollLayoutController) {

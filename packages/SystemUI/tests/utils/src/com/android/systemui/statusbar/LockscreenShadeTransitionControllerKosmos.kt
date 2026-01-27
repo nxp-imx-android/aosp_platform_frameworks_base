@@ -30,6 +30,7 @@ import com.android.systemui.plugins.activityStarter
 import com.android.systemui.shade.data.repository.shadeRepository
 import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.shade.domain.interactor.shadeLockscreenInteractor
+import com.android.systemui.shade.domain.interactor.shadeModeInteractor
 import com.android.systemui.statusbar.notification.stack.ambientState
 import com.android.systemui.statusbar.phone.keyguardBypassController
 import com.android.systemui.statusbar.phone.lsShadeTransitionLogger
@@ -60,6 +61,7 @@ var Kosmos.lockscreenShadeTransitionController by Fixture {
         shadeRepository = shadeRepository,
         shadeInteractor = shadeInteractor,
         splitShadeStateController = splitShadeStateController,
+        shadeModeInteractor = shadeModeInteractor,
         shadeLockscreenInteractorLazy = { shadeLockscreenInteractor },
         naturalScrollingSettingObserver = naturalScrollingSettingObserver,
         deviceEntryInteractor = deviceEntryInteractor,

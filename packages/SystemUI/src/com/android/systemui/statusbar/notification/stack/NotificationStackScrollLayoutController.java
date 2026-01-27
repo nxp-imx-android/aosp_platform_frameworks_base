@@ -913,7 +913,9 @@ public class NotificationStackScrollLayoutController implements Dumpable {
         mDismissibilityProvider = dismissibilityProvider;
         mActivityStarter = activityStarter;
         mSensitiveNotificationProtectionController = sensitiveNotificationProtectionController;
-        mView.passSplitShadeStateController(splitShadeStateController);
+        if (!SceneContainerFlag.isEnabled()) {
+            mView.passSplitShadeStateController(splitShadeStateController);
+        }
         mMagneticNotificationRowManager = magneticNotificationRowManager;
         mSectionsManager = sectionsManager;
         if (SceneContainerFlag.isEnabled()) {

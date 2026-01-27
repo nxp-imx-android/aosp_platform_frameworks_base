@@ -51,6 +51,8 @@ import com.android.systemui.plugins.statusbar.StatusBarStateController
 import com.android.systemui.res.R
 import com.android.systemui.shade.data.repository.fakeShadeRepository
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
+import com.android.systemui.shade.domain.interactor.fakeShadeModeInteractor
+import com.android.systemui.shade.shared.model.ShadeMode
 import com.android.systemui.statusbar.StatusBarState
 import com.android.systemui.statusbar.SysuiStatusBarStateController
 import com.android.systemui.statusbar.phone.KeyguardBypassController
@@ -134,6 +136,7 @@ class MediaHierarchyManagerTest : SysuiTestCase() {
     private val keyguardTransitionRepository = kosmos.fakeKeyguardTransitionRepository
     private val keyguardRepository = kosmos.fakeKeyguardRepository
     private val shadeRepository = kosmos.fakeShadeRepository
+    private val fakeShadeModeInteractor = kosmos.fakeShadeModeInteractor
 
     @Before
     fun setup() {
@@ -169,6 +172,7 @@ class MediaHierarchyManagerTest : SysuiTestCase() {
                 fakeHandler,
                 testScope.backgroundScope,
                 ResourcesSplitShadeStateController(),
+                fakeShadeModeInteractor,
                 logger,
                 dumpManager,
             )
@@ -904,6 +908,7 @@ class MediaHierarchyManagerTest : SysuiTestCase() {
         }
 
     private fun enableSplitShade() {
+        fakeShadeModeInteractor.shadeMode = MutableStateFlow(ShadeMode.Split)
         context
             .getOrCreateTestableResources()
             .addOverride(R.bool.config_use_split_notification_shade, true)

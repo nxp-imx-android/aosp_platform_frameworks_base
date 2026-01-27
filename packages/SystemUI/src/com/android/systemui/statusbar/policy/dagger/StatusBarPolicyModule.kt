@@ -68,6 +68,7 @@ import com.android.systemui.statusbar.policy.LocationController
 import com.android.systemui.statusbar.policy.LocationControllerImpl
 import com.android.systemui.statusbar.policy.NextAlarmController
 import com.android.systemui.statusbar.policy.NextAlarmControllerImpl
+import com.android.systemui.statusbar.policy.RemoteInputQuickSettingsDisabler
 import com.android.systemui.statusbar.policy.RotationLockController
 import com.android.systemui.statusbar.policy.RotationLockControllerImpl
 import com.android.systemui.statusbar.policy.SecurityController
@@ -108,6 +109,14 @@ import javax.inject.Named
 /** Dagger Module for code in the statusbar.policy package. */
 @Module(includes = [DeviceProvisioningRepositoryModule::class, SupervisionRepositoryModule::class])
 interface StatusBarPolicyModule {
+
+    @Binds
+    @IntoMap
+    @ClassKey(RemoteInputQuickSettingsDisabler::class)
+    abstract fun bindRemoteInputQuickSettingsDisabler(
+        remoteInputQuickSettingsDisabler: RemoteInputQuickSettingsDisabler
+    ): CoreStartable
+
     /**  */
     @Binds
     fun provideBluetoothController(controllerImpl: BluetoothControllerImpl): BluetoothController

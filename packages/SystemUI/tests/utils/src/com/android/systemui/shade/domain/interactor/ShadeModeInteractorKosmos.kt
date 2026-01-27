@@ -18,6 +18,7 @@ package com.android.systemui.shade.domain.interactor
 
 import android.content.testableContext
 import android.provider.Settings
+import androidx.compose.ui.Alignment
 import com.android.systemui.common.ui.data.repository.fakeConfigurationRepository
 import com.android.systemui.display.data.repository.displayStateRepository
 import com.android.systemui.kosmos.Kosmos
@@ -27,7 +28,10 @@ import com.android.systemui.log.table.logcatTableLogBuffer
 import com.android.systemui.res.R
 import com.android.systemui.shade.data.repository.shadeConfigRepository
 import com.android.systemui.shade.shared.flag.DualShadeFlag
+import com.android.systemui.shade.shared.model.ShadeMode
 import com.android.systemui.shared.settings.data.repository.secureSettingsRepository
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.runBlocking
 
 val Kosmos.shadeModeInteractor by Fixture {
@@ -36,6 +40,32 @@ val Kosmos.shadeModeInteractor by Fixture {
         shadeConfigRepository = shadeConfigRepository,
         tableLogBuffer = logcatTableLogBuffer(this, "sceneFrameworkTableLogBuffer"),
     )
+}
+
+var Kosmos.fakeShadeModeInteractor: FakeShadeModeInteractorImpl by Fixture {
+    FakeShadeModeInteractorImpl()
+}
+
+/*
+ * A fake ShadeModeInteractor for lightweight testing; for classes that are instantiated with a
+ * ShadeModeInteractor but whose tests don't need to mutate the internal state of applicationScope,
+ * shadeConfigRepository, or tableLogBuffer.
+ *
+ * Example usage via its Fixture:
+ *
+ * private val fakeShadeModeInteractor = kosmos.fakeShadeModeInteractor
+ *
+ * // To enable Split Shade for a unit test
+ * fakeShadeModeInteractor.shadeMode = MutableStateFlow(ShadeMode.Split)
+ *
+ */
+class FakeShadeModeInteractorImpl : ShadeModeInteractor {
+    override var shadeMode: StateFlow<ShadeMode> = MutableStateFlow(ShadeMode.Dual)
+    override val isFullWidthShade: StateFlow<Boolean> = MutableStateFlow(false)
+    override val notificationStackHorizontalAlignment: StateFlow<Alignment.Horizontal> =
+        MutableStateFlow(Alignment.CenterHorizontally)
+    override val isQSInlinePowerMenuEnabled: Boolean = false
+    override var isSplitShade: Boolean = false
 }
 
 val Kosmos.shadeMode by Fixture { shadeModeInteractor.shadeMode }
