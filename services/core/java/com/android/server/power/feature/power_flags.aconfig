@@ -124,3 +124,13 @@ flag {
     description: "When enabled, removes the attribution of the cached uids from wakelock"
     bug: "397943328"
 }
+
+flag {
+    name: "dont_churn_tag_database_on_release"
+    namespace: "power"
+    description: "When enabled, tag database will not churn old values when a non-existent tag wakelock is released"
+    bug: "478418224"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}

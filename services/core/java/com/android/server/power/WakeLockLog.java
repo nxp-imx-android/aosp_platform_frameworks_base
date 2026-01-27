@@ -27,6 +27,7 @@ import android.util.SparseArray;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.os.BackgroundThread;
+import com.android.server.power.feature.flags.Flags;
 
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
@@ -187,6 +188,11 @@ final class WakeLockLog {
     }
 
     @VisibleForTesting
+    TagData getTagOnIndex(int index) {
+        return mTagDatabase.getTag(index);
+    }
+
+    @VisibleForTesting
     void dump(PrintWriter pw, boolean includeTagDb) {
         try {
             synchronized (mLock) {
@@ -274,7 +280,9 @@ final class WakeLockLog {
             long time) {
         synchronized (mLock) {
             final TagData tagData = mTagDatabase.findOrCreateTag(
-                    tag, ownerUid, true /* shouldCreate */);
+                    tag, ownerUid,
+                    (Flags.dontChurnTagDatabaseOnRelease()
+                            ? eventType == TYPE_ACQUIRE : true)/* shouldCreate */);
             mLog.addEntry(new LogEntry(time, eventType, tagData, flags));
         }
     }
@@ -1216,17 +1224,6 @@ final class WakeLockLog {
                 return null;
             }
             return mArray[index];
-        }
-
-        /**
-         * Returns an existing tag for the specified wake lock tag + ownerUid.
-         *
-         * @param tag The wake lock tag.
-         * @param ownerUid The wake lock's ownerUid.
-         * @return the TagData instance.
-         */
-        public TagData getTag(String tag, int ownerUid) {
-            return findOrCreateTag(tag, ownerUid, false /* shouldCreate */);
         }
 
         /**
