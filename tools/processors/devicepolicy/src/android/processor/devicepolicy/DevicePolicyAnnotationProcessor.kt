@@ -55,6 +55,7 @@ class DevicePolicyAnnotationProcessor : AbstractProcessor() {
         add(BooleanPolicyDefinition::class.java.name)
         add(EnumPolicyDefinition::class.java.name)
         add(IntegerPolicyDefinition::class.java.name)
+        add(LongPolicyDefinition::class.java.name)
         add(StringPolicyDefinition::class.java.name)
         add(ListOfStringPolicyDefinition::class.java.name)
 
@@ -72,6 +73,7 @@ class DevicePolicyAnnotationProcessor : AbstractProcessor() {
             runProcessor(roundEnvironment, BooleanProcessor(processingEnv)),
             runProcessor(roundEnvironment, EnumProcessor(processingEnv)),
             runProcessor(roundEnvironment, IntegerProcessor(processingEnv)),
+            runProcessor(roundEnvironment, LongProcessor(processingEnv)),
             runProcessor(roundEnvironment, StringProcessor(processingEnv)),
             runProcessor(roundEnvironment, ListOfStringProcessor(processingEnv)),
         ).flatten()

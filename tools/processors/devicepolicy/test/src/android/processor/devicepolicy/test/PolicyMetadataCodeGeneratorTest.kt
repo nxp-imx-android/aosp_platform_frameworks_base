@@ -250,6 +250,50 @@ class PolicyMetadataCodeGeneratorTest {
             )
     }
 
+    private fun longTestPolicy(name: String): PolicyMetadata.Builder =
+        PolicyMetadata.newBuilder()
+            .setIdentifier(simpleNameToFieldName(name))
+            .setTypeSpecificMetadata(
+                TypeSpecificPolicyMetadata.newBuilder()
+                    .setLongMetadata(
+                        TypeSpecificPolicyMetadata.LongPolicyMetadata.newBuilder()
+                    )
+            )
+
+    @Test
+    fun test_longPolicy_outputMatches() {
+        val policyList =
+            PolicyMetadataList.newBuilder()
+                .addPolicyMetadata(
+                    longTestPolicy("test.package.PolicyContainer.MY_TEST_LONG_POLICY")
+                        .addAllAllowedScopes(listOf(PolicyMetadata.PolicyScope.POLICY_SCOPE_DEVICE))
+                        .setAffectedResource(PolicyMetadata.ResourceType.RESOURCE_DEVICE_WIDE)
+                )
+                .build()
+
+        val javaFile = PolicyMetadataCodeGenerator.generate(policyList)
+
+        assertThat(javaFileToString(javaFile))
+            .isEqualTo(
+                fillInFile(
+                    staticImports = listOf("test.package.PolicyContainer.MY_TEST_LONG_POLICY"),
+                    code =
+                        """
+                policies.add(new LongPolicyMetadata(
+                    /* id= */ MY_TEST_LONG_POLICY,
+                    /* allowedScopes= */ Set.of(
+                        2
+                    ),
+                    /* affectedResource= */ 1,
+                    /* requiredPermission= */ null,
+                    /* requiredCrossUserPermission= */ null,
+                    /* allowedDpcTypes= */ Set.of()
+                ));
+                """,
+                )
+            )
+    }
+
     private fun enumTestPolicy(name: String, allowedValues: Set<Int>): PolicyMetadata.Builder =
         PolicyMetadata.newBuilder()
             .setIdentifier(simpleNameToFieldName(name))

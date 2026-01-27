@@ -83,6 +83,8 @@ message TypeSpecificPolicyMetadata {
 
   message IntegerPolicyMetadata {}
 
+  message LongPolicyMetadata {}
+
   message EnumPolicyMetadata {
     int32 default_value = 1;
     string int_def_name = 2;
@@ -117,6 +119,7 @@ message TypeSpecificPolicyMetadata {
     EnumPolicyMetadata enum_metadata = 3;
     StringPolicyMetadata string_metadata = 4;
     ListPolicyMetadata list_metadata = 6;
+    LongPolicyMetadata long_metadata = 7;
   }
 
   reserved 5;

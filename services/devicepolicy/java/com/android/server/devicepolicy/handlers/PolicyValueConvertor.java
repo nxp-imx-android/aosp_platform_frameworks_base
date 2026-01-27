@@ -19,10 +19,12 @@ package com.android.server.devicepolicy.handlers;
 import android.annotation.NonNull;
 import android.app.admin.IntegerPolicyValue;
 import android.app.admin.ListOfStringPolicyValue;
+import android.app.admin.LongPolicyValue;
 import android.app.admin.PolicyValue;
 import android.app.admin.StringPolicyValue;
 import android.app.admin.metadata.EnumPolicyMetadata;
 import android.app.admin.metadata.ListPolicyMetadata;
+import android.app.admin.metadata.LongPolicyMetadata;
 import android.app.admin.metadata.PolicyMetadata;
 import android.app.admin.metadata.StringPolicyMetadata;
 
@@ -41,6 +43,14 @@ public abstract class PolicyValueConvertor<T> {
                 @Override
                 public @NonNull PolicyValue<Integer> toPolicyValue(@NonNull Integer value) {
                     return new IntegerPolicyValue(value);
+                }
+            };
+
+    private static final PolicyValueConvertor<Long> LONG_POLICY_VALUE_CONVERTOR =
+            new PolicyValueConvertor<>() {
+                @Override
+                public @NonNull PolicyValue<Long> toPolicyValue(@NonNull Long value) {
+                    return new LongPolicyValue(value);
                 }
             };
 
@@ -75,6 +85,7 @@ public abstract class PolicyValueConvertor<T> {
                 switch (metadata) {
                     case EnumPolicyMetadata e -> INTEGER_POLICY_VALUE_CONVERTOR;
                     case StringPolicyMetadata e -> STRING_POLICY_VALUE_CONVERTOR;
+                    case LongPolicyMetadata e -> LONG_POLICY_VALUE_CONVERTOR;
                     case ListPolicyMetadata l -> getListInstance(l);
                     default ->
                             throw new UnsupportedOperationException(

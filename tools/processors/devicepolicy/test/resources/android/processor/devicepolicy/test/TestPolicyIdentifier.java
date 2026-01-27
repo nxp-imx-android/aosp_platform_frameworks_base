@@ -25,6 +25,7 @@ import android.processor.devicepolicy.AllowedDpcTypes;
 import android.processor.devicepolicy.BooleanPolicyDefinition;
 import android.processor.devicepolicy.EnumPolicyDefinition;
 import android.processor.devicepolicy.IntegerPolicyDefinition;
+import android.processor.devicepolicy.LongPolicyDefinition;
 import android.processor.devicepolicy.ListOfStringPolicyDefinition;
 import android.processor.devicepolicy.PolicyDefinition;
 import android.processor.devicepolicy.StringPolicyDefinition;
@@ -131,6 +132,26 @@ public final class PolicyIdentifier<T> {
                                             unaffiliatedFullUserProfileOwner = DISALLOWED)))
     public static final PolicyIdentifier<Integer> SIMPLE_INTEGER_POLICY =
             new PolicyIdentifier<>("SIMPLE_INTEGER_POLICY");
+
+    /** Test policy for Long */
+    @LongPolicyDefinition(
+            base =
+                    @PolicyDefinition(
+                            allowedScopes = {
+                                1 // POLICY_SCOPE_USER
+                            },
+                            affectedResource = 1, // RESOURCE_DEVICE_WIDE
+                            // requiredPermission and requiredCrossUserPermission using the default
+                            // values.
+                            allowedDpcTypes =
+                                    @AllowedDpcTypes(
+                                            deviceOwner = DISALLOWED,
+                                            managedProfileOwnerOfOrganizationOwnedDevice =
+                                                    DISALLOWED,
+                                            managedProfileOwnerOfPersonalOwnedDevice = DISALLOWED,
+                                            unaffiliatedFullUserProfileOwner = DISALLOWED)))
+    public static final PolicyIdentifier<Long> SIMPLE_LONG_POLICY =
+            new PolicyIdentifier<>("SIMPLE_LONG_POLICY");
 
     /** Test policy 4 */
     @StringPolicyDefinition(

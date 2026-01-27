@@ -19,6 +19,7 @@ package com.android.server.devicepolicy.handlers;
 import android.annotation.NonNull;
 import android.app.admin.metadata.EnumPolicyMetadata;
 import android.app.admin.metadata.ListPolicyMetadata;
+import android.app.admin.metadata.LongPolicyMetadata;
 import android.app.admin.metadata.PolicyMetadata;
 import android.app.admin.metadata.StringPolicyMetadata;
 
@@ -47,6 +48,12 @@ public abstract class PolicyValidator<T> {
                 }
             };
 
+    private static final PolicyValidator<Long> LONG_POLICY_VALIDATOR =
+            new PolicyValidator<Long>() {
+                @Override
+                public void validate(@NonNull Long value, @NonNull PolicyMetadata<Long> policy) {}
+            };
+
     private static final PolicyValidator<String> STRING_POLICY_VALIDATOR =
             new PolicyValidator<String>() {
                 @Override
@@ -68,6 +75,7 @@ public abstract class PolicyValidator<T> {
                 switch (policy) {
                     case EnumPolicyMetadata e -> ENUM_POLICY_VALIDATOR;
                     case StringPolicyMetadata s -> STRING_POLICY_VALIDATOR;
+                    case LongPolicyMetadata l -> LONG_POLICY_VALIDATOR;
                     // Need to use a raw type here since we can't extract the element E of
                     // T=List<E>.
                     case ListPolicyMetadata l -> getListInstance(l);
