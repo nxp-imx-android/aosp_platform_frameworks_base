@@ -286,6 +286,16 @@ flag {
 }
 
 flag {
+    name: "consolidate_split_keyboard_shortcut_controllers"
+    namespace: "multitasking"
+    description: "Consolidate split desktop keyboard shortcuts handling on shell and launcher side"
+    bug: "438790317"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "retry_ime_animation_on_leash_ready"
     namespace: "multitasking"
     description: "Fix a bug where the ime animation wasn't being started on leash ready, which was occuring for Bubbles."
