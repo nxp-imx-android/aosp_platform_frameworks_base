@@ -37,7 +37,6 @@ import com.android.systemui.qs.tiles.base.shared.model.QSTileUIConfig
 import com.android.systemui.qs.tiles.dialog.InternetDetailsViewModel
 import com.android.systemui.qs.tiles.impl.cell.domain.interactor.MobileDataTileDataInteractor
 import com.android.systemui.qs.tiles.impl.cell.domain.interactor.MobileDataTileUserActionInteractor
-import com.android.systemui.qs.tiles.impl.cell.domain.model.MobileDataTileIcon
 import com.android.systemui.qs.tiles.impl.cell.domain.model.MobileDataTileModel
 import com.android.systemui.qs.tiles.impl.cell.ui.mapper.MobileDataTileMapper
 import com.android.systemui.res.R
@@ -83,11 +82,7 @@ class MobileDataTileTest : SysuiTestCase() {
     private lateinit var underTest: MobileDataTile
     private val tileDataFlow =
         MutableStateFlow<MobileDataTileModel>(
-            MobileDataTileModel(
-                isSimActive = false,
-                isEnabled = false,
-                icon = MobileDataTileIcon.SignalIcon(4),
-            )
+            MobileDataTileModel(isSimActive = false, isEnabled = false)
         )
 
     @Before
@@ -148,12 +143,7 @@ class MobileDataTileTest : SysuiTestCase() {
 
     @Test
     fun tileDataChanges_triggersMapperWithNewModel() {
-        val model =
-            MobileDataTileModel(
-                isSimActive = true,
-                isEnabled = true,
-                icon = MobileDataTileIcon.SignalIcon(4),
-            )
+        val model = MobileDataTileModel(isSimActive = true, isEnabled = true)
         // Mock a placeholder state to be returned by the mapper
         whenever(tileMapper.map(any(), any())).thenReturn(mock(QSTileState::class.java))
 

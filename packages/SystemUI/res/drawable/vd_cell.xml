@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Copyright (C) 2026 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:name="root_vector"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <group
+        android:name="root_group"
+        android:pivotX="32"
+        android:pivotY="32"
+        android:scaleX=".8169"
+        android:scaleY=".8169"
+        android:translateX="-20"
+        android:translateY="-20">
+        <group android:name="slash_group">
+            <path
+                android:name="slash_path"
+                android:pathData="@string/path_bluetooth_slash_off"
+                android:strokeWidth="0"
+                android:strokeColor="#ffffff"
+                android:strokeLineCap="round" />
+        </group>
+        <group android:name="top_arrow">
+            <group
+                android:name="top_arrow_resize"
+                android:scaleX="1.2241400416"
+                android:scaleY="1.2241400416"
+                android:translateX="17.3"
+                android:translateY="17.3">
+                <path
+                    android:name="arrow1"
+                    android:fillColor="#ffffff"
+                    android:pathData=" M16.1801 11.53C15.9001 11.53 15.6601 11.43 15.4701 11.23C15.2801 11.03 15.1801 10.79 15.1801 10.5V6.56996L14.2801 7.46996C14.1001 7.64996 13.8601 7.74996 13.5801 7.74996C13.3001 7.74996 13.0601 7.65996 12.8801 7.46996C12.7001 7.27996 12.6001 7.04996 12.6001 6.76996C12.6001 6.48996 12.6901 6.24996 12.8801 6.06996L15.4801 3.47996C15.5801 3.37996 15.6901 3.30996 15.8101 3.26996C15.9301 3.22996 16.0501 3.20996 16.1901 3.20996C16.3301 3.20996 16.4501 3.22996 16.5701 3.26996C16.6901 3.30996 16.8001 3.37996 16.9001 3.47996L19.5001 6.07996C19.6801 6.25996 19.7801 6.49996 19.7801 6.77996C19.7801 7.05996 19.6901 7.29996 19.5001 7.47996C19.3101 7.65996 19.0801 7.75996 18.8001 7.75996C18.5201 7.75996 18.2801 7.66996 18.1001 7.47996L17.2001 6.57996V10.53C17.2001 10.83 17.1001 11.07 16.9001 11.26C16.7001 11.45 16.4701 11.54 16.2001 11.54L16.1801 11.53Z" />
+            </group>
+        </group>
+        <group android:name="icon_group">
+            <clip-path
+                android:name="mask"
+                android:pathData="@string/path_bluetooth_diagonal_mask_on" />
+            <group
+                android:name="bottom_arrow_resize"
+                android:scaleX="1.2241400416"
+                android:scaleY="1.2241400416"
+                android:translateX="17.3"
+                android:translateY="17.3">
+                <path
+                    android:name="arrow2"
+                    android:fillColor="#ffffff"
+                    android:pathData="M10.1651 12.01C10.4451 12.01 10.6851 12.11 10.8751 12.31C11.0651 12.51 11.1651 12.75 11.1651 13.04L11.1651 16.97L12.0651 16.07C12.2451 15.89 12.4851 15.79 12.7651 15.79C13.0451 15.79 13.2851 15.88 13.4651 16.07C13.6451 16.26 13.7451 16.49 13.7451 16.77C13.7451 17.05 13.6551 17.29 13.4651 17.47L10.8651 20.06C10.7651 20.16 10.6551 20.23 10.5351 20.27C10.4151 20.31 10.2951 20.33 10.1551 20.33C10.0151 20.33 9.89512 20.31 9.77512 20.27C9.65512 20.23 9.54512 20.16 9.44512 20.06L6.84512 17.46C6.66512 17.28 6.56512 17.04 6.56512 16.76C6.56512 16.48 6.65512 16.24 6.84512 16.06C7.03512 15.88 7.26512 15.78 7.54512 15.78C7.82512 15.78 8.06512 15.87 8.24512 16.06L9.14512 16.96L9.14512 13.01C9.14512 12.71 9.24512 12.47 9.44512 12.28C9.64512 12.09 9.87512 12 10.1451 12L10.1651 12.01Z" />
+            </group>
+        </group>
+    </group>
+</vector>
