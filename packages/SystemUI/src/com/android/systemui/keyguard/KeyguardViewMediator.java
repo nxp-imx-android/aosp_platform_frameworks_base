@@ -721,33 +721,10 @@ public class KeyguardViewMediator implements CoreStartable,
     void handleUserSwitching(int userId, Runnable resultCallback) {
         Log.d(TAG, String.format("onUserSwitching %d", userId));
         synchronized (KeyguardViewMediator.this) {
-            if (!SceneContainerFlag.isEnabled()) {
-                if (!mLockPatternUtils.isSecure(userId)) {
-                    dismiss(null, null);
-                }
-                resultCallback.run();
-            } else {
-                // Calling dismiss on a secure user will show the bouncer.
-                // We wait for the dismiss to complete here as otherwise the user switching dialog
-                // might fade out while keyguard is still dismissing.
-                dismiss(new IKeyguardDismissCallback.Stub() {
-                            @Override
-                            public void onDismissError() throws RemoteException {
-                                resultCallback.run();
-                            }
-
-                            @Override
-                            public void onDismissSucceeded() throws RemoteException {
-                                resultCallback.run();
-                            }
-
-                            @Override
-                            public void onDismissCancelled() throws RemoteException {
-                                resultCallback.run();
-                            }
-                        },
-                        null);
+            if (!mLockPatternUtils.isSecure(userId)) {
+                dismiss(null, null);
             }
+            resultCallback.run();
         }
     }
 
@@ -757,14 +734,12 @@ public class KeyguardViewMediator implements CoreStartable,
     @VisibleForTesting
     void handleUserSwitchComplete(int userId) {
         Log.d(TAG, String.format("onUserSwitchComplete %d", userId));
-        if (!SceneContainerFlag.isEnabled()) {
-            // Calling dismiss on a secure user will show the bouncer
-            if (mLockPatternUtils.isSecure(userId)) {
-                // We are calling dismiss with a delay as there are race conditions in some
-                // scenarios caused by async layout listeners
-                mHandler.postDelayed(
-                        () -> dismiss(null /* callback */, null /* message */), mDismissToken, 500);
-            }
+        // Calling dismiss on a secure user will show the bouncer
+        if (mLockPatternUtils.isSecure(userId)) {
+            // We are calling dismiss with a delay as there are race conditions in some scenarios
+            // caused by async layout listeners
+            mHandler.postDelayed(() -> dismiss(null /* callback */, null /* message */),
+                    mDismissToken, 500);
         }
         // We need to adjust the status bar in case there are race conditions where the
         // previous adjust event was sent before the user switch completed.
