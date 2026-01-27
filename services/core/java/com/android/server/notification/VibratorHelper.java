@@ -191,7 +191,7 @@ public final class VibratorHelper {
             final Uri defaultRingtoneUri = RingtoneManager.getActualDefaultRingtoneUri(mContext,
                     RingtoneManager.TYPE_NOTIFICATION);
             final VibrationEffect vibrationEffectFromSoundUri =
-                    createVibrationEffectFromSoundUri(defaultRingtoneUri);
+                    createVibrationEffectFromSoundUri(defaultRingtoneUri, insistent);
             if (vibrationEffectFromSoundUri != null) {
                 return vibrationEffectFromSoundUri;
             }
@@ -214,14 +214,19 @@ public final class VibratorHelper {
      * vibration_uri represents a valid vibration effect in xml
      *
      * @param uri {@code Uri} an uri including query parameter "vibraiton_uri"
+     * @param insistent {@code true} if the vibration should loop until it is cancelled.
      */
-    public @Nullable VibrationEffect createVibrationEffectFromSoundUri(Uri uri) {
+    public @Nullable VibrationEffect createVibrationEffectFromSoundUri(Uri uri, boolean insistent) {
         if (uri == null || uri.isOpaque()) {
             return null;
         }
 
         try {
-            return Utils.parseVibrationEffect(mVibrator, Utils.getVibrationUri(uri));
+            final VibrationEffect effect =
+                    Utils.parseVibrationEffect(mVibrator, Utils.getVibrationUri(uri));
+            return effect != null
+                    ? effect.applyRepeatingIndefinitely(insistent, /* loopDelayMs= */ 0)
+                    : null;
         } catch (Exception e) {
             Slog.e(TAG, "Failed to get vibration effect: ", e);
         }

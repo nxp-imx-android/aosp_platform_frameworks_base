@@ -95,24 +95,25 @@ public class VibratorHelperTest extends UiServiceTestCase {
 
     @Test
     public void createVibrationEffectFromSoundUri_nullInput() {
-        assertNull(mVibratorHelper.createVibrationEffectFromSoundUri(null));
+        assertNull(mVibratorHelper.createVibrationEffectFromSoundUri(null, /* insistent= */ false));
     }
 
     @Test
     public void createVibrationEffectFromSoundUri_emptyUri() {
-        assertNull(mVibratorHelper.createVibrationEffectFromSoundUri(Uri.EMPTY));
+        assertNull(mVibratorHelper.createVibrationEffectFromSoundUri(Uri.EMPTY,
+                /* insistent= */ false));
     }
 
     @Test
     public void createVibrationEffectFromSoundUri_opaqueUri() {
         Uri uri = Uri.parse("a:b#c");
-        assertNull(mVibratorHelper.createVibrationEffectFromSoundUri(uri));
+        assertNull(mVibratorHelper.createVibrationEffectFromSoundUri(uri, /* insistent= */ false));
     }
 
     @Test
     public void createVibrationEffectFromSoundUri_uriWithoutRequiredQueryParameter() {
         Uri uri = Settings.System.DEFAULT_NOTIFICATION_URI;
-        assertNull(mVibratorHelper.createVibrationEffectFromSoundUri(uri));
+        assertNull(mVibratorHelper.createVibrationEffectFromSoundUri(uri, /* insistent= */ false));
     }
 
     @Test
@@ -121,7 +122,18 @@ public class VibratorHelperTest extends UiServiceTestCase {
         when(mVibrator.getInfo()).thenReturn(VibratorInfo.EMPTY_VIBRATOR_INFO);
         Uri validUri = getVibrationUriAppended(Settings.System.DEFAULT_NOTIFICATION_URI);
 
-        assertSingleVibration(mVibratorHelper.createVibrationEffectFromSoundUri(validUri));
+        assertSingleVibration(mVibratorHelper.createVibrationEffectFromSoundUri(validUri,
+                /* insistent= */ false));
+    }
+
+    @Test
+    public void createVibrationEffectFromSoundUri_insistentWithVibrationUri() throws IOException {
+        // prepare the uri with vibration
+        when(mVibrator.getInfo()).thenReturn(VibratorInfo.EMPTY_VIBRATOR_INFO);
+        Uri validUri = getVibrationUriAppended(Settings.System.DEFAULT_NOTIFICATION_URI);
+
+        assertRepeatingVibration(
+                mVibratorHelper.createVibrationEffectFromSoundUri(validUri, /* insistent= */ true));
     }
 
     @Test
