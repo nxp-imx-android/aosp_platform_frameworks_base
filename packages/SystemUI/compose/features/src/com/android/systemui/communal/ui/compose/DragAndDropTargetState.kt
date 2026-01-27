@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import com.android.systemui.Flags.communalWidgetResizing
 import com.android.systemui.communal.domain.model.CommunalContentModel
 import com.android.systemui.communal.ui.compose.extensions.firstItemAtOffset
+import com.android.systemui.communal.ui.viewmodel.BaseCommunalViewModel
 import com.android.systemui.communal.util.WidgetPickerIntentUtils
 import com.android.systemui.communal.util.WidgetPickerIntentUtils.getWidgetExtraFromIntent
 import kotlinx.coroutines.CoroutineScope
@@ -56,13 +57,14 @@ fun rememberDragAndDropTargetState(
     gridItemSize: SizeInfo?,
     contentOffset: Offset,
     contentListState: ContentListState,
+    viewModel: BaseCommunalViewModel,
 ): DragAndDropTargetState {
     val scope = rememberCoroutineScope()
     val autoScrollThreshold = with(LocalDensity.current) { 60.dp.toPx() }
     val columnWidth = with(LocalDensity.current) { gridItemSize?.cellSize?.width?.roundToPx() ?: 0 }
 
     val state =
-        remember(gridState, contentOffset, contentListState, autoScrollThreshold, scope) {
+        remember(gridState, contentOffset, contentListState, autoScrollThreshold, scope, viewModel) {
             DragAndDropTargetState(
                 state = gridState,
                 columnWidth = columnWidth,
@@ -70,6 +72,7 @@ fun rememberDragAndDropTargetState(
                 contentListState = contentListState,
                 autoScrollThreshold = autoScrollThreshold,
                 scope = scope,
+                viewModel = viewModel,
             )
         }
 
@@ -141,6 +144,7 @@ class DragAndDropTargetState(
     private val contentListState: ContentListState,
     private val autoScrollThreshold: Float,
     private val scope: CoroutineScope,
+    private val viewModel: BaseCommunalViewModel,
 ) {
     /**
      * The placeholder item that is treated as if it is being dragged across the grid. It is added
@@ -181,6 +185,7 @@ class DragAndDropTargetState(
         // assume item will be added to the end.
         contentListState.list.add(placeHolder)
         placeHolderIndex = contentListState.list.size - 1
+        viewModel.onAddWidgetDragAndDropStart()
     }
 
     fun onMoved(event: DragAndDropEvent) {
@@ -189,6 +194,7 @@ class DragAndDropTargetState(
     }
 
     fun onDrop(event: DragAndDropEvent): Boolean {
+        viewModel.onAddWidgetDragAndDropEnd()
         return placeHolderIndex?.let { dropIndex ->
             val widgetExtra = event.maybeWidgetExtra() ?: return false
             val (componentName, user) = widgetExtra
@@ -207,6 +213,7 @@ class DragAndDropTargetState(
     }
 
     fun onEnded() {
+        viewModel.onAddWidgetDragAndDropEnd()
         placeHolderIndex = null
         previousTargetItemKey = null
         contentListState.list.remove(placeHolder)
