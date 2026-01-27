@@ -857,8 +857,7 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
         }
     }
 
-    @VisibleForTesting
-    boolean shouldDisplayLockdown(UserInfo user) {
+    private boolean shouldDisplayLockdown(UserInfo user) {
         if (user == null) {
             return false;
         }
@@ -1047,7 +1046,7 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
 
     @VisibleForTesting
     class EmergencyDialerAction extends EmergencyAction {
-        private EmergencyDialerAction() {
+        EmergencyDialerAction() {
             super(com.android.systemui.res.R.drawable.ic_global_actions_emergency,
                     R.string.global_action_emergency);
         }
@@ -1069,11 +1068,6 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
                 mContext.startActivityAsUser(intent, mUserTracker.getUserHandle());
             }
         }
-    }
-
-    @VisibleForTesting
-    EmergencyDialerAction makeEmergencyDialerActionForTesting() {
-        return new EmergencyDialerAction();
     }
 
     @VisibleForTesting
@@ -1168,11 +1162,6 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
     }
 
     @VisibleForTesting
-    ScreenshotAction makeScreenshotActionForTesting() {
-        return new ScreenshotAction();
-    }
-
-    @VisibleForTesting
     class BugReportAction extends SinglePressAction implements LongPressAction {
 
         BugReportAction() {
@@ -1243,11 +1232,6 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
                     Settings.Secure.BUGREPORT_IN_POWER_MENU, 0, mUserTracker.getUserId()) != 0
                     && mUserTracker.getUserInfo().isAdmin();
         }
-    }
-
-    @VisibleForTesting
-    BugReportAction makeBugReportActionForTesting() {
-        return new BugReportAction();
     }
 
     private final class LogoutAction extends SinglePressAction {
