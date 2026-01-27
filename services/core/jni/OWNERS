@@ -1,6 +1,9 @@
 # Input
 per-file com_android_server_input_* = file:/INPUT_OWNERS
 
+# Attention
+per-file com_android_server_attention_* = file:/core/java/android/attention/OWNERS
+
 # Power
 per-file com_android_server_HardwarePropertiesManagerService.cpp = file:/services/core/java/com/android/server/power/OWNERS
 per-file com_android_server_power_* = file:/services/core/java/com/android/server/power/OWNERS
