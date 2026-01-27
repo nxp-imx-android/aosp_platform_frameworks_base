@@ -35,7 +35,7 @@ import java.io.PrintWriter;
 
 class InputConsumerImpl implements IBinder.DeathRecipient {
     final WindowManagerService mService;
-    final InputChannel mClientChannel;
+    final IBinder mClientChannelToken;
     final InputApplicationHandle mApplicationHandle;
     final InputWindowHandle mWindowHandle;
 
@@ -59,17 +59,19 @@ class InputConsumerImpl implements IBinder.DeathRecipient {
         mClientPid = clientPid;
         mClientUser = clientUser;
 
-        mClientChannel = mService.mInputManager.createInputChannel(name);
+        InputChannel clientChannel = mService.mInputManager.createInputChannel(name);
+        mClientChannelToken = clientChannel.getToken();
         if (inputChannel != null) {
-            mClientChannel.copyTo(inputChannel);
+            clientChannel.copyTo(inputChannel);
         }
+        clientChannel.dispose();
 
         mApplicationHandle = new InputApplicationHandle(new Binder(), name,
                 DEFAULT_DISPATCHING_TIMEOUT_MILLIS);
 
         mWindowHandle = new InputWindowHandle(mApplicationHandle, displayId);
         mWindowHandle.name = name;
-        mWindowHandle.token = mClientChannel.getToken();
+        mWindowHandle.token = mClientChannelToken;
         mWindowHandle.layoutParamsType = WindowManager.LayoutParams.TYPE_INPUT_CONSUMER;
         mWindowHandle.dispatchingTimeoutMillis = DEFAULT_DISPATCHING_TIMEOUT_MILLIS;
         mWindowHandle.ownerPid = WindowManagerService.MY_PID;
@@ -145,8 +147,7 @@ class InputConsumerImpl implements IBinder.DeathRecipient {
     }
 
     void disposeChannelsLw(SurfaceControl.Transaction t) {
-        mService.mInputManager.removeInputChannel(mClientChannel.getToken());
-        mClientChannel.dispose();
+        mService.mInputManager.removeInputChannel(mClientChannelToken);
         t.remove(mInputSurface);
         unlinkFromDeathRecipient();
     }
