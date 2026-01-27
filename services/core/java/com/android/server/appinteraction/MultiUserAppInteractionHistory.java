@@ -18,6 +18,7 @@ package com.android.server.appinteraction;
 
 import android.annotation.NonNull;
 import android.content.Context;
+import android.os.Environment;
 import android.os.UserHandle;
 import android.util.Slog;
 import android.util.SparseArray;
@@ -25,6 +26,7 @@ import android.util.SparseArray;
 import com.android.internal.annotations.GuardedBy;
 import com.android.server.SystemService;
 
+import java.io.File;
 import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -37,6 +39,8 @@ public class MultiUserAppInteractionHistory {
     private static final String TAG = "MultiUserAppInteraction";
 
     private static MultiUserAppInteractionHistory sInstance = null;
+
+    private static final String APP_INTERACTION_DIR = "app_interaction";
 
     private final Object mLock = new Object();
 
@@ -172,9 +176,20 @@ public class MultiUserAppInteractionHistory {
                                 @NonNull
                                 public AppInteractionHistory apply(@NonNull UserHandle userHandle) {
                                     Objects.requireNonNull(userHandle);
+                                    File appInteractionDir =
+                                            new File(
+                                                    Environment.getDataSystemCeDirectory(
+                                                            userHandle.getIdentifier()),
+                                                    APP_INTERACTION_DIR);
+                                    appInteractionDir.mkdirs();
+                                    File dbFile =
+                                            new File(
+                                                    appInteractionDir,
+                                                    AppInteractionSQLiteHistory.DB_NAME);
                                     return new AppInteractionSQLiteHistory(
                                             context.createContextAsUser(
-                                                    userHandle, /* flags= */ 0));
+                                                    userHandle, /* flags= */ 0),
+                                            /* dbFileName= */ dbFile.getAbsolutePath());
                                 }
                             });
         }
