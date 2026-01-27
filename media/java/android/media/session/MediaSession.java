@@ -16,6 +16,8 @@
 
 package android.media.session;
 
+import static com.android.media.mediasession.flags.Flags.FLAG_EXPOSE_BITMAP_SIZE_LIMIT_API;
+
 import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
@@ -52,6 +54,7 @@ import android.service.media.MediaBrowserService;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.Pair;
+import android.util.Size;
 import android.view.KeyEvent;
 import android.view.ViewConfiguration;
 
@@ -274,6 +277,19 @@ public final class MediaSession {
         } catch (RemoteException e) {
             throw new RuntimeException("Remote error creating session.", e);
         }
+    }
+
+    /**
+     * Gets the media metadata bitmap size limit from a specified context
+     *
+     * @param context The context to get the bitmap size limit from
+     */
+    @FlaggedApi(FLAG_EXPOSE_BITMAP_SIZE_LIMIT_API)
+    @NonNull
+    public static Size getBitmapSizeLimit(@NonNull Context context) {
+        int limit = context.getResources().getDimensionPixelSize(
+                com.android.internal.R.dimen.config_mediaMetadataBitmapMaxSize);
+        return new Size(limit, limit);
     }
 
     /**

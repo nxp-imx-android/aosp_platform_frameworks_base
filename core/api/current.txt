@@ -28802,6 +28802,7 @@ package android.media.session {
     ctor public MediaSession(@NonNull android.content.Context, @NonNull String);
     ctor public MediaSession(@NonNull android.content.Context, @NonNull String, @Nullable android.os.Bundle);
     ctor @FlaggedApi("com.android.media.mediasession.flags.override_media_session_owner") @RequiresPermission(android.Manifest.permission.OVERRIDE_MEDIA_SESSION_OWNER) public MediaSession(@NonNull android.content.Context, @NonNull String, @Nullable android.os.Bundle, @NonNull String);
+    method @FlaggedApi("com.android.media.mediasession.flags.expose_bitmap_size_limit_api") @NonNull public static android.util.Size getBitmapSizeLimit(@NonNull android.content.Context);
     method @NonNull public android.media.session.MediaController getController();
     method @NonNull public android.media.session.MediaSessionManager.RemoteUserInfo getCurrentControllerInfo();
     method @NonNull public android.media.session.MediaSession.Token getSessionToken();
