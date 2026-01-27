@@ -138,6 +138,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -1487,7 +1488,7 @@ public class NotificationStackScrollLayoutController implements Dumpable {
      */
     public void setBlurRadius(float blurRadius) {
         if (blurRadius > 0.0f) {
-            debugLog(
+            debugLog(() ->
                     "Setting blur RenderEffect for NotificationStackScrollLayoutController with "
                             + "radius " + blurRadius);
             mView.setRenderEffect(RenderEffect.createBlurEffect(
@@ -1495,7 +1496,8 @@ public class NotificationStackScrollLayoutController implements Dumpable {
                     blurRadius,
                     Shader.TileMode.CLAMP));
         } else {
-            debugLog("Resetting blur RenderEffect for NotificationStackScrollLayoutController");
+            debugLog(() ->
+                    "Resetting blur RenderEffect for NotificationStackScrollLayoutController");
             mView.setRenderEffect(null);
         }
     }
@@ -2346,9 +2348,9 @@ public class NotificationStackScrollLayoutController implements Dumpable {
         return mView.isOnLockscreen();
     }
 
-    private void debugLog(String msg) {
+    private void debugLog(@NonNull Supplier<String> msgSupplier) {
         if (DEBUG) {
-            Log.d(TAG, msg);
+            Log.d(TAG, msgSupplier.get());
         }
     }
 }
