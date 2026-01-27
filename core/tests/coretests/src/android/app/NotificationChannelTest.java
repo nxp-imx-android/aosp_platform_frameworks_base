@@ -382,12 +382,12 @@ public class NotificationChannelTest {
         when(mIContentProvider.canonicalize(any(), eq(uriAfterRestoredUncanonicalized)))
                 .thenReturn(uriAfterRestoredCanonicalized);
 
-        assertThat(
-                        channel.restoreSoundUri(
-                                mContext,
-                                uriToBeRestoredUncanonicalized,
-                                true,
-                                AudioAttributes.USAGE_NOTIFICATION))
+        assertThat(NotificationSoundCanonicalizer.restoreSoundUri(
+                mContext,
+                uriToBeRestoredUncanonicalized,
+                true,
+                AudioAttributes.USAGE_NOTIFICATION,
+                channel.isSoundRestored()).first)
                 .isEqualTo(uriAfterRestoredCanonicalized);
     }
 

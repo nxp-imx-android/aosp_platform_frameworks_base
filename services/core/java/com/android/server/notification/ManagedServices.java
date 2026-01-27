@@ -16,8 +16,8 @@
 
 package com.android.server.notification;
 
-import static android.app.backup.NotificationLoggingConstants.DATA_TYPE_MANAGED_SERVICE_PRIMARY_APPROVED;
-import static android.app.backup.NotificationLoggingConstants.DATA_TYPE_MANAGED_SERVICE_SECONDARY_APPROVED;
+import static android.app.NotificationLoggingConstants.DATA_TYPE_MANAGED_SERVICE_PRIMARY_APPROVED;
+import static android.app.NotificationLoggingConstants.DATA_TYPE_MANAGED_SERVICE_SECONDARY_APPROVED;
 import static android.content.Context.BIND_ALLOW_WHITELIST_MANAGEMENT;
 import static android.content.Context.BIND_AUTO_CREATE;
 import static android.content.Context.BIND_FOREGROUND_SERVICE;

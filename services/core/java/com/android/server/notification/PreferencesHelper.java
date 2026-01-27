@@ -20,6 +20,9 @@ import static android.app.AppOpsManager.OP_SYSTEM_ALERT_WINDOW;
 import static android.app.NotificationChannel.DEFAULT_CHANNEL_ID;
 import static android.app.NotificationChannel.PLACEHOLDER_CONVERSATION_ID;
 import static android.app.NotificationChannel.USER_LOCKED_IMPORTANCE;
+import static android.app.NotificationLoggingConstants.DATA_TYPE_NOTIF_GLOBAL;
+import static android.app.NotificationLoggingConstants.DATA_TYPE_NOTIF_PACKAGES;
+import static android.app.NotificationLoggingConstants.ERROR_XML_PARSING;
 import static android.app.NotificationManager.BUBBLE_PREFERENCE_ALL;
 import static android.app.NotificationManager.BUBBLE_PREFERENCE_NONE;
 import static android.app.NotificationManager.IMPORTANCE_DEFAULT;
@@ -27,9 +30,6 @@ import static android.app.NotificationManager.IMPORTANCE_LOW;
 import static android.app.NotificationManager.IMPORTANCE_MAX;
 import static android.app.NotificationManager.IMPORTANCE_NONE;
 import static android.app.NotificationManager.IMPORTANCE_UNSPECIFIED;
-import static android.app.backup.NotificationLoggingConstants.DATA_TYPE_NOTIF_GLOBAL;
-import static android.app.backup.NotificationLoggingConstants.DATA_TYPE_NOTIF_PACKAGES;
-import static android.app.backup.NotificationLoggingConstants.ERROR_XML_PARSING;
 import static android.os.Process.INVALID_UID;
 import static android.os.UserHandle.USER_SYSTEM;
 
@@ -50,6 +50,7 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationChannelGroup;
 import android.app.NotificationManager;
+import android.app.NotificationSoundCanonicalizer;
 import android.app.ZenBypassingApp;
 import android.app.backup.BackupRestoreEventLogger;
 import android.content.AttributionSource;
@@ -2948,12 +2949,15 @@ public class PreferencesHelper implements RankingConfig {
                             for (NotificationChannel channel : r.channels.values()) {
                                 if (!channel.isSoundRestored()) {
                                     Uri uri = channel.getSound();
-                                    Uri restoredUri =
-                                            channel.restoreSoundUri(
+                                    Pair<Uri, Boolean> restorationResult =
+                                            NotificationSoundCanonicalizer.restoreSoundUri(
                                                     mContext,
                                                     uri,
                                                     true,
-                                                    channel.getAudioAttributes().getUsage());
+                                                    channel.getAudioAttributes().getUsage(),
+                                                    false);
+                                    Uri restoredUri = restorationResult.first;
+                                    channel.setSoundRestored(restorationResult.second);
                                     if (Settings.System.DEFAULT_NOTIFICATION_URI.equals(
                                             restoredUri)) {
                                         Slog.w(TAG,

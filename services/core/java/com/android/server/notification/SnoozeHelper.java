@@ -15,8 +15,8 @@
  */
 package com.android.server.notification;
 
-import static android.app.backup.NotificationLoggingConstants.DATA_TYPE_SNOOZED;
-import static android.app.backup.NotificationLoggingConstants.ERROR_XML_PARSING;
+import static android.app.NotificationLoggingConstants.DATA_TYPE_SNOOZED;
+import static android.app.NotificationLoggingConstants.ERROR_XML_PARSING;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;

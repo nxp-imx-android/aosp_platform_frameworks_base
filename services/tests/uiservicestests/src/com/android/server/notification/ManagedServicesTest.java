@@ -15,8 +15,8 @@
  */
 package com.android.server.notification;
 
-import static android.app.backup.NotificationLoggingConstants.DATA_TYPE_MANAGED_SERVICE_PRIMARY_APPROVED;
-import static android.app.backup.NotificationLoggingConstants.DATA_TYPE_MANAGED_SERVICE_SECONDARY_APPROVED;
+import static android.app.NotificationLoggingConstants.DATA_TYPE_MANAGED_SERVICE_PRIMARY_APPROVED;
+import static android.app.NotificationLoggingConstants.DATA_TYPE_MANAGED_SERVICE_SECONDARY_APPROVED;
 import static android.content.Context.DEVICE_POLICY_SERVICE;
 import static android.os.UserHandle.USER_ALL;
 import static android.os.UserHandle.USER_CURRENT;

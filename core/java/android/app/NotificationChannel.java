@@ -47,6 +47,7 @@ import android.service.notification.DynamicBundle;
 import android.service.notification.NotificationListenerService;
 import android.text.TextUtils;
 import android.util.Log;
+import android.util.Pair;
 import android.util.Slog;
 import android.util.proto.ProtoOutputStream;
 
@@ -1261,9 +1262,15 @@ public final class NotificationChannel implements Parcelable {
         Uri sound = safeUri(parser, ATT_SOUND);
 
         final AudioAttributes audioAttributes = safeAudioAttributes(parser);
-        final int usage = audioAttributes.getUsage();
-        setSound(forRestore ? restoreSoundUri(context, sound, pkgInstalled, usage) : sound,
-                audioAttributes);
+        if (forRestore) {
+            final int usage = audioAttributes.getUsage();
+            Pair<Uri, Boolean> restorationResult = NotificationSoundCanonicalizer.restoreSoundUri(
+                    context, sound, pkgInstalled, usage, mSoundRestored);
+            setSoundRestored(restorationResult.second);
+            setSound(restorationResult.first, audioAttributes);
+        } else {
+            setSound(sound, audioAttributes);
+        }
 
         enableLights(safeBool(parser, ATT_LIGHTS, false));
         setLightColor(safeInt(parser, ATT_LIGHT_COLOR, DEFAULT_LIGHT_COLOR));
@@ -1311,92 +1318,11 @@ public final class NotificationChannel implements Parcelable {
         return mSoundRestored;
     }
 
-    @Nullable
-    private Uri getCanonicalizedSoundUri(ContentResolver contentResolver, @NonNull Uri uri) {
-        if (Settings.System.DEFAULT_NOTIFICATION_URI.equals(uri)) {
-            return uri;
-        }
-
-        if (ContentResolver.SCHEME_ANDROID_RESOURCE.equals(uri.getScheme())) {
-            try {
-                contentResolver.getResourceId(uri);
-                return uri;
-            } catch (FileNotFoundException e) {
-                return null;
-            }
-        }
-
-        if (ContentResolver.SCHEME_FILE.equals(uri.getScheme())) {
-            return uri;
-        }
-        return contentResolver.canonicalize(uri);
-    }
-
-    @Nullable
-    private Uri getUncanonicalizedSoundUri(
-            ContentResolver contentResolver, @NonNull Uri uri, int usage) {
-        if (Settings.System.DEFAULT_NOTIFICATION_URI.equals(uri)
-                || ContentResolver.SCHEME_ANDROID_RESOURCE.equals(uri.getScheme())
-                || ContentResolver.SCHEME_FILE.equals(uri.getScheme())) {
-            return uri;
-        }
-        int ringtoneType = 0;
-
-        // Consistent with UI(SoundPreferenceController.handlePreferenceTreeClick).
-        if (AudioAttributes.USAGE_ALARM == usage) {
-            ringtoneType = RingtoneManager.TYPE_ALARM;
-        } else if (AudioAttributes.USAGE_NOTIFICATION_RINGTONE == usage) {
-            ringtoneType = RingtoneManager.TYPE_RINGTONE;
-        } else {
-            ringtoneType = RingtoneManager.TYPE_NOTIFICATION;
-        }
-        try {
-            return RingtoneManager.getRingtoneUriForRestore(
-                    contentResolver, uri.toString(), ringtoneType);
-        } catch (Exception e) {
-            Log.e(TAG, "Failed to uncanonicalized sound uri for " + uri + " " + e);
-            return Settings.System.DEFAULT_NOTIFICATION_URI;
-        }
-    }
-
     /**
-     * Restore/validate sound Uri from backup
-     * @param context The Context
-     * @param uri The sound Uri to restore
-     * @param pkgInstalled If the parent package is installed
-     * @return restored and validated Uri
      * @hide
      */
-    @Nullable
-    public Uri restoreSoundUri(
-            Context context, @Nullable Uri uri, boolean pkgInstalled, int usage) {
-        if (uri == null || Uri.EMPTY.equals(uri)) {
-            return null;
-        }
-        ContentResolver contentResolver = context.getContentResolver();
-        // There are backups out there with uncanonical uris (because we fixed this after
-        // shipping). If uncanonical uris are given to MediaProvider.uncanonicalize it won't
-        // verify the uri against device storage and we'll possibly end up with a broken uri.
-        // We then canonicalize the uri to uncanonicalize it back, which means we properly check
-        // the uri and in the case of not having the resource we end up with the default - better
-        // than broken. As a side effect we'll canonicalize already canonicalized uris, this is fine
-        // according to the docs because canonicalize method has to handle canonical uris as well.
-        Uri canonicalizedUri = getCanonicalizedSoundUri(contentResolver, uri);
-        if (canonicalizedUri == null) {
-            // Uri failed to restore with package installed
-            if (!mSoundRestored && pkgInstalled) {
-                mSoundRestored = true;
-                // We got a null because the uri in the backup does not exist here, so we return
-                // default
-                return Settings.System.DEFAULT_NOTIFICATION_URI;
-            } else {
-                // Flag as unrestored and try again later (on package install)
-                mSoundRestored = false;
-                return uri;
-            }
-        }
-        mSoundRestored = true;
-        return getUncanonicalizedSoundUri(contentResolver, canonicalizedUri, usage);
+    public void setSoundRestored(boolean soundRestored) {
+        mSoundRestored = soundRestored;
     }
 
     /**
@@ -1412,24 +1338,6 @@ public final class NotificationChannel implements Parcelable {
      */
     public void writeXmlForBackup(XmlSerializer out, Context context) throws IOException {
         writeXml(XmlUtils.makeTyped(out), true, context);
-    }
-
-    private Uri getSoundForBackup(Context context) {
-        Uri sound = getSound();
-        if (sound == null || Uri.EMPTY.equals(sound)) {
-            return null;
-        }
-        try {
-            Uri canonicalSound = getCanonicalizedSoundUri(context.getContentResolver(), sound);
-            if (canonicalSound == null) {
-                // The content provider does not support canonical uris so we backup the default
-                return Settings.System.DEFAULT_NOTIFICATION_URI;
-            }
-            return canonicalSound;
-        } catch (Exception e) {
-            Slog.e(TAG, "Cannot find file for sound " + sound + " using default");
-            return Settings.System.DEFAULT_NOTIFICATION_URI;
-        }
     }
 
     /**
@@ -1456,7 +1364,9 @@ public final class NotificationChannel implements Parcelable {
         if (getLockscreenVisibility() != DEFAULT_VISIBILITY) {
             out.attributeInt(null, ATT_VISIBILITY, getLockscreenVisibility());
         }
-        Uri sound = forBackup ? getSoundForBackup(context) : getSound();
+        Uri sound = forBackup
+                ? NotificationSoundCanonicalizer.getSoundForBackup(context, getSound())
+                : getSound();
         if (sound != null) {
             out.attribute(null, ATT_SOUND, sound.toString());
         }

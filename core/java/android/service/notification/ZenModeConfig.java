@@ -16,6 +16,7 @@
 
 package android.service.notification;
 
+import static android.app.NotificationLoggingConstants.DATA_TYPE_ZEN_RULES;
 import static android.app.NotificationManager.Policy.ALL_PRIORITY_CATEGORIES;
 import static android.app.NotificationManager.Policy.CONVERSATION_SENDERS_IMPORTANT;
 import static android.app.NotificationManager.Policy.CONVERSATION_SENDERS_NONE;
@@ -24,7 +25,6 @@ import static android.app.NotificationManager.Policy.SUPPRESSED_EFFECT_FULL_SCRE
 import static android.app.NotificationManager.Policy.SUPPRESSED_EFFECT_LIGHTS;
 import static android.app.NotificationManager.Policy.SUPPRESSED_EFFECT_PEEK;
 import static android.app.NotificationManager.Policy.SUPPRESSED_EFFECT_SCREEN_OFF;
-import static android.app.backup.NotificationLoggingConstants.DATA_TYPE_ZEN_RULES;
 import static android.provider.Settings.Global.ZEN_MODE_IMPORTANT_INTERRUPTIONS;
 import static android.service.notification.SystemZenRules.PACKAGE_ANDROID;
 import static android.service.notification.ZenAdapters.notificationPolicyCategoryToZenPolicyCategory;

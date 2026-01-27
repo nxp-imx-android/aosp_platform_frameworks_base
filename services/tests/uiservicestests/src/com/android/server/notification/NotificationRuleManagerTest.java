@@ -17,6 +17,10 @@
 package com.android.server.notification;
 
 
+import static android.app.Notification.CATEGORY_ALARM;
+import static android.app.Notification.CATEGORY_MESSAGE;
+import static android.app.Notification.FLAG_PROMOTED_ONGOING;
+import static android.app.NotificationLoggingConstants.DATA_TYPE_NOTIFICATION_RULES;
 import static android.app.NotificationManager.IMPORTANCE_DEFAULT;
 import static android.app.NotificationManager.IMPORTANCE_LOW;
 import static android.app.NotificationManager.IMPORTANCE_NONE;
@@ -39,20 +43,31 @@ import static android.service.notification.Adjustment.KEY_TYPE;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+
 import android.app.ActivityManager;
 import android.app.Flags;
 import android.app.NotificationRule;
+import android.app.backup.BackupRestoreEventLogger;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.UserHandle;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
+import android.provider.Settings;
 import android.service.notification.Adjustment;
+import android.util.Log;
+import android.util.Xml;
 
 import androidx.test.filters.SmallTest;
 import androidx.test.runner.AndroidJUnit4;
 
+import com.android.modules.utils.TypedXmlPullParser;
+import com.android.modules.utils.TypedXmlSerializer;
 import com.android.server.UiServiceTestCase;
 
 import org.junit.Before;
@@ -62,6 +77,10 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -72,6 +91,8 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
     @Rule
     public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
+    @Mock
+    BackupRestoreEventLogger mLogger;
     @Mock
     private NotificationManagerPrivate mNmPrivate;
     private int mUser;
@@ -88,6 +109,67 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
 
     private NotificationRule createRule(int id, String name, boolean isEnabled) {
         return new NotificationRule.Builder(id, name).setEnabled(isEnabled).build();
+    }
+
+    private NotificationRule createFullRule(int id, String name, boolean isEnabled) {
+        int primaryAction = NotificationRule.Action.PRIMARY_ACTION_BUNDLE;
+        String editAction = "editAction";
+        String bundleName = "bundleName";
+        String emojiIcon = "\uD83D\uDE42";
+        int lightColor = Color.RED;
+        List<String> modes = List.of("manual", "bedtime");
+        Uri soundHaptics = Settings.System.DEFAULT_NOTIFICATION_URI;
+        List<String> categories = List.of(CATEGORY_MESSAGE, CATEGORY_ALARM);
+        int contactLevel = NotificationRule.Filter.CONTACT_LEVEL_CONTACT;
+        int conversationLevel = NotificationRule.Filter.CONVERSATION_LEVEL_PRIORITY;
+        List<Uri> contacts = List.of(Uri.EMPTY, Uri.fromParts("hi", "hi", "hi"));
+        List<Integer> excludedPackages = List.of(1234, 4321);
+        List<Integer> includedPackages = List.of(5678, 8765);
+        int flagMask = FLAG_PROMOTED_ONGOING;
+        List<String> keywords = List.of("keyword", "another");
+        List<String> shortcutIds = List.of("abc", "def");
+        List<Integer> staticBundleTypes = List.of(Adjustment.TYPE_NEWS, Adjustment.TYPE_PROMOTION);
+        List<UserHandle> userHandles = List.of(UserHandle.SYSTEM, UserHandle.CURRENT);
+        List<Integer> days = List.of(0, 1);
+        int startHour = 1;
+        int startMinute = 30;
+        int endHour = 3;
+        int endMinute = 45;
+        double latitude = 5.0;
+        double longitude = 20.0;
+        float radius = 10f;
+
+        return new NotificationRule.Builder(id, name)
+                .setAction(new NotificationRule.Action.Builder(primaryAction)
+                        .setDynamicBundleName(bundleName)
+                        .setDynamicBundleEmojiIcon(emojiIcon)
+                        .setLightColorOverride(lightColor)
+                        .setModeBreakthroughIds(modes)
+                        .setSoundHapticOverride(soundHaptics)
+                        .build())
+                .setConditions(List.of(
+                        NotificationRule.Condition.createTimeCondition(
+                                days, startHour, startMinute, endHour, endMinute),
+                        NotificationRule.Condition.createLocationCondition(
+                                latitude, longitude, radius))
+                )
+                .setFilters(List.of(new NotificationRule.Filter.Builder()
+                        .setCategories(categories)
+                        .setContactLevel(contactLevel)
+                        .setConversationLevel(conversationLevel)
+                        .setContacts(contacts)
+                        .setExcludedPackageUids(excludedPackages)
+                        .setFlags(flagMask)
+                        .setIncludedPackageUids(includedPackages)
+                        .setKeywords(keywords)
+                        .setShortcutIds(shortcutIds)
+                        .setStaticBundleTypes(staticBundleTypes)
+                        .setUsers(userHandles)
+                        .build()))
+                .setCanBeDisabled(false)
+                .setEditIntentAction(editAction)
+                .setEnabled(isEnabled)
+                .build();
     }
 
     @Test
@@ -390,5 +472,87 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
         actualSignals = behavioralAdjustment203.getSignals();
         assertThat(actualSignals.keySet().size()).isEqualTo(1);
         assertThat(actualSignals.getInt(KEY_TYPE)).isEqualTo(rule3.getId());
+    }
+
+    @Test
+    public void readWriteXml_local() throws Exception {
+        TypedXmlSerializer serializer = Xml.newFastSerializer();
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        serializer.setOutput(new BufferedOutputStream(baos), "utf-8");
+        serializer.startDocument(null, true);
+
+        NotificationRule rule1User1 = createFullRule(100, "test", true);
+        NotificationRule rule2User1 = createFullRule(101, "another", false);
+        NotificationRule rule3User1 = createRule(103, "boo", true);
+        underTest.setNotificationRules(mUser, List.of(rule1User1, rule2User1, rule3User1));
+        NotificationRule rule1User2 = createFullRule(101, "secondary", true);
+        NotificationRule rule2User2 = createFullRule(102, "third", false);
+        underTest.setNotificationRules(mUser + 1, List.of(rule1User2, rule2User2));
+
+        underTest.writeXml(serializer, false, UserHandle.USER_ALL, null, false);
+        serializer.endDocument();
+        serializer.flush();
+
+        // Uncomment if needed for debugging
+        // Log.v(getClass().getSimpleName(), baos.toString("UTF-8"));
+
+        TypedXmlPullParser parser = Xml.newFastPullParser();
+        byte[] byteArray = baos.toByteArray();
+        parser.setInput(new BufferedInputStream(new ByteArrayInputStream(byteArray)), null);
+        parser.nextTag();
+
+        underTest = new NotificationRuleManager(mContext, mNmPrivate);
+        underTest.readXml(parser, false, UserHandle.USER_ALL, null);
+
+        assertThat(underTest.getNotificationRules(mUser))
+                .containsExactly(rule1User1, rule2User1, rule3User1).inOrder();
+        assertThat(underTest.getNotificationRules(mUser + 1)).containsExactly(
+                rule1User2, rule2User2).inOrder();
+        assertThat(underTest.getNotificationRules(UserHandle.USER_ALL)).isEmpty();
+    }
+
+    @Test
+    public void readWriteXml_backupRestore() throws Exception {
+        TypedXmlSerializer serializer = Xml.newFastSerializer();
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        serializer.setOutput(new BufferedOutputStream(baos), "utf-8");
+        serializer.startDocument(null, true);
+
+        NotificationRule rule1User1 = createFullRule(100, "test", true);
+        NotificationRule rule2User1 = createFullRule(101, "another", false);
+        NotificationRule rule3User1 = createRule(103, "boo", true);
+        underTest.setNotificationRules(mUser, List.of(rule1User1, rule2User1, rule3User1));
+        NotificationRule rule1User2 = createFullRule(101, "secondary", true);
+        NotificationRule rule2User2 = createFullRule(102, "third", false);
+        underTest.setNotificationRules(mUser + 1, List.of(rule1User2, rule2User2));
+
+        underTest.writeXml(serializer, true, mUser,
+                android.app.Flags.backupRestoreLogging() ? mLogger : null, false);
+        serializer.endDocument();
+        serializer.flush();
+
+        // Uncomment if needed for debugging
+        // Log.v(getClass().getSimpleName(), baos.toString("UTF-8"));
+
+        if (android.app.Flags.backupRestoreLogging()) {
+            verify(mLogger).logItemsBackedUp(DATA_TYPE_NOTIFICATION_RULES, 3);
+        }
+
+        TypedXmlPullParser parser = Xml.newFastPullParser();
+        byte[] byteArray = baos.toByteArray();
+        parser.setInput(new BufferedInputStream(new ByteArrayInputStream(byteArray)), null);
+        parser.nextTag();
+
+        underTest = new NotificationRuleManager(mContext, mNmPrivate);
+        underTest.readXml(parser, true, mUser, mLogger);
+
+        if (android.app.Flags.backupRestoreLogging()) {
+            verify(mLogger).logItemsRestored(DATA_TYPE_NOTIFICATION_RULES, 3);
+            verify(mLogger, never()).logItemsRestoreFailed(anyString(), anyInt(), anyString());
+        }
+
+        assertThat(underTest.getNotificationRules(mUser))
+                .containsExactly(rule1User1, rule2User1, rule3User1).inOrder();
+        assertThat(underTest.getNotificationRules(mUser + 1)).isEmpty();
     }
 }
