@@ -53,22 +53,25 @@ public final class TrustTokenServiceClient {
             @NonNull TrustTokenRequest request,
             @NonNull OutcomeReceiver<TrustTokenResponse, TrustTokenServiceException> callback) {
         try {
-            ICancellationSignal remoteCancellation =
-                    mService.onRequestTrustTokens(
-                            request,
-                            new ITrustTokenCallback.Stub() {
-                                @Override
-                                public void onSuccess(TrustTokenResponse response) {
-                                    callback.onResult(response);
-                                }
-
-                                @Override
-                                public void onFailure(int code) {
-                                    callback.onError(new TrustTokenServiceException(code, ""));
-                                }
-                            });
             var cancellation = new CancellationSignal();
-            cancellation.setRemote(remoteCancellation);
+            mService.onRequestTrustTokens(
+                    request,
+                    new ITrustTokenCallback.Stub() {
+                        @Override
+                        public void onSuccess(TrustTokenResponse response) {
+                            callback.onResult(response);
+                        }
+
+                        @Override
+                        public void onRemoteCancellationSignal(ICancellationSignal signal) {
+                            cancellation.setRemote(signal);
+                        }
+
+                        @Override
+                        public void onFailure(int code) {
+                            callback.onError(new TrustTokenServiceException(code, ""));
+                        }
+                    });
             return cancellation;
         } catch (RemoteException e) {
             throw new RuntimeException(e);
