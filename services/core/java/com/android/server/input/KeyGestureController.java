@@ -32,6 +32,7 @@ import static android.window.DesktopExperienceFlags.TOGGLE_FULLSCREEN_STATE_VIA_
 import static com.android.hardware.input.Flags.enableNew26q2Keycodes;
 import static com.android.hardware.input.Flags.keyboardBacklightShortcuts;
 import static com.android.hardware.input.Flags.fixSearchModifierFallbacks;
+import static com.android.hardware.input.Flags.enableContextualInputTrigger;
 import static com.android.internal.config.sysui.SystemUiDeviceConfigFlags.SCREENSHOT_KEYCHORD_DELAY;
 
 import android.annotation.BinderThread;
@@ -896,6 +897,23 @@ final class KeyGestureController {
                                 new int[] {KeyEvent.KEYCODE_ACCESSIBILITY},
                                 /* modifierState= */ 0,
                                 KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_TOP_ROW_ACCESSIBILITY_KEY,
+                                KeyGestureEvent.ACTION_GESTURE_COMPLETE,
+                                displayId,
+                                focusedToken,
+                                /* flags= */ 0,
+                                /* appLaunchData= */ null);
+                        return true;
+                    }
+                }
+                break;
+            case KeyEvent.KEYCODE_INSERT:
+                if (enableContextualInputTrigger()) {
+                    if (firstDown && !hasModifiers) {
+                        handleKeyGesture(
+                                deviceId,
+                                new int[] {KeyEvent.KEYCODE_INSERT},
+                                /* modifierState= */ 0,
+                                KeyGestureEvent.KEY_GESTURE_TYPE_CONTEXTUAL_INPUT,
                                 KeyGestureEvent.ACTION_GESTURE_COMPLETE,
                                 displayId,
                                 focusedToken,
