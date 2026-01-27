@@ -103,6 +103,10 @@ class SnapshotPersistQueue {
      * @param paused Whether task snapshot persisting should be paused.
      */
     void setPaused(boolean paused) {
+        // TODO Add a blocking WriteQueueItem for unit tests instead of using this method.
+        if (Flags.noPauseTaskSnapshotPersister()) {
+            return;
+        }
         synchronized (mLock) {
             mPaused = paused;
             if (!paused) {
