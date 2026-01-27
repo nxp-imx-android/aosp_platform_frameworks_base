@@ -18,6 +18,7 @@ package com.android.systemui.inputmethod.domain.interactor
 
 import android.platform.test.annotations.RequiresFlagsEnabled
 import android.view.inputmethod.Flags.FLAG_IME_SWITCHER_MENU_SYSTEMUI
+import android.view.inputmethod.InputMethodManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
@@ -84,6 +85,7 @@ class ImeSwitcherMenuInteractorTest : SysuiTestCase() {
                     selectedSubtypeIndex = 0,
                     selectedImeSettingsIntent = null,
                     isScreenLocked = false,
+                    entryPoint = InputMethodManager.IM_PICKER_ENTRY_POINT_DEFAULT,
                     displayId = 5,
                 )
 

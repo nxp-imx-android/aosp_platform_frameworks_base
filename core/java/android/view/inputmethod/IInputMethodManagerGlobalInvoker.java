@@ -35,6 +35,7 @@ import android.os.ResultReceiver;
 import android.os.ServiceManager;
 import android.util.ExceptionUtils;
 import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager.IMPickerEntryPoint;
 
 import com.android.internal.infra.AndroidFuture;
 import com.android.internal.inputmethod.DirectBootAwareness;
@@ -338,13 +339,14 @@ final class IInputMethodManagerGlobalInvoker {
     @RequiresPermission(allOf = {
             Manifest.permission.WRITE_SECURE_SETTINGS,
             Manifest.permission.INTERACT_ACROSS_USERS_FULL})
-    static void showInputMethodPickerFromSystem(int auxiliarySubtypeMode, int displayId) {
+    static void showInputMethodPickerFromSystem(
+            int auxiliarySubtypeMode, @IMPickerEntryPoint int entryPoint, int displayId) {
         final IInputMethodManager service = getService();
         if (service == null) {
             return;
         }
         try {
-            service.showInputMethodPickerFromSystem(auxiliarySubtypeMode, displayId);
+            service.showInputMethodPickerFromSystem(auxiliarySubtypeMode, entryPoint, displayId);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

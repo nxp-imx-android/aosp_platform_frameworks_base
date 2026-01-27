@@ -454,8 +454,11 @@ public class NavigationBarTest extends SysuiTestCase {
         verify(mUiEventLogger).log(NAVBAR_IME_SWITCHER_BUTTON_TAP);
         verify(mUiEventLogger, never()).log(NAVBAR_IME_SWITCHER_BUTTON_LONGPRESS);
         verify(mInputMethodManager).onImeSwitchButtonClickFromSystem(mNavigationBar.mDisplayId);
-        verify(mInputMethodManager, never()).showInputMethodPickerFromSystem(
-                anyBoolean() /* showAuxiliarySubtypes */, anyInt() /* displayId */);
+        verify(mInputMethodManager, never())
+                .showInputMethodPickerFromSystem(
+                        anyBoolean() /* showAuxiliarySubtypes */,
+                        anyInt() /* entryPoint */,
+                        anyInt() /* displayId */);
     }
 
     @Test
@@ -466,8 +469,11 @@ public class NavigationBarTest extends SysuiTestCase {
 
         verify(mUiEventLogger, never()).log(NAVBAR_IME_SWITCHER_BUTTON_TAP);
         verify(mUiEventLogger).log(NAVBAR_IME_SWITCHER_BUTTON_LONGPRESS);
-        verify(mInputMethodManager).showInputMethodPickerFromSystem(
-                true /* showAuxiliarySubtypes */, mNavigationBar.mDisplayId);
+        verify(mInputMethodManager)
+                .showInputMethodPickerFromSystem(
+                        true /* showAuxiliarySubtypes */,
+                        InputMethodManager.IM_PICKER_ENTRY_POINT_DEFAULT,
+                        mNavigationBar.mDisplayId);
     }
 
     @Test

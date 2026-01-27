@@ -207,12 +207,15 @@ public class KeyguardPasswordViewController
             }
         });
 
-        mSwitchImeButton.setOnClickListener(v -> {
-            mKeyguardSecurityCallback.userActivity(); // Leave the screen on a bit longer
-            // Do not show auxiliary subtypes in password lock screen.
-            mInputMethodManager.showInputMethodPickerFromSystem(false,
-                    mView.getContext().getDisplayId());
-        });
+        mSwitchImeButton.setOnClickListener(
+                v -> {
+                    mKeyguardSecurityCallback.userActivity(); // Leave the screen on a bit longer
+                    // Do not show auxiliary subtypes in password lock screen.
+                    mInputMethodManager.showInputMethodPickerFromSystem(
+                            false /* showAuxiliarySubtypes */,
+                            InputMethodManager.IM_PICKER_ENTRY_POINT_DEFAULT,
+                            mView.getContext().getDisplayId());
+                });
 
         View cancelBtn = mView.findViewById(R.id.cancel_button);
         if (cancelBtn != null) {

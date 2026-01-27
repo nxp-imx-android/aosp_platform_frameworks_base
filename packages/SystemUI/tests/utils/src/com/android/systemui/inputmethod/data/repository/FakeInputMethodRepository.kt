@@ -17,6 +17,7 @@
 package com.android.systemui.inputmethod.data.repository
 
 import android.os.UserHandle
+import android.view.inputmethod.InputMethodManager.IMPickerEntryPoint
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.inputmethod.data.model.InputMethodModel
 import kotlinx.coroutines.flow.Flow
@@ -33,6 +34,12 @@ class FakeInputMethodRepository : InputMethodRepository {
     private var usersToEnabledInputMethods: MutableMap<Int, Flow<InputMethodModel>> = mutableMapOf()
 
     var selectedInputMethodSubtypes = listOf<InputMethodModel.Subtype>()
+
+    /**
+     * The entry point where the input method picker dialog was shown, or `null` if the dialog was
+     * not shown.
+     */
+    @IMPickerEntryPoint var inputMethodPickerShownEntryPoint: Int? = null
 
     /**
      * The display ID on which the input method picker dialog was shown, or `null` if the dialog was
@@ -66,7 +73,12 @@ class FakeInputMethodRepository : InputMethodRepository {
         }
     }
 
-    override suspend fun showInputMethodPicker(displayId: Int, showAuxiliarySubtypes: Boolean) {
+    override suspend fun showInputMethodPicker(
+        showAuxiliarySubtypes: Boolean,
+        @IMPickerEntryPoint entryPoint: Int,
+        displayId: Int,
+    ) {
+        inputMethodPickerShownEntryPoint = entryPoint
         inputMethodPickerShownDisplayId = displayId
     }
 }

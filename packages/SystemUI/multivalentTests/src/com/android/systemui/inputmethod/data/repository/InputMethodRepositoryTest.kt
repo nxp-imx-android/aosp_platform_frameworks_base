@@ -222,11 +222,16 @@ class InputMethodRepositoryTest : SysuiTestCase() {
         testScope.runTest {
             val displayId = 7
 
-            underTest.showInputMethodPicker(displayId, /* showAuxiliarySubtypes= */ true)
+            underTest.showInputMethodPicker(
+                /* showAuxiliarySubtypes= */ true,
+                InputMethodManager.IM_PICKER_ENTRY_POINT_DEFAULT,
+                displayId = displayId,
+            )
 
             verify(inputMethodManager)
                 .showInputMethodPickerFromSystem(
                     /* showAuxiliarySubtypes = */ eq(true),
+                    /* entryPoint = */ eq(InputMethodManager.IM_PICKER_ENTRY_POINT_DEFAULT),
                     /* displayId = */ eq(displayId),
                 )
         }

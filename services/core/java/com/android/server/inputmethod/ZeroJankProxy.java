@@ -52,6 +52,7 @@ import android.view.inputmethod.CursorAnchorInfo;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodInfo;
 import android.view.inputmethod.InputMethodManager;
+import android.view.inputmethod.InputMethodManager.IMPickerEntryPoint;
 import android.view.inputmethod.InputMethodSubtype;
 
 import com.android.internal.inputmethod.DirectBootAwareness;
@@ -230,8 +231,9 @@ final class ZeroJankProxy implements IInputMethodManagerImpl.Callback {
             Manifest.permission.INTERACT_ACROSS_USERS_FULL,
             Manifest.permission.WRITE_SECURE_SETTINGS})
     @Override
-    public void showInputMethodPickerFromSystem(int auxiliarySubtypeMode, int displayId) {
-        mInner.showInputMethodPickerFromSystem(auxiliarySubtypeMode, displayId);
+    public void showInputMethodPickerFromSystem(
+            int auxiliarySubtypeMode, @IMPickerEntryPoint int entryPoint, int displayId) {
+        mInner.showInputMethodPickerFromSystem(auxiliarySubtypeMode, entryPoint, displayId);
     }
 
     @IInputMethodManagerImpl.PermissionVerified(Manifest.permission.TEST_INPUT_METHOD)

@@ -137,6 +137,7 @@ import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethod;
 import android.view.inputmethod.InputMethodInfo;
 import android.view.inputmethod.InputMethodManager;
+import android.view.inputmethod.InputMethodManager.IMPickerEntryPoint;
 import android.view.inputmethod.InputMethodSubtype;
 
 import com.android.internal.annotations.GuardedBy;
@@ -468,8 +469,8 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
     interface ImeSwitcherMenu {
 
         void show(@NonNull List<ImeSubtypeListItem> items, @Nullable String selectedImeId,
-                int selectedSubtypeIndex, boolean isScreenLocked, int displayId,
-                @UserIdInt int userId);
+                int selectedSubtypeIndex, boolean isScreenLocked,
+                @IMPickerEntryPoint int entryPoint, int displayId, @UserIdInt int userId);
 
         void hide(int displayId, @UserIdInt int userId);
 
@@ -486,7 +487,8 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         @Override
         public void show(@NonNull List<ImeSubtypeListItem> items, @Nullable String selectedImeId,
                 @IntRange(from = NOT_A_SUBTYPE_INDEX) int selectedSubtypeIndex,
-                boolean isScreenLocked, int displayId, @UserIdInt int userId) {
+                boolean isScreenLocked, @IMPickerEntryPoint int entryPoint, int displayId,
+                @UserIdInt int userId) {
             if (mIImeSwitcherMenu != null) {
                 final var menuItems = new ArrayList<IImeSwitcherMenu.Item>();
                 for (int i = 0; i < items.size(); i++) {
@@ -507,7 +509,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                 try {
                     mIImeSwitcherMenu.show(ImeSwitcherMenuItemSafeList.create(menuItems),
                             selectedImeId, selectedSubtypeIndex, selectedImeSettingsIntent,
-                            isScreenLocked, displayId, userId);
+                            isScreenLocked, entryPoint, displayId, userId);
                 } catch (RemoteException e) {
                     Slog.w(TAG, "Failed show IME Switcher Menu for user: " + userId
                             + " on display: " + displayId, e);
@@ -4331,7 +4333,8 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                     ? userData.mCurClient.mSelfReportedDisplayId : DEFAULT_DISPLAY;
             mHandler.post(() -> {
                 synchronized (ImfLock.class) {
-                    showInputMethodPickerLocked(auxiliarySubtypeMode, displayId, userId);
+                    showInputMethodPickerLocked(auxiliarySubtypeMode,
+                            InputMethodManager.IM_PICKER_ENTRY_POINT_DEFAULT, displayId, userId);
                 }
             });
         }
@@ -4341,13 +4344,14 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             Manifest.permission.INTERACT_ACROSS_USERS_FULL,
             Manifest.permission.WRITE_SECURE_SETTINGS})
     @Override
-    public void showInputMethodPickerFromSystem(int auxiliarySubtypeMode, int displayId) {
+    public void showInputMethodPickerFromSystem(
+            int auxiliarySubtypeMode, @IMPickerEntryPoint int entryPoint, int displayId) {
         // Always call subtype picker, because subtype picker is a superset of input method
         // picker.
         mHandler.post(() -> {
             synchronized (ImfLock.class) {
                 final int userId = resolveImeUserIdFromDisplayIdLocked(displayId);
-                showInputMethodPickerLocked(auxiliarySubtypeMode, displayId, userId);
+                showInputMethodPickerLocked(auxiliarySubtypeMode, entryPoint, displayId, userId);
             }
         });
     }
@@ -4392,7 +4396,8 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             switchToNextInputMethodLocked(false /* onlyCurrentIme */, userData);
         } else {
             showInputMethodPickerFromSystem(
-                    InputMethodManager.SHOW_IM_PICKER_MODE_INCLUDE_AUXILIARY_SUBTYPES, displayId);
+                    InputMethodManager.SHOW_IM_PICKER_MODE_INCLUDE_AUXILIARY_SUBTYPES,
+                    InputMethodManager.IM_PICKER_ENTRY_POINT_DEFAULT, displayId);
         }
     }
 
@@ -5189,8 +5194,8 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
     }
 
     @GuardedBy("ImfLock.class")
-    private void showInputMethodPickerLocked(int auxiliarySubtypeMode, int displayId,
-            @UserIdInt int userId) {
+    private void showInputMethodPickerLocked(int auxiliarySubtypeMode,
+            @IMPickerEntryPoint int entryPoint, int displayId, @UserIdInt int userId) {
         final var userData = getUserData(userId);
         final boolean showAuxSubtypes;
         switch (auxiliarySubtypeMode) {
@@ -5244,7 +5249,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         }
 
         mImeSwitcherMenu.show(items, selectedImeId, selectedSubtypeIndex, isScreenLocked,
-                displayId, userId);
+                entryPoint, displayId, userId);
     }
 
     @SuppressWarnings("unchecked")
