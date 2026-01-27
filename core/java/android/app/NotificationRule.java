@@ -183,25 +183,25 @@ public final class NotificationRule implements Parcelable {
 
     @Override
     public void writeToParcel(@NonNull Parcel dest, int flags) {
-        dest.writeList(mFilters);
+        dest.writeTypedList(mFilters);
         dest.writeBoolean(mEnabled);
         dest.writeInt(mId);
         dest.writeString8(mName);
         dest.writeString8(mEditIntentAction);
         dest.writeParcelable(mAction, flags);
         dest.writeBoolean(mCanBeDisabled);
-        dest.writeList(mConditions);
+        dest.writeTypedList(mConditions);
     }
 
     private NotificationRule(Parcel in) {
-        mFilters.addAll(in.readArrayList(Filter.class.getClassLoader(), Filter.class));
+        in.readTypedList(mFilters, Filter.CREATOR);
         mEnabled = in.readBoolean();
         mId = in.readInt();
         mName = in.readString8();
         mEditIntentAction = in.readString8();
         mAction = in.readParcelable(Action.class.getClassLoader(), Action.class);
         mCanBeDisabled = in.readBoolean();
-        in.readList(mConditions, Condition.class.getClassLoader(), Condition.class);
+        in.readTypedList(mConditions, Condition.CREATOR);
     }
 
     private NotificationRule(@NonNull List<Filter> filters,
@@ -394,7 +394,10 @@ public final class NotificationRule implements Parcelable {
         }
 
         public static @NonNull Condition createTimeCondition(@NonNull List<Integer> days,
-                int startHour, int startMinute, int endHour, int endMinute) {
+                @IntRange(from = 0, to = 23) int startHour,
+                @IntRange(from = 0 , to = 59) int startMinute,
+                @IntRange(from = 0, to = 23) int endHour,
+                @IntRange(from = 0, to = 59) int endMinute) {
             return new Condition(days, startHour, startMinute, endHour, endMinute);
         }
 
@@ -412,7 +415,7 @@ public final class NotificationRule implements Parcelable {
 
         /**
          * If this is a {@link #CONDITION_TYPE_LOCATION} condition, returns the latitude of the
-         * latitude of the geofence circle where this rule applies.
+         * center of the geofence circle where this rule applies.
          */
         public double getLatitude() {
             return mLatitude;
@@ -420,7 +423,7 @@ public final class NotificationRule implements Parcelable {
 
         /**
          * If this is a {@link #CONDITION_TYPE_LOCATION} condition, returns the longitude of the
-         * latitude of the geofence circle where this rule applies.
+         * center of the geofence circle where this rule applies.
          */
         public double getLongitude() {
             return mLongitude;
@@ -520,9 +523,11 @@ public final class NotificationRule implements Parcelable {
             mDays.addAll(in.readArrayList(Integer.class.getClassLoader(), Integer.class));
             mStartHour = in.readInt();
             mStartMinute = in.readInt();
+            mEndHour = in.readInt();
+            mEndMinute = in.readInt();
         }
 
-        public void writeToParcel(@androidx.annotation.NonNull Parcel dest, int flags) {
+        public void writeToParcel(@NonNull Parcel dest, int flags) {
             dest.writeInt(mConditionType);
             dest.writeDouble(mLatitude);
             dest.writeDouble(mLongitude);
@@ -530,6 +535,8 @@ public final class NotificationRule implements Parcelable {
             dest.writeList(mDays);
             dest.writeInt(mStartHour);
             dest.writeInt(mStartMinute);
+            dest.writeInt(mEndHour);
+            dest.writeInt(mEndMinute);
         }
 
         @NonNull
@@ -669,7 +676,7 @@ public final class NotificationRule implements Parcelable {
         }
 
         @Override
-        public void writeToParcel(@androidx.annotation.NonNull Parcel dest, int flags) {
+        public void writeToParcel(@NonNull Parcel dest, int flags) {
             dest.writeInt(mPrimaryAction);
             if (mSoundHapticOverride != null) {
                 dest.writeByte((byte) 1);
@@ -969,7 +976,7 @@ public final class NotificationRule implements Parcelable {
          * Returns the {@link Notification#flags flags mask} that this rule applies to.
          * <p>Compare to {@link Notification#flags}.
          */
-        public int getFlags() {
+        public @Notification.NotificationFlags int getFlags() {
             return mFlags;
         }
 
