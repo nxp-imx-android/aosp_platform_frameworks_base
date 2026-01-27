@@ -464,6 +464,16 @@ flag {
 }
 
 flag {
+    name: "refine_ancestor_search_and_bounds"
+    namespace: "windowing_frontend"
+    description: "Limit the animation bounds for close transition, and do not let other child participants affect final root of a transition."
+    bug: "472227796"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "transit_mixpatcher_base"
     namespace: "windowing_frontend"
     description: "Foundation for shell-side transition Mixpatcher."

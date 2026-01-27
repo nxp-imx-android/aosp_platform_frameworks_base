@@ -485,6 +485,7 @@ public class GlobalSettingsValidators {
                                         Global.Wearable.STATUS_TRAY_CONFIGURATION_SYSTEM_UI_HOSTED),
                         }));
         VALIDATORS.put(Global.Wearable.GESTURE_PRIMARY_ACTION_USER_PREFERENCE, BOOLEAN_VALIDATOR);
+        VALIDATORS.put(Global.Wearable.GESTURE_ALWAYS_ON_MEDIA_ENABLED, BOOLEAN_VALIDATOR);
         VALIDATORS.put(Global.Wearable.GESTURE_DISMISS_ACTION_USER_PREFERENCE, BOOLEAN_VALIDATOR);
         VALIDATORS.put(Global.Wearable.GESTURE_HINT_PERIOD_DAYS, ANY_INTEGER_VALIDATOR);
         VALIDATORS.put(

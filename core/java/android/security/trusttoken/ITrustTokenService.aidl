@@ -16,6 +16,7 @@
 
 package android.security.trusttoken;
 
+import android.os.ICancellationSignal;
 import android.security.trusttoken.ITrustTokenCallback;
 import android.security.trusttoken.TrustTokenRequest;
 
@@ -24,7 +25,7 @@ import android.security.trusttoken.TrustTokenRequest;
  *
  * @hide
  */
-oneway interface ITrustTokenService {
-    void onRequestTrustTokens(in TrustTokenRequest request,
-                              in ITrustTokenCallback callback);
+interface ITrustTokenService {
+    ICancellationSignal onRequestTrustTokens(in TrustTokenRequest request,
+                                             in ITrustTokenCallback callback);
 }

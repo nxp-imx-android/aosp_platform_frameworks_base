@@ -19,16 +19,14 @@ package com.android.server.companion.datatransfer.continuity.connectivity;
 import android.annotation.NonNull;
 import android.companion.AssociationInfo;
 import android.companion.CompanionDeviceManager;
+import android.util.ArrayMap;
+import android.util.ArraySet;
 import android.util.Slog;
 import com.android.internal.annotations.VisibleForTesting;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import javax.annotation.concurrent.GuardedBy;
@@ -42,7 +40,7 @@ public class ConnectedAssociationStore {
     private final AssociationProfileManager mAssociationProfileManager;
     private final Listener mListener;
     private final Executor mExecutor;
-    private final Map<Integer, AssociationInfo> mConnectedAssociations = new HashMap<>();
+    private final ArrayMap<Integer, AssociationInfo> mConnectedAssociations = new ArrayMap<>(0);
 
     @GuardedBy("this")
     private Consumer<List<AssociationInfo>> mAssociationInfoConsumer;
@@ -114,9 +112,9 @@ public class ConnectedAssociationStore {
             }
         }
 
-        Set<Integer> removedAssociations = new HashSet<>(mConnectedAssociations.keySet());
+        ArraySet<Integer> removedAssociations = new ArraySet<>(mConnectedAssociations.keySet());
 
-        Set<AssociationInfo> addedAssociations = new HashSet<>();
+        ArraySet<AssociationInfo> addedAssociations = new ArraySet<>();
         for (AssociationInfo associationInfo : newTaskContinuityAssociations) {
             if (!mConnectedAssociations.containsKey(associationInfo.getId())) {
                 addedAssociations.add(associationInfo);

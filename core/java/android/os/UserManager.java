@@ -6061,8 +6061,11 @@ public class UserManager {
      * @hide
      */
     public boolean hasBadge(@UserIdInt int userId) {
-        if (!isProfile(userId)) {
-            // Since currently only profiles actually have badges, we can do this optimization.
+        final boolean isHsu = android.multiuser.Flags.hsuAppManagement()
+                && isHeadlessSystemUserMode() && userId == UserHandle.USER_SYSTEM;
+        if (!isProfile(userId) && !isHsu) {
+            // Since only certain types of users can currently have badges, we can sometimes
+            // optimize and avoid a binder call.
             return false;
         }
         try {

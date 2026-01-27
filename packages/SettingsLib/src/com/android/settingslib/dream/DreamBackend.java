@@ -15,6 +15,7 @@
  */
 
 package com.android.settingslib.dream;
+import static android.service.dreams.Flags.dreamsSwitcher;
 
 import android.annotation.IntDef;
 import android.content.ComponentName;
@@ -52,6 +53,7 @@ public class DreamBackend {
     private static final boolean DEBUG = false;
 
     public static class DreamInfo {
+        public static final int ORDER_UNSELECTED = -1;
         public CharSequence caption;
         public Drawable icon;
         public boolean isActive;
@@ -62,6 +64,7 @@ public class DreamBackend {
         public boolean supportsComplications = false;
         public int dreamCategory;
         public boolean userSelectable = true;
+        public int order = ORDER_UNSELECTED; // Start at 0 for active dreams.
 
         @Override
         public String toString() {
@@ -205,7 +208,7 @@ public class DreamBackend {
 
     public List<DreamInfo> getDreamInfos() {
         logd("getDreamInfos()");
-        ComponentName activeDream = getActiveDream();
+        final List<ComponentName> activeDreams = getActiveDreams();
         PackageManager pm = mContext.getPackageManager();
         Intent dreamIntent = new Intent(DreamService.SERVICE_INTERFACE);
         List<ResolveInfo> resolveInfos = pm.queryIntentServices(dreamIntent,
@@ -218,7 +221,7 @@ public class DreamBackend {
             }
 
             final DreamService.DreamMetadata dreamMetadata = DreamService.getDreamMetadata(
-                    mContext.getPackageManager(), resolveInfo.serviceInfo);
+                    pm, resolveInfo.serviceInfo);
             if (dreamMetadata != null && !dreamMetadata.userSelectable) {
                 continue;
             }
@@ -235,7 +238,11 @@ public class DreamBackend {
             dreamInfo.icon = resolveInfo.loadIcon(pm);
             dreamInfo.description = getDescription(resolveInfo, pm);
             dreamInfo.componentName = componentName;
-            dreamInfo.isActive = dreamInfo.componentName.equals(activeDream);
+            final int dreamIdx = activeDreams.indexOf(dreamInfo.componentName);
+            dreamInfo.isActive = dreamIdx > -1;
+            if (dreamInfo.isActive) {
+                dreamInfo.order = dreamIdx;
+            }
 
             dreamInfos.add(dreamInfo);
         }
@@ -589,6 +596,26 @@ public class DreamBackend {
         }
     }
 
+    /**
+     * Sets the active dreams.
+     */
+    public void setActiveDreams(ComponentName[] dreams) {
+        logd("setActiveDreams(%s)", Arrays.toString(dreams));
+        if (mDreamManager == null) {
+            return;
+        }
+        try {
+            mDreamManager.setDreamComponents(dreams);
+            logDreamSettingChangeToStatsd(DS_TYPE_DREAM_COMPONENT);
+        } catch (RemoteException e) {
+            Log.w(TAG, "Failed to set active dreams to " + Arrays.toString(dreams), e);
+        }
+    }
+
+    /**
+     * @deprecated Multiple dreams are now supported. Use {@link #getActiveDreams()} instead.
+     */
+    @Deprecated
     public ComponentName getActiveDream() {
         if (mDreamManager == null) {
             return null;
@@ -599,6 +626,30 @@ public class DreamBackend {
         } catch (RemoteException e) {
             Log.w(TAG, "Failed to get active dream", e);
             return null;
+        }
+    }
+
+    /**
+     * Returns an empty list if no dreams are active or an error occurs. If {@code dreamsSwitcher}
+     * is false, this list will contain at most one element.
+     *
+     * @return the list of active dreams.
+     */
+    public List<ComponentName> getActiveDreams() {
+        if (mDreamManager == null) {
+            return new ArrayList<>();
+        }
+        try {
+            final ComponentName[] dreams = mDreamManager.getDreamComponents();
+            if (dreams == null || dreams.length == 0) {
+                return new ArrayList<>();
+            }
+
+            // If dreamsSwitcher is false, only the first dream is considered active.
+            return dreamsSwitcher() ? Arrays.asList(dreams) : Arrays.asList(dreams[0]);
+        } catch (RemoteException e) {
+            Log.w(TAG, "Failed to get active dreams", e);
+            return new ArrayList<>();
         }
     }
 

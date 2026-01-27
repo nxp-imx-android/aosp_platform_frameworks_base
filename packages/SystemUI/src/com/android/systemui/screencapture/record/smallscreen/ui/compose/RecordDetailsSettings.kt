@@ -240,10 +240,7 @@ private fun AppSelectorButton(
                     .value,
             modifier = Modifier.size(40.dp).padding(8.dp),
         )
-        Column(
-            modifier =
-                Modifier.padding(horizontal = 8.dp).weight(weight = 1f, fill = false).basicMarquee()
-        ) {
+        Column(modifier = Modifier.padding(horizontal = 8.dp).weight(weight = 1f).basicMarquee()) {
             Text(
                 text = stringResource(R.string.screen_record_single_app_hint),
                 style = MaterialTheme.typography.titleSmall,

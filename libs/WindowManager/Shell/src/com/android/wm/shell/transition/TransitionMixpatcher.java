@@ -16,6 +16,11 @@
 
 package com.android.wm.shell.transition;
 
+import static android.view.WindowManager.TRANSIT_SLEEP;
+import static android.window.TransitionInfo.FLAG_IN_TASK_WITH_EMBEDDED_ACTIVITY;
+import static android.window.TransitionInfo.FLAG_IS_BEHIND_STARTING_WINDOW;
+import static android.window.TransitionInfo.FLAG_NO_ANIMATION;
+
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_MIXPATCHER;
 import static com.android.wm.shell.transition.Transitions.transitTypeToString;
 
@@ -25,6 +30,7 @@ import android.os.IBinder;
 import android.util.ArrayMap;
 import android.util.Log;
 import android.view.SurfaceControl;
+import android.view.WindowManager;
 import android.window.TransitionInfo;
 import android.window.WindowAnimationState;
 import android.window.WindowContainerToken;
@@ -33,8 +39,10 @@ import android.window.WindowContainerTransaction;
 import com.android.internal.protolog.ProtoLog;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.common.ShellExecutor;
+import com.android.wm.shell.keyguard.KeyguardTransitionPlanner;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Modular dispatcher/mixer for transition animations.
@@ -77,7 +85,7 @@ public class TransitionMixpatcher {
         int mDebugId = -1;
 
         /** List of planners that are interested in the result of this specific transition. */
-        ArrayList<ITransitionPlanner> mInterest = null;
+        List<ITransitionPlanner> mInterest = null;
 
         /** Transaction to apply right before starting animation. */
         SurfaceControl.Transaction mStartT;
@@ -129,6 +137,17 @@ public class TransitionMixpatcher {
      */
     final ArrayList<ITransitionPlanner> mPlanners = new ArrayList<>();
 
+    /** Token for tracking "sleep" as part of a transition. */
+    final WindowContainerToken mSleepProxy = WindowContainerToken.createProxy("SleepProxy");
+
+    /**
+     * Hard-coded "prefix" planners for special-case handling. These are hard-coded because
+     * they have specific interactions with the transition dispatch process.
+     */
+    private final ITransitionPlanner mInvisiblesPlanner = new InvisiblesPlanner();
+    private ITransitionPlanner mKeyguardPlanner;
+    private ITransitionPlanner mSleepPlanner = new SleepPlanner();
+
     /** List of currently-animating containers. */
     private final ArrayList<AnimatingContainer> mContainers = new ArrayList<>();
 
@@ -164,6 +183,7 @@ public class TransitionMixpatcher {
             @NonNull ShellExecutor mainExecutor) {
         mOrganizer = organizer;
         mMainExecutor = mainExecutor;
+        mKeyguardPlanner = new KeyguardTransitionPlanner(mMainExecutor);
     }
 
     private static int findTransition(@NonNull IBinder transition,
@@ -209,9 +229,9 @@ public class TransitionMixpatcher {
      *                 planning the transition's animation
      * @return The started transition's token (same as {@param transition} if it was not-null)
      */
-    IBinder startTransition(@Nullable IBinder transition, int type,
+    IBinder startTransition(@Nullable IBinder transition, @WindowManager.TransitionType int type,
             @Nullable WindowContainerTransaction wct,
-            @Nullable ArrayList<ITransitionPlanner> interest) {
+            @Nullable List<ITransitionPlanner> interest) {
         ProtoLog.v(WM_SHELL_MIXPATCHER, "startTransition| %s type=%s wct=%s interest=%s",
                 transition, transitTypeToString(type), wct, interest);
         final TransitionState pt;
@@ -300,6 +320,12 @@ public class TransitionMixpatcher {
         plan.mUnplannedInfo.getChanges().addAll(state.mBaseInfo.getChanges());
 
         // TODO: housekeeping / observer stuff
+
+        // Some hard-coded always-first planners for universal situations.
+        addToPlan(plan, state.mBaseInfo, mKeyguardPlanner, state.mTransition, state.mStartT);
+        final boolean isSleep = addToPlan(plan, state.mBaseInfo, mSleepPlanner,
+                state.mTransition, state.mStartT);
+        addToPlan(plan, state.mBaseInfo, mInvisiblesPlanner, state.mTransition, state.mStartT);
 
         // If there's any explicit interest, give those the first shot at planning changes.
         if (state.mInterest != null) {
@@ -510,5 +536,66 @@ public class TransitionMixpatcher {
         }
         mReadyOrder.clear();
         mFinished.clear();
+    }
+
+    private class InvisiblesPlanner implements ITransitionPlanner {
+        @Nullable
+        @Override
+        public void plan(@NonNull AnimationPlan plan, @NonNull TransitionInfo fullInfo,
+                @NonNull IBinder transition, @NonNull TransitionInfo info,
+                @NonNull SurfaceControl.Transaction startTransaction) {
+            ITransitionAnimation nullAnim = null;
+            final int changeSize = info.getChanges().size();
+            for (int i = changeSize - 1; i >= 0; --i) {
+                final TransitionInfo.Change change = info.getChanges().get(i);
+                //  Change is hidden behind starting window:
+                if ((change.hasAllFlags(FLAG_IS_BEHIND_STARTING_WINDOW | FLAG_NO_ANIMATION)
+                        || change.hasAllFlags(
+                        FLAG_IS_BEHIND_STARTING_WINDOW | FLAG_IN_TASK_WITH_EMBEDDED_ACTIVITY))
+                        // Change is occluded with no animation
+                        || change.hasAllFlags(TransitionInfo.FLAGS_IS_OCCLUDED_NO_ANIMATION)) {
+                    // Extract the change because it should be invisible in the animation.
+                    if (nullAnim == null) {
+                        nullAnim = new NoAnimation(mMainExecutor);
+                    }
+                    plan.setAnimation(change.getContainer(), nullAnim);
+                }
+            }
+            if (nullAnim != null) {
+                ProtoLog.v(WM_SHELL_MIXPATCHER,
+                        "Found non-visible containers in transition #%d", info.getDebugId());
+            }
+        }
+
+        @NonNull
+        @Override
+        public String getDebugName() {
+            return "Invisibles";
+        }
+    }
+
+    private class SleepPlanner implements ITransitionPlanner {
+        @Override
+        public void plan(@NonNull AnimationPlan plan, @NonNull TransitionInfo fullInfo,
+                @NonNull IBinder transition, @NonNull TransitionInfo info,
+                @NonNull SurfaceControl.Transaction startTransaction) {
+            if (!(info.getType() == TRANSIT_SLEEP
+                    || (info.getFlags() & TransitionInfo.FLAG_SYNC) != 0)) {
+                return;
+            }
+            ITransitionAnimation sleepAnim = new NoAnimation(mMainExecutor);
+            final TransitionInfo.Change sleepChg = new TransitionInfo.Change(mSleepProxy,
+                    new SurfaceControl.Builder().setName("SleepProxy").build());
+            info.addChange(sleepChg);
+            plan.setAnimation(sleepChg.getContainer(), sleepAnim);
+            ProtoLog.v(WM_SHELL_MIXPATCHER, "Build sleep proxy in transition #%d",
+                    info.getDebugId());
+        }
+
+        @NonNull
+        @Override
+        public String getDebugName() {
+            return "Sleep";
+        }
     }
 }

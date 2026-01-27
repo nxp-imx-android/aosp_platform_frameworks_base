@@ -1404,7 +1404,7 @@ public class TransitionTests extends WindowTestsBase {
         assertTrue(mDisplayContent.hasTopFixedRotationLaunchingApp());
 
         // The bar was invisible so it is not handled by the controller. But if it becomes visible
-        // and drawn before the transition starts,
+        // and drawn before the transition starts, it should be hidden and fade in later.
         assertFalse(asyncRotationController.isTargetToken(navBar.mToken));
         navBar.finishDrawing(null /* postDrawTransaction */, Integer.MAX_VALUE);
         assertTrue(asyncRotationController.isTargetToken(navBar.mToken));
@@ -1415,6 +1415,8 @@ public class TransitionTests extends WindowTestsBase {
         assertFalse(mDisplayContent.mTransitionController.isCollecting(statusBar.mToken));
         // Avoid DeviceStateController disturbing the test by triggering another rotation change.
         doReturn(false).when(mDisplayContent).updateRotationUnchecked();
+        // Wait for the display change due to transition.shouldApplyOnDisplayThread().
+        waitHandlerIdle(mWm.mH);
 
         clearInvocations(mTransaction);
         onRotationTransactionReady(player, mTransaction).onTransactionCommitted();
@@ -1423,6 +1425,8 @@ public class TransitionTests extends WindowTestsBase {
         spyOn(navBarInsetsProvider);
         player.finish();
 
+        // An unrelated transition should not affect the controller.
+        requestTransition(app, TRANSIT_CHANGE);
         // The controller should be cleared if the target windows are drawn.
         statusBar.finishDrawing(mWm.mTransactionFactory.get(), Integer.MAX_VALUE);
         assertNull(mDisplayContent.getAsyncRotationController());
@@ -3458,6 +3462,37 @@ public class TransitionTests extends WindowTestsBase {
 
         WindowContainer ancestor = Transition.findCommonAncestor(sortedTargets, display1Task);
         assertTrue(ancestor.isDescendantOf(otherDisplay.getParent()));
+    }
+
+
+    @Test
+    @EnableFlags(Flags.FLAG_REFINE_ANCESTOR_SEARCH_AND_BOUNDS)
+    public void testCommonAncestor_afterReparentToDisplay() {
+        final Task rootTask = createTask(mDisplayContent);
+        final Task toBackNestedTask = createTaskInRootTask(rootTask, 0);
+        final TaskFragment closeTaskFragment = createTaskFragmentWithActivity(toBackNestedTask);
+        final Task openNestedTask = createTaskInRootTask(rootTask, 0);
+        final TaskFragment openTaskFragment = createTaskFragmentWithActivity(openNestedTask);
+
+        final TaskDisplayArea tda = mDisplayContent.getDefaultTaskDisplayArea();
+        rootTask.setVisibleRequested(true);
+
+        final Transition.ChangeInfo taskChange = new Transition.ChangeInfo(toBackNestedTask,
+                true /* vis */, false /* exChg */);
+        taskChange.mStartParent = rootTask;
+        toBackNestedTask.reparent(tda, false /* onTop */);
+        toBackNestedTask.setVisibleRequested(false);
+        final ArrayList<Transition.ChangeInfo> sortedTargets = new ArrayList<>();
+        sortedTargets.add(new Transition.ChangeInfo(openTaskFragment, true /* vis*/ ,
+                false /* exChg */));
+        sortedTargets.add(new Transition.ChangeInfo(openNestedTask, true /* vis*/ ,
+                false /* exChg */));
+        sortedTargets.add(new Transition.ChangeInfo(closeTaskFragment, true /* vis*/ ,
+                false /* exChg */));
+        sortedTargets.add(taskChange);
+
+        WindowContainer ancestor = Transition.findCommonAncestor(sortedTargets, toBackNestedTask);
+        assertEquals(rootTask, ancestor);
     }
 
     @Test

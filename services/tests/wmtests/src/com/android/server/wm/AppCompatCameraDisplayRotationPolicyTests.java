@@ -48,6 +48,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 
@@ -554,7 +555,6 @@ public final class AppCompatCameraDisplayRotationPolicyTests extends WindowTests
         private void setupAppCompatConfiguration() {
             applyOnConf((c) -> {
                 c.enableCameraCompatForceRotateTreatment(true);
-                c.enableCameraCompatForceRotateTreatmentAtBuildTime(true);
                 c.enableCameraCompatRefresh(true);
                 c.enableCameraCompatRefreshCycleThroughStop(true);
                 c.enableCameraCompatSplitScreenAspectRatio(false);
@@ -584,10 +584,6 @@ public final class AppCompatCameraDisplayRotationPolicyTests extends WindowTests
         }
 
         private void setupFakeToasts() {
-            // Do not show the real toast.
-            doNothing().when(cameraCompatPolicy()).showToast(anyInt());
-            doNothing().when(cameraCompatPolicy()).showToast(anyInt(), anyString());
-
             final PackageManager mockPackageManager = mock(PackageManager.class);
             final ApplicationInfo mockApplicationInfo = mock(ApplicationInfo.class);
             when(mWindowTestsBase.mWm.mContext.getPackageManager()).thenReturn(mockPackageManager);
@@ -600,6 +596,15 @@ public final class AppCompatCameraDisplayRotationPolicyTests extends WindowTests
 
             doReturn(TEST_PACKAGE_1_LABEL).when(mockPackageManager)
                     .getApplicationLabel(mockApplicationInfo);
+
+            // Do not show the real toast.
+            final AppCompatCameraDisplayRotationPolicy cameraCompatPolicy = cameraCompatPolicy();
+            if (cameraCompatPolicy == null) {
+                return;
+            }
+            doNothing().when(cameraCompatPolicy).showToast(anyInt());
+            doNothing().when(cameraCompatPolicy).showToast(anyInt(), anyString());
+
         }
 
         private void configureActivity(@ScreenOrientation int activityOrientation) {
@@ -680,7 +685,11 @@ public final class AppCompatCameraDisplayRotationPolicyTests extends WindowTests
         }
 
         void finishRotationAnimation() {
-            cameraCompatPolicy().onScreenRotationAnimationFinished();
+            final AppCompatCameraDisplayRotationPolicy cameraCompatPolicy = cameraCompatPolicy();
+            if (cameraCompatPolicy == null) {
+                return;
+            }
+            cameraCompatPolicy.onScreenRotationAnimationFinished();
         }
 
         private void assertNoForceRotationOrRefresh() {
@@ -716,16 +725,22 @@ public final class AppCompatCameraDisplayRotationPolicyTests extends WindowTests
 
         private void assertMultiWindowToastShown(boolean shown) {
             verify(cameraCompatPolicy(), times(shown ? 1 : 0)).showToast(
-                    anyInt(), //eq(R.string.display_rotation_camera_compat_toast_in_multi_window),
+                    eq(R.string.display_rotation_camera_compat_toast_in_multi_window),
                     anyString());
         }
 
         private void assertPostRotationToastShown(boolean shown) {
+            if (cameraCompatPolicy() == null && !shown) {
+                return;
+            }
             verify(cameraCompatPolicy(), times(shown ? 1 : 0)).showToast(
                     R.string.display_rotation_camera_compat_toast_after_rotation);
         }
 
         AppCompatCameraDisplayRotationPolicy cameraCompatPolicy() {
+            if (activity().displayContent().mAppCompatCameraPolicy == null) {
+                return null;
+            }
             return activity().displayContent().mAppCompatCameraPolicy.mDisplayRotationPolicy;
         }
     }

@@ -35,6 +35,7 @@ import android.service.personalcontext.Token;
 import android.service.personalcontext.embedded.InsightSurfaceClientInfo;
 import android.service.personalcontext.hint.ContextHint;
 import android.service.personalcontext.hint.ContextHintWithSignature;
+import android.service.personalcontext.hint.ContextHintWithSignatureWrapper;
 import android.service.personalcontext.hint.ContextHintWrapper;
 import android.service.personalcontext.hint.NotificationEvent;
 import android.service.personalcontext.hint.NotificationHint;
@@ -103,6 +104,7 @@ public class PersonalContextManagerService extends SystemService {
     private record UserState(
             @NonNull ContextComponentManager componentManager,
             @NonNull ContextComponentMonitor monitor,
+            @NonNull HintInvalidationUnderstander hintInvalidationUnderstander,
             @NonNull NotificationActionRenderer notificationActionRenderer,
             @NonNull EmbeddedInsightRenderer embeddedInsightRenderer,
             @Nullable TextClassificationActionRenderer textClassificationActionRenderer) {
@@ -148,6 +150,9 @@ public class PersonalContextManagerService extends SystemService {
             final ContextComponentManager componentManager =
                     new ContextComponentManager(userContext);
             final ContextComponentMonitor monitor = new ContextComponentMonitor(componentManager);
+            final HintInvalidationUnderstander hintInvalidationUnderstander =
+                    new HintInvalidationUnderstander(
+                            insight -> startInsightWorkflow(userId, Set.of(insight)));
             final NotificationActionRenderer notificationActionRenderer =
                     new NotificationActionRenderer(
                             getLocalService(NotificationManagerInternal.class),
@@ -177,6 +182,7 @@ public class PersonalContextManagerService extends SystemService {
                     new UserState(
                             componentManager,
                             monitor,
+                            hintInvalidationUnderstander,
                             notificationActionRenderer,
                             embeddedInsightRenderer,
                             textClassificationActionRenderer));
@@ -203,6 +209,7 @@ public class PersonalContextManagerService extends SystemService {
         if (Log.isLoggable(TAG, Log.DEBUG)) {
             Slog.d(TAG, "Registering internal components for user " + userId);
         }
+        componentManager.register(userState.hintInvalidationUnderstander());
         componentManager.register(userState.notificationActionRenderer());
         componentManager.register(userState.embeddedInsightRenderer());
         if (userState.textClassificationActionRenderer != null) {
@@ -470,7 +477,7 @@ public class PersonalContextManagerService extends SystemService {
 
         @RequiresNoPermission
         @Override
-        public ContextHintWithSignature signHint(
+        public ContextHintWithSignatureWrapper signHint(
                 ContextHintWrapper hint, List<ContextHintWrapper> attributionHints) {
             final int callingPid = Binder.getCallingPid();
 
@@ -488,11 +495,11 @@ public class PersonalContextManagerService extends SystemService {
                             }
                         }
 
-                        return getService().signHint(
+                        return new ContextHintWithSignatureWrapper(getService().signHint(
                                 hint.getContextHint(),
                                 callingPid,
                                 emptySet(),
-                                signedAttributionHints);
+                                signedAttributionHints));
                     });
         }
 

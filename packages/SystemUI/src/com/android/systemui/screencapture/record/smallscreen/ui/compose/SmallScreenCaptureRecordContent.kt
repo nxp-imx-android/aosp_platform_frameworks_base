@@ -85,6 +85,8 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.android.compose.PlatformIconButton
 import com.android.compose.modifiers.animatedBackground
@@ -420,6 +422,14 @@ private fun ToolbarPrimaryButton(
     modifier: Modifier = Modifier,
 ) {
     AnimatedContent(targetState = recording) { isRecording ->
+        val buttonContentDescription =
+            stringResource(
+                if (isRecording) {
+                    R.string.screenrecord_stop_description
+                } else {
+                    R.string.screenrecord_start_description
+                }
+            )
         PrimaryButton(
             onClick = onClick,
             text =
@@ -456,7 +466,10 @@ private fun ToolbarPrimaryButton(
                         contentColor = MaterialTheme.colorScheme.onPrimary,
                     )
                 },
-            modifier = modifier.basicMarquee(),
+            modifier =
+                modifier.basicMarquee().semantics(true) {
+                    contentDescription = buttonContentDescription
+                },
         )
     }
 }

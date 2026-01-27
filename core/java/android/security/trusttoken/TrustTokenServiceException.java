@@ -56,6 +56,9 @@ public final class TrustTokenServiceException extends Exception {
     /** The request failed due to an unavailable error (such as network unavailable). */
     public static final int ERROR_UNAVAILABLE = 3;
 
+    /** The request was cancelled. */
+    public static final int ERROR_CANCELLED = 4;
+
     @ErrorCode
     private final int mErrorCode;
 

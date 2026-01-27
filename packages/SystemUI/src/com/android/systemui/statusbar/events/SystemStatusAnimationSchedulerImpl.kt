@@ -41,6 +41,7 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import java.io.PrintWriter
+import java.util.concurrent.Executor
 import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.FlowPreview
@@ -86,6 +87,7 @@ constructor(
     @Assisted private val coroutineScope: CoroutineScope,
     private val logger: SystemStatusAnimationSchedulerLogger?,
     @Main private val mainCoroutineContext: CoroutineContext,
+    @Main private val mainExecutor: Executor,
 ) : SystemStatusAnimationScheduler {
 
     @AssistedFactory
@@ -163,10 +165,12 @@ constructor(
     }
 
     override fun stop() {
-        coordinator.stopObserving()
-        listeners.clear()
-        chipAnimationController.stop()
-        dumpManager.unregisterDumpable(dumpableName)
+        mainExecutor.execute {
+            coordinator.stopObserving()
+            listeners.clear()
+            chipAnimationController.stop()
+            dumpManager.unregisterDumpable(dumpableName)
+        }
     }
 
     override fun onStatusEvent(event: StatusEvent) {

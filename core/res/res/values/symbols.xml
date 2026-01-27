@@ -1184,6 +1184,7 @@
   <java-symbol type="string" name="managed_profile_label_badge_3" />
   <java-symbol type="string" name="clone_profile_label_badge" />
   <java-symbol type="string" name="private_profile_label_badge" />
+  <java-symbol type="string" name="hsu_label_badge" />
   <java-symbol type="string" name="profile_label_private" />
   <java-symbol type="string" name="profile_label_clone" />
   <java-symbol type="string" name="profile_label_work" />
@@ -1532,6 +1533,9 @@
   <java-symbol type="drawable" name="ic_corp_user_badge" />
   <java-symbol type="drawable" name="ic_corp_badge_no_background" />
   <java-symbol type="drawable" name="ic_corp_statusbar_icon" />
+  <java-symbol type="drawable" name="ic_hsu_icon_badge" />
+  <java-symbol type="drawable" name="ic_hsu_badge" />
+  <java-symbol type="drawable" name="ic_hsu_badge_no_background" />
   <java-symbol type="drawable" name="stat_sys_managed_profile_status" />
   <java-symbol type="drawable" name="ic_test_badge_experiment" />
   <java-symbol type="drawable" name="ic_test_badge_no_background" />
@@ -4336,6 +4340,8 @@
 
   <java-symbol type="bool" name="config_handleVolumeKeysInWindowManager" />
   <java-symbol type="bool" name="config_handleVolumeAliasesUsingVolumeGroups" />
+  <java-symbol type="integer" name="config_tvLongPressVolumeKeysPerAdjustment" />
+  <java-symbol type="dimen" name="config_tvLongPressVolumeAdjustmentScaleFactor" />
   <java-symbol type="dimen" name="config_inCallNotificationVolume" />
   <java-symbol type="string" name="config_inCallNotificationSound" />
   <java-symbol type="string" name="config_cameraShutterSound" />
@@ -6217,6 +6223,8 @@
   <java-symbol type="string" name="unarchival_session_app_label" />
 
   <java-symbol type="bool" name="config_appResolutionSwitchVoteDisabled" />
+
+  <java-symbol type="bool" name="config_highBrightnessModeControllerOverridden" />
 
   <!-- Whether WM DisplayContent supports high performance transitions -->
   <java-symbol type="bool" name="config_deviceSupportsHighPerfTransitions" />

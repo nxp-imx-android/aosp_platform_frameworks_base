@@ -30,11 +30,10 @@ import android.annotation.Nullable;
 import android.annotation.PermissionManuallyEnforced;
 import android.annotation.SuppressLint;
 import android.app.contentsafety.ContentSafetyManager;
+import android.app.contentsafety.FeatureException;
 import android.app.contentsafety.ICheckContentCallback;
 import android.app.contentsafety.IContentSafetyManager;
 import android.app.contentsafety.IIsFeatureEnabledCallback;
-import android.app.contentsafety.IsFeatureEnabledCallback;
-import android.app.contentsafety.IsFeatureEnabledCallback.FeatureSettingsFailureStatus;
 import android.app.contentsafety.SupportedTypesResult;
 import android.content.ComponentName;
 import android.content.Context;
@@ -177,19 +176,10 @@ public class ContentSafetyManagerService extends SystemService {
         mIsSandboxedServicePcc =
                 getSandboxedServiceType() == SandboxedServiceType.SERVICE_TYPE_PCC;
 
-        final Intent remoteSandboxedIsolatedServiceIntent =
-                new Intent(ContentSafetySandboxedService.SERVICE_INTERFACE)
-                        .setComponent(mContentSafetyIsolatedComponentName);
-        final Intent remoteSandboxedPccServiceIntent =
-                new Intent(ContentSafetySandboxedService.SERVICE_INTERFACE)
-                        .setComponent(mContentSafetyPccComponentName);
-
         mPccServiceConnectionFactory =
-                new ServiceConnectionFactory(
-                        remoteSandboxedPccServiceIntent, mSandboxedServiceType);
+                new ServiceConnectionFactory(SandboxedServiceType.SERVICE_TYPE_PCC);
         mIsolatedServiceConnectionFactory =
-                new ServiceConnectionFactory(
-                        remoteSandboxedIsolatedServiceIntent, mSandboxedServiceType);
+                new ServiceConnectionFactory(SandboxedServiceType.SERVICE_TYPE_ISOLATED);
     }
 
     @Override
@@ -298,14 +288,14 @@ public class ContentSafetyManagerService extends SystemService {
     private void checkContentInternal(
             int featureType,
             Bundle input,
-            AndroidFuture cancellationSignalFuture,
+            @Nullable AndroidFuture cancellationSignalFuture,
             @NonNull ICheckContentCallback callback)
             throws RemoteException {
         if (!android.app.contentsafety.flags.Flags.enableContentsafety()) {
             return;
         }
 
-        if (cancellationSignalFuture.isCancelled()) {
+        if (cancellationSignalFuture != null && cancellationSignalFuture.isCancelled()) {
             Bundle bundle = new Bundle();
             ArrayList<Integer> error = new ArrayList<>();
             error.add(ContentSafetyManager.CONTENT_SAFETY_CHECK_CONTENT_CANCELLED);
@@ -424,7 +414,7 @@ public class ContentSafetyManagerService extends SystemService {
         if (!mIsServiceEnabled) {
             Slog.w(TAG, "Service not available");
             callback.onFailure(
-                    IsFeatureEnabledCallback.FEATURE_SETTINGS_SERVICE_UNAVAILABLE);
+                    FeatureException.FEATURE_SETTINGS_SERVICE_UNAVAILABLE);
             return;
         }
 
@@ -469,7 +459,6 @@ public class ContentSafetyManagerService extends SystemService {
             @Override
             @PermissionManuallyEnforced
             public String getRemoteServicePackageName() {
-                mContext.enforceCallingPermission(Manifest.permission.CHECK_CONTENT_SAFETY, TAG);
                 if (!android.app.contentsafety.flags.Flags.enableContentsafety()) {
                     return "";
                 }
@@ -505,8 +494,8 @@ public class ContentSafetyManagerService extends SystemService {
             public void checkContent(
                     int featureType,
                     Bundle input,
-                    AndroidFuture cancellationSignalFuture,
-                    ICheckContentCallback callback)
+                    @Nullable AndroidFuture cancellationSignalFuture,
+                    @NonNull ICheckContentCallback callback)
                     throws RemoteException {
                 mContext.enforceCallingPermission(Manifest.permission.CHECK_CONTENT_SAFETY, TAG);
                 checkContentInternal(featureType, input, cancellationSignalFuture, callback);
@@ -516,8 +505,8 @@ public class ContentSafetyManagerService extends SystemService {
             @PermissionManuallyEnforced
             public void isFeatureEnabled(
                     int featureType,
-                    AndroidFuture cancellationSignalFuture,
-                    IIsFeatureEnabledCallback callback)
+                    @Nullable AndroidFuture cancellationSignalFuture,
+                    @NonNull IIsFeatureEnabledCallback callback)
                     throws RemoteException {
                 mContext.enforceCallingPermission(Manifest.permission.CHECK_CONTENT_SAFETY, TAG);
                 isFeatureEnabledInternal(featureType, cancellationSignalFuture, callback);
@@ -552,7 +541,7 @@ public class ContentSafetyManagerService extends SystemService {
     }
 
     private ICheckContentCallback wrapCheckContentCallback(
-            AndroidFuture future, ICheckContentCallback callback) {
+            AndroidFuture future, @NonNull ICheckContentCallback callback) {
         return new ICheckContentCallback.Stub() {
             @Override
             @PermissionManuallyEnforced
@@ -577,7 +566,7 @@ public class ContentSafetyManagerService extends SystemService {
 
             @Override
             @PermissionManuallyEnforced
-            public void onFailure(@FeatureSettingsFailureStatus int failureStatus)
+            public void onFailure(int failureStatus)
                     throws RemoteException {
                 mContext.enforceCallingPermission(Manifest.permission.CHECK_CONTENT_SAFETY, TAG);
                 callback.onFailure(failureStatus);
@@ -592,7 +581,7 @@ public class ContentSafetyManagerService extends SystemService {
             Bundle input,
             AndroidFuture future,
             AndroidFuture cancellationSignalFuture,
-            ICheckContentCallback checkContentCallback)
+            @NonNull ICheckContentCallback checkContentCallback)
             throws RemoteException {
         try {
             sanitizeCheckLoadFeatureParams(result);
@@ -660,7 +649,7 @@ public class ContentSafetyManagerService extends SystemService {
             Bundle input,
             AndroidFuture future,
             AndroidFuture cancellationSignalFuture,
-            ICheckContentCallback checkContentCallback) {
+            @NonNull ICheckContentCallback checkContentCallback) {
         return new IGetFeatureCallback.Stub() {
             @Override
             @PermissionManuallyEnforced
@@ -877,7 +866,8 @@ public class ContentSafetyManagerService extends SystemService {
                                             mContentSafetyPccComponentName,
                                             Manifest.permission
                                                     .BIND_SANDBOXED_CONTENT_SAFETY_SERVICE));
-                    mRemoteContentSafetyPccService = mPccServiceConnectionFactory.create();
+                    mRemoteContentSafetyPccService = mPccServiceConnectionFactory.create(
+                            mContentSafetyPccComponentName);
                 }
                 mRemoteSandboxedService = mRemoteContentSafetyPccService;
             } else {
@@ -891,7 +881,8 @@ public class ContentSafetyManagerService extends SystemService {
                                             Manifest.permission
                                                     .BIND_SANDBOXED_CONTENT_SAFETY_SERVICE));
                     mRemoteContentSafetyIsolatedService =
-                            mIsolatedServiceConnectionFactory.create();
+                            mIsolatedServiceConnectionFactory.create(
+                                    mContentSafetyIsolatedComponentName);
                 }
                 mRemoteSandboxedService = mRemoteContentSafetyIsolatedService;
             }
@@ -1030,11 +1021,13 @@ public class ContentSafetyManagerService extends SystemService {
         try {
             synchronized (mLock) {
                 if (mTemporaryServiceNames != null && mTemporaryServiceNames.length == 4) {
+                    ComponentName isolatedServiceName = mTemporaryServiceNames[3];
                     return new String[] {
                             mTemporaryServiceNames[0].flattenToString(),
                             mTemporaryServiceNames[1].flattenToString(),
                             mTemporaryServiceNames[2].flattenToString(),
-                            mTemporaryServiceNames[3].flattenToString()
+                            isolatedServiceName == null ? null
+                                    : isolatedServiceName.flattenToString()
                     };
                 }
                 return new String [] {
@@ -1056,9 +1049,10 @@ public class ContentSafetyManagerService extends SystemService {
 
     private int getSandboxedServiceType() {
         setRemoteServiceComponentNames();
-        return mContentSafetyPccComponentName == null
-                ? SandboxedServiceType.SERVICE_TYPE_ISOLATED
-                : SandboxedServiceType.SERVICE_TYPE_PCC;
+        return (mContentSafetyPccComponentName != null
+                || mContentSafetyIsolatedComponentName == null)
+                ? SandboxedServiceType.SERVICE_TYPE_PCC
+                : SandboxedServiceType.SERVICE_TYPE_ISOLATED;
     }
 
     /**
@@ -1183,12 +1177,10 @@ public class ContentSafetyManagerService extends SystemService {
     public @interface CheckLoadFeatureParams {}
 
     private class ServiceConnectionFactory {
-        private final Intent mIntent;
         private final int mBindingFlags;
         private final int mSandboxedServiceType;
 
-        ServiceConnectionFactory(@NonNull Intent intent, int sandboxedServiceType) {
-            mIntent = intent;
+        ServiceConnectionFactory(int sandboxedServiceType) {
             mSandboxedServiceType = sandboxedServiceType;
             int flags = BIND_FOREGROUND_SERVICE | BIND_INCLUDE_CAPABILITIES | BIND_AUTO_CREATE;
             // TODO: Should we add the following line?
@@ -1196,11 +1188,16 @@ public class ContentSafetyManagerService extends SystemService {
             mBindingFlags = flags;
         }
 
-        RemoteContentSafetySandboxedService create() {
+
+        RemoteContentSafetySandboxedService create(@NonNull ComponentName componentName) {
+            Intent remoteSandboxedServiceIntent =
+                    new Intent(ContentSafetySandboxedService.SERVICE_INTERFACE)
+                            .setComponent(componentName)
+                            .setPackage(componentName.getPackageName());
             RemoteContentSafetySandboxedService connection =
                     new RemoteContentSafetySandboxedService(
                             mContext,
-                            mIntent,
+                            remoteSandboxedServiceIntent,
                             mBindingFlags,
                             UserHandle.SYSTEM.getIdentifier(),
                             IContentSafetySandboxedService.Stub::asInterface,

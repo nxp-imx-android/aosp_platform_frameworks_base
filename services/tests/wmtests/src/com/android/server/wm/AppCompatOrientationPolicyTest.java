@@ -287,7 +287,6 @@ public class AppCompatOrientationPolicyTest extends WindowTestsBase {
         runTestScenario((robot) -> {
             robot.applyOnConf((c)-> {
                 c.enableCameraCompatForceRotateTreatment(true);
-                c.enableCameraCompatForceRotateTreatmentAtBuildTime(true);
             });
             robot.applyOnActivity((a) -> {
                 a.createActivityWithComponentInNewTaskAndDisplay();
@@ -307,7 +306,6 @@ public class AppCompatOrientationPolicyTest extends WindowTestsBase {
         runTestScenario((robot) -> {
             robot.applyOnConf((c) -> {
                 c.enableCameraCompatForceRotateTreatment(true);
-                c.enableCameraCompatForceRotateTreatmentAtBuildTime(true);
             });
             robot.applyOnActivity((a) -> {
                 a.createActivityWithComponentInNewTaskAndDisplay();
@@ -338,7 +336,6 @@ public class AppCompatOrientationPolicyTest extends WindowTestsBase {
         runTestScenario((robot) -> {
             robot.applyOnConf((c) -> {
                 c.enableCameraCompatForceRotateTreatment(true);
-                c.enableCameraCompatForceRotateTreatmentAtBuildTime(true);
             });
             robot.applyOnActivity((a) -> {
                 a.createActivityWithComponentInNewTaskAndDisplay();
@@ -459,7 +456,6 @@ public class AppCompatOrientationPolicyTest extends WindowTestsBase {
         runTestScenario((robot) -> {
             robot.applyOnConf((c) -> {
                 c.enableCameraCompatForceRotateTreatment(true);
-                c.enableCameraCompatForceRotateTreatmentAtBuildTime(true);
                 c.enablePolicyForIgnoringRequestedOrientation(true);
             });
             robot.applyOnActivity((a) -> {

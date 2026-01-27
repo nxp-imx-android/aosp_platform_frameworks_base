@@ -284,3 +284,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "retry_ime_animation_on_leash_ready"
+    namespace: "multitasking"
+    description: "Fix a bug where the ime animation wasn't being started on leash ready, which was occuring for Bubbles."
+    bug: "457615714"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

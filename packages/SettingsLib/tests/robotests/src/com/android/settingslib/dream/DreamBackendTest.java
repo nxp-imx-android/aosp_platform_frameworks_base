@@ -16,6 +16,7 @@
 package com.android.settingslib.dream;
 
 
+import static android.service.dreams.Flags.FLAG_DREAMS_SWITCHER;
 import static android.service.dreams.Flags.FLAG_USER_SELECTABLE_METADATA;
 
 import static com.android.settingslib.dream.DreamBackend.COMPLICATION_TYPE_DATE;
@@ -27,6 +28,7 @@ import static com.android.settingslib.dream.DreamBackend.WHILE_CHARGING_OR_DOCKE
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -35,6 +37,7 @@ import static org.mockito.ArgumentMatchers.eq;
 
 import android.platform.test.flag.junit.SetFlagsRule;
 import com.android.internal.R;
+import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
@@ -45,11 +48,13 @@ import android.content.pm.ServiceInfo;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.os.Bundle;
+import android.os.RemoteException;
 import android.os.UserHandle;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.provider.Settings;
 import android.service.dreams.DreamService;
+import android.service.dreams.IDreamManager;
 
 import org.junit.After;
 import org.junit.Before;
@@ -62,6 +67,7 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.shadows.ShadowServiceManager;
 import org.robolectric.shadows.ShadowSettings;
 
 import java.util.Arrays;
@@ -91,6 +97,9 @@ public final class DreamBackendTest {
     private ContentResolver mMockResolver;
     @Mock
     private PackageManager mPackageManager;
+    @Mock
+    private IDreamManager mDreamManager;
+
     private DreamBackend mBackend;
 
     @Before
@@ -99,6 +108,8 @@ public final class DreamBackendTest {
         when(mContext.getApplicationContext()).thenReturn(mContext);
         when(mContext.getContentResolver()).thenReturn(mMockResolver);
         when(mContext.getPackageManager()).thenReturn(mPackageManager);
+        ShadowServiceManager.addBinderService(DreamService.DREAM_SERVICE,
+                IDreamManager.class, mDreamManager);
 
         final Resources res = mock(Resources.class);
         when(mContext.getResources()).thenReturn(res);
@@ -322,6 +333,7 @@ public final class DreamBackendTest {
 
     @Test
     @EnableFlags(FLAG_USER_SELECTABLE_METADATA)
+    @DisableFlags(FLAG_DREAMS_SWITCHER)
     public void testGetDreamInfos_filtersNonUserSelectable_whenFlagEnabled() {
         // arrange
         setupAllDreamInfos();
@@ -336,6 +348,7 @@ public final class DreamBackendTest {
 
     @Test
     @DisableFlags(FLAG_USER_SELECTABLE_METADATA)
+    @DisableFlags(FLAG_DREAMS_SWITCHER)
     public void testGetDreamInfos_doesNotFilterNonUserSelectable_whenFlagDisabled() {
         // arrange
         setupAllDreamInfos();
@@ -345,6 +358,97 @@ public final class DreamBackendTest {
 
         // assert
         assertThat(dreamInfos).hasSize(2);
+    }
+
+    @Test
+    public void testSetActiveDreams() throws RemoteException {
+        ComponentName[] dreams = {
+            new ComponentName(mContext, "Dream1"), new ComponentName(mContext, "Dream2")
+        };
+
+        mBackend.setActiveDreams(dreams);
+
+        verify(mDreamManager).setDreamComponents(dreams);
+    }
+
+    @Test
+    @DisableFlags(FLAG_DREAMS_SWITCHER)
+    public void testGetActiveDreams_withoutDreamSwitcher_returnsFirstDream()
+            throws RemoteException {
+        var firstDream = new ComponentName(mContext, "Dream1");
+        ComponentName[] dreams = {firstDream, new ComponentName(mContext, "Dream2")};
+        when(mDreamManager.getDreamComponents()).thenReturn(dreams);
+
+        List<ComponentName> activeDreams = mBackend.getActiveDreams();
+
+        assertThat(activeDreams).containsExactly(firstDream);
+    }
+
+    @Test
+    @EnableFlags(FLAG_DREAMS_SWITCHER)
+    public void testGetActiveDreams_withDreamSwitcher_returnsAllDreams() throws RemoteException {
+        ComponentName[] dreams = {
+            new ComponentName(mContext, "Dream1"), new ComponentName(mContext, "Dream2")
+        };
+        when(mDreamManager.getDreamComponents()).thenReturn(dreams);
+
+        List<ComponentName> activeDreams = mBackend.getActiveDreams();
+
+        assertThat(activeDreams).containsExactlyElementsIn(dreams);
+    }
+
+    @Test
+    @EnableFlags(FLAG_DREAMS_SWITCHER)
+    public void testGetDreamInfos_withDreamSwitcher_setsOrderAndActive() throws RemoteException {
+        // Arrange
+        ComponentName activeDream1 = new ComponentName("package", "name1");
+        ComponentName activeDream2 = new ComponentName("package", "name2");
+        ComponentName inactiveDream = new ComponentName("package", "name3");
+
+        ResolveInfo resolveInfo1 = createResolveInfo(activeDream1);
+        ResolveInfo resolveInfo2 = createResolveInfo(activeDream2);
+        ResolveInfo resolveInfo3 = createResolveInfo(inactiveDream);
+
+        when(mPackageManager.queryIntentServices(any(Intent.class), anyInt()))
+                .thenReturn(Arrays.asList(resolveInfo1, resolveInfo2, resolveInfo3));
+
+        // Mock active dreams in order
+        when(mDreamManager.getDreamComponents())
+                .thenReturn(new ComponentName[] {activeDream1, activeDream2});
+
+        // Act
+        List<DreamBackend.DreamInfo> dreamInfos = mBackend.getDreamInfos();
+
+        // Assert
+        DreamBackend.DreamInfo info1 = findDreamInfo(dreamInfos, activeDream1);
+        DreamBackend.DreamInfo info2 = findDreamInfo(dreamInfos, activeDream2);
+        DreamBackend.DreamInfo info3 = findDreamInfo(dreamInfos, inactiveDream);
+
+        assertThat(info1.isActive).isTrue();
+        assertThat(info1.order).isEqualTo(0); // Order starts from 0 for active dreams.
+
+        assertThat(info2.isActive).isTrue();
+        assertThat(info2.order).isEqualTo(1);
+
+        assertThat(info3.isActive).isFalse();
+        assertThat(info3.order).isEqualTo(DreamBackend.DreamInfo.ORDER_UNSELECTED);
+    }
+
+    private DreamBackend.DreamInfo findDreamInfo(
+            List<DreamBackend.DreamInfo> dreamInfos, ComponentName componentName) {
+        return dreamInfos.stream()
+                .filter(info -> info.componentName.equals(componentName))
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("Dream info not found for " + componentName));
+    }
+
+    private ResolveInfo createResolveInfo(ComponentName cn) {
+        ResolveInfo ri = new ResolveInfo();
+        ri.serviceInfo = new ServiceInfo();
+        ri.serviceInfo.packageName = cn.getPackageName();
+        ri.serviceInfo.name = cn.getClassName();
+        ri.nonLocalizedLabel = cn.flattenToShortString();
+        return ri;
     }
 
     private void setControlsEnabledOnLockscreen(boolean enabled) {

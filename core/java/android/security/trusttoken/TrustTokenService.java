@@ -22,7 +22,9 @@ import android.annotation.Nullable;
 import android.annotation.SystemApi;
 import android.app.Service;
 import android.content.Intent;
+import android.os.CancellationSignal;
 import android.os.IBinder;
+import android.os.ICancellationSignal;
 import android.os.OutcomeReceiver;
 import android.os.RemoteException;
 import android.security.Flags;
@@ -70,10 +72,12 @@ public abstract class TrustTokenService extends Service {
     private final ITrustTokenService.Stub mBinder =
             new ITrustTokenService.Stub() {
                 @Override
-                public void onRequestTrustTokens(
+                public ICancellationSignal onRequestTrustTokens(
                         TrustTokenRequest request, ITrustTokenCallback callback) {
+                    ICancellationSignal cancellationSignal = CancellationSignal.createTransport();
                     TrustTokenService.this.onRequestTrustTokens(
                             request,
+                            CancellationSignal.fromTransport(cancellationSignal),
                             new OutcomeReceiver<>() {
                                 @Override
                                 public void onResult(@NonNull TrustTokenResponse response) {
@@ -93,6 +97,7 @@ public abstract class TrustTokenService extends Service {
                                     }
                                 }
                             });
+                    return cancellationSignal;
                 }
             };
 
@@ -118,11 +123,17 @@ public abstract class TrustTokenService extends Service {
      * a background thread to avoid blocking the main thread.
      *
      * @param request The request to fetch trust tokens and other data from the remote server.
+     * @param cancellationSignal The cancellation signal to indicate if the request is cancelled.
+     *     The service can set a callback on cancellation by {@link
+     *     CancellationSignal#setOnCancelListener}. The service should invoke {@link
+     *     OutcomeReceiver#onError} with {@link TrustTokenServiceException#ERROR_CANCELLED} instead
+     *     of {@link OutcomeReceiver#onResult} upon cancellation.
      * @param callback The callback to invoke. Call {@link OutcomeReceiver#onResult} when the trust
      *     tokens and other data are available, or {@link OutcomeReceiver#onError} if a remote error
      *     occurred.
      */
     public abstract void onRequestTrustTokens(
             @NonNull TrustTokenRequest request,
+            @NonNull CancellationSignal cancellationSignal,
             @NonNull OutcomeReceiver<TrustTokenResponse, TrustTokenServiceException> callback);
 }

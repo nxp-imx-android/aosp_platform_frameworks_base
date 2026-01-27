@@ -930,7 +930,7 @@ flag {
     name: "enable_require_movable_task_api"
     namespace: "lse_desktop_experience"
     description: "Enables the API for apps to request movable tasks for new activities via ActivityOptions."
-    bug: "400407139"
+    bug: "407594924"
     is_exported: true
 }
 
@@ -1020,6 +1020,16 @@ flag {
 }
 
 flag {
+    name: "enable_trampoline_task_affinity_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Use task base package instead of activity package for trampoline task detection."
+    bug: "475747784"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_transient_gesture_in_system_ui"
     namespace: "lse_desktop_experience"
     description: "Enable transient gesture handling in system UI"
@@ -1058,7 +1068,7 @@ flag {
     name: "enable_window_repositioning_api"
     namespace: "lse_desktop_experience"
     description: "Enables the API to allow default browsers to reposition their windows."
-    bug: "400407139"
+    bug: "407594924"
     is_exported: true
 }
 

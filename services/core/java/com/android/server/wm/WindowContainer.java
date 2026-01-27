@@ -750,18 +750,27 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
             t.setLayer(mSurfaceControl, mLastLayer);
         }
 
-        for (int i = 0; i < mChildren.size(); i++)  {
-            SurfaceControl sc = mChildren.get(i).getSurfaceControl();
-            if (sc != null) {
-                t.reparent(sc, mSurfaceControl);
-            }
-        }
+        migrateChildrenToNewSurfaceControl(t);
 
         if (mOverlayHost != null) {
             mOverlayHost.setParent(t, mSurfaceControl);
         }
 
         scheduleAnimation();
+    }
+
+    /** Called when {@link #mSurfaceControl} is recreated. */
+    void migrateChildrenToNewSurfaceControl(SurfaceControl.Transaction t) {
+        final boolean useSyncTransaction = t == mSyncTransaction;
+        for (int i = 0; i < mChildren.size(); i++)  {
+            final WindowContainer<?> child = mChildren.get(i);
+            final SurfaceControl sc = child.mSurfaceControl;
+            if (sc != null) {
+                final SurfaceControl.Transaction childT =
+                        useSyncTransaction ? child.getSyncTransaction() : t;
+                childT.reparent(sc, mSurfaceControl);
+            }
+        }
     }
 
     // Temp. holders for a chain of containers we are currently processing.

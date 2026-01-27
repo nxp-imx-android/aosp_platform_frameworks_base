@@ -32,6 +32,7 @@ import com.android.wm.shell.common.pip.PipMediaController;
 import com.android.wm.shell.dagger.WMShellBaseModule;
 import com.android.wm.shell.dagger.WMSingleton;
 import com.android.wm.shell.pip.PipParamsChangedForwarder;
+import com.android.wm.shell.pip.PipTransitionController;
 import com.android.wm.shell.pip.tv.TvPipBoundsAlgorithm;
 import com.android.wm.shell.pip.tv.TvPipBoundsController;
 import com.android.wm.shell.pip.tv.TvPipBoundsState;
@@ -40,6 +41,7 @@ import com.android.wm.shell.pip.tv.TvPipNotificationController;
 import com.android.wm.shell.pip2.PipSurfaceTransactionHelper;
 import com.android.wm.shell.pip2.phone.PipTransitionState;
 import com.android.wm.shell.pip2.tv.TvPipController;
+import com.android.wm.shell.pip2.tv.TvPipScheduler;
 import com.android.wm.shell.pip2.tv.TvPipTransition;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
 import com.android.wm.shell.shared.pip.PipFlags;
@@ -89,6 +91,7 @@ public abstract class TvPip2Module {
             TvPipBoundsController tvPipBoundsController,
             PipTransitionState pipTransitionState,
             PipAppOpsListener pipAppOpsListener,
+            TvPipScheduler tvPipScheduler,
             TvPipMenuController tvPipMenuController,
             PipMediaController pipMediaController,
             TvPipNotificationController pipNotificationController,
@@ -112,6 +115,7 @@ public abstract class TvPip2Module {
                             tvPipBoundsController,
                             pipTransitionState,
                             pipAppOpsListener,
+                            tvPipScheduler,
                             tvPipMenuController,
                             pipMediaController,
                             pipNotificationController,
@@ -122,6 +126,18 @@ public abstract class TvPip2Module {
                             mainHandler,
                             mainExecutor));
         }
+    }
+
+    @WMSingleton
+    @Provides
+    static TvPipScheduler provideTvPipScheduler(
+            Context context,
+            PipTransitionState pipTransitionState,
+            PipTransitionController pipTransitionController,
+            TvPipBoundsState tvPipBoundsState,
+            @ShellMainThread ShellExecutor mainExecutor) {
+        return new TvPipScheduler(context, pipTransitionState, pipTransitionController,
+                tvPipBoundsState, mainExecutor);
     }
 
     @WMSingleton

@@ -16,8 +16,7 @@
 
 package com.android.server.companion.datatransfer.continuity;
 
-import java.util.HashMap;
-import java.util.Map;
+import android.util.ArrayMap;
 
 /**
  * Maintains a cache of user-specific resources, lazily instantiating them as needed.
@@ -26,7 +25,7 @@ import java.util.Map;
  */
 public abstract class MultiUserResourceCache<T> {
 
-    private final Map<Integer, T> mResources = new HashMap<>();
+    private final ArrayMap<Integer, T> mResources = new ArrayMap<>(0);
 
     /**
      * Returns the resource for the given user. If the resource does not exist, it is created.

@@ -2618,6 +2618,7 @@ package android.os {
     field @Nullable public static final String MANUFACTURER_FOR_ATTESTATION;
     field @Nullable public static final String MODEL_FOR_ATTESTATION;
     field @Nullable public static final String PRODUCT_FOR_ATTESTATION;
+    field @NonNull public static final String VBMETA_PUBLIC_KEY_DIGEST;
   }
 
   public static class Build.VERSION {
@@ -3325,6 +3326,15 @@ package android.security.keystore {
 
 }
 
+package android.security.trusttoken {
+
+  @FlaggedApi("android.security.talisman_service_api") public final class TrustTokenServiceClient {
+    ctor public TrustTokenServiceClient(@NonNull android.os.IBinder);
+    method @NonNull public android.os.CancellationSignal requestTrustTokens(@NonNull android.security.trusttoken.TrustTokenRequest, @NonNull android.os.OutcomeReceiver<android.security.trusttoken.TrustTokenResponse,android.security.trusttoken.TrustTokenServiceException>);
+  }
+
+}
+
 package android.service.autofill {
 
   public final class CharSequenceTransformation extends android.service.autofill.InternalTransformation implements android.os.Parcelable android.service.autofill.Transformation {
@@ -3541,7 +3551,7 @@ package android.service.personalcontext.hint {
     method @NonNull public android.os.Bundle toBundle();
   }
 
-  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class ContextHintWithSignature implements android.os.Parcelable {
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class ContextHintWithSignature {
     method public boolean isSignatureValid(@NonNull javax.crypto.spec.SecretKeySpec) throws java.security.GeneralSecurityException;
     field public static final String HMAC_ALGORITHM = "HmacSHA256";
   }
@@ -3555,6 +3565,16 @@ package android.service.personalcontext.hint {
     method @NonNull public android.service.personalcontext.hint.ContextHintWithSignature.Builder setOriginatingPackage(@Nullable String);
   }
 
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class ContextHintWithSignatureWrapper implements android.os.Parcelable {
+    ctor public ContextHintWithSignatureWrapper(@NonNull android.service.personalcontext.hint.ContextHintWithSignature);
+    method public int describeContents();
+    method @NonNull public android.service.personalcontext.hint.ContextHintWithSignature getContextHintWithSignature();
+    method @NonNull public static <T extends java.util.Collection<android.service.personalcontext.hint.ContextHintWithSignature>> T unwrapInto(@NonNull java.util.Collection<android.service.personalcontext.hint.ContextHintWithSignatureWrapper>, @NonNull T);
+    method @NonNull public static java.util.List<android.service.personalcontext.hint.ContextHintWithSignatureWrapper> wrapList(@NonNull java.util.Collection<android.service.personalcontext.hint.ContextHintWithSignature>);
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.service.personalcontext.hint.ContextHintWithSignatureWrapper> CREATOR;
+  }
+
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class HintFilter implements android.os.Parcelable {
     method @NonNull public java.util.Set<android.service.personalcontext.hint.ContextHintWithSignature> getInterestedHintClusters(@NonNull java.util.Set<android.service.personalcontext.hint.ContextHintWithSignature>, @NonNull java.util.Set<java.util.UUID>);
   }
@@ -3566,6 +3586,12 @@ package android.service.personalcontext.insight {
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public abstract class ContextInsight {
     method @NonNull public static android.service.personalcontext.insight.ContextInsight createInsightFromBundle(@Nullable android.os.Bundle);
     method @NonNull public android.os.Bundle toBundle();
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class HintInvalidationInsight.Builder {
+    ctor public HintInvalidationInsight.Builder(@NonNull android.service.personalcontext.hint.ContextHintWithSignature);
+    method @NonNull public android.service.personalcontext.insight.HintInvalidationInsight.Builder addToken(@NonNull android.service.personalcontext.Token);
+    method @NonNull public android.service.personalcontext.insight.HintInvalidationInsight build();
   }
 
 }

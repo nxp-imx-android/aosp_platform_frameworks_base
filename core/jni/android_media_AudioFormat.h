@@ -283,6 +283,7 @@ struct ChannelMasks {
 
     struct fields_t {
         jclass clazz;
+        jmethodID defaultConstructID;
         jmethodID constructID;
         jfieldID mPositionMask;
         jfieldID mIndexMask;
@@ -292,6 +293,7 @@ struct ChannelMasks {
             if (lclazz == NULL) return;
             clazz = (jclass)env->NewGlobalRef(lclazz);
             if (clazz == NULL) return;
+            defaultConstructID = env->GetMethodID(clazz, "<init>", "()V");
             constructID = env->GetMethodID(clazz, "<init>", "(II)V");
             mPositionMask = env->GetFieldID(clazz, "mPositionMask", "I");
             mIndexMask = env->GetFieldID(clazz, "mIndexMask", "I");
@@ -391,6 +393,11 @@ static inline ScopedLocalRef<jobject> javaChannelMasksFromNativeChannelMask(
     return ScopedLocalRef<jobject>(env,
                                    env->NewObject(fields.clazz, fields.constructID, positionMask,
                                                   indexMask));
+}
+
+static inline ScopedLocalRef<jobject> javaChannelMasksDefault(JNIEnv* env,
+                                                              const ChannelMasks::fields_t fields) {
+    return ScopedLocalRef<jobject>(env, env->NewObject(fields.clazz, fields.defaultConstructID));
 }
 
 #endif // ANDROID_MEDIA_AUDIOFORMAT_H

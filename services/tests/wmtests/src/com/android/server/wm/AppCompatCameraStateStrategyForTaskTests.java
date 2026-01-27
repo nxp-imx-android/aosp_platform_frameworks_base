@@ -19,7 +19,6 @@ package com.android.server.wm;
 import static org.junit.Assert.assertEquals;
 
 import android.compat.testing.PlatformCompatChangeRule;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.util.ArraySet;
 
@@ -188,7 +187,6 @@ public class AppCompatCameraStateStrategyForTaskTests extends WindowTestsBase {
         private void setupAppCompatConfiguration() {
             applyOnConf((c) -> {
                 c.enableCameraCompatForceRotateTreatment(true);
-                c.enableCameraCompatForceRotateTreatmentAtBuildTime(true);
                 c.enableCameraCompatSimReqOrientationTreatment(true);
             });
         }

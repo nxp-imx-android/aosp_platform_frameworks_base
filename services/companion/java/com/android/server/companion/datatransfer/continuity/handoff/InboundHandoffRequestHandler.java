@@ -27,6 +27,7 @@ import android.annotation.NonNull;
 import android.app.HandoffActivityData;
 import android.app.IHandoffTaskDataReceiver;
 import android.os.Binder;
+import android.util.ArrayMap;
 import android.util.Slog;
 import com.android.server.LocalServices;
 import com.android.server.companion.datatransfer.continuity.connectivity.TaskContinuityMessenger;
@@ -36,9 +37,7 @@ import com.android.server.companion.datatransfer.continuity.messages.HandoffRequ
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
 import com.android.server.wm.ActivityTaskManagerInternal;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -50,7 +49,7 @@ public class InboundHandoffRequestHandler extends IHandoffTaskDataReceiver.Stub 
     private static final String TAG = InboundHandoffRequestHandler.class.getSimpleName();
 
     // Map of task id to list of association ids that have a pending handoff request for that task.
-    private final Map<Integer, List<Integer>> mPendingHandoffRequests = new HashMap<>();
+    private final ArrayMap<Integer, List<Integer>> mPendingHandoffRequests = new ArrayMap<>(0);
     private final TaskContinuityMessenger mTaskContinuityMessenger;
     private final ActivityTaskManagerInternal mActivityTaskManagerInternal;
 

@@ -92,6 +92,8 @@ import com.android.server.pm.UserManagerInternal;
 import com.android.server.wm.ActivityTaskManagerInternal;
 import com.android.server.wm.WindowManagerInternal;
 
+import java.io.FileDescriptor;
+import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -184,6 +186,21 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     private final VirtualDpad mVirtualDpad;
     private final ComputerControlAudioCapture mAudioCapture;
     private final ComputerControlAudioInjector mAudioInjector;
+
+    @Override
+    protected void dump(@androidx.annotation.NonNull FileDescriptor fd,
+            @androidx.annotation.NonNull PrintWriter fout,
+            @androidx.annotation.Nullable String[] args) {
+        String indent = "        ";
+        fout.print(indent);
+
+        fout.print("ComupterControlSession {");
+        fout.print(" mDeviceId=" + mVirtualDeviceId);
+        fout.print(" mOwnerPackageName=" + mOwnerPackageName);
+        fout.print("}");
+        fout.print("\n");
+    }
+
     private final ScheduledExecutorService mScheduler =
             Executors.newSingleThreadScheduledExecutor();
     /** Executor for the shared FgThread. */
@@ -596,8 +613,10 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         if (mirror == null) {
             return null;
         }
+        final boolean foregroundMirroringStarted;
         synchronized (mInteractiveMirrors) {
-            if (mInteractiveMirrors.isEmpty()) {
+            foregroundMirroringStarted = mInteractiveMirrors.isEmpty();
+            if (foregroundMirroringStarted) {
                 // Automation is no longer running in the background. Show touches.
                 mInputManagerInternal.setForceShowTouchesOnDisplay(mVirtualDisplayId,
                         true /* enabled */);
@@ -612,6 +631,9 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         }
         outMirrorSurface.copyFrom(mirror.getMirrorLeash(),
                 "ComputerControlSessionImpl#createInteractiveMirrorDisplay");
+        if (foregroundMirroringStarted) {
+            mStatsController.onMirroringStarted();
+        }
         mStatsController.onMirrorViewCreated();
         return mirror;
     }
@@ -655,11 +677,13 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     }
 
     private void removeInteractiveMirror(InteractiveMirrorImpl interactiveMirror) {
+        final boolean foregroundMirroringStopped;
         synchronized (mInteractiveMirrors) {
             if (!mInteractiveMirrors.remove(interactiveMirror)) {
                 return;
             }
-            if (mInteractiveMirrors.isEmpty()) {
+            foregroundMirroringStopped = mInteractiveMirrors.isEmpty();
+            if (foregroundMirroringStopped) {
                 // Automation is fully running in the background. No need to show touches.
                 mInputManagerInternal.setForceShowTouchesOnDisplay(mVirtualDisplayId,
                         false /* enabled */);
@@ -678,6 +702,9 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         try (var transaction = mTransactionSupplier.get()) {
             interactiveMirror.closeWithTransaction(transaction);
             transaction.apply();
+        }
+        if (foregroundMirroringStopped) {
+            mStatsController.onMirroringStopped();
         }
     }
 

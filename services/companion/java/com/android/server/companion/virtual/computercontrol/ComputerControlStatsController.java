@@ -22,8 +22,6 @@ import static com.android.server.companion.virtual.computercontrol.ComputerContr
 import static com.android.server.companion.virtual.computercontrol.ComputerControlStatsLog.COMPUTER_CONTROL_FAILED_SESSION_REPORTED__REASON__PERMISSION_DENIED;
 import static com.android.server.companion.virtual.computercontrol.ComputerControlStatsLog.COMPUTER_CONTROL_FAILED_SESSION_REPORTED__REASON__SESSION_LIMIT_REACHED;
 import static com.android.server.companion.virtual.computercontrol.ComputerControlStatsLog.COMPUTER_CONTROL_SESSION_REPORTED;
-import static com.android.server.companion.virtual.computercontrol.ComputerControlStatsLog.COMPUTER_CONTROL_SESSION_REPORTED__PERFORMED_ACTIONS__ACTION_UNKNOWN;
-import static com.android.server.companion.virtual.computercontrol.ComputerControlStatsLog.COMPUTER_CONTROL_SESSION_REPORTED__PERFORMED_ACTIONS__GO_BACK;
 import static com.android.server.companion.virtual.computercontrol.ComputerControlStatsLog.COMPUTER_CONTROL_SESSION_REPORTED__BLOCK_REASONS__BLOCK_REASON_UNKNOWN;
 import static com.android.server.companion.virtual.computercontrol.ComputerControlStatsLog.COMPUTER_CONTROL_SESSION_REPORTED__BLOCK_REASONS__DISALLOWED_ACTIVITY_LAUNCH;
 import static com.android.server.companion.virtual.computercontrol.ComputerControlStatsLog.COMPUTER_CONTROL_SESSION_REPORTED__BLOCK_REASONS__SECURE_CONTENT;
@@ -32,6 +30,10 @@ import static com.android.server.companion.virtual.computercontrol.ComputerContr
 import static com.android.server.companion.virtual.computercontrol.ComputerControlStatsLog.COMPUTER_CONTROL_SESSION_REPORTED__CLOSE_REASON__SESSION_EMPTY;
 import static com.android.server.companion.virtual.computercontrol.ComputerControlStatsLog.COMPUTER_CONTROL_SESSION_REPORTED__CLOSE_REASON__SESSION_TIMED_OUT;
 import static com.android.server.companion.virtual.computercontrol.ComputerControlStatsLog.COMPUTER_CONTROL_SESSION_REPORTED__CLOSE_REASON__USER_INITIATED;
+import static com.android.server.companion.virtual.computercontrol.ComputerControlStatsLog.COMPUTER_CONTROL_SESSION_REPORTED__PERFORMED_ACTIONS__ACTION_UNKNOWN;
+import static com.android.server.companion.virtual.computercontrol.ComputerControlStatsLog.COMPUTER_CONTROL_SESSION_REPORTED__PERFORMED_ACTIONS__GO_BACK;
+
+import static java.util.Objects.requireNonNull;
 
 import android.annotation.NonNull;
 import android.annotation.UserIdInt;
@@ -77,6 +79,10 @@ final class ComputerControlStatsController {
 
     private final AtomicInteger mMirroredViews = new AtomicInteger(0);
     private final AtomicInteger mMirroredViewsInteractive = new AtomicInteger(0);
+    // Tracks the currently active mirror views to calculate the total duration.
+    private final AtomicReference<Instant> mMirrorViewLastCreatedTime = new AtomicReference<>();
+    private final AtomicReference<Duration> mMirroringTotalDuration =
+            new AtomicReference<>(Duration.ZERO);
 
     @GuardedBy("mApplicationLaunchPackages")
     private final ArrayList<String> mApplicationLaunchPackages = new ArrayList<>();
@@ -103,7 +109,9 @@ final class ComputerControlStatsController {
                 COMPUTER_CONTROL_FAILED_SESSION_REPORTED,
                 attributionSourceToUids(attributionSource),
                 attributionSourceToTags(attributionSource),
-                packageNamesToUids(packageManager, params.getTargetPackageNames(),
+                packageNamesToUids(
+                        packageManager,
+                        params.getTargetPackageNames(),
                         getUserId(attributionSource)),
                 params.getTargetPackageNames().size(),
                 statsReason);
@@ -153,6 +161,7 @@ final class ComputerControlStatsController {
             Slog.e(TAG, "Session was closed more than once.");
             return;
         }
+        updateMirroringTotalDuration();
         synchronized (mBlockReasons) {
             synchronized (mApplicationLaunchPackages) {
                 synchronized (mPerformedActions) {
@@ -168,8 +177,8 @@ final class ComputerControlStatsController {
                             COMPUTER_CONTROL_SESSION_REPORTED,
                             attributionSourceToUids(mAttributionSource),
                             attributionSourceToTags(mAttributionSource),
-                            packageNamesToUids(mPackageManager, mParams.getTargetPackageNames(),
-                                    userId),
+                            packageNamesToUids(
+                                    mPackageManager, mParams.getTargetPackageNames(), userId),
                             mParams.getTargetPackageNames().size(),
                             closeReasonToStats(closeReason),
                             duration.toMillis(),
@@ -177,15 +186,15 @@ final class ComputerControlStatsController {
                             mBlockReasons.size(),
                             mMirroredViews.get(),
                             mMirroredViewsInteractive.get(),
-                            packageNamesToUids(mPackageManager, mApplicationLaunchPackages,
-                                    userId),
+                            packageNamesToUids(mPackageManager, mApplicationLaunchPackages, userId),
                             mApplicationLaunchPackages.size(),
                             mTaps.get(),
                             mSwipes.get(),
                             mLongPresses.get(),
                             mInsertTexts.get(),
                             mPerformedActions.toArray(),
-                            mPerformedActions.size());
+                            mPerformedActions.size(),
+                            requireNonNull(mMirroringTotalDuration.get()).toMillis());
                 }
             }
         }
@@ -198,8 +207,21 @@ final class ComputerControlStatsController {
         }
     }
 
+    /** A new mirror view was created. */
     void onMirrorViewCreated() {
         mMirroredViews.incrementAndGet();
+    }
+
+    /** Mirroring started, there was none before. */
+    void onMirroringStarted() {
+        // In case of multiple start calls, we only track the first one.
+        mMirrorViewLastCreatedTime.compareAndSet(null, mClock.get());
+    }
+
+    /** All mirroring was stopped. */
+    void onMirroringStopped() {
+        // Resets last created time.
+        updateMirroringTotalDuration();
     }
 
     void onMirrorViewInteractive(boolean interactive) {
@@ -319,7 +341,8 @@ final class ComputerControlStatsController {
 
     /** Returns the uids of the package names. */
     private static int[] packageNamesToUids(
-            @NonNull PackageManager packageManager, @NonNull List<String> packageNames,
+            @NonNull PackageManager packageManager,
+            @NonNull List<String> packageNames,
             @UserIdInt int userId) {
         IntArray uids = new IntArray(packageNames.size());
         for (String packageName : packageNames) {
@@ -345,5 +368,18 @@ final class ComputerControlStatsController {
 
     private static int getUserId(@NonNull AttributionSource attributionSource) {
         return UserHandle.getUserId(attributionSource.getUid());
+    }
+
+    /**
+     * Updates the total duration of the mirror view based on the last created time, if any.
+     *
+     * <p>This resets the last created time to {@code null}.
+     */
+    private void updateMirroringTotalDuration() {
+        Instant lastCreatedTime = mMirrorViewLastCreatedTime.getAndSet(null);
+        if (lastCreatedTime != null) {
+            mMirroringTotalDuration.accumulateAndGet(
+                    Duration.between(lastCreatedTime, mClock.get()), Duration::plus);
+        }
     }
 }

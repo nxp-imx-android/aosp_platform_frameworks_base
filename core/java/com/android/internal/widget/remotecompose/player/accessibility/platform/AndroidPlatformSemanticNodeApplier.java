@@ -15,11 +15,13 @@
  */
 package com.android.internal.widget.remotecompose.player.accessibility.platform;
 
+import android.annotation.Nullable;
 import android.graphics.Rect;
 import android.view.View;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction;
 
+import com.android.internal.widget.remotecompose.core.operations.layout.Component;
 import com.android.internal.widget.remotecompose.core.operations.RootContentBehavior;
 import com.android.internal.widget.remotecompose.core.semantics.ScrollableComponent;
 import com.android.internal.widget.remotecompose.player.accessibility.BaseSemanticNodeApplier;
@@ -88,9 +90,17 @@ public class AndroidPlatformSemanticNodeApplier
     }
 
     @Override
-    protected void setBoundsInScreen(AccessibilityNodeInfo nodeInfo, Rect bounds) {
-        nodeInfo.setBoundsInParent(new Rect(0, 0, 1, 1));
-        nodeInfo.setBoundsInScreen(bounds);
+    protected void setBoundsInParentOrScreen(
+            AccessibilityNodeInfo nodeInfo,
+            Component component,
+            @Nullable Integer parentId) {
+        int[] bounds = new int[4];
+
+        component.getBoundsInSemanticParent(bounds, parentId);
+
+        // setBoundsInParent() is a deprecated method, however
+        // ExploreByTouchHelper.createNodeForChild() relies on the bounds in parent being set.
+        nodeInfo.setBoundsInParent(new Rect(bounds[0], bounds[1], bounds[2], bounds[3]));
     }
 
     @Override

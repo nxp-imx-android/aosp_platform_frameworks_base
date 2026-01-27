@@ -1071,7 +1071,7 @@ public class WindowManagerShellCommand extends ShellCommand {
         return 0;
     }
 
-    private int runSetCameraCompatAspectRatio(PrintWriter pw) throws RemoteException {
+    private int runSetCameraCompatAspectRatio(PrintWriter pw) {
         final float aspectRatio;
         try {
             String arg = getNextArgRequired();
@@ -1184,9 +1184,13 @@ public class WindowManagerShellCommand extends ShellCommand {
                 case "--cameraCompatAspectRatio":
                     runSetCameraCompatAspectRatio(pw);
                     break;
-                case "--isCameraCompatSimReqOrientationTreatmentForceEnabled":
+                case "--isCameraCompatSimReqOrientationTreatmentEnabled":
                     runSetBooleanFlag(pw, mAppCompatConfiguration
-                            ::setIsCameraCompatSimReqOrientationTreatmentForceEnabled);
+                            ::setCameraCompatSimReqOrientationTreatmentEnabled);
+                    break;
+                case "--isCameraCompatForceRotateTreatmentEnabled":
+                    runSetBooleanFlag(pw, mAppCompatConfiguration
+                            ::setCameraCompatForceRotateTreatmentEnabled);
                     break;
                 default:
                     getErrPrintWriter().println(
@@ -1282,9 +1286,12 @@ public class WindowManagerShellCommand extends ShellCommand {
                     case "cameraCompatAspectRatio":
                         mAppCompatConfiguration.resetCameraCompatAspectRatio();
                         break;
-                    case "isCameraCompatSimReqOrientationTreatmentForceEnabled":
+                    case "isCameraCompatSimReqOrientationTreatmentEnabled":
                         mAppCompatConfiguration
-                                .resetIsCameraCompatSimReqOrientationTreatmentForceEnabled();
+                                .resetCameraCompatSimReqOrientationTreatmentEnabled();
+                        break;
+                    case "isCameraCompatForceRotateTreatmentEnabled":
+                        mAppCompatConfiguration.resetCameraCompatForceRotateTreatmentEnabled();
                         break;
                     default:
                         getErrPrintWriter().println(
@@ -1397,7 +1404,8 @@ public class WindowManagerShellCommand extends ShellCommand {
             mAppCompatConfiguration.resetCameraCompatRefreshEnabled();
             mAppCompatConfiguration.resetCameraCompatRefreshCycleThroughStopEnabled();
             mAppCompatConfiguration.resetCameraCompatAspectRatio();
-            mAppCompatConfiguration.resetIsCameraCompatSimReqOrientationTreatmentForceEnabled();
+            mAppCompatConfiguration.resetCameraCompatSimReqOrientationTreatmentEnabled();
+            mAppCompatConfiguration.resetCameraCompatForceRotateTreatmentEnabled();
         }
     }
 
@@ -1474,9 +1482,10 @@ public class WindowManagerShellCommand extends ShellCommand {
                     + mAppCompatConfiguration.isUserAppAspectRatioFullscreenEnabled());
             pw.println("Default aspect ratio for camera compat freeform: "
                     + mAppCompatConfiguration.getCameraCompatAspectRatio());
-            pw.println("Is camera compatibility freeform treatment enabled for all apps: "
-                    + mAppCompatConfiguration
-                            .isCameraCompatSimReqOrientationTreatmentForceEnabled());
+            pw.println("Is camera compatibility simulate-requested-orientation treatment enabled: "
+                    + mAppCompatConfiguration.isCameraCompatSimReqOrientationTreatmentEnabled());
+            pw.println("Is camera compatibility force-rotate treatment enabled: "
+                    + mAppCompatConfiguration.isCameraCompatForceRotateTreatmentEnabled());
         }
         return 0;
     }
@@ -1740,9 +1749,12 @@ public class WindowManagerShellCommand extends ShellCommand {
         pw.println("        freeform camera compat mode. If aspectRatio <= "
                 + AppCompatConfiguration.MIN_FIXED_ORIENTATION_LETTERBOX_ASPECT_RATIO);
         pw.println("        it will be ignored.");
-        pw.println("      --isCameraCompatSimReqOrientationTreatmentForceEnabled [true|1|false|0]");
-        pw.println("        Whether camera compat treatment is enabled in freeform mode for all");
-        pw.println("        eligible apps.");
+        pw.println("      --isCameraCompatSimReqOrientationTreatmentEnabled [true|1|false|0]");
+        pw.println("        Whether camera compat simulate-requested-orientation treatment is ");
+        pw.println("        enabled for fixed-orientation apps.");
+        pw.println("      --isCameraCompatForceRotateTreatmentEnabled [true|1|false|0]");
+        pw.println("        Whether camera compat force-rotate treatment is enabled for ");
+        pw.println("        fixed-orientation apps.");
         pw.println("  reset-letterbox-style [aspectRatio|cornerRadius|backgroundType");
         pw.println("      |backgroundColor|wallpaperBlurRadius|wallpaperDarkScrimAlpha");
         pw.println("      |horizontalPositionMultiplier|verticalPositionMultiplier");
@@ -1753,7 +1765,8 @@ public class WindowManagerShellCommand extends ShellCommand {
         pw.println("      |persistentPositionMultiplierForVerticalReachability");
         pw.println("      |defaultPositionMultiplierForVerticalReachability");
         pw.println("      |cameraCompatAspectRatio");
-        pw.println("      |isCameraCompatSimReqOrientationTreatmentForceEnabled]");
+        pw.println("      |isCameraCompatSimReqOrientationTreatmentEnabled");
+        pw.println("      |isCameraCompatForceRotateTreatmentEnabled]");
         pw.println("    Resets overrides to default values for specified properties separated");
         pw.println("    by space, e.g. 'reset-letterbox-style aspectRatio cornerRadius'.");
         pw.println("    If no arguments provided, all values will be reset.");

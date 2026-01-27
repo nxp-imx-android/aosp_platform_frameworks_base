@@ -28,15 +28,21 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import android.app.ActivityManager;
+import android.content.Context;
 import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.graphics.Rect;
 import android.os.Handler;
+import android.util.DisplayMetrics;
+import android.view.Display;
 import android.window.WindowContainerTransaction;
 
 import androidx.test.annotation.UiThreadTest;
@@ -48,6 +54,7 @@ import com.android.wm.shell.ShellTestCase;
 import com.android.wm.shell.TestRunningTaskInfoBuilder;
 import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.common.DisplayImeController;
+import com.android.wm.shell.common.DisplayLayout;
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState;
 import com.android.wm.shell.splitscreen.SplitStatusBarHider;
 
@@ -127,6 +134,55 @@ public class SplitLayoutTests extends ShellTestCase {
         // Verify updateConfiguration checks the current DisplayLayout
         verify(mDisplayController, times(5)) // init * 1 + updateConfiguration * 4
                 .getDisplayLayout(anyInt());
+    }
+
+    @Test
+    public void testUpdateConfiguration_displayIdChanged_recreatesDisplayDependentComponents()
+            throws Exception {
+        int newDisplayId = 2; // Different from DEFAULT_DISPLAY 0
+        mSplitLayout.mInitialized = true;
+
+        // Mock Context, Resources, and Display for the new display
+        Context mockDisplayContext = mock(Context.class);
+        Resources mockResources = mock(Resources.class);
+        when(mockResources.getDisplayMetrics()).thenReturn(new DisplayMetrics());
+        when(mockResources.getConfiguration()).thenReturn(new Configuration());
+        when(mockResources.getIntArray(anyInt())).thenReturn(new int[0]);
+        when(mockDisplayContext.getResources()).thenReturn(mockResources);
+
+        DisplayLayout mockDisplayLayout = mock(DisplayLayout.class);
+        when(mockDisplayLayout.stableInsets()).thenReturn(new Rect());
+        when(mDisplayController.getDisplayLayout(newDisplayId)).thenReturn(mockDisplayLayout);
+
+        // Mock Display
+        Display mockDisplay = mock(Display.class);
+        when(mockDisplay.getDisplayId()).thenReturn(newDisplayId);
+        when(mockDisplayContext.getDisplay()).thenReturn(mockDisplay);
+
+        // Configure DisplayController to return our mocked context
+        when(mDisplayController.getDisplayContext(newDisplayId)).thenReturn(mockDisplayContext);
+        when(mockDisplayContext.createConfigurationContext(any())).thenReturn(mockDisplayContext);
+        when(mockDisplayContext.getDisplayId()).thenReturn(newDisplayId);
+
+        Object oldPolicy = mSplitLayout.mSurfaceEffectPolicy;
+
+        mSplitLayout.updateConfiguration(getConfiguration(), newDisplayId);
+
+        assertThat(mSplitLayout.mSurfaceEffectPolicy).isNotEqualTo(oldPolicy);
+    }
+
+    @Test
+    public void testUpdateConfiguration_sameDisplayId_preservesDisplayDependentComponents()
+            throws Exception {
+        int sameDisplayId = DEFAULT_DISPLAY;
+
+        mSplitLayout.mInitialized = true;
+        Object oldPolicy = mSplitLayout.mSurfaceEffectPolicy;
+
+        // Pass the same configuration and display ID.
+        mSplitLayout.updateConfiguration(getConfiguration(), sameDisplayId);
+
+        assertThat(mSplitLayout.mSurfaceEffectPolicy).isEqualTo(oldPolicy);
     }
 
     @Test

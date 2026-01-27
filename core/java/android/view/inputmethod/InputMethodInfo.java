@@ -550,8 +550,8 @@ public final class InputMethodInfo implements Parcelable {
     }
 
     InputMethodInfo(Parcel source) {
-        mId = source.readString();
-        mSettingsActivityName = source.readString();
+        mId = source.readString8();
+        mSettingsActivityName = source.readString8();
         mLanguageSettingsActivityName = source.readString8();
         mIsDefaultResId = source.readInt();
         mIsAuxIme = source.readInt() == 1;
@@ -1059,8 +1059,8 @@ public final class InputMethodInfo implements Parcelable {
      */
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(mId);
-        dest.writeString(mSettingsActivityName);
+        dest.writeString8(mId);
+        dest.writeString8(mSettingsActivityName);
         dest.writeString8(mLanguageSettingsActivityName);
         dest.writeInt(mIsDefaultResId);
         dest.writeInt(mIsAuxIme ? 1 : 0);

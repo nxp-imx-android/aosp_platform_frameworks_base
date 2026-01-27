@@ -72,6 +72,8 @@ import android.os.PowerManager.WakeLock;
 import android.os.RemoteException;
 import android.os.storage.StorageManager;
 import android.platform.test.annotations.EnableFlags;
+import android.platform.test.annotations.RequiresFlagsDisabled;
+import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.FlagsParameterization;
 import android.telephony.TelephonyManager;
 import android.testing.TestableLooper;
@@ -435,8 +437,15 @@ public class KeyguardViewMediatorTest extends SysuiTestCase {
         assertTrue(mViewMediator.isShowingAndNotOccluded());
     }
 
+    // The test is relying on the race condition postponed runnable, which handles the status set
+    // after the animation before the new keyguard transition. This is notproper for the new
+    // keyguard transition as we do not want any part of the animation handling affects the keyguard
+    // status. The test {@link testGoingAwayFollowedByBeforeUserSwitchDoesNotHideKeyguard()} should
+    // be enough for the new keyguard transition.
     @Test
     @TestableLooper.RunWithLooper(setAsMainLooper = true)
+    @RequiresFlagsDisabled(
+            com.android.window.flags.Flags.FLAG_ENSURE_KEYGUARD_DOES_TRANSITION_STARTING_BUG_FIX)
     public void testGoingAwayFollowedByBeforeUserSwitchWithDelayedExitAnimationDoesNotHideKeyguard() {
         mUsePostAfterTraversalRunnable = true;
 
@@ -1689,6 +1698,8 @@ public class KeyguardViewMediatorTest extends SysuiTestCase {
 
     @Test
     @TestableLooper.RunWithLooper(setAsMainLooper = true)
+    @RequiresFlagsDisabled(
+            com.android.window.flags.Flags.FLAG_ENSURE_KEYGUARD_DOES_TRANSITION_STARTING_BUG_FIX)
     public void testKeyguardExitAnimationCanceledIfShowIsRequested() {
         // Mock a secure user
         setCurrentUser(55, true);
@@ -1708,6 +1719,29 @@ public class KeyguardViewMediatorTest extends SysuiTestCase {
 
     @Test
     @TestableLooper.RunWithLooper(setAsMainLooper = true)
+    @RequiresFlagsEnabled(
+            com.android.window.flags.Flags.FLAG_ENSURE_KEYGUARD_DOES_TRANSITION_STARTING_BUG_FIX)
+    public void testKeyguardExitAndLockedIfShowIsRequested() {
+        // Mock a secure user
+        setCurrentUser(55, true);
+
+        // Setup keyguard
+        mViewMediator.onSystemReady();
+        processAllMessagesAndBgExecutorMessages();
+        mViewMediator.setShowingLocked(true, "");
+
+        // This will create a SHOW message, followed by a request to start the exit animation
+        mViewMediator.showDismissibleKeyguard();
+        mViewMediator.startKeyguardExitAnimation(buildSurfaceTransitionParams());
+
+        assertTrue(mViewMediator.isShowingAndNotOccluded());
+        verify(mStatusBarKeyguardViewManager, never()).hide(anyLong(), anyLong());
+    }
+
+    @Test
+    @TestableLooper.RunWithLooper(setAsMainLooper = true)
+    @RequiresFlagsDisabled(
+            com.android.window.flags.Flags.FLAG_ENSURE_KEYGUARD_DOES_TRANSITION_STARTING_BUG_FIX)
     public void testKeyguardExitAnimationCanceledIfSimLocked() {
         int currentUser = 55;
         // Mock an  insecure user
@@ -1720,6 +1754,41 @@ public class KeyguardViewMediatorTest extends SysuiTestCase {
         mViewMediator.setShowingLocked(true, "");
 
         startMockKeyguardExitAnimation();
+        assertTrue(mViewMediator.isShowingAndNotOccluded());
+
+        // Issue a SIM lock
+        mKeyguardUpdateMonitorCallbackCaptor.getValue().onSimStateChanged(
+                /* subId= */1, /* slotId= */0, TelephonyManager.SIM_STATE_PIN_REQUIRED);
+        processAllMessagesAndBgExecutorMessages();
+
+        // Attempt to process the exit animation, but it should fail
+        mViewMediator.mViewMediatorCallback.keyguardDonePending(currentUser);
+        mViewMediator.mViewMediatorCallback.readyForKeyguardDone();
+        TestableLooper.get(this).processAllMessages();
+
+        assertTrue(mViewMediator.isShowingAndNotOccluded());
+        verify(mKeyguardUnlockAnimationController, never())
+                .notifyFinishedKeyguardExitAnimation(false);
+    }
+
+
+    @Test
+    @TestableLooper.RunWithLooper(setAsMainLooper = true)
+    @RequiresFlagsEnabled(
+            com.android.window.flags.Flags.FLAG_ENSURE_KEYGUARD_DOES_TRANSITION_STARTING_BUG_FIX)
+    public void testKeyguardExitAndRelockIfSimLocked() {
+        int currentUser = 55;
+        // Mock an  insecure user
+        setCurrentUser(currentUser, false);
+
+        // Setup keyguard
+        mViewMediator.onSystemReady();
+        processAllMessagesAndBgExecutorMessages();
+        captureKeyguardUpdateMonitorCallback();
+        mViewMediator.setShowingLocked(true, "");
+
+        mViewMediator.startKeyguardExitAnimation(buildSurfaceTransitionParams());
+        processAllMessagesAndBgExecutorMessages();
         assertTrue(mViewMediator.isShowingAndNotOccluded());
 
         // Issue a SIM lock

@@ -26,6 +26,7 @@ import android.os.RemoteException;
 import android.service.personalcontext.hint.BundleHint;
 import android.service.personalcontext.hint.ContextHintTestUtils;
 import android.service.personalcontext.hint.ContextHintWithSignature;
+import android.service.personalcontext.hint.ContextHintWithSignatureWrapper;
 import android.service.personalcontext.refiner.IRefineCallback;
 import android.service.personalcontext.refiner.IRefiner;
 
@@ -75,7 +76,7 @@ public class ContextUnderstanderServiceTest {
         final List<ContextHintWithSignature> hints = Arrays.asList(hint1, hint2);
         IRefineCallback callback = mock(IRefineCallback.Stub.class);
 
-        mBinder.refine(hints, callback);
+        mBinder.refine(ContextHintWithSignatureWrapper.wrapList(hints), callback);
 
         ArgumentCaptor<List> hintCaptor = ArgumentCaptor.forClass(List.class);
         verify(mService).onUnderstand(hintCaptor.capture());

@@ -50,9 +50,13 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.stubbing.Answer;
 
+import java.util.concurrent.Executor;
+
 @RunWith(AndroidJUnit4.class)
 @Presubmit
 public class FullscreenRequestHandlerTest {
+    private static final Executor SAME_THREAD_EXECUTOR = Runnable::run;
+
     @Rule
     public final RavenwoodRule mRavenwood = new RavenwoodRule();
 
@@ -74,7 +78,7 @@ public class FullscreenRequestHandlerTest {
     @Test
     public void testRequestExitFullscreen_whenInFullscreen_sendsRequest() {
         mFullscreenRequestHandler.requestFullscreenMode(FULLSCREEN_MODE_REQUEST_EXIT, mCallback,
-                mToken);
+                mToken, SAME_THREAD_EXECUTOR);
 
         verify(mCallback, never()).onError(any());
         verify(mActivityClient).requestMultiwindowFullscreen(eq(mToken),
@@ -84,7 +88,7 @@ public class FullscreenRequestHandlerTest {
     @Test
     public void testRequestEnterFullscreen_whenAllowed_sendsRequest() {
         mFullscreenRequestHandler.requestFullscreenMode(FULLSCREEN_MODE_REQUEST_ENTER, mCallback,
-                mToken);
+                mToken, SAME_THREAD_EXECUTOR);
 
         verify(mCallback, never()).onError(any());
         verify(mActivityClient).requestMultiwindowFullscreen(eq(mToken),
@@ -94,7 +98,7 @@ public class FullscreenRequestHandlerTest {
     @Test
     public void testRequestFullscreen_whenNoCallback_sendsRequestWithoutCallback() {
         mFullscreenRequestHandler.requestFullscreenMode(FULLSCREEN_MODE_REQUEST_EXIT, null,
-                mToken);
+                mToken, SAME_THREAD_EXECUTOR);
 
         verify(mActivityClient).requestMultiwindowFullscreen(eq(mToken),
                 eq(FULLSCREEN_MODE_REQUEST_EXIT), eq(null));
@@ -107,7 +111,7 @@ public class FullscreenRequestHandlerTest {
                 any());
 
         mFullscreenRequestHandler.requestFullscreenMode(FULLSCREEN_MODE_REQUEST_EXIT, mCallback,
-                mToken);
+                mToken, SAME_THREAD_EXECUTOR);
 
         verify(mCallback).onError(exception);
     }
@@ -124,7 +128,7 @@ public class FullscreenRequestHandlerTest {
 
 
         mFullscreenRequestHandler.requestFullscreenMode(FULLSCREEN_MODE_REQUEST_EXIT, mCallback,
-                mToken);
+                mToken, SAME_THREAD_EXECUTOR);
 
         verify(mCallback).onResult(null);
     }
@@ -164,7 +168,7 @@ public class FullscreenRequestHandlerTest {
         }).when(mActivityClient).requestMultiwindowFullscreen(eq(mToken), anyInt(), any());
 
         mFullscreenRequestHandler.requestFullscreenMode(FULLSCREEN_MODE_REQUEST_EXIT, mCallback,
-                mToken);
+                mToken, SAME_THREAD_EXECUTOR);
 
         verify(mCallback).onError(any(expectedException));
     }

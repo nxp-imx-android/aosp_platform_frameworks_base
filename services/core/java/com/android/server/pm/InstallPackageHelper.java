@@ -2268,19 +2268,18 @@ final class InstallPackageHelper {
                         for (int currentUser : allUsers) {
                             if (!ps.getInstantApp(currentUser)) {
                                 // can't downgrade from full to instant
-                                Slog.w(TAG,
+                                throw new PrepareFailure(
+                                        PackageManager.INSTALL_FAILED_SESSION_INVALID,
                                         "Can't replace full app with instant app: " + pkgName11
                                                 + " for user: " + currentUser);
-                                throw new PrepareFailure(
-                                        PackageManager.INSTALL_FAILED_SESSION_INVALID);
                             }
                         }
                     } else if (!ps.getInstantApp(request.getUserId())) {
                         // can't downgrade from full to instant
-                        Slog.w(TAG, "Can't replace full app with instant app: " + pkgName11
-                                + " for user: " + request.getUserId());
                         throw new PrepareFailure(
-                                PackageManager.INSTALL_FAILED_SESSION_INVALID);
+                                PackageManager.INSTALL_FAILED_SESSION_INVALID,
+                                "Can't replace full app with instant app: " + pkgName11
+                                        + " for user: " + request.getUserId());
                     }
                 }
             }

@@ -163,7 +163,6 @@ import android.app.UiModeManager;
 import android.app.UiModeManager.ForceInvertStateChangeListener;
 import android.app.WindowConfiguration;
 import android.app.compat.CompatChanges;
-import android.app.servertransaction.WindowStateTransactionItem;
 import android.compat.annotation.ChangeId;
 import android.compat.annotation.EnabledSince;
 import android.compat.annotation.UnsupportedAppUsage;
@@ -304,6 +303,7 @@ import com.android.internal.util.FastPrintWriter;
 import com.android.internal.view.BaseSurfaceHolder;
 import com.android.internal.view.RootViewSurfaceTaker;
 import com.android.internal.view.SurfaceCallbackHelper;
+import com.android.internal.view.WindowClientTransactionHandler;
 import com.android.modules.expresslog.Counter;
 import com.android.os.coregraphics.HwuiStatsLog;
 
@@ -1318,20 +1318,16 @@ public final class ViewRootImpl implements ViewParent,
                     if (!setClientDrawnCornerRadii()) {
                         return;
                     }
-                    if (cornerRadii != null && cornerRadii.length == 4) {
+                    // Post to main thread
+                    mHandler.post(() -> {
                         CornerRadii newCornerRadii = new CornerRadii();
                         newCornerRadii.topLeft = cornerRadii[0];
                         newCornerRadii.topRight = cornerRadii[1];
                         newCornerRadii.bottomLeft = cornerRadii[2];
                         newCornerRadii.bottomRight = cornerRadii[3];
-                        if (!mCornerRadii.equals(newCornerRadii)) {
-                            mCornerRadii = newCornerRadii;
-                            invalidate();
-                        }
-                    } else {
-                        Log.wtf(TAG, "Corner radii received is null or invalid"
-                                + (cornerRadii == null ? "null" : "length " + cornerRadii.length));
-                    }
+                        mCornerRadii = newCornerRadii;
+                        invalidate();
+                    });
                 }
             };
 
@@ -11140,8 +11136,8 @@ public final class ViewRootImpl implements ViewParent,
         // scheduling it again.
         if (!mConsumeBatchedInputScheduled && !mConsumeBatchedInputImmediatelyScheduled) {
             mConsumeBatchedInputScheduled = true;
-            mChoreographer.postCallback(Choreographer.CALLBACK_INPUT,
-                    mConsumedBatchedInputRunnable, null);
+            mChoreographer.postVsyncCallback(Choreographer.CALLBACK_INPUT,
+                    mConsumedBatchedInputCallback);
             if (mAttachInfo.mThreadedRenderer != null) {
                 mAttachInfo.mThreadedRenderer.notifyCallbackPending();
             }
@@ -11151,8 +11147,8 @@ public final class ViewRootImpl implements ViewParent,
     void unscheduleConsumeBatchedInput() {
         if (mConsumeBatchedInputScheduled) {
             mConsumeBatchedInputScheduled = false;
-            mChoreographer.removeCallbacks(Choreographer.CALLBACK_INPUT,
-                    mConsumedBatchedInputRunnable, null);
+            mChoreographer.removeVsyncCallback(Choreographer.CALLBACK_INPUT,
+                    mConsumedBatchedInputCallback);
         }
     }
 
@@ -11255,13 +11251,13 @@ public final class ViewRootImpl implements ViewParent,
 
     HardwareRendererObserver mHardwareRendererObserver;
 
-    final class ConsumeBatchedInputRunnable implements Runnable {
+    final class ConsumeBatchedInputCallback implements Choreographer.VsyncCallback {
         @Override
-        public void run() {
+        public void onVsync(Choreographer.FrameData frameData) {
             Trace.traceBegin(TRACE_TAG_VIEW, mTag);
             try {
                 mConsumeBatchedInputScheduled = false;
-                if (doConsumeBatchedInput(mChoreographer.getFrameTimeNanos())) {
+                if (doConsumeBatchedInput(frameData.getFrameTimeNanos())) {
                     // If we consumed a batch here, we want to go ahead and schedule the
                     // consumption of batched input events on the next frame. Otherwise, we would
                     // wait until we have more input events pending and might get starved by other
@@ -11273,8 +11269,8 @@ public final class ViewRootImpl implements ViewParent,
             }
         }
     }
-    final ConsumeBatchedInputRunnable mConsumedBatchedInputRunnable =
-            new ConsumeBatchedInputRunnable();
+    final ConsumeBatchedInputCallback mConsumedBatchedInputCallback =
+            new ConsumeBatchedInputCallback();
     boolean mConsumeBatchedInputScheduled;
 
     final class ConsumeBatchedInputImmediatelyRunnable implements Runnable {
@@ -12290,17 +12286,130 @@ public final class ViewRootImpl implements ViewParent,
         }
     }
 
-    static class W extends IWindow.Stub implements WindowStateTransactionItem.TransactionListener {
+    static class W extends WindowClientTransactionHandler {
         private final WeakReference<ViewRootImpl> mViewAncestor;
         private boolean mIsFromTransactionItem;
+        private ResizeArgs mPendingResizeArgs;
+        private final List<InsetsControlArgs> mPendingInsetsControlArgsList = new ArrayList<>();
+
+        private static class ResizeArgs {
+            @NonNull
+            final WindowRelayoutResult mLayout;
+            final boolean mReportDraw;
+            final boolean mForceLayout;
+            final int mDisplayId;
+            final boolean mSyncWithBuffers;
+            final boolean mDragResizing;
+
+            ResizeArgs(@NonNull WindowRelayoutResult layout, boolean reportDraw,
+                    boolean forceLayout, int displayId, boolean syncWithBuffers,
+                    boolean dragResizing) {
+                mLayout = layout;
+                mReportDraw = reportDraw;
+                mForceLayout = forceLayout;
+                mDisplayId = displayId;
+                mSyncWithBuffers = syncWithBuffers;
+                mDragResizing = dragResizing;
+            }
+        }
+
+        private static class InsetsControlArgs {
+            @NonNull
+            final InsetsState mInsetsState;
+            @NonNull
+            final InsetsSourceControl.Array mControls;
+
+            InsetsControlArgs(@NonNull InsetsState insetsState,
+                    @NonNull InsetsSourceControl.Array controls) {
+                mInsetsState = insetsState;
+                mControls = controls;
+            }
+        }
 
         W(ViewRootImpl viewAncestor) {
             mViewAncestor = new WeakReference<ViewRootImpl>(viewAncestor);
         }
 
+        @Nullable
+        @Override
+        public Handler getHandler() {
+            final ViewRootImpl viewAncestor = mViewAncestor.get();
+            if (viewAncestor == null) {
+                return null;
+            }
+            return viewAncestor.mHandler;
+        }
+
         @Override
         public void onExecutingWindowStateTransactionItem() {
             mIsFromTransactionItem = true;
+        }
+
+        @Override
+        public void updatePendingResize(WindowRelayoutResult layout, boolean reportDraw,
+                boolean forceLayout, int displayId, boolean syncWithBuffers, boolean dragResizing) {
+            synchronized (this) {
+                if (mPendingResizeArgs != null) {
+                    reportDraw = reportDraw || mPendingResizeArgs.mReportDraw;
+                    forceLayout = forceLayout || mPendingResizeArgs.mForceLayout;
+                    syncWithBuffers = syncWithBuffers || mPendingResizeArgs.mSyncWithBuffers;
+                }
+                mPendingResizeArgs = new ResizeArgs(layout, reportDraw, forceLayout, displayId,
+                        syncWithBuffers, dragResizing);
+            }
+        }
+
+        @Override
+        public void handleResized() {
+            final ViewRootImpl viewAncestor = mViewAncestor.get();
+            if (viewAncestor == null) {
+                return;
+            }
+            final ResizeArgs args;
+            synchronized (this) {
+                args = mPendingResizeArgs;
+                mPendingResizeArgs = null;
+            }
+            if (args == null) {
+                return;
+            }
+            final WindowRelayoutResult layout = args.mLayout;
+            viewAncestor.handleResized(layout.frames, args.mReportDraw,
+                    layout.mergedConfiguration, layout.insetsState, args.mForceLayout,
+                    args.mDisplayId, layout.syncSeqId, args.mSyncWithBuffers,
+                    args.mDragResizing, layout.activityWindowInfo);
+        }
+
+        @Override
+        public void updatePendingInsetsControls(InsetsState state,
+                InsetsSourceControl.Array controls) {
+            synchronized (this) {
+                mPendingInsetsControlArgsList.add(new InsetsControlArgs(state, controls));
+            }
+        }
+
+        @Override
+        public void handleInsetsControlChanged() {
+            final ViewRootImpl viewAncestor = mViewAncestor.get();
+            final InsetsControlArgs[] argsArray;
+            synchronized (this) {
+                argsArray = mPendingInsetsControlArgsList.toArray(new InsetsControlArgs[0]);
+                mPendingInsetsControlArgsList.clear();
+            }
+            if (viewAncestor == null || !viewAncestor.mAdded) {
+                for (InsetsControlArgs args : argsArray) {
+                    args.mControls.release();
+                }
+                return;
+            }
+            for (InsetsControlArgs args : argsArray) {
+                // Only handling the latest controls is not compatible with handling all the
+                // controls. e.g., IME InsetsSourceConsumer might reset the source visibility or
+                // remove the IME surface when there is a null control. So if the controls are sent
+                // as "imeControl1 --> null --> imeControl2", only handling imeControl2 won't be the
+                // same as handling all of them.
+                viewAncestor.handleInsetsControlChanged(args.mInsetsState, args.mControls);
+            }
         }
 
         @Override

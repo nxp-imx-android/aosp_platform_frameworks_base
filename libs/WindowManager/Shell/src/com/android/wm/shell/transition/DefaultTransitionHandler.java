@@ -66,12 +66,13 @@ import static com.android.internal.policy.TransitionAnimation.WALLPAPER_TRANSITI
 import static com.android.internal.policy.TransitionAnimation.WALLPAPER_TRANSITION_INTRA_OPEN;
 import static com.android.internal.policy.TransitionAnimation.WALLPAPER_TRANSITION_NONE;
 import static com.android.internal.policy.TransitionAnimation.WALLPAPER_TRANSITION_OPEN;
-import static com.android.wm.shell.transition.DefaultSurfaceAnimator.buildWindowAnimation;
+import static com.android.wm.shell.transition.DefaultSurfaceAnimator.buildSurfaceAnimation;
 import static com.android.wm.shell.transition.TransitionAnimationHelper.getTransitionBackgroundColorIfSet;
 import static com.android.wm.shell.transition.TransitionAnimationHelper.getTransitionTypeFromInfo;
 import static com.android.wm.shell.transition.TransitionAnimationHelper.isCoveredByOpaqueFullscreenChange;
 import static com.android.wm.shell.transition.TransitionAnimationHelper.loadAttributeAnimation;
 
+import android.animation.Animator;
 import android.animation.ValueAnimator;
 import android.annotation.ColorInt;
 import android.annotation.NonNull;
@@ -121,8 +122,6 @@ import com.android.wm.shell.sysui.ShellInit;
 
 import java.util.ArrayList;
 import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.function.Consumer;
 
 /** The default handler that handles anything not already handled. */
 public class DefaultTransitionHandler implements Transitions.TransitionHandler {
@@ -138,9 +137,9 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
     private final DevicePolicyManager mDevicePolicyManager;
     private final TransitionAnimationHelper.RoundedContentTracker mRoundedContentBounds;
 
-    /** Keeps track of the currently-running transitions and their window animations */
-    private final ArrayMap<IBinder, ArrayList<WindowAnimation>>
-            mTransitionAnimators = new ArrayMap<>();
+    /** Keeps track of the currently-running animations associated with each transition. */
+    private final ArrayMap<IBinder, ArrayList<Animator>> mAnimations = new ArrayMap<>();
+
     private final CounterRotatorHelper mRotator = new CounterRotatorHelper();
     private final Rect mInsets = new Rect(0, 0, 0, 0);
     private float mTransitionAnimationScaleSetting = 1.0f;
@@ -315,11 +314,11 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
 
     @Override
     public boolean startAnimation(@NonNull IBinder transition,
-            @Nullable TransitionInfo info,
-            @NonNull TransitionDispatchState dispatchState,
-            @NonNull SurfaceControl.Transaction startTransaction,
-            @NonNull SurfaceControl.Transaction finishTransaction,
-            @NonNull Transitions.TransitionFinishCallback finishCallback) {
+                                  @Nullable TransitionInfo info,
+                                  @NonNull TransitionDispatchState dispatchState,
+                                  @NonNull SurfaceControl.Transaction startTransaction,
+                                  @NonNull SurfaceControl.Transaction finishTransaction,
+                                  @NonNull Transitions.TransitionFinishCallback finishCallback) {
         if (info == null) {
             // In data collection mode: there can't be errors - nothing to do
             return false;
@@ -354,20 +353,26 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
             return true;
         }
 
-        if (mTransitionAnimators.containsKey(transition)) {
+        if (mAnimations.containsKey(transition)) {
             throw new IllegalStateException("Got a duplicate startAnimation call for "
                     + transition);
         }
-        final ArrayList<WindowAnimation> animations = new ArrayList<>();
-        mTransitionAnimators.put(transition, animations);
+        final ArrayList<Animator> animations = new ArrayList<>();
+        mAnimations.put(transition, animations);
 
         final boolean isTaskTransition = com.android.window.flags.Flags.transitionHandlerCujTags()
                 && isTaskTransition(info);
 
-        final Consumer<WindowAnimation> onAnimFinish = (winAnim) -> {
-            animations.remove(winAnim);
+        final Runnable onAnimFinish = () -> {
             if (!animations.isEmpty()) return;
-            finishTransition(transition, info, finishCallback, isTaskTransition);
+            if (isTaskTransition) {
+                mInteractionJankMonitor.end(CUJ_DEFAULT_TASK_TO_TASK_ANIMATION);
+            }
+            mAnimations.remove(transition);
+            if (!Flags.releaseAllTransitionSurfaces()) {
+                info.releaseAllSurfaces();
+            }
+            finishCallback.onTransitionFinished(null /* wct */);
         };
 
         @ColorInt int backgroundColorForTransition = 0;
@@ -382,8 +387,8 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
         // single "close" change, for example. With only one change, there are no other layers
         // within the transition to interact with, so a background is unnecessary.
         final boolean allowBackground = info.getChanges().size() > 1
-                && (wallpaperTransit != WALLPAPER_TRANSITION_INTRA_OPEN
-                && wallpaperTransit != WALLPAPER_TRANSITION_INTRA_CLOSE);
+                        && (wallpaperTransit != WALLPAPER_TRANSITION_INTRA_OPEN
+                        && wallpaperTransit != WALLPAPER_TRANSITION_INTRA_CLOSE);
 
         for (int i = info.getChanges().size() - 1; i >= 0; --i) {
             final TransitionInfo.Change change = info.getChanges().get(i);
@@ -410,9 +415,8 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
                     if (!(isSeamlessDisplayChange || anim == ROTATION_ANIMATION_JUMPCUT)) {
                         final int flags = wallpaperTransit != WALLPAPER_TRANSITION_NONE
                                 ? ScreenRotationAnimation.FLAG_HAS_WALLPAPER : 0;
-                        startRotationAnimation(startTransaction, change,
-                                info, anim, flags, onAnimFinish)
-                                .ifPresent(animations::add);
+                        startRotationAnimation(startTransaction, change, info, anim, flags,
+                                animations, onAnimFinish);
                         animatingDisplayId = change.getEndDisplayId();
                         continue;
                     }
@@ -471,19 +475,15 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
                 if (change.getParent() == null && !change.hasFlags(FLAG_IS_DISPLAY)
                         && change.getStartRotation() != change.getEndRotation()) {
                     startRotationAnimation(startTransaction, change, info,
-                            ROTATION_ANIMATION_ROTATE, 0 /* flags */,
-                            onAnimFinish)
-                            .ifPresent(animations::add);
-
+                            ROTATION_ANIMATION_ROTATE, 0 /* flags */, animations, onAnimFinish);
                     continue;
                 }
 
                 if (Flags.portWindowSizeAnimation() && isTask
                         && TransitionInfo.isIndependent(change, info)
                         && change.getSnapshot() != null) {
-                    startBoundsChangeAnimation(startTransaction, change, onAnimFinish,
-                            mMainExecutor)
-                            .ifPresent(animations::add);
+                    startBoundsChangeAnimation(startTransaction, animations, change, onAnimFinish,
+                            mMainExecutor);
                     continue;
                 }
             }
@@ -586,9 +586,13 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
                 clipRect.offsetTo(0, 0);
 
                 final TransitionInfo.Root animRoot = TransitionUtil.getRootFor(change, info);
+                final Rect boundsForOffset =
+                        com.android.window.flags.Flags.refineAncestorSearchAndBounds()
+                        && TransitionUtil.isClosingType(change.getMode())
+                        ? change.getStartAbsBounds() : change.getEndAbsBounds();
                 final Point animRelOffset = new Point(
-                        change.getEndAbsBounds().left - animRoot.getOffset().x,
-                        change.getEndAbsBounds().top - animRoot.getOffset().y);
+                        boundsForOffset.left - animRoot.getOffset().x,
+                        boundsForOffset.top - animRoot.getOffset().y);
 
                 final boolean isActivity = change.getActivityComponent() != null;
                 if (isActivity) {
@@ -630,18 +634,15 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
                     leash.release();
                 }
 
-                WindowAnimation winAnim = buildWindowAnimation(a, change, change.getLeash(),
-                        onAnimFinish,
+                buildSurfaceAnimation(animations, a, change.getLeash(), onAnimFinish,
                         mTransactionPool, mMainExecutor, animRelOffset, cornerRadius, clipRect,
                         isTask || isActivity
                                 ? mRoundedContentBounds.forDisplay(change.getEndDisplayId())
                                 : null);
-                animations.add(winAnim);
 
                 final TransitionInfo.AnimationOptions options = change.getAnimationOptions();
                 if (options != null) {
-                    attachThumbnail(onAnimFinish, change, options, cornerRadius)
-                            .ifPresent(animations::add);
+                    attachThumbnail(animations, onAnimFinish, change, options, cornerRadius);
                 }
             }
         }
@@ -663,7 +664,9 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
             // now start animations. they are started on another thread, so we have to post them
             // *after* applying the startTransaction
             mAnimExecutor.execute(() -> {
-                animations.forEach(WindowAnimation::start);
+                for (int i = 0; i < animations.size(); ++i) {
+                    animations.get(i).start();
+                }
             });
         }
 
@@ -671,23 +674,9 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
         TransitionMetrics.getInstance().reportAnimationStart(transition);
         // run finish now in-case there are no animations
         if (!hasAnimations) {
-            finishTransition(transition, info, finishCallback, isTaskTransition);
+            onAnimFinish.run();
         }
         return true;
-    }
-
-    private void finishTransition(@NonNull IBinder transition, @NonNull TransitionInfo info,
-            @NonNull Transitions.TransitionFinishCallback finishCallback,
-            boolean isTaskTransition) {
-        if (isTaskTransition) {
-            mInteractionJankMonitor.end(CUJ_DEFAULT_TASK_TO_TASK_ANIMATION);
-        }
-        mTransitionAnimators.remove(transition);
-
-        if (!Flags.releaseAllTransitionSurfaces()) {
-            info.releaseAllSurfaces();
-        }
-        finishCallback.onTransitionFinished(null /* wct */);
     }
 
     private boolean isAnimationsDisabledForAnyDisplay(@NonNull TransitionInfo info) {
@@ -703,7 +692,7 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
             @ColorInt int color, @NonNull SurfaceControl.Transaction startTransaction,
             @NonNull SurfaceControl.Transaction finishTransaction) {
         final Color bgColor = Color.valueOf(color);
-        final float[] colorArray = new float[]{bgColor.red(), bgColor.green(), bgColor.blue()};
+        final float[] colorArray = new float[] { bgColor.red(), bgColor.green(), bgColor.blue() };
 
         boolean isSplitTaskInvolved = false;
         for (var change : info.getChanges()) {
@@ -733,8 +722,7 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
                             displayId, backgroundSurface, startTransaction, -1);
                 } catch (NoSuchElementException e) {
                     ProtoLog.wtf(ShellProtoLogGroup.WM_SHELL_TRANSITIONS,
-                            "Unable to add background because display %d does not exist",
-                            displayId);
+                            "Unable to add background because display %d does not exist",displayId);
                 }
             }
 
@@ -819,52 +807,55 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
             @NonNull SurfaceControl.Transaction finishT,
             @NonNull IBinder mergeTarget,
             @NonNull Transitions.TransitionFinishCallback finishCallback) {
-        ArrayList<WindowAnimation> animations = mTransitionAnimators.get(mergeTarget);
-        if (animations == null) return;
-        for (int i = animations.size() - 1; i >= 0; --i) {
-            final WindowAnimation winAnim = animations.get(i);
-            mAnimExecutor.execute(winAnim::end);
+        ArrayList<Animator> anims = mAnimations.get(mergeTarget);
+        if (anims == null) return;
+        for (int i = anims.size() - 1; i >= 0; --i) {
+            final Animator anim = anims.get(i);
+            mAnimExecutor.execute(anim::end);
         }
     }
 
-    private Optional<WindowAnimation> startRotationAnimation(
-            SurfaceControl.Transaction startTransaction,
+    private void startRotationAnimation(SurfaceControl.Transaction startTransaction,
             TransitionInfo.Change change, TransitionInfo info, int animHint, int flags,
-            Consumer<WindowAnimation> finishCallback) {
+            ArrayList<Animator> animations, Runnable onAnimFinish) {
         final int rootIdx = TransitionUtil.rootIndexFor(change, info);
         final ScreenRotationAnimation anim = new ScreenRotationAnimation(mContext,
                 mTransactionPool, startTransaction, change, info.getRoot(rootIdx).getLeash(),
                 animHint, flags);
-
-        Consumer<WindowAnimation> wrappedCallback = (winAnim) -> {
+        // The rotation animation may consist of 3 animations: fade-out screenshot, fade-in real
+        // content, and background color. The item of "animGroup" will be removed if the sub
+        // animation is finished. Then if the list becomes empty, the rotation animation is done.
+        final ArrayList<Animator> animGroup = new ArrayList<>(3);
+        final ArrayList<Animator> animGroupStore = new ArrayList<>(3);
+        final Runnable finishCallback = () -> {
+            if (!animGroup.isEmpty()) return;
             anim.kill();
-            finishCallback.accept(winAnim);
+            animations.removeAll(animGroupStore);
+            onAnimFinish.run();
         };
-
-        final WindowAnimation rotationAnimation = anim.buildAnimation(wrappedCallback,
-                mTransitionAnimationScaleSetting, mMainExecutor);
-        if (rotationAnimation == null) {
-            anim.kill();
-            return Optional.empty();
+        anim.buildAnimation(animGroup, finishCallback, mTransitionAnimationScaleSetting,
+                mMainExecutor);
+        for (int i = animGroup.size() - 1; i >= 0; i--) {
+            final Animator animator = animGroup.get(i);
+            animGroupStore.add(animator);
+            animations.add(animator);
         }
-        return Optional.of(rotationAnimation);
     }
 
-    private Optional<WindowAnimation> startBoundsChangeAnimation(
-            @NonNull SurfaceControl.Transaction startT,
-            @NonNull TransitionInfo.Change change,
-            @NonNull Consumer<WindowAnimation> finishCallback,
-            @NonNull ShellExecutor mainExecutor) {
+    private void startBoundsChangeAnimation(@NonNull SurfaceControl.Transaction startT,
+            @NonNull ArrayList<Animator> animations, @NonNull TransitionInfo.Change change,
+            @NonNull Runnable finishCb, @NonNull ShellExecutor mainExecutor) {
         final SizeChangeAnimation sca = new SizeChangeAnimation(change.getStartAbsBounds(),
                 change.getEndAbsBounds(), /* initialScale= */ 1f, /* scaleFactor= */ 1f);
         sca.initialize(change.getLeash(), change.getSnapshot(), startT);
-        final WindowAnimation winAnim = new WindowAnimation(change, 0 /* cornerRadius */);
         final ValueAnimator va = sca.buildAnimator(change.getLeash(), change.getSnapshot(),
-                (animation) -> mainExecutor.execute(() -> finishCallback.accept(winAnim)));
+                (animator) -> mainExecutor.execute(() -> {
+                    animations.remove(animator);
+                    finishCb.run();
+                }));
         va.setDuration(SIZE_CHANGE_ANIMATION_DURATION);
         va.setInterpolator(Interpolators.EMPHASIZED);
-        winAnim.setAnimator(va);
-        return Optional.of(winAnim);
+        animations.add(va);
     }
 
     @Nullable
@@ -956,30 +947,25 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
         return a;
     }
 
-    private Optional<WindowAnimation> attachThumbnail(
-            @NonNull Consumer<WindowAnimation> finishCallback,
-            TransitionInfo.Change change, TransitionInfo.AnimationOptions options,
-            float cornerRadius) {
+    private void attachThumbnail(@NonNull ArrayList<Animator> animations,
+            @NonNull Runnable finishCallback, TransitionInfo.Change change,
+            TransitionInfo.AnimationOptions options, float cornerRadius) {
         final boolean isOpen = TransitionUtil.isOpeningType(change.getMode());
         final boolean isClose = TransitionUtil.isClosingType(change.getMode());
         if (isOpen) {
             if (options.getType() == ANIM_OPEN_CROSS_PROFILE_APPS) {
-                return attachCrossProfileThumbnailAnimation(finishCallback, change,
+                attachCrossProfileThumbnailAnimation(animations, finishCallback, change,
                         cornerRadius);
             } else if (options.getType() == ANIM_THUMBNAIL_SCALE_UP) {
-                return attachThumbnailAnimation(finishCallback, change, options,
-                        cornerRadius);
+                attachThumbnailAnimation(animations, finishCallback, change, options, cornerRadius);
             }
         } else if (isClose && options.getType() == ANIM_THUMBNAIL_SCALE_DOWN) {
-            return attachThumbnailAnimation(finishCallback, change, options,
-                    cornerRadius);
+            attachThumbnailAnimation(animations, finishCallback, change, options, cornerRadius);
         }
-        return Optional.empty();
     }
 
-    private Optional<WindowAnimation> attachCrossProfileThumbnailAnimation(
-            @NonNull Consumer<WindowAnimation> finishCallback,
-            TransitionInfo.Change change, float cornerRadius) {
+    private void attachCrossProfileThumbnailAnimation(@NonNull ArrayList<Animator> animations,
+            @NonNull Runnable finishCallback, TransitionInfo.Change change, float cornerRadius) {
         final Rect bounds = change.getEndAbsBounds();
         // Show the right drawable depending on the user we're transitioning to.
         final Drawable thumbnailDrawable = change.hasFlags(FLAG_CROSS_PROFILE_OWNER_THUMBNAIL)
@@ -987,53 +973,59 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
                 : change.hasFlags(FLAG_CROSS_PROFILE_WORK_THUMBNAIL)
                         ? mEnterpriseThumbnailDrawable : null;
         if (thumbnailDrawable == null) {
-            return Optional.empty();
+            return;
         }
         final HardwareBuffer thumbnail = mTransitionAnimation.createCrossProfileAppsThumbnail(
                 thumbnailDrawable, bounds);
         if (thumbnail == null) {
-            return Optional.empty();
+            return;
         }
+
+        final SurfaceControl.Transaction transaction = mTransactionPool.acquire();
+        final WindowThumbnail wt = WindowThumbnail.createAndAttach(
+                change.getLeash(), thumbnail, transaction);
         final Animation a =
                 mTransitionAnimation.createCrossProfileAppsThumbnailAnimationLocked(bounds);
+        if (a == null) {
+            return;
+        }
 
-        return startThumbnailAnimation(finishCallback, change, cornerRadius, thumbnail, a);
+        final Runnable finisher = () -> {
+            wt.destroy(transaction);
+            mTransactionPool.release(transaction);
+
+            finishCallback.run();
+        };
+        a.restrictDuration(MAX_ANIMATION_DURATION);
+        a.scaleCurrentDuration(mTransitionAnimationScaleSetting);
+        buildSurfaceAnimation(animations, a, wt.getSurface(), finisher, mTransactionPool,
+                mMainExecutor, change.getEndRelOffset(), cornerRadius, change.getEndAbsBounds(),
+                getRoundedContentBounds(change));
     }
 
-    private Optional<WindowAnimation> attachThumbnailAnimation(
-            @NonNull Consumer<WindowAnimation> finishCallback,
-            TransitionInfo.Change change, TransitionInfo.AnimationOptions options,
-            float cornerRadius) {
+    private void attachThumbnailAnimation(@NonNull ArrayList<Animator> animations,
+            @NonNull Runnable finishCallback, TransitionInfo.Change change,
+            TransitionInfo.AnimationOptions options, float cornerRadius) {
+        final SurfaceControl.Transaction transaction = mTransactionPool.acquire();
+        final WindowThumbnail wt = WindowThumbnail.createAndAttach(
+                change.getLeash(), options.getThumbnail(), transaction);
         final Rect bounds = change.getEndAbsBounds();
         final int orientation = mContext.getResources().getConfiguration().orientation;
         final Animation a = mTransitionAnimation.createThumbnailAspectScaleAnimationLocked(bounds,
                 mInsets, options.getThumbnail(), orientation, null /* startRect */,
                 options.getTransitionBounds(), options.getType() == ANIM_THUMBNAIL_SCALE_UP);
 
-        return startThumbnailAnimation(finishCallback, change, cornerRadius,
-                options.getThumbnail(), a);
-    }
-
-    private Optional<WindowAnimation> startThumbnailAnimation(
-            @NonNull Consumer<WindowAnimation> finishCallback,
-            TransitionInfo.Change change, float cornerRadius,
-            HardwareBuffer thumbnail, Animation a) {
-        if (thumbnail == null || a == null) {
-            return Optional.empty();
-        }
-        final SurfaceControl.Transaction transaction = mTransactionPool.acquire();
-        final WindowThumbnail wt = WindowThumbnail.createAndAttach(
-                change.getLeash(), thumbnail, transaction);
-        final Consumer<WindowAnimation> finisher = (wAnim) -> {
+        final Runnable finisher = () -> {
             wt.destroy(transaction);
             mTransactionPool.release(transaction);
-            finishCallback.accept(wAnim);
+
+            finishCallback.run();
         };
         a.restrictDuration(MAX_ANIMATION_DURATION);
         a.scaleCurrentDuration(mTransitionAnimationScaleSetting);
-        return Optional.of(buildWindowAnimation(a, change, wt.getSurface(), finisher,
-                mTransactionPool, mMainExecutor, change.getEndRelOffset(), cornerRadius,
-                change.getEndAbsBounds(), getRoundedContentBounds(change)));
+        buildSurfaceAnimation(animations, a, wt.getSurface(), finisher, mTransactionPool,
+                mMainExecutor, change.getEndRelOffset(), cornerRadius, change.getEndAbsBounds(),
+                getRoundedContentBounds(change));
     }
 
     private static int getWallpaperTransitType(TransitionInfo info) {
@@ -1070,7 +1062,6 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
 
     /**
      * Returns {@code true} if the default transition handler can run the override animation.
-     *
      * @see #loadAnimation(int, TransitionInfo, TransitionInfo.Change, int, boolean)
      */
     public static boolean isSupportedOverrideAnimation(
@@ -1084,8 +1075,7 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
 
     @Override
     public void onTransitionConsumed(@NonNull IBinder transition, boolean aborted,
-            @Nullable SurfaceControl.Transaction finishTransaction) {
+                              @Nullable SurfaceControl.Transaction finishTransaction) {
         mInteractionJankMonitor.cancel(CUJ_DEFAULT_TASK_TO_TASK_ANIMATION);
     }
-
 }

@@ -27,6 +27,7 @@ import android.content.IntentFilter;
 import android.graphics.Insets;
 import android.graphics.Rect;
 import android.os.Handler;
+import android.view.Gravity;
 import android.view.SurfaceControl;
 import android.view.View;
 import android.view.ViewRootImpl;
@@ -42,6 +43,7 @@ import com.android.wm.shell.R;
 import com.android.wm.shell.common.SystemWindows;
 import com.android.wm.shell.common.pip.PipMenuController;
 import com.android.wm.shell.protolog.ShellProtoLogGroup;
+import com.android.wm.shell.shared.pip.PipFlags;
 
 import java.util.List;
 
@@ -625,6 +627,21 @@ public class TvPipMenuController implements PipMenuController, TvPipMenuView.Lis
     public void onCloseEduText() {
         mTvPipBoundsState.setPipMenuTemporaryDecorInsets(Insets.NONE);
         mDelegate.closeEduText();
+    }
+
+    /**
+     * Forces a menu bounds update specifically for PiP2 when the PiP window is anchored to the top.
+     * This compensates for cases where the transition framework doesn't trigger a
+     * resize because the content bounds remain static while the decoration/drawer changes.
+     */
+    @Override
+    public void onCloseEduTextMenuBoundsChange() {
+        if (PipFlags.isPip2ExperimentEnabled()) {
+            int gravity = mTvPipBoundsState.getTvPipGravity();
+            if ((gravity & Gravity.TOP) == Gravity.TOP) {
+                updateMenuBounds(mTvPipBoundsState.getBounds());
+            }
+        }
     }
 
     @Override

@@ -121,7 +121,7 @@ final class AppCompatCameraDisplayRotationPolicy implements AppCompatCameraState
                 && displayContent.mWmService.mAppCompatConfiguration
                         .isCameraCompatSimReqOrientationTreatmentEnabled())
                 && displayContent.mWmService.mAppCompatConfiguration
-                        .isCameraCompatForceRotateTreatmentEnabledAtBuildTime();
+                        .isCameraCompatForceRotateTreatmentEnabled();
     }
 
     /**

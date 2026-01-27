@@ -19,6 +19,7 @@ package com.android.server.display;
 import android.animation.ValueAnimator;
 import android.util.FloatProperty;
 import android.view.Choreographer;
+import android.view.Choreographer.VsyncCallback;
 
 import com.android.internal.display.BrightnessUtils;
 
@@ -261,8 +262,7 @@ class RampAnimator<T> {
                     mAwaitingCallback = true;
                     postAnimationCallback();
                 } else if (mAwaitingCallback) {
-                    mChoreographer.removeCallbacks(Choreographer.CALLBACK_ANIMATION,
-                            mAnimationCallback, null);
+                    mChoreographer.removeVsyncCallback(mAnimationCallback);
                     mAwaitingCallback = false;
                 }
             }
@@ -284,13 +284,13 @@ class RampAnimator<T> {
         }
 
         private void postAnimationCallback() {
-            mChoreographer.postCallback(Choreographer.CALLBACK_ANIMATION, mAnimationCallback, null);
+            mChoreographer.postVsyncCallback(mAnimationCallback);
         }
 
-        private final Runnable mAnimationCallback = new Runnable() {
+        private final VsyncCallback mAnimationCallback = new VsyncCallback() {
             @Override // Choreographer callback
-            public void run() {
-                long frameTimeNanos = mChoreographer.getFrameTimeNanos();
+            public void onVsync(Choreographer.FrameData frameData) {
+                long frameTimeNanos = frameData.getFrameTimeNanos();
                 mFirst.performNextAnimationStep(frameTimeNanos);
                 mSecond.performNextAnimationStep(frameTimeNanos);
                 if (isAnimating()) {

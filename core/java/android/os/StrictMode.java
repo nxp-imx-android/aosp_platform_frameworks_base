@@ -436,6 +436,9 @@ public final class StrictMode {
             new ThreadLocal<>();
     private static final ThreadLocal<Executor> sThreadViolationExecutor = new ThreadLocal<>();
 
+    private static final BackgroundActivityLaunchCallback BACKGROUND_ACTIVITY_LAUNCH_CALLBACK =
+            new BackgroundActivityLaunchCallback();
+
     /**
      * When #{@link ThreadPolicy.Builder#penaltyListener} is enabled, the listener is called on the
      * provided executor when a Thread violation occurs.
@@ -2313,7 +2316,7 @@ public final class StrictMode {
             IActivityTaskManager service = ActivityTaskManager.getService();
             if (service != null) {
                 service.registerBackgroundActivityStartCallback(
-                    new BackgroundActivityLaunchCallback());
+                        BACKGROUND_ACTIVITY_LAUNCH_CALLBACK);
             }
         } catch (DeadObjectException e) {
             // ignore

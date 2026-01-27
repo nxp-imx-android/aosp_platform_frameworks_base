@@ -51,6 +51,7 @@ import com.android.systemui.statusbar.events.shared.model.SystemEventAnimationSt
 import com.android.systemui.statusbar.layout.StatusBarContentInsetsProvider
 import com.android.systemui.statusbar.window.StatusBarWindowController
 import com.android.systemui.statusbar.window.StatusBarWindowControllerStore
+import com.android.systemui.util.concurrency.FakeExecutor
 import com.android.systemui.util.time.FakeSystemClock
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -101,6 +102,8 @@ class SystemStatusAnimationSchedulerImplTest(flags: FlagsParameterization) : Sys
     private lateinit var systemStatusAnimationScheduler: SystemStatusAnimationScheduler
 
     @get:Rule val animatorTestRule = AnimatorTestRule(this)
+
+    private val fakeExecutor = FakeExecutor(FakeSystemClock())
 
     companion object {
         @JvmStatic
@@ -780,13 +783,27 @@ class SystemStatusAnimationSchedulerImplTest(flags: FlagsParameterization) : Sys
     }
 
     @Test
-    fun testStop_unregistersDumpable() = runTest {
+    fun stop_unregistersDumpableOnMainThread() = runTest {
         initializeSystemStatusAnimationScheduler(displayId = Display.DEFAULT_DISPLAY)
 
         systemStatusAnimationScheduler.stop()
 
+        verify(dumpManager, never())
+            .unregisterDumpable(SystemStatusAnimationSchedulerImpl::class.java.simpleName)
+        fakeExecutor.runAllReady()
         verify(dumpManager)
             .unregisterDumpable(SystemStatusAnimationSchedulerImpl::class.java.simpleName)
+    }
+
+    @Test
+    fun stop_stopsCoordinatorOnMainThread() = runTest {
+        initializeSystemStatusAnimationScheduler(displayId = Display.DEFAULT_DISPLAY)
+
+        systemStatusAnimationScheduler.stop()
+
+        verify(systemEventCoordinator, never()).stopObserving()
+        fakeExecutor.runAllReady()
+        verify(systemEventCoordinator).stopObserving()
     }
 
     private fun TestScope.fastForwardAnimationToState(animationState: SystemEventAnimationState) {
@@ -868,6 +885,7 @@ class SystemStatusAnimationSchedulerImplTest(flags: FlagsParameterization) : Sys
                 coroutineScope,
                 logger,
                 coroutineScope.coroutineContext,
+                fakeExecutor,
             )
         // add a mock listener
         systemStatusAnimationScheduler.addCallback(listener)

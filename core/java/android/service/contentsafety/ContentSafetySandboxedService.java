@@ -146,6 +146,7 @@ public abstract class ContentSafetySandboxedService extends Service {
                         AndroidFuture cancellationSignalFuture,
                         ILoadFeatureCallback callback) {
                     Objects.requireNonNull(feature);
+                    Objects.requireNonNull(callback);
 
                     ICancellationSignal transport = null;
                     if (cancellationSignalFuture != null) {

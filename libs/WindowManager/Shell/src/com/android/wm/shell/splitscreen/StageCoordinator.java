@@ -2055,7 +2055,6 @@ public class StageCoordinator extends StageCoordinatorAbstract {
         // flag is enabled.
         // TODO: b/461541824 - Pass displayId from all split entry points.
         if (DesktopExperienceFlags.ENABLE_NON_DEFAULT_DISPLAY_SPLIT_BUGFIX.isTrue()) {
-            updateSplitLayoutConfig(mRootTDAOrganizer, DEFAULT_DISPLAY, mSplitLayout);
             prepareMovingSplitScreenRoot(wct, DEFAULT_DISPLAY, false /* onTop */);
         }
 
@@ -2547,7 +2546,8 @@ public class StageCoordinator extends StageCoordinatorAbstract {
 
         if (mSplitLayout == null) {
             int parallaxType =
-                    enableFlexibleTwoAppSplit() ? PARALLAX_FLEX_HYBRID : PARALLAX_ALIGN_CENTER;
+                    enableFlexibleTwoAppSplit() && taskInfo.displayId == DEFAULT_DISPLAY
+                            ? PARALLAX_FLEX_HYBRID : PARALLAX_ALIGN_CENTER;
             mSplitLayout = new SplitLayout(TAG + "SplitDivider", mContext,
                     mSplitRootTaskInfo.configuration, this, mParentContainerCallbacks,
                     mDisplayController, mDisplayImeController, mTaskOrganizer, parallaxType,

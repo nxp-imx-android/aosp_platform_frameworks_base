@@ -1,0 +1,89 @@
+/*
+ * Copyright (C) 2026 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.android.server.personalcontext;
+
+import android.service.personalcontext.hint.ContextHint;
+import android.service.personalcontext.hint.ContextHintWithSignature;
+import android.service.personalcontext.hint.HintFilter;
+import android.service.personalcontext.hint.HintInvalidationHint;
+import android.service.personalcontext.insight.ContextInsight;
+import android.service.personalcontext.insight.HintInvalidationInsight;
+import android.service.personalcontext.insight.interaction.InsightEvent;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import com.android.server.personalcontext.component.Refiner;
+
+import java.util.Set;
+import java.util.UUID;
+import java.util.function.Consumer;
+
+/**
+ * Built in understander for {@link HintInvalidationHint} -> {@link HintInvalidationInsight}.
+ *
+ * <p>This component is responsible for taking a {@link HintInvalidationHint} and turning it into a
+ * corresponding {@link HintInvalidationInsight}. It does not confirm whether the invalidation hint
+ * is valid (e.g. came from the correct package). It just handles the transformation and
+ * re-transmittal.
+ */
+public class HintInvalidationUnderstander implements Refiner {
+    private static final HintFilter HINT_FILTER = new HintFilter.Builder()
+            .addHintType(HintInvalidationHint.class, true)
+            .build();
+
+    private final UUID mComponentId = UUID.randomUUID();
+    private final Consumer<? super HintInvalidationInsight> mPublishInsightCallback;
+
+    public HintInvalidationUnderstander(Consumer<ContextInsight> publishInsightCallback) {
+        mPublishInsightCallback = publishInsightCallback;
+    }
+
+    @Nullable
+    @Override
+    public Set<Set<ContextHintWithSignature>> getInterestedHintClusters(
+            @NonNull Set<ContextHintWithSignature> allContextHints, @NonNull Set<UUID> seenIDs,
+            boolean isFirstRun) {
+        final Set<ContextHintWithSignature> hints = HINT_FILTER.getInterestedHintClusters(
+                allContextHints, seenIDs);
+        return hints == null || hints.isEmpty() ? null : Set.of(hints);
+    }
+
+    @Override
+    public void refine(@NonNull Set<ContextHintWithSignature> inputHints,
+            @NonNull Consumer<Set<ContextHint>> callback) {
+        for (ContextHintWithSignature hint : inputHints) {
+            mPublishInsightCallback.accept(
+                    new HintInvalidationInsight.Builder(hint).build());
+        }
+    }
+
+    @Override
+    public void handleEvent(@NonNull String packageName, @NonNull InsightEvent event) {
+        // Do nothing.
+    }
+
+    @Override
+    public UUID getComponentId() {
+        return mComponentId;
+    }
+
+    @Override
+    public String toString() {
+        return "HintInvalidationUnderstander{" + mComponentId + '}';
+    }
+}

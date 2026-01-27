@@ -73,7 +73,6 @@ import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.DisplayInfo;
 import android.view.View;
-import android.view.accessibility.Flags;
 import android.view.accessibility.IRemoteMagnificationAnimationCallback;
 import android.view.accessibility.MagnificationAnimationCallback;
 import android.widget.Scroller;
@@ -1918,62 +1917,24 @@ public class MagnificationControllerTest {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_REQUEST_RECTANGLE_WITH_SOURCE)
-    public void onRectangleOnScreenRequested_flagOff_scrollOnly_dispatchWithUndefinedSource() {
-        onRectangleOnScreenRequested_flagOffHelper_dispatchWithUndefinedSource(
+    public void onRectangleOnScreenRequested_scrollOnly_dispatchWithScrollOnlySource() {
+        onRectangleOnScreenRequested_dispatchWithExpectedSource(
                 TEST_SOURCE_SCROLL_ONLY);
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_REQUEST_RECTANGLE_WITH_SOURCE)
-    public void onRectangleOnScreenRequested_flagOn_scrollOnly_dispatchWithScrollOnlySource() {
-        onRectangleOnScreenRequested_flagOnHelper_dispatchWithExpectedSource(
-                TEST_SOURCE_SCROLL_ONLY);
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_REQUEST_RECTANGLE_WITH_SOURCE)
-    public void onRectangleOnScreenRequested_flagOff_textCursor_dispatchWithUndefinedSource() {
-        onRectangleOnScreenRequested_flagOffHelper_dispatchWithUndefinedSource(
+    public void onRectangleOnScreenRequested_textCursor_dispatchWithTextCursorSource() {
+        onRectangleOnScreenRequested_dispatchWithExpectedSource(
                 TEST_SOURCE_TEXT_CURSOR);
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_REQUEST_RECTANGLE_WITH_SOURCE)
-    public void onRectangleOnScreenRequested_flagOn_textCursor_dispatchWithTextCursorSource() {
-        onRectangleOnScreenRequested_flagOnHelper_dispatchWithExpectedSource(
-                TEST_SOURCE_TEXT_CURSOR);
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_REQUEST_RECTANGLE_WITH_SOURCE)
-    public void onRectangleOnScreenRequested_flagOff_inputFocus_dispatchWithUndefinedSource() {
-        onRectangleOnScreenRequested_flagOffHelper_dispatchWithUndefinedSource(
+    public void onRectangleOnScreenRequested_inputFocus_dispatchWithInputFocusSource() {
+        onRectangleOnScreenRequested_dispatchWithExpectedSource(
                 TEST_SOURCE_INPUT_FOCUS);
     }
 
-    @Test
-    @EnableFlags(Flags.FLAG_REQUEST_RECTANGLE_WITH_SOURCE)
-    public void onRectangleOnScreenRequested_flagOn_inputFocus_dispatchWithInputFocusSource() {
-        onRectangleOnScreenRequested_flagOnHelper_dispatchWithExpectedSource(
-                TEST_SOURCE_INPUT_FOCUS);
-    }
-
-    private void onRectangleOnScreenRequested_flagOffHelper_dispatchWithUndefinedSource(
-            int source) {
-        mMagnificationController.onFullScreenMagnificationActivationState(TEST_DISPLAY,
-                true);
-        UiChangesForAccessibilityCallbacks callbacks = getUiChangesForAccessibilityCallbacks();
-
-        callbacks.onRectangleOnScreenRequested(TEST_DISPLAY,
-                TEST_RECT.left, TEST_RECT.top, TEST_RECT.right, TEST_RECT.bottom, source);
-
-        verify(mScreenMagnificationController).onRectangleOnScreenRequested(eq(TEST_DISPLAY),
-                eq(TEST_RECT.left), eq(TEST_RECT.top), eq(TEST_RECT.right), eq(TEST_RECT.bottom),
-                eq(TEST_SOURCE_UNDEFINED));
-    }
-
-    private void onRectangleOnScreenRequested_flagOnHelper_dispatchWithExpectedSource(int source) {
+    private void onRectangleOnScreenRequested_dispatchWithExpectedSource(int source) {
         mMagnificationController.onFullScreenMagnificationActivationState(TEST_DISPLAY,
                 true);
         UiChangesForAccessibilityCallbacks callbacks = getUiChangesForAccessibilityCallbacks();

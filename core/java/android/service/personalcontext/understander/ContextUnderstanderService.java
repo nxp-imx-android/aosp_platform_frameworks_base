@@ -30,6 +30,7 @@ import android.service.personalcontext.Flags;
 import android.service.personalcontext.PersonalContextManager;
 import android.service.personalcontext.hint.ContextHint;
 import android.service.personalcontext.hint.ContextHintWithSignature;
+import android.service.personalcontext.hint.ContextHintWithSignatureWrapper;
 import android.service.personalcontext.hint.HintFilter;
 import android.service.personalcontext.insight.ContextInsight;
 import android.service.personalcontext.insight.interaction.InsightEvent;
@@ -184,12 +185,14 @@ public abstract class ContextUnderstanderService extends Service {
         }
 
         @Override
-        public void refine(List<ContextHintWithSignature> inputHints, IRefineCallback callback)
+        public void refine(
+                List<ContextHintWithSignatureWrapper> inputHints, IRefineCallback callback)
                 throws RemoteException {
             // Report that hints were refined right away so that the core doesn't wait around.
             callback.onHintsRefined(Collections.emptyList());
 
-            getServiceOrThrow().onUnderstand(inputHints);
+            getServiceOrThrow().onUnderstand(
+                    ContextHintWithSignatureWrapper.unwrapList(inputHints));
         }
 
         @Override

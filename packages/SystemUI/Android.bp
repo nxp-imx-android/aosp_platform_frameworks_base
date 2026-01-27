@@ -691,7 +691,7 @@ java_library {
 android_library {
     name: "SystemUI-tests-base",
     use_resource_processor: true,
-    manifest: "tests/AndroidManifest-base.xml",
+    package_name: "com.android.systemui.tests",
     resource_dirs: [
         "tests/res",
     ],
@@ -796,10 +796,9 @@ android_library {
 android_library {
     name: "SystemUI-tests",
     use_resource_processor: true,
-    manifest: "tests/AndroidManifest-base.xml",
+    manifest: "tests/AndroidManifest.xml",
     resource_dirs: ["tests/res/"],
 
-    additional_manifests: ["tests/AndroidManifest.xml"],
     srcs: [
         "tests/src/**/*.kt",
         "tests/src/**/*.java",
@@ -875,7 +874,7 @@ android_app {
         "platform_app_defaults",
         "SystemUI_optimized_defaults",
     ],
-    manifest: "tests/AndroidManifest-base.xml",
+    package_name: "com.android.systemui.tests.robo",
 
     static_libs: [
         "//frameworks/libs/systemui:compilelib",
@@ -1008,7 +1007,7 @@ android_robolectric_test {
 
 android_ravenwood_test {
     name: "SystemUiRavenTests",
-    manifest: "tests/AndroidManifest-base.xml",
+    package_name: "com.android.systemui.tests.raven",
     build_resources: true,
     data: ["ravenwood.prop"],
     srcs: [

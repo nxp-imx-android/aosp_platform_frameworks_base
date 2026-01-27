@@ -274,6 +274,7 @@ import android.view.KeyEvent;
 import android.view.accessibility.AccessibilityManager;
 import android.widget.Toast;
 
+import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.os.SomeArgs;
@@ -830,6 +831,8 @@ public class AudioService extends IAudioService.Stub
     private final boolean mUseFixedVolume;
     private final boolean mRingerModeAffectsAlarm;
     private final boolean mUseVolumeGroupAliases;
+
+    private final TvVolumeKeyBatchingState mTvVolumeKeyBatchingState;
 
     // If absolute volume is supported in AVRCP device
     private volatile boolean mAvrcpAbsVolSupported = false;
@@ -1533,6 +1536,13 @@ public class AudioService extends IAudioService.Stub
 
         mUseVolumeGroupAliases = mContext.getResources().getBoolean(
                 com.android.internal.R.bool.config_handleVolumeAliasesUsingVolumeGroups);
+
+        int tvLongPressVolumeKeysPerAdjustment = mContext.getResources().getInteger(
+                com.android.internal.R.integer.config_tvLongPressVolumeKeysPerAdjustment);
+        float tvLongPressVolumeAdjustmentScaleFactor = mContext.getResources().getFloat(
+                R.dimen.config_tvLongPressVolumeAdjustmentScaleFactor);
+        mTvVolumeKeyBatchingState = new TvVolumeKeyBatchingState(
+                tvLongPressVolumeKeysPerAdjustment, tvLongPressVolumeAdjustmentScaleFactor);
 
         mAudioVolumeChangeHandler = new AudioVolumeChangeHandler(mAudioSystem);
         // Initialize volume
@@ -4313,8 +4323,12 @@ public class AudioService extends IAudioService.Stub
                 streamTypeAlias, flagsContainsAbsoluteDevices(flags));
         final int deviceType = deviceAttr.getInternalType();
 
+        TvVolumeKeyBatchingState.VolumeAdjustmentModifiers volumeAdjustmentModifiers =
+                mTvVolumeKeyBatchingState.processVolumeKey(direction, keyEventMode);
+
         int aliasIndex = streamState.getIndex(deviceType);
-        boolean adjustVolume = true;
+        boolean adjustVolume = volumeAdjustmentModifiers.shouldAdjustVolume();
+        boolean adjustCecVolume = true;
         int step;
 
         boolean isAbsoluteVolumeDevice = unifyAbsoluteVolumeManagement() ? isAbsoluteVolumeDevice(
@@ -4358,8 +4372,9 @@ public class AudioService extends IAudioService.Stub
             }
         } else {
             // convert one UI step (+/-1) into a number of internal units on the stream alias
-            step = rescaleStep((int) (10 * streamState.getIndexStepFactor()), streamType,
-                    streamTypeAlias);
+            float volumeStep = 10.0f * streamState.getIndexStepFactor()
+                    * volumeAdjustmentModifiers.getScaleFactor();
+            step = rescaleStep((int) volumeStep, streamType, streamTypeAlias);
         }
 
         // If either the client forces allowing ringer modes for this adjustment,
@@ -4375,7 +4390,7 @@ public class AudioService extends IAudioService.Stub
             // need to adjust the volume further.
             final int result = checkForRingerModeChange(aliasIndex, direction, step,
                     streamState.mIsMuted, callingPackage, flags);
-            adjustVolume = (result & FLAG_ADJUST_VOLUME) != 0;
+            adjustVolume = adjustCecVolume = (result & FLAG_ADJUST_VOLUME) != 0;
             // If suppressing a volume adjustment in silent mode, display the UI hint
             if ((result & AudioManager.FLAG_SHOW_SILENT_HINT) != 0) {
                 flags |= AudioManager.FLAG_SHOW_SILENT_HINT;
@@ -4390,14 +4405,14 @@ public class AudioService extends IAudioService.Stub
             if (direction == AudioManager.ADJUST_TOGGLE_MUTE
                     || direction == AudioManager.ADJUST_UNMUTE
                     || direction == AudioManager.ADJUST_RAISE) {
-                adjustVolume = false;
+                adjustVolume = adjustCecVolume = false;
             }
         }
 
         // If the ringer mode or zen is muting the stream, do not change stream unless
         // it'll cause us to exit dnd
         if (!volumeAdjustmentAllowedByDnd(streamTypeAlias, flags)) {
-            adjustVolume = false;
+            adjustVolume = adjustCecVolume = false;
         }
         int oldIndex = getVssForStreamOrDefault(streamType).getIndex(deviceType);
 
@@ -4468,7 +4483,7 @@ public class AudioService extends IAudioService.Stub
         }
 
         final int newIndex = getVssForStreamOrDefault(streamType).getIndex(deviceType);
-        if (adjustVolume) {
+        if (adjustCecVolume) {
             synchronized (mHdmiClientLock) {
                 if (mHdmiManager != null) {
                     // At most one of mHdmiPlaybackClient and mHdmiTvClient should be non-null

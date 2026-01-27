@@ -1276,7 +1276,8 @@ public class ContentProviderHelper {
 
         int numProviders = providers.size();
         final ProcessProviderRecord pr = app.mProviders;
-        pr.ensureProviderCapacity(numProviders + pr.numberOfProviders());
+        mService.mProcessStateController.ensurePublishedProviderCapacity(app,
+                numProviders + pr.numberOfProviders());
         for (int i = 0; i < numProviders; i++) {
             // NOTE: keep logic in sync with installEncryptionUnawareProviders
             ProviderInfo cpi = providers.get(i);
@@ -1313,7 +1314,7 @@ public class ContentProviderHelper {
             if (DEBUG_MU) {
                 Slog.v(TAG_MU, "generateApplicationProvidersLocked, cpr.mUid = " + cpr.mUid);
             }
-            pr.installProvider(cpi.name, cpr);
+            mService.mProcessStateController.addPublishedProvider(app, cpi.name, cpr);
             if (!cpi.multiprocess || !"android".equals(cpi.packageName)) {
                 // Don't add this if it is a platform component that is marked
                 // to run in multiple processes, because this is actually
@@ -1876,7 +1877,7 @@ public class ContentProviderHelper {
                 if (cpr.mProc != null && !hasProviderConnectionLocked(cpr.mProc)) {
                     cpr.mProc.mProfile.clearHostingComponentType(HOSTING_COMPONENT_TYPE_PROVIDER);
                 }
-                if (conn.client.mProviders.removeProviderConnection(conn)) {
+                if (mService.mProcessStateController.removeProviderConnection(conn.client, conn)) {
                     mService.stopAssociationLocked(capp.uid, capp.processName,
                             cpr.mUid, cpr.mAppInfo.longVersionCode, cpr.name,
                             cpr.mProviderInfo.processName);

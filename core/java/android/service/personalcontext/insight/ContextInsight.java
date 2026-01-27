@@ -31,6 +31,7 @@ import android.service.personalcontext.RenderToken;
 import android.service.personalcontext.Token;
 import android.service.personalcontext.hint.ContextHint;
 import android.service.personalcontext.hint.ContextHintWithSignature;
+import android.service.personalcontext.hint.ContextHintWithSignatureWrapper;
 import android.service.personalcontext.insight.interaction.InsightEvent;
 import android.util.Log;
 
@@ -41,6 +42,7 @@ import com.android.internal.annotations.VisibleForTesting;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -66,6 +68,7 @@ public abstract class ContextInsight {
     private static final String KEY_TOKENS = "key_tokens";
     private static final String KEY_INSIGHT_DATA = "key_insight_data";
     private static final String KEY_ORIGINATING_COMPONENT_ID = "key_originating_component_id";
+    private static final String KEY_CREATION_TIME = "key_creation_time";
 
     /**
      * Enumeration of insight types.
@@ -79,7 +82,8 @@ public abstract class ContextInsight {
                 INSIGHT_TYPE_BUNDLE,
                 INSIGHT_TYPE_ACTIONABLE,
                 INSIGHT_TYPE_DISPLAY,
-                INSIGHT_TYPE_COLLECTION
+                INSIGHT_TYPE_COLLECTION,
+                INSIGHT_TYPE_HINT_INVALIDATION,
             })
     @Retention(RetentionPolicy.SOURCE)
     public @interface InsightType {}
@@ -103,6 +107,9 @@ public abstract class ContextInsight {
 
     /** Type identifier for {@link InsightCollection}. */
     static final int INSIGHT_TYPE_COLLECTION = 4;
+
+    /** Type identifier for {@link InsightCollection}. */
+    static final int INSIGHT_TYPE_HINT_INVALIDATION = 5;
 
     /**
      * Object returned when there is an unparcelling error.
@@ -135,6 +142,7 @@ public abstract class ContextInsight {
     private final UUID mOriginatingComponentId;
     private final Set<ContextHintWithSignature> mOriginHints;
     private final Set<Token> mTokens;
+    private final Instant mCreationTime;
 
     /**
      * Internal constructor for insights. This should be called by subclasses in their public
@@ -147,6 +155,7 @@ public abstract class ContextInsight {
         mOriginatingComponentId = params.mOriginatingComponentId;
         mOriginHints = Collections.unmodifiableSet(new HashSet<>(params.mOriginHints));
         mTokens = Collections.unmodifiableSet(new HashSet<>(params.mTokens));
+        mCreationTime = params.mCreationTime;
     }
 
     /**
@@ -234,6 +243,12 @@ public abstract class ContextInsight {
         return mTokens;
     }
 
+    /** Gets the time this hint was created. */
+    @NonNull
+    public final Instant getCreationTime() {
+        return mCreationTime;
+    }
+
     @NonNull abstract Bundle toBundleImpl();
 
     /**
@@ -248,9 +263,12 @@ public abstract class ContextInsight {
         b.putString(KEY_INSIGHT_ID, mId.toString());
         b.putString(KEY_ORIGINATING_COMPONENT_ID,
                 mOriginatingComponentId == null ? null : mOriginatingComponentId.toString());
-        b.putParcelableArrayList(KEY_ORIGIN_HINTS, new ArrayList<>(mOriginHints));
+        b.putParcelableArrayList(
+                KEY_ORIGIN_HINTS, new ArrayList<>(
+                        ContextHintWithSignatureWrapper.wrapList(mOriginHints)));
         b.putParcelableArrayList(KEY_TOKENS, new ArrayList<>(mTokens));
         b.putBundle(KEY_INSIGHT_DATA, toBundleImpl());
+        b.putLong(KEY_CREATION_TIME, mCreationTime.toEpochMilli());
         return b;
     }
 
@@ -299,8 +317,11 @@ public abstract class ContextInsight {
         final ConstructorParams constructorParams = new ConstructorParams(
                 UUID.fromString(bundle.getString(KEY_INSIGHT_ID)),
                 originatingComponentId == null ? null : UUID.fromString(originatingComponentId),
-                bundle.getParcelableArrayList(KEY_ORIGIN_HINTS, ContextHintWithSignature.class),
-                bundle.getParcelableArrayList(KEY_TOKENS, Token.class));
+                ContextHintWithSignatureWrapper.unwrapList(
+                        bundle.getParcelableArrayList(
+                                KEY_ORIGIN_HINTS, ContextHintWithSignatureWrapper.class)),
+                bundle.getParcelableArrayList(KEY_TOKENS, Token.class),
+                Instant.ofEpochMilli(bundle.getLong(KEY_CREATION_TIME)));
 
         try {
             return switch (type) {
@@ -308,6 +329,8 @@ public abstract class ContextInsight {
                 case INSIGHT_TYPE_ACTIONABLE -> new ActionableInsight(constructorParams, data);
                 case INSIGHT_TYPE_DISPLAY -> new DisplayInsight(constructorParams, data);
                 case INSIGHT_TYPE_COLLECTION -> new InsightCollection(constructorParams, data);
+                case INSIGHT_TYPE_HINT_INVALIDATION -> new HintInvalidationInsight(
+                        constructorParams, data);
                 default -> ERROR_INSIGHT;
             };
         } catch (Exception e) {
@@ -352,23 +375,31 @@ public abstract class ContextInsight {
         private final UUID mOriginatingComponentId;
         private final Collection<ContextHintWithSignature> mOriginHints;
         private final Collection<Token> mTokens;
+        private final Instant mCreationTime;
 
         private ConstructorParams(
                 UUID originatingComponentId,
                 Collection<ContextHintWithSignature> originHints,
                 Collection<Token> tokens) {
-            this(UUID.randomUUID(), originatingComponentId, originHints, tokens);
+            this(
+                    UUID.randomUUID(),
+                    originatingComponentId,
+                    originHints,
+                    tokens,
+                    Instant.now());
         }
 
         private ConstructorParams(
                 UUID id,
                 UUID originatingComponentId,
                 Collection<ContextHintWithSignature> originHints,
-                Collection<Token> tokens) {
+                Collection<Token> tokens,
+                Instant creationTime) {
             mId = id;
             mOriginatingComponentId = originatingComponentId;
             mOriginHints = originHints;
             mTokens = tokens;
+            mCreationTime = creationTime;
         }
 
         static final class Builder {

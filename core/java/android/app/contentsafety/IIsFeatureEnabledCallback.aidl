@@ -6,6 +6,6 @@ package android.app.contentsafety;
   * @hide
   */
 oneway interface IIsFeatureEnabledCallback {
-    void onSuccess(in boolean isFeatureEnabledResult) = 1;
-    void onFailure(int failureStatus) = 2;
+    void onSuccess(boolean isFeatureEnabledResult) = 1;
+    void onFailure(in int errorCode) = 2;
 }

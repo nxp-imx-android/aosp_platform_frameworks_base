@@ -14,18 +14,16 @@
  * limitations under the License.
  */
 
-
 package com.android.server.companion.datatransfer.continuity.handoff;
 
 import android.annotation.NonNull;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.SigningInfo;
+import android.util.ArrayMap;
 import android.util.Slog;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 import javax.annotation.concurrent.GuardedBy;
 
@@ -36,7 +34,7 @@ public class PackageSignatureDigestsCache {
     private final PackageManager mPackageManager;
 
     @GuardedBy("this")
-    private final Map<String, byte[][]> mPackageSignatureDigestsMap = new HashMap<>();
+    private final ArrayMap<String, byte[][]> mPackageSignatureDigestsMap = new ArrayMap<>();
 
     public PackageSignatureDigestsCache(@NonNull PackageManager packageManager) {
         mPackageManager = Objects.requireNonNull(packageManager);
@@ -52,22 +50,24 @@ public class PackageSignatureDigestsCache {
             }
             PackageInfo packageInfo;
             try {
-                packageInfo = mPackageManager.getPackageInfo(packageName,
-                        PackageManager.GET_SIGNING_CERTIFICATES);
+                packageInfo =
+                        mPackageManager.getPackageInfo(
+                                packageName, PackageManager.GET_SIGNING_CERTIFICATES);
             } catch (PackageManager.NameNotFoundException e) {
                 Slog.w(TAG, "Package not found for signature collection: " + packageName);
-                return new byte[][]{};
+                return new byte[][] {};
             }
 
             if (packageInfo == null) {
-                return new byte[][]{};
+                return new byte[][] {};
             }
 
             SigningInfo signingInfo = packageInfo.signingInfo;
-            if (signingInfo == null || signingInfo.getApkContentsSigners() == null
+            if (signingInfo == null
+                    || signingInfo.getApkContentsSigners() == null
                     || signingInfo.getApkContentsSigners().length == 0) {
                 Slog.w(TAG, "No signing info found for package: " + packageName);
-                return new byte[][]{};
+                return new byte[][] {};
             }
 
             byte[][] signatureDigests = new byte[signingInfo.getApkContentsSigners().length][];
@@ -79,7 +79,7 @@ public class PackageSignatureDigestsCache {
                 }
             } catch (NoSuchAlgorithmException e) {
                 Slog.e(TAG, "SHA-256 not available", e);
-                return new byte[][]{};
+                return new byte[][] {};
             }
 
             mPackageSignatureDigestsMap.put(packageName, signatureDigests);

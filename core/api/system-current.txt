@@ -2329,14 +2329,13 @@ package android.app.contentsafety {
     method @NonNull @RequiresPermission(android.Manifest.permission.CHECK_CONTENT_SAFETY) public String getRemoteServicePackageName();
     method @NonNull @RequiresPermission(android.Manifest.permission.CHECK_CONTENT_SAFETY) public String getRemoteSettingsServicePackageName();
     method @NonNull @RequiresPermission(android.Manifest.permission.CHECK_CONTENT_SAFETY) public android.app.contentsafety.SupportedTypesResult getSupportedInputTypes(int);
-    method @RequiresPermission(android.Manifest.permission.CHECK_CONTENT_SAFETY) public void isFeatureEnabled(int, @Nullable android.os.CancellationSignal, @NonNull java.util.concurrent.Executor, @NonNull android.app.contentsafety.IsFeatureEnabledCallback);
+    method @RequiresPermission(android.Manifest.permission.CHECK_CONTENT_SAFETY) public void isFeatureEnabled(int, @Nullable android.os.CancellationSignal, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.lang.Boolean,android.app.contentsafety.FeatureException>);
     field public static final int CONTENT_SAFETY_UNKNOWN = 0; // 0x0
-    field public static final String TAG = "ContentSafety";
   }
 
-  @FlaggedApi("android.app.contentsafety.flags.enable_contentsafety") public interface IsFeatureEnabledCallback {
-    method public void onFailure(int);
-    method public void onSuccess(boolean);
+  @FlaggedApi("android.app.contentsafety.flags.enable_contentsafety") public class FeatureException extends java.lang.Exception {
+    ctor public FeatureException(int);
+    method public int getErrorCode();
     field public static final int FEATURE_SETTINGS_ERROR = 1; // 0x1
     field public static final int FEATURE_SETTINGS_ERROR_UNKNOWN = 0; // 0x0
     field public static final int FEATURE_SETTINGS_SERVICE_UNAVAILABLE = 2; // 0x2
@@ -13937,13 +13936,14 @@ package android.security.trusttoken {
   @FlaggedApi("android.security.talisman_service_api") public abstract class TrustTokenService extends android.app.Service {
     ctor public TrustTokenService();
     method @Nullable public final android.os.IBinder onBind(@Nullable android.content.Intent);
-    method public abstract void onRequestTrustTokens(@NonNull android.security.trusttoken.TrustTokenRequest, @NonNull android.os.OutcomeReceiver<android.security.trusttoken.TrustTokenResponse,android.security.trusttoken.TrustTokenServiceException>);
+    method public abstract void onRequestTrustTokens(@NonNull android.security.trusttoken.TrustTokenRequest, @NonNull android.os.CancellationSignal, @NonNull android.os.OutcomeReceiver<android.security.trusttoken.TrustTokenResponse,android.security.trusttoken.TrustTokenServiceException>);
     field public static final String SERVICE_INTERFACE = "android.security.trusttoken.TrustTokenService";
   }
 
   @FlaggedApi("android.security.talisman_service_api") public final class TrustTokenServiceException extends java.lang.Exception {
     ctor public TrustTokenServiceException(int, @NonNull String);
     method public int getErrorCode();
+    field public static final int ERROR_CANCELLED = 4; // 0x4
     field public static final int ERROR_INTERNAL = 2; // 0x2
     field public static final int ERROR_INVALID_ARGUMENT = 1; // 0x1
     field public static final int ERROR_UNAVAILABLE = 3; // 0x3
@@ -14312,7 +14312,7 @@ package android.service.contentsafety {
   @FlaggedApi("android.app.contentsafety.flags.enable_contentsafety") public abstract class ContentSafetySettingsService extends android.app.Service {
     ctor public ContentSafetySettingsService();
     method @Nullable public final android.os.IBinder onBind(@Nullable android.content.Intent);
-    method @RequiresPermission(android.Manifest.permission.CHECK_CONTENT_SAFETY) public abstract void onIsFeatureEnabled(int, @NonNull android.os.UserHandle, @Nullable android.os.CancellationSignal, @NonNull android.app.contentsafety.IsFeatureEnabledCallback);
+    method @RequiresPermission(android.Manifest.permission.CHECK_CONTENT_SAFETY) public abstract void onIsFeatureEnabled(int, @NonNull android.os.UserHandle, @Nullable android.os.CancellationSignal, @NonNull android.os.OutcomeReceiver<java.lang.Boolean,android.app.contentsafety.FeatureException>);
     field public static final String SERVICE_INTERFACE = "android.service.contentsafety.ContentSafetySettingsService";
   }
 
