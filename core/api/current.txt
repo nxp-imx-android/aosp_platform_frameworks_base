@@ -9732,7 +9732,7 @@ package android.app.contentrestriction {
   }
 
   @FlaggedApi("android.app.contentrestriction.flags.content_restriction_api") public class ContentRestrictionManager {
-    method @FlaggedApi("android.app.contentrestriction.flags.content_restriction_api") public void isContentAllowed(@NonNull android.app.contentrestriction.Content, @NonNull java.util.function.Consumer<java.lang.Boolean>);
+    method @FlaggedApi("android.app.contentrestriction.flags.content_restriction_api") public void isContentAllowed(@NonNull android.app.contentrestriction.Content, @NonNull java.util.concurrent.Executor, @NonNull java.util.function.Consumer<java.lang.Boolean>);
     method @FlaggedApi("android.app.contentrestriction.flags.content_restriction_api") public boolean isContentRestrictionEnabled();
   }
 
