@@ -19961,7 +19961,9 @@ package android.telephony.satellite {
     method public int describeContents();
     method @NonNull public int[] getBands();
     method @NonNull public int[] getEarfcns();
+    method @FlaggedApi("com.android.internal.telephony.flags.system_selection_specifier_enhancement") @NonNull public String getIccId();
     method @NonNull public String getMccMnc();
+    method @FlaggedApi("com.android.internal.telephony.flags.system_selection_specifier_enhancement") @NonNull public String[] getMccMncs();
     method @NonNull public java.util.List<android.telephony.satellite.SatelliteInfo> getSatelliteInfos();
     method @NonNull public int[] getTagIds();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
@@ -19973,7 +19975,9 @@ package android.telephony.satellite {
     method @NonNull public android.telephony.satellite.SystemSelectionSpecifier build();
     method @NonNull public android.telephony.satellite.SystemSelectionSpecifier.Builder setBands(@NonNull int[]);
     method @NonNull public android.telephony.satellite.SystemSelectionSpecifier.Builder setEarfcns(@NonNull int[]);
+    method @FlaggedApi("com.android.internal.telephony.flags.system_selection_specifier_enhancement") @NonNull public android.telephony.satellite.SystemSelectionSpecifier.Builder setIccId(@NonNull String);
     method @NonNull public android.telephony.satellite.SystemSelectionSpecifier.Builder setMccMnc(@NonNull String);
+    method @FlaggedApi("com.android.internal.telephony.flags.system_selection_specifier_enhancement") @NonNull public android.telephony.satellite.SystemSelectionSpecifier.Builder setMccMncs(@NonNull String[]);
     method @NonNull public android.telephony.satellite.SystemSelectionSpecifier.Builder setSatelliteInfos(@NonNull java.util.List<android.telephony.satellite.SatelliteInfo>);
     method @NonNull public android.telephony.satellite.SystemSelectionSpecifier.Builder setTagIds(@NonNull int[]);
   }
