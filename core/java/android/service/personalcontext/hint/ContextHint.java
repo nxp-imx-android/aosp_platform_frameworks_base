@@ -94,7 +94,7 @@ public abstract class ContextHint {
     /** Hint type for {@link TextClassificationHint}. */
     static final int HINT_TYPE_TEXT_CLASSIFICATION = 3;
 
-    /** Hint type for {@link ConversationHint}. */
+    /** Hint type for {@link ContentCaptureConversationHint}. */
     static final int HINT_TYPE_CONVERSATION = 4;
 
     /** Hint type for {@link RecentViewHint}. */
@@ -265,7 +265,8 @@ public abstract class ContextHint {
                 case HINT_TYPE_NOTIFICATION -> new NotificationHint(constructorParams, data);
                 case HINT_TYPE_TEXT_CLASSIFICATION -> new TextClassificationHint(constructorParams,
                         data);
-                case HINT_TYPE_CONVERSATION -> new ConversationHint(constructorParams, data);
+                case HINT_TYPE_CONVERSATION ->new ContentCaptureConversationHint(constructorParams,
+                        data);
                 case HINT_TYPE_RECENT_VIEW -> new RecentViewHint(constructorParams, data);
                 case HINT_TYPE_USER_INPUT -> new UserInputHint(constructorParams, data);
                 case HINT_TYPE_AUTOFILL_INLINE_REQUEST -> new AutofillInlineRequestHint(

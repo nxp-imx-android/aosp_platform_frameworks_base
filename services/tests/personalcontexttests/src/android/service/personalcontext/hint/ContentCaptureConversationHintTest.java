@@ -21,10 +21,10 @@ import static com.google.common.truth.Truth.assertThat;
 import android.app.assist.ActivityId;
 import android.content.ComponentName;
 import android.os.Binder;
-import android.service.personalcontext.hint.ConversationEvent.ConversationEnterEvent;
-import android.service.personalcontext.hint.ConversationEvent.ConversationExitEvent;
-import android.service.personalcontext.hint.ConversationEvent.ConversationProcessingEvent;
-import android.service.personalcontext.hint.ConversationEvent.ConversationUpdateEvent;
+import android.service.personalcontext.hint.ContentCaptureConversationEvent.ConversationEnterEvent;
+import android.service.personalcontext.hint.ContentCaptureConversationEvent.ConversationExitEvent;
+import android.service.personalcontext.hint.ContentCaptureConversationEvent.ConversationProcessingEvent;
+import android.service.personalcontext.hint.ContentCaptureConversationEvent.ConversationUpdateEvent;
 import android.view.autofill.AutofillId;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -42,7 +42,7 @@ import javax.crypto.spec.SecretKeySpec;
 
 @SmallTest
 @RunWith(AndroidJUnit4.class)
-public class ConversationHintTest {
+public class ContentCaptureConversationHintTest {
     private static final String CONVERSATION_SESSION_ID = "session_id";
     private static final AutofillId AUTOFILL_ID = new AutofillId(1);
     private static final String CONTENT_DESCRIPTION = "content description";
@@ -71,12 +71,13 @@ public class ConversationHintTest {
         final ConversationEnterEvent enterEvent =
                 new ConversationEnterEvent(
                         CONVERSATION_SESSION_ID, clientEventTimestamp, enterTimestamp);
-        final ConversationHint hint = new ConversationHint.Builder(enterEvent).build();
+        final ContentCaptureConversationHint hint =
+                new ContentCaptureConversationHint.Builder(enterEvent).build();
 
         final ContextHint outputHint = ContextHintTestUtils.assertParcelUnparcel(hint);
-        assertThat(outputHint).isInstanceOf(ConversationHint.class);
-        final ConversationEvent outputEvent =
-                ((ConversationHint) outputHint).getConversationEvent();
+        assertThat(outputHint).isInstanceOf(ContentCaptureConversationHint.class);
+        final ContentCaptureConversationEvent outputEvent =
+                ((ContentCaptureConversationHint) outputHint).getConversationEvent();
         assertThat(outputEvent).isInstanceOf(ConversationEnterEvent.class);
 
         final ConversationEnterEvent outputEnterEvent = (ConversationEnterEvent) outputEvent;
@@ -92,12 +93,13 @@ public class ConversationHintTest {
         final ConversationExitEvent exitEvent =
                 new ConversationExitEvent(
                         CONVERSATION_SESSION_ID, clientEventTimestamp, exitTimestamp);
-        final ConversationHint hint = new ConversationHint.Builder(exitEvent).build();
+        final ContentCaptureConversationHint hint =
+                new ContentCaptureConversationHint.Builder(exitEvent).build();
 
         final ContextHint outputHint = ContextHintTestUtils.assertParcelUnparcel(hint);
-        assertThat(outputHint).isInstanceOf(ConversationHint.class);
-        final ConversationEvent outputEvent =
-                ((ConversationHint) outputHint).getConversationEvent();
+        assertThat(outputHint).isInstanceOf(ContentCaptureConversationHint.class);
+        final ContentCaptureConversationEvent outputEvent =
+                ((ContentCaptureConversationHint) outputHint).getConversationEvent();
         assertThat(outputEvent).isInstanceOf(ConversationExitEvent.class);
 
         final ConversationExitEvent outputExitEvent = (ConversationExitEvent) outputEvent;
@@ -117,12 +119,13 @@ public class ConversationHintTest {
                         clientEventTimestamp,
                         processingTimestamp,
                         messageAutofillId);
-        final ConversationHint hint = new ConversationHint.Builder(processingEvent).build();
+        final ContentCaptureConversationHint hint =
+                new ContentCaptureConversationHint.Builder(processingEvent).build();
 
         final ContextHint outputHint = ContextHintTestUtils.assertParcelUnparcel(hint);
-        assertThat(outputHint).isInstanceOf(ConversationHint.class);
-        final ConversationEvent outputEvent =
-                ((ConversationHint) outputHint).getConversationEvent();
+        assertThat(outputHint).isInstanceOf(ContentCaptureConversationHint.class);
+        final ContentCaptureConversationEvent outputEvent =
+                ((ContentCaptureConversationHint) outputHint).getConversationEvent();
         assertThat(outputEvent).isInstanceOf(ConversationProcessingEvent.class);
 
         final ConversationProcessingEvent outputProcessingEvent =
@@ -164,12 +167,13 @@ public class ConversationHintTest {
                         clientEventTimestamp,
                         updateTimestamp,
                         conversationData);
-        final ConversationHint hint = new ConversationHint.Builder(updateEvent).build();
+        final ContentCaptureConversationHint hint =
+                new ContentCaptureConversationHint.Builder(updateEvent).build();
 
         final ContextHint outputHint = ContextHintTestUtils.assertParcelUnparcel(hint);
-        assertThat(outputHint).isInstanceOf(ConversationHint.class);
-        final ConversationEvent outputEvent =
-                ((ConversationHint) outputHint).getConversationEvent();
+        assertThat(outputHint).isInstanceOf(ContentCaptureConversationHint.class);
+        final ContentCaptureConversationEvent outputEvent =
+                ((ContentCaptureConversationHint) outputHint).getConversationEvent();
         assertThat(outputEvent).isInstanceOf(ConversationUpdateEvent.class);
 
         final ConversationUpdateEvent outputUpdateEvent = (ConversationUpdateEvent) outputEvent;
@@ -208,7 +212,8 @@ public class ConversationHintTest {
                         clientEventTimestamp,
                         updateTimestamp,
                         conversationData);
-        final ConversationHint hint = new ConversationHint.Builder(updateEvent).build();
+        final ContentCaptureConversationHint hint =
+                new ContentCaptureConversationHint.Builder(updateEvent).build();
 
         final SecretKeySpec key = ContextHintTestUtils.generateSignedHintKey();
         final ContextHintWithSignature hintWithSignature =
