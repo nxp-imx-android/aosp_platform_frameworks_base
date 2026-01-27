@@ -17,41 +17,28 @@
 package com.android.server.supervision;
 
 import android.annotation.NonNull;
-import android.app.admin.DevicePolicyManager;
+import android.app.admin.DevicePolicyManagerInternal;
 import android.app.role.RoleManager;
-import android.app.supervision.SupervisionManager;
-import android.app.supervision.flags.Flags;
-import android.content.ComponentName;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.content.pm.UserInfo;
-import android.os.UserHandle;
-import android.util.Slog;
-
 import android.content.Context;
+import android.content.pm.UserInfo;
+import android.util.Slog;
 
 import com.android.server.pm.UserManagerInternal;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 class SupervisionPolicyMigrator {
     private final Context mContext;
     private final UserManagerInternal mUserManagerInternal;
-    private final SupervisionService.Injector mInjector;
-    private final DevicePolicyManager mDpm;
+    private final DevicePolicyManagerInternal mDpmi;
 
     SupervisionPolicyMigrator(
             Context context,
             @NonNull UserManagerInternal userManagerInternal,
-            @NonNull SupervisionService.Injector injector,
-            @NonNull DevicePolicyManager dpm) {
+            @NonNull DevicePolicyManagerInternal dpmi) {
         mContext = context;
         mUserManagerInternal = userManagerInternal;
-        mInjector = injector;
-        mDpm = dpm;
+        mDpmi = dpmi;
     }
 
     boolean upgrade(int fromVersion, int toVersion) {
@@ -75,58 +62,9 @@ class SupervisionPolicyMigrator {
         // Role holders.
         List<UserInfo> users = mUserManagerInternal.getUsers(false /*excludeDying*/);
         for (UserInfo user : users) {
-            int userId = user.id;
-            // Get holders for both supervision roles
-            List<String> supervisionRoleHolders =
-                    mInjector.getRoleHoldersAsUser(
-                            RoleManager.ROLE_SUPERVISION, UserHandle.of(userId));
-            List<String> systemSupervisionRoleHolders =
-                    mInjector.getRoleHoldersAsUser(
-                            RoleManager.ROLE_SYSTEM_SUPERVISION, UserHandle.of(userId));
-
-            // Combine them into a single list/set
-            Set<String> allRoleHolders = new HashSet<>(supervisionRoleHolders);
-            allRoleHolders.addAll(systemSupervisionRoleHolders);
-
-            if (!allRoleHolders.isEmpty()) {
-                Slog.i(
-                        SupervisionLog.TAG,
-                        "Clearing application hidden policies for user "
-                                + userId
-                                + " set by "
-                                + allRoleHolders);
-                // Unhide any apps that were hidden by the old supervision admins.
-                List<ComponentName> activeAdmins = mDpm.getActiveAdminsAsUser(userId);
-                if (activeAdmins != null) {
-                    List<ComponentName> supervisionAdmins = new ArrayList<>();
-                    for (ComponentName admin : activeAdmins) {
-                        if (allRoleHolders.contains(admin.getPackageName())) {
-                            supervisionAdmins.add(admin);
-                        }
-                    }
-
-                    if (!supervisionAdmins.isEmpty()) {
-                        PackageManager pm = mContext.getPackageManager();
-                        List<PackageInfo> installedPackages =
-                                pm.getInstalledPackagesAsUser(
-                                        PackageManager.GET_UNINSTALLED_PACKAGES, userId);
-                        for (PackageInfo pi : installedPackages) {
-                            if (pm.getApplicationHiddenSettingAsUser(
-                                    pi.packageName, UserHandle.of(userId))) {
-                                // Package is hidden, check if it was hidden by a supervision role
-                                // holder
-                                for (ComponentName admin : supervisionAdmins) {
-                                    if (mDpm.isApplicationHidden(admin, pi.packageName)) {
-                                        mDpm.setApplicationHidden(admin, pi.packageName, false);
-                                        // Once unhidden, no need to check other admins
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            // Clear legacy DPM policies for both supervision roles across all relevant identities.
+            mDpmi.clearHiddenApplicationsForRole(RoleManager.ROLE_SUPERVISION, user.id);
+            mDpmi.clearHiddenApplicationsForRole(RoleManager.ROLE_SYSTEM_SUPERVISION, user.id);
         }
         return true;
     }

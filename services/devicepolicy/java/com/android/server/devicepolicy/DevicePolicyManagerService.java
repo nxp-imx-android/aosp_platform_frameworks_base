@@ -104,7 +104,6 @@ import static android.app.admin.DevicePolicyManager.DELEGATION_NETWORK_LOGGING;
 import static android.app.admin.DevicePolicyManager.DELEGATION_PACKAGE_ACCESS;
 import static android.app.admin.DevicePolicyManager.DELEGATION_PERMISSION_GRANT;
 import static android.app.admin.DevicePolicyManager.DELEGATION_SECURITY_LOGGING;
-import static android.app.admin.DevicePolicyManager.DEVICE_OWNER;
 import static android.app.admin.DevicePolicyManager.DEVICE_OWNER_TYPE_DEFAULT;
 import static android.app.admin.DevicePolicyManager.DEVICE_OWNER_TYPE_FINANCED;
 import static android.app.admin.DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE_PER_USER;
@@ -133,8 +132,6 @@ import static android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_NOTIFICATI
 import static android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_OVERVIEW;
 import static android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_QUICK_SETTINGS;
 import static android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_SYSTEM_INFO;
-import static android.app.admin.DevicePolicyManager.MANAGED_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE;
-import static android.app.admin.DevicePolicyManager.MANAGED_PROFILE_OWNER_OF_PERSONAL_OWNED_DEVICE;
 import static android.app.admin.DevicePolicyManager.NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY;
 import static android.app.admin.DevicePolicyManager.NON_ORG_OWNED_PROFILE_KEYGUARD_FEATURES_AFFECT_OWNER;
 import static android.app.admin.DevicePolicyManager.OPERATION_SAFETY_REASON_NONE;
@@ -191,7 +188,6 @@ import static android.app.admin.DevicePolicyManager.STATUS_USER_HAS_PROFILE;
 import static android.app.admin.DevicePolicyManager.STATUS_USER_HAS_PROFILE_OWNER;
 import static android.app.admin.DevicePolicyManager.STATUS_USER_NOT_RUNNING;
 import static android.app.admin.DevicePolicyManager.STATUS_USER_SETUP_COMPLETED;
-import static android.app.admin.DevicePolicyManager.UNAFFILIATED_FULL_USER_PROFILE_OWNER;
 import static android.app.admin.DevicePolicyManager.WIPE_EUICC;
 import static android.app.admin.DevicePolicyManager.WIPE_EXTERNAL_STORAGE;
 import static android.app.admin.DevicePolicyManager.WIPE_RESET_PROTECTION_DATA;
@@ -249,7 +245,6 @@ import static android.provider.Telephony.Carriers.ENFORCE_KEY;
 import static android.provider.Telephony.Carriers.ENFORCE_MANAGED_URI;
 import static android.provider.Telephony.Carriers.INVALID_APN_ID;
 import static android.security.keystore.AttestationUtils.USE_INDIVIDUAL_ATTESTATION;
-
 import static com.android.internal.logging.nano.MetricsProto.MetricsEvent.PROVISIONING_ENTRY_POINT_ADB;
 import static com.android.internal.util.ConcurrentUtils.DIRECT_EXECUTOR;
 import static com.android.internal.widget.LockPatternUtils.CREDENTIAL_TYPE_NONE;
@@ -349,6 +344,7 @@ import android.app.admin.MultiUserManagedUserProvisioningParams;
 import android.app.admin.MultiUserManagedUserProvisioningParamsTransport;
 import android.app.admin.NetworkEvent;
 import android.app.admin.PackagePolicy;
+import android.app.admin.PackagePolicyKey;
 import android.app.admin.PackageSetPolicyValue;
 import android.app.admin.ParcelableGranteeMap;
 import android.app.admin.ParcelableResource;
@@ -489,7 +485,6 @@ import android.util.StatsEvent;
 import android.util.Xml;
 import android.view.accessibility.IAccessibilityManager;
 import android.view.inputmethod.InputMethodInfo;
-
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
@@ -533,9 +528,6 @@ import com.android.server.storage.DeviceStorageMonitorInternal;
 import com.android.server.uri.NeededUriGrants;
 import com.android.server.uri.UriGrantsManagerInternal;
 import com.android.server.utils.Slogf;
-
-import org.xmlpull.v1.XmlPullParserException;
-
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileDescriptor;
@@ -576,6 +568,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.xmlpull.v1.XmlPullParserException;
 
 /**
  * Implementation of the device policy APIs.
@@ -13054,6 +13047,55 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
         }
     }
 
+    private void clearHiddenApplicationsForRole(
+            @NonNull String roleName, @UserIdInt int targetUser) {
+        List<String> roleHolders =
+                mInjector.binderWithCleanCallingIdentity(
+                        () ->
+                                mRoleManager.getRoleHoldersAsUser(
+                                        roleName, UserHandle.of(targetUser)));
+
+        if (roleHolders.isEmpty()) {
+            return;
+        }
+
+        synchronized (getLockObject()) {
+            for (String roleHolderPackage : roleHolders) {
+                final EnforcingAdmin admin =
+                        EnforcingAdmin.createRoleEnforcingAdmin(roleHolderPackage, targetUser);
+
+                // Query for ALL "Application Hidden" policy keys set for matching admins.
+                // Admins with the same (user, package) have equal AdminKeys, so this should match
+                // other admins regardless of their authority (e.g. Role or Enterprise).
+                final Set<PolicyKey> keys =
+                        mDevicePolicyEngine.getLocalPolicyKeysSetByAdmin(
+                                PolicyDefinition.GENERIC_APPLICATION_HIDDEN, admin, targetUser);
+
+                for (PolicyKey key : keys) {
+                    if (!(key instanceof PackagePolicyKey)) {
+                        Slogf.w(
+                                LOG_TAG,
+                                "Unexpected key type in clearHiddenApplicationsForRole: %s",
+                                key);
+                        continue;
+                    }
+
+                    final String targetPkg = ((PackagePolicyKey) key).getPackageName();
+                    final PolicyDefinition<Boolean> policyDef =
+                            PolicyDefinition.APPLICATION_HIDDEN(targetPkg);
+                    Slogf.i(
+                            LOG_TAG,
+                            "Clearing APPLICATION_HIDDEN for %s set by %s (Role: %s)",
+                            targetPkg,
+                            admin.getPackageName(),
+                            roleName);
+
+                    mDevicePolicyEngine.removeLocalPolicy(policyDef, admin, targetUser);
+                }
+            }
+        }
+    }
+
     private void enforcePackageIsSystemPackage(String packageName, int userId)
             throws RemoteException {
         boolean isSystem;
@@ -14973,6 +15015,11 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
                 int userId, boolean hidden) {
             DevicePolicyManagerService.this.setApplicationHiddenBySystem(
                     systemEntity, packageName, userId, hidden);
+        }
+
+        @Override
+        public void clearHiddenApplicationsForRole(@NonNull String roleName, int targetUser) {
+            DevicePolicyManagerService.this.clearHiddenApplicationsForRole(roleName, targetUser);
         }
 
         @Override
