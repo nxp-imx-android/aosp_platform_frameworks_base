@@ -30,6 +30,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.ActivityIntentHelper
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.camera.domain.interactor.CameraNotifyWarmUpInteractor
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.settings.DisplayTracker
 import com.android.systemui.statusbar.NotificationLockscreenUserManager
@@ -65,6 +66,7 @@ class CameraGestureHelperTest : SysuiTestCase() {
     @Mock lateinit var activityIntentHelper: ActivityIntentHelper
     @Mock lateinit var activityTaskManager: IActivityTaskManager
     @Mock lateinit var cameraIntents: CameraIntentsWrapper
+    @Mock lateinit var cameraNotifyWarmUpInteractor: CameraNotifyWarmUpInteractor
     @Mock lateinit var contentResolver: ContentResolver
     @Mock lateinit var selectedUserInteractor: SelectedUserInteractor
     @Mock lateinit var devicePolicyManager: DevicePolicyManager
@@ -96,6 +98,7 @@ class CameraGestureHelperTest : SysuiTestCase() {
                 activityIntentHelper = activityIntentHelper,
                 activityTaskManager = activityTaskManager,
                 cameraIntents = cameraIntents,
+                cameraNotifyWarmUpInteractor = cameraNotifyWarmUpInteractor,
                 contentResolver = contentResolver,
                 uiExecutor = MoreExecutors.directExecutor(),
                 selectedUserInteractor = selectedUserInteractor,

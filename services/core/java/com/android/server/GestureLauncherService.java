@@ -32,8 +32,6 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.database.ContentObserver;
-import android.hardware.camera2.CameraManager;
-import android.hardware.camera2.CameraAccessException;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -74,7 +72,6 @@ public class GestureLauncherService extends SystemService {
     private static final boolean DBG = false;
     private static final boolean DBG_CAMERA_LIFT = false;
     private static final String TAG = "GestureLauncherService";
-    private static final String CAMERA_ID_BACK = "0";
 
     /**
      * Time in milliseconds in which the power button must be pressed twice so it will be considered
@@ -150,7 +147,6 @@ public class GestureLauncherService extends SystemService {
     private Context mContext;
     private final MetricsLogger mMetricsLogger;
     private PowerManager mPowerManager;
-    private CameraManager mCameraManager;
 
     private WindowManagerInternal mWindowManagerInternal;
 
@@ -847,27 +843,6 @@ public class GestureLauncherService extends SystemService {
         }
     }
 
-    CameraManager getCameraManager() {
-        if (mCameraManager != null) {
-            return mCameraManager;
-        }
-        mCameraManager = mContext.getSystemService(CameraManager.class);
-        return mCameraManager;
-    }
-
-    void notifyCameraWarmup() {
-        try {
-            CameraManager cameraManager = getCameraManager();
-            if (cameraManager != null) {
-                cameraManager.warmUp(CAMERA_ID_BACK);
-            } else {
-                Slog.e(TAG, "CameraManager is not ready yet");
-            }
-        } catch (CameraAccessException e) {
-            Slog.e(TAG, "Cameraservice unavailable for camera warm up hint:", e);
-        }
-    }
-
     /**
      * @return true if camera was launched, false otherwise.
      */
@@ -888,11 +863,6 @@ public class GestureLauncherService extends SystemService {
                 Slog.d(TAG, String.format(
                         "userSetupComplete = %s, performing camera gesture.",
                         userSetupComplete));
-            }
-
-            // Faster camera response
-            if (com.android.internal.camera.flags.Flags.cameraWarmUp()) {
-                notifyCameraWarmup();
             }
 
             if (useWakelock) {

@@ -2132,7 +2132,8 @@ public final class CameraManager {
      * Send a hint to the camera sub-system to warm up the given camera id in expectation
      * of an imminent {@link CameraManager#openCamera} call.
      *
-     * This call is only legal to call from a client with system uid.
+     * This call is only legal to call from a client with the android.permission.CAMERA_WARMUP
+     * permission
      *
      * @param cameraId       The camera id of client to inject session params into.
      *                       If no such client exists for cameraId, no warm up hint is sent.
@@ -2145,6 +2146,7 @@ public final class CameraManager {
      *                                  the warm up hint.
      * @hide
      */
+    @RequiresPermission(android.Manifest.permission.WARM_UP_CAMERA)
     public void warmUp(@NonNull String cameraId)
             throws CameraAccessException, SecurityException {
         CameraManagerGlobal.get().warmUp(cameraId,

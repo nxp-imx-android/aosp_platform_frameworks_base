@@ -29,6 +29,7 @@ import android.os.RemoteException
 import android.util.Log
 import android.view.WindowManager
 import com.android.systemui.ActivityIntentHelper
+import com.android.systemui.camera.domain.interactor.CameraNotifyWarmUpInteractor
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.plugins.ActivityStarter
@@ -59,6 +60,7 @@ constructor(
     private val activityIntentHelper: ActivityIntentHelper,
     private val activityTaskManager: IActivityTaskManager,
     private val cameraIntents: CameraIntentsWrapper,
+    private val cameraNotifyWarmUpInteractor: CameraNotifyWarmUpInteractor,
     private val contentResolver: ContentResolver,
     @Main private val uiExecutor: Executor,
     private val selectedUserInteractor: SelectedUserInteractor,
@@ -105,6 +107,10 @@ constructor(
                 intent,
                 selectedUserInteractor.getSelectedUserId(),
             )
+
+        if (com.android.internal.camera.flags.Flags.cameraWarmUp()) {
+            cameraNotifyWarmUpInteractor.notifyCameraWarmUp()
+        }
         if (CameraIntents.isSecureCameraIntent(intent) && !wouldLaunchResolverActivity) {
             uiExecutor.execute {
                 // Normally an activity will set its requested rotation animation on its window.
