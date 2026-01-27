@@ -10619,9 +10619,11 @@ public class CarrierConfigManager {
             "satellite_roaming_turn_off_session_for_emergency_call_bool";
 
     /** @hide */
+    @Retention(RetentionPolicy.SOURCE)
     @IntDef({
             CARRIER_ROAMING_NTN_CONNECT_AUTOMATIC,
             CARRIER_ROAMING_NTN_CONNECT_MANUAL,
+            CARRIER_ROAMING_NTN_CONNECT_HYBRID
     })
     public @interface CARRIER_ROAMING_NTN_CONNECT_TYPE {}
 
@@ -10643,12 +10645,10 @@ public class CarrierConfigManager {
      */
     @FlaggedApi(Flags.FLAG_SATELLITE_26Q2_APIS)
     public static final int CARRIER_ROAMING_NTN_CONNECT_HYBRID = 2;
+
     /**
-     * Indicates carrier roaming non-terrestrial network connect type that the device can use to
-     * perform satellite communication.
-     * If this key is set to CARRIER_ROAMING_NTN_CONNECT_MANUAL then connect button will be
-     * displayed to user when the device is eligible to use carrier roaming
-     * non-terrestrial network.
+     * Indicates carrier roaming non-terrestrial network {@link SatelliteManager.ConnectType} that
+     * the device can use to perform satellite communication.
      */
     @FlaggedApi(Flags.FLAG_SATELLITE_SYSTEM_APIS)
     public static final String KEY_CARRIER_ROAMING_NTN_CONNECT_TYPE_INT =
