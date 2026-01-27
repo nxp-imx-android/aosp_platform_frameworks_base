@@ -139,6 +139,8 @@ public class QuickStepContract {
     public static final long SYSUI_STATE_BACK_DISMISS_IME = 1L << 36;
     // Whether WindowManagerService/DisplayPolicy returns false for hasNavigationBar().
     public static final long SYSUI_STATE_NAVIGATION_BAR_DISABLED = 1L << 37;
+    // Whether dual shade is enabled.
+    public static final long SYSUI_STATE_DUAL_SHADE_ENABLED = 1L << 38;
 
     // Mask for SystemUiStateFlags to isolate SYSUI_STATE_AWAKE and
     // SYSUI_STATE_WAKEFULNESS_TRANSITION, to match WAKEFULNESS_* constants
@@ -191,6 +193,7 @@ public class QuickStepContract {
             SYSUI_STATE_DISABLE_GESTURE_PIP_ANIMATING,
             SYSUI_STATE_COMMUNAL_HUB_SHOWING,
             SYSUI_STATE_BACK_DISMISS_IME,
+            SYSUI_STATE_DUAL_SHADE_ENABLED,
     })
     public @interface SystemUiStateFlags {}
 
@@ -306,6 +309,9 @@ public class QuickStepContract {
         }
         if ((flags & SYSUI_STATE_NAVIGATION_BAR_DISABLED) != 0) {
             str.add("hasNavigationBar=false");
+        }
+        if ((flags & SYSUI_STATE_DUAL_SHADE_ENABLED) != 0) {
+            str.add("dual_shade_enabled");
         }
 
         return str.toString();

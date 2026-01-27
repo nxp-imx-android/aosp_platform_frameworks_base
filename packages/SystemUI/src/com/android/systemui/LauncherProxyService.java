@@ -31,6 +31,7 @@ import static com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_B
 import static com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_COMMUNAL_HUB_SHOWING;
 import static com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_DEVICE_DOZING;
 import static com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_DEVICE_DREAMING;
+import static com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_DUAL_SHADE_ENABLED;
 import static com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_FREEFORM_ACTIVE_IN_DESKTOP_MODE;
 import static com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_NAVIGATION_BAR_DISABLED;
 import static com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_STATUS_BAR_KEYGUARD_GOING_AWAY;
@@ -114,6 +115,7 @@ import com.android.systemui.settings.UserTracker;
 import com.android.systemui.shade.ShadeViewController;
 import com.android.systemui.shade.display.StatusBarTouchShadeDisplayPolicy;
 import com.android.systemui.shade.display.domain.interactor.ShadeExpansionTargetDisplayInteractor;
+import com.android.systemui.shade.domain.interactor.ShadeModeInteractor;
 import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround;
 import com.android.systemui.shared.recents.ILauncherProxy;
 import com.android.systemui.shared.recents.ISystemUiProxy;
@@ -195,6 +197,7 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
     private final BackAnimation mBackAnimation;
 
     private final DesktopState mDesktopState;
+    private final ShadeModeInteractor mShadeModeInteractor;
 
     private ILauncherProxy mLauncherProxy;
     private int mConnectionBackoffAttempts;
@@ -747,7 +750,8 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
             ProcessWrapper processWrapper,
             DisplayRepository displayRepository,
             DesktopState desktopState,
-            HeadlessSystemUserMode headlessSystemUserMode
+            HeadlessSystemUserMode headlessSystemUserMode,
+            ShadeModeInteractor shadeModeInteractor
     ) {
         mHeadlessSystemUserMode = headlessSystemUserMode;
         // b/241601880: This component should only be running for primary users or
@@ -791,6 +795,7 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
         mBroadcastDispatcher = broadcastDispatcher;
         mBackAnimation = backAnimation.orElse(null);
         mDesktopState = desktopState;
+        mShadeModeInteractor = shadeModeInteractor;
 
         if (!KeyguardWmStateRefactor.isEnabled()) {
             mSysuiUnlockAnimationController = sysuiUnlockAnimationController;
@@ -910,6 +915,8 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
     /** Force updates SystemUI state flags prior to sending them to Launcher. */
     public void updateSystemUiStateFlags() {
         updateSysUIStateForNavbars();
+        mDefaultDisplaySysUIState.setFlag(SYSUI_STATE_DUAL_SHADE_ENABLED,
+                mShadeModeInteractor.isDualShade());
         mShadeViewControllerLazy.get().updateSystemUiStateFlags();
         if (mStatusBarWinController != null) {
             mStatusBarWinController.notifyStateChangedCallbacks();
