@@ -10136,13 +10136,10 @@ package android.app.permissionui {
   }
 
   public static final class LocationButtonRequest.Builder {
-    ctor public LocationButtonRequest.Builder();
-    ctor public LocationButtonRequest.Builder(@NonNull android.app.permissionui.LocationButtonRequest);
+    ctor public LocationButtonRequest.Builder(int, int, @NonNull android.content.res.Configuration);
     method @NonNull public android.app.permissionui.LocationButtonRequest build();
     method @NonNull public android.app.permissionui.LocationButtonRequest.Builder setBackgroundColor(@ColorInt int);
-    method @NonNull public android.app.permissionui.LocationButtonRequest.Builder setConfiguration(@NonNull android.content.res.Configuration);
     method @NonNull public android.app.permissionui.LocationButtonRequest.Builder setCornerRadius(float);
-    method @NonNull public android.app.permissionui.LocationButtonRequest.Builder setHeight(int);
     method @NonNull public android.app.permissionui.LocationButtonRequest.Builder setIconTint(@ColorInt int);
     method @NonNull public android.app.permissionui.LocationButtonRequest.Builder setPaddingBottom(int);
     method @NonNull public android.app.permissionui.LocationButtonRequest.Builder setPaddingLeft(int);
@@ -10153,7 +10150,6 @@ package android.app.permissionui {
     method @NonNull public android.app.permissionui.LocationButtonRequest.Builder setStrokeWidth(int);
     method @NonNull public android.app.permissionui.LocationButtonRequest.Builder setTextColor(@ColorInt int);
     method @NonNull public android.app.permissionui.LocationButtonRequest.Builder setTextType(int);
-    method @NonNull public android.app.permissionui.LocationButtonRequest.Builder setWidth(int);
   }
 
   @FlaggedApi("android.permission.flags.location_button_enabled") public interface LocationButtonSession extends java.lang.AutoCloseable {
