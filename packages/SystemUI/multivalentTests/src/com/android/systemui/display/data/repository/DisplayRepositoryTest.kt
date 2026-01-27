@@ -1009,6 +1009,14 @@ class DisplayRepositoryTest : SysuiTestCase() {
         displayListener.value.onDisplayAdded(id)
     }
 
+    // There is no test for isMirroringEnabled as we can't really set the Secure setting to true on
+    // real devices. It would require implement an abstraction just to mock this, which is not worth
+    // it. Note this abstraction is already there in SystemUI (SettingsProxy), but as this is from a
+    // different lib (displaylib), it's not worth duplicating it or moving it to a shared lib.
+    //
+    // @Test
+    // fun isMirroringEnabled_settingChange_propagated()
+
     private fun sendOnDisplayAdded(id: Int) {
         displayListener.value.onDisplayAdded(id)
     }
