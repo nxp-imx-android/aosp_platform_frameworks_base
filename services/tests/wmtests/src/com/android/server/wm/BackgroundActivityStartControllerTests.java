@@ -16,6 +16,9 @@
 
 package com.android.server.wm;
 
+import static android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT;
+
+import static com.android.server.wm.BackgroundActivityStartController.BAL_ALLOW_PCC_DEFINING_APP_HAS_VISIBLE_WINDOW;
 import static com.android.server.wm.BackgroundActivityStartController.BAL_ALLOW_PERMISSION;
 import static com.android.server.wm.BackgroundActivityStartController.BAL_ALLOW_VISIBLE_WINDOW;
 import static com.android.server.wm.BackgroundActivityStartController.BAL_BLOCK;
@@ -33,8 +36,11 @@ import android.app.BackgroundStartPrivileges;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.pm.PackageManagerInternal;
+import android.os.Process;
 import android.platform.test.annotations.Presubmit;
+import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.provider.DeviceConfig;
 
 import androidx.test.filters.SmallTest;
@@ -111,6 +117,8 @@ public class BackgroundActivityStartControllerTests {
     MirrorActiveUids mActiveUids = new MirrorActiveUids();
     @Mock
     VisibleActivityProcessTracker mVisibleActivityProcessTracker;
+    @Mock
+    PackageManager mPackageManager;
 
     WindowProcessControllerMap mProcessMap = new WindowProcessControllerMap();
 
@@ -296,6 +304,42 @@ public class BackgroundActivityStartControllerTests {
         assertThat(verdict).isEqualTo(BalVerdict.BLOCK);
         assertThat(mBalAllowedLogs).containsExactly(
                 new BalAllowedLog("package.app3/someClass", BAL_BLOCK));
+    }
+
+    @Test
+    @RequiresFlagsEnabled(FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public void testPccActivityStart_parentVisible_isAllowed() {
+        int parentAppUid = REGULAR_UID_1;
+        // PCC UIDS are currently at a fixed offset from refular app uids
+        int pccUid = REGULAR_UID_1 + Process.FIRST_PCC_UID - Process.FIRST_APPLICATION_UID;
+        Mockito.when(mContext.getPackageManager()).thenReturn(mPackageManager);
+        Mockito.when(mPackageManager.getAppUidForPrivateComputeCoreUid(pccUid))
+                .thenReturn(parentAppUid);
+        Mockito.when(mService.hasActiveVisibleWindow(parentAppUid)).thenReturn(true);
+
+        int callingPid = REGULAR_PID_1;
+        String callingPackage = "com.android.pcc";
+        PendingIntentRecord originatingPendingIntent = null;
+        Intent intent = TEST_INTENT;
+        ActivityOptions checkedOptions = ActivityOptions.makeBasic();
+
+        BalVerdict verdict = mController.checkBackgroundActivityStart(
+                pccUid,
+                callingPid,
+                callingPackage,
+                pccUid, // realCallingUid
+                callingPid, // realCallingPid
+                mCallerApp,
+                originatingPendingIntent,
+                false, // allowBalExemptionForSystemProcess
+                mResultRecord,
+                intent,
+                checkedOptions);
+
+        assertThat(verdict.getCode()).isEqualTo(BAL_ALLOW_PCC_DEFINING_APP_HAS_VISIBLE_WINDOW);
+        assertThat(mBalAllowedLogs).containsExactly(
+                new BalAllowedLog("package.app3/someClass",
+                        BAL_ALLOW_PCC_DEFINING_APP_HAS_VISIBLE_WINDOW));
     }
 
     @Test
