@@ -492,6 +492,16 @@ public class AlarmManager {
      * Direct callback version of {@link #set(int, long, PendingIntent)}.  Rather than
      * supplying a PendingIntent to be sent when the alarm time is reached, this variant
      * supplies an {@link OnAlarmListener} instance that will be invoked at that time.
+     *
+     * <p>
+     * The {@link OnAlarmListener} instance supplied is tied to the lifecycle of the
+     * component that scheduled it. The system can drop the alarm once this component
+     * is no longer in an active state. For example, if this alarm is scheduled from a foreground
+     * service, it should not be expected to trigger after the foreground service terminates.
+     * <p>
+     * To schedule alarms that fire reliably even after the current lifecycle completes,
+     * and starts the app if required, use {@link #set(int, long, PendingIntent)}.
+     *
      * <p>
      * The OnAlarmListener's {@link OnAlarmListener#onAlarm() onAlarm()} method will be
      * invoked via the specified target Handler, or on the application's main looper
@@ -641,6 +651,16 @@ public class AlarmManager {
      * Direct callback version of {@link #setWindow(int, long, long, PendingIntent)}.  Rather
      * than supplying a PendingIntent to be sent when the alarm time is reached, this variant
      * supplies an {@link OnAlarmListener} instance that will be invoked at that time.
+     *
+     * <p>
+     * The {@link OnAlarmListener} instance supplied is tied to the lifecycle of the
+     * component that scheduled it. The system can drop the alarm once this component
+     * is no longer in an active state. For example, if this alarm is scheduled from a foreground
+     * service, it should not be expected to trigger after the foreground service terminates.
+     * <p>
+     * To schedule alarms that fire reliably even after the current lifecycle completes,
+     * and starts the app if required, use {@link #setWindow(int, long, long, PendingIntent)}.
+     *
      * <p>
      * The OnAlarmListener {@link OnAlarmListener#onAlarm() onAlarm()} method will be
      * invoked via the specified target Handler, or on the application's main looper
@@ -665,6 +685,16 @@ public class AlarmManager {
      * Direct callback version of {@link #setWindow(int, long, long, PendingIntent)}.  Rather
      * than supplying a PendingIntent to be sent when the alarm time is reached, this variant
      * supplies an {@link OnAlarmListener} instance that will be invoked at that time.
+     *
+     * <p>
+     * The {@link OnAlarmListener} instance supplied is tied to the lifecycle of the
+     * component that scheduled it. The system can drop the alarm once this component
+     * is no longer in an active state. For example, if this alarm is scheduled from a foreground
+     * service, it should not be expected to trigger after the foreground service terminates.
+     * <p>
+     * To schedule alarms that fire reliably even after the current lifecycle completes,
+     * and starts the app if required, use {@link #setWindow(int, long, long, PendingIntent)}.
+     *
      * <p>
      * The OnAlarmListener {@link OnAlarmListener#onAlarm() onAlarm()} method will be
      * invoked via the specified target Executor.
@@ -687,6 +717,16 @@ public class AlarmManager {
      * Direct callback version of {@link #setWindow(int, long, long, PendingIntent)}.  Rather
      * than supplying a PendingIntent to be sent when the alarm time is reached, this variant
      * supplies an {@link OnAlarmListener} instance that will be invoked at that time.
+     *
+     * <p>
+     * The {@link OnAlarmListener} instance supplied is tied to the lifecycle of the
+     * component that scheduled it. The system can drop the alarm once this component
+     * is no longer in an active state. For example, if this alarm is scheduled from a foreground
+     * service, it should not be expected to trigger after the foreground service terminates.
+     * <p>
+     * To schedule alarms that fire reliably even after the current lifecycle completes,
+     * and starts the app if required, use {@link #setWindow(int, long, long, PendingIntent)}.
+     *
      * <p>
      * The OnAlarmListener's {@link OnAlarmListener#onAlarm() onAlarm()} method will be
      * invoked via the specified target Executor.
@@ -726,6 +766,12 @@ public class AlarmManager {
      * {@link #setAndAllowWhileIdle(int, long, PendingIntent)} or
      * {@link #setExactAndAllowWhileIdle(int, long, PendingIntent)}. So the caller should not
      * expect these to arrive in any relative order to its other alarms.
+     *
+     * <p>
+     * The {@link OnAlarmListener} instance supplied is tied to the lifecycle of the
+     * component that scheduled it. The system can drop the alarm once this component
+     * is no longer in an active state. For example, if this alarm is scheduled from a foreground
+     * service, it should not be expected to trigger after the foreground service terminates.
      *
      * @param type type of alarm
      * @param windowStartMillis The earliest time, in milliseconds, that the alarm should
@@ -815,17 +861,20 @@ public class AlarmManager {
      * Direct callback version of {@link #setExact(int, long, PendingIntent)}.  Rather
      * than supplying a PendingIntent to be sent when the alarm time is reached, this variant
      * supplies an {@link OnAlarmListener} instance that will be invoked at that time.
+     *
+     * <p>
+     * The {@link OnAlarmListener} instance supplied is tied to the lifecycle of the
+     * component that scheduled it. The system can drop the alarm once this component
+     * is no longer in an active state. For example, if this alarm is scheduled from a foreground
+     * service, it should not be expected to trigger after the foreground service terminates.
+     * <p>
+     * To schedule alarms that fire reliably even after the current lifecycle completes,
+     * and starts the app if required, use {@link #setExact(int, long, PendingIntent)}.
+     *
      * <p>
      * The OnAlarmListener's {@link OnAlarmListener#onAlarm() onAlarm()} method will be
      * invoked via the specified target Handler, or on the application's main looper
      * if {@code null} is passed as the {@code targetHandler} parameter.
-     * <p>
-     * This API should only be used to set alarms that are relevant in the context of the app's
-     * current lifecycle, as the {@link OnAlarmListener} instance supplied is only valid as long as
-     * the process is alive, and the system can clean up the app process as soon as it is out of
-     * lifecycle. To schedule alarms that fire reliably even after the current lifecycle completes,
-     * and wakes up the app if required, use any of the other scheduling APIs that accept a
-     * {@link PendingIntent} instance.
      *
      * <p>
      * On previous android versions {@link Build.VERSION_CODES#S} and
@@ -847,6 +896,11 @@ public class AlarmManager {
     /**
      * Schedule an idle-until alarm, which will keep the alarm manager idle until
      * the given time.
+     * <p>
+     * The {@link OnAlarmListener} instance supplied is tied to the lifecycle of the
+     * component that scheduled it. The system can drop the alarm once this component
+     * is no longer in an active state. For example, if this alarm is scheduled from a foreground
+     * service, it should not be expected to trigger after the foreground service terminates.
      * @hide
      */
     public void setIdleUntil(@AlarmType int type, long triggerAtMillis, @Nullable String tag,
@@ -929,6 +983,14 @@ public class AlarmManager {
      * Direct callback version of {@link #set(int, long, long, long, PendingIntent, WorkSource)}.
      * Note that repeating alarms must use the PendingIntent variant, not an OnAlarmListener.
      * <p>
+     * The {@link OnAlarmListener} instance supplied is tied to the lifecycle of the
+     * component that scheduled it. The system can drop the alarm once this component
+     * is no longer in an active state. For example, if this alarm is scheduled from a foreground
+     * service, it should not be expected to trigger after the foreground service terminates.
+     * <p>
+     * To schedule alarms that fire reliably even after the current lifecycle completes,
+     * and starts the app if required, use {@link #set(int, long, PendingIntent)}.
+     * <p>
      * The OnAlarmListener's {@link OnAlarmListener#onAlarm() onAlarm()} method will be
      * invoked via the specified target Handler, or on the application's main looper
      * if {@code null} is passed as the {@code targetHandler} parameter.
@@ -998,6 +1060,15 @@ public class AlarmManager {
      * One subtle difference is that this API requires {@code workSource} to be non-null. If you
      * don't want to attribute this alarm to another app for battery consumption, you should use
      * {@link #setExact(int, long, String, OnAlarmListener, Handler)} instead.
+     *
+     * <p>
+     * The {@link OnAlarmListener} instance supplied is tied to the lifecycle of the
+     * component that scheduled it. The system can drop the alarm once this component
+     * is no longer in an active state. For example, if this alarm is scheduled from a foreground
+     * service, it should not be expected to trigger after the foreground service terminates.
+     * <p>
+     * To schedule alarms that fire reliably even after the current lifecycle completes,
+     * and starts the app if required, use {@link #setExact(int, long, PendingIntent)}.
      *
      * <p>
      * Note that on previous Android versions {@link Build.VERSION_CODES#S} and
@@ -1319,7 +1390,15 @@ public class AlarmManager {
      * Like {@link #setExact(int, long, String, Executor, WorkSource, OnAlarmListener)}, but this
      * alarm will be allowed to execute even when the system is in low-power idle modes.
      *
-     * <p> See {@link #setExactAndAllowWhileIdle(int, long, PendingIntent)} for more details.
+     * <p>
+     * The {@link OnAlarmListener} instance supplied is tied to the lifecycle of the
+     * component that scheduled it. The system can drop the alarm once this component
+     * is no longer in an active state. For example, if this alarm is scheduled from a foreground
+     * service, it should not be expected to trigger after the foreground service terminates.
+     * <p>
+     * To schedule alarms that fire reliably even after the current lifecycle completes,
+     * and starts the app if required, use
+     * {@link #setExactAndAllowWhileIdle(int, long, PendingIntent)}.
      *
      * <p class="note"><strong>Note:</strong>
      * Starting with android version {@link Build.VERSION_CODES#UPSIDE_DOWN_CAKE}, the system will
@@ -1356,11 +1435,15 @@ public class AlarmManager {
      * alarm will be allowed to execute even when the system is in low-power idle modes with relaxed
      * quota.
      *
-     * <p> See {@link #setExactAndAllowWhileIdle(int, long, PendingIntent)} for more details.
-     *
-     * <p class="note"><strong>Note:</strong>
-     * The system will explicitly drop any alarms set via this API when the calling app goes out
-     * of lifecycle.
+     * <p>
+     * The {@link OnAlarmListener} instance supplied is tied to the lifecycle of the
+     * component that scheduled it. The system can drop the alarm once this component
+     * is no longer in an active state. For example, if this alarm is scheduled from a foreground
+     * service, it should not be expected to trigger after the foreground service terminates.
+     * <p>
+     * To schedule alarms that fire reliably even after the current lifecycle completes,
+     * and starts the app if required, use
+     * {@link #setExactAndAllowWhileIdle(int, long, PendingIntent)}.
      *
      * @param type            type of alarm.
      * @param triggerAtMillis The exact time in milliseconds, that the alarm should be delivered,
