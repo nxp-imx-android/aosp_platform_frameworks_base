@@ -283,6 +283,24 @@ policy_metadata {
 }
 policy_metadata {
   identifier {
+    field_name: "SIMPLE_LONG_POLICY"
+    class_name: "PolicyIdentifier"
+    package_name: "android.app.admin"
+  }
+  type {
+    class_name: "Long"
+    package_name: "java.lang"
+  }
+  documentation: "Test policy for Long "
+  type_specific_metadata {
+    long_metadata {
+    }
+  }
+  allowed_scopes: POLICY_SCOPE_USER
+  affected_resource: RESOURCE_DEVICE_WIDE
+}
+policy_metadata {
+  identifier {
     field_name: "SIMPLE_STRING_POLICY"
     class_name: "PolicyIdentifier"
     package_name: "android.app.admin"

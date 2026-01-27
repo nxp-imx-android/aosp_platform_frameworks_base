@@ -19,6 +19,7 @@ package android.app.admin.metadata;
 import android.annotation.NonNull;
 import android.app.admin.PolicyIdentifier;
 import android.app.admin.PolicyValueTransport;
+import android.app.admin.metadata.LongPolicyMetadata;
 
 import java.util.List;
 
@@ -49,6 +50,25 @@ public abstract class PolicyTransportValueConvertor<T> {
                     }
 
                     return transport.getBooleanField();
+                }
+            };
+    private static final PolicyTransportValueConvertor<Long> LONG_CONVERTOR =
+            new PolicyTransportValueConvertor<>() {
+                @Override
+                @NonNull
+                public PolicyValueTransport toTransport(@NonNull Long value) {
+                    return PolicyValueTransport.longField(value);
+                }
+
+                @NonNull
+                @Override
+                public Long fromTransport(@NonNull PolicyValueTransport transport) {
+                    if (transport.getTag() != PolicyValueTransport.longField) {
+                        throw new IllegalArgumentException(
+                                "Policy value " + transport + " is not a long");
+                    }
+
+                    return transport.getLongField();
                 }
             };
     private static final PolicyTransportValueConvertor<Integer> INTEGER_CONVERTOR =
@@ -130,6 +150,7 @@ public abstract class PolicyTransportValueConvertor<T> {
         return (PolicyTransportValueConvertor<T>) switch (metadata) {
             case BooleanPolicyMetadata m -> BOOLEAN_CONVERTOR;
             case IntegerPolicyMetadata m -> INTEGER_CONVERTOR;
+            case LongPolicyMetadata m -> LONG_CONVERTOR;
             case EnumPolicyMetadata m -> INTEGER_CONVERTOR;
             case StringPolicyMetadata m -> STRING_CONVERTOR;
             // Need to use a raw type here since we can't extract the element E of T=List<E>.

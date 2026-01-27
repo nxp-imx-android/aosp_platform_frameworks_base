@@ -59,6 +59,7 @@ class DevicePolicyAnnotationProcessorTest {
             "PolicyMetadata",
             "BooleanPolicyMetadata",
             "IntegerPolicyMetadata",
+            "LongPolicyMetadata",
             "EnumPolicyMetadata",
             "StringPolicyMetadata",
             "ListPolicyMetadata",
@@ -108,6 +109,7 @@ class DevicePolicyAnnotationProcessorTest {
                 import android.processor.devicepolicy.EnumPolicyDefinition;
                 import android.processor.devicepolicy.IntegerPolicyDefinition;
                 import android.processor.devicepolicy.ListOfStringPolicyDefinition;
+                import android.processor.devicepolicy.LongPolicyDefinition;
                 import android.processor.devicepolicy.PolicyDefinition;
                 import android.processor.devicepolicy.StringPolicyDefinition;
 
