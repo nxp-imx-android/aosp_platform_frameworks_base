@@ -849,37 +849,41 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
     }
 
     @Override
-    public void registerAppFunction(
-            String packageName, String functionIdentifier, IAppFunctionExecutor session) {
+    public void registerAppFunctions(
+            String packageName, List<String> functionIdentifiers, IAppFunctionExecutor executor) {
         mCallerValidator.validateCallingPackage(packageName);
-        if (!mAppFunctionMetadataReader.isDynamicFunction(
-                packageName, functionIdentifier, Binder.getCallingUserHandle())) {
-            throw new IllegalArgumentException(
-                    "Unable to register AppFunction "
-                            + functionIdentifier
-                            + ". Ensure this function is declared in the XML resource referenced"
-                            + " by the property within the <application> tag of your "
-                            + "AndroidManifest.xml.");
+        for (String functionIdentifier : functionIdentifiers) {
+            if (!mAppFunctionMetadataReader.isDynamicFunction(
+                    packageName, functionIdentifier, Binder.getCallingUserHandle())) {
+                throw new IllegalArgumentException(
+                        "Unable to register AppFunction "
+                                + functionIdentifier
+                                + ". Ensure this function is declared in the XML resource"
+                                + " referenced by the property within the <application> tag of your"
+                                + " AndroidManifest.xml.");
+            }
         }
-        mDynamicAppFunctionRegistry.registerAppFunction(
-                packageName, functionIdentifier, session, Binder.getCallingUserHandle());
+        mDynamicAppFunctionRegistry.registerAppFunctions(
+                packageName, functionIdentifiers, executor, Binder.getCallingUserHandle());
     }
 
     @Override
-    public void unregisterAppFunction(
-            String packageName, String functionIdentifier, IAppFunctionExecutor session) {
+    public void unregisterAppFunctions(
+            String packageName, List<String> functionIdentifiers, IAppFunctionExecutor session) {
         mCallerValidator.validateCallingPackage(packageName);
-        if (!mAppFunctionMetadataReader.isDynamicFunction(
-                packageName, functionIdentifier, Binder.getCallingUserHandle())) {
-            throw new IllegalArgumentException(
-                    "Unable to unregister AppFunction "
-                            + functionIdentifier
-                            + ". Ensure this function is declared in the XML resource referenced"
-                            + " by the property within the <application> tag of your "
-                            + "AndroidManifest.xml.");
+        for (String functionIdentifier : functionIdentifiers) {
+            if (!mAppFunctionMetadataReader.isDynamicFunction(
+                    packageName, functionIdentifier, Binder.getCallingUserHandle())) {
+                throw new IllegalArgumentException(
+                        "Unable to unregister AppFunction "
+                                + functionIdentifier
+                                + ". Ensure this function is declared in the XML resource"
+                                + " referenced by the property within the <application> tag of your"
+                                + " AndroidManifest.xml.");
+            }
         }
-        mDynamicAppFunctionRegistry.unregisterAppFunction(
-                packageName, functionIdentifier, session, Binder.getCallingUserHandle());
+        mDynamicAppFunctionRegistry.unregisterAppFunctions(
+                packageName, functionIdentifiers, session, Binder.getCallingUserHandle());
     }
 
     @Override

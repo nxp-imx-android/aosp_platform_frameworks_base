@@ -111,9 +111,9 @@ interface IAppFunctionManager {
         int flags
     );
 
-    void registerAppFunction(in String packageName, in String functionId, in IAppFunctionExecutor executor);
+    void registerAppFunctions(in String packageName, in List<String> functionIds, in IAppFunctionExecutor executor);
 
-    void unregisterAppFunction(in String packageName, in String functionId, in IAppFunctionExecutor executor);
+    void unregisterAppFunctions(in String packageName, in List<String> functionIds, in IAppFunctionExecutor executor);
 
     void revokeSelfAccess(in String targetPackageName);
 
