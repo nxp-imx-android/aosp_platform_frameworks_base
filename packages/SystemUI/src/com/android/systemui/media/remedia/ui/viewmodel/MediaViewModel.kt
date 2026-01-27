@@ -20,6 +20,7 @@ import android.content.Context
 import android.icu.text.MeasureFormat
 import android.icu.util.Measure
 import android.icu.util.MeasureUnit
+import android.text.format.DateUtils
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -175,6 +176,15 @@ constructor(
                                             formatTimeContentDescription(session.positionMs),
                                             formatTimeContentDescription(session.durationMs),
                                         ),
+                                    progressText =
+                                        if (isCurrentSessionAndScrubbing) {
+                                            formatTimeLabel(
+                                                (seekProgress * session.durationMs).toLong()
+                                            )
+                                        } else {
+                                            formatTimeLabel(session.positionMs)
+                                        },
+                                    durationText = formatTimeLabel(session.durationMs),
                                 )
                             } else {
                                 MediaNavigationViewModel.Hidden(
@@ -524,6 +534,11 @@ constructor(
 
         return MeasureFormat.getInstance(Locale.getDefault(), MeasureFormat.FormatWidth.WIDE)
             .formatMeasures(*measures.toTypedArray())
+    }
+
+    /** Returns a time string suitable for display, e.g. "12:34" */
+    private fun formatTimeLabel(milliseconds: Long): String {
+        return DateUtils.formatElapsedTime(milliseconds / DateUtils.SECOND_IN_MILLIS)
     }
 
     /**
