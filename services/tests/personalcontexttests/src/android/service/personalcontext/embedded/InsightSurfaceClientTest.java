@@ -93,16 +93,17 @@ public class InsightSurfaceClientTest {
     }
 
     @Test
-    public void testSurfaceReleased() throws RemoteException {
+    public void testSurfaceDestroyed() throws RemoteException {
         mClient.register();
-        mClient.unregister();
         final ArgumentCaptor<InsightSurfaceClientInfo> clientInfoCaptor =
                 ArgumentCaptor.forClass(InsightSurfaceClientInfo.class);
-        verify(mPersonalContextManager).unregisterInsightSurfaceClient(clientInfoCaptor.capture());
+        verify(mPersonalContextManager).registerInsightSurfaceClient(
+                clientInfoCaptor.capture(), eq(List.of(mHint)));
 
         final IInsightSurfaceClient client = clientInfoCaptor.getValue().getClient();
+        client.onSurfaceCreated(mSurfacePackage, mSession);
         client.onSurfaceReleased(mSurfacePackage);
-        verify(mClientCallbacks).onSurfaceReleased(mSurfacePackage);
+        verify(mClientCallbacks).onSessionDestroyed(any(InsightSurfaceSession.class));
     }
 
     @Test
