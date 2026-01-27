@@ -15143,7 +15143,6 @@ package android.service.personalcontext.understander {
     method public void onHandleEvent(@NonNull String, @NonNull android.service.personalcontext.insight.interaction.InsightEvent);
     method @NonNull public abstract android.service.personalcontext.hint.HintFilter onInitializeFilter();
     method public abstract void onUnderstand(@NonNull java.util.List<android.service.personalcontext.hint.ContextHintWithSignature>);
-    method @Deprecated public final void understood(@NonNull java.util.List<android.service.personalcontext.insight.ContextInsight>);
     method public final void understood(@NonNull android.service.personalcontext.insight.ContextInsight);
   }
 

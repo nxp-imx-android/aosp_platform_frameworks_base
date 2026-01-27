@@ -126,20 +126,6 @@ public abstract class ContextUnderstanderService extends Service {
     public abstract void onUnderstand(@NonNull List<ContextHintWithSignature> hints);
 
     /**
-     * @deprecated use {@link #understood(ContextInsight)}
-     */
-    @Deprecated
-    public final void understood(@NonNull List<ContextInsight> insights) {
-        if (mPersonalContextManager == null) {
-            mPersonalContextManager = getSystemService(PersonalContextManager.class);
-        }
-        if (mPersonalContextManager == null) {
-            throw new IllegalStateException("Personal Context Manager service is not running");
-        }
-        mPersonalContextManager.publishInsight(insights);
-    }
-
-    /**
      * Feeds a {@link ContextInsight} into the Personal Context system.
      *
      * <p>Most understanders will want to respond to calls to {@link #onUnderstand} inline when all
@@ -154,7 +140,13 @@ public abstract class ContextUnderstanderService extends Service {
      * can be re-attempted in a few seconds, once system services have started.
      */
     public final void understood(@NonNull ContextInsight insight) {
-        understood(List.of(insight));
+        if (mPersonalContextManager == null) {
+            mPersonalContextManager = getSystemService(PersonalContextManager.class);
+        }
+        if (mPersonalContextManager == null) {
+            throw new IllegalStateException("Personal Context Manager service is not running");
+        }
+        mPersonalContextManager.publishInsight(List.of(insight));
     }
 
     /** Override this method to receive logging events for actions taken on the insight. */
