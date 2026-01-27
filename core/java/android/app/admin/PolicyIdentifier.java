@@ -194,7 +194,7 @@ public final class PolicyIdentifier<T> {
      * enforced and the user cannot disable it.
      */
     @FlaggedApi(FLAG_POLICY_STREAMLINING_AUTO_TIME)
-    public static final int AUTO_TIME_ENFORCED = 4;
+    public static final int AUTO_TIME_ENABLED = 4;
 
     /**
      * Possible values {@link AUTO_TIME}
@@ -209,7 +209,7 @@ public final class PolicyIdentifier<T> {
                 AUTO_TIME_DISABLED_UNENFORCED,
                 AUTO_TIME_ENABLED_UNENFORCED,
                 AUTO_TIME_DISABLED,
-                AUTO_TIME_ENFORCED,
+                AUTO_TIME_ENABLED,
             })
     public @interface AutoTimeValue {}
 
