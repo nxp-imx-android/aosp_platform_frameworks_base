@@ -62,7 +62,7 @@ import kotlinx.coroutines.delay
 fun CredentialScreen(
     viewModelFactory: CredentialViewModel.Factory,
     onCancel: () -> Unit = {}, // TODO: These three callbacks are Spaghetti related
-    onCredentialMatched: (ByteArray) -> Unit,
+    onCredentialMatched: (ByteArray, Boolean) -> Unit,
     onFallbackSelected: (Int) -> Unit = {},
 ) {
     val viewModel = rememberViewModel("CredentialScreen") { viewModelFactory.create() }
@@ -84,6 +84,8 @@ fun CredentialScreen(
 
     val stealthMode by viewModel.stealthMode.collectAsStateWithLifecycle(initialValue = false)
     val isTwoPane by viewModel.isTwoPane.collectAsStateWithLifecycle(initialValue = false)
+    val isCredentialAllowed by
+        viewModel.isCredentialAllowed.collectAsStateWithLifecycle(initialValue = true)
 
     val fallbackOptions by
         viewModel.fallbackOptions.collectAsStateWithLifecycle(initialValue = emptyList())
@@ -134,7 +136,9 @@ fun CredentialScreen(
         viewModel.checkCredential(pattern, header)
     }
 
-    val handleSuccess: (ByteArray) -> Unit = { attestation -> onCredentialMatched(attestation) }
+    val handleSuccess: (ByteArray) -> Unit = { attestation ->
+        onCredentialMatched(attestation, isCredentialAllowed)
+    }
 
     val view = LocalView.current
     val configuration = LocalConfiguration.current

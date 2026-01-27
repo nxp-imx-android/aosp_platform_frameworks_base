@@ -62,7 +62,9 @@ object CredentialViewBinder {
                 CredentialScreen(
                     viewModelFactory = viewModelFactory,
                     onCancel = { host.onCredentialAborted() },
-                    onCredentialMatched = { credential -> host.onCredentialMatched(credential) },
+                    onCredentialMatched = { credential, isAllowed ->
+                        host.onCredentialMatched(credential, isAllowed)
+                    },
                     onFallbackSelected = { option ->
                         legacyCallback.onFallbackOptionPressed(option)
                     },
