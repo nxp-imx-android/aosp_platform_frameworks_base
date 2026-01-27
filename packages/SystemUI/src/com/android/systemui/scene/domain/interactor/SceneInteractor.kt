@@ -16,6 +16,7 @@
 
 package com.android.systemui.scene.domain.interactor
 
+import androidx.compose.runtime.snapshotFlow
 import com.android.app.tracing.coroutines.flow.stateInTraced
 import com.android.compose.animation.scene.ContentKey
 import com.android.compose.animation.scene.ObservableTransitionState
@@ -59,7 +60,6 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 /**
@@ -102,8 +102,11 @@ constructor(
      */
     val currentScene: StateFlow<SceneKey> = repository.currentScene
 
+    val transitionState: TransitionState
+        get() = repository.transitionState
+
     val currentSceneAsState: SceneKey
-        get() = repository.transitionState.currentScene
+        get() = transitionState.currentScene
 
     /**
      * The current set of overlays to be shown (may be empty).
@@ -113,14 +116,7 @@ constructor(
      */
     val currentOverlays: StateFlow<Set<OverlayKey>> = repository.currentOverlays
 
-    /**
-     * The current state of the transition.
-     *
-     * Consumers should use this state to know:
-     * 1. Whether there is an ongoing transition or if the system is at rest.
-     * 2. When transitioning, which scenes are being transitioned between.
-     * 3. When transitioning, what the progress of the transition is.
-     */
+    @Deprecated("Prefer the more performant non-Flow version.", ReplaceWith("transitionState"))
     val transitionStateFlow: StateFlow<ObservableTransitionState> =
         repository.transitionStateFlow
             .onEach { logger.logSceneTransition(it) }
@@ -173,34 +169,55 @@ constructor(
                 initialValue = false,
             )
 
-    /** Whether the scene container is visible. */
+    /**
+     * Whether the scene container is visible.
+     *
+     * This is snapshot-state backed; it will have new values as appropriate, after any of its
+     * upstream states has new values.
+     *
+     * One way to change the value here is to post an [event][Event] through [handleEvent]. There
+     * are other ways for this state to have new values, one such way is by transitioning between
+     * scenes and/or showing/hiding overlays or by calling other methods in this class like
+     * [onTransitionAnimationStart], [onTransitionAnimationCancelled], or
+     * [onTransitionAnimationEnd].
+     *
+     * See the implementation to discover the full list of upstream states that affect this value
+     * and the methods that ends up mutating those states.
+     */
+    val isVisible: Boolean
+        get() = isVisibleWithLoggingReason().value
+
+    @Deprecated("Prefer the more performant, non-Flow version.", ReplaceWith("isVisible"))
     val isVisibleFlow: StateFlow<Boolean> =
-        combine(
-                repository.isVisible,
-                repository.isRemoteUserInputOngoing,
-                repository.activeTransitionAnimationCount,
-            ) { isVisible, isRemoteUserInteractionOngoing, activeTransitionAnimationCount ->
-                isVisibleInternal(
-                    raw = isVisible,
-                    isRemoteUserInputOngoing = isRemoteUserInteractionOngoing,
-                    activeTransitionAnimationCount = activeTransitionAnimationCount,
-                )
-            }
+        snapshotFlow { isVisible }
             .stateInTraced(
                 name = "isVisible",
                 scope = applicationScope,
                 started = SharingStarted.WhileSubscribed(),
-                initialValue = isVisibleInternal(),
+                initialValue = isVisible,
             )
 
     /** Whether there's an ongoing remotely-initiated user interaction. */
-    val isRemoteUserInteractionOngoing: StateFlow<Boolean> = repository.isRemoteUserInputOngoing
+    val isRemoteUserInteractionOngoing: StateFlow<Boolean> =
+        snapshotFlow { repository.isRemoteUserInputOngoing }
+            .stateInTraced(
+                name = "isRemoteUserInteractorOngoing",
+                scope = applicationScope,
+                started = SharingStarted.Eagerly,
+                initialValue = repository.isRemoteUserInputOngoing,
+            )
 
     /**
      * Whether there's an ongoing user interaction started in the scene container Compose hierarchy.
      */
     val isSceneContainerUserInputOngoing: StateFlow<Boolean> =
-        repository.isSceneContainerUserInputOngoing
+        snapshotFlow { repository.isSceneContainerUserInputOngoing }
+            .stateInTraced(
+                name = "isSceneContainerUserInputOngoing",
+                scope = applicationScope,
+                started = SharingStarted.Eagerly,
+                initialValue = repository.isSceneContainerUserInputOngoing,
+            )
 
     /**
      * The current content that has the highest z-order out of all currently shown scenes and
@@ -479,22 +496,149 @@ constructor(
     }
 
     /**
-     * Sets the visibility of the container.
+     * Synchronously handles the given [event], updating snapshot-backed states as needed.
      *
-     * Please do not call this from outside of the scene framework. If you are trying to force the
-     * visibility to visible or invisible, prefer making changes to the existing caller of this
-     * method or to upstream state used to calculate [isVisible]; for an example of the latter,
-     * please see [onRemoteUserInputStarted] and [onUserInputFinished].
+     * Once this call returns, it's guaranteed that [isVisible] will have the correct value, given
+     * the event.
      */
-    fun setVisible(isVisible: Boolean, loggingReason: String) {
-        val wasVisible = repository.isVisible.value
-        if (wasVisible == isVisible) {
-            logger.logVisibilityRejection(to = isVisible, reason = loggingReason)
-            return
-        }
+    fun handleEvent(event: Event) {
+        // Save the original value of isVisible to later detect if it changed.
+        val oldIsVisible = isVisible
 
-        logger.logVisibilityChange(from = wasVisible, to = isVisible, reason = loggingReason)
-        repository.setVisible(isVisible)
+        logger.logEvent(event)
+
+        // Apply the event to modify all the necessary states so the next read from isVisible
+        // reflects the right value.
+        updateStates(event)
+
+        // Calculate the new value of isVisible and get the logging reason for why it's set to that.
+        val isVisibleWithLoggingReason = isVisibleWithLoggingReason()
+
+        // Log the change to isVisible (or the rejection of the change).
+        if (oldIsVisible != isVisibleWithLoggingReason.value) {
+            logger.logVisibilityChange(
+                from = oldIsVisible,
+                to = isVisibleWithLoggingReason.value,
+                reason = isVisibleWithLoggingReason.loggingReason,
+            )
+        } else {
+            logger.logVisibilityRejection(
+                to = oldIsVisible,
+                reason = isVisibleWithLoggingReason.loggingReason,
+            )
+        }
+    }
+
+    /**
+     * Takes the given [event] and updates the [repository][SceneContainerRepository] with the
+     * necessary states that will be needed to calculate the visibility state later.
+     */
+    private fun updateStates(event: Event) {
+        when (event) {
+            is Event.RemoteUserInputStart -> {
+                logger.logRemoteUserInputStarted(event.loggingReason)
+                repository.isRemoteUserInputOngoing = true
+            }
+
+            Event.SceneContainerUserInputStart -> {
+                logger.logUserInputFinished(transitionState)
+                repository.isSceneContainerUserInputOngoing = true
+            }
+
+            Event.UserInputEnd -> {
+                repository.isRemoteUserInputOngoing = false
+                repository.isSceneContainerUserInputOngoing = false
+            }
+
+            Event.TransitionAnimationStart -> {
+                (repository.activeTransitionAnimationCount++).also {
+                    check(it < 10) {
+                        "Number of active transition animations is too high. Something must be" +
+                            " calling onTransitionAnimationStart too many times!"
+                    }
+                }
+            }
+
+            Event.TransitionAnimationEnd,
+            Event.TransitionAnimationCancel -> {
+                (repository.activeTransitionAnimationCount--).also {
+                    check(it >= 0) {
+                        "Number of active transition animations is negative. Something must be" +
+                            " calling onTransitionAnimationEnd or onTransitionAnimationCancelled too" +
+                            " many times!"
+                    }
+                }
+            }
+
+            is Event.DeviceProvisioningChange -> {
+                repository.isDeviceProvisioned = event.isDeviceProvisioned
+            }
+
+            is Event.DeviceUnlockChange -> {
+                repository.isDeviceUnlocked = event.isDeviceUnlocked
+            }
+
+            is Event.AlternateBouncerVisibilityChange -> {
+                repository.isAlternateBouncerVisible = event.isVisible
+            }
+
+            is Event.HeadsUpNotificationVisibilityChange -> {
+                repository.isHeadsUpVisible = event.isVisible
+            }
+
+            is Event.SurfaceBehindAnimationChange -> {
+                repository.isSurfaceBehindAnimating = event.isAnimating
+            }
+        }
+    }
+
+    private fun isVisibleWithLoggingReason(): IsVisibleWithLoggingReason {
+        return when {
+            !repository.isDeviceProvisioned && repository.isDeviceUnlocked ->
+                IsVisibleWithLoggingReason(false, "device unlocked and not provisioned")
+
+            transitionState.isTransitioningFromOrTo(Scenes.Communal) ||
+                transitionState.isIdle(Scenes.Communal) ->
+                IsVisibleWithLoggingReason(true, "on or transitioning to/from communal")
+
+            repository.isSurfaceBehindAnimating ->
+                IsVisibleWithLoggingReason(true, "animating surface behind")
+
+            repository.isHeadsUpVisible -> IsVisibleWithLoggingReason(true, "showing a HUN")
+
+            repository.isAlternateBouncerVisible ->
+                IsVisibleWithLoggingReason(true, "showing alternate bouncer")
+
+            repository.isRemoteUserInputOngoing ->
+                IsVisibleWithLoggingReason(true, "remote user input ongoing")
+
+            repository.activeTransitionAnimationCount > 0 ->
+                IsVisibleWithLoggingReason(true, "active transition animation")
+
+            else ->
+                when (transitionState) {
+                    is TransitionState.Idle ->
+                        when {
+                            hasNonTransparentContent(transitionState.currentScene) ->
+                                IsVisibleWithLoggingReason(
+                                    true,
+                                    "scene has non-transparent content",
+                                )
+
+                            transitionState.currentOverlays.isNotEmpty() ->
+                                IsVisibleWithLoggingReason(true, "overlay is shown")
+
+                            transitionState.currentScene == Scenes.Occluded ->
+                                IsVisibleWithLoggingReason(false, "occluded")
+
+                            else -> IsVisibleWithLoggingReason(false, "scene is Gone")
+                        }
+
+                    is TransitionState.Transition -> {
+                        IsVisibleWithLoggingReason(true, "in transition")
+                    }
+                }
+        }
     }
 
     /**
@@ -504,7 +648,7 @@ constructor(
      * container.
      */
     fun onSceneContainerUserInputStarted() {
-        repository.isSceneContainerUserInputOngoing.value = true
+        handleEvent(Event.SceneContainerUserInputStart)
     }
 
     /**
@@ -519,8 +663,7 @@ constructor(
      * within the System UI process and code, it also originates remotely.
      */
     fun onRemoteUserInputStarted(loggingReason: String) {
-        logger.logRemoteUserInputStarted(loggingReason)
-        repository.isRemoteUserInputOngoing.value = true
+        handleEvent(Event.RemoteUserInputStart(loggingReason))
     }
 
     /**
@@ -528,9 +671,7 @@ constructor(
      * [onSceneContainerUserInputStarted] and [onRemoteUserInputStarted]) has finished.
      */
     fun onUserInputFinished() {
-        logger.logUserInputFinished(transitionStateFlow.value)
-        repository.isSceneContainerUserInputOngoing.value = false
-        repository.isRemoteUserInputOngoing.value = false
+        handleEvent(Event.UserInputEnd)
     }
 
     /**
@@ -559,14 +700,6 @@ constructor(
 
     fun startTransitionImmediately(transition: TransitionState.Transition) {
         repository.startTransitionImmediately(transition)
-    }
-
-    private fun isVisibleInternal(
-        raw: Boolean = repository.isVisible.value,
-        isRemoteUserInputOngoing: Boolean = repository.isRemoteUserInputOngoing.value,
-        activeTransitionAnimationCount: Int = repository.activeTransitionAnimationCount.value,
-    ): Boolean {
-        return raw || isRemoteUserInputOngoing || activeTransitionAnimationCount > 0
     }
 
     /**
@@ -772,14 +905,7 @@ constructor(
      * The scene container will remain visible while any transition animation is running within it.
      */
     fun onTransitionAnimationStart() {
-        repository.activeTransitionAnimationCount.update { current ->
-            (current + 1).also {
-                check(it < 10) {
-                    "Number of active transition animations is too high. Something must be" +
-                        " calling onTransitionAnimationStart too many times!"
-                }
-            }
-        }
+        handleEvent(Event.TransitionAnimationStart)
     }
 
     /**
@@ -788,7 +914,7 @@ constructor(
      * The scene container will remain visible while any transition animation is running within it.
      */
     fun onTransitionAnimationEnd() {
-        decrementActiveTransitionAnimationCount()
+        handleEvent(Event.TransitionAnimationEnd)
     }
 
     /**
@@ -797,7 +923,7 @@ constructor(
      * The scene container will remain visible while any transition animation is running within it.
      */
     fun onTransitionAnimationCancelled() {
-        decrementActiveTransitionAnimationCount()
+        handleEvent(Event.TransitionAnimationCancel)
     }
 
     suspend fun hydrateTableLogBuffer(tableLogBuffer: TableLogBuffer) {
@@ -818,18 +944,6 @@ constructor(
                     .collect { (prev, current) ->
                         tableLogBuffer.logDiffs(prevVal = prev, newVal = current)
                     }
-            }
-        }
-    }
-
-    private fun decrementActiveTransitionAnimationCount() {
-        repository.activeTransitionAnimationCount.update { current ->
-            (current - 1).also {
-                check(it >= 0) {
-                    "Number of active transition animations is negative. Something must be" +
-                        " calling onTransitionAnimationEnd or onTransitionAnimationCancelled too" +
-                        " many times!"
-                }
             }
         }
     }
@@ -868,5 +982,83 @@ constructor(
         } else {
             determineTopmostContent(overlays)
         }
+    }
+
+    /**
+     * Returns `true` if the scene can ever have non-transparent content; `false` otherwise.
+     *
+     * A scene is not transparent when it contains content that can render, even if only sometimes.
+     * A scene does not have non-transparent content when its own layout never shows any UI
+     * elements.
+     *
+     * NOTE: this is not the same as the visibility of the shade window-view as that could become
+     * visible when floating elements outside the scene but inside the window-view become visible
+     * (examples of such "floating" elements: alternate bouncer, heads-up notifications); these
+     * floating elements becoming visible will make the shade window-view visible even if the scene
+     * itself never renders anything.
+     */
+    private fun hasNonTransparentContent(scene: SceneKey): Boolean {
+        return when (scene) {
+            // THE FOLLOWING SCENES RENDER CONTENT, ALWAYS OR SOMETIMES:
+            Scenes.Lockscreen,
+            Scenes.QuickSettings,
+            Scenes.Shade,
+            Scenes.Communal -> true
+            // THE FOLLOWING SCENES NEVER RENDER ANY CONTENT, THEIR LAYOUT IS ALWAYS TRANSPARENT:
+            Scenes.Gone,
+            Scenes.Occluded,
+            Scenes.Dream -> false
+            // Note: this is purposely not using the else branch for "all other scenes are false"
+            // because we want future devs who add a new SceneKey to have to modify this list and,
+            // since SceneKeys are not an enum or a sealed interface/class, there's no other way to
+            // enforce that.
+            else -> error("Scene ${scene.debugName} needs to be added to a branch above!")
+        }
+    }
+
+    private data class IsVisibleWithLoggingReason(val value: Boolean, val loggingReason: String)
+
+    /**
+     * Defines interface for classes that represents events that are of interest to the scene
+     * framework.
+     */
+    sealed interface Event {
+        /** User input has started, directly on the UI of the scene container. */
+        data object SceneContainerUserInputStart : Event
+
+        /**
+         * User input has started, outside the UI of the scene container or even in another process.
+         */
+        data class RemoteUserInputStart(val loggingReason: String) : Event
+
+        /** User input (native or remote) has finished. */
+        data object UserInputEnd : Event
+
+        /** A transition animation (for example, to show an activity) has started. */
+        data object TransitionAnimationStart : Event
+
+        /** A transition animation (for example, to show an activity) has ended. */
+        data object TransitionAnimationEnd : Event
+
+        /** A transition animation (for example, to show an activity) has been cancelled. */
+        data object TransitionAnimationCancel : Event
+
+        /** A change to the device provisioning state (setup wizard started or finished). */
+        data class DeviceProvisioningChange(val isDeviceProvisioned: Boolean) : Event
+
+        /** The device has become locked or unlocked. */
+        data class DeviceUnlockChange(val isDeviceUnlocked: Boolean) : Event
+
+        /**
+         * A heads-up notification (is either visible or not). It's considered visible while
+         * animating away.
+         */
+        data class HeadsUpNotificationVisibilityChange(val isVisible: Boolean) : Event
+
+        /** The alternate bouncer has become visible or invisible. */
+        data class AlternateBouncerVisibilityChange(val isVisible: Boolean) : Event
+
+        /** The surface behind System UI has begun or stopped animating. */
+        data class SurfaceBehindAnimationChange(val isAnimating: Boolean) : Event
     }
 }

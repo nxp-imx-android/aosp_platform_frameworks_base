@@ -95,20 +95,6 @@ class SceneContainerRepositoryTest : SysuiTestCase() {
     }
 
     @Test
-    fun isVisible() =
-        testScope.runTest {
-            val underTest = kosmos.sceneContainerRepository
-            val isVisible by collectLastValue(underTest.isVisible)
-            assertThat(isVisible).isTrue()
-
-            underTest.setVisible(false)
-            assertThat(isVisible).isFalse()
-
-            underTest.setVisible(true)
-            assertThat(isVisible).isTrue()
-        }
-
-    @Test
     fun transitionState_defaultsToIdle() =
         testScope.runTest {
             val underTest = kosmos.sceneContainerRepository

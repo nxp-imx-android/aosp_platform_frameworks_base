@@ -24,6 +24,8 @@ import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.animation.scene.ObservableTransitionState.Transition.ShowOrHideOverlay
 import com.android.compose.animation.scene.SceneKey
+import com.android.compose.animation.scene.content.state.TransitionState
+import com.android.mechanics.GestureContext
 import com.android.systemui.Flags.FLAG_DUAL_SHADE
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.deviceentry.domain.interactor.deviceUnlockedInteractor
@@ -41,6 +43,7 @@ import com.android.systemui.scene.data.repository.Idle
 import com.android.systemui.scene.data.repository.Transition
 import com.android.systemui.scene.data.repository.sceneContainerRepository
 import com.android.systemui.scene.data.repository.setSceneTransition
+import com.android.systemui.scene.data.repository.unlockDevice
 import com.android.systemui.scene.domain.resolver.homeSceneFamilyResolver
 import com.android.systemui.scene.overlayKeys
 import com.android.systemui.scene.sceneContainerConfig
@@ -57,6 +60,7 @@ import com.android.systemui.statusbar.disableflags.shared.model.DisableFlagsMode
 import com.android.systemui.statusbar.phone.BiometricUnlockController
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
@@ -534,30 +538,17 @@ class SceneInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    fun isVisible() =
-        kosmos.runTest {
-            val isVisible by collectLastValue(underTest.isVisibleFlow)
-            assertThat(isVisible).isTrue()
-
-            underTest.setVisible(false, "reason")
-            assertThat(isVisible).isFalse()
-
-            underTest.setVisible(true, "reason")
-            assertThat(isVisible).isTrue()
-        }
-
-    @Test
     fun isVisible_duringRemoteUserInteraction_forcedVisible() =
         kosmos.runTest {
-            underTest.setVisible(false, "reason")
-            val isVisible by collectLastValue(underTest.isVisibleFlow)
-            assertThat(isVisible).isFalse()
+            unlockDevice()
+            underTest.changeScene(Scenes.Gone, "Switch to Gone to make isVisible be false.")
+            assertThat(underTest.isVisible).isFalse()
+
             underTest.onRemoteUserInputStarted("reason")
-            assertThat(isVisible).isTrue()
+            assertThat(underTest.isVisible).isTrue()
 
             underTest.onUserInputFinished()
-
-            assertThat(isVisible).isFalse()
+            assertThat(underTest.isVisible).isFalse()
         }
 
     @Test
@@ -681,47 +672,49 @@ class SceneInteractorTest : SysuiTestCase() {
     @Test
     fun transitionAnimations() =
         kosmos.runTest {
-            val isVisible by collectLastValue(underTest.isVisibleFlow)
-            assertThat(isVisible).isTrue()
-
-            underTest.setVisible(false, "test")
-            assertThat(isVisible).isFalse()
+            unlockDevice()
+            underTest.changeScene(Scenes.Gone, "Switch to Gone to make isVisible be false.")
+            assertThat(underTest.isVisible).isFalse()
 
             underTest.onTransitionAnimationStart()
             // One animation is active, forced visible.
-            assertThat(isVisible).isTrue()
+            assertThat(underTest.isVisible).isTrue()
 
             underTest.onTransitionAnimationEnd()
             // No more active animations, not forced visible.
-            assertThat(isVisible).isFalse()
+            assertThat(underTest.isVisible).isFalse()
 
             underTest.onTransitionAnimationStart()
             // One animation is active, forced visible.
-            assertThat(isVisible).isTrue()
+            assertThat(underTest.isVisible).isTrue()
 
             underTest.onTransitionAnimationCancelled()
             // No more active animations, not forced visible.
-            assertThat(isVisible).isFalse()
+            assertThat(underTest.isVisible).isFalse()
 
-            underTest.setVisible(true, "test")
-            assertThat(isVisible).isTrue()
+            underTest.changeScene(
+                Scenes.Lockscreen,
+                "Switch to Lockscreen to make isVisible be false.",
+            )
+            assertThat(underTest.isVisible).isTrue()
 
             underTest.onTransitionAnimationStart()
             underTest.onTransitionAnimationStart()
             // Two animations are active, forced visible.
-            assertThat(isVisible).isTrue()
+            assertThat(underTest.isVisible).isTrue()
 
-            underTest.setVisible(false, "test")
+            unlockDevice()
+            underTest.changeScene(Scenes.Gone, "Switch to Gone to make isVisible be false.")
             // Two animations are active, forced visible.
-            assertThat(isVisible).isTrue()
+            assertThat(underTest.isVisible).isTrue()
 
             underTest.onTransitionAnimationEnd()
             // One animation is still active, forced visible.
-            assertThat(isVisible).isTrue()
+            assertThat(underTest.isVisible).isTrue()
 
             underTest.onTransitionAnimationEnd()
             // No more active animations, not forced visible.
-            assertThat(isVisible).isFalse()
+            assertThat(underTest.isVisible).isFalse()
         }
 
     @Test
@@ -972,5 +965,178 @@ class SceneInteractorTest : SysuiTestCase() {
             underTest.showOverlay(Overlays.NotificationsShade, "reason")
 
             assertThat(topmostContent).isEqualTo(Overlays.QuickSettingsShade)
+        }
+
+    @Test
+    fun isVisible_goneVsSingleShade() =
+        kosmos.runTest {
+            enableSingleShade()
+            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
+                biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
+            )
+            underTest.snapToScene(Scenes.Gone, "gone to make isVisible be false")
+            assertThat(underTest.currentSceneAsState).isEqualTo(Scenes.Gone)
+            assertThat(underTest.isVisible).isFalse()
+
+            fakeSceneDataSource.transitionState =
+                fakeTransition(
+                    fromScene = Scenes.Gone,
+                    toScene = Scenes.Shade,
+                    currentScene = { Scenes.Gone },
+                )
+            assertThat(underTest.currentSceneAsState).isEqualTo(Scenes.Gone)
+            assertThat(underTest.isVisible).isTrue() // transitioning to Shade, should be visible.
+
+            underTest.changeScene(Scenes.Shade, "shade to make isVisible be true")
+            assertThat(underTest.currentSceneAsState).isEqualTo(Scenes.Shade)
+            assertThat(underTest.isVisible).isTrue()
+
+            underTest.changeScene(Scenes.Gone, "gone to make isVisible be false again")
+            assertThat(underTest.currentSceneAsState).isEqualTo(Scenes.Gone)
+            assertThat(underTest.isVisible).isFalse()
+        }
+
+    @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
+    fun isVisible_goneVsDualShade() =
+        kosmos.runTest {
+            enableDualShade()
+            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
+                biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
+            )
+            underTest.snapToScene(Scenes.Gone, "gone to make isVisible be false")
+            assertThat(underTest.currentSceneAsState).isEqualTo(Scenes.Gone)
+            assertThat(underTest.transitionState.currentOverlays).isEmpty()
+            assertThat(underTest.isVisible).isFalse()
+
+            underTest.showOverlay(
+                Overlays.NotificationsShade,
+                "notif shade to make isVisible be true",
+            )
+            assertThat(underTest.currentSceneAsState).isEqualTo(Scenes.Gone)
+            assertThat(underTest.transitionState.currentOverlays)
+                .isEqualTo(setOf(Overlays.NotificationsShade))
+            assertThat(underTest.isVisible).isTrue()
+
+            underTest.hideOverlay(
+                Overlays.NotificationsShade,
+                "hide notif shade to make isVisible be false",
+            )
+            assertThat(underTest.currentSceneAsState).isEqualTo(Scenes.Gone)
+            assertThat(underTest.transitionState.currentOverlays).isEmpty()
+            assertThat(underTest.isVisible).isFalse()
+
+            underTest.showOverlay(Overlays.QuickSettingsShade, "qs shade to make isVisible be true")
+            assertThat(underTest.currentSceneAsState).isEqualTo(Scenes.Gone)
+            assertThat(underTest.transitionState.currentOverlays)
+                .isEqualTo(setOf(Overlays.QuickSettingsShade))
+            assertThat(underTest.isVisible).isTrue()
+
+            underTest.hideOverlay(
+                Overlays.QuickSettingsShade,
+                "hide qs shade to make isVisible be false",
+            )
+            assertThat(underTest.currentSceneAsState).isEqualTo(Scenes.Gone)
+            assertThat(underTest.transitionState.currentOverlays).isEmpty()
+            assertThat(underTest.isVisible).isFalse()
+        }
+
+    @Test
+    fun isVisible_lockscreenBouncerAndUnlock() =
+        kosmos.runTest {
+            enableSingleShade()
+            underTest.snapToScene(
+                Scenes.Lockscreen,
+                "lockscreen to lock device and make isVisible be true",
+            )
+            assertThat(underTest.currentSceneAsState).isEqualTo(Scenes.Lockscreen)
+            assertThat(underTest.transitionState.currentOverlays).isEmpty()
+            assertThat(underTest.isVisible).isTrue()
+
+            underTest.showOverlay(Overlays.Bouncer, "show bouncer to emulate user unlock stes")
+            assertThat(underTest.currentSceneAsState).isEqualTo(Scenes.Lockscreen)
+            assertThat(underTest.transitionState.currentOverlays).isEqualTo(setOf(Overlays.Bouncer))
+            assertThat(underTest.isVisible).isTrue()
+
+            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
+                biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
+            )
+            underTest.changeScene(Scenes.Gone, "gone to unlock device and make isVisible be false")
+            assertThat(underTest.currentSceneAsState).isEqualTo(Scenes.Gone)
+            assertThat(underTest.transitionState.currentOverlays).isEmpty()
+            assertThat(underTest.isVisible).isFalse()
+        }
+
+    @Test
+    fun isVisible_huns() =
+        kosmos.runTest {
+            underTest.snapToScene(Scenes.Lockscreen, "lockscreen to start visible")
+            assertThat(underTest.currentSceneAsState).isEqualTo(Scenes.Lockscreen)
+            assertThat(underTest.transitionState.currentOverlays).isEmpty()
+            assertThat(underTest.isVisible).isTrue()
+
+            // Show a HUN
+            underTest.handleEvent(SceneInteractor.Event.HeadsUpNotificationVisibilityChange(true))
+            assertThat(underTest.isVisible).isTrue()
+
+            // Hide a HUN
+            underTest.handleEvent(SceneInteractor.Event.HeadsUpNotificationVisibilityChange(false))
+            assertThat(underTest.isVisible).isTrue() // still visible because, on lockscreen.
+
+            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
+                biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
+            )
+            underTest.changeScene(Scenes.Gone, "gone to start off not visible")
+            assertThat(underTest.currentSceneAsState).isEqualTo(Scenes.Gone)
+            assertThat(underTest.transitionState.currentOverlays).isEmpty()
+            assertThat(underTest.isVisible).isFalse()
+
+            // Show a HUN
+            underTest.handleEvent(SceneInteractor.Event.HeadsUpNotificationVisibilityChange(true))
+            assertThat(underTest.isVisible).isTrue() // now visible even though on Gone.
+
+            // Hide a HUN
+            underTest.handleEvent(SceneInteractor.Event.HeadsUpNotificationVisibilityChange(false))
+            assertThat(underTest.isVisible).isFalse()
+        }
+}
+
+private fun Kosmos.fakeTransition(
+    fromScene: SceneKey,
+    toScene: SceneKey,
+    currentScene: () -> SceneKey,
+    transitionStateWhenTransitionStarted: TransitionState = fakeSceneDataSource.transitionState,
+): TransitionState.Transition.ChangeScene {
+    return object :
+            TransitionState.Transition.ChangeScene(fromScene = fromScene, toScene = toScene) {
+            override val progress: Float = 0.5f
+            override val progressVelocity: Float = 0f
+            override val previewProgress: Float = 0f
+            override val isInitiatedByUserInput: Boolean = true
+            override val isInPreviewStage: Boolean = false
+            override val isUserInputOngoing: Boolean = true
+            override val currentScene: SceneKey
+                get() = currentScene()
+
+            override val gestureContext: GestureContext? = null
+
+            private val completable = CompletableDeferred<Unit>()
+
+            override suspend fun run() {
+                completable.await()
+            }
+
+            override fun freezeAndAnimateToCurrentState() {
+                completable.complete(Unit)
+            }
+        }
+        .apply {
+            currentSceneWhenTransitionStarted = transitionStateWhenTransitionStarted.currentScene
+            currentOverlaysWhenTransitionStarted =
+                transitionStateWhenTransitionStarted.currentOverlays
         }
 }

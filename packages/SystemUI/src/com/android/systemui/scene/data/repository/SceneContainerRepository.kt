@@ -16,6 +16,10 @@
 
 package com.android.systemui.scene.data.repository
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import com.android.compose.animation.scene.ContentKey
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.systemui.dagger.SysUISingleton
@@ -29,7 +33,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
@@ -53,18 +56,15 @@ constructor(
      */
     val allContentKeys: List<ContentKey> = config.sceneKeys + config.overlayKeys
 
-    private val _isVisible = MutableStateFlow(true)
-    val isVisible: StateFlow<Boolean> = _isVisible.asStateFlow()
-
     /**
      * Whether there's an ongoing remotely-initiated user interaction.
      *
      * For more information see the logic in `SceneInteractor` that mutates this.
      */
-    val isRemoteUserInputOngoing = MutableStateFlow(false)
+    var isRemoteUserInputOngoing: Boolean by mutableStateOf(false)
 
     /** Whether there's ongoing user input on the scene container Composable hierarchy */
-    val isSceneContainerUserInputOngoing = MutableStateFlow(false)
+    var isSceneContainerUserInputOngoing by mutableStateOf(false)
 
     private val defaultTransitionStateFlowValue =
         ObservableTransitionState.Idle(config.initialSceneKey)
@@ -80,13 +80,41 @@ constructor(
                 initialValue = defaultTransitionStateFlowValue,
             )
 
-    /** Number of currently active transition animations. */
-    val activeTransitionAnimationCount = MutableStateFlow(0)
+    /**
+     * Number of currently active transition animations. Note: this is _not_ the authoritative
+     * source of truth for this state and is merely a local copy of it.
+     */
+    var activeTransitionAnimationCount: Int by mutableIntStateOf(0)
 
-    /** Sets whether the container is visible. */
-    fun setVisible(isVisible: Boolean) {
-        _isVisible.value = isVisible
-    }
+    /**
+     * Whether the device is provisioned (setup wizard finished). Note: this is _not_ the
+     * authoritative source of truth for this state and is merely a local copy of it.
+     */
+    var isDeviceProvisioned: Boolean by mutableStateOf(false)
+
+    /**
+     * Whether the device is unlocked. Note: this is _not_ the authoritative source of truth for
+     * this state and is merely a local copy of it.
+     */
+    var isDeviceUnlocked: Boolean by mutableStateOf(false)
+
+    /**
+     * Whether the alternate bouncer is visible. Note: this is _not_ the authoritative source of
+     * truth for this state and is merely a local copy of it.
+     */
+    var isAlternateBouncerVisible: Boolean by mutableStateOf(false)
+
+    /**
+     * Whether any heads-up notification (HUN) is visible. Note: this is _not_ the authoritative
+     * source of truth for this state and is merely a local copy of it.
+     */
+    var isHeadsUpVisible: Boolean by mutableStateOf(false)
+
+    /**
+     * Whether the surface behind System UI is animating. Note: this is _not_ the authoritative
+     * source of truth for this state and is merely a local copy of it.
+     */
+    var isSurfaceBehindAnimating: Boolean by mutableStateOf(false)
 
     /**
      * Binds the given flow so the system remembers it.

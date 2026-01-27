@@ -41,6 +41,7 @@ import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.res.R
 import com.android.systemui.scene.data.repository.sceneContainerRepository
 import com.android.systemui.scene.data.repository.setSceneTransition
+import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
@@ -83,10 +84,10 @@ class ShadeTouchableRegionManagerTest : SysuiTestCase() {
             sceneContainerRepository.setTransitionState(flowOf(Idle(currentScene = Scenes.Gone)))
             assertThat(underTest.shouldMakeEntireScreenTouchable()).isFalse()
 
-            sceneContainerRepository.isRemoteUserInputOngoing.value = true
+            sceneInteractor.handleEvent(SceneInteractor.Event.RemoteUserInputStart("test"))
             assertThat(underTest.shouldMakeEntireScreenTouchable()).isTrue()
 
-            sceneContainerRepository.isRemoteUserInputOngoing.value = false
+            sceneInteractor.handleEvent(SceneInteractor.Event.UserInputEnd)
             assertThat(underTest.shouldMakeEntireScreenTouchable()).isFalse()
         }
 
@@ -96,7 +97,7 @@ class ShadeTouchableRegionManagerTest : SysuiTestCase() {
         kosmos.runTest {
             assertThat(underTest.shouldMakeEntireScreenTouchable()).isFalse()
 
-            sceneContainerRepository.isRemoteUserInputOngoing.value = true
+            sceneInteractor.handleEvent(SceneInteractor.Event.RemoteUserInputStart("test"))
 
             assertThat(underTest.shouldMakeEntireScreenTouchable()).isFalse()
         }
