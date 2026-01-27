@@ -808,11 +808,22 @@ object KeyGestureTestData {
                 isGestureHandlerRegistered = true,
             ),
             KeyGestureData(
-                "LANGUAGE_SWITCH -> Switch Language Forward",
+                "LANGUAGE_SWITCH -> Switch Language",
                 intArrayOf(KeyEvent.KEYCODE_LANGUAGE_SWITCH),
                 KeyGestureEvent.KEY_GESTURE_TYPE_LANGUAGE_SWITCH,
                 intArrayOf(KeyEvent.KEYCODE_LANGUAGE_SWITCH),
                 0,
+                intArrayOf(KeyGestureEvent.ACTION_GESTURE_COMPLETE),
+            ),
+            KeyGestureData(
+                "SHIFT + LANGUAGE_SWITCH -> Switch Language",
+                intArrayOf(
+                    KeyEvent.KEYCODE_SHIFT_LEFT,
+                    KeyEvent.KEYCODE_LANGUAGE_SWITCH,
+                ),
+                KeyGestureEvent.KEY_GESTURE_TYPE_LANGUAGE_SWITCH,
+                intArrayOf(KeyEvent.KEYCODE_LANGUAGE_SWITCH),
+                KeyEvent.META_SHIFT_ON,
                 intArrayOf(KeyGestureEvent.ACTION_GESTURE_COMPLETE),
             ),
             KeyGestureData(
