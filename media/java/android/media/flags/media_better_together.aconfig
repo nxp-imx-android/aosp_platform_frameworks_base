@@ -36,14 +36,6 @@ flag {
 }
 
 flag {
-    name: "enable_cross_user_routing_in_media_router2"
-    is_exported: true
-    namespace: "media_solutions"
-    description: "Allows clients of privileged MediaRouter2 that hold INTERACT_ACROSS_USERS_FULL to control routing across users."
-    bug: "288580225"
-}
-
-flag {
     name: "enable_remove_preferred_device_fixes"
     namespace: "media_better_together"
     description: "Prevents MediaRouter2 from changing routing policies in specific situations where it shouldn't change them."
@@ -292,3 +284,10 @@ flag {
      bug: "279555229"
 }
 
+flag {
+    name: "enable_cross_user_routing_in_media_router2"
+    is_exported: true
+    namespace: "media_solutions"
+    description: "Allows clients of privileged MediaRouter2 that hold INTERACT_ACROSS_USERS_FULL to control routing across users."
+    bug: "288580225"
+}
