@@ -43,6 +43,7 @@ import com.android.systemui.scene.domain.interactor.sceneBackInteractor
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
+import com.android.systemui.shade.domain.interactor.enableSingleShade
 import com.android.systemui.statusbar.phone.BiometricUnlockController
 import com.android.systemui.testKosmos
 import com.android.systemui.util.mockito.mock
@@ -256,6 +257,7 @@ class DreamStartableTest : SysuiTestCase() {
             val currentScene by collectLastValue(sceneInteractor.currentScene)
 
             // GIVEN we are on quick settings
+            enableSingleShade() // Scenes.QuickSettings is only available in SingleShade
             sceneInteractor.changeScene(Scenes.QuickSettings, "reason")
             runCurrent()
             assertThat(currentScene).isEqualTo(Scenes.QuickSettings)
