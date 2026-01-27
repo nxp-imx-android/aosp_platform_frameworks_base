@@ -23,7 +23,6 @@ import com.android.systemui.plugins.VolumeDialog;
 import com.android.systemui.statusbar.policy.ConfigurationController;
 import com.android.systemui.volume.VolumeComponent;
 import com.android.systemui.volume.VolumeDialogComponent;
-import com.android.systemui.volume.VolumeDialogImpl;
 import com.android.systemui.volume.VolumePanelDialogReceiver;
 import com.android.systemui.volume.VolumeUI;
 import com.android.systemui.volume.dialog.VolumeDialogPlugin;
@@ -34,12 +33,9 @@ import com.android.systemui.volume.panel.dagger.factory.VolumePanelComponentFact
 
 import dagger.Binds;
 import dagger.Module;
-import dagger.Provides;
 import dagger.multibindings.ClassKey;
 import dagger.multibindings.IntoMap;
 import dagger.multibindings.IntoSet;
-
-import javax.inject.Named;
 
 /** Dagger Module for code in the volume package. */
 @Module(
@@ -88,13 +84,6 @@ public interface VolumeModule {
     @Binds
     VolumeDialogPluginComponentFactory bindVolumeDialogPluginComponentFactory(
             VolumeDialogPluginComponent.Factory impl);
-
-    /**  */
-    @Provides
-    @Named(VolumeDialogImpl.VOLUME_DIALOG_JANK)
-    static boolean providesListenForJank() {
-        return true;
-    }
 
     @Binds
     VolumeDialog bindVolumeDialog(VolumeDialogPlugin impl);
