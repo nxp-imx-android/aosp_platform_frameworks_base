@@ -14,19 +14,20 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.desktopai.api.config
+package com.android.wm.shell.desktopai.core
+
+import com.android.wm.shell.desktopai.api.ContextData
 
 /**
- * Definition for an event source that produces [TriggerEvent]s.
+ * Example implementation representing a list of recently used applications.
  *
- * Implementations of this interface wrap specific system listeners (like ShellController or
- * InputManager) and normalize their signals into standard [TriggerEvent] objects.
+ * @property apps A list of package names or app titles.
  */
-interface ITriggerSource {
-    /**
-     * Starts listening to the underlying system component.
-     *
-     * @param onEvent A lambda that the source must call whenever an event occurs.
-     */
-    fun start(onEvent: (TriggerEvent) -> Unit)
+data class RecentsContext(val apps: List<String>) : ContextData {
+    override val id = ID
+
+    companion object {
+        /** Constant ID for Proto mapping. */
+        const val ID = "context.recents"
+    }
 }

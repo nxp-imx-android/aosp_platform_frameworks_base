@@ -18,10 +18,10 @@ package com.android.wm.shell.desktopai.core
 
 import com.android.internal.protolog.ProtoLog
 import com.android.window.flags.Flags
-import com.android.wm.shell.desktopai.api.config.ITriggerManager
-import com.android.wm.shell.desktopai.api.config.ITriggerSource
-import com.android.wm.shell.desktopai.api.config.TriggerEvent
-import com.android.wm.shell.desktopai.api.config.TriggerEventType
+import com.android.wm.shell.desktopai.api.ITriggerManager
+import com.android.wm.shell.desktopai.api.ITriggerSource
+import com.android.wm.shell.desktopai.api.TriggerEvent
+import com.android.wm.shell.desktopai.api.TriggerEventType
 import com.android.wm.shell.desktopai.api.config.TriggerStrategy
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_AI
 import com.android.wm.shell.sysui.ShellInit

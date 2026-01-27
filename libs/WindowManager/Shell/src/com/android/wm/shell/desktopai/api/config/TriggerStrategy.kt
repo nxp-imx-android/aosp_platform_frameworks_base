@@ -16,6 +16,9 @@
 
 package com.android.wm.shell.desktopai.api.config
 
+import com.android.wm.shell.desktopai.api.TriggerEvent
+import com.android.wm.shell.desktopai.api.TriggerEventType
+
 /**
  * Defines a rule or condition that must be met for a [TriggerEvent] to activate a registered
  * callback.
