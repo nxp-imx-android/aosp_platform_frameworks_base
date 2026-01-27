@@ -28,6 +28,9 @@ import android.os.UserHandle
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.server.SystemService.TargetUser
 import com.google.common.truth.Truth.assertThat
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Test
@@ -36,20 +39,18 @@ import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
 
 @RunWith(AndroidJUnit4::class)
 class MultiUserDynamicAppFunctionRegistryTest {
     private val mockContext: Context = mock()
     private lateinit var registry: MultiUserDynamicAppFunctionRegistry
+    private val mockMetadataObserver = mock<AppFunctionMetadataObserver>()
 
     @Before
     fun setUp() {
         registry = MultiUserDynamicAppFunctionRegistry()
-        registry.onUserUnlocked(TARGET_USER_10)
-        registry.onUserUnlocked(TARGET_USER_11)
+        registry.onUserUnlocked(mockMetadataObserver, TARGET_USER_10)
+        registry.onUserUnlocked(mockMetadataObserver, TARGET_USER_11)
     }
 
     @Test
@@ -57,9 +58,7 @@ class MultiUserDynamicAppFunctionRegistryTest {
         val executor = createExecutorMock()
         registry.registerAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executor, USER_10)
 
-        assertThat(
-            registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION, USER_10)
-        ).isTrue()
+        assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION, USER_10)).isTrue()
     }
 
     @Test
@@ -67,9 +66,7 @@ class MultiUserDynamicAppFunctionRegistryTest {
         val executor = createExecutorMock()
         registry.registerAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executor, USER_10)
 
-        assertThat(
-            registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION, USER_11)
-        ).isFalse()
+        assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION, USER_11)).isFalse()
     }
 
     @Test
@@ -93,15 +90,11 @@ class MultiUserDynamicAppFunctionRegistryTest {
     fun unregister_correctUser_success() {
         val executor = createExecutorMock()
         registry.registerAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executor, USER_10)
-        assertThat(
-            registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION, USER_10)
-        ).isTrue()
+        assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION, USER_10)).isTrue()
 
         registry.unregisterAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executor, USER_10)
 
-        assertThat(
-            registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION, USER_10)
-        ).isFalse()
+        assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION, USER_10)).isFalse()
     }
 
     @Test
@@ -111,9 +104,7 @@ class MultiUserDynamicAppFunctionRegistryTest {
 
         registry.unregisterAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executor, USER_11)
 
-        assertThat(
-            registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION, USER_10)
-        ).isTrue()
+        assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION, USER_10)).isTrue()
     }
 
     @Test
@@ -129,9 +120,7 @@ class MultiUserDynamicAppFunctionRegistryTest {
             registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION, USER_10)
         }
 
-        assertThat(
-            registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION, USER_11)
-        ).isTrue()
+        assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION, USER_11)).isTrue()
     }
 
     @Test
@@ -147,11 +136,9 @@ class MultiUserDynamicAppFunctionRegistryTest {
         val executor = createExecutorMock()
         registry.registerAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executor, USER_10)
 
-        registry.onUserUnlocked(TARGET_USER_10)
+        registry.onUserUnlocked(mockMetadataObserver, TARGET_USER_10)
 
-        assertThat(
-            registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION, USER_10)
-        ).isTrue()
+        assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION, USER_10)).isTrue()
     }
 
     @Test
@@ -168,19 +155,20 @@ class MultiUserDynamicAppFunctionRegistryTest {
 
         // Stop and re-unlock the user
         registry.onUserStopped(TARGET_USER_10)
-        registry.onUserUnlocked(TARGET_USER_10)
+        registry.onUserUnlocked(mockMetadataObserver, TARGET_USER_10)
 
         // Verify the old registration is gone
-        assertThat(
-            registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION, USER_10)
-        ).isFalse()
+        assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION, USER_10)).isFalse()
     }
 
     @Test
     fun register_withInvalidUserAll_throwsException() {
         assertThrows(IllegalStateException::class.java) {
             registry.registerAppFunctions(
-                TEST_PACKAGE, listOf(TEST_FUNCTION), createExecutorMock(), UserHandle.ALL
+                TEST_PACKAGE,
+                listOf(TEST_FUNCTION),
+                createExecutorMock(),
+                UserHandle.ALL,
             )
         }
     }
@@ -203,7 +191,10 @@ class MultiUserDynamicAppFunctionRegistryTest {
         executorService.submit {
             try {
                 registry.registerAppFunctions(
-                    TEST_PACKAGE, listOf("raceFunction"), createExecutorMock(), USER_10
+                    TEST_PACKAGE,
+                    listOf("raceFunction"),
+                    createExecutorMock(),
+                    USER_10,
                 )
             } catch (e: IllegalStateException) {
                 // This is an expected, safe outcome if stop runs first
@@ -229,7 +220,7 @@ class MultiUserDynamicAppFunctionRegistryTest {
     private fun createAidlRequest(
         packageName: String,
         functionId: String,
-        userHandle: UserHandle
+        userHandle: UserHandle,
     ): ExecuteAppFunctionAidlRequest {
         val clientRequest = ExecuteAppFunctionRequest.Builder(packageName, functionId).build()
         return ExecuteAppFunctionAidlRequest(clientRequest, userHandle, "calling.package", 0, 0)

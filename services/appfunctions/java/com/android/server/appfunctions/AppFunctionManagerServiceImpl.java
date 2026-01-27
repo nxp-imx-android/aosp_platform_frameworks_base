@@ -19,6 +19,8 @@ package com.android.server.appfunctions;
 import static android.app.appfunctions.AppFunctionException.ERROR_SYSTEM_ERROR;
 import static android.app.appfunctions.AppFunctionManager.ACCESS_REQUEST_STATE_UNREQUESTABLE;
 import static android.app.appfunctions.AppFunctionManager.ACTION_REQUEST_APP_FUNCTION_ACCESS;
+import static android.app.appfunctions.AppFunctionManager.APP_FUNCTION_STATE_DEFAULT;
+import static android.app.appfunctions.AppFunctionManager.APP_FUNCTION_STATE_ENABLED;
 import static android.app.appfunctions.AppFunctionRuntimeMetadata.APP_FUNCTION_RUNTIME_METADATA_DB;
 import static android.app.appfunctions.AppFunctionRuntimeMetadata.APP_FUNCTION_RUNTIME_NAMESPACE;
 import static android.app.appfunctions.AppFunctionStaticMetadataHelper.APP_FUNCTION_STATIC_METADATA_DB;
@@ -235,7 +237,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         mPackageMonitors.append(user.getUserIdentifier(), pkgMonitorForUser);
 
         if (android.app.appfunctions.flags.Flags.enableDynamicAppFunctions()) {
-            mDynamicAppFunctionRegistry.onUserUnlocked(user);
+            mDynamicAppFunctionRegistry.onUserUnlocked(mAppFunctionMetadataObserver, user);
         }
 
         if (android.app.appfunctions.flags.Flags.enableAppInteractionApi()) {
@@ -613,32 +615,23 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
     }
 
     @Override
-    public void registerAppFunctionObserverCallback(
+    public void observeAppFunctions(
             @NonNull AppFunctionAidlSearchSpec aidlSearchSpec,
             @NonNull IObserveAppFunctionChangesCallback observeAppFunctionsCallback)
-            throws RemoteException {
+            throws RemoteException, SecurityException {
         Objects.requireNonNull(aidlSearchSpec);
         Objects.requireNonNull(observeAppFunctionsCallback);
 
         final int callingUid = Binder.getCallingUid();
         final int callingPid = Binder.getCallingPid();
 
-        try {
-            // The calling package name will be used to determine the visible packages.
-            mCallerValidator.validateCallingPackage(aidlSearchSpec.getCallingPackageName());
-            mCallerValidator.verifyUserInteraction(
-                    /* targetUserId= */ aidlSearchSpec.getTargetUserId(),
-                    /* callingUid= */ callingUid,
-                    /* callingPid= */ callingPid,
-                    /* callingPackageName= */ aidlSearchSpec.getCallingPackageName());
-        } catch (SecurityException e) {
-            try {
-                observeAppFunctionsCallback.onRegistrationError(new ParcelableException(e));
-            } catch (RemoteException ex) {
-                Slog.e(TAG, "Failed to execute callback#onError.", e);
-            }
-            return;
-        }
+        // The calling package name will be used to determine the visible packages.
+        mCallerValidator.validateCallingPackage(aidlSearchSpec.getCallingPackageName());
+        mCallerValidator.verifyUserInteraction(
+                /* targetUserId= */ aidlSearchSpec.getTargetUserId(),
+                /* callingUid= */ callingUid,
+                /* callingPid= */ callingPid,
+                /* callingPackageName= */ aidlSearchSpec.getCallingPackageName());
 
         UserHandle targetUser = UserHandle.of(aidlSearchSpec.getTargetUserId());
 
@@ -653,6 +646,30 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
 
         mAppFunctionMetadataObserver.registerClientAppCallback(
                 targetUser, filteredSearchSpec, observeAppFunctionsCallback);
+    }
+
+    @Override
+    public void unregisterAppFunctionObserver(
+            @NonNull String callingPackage,
+            @NonNull UserHandle userHandle,
+            @NonNull IObserveAppFunctionChangesCallback observeAppFunctionsCallback)
+            throws SecurityException {
+        Objects.requireNonNull(callingPackage);
+        Objects.requireNonNull(userHandle);
+        Objects.requireNonNull(observeAppFunctionsCallback);
+
+        final int callingUid = Binder.getCallingUid();
+        final int callingPid = Binder.getCallingPid();
+
+        mCallerValidator.validateCallingPackage(callingPackage);
+        mCallerValidator.verifyUserInteraction(
+                /* targetUserId= */ userHandle.getIdentifier(),
+                /* callingUid= */ callingUid,
+                /* callingPid= */ callingPid,
+                /* callingPackageName= */ callingPackage);
+
+        mAppFunctionMetadataObserver.unregisterClientAppCallback(
+                userHandle, observeAppFunctionsCallback);
     }
 
     @Override
@@ -772,6 +789,8 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         return future;
     }
 
+    // TODO(b/438413081): Consider caching runtime enabled states for all app functions
+    //  for quick lookup
     private CompletableFuture<Boolean> isAppFunctionEnabledInternal2(
             @NonNull String functionIdentifier,
             @NonNull String targetPackage,
@@ -865,6 +884,11 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         }
         mDynamicAppFunctionRegistry.registerAppFunctions(
                 packageName, functionIdentifiers, executor, Binder.getCallingUserHandle());
+
+        for (String functionIdentifier : functionIdentifiers) {
+            onDynamicFunctionRegistrationChanged(packageName, functionIdentifier,
+                    Binder.getCallingUserHandle());
+        }
     }
 
     @Override
@@ -884,6 +908,22 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         }
         mDynamicAppFunctionRegistry.unregisterAppFunctions(
                 packageName, functionIdentifiers, session, Binder.getCallingUserHandle());
+
+        for (String functionIdentifier : functionIdentifiers) {
+            onDynamicFunctionRegistrationChanged(packageName, functionIdentifier,
+                    Binder.getCallingUserHandle());
+        }
+    }
+
+    private void onDynamicFunctionRegistrationChanged(
+            String packageName, String functionIdentifier, UserHandle callingUserHandle) {
+        // TODO(b/438413081): Verify that the function is runtime enabled before notifying after
+        //   registration/unregistration to avoid redundant calls when the effective state hasn't
+        //   changed.
+        THREAD_POOL_EXECUTOR.execute(
+                () ->
+                        mAppFunctionMetadataObserver.onEnabledStateChanged(
+                                callingUserHandle, packageName, functionIdentifier));
     }
 
     @Override
@@ -1029,6 +1069,12 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
             @NonNull UserHandle userHandle,
             @AppFunctionManager.EnabledState int enabledState)
             throws Exception {
+        if (android.app.appfunctions.flags.Flags.enableDynamicAppFunctions()) {
+            setAppFunctionEnabledInternalLocked2(
+                    callingPackage, functionIdentifier, userHandle, enabledState);
+            return;
+        }
+
         AppSearchManager perUserAppSearchManager = getAppSearchManagerAsUser(userHandle);
 
         if (perUserAppSearchManager == null) {
@@ -1064,6 +1110,107 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                 throw new IllegalStateException(
                         "Failed writing updated doc to AppSearch due to " + putDocumentBatchResult);
             }
+        }
+    }
+
+    @WorkerThread
+    @GuardedBy("getLockForPackage(callingPackage)")
+    private void setAppFunctionEnabledInternalLocked2(
+            @NonNull String callingPackage,
+            @NonNull String functionIdentifier,
+            @NonNull UserHandle userHandle,
+            @AppFunctionManager.EnabledState int requestedRuntimeState)
+            throws Exception {
+        AppSearchManager perUserAppSearchManager = getAppSearchManagerAsUser(userHandle);
+
+        if (perUserAppSearchManager == null) {
+            throw new IllegalStateException(
+                    "AppSearchManager not found for user:" + userHandle.getIdentifier());
+        }
+        SearchContext runtimeMetadataSearchContext =
+                new SearchContext.Builder(APP_FUNCTION_RUNTIME_METADATA_DB).build();
+
+        try (FutureAppSearchSession runtimeMetadataSearchSession =
+                new FutureAppSearchSessionImpl(
+                        perUserAppSearchManager,
+                        THREAD_POOL_EXECUTOR,
+                        runtimeMetadataSearchContext)) {
+            AppFunctionRuntimeMetadata existingMetadata =
+                    new AppFunctionRuntimeMetadata(
+                            getRuntimeMetadataGenericDocument(
+                                    callingPackage,
+                                    functionIdentifier,
+                                    runtimeMetadataSearchSession));
+
+            // No need to overwrite metadata if the runtime enabled state value isn't changing.
+            if (requestedRuntimeState == existingMetadata.getEnabled()) {
+                return;
+            }
+
+            // TODO(b/438413081): Optimize this function to call app search only once to retrieve
+            //  both the runtime metadata and the effective enabled state.
+            final boolean isExistingMetadataEffectivelyEnabled =
+                    isAppFunctionEnabledInternal2(
+                                    existingMetadata,
+                                    perUserAppSearchManager,
+                                    userHandle.getIdentifier())
+                            .get();
+
+            AppFunctionRuntimeMetadata newMetadata =
+                    new AppFunctionRuntimeMetadata.Builder(existingMetadata)
+                            .setEnabled(requestedRuntimeState)
+                            .build();
+            AppSearchBatchResult<String, Void> putDocumentBatchResult =
+                    runtimeMetadataSearchSession
+                            .put(
+                                    new PutDocumentsRequest.Builder()
+                                            .addGenericDocuments(newMetadata)
+                                            .build())
+                            .get();
+            if (!putDocumentBatchResult.isSuccess()) {
+                throw new IllegalStateException(
+                        "Failed writing updated doc to AppSearch due to " + putDocumentBatchResult);
+            }
+
+            boolean isNewMetadataEffectivelyEnabled =
+                    isAppFunctionEnabledInternal2(
+                                    newMetadata,
+                                    perUserAppSearchManager,
+                                    userHandle.getIdentifier())
+                            .get();
+
+            try {
+                if (isExistingMetadataEffectivelyEnabled != isNewMetadataEffectivelyEnabled) {
+                    mAppFunctionMetadataObserver.onEnabledStateChanged(
+                            userHandle, callingPackage, functionIdentifier);
+                }
+            } catch (Exception e) {
+                Slog.w(TAG, "Failed to report enabled state change.", e);
+            }
+        }
+    }
+
+    /**
+     * Returns true if the given {@link AppFunctionRuntimeMetadata} is enabled.
+     *
+     * <p>This function makes use of an already obtained {@link AppFunctionRuntimeMetadata} to
+     * optimize {@link #isAppFunctionEnabledInternal2}. If the runtimeMetadata has a non-default
+     * enabled state, it returns it. Otherwise, it routes to {@link #isAppFunctionEnabledInternal2}.
+     */
+    private CompletableFuture<Boolean> isAppFunctionEnabledInternal2(
+            @NonNull AppFunctionRuntimeMetadata runtimeMetadata,
+            @NonNull AppSearchManager appSearchManager,
+            int userId)
+            throws Exception {
+        if (runtimeMetadata.getEnabled() == APP_FUNCTION_STATE_DEFAULT) {
+            return isAppFunctionEnabledInternal2(
+                    runtimeMetadata.getFunctionId(),
+                    runtimeMetadata.getPackageName(),
+                    appSearchManager,
+                    userId);
+        } else {
+            return AndroidFuture.completedFuture(
+                    runtimeMetadata.getEnabled() == APP_FUNCTION_STATE_ENABLED);
         }
     }
 
