@@ -184,7 +184,7 @@ class RecentsMixedTransition extends DefaultMixedHandler.MixedTransition {
                 if (!splitNotifiedByRecents) {
                     mSplitHandler.onRecentsInSplitAnimationFinishing(
                             mSplitHandler.wctIsReorderingSplitToTop(wct),
-                            wct, finishTransaction);
+                            wct, finishTransaction, mInfo);
                 }
             } else {
                 // notify pair-to-pair recents animation finish
@@ -198,7 +198,7 @@ class RecentsMixedTransition extends DefaultMixedHandler.MixedTransition {
         final boolean handled = mLeftoversHandler.startAnimation(
                 mTransition, info, startTransaction, finishTransaction, finishCB);
         if (!handled) {
-            mSplitHandler.onRecentsInSplitAnimationCanceled();
+            mSplitHandler.onRecentsInSplitAnimationCanceled(mInfo);
         }
         return handled;
     }
@@ -210,7 +210,8 @@ class RecentsMixedTransition extends DefaultMixedHandler.MixedTransition {
             @NonNull WindowContainerTransaction finishWct,
             @NonNull SurfaceControl.Transaction finishT) {
         if (mAnimType != ANIM_TYPE_PAIR_TO_PAIR) {
-            mSplitHandler.onRecentsInSplitAnimationFinishing(returnToApp, finishWct, finishT);
+            mSplitHandler.onRecentsInSplitAnimationFinishing(
+                    returnToApp, finishWct, finishT, mInfo);
         }
     }
 

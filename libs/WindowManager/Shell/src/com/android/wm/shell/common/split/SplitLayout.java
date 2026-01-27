@@ -223,6 +223,7 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
     private boolean mIsLeftRightSplit;
     private ValueAnimator mDividerFlingAnimator;
     private AnimatorSet mSwapAnimator;
+    private boolean mRecentsAnimating;
 
     public SplitLayout(String windowName, Context context, Configuration configuration,
             SplitLayoutHandler splitLayoutHandler,
@@ -1330,6 +1331,16 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
         return mIsLeftRightSplit;
     }
 
+    /**
+     * Sets whether a Recents transition animation is currently active in {@code StageCoordinator}.
+     * When active, local layout adjustments (like IME dimming) are suppressed to avoid conflicting
+     * with the transition's own surface manipulations.
+     */
+    @VisibleForTesting
+    public void setRecentsAnimating(boolean animating) {
+        mRecentsAnimating = animating;
+    }
+
     /** Apply recorded surface layout to the {@link SurfaceControl.Transaction}. */
     public void applySurfaceChanges(SurfaceControl.Transaction t, SurfaceControl leash1,
             SurfaceControl leash2, SurfaceControl dimLayer1, SurfaceControl dimLayer2,
@@ -1518,8 +1529,14 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
         int getSplitItemPosition(WindowContainerToken token);
     }
 
+    @VisibleForTesting
+    DisplayImeController.ImePositionProcessor getImePositionProcessor() {
+        return mImePositionProcessor;
+    }
+
     /** Records IME top offset changes and updates SplitLayout correspondingly. */
-    private class ImePositionProcessor implements DisplayImeController.ImePositionProcessor {
+    @VisibleForTesting
+    class ImePositionProcessor implements DisplayImeController.ImePositionProcessor {
         /**
          * Maximum size of an adjusted split bounds relative to original stack bounds. Used to
          * restrict IME adjustment so that a min portion of top split remains visible.
@@ -1724,7 +1741,8 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
         boolean adjustSurfaceLayoutForIme(SurfaceControl.Transaction t,
                 SurfaceControl dividerLeash, SurfaceControl leash1, SurfaceControl leash2,
                 SurfaceControl dimLayer1, SurfaceControl dimLayer2) {
-            final boolean showDim = mDimValue1 > 0.001f || mDimValue2 > 0.001f;
+            final boolean showDim = (mDimValue1 > 0.001f || mDimValue2 > 0.001f)
+                    && !mRecentsAnimating;
             boolean adjusted = false;
             if (mYOffsetForIme != 0) {
                 if (dividerLeash != null) {
