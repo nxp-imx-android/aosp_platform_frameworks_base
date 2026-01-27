@@ -20,6 +20,7 @@ import static android.aiseal.Flags.aisealHostApis;
 import static android.app.appfunctions.flags.Flags.enableAppFunctionManager;
 import static android.app.lskfreset.flags.Flags.enableLskfResetManager;
 import static android.app.privatecompute.flags.Flags.enablePccFrameworkSupport;
+import static android.content.pm.PackageManager.FEATURE_AISEAL;
 import static android.hardware.serial.flags.Flags.enableWiredSerialApi;
 import static android.permission.flags.Flags.assistSettingsPrivacyImprovementsEnabled;
 import static android.provider.flags.Flags.newStoragePublicApi;
@@ -2045,6 +2046,9 @@ public final class SystemServiceRegistry {
                         @Override
                         public AiSealManager createService(ContextImpl ctx)
                                 throws ServiceNotFoundException {
+                            if (!ctx.getPackageManager().hasSystemFeature(FEATURE_AISEAL)) {
+                                return null;
+                            }
                             return new AiSealManager(ctx);
                         }
                     });
