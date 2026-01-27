@@ -667,6 +667,43 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
         });
     }
 
+    @Test
+    public void testShouldIgnoreReqOrientationForCameraCompat_cameraOpened_returnsTrue() {
+        runTestScenario((robot) -> {
+            robot.configureActivity(SCREEN_ORIENTATION_PORTRAIT);
+            robot.activity().rotateDisplayForTopActivity(ROTATION_270);
+
+            robot.onCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
+
+            robot.checkShouldIgnoreReqOrientationForCameraCompat(true);
+        });
+    }
+
+    @Test
+    public void testShouldIgnoreReqOrientationForCameraCompat_cameraOpened_returnsFalse() {
+        runTestScenario((robot) -> {
+            robot.configureActivity(SCREEN_ORIENTATION_FULL_USER);
+            robot.activity().rotateDisplayForTopActivity(ROTATION_270);
+
+            robot.onCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
+
+            robot.checkShouldIgnoreReqOrientationForCameraCompat(false);
+        });
+    }
+
+    @Test
+    public void testShouldIgnoreReqOrientationForCameraCompat_cameraClosed_returnsFalse() {
+        runTestScenario((robot) -> {
+            robot.configureActivity(SCREEN_ORIENTATION_PORTRAIT);
+            robot.activity().rotateDisplayForTopActivity(ROTATION_270);
+
+            robot.onCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
+            robot.onCameraClosed(CAMERA_ID_1);
+
+            robot.checkShouldIgnoreReqOrientationForCameraCompat(false);
+        });
+    }
+
     /**
      * Runs a test scenario providing a Robot.
      */
@@ -888,6 +925,11 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
             assertEquals(active,
                     cameraCompatFreeformPolicy().isCompatibilityTreatmentEnabledForActivity(
                             activity().top(), /* checkOrientation */ true));
+        }
+
+        void checkShouldIgnoreReqOrientationForCameraCompat(boolean expected) {
+            assertEquals(expected, cameraCompatFreeformPolicy()
+                    .shouldIgnoreReqOrientationForCameraCompat(activity().top()));
         }
 
         void setOverrideMinAspectRatioEnabled(boolean enabled) {
