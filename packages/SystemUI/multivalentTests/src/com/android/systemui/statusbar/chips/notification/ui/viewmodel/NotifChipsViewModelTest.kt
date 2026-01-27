@@ -125,6 +125,48 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
+    fun chips_screenShareNotificationTrue_FilledIn() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.chips)
+
+            val key = "test"
+            setNotifs(
+                listOf(
+                    activeNotificationModel(
+                        key = key,
+                        isScreenShareNotification = true,
+                        promotedContent = newPromotedNotificationContentBuilder("notif").build(),
+                    )
+                )
+            )
+
+            val chip = latest!!.single()
+            assertThat(chip.key).isEqualTo(key)
+            assertThat(chip.isScreenShareNotification).isTrue()
+        }
+
+    @Test
+    fun chips_screenShareNotificationFalse_FilledIn() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.chips)
+
+            val key = "test"
+            setNotifs(
+                listOf(
+                    activeNotificationModel(
+                        key = key,
+                        isScreenShareNotification = false,
+                        promotedContent = newPromotedNotificationContentBuilder("notif").build(),
+                    )
+                )
+            )
+
+            val chip = latest!!.single()
+            assertThat(chip.key).isEqualTo(key)
+            assertThat(chip.isScreenShareNotification).isFalse()
+        }
+
+    @Test
     fun chips_onePromotedNotif_keysAndIntentFilledIn() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
