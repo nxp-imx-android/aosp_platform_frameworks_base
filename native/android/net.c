@@ -16,7 +16,6 @@
 
 
 #include <android/multinetwork.h>
-#include <connectivity_native.h>
 #include <errno.h>
 #include <NetdClient.h>    // the functions that communicate with netd
 #include <resolv_netid.h>  // android_getaddrinfofornet()
@@ -173,8 +172,4 @@ int android_tag_socket(int sockfd, uint32_t tag) {
 
 int android_untag_socket(int sockfd) {
     return untagSocket(sockfd);
-}
-
-int32_t android_getnetworkblockedreason(int sockfd) {
-    return AConnectivityNative_getNetworkBlockedReason(sockfd);
 }
