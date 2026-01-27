@@ -13,7 +13,7 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License
   -->
-<LinearLayout
+<com.android.internal.widget.SingleMetricNotificationFrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/metric_view_0"
     android:layout_width="match_parent"
@@ -24,27 +24,34 @@
 
         <TextView
             android:id="@+id/metric_label_0"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_gravity="top|start"
             android:maxLines="1"
             style="@style/NotificationExpandedSingleMetricLabel"
-            android:layout_weight="1"
             />
 
-        <TextView
-            android:id="@+id/metric_value_0"
-            android:layout_width="0dp"
+        <LinearLayout
+            android:id="@+id/metric_value_container"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            style="@style/NotificationExpandedSingleMetricValue"
-            android:layout_weight="1"
-            />
+            android:layout_gravity="top|end"
+            android:orientation="vertical">
+                <TextView
+                    android:id="@+id/metric_value_0"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/NotificationExpandedSingleMetricValue"
+                    />
 
-        <Chronometer
-            android:id="@+id/metric_chronometer_0"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:visibility="gone"
-            style="@style/NotificationExpandedSingleMetricValue"
-            android:layout_weight="1"
-            />
-</LinearLayout>
+                <Chronometer
+                    android:id="@+id/metric_chronometer_0"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone"
+                    style="@style/NotificationExpandedSingleMetricValue"
+                    />
+
+        </LinearLayout>
+
+</com.android.internal.widget.SingleMetricNotificationFrameLayout>
