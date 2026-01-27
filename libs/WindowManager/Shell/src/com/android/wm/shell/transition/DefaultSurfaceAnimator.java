@@ -28,11 +28,11 @@ import android.view.Choreographer;
 import android.view.SurfaceControl;
 import android.view.animation.Animation;
 import android.view.animation.Transformation;
-import android.window.TransitionInfo;
 
 import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.shared.TransactionPool;
 
+import java.util.ArrayList;
 import java.util.Objects;
 import java.util.function.Consumer;
 
@@ -92,53 +92,22 @@ public class DefaultSurfaceAnimator implements Runnable {
         animator.mTransaction = null;
     }
 
-    /**
-     * Builds an animator for the surface without creating a WindowAnimation and with no finish
-     * callback function.
-     */
-    static ValueAnimator createAnimator(@NonNull Animation anim, @NonNull SurfaceControl leash,
-            @NonNull TransactionPool pool, @Nullable Point position, float cornerRadius,
-            @Nullable Rect clipRect) {
-        final DefaultAnimationAdapter adapter = new DefaultAnimationAdapter(anim, leash,
-                position, clipRect, cornerRadius, null /* roundedBounds */);
-        return buildSurfaceAnimation(anim, null /* finishRunnable */, pool, null /* mainExecutor */,
-                adapter);
-    }
-
-    /** Builds an animator for the surface and attaches a WindowAnimation to the adapter. */
-    static WindowAnimation buildWindowAnimation(@NonNull Animation anim,
-            @NonNull TransitionInfo.Change change,
-            @NonNull SurfaceControl leash,
-            Consumer<WindowAnimation> finishCallback, @NonNull TransactionPool pool,
-            ShellExecutor mainExecutor, @Nullable Point position, float cornerRadius,
+    /** Builds an animator for the surface and adds it to the `animations` list. */
+    static void buildSurfaceAnimation(@NonNull ArrayList<Animator> animations,
+            @NonNull Animation anim, @NonNull SurfaceControl leash,
+            @NonNull Runnable finishCallback, @NonNull TransactionPool pool,
+            @NonNull ShellExecutor mainExecutor, @Nullable Point position, float cornerRadius,
             @Nullable Rect clipRect,
             @Nullable TransitionAnimationHelper.RoundedContentPerDisplay roundedBounds) {
         final DefaultAnimationAdapter adapter = new DefaultAnimationAdapter(anim, leash,
                 position, clipRect, cornerRadius, roundedBounds);
-        return buildWindowAnimation(anim, change, adapter, finishCallback, pool, mainExecutor,
-                cornerRadius);
+        buildSurfaceAnimation(animations, anim, finishCallback, pool, mainExecutor, adapter);
     }
 
-    /** Builds an animator for the surface and attaches a WindowAnimation to the adapter. */
-    static WindowAnimation buildWindowAnimation(@NonNull Animation anim,
-            @NonNull TransitionInfo.Change change,
-            @NonNull AnimationAdapter adapter,
-            Consumer<WindowAnimation> finishCallback, @NonNull TransactionPool pool,
-            ShellExecutor mainExecutor,
-            float cornerRadius) {
-        WindowAnimation windowAnimation = new WindowAnimation(change, cornerRadius);
-        windowAnimation.setTransformation(adapter.mTransformation);
-
-        Runnable finishRunnable = () -> finishCallback.accept(windowAnimation);
-        ValueAnimator va = buildSurfaceAnimation(anim, finishRunnable, pool, mainExecutor, adapter);
-        windowAnimation.setAnimator(va);
-        return windowAnimation;
-    }
-
-    /** Builds an animator for the surface. */
-    static ValueAnimator buildSurfaceAnimation(
-            @NonNull Animation anim, Runnable finishRunnable,
-            @NonNull TransactionPool pool, ShellExecutor mainExecutor,
+    /** Builds an animator for the surface and adds it to the `animations` list. */
+    static void buildSurfaceAnimation(@NonNull ArrayList<Animator> animations,
+            @NonNull Animation anim, @NonNull Runnable finishCallback,
+            @NonNull TransactionPool pool, @NonNull ShellExecutor mainExecutor,
             @NonNull AnimationAdapter updateListener) {
         final SurfaceControl.Transaction transaction;
         if (com.android.window.flags.Flags.defaultAnimatorSingleTransaction2()) {
@@ -158,16 +127,16 @@ public class DefaultSurfaceAnimator implements Runnable {
             } else {
                 pool.release(transaction);
             }
-            if (mainExecutor != null && finishRunnable != null) {
-                mainExecutor.execute(finishRunnable);
-            }
+            mainExecutor.execute(() -> {
+                animations.remove(vanim);
+                finishCallback.run();
+            });
         });
-        return va;
+        animations.add(va);
     }
 
     /** The animation adapter for buildSurfaceAnimation. */
     abstract static class AnimationAdapter implements ValueAnimator.AnimatorUpdateListener {
-        @NonNull  final Transformation mTransformation = new Transformation();
         @NonNull final SurfaceControl mLeash;
         @NonNull SurfaceControl.Transaction mTransaction;
         private Choreographer mChoreographer;
@@ -205,6 +174,7 @@ public class DefaultSurfaceAnimator implements Runnable {
     }
 
     private static class DefaultAnimationAdapter extends AnimationAdapter {
+        final Transformation mTransformation = new Transformation();
         final float[] mMatrix = new float[9];
         @NonNull final Animation mAnim;
         @Nullable final Point mPosition;
@@ -217,8 +187,7 @@ public class DefaultSurfaceAnimator implements Runnable {
          * Inset changes aren't synchronized with transitions, so use a "provider" to track the
          * bottom of the display content during the animation.
          */
-        @Nullable
-        final TransitionAnimationHelper.RoundedContentPerDisplay mRoundedContentBounds;
+        @Nullable final TransitionAnimationHelper.RoundedContentPerDisplay mRoundedContentBounds;
 
         DefaultAnimationAdapter(@NonNull Animation anim, @NonNull SurfaceControl leash,
                 @Nullable Point position, @Nullable Rect clipRect, float cornerRadius,
