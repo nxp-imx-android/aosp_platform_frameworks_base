@@ -159,7 +159,8 @@ abstract public class ManagedServices {
     // contains connections to all connected services, including app services
     // and system services
     @GuardedBy("mMutex")
-    private final ArrayList<ManagedServiceInfo> mServices = new ArrayList<>();
+    @VisibleForTesting
+    final ArrayList<ManagedServiceInfo> mServices = new ArrayList<>();
     /**
      * The services that have been bound by us. If the service is also connected, it will also
      * be in {@link #mServices}.
@@ -1952,14 +1953,17 @@ abstract public class ManagedServices {
                             mService = asInterface(binder);
                             info = new ManagedServiceInfo(mService, name, userid, isSystem,
                                     this, targetSdkVersion, uid, binderSession);
-                            binder.linkToDeath(info, 0);
                             ManagedServiceInfo previousBinding = getService(name, userid);
                             if (previousBinding != null) {
                                 Slog.wtfStack(TAG,
                                         "Duplicate binding! previous=" + previousBinding
                                                 + "; current=" + info);
+                                if (Flags.ignoreDuplicateBindings()) {
+                                    Slog.w(TAG, "Ignoring callback for duplicate binding.");
+                                    return;
+                                }
                             }
-
+                            binder.linkToDeath(info, 0);
                             added = mServices.add(info);
                         } catch (RemoteException e) {
                             Slog.e(TAG, "Failed to linkToDeath, already dead", e);
