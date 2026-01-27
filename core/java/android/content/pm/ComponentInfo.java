@@ -113,6 +113,10 @@ public class ComponentInfo extends PackageItemInfo {
     private static final int FLAG_INHERIT_PACKAGE_NAME = 1 << 4;
     private static final int FLAG_INHERIT_PROCESS_NAME = 1 << 5;
     private static final int FLAG_INHERIT_META_DATA = 1 << 6;
+    private static final int FLAG_INHERIT_LABEL = 1 << 7;
+    private static final int FLAG_INHERIT_ICON = 1 << 8;
+    private static final int FLAG_INHERIT_LOGO = 1 << 9;
+    private static final int FLAG_INHERIT_BANNER = 1 << 10;
 
     public ComponentInfo() {
     }
@@ -308,51 +312,56 @@ public class ComponentInfo extends PackageItemInfo {
             flags |= FLAG_INHERIT_META_DATA;
         }
 
+        boolean inheritLabel = applicationInfo != null && labelRes != 0
+                && labelRes == applicationInfo.labelRes && nonLocalizedLabel == null
+                && applicationInfo.nonLocalizedLabel == null;
+        if (inheritLabel) {
+            flags |= FLAG_INHERIT_LABEL;
+        }
+
+        boolean inheritIcon = applicationInfo != null && icon != 0 && icon == applicationInfo.icon;
+        if (inheritIcon) {
+            flags |= FLAG_INHERIT_ICON;
+        }
+
+        boolean inheritLogo = applicationInfo != null && logo != 0 && logo == applicationInfo.logo;
+        if (inheritLogo) {
+            flags |= FLAG_INHERIT_LOGO;
+        }
+
+        boolean inheritBanner = applicationInfo != null && banner != 0
+                && banner == applicationInfo.banner;
+        if (inheritBanner) {
+            flags |= FLAG_INHERIT_BANNER;
+        }
+
         dest.writeInt(flags);
 
         if (!inheritPackageName) {
             dest.writeString8(packageName);
         }
 
-        // Optimization: if the label resource ID matches the application's label resource ID,
-        // and we don't have a non-localized label override, we can skip writing the ID.
-        // We write 0 (invalid resource ID) instead. The getters (loadLabel/loadUnsafeLabel)
-        // are already designed to fallback to the ApplicationInfo if the component's
-        // labelRes is 0.
-        int labelResToWrite = labelRes;
-        if (applicationInfo != null && labelRes != 0 && labelRes == applicationInfo.labelRes
-                && nonLocalizedLabel == null && applicationInfo.nonLocalizedLabel == null) {
-            labelResToWrite = 0;
+        if (!inheritLabel) {
+            dest.writeInt(labelRes);
         }
-        dest.writeInt(labelResToWrite);
 
         TextUtils.writeToParcel(nonLocalizedLabel, dest, parcelableFlags);
 
-        // Optimization: similar to labelRes, if the icon resource ID matches the application's,
-        // write 0. getIconResource() handles the fallback.
-        int iconToWrite = icon;
-        if (applicationInfo != null && icon != 0 && icon == applicationInfo.icon) {
-            iconToWrite = 0;
+        if (!inheritIcon) {
+            dest.writeInt(icon);
         }
-        dest.writeInt(iconToWrite);
 
-        // Optimization: same for logo. getLogoResource() handles fallback.
-        int logoToWrite = logo;
-        if (applicationInfo != null && logo != 0 && logo == applicationInfo.logo) {
-            logoToWrite = 0;
+        if (!inheritLogo) {
+            dest.writeInt(logo);
         }
-        dest.writeInt(logoToWrite);
 
         if (!inheritMetaData) {
             dest.writeBundle(metaData);
         }
 
-        // Optimization: same for banner. getBannerResource() handles fallback.
-        int bannerToWrite = banner;
-        if (applicationInfo != null && banner != 0 && banner == applicationInfo.banner) {
-            bannerToWrite = 0;
+        if (!inheritBanner) {
+            dest.writeInt(banner);
         }
-        dest.writeInt(bannerToWrite);
 
         dest.writeInt(showUserIcon);
         // isArchived is in flags
@@ -384,21 +393,34 @@ public class ComponentInfo extends PackageItemInfo {
         boolean inheritPackageName = (flags & FLAG_INHERIT_PACKAGE_NAME) != 0;
         boolean inheritProcessName = (flags & FLAG_INHERIT_PROCESS_NAME) != 0;
         boolean inheritMetaData = (flags & FLAG_INHERIT_META_DATA) != 0;
+        boolean inheritLabel = (flags & FLAG_INHERIT_LABEL) != 0;
+        boolean inheritIcon = (flags & FLAG_INHERIT_ICON) != 0;
+        boolean inheritLogo = (flags & FLAG_INHERIT_LOGO) != 0;
+        boolean inheritBanner = (flags & FLAG_INHERIT_BANNER) != 0;
+
 
         if (!inheritPackageName) {
             packageName = source.readString8();
         }
 
-        labelRes = source.readInt();
+        if (!inheritLabel) {
+            labelRes = source.readInt();
+        }
         nonLocalizedLabel = TextUtils.CHAR_SEQUENCE_CREATOR.createFromParcel(source);
-        icon = source.readInt();
-        logo = source.readInt();
+        if (!inheritIcon) {
+            icon = source.readInt();
+        }
+        if (!inheritLogo) {
+            logo = source.readInt();
+        }
 
         if (!inheritMetaData) {
             metaData = source.readBundle();
         }
 
-        banner = source.readInt();
+        if (!inheritBanner) {
+            banner = source.readInt();
+        }
         showUserIcon = source.readInt();
 
         // ComponentInfo reading
@@ -424,20 +446,16 @@ public class ComponentInfo extends PackageItemInfo {
         }
 
         if (applicationInfo != null) {
-            // Restore the fields that we optimized out by writing 0.
-            // This ensures that code accessing fields directly (instead of using getters)
-            // sees the correct inherited value, preserving compatibility.
-            if (labelRes == 0 && nonLocalizedLabel == null
-                    && applicationInfo.nonLocalizedLabel == null) {
+            if (inheritLabel) {
                 labelRes = applicationInfo.labelRes;
             }
-            if (icon == 0) {
+            if (inheritIcon) {
                 icon = applicationInfo.icon;
             }
-            if (logo == 0) {
+            if (inheritLogo) {
                 logo = applicationInfo.logo;
             }
-            if (banner == 0) {
+            if (inheritBanner) {
                 banner = applicationInfo.banner;
             }
         }
