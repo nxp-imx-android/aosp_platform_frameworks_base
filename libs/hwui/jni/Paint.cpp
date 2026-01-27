@@ -74,7 +74,7 @@ static void addPosTextPath(const SkFont& font, const uint16_t glyphs[], int coun
         SkPathBuilder* fDst;
         const SkPoint* fPos;
     } rec = { dst, pos };
-    font.getPaths(glyphs, count, [](const SkPath* src, const SkMatrix& mx, void* ctx) {
+    font.getPaths({glyphs, count}, [](const SkPath* src, const SkMatrix& mx, void* ctx) {
         Rec* rec = (Rec*)ctx;
         if (src) {
             SkMatrix tmp(mx);
