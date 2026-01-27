@@ -256,6 +256,8 @@ public final class SurfaceControl implements Parcelable {
             long nativeObject, float currentBufferRatio, float desiredRatio);
     private static native void nativeSetDesiredHdrHeadroom(long transactionObj,
             long nativeObject, float desiredRatio);
+    private static native void nativeSetDesiredMaxHdrHeadroom(long transactionObj,
+            long nativeObject, float maxDesiredHdrSdrRatio);
     private static native void nativeSetCachingHint(long transactionObj,
             long nativeObject, int cachingHint);
     private static native void nativeSetDamageRegion(long transactionObj, long nativeObject,
@@ -5131,6 +5133,32 @@ public final class SurfaceControl implements Parcelable {
                         "desiredRatio must be finite && >= 1.0f or 0; got " + desiredRatio);
             }
             nativeSetDesiredHdrHeadroom(mNativeObject, sc.mNativeObject, desiredRatio);
+            return this;
+        }
+
+        /**
+         * Sets the maximum desired HDR headroom for this layer and its children.
+         *
+         * Unlike #setDesiredHdrHeadroom, this method will propagate the maximum desired
+         * headroom down to this SurfaceControl's children to clamp the desired HDR
+         * headroom for that layer.
+         *
+         * @param sc The SurfaceControl to update
+         * @param maxDesiredHdrSdrRatio The maximum desired HDR/SDR ratio.
+         * @return this
+         * @see #setDesiredHdrHeadroom
+         * @hide
+         */
+        public @NonNull Transaction setDesiredMaxHdrHeadroom(@NonNull SurfaceControl sc,
+                @FloatRange(from = 0.0f) float maxDesiredHdrSdrRatio) {
+            checkPreconditions(sc);
+            if (!Float.isFinite(maxDesiredHdrSdrRatio)
+                    || (maxDesiredHdrSdrRatio != 0 && maxDesiredHdrSdrRatio < 1.0f)) {
+                throw new IllegalArgumentException(
+                        "maxDesiredHdrSdrRatio must be finite && >= 1.0f or 0; got "
+                        + maxDesiredHdrSdrRatio);
+            }
+            nativeSetDesiredMaxHdrHeadroom(mNativeObject, sc.mNativeObject, maxDesiredHdrSdrRatio);
             return this;
         }
 
