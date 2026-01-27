@@ -16,6 +16,7 @@
 
 package com.android.server.companion.association;
 
+import static com.android.server.companion.utils.AssociationUtils.getMacAddress;
 import static com.android.server.companion.utils.MetricUtils.logCreateAssociation;
 import static com.android.server.companion.utils.MetricUtils.logRemoveAssociation;
 import static com.android.server.companion.utils.PermissionsUtils.enforceCallerCanManageAssociationsForPackage;
@@ -277,8 +278,8 @@ public class AssociationStore {
             }
 
             // Check if the MacAddress has changed.
-            final MacAddress updatedAddress = updated.getDeviceMacAddress();
-            final MacAddress currentAddress = current.getDeviceMacAddress();
+            final MacAddress updatedAddress = getMacAddress(updated);
+            final MacAddress currentAddress = getMacAddress(current);
             macAddressChanged = !Objects.equals(currentAddress, updatedAddress);
 
             broadcastChange(macAddressChanged ? CHANGE_TYPE_UPDATED_ADDRESS_CHANGED
@@ -418,10 +419,10 @@ public class AssociationStore {
     @Nullable
     public AssociationInfo getFirstAssociationByAddress(
             @UserIdInt int userId, @NonNull String packageName, @NonNull String macAddress) {
+        final MacAddress address = MacAddress.fromString(macAddress);
         synchronized (mLock) {
             return CollectionUtils.find(getActiveAssociationsByPackage(userId, packageName),
-                    a -> a.getDeviceMacAddress() != null && a.getDeviceMacAddress()
-                            .equals(MacAddress.fromString(macAddress)));
+                    a -> address.equals(getMacAddress(a)));
         }
     }
 
@@ -457,10 +458,10 @@ public class AssociationStore {
      */
     @NonNull
     public List<AssociationInfo> getActiveAssociationsByAddress(@NonNull String macAddress) {
+        final MacAddress address = MacAddress.fromString(macAddress);
         synchronized (mLock) {
             return CollectionUtils.filter(getActiveAssociations(),
-                    a -> a.getDeviceMacAddress() != null && a.getDeviceMacAddress()
-                            .equals(MacAddress.fromString(macAddress)));
+                    a -> address.equals(getMacAddress(a)));
         }
     }
 
