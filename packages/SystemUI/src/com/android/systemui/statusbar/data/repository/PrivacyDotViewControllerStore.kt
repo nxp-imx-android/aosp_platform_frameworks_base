@@ -50,7 +50,7 @@ constructor(
     private val displayScopeRepository: PerDisplayRepository<CoroutineScope>,
     private val perDisplaySubcomponentRepo: PerDisplayRepository<SystemUIDisplaySubcomponent>,
     @Default private val defaultStatusAnimationSchedulerLazy: Lazy<SystemStatusAnimationScheduler>,
-    private val defaultAvControlsChipInteractorLazy: Lazy<AvControlsChipInteractor>,
+    @Default private val defaultAvControlsChipInteractorLazy: Lazy<AvControlsChipInteractor>,
 ) :
     PrivacyDotViewControllerStore,
     StatusBarPerDisplayStoreImpl<PrivacyDotViewController>(
