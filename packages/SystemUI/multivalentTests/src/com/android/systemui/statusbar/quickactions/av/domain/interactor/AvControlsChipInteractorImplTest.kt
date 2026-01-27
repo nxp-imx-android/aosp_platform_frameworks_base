@@ -16,16 +16,13 @@
 
 package com.android.systemui.statusbar.quickactions.av.domain.interactor
 
-import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
-import android.view.Display
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
-import com.android.systemui.Flags.FLAG_AV_CONTROLS_CHIP_PER_DISPLAY
 import com.android.systemui.Flags.FLAG_EXPANDED_PRIVACY_INDICATORS_ON_LARGE_SCREEN
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.shade.data.repository.fakePrivacyChipRepository
-import com.android.systemui.statusbar.data.repository.fakeStatusBarModeRepository
+import com.android.systemui.statusbar.data.repository.fakeStatusBarModePerDisplayRepository
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.Test
 import kotlinx.coroutines.flow.first
@@ -76,7 +73,7 @@ class AvControlsChipInteractorImplTest() : AvControlsChipInteractorTestBase() {
     fun cameraActive_noFullscreen_shouldSuppressDot() =
         kosmos.runTest {
             fakePrivacyChipRepository.setPrivacyItems(listOf(cameraItem))
-            fakeStatusBarModeRepository.defaultDisplay.isInFullscreenMode.value = false
+            fakeStatusBarModePerDisplayRepository.isInFullscreenMode.value = false
             assertThat(underTest.isShowingAvChip.first()).isEqualTo(true)
         }
 
@@ -85,35 +82,7 @@ class AvControlsChipInteractorImplTest() : AvControlsChipInteractorTestBase() {
     fun cameraActive_fullscreen_shouldNotSuppressDot() =
         kosmos.runTest {
             fakePrivacyChipRepository.setPrivacyItems(listOf(cameraItem))
-            fakeStatusBarModeRepository.defaultDisplay.isInFullscreenMode.value = true
+            fakeStatusBarModePerDisplayRepository.isInFullscreenMode.value = true
             assertThat(underTest.isShowingAvChip.first()).isEqualTo(false)
         }
-
-    @Test
-    @EnableFlags(FLAG_AV_CONTROLS_CHIP_PER_DISPLAY)
-    fun cameraActive_fullscreenOnTestDisplayId_perDisplayFlagEnabled_shouldNotShowAvChip() =
-        kosmos.runTest {
-            val underTest = createAvControlsChipInteractorImplForDisplay(TEST_DISPLAY_ID)
-            fakePrivacyChipRepository.setPrivacyItems(listOf(cameraItem))
-            fakeStatusBarModeRepository.forDisplay(TEST_DISPLAY_ID).isInFullscreenMode.value = true
-            fakeStatusBarModeRepository.defaultDisplay.isInFullscreenMode.value = false
-
-            assertThat(underTest.isShowingAvChip.first()).isEqualTo(false)
-        }
-
-    @Test
-    @DisableFlags(FLAG_AV_CONTROLS_CHIP_PER_DISPLAY)
-    fun cameraActive_fullscreenOnTestDisplayId_perDisplayFlagEnabled_shouldShowAvChip() =
-        kosmos.runTest {
-            val underTest = createAvControlsChipInteractorImplForDisplay(TEST_DISPLAY_ID)
-            fakePrivacyChipRepository.setPrivacyItems(listOf(cameraItem))
-            fakeStatusBarModeRepository.forDisplay(TEST_DISPLAY_ID).isInFullscreenMode.value = true
-            fakeStatusBarModeRepository.defaultDisplay.isInFullscreenMode.value = false
-
-            assertThat(underTest.isShowingAvChip.first()).isEqualTo(true)
-        }
-
-    private companion object {
-        const val TEST_DISPLAY_ID = Display.DEFAULT_DISPLAY + 1234
-    }
 }

@@ -25,7 +25,7 @@ import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.PerDispla
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.core.Logger
-import com.android.systemui.statusbar.data.repository.StatusBarModeRepositoryStore
+import com.android.systemui.statusbar.data.repository.StatusBarModePerDisplayRepository
 import com.android.systemui.statusbar.gesture.SwipeStatusBarAwayGestureHandler
 import com.android.systemui.statusbar.phone.ongoingcall.OngoingCallLog
 import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCallModel
@@ -38,7 +38,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterIsInstance
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 
 /**
@@ -58,7 +57,7 @@ class OngoingCallStatusBarInteractor
 constructor(
     @DisplayAware private val displayId: Int,
     @DisplayAware private val scope: CoroutineScope,
-    private val statusBarModeRepositoryStore: StatusBarModeRepositoryStore,
+    @DisplayAware private val statusBarModeRepository: StatusBarModePerDisplayRepository,
     private val statusBarWindowControllerStore: StatusBarWindowControllerStore,
     @DisplayAware private val swipeStatusBarAwayGestureHandler: SwipeStatusBarAwayGestureHandler,
     private val ongoingCallInteractor: OngoingCallInteractor,
@@ -94,7 +93,7 @@ constructor(
     val isGestureListeningEnabled =
         combine(
             ongoingCallInteractor.ongoingCallState,
-            statusBarModeRepositoryStore.forDisplay(displayId)?.isInFullscreenMode ?: flowOf(false),
+            statusBarModeRepository.isInFullscreenMode,
             isChipSwipedAway,
         ) { callState, isFullscreen, chipSwipedAway ->
             callState.willCallChipBeVisible() && !chipSwipedAway && isFullscreen
@@ -129,9 +128,7 @@ constructor(
         // TODO(b/382808183): Create a single repository that can be utilized in
         //  `statusBarModeRepositoryStore` and `statusBarWindowControllerStore` so we do not need
         //  two separate calls to force the status bar to stay visible.
-        statusBarModeRepositoryStore
-            .forDisplay(displayId)
-            ?.setOngoingProcessRequiresStatusBarVisible(statusBarRequired)
+        statusBarModeRepository.setOngoingProcessRequiresStatusBarVisible(statusBarRequired)
 
         statusBarWindowControllerStore
             .forDisplay(displayId)

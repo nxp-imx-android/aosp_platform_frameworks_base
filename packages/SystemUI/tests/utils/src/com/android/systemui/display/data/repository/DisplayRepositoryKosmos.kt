@@ -38,6 +38,8 @@ import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipsVie
 import com.android.systemui.statusbar.chips.ui.viewmodel.ongoingActivityChipsViewModel
 import com.android.systemui.statusbar.core.statusBarIconRefreshInteractor
 import com.android.systemui.statusbar.data.repository.StatusBarConfigurationController
+import com.android.systemui.statusbar.data.repository.StatusBarModePerDisplayRepository
+import com.android.systemui.statusbar.data.repository.fakeStatusBarModePerDisplayRepository
 import com.android.systemui.statusbar.disableflags.domain.interactor.DisableFlagsInteractor
 import com.android.systemui.statusbar.disableflags.domain.interactor.disableFlagsInteractor
 import com.android.systemui.statusbar.domain.interactor.StatusBarIconRefreshInteractor
@@ -113,6 +115,9 @@ fun Kosmos.createFakeDisplaySubcomponent(
     systemStatusEventAnimationInteractor: () -> SystemStatusEventAnimationInteractor = {
         this.systemStatusEventAnimationInteractor
     },
+    statusBarModeRepo: () -> StatusBarModePerDisplayRepository = {
+        this.fakeStatusBarModePerDisplayRepository
+    },
     statusBarWindowStateRepository: () -> StatusBarWindowStatePerDisplayRepository = {
         this.fakeStatusBarWindowStatePerDisplayRepository
     },
@@ -144,6 +149,9 @@ fun Kosmos.createFakeDisplaySubcomponent(
 
         override val systemBarUtilsState: SystemBarUtilsState
             get() = systemBarUtilsState()
+
+        override val statusBarModeRepo: StatusBarModePerDisplayRepository
+            get() = statusBarModeRepo()
 
         override val statusBarConfigurationController: StatusBarConfigurationController
             get() = statusBarConfigurationController()

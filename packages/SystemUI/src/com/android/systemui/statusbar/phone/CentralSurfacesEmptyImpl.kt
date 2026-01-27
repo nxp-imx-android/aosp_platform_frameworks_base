@@ -52,8 +52,6 @@ abstract class CentralSurfacesEmptyImpl : CentralSurfaces {
 
     override fun checkBarModes() {}
 
-    override fun updateBubblesVisibility() {}
-
     override fun setInteracting(barWindow: Int, interacting: Boolean) {}
 
     override fun getDisplayWidth() = 0f

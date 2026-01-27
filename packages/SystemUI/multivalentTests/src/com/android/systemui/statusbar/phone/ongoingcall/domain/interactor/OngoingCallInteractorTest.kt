@@ -27,7 +27,7 @@ import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.statusbar.StatusBarIconView
-import com.android.systemui.statusbar.data.repository.fakeStatusBarModeRepository
+import com.android.systemui.statusbar.data.repository.fakeStatusBarModePerDisplayRepository
 import com.android.systemui.statusbar.gesture.swipeStatusBarAwayGestureHandler
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentBuilder
 import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCallModel
@@ -187,7 +187,7 @@ class OngoingCallInteractorTest : SysuiTestCase() {
 
             clearInvocations(kosmos.swipeStatusBarAwayGestureHandler)
             // Set up notification but not in fullscreen
-            kosmos.fakeStatusBarModeRepository.defaultDisplay.isInFullscreenMode.value = false
+            kosmos.fakeStatusBarModePerDisplayRepository.isInFullscreenMode.value = false
             addOngoingCallState()
 
             assertThat(ongoingCallState).isInstanceOf(OngoingCallModel.InCall::class.java)

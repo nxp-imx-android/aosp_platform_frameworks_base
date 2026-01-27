@@ -83,7 +83,7 @@ import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipsWit
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipsWithNotifsViewModelTest.Companion.assertIsScreenRecordChip
 import com.android.systemui.statusbar.core.StatusBarForDesktop
 import com.android.systemui.statusbar.data.model.StatusBarMode
-import com.android.systemui.statusbar.data.repository.fakeStatusBarModeRepository
+import com.android.systemui.statusbar.data.repository.fakeStatusBarModePerDisplayRepository
 import com.android.systemui.statusbar.disableflags.data.repository.fakeDisableFlagsRepository
 import com.android.systemui.statusbar.disableflags.shared.model.DisableFlagsModel
 import com.android.systemui.statusbar.events.data.repository.systemStatusEventAnimationRepository
@@ -451,7 +451,7 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
     @Test
     fun areNotificationsLightsOut_lowProfileWithNotifications_true() =
         kosmos.runTest {
-            fakeStatusBarModeRepository.defaultDisplay.statusBarMode.value =
+            fakeStatusBarModePerDisplayRepository.statusBarMode.value =
                 StatusBarMode.LIGHTS_OUT_TRANSPARENT
             activeNotificationListRepository.activeNotifications.value =
                 activeNotificationsStore(testNotifications)
@@ -464,7 +464,7 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
     @Test
     fun areNotificationsLightsOut_lowProfileWithoutNotifications_false() =
         kosmos.runTest {
-            fakeStatusBarModeRepository.defaultDisplay.statusBarMode.value =
+            fakeStatusBarModePerDisplayRepository.statusBarMode.value =
                 StatusBarMode.LIGHTS_OUT_TRANSPARENT
             activeNotificationListRepository.activeNotifications.value =
                 activeNotificationsStore(emptyList())
@@ -477,8 +477,7 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
     @Test
     fun areNotificationsLightsOut_defaultStatusBarModeWithoutNotifications_false() =
         kosmos.runTest {
-            fakeStatusBarModeRepository.defaultDisplay.statusBarMode.value =
-                StatusBarMode.TRANSPARENT
+            fakeStatusBarModePerDisplayRepository.statusBarMode.value = StatusBarMode.TRANSPARENT
             activeNotificationListRepository.activeNotifications.value =
                 activeNotificationsStore(emptyList())
 
@@ -490,8 +489,7 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
     @Test
     fun areNotificationsLightsOut_defaultStatusBarModeWithNotifications_false() =
         kosmos.runTest {
-            fakeStatusBarModeRepository.defaultDisplay.statusBarMode.value =
-                StatusBarMode.TRANSPARENT
+            fakeStatusBarModePerDisplayRepository.statusBarMode.value = StatusBarMode.TRANSPARENT
             activeNotificationListRepository.activeNotifications.value =
                 activeNotificationsStore(testNotifications)
 

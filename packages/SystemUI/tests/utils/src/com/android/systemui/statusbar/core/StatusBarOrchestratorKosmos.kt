@@ -34,7 +34,6 @@ import com.android.systemui.shade.mockShadeSurface
 import com.android.systemui.statusbar.data.repository.fakeStatusBarModePerDisplayRepository
 import com.android.systemui.statusbar.data.repository.lightBarControllerStore
 import com.android.systemui.statusbar.data.repository.privacyDotWindowControllerStore
-import com.android.systemui.statusbar.data.repository.statusBarModeRepository
 import com.android.systemui.statusbar.domain.interactor.StatusBarIconRefreshInteractor
 import com.android.systemui.statusbar.domain.interactor.StatusBarIconRefreshInteractorImpl
 import com.android.systemui.statusbar.mockNotificationRemoteInputManager
@@ -55,7 +54,6 @@ val Kosmos.multiDisplayStatusBarOrchestratorStore by
             displayRepository,
             statusBarOrchestratorFactory,
             statusBarWindowControllerStore,
-            statusBarModeRepository,
             statusBarInitializerStore,
             fakeAutoHideControllerStore,
             displayScopeRepository,

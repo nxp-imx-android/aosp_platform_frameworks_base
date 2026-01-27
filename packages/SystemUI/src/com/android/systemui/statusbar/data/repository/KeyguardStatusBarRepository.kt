@@ -33,7 +33,7 @@ import kotlinx.coroutines.flow.merge
 
 /**
  * Repository for data that's specific to the status bar **on keyguard**. For data that applies to
- * all status bars, use [StatusBarModeRepositoryStore].
+ * all status bars, use [StatusBarModePerDisplayRepository].
  */
 interface KeyguardStatusBarRepository {
     /** True if we can show the user switcher on keyguard and false otherwise. */
@@ -73,10 +73,9 @@ constructor(
 
     /** True if we can show the user switcher on keyguard and false otherwise. */
     override val isKeyguardUserSwitcherEnabled: Flow<Boolean> =
-        combine(
-            userSwitcherRepository.isEnabled,
-            isKeyguardUserSwitcherConfigEnabled,
-        ) { isEnabled, isKeyguardEnabled ->
+        combine(userSwitcherRepository.isEnabled, isKeyguardUserSwitcherConfigEnabled) {
+            isEnabled,
+            isKeyguardEnabled ->
             isEnabled && isKeyguardEnabled
         }
 }
