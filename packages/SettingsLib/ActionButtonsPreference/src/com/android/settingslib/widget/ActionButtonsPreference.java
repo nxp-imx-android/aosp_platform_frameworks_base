@@ -25,7 +25,6 @@ import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
-import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -599,16 +598,10 @@ public class ActionButtonsPreference extends Preference implements GroupSectionD
                     ((MaterialButton) mButton).setIcon(mIcon);
                 }
                 mButton.setEnabled(mIsEnabled);
+                mButton.setOnClickListener(mListener);
+                mTextView.setOnClickListener(mListener);
                 mActionLayout.setEnabled(mIsEnabled);
                 mActionLayout.setOnClickListener(mListener);
-                mActionLayout.setAccessibilityDelegate(new View.AccessibilityDelegate() {
-                    @Override
-                    public void onInitializeAccessibilityNodeInfo(
-                            View host, AccessibilityNodeInfo info) {
-                        super.onInitializeAccessibilityNodeInfo(host, info);
-                        info.setClassName(Button.class.getName());
-                    }
-                });
                 mActionLayout.setContentDescription(
                         TextUtils.isEmpty(mContentDescription) ? mText : mContentDescription);
             } else {
