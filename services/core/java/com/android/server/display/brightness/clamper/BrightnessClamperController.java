@@ -20,6 +20,8 @@ import static android.service.notification.Flags.applyBrightnessClampingForModes
 import static android.service.notification.Flags.enableBrightnessClampingForBedtime;
 import static android.view.Display.STATE_ON;
 
+import static com.android.server.display.feature.flags.Flags.refactorNormalBrightnessModeController;
+
 import android.annotation.FloatRange;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -53,6 +55,7 @@ import com.android.server.display.plugin.PluginManager;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executor;
 
 /**
@@ -290,6 +293,20 @@ public class BrightnessClamperController {
     }
 
     /**
+     * Set the current state of auto-brightness.
+     */
+    public void setAutoBrightnessState(int state) {
+        mModifiers.forEach(modifier -> modifier.setAutoBrightnessState(state));
+    }
+
+    /**
+     * Set whether High Brightness Mode is currently allowed.
+     */
+    public void setIsHbmAllowed(boolean isHbmAllowed) {
+        mModifiers.forEach(modifier -> modifier.setIsHbmAllowed(isHbmAllowed));
+    }
+
+    /**
      * Clampers change listener
      */
     public interface ClamperChangeListener {
@@ -338,6 +355,9 @@ public class BrightnessClamperController {
                     handler, context, flags, pluginManager, listener, data));
             if (flags.isMinmodeCapBrightnessEnabled()) {
                 modifiers.add(new BrightnessMinModeModifier(handler, context, listener, data));
+            }
+            if (refactorNormalBrightnessModeController()) {
+                modifiers.add(new BrightnessMaxLuxModifier(handler, listener, data));
             }
             return modifiers;
         }
@@ -457,6 +477,11 @@ public class BrightnessClamperController {
         @Override
         public SensorData getTempSensor() {
             return mDisplayDeviceConfig.getTempSensor();
+        }
+
+        public Map<DisplayDeviceConfig.BrightnessLimitMapType, Map<Float, Float>>
+                getMaxBrightnessLimits() {
+            return mDisplayDeviceConfig.getLuxThrottlingData();
         }
 
         @NonNull
