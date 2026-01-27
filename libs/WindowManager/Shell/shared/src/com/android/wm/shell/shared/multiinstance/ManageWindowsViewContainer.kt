@@ -87,8 +87,8 @@ abstract class ManageWindowsViewContainer(
     }
 
     /** Play the animation for opening the menu. */
-    fun animateOpen() {
-        menuView.animateOpen()
+    fun animateOpen(onEnd: (() -> Unit)? = null) {
+        menuView.animateOpen(onEnd)
     }
 
     /**
@@ -245,7 +245,7 @@ abstract class ManageWindowsViewContainer(
         }
 
         /** Play the animation for opening the menu. */
-        fun animateOpen() {
+        fun animateOpen(onEnd: (() -> Unit)? = null) {
             animateView(
                 scrollableMenuView,
                 MENU_BOUNDS_SHRUNK_SCALE,
@@ -263,7 +263,18 @@ abstract class ManageWindowsViewContainer(
                     delay = MENU_ALPHA_ANIM_DELAY,
                 )
             }
-            createAnimatorSet().start()
+            createAnimatorSet().apply {
+                onEnd?.let {
+                    addListener(
+                        object : AnimatorListenerAdapter() {
+                            override fun onAnimationEnd(animation: Animator) {
+                                it.invoke()
+                            }
+                        }
+                    )
+                }
+                start()
+            }
         }
 
         /** Play the animation for closing the menu. */
