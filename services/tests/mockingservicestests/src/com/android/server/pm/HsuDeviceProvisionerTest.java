@@ -296,7 +296,7 @@ public final class HsuDeviceProvisionerTest {
     }
 
     private void verifyCopySecureSettingFromFirstAdminNeverCalled() {
-        verify(mSpy, never()).disableSetupWizardHomeForSystemUser();
+        verify(mSpy, never()).copySecureSettingFromFirstAdmin();
     }
 
     private void verifyDisableSetupWizardHomeForSystemUserCalled() {
@@ -304,7 +304,7 @@ public final class HsuDeviceProvisionerTest {
     }
 
     private void verifyDisableSetupWizardHomeForSystemUserNeverCalled() {
-        verify(mSpy, never()).copySecureSettingFromFirstAdmin();
+        verify(mSpy, never()).disableSetupWizardHomeForSystemUser();
     }
 
     private void ignoreOnDeviceUpgrading() {
