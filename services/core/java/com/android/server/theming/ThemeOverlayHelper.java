@@ -35,7 +35,6 @@ import com.google.ux.material.libmonet.dynamiccolor.DynamicColor;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
-import java.util.stream.Collectors;
 
 /**
  * A utility class responsible for creating and applying color-based theme overlays.
@@ -49,16 +48,7 @@ public class ThemeOverlayHelper {
     private static final String TAG = "ThemeOverlayHelper";
     private static final String ANDROID_PACKAGE = "android";
 
-    private static final String OVERLAY_NAME_NEUTRAL = "neutral";
-    private static final String OVERLAY_NAME_ACCENT = "accent";
     private static final String OVERLAY_NAME_DYNAMIC = "dynamic";
-
-    // Order matters for consistency, though logically independent.
-    private static final List<String> OVERLAY_NAMES = List.of(
-            OVERLAY_NAME_NEUTRAL,
-            OVERLAY_NAME_ACCENT,
-            OVERLAY_NAME_DYNAMIC
-    );
 
     private final OverlayManagerInternal mOverlayManager;
 
@@ -97,13 +87,11 @@ public class ThemeOverlayHelper {
         final OverlayManagerTransaction.Builder transaction =
                 new OverlayManagerTransaction.Builder();
 
-        for (String overlayName : OVERLAY_NAMES) {
-            final OverlayIdentifier identifier = new OverlayIdentifier(ANDROID_PACKAGE,
-                    overlayName + "_" + userId);
-            addToTransaction(transaction, identifier, userId, /* applyToSystem */ true,
-                    snapshot.profiles());
-            checkCancellation();
-        }
+        final OverlayIdentifier identifier = new OverlayIdentifier(ANDROID_PACKAGE,
+                OVERLAY_NAME_DYNAMIC + "_" + userId);
+        addToTransaction(transaction, identifier, userId, /* applyToSystem */ true,
+                snapshot.profiles());
+        checkCancellation();
 
         commitTransaction(transaction);
     }
@@ -114,23 +102,19 @@ public class ThemeOverlayHelper {
     private void registerAndEnableOverlays(ThemeStatePair.OverlaySnapshot snapshot,
             boolean applyToSystem) {
         final int userId = snapshot.userId();
-        final List<FabricatedOverlay> overlays = createOverlays(snapshot.lightScheme(),
+        final FabricatedOverlay overlay = createDynamicOverlay(snapshot.lightScheme(),
                 snapshot.darkScheme(), userId);
 
-        final List<String> overlayNames = overlays.stream().map(
-                o -> o.getIdentifier().getOverlayName()).collect(Collectors.toList());
-
-        Slog.d(TAG, "Registering and Enabling overlays " + overlayNames + " for user " + userId);
+        Slog.d(TAG, "Registering and Enabling overlay " + OVERLAY_NAME_DYNAMIC + " for user "
+                + userId);
 
         final OverlayManagerTransaction.Builder transaction =
                 new OverlayManagerTransaction.Builder();
 
-        for (FabricatedOverlay overlay : overlays) {
-            transaction.registerFabricatedOverlay(overlay);
-            addToTransaction(transaction, overlay.getIdentifier(), userId, applyToSystem,
-                    snapshot.profiles());
-            checkCancellation();
-        }
+        transaction.registerFabricatedOverlay(overlay);
+        addToTransaction(transaction, overlay.getIdentifier(), userId, applyToSystem,
+                snapshot.profiles());
+        checkCancellation();
 
         commitTransaction(transaction);
     }
@@ -203,23 +187,6 @@ public class ThemeOverlayHelper {
         }
     }
 
-    private List<FabricatedOverlay> createOverlays(ColorScheme light, ColorScheme dark,
-            int userId) {
-        return List.of(
-                createOverlay(OVERLAY_NAME_NEUTRAL, DynamicColors.getAllNeutralPalette(), light,
-                        dark, userId),
-                createOverlay(OVERLAY_NAME_ACCENT, DynamicColors.getAllAccentPalette(), light, dark,
-                        userId),
-                createDynamicOverlay(light, dark, userId));
-    }
-
-    private FabricatedOverlay createOverlay(String name, List<Pair<String, DynamicColor>> colors,
-            ColorScheme light, ColorScheme dark, int userId) {
-        FabricatedOverlay overlay = newFabricatedOverlay(name, userId);
-        assignColorsToOverlay(overlay, colors, false, light, dark);
-        return overlay;
-    }
-
 
     /**
      * Creates a fabricated overlay for dynamic colors.
@@ -231,7 +198,16 @@ public class ThemeOverlayHelper {
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
     public FabricatedOverlay createDynamicOverlay(ColorScheme lightColorScheme,
             ColorScheme darkColorScheme, int userId) {
-        FabricatedOverlay overlay = newFabricatedOverlay(OVERLAY_NAME_DYNAMIC, userId);
+        FabricatedOverlay overlay = new FabricatedOverlay.Builder(ANDROID_PACKAGE,
+                OVERLAY_NAME_DYNAMIC + "_" + userId, ANDROID_PACKAGE).build();
+
+        // Neutral palette
+        assignColorsToOverlay(overlay, DynamicColors.getAllNeutralPalette(),
+                false, lightColorScheme, darkColorScheme);
+
+        // Accent palette
+        assignColorsToOverlay(overlay, DynamicColors.getAllAccentPalette(),
+                false, lightColorScheme, darkColorScheme);
 
         //Themed Colors
         assignColorsToOverlay(overlay, DynamicColors.getAllDynamicColorsMapped(),
@@ -266,11 +242,6 @@ public class ThemeOverlayHelper {
             overlay.setResourceValue(prefix + "_dark", TYPE_INT_COLOR_ARGB8,
                     p.second.getArgb(darkColorScheme.getMaterialScheme()), null);
         }
-    }
-
-    private FabricatedOverlay newFabricatedOverlay(String name, int userId) {
-        return new FabricatedOverlay.Builder(ANDROID_PACKAGE, name + "_" + userId,
-                ANDROID_PACKAGE).build();
     }
 
     private void checkCancellation() throws CancellationException {

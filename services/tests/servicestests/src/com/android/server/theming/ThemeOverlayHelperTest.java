@@ -25,6 +25,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import android.content.om.FabricatedOverlay;
 import android.content.om.OverlayIdentifier;
 import android.content.om.OverlayInfo;
 import android.content.om.OverlayManagerTransaction;
@@ -52,7 +53,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.Arrays;
-import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -113,14 +114,12 @@ public class ThemeOverlayHelperTest {
         verify(mOverlayManager).commit(mTransactionCaptor.capture());
         String transactionString = mTransactionCaptor.getValue().toString();
 
-        final List<String> overlayNames = List.of("neutral", "accent", "dynamic");
-        for (String overlayName : overlayNames) {
-            // Check that overlays are enabled for the primary user, their profile, and system.
-            // The overlay itself is named with the PRIMARY_USER_ID suffix.
-            assertSetEnabled(transactionString, overlayName, PRIMARY_USER_ID, PRIMARY_USER_ID);
-            assertSetEnabled(transactionString, overlayName, PRIMARY_USER_ID, PROFILE_USER_ID);
-            assertSetEnabled(transactionString, overlayName, PRIMARY_USER_ID, SYSTEM_USER_ID);
-        }
+        String overlayName = "dynamic";
+        // Check that overlays are enabled for the primary user, their profile, and system.
+        // The overlay itself is named with the PRIMARY_USER_ID suffix.
+        assertSetEnabled(transactionString, overlayName, PRIMARY_USER_ID, PRIMARY_USER_ID);
+        assertSetEnabled(transactionString, overlayName, PRIMARY_USER_ID, PROFILE_USER_ID);
+        assertSetEnabled(transactionString, overlayName, PRIMARY_USER_ID, SYSTEM_USER_ID);
     }
 
     @Test
@@ -137,13 +136,11 @@ public class ThemeOverlayHelperTest {
         verify(mOverlayManager).commit(mTransactionCaptor.capture());
         String transactionString = mTransactionCaptor.getValue().toString();
 
-        final List<String> overlayNames = List.of("neutral", "accent", "dynamic");
-        for (String overlayName : overlayNames) {
-            // Should be enabled for the user themselves
-            assertSetEnabled(transactionString, overlayName, PRIMARY_USER_ID, PRIMARY_USER_ID);
-            // Should NOT be enabled for the system user
-            assertNotSetEnabled(transactionString, overlayName, PRIMARY_USER_ID, SYSTEM_USER_ID);
-        }
+        String overlayName = "dynamic";
+        // Should be enabled for the user themselves
+        assertSetEnabled(transactionString, overlayName, PRIMARY_USER_ID, PRIMARY_USER_ID);
+        // Should NOT be enabled for the system user
+        assertNotSetEnabled(transactionString, overlayName, PRIMARY_USER_ID, SYSTEM_USER_ID);
     }
 
     @Test
@@ -160,15 +157,13 @@ public class ThemeOverlayHelperTest {
         verify(mOverlayManager).commit(mTransactionCaptor.capture());
         String transactionString = mTransactionCaptor.getValue().toString();
 
-        final List<String> overlayNames = List.of("neutral", "accent", "dynamic");
-        for (String overlayName : overlayNames) {
-            // It should be enabled for the system user exactly once.
-            // Overlay owner is SYSTEM_USER_ID, target is SYSTEM_USER_ID.
-            String expectedSubstring = getSetEnabledSubstring(overlayName, SYSTEM_USER_ID,
-                    SYSTEM_USER_ID);
-            int count = countOccurrences(transactionString, expectedSubstring);
-            assertThat(count).isEqualTo(1);
-        }
+        String overlayName = "dynamic";
+        // It should be enabled for the system user exactly once.
+        // Overlay owner is SYSTEM_USER_ID, target is SYSTEM_USER_ID.
+        String expectedSubstring = getSetEnabledSubstring(overlayName, SYSTEM_USER_ID,
+                SYSTEM_USER_ID);
+        int count = countOccurrences(transactionString, expectedSubstring);
+        assertThat(count).isEqualTo(1);
     }
 
     @Test
@@ -185,16 +180,14 @@ public class ThemeOverlayHelperTest {
         verify(mOverlayManager).commit(mTransactionCaptor.capture());
         String transactionString = mTransactionCaptor.getValue().toString();
 
-        final List<String> overlayNames = List.of("neutral", "accent", "dynamic");
-        for (String overlayName : overlayNames) {
-            // Check that REGISTER request is NOT present.
-            String registerRequest = "TYPE_REGISTER_FABRICATED";
-            assertThat(transactionString).doesNotContain(registerRequest);
+        String overlayName = "dynamic";
+        // Check that REGISTER request is NOT present.
+        String registerRequest = "TYPE_REGISTER_FABRICATED";
+        assertThat(transactionString).doesNotContain(registerRequest);
 
-            // Check that ENABLE requests ARE present for user and system.
-            assertSetEnabled(transactionString, overlayName, PRIMARY_USER_ID, PRIMARY_USER_ID);
-            assertSetEnabled(transactionString, overlayName, PRIMARY_USER_ID, SYSTEM_USER_ID);
-        }
+        // Check that ENABLE requests ARE present for user and system.
+        assertSetEnabled(transactionString, overlayName, PRIMARY_USER_ID, PRIMARY_USER_ID);
+        assertSetEnabled(transactionString, overlayName, PRIMARY_USER_ID, SYSTEM_USER_ID);
     }
 
     @Test
@@ -237,6 +230,27 @@ public class ThemeOverlayHelperTest {
         assertUnregister(transactionString, "com.google.android.apps.wearable.systemui", "neutral");
         assertUnregister(transactionString, "com.google.android.apps.wearable.systemui", "accent");
         assertUnregister(transactionString, "com.google.android.apps.wearable.systemui", "dynamic");
+    }
+
+    @Test
+    public void createDynamicOverlay_containsNeutralAndAccentColors() {
+        ThemeStatePair statePair = new ThemeStatePair(PRIMARY_USER_ID, true, SEED_COLOR_VALID,
+                CONTRAST_DEFAULT, STYLE_VALID, SpecVersion.SPEC_2025, Platform.PHONE);
+
+        FabricatedOverlay overlay = mThemeOverlayHelper.createDynamicOverlay(
+                statePair.getLightScheme(), statePair.getDarkScheme(), PRIMARY_USER_ID);
+
+        Map<String, Color> entries = android.app.ThemeManager.extractColorPairs(overlay);
+
+        // Verify some neutral colors are present
+        assertThat(entries).containsKey("android:color/system_neutral1_100_light");
+        assertThat(entries).containsKey("android:color/system_neutral1_100_dark");
+        assertThat(entries).containsKey("android:color/system_neutral2_500_light");
+
+        // Verify some accent colors are present
+        assertThat(entries).containsKey("android:color/system_accent1_100_light");
+        assertThat(entries).containsKey("android:color/system_accent1_100_dark");
+        assertThat(entries).containsKey("android:color/system_accent2_500_light");
     }
 
     /**

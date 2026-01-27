@@ -247,7 +247,7 @@ public class ThemeManager {
      * and values are the corresponding {@link Color} objects.
      * @hide
      */
-    public Map<String, Color> extractColorPairs(FabricatedOverlay fabricatedOverlay) {
+    public static Map<String, Color> extractColorPairs(FabricatedOverlay fabricatedOverlay) {
         final List<FabricatedOverlayInternalEntry> colorEntries = fabricatedOverlay.getEntries(
                 TypedValue.TYPE_INT_COLOR_ARGB8,
                 TypedValue.TYPE_INT_COLOR_RGB8,
