@@ -58,9 +58,11 @@ import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInterac
 import com.android.systemui.keyguard.shared.model.KeyguardState;
 import com.android.systemui.navigationbar.NavigationModeController;
 import com.android.systemui.scene.domain.interactor.SceneInteractor;
+import com.android.systemui.scene.shared.model.Overlays;
 import com.android.systemui.scene.shared.model.Scenes;
 import com.android.systemui.settings.FakeDisplayTracker;
 import com.android.systemui.settings.UserTracker;
+import com.android.systemui.user.domain.interactor.HeadlessSystemUserMode;
 import com.android.systemui.util.settings.SecureSettings;
 
 import kotlinx.coroutines.flow.MutableStateFlow;
@@ -77,6 +79,7 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
+import java.util.Set;
 import java.util.concurrent.Executor;
 
 /** Test for {@link AccessibilityFloatingMenuController}. */
@@ -124,6 +127,8 @@ public class AccessibilityFloatingMenuControllerTest extends SysuiTestCase {
     @Captor
     private ArgumentCaptor<UserTracker.Callback> mUserTrackerCallbackCaptor;
     private UserTracker.Callback mUserTrackerCallback;
+    @Mock
+    private HeadlessSystemUserMode mHeadlessSystemUserMode;
 
     private FakeKeyboardRepository mKeyboardRepository;
     private FakePointerDeviceRepository mPointerDeviceRepository;
@@ -543,6 +548,48 @@ public class AccessibilityFloatingMenuControllerTest extends SysuiTestCase {
         assertThat(mController.mFloatingMenu).isNotSameInstanceAs(floatingMenu);
     }
 
+    @Test
+    @EnableFlags({Flags.FLAG_KEYGUARD_INTERACTOR_FOR_FLOATING_BUTTON, Flags.FLAG_SCENE_CONTAINER})
+    @DisableFlags(Flags.FLAG_FLOATING_MENU_ON_HEADLESS_USER)
+    public void onBouncerOverlay_headlessSystem_flagOff_destroysWidget() {
+        enableAccessibilityFloatingMenuConfig();
+        mController = setUpController();
+        when(mHeadlessSystemUserMode.isHeadlessSystemUserMode()).thenReturn(true);
+        mController.mSceneConsumer.accept(Scenes.Lockscreen);
+
+        mController.mOverlayConsumer.accept(Set.of(Overlays.Bouncer));
+
+        assertThat(mController.mFloatingMenu).isNull();
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_KEYGUARD_INTERACTOR_FOR_FLOATING_BUTTON, Flags.FLAG_SCENE_CONTAINER,
+            Flags.FLAG_FLOATING_MENU_ON_HEADLESS_USER})
+    public void onBouncerOverlay_headlessSystem_showsWidget() {
+        enableAccessibilityFloatingMenuConfig();
+        mController = setUpController();
+        when(mHeadlessSystemUserMode.isHeadlessSystemUserMode()).thenReturn(true);
+        mController.mSceneConsumer.accept(Scenes.Lockscreen);
+
+        mController.mOverlayConsumer.accept(Set.of(Overlays.Bouncer));
+
+        assertThat(mController.mFloatingMenu).isNotNull();
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_KEYGUARD_INTERACTOR_FOR_FLOATING_BUTTON, Flags.FLAG_SCENE_CONTAINER,
+            Flags.FLAG_FLOATING_MENU_ON_HEADLESS_USER})
+    public void onBouncerOverlay_notHeadlessSystem_destroysWidget() {
+        mController = setUpController();
+        enableAccessibilityFloatingMenuConfig();
+        when(mHeadlessSystemUserMode.isHeadlessSystemUserMode()).thenReturn(false);
+        mController.mSceneConsumer.accept(Scenes.Lockscreen);
+
+        mController.mOverlayConsumer.accept(Set.of(Overlays.Bouncer));
+
+        assertThat(mController.mFloatingMenu).isNull();
+    }
+
     private AccessibilityFloatingMenuController setUpController() {
         final WindowManager windowManager = mContext.getSystemService(WindowManager.class);
         final DisplayManager displayManager = mContext.getSystemService(DisplayManager.class);
@@ -558,7 +605,8 @@ public class AccessibilityFloatingMenuControllerTest extends SysuiTestCase {
                         new Handler(mTestableLooper.getLooper()),
                         /*coroutineScope= */ null ,
                         mKeyguardInteractor, mSceneInteractor, mUserTracker,
-                        mKeyboardRepository, mPointerDeviceRepository);
+                        mKeyboardRepository, mPointerDeviceRepository,
+                        mHeadlessSystemUserMode);
         controller.init();
 
         return controller;
