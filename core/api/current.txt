@@ -5260,6 +5260,10 @@ package android.app {
     method @NonNull public android.app.AppInteractionAttribution.Builder setInteractionUri(@Nullable android.net.Uri);
   }
 
+  @FlaggedApi("android.app.appfunctions.flags.enable_app_interaction_api") public final class AppInteractionContract implements android.provider.BaseColumns {
+    method @NonNull public static java.util.List<java.lang.String> getDeviceAssistancePackageNames(@NonNull android.content.Context);
+  }
+
   public class AppOpsManager {
     method @FlaggedApi("android.permission.flags.check_op_overload_api_enabled") public int checkOp(@NonNull String, int, @NonNull String);
     method @FlaggedApi("android.permission.flags.check_op_overload_api_enabled") public int checkOp(@NonNull String, int, @NonNull String, @Nullable String);
