@@ -126,6 +126,7 @@ constructor(
     override suspend fun onActivated(): Nothing {
         coroutineScope {
             launch { super.onActivated() }
+                .invokeOnCompletion { simBouncerInteractor.resetSimPukUserInput() }
             launch {
                 requests.receiveAsFlow().collect { request ->
                     when (request) {
