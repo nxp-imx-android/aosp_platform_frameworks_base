@@ -8840,7 +8840,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                     throw new IllegalArgumentException(
                             "Render thread does not belong to process");
                 }
-                proc.setRenderThreadTid(tid);
+                mProcessStateController.setRenderThreadTid(proc, tid);
                 if (DEBUG_OOM_ADJ) {
                     Slog.d("UI_FIFO", "Set RenderThread tid " + tid + " for pid " + pid);
                 }
@@ -17775,7 +17775,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                     } else {
                         // We delay killing processes that are not in the background or running a
                         // receiver.
-                        pr.setWaitingToKill("remove task");
+                        mProcessStateController.setWaitingToKill(pr, "remove task");
                     }
 
                     // Send the profiling trigger. This is done both in cases where we kill

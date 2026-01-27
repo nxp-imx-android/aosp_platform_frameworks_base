@@ -1239,7 +1239,7 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
             unlinkDeathRecipient();
         }
         makeInactive(processStats);
-        setWaitingToKill(null);
+        mService.mProcessStateController.setWaitingToKill(this, /* reason= */ null);
 
         super.onCleanupApplicationRecordLSP();
         mService.mProcessStateController.onCleanupApplicationRecord(mServices);
@@ -1749,7 +1749,7 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
     public void onStartActivity(int topProcessState, boolean setProfileProc, String packageName,
             long versionCode) {
         synchronized (mService) {
-            setWaitingToKill(null);
+            mService.mProcessStateController.setWaitingToKill(this, /* reason= */ null);
             if (setProfileProc) {
                 synchronized (mService.mAppProfiler.mProfilerLock) {
                     mService.mAppProfiler.setProfileProcLPf(this);

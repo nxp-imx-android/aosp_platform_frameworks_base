@@ -2582,12 +2582,12 @@ public final class ProcessList extends ProcessListInternal
             if (ast != null) {
                 final boolean inBgRestricted = ast.isAppBackgroundRestricted(
                         app.info.uid, app.info.packageName);
-                if (inBgRestricted) {
-                    synchronized (mService) {
+                synchronized (mService) {
+                    if (inBgRestricted) {
                         mAppsInBackgroundRestricted.add(app);
                     }
+                    mService.mProcessStateController.setBackgroundRestricted(app, inBgRestricted);
                 }
-                app.setBackgroundRestricted(inBgRestricted);
             }
 
             final Process.ProcessStartResult startResult;
@@ -2815,7 +2815,7 @@ public final class ProcessList extends ProcessListInternal
                 return null;
             }
             app.mErrorState.setCrashHandler(crashHandler);
-            app.setIsolatedEntryPoint(entryPoint);
+            mService.mProcessStateController.setIsolatedEntryPoint(app, entryPoint);
             app.setIsolatedEntryPointArgs(entryPointArgs);
             if (predecessor != null) {
                 app.mPredecessor = predecessor;
@@ -3362,7 +3362,7 @@ public final class ProcessList extends ProcessListInternal
             uidRec.addProcess(proc);
 
             // Reset render thread tid if it was already set, so new process can set it again.
-            proc.setRenderThreadTid(0);
+            mService.mProcessStateController.setRenderThreadTid(proc, 0);
             mProcessNames.put(proc.processName, proc.uid, proc);
         }
         if (proc.isolated) {
@@ -3761,7 +3761,7 @@ public final class ProcessList extends ProcessListInternal
     @GuardedBy({"mService", "mProcLock"})
     private int offerLruProcessInternalLSP(ProcessRecord app, long now, String what, Object obj,
             ProcessRecord srcApp) {
-        app.setLastActivityTime(now);
+        mService.mProcessStateController.setLastActivityTime(app, now);
 
         if (app.hasActivitiesOrRecentTasks()) {
             // Don't want to touch dependent processes that are hosting activities.
@@ -4061,7 +4061,7 @@ public final class ProcessList extends ProcessListInternal
         incrementLruSeq();
         final long now = SystemClock.uptimeMillis();
         final ProcessServiceRecord psr = app.mServices;
-        app.setLastActivityTime(now);
+        mService.mProcessStateController.setLastActivityTime(app, now);
 
         // First a quick reject: if the app is already at the position we will
         // put it, then there is nothing to do.
@@ -5666,7 +5666,7 @@ public final class ProcessList extends ProcessListInternal
             final long nowElapsed = SystemClock.elapsedRealtime();
             uidRec.forEachProcess(app -> {
                 if (TextUtils.equals(app.info.packageName, packageName)) {
-                    app.setBackgroundRestricted(restricted);
+                    app.mService.mProcessStateController.setBackgroundRestricted(app, restricted);
                     if (restricted) {
                         mAppsInBackgroundRestricted.add(app);
                         final long future = killAppIfBgRestrictedAndCachedIdleLocked(

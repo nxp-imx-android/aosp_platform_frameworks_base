@@ -689,6 +689,48 @@ public class ProcessStateController {
     }
 
     /**
+     * Note that the given process is waiting to be killed.
+     */
+    @GuardedBy("mLock")
+    public void setWaitingToKill(@NonNull ProcessRecordInternal proc,
+            @Nullable String waitingToKill) {
+        proc.setWaitingToKill(waitingToKill);
+    }
+
+    /**
+     * Note the render thread TID of the given process.
+     */
+    @GuardedBy({"mLock", "mProcLock"})
+    public void setRenderThreadTid(@NonNull ProcessRecordInternal proc, int tid) {
+        proc.setRenderThreadTid(tid);
+    }
+
+    /**
+     * Set the last time the given process was active.
+     */
+    @GuardedBy({"mLock", "mProcLock"})
+    public void setLastActivityTime(@NonNull ProcessRecordInternal proc, long lastActivityTime) {
+        proc.setLastActivityTime(lastActivityTime);
+    }
+
+    /**
+     * Note whether the given process is background restricted.
+     */
+    @GuardedBy("mLock")
+    public void setBackgroundRestricted(@NonNull ProcessRecordInternal proc, boolean restricted) {
+        proc.setBackgroundRestricted(restricted);
+    }
+
+    /**
+     * Sets the entry point for an isolated process.
+     */
+    @GuardedBy("mLock")
+    public void setIsolatedEntryPoint(@NonNull ProcessRecordInternal proc,
+            @Nullable String isolatedEntryPoint) {
+        proc.setIsolatedEntryPoint(isolatedEntryPoint);
+    }
+
+    /**
      * Set the maximum adj score a process can be assigned.
      */
     @GuardedBy("mLock")
