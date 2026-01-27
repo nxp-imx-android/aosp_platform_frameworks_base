@@ -162,6 +162,7 @@ public:
     }
 
     SkPath& getPath() const { return this->ensurePath(); }
+    SkPathBuilder& getBuilder() const { return this->ensureBuilder(); }
 
 private:
     PathWrapper(const PathWrapper&) = delete;
@@ -197,6 +198,10 @@ static PathWrapper* AsPathWrapper(jlong objHandle) {
 
 SkPath* AsSkPath(jlong objHandle) {
     return objHandle ? &AsPathWrapper(objHandle)->getPath() : nullptr;
+}
+
+SkPathBuilder* AsSkPathBuilder(jlong objHandle) {
+    return objHandle ? &AsPathWrapper(objHandle)->getBuilder() : nullptr;
 }
 
 class SkPathGlue {
