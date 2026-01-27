@@ -502,6 +502,10 @@ class TransitionController {
         return mTransitionPlayers.getLast().mPlayer;
     }
 
+    int getTransitionPlayerCount() {
+        return mTransitionPlayers.size();
+    }
+
     boolean isShellTransitionsEnabled() {
         return !mTransitionPlayers.isEmpty() || Flags.fallbackTransitionPlayer();
     }
