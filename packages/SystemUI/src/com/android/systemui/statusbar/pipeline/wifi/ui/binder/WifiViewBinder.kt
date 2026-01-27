@@ -29,7 +29,6 @@ import com.android.systemui.lifecycle.repeatWhenAttached
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.StatusBarIconView
 import com.android.systemui.statusbar.StatusBarIconView.STATE_HIDDEN
-import com.android.systemui.statusbar.core.NewStatusBarIcons
 import com.android.systemui.statusbar.pipeline.shared.ui.binder.ModernStatusBarViewBinding
 import com.android.systemui.statusbar.pipeline.shared.ui.binder.ModernStatusBarViewVisibilityHelper
 import com.android.systemui.statusbar.pipeline.wifi.ui.model.WifiIcon
@@ -59,8 +58,6 @@ object WifiViewBinder {
         val activityInView = view.requireViewById<ImageView>(R.id.wifi_in)
         val activityOutView = view.requireViewById<ImageView>(R.id.wifi_out)
         val activityContainerView = view.requireViewById<View>(R.id.inout_container)
-        val airplaneSpacer = view.requireViewById<View>(R.id.wifi_airplane_spacer)
-        val signalSpacer = view.requireViewById<View>(R.id.wifi_signal_spacer)
 
         view.isVisible = true
         iconView.isVisible = true
@@ -131,21 +128,6 @@ object WifiViewBinder {
                 launch {
                     viewModel.isActivityContainerVisible.distinctUntilChanged().collect { visible ->
                         activityContainerView.isVisible = visible
-                    }
-                }
-
-                if (!NewStatusBarIcons.isEnabled) {
-                    launch {
-                        viewModel.isAirplaneSpacerVisible.distinctUntilChanged().collect { visible
-                            ->
-                            airplaneSpacer.isVisible = visible
-                        }
-                    }
-
-                    launch {
-                        viewModel.isSignalSpacerVisible.distinctUntilChanged().collect { visible ->
-                            signalSpacer.isVisible = visible
-                        }
                     }
                 }
 
