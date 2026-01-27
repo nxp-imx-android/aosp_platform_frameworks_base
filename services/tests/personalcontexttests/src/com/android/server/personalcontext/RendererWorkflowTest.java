@@ -104,9 +104,7 @@ public class RendererWorkflowTest {
         final RendererWorkflow.ComponentProvider provider =
                 mock(RendererWorkflow.ComponentProvider.class);
         final ContextInsight insight = buildInsight(
-                List.of(new RenderToken.RenderTokenBuilder()
-                        .setRendererComponentId(UUID.randomUUID())
-                        .build()),
+                List.of(new RenderToken(UUID.randomUUID())),
                 key);
 
         doReturn(null).when(provider).getRendererById(any());
@@ -129,9 +127,7 @@ public class RendererWorkflowTest {
         final UUID componentId = UUID.randomUUID();
         final SecretKeySpec key = ContextHintTestUtils.generateSignedHintKey();
         final Renderer renderer = mock(Renderer.class);
-        final RenderToken renderToken = new RenderToken.RenderTokenBuilder()
-                .setRendererComponentId(componentId)
-                .build();
+        final RenderToken renderToken = new RenderToken(componentId);
         final RendererWorkflow.EventListener listener = mock(RendererWorkflow.EventListener.class);
         final RendererWorkflow.ComponentProvider provider =
                 mock(RendererWorkflow.ComponentProvider.class);
@@ -222,15 +218,11 @@ public class RendererWorkflowTest {
         final ContextInsight insight = new BundleInsight.Builder()
                 .addOriginHint(
                         new ContextHintWithSignature.Builder(new BundleHint.Builder().build(), key)
-                                .addRenderTokens(List.of(new RenderToken.RenderTokenBuilder()
-                                        .setRendererComponentId(UUID.randomUUID())
-                                        .build()))
+                                .addRenderTokens(List.of(new RenderToken(UUID.randomUUID())))
                                 .build())
                 .addOriginHint(
                         new ContextHintWithSignature.Builder(new BundleHint.Builder().build(), key)
-                                .addRenderTokens(List.of(new RenderToken.RenderTokenBuilder()
-                                        .setRendererComponentId(UUID.randomUUID())
-                                        .build()))
+                                .addRenderTokens(List.of(new RenderToken(UUID.randomUUID())))
                                 .build())
                 .build();
 

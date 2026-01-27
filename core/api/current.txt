@@ -43893,18 +43893,13 @@ package android.service.personalcontext {
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class RenderToken implements java.lang.Comparable<android.service.personalcontext.RenderToken> android.os.Parcelable {
+    ctor public RenderToken(@NonNull java.util.UUID);
     method public int compareTo(@NonNull android.service.personalcontext.RenderToken);
     method public int describeContents();
     method @NonNull public java.util.UUID getRendererComponentId();
     method @NonNull public java.util.UUID getTokenId();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.service.personalcontext.RenderToken> CREATOR;
-  }
-
-  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class RenderToken.RenderTokenBuilder {
-    ctor public RenderToken.RenderTokenBuilder();
-    method @NonNull public android.service.personalcontext.RenderToken build();
-    method @NonNull public android.service.personalcontext.RenderToken.RenderTokenBuilder setRendererComponentId(@NonNull java.util.UUID);
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class Token implements android.os.Parcelable {
