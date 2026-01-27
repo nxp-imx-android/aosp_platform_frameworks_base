@@ -102,8 +102,8 @@ public final class RatingLevelInfo implements Parcelable {
     }
 
     private RatingLevelInfo(Parcel in) {
-        mLevelText = in.readString();
-        mLevelAbbrText = in.readString();
+        mLevelText = in.readString8();
+        mLevelAbbrText = in.readString8();
         mIsBlocked = in.readByte() != 0; // Reading boolean
     }
 
