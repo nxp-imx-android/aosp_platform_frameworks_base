@@ -429,6 +429,71 @@ public final class MediaQualityManager {
     }
 
     /**
+     * Gets the static equalizer capabilities of the device.
+     *
+     * <p>This includes information like the supported gain range (min/max levels) and the
+     * center frequencies of all available equalizer bands. This information is static and
+     * is not expected to change at runtime.
+     *
+     * @return An {@link EqualizerCapabilities} object describing the hardware's equalizer
+     *         capabilities, or {@code null} if the information is not available.
+     * @throws SecurityException if the caller does not have the required permission.
+     *
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    @Nullable
+    public EqualizerCapabilities getEqualizerCapabilities() {
+        try {
+            // The mService is the binder object pointing to the MediaQualityService.
+            // The userId is typically retrieved from the context.
+            return mService.getEqualizerCapabilities(mContext.getUserId());
+        } catch (RemoteException e) {
+            // Rethrow the exception as a standard system server exception.
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Gets the current equalizer settings.
+     *
+     * <p>This returns a list of all available bands and their current gain levels.
+     *
+     * @return An {@link EqualizerSettings} object containing the current settings for all
+     *         equalizer bands, or {@code null} if the settings are not available.
+     * @throws SecurityException if the caller does not have the required permission.
+     *
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    @Nullable
+    public EqualizerSettings getEqualizerSettings() {
+        try {
+            return mService.getEqualizerSettings(mContext.getUserId());
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Sets the desired equalizer settings.
+     *
+     * <p>The caller provides an {@link EqualizerSettings} object containing the new
+     * settings. The framework must ensure the bands provided in the {@code settings} object
+     * match the frequencies reported by {@link #getEqualizerCapabilities()}.
+     *
+     * @param settings The {@link EqualizerSettings} object containing the new desired settings.
+     * @throws SecurityException if the caller does not have the required permission.
+     *
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public void setEqualizerSettings(@Nullable EqualizerSettings settings) {
+        try {
+            mService.setEqualizerSettings(settings, mContext.getUserId());
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
      * Checks if a specific display panel technology is supported by the device.
      * <p>
      * This is a blocking call and should not be called on the main thread.

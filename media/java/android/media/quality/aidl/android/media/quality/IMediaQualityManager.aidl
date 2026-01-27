@@ -17,6 +17,8 @@
 package android.media.quality;
 
 import android.media.quality.AmbientBacklightSettings;
+import android.media.quality.EqualizerCapabilities;
+import android.media.quality.EqualizerSettings;
 import android.media.quality.IActiveProcessingPictureListener;
 import android.media.quality.IAmbientBacklightCallback;
 import android.media.quality.IPictureProfileCallback;
@@ -98,4 +100,8 @@ interface IMediaQualityManager {
     void setAmbientBacklightSettings(in AmbientBacklightSettings settings, int userId);
     void setAmbientBacklightEnabled(in boolean enabled, int userId);
     boolean isAmbientBacklightEnabled(int userId);
+
+    EqualizerCapabilities getEqualizerCapabilities(int userId);
+    EqualizerSettings getEqualizerSettings(int userId);
+    void setEqualizerSettings(in EqualizerSettings Settings, int userId);
 }

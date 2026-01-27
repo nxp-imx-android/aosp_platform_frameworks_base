@@ -2216,9 +2216,14 @@ public class MediaQualityContract {
         public static final String PARAMETER_SURROUND_SOUND = "surround_sound";
 
         /**
-         * @hide
+         * Equalizer can fine-tune the audio output by adjusting the loudness of different
+         * frequency bands;
+         * Normally each band have a value of -50 to 50.
+         *
+         * <p>Type: String
          */
-        public static final String PARAMETER_EQUALIZER_DETAIL = "equalizer_detail";
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+        public static final String PARAMETER_EQUALIZER_SETTINGS = "equalizer_settings";
 
         /**
          * Enable/disable speaker output.
