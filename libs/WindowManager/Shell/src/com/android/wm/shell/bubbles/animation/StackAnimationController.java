@@ -19,6 +19,8 @@ package com.android.wm.shell.bubbles.animation;
 import static com.android.wm.shell.bubbles.BubblePositioner.NUM_VISIBLE_WHEN_RESTING;
 import static com.android.wm.shell.bubbles.animation.FlingToDismissUtils.getFlingToDismissTargetWidth;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.content.ContentResolver;
 import android.content.res.Resources;
 import android.graphics.PointF;
@@ -993,6 +995,15 @@ public class StackAnimationController extends
                 .withEndAction(() -> {
                     v.setTag(R.id.reorder_animator_tag, null);
                 });
+        animator.setListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationCancel(Animator animation) {
+                // Set scale and alpha to end-values to clean up animation state
+                v.setScaleX(1f);
+                v.setScaleY(1f);
+                v.setAlpha(1f);
+            }
+        });
         v.setTag(R.id.reorder_animator_tag, animator);
         if (mPositioner.showBubblesVertically()) {
             animator.translationX(endX);
