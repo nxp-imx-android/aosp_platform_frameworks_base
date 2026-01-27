@@ -53,6 +53,7 @@ import android.graphics.Insets;
 import android.os.Build;
 import android.os.RemoteException;
 import android.os.SystemClock;
+import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.provider.Settings;
 import android.server.wm.DumpOnFailure;
 import android.server.wm.LockScreenSession;
@@ -63,6 +64,7 @@ import android.view.WindowInsets;
 import android.view.WindowInsetsAnimation;
 import android.view.WindowManagerGlobal;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.Flags;
 import android.view.inputmethod.InputMethodManager;
 
 import androidx.annotation.NonNull;
@@ -141,6 +143,8 @@ public class InputMethodServiceTest {
     private final WindowManagerStateHelper mWmState = new WindowManagerStateHelper();
 
     private final GestureNavSwitchHelper mGestureNavSwitchHelper = new GestureNavSwitchHelper();
+
+    private final DeviceFlagsValueProvider mFlagsValueProvider = new DeviceFlagsValueProvider();
 
     @Rule
     public final TestName mName = new TestName();
@@ -1032,14 +1036,21 @@ public class InputMethodServiceTest {
             final var info = mImm.getCurrentInputMethodInfo();
             assertEquals(mInputMethodId, info != null ? info.getId() : null);
 
-            final var container = mUiDevice.wait(Until.findObject(By.res("android:id/container")),
+
+            final String containerResId =
+                    mFlagsValueProvider.getBoolean(Flags.FLAG_IME_SWITCHER_MENU_SYSTEMUI)
+                            ? "container" : "android:id/container";
+            final var container = mUiDevice.wait(Until.findObject(By.res(containerResId)),
                     TIMEOUT_MS);
             assertNotNull("Container view should be found.", container);
 
             // Make sure the container starts at the top.
             container.scroll(Direction.UP, SCROLL_TOP_PERCENT);
+            final String buttonResId =
+                    mFlagsValueProvider.getBoolean(Flags.FLAG_IME_SWITCHER_MENU_SYSTEMUI)
+                            ? "button1" : "android:id/button1";
             final var languageSettingsButtonUiObject = container.scrollUntil(Direction.DOWN,
-                    Until.findObject(By.res("android:id/button1")));
+                    Until.findObject(By.res(buttonResId)));
             assertNotNull("Language settings button should be found",
                     languageSettingsButtonUiObject);
 
@@ -1088,14 +1099,20 @@ public class InputMethodServiceTest {
 
             showImeSwitcherMenu(true /* showWhenLocked */);
 
-            final var container = mUiDevice.wait(Until.findObject(By.res("android:id/container")),
+            final String containerResId =
+                    mFlagsValueProvider.getBoolean(Flags.FLAG_IME_SWITCHER_MENU_SYSTEMUI)
+                            ? "container" : "android:id/container";
+            final var container = mUiDevice.wait(Until.findObject(By.res(containerResId)),
                     TIMEOUT_MS);
             assertNotNull("Container view should be found.", container);
 
             // Make sure the container starts at the top.
             container.scroll(Direction.UP, SCROLL_TOP_PERCENT);
+            final String buttonResId =
+                    mFlagsValueProvider.getBoolean(Flags.FLAG_IME_SWITCHER_MENU_SYSTEMUI)
+                            ? "button1" : "android:id/button1";
             final boolean hasButton = container.scrollUntil(Direction.DOWN,
-                    Until.hasObject(By.res("android:id/button1")));
+                    Until.hasObject(By.res(buttonResId)));
             assertFalse("Language settings button should not be found", hasButton);
 
             context.sendBroadcast(
@@ -1126,14 +1143,20 @@ public class InputMethodServiceTest {
         try (var ignored = withDeviceProvisioned(context, false /* provisioned */)) {
             showImeSwitcherMenu(false /* showWhenLocked */);
 
-            final var container = mUiDevice.wait(Until.findObject(By.res("android:id/container")),
+            final String containerResId =
+                    mFlagsValueProvider.getBoolean(Flags.FLAG_IME_SWITCHER_MENU_SYSTEMUI)
+                            ? "container" : "android:id/container";
+            final var container = mUiDevice.wait(Until.findObject(By.res(containerResId)),
                     TIMEOUT_MS);
             assertNotNull("Container view should be found.", container);
 
             // Make sure the container starts at the top.
             container.scroll(Direction.UP, SCROLL_TOP_PERCENT);
+            final String buttonResId =
+                    mFlagsValueProvider.getBoolean(Flags.FLAG_IME_SWITCHER_MENU_SYSTEMUI)
+                            ? "button1" : "android:id/button1";
             final boolean hasButton = container.scrollUntil(Direction.DOWN,
-                    Until.hasObject(By.res("android:id/button1")));
+                    Until.hasObject(By.res(buttonResId)));
             assertFalse("Language settings button should not be found", hasButton);
 
             context.sendBroadcast(
