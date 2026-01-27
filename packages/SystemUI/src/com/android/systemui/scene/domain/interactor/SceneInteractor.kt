@@ -103,7 +103,7 @@ constructor(
     val currentScene: StateFlow<SceneKey> = repository.currentScene
 
     val currentSceneAsState: SceneKey
-        get() = repository.currentSceneAsState
+        get() = repository.transitionState.currentScene
 
     /**
      * The current set of overlays to be shown (may be empty).
@@ -122,13 +122,13 @@ constructor(
      * 3. When transitioning, what the progress of the transition is.
      */
     val transitionStateFlow: StateFlow<ObservableTransitionState> =
-        repository.transitionState
+        repository.transitionStateFlow
             .onEach { logger.logSceneTransition(it) }
             .stateInTraced(
                 name = "transitionState",
                 scope = applicationScope,
                 started = SharingStarted.Eagerly,
-                initialValue = repository.transitionState.value,
+                initialValue = repository.transitionStateFlow.value,
             )
 
     /**
@@ -174,7 +174,7 @@ constructor(
             )
 
     /** Whether the scene container is visible. */
-    val isVisible: StateFlow<Boolean> =
+    val isVisibleFlow: StateFlow<Boolean> =
         combine(
                 repository.isVisible,
                 repository.isRemoteUserInputOngoing,

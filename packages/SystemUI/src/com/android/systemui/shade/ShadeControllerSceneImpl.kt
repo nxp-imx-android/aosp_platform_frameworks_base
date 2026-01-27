@@ -192,7 +192,7 @@ constructor(
 
     override fun setVisibilityListener(listener: ShadeVisibilityListener) {
         scope.launch {
-            sceneInteractor.isVisible.collect { isVisible ->
+            sceneInteractor.isVisibleFlow.collect { isVisible ->
                 withContext(mainDispatcher) { listener.expandedVisibleChanged(isVisible) }
             }
         }

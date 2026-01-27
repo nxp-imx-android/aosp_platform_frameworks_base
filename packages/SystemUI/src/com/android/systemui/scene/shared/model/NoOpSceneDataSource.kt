@@ -27,7 +27,7 @@ import kotlinx.coroutines.flow.asStateFlow
 class NoOpSceneDataSource(initialSceneKey: SceneKey) : SceneDataSource {
     override val currentScene: StateFlow<SceneKey> = MutableStateFlow(initialSceneKey).asStateFlow()
 
-    override val currentSceneAsState: SceneKey = initialSceneKey
+    override val transitionState: TransitionState = TransitionState.Idle(initialSceneKey)
 
     override val currentOverlays: StateFlow<Set<OverlayKey>> =
         MutableStateFlow(emptySet<OverlayKey>()).asStateFlow()

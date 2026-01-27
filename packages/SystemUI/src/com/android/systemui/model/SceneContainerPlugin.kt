@@ -102,7 +102,7 @@ constructor(
                     scene = idleState.currentScene,
                     sceneBehind = sceneBehind,
                     overlays = idleState.currentOverlays,
-                    isVisible = sceneInteractor.get().isVisible.value,
+                    isVisible = sceneInteractor.get().isVisibleFlow.value,
                     shadeMode = shadeMode,
                 )
             )
