@@ -80,7 +80,7 @@ constructor(
             .hydratedStateOf("PreCaptureViewModel#recordingIsStarted")
 
     private val captureTypeSource = MutableStateFlow(ScreenCaptureType.SCREENSHOT)
-    private val captureRegionSource = MutableStateFlow(ScreenCaptureRegion.FULLSCREEN)
+    private val captureRegionSource = MutableStateFlow(ScreenCaptureRegion.PARTIAL)
 
     private val regionBoxSource = MutableStateFlow<Rect?>(null)
 

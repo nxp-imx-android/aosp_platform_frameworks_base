@@ -112,7 +112,7 @@ constructor(
             REGION_FULLSCREEN -> ScreenCaptureRegion.FULLSCREEN
             REGION_PARTIAL -> ScreenCaptureRegion.PARTIAL
             REGION_APP_WINDOW -> ScreenCaptureRegion.APP_WINDOW
-            else -> ScreenCaptureRegion.FULLSCREEN
+            else -> ScreenCaptureRegion.PARTIAL
         }
     }
 
