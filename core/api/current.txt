@@ -28440,6 +28440,7 @@ package android.media.quality {
     field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String LEVEL_RANGE_AUTO = "AUTO";
     field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String LEVEL_RANGE_FULL = "FULL";
     field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String LEVEL_RANGE_LIMITED = "LIMITED";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String LEVEL_USER = "level_user";
     field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final int PANEL_TECHNOLOGY_OLED = 0; // 0x0
     field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String PICTURE_QUALITY_EVENT_TYPE_BBD_RESULT = "BBD_RESULT";
     field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String PICTURE_QUALITY_EVENT_TYPE_CAPTUREPOINT_INFO_CHANGE = "CAPTUREPOINT_INFO_CHANGE";
@@ -28473,9 +28474,15 @@ package android.media.quality {
     field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String STREAM_STATUS_IMAX_SDR = "IMAXSDR";
     field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String STREAM_STATUS_SDR = "SDR";
     field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String STREAM_STATUS_TCH = "TCH";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String THREE_D_MODE_FRAME_PACKING = "frame_packing";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String THREE_D_MODE_OFF = "off";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String THREE_D_MODE_SIDE_BY_SIDE = "side_by_side";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String THREE_D_MODE_TOP_AND_BOTTOM = "top_and_bottom";
   }
 
   public static final class MediaQualityContract.PictureQuality {
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String PARAMETER_3D_MODE = "3d_mode";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String PARAMETER_3D_TO_2D = "3d_to_2d";
     field public static final String PARAMETER_AUTO_PICTURE_QUALITY_ENABLED = "auto_picture_quality_enabled";
     field public static final String PARAMETER_AUTO_SUPER_RESOLUTION_ENABLED = "auto_super_resolution_enabled";
     field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String PARAMETER_BLACK_STRETCH = "black_stretch";
@@ -28539,8 +28546,12 @@ package android.media.quality {
     field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String PARAMETER_LEVEL_RANGE = "level_range";
     field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String PARAMETER_LOW_BLUE_LIGHT = "low_blue_light";
     field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String PARAMETER_LOW_LATENCY = "low_latency";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String PARAMETER_MEMC_DEBLUR = "memc_deblur";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String PARAMETER_MEMC_DEJUDDER = "memc_dejudder";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String PARAMETER_MEMC_EFFECT = "memc_effect";
     field public static final String PARAMETER_MPEG_NOISE_REDUCTION = "mpeg_noise_reduction";
     field public static final String PARAMETER_NOISE_REDUCTION = "noise_reduction";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String PARAMETER_ORIGINAL_FRAMERATE = "original_framerate";
     field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String PARAMETER_OSD_BLUE_GAIN = "osd_blue_gain";
     field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String PARAMETER_OSD_BLUE_OFFSET = "osd_blue_offset";
     field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String PARAMETER_OSD_CONTRAST = "osd_contrast";
@@ -28564,7 +28575,11 @@ package android.media.quality {
     field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String PARAMETER_AD_VOLUME = "ad_volume";
     field public static final String PARAMETER_AUTO_VOLUME_CONTROL = "auto_volume_control";
     field public static final String PARAMETER_BALANCE = "balance";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String PARAMETER_BALANCE_BLUETOOTH = "balance_bluetooth";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String PARAMETER_BALANCE_HEADPHONES = "balance_headphones";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String PARAMETER_BALANCE_SPEAKER = "balance_speaker";
     field public static final String PARAMETER_BASS = "bass";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String PARAMETER_BT_LATENCY_US = "bt_latency_us";
     field public static final String PARAMETER_DIALOGUE_ENHANCER = "dialogue_enhancer";
     field public static final String PARAMETER_DIGITAL_OUTPUT_DELAY_MILLIS = "digital_output_delay_millis";
     field public static final String PARAMETER_DIGITAL_OUTPUT_MODE = "digital_output_mode";
@@ -28584,6 +28599,7 @@ package android.media.quality {
     field public static final String PARAMETER_DTS_VIRTUAL_X_TRU_SURROUND_X = "dts_virtual_x_tru_surround_x";
     field public static final String PARAMETER_DTS_VIRTUAL_X_TRU_VOLUME_HD = "dts_virtual_x_tru_volume_hd";
     field public static final String PARAMETER_EARC = "earc";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String PARAMETER_HI_RES_AUDIO = "hi_res_audio";
     field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String PARAMETER_PAN_FADE_ENABLE = "pan_fade_enable";
     field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String PARAMETER_SOUND_STYLE = "sound_style";
     field public static final String PARAMETER_SPEAKERS = "speakers";
