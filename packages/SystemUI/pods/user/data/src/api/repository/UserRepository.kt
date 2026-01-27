@@ -34,6 +34,7 @@ import kotlinx.coroutines.flow.map
  * Abstracts-away data sources and their schemas so the rest of the app doesn't need to worry about
  * upstream changes.
  */
+@Suppress("INAPPLICABLE_JVM_NAME")
 public interface UserRepository {
     /** User switcher related settings. */
     public val userSwitcherSettings: Flow<UserSwitcherSettingsModel>
@@ -45,7 +46,7 @@ public interface UserRepository {
     public val selectedUser: StateFlow<SelectedUserModel>
 
     /** [UserInfo] of the currently-selected user. */
-    public val selectedUserInfo: Flow<UserInfo>
+    @get:JvmName("selectedUserInfo") public val selectedUserInfo: Flow<UserInfo>
 
     /** Tracks whether the main user is unlocked. */
     public fun isUserUnlocked(userHandle: UserHandle?): Flow<Boolean>

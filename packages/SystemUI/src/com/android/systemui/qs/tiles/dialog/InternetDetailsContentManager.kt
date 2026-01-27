@@ -512,7 +512,11 @@ constructor(
         }
 
         lifecycleRegistry.currentState = Lifecycle.State.RESUMED
-        internetDetailsContentController.onStart(internetDetailsCallback, canConfigWifi)
+        internetDetailsContentController.onStart(
+            internetDetailsCallback,
+            canConfigWifi,
+            coroutineScope,
+        )
         if (!canConfigWifi) {
             hideWifiViews()
         }
