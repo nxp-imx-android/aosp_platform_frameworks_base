@@ -902,8 +902,8 @@ public class Bubble implements BubbleViewProvider {
 
     /**
      * @return the icon set on BubbleMetadata, if it exists. This is only non-null for bubbles
-     * created via a PendingIntent. This is null for bubbles created by a shortcut, as we use the
-     * icon from the shortcut.
+     * created via a PendingIntent. For bubbles created by a shortcut, this can be from the
+     * activity/app info or null. In the null case, we use the icon from the shortcut.
      */
     @Nullable
     public Icon getIcon() {

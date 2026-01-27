@@ -130,6 +130,7 @@ class BubbleStackViewTest {
                 bubbleLogger,
                 positioner,
                 BubbleEducationController(context),
+                FakeBubbleAppInfoProvider(),
                 shellExecutor,
                 shellExecutor,
             )

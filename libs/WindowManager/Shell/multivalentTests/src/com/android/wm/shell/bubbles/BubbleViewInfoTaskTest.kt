@@ -125,12 +125,14 @@ class BubbleViewInfoTaskTest {
         bubbleLogger = BubbleLogger(UiEventLoggerFake())
         val instanceIdSequence = InstanceIdSequence(/* instanceIdMax= */ 10)
         sessionTracker = BubbleSessionTrackerImpl(instanceIdSequence, bubbleLogger)
+        appInfoProvider = FakeBubbleAppInfoProvider()
         val bubbleData =
             BubbleData(
                 context,
                 bubbleLogger,
                 bubblePositioner,
                 BubbleEducationController(context),
+                appInfoProvider,
                 mainExecutor,
                 bgExecutor,
             )
@@ -145,7 +147,6 @@ class BubbleViewInfoTaskTest {
                 BubblePersistentRepository(context),
             )
 
-        appInfoProvider = FakeBubbleAppInfoProvider()
         bubbleViewInfoTaskFactory =
             FakeBubbleViewInfoTaskFactory(
                 bubblePositioner,

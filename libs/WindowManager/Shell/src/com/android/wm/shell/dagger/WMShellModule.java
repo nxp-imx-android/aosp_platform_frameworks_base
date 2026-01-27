@@ -311,10 +311,12 @@ public abstract class WMShellModule {
             BubbleLogger logger,
             BubblePositioner positioner,
             BubbleEducationController educationController,
+            BubbleAppInfoProvider appInfoProvider,
             @ShellMainThread ShellExecutor mainExecutor,
             @ShellBackgroundThread ShellExecutor bgExecutor) {
         return new BubbleData(
-                context, logger, positioner, educationController, mainExecutor, bgExecutor);
+                context, logger, positioner, educationController, appInfoProvider, mainExecutor,
+                bgExecutor);
     }
 
     @WMSingleton

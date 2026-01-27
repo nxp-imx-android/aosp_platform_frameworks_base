@@ -17,8 +17,12 @@
 package com.android.wm.shell.bubbles.appinfo
 
 import android.content.Context
+import android.content.Intent
+import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
+import android.graphics.drawable.Icon
 import android.util.Log
+import com.android.wm.shell.Flags
 import com.android.wm.shell.bubbles.Bubble
 import com.android.wm.shell.bubbles.BubbleController
 import javax.inject.Inject
@@ -37,6 +41,25 @@ class PackageManagerBubbleAppInfoProvider @Inject constructor() : BubbleAppInfoP
         // App name & app icon
         val pm = BubbleController.getPackageManagerForUser(context, bubble.user.identifier)
         try {
+            // Try to load name and icon from the activity info if the component is available
+            if (Flags.useBubbleIconFromActivityInfo()) {
+                val intent = bubble.intent
+                val component = intent?.component
+                if (intent != null && component != null) {
+                    val activityInfo = pm.getActivityInfo(component, /* flags= */ 0)
+                    val activityName = activityInfo.loadLabel(pm)?.toString()
+                    val icon = getActivityInfoIcon(activityInfo, bubble.packageName)
+                    val activityInfoIcon = icon?.loadDrawable(context)
+                    if (activityName != null && activityInfoIcon != null) {
+                        return BubbleAppInfo(
+                            appName = activityName,
+                            appIcon = activityInfoIcon,
+                            user = bubble.user,
+                        )
+                    }
+                }
+            }
+            // Fallback to name and icon from application info
             val appInfo =
                 pm.getApplicationInfo(
                     bubble.packageName,
@@ -54,5 +77,48 @@ class PackageManagerBubbleAppInfoProvider @Inject constructor() : BubbleAppInfoP
             Log.w(TAG, "Unable to find package: ${bubble.packageName}")
             return null
         }
+    }
+
+    /**
+     * Retrieves the icon for the bubble from the activity info.
+     *
+     * @param pm the PackageManager to use
+     * @param intent the Intent of the bubble
+     * @return the activity icon or null if it cannot be loaded
+     */
+    override fun getActivityInfoIcon(pm: PackageManager, intent: Intent?): Icon? {
+        val component = intent?.component ?: return null
+        val packageName = component.packageName
+        try {
+            val activityInfo = pm.getActivityInfo(component, /* flags= */ 0)
+            return getActivityInfoIcon(activityInfo, packageName)
+        } catch (e: Exception) {
+            Log.w(TAG, "Error resolving getting icon for package: $packageName", e)
+        }
+        return null
+    }
+
+    /**
+     * Retrieves the icon for the bubble from the activity info.
+     *
+     * @param activityInfo the ActivityInfo to get data from
+     * @param packageName the package name of the bubble'd app
+     * @return the activity icon or null if it cannot be loaded
+     */
+    override fun getActivityInfoIcon(activityInfo: ActivityInfo, packageName: String): Icon? {
+        try {
+            val iconRes = activityInfo.iconResource
+            if (iconRes != 0) {
+                return Icon.createWithResource(packageName, iconRes)
+            } else {
+                val logoRes = activityInfo.logoResource
+                if (logoRes != 0) {
+                    return Icon.createWithResource(packageName, logoRes)
+                }
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "Error getting activity icon for package: $packageName", e)
+        }
+        return null
     }
 }

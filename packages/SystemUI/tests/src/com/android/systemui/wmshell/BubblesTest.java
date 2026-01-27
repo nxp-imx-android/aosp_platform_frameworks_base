@@ -178,6 +178,7 @@ import com.android.wm.shell.bubbles.BubbleViewInfoTask;
 import com.android.wm.shell.bubbles.BubbleViewProvider;
 import com.android.wm.shell.bubbles.Bubbles;
 import com.android.wm.shell.bubbles.StackEducationView;
+import com.android.wm.shell.bubbles.appinfo.BubbleAppInfoProvider;
 import com.android.wm.shell.bubbles.appinfo.PackageManagerBubbleAppInfoProvider;
 import com.android.wm.shell.bubbles.bar.BubbleBarLayerView;
 import com.android.wm.shell.bubbles.logging.BubbleLogger;
@@ -369,7 +370,7 @@ public class BubblesTest extends SysuiTestCase {
     private ShellTaskOrganizer mShellTaskOrganizer;
     private TaskViewRepository mTaskViewRepository;
     private TaskViewTransitions mTaskViewTransitions;
-    private PackageManagerBubbleAppInfoProvider mAppInfoProvider;
+    private BubbleAppInfoProvider mAppInfoProvider;
     private BubbleUserResolver mBubbleUserResolver;
 
     private TestableBubblePositioner mPositioner;
@@ -470,8 +471,9 @@ public class BubblesTest extends SysuiTestCase {
         mPositioner = new TestableBubblePositioner(mContext,
                 mContext.getSystemService(WindowManager.class));
         mPositioner.setMaxBubbles(5);
+        mAppInfoProvider = new PackageManagerBubbleAppInfoProvider();
         mBubbleData = new BubbleData(mContext, mBubbleLogger, mPositioner, mEducationController,
-                syncExecutor, syncExecutor);
+                mAppInfoProvider, syncExecutor, syncExecutor);
         int currentUserId = ActivityManager.getCurrentUser();
         UserInfo currentUserInfo = createUserInfo(currentUserId);
         when(mUserManager.getProfiles(currentUserId)).thenReturn(
@@ -518,7 +520,6 @@ public class BubblesTest extends SysuiTestCase {
         mTaskViewRepository = new TaskViewRepository();
         mTaskViewTransitions = new TaskViewTransitions(mTransitions, mTaskViewRepository,
                 mShellTaskOrganizer, Optional.of(mBubbleHelper), Optional.empty());
-        mAppInfoProvider = new PackageManagerBubbleAppInfoProvider();
         mBubbleUserResolver = userId -> new BubbleUserInfo(userId, UserType.MAIN);
         BubbleViewInfoTask.Factory bubbleViewInfoTaskFactory = new BubbleViewInfoTask.Factory() {
             @Override
