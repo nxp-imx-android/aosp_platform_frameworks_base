@@ -341,7 +341,8 @@ class BouncerMessageViewModelTest : SysuiTestCase() {
             bouncerInteractor.authenticate(wrongCred)
             runCurrent()
 
-            assertThat(message?.text).isEqualTo(duplicateCredString)
+            assertThat(message?.text).isEqualTo(enterCredString)
+            assertThat(message?.secondaryText).isEqualTo(duplicateCredString)
         }
 
     @Test

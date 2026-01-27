@@ -441,7 +441,8 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
             underTest.onPrimaryAuthIncorrectAttempt(isDuplicate = true)
 
             assertThat(bouncerMessage).isNotNull()
-            assertThat(primaryResMessage(bouncerMessage)).isEqualTo(duplicateCredString)
+            assertThat(primaryResMessage(bouncerMessage)).isEqualTo(fpOrCredString)
+            assertThat(secondaryResMessage(bouncerMessage)).isEqualTo(duplicateCredString)
         }
 
     @EnableFlags(FLAG_SECURE_LOCK_DEVICE)

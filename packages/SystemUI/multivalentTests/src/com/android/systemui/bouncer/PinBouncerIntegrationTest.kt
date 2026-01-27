@@ -66,7 +66,8 @@ class PinBouncerIntegrationTest : SysuiTestCase() {
             enterPin(FakeAuthenticationRepository.WRONG_PIN)
             enterPin(FakeAuthenticationRepository.WRONG_PIN)
 
-            assertThat(message?.text).isEqualTo("Already tried that PIN. Try another.")
+            assertThat(message?.text).isEqualTo("Enter PIN")
+            assertThat(message?.secondaryText).isEqualTo("Already tried that PIN. Try another.")
         }
 
     @Test
