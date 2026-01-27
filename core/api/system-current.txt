@@ -6016,8 +6016,8 @@ package android.hardware.contexthub {
   @FlaggedApi("android.chre.flags.offload_api") public class HubEndpoint {
     method @FlaggedApi("android.chre.flags.fmcq_api") @NonNull @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB) public android.hardware.contexthub.DataFlowSource createDataFlowSource(@NonNull @Size(min=1) java.util.Set<java.lang.Long>, @NonNull android.hardware.contexthub.DataFlowDataConfig, @IntRange(from=1) int, @IntRange(from=1) int);
     method @FlaggedApi("android.chre.flags.fmcq_api") @Nullable public android.hardware.contexthub.DataFlowCallback getDataFlowCallback();
+    method @FlaggedApi("android.chre.flags.fmcq_api") @NonNull public android.os.Looper getEpollLooper();
     method @Nullable public android.hardware.contexthub.HubEndpointLifecycleCallback getLifecycleCallback();
-    method @FlaggedApi("android.chre.flags.fmcq_api") @NonNull public android.os.Looper getLooper();
     method @Nullable public android.hardware.contexthub.HubEndpointMessageCallback getMessageCallback();
     method @NonNull public java.util.Collection<android.hardware.contexthub.HubServiceInfo> getServiceInfoCollection();
     method @Nullable public String getTag();
@@ -6035,9 +6035,9 @@ package android.hardware.contexthub {
     method @NonNull public android.hardware.contexthub.HubEndpoint build();
     method @FlaggedApi("android.chre.flags.fmcq_api") @NonNull public android.hardware.contexthub.HubEndpoint.Builder setDataFlowCallback(@NonNull android.hardware.contexthub.DataFlowCallback);
     method @FlaggedApi("android.chre.flags.fmcq_api") @NonNull public android.hardware.contexthub.HubEndpoint.Builder setDataFlowCallback(@NonNull java.util.concurrent.Executor, @NonNull android.hardware.contexthub.DataFlowCallback);
+    method @FlaggedApi("android.chre.flags.fmcq_api") @NonNull public android.hardware.contexthub.HubEndpoint.Builder setEpollLooper(@NonNull android.os.Looper);
     method @NonNull public android.hardware.contexthub.HubEndpoint.Builder setLifecycleCallback(@NonNull android.hardware.contexthub.HubEndpointLifecycleCallback);
     method @NonNull public android.hardware.contexthub.HubEndpoint.Builder setLifecycleCallback(@NonNull java.util.concurrent.Executor, @NonNull android.hardware.contexthub.HubEndpointLifecycleCallback);
-    method @FlaggedApi("android.chre.flags.fmcq_api") @NonNull public android.hardware.contexthub.HubEndpoint.Builder setLooper(@NonNull android.os.Looper);
     method @NonNull public android.hardware.contexthub.HubEndpoint.Builder setMessageCallback(@NonNull android.hardware.contexthub.HubEndpointMessageCallback);
     method @NonNull public android.hardware.contexthub.HubEndpoint.Builder setMessageCallback(@NonNull java.util.concurrent.Executor, @NonNull android.hardware.contexthub.HubEndpointMessageCallback);
     method @NonNull public android.hardware.contexthub.HubEndpoint.Builder setServiceInfoCollection(@NonNull java.util.Collection<android.hardware.contexthub.HubServiceInfo>);
