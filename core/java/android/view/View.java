@@ -31510,8 +31510,8 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
      * MotionEvent#AXIS_RELATIVE_X} and {@link MotionEvent#AXIS_RELATIVE_Y}. If the touchpad
      * supports them, touch dimension information may be available through the {@link
      * MotionEvent#AXIS_PRESSURE}, {@link MotionEvent#AXIS_TOUCH_MAJOR}, {@link
-     * MotionEvent#AXIS_TOUCH_MINOR}, {@link MotionEvent#AXIS_TOOL_MAJOR}, and {@link
-     * MotionEvent#AXIS_TOOL_MINOR} axes.
+     * MotionEvent#AXIS_TOUCH_MINOR}, {@link MotionEvent#AXIS_TOOL_MAJOR}, {@link
+     * MotionEvent#AXIS_TOOL_MINOR}, and {@link MotionEvent#AXIS_ORIENTATION} axes.
      * <p>
      * Events from mice are always reported in the same way regardless of capture mode.
      *
