@@ -52,7 +52,6 @@ import android.content.pm.UserInfo.FLAG_MAIN
 import android.content.pm.UserInfo.FLAG_PROFILE
 import android.content.res.Configuration.ORIENTATION_LANDSCAPE
 import android.content.res.Configuration.ORIENTATION_PORTRAIT
-import android.content.res.Resources
 import android.graphics.Point
 import android.graphics.PointF
 import android.graphics.Rect
@@ -302,7 +301,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @Mock private lateinit var mockToast: Toast
     private lateinit var mockitoSession: StaticMockitoSession
     @Mock private lateinit var bubbleController: BubbleController
-    @Mock private lateinit var resources: Resources
     @Mock private lateinit var desktopRemoteListener: DesktopRemoteListener
     @Mock private lateinit var userManager: UserManager
     @Mock
@@ -314,7 +312,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @Mock private lateinit var userProfileContexts: UserProfileContexts
     @Mock private lateinit var desksTransitionsObserver: DesksTransitionObserver
     @Mock private lateinit var packageManager: PackageManager
-    @Mock private lateinit var mockDisplayContext: Context
     @Mock private lateinit var windowDragTransitionHandler: WindowDragTransitionHandler
     @Mock private lateinit var deskSwitchTransitionHandler: DeskSwitchTransitionHandler
     @Mock
@@ -449,9 +446,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         whenever(deskSwitchTransitionHandler.startTransition(any(), any(), any(), any(), any()))
             .thenReturn(Binder())
         whenever(displayController.getDisplayLayout(anyInt())).thenReturn(displayLayout)
-        whenever(displayController.getDisplayContext(anyInt())).thenReturn(mockDisplayContext)
-        whenever(mockDisplayContext.resources).thenReturn(resources)
-        whenever(mockDisplayContext.getDisplay()).thenReturn(display)
+        whenever(displayController.getDisplayContext(anyInt())).thenReturn(mContext)
         whenever(displayController.getDisplay(anyInt())).thenReturn(display)
         whenever(displayController.getDisplayUniqueId(SECONDARY_DISPLAY_ID))
             .thenReturn(SECOND_DISPLAY_UNIQUE_ID)
@@ -11911,10 +11906,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(
-        FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-        Flags.FLAG_ENABLE_BUBBLE_ROOT_TASK,
-    )
+    @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND, Flags.FLAG_ENABLE_BUBBLE_ROOT_TASK)
     fun addMoveToBubbleFromDesktopChange_multiTasks_notExitDesktop() {
         val task = setUpFreeformTask()
         setUpFreeformTask()
