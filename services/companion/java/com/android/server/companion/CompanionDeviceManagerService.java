@@ -915,6 +915,15 @@ public class CompanionDeviceManagerService extends SystemService {
         }
 
         @Override
+        @EnforcePermission(MANAGE_COMPANION_DEVICES)
+        public boolean isDevicePresent(int associationId) {
+            isDevicePresent_enforcePermission();
+
+            mAssociationStore.getAssociationWithCallerChecks(associationId);
+            return mDevicePresenceProcessor.isDevicePresent(associationId);
+        }
+
+        @Override
         public void notifyActionResult(int associationId, @NonNull ActionResult result) {
             android.os.Trace.asyncTraceForTrackBegin(
                     Trace.TRACE_TAG_SYSTEM_SERVER,

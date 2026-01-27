@@ -2576,6 +2576,27 @@ public final class CompanionDeviceManager {
         }
     }
 
+    /**
+     * Checks if a device is present for a given association id.
+     *
+     * @param associationId id of the device association
+     * @return {@code true} if the device is present, {@code false} otherwise.
+     * @hide
+     */
+    @RequiresPermission("android.Manifest.permission.MANAGE_COMPANION_DEVICES")
+    public boolean isDevicePresent(int associationId) {
+        if (mService == null) {
+            Log.w(TAG, "CompanionDeviceManager service is not available.");
+            return false;
+        }
+
+        try {
+            return mService.isDevicePresent(associationId);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
     private static class AssociationRequestCallbackProxy extends IAssociationRequestCallback.Stub {
         private final Handler mHandler;
         private final Callback mCallback;
