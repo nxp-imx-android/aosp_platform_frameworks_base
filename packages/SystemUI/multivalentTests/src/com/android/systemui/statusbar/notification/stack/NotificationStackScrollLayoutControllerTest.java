@@ -747,12 +747,23 @@ public class NotificationStackScrollLayoutControllerTest extends SysuiTestCase {
     @Test
     @EnableSceneContainer
     public void onTouchEvent_lockScreenExpandSwallowsIt() {
+        // GIVEN: Controller is attached and SceneContainer is enabled
         initController(/* viewIsAttached= */ true);
+
+        // GIVEN: NSSL reports being on Lockscreen (Required for LockscreenShadeTransitionController
+        // to run)
+        when(mNotificationStackScrollLayout.isOnLockscreen()).thenReturn(true);
+
+        // VERIFY: The controller knows it is on the lockscreen
+        assertThat(mController.isOnLockscreen()).isTrue();
+
+        // GIVEN: ExpandHelper is available and the stack is expanded
         when(mNotificationStackScrollLayout.getExpandHelper()).thenReturn(mExpandHelper);
         when(mNotificationStackScrollLayout.isExpanded()).thenReturn(true);
         NotificationStackScrollLayoutController.TouchHandler touchHandler =
                 mController.getTouchHandler();
 
+        // WHEN: A touch event occurs that the DragDownHelper wants to handle
         MotionEvent event = MotionEvent.obtain(
                 /* downTime= */ 0,
                 /* eventTime= */ 0,
@@ -764,19 +775,32 @@ public class NotificationStackScrollLayoutControllerTest extends SysuiTestCase {
         when(mDragDownHelper.onTouchEvent(event)).thenReturn(true);
         boolean touchHandled = touchHandler.onTouchEvent(event);
 
+        // THEN: The touch is handled by the DragDownHelper and NOT the NSSL
         assertThat(touchHandled).isTrue();
+        verify(mDragDownHelper).onTouchEvent(event);
         verify(mNotificationStackScrollLayout, never()).onScrollTouch(any());
     }
 
     @Test
     @EnableSceneContainer
     public void onInterceptTouchEvent_lockScreenExpandSwallowsIt() {
+        // GIVEN: Controller is attached and SceneContainer is enabled
         initController(/* viewIsAttached= */ true);
+
+        // GIVEN: NSSL reports being on Lockscreen (Required for LockscreenShadeTransitionController
+        // to run)
+        when(mNotificationStackScrollLayout.isOnLockscreen()).thenReturn(true);
+
+        // VERIFY: The controller knows it is on the lockscreen
+        assertThat(mController.isOnLockscreen()).isTrue();
+
+        // GIVEN: ExpandHelper is available and the stack is expanded
         when(mNotificationStackScrollLayout.getExpandHelper()).thenReturn(mExpandHelper);
         when(mNotificationStackScrollLayout.isExpanded()).thenReturn(true);
         NotificationStackScrollLayoutController.TouchHandler touchHandler =
                 mController.getTouchHandler();
 
+        // WHEN: An intercept touch event occurs that DragDownHelper wants to intercept
         MotionEvent event = MotionEvent.obtain(
                 /* downTime= */ 0,
                 /* eventTime= */ 0,
@@ -788,8 +812,81 @@ public class NotificationStackScrollLayoutControllerTest extends SysuiTestCase {
         when(mDragDownHelper.onInterceptTouchEvent(event)).thenReturn(true);
         boolean touchIntercepted = touchHandler.onInterceptTouchEvent(event);
 
+        // THEN: The touch is intercepted by DragDownHelper and NOT the NSSL
         assertThat(touchIntercepted).isTrue();
+        verify(mDragDownHelper).onInterceptTouchEvent(event);
         verify(mNotificationStackScrollLayout, never()).onInterceptTouchEventScroll(event);
+    }
+
+    @Test
+    @EnableSceneContainer
+    public void onTouchEvent_shadeState_lockScreenExpandIgnored() {
+        // GIVEN: Controller is attached and SceneContainer is enabled
+        initController(/* viewIsAttached= */ true);
+
+        // GIVEN: NSSL reports NOT being on Lockscreen (e.g. SHADE)
+        when(mNotificationStackScrollLayout.isOnLockscreen()).thenReturn(false);
+
+        // VERIFY: The controller knows it is NOT on the lockscreen
+        assertThat(mController.isOnLockscreen()).isFalse();
+
+        // GIVEN: ExpandHelper is available and the stack is expanded
+        when(mNotificationStackScrollLayout.getExpandHelper()).thenReturn(mExpandHelper);
+        when(mNotificationStackScrollLayout.isExpanded()).thenReturn(true);
+        when(mNotificationStackScrollLayout.onScrollTouch(any())).thenReturn(true);
+
+        // WHEN: A touch event occurs that DragDownHelper wants to intercept
+        MotionEvent event = MotionEvent.obtain(
+                /* downTime= */ 0,
+                /* eventTime= */ 0,
+                MotionEvent.ACTION_DOWN,
+                0,
+                0,
+                /* metaState= */ 0
+        );
+        when(mDragDownHelper.onTouchEvent(event)).thenReturn(true);
+        mController.getTouchHandler().onTouchEvent(event);
+
+        // THEN: The Lockscreen DragDownHelper should NOT receive the event
+        verify(mDragDownHelper, never()).onTouchEvent(any());
+
+        // THEN: The event should fall through to the NSSL scroll handler
+        verify(mNotificationStackScrollLayout).onScrollTouch(event);
+    }
+
+    @Test
+    @EnableSceneContainer
+    public void onInterceptTouchEvent_shadeState_lockScreenExpandIgnored() {
+        // GIVEN: Controller is attached and SceneContainer is enabled
+        initController(/* viewIsAttached= */ true);
+
+        // GIVEN: NSSL reports NOT being on Lockscreen (e.g. SHADE)
+        when(mNotificationStackScrollLayout.isOnLockscreen()).thenReturn(false);
+
+        // VERIFY: The controller knows it is NOT on the lockscreen
+        assertThat(mController.isOnLockscreen()).isFalse();
+
+        // GIVEN: ExpandHelper is available and the stack is expanded
+        when(mNotificationStackScrollLayout.getExpandHelper()).thenReturn(mExpandHelper);
+        when(mNotificationStackScrollLayout.isExpanded()).thenReturn(true);
+
+        // WHEN: An intercept touch event occurs that DragDownHelper wants to intercept
+        MotionEvent event = MotionEvent.obtain(
+                /* downTime= */ 0,
+                /* eventTime= */ 0,
+                MotionEvent.ACTION_DOWN,
+                0,
+                0,
+                /* metaState= */ 0
+        );
+        when(mDragDownHelper.onInterceptTouchEvent(event)).thenReturn(true);
+        mController.getTouchHandler().onInterceptTouchEvent(event);
+
+        // THEN: The Lockscreen DragDownHelper should NOT receive the event
+        verify(mDragDownHelper, never()).onInterceptTouchEvent(any());
+
+        // THEN: The event should fall through to the NSSL scroll interceptor
+        verify(mNotificationStackScrollLayout).onInterceptTouchEventScroll(event);
     }
 
     private LogMaker logMatcher(int category, int type) {

@@ -197,6 +197,10 @@ public class NotificationStackScrollLayoutController implements Dumpable {
     private NotificationSwipeHelper mSwipeHelper;
     @Nullable
     private Boolean mHistoryEnabled;
+
+    /**
+     * Current status bar state
+     */
     private int mBarState;
     private HeadsUpAppearanceController mHeadsUpAppearanceController;
 
@@ -2321,8 +2325,13 @@ public class NotificationStackScrollLayoutController implements Dumpable {
             }
         }
 
+        /**
+         * @return Whether the mLockscreenShadeTransitionController should handle the touch.
+         */
         private boolean shouldLockscreenExpandHandleTouch() {
-            return SceneContainerFlag.isEnabled() && mLongPressedView == null
+            return SceneContainerFlag.isEnabled()
+                    && isOnLockscreen()
+                    && mLongPressedView == null
                     && !mSwipeHelper.isSwiping();
         }
 
@@ -2330,6 +2339,11 @@ public class NotificationStackScrollLayoutController implements Dumpable {
             return SceneContainerFlag.isEnabled() && mLongPressedView == null
                     && !mSwipeHelper.isSwiping();
         }
+    }
+
+    @VisibleForTesting
+    boolean isOnLockscreen() {
+        return mView.isOnLockscreen();
     }
 
     private void debugLog(String msg) {
