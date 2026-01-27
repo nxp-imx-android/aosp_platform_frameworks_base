@@ -72,16 +72,13 @@ public final class TimeZoneConfiguration implements Parcelable {
     @interface Setting {}
 
     /** See {@link TimeZoneConfiguration#isAutoDetectionEnabled()} for details. */
-    @Setting
-    private static final String SETTING_AUTO_DETECTION_ENABLED = "autoDetectionEnabled";
+    @Setting private static final String SETTING_AUTO_DETECTION_ENABLED = "autoDetectionEnabled";
 
     /** See {@link TimeZoneConfiguration#isGeoDetectionEnabled()} for details. */
-    @Setting
-    private static final String SETTING_GEO_DETECTION_ENABLED = "geoDetectionEnabled";
+    @Setting private static final String SETTING_GEO_DETECTION_ENABLED = "geoDetectionEnabled";
 
     /** See {@link TimeZoneConfiguration#areNotificationsEnabled()} for details. */
-    @Setting
-    private static final String SETTING_NOTIFICATIONS_ENABLED = "notificationsEnabled";
+    @Setting private static final String SETTING_NOTIFICATIONS_ENABLED = "notificationsEnabled";
 
     /**
      * See {@link TimeZoneConfiguration#areTimeZoneOffsetChangeNotificationsEnabled()} for details.
@@ -120,9 +117,9 @@ public final class TimeZoneConfiguration implements Parcelable {
     }
 
     /**
-     * Returns the value of the {@link #SETTING_AUTO_DETECTION_ENABLED} setting. This
-     * controls whether a device will attempt to determine the time zone automatically using
-     * contextual information if the device supports auto detection.
+     * Returns the value of the {@link #SETTING_AUTO_DETECTION_ENABLED} setting. This controls
+     * whether a device will attempt to determine the time zone automatically using contextual
+     * information if the device supports auto detection.
      *
      * <p>See {@link TimeZoneCapabilities#getConfigureAutoDetectionEnabledCapability()} for how to
      * tell if the setting is meaningful for the current user at this time.
@@ -144,9 +141,9 @@ public final class TimeZoneConfiguration implements Parcelable {
     }
 
     /**
-     * Returns the value of the {@link #SETTING_GEO_DETECTION_ENABLED} setting. This
-     * controls whether the device can use geolocation to determine time zone. This value may only
-     * be used by Android under some circumstances.
+     * Returns the value of the {@link #SETTING_GEO_DETECTION_ENABLED} setting. This controls
+     * whether the device can use geolocation to determine time zone. This value may only be used by
+     * Android under some circumstances.
      *
      * <p>See {@link TimeZoneCapabilities#getConfigureGeoDetectionEnabledCapability()} for how to
      * tell if the setting is meaningful for the current user at this time.
@@ -169,14 +166,13 @@ public final class TimeZoneConfiguration implements Parcelable {
 
     /**
      * Returns the value of the {@link #SETTING_NOTIFICATIONS_ENABLED} setting. This controls
-     * whether the device can send time and time zone related notifications. This value may only
-     * be used by Android under some circumstances.
+     * whether the device can send time and time zone related notifications. This value may only be
+     * used by Android under some circumstances.
      *
      * <p>See {@link TimeZoneCapabilities#getConfigureNotificationsEnabledCapability()} ()} for how
      * to tell if the setting is meaningful for the current user at this time.
      *
      * @throws IllegalStateException if the setting is not present
-     *
      * @hide
      */
     public boolean areNotificationsEnabled() {
@@ -244,9 +240,7 @@ public final class TimeZoneConfiguration implements Parcelable {
 
     @Override
     public String toString() {
-        return "TimeZoneConfiguration{"
-                + "mBundle=" + mBundle
-                + '}';
+        return "TimeZoneConfiguration{" + "mBundle=" + mBundle + '}';
     }
 
     private void enforceSettingPresent(@Setting String setting) {
@@ -265,15 +259,10 @@ public final class TimeZoneConfiguration implements Parcelable {
 
         private final Bundle mBundle = new Bundle();
 
-        /**
-         * Creates a new Builder with no settings held.
-         */
-        public Builder() {
-        }
+        /** Creates a new Builder with no settings held. */
+        public Builder() {}
 
-        /**
-         * Creates a new Builder by copying the settings from an existing instance.
-         */
+        /** Creates a new Builder by copying the settings from an existing instance. */
         public Builder(@NonNull TimeZoneConfiguration toCopy) {
             mergeProperties(toCopy);
         }
@@ -296,18 +285,14 @@ public final class TimeZoneConfiguration implements Parcelable {
             return this;
         }
 
-        /**
-         * Sets the state of the {@link #SETTING_AUTO_DETECTION_ENABLED} setting.
-         */
+        /** Sets the state of the {@link #SETTING_AUTO_DETECTION_ENABLED} setting. */
         @NonNull
         public Builder setAutoDetectionEnabled(boolean enabled) {
             this.mBundle.putBoolean(SETTING_AUTO_DETECTION_ENABLED, enabled);
             return this;
         }
 
-        /**
-         * Sets the state of the {@link #SETTING_GEO_DETECTION_ENABLED} setting.
-         */
+        /** Sets the state of the {@link #SETTING_GEO_DETECTION_ENABLED} setting. */
         @NonNull
         public Builder setGeoDetectionEnabled(boolean enabled) {
             this.mBundle.putBoolean(SETTING_GEO_DETECTION_ENABLED, enabled);
@@ -315,7 +300,7 @@ public final class TimeZoneConfiguration implements Parcelable {
         }
 
         /**
-         * Sets the state of the {@link #SETTING_NOTIFICATIONS_ENABLED} setting.         *
+         * Sets the state of the {@link #SETTING_NOTIFICATIONS_ENABLED} setting. *
          *
          * @hide
          */
@@ -344,4 +329,3 @@ public final class TimeZoneConfiguration implements Parcelable {
         }
     }
 }
-

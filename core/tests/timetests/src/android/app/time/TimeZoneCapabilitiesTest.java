@@ -191,13 +191,13 @@ public class TimeZoneCapabilitiesTest {
                                 CAPABILITY_POSSESSED)
                         .build();
 
-        TimeZoneConfiguration configChange = new TimeZoneConfiguration.Builder()
-                .setAutoDetectionEnabled(false)
-                .build();
+        TimeZoneConfiguration configChange =
+                new TimeZoneConfiguration.Builder().setAutoDetectionEnabled(false).build();
 
-        TimeZoneConfiguration expected = new TimeZoneConfiguration.Builder(oldConfiguration)
-                .setAutoDetectionEnabled(false)
-                .build();
+        TimeZoneConfiguration expected =
+                new TimeZoneConfiguration.Builder(oldConfiguration)
+                        .setAutoDetectionEnabled(false)
+                        .build();
         assertEquals(expected, capabilities.tryApplyConfigChanges(oldConfiguration, configChange));
     }
 
@@ -219,9 +219,8 @@ public class TimeZoneCapabilitiesTest {
                                 CAPABILITY_NOT_ALLOWED)
                         .build();
 
-        TimeZoneConfiguration configChange = new TimeZoneConfiguration.Builder()
-                .setAutoDetectionEnabled(false)
-                .build();
+        TimeZoneConfiguration configChange =
+                new TimeZoneConfiguration.Builder().setAutoDetectionEnabled(false).build();
 
         assertNull(capabilities.tryApplyConfigChanges(oldConfiguration, configChange));
     }
