@@ -233,15 +233,15 @@ class DesktopDisplayModeController(
 
         val isDefaultDisplayDesktopEligible = isDefaultDisplayDesktopEligible()
         logV(
-            "canDesktopFirstModeBeEnabledOnDefaultDisplay: isDefaultDisplayDesktopEligible=%s",
+            "canDesktopFirstModeBeEnabledOnDefaultDisplay: isDefaultDisplayDesktopEligible=%b",
             isDefaultDisplayDesktopEligible,
         )
         if (isDefaultDisplayDesktopEligible) {
             val isExtendedDisplayEnabled = isExtendedDisplayEnabled()
             val hasExternalDisplay = hasExternalDisplay()
             logV(
-                "canDesktopFirstModeBeEnabledOnDefaultDisplay: isExtendedDisplayEnabled=%s" +
-                    " hasExternalDisplay=%s",
+                "canDesktopFirstModeBeEnabledOnDefaultDisplay: isExtendedDisplayEnabled=%b" +
+                    " hasExternalDisplay=%b",
                 isExtendedDisplayEnabled,
                 hasExternalDisplay,
             )
@@ -252,8 +252,8 @@ class DesktopDisplayModeController(
                 val hasAnyTouchpadDevice = hasAnyTouchpadDevice()
                 val hasAnyPhysicalKeyboardDevice = hasAnyPhysicalKeyboardDevice()
                 logV(
-                    "canDesktopFirstModeBeEnabledOnDefaultDisplay: hasAnyTouchpadDevice=%s" +
-                        " hasAnyPhysicalKeyboardDevice=%s",
+                    "canDesktopFirstModeBeEnabledOnDefaultDisplay: hasAnyTouchpadDevice=%b" +
+                        " hasAnyPhysicalKeyboardDevice=%b",
                     hasAnyTouchpadDevice,
                     hasAnyPhysicalKeyboardDevice,
                 )
@@ -263,7 +263,7 @@ class DesktopDisplayModeController(
             }
             if (Flags.enableDesktopFirstLaptopStateBugfix()) {
                 logV(
-                    "canDesktopFirstModeBeEnabledOnDefaultDisplay: isDesktopFirstDeviceState=%s",
+                    "canDesktopFirstModeBeEnabledOnDefaultDisplay: isDesktopFirstDeviceState=%b",
                     isDesktopFirstDeviceState,
                 )
                 if (isDesktopFirstDeviceState) {
@@ -329,10 +329,14 @@ class DesktopDisplayModeController(
         return desktopState.isDesktopModeSupportedOnDisplay(DEFAULT_DISPLAY)
     }
 
+    // TODO(b/478792808): Remove suppression
+    @SuppressWarnings("ProtoLogNonConstantFormat")
     private fun logV(msg: String, vararg arguments: Any?) {
         ProtoLog.v(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
     }
 
+    // TODO(b/478792808): Remove suppression
+    @SuppressWarnings("ProtoLogNonConstantFormat")
     private fun logW(msg: String, vararg arguments: Any?) {
         ProtoLog.w(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
     }

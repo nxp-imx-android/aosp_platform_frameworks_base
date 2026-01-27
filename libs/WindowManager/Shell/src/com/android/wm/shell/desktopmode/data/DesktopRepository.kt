@@ -982,7 +982,7 @@ class DesktopRepository(
             val hasTopTransparentFullscreenTask =
                 getTopTransparentFullscreenTaskData(desk.deskId) != null
             logD(
-                "isAnyDeskActive: hasVisibleTasks=%s hasTopTransparentFullscreenTask=%s",
+                "isAnyDeskActive: hasVisibleTasks=%b hasTopTransparentFullscreenTask=%b",
                 hasVisibleTasks,
                 hasTopTransparentFullscreenTask,
             )
@@ -996,7 +996,7 @@ class DesktopRepository(
     @VisibleForTesting
     fun getVisibleTaskCount(displayId: Int): Int =
         (desktopData.getActiveDesk(displayId)?.visibleTasks?.size ?: 0).also {
-            logD("getVisibleTaskCount=$it")
+            logD("getVisibleTaskCount=%d", it)
         }
 
     /** Gets the number of visible tasks on the given desk. */
@@ -1809,14 +1809,20 @@ class DesktopRepository(
         }
     }
 
+    // TODO(b/478792808): Remove suppression
+    @SuppressWarnings("ProtoLogNonConstantFormat")
     private fun logD(msg: String, vararg arguments: Any?) {
         ProtoLog.d(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
     }
 
+    // TODO(b/478792808): Remove suppression
+    @SuppressWarnings("ProtoLogNonConstantFormat")
     private fun logW(msg: String, vararg arguments: Any?) {
         ProtoLog.w(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
     }
 
+    // TODO(b/478792808): Remove suppression
+    @SuppressWarnings("ProtoLogNonConstantFormat")
     private fun logE(msg: String, vararg arguments: Any?) {
         ProtoLog.e(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
     }

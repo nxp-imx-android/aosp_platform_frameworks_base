@@ -23,6 +23,7 @@ import com.android.wm.shell.shared.bubbles.logging.DebugLogger
 /**
  * An implementation of [DebugLogger] that logs events to [ProtoLog] with [WM_SHELL_BUBBLES] group.
  */
+@SuppressWarnings("ProtoLogNonConstantFormat")
 class BubbleProtoLog : DebugLogger {
 
     override fun d(message: String, vararg parameters: Any?, eventData: String?) {

@@ -45,7 +45,8 @@ constructor(
         consumerMap[eventType] = consumer
         ProtoLog.v(
             ShellProtoLogGroup.WM_SHELL_COMPAT_UI,
-            "$TAG: Subscribed void consumer for event: ${eventType.simpleName}",
+            "$TAG: Subscribed void consumer for event: %s",
+            eventType.simpleName,
         )
     }
 
@@ -57,7 +58,8 @@ constructor(
         consumerMap[eventType] = consumer
         ProtoLog.v(
             ShellProtoLogGroup.WM_SHELL_COMPAT_UI,
-            "$TAG: Subscribed callback consumer for event: ${eventType.simpleName}",
+            "$TAG: Subscribed callback consumer for event: %s",
+            eventType.simpleName,
         )
     }
 
@@ -66,7 +68,8 @@ constructor(
         if (removed != null) {
             ProtoLog.v(
                 ShellProtoLogGroup.WM_SHELL_COMPAT_UI,
-                "$TAG: Unsubscribed consumer for event: ${eventType.simpleName}",
+                "$TAG: Unsubscribed consumer for event: %s",
+                eventType.simpleName,
             )
         }
     }
@@ -80,7 +83,8 @@ constructor(
         if (consumer == null) {
             ProtoLog.v(
                 ShellProtoLogGroup.WM_SHELL_COMPAT_UI,
-                "$TAG: No consumer for event: ${event.javaClass.simpleName}",
+                "$TAG: No consumer for event: %s",
+                event.javaClass.simpleName,
             )
             return
         }
@@ -98,7 +102,9 @@ constructor(
             } catch (e: Exception) {
                 ProtoLog.v(
                     ShellProtoLogGroup.WM_SHELL_COMPAT_UI,
-                    "$TAG: Error processing event: ${event.javaClass.simpleName} $e",
+                    "$TAG: Error processing event: %s %s",
+                    event.javaClass.simpleName,
+                    e,
                 )
             }
         }
@@ -117,7 +123,8 @@ constructor(
         if (consumer == null) {
             ProtoLog.v(
                 ShellProtoLogGroup.WM_SHELL_COMPAT_UI,
-                "$TAG: No consumer for event: ${event.javaClass.simpleName}",
+                "$TAG: No consumer for event: %s",
+                event.javaClass.simpleName,
             )
             return
         }
@@ -125,7 +132,8 @@ constructor(
         if (consumer !is CompatUICallbackEventConsumer<*, *>) {
             ProtoLog.v(
                 ShellProtoLogGroup.WM_SHELL_COMPAT_UI,
-                "$TAG: Registered consumer for ${event.javaClass.simpleName} does not support callbacks.",
+                "$TAG: Registered consumer for %s does not support callbacks.",
+                event.javaClass.simpleName,
             )
             return
         }
@@ -141,7 +149,9 @@ constructor(
             } catch (e: Exception) {
                 ProtoLog.v(
                     ShellProtoLogGroup.WM_SHELL_COMPAT_UI,
-                    "$TAG: Error processing callback event: ${event.javaClass.simpleName} $e",
+                    "$TAG: Error processing callback event: %s %s",
+                    event.javaClass.simpleName,
+                    e,
                 )
             }
         }

@@ -76,16 +76,22 @@ class NormalAppLayerHandler(
     internal companion object {
         private const val TAG = "NormalAppLayer"
 
+        // TODO(b/478792808): Remove suppression
+        @SuppressWarnings("ProtoLogNonConstantFormat")
         @JvmStatic
         internal fun logV(message: String, vararg args: Any?) {
             ProtoLog.v(WM_SHELL_WINDOWING_LAYER, "%s: $message", TAG, *args)
         }
 
+        // TODO(b/478792808): Remove suppression
+        @SuppressWarnings("ProtoLogNonConstantFormat")
         @JvmStatic
         internal fun logW(message: String, vararg args: Any?) {
             ProtoLog.w(WM_SHELL_WINDOWING_LAYER, "%s: $message", TAG, *args)
         }
 
+        // TODO(b/478792808): Remove suppression
+        @SuppressWarnings("ProtoLogNonConstantFormat")
         @JvmStatic
         internal fun logE(message: String, vararg args: Any?) {
             ProtoLog.e(WM_SHELL_WINDOWING_LAYER, "%s: $message", TAG, *args)

@@ -4663,7 +4663,7 @@ class DesktopTasksController(
             // We're in desktop-first mode.
             val forceEnterDesktop = shouldForceEnterDesktopByDesktopFirstPolicy(task, requestType)
             logV(
-                "shouldFullscreenTaskLaunchSwitchToDesktop, forceEnterDesktop=%s",
+                "shouldFullscreenTaskLaunchSwitchToDesktop, forceEnterDesktop=%b",
                 forceEnterDesktop,
             )
             return forceEnterDesktop
@@ -7184,22 +7184,32 @@ class DesktopTasksController(
         }
     }
 
+    // TODO(b/478792808): Remove suppression
+    @SuppressWarnings("ProtoLogNonConstantFormat")
     private fun logV(msg: String, vararg arguments: Any?) {
         ProtoLog.v(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
     }
 
+    // TODO(b/478792808): Remove suppression
+    @SuppressWarnings("ProtoLogNonConstantFormat")
     private fun logD(msg: String, vararg arguments: Any?) {
         ProtoLog.d(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
     }
 
+    // TODO(b/478792808): Remove suppression
+    @SuppressWarnings("ProtoLogNonConstantFormat")
     private fun logI(msg: String, vararg arguments: Any?) {
         ProtoLog.i(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
     }
 
+    // TODO(b/478792808): Remove suppression
+    @SuppressWarnings("ProtoLogNonConstantFormat")
     private fun logW(msg: String, vararg arguments: Any?) {
         ProtoLog.w(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
     }
 
+    // TODO(b/478792808): Remove suppression
+    @SuppressWarnings("ProtoLogNonConstantFormat")
     private fun logE(msg: String, vararg arguments: Any?) {
         ProtoLog.e(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
     }
@@ -7310,10 +7320,14 @@ class DesktopTasksController(
             }
         }
 
+        // TODO(b/478792808): Remove suppression
+        @SuppressWarnings("ProtoLogNonConstantFormat")
         private fun logV(msg: String, vararg arguments: Any?) {
             ProtoLog.v(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
         }
 
+        // TODO(b/478792808): Remove suppression
+        @SuppressWarnings("ProtoLogNonConstantFormat")
         private fun logI(msg: String, vararg arguments: Any?) {
             ProtoLog.i(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
         }

@@ -117,8 +117,7 @@ class SnapController() : SnapEventHandler {
         } else {
             ProtoLog.w(
                 WM_SHELL_DESKTOP_MODE,
-                "%s: SnapController is not running! SnapEventHandler missing!",
-                TAG,
+                "$TAG: SnapController is not running! SnapEventHandler missing!",
             )
             null
         }

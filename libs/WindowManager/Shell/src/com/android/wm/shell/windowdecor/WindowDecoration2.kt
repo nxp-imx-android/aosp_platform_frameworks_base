@@ -448,6 +448,8 @@ abstract class WindowDecoration2<T>(
         startT.setWindowCrop(containerSurface, taskWidth, taskHeight).show(containerSurface)
     }
 
+    // TODO(b/478792808): Remove suppression
+    @SuppressWarnings("ProtoLogNonConstantFormat")
     private fun logD(msg: String, vararg arguments: Any?) {
         ProtoLog.d(ShellProtoLogGroup.WM_SHELL_WINDOW_DECORATION, "%s: $msg", TAG, *arguments)
     }

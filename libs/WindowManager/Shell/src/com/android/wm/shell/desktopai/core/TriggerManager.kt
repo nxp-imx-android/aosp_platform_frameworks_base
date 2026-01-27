@@ -77,11 +77,11 @@ class TriggerManager(shellInit: ShellInit, private val sources: List<ITriggerSou
         val list = registry.getOrPut(type) { mutableListOf() }
         list.add(Registration(strategy, callback))
 
-        ProtoLog.v(WM_SHELL_DESKTOP_AI, "%s: Registered strategy: %s", TAG, strategy)
+        ProtoLog.v(WM_SHELL_DESKTOP_AI, "$TAG: Registered strategy: %s", strategy)
     }
 
     private fun fireEvent(event: TriggerEvent) {
-        ProtoLog.v(WM_SHELL_DESKTOP_AI, "%s: Processing event: %s", TAG, event)
+        ProtoLog.v(WM_SHELL_DESKTOP_AI, "$TAG: Processing event: %s", event)
 
         // 1. Efficient Lookup: Only look at strategies relevant to this Event Type
         val candidates = registry[event.type] ?: return
