@@ -374,7 +374,8 @@ public class ThemeManagerInternalTests {
         android.content.om.FabricatedOverlay mockFabricatedOverlay =
                 mock(android.content.om.FabricatedOverlay.class);
         when(mockFabricatedOverlay.getInternal()).thenReturn(mockOverlay);
-        doReturn(mockFabricatedOverlay).when(mOverlayHelper).createDynamicOverlay(any(), any());
+        doReturn(mockFabricatedOverlay).when(mOverlayHelper).createDynamicOverlay(any(), any(),
+                anyInt());
 
         FabricatedOverlayInternal overlay = mUnderTest.generateDynamicColorOverlay(mUserId,
                 options);
@@ -392,7 +393,8 @@ public class ThemeManagerInternalTests {
         android.content.om.FabricatedOverlay mockFabricatedOverlay =
                 mock(android.content.om.FabricatedOverlay.class);
         when(mockFabricatedOverlay.getInternal()).thenReturn(mockOverlay);
-        doReturn(mockFabricatedOverlay).when(mOverlayHelper).createDynamicOverlay(any(), any());
+        doReturn(mockFabricatedOverlay).when(mOverlayHelper).createDynamicOverlay(any(), any(),
+                anyInt());
 
         FabricatedOverlayInternal overlay = mUnderTest.generateDynamicColorOverlay(mUserId,
                 options);
@@ -413,7 +415,8 @@ public class ThemeManagerInternalTests {
         android.content.om.FabricatedOverlay mockFabricatedOverlay =
                 mock(android.content.om.FabricatedOverlay.class);
         when(mockFabricatedOverlay.getInternal()).thenReturn(mockOverlay);
-        doReturn(mockFabricatedOverlay).when(mOverlayHelper).createDynamicOverlay(any(), any());
+        doReturn(mockFabricatedOverlay).when(mOverlayHelper).createDynamicOverlay(any(), any(),
+                anyInt());
 
         FabricatedOverlayInternal overlay = mUnderTest.generateDynamicColorOverlay(mUserId,
                 options);
