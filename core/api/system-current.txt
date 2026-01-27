@@ -15927,6 +15927,7 @@ package android.telephony {
     field public static final String KEY_GBA_UA_SECURITY_ORGANIZATION_INT = "gba_ua_security_organization_int";
     field public static final String KEY_GBA_UA_SECURITY_PROTOCOL_INT = "gba_ua_security_protocol_int";
     field public static final String KEY_GBA_UA_TLS_CIPHER_SUITE_INT = "gba_ua_tls_cipher_suite_int";
+    field @FlaggedApi("com.android.internal.telephony.flags.satellite_26q2_apis") public static final String KEY_SATELLITE_TECHNOLOGY_INT_ARRAY = "satellite_technology_type_int_array";
     field @Deprecated public static final String KEY_SUPPORT_CDMA_1X_VOICE_CALLS_BOOL = "support_cdma_1x_voice_calls_bool";
   }
 
