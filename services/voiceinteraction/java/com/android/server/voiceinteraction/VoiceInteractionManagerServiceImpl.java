@@ -309,7 +309,7 @@ class VoiceInteractionManagerServiceImpl implements VoiceInteractionSessionConne
     public void grantImplicitAccessLocked(int grantRecipientUid, @Nullable Intent intent) {
         final int grantRecipientAppId = UserHandle.getAppId(grantRecipientUid);
         final int grantRecipientUserId = UserHandle.getUserId(grantRecipientUid);
-        final int voiceInteractionUid = mInfo.getServiceInfo().applicationInfo.uid;
+        final int voiceInteractionUid = mInfo.getServiceInfo().getUid();
         mPackageManagerInternal.grantImplicitAccess(
                 grantRecipientUserId,
                 intent,
@@ -815,7 +815,7 @@ class VoiceInteractionManagerServiceImpl implements VoiceInteractionSessionConne
             int detectorType,
             @NonNull ServiceInfo hotwordDetectionServiceInfo) {
         Slog.v(TAG, "verifyDetectorForHotwordDetectionLocked");
-        int voiceInteractionServiceUid = mInfo.getServiceInfo().applicationInfo.uid;
+        int voiceInteractionServiceUid = mInfo.getServiceInfo().getUid();
         if (!Manifest.permission.BIND_HOTWORD_DETECTION_SERVICE.equals(
                 hotwordDetectionServiceInfo.permission)) {
             Slog.w(
@@ -1182,7 +1182,7 @@ class VoiceInteractionManagerServiceImpl implements VoiceInteractionSessionConne
 
     public void logUnrestrictedServiceTypeAndThrowExceptionLocked(
             IHotwordRecognitionStatusCallback callback, int detectorType) {
-        int voiceInteractionServiceUid = mInfo.getServiceInfo().applicationInfo.uid;
+        int voiceInteractionServiceUid = mInfo.getServiceInfo().getUid();
 
         Slog.w(TAG, "Hotword detection service not in a PCC or isolated process");
         logDetectorCreateEventIfNeeded(callback, detectorType, false, voiceInteractionServiceUid);

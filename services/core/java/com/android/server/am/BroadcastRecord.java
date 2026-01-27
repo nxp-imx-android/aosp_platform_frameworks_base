@@ -1034,7 +1034,7 @@ final class BroadcastRecord extends Binder {
                     || (info.applicationInfo.packageName.equals(packageName)
                     && (filterByClasses == null || filterByClasses.contains(info.name)));
             if (sameComponent && (cleanupAllUsers
-                    || UserHandle.getUserId(info.applicationInfo.uid) == userId)) {
+                    || UserHandle.getUserId(info.getUid()) == userId)) {
                 if (!doit) {
                     return true;
                 }

@@ -685,7 +685,7 @@ public final class BatteryService extends SystemService {
                 }
 
                 if (mContext.checkPermission(android.Manifest.permission.SHUTDOWN, 0,
-                        ri.activityInfo.applicationInfo.uid) != PackageManager.PERMISSION_GRANTED) {
+                        ri.activityInfo.getUid()) != PackageManager.PERMISSION_GRANTED) {
                     Slog.w(TAG, "Shutdown activity " + ri.activityInfo.getComponentName()
                             + " does not have permission " + android.Manifest.permission.SHUTDOWN);
                     continue;

@@ -1178,7 +1178,7 @@ final class ServiceRecord extends ServiceRecordInternal implements ComponentName
         }
         if ((serviceInfo.applicationInfo.flags&ApplicationInfo.FLAG_PERSISTENT) == 0) {
             tracker = ams.mProcessStats.getServiceState(serviceInfo.packageName,
-                    serviceInfo.applicationInfo.uid,
+                    serviceInfo.getUid(),
                     serviceInfo.applicationInfo.longVersionCode,
                     serviceInfo.processName, serviceInfo.name);
             if (tracker != null) {
@@ -1200,7 +1200,7 @@ final class ServiceRecord extends ServiceRecordInternal implements ComponentName
             if ((serviceInfo.applicationInfo.flags&ApplicationInfo.FLAG_PERSISTENT) == 0) {
                 restartTracker = ams.mProcessStats.getServiceState(
                         serviceInfo.packageName,
-                        serviceInfo.applicationInfo.uid,
+                        serviceInfo.getUid(),
                         serviceInfo.applicationInfo.longVersionCode,
                         serviceInfo.processName, serviceInfo.name);
             }

@@ -204,7 +204,7 @@ final class AppCompatResourceOverlayPolicy {
             return;
         }
 
-        final int userId = UserHandle.getUserId(mActivityRecord.info.applicationInfo.uid);
+        final int userId = UserHandle.getUserId(mActivityRecord.info.getUid());
         for (int i = 0; i < overlayPaths.length; i++) {
             final String overlayPath = overlayPaths[i];
             mLastReportedOverlayPathsToConstraintsMap.put(overlayPath,

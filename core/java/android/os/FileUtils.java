@@ -1673,7 +1673,7 @@ public final class FileUtils {
             return -1;
         }
 
-        sMediaProviderAppId = UserHandle.getAppId(provider.applicationInfo.uid);
+        sMediaProviderAppId = UserHandle.getAppId(provider.getUid());
         return sMediaProviderAppId;
     }
 

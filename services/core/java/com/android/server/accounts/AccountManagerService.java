@@ -5179,7 +5179,7 @@ public class AccountManagerService
                     return false;
                 }
                 ActivityInfo targetActivityInfo = resolveInfo.activityInfo;
-                int targetUid = targetActivityInfo.applicationInfo.uid;
+                int targetUid = targetActivityInfo.getUid();
                 PackageManagerInternal pmi = LocalServices.getService(PackageManagerInternal.class);
                 if (!isExportedSystemActivity(targetActivityInfo)
                         && !pmi.hasSignatureCapability(targetUid, authUid, CertCapabilities.AUTH)) {

@@ -956,7 +956,7 @@ public class ResolverListAdapter extends BaseAdapter {
                 ActivityInfo activityInfo = mDisplayResolveInfo.getResolveInfo().activityInfo;
                 String packageName = activityInfo.packageName;
 
-                int uid = activityInfo.applicationInfo.uid;
+                int uid = activityInfo.getUid();
                 boolean hasRecordPermission =
                         PermissionChecker.checkPermissionForPreflight(
                                 mContext,
