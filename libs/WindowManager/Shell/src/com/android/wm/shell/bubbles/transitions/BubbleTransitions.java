@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.bubbles;
+package com.android.wm.shell.bubbles.transitions;
 
 import static android.app.ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOW_ALWAYS;
 import static android.app.ActivityTaskManager.INVALID_TASK_ID;
@@ -67,6 +67,19 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.protolog.ProtoLog;
 import com.android.launcher3.icons.BubbleIconFactory;
 import com.android.wm.shell.ShellTaskOrganizer;
+import com.android.wm.shell.bubbles.Bubble;
+import com.android.wm.shell.bubbles.BubbleController;
+import com.android.wm.shell.bubbles.BubbleData;
+import com.android.wm.shell.bubbles.BubbleExpandedView;
+import com.android.wm.shell.bubbles.BubbleExpandedViewManager;
+import com.android.wm.shell.bubbles.BubbleExpandedViewTransitionAnimator;
+import com.android.wm.shell.bubbles.BubbleHelper;
+import com.android.wm.shell.bubbles.BubblePositioner;
+import com.android.wm.shell.bubbles.BubbleStackView;
+import com.android.wm.shell.bubbles.BubbleTaskViewFactory;
+import com.android.wm.shell.bubbles.BubbleViewInfoTask;
+import com.android.wm.shell.bubbles.BubbleViewProvider;
+import com.android.wm.shell.bubbles.Bubbles;
 import com.android.wm.shell.bubbles.bar.BubbleBarExpandedView;
 import com.android.wm.shell.bubbles.bar.BubbleBarLayerView;
 import com.android.wm.shell.common.HomeIntentProvider;
@@ -103,7 +116,7 @@ public class BubbleTransitions {
     @NonNull final TaskViewRepository mRepository;
     @NonNull final Executor mMainExecutor;
     @NonNull final BubbleData mBubbleData;
-    @NonNull final TaskViewTransitions mTaskViewTransitions;
+    @NonNull public final TaskViewTransitions mTaskViewTransitions;
     @NonNull final Context mContext;
     @NonNull final BubbleViewInfoTask.Factory mBubbleViewInfoTaskFactory;
     @NonNull final BubbleHelper mBubbleHelper;
@@ -412,9 +425,13 @@ public class BubbleTransitions {
      * interface.
      */
     public interface BubbleTransition {
+        /** Notifies this transition that the task view surface was created. */
         default void surfaceCreated() {}
+        /** Notifies this transition that it can continue to expand the bubble. */
         default void continueExpand() {}
+        /** Notifies that this transition should be skipped. */
         default void skip() {}
+        /** Notifies this transition that it can continue to collapse the bubble. */
         default void continueCollapse() {}
         /** Called when the given Bubble's expanded TaskView has bounds changed. */
         default void onTaskViewBoundsChanged(Bubble bubble) {}
@@ -1214,7 +1231,8 @@ public class BubbleTransitions {
                 }
 
                 // Add the task view task listener manually since we aren't going through
-                // TaskViewTransitions (which normally sets up the listener via a pending launch cookie
+                // TaskViewTransitions (which normally sets up the listener via a pending launch
+                // cookie
                 mTaskOrganizer.setPendingLaunchCookieListener(mLaunchCookie.binder,
                         mBubble.getTaskView().getController());
 

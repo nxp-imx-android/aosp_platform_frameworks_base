@@ -24,6 +24,7 @@ import android.view.View;
 import androidx.annotation.NonNull;
 
 import com.android.wm.shell.bubbles.bar.BubbleBarLayerView;
+import com.android.wm.shell.bubbles.transitions.BubbleTransitions;
 
 /**
  * {@link BubbleTransitions} needs to perform various actions on the bubble expanded view and its
