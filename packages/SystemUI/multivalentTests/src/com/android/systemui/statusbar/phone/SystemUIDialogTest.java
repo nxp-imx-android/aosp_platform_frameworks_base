@@ -86,7 +86,7 @@ public class SystemUIDialogTest extends SysuiTestCase {
     @Mock
     private SystemUIDialogManager mSystemUIDialogManager;
     @Mock
-    private DialogTransitionAnimator mDialogTransiationAnimator;
+    private DialogTransitionAnimator mDialogTransitionAnimator;
     private SysUiState mSysUiState;
     private FakeDisplayRepository mDisplayRepository;
     private SysUiState mConnectedDisplaySysUiState;
@@ -105,6 +105,7 @@ public class SystemUIDialogTest extends SysuiTestCase {
     public void setup() {
         MockitoAnnotations.initMocks(this);
         KosmosJavaAdapter kosmos = new KosmosJavaAdapter(this);
+        allowTestableLooperAsMainThread();
         mSysUiState = kosmos.getSysuiState();
         mDisplayRepository = kosmos.getDisplayRepository();
         mStateRepository = kosmos.getFakeSysUIStatePerDisplayRepository();
@@ -138,7 +139,7 @@ public class SystemUIDialogTest extends SysuiTestCase {
                 mContext,
                 mSystemUIDialogManager,
                 mBroadcastDispatcher,
-                mDialogTransiationAnimator,
+                mDialogTransitionAnimator,
                 null)
                 .create();
         final ArgumentCaptor<BroadcastReceiver> broadcastReceiverCaptor =
@@ -185,6 +186,11 @@ public class SystemUIDialogTest extends SysuiTestCase {
                 intentFilterCaptor.capture(), ArgumentMatchers.eq(null), ArgumentMatchers.any());
         assertTrue(intentFilterCaptor.getValue().hasAction(Intent.ACTION_SCREEN_OFF));
         assertFalse(intentFilterCaptor.getValue().hasAction(Intent.ACTION_CLOSE_SYSTEM_DIALOGS));
+
+        dialog.dismiss();
+        verify(mBroadcastDispatcher).unregisterReceiver(
+                ArgumentMatchers.eq(broadcastReceiverCaptor.getValue()));
+        assertFalse(dialog.isShowing());
     }
 
     @Test
@@ -193,12 +199,11 @@ public class SystemUIDialogTest extends SysuiTestCase {
                 mContext,
                 mSystemUIDialogManager,
                 mBroadcastDispatcher,
-                mDialogTransiationAnimator,
+                mDialogTransitionAnimator,
                 null)
                 .create();
 
         dialog.show();
-
         assertTrue(dialog.isShowing());
 
         dialog.dismiss();
@@ -216,7 +221,7 @@ public class SystemUIDialogTest extends SysuiTestCase {
                 false /* refreshBackgroundOnThemeChange */,
                 mSystemUIDialogManager,
                 mBroadcastDispatcher,
-                mDialogTransiationAnimator,
+                mDialogTransitionAnimator,
                 null,
                 mDelegate,
                 true,
