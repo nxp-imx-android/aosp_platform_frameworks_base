@@ -56,7 +56,6 @@ import com.android.systemui.statusbar.phone.ScreenOffAnimationController
 import com.android.systemui.util.kotlin.BooleanFlowOperators.anyOf
 import com.android.systemui.util.kotlin.FlowDumperImpl
 import com.android.systemui.util.kotlin.pairwise
-import com.android.systemui.util.kotlin.sample
 import com.android.systemui.util.ui.AnimatableEvent
 import com.android.systemui.util.ui.AnimatedValue
 import com.android.systemui.util.ui.toAnimatedValueFlow
@@ -521,15 +520,13 @@ constructor(
     private fun areNotifsFullyHiddenAnimated(): Flow<AnimatedValue<Boolean>> {
         return notificationsKeyguardInteractor.areNotificationsFullyHidden
             .pairwise(initialValue = null)
-            .sample(deviceEntryBypassInteractor.isBypassEnabled) {
-                (prev, fullyHidden),
-                bypassEnabled ->
+            .map { (prev, fullyHidden) ->
                 val animate =
                     when {
                         // Don't animate for the first value
                         prev == null -> false
                         // Always animate if bypass is enabled.
-                        bypassEnabled -> true
+                        deviceEntryBypassInteractor.isBypassEnabled.value -> true
                         // If we're not bypassing and we're not going to AOD, then we're not
                         // animating.
                         !dozeParameters.alwaysOn -> false
