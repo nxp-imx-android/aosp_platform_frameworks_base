@@ -175,5 +175,5 @@
     <string name="open_by_default_splash_dialog_browser_text" msgid="4439951040200685938">"Buka di browser"</string>
     <string name="open_by_default_splash_dialog_app_text" msgid="2680408983754147907">"Tetap di aplikasi"</string>
     <string name="open_by_default_splash_dialog_ask_me_later_text" msgid="2706872945449736432">"Nanti saja"</string>
-    <string name="package_update_text" msgid="196015273357188152">"Memperbarui..."</string>
+    <string name="package_update_text" msgid="196015273357188152">"Mengupdate..."</string>
 </resources>
