@@ -413,8 +413,9 @@ object KeyguardRootViewBinder {
         disposables +=
             view.onApplyWindowInsets { _: View, insets: WindowInsets ->
                 val insetTypes = WindowInsets.Type.systemBars() or WindowInsets.Type.displayCutout()
-                burnInParams.update { current ->
-                    current.copy(topInset = insets.getInsetsIgnoringVisibility(insetTypes).top)
+                val insetAmount = insets.getInsetsIgnoringVisibility(insetTypes).top
+                if (burnInParams.value.topInset() != insetAmount) {
+                    burnInParams.update { current -> current.copy(topInset = { insetAmount }) }
                 }
                 insets
             }
@@ -483,21 +484,19 @@ object KeyguardRootViewBinder {
                 )
             }
 
-            burnInParams.update { current ->
-                current.copy(
-                    minViewY =
-                        // To ensure burn-in doesn't enroach the top inset, get the min top Y
-                        childViews.entries.fold(Int.MAX_VALUE) { currentMin, (viewId, view) ->
-                            min(
-                                currentMin,
-                                if (!isUserVisible(view)) {
-                                    Int.MAX_VALUE
-                                } else {
-                                    view.getTop()
-                                },
-                            )
-                        }
-                )
+            val calculatedMinViewY =
+                childViews.entries.fold(Int.MAX_VALUE) { currentMin, (_, view) ->
+                    min(
+                        currentMin,
+                        if (!isUserVisible(view)) {
+                            Int.MAX_VALUE
+                        } else {
+                            view.top
+                        },
+                    )
+                }
+            if (calculatedMinViewY != burnInParams.value.minViewY()) {
+                burnInParams.update { current -> current.copy(minViewY = { calculatedMinViewY }) }
             }
         }
 

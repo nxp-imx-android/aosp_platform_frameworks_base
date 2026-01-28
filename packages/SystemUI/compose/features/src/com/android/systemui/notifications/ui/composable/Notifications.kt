@@ -66,6 +66,7 @@ import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.findRootCoordinates
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.layout.onSizeChanged
@@ -91,6 +92,7 @@ import com.android.compose.animation.scene.SceneTransitionLayoutState
 import com.android.compose.gesture.effect.OffsetOverscrollEffect
 import com.android.compose.gesture.effect.rememberOffsetOverscrollEffect
 import com.android.compose.modifiers.onUnplaced
+import com.android.compose.modifiers.padding
 import com.android.compose.modifiers.thenIf
 import com.android.compose.nestedscroll.OnStopScope
 import com.android.compose.nestedscroll.PriorityNestedScrollConnection
@@ -202,7 +204,7 @@ fun ContentScope.ScrollingNotificationPanel(
     shouldPunchHoleBehindScrim: Boolean,
     isTransparencyEnabled: Boolean,
     stackTopPadding: Dp,
-    stackBottomPadding: Dp,
+    stackBottomPadding: () -> Dp,
     modifier: Modifier = Modifier,
     shouldFillMaxHeight: Boolean = false,
     shouldIncludeHeadsUpSpace: Boolean = true,
@@ -284,7 +286,7 @@ fun ContentScope.NestedScrollingNotificationPanel(
     shouldPunchHoleBehindScrim: Boolean,
     isTransparencyEnabled: Boolean,
     stackTopPadding: Dp,
-    stackBottomPadding: Dp,
+    stackBottomPadding: () -> Dp,
     contentScrollState: ScrollState,
     scrollingContentOverscrollEffect: OffsetOverscrollEffect,
     shortContentOverscrollEffect: OffsetOverscrollEffect,
@@ -400,8 +402,9 @@ fun ContentScope.NestedScrollingNotificationPanel(
     val screenHeight = with(density) { LocalConfiguration.current.screenHeightDp.dp.toPx() }
 
     /** Total horizontal stack padding in pixels. */
-    val stackHorizontalPaddingPx =
-        with(LocalDensity.current) { (stackTopPadding + stackBottomPadding).toPx() }.roundToInt()
+    val stackHorizontalPaddingPx = {
+        with(density) { (stackTopPadding + stackBottomPadding()).toPx() }.roundToInt()
+    }
 
     val scrimRounding =
         viewModel.shadeScrimRounding.collectAsStateWithLifecycle(ShadeScrimRounding())
@@ -541,7 +544,10 @@ fun ContentScope.NestedScrollingNotificationPanel(
                                         if (shouldContentFillMaxSize) Modifier.fillMaxSize()
                                         else Modifier.fillMaxWidth()
                                     )
-                                    .padding(top = stackTopPadding, bottom = stackBottomPadding)
+                                    .padding(
+                                        top = { stackTopPadding.roundToPx() },
+                                        bottom = { stackBottomPadding().roundToPx() },
+                                    )
                                     .onPlaced {
                                         val rawBounds = it.rawBoundsInWindow()
                                         debugLog(viewModel) {
@@ -594,7 +600,7 @@ fun ContentScope.NestedScrollingNotificationPanel(
                                     Modifier.notificationStackHeight(view = stackScrollView)
                                         .onSizeChanged { size ->
                                             onStackHeightChanged(
-                                                size.height + stackHorizontalPaddingPx
+                                                size.height + stackHorizontalPaddingPx()
                                             )
                                         },
                             )

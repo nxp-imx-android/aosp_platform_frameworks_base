@@ -25,8 +25,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalDensity
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.systemui.keyguard.ui.viewmodel.AodBurnInViewModel
@@ -34,6 +32,7 @@ import com.android.systemui.keyguard.ui.viewmodel.BurnInMovementState
 import com.android.systemui.keyguard.ui.viewmodel.BurnInParameters
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardClockViewModel
 import kotlin.math.ceil
+import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
 
@@ -41,31 +40,35 @@ import kotlin.math.roundToInt
 @Composable
 fun trackBurnInParameters(
     burnInViewModel: AodBurnInViewModel,
-    burnInMovementState: BurnInMovementState,
+    burnInMovementState: () -> BurnInMovementState,
     clockViewModel: KeyguardClockViewModel,
 ): BurnInTracker {
     val clock by clockViewModel.currentClock.collectAsStateWithLifecycle()
-
-    var cachedTranslation by remember { mutableStateOf<Offset>(Offset(0f, 0f)) }
     val (smartspaceTop, onSmartspaceTopChanged) = remember { mutableStateOf<Float?>(null) }
     val (smallClockTop, onSmallClockTopChanged) = remember(clock) { mutableStateOf<Float?>(null) }
-    val topmostTop = ceil(min(smartspaceTop ?: 0f, smallClockTop ?: 0f)).roundToInt()
-    val topInset =
-        WindowInsets.systemBars.union(WindowInsets.displayCutout).getTop(LocalDensity.current)
+
+    val systemBars = WindowInsets.systemBars
+    val displayCutout = WindowInsets.displayCutout
+    val density = LocalDensity.current
+
     val params =
-        remember(topInset, topmostTop) {
+        remember(systemBars, displayCutout, density, smartspaceTop, smallClockTop) {
+            val topInset = { systemBars.union(displayCutout).getTop(density) }
             BurnInParameters(
                 topInset = topInset,
-                minViewY = topmostTop,
-                translationX = { cachedTranslation.x },
-                translationY = { cachedTranslation.y },
+                minViewY = {
+                    // minViewY should never be below the topInset
+                    val topMost = ceil(min(smartspaceTop ?: 0f, smallClockTop ?: 0f)).roundToInt()
+                    max(topInset(), topMost)
+                },
+                translationX = { burnInMovementState().translation.x },
+                translationY = { burnInMovementState().translation.y },
             )
         }
 
     LaunchedEffect(params) { burnInViewModel.updateBurnInParams(params) }
-    cachedTranslation = burnInMovementState.translation
 
-    return remember(params, onSmartspaceTopChanged, onSmallClockTopChanged) {
+    return remember(onSmartspaceTopChanged, onSmallClockTopChanged, params) {
         BurnInTracker(
             parameters = params,
             onSmartspaceTopChanged = onSmartspaceTopChanged,

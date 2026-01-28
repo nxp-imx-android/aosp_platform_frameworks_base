@@ -80,7 +80,11 @@ constructor(
             val viewModel =
                 rememberViewModel("LockscreenRoot-viewModel") { viewModelFactory.create() }
             val burnInTracker =
-                trackBurnInParameters(aodBurnInViewModel, viewModel.burnIn, keyguardClockViewModel)
+                trackBurnInParameters(
+                    aodBurnInViewModel,
+                    { viewModel.burnIn },
+                    keyguardClockViewModel,
+                )
             LockscreenTouchHandling(viewModel.touchHandlingFactory) { onSettingsMenuPlaced ->
                 val innerContext =
                     context.copy(
