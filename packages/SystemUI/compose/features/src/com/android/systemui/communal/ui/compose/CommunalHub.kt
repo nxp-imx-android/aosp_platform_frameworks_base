@@ -125,6 +125,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
@@ -471,6 +472,30 @@ fun CommunalHub(
                             interactionHandler = interactionHandler,
                             widgetSection = widgetSection,
                             contentScope = contentScope,
+                            updateDragPositionForCancel = { widgetShadowOffset ->
+                                if (communalHubCancelAddWidget()) {
+                                    val cancelButtonInWindow =
+                                        cancelButtonCoordinates?.boundsInWindow()
+                                    if (addingWidgetDragAction && cancelButtonInWindow != null) {
+                                        // The newly added widget is only a widget shadow
+                                        // we know the center point of this widget shadow
+                                        // (widgetShadowoffset)
+                                        // we are creating a bigger zone for the cancel area
+                                        val fullWidthCancelBounds =
+                                            Rect(
+                                                left = 0f,
+                                                top = 0f,
+                                                right = screenWidth.toFloat(),
+                                                bottom = cancelButtonInWindow.bottom,
+                                            )
+                                        fullWidthCancelBounds.contains(widgetShadowOffset)
+                                    } else {
+                                        false
+                                    }
+                                } else {
+                                    false
+                                }
+                            },
                         )
                     }
                 }
@@ -924,6 +949,7 @@ private fun BoxScope.CommunalHubLazyGrid(
     interactionHandler: RemoteViews.InteractionHandler?,
     widgetSection: CommunalAppWidgetSection,
     contentScope: ContentScope?,
+    updateDragPositionForCancel: (widgetShadowOffset: Offset) -> Boolean,
 ) {
     var gridModifier =
         Modifier.align(Alignment.TopStart).onGloballyPositioned { setGridCoordinates(it) }
@@ -935,6 +961,7 @@ private fun BoxScope.CommunalHubLazyGrid(
         else if (communalResponsiveGrid() && isMediumWindow()) hubDimensions.ItemSpacingMedium
         else Dimensions.ItemSpacing
     val windowSize = WindowSizeUtils.getWindowSizeCategory(LocalContext.current)
+    var draggingPlaceHolderAlpha: Float by remember { mutableStateOf(1f) }
     if (viewModel.isEditMode && viewModel is CommunalEditModeViewModel) {
         list = contentListState.list
         // for drag & drop operations within the communal hub grid
@@ -962,6 +989,8 @@ private fun BoxScope.CommunalHubLazyGrid(
                 contentListState = contentListState,
                 contentOffset = contentOffset,
                 viewModel = viewModel,
+                updateDragPositionForCancel = updateDragPositionForCancel,
+                setDraggingPlaceHolderAlpha = { draggingPlaceHolderAlpha = it },
             )
 
         // A full size box in background that listens to widget drops from the picker.
@@ -970,8 +999,10 @@ private fun BoxScope.CommunalHubLazyGrid(
         Box(Modifier.fillMaxSize().dragAndDropTarget(dragAndDropTargetState)) {}
     } else if (communalResponsiveGrid()) {
         gridModifier = gridModifier.fillMaxSize()
+        draggingPlaceHolderAlpha = 1f
     } else {
         gridModifier = gridModifier.height(hubDimensions.GridHeight)
+        draggingPlaceHolderAlpha = 1f
     }
 
     HorizontalGridWrapper(
@@ -1117,7 +1148,9 @@ private fun BoxScope.CommunalHubLazyGrid(
                             widgetSection = widgetSection,
                             resizeableItemFrameViewModel = resizeableItemFrameViewModel,
                             isVisible = isVisible,
-                        )
+                        ) {
+                            draggingPlaceHolderAlpha
+                        }
                     }
                 }
             } else {
@@ -1142,7 +1175,9 @@ private fun BoxScope.CommunalHubLazyGrid(
                     resizeableItemFrameViewModel = resizeableItemFrameViewModel,
                     contentScope = contentScope,
                     isVisible = isVisible,
-                )
+                ) {
+                    draggingPlaceHolderAlpha
+                }
             }
         }
     }
@@ -1252,8 +1287,8 @@ private fun Toolbar(
         // Clear any existing coordinates when remove is not enabled.
         setRemoveButtonCoordinates(null)
     }
-    if(!cancelAddEnabled) {
-        //Clear any existing coordinates when cancel is not enabled.
+    if (!cancelAddEnabled) {
+        // Clear any existing coordinates when cancel is not enabled.
         setCancelButtonCoordinates(null)
     }
     val removeButtonAlpha: Float by
@@ -1324,7 +1359,7 @@ private fun Toolbar(
             }
         }
 
-        if(communalHubCancelAddWidget()) {
+        if (communalHubCancelAddWidget()) {
             AnimatedVisibility(
                 modifier = Modifier.align(Alignment.Center),
                 visible = cancelAddEnabled,
@@ -1333,8 +1368,7 @@ private fun Toolbar(
             ) {
                 Surface(
                     modifier =
-                        Modifier.toolbarHeight()
-                        .onGloballyPositioned {
+                        Modifier.toolbarHeight().onGloballyPositioned {
                             // It's possible for this callback to fire after cancel has been
                             // disabled. Check enabled state before setting.
                             if (cancelAddEnabled) {
@@ -1350,7 +1384,7 @@ private fun Toolbar(
                         horizontalArrangement =
                             Arrangement.spacedBy(
                                 ButtonDefaults.IconSpacing,
-                                Alignment.CenterHorizontally
+                                Alignment.CenterHorizontally,
                             ),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
@@ -1361,7 +1395,7 @@ private fun Toolbar(
             }
         }
 
-        if(!isCancelAddActiveAndVisible) {
+        if (!isCancelAddActiveAndVisible) {
             ToolbarButton(
                 isPrimary = !removeEnabled,
                 modifier = Modifier.align(Alignment.CenterEnd),
@@ -1464,6 +1498,7 @@ private fun CommunalContent(
     resizeableItemFrameViewModel: ResizeableItemFrameViewModel?,
     contentScope: ContentScope? = null,
     isVisible: Boolean,
+    draggingPlaceHolderAlpha: () -> Float,
 ) {
     when (model) {
         is CommunalContentModel.WidgetContent.Widget ->
@@ -1480,7 +1515,13 @@ private fun CommunalContent(
                 resizeableItemFrameViewModel,
                 isVisible,
             )
-        is CommunalContentModel.WidgetPlaceholder -> HighlightedItem(modifier)
+        is CommunalContentModel.WidgetPlaceholder -> {
+            if (communalHubCancelAddWidget()) {
+                AnimatedWidgetPlaceholder(modifier, alphaState = draggingPlaceHolderAlpha)
+            } else {
+                HighlightedItem(modifier)
+            }
+        }
         is CommunalContentModel.WidgetContent.DisabledWidget ->
             DisabledWidgetPlaceholder(model, viewModel, modifier)
         is CommunalContentModel.WidgetContent.PendingWidget ->
@@ -1516,6 +1557,12 @@ fun HighlightedItem(modifier: Modifier = Modifier, alpha: Float = 1.0f) {
                 )
             }
     )
+}
+
+@Composable
+private fun AnimatedWidgetPlaceholder(modifier: Modifier, alphaState: () -> Float) {
+    val alpha by animateFloatAsState(targetValue = alphaState(), label = "PlaceholderAlpha")
+    HighlightedItem(modifier, alpha = alpha)
 }
 
 /** Presents a CTA tile at the end of the grid, to customize the hub. */
