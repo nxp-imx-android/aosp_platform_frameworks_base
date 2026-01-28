@@ -72,7 +72,7 @@ public final class NotificationRule implements Parcelable {
      */
     public static final int RESERVED_ID_PRIORITY_CONVERSATIONS = 202;
     /**
-     * Reserved rule id for the OS owned rule that bundles lower urgency notifications
+     * Reserved rule id for the NAS owned rule that bundles lower urgency notifications
      */
     public static final int RESERVED_ID_STATIC_BUNDLES = 203;
     /**
@@ -144,6 +144,16 @@ public final class NotificationRule implements Parcelable {
     private @Nullable final Action mAction;
     private boolean mCanBeDisabled = true;
     private final List<Condition> mConditions = new ArrayList<>();
+
+    /**
+     * @hide
+     */
+    public static boolean isSystemRule(int ruleId) {
+        return ruleId == RESERVED_ID_PROMOTED
+                || ruleId == RESERVED_ID_PRIORITY_CONVERSATIONS
+                || ruleId == RESERVED_ID_IMPORTANT_NOTIFICATIONS
+                || ruleId == RESERVED_ID_STATIC_BUNDLES;
+    }
 
     /**
      * Returns the filters for this rule.
