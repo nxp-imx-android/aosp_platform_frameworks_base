@@ -1700,7 +1700,9 @@ class PackageManagerShellCommand extends ShellCommand {
             return 1;
         }
         if (!si.isStagedSessionReady() && !si.isStagedSessionFailed()) {
-            pw.println("Failure [timed out after " + timeoutMs + " ms]");
+            pw.println("Failure [timed out after " + timeoutMs + " ms]."
+                    + " Ending this command now but session is still being staged asynchronously."
+                    + " Use 'pm list staged-sessions' to check the session status later.");
             return 1;
         }
         if (!si.isStagedSessionReady()) {
