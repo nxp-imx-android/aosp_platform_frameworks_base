@@ -19,6 +19,8 @@ package com.android.server.personalcontext.embedded;
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -29,9 +31,12 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.service.personalcontext.RenderToken;
 import android.service.personalcontext.embedded.IInsightSurfaceVisualizer;
 import android.service.personalcontext.embedded.InsightSurfaceClientInfo;
 import android.service.personalcontext.embedded.InsightSurfaceVisualizerService;
+import android.service.personalcontext.insight.BundleInsight;
+import android.service.personalcontext.insight.ContextInsight;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
@@ -43,7 +48,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.util.List;
+import java.util.UUID;
 
 @SmallTest
 @RunWith(AndroidJUnit4.class)
@@ -124,9 +129,16 @@ public class VisualizerConnectionTest {
     @Test
     public void testCreateVisualizationForClient() throws RemoteException {
         mVisualizerConnection.onRegistered();
+        final ContextInsight insight = new BundleInsight.Builder().build();
+        final RenderToken renderToken = new RenderToken(UUID.randomUUID());
         final InsightSurfaceClientInfo client = mock(InsightSurfaceClientInfo.class);
-        mVisualizerConnection.createVisualizationForClient(List.of(), client, (success) -> {});
-        verify(mVisualizer).createVisualizationForClient(any(), any(), any());
+        mVisualizerConnection.createVisualizationForClient(
+                insight, client, renderToken, (success) -> {});
+        verify(mVisualizer).createVisualizationForClient(
+                argThat(wrapper -> wrapper.getContextInsight() == insight),
+                any(),
+                eq(renderToken),
+                any());
     }
 
     @Test

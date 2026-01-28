@@ -17,6 +17,7 @@
 package com.android.systemui.personalcontext
 
 import android.content.Context
+import android.service.personalcontext.RenderToken
 import android.service.personalcontext.embedded.InsightSurfaceClientInfo
 import android.service.personalcontext.embedded.InsightSurfaceVisualizerService
 import android.service.personalcontext.insight.ContextInsight
@@ -61,7 +62,8 @@ constructor(
 
     override fun onCreateEmbeddedView(
         context: Context,
-        insights: List<ContextInsight>,
+        insight: ContextInsight,
+        renderToken: RenderToken?,
         info: InsightSurfaceClientInfo,
     ): View? {
         Log.d(TAG, "onCreateEmbeddedView: ${info.id}")
@@ -71,13 +73,13 @@ constructor(
             return null
         }
 
-        val template = templateFactory.createTemplate(insights, info) ?: return null
+        val template = templateFactory.createTemplate(insight, info) ?: return null
 
         return composeViewFactory.createComposeView(context).apply {
             viewsAwaitingClientConnection[info.id] = this
             setContent {
                 CompositionLocalProvider(LocalInsightSurfaceClientInfo provides info) {
-                    template.Content(insights)
+                    template.Content(insight)
                 }
             }
         }
