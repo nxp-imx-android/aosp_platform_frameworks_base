@@ -1477,7 +1477,7 @@ class DeviceEntryFaceAuthRepositoryTest : SysuiTestCase() {
         detectRunning = collectLastValue(underTest.isDetectRunning)
         lockedOut = collectLastValue(underTest.isLockedOut)
         canFaceAuthRun = collectLastValue(underTest.canRunFaceAuth)
-        authenticated = collectLastValue(underTest.isAuthenticated)
+        authenticated = collectLastValue(underTest.isCurrentUserAuthenticated)
         bypassEnabled = collectLastValue(underTest.isBypassEnabled)
         fakeUserRepository.setSelectedUserInfo(primaryUser)
         runCurrent()

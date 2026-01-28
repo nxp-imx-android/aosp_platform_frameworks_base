@@ -716,7 +716,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
             underTest.start()
 
             // Authenticate using a passive auth method like face auth while bypass is disabled.
-            fakeDeviceEntryFaceAuthRepository.isAuthenticated.value = true
+            fakeDeviceEntryFaceAuthRepository.isCurrentUserAuthenticated.value = true
 
             assertThat(currentSceneKey).isEqualTo(Scenes.Lockscreen)
         }
@@ -3602,7 +3602,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
 
     private fun Kosmos.updateFaceAuthStatus(isSuccess: Boolean) {
         with(fakeDeviceEntryFaceAuthRepository) {
-            isAuthenticated.value = isSuccess
+            isCurrentUserAuthenticated.value = isSuccess
             setAuthenticationStatus(
                 if (isSuccess) {
                     kosmos.biometricUnlockInteractor.setBiometricUnlockState(
