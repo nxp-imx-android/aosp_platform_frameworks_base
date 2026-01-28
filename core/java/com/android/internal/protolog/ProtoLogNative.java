@@ -63,11 +63,11 @@ public final class ProtoLogNative {
      */
     public static void log(@ProtoLogLevel int level, @NonNull String tag,
             @NonNull String message, @NonNull Object... args) {
-        if (args.length > 16) {
-            // The limit of 16 arguments comes from using a 32-bit integer for the parameter mask,
-            // a 2-bit type identifier for each argument (2 bits * 16 args = 32 bits).
+        if (args.length > 32) {
+            // The limit of 32 arguments comes from using a 64-bit long for the parameter mask,
+            // a 2-bit type identifier for each argument (2 bits * 32 args = 64 bits).
             throw new IllegalArgumentException(
-                    "ProtoLog does not support more than 16 arguments: " + message);
+                    "ProtoLog does not support more than 32 arguments: " + message);
         }
 
         // NOTE: Ensure that nothing in this function call triggers a ProtoLog call otherwise we
@@ -78,7 +78,7 @@ public final class ProtoLogNative {
             long[] primitiveArgs = buffer.mPrimitiveArgs;
             Object[] stringArgs = buffer.mStringArgs;
 
-            int mask = 0;
+            long mask = 0;
             int argIdx = 0;
 
             for (int i = 0; i < args.length; i++) {
@@ -136,12 +136,12 @@ public final class ProtoLogNative {
      * @param args        The log message arguments.
      */
     public static void log(@ProtoLogLevel int level, @NonNull String tag, long messageHash,
-            int paramsMask, @NonNull Object... args) {
-        if (args.length > 16) {
-            // The limit of 16 arguments comes from using a 32-bit integer for the parameter mask,
-            // a 2-bit type identifier for each argument (2 bits * 16 args = 32 bits).
+            long paramsMask, @NonNull Object... args) {
+        if (args.length > 32) {
+            // The limit of 32 arguments comes from using a 64-bit long for the parameter mask,
+            // a 2-bit type identifier for each argument (2 bits * 32 args = 64 bits).
             throw new IllegalArgumentException(
-                    "ProtoLog does not support more than 16 arguments. Hash: " + messageHash);
+                    "ProtoLog does not support more than 32 arguments. Hash: " + messageHash);
         }
 
         // NOTE: Ensure that nothing in this function call triggers a ProtoLog call otherwise we
@@ -188,8 +188,8 @@ public final class ProtoLogNative {
             ThreadLocal.withInitial(ThreadBuffer::new);
 
     private static class ThreadBuffer {
-        final long[] mPrimitiveArgs = new long[16];
-        final Object[] mStringArgs = new Object[16];
+        final long[] mPrimitiveArgs = new long[32];
+        final Object[] mStringArgs = new Object[32];
     }
 
     /**
@@ -204,7 +204,7 @@ public final class ProtoLogNative {
      */
     @FastNative
     private static native void log(int level, @NonNull String group, @NonNull String message,
-            int paramsMask, int argCount, long[] primitiveArgs, Object[] stringArgs);
+            long paramsMask, int argCount, long[] primitiveArgs, Object[] stringArgs);
 
     /**
      * Native log implementation. This is what will be called from Java.
@@ -212,5 +212,5 @@ public final class ProtoLogNative {
      */
     @FastNative
     private static native void log(int level, @NonNull String group, long messageHash,
-            int paramsMask, int argCount, long[] primitiveArgs, Object[] stringArgs);
+            long paramsMask, int argCount, long[] primitiveArgs, Object[] stringArgs);
 }

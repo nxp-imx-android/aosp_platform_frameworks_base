@@ -64,6 +64,15 @@ class ProtoLogFormatDetector : Detector(), SourceCodeScanner {
                 val formatStringArg = arguments[1]
                 val formatArgs = arguments.subList(2, arguments.size)
 
+                if (formatArgs.size > 32) {
+                    context.report(
+                        ISSUE_TOO_MANY_ARGS,
+                        node,
+                        context.getLocation(node),
+                        "ProtoLog method has too many arguments ${formatArgs.size} (limit is 32)",
+                    )
+                }
+
                 val formatString = formatStringArg.evaluate() as? String
                 if (formatString == null) {
                     context.report(
@@ -347,6 +356,25 @@ class ProtoLogFormatDetector : Detector(), SourceCodeScanner {
                 category = Category.CORRECTNESS,
                 priority = 4,
                 severity = Severity.WARNING,
+                implementation =
+                    Implementation(
+                        ProtoLogFormatDetector::class.java,
+                        EnumSet.of(Scope.JAVA_FILE),
+                        Scope.JAVA_FILE_SCOPE,
+                    ),
+            )
+
+        val ISSUE_TOO_MANY_ARGS: Issue =
+            Issue.create(
+                id = "ProtoLogTooManyArgs",
+                briefDescription = "ProtoLog method has too many arguments",
+                explanation =
+                    """
+                    ProtoLog methods support at most 32 arguments.
+                    """,
+                category = Category.CORRECTNESS,
+                priority = 6,
+                severity = Severity.ERROR,
                 implementation =
                     Implementation(
                         ProtoLogFormatDetector::class.java,
