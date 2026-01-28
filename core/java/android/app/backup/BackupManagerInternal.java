@@ -16,7 +16,9 @@
 
 package android.app.backup;
 
+import android.annotation.NonNull;
 import android.annotation.UserIdInt;
+import android.app.backup.DelayedRestoreRequest;
 import android.os.IBinder;
 
 /**
@@ -37,4 +39,25 @@ public interface BackupManagerInternal {
      * This method is only invoked by the Activity Manager.
      */
     void agentDisconnectedForUser(String packageName, @UserIdInt int userId);
+
+    /**
+     * Triggers any previously scheduled delayed restore requests meeting the met conditions.
+     *
+     * @param userId            User id for which the action should be performed.
+     * @param request           The DelayedRestoreRequest to trigger.
+     * @hide
+     */
+    void onDelayedRestoreConditionMetForUser(int userId, DelayedRestoreRequest request);
+
+    /**
+     * Schedules a restore request that cannot be immediately met due to some external dependency.
+     * For example, a part of restore for an application might depend on a different application
+     * being installed first. The system will store this request and attempt to perform the restore
+     * once the dependencies are met (e.g., the app is installed).
+     *
+     * @param userId User id for which the request should be scheduled.
+     * @param request The DelayedRestoreRequest to schedule.
+     * @return boolean indicating the success of the scheduling request.
+     */
+    boolean scheduleDelayedRestoreForUser(int userId, DelayedRestoreRequest request);
 }

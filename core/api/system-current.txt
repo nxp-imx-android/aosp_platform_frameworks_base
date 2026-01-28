@@ -419,6 +419,7 @@ package android {
     field public static final String REVOKE_RUNTIME_PERMISSIONS = "android.permission.REVOKE_RUNTIME_PERMISSIONS";
     field public static final String ROTATE_SURFACE_FLINGER = "android.permission.ROTATE_SURFACE_FLINGER";
     field public static final String SATELLITE_COMMUNICATION = "android.permission.SATELLITE_COMMUNICATION";
+    field @FlaggedApi("com.android.server.backup.enable_delayed_restore_api") public static final String SCHEDULE_DELAYED_RESTORE = "android.permission.SCHEDULE_DELAYED_RESTORE";
     field public static final String SCHEDULE_PRIORITIZED_ALARM = "android.permission.SCHEDULE_PRIORITIZED_ALARM";
     field @Deprecated public static final String SCORE_NETWORKS = "android.permission.SCORE_NETWORKS";
     field public static final String SECURE_ELEMENT_PRIVILEGED_OPERATION = "android.permission.SECURE_ELEMENT_PRIVILEGED_OPERATION";
@@ -2051,6 +2052,11 @@ package android.app.assist {
 
 package android.app.backup {
 
+  public abstract class BackupAgent extends android.content.ContextWrapper {
+    method @FlaggedApi("com.android.server.backup.enable_delayed_restore_api") public void onDelayedFullRestore(@NonNull android.app.backup.DelayedRestoreRequest);
+    method @FlaggedApi("com.android.server.backup.enable_delayed_restore_api") public void onDelayedRestore(@NonNull android.app.backup.DelayedRestoreRequest, @NonNull android.app.backup.BackupDataInput, long, @NonNull android.os.ParcelFileDescriptor) throws java.io.IOException;
+  }
+
   public class BackupDataInput {
     ctor public BackupDataInput(java.io.FileDescriptor);
   }
@@ -2058,6 +2064,10 @@ package android.app.backup {
   public class BackupDataOutput {
     ctor public BackupDataOutput(java.io.FileDescriptor);
     ctor public BackupDataOutput(java.io.FileDescriptor, long);
+  }
+
+  public interface BackupHelper {
+    method @FlaggedApi("com.android.server.backup.enable_delayed_restore_api") public default void delayedRestoreEntity(@NonNull android.app.backup.DelayedRestoreRequest, @NonNull android.app.backup.BackupDataInputStream);
   }
 
   public class BackupManager {
@@ -2083,6 +2093,7 @@ package android.app.backup {
     method @RequiresPermission(android.Manifest.permission.BACKUP) public int requestBackup(String[], android.app.backup.BackupObserver);
     method @RequiresPermission(android.Manifest.permission.BACKUP) public int requestBackup(String[], android.app.backup.BackupObserver, android.app.backup.BackupManagerMonitor, int);
     method @Deprecated public int requestRestore(android.app.backup.RestoreObserver, android.app.backup.BackupManagerMonitor);
+    method @FlaggedApi("com.android.server.backup.enable_delayed_restore_api") @RequiresPermission(android.Manifest.permission.SCHEDULE_DELAYED_RESTORE) public boolean scheduleDelayedRestore(@NonNull android.app.backup.DelayedRestoreRequest);
     method @Deprecated @RequiresPermission(android.Manifest.permission.BACKUP) public String selectBackupTransport(String);
     method @RequiresPermission(android.Manifest.permission.BACKUP) public void selectBackupTransport(android.content.ComponentName, android.app.backup.SelectBackupTransportCallback);
     method @RequiresPermission(android.Manifest.permission.BACKUP) public void setAncestralSerialNumber(long);
@@ -2258,6 +2269,24 @@ package android.app.backup {
     field public static final int TRANSPORT_OK = 0; // 0x0
     field public static final int TRANSPORT_PACKAGE_REJECTED = -1002; // 0xfffffc16
     field public static final int TRANSPORT_QUOTA_EXCEEDED = -1005; // 0xfffffc13
+  }
+
+  @FlaggedApi("com.android.server.backup.enable_delayed_restore_api") public final class DelayedRestoreRequest implements android.os.Parcelable {
+    method public int describeContents();
+    method @Nullable public String getPackageName();
+    method public int getType();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.app.backup.DelayedRestoreRequest> CREATOR;
+    field public static final int TYPE_APP_INSTALL = 1; // 0x1
+    field public static final int TYPE_APP_UPDATE = 2; // 0x2
+    field public static final int TYPE_MANAGED_PROFILE_PROVISIONED = 4; // 0x4
+    field public static final int TYPE_SETUP_COMPLETE = 3; // 0x3
+  }
+
+  @FlaggedApi("com.android.server.backup.enable_delayed_restore_api") public static final class DelayedRestoreRequest.Builder {
+    ctor public DelayedRestoreRequest.Builder(int);
+    method @NonNull public android.app.backup.DelayedRestoreRequest build();
+    method @NonNull public android.app.backup.DelayedRestoreRequest.Builder setPackageName(@NonNull String);
   }
 
   public class RestoreDescription implements android.os.Parcelable {
