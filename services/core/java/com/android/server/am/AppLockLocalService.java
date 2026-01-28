@@ -118,13 +118,18 @@ public final class AppLockLocalService implements AppLockInternal,
      * Called by the {@link ActivityManagerService} once the system services are ready.
      */
     public void systemServicesReady() {
-        initAppLockLockedStates();
-        mPackageMonitor.register(mAmService.mContext, UserHandle.ALL,
-                BackgroundThread.getHandler());
-        Context context = mAmService.mContext;
-        final KeyguardManager keyguardManager = context.getSystemService(KeyguardManager.class);
-        keyguardManager.addDeviceLockedStateListener(BackgroundThread.getExecutor(), /* listener= */
-                this);
+        Trace.beginSection(TAG + ".systemServicesReady");
+        try {
+            initAppLockLockedStates();
+            mPackageMonitor.register(mAmService.mContext, UserHandle.ALL,
+                    BackgroundThread.getHandler());
+            Context context = mAmService.mContext;
+            final KeyguardManager keyguardManager = context.getSystemService(KeyguardManager.class);
+            keyguardManager.addDeviceLockedStateListener(BackgroundThread.getExecutor(),
+                    /* listener= */ this);
+        } finally {
+            Trace.endSection();
+        }
     }
 
     /**
@@ -564,82 +569,93 @@ public final class AppLockLocalService implements AppLockInternal,
 
     @Override
     public void onDeviceLockedStateChanged(boolean isDeviceLocked) {
-        if (!isDeviceLocked) {
-            return;
-        }
-        synchronized (mLock) {
-            for (int i = 0; i < mAppLockLockedStatesForUser.size(); i++) {
-                final int userId = mAppLockLockedStatesForUser.keyAt(i);
-                final ArrayMap<String, AppLockLockedState> userPackages =
-                        mAppLockLockedStatesForUser.valueAt(i);
+        Trace.beginSection(TAG + ".onDeviceLockedStateChanged");
+        try {
+            if (!isDeviceLocked) {
+                return;
+            }
+            synchronized (mLock) {
+                for (int i = 0; i < mAppLockLockedStatesForUser.size(); i++) {
+                    final int userId = mAppLockLockedStatesForUser.keyAt(i);
+                    final ArrayMap<String, AppLockLockedState> userPackages =
+                            mAppLockLockedStatesForUser.valueAt(i);
 
-                if (userPackages == null) {
-                    continue;
-                }
-                for (Map.Entry<String, AppLockLockedState> entry : userPackages.entrySet()) {
-                    AppLockLockedState state = entry.getValue();
-                    // Send an update for all unlocked packages that they are now immediately locked
-                    if (state != null && state.mLastSentLockedState != null
-                            && !state.mLastSentLockedState) {
-                        if (DEBUG) {
-                            Slog.d(TAG, entry.getKey()
-                                    + " has become locked due to the device locking");
+                    if (userPackages == null) {
+                        continue;
+                    }
+                    for (Map.Entry<String, AppLockLockedState> entry : userPackages.entrySet()) {
+                        AppLockLockedState state = entry.getValue();
+                        // Send an update for all unlocked packages that they are now immediately
+                        // locked.
+                        if (state != null && state.mLastSentLockedState != null
+                                && !state.mLastSentLockedState) {
+                            if (DEBUG) {
+                                Slog.d(TAG, entry.getKey()
+                                        + " has become locked due to the device locking");
+                            }
+                            handleLockedStateLocked(entry.getKey(), userId, /* lockImmediately= */
+                                    true);
                         }
-                        handleLockedStateLocked(entry.getKey(), userId, /* lockImmediately= */
-                                true);
                     }
                 }
             }
+        } finally {
+            Trace.endSection();
         }
     }
 
     @Override
     public void setAppLockEnabledPackageSuccessfullyAuthenticated(@NonNull String packageName,
             int userId) {
-        Objects.requireNonNull(packageName);
+        Trace.beginSection(TAG + ".setAppLockEnabledPackageSuccessfullyAuthenticated");
+        try {
+            Objects.requireNonNull(packageName);
 
-        if (DEBUG) {
-            Slog.d(TAG, "setAppLockEnabledPackageSuccessfullyAuthenticated for " + packageName
-                    + " and user: " + userId);
-        }
-
-        final ArraySet<String> packagesToAuthenticate = new ArraySet<>();
-        packagesToAuthenticate.add(packageName);
-        // In a multi-window scenario, e.g. split screen and freeform windows, multiple packages can
-        // be visible with an App Lock overlay simultaneously. To improve user experience, retrieve
-        // all such packages for the current user and authenticate them along with the primary
-        // package.
-        final Set<String> packagesWithVisibleAppLockOverlay = mAtmInternal
-                .getPackagesWithVisibleAppLockOverlay(userId);
-        if (packagesWithVisibleAppLockOverlay != null
-                && !packagesWithVisibleAppLockOverlay.isEmpty()) {
-            packagesToAuthenticate.addAll(packagesWithVisibleAppLockOverlay);
-        }
-
-        synchronized (mLock) {
-            // All packages receive the same 'authTime' to accurately reflect a single user
-            // authentication event. Even if processing multiple packages takes longer than a very
-            // short grace period, the functional impact is practically negligible due to the
-            // microsecond scale of loop operations vs. the millisecond or second scale of typical
-            // grace periods.
-            final long authTime = System.currentTimeMillis();
-
-            for (int i = 0; i < packagesToAuthenticate.size(); i++) {
-                final String packageToAuthenticate = packagesToAuthenticate.valueAt(i);
-                if (packageToAuthenticate == null
-                        || !isPackageAppLockEnabledLocked(packageToAuthenticate, userId)) {
-                    // Ensure the package still has App Lock enabled.
-                    continue;
-                }
-                if (DEBUG) {
-                    Slog.d(TAG, "setAppLockEnabledPackageSuccessfullyAuthenticated: authenticating"
-                            + " package " + packageToAuthenticate);
-                }
-                final AppLockLockedState state = getOrCreateAppLockLockedStateLocked(
-                        packageToAuthenticate, userId);
-                state.mLastSuccessfulAuthTimeSinceBoot = authTime;
-                handleUnlockedStateLocked(packageToAuthenticate, userId);
+            if (DEBUG) {
+                Slog.d(TAG, "setAppLockEnabledPackageSuccessfullyAuthenticated for " + packageName
+                        + " and user: " + userId);
             }
+
+            final ArraySet<String> packagesToAuthenticate = new ArraySet<>();
+            packagesToAuthenticate.add(packageName);
+            // In a multi-window scenario, e.g. split screen and freeform windows, multiple packages
+            // can be visible with an App Lock overlay simultaneously. To improve user experience,
+            // retrieve all such packages for the current user and authenticate them along with the
+            // primary package.
+            final Set<String> packagesWithVisibleAppLockOverlay = mAtmInternal
+                    .getPackagesWithVisibleAppLockOverlay(userId);
+            if (packagesWithVisibleAppLockOverlay != null
+                    && !packagesWithVisibleAppLockOverlay.isEmpty()) {
+                packagesToAuthenticate.addAll(packagesWithVisibleAppLockOverlay);
+            }
+
+            synchronized (mLock) {
+                // All packages receive the same 'authTime' to accurately reflect a single user
+                // authentication event. Even if processing multiple packages takes longer than a
+                // very short grace period, the functional impact is practically negligible due to
+                // the microsecond scale of loop operations vs. the millisecond or second scale of
+                // typical grace periods.
+                final long authTime = System.currentTimeMillis();
+
+                for (int i = 0; i < packagesToAuthenticate.size(); i++) {
+                    final String packageToAuthenticate = packagesToAuthenticate.valueAt(i);
+                    if (packageToAuthenticate == null
+                            || !isPackageAppLockEnabledLocked(packageToAuthenticate, userId)) {
+                        // Ensure the package still has App Lock enabled.
+                        continue;
+                    }
+                    if (DEBUG) {
+                        Slog.d(TAG, "setAppLockEnabledPackageSuccessfullyAuthenticated:"
+                                + " authenticating package " + packageToAuthenticate);
+                    }
+                    final AppLockLockedState state = getOrCreateAppLockLockedStateLocked(
+                            packageToAuthenticate, userId);
+                    state.mLastSuccessfulAuthTimeSinceBoot = authTime;
+                    handleUnlockedStateLocked(packageToAuthenticate, userId);
+                }
+            }
+        } finally {
+            Trace.endSection();
         }
     }
 
@@ -728,33 +744,48 @@ public final class AppLockLocalService implements AppLockInternal,
 
         @Override
         public void onPackageAppLockEnabled(String packageName) {
-            super.onPackageAppLockEnabled(packageName);
-            if (DEBUG) {
-                Slog.d(TAG, "onPackageAppLockEnabled for " + packageName);
-            }
-            final int userId = getChangingUserId();
+            Trace.beginSection(TAG + ".onPackageAppLockEnabled");
+            try {
+                super.onPackageAppLockEnabled(packageName);
+                if (DEBUG) {
+                    Slog.d(TAG, "onPackageAppLockEnabled for " + packageName);
+                }
+                final int userId = getChangingUserId();
 
-            mService.handleAppLockEnabled(packageName, userId);
+                mService.handleAppLockEnabled(packageName, userId);
+            } finally {
+                Trace.endSection();
+            }
         }
 
         @Override
         public void onPackageAppLockDisabled(String packageName) {
-            super.onPackageAppLockDisabled(packageName);
-            if (DEBUG) {
-                Slog.d(TAG, "onPackageAppLockDisabled for " + packageName);
-            }
+            Trace.beginSection(TAG + ".onPackageAppLockDisabled");
+            try {
+                super.onPackageAppLockDisabled(packageName);
+                if (DEBUG) {
+                    Slog.d(TAG, "onPackageAppLockDisabled for " + packageName);
+                }
 
-            updateMapAndListenersPackageNoLongerAppLockEnabled(packageName);
+                updateMapAndListenersPackageNoLongerAppLockEnabled(packageName);
+            } finally {
+                Trace.endSection();
+            }
         }
 
         @Override
         public void onPackageRemoved(String packageName, int uid) {
-            super.onPackageRemoved(packageName, uid);
-            if (DEBUG) {
-                Slog.d(TAG, "onPackageRemoved for " + packageName);
-            }
+            Trace.beginSection(TAG + ".onPackageRemoved");
+            try {
+                super.onPackageRemoved(packageName, uid);
+                if (DEBUG) {
+                    Slog.d(TAG, "onPackageRemoved for " + packageName);
+                }
 
-            updateMapAndListenersPackageNoLongerAppLockEnabled(packageName);
+                updateMapAndListenersPackageNoLongerAppLockEnabled(packageName);
+            } finally {
+                Trace.endSection();
+            }
         }
 
         private void updateMapAndListenersPackageNoLongerAppLockEnabled(String packageName) {
