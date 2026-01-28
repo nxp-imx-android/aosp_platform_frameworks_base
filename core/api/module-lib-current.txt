@@ -176,6 +176,7 @@ package android.media {
   public class AudioManager {
     method public void adjustStreamVolumeForUid(int, int, int, @NonNull String, int, int, int);
     method public void adjustSuggestedStreamVolumeForUid(int, int, int, @NonNull String, int, int, int);
+    method @FlaggedApi("android.media.audio.fused_telecom_route_api") @NonNull @RequiresPermission(android.Manifest.permission.MODIFY_PHONE_STATE) public android.media.AudioModeSession createAudioModeSession(@NonNull android.media.AudioModeSession.Request, @NonNull java.util.concurrent.Executor, @NonNull android.media.AudioModeSession.Callback);
     method @FlaggedApi("android.media.audio.bt_device_category_api") @RequiresPermission(android.Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED) public int getBluetoothAudioDeviceCategory(@NonNull String);
     method @NonNull public java.util.List<android.bluetooth.BluetoothCodecConfig> getHwOffloadFormatsSupportedForA2dp();
     method @NonNull public java.util.List<android.bluetooth.BluetoothLeAudioCodecConfig> getHwOffloadFormatsSupportedForLeAudio();
@@ -194,6 +195,55 @@ package android.media {
     field @FlaggedApi("android.media.audio.bt_audio_disconnect_api") public static final int HFP_AUDIO_DISCONNECT_INTERNAL_ERROR = 4; // 0x4
     field @FlaggedApi("android.media.audio.bt_audio_disconnect_api") public static final int HFP_AUDIO_DISCONNECT_PRECONDITION_FAILED = 3; // 0x3
     field @FlaggedApi("android.media.audio.bt_audio_disconnect_api") public static final int HFP_AUDIO_DISCONNECT_REMOTE_INITIATED = 1; // 0x1
+  }
+
+  @FlaggedApi("android.media.audio.fused_telecom_route_api") public final class AudioModeSession implements java.lang.AutoCloseable {
+    method public void close();
+    method @NonNull public java.util.List<android.media.AudioModeSession.AudioRoute> getAvailableRoutes();
+    method public void setClientPaused(boolean);
+    method public void setDisplayActiveUseCase(boolean);
+    method public void setMode(int);
+    method public int setRequestedRoute(@Nullable android.media.AudioModeSession.AudioRoute);
+    field public static final int ROUTING_RESULT_FAILED = 1; // 0x1
+    field public static final int ROUTING_RESULT_PREEMPTED = 2; // 0x2
+    field public static final int ROUTING_RESULT_SUCCESSFUL = 0; // 0x0
+    field public static final int ROUTING_RESULT_TIMED_OUT = 3; // 0x3
+  }
+
+  public static final class AudioModeSession.AudioRoute {
+    method @Nullable public android.media.AudioDeviceAttributes getInputDevice();
+    method @NonNull public android.media.AudioDeviceAttributes getPrimaryDevice();
+  }
+
+  public static final class AudioModeSession.AudioRoute.Builder {
+    ctor public AudioModeSession.AudioRoute.Builder(@NonNull android.media.AudioDeviceAttributes);
+    method @NonNull public android.media.AudioModeSession.AudioRoute build();
+    method @NonNull public android.media.AudioModeSession.AudioRoute.Builder setInputDevice(@Nullable android.media.AudioDeviceAttributes);
+  }
+
+  public static interface AudioModeSession.Callback {
+    method public void onAvailableRoutesChanged(@NonNull java.util.List<android.media.AudioModeSession.AudioRoute>);
+    method public void onClosed();
+    method public void onExternalRequestedRouteChanged(@Nullable android.media.AudioModeSession.AudioRoute, int);
+    method public void onPaused();
+    method public void onResumed(int);
+    method public void onRoutingResult(int, @Nullable android.media.AudioModeSession.AudioRoute, int);
+  }
+
+  public static final class AudioModeSession.Request {
+    method @Nullable public android.content.AttributionSource getClientAttribution();
+    method public int getInitialMode();
+    method @NonNull public java.util.List<java.lang.Integer> getNoFocusModes();
+    method public boolean isDisplayActiveUseCase();
+  }
+
+  public static final class AudioModeSession.Request.Builder {
+    ctor public AudioModeSession.Request.Builder();
+    method @NonNull public android.media.AudioModeSession.Request build();
+    method @NonNull public android.media.AudioModeSession.Request.Builder setClientAttribution(@Nullable android.content.AttributionSource);
+    method @NonNull public android.media.AudioModeSession.Request.Builder setDisplayActiveUseCase(boolean);
+    method @NonNull public android.media.AudioModeSession.Request.Builder setInitialMode(int);
+    method @NonNull public android.media.AudioModeSession.Request.Builder setNoFocusModes(@NonNull java.util.List<java.lang.Integer>);
   }
 
   public final class BluetoothProfileConnectionInfo implements android.os.Parcelable {
