@@ -602,5 +602,12 @@ flag {
   namespace: "enterprise"
   description: "Feature flag to enable keychain to suppress certificate selection"
   bug: "424869636"
+}
+
+flag {
+  name: "keychain_suppress_certificate_selections"
+  namespace: "enterprise"
+  description: "Feature flag to enable keychain to suppress certificate selection"
+  bug: "424869636"
   is_exported: true
 }

@@ -41783,7 +41783,7 @@ package android.security {
     ctor public KeyChain();
     method public static void choosePrivateKeyAlias(@NonNull android.app.Activity, @NonNull android.security.KeyChainAliasCallback, @Nullable String[], @Nullable java.security.Principal[], @Nullable String, int, @Nullable String);
     method public static void choosePrivateKeyAlias(@NonNull android.app.Activity, @NonNull android.security.KeyChainAliasCallback, @Nullable String[], @Nullable java.security.Principal[], @Nullable android.net.Uri, @Nullable String);
-    method @FlaggedApi("android.app.admin.flags.keychain_suppress_certificate_selection") public static void choosePrivateKeyAlias(@NonNull android.app.Activity, @Nullable java.util.List<java.lang.String>, @Nullable java.util.List<java.security.Principal>, @Nullable android.net.Uri, @Nullable String, boolean, @NonNull java.util.concurrent.Executor, @NonNull android.security.KeyChainAliasCallback);
+    method @FlaggedApi("android.app.admin.flags.keychain_suppress_certificate_selections") public static void choosePrivateKeyAlias(@NonNull android.app.Activity, @Nullable java.util.List<java.lang.String>, @Nullable java.util.List<java.security.Principal>, @Nullable android.net.Uri, @Nullable String, boolean, @NonNull java.util.concurrent.Executor, @NonNull android.security.KeyChainAliasCallback);
     method @NonNull public static android.content.Intent createInstallIntent();
     method @NonNull public static android.content.Intent createManageCredentialsIntent(@NonNull android.security.AppUriAuthenticationPolicy);
     method @Nullable @WorkerThread public static java.security.cert.X509Certificate[] getCertificateChain(@NonNull android.content.Context, @NonNull String) throws java.lang.InterruptedException, android.security.KeyChainException;
@@ -41803,13 +41803,13 @@ package android.security {
     field public static final String EXTRA_NAME = "name";
     field public static final String EXTRA_PKCS12 = "PKCS12";
     field public static final String KEY_ALIAS_SELECTION_DENIED = "android:alias-selection-denied";
-    field @FlaggedApi("android.app.admin.flags.keychain_suppress_certificate_selection") public static final int SELECTION_ERROR_CERTIFICATE_SELECTION_SUPPRESSED = 2; // 0x2
-    field @FlaggedApi("android.app.admin.flags.keychain_suppress_certificate_selection") public static final int SELECTION_ERROR_OTHER = 1; // 0x1
+    field @FlaggedApi("android.app.admin.flags.keychain_suppress_certificate_selections") public static final int SELECTION_ERROR_CERTIFICATE_SELECTION_SUPPRESSED = 2; // 0x2
+    field @FlaggedApi("android.app.admin.flags.keychain_suppress_certificate_selections") public static final int SELECTION_ERROR_OTHER = 1; // 0x1
   }
 
   public interface KeyChainAliasCallback {
     method public void alias(@Nullable String);
-    method @FlaggedApi("android.app.admin.flags.keychain_suppress_certificate_selection") public default void onError(int);
+    method @FlaggedApi("android.app.admin.flags.keychain_suppress_certificate_selections") public default void onError(int);
   }
 
   public class KeyChainException extends java.lang.Exception {

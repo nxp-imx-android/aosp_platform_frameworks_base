@@ -29,7 +29,7 @@ public interface KeyChainAliasCallback {
     public void alias(@Nullable String alias);
 
     /** Called with the error code of the certificate selection. */
-    @FlaggedApi(android.app.admin.flags.Flags.FLAG_KEYCHAIN_SUPPRESS_CERTIFICATE_SELECTION)
+    @FlaggedApi(android.app.admin.flags.Flags.FLAG_KEYCHAIN_SUPPRESS_CERTIFICATE_SELECTIONS)
     default void onError(@KeyChain.SelectionError int errorCode) {
         alias(null);
     }
