@@ -78,14 +78,22 @@ constructor(
         private set
 
     /** The index of the currently visible card across different locations of media carousel */
-    val currentIndex: Int by derivedStateOf { interactor.currentCarouselIndex }
+    val currentIndex: Int by derivedStateOf {
+        // allow update cards index on locations if the number of cards stays the same.
+        if (isVisible() || interactor.sessions.size == latestVersion.size) {
+            latestCurrentIndex = interactor.currentCarouselIndex
+        }
+        latestCurrentIndex
+    }
 
     /** Whether media carousel should scroll to the first card in the list after composition */
     val scrollToFirst: Boolean by derivedStateOf { interactor.shouldScrollToFirst }
 
     var cardMaxWidth: Int by mutableIntStateOf(0)
 
+    // TODO: b/397989775 these variables are only used when scene_container flag is off
     private var latestVersion = emptyList<MediaCardViewModel>()
+    private var latestCurrentIndex = 0
     private var isVisible: () -> Boolean = { true }
 
     private val isOnLockscreen: Boolean by
