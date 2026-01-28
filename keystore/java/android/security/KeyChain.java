@@ -400,20 +400,20 @@ public final class KeyChain {
      * Error code indicating that no error occurred during KeyChain selection.
      * @hide
      */
-    @FlaggedApi(android.app.admin.flags.Flags.FLAG_KEYCHAIN_SUPPRESS_CERTIFICATE_SELECTION)
+    @FlaggedApi(android.app.admin.flags.Flags.FLAG_KEYCHAIN_SUPPRESS_CERTIFICATE_SELECTIONS)
     public static final int SELECTION_ERROR_NONE = 0;
 
     /**
      * A generic catch-all error code for any KeyChain selection issues not covered by more specific
      * codes. This ensures forward compatibility as new error types are introduced.
      */
-    @FlaggedApi(android.app.admin.flags.Flags.FLAG_KEYCHAIN_SUPPRESS_CERTIFICATE_SELECTION)
+    @FlaggedApi(android.app.admin.flags.Flags.FLAG_KEYCHAIN_SUPPRESS_CERTIFICATE_SELECTIONS)
     public static final int SELECTION_ERROR_OTHER = 1;
 
     /** Error code indicating that manual certificate selection was required—due to multiple
      * suitable certificates and no admin policy—but the selection UI was suppressed by the caller.
      */
-    @FlaggedApi(android.app.admin.flags.Flags.FLAG_KEYCHAIN_SUPPRESS_CERTIFICATE_SELECTION)
+    @FlaggedApi(android.app.admin.flags.Flags.FLAG_KEYCHAIN_SUPPRESS_CERTIFICATE_SELECTIONS)
     public static final int SELECTION_ERROR_CERTIFICATE_SELECTION_SUPPRESSED = 2;
 
     /**
@@ -649,7 +649,7 @@ public final class KeyChain {
      * @throws IllegalArgumentException if the specified issuers are not of type {@code
      *     X500Principal}.
      */
-    @FlaggedApi(android.app.admin.flags.Flags.FLAG_KEYCHAIN_SUPPRESS_CERTIFICATE_SELECTION)
+    @FlaggedApi(android.app.admin.flags.Flags.FLAG_KEYCHAIN_SUPPRESS_CERTIFICATE_SELECTIONS)
     public static void choosePrivateKeyAlias(
             @NonNull Activity activity,
             @Nullable List<@KeyProperties.KeyAlgorithmEnum String> keyTypes,
@@ -698,7 +698,7 @@ public final class KeyChain {
         intent.putExtra(EXTRA_ALIAS, alias);
         String[] keyTypesArray = keyTypes.toArray(new String[0]);
         intent.putExtra(EXTRA_KEY_TYPES, keyTypesArray);
-        if (Flags.keychainSuppressCertificateSelection()) {
+        if (Flags.keychainSuppressCertificateSelections()) {
             intent.putExtra(EXTRA_SUPPRESS_CERTIFICATE_SELECTION, suppressCertificateSelection);
         }
         ArrayList<byte[]> issuersList = new ArrayList();
