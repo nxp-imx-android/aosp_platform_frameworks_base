@@ -25,6 +25,7 @@ import android.content.Intent
 import android.graphics.Rect
 import android.graphics.RectF
 import android.os.IBinder
+import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.WindowManager
@@ -305,7 +306,8 @@ class DesktopTasksTransitionObserverTest : ShellTestCase() {
     }
 
     @Test
-    fun closingTask_startsTransitionToRemoveFully() {
+    @EnableFlags(Flags.FLAG_SKIP_KILL_PROCESS_FOR_DESKTOP_TASK_CORE_CLOSE_TRANSITION)
+    fun closingTask_skipKillProcessFlagEnabled_startsTransitionToRemoveFully() {
         val mockTransition = Mockito.mock(IBinder::class.java)
         val freeformTask = createTaskInfo(1)
         val freeformTask2 = createTaskInfo(2)
@@ -322,8 +324,53 @@ class DesktopTasksTransitionObserverTest : ShellTestCase() {
 
         val wct = getLatestWct(type = TRANSIT_CLOSE)
         assertThat(wct.hierarchyOps).hasSize(2)
-        wct.assertRemoveAt(index = 0, freeformTask.token)
-        wct.assertRemoveAt(index = 1, freeformTask2.token)
+        // The skip-kill-process flag is enabled; the processes should not be killed
+        wct.assertRemoveAt(
+            index = 0,
+            freeformTask.token,
+            /* removeFromRecents= */ true,
+            /* killProcess= */ false,
+        )
+        wct.assertRemoveAt(
+            index = 1,
+            freeformTask2.token,
+            /* removeFromRecents= */ true,
+            /* killProcess= */ false,
+        )
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_SKIP_KILL_PROCESS_FOR_DESKTOP_TASK_CORE_CLOSE_TRANSITION)
+    fun closingTask_skipKillProcessFlagDisabled_startsTransitionToRemoveFully() {
+        val mockTransition = Mockito.mock(IBinder::class.java)
+        val freeformTask = createTaskInfo(1)
+        val freeformTask2 = createTaskInfo(2)
+        whenever(taskRepository.isAnyDeskActive(any())).thenReturn(true)
+        whenever(mixedHandler.hasTransition(mockTransition)).thenReturn(false)
+
+        transitionObserver.onTransitionReady(
+            transition = mockTransition,
+            info = createCloseTransition(listOf(freeformTask, freeformTask2)),
+            startTransaction = mock(),
+            finishTransaction = mock(),
+        )
+        transitionObserver.onTransitionFinished(transition = mockTransition, aborted = false)
+
+        val wct = getLatestWct(type = TRANSIT_CLOSE)
+        assertThat(wct.hierarchyOps).hasSize(2)
+        // The skip-kill-process flag is disabled; the processes should be killed
+        wct.assertRemoveAt(
+            index = 0,
+            freeformTask.token,
+            /* removeFromRecents= */ true,
+            /* killProcess= */ true,
+        )
+        wct.assertRemoveAt(
+            index = 1,
+            freeformTask2.token,
+            /* removeFromRecents= */ true,
+            /* killProcess= */ true,
+        )
     }
 
     @Test
@@ -616,11 +663,18 @@ class DesktopTasksTransitionObserverTest : ShellTestCase() {
         return arg.value
     }
 
-    private fun WindowContainerTransaction.assertRemoveAt(index: Int, token: WindowContainerToken) {
+    private fun WindowContainerTransaction.assertRemoveAt(
+        index: Int,
+        token: WindowContainerToken,
+        removeFromRecents: Boolean?,
+        killProcess: Boolean?,
+    ) {
         assertIndexInBounds(index)
         val op = hierarchyOps[index]
         assertThat(op.type).isEqualTo(HIERARCHY_OP_TYPE_REMOVE_TASK)
         assertThat(op.container).isEqualTo(token.asBinder())
+        removeFromRecents?.let { assertThat(op.removeFromRecents).isEqualTo(it) }
+        killProcess?.let { assertThat(op.killProcess).isEqualTo(it) }
     }
 
     private fun WindowContainerTransaction.assertReorderAt(
