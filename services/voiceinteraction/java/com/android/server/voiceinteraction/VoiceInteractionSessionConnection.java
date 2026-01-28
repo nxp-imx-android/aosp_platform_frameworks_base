@@ -387,7 +387,9 @@ final class VoiceInteractionSessionConnection implements ServiceConnection,
                 }
                 boolean needDisclosure = mAssistDataRequester.getPendingDataCount() > 0
                         || mAssistDataRequester.getPendingScreenshotCount() > 0;
-                if (needDisclosure && AssistUtils.shouldDisclose(mContext, mSessionComponentName)) {
+                if (!android.permission.flags.Flags.assistSettingsPrivacyImprovementsEnabled()
+                        && needDisclosure && AssistUtils.shouldDisclose(mContext,
+                        mSessionComponentName)) {
                     mHandler.post(mShowAssistDisclosureRunnable);
                 }
             }
