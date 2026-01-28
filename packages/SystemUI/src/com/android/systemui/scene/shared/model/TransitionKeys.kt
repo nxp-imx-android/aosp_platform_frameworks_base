@@ -24,8 +24,11 @@ import com.android.compose.animation.scene.TransitionKey
  * This is the subset of transitions that can be referenced by key when a scene change is requested.
  */
 object TransitionKeys {
+    /** A scene transition to the Lockscreen with Always-on-Display enabled. */
+    val ToAlwaysOnDisplay = TransitionKey("ToAlwaysOnDisplay")
+
     /** The Gone/Lockscreen-to-Shade transition with Split Shade enabled. */
-    val ToSplitShade = TransitionKey("GoneToSplitShade")
+    val ToSplitShade = TransitionKey("ToSplitShade")
 
     /** A scene transition that can collapse the Shade slightly faster than a normal collapse. */
     val SlightlyFasterShadeTransition = TransitionKey("SlightlyFasterShadeTransition")
@@ -35,9 +38,6 @@ object TransitionKeys {
 
     /** Reference to a transition in or out of communal scene triggered by the system. */
     val SystemCommunalTransition = TransitionKey("SystemCommunalTransition")
-
-    /** Reference to the Shade Expanded-to-Lockscreen transition with Always-on-Display enabled. */
-    val ShadeExpandedToAlwaysOnDisplay = TransitionKey("ShadeExpandedToAlwaysOnDisplay")
 
     /** A scene transition for swiping up to the gone scene. */
     val SwipeUpToGone = TransitionKey("SwipeUpToGone")

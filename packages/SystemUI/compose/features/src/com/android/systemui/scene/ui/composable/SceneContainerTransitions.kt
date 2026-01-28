@@ -15,9 +15,9 @@ import com.android.systemui.res.R
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.scene.shared.model.TransitionKeys
-import com.android.systemui.scene.shared.model.TransitionKeys.ShadeExpandedToAlwaysOnDisplay
 import com.android.systemui.scene.shared.model.TransitionKeys.SlightlyFasterShadeTransition
 import com.android.systemui.scene.shared.model.TransitionKeys.SystemCommunalTransition
+import com.android.systemui.scene.shared.model.TransitionKeys.ToAlwaysOnDisplay
 import com.android.systemui.scene.shared.model.TransitionKeys.ToSplitShade
 import com.android.systemui.scene.ui.composable.transitions.aodToGoneTransition
 import com.android.systemui.scene.ui.composable.transitions.bouncerToGoneTransition
@@ -98,7 +98,9 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
                 cuj = Cuj.CUJ_NOTIFICATION_SHADE_EXPAND_COLLAPSE,
                 cujTag = TAG_EXPAND,
             ) {
-                dreamToSingleShadeTransition(singleShadeMarginHorizontalPx = singleShadeMarginHorizontalPx,)
+                dreamToSingleShadeTransition(
+                    singleShadeMarginHorizontalPx = singleShadeMarginHorizontalPx
+                )
             }
             from(
                 Scenes.Dream,
@@ -123,7 +125,9 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
                 cuj = Cuj.CUJ_NOTIFICATION_SHADE_EXPAND_COLLAPSE,
                 cujTag = TAG_EXPAND,
             ) {
-                goneToSingleShadeTransition(singleShadeMarginHorizontalPx = singleShadeMarginHorizontalPx,)
+                goneToSingleShadeTransition(
+                    singleShadeMarginHorizontalPx = singleShadeMarginHorizontalPx
+                )
             }
             from(
                 Scenes.Gone,
@@ -141,7 +145,10 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
                 cuj = Cuj.CUJ_NOTIFICATION_SHADE_EXPAND_COLLAPSE,
                 cujTag = TAG_EXPAND,
             ) {
-                goneToSingleShadeTransition(singleShadeMarginHorizontalPx = singleShadeMarginHorizontalPx, durationScale = 0.9)
+                goneToSingleShadeTransition(
+                    singleShadeMarginHorizontalPx = singleShadeMarginHorizontalPx,
+                    durationScale = 0.9,
+                )
             }
             from(
                 Scenes.Gone,
@@ -222,11 +229,7 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
             ) {
                 lockscreenToGoneWithAnimationOverLockscreenTransition()
             }
-            from(
-                Scenes.Gone,
-                to = Scenes.Lockscreen,
-                key = KeyguardTransitionKeys.GoneToAodEnterFromTop,
-            ) {
+            from(Scenes.Gone, to = Scenes.Lockscreen, key = ToAlwaysOnDisplay) {
                 goneToAodEnterFromTop()
             }
             from(
@@ -277,7 +280,11 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
                 cuj = Cuj.CUJ_NOTIFICATION_SHADE_EXPAND_COLLAPSE,
                 cujTag = TAG_COLLAPSE,
             ) {
-                reversed { goneToSingleShadeTransition(singleShadeMarginHorizontalPx = singleShadeMarginHorizontalPx,) }
+                reversed {
+                    goneToSingleShadeTransition(
+                        singleShadeMarginHorizontalPx = singleShadeMarginHorizontalPx
+                    )
+                }
             }
             from(
                 Scenes.Shade,
@@ -322,7 +329,7 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
             from(
                 Scenes.Shade,
                 to = Scenes.Lockscreen,
-                key = ShadeExpandedToAlwaysOnDisplay,
+                key = ToAlwaysOnDisplay,
                 cuj = Cuj.CUJ_NOTIFICATION_SHADE_EXPAND_COLLAPSE,
             ) {
                 shadeToAlwaysOnDisplayTransition()
@@ -343,7 +350,9 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
                 cuj = Cuj.CUJ_NOTIFICATION_SHADE_EXPAND_COLLAPSE,
                 cujTag = TAG_EXPAND,
             ) {
-                communalToSingleShadeTransition(singleShadeMarginHorizontalPx = singleShadeMarginHorizontalPx)
+                communalToSingleShadeTransition(
+                    singleShadeMarginHorizontalPx = singleShadeMarginHorizontalPx
+                )
             }
             from(
                 Scenes.Communal,

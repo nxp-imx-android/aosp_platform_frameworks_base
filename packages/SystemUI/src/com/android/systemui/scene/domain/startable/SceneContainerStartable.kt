@@ -60,7 +60,6 @@ import com.android.systemui.keyguard.domain.interactor.TrustInteractor
 import com.android.systemui.keyguard.shared.model.BiometricUnlockMode
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.shared.model.KeyguardTransitionKeys.AodToGoneTransition
-import com.android.systemui.keyguard.shared.model.KeyguardTransitionKeys.GoneToAodEnterFromTop
 import com.android.systemui.log.table.TableLogBuffer
 import com.android.systemui.model.SceneContainerPlugin
 import com.android.systemui.model.SceneContainerPluginImpl
@@ -84,13 +83,12 @@ import com.android.systemui.scene.shared.logger.SceneLogger
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.SceneFamilies
 import com.android.systemui.scene.shared.model.Scenes
-import com.android.systemui.scene.shared.model.TransitionKeys.ShadeExpandedToAlwaysOnDisplay
+import com.android.systemui.scene.shared.model.TransitionKeys.ToAlwaysOnDisplay
 import com.android.systemui.scene.shared.model.isKeyguardScene
 import com.android.systemui.shade.domain.interactor.ShadeDisplaysInteractor
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
-import com.android.systemui.statusbar.NotificationLockscreenUserManager
 import com.android.systemui.statusbar.NotificationShadeWindowController
 import com.android.systemui.statusbar.SysuiStatusBarStateController
 import com.android.systemui.statusbar.VibratorHelper
@@ -172,9 +170,8 @@ constructor(
     @SceneFrameworkTableLog private val tableLogBuffer: TableLogBuffer,
     private val trustInteractor: TrustInteractor,
     private val sysuiStateInteractor: SysUIStateDisplaysInteractor,
-    private val shadeDisplaysInteractor: Lazy<ShadeDisplaysInteractor>,
+    shadeDisplaysInteractor: Lazy<ShadeDisplaysInteractor>,
     private val surfaceBehindInteractor: KeyguardSurfaceBehindInteractor,
-    private val lockscreenUserManager: NotificationLockscreenUserManager,
     private val keyguardDismissActionInteractor: KeyguardDismissActionInteractor,
     private val wakeDirectlyToGoneInteractor: KeyguardWakeDirectlyToGoneInteractor,
     private val keyguardShowWhileAwakeInteractor: KeyguardShowWhileAwakeInteractor,
@@ -785,13 +782,7 @@ constructor(
                     switchToScene(
                         targetSceneKey = Scenes.Lockscreen,
                         loggingReason = "device is starting to sleep",
-                        transitionKey =
-                            when {
-                                isShadeAnyExpanded && isAodAvailable ->
-                                    ShadeExpandedToAlwaysOnDisplay
-                                isAodAvailable -> GoneToAodEnterFromTop
-                                else -> null
-                            },
+                        transitionKey = ToAlwaysOnDisplay.takeIf { isAodAvailable },
                         keyguardState = getKeyguardStateForWakefulness(isAwake = false),
                         freezeAndAnimateToCurrentState = !isAodAvailable,
                         instantlySnapScenes = isShadeAnyExpanded && isAodAvailable,

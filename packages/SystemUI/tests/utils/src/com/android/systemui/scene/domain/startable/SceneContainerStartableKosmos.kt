@@ -56,7 +56,6 @@ import com.android.systemui.shade.domain.interactor.shadeDisplaysInteractor
 import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.shade.domain.interactor.shadeModeInteractor
 import com.android.systemui.statusbar.notification.stack.domain.interactor.headsUpNotificationInteractor
-import com.android.systemui.statusbar.notificationLockscreenUserManager
 import com.android.systemui.statusbar.notificationShadeWindowController
 import com.android.systemui.statusbar.phone.centralSurfacesOptional
 import com.android.systemui.statusbar.policy.domain.interactor.deviceProvisioningInteractor
@@ -101,7 +100,6 @@ val Kosmos.sceneContainerStartable by Fixture {
         sysuiStateInteractor = sysuiStateInteractor,
         shadeDisplaysInteractor = { shadeDisplaysInteractor },
         surfaceBehindInteractor = keyguardSurfaceBehindInteractor,
-        lockscreenUserManager = notificationLockscreenUserManager,
         keyguardDismissActionInteractor = keyguardDismissActionInteractor,
         wakeDirectlyToGoneInteractor = keyguardWakeDirectlyToGoneInteractor,
         keyguardShowWhileAwakeInteractor = keyguardShowWhileAwakeInteractor,
