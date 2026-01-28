@@ -746,7 +746,7 @@ public class ActivityManagerService extends IActivityManager.Stub
 
     public final IntentFirewall mIntentFirewall;
 
-    private final MemoryLimiter mMemoryLimiter = new MemoryLimiter();
+    private final MemoryLimiter mMemoryLimiter = MemoryLimiter.getDefaultMemoryLimiter(this);
 
     /**
      * The global lock for AMS, it's de-facto the ActivityManagerService object as of now.
@@ -2749,8 +2749,8 @@ public class ActivityManagerService extends IActivityManager.Stub
     /**
      * Return a new limiter from the controller.
      */
-    MemoryLimiter.Limiter newMemoryLimiter(@Nullable String pkg) {
-        return mMemoryLimiter.newLimiter(pkg);
+    MemoryLimiter.Limiter newMemoryLimiter() {
+        return mMemoryLimiter.newLimiter();
     }
 
     /**

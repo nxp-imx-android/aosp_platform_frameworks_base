@@ -24,6 +24,7 @@ import static android.text.TextUtils.formatSimple;
 import static com.android.internal.util.Preconditions.checkArgumentInRange;
 import static com.android.internal.util.Preconditions.checkArgumentNonNegative;
 
+import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityManager;
 import android.app.ActivityManager.ProcessState;
@@ -235,6 +236,10 @@ class MemoryLimiter implements AutoCloseable {
         // lock is only taken one of those two places.
         private final Object mLock = new Object();
 
+        // The activity manager service, used to fetch package names based on pids.
+        @Nullable
+        private final ActivityManagerService mAm;
+
         // The message queue that distributes calls into the native layer.
         private final Handler mQueue;
 
@@ -265,7 +270,9 @@ class MemoryLimiter implements AutoCloseable {
          * In the constructor, create the native peer and the message queue that will handle all
          * requests directed to the native layer.
          */
-        ControllerEnabled(@Nullable String configFile) {
+        ControllerEnabled(@Nullable String configFile, @Nullable ActivityManagerService ams) {
+            mAm = ams;
+
             mQueue = new Handler(BackgroundThread.getHandler().getLooper()) {
                     // Toggles to false once the Controller is closed.
                     private boolean mOpen = true;
@@ -333,8 +340,8 @@ class MemoryLimiter implements AutoCloseable {
         /**
          * The no-argument default tries to pick its configuration from the vendor partition.
          */
-        ControllerEnabled() {
-            this(CONFIG_PATH);
+        ControllerEnabled(@Nullable ActivityManagerService ams) {
+            this(CONFIG_PATH, ams);
         }
 
         // Return true if the controller should monitor for over-limit events.  Test instances can
@@ -448,6 +455,10 @@ class MemoryLimiter implements AutoCloseable {
         @UsedByNative
         @Override
         public void onLimitExceeded(int pid, int uid, int type, long limit, @Nullable String pkg) {
+            if (mAm != null) {
+                pkg = mAm.mInternal.getPackageNameByPid(pid);
+            }
+
             Slog.i(TAG, formatSimple("onLimitExceeded: pid=%d uid=%d type=%s limit=%d pkg=%s",
                     pid, uid, limitTypeToString(type), limit, pkg));
 
@@ -556,14 +567,14 @@ class MemoryLimiter implements AutoCloseable {
      * directly to supply specialized controllers.
      */
     @VisibleForTesting
-    MemoryLimiter(Controller controller) {
+    MemoryLimiter(@NonNull Controller controller) {
         mController = controller;
     }
 
     /**
      * Construct the default memory limiter.
      */
-    private static Controller getDefaultController() {
+    private static Controller getDefaultController(@Nullable ActivityManagerService ams) {
         if (!Flags.memoryLimiterEnable()) {
             // The feature is disabled.
             return new ControllerDisabled();
@@ -574,23 +585,20 @@ class MemoryLimiter implements AutoCloseable {
             return new ControllerDisabled();
         } else {
             // The feature is enabled and this is system_server.
-            return new ControllerEnabled();
+            return new ControllerEnabled(ams);
         }
     }
 
     /**
-     * Create the default controller, based on the feature flag and the enclosing process.
+     * Create the default MemoryLimiter, based on the feature flag and the enclosing process.
      */
-    MemoryLimiter() {
-        this(getDefaultController());
+    static MemoryLimiter getDefaultMemoryLimiter(@Nullable ActivityManagerService ams) {
+        return new MemoryLimiter(getDefaultController(ams));
     }
 
     // The object that tracks the state of an individual process.  It is not static.  Methods in
     // this class are not thread-safe.  Normally, these are called inside the AMS lock.
     class Limiter {
-
-        // The package associated with this instance.
-        private final String mPackage;
 
         // The pid that this instance controls.
         private int mPid = INVALID_PID;
@@ -598,13 +606,6 @@ class MemoryLimiter implements AutoCloseable {
         private int mUid = INVALID_UID;
         // The last limit assigned to the process.
         private Long mLimit = null;
-
-        /**
-         * Construct the instance with a fixed package name.
-         */
-        Limiter(@Nullable String pkg) {
-            mPackage = pkg;
-        }
 
         /**
          * Return true if the process should be monitored and limited.
@@ -621,7 +622,7 @@ class MemoryLimiter implements AutoCloseable {
         private void maybeStart() {
             if (!shouldMonitor()) return;
             mLimit = null;
-            mController.setPidUid(mPid, mUid, mPackage);
+            mController.setPidUid(mPid, mUid, null);
         }
 
         /**
@@ -684,10 +685,10 @@ class MemoryLimiter implements AutoCloseable {
     }
 
     /**
-     * Return a new Process object bound to this instance.
+     * Return a new Process-helper object bound to this instance.
      */
-    Limiter newLimiter(@Nullable String pkg) {
-        return new Limiter(pkg);
+    Limiter newLimiter() {
+        return new Limiter();
     }
 
     /**
