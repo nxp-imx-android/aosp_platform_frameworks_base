@@ -20,9 +20,6 @@ import android.content.Intent
 import android.media.projection.IMediaProjection
 import android.media.projection.IMediaProjectionManager.EXTRA_USER_REVIEW_GRANTED_CONSENT
 import android.media.projection.MediaProjectionConfig
-import android.media.projection.MediaProjectionConfig.PROJECTION_SOURCE_APP
-import android.media.projection.MediaProjectionConfig.PROJECTION_SOURCE_APP_CONTENT
-import android.media.projection.MediaProjectionConfig.PROJECTION_SOURCE_DISPLAY
 import android.media.projection.MediaProjectionManager.EXTRA_MEDIA_PROJECTION
 import android.media.projection.MediaProjectionManager.EXTRA_MEDIA_PROJECTION_CONFIG
 import android.os.Bundle
@@ -110,18 +107,6 @@ constructor(
             finish()
             return
         }
-
-        if (
-            config == null ||
-                (!config.isSourceEnabled(PROJECTION_SOURCE_APP) &&
-                    !config.isSourceEnabled(PROJECTION_SOURCE_APP_CONTENT) &&
-                    !config.isSourceEnabled(PROJECTION_SOURCE_DISPLAY))
-        ) {
-            Log.e(TAG, "Missing or empty media projection config: $config")
-            finish()
-            return
-        }
-
         val projection = IMediaProjection.Stub.asInterface(projectionBinder)
 
         val parameters = ScreenCaptureUiParameters.ShareScreen(hostAppUserHandle = hostUserHandle)
