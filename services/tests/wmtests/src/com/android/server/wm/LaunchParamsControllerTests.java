@@ -127,6 +127,7 @@ public class LaunchParamsControllerTests extends WindowTestsBase {
         expected.mWindowingMode = WINDOWING_MODE_FREEFORM;
         expected.mBounds.set(200, 300, 400, 500);
         expected.mNeedsSafeRegionBounds = true;
+        expected.mIsTaskMoveDisallowed = true;
         mPersister.putLaunchParams(userId, name, expected);
 
         mController.calculate(task, null /*layout*/, task.topRunningActivity(), null /*source*/,
@@ -163,6 +164,7 @@ public class LaunchParamsControllerTests extends WindowTestsBase {
         storedParams.mWindowingMode = WINDOWING_MODE_FREEFORM;
         storedParams.mBounds.set(200, 300, 400, 500);
         storedParams.mNeedsSafeRegionBounds = true;
+        storedParams.mIsTaskMoveDisallowed = true;
 
         mPersister.putLaunchParams(userId, name, storedParams);
 

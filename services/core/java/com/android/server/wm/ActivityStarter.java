@@ -230,6 +230,7 @@ class ActivityStarter {
     private TaskDisplayArea mPreferredTaskDisplayArea;
     @WindowingMode
     private int mPreferredWindowingMode;
+    private boolean mIsTaskMoveDisallowed;
 
     private Task mInTask;
     private TaskFragment mInTaskFragment;
@@ -784,6 +785,7 @@ class ActivityStarter {
         mSourceRecord = starter.mSourceRecord;
         mPreferredTaskDisplayArea = starter.mPreferredTaskDisplayArea;
         mPreferredWindowingMode = starter.mPreferredWindowingMode;
+        mIsTaskMoveDisallowed = starter.mIsTaskMoveDisallowed;
 
         mInTask = starter.mInTask;
         mInTaskFragment = starter.mInTaskFragment;
@@ -2103,6 +2105,10 @@ class ActivityStarter {
                 return START_CANNOT_GUARANTEE_TASK_MOVABILITY;
             }
 
+            if (mIsTaskMoveDisallowed) {
+                return START_CANNOT_GUARANTEE_TASK_MOVABILITY;
+            }
+
             if (mPreferredTaskDisplayArea == null
                     || !mPreferredTaskDisplayArea.getIsTaskMoveAllowed()) {
                 return START_CANNOT_GUARANTEE_TASK_MOVABILITY;
@@ -2348,6 +2354,7 @@ class ActivityStarter {
         if (mLaunchParams.mNeedsSafeRegionBounds != null) {
             r.setNeedsSafeRegionBounds(mLaunchParams.mNeedsSafeRegionBounds);
         }
+        mIsTaskMoveDisallowed = mLaunchParams.mIsTaskMoveDisallowed;
     }
 
     private TaskDisplayArea computeSuggestedLaunchDisplayArea(
@@ -2771,6 +2778,7 @@ class ActivityStarter {
         mSourceRecord = null;
         mPreferredTaskDisplayArea = null;
         mPreferredWindowingMode = WINDOWING_MODE_UNDEFINED;
+        mIsTaskMoveDisallowed = false;
 
         mInTask = null;
         mInTaskFragment = null;
@@ -2827,6 +2835,7 @@ class ActivityStarter {
                 ? mLaunchParams.mPreferredTaskDisplayArea
                 : mRootWindowContainer.getDefaultTaskDisplayArea();
         mPreferredWindowingMode = mLaunchParams.mWindowingMode;
+        mIsTaskMoveDisallowed = mLaunchParams.mIsTaskMoveDisallowed;
 
         mLaunchMode = r.launchMode;
 

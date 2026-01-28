@@ -81,6 +81,9 @@ class DesktopModeLaunchParamsModifier extends DefaultLaunchParamsModifier {
         initLogBuilder("DesktopModeLaunchParamsModifier", phase, task, activity);
         int result = calculate(task, layout, activity, source, options, request, phase,
                 currentParams, outParams);
+        if (outParams.mWindowingMode == WINDOWING_MODE_FULLSCREEN) {
+            outParams.mIsTaskMoveDisallowed = true;
+        }
         mResult = result;
         outputLog();
         return result;
