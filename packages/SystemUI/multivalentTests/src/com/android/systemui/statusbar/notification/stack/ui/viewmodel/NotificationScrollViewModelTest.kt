@@ -276,68 +276,6 @@ class NotificationScrollViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun expandOccluded_toNotifStack() =
-        kosmos.runTest {
-            val expectedFraction: Float = 0.5f
-            val expandFraction by collectLastValue(underTest.expandFraction)
-
-            enableSingleShade()
-            runCurrent()
-
-            // GIVEN a transition from Occluded to Shade scene
-            sceneContainerRepository.setTransitionState(
-                flowOf(
-                    Transition.ChangeScene(
-                        fromScene = Scenes.Occluded,
-                        toScene = Scenes.Shade,
-                        currentScene = flowOf(Scenes.Occluded),
-                        currentOverlays = emptySet(),
-                        progress = MutableStateFlow(expectedFraction),
-                        isInitiatedByUserInput = true,
-                        isUserInputOngoing = flowOf(true),
-                        previewProgress = flowOf(0f),
-                        isInPreviewStage = flowOf(false),
-                    )
-                )
-            )
-            runCurrent()
-
-            // THEN expandFraction is expectedFraction
-            assertThat(expandFraction).isEqualTo(expectedFraction)
-        }
-
-    @Test
-    fun expandNotifStack_toOccluded() =
-        kosmos.runTest {
-            val expectedFraction: Float = 0.5f
-            val expandFraction by collectLastValue(underTest.expandFraction)
-
-            enableSingleShade()
-            runCurrent()
-
-            // GIVEN a transition from Shade scene to Occluded
-            sceneContainerRepository.setTransitionState(
-                flowOf(
-                    Transition.ChangeScene(
-                        fromScene = Scenes.Shade,
-                        toScene = Scenes.Occluded,
-                        currentScene = flowOf(Scenes.Shade),
-                        currentOverlays = emptySet(),
-                        progress = MutableStateFlow(expectedFraction),
-                        isInitiatedByUserInput = true,
-                        isUserInputOngoing = flowOf(true),
-                        previewProgress = flowOf(0f),
-                        isInPreviewStage = flowOf(false),
-                    )
-                )
-            )
-            runCurrent()
-
-            // THEN expandFraction is expectedFraction
-            assertThat(expandFraction).isEqualTo(expectedFraction)
-        }
-
-    @Test
     fun suppressHeightUpdates_idleQuickSettings_EndHeightOnly() {
         kosmos.runTest {
             val suppressHeightUpdates by collectLastValue(underTest.suppressHeightUpdates)
@@ -756,6 +694,40 @@ class NotificationScrollViewModelTest : SysuiTestCase() {
                     assertThat(expandFraction).isWithin(0.01f).of(1f - progress)
                 },
                 verifyIdleOnTargetScene = { assertThat(expandFraction).isEqualTo(1f) },
+            )
+        }
+
+    @Test
+    fun shadeExpansion_occludedToShade() =
+        kosmos.runTest {
+            val expandFraction by collectLastValue(notificationScrollViewModel.expandFraction)
+
+            enableSingleShade()
+            driveSceneTransition(
+                currentScene = Scenes.Occluded,
+                targetScene = Scenes.Shade,
+                verifyIdleOnCurrentScene = { assertThat(expandFraction).isEqualTo(0f) },
+                verifyTransitionStep = { progress ->
+                    assertThat(expandFraction).isEqualTo(progress)
+                },
+                verifyIdleOnTargetScene = { assertThat(expandFraction).isEqualTo(1f) },
+            )
+        }
+
+    @Test
+    fun shadeExpansion_shadeToOccluded() =
+        kosmos.runTest {
+            val expandFraction by collectLastValue(notificationScrollViewModel.expandFraction)
+
+            enableSingleShade()
+            driveSceneTransition(
+                currentScene = Scenes.Shade,
+                targetScene = Scenes.Occluded,
+                verifyIdleOnCurrentScene = { assertThat(expandFraction).isEqualTo(1f) },
+                verifyTransitionStep = { progress ->
+                    assertThat(expandFraction).isWithin(0.01f).of(1f - progress)
+                },
+                verifyIdleOnTargetScene = { assertThat(expandFraction).isEqualTo(0f) },
             )
         }
 
