@@ -50,6 +50,7 @@ import android.net.NetworkStats;
 import android.net.NetworkTemplate;
 import android.net.TelephonyNetworkSpecifier;
 import android.net.Uri;
+import android.net.platform.flags.Flags;
 import android.os.BestClock;
 import android.os.Handler;
 import android.os.SystemClock;
@@ -65,7 +66,6 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.IndentingPrintWriter;
 import com.android.server.LocalServices;
 import com.android.server.net.NetworkPolicyManagerInternal;
-import com.android.server.net.Flags;
 
 import java.time.Clock;
 import java.time.ZoneId;
