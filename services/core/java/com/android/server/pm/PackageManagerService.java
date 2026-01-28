@@ -7586,6 +7586,15 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
             return mAppLockPackageHelper.isPackageAppLockEnabled(snapshot, packageName, userId);
         }
 
+        @Override
+        public @NonNull List<String> getAppLockEnabledPackagesForUser(int userId) {
+            if (!android.security.Flags.appLockApis()) {
+                return Collections.emptyList();
+            }
+            final Computer snapshot = snapshotComputer();
+            return mAppLockPackageHelper.getAppLockEnabledPackages(snapshot, userId);
+        }
+
         @Nullable
         @Override
         public AllowComponentAccessPolicyInfo getAllowComponentAccessPolicyInfo(

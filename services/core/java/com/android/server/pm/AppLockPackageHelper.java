@@ -32,6 +32,7 @@ import android.os.Binder;
 import android.os.Build;
 import android.os.Process;
 import android.os.UserHandle;
+import android.util.ArrayMap;
 import android.util.ArraySet;
 import android.util.Log;
 import android.util.Slog;
@@ -43,9 +44,11 @@ import com.android.server.LocalServices;
 import com.android.server.SystemConfig;
 import com.android.server.pm.pkg.AndroidPackage;
 import com.android.server.pm.pkg.PackageStateInternal;
+import com.android.server.pm.pkg.PackageUserStateInternal;
 import com.android.server.pm.pkg.mutate.PackageStateMutator;
 import com.android.server.pm.pkg.mutate.PackageUserStateWrite;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -252,6 +255,29 @@ public final class AppLockPackageHelper {
         PackageStateInternal packageState = snapshot.getPackageStateInternal(packageName);
         return packageState != null && packageState.getUserStateOrDefault(
                 userId).isAppLockEnabled();
+    }
+
+    /**
+     * Returns a list of packages that have App Lock enabled.
+     *
+     * @param snapshot    Computer snapshot
+     * @param userId      User Id to set the App Lock enablement state for
+     * @return {@link List} of packages names that have App Lock enabled for the user
+     *
+     */
+    public List<String> getAppLockEnabledPackages(@NonNull Computer snapshot, int userId) {
+        final ArrayMap<String, ? extends PackageStateInternal> packageStates =
+                snapshot.getPackageStates();
+        final List<String> packages = new ArrayList<>();
+        for (int i = packageStates.size() - 1; i >= 0; i--) {
+            final PackageStateInternal ps = packageStates.valueAt(i);
+            final PackageUserStateInternal userState = ps.getUserStateOrDefault(userId);
+            final AndroidPackage pkg = ps.getPkg();
+            if (userState.isAppLockEnabled() && pkg != null && pkg.getPackageName() != null) {
+                packages.add(pkg.getPackageName());
+            }
+        }
+        return packages;
     }
 
     /**
