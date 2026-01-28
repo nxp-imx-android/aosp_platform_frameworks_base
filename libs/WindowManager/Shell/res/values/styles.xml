@@ -87,6 +87,7 @@
     <style name="DesktopModeHandleMenuWindowingButton">
         <item name="android:layout_width">48dp</item>
         <item name="android:layout_height">48dp</item>
+        <item name="android:paddingHorizontal">14dp</item>
         <item name="android:scaleType">fitCenter</item>
         <item name="android:background">?android:selectableItemBackgroundBorderless</item>
     </style>
