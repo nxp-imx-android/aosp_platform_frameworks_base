@@ -36,6 +36,7 @@ import android.view.inputmethod.CursorAnchorInfo;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodInfo;
 import android.view.inputmethod.InputMethodManager;
+import android.view.inputmethod.InputMethodManager.IMPickerEntryPoint;
 import android.view.inputmethod.InputMethodSubtype;
 
 import com.android.internal.inputmethod.DirectBootAwareness;
@@ -150,7 +151,8 @@ final class IInputMethodManagerImpl extends IInputMethodManager.Stub {
         @PermissionVerified(allOf = {
                 Manifest.permission.INTERACT_ACROSS_USERS_FULL,
                 Manifest.permission.WRITE_SECURE_SETTINGS})
-        void showInputMethodPickerFromSystem(int auxiliarySubtypeMode, int displayId);
+        void showInputMethodPickerFromSystem(
+                int auxiliarySubtypeMode, @IMPickerEntryPoint int entryPoint, int displayId);
 
         @PermissionVerified(Manifest.permission.TEST_INPUT_METHOD)
         boolean isInputMethodPickerShownForTest(@UserIdInt int userId);
@@ -366,10 +368,11 @@ final class IInputMethodManagerImpl extends IInputMethodManager.Stub {
             Manifest.permission.WRITE_SECURE_SETTINGS,
             Manifest.permission.INTERACT_ACROSS_USERS_FULL})
     @Override
-    public void showInputMethodPickerFromSystem(int auxiliarySubtypeMode, int displayId) {
+    public void showInputMethodPickerFromSystem(
+            int auxiliarySubtypeMode, @IMPickerEntryPoint int entryPoint, int displayId) {
         super.showInputMethodPickerFromSystem_enforcePermission();
 
-        mCallback.showInputMethodPickerFromSystem(auxiliarySubtypeMode, displayId);
+        mCallback.showInputMethodPickerFromSystem(auxiliarySubtypeMode, entryPoint, displayId);
     }
 
     @EnforcePermission(Manifest.permission.TEST_INPUT_METHOD)

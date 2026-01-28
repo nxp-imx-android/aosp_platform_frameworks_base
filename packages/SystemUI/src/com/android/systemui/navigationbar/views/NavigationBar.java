@@ -1550,7 +1550,9 @@ public class NavigationBar extends ViewController<NavigationBarView> implements 
     @VisibleForTesting
     boolean onImeSwitcherLongClick(View v) {
         mNavBarButtonClickLogger.logImeSwitcherClick();
-        mInputMethodManager.showInputMethodPickerFromSystem(true /* showAuxiliarySubtypes */,
+        mInputMethodManager.showInputMethodPickerFromSystem(
+                true /* showAuxiliarySubtypes */,
+                InputMethodManager.IM_PICKER_ENTRY_POINT_DEFAULT,
                 mDisplayId);
         mUiEventLogger.log(KeyButtonView.NavBarButtonEvent.NAVBAR_IME_SWITCHER_BUTTON_LONGPRESS);
         return true;

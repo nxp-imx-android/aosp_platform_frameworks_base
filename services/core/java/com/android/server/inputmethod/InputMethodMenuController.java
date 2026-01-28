@@ -43,6 +43,7 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodInfo;
+import android.view.inputmethod.InputMethodManager.IMPickerEntryPoint;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -89,6 +90,7 @@ final class InputMethodMenuController implements ImeSwitcherMenu {
      *                             subtypes, or {@link InputMethodUtils#NOT_A_SUBTYPE_INDEX} if no
      *                             subtype is selected.
      * @param isScreenLocked       whether the screen is current locked.
+     * @param entryPoint           the entry point where the menu was requested from.
      * @param displayId            the ID of the display where the menu was requested.
      * @param userId               the ID of the user that requested the menu.
      */
@@ -96,7 +98,7 @@ final class InputMethodMenuController implements ImeSwitcherMenu {
     @Override
     public void show(@NonNull List<ImeSubtypeListItem> items, @Nullable String selectedImeId,
             @IntRange(from = NOT_A_SUBTYPE_INDEX) int selectedSubtypeIndex, boolean isScreenLocked,
-            int displayId, @UserIdInt int userId) {
+            @IMPickerEntryPoint int entryPoint, int displayId, @UserIdInt int userId) {
         // Hide the menu in case it was already showing.
         hide(displayId, userId);
 

@@ -27,6 +27,7 @@ import com.android.systemui.inputmethod.data.repository.fakeInputMethodRepositor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.backgroundScope
 import com.android.systemui.kosmos.runTest
+import android.view.inputmethod.InputMethodManager
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.testKosmosNew
 import com.google.common.truth.Truth.assertThat
@@ -84,6 +85,8 @@ class ImeIndicatorChipInteractorTest : SysuiTestCase() {
             underTest.showInputMethodPicker(displayId)
             testScope.runCurrent()
 
+            assertThat(fakeInputMethodRepository.inputMethodPickerShownEntryPoint)
+                .isEqualTo(InputMethodManager.IM_PICKER_ENTRY_POINT_STATUS_BAR_CHIP)
             assertThat(fakeInputMethodRepository.inputMethodPickerShownDisplayId)
                 .isEqualTo(displayId)
         }

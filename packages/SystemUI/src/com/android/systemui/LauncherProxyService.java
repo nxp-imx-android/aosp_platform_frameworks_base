@@ -350,6 +350,7 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
             // Launcher/Taskbar isn't display aware.
             mContext.getSystemService(InputMethodManager.class)
                     .showInputMethodPickerFromSystem(true /* showAuxiliarySubtypes */,
+                            InputMethodManager.IM_PICKER_ENTRY_POINT_DEFAULT,
                             mDisplayTracker.getDefaultDisplayId());
             mUiEventLogger.log(
                     KeyButtonView.NavBarButtonEvent.NAVBAR_IME_SWITCHER_BUTTON_LONGPRESS);

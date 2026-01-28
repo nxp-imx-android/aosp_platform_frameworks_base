@@ -26,6 +26,7 @@ import android.util.Log
 import android.util.SparseArray
 import android.view.inputmethod.Flags
 import android.view.inputmethod.InputMethodManager
+import android.view.inputmethod.InputMethodManager.IMPickerEntryPoint
 import androidx.annotation.MainThread
 import com.android.internal.inputmethod.IImeSwitcherMenu
 import com.android.internal.inputmethod.IImeSwitcherMenuListener
@@ -214,6 +215,7 @@ constructor(
             selectedSubtypeIndex: Int,
             selectedImeSettingsIntent: Intent?,
             isScreenLocked: Boolean,
+            @IMPickerEntryPoint entryPoint: Int,
             displayId: Int,
             @UserIdInt userId: Int,
         ) {
@@ -225,6 +227,7 @@ constructor(
                         selectedSubtypeIndex,
                         selectedImeSettingsIntent,
                         isScreenLocked,
+                        entryPoint,
                         displayId,
                     )
                 updateModel(userId, model)
