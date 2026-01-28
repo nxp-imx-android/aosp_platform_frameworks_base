@@ -68,8 +68,7 @@
     <string name="permission_media_routing_control" msgid="5498639511586715253">"Mainīt multivides izvadi"</string>
     <string name="permission_storage" msgid="6831099350839392343">"Fotoattēli un multivides faili"</string>
     <string name="permission_notifications" msgid="4099418516590632909">"Paziņojumi"</string>
-    <!-- no translation found for permission_app_streaming (4488910074894929222) -->
-    <skip />
+    <string name="permission_app_streaming" msgid="4488910074894929222">"Ekrāna spoguļošana un lietotņu straumēšana"</string>
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"Datu straumēšana uz ierīci (<xliff:g id="DEVICE_TYPE">%1$s</xliff:g>)"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"Ekrāna spoguļošana"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"Lietotņu straumēšana"</string>
@@ -84,11 +83,9 @@
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"Atrast tuvumā esošas ierīces, izveidot ar tām savienojumu un noteikt to relatīvo atrašanās vietu"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"Lasīt visus paziņojumus, tostarp tādu informāciju kā kontaktpersonas, ziņojumi un fotoattēli"</string>
     <string name="permission_notifications_summary" msgid="6819393427371255636">"• Lasīt visus paziņojumus, tostarp tādu informāciju kā kontaktpersonas, ziņojumi un fotoattēli&lt;br/&gt;• Sūtīt jums paziņojumus&lt;br/&gt;&lt;br/&gt;Jebkurā brīdī sadaļā “Iestatījumi un paziņojumi” varat pārvaldīt šīs lietotnes atļauju lasīt un sūtīt paziņojumus."</string>
-    <!-- no translation found for permission_storage_summary (3779040306012319942) -->
-    <skip />
+    <string name="permission_storage_summary" msgid="3779040306012319942">"Kopīgojiet tālruņa fotoattēlus un multivides saturu ar citām savām ierīcēm."</string>
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"Paziņojumu nosūtīšana sev"</string>
-    <!-- no translation found for permission_app_streaming_summary (4114223538437344105) -->
-    <skip />
+    <string name="permission_app_streaming_summary" msgid="4114223538437344105">"Kopīgojiet tālruņa ekrānu, tostarp lietotnes, ar savām ierīcēm. Jūsu ierīcēm būs piekļuve visam saturam, kas ir redzams jūsu tālrunī, tostarp audio, fotoattēliem, maksājuma informācijai, parolēm un ziņojumiem, pat ja tālrunis ir bloķēts.&lt;br/&gt;&lt;br/&gt;Ierīces varēs tālrunim nodrošināt mikrofona, kameras un citu sensoru datus, tostarp mijiedarbības, piemēram, skāriena žestus un peles klikšķus."</string>
     <string name="permission_create_virtual_device_summary" msgid="3570256456647725172">"Straumējiet mikrofona, kameras un citu sensoru datus no ierīces &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; uz savu ierīci (<xliff:g id="DEVICE_TYPE">%2$s</xliff:g>)."</string>
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"Ierakstiet, apraidiet vai kopīgojiet savas ierīces (<xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g>) ekrānu ar ierīci &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;Lietotne <xliff:g id="APP_NAME">%1$s</xliff:g> varēs piekļūt visam jūsu ierīces (<xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g>) ekrānā redzamajam vai atskaņotajam saturam, tostarp audio, fotoattēliem, maksājumu informācijai, parolēm un ziņojumiem."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"Straumējiet savas ierīces (<xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g>) lietotnes uz ierīci &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;Lietotne <xliff:g id="APP_NAME">%1$s</xliff:g> varēs piekļūt visam jūsu ierīces (<xliff:g id="DEVICE_NAME_2">%3$s</xliff:g>), ekrānā redzamajam vai atskaņotajam saturam, tostarp audio, fotoattēliem, maksājumu informācijai, parolēm un ziņojumiem arī tad, kad jūsu ierīce (<xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g>) būs bloķēta."</string>

@@ -68,8 +68,7 @@
     <string name="permission_media_routing_control" msgid="5498639511586715253">"Cambiar a saída multimedia"</string>
     <string name="permission_storage" msgid="6831099350839392343">"Fotos e contido multimedia"</string>
     <string name="permission_notifications" msgid="4099418516590632909">"Notificacións"</string>
-    <!-- no translation found for permission_app_streaming (4488910074894929222) -->
-    <skip />
+    <string name="permission_app_streaming" msgid="4488910074894929222">"Replicar a pantalla e reproducir aplicacións"</string>
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"Reproducir os datos en: <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"Replicar a túa pantalla"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"Reproducir as aplicacións"</string>
@@ -84,11 +83,9 @@
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"Busca dispositivos próximos, establece conexión con eles e determina a súa posición relativa"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"Le todas as notificacións (que poden incluír información como contactos, mensaxes e fotos)"</string>
     <string name="permission_notifications_summary" msgid="6819393427371255636">"• Le todas as notificacións (que poden incluír información como contactos, mensaxes e fotos)&lt;br/&gt;• Envíache notificacións&lt;br/&gt;&lt;br/&gt;En Configuración &gt; Notificacións podes xestionar en calquera momento a capacidade desta aplicación para ler e enviar notificacións."</string>
-    <!-- no translation found for permission_storage_summary (3779040306012319942) -->
-    <skip />
+    <string name="permission_storage_summary" msgid="3779040306012319942">"Comparte as fotos e o contido multimedia do teu teléfono cos outros dispositivos que teñas."</string>
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"Envíache notificacións"</string>
-    <!-- no translation found for permission_app_streaming_summary (4114223538437344105) -->
-    <skip />
+    <string name="permission_app_streaming_summary" msgid="4114223538437344105">"Comparte a pantalla do teu teléfono (incluídas as aplicacións) cos teus dispositivos. Os teus dispositivos terán acceso a todo o que se vexa no teléfono, como o audio, as fotos, a información de pago, os contrasinais e as mensaxes, mesmo cando o teléfono estea bloqueado.&lt;br/&gt;&lt;br/&gt;Proporciona ao teléfono datos do micrófono, da cámara e doutros sensores dos teus dispositivos, como as interaccións (por exemplo, os xestos táctiles e os clics do rato)."</string>
     <string name="permission_create_virtual_device_summary" msgid="3570256456647725172">"Reproduce en tempo real os datos do micrófono, da cámara e doutros sensores do &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; no dispositivo (<xliff:g id="DEVICE_TYPE">%2$s</xliff:g>)."</string>
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"Grava, emite ou comparte o contido da pantalla do dispositivo (<xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g>) co &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> terá acceso a todo o que se vexa ou reproduza no teu dispositivo (<xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g>), como o audio, as fotos, a información de pago, os contrasinais e as mensaxes."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"Emite as aplicacións do dispositivo (<xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g>) no &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> terá acceso a todo o que se vexa ou reproduza no <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g>, como o audio, as fotos, a información de pago, os contrasinais e as mensaxes, incluso cando o dispositivo (<xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g>) estea bloqueado."</string>

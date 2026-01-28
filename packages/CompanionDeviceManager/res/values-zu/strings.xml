@@ -68,8 +68,7 @@
     <string name="permission_media_routing_control" msgid="5498639511586715253">"Shintsha umphumela wemidiya"</string>
     <string name="permission_storage" msgid="6831099350839392343">"Izithombe nemidiya"</string>
     <string name="permission_notifications" msgid="4099418516590632909">"Izaziso"</string>
-    <!-- no translation found for permission_app_streaming (4488910074894929222) -->
-    <skip />
+    <string name="permission_app_streaming" msgid="4488910074894929222">"Fanisa isikrini futhi usakaze ama-app"</string>
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"Sakaza idatha ku-<xliff:g id="DEVICE_TYPE">%1$s</xliff:g> yakho"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"Fanisa isikrini sakho"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"Sakaza ama-app"</string>
@@ -84,11 +83,9 @@
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"Thola, uxhume, futhi unqume indawo yamadivayisi aseduze"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"Funda zonke izaziso, okuhlanganisa ulwazi loxhumana nabo, imiyalezo, nezithombe"</string>
     <string name="permission_notifications_summary" msgid="6819393427371255636">"• Funda zonke izaziso, okuhlanganisa ulwazi olufana nelokuxhumana nabo, imiyalezo, nezithombe&lt;br/&gt;• Thumela izaziso&lt;br/&gt;&lt;br/&gt;Ungakwazi ukulawula ikhono lale-app lokufunda nokuthumela izaziso noma nini Kumasethingi &gt; Nezaziso."</string>
-    <!-- no translation found for permission_storage_summary (3779040306012319942) -->
-    <skip />
+    <string name="permission_storage_summary" msgid="3779040306012319942">"Yabelana ngezithombe nemidiya yefoni yakho namanye amadivayisi akho."</string>
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"Thumela izexwayiso"</string>
-    <!-- no translation found for permission_app_streaming_summary (4114223538437344105) -->
-    <skip />
+    <string name="permission_app_streaming_summary" msgid="4114223538437344105">"Yabelana ngesikrini sefoni yakho, okuhlanganisa nama-app, kumadivayisi akho. Amadivayisi wakho azokwazi ukufinyelela kunoma yini ebonakalayo efonini yakho, okuhlanganisa umsindo, izithombe, ulwazi lokukhokha, amaphasiwedi nemilayezo, ngisho noma ifoni yakho ikhiyiwe.&lt;br/&gt;&lt;br/&gt;Nikeza imakrofoni, ikhamera kanye nenye idatha yenzwa kusuka kumadivayisi akho ubuyisele efonini yakho, okuhlanganisa ukuxhumana okufana nokunyakazisa umzimba ngokuthinta nokuchofoza imawusi."</string>
     <string name="permission_create_virtual_device_summary" msgid="3570256456647725172">"Sakaza imakrofoni, ikhamera kanye nokunye nedatha eyenzwa kusuka kokuthi &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; ukuya ku-<xliff:g id="DEVICE_TYPE">%2$s</xliff:g> yakho."</string>
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"Rekhoda, sakaza noma wabelane neskrini sakho se-<xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> kokuthi &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> izokwazi ukufinyelela kunoma yini ebonakalayo noma edlalwayo ku-<xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g> yakho, okuhlanganisa umsindo, izithombe, ulwazi lokukhokha, amaphasiwedi, nemilayezo."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"Sakaza ama-app akho e-<xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> kokuthi &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;i-<xliff:g id="APP_NAME">%1$s</xliff:g> izokwazi ukufinyelela kunoma yini ebonakalayo noma edlalwa ku-<xliff:g id="DEVICE_NAME_2">%3$s</xliff:g>, okuhlanganisa okulalelwayo, izithombe, ulwazi lokukhokha, amaphasiwedi, nemiyalezo, ngisho noma i-<xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> yakho ikhiyiwe."</string>

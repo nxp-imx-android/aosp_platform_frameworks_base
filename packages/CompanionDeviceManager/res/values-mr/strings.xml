@@ -68,8 +68,7 @@
     <string name="permission_media_routing_control" msgid="5498639511586715253">"मीडिया आउटपुट बदला"</string>
     <string name="permission_storage" msgid="6831099350839392343">"फोटो आणि मीडिया"</string>
     <string name="permission_notifications" msgid="4099418516590632909">"नोटिफिकेशन"</string>
-    <!-- no translation found for permission_app_streaming (4488910074894929222) -->
-    <skip />
+    <string name="permission_app_streaming" msgid="4488910074894929222">"स्क्रीन मिरर करा, ॲप्स स्ट्रीम करा"</string>
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"तुमच्या <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> वर डेटा स्ट्रीम करा"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"तुमची स्क्रीन मिरर करा"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"अ‍ॅप्स स्ट्रीम करा"</string>
@@ -84,11 +83,9 @@
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"जवळपासची डिव्हाइस शोधणे, त्यांच्याशी कनेक्ट करणे आणि त्यांचे संबंधित स्थान निर्धारित करणे"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"संपर्क, मेसेज आणि फोटो यांसारख्या माहितीसह सर्व सूचना वाचणे"</string>
     <string name="permission_notifications_summary" msgid="6819393427371255636">"• संपर्क, मेसेज आणि फोटोसारख्या माहितीसह सर्व नोटिफिकेशन वाचणे&lt;br/&gt;• तुम्हाला नोटिफिकेशन पाठवणे&lt;br/&gt;&lt;br/&gt;तुम्ही या अ‍ॅपची नोटिफिकेशन वाचण्याची आणि पाठवण्याची क्षमता सेटिंग्ज &gt; नोटिफिकेशन मध्ये कधीही व्यवस्थापित करू शकता."</string>
-    <!-- no translation found for permission_storage_summary (3779040306012319942) -->
-    <skip />
+    <string name="permission_storage_summary" msgid="3779040306012319942">"तुमच्या फोनमधील फोटो आणि मीडिया तुमच्या इतर डिव्हाइससोबत शेअर करा."</string>
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"तुम्हाला नोटिफिकेशन पाठवण्याची परवानगी देते"</string>
-    <!-- no translation found for permission_app_streaming_summary (4114223538437344105) -->
-    <skip />
+    <string name="permission_app_streaming_summary" msgid="4114223538437344105">"ॲप्ससह, तुमच्या फोनची स्क्रीन तुमच्या डिव्हाइसवर शेअर करा. तुमचा फोन लॉक केलेला असतानादेखील, तुमच्या डिव्हाइसना ऑडिओ, फोटो, पेमेंट माहिती, पासवर्ड आणि मेसेज यांसह, तुमच्या फोनवर दिसणाऱ्या कोणत्याही गोष्टीचा ॲक्सेस असेल.&lt;br/&gt;&lt;br/&gt;तुमच्या डिव्हाइसवरून स्पर्श जेश्चर आणि माउस क्लिक यांसारख्या संवादांसह मायक्रोफोन, कॅमेरा व इतर सेन्सर डेटा तुमच्या फोनवर परत पाठवा."</string>
     <string name="permission_create_virtual_device_summary" msgid="3570256456647725172">"&lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; वरून तुमच्या <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> वर मायक्रोफोन, कॅमेरा आणि इतर सेन्सर डेटा स्ट्रीम करा."</string>
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"तुमच्या <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> ची स्क्रीन &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; वर रेकॉर्ड करा, कास्ट करा किंवा शेअर करा.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> ला ऑडिओ, फोटो, पेमेंट माहिती, पासवर्ड आणि मेसेजच्या समावेशासह <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g> वर दिसणाऱ्या किंवा प्ले केल्या जाणाऱ्या कोणत्याही गोष्टीचा अ‍ॅक्सेस असेल."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"तुमची <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> ची अ‍ॅप्स &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt; वर स्ट्रीम करा. तुमचा <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> लॉक असतानाही, &lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> ला ऑडिओ, फोटो, पेमेंट माहिती, पासवर्ड आणि मेसेजच्या समावेशासह <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g> वर दिसणाऱ्या किंवा प्ले केल्या जाणाऱ्या कोणत्याही गोष्टीचा अ‍ॅक्सेस असेल."</string>

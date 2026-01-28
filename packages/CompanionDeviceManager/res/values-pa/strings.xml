@@ -68,8 +68,7 @@
     <string name="permission_media_routing_control" msgid="5498639511586715253">"ਮੀਡੀਆ ਆਊਟਪੁੱਟ ਬਦਲੋ"</string>
     <string name="permission_storage" msgid="6831099350839392343">"ਫ਼ੋਟੋਆਂ ਅਤੇ ਮੀਡੀਆ"</string>
     <string name="permission_notifications" msgid="4099418516590632909">"ਸੂਚਨਾਵਾਂ"</string>
-    <!-- no translation found for permission_app_streaming (4488910074894929222) -->
-    <skip />
+    <string name="permission_app_streaming" msgid="4488910074894929222">"ਸਕ੍ਰੀਨ ਨੂੰ ਪ੍ਰਤਿਬਿੰਬਿਤ ਕਰੋ ਅਤੇ ਐਪਾਂ ਨੂੰ ਸਟ੍ਰੀਮ ਕਰੋ"</string>
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"ਆਪਣੇ <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> \'ਤੇ ਡਾਟਾ ਸਟ੍ਰੀਮ ਕਰੋ"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"ਆਪਣੀ ਸਕ੍ਰੀਨ ਪ੍ਰਤਿਬਿੰਬਿਤ ਕਰੋ"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"ਸਟ੍ਰੀਮ ਐਪਾਂ"</string>
@@ -84,11 +83,9 @@
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"ਨਜ਼ਦੀਕੀ ਡੀਵਾਈਸਾਂ ਨੂੰ ਲੱਭਣ, ਉਨ੍ਹਾਂ ਨਾਲ ਕਨੈਕਟ ਕਰਨ ਅਤੇ ਸੰਬੰਧਿਤ ਸਥਿਤੀ ਨਿਰਧਾਰਿਤ ਕਰਨ ਦੀ ਇਜਾਜ਼ਤ ਦਿਓ"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"ਸਾਰੀਆਂ ਸੂਚਨਾਵਾਂ ਪੜ੍ਹਨ ਦੀ ਇਜਾਜ਼ਤ ਦਿਓ, ਜਿਵੇਂ ਕਿ ਸੰਪਰਕਾਂ, ਸੁਨੇਹਿਆਂ ਅਤੇ ਫ਼ੋਟੋਆਂ ਦੀ ਜਾਣਕਾਰੀ"</string>
     <string name="permission_notifications_summary" msgid="6819393427371255636">"• ਸਾਰੀਆਂ ਸੂਚਨਾਵਾਂ ਪੜ੍ਹਨ ਦੀ ਇਜਾਜ਼ਤ ਦਿਓ, ਜਿਵੇਂ ਕਿ ਸੰਪਰਕਾਂ, ਸੁਨੇਹਿਆਂ ਅਤੇ ਫ਼ੋਟੋਆਂ ਦੀ ਜਾਣਕਾਰੀ&lt;br/&gt;• ਤੁਹਾਨੂੰ ਸੂਚਨਾਵਾਂ ਭੇਜਣ ਦੀ ਇਜਾਜ਼ਤ ਦਿਓ&lt;br/&gt;&lt;br/&gt;ਤੁਸੀਂ ਸੈਟਿੰਗਾਂ &gt; ਸੂਚਨਾਵਾਂ ਵਿੱਚ ਜਾ ਕੇ ਕਿਸੇ ਵੀ ਵੇਲੇ ਸੂਚਨਾਵਾਂ ਨੂੰ ਪੜ੍ਹਨ ਅਤੇ ਭੇਜਣ ਦੀ ਇਸ ਐਪ ਦੀ ਯੋਗਤਾ ਦਾ ਪ੍ਰਬੰਧਨ ਕਰ ਸਕਦੇ ਹੋ।"</string>
-    <!-- no translation found for permission_storage_summary (3779040306012319942) -->
-    <skip />
+    <string name="permission_storage_summary" msgid="3779040306012319942">"ਆਪਣੇ ਫ਼ੋਨ ਦੀਆਂ ਫ਼ੋਟੋਆਂ ਅਤੇ ਮੀਡੀਆ ਨੂੰ ਆਪਣੇ ਹੋਰ ਡੀਵਾਈਸਾਂ ਨਾਲ ਸਾਂਝਾ ਕਰੋ।"</string>
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"ਤੁਹਾਨੂੰ ਸੂਚਨਾਵਾਂ ਭੇਜਣ ਦੀ ਇਜਾਜ਼ਤ ਦਿਓ"</string>
-    <!-- no translation found for permission_app_streaming_summary (4114223538437344105) -->
-    <skip />
+    <string name="permission_app_streaming_summary" msgid="4114223538437344105">"ਆਪਣੇ ਡੀਵਾਈਸਾਂ ਨਾਲ ਐਪਾਂ ਸਮੇਤ ਆਪਣੇ ਫ਼ੋਨ ਦੀ ਸਕ੍ਰੀਨ ਸਾਂਝੀ ਕਰੋ। ਤੁਹਾਡੇ ਫ਼ੋਨ ਦੇ ਲਾਕ ਹੋਣ \'ਤੇ ਵੀ, ਤੁਹਾਡੇ ਡੀਵਾਈਸਾਂ ਕੋਲ ਆਡੀਓ, ਫ਼ੋਟੋਆਂ, ਭੁਗਤਾਨ ਜਾਣਕਾਰੀ, ਪਾਸਵਰਡ ਅਤੇ ਸੁਨੇਹਿਆਂ ਸਮੇਤ, ਤੁਹਾਡੇ ਫ਼ੋਨ \'ਤੇ ਦਿਖਣਯੋਗ ਕਿਸੇ ਵੀ ਚੀਜ਼ ਤੱਕ ਪਹੁੰਚ ਹੋਵੇਗੀ।&lt;br/&gt;&lt;br/&gt;ਸਪਰਸ਼ ਇਸ਼ਾਰਿਆਂ ਅਤੇ ਮਾਊਸ ਕਲਿੱਕਾਂ ਵਰਗੀਆਂ ਅੰਤਰਕਿਰਿਆਵਾਂ ਸਮੇਤ, ਆਪਣੇ ਡੀਵਾਈਸਾਂ ਤੋਂ ਮਾਈਕ੍ਰੋਫ਼ੋਨ, ਕੈਮਰਾ ਅਤੇ ਹੋਰ ਸੈਂਸਰ ਡਾਟਾ ਵਾਪਸ ਆਪਣੇ ਫ਼ੋਨ \'ਤੇ ਮੁਹੱਈਆ ਕਰਵਾਓ।"</string>
     <string name="permission_create_virtual_device_summary" msgid="3570256456647725172">"&lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; ਤੋਂ ਆਪਣੇ <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> \'ਤੇ ਮਾਈਕ੍ਰੋਫ਼ੋਨ, ਕੈਮਰਾ ਅਤੇ ਹੋਰ ਸੈਂਸਰ ਡਾਟਾ ਸਟ੍ਰੀਮ ਕਰੋ।"</string>
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"ਆਪਣੇ <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> ਦੀ ਸਕ੍ਰੀਨ ਨੂੰ &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; \'ਤੇ ਰਿਕਾਰਡ, ਕਾਸਟ ਜਾਂ ਸਾਂਝਾ ਕਰੋ।&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> ਕੋਲ ਤੁਹਾਡੇ <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g> \'ਤੇ ਦਿਖਾਈ ਦੇਣ ਵਾਲੀ ਜਾਂ ਚਲਾਈ ਜਾਣ ਵਾਲੀ ਹਰ ਚੀਜ਼ ਤੱਕ ਪਹੁੰਚ ਹੋਵੇਗੀ, ਜਿਸ ਵਿੱਚ ਆਡੀਓ, ਫ਼ੋਟੋਆਂ, ਭੁਗਤਾਨ ਜਾਣਕਾਰੀ, ਪਾਸਵਰਡ ਅਤੇ ਸੁਨੇਹੇ ਸ਼ਾਮਲ ਹਨ।"</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"ਆਪਣੇ <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> ਦੀਆਂ ਐਪਾਂ ਨੂੰ &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt; \'ਤੇ ਸਟ੍ਰੀਮ ਕਰੋ।&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> ਕੋਲ <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g> \'ਤੇ ਦਿਖਾਈ ਦੇਣ ਵਾਲੀ ਜਾਂ ਚਲਾਈ ਜਾਣ ਵਾਲੀ ਹਰ ਚੀਜ਼ ਤੱਕ ਪਹੁੰਚ ਹੋਵੇਗੀ, ਜਿਸ ਵਿੱਚ ਆਡੀਓ, ਫ਼ੋਟੋਆਂ, ਭੁਗਤਾਨ ਜਾਣਕਾਰੀ, ਪਾਸਵਰਡ ਅਤੇ ਸੁਨੇਹੇ ਸ਼ਾਮਲ ਹਨ, ਭਾਵੇਂ ਤੁਹਾਡਾ <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> ਲਾਕ ਹੋਵੇ।"</string>
