@@ -16,12 +16,16 @@
 #include "pipeline/skia/SkiaIpcPipeline.h"
 
 #include <android/ipcrenderbuffer/IPCRecordingCanvas.h>
+#include <gui/TraceUtils.h>
+#include <include/core/SkImage.h>
+#include <include/core/SkSurface.h>
 #include <system/window.h>
 
 #include <cstddef>
 
 #include "DeviceInfo.h"
 #include "LightingInfo.h"
+#include "RenderNodeDrawable.h"
 #include "hwui/OutOfProcessRendering.h"
 #include "renderthread/Frame.h"
 #include "utils/Color.h"
@@ -71,6 +75,7 @@ void SkiaIpcPipeline::setSurfaceControl(const sp<SurfaceControl>& surfaceControl
 
 void SkiaIpcPipeline::renderLayersImpl(const LayerUpdateQueue& layers, bool opaque) {
     // Render all layers that need to be updated, in order.
+    ATRACE_CALL();
     for (size_t i = 0; i < layers.entries().size(); i++) {
         RenderNode* layerNode = layers.entries()[i].renderNode.get();
         // only schedule repaint if node still on layer - possible it may have been
@@ -79,16 +84,27 @@ void SkiaIpcPipeline::renderLayersImpl(const LayerUpdateQueue& layers, bool opaq
         if (CC_UNLIKELY(layerNode->getLayerSurface() == nullptr)) {
             continue;
         }
-        bool rendered = renderLayerImpl(layerNode, layers.entries()[i].damage);
-        if (!rendered) {
-            return;
-        }
-    }
 
-    if (auto* context = mRenderThread.getGrContext()) {
-        // Ensure work is submitted for offscreen layers since OOPR does not
-        // submit work for the main pass.
-        context->flushAndSubmit();
+        SkSurface* layerSurface = layerNode->getLayerSurface();
+
+        IPCRecordingCanvas* layerCanvas = mIPCRecordingCanvas.get();
+
+        layerCanvas->beginRenderTarget(layerNode->getOoprResources()->buffer->getId());
+
+        {
+            SkAutoCanvasRestore saver(layerCanvas, true);
+            AutoLightingInfoRestore restoreLightingInfo(layerNode);
+            layerCanvas->clear(SK_ColorTRANSPARENT);
+            RenderNodeDrawable root(layerNode, layerCanvas, false);
+            root.forceDraw(layerCanvas);
+        }
+
+        layerCanvas->endRenderTarget();
+
+        sk_sp<SkImage> layerImage = layerSurface->makeImageSnapshot();
+        oopr::registerSnapshot(layerNode->getOoprResources().get(), layerImage);
+
+        layerNode->getSkiaLayer()->hasRenderedSinceRepaint = false;
     }
 }
 
@@ -131,6 +147,7 @@ IRenderPipeline::DrawResult SkiaIpcPipeline::draw(
     std::function<void(SurfaceComposerClient::Transaction*)> transactionReadyCallback;
     LightingInfo::updateLighting(lightGeometry, lightInfo);
     SkCanvas* canvas = mIPCRecordingCanvas.get();
+    ATRACE_CALL();
 
     if (!mIPCRecordingCanvas->canRecord()) {
         IRenderPipeline::DrawResult result;
