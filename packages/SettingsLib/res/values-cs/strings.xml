@@ -349,7 +349,7 @@
     <string name="wifi_non_persistent_mac_randomization_summary" msgid="2159794543105053930">"Když je tento režim aktivován, adresa MAC tohoto zařízení se může změnit pokaždé, když se zařízení připojí k síti s aktivovanou randomizací adres MAC."</string>
     <string name="wifi_metered_label" msgid="8737187690304098638">"Měřená"</string>
     <string name="wifi_unmetered_label" msgid="6174142840934095093">"Neměřená"</string>
-    <string name="select_logd_size_title" msgid="4393502933789367691">"Velikost vyrovnávací paměti protokolovacího nástroje"</string>
+    <string name="select_logd_size_title" msgid="4393502933789367691">"Vyrovnávací paměť protokolovacího nástroje"</string>
     <string name="select_logd_size_dialog_title" msgid="2105401994681013578">"Velikost vyrovnávací paměti protokol. nástroje"</string>
     <string name="dev_logpersist_clear_warning_title" msgid="8631859265777337991">"Vymazat trvalé úložiště protokolovacího nástroje?"</string>
     <string name="dev_logpersist_clear_warning_message" msgid="6447590867594287413">"Pokud již pomocí nástroje na trvalé protokolování nic nemonitorujeme, jsme povinni jeho data uložená v zařízení vymazat."</string>
