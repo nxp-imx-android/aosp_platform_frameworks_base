@@ -4101,6 +4101,15 @@ public class CarrierConfigManager {
             "nr_timers_reset_on_plmn_change_bool";
 
     /**
+     * Whether device resets all of NR timers when device transits from ENDC to NR SA.
+     * The default value is false;
+     *
+     * @hide
+     */
+    public static final String KEY_NR_TIMERS_RESET_ON_ENDC_TO_SA_TRANSIT_BOOL =
+            "nr_timers_reset_on_endc_to_sa_transit_bool";
+
+    /**
      * A list of additional NR advanced band would map to
      * {@link TelephonyDisplayInfo#OVERRIDE_NETWORK_TYPE_NR_ADVANCED} when the device is on that
      * band.
@@ -12088,6 +12097,7 @@ public class CarrierConfigManager {
         sDefaults.putBoolean(KEY_NR_TIMERS_RESET_IF_NON_ENDC_AND_RRC_IDLE_BOOL, false);
         sDefaults.putBoolean(KEY_NR_TIMERS_RESET_ON_VOICE_QOS_BOOL, false);
         sDefaults.putBoolean(KEY_NR_TIMERS_RESET_ON_PLMN_CHANGE_BOOL, false);
+        sDefaults.putBoolean(KEY_NR_TIMERS_RESET_ON_ENDC_TO_SA_TRANSIT_BOOL, false);
         /* Default value is 1 hour. */
         sDefaults.putLong(KEY_5G_WATCHDOG_TIME_MS_LONG, 3600000);
         sDefaults.putIntArray(KEY_ADDITIONAL_NR_ADVANCED_BANDS_INT_ARRAY, new int[0]);
