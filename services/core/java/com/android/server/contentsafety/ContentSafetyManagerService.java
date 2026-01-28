@@ -292,7 +292,7 @@ public class ContentSafetyManagerService extends SystemService {
                             mRemoteSandboxedService.postAsync(
                                     service -> {
                                         AndroidFuture future = new AndroidFuture();
-                                        service.checkContent(
+                                        service.requestCheckContent(
                                                 featureType,
                                                 input,
                                                 wrapCancellationFuture(
@@ -323,7 +323,7 @@ public class ContentSafetyManagerService extends SystemService {
                         mRemoteContentSafetyService.postAsync(
                                 csService -> {
                                     AndroidFuture future = new AndroidFuture();
-                                    csService.getFeature(
+                                    csService.requestGetFeature(
                                             featureType,
                                             wrapCancellationFuture(
                                                     cancellationSignalFuture),
@@ -376,7 +376,7 @@ public class ContentSafetyManagerService extends SystemService {
                 mRemoteContentSafetySettingsService.run(
                         service -> {
                             AndroidFuture future = new AndroidFuture();
-                            service.isFeatureEnabled(
+                            service.requestIsFeatureEnabled(
                                     featureType,
                                     userId,
                                     wrapCancellationFuture(cancellationSignalFuture),
@@ -437,7 +437,7 @@ public class ContentSafetyManagerService extends SystemService {
 
             @Override
             @PermissionManuallyEnforced
-            public void checkContent(
+            public void requestCheckContent(
                     int featureType,
                     Bundle input,
                     @Nullable AndroidFuture cancellationSignalFuture,
@@ -449,7 +449,7 @@ public class ContentSafetyManagerService extends SystemService {
 
             @Override
             @PermissionManuallyEnforced
-            public void isFeatureEnabled(
+            public void requestIsFeatureEnabled(
                     int featureType,
                     @Nullable AndroidFuture cancellationSignalFuture,
                     @NonNull IIsFeatureEnabledCallback callback)
@@ -544,7 +544,7 @@ public class ContentSafetyManagerService extends SystemService {
                                                             + " map. %s",
                                                     ex));
                                 }
-                                service.loadFeature(
+                                service.requestLoadFeature(
                                         result,
                                         wrapCancellationFuture(
                                                 cancellationSignalFuture),
@@ -630,7 +630,7 @@ public class ContentSafetyManagerService extends SystemService {
             AndroidFuture checkContentResultFuture =
                     mRemoteSandboxedService.postAsync(
                             service -> {
-                                service.checkContent(
+                                service.requestCheckContent(
                                         featureType,
                                         input,
                                         wrapCancellationFuture(

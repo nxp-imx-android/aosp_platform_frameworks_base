@@ -2439,11 +2439,11 @@ package android.app.compat {
 package android.app.contentsafety {
 
   @FlaggedApi("android.app.contentsafety.flags.enable_contentsafety") public final class ContentSafetyManager {
-    method @RequiresPermission(android.Manifest.permission.CHECK_CONTENT_SAFETY) public void checkContent(int, @NonNull java.util.Map<java.lang.Integer,java.util.List<android.os.ParcelFileDescriptor>>, @Nullable android.os.CancellationSignal, @NonNull java.util.concurrent.Executor, @NonNull java.util.function.Consumer<java.util.Map<java.lang.Integer,java.util.List<java.lang.Integer>>>);
     method @NonNull @RequiresPermission(android.Manifest.permission.CHECK_CONTENT_SAFETY) public String getRemoteSandboxedServicePackageName();
     method @NonNull @RequiresPermission(android.Manifest.permission.CHECK_CONTENT_SAFETY) public String getRemoteServicePackageName();
     method @NonNull @RequiresPermission(android.Manifest.permission.CHECK_CONTENT_SAFETY) public String getRemoteSettingsServicePackageName();
-    method @RequiresPermission(android.Manifest.permission.CHECK_CONTENT_SAFETY) public void isFeatureEnabled(int, @Nullable android.os.CancellationSignal, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.lang.Boolean,android.app.contentsafety.FeatureException>);
+    method @RequiresPermission(android.Manifest.permission.CHECK_CONTENT_SAFETY) public void requestCheckContent(int, @NonNull java.util.Map<java.lang.Integer,java.util.List<android.os.ParcelFileDescriptor>>, @Nullable android.os.CancellationSignal, @NonNull java.util.concurrent.Executor, @NonNull java.util.function.Consumer<java.util.Map<java.lang.Integer,java.util.List<java.lang.Integer>>>);
+    method @RequiresPermission(android.Manifest.permission.CHECK_CONTENT_SAFETY) public void requestIsFeatureEnabled(int, @Nullable android.os.CancellationSignal, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.lang.Boolean,android.app.contentsafety.FeatureException>);
     field public static final int CONTENT_SAFETY_UNKNOWN = 0; // 0x0
   }
 
@@ -14397,15 +14397,15 @@ package android.service.contentsafety {
   @FlaggedApi("android.app.contentsafety.flags.enable_contentsafety") public abstract class ContentSafetySandboxedService extends android.app.Service {
     ctor public ContentSafetySandboxedService();
     method @Nullable public final android.os.IBinder onBind(@Nullable android.content.Intent);
-    method @RequiresPermission(android.Manifest.permission.CHECK_CONTENT_SAFETY) public abstract void onCheckContent(int, @NonNull java.util.Map<java.lang.Integer,java.util.List<android.os.ParcelFileDescriptor>>, @Nullable android.os.CancellationSignal, @NonNull java.util.function.Consumer<java.util.Map<java.lang.String,java.util.List<java.lang.Integer>>>);
-    method @RequiresPermission(android.Manifest.permission.CHECK_CONTENT_SAFETY) public abstract void onLoadFeature(@NonNull java.util.Map<java.lang.String,android.os.ParcelFileDescriptor>, @Nullable android.os.CancellationSignal, @NonNull android.os.OutcomeReceiver<java.lang.Void,android.service.contentsafety.ContentSafetyException>);
+    method @RequiresPermission(android.Manifest.permission.CHECK_CONTENT_SAFETY) public abstract void onCheckContentRequest(int, @NonNull java.util.Map<java.lang.Integer,java.util.List<android.os.ParcelFileDescriptor>>, @Nullable android.os.CancellationSignal, @NonNull java.util.function.Consumer<java.util.Map<java.lang.String,java.util.List<java.lang.Integer>>>);
+    method @RequiresPermission(android.Manifest.permission.CHECK_CONTENT_SAFETY) public abstract void onLoadFeatureRequest(@NonNull java.util.Map<java.lang.String,android.os.ParcelFileDescriptor>, @Nullable android.os.CancellationSignal, @NonNull android.os.OutcomeReceiver<java.lang.Void,android.service.contentsafety.ContentSafetyException>);
     field public static final String SERVICE_INTERFACE = "android.service.contentsafety.ContentSafetySandboxedService";
   }
 
   @FlaggedApi("android.app.contentsafety.flags.enable_contentsafety") public abstract class ContentSafetyService extends android.app.Service {
     ctor public ContentSafetyService();
     method @Nullable public final android.os.IBinder onBind(@Nullable android.content.Intent);
-    method public abstract void onGetFeature(int, @Nullable android.os.CancellationSignal, @NonNull android.os.OutcomeReceiver<java.util.Map<java.lang.String,android.os.ParcelFileDescriptor>,android.service.contentsafety.ContentSafetyException>);
+    method public abstract void onGetFeatureRequest(int, @Nullable android.os.CancellationSignal, @NonNull android.os.OutcomeReceiver<java.util.Map<java.lang.String,android.os.ParcelFileDescriptor>,android.service.contentsafety.ContentSafetyException>);
     method public abstract void onNotifySandboxedServiceConnected();
     method public abstract void onNotifySandboxedServiceDisconnected();
     method public abstract void onNotifySettingsServiceConnected();
@@ -14416,7 +14416,7 @@ package android.service.contentsafety {
   @FlaggedApi("android.app.contentsafety.flags.enable_contentsafety") public abstract class ContentSafetySettingsService extends android.app.Service {
     ctor public ContentSafetySettingsService();
     method @Nullable public final android.os.IBinder onBind(@Nullable android.content.Intent);
-    method @RequiresPermission(android.Manifest.permission.CHECK_CONTENT_SAFETY) public abstract void onIsFeatureEnabled(int, @NonNull android.os.UserHandle, @Nullable android.os.CancellationSignal, @NonNull android.os.OutcomeReceiver<java.lang.Boolean,android.app.contentsafety.FeatureException>);
+    method @RequiresPermission(android.Manifest.permission.CHECK_CONTENT_SAFETY) public abstract void onIsFeatureEnabledRequest(int, @NonNull android.os.UserHandle, @Nullable android.os.CancellationSignal, @NonNull android.os.OutcomeReceiver<java.lang.Boolean,android.app.contentsafety.FeatureException>);
     field public static final String SERVICE_INTERFACE = "android.service.contentsafety.ContentSafetySettingsService";
   }
 
