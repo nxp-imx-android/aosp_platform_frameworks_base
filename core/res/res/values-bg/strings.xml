@@ -2114,50 +2114,29 @@
     <string name="app_lock_add_screen_lock_button_text" msgid="9209013414563206600">"Добавяне на опция за заключване на екрана"</string>
     <string name="app_lock_add_screen_lock_message" msgid="6107009360675769892">"Опцията ви за заключване на екрана може да бъде ПИН код, фигура или парола. Ще я използвате за отключване на устройството си и за достъп до заключените приложения."</string>
     <string name="app_lock_add_screen_lock_title" msgid="6905612843620128689">"Първо, добавете опция за заключване на екрана"</string>
-    <!-- no translation found for enable_app_lock_success_toast_message (3339622779190529987) -->
-    <skip />
-    <!-- no translation found for enable_app_lock_failure_toast_message (1055838896510445566) -->
-    <skip />
-    <!-- no translation found for disable_app_lock_success_toast_message (70733620589071266) -->
-    <skip />
+    <string name="enable_app_lock_success_toast_message" msgid="3339622779190529987">"Приложението <xliff:g id="APP_NAME">%1$s</xliff:g> е заключено"</string>
+    <string name="enable_app_lock_failure_toast_message" msgid="1055838896510445566">"<xliff:g id="APP_NAME">%1$s</xliff:g> не може да се заключи"</string>
+    <string name="disable_app_lock_success_toast_message" msgid="70733620589071266">"Заключването на приложението е премахнато от <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="locked_app_biometric_prompt_description" msgid="6853122652400451464">"Приложението <xliff:g id="APP_NAME">%1$s</xliff:g> е заключено"</string>
     <string name="locked_app_external_display_message" msgid="5483884799685545338">"За да осъществите достъп до приложението на този екран, първо потвърдете самоличността си на другото си устройство"</string>
-    <!-- no translation found for app_lock_edu_dialog_enable_app_lock_title (283314042336592322) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_description (8176807243219769518) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_description_template (8563718120753342530) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_description_template_no_biometrics (7122017109150633691) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_info_header (5876120209204270990) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_info_notifications (1124438392204873305) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_info_widgets (8809009414650740872) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_button_lock (3914687128135704801) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_face (1348151645996748654) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_fingerprint (5206107469561561455) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_fingerprint_and_face (7895807411323811641) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_lockscreen_password_name (8487096457702445059) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_lockscreen_pattern_name (991436996281983547) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_lockscreen_pin_name (6458607126966304795) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_dialog_title (5030286398974840579) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_dialog_sub_title (310758587817184145) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_expand_app_list_button (3214809707125223273) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_continue_button (4045066724173414043) -->
-    <skip />
+    <string name="app_lock_edu_dialog_enable_app_lock_title" msgid="283314042336592322">"Да се добави ли заключване на приложението за <xliff:g id="APP_NAME">%1$s</xliff:g>?"</string>
+    <string name="app_lock_edu_dialog_description" msgid="8176807243219769518">"От съображения за сигурност само вие можете да осъществявате достъп до това приложение чрез „Отключване с отпечатък“ и „Отключване с лице“ или ПИН кода си"</string>
+    <string name="app_lock_edu_dialog_description_template" msgid="8563718120753342530">"От съображения за сигурност само вие можете да осъществявате достъп до това приложение чрез %1$s или %2$s"</string>
+    <string name="app_lock_edu_dialog_description_template_no_biometrics" msgid="7122017109150633691">"От съображения за сигурност само вие можете да осъществявате достъп до това приложение чрез %1$s"</string>
+    <string name="app_lock_edu_dialog_info_header" msgid="5876120209204270990">"Със заключване на приложението"</string>
+    <string name="app_lock_edu_dialog_info_notifications" msgid="1124438392204873305">"Съдържанието на известията ще бъде скрито"</string>
+    <string name="app_lock_edu_dialog_info_widgets" msgid="8809009414650740872">"Приспособленията и преките пътища ще бъдат премахнати"</string>
+    <string name="app_lock_edu_dialog_button_lock" msgid="3914687128135704801">"+ закл. на прилож."</string>
+    <string name="app_lock_edu_dialog_biometric_description_has_face" msgid="1348151645996748654">"Отключване с лице"</string>
+    <string name="app_lock_edu_dialog_biometric_description_has_fingerprint" msgid="5206107469561561455">"Отключване с отпечатък"</string>
+    <string name="app_lock_edu_dialog_biometric_description_has_fingerprint_and_face" msgid="7895807411323811641">"Отключване с отпечатък или с лице"</string>
+    <string name="app_lock_edu_dialog_lockscreen_password_name" msgid="8487096457702445059">"Парола"</string>
+    <string name="app_lock_edu_dialog_lockscreen_pattern_name" msgid="991436996281983547">"Фигура"</string>
+    <string name="app_lock_edu_dialog_lockscreen_pin_name" msgid="6458607126966304795">"ПИН код"</string>
+    <string name="app_lock_permission_review_dialog_title" msgid="5030286398974840579">"Снимките ви може да продължат да се показват в други прилож."</string>
+    <string name="app_lock_permission_review_dialog_sub_title" msgid="310758587817184145">"Приложения с достъп до снимките ви"</string>
+    <string name="app_lock_permission_review_expand_app_list_button" msgid="3214809707125223273">"Преглед на всички"</string>
+    <string name="app_lock_permission_review_continue_button" msgid="4045066724173414043">"Напред"</string>
     <string name="work_mode_off_title" msgid="6367463960165135829">"Отмяна на паузата за служ. прил.?"</string>
     <string name="work_mode_turn_on" msgid="5316648862401307800">"Отмяна на паузата"</string>
     <string name="work_mode_emergency_call_button" msgid="6818855962881612322">"Спешен случай"</string>

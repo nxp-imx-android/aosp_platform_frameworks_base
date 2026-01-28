@@ -2114,50 +2114,29 @@
     <string name="app_lock_add_screen_lock_button_text" msgid="9209013414563206600">"Magdagdag ng screen lock"</string>
     <string name="app_lock_add_screen_lock_message" msgid="6107009360675769892">"Puwedeng PIN, pattern, o password ang iyong screen lock. Gagamitin mo ito para i-unlock ang iyong device at i-access ang mga naka-lock na app."</string>
     <string name="app_lock_add_screen_lock_title" msgid="6905612843620128689">"Una, magdagdag ng screen lock"</string>
-    <!-- no translation found for enable_app_lock_success_toast_message (3339622779190529987) -->
-    <skip />
-    <!-- no translation found for enable_app_lock_failure_toast_message (1055838896510445566) -->
-    <skip />
-    <!-- no translation found for disable_app_lock_success_toast_message (70733620589071266) -->
-    <skip />
+    <string name="enable_app_lock_success_toast_message" msgid="3339622779190529987">"Naka-lock ang <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
+    <string name="enable_app_lock_failure_toast_message" msgid="1055838896510445566">"Hindi ma-lock ang <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
+    <string name="disable_app_lock_success_toast_message" msgid="70733620589071266">"Inalis ang Lock ng App sa <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="locked_app_biometric_prompt_description" msgid="6853122652400451464">"Naka-lock ang <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="locked_app_external_display_message" msgid="5483884799685545338">"Para ma-access ang app sa display na ito, i-verify muna na ikaw ito sa isa mo pang device"</string>
-    <!-- no translation found for app_lock_edu_dialog_enable_app_lock_title (283314042336592322) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_description (8176807243219769518) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_description_template (8563718120753342530) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_description_template_no_biometrics (7122017109150633691) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_info_header (5876120209204270990) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_info_notifications (1124438392204873305) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_info_widgets (8809009414650740872) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_button_lock (3914687128135704801) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_face (1348151645996748654) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_fingerprint (5206107469561561455) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_fingerprint_and_face (7895807411323811641) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_lockscreen_password_name (8487096457702445059) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_lockscreen_pattern_name (991436996281983547) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_lockscreen_pin_name (6458607126966304795) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_dialog_title (5030286398974840579) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_dialog_sub_title (310758587817184145) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_expand_app_list_button (3214809707125223273) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_continue_button (4045066724173414043) -->
-    <skip />
+    <string name="app_lock_edu_dialog_enable_app_lock_title" msgid="283314042336592322">"Magdagdag ng lock ng app sa <xliff:g id="APP_NAME">%1$s</xliff:g>?"</string>
+    <string name="app_lock_edu_dialog_description" msgid="8176807243219769518">"Para sa iyong seguridad, ikaw lang ang makaka-access sa app na ito gamit ang Pag-unlock Gamit ang Fingerprint at Mukha o ang PIN mo"</string>
+    <string name="app_lock_edu_dialog_description_template" msgid="8563718120753342530">"Para sa iyong seguridad, ikaw lang ang puwedeng mag-access sa app na ito gamit ang %1$s o ang %2$s mo"</string>
+    <string name="app_lock_edu_dialog_description_template_no_biometrics" msgid="7122017109150633691">"Para sa iyong seguridad, ikaw lang ang makaka-access sa app na ito gamit ang %1$s mo"</string>
+    <string name="app_lock_edu_dialog_info_header" msgid="5876120209204270990">"Gumagamit ng lock ng app"</string>
+    <string name="app_lock_edu_dialog_info_notifications" msgid="1124438392204873305">"Itatago ang content ng notification"</string>
+    <string name="app_lock_edu_dialog_info_widgets" msgid="8809009414650740872">"Aalisin ang mga widget at shortcut"</string>
+    <string name="app_lock_edu_dialog_button_lock" msgid="3914687128135704801">"Idagdag ang app lock"</string>
+    <string name="app_lock_edu_dialog_biometric_description_has_face" msgid="1348151645996748654">"Pag-unlock Gamit ang Mukha"</string>
+    <string name="app_lock_edu_dialog_biometric_description_has_fingerprint" msgid="5206107469561561455">"Pag-unlock Gamit ang Fingerprint"</string>
+    <string name="app_lock_edu_dialog_biometric_description_has_fingerprint_and_face" msgid="7895807411323811641">"Pag-unlock Gamit ang Fingerprint o Mukha"</string>
+    <string name="app_lock_edu_dialog_lockscreen_password_name" msgid="8487096457702445059">"Password"</string>
+    <string name="app_lock_edu_dialog_lockscreen_pattern_name" msgid="991436996281983547">"Pattern"</string>
+    <string name="app_lock_edu_dialog_lockscreen_pin_name" msgid="6458607126966304795">"PIN"</string>
+    <string name="app_lock_permission_review_dialog_title" msgid="5030286398974840579">"Posibleng lumabas pa rin ang mga larawan mo sa iba pang app"</string>
+    <string name="app_lock_permission_review_dialog_sub_title" msgid="310758587817184145">"Mga app na may access sa mga larawan mo"</string>
+    <string name="app_lock_permission_review_expand_app_list_button" msgid="3214809707125223273">"Tingnan lahat"</string>
+    <string name="app_lock_permission_review_continue_button" msgid="4045066724173414043">"Magpatuloy"</string>
     <string name="work_mode_off_title" msgid="6367463960165135829">"I-unpause ang mga work app?"</string>
     <string name="work_mode_turn_on" msgid="5316648862401307800">"I-unpause"</string>
     <string name="work_mode_emergency_call_button" msgid="6818855962881612322">"Emergency"</string>
