@@ -16,6 +16,9 @@
 
 package com.android.wm.shell.common.split;
 
+import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
+import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
+import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
 import static android.view.Display.DEFAULT_DISPLAY;
 
 import static com.android.wm.shell.shared.split.SplitScreenConstants.CONTROLLED_ACTIVITY_TYPES;
@@ -49,6 +52,8 @@ import com.android.wm.shell.splitscreen.BranchNode;
 import com.android.wm.shell.splitscreen.LayoutNode;
 import com.android.wm.shell.splitscreen.LeafNode;
 import com.android.wm.shell.splitscreen.StageTaskListener;
+
+import java.util.Objects;
 
 /** Helper utility class for split screen components to use. */
 public class SplitScreenUtils {
@@ -283,5 +288,29 @@ public class SplitScreenUtils {
                 splitLayout.update(null /* t */, false /* resetImePosition */);
             }
         }
+    }
+
+    /**
+     * Returns the target windowing mode for a task when leaving split-screen.
+     *
+     * In a freeform-first environment (like desktop), explicitly set the windowing mode to
+     * fullscreen when leaving split-screen. On a standard display, setting it to UNDEFINED allows
+     * the task to inherit the display's default windowing mode (usually fullscreen).
+     *
+     * @param rootTDAOrganizer The {@link RootTaskDisplayAreaOrganizer} used to retrieve display
+     *                         area information.
+     * @param displayId        The ID of the display the task is moving to.
+     * @return {@link android.app.WindowConfiguration#WINDOWING_MODE_FULLSCREEN} if the target
+     *         display is in freeform mode; otherwise
+     *         {@link android.app.WindowConfiguration#WINDOWING_MODE_UNDEFINED}.
+     */
+    public static int getTargetWindowingModeWhenExitSplit(
+            @NonNull RootTaskDisplayAreaOrganizer rootTDAOrganizer, int displayId) {
+        final DisplayAreaInfo tdaInfo = rootTDAOrganizer.getDisplayAreaInfo(displayId);
+        Objects.requireNonNull(tdaInfo);
+        final int displayWindowingMode =
+                tdaInfo.configuration.windowConfiguration.getWindowingMode();
+        return displayWindowingMode == WINDOWING_MODE_FREEFORM
+                ? WINDOWING_MODE_FULLSCREEN : WINDOWING_MODE_UNDEFINED;
     }
 }
