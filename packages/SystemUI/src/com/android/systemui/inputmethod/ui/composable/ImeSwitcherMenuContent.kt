@@ -94,7 +94,6 @@ fun ImeSwitcherMenuContent(
     val isDarkTheme =
         if (Flags.dialogBackgroundRefresh()) isCurrentlyInDarkTheme else cachedDarkTheme
     val paneTitleDescription = stringResource(R.string.select_input_method)
-    val buttonDescription = stringResource(R.string.input_method_language_settings)
 
     PlatformTheme(isDarkTheme = cachedDarkTheme) {
         Column(
@@ -110,29 +109,45 @@ fun ImeSwitcherMenuContent(
             Column(modifier = Modifier.weight(weight = 1f, fill = false)) {
                 ImeSwitcherMenuList(viewModel.menuItems.toList(), viewModel, dismissAction)
             }
-            viewModel.settingsButtonAction.value?.let {
-                Box(
-                    contentAlignment = Alignment.CenterEnd,
-                    modifier =
-                        Modifier.fillMaxWidth().padding(top = 8.dp, end = 16.dp, bottom = 16.dp),
-                ) {
-                    PlatformOutlinedButton(
-                        modifier = Modifier.testTag("button1"),
-                        onClick = {
-                            it.invoke()
-                            dismissAction.invoke()
-                        },
-                    ) {
-                        Text(
-                            text = stringResource(R.string.input_method_switcher_settings_button),
-                            modifier =
-                                Modifier.padding(vertical = 3.dp).semantics {
-                                    contentDescription = buttonDescription
-                                },
-                        )
+            viewModel.settingsButtonAction.value?.let { action ->
+                SettingsFooter(
+                    settingsButtonAction = {
+                        action.invoke()
+                        dismissAction.invoke()
                     }
-                }
+                )
             }
+        }
+    }
+}
+
+/**
+ * The footer of the IME Switcher Menu Dialog, which contains the settings button.
+ *
+ * @param settingsButtonAction the action to invoke when the settings button is clicked. This
+ *   action should also dismiss the UI.
+ */
+@Composable
+private fun SettingsFooter(settingsButtonAction: () -> Unit) {
+    val settingsButtonDescription = stringResource(R.string.input_method_language_settings)
+    Box(
+        contentAlignment = Alignment.CenterEnd,
+        modifier =
+            Modifier.fillMaxWidth()
+                .padding(top = 8.dp, end = 16.dp, bottom = 16.dp)
+                .testTag("settings_footer"),
+    ) {
+        PlatformOutlinedButton(
+            modifier = Modifier.testTag("button1"),
+            onClick = settingsButtonAction,
+        ) {
+            Text(
+                text = stringResource(R.string.input_method_switcher_settings_button),
+                modifier =
+                    Modifier.padding(vertical = 3.dp).semantics {
+                        contentDescription = settingsButtonDescription
+                    },
+            )
         }
     }
 }
