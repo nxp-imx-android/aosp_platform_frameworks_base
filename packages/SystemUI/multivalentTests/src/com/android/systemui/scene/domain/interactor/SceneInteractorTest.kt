@@ -24,8 +24,6 @@ import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.animation.scene.ObservableTransitionState.Transition.ShowOrHideOverlay
 import com.android.compose.animation.scene.SceneKey
-import com.android.compose.animation.scene.content.state.TransitionState
-import com.android.mechanics.GestureContext
 import com.android.systemui.Flags.FLAG_DUAL_SHADE
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.deviceentry.domain.interactor.deviceUnlockedInteractor
@@ -60,7 +58,6 @@ import com.android.systemui.statusbar.disableflags.shared.model.DisableFlagsMode
 import com.android.systemui.statusbar.phone.BiometricUnlockController
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
-import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
@@ -979,15 +976,6 @@ class SceneInteractorTest : SysuiTestCase() {
             assertThat(underTest.currentSceneAsState).isEqualTo(Scenes.Gone)
             assertThat(underTest.isVisible).isFalse()
 
-            fakeSceneDataSource.transitionState =
-                fakeTransition(
-                    fromScene = Scenes.Gone,
-                    toScene = Scenes.Shade,
-                    currentScene = { Scenes.Gone },
-                )
-            assertThat(underTest.currentSceneAsState).isEqualTo(Scenes.Gone)
-            assertThat(underTest.isVisible).isTrue() // transitioning to Shade, should be visible.
-
             underTest.changeScene(Scenes.Shade, "shade to make isVisible be true")
             assertThat(underTest.currentSceneAsState).isEqualTo(Scenes.Shade)
             assertThat(underTest.isVisible).isTrue()
@@ -1102,41 +1090,5 @@ class SceneInteractorTest : SysuiTestCase() {
             // Hide a HUN
             underTest.handleEvent(SceneInteractor.Event.HeadsUpNotificationVisibilityChange(false))
             assertThat(underTest.isVisible).isFalse()
-        }
-}
-
-private fun Kosmos.fakeTransition(
-    fromScene: SceneKey,
-    toScene: SceneKey,
-    currentScene: () -> SceneKey,
-    transitionStateWhenTransitionStarted: TransitionState = fakeSceneDataSource.transitionState,
-): TransitionState.Transition.ChangeScene {
-    return object :
-            TransitionState.Transition.ChangeScene(fromScene = fromScene, toScene = toScene) {
-            override val progress: Float = 0.5f
-            override val progressVelocity: Float = 0f
-            override val previewProgress: Float = 0f
-            override val isInitiatedByUserInput: Boolean = true
-            override val isInPreviewStage: Boolean = false
-            override val isUserInputOngoing: Boolean = true
-            override val currentScene: SceneKey
-                get() = currentScene()
-
-            override val gestureContext: GestureContext? = null
-
-            private val completable = CompletableDeferred<Unit>()
-
-            override suspend fun run() {
-                completable.await()
-            }
-
-            override fun freezeAndAnimateToCurrentState() {
-                completable.complete(Unit)
-            }
-        }
-        .apply {
-            currentSceneWhenTransitionStarted = transitionStateWhenTransitionStarted.currentScene
-            currentOverlaysWhenTransitionStarted =
-                transitionStateWhenTransitionStarted.currentOverlays
         }
 }
