@@ -10027,7 +10027,9 @@ public class CarrierConfigManager {
      * A PLMN supporting DTC technology must be distinct from terrestrial networks;
      * therefore, it will be classified as an NTN.
      * </ul>
+     * @hide
      */
+    @SystemApi
     @FlaggedApi(Flags.FLAG_SATELLITE_26Q2_APIS)
     public static final String KEY_SATELLITE_TECHNOLOGY_INT_ARRAY =
             "satellite_technology_type_int_array";
