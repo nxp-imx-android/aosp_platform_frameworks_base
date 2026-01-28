@@ -35,7 +35,6 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Fake implementation of ScheduledExecutorService for use in testing. Implementation only covers
@@ -44,13 +43,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 class FakeScheduledExecutorService implements ScheduledExecutorService {
     private long mElapsedMillis = 0;
-
-    // Indicator if the executor is currently running tasks. Note that this absolutely cannot be
-    // used as a general synchronization primitive as there's no way to guarantee that the state
-    // of the boolean does not change immediately after checking it. There's one exception to
-    // this: if the future queue is shut down and empty and this is false then you can safely
-    // assume that it will never go back to being true again.
-    private AtomicBoolean mIsRunningTasks = new AtomicBoolean(false);
 
     // Helper wrapper that combines queuing of futures with a semaphore. For tracking futures and
     // future timeouts we mostly just need a DelayQueue, but adding in the semaphore functionality
@@ -77,8 +69,8 @@ class FakeScheduledExecutorService implements ScheduledExecutorService {
                 if (mShutdown) {
                     throw new RejectedExecutionException("Executor has been shut down");
                 }
+                mQueue.put(e);
             }
-            mQueue.put(e);
             release();
         }
 
@@ -125,6 +117,11 @@ class FakeScheduledExecutorService implements ScheduledExecutorService {
             new DelayQueueSemaphore<>();
     private final DelayQueueSemaphore<FakeScheduledFuture<?>.WaitForTimeout> mTimeoutQueue =
             new DelayQueueSemaphore<>();
+
+    // A dummy future that will get run when the executor is terminated. This can be used to
+    // implement blocking on termination via get().
+    private final FakeScheduledFuture<?> mTerminationFuture =
+            new FakeScheduledFuture<>(() -> {}, 0);
 
     // The thread that can run fastForwardMillis.
     private final Thread mExecutionThread;
@@ -196,27 +193,25 @@ class FakeScheduledExecutorService implements ScheduledExecutorService {
         assertExecutionThread();
         mElapsedMillis += millis;
 
-        int executedCount = 0;
-        if (mFutureQueue.size() > 0) {
-            // Technically the size check is redundant as we can just call drain() and it will
-            // return an empty list but we want to avoid setting the is-running bit specifically
-            // in the case of "shut down and no tasks to run".
-            mIsRunningTasks.set(true);
-            try {
-                List<FakeScheduledFuture<?>> readyFutures = mFutureQueue.drain();
-                for (FakeScheduledFuture<?> future : readyFutures) {
-                    future.execute();
-                    executedCount += 1;
-                }
-            } finally {
-                mIsRunningTasks.set(false);
-            }
+        // Execute all futures that are ready to run.
+        List<FakeScheduledFuture<?>> readyFutures = mFutureQueue.drain();
+        for (FakeScheduledFuture<?> future : readyFutures) {
+            future.execute();
         }
+        // If the executor has been shut down and there are no more pending tasks then run the
+        // termination future to unblock any termination waiters.
+        if (mFutureQueue.isShutdown() && mFutureQueue.size() == 0) {
+            mTerminationFuture.execute();
+        }
+        // Signal all timeouts that have expired. We run this after all of the ready futures have
+        // been executed and so if moving time forward triggers both execution and timeout then the
+        // exeuction takes precedence.
         List<FakeScheduledFuture<?>.WaitForTimeout> readyTimeouts = mTimeoutQueue.drain();
         for (FakeScheduledFuture<?>.WaitForTimeout waiter : readyTimeouts) {
             waiter.signal();
         }
-        return executedCount;
+        // The number of tasks that were executed earlier.
+        return readyFutures.size();
     }
 
     @Override
@@ -287,15 +282,24 @@ class FakeScheduledExecutorService implements ScheduledExecutorService {
 
     @Override
     public boolean isTerminated() {
-        // The executor is terminated once it has been shut down and there are no remaining tasks
-        // either in the queue or currently being executed. Note that the order of the checks here
-        // is important for avoiding race conditions.
-        return isShutdown() && mFutureQueue.size() == 0 && !mIsRunningTasks.get();
+        // Note that termination is only triggered when time is advanced and so even if you call
+        // shutdown and there are no pending tasks isTerminated() will still return false until
+        // fastForwardMillis() is called.
+        return mTerminationFuture.isDone();
     }
 
     @Override
     public boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException {
-        throw new UnsupportedOperationException();
+        try {
+            mTerminationFuture.get(timeout, unit);
+            return true;
+        } catch (ExecutionException e) {
+            // This shouldn't happen because the termination future body is just a no-op but if it
+            // does that still would mean the termination was triggered and so return true.
+            return true;
+        } catch (TimeoutException e) {
+            return false;
+        }
     }
 
     @Override
