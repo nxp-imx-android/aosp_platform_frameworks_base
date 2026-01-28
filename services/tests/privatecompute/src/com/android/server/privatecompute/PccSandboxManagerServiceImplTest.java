@@ -33,6 +33,7 @@ import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import androidx.test.runner.AndroidJUnit4;
 import com.android.server.LocalServices;
+import com.android.server.privatecompute.PccSandboxManagerServiceImpl.Injector;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -59,6 +60,8 @@ public class PccSandboxManagerServiceImplTest {
 
     @Mock private PackageManagerInternal mPackageManagerInternal;
 
+    @Mock private Injector mInjector;
+
     private PccSandboxManagerServiceImpl mService;
 
     @Before
@@ -66,7 +69,7 @@ public class PccSandboxManagerServiceImplTest {
         when(mContext.getPackageManager()).thenReturn(mPackageManager);
         LocalServices.removeServiceForTest(PackageManagerInternal.class);
         LocalServices.addService(PackageManagerInternal.class, mPackageManagerInternal);
-        mService = new PccSandboxManagerServiceImpl(mContext);
+        mService = new PccSandboxManagerServiceImpl(mContext, mInjector);
     }
 
     @Test
@@ -174,5 +177,27 @@ public class PccSandboxManagerServiceImplTest {
         mService.writeToAuditLogInternal(new PersistableBundle(), TEST_PACKAGE_NAME);
 
         // No exception thrown.
+    }
+
+    @Test
+    public void testWriteToAuditLogInternal_sysPropDisabled_returnsFalse() {
+        when(mInjector.auditModeEnabled()).thenReturn(false);
+        int testUid = android.os.Process.myUid();
+        when(mPackageManagerInternal.isSameApp(
+                        TEST_PACKAGE_NAME, testUid, UserHandle.getUserId(testUid)))
+                .thenReturn(true);
+
+        assertFalse(mService.writeToAuditLogInternal(new PersistableBundle(), TEST_PACKAGE_NAME));
+    }
+
+    @Test
+    public void testWriteToAuditLogInternal_sysPropEnabled_returnsTrue() {
+        when(mInjector.auditModeEnabled()).thenReturn(true);
+        int testUid = android.os.Process.myUid();
+        when(mPackageManagerInternal.isSameApp(
+                        TEST_PACKAGE_NAME, testUid, UserHandle.getUserId(testUid)))
+                .thenReturn(true);
+
+        assertTrue(mService.writeToAuditLogInternal(new PersistableBundle(), TEST_PACKAGE_NAME));
     }
 }
