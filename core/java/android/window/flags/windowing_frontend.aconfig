@@ -485,6 +485,13 @@ flag {
 }
 
 flag {
+    name: "enable_merge_animations"
+    namespace: "windowing_frontend"
+    description: "Create animations for windows during mergeAnimation"
+    bug: "477175273"
+}
+
+flag {
     name: "only_cache_low_res_task_snapshot"
     namespace: "windowing_frontend"
     description: "Only cache low resolution task snapshot in system server."

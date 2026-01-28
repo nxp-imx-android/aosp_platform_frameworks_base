@@ -68,8 +68,10 @@ class TransitionInfoBuilder @JvmOverloads constructor(
     fun addChange(
         @WindowManager.TransitionType mode: Int,
         activityTransitionInfo: ActivityTransitionInfo,
-    ) = addChange(ChangeBuilder(mode).setDisplayId(displayId)
-        .setActivityTransitionInfo(activityTransitionInfo).build())
+    ) = addChange(
+        ChangeBuilder(mode).setDisplayId(displayId)
+            .setActivityTransitionInfo(activityTransitionInfo).build()
+    )
 
     /** Adds a change to the [TransitionInfo] for activity transition without task id. */
     fun addChange(@WindowManager.TransitionType mode: Int, activityComponent: ComponentName) =
@@ -77,12 +79,15 @@ class TransitionInfoBuilder @JvmOverloads constructor(
             ChangeBuilder(mode).setDisplayId(displayId)
                 .setActivityTransitionInfo(
                     ActivityTransitionInfo(activityComponent, INVALID_TASK_ID)
-        ).build())
+                ).build()
+        )
 
     /** Add a change to the [TransitionInfo] for task fragment. */
     fun addChange(@WindowManager.TransitionType mode: Int, taskFragmentToken: IBinder) =
-        addChange(ChangeBuilder(mode).setDisplayId(displayId)
-            .setTaskFragmentToken(taskFragmentToken).build())
+        addChange(
+            ChangeBuilder(mode).setDisplayId(displayId)
+                .setTaskFragmentToken(taskFragmentToken).build()
+        )
 
     /**
      * Adds a pre-configured change to the [TransitionInfo].
@@ -107,6 +112,22 @@ class TransitionInfoBuilder @JvmOverloads constructor(
         // Add the change to the internal TransitionInfo object.
         info.addChange(change)
         return this // Return this for fluent builder pattern.
+    }
+
+    /**
+     * Adds a root to the [TransitionInfo].
+     *
+     * @param rootLeash the SurfaceControl leash to use for the root.
+     * @param displayId the display ID for this root leash. Defaults to the builder's displayId.
+     * @return this TransitionInfoBuilder instance for chaining.
+     */
+    @JvmOverloads
+    fun addRoot(
+        rootLeash: SurfaceControl,
+        displayId: Int = this.displayId
+    ): TransitionInfoBuilder {
+        info.addRootLeash(displayId, rootLeash, 0, 0)
+        return this
     }
 
     /**

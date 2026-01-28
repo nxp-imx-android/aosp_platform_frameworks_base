@@ -59,6 +59,17 @@ class ChangeBuilder {
         change.mode = mode
     }
 
+    constructor(@WindowManager.TransitionType mode: Int, leash: SurfaceControl) {
+        change =
+            TransitionInfo.Change(
+                if (com.android.window.flags.Flags.transitMixpatcherBase())
+                    WindowContainerToken.createProxy("Change")
+                else null,
+                leash,
+            )
+        change.mode = mode
+    }
+
     fun setFlags(@TransitionInfo.ChangeFlags flags: Int): ChangeBuilder {
         change.flags = flags
         return this
