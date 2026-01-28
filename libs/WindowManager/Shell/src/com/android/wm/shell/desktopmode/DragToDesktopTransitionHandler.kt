@@ -48,6 +48,7 @@ import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.animation.FloatProperties
 import com.android.wm.shell.bubbles.BubbleController
 import com.android.wm.shell.bubbles.transitions.BubbleTransitions
+import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_DESKTOP_MODE_CANCEL_DRAG_TO_DESKTOP
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_DESKTOP_MODE_END_DRAG_TO_DESKTOP
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_DESKTOP_MODE_START_DRAG_TO_DESKTOP
@@ -95,6 +96,7 @@ sealed class DragToDesktopTransitionHandler(
     protected val transactionSupplier: Supplier<SurfaceControl.Transaction>,
     private val desktopState: DesktopState,
     private val desktopConfig: DesktopConfig,
+    private val displayController: DisplayController,
 ) : TransitionHandler {
 
     protected val rectEvaluator = RectEvaluator(Rect())
@@ -278,6 +280,12 @@ sealed class DragToDesktopTransitionHandler(
             // bounds) first before actually starting the cancel transition so that the wallpaper
             // is visible behind the animating task.
             state.activeCancelAnimation = startCancelAnimation()
+        } else if (
+            state.draggedTaskChange != null && cancelState == CancelState.CANCEL_SPLIT_TO_FULLSCREEN
+        ) {
+            // Task is dragged from split to fullscreen. Animates to fullscreen bounds using the
+            // resize veil before starting a transition to finalize task bounds and exit split.
+            state.activeCancelAnimation = startSplitToFullscreenAnimation()
         } else if (
             state.draggedTaskChange != null &&
                 (cancelState == CancelState.CANCEL_SPLIT_LEFT ||
@@ -767,16 +775,8 @@ sealed class DragToDesktopTransitionHandler(
             startT.apply()
             finishCallback.onTransitionFinished(/* wct= */ null)
             startTransitionFinishCb.onTransitionFinished(/* wct= */ null)
-            // For splitscreen, dragging upward to "cancel" actually is a signal from the user
-            // that we want to go to fullscreen. We will cancel the desktop transition, let
-            // splitscreen go back to where it was, and then expand to fullscreen.
-            // TODO (b/396438812): Let this be a single transition that actually goes straight
-            // to fullscreen
             if (state is TransitionState.FromSplit) {
-                splitScreenController.moveTaskToFullscreen(
-                    state.draggedTaskId,
-                    SplitScreenController.EXIT_REASON_DRAG_TO_FULLSCREEN,
-                )
+                onTaskResizeAnimationListener.onAnimationEnd(draggingTaskId)
             }
             clearState()
             return
@@ -1008,9 +1008,80 @@ sealed class DragToDesktopTransitionHandler(
             }
     }
 
+    private fun startSplitToFullscreenAnimation(): Animator {
+        val state = requireTransitionState()
+        val dragToDesktopAnimator = state.dragAnimator
+
+        val draggedTaskChange =
+            state.draggedTaskChange ?: throw IllegalStateException("Expected non-null task change")
+        val sc = draggedTaskChange.leash
+        // Cancel the animation that shrinks the window when task is first dragged from split screen
+        dragToDesktopAnimator.cancelAnimator()
+        // Then animate the scaled window to fullscreen bounds
+        val x = dragToDesktopAnimator.position.x.toInt()
+        val y = dragToDesktopAnimator.position.y.toInt()
+        val tx = transactionSupplier.get()
+
+        val displayContext =
+            displayController.getDisplayContext(draggedTaskChange.endDisplayId) ?: this.context
+        val screenWidth = displayContext.resources.displayMetrics.widthPixels
+        val screenHeight = displayContext.resources.displayMetrics.heightPixels
+        val startAnimationBounds =
+            Rect(
+                /* left = */ x,
+                /* top = */ y,
+                /* right = */ x +
+                    (DRAG_FREEFORM_SCALE * draggedTaskChange.startAbsBounds.width()).toInt(),
+                /* bottom = */ y +
+                    (DRAG_FREEFORM_SCALE * draggedTaskChange.startAbsBounds.height()).toInt(),
+            )
+        val endAnimationBounds =
+            Rect(/* left= */ 0, /* top= */ 0, /* right= */ screenWidth, /* bottom= */ screenHeight)
+        // Reset the task's scale
+        tx.setScale(sc, /* scaleX= */ 1F, /* scaleY= */ 1F)
+        onTaskResizeAnimationListener.onAnimationStart(
+            state.draggedTaskId,
+            tx,
+            startAnimationBounds,
+        )
+
+        return ValueAnimator.ofObject(rectEvaluator, startAnimationBounds, endAnimationBounds)
+            .setDuration(DRAG_TO_DESKTOP_FINISH_ANIM_DURATION_MS)
+            .apply {
+                addUpdateListener { animator ->
+                    val bounds = animator.animatedValue as Rect
+                    onTaskResizeAnimationListener.onBoundsChange(state.draggedTaskId, tx, bounds)
+                }
+                addListener(
+                    object : AnimatorListenerAdapter() {
+                        override fun onAnimationEnd(animation: Animator) {
+                            state.activeCancelAnimation = null
+                            dragToDesktopStateListener?.onCancelToDesktopAnimationEnd()
+                            // Start the exit split and restore order
+                            startCancelSplitToFullscreenTransition()
+                        }
+                    }
+                )
+                start()
+            }
+    }
+
     private fun startCancelDragToDesktopTransition() {
         val state = requireTransitionState()
         val wct = WindowContainerTransaction()
+        restoreWindowOrder(wct, state)
+        state.cancelTransitionToken =
+            transitions.startTransition(TRANSIT_DESKTOP_MODE_CANCEL_DRAG_TO_DESKTOP, wct, this)
+    }
+
+    private fun startCancelSplitToFullscreenTransition() {
+        val state = requireTransitionState()
+        val wct = WindowContainerTransaction()
+        splitScreenController.prepareExitSplitScreen(
+            wct,
+            splitScreenController.getStageOfTask(draggingTaskId),
+            SplitScreenController.EXIT_REASON_DRAG_TO_FULLSCREEN,
+        )
         restoreWindowOrder(wct, state)
         state.cancelTransitionToken =
             transitions.startTransition(TRANSIT_DESKTOP_MODE_CANCEL_DRAG_TO_DESKTOP, wct, this)
@@ -1020,32 +1091,24 @@ sealed class DragToDesktopTransitionHandler(
         wct: WindowContainerTransaction,
         state: TransitionState = requireTransitionState(),
     ) {
-        when (state) {
-            is TransitionState.FromFullscreen -> {
-                // There may have been tasks sent behind home that are not the dragged task (like
-                // when the dragged task is translucent and that makes the task behind it visible).
-                // Restore the order of those first.
-                state.otherRootChanges
-                    .mapNotNull { it.container }
-                    .forEach { wc ->
-                        // TODO(b/322852244): investigate why even though these "other" tasks are
-                        //  reordered in front of home and behind the translucent dragged task, its
-                        //  surface is not visible on screen.
-                        wct.reorder(wc, /* onTop= */ true)
-                    }
-                val wc =
-                    state.draggedTaskChange?.container
-                        ?: error("Dragged task should be non-null before cancelling")
-                // Then the dragged task a the very top.
-                wct.reorder(wc, /* onTop= */ true)
-            }
-            is TransitionState.FromSplit -> {
-                val wc =
-                    state.splitRootChange?.container
-                        ?: error("Split root should be non-null before cancelling")
-                wct.reorder(wc, /* onTop= */ true)
-            }
+        if (state is TransitionState.FromFullscreen) {
+            // There may have been tasks sent behind home that are not the dragged task (like
+            // when the dragged task is translucent and that makes the task behind it visible).
+            // Restore the order of those first.
+            state.otherRootChanges
+                .mapNotNull { it.container }
+                .forEach { wc ->
+                    // TODO(b/322852244): investigate why even though these "other" tasks are
+                    //  reordered in front of home and behind the translucent dragged task, its
+                    //  surface is not visible on screen.
+                    wct.reorder(wc, /* onTop= */ true)
+                }
         }
+        val wc =
+            state.draggedTaskChange?.container
+                ?: error("Dragged task should be non-null before cancelling")
+        // Move dragged task to very top
+        wct.reorder(wc, /* onTop= */ true)
         val homeWc =
             state.homeChange?.container ?: error("Home task should be non-null before cancelling")
         wct.restoreTransientOrder(homeWc)
@@ -1187,6 +1250,8 @@ sealed class DragToDesktopTransitionHandler(
         NO_CANCEL,
         /** A standard cancel event; should restore task to previous windowing mode. */
         STANDARD_CANCEL,
+        /** A cancel event where the task will enter fullscreen from split. */
+        CANCEL_SPLIT_TO_FULLSCREEN,
         /** A cancel event where the task will request to enter split on the left side. */
         CANCEL_SPLIT_LEFT,
         /** A cancel event where the task will request to enter split on the right side. */
@@ -1233,6 +1298,7 @@ constructor(
     },
     desktopState: DesktopState,
     desktopConfig: DesktopConfig,
+    displayController: DisplayController,
 ) :
     DragToDesktopTransitionHandler(
         context,
@@ -1245,6 +1311,7 @@ constructor(
         transactionSupplier,
         desktopState,
         desktopConfig,
+        displayController,
     ) {
 
     private val positionSpringConfig =

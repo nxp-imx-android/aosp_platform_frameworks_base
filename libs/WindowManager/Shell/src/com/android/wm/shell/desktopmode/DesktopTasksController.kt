@@ -2222,9 +2222,13 @@ class DesktopTasksController(
      */
     fun cancelDragToDesktop(task: RunningTaskInfo) {
         logV("cancelDragToDesktop taskId=%d", task.taskId)
-        dragToDesktopTransitionHandler.cancelDragToDesktopTransition(
-            DragToDesktopTransitionHandler.CancelState.STANDARD_CANCEL
-        )
+        val cancelState =
+            if (splitScreenController.isTaskInSplitScreen(task.taskId)) {
+                DragToDesktopTransitionHandler.CancelState.CANCEL_SPLIT_TO_FULLSCREEN
+            } else {
+                DragToDesktopTransitionHandler.CancelState.STANDARD_CANCEL
+            }
+        dragToDesktopTransitionHandler.cancelDragToDesktopTransition(cancelState)
     }
 
     private fun moveToFullscreenWithAnimation(

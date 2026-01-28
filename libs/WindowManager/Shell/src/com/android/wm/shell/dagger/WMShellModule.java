@@ -1305,11 +1305,12 @@ public abstract class WMShellModule {
             InteractionJankMonitor interactionJankMonitor,
             Optional<BubbleController> bubbleController,
             DesktopState desktopState,
-            DesktopConfig desktopConfig) {
+            DesktopConfig desktopConfig,
+            DisplayController displayController) {
         return new SpringDragToDesktopTransitionHandler(
                 context, transitions, rootTaskDisplayAreaOrganizer, desksOrganizer,
                 desktopUserRepositories, interactionJankMonitor, bubbleController, desktopState,
-                desktopConfig);
+                desktopConfig, displayController);
     }
 
     @WMSingleton
