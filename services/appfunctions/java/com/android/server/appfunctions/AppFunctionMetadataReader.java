@@ -35,6 +35,7 @@ import android.app.appfunctions.AppFunctionName;
 import android.app.appfunctions.AppFunctionPackageMetadata;
 import android.app.appfunctions.AppFunctionRuntimeMetadata;
 import android.app.appfunctions.AppFunctionSearchSpec;
+import android.app.appfunctions.AppFunctionState;
 import android.app.appfunctions.AppFunctionStaticMetadataHelper;
 import android.app.appfunctions.IAppFunctionSearchResultCallback;
 import android.app.appfunctions.IAppFunctionSearchResults;
@@ -228,6 +229,106 @@ final class AppFunctionMetadataReader {
                         });
     }
 
+    /** Gets a list of {@link AppFunctionState}. */
+    @NonNull
+    AndroidFuture<List<AppFunctionState>> getAppFunctionStates(
+            @NonNull FutureGlobalSearchSession futureGlobalSearchSession,
+            @NonNull List<AppFunctionName> appFunctionNames,
+            int userId) {
+        Objects.requireNonNull(futureGlobalSearchSession);
+        Objects.requireNonNull(appFunctionNames);
+
+        if (appFunctionNames.isEmpty()) {
+            return AndroidFuture.completedFuture(List.of());
+        }
+
+        List<String> documentIds = new ArrayList<>();
+        for (AppFunctionName name : appFunctionNames) {
+            documentIds.add(name.getQualifiedId());
+        }
+
+        SearchSpec appFunctionJoinedStaticWithRuntime =
+                new SearchSpec.Builder()
+                        .addFilterDocumentIds(documentIds)
+                        .addFilterPackageNames(APP_FUNCTION_INDEXER_PACKAGE)
+                        .addFilterSchemas(AppFunctionStaticMetadataHelper.STATIC_SCHEMA_TYPE)
+                        .addProjectionPaths(
+                                SearchSpec.SCHEMA_TYPE_WILDCARD,
+                                List.of(
+                                        new PropertyPath(
+                                                AppFunctionMetadata.PROPERTY_ENABLED_BY_DEFAULT)))
+                        .setJoinSpec(JOIN_SPEC)
+                        .setVerbatimSearchEnabled(true)
+                        .setResultCountPerPage(
+                                mServiceConfig.getSearchAppFunctionInternalPageSize())
+                        .build();
+
+        return futureGlobalSearchSession
+                .search("", appFunctionJoinedStaticWithRuntime)
+                .thenCompose(
+                        searchResults -> {
+                            List<AppFunctionState> accumulator = new ArrayList<>();
+                            return parseAppFunctionStates(searchResults, userId, accumulator)
+                                    .whenComplete(
+                                            (result, exception) -> {
+                                                searchResults.close();
+                                            });
+                        });
+    }
+
+    @NonNull
+    private AndroidFuture<List<AppFunctionState>> parseAppFunctionStates(
+            @NonNull FutureSearchResults searchResults,
+            int userId,
+            @NonNull List<AppFunctionState> accumulator) {
+        Objects.requireNonNull(searchResults);
+        Objects.requireNonNull(accumulator);
+
+        return searchResults
+                .getNextPage()
+                .thenCompose(
+                        page -> {
+                            if (page.isEmpty()) {
+                                return AndroidFuture.completedFuture(accumulator);
+                            }
+
+                            for (SearchResult result : page) {
+                                AppFunctionState state = parseAppFunctionState(result, userId);
+                                if (state != null) accumulator.add(state);
+                            }
+
+                            return parseAppFunctionStates(searchResults, userId, accumulator);
+                        });
+    }
+
+    @Nullable
+    private AppFunctionState parseAppFunctionState(@NonNull SearchResult searchResult, int userId) {
+        Objects.requireNonNull(searchResult);
+
+        try {
+            GenericDocument staticDocument = requireNonNull(searchResult.getGenericDocument());
+            if (requireNonNull(searchResult.getJoinedResults()).size() != 1) {
+                Slog.w(
+                        TAG,
+                        TextUtils.formatSimple(
+                                "Expected 1 GenericDocument for runtimeMetadata, found %d",
+                                searchResult.getJoinedResults().size()));
+                return null;
+            }
+            GenericDocument runtimeDocument =
+                    requireNonNull(searchResult.getJoinedResults().getFirst().getGenericDocument());
+            AppFunctionName appFunctionName =
+                    AppFunctionName.fromQualifiedId(staticDocument.getId());
+
+            return new AppFunctionState(
+                    appFunctionName,
+                    calculateEffectiveEnabledState(staticDocument, runtimeDocument, userId));
+        } catch (RuntimeException e) {
+            Slog.e(TAG, "Failed to convert SearchResult to AppFunctionState.", e);
+            return null;
+        }
+    }
+
     /**
      * Performs a one-time search for AppFunctionMetadata with the given searchSpec and returns the
      * result.
@@ -243,19 +344,18 @@ final class AppFunctionMetadataReader {
     IAppFunctionSearchResults searchAppFunctions(
             @NonNull FutureGlobalSearchSession futureGlobalSearchSession,
             @NonNull AppFunctionSearchSpec appFunctionSearchSpec,
-            @NonNull Executor resultExecutor,
-            int userId)
+            @NonNull Executor resultExecutor)
             throws ExecutionException, InterruptedException {
         requireNonNull(futureGlobalSearchSession);
         requireNonNull(appFunctionSearchSpec);
         requireNonNull(resultExecutor);
 
-        SearchSpec appFunctionJoinedStaticWithRuntimeSearchSpec =
+        SearchSpec staticMetadataSearchSpec =
                 new SearchSpec.Builder()
                         .addFilterNamespaces(APP_FUNCTION_STATIC_NAMESPACE)
                         .addFilterPackageNames(APP_FUNCTION_INDEXER_PACKAGE)
                         .addFilterDocumentIds(appFunctionSearchSpec.getQualifiedIdsFilter())
-                        .setJoinSpec(JOIN_SPEC)
+                        .addFilterSchemas(AppFunctionStaticMetadataHelper.STATIC_SCHEMA_TYPE)
                         .setVerbatimSearchEnabled(true)
                         .setNumericSearchEnabled(true)
                         .setListFilterQueryLanguageEnabled(true)
@@ -267,10 +367,10 @@ final class AppFunctionMetadataReader {
                 futureGlobalSearchSession
                         .search(
                                 appFunctionSearchSpec.getStaticMetadataAppSearchQuery(),
-                                appFunctionJoinedStaticWithRuntimeSearchSpec)
+                                staticMetadataSearchSpec)
                         .get();
         return new AppFunctionSearchResultsImpl(
-                this, futureGlobalSearchSession, futureSearchResults, resultExecutor, userId);
+                this, futureGlobalSearchSession, futureSearchResults, resultExecutor);
     }
 
     /**
@@ -282,23 +382,10 @@ final class AppFunctionMetadataReader {
     @WorkerThread
     public AppFunctionMetadata buildAppFunctionMetadata(
             @NonNull SearchResult searchResult,
-            @NonNull AppFunctionPackageMetadata packageMetadata,
-            int userId) {
+            @NonNull AppFunctionPackageMetadata packageMetadata) {
         try {
             GenericDocument staticDocument = requireNonNull(searchResult.getGenericDocument());
-            if (requireNonNull(searchResult.getJoinedResults()).size() != 1) {
-                throw new IllegalArgumentException(
-                        TextUtils.formatSimple(
-                                "Expected 1 GenericDocument for runtimeMetadata, found %d",
-                                searchResult.getJoinedResults().size()));
-            }
-            GenericDocument runtimeDocument =
-                    requireNonNull(searchResult.getJoinedResults().getFirst().getGenericDocument());
-
-            return new AppFunctionMetadata.Builder(staticDocument, packageMetadata)
-                    .setEnabled(
-                            calculateEffectiveEnabledState(staticDocument, runtimeDocument, userId))
-                    .build();
+            return new AppFunctionMetadata.Builder(staticDocument, packageMetadata).build();
         } catch (RuntimeException e) {
             Slog.e(TAG, "Failed to convert SearchResult to AppFunctionMetadata.", e);
             return null;
@@ -350,8 +437,6 @@ final class AppFunctionMetadataReader {
 
         @NonNull private final Executor mExecutor;
 
-        private final int mUserId;
-
         private final Object mLock = new Object();
 
         @GuardedBy("mLock")
@@ -361,13 +446,11 @@ final class AppFunctionMetadataReader {
                 @NonNull AppFunctionMetadataReader reader,
                 @NonNull FutureGlobalSearchSession globalSession,
                 @NonNull FutureSearchResults searchResults,
-                @NonNull Executor executor,
-                int userId) {
+                @NonNull Executor executor) {
             mReader = Objects.requireNonNull(reader);
             mGlobalSession = Objects.requireNonNull(globalSession);
             mSearchResults = Objects.requireNonNull(searchResults);
             mExecutor = Objects.requireNonNull(executor);
-            mUserId = userId;
         }
 
         @PermissionManuallyEnforced
@@ -487,7 +570,7 @@ final class AppFunctionMetadataReader {
                 }
 
                 AppFunctionMetadata meta =
-                        mReader.buildAppFunctionMetadata(result, packageMetadata, mUserId);
+                        mReader.buildAppFunctionMetadata(result, packageMetadata);
                 if (meta != null) metadataList.add(meta);
             }
 

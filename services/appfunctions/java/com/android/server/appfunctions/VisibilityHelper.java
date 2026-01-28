@@ -22,6 +22,8 @@ import android.app.appfunctions.AppFunctionAidlSearchSpec;
 import android.app.appfunctions.AppFunctionName;
 import android.app.appfunctions.AppFunctionSearchSpec;
 
+import java.util.List;
+
 /** Helper for handling AppFunction visibility. */
 public interface VisibilityHelper {
     /**
@@ -34,6 +36,22 @@ public interface VisibilityHelper {
     @Nullable
     AppFunctionSearchSpec applyVisiblePackageFilter(
             @NonNull AppFunctionAidlSearchSpec aidlSearchSpec, int callingUid, int callingPid);
+
+    /**
+     * Filters the {@code functionNames} to only return the visible ones.
+     *
+     * @param functionNames The list of {@link AppFunctionName}.
+     * @param callingPackageName The calling package name.
+     * @param callingUid The calling uid.
+     * @param callingPid The calling pid.
+     * @return The list of {@link AppFunctionName} that the caller has visibility with.
+     */
+    @NonNull
+    List<AppFunctionName> filterVisibleAppFunctions(
+            @NonNull List<AppFunctionName> functionNames,
+            @NonNull String callingPackageName,
+            int callingUid,
+            int callingPid);
 
     /**
      * Checks if {@code appFunctionName} is visible from {@code callingPackage}.

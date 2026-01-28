@@ -55,6 +55,7 @@ import android.app.appfunctions.IAppFunctionSearchResults;
 import android.app.appfunctions.IAppFunctionService;
 import android.app.appfunctions.ICancellationCallback;
 import android.app.appfunctions.IExecuteAppFunctionCallback;
+import android.app.appfunctions.IGetAppFunctionStatesCallback;
 import android.app.appfunctions.IIsAppFunctionEnabledCallback;
 import android.app.appfunctions.IObserveAppFunctionChangesCallback;
 import android.app.appfunctions.IOnAppFunctionAccessChangeListener;
@@ -519,6 +520,84 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
     }
 
     @Override
+    public void getAppFunctionStates(
+            @NonNull List<AppFunctionName> appFunctionNames,
+            @NonNull String callingPackageName,
+            int targetUserId,
+            @NonNull IGetAppFunctionStatesCallback callback)
+            throws RemoteException {
+        Objects.requireNonNull(appFunctionNames);
+        Objects.requireNonNull(callback);
+
+        final int callingUid = Binder.getCallingUid();
+        final int callingPid = Binder.getCallingPid();
+
+        try {
+            // The calling package name will be used to determine the visible packages.
+            mCallerValidator.validateCallingPackage(callingPackageName);
+            mCallerValidator.verifyUserInteraction(
+                    /* targetUserId= */ targetUserId,
+                    /* callingUid= */ callingUid,
+                    /* callingPid= */ callingPid,
+                    /* callingPackageName= */ callingPackageName);
+        } catch (SecurityException e) {
+            try {
+                callback.onError(new ParcelableException(e));
+            } catch (RemoteException ex) {
+                Slog.e(TAG, "Failed to execute callback#onError.", e);
+            }
+            return;
+        }
+
+        UserHandle targetUser = UserHandle.of(targetUserId);
+        AppSearchManager perUserAppSearchManager = getAppSearchManagerAsUser(targetUser);
+        if (perUserAppSearchManager == null) {
+            throw new IllegalStateException(
+                    "AppSearchManager not found for user:" + targetUser.getIdentifier());
+        }
+
+        THREAD_POOL_EXECUTOR.execute(
+                () -> {
+                    List<AppFunctionName> visibleAppFunctionNames =
+                            mVisibilityHelper.filterVisibleAppFunctions(
+                                    appFunctionNames, callingPackageName, callingUid, callingPid);
+
+                    FutureGlobalSearchSession futureGlobalSearchSession =
+                            new FutureGlobalSearchSession(
+                                    perUserAppSearchManager, THREAD_POOL_EXECUTOR);
+
+                    final long token = Binder.clearCallingIdentity();
+                    try {
+                        var unused =
+                                mAppFunctionMetadataReader
+                                        .getAppFunctionStates(
+                                                futureGlobalSearchSession,
+                                                visibleAppFunctionNames,
+                                                targetUserId)
+                                        .whenCompleteAsync(
+                                                (states, exception) -> {
+                                                    try {
+                                                        if (exception != null) {
+                                                            callback.onError(
+                                                                    new ParcelableException(
+                                                                            exception));
+                                                        } else {
+                                                            callback.onSuccess(states);
+                                                        }
+                                                    } catch (RemoteException re) {
+                                                        Slog.w(TAG, "Fail to call onError");
+                                                    } finally {
+                                                        futureGlobalSearchSession.close();
+                                                    }
+                                                },
+                                                THREAD_POOL_EXECUTOR);
+                    } finally {
+                        Binder.restoreCallingIdentity(token);
+                    }
+                });
+    }
+
+    @Override
     public void searchAppFunctions(
             @NonNull AppFunctionAidlSearchSpec aidlSearchSpec,
             @NonNull ISearchAppFunctionsCallback searchAppFunctionsCallback)
@@ -595,8 +674,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                                 mAppFunctionMetadataReader.searchAppFunctions(
                                         futureGlobalSearchSession,
                                         filteredSearchSpec,
-                                        THREAD_POOL_EXECUTOR,
-                                        aidlSearchSpec.getTargetUserId());
+                                        THREAD_POOL_EXECUTOR);
                         try {
                             searchAppFunctionsCallback.onSuccess(results);
                         } catch (RemoteException e) {

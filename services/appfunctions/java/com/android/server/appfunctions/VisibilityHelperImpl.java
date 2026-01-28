@@ -22,13 +22,13 @@ import android.annotation.Nullable;
 import android.app.appfunctions.AppFunctionAidlSearchSpec;
 import android.app.appfunctions.AppFunctionName;
 import android.app.appfunctions.AppFunctionSearchSpec;
+import android.app.appfunctions.flags.Flags;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManagerInternal;
 import android.os.Binder;
 import android.util.ArraySet;
-import android.app.appfunctions.flags.Flags;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -59,12 +59,51 @@ public final class VisibilityHelperImpl implements VisibilityHelper {
 
         final long token = Binder.clearCallingIdentity();
         try {
-            if (mContext.checkPermission(
-                            Manifest.permission.EXECUTE_APP_FUNCTIONS, callingPid, callingUid)
-                    != PackageManager.PERMISSION_GRANTED) {
+            if (!hasPermissionsToQueryRuntimeMetadata(callingUid, callingPid)) {
                 return false;
             }
             return mPmInternal.canQueryPackage(callingUid, appFunctionName.getPackageName());
+        } finally {
+            Binder.restoreCallingIdentity(token);
+        }
+    }
+
+    @NonNull
+    @Override
+    public List<AppFunctionName> filterVisibleAppFunctions(
+            @NonNull List<AppFunctionName> functionNames,
+            @NonNull String callingPackageName,
+            int callingUid,
+            int callingPid) {
+        Objects.requireNonNull(functionNames);
+        Objects.requireNonNull(callingPackageName);
+
+        final long token = Binder.clearCallingIdentity();
+        try {
+            if (hasPermissionsToQueryRuntimeMetadata(callingUid, callingPid)) {
+                if (mContext.checkPermission(
+                                Manifest.permission.QUERY_ALL_PACKAGES, callingPid, callingUid)
+                        == PackageManager.PERMISSION_GRANTED) {
+                    return new ArrayList<>(functionNames);
+                } else {
+                    List<AppFunctionName> visibleFunctionNames = new ArrayList<>();
+                    for (AppFunctionName functionName : functionNames) {
+                        if (mPmInternal.canQueryPackage(
+                                callingUid, functionName.getPackageName())) {
+                            visibleFunctionNames.add(functionName);
+                        }
+                    }
+                    return visibleFunctionNames;
+                }
+            }
+
+            List<AppFunctionName> selfFunctionNames = new ArrayList<>();
+            for (AppFunctionName functionName : functionNames) {
+                if (functionName.getPackageName().equals(callingPackageName)) {
+                    selfFunctionNames.add(functionName);
+                }
+            }
+            return selfFunctionNames;
         } finally {
             Binder.restoreCallingIdentity(token);
         }
@@ -129,9 +168,7 @@ public final class VisibilityHelperImpl implements VisibilityHelper {
     private boolean hasPermissionsToQueryRuntimeMetadata(int callingUid, int callingPid) {
         if (Flags.enableAppFunctionPermissionV2()
                 && mContext.checkPermission(
-                                Manifest.permission.DISCOVER_APP_FUNCTIONS,
-                                callingPid,
-                                callingUid)
+                                Manifest.permission.DISCOVER_APP_FUNCTIONS, callingPid, callingUid)
                         == PackageManager.PERMISSION_GRANTED) {
             return true;
         }
