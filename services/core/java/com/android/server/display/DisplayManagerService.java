@@ -5549,12 +5549,19 @@ public final class DisplayManagerService extends SystemService {
             // Except for configure wifi display permission, which is required to get the wifi
             // display address.
             final int callingUid = Binder.getCallingUid();
-            final boolean hasConfigureWifiDisplayPermission = (callingUid == Process.SYSTEM_UID)
-                    || checkCallingPermission(android.Manifest.permission.CONFIGURE_WIFI_DISPLAY,
-                            "getWifiDisplayStatus()");
+            final boolean isDeviceAddressVisible = (callingUid == Process.SYSTEM_UID)
+                    || (PackageManager.PERMISSION_GRANTED == mContext.checkCallingPermission(
+                            android.Manifest.permission.CONFIGURE_WIFI_DISPLAY))
+                    || (PackageManager.PERMISSION_GRANTED == mContext.checkCallingPermission(
+                            android.Manifest.permission.ACCESS_FINE_LOCATION));
+            if (!isDeviceAddressVisible) {
+                Slog.w(TAG, "getWifiDisplayStatus called without CONFIGURE_WIFI_DISPLAY or"
+                        + " ACCESS_FINE_LOCATION permission, and is not the system UID, uid="
+                        + callingUid + ", device address will be hidden.");
+            }
             final long token = Binder.clearCallingIdentity();
             try {
-                return getWifiDisplayStatusInternal(hasConfigureWifiDisplayPermission);
+                return getWifiDisplayStatusInternal(isDeviceAddressVisible);
             } finally {
                 Binder.restoreCallingIdentity(token);
             }
