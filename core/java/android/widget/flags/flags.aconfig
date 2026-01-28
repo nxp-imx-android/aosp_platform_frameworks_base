@@ -24,3 +24,13 @@ flag {
   description: "Enables the 'Look Up' action in context menus."
   bug: "472178600"
 }
+
+flag {
+  name: "list_view_count_for_accessibility"
+  namespace: "accessibility"
+  description: "Provide CollectionInfo with the ListView item count."
+  bug: "338453190"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
