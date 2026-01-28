@@ -587,7 +587,7 @@ public final class NotificationRule implements Parcelable {
 
         private @PrimaryAction int mPrimaryAction = PRIMARY_ACTION_NONE;
         private final @Nullable Uri mSoundHapticOverride;
-        private @ColorInt int mLightColor = -1;
+        private @ColorInt int mLightColor = 0;
         private final List<String> mModeBreakthroughs = new ArrayList<>();
         private final @Nullable String mBundleName;
         private final @Nullable String mEmojiIcon;
@@ -727,7 +727,7 @@ public final class NotificationRule implements Parcelable {
         public static final class Builder {
             private @PrimaryAction int mPrimaryAction = PRIMARY_ACTION_NONE;
             private Uri mSoundHapticOverride;
-            private @ColorInt int mLightColor = -1;
+            private @ColorInt int mLightColor = 0;
             private final List<String> mModeBreakthroughs = new ArrayList<>();
             private String mBundleName;
             private String mEmojiIcon;
