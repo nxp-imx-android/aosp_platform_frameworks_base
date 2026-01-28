@@ -922,6 +922,23 @@ public class MediaQualityService extends SystemService {
 
         @GuardedBy("mPictureProfileLock")
         @Override
+        public List<PictureProfileHandle> getPictureProfileHandleList(String[] ids, int userId) {
+            List<PictureProfileHandle> toReturn = new ArrayList<>();
+            synchronized (mPictureProfileLock) {
+                for (String id : ids) {
+                    Long key = mPictureProfileTempIdMap.getKey(id);
+                    if (key != null) {
+                        toReturn.add(new PictureProfileHandle(key));
+                    } else {
+                        toReturn.add(null);
+                    }
+                }
+            }
+            return toReturn;
+        }
+
+        @GuardedBy("mPictureProfileLock")
+        @Override
         public long getPictureProfileHandleValue(String id, int userId) {
             if (DEBUG) {
                 Slog.d(TAG, "getPictureProfileHandleValue with id = " + id);
@@ -1053,6 +1070,61 @@ public class MediaQualityService extends SystemService {
                             Slog.d(TAG, "handle returned is " + current.getHandle().getId());
                         }
                         return current.getHandle().getId();
+                    }
+                    if (DEBUG) {
+                        Slog.d(TAG, "handle returned is " + handle);
+                    }
+                    return handle;
+                }
+            }
+        }
+
+        public PictureProfileHandle getCurrentPictureProfileHandleForTvInput(
+                String inputId, int userId) {
+            if (DEBUG) {
+                Slog.d(TAG, "getCurrentPictureProfileHandleForTvInput for id " + inputId);
+            }
+            // TODO: cache profiles
+            String[] columns = {BaseParameters.PARAMETER_ID};
+            String selection = BaseParameters.PARAMETER_TYPE + " = ? AND ("
+                    + BaseParameters.PARAMETER_NAME + " = ? OR "
+                    + BaseParameters.PARAMETER_NAME + " = ? OR "
+                    + BaseParameters.PARAMETER_NAME + " LIKE ?) AND "
+                    + BaseParameters.PARAMETER_INPUT_ID + " = ?";
+            String[] selectionArguments = {
+                    Integer.toString(PictureProfile.TYPE_SYSTEM),
+                    PictureProfile.NAME_DEFAULT,
+                    PictureProfile.NAME_DEFAULT + "/" + PictureProfile.STATUS_SDR,
+                    // b/427656481 Workaround to recognize temp input default.
+                    "%" + PictureProfile.NAME_DEFAULT + "/" + PictureProfile.STATUS_SDR,
+                    inputId
+            };
+            synchronized (mPictureProfileLock) {
+                try (Cursor cursor = mMqDatabaseUtils.getCursorAfterQuerying(
+                        mMediaQualityDbHelper.PICTURE_QUALITY_TABLE_NAME,
+                        columns, selection, selectionArguments)) {
+                    int count = cursor.getCount();
+                    if (count == 0) {
+                        Slog.e(TAG, "getPictureProfileHandleForTvInput: the count is 0");
+                        return PictureProfileHandle.NONE;
+                    }
+                    PictureProfileHandle handle = PictureProfileHandle.NONE;
+                    cursor.moveToFirst();
+                    PictureProfile p = MediaQualityUtils.convertCursorToPictureProfileWithTempId(
+                            cursor, mPictureProfileTempIdMap);
+                    if (p == null || p.getHandle() == null) {
+                        Slog.e(TAG, "getPictureProfileHandleForTvInput: retrieved profile or"
+                                + "handle is null");
+                        return PictureProfileHandle.NONE;
+                    }
+                    handle = p.getHandle();
+                    PictureProfile current = mOriginalHandleToCurrentPictureProfile
+                            .get(handle.getId());
+                    if (current != null && current.getHandle() != null) {
+                        if (DEBUG) {
+                            Slog.d(TAG, "handle returned is " + current.getHandle().getId());
+                        }
+                        return current.getHandle();
                     }
                     if (DEBUG) {
                         Slog.d(TAG, "handle returned is " + handle);

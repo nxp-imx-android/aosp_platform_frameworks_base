@@ -357,6 +357,8 @@ public final class MediaQualityManager {
      *
      * @hide
      */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
     @RequiresPermission(android.Manifest.permission.MANAGE_GLOBAL_PICTURE_QUALITY_SERVICE)
     @Nullable
     public PictureProfile getDefaultPictureProfile() {
@@ -478,6 +480,32 @@ public final class MediaQualityManager {
     }
 
     /**
+     * Returns a list of PictureProfileHandle objects corresponding to the provided
+     * profile identifiers.
+     *
+     * <p>The returned list contains handles that allow for the management or selection of
+     * specific picture profiles. If a provided ID does not correspond to an existing profile, it
+     * will be omitted from the result.
+     *
+     * @param ids An array of unique string identifiers for the desired picture profiles.
+     * @return A {@link List} of PictureProfileHandle objects. Returns an empty list
+     * if no matching profiles are found or if {@code ids} is empty.
+     *
+     * @hide
+     */
+    @SystemApi
+    @NonNull
+    @RequiresPermission(android.Manifest.permission.MANAGE_GLOBAL_PICTURE_QUALITY_SERVICE)
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public List<PictureProfileHandle> getPictureProfileHandleList(@NonNull String[] ids) {
+        try {
+            return mService.getPictureProfileHandleList(ids, mUserHandle.getIdentifier());
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
      * Gets picture profile handle for TV input.
      * @hide
      */
@@ -490,10 +518,50 @@ public final class MediaQualityManager {
     }
 
     /**
-     * Gets current picture profile instance for TV input.
+     * Returns the PictureProfileHandle currently associated with a specific TV input.
+     *
+     * <p>This is used to retrieve the active picture profile for a given input source,
+     * such as an HDMI port or a built-in tuner. This allows system apps to query
+     * which profile is currently applied to the video content of that input.
+     *
+     * @param inputId The ID of the TV input (from {@link android.media.tv.TvInputInfo#getId()}).
+     * @return The PictureProfileHandle associated with the input, or PictureProfileHandle.NONE
+     * if the input ID is invalid or has no associated profile.
+     * @see android.media.tv.TvInputManager
+     *
      * @hide
      */
-    public PictureProfile getCurrentPictureProfileForTvInput(String inputId) {
+    @SystemApi
+    @Nullable
+    @RequiresPermission(android.Manifest.permission.MANAGE_GLOBAL_PICTURE_QUALITY_SERVICE)
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public PictureProfileHandle getCurrentPictureProfileHandleForTvInput(@NonNull String inputId) {
+        try {
+            return mService.getCurrentPictureProfileHandleForTvInput(
+                    inputId, mUserHandle.getIdentifier());
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Returns the picture profile currently applied to the specified TV input.
+     *
+     * <p>This method retrieves the {@link PictureProfile} settings (such as brightness,
+     * contrast, and color mode) that are currently active for the given Input ID.
+     *
+     * @param inputId The ID of the TV input (e.g., {@link android.media.tv.TvInputInfo#getId()}).
+     * Cannot be {@code null}.
+     * @return The {@link PictureProfile} associated with the input, or {@code null} if
+     * no profile is currently set or if the input ID is invalid.
+     *
+     * @hide
+     */
+    @SystemApi
+    @Nullable
+    @RequiresPermission(android.Manifest.permission.MANAGE_GLOBAL_PICTURE_QUALITY_SERVICE)
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public PictureProfile getCurrentPictureProfileForTvInput(@NonNull String inputId) {
         try {
             return mService.getCurrentPictureProfileForTvInput(
                     inputId, mUserHandle.getIdentifier());
@@ -503,10 +571,23 @@ public final class MediaQualityManager {
     }
 
     /**
-     * Gets all picture profiles instance for TV input.
+     * Returns a list of all picture profiles supported by the specified TV input.
+     *
+     * <p>This method retrieves all available {@link PictureProfile} options that can be applied to
+     * the given Input ID.
+     *
+     * @param inputId The ID of the TV input (e.g., {@link android.media.tv.TvInputInfo#getId()}).
+     * Cannot be {@code null}.
+     * @return A list of {@link PictureProfile} objects supported by the input, or an empty list
+     * if no profiles are available.
+     *
      * @hide
      */
-    public List<PictureProfile> getAllPictureProfilesForTvInput(String inputId) {
+    @SystemApi
+    @NonNull
+    @RequiresPermission(android.Manifest.permission.MANAGE_GLOBAL_PICTURE_QUALITY_SERVICE)
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public List<PictureProfile> getAllPictureProfilesForTvInput(@NonNull String inputId) {
         try {
             return mService.getAllPictureProfilesForTvInput(
                     inputId, mUserHandle.getIdentifier());
@@ -697,6 +778,8 @@ public final class MediaQualityManager {
      */
     @RequiresPermission(android.Manifest.permission.MANAGE_GLOBAL_SOUND_QUALITY_SERVICE)
     @Nullable
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
     public SoundProfile getDefaultSoundProfile() {
         try {
             return mService.getDefaultSoundProfile();

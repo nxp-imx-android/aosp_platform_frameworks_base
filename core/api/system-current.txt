@@ -9059,7 +9059,13 @@ package android.media.quality {
 
   @FlaggedApi("android.media.tv.flags.media_quality_fw") public final class MediaQualityManager {
     method public void addGlobalActiveProcessingPictureListener(@NonNull java.util.concurrent.Executor, @NonNull java.util.function.Consumer<java.util.List<android.media.quality.ActiveProcessingPicture>>);
+    method @FlaggedApi("android.media.tv.flags.media_quality_fw_c") @NonNull public java.util.List<android.media.quality.PictureProfile> getAllPictureProfilesForTvInput(@NonNull String);
+    method @FlaggedApi("android.media.tv.flags.media_quality_fw_c") @Nullable public android.media.quality.PictureProfile getCurrentPictureProfileForTvInput(@NonNull String);
+    method @FlaggedApi("android.media.tv.flags.media_quality_fw_c") @Nullable public android.media.quality.PictureProfileHandle getCurrentPictureProfileHandleForTvInput(@NonNull String);
+    method @FlaggedApi("android.media.tv.flags.media_quality_fw_c") @Nullable public android.media.quality.PictureProfile getDefaultPictureProfile();
+    method @FlaggedApi("android.media.tv.flags.media_quality_fw_c") @Nullable public android.media.quality.SoundProfile getDefaultSoundProfile();
     method @NonNull public java.util.List<java.lang.String> getPictureProfileAllowList();
+    method @FlaggedApi("android.media.tv.flags.media_quality_fw_c") @NonNull public java.util.List<android.media.quality.PictureProfileHandle> getPictureProfileHandleList(@NonNull String[]);
     method @NonNull public java.util.List<java.lang.String> getPictureProfilePackageNames();
     method @NonNull public java.util.List<android.media.quality.PictureProfile> getPictureProfilesByPackage(@NonNull String, @Nullable android.media.quality.MediaQualityManager.ProfileQueryParams);
     method @NonNull public java.util.List<java.lang.String> getSoundProfileAllowList();
