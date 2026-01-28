@@ -52,6 +52,7 @@ import com.android.systemui.qs.tiles.impl.modes.domain.interactor.ModesTileUserA
 import com.android.systemui.qs.tiles.impl.modes.domain.model.ModesTileModel
 import com.android.systemui.qs.tiles.impl.modes.ui.mapper.ModesTileMapper
 import com.android.systemui.res.R
+import com.android.systemui.retail.domain.interactor.RetailModeInteractor
 import com.android.systemui.statusbar.policy.ui.dialog.viewmodel.ModesDialogViewModel
 import javax.inject.Inject
 
@@ -72,6 +73,7 @@ constructor(
     private val tileMapper: ModesTileMapper,
     private val userActionInteractor: ModesTileUserActionInteractor,
     private val modesDialogViewModel: ModesDialogViewModel,
+    private val retailModeInteractor: RetailModeInteractor,
 ) :
     QSTileImpl<QSTile.State>(
         host,
@@ -96,7 +98,17 @@ constructor(
         }
     }
 
-    override fun isAvailable(): Boolean = true
+    override fun isAvailable(): Boolean {
+        // Check if the device is in retail demo mode.
+        val isRetailDemoMode = retailModeInteractor.isInRetailMode
+
+        // Check if the DND tile should be hidden in retail demo mode.
+        val hideInRetailDemoMode =
+            mContext.resources.getBoolean(R.bool.config_hideDNDinQSinRetailDemoMode)
+
+        // Hide the tile (return false) only if BOTH conditions are met.
+        return !(isRetailDemoMode && hideInRetailDemoMode)
+    }
 
     override fun getTileLabel(): CharSequence = tileState.label
 
