@@ -8838,14 +8838,16 @@ public class WindowManagerService extends IWindowManager.Stub
 
         @Override
         public void enableClientRenderingLimitationsOnDisplay(int displayId, boolean enable) {
-            final DisplayContent dc = mRoot.getDisplayContent(displayId);
-            if (dc == null) {
-                Slog.e(TAG, "Failed to change client rendering limitations"
-                        + " for display: " + displayId
-                        + " - DisplayContent not found.");
-                return;
+            synchronized (mGlobalLock) {
+                final DisplayContent dc = mRoot.getDisplayContent(displayId);
+                if (dc == null) {
+                    Slog.e(TAG, "Failed to change client rendering limitations"
+                            + " for display: " + displayId
+                            + " - DisplayContent not found.");
+                    return;
+                }
+                dc.enableClientRenderingLimitations(enable);
             }
-            dc.enableClientRenderingLimitations(enable);
         }
 
         @Override
