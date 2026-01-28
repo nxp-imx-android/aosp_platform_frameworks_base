@@ -612,7 +612,27 @@ public class OomAdjusterImpl extends OomAdjuster {
         super(serviceLock, procLock, processList, activeUids, adjusterThread, oomConstants,
                 globalState, injector, callback, updateHandler, hostingTypeProvider);
 
-        SystemNode.initInstance(processList);
+        if (Flags.enableCapabilityControllerComputation()
+                || Flags.enableProcstateControllerComputation()) {
+            SystemNode.initInstance(processList);
+            mEdgesToUpdate = new ArrayList<>();
+            mAddEdgeToUpdateConsumer = mEdgesToUpdate::add;
+            mReachableNodes = new ArrayList<>();
+        } else {
+            mEdgesToUpdate = null;
+            mAddEdgeToUpdateConsumer = null;
+            mReachableNodes = null;
+        }
+        if (Flags.enableCapabilityControllerComputation()) {
+            mCapabilityController = new CapabilityController();
+        } else {
+            mCapabilityController = null;
+        }
+        if (Flags.enableProcstateControllerComputation()) {
+            mProcStateController = new ProcStateController();
+        } else {
+            mProcStateController = null;
+        }
     }
 
     private final ProcessRecordNodes mProcessRecordProcStateNodes = new ProcessRecordNodes(
@@ -621,18 +641,15 @@ public class OomAdjusterImpl extends OomAdjuster {
             ProcessRecordNode.NODE_TYPE_ADJ, ADJ_SLOT_VALUES.length);
     private final OomAdjusterArgs mTmpOomAdjusterArgs = new OomAdjusterArgs();
 
-    private final CapabilityController mCapabilityController =
-            Flags.enableCapabilityControllerComputation() ? new CapabilityController() : null;
+    private final CapabilityController mCapabilityController;
+    private final ProcStateController mProcStateController;
     /** A list of edges for partial graph updates in {@link #partialUpdateProcessGraphLSP}. */
-    private final ArrayList<GraphEdge> mEdgesToUpdate =
-            Flags.enableCapabilityControllerComputation() ? new ArrayList<>() : null;
-    private final Consumer<GraphEdge> mAddEdgeToUpdateConsumer =
-            Flags.enableCapabilityControllerComputation() ? mEdgesToUpdate::add : null;
+    private final ArrayList<GraphEdge> mEdgesToUpdate;
+    private final Consumer<GraphEdge> mAddEdgeToUpdateConsumer;
     /**
      * A list of reachable nodes for partial graph updates in {@link #partialUpdateProcessGraphLSP}.
      */
-    private final ArrayList<ProcessNode> mReachableNodes =
-            Flags.enableCapabilityControllerComputation() ? new ArrayList<>() : null;
+    private final ArrayList<ProcessNode> mReachableNodes;
 
     void unlinkProcessRecordFromList(@NonNull ProcessRecordInternal app) {
         mProcessRecordProcStateNodes.unlink(app);
@@ -765,6 +782,10 @@ public class OomAdjusterImpl extends OomAdjuster {
         mTmpOomAdjusterArgs.update(topApp, now, UNKNOWN_ADJ, oomAdjReason, null, true);
         computeConnectionsLSP();
 
+        if (Flags.enableProcstateControllerComputation()) {
+            mProcStateController.fullUpdate();
+        }
+
         applyLruAdjust(mProcessList.getLruProcessesLOSP());
         postUpdateOomAdjInnerLSP(oomAdjReason, mActiveUids, now, nowElapsed, oldTime, true);
     }
@@ -856,7 +877,11 @@ public class OomAdjusterImpl extends OomAdjuster {
         // Capability computation needs updated process state values, so this should be after
         // computeConnectionsLSP, where the process state computation is done. It also needs to
         // be before updateAppUidRecIfNecessaryLSP because updated capabilities are read there.
-        if (Flags.enableCapabilityControllerComputation()) {
+        // TODO: b/479715665 - After the ProcStateController is launched, make CapabilityController
+        //                     switch to use the procState from ProcStateController. Then the
+        //                     computation can be moved before computeConnectionsLSP.
+        if (Flags.enableCapabilityControllerComputation()
+                || Flags.enableProcstateControllerComputation()) {
             partialUpdateProcessGraphLSP(targets, reachables);
         }
 
@@ -905,8 +930,13 @@ public class OomAdjusterImpl extends OomAdjuster {
             mReachableNodes.add(reachables.get(i).getProcessNode());
         }
 
-        // Only triggers computation without using its result.
-        mCapabilityController.update(mEdgesToUpdate, mReachableNodes);
+        // Only triggers computations without using its result.
+        if (Flags.enableProcstateControllerComputation()) {
+            mProcStateController.partialUpdate(mEdgesToUpdate, mReachableNodes);
+        }
+        if (Flags.enableCapabilityControllerComputation()) {
+            mCapabilityController.update(mEdgesToUpdate, mReachableNodes);
+        }
         mEdgesToUpdate.clear();
         mReachableNodes.clear();
     }
