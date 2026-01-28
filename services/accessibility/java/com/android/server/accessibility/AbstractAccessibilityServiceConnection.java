@@ -529,6 +529,9 @@ abstract class AbstractAccessibilityServiceConnection extends IAccessibilityServ
             Slog.e(LOG_TAG, "Observing motion events requires permission "
                     + ACCESSIBILITY_MOTION_EVENT_OBSERVING);
             info.setObservedMotionEventSources(0);
+            if (Flags.resetMotionEventSourcesOnDeniedPermission()) {
+                info.setMotionEventSources(0);
+            }
         }
         final long identity = Binder.clearCallingIdentity();
         try {
