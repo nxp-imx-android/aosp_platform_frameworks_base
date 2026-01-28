@@ -814,7 +814,8 @@ public class SettingsBackupTest {
                  Settings.Secure.OTP_NOTIFICATION_REDACTION_LOCK_TIME,
                  Settings.Secure.APP_FUNCTION_ADDITIONAL_AGENT_ALLOWLIST,
                  Settings.Secure.READ_SCREEN_CONTEXT_REQUEST_DENIED_COUNT,
-                 Settings.Secure.TRUSTED_LOCATIONS_COUNT);
+                 Settings.Secure.TRUSTED_LOCATIONS_COUNT,
+                 Settings.Secure.IS_WALLET_SERVICE_AVAILABLE);
 
     @Test
     public void systemSettingsBackedUpOrDenied() {
