@@ -78,9 +78,9 @@ public class FloatingToolbarRoot extends LinearLayout {
             }
             // TODO(b/215497659): Check FLAG_WINDOW_IS_PARTIALLY_OBSCURED
             if (!mContentRect.contains(mLastDownX, mLastDownY)) {
-                if (DEBUG) {
-                    Log.d(TAG, "Transfer touch focus to application.");
-                }
+                Log.e(TAG, "Region that shouldn't be touchable has been touched."
+                        + " lastDown=(" + mLastDownX + "," + mLastDownY + "). Transferring touch to"
+                        + " host application.");
                 mTransferTouchListener.onTransferTouch(getViewRootImpl().getInputToken(),
                         mTargetInputToken);
             }

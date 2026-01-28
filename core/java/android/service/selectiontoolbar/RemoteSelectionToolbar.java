@@ -24,6 +24,7 @@ import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.graphics.Region;
 import android.graphics.drawable.AnimatedVectorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
@@ -40,6 +41,7 @@ import android.view.SurfaceControlViewHost;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
 import android.view.animation.AnimationUtils;
@@ -173,6 +175,8 @@ public final class RemoteSelectionToolbar {
     private final Rect mTempContentRectForRoot = new Rect();
     private final int[] mTempCoords = new int[2];
 
+    private ViewTreeObserver.OnComputeInternalInsetsListener mInsetsComputer;
+
     public RemoteSelectionToolbar(int uid, Context context,
             ShowInfo showInfo, SelectionToolbarRenderService.RemoteCallbackWrapper callbackWrapper,
             SelectionToolbarRenderService.TransferTouchListener transferTouchListener,
@@ -246,6 +250,43 @@ public final class RemoteSelectionToolbar {
             }
         });
         mShowAnimation = createEnterAnimation(mContentContainer);
+
+        // The input is first hit tested for the embedded window, so we need this here for the
+        // input to miss this embedded window. Then on the client popup window we need the same
+        // touchable region again to avoid the input hitting the popup window after it misses
+        // the embedded window.
+        mInsetsComputer = info -> {
+            info.contentInsets.setEmpty();
+            info.visibleInsets.setEmpty();
+            if (mMainPanelSize == null) {
+                return;
+            }
+            int width, height;
+            if (mIsOverflowOpen && mOverflowPanelSize != null) {
+                width = mOverflowPanelSize.getWidth();
+                height = mOverflowPanelSize.getHeight();
+            } else {
+                width = mMainPanelSize.getWidth();
+                height = mMainPanelSize.getHeight();
+            }
+            int x = (int) mContentContainer.getX();
+            int y = (int) mContentContainer.getY();
+            info.touchableRegion.set(x, y, x + width, y + height);
+            info.setTouchableInsets(
+                    ViewTreeObserver.InternalInsetsInfo.TOUCHABLE_INSETS_REGION);
+        };
+        mContentHolder.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
+            @Override
+            public void onViewAttachedToWindow(View v) {
+                v.getViewTreeObserver().removeOnComputeInternalInsetsListener(mInsetsComputer);
+                v.getViewTreeObserver().addOnComputeInternalInsetsListener(mInsetsComputer);
+            }
+
+            @Override
+            public void onViewDetachedFromWindow(View v) {
+                v.getViewTreeObserver().removeOnComputeInternalInsetsListener(mInsetsComputer);
+            }
+        });
         mDelayedHideAnimation = createExitAnimation(
                 mContentContainer,
                 150,  // startDelay
@@ -314,6 +355,20 @@ public final class RemoteSelectionToolbar {
         WidgetInfo widgetInfo = new WidgetInfo();
         widgetInfo.sequenceNumber = mSequenceNumber;
         widgetInfo.contentRect = mTempContentRect;
+        int width, height;
+        if (mIsOverflowOpen) {
+            width = mOverflowPanelSize.getWidth();
+            height = mOverflowPanelSize.getHeight();
+        } else {
+            width = mMainPanelSize.getWidth();
+            height = mMainPanelSize.getHeight();
+        }
+        widgetInfo.touchableRegion = new Region(
+                mRelativeCoordsForToolbar.x + (int) mContentContainer.getX(),
+                mRelativeCoordsForToolbar.y + (int) mContentContainer.getY(),
+                mRelativeCoordsForToolbar.x + (int) mContentContainer.getX() + width,
+                mRelativeCoordsForToolbar.y + (int) mContentContainer.getY() + height
+        );
         widgetInfo.surfacePackage = getSurfacePackage();
         return widgetInfo;
     }
@@ -1172,6 +1227,9 @@ public final class RemoteSelectionToolbar {
                 // actually ends.
                 mContentContainer.post(() -> {
                     setPanelsStatesAtRestingPosition();
+                    if (isShowing()) {
+                        mCallbackWrapper.onWidgetUpdated(createWidgetInfo());
+                    }
                 });
             }
 

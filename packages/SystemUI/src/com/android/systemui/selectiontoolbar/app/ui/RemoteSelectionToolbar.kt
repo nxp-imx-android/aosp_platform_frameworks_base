@@ -23,6 +23,7 @@ import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Point
 import android.graphics.Rect
+import android.graphics.Region
 import android.graphics.drawable.AnimatedVectorDrawable
 import android.os.Handler
 import android.os.Looper
@@ -42,6 +43,7 @@ import android.view.View
 import android.view.View.MeasureSpec
 import android.view.ViewConfiguration
 import android.view.ViewGroup
+import android.view.ViewTreeObserver
 import android.view.animation.Animation
 import android.view.animation.AnimationSet
 import android.view.animation.AnimationUtils
@@ -101,9 +103,44 @@ class RemoteSelectionToolbar(
                 updateFloatingToolbarRootContentRect()
             }
         } // holds all contents.
+    // The input is first hit tested for the embedded window, so we need this here for the
+    // input to miss this embedded window. Then on the client popup window we need the same
+    // touchable region again to avoid the input hitting the popup window after it misses
+    // the embedded window.
+    private val insetsComputer =
+        ViewTreeObserver.OnComputeInternalInsetsListener { info ->
+            info.contentInsets.setEmpty()
+            info.visibleInsets.setEmpty()
+            val mainPanelSize = mainPanelSize ?: return@OnComputeInternalInsetsListener
+            val width: Int
+            val height: Int
+            if (isOverflowOpen && overflowPanelSize != null) {
+                width = overflowPanelSize!!.width
+                height = overflowPanelSize!!.height
+            } else {
+                width = mainPanelSize.width
+                height = mainPanelSize.height
+            }
+            val x = contentContainer.x.toInt()
+            val y = contentContainer.y.toInt()
+            info.touchableRegion.set(x, y, x + width, y + height)
+            info.setTouchableInsets(ViewTreeObserver.InternalInsetsInfo.TOUCHABLE_INSETS_REGION)
+        }
     private val contentHolder =
         FloatingToolbarRoot(context, hostInputToken, transferTouchListener).apply {
             addView(contentContainer)
+            addOnAttachStateChangeListener(
+                object : View.OnAttachStateChangeListener {
+                    override fun onViewAttachedToWindow(v: View) {
+                        v.viewTreeObserver.removeOnComputeInternalInsetsListener(insetsComputer)
+                        v.viewTreeObserver.addOnComputeInternalInsetsListener(insetsComputer)
+                    }
+
+                    override fun onViewDetachedFromWindow(v: View) {
+                        v.viewTreeObserver.removeOnComputeInternalInsetsListener(insetsComputer)
+                    }
+                }
+            )
         }
 
     /* Margins between the popup window and its content. */
@@ -271,6 +308,22 @@ class RemoteSelectionToolbar(
         val widgetInfo = WidgetInfo()
         widgetInfo.sequenceNumber = sequenceNumber
         widgetInfo.contentRect = tempContentRect
+        val width: Int
+        val height: Int
+        if (isOverflowOpen) {
+            width = overflowPanelSize!!.width
+            height = overflowPanelSize!!.height
+        } else {
+            width = mainPanelSize!!.width
+            height = mainPanelSize!!.height
+        }
+        widgetInfo.touchableRegion =
+            Region(
+                relativeCoordsForToolbar.x + contentContainer.x.toInt(),
+                relativeCoordsForToolbar.y + contentContainer.y.toInt(),
+                relativeCoordsForToolbar.x + contentContainer.x.toInt() + width,
+                relativeCoordsForToolbar.y + contentContainer.y.toInt() + height,
+            )
         widgetInfo.surfacePackage = getSurfacePackage()
         return widgetInfo
     }
@@ -1160,7 +1213,12 @@ class RemoteSelectionToolbar(
             override fun onAnimationEnd(animation: Animation) {
                 // Posting this because it seems like this is called before the animation
                 // actually ends.
-                contentContainer.post { setPanelsStatesAtRestingPosition() }
+                contentContainer.post {
+                    setPanelsStatesAtRestingPosition()
+                    if (isShowing) {
+                        callbackWrapper.onWidgetUpdated(createWidgetInfo())
+                    }
+                }
             }
 
             override fun onAnimationRepeat(animation: Animation) {}
