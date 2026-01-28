@@ -17,6 +17,7 @@ package android.security.authenticationpolicy;
 
 import static android.Manifest.permission.MANAGE_SECURE_LOCK_DEVICE;
 import static android.Manifest.permission.USE_BIOMETRIC_INTERNAL;
+import static android.companion.Flags.FLAG_SUPPORT_AI_AGENT;
 import static android.hardware.biometrics.Flags.FLAG_IDENTITY_CHECK_WATCH;
 import static android.Manifest.permission.TEST_BIOMETRIC;
 import static android.security.Flags.FLAG_SECURE_LOCKDOWN;
@@ -554,6 +555,25 @@ public final class AuthenticationPolicyManager {
     public void cancelWatchRangingForRequestId(long authenticationRequestId) {
         try {
             mAuthenticationPolicyService.cancelWatchRangingForRequestId(authenticationRequestId);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Checks if a cross device agent is authorized for automation on this device when locked.
+     *
+     * @param associationId association id from the CompanionDeviceManager
+     * @return true if authorized now
+     *
+     * @hide
+     */
+    @RequiresPermission(USE_BIOMETRIC_INTERNAL)
+    @FlaggedApi(FLAG_SUPPORT_AI_AGENT)
+    public boolean isConnectedAgentAuthorized(int associationId) {
+        try {
+            return mAuthenticationPolicyService.isAgentAuthorized(
+                    mContext.getUser(), associationId);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

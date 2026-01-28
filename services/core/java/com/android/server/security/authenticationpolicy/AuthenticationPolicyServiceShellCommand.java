@@ -61,6 +61,8 @@ class AuthenticationPolicyServiceShellCommand extends ShellCommand {
                     return getSecureLockDeviceAvailability(pw);
                 case "set-secure-lock-device-test-status":
                     return setSecureLockDeviceTestStatus(pw);
+                case "is-agent-authorized":
+                    return isAgentAuthorized(pw);
             }
         } catch (RemoteException e) {
             pw.println("Remote exception: " + e);
@@ -75,7 +77,7 @@ class AuthenticationPolicyServiceShellCommand extends ShellCommand {
     }
 
     private void dumpHelp(@NonNull PrintWriter pw) {
-        pw.println("Secure Lock Device commands:");
+        pw.println("Authentication Policy commands:");
         pw.println("  help");
         pw.println("      Print this help text.");
         pw.println("  enable-secure-lock-device [some message]");
@@ -84,6 +86,7 @@ class AuthenticationPolicyServiceShellCommand extends ShellCommand {
         pw.println("  get-secure-lock-device-availability");
         pw.println("  on-strong-face-auth-success-confirmed");
         pw.println("  set-secure-lock-device-test-status [true/false]");
+        pw.println("  is-agent-authorized [association-id]");
     }
 
     @SuppressLint("AndroidFrameworkRequiresPermission")
@@ -136,6 +139,19 @@ class AuthenticationPolicyServiceShellCommand extends ShellCommand {
         boolean isTestMode = getNextArgRequired().equals("true");
         mService.setSecureLockDeviceTestStatus(isTestMode);
         pw.println("setSecureLockDeviceTestStatus(isTestMode = " + isTestMode + ")");
+        return 0;
+    }
+
+    private int isAgentAuthorized(@NonNull PrintWriter pw) throws RemoteException {
+        try {
+            final int id = Integer.parseInt(getNextArgRequired());
+            if (id >= 0) {
+                final boolean result = mService.isAgentAuthorized(mCallingUser, id);
+                pw.println("authorized: " + result);
+            }
+        } catch (Exception e) {
+            pw.println("invalid id or not enabled");
+        }
         return 0;
     }
 }

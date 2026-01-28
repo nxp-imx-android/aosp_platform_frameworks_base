@@ -1,0 +1,65 @@
+/*
+ * Copyright (C) 2026 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.android.server.security.authenticationpolicy.agent;
+
+/** Immutable metadata for a connected agent. */
+public class AgentSession {
+
+    private final int mId;
+    private final int mUserId;
+    private final boolean mAllowed;
+
+    /**
+     * Create an initially authorized AgentSession record to cache any signals / status from
+     * when the agent's device connected.
+     *
+     * @param id a unique id for this session
+     */
+    public static AgentSession authorized(int userId, int id) {
+        return new AgentSession(userId, id, true);
+    }
+
+    /**
+     * Create a session record for a device that is not authorized for automation.
+     *
+     * @param id a unique id for this session
+     */
+    public static AgentSession notAuthorized(int userId, int id) {
+        return new AgentSession(userId, id, false);
+    }
+
+    private AgentSession(int userId, int id, boolean allowAutomation) {
+        mId = id;
+        mUserId = userId;
+        mAllowed = allowAutomation;
+    }
+
+    /** Get the id of this session. */
+    public int getId() {
+        return mId;
+    }
+
+    /** Get the user of the session owner. */
+    public int getUserId() {
+        return mUserId;
+    }
+
+    /** If the agent is can perform automations on this device. */
+    public boolean isAllowed() {
+        return mAllowed;
+    }
+}

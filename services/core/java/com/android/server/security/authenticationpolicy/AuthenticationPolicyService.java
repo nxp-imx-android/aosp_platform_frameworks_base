@@ -79,6 +79,7 @@ import com.android.server.SystemService;
 import com.android.server.locksettings.LockSettingsInternal;
 import com.android.server.locksettings.LockSettingsStateListener;
 import com.android.server.pm.UserManagerInternal;
+import com.android.server.security.authenticationpolicy.agent.AgentAuthServiceInternal;
 import com.android.server.wm.WindowManagerInternal;
 
 import java.io.FileDescriptor;
@@ -670,19 +671,37 @@ public class AuthenticationPolicyService extends SystemService {
         }
 
         @Override
+        @EnforcePermission(USE_BIOMETRIC_INTERNAL)
+        public boolean isAgentAuthorized(UserHandle user, int associationId) {
+            isAgentAuthorized_enforcePermission();
+
+            if (android.companion.Flags.supportAiAgent()) {
+                return mAgentAuthService.isAgentAuthorized(user.getIdentifier(), associationId);
+            } else {
+                return false;
+            }
+        }
+
+        @Override
         public void onShellCommand(FileDescriptor in, FileDescriptor out, FileDescriptor err,
                 @NonNull String[] args, ShellCallback callback,
                 @NonNull ResultReceiver resultReceiver) {
             if (Build.IS_DEBUGGABLE) {
-                if (Binder.getCallingUid() != Process.SHELL_UID) {
-                    Slog.e(TAG, "Shell command called from non-shell UID: "
-                            + Binder.getCallingUid());
+                final int caller = Binder.getCallingUid();
+                if (caller != Process.SHELL_UID && caller != Process.ROOT_UID) {
+                    Slog.e(TAG, "Shell command called from non-shell / non-root UID: "
+                            + caller);
                     resultReceiver.send(-1, null);
-                    return;
+                } else {
+                    (new AuthenticationPolicyServiceShellCommand(this, getContext()))
+                            .exec(this, in, out, err, args, callback, resultReceiver);
                 }
-                (new AuthenticationPolicyServiceShellCommand(this, getContext()))
-                        .exec(this, in, out, err, args, callback, resultReceiver);
             }
         }
     };
+
+    @VisibleForTesting
+    IAuthenticationPolicyService getBinderService() {
+        return (IAuthenticationPolicyService) mService;
+    }
 }
