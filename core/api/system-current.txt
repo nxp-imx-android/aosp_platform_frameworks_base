@@ -1254,7 +1254,7 @@ package android.app {
 
   public static final class NotificationRule.Condition implements android.os.Parcelable {
     method @NonNull public static android.app.NotificationRule.Condition createLocationCondition(double, double, float);
-    method @NonNull public static android.app.NotificationRule.Condition createTimeCondition(@NonNull java.util.List<java.lang.Integer>, int, int, int, int);
+    method @NonNull public static android.app.NotificationRule.Condition createTimeCondition(@NonNull java.util.List<java.lang.Integer>, @IntRange(from=0, to=23) int, @IntRange(from=0, to=59) int, @IntRange(from=0, to=23) int, @IntRange(from=0, to=59) int);
     method public int describeContents();
     method public int getConditionType();
     method @NonNull public java.util.List<java.lang.Integer> getDays();
