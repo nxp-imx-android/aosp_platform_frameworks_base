@@ -122,9 +122,7 @@ class WifiTileDataInteractorTest(flags: FlagsParameterization) : SysuiTestCase()
             connectivityRepository.setWifiConnected()
             wifiRepository.setIsWifiDefault(true)
             wifiRepository.setIsWifiEnabled(true)
-            wifiRepository.setWifiNetwork(
-                WifiNetworkModel.Active.of(isValidated = true, level = 4, ssid = "Test SSID")
-            )
+            wifiRepository.setWifiNetwork(WifiNetworkModel.Active.of(level = 4, ssid = "Test SSID"))
 
             val expectedModel =
                 WifiTileModel.Active(

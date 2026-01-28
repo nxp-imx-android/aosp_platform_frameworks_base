@@ -143,9 +143,7 @@ class InternetTileDataInteractorTest : SysuiTestCase() {
             addOverride(com.android.settingslib.R.drawable.ic_hotspot_watch, TestStubDrawable())
             addOverride(com.android.settingslib.R.drawable.ic_hotspot_auto, TestStubDrawable())
 
-            WifiIcons.WIFI_NO_INTERNET_ICONS.forEach { iconId ->
-                addOverride(iconId, TestStubDrawable())
-            }
+            WifiIcons.WIFI_FULL_ICONS.forEach { iconId -> addOverride(iconId, TestStubDrawable()) }
         }
 
         underTest =
@@ -205,7 +203,7 @@ class InternetTileDataInteractorTest : SysuiTestCase() {
             assertThat(latest?.secondaryTitle).isEqualTo("test ssid")
             assertThat(latest?.secondaryLabel).isNull()
 
-            val expectedIcon = InternetTileIconModel.ResourceId(WifiIcons.WIFI_NO_INTERNET_ICONS[4])
+            val expectedIcon = InternetTileIconModel.ResourceId(WifiIcons.WIFI_FULL_ICONS[4])
             assertThat(latest?.icon).isEqualTo(expectedIcon)
             assertThat(latest?.contentDescription.loadContentDescription(context))
                 .isEqualTo("$internet,test ssid")
@@ -232,7 +230,7 @@ class InternetTileDataInteractorTest : SysuiTestCase() {
             wifiRepository.setIsWifiDefault(true)
             wifiRepository.setWifiNetwork(networkModel)
 
-            val expectedIcon = InternetTileIconModel.ResourceId(WifiIcons.WIFI_NO_INTERNET_ICONS[4])
+            val expectedIcon = InternetTileIconModel.ResourceId(WifiIcons.WIFI_FULL_ICONS[4])
             assertThat(latest?.icon).isEqualTo(expectedIcon)
             assertThat(latest?.stateDescription.loadContentDescription(context))
                 .doesNotContain(

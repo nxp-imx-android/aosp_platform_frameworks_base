@@ -16,8 +16,6 @@
 
 package com.android.systemui.statusbar.pipeline.wifi.ui.viewmodel
 
-import android.platform.test.annotations.DisableFlags
-import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.settingslib.AccessibilityContentDescriptions.WIFI_OTHER_DEVICE_CONNECTION
@@ -101,7 +99,7 @@ class WifiViewModelTest : SysuiTestCase() {
             val latestKeyguard by collectLastValue(keyguard.wifiIcon)
             val latestQs by collectLastValue(qs.wifiIcon)
 
-            wifiRepository.setWifiNetwork(WifiNetworkModel.Active.of(isValidated = true, level = 1))
+            wifiRepository.setWifiNetwork(WifiNetworkModel.Active.of(level = 1))
 
             assertThat(latestHome).isInstanceOf(WifiIcon.Visible::class.java)
             assertThat(latestHome).isEqualTo(latestKeyguard)
@@ -116,7 +114,6 @@ class WifiViewModelTest : SysuiTestCase() {
             // Even WHEN the network has a valid hotspot type
             wifiRepository.setWifiNetwork(
                 WifiNetworkModel.Active.of(
-                    isValidated = true,
                     level = 1,
                     hotspotDeviceType = WifiNetworkModel.HotspotDeviceType.LAPTOP,
                 )

@@ -408,7 +408,7 @@ constructor(
             }
 
         return WifiNetworkModel.Active.of(
-            isValidated = this.hasInternetAccess(),
+            showExclamation = this.shouldShowXLevelIcon(),
             level = this.level,
             ssid = this.title,
             hotspotDeviceType = hotspotDeviceType,
