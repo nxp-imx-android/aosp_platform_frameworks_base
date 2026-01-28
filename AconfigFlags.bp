@@ -35,6 +35,7 @@ aconfig_declarations_group {
         "android.app.lskfreset.flags-aconfig-java",
         "android.app.ondeviceintelligence-aconfig-java",
         "android.app.privatecompute.flags-aconfig-java",
+        "android.app.search.flags-aconfig-java",
         "android.app.smartspace.flags-aconfig-java",
         "android.app.supervision.flags-aconfig-java",
         "android.app.usage.flags-aconfig-java",
@@ -1847,6 +1848,21 @@ aconfig_declarations {
 java_aconfig_library {
     name: "android.app.assist.flags-aconfig-java",
     aconfig_declarations: "android.app.assist.flags-aconfig",
+    defaults: ["framework-minus-apex-aconfig-java-defaults"],
+}
+
+// Search
+aconfig_declarations {
+    name: "android.app.search.flags-aconfig",
+    exportable: true,
+    package: "android.app.search.flags",
+    container: "system",
+    srcs: ["core/java/android/app/search/flags.aconfig"],
+}
+
+java_aconfig_library {
+    name: "android.app.search.flags-aconfig-java",
+    aconfig_declarations: "android.app.search.flags-aconfig",
     defaults: ["framework-minus-apex-aconfig-java-defaults"],
 }
 

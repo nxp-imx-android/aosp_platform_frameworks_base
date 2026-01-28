@@ -2876,6 +2876,7 @@ package android.app.search {
     method @NonNull public String getLayoutType();
     method @NonNull public String getPackageName();
     method @NonNull public String getParentId();
+    method @FlaggedApi("android.app.search.flags.remote_views") @Nullable public android.widget.RemoteViews getRemoteViews();
     method public int getResultType();
     method public float getScore();
     method @Nullable public android.app.search.SearchAction getSearchAction();
@@ -2902,6 +2903,7 @@ package android.app.search {
     method @NonNull public android.app.search.SearchTarget.Builder setHidden(boolean);
     method @NonNull public android.app.search.SearchTarget.Builder setPackageName(@NonNull String);
     method @NonNull public android.app.search.SearchTarget.Builder setParentId(@NonNull String);
+    method @FlaggedApi("android.app.search.flags.remote_views") @NonNull public android.app.search.SearchTarget.Builder setRemoteViews(@NonNull android.widget.RemoteViews);
     method @NonNull public android.app.search.SearchTarget.Builder setScore(@FloatRange(from=0.0f, to=1.0f) float);
     method @NonNull public android.app.search.SearchTarget.Builder setSearchAction(@Nullable android.app.search.SearchAction);
     method @NonNull public android.app.search.SearchTarget.Builder setShortcutInfo(@NonNull android.content.pm.ShortcutInfo);
