@@ -42,6 +42,9 @@ import static android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE;
 
 import static com.android.server.am.psc.Constants.FOREGROUND_APP_ADJ;
 import static com.android.server.am.psc.Constants.UNKNOWN_ADJ;
+import static com.android.server.am.psc.OomAdjuster.CPU_TIME_REASON_ALLOW_LIST;
+import static com.android.server.am.psc.OomAdjuster.CPU_TIME_REASON_NONE;
+import static com.android.server.am.psc.OomAdjuster.CPU_TIME_REASON_OTHER;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
@@ -78,6 +81,7 @@ public class CapabilityControllerTest {
         ProcessEdge edge = new ProcessEdge(node);
 
         assertEquals(PROCESS_CAPABILITY_NONE, edge.evaluateCapabilityFilter());
+        assertEquals(CPU_TIME_REASON_NONE, edge.getCpuTimeReasons());
     }
 
     @Test
@@ -100,6 +104,7 @@ public class CapabilityControllerTest {
         ProcessEdge edge = new ProcessEdge(node);
 
         assertEquals(PROCESS_CAPABILITY_ALL, edge.evaluateCapabilityFilter());
+        FlagAssert.assertThat(edge.getCpuTimeReasons()).hasSet(CPU_TIME_REASON_OTHER);
     }
 
     @Test
@@ -241,6 +246,8 @@ public class CapabilityControllerTest {
             final ProcessEdge edge = new ProcessEdge(node);
 
             assertEquals(PROCESS_CAPABILITY_ALL, edge.evaluateCapabilityFilter());
+            // No CPU time reason is granted in this case.
+            assertEquals(CPU_TIME_REASON_NONE, edge.getCpuTimeReasons());
         }
     }
 
@@ -312,6 +319,7 @@ public class CapabilityControllerTest {
         final ProcessEdge edge = new ProcessEdge(node);
 
         FlagAssert.assertThat(edge.evaluateCapabilityFilter()).hasSet(PROCESS_CAPABILITY_CPU_TIME);
+        FlagAssert.assertThat(edge.getCpuTimeReasons()).hasSet(CPU_TIME_REASON_ALLOW_LIST);
     }
 
     @Test
@@ -320,6 +328,7 @@ public class CapabilityControllerTest {
         final ProcessEdge edge = new ProcessEdge(node);
 
         FlagAssert.assertThat(edge.evaluateCapabilityFilter()).hasSet(PROCESS_CAPABILITY_CPU_TIME);
+        FlagAssert.assertThat(edge.getCpuTimeReasons()).hasSet(CPU_TIME_REASON_OTHER);
     }
 
     @Test
@@ -328,6 +337,7 @@ public class CapabilityControllerTest {
         final ProcessEdge edge = new ProcessEdge(node);
 
         FlagAssert.assertThat(edge.evaluateCapabilityFilter()).hasSet(PROCESS_CAPABILITY_CPU_TIME);
+        FlagAssert.assertThat(edge.getCpuTimeReasons()).hasSet(CPU_TIME_REASON_OTHER);
     }
 
     @Test
@@ -336,6 +346,7 @@ public class CapabilityControllerTest {
         final ProcessEdge edge = new ProcessEdge(node);
 
         FlagAssert.assertThat(edge.evaluateCapabilityFilter()).hasSet(PROCESS_CAPABILITY_CPU_TIME);
+        FlagAssert.assertThat(edge.getCpuTimeReasons()).hasSet(CPU_TIME_REASON_OTHER);
     }
 
     @Test
@@ -344,6 +355,7 @@ public class CapabilityControllerTest {
         final ProcessEdge edge = new ProcessEdge(node);
 
         FlagAssert.assertThat(edge.evaluateCapabilityFilter()).hasSet(PROCESS_CAPABILITY_CPU_TIME);
+        FlagAssert.assertThat(edge.getCpuTimeReasons()).hasSet(CPU_TIME_REASON_OTHER);
     }
 
     @Test
@@ -352,6 +364,7 @@ public class CapabilityControllerTest {
         final ProcessEdge edge = new ProcessEdge(node);
 
         FlagAssert.assertThat(edge.evaluateCapabilityFilter()).hasSet(PROCESS_CAPABILITY_CPU_TIME);
+        FlagAssert.assertThat(edge.getCpuTimeReasons()).hasSet(CPU_TIME_REASON_OTHER);
     }
 
     @Test
@@ -368,6 +381,7 @@ public class CapabilityControllerTest {
 
         FlagAssert.assertThat(edge.evaluateCapabilityFilter()).hasNotSet(
                 PROCESS_CAPABILITY_CPU_TIME);
+        assertEquals(CPU_TIME_REASON_NONE, edge.getCpuTimeReasons());
     }
 
     private static class TestServiceRecord {

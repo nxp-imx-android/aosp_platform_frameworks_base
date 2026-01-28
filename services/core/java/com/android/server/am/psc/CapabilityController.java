@@ -35,6 +35,8 @@ import static android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE;
 import static android.media.audio.Flags.roForegroundAudioControl;
 
 import static com.android.server.am.psc.Constants.FOREGROUND_APP_ADJ;
+import static com.android.server.am.psc.OomAdjuster.CPU_TIME_REASON_ALLOW_LIST;
+import static com.android.server.am.psc.OomAdjuster.CPU_TIME_REASON_OTHER;
 
 import android.annotation.NonNull;
 import android.app.ActivityManager.ProcessCapability;
@@ -56,8 +58,12 @@ class CapabilityController {
                     | PROCESS_CAPABILITY_FOREGROUND_MICROPHONE
                     | PROCESS_CAPABILITY_FOREGROUND_AUDIO_CONTROL;
 
-    /** Evaluates a filter by combining all the policies of a process edge. */
+    /**
+     * Evaluates a filter by combining all the policies of a process edge and also updates its CPU
+     * time reasons.
+     */
     static @ProcessCapability int evaluateFilter(@NonNull ProcessEdge edge) {
+        edge.clearCpuTimeReasons();
         // No capability is granted to a non-running process.
         if (!edge.getTarget().isProcessRunning()) return PROCESS_CAPABILITY_NONE;
         // TODO(b/466961280): Add more policies.
@@ -72,6 +78,7 @@ class CapabilityController {
     /** Evaluates a filter based on the process's max oom score (maxAdj). */
     private static @ProcessCapability int evaluateMaxAdjPolicy(@NonNull ProcessEdge edge) {
         if (edge.getTarget().getMaxAdj() <= FOREGROUND_APP_ADJ) {
+            edge.addCpuTimeReasons(CPU_TIME_REASON_OTHER);
             return PROCESS_CAPABILITY_ALL;
         } else {
             return PROCESS_CAPABILITY_NONE;
@@ -155,6 +162,10 @@ class CapabilityController {
             case PROCESS_STATE_PERSISTENT:
             case PROCESS_STATE_PERSISTENT_UI:
             case PROCESS_STATE_TOP:
+                // Note: Although CPU time capability and implicit CPU time capability are granted,
+                // no (implicit) CPU time reason is set in this case. These process states
+                // inherently represent high-importance processes that will not be frozen, and no
+                // reason is added by default.
                 baseCapabilities = PROCESS_CAPABILITY_ALL; // BFSL allowed
                 break;
             case PROCESS_STATE_BOUND_TOP:
@@ -186,27 +197,33 @@ class CapabilityController {
     }
     // LINT.ThenChange(OomAdjuster.java:getDefaultCapability)
 
-    /** Evaluates process CPU time capability. */
+    /** Evaluates process CPU time capability and updates CPU time reasons on the process edge. */
     // LINT.IfChange(evaluateCpuTimePolicy)
     private static @ProcessCapability int evaluateCpuTimePolicy(@NonNull ProcessEdge edge) {
         final GraphNode node = edge.getTarget();
-        // TODO(b/475333334): Add CPU time reasons for the conditions below.
         if (node.isCurAllowListed()) {
+            edge.addCpuTimeReasons(CPU_TIME_REASON_ALLOW_LIST);
             return PROCESS_CAPABILITY_CPU_TIME;
         }
+        // TODO: b/482137218 - Replace all usages of CPU_TIME_REASON_OTHER with explicit reasons.
         if (node.hasForegroundActivities()) {
+            edge.addCpuTimeReasons(CPU_TIME_REASON_OTHER);
             return PROCESS_CAPABILITY_CPU_TIME;
         }
         if (node.hasExecutingServices()) {
+            edge.addCpuTimeReasons(CPU_TIME_REASON_OTHER);
             return PROCESS_CAPABILITY_CPU_TIME;
         }
         if (node.hasForegroundServices()) {
+            edge.addCpuTimeReasons(CPU_TIME_REASON_OTHER);
             return PROCESS_CAPABILITY_CPU_TIME;
         }
         if (node.isReceivingBroadcast()) {
+            edge.addCpuTimeReasons(CPU_TIME_REASON_OTHER);
             return PROCESS_CAPABILITY_CPU_TIME;
         }
         if (node.hasActiveInstrumentation()) {
+            edge.addCpuTimeReasons(CPU_TIME_REASON_OTHER);
             return PROCESS_CAPABILITY_CPU_TIME;
         }
         return PROCESS_CAPABILITY_NONE;
