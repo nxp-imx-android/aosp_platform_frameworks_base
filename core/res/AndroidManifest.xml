@@ -10195,6 +10195,18 @@
         android:protectionLevel="signature"
         android:featureFlag="android.permission.flags.content_restriction_role_enabled" />
 
+    <!-- Must be required by any
+         {@link android.service.personalcontext.refiner.HintRefinerService},
+         {@link android.service.personalcontext.undedrstander.ContextUnderstanderService}, or
+         {@link android.service.personalcontext.renderer.InsightRendererService} to ensure that
+         only the system can bind to it.
+         <p>Protection level: signature
+         @FlaggedApi(android.service.personalcontext.Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
+    -->
+    <permission android:name="android.permission.BIND_CONTEXT_COMPONENT_SERVICE"
+        android:protectionLevel="signature"
+        android:featureFlag="android.service.personalcontext.enable_personal_context_service" />
+
     <!-- Must be required by a
          {@link android.service.personalcontext.renderer.InsightRendererService}, to ensure that
          only the system can bind to it.
