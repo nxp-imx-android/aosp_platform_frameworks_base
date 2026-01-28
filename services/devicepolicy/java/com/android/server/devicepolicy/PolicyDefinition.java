@@ -57,10 +57,10 @@ public final class PolicyDefinition<V> {
     static final int POLICY_FLAG_NONE = 0;
 
     // Only use this flag if a policy can not be applied locally.
-    static final int POLICY_FLAG_GLOBAL_ONLY_POLICY = 1;
+    public static final int POLICY_FLAG_GLOBAL_ONLY_POLICY = 1;
 
     // Only use this flag if a policy can not be applied globally.
-    static final int POLICY_FLAG_LOCAL_ONLY_POLICY = 1 << 1;
+    public static final int POLICY_FLAG_LOCAL_ONLY_POLICY = 1 << 1;
 
     // Only use this flag if a policy is inheritable by child profile from parent.
     static final int POLICY_FLAG_INHERITABLE = 1 << 2;
@@ -88,8 +88,9 @@ public final class PolicyDefinition<V> {
     // re-applied when the package is installed.
     private static final int POLICY_FLAG_PACKAGE_POLICY = 1 << 6;
 
-    private static final MostRestrictive<Boolean> FALSE_MORE_RESTRICTIVE = new MostRestrictive<>(
-            List.of(new BooleanPolicyValue(false), new BooleanPolicyValue(true)));
+    public static final MostRestrictive<Boolean> FALSE_MORE_RESTRICTIVE =
+            new MostRestrictive<>(
+                    List.of(new BooleanPolicyValue(false), new BooleanPolicyValue(true)));
 
     static final MostRestrictive<Boolean> TRUE_MORE_RESTRICTIVE = new MostRestrictive<>(
             List.of(new BooleanPolicyValue(true), new BooleanPolicyValue(false)));
@@ -366,18 +367,6 @@ public final class PolicyDefinition<V> {
             PolicyEnforcerCallbacks::setMtePolicy,
             new IntegerPolicySerializer());
 
-    // TODO(b/464477084): Add a resolution mechanism for AUTO_TIME to include most restrictive
-    // resolution approach.
-    public static PolicyDefinition<Integer> AUTO_TIME = new PolicyDefinition<>(
-            new NoArgsPolicyKey(DevicePolicyIdentifiers.AUTO_TIME_POLICY),
-            new TopPriority<>(List.of(
-                    EnforcingAdmin.getRoleAuthorityOf(ROLE_SYSTEM_SUPERVISION),
-                    EnforcingAdmin.getRoleAuthorityOf(ROLE_SYSTEM_FINANCED_DEVICE_CONTROLLER),
-                    EnforcingAdmin.DPC_AUTHORITY)),
-            POLICY_FLAG_GLOBAL_ONLY_POLICY,
-            PolicyEnforcerCallbacks::setAutoTimePolicy,
-            new IntegerPolicySerializer());
-
     static PolicyDefinition<Set<String>> CROSS_PROFILE_WIDGET_PROVIDER =
             new PolicyDefinition<>(
                     new NoArgsPolicyKey(
@@ -403,16 +392,6 @@ public final class PolicyDefinition<V> {
                     new IntegerPolicySerializer()
             );
 
-    public static final PolicyDefinition<String> LOCKSCREEN_MESSAGE =
-            new PolicyDefinition<>(
-                    new NoArgsPolicyKey(
-                            DevicePolicyIdentifiers.LOCKSCREEN_MESSAGE_POLICY),
-                    new MostRecent<>(), // TODO(b/457343029): Replace with DPC priority.
-                    POLICY_FLAG_GLOBAL_ONLY_POLICY,
-                    PolicyEnforcerCallbacks::setLockScreenInfoPolicy,
-                    new StringPolicySerializer()
-            );
-
     private final PolicyKey mPolicyKey;
     private final ResolutionMechanism<V> mResolutionMechanism;
     private final int mPolicyFlags;
@@ -428,7 +407,7 @@ public final class PolicyDefinition<V> {
     }
 
     @NonNull
-    PolicyKey getPolicyKey() {
+    public PolicyKey getPolicyKey() {
         return mPolicyKey;
     }
 
@@ -440,14 +419,14 @@ public final class PolicyDefinition<V> {
     /**
      * Returns {@code true} if the policy is a global policy by nature and can't be applied locally.
      */
-    boolean isGlobalOnlyPolicy() {
+    public boolean isGlobalOnlyPolicy() {
         return (mPolicyFlags & POLICY_FLAG_GLOBAL_ONLY_POLICY) != 0;
     }
 
     /**
      * Returns {@code true} if the policy is a local policy by nature and can't be applied globally.
      */
-    boolean isLocalOnlyPolicy() {
+    public boolean isLocalOnlyPolicy() {
         return (mPolicyFlags & POLICY_FLAG_LOCAL_ONLY_POLICY) != 0;
     }
 
@@ -537,7 +516,82 @@ public final class PolicyDefinition<V> {
 
     @Override
     public String toString() {
-        return "PolicyDefinition{ mPolicyKey= " + mPolicyKey + ", mResolutionMechanism= "
-                + mResolutionMechanism + ", mPolicyFlags= " + mPolicyFlags + " }";
+        return "PolicyDefinition{ mPolicyKey= "
+                + mPolicyKey
+                + ", mResolutionMechanism= "
+                + mResolutionMechanism
+                + ", mPolicyFlags= "
+                + mPolicyFlags
+                + " }";
+    }
+
+    /** Returns a builder object for a {@link PolicyDefinition}. */
+    public static <T> Builder<T> builder() {
+        return new Builder<T>();
+    }
+
+    public static class Builder<T> {
+
+        private int mFlags = 0;
+        private PolicyKey mKey = null;
+        private QuadFunction<T, Context, Integer, PolicyKey, CompletableFuture<Boolean>>
+                mEnforcerCallback = null;
+        private PolicySerializer<T> mSerializer = null;
+        private ResolutionMechanism<T> mResolutionMechanism = null;
+
+        public PolicyDefinition<T> build() {
+            if (mKey == null) {
+                throw new IllegalStateException("Missing key when building PolicyDefinition");
+            }
+            if (mSerializer == null) {
+                throw new IllegalStateException(
+                        "Missing policy serializer when building PolicyDefinition of " + mKey);
+            }
+            if (mResolutionMechanism == null) {
+                throw new IllegalStateException(
+                        "Missing resolution mechanism when building PolicyDefinition of " + mKey);
+            }
+            if (mEnforcerCallback == null) {
+                throw new IllegalStateException(
+                        "Missing enforcer callback when building PolicyDefinition of " + mKey);
+            }
+            return new PolicyDefinition<T>(
+                    mKey, mResolutionMechanism, mFlags, mEnforcerCallback, mSerializer);
+        }
+
+        public Builder<T> setKey(@NonNull PolicyKey key) {
+            mKey = key;
+            return this;
+        }
+
+        public Builder<T> setResolutionMechanism(@NonNull ResolutionMechanism<T> mechanism) {
+            mResolutionMechanism = mechanism;
+            return this;
+        }
+
+        public Builder<T> setEnforcerCallback(
+                @NonNull
+                        QuadFunction<T, Context, Integer, PolicyKey, CompletableFuture<Boolean>>
+                                callback) {
+            mEnforcerCallback = callback;
+            return this;
+        }
+
+        public Builder<T> setSerializer(PolicySerializer<T> serializer) {
+            mSerializer = serializer;
+            return this;
+        }
+
+        /** Adds the given flag to the flags previously added to this builder. */
+        public Builder<T> addFlag(int newFlagValue) {
+            mFlags |= newFlagValue;
+            return this;
+        }
+
+        /** Resets the flags previously added to this builder. */
+        public Builder<T> clearFlags() {
+            mFlags = 0;
+            return this;
+        }
     }
 }

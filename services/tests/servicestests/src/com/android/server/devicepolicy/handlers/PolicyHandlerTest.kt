@@ -242,10 +242,14 @@ open class PolicyHandlerTest {
 
     @Test
     fun setPolicyUnchecked_shouldStorePolicy() {
-        val handler = createHandler(metadata = copyOf(Policy.metadata, allowedScopes = allScopes))
         val theCaller = anyCaller
         val theValue = Policy.VALUE_1
         val theKey = Policy.definition
+        val handler =
+            createHandler(
+                metadata = copyOf(Policy.metadata, allowedScopes = allScopes),
+                definition = theKey,
+            )
 
         for (scope in allScopes) {
             handler.setPolicyUnchecked(
@@ -264,13 +268,14 @@ open class PolicyHandlerTest {
 
     @Test
     fun setPolicyUnchecked_shouldClearNullPolicy() {
+        val theCaller = anyCaller
+        val theKey = Policy.definition
         val handler =
             createHandler(
                 metadata = copyOf(Policy.metadata, allowedScopes = allScopes),
                 delegate = mockDelegate,
+                definition = theKey,
             )
-        val theCaller = anyCaller
-        val theKey = Policy.definition
 
         for (scope in allScopes) {
             handler.setPolicyUnchecked(theCaller, scope, null)
@@ -479,10 +484,14 @@ open class PolicyHandlerTest {
 
     @Test
     fun getPolicyUnchecked_getStoredPolicy() {
-        val handler = createHandler(metadata = copyOf(Policy.metadata, allowedScopes = allScopes))
         val theCaller = anyCaller
         val storedValue = Policy.VALUE_1
         val theKey = Policy.definition
+        val handler =
+            createHandler(
+                metadata = copyOf(Policy.metadata, allowedScopes = allScopes),
+                definition = theKey,
+            )
 
         mockDelegate.stub {
             on { getPolicySetByAdmin<Int>(any(), any(), any()) } doReturn storedValue
@@ -500,13 +509,14 @@ open class PolicyHandlerTest {
 
     @Test
     fun getPolicyUnchecked_shouldBeAbleToHandleUnsetPolicies() {
+        val theCaller = anyCaller
+        val theKey = Policy.definition
         val handler =
             createHandler(
                 metadata = copyOf(Policy.metadata, allowedScopes = allScopes),
                 delegate = mockDelegate,
+                definition = theKey,
             )
-        val theCaller = anyCaller
-        val theKey = Policy.definition
 
         mockDelegate.stub { on { getPolicySetByAdmin<Int>(any(), any(), any()) } doReturn null }
 
@@ -521,7 +531,7 @@ open class PolicyHandlerTest {
     @Test
     fun getResolvedPerUserPolicyUnchecked_onSelf_shouldReadPerUserPolicy() {
         val metadata = copyOf(Policy.metadata, affectedResource = RESOURCE_PER_USER)
-        val handler = createHandler(metadata = metadata)
+        val handler = createHandler(metadata = metadata, definition = Policy.definition)
         val theUser = anyUid
 
         handler.getResolvedPerUserPolicyUnchecked(theUser)
@@ -533,7 +543,7 @@ open class PolicyHandlerTest {
     @Test
     fun getResolvedDeviceWidePolicyUnchecked_shouldReadDeviceWidePolicy() {
         val metadata = copyOf(Policy.metadata, affectedResource = RESOURCE_DEVICE_WIDE)
-        val handler = createHandler(metadata = metadata)
+        val handler = createHandler(metadata = metadata, definition = Policy.definition)
 
         handler.getResolvedDeviceWidePolicyUnchecked()
 
@@ -911,4 +921,5 @@ open class PolicyHandlerTest {
 
         assertThat(error).hasMessageThat().contains("no requiredPermission")
     }
+
 }

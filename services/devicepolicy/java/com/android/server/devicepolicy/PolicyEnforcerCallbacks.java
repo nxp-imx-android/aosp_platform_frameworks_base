@@ -70,11 +70,11 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
-final class PolicyEnforcerCallbacks {
+public final class PolicyEnforcerCallbacks {
 
     private static final String LOG_TAG = "PolicyEnforcerCallbacks";
 
-    static <T> CompletableFuture<Boolean> noOp(T value, Context context, Integer userId,
+    public static <T> CompletableFuture<Boolean> noOp(T value, Context context, Integer userId,
             PolicyKey policyKey) {
         return AndroidFuture.completedFuture(true);
     }
@@ -495,7 +495,7 @@ final class PolicyEnforcerCallbacks {
         return AndroidFuture.completedFuture(true);
     }
 
-    static CompletableFuture<Boolean> setLockScreenInfoPolicy(
+    public static CompletableFuture<Boolean> setLockScreenInfoPolicy(
             @Nullable String info, @NonNull Context context, int userId,
             @NonNull PolicyKey policyKey) {
         if (!Flags.lockscreenInfoCoexistence()) {

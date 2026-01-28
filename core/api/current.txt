@@ -8456,7 +8456,6 @@ package android.app.admin {
     field @FlaggedApi("android.view.contentprotection.flags.manage_device_policy_enabled") public static final String CONTENT_PROTECTION_POLICY = "contentProtection";
     field @FlaggedApi("android.app.admin.flags.cross_profile_widget_provider_bulk_apis") public static final String CROSS_PROFILE_WIDGET_PROVIDER_POLICY = "crossProfileWidgetProvider";
     field public static final String KEYGUARD_DISABLED_FEATURES_POLICY = "keyguardDisabledFeatures";
-    field @FlaggedApi("android.app.admin.flags.lockscreen_info_coexistence") public static final String LOCKSCREEN_MESSAGE_POLICY = "lockscreenMessage";
     field public static final String LOCK_TASK_POLICY = "lockTask";
     field @FlaggedApi("android.app.admin.flags.set_mte_policy_coexistence") public static final String MEMORY_TAGGING_POLICY = "memoryTagging";
     field public static final String PACKAGES_SUSPENDED_POLICY = "packagesSuspended";

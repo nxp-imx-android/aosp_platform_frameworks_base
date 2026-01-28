@@ -19,6 +19,9 @@ package com.android.server.devicepolicy.handlers;
 import static android.app.admin.DevicePolicyManager.POLICY_SCOPE_DEVICE;
 import static android.app.admin.DevicePolicyManager.POLICY_SCOPE_PARENT_USER;
 import static android.app.admin.DevicePolicyManager.POLICY_SCOPE_USER;
+import static android.app.role.RoleManager.ROLE_SYSTEM_FINANCED_DEVICE_CONTROLLER;
+import static android.app.role.RoleManager.ROLE_SYSTEM_SUPERVISION;
+import static com.android.server.devicepolicy.PolicyDefinition.POLICY_FLAG_GLOBAL_ONLY_POLICY;
 import static android.app.admin.DevicePolicyManager.RESOURCE_DEVICE_WIDE;
 import static android.app.admin.DevicePolicyManager.RESOURCE_PER_USER;
 
@@ -29,18 +32,25 @@ import android.annotation.UserIdInt;
 import android.app.admin.BooleanPolicyValue;
 import android.app.admin.DevicePolicyManager.DpcType;
 import android.app.admin.DevicePolicyManager.PolicyScope;
+import android.app.admin.NoArgsPolicyKey;
 import android.app.admin.PolicyIdentifier;
 import android.app.admin.PolicyValue;
 import android.app.admin.PolicyValueTransport;
 import android.app.admin.metadata.GeneratedPolicyMetadata;
 import android.app.admin.metadata.PolicyMetadata;
 import android.app.admin.metadata.PolicyTransportValueConvertor;
+import android.app.admin.DevicePolicyIdentifiers;
 
 import com.android.server.devicepolicy.CallerIdentity;
 import com.android.server.devicepolicy.DevicePolicyManagerService;
+import com.android.server.devicepolicy.EnforcingAdmin;
 import com.android.server.devicepolicy.IPermissionChecker;
+import com.android.server.devicepolicy.MostRecent;
 import com.android.server.devicepolicy.PolicyDefinition;
+import com.android.server.devicepolicy.PolicyEnforcerCallbacks;
+import com.android.server.devicepolicy.TopPriority;
 
+import com.android.server.utils.Slogf;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -108,7 +118,7 @@ public class PolicyHandler<T> {
 
     static {
         HANDLERS.add(
-                new PolicyHandler<Integer>(PolicyIdentifier.SCREEN_CAPTURE, null) {
+                new PolicyHandler<Integer>(PolicyIdentifier.SCREEN_CAPTURE) {
                     @Override
                     protected void storePolicyValue(
                             CallerIdentity caller, int scope, Integer value) {
@@ -127,7 +137,7 @@ public class PolicyHandler<T> {
 
                     @Override
                     protected Integer getPolicyValue(CallerIdentity caller, int scope) {
-                        Boolean isDisabled =
+                        var isDisabled =
                                 getPolicySetByAdmin(
                                         caller, PolicyDefinition.SCREEN_CAPTURE_DISABLED, scope);
 
@@ -150,10 +160,8 @@ public class PolicyHandler<T> {
                                 isDisabled);
                     }
                 });
-        HANDLERS.add(
-                new PolicyHandler<Integer>(PolicyIdentifier.AUTO_TIME, PolicyDefinition.AUTO_TIME));
-        HANDLERS.add(new PolicyHandler<String>(PolicyIdentifier.LOCKSCREEN_MESSAGE,
-                PolicyDefinition.LOCKSCREEN_MESSAGE));
+        HANDLERS.add(new PolicyHandler<Integer>(PolicyIdentifier.AUTO_TIME));
+        HANDLERS.add(new PolicyHandler<String>(PolicyIdentifier.LOCKSCREEN_MESSAGE));
     }
 
     static Integer booleanToEnum(int trueValue, int falseValue, Boolean value) {
@@ -168,12 +176,10 @@ public class PolicyHandler<T> {
 
     private final PolicyIdentifier<T> mKey;
     private final PolicyMetadata<T> mPolicyMetadata;
+    private final PolicyDefinition<T> mPolicyDefinition;
     private final PolicyValidator<T> mValidator;
     private final PolicyValueConvertor<T> mValueConvertor;
     private final PolicyTransportValueConvertor<T> mTransportValueConvertor;
-
-    // TODO(444641755): obtain policy definition through PolicyMetadata.
-    private final PolicyDefinition<T> mPolicyDefinition;
 
     /**
      * Helper class that provides access to methods used while processing policies. Must be
@@ -181,7 +187,17 @@ public class PolicyHandler<T> {
      */
     private Delegate mDelegate = null;
 
-    public PolicyHandler(
+    /** Constructor that uses the generated {@link PolicyMetadata} and {@link PolicyDefinition}. */
+    public PolicyHandler(@NonNull PolicyIdentifier<T> key) {
+        this(key, GeneratedPolicyMetadata.getPolicyMetadata(key));
+    }
+
+    /** Constructor that uses the generated {@link PolicyDefinition}. */
+    private PolicyHandler(@NonNull PolicyIdentifier<T> key, @NonNull PolicyMetadata<T> metadata) {
+        this(key, metadata, PolicyDefinitionFactory.build(key, metadata));
+    }
+
+    private PolicyHandler(
             @NonNull PolicyIdentifier<T> key,
             @NonNull PolicyMetadata<T> policyMetadata,
             @Nullable PolicyDefinition<T> policyDefinition) {
@@ -191,12 +207,6 @@ public class PolicyHandler<T> {
         mValidator = PolicyValidator.getInstance(mPolicyMetadata);
         mTransportValueConvertor = PolicyTransportValueConvertor.getInstance(mPolicyMetadata);
         mValueConvertor = PolicyValueConvertor.getInstance(mPolicyMetadata);
-    }
-
-    /** Constructor that uses the generated {@link PolicyMetadata} */
-    public PolicyHandler(
-            @NonNull PolicyIdentifier<T> key, @Nullable PolicyDefinition<T> policyDefinition) {
-        this(key, GeneratedPolicyMetadata.getPolicyMetadata(key), policyDefinition);
     }
 
     /** Convenience constructor used by unittests */
@@ -211,6 +221,10 @@ public class PolicyHandler<T> {
 
     public PolicyIdentifier<T> getKey() {
         return mKey;
+    }
+
+    public final boolean hasPolicyDefinition() {
+        return (mPolicyDefinition != null);
     }
 
     @NonNull
@@ -511,12 +525,12 @@ public class PolicyHandler<T> {
      * DevicePolicyEngine.
      */
     @NonNull
-    protected final PolicyDefinition<T> getPolicyDefinition() {
+    public final PolicyDefinition<T> getPolicyDefinition() {
         if (mPolicyDefinition == null) {
             throw new IllegalStateException(
                     "getPolicyDefinition() can not be used for policy "
                             + getKey().getId()
-                            + ", since no policy definition was passed into the constructor");
+                            + ", since PolicyDefinitionFactory returned null");
         }
         return mPolicyDefinition;
     }

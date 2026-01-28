@@ -99,6 +99,7 @@ android_test {
         "services.signal-collectors",
         "services.signal-collector-manager-internal",
         "service-anomaly-detector.impl",
+        "TestParameterInjector",
     ] + select(soong_config_variable("ANDROID", "release_crashrecovery_module"), {
         "true": ["service-crashrecovery-pre-jarjar"],
         default: [],
