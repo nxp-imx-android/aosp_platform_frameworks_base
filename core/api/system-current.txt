@@ -2650,6 +2650,7 @@ package android.app.motioncues {
     method @FlaggedApi("android.app.enable_motion_cues") public final void updateBubblePixelPos(float, float);
     method @FlaggedApi("android.app.enable_motion_cues") public final void updateMotionCuesVisualStyle(@NonNull android.app.motioncues.MotionCuesVisualStyle);
     field @FlaggedApi("android.app.enable_motion_cues") public static final String EXTRA_API_CALLBACK = "android.app.motioncues.extra.API_CALLBACK";
+    field public static final String SERVICE_INTERFACE = "android.app.motioncues.MotionCuesService";
   }
 
   @FlaggedApi("android.app.enable_motion_cues") public final class MotionCuesSettings implements android.os.Parcelable {
