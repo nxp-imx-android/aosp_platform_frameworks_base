@@ -857,13 +857,10 @@ public final class MediaProjectionManagerService extends SystemService
                     projection == null ? null : projection.asBinder());
         }
 
+        @android.annotation.EnforcePermission(android.Manifest.permission.MANAGE_MEDIA_PROJECTION)
         @Override // Binder call
         public MediaProjectionInfo getActiveProjectionInfo() {
-            if (mContext.checkCallingPermission(MANAGE_MEDIA_PROJECTION)
-                        != PackageManager.PERMISSION_GRANTED) {
-                throw new SecurityException("Requires MANAGE_MEDIA_PROJECTION in order to get "
-                        + "active projection info");
-            }
+            getActiveProjectionInfo_enforcePermission();
             final long token = Binder.clearCallingIdentity();
             try {
                 return MediaProjectionManagerService.this.getActiveProjectionInfo();
