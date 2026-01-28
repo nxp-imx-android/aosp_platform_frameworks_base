@@ -864,6 +864,8 @@
     <protected-broadcast android:name="android.app.action.ALLOWED_NAS_ADJUSTMENT_KEYS_CHANGED" />
     <protected-broadcast android:name="android.app.action.SUPPORTED_NAS_ADJUSTMENT_KEYS_CHANGED" />
     <protected-broadcast android:name="android.telephony.action.STK_SETUP_EVENT_LIST" />
+    <protected-broadcast android:name="android.intent.action.UPDATE_CT_LOGS" />
+    <protected-broadcast android:name="android.intent.action.INSTALL_COMPLETE" />
     <protected-broadcast android:name="android.intent.action.PERSONAL_CONTEXT_MODE_CHANGED" />
 
     <!-- Added in 26Q4 -->
