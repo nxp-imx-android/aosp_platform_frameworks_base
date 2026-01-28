@@ -16415,6 +16415,7 @@ package android.telephony {
     method public int getNetworkRegistrationState();
     method @Deprecated public int getRegistrationState();
     method public int getRoamingType();
+    method @FlaggedApi("com.android.internal.telephony.flags.system_selection_specifier_enhancement") @RequiresPermission(android.Manifest.permission.SATELLITE_COMMUNICATION) public int getSatelliteTechnology();
     method public boolean isEmergencyEnabled();
     method public void writeToParcel(android.os.Parcel, int);
     field public static final int REGISTRATION_STATE_DENIED = 3; // 0x3
