@@ -116,14 +116,10 @@ public final class RouterInfoMediaManager extends InfoMediaManager {
 
         MediaRouter2 router = null;
 
-        if (Flags.enableCrossUserRoutingInMediaRouter2()) {
-            try {
-                router = MediaRouter2.getInstance(context, packageName, userHandle);
-            } catch (IllegalArgumentException ex) {
-                // Do nothing
-            }
-        } else {
-            router = MediaRouter2.getInstance(context, packageName);
+        try {
+            router = MediaRouter2.getInstance(context, packageName, userHandle);
+        } catch (IllegalArgumentException ex) {
+            // Do nothing
         }
         if (router == null) {
             throw new PackageNotAvailableException(
