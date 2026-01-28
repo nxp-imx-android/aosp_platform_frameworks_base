@@ -107,18 +107,31 @@ class alignas(8) SharedMemory { // Ensure that `sizeof(SharedMemory)` is the sam
 private:
     volatile std::atomic<int64_t> latestNetworkTimeUnixEpochMillisAtZeroElapsedRealtimeMillis;
     volatile std::atomic<float> currentAnimatorScale;
-    volatile std::atomic<bool> isDeviceUpgrading;
+    volatile std::atomic<int32_t> isDeviceUpgrading;
 
     // LINT.IfChange(invalid_network_time)
     static constexpr int64_t INVALID_NETWORK_TIME = -1;
     // LINT.ThenChange(frameworks/base/core/java/com/android/internal/os/ApplicationSharedMemory.java:invalid_network_time)
+
+    // LINT.IfChange(pm_device_upgrading_unset)
+    static constexpr int32_t PM_DEVICE_UPGRADING_UNSET = -1;
+    // LINT.ThenChange(frameworks/base/core/java/com/android/internal/os/ApplicationSharedMemory.java:pm_device_upgrading_unset)
+
+    // LINT.IfChange(pm_device_upgrading_false)
+    static constexpr int32_t PM_DEVICE_UPGRADING_FALSE = 0;
+    // LINT.ThenChange(frameworks/base/core/java/com/android/internal/os/ApplicationSharedMemory.java:pm_device_upgrading_false)
+
+    // LINT.IfChange(pm_device_upgrading_true)
+    static constexpr int32_t PM_DEVICE_UPGRADING_TRUE = 1;
+    // LINT.ThenChange(frameworks/base/core/java/com/android/internal/os/ApplicationSharedMemory.java:pm_device_upgrading_true)
+
 
 public:
     // Default constructor sets initial values
     SharedMemory()
           : latestNetworkTimeUnixEpochMillisAtZeroElapsedRealtimeMillis(INVALID_NETWORK_TIME),
             currentAnimatorScale(1.f),
-            isDeviceUpgrading(false) {}
+            isDeviceUpgrading(PM_DEVICE_UPGRADING_UNSET) {}
 
     int64_t getLatestNetworkTimeUnixEpochMillisAtZeroElapsedRealtimeMillis() const {
         return latestNetworkTimeUnixEpochMillisAtZeroElapsedRealtimeMillis;
@@ -137,10 +150,10 @@ public:
     }
 
     void setIsDeviceUpgrading(bool upgrading) {
-        isDeviceUpgrading = upgrading;
+        isDeviceUpgrading = upgrading ? PM_DEVICE_UPGRADING_TRUE : PM_DEVICE_UPGRADING_FALSE;
     }
 
-    bool getIsDeviceUpgrading() const {
+    int getIsDeviceUpgrading() const {
         return isDeviceUpgrading;
     }
 
@@ -162,9 +175,7 @@ static_assert(sizeof(SharedMemory) ==
                       // currentAnimatorScale
                       4 +
                       // isDeviceUpgrading
-                      1 +
-                      // padding up to 8 bytes
-                      3 +
+                      4 +
                       sizeof(SystemFeaturesCache) +
                       sizeof(SystemCacheNonce),
               "Unexpected SharedMemory size");
@@ -174,9 +185,7 @@ static_assert(offsetof(SharedMemory, systemFeaturesCache) ==
                       // currentAnimatorScale
                       4 +
                       // isDeviceUpgrading
-                      1 +
-                      // padding up to 8 bytes,
-                      3,
+                      4,
               "Unexpected SystemFeaturesCache offset in SharedMemory");
 static_assert(offsetof(SharedMemory, systemPic) ==
                       offsetof(SharedMemory, systemFeaturesCache) + sizeof(SystemFeaturesCache),
@@ -275,7 +284,7 @@ static void nativeSetIsDeviceUpgrading(JNIEnv* env, jclass*, jlong ptr, jboolean
     sharedMemory->setIsDeviceUpgrading(upgrading);
 }
 
-static jboolean nativeGetIsDeviceUpgrading(JNIEnv* env, jclass*, jlong ptr) {
+static jint nativeGetIsDeviceUpgrading(JNIEnv* env, jclass*, jlong ptr) {
     SharedMemory* sharedMemory = reinterpret_cast<SharedMemory*>(ptr);
     return sharedMemory->getIsDeviceUpgrading();
 }
@@ -296,7 +305,7 @@ static const JNINativeMethod gMethods[] = {
         {"nativeSetCurrentAnimatorScale", "(JF)V", (void*)nativeSetCurrentAnimatorScale},
         {"nativeGetCurrentAnimatorScale", "(J)F", (void*)nativeGetCurrentAnimatorScale},
         {"nativeSetIsDeviceUpgrading", "(JZ)V", (void*)nativeSetIsDeviceUpgrading},
-        {"nativeGetIsDeviceUpgrading", "(J)Z", (void*)nativeGetIsDeviceUpgrading},
+        {"nativeGetIsDeviceUpgrading", "(J)I", (void*)nativeGetIsDeviceUpgrading},
 };
 
 static const char kApplicationSharedMemoryClassName[] =

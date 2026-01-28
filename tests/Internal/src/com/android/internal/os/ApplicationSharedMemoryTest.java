@@ -184,9 +184,9 @@ public class ApplicationSharedMemoryTest {
     @Test
     public void isDeviceUpgradingSharedMemory() throws IOException {
         ApplicationSharedMemory instance1 = ApplicationSharedMemory.create();
-
+        assertThat(instance1.getIsDeviceUpgrading()).isEqualTo(-1);
         instance1.setIsDeviceUpgrading(true);
-        assertThat(instance1.getIsDeviceUpgrading()).isTrue();
+        assertThat(instance1.getIsDeviceUpgrading()).isEqualTo(1);
 
         // Create a second read-only instance from the first
         ApplicationSharedMemory instance2 =
@@ -194,13 +194,13 @@ public class ApplicationSharedMemoryTest {
                         instance1.getReadOnlyFileDescriptor(), /* mutable= */ false);
 
         // Assert: Second instance reflects the value from the first
-        assertThat(instance2.getIsDeviceUpgrading()).isTrue();
+        assertThat(instance2.getIsDeviceUpgrading()).isEqualTo(1);
 
         // Test setting to false on the first instance
         instance1.setIsDeviceUpgrading(false);
-        assertThat(instance1.getIsDeviceUpgrading()).isFalse();
+        assertThat(instance1.getIsDeviceUpgrading()).isEqualTo(0);
 
         // Assert: Second instance also reflects the updated value
-        assertThat(instance2.getIsDeviceUpgrading()).isFalse();
+        assertThat(instance2.getIsDeviceUpgrading()).isEqualTo(0);
     }
 }
