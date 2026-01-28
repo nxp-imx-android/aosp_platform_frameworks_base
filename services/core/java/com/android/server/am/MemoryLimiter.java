@@ -278,7 +278,8 @@ class MemoryLimiter implements AutoCloseable {
                     private boolean mOpen = true;
 
                     // The native handler.
-                    private final long mNative = initLimiter(ControllerEnabled.this);
+                    private final long mNative = initLimiter(ControllerEnabled.this,
+                            enableMonitoring());
 
                     @Override
                     public void handleMessage(Message msg) {
@@ -725,9 +726,14 @@ class MemoryLimiter implements AutoCloseable {
 
     /**
      * Initialize the native layer and return a pointer to the native handler.  The controller
-     * receives any over-limit events.
+     * receives any over-limit events.  The method will throw an exception if initialization
+     * fails.
+     *
+     * @param controller is the Controller that receives over-limit events.
+     * @param monitor is true if limit monitoring is enabled.
+     * @return the native service.
      */
-    private static native long initLimiter(Controller controller);
+    private static native long initLimiter(Controller controller, boolean monitor);
 
     /**
      * Release the native handler.
@@ -736,14 +742,14 @@ class MemoryLimiter implements AutoCloseable {
 
     /**
      * Inform the native layer that a process has started.  No profile is assigned to the process
-     * but monitoring starts.  The function returns true on success.
+     * but the native service prepares to monitor the process, if monitoring was enabled when the
+     * native service was initialized.
      */
-    private static native boolean onProcessStarted(long servicePtr, int pid, int uid);
+    private static native void onProcessStarted(long servicePtr, int pid, int uid);
 
     /**
      * Request that a process's memory.high be configured to limit.  Negative values for the limit
-     * mean "maximum memory".  The function returns true on success.  If the process has not been
-     * started, or the process has exited since the last start, the function returns false.
+     * mean "maximum memory".
      */
-    private static native boolean configureLimit(long servicePtr, int pid, int uid, long limit);
+    private static native void configureLimit(long servicePtr, int pid, int uid, long limit);
 }
