@@ -65,7 +65,10 @@ public final class IntelligenceServiceExecutor
         manager.ensureRemoteIntelligenceServiceInitialized(/* shouldThrow= */ true);
 
         AndroidFuture<?> future =
-                manager.getRemoteOnDeviceIntelligenceService().postAsync(remoteCall::run);
+                manager.getRemoteOnDeviceIntelligenceService().postAsync(service -> {
+                    AndroidFuture<?> res = remoteCall.run(service);
+                    return res != null ? res : AndroidFuture.completedFuture(null);
+                });
         future.whenComplete(
                 (res, ex) -> {
                     if (ex != null) {
