@@ -91,6 +91,9 @@ constructor(
         val iconBackgroundView: ImageView? =
             holder.findViewById(R.id.icon_background) as? ImageView
 
+        val bottomSpacer = holder.findViewById(R.id.entity_header_bottom_spacer)
+        bottomSpacer?.visibility = if (summary.isNullOrEmpty()) View.VISIBLE else View.GONE
+
         if (icon != null) {
             iconView?.let { iv ->
                 val layoutParams = iconView.layoutParams
