@@ -3532,6 +3532,17 @@ package android.service.dreams {
 
 package android.service.notification {
 
+  public final class Adjustment implements android.os.Parcelable {
+    method @FlaggedApi("android.app.nm_contextual_display_launch") public int getOriginatingRuleId();
+    method @FlaggedApi("android.app.nm_contextual_display_launch") public int getOriginatingRuleOrder();
+    method @FlaggedApi("android.app.nm_contextual_display_launch") public void setOriginatingRuleId(int);
+    method @FlaggedApi("android.app.nm_contextual_display_launch") public void setOriginatingRuleOrder(int);
+    field @FlaggedApi("android.app.nm_contextual_display_launch") public static final String KEY_HIGHLIGHT = "highlight";
+    field @FlaggedApi("android.app.nm_contextual_display_launch") public static final String KEY_LIGHT = "light";
+    field @FlaggedApi("android.app.nm_contextual_display_launch") public static final String KEY_MODE_BREAKTHROUGHS = "mode_breakthrough";
+    field @FlaggedApi("android.app.nm_contextual_display_launch") public static final String KEY_SOUND = "sound";
+  }
+
   @Deprecated public abstract class ConditionProviderService extends android.app.Service {
     method @Deprecated public boolean isBound();
   }
