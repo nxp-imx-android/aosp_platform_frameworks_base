@@ -38,6 +38,7 @@ import android.service.personalcontext.hint.ContextHintWithSignature;
 import android.service.personalcontext.hint.ContextHintWrapper;
 import android.service.personalcontext.insight.ContextInsight;
 import android.service.personalcontext.insight.ContextInsightWrapper;
+import android.service.personalcontext.insight.PublishedContextInsight;
 import android.service.personalcontext.insight.interaction.InsightEvent;
 import android.service.personalcontext.insight.interaction.ReturnHintReport;
 import android.util.Log;
@@ -429,13 +430,27 @@ public final class PersonalContextManager {
     }
 
     /**
-     * Reports an InsightEvent back to the Understander that generated the Insight.
+     * Reports an event that occurred on this insight from a Renderer back to the Understander that
+     * published it.
+     *
+     * @param insight Insight the event occurred on
+     * @param eventType Type of event that occurred (see {@code InsightEvent.EVENT_*})
+     * @param renderToken RenderToken supplied to the Renderer
      *
      * @hide
      */
-    public void reportEvent(@NonNull InsightEvent event) {
+    @SystemApi
+    public void reportInsightEvent(
+            @NonNull PublishedContextInsight insight,
+            @InsightEvent.EventType int eventType,
+            @NonNull RenderToken renderToken) {
         try {
-            mService.reportEvent(event, mContext.getUserId());
+            mService.reportEvent(new InsightEvent(
+                            eventType,
+                            insight,
+                            System.currentTimeMillis(),
+                            renderToken),
+                    mContext.getUserId());
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
