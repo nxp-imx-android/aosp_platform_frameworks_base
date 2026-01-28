@@ -55,8 +55,8 @@ import java.util.function.Consumer;
  * The ContentSafetyManager provides access to content safety features.
  *
  * <p>It allows granted apps to manage content safety service configured on the device. Typical
- * calling pattern will be to {@link #checkContent} and {@link #isFeatureEnabled} checkFile against
- * sensitive content warnings.
+ * calling pattern will be to {@link #checkContentRequest} and {@link #isFeatureEnabledRequest}
+ * checkFile against sensitive content warnings.
  *
  * @hide
  */
@@ -271,7 +271,7 @@ public final class ContentSafetyManager {
      *     check content.
      */
     @RequiresPermission(Manifest.permission.CHECK_CONTENT_SAFETY)
-    public void checkContent(
+    public void requestCheckContent(
             @FeatureType int featureType,
             @NonNull @CheckContentParams Map<Integer, List<ParcelFileDescriptor>> input,
             @Nullable CancellationSignal cancellationSignal,
@@ -292,7 +292,7 @@ public final class ContentSafetyManager {
                                     }));
                 }};
 
-            mService.checkContent(
+            mService.requestCheckContent(
                     featureType,
                     packMapIntoBundle(input),
                     configureRemoteCancellationFuture(cancellationSignal, callbackExecutor),
@@ -361,7 +361,7 @@ public final class ContentSafetyManager {
      *     status code .
      */
     @RequiresPermission(Manifest.permission.CHECK_CONTENT_SAFETY)
-    public void isFeatureEnabled(
+    public void requestIsFeatureEnabled(
             @FeatureType int featureType,
             @Nullable CancellationSignal cancellationSignal,
             @NonNull @CallbackExecutor Executor callbackExecutor,
@@ -384,7 +384,7 @@ public final class ContentSafetyManager {
                 }
             };
 
-            mService.isFeatureEnabled(
+            mService.requestIsFeatureEnabled(
                     featureType,
                     configureRemoteCancellationFuture(cancellationSignal, callbackExecutor),
                     callback);
