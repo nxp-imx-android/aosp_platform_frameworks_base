@@ -33,9 +33,9 @@ import kotlinx.coroutines.launch
  *
  * @see [ExclusiveActivatable]
  */
-abstract class HydratedActivatable(
+public abstract class HydratedActivatable(
     /** Enable this to use [enqueueOnActivatedScope] */
-    val enableEnqueuedActivations: Boolean = false
+    public val enableEnqueuedActivations: Boolean = false
 ) : Activatable {
 
     private val hydrator = Hydrator("${this::class.simpleName}.hydrator")
@@ -117,7 +117,8 @@ abstract class HydratedActivatable(
      *
      * @see [Hydrator.hydratedStateOf]
      */
-    protected fun <T> StateFlow<T>.hydratedStateOf() = hydrator.hydratedStateOf(this)
+    protected fun <T> StateFlow<T>.hydratedStateOf(): Hydrator.StateDelegateProvider<T> =
+        hydrator.hydratedStateOf(this)
 
     /**
      * Returns a [Hydrator.StateDelegateProvider] which will automatically set the [traceName]. Use
@@ -127,6 +128,6 @@ abstract class HydratedActivatable(
      *
      * @see [Hydrator.hydratedStateOf]
      */
-    protected fun <T> Flow<T>.hydratedStateOf(initialValue: T) =
+    protected fun <T> Flow<T>.hydratedStateOf(initialValue: T): Hydrator.StateDelegateProvider<T> =
         hydrator.hydratedStateOf(initialValue, this)
 }

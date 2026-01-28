@@ -73,7 +73,7 @@ import kotlinx.coroutines.flow.onStart
  *   is detached. Using this is not *thread-safe* and should only be used on the main thread.
  */
 @MainThread
-fun View.repeatWhenAttached(
+public fun View.repeatWhenAttached(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     assertOnMainThread: Boolean = true,
     block: suspend LifecycleOwner.(View) -> Unit,
@@ -154,7 +154,7 @@ private fun createLifecycleOwnerAndRun(
  * └───────────────┴───────────────────┴──────────────┴─────────────────┘
  * ```
  */
-class ViewLifecycleOwner(private val view: View, useSeparateThreadUnsafe: Boolean = false) :
+public class ViewLifecycleOwner(private val view: View, useSeparateThreadUnsafe: Boolean = false) :
     LifecycleOwner {
 
     private val windowVisibleListener =
@@ -171,7 +171,7 @@ class ViewLifecycleOwner(private val view: View, useSeparateThreadUnsafe: Boolea
             LifecycleRegistry(this)
         }
 
-    fun onCreate() {
+    public fun onCreate() {
         registry.currentState = Lifecycle.State.CREATED
         assert(observer == null)
         // ViewTreeObserver on a view actually changes whether the view is attached to Window or
@@ -185,7 +185,7 @@ class ViewLifecycleOwner(private val view: View, useSeparateThreadUnsafe: Boolea
         updateState()
     }
 
-    fun onDestroy() {
+    public fun onDestroy() {
         assert(observer != null)
         observer?.apply {
             removeOnWindowVisibilityChangeListener(windowVisibleListener)
@@ -195,7 +195,7 @@ class ViewLifecycleOwner(private val view: View, useSeparateThreadUnsafe: Boolea
         registry.currentState = Lifecycle.State.DESTROYED
     }
 
-    override val lifecycle: Lifecycle
+    public override val lifecycle: Lifecycle
         get() {
             return registry
         }
@@ -219,7 +219,7 @@ class ViewLifecycleOwner(private val view: View, useSeparateThreadUnsafe: Boolea
  * [block] may be run multiple times, running once per every time this` [View]'s Window's
  * [WindowLifecycleState] becomes at least at [state].
  */
-suspend fun View.repeatOnWindowLifecycle(
+public suspend fun View.repeatOnWindowLifecycle(
     state: WindowLifecycleState,
     block: suspend CoroutineScope.() -> Unit,
 ): Nothing {
@@ -240,7 +240,9 @@ suspend fun View.repeatOnWindowLifecycle(
  * [block] may be run multiple times, running once per every time the view is attached.
  */
 @MainThread
-suspend fun View.repeatWhenAttachedToWindow(block: suspend CoroutineScope.() -> Unit): Nothing {
+public suspend fun View.repeatWhenAttachedToWindow(
+    block: suspend CoroutineScope.() -> Unit
+): Nothing {
     Assert.isMainThread()
     isAttached.collectLatest { if (it) coroutineScope { block() } }
     awaitCancellation() // satisfies return type of Nothing
@@ -256,7 +258,9 @@ suspend fun View.repeatWhenAttachedToWindow(block: suspend CoroutineScope.() -> 
  * [block] may be run multiple times, running once per every time the window becomes visible.
  */
 @MainThread
-suspend fun View.repeatWhenWindowIsVisible(block: suspend CoroutineScope.() -> Unit): Nothing {
+public suspend fun View.repeatWhenWindowIsVisible(
+    block: suspend CoroutineScope.() -> Unit
+): Nothing {
     Assert.isMainThread()
     isWindowVisible.collectLatest { if (it) coroutineScope { block() } }
     awaitCancellation() // satisfies return type of Nothing
@@ -272,14 +276,16 @@ suspend fun View.repeatWhenWindowIsVisible(block: suspend CoroutineScope.() -> U
  * [block] may be run multiple times, running once per every time the window is focused.
  */
 @MainThread
-suspend fun View.repeatWhenWindowHasFocus(block: suspend CoroutineScope.() -> Unit): Nothing {
+public suspend fun View.repeatWhenWindowHasFocus(
+    block: suspend CoroutineScope.() -> Unit
+): Nothing {
     Assert.isMainThread()
     isWindowFocused.collectLatest { if (it) coroutineScope { block() } }
     awaitCancellation() // satisfies return type of Nothing
 }
 
 /** Lifecycle states for a [View]'s interaction with a [android.view.Window]. */
-enum class WindowLifecycleState {
+public enum class WindowLifecycleState {
     /** Indicates that the [View] is attached to a [android.view.Window]. */
     ATTACHED,
     /**
