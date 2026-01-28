@@ -77,6 +77,7 @@ interface IMediaQualityManager {
     List<String> getSoundProfileAllowList(int userId);
     void setSoundProfileAllowList(in List<String> packages, int userId);
     List<SoundProfileHandle> getSoundProfileHandle(in String[] id, int userId);
+    List<SoundProfileHandle> getSoundProfileHandleList(in String[] ids, int userId);
 
     void registerPictureProfileCallback(in IPictureProfileCallback cb);
     void registerSoundProfileCallback(in ISoundProfileCallback cb);

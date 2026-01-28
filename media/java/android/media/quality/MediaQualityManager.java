@@ -609,6 +609,33 @@ public final class MediaQualityManager {
     }
 
     /**
+     * Returns a list of SoundProfileHandle objects corresponding to the provided
+     * profile identifiers.
+     *
+     * <p>The returned list contains handles that allow for the management or selection of
+     * specific sound profiles. If a provided ID does not correspond to an existing profile, it
+     * will be omitted from the result.
+     *
+     * @param ids An array of unique string identifiers for the desired sound profiles.
+     * @return A {@link List} of SoundProfileHandle objects. Returns an empty list
+     * if no matching profiles are found or if {@code ids} is empty.
+     *
+     * @hide
+     */
+    @SystemApi
+    @NonNull
+    @RequiresPermission(android.Manifest.permission.MANAGE_GLOBAL_SOUND_QUALITY_SERVICE)
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public List<SoundProfileHandle> getSoundProfileHandleList(@NonNull String[] ids) {
+        try {
+            return mService.getSoundProfileHandleList(ids, mUserHandle.getIdentifier());
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+
+    /**
      * Creates a picture profile and store it in the system.
      *
      * <p>If the profile is created successfully,

@@ -78,10 +78,7 @@ public final class MediaQualityUtils {
     private static final String TAG = "MediaQualityUtils";
     public static final String SETTINGS = "settings";
 
-    public static final SoundProfileHandle SOUND_PROFILE_HANDLE_NONE = new SoundProfileHandle();
-    static {
-        SOUND_PROFILE_HANDLE_NONE.id = -10000;
-    }
+    public static final SoundProfileHandle SOUND_PROFILE_HANDLE_NONE = SoundProfileHandle.NONE;
 
     private static final Set<String> PREDEFINED_NAMES = new HashSet<>(Arrays.asList(
             PictureQuality.PARAMETER_BRIGHTNESS,

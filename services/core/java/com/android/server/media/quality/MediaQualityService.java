@@ -1210,6 +1210,28 @@ public class MediaQualityService extends SystemService {
 
         @GuardedBy("mSoundProfileLock")
         @Override
+        public List<SoundProfileHandle> getSoundProfileHandleList(
+                @NonNull String[] ids, int userId) {
+            if (DEBUG) {
+                Slog.d(TAG, "getSoundProfileHandle");
+            }
+            List<SoundProfileHandle> toReturn = new ArrayList<>();
+            synchronized (mSoundProfileLock) {
+                for (String id : ids) {
+                    Long key = mSoundProfileTempIdMap.getKey(id);
+                    if (key != null) {
+                        toReturn.add(MediaQualityUtils.SOUND_PROFILE_HANDLE_NONE);
+                    } else {
+                        toReturn.add(null);
+                    }
+                }
+            }
+            return toReturn;
+        }
+
+
+        @GuardedBy("mSoundProfileLock")
+        @Override
         public void createSoundProfile(SoundProfile sp, int userId) {
             if (DEBUG) {
                 Slog.d(TAG, "createSoundProfile: create sound profile for " + sp.getName());

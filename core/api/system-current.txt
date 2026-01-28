@@ -9111,6 +9111,7 @@ package android.media.quality {
     method @NonNull public java.util.List<java.lang.String> getPictureProfilePackageNames();
     method @NonNull public java.util.List<android.media.quality.PictureProfile> getPictureProfilesByPackage(@NonNull String, @Nullable android.media.quality.MediaQualityManager.ProfileQueryParams);
     method @NonNull public java.util.List<java.lang.String> getSoundProfileAllowList();
+    method @FlaggedApi("android.media.tv.flags.media_quality_fw_c") @NonNull public java.util.List<android.media.quality.SoundProfileHandle> getSoundProfileHandleList(@NonNull String[]);
     method @NonNull public java.util.List<java.lang.String> getSoundProfilePackageNames();
     method @NonNull public java.util.List<android.media.quality.SoundProfile> getSoundProfilesByPackage(@NonNull String, @Nullable android.media.quality.MediaQualityManager.ProfileQueryParams);
     method public void setAutoPictureQualityEnabled(boolean);
@@ -9140,6 +9141,14 @@ package android.media.quality {
     method @NonNull public android.media.quality.SoundProfile.Builder setInputId(@NonNull String);
     method @NonNull public android.media.quality.SoundProfile.Builder setPackageName(@NonNull String);
     method @NonNull public android.media.quality.SoundProfile.Builder setProfileType(int);
+  }
+
+  @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public final class SoundProfileHandle implements android.os.Parcelable {
+    method public int describeContents();
+    method public long getId();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.media.quality.SoundProfileHandle> CREATOR;
+    field @NonNull public static final android.media.quality.SoundProfileHandle NONE;
   }
 
 }
