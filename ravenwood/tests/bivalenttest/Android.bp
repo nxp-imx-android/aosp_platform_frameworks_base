@@ -37,6 +37,7 @@ cc_library_shared {
 
 java_defaults {
     name: "ravenwood-bivalent-defaults",
+    target_sdk_version: "34", // For compat-framework tests
     static_libs: [
         "androidx.annotation_annotation",
         "androidx.test.ext.junit",
@@ -64,16 +65,13 @@ java_defaults {
 android_ravenwood_test {
     name: "RavenwoodBivalentTest",
     defaults: ["ravenwood-bivalent-defaults"],
-    target_sdk_version: "34",
     package_name: "com.android.ravenwoodtest.bivalenttest",
-    auto_gen_config: true,
+    build_resources: true,
 }
 
 java_defaults {
     name: "ravenwood-bivalent-device-defaults",
     defaults: ["ravenwood-bivalent-defaults"],
-
-    target_sdk_version: "34", // For compat-framework tests
 
     // TODO(b/371215487): migrate bivalenttest.ravenizer tests to another architecture
     exclude_srcs: [
@@ -85,6 +83,10 @@ java_defaults {
         "truth",
         "flag-junit",
         "ravenwood-junit",
+        "mockito-target-inline-minus-junit4",
+    ],
+    jni_libs: [
+        "libdexmakerjvmtiagent",
     ],
     test_suites: [
         "device-tests",

@@ -55,8 +55,6 @@ import android.ravenwood.annotation.RavenwoodIgnore;
 import android.ravenwood.annotation.RavenwoodKeep;
 import android.ravenwood.annotation.RavenwoodKeepPartialClass;
 import android.ravenwood.annotation.RavenwoodKeepStaticInitializer;
-import android.ravenwood.annotation.RavenwoodRedirect;
-import android.ravenwood.annotation.RavenwoodRedirectionClass;
 import android.ravenwood.annotation.RavenwoodReplace;
 import android.ravenwood.annotation.RavenwoodThrow;
 import android.security.net.config.NetworkSecurityConfigProvider;
@@ -117,7 +115,6 @@ final class ServiceConnectionLeaked extends AndroidRuntimeException {
  * @hide
  */
 @RavenwoodKeepPartialClass
-@RavenwoodRedirectionClass("LoadedApk_ravenwood")
 @RavenwoodKeepStaticInitializer
 public final class LoadedApk {
     static final String TAG = "LoadedApk";
@@ -335,6 +332,7 @@ public final class LoadedApk {
     }
 
     @UnsupportedAppUsage(trackingBug = 172409979)
+    @RavenwoodKeep
     public CompatibilityInfo getCompatibilityInfo() {
         return mDisplayAdjustments.getCompatibilityInfo();
     }
@@ -862,6 +860,7 @@ public final class LoadedApk {
 
     private SplitDependencyLoaderImpl mSplitLoader;
 
+    @RavenwoodReplace(reason = "Ravenwood does not support split APK")
     ClassLoader getSplitClassLoader(String splitName) throws NameNotFoundException {
         if (mSplitLoader == null) {
             return mClassLoader;
@@ -869,6 +868,11 @@ public final class LoadedApk {
         return mSplitLoader.getClassLoaderForSplit(splitName);
     }
 
+    private ClassLoader getSplitClassLoader$ravenwood(String splitName) {
+        return getClassLoader();
+    }
+
+    @RavenwoodIgnore(reason = "Ravenwood does not support split APK")
     String[] getSplitPaths(String splitName) throws NameNotFoundException {
         if (mSplitLoader == null) {
             return mSplitResDirs;
@@ -1256,7 +1260,7 @@ public final class LoadedApk {
     }
 
     @UnsupportedAppUsage
-    @RavenwoodRedirect
+    @RavenwoodReplace(comment = "Ravenwood loads all classes in a single classloader")
     public ClassLoader getClassLoader() {
         ClassLoader ret = mClassLoader;
         if (ret != null) {
@@ -1268,6 +1272,10 @@ public final class LoadedApk {
             }
             return mClassLoader;
         }
+    }
+
+    private ClassLoader getClassLoader$ravenwood() {
+        return LoadedApk.class.getClassLoader();
     }
 
     private void registerAppInfoToArt() {
@@ -1475,6 +1483,7 @@ public final class LoadedApk {
      * Corresponds to {@link ApplicationInfo#resourceDirs}.
      */
     @UnsupportedAppUsage
+    @RavenwoodKeep
     public String[] getOverlayDirs() {
         return mLegacyOverlayDirs;
     }
@@ -1482,6 +1491,7 @@ public final class LoadedApk {
     /**
      * Corresponds to {@link ApplicationInfo#overlayPaths}.
      */
+    @RavenwoodKeep
     public String[] getOverlayPaths() {
         return mOverlayPaths;
     }
@@ -1522,7 +1532,7 @@ public final class LoadedApk {
         return mResources;
     }
 
-    @RavenwoodRedirect
+    @RavenwoodKeep
     private Resources getResourcesInner() {
         final String[] splitPaths;
         try {

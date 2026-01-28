@@ -605,7 +605,6 @@ public final class AssetManager implements AutoCloseable {
 
     /** @hide */
     @NonNull
-    @RavenwoodThrow(blockedBy = ResourcesLoader.class)
     public List<ResourcesLoader> getLoaders() {
         return mLoaders == null ? Collections.emptyList() : Arrays.asList(mLoaders);
     }
