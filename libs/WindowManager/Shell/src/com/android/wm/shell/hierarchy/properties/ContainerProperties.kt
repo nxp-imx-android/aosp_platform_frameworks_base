@@ -22,10 +22,10 @@ import android.window.TransitionInfo
 import androidx.annotation.CallSuper
 import com.android.wm.shell.dagger.hierarchy.WmSyncedProperty
 import com.android.wm.shell.hierarchy.updates.HierarchyChangeFlags
-import com.android.wm.shell.hierarchy.updates.HierarchyChanges.Companion.CHANGED_BOUNDS
-import com.android.wm.shell.hierarchy.updates.HierarchyChanges.Companion.CHANGED_ROTATION
-import com.android.wm.shell.hierarchy.updates.HierarchyChanges.Companion.CHANGED_VISIBILITY
-import com.android.wm.shell.hierarchy.updates.HierarchyChanges.Companion.CHANGED_WINDOWING_MODE
+import com.android.wm.shell.hierarchy.updates.HierarchySnapshot.Companion.CHANGED_BOUNDS
+import com.android.wm.shell.hierarchy.updates.HierarchySnapshot.Companion.CHANGED_ROTATION
+import com.android.wm.shell.hierarchy.updates.HierarchySnapshot.Companion.CHANGED_VISIBILITY
+import com.android.wm.shell.hierarchy.updates.HierarchySnapshot.Companion.CHANGED_WINDOWING_MODE
 import com.android.wm.shell.hierarchy.utils.ImmutableRectF
 import com.android.wm.shell.shared.TransitionUtil
 
@@ -48,7 +48,7 @@ open class ContainerProperties(
         }
 
     // Whether this container is requested to be visible or not. This does not aggregate the
-    // visiblity of any ancestors
+    // visibility of any ancestors
     var visibleRequested: Boolean = false
 
     // Convenience property to get the bounds of this container
@@ -131,7 +131,7 @@ open class ContainerProperties(
 
     final override fun toString(): String {
         val props = propsToString()
-        return "window {$props}"
+        return "p {$props}"
     }
 
     /**

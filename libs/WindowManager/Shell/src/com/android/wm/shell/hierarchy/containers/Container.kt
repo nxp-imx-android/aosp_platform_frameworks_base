@@ -39,7 +39,7 @@ open class Container(
     name: String? = null
 ) {
     // A debug name for this container
-    var name = "${name ?: this::class.simpleName}_${tokenToString(token)}"
+    var name = "${name ?: props::class.simpleName}_${tokenToString(token)}"
 
     // The actual SurfaceControl for this container. For containers that have corresponding WM
     // containers, then this leash is provided by WM via transitions. Otherwise the creator of
@@ -82,12 +82,11 @@ open class Container(
     // The children of this container in the hierarchy
     val children = mutableListOf<Container>()
 
-    // Describes a container that exists transiently during a transition, but is not organized and
-    // will be removed from the hierarchy once the transition is completed. Modes associated with
-    // containers in the hiararchy are not notified of transient containers when they are added
+    // Describes a container that exists during a transition, but is not organized and will be
+    // removed from the hierarchy once the transition is completed. Modes associated with
+    // containers in the hierarchy are not notified of temporary containers when they are added
     // and removed from the hierarchy (but can query the hierarchy as necessary)
-    var isTransientAnimatingContainer = false
-        protected set
+    var isTemporaryAnimatingContainer = false
 
     /**
      * Reorders a child of the container to the top or bottom of the list.

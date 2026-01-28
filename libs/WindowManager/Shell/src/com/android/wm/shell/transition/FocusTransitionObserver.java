@@ -68,6 +68,13 @@ public class FocusTransitionObserver {
 
     private final ArraySet<RunningTaskInfo> mTmpTasksToBeNotified = new ArraySet<>();
 
+    /**
+     * Constructor for when this class is only used to track state.
+     */
+    public FocusTransitionObserver() {
+        mShellCommandHandler = null;
+    }
+
     public FocusTransitionObserver(
             @NonNull ShellInit shellInit,
             @NonNull ShellCommandHandler shellCommandHandler) {
@@ -287,6 +294,18 @@ public class FocusTransitionObserver {
         // the focus changes. So we here returns only taskId to ask callers to fetch the TaskInfo
         // if needed.
         return taskInfo != null ? taskInfo.taskId : INVALID_TASK_ID;
+    }
+
+    /**
+     * Returns a mapping of display id -> focused task id on that display.
+     */
+    public void setFocusedTaskIdsPerDisplay(Map<Integer, Integer> focusedTaskPerDisplay) {
+        focusedTaskPerDisplay.clear();
+        for (int i = 0; i < mFocusedTaskOnDisplay.size(); i++) {
+            final int displayId = mFocusedTaskOnDisplay.keyAt(i);
+            final RunningTaskInfo taskInfo = mFocusedTaskOnDisplay.valueAt(i);
+            focusedTaskPerDisplay.put(displayId, taskInfo.taskId);
+        }
     }
 
     /** Dumps focused display and tasks. */

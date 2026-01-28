@@ -548,6 +548,13 @@ public class Transitions implements RemoteCallable<Transitions>,
         return mRemoteTransitionHandler;
     }
 
+    /**
+     * Hooks the container hierarchy adapter into the transitions flow.
+     */
+    public void registerContainerHierarchyAdapter(TransitionObserver observer) {
+        mObservers.add(0, observer);
+    }
+
     /** Registers an observer on the lifecycle of transitions. */
     public void registerObserver(@NonNull TransitionObserver observer) {
         mObservers.add(observer);

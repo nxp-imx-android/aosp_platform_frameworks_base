@@ -60,15 +60,11 @@ interface HierarchyUpdateRequester {
      *
      * This can be called while another update is in progress as the changes in the WCT are
      * requested to be applied asynchronously.
-     *
-     * @param useWct If set, the provided callback will be given this WCT, and it will not be
-     *               applied automatically (the caller must apply the WCT themselves)
      */
     fun wm(
         reason: String,
         transitType: Int,
-        useWct: WindowContainerTransaction = UNSPECIFIED_WCT,
-        fn: (WindowContainerTransaction) -> Unit
+        wct: WindowContainerTransaction,
     ) {
         throw IllegalStateException("Requesting update before initialization")
     }

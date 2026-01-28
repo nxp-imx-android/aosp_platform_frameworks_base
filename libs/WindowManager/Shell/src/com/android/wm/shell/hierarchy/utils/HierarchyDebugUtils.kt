@@ -16,6 +16,9 @@
 package com.android.wm.shell.hierarchy.utils
 
 import android.window.WindowContainerToken
+import com.android.wm.shell.hierarchy.containers.Container
+import com.android.wm.shell.hierarchy.updates.HierarchySnapshot
+import com.android.wm.shell.hierarchy.updates.EMPTY_SNAPSHOT
 
 /**
  * Utility functions to support debugging the hierarchy.
@@ -31,11 +34,94 @@ class HierarchyDebugUtils {
         val NONE = "\u001b[0m"
 
         /**
+         * Returns a string representation of a hierarchy rooted at the given container.
+         */
+        fun dumpToString(
+            container: Container,
+            prefix: String = "",
+            snapshot: HierarchySnapshot = EMPTY_SNAPSHOT,
+            withColor: String? = null,
+        ): String {
+            val changeFlags = snapshot.getChanges(container)
+            val oldState =
+                if (!changeFlags.isEmpty) {
+                    snapshot.snapshots.getValue(container).state
+                } else null
+            val startColorTag = withColor ?: ""
+            val endColorTag = if (withColor != null) NONE else ""
+            var output = ""
+
+            // Dump basic info
+            val startModeColorTag = if (withColor != null) PURPLE else ""
+            val endModeColorTag = if (withColor != null) NONE else ""
+            val modeStr = if (container.mode != null)
+                " ${startModeColorTag}${container.mode!!.getId()}${endModeColorTag}" else ""
+            val changeFlagStr = if (!changeFlags.isEmpty) " changes=$changeFlags" else ""
+            output += "${prefix}${startColorTag}${container.name}${endColorTag}" +
+                    "${modeStr}${changeFlagStr}\n"
+
+            // Dump current & previous window oinfo
+            if (oldState != null) {
+                output += "${prefix}$YELLOW(from)$NONE ${oldState.props}\n"
+                output += "${prefix}$YELLOW  (to)$NONE ${container.props}\n"
+            } else {
+                output += "${prefix}${container.props}\n"
+            }
+
+            // Dump current surface info
+            output += "${prefix}${container.surface}\n"
+
+            // Identify changed children
+            val reorderedChildren = mutableListOf<Container>()
+            val removedChildren = mutableListOf<Container>()
+            val addedChildren = mutableListOf<Container>()
+            if (oldState != null) {
+                if (!oldState.children.isEmpty()) {
+                    removedChildren.addAll(oldState.children - container.children.toSet())
+                    addedChildren.addAll(container.children - oldState.children.toSet())
+                    for (child in oldState.children) {
+                        if (child in container.children) {
+                            if (container.children.indexOf(child)
+                                != oldState.children.indexOf(child)
+                            ) {
+                                reorderedChildren.add(child)
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Dump the current children
+            if (container.children.isNotEmpty()) {
+                val innerPrefix = "${prefix}| "
+                val allChildren = removedChildren + container.children
+                for ((index, child) in allChildren.withIndex()) {
+                    if (index > 0) {
+                        output += "${prefix}| -\n"
+                    }
+                    var withColor = WHITE
+                    if (child in removedChildren) {
+                        withColor = RED
+                    } else if (child in reorderedChildren) {
+                        withColor = YELLOW
+                    } else if (child in addedChildren) {
+                        withColor = GREEN
+                    }
+                    output += dumpToString(child, innerPrefix, snapshot, withColor)
+                    output += "\n"
+                }
+            }
+            return output.trimEnd()
+        }
+
+        /**
          * Returns a string representation for a token.
          */
         fun tokenToString(token: WindowContainerToken): String {
-            val windowTokenStr =
-                token.toString().removePrefix("WCT{android.os.BinderProxy@").removeSuffix("}")
+            val windowTokenStr = token.toString()
+                .removePrefix("WCT{android.os.BinderProxy@")
+                .removePrefix("WCT{android.os.Binder@")
+                .removeSuffix("}")
             return "Token=${windowTokenStr}"
         }
     }

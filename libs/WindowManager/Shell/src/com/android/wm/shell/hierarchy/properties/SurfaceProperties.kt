@@ -235,7 +235,7 @@ class SurfaceProperties(
     override fun toString(): String {
         val props = "layer=$layer alpha=$alpha crop=$crop refFrame=${referenceFrame}" +
                 " bounds=$relBounds bgBlur=$backgroundBlurRadius"
-        return "surface {$props}"
+        return "s {$props}"
     }
 
     companion object {

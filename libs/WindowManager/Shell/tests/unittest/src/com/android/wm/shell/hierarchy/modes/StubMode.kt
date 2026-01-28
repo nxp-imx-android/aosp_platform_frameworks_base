@@ -17,6 +17,7 @@ package com.android.wm.shell.hierarchy.modes
 
 import com.android.wm.shell.hierarchy.containers.Container
 import com.android.wm.shell.hierarchy.updates.HierarchyChangeFlags
+import com.android.wm.shell.hierarchy.updates.HierarchySnapshot
 
 /**
  * A test Mode for a container in the ContainerHierarchy.
@@ -33,9 +34,9 @@ open class StubMode() : Mode {
     override fun attachToContainer(
         updateContext: Mode.UpdateContext,
         container: Container,
-        isTopAncestor: Boolean
+        isDirectlyAssigned: Boolean
     ) {
-        if (isTopAncestor) {
+        if (isDirectlyAssigned) {
             attachedRoots.add(container)
         }
         attachedContainers.add(container)
@@ -44,5 +45,13 @@ open class StubMode() : Mode {
     override fun detachFromContainer(updateContext: Mode.UpdateContext, container: Container) {
         attachedRoots.remove(container)
         attachedContainers.remove(container)
+    }
+
+    override fun containerChanged(
+        updateContext: Mode.UpdateContext,
+        container: Container,
+        snapshot: HierarchySnapshot
+    ) {
+        updates.add(container to snapshot.getChanges(container))
     }
 }

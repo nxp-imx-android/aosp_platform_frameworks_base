@@ -23,7 +23,7 @@ import androidx.test.filters.SmallTest
 import com.android.wm.shell.Flags.FLAG_ENABLE_SHELL_MODES
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.hierarchy.updates.HierarchyChangeFlags
-import com.android.wm.shell.hierarchy.updates.HierarchyChanges
+import com.android.wm.shell.hierarchy.updates.HierarchySnapshot
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -82,7 +82,7 @@ class ContainerPropertiesTest : ShellTestCase() {
         val chgs = HierarchyChangeFlags()
         properties1.diff(properties2, chgs)
 
-        assertThat(chgs.get(HierarchyChanges.CHANGED_BOUNDS)).isTrue()
+        assertThat(chgs.get(HierarchySnapshot.CHANGED_BOUNDS)).isTrue()
     }
 
     @Test
@@ -95,7 +95,7 @@ class ContainerPropertiesTest : ShellTestCase() {
         val chgs = HierarchyChangeFlags()
         properties1.diff(properties2, chgs)
 
-        assertThat(chgs.get(HierarchyChanges.CHANGED_ROTATION)).isTrue()
+        assertThat(chgs.get(HierarchySnapshot.CHANGED_ROTATION)).isTrue()
     }
 
     @Test
@@ -112,7 +112,7 @@ class ContainerPropertiesTest : ShellTestCase() {
         val chgs = HierarchyChangeFlags()
         properties1.diff(properties2, chgs)
 
-        assertThat(chgs.get(HierarchyChanges.CHANGED_WINDOWING_MODE)).isTrue()
+        assertThat(chgs.get(HierarchySnapshot.CHANGED_WINDOWING_MODE)).isTrue()
     }
 
     @Test
@@ -130,8 +130,8 @@ class ContainerPropertiesTest : ShellTestCase() {
         val chgs = HierarchyChangeFlags()
         properties1.diff(properties2, chgs)
 
-        assertThat(chgs.get(HierarchyChanges.CHANGED_BOUNDS)).isTrue()
-        assertThat(chgs.get(HierarchyChanges.CHANGED_ROTATION)).isTrue()
-        assertThat(chgs.get(HierarchyChanges.CHANGED_WINDOWING_MODE)).isTrue()
+        assertThat(chgs.get(HierarchySnapshot.CHANGED_BOUNDS)).isTrue()
+        assertThat(chgs.get(HierarchySnapshot.CHANGED_ROTATION)).isTrue()
+        assertThat(chgs.get(HierarchySnapshot.CHANGED_WINDOWING_MODE)).isTrue()
     }
 }
