@@ -16,6 +16,6 @@
 
 package com.android.server.security.talisman;
 
-public class TrustTokenExhaustedException extends Exception {
+public class TrustTokenExhaustedException extends IllegalStateException {
     TrustTokenExhaustedException() {}
 }

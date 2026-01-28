@@ -36,7 +36,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 
-class TrustTokenSqliteDatabase extends TrustTokenDatabase {
+class TrustTokenSqliteDatabase extends TrustTokenDatabase implements AutoCloseable {
     private static final String TAG = "TrustTokenDatabase";
     private static final Duration MINIMUM_VALID_DURATION = Duration.ofMinutes(15);
 
@@ -100,6 +100,11 @@ class TrustTokenSqliteDatabase extends TrustTokenDatabase {
     void updateTrustConfiguration(@NonNull TrustConfiguration configuration) {
         DatabaseHelper db = getWritableDatabase();
         db.updateTrustConfiguration(configuration);
+    }
+
+    @Override
+    public void close() {
+        mOpenHelper.close();
     }
 
     private TrustTokenSqliteDatabase(OpenHelper helper, Clock clock) {

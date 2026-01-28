@@ -93,13 +93,16 @@ final class TrustTokenMasterKey {
         return fromKeyStore(keyPrefix);
     }
 
-    @NonNull
+    @Nullable
     static TrustTokenMasterKey fromKeyStore(@NonNull String keyPrefix) {
         var helper = new KeyStoreHelper();
         var encryptionEntry =
                 (KeyStore.SecretKeyEntry) helper.getEntry(encryptionKeyAlias(keyPrefix));
         var attestationEntry =
                 (KeyStore.PrivateKeyEntry) helper.getEntry(attestationKeyAlias(keyPrefix));
+        if (encryptionEntry == null || attestationEntry == null) {
+            return null;
+        }
         var certificates =
                 new ArrayList<Certificate>(1 + attestationEntry.getCertificateChain().length);
         certificates.addAll(Arrays.asList(attestationEntry.getCertificateChain()));
@@ -199,7 +202,7 @@ final class TrustTokenMasterKey {
             }
         }
 
-        @NonNull
+        @Nullable
         KeyStore.Entry getEntry(@NonNull String alias) {
             try {
                 return mKeyStore.getEntry(alias, null);
