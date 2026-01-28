@@ -505,16 +505,28 @@ public class PipBoundsAlgorithm implements PipDisplayLayoutState.DisplayIdListen
                 displayLayout);
         final int leftEdge = bounds.left;
 
+        // Make sure that the PiP window vertically stays within the movement bounds
+        final int newTop = Math.max(movementBounds.top,
+                Math.min(bounds.top, movementBounds.bottom));
+
+        // If PiP is allowed to free-float, we only snap to an edge if the PiP is off-screen
+        if (mPipDesktopState.isFreeFloatingPipEnabled()) {
+            int adjustedLeft = leftEdge;
+            if (leftEdge < movementBounds.left) {
+                adjustedLeft = movementBounds.left;
+            } else if (leftEdge > movementBounds.right) {
+                adjustedLeft = movementBounds.right;
+            }
+            bounds.offsetTo(adjustedLeft, newTop);
+            return;
+        }
+
         final int fromLeft = Math.abs(leftEdge - movementBounds.left);
         final int fromRight = Math.abs(movementBounds.right - leftEdge);
-
         // The PIP will be snapped to either the right or left edge, so calculate which one
         // is closest to the current position.
         final int newLeft = fromLeft < fromRight
                 ? movementBounds.left : movementBounds.right;
-        // Make sure that the PiP window vertically stays within the movement bounds
-        final int newTop = Math.max(movementBounds.top,
-                Math.min(bounds.top, movementBounds.bottom));
 
         bounds.offsetTo(newLeft, newTop);
     }

@@ -69,6 +69,7 @@ import com.android.wm.shell.common.pip.IPipAnimationListener.PipResources;
 import com.android.wm.shell.common.pip.PipAppOpsListener;
 import com.android.wm.shell.common.pip.PipBoundsAlgorithm;
 import com.android.wm.shell.common.pip.PipBoundsState;
+import com.android.wm.shell.common.pip.PipDesktopState;
 import com.android.wm.shell.common.pip.PipDisplayLayoutState;
 import com.android.wm.shell.common.pip.PipKeepClearAlgorithmInterface;
 import com.android.wm.shell.common.pip.PipMediaController;
@@ -133,6 +134,7 @@ public class PipController implements ConfigurationChangeListener,
     private final PipSurfaceTransactionHelper.SurfaceControlTransactionFactory
             mSurfaceControlTransactionFactory;
     private final PipSurfaceTransactionHelper mPipSurfaceTransactionHelper;
+    private final PipDesktopState mPipDesktopState;
 
     private boolean mWaitingToPlayDisplayChangeBoundsUpdate;
 
@@ -182,6 +184,7 @@ public class PipController implements ConfigurationChangeListener,
             TabletopModeController tabletopModeController,
             PipKeepClearAlgorithmInterface pipKeepClearAlgorithm,
             PipSurfaceTransactionHelper pipSurfaceTransactionHelper,
+            PipDesktopState pipDesktopState,
             ShellExecutor mainExecutor) {
         mContext = context;
         mShellCommandHandler = shellCommandHandler;
@@ -205,6 +208,7 @@ public class PipController implements ConfigurationChangeListener,
         mTabletopModeController = tabletopModeController;
         mPipKeepClearAlgorithm = pipKeepClearAlgorithm;
         mPipSurfaceTransactionHelper = pipSurfaceTransactionHelper;
+        mPipDesktopState = pipDesktopState;
         mMainExecutor = mainExecutor;
         mImpl = new PipImpl();
         mSurfaceControlTransactionFactory =
@@ -239,6 +243,7 @@ public class PipController implements ConfigurationChangeListener,
             TabletopModeController tabletopModeController,
             PipKeepClearAlgorithmInterface pipKeepClearAlgorithm,
             PipSurfaceTransactionHelper pipSurfaceTransactionHelper,
+            PipDesktopState pipDesktopState,
             ShellExecutor mainExecutor) {
         if (!context.getPackageManager().hasSystemFeature(FEATURE_PICTURE_IN_PICTURE)) {
             ProtoLog.w(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
@@ -250,7 +255,7 @@ public class PipController implements ConfigurationChangeListener,
                 pipDisplayLayoutState, pipScheduler, taskStackListener, shellTaskOrganizer,
                 pipTransitionState, pipTouchHandler, pipAppOpsListener, pipMenuController,
                 pipUiEventLogger, pipMediaController, tabletopModeController,
-                pipKeepClearAlgorithm, pipSurfaceTransactionHelper, mainExecutor);
+                pipKeepClearAlgorithm, pipSurfaceTransactionHelper, pipDesktopState, mainExecutor);
     }
 
     public PipImpl getPipImpl() {
@@ -451,16 +456,40 @@ public class PipController implements ConfigurationChangeListener,
 
     @Override
     public void onDisplayRemoved(int displayId) {
-        // If PiP was active on an external display that is removed, clean up states and set
-        // {@link PipDisplayLayoutState} to DEFAULT_DISPLAY.
-        if (mPipTransitionState.isInPip() && displayId == mPipDisplayLayoutState.getDisplayId()
-                && displayId != DEFAULT_DISPLAY) {
-            mPipTransitionState.setState(PipTransitionState.EXITING_PIP);
-            mPipTransitionState.setState(PipTransitionState.EXITED_PIP);
+        if (mPipTransitionState.isInPip()) {
+            if (displayId == mPipDisplayLayoutState.getDisplayId()) {
+                // If PiP was active on an external display that is removed, clean up states and set
+                // {@link PipDisplayLayoutState} to DEFAULT_DISPLAY.
+                mPipTransitionState.setState(PipTransitionState.EXITING_PIP);
+                mPipTransitionState.setState(PipTransitionState.EXITED_PIP);
 
-            mPipDisplayLayoutState.setDisplayId(DEFAULT_DISPLAY);
-            mPipDisplayLayoutState.setDisplayLayout(
-                    mDisplayController.getDisplayLayout(DEFAULT_DISPLAY));
+                mPipDisplayLayoutState.setDisplayId(DEFAULT_DISPLAY);
+                mPipDisplayLayoutState.setDisplayLayout(
+                        mDisplayController.getDisplayLayout(DEFAULT_DISPLAY));
+            } else {
+                // If PiP was active but not on the display that is removed (i.e. it's remaining on
+                // the same display), snap PiP to an edge if the display does not currently allow
+                // free-floating (because it might have changed from Desktop-first to Touch-first).
+                if (!mPipDesktopState.isFreeFloatingPipEnabled()) {
+                    final Rect currentBounds = mPipBoundsState.getBounds();
+                    final float snapFraction =
+                            mPipBoundsAlgorithm.getSnapAlgorithm().getSnapFraction(
+                                    currentBounds,
+                                    mPipBoundsAlgorithm.getMovementBounds(currentBounds),
+                                    mPipBoundsState.getStashedState());
+                    updateBoundsOnDisplayChange(snapFraction);
+                    final Rect toBounds = mPipBoundsState.getBounds();
+                    // Use the existing DISPLAY_CHANGE_PIP_BOUNDS logic to jump cut to new bounds
+                    if (!currentBounds.equals(toBounds)) {
+                        mPipTransitionState.setOnIdlePipTransitionStateRunnable(() -> {
+                            final Bundle extra = new Bundle();
+                            extra.putParcelable(DISPLAY_CHANGE_PIP_BOUNDS, toBounds);
+                            mPipTransitionState.setState(PipTransitionState.SCHEDULED_BOUNDS_CHANGE,
+                                    extra);
+                        });
+                    }
+                }
+            }
         }
 
         // Avoid keeping track of insets listeners for the removed displays to prevent memory leaks.
