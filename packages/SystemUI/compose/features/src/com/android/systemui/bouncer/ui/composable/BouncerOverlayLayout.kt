@@ -18,11 +18,9 @@ package com.android.systemui.bouncer.ui.composable
 
 import androidx.annotation.VisibleForTesting
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
 import androidx.window.core.layout.WindowSizeClass
 import com.android.compose.windowsizeclass.LocalWindowSizeClass
 import com.android.systemui.Flags
-import com.android.systemui.res.R
 
 /**
  * Returns the [BouncerOverlayLayout] that should be used by the bouncer scene. If
@@ -39,11 +37,7 @@ fun shouldBeContainerized(): Boolean {
     if (!Flags.containerizeBouncerOnLargeScreens() && !Flags.containerizeBouncerOnLargeScreens2()) {
         return false
     }
-    val useLowerBreakpoint =
-        LocalContext.current.resources.getBoolean(
-            R.bool.config_lowerBouncerContainerizationBreakpointToLargeWidth
-        )
-    return shouldBeContainerizedInternal(LocalWindowSizeClass.current, useLowerBreakpoint)
+    return shouldBeContainerizedInternal(LocalWindowSizeClass.current)
 }
 
 /** Enumerates all known adaptive layout configurations. */
@@ -86,19 +80,9 @@ fun calculateLayoutInternal(
 }
 
 @VisibleForTesting
-fun shouldBeContainerizedInternal(
-    windowSizeClass: WindowSizeClass,
-    useLowerBreakpoint: Boolean,
-): Boolean {
-    return if (useLowerBreakpoint) {
-        windowSizeClass.isAtLeastBreakpoint(
-            WindowSizeClass.WIDTH_DP_LARGE_LOWER_BOUND,
-            WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND,
-        )
-    } else {
-        windowSizeClass.isAtLeastBreakpoint(
-            WindowSizeClass.WIDTH_DP_EXTRA_LARGE_LOWER_BOUND,
-            WindowSizeClass.HEIGHT_DP_EXPANDED_LOWER_BOUND,
-        )
-    }
+fun shouldBeContainerizedInternal(windowSizeClass: WindowSizeClass): Boolean {
+    return windowSizeClass.isAtLeastBreakpoint(
+        WindowSizeClass.WIDTH_DP_EXTRA_LARGE_LOWER_BOUND,
+        WindowSizeClass.HEIGHT_DP_EXPANDED_LOWER_BOUND,
+    )
 }
