@@ -85,9 +85,11 @@ import androidx.compose.ui.util.lerp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.animation.scene.ContentKey
 import com.android.compose.animation.scene.ContentScope
+import com.android.compose.animation.scene.ElementContentPicker
 import com.android.compose.animation.scene.ElementKey
-import com.android.compose.animation.scene.LowestZIndexContentPicker
+import com.android.compose.animation.scene.HeadsUpContentPicker
 import com.android.compose.animation.scene.SceneTransitionLayoutState
+import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.compose.gesture.effect.OffsetOverscrollEffect
 import com.android.compose.gesture.effect.rememberOffsetOverscrollEffect
 import com.android.compose.modifiers.onUnplaced
@@ -143,7 +145,14 @@ object Notifications {
          * [HeadsUpPlaceholderContentPicker].
          */
         val HeadsUpNotificationPlaceholder =
-            ElementKey("HeadsUpNotificationPlaceholder", contentPicker = LowestZIndexContentPicker)
+            ElementKey(
+                "HeadsUpNotificationPlaceholder",
+                contentPicker =
+                    HeadsUpContentPicker(
+                        sceneWithShadeCollapsed = Scenes.Lockscreen,
+                        sceneWithShadeExpanded = Scenes.Shade,
+                    ),
+            )
     }
 }
 
