@@ -68,14 +68,15 @@ constructor(
         }
     }
 
+    private val _dialogRequest =
+        MutableStateFlow(DialogRequestModel(UserShortcutType.DEFAULT, INVALID_DISPLAY))
     /**
-     * Latest snapshot of the dialog request that's kept up to date once the view model is
-     * activated.
+     * Latest snapshot of the dialog request.
+     *
+     * Kept up to date only while the view model is activated. Should only be read after activation
+     * and at least one dialog request has been received.
      */
-    val dialogRequest by
-        interactor.dialogRequest.hydratedStateOf(
-            DialogRequestModel(UserShortcutType.DEFAULT, INVALID_DISPLAY)
-        )
+    val dialogRequest = _dialogRequest.asStateFlow()
 
     private val _dialogType = MutableStateFlow(DialogType.NONE)
     /** The type of dialog that should be shown. */
@@ -136,6 +137,8 @@ constructor(
     }
 
     private suspend fun onDialogRequest(requestModel: DialogRequestModel) {
+        _dialogRequest.value = requestModel
+
         val shortcutType = requestModel.shortcutType
 
         if (shortcutType == UserShortcutType.QUICK_ACCESS) {

@@ -29,14 +29,13 @@ import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
-import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.isToggleable
 import androidx.compose.ui.test.junit4.ComposeTestRule
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performScrollToNode
+import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.accessibility.common.ShortcutChooserDialogConstants
@@ -182,7 +181,7 @@ class ShortcutChooserDialogStartableTest : SysuiTestCase() {
             assertThat(getSelectedTargetNames()).isEqualTo(setOf(TALKBACK_TARGET_NAME))
 
             // Finally click on Done button.
-            composeTestRule.onDoneButton().performClick()
+            composeTestRule.onDoneButton().performScrollAndClick()
             composeTestRule.waitForIdle()
 
             // Will dismiss the dialog, because there are less than two targets selected.
@@ -213,7 +212,7 @@ class ShortcutChooserDialogStartableTest : SysuiTestCase() {
                 .isEqualTo(setOf(TALKBACK_TARGET_NAME, MAGNIFICATION_TARGET_NAME))
 
             // Finally click on Done button.
-            composeTestRule.onDoneButton().performClick()
+            composeTestRule.onDoneButton().performScrollAndClick()
             composeTestRule.waitForIdle()
 
             // Will show Toggle targets dialog, because there are at least two targets selected.
@@ -242,7 +241,6 @@ class ShortcutChooserDialogStartableTest : SysuiTestCase() {
             underTest.start()
 
             sendIntentInMainThreadWaitForIdle(UserShortcutType.TOP_ROW_KEY)
-            composeTestRule.waitForIdle()
 
             assertCurrentDialog(DialogType.NONE)
         }
@@ -318,7 +316,7 @@ class ShortcutChooserDialogStartableTest : SysuiTestCase() {
             sendIntentInMainThreadWaitForIdle()
 
             // Click on the Done button.
-            composeTestRule.onDoneButton().performClick()
+            composeTestRule.onDoneButton().performScrollAndClick()
             composeTestRule.waitForIdle()
 
             // Will dismiss the dialog.
@@ -544,12 +542,7 @@ class ShortcutChooserDialogStartableTest : SysuiTestCase() {
 
             assertCurrentDialog(DialogType.QUICK_ACCESS)
 
-            // The number of targets caused the dialog to scroll, so we need to scroll down to make
-            // the Done button visible for clicking.
-            composeTestRule
-                .onNodeWithTag("quick_access_dialog")
-                .performScrollToNode(hasTestTag("done_button"))
-            composeTestRule.onDoneButton().performClick()
+            composeTestRule.onDoneButton().performScrollAndClick()
             composeTestRule.waitForIdle()
 
             assertCurrentDialog(DialogType.NONE)
@@ -565,7 +558,7 @@ class ShortcutChooserDialogStartableTest : SysuiTestCase() {
 
             assertCurrentDialog(DialogType.QUICK_ACCESS)
             assertThat(fakeRepository.isTargetEnabled(TALKBACK_TARGET_NAME)).isFalse()
-            val targetNode = composeTestRule.onNodeWithText("Screen Reader")
+            val targetNode = composeTestRule.onNodeWithTag(TALKBACK_TARGET_NAME)
             targetNode.assert(isToggleable())
             targetNode.assertIsOff()
 
@@ -603,7 +596,7 @@ class ShortcutChooserDialogStartableTest : SysuiTestCase() {
             assertCurrentDialog(DialogType.QUICK_ACCESS)
 
             assertThat(fakeRepository.isTargetEnabled(MAGNIFICATION_TARGET_NAME)).isFalse()
-            val targetNode = composeTestRule.onNodeWithText("Magnification")
+            val targetNode = composeTestRule.onNodeWithTag(MAGNIFICATION_TARGET_NAME)
             targetNode.assert(isNotToggleable())
 
             targetNode.performClick()
@@ -628,7 +621,7 @@ class ShortcutChooserDialogStartableTest : SysuiTestCase() {
 
             assertThat(fakeRepository.isTargetAssigned(shortcutType, targetName)).isFalse()
             assertThat(fakeRepository.isTargetEnabled(targetName)).isFalse()
-            val targetNode = composeTestRule.onNodeWithText("Untrusted Service")
+            val targetNode = composeTestRule.onNodeWithTag(targetName)
             targetNode.assertIsOff()
 
             targetNode.performClick()
@@ -744,6 +737,15 @@ class ShortcutChooserDialogStartableTest : SysuiTestCase() {
     private fun ComposeTestRule.onDoneButton() = onNodeWithTag("done_button")
 
     private fun ComposeTestRule.onEditButton() = onNodeWithTag("edit_button")
+
+    /**
+     * Click on a button, with scrolling if necessary.
+     *
+     * Sometimes the number of targets causes the dialog to scroll, so we need to scroll to make the
+     * button visible for clicking.
+     */
+    private fun SemanticsNodeInteraction.performScrollAndClick() =
+        performScrollTo().assertIsDisplayed().performClick()
 
     private fun ComposeTestRule.onTutorialDialogTitle() =
         onNodeWithText(
