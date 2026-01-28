@@ -91,7 +91,7 @@
     <string name="kg_primary_auth_duplicate_guess_password" msgid="3153406042812407458">"Você já tentou essa senha. Use outra."</string>
     <string name="kg_primary_auth_locked_out_pattern" msgid="8266214607346180952">"Muitas tentativas com o padrão incorreto"</string>
     <string name="kg_primary_auth_locked_out_password" msgid="6170245108400198659">"Muitas tentativas com a senha incorreta"</string>
-    <string name="kg_primary_auth_locked_out_pin_shortlink" msgid="1294871994741389848">"Muitas tentativas com o PIN incorreto\nSaiba mais em <xliff:g id="SHORTLINK">{shortlink}</xliff:g>"</string>
+    <string name="kg_primary_auth_locked_out_pin_shortlink" msgid="1294871994741389848">"Houve muitas tentativas com o PIN incorreto\nSaiba mais em <xliff:g id="SHORTLINK">{shortlink}</xliff:g>"</string>
     <string name="kg_primary_auth_locked_out_pattern_shortlink" msgid="5998598232858156495">"Muitas tentativas com o padrão incorreto\nSaiba mais em <xliff:g id="SHORTLINK">{shortlink}</xliff:g>"</string>
     <string name="kg_primary_auth_locked_out_password_shortlink" msgid="7035847891707609104">"Muitas tentativas com a senha incorreta\nSaiba mais em <xliff:g id="SHORTLINK">{shortlink}</xliff:g>"</string>
     <string name="kg_too_many_failed_attempts_countdown" msgid="2038195171919795529">"{count,plural, =1{Tente novamente em # segundo.}one{Tente novamente em # segundo.}many{Tente novamente em # segundos.}other{Tente novamente em # segundos.}}"</string>

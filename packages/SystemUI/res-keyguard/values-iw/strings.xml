@@ -86,12 +86,12 @@
     <string name="kg_fp_locked_out" msgid="6228277682396768830">"לא ניתן לפתוח בטביעת אצבע. בוצעו יותר מדי ניסיונות."</string>
     <string name="kg_trust_agent_disabled" msgid="5400691179958727891">"התכונה \'סביבה אמינה\' לא זמינה"</string>
     <string name="kg_primary_auth_locked_out_pin" msgid="5492230176361601475">"הקשת קוד אימות שגוי יותר מדי פעמים"</string>
-    <string name="kg_primary_auth_duplicate_guess_pin" msgid="5834891656916692329">"כבר ניסית את קוד האימות הזה. כדאי לנסות קוד אחר."</string>
+    <string name="kg_primary_auth_duplicate_guess_pin" msgid="5834891656916692329">"כבר ניסית את הקוד הזה. כדאי לנסות קוד אחר."</string>
     <string name="kg_primary_auth_duplicate_guess_pattern" msgid="3827593245962385968">"כבר ניסית את קו פתיחת הנעילה הזה. כדאי לנסות קו אחר."</string>
     <string name="kg_primary_auth_duplicate_guess_password" msgid="3153406042812407458">"כבר ניסית את הסיסמה הזו. כדאי לנסות סיסמה אחרת."</string>
     <string name="kg_primary_auth_locked_out_pattern" msgid="8266214607346180952">"ציירת קו פתיחת נעילה שגוי יותר מדי פעמים"</string>
     <string name="kg_primary_auth_locked_out_password" msgid="6170245108400198659">"הסיסמה שהקלדת הייתה שגויה יותר מדי פעמים"</string>
-    <string name="kg_primary_auth_locked_out_pin_shortlink" msgid="1294871994741389848">"הקלדת קוד אימות שגוי יותר מדי פעמים\nמידע נוסף זמין בכתובת <xliff:g id="SHORTLINK">{shortlink}</xliff:g>"</string>
+    <string name="kg_primary_auth_locked_out_pin_shortlink" msgid="1294871994741389848">"הקלדת קוד אימות שגוי יותר מדי פעמים.\nמידע נוסף זמין בכתובת <xliff:g id="SHORTLINK">{shortlink}</xliff:g>"</string>
     <string name="kg_primary_auth_locked_out_pattern_shortlink" msgid="5998598232858156495">"ציירת קו פתיחת נעילה שגוי יותר מדי פעמים\nמידע נוסף זמין בכתובת <xliff:g id="SHORTLINK">{shortlink}</xliff:g>"</string>
     <string name="kg_primary_auth_locked_out_password_shortlink" msgid="7035847891707609104">"הקלדת סיסמה שגויה יותר מדי פעמים\nמידע נוסף זמין בכתובת <xliff:g id="SHORTLINK">{shortlink}</xliff:g>"</string>
     <string name="kg_too_many_failed_attempts_countdown" msgid="2038195171919795529">"{count,plural, =1{אפשר לנסות שוב בעוד שנייה אחת.}one{אפשר לנסות שוב בעוד # שניות.}two{אפשר לנסות שוב בעוד # שניות.}other{אפשר לנסות שוב בעוד # שניות.}}"</string>
