@@ -184,13 +184,17 @@
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"Прозор за дељење апликације"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"Делите картицу"</string>
     <string name="screen_share_entire_screen_sharing_title" msgid="9093580141248337998">"Делите цео екран"</string>
-    <!-- no translation found for screen_share_disclaimer_app_sharing (1839029004749224549) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer_tab_sharing (3811486274577713101) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer_full_screen_sharing (5173795016606926338) -->
-    <skip />
+    <string name="screen_share_disclaimer_app_sharing" msgid="1839029004749224549">"Када делите апликацију, <xliff:g id="APP_NAME">%1$s</xliff:g> види сав садржај који се приказује или пушта у њој. Будите пажљиви са осетљивим информацијама."</string>
+    <string name="screen_share_disclaimer_tab_sharing" msgid="3811486274577713101">"Када делите картицу, <xliff:g id="APP_NAME">%1$s</xliff:g> види сав садржај на њој. Будите пажљиви са осетљивим информацијама."</string>
+    <string name="screen_share_disclaimer_full_screen_sharing" msgid="5173795016606926338">"Када делите цео екран, <xliff:g id="APP_NAME">%1$s</xliff:g> види све што је на њему. Будите пажљиви са осетљивим информацијама."</string>
     <string name="screen_share_a11y_announcement" msgid="8938007210094494367">"Одаберите шта ћете делити. Изаберите картицу, апликацију или цео екран. Затим притисните Дели."</string>
+    <string name="screen_share_cancel_announcement" msgid="5940879227647436383">"Покретање дељења садржаја екрана је завршено. Екран се не дели ни са ким."</string>
+    <!-- no translation found for screen_share_a11y_sharing_app (3445421300603336524) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_sharing_tab (2963542572740628746) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_sharing_display (5919924998949424031) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Направи снимак екрана прозора апликације"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Сними прозор апликације"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Направи снимак екрана изабране области"</string>
@@ -276,8 +280,8 @@
     <string name="biometric_dialog_authenticated" msgid="7337147327545272484">"Идентитет је потврђен"</string>
     <string name="biometric_dialog_cancel_authentication" msgid="981316588773442637">"Откажите потврду идентитета"</string>
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"Још опција"</string>
-    <string name="biometric_dialog_fallback_title" msgid="2337887849267443214">"Верификујте на други начин"</string>
-    <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"Верификујте на други начин"</string>
+    <string name="biometric_dialog_fallback_title" msgid="2337887849267443214">"Потврди на други начин"</string>
+    <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"Потврди на други начин"</string>
     <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"Управљајте Провером идентитета"</string>
     <string name="biometric_dialog_identity_check_footer_link_text" msgid="5445804502968287214">"Сазнајте више о Провери идентитета"</string>
     <string name="biometric_dialog_identity_check_footer" msgid="4176895548458429932">"Провера идентитета је укључена и може да вам верификује идентитет само помоћу отиска прста или лица. %1$s"</string>
@@ -1792,10 +1796,13 @@
     <string name="accessibility_close_overlay_action" msgid="3581095146209387670">"иди назад"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"аутоматско попуњавање"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"прошири"</string>
-    <string name="location_button_text_share_precise_location" msgid="5341882050169860712">"Дели прецизну локацију"</string>
-    <string name="location_button_text_use_precise_location" msgid="3499475231656390476">"Користи прецизну локацију"</string>
-    <string name="location_button_text_near_precise_location" msgid="3607275724182981412">"У близини прецизне локације"</string>
     <string name="location_button_text_precise_location" msgid="4441259889842542799">"Прецизна локација"</string>
+    <string name="location_button_text_use_precise_location" msgid="3499475231656390476">"Користи прецизну локацију"</string>
+    <string name="location_button_text_share_precise_location" msgid="5341882050169860712">"Дели прецизну локацију"</string>
+    <!-- no translation found for location_button_text_near_my_precise_location (7590342799002942963) -->
+    <skip />
+    <!-- no translation found for location_button_text_near_your_precise_location (3792598666253599055) -->
+    <skip />
     <string name="privacy_chip_use_string" msgid="979159484631969073">"<xliff:g id="SENSOR">%1$s</xliff:g> се користи"</string>
     <string name="privacy_chip_use_string_with_app" msgid="6807216002072346877">"<xliff:g id="APP">%2$s</xliff:g> користи: <xliff:g id="SENSOR">%1$s</xliff:g>"</string>
     <string name="privacy_chip_camera_and_mic_text" msgid="6254449489859255607">"Камера и микрофон"</string>
@@ -1819,10 +1826,16 @@
     <string name="av_camera_blur_light" msgid="5666055368940059418">"Благо"</string>
     <string name="av_camera_blur_full" msgid="3276351992811619332">"Потпуно"</string>
     <string name="av_camera_improve_lighting" msgid="1540549414296669133">"Побољшано осветљење"</string>
+    <string name="av_camera_face_retouch" msgid="45890971969486224">"Дотеривање портрета"</string>
     <string name="av_camera_framing" msgid="5108462267843042492">"Уоквиривање камере"</string>
     <string name="av_studio_mic" msgid="2614843492629357766">"Студијски микрофон"</string>
     <string name="av_studio_look" msgid="621893522645557619">"Студијски изглед"</string>
     <string name="av_studio_look_effects" msgid="4105109585851068415">"Ефеката: %d"</string>
     <string name="av_blur" msgid="405131343487260171">"Замагли"</string>
     <string name="av_live_captions" msgid="7819416886586903077">"Титл уживо"</string>
+    <string name="accessibility_hearing_device_battery_level" msgid="1032601787487328432">"Батерија: %s"</string>
+    <string name="accessibility_hearing_device_left_right_battery_level" msgid="5327672450604052979">"Лева страна батерије: %1$s    Десна страна батерије: %2$s"</string>
+    <string name="accessibility_hearing_device_left_battery_level" msgid="327961080394238636">"Лева страна батерије: %1$s"</string>
+    <string name="accessibility_hearing_device_right_battery_level" msgid="7598843215226414563">"Десна страна батерије: %1$s"</string>
+    <string name="accessibility_hearing_device_notification_channel_name" msgid="7365020777623709400">"Статус слушног апарата"</string>
 </resources>

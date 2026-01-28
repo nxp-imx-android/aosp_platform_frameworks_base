@@ -184,13 +184,18 @@
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"Ruhusu dirisha la programu lifikiwe"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"Onyesha kichupo"</string>
     <string name="screen_share_entire_screen_sharing_title" msgid="9093580141248337998">"Ruhusu ufikiaji wa skrini nzima"</string>
-    <!-- no translation found for screen_share_disclaimer_app_sharing (1839029004749224549) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer_tab_sharing (3811486274577713101) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer_full_screen_sharing (5173795016606926338) -->
-    <skip />
+    <string name="screen_share_disclaimer_app_sharing" msgid="1839029004749224549">"Unaporuhusu ufikiaji wa programu, chochote kinachoonyeshwa au kuchezwa katika programu hiyo kitaonekana kwa <xliff:g id="APP_NAME">%1$s</xliff:g>. Kwa hivyo kuwa mwangalifu na taarifa nyeti."</string>
+    <string name="screen_share_disclaimer_tab_sharing" msgid="3811486274577713101">"Unaporuhusu ufikiaji wa kichupo, chochote kilicho kwenye kichupo kitaonekana kwa <xliff:g id="APP_NAME">%1$s</xliff:g>. Kwa hivyo kuwa mwangalifu na taarifa nyeti."</string>
+    <string name="screen_share_disclaimer_full_screen_sharing" msgid="5173795016606926338">"Unaporuhusu ufikiaji wa skrini nzima, chochote kilicho katika skrini yako kitaonekana kwa <xliff:g id="APP_NAME">%1$s</xliff:g>. Kwa hivyo kuwa mwangalifu na taarifa nyeti."</string>
     <string name="screen_share_a11y_announcement" msgid="8938007210094494367">"Chagua cha kuonyesha. Chagua kichupo, programu au skrini nzima. Kisha ubonyeze kitufe cha kuonyesha skrini."</string>
+    <!-- no translation found for screen_share_cancel_announcement (5940879227647436383) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_sharing_app (3445421300603336524) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_sharing_tab (2963542572740628746) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_sharing_display (5919924998949424031) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Piga picha ya skrini ya dirisha"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Rekodi dirisha"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Piga picha ya skrini ya sehemu uliyochagua"</string>
@@ -1792,10 +1797,13 @@
     <string name="accessibility_close_overlay_action" msgid="3581095146209387670">"rudi"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"jaza kiotomatiki"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"panua"</string>
-    <string name="location_button_text_share_precise_location" msgid="5341882050169860712">"Tuma maelezo ya eneo mahususi"</string>
-    <string name="location_button_text_use_precise_location" msgid="3499475231656390476">"Tumia maelezo ya eneo mahususi"</string>
-    <string name="location_button_text_near_precise_location" msgid="3607275724182981412">"Karibu na eneo mahususi"</string>
     <string name="location_button_text_precise_location" msgid="4441259889842542799">"Eneo mahususi"</string>
+    <string name="location_button_text_use_precise_location" msgid="3499475231656390476">"Tumia maelezo ya eneo mahususi"</string>
+    <string name="location_button_text_share_precise_location" msgid="5341882050169860712">"Tuma maelezo ya eneo mahususi"</string>
+    <!-- no translation found for location_button_text_near_my_precise_location (7590342799002942963) -->
+    <skip />
+    <!-- no translation found for location_button_text_near_your_precise_location (3792598666253599055) -->
+    <skip />
     <string name="privacy_chip_use_string" msgid="979159484631969073">"<xliff:g id="SENSOR">%1$s</xliff:g> inatumika"</string>
     <string name="privacy_chip_use_string_with_app" msgid="6807216002072346877">"<xliff:g id="SENSOR">%1$s</xliff:g> inatumiwa na <xliff:g id="APP">%2$s</xliff:g>"</string>
     <string name="privacy_chip_camera_and_mic_text" msgid="6254449489859255607">"Kamera na maikrofoni"</string>
@@ -1816,13 +1824,28 @@
     <string name="av_camera_label" msgid="7719772172590702343">"Kamera"</string>
     <string name="av_camera_blur_drill_in_title" msgid="2250600375798981511">"Ukungu wa Mandharinyuma"</string>
     <string name="av_camera_blur_off" msgid="3170334995799202022">"Umezima"</string>
-    <string name="av_camera_blur_light" msgid="5666055368940059418">"Meupe"</string>
+    <string name="av_camera_blur_light" msgid="5666055368940059418">"Nyepesi"</string>
     <string name="av_camera_blur_full" msgid="3276351992811619332">"Kamili"</string>
     <string name="av_camera_improve_lighting" msgid="1540549414296669133">"Boresha mwangaza"</string>
+    <!-- no translation found for av_camera_face_retouch (45890971969486224) -->
+    <skip />
     <string name="av_camera_framing" msgid="5108462267843042492">"Kufremu Kamera"</string>
     <string name="av_studio_mic" msgid="2614843492629357766">"Maikrofoni ya Studio"</string>
     <string name="av_studio_look" msgid="621893522645557619">"Mwonekano Kistudio"</string>
     <string name="av_studio_look_effects" msgid="4105109585851068415">"Madoido %d"</string>
     <string name="av_blur" msgid="405131343487260171">"Tia ukungu"</string>
     <string name="av_live_captions" msgid="7819416886586903077">"Manukuu Papo Hapo"</string>
+    <!-- String.format failed for translation -->
+    <!-- no translation found for accessibility_hearing_device_battery_level (1032601787487328432) -->
+    <skip />
+    <!-- String.format failed for translation -->
+    <!-- no translation found for accessibility_hearing_device_left_right_battery_level (5327672450604052979) -->
+    <skip />
+    <!-- String.format failed for translation -->
+    <!-- no translation found for accessibility_hearing_device_left_battery_level (327961080394238636) -->
+    <skip />
+    <!-- String.format failed for translation -->
+    <!-- no translation found for accessibility_hearing_device_right_battery_level (7598843215226414563) -->
+    <skip />
+    <string name="accessibility_hearing_device_notification_channel_name" msgid="7365020777623709400">"Hali ya Vifaa vya Kusikilizia"</string>
 </resources>

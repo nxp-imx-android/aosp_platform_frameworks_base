@@ -184,13 +184,18 @@
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"अ‍ॅप विंडो शेअर करा"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"टॅब शेअर करा"</string>
     <string name="screen_share_entire_screen_sharing_title" msgid="9093580141248337998">"संपूर्ण स्क्रीन शेअर करा"</string>
-    <!-- no translation found for screen_share_disclaimer_app_sharing (1839029004749224549) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer_tab_sharing (3811486274577713101) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer_full_screen_sharing (5173795016606926338) -->
-    <skip />
+    <string name="screen_share_disclaimer_app_sharing" msgid="1839029004749224549">"ॲप शेअर करताना त्यावर दिसणारे अथवा प्ले होणारे काहीही <xliff:g id="APP_NAME">%1$s</xliff:g> ला दिसते. संवेदनशील माहितीबाबत सावधगिरी बाळगा."</string>
+    <string name="screen_share_disclaimer_tab_sharing" msgid="3811486274577713101">"टॅब शेअर करताना त्या टॅबमधील कोणतीही गोष्ट <xliff:g id="APP_NAME">%1$s</xliff:g> ला दिसते. त्यामुळे संवेदनशील माहितीबाबत सावधगिरी बाळगा."</string>
+    <string name="screen_share_disclaimer_full_screen_sharing" msgid="5173795016606926338">"तुम्ही तुमची संपूर्ण स्क्रीन शेअर करता, तेव्हा तुमच्या स्क्रीनवरील कोणतीही गोष्ट <xliff:g id="APP_NAME">%1$s</xliff:g> ला दिसते. त्यामुळे संवेदनशील माहितीबाबत सावधगिरी बाळगा."</string>
     <string name="screen_share_a11y_announcement" msgid="8938007210094494367">"काय शेअर करायचे आहे ते निवडा. टॅब, अ‍ॅप किंवा संपूर्ण स्क्रीन निवडा. त्यानंतर शेअर करा प्रेस करा."</string>
+    <!-- no translation found for screen_share_cancel_announcement (5940879227647436383) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_sharing_app (3445421300603336524) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_sharing_tab (2963542572740628746) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_sharing_display (5919924998949424031) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"विंडोचा स्क्रीनशॉट घ्या"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"विंडो रेकॉर्ड करा"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"निवडलेल्या भागाचा स्क्रीनशॉट घ्या"</string>
@@ -1792,10 +1797,13 @@
     <string name="accessibility_close_overlay_action" msgid="3581095146209387670">"परत जा"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"ऑटोफिल"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"विस्तार करा"</string>
-    <string name="location_button_text_share_precise_location" msgid="5341882050169860712">"अचूक स्थान शेअर करा"</string>
-    <string name="location_button_text_use_precise_location" msgid="3499475231656390476">"अचूक स्थान वापरा"</string>
-    <string name="location_button_text_near_precise_location" msgid="3607275724182981412">"अचूक स्थानाजवळ"</string>
     <string name="location_button_text_precise_location" msgid="4441259889842542799">"अचूक स्थान"</string>
+    <string name="location_button_text_use_precise_location" msgid="3499475231656390476">"अचूक स्थान वापरा"</string>
+    <string name="location_button_text_share_precise_location" msgid="5341882050169860712">"अचूक स्थान शेअर करा"</string>
+    <!-- no translation found for location_button_text_near_my_precise_location (7590342799002942963) -->
+    <skip />
+    <!-- no translation found for location_button_text_near_your_precise_location (3792598666253599055) -->
+    <skip />
     <string name="privacy_chip_use_string" msgid="979159484631969073">"<xliff:g id="SENSOR">%1$s</xliff:g> वापरात आहे"</string>
     <string name="privacy_chip_use_string_with_app" msgid="6807216002072346877">"<xliff:g id="APP">%2$s</xliff:g> द्वारे <xliff:g id="SENSOR">%1$s</xliff:g> वापरले जात आहे"</string>
     <string name="privacy_chip_camera_and_mic_text" msgid="6254449489859255607">"कॅमेरा आणि माइक"</string>
@@ -1819,10 +1827,17 @@
     <string name="av_camera_blur_light" msgid="5666055368940059418">"फिकट"</string>
     <string name="av_camera_blur_full" msgid="3276351992811619332">"संपूर्ण"</string>
     <string name="av_camera_improve_lighting" msgid="1540549414296669133">"लायटिंगमध्ये सुधारणा करा"</string>
+    <!-- no translation found for av_camera_face_retouch (45890971969486224) -->
+    <skip />
     <string name="av_camera_framing" msgid="5108462267843042492">"कॅमेरा फ्रेमिंग"</string>
     <string name="av_studio_mic" msgid="2614843492629357766">"स्टुडिओ माइक"</string>
     <string name="av_studio_look" msgid="621893522645557619">"स्टुडिओ लुक"</string>
     <string name="av_studio_look_effects" msgid="4105109585851068415">"%d इफेक्ट"</string>
     <string name="av_blur" msgid="405131343487260171">"ब्लर करा"</string>
     <string name="av_live_captions" msgid="7819416886586903077">"लाइव्ह कॅप्शन"</string>
+    <string name="accessibility_hearing_device_battery_level" msgid="1032601787487328432">"बॅटरी %s"</string>
+    <string name="accessibility_hearing_device_left_right_battery_level" msgid="5327672450604052979">"डावीकडील बॅटरी %1$s    उजवीकडील बॅटरी %2$s"</string>
+    <string name="accessibility_hearing_device_left_battery_level" msgid="327961080394238636">"डावीकडील बॅटरी %1$s"</string>
+    <string name="accessibility_hearing_device_right_battery_level" msgid="7598843215226414563">"उजवीकडील बॅटरी %1$s"</string>
+    <string name="accessibility_hearing_device_notification_channel_name" msgid="7365020777623709400">"श्रवणयंत्राचे स्टेटस"</string>
 </resources>
