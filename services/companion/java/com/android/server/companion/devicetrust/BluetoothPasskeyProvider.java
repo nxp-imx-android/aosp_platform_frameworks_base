@@ -16,6 +16,8 @@
 
 package com.android.server.companion.devicetrust;
 
+import static com.android.server.companion.utils.AssociationUtils.getMacAddress;
+
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.UserIdInt;
@@ -76,11 +78,22 @@ public class BluetoothPasskeyProvider implements PskProvider {
             }
         }, new IntentFilter(BluetoothDevice.ACTION_PAIRING_REQUEST));
 
-        // Listen for new associations to filter for passkeys to persist
+        // Listen for new associations and updates to filter for passkeys to persist
         mAssociationStore.registerLocalListener(new AssociationStore.OnChangeListener() {
             @Override
             public void onAssociationAdded(AssociationInfo association) {
-                MacAddress address = association.getDeviceMacAddress();
+                persistIfAddressExists(association);
+            }
+
+            @Override
+            public void onAssociationUpdated(AssociationInfo association, boolean addressChanged) {
+                if (addressChanged) {
+                    persistIfAddressExists(association);
+                }
+            }
+
+            private void persistIfAddressExists(AssociationInfo association) {
+                MacAddress address = getMacAddress(association);
                 if (address != null && mPassKeys.containsKey(address)) {
                     persistKeysForUser(association.getUserId());
                 }
@@ -98,12 +111,8 @@ public class BluetoothPasskeyProvider implements PskProvider {
     @Nullable
     public byte[] getKey(@UserIdInt int userId, int associationId) {
         AssociationInfo association = mAssociationStore.getAssociationById(associationId);
-        if (association == null) {
-            return null;
-        }
-        MacAddress address = association.getDeviceMacAddress();
+        MacAddress address = getMacAddress(association);
         if (address == null) {
-            // TODO: Support device matching by deviceID and other identifiers
             return null;
         }
 
@@ -174,7 +183,7 @@ public class BluetoothPasskeyProvider implements PskProvider {
     private synchronized void persistKeysForUser(@UserIdInt int userId) {
         PersistableBundle keysToPersist = new PersistableBundle();
         for (AssociationInfo association : mAssociationStore.getActiveAssociationsByUser(userId)) {
-            MacAddress address = association.getDeviceMacAddress();
+            MacAddress address = getMacAddress(association);
             if (address == null) {
                 continue;
             }
