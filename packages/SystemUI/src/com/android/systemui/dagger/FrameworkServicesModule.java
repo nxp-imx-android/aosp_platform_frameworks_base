@@ -73,7 +73,6 @@ import android.hardware.location.ContextHubManager;
 import android.location.LocationManager;
 import android.media.AudioManager;
 import android.media.IAudioService;
-import android.media.MediaRouter;
 import android.media.MediaRouter2Manager;
 import android.media.projection.IMediaProjectionManager;
 import android.media.projection.MediaProjectionManager;
@@ -853,11 +852,5 @@ public class FrameworkServicesModule {
     @Nullable
     static AutofillManager provideAutofillManager(Context context) {
         return context.getSystemService(AutofillManager.class);
-    }
-
-    @Provides
-    @Singleton
-    static MediaRouter provideMediaRouter(Context context) {
-        return context.getSystemService(MediaRouter.class);
     }
 }

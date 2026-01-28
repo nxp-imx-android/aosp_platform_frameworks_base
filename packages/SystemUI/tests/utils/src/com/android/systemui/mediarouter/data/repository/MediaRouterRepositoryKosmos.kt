@@ -24,7 +24,7 @@ import com.android.systemui.statusbar.policy.fakeCastController
 val Kosmos.realMediaRouterRepository by
     Kosmos.Fixture {
         MediaRouterRepositoryImpl(
-            backgroundScope = applicationCoroutineScope,
+            scope = applicationCoroutineScope,
             castController = fakeCastController,
             logger = logcatLogBuffer("MediaRouter"),
         )

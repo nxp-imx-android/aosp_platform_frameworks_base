@@ -24,7 +24,7 @@ import com.android.systemui.statusbar.chips.statusBarChipsLogger
 val Kosmos.mediaRouterChipInteractor by
     Kosmos.Fixture {
         MediaRouterChipInteractor(
-            backgroundScope = applicationCoroutineScope,
+            scope = applicationCoroutineScope,
             mediaRouterRepository = fakeMediaRouterRepository,
             logger = statusBarChipsLogger,
         )
