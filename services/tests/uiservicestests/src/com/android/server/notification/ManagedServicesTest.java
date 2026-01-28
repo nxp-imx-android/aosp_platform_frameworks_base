@@ -1179,6 +1179,58 @@ public class ManagedServicesTest extends UiServiceTestCase {
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_IGNORE_DUPLICATE_BINDINGS)
+    public void duplicateBindingsIgnored() throws PackageManager.NameNotFoundException {
+        Context context = mock(Context.class);
+        PackageManager pm = mock(PackageManager.class);
+        ApplicationInfo ai = new ApplicationInfo();
+        ai.targetSdkVersion = Build.VERSION_CODES.CUR_DEVELOPMENT;
+
+        when(context.getPackageName()).thenReturn(mPkg);
+        when(context.getUserId()).thenReturn(mUser.getIdentifier());
+        when(context.getPackageManager()).thenReturn(pm);
+        when(pm.getApplicationInfo(anyString(), anyInt())).thenReturn(ai);
+
+        final Set<ManagedServices.ManagedServiceInfo> seen = new ArraySet<>(2);
+
+        ManagedServices service = new TestManagedServices(context, mLock, mUserProfiles, mIpm,
+                APPROVAL_BY_COMPONENT) {
+            @Override
+            protected void onServiceAdded(ManagedServiceInfo info) {
+                super.onServiceAdded(info);
+                assertFalse("Duplicate initialization for " + info, seen.contains(info));
+                seen.add(info);
+            }
+        };
+        ComponentName cn = ComponentName.unflattenFromString("a/a");
+
+        when(context.bindServiceAsUser(any(), any(), any(), any())).thenAnswer(invocation -> {
+            Object[] args = invocation.getArguments();
+            Intent intent = (Intent) args[0];
+            ServiceConnection sc = (ServiceConnection) args[1];
+            sc.onServiceConnected(intent.getComponent(), mock(IBinder.class),
+                    mock(IBinderSession.class));
+            return true;
+        });
+
+        service.registerService(cn, 0);
+        assertEquals(1, service.mServices.size());
+        assertEquals(1, seen.size());
+        assertTrue(service.isBound(cn, 0));
+
+        service.registerService(cn, 0);
+        assertEquals(1, service.mServices.size());
+        assertEquals(1, seen.size());
+        assertTrue(service.isBound(cn, 0));
+
+        service.registerService(cn, 10);
+        assertEquals(2, service.mServices.size());
+        assertEquals(2, seen.size());
+        assertTrue(service.isBound(cn, 0));
+        assertTrue(service.isBound(cn, 10));
+    }
+
+    @Test
     public void testPackageUninstall_packageNoLongerInApprovedList() throws Exception {
         for (int approvalLevel : new int[] {APPROVAL_BY_COMPONENT, APPROVAL_BY_PACKAGE}) {
             ManagedServices service = new TestManagedServices(getContext(), mLock, mUserProfiles,

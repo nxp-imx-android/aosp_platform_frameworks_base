@@ -27,6 +27,7 @@ import com.android.systemui.common.ui.data.repository.configurationRepository
 import com.android.systemui.concurrency.fakeExecutor
 import com.android.systemui.customization.clocks.ClockLogger
 import com.android.systemui.customization.clocks.FixedTimeKeeper
+import com.android.systemui.display.data.repository.fakeDisplayWindowPropertiesRepository
 import com.android.systemui.flags.Flags
 import com.android.systemui.flags.fakeFeatureFlagsClassic
 import com.android.systemui.flags.featureFlagsClassic
@@ -85,7 +86,6 @@ val Kosmos.keyguardClockRepositoryImpl by
                         batteryController = batteryController,
                         keyguardUpdateMonitor = keyguardUpdateMonitor,
                         configurationController = configurationController,
-                        resources = mainResources,
                         context = testableContext,
                         mainExecutor = fakeExecutor,
                         bgExecutor = fakeExecutor,
@@ -96,6 +96,7 @@ val Kosmos.keyguardClockRepositoryImpl by
                         zenModeInteractor = zenModeInteractor,
                         userTracker = userTracker,
                         dozingToLockscreenViewModel = { dozingToLockscreenTransitionViewModel },
+                        displayWindowPropertiesRepository = fakeDisplayWindowPropertiesRepository,
                     )
                     .apply { clock = clockRegistry.createCurrentClock(context) },
             backgroundDispatcher = testDispatcher,

@@ -9062,8 +9062,8 @@ package android.app.admin {
     field @FlaggedApi("android.app.admin.flags.policy_streamlining_auto_time") @NonNull public static final android.app.admin.PolicyIdentifier<java.lang.Integer> AUTO_TIME;
     field @FlaggedApi("android.app.admin.flags.policy_streamlining_auto_time") public static final int AUTO_TIME_DISABLED = 3; // 0x3
     field @FlaggedApi("android.app.admin.flags.policy_streamlining_auto_time") public static final int AUTO_TIME_DISABLED_UNENFORCED = 1; // 0x1
+    field @FlaggedApi("android.app.admin.flags.policy_streamlining_auto_time") public static final int AUTO_TIME_ENABLED = 4; // 0x4
     field @FlaggedApi("android.app.admin.flags.policy_streamlining_auto_time") public static final int AUTO_TIME_ENABLED_UNENFORCED = 2; // 0x2
-    field @FlaggedApi("android.app.admin.flags.policy_streamlining_auto_time") public static final int AUTO_TIME_ENFORCED = 4; // 0x4
     field @FlaggedApi("android.app.admin.flags.policy_streamlining_auto_time") public static final int AUTO_TIME_USER_CHOICE = 0; // 0x0
     field @FlaggedApi("android.app.admin.flags.policy_streamlining") @NonNull public static final android.app.admin.PolicyIdentifier<java.lang.String> LOCKSCREEN_MESSAGE;
     field @FlaggedApi("android.app.admin.flags.policy_streamlining") @NonNull public static final android.app.admin.PolicyIdentifier<java.lang.Integer> SCREEN_CAPTURE;
@@ -9292,6 +9292,7 @@ package android.app.appfunctions {
     method @FlaggedApi("android.app.appfunctions.flags.enable_app_function_permission_v2") @RequiresPermission(anyOf={android.Manifest.permission.EXECUTE_APP_FUNCTIONS, "android.permission.DISCOVER_APP_FUNCTIONS", "android.permission.EXECUTE_APP_FUNCTIONS_SYSTEM"}, conditional=true) public void isAppFunctionEnabled(@NonNull String, @NonNull String, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.lang.Boolean,java.lang.Exception>);
     method public void isAppFunctionEnabled(@NonNull String, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.lang.Boolean,java.lang.Exception>);
     method @FlaggedApi("android.app.appfunctions.flags.enable_dynamic_app_functions") @NonNull public android.app.appfunctions.AppFunctionRegistration registerAppFunction(@NonNull String, @NonNull java.util.concurrent.Executor, @NonNull android.app.appfunctions.AppFunction);
+    method @FlaggedApi("android.app.appfunctions.flags.enable_dynamic_app_functions") @NonNull public android.app.appfunctions.AppFunctionRegistration registerAppFunctions(@NonNull java.util.List<android.app.appfunctions.RegisterAppFunctionRequest>);
     method @FlaggedApi("android.permission.flags.app_function_access_api_enabled") public void revokeSelfAccess(@NonNull String);
     method @FlaggedApi("android.app.appfunctions.flags.enable_dynamic_app_functions") @RequiresPermission(anyOf={android.Manifest.permission.EXECUTE_APP_FUNCTIONS, "android.permission.DISCOVER_APP_FUNCTIONS", "android.permission.EXECUTE_APP_FUNCTIONS_SYSTEM"}, conditional=true) public void searchAppFunctions(@NonNull android.app.appfunctions.AppFunctionSearchSpec, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.util.List<android.app.appfunctions.AppFunctionMetadata>,java.lang.Exception>);
     method public void setAppFunctionEnabled(@NonNull String, int, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.lang.Void,java.lang.Exception>);
@@ -9421,6 +9422,13 @@ package android.app.appfunctions {
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.app.appfunctions.ExecuteAppFunctionResponse> CREATOR;
     field public static final String PROPERTY_RETURN_VALUE = "androidAppfunctionsReturnValue";
+  }
+
+  @FlaggedApi("android.app.appfunctions.flags.enable_dynamic_app_functions") public final class RegisterAppFunctionRequest {
+    ctor public RegisterAppFunctionRequest(@NonNull String, @NonNull java.util.concurrent.Executor, @NonNull android.app.appfunctions.AppFunction);
+    method @NonNull public android.app.appfunctions.AppFunction getAppFunction();
+    method @NonNull public java.util.concurrent.Executor getExecutor();
+    method @NonNull public String getFunctionIdentifier();
   }
 
 }
@@ -9732,7 +9740,7 @@ package android.app.contentrestriction {
   }
 
   @FlaggedApi("android.app.contentrestriction.flags.content_restriction_api") public class ContentRestrictionManager {
-    method @FlaggedApi("android.app.contentrestriction.flags.content_restriction_api") public void isContentAllowed(@NonNull android.app.contentrestriction.Content, @NonNull java.util.function.Consumer<java.lang.Boolean>);
+    method @FlaggedApi("android.app.contentrestriction.flags.content_restriction_api") public void isContentAllowed(@NonNull android.app.contentrestriction.Content, @NonNull java.util.concurrent.Executor, @NonNull java.util.function.Consumer<java.lang.Boolean>);
     method @FlaggedApi("android.app.contentrestriction.flags.content_restriction_api") public boolean isContentRestrictionEnabled();
   }
 
@@ -16171,7 +16179,7 @@ package android.database.sqlite {
     method public int getColumnLength(int);
     method public long getColumnLong(int);
     method @NonNull public String getColumnName(int);
-    method @NonNull public String getColumnText(int);
+    method @Nullable public String getColumnText(int);
     method public int getColumnType(int);
     method public int getParameterCount();
     method public int getParameterIndex(@NonNull String);
@@ -22841,7 +22849,7 @@ package android.media {
     method @Deprecated public int getVibrateSetting(int);
     method public int getVolumeGroupIdForAttributes(@NonNull android.media.AudioAttributes);
     method @Deprecated public boolean isBluetoothA2dpOn();
-    method public boolean isBluetoothScoAvailableOffCall();
+    method @Deprecated @FlaggedApi("android.media.audio.amsco_available_api") public boolean isBluetoothScoAvailableOffCall();
     method @Deprecated public boolean isBluetoothScoOn();
     method public boolean isCallScreeningModeSupported();
     method public static boolean isHapticPlaybackSupported();
@@ -22872,7 +22880,7 @@ package android.media {
     method public int requestAudioFocus(@NonNull android.media.AudioFocusRequest);
     method public void setAllowedCapturePolicy(int);
     method @Deprecated public void setBluetoothA2dpOn(boolean);
-    method public void setBluetoothScoOn(boolean);
+    method @Deprecated @FlaggedApi("android.media.audio.amsco_available_api") public void setBluetoothScoOn(boolean);
     method public boolean setCommunicationDevice(@NonNull android.media.AudioDeviceInfo);
     method @RequiresPermission(android.Manifest.permission.WRITE_SETTINGS) public boolean setEncodedSurroundMode(int);
     method public void setMicrophoneMute(boolean);
@@ -22904,8 +22912,8 @@ package android.media {
     field public static final String ACTION_HEADSET_PLUG = "android.intent.action.HEADSET_PLUG";
     field public static final String ACTION_MICROPHONE_MUTE_CHANGED = "android.media.action.MICROPHONE_MUTE_CHANGED";
     field @Deprecated public static final String ACTION_SCO_AUDIO_STATE_CHANGED = "android.media.SCO_AUDIO_STATE_CHANGED";
-    field public static final String ACTION_SCO_AUDIO_STATE_UPDATED = "android.media.ACTION_SCO_AUDIO_STATE_UPDATED";
-    field public static final String ACTION_SPEAKERPHONE_STATE_CHANGED = "android.media.action.SPEAKERPHONE_STATE_CHANGED";
+    field @Deprecated @FlaggedApi("android.media.audio.amsco_available_api") public static final String ACTION_SCO_AUDIO_STATE_UPDATED = "android.media.ACTION_SCO_AUDIO_STATE_UPDATED";
+    field @Deprecated @FlaggedApi("android.media.audio.amsco_available_api") public static final String ACTION_SPEAKERPHONE_STATE_CHANGED = "android.media.action.SPEAKERPHONE_STATE_CHANGED";
     field public static final int ADJUST_LOWER = -1; // 0xffffffff
     field public static final int ADJUST_MUTE = -100; // 0xffffff9c
     field public static final int ADJUST_RAISE = 1; // 0x1
@@ -22939,8 +22947,8 @@ package android.media {
     field public static final String EXTRA_ENCODINGS = "android.media.extra.ENCODINGS";
     field public static final String EXTRA_MAX_CHANNEL_COUNT = "android.media.extra.MAX_CHANNEL_COUNT";
     field public static final String EXTRA_RINGER_MODE = "android.media.EXTRA_RINGER_MODE";
-    field public static final String EXTRA_SCO_AUDIO_PREVIOUS_STATE = "android.media.extra.SCO_AUDIO_PREVIOUS_STATE";
-    field public static final String EXTRA_SCO_AUDIO_STATE = "android.media.extra.SCO_AUDIO_STATE";
+    field @Deprecated @FlaggedApi("android.media.audio.amsco_available_api") public static final String EXTRA_SCO_AUDIO_PREVIOUS_STATE = "android.media.extra.SCO_AUDIO_PREVIOUS_STATE";
+    field @Deprecated @FlaggedApi("android.media.audio.amsco_available_api") public static final String EXTRA_SCO_AUDIO_STATE = "android.media.extra.SCO_AUDIO_STATE";
     field @Deprecated public static final String EXTRA_VIBRATE_SETTING = "android.media.EXTRA_VIBRATE_SETTING";
     field @Deprecated public static final String EXTRA_VIBRATE_TYPE = "android.media.EXTRA_VIBRATE_TYPE";
     field public static final int FLAG_ALLOW_RINGER_MODES = 2; // 0x2
@@ -22992,10 +23000,10 @@ package android.media {
     field @Deprecated public static final int ROUTE_EARPIECE = 1; // 0x1
     field @Deprecated public static final int ROUTE_HEADSET = 8; // 0x8
     field @Deprecated public static final int ROUTE_SPEAKER = 2; // 0x2
-    field public static final int SCO_AUDIO_STATE_CONNECTED = 1; // 0x1
-    field public static final int SCO_AUDIO_STATE_CONNECTING = 2; // 0x2
-    field public static final int SCO_AUDIO_STATE_DISCONNECTED = 0; // 0x0
-    field public static final int SCO_AUDIO_STATE_ERROR = -1; // 0xffffffff
+    field @Deprecated @FlaggedApi("android.media.audio.amsco_available_api") public static final int SCO_AUDIO_STATE_CONNECTED = 1; // 0x1
+    field @Deprecated @FlaggedApi("android.media.audio.amsco_available_api") public static final int SCO_AUDIO_STATE_CONNECTING = 2; // 0x2
+    field @Deprecated @FlaggedApi("android.media.audio.amsco_available_api") public static final int SCO_AUDIO_STATE_DISCONNECTED = 0; // 0x0
+    field @Deprecated @FlaggedApi("android.media.audio.amsco_available_api") public static final int SCO_AUDIO_STATE_ERROR = -1; // 0xffffffff
     field public static final int STREAM_ACCESSIBILITY = 10; // 0xa
     field public static final int STREAM_ALARM = 4; // 0x4
     field @FlaggedApi("android.media.audio.stream_assistant_public") public static final int STREAM_ASSISTANT = 11; // 0xb
@@ -28794,6 +28802,7 @@ package android.media.session {
     ctor public MediaSession(@NonNull android.content.Context, @NonNull String);
     ctor public MediaSession(@NonNull android.content.Context, @NonNull String, @Nullable android.os.Bundle);
     ctor @FlaggedApi("com.android.media.mediasession.flags.override_media_session_owner") @RequiresPermission(android.Manifest.permission.OVERRIDE_MEDIA_SESSION_OWNER) public MediaSession(@NonNull android.content.Context, @NonNull String, @Nullable android.os.Bundle, @NonNull String);
+    method @FlaggedApi("com.android.media.mediasession.flags.expose_bitmap_size_limit_api") @NonNull public static android.util.Size getBitmapSizeLimit(@NonNull android.content.Context);
     method @NonNull public android.media.session.MediaController getController();
     method @NonNull public android.media.session.MediaSessionManager.RemoteUserInfo getCurrentControllerInfo();
     method @NonNull public android.media.session.MediaSession.Token getSessionToken();
@@ -40421,6 +40430,7 @@ package android.provider {
     field public static final String SUBJECT = "subject";
     field public static final String SUBSCRIPTION_ID = "sub_id";
     field public static final String THREAD_ID = "thread_id";
+    field @FlaggedApi("com.android.internal.telephony.flags.message_promotion") public static final String TRANSACTION_ID = "tr_id";
     field public static final String TYPE = "type";
   }
 
@@ -54292,7 +54302,6 @@ package android.view {
   @FlaggedApi("android.view.flags.surface_view_set_blur_regions") public final class RoundedRectBlurRegion extends android.view.BlurRegion {
     ctor public RoundedRectBlurRegion();
     ctor public RoundedRectBlurRegion(@NonNull android.graphics.RectF, @NonNull float[], @FloatRange(from=0.0, to=1.0) float, float);
-    ctor public RoundedRectBlurRegion(@NonNull android.view.RoundedRectBlurRegion);
     method @NonNull public android.view.RoundedRectBlurRegion copy();
     method @NonNull public android.graphics.RectF getBounds();
     method @NonNull public float[] getCornerRadius();

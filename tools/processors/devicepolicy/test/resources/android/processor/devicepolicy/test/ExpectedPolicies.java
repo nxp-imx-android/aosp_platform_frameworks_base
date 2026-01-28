@@ -19,6 +19,7 @@ package android.app.admin.metadata;
 import static android.app.admin.PolicyIdentifier.SIMPLE_BOOLEAN_POLICY;
 import static android.app.admin.PolicyIdentifier.SIMPLE_ENUM_POLICY;
 import static android.app.admin.PolicyIdentifier.SIMPLE_INTEGER_POLICY;
+import static android.app.admin.PolicyIdentifier.SIMPLE_LONG_POLICY;
 import static android.app.admin.PolicyIdentifier.SIMPLE_STRING_LIST_POLICY;
 import static android.app.admin.PolicyIdentifier.SIMPLE_STRING_POLICY;
 import static android.app.admin.PolicyIdentifier.TEST_AFFILIATED_PROFILE_OWNER_ON_USER_ALLOWED;
@@ -206,6 +207,16 @@ public class Policies {
                 5, // MANAGED_PROFILE_OWNER_OF_PERSONAL_OWNED_DEVICE
                 7  // AFFILIATED_FULL_USER_PROFILE_OWNER
             )
+        ));
+        policies.add(new LongPolicyMetadata(
+            /* id= */ SIMPLE_LONG_POLICY,
+            /* allowedScopes= */ Set.of(
+                1
+            ),
+            /* affectedResource= */ 1,
+            /* requiredPermission= */ null,
+            /* requiredCrossUserPermission= */ null,
+            /* allowedDpcTypes= */ Set.of()
         ));
         policies.add(new StringPolicyMetadata(
             /* id= */ SIMPLE_STRING_POLICY,

@@ -441,9 +441,13 @@ public abstract class Connection extends Conferenceable {
     public static final int CAPABILITY_TRANSFER = 0x08000000;
 
     /**
-     * Indicates that this {@code Connection} can be transferred to another
-     * ongoing {@code Connection}.
-     * Connection supports the consultative call transfer feature.
+     * Indicates that this {@code Connection} can perform a consultative transfer to another
+     * ongoing {@code Connection} that also has this capability.
+     *
+     * A consultative transfer request is initialted when {@link #onTransfer(Connection)} is called
+     * on a {@code Connection} with this capability.
+     *
+     * See 3GPP TS 24.629 for more details.
      */
     @FlaggedApi(android.telecom.flags.Flags.FLAG_EXPLICIT_CALL_TRANSFER)
     public static final int CAPABILITY_TRANSFER_CONSULTATIVE = 0x10000000;
@@ -3559,24 +3563,27 @@ public abstract class Connection extends Conferenceable {
     public void onReject(String replyMessage) {}
 
     /**
-     * Notifies this Connection, a request to transfer to a target number.
-     * @param number the number to transfer this {@link Connection} to.
+     * Notifies this Connection of a request to transfer to a target number.
+     * @param address the address to transfer this {@link Connection} to.
      * @param isConfirmationRequired when {@code true}, the {@link ConnectionService}
      * should wait until the transfer has successfully completed before disconnecting
-     * the current {@link Connection}.
+     * the current {@link Connection}, also known as an assured transfer.
      * When {@code false}, the {@link ConnectionService} should signal the network to
      * perform the transfer, but should immediately disconnect the call regardless of
-     * the outcome of the transfer.
+     * the outcome of the transfer, also known as a blind transfer.
      */
     @FlaggedApi(android.telecom.flags.Flags.FLAG_EXPLICIT_CALL_TRANSFER)
-    public void onTransfer(@NonNull Uri number, boolean isConfirmationRequired) {}
+    public void onTransfer(@NonNull Uri address, boolean isConfirmationRequired) {}
 
     /**
-     * Notifies this Connection, a request to transfer to another Connection.
-     * @param otherConnection the {@link Connection} to transfer this call to.
+     * Notifies this Connection of a request to start a CONSULTATIVE transfer to another Connection.
+     *
+     * See 3GPP TS 24.629 for more details.
+     *
+     * @param toConnection the {@link Connection} to transfer this call to.
      */
     @FlaggedApi(android.telecom.flags.Flags.FLAG_EXPLICIT_CALL_TRANSFER)
-    public void onTransfer(@NonNull Connection otherConnection) {}
+    public void onTransfer(@NonNull Connection toConnection) {}
 
     /**
      * Notifies this Connection of a request to silence the ringer.

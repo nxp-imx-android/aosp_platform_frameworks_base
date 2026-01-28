@@ -47,8 +47,8 @@ class SceneDataSourceDelegator(applicationScope: CoroutineScope, config: SceneCo
                 initialValue = config.initialSceneKey,
             )
 
-    override val currentSceneAsState: SceneKey
-        get() = delegateMutable.value.currentSceneAsState
+    override val transitionState: TransitionState
+        get() = delegateMutable.value.transitionState
 
     override val currentOverlays: StateFlow<Set<OverlayKey>> =
         delegateMutable

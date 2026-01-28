@@ -147,6 +147,7 @@ object PolicyMetadataCodeGenerator {
             TypeMetadataCase.ENUM_METADATA -> generateEnumPolicyMetadata(policy)
             TypeMetadataCase.BOOLEAN_METADATA -> generateBooleanPolicyMetadata(policy)
             TypeMetadataCase.INTEGER_METADATA -> generateIntegerPolicyMetadata(policy)
+            TypeMetadataCase.LONG_METADATA -> generateLongPolicyMetadata(policy)
             TypeMetadataCase.STRING_METADATA -> generateStringPolicyMetadata(policy)
             TypeMetadataCase.LIST_METADATA -> generateListPolicyMetadata(policy)
             TypeMetadataCase.TYPEMETADATA_NOT_SET ->
@@ -281,6 +282,21 @@ object PolicyMetadataCodeGenerator {
     ) =
         CodeBlock.builder()
             .add("new \$T(\n", integerPolicyMetadataType)
+            .indent()
+            .addPolicyArguments(policy, policyId)
+            .add("\n")
+            .unindent()
+            .add(")")
+            .build()
+
+    private val longPolicyMetadataType = ClassName.get(METADATA_PACKAGE, "LongPolicyMetadata")
+
+    private fun generateLongPolicyMetadata(
+        policy: PolicyMetadata,
+        policyId: CodeBlock = policy.getPolicyIdCodeBlock(),
+    ) =
+        CodeBlock.builder()
+            .add("new \$T(\n", longPolicyMetadataType)
             .indent()
             .addPolicyArguments(policy, policyId)
             .add("\n")

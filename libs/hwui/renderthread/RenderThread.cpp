@@ -99,6 +99,12 @@ void RenderThread::frameCallback(int64_t vsyncId, int64_t frameDeadline, int64_t
             }
 
             const auto callbacksDuration = estimateCallbacksExpectedDuration();
+            // If the estimate is greater than the time we have left, assume this is due
+            // to the previous frame transiently taking longer than it should and give the
+            // UI thread a chance to produce this frame.
+            if (callbacksDuration > timeUntilDeadline) {
+                return defaultRunAt;
+            }
             return (frameTimeTimePoint + (timeUntilDeadline - callbacksDuration));
         }();
 

@@ -49,7 +49,7 @@ constructor(
 
     init {
         if (Flags.appCompatRefactoring()) {
-            ProtoLog.v(WM_SHELL_APP_COMPAT, "%s: %s", TAG, "Initializing LetterboxCommandHandler")
+            ProtoLog.v(WM_SHELL_APP_COMPAT, "$TAG: Initializing LetterboxCommandHandler")
             shellInit.addInitCallback(
                 { shellCommandHandler.addCommandCallback("letterbox", this, this) },
                 this,

@@ -49,6 +49,7 @@ import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.testKosmos
 import com.google.android.msdl.data.model.MSDLToken
 import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 import org.junit.Before
@@ -133,6 +134,45 @@ class PinBouncerViewModelTest : SysuiTestCase() {
 
             assertThat(hintedPinLength).isNull()
         }
+
+    @Test
+    fun closingAndReopeningBouncer_clearsSavedSIMPINState() =
+        kosmos.runTest {
+            val underTest =
+                pinBouncerViewModelFactory.create(
+                    isInputEnabled = MutableStateFlow(true),
+                    onIntentionalUserInput = {},
+                    authenticationMethod = AuthenticationMethodModel.Sim,
+                    bouncerHapticPlayer = bouncerHapticPlayer,
+                )
+            val onActivatedJob = underTest.activateIn(testScope)
+
+            fakeSimBouncerRepository.setSimPukLocked(true)
+            runCurrent()
+
+            // step 1: enter PUK code "12345678"
+            underTest.inputPin(intArrayOf(1, 2, 3, 4, 5, 6, 7, 8))
+            runCurrent()
+
+            // step 1: enter PIN code "4567"
+            underTest.inputPin(intArrayOf(4, 5, 6, 7))
+            runCurrent()
+
+            assertThat(fakeSimBouncerRepository.simPukInputModel.enteredSimPuk)
+                .isEqualTo("12345678")
+            assertThat(fakeSimBouncerRepository.simPukInputModel.enteredSimPin).isEqualTo("4567")
+            // close the bouncer
+            onActivatedJob.cancel()
+            runCurrent()
+
+            assertThat(fakeSimBouncerRepository.simPukInputModel.enteredSimPuk).isNull()
+            assertThat(fakeSimBouncerRepository.simPukInputModel.enteredSimPin).isNull()
+        }
+
+    private fun PinBouncerViewModel.inputPin(digits: IntArray) {
+        digits.forEach { onPinButtonClicked(it) }
+        this.onAuthenticateButtonClicked()
+    }
 
     @Test
     fun onPinButtonClicked() =

@@ -131,8 +131,9 @@ class DesktopMinimizationTransitionHandler(
             change.taskInfo?.let { displayController.getDisplayContext(it.displayId) }
         if (displayContext == null) {
             logW(
-                "displayContext is null for taskId=${change.taskInfo?.taskId}, " +
-                    "displayId=${change.taskInfo?.displayId}"
+                "displayContext is null for taskId=%d, displayId=%d",
+                change.taskInfo?.taskId,
+                change.taskInfo?.displayId,
             )
             return null
         }
@@ -148,6 +149,8 @@ class DesktopMinimizationTransitionHandler(
     }
 
     private companion object {
+        // TODO(b/478792808): Remove suppression
+        @SuppressWarnings("ProtoLogNonConstantFormat")
         private fun logW(msg: String, vararg arguments: Any?) {
             ProtoLog.w(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
         }

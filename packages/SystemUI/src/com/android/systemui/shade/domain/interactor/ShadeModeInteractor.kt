@@ -204,7 +204,7 @@ constructor(
     }
 }
 
-class ShadeModeInteractorEmptyImpl @Inject constructor() : ShadeModeInteractor {
+open class ShadeModeInteractorEmptyImpl @Inject constructor() : ShadeModeInteractor {
 
     override val shadeMode: StateFlow<ShadeMode> = MutableStateFlow(ShadeMode.Single)
 

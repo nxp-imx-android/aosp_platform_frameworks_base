@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.bubbles;
+package com.android.wm.shell.bubbles.transitions;
 
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD;
 import static android.view.WindowManager.TRANSIT_CHANGE;
@@ -78,11 +78,25 @@ import com.android.testing.wm.util.MockToken;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.ShellTestCase;
 import com.android.wm.shell.TestSyncExecutor;
-import com.android.wm.shell.bubbles.BubbleTransitions.BarToFloatingConversion;
-import com.android.wm.shell.bubbles.BubbleTransitions.DraggedBubbleIconToFullscreen;
+import com.android.wm.shell.bubbles.Bubble;
+import com.android.wm.shell.bubbles.BubbleController;
+import com.android.wm.shell.bubbles.BubbleData;
+import com.android.wm.shell.bubbles.BubbleExpandedView;
+import com.android.wm.shell.bubbles.BubbleExpandedViewManager;
+import com.android.wm.shell.bubbles.BubbleHelper;
+import com.android.wm.shell.bubbles.BubbleHelperImpl;
+import com.android.wm.shell.bubbles.BubblePositioner;
+import com.android.wm.shell.bubbles.BubbleRootTask;
+import com.android.wm.shell.bubbles.BubbleStackView;
+import com.android.wm.shell.bubbles.BubbleTaskView;
+import com.android.wm.shell.bubbles.BubbleTaskViewFactory;
+import com.android.wm.shell.bubbles.BubbleViewInfoTask;
+import com.android.wm.shell.bubbles.Bubbles;
 import com.android.wm.shell.bubbles.appinfo.PackageManagerBubbleAppInfoProvider;
 import com.android.wm.shell.bubbles.bar.BubbleBarExpandedView;
 import com.android.wm.shell.bubbles.bar.BubbleBarLayerView;
+import com.android.wm.shell.bubbles.transitions.BubbleTransitions.BarToFloatingConversion;
+import com.android.wm.shell.bubbles.transitions.BubbleTransitions.DraggedBubbleIconToFullscreen;
 import com.android.wm.shell.bubbles.user.data.BubbleUserResolver;
 import com.android.wm.shell.bubbles.user.model.BubbleUserInfo;
 import com.android.wm.shell.common.HomeIntentProvider;

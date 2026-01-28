@@ -185,6 +185,16 @@ flag {
 }
 
 flag {
+    name: "surface_view_max_hdr_headroom"
+    namespace: "core_graphics"
+    description: "Enable SurfaceView max HDR headroom API"
+    bug: "416494780"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "atomic_traversal_barrier"
     namespace: "system_performance"
     description: "Control whether traversal sync barriers are stored in atomics."

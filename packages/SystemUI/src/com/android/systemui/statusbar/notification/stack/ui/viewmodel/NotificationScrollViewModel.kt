@@ -267,6 +267,12 @@ constructor(
     fun blurRadius(maxBlurRadius: Flow<Int>) =
         combine(blurFraction, maxBlurRadius) { fraction, maxRadius -> fraction * maxRadius }
 
+    /** Whether or not Split Shade is enabled. */
+    val isSplitShade: Flow<Boolean> =
+        shadeModeInteractor.shadeMode.flatMapLatest { shadeMode ->
+            flowOf(shadeMode is ShadeMode.Split)
+        }
+
     /**
      * Scale of the blur effect that should be applied to Notifications.
      *

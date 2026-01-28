@@ -37,6 +37,7 @@ import com.android.wm.shell.bubbles.appinfo.PackageManagerBubbleAppInfoProvider
 import com.android.wm.shell.bubbles.bar.BubbleBarLayerView
 import com.android.wm.shell.bubbles.logging.BubbleLogger
 import com.android.wm.shell.bubbles.logging.BubbleSessionTracker
+import com.android.wm.shell.bubbles.transitions.BubbleTransitions
 import com.android.wm.shell.bubbles.user.data.BubbleUserResolver
 import com.android.wm.shell.bubbles.user.model.BubbleUserInfo
 import com.android.wm.shell.common.DisplayController

@@ -114,13 +114,13 @@ private fun SelectorItem(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.Start),
         ) {
-            Box(
-                modifier =
-                    Modifier.size(24.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.surfaceVariant)
-            ) {
-                if (icon != null) {
+            if (icon != null) {
+                Box(
+                    modifier =
+                        Modifier.size(24.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                ) {
                     Image(bitmap = icon.asImageBitmap(), contentDescription = label?.toString())
                 }
             }

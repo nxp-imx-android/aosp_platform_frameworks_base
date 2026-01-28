@@ -2108,15 +2108,9 @@ void javaAudioFormatToNativeAudioConfig(JNIEnv *env, audio_config_t *nConfig,
     *nConfig = AUDIO_CONFIG_INITIALIZER;
     nConfig->format = audioFormatToNative(env->GetIntField(jFormat, gAudioFormatFields.mEncoding));
     nConfig->sample_rate = env->GetIntField(jFormat, gAudioFormatFields.mSampleRate);
-    // TODO(b/460465715): Use nativeChannelMaskFromJavaChannelMasks?
     jobject jChannelMasks = env->GetObjectField(jFormat, gAudioFormatFields.mChannelMasks);
-    ChannelMasks channelMasks;
-    channelMasks.fillFromJobject(env, gAudioChannelMasksFields, jChannelMasks);
-    if (isInput) {
-        nConfig->channel_mask = inChannelMaskToNative(channelMasks.positionMask);
-    } else {
-        nConfig->channel_mask = outChannelMaskToNative(channelMasks.positionMask);
-    }
+    nConfig->channel_mask = nativeChannelMaskFromJavaChannelMasks(env, gAudioChannelMasksFields,
+                                                                  jChannelMasks, isInput);
 }
 
 void javaAudioFormatToNativeAudioConfigBase(JNIEnv *env, const jobject jFormat,

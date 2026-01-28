@@ -112,7 +112,7 @@ public class BatchedInputEventReceiver extends InputEventReceiver {
         if (!mBatchedInputScheduled) {
             mBatchedInputScheduled = true;
             traceBoolVariable("mBatchedInputScheduled", mBatchedInputScheduled);
-            mChoreographer.postVsyncCallback(Choreographer.CALLBACK_INPUT, mBatchedInputCallback);
+            mChoreographer.postCallback(Choreographer.CALLBACK_INPUT, mBatchedInputRunnable, null);
         }
     }
 
@@ -120,8 +120,8 @@ public class BatchedInputEventReceiver extends InputEventReceiver {
         if (mBatchedInputScheduled) {
             mBatchedInputScheduled = false;
             traceBoolVariable("mBatchedInputScheduled", mBatchedInputScheduled);
-            mChoreographer.removeVsyncCallback(
-                    Choreographer.CALLBACK_INPUT, mBatchedInputCallback);
+            mChoreographer.removeCallbacks(
+                    Choreographer.CALLBACK_INPUT, mBatchedInputRunnable, null);
         }
     }
 
@@ -131,18 +131,18 @@ public class BatchedInputEventReceiver extends InputEventReceiver {
         Trace.traceCounter(Trace.TRACE_TAG_INPUT, name, value ? 1 : 0);
     }
 
-    private final class BatchedInputCallback implements Choreographer.VsyncCallback {
+    private final class BatchedInputRunnable implements Runnable {
         @Override
-        public void onVsync(Choreographer.FrameData frameData) {
+        public void run() {
             try {
                 Trace.traceBegin(Trace.TRACE_TAG_INPUT, mTag);
-                doConsumeBatchedInput(frameData.getFrameTimeNanos());
+                doConsumeBatchedInput(mChoreographer.getFrameTimeNanos());
             } finally {
                 Trace.traceEnd(Trace.TRACE_TAG_INPUT);
             }
         }
     }
-    private final BatchedInputCallback mBatchedInputCallback = new BatchedInputCallback();
+    private final BatchedInputRunnable mBatchedInputRunnable = new BatchedInputRunnable();
 
     /**
      * A {@link BatchedInputEventReceiver} that reports events to an {@link InputEventListener}.

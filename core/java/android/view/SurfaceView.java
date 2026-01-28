@@ -1307,6 +1307,10 @@ public class SurfaceView extends View implements ViewRootImpl.SurfaceChangedCall
             if (hdrHeadroomChanged || creating) {
                 surfaceUpdateTransaction.setDesiredHdrHeadroom(
                         mBlastSurfaceControl, mHdrHeadroom);
+                if (android.view.flags.Flags.surfaceViewMaxHdrHeadroom()) {
+                    surfaceUpdateTransaction.setDesiredMaxHdrHeadroom(
+                            mSurfaceControl, mHdrHeadroom);
+                }
             }
             if (pictureProfileHandle != null) {
                 surfaceUpdateTransaction.setPictureProfileHandle(

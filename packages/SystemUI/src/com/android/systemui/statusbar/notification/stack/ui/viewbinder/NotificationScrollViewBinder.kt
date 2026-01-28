@@ -100,7 +100,7 @@ constructor(
                 launch { viewModel.blurRadius(maxBlurRadius).collect(view::setBlurRadius) }
                 launch { viewModel.interactive.collectTraced(view::setInteractive) }
             }
-
+            launch { viewModel.isSplitShade.collectTraced { view.setSplitShade(it) } }
             launch {
                 viewModel
                     .getLockscreenDisplayConfig(view::calculateMaxNotifications)

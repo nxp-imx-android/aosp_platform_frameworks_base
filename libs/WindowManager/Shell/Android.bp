@@ -194,6 +194,11 @@ android_library {
     manifest: "AndroidManifest.xml",
     plugins: ["dagger2-compiler"],
     use_resource_processor: true,
+    lint: {
+        extra_check_modules: [
+            "ProtoLogLintChecker",
+        ],
+    },
 }
 
 java_defaults {

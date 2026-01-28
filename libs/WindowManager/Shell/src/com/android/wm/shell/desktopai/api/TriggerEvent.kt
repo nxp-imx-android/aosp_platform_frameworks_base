@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.desktopai.api.config
+package com.android.wm.shell.desktopai.api
 
 /**
  * Represents a discrete event occurring within the system that might trigger an action.

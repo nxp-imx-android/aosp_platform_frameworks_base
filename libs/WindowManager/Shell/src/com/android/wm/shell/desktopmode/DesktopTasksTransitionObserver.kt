@@ -283,6 +283,23 @@ class DesktopTasksTransitionObserver(
                     if (change.startAbsBounds == change.endAbsBounds) return@forEachLoop
                     // Is a freeform task.
                     if (!taskInfo.isFreeform) return@forEachLoop
+                    // TODO: b/477848767 - Remember only position if the task is unresizable.
+                    // Is resizable.
+                    if (!taskInfo.isResizeable) {
+                        logV(
+                            "Remembered bounds is NOT updated as task#%d is unresizable",
+                            taskInfo.taskId,
+                        )
+                        return@forEachLoop
+                    }
+                    if (taskInfo.appCompatTaskInfo?.hasIsExcludeCaptionInsets() == true) {
+                        logV(
+                            "Remembered bounds is NOT updated as task#%d has " +
+                                "isExcludeCaptionInsets",
+                            taskInfo.taskId,
+                        )
+                        return@forEachLoop
+                    }
 
                     val desktopRepository = desktopUserRepositories.getProfile(taskInfo.userId)
                     if (desktopRepository.isTaskInFullImmersiveState(taskInfo.taskId)) {
@@ -329,6 +346,8 @@ class DesktopTasksTransitionObserver(
         pendingUserBoundsChangeTransitions.add(transition)
     }
 
+    // TODO(b/478792808): Remove suppression
+    @SuppressWarnings("ProtoLogNonConstantFormat")
     private fun logV(msg: String, vararg arguments: Any?) {
         ProtoLog.v(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
     }

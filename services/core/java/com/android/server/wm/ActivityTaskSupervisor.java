@@ -874,11 +874,11 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
             }
 
             final int applicationInfoUid =
-                    (r.info.applicationInfo != null) ? r.info.applicationInfo.uid : -1;
-            if ((r.mUserId != proc.mUserId) || (r.info.applicationInfo.uid != applicationInfoUid)) {
+                    (r.info.applicationInfo != null) ? r.info.getUid() : -1;
+            if ((r.mUserId != proc.mUserId) || (r.info.getUid() != applicationInfoUid)) {
                 Slog.wtf(TAG,
                         "User ID for activity changing for " + r
-                                + " appInfo.uid=" + r.info.applicationInfo.uid
+                                + " appInfo.uid=" + r.info.getUid()
                                 + " info.ai.uid=" + applicationInfoUid
                                 + " old=" + r.app + " new=" + proc);
             }

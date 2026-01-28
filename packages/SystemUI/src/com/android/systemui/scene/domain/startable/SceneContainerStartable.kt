@@ -236,7 +236,7 @@ constructor(
                 }
 
                 printSection("Framework state") {
-                    println("isVisible", sceneInteractor.isVisible.value)
+                    println("isVisible", sceneInteractor.isVisibleFlow.value)
                     println("currentScene", sceneInteractor.currentScene.value.debugName)
                     println(
                         "currentOverlays",
@@ -909,7 +909,7 @@ constructor(
                     sceneInteractor.transitionStateFlow
                         .mapNotNull { it as? ObservableTransitionState.Idle }
                         .distinctUntilChanged(),
-                    sceneInteractor.isVisible,
+                    sceneInteractor.isVisibleFlow,
                     shadePendingDisplayId,
                     sceneBackInteractor.backStack,
                     shadeModeInteractor.shadeMode,

@@ -108,6 +108,7 @@ import com.android.wm.shell.bubbles.logging.BubbleLogger;
 import com.android.wm.shell.bubbles.logging.BubbleProtoLog;
 import com.android.wm.shell.bubbles.logging.BubbleSessionTracker;
 import com.android.wm.shell.bubbles.logging.BubbleSessionTracker.SessionEvent;
+import com.android.wm.shell.bubbles.transitions.BubbleTransitions;
 import com.android.wm.shell.bubbles.util.BubbleShellCommandHandler;
 import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.common.DisplayImeController;
@@ -1821,7 +1822,7 @@ public class BubbleController implements ConfigurationChangeListener,
      * @param taskInfo the task.
      */
     @NonNull
-    Transitions.TransitionHandler expandStackAndSelectBubbleForExistingTransition(
+    public Transitions.TransitionHandler expandStackAndSelectBubbleForExistingTransition(
             @NonNull ActivityManager.RunningTaskInfo taskInfo,
             @NonNull IBinder transition,
             Consumer<Transitions.TransitionHandler> onInflatedCallback) {
@@ -1848,7 +1849,7 @@ public class BubbleController implements ConfigurationChangeListener,
      * Jumpcut animation to switch the Task showing in expanded Bubble.
      */
     @NonNull
-    Transitions.TransitionHandler jumpcutBubbleSwitchTransition(
+    public Transitions.TransitionHandler jumpcutBubbleSwitchTransition(
             @NonNull ActivityManager.RunningTaskInfo openingTaskInfo,
             @NonNull ActivityManager.RunningTaskInfo closingTaskInfo,
             @NonNull IBinder transition,

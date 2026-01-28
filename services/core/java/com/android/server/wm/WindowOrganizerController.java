@@ -664,7 +664,10 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
             final Map.Entry<IBinder, WindowContainerTransaction.Change> entry = entries.next();
             final WindowContainer wc = WindowContainer.fromBinder(entry.getKey());
             if (wc == null || wc.isOrganized()) continue;
-            Slog.wtf(TAG, "Attempting to externally manipulate a non-organized container: " + wc);
+            Slog.wtf(TAG, "Attempting to externally manipulate a non-organized container: " + wc
+                    + " isAttached=" + wc.isAttached()
+                    + " playercount=" + mTransitionController.getTransitionPlayerCount()
+                    + " taskorg=" + mTaskOrganizerController.getTaskOrganizer());
             entries.remove();
         }
         List<WindowContainerTransaction.HierarchyOp> hops = t.getHierarchyOps();

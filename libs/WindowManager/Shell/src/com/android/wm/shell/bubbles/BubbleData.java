@@ -592,7 +592,7 @@ public class BubbleData {
      * com.android.wm.shell.bubbles.bar.BubbleBarLayerView,
      * com.android.launcher3.icons.BubbleIconFactory, boolean)
      */
-    void notificationEntryUpdated(Bubble bubble, boolean suppressFlyout, boolean showInShade,
+    public void notificationEntryUpdated(Bubble bubble, boolean suppressFlyout, boolean showInShade,
             @Nullable BubbleBarLocation bubbleBarLocation) {
         mPendingBubbles.remove(bubble.getKey()); // No longer pending once we're here
         Bubble prevBubble = getBubbleInStackWithKey(bubble.getKey());
@@ -650,7 +650,7 @@ public class BubbleData {
      *  - All info in the opening Bubble has completed loading.
      *  - The BubbleBar Icon of the closing Bubble can be removed.
      */
-    void jumpcutBubbleSwitch(Bubble openingBubble, Bubble closingBubble) {
+    public void jumpcutBubbleSwitch(Bubble openingBubble, Bubble closingBubble) {
         // Notify launcher about the closing Bubble, but don't actually remove its TaskView yet
         // because we still need it to be visible until the opening Bubble is fully visible.
         // The cleanup will be done onTaskVanished.
@@ -1363,7 +1363,7 @@ public class BubbleData {
 
     /** @return the bubble in the stack that matches the provided taskId. */
     @Nullable
-    Bubble getBubbleInStackWithTaskId(int taskId) {
+    public Bubble getBubbleInStackWithTaskId(int taskId) {
         return getBubbleWithPredicate(mBubbles, b -> b.getTaskId() == taskId);
     }
 

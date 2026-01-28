@@ -35,10 +35,6 @@ import com.android.systemui.statusbar.StatusBarIconView.STATE_HIDDEN
 import com.android.systemui.statusbar.StatusBarIconView.STATE_ICON
 import com.android.systemui.statusbar.core.NewStatusBarIcons
 import com.android.systemui.statusbar.phone.StatusBarLocation
-import com.android.systemui.statusbar.pipeline.airplane.data.repository.AirplaneModeRepository
-import com.android.systemui.statusbar.pipeline.airplane.data.repository.airplaneModeRepository
-import com.android.systemui.statusbar.pipeline.airplane.ui.viewmodel.AirplaneModeViewModel
-import com.android.systemui.statusbar.pipeline.airplane.ui.viewmodel.airplaneModeViewModel
 import com.android.systemui.statusbar.pipeline.shared.ConnectivityConstants
 import com.android.systemui.statusbar.pipeline.shared.data.repository.FakeConnectivityRepository
 import com.android.systemui.statusbar.pipeline.shared.data.repository.connectivityRepository
@@ -55,7 +51,6 @@ import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -73,13 +68,11 @@ class ModernStatusBarWifiViewTest : SysuiTestCase() {
     private val tableLogBuffer = logcatTableLogBuffer(kosmos, "ModernStatusBarWifiViewTest")
     @Mock private lateinit var connectivityConstants: ConnectivityConstants
     @Mock private lateinit var wifiConstants: WifiConstants
-    private lateinit var airplaneModeRepository: AirplaneModeRepository
     private lateinit var connectivityRepository: FakeConnectivityRepository
     private lateinit var wifiRepository: FakeWifiRepository
     private lateinit var interactor: WifiInteractor
     private lateinit var viewModel: LocationBasedWifiViewModel
     private lateinit var scope: CoroutineScope
-    private lateinit var airplaneModeViewModel: AirplaneModeViewModel
 
     @Before
     fun setUp() {
@@ -88,17 +81,13 @@ class ModernStatusBarWifiViewTest : SysuiTestCase() {
         context.orCreateTestableResources
         testableLooper = TestableLooper.get(this)
 
-        airplaneModeRepository = kosmos.airplaneModeRepository
         connectivityRepository = kosmos.connectivityRepository.fake
         wifiRepository = FakeWifiRepository()
         wifiRepository.setIsWifiEnabled(true)
         scope = CoroutineScope(Dispatchers.Unconfined)
         interactor = WifiInteractorImpl(connectivityRepository, wifiRepository, scope)
-        airplaneModeViewModel = kosmos.airplaneModeViewModel
         val viewModelCommon =
             WifiViewModel(
-                airplaneModeViewModel,
-                shouldShowSignalSpacerProvider = { MutableStateFlow(false) },
                 connectivityConstants,
                 context,
                 tableLogBuffer,

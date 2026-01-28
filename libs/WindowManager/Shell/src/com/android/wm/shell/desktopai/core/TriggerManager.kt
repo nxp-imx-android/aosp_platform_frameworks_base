@@ -18,10 +18,10 @@ package com.android.wm.shell.desktopai.core
 
 import com.android.internal.protolog.ProtoLog
 import com.android.window.flags.Flags
-import com.android.wm.shell.desktopai.api.config.ITriggerManager
-import com.android.wm.shell.desktopai.api.config.ITriggerSource
-import com.android.wm.shell.desktopai.api.config.TriggerEvent
-import com.android.wm.shell.desktopai.api.config.TriggerEventType
+import com.android.wm.shell.desktopai.api.ITriggerManager
+import com.android.wm.shell.desktopai.api.ITriggerSource
+import com.android.wm.shell.desktopai.api.TriggerEvent
+import com.android.wm.shell.desktopai.api.TriggerEventType
 import com.android.wm.shell.desktopai.api.config.TriggerStrategy
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_AI
 import com.android.wm.shell.sysui.ShellInit
@@ -77,11 +77,11 @@ class TriggerManager(shellInit: ShellInit, private val sources: List<ITriggerSou
         val list = registry.getOrPut(type) { mutableListOf() }
         list.add(Registration(strategy, callback))
 
-        ProtoLog.v(WM_SHELL_DESKTOP_AI, "%s: Registered strategy: %s", TAG, strategy)
+        ProtoLog.v(WM_SHELL_DESKTOP_AI, "$TAG: Registered strategy: %s", strategy)
     }
 
     private fun fireEvent(event: TriggerEvent) {
-        ProtoLog.v(WM_SHELL_DESKTOP_AI, "%s: Processing event: %s", TAG, event)
+        ProtoLog.v(WM_SHELL_DESKTOP_AI, "$TAG: Processing event: %s", event)
 
         // 1. Efficient Lookup: Only look at strategies relevant to this Event Type
         val candidates = registry[event.type] ?: return

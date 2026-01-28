@@ -103,7 +103,7 @@ constructor(
     val currentScene: StateFlow<SceneKey> = repository.currentScene
 
     val currentSceneAsState: SceneKey
-        get() = repository.currentSceneAsState
+        get() = repository.transitionState.currentScene
 
     /**
      * The current set of overlays to be shown (may be empty).
@@ -122,13 +122,13 @@ constructor(
      * 3. When transitioning, what the progress of the transition is.
      */
     val transitionStateFlow: StateFlow<ObservableTransitionState> =
-        repository.transitionState
+        repository.transitionStateFlow
             .onEach { logger.logSceneTransition(it) }
             .stateInTraced(
                 name = "transitionState",
                 scope = applicationScope,
                 started = SharingStarted.Eagerly,
-                initialValue = repository.transitionState.value,
+                initialValue = repository.transitionStateFlow.value,
             )
 
     /**
@@ -174,7 +174,7 @@ constructor(
             )
 
     /** Whether the scene container is visible. */
-    val isVisible: StateFlow<Boolean> =
+    val isVisibleFlow: StateFlow<Boolean> =
         combine(
                 repository.isVisible,
                 repository.isRemoteUserInputOngoing,
@@ -201,6 +201,23 @@ constructor(
      */
     val isSceneContainerUserInputOngoing: StateFlow<Boolean> =
         repository.isSceneContainerUserInputOngoing
+
+    /**
+     * The current content that has the highest z-order out of all currently shown scenes and
+     * overlays.
+     *
+     * Note that during a transition between content, a different content may have the highest z-
+     * order. Only the one provided by this flow is considered the current logical topmost content.
+     */
+    @Deprecated("Only to be used for compatibility with KeyguardTransitionFramework")
+    val topmostContent: StateFlow<ContentKey> =
+        combine(currentScene, currentOverlays, ::determineTopmostContent)
+            .stateInTraced(
+                name = "topmostContent",
+                scope = applicationScope,
+                started = SharingStarted.Eagerly,
+                initialValue = determineTopmostContent(currentScene.value, currentOverlays.value),
+            )
 
     /**
      * The amount of transition into or out of the given [content].
@@ -852,21 +869,4 @@ constructor(
             determineTopmostContent(overlays)
         }
     }
-
-    /**
-     * The current content that has the highest z-order out of all currently shown scenes and
-     * overlays.
-     *
-     * Note that during a transition between content, a different content may have the highest z-
-     * order. Only the one provided by this flow is considered the current logical topmost content.
-     */
-    @Deprecated("Only to be used for compatibility with KeyguardTransitionFramework")
-    val topmostContent: StateFlow<ContentKey> =
-        combine(currentScene, currentOverlays, ::determineTopmostContent)
-            .stateInTraced(
-                name = "topmostContent",
-                scope = applicationScope,
-                started = SharingStarted.Eagerly,
-                initialValue = determineTopmostContent(currentScene.value, currentOverlays.value),
-            )
 }

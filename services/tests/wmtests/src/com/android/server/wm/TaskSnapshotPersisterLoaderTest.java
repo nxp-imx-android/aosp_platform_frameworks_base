@@ -35,6 +35,7 @@ import android.app.ActivityManager;
 import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.os.SystemClock;
+import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.util.ArraySet;
 import android.view.Surface;
@@ -119,6 +120,7 @@ public class TaskSnapshotPersisterLoaderTest extends TaskSnapshotPersisterTestBa
      * Tests that too many store write queue items are being purged.
      */
     @Test
+    @DisableFlags(com.android.window.flags.Flags.FLAG_NO_PAUSE_TASK_SNAPSHOT_PERSISTER)
     public void testPurging() {
         mPersister.persistSnapshot(100, mTestUserId, createFakeSnapshot());
         mSnapshotPersistQueue.waitForQueueEmpty();

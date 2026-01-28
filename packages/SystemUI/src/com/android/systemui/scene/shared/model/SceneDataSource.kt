@@ -34,7 +34,7 @@ interface SceneDataSource {
      */
     val currentScene: StateFlow<SceneKey>
 
-    val currentSceneAsState: SceneKey
+    val transitionState: TransitionState
 
     /**
      * The current set of overlays to be shown (may be empty).

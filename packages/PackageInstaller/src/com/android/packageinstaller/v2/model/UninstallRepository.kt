@@ -38,7 +38,6 @@ import android.content.pm.VersionedPackage
 import android.graphics.drawable.Icon
 import android.os.Build
 import android.os.Bundle
-import android.os.Flags
 import android.os.Process
 import android.os.UserHandle
 import android.os.UserManager
@@ -55,7 +54,6 @@ import com.android.packageinstaller.v2.model.PackageUtil.getPackageNameForUid
 import com.android.packageinstaller.v2.model.PackageUtil.isPermissionGranted
 import com.android.packageinstaller.v2.model.PackageUtil.isProfileOfOrSame
 import android.content.pm.Flags as PmFlags
-import android.multiuser.Flags as MultiuserFlags
 
 class UninstallRepository(private val context: Context) {
 
@@ -524,8 +522,8 @@ class UninstallRepository(private val context: Context) {
             intent.putExtra(Intent.EXTRA_INSTALL_RESULT, legacyStatus)
             if (status == PackageInstaller.STATUS_SUCCESS) {
                 uninstallResult.setValue(
-                    UninstallSuccess(appInfo = targetAppInfo!!, resultIntent = intent,
-                        activityResultCode = Activity.RESULT_OK)
+                    UninstallSuccess(resultIntent = intent,
+                        activityResultCode = Activity.RESULT_OK, appLabel = targetAppLabel)
                 )
             } else {
                 uninstallResult.setValue(
@@ -547,9 +545,9 @@ class UninstallRepository(private val context: Context) {
                 R.string.uninstall_done_app
             }
             uninstallResult.value = UninstallSuccess(
-                appInfo = targetAppInfo!!,
                 activityResultCode = legacyStatus,
-                messageResId = messageResId
+                messageResId = messageResId,
+                appLabel = targetAppLabel
             )
         } else {
             val uninstallFailureChannel = NotificationChannel(

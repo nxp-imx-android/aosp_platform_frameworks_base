@@ -53,6 +53,7 @@ import com.android.launcher3.icons.BubbleIconFactory;
 import com.android.wm.shell.bubbles.bar.BubbleBarExpandedView;
 import com.android.wm.shell.bubbles.bar.BubbleBarLayerView;
 import com.android.wm.shell.bubbles.model.BubbleIcon;
+import com.android.wm.shell.bubbles.transitions.BubbleTransitions;
 import com.android.wm.shell.common.ComponentUtils;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
 import com.android.wm.shell.shared.bubbles.BubbleInfo;
@@ -700,8 +701,7 @@ public class Bubble implements BubbleViewProvider {
      * Sets whether to perform inflation on the same thread as the caller. This method should only
      * be used in tests, not in production.
      */
-    @VisibleForTesting
-    void setInflateSynchronously(boolean inflateSynchronously) {
+    public void setInflateSynchronously(boolean inflateSynchronously) {
         mInflateSynchronously = inflateSynchronously;
     }
 
@@ -751,7 +751,7 @@ public class Bubble implements BubbleViewProvider {
      * @param skipInflation whether to skip inflating expanded views. true for overflow bubbles.
      * @param bubbleViewInfoTaskFactory factory for creating {@link BubbleViewInfoTask} jobs.
      */
-    void inflate(BubbleViewInfoTask.Callback callback,
+    public void inflate(BubbleViewInfoTask.Callback callback,
             Context context,
             BubbleExpandedViewManager expandedViewManager,
             BubbleTaskViewFactory taskViewFactory,
@@ -1152,7 +1152,7 @@ public class Bubble implements BubbleViewProvider {
      * Returns the pending intent used to populate the bubble.
      */
     @Nullable
-    PendingIntent getPendingIntent() {
+    public PendingIntent getPendingIntent() {
         return mPendingIntent;
     }
 

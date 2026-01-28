@@ -1473,6 +1473,15 @@ public class SupervisionService extends ISupervisionManager.Stub {
                 mSupervisionSettings.saveUserData();
             }
         }
+
+        @Override
+        public boolean isEscrowTokenRequired(@UserIdInt int userId) {
+            if (!Flags.verifySupervisionRoleHoldersBeforeDestroyingEscrowToken()) {
+                return false;
+            }
+            final UserHandle user = UserHandle.of(userId);
+            return !mInjector.getRoleHoldersAsUser(ROLE_SUPERVISION, user).isEmpty();
+        }
     }
 
     private final class RoleObserver implements OnRoleHoldersChangedListener {

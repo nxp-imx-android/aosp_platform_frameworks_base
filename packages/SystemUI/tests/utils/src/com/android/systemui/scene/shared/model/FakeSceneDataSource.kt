@@ -16,6 +16,9 @@
 
 package com.android.systemui.scene.shared.model
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import com.android.compose.animation.scene.OverlayKey
 import com.android.compose.animation.scene.SceneKey
 import com.android.compose.animation.scene.TransitionKey
@@ -33,7 +36,8 @@ class FakeSceneDataSource(initialSceneKey: SceneKey, val testScope: TestScope) :
     private val _currentScene = MutableStateFlow(initialSceneKey)
     override val currentScene: StateFlow<SceneKey> = _currentScene.asStateFlow()
 
-    override val currentSceneAsState: SceneKey by currentScene.hydratedStateOf()
+    override var transitionState: TransitionState by
+        mutableStateOf(TransitionState.Idle(initialSceneKey))
 
     private val _currentOverlays = MutableStateFlow<Set<OverlayKey>>(emptySet())
     override val currentOverlays: StateFlow<Set<OverlayKey>> = _currentOverlays.asStateFlow()

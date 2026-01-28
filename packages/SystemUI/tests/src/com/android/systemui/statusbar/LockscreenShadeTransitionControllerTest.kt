@@ -24,8 +24,10 @@ import com.android.systemui.plugins.qs.QS
 import com.android.systemui.res.R
 import com.android.systemui.shade.data.repository.shadeRepository
 import com.android.systemui.shade.domain.interactor.ShadeLockscreenInteractor
+import com.android.systemui.shade.domain.interactor.fakeShadeModeInteractor
 import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.shade.shadeTestUtil
+import com.android.systemui.shade.shared.model.ShadeMode
 import com.android.systemui.statusbar.disableflags.data.repository.fakeDisableFlagsRepository
 import com.android.systemui.statusbar.disableflags.shared.model.DisableFlagsModel
 import com.android.systemui.statusbar.notification.collection.EntryAdapter
@@ -80,6 +82,7 @@ class LockscreenShadeTransitionControllerTest : SysuiTestCase() {
     private lateinit var transitionController: LockscreenShadeTransitionController
     private val configurationController = kosmos.fakeConfigurationController
     private val disableFlagsRepository = kosmos.fakeDisableFlagsRepository
+    private val fakeShadeModeInteractor = kosmos.fakeShadeModeInteractor
     private val testScope = kosmos.testScope
 
     lateinit var row: ExpandableNotificationRow
@@ -142,6 +145,8 @@ class LockscreenShadeTransitionControllerTest : SysuiTestCase() {
                         configurationController = configurationController,
                         dumpManager = mock(),
                         splitShadeStateController = ResourcesSplitShadeStateController(),
+                        shadeModeInteractor = fakeShadeModeInteractor,
+                        backgroundScope = testScope.backgroundScope,
                     ),
                 keyguardTransitionControllerFactory = { notificationPanelController ->
                     LockscreenShadeKeyguardTransitionController(
@@ -151,6 +156,8 @@ class LockscreenShadeTransitionControllerTest : SysuiTestCase() {
                         configurationController = configurationController,
                         dumpManager = mock(),
                         splitShadeStateController = ResourcesSplitShadeStateController(),
+                        shadeModeInteractor = fakeShadeModeInteractor,
+                        backgroundScope = testScope.backgroundScope,
                     )
                 },
                 depthController = depthController,
@@ -166,6 +173,7 @@ class LockscreenShadeTransitionControllerTest : SysuiTestCase() {
                 shadeRepository = kosmos.shadeRepository,
                 shadeInteractor = kosmos.shadeInteractor,
                 splitShadeStateController = ResourcesSplitShadeStateController(),
+                shadeModeInteractor = fakeShadeModeInteractor,
                 shadeLockscreenInteractorLazy = { shadeLockscreenInteractor },
                 naturalScrollingSettingObserver = naturalScrollingSettingObserver,
                 deviceEntryInteractor = kosmos.deviceEntryInteractor,
@@ -802,6 +810,7 @@ class LockscreenShadeTransitionControllerTest : SysuiTestCase() {
     }
 
     private fun setSplitShadeEnabled(enabled: Boolean) {
+        if (enabled) fakeShadeModeInteractor.shadeMode = MutableStateFlow(ShadeMode.Split)
         overrideResource(R.bool.config_use_split_notification_shade, enabled)
         configurationController.notifyConfigurationChanged()
     }

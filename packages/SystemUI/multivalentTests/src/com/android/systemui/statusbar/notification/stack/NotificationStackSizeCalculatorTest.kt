@@ -26,6 +26,8 @@ import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.media.controls.domain.pipeline.MediaDataManager
 import com.android.systemui.res.R
+import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
+import com.android.systemui.shade.domain.interactor.fakeShadeModeInteractor
 import com.android.systemui.statusbar.LockscreenShadeTransitionController
 import com.android.systemui.statusbar.StatusBarState
 import com.android.systemui.statusbar.SysuiStatusBarStateController
@@ -60,6 +62,7 @@ class NotificationStackSizeCalculatorTest : SysuiTestCase() {
 
     private val testableResources = mContext.orCreateTestableResources
     private val kosmos = testKosmos()
+    private val shadeModeInteractor: ShadeModeInteractor = kosmos.fakeShadeModeInteractor
     private val testScope = kosmos.testScope
 
     private lateinit var sizeCalculator: NotificationStackSizeCalculator
@@ -80,6 +83,7 @@ class NotificationStackSizeCalculatorTest : SysuiTestCase() {
                 mediaDataManager = mediaDataManager,
                 testableResources.resources,
                 ResourcesSplitShadeStateController(),
+                shadeModeInteractor,
                 seenNotificationsInteractor = seenNotificationsInteractor,
                 scope = testScope,
             )

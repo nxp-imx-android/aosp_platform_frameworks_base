@@ -21662,20 +21662,6 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
 
             onProvisionMultiUserDeviceStarted(provisioningParams);
 
-            // These properties are global so will apply on all users
-            setTimeAndTimezone(provisioningParams.getTimeZone(), provisioningParams.getLocalTime());
-            setLocale(provisioningParams.getLocale());
-
-            // TODO(b/390162247): Create removeNonRequiredAppsForMultiUserDevice with its own
-            // allowlist/blocklist.
-            if (!removeNonRequiredAppsForManagedDevice(
-                    UserHandle.USER_SYSTEM, provisioningParams.isLeaveAllSystemAppsEnabled(),
-                    deviceAdmin)) {
-                throw new ServiceSpecificException(
-                        ERROR_REMOVE_NON_REQUIRED_APPS_FAILED,
-                        "PackageManager failed to remove non required apps.");
-            }
-
             // TODO(b/390162247): Remove this once we decide where to store
             // provisioning-related data instead of ActiveAdmin.
             enableAndSetActiveAdmin(UserHandle.USER_SYSTEM, UserHandle.USER_SYSTEM, deviceAdmin);
@@ -21684,13 +21670,6 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
             mDeviceAdmins.getOwners().writeDeviceOwner();
 
             onProvisionMultiUserDeviceCompleted(provisioningParams);
-            // TODO(b/390162247): This is only used by ManagedProvisioning app
-            // to create system app snapshot. Instead, this should be done in
-            // framework and we should not send this broadcast.
-            sendProvisioningCompletedBroadcast(
-                    UserHandle.USER_SYSTEM,
-                    ACTION_PROVISION_MULTI_USER_DEVICE,
-                    provisioningParams.isLeaveAllSystemAppsEnabled());
         } catch (Exception e) {
             DevicePolicyEventLogger.createEvent(DevicePolicyEnums.PLATFORM_PROVISIONING_ERROR)
                     .setStrings(callerPackage)

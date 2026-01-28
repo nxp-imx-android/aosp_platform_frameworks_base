@@ -87,26 +87,50 @@ public final class LocationTimeZoneAlgorithmStatus implements Parcelable {
      */
     public static final @ProviderStatus int PROVIDER_STATUS_IS_UNCERTAIN = 4;
 
-    /**
-     * An instance used when the location algorithm is not supported by the device.
-     */
+    /** An instance used when the location algorithm is not supported by the device. */
     public static final LocationTimeZoneAlgorithmStatus NOT_SUPPORTED =
-            new LocationTimeZoneAlgorithmStatus(DETECTION_ALGORITHM_STATUS_NOT_SUPPORTED,
-                    PROVIDER_STATUS_NOT_PRESENT, null, PROVIDER_STATUS_NOT_PRESENT, null);
+            new LocationTimeZoneAlgorithmStatus(
+                    DETECTION_ALGORITHM_STATUS_NOT_SUPPORTED,
+                    PROVIDER_STATUS_NOT_PRESENT,
+                    /* primaryProviderReportedStatus= */ null,
+                    PROVIDER_STATUS_NOT_PRESENT,
+                    /* secondaryProviderReportedStatus= */ null);
 
-    /**
-     * An instance used when the location algorithm is running, but has not reported an event.
-     */
+    /** An instance used when the location algorithm is running, but has not reported an event. */
     public static final LocationTimeZoneAlgorithmStatus RUNNING_NOT_REPORTED =
-            new LocationTimeZoneAlgorithmStatus(DETECTION_ALGORITHM_STATUS_NOT_RUNNING,
-                    PROVIDER_STATUS_NOT_READY, null, PROVIDER_STATUS_NOT_READY, null);
+            new LocationTimeZoneAlgorithmStatus(
+                    DETECTION_ALGORITHM_STATUS_NOT_RUNNING,
+                    PROVIDER_STATUS_NOT_READY,
+                    /* primaryProviderReportedStatus= */ null,
+                    PROVIDER_STATUS_NOT_READY,
+                    /* secondaryProviderReportedStatus= */ null);
+
+    /** An instance used when the location algorithm is supported but not running. */
+    public static final LocationTimeZoneAlgorithmStatus NOT_RUNNING =
+            new LocationTimeZoneAlgorithmStatus(
+                    DETECTION_ALGORITHM_STATUS_NOT_RUNNING,
+                    PROVIDER_STATUS_NOT_READY,
+                    /* primaryProviderReportedStatus= */ null,
+                    PROVIDER_STATUS_NOT_READY,
+                    /* secondaryProviderReportedStatus= */ null);
 
     /**
-     * An instance used when the location algorithm is supported but not running.
+     * Note: "}" has to be escaped on Android with "\\}" because the regexp library is not based on
+     * OpenJDK code.
      */
-    public static final LocationTimeZoneAlgorithmStatus NOT_RUNNING =
-            new LocationTimeZoneAlgorithmStatus(DETECTION_ALGORITHM_STATUS_NOT_RUNNING,
-                    PROVIDER_STATUS_NOT_READY, null, PROVIDER_STATUS_NOT_READY, null);
+    private static final String PRIMARY_PROVIDER_REPORTED_STATUS_REGEX =
+            "(?:, mPrimaryProviderReportedStatus=(null|TimeZoneProviderStatus\\{[^}]+\\}))?";
+
+    private static final String SECONDARY_PROVIDER_REPORTED_STATUS_REGEX =
+            "(?:, mSecondaryProviderReportedStatus=(null|TimeZoneProviderStatus\\{[^}]+\\}))?";
+    private static final Pattern PARSE_COMMAND_LINE_ARG_PATTERN =
+            Pattern.compile(
+                    "LocationTimeZoneAlgorithmStatus\\{mAlgorithmStatus=(.+),"
+                            + " mPrimaryProviderStatus=([^,]+)"
+                            + PRIMARY_PROVIDER_REPORTED_STATUS_REGEX
+                            + ", mSecondaryProviderStatus=([^,]+)"
+                            + SECONDARY_PROVIDER_REPORTED_STATUS_REGEX
+                            + "\\}");
 
     private final @DetectionAlgorithmStatus int mStatus;
     private final @ProviderStatus int mPrimaryProviderStatus;
@@ -205,11 +229,20 @@ public final class LocationTimeZoneAlgorithmStatus implements Parcelable {
     @Override
     public String toString() {
         return "LocationTimeZoneAlgorithmStatus{"
-                + "mAlgorithmStatus=" + detectionAlgorithmStatusToString(mStatus)
-                + ", mPrimaryProviderStatus=" + providerStatusToString(mPrimaryProviderStatus)
-                + ", mPrimaryProviderReportedStatus=" + mPrimaryProviderReportedStatus
-                + ", mSecondaryProviderStatus=" + providerStatusToString(mSecondaryProviderStatus)
-                + ", mSecondaryProviderReportedStatus=" + mSecondaryProviderReportedStatus
+                + "mAlgorithmStatus="
+                + detectionAlgorithmStatusToString(mStatus)
+                + ", mPrimaryProviderStatus="
+                + providerStatusToString(mPrimaryProviderStatus)
+                + (mPrimaryProviderStatus == PROVIDER_STATUS_NOT_PRESENT
+                                || mPrimaryProviderStatus == PROVIDER_STATUS_NOT_READY
+                        ? ""
+                        : ", mPrimaryProviderReportedStatus=" + mPrimaryProviderReportedStatus)
+                + ", mSecondaryProviderStatus="
+                + providerStatusToString(mSecondaryProviderStatus)
+                + (mSecondaryProviderStatus == PROVIDER_STATUS_NOT_PRESENT
+                                || mSecondaryProviderStatus == PROVIDER_STATUS_NOT_READY
+                        ? ""
+                        : ", mSecondaryProviderReportedStatus=" + mSecondaryProviderReportedStatus)
                 + '}';
     }
 
@@ -219,17 +252,7 @@ public final class LocationTimeZoneAlgorithmStatus implements Parcelable {
      */
     @NonNull
     public static LocationTimeZoneAlgorithmStatus parseCommandlineArg(@NonNull String arg) {
-        // Note: "}" has to be escaped on Android with "\\}" because the regexp library is not based
-        // on OpenJDK code.
-        Pattern pattern = Pattern.compile("LocationTimeZoneAlgorithmStatus\\{"
-                + "mAlgorithmStatus=(.+)"
-                + ", mPrimaryProviderStatus=([^,]+)"
-                + ", mPrimaryProviderReportedStatus=(null|TimeZoneProviderStatus\\{[^}]+\\})"
-                + ", mSecondaryProviderStatus=([^,]+)"
-                + ", mSecondaryProviderReportedStatus=(null|TimeZoneProviderStatus\\{[^}]+\\})"
-                + "\\}"
-        );
-        Matcher matcher = pattern.matcher(arg);
+        Matcher matcher = PARSE_COMMAND_LINE_ARG_PATTERN.matcher(arg);
         if (!matcher.matches()) {
             throw new IllegalArgumentException("Unable to parse algorithm status arg: " + arg);
         }
@@ -250,7 +273,7 @@ public final class LocationTimeZoneAlgorithmStatus implements Parcelable {
     private static TimeZoneProviderStatus parseTimeZoneProviderStatusOrNull(
             String providerReportedStatusString) {
         TimeZoneProviderStatus providerReportedStatus;
-        if ("null".equals(providerReportedStatusString)) {
+        if (providerReportedStatusString == null || "null".equals(providerReportedStatusString)) {
             providerReportedStatus = null;
         } else {
             providerReportedStatus =
@@ -300,17 +323,17 @@ public final class LocationTimeZoneAlgorithmStatus implements Parcelable {
         if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
+        if (o instanceof LocationTimeZoneAlgorithmStatus that) {
+            return mStatus == that.mStatus
+                    && mPrimaryProviderStatus == that.mPrimaryProviderStatus
+                    && Objects.equals(
+                            mPrimaryProviderReportedStatus, that.mPrimaryProviderReportedStatus)
+                    && mSecondaryProviderStatus == that.mSecondaryProviderStatus
+                    && Objects.equals(
+                            mSecondaryProviderReportedStatus,
+                            that.mSecondaryProviderReportedStatus);
         }
-        LocationTimeZoneAlgorithmStatus that = (LocationTimeZoneAlgorithmStatus) o;
-        return mStatus == that.mStatus
-                && mPrimaryProviderStatus == that.mPrimaryProviderStatus
-                && Objects.equals(
-                        mPrimaryProviderReportedStatus, that.mPrimaryProviderReportedStatus)
-                && mSecondaryProviderStatus == that.mSecondaryProviderStatus
-                && Objects.equals(
-                        mSecondaryProviderReportedStatus, that.mSecondaryProviderReportedStatus);
+        return false;
     }
 
     @Override

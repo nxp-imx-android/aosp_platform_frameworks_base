@@ -127,7 +127,8 @@ public class ThemeManagerInternal {
         ColorScheme newDarkScheme = new ColorScheme(newSeed, true, newStyle, newContrast);
         ColorScheme newLightScheme = new ColorScheme(newSeed, false, newStyle, newContrast);
 
-        return mOverlayHelper.createDynamicOverlay(newLightScheme, newDarkScheme).getInternal();
+        return mOverlayHelper.createDynamicOverlay(newLightScheme, newDarkScheme,
+                userId).getInternal();
     }
 
     /**
@@ -146,7 +147,7 @@ public class ThemeManagerInternal {
     /**
      * Notifies all registered listeners that the theme settings have changed for a specific user.
      *
-     * @param userId The ID of a Full User for which the theme settings were changed.
+     * @param userId      The ID of a Full User for which the theme settings were changed.
      * @param oldSettings The previous {@link ThemeSettings} before the change.
      * @param newSettings The new {@link ThemeSettings} after the change.
      */

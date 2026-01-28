@@ -94,8 +94,6 @@ import com.android.keyguard.KeyguardSliceView;
 import com.android.systemui.Dependency;
 import com.android.systemui.Dumpable;
 import com.android.systemui.ExpandHelper;
-import com.android.systemui.flags.FeatureFlags;
-import com.android.systemui.flags.Flags;
 import com.android.systemui.notifications.ui.YSpace;
 import com.android.systemui.res.R;
 import com.android.systemui.scene.shared.flag.SceneContainerFlag;
@@ -6471,15 +6469,21 @@ public class NotificationStackScrollLayout
 
     @VisibleForTesting
     void updateSplitNotificationShade() {
+        if (SceneContainerFlag.isEnabled()) return;
         boolean split = mSplitShadeStateController.shouldUseSplitNotificationShade(getResources());
         if (split != mShouldUseSplitNotificationShade) {
-            mShouldUseSplitNotificationShade = split;
-            mShouldSkipTopPaddingAnimationAfterFold = true;
-            mAmbientState.setUseSplitShade(split);
-            updateDismissBehavior();
-            updateUseRoundedRectClipping();
-            requestLayout();
+            setSplitShade(split);
         }
+    }
+
+    @Override
+    public void setSplitShade(boolean split) {
+        mShouldUseSplitNotificationShade = split;
+        mShouldSkipTopPaddingAnimationAfterFold = true;
+        mAmbientState.setUseSplitShade(split);
+        updateDismissBehavior();
+        updateUseRoundedRectClipping();
+        requestLayout();
     }
 
     private void updateDismissBehavior() {

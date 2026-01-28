@@ -1185,16 +1185,16 @@ public abstract class Conference extends Conferenceable {
      * <p>
      * This API is intended for use by the platform Telephony stack only.
      *
-     * @param isConference {@code true} if this {@link Conference} should be treated like a
+     * @param isMultiparty {@code true} if this {@link Conference} should be treated like a
      *      conference call, {@code false} if it should be treated like a single-party call.
      * @hide
      */
     @SystemApi
     @RequiresPermission(MODIFY_PHONE_STATE)
-    public void setConferenceState(boolean isConference) {
-        mIsMultiparty = isConference;
+    public void setConferenceState(boolean isMultiparty) {
+        mIsMultiparty = isMultiparty;
         for (Listener l : mListeners) {
-            l.onConferenceStateChanged(this, isConference);
+            l.onConferenceStateChanged(this, isMultiparty);
         }
     }
 
@@ -1231,7 +1231,7 @@ public abstract class Conference extends Conferenceable {
      */
     @SystemApi
     @FlaggedApi(android.telecom.flags.Flags.FLAG_TELECOM_MAINLINE_API)
-    public boolean isConferenceState() {
+    public boolean isMultiparty() {
         return mIsMultiparty;
     }
 

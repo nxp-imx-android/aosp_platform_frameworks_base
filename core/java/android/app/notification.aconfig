@@ -265,6 +265,14 @@ flag {
   name: "nm_contextual_display"
   namespace: "notifications"
   is_exported: true
+  description: "Changes notification appearance based on user created rules, prototyping"
+  bug: "438704204"
+}
+
+flag {
+  name: "nm_contextual_display_launch"
+  namespace: "notifications"
+  is_exported: true
   description: "Changes notification appearance based on user created rules"
   bug: "438704204"
 }

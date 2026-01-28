@@ -496,6 +496,17 @@ public class ShortcutService extends IShortcutService.Stub {
                 handleAppLockEnabled(packageName, getChangingUserId());
             }
         }
+
+        @Override
+        public void onPackageAppLockDisabled(String packageName) {
+            if (android.content.pm.Flags.appLockShortcutRemoval()) {
+                if (DEBUG) {
+                    Slog.d(TAG, "App Lock disabled for: " + packageName
+                            + "re-enabling all pinned shortcuts");
+                }
+                handleAppLockDisabled(packageName, getChangingUserId());
+            }
+        }
     };
 
     public ShortcutService(Context context) {
@@ -523,8 +534,17 @@ public class ShortcutService extends IShortcutService.Stub {
                 notifyListeners(packageName, userId);
             }
             user.rescanPackageIfNeeded(packageName, /* forceRescan=*/ true);
-            ShortcutPackage ps = getPackageShortcutsLocked(packageName, userId);
-            ps.deleteAllDynamicShortcuts();
+        }
+    }
+
+    void handleAppLockDisabled(String packageName, int userId) {
+        synchronized (mServiceLock) {
+            final ShortcutUser user = getUserShortcutsLocked(userId);
+            if (user == null) {
+                return;
+            }
+            // Rescan the package to parse all the manifest shortcuts again.
+            user.rescanPackageIfNeeded(packageName, /* forceRescan=*/ true);
         }
     }
 

@@ -16,15 +16,19 @@
 package com.android.keyguard
 
 import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.res.Resources
 import android.icu.util.TimeZone as IcuTimeZone
 import android.view.View
 import android.view.ViewTreeObserver
+import android.view.WindowManager
 import android.widget.FrameLayout
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.settingslib.notification.modes.TestModeBuilder.MANUAL_DND
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.broadcast.BroadcastDispatcher
+import com.android.systemui.display.data.repository.fakeDisplayWindowPropertiesRepository
 import com.android.systemui.flags.Flags
 import com.android.systemui.flags.fakeFeatureFlagsClassic
 import com.android.systemui.keyguard.data.repository.FakeKeyguardRepository
@@ -137,6 +141,9 @@ class ClockEventControllerTest : SysuiTestCase() {
     private var zenModeControllerCallback: ZenModeController.Callback? = null
     private var bindHandle: DisposableHandle? = null
 
+    @Mock private lateinit var display1Context: Context
+    @Mock private lateinit var display1Resources: Resources
+
     @Before
     fun setUp() {
         whenever(clock.smallClock).thenReturn(smallClockController)
@@ -171,7 +178,6 @@ class ClockEventControllerTest : SysuiTestCase() {
                 batteryController,
                 keyguardUpdateMonitor,
                 configurationController,
-                context.resources,
                 context,
                 mainExecutor,
                 bgExecutor,
@@ -180,9 +186,9 @@ class ClockEventControllerTest : SysuiTestCase() {
                 zenModeController,
                 zenModeInteractor,
                 userTracker,
-            ) {
-                dozingToLockscreenViewModel
-            }
+                { dozingToLockscreenViewModel },
+                kosmos.fakeDisplayWindowPropertiesRepository,
+            )
         underTest.clock = clock
 
         runBlocking(IMMEDIATE) {
@@ -516,6 +522,24 @@ class ClockEventControllerTest : SysuiTestCase() {
             runCurrent()
 
             verify(events).onZenDataChanged(eq(ZenData(ZenMode.OFF, R.string::dnd_is_off.name)))
+        }
+
+    @Test
+    fun setLargeClockDisplayId_verifiesFontSizeUpdatesFromDisplayContext() =
+        testScope.runTest {
+            val displayId = 10
+            whenever(display1Context.resources).thenReturn(display1Resources)
+            whenever(display1Resources.getDimensionPixelSize(any()))
+                .thenReturn(100)
+            kosmos.fakeDisplayWindowPropertiesRepository.insertForContext(
+                displayId,
+                WindowManager.LayoutParams.TYPE_STATUS_BAR,
+                display1Context,
+            )
+
+            underTest.setLargeClockDisplayId(displayId)
+
+            verify(largeClockEvents).onFontSettingChanged(100f)
         }
 
     companion object {

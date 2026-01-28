@@ -870,12 +870,21 @@ public final class DisplayTopology implements Parcelable {
             return;
         }
         for (TreeNode child : display.mChildren) {
+            // Ensure cursor can cross display by forcing parent-child displays to overlap by 1px
+            float parentPixelDp = pxToDp(1, display.mLogicalDensity);
+            float childPixelDp = pxToDp(1, child.mLogicalDensity);
+            float minOverlap = Math.max(parentPixelDp, childPixelDp);
+
             if (child.mPosition == POSITION_LEFT || child.mPosition == POSITION_RIGHT) {
                 child.mOffset = MathUtils.constrain(
-                        child.mOffset, -child.getHeight(), display.getHeight());
+                        child.mOffset,
+                        -child.getHeight() + minOverlap,
+                        display.getHeight() - minOverlap);
             } else if (child.mPosition == POSITION_TOP || child.mPosition == POSITION_BOTTOM) {
                 child.mOffset = MathUtils.constrain(
-                        child.mOffset, -child.getWidth(), display.getWidth());
+                        child.mOffset,
+                        -child.getWidth() + minOverlap,
+                        display.getWidth() - minOverlap);
             }
             clampOffsets(child);
         }

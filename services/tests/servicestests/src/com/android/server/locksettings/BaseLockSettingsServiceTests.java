@@ -31,6 +31,7 @@ import android.app.NotificationManager;
 import android.app.admin.DevicePolicyManager;
 import android.app.admin.DevicePolicyManagerInternal;
 import android.app.admin.DeviceStateCache;
+import android.app.supervision.SupervisionManagerInternal;
 import android.app.test.PropertyInvalidatedCacheTestRule;
 import android.app.trust.TrustManager;
 import android.content.ComponentName;
@@ -101,6 +102,7 @@ public abstract class BaseLockSettingsServiceTests {
     FakeGateKeeperService mGateKeeperService;
     NotificationManager mNotificationManager;
     UserManager mUserManager;
+    SupervisionManagerInternal mSupervisionManagerInternal;
     FakeStorageManager mStorageManager;
     IActivityManager mActivityManager;
     DevicePolicyManager mDevicePolicyManager;
@@ -133,6 +135,7 @@ public abstract class BaseLockSettingsServiceTests {
         mGateKeeperService = new FakeGateKeeperService();
         mNotificationManager = mock(NotificationManager.class);
         mUserManager = mock(UserManager.class);
+        mSupervisionManagerInternal = mock(SupervisionManagerInternal.class);
         mStorageManager = new FakeStorageManager();
         mActivityManager = mock(IActivityManager.class);
         mDevicePolicyManager = mock(DevicePolicyManager.class);
@@ -195,6 +198,7 @@ public abstract class BaseLockSettingsServiceTests {
                         mock(IStorageManager.class),
                         setUpStorageManagerInternalMock(),
                         mSpManager,
+                        mSupervisionManagerInternal,
                         mGsiService,
                         mRecoverableKeyStoreManager,
                         mUserManagerInternal,
@@ -261,6 +265,7 @@ public abstract class BaseLockSettingsServiceTests {
         when(mDevicePolicyManager.getDeviceOwnerComponentOnAnyUser()).thenReturn(
                 new ComponentName("com.dummy.package", ".FakeDeviceOwner"));
         when(mDeviceStateCache.isUserOrganizationManaged(anyInt())).thenReturn(true);
+        when(mSupervisionManagerInternal.isEscrowTokenRequired(anyInt())).thenReturn(false);
         when(mDeviceStateCache.isDeviceProvisioned()).thenReturn(true);
         mockBiometricsHardwareFingerprintsAndTemplates(PRIMARY_USER_ID);
         mockBiometricsHardwareFingerprintsAndTemplates(MANAGED_PROFILE_USER_ID);

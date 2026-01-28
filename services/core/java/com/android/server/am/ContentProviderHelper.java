@@ -624,7 +624,7 @@ public class ContentProviderHelper {
                                     + cpr.mUid + " for provider "
                                     + name + ": launching app became null");
                             EventLogTags.writeAmProviderLostProcess(
-                                    UserHandle.getUserId(cpi.applicationInfo.uid),
+                                    UserHandle.getUserId(cpi.getUid()),
                                     cpi.applicationInfo.packageName,
                                     cpr.mUid, name);
                             return null;

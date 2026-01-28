@@ -476,6 +476,16 @@ public class AppLockLocalServiceTest {
     }
 
     @Test
+    public void handleUidChangeLocked_nullUidRecord_noUpdate() {
+        mAppLockLocalService.handleUidChangeLocked(null, TEST_UID, UidRecord.CHANGE_PROCSTATE,
+                PROCESS_STATE_TOP);
+
+        assertThat(mListener.hasDefaultValues()).isTrue();
+        assertThat(mAppLockLocalService.packageHasQueuedAppLockedJob(TEST_USER_ID_1,
+                TEST_PACKAGE_1)).isFalse();
+    }
+
+    @Test
     public void handleUidChangeLocked_packageNewlyLocked_lockJobQueued() throws Exception {
         mAppLockLocalService.systemServicesReady();
         mAppLockLocalService.handleUnlockedStateLocked(TEST_PACKAGE_1, TEST_USER_ID_1);

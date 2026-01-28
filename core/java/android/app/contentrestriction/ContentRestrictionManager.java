@@ -16,13 +16,16 @@
 
 package android.app.contentrestriction;
 
+import android.annotation.CallbackExecutor;
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.SystemService;
 import android.app.contentrestriction.flags.Flags;
 import android.content.Context;
+import android.os.Binder;
 import android.os.RemoteException;
 
+import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 
 /**
@@ -53,12 +56,17 @@ public class ContentRestrictionManager {
      * {@code false}.
      *
      * @param content the content to be classified
+     * @param executor the executor on which to run the callback
      * @param callback the callback for whether the content is allowed
      */
     @FlaggedApi(Flags.FLAG_CONTENT_RESTRICTION_API)
-    public void isContentAllowed(@NonNull Content content, @NonNull Consumer<Boolean> callback) {
+    public void isContentAllowed(
+            @NonNull Content content,
+            @NonNull @CallbackExecutor Executor executor,
+            @NonNull Consumer<Boolean> callback) {
+
         if (!isContentRestrictionEnabled()) {
-            callback.accept(true);
+            executor.execute(() -> callback.accept(true));
             return;
         }
 
@@ -67,7 +75,12 @@ public class ContentRestrictionManager {
                     new IContentRestrictionCallback.Stub() {
                 @Override
                 public void onResult(boolean isContentAllowed) {
-                    callback.accept(isContentAllowed);
+                    final long token = Binder.clearCallingIdentity();
+                    try {
+                        executor.execute(() -> callback.accept(isContentAllowed));
+                    } finally {
+                        Binder.restoreCallingIdentity(token);
+                    }
                 }
             });
         } catch (RemoteException e) {

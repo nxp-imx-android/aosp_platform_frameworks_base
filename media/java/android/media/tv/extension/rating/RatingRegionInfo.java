@@ -140,7 +140,7 @@ public final class RatingRegionInfo implements Parcelable {
 
     private RatingRegionInfo(Parcel in) {
         mRatingRegionId = in.readInt();
-        mRatingRegionText = in.readString();
+        mRatingRegionText = in.readString8();
         mRatingRegionVersion = in.readInt();
         mRatingDimNumber = in.readInt();
         mRatingDimInfoList = in.createTypedArrayList(RatingDimInfo.CREATOR);

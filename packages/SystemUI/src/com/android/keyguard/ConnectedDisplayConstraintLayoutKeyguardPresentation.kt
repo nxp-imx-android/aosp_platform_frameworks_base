@@ -136,7 +136,7 @@ constructor(
         }
 
         clockEventController.clock = clockController
-        clockEventController.setLargeClockOnSecondaryDisplay(true)
+        clockEventController.setLargeClockDisplayId(display.displayId)
         faceController = clockController.largeClock
         faceController.events.onSecondaryDisplayChanged(true)
 

@@ -802,6 +802,13 @@ static void nativeSetDesiredHdrHeadroom(JNIEnv* env, jclass clazz, jlong transac
     transaction->setDesiredHdrHeadroom(ctrl, desiredRatio);
 }
 
+static void nativeSetDesiredMaxHdrHeadroom(JNIEnv* env, jclass clazz, jlong transactionObj,
+                                           jlong nativeObject, float maxDesiredHdrSdrRatio) {
+    auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
+    auto ctrl = SpFromRawPtr<SurfaceControl>(nativeObject);
+    transaction->setDesiredMaxHdrHeadroom(ctrl, maxDesiredHdrSdrRatio);
+}
+
 static void nativeSetLuts(JNIEnv* env, jclass clazz, jlong transactionObj, jlong nativeObject,
                           jfloatArray jbufferArray, jintArray joffsetArray,
                           jintArray jdimensionArray, jintArray jsizeArray,
@@ -2911,6 +2918,8 @@ static const JNINativeMethod sSurfaceControlMethods[] = {
             (void*)nativeSetExtendedRangeBrightness },
     {"nativeSetDesiredHdrHeadroom", "(JJF)V",
             (void*)nativeSetDesiredHdrHeadroom },
+    {"nativeSetDesiredMaxHdrHeadroom", "(JJF)V",
+            (void*)nativeSetDesiredMaxHdrHeadroom },
     {"nativeSetCachingHint", "(JJI)V",
             (void*)nativeSetCachingHint },
     {"nativeAddTransactionBarrier", "(JLandroid/os/Parcel;)V",

@@ -66,15 +66,18 @@ constructor(
     /** Whether there's ongoing user input on the scene container Composable hierarchy */
     val isSceneContainerUserInputOngoing = MutableStateFlow(false)
 
-    private val defaultTransitionState = ObservableTransitionState.Idle(config.initialSceneKey)
-    private val _transitionState = MutableStateFlow<Flow<ObservableTransitionState>?>(null)
-    val transitionState: StateFlow<ObservableTransitionState> =
-        _transitionState
-            .flatMapLatest { innerFlowOrNull -> innerFlowOrNull ?: flowOf(defaultTransitionState) }
+    private val defaultTransitionStateFlowValue =
+        ObservableTransitionState.Idle(config.initialSceneKey)
+    private val _transitionStateFlow = MutableStateFlow<Flow<ObservableTransitionState>?>(null)
+    val transitionStateFlow: StateFlow<ObservableTransitionState> =
+        _transitionStateFlow
+            .flatMapLatest { innerFlowOrNull ->
+                innerFlowOrNull ?: flowOf(defaultTransitionStateFlowValue)
+            }
             .stateIn(
                 scope = applicationScope,
                 started = SharingStarted.Eagerly,
-                initialValue = defaultTransitionState,
+                initialValue = defaultTransitionStateFlowValue,
             )
 
     /** Number of currently active transition animations. */
@@ -91,6 +94,6 @@ constructor(
      * Note that you must call is with `null` when the UI is done or risk a memory leak.
      */
     fun setTransitionState(transitionState: Flow<ObservableTransitionState>?) {
-        _transitionState.value = transitionState
+        _transitionStateFlow.value = transitionState
     }
 }

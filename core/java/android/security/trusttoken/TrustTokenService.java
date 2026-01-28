@@ -29,6 +29,7 @@ import android.os.OutcomeReceiver;
 import android.os.RemoteException;
 import android.security.Flags;
 import android.util.Log;
+import android.util.Slog;
 
 /**
  * A service that can fetch a set of trust tokens from a remote source and make them available to
@@ -72,7 +73,7 @@ public abstract class TrustTokenService extends Service {
     private final ITrustTokenService.Stub mBinder =
             new ITrustTokenService.Stub() {
                 @Override
-                public ICancellationSignal onRequestTrustTokens(
+                public void onRequestTrustTokens(
                         TrustTokenRequest request, ITrustTokenCallback callback) {
                     ICancellationSignal cancellationSignal = CancellationSignal.createTransport();
                     TrustTokenService.this.onRequestTrustTokens(
@@ -97,7 +98,11 @@ public abstract class TrustTokenService extends Service {
                                     }
                                 }
                             });
-                    return cancellationSignal;
+                    try {
+                        callback.onRemoteCancellationSignal(cancellationSignal);
+                    } catch (RemoteException e) {
+                        Slog.e(TAG, "Error when sending back the cancellation signal", e);
+                    }
                 }
             };
 

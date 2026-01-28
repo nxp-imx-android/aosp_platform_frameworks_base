@@ -66,13 +66,7 @@ class LetterboxInputDetector(
             if (tmpState.start(tx)) {
                 state = tmpState
             } else {
-                ProtoLog.v(
-                    WM_SHELL_APP_COMPAT,
-                    "%s not started for %s on %s",
-                    TAG,
-                    "$source",
-                    "$key",
-                )
+                ProtoLog.v(WM_SHELL_APP_COMPAT, "$TAG not started for %s on %s", source, key)
             }
         }
     }

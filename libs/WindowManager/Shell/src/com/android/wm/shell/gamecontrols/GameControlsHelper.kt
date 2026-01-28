@@ -20,7 +20,6 @@ import android.app.TaskInfo
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ApplicationInfo
-import android.content.pm.PackageManager
 import android.window.DesktopExperienceFlags
 import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.R
@@ -101,8 +100,7 @@ object GameControlsHelper {
         if (intent == null) {
             return false
         }
-        return context.packageManager.queryBroadcastReceivers(intent, /* flags= */ 0)
-            .isNotEmpty()
+        return context.packageManager.queryBroadcastReceivers(intent, /* flags= */ 0).isNotEmpty()
     }
 
     private fun gameControlsButtonFlagEnabled(): Boolean {
@@ -115,7 +113,8 @@ object GameControlsHelper {
             val packageName = taskInfo.baseActivity?.packageName ?: "unknown"
             ProtoLog.w(
                 WM_SHELL_WINDOW_DECORATION,
-                "GameControlsHelper: Could not get ApplicationInfo for $packageName",
+                "GameControlsHelper: Could not get ApplicationInfo for %s",
+                packageName,
             )
             return false
         }

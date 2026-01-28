@@ -81,6 +81,7 @@ import com.android.systemui.shade.data.repository.fakeShadeDisplaysRepository
 import com.android.systemui.shade.data.repository.shadeConfigRepository
 import com.android.systemui.shade.data.repository.shadeDialogContextInteractor
 import com.android.systemui.shade.data.repository.shadeRepository
+import com.android.systemui.shade.domain.interactor.fakeShadeModeInteractor
 import com.android.systemui.shade.domain.interactor.shadeDisplaysInteractor
 import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.shade.domain.interactor.shadeLayoutParams
@@ -228,6 +229,7 @@ class KosmosJavaAdapter() {
     val msdlPlayer by lazy { kosmos.fakeMSDLPlayer }
 
     val shadeModeInteractor by lazy { kosmos.shadeModeInteractor }
+    val fakeShadeModeInteractor by lazy { kosmos.fakeShadeModeInteractor }
 
     val bouncerHapticHelper by lazy { kosmos.bouncerHapticPlayer }
 

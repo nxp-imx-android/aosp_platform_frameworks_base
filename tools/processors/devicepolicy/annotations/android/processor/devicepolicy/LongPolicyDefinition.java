@@ -14,19 +14,21 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.desktopai.api.config
+package android.processor.devicepolicy;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Definition for an event source that produces [TriggerEvent]s.
- *
- * Implementations of this interface wrap specific system listeners (like ShellController or
- * InputManager) and normalize their signals into standard [TriggerEvent] objects.
+ * Metadata for a long policy.
  */
-interface ITriggerSource {
+@Retention(RetentionPolicy.SOURCE)
+@Target({ElementType.FIELD})
+public @interface LongPolicyDefinition {
     /**
-     * Starts listening to the underlying system component.
-     *
-     * @param onEvent A lambda that the source must call whenever an event occurs.
+     * Base data for all policies.
      */
-    fun start(onEvent: (TriggerEvent) -> Unit)
+    PolicyDefinition base();
 }

@@ -205,6 +205,17 @@ class DesktopModeCompatPolicyTest : ShellTestCase() {
                 }
             )
         )
+        verify(packageManager, times(1))
+            .getPackageInfoAsUser(
+                eq("com.test.dummypackage"),
+                eq(PackageManager.GET_PERMISSIONS),
+                eq(10),
+            )
+    }
+
+    @Test
+    fun testIsTopActivityExemptWithOnlyRequestedPermission_onlyTransparentActivitiesInStack() {
+        requestOverlayPermissionForAllUsers(arrayOf(SYSTEM_ALERT_WINDOW))
         assertFalse(
             desktopModeCompatPolicy.isTopActivityExemptFromDesktopWindowing(
                 createFreeformTask().apply {
@@ -212,22 +223,9 @@ class DesktopModeCompatPolicyTest : ShellTestCase() {
                     isTopActivityNoDisplay = false
                     numActivities = 1
                     baseActivity = baseActivityTest
-                    userId = 0
                 }
             )
         )
-        verify(packageManager, times(1))
-            .getPackageInfoAsUser(
-                eq("com.test.dummypackage"),
-                eq(PackageManager.GET_PERMISSIONS),
-                eq(10),
-            )
-        verify(packageManager, times(1))
-            .getPackageInfoAsUser(
-                eq("com.test.dummypackage"),
-                eq(PackageManager.GET_PERMISSIONS),
-                eq(0),
-            )
     }
 
     @Test
@@ -587,9 +585,25 @@ class DesktopModeCompatPolicyTest : ShellTestCase() {
                 }
         }
 
+    fun requestOverlayPermissionForAllUsers(permissions: Array<String>) {
+        val packageInfo = mock<PackageInfo>()
+        packageInfo.requestedPermissions = permissions
+        packageInfo.requestedPermissionsFlags = IntArray(permissions.size) { 0 }
+        whenever(
+                packageManager.getPackageInfoAsUser(
+                    anyString(),
+                    eq(PackageManager.GET_PERMISSIONS),
+                    anyInt(),
+                )
+            )
+            .thenReturn(packageInfo)
+    }
+
     fun allowOverlayPermissionForAllUsers(permissions: Array<String>) {
         val packageInfo = mock<PackageInfo>()
         packageInfo.requestedPermissions = permissions
+        packageInfo.requestedPermissionsFlags =
+            IntArray(permissions.size) { PackageInfo.REQUESTED_PERMISSION_GRANTED }
         whenever(
                 packageManager.getPackageInfoAsUser(
                     anyString(),

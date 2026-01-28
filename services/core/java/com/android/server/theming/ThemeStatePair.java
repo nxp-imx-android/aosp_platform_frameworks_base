@@ -85,11 +85,7 @@ class ThemeStatePair {
      * @param style     The initial style for the user's theme.
      */
     @SuppressLint("WrongConstant")
-    protected ThemeStatePair(
-            int userId,
-            boolean isSetup,
-            int seedColor,
-            float contrast,
+    protected ThemeStatePair(int userId, boolean isSetup, int seedColor, float contrast,
             @ThemeStyle.Type Integer style) {
 
         this.userId = userId;
@@ -288,7 +284,7 @@ class ThemeStatePair {
             if (!shouldUpdateOverlaysLocked()) {
                 mCurrent = mPending;
                 return new OverlaySnapshot(userId, mPending.childProfiles(), mLightScheme,
-                        mDarkScheme);
+                        mDarkScheme, /*contentChanged*/ false);
             }
             stateToCommit = mPending;
         }
@@ -312,7 +308,8 @@ class ThemeStatePair {
             Slog.d(TAG, "User " + userId + " generating new overlays");
             mCurrent = stateToCommit;
 
-            return new OverlaySnapshot(userId, mCurrent.childProfiles(), mLightScheme, mDarkScheme);
+            return new OverlaySnapshot(userId, mCurrent.childProfiles(), mLightScheme, mDarkScheme,
+                    /*contentChanged*/ true);
         }
     }
 
@@ -373,7 +370,7 @@ class ThemeStatePair {
             }
 
             if (mPending.equals(mCurrent)) {
-                Slog.d(TAG, "No change in State for user " + userId + ". Skipping. ");
+                // No change in State for this user, Skipping
                 return false;
             }
 
@@ -402,11 +399,10 @@ class ThemeStatePair {
 
 
     /**
-     * Checks if the current ColorScheme is correctly applied across all user profiles.
+     * Checks if the current ColorScheme is correctly applied.
      * <p>
      * This method verifies that the colors extracted from the ColorScheme match the
-     * actual colors applied in the system resources for each profile associated with
-     * the current state.
+     * actual colors applied in the system resources for a given user with the current state.
      * <p>
      * Note: This is a heuristic check and does not verify every single color. It checks a
      * representative subset of colors to determine if the ColorScheme is generally applied.
@@ -415,58 +411,52 @@ class ThemeStatePair {
      * @return {@code true} if the ColorScheme is correctly applied, {@code false} otherwise.
      */
     protected boolean isColorSchemeApplied(Context mainContext) {
-        final Set<Integer> allProfiles;
         final ColorScheme darkScheme;
         final ColorScheme lightScheme;
 
         synchronized (mLock) {
-            allProfiles = new HashSet<>(mCurrent.childProfiles());
             darkScheme = mDarkScheme;
             lightScheme = mLightScheme;
         }
-        allProfiles.add(userId);
 
-        for (Integer userId : allProfiles) {
-            Resources res = mainContext.createContextAsUser(UserHandle.of(userId),
-                    0).getResources();
+        Resources res = mainContext.createContextAsUser(UserHandle.of(userId), 0).getResources();
 
-            if (!(res.getColor(R.color.system_accent1_500_dark)
-                    == darkScheme.getAccent1().getS500()
-                    && res.getColor(R.color.system_accent1_500_light)
-                    == lightScheme.getAccent1().getS500()
+        if (!(res.getColor(R.color.system_accent1_500_dark)
+                == darkScheme.getAccent1().getS500()
+                && res.getColor(R.color.system_accent1_500_light)
+                == lightScheme.getAccent1().getS500()
 
-                    && res.getColor(com.android.internal.R.color.system_accent2_500_dark)
-                    == darkScheme.getAccent2().getS500()
-                    && res.getColor(R.color.system_accent2_500_light)
-                    == lightScheme.getAccent2().getS500()
+                && res.getColor(com.android.internal.R.color.system_accent2_500_dark)
+                == darkScheme.getAccent2().getS500()
+                && res.getColor(R.color.system_accent2_500_light)
+                == lightScheme.getAccent2().getS500()
 
-                    && res.getColor(com.android.internal.R.color.system_accent3_500_dark)
-                    == darkScheme.getAccent3().getS500()
-                    && res.getColor(R.color.system_accent3_500_light)
-                    == lightScheme.getAccent3().getS500()
+                && res.getColor(com.android.internal.R.color.system_accent3_500_dark)
+                == darkScheme.getAccent3().getS500()
+                && res.getColor(R.color.system_accent3_500_light)
+                == lightScheme.getAccent3().getS500()
 
-                    && res.getColor(com.android.internal.R.color.system_neutral1_500_dark)
-                    == darkScheme.getNeutral1().getS500()
-                    && res.getColor(R.color.system_neutral1_500_light)
-                    == lightScheme.getNeutral1().getS500()
+                && res.getColor(com.android.internal.R.color.system_neutral1_500_dark)
+                == darkScheme.getNeutral1().getS500()
+                && res.getColor(R.color.system_neutral1_500_light)
+                == lightScheme.getNeutral1().getS500()
 
-                    && res.getColor(com.android.internal.R.color.system_neutral2_500_dark)
-                    == darkScheme.getNeutral2().getS500()
-                    && res.getColor(R.color.system_neutral2_500_light)
-                    == lightScheme.getNeutral2().getS500()
+                && res.getColor(com.android.internal.R.color.system_neutral2_500_dark)
+                == darkScheme.getNeutral2().getS500()
+                && res.getColor(R.color.system_neutral2_500_light)
+                == lightScheme.getNeutral2().getS500()
 
-                    && res.getColor(android.R.color.system_outline_variant_dark)
-                    == darkScheme.getMaterialScheme().getOutlineVariant()
-                    && res.getColor(android.R.color.system_outline_variant_light)
-                    == lightScheme.getMaterialScheme().getOutlineVariant()
+                && res.getColor(android.R.color.system_outline_variant_dark)
+                == darkScheme.getMaterialScheme().getOutlineVariant()
+                && res.getColor(android.R.color.system_outline_variant_light)
+                == lightScheme.getMaterialScheme().getOutlineVariant()
 
-                    && res.getColor(android.R.color.system_primary_container_dark)
-                    == darkScheme.getMaterialScheme().getPrimaryContainer()
-                    && res.getColor(android.R.color.system_primary_container_light)
-                    == lightScheme.getMaterialScheme().getPrimaryContainer())
-            ) {
-                return false;
-            }
+                && res.getColor(android.R.color.system_primary_container_dark)
+                == darkScheme.getMaterialScheme().getPrimaryContainer()
+                && res.getColor(android.R.color.system_primary_container_light)
+                == lightScheme.getMaterialScheme().getPrimaryContainer())
+        ) {
+            return false;
         }
 
         return true;
@@ -476,7 +466,7 @@ class ThemeStatePair {
      * Immutable snapshot of the data required to apply overlays.
      */
     protected record OverlaySnapshot(int userId, Set<Integer> profiles, ColorScheme lightScheme,
-                                     ColorScheme darkScheme) {
+                                     ColorScheme darkScheme, boolean contentChanged) {
     }
 
     /**

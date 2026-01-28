@@ -18,6 +18,8 @@ package com.android.wm.shell.desktopai.api.config
 
 import androidx.test.filters.SmallTest
 import com.android.wm.shell.ShellTestCase
+import com.android.wm.shell.desktopai.api.TriggerEvent
+import com.android.wm.shell.desktopai.api.TriggerEventType
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith

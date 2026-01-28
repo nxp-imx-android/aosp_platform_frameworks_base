@@ -83,8 +83,10 @@ public abstract class BlurRegion {
     public abstract float[] toFloatArray(int offsetX, int offsetY, float scaleX, float scaleY);
 
     /**
-    * @return deep copy of this blur region
-    */
+     * Returns a deep copy of this blur region.
+     *
+     * @return deep copy of this blur region
+     */
     @NonNull
     public abstract BlurRegion copy();
 

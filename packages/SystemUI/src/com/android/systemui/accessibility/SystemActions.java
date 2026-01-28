@@ -41,7 +41,6 @@ import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
 import android.view.WindowManagerGlobal;
 import android.view.accessibility.AccessibilityManager;
-import android.view.accessibility.Flags;
 
 import com.android.internal.R;
 import com.android.internal.accessibility.util.AccessibilityUtils;
@@ -775,15 +774,11 @@ public class SystemActions implements CoreStartable, ConfigurationController.Con
                     break;
                 }
                 case INTENT_ACTION_MENU: {
-                    if (Flags.globalActionMenu()) {
-                        handleMenu();
-                    }
+                    handleMenu();
                     break;
                 }
                 case INTENT_ACTION_MEDIA_PLAY_PAUSE: {
-                    if (Flags.globalActionMediaPlayPause()) {
-                        handleMediaPlayPause();
-                    }
+                    handleMediaPlayPause();
                     break;
                 }
                 default:

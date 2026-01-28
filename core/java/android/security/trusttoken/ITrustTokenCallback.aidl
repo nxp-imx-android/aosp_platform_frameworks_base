@@ -17,6 +17,7 @@
 package android.security.trusttoken;
 
 import android.security.trusttoken.TrustTokenResponse;
+import android.os.ICancellationSignal;
 
 /**
  * Interface to receive trust tokens from the TrustTokenService.
@@ -25,5 +26,8 @@ import android.security.trusttoken.TrustTokenResponse;
  */
 oneway interface ITrustTokenCallback {
     void onSuccess(in TrustTokenResponse response);
+    // This returns the remote CancellationSignal. This itself is NOT a
+    // cancellation.
+    void onRemoteCancellationSignal(in ICancellationSignal signal);
     void onFailure(int code);
 }

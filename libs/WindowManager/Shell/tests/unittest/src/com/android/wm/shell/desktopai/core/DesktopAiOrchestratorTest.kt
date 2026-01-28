@@ -19,10 +19,10 @@ package com.android.wm.shell.desktopai.core
 import android.testing.AndroidTestingRunner
 import androidx.test.filters.SmallTest
 import com.android.wm.shell.ShellTestCase
+import com.android.wm.shell.desktopai.api.ITriggerManager
+import com.android.wm.shell.desktopai.api.TriggerEvent
+import com.android.wm.shell.desktopai.api.TriggerEventType
 import com.android.wm.shell.desktopai.api.config.CujConfiguration
-import com.android.wm.shell.desktopai.api.config.ITriggerManager
-import com.android.wm.shell.desktopai.api.config.TriggerEvent
-import com.android.wm.shell.desktopai.api.config.TriggerEventType
 import com.android.wm.shell.desktopai.api.config.TriggerStrategy
 import org.junit.Before
 import org.junit.Test

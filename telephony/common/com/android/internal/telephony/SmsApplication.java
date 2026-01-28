@@ -281,7 +281,7 @@ public final class SmsApplication {
             final String packageName = activityInfo.packageName;
             if (!receivers.containsKey(packageName)) {
                 final SmsApplicationData smsApplicationData = new SmsApplicationData(packageName,
-                        activityInfo.applicationInfo.uid);
+                        activityInfo.getUid());
                 smsApplicationData.mSmsReceiverClass = activityInfo.name;
                 receivers.put(packageName, smsApplicationData);
             }

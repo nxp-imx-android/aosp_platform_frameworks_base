@@ -46,6 +46,7 @@ import static android.view.Display.HdrCapabilities.HDR_TYPE_INVALID;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doAnswer;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.when;
+import static com.android.graphics.surfaceflinger.flags.Flags.FLAG_FORCE_SDR_INVALID_HDR_TYPE;
 import static com.android.server.display.ExternalDisplayPolicy.ENABLE_ON_CONNECT;
 import static com.android.server.display.TestUtilsKt.createInMemoryPersistentDataStore;
 import static com.android.server.display.TestUtilsKt.createSensor;
@@ -145,6 +146,7 @@ import android.os.TestLooperManager;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.os.test.FakePermissionEnforcer;
+import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
@@ -3122,6 +3124,31 @@ public class DisplayManagerServiceTest {
         assertEquals(mode, mDisplayManager.getHdrConversionModeSettingInternal());
         assertEquals(mode.getConversionMode(), mHdrConversionMode);
         assertEquals(mode.getPreferredHdrOutputType(), mPreferredHdrOutputType);
+    }
+
+    @DisableFlags({FLAG_FORCE_SDR_INVALID_HDR_TYPE})
+    @Test
+    public void testHdrConversionMode_withForceSdr_sendsPassthrough() {
+        mDisplayManager = new DisplayManagerService(mContext, mBasicInjector);
+        final HdrConversionMode mode = new HdrConversionMode(
+                HdrConversionMode.HDR_CONVERSION_FORCE,
+                Display.HdrCapabilities.HDR_TYPE_INVALID);
+        mDisplayManager.setHdrConversionModeInternal(mode);
+
+        assertEquals(mHdrConversionMode, HdrConversionMode.HDR_CONVERSION_PASSTHROUGH);
+    }
+
+    @EnableFlags({FLAG_FORCE_SDR_INVALID_HDR_TYPE})
+    @Test
+    public void testHdrConversionMode_withForceSdr_sendsHdrTypeInvalid() {
+        mDisplayManager = new DisplayManagerService(mContext, mBasicInjector);
+        final HdrConversionMode mode = new HdrConversionMode(
+                HdrConversionMode.HDR_CONVERSION_FORCE,
+                Display.HdrCapabilities.HDR_TYPE_INVALID);
+        mDisplayManager.setHdrConversionModeInternal(mode);
+
+        assertEquals(mHdrConversionMode, HdrConversionMode.HDR_CONVERSION_FORCE);
+        assertEquals(mPreferredHdrOutputType, Display.HdrCapabilities.HDR_TYPE_INVALID);
     }
 
     @Test

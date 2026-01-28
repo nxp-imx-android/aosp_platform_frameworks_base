@@ -112,7 +112,7 @@ class SceneContainerRepositoryTest : SysuiTestCase() {
     fun transitionState_defaultsToIdle() =
         testScope.runTest {
             val underTest = kosmos.sceneContainerRepository
-            val transitionState by collectLastValue(underTest.transitionState)
+            val transitionState by collectLastValue(underTest.transitionStateFlow)
 
             assertThat(transitionState)
                 .isEqualTo(
@@ -129,7 +129,7 @@ class SceneContainerRepositoryTest : SysuiTestCase() {
                     ObservableTransitionState.Idle(Scenes.Lockscreen)
                 )
             underTest.setTransitionState(transitionState)
-            val reflectedTransitionState by collectLastValue(underTest.transitionState)
+            val reflectedTransitionState by collectLastValue(underTest.transitionStateFlow)
             assertThat(reflectedTransitionState).isEqualTo(transitionState.value)
 
             val progress = MutableStateFlow(1f)

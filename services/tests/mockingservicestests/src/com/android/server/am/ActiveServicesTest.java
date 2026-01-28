@@ -1197,4 +1197,39 @@ public final class ActiveServicesTest {
                         eq(mService.mConstants.SERVICE_TIMEOUT),
                         contains("Executing Service:"));
     }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public void testServiceRecordGetUid_PccService() {
+        // This test verifies that ServiceRecord.getUid() returns the PCC UID
+        // when the service is configured to run in the PCC sandbox.
+        // This indirectly tests the change in ServiceRecord.java where
+        // serviceInfo.getUid() is used instead of serviceInfo.applicationInfo.uid.
+
+        // Create a PCC ServiceRecord
+        ServiceRecord r = createPccServiceRecord();
+
+        // Verify that getUid() returns the PCC UID (30001)
+        // createPccServiceRecord sets pccUid to 30001 and flag FLAG_RUN_IN_PCC_SANDBOX
+        assertThat(r.serviceInfo.getUid()).isEqualTo(30001);
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public void testServiceRecordGetUid_NormalService() {
+        // This test verifies that ServiceRecord.getUid() returns the App UID
+        // when the service is NOT configured to run in the PCC sandbox.
+
+        // Create a normal ServiceRecord
+        ServiceRecord r = createServiceRecord();
+        // createServiceRecord() creates a mock ServiceRecord but doesn't set serviceInfo.
+        // We need to set it up properly for getUid() to work.
+        ServiceInfo si = new ServiceInfo();
+        si.applicationInfo = new ApplicationInfo();
+        si.applicationInfo.uid = TEST_UID;
+        setFieldValue(ServiceRecord.class, r, "serviceInfo", si);
+
+        // Verify that getUid() returns the App UID (TEST_UID = 10123)
+        assertThat(r.serviceInfo.getUid()).isEqualTo(TEST_UID);
+    }
 }

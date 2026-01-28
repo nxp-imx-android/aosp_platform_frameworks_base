@@ -200,7 +200,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
             enableSingleShade()
             runCurrent()
             val currentDesiredSceneKey by collectLastValue(sceneInteractor.currentScene)
-            val isVisible by collectLastValue(sceneInteractor.isVisible)
+            val isVisible by collectLastValue(sceneInteractor.isVisibleFlow)
             val transitionStateFlow =
                 prepareState(
                     authenticationMethod = AuthenticationMethodModel.Pin,
@@ -259,7 +259,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
             enableDualShade()
             val currentDesiredSceneKey by collectLastValue(sceneInteractor.currentScene)
             val currentDesiredOverlays by collectLastValue(sceneInteractor.currentOverlays)
-            val isVisible by collectLastValue(sceneInteractor.isVisible)
+            val isVisible by collectLastValue(sceneInteractor.isVisibleFlow)
             val transitionStateFlow =
                 prepareState(
                     authenticationMethod = AuthenticationMethodModel.Pin,
@@ -333,7 +333,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
     @Test
     fun hydrateVisibility_basedOnDeviceProvisioning() =
         kosmos.runTest {
-            val isVisible by collectLastValue(sceneInteractor.isVisible)
+            val isVisible by collectLastValue(sceneInteractor.isVisibleFlow)
             prepareState(
                 authenticationMethod = AuthenticationMethodModel.Pin,
                 isDeviceUnlocked = true,
@@ -352,7 +352,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
     @Test
     fun hydrateVisibility_deviceNotProvisionedAndLocked() =
         kosmos.runTest {
-            val isVisible by collectLastValue(sceneInteractor.isVisible)
+            val isVisible by collectLastValue(sceneInteractor.isVisibleFlow)
             prepareState(
                 authenticationMethod = AuthenticationMethodModel.Pin,
                 isDeviceUnlocked = false,
@@ -367,7 +367,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
     @Test
     fun hydrateVisibility_basedOnOcclusion() =
         kosmos.runTest {
-            val isVisible by collectLastValue(sceneInteractor.isVisible)
+            val isVisible by collectLastValue(sceneInteractor.isVisibleFlow)
             val transitionStateFlowValue =
                 prepareState(isDeviceUnlocked = true, initialSceneKey = Scenes.Lockscreen)
 
@@ -384,7 +384,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
     @Test
     fun hydrateVisibility_basedOnAlternateBouncer() =
         kosmos.runTest {
-            val isVisible by collectLastValue(sceneInteractor.isVisible)
+            val isVisible by collectLastValue(sceneInteractor.isVisibleFlow)
             val transitionStateFlowValue =
                 prepareState(isDeviceUnlocked = false, initialSceneKey = Scenes.Lockscreen)
 
@@ -406,7 +406,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
     @Test
     fun hydrateVisibility_whileDreaming() =
         kosmos.runTest {
-            val isVisible by collectLastValue(sceneInteractor.isVisible)
+            val isVisible by collectLastValue(sceneInteractor.isVisibleFlow)
 
             // GIVEN the device is dreaming
             prepareState(isDeviceUnlocked = false, initialSceneKey = Scenes.Dream)
@@ -417,7 +417,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
     @Test
     fun hydrateVisibility_surfaceBehindAnimating() =
         kosmos.runTest {
-            val isVisible by collectLastValue(sceneInteractor.isVisible)
+            val isVisible by collectLastValue(sceneInteractor.isVisibleFlow)
 
             val transitionState =
                 prepareState(isDeviceUnlocked = true, initialSceneKey = Scenes.Lockscreen)
@@ -3220,7 +3220,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
         kosmos.runTest {
             underTest.start()
 
-            val isVisible by collectLastValue(sceneInteractor.isVisible)
+            val isVisible by collectLastValue(sceneInteractor.isVisibleFlow)
             assertThat(isVisible).isTrue()
 
             sceneInteractor.setVisible(false, "reason")

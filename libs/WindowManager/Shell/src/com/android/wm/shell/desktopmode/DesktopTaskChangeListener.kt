@@ -57,7 +57,7 @@ class DesktopTaskChangeListener(
         val isActiveTask = desktopRepository.isActiveTask(taskInfo.taskId)
         val isTaskPinned = isTaskPinned(taskInfo)
         logD(
-            "onTaskOpening for taskId=%d, displayId=%d userId=%s currentUserId=%d " +
+            "onTaskOpening for taskId=%d, displayId=%d userId=%d currentUserId=%d " +
                 "parentTaskId=%d isFreeform=%b isActive=%b isPinned=%b",
             taskInfo.taskId,
             taskInfo.displayId,
@@ -115,7 +115,7 @@ class DesktopTaskChangeListener(
             )
             if (!isDesktopTask && isActiveTask) {
                 logD(
-                    "Removing previous desktop task moved to non-desktop display",
+                    "Removing previous desktop task#%d moved to non-desktop display#%d",
                     taskInfo.taskId,
                     taskInfo.displayId,
                 )
@@ -222,7 +222,7 @@ class DesktopTaskChangeListener(
         val isTaskPinned = isTaskPinned(taskInfo)
         val isDesktopTask = isDesktopTask(taskInfo)
         logD(
-            "onTaskMovingToFront for taskId=%d, displayId=%d userId=%s currentUserId=%d " +
+            "onTaskMovingToFront for taskId=%d, displayId=%d userId=%d currentUserId=%d " +
                 "parentTaskId=%d isFreeform=%b isActive=%b isPinned=%b isDesktopTask=%b",
             taskInfo.taskId,
             taskInfo.displayId,
@@ -344,14 +344,20 @@ class DesktopTaskChangeListener(
         }
     }
 
+    // TODO(b/478792808): Remove suppression
+    @SuppressWarnings("ProtoLogNonConstantFormat")
     private fun logD(msg: String, vararg arguments: Any?) {
         ProtoLog.d(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
     }
 
+    // TODO(b/478792808): Remove suppression
+    @SuppressWarnings("ProtoLogNonConstantFormat")
     private fun logE(msg: String, vararg arguments: Any?) {
         ProtoLog.e(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
     }
 
+    // TODO(b/478792808): Remove suppression
+    @SuppressWarnings("ProtoLogNonConstantFormat")
     private fun logWtf(msg: String, vararg arguments: Any?) {
         ProtoLog.wtf(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
     }

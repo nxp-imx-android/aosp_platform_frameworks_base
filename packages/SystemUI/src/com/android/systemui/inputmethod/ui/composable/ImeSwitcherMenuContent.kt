@@ -47,12 +47,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.unit.dp
 import com.android.compose.PlatformOutlinedButton
 import com.android.compose.theme.PlatformTheme
@@ -96,7 +98,13 @@ fun ImeSwitcherMenuContent(
 
     PlatformTheme(isDarkTheme = cachedDarkTheme) {
         Column(
-            modifier = Modifier.fillMaxWidth().semantics { paneTitle = paneTitleDescription },
+            modifier =
+                Modifier.fillMaxWidth()
+                    .semantics {
+                        paneTitle = paneTitleDescription
+                        testTagsAsResourceId = true
+                    }
+                    .testTag("container"),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Column(modifier = Modifier.weight(weight = 1f, fill = false)) {
@@ -109,10 +117,11 @@ fun ImeSwitcherMenuContent(
                         Modifier.fillMaxWidth().padding(top = 8.dp, end = 16.dp, bottom = 16.dp),
                 ) {
                     PlatformOutlinedButton(
+                        modifier = Modifier.testTag("button1"),
                         onClick = {
                             it.invoke()
                             dismissAction.invoke()
-                        }
+                        },
                     ) {
                         Text(
                             text = stringResource(R.string.input_method_switcher_settings_button),

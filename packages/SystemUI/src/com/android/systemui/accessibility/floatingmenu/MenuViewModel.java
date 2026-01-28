@@ -22,6 +22,7 @@ import static java.util.Collections.emptyList;
 
 import android.content.ComponentName;
 import android.content.Context;
+import android.os.Looper;
 import android.view.accessibility.AccessibilityManager;
 
 import androidx.lifecycle.LiveData;
@@ -52,8 +53,12 @@ public class MenuViewModel implements MenuInfoRepository.OnContentsChanged {
             HearingAidDeviceManager.ConnectionStatus.NO_DEVICE_BONDED);
     private final LiveData<Integer> mHearingDeviceTargetIndex = Transformations.map(
             mTargetFeaturesData, this::getHearingDeviceTargetIndex);
+    private final MutableLiveData<MenuPosition> mPositionData =
+            new MutableLiveData<>();
 
     private final MenuInfoRepository mInfoRepository;
+
+    private MenuPosition mLastMenuPosition = MenuPosition.BOTTOM_RIGHT;
 
     MenuViewModel(Context context, AccessibilityManager accessibilityManager,
             SecureSettings secureSettings, HearingAidDeviceManager hearingAidDeviceManager) {
@@ -89,6 +94,15 @@ public class MenuViewModel implements MenuInfoRepository.OnContentsChanged {
 
     void updateMenuSavingPosition(Position percentagePosition) {
         mInfoRepository.updateMenuSavingPosition(percentagePosition);
+        // LiveData updates must happen on the main thread.
+        // If we are already on the main thread (e.g., in tests), use setValue() for
+        // synchronous updates to avoid race conditions. Otherwise, use postValue()
+        // to safely update from background threads (e.g., animation callbacks).
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            mPositionData.setValue(null);
+        } else {
+            mPositionData.postValue(null);
+        }
     }
 
     void updateDockTooltipVisibility(boolean hasSeen) {
@@ -117,6 +131,29 @@ public class MenuViewModel implements MenuInfoRepository.OnContentsChanged {
     LiveData<Position> getPercentagePositionData() {
         mInfoRepository.loadMenuPosition(mPercentagePositionData::setValue);
         return mPercentagePositionData;
+    }
+
+    LiveData<MenuPosition> getPositionData() {
+        return mPositionData;
+    }
+
+    void cycleMenuPosition() {
+        MenuPosition currentPosition = mPositionData.getValue();
+
+        if (currentPosition == null) {
+            currentPosition = mLastMenuPosition;
+        }
+
+        MenuPosition nextPosition = switch (currentPosition) {
+            case BOTTOM_RIGHT -> MenuPosition.BOTTOM_LEFT;
+            case BOTTOM_LEFT -> MenuPosition.TOP_LEFT;
+            case TOP_LEFT -> MenuPosition.TOP_RIGHT;
+            case TOP_RIGHT -> MenuPosition.BOTTOM_RIGHT;
+            case null -> MenuPosition.BOTTOM_RIGHT;
+        };
+
+        mLastMenuPosition = nextPosition;
+        mPositionData.setValue(nextPosition);
     }
 
     LiveData<Integer> getSizeTypeData() {

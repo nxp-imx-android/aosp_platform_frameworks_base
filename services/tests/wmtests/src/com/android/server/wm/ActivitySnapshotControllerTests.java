@@ -33,6 +33,7 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.never;
 
+import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.util.ArraySet;
 import android.window.TaskSnapshot;
@@ -265,6 +266,7 @@ public class ActivitySnapshotControllerTests extends TaskSnapshotPersisterTestBa
      * items.
      */
     @Test
+    @DisableFlags(com.android.window.flags.Flags.FLAG_NO_PAUSE_TASK_SNAPSHOT_PERSISTER)
     public void testSkipRecordActivity() {
         final AbsAppSnapshotController.SnapshotSupplier supplier =
                 new AbsAppSnapshotController.SnapshotSupplier();

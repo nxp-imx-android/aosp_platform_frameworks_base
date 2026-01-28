@@ -103,7 +103,7 @@ class DesktopImmersiveController(
             return
         }
         val wct = WindowContainerTransaction().apply { setBounds(taskInfo.token, Rect()) }
-        logV("Moving task ${taskInfo.taskId} into immersive mode")
+        logV("Moving task %d into immersive mode", taskInfo.taskId)
         val transition = transitions.startTransition(TRANSIT_CHANGE, wct, /* handler= */ this)
         addPendingImmersiveTransition(
             taskId = taskInfo.taskId,
@@ -435,7 +435,7 @@ class DesktopImmersiveController(
             }
         if (pendingTransition != null) {
             logV(
-                "Pending transition %s for task#%s merged into %s",
+                "Pending transition %s for task#%d merged into %s",
                 merged,
                 pendingTransition.taskId,
                 playing,
@@ -527,10 +527,14 @@ class DesktopImmersiveController(
         CLOSED, // The immersive task was closed.
     }
 
+    // TODO(b/478792808): Remove suppression
+    @SuppressWarnings("ProtoLogNonConstantFormat")
     private fun logV(msg: String, vararg arguments: Any?) {
         ProtoLog.v(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
     }
 
+    // TODO(b/478792808): Remove suppression
+    @SuppressWarnings("ProtoLogNonConstantFormat")
     private fun logD(msg: String, vararg arguments: Any?) {
         ProtoLog.d(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
     }

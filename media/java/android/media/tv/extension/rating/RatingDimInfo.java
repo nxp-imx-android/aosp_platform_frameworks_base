@@ -126,7 +126,7 @@ public final class RatingDimInfo implements Parcelable {
     private RatingDimInfo(Parcel in) {
         mRatingLevelNumber = in.readInt();
         mIsDimGrad = in.readByte() != 0;
-        mDimText = in.readString();
+        mDimText = in.readString8();
         mRatingLevelList = in.createTypedArrayList(RatingLevelInfo.CREATOR);
     }
 

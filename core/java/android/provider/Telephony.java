@@ -24,6 +24,7 @@ import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
 import android.annotation.SdkConstant;
 import android.annotation.SdkConstant.SdkConstantType;
+import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
 import android.annotation.TestApi;
 import android.app.admin.DevicePolicyManager;
@@ -623,6 +624,25 @@ public final class Telephony {
          * @hide
          */
         public static final String READ_RESTRICTION = ReadRestriction.READ_RESTRICTION_COLUMN_NAME;
+
+        /**
+         * The {@code transaction-id} of the message.
+         * <p>
+         * This column is used by the default messaging app to associate an internal transaction
+         * identifier with a specific SMS message record in the database.
+         * </p><p>
+         * The platform stores the value provided in this column but treats it as an opaque field.
+         * It does not interpret, validate or use the contents of this column for any platform
+         * logic.
+         * </p><p>
+         *
+         * <P>Type: TEXT</P>
+         */
+        @FlaggedApi(Flags.FLAG_MESSAGE_PROMOTION)
+        // TODO(b/478827787): Suppress the IntentName lint check because TRANSACTION_ID is a column
+        //  name, not an Intent action.
+        @SuppressLint("IntentName")
+        public static final String TRANSACTION_ID = "tr_id";
     }
 
     /**

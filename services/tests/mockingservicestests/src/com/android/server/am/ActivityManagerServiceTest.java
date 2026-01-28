@@ -101,6 +101,7 @@ import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.content.pm.ActivityInfo;
 import android.content.pm.AllowComponentAccessPolicyInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.IPackageManager;
@@ -1975,6 +1976,36 @@ public class ActivityManagerServiceTest {
 
         // Verify the exception message.
         assertThat(thrown.getMessage()).isEqualTo("app ActivityThread is null");
+    }
+
+    @Test
+    @RequiresFlagsEnabled(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public void testGetActivityInfoForUser_PccUid() {
+        int pccUid = android.os.Process.FIRST_PCC_UID + 5;
+        ActivityInfo aInfo = new ActivityInfo();
+        aInfo.applicationInfo = new ApplicationInfo();
+        aInfo.applicationInfo.uid = 10123;
+        aInfo.applicationInfo.pccUid = pccUid;
+        aInfo.flags |= ActivityInfo.FLAG_RUN_IN_PCC_SANDBOX;
+
+        // Should return original aInfo because pccUid < PER_USER_RANGE
+        ActivityInfo result = mAms.getActivityInfoForUser(aInfo, 0);
+        assertEquals(aInfo, result);
+        assertEquals(pccUid, result.getUid());
+    }
+
+    @Test
+    @RequiresFlagsEnabled(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public void testGetActivityInfoForUser_NormalUid() {
+        int appUid = 10123;
+        ActivityInfo aInfo = new ActivityInfo();
+        aInfo.applicationInfo = new ApplicationInfo();
+        aInfo.applicationInfo.uid = appUid;
+        aInfo.applicationInfo.pccUid = -1;
+
+        ActivityInfo result = mAms.getActivityInfoForUser(aInfo, 0);
+        assertEquals(aInfo, result);
+        assertEquals(appUid, result.getUid());
     }
 
     private void setupAllowComponentAccessPolicy(

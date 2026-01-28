@@ -1849,7 +1849,7 @@ class ActivityMetricsLogger {
      * Logs the changing of the letterbox position along with its package UID
      */
     void logLetterboxPositionChange(@NonNull ActivityRecord activity, int position) {
-        int packageUid = activity.info.applicationInfo.uid;
+        int packageUid = activity.info.getUid();
         FrameworkStatsLog.write(FrameworkStatsLog.LETTERBOX_POSITION_CHANGED, packageUid, position);
 
         if (!mPackageUidToCompatStateInfo.contains(packageUid)) {

@@ -150,6 +150,16 @@ flag {
   bug: "344050265"
 }
 
+flag {
+  name: "ignore_duplicate_bindings"
+  namespace: "backstage_power"
+  description: "Ignores duplicate bindings to the same NotificationListenerService."
+  bug: "434679743"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
 # Start: Flags that have been cleaned up in code but must remain defined for CTS
 
 flag {
