@@ -45,7 +45,6 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.ActivityInfo
 import android.content.pm.ApplicationInfo
-import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.content.pm.PackageManager.PERMISSION_DENIED
 import android.content.pm.PackageManager.PERMISSION_GRANTED
@@ -1731,20 +1730,17 @@ class SupervisionServiceTest {
     fun onBootCompleted_upgradeNeeded_performsUpgrade() {
         // Setup settings file with old version
         val settings = loadSupervisionSettings(ServicestestsR.xml.supervision_settings_v0, 0)
-
-        // Setup mocks
-        setupMocksForUpgrade()
+        val userInfo = UserInfo(USER_ID, "testuser", 0)
+        whenever(mockUserManagerInternal.getUsers(false)).thenReturn(listOf(userInfo))
 
         // Trigger boot phase
         triggerBootCompleted()
 
         // Verify upgrade happened
-        verify(mockDpm)
-            .setApplicationHidden(
-                eq(ComponentName(ROLE_HOLDER_PACKAGE, "AdminReceiver")),
-                eq(HIDDEN_PACKAGE),
-                eq(false),
-            )
+        verify(mockDpmInternal)
+            .clearHiddenApplicationsForRole(RoleManager.ROLE_SUPERVISION, USER_ID)
+        verify(mockDpmInternal)
+            .clearHiddenApplicationsForRole(RoleManager.ROLE_SYSTEM_SUPERVISION, USER_ID)
         assertThat(settings.version).isEqualTo(SupervisionSettings.VERSION)
     }
 
@@ -1821,26 +1817,6 @@ class SupervisionServiceTest {
 
     private fun getPolicyData(policy: Policy): PolicyData? {
         return service.getUserDataLocked(USER_ID).policies[policy.policyKey]
-    }
-
-    private fun setupMocksForUpgrade() {
-        val userInfo = UserInfo(USER_ID, "testuser", 0)
-        whenever(mockUserManagerInternal.getUsers(false)).thenReturn(listOf(userInfo))
-        val roleHolders = listOf(ROLE_HOLDER_PACKAGE)
-        injector.setRoleHoldersAsUser(
-            RoleManager.ROLE_SUPERVISION,
-            UserHandle.of(USER_ID),
-            roleHolders,
-        )
-        val admin = ComponentName(ROLE_HOLDER_PACKAGE, "AdminReceiver")
-        whenever(mockDpm.getActiveAdminsAsUser(USER_ID)).thenReturn(listOf(admin))
-        val packageInfo = PackageInfo()
-        packageInfo.packageName = HIDDEN_PACKAGE
-        whenever(mockPackageManager.getInstalledPackagesAsUser(any<Int>(), any<Int>()))
-            .thenReturn(listOf(packageInfo))
-        whenever(mockPackageManager.getApplicationHiddenSettingAsUser(eq(HIDDEN_PACKAGE), any()))
-            .thenReturn(true)
-        whenever(mockDpm.isApplicationHidden(admin, HIDDEN_PACKAGE)).thenReturn(true)
     }
 
     private fun loadSupervisionSettings(resId: Int, expectedVersion: Int): SupervisionSettings {
