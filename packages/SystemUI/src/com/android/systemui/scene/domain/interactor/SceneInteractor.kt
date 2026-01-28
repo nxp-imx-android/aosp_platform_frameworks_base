@@ -317,6 +317,30 @@ constructor(
     }
 
     /**
+     * Snaps to [Scenes.Gone] and does not validate the scene change, since the unlocked power
+     * gesture has the authority to unilaterally unlock the device. We don't want to wait for device
+     * unlocked flows to emit, so we start the scene transition as we unlock.
+     *
+     * DO NOT USE THIS FOR ANY OTHER REASON. The unlocked power gesture is a special case since the
+     * first power button tap can instantly lock the device, while the second tap re-unlocks it
+     * without any actual authentication.
+     */
+    fun snapToGoneForUnlockedPowerLaunchGesture(
+        loggingReason: String,
+        hideAllOverlays: Boolean = true,
+        keyguardState: KeyguardState? = null,
+    ) {
+        snapToScene(
+            Scenes.Gone,
+            loggingReason,
+            hideAllOverlays,
+            keyguardState,
+            // Only allowed for unlocked power gesture! Do not emulate this!
+            skipValidateSceneChange = true,
+        )
+    }
+
+    /**
      * Requests a scene change to the given scene.
      *
      * The change is instantaneous and not animated; it will be observable in the next frame and
@@ -334,6 +358,25 @@ constructor(
         hideAllOverlays: Boolean = true,
         keyguardState: KeyguardState? = null,
     ) {
+        snapToScene(
+            toScene,
+            loggingReason,
+            hideAllOverlays,
+            keyguardState,
+            skipValidateSceneChange = false,
+        )
+    }
+
+    private fun snapToScene(
+        toScene: SceneKey,
+        loggingReason: String,
+        hideAllOverlays: Boolean = true,
+        keyguardState: KeyguardState? = null,
+        // Whether to skip validating the scene change. This should *always* be false unless we're
+        // doing the unlocked power launch gesture, which is the only case where System UI can
+        // unilaterally unlock the device and return to Gone despite the device being locked.
+        skipValidateSceneChange: Boolean = false,
+    ) {
         if (keyguardState != null) {
             lockscreenSceneTransitionInteractor.get().setNextLockscreenTargetState(keyguardState)
         }
@@ -341,11 +384,12 @@ constructor(
         val currentSceneKey = currentScene.value
         val resolvedScene = sceneFamilyResolvers.get()[toScene]?.resolvedScene?.value ?: toScene
         if (
-            !validateSceneChange(
-                from = currentSceneKey,
-                to = resolvedScene,
-                loggingReason = loggingReason,
-            )
+            !skipValidateSceneChange &&
+                !validateSceneChange(
+                    from = currentSceneKey,
+                    to = resolvedScene,
+                    loggingReason = loggingReason,
+                )
         ) {
             if (hideAllOverlays) {
                 repository.instantlyTransitionTo(overlays = emptySet())
@@ -357,7 +401,13 @@ constructor(
             from = currentSceneKey,
             to = resolvedScene,
             keyguardState = keyguardState,
-            reason = loggingReason,
+            reason =
+                loggingReason +
+                    if (skipValidateSceneChange) {
+                        " - skipped validation"
+                    } else {
+                        ""
+                    },
             isInstant = true,
         )
 

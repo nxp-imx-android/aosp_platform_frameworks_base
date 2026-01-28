@@ -31,6 +31,7 @@ import com.android.systemui.common.coroutine.ChannelExt.trySendWithFailureLoggin
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
+import com.android.systemui.power.data.model.PowerButtonLaunchEvent
 import com.android.systemui.power.shared.model.DozeScreenStateModel
 import com.android.systemui.power.shared.model.ScreenPowerState
 import com.android.systemui.power.shared.model.WakeSleepReason
@@ -41,7 +42,10 @@ import com.android.systemui.util.time.SystemClock
 import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -61,6 +65,12 @@ interface PowerRepository {
      * cannot interact with the device and will need to wake it up somehow if they wish to do so.
      */
     val wakefulness: StateFlow<WakefulnessModel>
+
+    /**
+     * Emits when a double tap power button launch is detected, with information about the entry
+     * status of the device when the gesture was initiated.
+     */
+    val powerButtonLaunchEvents: Flow<PowerButtonLaunchEvent>
 
     /**
      * The physical on/off state of the display. [ScreenPowerState.SCREEN_OFF] means the display is
@@ -97,10 +107,19 @@ interface PowerRepository {
         lastSleepReason: WakeSleepReason = wakefulness.value.lastSleepReason,
         powerButtonLaunchGestureTriggered: Boolean =
             wakefulness.value.powerButtonLaunchGestureTriggered,
+        asleepOrWakingFromPreviouslyEnteredDevice: Boolean =
+            if (SceneContainerFlag.isEnabled) {
+                wakefulness.value.asleepOrWakingFromPreviouslyEnteredDevice()
+            } else {
+                false
+            },
     )
 
     /** Updates the screen power state. */
     fun setScreenPowerState(state: ScreenPowerState)
+
+    /** Notifies the repository that a double tap power button launch gesture has been detected. */
+    fun onPowerButtonLaunchEvent(event: PowerButtonLaunchEvent)
 }
 
 @SysUISingleton
@@ -148,11 +167,19 @@ constructor(
     private val _wakefulness = MutableStateFlow(WakefulnessModel()).traceAs("wakefulness")
     override val wakefulness = _wakefulness.asStateFlow()
 
+    @SuppressLint("SharedFlowCreation")
+    override val powerButtonLaunchEvents =
+        MutableSharedFlow<PowerButtonLaunchEvent>(
+            replay = 1,
+            onBufferOverflow = BufferOverflow.DROP_OLDEST,
+        )
+
     override fun updateWakefulness(
         rawState: WakefulnessState,
         lastWakeReason: WakeSleepReason,
         lastSleepReason: WakeSleepReason,
         powerButtonLaunchGestureTriggered: Boolean,
+        asleepOrWakingFromPreviouslyEnteredDevice: Boolean,
     ) {
         _wakefulness.value =
             WakefulnessModel(
@@ -160,6 +187,7 @@ constructor(
                 lastWakeReason,
                 lastSleepReason,
                 powerButtonLaunchGestureTriggered,
+                asleepOrWakingFromPreviouslyEnteredDevice,
             )
     }
 
@@ -169,6 +197,10 @@ constructor(
 
     override fun setScreenPowerState(state: ScreenPowerState) {
         _screenPowerState.value = state
+    }
+
+    override fun onPowerButtonLaunchEvent(event: PowerButtonLaunchEvent) {
+        powerButtonLaunchEvents.tryEmit(event)
     }
 
     override fun wakeUp(why: String, wakeReason: Int) {

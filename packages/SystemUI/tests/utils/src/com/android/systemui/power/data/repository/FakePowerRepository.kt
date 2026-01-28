@@ -19,6 +19,7 @@ package com.android.systemui.power.data.repository
 
 import android.os.PowerManager
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.power.data.model.PowerButtonLaunchEvent
 import com.android.systemui.power.shared.model.DozeScreenStateModel
 import com.android.systemui.power.shared.model.ScreenPowerState
 import com.android.systemui.power.shared.model.WakeSleepReason
@@ -27,6 +28,8 @@ import com.android.systemui.power.shared.model.WakefulnessState
 import dagger.Binds
 import dagger.Module
 import javax.inject.Inject
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -43,6 +46,12 @@ class FakePowerRepository @Inject constructor() : PowerRepository {
     override val screenPowerState = _screenPowerState.asStateFlow()
 
     override val dozeScreenState = MutableStateFlow(DozeScreenStateModel.UNKNOWN)
+
+    override val powerButtonLaunchEvents =
+        MutableSharedFlow<PowerButtonLaunchEvent>(
+            replay = 1,
+            onBufferOverflow = BufferOverflow.DROP_OLDEST,
+        )
 
     var lastWakeWhy: String? = null
     var lastWakeReason: Int? = null
@@ -67,6 +76,7 @@ class FakePowerRepository @Inject constructor() : PowerRepository {
         lastWakeReason: WakeSleepReason,
         lastSleepReason: WakeSleepReason,
         powerButtonLaunchGestureTriggered: Boolean,
+        asleepOrWakingFromPreviouslyEnteredDevice: Boolean,
     ) {
         _wakefulness.value =
             WakefulnessModel(
@@ -74,11 +84,16 @@ class FakePowerRepository @Inject constructor() : PowerRepository {
                 lastWakeReason,
                 lastSleepReason,
                 powerButtonLaunchGestureTriggered,
+                asleepOrWakingFromPreviouslyEnteredDevice,
             )
     }
 
     override fun setScreenPowerState(state: ScreenPowerState) {
         _screenPowerState.value = state
+    }
+
+    override fun onPowerButtonLaunchEvent(event: PowerButtonLaunchEvent) {
+        powerButtonLaunchEvents.tryEmit(event)
     }
 }
 
