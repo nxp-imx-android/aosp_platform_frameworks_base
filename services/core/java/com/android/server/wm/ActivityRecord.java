@@ -1158,10 +1158,10 @@ final class ActivityRecord extends WindowToken {
             pw.println(prefix + "mLastReportedMultiWindowMode=" + mLastReportedMultiWindowMode
                     + " mLastReportedPictureInPictureMode=" + mLastReportedPictureInPictureMode);
             if (info.supportsPictureInPicture()) {
-                pw.println(prefix + "supportsPictureInPicture=" + info.supportsPictureInPicture());
-                pw.println(prefix + "supportsEnterPipOnTaskSwitch: "
-                        + supportsEnterPipOnTaskSwitch);
-                pw.println(prefix + "mPauseSchedulePendingForPip=" + mPauseSchedulePendingForPip);
+                pw.println(prefix + "supportsPictureInPicture=" + info.supportsPictureInPicture()
+                        + " supportsEnterPipOnTaskSwitch=" + supportsEnterPipOnTaskSwitch
+                        + " autoEnteringPip=" + mAutoEnteringPip
+                        + " mPauseSchedulePendingForPip=" + mPauseSchedulePendingForPip);
             }
             if (getMaxAspectRatio() != 0) {
                 pw.println(prefix + "maxAspectRatio=" + getMaxAspectRatio());
@@ -6054,6 +6054,7 @@ final class ActivityRecord extends WindowToken {
             final PauseActivityItem item = new PauseActivityItem(token, finishing,
                     false /* userLeaving */, false /* dontReport */, mAutoEnteringPip);
             mAtmService.getLifecycleManager().scheduleTransactionItem(app.getThread(), item);
+            mAutoEnteringPip = false;
         } else if (shouldStartActivity()) {
             if (DEBUG_VISIBILITY) {
                 Slog.v(TAG_VISIBILITY, "Start visible activity, " + this);
