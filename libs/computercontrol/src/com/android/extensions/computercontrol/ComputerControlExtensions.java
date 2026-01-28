@@ -138,6 +138,7 @@ public class ComputerControlExtensions {
      * @param listener The listener to add.
      * @throws SecurityException if the caller does not hold the {@link RoleManager#ROLE_HOME} role.
      * @see #unregisterAutomatedPackageListener
+     * @hide
      */
     public void registerAutomatedPackageListener(
             @NonNull Context context,
@@ -165,6 +166,7 @@ public class ComputerControlExtensions {
      * @param listener The listener to unregister.
      * @throws SecurityException if the caller does not hold the {@link RoleManager#ROLE_HOME} role.
      * @see #registerAutomatedPackageListener
+     * @hide
      */
     public void unregisterAutomatedPackageListener(
             @NonNull Context context, @NonNull AutomatedPackageListener listener) {
