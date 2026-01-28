@@ -54429,8 +54429,10 @@ package android.view {
   @FlaggedApi("com.android.window.flags.scvh_set_focusable_api") public static class SurfaceControlViewHost.LayoutParams {
     ctor @FlaggedApi("com.android.window.flags.scvh_set_focusable_api") public SurfaceControlViewHost.LayoutParams(int, int, boolean);
     method @FlaggedApi("com.android.window.flags.scvh_set_focusable_api") public int getHeight();
+    method @FlaggedApi("com.android.window.flags.scvh_set_focusable_api") @NonNull public String getTitle();
     method @FlaggedApi("com.android.window.flags.scvh_set_focusable_api") public int getWidth();
     method @FlaggedApi("com.android.window.flags.scvh_set_focusable_api") public boolean isFocusable();
+    method @FlaggedApi("com.android.window.flags.scvh_set_focusable_api") public void setTitle(@NonNull String);
   }
 
   public static final class SurfaceControlViewHost.SurfacePackage implements android.os.Parcelable {
