@@ -162,8 +162,6 @@ import dagger.assisted.Assisted;
 import dagger.assisted.AssistedFactory;
 import dagger.assisted.AssistedInject;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -2675,8 +2673,14 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
         }
 
         @Override
-        public boolean onTouchEvent(@NonNull SystemUIDialog dialog, @NonNull MotionEvent event) {
+        public boolean dispatchTouchEvent(@NonNull SystemUIDialog dialog,
+                @NonNull MotionEvent motionEvent) {
             mRescheduleBurnInTimeout.run();
+            return false;
+        }
+
+        @Override
+        public boolean onTouchEvent(@NonNull SystemUIDialog dialog, @NonNull MotionEvent event) {
             return mGestureDetector.onTouchEvent(event);
         }
 
@@ -2867,7 +2871,7 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
 
         @Deprecated
         @Override
-        public void onBackPressed(@NotNull SystemUIDialog dialog) {
+        public void onBackPressed(@NonNull SystemUIDialog dialog) {
             logOnBackInvocation();
         }
 

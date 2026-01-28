@@ -541,6 +541,14 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
     }
 
     @Override
+    public boolean dispatchTouchEvent(@NonNull MotionEvent ev) {
+        if (mDelegate.dispatchTouchEvent(this, ev)) {
+            return true;
+        }
+        return super.dispatchTouchEvent(ev);
+    }
+
+    @Override
     public boolean onTouchEvent(@NonNull MotionEvent motionEvent) {
         if (mDelegate.onTouchEvent(this, motionEvent)) {
             return true;

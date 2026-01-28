@@ -58,6 +58,8 @@ interface DialogDelegate<T : Dialog> {
     fun getBackAnimationSpec(displayMetricsProvider: () -> DisplayMetrics): BackAnimationSpec =
         BackAnimationSpec.floatingSystemSurfacesForSysUi(displayMetricsProvider)
 
+    fun dispatchTouchEvent(dialog: T, motionEvent: MotionEvent): Boolean = false
+
     fun onTouchEvent(dialog: T, motionEvent: MotionEvent): Boolean = false
 
     @Deprecated("see Dialog.onBackPressed") fun onBackPressed(dialog: T) {}

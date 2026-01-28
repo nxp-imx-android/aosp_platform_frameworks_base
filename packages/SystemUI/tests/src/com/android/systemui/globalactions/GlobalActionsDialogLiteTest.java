@@ -328,6 +328,39 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
     }
 
     @Test
+    public void testTouchReschedulesBurnInTimeout() {
+        final int timeout = 10000;
+        mFakeGlobalSettings.putInt(Settings.Global.GLOBAL_ACTIONS_TIMEOUT_MILLIS, timeout);
+        setMaxShownPowerItems(1);
+        mRepository.setPossibleGlobalActions(List.of(GlobalActionType.POWER));
+        setShouldDisplayLockdown(true);
+        GlobalActionsDialogLite globalActionsDialogLite = createGlobalActionsDialogLite();
+
+        GlobalActionsDialogLite.ActionsDialogLiteDelegate delegate =
+                globalActionsDialogLite.createDialogDelegate();
+        delegate.show(null);
+        // Clear the dismiss override so we don't have behavior after dismissing the dialog
+        assertThat(delegate.mCurrentDialog).isNotNull();
+        delegate.mCurrentDialog.setDismissOverride(null);
+        verifyLogPosted(GlobalActionsEvent.GA_POWER_MENU_OPEN, 0);
+
+        // Advance halfway through timeout.
+        mTestableLooper.moveTimeForward(timeout / 2);
+        assertThat(mUiEventLoggerFake.numLogs()).isEqualTo(1);
+
+        MotionEvent event = MotionEvent.obtain(0, 0, MotionEvent.ACTION_DOWN, 0, 0, 0);
+        delegate.mCurrentDialog.dispatchTouchEvent(event);
+
+        // Advance past original timeout.
+        mTestableLooper.moveTimeForward((timeout / 2) + 1000);
+        assertThat(mUiEventLoggerFake.numLogs()).isEqualTo(1);
+
+        // Advance past final timeout.
+        mTestableLooper.moveTimeForward(timeout / 2);
+        verifyLogPosted(GlobalActionsEvent.GA_CLOSE_TIMEOUT, 1);
+    }
+
+    @Test
     public void testSwipeDownLockscreen_logAndOpenQS() {
         setMaxShownPowerItems(4);
         mRepository.setPossibleGlobalActions(List.of(
