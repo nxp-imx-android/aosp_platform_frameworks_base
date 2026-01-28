@@ -437,8 +437,11 @@ public abstract class StageCoordinatorAbstract implements SplitLayout.SplitLayou
             @NonNull WindowContainerTransaction finishWct,
             @NonNull SurfaceControl.Transaction finishT);
 
-    /** Call this when the animation from split screen to desktop is started. */
-    public abstract void onSplitToDesktop();
+    /**
+     * Call this when the animation to exit split is started and handled by another
+     * transition handler.
+     */
+    public abstract void onExitingSplit();
 
     /** Call this when the recents animation finishes by doing pair-to-pair switch. */
     public abstract void onRecentsPairToPairAnimationFinish(WindowContainerTransaction finishWct);

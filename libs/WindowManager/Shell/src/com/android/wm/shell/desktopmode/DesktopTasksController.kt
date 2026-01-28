@@ -2213,7 +2213,6 @@ class DesktopTasksController(
                 splitScreenController.getStageOfTask(taskInfo.taskId),
                 EXIT_REASON_DESKTOP_MODE,
             )
-            splitScreenController.transitionHandler?.onSplitToDesktop()
         }
     }
 
