@@ -554,6 +554,7 @@ public class GraphicsEnvironment {
                         if (DEBUG) {
                             Log.v(TAG, "Enable ANGLE for game on config_angleForGamesEnabled=true");
                         }
+                        return ANGLE_GL_DRIVER_CHOICE_ANGLE;
                     }
                 } catch (Resources.NotFoundException e) {
                     if (DEBUG) {
