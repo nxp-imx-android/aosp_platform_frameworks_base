@@ -35,8 +35,12 @@ import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 /**
  * The {@link AudioFormat} class is used to access a number of audio format and
@@ -1269,6 +1273,115 @@ public final class AudioFormat implements Parcelable {
     /**
      * @hide
      */
+    public static class ChannelMasksArray {
+        @NonNull private final int[] mPositionMasks;
+        @NonNull private final int[] mIndexMasks;
+
+        public ChannelMasksArray() {
+            mPositionMasks = new int[0];
+            mIndexMasks = new int[0];
+        }
+
+        public ChannelMasksArray(int[] positionMasks, int[] indexMasks) {
+            mPositionMasks = positionMasks != null ? positionMasks : new int[0];
+            mIndexMasks = indexMasks != null ? indexMasks : new int[0];
+        }
+
+        /**
+         * Merge a list of channel mask arrays into a new channel mask array.
+         * @param arrays The list of arrays to merge.
+         */
+        public static ChannelMasksArray mergeLists(@NonNull List<ChannelMasksArray> arrays) {
+            TreeSet<Integer> posMasks = new TreeSet<>();
+            TreeSet<Integer> indexMasks = new TreeSet<>();
+            for (ChannelMasksArray array : arrays) {
+                for (int mask : array.mPositionMasks) {
+                    posMasks.add(mask);
+                }
+                for (int mask : array.mIndexMasks) {
+                    indexMasks.add(mask);
+                }
+            }
+            return new ChannelMasksArray(
+                    posMasks.stream().mapToInt(i -> i).toArray(),
+                    indexMasks.stream().mapToInt(i -> i).toArray());
+        }
+
+        public @NonNull int[] getPositionMasks() {
+            return mPositionMasks;
+        }
+
+        public @NonNull int[] getIndexMasks() {
+            return mIndexMasks;
+        }
+
+        /**
+         * @param isInput Whether it is for input direction.
+         * @return An array of channel counts (1, 2, 4, ...) for which this audio device
+         * can be configured.
+         *
+         * Note: an empty array indicates that the device supports arbitrary channel counts.
+         */
+        public int[] getChannelCounts(boolean isInput) {
+            TreeSet<Integer> countSet = new TreeSet<Integer>();
+            addChannelCounts(countSet, isInput);
+            int[] counts = new int[countSet.size()];
+            int index = 0;
+            for (int count : countSet) {
+                counts[index++] = count;
+            }
+            return counts;
+        }
+
+        private void addChannelCounts(Set<Integer> countSet, boolean isInput) {
+            for (int mask : mPositionMasks) {
+                countSet.add(isInput
+                        ? AudioFormat.channelCountFromInChannelMask(mask)
+                        : AudioFormat.channelCountFromOutChannelMask(mask));
+            }
+            for (int indexMask : mIndexMasks) {
+                countSet.add(Integer.bitCount(indexMask));
+            }
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder sb = new StringBuilder();
+            if (mPositionMasks.length > 0) {
+                sb.append(", channel masks=").append(toHexString(mPositionMasks));
+            }
+            if (mIndexMasks.length > 0) {
+                sb.append(", channel index masks=").append(Arrays.toString(mIndexMasks));
+            }
+            return sb.toString();
+        }
+
+        private static String toHexString(int[] ints) {
+            if (ints == null || ints.length == 0) {
+                return "";
+            }
+            return Arrays.stream(ints).mapToObj(anInt -> String.format("0x%02X", anInt))
+                    .collect(Collectors.joining(", "));
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(Arrays.hashCode(mPositionMasks), Arrays.hashCode(mIndexMasks));
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof ChannelMasksArray)) return false;
+            ChannelMasksArray that = (ChannelMasksArray) o;
+            return Arrays.equals(mPositionMasks, that.mPositionMasks)
+                    && Arrays.equals(mIndexMasks, that.mIndexMasks);
+        }
+    }
+
+    /**
+     * @hide
+     */
     public static class ChannelMasks {
         private final int mPositionMask;
         private final int mIndexMask;
@@ -1279,15 +1392,7 @@ public final class AudioFormat implements Parcelable {
         }
 
         public ChannelMasks(int positionMask, int indexMask) {
-            final int channelIndexCount = Integer.bitCount(indexMask);
-            // The channel count is calculated in the same way both for In and Out masks.
-            int channelCount = channelCountFromOutChannelMask(positionMask);
-            if (channelCount == 0) {
-                channelCount = channelIndexCount;
-            } else if (channelCount != channelIndexCount && channelIndexCount != 0) {
-                channelCount = 0; // position and index channel count mismatch
-            }
-            mChannelCount = channelCount;
+            mChannelCount = getChannelCount(positionMask, indexMask);
             mPositionMask = positionMask;
             mIndexMask = indexMask;
         }
@@ -1324,6 +1429,17 @@ public final class AudioFormat implements Parcelable {
             return "ChannelMasks:"
                     + " chan=0x" + Integer.toHexString(mPositionMask).toUpperCase(Locale.ROOT)
                     + " chan_index=0x" + Integer.toHexString(mIndexMask).toUpperCase(Locale.ROOT);
+        }
+
+        private static int getChannelCount(int positionMask, int indexMask) {
+            final int channelIndexCount = Integer.bitCount(indexMask);
+            int channelCount = channelCountFromOutChannelMask(positionMask);
+            if (channelCount == 0) {
+                channelCount = channelIndexCount;
+            } else if (channelCount != channelIndexCount && channelIndexCount != 0) {
+                channelCount = 0; // position and index channel count mismatch
+            }
+            return channelCount;
         }
     }
 

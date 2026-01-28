@@ -205,6 +205,7 @@ cc_defaults_for_libandroid_runtime {
                 "android_media_audio_common_AidlConversion.cpp",
                 "android_media_AudioDeviceAttributes.cpp",
                 "android_media_AudioEffectDescriptor.cpp",
+                "android_media_AudioFormat.cpp",
                 "android_media_AudioRecord.cpp",
                 "android_media_AudioSystem.cpp",
                 "android_media_AudioTrackCallback.cpp",
