@@ -466,8 +466,7 @@ public class MemoryLimiterTest {
      * checked.
      */
     @RequiresFlagsEnabled({Flags.FLAG_MEMORY_LIMITER_ENABLE,
-            Flags.FLAG_MEMORY_LIMITER_DEFAULT_APP_LIMITS,
-            Flags.FLAG_MEMORY_LIMITER_TRIGGER})
+            Flags.FLAG_MEMORY_LIMITER_DEFAULT_APP_LIMITS})
     @Test
     public void testOperation() throws Exception {
         // Use the default "enabled" controller to fetch the limit.  There is no need for a full
