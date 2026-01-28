@@ -381,6 +381,7 @@ public class ThemeManagerInternal {
      */
     public void onBootAnimationDismissing() {
         mStateManager.onBootAnimationDismissing();
+        mThemeSettingsManager.updateMigratedSettings(mContext.getContentResolver());
     }
 
     /**

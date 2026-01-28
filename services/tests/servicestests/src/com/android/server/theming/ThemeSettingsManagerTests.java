@@ -22,6 +22,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 import android.app.WallpaperColors;
@@ -98,11 +99,14 @@ public class ThemeSettingsManagerTests {
     }
 
     @Test
-    public void getSettings_emptyJSON_returnsNull() {
+    public void getSettings_emptyJSON_returnsFallback() {
         Settings.Secure.putStringForUser(mContentResolver,
                 Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES, "{}", mUserId);
         ThemeSettings settings = mManager.getSettings(mUserId, mContentResolver);
-        assertThat(settings).isNull();
+
+        assertThat(settings).isNotNull();
+        assertThat(settings.colorSource()).isEqualTo(FieldColorSource.VALUE_HOME_WALLPAPER);
+        assertThat(settings.themeStyle()).isEqualTo(ThemeStyle.TONAL_SPOT);
     }
 
     @Test
@@ -395,5 +399,29 @@ public class ThemeSettingsManagerTests {
         // 4. Verify cache is updated
         ThemeSettings updatedCachedSettings = mManager.getSettings(mUserId, mContentResolver);
         assertThat(updatedCachedSettings).isEqualTo(newSettings);
+    }
+
+    @Test
+    public void getSettings_legacyJSON_migratesColorFromWallpaper() {
+        // Setup legacy JSON without system_palette
+        String legacyJson = "{"
+                + "\"android.theme.customization.color_source\":\"home_wallpaper\","
+                + "\"android.theme.customization.theme_style\":\"EXPRESSIVE\""
+                + "}";
+        Settings.Secure.putStringForUser(mContentResolver,
+                Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES, legacyJson, mUserId);
+
+        // Mock wallpaper color
+        Color wallpaperColor = Color.valueOf(Color.MAGENTA);
+        WallpaperColors colors = new WallpaperColors(wallpaperColor, null, null);
+        when(mMockWmi.getWallpaperColors(anyInt(), eq(mUserId))).thenReturn(colors);
+
+        ThemeSettings settings = mManager.getSettings(mUserId, mContentResolver);
+
+        assertThat(settings).isNotNull();
+        assertThat(settings.themeStyle()).isEqualTo(ThemeStyle.EXPRESSIVE);
+        assertThat(settings.colorSource()).isEqualTo(FieldColorSource.VALUE_HOME_WALLPAPER);
+        // Should have picked up MAGENTA from wallpaper
+        assertThat(settings.systemPalette()).isEqualTo(wallpaperColor);
     }
 }

@@ -177,6 +177,11 @@ public class ThemeEventObserver {
         final String changedPackage = data.getSchemeSpecificPart();
         if ("android".equals(changedPackage)) {
             final int userId = intent.getIntExtra(Intent.EXTRA_USER_ID, UserHandle.USER_NULL);
+
+            if (shouldIgnoreEventForUser(userId, "onOverlayChanged")) {
+                return;
+            }
+
             Slog.i(TAG, "Theme overlays successfully applied for user " + userId);
             mThemeManagerInternal.notifyThemeChanged(userId);
         }
@@ -201,7 +206,7 @@ public class ThemeEventObserver {
         }
 
         Slog.d(TAG, "User: " + userId + " changed wallpaper");
-        mStateManager.onSeedColorChange(mActivityManagerInternal.getCurrentUserId(),
+        mStateManager.onSeedColorChange(userId,
                 ColorScheme.getSeedColor(wallpaperColors), fromForegroundApp);
     }
 
@@ -265,6 +270,12 @@ public class ThemeEventObserver {
     // Helper Methods
 
     private boolean shouldIgnoreEventForUser(int userId, String methodName) {
+        // Bypass profiles explicitly. Unified theme drive events only come from Full Users.
+        if (mStateManager.parentOf(userId) != null) {
+            Slog.d(TAG, "Bypassing '" + methodName + "' for profile " + userId);
+            return true;
+        }
+
         if (mThemeUserLifecycle.loadUserStateAndNotifyStateManager(userId)) {
             return false;
         }
