@@ -103,6 +103,7 @@ import androidx.compose.material3.IconButtonColors
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -186,6 +187,7 @@ import com.android.compose.windowsizeclass.LocalWindowSizeClass
 import com.android.internal.R.dimen.system_app_widget_background_radius
 import com.android.systemui.Flags
 import com.android.systemui.Flags.communalEditModeAccessibilityResize
+import com.android.systemui.Flags.communalHubCancelAddWidget
 import com.android.systemui.Flags.communalResponsiveGrid
 import com.android.systemui.Flags.communalTimerFlickerFix
 import com.android.systemui.Flags.communalWidgetResizing
@@ -234,6 +236,7 @@ fun CommunalHub(
     val communalContent by
         viewModel.communalContent.collectAsStateWithLifecycle(initialValue = emptyList())
     var removeButtonCoordinates: LayoutCoordinates? by remember { mutableStateOf(null) }
+    var cancelButtonCoordinates: LayoutCoordinates? by remember { mutableStateOf(null) }
     var toolbarSize: IntSize? by remember { mutableStateOf(null) }
     var gridCoordinates: LayoutCoordinates? by remember { mutableStateOf(null) }
     var contentOffset: Offset by remember { mutableStateOf(Offset.Zero) }
@@ -245,6 +248,7 @@ fun CommunalHub(
 
     val contentListState = rememberContentListState(widgetConfigurator, communalContent, viewModel)
     val reorderingWidgets by viewModel.reorderingWidgets.collectAsStateWithLifecycle()
+    val addingWidgetDragAction by viewModel.addingWidgetDragAction.collectAsStateWithLifecycle()
     val selectedKey = viewModel.selectedKey.collectAsStateWithLifecycle()
     val removeButtonEnabled by remember {
         derivedStateOf { selectedKey.value != null || reorderingWidgets }
@@ -504,6 +508,8 @@ fun CommunalHub(
                         }
                     },
                     removeEnabled = removeButtonEnabled,
+                    cancelAddEnabled = addingWidgetDragAction,
+                    setCancelButtonCoordinates = { cancelButtonCoordinates = it },
                 )
             }
         }
@@ -955,6 +961,7 @@ private fun BoxScope.CommunalHubLazyGrid(
                 gridItemSize = gridItemSize,
                 contentListState = contentListState,
                 contentOffset = contentOffset,
+                viewModel = viewModel,
             )
 
         // A full size box in background that listens to widget drops from the picker.
@@ -1238,10 +1245,16 @@ private fun Toolbar(
     setRemoveButtonCoordinates: (coordinates: LayoutCoordinates?) -> Unit,
     onOpenWidgetPicker: () -> Unit,
     onEditDone: () -> Unit,
+    cancelAddEnabled: Boolean,
+    setCancelButtonCoordinates: (coordinates: LayoutCoordinates?) -> Unit,
 ) {
     if (!removeEnabled) {
         // Clear any existing coordinates when remove is not enabled.
         setRemoveButtonCoordinates(null)
+    }
+    if(!cancelAddEnabled) {
+        //Clear any existing coordinates when cancel is not enabled.
+        setCancelButtonCoordinates(null)
     }
     val removeButtonAlpha: Float by
         animateFloatAsState(
@@ -1251,8 +1264,10 @@ private fun Toolbar(
     val toolbarPadding = toolbarPadding()
     Box(modifier = Modifier.fillMaxWidth().padding(toolbarPadding)) {
         val addWidgetText = stringResource(R.string.hub_mode_add_widget_button_text)
+        val isCancelAddActiveAndVisible = communalHubCancelAddWidget() && cancelAddEnabled
+        val isRemoveActiveAndVisible = Flags.hubEditModeTouchAdjustments() && removeEnabled
 
-        if (!(Flags.hubEditModeTouchAdjustments() && removeEnabled)) {
+        if (!(isRemoveActiveAndVisible || isCancelAddActiveAndVisible)) {
             ToolbarButton(
                 isPrimary = !removeEnabled,
                 modifier = Modifier.align(Alignment.CenterStart),
@@ -1309,13 +1324,52 @@ private fun Toolbar(
             }
         }
 
-        ToolbarButton(
-            isPrimary = !removeEnabled,
-            modifier = Modifier.align(Alignment.CenterEnd),
-            onClick = onEditDone,
-        ) {
-            Icon(Icons.Default.Check, contentDescription = null)
-            ToolbarButtonText(stringResource(R.string.hub_mode_editing_exit_button_text))
+        if(communalHubCancelAddWidget()) {
+            AnimatedVisibility(
+                modifier = Modifier.align(Alignment.Center),
+                visible = cancelAddEnabled,
+                enter = fadeIn(),
+                exit = fadeOut(),
+            ) {
+                Surface(
+                    modifier =
+                        Modifier.toolbarHeight()
+                        .onGloballyPositioned {
+                            // It's possible for this callback to fire after cancel has been
+                            // disabled. Check enabled state before setting.
+                            if (cancelAddEnabled) {
+                                setCancelButtonCoordinates(it)
+                            }
+                        },
+                    shape = ButtonDefaults.shape,
+                    color = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                ) {
+                    Row(
+                        modifier = Modifier.padding(Dimensions.ButtonPadding),
+                        horizontalArrangement =
+                            Arrangement.spacedBy(
+                                ButtonDefaults.IconSpacing,
+                                Alignment.CenterHorizontally
+                            ),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(Icons.Default.Close, contentDescription = null)
+                        ToolbarButtonText(stringResource(R.string.cancel))
+                    }
+                }
+            }
+        }
+
+        if(!isCancelAddActiveAndVisible) {
+            ToolbarButton(
+                isPrimary = !removeEnabled,
+                modifier = Modifier.align(Alignment.CenterEnd),
+                onClick = onEditDone,
+            ) {
+                Icon(Icons.Default.Check, contentDescription = null)
+                ToolbarButtonText(stringResource(R.string.hub_mode_editing_exit_button_text))
+            }
         }
     }
 }
