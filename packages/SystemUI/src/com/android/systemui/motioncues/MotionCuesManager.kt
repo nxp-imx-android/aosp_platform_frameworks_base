@@ -18,6 +18,7 @@ package com.android.systemui.motioncues
 
 import android.app.motioncues.IMotionCuesCallback
 import android.app.motioncues.MotionCuesVisualStyle
+import android.app.motioncues.MotionCuesService.SERVICE_INTERFACE
 import android.app.motioncues.MotionCuesService.EXTRA_API_CALLBACK
 import android.app.motioncues.MotionCuesSettings
 import android.content.ComponentName
@@ -98,7 +99,7 @@ class MotionCuesManager @Inject constructor(
         }
 
         val motionCuesIntent =
-            Intent().apply {
+            Intent(SERVICE_INTERFACE).apply {
                 component = componentName
                 putExtra(EXTRA_API_CALLBACK, motionCuesCallback.asBinder())
             }
