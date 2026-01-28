@@ -27,8 +27,10 @@ import android.os.UserHandle;
 import android.service.notification.StatusBarNotification;
 import android.util.Log;
 
+import com.android.systemui.Dumpable;
 import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.dagger.qualifiers.Main;
+import com.android.systemui.dump.DumpManager;
 import com.android.systemui.plugins.PluginManager;
 import com.android.systemui.statusbar.dagger.CentralSurfacesModule;
 import com.android.systemui.statusbar.domain.interactor.SilentNotificationStatusIconsVisibilityInteractor;
@@ -83,6 +85,7 @@ public class NotificationListener extends NotificationListenerWithPlugins implem
             SilentNotificationStatusIconsVisibilityInteractor statusIconInteractor,
             SystemClock systemClock,
             @Main Executor mainExecutor,
+            DumpManager dumpManager,
             PluginManager pluginManager) {
         super(pluginManager);
         mContext = context;
@@ -90,6 +93,12 @@ public class NotificationListener extends NotificationListenerWithPlugins implem
         mStatusIconInteractor = statusIconInteractor;
         mSystemClock = systemClock;
         mMainExecutor = mainExecutor;
+
+        // Register this particular instance of PluginManager with a unique name.
+        if (pluginManager instanceof Dumpable) {
+            dumpManager.registerDumpable(
+                    "NotificationListener.PluginManager", (Dumpable) pluginManager);
+        }
     }
 
     /** Registers a listener that's notified when notifications are added/removed/etc. */
@@ -270,6 +279,7 @@ public class NotificationListener extends NotificationListenerWithPlugins implem
     @Override
     public void dumpPipeline(@NonNull PipelineDumper d) {
         d.dump("notificationHandlers", mNotificationHandlers);
+        super.dumpPipeline(d);
     }
 
     private static Ranking getRankingOrTemporaryStandIn(RankingMap rankingMap, String key) {
