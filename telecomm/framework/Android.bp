@@ -32,6 +32,7 @@ filegroup {
     visibility: [
         "//frameworks/base:__subpackages__",
         "//packages/modules/Telephony/telecom:__subpackages__",
+        "//packages/services/Telecomm",
     ],
 }
 
