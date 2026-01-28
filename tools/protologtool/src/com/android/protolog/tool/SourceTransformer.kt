@@ -150,7 +150,7 @@ class SourceTransformer(
         // Insert bitmap representing which Number parameters are to be considered as
         // floating point numbers.
         // Out: ProtoLog.e(GROUP, 1234, 0, args)
-        newCall.arguments.add(2, IntegerLiteralExpr(typeMask))
+        newCall.arguments.add(2, LongLiteralExpr("${typeMask}L"))
         // Replace call to a stub method with an actual implementation.
         // Out: ProtoLogImpl.e(GROUP, 1234, 0, args)
         newCall.setScope(protoLogImplClassNode)

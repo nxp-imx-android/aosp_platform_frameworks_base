@@ -214,7 +214,7 @@ public class ProtoLogControllerTest {
 
         @Override
         public void log(@NonNull LogLevel logLevel, @NonNull IProtoLogGroup group, long messageHash,
-                int paramsMask, @Nullable Object[] args) {
+                long paramsMask, @Nullable Object[] args) {
             // No-op for testing
         }
 

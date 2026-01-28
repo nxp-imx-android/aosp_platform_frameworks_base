@@ -87,8 +87,76 @@ class EndToEndTest {
                 "String protoLogParam0 = String.valueOf(argString);" +
                     "  long protoLogParam1 = argInt;" +
                     "  com.android.internal.protolog.ProtoLogImpl_454675969.d(" +
-                    "GROUP, -6872339441335321086L, 4, protoLogParam0, protoLogParam1);" +
+                    "GROUP, -6872339441335321086L, 4L, protoLogParam0, protoLogParam1);" +
                     " }"
+            )
+    }
+
+    @Test
+    fun e2e_transform_moreThan16Params() {
+        val output =
+            run(
+                srcs =
+                    mapOf(
+                        "frameworks/base/org/example/Example.java" to
+                                """
+                            package org.example;
+                            import com.android.internal.protolog.ProtoLog;
+                            import static com.android.internal.protolog.ProtoLogGroup.GROUP;
+
+                            class Example {
+                                void method() {
+                                    ProtoLog.d(GROUP, "Example: %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d", 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20);
+                                }
+                            }
+                            """
+                                    .trimIndent()
+                    ),
+                logGroup = LogGroup("GROUP", true, false, "TAG_GROUP", 1),
+                commandOptions =
+                    CommandOptions(
+                        arrayOf(
+                            "transform-protolog-calls",
+                            "--protolog-class",
+                            "com.android.internal.protolog.ProtoLog",
+                            "--loggroups-class",
+                            "com.android.internal.protolog.ProtoLogGroup",
+                            "--loggroups-jar",
+                            "not_required.jar",
+                            "--viewer-config-file-path",
+                            "not_required.pb",
+                            "--output-srcjar",
+                            "out.srcjar",
+                            "frameworks/base/org/example/Example.java",
+                        )
+                    ),
+            )
+        val outSrcJar = assertLoadSrcJar(output, "out.srcjar")
+        Truth.assertThat(outSrcJar["frameworks/base/org/example/Example.java"])
+            .contains(
+                "long protoLogParam0 = 1;" +
+                        "  long protoLogParam1 = 2;" +
+                        "  long protoLogParam2 = 3;" +
+                        "  long protoLogParam3 = 4;" +
+                        "  long protoLogParam4 = 5;" +
+                        "  long protoLogParam5 = 6;" +
+                        "  long protoLogParam6 = 7;" +
+                        "  long protoLogParam7 = 8;" +
+                        "  long protoLogParam8 = 9;" +
+                        "  long protoLogParam9 = 10;" +
+                        "  long protoLogParam10 = 11;" +
+                        "  long protoLogParam11 = 12;" +
+                        "  long protoLogParam12 = 13;" +
+                        "  long protoLogParam13 = 14;" +
+                        "  long protoLogParam14 = 15;" +
+                        "  long protoLogParam15 = 16;" +
+                        "  long protoLogParam16 = 17;" +
+                        "  long protoLogParam17 = 18;" +
+                        "  long protoLogParam18 = 19;" +
+                        "  long protoLogParam19 = 20;" +
+                        "  com.android.internal.protolog.ProtoLogImpl_454675969.d(" +
+                        "GROUP, 3161983496706734947L, 366503875925L, protoLogParam0, protoLogParam1, protoLogParam2, protoLogParam3, protoLogParam4, protoLogParam5, protoLogParam6, protoLogParam7, protoLogParam8, protoLogParam9, protoLogParam10, protoLogParam11, protoLogParam12, protoLogParam13, protoLogParam14, protoLogParam15, protoLogParam16, protoLogParam17, protoLogParam18, protoLogParam19);" +
+                        " }"
             )
     }
 

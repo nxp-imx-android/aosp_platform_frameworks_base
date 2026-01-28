@@ -73,7 +73,7 @@ static void com_android_internal_protolog_init() {
 
 class JniArgumentProvider : public IArgumentProvider {
 public:
-    JniArgumentProvider(JNIEnv* env, int paramsMask, int argCount, jlongArray primitiveArgs,
+    JniArgumentProvider(JNIEnv* env, long paramsMask, int argCount, jlongArray primitiveArgs,
                         jobjectArray stringArgs)
           : mEnv(env),
             mParamsMask(paramsMask),
@@ -198,7 +198,7 @@ private:
     }
 
     JNIEnv* mEnv;
-    int mParamsMask;
+    long mParamsMask;
     int mArgCount;
     jlong* mPrimitiveArgsPtr;
     jobjectArray mStringArgs;
@@ -212,7 +212,7 @@ private:
 
 static void com_android_internal_protolog_log_string(JNIEnv* env, jclass clazz, jint level,
                                                      jstring group, jstring message,
-                                                     jint paramsMask, jint argCount,
+                                                     jlong paramsMask, jint argCount,
                                                      jlongArray primitiveArgs,
                                                      jobjectArray stringArgs) {
     if (group == nullptr || message == nullptr) {
@@ -239,7 +239,7 @@ static void com_android_internal_protolog_log_string(JNIEnv* env, jclass clazz, 
 
 static void com_android_internal_protolog_log_hash(JNIEnv* env, jclass clazz, jint level,
                                                    jstring group, jlong messageHash,
-                                                   jint paramsMask, jint argCount,
+                                                   jlong paramsMask, jint argCount,
                                                    jlongArray primitiveArgs,
                                                    jobjectArray stringArgs) {
     if (group == nullptr) {
@@ -264,9 +264,9 @@ static void com_android_internal_protolog_log_hash(JNIEnv* env, jclass clazz, ji
 
 static const JNINativeMethod gMethods[] = {
         {"init", "()V", (void*)com_android_internal_protolog_init},
-        {"log", "(ILjava/lang/String;Ljava/lang/String;II[J[Ljava/lang/Object;)V",
+        {"log", "(ILjava/lang/String;Ljava/lang/String;JI[J[Ljava/lang/Object;)V",
          (void*)com_android_internal_protolog_log_string},
-        {"log", "(ILjava/lang/String;JII[J[Ljava/lang/Object;)V",
+        {"log", "(ILjava/lang/String;JJI[J[Ljava/lang/Object;)V",
          (void*)com_android_internal_protolog_log_hash},
 };
 

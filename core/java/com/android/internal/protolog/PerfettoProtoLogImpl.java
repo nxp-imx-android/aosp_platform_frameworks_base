@@ -425,7 +425,7 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
     @VisibleForTesting
     @Override
     public void log(@NonNull LogLevel logLevel, @NonNull IProtoLogGroup group, long messageHash,
-            int paramsMask, @Nullable Object[] args) {
+            long paramsMask, @Nullable Object[] args) {
         log(logLevel, group, new Message(messageHash, paramsMask), args);
     }
 
@@ -720,7 +720,9 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
                 // trace processing easier.
                 int argIndex = 0;
                 for (Object o : args) {
-                    int type = LogDataType.bitmaskToLogDataType(message.getMessageMask(), argIndex);
+                    long type =
+                            LogDataType.bitmaskToLogDataType(
+                                    message.getMessageMask(), argIndex);
                     if (type == LogDataType.STRING) {
                         needsIncrementalState = true;
                         if (o == null) {
@@ -1152,11 +1154,11 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
     protected static class Message {
         @Nullable
         private final Long mMessageHash;
-        private final int mMessageMask;
+        private final long mMessageMask;
         @Nullable
         private final String mMessageString;
 
-        private Message(long messageHash, int messageMask) {
+        private Message(long messageHash, long messageMask) {
             this.mMessageHash = messageHash;
             this.mMessageMask = messageMask;
             this.mMessageString = null;
@@ -1169,7 +1171,7 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
             this.mMessageString = messageString;
         }
 
-        private int getMessageMask() {
+        private long getMessageMask() {
             return mMessageMask;
         }
 

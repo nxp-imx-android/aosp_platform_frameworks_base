@@ -219,6 +219,29 @@ public class ProtoLogNativeTest {
     }
 
     @Test
+    public void testLogMoreThan16Args() throws IOException {
+        final String format =
+                "Test message %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d";
+        final String expectedMessage =
+                "Test message 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20";
+
+        ProtoLogTrace trace =
+                logAndReadTrace(
+                        () -> {
+                            Object[] args = {
+                                1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+                                20
+                            };
+                            ProtoLogNative.log(
+                                    ProtoLogNative.PROTO_LOG_LEVEL_DEBUG, "TEST_TAG", format, args);
+                        });
+
+        assertWithMessage("Trace should contain the message with all argument")
+                .that(trace.messages.stream().map(ProtoLogMessage::getMessage))
+                .contains(expectedMessage);
+    }
+
+    @Test
     public void testLogHash_withViewerConfig_isDecoded() throws IOException {
         final long messageHash = 0x12345678ABCDL;
         final String messageFormat = "Hashed message: %s, value: %d";
@@ -611,7 +634,7 @@ public class ProtoLogNativeTest {
         return reader.readProtoLogTrace();
     }
 
-    private int generateProtoLogToolMask(String formatString, Object... args) {
+    private long generateProtoLogToolMask(String formatString, Object... args) {
         List<Integer> types = LogDataType.parseFormatString(formatString);
         // The C++ side of protolog expects the arguments to match the format string.
         assertWithMessage("Number of arguments should match format string")
