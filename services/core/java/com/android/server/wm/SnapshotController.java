@@ -279,12 +279,12 @@ class SnapshotController {
         boolean convertToLow;
         synchronized (mService.mGlobalLock) {
             inCacheSnapshot = mTaskSnapshotController.getSnapshot(
-                    taskId, retrieveResolution);
+                    taskId, retrieveResolution, TaskSnapshot.REFERENCE_WRITE_TO_PARCEL);
             if (inCacheSnapshot != null) {
                 if (inCacheSnapshot.getCaptureTime() > latestCaptureTime) {
-                    inCacheSnapshot.addReference(TaskSnapshot.REFERENCE_WRITE_TO_PARCEL);
                     return inCacheSnapshot;
                 } else {
+                    inCacheSnapshot.removeReference(TaskSnapshot.REFERENCE_WRITE_TO_PARCEL);
                     return null;
                 }
             }
@@ -314,7 +314,7 @@ class SnapshotController {
                             "waitSnapshotUpdated_Id=" + taskId);
                 }
                 Thread.yield();
-                mTaskSnapshotController.mCache.waitForSnapshotEntryPutOrRemoved(taskId);
+                mTaskSnapshotController.mCache.waitForLowResSnapshotEntryPutOrRemoved(taskId);
                 if (traceEnabled) {
                     Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
                     Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER, "waitSnapshotUpdated_reload");

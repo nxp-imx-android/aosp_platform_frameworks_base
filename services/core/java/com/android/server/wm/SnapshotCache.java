@@ -66,10 +66,10 @@ abstract class SnapshotCache<TYPE extends WindowContainer> {
         }
     }
 
-    void waitForSnapshotEntryPutOrRemoved(Integer id) {
+    void waitForLowResSnapshotEntryPutOrRemoved(Integer id) {
         synchronized (mLock) {
             final CacheEntry entry = mRunningCache.get(id);
-            if (entry == null) {
+            if (entry == null || entry.snapshot.isLowResolution()) {
                 return;
             }
         }

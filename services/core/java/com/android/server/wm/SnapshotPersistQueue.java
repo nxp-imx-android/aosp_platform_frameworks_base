@@ -513,60 +513,84 @@ class SnapshotPersistQueue {
             if (swBitmap == null) {
                 return false;
             }
-            final File file = mPersistInfoProvider.getHighResolutionBitmapFile(mId, mUserId);
-            try (FileOutputStream fos = new FileOutputStream(file)) {
-                swBitmap.compress(Flags.onlyCacheLowResTaskSnapshot() ? PNG : JPEG,
-                        COMPRESS_QUALITY, fos);
-            } catch (IOException e) {
-                Slog.e(TAG, "Unable to open " + file + " for persisting.", e);
-                return false;
-            }
+            try {
+                // Process low resolution snapshot before high resolution snapshot. Because process
+                // low-res snapshot is much faster than high-res snapshot, if any caller wants to
+                // get low-res, it can get snapshot as soon as possible.
+                if (mLowResSnapshotConsumer != null) {
+                    final Bitmap lowResBitmap = createLowResBitmap(swBitmap);
+                    final boolean writeSuccess = writeBitmap(lowResBitmap, false /* highRes */);
+                    mLowResSnapshotConsumer.accept(new LowResSnapshotSupplier() {
+                        @Override
+                        public TaskSnapshot getLowResSnapshot() {
+                            if (!writeSuccess) {
+                                abort();
+                                return null;
+                            }
+                            if (mKnownLowResSnapshot != null) {
+                                lowResBitmap.recycle();
+                                return mKnownLowResSnapshot;
+                            }
+                            final TaskSnapshot result = TaskSnapshotConvertUtil
+                                    .convertLowResSnapshot(mSnapshot, lowResBitmap);
+                            lowResBitmap.recycle();
+                            return result;
+                        }
 
-            if (!mPersistInfoProvider.enableLowResSnapshots()) {
+                        @Override
+                        public void abort() {
+                            lowResBitmap.recycle();
+                            removeKnownLowResSnapshot();
+                        }
+                    });
+                    if (!writeSuccess) {
+                        return false;
+                    }
+                    return writeBitmap(swBitmap, true /* highRes */);
+                }
+
+                if (!writeBitmap(swBitmap, true /* highRes */)) {
+                    return false;
+                }
+
+                if (!mPersistInfoProvider.enableLowResSnapshots()) {
+                    return true;
+                }
+
+                final Bitmap lowResBitmap = createLowResBitmap(swBitmap);
+                final boolean result = writeBitmap(lowResBitmap, false /* highRes */);
+                lowResBitmap.recycle();
+                removeKnownLowResSnapshot();
+                return result;
+            } finally {
                 swBitmap.recycle();
-                return true;
             }
+        }
 
+        private Bitmap createLowResBitmap(Bitmap highResBitmap) {
             final int width = mSnapshot.getHardwareBufferWidth();
             final int height = mSnapshot.getHardwareBufferHeight();
-            final Bitmap lowResBitmap = Bitmap.createScaledBitmap(swBitmap,
+            return Bitmap.createScaledBitmap(highResBitmap,
                     (int) (width * mPersistInfoProvider.lowResScaleFactor()),
                     (int) (height * mPersistInfoProvider.lowResScaleFactor()),
                     true /* filter */);
-            swBitmap.recycle();
+        }
 
-            final File lowResFile = mPersistInfoProvider.getLowResolutionBitmapFile(mId, mUserId);
-            try (FileOutputStream lowResFos = new FileOutputStream(lowResFile)) {
-                lowResBitmap.compress(JPEG, COMPRESS_QUALITY, lowResFos);
+        private boolean writeBitmap(Bitmap swBitmap, boolean highRes) {
+            final File bitmapFile = highRes
+                    ? mPersistInfoProvider.getHighResolutionBitmapFile(mId, mUserId)
+                    : mPersistInfoProvider.getLowResolutionBitmapFile(mId, mUserId);
+            try (FileOutputStream fos = new FileOutputStream(bitmapFile)) {
+                if (highRes) {
+                    swBitmap.compress(Flags.onlyCacheLowResTaskSnapshot() ? PNG : JPEG,
+                            COMPRESS_QUALITY, fos);
+                } else {
+                    swBitmap.compress(JPEG, COMPRESS_QUALITY, fos);
+                }
             } catch (IOException e) {
-                Slog.e(TAG, "Unable to open " + lowResFile + " for persisting.", e);
+                Slog.e(TAG, "Unable to open " + bitmapFile + " for persisting.", e);
                 return false;
             }
-            if (mLowResSnapshotConsumer != null) {
-                mLowResSnapshotConsumer.accept(new LowResSnapshotSupplier() {
-                    @Override
-                    public TaskSnapshot getLowResSnapshot() {
-                        if (mKnownLowResSnapshot != null) {
-                            lowResBitmap.recycle();
-                            return mKnownLowResSnapshot;
-                        }
-                        final TaskSnapshot result = TaskSnapshotConvertUtil
-                                .convertLowResSnapshot(mSnapshot, lowResBitmap);
-                        lowResBitmap.recycle();
-                        return result;
-                    }
-
-                    @Override
-                    public void abort() {
-                        lowResBitmap.recycle();
-                        removeKnownLowResSnapshot();
-                    }
-                });
-            } else {
-                lowResBitmap.recycle();
-                removeKnownLowResSnapshot();
-            }
-
             return true;
         }
 
