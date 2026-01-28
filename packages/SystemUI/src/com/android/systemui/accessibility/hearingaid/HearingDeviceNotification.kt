@@ -45,25 +45,25 @@ import javax.inject.Inject
 
 /** Monitor hearing devices status and show notifications. */
 @SysUISingleton
-class HearingDeviceStatusNotification
+class HearingDeviceNotification
 @Inject
 constructor(
     private val context: Context,
     private val bluetoothController: BluetoothController,
     private val broadcastDispatcher: BroadcastDispatcher,
     private val notificationManager: NotificationManager,
+    private val dismissController: HearingDeviceNotificationDismissController,
     @Main private val mainExecutor: Executor,
 ) : CoreStartable, BluetoothController.Callback, CachedBluetoothDevice.Callback {
 
     private val trackedDevices = mutableSetOf<CachedBluetoothDevice>()
-    private val notificationDismissController = NotificationDismissController()
 
     private val notificationReceiver =
         object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent) {
                 if (intent.action == ACTION_DISMISS_NOTIFICATION) {
                     intent.getStringExtra(KEY_BLUETOOTH_ADDRESS)?.let {
-                        notificationDismissController.dismissNotification(it)
+                        dismissController.dismissNotification(it)
                     }
                 }
             }
@@ -135,7 +135,7 @@ constructor(
         devicesToRemove.forEach { device ->
             device.unregisterCallback(this)
             trackedDevices.remove(device)
-            notificationDismissController.removeDevice(device.address)
+            dismissController.removeDevice(device.address)
         }
         devicesToAdd.forEach { device ->
             device.registerCallback(mainExecutor, this)
@@ -146,16 +146,13 @@ constructor(
     private fun clearTrackedDevices() {
         trackedDevices.forEach { it.unregisterCallback(this) }
         trackedDevices.clear()
-        notificationDismissController.reset()
+        dismissController.reset()
     }
 
     private fun updateNotification(device: CachedBluetoothDevice) {
         if (
             isValidHearingDevice(device) &&
-                notificationDismissController.shouldShowNotification(
-                    device.address,
-                    device.batteryLevel,
-                )
+                dismissController.updateAndCheckNotification(device.address, device.batteryLevel)
         ) {
             postNotification(device)
         } else {
@@ -316,52 +313,8 @@ constructor(
         )
     }
 
-    private class NotificationDismissController {
-        private val thresholds =
-            listOf(BATTERY_LEVEL_LOW, BATTERY_LEVEL_VERY_LOW, BATTERY_LEVEL_CRITICAL)
-        private val dismissedDevices = mutableSetOf<String>()
-        // Tracks the lowest threshold warned for each device
-        private val lastThresholdMap = mutableMapOf<String, Int>()
-
-        fun dismissNotification(address: String) {
-            dismissedDevices.add(address)
-        }
-
-        fun shouldShowNotification(address: String, batteryLevel: Int): Boolean {
-            val currentThreshold = thresholds.filter { batteryLevel <= it }.minOrNull()
-            if (currentThreshold == null) {
-                lastThresholdMap.remove(address)
-                return !dismissedDevices.contains(address)
-            }
-
-            val lastThreshold = lastThresholdMap[address]
-            val nextThresholdReached = lastThreshold == null || currentThreshold < lastThreshold
-            if (nextThresholdReached) {
-                dismissedDevices.remove(address)
-            }
-            lastThresholdMap[address] = currentThreshold
-            return !dismissedDevices.contains(address)
-        }
-
-        fun removeDevice(address: String) {
-            dismissedDevices.remove(address)
-            lastThresholdMap.remove(address)
-        }
-
-        fun reset() {
-            dismissedDevices.clear()
-            lastThresholdMap.clear()
-        }
-
-        companion object {
-            private const val BATTERY_LEVEL_LOW = 20
-            private const val BATTERY_LEVEL_VERY_LOW = 10
-            private const val BATTERY_LEVEL_CRITICAL = 2
-        }
-    }
-
     companion object {
-        private const val TAG = "HearingDeviceStatusNotification"
+        private const val TAG = "HearingDeviceNotification"
         private const val CHANNEL_ID = "hearing_device_status"
         private const val NOTIFICATION_ID = 101
         private const val EXTRA_SHOW_FRAGMENT_ARGUMENTS = ":settings:show_fragment_args"

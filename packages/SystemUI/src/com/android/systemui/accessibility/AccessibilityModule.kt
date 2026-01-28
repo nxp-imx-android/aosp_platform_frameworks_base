@@ -27,7 +27,7 @@ import com.android.systemui.accessibility.data.repository.ColorInversionReposito
 import com.android.systemui.accessibility.data.repository.ColorInversionRepositoryImpl
 import com.android.systemui.accessibility.data.repository.OneHandedModeRepository
 import com.android.systemui.accessibility.data.repository.OneHandedModeRepositoryImpl
-import com.android.systemui.accessibility.hearingaid.HearingDeviceStatusNotification
+import com.android.systemui.accessibility.hearingaid.HearingDeviceNotification
 import com.android.systemui.accessibility.keygesture.ui.KeyGestureDialogStartable
 import com.android.systemui.accessibility.qs.QSAccessibilityModule
 import com.android.systemui.accessibility.shortcutchooser.ui.startable.ShortcutChooserDialogStartable
@@ -70,11 +70,9 @@ interface AccessibilityModule {
     @ClassKey(ShortcutChooserDialogStartable::class)
     fun bindShortcutChooserDialogStartable(startable: ShortcutChooserDialogStartable): CoreStartable
 
-    /** Inject into HearingDeviceStatusNotification Startable. */
+    /** Inject into HearingDeviceNotification Startable. */
     @Binds
     @IntoMap
-    @ClassKey(HearingDeviceStatusNotification::class)
-    fun bindHearingDeviceStatusNotification(
-        startable: HearingDeviceStatusNotification
-    ): CoreStartable
+    @ClassKey(HearingDeviceNotification::class)
+    fun bindHearingDeviceNotification(startable: HearingDeviceNotification): CoreStartable
 }
