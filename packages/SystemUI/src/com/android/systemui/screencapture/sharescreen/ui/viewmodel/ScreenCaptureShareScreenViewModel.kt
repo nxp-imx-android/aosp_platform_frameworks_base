@@ -40,6 +40,7 @@ import com.android.systemui.screencapture.common.ui.viewmodel.DisplaysViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.RecentTasksViewModel
 import com.android.systemui.screencapture.sharescreen.domain.interactor.ShareScreenUiInteractor
+import com.android.systemui.statusbar.quickactions.sharescreen.domain.interactor.ShareScreenPrivacyIndicatorInteractor
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -59,6 +60,7 @@ constructor(
     private val displaysViewModel: DisplaysViewModel,
     private val accessibilityManager: AccessibilityManager,
     private val context: Context,
+    private val shareScreenPrivacyIndicatorInteractor: ShareScreenPrivacyIndicatorInteractor,
 ) :
     HydratedActivatable(enableEnqueuedActivations = true),
     DrawableLoaderViewModel by drawableLoaderViewModel {
@@ -145,6 +147,8 @@ constructor(
         // Hide the UI immediately for responsive feedback.
         isUiVisible = false
         var announcement: String? = null
+        var sharingLabel = ""
+        var sharingType: ShareScreenPrivacyIndicatorInteractor.SharingType? = null
 
         when (val currentModel = currentTargetsModel) {
             is RecentTasksViewModel -> {
@@ -152,11 +156,10 @@ constructor(
                     enqueueOnActivatedScope {
                         shareScreenUiInteractor.onAppSharingApproved(it.model.taskId)
                     }
+                    sharingLabel = it.label?.getOrNull()?.toString() ?: ""
+                    sharingType = ShareScreenPrivacyIndicatorInteractor.SharingType.APP
                     announcement =
-                        context.getString(
-                            R.string.screen_share_a11y_sharing_app,
-                            it.label?.getOrNull() ?: "",
-                        )
+                        context.getString(R.string.screen_share_a11y_sharing_app, sharingLabel)
                 }
             }
             is AppContentsViewModel -> {
@@ -173,24 +176,26 @@ constructor(
                         callback,
                         currentModel.captureAudio.value,
                     )
+                    sharingLabel = it.label?.getOrNull()?.toString() ?: ""
+                    sharingType = ShareScreenPrivacyIndicatorInteractor.SharingType.TAB
                     announcement =
-                        context.getString(
-                            R.string.screen_share_a11y_sharing_tab,
-                            it.label?.getOrNull() ?: "",
-                        )
+                        context.getString(R.string.screen_share_a11y_sharing_tab, sharingLabel)
                 }
             }
             is DisplaysViewModel -> {
                 currentModel.selectedTarget.value?.let {
                     shareScreenUiInteractor.onDisplaySharingApproved(it.model.displayId)
+                    sharingLabel = it.label?.getOrNull()?.toString() ?: ""
+                    sharingType = ShareScreenPrivacyIndicatorInteractor.SharingType.DISPLAY
                     announcement =
-                        context.getString(
-                            R.string.screen_share_a11y_sharing_display,
-                            it.label?.getOrNull() ?: "",
-                        )
+                        context.getString(R.string.screen_share_a11y_sharing_display, sharingLabel)
                 }
             }
             else -> throw IllegalStateException("Unsupported TargetsViewModel type: $currentModel")
+        }
+
+        sharingType?.let { type ->
+            shareScreenPrivacyIndicatorInteractor.assignSharingInfo(type, sharingLabel)
         }
 
         announcement?.let {

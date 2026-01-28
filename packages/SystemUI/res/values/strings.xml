@@ -472,6 +472,12 @@
     <string name="screen_share_a11y_sharing_tab">Now sharing tab: <xliff:g id="tab_title">%1$s</xliff:g>. Use privacy indicator to end sharing.</string>
     <!-- Accessibility announcement when sharing a display [CHAR LIMIT=NONE] -->
     <string name="screen_share_a11y_sharing_display">Now sharing display: <xliff:g id="display_name">%1$s</xliff:g>. Use privacy indicator to end sharing.</string>
+    <!-- Accessibility announcement when stopping sharing an app [CHAR LIMIT=NONE] -->
+    <string name="screen_share_a11y_stopped_sharing_app">Stopped sharing app: <xliff:g id="app_name">%1$s</xliff:g>. Screen not shared with anyone.</string>
+    <!-- Accessibility announcement when stopping sharing a tab [CHAR LIMIT=NONE] -->
+    <string name="screen_share_a11y_stopped_sharing_tab">Stopped sharing tab: <xliff:g id="tab_title">%1$s</xliff:g>. Screen not shared with anyone.</string>
+    <!-- Accessibility announcement when stopping sharing a display [CHAR LIMIT=NONE] -->
+    <string name="screen_share_a11y_stopped_sharing_display">Stopped sharing display: <xliff:g id="display_name">%1$s</xliff:g>. Screen not shared with anyone.</string>
     <!-- Content description for the app window screenshot button in the toolbar, when the capture mode is set to "screenshot". [CHAR LIMIT=NONE] -->
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y">Take screenshot of window</string>
     <!-- Content description for the app window screenshot button in the toolbar, when the capture mode is set to "record". [CHAR LIMIT=NONE] -->
