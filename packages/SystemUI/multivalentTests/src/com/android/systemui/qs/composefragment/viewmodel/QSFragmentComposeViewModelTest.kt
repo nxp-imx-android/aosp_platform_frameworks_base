@@ -20,7 +20,6 @@ import android.app.StatusBarManager
 import android.content.testableContext
 import android.graphics.Rect
 import android.platform.test.annotations.DisableFlags
-import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper.RunWithLooper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -75,7 +74,6 @@ class QSFragmentComposeViewModelTest : AbstractQSFragmentComposeViewModelTest() 
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_NO_EXPANSION_ON_OVERSCROLL)
     fun qsExpansionValueChanges_whenOverScrolling_zeroExpansionState() = runTest {
         underTest.isStackScrollerOverscrolling = true
         underTest.setQsExpansionValue(0f)
@@ -86,20 +84,6 @@ class QSFragmentComposeViewModelTest : AbstractQSFragmentComposeViewModelTest() 
 
         underTest.setQsExpansionValue(1f)
         assertThat(underTest.expansionState.progress).isEqualTo(0f)
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_NO_EXPANSION_ON_OVERSCROLL)
-    fun qsExpansionValueChanges_whenOverScrolling_nonZeroExpansionState_withFlagOff() = runTest {
-        underTest.isStackScrollerOverscrolling = true
-        underTest.setQsExpansionValue(0f)
-        assertThat(underTest.expansionState.progress).isEqualTo(0f)
-
-        underTest.setQsExpansionValue(0.3f)
-        assertThat(underTest.expansionState.progress).isEqualTo(0.3f)
-
-        underTest.setQsExpansionValue(1f)
-        assertThat(underTest.expansionState.progress).isEqualTo(1f)
     }
 
     @Test
