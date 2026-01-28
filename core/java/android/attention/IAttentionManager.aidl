@@ -24,8 +24,10 @@ import android.attention.IInteractionListener;
  */
 interface IAttentionManager {
     // interactionTypes expects INTERACTION_TYPE_*  flag constants defined in InteractionState
+    @EnforcePermission("ACCESS_ATTENTION_LISTENER")
     void registerListener(int interactionTypes, long debounceTimeInMills,
         IInteractionListener listener);
 
-    void unregisterListener(IInteractionListener listener);
+    @EnforcePermission("ACCESS_ATTENTION_LISTENER")
+    void unregisterListener();
 }

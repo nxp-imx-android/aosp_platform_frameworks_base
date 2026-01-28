@@ -5750,12 +5750,13 @@ public abstract class Context {
     /**
      * Use with {@link #getSystemService(String)} to retrieve a
      * {@link com.android.server.attention.AttentionManagerService} for attention services.
+     * @hide
      *
      * @see #getSystemService(String)
-     * @see android.server.attention.AttentionManagerService
-     * @hide
+     * @see com.android.server.attention.AttentionManagerService
      */
-    @TestApi
+    @SystemApi
+    @FlaggedApi(com.android.input.flags.Flags.FLAG_ENABLE_ATTENTION_SERVICE_APIS)
     public static final String ATTENTION_SERVICE = "attention";
 
     /**
