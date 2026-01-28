@@ -439,6 +439,13 @@ flag {
 }
 
 flag {
+    name: "shared_surface_transition_animation"
+    namespace: "windowing_frontend"
+    description: "Allow the client to describe a transition animation and participate in the animation using a shared surface."
+    bug: "475737659"
+}
+
+flag {
     name: "use_transition_for_screenshot_window_additions"
     namespace: "web_apps_on_chromeos_and_android"
     description: "Use shell transitions to synchronize screenshot window additions."
