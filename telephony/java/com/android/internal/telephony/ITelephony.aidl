@@ -83,6 +83,7 @@ import android.telephony.satellite.ISatelliteTransmissionUpdateCallback;
 import android.telephony.satellite.ISelectedNbIotSatelliteSubscriptionCallback;
 import android.telephony.satellite.NtnSignalStrength;
 import android.telephony.satellite.PlmnSatelliteConfig;
+import android.telephony.satellite.PointingUiAppLaunchIntentAttributes;
 import android.telephony.satellite.SatelliteCapabilities;
 import android.telephony.satellite.SatelliteDatagram;
 import android.telephony.satellite.SatelliteSubscriberInfo;
@@ -3698,6 +3699,16 @@ interface ITelephony {
      */
     @JavaPassthrough(annotation = "@android.annotation.RequiresPermission("
                     + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
-    int[]
-    getCarrierRoamingNtnAvailableServices(int subId);
+    int[] getCarrierRoamingNtnAvailableServices(int subId);
+
+    /**
+     * Request to get the PendingIntent to launch the PointingUI app.
+     *
+     * @param launchIntentAttributes The attributes to create the launch intent.
+     * @param receiver The result receiver that returns the {@link PendingIntent} to launch the
+     * PointingUI app if the request is successful or an error code if the request failed.
+     */
+    @JavaPassthrough(annotation = "@android.annotation.RequiresPermission("
+                    + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
+    void requestPointingUiAppLaunchIntent(in PointingUiAppLaunchIntentAttributes launchIntentAttributes, in ResultReceiver receiver);
 }
