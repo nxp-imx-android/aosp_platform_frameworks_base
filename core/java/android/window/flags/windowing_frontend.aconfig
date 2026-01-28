@@ -491,6 +491,16 @@ flag {
 }
 
 flag {
+    name: "no_transfer_first_window_drawn"
+    namespace: "windowing_frontend"
+    description: "The firstWindowDrawn attribute should only represents main window drawn for an activity."
+    bug: "477134239"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "only_cache_low_res_task_snapshot"
     namespace: "windowing_frontend"
     description: "Only cache low resolution task snapshot in system server."
