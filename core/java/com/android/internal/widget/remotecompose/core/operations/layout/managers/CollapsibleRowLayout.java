@@ -15,6 +15,9 @@
  */
 package com.android.internal.widget.remotecompose.core.operations.layout.managers;
 
+import static com.android.internal.widget.remotecompose.core.documentation.DocumentedOperation.FLOAT;
+import static com.android.internal.widget.remotecompose.core.documentation.DocumentedOperation.INT;
+
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 
@@ -23,6 +26,7 @@ import com.android.internal.widget.remotecompose.core.Operations;
 import com.android.internal.widget.remotecompose.core.PaintContext;
 import com.android.internal.widget.remotecompose.core.RemoteContext;
 import com.android.internal.widget.remotecompose.core.WireBuffer;
+import com.android.internal.widget.remotecompose.core.documentation.DocumentationBuilder;
 import com.android.internal.widget.remotecompose.core.operations.layout.Component;
 import com.android.internal.widget.remotecompose.core.operations.layout.LayoutComponent;
 import com.android.internal.widget.remotecompose.core.operations.layout.measure.ComponentMeasure;
@@ -73,6 +77,21 @@ public class CollapsibleRowLayout extends RowLayout {
                 horizontalPositioning,
                 verticalPositioning,
                 spacedBy);
+    }
+
+    /**
+     * Populate the documentation with a description of this operation
+     *
+     * @param doc to append the description to.
+     */
+    public static void documentation(@NonNull DocumentationBuilder doc) {
+        doc.operation("Layout Operations", id(), "CollapsibleRow")
+                .description("A row layout that can hide children if space is insufficient")
+                .field(INT, "componentId", "Unique ID for this component")
+                .field(INT, "animationId", "ID for animation purposes")
+                .field(INT, "horizontalPositioning", "Horizontal positioning value")
+                .field(INT, "verticalPositioning", "Vertical positioning value")
+                .field(FLOAT, "spacedBy", "Horizontal spacing between components");
     }
 
     @NonNull
