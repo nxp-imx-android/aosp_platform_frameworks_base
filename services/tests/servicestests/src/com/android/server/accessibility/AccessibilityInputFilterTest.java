@@ -44,6 +44,7 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -615,6 +616,58 @@ public class AccessibilityInputFilterTest {
         downEvent.recycle();
     }
 
+    @Test
+    @EnableFlags(Flags.FLAG_SEND_A11Y_ACTION_CANCEL_ON_RESET)
+    public void testDoubleTap_shouldNotClearEventsOnSecondActionDown() {
+        mA11yInputFilter.setUserAndEnabledFeatures(0, FLAG_FEATURE_TOUCH_EXPLORATION);
+        EventStreamTransformation mockHandler = mock(EventStreamTransformation.class);
+        mEventHandler.put(DEFAULT_DISPLAY, mockHandler);
+
+        send(downEvent(DEFAULT_DISPLAY, InputDevice.SOURCE_TOUCHSCREEN));
+        // The first down event triggers clearEvents because the source changes from -1 to
+        // TOUCHSCREEN.
+        verify(mockHandler, times(1)).clearEvents(anyInt());
+
+        Mockito.clearInvocations(mockHandler);
+
+        send(upEvent(DEFAULT_DISPLAY, InputDevice.SOURCE_TOUCHSCREEN));
+        send(downEvent(DEFAULT_DISPLAY, InputDevice.SOURCE_TOUCHSCREEN));
+
+        verify(mockHandler, never()).clearEvents(anyInt());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_SEND_A11Y_ACTION_CANCEL_ON_RESET)
+    public void testTripleTap_doesNotResetGestureHandler() {
+        // This test simulates the specific failure mode where the filter was resetting
+        // the gesture handler in the middle of a multi-tap gesture.
+        mA11yInputFilter.setUserAndEnabledFeatures(0,
+                FLAG_FEATURE_MAGNIFICATION_SINGLE_FINGER_TRIPLE_TAP);
+        EventStreamTransformation mockHandler = mock(EventStreamTransformation.class);
+        mEventHandler.put(DEFAULT_DISPLAY, mockHandler);
+
+        // Tap 1
+        send(downEvent(DEFAULT_DISPLAY, InputDevice.SOURCE_TOUCHSCREEN));
+        // We expect a clearEvents call here to initialize the stream
+        verify(mockHandler, times(1)).clearEvents(anyInt());
+        Mockito.clearInvocations(mockHandler);
+
+        send(upEvent(DEFAULT_DISPLAY, InputDevice.SOURCE_TOUCHSCREEN));
+
+        // Tap 2
+        send(downEvent(DEFAULT_DISPLAY, InputDevice.SOURCE_TOUCHSCREEN));
+        send(upEvent(DEFAULT_DISPLAY, InputDevice.SOURCE_TOUCHSCREEN));
+
+        // Tap 3
+        send(downEvent(DEFAULT_DISPLAY, InputDevice.SOURCE_TOUCHSCREEN));
+        send(upEvent(DEFAULT_DISPLAY, InputDevice.SOURCE_TOUCHSCREEN));
+
+        // Crucial verification: The filter must NOT have cleared events (reset the handler)
+        // during any of the subsequent taps. If it did, the handler would forget the
+        // previous taps and fail to detect the triple-tap.
+        verify(mockHandler, never()).clearEvents(anyInt());
+    }
+
     private Display createStubDisplay(DisplayInfo displayInfo) {
         final int displayId = sNextDisplayId++;
         final Display display = new Display(DisplayManagerGlobal.getInstance(), displayId,
@@ -638,6 +691,15 @@ public class AccessibilityInputFilterTest {
         mLastDownTime = SystemClock.uptimeMillis();
         final MotionEvent ev = MotionEvent.obtain(mLastDownTime, mLastDownTime,
                 MotionEvent.ACTION_DOWN, DEFAULT_X, DEFAULT_Y, 0);
+        ev.setDisplayId(displayId);
+        ev.setSource(source);
+        return ev;
+    }
+
+    private MotionEvent upEvent(int displayId, int source) {
+        long eventTime = SystemClock.uptimeMillis();
+        final MotionEvent ev = MotionEvent.obtain(mLastDownTime, eventTime,
+                MotionEvent.ACTION_UP, DEFAULT_X, DEFAULT_Y, 0);
         ev.setDisplayId(displayId);
         ev.setSource(source);
         return ev;
