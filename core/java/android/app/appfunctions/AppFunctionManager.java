@@ -95,13 +95,21 @@ import java.util.concurrent.Executor;
  *
  * <h3>Discovering App Functions</h3>
  *
- * <p>When there is a package change or the device starts up, the metadata of available functions is
- * indexed on-device by {@link AppSearchManager}. AppSearch stores the indexed information as an
- * {@code AppFunctionStaticMetadata} document. This document contains the {@code functionIdentifier}
- * and the schema information that the app function implements. This allows other apps and the app
- * itself to discover these functions using the AppSearch search APIs. Visibility to this metadata
- * document is based on the packages that have visibility to the app providing the app functions.
- * AppFunction SDK provides a convenient way to achieve this and is the preferred method.
+ * <p>Apps can discover available functions by querying {@link AppFunctionMetadata} using the {@link
+ * #searchAppFunctions} API.
+ *
+ * <p>{@link AppFunctionMetadata} contains info about the app function, including {@link
+ * AppFunctionName} and {@link AppFunctionSchemaMetadata}, which are required to identify and
+ * execute a function.
+ *
+ * <p>To maintain an up-to-date snapshot of {@link AppFunctionMetadata}, apps can monitor metadata
+ * updates using the {@link #observeAppFunctions} API alongside {@link #searchAppFunctions}. Updates
+ * to function metadata may happen due to a package change, or due to a runtime change; such as an
+ * invocation of {@link #setAppFunctionEnabled}.
+ *
+ * <p>Visibility to the metadata document is based on the packages that have visibility to the app
+ * providing the app functions. AppFunction SDK provides a convenient way to achieve this and is the
+ * preferred method.
  *
  * <h3>Executing App Functions</h3>
  *
@@ -467,8 +475,8 @@ public final class AppFunctionManager {
     }
 
     /**
-     * Performs a one-time search for AppFunctionMetadata with the given searchSpec and notifies the
-     * given callback of the result.
+     * Performs a one-time search for {@link AppFunctionMetadata} with the given {@link
+     * AppFunctionSearchSpec} and notifies the given callback of the result.
      *
      * <p>Note that the state is not guaranteed to be the latest, as metadata can change between
      * request and execute times.
@@ -536,7 +544,7 @@ public final class AppFunctionManager {
     }
 
     /**
-     * Registers an observer to monitor changes to {@code AppFunctionMetadata} that match the
+     * Registers an observer to monitor changes to {@link AppFunctionMetadata} that match the
      * provided {@link AppFunctionSearchSpec}.
      *
      * <p>When a change occurs, the registered {@link AppFunctionObserver} will be notified with
