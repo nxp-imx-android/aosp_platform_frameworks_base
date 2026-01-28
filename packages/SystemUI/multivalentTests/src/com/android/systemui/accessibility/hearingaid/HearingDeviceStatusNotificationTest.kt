@@ -20,6 +20,7 @@ import android.app.Notification
 import android.app.NotificationManager
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothProfile
+import android.content.Intent
 import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -28,7 +29,11 @@ import com.android.settingslib.bluetooth.BatteryLevelsInfo
 import com.android.settingslib.bluetooth.CachedBluetoothDevice
 import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.broadcast.FakeBroadcastDispatcher
+import com.android.systemui.broadcast.logging.BroadcastDispatcherLogger
+import com.android.systemui.dump.DumpManager
 import com.android.systemui.res.R
+import com.android.systemui.settings.UserTracker
 import com.android.systemui.statusbar.policy.BluetoothController
 import com.android.systemui.util.concurrency.FakeExecutor
 import com.android.systemui.util.time.FakeSystemClock
@@ -42,6 +47,7 @@ import org.mockito.ArgumentMatchers.anyString
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.stub
 import org.mockito.kotlin.verify
@@ -56,6 +62,7 @@ class HearingDeviceStatusNotificationTest : SysuiTestCase() {
     private val device = mock<BluetoothDevice>()
 
     private val mainExecutor = FakeExecutor(FakeSystemClock())
+    private lateinit var broadcastDispatcher: FakeBroadcastDispatcher
     private lateinit var notification: HearingDeviceStatusNotification
 
     @Before
@@ -70,10 +77,23 @@ class HearingDeviceStatusNotificationTest : SysuiTestCase() {
         }
         bluetoothController.stub { on { connectedDevices } doReturn listOf(cachedDevice) }
 
+        broadcastDispatcher =
+            FakeBroadcastDispatcher(
+                context,
+                mainExecutor,
+                TestableLooper.get(this).looper,
+                mainExecutor,
+                mock<DumpManager>(),
+                mock<BroadcastDispatcherLogger>(),
+                mock<UserTracker>(),
+                false,
+            )
+
         notification =
             HearingDeviceStatusNotification(
                 context,
                 bluetoothController,
+                broadcastDispatcher,
                 notificationManager,
                 mainExecutor,
             )
@@ -156,6 +176,63 @@ class HearingDeviceStatusNotificationTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(Flags.FLAG_HEARING_DEVICE_STATUS_NOTIFICATION)
+    fun updateNotification_deviceDismissedAndBatteryNotLow_noNotification() {
+        cachedDevice.stub { on { batteryLevel } doReturn TEST_BATTERY_LEVEL_HIGH }
+
+        // Show the notification and simulate the dismiss action when battery level is high
+        notification.start()
+        mainExecutor.runAllReady()
+        broadcastDispatcher.sendIntentToMatchingReceiversOnly(context, getDismissIntent())
+        mainExecutor.runAllReady()
+        // Battery level drop to medium level
+        cachedDevice.stub { on { batteryLevel } doReturn TEST_BATTERY_LEVEL_MEDIUM }
+        reset(notificationManager)
+        notification.onDeviceAttributesChanged()
+        mainExecutor.runAllReady()
+
+        verify(notificationManager, never()).notify(anyString(), anyInt(), any())
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_HEARING_DEVICE_STATUS_NOTIFICATION)
+    fun updateNotification_deviceDismissedAndBatteryFromHighToLow_showNotification() {
+        cachedDevice.stub { on { batteryLevel } doReturn TEST_BATTERY_LEVEL_HIGH }
+
+        // Show the notification and simulate the dismiss action when battery level is high
+        notification.start()
+        mainExecutor.runAllReady()
+        broadcastDispatcher.sendIntentToMatchingReceiversOnly(context, getDismissIntent())
+        mainExecutor.runAllReady()
+        // Battery level drop to low level (<=20%)
+        cachedDevice.stub { on { batteryLevel } doReturn TEST_BATTERY_LEVEL_LOW }
+        reset(notificationManager)
+        notification.onDeviceAttributesChanged()
+        mainExecutor.runAllReady()
+
+        verify(notificationManager).notify(anyString(), anyInt(), any())
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_HEARING_DEVICE_STATUS_NOTIFICATION)
+    fun updateNotification_deviceDismissedAndBatteryFromLowToVeryLow_showNotification() {
+        cachedDevice.stub { on { batteryLevel } doReturn TEST_BATTERY_LEVEL_LOW }
+
+        // Show the notification and simulate the dismiss action when battery level is low
+        notification.start()
+        mainExecutor.runAllReady()
+        broadcastDispatcher.sendIntentToMatchingReceiversOnly(context, getDismissIntent())
+        mainExecutor.runAllReady()
+        // Battery level drop to very low level (<=10%)
+        cachedDevice.stub { on { batteryLevel } doReturn TEST_BATTERY_LEVEL_VERY_LOW }
+        reset(notificationManager)
+        notification.onDeviceAttributesChanged()
+        mainExecutor.runAllReady()
+
+        verify(notificationManager).notify(anyString(), anyInt(), any())
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_HEARING_DEVICE_STATUS_NOTIFICATION)
     fun updateNotification_deviceActive_showActiveSubtext() {
         cachedDevice.stub {
             on { isActiveDevice(BluetoothProfile.HEARING_AID) } doReturn true
@@ -167,9 +244,7 @@ class HearingDeviceStatusNotificationTest : SysuiTestCase() {
 
         val notificationCaptor = ArgumentCaptor.forClass(Notification::class.java)
         verify(notificationManager).notify(anyString(), anyInt(), notificationCaptor.capture())
-
-        val notification = notificationCaptor.value
-        assertThat(notification.extras.getString(Notification.EXTRA_SUB_TEXT))
+        assertThat(notificationCaptor.value.extras.getString(Notification.EXTRA_SUB_TEXT))
             .isEqualTo(context.getString(R.string.quick_settings_hearing_devices_connected))
     }
 
@@ -186,9 +261,7 @@ class HearingDeviceStatusNotificationTest : SysuiTestCase() {
 
         val notificationCaptor = ArgumentCaptor.forClass(Notification::class.java)
         verify(notificationManager).notify(anyString(), anyInt(), notificationCaptor.capture())
-
-        val notification = notificationCaptor.value
-        assertThat(notification.extras.getString(Notification.EXTRA_SUB_TEXT))
+        assertThat(notificationCaptor.value.extras.getString(Notification.EXTRA_SUB_TEXT))
             .isEqualTo(context.getString(R.string.quick_settings_bluetooth_device_connected))
     }
 
@@ -207,8 +280,7 @@ class HearingDeviceStatusNotificationTest : SysuiTestCase() {
 
         val notificationCaptor = ArgumentCaptor.forClass(Notification::class.java)
         verify(notificationManager).notify(anyString(), anyInt(), notificationCaptor.capture())
-        val notification = notificationCaptor.value
-        assertThat(notification.extras.getString(Notification.EXTRA_TITLE))
+        assertThat(notificationCaptor.value.extras.getString(Notification.EXTRA_TITLE))
             .isEqualTo(activeDevice.name)
     }
 
@@ -227,9 +299,7 @@ class HearingDeviceStatusNotificationTest : SysuiTestCase() {
 
         val notificationCaptor = ArgumentCaptor.forClass(Notification::class.java)
         verify(notificationManager).notify(anyString(), anyInt(), notificationCaptor.capture())
-
-        val notification = notificationCaptor.value
-        assertThat(notification.extras.getString(Notification.EXTRA_TITLE))
+        assertThat(notificationCaptor.value.extras.getString(Notification.EXTRA_TITLE))
             .isEqualTo(connectedDevice.name)
     }
 
@@ -276,7 +346,6 @@ class HearingDeviceStatusNotificationTest : SysuiTestCase() {
     fun onDeviceAttributesChanged_updatesNotification() {
         notification.start()
         mainExecutor.runAllReady()
-
         reset(notificationManager)
         notification.onDeviceAttributesChanged()
         mainExecutor.runAllReady()
@@ -289,14 +358,6 @@ class HearingDeviceStatusNotificationTest : SysuiTestCase() {
     fun onBluetoothStateChange_disabled_cancelNotification() {
         notification.start()
         mainExecutor.runAllReady()
-
-        verify(notificationManager)
-            .notify(
-                anyString(),
-                anyInt(),
-                ArgumentCaptor.forClass(Notification::class.java).capture(),
-            )
-
         notification.onBluetoothStateChange(false)
         mainExecutor.runAllReady()
 
@@ -313,10 +374,20 @@ class HearingDeviceStatusNotificationTest : SysuiTestCase() {
         }
     }
 
+    private fun getDismissIntent(): Intent {
+        return Intent("com.android.systemui.accessibility.hearingaid.DISMISS_NOTIFICATION").apply {
+            putExtra("device_address", TEST_DEVICE_ADDRESS)
+        }
+    }
+
     companion object {
         private const val TEST_DEVICE_NAME = "test_device_name"
         private const val TEST_DEVICE_ADDRESS = "AA:BB:CC:DD:EE:FF"
         private const val TEST_MEMBER_DEVICE_NAME = "test_member_device_name"
         private const val TEST_MEMBER_DEVICE_ADDRESS = "AA:BB:CC:DD:EE:GG"
+        private const val TEST_BATTERY_LEVEL_HIGH = 90
+        private const val TEST_BATTERY_LEVEL_MEDIUM = 50
+        private const val TEST_BATTERY_LEVEL_LOW = 15
+        private const val TEST_BATTERY_LEVEL_VERY_LOW = 8
     }
 }
