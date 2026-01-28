@@ -285,14 +285,26 @@ public abstract class OnDeviceIntelligenceService extends Service {
                 }
 
                 @Override
-                public void fetchImageDescriptionModel(int callerUid,
+                public void listImageDescriptionModels(int callerUid,
+                        IImageDescriptionModelListCallback callback) {
+                    Objects.requireNonNull(callback);
+                    mHandler.executeOrSendMessage(
+                            obtainMessage(
+                                    OnDeviceIntelligenceService::onListImageDescriptionModels,
+                                    OnDeviceIntelligenceService.this, callerUid,
+                                    wrapImageDescriptionModelListCallback(callback)));
+                }
+
+                @Override
+                public void fetchImageDescriptionModel(int callerUid, String modelSignature,
                         IImageDescriptionModelCallback callback) {
+                    Objects.requireNonNull(modelSignature);
                     Objects.requireNonNull(callback);
                     mHandler.executeOrSendMessage(
                             obtainMessage(
                                     OnDeviceIntelligenceService::onFetchImageDescriptionModel,
                                     OnDeviceIntelligenceService.this, callerUid,
-                                    wrapImageDescriptionModelCallback(callback)));
+                                    modelSignature, wrapImageDescriptionModelCallback(callback)));
                 }
 
                 @Override
@@ -681,14 +693,35 @@ public abstract class OnDeviceIntelligenceService extends Service {
     }
 
     /**
+     * Get the list of available image description models.
+     *
+     * @param callerUid UID of the caller that initiated this call chain.
+     * @param callback Callback to populate with the list of {@link ImageDescriptionModelInfo}.
+     */
+    @FlaggedApi(FLAG_ON_DEVICE_INTELLIGENCE_26Q2)
+    public void onListImageDescriptionModels(
+            int callerUid,
+            @NonNull
+                    OutcomeReceiver<List<ImageDescriptionModel>, OnDeviceIntelligenceException>
+                            callback) {
+        callback.onError(
+                new OnDeviceIntelligenceException(
+                        OnDeviceIntelligenceException.PROCESSING_ERROR_SERVICE_UNAVAILABLE,
+                        "Service unavailable"));
+    }
+
+
+    /**
      * Invoked when the caller requests to fetch a specific image description model.
      *
      * @param callerUid UID of the caller that initiated this call chain.
+     * @param modelSignature The unique signature of the image description model to retrieve.
      * @param callback Callback to populate with the {@link ImageDescriptionModel}.
      */
     @FlaggedApi(FLAG_ON_DEVICE_INTELLIGENCE_26Q2)
     public void onFetchImageDescriptionModel(
             int callerUid,
+            @NonNull String modelSignature,
             @NonNull
                     OutcomeReceiver<ImageDescriptionModel, OnDeviceIntelligenceException>
                             callback) {
@@ -729,6 +762,32 @@ public abstract class OnDeviceIntelligenceService extends Service {
         return new OutcomeReceiver<>() {
             @Override
             public void onResult(EmbeddingModel result) {
+                try {
+                    callback.onSuccess(result);
+                } catch (RemoteException e) {
+                    Slog.e(TAG, "Error sending result: " + e);
+                }
+            }
+
+            @Override
+            public void onError(OnDeviceIntelligenceException exception) {
+                try {
+                    callback.onFailure(
+                            exception.getErrorCode(),
+                            exception.getMessage(),
+                            exception.getErrorParams());
+                } catch (RemoteException e) {
+                    Slog.e(TAG, "Error sending failure: " + e);
+                }
+            }
+        };
+    }
+
+    private OutcomeReceiver<List<ImageDescriptionModel>, OnDeviceIntelligenceException>
+            wrapImageDescriptionModelListCallback(IImageDescriptionModelListCallback callback) {
+        return new OutcomeReceiver<>() {
+            @Override
+            public void onResult(List<ImageDescriptionModel> result) {
                 try {
                     callback.onSuccess(result);
                 } catch (RemoteException e) {

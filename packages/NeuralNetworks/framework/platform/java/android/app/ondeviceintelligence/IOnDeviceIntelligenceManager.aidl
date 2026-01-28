@@ -25,6 +25,7 @@
  import android.app.ondeviceintelligence.Feature;
  import android.app.ondeviceintelligence.FeatureDetails;
  import android.app.ondeviceintelligence.InferenceInfo;
+ import android.app.ondeviceintelligence.Content;
  import java.util.List;
  import android.app.ondeviceintelligence.IDownloadCallback;
  import android.app.ondeviceintelligence.IListFeaturesCallback;
@@ -110,7 +111,11 @@ interface IOnDeviceIntelligenceManager {
 
       @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.USE_ON_DEVICE_INTELLIGENCE)")
       @JavaPassthrough(annotation="@android.annotation.FlaggedApi(android.app.ondeviceintelligence.flags.Flags.FLAG_ON_DEVICE_INTELLIGENCE_26Q2)")
-      void fetchImageDescriptionModel(in IImageDescriptionModelCallback callback) = 16;
+      void fetchImageDescriptionModel(in String modelSignature, in IImageDescriptionModelCallback callback) = 16;
+
+      @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.USE_ON_DEVICE_INTELLIGENCE)")
+      @JavaPassthrough(annotation="@android.annotation.FlaggedApi(android.app.ondeviceintelligence.flags.Flags.FLAG_ON_DEVICE_INTELLIGENCE_26Q2)")
+      void listImageDescriptionModels(in IImageDescriptionModelListCallback callback) = 20;
 
       @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.USE_ON_DEVICE_INTELLIGENCE)")
       @JavaPassthrough(annotation="@android.annotation.FlaggedApi(android.app.ondeviceintelligence.flags.Flags.FLAG_ON_DEVICE_INTELLIGENCE_26Q2)")
@@ -119,4 +124,9 @@ interface IOnDeviceIntelligenceManager {
       @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.USE_ON_DEVICE_INTELLIGENCE)")
       @JavaPassthrough(annotation="@android.annotation.FlaggedApi(android.app.ondeviceintelligence.flags.Flags.FLAG_ON_DEVICE_INTELLIGENCE_26Q2)")
       void generateImageDescription(in Feature feature, in ImageDescriptionRequest request, in AndroidFuture cancellationSignalFuture, in IImageDescriptionCallback callback) = 18;
+
+      @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.USE_ON_DEVICE_INTELLIGENCE)")
+      @JavaPassthrough(annotation="@android.annotation.FlaggedApi(android.app.ondeviceintelligence.flags.Flags.FLAG_ON_DEVICE_INTELLIGENCE_26Q2)")
+      void requestTokenInfoWithContent(in Feature feature, in Content content, in  AndroidFuture cancellationSignalFuture,
+                                                                in ITokenInfoCallback tokenInfocallback) = 19;
  }

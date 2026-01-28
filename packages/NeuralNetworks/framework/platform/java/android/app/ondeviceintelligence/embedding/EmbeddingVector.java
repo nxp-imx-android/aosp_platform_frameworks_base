@@ -28,6 +28,9 @@ import java.util.Objects;
 /**
  * Represents a raw vector embedding.
  *
+ * <p>The size of the float array returned by {@link #getVector()} is equal to {@link #getRows()}
+ * multiplied by {@link #getRowDimension()}.
+ *
  * <p>The generated embeddings from this response are compatible with and can be stored and queried
  * in AppSearch. For more details on how to use embeddings in AppSearch, see
  * {@link android.app.appsearch.EmbeddingVector}.
@@ -38,14 +41,33 @@ import java.util.Objects;
 @FlaggedApi(Flags.FLAG_ON_DEVICE_INTELLIGENCE_26Q2)
 public final class EmbeddingVector implements Parcelable {
     private final float[] mVector;
+    private final int[] mShape;
 
     /**
      * Constructs a new {@link EmbeddingVector} from the given float array.
      *
-     * @param vector The vector representing the embedding.
+     * @param vector  The vector representing the embedding.
+     * @param shape   The shape of the embedding vector.
      */
-    public EmbeddingVector(@NonNull float[] vector) {
-        mVector = Objects.requireNonNull(vector);
+    public EmbeddingVector(@NonNull float[] vector, @NonNull int[] shape) {
+        mVector = Objects.requireNonNull(vector).clone();
+        mShape = Objects.requireNonNull(shape).clone();
+        long expectedLength = 1;
+        for (int dim : mShape) {
+            if (dim <= 0) {
+                throw new IllegalArgumentException("Dimension must be positive, found " + dim);
+            }
+            // Check for overflow before multiplying.
+            if (expectedLength > Integer.MAX_VALUE / dim) {
+                throw new IllegalArgumentException("Shape product exceeds maximum vector size");
+            }
+            expectedLength *= dim;
+        }
+        if (mVector.length != (int) expectedLength) {
+            throw new IllegalArgumentException(
+                    "Vector length " + mVector.length + " does not match shape product "
+                            + expectedLength);
+        }
     }
 
     /**
@@ -53,7 +75,15 @@ public final class EmbeddingVector implements Parcelable {
      */
     @NonNull
     public float[] getVector() {
-        return mVector;
+        return mVector.clone();
+    }
+
+    /**
+     * Returns the shape of the embedding vector.
+     */
+    @NonNull
+    public int[] getShape() {
+        return mShape.clone();
     }
 
     @Override
@@ -64,6 +94,7 @@ public final class EmbeddingVector implements Parcelable {
     @Override
     public void writeToParcel(@NonNull Parcel dest, int flags) {
         dest.writeFloatArray(mVector);
+        dest.writeIntArray(mShape);
     }
 
     public static final @NonNull Creator<EmbeddingVector> CREATOR =
@@ -81,5 +112,6 @@ public final class EmbeddingVector implements Parcelable {
 
     private EmbeddingVector(Parcel in) {
         mVector = in.createFloatArray();
+        mShape = in.createIntArray();
     }
 }
