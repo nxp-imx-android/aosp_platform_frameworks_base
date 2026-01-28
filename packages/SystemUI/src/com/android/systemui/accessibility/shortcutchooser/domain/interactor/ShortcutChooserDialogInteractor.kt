@@ -24,7 +24,6 @@ import android.util.Log
 import android.view.Display.INVALID_DISPLAY
 import android.view.accessibility.Flags as AccessibilityFlags
 import androidx.annotation.VisibleForTesting
-import com.android.internal.accessibility.AccessibilityShortcutController.ACCESSIBILITY_HEARING_AIDS_COMPONENT_NAME
 import com.android.internal.accessibility.common.ShortcutChooserDialogConstants
 import com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType
 import com.android.internal.accessibility.util.AccessibilityUtils
@@ -212,7 +211,7 @@ constructor(
      */
     private suspend fun List<AccessibilityTargetModel>.filterExcludedTargets() =
         if (!isCompletedFullUser()) {
-            filterNot { it.targetName in HSUM_EXCLUDED_TARGETS }
+            filterNot { it.targetName in repository.hsuExcludedTargets }
         } else {
             this
         }
@@ -230,10 +229,5 @@ constructor(
         const val QUICK_ACCESS_PERMISSION =
             "com.android.systemui.permission.LAUNCH_ACCESSIBILITY_QUICK_ACCESS_DIALOG"
         @VisibleForTesting const val SYSTEMUI_PACKAGE = "com.android.systemui"
-
-        /** Targets that we don't want to show for the System user in HSUM or OOBE. */
-        @VisibleForTesting
-        val HSUM_EXCLUDED_TARGETS =
-            setOf(ACCESSIBILITY_HEARING_AIDS_COMPONENT_NAME.flattenToString())
     }
 }

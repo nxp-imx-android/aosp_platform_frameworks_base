@@ -66,7 +66,7 @@ class ShortcutChooserDialogInteractorTest : SysuiTestCase() {
     private companion object {
         const val TALKBACK_TARGET_NAME = "fakeTalkBackTargetName"
         const val MAGNIFICATION_TARGET_NAME = "fakeMagnificationTargetName"
-        val HSUM_EXCLUDED_TARGETS = ShortcutChooserDialogInteractor.HSUM_EXCLUDED_TARGETS
+        const val HSU_EXCLUDED_TARGET_NAME = "fakeHsuExcludedTargetName"
     }
 
     private val kosmos = testKosmosNew()
@@ -288,7 +288,7 @@ class ShortcutChooserDialogInteractorTest : SysuiTestCase() {
         kosmos.runTest {
             val shortcutType = UserShortcutType.QUICK_ACCESS
             val targetName1 = "com.android.test/TestService1"
-            val targetName2 = HSUM_EXCLUDED_TARGETS.first()
+            val targetName2 = HSU_EXCLUDED_TARGET_NAME
             val targets =
                 listOf(
                     createTargetModel(shortcutType, targetName1, isAssigned = false),
@@ -296,6 +296,7 @@ class ShortcutChooserDialogInteractorTest : SysuiTestCase() {
                 )
             whenever(mockRepository.getAllAccessibilityTargetsInfo(shortcutType))
                 .thenReturn(targets)
+            whenever(mockRepository.hsuExcludedTargets).thenReturn(listOf(HSU_EXCLUDED_TARGET_NAME))
             fakeHeadlessSystemUserMode.setIsHeadlessSystemUser(false)
             setOobeCompleted(true)
             assertThat(underTest.isCompletedFullUser()).isTrue()
@@ -315,7 +316,7 @@ class ShortcutChooserDialogInteractorTest : SysuiTestCase() {
         kosmos.runTest {
             val shortcutType = UserShortcutType.QUICK_ACCESS
             val targetName1 = "com.android.test/TestService1"
-            val targetName2 = HSUM_EXCLUDED_TARGETS.first()
+            val targetName2 = HSU_EXCLUDED_TARGET_NAME
             val targets =
                 listOf(
                     createTargetModel(shortcutType, targetName1, isAssigned = false),
@@ -323,6 +324,7 @@ class ShortcutChooserDialogInteractorTest : SysuiTestCase() {
                 )
             whenever(mockRepository.getAllAccessibilityTargetsInfo(shortcutType))
                 .thenReturn(targets)
+            whenever(mockRepository.hsuExcludedTargets).thenReturn(listOf(HSU_EXCLUDED_TARGET_NAME))
             fakeHeadlessSystemUserMode.setIsHeadlessSystemUser(true)
             setOobeCompleted(true)
             assertThat(underTest.isCompletedFullUser()).isFalse()
