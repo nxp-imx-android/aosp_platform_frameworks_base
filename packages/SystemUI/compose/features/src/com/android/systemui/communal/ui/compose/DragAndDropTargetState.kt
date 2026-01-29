@@ -36,6 +36,7 @@ import androidx.compose.ui.draganddrop.toAndroidDragEvent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
+import com.android.systemui.Flags.communalHubCancelAddWidget
 import com.android.systemui.Flags.communalWidgetResizing
 import com.android.systemui.communal.domain.model.CommunalContentModel
 import com.android.systemui.communal.ui.compose.extensions.firstItemAtOffset
@@ -58,13 +59,24 @@ fun rememberDragAndDropTargetState(
     contentOffset: Offset,
     contentListState: ContentListState,
     viewModel: BaseCommunalViewModel,
+    updateDragPositionForCancel: (widgetShadowOffset: Offset) -> Boolean,
+    setDraggingPlaceHolderAlpha: (alpha: Float) -> Unit,
 ): DragAndDropTargetState {
     val scope = rememberCoroutineScope()
     val autoScrollThreshold = with(LocalDensity.current) { 60.dp.toPx() }
     val columnWidth = with(LocalDensity.current) { gridItemSize?.cellSize?.width?.roundToPx() ?: 0 }
 
     val state =
-        remember(gridState, contentOffset, contentListState, autoScrollThreshold, scope, viewModel) {
+        remember(
+            gridState,
+            contentOffset,
+            contentListState,
+            autoScrollThreshold,
+            scope,
+            viewModel,
+            updateDragPositionForCancel,
+            setDraggingPlaceHolderAlpha,
+        ) {
             DragAndDropTargetState(
                 state = gridState,
                 columnWidth = columnWidth,
@@ -73,6 +85,8 @@ fun rememberDragAndDropTargetState(
                 autoScrollThreshold = autoScrollThreshold,
                 scope = scope,
                 viewModel = viewModel,
+                updateDragPositionForCancel = updateDragPositionForCancel,
+                setDraggingPlaceHolderAlpha = setDraggingPlaceHolderAlpha,
             )
         }
 
@@ -145,6 +159,8 @@ class DragAndDropTargetState(
     private val autoScrollThreshold: Float,
     private val scope: CoroutineScope,
     private val viewModel: BaseCommunalViewModel,
+    private val updateDragPositionForCancel: (widgetShadowOffset: Offset) -> Boolean,
+    private val setDraggingPlaceHolderAlpha: (alpha: Float) -> Unit,
 ) {
     /**
      * The placeholder item that is treated as if it is being dragged across the grid. It is added
@@ -154,6 +170,14 @@ class DragAndDropTargetState(
     private var placeHolderIndex: Int? = null
     private var previousTargetItemKey: Any? = null
     private var dragOffset = Offset.Zero
+    private var isDraggingToCancel = false
+
+    private fun widgetShadowDraggingToCancel(value: Boolean) {
+        if (communalHubCancelAddWidget()) {
+            isDraggingToCancel = value
+            setDraggingPlaceHolderAlpha(if (value) 0f else 1f)
+        }
+    }
 
     private val scrollChannel = Channel<Float>()
 
@@ -195,21 +219,32 @@ class DragAndDropTargetState(
 
     fun onDrop(event: DragAndDropEvent): Boolean {
         viewModel.onAddWidgetDragAndDropEnd()
-        return placeHolderIndex?.let { dropIndex ->
-            val widgetExtra = event.maybeWidgetExtra() ?: return false
-            val (componentName, user) = widgetExtra
-            if (componentName != null && user != null) {
-                // Placeholder isn't removed yet to allow the setting the right rank for items
-                // before adding in the new item.
-                contentListState.onSaveList(
-                    newItemComponentName = componentName,
-                    newItemUser = user,
-                    newItemIndex = dropIndex,
-                )
-                return@let true
-            }
+        if (communalHubCancelAddWidget() && isDraggingToCancel) {
+            // If the user cancels the new widget; the isDraggingToCancel should be false
+            // but the border of the placeholder should remain 0f.
+            // This is the reason we are setting them manually instead of using the
+            // widgetShadowDraggingToCancel() function.
+            isDraggingToCancel = false
+            setDraggingPlaceHolderAlpha(0f)
             return false
-        } ?: false
+        } else {
+            widgetShadowDraggingToCancel(false)
+            return placeHolderIndex?.let { dropIndex ->
+                val widgetExtra = event.maybeWidgetExtra() ?: return false
+                val (componentName, user) = widgetExtra
+                if (componentName != null && user != null) {
+                    // Placeholder isn't removed yet to allow the setting the right rank for items
+                    // before adding in the new item.
+                    contentListState.onSaveList(
+                        newItemComponentName = componentName,
+                        newItemUser = user,
+                        newItemIndex = dropIndex,
+                    )
+                    return@let true
+                }
+                return false
+            } ?: false
+        }
     }
 
     fun onEnded() {
@@ -217,6 +252,7 @@ class DragAndDropTargetState(
         placeHolderIndex = null
         previousTargetItemKey = null
         contentListState.list.remove(placeHolder)
+        widgetShadowDraggingToCancel(false)
     }
 
     fun onExited() {
@@ -262,8 +298,14 @@ class DragAndDropTargetState(
             }
 
             placeHolderIndex = targetItem.index
+            widgetShadowDraggingToCancel(false)
         } else if (targetItem == null) {
             previousTargetItemKey = null
+            if (communalHubCancelAddWidget()) {
+                widgetShadowDraggingToCancel(updateDragPositionForCancel(dragOffset))
+            } else {
+                widgetShadowDraggingToCancel(false)
+            }
         }
     }
 
