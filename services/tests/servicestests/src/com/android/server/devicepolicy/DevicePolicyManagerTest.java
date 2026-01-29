@@ -9152,6 +9152,28 @@ public class DevicePolicyManagerTest extends DpmTestBase {
         assertThat(permitted).isNull();
     }
 
+    @Test
+    public void testSetPackagesSuspended_afterReload() throws Exception {
+        mockEmptyPolicyExemptApps();
+
+        // Setup DO.
+        setDeviceOwner();
+
+        final String[] pkgs1 = {"pkg1", "pkg2"};
+        final String[] suspended1 = dpm.setPackagesSuspended(admin1, pkgs1, true);
+        assertThat(suspended1).isNotNull();
+        assertThat(suspended1.length).isEqualTo(2);
+
+        // Now simulate a reboot.
+        initializeDpms();
+
+        // Call again. This should not fail.
+        final String[] pkgs2 = {"pkg3", "pkg4"};
+        final String[] suspended2 = dpm.setPackagesSuspended(admin1, pkgs2, true);
+        assertThat(suspended2).isNotNull();
+        assertThat(suspended2.length).isEqualTo(2);
+    }
+
     private void setupVpnAuthorization(String userVpnPackage, int userVpnUid) {
         final AppOpsManager.PackageOps vpnOp = new AppOpsManager.PackageOps(userVpnPackage,
                 userVpnUid, List.of(new AppOpsManager.OpEntry(
