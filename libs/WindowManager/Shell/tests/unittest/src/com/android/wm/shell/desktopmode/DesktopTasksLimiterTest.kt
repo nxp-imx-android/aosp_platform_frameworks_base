@@ -350,19 +350,21 @@ class DesktopTasksLimiterTest : ShellTestCase() {
     fun removeLeftoverMinimizedTasks_activeNonMinimizedTasksStillAround_doesNothing() {
         desktopTaskRepo.addDesk(displayId = DEFAULT_DISPLAY, deskId = 0)
         desktopTaskRepo.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = 0)
-        desktopTaskRepo.addTask(
+        desktopTaskRepo.addTaskToDesk(
             displayId = DEFAULT_DISPLAY,
+            deskId = 0,
             taskId = 1,
             isVisible = true,
             taskBounds = TASK_BOUNDS,
         )
-        desktopTaskRepo.addTask(
+        desktopTaskRepo.addTaskToDesk(
             displayId = DEFAULT_DISPLAY,
-            taskId = 1,
+            deskId = 0,
+            taskId = 2,
             isVisible = true,
             taskBounds = TASK_BOUNDS,
         )
-        desktopTaskRepo.minimizeTask(displayId = DEFAULT_DISPLAY, taskId = 2)
+        desktopTaskRepo.minimizeTask(displayId = DEFAULT_DISPLAY, taskId = 3)
 
         val wct = WindowContainerTransaction()
         desktopTasksLimiter.leftoverMinimizedTasksRemover.removeLeftoverMinimizedTasks(
@@ -942,7 +944,8 @@ class DesktopTasksLimiterTest : ShellTestCase() {
     private fun setUpFreeformTask(displayId: Int = DEFAULT_DISPLAY): RunningTaskInfo {
         val task = createFreeformTask(displayId)
         `when`(shellTaskOrganizer.getRunningTaskInfo(task.taskId)).thenReturn(task)
-        desktopTaskRepo.addTask(displayId, task.taskId, task.isVisible, TASK_BOUNDS)
+        val deskId = desktopTaskRepo.getActiveDeskId(displayId) ?: 0
+        desktopTaskRepo.addTaskToDesk(displayId, deskId, task.taskId, task.isVisible, TASK_BOUNDS)
         return task
     }
 
