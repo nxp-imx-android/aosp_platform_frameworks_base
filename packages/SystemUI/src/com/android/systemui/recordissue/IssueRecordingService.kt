@@ -163,6 +163,7 @@ constructor(
         private const val CHANNEL_ID = "issue_record"
         const val EXTRA_SCREEN_RECORD = "extra_screenRecord"
         const val EXTRA_BUG_REPORT = "extra_bugReport"
+        const val EXTRA_SHOW_SECONDS = "extra_showSeconds"
 
         /**
          * Get an intent to stop the issue recording service.
@@ -191,6 +192,7 @@ constructor(
                 .putExtra(INTENT_EXTRA_TRACE_TYPE, traceConfig)
                 .putExtra(EXTRA_SCREEN_RECORD, screenRecord)
                 .putExtra(EXTRA_BUG_REPORT, bugReport)
+                .putExtra(EXTRA_SHOW_SECONDS, true)
     }
 }
 
