@@ -29,6 +29,7 @@ import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.deviceentry.data.repository.deviceEntryRepository
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryInteractor
 import com.android.systemui.deviceentry.shared.model.DeviceUnlockStatus
+import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.keyguard.data.repository.FakeKeyguardRepository
 import com.android.systemui.keyguard.domain.interactor.dozeInteractor
 import com.android.systemui.kosmos.testScope
@@ -287,6 +288,7 @@ class PowerInteractorTest : SysuiTestCase() {
     }
 
     @Test
+    @EnableSceneContainer
     fun deviceEnteredOnGoingToSleep_fromUnlockedShade_thenClearedOnNextFinishedWakingUp() {
         // Unlocked and in Gone
         whenever(deviceEntryInteractor.isDeviceEntered).thenReturn(MutableStateFlow(true))
@@ -309,6 +311,7 @@ class PowerInteractorTest : SysuiTestCase() {
     }
 
     @Test
+    @EnableSceneContainer
     fun deviceEnteredOnGoingToSleep_fromGone_thenClearedOnNextFinishedWakingUp() {
         // Unlocked and in Gone
         whenever(deviceEntryInteractor.isDeviceEntered).thenReturn(MutableStateFlow(true))
@@ -331,6 +334,7 @@ class PowerInteractorTest : SysuiTestCase() {
     }
 
     @Test
+    @EnableSceneContainer
     fun deviceNotEnteredOnGoingToSleep_fromShade_stillNotEntered() {
         // Unlocked and in Gone
         whenever(deviceEntryInteractor.isDeviceEntered).thenReturn(MutableStateFlow(false))
