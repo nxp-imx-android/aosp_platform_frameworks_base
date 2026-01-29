@@ -20,6 +20,7 @@ import static com.android.server.am.psc.OomAdjuster.CPU_TIME_REASON_NONE;
 import android.annotation.NonNull;
 import android.app.ActivityManager;
 import android.app.ActivityManager.ProcessCapability;
+import android.app.ActivityManager.ProcessState;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 
 import com.android.server.am.psc.OomAdjuster.CpuTimeReasons;
@@ -74,5 +75,10 @@ final class ProcessEdge extends GraphEdge {
     @ProcessCapability
     int evaluateCapabilityFilter() {
         return CapabilityController.evaluateFilter(this);
+    }
+
+    @Override
+    protected @ProcessState int evaluateProcState() {
+        return ProcStateController.evaluateProcState(this);
     }
 }

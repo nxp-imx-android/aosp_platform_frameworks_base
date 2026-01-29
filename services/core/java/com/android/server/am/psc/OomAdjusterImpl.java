@@ -787,7 +787,7 @@ public class OomAdjusterImpl extends OomAdjuster {
         computeConnectionsLSP();
 
         if (Flags.enableProcstateControllerComputation()) {
-            mProcStateController.fullUpdate();
+            mProcStateController.fullUpdate(SystemNode.getInstance());
         }
 
         applyLruAdjust(mProcessList.getLruProcessesLOSP());

@@ -17,6 +17,7 @@ package com.android.server.am.psc;
 
 import android.annotation.NonNull;
 import android.app.ActivityManager.ProcessCapability;
+import android.app.ActivityManager.ProcessState;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 
 import java.util.function.Consumer;
@@ -38,6 +39,10 @@ abstract class GraphNode {
     /** Gets output capabilities from the node. */
     @ProcessCapability
     abstract int getCapability();
+
+    /** Gets the process state from the node. */
+    @ProcessState
+    abstract int getProcState();
 
     final boolean isEnqueued() {
         return mIsEnqueued;

@@ -18,6 +18,7 @@ package com.android.server.am.psc;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityManager.ProcessCapability;
+import android.app.ActivityManager.ProcessState;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 
 import java.util.Objects;
@@ -54,5 +55,10 @@ class ProviderBindingEdge extends GraphEdge {
     @ProcessCapability
     int evaluateCapabilityFilter() {
         return CapabilityController.evaluateFilter(this);
+    }
+
+    @Override
+    protected @ProcessState int evaluateProcState() {
+        return ProcStateController.evaluateProcState(this);
     }
 }
