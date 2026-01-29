@@ -170,7 +170,7 @@ class ShadeTouchHandlerTest(flags: FlagsParameterization) : SysuiTestCase() {
         swipe(Direction.DOWN)
 
         // Both motion events are sent for central surfaces to process.
-        assertThat(kosmos.sceneContainerRepository.isRemoteUserInputOngoing.value).isTrue()
+        assertThat(kosmos.sceneContainerRepository.isRemoteUserInputOngoing).isTrue()
         verify(windowRootView, times(2)).dispatchTouchEvent(any())
     }
 
@@ -182,7 +182,7 @@ class ShadeTouchHandlerTest(flags: FlagsParameterization) : SysuiTestCase() {
         swipe(Direction.DOWN)
 
         // Both motion events are sent for the shade view to process.
-        assertThat(kosmos.sceneContainerRepository.isRemoteUserInputOngoing.value).isTrue()
+        assertThat(kosmos.sceneContainerRepository.isRemoteUserInputOngoing).isTrue()
         verify(windowRootView, times(2)).dispatchTouchEvent(any())
     }
 

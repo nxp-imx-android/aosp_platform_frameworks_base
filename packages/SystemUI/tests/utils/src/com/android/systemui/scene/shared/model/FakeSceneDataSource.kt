@@ -36,15 +36,43 @@ class FakeSceneDataSource(initialSceneKey: SceneKey, val testScope: TestScope) :
     private val _currentScene = MutableStateFlow(initialSceneKey)
     override val currentScene: StateFlow<SceneKey> = _currentScene.asStateFlow()
 
-    override var transitionState: TransitionState by
+    var isPaused: Boolean by mutableStateOf(false)
+
+    /**
+     * The actual state that is served from this data source, regardless of the value of [isPaused].
+     */
+    private var _transitionState: TransitionState by
         mutableStateOf(TransitionState.Idle(initialSceneKey))
+
+    /** Accumulates state changes while [isPaused] is `true`. */
+    private var pausedTransitionState: TransitionState = _transitionState
+
+    override var transitionState: TransitionState
+        set(value) {
+            if (isPaused) {
+                // While paused, all updates go to the other field and are not reflected back
+                // through this property.
+                pausedTransitionState = value
+            } else {
+                // While unpaused, all updates go directly to the backing property and are reflected
+                // immediately.
+                _transitionState = value
+            }
+        }
+        get() = _transitionState
+
+    // Returns the "accumulated" TransitionState, based on the value of isPaused. This will be the
+    // "real" TransitionState as it's been changing, regardless of whether we're in a pause or not.
+    // It's different from transitionState because that one always serves what the user/test should
+    // see and not what the internal state might be, which is dependant on the state of isPaused.
+    // Use this to make modifications to either the real state when not paused or the paused state
+    // during a pause or your risk A BUG where you drop accumulated state during a pause by
+    // modifying the wrong state.
+    private val accumulatedTransitionState: TransitionState
+        get() = if (isPaused) pausedTransitionState else _transitionState
 
     private val _currentOverlays = MutableStateFlow<Set<OverlayKey>>(emptySet())
     override val currentOverlays: StateFlow<Set<OverlayKey>> = _currentOverlays.asStateFlow()
-
-    private var _isPaused = false
-    val isPaused
-        get() = testScope.currentValue { _isPaused }
 
     private var _pendingScene: SceneKey? = null
     val pendingScene
@@ -56,27 +84,45 @@ class FakeSceneDataSource(initialSceneKey: SceneKey, val testScope: TestScope) :
     var freezeAndAnimateToCurrentStateCallCount = 0
 
     override fun changeScene(toScene: SceneKey, transitionKey: TransitionKey?) {
-        if (_isPaused) {
+        if (isPaused) {
             _pendingScene = toScene
         } else {
             _currentScene.value = toScene
         }
+
+        transitionState =
+            TransitionState.Idle(
+                currentScene = toScene,
+                currentOverlays = accumulatedTransitionState.currentOverlays,
+            )
     }
 
     override fun showOverlay(overlay: OverlayKey, transitionKey: TransitionKey?) {
-        if (_isPaused) {
+        if (isPaused) {
             pendingOverlays = (pendingOverlays ?: currentOverlays.value) + overlay
         } else {
             _currentOverlays.value += overlay
         }
+
+        transitionState =
+            TransitionState.Idle(
+                currentScene = accumulatedTransitionState.currentScene,
+                currentOverlays = accumulatedTransitionState.currentOverlays + overlay,
+            )
     }
 
     override fun hideOverlay(overlay: OverlayKey, transitionKey: TransitionKey?) {
-        if (_isPaused) {
+        if (isPaused) {
             pendingOverlays = (pendingOverlays ?: currentOverlays.value) - overlay
         } else {
             _currentOverlays.value -= overlay
         }
+
+        transitionState =
+            TransitionState.Idle(
+                currentScene = accumulatedTransitionState.currentScene,
+                currentOverlays = accumulatedTransitionState.currentOverlays - overlay,
+            )
     }
 
     override fun replaceOverlay(from: OverlayKey, to: OverlayKey, transitionKey: TransitionKey?) {
@@ -89,7 +135,7 @@ class FakeSceneDataSource(initialSceneKey: SceneKey, val testScope: TestScope) :
     }
 
     override fun instantlyTransitionTo(scene: SceneKey?, overlays: Set<OverlayKey>?) {
-        if (_isPaused) {
+        if (isPaused) {
             _pendingScene = scene
             pendingOverlays = overlays
         } else {
@@ -100,6 +146,12 @@ class FakeSceneDataSource(initialSceneKey: SceneKey, val testScope: TestScope) :
                 _currentOverlays.value = overlays
             }
         }
+
+        transitionState =
+            TransitionState.Idle(
+                currentScene = scene ?: accumulatedTransitionState.currentScene,
+                currentOverlays = overlays ?: accumulatedTransitionState.currentOverlays,
+            )
     }
 
     override fun startTransitionImmediately(transition: TransitionState.Transition) = Unit
@@ -111,9 +163,10 @@ class FakeSceneDataSource(initialSceneKey: SceneKey, val testScope: TestScope) :
      * last one will be remembered.
      */
     fun pause() {
-        check(!_isPaused) { "Can't pause what's already paused!" }
+        check(!isPaused) { "Can't pause what's already paused!" }
 
-        _isPaused = true
+        pausedTransitionState = transitionState
+        isPaused = true
     }
 
     /**
@@ -136,23 +189,40 @@ class FakeSceneDataSource(initialSceneKey: SceneKey, val testScope: TestScope) :
         expectedScene: SceneKey? = null,
         expectedOverlays: Set<OverlayKey>? = null,
     ) {
-        check(force || _isPaused) { "Can't unpause what's already not paused!" }
+        check(force || isPaused) { "Can't unpause what's already not paused!" }
 
-        _isPaused = false
+        // When unpaused, all changes that were accumulated during the pause are committed into the
+        // real property and reflected back to the downstream.
+        _transitionState = pausedTransitionState
+        isPaused = false
         _pendingScene?.let { _currentScene.value = it }
         _pendingScene = null
         pendingOverlays?.let { _currentOverlays.value = it }
         pendingOverlays = null
 
-        check(expectedScene == null || currentScene.value == expectedScene) {
-            """
-                Unexpected scene while unpausing.
-                Expected $expectedScene but was ${currentScene.value}.
-            """
-                .trimIndent()
+        if (expectedScene != null) {
+            check(expectedScene == currentScene.value) {
+                "Unexpected currentScene flow value of ${currentScene.value.debugName}, expected:" +
+                    " ${expectedScene.debugName}"
+            }
+            check(expectedScene == transitionState.currentScene) {
+                "Unexpected transitionState.currentScene value of" +
+                    " ${transitionState.currentScene.debugName}, expected:" +
+                    " ${expectedScene.debugName}"
+            }
         }
-        check(expectedOverlays == null || expectedOverlays == currentOverlays.value) {
-            "Expected $expectedOverlays, but instead found overlays ${currentOverlays.value}."
+
+        if (expectedOverlays != null) {
+            check(expectedOverlays == currentOverlays.value) {
+                "Unexpected expectedOverlays flow value of" +
+                    " ${currentOverlays.value.joinToString { it.debugName }}, expected:" +
+                    " ${expectedOverlays.joinToString { it.debugName }}"
+            }
+            check(expectedOverlays == transitionState.currentOverlays) {
+                "Unexpected transitionState.currentOverlays value of" +
+                    " ${transitionState.currentOverlays.joinToString { it.debugName }}," +
+                    " expected: ${expectedOverlays.joinToString { it.debugName }}"
+            }
         }
     }
 }

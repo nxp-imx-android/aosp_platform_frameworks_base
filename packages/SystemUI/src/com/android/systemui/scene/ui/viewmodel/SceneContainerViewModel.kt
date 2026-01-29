@@ -101,16 +101,15 @@ constructor(
 ) : ExclusiveActivatable() {
 
     /** The scene that should be rendered. */
-    val currentScene: StateFlow<SceneKey> = sceneInteractor.currentScene
-
-    val currentSceneAsState: SceneKey
+    val currentScene: SceneKey
         get() = sceneInteractor.currentSceneAsState
 
     private val hydrator = Hydrator("SceneContainerViewModel.hydrator")
     val blurViewModel: SceneTransitionBlurViewModel = sceneTransitionBlurViewModelFactory.create()
 
     /** Whether the container is visible. */
-    val isVisible: Boolean by hydrator.hydratedStateOf("isVisible", sceneInteractor.isVisibleFlow)
+    val isVisible: Boolean
+        get() = sceneInteractor.isVisible
 
     val hapticsViewModel: SceneContainerHapticsViewModel = hapticsViewModelFactory.create()
 
@@ -251,7 +250,7 @@ constructor(
                         toContent
                     }
                 logger.falsingCheckForContentChange(
-                    from = currentScene.value,
+                    from = currentScene,
                     to = toContent,
                     isAllowedByFalsing = isAllowedByFalsing,
                 )
@@ -325,7 +324,7 @@ constructor(
             toScene == Scenes.Gone && !deviceUnlockedInteractor.deviceUnlockStatus.value.isUnlocked
         ) {
             logger.logContentChangeRejection(
-                from = currentScene.value,
+                from = currentScene,
                 to = toScene,
                 originalChangeReason = null,
                 rejectionReason = "Device not unlocked",
@@ -333,11 +332,11 @@ constructor(
             return false
         }
 
-        val canChangeScene = isFalsingAllowingContentChange(from = currentScene.value, to = toScene)
+        val canChangeScene = isFalsingAllowingContentChange(from = currentScene, to = toScene)
         if (canChangeScene) {
             // A scene change is guaranteed; log it.
             logger.logSceneChanged(
-                from = currentScene.value,
+                from = currentScene,
                 to = toScene,
                 keyguardState = null,
                 reason = "user interaction",
@@ -512,7 +511,7 @@ constructor(
             val isFalseTouch = falsingInteractor.isFalseTouch(interactionType)
 
             // Only enforce falsing if moving from the lockscreen scene to new content.
-            val fromLockscreenScene = currentScene.value == Scenes.Lockscreen
+            val fromLockscreenScene = currentScene == Scenes.Lockscreen
 
             !fromLockscreenScene || !isFalseTouch
         } ?: true

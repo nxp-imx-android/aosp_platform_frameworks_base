@@ -25,6 +25,7 @@ import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepos
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.shared.model.TransitionStep
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
@@ -80,7 +81,7 @@ suspend fun Kosmos.setTransition(
         testScope = testScope,
         fillInSteps = true,
     )
-    testScope.testScheduler.runCurrent()
+    runCurrent()
 }
 
 fun Kosmos.setSceneTransition(
@@ -106,26 +107,26 @@ fun Kosmos.setSceneTransition(
         unlockDevice()
     }
     if (!skipChangeScene) {
-        testScope.testScheduler.runCurrent()
+        runCurrent()
         testScope.backgroundScope
         sceneInteractor.changeScene(getCurrentCurrentScene(transition), "Kosmos.setSceneTransition")
     }
     if (unlockDevice) {
         lockDevice()
     }
-    testScope.testScheduler.runCurrent()
+    runCurrent()
 }
 
 fun Kosmos.unlockDevice() {
     fakeDeviceEntryRepository.deviceUnlockStatus.value =
         DeviceUnlockStatus(isUnlocked = true, deviceUnlockSource = null)
-    testScope.testScheduler.runCurrent()
+    runCurrent()
 }
 
 fun Kosmos.lockDevice() {
     fakeDeviceEntryRepository.deviceUnlockStatus.value =
         DeviceUnlockStatus(isUnlocked = false, deviceUnlockSource = null)
-    testScope.testScheduler.runCurrent()
+    runCurrent()
 }
 
 private fun getCurrentCurrentScene(transition: ObservableTransitionState): SceneKey {
