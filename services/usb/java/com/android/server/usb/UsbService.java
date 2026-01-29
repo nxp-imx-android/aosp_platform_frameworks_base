@@ -21,6 +21,7 @@ import static android.hardware.usb.DisplayPortAltModeInfo.LINK_TRAINING_STATUS_U
 import static android.hardware.usb.InternalUsbDataSignalDisableReason.USB_DISABLE_REASON_APM;
 import static android.hardware.usb.InternalUsbDataSignalDisableReason.USB_DISABLE_REASON_ENTERPRISE;
 import static android.hardware.usb.InternalUsbDataSignalDisableReason.USB_DISABLE_REASON_LOCKDOWN_MODE;
+import static android.hardware.usb.PowerProfileInfo.POWER_PROFILE_ERROR_FIELD_NOT_SUPPORTED;
 import static android.hardware.usb.UsbOperationInternal.USB_OPERATION_ERROR_INTERNAL;
 import static android.hardware.usb.UsbPortStatus.DATA_ROLE_DEVICE;
 import static android.hardware.usb.UsbPortStatus.DATA_ROLE_HOST;
@@ -51,6 +52,7 @@ import android.hardware.usb.IUsbManager;
 import android.hardware.usb.IUsbManagerInternal;
 import android.hardware.usb.IUsbOperationInternal;
 import android.hardware.usb.ParcelableUsbPort;
+import android.hardware.usb.PowerProfileInfo;
 import android.hardware.usb.UsbAccessory;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
@@ -1523,6 +1525,7 @@ public class UsbService extends IUsbManager.Stub {
                 int i;
                 boolean supportsComplianceWarnings = false;
                 boolean supportsDisplayPortAltMode = false;
+                boolean supportsPowerProfiles = false;
                 switch (args[2]) {
                     case "ufp":
                         supportedModes = MODE_UFP;
@@ -1548,14 +1551,17 @@ public class UsbService extends IUsbManager.Stub {
                     case "--displayport":
                         supportsDisplayPortAltMode = true;
                         continue;
+                    case "--power-profiles":
+                        supportsPowerProfiles = true;
+                        continue;
                     default:
                         pw.println("Invalid Identifier: " + args[i]);
                     }
                 }
                 if (mPortManager != null) {
                     mPortManager.addSimulatedPort(portId, supportedModes,
-                        supportsComplianceWarnings, supportsDisplayPortAltMode,
-                        pw);
+                            supportsComplianceWarnings, supportsDisplayPortAltMode,
+                            supportsPowerProfiles, pw);
                     pw.println();
                     mPortManager.dump(new DualDumpOutputStream(new IndentingPrintWriter(pw, "  ")),
                             "", 0);
@@ -1712,6 +1718,67 @@ public class UsbService extends IUsbManager.Stub {
                         }
                     }
                 }
+            } else if ("add-power-profile".equals(args[0]) && args.length >= 4) {
+                final String portId = args[1];
+                final boolean isPort = Boolean.parseBoolean(args[2]);
+                final boolean isSink = Boolean.parseBoolean(args[3]);
+                String name = "";
+                int type = POWER_PROFILE_ERROR_FIELD_NOT_SUPPORTED;
+                int minVoltage = POWER_PROFILE_ERROR_FIELD_NOT_SUPPORTED;
+                int maxVoltage = POWER_PROFILE_ERROR_FIELD_NOT_SUPPORTED;
+                int minCurrent = POWER_PROFILE_ERROR_FIELD_NOT_SUPPORTED;
+                int maxCurrent = POWER_PROFILE_ERROR_FIELD_NOT_SUPPORTED;
+                int maxPower = POWER_PROFILE_ERROR_FIELD_NOT_SUPPORTED;
+                PowerProfileInfo.Builder builder = new PowerProfileInfo.Builder();
+
+                for (int i = 4; i < args.length; i++) {
+                    if ("--name".equals(args[i]) && i < args.length - 1) {
+                        name = args[i + 1];
+                    }
+                    if ("--type".equals(args[i]) && i < args.length - 1) {
+                        type = Integer.parseInt(args[i + 1]);
+                    }
+                    if ("--minVoltage".equals(args[i]) && i < args.length - 1) {
+                        minVoltage = Integer.parseInt(args[i + 1]);
+                    }
+                    if ("--maxVoltage".equals(args[i]) && i < args.length - 1) {
+                        maxVoltage = Integer.parseInt(args[i + 1]);
+                    }
+                    if ("--minCurrent".equals(args[i]) && i < args.length - 1) {
+                        minCurrent = Integer.parseInt(args[i + 1]);
+                    }
+                    if ("--maxCurrent".equals(args[i]) && i < args.length - 1) {
+                        maxCurrent = Integer.parseInt(args[i + 1]);
+                    }
+                    if ("--maxPower".equals(args[i]) && i < args.length - 1) {
+                        maxPower = Integer.parseInt(args[i + 1]);
+                    }
+                }
+
+                builder.setName(name)
+                        .setPowerProfileType(type)
+                        .setMinVoltageMv(minVoltage)
+                        .setMaxVoltageMv(maxVoltage)
+                        .setMinCurrentMa(minCurrent)
+                        .setMaxCurrentMa(maxCurrent)
+                        .setMaxPowerMw(maxPower);
+                PowerProfileInfo info = builder.build();
+
+                if (mPortManager != null) {
+                    mPortManager.simulatePowerProfileInfo(portId, info, isPort, isSink, pw);
+                    pw.println();
+                    mPortManager.dump(new DualDumpOutputStream(new IndentingPrintWriter(pw, "  ")),
+                            "", 0);
+                }
+
+            } else if ("clear-power-profiles".equals(args[0]) && args.length == 2) {
+                final String portId = args[1];
+                if (mPortManager != null) {
+                    mPortManager.clearSimulatedPowerProfileInfo(portId, pw);
+                    pw.println();
+                    mPortManager.dump(new DualDumpOutputStream(new IndentingPrintWriter(pw, "  ")),
+                            "", 0);
+                }
             } else if ("ports".equals(args[0]) && args.length == 1) {
                 if (mPortManager != null) {
                     mPortManager.dump(new DualDumpOutputStream(new IndentingPrintWriter(pw, "  ")),
@@ -1727,6 +1794,7 @@ public class UsbService extends IUsbManager.Stub {
                 pw.println("    <optional args> include:");
                 pw.println("      --compliance-warnings: enables compliance warnings on port");
                 pw.println("      --displayport: enables DisplayPort Alt Mode on port");
+                pw.println("      --power-profiles: enables PowerProfile reporting on port");
                 pw.println("  connect-port <id> <ufp|dfp><?> <source|sink><?> <host|device><?>");
                 pw.println("    (add ? suffix if mode, power role, or data role can be changed)");
                 pw.println("  disconnect-port <id>");
@@ -1809,6 +1877,22 @@ public class UsbService extends IUsbManager.Stub {
                 pw.println("  dumpsys usb dump-descriptors -dump-tree");
                 pw.println("  dumpsys usb dump-descriptors -dump-list");
                 pw.println("  dumpsys usb dump-descriptors -dump-raw");
+                pw.println();
+                pw.println("Example USB PowerProfileInfo:");
+                pw.println("  dumpsys usb add-port \"matrix\" dual --power-profiles");
+                pw.println("  dumpsys usb add-power-profile \"matrix\" <isPort> <isSink> --type 6 --maxVoltage 5000 --maxCurrent 3000");
+                pw.println("The required fields are as followed:");
+                pw.println("    <isPort>: type Boolean, true if PowerProfileInfo describes local port, partner port otherwise");
+                pw.println("    <isSink>: type Boolean, true if PowerProfileInfo describes sink profile, source profile otherwise");
+                pw.println("The optional fields are as followed:");
+                pw.println("    --name <name>: type String, should be non-empty for POWER_PROFILE_TYPE_VENDOR");
+                pw.println("    --type <type>: type PowerProfileType");
+                pw.println("    --minVoltage <minVoltage>: type int, expressed in Mv");
+                pw.println("    --maxVoltage <maxVoltage>: type int, expressed in Mv");
+                pw.println("    --minCurrent <minCurrent>: type int, expressed in Ma");
+                pw.println("    --maxCurrent <maxCurrent>: type int, expressed in Ma");
+                pw.println("    --maxPower <maxPower>: type int, expressed in Mw");
+                pw.println("  dumpsys usb clear-power-profiles \"matrix\"");
             }
         } finally {
             Binder.restoreCallingIdentity(ident);
