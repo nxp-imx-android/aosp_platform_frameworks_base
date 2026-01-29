@@ -434,7 +434,7 @@ public final class ServiceBindingOomAdjPolicyTest extends BaseServiceTest {
 
     @SuppressWarnings("GuardedBy")
     private void removeProcessRecord(ProcessRecord app) {
-        app.setKilled(true);
+        mAms.mProcessStateController.setKilled(app, true);
         mProcessList.removeProcessNameLocked(app.processName, app.uid);
         mProcessList.removeLruProcessLocked(app);
     }

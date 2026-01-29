@@ -859,7 +859,7 @@ public abstract class ProcessRecordInternal {
     }
 
     @GuardedBy({"mServiceLock", "mProcLock"})
-    public void setKilled(boolean killed) {
+    void setKilled(boolean killed) {
         mKilled = killed;
     }
 
@@ -869,13 +869,13 @@ public abstract class ProcessRecordInternal {
     }
 
     @GuardedBy({"mServiceLock", "mProcLock"})
-    public void setKilledByAm(boolean killedByAm) {
+    void setKilledByAm(boolean killedByAm) {
         mKilledByAm = killedByAm;
     }
 
 
     @GuardedBy("mServiceLock")
-    public void setMaxAdj(int maxAdj) {
+    void setMaxAdj(int maxAdj) {
         mMaxAdj = maxAdj;
     }
 
@@ -1210,7 +1210,7 @@ public abstract class ProcessRecordInternal {
 
     /** Sets whether this process is currently showing top UI, and notifies the observer. */
     @GuardedBy("mServiceLock")
-    public void setHasTopUi(boolean hasTopUi) {
+    void setHasTopUi(boolean hasTopUi) {
         mHasTopUi = hasTopUi;
         mObserver.onHasTopUiChanged(mHasTopUi);
     }
@@ -1222,7 +1222,7 @@ public abstract class ProcessRecordInternal {
 
     /** Sets whether the process is currently showing overlay UI, and notifies the observer. */
     @GuardedBy("mServiceLock")
-    public void setHasOverlayUi(boolean hasOverlayUi) {
+    void setHasOverlayUi(boolean hasOverlayUi) {
         mHasOverlayUi = hasOverlayUi;
         mObserver.onHasOverlayUiChanged(mHasOverlayUi);
     }
@@ -1238,12 +1238,12 @@ public abstract class ProcessRecordInternal {
     }
 
     @GuardedBy("mServiceLock")
-    public void setIsRunningRemoteAnimation(boolean runningRemoteAnimation) {
+    void setIsRunningRemoteAnimation(boolean runningRemoteAnimation) {
         mRunningRemoteAnimation = runningRemoteAnimation;
     }
 
     @GuardedBy("mServiceLock")
-    public void setForcingToImportant(Object forcingToImportant) {
+    void setForcingToImportant(Object forcingToImportant) {
         mForcingToImportant = forcingToImportant;
     }
 
@@ -1677,7 +1677,7 @@ public abstract class ProcessRecordInternal {
     }
 
     @GuardedBy("mServiceLock")
-    public void setIsZramWrittenBack(boolean isZramWrittenBack) {
+    void setIsZramWrittenBack(boolean isZramWrittenBack) {
         mIsZramWrittenBack = isZramWrittenBack;
     }
 

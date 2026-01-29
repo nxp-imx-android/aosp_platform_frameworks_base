@@ -1216,7 +1216,7 @@ public final class CachedAppOptimizerTest {
         assertTrue(mFreezeCounter.await(5, TimeUnit.SECONDS));
 
         // Mark as written back
-        app.setIsZramWrittenBack(true);
+        mAms.mProcessStateController.setIsZramWrittenBack(app, true);
         assertTrue(app.isZramWrittenBack());
 
         // Verify onZramWritebackStateChanged call

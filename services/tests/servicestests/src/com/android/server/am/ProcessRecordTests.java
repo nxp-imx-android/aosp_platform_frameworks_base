@@ -23,6 +23,8 @@ import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentat
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -37,6 +39,7 @@ import androidx.test.filters.FlakyTest;
 
 import com.android.internal.os.TimeoutRecord;
 import com.android.server.LocalServices;
+import com.android.server.am.psc.ProcessRecordInternal;
 import com.android.server.am.psc.ProcessStateController;
 import com.android.server.wm.ActivityTaskManagerService;
 
@@ -73,8 +76,12 @@ public class ProcessRecordTests {
             final ProcessStateController psc = mock(ProcessStateController.class);
             doReturn(mock(ProcessStateController.ActivityStateAsyncUpdater.class)).when(
                     psc).createActivityStateAsyncUpdater(any());
+            doCallRealMethod().when(psc).setKilled(any(ProcessRecordInternal.class), anyBoolean());
+            doCallRealMethod().when(psc).setKilledByAm(any(ProcessRecordInternal.class),
+                    anyBoolean());
 
             sService = mock(ActivityManagerService.class);
+            sService.mProcessStateController = psc;
             sService.mActivityTaskManager = new ActivityTaskManagerService(sContext);
             sService.mActivityTaskManager.initialize(null, null, psc, sContext.getMainLooper());
             sService.mAtmInternal = sService.mActivityTaskManager.getAtmInternal();
@@ -156,7 +163,7 @@ public class ProcessRecordTests {
      */
     @Test
     public void testAnrWhenKilledByAm() {
-        mProcessRecord.setKilledByAm(true);
+        sService.mProcessStateController.setKilledByAm(mProcessRecord, true);
         appNotResponding(mProcessErrorState, "Test ANR when killed by AM");
         assertFalse(mProcessErrorState.isNotResponding());
         assertFalse(mProcessErrorState.isCrashing());
@@ -168,7 +175,7 @@ public class ProcessRecordTests {
      */
     @Test
     public void testAnrWhenKilled() {
-        mProcessRecord.setKilled(true);
+        sService.mProcessStateController.setKilled(mProcessRecord, true);
         appNotResponding(mProcessErrorState, "Test ANR when killed");
         assertFalse(mProcessErrorState.isNotResponding());
         assertFalse(mProcessErrorState.isCrashing());
