@@ -75,7 +75,8 @@ class PackageUpdateController(
             val wct = WindowContainerTransaction()
             updatingTasks.forEach { task ->
                 val icon = getIcon(task)
-                launchPlaceholderInTask(wct, task, icon)
+                val name = getName(task)
+                launchPlaceholderInTask(wct, task, icon, name)
                 ProtoLog.d(
                     WM_SHELL_PACKAGE_UPDATE,
                     "PackageUpdateController: Setting continue package update for task %d.",
@@ -113,11 +114,13 @@ class PackageUpdateController(
         wct: WindowContainerTransaction,
         task: ActivityManager.RunningTaskInfo,
         icon: Bitmap?,
+        name: CharSequence?,
     ) {
         val userId = task.userId
         val userHandle = UserHandle.of(userId)
         val userContext = userProfileContexts.getOrCreate(userId)
-        val intent = PackageUpdateActivity.createIntent(userContext, userId, task.taskId, icon)
+        val intent =
+            PackageUpdateActivity.createIntent(userContext, userId, task.taskId, icon, name)
 
         val options =
             ActivityOptions.makeBasic().apply {
@@ -183,6 +186,19 @@ class PackageUpdateController(
         }
         // Don't show any icon if there is no window decor
         // TODO(b/468276203) - Add icon when there is no window decor
+        return null
+    }
+
+    suspend fun getName(task: ActivityManager.RunningTaskInfo): CharSequence? {
+        // Handle when there is window decor
+        if (desktopModeWindowDecorViewModel.isPresent) {
+            val viewModel = desktopModeWindowDecorViewModel.get()
+            return if (viewModel.hasWindowDecoration(task.taskId)) {
+                taskResourceLoader.getNameAndHeaderIcon(task).first
+            } else {
+                null
+            }
+        }
         return null
     }
 
