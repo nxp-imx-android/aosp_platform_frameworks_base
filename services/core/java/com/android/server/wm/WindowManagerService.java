@@ -7081,8 +7081,7 @@ public class WindowManagerService extends IWindowManager.Stub
     }
 
     @Override
-    public void createInputConsumer(IBinder token, String name, int displayId,
-            InputChannel inputChannel) {
+    public InputChannel createInputConsumer(IBinder token, String name, int displayId) {
         if (!mAtmService.isCallerRecents(Binder.getCallingUid())
                 && mContext.checkCallingOrSelfPermission(INPUT_CONSUMER) != PERMISSION_GRANTED) {
             throw new SecurityException("createInputConsumer requires INPUT_CONSUMER permission");
@@ -7091,10 +7090,11 @@ public class WindowManagerService extends IWindowManager.Stub
         synchronized (mGlobalLock) {
             DisplayContent display = mRoot.getDisplayContent(displayId);
             if (display != null) {
-                display.getInputMonitor().createInputConsumer(token, name, inputChannel,
+                return display.getInputMonitor().createInputConsumer(token, name,
                         Binder.getCallingPid(), Binder.getCallingUserHandle());
             }
         }
+        return null;
     }
 
     @Override

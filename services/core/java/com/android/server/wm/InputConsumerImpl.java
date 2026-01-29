@@ -51,7 +51,7 @@ class InputConsumerImpl implements IBinder.DeathRecipient {
     private final Rect mOldWindowCrop = new Rect();
 
     InputConsumerImpl(WindowManagerService service, IBinder token, String name,
-            InputChannel inputChannel, int clientPid, UserHandle clientUser, int displayId,
+            IBinder inputChannelToken, int clientPid, UserHandle clientUser, int displayId,
             SurfaceControl.Transaction t) {
         mService = service;
         mToken = token;
@@ -59,12 +59,7 @@ class InputConsumerImpl implements IBinder.DeathRecipient {
         mClientPid = clientPid;
         mClientUser = clientUser;
 
-        InputChannel clientChannel = mService.mInputManager.createInputChannel(name);
-        mClientChannelToken = clientChannel.getToken();
-        if (inputChannel != null) {
-            clientChannel.copyTo(inputChannel);
-        }
-        clientChannel.dispose();
+        mClientChannelToken = inputChannelToken;
 
         mApplicationHandle = new InputApplicationHandle(new Binder(), name,
                 DEFAULT_DISPATCHING_TIMEOUT_MILLIS);
