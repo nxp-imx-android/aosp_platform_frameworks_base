@@ -136,6 +136,13 @@ flag {
 }
 
 flag {
+    name: "enable_animation_on_back_navigation_interception"
+    namespace: "lse_desktop_experience"
+    description: "Adds a new animation when minimization on back navigation is prevented"
+    bug: "347165603"
+}
+
+flag {
     name: "enable_app_handle_position_reporting"
     namespace: "lse_desktop_experience"
     description: "Report app handle position to the SysUi."

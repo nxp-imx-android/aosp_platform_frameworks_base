@@ -38,6 +38,7 @@ import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_BACK_PREVI
 import static com.android.server.wm.SurfaceAnimator.ANIMATION_TYPE_PREDICT_BACK;
 import static com.android.server.wm.WindowManagerService.UPDATE_FOCUS_NORMAL;
 import static com.android.window.flags.Flags.fixCrossActivityBackAnimationInBubbles;
+import static com.android.window.flags.Flags.enableAnimationOnBackNavigationInterception;
 
 import android.annotation.BinderThread;
 import android.annotation.NonNull;
@@ -348,11 +349,17 @@ class BackNavigationController {
             // We don't have an application callback, let's find the destination of the back gesture
             // The search logic should align with ActivityClientController#finishActivity
             final ArrayList<ActivityRecord> prevActivities = new ArrayList<>();
-            final boolean canAnimate = getAnimatablePrevActivities(currentTask, currentActivity,
-                    prevActivities);
+            final boolean isInterceptedByRootTask =
+                    isBackInterceptedByRootTask(currentTask, currentActivity);
+            final boolean canAnimate = !isInterceptedByRootTask
+                    && getAnimatablePrevActivities(currentTask, currentActivity, prevActivities);
             final boolean isOccluded = isKeyguardOccluded(window);
             if (!canAnimate) {
-                backType = BackNavigationInfo.TYPE_CALLBACK;
+                if (enableAnimationOnBackNavigationInterception() && isInterceptedByRootTask) {
+                    backType = BackNavigationInfo.TYPE_TASK_ROOT_INTERCEPTION;
+                } else {
+                    backType = BackNavigationInfo.TYPE_CALLBACK;
+                }
             } else if (window.mAttrs.type != TYPE_BASE_APPLICATION) {
                 // The focus window belongs to an activity and it's not the base window.
                 backType = BackNavigationInfo.TYPE_DIALOG_CLOSE;
@@ -492,7 +499,9 @@ class BackNavigationController {
             }
             infoBuilder.setPrepareRemoteAnimation(prepareAnimation);
 
-            if (removedWindowContainer != null) {
+            if (removedWindowContainer != null
+                    || (enableAnimationOnBackNavigationInterception()
+                            && backType == BackNavigationInfo.TYPE_TASK_ROOT_INTERCEPTION)) {
                 final int finalBackType = backType;
                 final RemoteCallback onBackNavigationDone = new RemoteCallback(result ->
                         onBackNavigationDone(result, finalBackType));
@@ -516,12 +525,6 @@ class BackNavigationController {
             @NonNull ArrayList<ActivityRecord> outPrevActivities) {
         final ActivityRecord root = currentTask.getRootActivity(false /*ignoreRelinquishIdentity*/,
                 true /*setToBottomIfNone*/);
-        if ((!fixCrossActivityBackAnimationInBubbles() || root == currentActivity)
-                && currentActivity.mAtmService.mTaskOrganizerController
-                .shouldInterceptBackPressedOnRootTask(currentTask.getRootTask())) {
-            // The task organizer will handle back pressed, don't play animation.
-            return false;
-        }
         if (root != null && ActivityClientController.shouldMoveTaskToBack(currentActivity, root)) {
             return true;
         }
@@ -834,6 +837,16 @@ class BackNavigationController {
             }
         }
         return !internalDisplaySupportsDesktop && externalDisplaySupportsDesktop;
+    }
+
+    @VisibleForTesting
+    static boolean isBackInterceptedByRootTask(@NonNull Task currentTask,
+            @NonNull ActivityRecord currentActivity) {
+        final ActivityRecord root = currentTask.getRootActivity(false /*ignoreRelinquishIdentity*/,
+                true /*setToBottomIfNone*/);
+        return (!fixCrossActivityBackAnimationInBubbles() || root == currentActivity)
+                && currentActivity.mAtmService.mTaskOrganizerController
+                        .shouldInterceptBackPressedOnRootTask(currentTask.getRootTask());
     }
 
     @VisibleForTesting
