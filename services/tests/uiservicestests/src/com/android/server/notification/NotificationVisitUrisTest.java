@@ -110,6 +110,7 @@ public class NotificationVisitUrisTest extends UiServiceTestCase {
     private static final ImmutableSet<Class<?>> UNUSABLE_TYPES =
             ImmutableSet.of(Consumer.class, IBinder.class, MediaSession.Token.class, Parcel.class,
                     PrintWriter.class, Resources.Theme.class, View.class,
+                    Notification.UserProfileBadgeProvider.class,
                     LayoutInflater.Factory2.class, ProtoOutputStream.class);
 
     // Maximum number of times we allow generating the same class recursively.
