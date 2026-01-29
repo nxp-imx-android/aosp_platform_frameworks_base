@@ -84,10 +84,8 @@ public:
     // The pid and uid being monitored.  These are const, and therefore may be public.
     const pid_t mPid;
     const uid_t mUid;
-    const std::optional<std::string> mPkg;
 
-    Process(pid_t pid, uid_t uid, std::optional<std::string>& pkg)
-          : mPid(pid), mUid(uid), mPkg(pkg) {}
+    Process(pid_t pid, uid_t uid) : mPid(pid), mUid(uid) {}
 
     // There is no copy constructor.
     Process(Process const&) = delete;
@@ -96,11 +94,7 @@ public:
     // descriptor is not owned by the Process, but it is copied over and then reset on the
     // right-hand side.
     Process(Process&& r) noexcept
-          : mPid(r.mPid),
-            mUid(r.mUid),
-            mPkg(r.mPkg),
-            mPidFd(std::move(r.mPidFd)),
-            mMemoryWd(r.mMemoryWd) {
+          : mPid(r.mPid), mUid(r.mUid), mPidFd(std::move(r.mPidFd)), mMemoryWd(r.mMemoryWd) {
         r.mMemoryWd = UNSET;
     }
 
@@ -209,7 +203,7 @@ public:
             throwRuntime(env, "failed to find Controller class");
             return;
         }
-        mFunc = env->GetMethodID(service, "onLimitExceeded", "(IIIJLjava/lang/String;)V");
+        mFunc = env->GetMethodID(service, "onLimitExceeded", "(IIIJ)V");
         if (mFunc == nullptr) {
             throwRuntime(env, "failed to find limiter callback");
             return;
@@ -237,15 +231,10 @@ public:
         }
     }
 
-    void operator()(int pid, int uid, MonitoredLimit type, int64_t limit,
-                    std::optional<std::string>& pkg) {
+    void operator()(int pid, int uid, MonitoredLimit type, int64_t limit) {
         JNIEnv* env;
         if (mVm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6) == JNI_OK) {
-            jstring jpkg = nullptr;
-            if (pkg.has_value()) {
-                jpkg = env->NewStringUTF(pkg.value().c_str());
-            }
-            env->CallVoidMethod(mLimiter, mFunc, pid, uid, type, limit, jpkg);
+            env->CallVoidMethod(mLimiter, mFunc, pid, uid, type, limit);
         } else {
             ALOGE("GetEnv() failed");
         }
@@ -362,8 +351,8 @@ public:
 
     // Add a process to the list of monitored processes.  The process and its file descriptors
     // is owned by the monitor.
-    bool start(int pid, int uid, std::optional<std::string>& pkg) {
-        Process p(pid, uid, pkg);
+    bool start(int pid, int uid) {
+        Process p(pid, uid);
         if (!p.init()) return false;
         base::borrowed_fd pfd = p.getPidFd();
 
@@ -505,7 +494,6 @@ private:
             pid_t pid = 0;
             uid_t uid = 0;
             MonitoredLimit type = MonitoredLimit::kUnknown;
-            std::optional<std::string> pkg;
             {
                 AutoMutex _l(mLock);
                 pid = lookup(wd);
@@ -514,7 +502,6 @@ private:
                     Process* p = &i->second;
                     uid = p->mUid;
                     type = p->getLimitType(wd);
-                    pkg = p->mPkg;
                     p->unwatch(mInotifyFd, mWdMap);
                 }
             }
@@ -533,7 +520,7 @@ private:
                         sscanf(value.c_str(), "%" SCNd64, &limit);
                     }
                 }
-                mCallback(pid, uid, type, limit, pkg);
+                mCallback(pid, uid, type, limit);
             }
         } else {
             ALOGE("read(inotify) failed: %s", strerror(errno));
@@ -568,15 +555,9 @@ void closeLimiter(JNIEnv* env, jclass, jlong service) {
 }
 
 // A process has started.
-jboolean startProcess(JNIEnv* env, jclass, jlong service, jint pid, jint uid, jstring jpkg) {
+jboolean startProcess(JNIEnv* env, jclass, jlong service, jint pid, jint uid) {
     Monitor* m = getMonitor(service);
-    ATRACE_CALL();
-    std::optional<std::string> pkg;
-    if (jpkg != nullptr) {
-        ScopedUtfChars name(env, jpkg);
-        pkg = std::string(name.c_str());
-    }
-    return m->start(pid, uid, pkg);
+    return m->start(pid, uid);
 }
 
 // A tiny class that emits a trace in its destructor.
@@ -623,7 +604,7 @@ jboolean configureLimit(JNIEnv*, jclass, jlong service, jint pid, jint uid, jlon
 
 const JNINativeMethod sMethods[] = {
         {"closeLimiter", "(J)V", (void*)closeLimiter},
-        {"onProcessStarted", "(JIILjava/lang/String;)Z", (void*)startProcess},
+        {"onProcessStarted", "(JII)Z", (void*)startProcess},
         {"configureLimit", "(JIIJ)Z", (void*)configureLimit},
         {"initLimiter", "(Lcom/android/server/am/MemoryLimiter$Controller;)J", (void*)initLimiter},
 };
