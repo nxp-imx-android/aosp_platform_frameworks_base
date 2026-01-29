@@ -15,7 +15,6 @@
   -->
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:androidprv="http://schemas.android.com/apk/prv/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/internet_connectivity_details"
@@ -83,7 +82,7 @@
                             android:layout_gravity="center"
                             android:autoMirrored="true"
                             android:src="@drawable/stat_sys_ethernet_fully"
-                            android:tint="@androidprv:color/materialColorOnPrimary" />
+                            android:tint="@color/materialColorOnPrimary" />
                     </FrameLayout>
 
                     <LinearLayout
@@ -292,7 +291,7 @@
                             android:layout_height="match_parent"
                             android:scaleType="fitCenter"
                             android:layout_gravity="center"
-                            android:tint="@androidprv:color/materialColorOnPrimary" />
+                            android:tint="@color/materialColorOnPrimary" />
                     </FrameLayout>
 
                     <LinearLayout
@@ -328,7 +327,7 @@
                             android:layout_width="24dp"
                             android:layout_gravity="end|center_vertical"
                             android:layout_height="wrap_content"
-                            android:tint="@androidprv:color/materialColorOnPrimary" />
+                            android:tint="@color/materialColorOnPrimary" />
                     </FrameLayout>
                 </LinearLayout>
 

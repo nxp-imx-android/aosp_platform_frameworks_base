@@ -429,6 +429,7 @@ android_library {
         "androidx.leanback_leanback",
         "androidx.slice_slice-core",
         "androidx.slice_slice-view",
+        "dynamiccolors",
     ],
     manifest: "AndroidManifest-res.xml",
     flags_packages: [

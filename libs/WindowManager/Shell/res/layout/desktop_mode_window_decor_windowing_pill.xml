@@ -15,14 +15,13 @@
   ~ limitations under the License.
   -->
 <merge xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:androidprv="http://schemas.android.com/apk/prv/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <ImageButton
         android:id="@+id/fullscreen_button"
         android:contentDescription="@string/fullscreen_text"
         android:src="@drawable/desktop_mode_ic_handle_menu_fullscreen"
-        android:tint="@androidprv:color/materialColorOnSurface"
+        android:tint="@color/materialColorOnSurface"
         android:tooltipText="@string/fullscreen_text"
         style="@style/DesktopModeHandleMenuWindowingButton"
         app:layout_constraintStart_toStartOf="parent"
@@ -34,7 +33,7 @@
         android:id="@+id/split_screen_button"
         android:contentDescription="@string/split_screen_text"
         android:src="@drawable/desktop_mode_ic_handle_menu_splitscreen"
-        android:tint="@androidprv:color/materialColorOnSurface"
+        android:tint="@color/materialColorOnSurface"
         android:tooltipText="@string/split_screen_text"
         style="@style/DesktopModeHandleMenuWindowingButton"
         app:layout_constraintStart_toEndOf="@id/fullscreen_button"
@@ -46,7 +45,7 @@
         android:id="@+id/floating_button"
         android:contentDescription="@string/float_button_text"
         android:src="@drawable/desktop_mode_ic_handle_menu_floating"
-        android:tint="@androidprv:color/materialColorOnSurface"
+        android:tint="@color/materialColorOnSurface"
         android:tooltipText="@string/float_button_text"
         style="@style/DesktopModeHandleMenuWindowingButton"
         app:layout_constraintStart_toEndOf="@id/split_screen_button"
@@ -58,7 +57,7 @@
         android:id="@+id/desktop_button"
         android:contentDescription="@string/desktop_text"
         android:src="@drawable/desktop_mode_ic_handle_menu_desktop"
-        android:tint="@androidprv:color/materialColorOnSurface"
+        android:tint="@color/materialColorOnSurface"
         android:tooltipText="@string/desktop_text"
         style="@style/DesktopModeHandleMenuWindowingButton"
         app:layout_constraintStart_toEndOf="@id/floating_button"
