@@ -212,7 +212,12 @@ fun ContentScope.SingleShadeNestedScrollLayout(
                                         collapsibleHeaderHeight = {
                                             overlappableHeaderHeight.intValue.toFloat()
                                         },
-                                        canOverscrollContent = { isContentTallerThanScrimAtRest() },
+                                        // Disable preScroll for nested connection while expanding
+                                        // notification
+                                        canOverscrollContent = {
+                                            isContentTallerThanScrimAtRest() &&
+                                                !viewModel.isCurrentGestureExpandingNotification
+                                        },
                                         flingBehavior = flingBehavior,
                                     )
                                 }

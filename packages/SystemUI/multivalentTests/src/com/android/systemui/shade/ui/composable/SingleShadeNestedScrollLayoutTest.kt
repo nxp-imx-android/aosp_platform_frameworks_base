@@ -52,10 +52,13 @@ import com.android.systemui.jank.interactionJankMonitor
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
+import com.android.systemui.kosmos.testScope
+import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.scene.session.shared.SessionStorage
 import com.android.systemui.scene.session.ui.composable.SaveableSession
 import com.android.systemui.scene.session.ui.composable.Session
 import com.android.systemui.statusbar.notification.stack.data.repository.notificationPlaceholderRepository
+import com.android.systemui.statusbar.notification.stack.domain.interactor.notificationStackAppearanceInteractor
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.notificationsPlaceholderViewModel
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
@@ -189,6 +192,36 @@ class SingleShadeNestedScrollLayoutTest : SysuiTestCase() {
 
             // Then the content is not "scrolledToTop" anymore
             assertThat(contentScrollState?.isScrolledToTop).isFalse()
+        }
+
+    @Test
+    fun scrollState_scrimDoesNotScrollToTop_whileExpandingNotificationGesture() =
+        kosmos.runTest {
+            val contentScrollState by
+                collectLastValue(notificationPlaceholderRepository.shadeScrollState)
+
+            // Given the content is tall enough to scroll, and the scrim is at rest
+            setTestContent(contentHeight = { 1000.dp })
+
+            // Given the current gesture is expanding a notification
+            kosmos.notificationStackAppearanceInteractor.setCurrentGestureExpandingNotif(true)
+            kosmos.notificationsPlaceholderViewModel.activateIn(kosmos.testScope)
+            runCurrent()
+
+            // When the scrim is swiped up
+            swipeScrimUp()
+            // Then scrim does NOT move up
+            assertScrimAtRest()
+            assertThat(contentScrollState?.isScrolledToTop).isFalse()
+
+            // When the current gesture is no longer expanding a notification
+            kosmos.notificationStackAppearanceInteractor.setCurrentGestureExpandingNotif(false)
+            runCurrent()
+
+            // When the scrim is swiped up
+            swipeScrimUp()
+            // Then scrim moves up
+            assertScrimScrolledToTop()
         }
 
     @Test
