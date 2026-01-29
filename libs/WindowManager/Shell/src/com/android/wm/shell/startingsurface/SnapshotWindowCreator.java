@@ -28,13 +28,19 @@ import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.protolog.ShellProtoLogGroup;
 
 class SnapshotWindowCreator {
+    // Redraw using the high-resolution snapshot if the low-resolution snapshot scale falls below
+    // the threshold.
+    private static final float REDRAW_HIGH_RES_SCALE_THRESHOLD = 0.5f;
+    private final float mLowResSnapshotScale;
     private final ShellExecutor mMainExecutor;
     private final ShellExecutor mBgExecutor;
     private final StartingSurfaceDrawer.StartingWindowRecordManager
             mStartingWindowRecordManager;
 
-    SnapshotWindowCreator(ShellExecutor mainExecutor, ShellExecutor bgExecutor,
+    SnapshotWindowCreator(float lowResSnapshotScale, ShellExecutor mainExecutor,
+            ShellExecutor bgExecutor,
             StartingSurfaceDrawer.StartingWindowRecordManager startingWindowRecordManager) {
+        mLowResSnapshotScale = lowResSnapshotScale;
         mMainExecutor = mainExecutor;
         mBgExecutor = bgExecutor;
         mStartingWindowRecordManager = startingWindowRecordManager;
@@ -52,8 +58,8 @@ class SnapshotWindowCreator {
                     startingWindowInfo.taskInfo.topActivityType, mMainExecutor,
                     taskId, mStartingWindowRecordManager);
             mStartingWindowRecordManager.addRecord(taskId, tView);
-
-            if (Flags.onlyCacheLowResTaskSnapshot() && snapshot.isLowResolution()) {
+            if (Flags.onlyCacheLowResTaskSnapshot() && snapshot.isLowResolution()
+                    && (mLowResSnapshotScale < REDRAW_HIGH_RES_SCALE_THRESHOLD)) {
                 tView.scheduleRedrawSnapshot(mBgExecutor, () -> {
                     final TaskSnapshot replace;
                     try {
@@ -68,6 +74,9 @@ class SnapshotWindowCreator {
                                 ProtoLog.v(ShellProtoLogGroup.WM_SHELL_STARTING_WINDOW,
                                         "redrawSnapshot for task=%d", taskId);
                                 surface.redrawSnapshot(replace, startingWindowInfo.taskBounds);
+                            } else {
+                                // Starting window was removed.
+                                replace.closeBuffer();
                             }
                         });
                     }
@@ -93,7 +102,7 @@ class SnapshotWindowCreator {
         protected void removeImmediately() {
             super.removeImmediately();
             mTaskSnapshotWindow.removeImmediately();
-            if (mBgExecutor != null) {
+            if (mBgExecutor != null && mRedrawSnapshotCallback != null) {
                 mBgExecutor.removeCallbacks(mRedrawSnapshotCallback);
                 mRedrawSnapshotCallback = null;
             }
