@@ -6399,6 +6399,9 @@
   <!-- Style for Material3 AlertDialog. Will only be used for sdk 36 or above. -->
   <java-symbol type="style" name="AlertDialog.Material3" />
 
+  <!-- Allow Theme_Dialog_Confirmation to use Material3 -->
+  <java-symbol type="style" name="Theme.Dialog.Confirmation" />
+
   <java-symbol type="bool" name="config_allowNormalBrightnessForDozePolicy" />
 
   <!-- Material motion spec config tokens -->
