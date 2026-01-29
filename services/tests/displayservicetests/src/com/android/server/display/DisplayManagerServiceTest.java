@@ -1049,8 +1049,11 @@ public class DisplayManagerServiceTest {
         DisplayManagerService.BinderService displayManagerBinderService =
                 mDisplayManager.new BinderService();
 
-        DisplayDevice internalDisplayDevice = logicalDisplayMapper.getDisplayLocked(
-                Display.DEFAULT_DISPLAY).getPrimaryDisplayDeviceLocked();
+        DisplayDevice internalDisplayDevice;
+        synchronized (mDisplayManager.getSyncRoot()) {
+            internalDisplayDevice = logicalDisplayMapper.getDisplayLocked(
+                    Display.DEFAULT_DISPLAY).getPrimaryDisplayDeviceLocked();
+        }
         // Create external display
         FakeDisplayDevice externalDisplayDevice =
                 createFakeDisplayDevice(mDisplayManager, new float[]{60f}, Display.TYPE_EXTERNAL);
@@ -1058,10 +1061,13 @@ public class DisplayManagerServiceTest {
                 displayManagerBinderService, externalDisplayDevice);
         initDisplayPowerController(localService);
         mDisplayManager.enableConnectedDisplay(externalDisplayId, /* enabled= */ true);
-        int internalGroupId = logicalDisplayMapper.getDisplayGroupIdFromDisplayIdLocked(
-                Display.DEFAULT_DISPLAY);
-        int externalGroupId = logicalDisplayMapper.getDisplayGroupIdFromDisplayIdLocked(
-                externalDisplayId);
+        int internalGroupId, externalGroupId;
+        synchronized (mDisplayManager.getSyncRoot()) {
+            internalGroupId = logicalDisplayMapper.getDisplayGroupIdFromDisplayIdLocked(
+                    Display.DEFAULT_DISPLAY);
+            externalGroupId = logicalDisplayMapper.getDisplayGroupIdFromDisplayIdLocked(
+                    externalDisplayId);
+        }
         DisplayManagerInternal.DisplayPowerRequest dpr =
                 new DisplayManagerInternal.DisplayPowerRequest();
         // Initialize DPCs
@@ -1080,12 +1086,16 @@ public class DisplayManagerServiceTest {
         localService.requestPowerState(externalGroupId, dpr, /* waitForNegativeProximity= */ false);
         flushHandlers();
 
-        assertEquals(Display.STATE_OFF, mDisplayManager.getLogicalDisplayMapper().getDisplayLocked(
-                internalDisplayDevice).getPrimaryDisplayDeviceLocked().getDisplayDeviceInfoLocked()
-                .committedState);
-        assertEquals(Display.STATE_ON, mDisplayManager.getLogicalDisplayMapper().getDisplayLocked(
-                externalDisplayDevice).getPrimaryDisplayDeviceLocked().getDisplayDeviceInfoLocked()
-                .committedState);
+        synchronized (mDisplayManager.getSyncRoot()) {
+            assertEquals(Display.STATE_OFF,
+                    mDisplayManager.getLogicalDisplayMapper().getDisplayLocked(
+                            internalDisplayDevice).getPrimaryDisplayDeviceLocked()
+                            .getDisplayDeviceInfoLocked().committedState);
+            assertEquals(Display.STATE_ON,
+                    mDisplayManager.getLogicalDisplayMapper().getDisplayLocked(
+                            externalDisplayDevice).getPrimaryDisplayDeviceLocked()
+                            .getDisplayDeviceInfoLocked().committedState);
+        }
 
         listener.onDeviceStateChanged(
                 new DeviceState(new DeviceState.Configuration.Builder(/* identifier= */ 456,
@@ -1100,12 +1110,16 @@ public class DisplayManagerServiceTest {
         localService.requestPowerState(externalGroupId, dpr, /* waitForNegativeProximity= */ false);
         flushHandlers();
 
-        assertEquals(Display.STATE_ON, mDisplayManager.getLogicalDisplayMapper().getDisplayLocked(
-                internalDisplayDevice).getPrimaryDisplayDeviceLocked().getDisplayDeviceInfoLocked()
-                .committedState);
-        assertEquals(Display.STATE_ON, mDisplayManager.getLogicalDisplayMapper().getDisplayLocked(
-                externalDisplayDevice).getPrimaryDisplayDeviceLocked().getDisplayDeviceInfoLocked()
-                .committedState);
+        synchronized (mDisplayManager.getSyncRoot()) {
+            assertEquals(Display.STATE_ON,
+                    mDisplayManager.getLogicalDisplayMapper().getDisplayLocked(
+                            internalDisplayDevice).getPrimaryDisplayDeviceLocked()
+                            .getDisplayDeviceInfoLocked().committedState);
+            assertEquals(Display.STATE_ON,
+                    mDisplayManager.getLogicalDisplayMapper().getDisplayLocked(
+                            externalDisplayDevice).getPrimaryDisplayDeviceLocked()
+                            .getDisplayDeviceInfoLocked().committedState);
+        }
     }
 
     /**
