@@ -22,6 +22,7 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
@@ -106,11 +107,15 @@ import org.mockito.MockitoAnnotations;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 @SmallTest
 @RunWith(AndroidJUnit4.class)
 @TestableLooper.RunWithLooper(setAsMainLooper = true)
 public class GlobalActionsDialogLiteTest extends SysuiTestCase {
+
+    private static final long TIMEOUT_IN_SECONDS = 5L;
 
     @Mock private GlobalActions.GlobalActionsManager mWindowManagerFuncs;
     @Mock private AudioManager mAudioManager;
@@ -231,7 +236,7 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
     }
 
     @Test
-    public void testPredictiveBackCallbackRegisteredAndUnregistered() {
+    public void testPredictiveBackCallbackRegisteredAndUnregistered() throws InterruptedException {
         setMaxShownPowerItems(4);
         mRepository.setPossibleGlobalActions(List.of(
                 GlobalActionType.EMERGENCY,
@@ -241,6 +246,8 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
         ));
         setShouldDisplayLockdown(true);
         GlobalActionsDialogLite globalActionsDialogLite = createGlobalActionsDialogLite();
+        final var latch = new CountDownLatch(1);
+        globalActionsDialogLite.setDismissLatchForTesting(latch);
 
         GlobalActionsDialogLite.ActionsDialogLiteDelegate delegate =
                 globalActionsDialogLite.createDialogDelegate();
@@ -250,7 +257,6 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
         spyOn(backInvokedDispatcher);
         delegate.show(null /* expandable */);
         // Clear the dismiss override so we don't have behavior after dismissing the dialog
-        assertThat(delegate.mCurrentDialog).isNotNull();
         delegate.mCurrentDialog.setDismissOverride(null);
         ArgumentCaptor<OnBackInvokedCallback> callbackCaptor =
                 ArgumentCaptor.forClass(OnBackInvokedCallback.class);
@@ -262,6 +268,12 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
 
         mTestableLooper.processAllMessages();
         verify(backInvokedDispatcher).unregisterOnBackInvokedCallback(eq(callback));
+
+        final boolean completed = latch.await(TIMEOUT_IN_SECONDS, TimeUnit.SECONDS);
+        if (!completed) {
+            fail("Timed out waiting for delegate to be dismissed");
+        }
+        assertThat(globalActionsDialogLite.mDelegate).isNull();
     }
 
     /**
@@ -270,7 +282,7 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
      */
     @FlakyTest
     @Test
-    public void testPredictiveBackInvocationDismissesDialog() {
+    public void testPredictiveBackInvocationDismissesDialog() throws InterruptedException {
         setMaxShownPowerItems(4);
         mRepository.setPossibleGlobalActions(List.of(
                 GlobalActionType.EMERGENCY,
@@ -280,6 +292,8 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
         ));
         setShouldDisplayLockdown(true);
         GlobalActionsDialogLite globalActionsDialogLite = createGlobalActionsDialogLite();
+        final var latch = new CountDownLatch(1);
+        globalActionsDialogLite.setDismissLatchForTesting(latch);
 
         GlobalActionsDialogLite.ActionsDialogLiteDelegate delegate =
                 globalActionsDialogLite.createDialogDelegate();
@@ -289,7 +303,6 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
         spyOn(backInvokedDispatcher);
         delegate.show(null /* expandable */);
         // Clear the dismiss override so we don't have behavior after dismissing the dialog
-        assertThat(delegate.mCurrentDialog).isNotNull();
         delegate.mCurrentDialog.setDismissOverride(null);
         verifyLogPosted(GlobalActionsEvent.GA_POWER_MENU_OPEN, 0 /* position */);
         ArgumentCaptor<OnBackInvokedCallback> callbackCaptor =
@@ -306,7 +319,12 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
 
         verifyLogPosted(GlobalActionsEvent.GA_CLOSE_BACK, 1 /* position */);
         verifyLogPosted(GlobalActionsEvent.GA_POWER_MENU_CLOSE, 2 /* position */);
-        assertThat(delegate.isShowing()).isFalse();
+
+        final boolean completed = latch.await(TIMEOUT_IN_SECONDS, TimeUnit.SECONDS);
+        if (!completed) {
+            fail("Timed out waiting for delegate to be dismissed");
+        }
+        assertThat(globalActionsDialogLite.mDelegate).isNull();
     }
 
     @Test
@@ -328,20 +346,21 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
     }
 
     @Test
-    public void testTouchReschedulesBurnInTimeout() {
+    public void testTouchReschedulesBurnInTimeout() throws InterruptedException {
         final int timeout = 10000;
         mFakeGlobalSettings.putInt(Settings.Global.GLOBAL_ACTIONS_TIMEOUT_MILLIS, timeout);
         setMaxShownPowerItems(1);
         mRepository.setPossibleGlobalActions(List.of(GlobalActionType.POWER));
         setShouldDisplayLockdown(true);
         GlobalActionsDialogLite globalActionsDialogLite = createGlobalActionsDialogLite();
+        final var latch = new CountDownLatch(1);
+        globalActionsDialogLite.setDismissLatchForTesting(latch);
 
-        GlobalActionsDialogLite.ActionsDialogLiteDelegate delegate =
-                globalActionsDialogLite.createDialogDelegate();
-        delegate.show(null);
+        globalActionsDialogLite.showOrHideDialog(false, true, null, Display.DEFAULT_DISPLAY);
         // Clear the dismiss override so we don't have behavior after dismissing the dialog
-        assertThat(delegate.mCurrentDialog).isNotNull();
-        delegate.mCurrentDialog.setDismissOverride(null);
+        assertThat(globalActionsDialogLite.mDelegate).isNotNull();
+        assertThat(globalActionsDialogLite.mDelegate.mCurrentDialog).isNotNull();
+        globalActionsDialogLite.mDelegate.mCurrentDialog.setDismissOverride(null);
         verifyLogPosted(GlobalActionsEvent.GA_POWER_MENU_OPEN, 0);
 
         // Advance halfway through timeout.
@@ -349,7 +368,7 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
         assertThat(mUiEventLoggerFake.numLogs()).isEqualTo(1);
 
         MotionEvent event = MotionEvent.obtain(0, 0, MotionEvent.ACTION_DOWN, 0, 0, 0);
-        delegate.mCurrentDialog.dispatchTouchEvent(event);
+        globalActionsDialogLite.mDelegate.mCurrentDialog.dispatchTouchEvent(event);
 
         // Advance past original timeout.
         mTestableLooper.moveTimeForward((timeout / 2) + 1000);
@@ -358,6 +377,12 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
         // Advance past final timeout.
         mTestableLooper.moveTimeForward(timeout / 2);
         verifyLogPosted(GlobalActionsEvent.GA_CLOSE_TIMEOUT, 1);
+
+        final boolean completed = latch.await(TIMEOUT_IN_SECONDS, TimeUnit.SECONDS);
+        if (!completed) {
+            fail("Timed out waiting for delegate to be dismissed");
+        }
+        assertThat(globalActionsDialogLite.mDelegate).isNull();
     }
 
     @Test
@@ -491,7 +516,8 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
     }
 
     @Test
-    public void testCreateActionItems_lockdownEnabled_doesShowLockdown() {
+    public void testCreateActionItems_lockdownEnabled_doesShowLockdown()
+            throws InterruptedException {
         when(mPackageManager.hasSystemFeature(PackageManager.FEATURE_TELEPHONY_CALLING))
                 .thenReturn(true);
         setMaxShownPowerItems(4);
@@ -503,6 +529,9 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
         ));
         setShouldDisplayLockdown(true);
         GlobalActionsDialogLite globalActionsDialogLite = createGlobalActionsDialogLite();
+        final var latch = new CountDownLatch(1);
+        globalActionsDialogLite.setDismissLatchForTesting(latch);
+
         globalActionsDialogLite.showOrHideDialog(false, true, null, Display.DEFAULT_DISPLAY);
         // Clear the dismiss override so we don't have behavior after dismissing the dialog
         assertThat(globalActionsDialogLite.mDelegate).isNotNull();
@@ -519,10 +548,18 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
 
         // Hide dialog
         globalActionsDialogLite.showOrHideDialog(false, true, null, Display.DEFAULT_DISPLAY);
+
+        mTestableLooper.processAllMessages();
+        final boolean completed = latch.await(TIMEOUT_IN_SECONDS, TimeUnit.SECONDS);
+        if (!completed) {
+            fail("Timed out waiting for delegate to be dismissed");
+        }
+        assertThat(globalActionsDialogLite.mDelegate).isNull();
     }
 
     @Test
-    public void testCreateActionItems_lockdownDisabled_doesNotShowLockdown() {
+    public void testCreateActionItems_lockdownDisabled_doesNotShowLockdown()
+            throws InterruptedException {
         when(mPackageManager.hasSystemFeature(PackageManager.FEATURE_TELEPHONY_CALLING))
                 .thenReturn(true);
         setMaxShownPowerItems(4);
@@ -535,6 +572,9 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
         // make sure lockdown action will NOT be shown
         setShouldDisplayLockdown(false);
         GlobalActionsDialogLite globalActionsDialogLite = createGlobalActionsDialogLite();
+        final var latch = new CountDownLatch(1);
+        globalActionsDialogLite.setDismissLatchForTesting(latch);
+
         globalActionsDialogLite.showOrHideDialog(false, true, null, Display.DEFAULT_DISPLAY);
         // Clear the dismiss override so we don't have behavior after dismissing the dialog
         assertThat(globalActionsDialogLite.mDelegate).isNotNull();
@@ -550,10 +590,18 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
 
         // Hide dialog
         globalActionsDialogLite.showOrHideDialog(false, true, null, Display.DEFAULT_DISPLAY);
+
+        mTestableLooper.processAllMessages();
+        final boolean completed = latch.await(TIMEOUT_IN_SECONDS, TimeUnit.SECONDS);
+        if (!completed) {
+            fail("Timed out waiting for delegate to be dismissed");
+        }
+        assertThat(globalActionsDialogLite.mDelegate).isNull();
     }
 
     @Test
-    public void testCreateActionItems_emergencyDisabled_doesNotShowEmergency() {
+    public void testCreateActionItems_emergencyDisabled_doesNotShowEmergency()
+            throws InterruptedException {
         // make sure emergency action will NOT be shown
         when(mPackageManager.hasSystemFeature(PackageManager.FEATURE_TELEPHONY_CALLING))
                 .thenReturn(false);
@@ -566,6 +614,9 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
         ));
         setShouldDisplayLockdown(true);
         GlobalActionsDialogLite globalActionsDialogLite = createGlobalActionsDialogLite();
+        final var latch = new CountDownLatch(1);
+        globalActionsDialogLite.setDismissLatchForTesting(latch);
+
         globalActionsDialogLite.showOrHideDialog(false, true, null, Display.DEFAULT_DISPLAY);
         // Clear the dismiss override so we don't have behavior after dismissing the dialog
         assertThat(globalActionsDialogLite.mDelegate).isNotNull();
@@ -581,6 +632,13 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
 
         // Hide dialog
         globalActionsDialogLite.showOrHideDialog(false, true, null, Display.DEFAULT_DISPLAY);
+
+        mTestableLooper.processAllMessages();
+        final boolean completed = latch.await(TIMEOUT_IN_SECONDS, TimeUnit.SECONDS);
+        if (!completed) {
+            fail("Timed out waiting for delegate to be dismissed");
+        }
+        assertThat(globalActionsDialogLite.mDelegate).isNull();
     }
 
     @Test
@@ -650,7 +708,8 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
 
     @Test
     @RequiresFlagsEnabled(Flags.FLAG_GLOBAL_ACTIONS_FEEDBACK_ACTION)
-    public void testCreateActionItems_feedbackAction_hasReceiver_showsAction() {
+    public void testCreateActionItems_feedbackAction_hasReceiver_showsAction()
+            throws InterruptedException {
         doReturn(new String[]{GlobalActionsDialogLite.GLOBAL_ACTION_KEY_FEEDBACK})
                 .when(mResources).getStringArray(R.array.config_globalActionsList);
         setMaxShownPowerItems(1);
@@ -677,6 +736,9 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
                 });
 
         GlobalActionsDialogLite globalActionsDialogLite = createGlobalActionsDialogLite();
+        final var latch = new CountDownLatch(1);
+        globalActionsDialogLite.setDismissLatchForTesting(latch);
+
         globalActionsDialogLite.showOrHideDialog(false, true, null, Display.DEFAULT_DISPLAY);
         // Clear the dismiss override so we don't have behavior after dismissing the dialog
         assertThat(globalActionsDialogLite.mDelegate).isNotNull();
@@ -690,11 +752,19 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
 
         // Hide dialog
         globalActionsDialogLite.showOrHideDialog(false, true, null, Display.DEFAULT_DISPLAY);
+
+        mTestableLooper.processAllMessages();
+        final boolean completed = latch.await(TIMEOUT_IN_SECONDS, TimeUnit.SECONDS);
+        if (!completed) {
+            fail("Timed out waiting for delegate to be dismissed");
+        }
+        assertThat(globalActionsDialogLite.mDelegate).isNull();
     }
 
     @Test
     @RequiresFlagsEnabled(Flags.FLAG_GLOBAL_ACTIONS_FEEDBACK_ACTION)
-    public void testCreateActionItems_feedbackAction_noReceiver_hidesAction() {
+    public void testCreateActionItems_feedbackAction_noReceiver_hidesAction()
+            throws InterruptedException {
         doReturn(new String[]{GlobalActionsDialogLite.GLOBAL_ACTION_KEY_FEEDBACK})
                 .when(mResources).getStringArray(R.array.config_globalActionsList);
         setMaxShownPowerItems(1);
@@ -709,6 +779,9 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
                 .thenReturn(new ArrayList<>());
 
         GlobalActionsDialogLite globalActionsDialogLite = createGlobalActionsDialogLite();
+        final var latch = new CountDownLatch(1);
+        globalActionsDialogLite.setDismissLatchForTesting(latch);
+
         globalActionsDialogLite.showOrHideDialog(false, true, null, Display.DEFAULT_DISPLAY);
         // Clear the dismiss override so we don't have behavior after dismissing the dialog
         assertThat(globalActionsDialogLite.mDelegate).isNotNull();
@@ -722,11 +795,19 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
 
         // Hide dialog
         globalActionsDialogLite.showOrHideDialog(false, true, null, Display.DEFAULT_DISPLAY);
+
+        mTestableLooper.processAllMessages();
+        final boolean completed = latch.await(TIMEOUT_IN_SECONDS, TimeUnit.SECONDS);
+        if (!completed) {
+            fail("Timed out waiting for delegate to be dismissed");
+        }
+        assertThat(globalActionsDialogLite.mDelegate).isNull();
     }
 
     @Test
     @RequiresFlagsDisabled(Flags.FLAG_GLOBAL_ACTIONS_FEEDBACK_ACTION)
-    public void testCreateActionItems_feedbackAction_flagDisabled_hidesAction() {
+    public void testCreateActionItems_feedbackAction_flagDisabled_hidesAction()
+            throws InterruptedException {
         doReturn(new String[]{GlobalActionsDialogLite.GLOBAL_ACTION_KEY_FEEDBACK})
                 .when(mResources).getStringArray(R.array.config_globalActionsList);
         setMaxShownPowerItems(1);
@@ -751,8 +832,10 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
                     }
                     return new ArrayList<>();
                 });
-
         GlobalActionsDialogLite globalActionsDialogLite = createGlobalActionsDialogLite();
+        final var latch = new CountDownLatch(1);
+        globalActionsDialogLite.setDismissLatchForTesting(latch);
+
         globalActionsDialogLite.showOrHideDialog(false, true, null, Display.DEFAULT_DISPLAY);
         // Clear the dismiss override so we don't have behavior after dismissing the dialog
         assertThat(globalActionsDialogLite.mDelegate).isNotNull();
@@ -766,10 +849,17 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
 
         // Hide dialog
         globalActionsDialogLite.showOrHideDialog(false, true, null, Display.DEFAULT_DISPLAY);
+
+        mTestableLooper.processAllMessages();
+        final boolean completed = latch.await(TIMEOUT_IN_SECONDS, TimeUnit.SECONDS);
+        if (!completed) {
+            fail("Timed out waiting for delegate to be dismissed");
+        }
+        assertThat(globalActionsDialogLite.mDelegate).isNull();
     }
 
     @Test
-    public void testOnLockScreen_disableSmartLock() {
+    public void testOnLockScreen_disableSmartLock() throws InterruptedException {
         int expectedUser = 100;
         doReturn(expectedUser).when(mFakeSelectedUserInteractor).getSelectedUserId();
         setMaxShownPowerItems(4);
@@ -781,6 +871,8 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
         ));
         setShouldDisplayLockdown(true);
         GlobalActionsDialogLite globalActionsDialogLite = createGlobalActionsDialogLite();
+        final var latch = new CountDownLatch(1);
+        globalActionsDialogLite.setDismissLatchForTesting(latch);
 
         // When entering power menu from lockscreen, with smart lock enabled
         when(mKeyguardUpdateMonitor.getUserHasTrust(anyInt())).thenReturn(true);
@@ -795,6 +887,13 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
 
         // Hide dialog
         globalActionsDialogLite.showOrHideDialog(true, true, null, Display.DEFAULT_DISPLAY);
+
+        mTestableLooper.processAllMessages();
+        final boolean completed = latch.await(TIMEOUT_IN_SECONDS, TimeUnit.SECONDS);
+        if (!completed) {
+            fail("Timed out waiting for delegate to be dismissed");
+        }
+        assertThat(globalActionsDialogLite.mDelegate).isNull();
     }
 
     @Test
@@ -850,7 +949,8 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
     }
 
     @Test
-    public void testCreateActionItems_systemUpdateEnabled_doesShowSystemUpdate() {
+    public void testCreateActionItems_systemUpdateEnabled_doesShowSystemUpdate()
+            throws InterruptedException {
         when(mPackageManager.hasSystemFeature(PackageManager.FEATURE_TELEPHONY_CALLING))
                 .thenReturn(true);
         setMaxShownPowerItems(5);
@@ -863,6 +963,9 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
         ));
         setShouldDisplayLockdown(true);
         GlobalActionsDialogLite globalActionsDialogLite = createGlobalActionsDialogLite();
+        final var latch = new CountDownLatch(1);
+        globalActionsDialogLite.setDismissLatchForTesting(latch);
+
         globalActionsDialogLite.showOrHideDialog(false, true, null, Display.DEFAULT_DISPLAY);
         // Clear the dismiss override so we don't have behavior after dismissing the dialog
         assertThat(globalActionsDialogLite.mDelegate).isNotNull();
@@ -880,10 +983,18 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
 
         // Hide dialog
         globalActionsDialogLite.showOrHideDialog(false, true, null, Display.DEFAULT_DISPLAY);
+
+        mTestableLooper.processAllMessages();
+        final boolean completed = latch.await(TIMEOUT_IN_SECONDS, TimeUnit.SECONDS);
+        if (!completed) {
+            fail("Timed out waiting for delegate to be dismissed");
+        }
+        assertThat(globalActionsDialogLite.mDelegate).isNull();
     }
 
     @Test
-    public void testCreateActionItems_systemUpdateDisabled_doesNotShowSystemUpdateAction() {
+    public void testCreateActionItems_systemUpdateDisabled_doesNotShowSystemUpdateAction()
+            throws InterruptedException {
         when(mPackageManager.hasSystemFeature(PackageManager.FEATURE_TELEPHONY_CALLING))
                 .thenReturn(true);
         setMaxShownPowerItems(5);
@@ -895,6 +1006,9 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
         ));
         setShouldDisplayLockdown(true);
         GlobalActionsDialogLite globalActionsDialogLite = createGlobalActionsDialogLite();
+        final var latch = new CountDownLatch(1);
+        globalActionsDialogLite.setDismissLatchForTesting(latch);
+
         globalActionsDialogLite.showOrHideDialog(false, true, null, Display.DEFAULT_DISPLAY);
         // Clear the dismiss override so we don't have behavior after dismissing the dialog
         assertThat(globalActionsDialogLite.mDelegate).isNotNull();
@@ -908,10 +1022,18 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
 
         // Hide dialog
         globalActionsDialogLite.showOrHideDialog(false, true, null, Display.DEFAULT_DISPLAY);
+
+        mTestableLooper.processAllMessages();
+        final boolean completed = latch.await(TIMEOUT_IN_SECONDS, TimeUnit.SECONDS);
+        if (!completed) {
+            fail("Timed out waiting for delegate to be dismissed");
+        }
+        assertThat(globalActionsDialogLite.mDelegate).isNull();
     }
 
     @Test
-    public void testCreateActionItems_systemUpdateEnabled_locked_showsSystemUpdate() {
+    public void testCreateActionItems_systemUpdateEnabled_locked_showsSystemUpdate()
+            throws InterruptedException {
         when(mPackageManager.hasSystemFeature(PackageManager.FEATURE_TELEPHONY_CALLING))
                 .thenReturn(true);
         setMaxShownPowerItems(5);
@@ -924,6 +1046,8 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
         ));
         setShouldDisplayLockdown(true);
         GlobalActionsDialogLite globalActionsDialogLite = createGlobalActionsDialogLite();
+        final var latch = new CountDownLatch(1);
+        globalActionsDialogLite.setDismissLatchForTesting(latch);
 
         // Show dialog with keyguard showing
         globalActionsDialogLite.showOrHideDialog(true, true, null, Display.DEFAULT_DISPLAY);
@@ -937,10 +1061,18 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
 
         // Hide dialog
         globalActionsDialogLite.showOrHideDialog(true, true, null, Display.DEFAULT_DISPLAY);
+
+        mTestableLooper.processAllMessages();
+        final boolean completed = latch.await(TIMEOUT_IN_SECONDS, TimeUnit.SECONDS);
+        if (!completed) {
+            fail("Timed out waiting for delegate to be dismissed");
+        }
+        assertThat(globalActionsDialogLite.mDelegate).isNull();
     }
 
     @Test
-    public void testCreateActionItems_systemUpdateEnabled_notProvisioned_noSystemUpdate() {
+    public void testCreateActionItems_systemUpdateEnabled_notProvisioned_noSystemUpdate()
+            throws InterruptedException {
         when(mPackageManager.hasSystemFeature(PackageManager.FEATURE_TELEPHONY_CALLING))
                 .thenReturn(true);
         setMaxShownPowerItems(5);
@@ -953,6 +1085,8 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
         ));
         setShouldDisplayLockdown(true);
         GlobalActionsDialogLite globalActionsDialogLite = createGlobalActionsDialogLite();
+        final var latch = new CountDownLatch(1);
+        globalActionsDialogLite.setDismissLatchForTesting(latch);
 
         // Show dialog with keyguard showing
         globalActionsDialogLite.showOrHideDialog(false, false, null, Display.DEFAULT_DISPLAY);
@@ -967,16 +1101,25 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
         // Hide dialog
         globalActionsDialogLite.showOrHideDialog(false, false, null, Display.DEFAULT_DISPLAY);
 
+        mTestableLooper.processAllMessages();
+        final boolean completed = latch.await(TIMEOUT_IN_SECONDS, TimeUnit.SECONDS);
+        if (!completed) {
+            fail("Timed out waiting for delegate to be dismissed");
+        }
+        assertThat(globalActionsDialogLite.mDelegate).isNull();
     }
 
     @Test
-    public void userSwitching_dismissDialog() {
+    public void userSwitching_dismissDialog() throws InterruptedException {
         setMaxShownPowerItems(2);
         mRepository.setPossibleGlobalActions(List.of(
                 GlobalActionType.POWER,
                 GlobalActionType.RESTART
         ));
         GlobalActionsDialogLite globalActionsDialogLite = createGlobalActionsDialogLite();
+        final var latch = new CountDownLatch(1);
+        globalActionsDialogLite.setDismissLatchForTesting(latch);
+
         globalActionsDialogLite.showOrHideDialog(false, true, null, Display.DEFAULT_DISPLAY);
         // Clear the dismiss override so we don't have behavior after dismissing the dialog
         assertThat(globalActionsDialogLite.mDelegate).isNotNull();
@@ -992,8 +1135,12 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
         verify(mUserTracker).addCallback(captor.capture(), eq(mBackgroundExecutor));
 
         captor.getValue().onBeforeUserSwitching(100);
-        mTestableLooper.processAllMessages();
 
+        mTestableLooper.processAllMessages();
+        final boolean completed = latch.await(TIMEOUT_IN_SECONDS, TimeUnit.SECONDS);
+        if (!completed) {
+            fail("Timed out waiting for delegate to be dismissed");
+        }
         assertThat(globalActionsDialogLite.mDelegate).isNull();
     }
 
@@ -1025,7 +1172,8 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
     }
 
     @Test
-    public void testCreateActionItems_standbyDisabled_doesNotShowStandbyAction() {
+    public void testCreateActionItems_standbyDisabled_doesNotShowStandbyAction()
+            throws InterruptedException {
         when(mPackageManager.hasSystemFeature(PackageManager.FEATURE_TELEPHONY_CALLING))
                 .thenReturn(true);
         setMaxShownPowerItems(5);
@@ -1037,6 +1185,9 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
         ));
         setShouldDisplayLockdown(true);
         GlobalActionsDialogLite globalActionsDialogLite = createGlobalActionsDialogLite();
+        final var latch = new CountDownLatch(1);
+        globalActionsDialogLite.setDismissLatchForTesting(latch);
+
         globalActionsDialogLite.showOrHideDialog(false, true, null, Display.DEFAULT_DISPLAY);
         // Clear the dismiss override so we don't have behavior after dismissing the dialog
         assertThat(globalActionsDialogLite.mDelegate).isNotNull();
@@ -1050,10 +1201,18 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
 
         // Hide dialog
         globalActionsDialogLite.showOrHideDialog(false, true, null, Display.DEFAULT_DISPLAY);
+
+        mTestableLooper.processAllMessages();
+        final boolean completed = latch.await(TIMEOUT_IN_SECONDS, TimeUnit.SECONDS);
+        if (!completed) {
+            fail("Timed out waiting for delegate to be dismissed");
+        }
+        assertThat(globalActionsDialogLite.mDelegate).isNull();
     }
 
     @Test
-    public void testCreateActionItems_standbyEnabled_locked_showsStandby() {
+    public void testCreateActionItems_standbyEnabled_locked_showsStandby()
+            throws InterruptedException {
         // Test like a TV, which only has standby and shut down
         setMaxShownPowerItems(2);
         mRepository.setPossibleGlobalActions(List.of(
@@ -1061,6 +1220,8 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
                 GlobalActionType.POWER
         ));
         GlobalActionsDialogLite globalActionsDialogLite = createGlobalActionsDialogLite();
+        final var latch = new CountDownLatch(1);
+        globalActionsDialogLite.setDismissLatchForTesting(latch);
 
         // Show dialog with keyguard showing and provisioned
         globalActionsDialogLite.showOrHideDialog(true, true, null, Display.DEFAULT_DISPLAY);
@@ -1074,10 +1235,18 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
 
         // Hide dialog
         globalActionsDialogLite.showOrHideDialog(true, true, null, Display.DEFAULT_DISPLAY);
+
+        mTestableLooper.processAllMessages();
+        final boolean completed = latch.await(TIMEOUT_IN_SECONDS, TimeUnit.SECONDS);
+        if (!completed) {
+            fail("Timed out waiting for delegate to be dismissed");
+        }
+        assertThat(globalActionsDialogLite.mDelegate).isNull();
     }
 
     @Test
-    public void testCreateActionItems_standbyEnabled_notProvisioned_showsStandby() {
+    public void testCreateActionItems_standbyEnabled_notProvisioned_showsStandby()
+            throws InterruptedException {
         // Test like a TV, which only has standby and shut down.
         setMaxShownPowerItems(2);
         mRepository.setPossibleGlobalActions(List.of(
@@ -1085,6 +1254,8 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
                 GlobalActionType.POWER
         ));
         GlobalActionsDialogLite globalActionsDialogLite = createGlobalActionsDialogLite();
+        final var latch = new CountDownLatch(1);
+        globalActionsDialogLite.setDismissLatchForTesting(latch);
 
         // Show dialog without keyguard showing and not provisioned
         globalActionsDialogLite.showOrHideDialog(false, false, null, Display.DEFAULT_DISPLAY);
@@ -1098,10 +1269,18 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
 
         // Hide dialog
         globalActionsDialogLite.showOrHideDialog(false, false, null, Display.DEFAULT_DISPLAY);
+
+        mTestableLooper.processAllMessages();
+        final boolean completed = latch.await(TIMEOUT_IN_SECONDS, TimeUnit.SECONDS);
+        if (!completed) {
+            fail("Timed out waiting for delegate to be dismissed");
+        }
+        assertThat(globalActionsDialogLite.mDelegate).isNull();
     }
 
     @Test
-    public void testCreateActionItems_noneTv_actionsNotFocusableAndClickable() {
+    public void testCreateActionItems_noneTv_actionsNotFocusableAndClickable()
+            throws InterruptedException {
         // Test like a TV, which only has standby and shut down.
         when(mPackageManager.hasSystemFeature(PackageManager.FEATURE_LEANBACK)).thenReturn(false);
         setMaxShownPowerItems(2);
@@ -1110,35 +1289,45 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
                 GlobalActionType.POWER
         ));
         GlobalActionsDialogLite globalActionsDialogLite = createGlobalActionsDialogLite();
+        final var latch = new CountDownLatch(1);
+        globalActionsDialogLite.setDismissLatchForTesting(latch);
 
-        GlobalActionsDialogLite.ActionsDialogLiteDelegate delegate =
-                globalActionsDialogLite.createDialogDelegate();
-        delegate.show(null /* expandable */);
+        globalActionsDialogLite.showOrHideDialog(false, true, null, Display.DEFAULT_DISPLAY);
         // Clear the dismiss override so we don't have behavior after dismissing the dialog
-        assertThat(delegate.mCurrentDialog).isNotNull();
-        delegate.mCurrentDialog.setDismissOverride(null);
+        assertThat(globalActionsDialogLite.mDelegate).isNotNull();
+        assertThat(globalActionsDialogLite.mDelegate.mCurrentDialog).isNotNull();
+        globalActionsDialogLite.mDelegate.mCurrentDialog.setDismissOverride(null);
         mTestableLooper.processAllMessages();
-        assertThat(delegate.isShowing()).isTrue();
+        assertThat(globalActionsDialogLite.mDelegate.isShowing()).isTrue();
 
         final GlobalActionsDialogLite.SinglePressAction action =
                 (GlobalActionsDialogLite.SinglePressAction) globalActionsDialogLite.mItems.get(0);
         assertThat(action.mIconView.isClickable()).isFalse();
         assertThat(action.mIconView.isFocusable()).isFalse();
         assertThat(action.mIconView.performClick()).isFalse();
-        assertThat(delegate.isShowing()).isTrue();
+        assertThat(globalActionsDialogLite.mDelegate.isShowing()).isTrue();
 
         final GlobalActionsDialogLite.SinglePressAction action1 =
                 (GlobalActionsDialogLite.SinglePressAction) globalActionsDialogLite.mItems.get(1);
         assertThat(action1.mIconView.isClickable()).isFalse();
         assertThat(action1.mIconView.isFocusable()).isFalse();
         assertThat(action1.mIconView.performClick()).isFalse();
-        assertThat(delegate.isShowing()).isTrue();
+        assertThat(globalActionsDialogLite.mDelegate.isShowing()).isTrue();
 
-        delegate.dismiss();
+        // Hide dialog
+        globalActionsDialogLite.showOrHideDialog(false, true, null, Display.DEFAULT_DISPLAY);
+
+        mTestableLooper.processAllMessages();
+        final boolean completed = latch.await(TIMEOUT_IN_SECONDS, TimeUnit.SECONDS);
+        if (!completed) {
+            fail("Timed out waiting for delegate to be dismissed");
+        }
+        assertThat(globalActionsDialogLite.mDelegate).isNull();
     }
 
     @Test
-    public void testCreateActionItems_tv_actionsFocusableAndClickable() {
+    public void testCreateActionItems_tv_actionsFocusableAndClickable()
+            throws InterruptedException {
         // Test like a TV, which only has standby and shut down.
         when(mPackageManager.hasSystemFeature(PackageManager.FEATURE_LEANBACK)).thenReturn(true);
         setMaxShownPowerItems(2);
@@ -1147,15 +1336,16 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
                 GlobalActionType.POWER
         ));
         GlobalActionsDialogLite globalActionsDialogLite = createGlobalActionsDialogLite();
+        final var latch = new CountDownLatch(1);
+        globalActionsDialogLite.setDismissLatchForTesting(latch);
 
-        GlobalActionsDialogLite.ActionsDialogLiteDelegate delegate =
-                globalActionsDialogLite.createDialogDelegate();
-        delegate.show(null /* expandable */);
+        globalActionsDialogLite.showOrHideDialog(false, true, null, Display.DEFAULT_DISPLAY);
         // Clear the dismiss override so we don't have behavior after dismissing the dialog
-        assertThat(delegate.mCurrentDialog).isNotNull();
-        delegate.mCurrentDialog.setDismissOverride(null);
+        assertThat(globalActionsDialogLite.mDelegate).isNotNull();
+        assertThat(globalActionsDialogLite.mDelegate.mCurrentDialog).isNotNull();
+        globalActionsDialogLite.mDelegate.mCurrentDialog.setDismissOverride(null);
         verifyLogPosted(GlobalActionsEvent.GA_POWER_MENU_OPEN, 0 /* position */);
-        assertThat(delegate.isShowing()).isTrue();
+        assertThat(globalActionsDialogLite.mDelegate.isShowing()).isTrue();
 
         final GlobalActionsDialogLite.SinglePressAction action =
                 (GlobalActionsDialogLite.SinglePressAction) globalActionsDialogLite.mItems.get(0);
@@ -1171,7 +1361,11 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
         verifyLogPosted(GlobalActionsEvent.GA_POWER_MENU_CLOSE, 1 /* position */);
         verifyLogPosted(GlobalActionsEvent.GA_STANDBY_PRESS, 2 /* position */);
 
-        delegate.dismiss();
+        final boolean completed = latch.await(TIMEOUT_IN_SECONDS, TimeUnit.SECONDS);
+        if (!completed) {
+            fail("Timed out waiting for delegate to be dismissed");
+        }
+        assertThat(globalActionsDialogLite.mDelegate).isNull();
     }
 
     @Test
@@ -1184,7 +1378,7 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
     }
 
     @Test
-    public void testCreateActionItems_lockEnabled_doesShowLock() {
+    public void testCreateActionItems_lockEnabled_doesShowLock() throws InterruptedException {
         when(mPackageManager.hasSystemFeature(PackageManager.FEATURE_TELEPHONY_CALLING))
                 .thenReturn(true);
         setMaxShownPowerItems(4);
@@ -1197,6 +1391,8 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
         when(mKeyguardStateController.isMethodSecure()).thenReturn(true);
         when(mKeyguardStateController.isUnlocked()).thenReturn(true);
         GlobalActionsDialogLite globalActionsDialogLite = createGlobalActionsDialogLite();
+        final var latch = new CountDownLatch(1);
+        globalActionsDialogLite.setDismissLatchForTesting(latch);
 
         globalActionsDialogLite.showOrHideDialog(false, true, null, Display.DEFAULT_DISPLAY);
         // Clear the dismiss override so we don't have behavior after dismissing the dialog
@@ -1212,10 +1408,18 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
 
         // Hide dialog
         globalActionsDialogLite.showOrHideDialog(false, true, null, Display.DEFAULT_DISPLAY);
+
+        mTestableLooper.processAllMessages();
+        final boolean completed = latch.await(TIMEOUT_IN_SECONDS, TimeUnit.SECONDS);
+        if (!completed) {
+            fail("Timed out waiting for delegate to be dismissed");
+        }
+        assertThat(globalActionsDialogLite.mDelegate).isNull();
     }
 
     @Test
-    public void testCreateActionItems_keyguardShowing_doesNotShowLock() {
+    public void testCreateActionItems_keyguardShowing_doesNotShowLock()
+            throws InterruptedException {
         when(mPackageManager.hasSystemFeature(PackageManager.FEATURE_TELEPHONY_CALLING))
                 .thenReturn(true);
         setMaxShownPowerItems(4);
@@ -1228,6 +1432,8 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
         when(mKeyguardStateController.isMethodSecure()).thenReturn(true);
         when(mKeyguardStateController.isUnlocked()).thenReturn(true);
         GlobalActionsDialogLite globalActionsDialogLite = createGlobalActionsDialogLite();
+        final var latch = new CountDownLatch(1);
+        globalActionsDialogLite.setDismissLatchForTesting(latch);
 
         globalActionsDialogLite.showOrHideDialog(true, true, null, Display.DEFAULT_DISPLAY);
         // Clear the dismiss override so we don't have behavior after dismissing the dialog
@@ -1240,10 +1446,18 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
 
         // Hide dialog
         globalActionsDialogLite.showOrHideDialog(true, true, null, Display.DEFAULT_DISPLAY);
+
+        mTestableLooper.processAllMessages();
+        final boolean completed = latch.await(TIMEOUT_IN_SECONDS, TimeUnit.SECONDS);
+        if (!completed) {
+            fail("Timed out waiting for delegate to be dismissed");
+        }
+        assertThat(globalActionsDialogLite.mDelegate).isNull();
     }
 
     @Test
-    public void testCreateActionItems_deviceNotProvisioned_doesNotShowLock() {
+    public void testCreateActionItems_deviceNotProvisioned_doesNotShowLock()
+            throws InterruptedException {
         when(mPackageManager.hasSystemFeature(PackageManager.FEATURE_TELEPHONY_CALLING))
                 .thenReturn(true);
         setMaxShownPowerItems(4);
@@ -1256,6 +1470,8 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
         when(mKeyguardStateController.isMethodSecure()).thenReturn(true);
         when(mKeyguardStateController.isUnlocked()).thenReturn(true);
         GlobalActionsDialogLite globalActionsDialogLite = createGlobalActionsDialogLite();
+        final var latch = new CountDownLatch(1);
+        globalActionsDialogLite.setDismissLatchForTesting(latch);
 
         globalActionsDialogLite.showOrHideDialog(false, false, null, Display.DEFAULT_DISPLAY);
         // Clear the dismiss override so we don't have behavior after dismissing the dialog
@@ -1268,10 +1484,17 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
 
         // Hide dialog
         globalActionsDialogLite.showOrHideDialog(false, false, null, Display.DEFAULT_DISPLAY);
+
+        mTestableLooper.processAllMessages();
+        final boolean completed = latch.await(TIMEOUT_IN_SECONDS, TimeUnit.SECONDS);
+        if (!completed) {
+            fail("Timed out waiting for delegate to be dismissed");
+        }
+        assertThat(globalActionsDialogLite.mDelegate).isNull();
     }
 
     @Test
-    public void testCreateActionItems_noLockScreen_doesNotShowLock() {
+    public void testCreateActionItems_noLockScreen_doesNotShowLock() throws InterruptedException {
         when(mPackageManager.hasSystemFeature(PackageManager.FEATURE_TELEPHONY_CALLING))
                 .thenReturn(true);
         setMaxShownPowerItems(4);
@@ -1284,6 +1507,8 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
         when(mKeyguardStateController.isMethodSecure()).thenReturn(false);
         when(mKeyguardStateController.isUnlocked()).thenReturn(true);
         GlobalActionsDialogLite globalActionsDialogLite = createGlobalActionsDialogLite();
+        final var latch = new CountDownLatch(1);
+        globalActionsDialogLite.setDismissLatchForTesting(latch);
 
         globalActionsDialogLite.showOrHideDialog(false, true, null, Display.DEFAULT_DISPLAY);
         // Clear the dismiss override so we don't have behavior after dismissing the dialog
@@ -1296,10 +1521,17 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
 
         // Hide dialog
         globalActionsDialogLite.showOrHideDialog(false, true, null, Display.DEFAULT_DISPLAY);
+
+        mTestableLooper.processAllMessages();
+        final boolean completed = latch.await(TIMEOUT_IN_SECONDS, TimeUnit.SECONDS);
+        if (!completed) {
+            fail("Timed out waiting for delegate to be dismissed");
+        }
+        assertThat(globalActionsDialogLite.mDelegate).isNull();
     }
 
     @Test
-    public void testCreateActionItems_deviceLocked_doesNotShowLock() {
+    public void testCreateActionItems_deviceLocked_doesNotShowLock() throws InterruptedException {
         when(mPackageManager.hasSystemFeature(PackageManager.FEATURE_TELEPHONY_CALLING))
                 .thenReturn(true);
         setMaxShownPowerItems(4);
@@ -1312,6 +1544,8 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
         when(mKeyguardStateController.isMethodSecure()).thenReturn(true);
         when(mKeyguardStateController.isUnlocked()).thenReturn(false);
         GlobalActionsDialogLite globalActionsDialogLite = createGlobalActionsDialogLite();
+        final var latch = new CountDownLatch(1);
+        globalActionsDialogLite.setDismissLatchForTesting(latch);
 
         globalActionsDialogLite.showOrHideDialog(false, true, null, Display.DEFAULT_DISPLAY);
         // Clear the dismiss override so we don't have behavior after dismissing the dialog
@@ -1324,6 +1558,13 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
 
         // Hide dialog
         globalActionsDialogLite.showOrHideDialog(false, true, null, Display.DEFAULT_DISPLAY);
+
+        mTestableLooper.processAllMessages();
+        final boolean completed = latch.await(TIMEOUT_IN_SECONDS, TimeUnit.SECONDS);
+        if (!completed) {
+            fail("Timed out waiting for delegate to be dismissed");
+        }
+        assertThat(globalActionsDialogLite.mDelegate).isNull();
     }
 
     @Test
