@@ -31560,48 +31560,62 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
     public @interface PointerCaptureMode {}
 
     /**
-     * Requests pointer capture mode.
-     * <p>
-     * When the window has pointer capture, the mouse pointer icon will disappear and will not
-     * change its position. Enabling pointer capture will change the behavior of input devices in
-     * the following ways:
-     * <ul>
-     *     <li>Events from a mouse will be delivered with the source
-     *     {@link InputDevice#SOURCE_MOUSE_RELATIVE}, and relative position changes will be
-     *     available through {@link MotionEvent#getX} and {@link MotionEvent#getY}.</li>
+     * {@if (flag(com.android.hardware.input.Flags.FLAG_POINTER_CAPTURE_MODES)) {
+     *     Requests pointer capture in
+     *     {@if (flag(com.android.hardware.input.Flags.FLAG_RELATIVE_CAPTURE_MODE_BY_DEFAULT))
+     *         {relative}
+     *     else
+     *         {absolute}
+     *     } mode.
+     *     <p>
+     *     Equivalent to calling {@link #requestPointerCapture(int)} with
+     *     {@if (flag(com.android.hardware.input.Flags.FLAG_RELATIVE_CAPTURE_MODE_BY_DEFAULT))
+     *         {{@link #POINTER_CAPTURE_MODE_RELATIVE}}
+     *     else
+     *         {{@link #POINTER_CAPTURE_MODE_ABSOLUTE}}
+     *     }.
+     * } else {
+     *     Requests pointer capture mode.
+     *     <p>
+     *     When the window has pointer capture, the mouse pointer icon will disappear and will not
+     *     change its position. Enabling pointer capture will change the behavior of input devices
+     *     in the following ways:
+     *     <ul>
+     *         <li>Events from a mouse will be delivered with the source
+     *         {@link InputDevice#SOURCE_MOUSE_RELATIVE}, and relative position changes will be
+     *         available through {@link MotionEvent#getX} and {@link MotionEvent#getY}.</li>
      *
-     *     <li>Events from a touchpad or trackpad will be delivered with the source
-     *     {@link InputDevice#SOURCE_TOUCHPAD}, where the absolute position of each of the pointers
-     *     on the touchpad will be available through {@link MotionEvent#getX(int)} and
-     *     {@link MotionEvent#getY(int)}, and their relative movements are stored in
-     *     {@link MotionEvent#AXIS_RELATIVE_X} and {@link MotionEvent#AXIS_RELATIVE_Y}.</li>
+     *         <li>Events from a touchpad or trackpad will be delivered with the source {@link
+     *         InputDevice#SOURCE_TOUCHPAD}, where the absolute position of each of the pointers on
+     *         the touchpad will be available through {@link MotionEvent#getX(int)} and {@link
+     *         MotionEvent#getY(int)}, and their relative movements are stored in {@link
+     *         MotionEvent#AXIS_RELATIVE_X} and {@link MotionEvent#AXIS_RELATIVE_Y}.</li>
      *
-     *     <li>Events from other types of devices, such as touchscreens, will not be affected.</li>
-     * </ul>
-     * <p>
-     * When pointer capture changes, connected mouse and trackpad devices may be reconfigured,
-     * and their properties (such as their sources or motion ranges) may change. Use an
-     * {@link android.hardware.input.InputManager.InputDeviceListener} to be notified when a device
-     * changes (which may happen after enabling or disabling pointer capture), and use
-     * {@link InputDevice#getDevice(int)} to get the updated {@link InputDevice}.
-     * <p>
-     * Events captured through pointer capture will be dispatched to
-     * {@link OnCapturedPointerListener#onCapturedPointer(View, MotionEvent)} if an
-     * {@link OnCapturedPointerListener} is set, and otherwise to
-     * {@link #onCapturedPointerEvent(MotionEvent)}.
-     * <p>
-     * If the window already has pointer capture, this call does nothing.
-     * <p>
-     * The capture may be released through {@link #releasePointerCapture()}, or will be lost
-     * automatically when the window loses focus.
+     *         <li>Events from other types of devices, such as touchscreens, will not be
+     *         affected.</li>
+     *     </ul>
+     *     <p>
+     *     When pointer capture changes, connected mouse and trackpad devices may be reconfigured,
+     *     and their properties (such as their sources or motion ranges) may change. Use an {@link
+     *     android.hardware.input.InputManager.InputDeviceListener} to be notified when a device
+     *     changes (which may happen after enabling or disabling pointer capture), and use {@link
+     *     InputDevice#getDevice(int)} to get the updated {@link InputDevice}.
+     *     <p>
+     *     Events captured through pointer capture will be dispatched to
+     *     {@link OnCapturedPointerListener#onCapturedPointer(View, MotionEvent)} if an
+     *     {@link OnCapturedPointerListener} is set, and otherwise to
+     *     {@link #onCapturedPointerEvent(MotionEvent)}.
+     *     <p>
+     *     If the window already has pointer capture, this call does nothing.
+     *     <p>
+     *     The capture may be released through {@link #releasePointerCapture()}, or will be lost
+     *     automatically when the window loses focus.
+     * }}
      *
      * @see #releasePointerCapture()
      * @see #hasPointerCapture()
      * @see #onPointerCaptureChange(boolean)
      */
-    // TODO(b/403531245): when the flag launches, update this JavaDoc to say that calling this
-    //  method is equivalent to calling requestPointerCapture(int) with a particular mode, and
-    //  update the paragraph on what happens if the window already has pointer capture.
     public void requestPointerCapture() {
         final ViewRootImpl viewRootImpl = getViewRootImpl();
         if (viewRootImpl != null) {
@@ -31658,6 +31672,8 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
      * @see #hasPointerCapture()
      * @see #onPointerCaptureChange(boolean)
      */
+    // TODO(b/403531245): update the paragraph on what happens if the window already has pointer
+    //   capture in a different mode.
     @FlaggedApi(com.android.hardware.input.Flags.FLAG_POINTER_CAPTURE_MODES)
     public void requestPointerCapture(@PointerCaptureMode int mode) {
         final ViewRootImpl viewRootImpl = getViewRootImpl();
