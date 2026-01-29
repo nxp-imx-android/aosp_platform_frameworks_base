@@ -828,7 +828,8 @@
 
         <!-- AppFunctions -->
         <activity android:name=".appfunctions.trampoline.AppFunctionExecutorProxy"
-            android:exported="false"
+            android:exported="true"
+            android:permission="android.permission.EXECUTE_APP_FUNCTIONS"
             android:excludeFromRecents="true"
             android:theme="@android:style/Theme.NoDisplay">
         </activity >
