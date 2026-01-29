@@ -131,6 +131,7 @@ import com.android.internal.util.IntPair;
 import com.android.server.AlarmManagerInternal;
 import com.android.server.AppSchedulingModuleThread;
 import com.android.server.LocalServices;
+import com.android.server.deviceidle.Flags;
 import com.android.server.pm.pkg.AndroidPackage;
 import com.android.server.usage.AppIdleHistory.AppUsageHistory;
 import com.android.tools.r8.keepanno.annotations.KeepItemKind;
@@ -3024,12 +3025,13 @@ public class AppStandbyController
      * Observe changes for {@link DeviceConfig#NAMESPACE_APP_STANDBY} and other standby related
      * Settings constants.
      */
-    private class ConstantsObserver extends ContentObserver implements
+    class ConstantsObserver extends ContentObserver implements
             DeviceConfig.OnPropertiesChangedListener {
         private static final String KEY_STRONG_USAGE_HOLD_DURATION = "strong_usage_duration";
         private static final String KEY_NOTIFICATION_SEEN_HOLD_DURATION =
                 "notification_seen_duration";
-        private static final String KEY_NOTIFICATION_SEEN_PROMOTED_BUCKET =
+        @VisibleForTesting
+        static final String KEY_NOTIFICATION_SEEN_PROMOTED_BUCKET =
                 "notification_seen_promoted_bucket";
         private static final String KEY_RETAIN_NOTIFICATION_SEEN_IMPACT_FOR_PRE_T_APPS =
                 "retain_notification_seen_impact_for_pre_t_apps";
@@ -3098,8 +3100,10 @@ public class AppStandbyController
 
         public static final long DEFAULT_SLICE_PINNED_TIMEOUT =
                 COMPRESS_TIME ? 12 * ONE_MINUTE : 2 * ONE_HOUR;
+
         public static final int DEFAULT_NOTIFICATION_SEEN_PROMOTED_BUCKET =
-                STANDBY_BUCKET_WORKING_SET;
+                Flags.removeNotificationSeenElevation()
+                        ? STANDBY_BUCKET_RARE : STANDBY_BUCKET_WORKING_SET;
         public static final boolean DEFAULT_RETAIN_NOTIFICATION_SEEN_IMPACT_FOR_PRE_T_APPS = false;
         public static final boolean DEFAULT_TRIGGER_QUOTA_BUMP_ON_NOTIFICATION_SEEN = false;
         public static final long DEFAULT_SYSTEM_UPDATE_TIMEOUT =
