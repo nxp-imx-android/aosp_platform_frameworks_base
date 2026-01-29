@@ -46,7 +46,9 @@ import com.android.systemui.qs.panels.domain.interactor.tileSquishinessInteracto
 import com.android.systemui.qs.panels.ui.viewmodel.setConfigurationForMediaInRow
 import com.android.systemui.res.R
 import com.android.systemui.shade.data.repository.FakeShadeRepository
+import com.android.systemui.shade.domain.interactor.shadeModeInteractor
 import com.android.systemui.shade.largeScreenHeaderHelper
+import com.android.systemui.shade.shared.model.ShadeMode
 import com.android.systemui.statusbar.StatusBarState
 import com.android.systemui.statusbar.disableflags.data.repository.fakeDisableFlagsRepository
 import com.android.systemui.statusbar.disableflags.shared.model.DisableFlagsModel
@@ -400,17 +402,23 @@ class QSFragmentComposeViewModelTest : AbstractQSFragmentComposeViewModelTest() 
     @DisableSceneContainer
     @DisableFlags(Flags.FLAG_MEDIA_CONTROLS_IN_COMPOSE)
     fun disappearParams() = runTest {
+        val shadeMode by collectLastValue(shadeModeInteractor.shadeMode)
         setMediaState(ACTIVE_MEDIA)
 
         setConfigurationForMediaInRow(false)
 
-        assertThat(underTest.qqsMediaHost.disappearParameters).isEqualTo(disappearParamsColumn)
-        assertThat(underTest.qsMediaHost.disappearParameters).isEqualTo(disappearParamsColumn)
+        if (shadeMode is ShadeMode.Split) {
+            // mediaInRow is always false on Split shade, and QQS is never shown.
+            assertThat(underTest.qsMediaHost.disappearParameters).isEqualTo(disappearParamsColumn)
+        } else {
+            assertThat(underTest.qqsMediaHost.disappearParameters).isEqualTo(disappearParamsColumn)
+            assertThat(underTest.qsMediaHost.disappearParameters).isEqualTo(disappearParamsColumn)
 
-        setConfigurationForMediaInRow(true)
+            setConfigurationForMediaInRow(true)
 
-        assertThat(underTest.qqsMediaHost.disappearParameters).isEqualTo(disappearParamsRow)
-        assertThat(underTest.qsMediaHost.disappearParameters).isEqualTo(disappearParamsRow)
+            assertThat(underTest.qqsMediaHost.disappearParameters).isEqualTo(disappearParamsRow)
+            assertThat(underTest.qsMediaHost.disappearParameters).isEqualTo(disappearParamsRow)
+        }
     }
 
     @Test
