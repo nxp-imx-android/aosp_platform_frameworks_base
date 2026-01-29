@@ -122,6 +122,7 @@ import android.view.inputmethod.EditorInfo;
 import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.android.internal.inputmethod.IRemoteComputerControlInputConnection;
+import com.android.internal.os.IResultReceiver;
 import com.android.server.LocalServices;
 import com.android.server.appinteraction.AppInteractionService;
 import com.android.server.input.InputManagerInternal;
@@ -262,6 +263,8 @@ public class ComputerControlSessionImplTest {
     private IApplicationThread mAppThread;
     @Mock
     private IComputerControlSessionCallback mCallback;
+    @Mock
+    private IResultReceiver mA11yEmbeddedConnectionReceiver;
 
     @Captor
     private ArgumentCaptor<Intent> mIntentArgumentCaptor;
@@ -937,7 +940,8 @@ public class ComputerControlSessionImplTest {
                 .thenReturn(displayMirror);
 
         final var returnedMirrorSurface = Mockito.mock(SurfaceControl.class);
-        IInteractiveMirror mirror = mSession.createInteractiveMirror(returnedMirrorSurface);
+        IInteractiveMirror mirror = mSession.createInteractiveMirror(
+                mA11yEmbeddedConnectionReceiver, returnedMirrorSurface);
 
         final var mirrorSurface = displayMirror.getMirrorSurfaceControl();
         verify(mWindowManagerInternal).createMirrorForDisplayContent(VIRTUAL_DISPLAY_ID);
@@ -956,7 +960,8 @@ public class ComputerControlSessionImplTest {
                 .thenReturn(null);
 
         final var returnedMirrorSurface = new SurfaceControl();
-        IInteractiveMirror mirror = mSession.createInteractiveMirror(returnedMirrorSurface);
+        IInteractiveMirror mirror = mSession.createInteractiveMirror(
+                mA11yEmbeddedConnectionReceiver, returnedMirrorSurface);
 
         verify(mWindowManagerInternal).createMirrorForDisplayContent(VIRTUAL_DISPLAY_ID);
         assertThat(mirror).isNull();
@@ -969,7 +974,8 @@ public class ComputerControlSessionImplTest {
         when(mWindowManagerInternal.createMirrorForDisplayContent(VIRTUAL_DISPLAY_ID))
                 .thenReturn(displayMirror);
         final var returnedMirrorSurface = Mockito.mock(SurfaceControl.class);
-        IInteractiveMirror mirror = mSession.createInteractiveMirror(returnedMirrorSurface);
+        IInteractiveMirror mirror = mSession.createInteractiveMirror(
+                mA11yEmbeddedConnectionReceiver, returnedMirrorSurface);
         assertThat(mirror).isNotNull();
         verify(mWindowManagerInternal).createMirrorForDisplayContent(VIRTUAL_DISPLAY_ID);
         verify(returnedMirrorSurface).copyFrom(mSurfaceControlArgumentCaptor.capture(), any());
@@ -988,13 +994,15 @@ public class ComputerControlSessionImplTest {
         final var displayMirror1 = mockDisplayMirror();
         when(mWindowManagerInternal.createMirrorForDisplayContent(VIRTUAL_DISPLAY_ID))
                 .thenReturn(displayMirror1);
-        IInteractiveMirror mirror1 = mSession.createInteractiveMirror(new SurfaceControl());
+        IInteractiveMirror mirror1 = mSession.createInteractiveMirror(
+                mA11yEmbeddedConnectionReceiver, new SurfaceControl());
         assertThat(mirror1).isNotNull();
         verify(mInputManagerInternal).setForceShowTouchesOnDisplay(VIRTUAL_DISPLAY_ID, true);
         final var displayMirror2 = mockDisplayMirror();
         when(mWindowManagerInternal.createMirrorForDisplayContent(VIRTUAL_DISPLAY_ID))
                 .thenReturn(displayMirror2);
-        IInteractiveMirror mirror2 = mSession.createInteractiveMirror(new SurfaceControl());
+        IInteractiveMirror mirror2 = mSession.createInteractiveMirror(
+                mA11yEmbeddedConnectionReceiver, new SurfaceControl());
         assertThat(mirror2).isNotNull();
         verify(mWindowManagerInternal, times(2)).createMirrorForDisplayContent(VIRTUAL_DISPLAY_ID);
         clearInvocations(mTransaction);
@@ -1014,7 +1022,8 @@ public class ComputerControlSessionImplTest {
         when(mWindowManagerInternal.createMirrorForDisplayContent(VIRTUAL_DISPLAY_ID))
                 .thenReturn(displayMirror);
         final var returnedMirrorSurface = Mockito.mock(SurfaceControl.class);
-        IInteractiveMirror mirror = mSession.createInteractiveMirror(returnedMirrorSurface);
+        IInteractiveMirror mirror = mSession.createInteractiveMirror(
+                mA11yEmbeddedConnectionReceiver, returnedMirrorSurface);
         assertThat(mirror).isNotNull();
         mirror.close();
         clearInvocations(mTransaction, displayMirror);
@@ -1572,7 +1581,8 @@ public class ComputerControlSessionImplTest {
                 any())).thenReturn(true);
         setupMockMirror();
 
-        IInteractiveMirror mirror = mSession.createInteractiveMirror(new SurfaceControl());
+        IInteractiveMirror mirror = mSession.createInteractiveMirror(
+                mA11yEmbeddedConnectionReceiver, new SurfaceControl());
         assertThat(mirror).isNotNull();
 
         mSession.requestScreenshot();
@@ -1591,7 +1601,7 @@ public class ComputerControlSessionImplTest {
         createComputerControlSession(mDefaultParams);
         setupMockMirror();
 
-        mSession.createInteractiveMirror(new SurfaceControl());
+        mSession.createInteractiveMirror(mA11yEmbeddedConnectionReceiver, new SurfaceControl());
 
         verify(mWindowManagerInternal).requestHardwareRendererOutputEnabled(eq(VIRTUAL_DISPLAY_ID),
                 eq(0L), any(), any());
@@ -1601,7 +1611,8 @@ public class ComputerControlSessionImplTest {
     public void closeInteractiveMirror_disablesHardwareRendererOutput() throws Exception {
         createComputerControlSession(mDefaultParams);
         setupMockMirror();
-        IInteractiveMirror mirror = mSession.createInteractiveMirror(new SurfaceControl());
+        IInteractiveMirror mirror = mSession.createInteractiveMirror(
+                mA11yEmbeddedConnectionReceiver, new SurfaceControl());
         clearInvocations(mWindowManagerInternal);
 
         mirror.close();
@@ -1619,7 +1630,8 @@ public class ComputerControlSessionImplTest {
                 any())).thenReturn(true);
         setupMockMirror();
 
-        IInteractiveMirror mirror = mSession.createInteractiveMirror(new SurfaceControl());
+        IInteractiveMirror mirror = mSession.createInteractiveMirror(
+                mA11yEmbeddedConnectionReceiver, new SurfaceControl());
         mSession.requestScreenshot();
         clearInvocations(mWindowManagerInternal);
 
@@ -1632,7 +1644,8 @@ public class ComputerControlSessionImplTest {
     public void updateInsets_appliesInsetsToVirtualDisplay() throws Exception {
         createComputerControlSession(mDefaultParams);
         setupMockMirror();
-        IInteractiveMirror mirror = mSession.createInteractiveMirror(new SurfaceControl());
+        IInteractiveMirror mirror = mSession.createInteractiveMirror(
+                mA11yEmbeddedConnectionReceiver, new SurfaceControl());
         Insets insets = Insets.of(10, 20, 30, 40);
 
         mirror.updateInsets(insets);
@@ -1652,7 +1665,8 @@ public class ComputerControlSessionImplTest {
     public void updateInsets_scaled_appliesScaledInsetsToVirtualDisplay() throws Exception {
         createComputerControlSession(mDefaultParams);
         setupMockMirror();
-        IInteractiveMirror mirror = mSession.createInteractiveMirror(new SurfaceControl());
+        IInteractiveMirror mirror = mSession.createInteractiveMirror(
+                mA11yEmbeddedConnectionReceiver, new SurfaceControl());
         // DISPLAY_WIDTH = 600, DISPLAY_HEIGHT = 1000
         // resize to 300x500 -> scale = 2.0
         mirror.resize(300, 500);
@@ -1675,7 +1689,8 @@ public class ComputerControlSessionImplTest {
     public void closeInteractiveMirror_removesInsets() throws Exception {
         createComputerControlSession(mDefaultParams);
         setupMockMirror();
-        IInteractiveMirror mirror = mSession.createInteractiveMirror(new SurfaceControl());
+        IInteractiveMirror mirror = mSession.createInteractiveMirror(
+                mA11yEmbeddedConnectionReceiver, new SurfaceControl());
         Insets insets = Insets.of(10, 20, 30, 40);
         mirror.updateInsets(insets);
         verify(mWindowManager, timeout(UI_THREAD_TIMEOUT_MS)).addView(any(), any());
@@ -1723,7 +1738,7 @@ public class ComputerControlSessionImplTest {
     public void updatePowerState_blockedState_withMirror_doesNotSleep() throws Exception {
         createComputerControlSession(mDefaultParams);
         setupMockMirror();
-        mSession.createInteractiveMirror(new SurfaceControl());
+        mSession.createInteractiveMirror(mA11yEmbeddedConnectionReceiver, new SurfaceControl());
         verify(mVirtualDevice).addActivityListener(any(),
                 mActivityListenerArgumentCaptor.capture());
         final var activityListener = mActivityListenerArgumentCaptor.getValue();
@@ -1747,7 +1762,7 @@ public class ComputerControlSessionImplTest {
         clearInvocations(mVirtualDevice);
 
         setupMockMirror();
-        mSession.createInteractiveMirror(new SurfaceControl());
+        mSession.createInteractiveMirror(mA11yEmbeddedConnectionReceiver, new SurfaceControl());
         waitForIdle();
 
         verify(mVirtualDevice).wakeUp();
@@ -1757,7 +1772,8 @@ public class ComputerControlSessionImplTest {
     public void updatePowerState_removeMirrorWhileBlocked_sleepsDevice() throws Exception {
         createComputerControlSession(mDefaultParams);
         setupMockMirror();
-        IInteractiveMirror mirror = mSession.createInteractiveMirror(new SurfaceControl());
+        IInteractiveMirror mirror = mSession.createInteractiveMirror(
+                mA11yEmbeddedConnectionReceiver, new SurfaceControl());
         verify(mVirtualDevice).addActivityListener(any(),
                 mActivityListenerArgumentCaptor.capture());
         final var activityListener = mActivityListenerArgumentCaptor.getValue();
@@ -1903,7 +1919,8 @@ public class ComputerControlSessionImplTest {
     public void setInteractive_inBlockedState_enablesInteractivity() throws Exception {
         createComputerControlSession(mDefaultParams);
         setupMockMirror();
-        IInteractiveMirror mirror = mSession.createInteractiveMirror(new SurfaceControl());
+        IInteractiveMirror mirror = mSession.createInteractiveMirror(
+                mA11yEmbeddedConnectionReceiver, new SurfaceControl());
         mirror.setInteractive(false);
 
         try (InBlockedState inBlockedState = new InBlockedState()) {
@@ -1918,7 +1935,8 @@ public class ComputerControlSessionImplTest {
     public void setInteractive_inBlockedState_disablesInteractivity() throws Exception {
         createComputerControlSession(mDefaultParams);
         setupMockMirror();
-        IInteractiveMirror mirror = mSession.createInteractiveMirror(new SurfaceControl());
+        IInteractiveMirror mirror = mSession.createInteractiveMirror(
+                mA11yEmbeddedConnectionReceiver, new SurfaceControl());
 
         try (InBlockedState inBlockedState = new InBlockedState()) {
             mirror.setInteractive(true);
@@ -1934,7 +1952,8 @@ public class ComputerControlSessionImplTest {
     public void setInteractive_inActiveState_doesNotEnableInteractivity() throws Exception {
         createComputerControlSession(mDefaultParams);
         setupMockMirror();
-        IInteractiveMirror mirror = mSession.createInteractiveMirror(new SurfaceControl());
+        IInteractiveMirror mirror = mSession.createInteractiveMirror(
+                mA11yEmbeddedConnectionReceiver, new SurfaceControl());
 
         clearInvocations(mTransaction);
         mirror.setInteractive(true);
@@ -1946,7 +1965,8 @@ public class ComputerControlSessionImplTest {
     public void setInteractive_transitionToBlocked_enablesInteractivity() throws Exception {
         createComputerControlSession(mDefaultParams);
         setupMockMirror();
-        IInteractiveMirror mirror = mSession.createInteractiveMirror(new SurfaceControl());
+        IInteractiveMirror mirror = mSession.createInteractiveMirror(
+                mA11yEmbeddedConnectionReceiver, new SurfaceControl());
         mirror.setInteractive(true);
         clearInvocations(mTransaction);
 
@@ -1959,7 +1979,8 @@ public class ComputerControlSessionImplTest {
     public void setInteractive_transitionToActive_disablesInteractivity() throws Exception {
         createComputerControlSession(mDefaultParams);
         setupMockMirror();
-        IInteractiveMirror mirror = mSession.createInteractiveMirror(new SurfaceControl());
+        IInteractiveMirror mirror = mSession.createInteractiveMirror(
+                mA11yEmbeddedConnectionReceiver, new SurfaceControl());
 
         try (InBlockedState inBlockedState = new InBlockedState()) {
             mirror.setInteractive(true);
@@ -1969,6 +1990,28 @@ public class ComputerControlSessionImplTest {
         waitForIdle();
 
         verify(mTransaction).setDropInputMode(any(), eq(DropInputMode.ALL));
+    }
+
+    @Test
+    public void setInteractive_inBlockedState_enablesA11yForwarding() throws Exception {
+        createComputerControlSession(mDefaultParams);
+        setupMockMirror();
+        IInteractiveMirror mirror = mSession.createInteractiveMirror(
+                mA11yEmbeddedConnectionReceiver, new SurfaceControl());
+        mirror.setInteractive(false);
+
+        try (InBlockedState inBlockedState = new InBlockedState()) {
+            clearInvocations(mWindowManagerInternal);
+            mirror.setInteractive(true);
+
+            verify(mWindowManagerInternal).setFocusedA11yEmbeddedConnectionReceiverOnDisplay(
+                    eq(VIRTUAL_DISPLAY_ID), eq(mA11yEmbeddedConnectionReceiver));
+        }
+        mSession.requestUnblock();
+        waitForIdle();
+
+        verify(mWindowManagerInternal).setFocusedA11yEmbeddedConnectionReceiverOnDisplay(
+                eq(VIRTUAL_DISPLAY_ID), eq(null));
     }
 
     @Test

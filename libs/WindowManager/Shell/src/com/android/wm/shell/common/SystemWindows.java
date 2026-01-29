@@ -414,5 +414,8 @@ public class SystemWindows {
 
         @Override
         public void requestViewAnimationsDisabled(boolean disabled) {}
+
+        @Override
+        public void requestAccessibilityEmbeddedConnection(IResultReceiver receiver) {}
     }
 }

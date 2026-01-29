@@ -264,6 +264,7 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.logging.MetricsLogger;
 import com.android.internal.logging.nano.MetricsProto.MetricsEvent;
+import com.android.internal.os.IResultReceiver;
 import com.android.internal.policy.TransitionAnimation;
 import com.android.internal.protolog.ProtoLog;
 import com.android.internal.util.ToBooleanFunction;
@@ -873,6 +874,10 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
 
     /** Whether client rendering limitations are enabled for this display. **/
     private boolean mAreClientRenderingLimitationsEnabled = false;
+
+    /** The result receiver for getting a11y embedded connection updates of the focused window. */
+    @Nullable
+    private IResultReceiver mA11yEmbeddedConnectionReceiver = null;
 
     private final Consumer<WindowState> mUpdateWindowsForAnimator = w -> {
         WindowStateAnimator winAnimator = w.mWinAnimator;
@@ -1584,6 +1589,25 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                         Surface.FRAME_RATE_COMPATIBILITY_DEFAULT)
                 .setFrameRateSelectionStrategy(mSurfaceControl,
                         SurfaceControl.FRAME_RATE_SELECTION_STRATEGY_OVERRIDE_CHILDREN);
+    }
+
+    void setFocusedA11yEmbeddedConnectionReceiver(@Nullable IResultReceiver receiver) {
+        if (mA11yEmbeddedConnectionReceiver == receiver) {
+            return;
+        }
+        mA11yEmbeddedConnectionReceiver = receiver;
+        handleA11yEmbeddedConnectionUpdatesForFocusedWindow();
+    }
+
+    private void handleA11yEmbeddedConnectionUpdatesForFocusedWindow() {
+        if (mA11yEmbeddedConnectionReceiver == null || mCurrentFocus == null) {
+            return;
+        }
+        try {
+            mCurrentFocus.mClient.requestAccessibilityEmbeddedConnection(
+                    mA11yEmbeddedConnectionReceiver);
+        } catch (RemoteException e) {
+        }
     }
 
     /**
@@ -4449,6 +4473,8 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                     this::updateAccessibilityOnWindowFocusChanged,
                     mWmService.mAccessibilityController));
         }
+
+        handleA11yEmbeddedConnectionUpdatesForFocusedWindow();
 
         return true;
     }

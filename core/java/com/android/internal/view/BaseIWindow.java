@@ -149,4 +149,8 @@ public class BaseIWindow extends WindowClientTransactionHandler {
     @Override
     public void dispatchScrollToTop(int x) {
     }
+
+    @Override
+    public void requestAccessibilityEmbeddedConnection(IResultReceiver receiver) {
+    }
 }

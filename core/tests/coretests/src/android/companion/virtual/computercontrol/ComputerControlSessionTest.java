@@ -60,7 +60,6 @@ import org.mockito.MockitoAnnotations;
 
 import java.time.Duration;
 import java.util.concurrent.Executor;
-import java.util.function.Consumer;
 
 @RunWith(AndroidJUnit4.class)
 public class ComputerControlSessionTest {
@@ -83,7 +82,7 @@ public class ComputerControlSessionTest {
     @Mock
     private ComputerControlSession.StabilityListener mMockStabilityListener;
     @Mock
-    private Consumer<AccessibilityDisplayProxy> mRegisterProxy;
+    private ComputerControlSession.InjectedA11yManager mA11yManager;
 
     @Captor
     private ArgumentCaptor<AccessibilityDisplayProxy> mProxyCaptor;
@@ -95,7 +94,6 @@ public class ComputerControlSessionTest {
     private ComputerControlSession mSession;
     private IComputerControlLifecycleCallback mLifecycle;
     private Surface mSurface;
-    private AccessibilityDisplayProxy mAccessibilityProxy;
 
     private AutoCloseable mMockitoSession;
 
@@ -109,13 +107,10 @@ public class ComputerControlSessionTest {
         displayInfo.logicalHeight = HEIGHT;
         when(mDisplayManager.getDisplayInfo(DISPLAY_ID)).thenReturn(displayInfo);
 
-        mSession = new ComputerControlSession(DISPLAY_ID, mMockSession, mRegisterProxy,
+        mSession = new ComputerControlSession(DISPLAY_ID, mMockSession, mA11yManager,
                 mMockOnClosedRunnable, new DisplayManagerGlobal(mDisplayManager));
 
         // Capture session initialization args from constructor.
-        verify(mRegisterProxy).accept(mProxyCaptor.capture());
-        mAccessibilityProxy = mProxyCaptor.getValue();
-        assertThat(mAccessibilityProxy).isNotNull();
         verify(mMockSession).initialize(mLifecycleCaptor.capture(), mSurfaceCaptor.capture());
         mLifecycle = mLifecycleCaptor.getValue();
         assertThat(mLifecycle).isNotNull();
@@ -143,9 +138,9 @@ public class ComputerControlSessionTest {
 
     @Test
     public void createInteractiveMirror_returns() throws RemoteException {
-        when(mMockSession.createInteractiveMirror(any()))
+        when(mMockSession.createInteractiveMirror(any(), any()))
                 .thenReturn(mMockInteractiveMirror);
-        InteractiveMirror mirror = mSession.createInteractiveMirror();
+        InteractiveMirror mirror = mSession.createInteractiveMirror(null);
         assertThat(mirror).isNotNull();
     }
 
@@ -360,14 +355,18 @@ public class ComputerControlSessionTest {
     }
 
     @Test
-    public void setStabilityListener_waitsForFirstFrame_afterAccessibilityEvent() {
+    public void setStabilityListener_waitsForFirstFrame_afterAccessibilityEvent()
+            throws RemoteException {
+        mLifecycle.onActive();
+        verify(mA11yManager).registerDisplayProxy(mProxyCaptor.capture());
+        var a11yProxy = mProxyCaptor.getValue();
         mSession.setStabilityListener(Duration.ofMillis(0), mExecutor, mMockStabilityListener);
         // Tap to reset the idle state.
         mSession.tap(0, 0);
         verify(mMockStabilityListener, Mockito.after(100).never()).onSessionStable();
 
         // Verify listener is NOT called after accessibility event
-        mAccessibilityProxy.onAccessibilityEvent(null);
+        a11yProxy.onAccessibilityEvent(null);
         verify(mMockStabilityListener, Mockito.after(100).never()).onSessionStable();
 
         drawFrame(mSurface);
@@ -376,7 +375,10 @@ public class ComputerControlSessionTest {
     }
 
     @Test
-    public void setStabilityListener_accessibilityEvent_extendsTimeout() {
+    public void setStabilityListener_accessibilityEvent_extendsTimeout() throws RemoteException {
+        mLifecycle.onActive();
+        verify(mA11yManager).registerDisplayProxy(mProxyCaptor.capture());
+        var a11yProxy = mProxyCaptor.getValue();
         drawFrame(mSurface);
 
         mSession.setStabilityListener(Duration.ofMillis(100), mExecutor, mMockStabilityListener);
@@ -385,7 +387,7 @@ public class ComputerControlSessionTest {
 
         for (int i = 0; i < 4; i++) {
             SystemClock.sleep(60);
-            mAccessibilityProxy.onAccessibilityEvent(null);
+            a11yProxy.onAccessibilityEvent(null);
         }
         verify(mMockStabilityListener, never()).onSessionStable();
 
@@ -432,14 +434,18 @@ public class ComputerControlSessionTest {
     }
 
     @Test
-    public void setStabilityListener_frameAlreadyAvailable_firesAfterAccessibilityEvent() {
+    public void setStabilityListener_frameAlreadyAvailable_firesAfterAccessibilityEvent()
+            throws RemoteException {
+        mLifecycle.onActive();
+        verify(mA11yManager).registerDisplayProxy(mProxyCaptor.capture());
+        var a11yProxy = mProxyCaptor.getValue();
         drawFrame(mSurface);
         SystemClock.sleep(FRAME_PROCESSING_DELAY_MS);
 
         mSession.setStabilityListener(Duration.ofMillis(100), mExecutor, mMockStabilityListener);
         // Tap to reset the idle state.
         mSession.tap(0, 0);
-        mAccessibilityProxy.onAccessibilityEvent(null);
+        a11yProxy.onAccessibilityEvent(null);
 
         verify(mMockStabilityListener, timeout(2 * 100)).onSessionStable();
     }

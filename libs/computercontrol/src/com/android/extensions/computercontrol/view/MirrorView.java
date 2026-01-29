@@ -22,7 +22,9 @@ import android.companion.virtual.computercontrol.InteractiveMirror;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Insets;
+import android.graphics.Matrix;
 import android.graphics.Rect;
+import android.os.Bundle;
 import android.os.HandlerThread;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -30,6 +32,7 @@ import android.util.Size;
 import android.view.Display;
 import android.view.DisplayInfo;
 import android.view.Gravity;
+import android.view.RemoteAccessibilityController;
 import android.view.SurfaceControl;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -40,12 +43,15 @@ import android.view.ViewRootImpl;
 import android.view.ViewTreeObserver;
 import android.view.WindowInsets;
 import android.view.WindowManager;
+import android.view.accessibility.AccessibilityNodeInfo;
+import android.view.accessibility.IAccessibilityEmbeddedConnection;
 import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.android.extensions.computercontrol.ComputerControlSession;
+import com.android.internal.os.IResultReceiver;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -123,6 +129,23 @@ public class MirrorView extends FrameLayout {
         return true;
     };
 
+    private final IResultReceiver mA11yEmbeddedConnectionReceiver = new IResultReceiver.Stub() {
+        @Override
+        public void send(int resultCode, Bundle resultData) {
+            final var connection = IAccessibilityEmbeddedConnection.Stub.asInterface(
+                    resultData.getBinder(
+                            WindowManager.PARCEL_KEY_A11Y_EMBEDDED_CONNECTION));
+
+            Log.i(TAG, "Received new a11y embedded connection:  " + connection);
+            post(() -> {
+                if (mComputerControlSession == null || !mIsMirrorSurfaceCreated) {
+                    return;
+                }
+                mMirrorSurface.setA11yRemoteConnection(connection);
+            });
+        }
+    };
+
     public MirrorView(Context context) {
         super(context);
         init();
@@ -189,7 +212,7 @@ public class MirrorView extends FrameLayout {
                 mInteractiveMirror.close();
             }
             final var interactiveMirror = session != null
-                    ? session.createInteractiveMirror() : null;
+                    ? session.createInteractiveMirror(mA11yEmbeddedConnectionReceiver) : null;
             mInteractiveMirror = interactiveMirror;
 
             final SurfaceControl mirrorSurface;
@@ -351,6 +374,7 @@ public class MirrorView extends FrameLayout {
             public void surfaceDestroyed(@NonNull SurfaceHolder holder) {
                 mIsMirrorSurfaceCreated = false;
                 getViewTreeObserver().removeOnPreDrawListener(mOnPreDrawListener);
+                mMirrorSurface.setA11yRemoteConnection(null);
                 updateInteractiveMirrorOnAuxThread(null, false);
             }
         });
@@ -393,10 +417,14 @@ public class MirrorView extends FrameLayout {
         @ScaleType
         private int mScaleType = DEFAULT_SCALE_TYPE;
 
+        private final RemoteAccessibilityController mRemoteA11yController =
+                new RemoteAccessibilityController(MirrorSurface.this);
+
         MirrorSurface(Context context) {
             super(context);
             setCompositionOrder(0);
             setSurfaceLifecycle(SURFACE_LIFECYCLE_FOLLOWS_VISIBILITY);
+            setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_YES);
         }
 
         void setScaleType(@ScaleType int scaleType) {
@@ -485,6 +513,47 @@ public class MirrorView extends FrameLayout {
             invalidate();
         }
 
+        void setA11yRemoteConnection(@Nullable IAccessibilityEmbeddedConnection connection) {
+            if (connection == null) {
+                mRemoteA11yController.disassociateHierarchy();
+                return;
+            }
+            if (mRemoteA11yController.alreadyAssociated(connection)) {
+                return;
+            }
+            mRemoteA11yController.associateHierarchy(connection,
+                    getViewRootImpl().getAccessibilityLeashToken(), getAccessibilityViewId(),
+                    getAccessibilityWindowId());
+            updateEmbeddedAccessibilityMatrix(/* force= */true);
+        }
+
+        @Override
+        public void onInitializeAccessibilityNodeInfoInternal(AccessibilityNodeInfo info) {
+            super.onInitializeAccessibilityNodeInfoInternal(info);
+            if (!mRemoteA11yController.connected()) {
+                return;
+            }
+            // Add a leashed child when this SurfaceView embeds another view hierarchy. Getting this
+            // leashed child would return the root node in the embedded hierarchy
+            info.addChild(mRemoteA11yController.getLeashToken());
+        }
+
+        private void updateEmbeddedAccessibilityMatrix(boolean force) {
+            if (!mRemoteA11yController.connected()) {
+                return;
+            }
+            var bounds = new Rect();
+            getBoundsOnScreen(bounds);
+            var transformation = mCurrentTransformation != null
+                    ? mCurrentTransformation
+                    : Transformation.IDENTITY;
+            var matrix = new Matrix();
+            matrix.setScale(transformation.scale, transformation.scale);
+            matrix.postTranslate(bounds.left + transformation.translateX,
+                    bounds.top + transformation.translateY);
+            mRemoteA11yController.setWindowMatrix(matrix, force);
+        }
+
         private void updateMirrorSurface() {
             final var parentSurface = getSurfaceControl();
             final boolean parentChanged = !isSame(parentSurface, mPreviousParentSurface);
@@ -531,6 +600,7 @@ public class MirrorView extends FrameLayout {
                 }
 
                 applyTransactionOnVriDraw(transaction);
+                updateEmbeddedAccessibilityMatrix(/* force= */false);
             }
         }
 

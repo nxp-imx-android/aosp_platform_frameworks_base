@@ -8919,6 +8919,21 @@ public class WindowManagerService extends IWindowManager.Stub
         }
 
         @Override
+        public void setFocusedA11yEmbeddedConnectionReceiverOnDisplay(int displayId,
+                @Nullable IResultReceiver receiver) {
+            synchronized (mGlobalLock) {
+                final DisplayContent dc = mRoot.getDisplayContent(displayId);
+                if (dc == null) {
+                    Slog.e(TAG, "Failed to set A11y embedded connection receiver"
+                            + " for display: " + displayId
+                            + " - DisplayContent not found.");
+                    return;
+                }
+                dc.setFocusedA11yEmbeddedConnectionReceiver(receiver);
+            }
+        }
+
+        @Override
         public void setThemeReady(boolean ready) {
             synchronized (mGlobalLock) {
                 mThemeReady = ready;
