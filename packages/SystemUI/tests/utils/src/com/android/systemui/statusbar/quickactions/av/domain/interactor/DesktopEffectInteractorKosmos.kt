@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.quickactions.av.domain.interactor
 
+import com.android.systemui.accessibility.domain.interactor.captioningInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.backgroundScope
 import com.android.systemui.kosmos.testDispatcher
@@ -29,5 +30,6 @@ val Kosmos.desktopEffectInteractor: DesktopEffectInteractor by
             bgDispatcher = testDispatcher,
             selectedUserInteractor = selectedUserInteractor,
             secureSettingsForUserRepository = secureSettingsForUserRepository,
+            captioningInteractor = captioningInteractor,
         )
     }

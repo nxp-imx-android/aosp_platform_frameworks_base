@@ -31,8 +31,7 @@ constructor(private val desktopEffectInteractor: DesktopEffectInteractor) :
         desktopEffectInteractor.model
             .map {
                 ButtonUiState(
-                    // TODO(b/436222258): Attach to backend when available
-                    isEnabled = false,
+                    isEnabled = it.liveCaptions,
                     subText = com.android.systemui.res.R.string.av_live_captions,
                     image = com.android.systemui.res.R.drawable.subtitles,
                 )
@@ -40,7 +39,7 @@ constructor(private val desktopEffectInteractor: DesktopEffectInteractor) :
             .hydratedStateOf(initialValue = ButtonUiState())
 
     override suspend fun onClick() {
-        // TODO(b/436222258): Attach to backend when available
+        desktopEffectInteractor.setLiveCaptions(newValue = !state.isEnabled)
     }
 
     /** A factory to be used to create view model instances. */

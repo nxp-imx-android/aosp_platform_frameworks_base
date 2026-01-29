@@ -21,12 +21,14 @@ import android.testing.TestableLooper.RunWithLooper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.accessibility.data.repository.fakeCaptioningRepository
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.statusbar.quickactions.av.domain.interactor.DesktopEffectInteractor.Companion.DESKTOP_EFFECTS_BLUR_LEVEL_KEY
+import com.android.systemui.statusbar.quickactions.av.domain.interactor.DesktopEffectInteractor.Companion.DESKTOP_EFFECTS_CAMERA_FRAMING_KEY
 import com.android.systemui.statusbar.quickactions.av.domain.interactor.DesktopEffectInteractor.Companion.DESKTOP_EFFECTS_FACE_RETOUCH_KEY
 import com.android.systemui.statusbar.quickactions.av.domain.interactor.DesktopEffectInteractor.Companion.DESKTOP_EFFECTS_PORTRAIT_RELIGHT_KEY
 import com.android.systemui.statusbar.quickactions.av.domain.interactor.DesktopEffectInteractor.Companion.DESKTOP_EFFECTS_STUDIO_MIC_KEY
@@ -172,6 +174,42 @@ class DesktopEffectInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    fun receiveCameraFraming() =
+        kosmos.runTest {
+            assertThat(latest!!.cameraFraming).isEqualTo(false)
+
+            fakeSettings.putBoolForUser(
+                userHandle = FIRST_USER.id,
+                name = DESKTOP_EFFECTS_CAMERA_FRAMING_KEY,
+                value = true,
+            )
+
+            assertThat(latest!!.cameraFraming).isEqualTo(true)
+
+            fakeSettings.putBoolForUser(
+                userHandle = FIRST_USER.id,
+                name = DESKTOP_EFFECTS_CAMERA_FRAMING_KEY,
+                value = false,
+            )
+
+            assertThat(latest!!.cameraFraming).isEqualTo(false)
+        }
+
+    @Test
+    fun receiveLiveCaptions() =
+        kosmos.runTest {
+            assertThat(latest!!.liveCaptions).isEqualTo(false)
+
+            fakeCaptioningRepository.setIsSystemAudioCaptioningEnabled(true)
+
+            assertThat(latest!!.liveCaptions).isEqualTo(true)
+
+            fakeCaptioningRepository.setIsSystemAudioCaptioningEnabled(false)
+
+            assertThat(latest!!.liveCaptions)
+        }
+
+    @Test
     fun setPortraitRelight_propagatesUpAndBack() =
         kosmos.runTest {
             underTest.setPortraitRelight(true)
@@ -220,6 +258,14 @@ class DesktopEffectInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    fun setLiveCaptions_propagatesUpAndBack() =
+        kosmos.runTest {
+            underTest.setLiveCaptions(true)
+
+            assertThat(latest!!.liveCaptions).isEqualTo(true)
+        }
+
+    @Test
     fun setBlurLevel_propagatesUpAndBack() =
         kosmos.runTest {
             underTest.setBlurLevel(BlurLevel.LIGHT)
@@ -233,6 +279,22 @@ class DesktopEffectInteractorTest : SysuiTestCase() {
                     )
                 )
                 .isEqualTo(BlurLevel.LIGHT.code)
+        }
+
+    @Test
+    fun setCameraFraming_propagatesUpAndBack() =
+        kosmos.runTest {
+            underTest.setCameraFraming(true)
+
+            assertThat(latest!!.cameraFraming).isEqualTo(true)
+            assertThat(
+                    fakeSettings.getBoolForUser(
+                        DESKTOP_EFFECTS_CAMERA_FRAMING_KEY,
+                        false,
+                        FIRST_USER.id,
+                    )
+                )
+                .isEqualTo(true)
         }
 
     @Test
