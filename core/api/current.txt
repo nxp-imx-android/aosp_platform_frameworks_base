@@ -44000,6 +44000,7 @@ package android.service.personalcontext.hint {
     method @NonNull public android.service.personalcontext.hint.AutofillInlineRequestHint.Builder addToken(@NonNull android.service.personalcontext.Token);
     method @NonNull public android.service.personalcontext.hint.AutofillInlineRequestHint build();
     method @NonNull public android.service.personalcontext.hint.AutofillInlineRequestHint.Builder setActivityComponent(@NonNull android.content.ComponentName);
+    method @NonNull public android.service.personalcontext.hint.AutofillInlineRequestHint.Builder setAugmentedAutofillManagerClient(@NonNull android.os.IBinder);
     method @NonNull public android.service.personalcontext.hint.AutofillInlineRequestHint.Builder setAutofillValue(@NonNull android.view.autofill.AutofillValue);
     method @NonNull public android.service.personalcontext.hint.AutofillInlineRequestHint.Builder setFillEventHistory(@Nullable android.service.autofill.FillEventHistory);
     method @NonNull public android.service.personalcontext.hint.AutofillInlineRequestHint.Builder setFocusedId(@NonNull android.view.autofill.AutofillId);

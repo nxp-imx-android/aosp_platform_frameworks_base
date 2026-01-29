@@ -14926,6 +14926,8 @@ package android.service.persistentdata {
 package android.service.personalcontext {
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class PersonalContextManager {
+    method @NonNull public android.app.assist.AssistStructure.ViewNode getFocusedViewNode(@NonNull android.service.personalcontext.hint.AutofillInlineRequestHint);
+    method @NonNull public android.graphics.Rect getViewCoordinates(@NonNull android.service.personalcontext.hint.AutofillInlineRequestHint);
     method public boolean isEnabled();
     method @NonNull public android.service.personalcontext.Token mintToken();
     method public void publishTriggeringHint(@NonNull java.util.List<android.service.personalcontext.hint.ContextHint>, @Nullable java.util.List<android.service.personalcontext.RenderToken>);
