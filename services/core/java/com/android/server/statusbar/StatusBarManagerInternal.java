@@ -291,4 +291,14 @@ public interface StatusBarManagerInternal {
 
     /** Passes through the given shell commands to SystemUI */
     void passThroughShellCommand(String[] args, FileDescriptor fd);
+
+    /**
+     * Called when display info has been changed.
+     */
+    void onDisplayInfoChanged();
+
+    /**
+     * Called when the configuration has been changed.
+     */
+    void onConfigurationChanged();
 }

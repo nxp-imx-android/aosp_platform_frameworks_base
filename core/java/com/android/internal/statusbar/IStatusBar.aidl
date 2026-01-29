@@ -433,4 +433,14 @@ oneway interface IStatusBar
 
     /** Terminates the started motion cues session */
     void endMotionCuesSession();
+
+    /**
+     * Called when display info has been changed.
+     */
+    void onDisplayInfoChanged();
+
+    /**
+     * Called when the configuration has been changed.
+     */
+    void onConfigurationChanged();
 }
