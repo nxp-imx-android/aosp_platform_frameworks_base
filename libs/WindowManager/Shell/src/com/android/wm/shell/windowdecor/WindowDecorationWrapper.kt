@@ -141,10 +141,10 @@ private constructor(
                 else -> error("Expected Non-null default or desktop window decoration")
             }
 
-    val maximizeMenuController: MaximizeMenuController?
+    val layoutMenuController: LayoutMenuController?
         get() =
             when {
-                defaultWindowDecor != null -> requireDefaultWindowDecor().maximizeMenuController
+                defaultWindowDecor != null -> requireDefaultWindowDecor().layoutMenuController
                 desktopWindowDecor != null -> requireDesktopWindowDecor()
                 else -> error("Expected Non-null default or desktop window decoration")
             }
