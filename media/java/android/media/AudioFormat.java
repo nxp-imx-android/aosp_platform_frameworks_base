@@ -16,6 +16,7 @@
 
 package android.media;
 
+import static android.media.audio.Flags.FLAG_AMBISONICS_SUPPORT_API;
 import static android.media.audio.Flags.FLAG_DOLBY_AC4_LEVEL4_ENCODING_API;
 import static android.media.audio.Flags.FLAG_IAMF_DEFINITIONS_API;
 import static android.media.audio.Flags.FLAG_SONY_360RA_MPEGH_3D_FORMAT;
@@ -251,6 +252,27 @@ import java.util.stream.Collectors;
  *  about position it corresponds to, in which case the channel index mask is <code>0xC</code>.
  *  Multichannel <code>AudioRecord</code> sessions should use channel index masks.
  * </ul>
+ *
+ * <h5 id="channelAcnMask">Ambisonics channel masks</h5> <br>As of API {@link
+ * android.os.Build.VERSION_CODES#CINNAMON_BUN}, another type of channel mask has been added:
+ * Ambisonics. This channel mask is used when dealing with audio scenes encoded using <a
+ * href="https://en.wikipedia.org/wiki/Ambisonics">the corresponding spatial format.</a> The
+ * inherent requirement of the Ambisonics representation is that it uses certain channel counts that
+ * depend on the <b>order</b> used. The formula for calculating the channel count for <b>full
+ * sphere</b> Ambisonics representation is <code>(N + 1) ^ 2</code> where <code>N</code> is the
+ * order. The minimum order supported is <code>0</code> ({@link #CHANNEL_ACN_ORDER_0}) which uses 1
+ * channel, and the maximum order is <code>14</code> ({@link #CHANNEL_ACN_ORDER_14}) which uses 225
+ * channels. Since mobile devices may not possess enough power for dealing with such huge number of
+ * channels, the framework also allows using "horizontal-only" representation which significantly
+ * reduces the number of channels compared to full sphere. For the horizontal-only representation
+ * the number of channels is calculated using the formula <code>(2 * N + 1)</code>, thus the 14th
+ * horizontal-only representation {@link #CHANNEL_ACN_ORDER_14_HRZ} uses only 29 channels.
+ *
+ * The Ambisonics channel mask actually only stores the number of channels used, and the flag
+ * {@link #CHANNEL_ACN_HORIZONTAL} for specifying whether it's a horizontal-only representation.
+ *
+ * Android assumes that the Ambisonics representation uses ACN channel order and SN3D normalization.
+ *
  * <h4 id="audioFrame">Audio Frame</h4>
  * <p>For linear PCM, an audio frame consists of a set of samples captured at the same time,
  * whose count and
@@ -786,6 +808,102 @@ public final class AudioFormat implements Parcelable {
     @Retention(RetentionPolicy.SOURCE)
     public @interface ChannelOut {}
 
+    /** Ambisonics channel mask for order 0. */
+    @FlaggedApi(FLAG_AMBISONICS_SUPPORT_API)
+    public static final int CHANNEL_ACN_ORDER_0 = 1;
+    /** Ambisonics channel mask for order 1. */
+    @FlaggedApi(FLAG_AMBISONICS_SUPPORT_API)
+    public static final int CHANNEL_ACN_ORDER_1 = 4;
+    /** Ambisonics channel mask for order 2. */
+    @FlaggedApi(FLAG_AMBISONICS_SUPPORT_API)
+    public static final int CHANNEL_ACN_ORDER_2 = 9;
+    /** Ambisonics channel mask for order 3. */
+    @FlaggedApi(FLAG_AMBISONICS_SUPPORT_API)
+    public static final int CHANNEL_ACN_ORDER_3 = 16;
+    /** Ambisonics channel mask for order 4. */
+    @FlaggedApi(FLAG_AMBISONICS_SUPPORT_API)
+    public static final int CHANNEL_ACN_ORDER_4 = 25;
+    /** Ambisonics channel mask for order 5. */
+    @FlaggedApi(FLAG_AMBISONICS_SUPPORT_API)
+    public static final int CHANNEL_ACN_ORDER_5 = 36;
+    /** Ambisonics channel mask for order 6. */
+    @FlaggedApi(FLAG_AMBISONICS_SUPPORT_API)
+    public static final int CHANNEL_ACN_ORDER_6 = 49;
+    /** Ambisonics channel mask for order 7. */
+    @FlaggedApi(FLAG_AMBISONICS_SUPPORT_API)
+    public static final int CHANNEL_ACN_ORDER_7 = 64;
+    /** Ambisonics channel mask for order 8. */
+    @FlaggedApi(FLAG_AMBISONICS_SUPPORT_API)
+    public static final int CHANNEL_ACN_ORDER_8 = 81;
+    /** Ambisonics channel mask for order 9. */
+    @FlaggedApi(FLAG_AMBISONICS_SUPPORT_API)
+    public static final int CHANNEL_ACN_ORDER_9 = 100;
+    /** Ambisonics channel mask for order 10. */
+    @FlaggedApi(FLAG_AMBISONICS_SUPPORT_API)
+    public static final int CHANNEL_ACN_ORDER_10 = 121;
+    /** Ambisonics channel mask for order 11. */
+    @FlaggedApi(FLAG_AMBISONICS_SUPPORT_API)
+    public static final int CHANNEL_ACN_ORDER_11 = 144;
+    /** Ambisonics channel mask for order 12. */
+    @FlaggedApi(FLAG_AMBISONICS_SUPPORT_API)
+    public static final int CHANNEL_ACN_ORDER_12 = 169;
+    /** Ambisonics channel mask for order 13. */
+    @FlaggedApi(FLAG_AMBISONICS_SUPPORT_API)
+    public static final int CHANNEL_ACN_ORDER_13 = 196;
+    /** Ambisonics channel mask for order 14. */
+    @FlaggedApi(FLAG_AMBISONICS_SUPPORT_API)
+    public static final int CHANNEL_ACN_ORDER_14 = 225;
+
+    /** Ambisonics channel mask flag for the horizontal-only representation. */
+    @FlaggedApi(FLAG_AMBISONICS_SUPPORT_API)
+    public static final int CHANNEL_ACN_HORIZONTAL = 1 << 9;
+
+    /** Ambisonics horizontal-only channel mask for order 0. */
+    @FlaggedApi(FLAG_AMBISONICS_SUPPORT_API)
+    public static final int CHANNEL_ACN_ORDER_0_HRZ = CHANNEL_ACN_HORIZONTAL | 1;
+    /** Ambisonics horizontal-only channel mask for order 1. */
+    @FlaggedApi(FLAG_AMBISONICS_SUPPORT_API)
+    public static final int CHANNEL_ACN_ORDER_1_HRZ = CHANNEL_ACN_HORIZONTAL | 3;
+    /** Ambisonics horizontal-only channel mask for order 2. */
+    @FlaggedApi(FLAG_AMBISONICS_SUPPORT_API)
+    public static final int CHANNEL_ACN_ORDER_2_HRZ = CHANNEL_ACN_HORIZONTAL | 5;
+    /** Ambisonics horizontal-only channel mask for order 3. */
+    @FlaggedApi(FLAG_AMBISONICS_SUPPORT_API)
+    public static final int CHANNEL_ACN_ORDER_3_HRZ = CHANNEL_ACN_HORIZONTAL | 7;
+    /** Ambisonics horizontal-only channel mask for order 4. */
+    @FlaggedApi(FLAG_AMBISONICS_SUPPORT_API)
+    public static final int CHANNEL_ACN_ORDER_4_HRZ = CHANNEL_ACN_HORIZONTAL | 9;
+    /** Ambisonics horizontal-only channel mask for order 5. */
+    @FlaggedApi(FLAG_AMBISONICS_SUPPORT_API)
+    public static final int CHANNEL_ACN_ORDER_5_HRZ = CHANNEL_ACN_HORIZONTAL | 11;
+    /** Ambisonics horizontal-only channel mask for order 6. */
+    @FlaggedApi(FLAG_AMBISONICS_SUPPORT_API)
+    public static final int CHANNEL_ACN_ORDER_6_HRZ = CHANNEL_ACN_HORIZONTAL | 13;
+    /** Ambisonics horizontal-only channel mask for order 7. */
+    @FlaggedApi(FLAG_AMBISONICS_SUPPORT_API)
+    public static final int CHANNEL_ACN_ORDER_7_HRZ = CHANNEL_ACN_HORIZONTAL | 15;
+    /** Ambisonics horizontal-only channel mask for order 8. */
+    @FlaggedApi(FLAG_AMBISONICS_SUPPORT_API)
+    public static final int CHANNEL_ACN_ORDER_8_HRZ = CHANNEL_ACN_HORIZONTAL | 17;
+    /** Ambisonics horizontal-only channel mask for order 9. */
+    @FlaggedApi(FLAG_AMBISONICS_SUPPORT_API)
+    public static final int CHANNEL_ACN_ORDER_9_HRZ = CHANNEL_ACN_HORIZONTAL | 19;
+    /** Ambisonics horizontal-only channel mask for order 10. */
+    @FlaggedApi(FLAG_AMBISONICS_SUPPORT_API)
+    public static final int CHANNEL_ACN_ORDER_10_HRZ = CHANNEL_ACN_HORIZONTAL | 21;
+    /** Ambisonics horizontal-only channel mask for order 11. */
+    @FlaggedApi(FLAG_AMBISONICS_SUPPORT_API)
+    public static final int CHANNEL_ACN_ORDER_11_HRZ = CHANNEL_ACN_HORIZONTAL | 23;
+    /** Ambisonics horizontal-only channel mask for order 12. */
+    @FlaggedApi(FLAG_AMBISONICS_SUPPORT_API)
+    public static final int CHANNEL_ACN_ORDER_12_HRZ = CHANNEL_ACN_HORIZONTAL | 25;
+    /** Ambisonics horizontal-only channel mask for order 13. */
+    @FlaggedApi(FLAG_AMBISONICS_SUPPORT_API)
+    public static final int CHANNEL_ACN_ORDER_13_HRZ = CHANNEL_ACN_HORIZONTAL | 27;
+    /** Ambisonics horizontal-only channel mask for order 14. */
+    @FlaggedApi(FLAG_AMBISONICS_SUPPORT_API)
+    public static final int CHANNEL_ACN_ORDER_14_HRZ = CHANNEL_ACN_HORIZONTAL | 29;
+
     /** Minimum value for sample rate,
      *  assuming AudioTrack and AudioRecord share the same limitations.
      * @hide
@@ -846,6 +964,18 @@ public final class AudioFormat implements Parcelable {
     @TestApi
     public static int channelCountFromOutChannelMask(int mask) {
         return Integer.bitCount(mask);
+    }
+    /**
+     * @hide
+     * Return the number of channels from Ambisonics channel mask
+     * @param mask which is a packed integer with first 8 low-order bits specifying the number
+     *             of channels used
+     * @return number of channels for the mask
+     */
+    @TestApi
+    @FlaggedApi(FLAG_AMBISONICS_SUPPORT_API)
+    public static int channelCountFromAcnChannelMask(int mask) {
+        return mask & ((1 << 8) - 1);
     }
     /**
      * @hide
@@ -1276,15 +1406,20 @@ public final class AudioFormat implements Parcelable {
     public static class ChannelMasksArray {
         @NonNull private final int[] mPositionMasks;
         @NonNull private final int[] mIndexMasks;
+        @NonNull private final int[] mAcnMasks;
 
         public ChannelMasksArray() {
-            mPositionMasks = new int[0];
-            mIndexMasks = new int[0];
+            this(null, null, null);
         }
 
         public ChannelMasksArray(int[] positionMasks, int[] indexMasks) {
+            this(positionMasks, indexMasks, null);
+        }
+
+        public ChannelMasksArray(int[] positionMasks, int[] indexMasks, int[] acnMasks) {
             mPositionMasks = positionMasks != null ? positionMasks : new int[0];
             mIndexMasks = indexMasks != null ? indexMasks : new int[0];
+            mAcnMasks = acnMasks != null ? acnMasks : new int[0];
         }
 
         /**
@@ -1294,6 +1429,7 @@ public final class AudioFormat implements Parcelable {
         public static ChannelMasksArray mergeLists(@NonNull List<ChannelMasksArray> arrays) {
             TreeSet<Integer> posMasks = new TreeSet<>();
             TreeSet<Integer> indexMasks = new TreeSet<>();
+            TreeSet<Integer> acnMasks = new TreeSet<>();
             for (ChannelMasksArray array : arrays) {
                 for (int mask : array.mPositionMasks) {
                     posMasks.add(mask);
@@ -1301,10 +1437,14 @@ public final class AudioFormat implements Parcelable {
                 for (int mask : array.mIndexMasks) {
                     indexMasks.add(mask);
                 }
+                for (int mask : array.mAcnMasks) {
+                    acnMasks.add(mask);
+                }
             }
             return new ChannelMasksArray(
                     posMasks.stream().mapToInt(i -> i).toArray(),
-                    indexMasks.stream().mapToInt(i -> i).toArray());
+                    indexMasks.stream().mapToInt(i -> i).toArray(),
+                    acnMasks.stream().mapToInt(i -> i).toArray());
         }
 
         public @NonNull int[] getPositionMasks() {
@@ -1313,6 +1453,10 @@ public final class AudioFormat implements Parcelable {
 
         public @NonNull int[] getIndexMasks() {
             return mIndexMasks;
+        }
+
+        public @NonNull int[] getAcnMasks() {
+            return mAcnMasks;
         }
 
         /**
@@ -1342,6 +1486,9 @@ public final class AudioFormat implements Parcelable {
             for (int indexMask : mIndexMasks) {
                 countSet.add(Integer.bitCount(indexMask));
             }
+            for (int acnMask : mAcnMasks) {
+                countSet.add(channelCountFromAcnChannelMask(acnMask));
+            }
         }
 
         @Override
@@ -1352,6 +1499,9 @@ public final class AudioFormat implements Parcelable {
             }
             if (mIndexMasks.length > 0) {
                 sb.append(", channel index masks=").append(Arrays.toString(mIndexMasks));
+            }
+            if (mAcnMasks.length > 0) {
+                sb.append(", ambisonics masks=").append(Arrays.toString(mAcnMasks));
             }
             return sb.toString();
         }
@@ -1366,7 +1516,8 @@ public final class AudioFormat implements Parcelable {
 
         @Override
         public int hashCode() {
-            return Objects.hash(Arrays.hashCode(mPositionMasks), Arrays.hashCode(mIndexMasks));
+            return Objects.hash(Arrays.hashCode(mPositionMasks), Arrays.hashCode(mIndexMasks),
+                                Arrays.hashCode(mAcnMasks));
         }
 
         @Override
@@ -1375,7 +1526,8 @@ public final class AudioFormat implements Parcelable {
             if (!(o instanceof ChannelMasksArray)) return false;
             ChannelMasksArray that = (ChannelMasksArray) o;
             return Arrays.equals(mPositionMasks, that.mPositionMasks)
-                    && Arrays.equals(mIndexMasks, that.mIndexMasks);
+                    && Arrays.equals(mIndexMasks, that.mIndexMasks)
+                    && Arrays.equals(mAcnMasks, that.mAcnMasks);
         }
     }
 
@@ -1385,16 +1537,27 @@ public final class AudioFormat implements Parcelable {
     public static class ChannelMasks {
         private final int mPositionMask;
         private final int mIndexMask;
+        private final int mAcnMask;
         private final int mChannelCount;
 
         public ChannelMasks() {
-            this(AudioFormat.CHANNEL_INVALID, AudioFormat.CHANNEL_INVALID /*0*/);
+            this(AudioFormat.CHANNEL_INVALID, AudioFormat.CHANNEL_INVALID,
+                    AudioFormat.CHANNEL_INVALID /*0*/);
+        }
+
+        public ChannelMasks(int positionMask) {
+            this(positionMask, AudioFormat.CHANNEL_INVALID, AudioFormat.CHANNEL_INVALID /*0*/);
         }
 
         public ChannelMasks(int positionMask, int indexMask) {
-            mChannelCount = getChannelCount(positionMask, indexMask);
+            this(positionMask, indexMask, AudioFormat.CHANNEL_INVALID /*0*/);
+        }
+
+        public ChannelMasks(int positionMask, int indexMask, int acnMask) {
+            mChannelCount = getChannelCount(positionMask, indexMask, acnMask);
             mPositionMask = positionMask;
             mIndexMask = indexMask;
+            mAcnMask = acnMask;
         }
 
         public int getPositionMask() {
@@ -1405,13 +1568,17 @@ public final class AudioFormat implements Parcelable {
             return mIndexMask;
         }
 
+        public int getAcnMask() {
+            return mAcnMask;
+        }
+
         public int getChannelCount() {
             return mChannelCount;
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(mPositionMask, mIndexMask);
+            return Objects.hash(mPositionMask, mIndexMask, mAcnMask);
         }
 
         @Override
@@ -1421,23 +1588,38 @@ public final class AudioFormat implements Parcelable {
             ChannelMasks that = (ChannelMasks) o;
             // mChannelCount is derived from masks, so strictly checking masks is sufficient
             return mPositionMask == that.mPositionMask
-                    && mIndexMask == that.mIndexMask;
+                    && mIndexMask == that.mIndexMask
+                    && mAcnMask == that.mAcnMask;
         }
 
         @Override
         public String toString() {
             return "ChannelMasks:"
                     + " chan=0x" + Integer.toHexString(mPositionMask).toUpperCase(Locale.ROOT)
-                    + " chan_index=0x" + Integer.toHexString(mIndexMask).toUpperCase(Locale.ROOT);
+                    + " chan_index=0x" + Integer.toHexString(mIndexMask).toUpperCase(Locale.ROOT)
+                    + " chan_acn=0x" + Integer.toHexString(mAcnMask).toUpperCase(Locale.ROOT);
         }
 
-        private static int getChannelCount(int positionMask, int indexMask) {
-            final int channelIndexCount = Integer.bitCount(indexMask);
+        private static int getChannelCount(int positionMask, int indexMask, int acnMask) {
+            final int indexChannelCount = Integer.bitCount(indexMask);
+            final int acnChannelCount = channelCountFromAcnChannelMask(acnMask);
             int channelCount = channelCountFromOutChannelMask(positionMask);
-            if (channelCount == 0) {
-                channelCount = channelIndexCount;
-            } else if (channelCount != channelIndexCount && channelIndexCount != 0) {
-                channelCount = 0; // position and index channel count mismatch
+            if (positionMask == 0 && indexMask == 0) {
+                return acnChannelCount;
+            }
+            // Establish the base channel count from positionMask or indexMask
+            if (positionMask != 0) {
+                // Check consistency with indexMask if it's also present
+                if (indexMask != 0 && channelCount != indexChannelCount) {
+                    return 0; // Mismatch between position and index channel counts
+                }
+            } else {
+                // positionMask is 0, so indexMask must be non-zero here
+                channelCount = indexChannelCount;
+            }
+            // Check consistency between acnChannelMask if it's present and index channel mask
+            if (acnMask != 0 && indexMask != 0 && channelCount != acnChannelCount) {
+                return 0; // Mismatch with ACN channel count
             }
             return channelCount;
         }
@@ -1461,12 +1643,13 @@ public final class AudioFormat implements Parcelable {
              | AUDIO_FORMAT_HAS_PROPERTY_SAMPLE_RATE
              | AUDIO_FORMAT_HAS_PROPERTY_CHANNEL_MASK
              | AUDIO_FORMAT_HAS_PROPERTY_CHANNEL_INDEX_MASK,
-             encoding, sampleRate, channelMask, channelIndexMask
+                encoding, sampleRate, channelMask, channelIndexMask, CHANNEL_INVALID
              );
     }
 
     private AudioFormat(int propertySetMask,
-            int encoding, int sampleRate, int channelMask, int channelIndexMask) {
+            int encoding, int sampleRate,
+            int channelMask, int channelIndexMask, int channelAcnMask) {
         mPropertySetMask = propertySetMask;
         mEncoding = (propertySetMask & AUDIO_FORMAT_HAS_PROPERTY_ENCODING) != 0
                 ? encoding : ENCODING_INVALID;
@@ -1476,7 +1659,9 @@ public final class AudioFormat implements Parcelable {
             (propertySetMask & AUDIO_FORMAT_HAS_PROPERTY_CHANNEL_MASK) != 0
                     ? channelMask : CHANNEL_INVALID,
             (propertySetMask & AUDIO_FORMAT_HAS_PROPERTY_CHANNEL_INDEX_MASK) != 0
-                    ? channelIndexMask : CHANNEL_INVALID
+                    ? channelIndexMask : CHANNEL_INVALID,
+            (propertySetMask & AUDIO_FORMAT_HAS_PROPERTY_CHANNEL_ACN_MASK) != 0
+                    ? channelAcnMask : CHANNEL_INVALID
         );
 
         // Compute derived values.
@@ -1501,6 +1686,8 @@ public final class AudioFormat implements Parcelable {
     public final static int AUDIO_FORMAT_HAS_PROPERTY_CHANNEL_MASK = 0x1 << 2;
     /** @hide */
     public final static int AUDIO_FORMAT_HAS_PROPERTY_CHANNEL_INDEX_MASK = 0x1 << 3;
+    /** @hide */
+    public static final int AUDIO_FORMAT_HAS_PROPERTY_CHANNEL_ACN_MASK = 0x1 << 4;
 
     // This is an immutable class, all member variables are final.
 
@@ -1558,6 +1745,18 @@ public final class AudioFormat implements Parcelable {
      */
     public int getChannelIndexMask() {
         return mChannelMasks.mIndexMask;
+    }
+
+    /**
+     * Return the Ambisonics channel mask.
+     * See the section on <a href="#channelAcnMask">Ambisonics channel masks</a> for more
+     * information.
+     * @return one of the values that can be set in {@link Builder#setChannelAcnMask(int)} or
+     * {@link AudioFormat#CHANNEL_INVALID} if not set or an invalid mask was used.
+     */
+    @FlaggedApi(FLAG_AMBISONICS_SUPPORT_API)
+    public int getChannelAcnMask() {
+        return mChannelMasks.mAcnMask;
     }
 
     /** @hide */
@@ -1624,6 +1823,7 @@ public final class AudioFormat implements Parcelable {
         private int mSampleRate = SAMPLE_RATE_UNSPECIFIED;
         private int mChannelMask = CHANNEL_INVALID;
         private int mChannelIndexMask = 0;
+        private int mChannelAcnMask = CHANNEL_INVALID;
         private int mPropertySetMask = AUDIO_FORMAT_HAS_PROPERTY_NONE;
 
         /**
@@ -1641,6 +1841,7 @@ public final class AudioFormat implements Parcelable {
             mSampleRate = af.mSampleRate;
             mChannelMask = af.mChannelMasks.mPositionMask;
             mChannelIndexMask = af.mChannelMasks.mIndexMask;
+            mChannelAcnMask = af.mChannelMasks.mAcnMask;
             mPropertySetMask = af.mPropertySetMask;
         }
 
@@ -1655,7 +1856,8 @@ public final class AudioFormat implements Parcelable {
                     mEncoding,
                     mSampleRate,
                     mChannelMask,
-                    mChannelIndexMask
+                    mChannelIndexMask,
+                    mChannelAcnMask
                     );
             return af;
         }
@@ -1811,13 +2013,45 @@ public final class AudioFormat implements Parcelable {
         public @NonNull Builder setChannelIndexMask(int channelIndexMask) {
             if (channelIndexMask == 0) {
                 throw new IllegalArgumentException("Invalid zero channel index mask");
-            } else if (/* channelIndexMask != 0 && */ mChannelMask != 0 &&
-                    Integer.bitCount(channelIndexMask) != Integer.bitCount(mChannelMask)) {
+            } else if (/* channelIndexMask != 0 && */ (mChannelMask != 0
+                            && Integer.bitCount(channelIndexMask) != Integer.bitCount(mChannelMask))
+                    || (mChannelAcnMask != 0 && Integer.bitCount(channelIndexMask)
+                            != channelCountFromAcnChannelMask(mChannelAcnMask))) {
                 throw new IllegalArgumentException("Mismatched channel count for index mask " +
                         Integer.toHexString(channelIndexMask).toUpperCase());
             }
             mChannelIndexMask = channelIndexMask;
             mPropertySetMask |= AUDIO_FORMAT_HAS_PROPERTY_CHANNEL_INDEX_MASK;
+            return this;
+        }
+
+        /**
+         * Sets the Ambisonics channel mask.
+         * The Ambisonics channel mask specifies that the audio data is in Ambisonics format,
+         * using the ACN (Ambisonics Channel Number) ordering and SN3D normalization.
+         * The mask indicates the order of the Ambisonics content and whether it is a
+         * full-sphere or horizontal-only representation.
+         * @param channelAcnMask the Ambisonics channel mask, e.g.
+         *     {@link AudioFormat#CHANNEL_ACN_ORDER_1},
+         *     {@link AudioFormat#CHANNEL_ACN_ORDER_1_HRZ}.
+         * @return the same {@code Builder} instance.
+         * @throws IllegalArgumentException if {@code channelAcnMask} is 0 or if a
+         *    channel index mask is already set and its channel count does not match
+         *    the channel count derived from {@code channelAcnMask}.
+         */
+        @FlaggedApi(FLAG_AMBISONICS_SUPPORT_API)
+        public @NonNull Builder setChannelAcnMask(int channelAcnMask) {
+            if (channelAcnMask == 0) {
+                throw new IllegalArgumentException("Invalid zero Ambisonics channel mask");
+            } else if (/* channelAcnMask != 0 && */ mChannelIndexMask != 0
+                    && channelCountFromAcnChannelMask(channelAcnMask)
+                    != Integer.bitCount(mChannelIndexMask)) {
+                throw new IllegalArgumentException(
+                        "Mismatched channel count for Ambisonics mask "
+                        + Integer.toHexString(channelAcnMask).toUpperCase(Locale.ROOT));
+            }
+            mChannelAcnMask = channelAcnMask;
+            mPropertySetMask |= AUDIO_FORMAT_HAS_PROPERTY_CHANNEL_ACN_MASK;
             return this;
         }
 
@@ -1878,15 +2112,17 @@ public final class AudioFormat implements Parcelable {
         dest.writeInt(mSampleRate);
         dest.writeInt(mChannelMasks.mPositionMask);
         dest.writeInt(mChannelMasks.mIndexMask);
+        dest.writeInt(mChannelMasks.mAcnMask);
     }
 
     private AudioFormat(Parcel in) {
         this(
-             in.readInt(), // propertySetMask
-             in.readInt(), // encoding
-             in.readInt(), // sampleRate
-             in.readInt(), // channelMask
-             in.readInt()  // channelIndexMask
+                in.readInt(), // propertySetMask
+                in.readInt(), // encoding
+                in.readInt(), // sampleRate
+                in.readInt(), // channelMask
+                in.readInt(), // channelIndexMask
+                in.readInt()  // channelAcnMask
             );
     }
 

@@ -80,7 +80,7 @@ public class AudioGain {
                         int minValue, int maxValue, int defaultValue, int stepValue,
                         int rampDurationMinMs, int rampDurationMaxMs) {
         this(index, mode,
-                new AudioFormat.ChannelMasks(channelMask, AudioFormat.CHANNEL_INVALID),
+                new AudioFormat.ChannelMasks(channelMask),
                 minValue, maxValue, defaultValue, stepValue, rampDurationMinMs,
                 rampDurationMaxMs);
     }
@@ -177,8 +177,7 @@ public class AudioGain {
     public AudioGainConfig buildConfig(int mode, int channelMask,
                                        int[] values, int rampDurationMs) {
         //TODO: check params here
-        return new AudioGainConfig(mIndex, this, mode,
-                new AudioFormat.ChannelMasks(channelMask, AudioFormat.CHANNEL_INVALID),
+        return new AudioGainConfig(mIndex, this, mode, new AudioFormat.ChannelMasks(channelMask),
                 values, rampDurationMs);
     }
 
