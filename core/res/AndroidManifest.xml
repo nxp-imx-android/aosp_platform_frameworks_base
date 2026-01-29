@@ -5415,6 +5415,14 @@
         android:protectionLevel="signature" />
     <uses-permission android:name="android.permission.BIND_JOB_SERVICE"/>
 
+    <!-- Allows the system to bind to an application's data migration service for Private Compute.
+         <p>Protection level: signature
+         @FlaggedApi(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    -->
+    <permission android:name="android.permission.BIND_DATA_MIGRATION_FOR_PRIVATECOMPUTE"
+      android:protectionLevel="signature" />
+    <uses-permission android:name="android.permission.BIND_DATA_MIGRATION_FOR_PRIVATECOMPUTE"/>
+
     <!-- Allows an application to initiate configuration updates
          <p>An application requesting this permission is responsible for
          verifying the source and integrity of any update before passing

@@ -16,6 +16,7 @@
 
 package android.app.privatecompute;
 
+import android.app.privatecompute.IMigrationRequestResultReceiver;
 import android.os.PersistableBundle;
 
 /**
@@ -25,4 +26,5 @@ interface IPccSandboxManager {
     boolean isPrivateComputeServicesUid(int uid);
 
     oneway void writeToAuditLog(in PersistableBundle data, in String packageName);
+    oneway void startNonPccProcessForDataMigration(in IMigrationRequestResultReceiver callback);
 }
