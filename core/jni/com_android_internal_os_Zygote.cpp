@@ -1838,19 +1838,10 @@ static void ReloadBuildJavaConstants(JNIEnv* env) {
 }
 
 static void BindMountSyspropOverride(fail_fn_t fail_fn, JNIEnv* env) {
-  std::string source = "/dev/__properties__/appcompat_override";
-  std::string target = "/dev/__properties__";
-  if (access(source.c_str(), F_OK) != 0) {
-      return;
-  }
-  if (access(target.c_str(), F_OK) != 0) {
-      return;
-  }
-  BindMount(source, target, fail_fn);
-  // Reload the system properties file, to ensure new values are read into memory
-  __system_properties_zygote_reload();
-  // android.os.Build constants are pulled from system properties, so they must be reloaded, too
-  ReloadBuildJavaConstants(env);
+    // Reload the system properties file, to ensure new values are read into memory
+    __system_properties_zygote_reload();
+    // android.os.Build constants are pulled from system properties, so they must be reloaded, too
+    ReloadBuildJavaConstants(env);
 }
 
 static void MountInitOverride(fail_fn_t fail_fn, JNIEnv* env) {
