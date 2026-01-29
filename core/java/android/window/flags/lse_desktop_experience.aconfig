@@ -876,6 +876,16 @@ flag {
 }
 
 flag {
+    name: "enable_privileged_app_transparent_windowing_exemptions"
+    namespace: "lse_desktop_experience"
+    description: "Enables transparent activity windowing exemptions for privileged apps."
+    bug: "413348299"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_projected_display_desktop_mode"
     namespace: "lse_desktop_experience"
     description: "Enable Desktop Mode on Projected Mode devices but constrained to the external display."

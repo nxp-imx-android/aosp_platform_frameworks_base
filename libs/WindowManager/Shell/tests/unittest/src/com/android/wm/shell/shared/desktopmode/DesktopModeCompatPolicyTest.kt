@@ -111,6 +111,50 @@ class DesktopModeCompatPolicyTest : ShellTestCase() {
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_ENABLE_PRIVILEGED_APP_TRANSPARENT_WINDOWING_EXEMPTIONS)
+    fun testIsTopActivityExempt_isPrivilegedApp_onlyTransparentActivitiesInStack() {
+        assertTrue(
+            desktopModeCompatPolicy.isTopActivityExemptFromDesktopWindowing(
+                createFreeformTask().apply {
+                    isActivityStackTransparent = true
+                    isTopActivityNoDisplay = false
+                    numActivities = 1
+                    topActivityInfo =
+                        ActivityInfo().apply {
+                            applicationInfo =
+                                ApplicationInfo().apply {
+                                    privateFlags = ApplicationInfo.PRIVATE_FLAG_PRIVILEGED
+                                }
+                        }
+                    baseActivity = baseActivityTest
+                }
+            )
+        )
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_PRIVILEGED_APP_TRANSPARENT_WINDOWING_EXEMPTIONS)
+    fun testIsTopActivityExempt_isPrivilegedApp_nonTransparentActivitiesInStack() {
+        assertFalse(
+            desktopModeCompatPolicy.isTopActivityExemptFromDesktopWindowing(
+                createFreeformTask().apply {
+                    isActivityStackTransparent = false
+                    isTopActivityNoDisplay = false
+                    numActivities = 1
+                    topActivityInfo =
+                        ActivityInfo().apply {
+                            applicationInfo =
+                                ApplicationInfo().apply {
+                                    privateFlags = ApplicationInfo.PRIVATE_FLAG_PRIVILEGED
+                                }
+                        }
+                    baseActivity = baseActivityTest
+                }
+            )
+        )
+    }
+
+    @Test
     fun testIsTopActivityExemptWithPlatformSignature_onlyTransparentActivitiesInStack() {
         assertTrue(
             desktopModeCompatPolicy.isTopActivityExemptFromDesktopWindowing(
