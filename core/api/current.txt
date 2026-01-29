@@ -31967,6 +31967,7 @@ package android.opengl {
   public class EGLExt {
     ctor public EGLExt();
     method @NonNull public static android.hardware.SyncFence eglDupNativeFenceFDANDROID(@NonNull android.opengl.EGLDisplay, @NonNull android.opengl.EGLSync);
+    method @FlaggedApi("com.android.graphics.egl.flags.egl_get_native_client_buffer") public static long eglGetNativeClientBufferANDROID(@NonNull android.hardware.HardwareBuffer);
     method public static boolean eglPresentationTimeANDROID(android.opengl.EGLDisplay, android.opengl.EGLSurface, long);
     field public static final int EGL_CONTEXT_FLAGS_KHR = 12540; // 0x30fc
     field public static final int EGL_CONTEXT_MAJOR_VERSION_KHR = 12440; // 0x3098
