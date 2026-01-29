@@ -186,7 +186,7 @@ import com.android.compose.ui.graphics.painter.rememberDrawablePainter
 import com.android.compose.windowsizeclass.LocalWindowSizeClass
 import com.android.internal.R.dimen.system_app_widget_background_radius
 import com.android.systemui.Flags
-import com.android.systemui.Flags.communalEditModeAccessibilityResize
+import com.android.systemui.Flags.communalAccessibilityResize
 import com.android.systemui.Flags.communalHubCancelAddWidget
 import com.android.systemui.Flags.communalResponsiveGrid
 import com.android.systemui.Flags.communalTimerFlickerFix
@@ -311,7 +311,7 @@ fun CommunalHub(
                                 // allows listening for taps on the grid's background to deselect
                                 // items, while also allowing taps on child composables to pass
                                 // through to them.
-                                if (communalEditModeAccessibilityResize()) PointerEventPass.Final
+                                if (communalAccessibilityResize()) PointerEventPass.Final
                                 else PointerEventPass.Initial
                         ) { offset ->
                             // if RTL, flip offset direction from Left side to Right
@@ -326,7 +326,7 @@ fun CommunalHub(
                             val tappedKey =
                                 index?.let { keyAtIndexIfEditable(contentListState.list, index) }
 
-                            if (communalEditModeAccessibilityResize()) {
+                            if (communalAccessibilityResize()) {
                                 // If we tap on the background, we should deselect whatever was
                                 // selected. Otherwise, the selection/deselection process is
                                 // managed by the WidgetContent itself.
@@ -1023,14 +1023,14 @@ private fun BoxScope.CommunalHubLazyGrid(
                 if (viewModel is CommunalEditModeViewModel) {
                     rememberViewModel(
                         key =
-                            if (communalEditModeAccessibilityResize()) item.key
+                            if (communalAccessibilityResize()) item.key
                             else currentItemSpan,
                         traceName = "ResizeableItemFrame.viewModel.$index",
                     ) {
                         val componentName =
                             (item as? CommunalContentModel.WidgetContent.Widget)?.componentName
                         viewModel.resizeableItemFrameViewModelFactory.create(
-                            if (communalEditModeAccessibilityResize()) componentName else null
+                            if (communalAccessibilityResize()) componentName else null
                         )
                     }
                 } else {
@@ -1662,7 +1662,7 @@ private fun WidgetContent(
                 .focusRequester(focusRequester)
                 .focusable(interactionSource = interactionSource)
                 .then(selectableModifier)
-                .thenIf(communalEditModeAccessibilityResize() && viewModel.isEditMode) {
+                .thenIf(communalAccessibilityResize() && viewModel.isEditMode) {
                     Modifier.pointerInput(isSelected, model.key) {
                         observeTaps {
                             if (isSelected && Flags.hubEditModeTouchAdjustments()) {
