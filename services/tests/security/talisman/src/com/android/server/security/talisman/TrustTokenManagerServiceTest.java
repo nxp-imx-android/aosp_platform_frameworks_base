@@ -326,4 +326,19 @@ public final class TrustTokenManagerServiceTest {
                                 List.of(TRUST_TOKEN_KEY_1, TRUST_TOKEN_KEY_1),
                                 List.of(TRUST_TOKEN_1, TRUST_TOKEN_2)));
     }
+
+    @Test
+    public void generateKeys_numMatches() {
+        assertThat(mInternal.generateKeys(2)).hasSize(2);
+        assertThat(mInternal.generateKeys(3)).hasSize(3);
+    }
+
+    @Test
+    public void attestKeys_numMatches() {
+        TrustTokenBatchAttestation attestation = mInternal.attestKeys(mInternal.generateKeys(2));
+        assertThat(attestation.getBatchHash().length).isGreaterThan(0);
+        assertThat(attestation.getSignature().length).isGreaterThan(0);
+        // There should at least an attestation root, and the batch attestation key.
+        assertThat(attestation.getCertificates().size()).isAtLeast(2);
+    }
 }
