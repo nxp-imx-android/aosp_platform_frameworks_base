@@ -758,6 +758,27 @@ constructor(
                 }
             }
         }
+
+        applicationScope.launch {
+            // Mainly used for tests that are frequently changing keyguard enabled state. There is a
+            // race condition on wake up, where checks for suppression happen on background threads
+            // that lead to calls to wakeDirectlyToGoneInteractor.canWakeDirectlyToGone.value
+            // retrieving the value too early. See [KeyguardEnabledInteractor#isKeyguardSuppressed]
+            combine(
+                    wakeDirectlyToGoneInteractor.shouldSuppressKeyguard,
+                    wakeDirectlyToGoneInteractor.canWakeDirectlyToGone,
+                    ::Pair,
+                )
+                .collect { (shouldSuppressKeyguard, canWakeDirectlyToGone) ->
+                    if (shouldSuppressKeyguard && canWakeDirectlyToGone) {
+                        switchToScene(
+                            targetSceneKey = Scenes.Gone,
+                            loggingReason = "keyguard suppressed and can wake to gone",
+                            instantlySnapScenes = !keyguardInteractor.isAodAvailable.value,
+                        )
+                    }
+                }
+        }
     }
 
     private fun handleDisableFlags() {
