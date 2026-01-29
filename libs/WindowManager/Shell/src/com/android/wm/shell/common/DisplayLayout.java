@@ -77,6 +77,7 @@ public class DisplayLayout {
     private int mWidth;
     private int mHeight;
     private RectF mGlobalBoundsDp;
+    @Nullable
     private DisplayCutout mCutout;
     private int mRotation;
     private int mDensityDpi;
@@ -238,7 +239,8 @@ public class DisplayLayout {
 
     @VisibleForTesting
     void recalcInsets(Resources res) {
-        computeNonDecorInsets(mInsetsState, mNonDecorInsets, mHasNavigationBar);
+        Rect cutoutInsets = mCutout == null ? null : mCutout.getSafeInsets();
+        computeNonDecorInsets(mInsetsState, mNonDecorInsets, mHasNavigationBar, cutoutInsets);
         mStableInsets.set(mNonDecorInsets);
         if (mHasStatusBar) {
             convertNonDecorInsetsToStableInsets(res, mStableInsets, mCutout, mHasStatusBar);
@@ -427,9 +429,11 @@ public class DisplayLayout {
      * @param hasNavigationBar indicates whether a navigation bar exists on the display
      */
     static void computeNonDecorInsets(InsetsState insetsState,
-            Rect outInsets, boolean hasNavigationBar) {
-        final int types = (hasNavigationBar ? WindowInsets.Type.navigationBars() : 0)
-                | WindowInsets.Type.displayCutout();
+            Rect outInsets, boolean hasNavigationBar, @Nullable Rect cutout) {
+        // don't look at the source cutout inset because it may not have been updated yet if we just
+        // rotated. instead we have to rely on the manually rotated cutout and merge that into the
+        // final insets
+        final int types = (hasNavigationBar ? WindowInsets.Type.navigationBars() : 0);
         final Rect displayFrame = insetsState.getDisplayFrame();
         final Insets insets = insetsState.calculateInsets(
                 displayFrame,
@@ -437,6 +441,16 @@ public class DisplayLayout {
                 types,
                 true /* ignoreVisibility */);
         outInsets.set(insets.toRect());
+        if (cutout != null) {
+            mergeInsets(outInsets, cutout);
+        }
+    }
+
+    private static void mergeInsets(Rect inOut, Rect other) {
+        inOut.left = Math.max(inOut.left, other.left);
+        inOut.top = Math.max(inOut.top, other.top);
+        inOut.right = Math.max(inOut.right, other.right);
+        inOut.bottom = Math.max(inOut.bottom, other.bottom);
     }
 
     static boolean hasNavigationBar(DisplayInfo info, Context context, int displayId) {
