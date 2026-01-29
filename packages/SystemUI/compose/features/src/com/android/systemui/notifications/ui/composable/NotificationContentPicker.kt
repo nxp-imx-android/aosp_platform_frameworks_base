@@ -18,6 +18,7 @@ package com.android.systemui.notifications.ui.composable
 
 import com.android.compose.animation.scene.ContentKey
 import com.android.systemui.scene.shared.model.SceneContainerConfig
+import com.android.systemui.scene.shared.model.Scenes
 import javax.inject.Inject
 
 interface NotificationContentPicker {
@@ -56,7 +57,14 @@ class HeadsUpPlaceholderContentPicker @Inject constructor(config: SceneContainer
     private val contentKeysByZOrder by lazy { (config.sceneKeys + config.overlayKeys) }
 
     override fun pickContentFrom(keys: Set<ContentKey>): ContentKey? {
-        // Select the content drawn at the bottom.
+        // Pick shade (higher z than lockscreen/AOD) so that HUN gets
+        // expanded target bounds at start of transition
+        // to prevent jump cut at end of transition
+        if (Scenes.Lockscreen in keys && Scenes.Shade in keys) {
+            return Scenes.Shade
+        }
+
+        // Pick lowest z content
         return contentKeysByZOrder.firstOrNull { it in keys }
     }
 }
