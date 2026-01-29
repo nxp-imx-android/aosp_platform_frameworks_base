@@ -17,6 +17,7 @@
 package android.telephony.satellite;
 
 import android.Manifest;
+import android.app.PendingIntent;
 import android.annotation.CallbackExecutor;
 import android.annotation.FlaggedApi;
 import android.annotation.Hide;
@@ -302,6 +303,14 @@ public final class SatelliteManager {
      */
     public static final String KEY_SELECTED_NB_IOT_SATELLITE_SUBSCRIPTION_ID =
             "selected_nb_iot_satellite_subscription_id";
+
+    /**
+     * Bundle key to get the response from
+     * {@link #requestPointingUiAppLaunchIntent(PointingUiAppLaunchIntentAttributes, Executor,
+     * OutcomeReceiver)}.
+     * @hide
+     */
+    public static final String KEY_POINTING_UI_APP_LAUNCH_INTENT = "pointing_ui_app_launch_intent";
 
     /**
      * Bundle key to get the response from
@@ -4197,6 +4206,69 @@ public final class SatelliteManager {
             ex.rethrowAsRuntimeException();
         }
         return null;
+    }
+
+    /**
+     * Requests a {@link PendingIntent} to launch the Pointing UI application.
+     *
+     * <p>The Pointing UI application is designed to assist users in aligning their
+     * mobile device with a specific satellite by providing directional guidance.
+     *
+     * @param launchIntentAttributes The attributes to create the launch intent.
+     * @param executor The executor on which the callback will be called.
+     * @param callback The callback object to which the result will be delivered.
+     *                 If the request is successful, {@link OutcomeReceiver#onResult(Object)}
+     *                 will return the {@link PendingIntent} to launch the PointingUI app.
+     *                 If the request is not successful, {@link OutcomeReceiver#onError(Throwable)}
+     *                 will return a {@link SatelliteException} with the {@link SatelliteResult}.
+     *
+     * @throws SecurityException if the caller doesn't have required permission.
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_SYSTEM_SELECTION_SPECIFIER_ENHANCEMENT)
+    @SystemApi
+    @RequiresPermission(Manifest.permission.SATELLITE_COMMUNICATION)
+    public void requestPointingUiAppLaunchIntent(
+            @NonNull PointingUiAppLaunchIntentAttributes launchIntentAttributes,
+            @NonNull @CallbackExecutor Executor executor,
+            @NonNull OutcomeReceiver<PendingIntent, SatelliteException> callback) {
+        Objects.requireNonNull(launchIntentAttributes);
+        Objects.requireNonNull(executor);
+        Objects.requireNonNull(callback);
+
+        try {
+            ITelephony telephony = getITelephony();
+            if (telephony != null) {
+                ResultReceiver receiver = new ResultReceiver(null) {
+                    @Override
+                    protected void onReceiveResult(int resultCode, Bundle resultData) {
+                        if (resultCode == SATELLITE_RESULT_SUCCESS) {
+                            if (resultData.containsKey(KEY_POINTING_UI_APP_LAUNCH_INTENT)) {
+                                PendingIntent launchIntent =
+                                        resultData.getParcelable(KEY_POINTING_UI_APP_LAUNCH_INTENT,
+                                                PendingIntent.class);
+                                executor.execute(() -> Binder.withCleanCallingIdentity(() ->
+                                        callback.onResult(launchIntent)));
+                            } else {
+                                loge("KEY_POINTING_UI_APP_LAUNCH_INTENT does not exist.");
+                                executor.execute(() -> Binder.withCleanCallingIdentity(() ->
+                                        callback.onError(new SatelliteException(
+                                                SATELLITE_RESULT_REQUEST_FAILED))));
+                            }
+                        } else {
+                            executor.execute(() -> Binder.withCleanCallingIdentity(() ->
+                                    callback.onError(new SatelliteException(resultCode))));
+                        }
+                    }
+                };
+                telephony.requestPointingUiAppLaunchIntent(launchIntentAttributes, receiver);
+            } else {
+                throw new IllegalStateException("telephony service is null.");
+            }
+        } catch (RemoteException ex) {
+            loge("requestPointingUiAppLaunchIntent() RemoteException: " + ex);
+            ex.rethrowAsRuntimeException();
+        }
     }
 
     /**

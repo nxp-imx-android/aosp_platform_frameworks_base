@@ -19833,6 +19833,16 @@ package android.telephony.satellite {
     field @NonNull public static final android.os.Parcelable.Creator<android.telephony.satellite.PointingInfo> CREATOR;
   }
 
+  @FlaggedApi("com.android.internal.telephony.flags.system_selection_specifier_enhancement") public final class PointingUiAppLaunchIntentAttributes implements android.os.Parcelable {
+    ctor public PointingUiAppLaunchIntentAttributes(boolean, boolean, boolean);
+    method public int describeContents();
+    method public boolean isDemoMode();
+    method public boolean isEmergencyMode();
+    method public boolean isFullScreen();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.telephony.satellite.PointingUiAppLaunchIntentAttributes> CREATOR;
+  }
+
   @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") public final class SatelliteAccessConfiguration implements android.os.Parcelable {
     method public int describeContents();
     method @NonNull public java.util.List<android.telephony.satellite.SatelliteInfo> getSatelliteInfos();
@@ -19923,6 +19933,7 @@ package android.telephony.satellite {
     method @RequiresPermission(android.Manifest.permission.SATELLITE_COMMUNICATION) public void requestIsProvisioned(@NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.lang.Boolean,android.telephony.satellite.SatelliteManager.SatelliteException>);
     method public void requestIsSupported(@NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.lang.Boolean,android.telephony.satellite.SatelliteManager.SatelliteException>);
     method @RequiresPermission(android.Manifest.permission.SATELLITE_COMMUNICATION) public void requestNtnSignalStrength(@NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<android.telephony.satellite.NtnSignalStrength,android.telephony.satellite.SatelliteManager.SatelliteException>);
+    method @FlaggedApi("com.android.internal.telephony.flags.system_selection_specifier_enhancement") @RequiresPermission(android.Manifest.permission.SATELLITE_COMMUNICATION) public void requestPointingUiAppLaunchIntent(@NonNull android.telephony.satellite.PointingUiAppLaunchIntentAttributes, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<android.app.PendingIntent,android.telephony.satellite.SatelliteManager.SatelliteException>);
     method @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") @RequiresPermission(android.Manifest.permission.SATELLITE_COMMUNICATION) public void requestSatelliteAccessConfigurationForCurrentLocation(@NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<android.telephony.satellite.SatelliteAccessConfiguration,android.telephony.satellite.SatelliteManager.SatelliteException>);
     method @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") @RequiresPermission(android.Manifest.permission.SATELLITE_COMMUNICATION) public void requestSatelliteSubscriberProvisionStatus(@NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.util.List<android.telephony.satellite.SatelliteSubscriberProvisionStatus>,android.telephony.satellite.SatelliteManager.SatelliteException>);
     method @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") @RequiresPermission(android.Manifest.permission.SATELLITE_COMMUNICATION) public void requestSelectedNbIotSatelliteSubscriptionId(@NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.lang.Integer,android.telephony.satellite.SatelliteManager.SatelliteException>);
