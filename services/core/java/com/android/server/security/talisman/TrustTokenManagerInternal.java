@@ -58,4 +58,10 @@ interface TrustTokenManagerInternal {
      * @param configuration The updated configuration.
      */
     void updateTrustConfiguration(TrustConfiguration configuration);
+
+    /**
+     * Cleans up the internal database.
+     * @hide
+     */
+    void cleanUpDatabase();
 }
