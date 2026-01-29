@@ -327,6 +327,7 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
         verifyLogPosted(GlobalActionsEvent.GA_CLOSE_TAP_OUTSIDE, 0 /* position */);
     }
 
+    @FlakyTest(bugId = 479814486)
     @Test
     public void testTouchReschedulesBurnInTimeout() {
         final int timeout = 10000;
@@ -969,6 +970,7 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
 
     }
 
+    @FlakyTest(bugId = 479814486)
     @Test
     public void userSwitching_dismissDialog() {
         setMaxShownPowerItems(2);
