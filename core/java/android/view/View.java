@@ -52,6 +52,7 @@ import static android.view.displayhash.DisplayHashResultCallback.EXTRA_DISPLAY_H
 import static android.view.displayhash.DisplayHashResultCallback.EXTRA_DISPLAY_HASH_ERROR_CODE;
 import static android.view.flags.Flags.FLAG_CALLED_FROM_WRONG_THREAD_LISTENER_API;
 import static android.view.flags.Flags.FLAG_SENSITIVE_CONTENT_APP_PROTECTION_API;
+import static android.view.flags.Flags.FLAG_SCROLL_TO_TOP;
 import static android.view.flags.Flags.FLAG_TOOLKIT_SET_FRAME_RATE_READ_ONLY;
 import static android.view.flags.Flags.FLAG_VIEW_VELOCITY_API;
 import static android.view.flags.Flags.enableUseMeasureCacheDuringForceLayout;
@@ -16901,6 +16902,19 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
      */
     public boolean dispatchKeyShortcutEvent(KeyEvent event) {
         return onKeyShortcut(event.getKeyCode(), event);
+    }
+
+    /**
+     * Dispatches a command to scroll the main content to the top.
+     *
+     * @param x The x-coordinate of the scroll-to-top command, in the coordinate
+     *          space of this view.
+     * @return true if the event was consumed and should not be propagated to other
+     * potential handlers.
+     */
+    @FlaggedApi(FLAG_SCROLL_TO_TOP)
+    public boolean dispatchScrollToTop(int x) {
+        return false;
     }
 
     /**
