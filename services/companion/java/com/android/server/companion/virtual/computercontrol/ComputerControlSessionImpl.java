@@ -236,8 +236,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                 @Override
                 public void onBlocked(@ComputerControlSession.SessionBlockReason int reason,
                         @Nullable String blockingPackage) {
-                    cancelOngoingKeyGestures();
-                    cancelOngoingTouchGestures();
+                    cancelOngoingInteractions();
                     mStatsController.onSessionBlocked(reason);
                 }
 
@@ -525,6 +524,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             Slog.e(TAG, "Cannot launch application: Agent interaction is not available");
             return;
         }
+        cancelOngoingInteractions();
         synchronized (mAllowlistedPackages) {
             mAllowlistedPackages.add(packageName);
         }
@@ -551,7 +551,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         if (shouldDisallowInteractions("tap")) {
             return;
         }
-        cancelOngoingTouchGestures();
+        cancelOngoingInteractions();
         mVirtualTouchscreen.sendTouchEvent(createTouchEvent(x, y, VirtualTouchEvent.ACTION_DOWN));
         mVirtualTouchscreen.sendTouchEvent(createTouchEvent(x, y, VirtualTouchEvent.ACTION_UP));
         mStatsController.onTap();
@@ -564,7 +564,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         if (shouldDisallowInteractions("swipe")) {
             return;
         }
-        cancelOngoingTouchGestures();
+        cancelOngoingInteractions();
         mVirtualTouchscreen.sendTouchEvent(
                 createTouchEvent(fromX, fromY, VirtualTouchEvent.ACTION_DOWN));
         performSwipeStep(fromX, fromY, toX, toY, /* step= */ 0, SWIPE_STEPS);
@@ -577,7 +577,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         if (shouldDisallowInteractions("longPress")) {
             return;
         }
-        cancelOngoingTouchGestures();
+        cancelOngoingInteractions();
         mVirtualTouchscreen.sendTouchEvent(
                 createTouchEvent(x, y, VirtualTouchEvent.ACTION_DOWN));
         int longPressStepCount =
@@ -594,6 +594,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         if (shouldDisallowInteractions("performAction")) {
             return;
         }
+        cancelOngoingInteractions();
         if (actionCode == ComputerControlSession.ACTION_GO_BACK) {
             mVirtualDpad.sendKeyEvent(
                     createKeyEvent(KeyEvent.KEYCODE_BACK, VirtualKeyEvent.ACTION_DOWN));
@@ -733,7 +734,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         if (shouldDisallowInteractions("insertText")) {
             return;
         }
-        cancelOngoingKeyGestures();
+        cancelOngoingInteractions();
 
         InputMethodManagerInternal.ComputerControlInputConnectionData data = getInputConnectionData(
                 mVirtualDisplayId);
@@ -870,8 +871,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     }
 
     private void releaseResources() {
-        cancelOngoingKeyGestures();
-        cancelOngoingTouchGestures();
+        cancelOngoingInteractions();
         cancelPendingCloseSession();
         mAudioInjector.stopAudioInjection();
         mAudioCapture.stopAudioCapture();
@@ -924,14 +924,11 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         return false;
     }
 
-    private void cancelOngoingKeyGestures() {
+    private void cancelOngoingInteractions() {
         if (mInsertTextFuture != null) {
             mInsertTextFuture.cancel(false);
             mInsertTextFuture = null;
         }
-    }
-
-    private void cancelOngoingTouchGestures() {
         if (mSwipeFuture != null && mSwipeFuture.cancel(false)) {
             mVirtualTouchscreen.sendTouchEvent(
                     createTouchEvent(0, 0, VirtualTouchEvent.ACTION_CANCEL));
