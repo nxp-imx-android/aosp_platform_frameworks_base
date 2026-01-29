@@ -438,23 +438,6 @@ LIBANDROID {
     ANativeService_setOnRebindCallback; # introduced=37 artless
     ANativeService_setOnDestroyCallback; # introduced=37 artless
     ANativeService_setOnTrimMemoryCallback; # introduced=37 artless
-    ANpuManager_isSupported; # introduced=37
-    ANpuManager_allocAsync; # introduced=37
-    ANpuBuffer_free; # introduced=37
-    ANpuBuffer_map; # introduced=37
-    ANpuBuffer_unmap; # introduced=37
-    ANpuBuffer_setPriority; # introduced=37
-    ANpuManager_AllocRequest_create; # introduced=37
-    ANpuManager_AllocRequest_free; # introduced=37
-    ANpuManager_AllocRequest_setBufferPriority; # introduced=37
-    ANpuManager_AllocRequest_setBufferType; # introduced=37
-    ANpuManager_AllocRequest_setCookie; # introduced=37
-    ANpuManager_AllocRequest_setDeviceNumber; # introduced=37
-    ANpuManager_AllocRequest_setFileSegmentToLoad; # introduced=37
-    ANpuManager_AllocRequest_setProtectionFlags; # introduced=37
-    ANpuManager_AllocRequest_setOnAlloc; # introduced=37
-    ANpuManager_AllocRequest_setOnPreempt; # introduced=37
-    ANpuManager_AllocRequest_setSize; # introduced=37
   local:
     *;
 };
