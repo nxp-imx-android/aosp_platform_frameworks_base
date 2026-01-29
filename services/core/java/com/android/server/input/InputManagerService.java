@@ -2617,8 +2617,9 @@ public class InputManagerService extends IInputManager.Stub
 
     // Native callback
     @SuppressWarnings("unused")
-    private void notifyDropWindow(IBinder token, float x, float y) {
-        mWindowManagerCallbacks.notifyDropWindow(token, x, y);
+    private void notifyDropWindow(IBinder token, float windowX, float windowY, float displayX,
+            float displayY) {
+        mWindowManagerCallbacks.notifyDropWindow(token, windowX, windowY, displayX, displayY);
     }
 
     // Native callback.
@@ -3667,8 +3668,17 @@ public class InputManagerService extends IInputManager.Stub
 
         /**
          * Called when the drag over window has changed.
+         *
+         * @param token The token of the window over which drop occurred.
+         * @param windowX The x coordinate of the drag event, relative to the window's surface.
+         * @param windowY The y coordinate of the drag event, relative to the window's surface.
+         * @param rawX The x coordinate of the drag event, relative to the display in which the
+         *             gesture ended (and where the drop window is located, if any).
+         * @param rawY The y coordinate of the drag event, relative to the display in which the
+         *             gesture ended (and where the drop window is located, if any).
          */
-        void notifyDropWindow(IBinder token, float x, float y);
+        void notifyDropWindow(IBinder token, float windowX, float windowY, float rawX,
+                float rawY);
 
         /**
          * Get the {@link SurfaceControl} that should be the parent for the surfaces created for

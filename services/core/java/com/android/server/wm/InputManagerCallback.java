@@ -310,9 +310,11 @@ final class InputManagerCallback implements InputManagerService.WindowManagerCal
     }
 
     @Override
-    public void notifyDropWindow(IBinder token, float x, float y) {
+    public void notifyDropWindow(IBinder token, float windowX, float windowY, float rawX,
+            float rawY) {
         mService.mH.sendMessage(PooledLambda.obtainMessage(
-                mService.mDragDropController::reportDropWindow, token, x, y));
+                mService.mDragDropController::reportDropWindow, token, windowX, windowY, rawX,
+                rawY));
     }
 
     @Override

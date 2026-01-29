@@ -442,7 +442,7 @@ public:
                           ui::LogicalDisplayId displayId) override;
     void onPointerDownOutsideFocus(const sp<IBinder>& touchedToken) override;
     void setPointerCapture(const PointerCaptureRequest& request) override;
-    void notifyDropWindow(const sp<IBinder>& token, float x, float y) override;
+    void notifyDropWindow(const sp<IBinder>& token, vec2 location, vec2 rawLocation) override;
     void notifyDeviceInteraction(int32_t deviceId, nsecs_t timestamp,
                                  const std::set<gui::Uid>& uids) override;
     void notifyFocusedDisplayChanged(ui::LogicalDisplayId displayId) override;
@@ -1331,7 +1331,8 @@ void NativeInputManager::notifyFocusChanged(const sp<IBinder>& oldToken,
     checkAndClearExceptionFromCallback(env, "notifyFocusChanged");
 }
 
-void NativeInputManager::notifyDropWindow(const sp<IBinder>& token, float x, float y) {
+void NativeInputManager::notifyDropWindow(const sp<IBinder>& token, vec2 location,
+                                          vec2 rawLocation) {
 #if DEBUG_INPUT_DISPATCHER_POLICY
     ALOGD("notifyDropWindow");
 #endif
@@ -1341,7 +1342,8 @@ void NativeInputManager::notifyDropWindow(const sp<IBinder>& token, float x, flo
     ScopedLocalFrame localFrame(env);
 
     jobject tokenObj = javaObjectForIBinder(env, token);
-    env->CallVoidMethod(mServiceObj, gServiceClassInfo.notifyDropWindow, tokenObj, x, y);
+    env->CallVoidMethod(mServiceObj, gServiceClassInfo.notifyDropWindow, tokenObj, location.x,
+                        location.y, rawLocation.x, rawLocation.y);
     checkAndClearExceptionFromCallback(env, "notifyDropWindow");
 }
 
@@ -3705,7 +3707,7 @@ int register_android_server_InputManager(JNIEnv* env) {
     GET_METHOD_ID(gServiceClassInfo.notifyFocusChanged, clazz,
             "notifyFocusChanged", "(Landroid/os/IBinder;Landroid/os/IBinder;)V");
     GET_METHOD_ID(gServiceClassInfo.notifyDropWindow, clazz, "notifyDropWindow",
-                  "(Landroid/os/IBinder;FF)V");
+                  "(Landroid/os/IBinder;FFFF)V");
 
     GET_METHOD_ID(gServiceClassInfo.notifySensorEvent, clazz, "notifySensorEvent", "(IIIJ[F)V");
 
