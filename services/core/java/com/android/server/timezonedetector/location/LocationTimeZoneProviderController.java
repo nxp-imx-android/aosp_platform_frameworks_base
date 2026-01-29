@@ -444,7 +444,7 @@ class LocationTimeZoneProviderController implements Dumpable {
                                     + " primary="
                                     + mPrimaryProvider.getCurrentState()
                                     + " secondary="
-                                    + mPrimaryProvider.getCurrentState();
+                                    + mSecondaryProvider.getCurrentState();
                     setStateAndReportStatusOnlyEvent(STATE_FAILED, reason);
                 }
             }
