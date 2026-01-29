@@ -22,6 +22,7 @@ import android.media.projection.StopReason
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityManager
 import android.widget.Toast
+import com.android.systemui.CoreStartable
 import com.android.systemui.common.ui.data.repository.ConfigurationRepository
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
@@ -50,7 +51,7 @@ constructor(
     private val mediaProjectionRepository: MediaProjectionRepository,
     private val accessibilityManager: AccessibilityManager,
     @Application private val context: Context,
-) {
+) : CoreStartable {
     enum class SharingType {
         APP,
         TAB,
@@ -84,7 +85,7 @@ constructor(
                 initialValue = false,
             )
 
-    init {
+    override fun start() {
         scope.launch {
             var wasProjecting = false
             isMediaProjecting.collect { isProjecting ->

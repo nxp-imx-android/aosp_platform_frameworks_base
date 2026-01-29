@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.quickactions.sharescreen.domain.interactor
 
+import android.view.accessibility.accessibilityManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
@@ -33,6 +34,10 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.kotlin.any
+import org.mockito.kotlin.never
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @SmallTest
@@ -50,11 +55,53 @@ class ShareScreenPrivacyIndicatorInteractorTest : SysuiTestCase() {
         )
         kosmos.fakeMediaProjectionRepository.mediaProjectionState.value =
             MediaProjectionState.NotProjecting
+
+        kosmos.underTest.start()
     }
 
     @Test
     fun isChipVisible_initiallyFalse() =
         kosmos.runTest { assertThat(currentValue(underTest.isChipVisible)).isFalse() }
+
+    @Test
+    fun announceStoppedSharing_onMediaProjectionStopped_announces() =
+        kosmos.runTest {
+            whenever(kosmos.accessibilityManager.isEnabled).thenReturn(true)
+            underTest.assignSharingInfo(
+                ShareScreenPrivacyIndicatorInteractor.SharingType.DISPLAY,
+                "Test Display",
+            )
+
+            // Start projecting
+            kosmos.fakeMediaProjectionRepository.mediaProjectionState.value =
+                MediaProjectionState.Projecting.EntireScreen(
+                    hostPackage = "test",
+                    hostDeviceName = null,
+                )
+
+            // Stop projecting
+            kosmos.fakeMediaProjectionRepository.mediaProjectionState.value =
+                MediaProjectionState.NotProjecting
+
+            verify(kosmos.accessibilityManager).sendAccessibilityEvent(any())
+        }
+
+    @Test
+    fun announceStoppedSharing_notStarted_noAnnouncement() =
+        kosmos.runTest {
+            // This test is to verify it doesn't announce if it was never projecting.
+            whenever(kosmos.accessibilityManager.isEnabled).thenReturn(true)
+            underTest.assignSharingInfo(
+                ShareScreenPrivacyIndicatorInteractor.SharingType.APP,
+                "Test App",
+            )
+
+            // No projection state change to stopped from started.
+            kosmos.fakeMediaProjectionRepository.mediaProjectionState.value =
+                MediaProjectionState.NotProjecting
+
+            verify(kosmos.accessibilityManager, never()).sendAccessibilityEvent(any())
+        }
 
     @Test
     fun isChipVisible_onMediaProjectionStarted_true() =
