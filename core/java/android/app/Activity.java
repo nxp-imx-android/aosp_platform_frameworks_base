@@ -1974,8 +1974,11 @@ public class Activity extends ContextThemeWrapper
      *     recently supplied in {@link #onSaveInstanceState}.
      *     <b><i>Note: Otherwise it is null.</i></b>
      * @param persistentState if the activity is being re-initialized after
-     *     previously being shut down or powered off then this Bundle contains the data it most
-     *     recently supplied to outPersistentState in {@link #onSaveInstanceState}.
+     *     previously being shut down{@if (flag
+     *     (com.android.window.flags.Flags.FLAG_ENABLE_APP_RESTART_AFTER_UPDATE))
+     *     {, powered off or updated to a new version} else { or powered off}} then this Bundle
+     *     contains the data it most recently supplied to outPersistentState in
+     *     {@link #onSaveInstanceState}.
      *     <b><i>Note: Otherwise it is null.</i></b>
      *
      * @see #onCreate(android.os.Bundle)
@@ -2623,10 +2626,13 @@ public class Activity extends ContextThemeWrapper
      * created with the attribute {@link android.R.attr#persistableMode} set to
      * <code>persistAcrossReboots</code>. The {@link android.os.PersistableBundle} passed
      * in will be saved and presented in {@link #onCreate(Bundle, PersistableBundle)}
-     * the first time that this activity is restarted following the next device reboot.
+     * the first time that this activity is restarted following the next device reboot{@if
+     * (flag(com.android.window.flags.Flags.FLAG_ENABLE_APP_RESTART_AFTER_UPDATE)){ or after an
+     * update}}.
      *
      * @param outState Bundle in which to place your saved state.
-     * @param outPersistentState State which will be saved across reboots.
+     * @param outPersistentState State which will be saved across reboots{@if (
+ flag(com.android.window.flags.Flags.FLAG_ENABLE_APP_RESTART_AFTER_UPDATE)){ and updates}}.
      *
      * @see #onSaveInstanceState(Bundle)
      * @see #onCreate
