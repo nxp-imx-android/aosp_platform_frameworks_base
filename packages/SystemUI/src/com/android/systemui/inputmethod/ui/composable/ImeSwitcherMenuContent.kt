@@ -74,7 +74,7 @@ fun ImeSwitcherMenuContent(
         if (Flags.dialogBackgroundRefresh()) isCurrentlyInDarkTheme else cachedDarkTheme
     val paneTitleDescription = stringResource(R.string.select_input_method)
 
-    PlatformTheme(isDarkTheme = cachedDarkTheme) {
+    PlatformTheme(isDarkTheme = isDarkTheme) {
         Column(
             modifier =
                 Modifier.fillMaxWidth()
