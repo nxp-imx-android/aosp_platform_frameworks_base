@@ -4990,7 +4990,11 @@ public class UserManagerService extends IUserManager.Stub {
         File tempBackup = new File(filename.getParent(), filename.getName() + ".backup");
         File reserveCopy = new File(filename.getParent(),
                 filename.getName() + ".reservecopy");
-        int fileMode = FileUtils.S_IRWXU | FileUtils.S_IRWXG | FileUtils.S_IXOTH;
+        int fileMode =  FileUtils.S_IRUSR
+                            | FileUtils.S_IWUSR
+                            | FileUtils.S_IRGRP
+                            | FileUtils.S_IWGRP
+                            | FileUtils.S_IROTH;
         return new ResilientAtomicFile(filename, tempBackup, reserveCopy, fileMode,
                 "user list", (priority, msg) -> {
             Slog.e(LOG_TAG, msg);
@@ -5527,6 +5531,10 @@ public class UserManagerService extends IUserManager.Stub {
             } catch (SecurityException se) {
                 Slog.e(LOG_TAG, "Error deleting the perfetto user list", se);
             }
+        } else {
+            // File exists and flag is on, make sure file has correct permissions
+            // TODO: annabauza - Remove with flag cleanup. Temporary for current testing population.
+            SELinux.restorecon(mPerfUserListFile);
         }
     }
 
@@ -5908,6 +5916,7 @@ public class UserManagerService extends IUserManager.Stub {
                         }
                     }
                     file.finishWrite(fos);
+                    SELinux.restorecon(mPerfUserListFile);
                 } catch (Exception e) {
                     Slog.e(LOG_TAG, "Error writing perf user list", e);
                     file.failWrite(fos);
