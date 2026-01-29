@@ -188,8 +188,12 @@ class WallpaperData {
      */
     int mOrientationWhenSet = ORIENTATION_UNKNOWN;
 
+    /** Default component name used before a component is set at boot time  */
+    static final ComponentName NO_COMPONENT = new ComponentName("", "");
+
     /** Description of the current wallpaper */
-    private WallpaperDescription mDescription = new WallpaperDescription.Builder().build();
+    private WallpaperDescription mDescription = new WallpaperDescription.Builder()
+            .setComponent(NO_COMPONENT).build();
 
     WallpaperData(int userId, @SetWallpaperFlags int wallpaperType) {
         this.userId = userId;
@@ -243,7 +247,13 @@ class WallpaperData {
         return result;
     }
 
-    @NonNull ComponentName getComponent() {
+    @NonNull
+    ComponentName getComponent() {
+        if (mDescription.getComponent() == null) {
+            // This should be impossible since all methods of setting the component enforce
+            // non-nullity, but this gets rid of a linter error.
+            throw new IllegalStateException("WallpaperDescription component must not be null");
+        }
         return mDescription.getComponent();
     }
 
