@@ -29,12 +29,14 @@ import static com.android.server.companion.virtual.computercontrol.ComputerContr
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.UserIdInt;
 import android.app.Activity;
 import android.app.ActivityOptions;
 import android.app.AppOpsManager;
 import android.app.IApplicationThread;
 import android.app.KeyguardManager;
 import android.app.PendingIntent;
+import android.app.admin.DevicePolicyManager;
 import android.app.admin.DevicePolicyManagerInternal;
 import android.companion.virtual.VirtualDeviceManager.VirtualDevice;
 import android.companion.virtual.VirtualDeviceParams;
@@ -45,6 +47,7 @@ import android.content.AttributionSource;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.pm.UserInfo;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
@@ -54,6 +57,7 @@ import android.os.Process;
 import android.os.RemoteException;
 import android.os.ResultReceiver;
 import android.os.UserHandle;
+import android.os.UserManager;
 import android.util.ArraySet;
 import android.util.Slog;
 
@@ -84,6 +88,8 @@ public final class ComputerControlSessionProcessor {
     private final KeyguardManager mKeyguardManager;
     private final AppOpsManager mAppOpsManager;
     private final PackageManager mPackageManager;
+    private final UserManager mUserManager;
+    private final DevicePolicyManager mDevicePolicyManager;
     private final DevicePolicyManagerInternal mDevicePolicyManagerInternal;
     private final VirtualDeviceFactory mVirtualDeviceFactory;
     private final PendingIntentFactory mPendingIntentFactory;
@@ -116,6 +122,8 @@ public final class ComputerControlSessionProcessor {
         mKeyguardManager = context.getSystemService(KeyguardManager.class);
         mAppOpsManager = context.getSystemService(AppOpsManager.class);
         mPackageManager = context.getPackageManager();
+        mUserManager = context.getSystemService(UserManager.class);
+        mDevicePolicyManager = context.getSystemService(DevicePolicyManager.class);
         mDevicePolicyManagerInternal = LocalServices.getService(DevicePolicyManagerInternal.class);
         mAllowlistController = allowlistController;
     }
@@ -185,12 +193,12 @@ public final class ComputerControlSessionProcessor {
         final UserHandle ownerUser = UserHandle.getUserHandleForUid(attributionSource.getUid());
         // TODO: b/445856399 - Support managed profiles.
         Binder.withCleanCallingIdentity(() -> {
-            if (mDevicePolicyManagerInternal.isUserOrganizationManaged(ownerUser.getIdentifier())) {
+            if (!isComputerControlAvailableForUser(ownerUser.getIdentifier())) {
                 ComputerControlStatsController.writeFailedSessionWithStatsReason(
                         mPackageManager, attributionSource, params,
                         COMPUTER_CONTROL_FAILED_SESSION_REPORTED__REASON__MANAGED_POLICY_DISABLED);
                 throw new SecurityException(
-                    "Managed profiles are not allowed to use Computer Control.");
+                        "Managed profiles are not allowed to use Computer Control.");
             }
         });
 
@@ -243,8 +251,7 @@ public final class ComputerControlSessionProcessor {
         final Context ownerContext;
         final long token = Binder.clearCallingIdentity();
         try {
-            // TODO: b/445856399 - Support managed profiles.
-            if (mDevicePolicyManagerInternal.isUserOrganizationManaged(ownerUser.getIdentifier())) {
+            if (!isComputerControlAvailableForUser(ownerUser.getIdentifier())) {
                 return false;
             }
             ownerContext = mContext.createContextAsUser(ownerUser, /* flags = */ 0);
@@ -259,6 +266,33 @@ public final class ComputerControlSessionProcessor {
         } catch (SecurityException e) {
             return false;
         }
+    }
+
+    private boolean isComputerControlAvailableForUser(@UserIdInt int userId) {
+        if (!android.companion.virtualdevice.flags.Flags.computerControlManagedProfiles()) {
+            return !mDevicePolicyManagerInternal.isUserOrganizationManaged(userId);
+        }
+
+        // On fully managed devices, follow nearbyAppStreamingPolicy.
+        if (mDevicePolicyManagerInternal.getDeviceOwnerComponent(/* callingUser= */ false)
+                != null) {
+            return mDevicePolicyManager.getNearbyAppStreamingPolicy(userId)
+                    != DevicePolicyManager.NEARBY_STREAMING_DISABLED;
+        }
+
+        // TODO: b/445856399 - Support managed profiles. For now they are blocked.
+        if (mUserManager.isManagedProfile(userId)) {
+            return false;
+        }
+
+        // Organization-owned devices with managed profiles are allowed to use Computer Control
+        // if the parent profile allows it.
+        if (mDevicePolicyManager.isOrganizationOwnedDeviceWithManagedProfile()) {
+            UserInfo userInfo = mUserManager.getUserInfo(userId);
+            return mDevicePolicyManager.getParentProfileInstance(userInfo)
+                    .getNearbyAppStreamingPolicy() != DevicePolicyManager.NEARBY_STREAMING_DISABLED;
+        }
+        return true;
     }
 
     /**

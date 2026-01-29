@@ -248,3 +248,13 @@ flag {
     bug: "441661489"
     is_exported: true
 }
+
+flag {
+    name: "computer_control_managed_profiles"
+    namespace: "virtual_devices"
+    description: "Improve computer control support for managed profiles."
+    bug: "440352486"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
