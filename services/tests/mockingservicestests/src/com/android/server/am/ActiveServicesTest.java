@@ -650,9 +650,7 @@ public final class ActiveServicesTest {
                         anyBoolean(),
                         anyBoolean(),
                         anyInt());
-        when(mActiveServices.isServiceNeededLocked(
-                        any(ServiceRecord.class), anyBoolean(), anyBoolean()))
-                .thenReturn(true);
+        when(r.isNeededLocked(anyBoolean(), anyBoolean())).thenReturn(true);
 
         setFieldValue(ActiveServices.class, mActiveServices, "mPendingServices", new ArrayList<>());
         mActiveServices.mPendingServices.add(r);

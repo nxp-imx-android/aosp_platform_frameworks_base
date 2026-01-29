@@ -31,6 +31,7 @@ import static com.android.server.am.ActivityManagerDebugConfig.TAG_AM;
 import static com.android.server.am.ActivityManagerDebugConfig.TAG_WITH_CLASS_NAME;
 
 import android.annotation.ElapsedRealtimeLong;
+import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.UptimeMillisLong;
@@ -74,6 +75,8 @@ import com.android.server.uri.NeededUriGrants;
 import com.android.server.uri.UriPermissionOwner;
 
 import java.io.PrintWriter;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -1926,5 +1929,73 @@ final class ServiceRecord extends ServiceRecordInternal implements ComponentName
         if (getHostProcess() != null) {
             mAdjSeq = getHostProcess().getAdjSeq();
         }
+    }
+
+    /** Service is not needed to be running. */
+    static final int NEEDED_NONE = 0;
+    /** Service is needed to be running because it has been explicitly started. */
+    static final int NEEDED_BY_START = 1 << 0;
+    /** Service is needed to be running because it has auto-create connections. */
+    static final int NEEDED_BY_AUTO_CREATE = 1 << 1;
+
+    @IntDef(flag = true, prefix = { "NEEDED_" }, value = {
+            NEEDED_NONE,
+            NEEDED_BY_START,
+            NEEDED_BY_AUTO_CREATE,
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    @interface NeededReason {}
+
+    /**
+     * @return a bitmask indicating why this service is required to be running.
+     */
+    @NeededReason
+    int getNeededReasonsLocked(boolean knowConn, boolean hasConn) {
+        int result = NEEDED_NONE;
+
+        // Are we still explicitly being asked to run?
+        if (isStartRequested()) {
+            result |= NEEDED_BY_START;
+        }
+
+        // Is someone still bound to us keeping us running?
+        if (!knowConn) {
+            hasConn = hasAutoCreateConnections();
+        }
+        if (hasConn) {
+            result |= NEEDED_BY_AUTO_CREATE;
+        }
+        return result;
+    }
+
+    /**
+     * @return true if the service is required to be running.
+     */
+    boolean isNeededLocked(boolean knowConn, boolean hasConn) {
+        return getNeededReasonsLocked(knowConn, hasConn) != NEEDED_NONE;
+    }
+
+    /**
+     * @return true if there is at least one auto-create connection from a process
+     * that is not currently frozen.
+     */
+    boolean hasNonFrozenAutoCreateConnections() {
+        final ArrayMap<IBinder, ArrayList<ConnectionRecord>> connections = getConnections();
+        for (int conni = connections.size() - 1; conni >= 0; conni--) {
+            final ArrayList<ConnectionRecord> clist = connections.valueAt(conni);
+            if (clist == null) {
+                continue;
+            }
+            for (int i = clist.size() - 1; i >= 0; i--) {
+                final ConnectionRecord cr = clist.get(i);
+                if (cr.hasFlag(Context.BIND_AUTO_CREATE)) {
+                    final ProcessRecord client = cr.getClient();
+                    if (client != null && client.getThread() != null && !client.isFrozen()) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 }

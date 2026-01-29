@@ -267,6 +267,7 @@ final class ProcessServiceRecord extends ProcessServiceRecordInternal {
     void onProcessUnfrozen() {
         synchronized (mService) {
             scheduleServiceTimeoutIfNeededLocked();
+            mService.mServices.onProcessUnfrozenLocked(this);
         }
     }
 

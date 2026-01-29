@@ -763,6 +763,8 @@ public abstract class Context {
      *
      * @hide
      */
+    @TestApi
+    @SuppressWarnings("UnflaggedApi") // @TestApi without associated feature.
     public static final long BIND_ALLOW_FREEZE = 0x4_0000_0000L;
 
     /**
