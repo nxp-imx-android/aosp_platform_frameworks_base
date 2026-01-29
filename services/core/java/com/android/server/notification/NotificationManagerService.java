@@ -9440,6 +9440,7 @@ public class NotificationManagerService extends SystemService {
         notification.fixSilentGroup();
 
         if (shouldOffloadBitmap(notification)) {
+            Trace.traceBegin(Trace.TRACE_TAG_SYSTEM_SERVER, "offloadNotificationBitmap");
             Icon icon = Notification.BigPictureStyle.getPictureIcon(notification.extras);
 
             Uri uri = mBitmapOffloader.offloadBitmap(BITMAP_SOURCE_NOTIFICATIONS, icon.getBitmap());
@@ -9448,6 +9449,7 @@ public class NotificationManagerService extends SystemService {
                 notification.extras.putParcelable(Notification.EXTRA_PICTURE, null);
                 notification.extras.putParcelable(Notification.EXTRA_PICTURE_ICON, icon);
             }
+            Trace.traceEnd(Trace.TRACE_TAG_SYSTEM_SERVER);
         }
 
         // Ensure only allowed packages can hide status bar notification icon
