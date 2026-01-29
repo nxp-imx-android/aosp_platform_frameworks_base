@@ -19,16 +19,14 @@ package com.android.server.am;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.os.SystemClock;
+import android.os.UserHandle;
 import android.util.Pair;
 
 import androidx.test.filters.SmallTest;
 
-import com.android.server.am.BaseBroadcastQueueTest.BroadcastRecordBuilder;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.MockitoAnnotations;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.ArrayList;
@@ -38,13 +36,8 @@ import java.util.ArrayList;
  */
 @SmallTest
 @RunWith(MockitoJUnitRunner.class)
-public class BroadcastHistoryTest {
-    private static final int TEST_UID1 = 1001;
-    private static final int TEST_UID2 = 1002;
-    private static final int TEST_UID3 = 1003;
-
-    private static final String TEST_PKG1 = "com.example.one";
-    private static final String TEST_PKG2 = "com.example.two";
+public class BroadcastHistoryTest extends BaseBroadcastQueueTest {
+    private static final String TAG = "BroadcastHistoryTest";
 
     private static final String TEST_ACTION = "com.example.action";
     private static final String TEST_ACTION1 = "com.example.action_1";
@@ -53,18 +46,31 @@ public class BroadcastHistoryTest {
     private BroadcastHistory mBroadcastHistory;
 
     @Before
-    public void setUp() {
-        MockitoAnnotations.openMocks(this);
+    public void setUp() throws Exception {
+        super.setUp();
         final BroadcastConstants constants = new BroadcastConstants("bcast_constants");
         mBroadcastHistory = new BroadcastHistory(constants);
     }
 
-    private BroadcastRecord createBroadcastRecord(int callingUid, String callerPackage,
+    @Override
+    public String getTag() {
+        return TAG;
+    }
+
+    private BroadcastRecord createBroadcastRecord(String callerPackage,
             String action, long enqueueTime) {
+        return createBroadcastRecord(callerPackage, callerPackage, action, enqueueTime);
+    }
+
+    private BroadcastRecord createBroadcastRecord(String callerPackage,
+            String callerProcess, String action, long enqueueTime) {
+        final ProcessRecord callerApp = makeProcessRecord(makeApplicationInfo(
+                callerPackage, callerProcess, UserHandle.USER_SYSTEM));
         final BroadcastRecord br = new BroadcastRecordBuilder()
                 .setIntentAction(action)
-                .setCallingUid(callingUid)
+                .setCallerApp(callerApp)
                 .setCallerPackage(callerPackage)
+                .setCallingUid(callerApp.uid)
                 .build();
         br.enqueueTime = enqueueTime;
         return br;
@@ -73,32 +79,79 @@ public class BroadcastHistoryTest {
     @Test
     public void testGetPendingBroadcastCountForUid() {
         mBroadcastHistory.onBroadcastEnqueuedLocked(
-                createBroadcastRecord(TEST_UID1, TEST_PKG1, TEST_ACTION1, 1000));
+                createBroadcastRecord(PACKAGE_GREEN, TEST_ACTION1, 1000));
         mBroadcastHistory.onBroadcastEnqueuedLocked(
-                createBroadcastRecord(TEST_UID1, TEST_PKG1, TEST_ACTION2, 2000));
+                createBroadcastRecord(PACKAGE_GREEN, TEST_ACTION2, 2000));
         mBroadcastHistory.onBroadcastEnqueuedLocked(
-                createBroadcastRecord(TEST_UID2, TEST_PKG2, TEST_ACTION1, 3000));
+                createBroadcastRecord(PACKAGE_RED, TEST_ACTION1, 3000));
 
-        assertThat(mBroadcastHistory.getPendingBroadcastCountForSenderUid(TEST_UID1)).isEqualTo(2);
-        assertThat(mBroadcastHistory.getPendingBroadcastCountForSenderUid(TEST_UID2)).isEqualTo(1);
-        assertThat(mBroadcastHistory.getPendingBroadcastCountForSenderUid(TEST_UID3)).isEqualTo(0);
+        assertThat(mBroadcastHistory.getPendingBroadcastCountForSenderUid(
+                getUidForPackage(PACKAGE_GREEN))).isEqualTo(2);
+        assertThat(mBroadcastHistory.getPendingBroadcastCountForSenderUid(
+                getUidForPackage(PACKAGE_RED))).isEqualTo(1);
+        assertThat(mBroadcastHistory.getPendingBroadcastCountForSenderUid(
+                getUidForPackage(PACKAGE_BLUE))).isEqualTo(0);
     }
 
     @Test
-    public void testGetOldestPendingBroadcastEnqueueTime() {
+    public void testGetPendingBroadcastCountForSenderProcess() {
         mBroadcastHistory.onBroadcastEnqueuedLocked(
-                createBroadcastRecord(TEST_UID1, TEST_PKG1, TEST_ACTION1, 2000));
+                createBroadcastRecord(PACKAGE_GREEN, PROCESS_GREEN, TEST_ACTION1, 1000));
         mBroadcastHistory.onBroadcastEnqueuedLocked(
-                createBroadcastRecord(TEST_UID1, TEST_PKG1, TEST_ACTION2, 1000));
+                createBroadcastRecord(PACKAGE_GREEN, PROCESS_GREEN, TEST_ACTION2, 2000));
         mBroadcastHistory.onBroadcastEnqueuedLocked(
-                createBroadcastRecord(TEST_UID2, TEST_PKG2, TEST_ACTION1, 3000));
+                createBroadcastRecord(PACKAGE_GREEN, PROCESS_RED, TEST_ACTION2, 3000));
+        mBroadcastHistory.onBroadcastEnqueuedLocked(
+                createBroadcastRecord(PACKAGE_RED, PROCESS_GREEN, TEST_ACTION1, 4000));
 
-        assertThat(mBroadcastHistory.getOldestPendingBroadcastEnqueueTime(TEST_UID1))
-                .isEqualTo(1000);
-        assertThat(mBroadcastHistory.getOldestPendingBroadcastEnqueueTime(TEST_UID2))
-                .isEqualTo(3000);
-        assertThat(mBroadcastHistory.getOldestPendingBroadcastEnqueueTime(TEST_UID3))
-                .isEqualTo(Long.MAX_VALUE);
+        assertThat(mBroadcastHistory.getPendingBroadcastCountForSenderProcess(
+                getUidForPackage(PACKAGE_GREEN), PROCESS_GREEN)).isEqualTo(2);
+        assertThat(mBroadcastHistory.getPendingBroadcastCountForSenderProcess(
+                getUidForPackage(PACKAGE_GREEN), PROCESS_RED)).isEqualTo(1);
+        assertThat(mBroadcastHistory.getPendingBroadcastCountForSenderProcess(
+                getUidForPackage(PACKAGE_GREEN), PROCESS_BLUE)).isEqualTo(0);
+        assertThat(mBroadcastHistory.getPendingBroadcastCountForSenderProcess(
+                getUidForPackage(PACKAGE_RED), PROCESS_GREEN)).isEqualTo(1);
+    }
+
+    @Test
+    public void testGetPendingBroadcastCountSince() {
+        mBroadcastHistory.onBroadcastEnqueuedLocked(
+                createBroadcastRecord(PACKAGE_GREEN, PROCESS_GREEN, TEST_ACTION1, 1000));
+        mBroadcastHistory.onBroadcastEnqueuedLocked(
+                createBroadcastRecord(PACKAGE_GREEN, PROCESS_GREEN, TEST_ACTION2, 2000));
+        mBroadcastHistory.onBroadcastEnqueuedLocked(
+                createBroadcastRecord(PACKAGE_GREEN, PROCESS_GREEN, TEST_ACTION, 3000));
+        mBroadcastHistory.onBroadcastEnqueuedLocked(
+                createBroadcastRecord(PACKAGE_GREEN, PROCESS_RED, TEST_ACTION, 3000));
+
+        // Verify the pending broadcast count for green process.
+        assertThat(mBroadcastHistory.getPendingBroadcastCountForSenderProcessSince(
+                getUidForPackage(PACKAGE_GREEN), PROCESS_GREEN, 500))
+                .isEqualTo(3);
+        assertThat(mBroadcastHistory.getPendingBroadcastCountForSenderProcessSince(
+                getUidForPackage(PACKAGE_GREEN), PROCESS_GREEN, 1500))
+                .isEqualTo(2);
+        assertThat(mBroadcastHistory.getPendingBroadcastCountForSenderProcessSince(
+                getUidForPackage(PACKAGE_GREEN), PROCESS_GREEN, 2500))
+                .isEqualTo(1);
+        assertThat(mBroadcastHistory.getPendingBroadcastCountForSenderProcessSince(
+                getUidForPackage(PACKAGE_GREEN), PROCESS_GREEN, 3500))
+                .isEqualTo(0);
+
+        // Verify the pending broadcast count for red process.
+        assertThat(mBroadcastHistory.getPendingBroadcastCountForSenderProcessSince(
+                getUidForPackage(PACKAGE_GREEN), PROCESS_RED, 500))
+                .isEqualTo(1);
+        assertThat(mBroadcastHistory.getPendingBroadcastCountForSenderProcessSince(
+                getUidForPackage(PACKAGE_GREEN), PROCESS_RED, 1500))
+                .isEqualTo(1);
+        assertThat(mBroadcastHistory.getPendingBroadcastCountForSenderProcessSince(
+                getUidForPackage(PACKAGE_GREEN), PROCESS_RED, 2500))
+                .isEqualTo(1);
+        assertThat(mBroadcastHistory.getPendingBroadcastCountForSenderProcessSince(
+                getUidForPackage(PACKAGE_GREEN), PROCESS_RED, 3500))
+                .isEqualTo(0);
     }
 
     @Test
@@ -114,12 +167,12 @@ public class BroadcastHistoryTest {
             final int count = broadcastCounts.get(i).second;
             for (int j = 0; j < count; ++j) {
                 mBroadcastHistory.onBroadcastEnqueuedLocked(createBroadcastRecord(
-                        TEST_UID1, TEST_PKG1, action, SystemClock.uptimeMillis()));
+                        PACKAGE_GREEN, action, SystemClock.uptimeMillis()));
             }
         }
 
         final StringBuilder sb = new StringBuilder();
-        mBroadcastHistory.appendPendingBroadcastsSummaryForUid(sb, TEST_UID1);
+        mBroadcastHistory.appendPendingBroadcastsSummaryForUid(sb, getUidForPackage(PACKAGE_GREEN));
         final String summary = sb.toString();
         final int broadcastCountsSize = broadcastCounts.size();
         for (int i = 0; i < BroadcastHistory.TOP_N_INTENTS_TO_DUMP; i++) {
@@ -129,5 +182,39 @@ public class BroadcastHistoryTest {
             final int expectedCount = broadcastCounts.get(broadcastCountsSize - 1 - i).second;
             assertThat(summary).contains(expectedAction + ": " + expectedCount);
         }
+    }
+
+    @Test
+    public void testNeverBroadcasted() {
+        final int uid = getUidForPackage(PACKAGE_BLUE);
+
+        assertThat(mBroadcastHistory.getPendingBroadcastCountForSenderUid(uid))
+                .isEqualTo(0);
+        assertThat(mBroadcastHistory.getPendingBroadcastCountForSenderProcess(uid, PROCESS_GREEN))
+                .isEqualTo(0);
+        assertThat(mBroadcastHistory.getPendingBroadcastCountForSenderProcessSince(
+                uid, PROCESS_GREEN, 0)).isEqualTo(0);
+    }
+
+    @Test
+    public void testPendingCountGoesDownAfterFinished() {
+        final BroadcastRecord record = createBroadcastRecord(PACKAGE_GREEN, PROCESS_GREEN,
+                TEST_ACTION, SystemClock.uptimeMillis());
+
+        mBroadcastHistory.onBroadcastEnqueuedLocked(record);
+        assertThat(mBroadcastHistory.getPendingBroadcastCountForSenderUid(
+                getUidForPackage(PACKAGE_GREEN)))
+                .isEqualTo(1);
+        assertThat(mBroadcastHistory.getPendingBroadcastCountForSenderProcess(
+                getUidForPackage(PACKAGE_GREEN), PROCESS_GREEN))
+                .isEqualTo(1);
+
+        mBroadcastHistory.onBroadcastFinishedLocked(record);
+        assertThat(mBroadcastHistory.getPendingBroadcastCountForSenderUid(
+                getUidForPackage(PACKAGE_GREEN)))
+                .isEqualTo(0);
+        assertThat(mBroadcastHistory.getPendingBroadcastCountForSenderProcess(
+                getUidForPackage(PACKAGE_GREEN), PROCESS_GREEN))
+                .isEqualTo(0);
     }
 }

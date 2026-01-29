@@ -104,6 +104,12 @@ public class BroadcastHistory {
     private final SparseArray<ArrayMap<String, Integer>> mPendingBroadcastCountsPerUid =
             new SparseArray<>();
 
+    /**
+     * Map of uids to process names to number of pending broadcasts it sent.
+     */
+    private final SparseArray<ArrayMap<String, Integer>> mPendingBroadcastCountsPerProcess =
+            new SparseArray<>();
+
     void onBroadcastFrozenLocked(@NonNull BroadcastRecord r) {
         mFrozenBroadcasts.add(r);
     }
@@ -124,6 +130,25 @@ public class BroadcastHistory {
 
     private void updatePendingBroadcastCounterAndLogToTrace(@NonNull BroadcastRecord r,
             int delta) {
+        if (r.callerApp != null) {
+            final String processName = r.callerApp.processName;
+            ArrayMap<String, Integer> processCounts =
+                    mPendingBroadcastCountsPerProcess.get(r.callingUid);
+            if (processCounts == null) {
+                processCounts = new ArrayMap<>();
+                mPendingBroadcastCountsPerProcess.put(r.callingUid, processCounts);
+            }
+            final int newCount = processCounts.getOrDefault(processName, 0) + delta;
+            if (newCount <= 0) {
+                processCounts.remove(processName);
+                if (processCounts.isEmpty()) {
+                    mPendingBroadcastCountsPerProcess.remove(r.callingUid);
+                }
+            } else {
+                processCounts.put(processName, newCount);
+            }
+        }
+
         ArrayMap<String, Integer> pendingBroadcastCounts =
                 mPendingBroadcastCountsPerUid.get(r.callingUid);
         if (pendingBroadcastCounts == null) {
@@ -167,6 +192,15 @@ public class BroadcastHistory {
         return mPendingBroadcasts.size();
     }
 
+    int getPendingBroadcastCountForSenderProcess(int uid, @NonNull String processName) {
+        final ArrayMap<String, Integer> processCounts =
+                mPendingBroadcastCountsPerProcess.get(uid);
+        if (processCounts == null) {
+            return 0;
+        }
+        return processCounts.getOrDefault(processName, 0);
+    }
+
     int getPendingBroadcastCountForSenderUid(int uid) {
         final ArrayMap<String, Integer> countsPerPkg = mPendingBroadcastCountsPerUid.get(uid);
         if (countsPerPkg == null) {
@@ -180,19 +214,20 @@ public class BroadcastHistory {
         return pendingCount;
     }
 
-    @UptimeMillisLong
-    long getOldestPendingBroadcastEnqueueTime(int uid) {
-        long oldestTime = Long.MAX_VALUE;
+    int getPendingBroadcastCountForSenderProcessSince(int uid, @NonNull String processName,
+            @UptimeMillisLong long sinceTime) {
+        int count = 0;
         final int size = mPendingBroadcasts.size();
         for (int i = 0; i < size; i++) {
             final BroadcastRecord br = mPendingBroadcasts.get(i);
-            if (br.callingUid == uid) {
-                if (br.enqueueTime < oldestTime) {
-                    oldestTime = br.enqueueTime;
+            if (br.callingUid == uid && br.callerApp != null
+                    && Objects.equals(br.callerApp.processName, processName)) {
+                if (br.enqueueTime >= sinceTime) {
+                    count++;
                 }
             }
         }
-        return oldestTime;
+        return count;
     }
 
     void appendPendingBroadcastsSummaryForUid(@NonNull StringBuilder summary, int uid) {
