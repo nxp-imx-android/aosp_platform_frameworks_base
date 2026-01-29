@@ -31,6 +31,7 @@ import com.android.internal.widget.remotecompose.core.documentation.Documentatio
 import com.android.internal.widget.remotecompose.core.operations.layout.measure.Measurable;
 import com.android.internal.widget.remotecompose.core.operations.layout.measure.MeasurePass;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.ComponentModifiers;
+import com.android.internal.widget.remotecompose.core.operations.layout.utils.DebugLog;
 import com.android.internal.widget.remotecompose.core.operations.utilities.StringSerializer;
 import com.android.internal.widget.remotecompose.core.serialize.MapSerializer;
 import com.android.internal.widget.remotecompose.core.serialize.SerializeTags;
@@ -142,6 +143,9 @@ public class RootLayoutComponent extends Component {
         if (!mNeedsMeasure) {
             return;
         }
+        if (context.isLayoutDebug()) {
+            DebugLog.clear();
+        }
         mNeedsMeasure = false;
         context.mLastComponent = this;
         setWidth(context.mWidth);
@@ -155,6 +159,9 @@ public class RootLayoutComponent extends Component {
                 m.measure(context.getPaintContext(), 0f, mWidth, 0f, mHeight, measurePass);
                 m.layout(context, measurePass);
             }
+        }
+        if (context.isLayoutDebug()) {
+            DebugLog.display();
         }
     }
 

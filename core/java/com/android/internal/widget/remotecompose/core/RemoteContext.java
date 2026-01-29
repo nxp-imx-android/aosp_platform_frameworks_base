@@ -23,6 +23,7 @@ import com.android.internal.widget.remotecompose.core.operations.ShaderData;
 import com.android.internal.widget.remotecompose.core.operations.Theme;
 import com.android.internal.widget.remotecompose.core.operations.Utils;
 import com.android.internal.widget.remotecompose.core.operations.layout.Component;
+import com.android.internal.widget.remotecompose.core.operations.layout.utils.DebugLog;
 import com.android.internal.widget.remotecompose.core.operations.utilities.ArrayAccess;
 import com.android.internal.widget.remotecompose.core.operations.utilities.CollectionsAccess;
 import com.android.internal.widget.remotecompose.core.operations.utilities.DataMap;
@@ -510,8 +511,13 @@ public abstract class RemoteContext {
         return mDebug == 2;
     }
 
+    public boolean isLayoutDebug() {
+        return mDebug == 3;
+    }
+
     public void setDebug(int debug) {
         this.mDebug = debug;
+        DebugLog.DEBUG_LAYOUT_ON = mDebug == 3;
     }
 
     /**
