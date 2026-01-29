@@ -746,13 +746,6 @@ flag {
 }
 
 flag {
-    name: "enable_key_gesture_handler_for_sysui"
-    namespace: "lse_desktop_experience"
-    description: "Enables the key gesture handler for listening to SysUi interested key events."
-    bug: "406740557"
-}
-
-flag {
     name: "enable_launcher_handle_go_home_keyboard_shortcut"
     namespace: "lse_desktop_experience"
     description: "Enables handling the go home keyboard shortcut on the Launcher side."

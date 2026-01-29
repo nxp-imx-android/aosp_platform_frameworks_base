@@ -3502,9 +3502,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             supportedGestures.add(KeyGestureEvent.KEY_GESTURE_TYPE_RECENT_APPS);
             supportedGestures.add(KeyGestureEvent.KEY_GESTURE_TYPE_RECENT_APPS_SWITCHER);
         }
-        if (!com.android.window.flags.Flags.enableKeyGestureHandlerForSysui()) {
-            supportedGestures.add(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL);
-        }
         mInputManager.registerKeyGestureEventHandler(supportedGestures,
                 PhoneWindowManager.this::handleKeyGestureEvent);
     }
