@@ -184,13 +184,18 @@
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"Uygulama penceresini paylaşın"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"Sekmeyi paylaş"</string>
     <string name="screen_share_entire_screen_sharing_title" msgid="9093580141248337998">"Tüm ekranı paylaş"</string>
-    <!-- no translation found for screen_share_disclaimer_app_sharing (1839029004749224549) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer_tab_sharing (3811486274577713101) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer_full_screen_sharing (5173795016606926338) -->
-    <skip />
+    <string name="screen_share_disclaimer_app_sharing" msgid="1839029004749224549">"<xliff:g id="APP_NAME">%1$s</xliff:g>, bir uygulamayı paylaştığınızda o uygulamada gösterilen veya oynatılan her şeyi görebilir. Bu nedenle hassas bilgiler konusunda dikkatli olun."</string>
+    <string name="screen_share_disclaimer_tab_sharing" msgid="3811486274577713101">"<xliff:g id="APP_NAME">%1$s</xliff:g>, bir sekmeyi paylaştığınızda sekmedeki her şeyi görebilir. Bu nedenle hassas bilgiler konusunda dikkatli olun."</string>
+    <string name="screen_share_disclaimer_full_screen_sharing" msgid="5173795016606926338">"<xliff:g id="APP_NAME">%1$s</xliff:g>, tüm ekranınızı paylaştığınızda ekranınızdaki her şeyi görebilir. Bu nedenle hassas bilgiler konusunda dikkatli olun."</string>
     <string name="screen_share_a11y_announcement" msgid="8938007210094494367">"Neyi paylaşacağınızı seçin. Sekmeyi, uygulamayı veya ekranın tamamını seçin. Ardından Paylaş\'a basın."</string>
+    <!-- no translation found for screen_share_cancel_announcement (5940879227647436383) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_sharing_app (3445421300603336524) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_sharing_tab (2963542572740628746) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_sharing_display (5919924998949424031) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Pencerenin ekran görüntüsünü al"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Pencereyi kaydet"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Seçili alanın ekran görüntüsünü al"</string>
@@ -1792,10 +1797,13 @@
     <string name="accessibility_close_overlay_action" msgid="3581095146209387670">"geri dön"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"otomatik doldur"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"genişlet"</string>
-    <string name="location_button_text_share_precise_location" msgid="5341882050169860712">"Tam konumu paylaş"</string>
-    <string name="location_button_text_use_precise_location" msgid="3499475231656390476">"Tam konumu kullan"</string>
-    <string name="location_button_text_near_precise_location" msgid="3607275724182981412">"Tam konumun yakınında"</string>
     <string name="location_button_text_precise_location" msgid="4441259889842542799">"Tam konum"</string>
+    <string name="location_button_text_use_precise_location" msgid="3499475231656390476">"Tam konumu kullan"</string>
+    <string name="location_button_text_share_precise_location" msgid="5341882050169860712">"Tam konumu paylaş"</string>
+    <!-- no translation found for location_button_text_near_my_precise_location (7590342799002942963) -->
+    <skip />
+    <!-- no translation found for location_button_text_near_your_precise_location (3792598666253599055) -->
+    <skip />
     <string name="privacy_chip_use_string" msgid="979159484631969073">"<xliff:g id="SENSOR">%1$s</xliff:g> kullanımda"</string>
     <string name="privacy_chip_use_string_with_app" msgid="6807216002072346877">"<xliff:g id="SENSOR">%1$s</xliff:g>, <xliff:g id="APP">%2$s</xliff:g> tarafından kullanımda"</string>
     <string name="privacy_chip_camera_and_mic_text" msgid="6254449489859255607">"Kamera ve mikrofon"</string>
@@ -1819,10 +1827,17 @@
     <string name="av_camera_blur_light" msgid="5666055368940059418">"Hafif"</string>
     <string name="av_camera_blur_full" msgid="3276351992811619332">"Tam"</string>
     <string name="av_camera_improve_lighting" msgid="1540549414296669133">"Gelişmiş Işık"</string>
+    <!-- no translation found for av_camera_face_retouch (45890971969486224) -->
+    <skip />
     <string name="av_camera_framing" msgid="5108462267843042492">"Kamera Çerçevelemesi"</string>
     <string name="av_studio_mic" msgid="2614843492629357766">"Stüdyo mikrofonu"</string>
     <string name="av_studio_look" msgid="621893522645557619">"Stüdyo görüntü kalitesi"</string>
     <string name="av_studio_look_effects" msgid="4105109585851068415">"%d efekt"</string>
     <string name="av_blur" msgid="405131343487260171">"Bulanıklaştır"</string>
     <string name="av_live_captions" msgid="7819416886586903077">"Canlı Altyazı"</string>
+    <string name="accessibility_hearing_device_battery_level" msgid="1032601787487328432">"Pil %s"</string>
+    <string name="accessibility_hearing_device_left_right_battery_level" msgid="5327672450604052979">"Sol kulaklık pili %1$s    Sağ kulaklık pili %2$s"</string>
+    <string name="accessibility_hearing_device_left_battery_level" msgid="327961080394238636">"Sol kulaklık pili %1$s"</string>
+    <string name="accessibility_hearing_device_right_battery_level" msgid="7598843215226414563">"Sağ kulaklık pili %1$s"</string>
+    <string name="accessibility_hearing_device_notification_channel_name" msgid="7365020777623709400">"İşitme Cihazı Durumu"</string>
 </resources>

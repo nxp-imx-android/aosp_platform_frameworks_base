@@ -184,13 +184,18 @@
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"App-Fenster teilen"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"Tab teilen"</string>
     <string name="screen_share_entire_screen_sharing_title" msgid="9093580141248337998">"Gesamten Bildschirm freigeben"</string>
-    <!-- no translation found for screen_share_disclaimer_app_sharing (1839029004749224549) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer_tab_sharing (3811486274577713101) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer_full_screen_sharing (5173795016606926338) -->
-    <skip />
+    <string name="screen_share_disclaimer_app_sharing" msgid="1839029004749224549">"Wenn du eine App streamst, ist für <xliff:g id="APP_NAME">%1$s</xliff:g> alles sichtbar, was in dieser App angezeigt oder abgespielt wird. Sei daher mit vertraulichen Informationen vorsichtig."</string>
+    <string name="screen_share_disclaimer_tab_sharing" msgid="3811486274577713101">"Wenn du einen Tab teilst, ist für <xliff:g id="APP_NAME">%1$s</xliff:g> alles sichtbar, was in diesem Tab angezeigt wird. Sei daher mit vertraulichen Informationen vorsichtig."</string>
+    <string name="screen_share_disclaimer_full_screen_sharing" msgid="5173795016606926338">"Wenn du den gesamten Bildschirm teilst, ist für <xliff:g id="APP_NAME">%1$s</xliff:g> alles auf dem Bildschirm sichtbar. Sei daher mit vertraulichen Informationen vorsichtig."</string>
     <string name="screen_share_a11y_announcement" msgid="8938007210094494367">"Wähle aus, welcher Bereich des Bildschirms freigegeben werden soll. Du hast die Wahl zwischen „Tab“, „App“ und „Gesamter Bildschirm“. Tippe dann auf „Teilen“."</string>
+    <!-- no translation found for screen_share_cancel_announcement (5940879227647436383) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_sharing_app (3445421300603336524) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_sharing_tab (2963542572740628746) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_sharing_display (5919924998949424031) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Screenshot des Fensters erstellen"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Fenster aufnehmen"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Screenshot des ausgewählten Bereichs erstellen"</string>
@@ -936,7 +941,7 @@
     <string name="notification_guts_bundle_title" msgid="5252530007273079591">"Stummschalten und bündeln"</string>
     <string name="notification_guts_single_bundle_notif_title" msgid="5397951402211886396">"Benachrichtigungs­-Manager verwenden"</string>
     <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"Für <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
-    <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"Umsätze, neue Funktionen und mehr"</string>
+    <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"Angebote, neue Funktionen und mehr"</string>
     <string name="notification_guts_news_summary" msgid="638697931043407835">"Top-Meldungen, Artikel und mehr"</string>
     <string name="notification_guts_social_summary" msgid="3749147631983977040">"Likes, Beiträge und mehr"</string>
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"Newsletter, empfohlene Medien und mehr"</string>
@@ -1230,7 +1235,7 @@
     <string name="lockscreen_shortcut_right" msgid="4138414674531853719">"Rechte Verknüpfung"</string>
     <string name="lockscreen_unlock_left" msgid="1417801334370269374">"Linke Verknüpfung entsperrt außerdem"</string>
     <string name="lockscreen_unlock_right" msgid="4658008735541075346">"Rechte Verknüpfung entsperrt außerdem"</string>
-    <string name="lockscreen_none" msgid="4710862479308909198">"Keine"</string>
+    <string name="lockscreen_none" msgid="4710862479308909198">"Keiner"</string>
     <string name="tuner_launch_app" msgid="3906265365971743305">"<xliff:g id="APP">%1$s</xliff:g> starten"</string>
     <string name="tuner_other_apps" msgid="7767462881742291204">"Sonstige Apps"</string>
     <string name="tuner_circle" msgid="5270591778160525693">"Kreis"</string>
@@ -1720,7 +1725,7 @@
     <string name="touchpad_home_gesture_action_title" msgid="8885107349719257882">"Startbildschirm"</string>
     <string name="touchpad_home_gesture_guidance" msgid="4178219118381915899">"Wische an einer beliebigen Stelle auf dem Touchpad mit drei Fingern nach oben"</string>
     <string name="touchpad_home_gesture_success_title" msgid="3648264553645798470">"Gut gemacht!"</string>
-    <string name="touchpad_home_gesture_success_body" msgid="2590690589194027059">"Du hast den Schritt für die Touchgeste „Zum Startbildschirm“ abgeschlossen"</string>
+    <string name="touchpad_home_gesture_success_body" msgid="2590690589194027059">"Du hast das Tutorial für die Touchgeste „Zum Startbildschirm“ abgeschlossen"</string>
     <string name="touchpad_home_gesture_error_body" msgid="3810674109999513073">"Wenn du zum Startbildschirm gelangen möchtest, wische auf dem Touchpad mit drei Fingern nach oben"</string>
     <string name="touchpad_recent_apps_gesture_action_title" msgid="934906836867137906">"Letzte Apps aufrufen"</string>
     <string name="touchpad_recent_apps_gesture_guidance" msgid="6304446013842271822">"Wische mit drei Fingern nach oben und halte das Touchpad gedrückt"</string>
@@ -1730,7 +1735,7 @@
     <string name="touchpad_switch_apps_gesture_action_title" msgid="6835222344612924512">"Zwischen Apps wechseln"</string>
     <string name="touchpad_switch_apps_gesture_guidance" msgid="2554844933805502538">"Wische mit vier Fingern auf dem Touchpad nach rechts"</string>
     <string name="touchpad_switch_apps_gesture_success_title" msgid="4894947244328032458">"Gut gemacht!"</string>
-    <string name="touchpad_switch_apps_gesture_success_body" msgid="8151089866035126312">"Du hast das Tutorial für die Touchgeste „Apps wechseln“ abgeschlossen."</string>
+    <string name="touchpad_switch_apps_gesture_success_body" msgid="8151089866035126312">"Du hast das Tutorial für die Touchgeste „Zwischen Apps wechseln“ abgeschlossen."</string>
     <string name="touchpad_switch_gesture_error_body" msgid="5895231916964677918">"Wische mit vier Fingern auf dem Touchpad nach rechts, um zwischen Apps zu wechseln"</string>
     <string name="tutorial_action_key_title" msgid="8172535792469008169">"Alle Apps anzeigen"</string>
     <string name="tutorial_action_key_guidance" msgid="5040613427202799294">"Drücke die Aktionstaste auf deiner Tastatur"</string>
@@ -1792,10 +1797,13 @@
     <string name="accessibility_close_overlay_action" msgid="3581095146209387670">"zurück"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"automatisch ausfüllen"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"maximieren"</string>
-    <string name="location_button_text_share_precise_location" msgid="5341882050169860712">"Genauen Standort teilen"</string>
-    <string name="location_button_text_use_precise_location" msgid="3499475231656390476">"Genauen Standort verwenden"</string>
-    <string name="location_button_text_near_precise_location" msgid="3607275724182981412">"Ungefährer Standort"</string>
     <string name="location_button_text_precise_location" msgid="4441259889842542799">"Genauer Standort"</string>
+    <string name="location_button_text_use_precise_location" msgid="3499475231656390476">"Genauen Standort verwenden"</string>
+    <string name="location_button_text_share_precise_location" msgid="5341882050169860712">"Genauen Standort teilen"</string>
+    <!-- no translation found for location_button_text_near_my_precise_location (7590342799002942963) -->
+    <skip />
+    <!-- no translation found for location_button_text_near_your_precise_location (3792598666253599055) -->
+    <skip />
     <string name="privacy_chip_use_string" msgid="979159484631969073">"<xliff:g id="SENSOR">%1$s</xliff:g> wird verwendet"</string>
     <string name="privacy_chip_use_string_with_app" msgid="6807216002072346877">"<xliff:g id="SENSOR">%1$s</xliff:g> wird von <xliff:g id="APP">%2$s</xliff:g> verwendet"</string>
     <string name="privacy_chip_camera_and_mic_text" msgid="6254449489859255607">"Kamera und Mikrofon"</string>
@@ -1819,10 +1827,17 @@
     <string name="av_camera_blur_light" msgid="5666055368940059418">"Hell"</string>
     <string name="av_camera_blur_full" msgid="3276351992811619332">"Vollständig"</string>
     <string name="av_camera_improve_lighting" msgid="1540549414296669133">"Belichtung verbessern"</string>
+    <!-- no translation found for av_camera_face_retouch (45890971969486224) -->
+    <skip />
     <string name="av_camera_framing" msgid="5108462267843042492">"Automatischer Bildausschnitt"</string>
     <string name="av_studio_mic" msgid="2614843492629357766">"Studiomikrofon"</string>
     <string name="av_studio_look" msgid="621893522645557619">"Studiolook"</string>
     <string name="av_studio_look_effects" msgid="4105109585851068415">"%d Effekte"</string>
     <string name="av_blur" msgid="405131343487260171">"Weichzeichnen"</string>
     <string name="av_live_captions" msgid="7819416886586903077">"Automatische Untertitel"</string>
+    <string name="accessibility_hearing_device_battery_level" msgid="1032601787487328432">"Akkustand: %s"</string>
+    <string name="accessibility_hearing_device_left_right_battery_level" msgid="5327672450604052979">"Akkustand links: %1$s    Akkustand rechts: %2$s"</string>
+    <string name="accessibility_hearing_device_left_battery_level" msgid="327961080394238636">"Akkustand links: %1$s"</string>
+    <string name="accessibility_hearing_device_right_battery_level" msgid="7598843215226414563">"Akkustand rechts: %1$s"</string>
+    <string name="accessibility_hearing_device_notification_channel_name" msgid="7365020777623709400">"Status des Hörgeräts"</string>
 </resources>

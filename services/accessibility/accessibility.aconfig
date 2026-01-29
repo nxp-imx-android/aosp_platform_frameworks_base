@@ -153,6 +153,16 @@ flag {
 }
 
 flag {
+    name: "reset_motion_event_sources_on_denied_permission"
+    namespace: "accessibility"
+    description: "Resets MotionEventSources when the ACCESSIBILITY_MOTION_EVENT_OBSERVING permission is denied to prevent screen freezes."
+    bug: "469177223"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "send_a11y_action_cancel_on_reset"
     namespace: "accessibility"
     description: "Sends ACTION_CANCEL to InputDispatcher when AccessibilityInputFilter resets with active pointers to prevent state desynchronization."

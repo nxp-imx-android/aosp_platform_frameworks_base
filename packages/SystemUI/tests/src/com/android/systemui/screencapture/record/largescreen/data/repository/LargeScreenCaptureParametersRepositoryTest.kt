@@ -178,10 +178,9 @@ class LargeScreenCaptureParametersRepositoryTest : SysuiTestCase() {
         }
 
     @Test
-    fun getSelectedCaptureRegion_fullscreenByDefault() =
+    fun getSelectedCaptureRegion_partialByDefault() =
         kosmos.runTest {
-            assertThat(underTest.getSelectedCaptureRegion())
-                .isEqualTo(ScreenCaptureRegion.FULLSCREEN)
+            assertThat(underTest.getSelectedCaptureRegion()).isEqualTo(ScreenCaptureRegion.PARTIAL)
         }
 
     @Test

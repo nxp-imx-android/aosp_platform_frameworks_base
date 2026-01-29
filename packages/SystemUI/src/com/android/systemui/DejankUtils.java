@@ -51,7 +51,8 @@ public class DejankUtils {
 
     public static final boolean STRICT_MODE_ENABLED = Build.IS_ENG
             || SystemProperties.getBoolean("persist.sysui.strictmode", false);
-    private static final Choreographer sChoreographer = Choreographer.getInstance();
+    // initially null to avoid crashing if this class is loaded in an invalid thread
+    private static Choreographer sChoreographer = null;
     private static final Handler sHandler = new Handler();
     private static final ArrayList<Runnable> sPendingRunnables = new ArrayList<>();
     private static final Random sRandom = new Random();
@@ -252,6 +253,10 @@ public class DejankUtils {
     }
 
     private static void postAnimationCallback() {
+        Assert.isMainThread();
+        if (sChoreographer == null) {
+            sChoreographer = Choreographer.getInstance();
+        }
         sChoreographer.postCallback(Choreographer.CALLBACK_ANIMATION, sAnimationCallbackRunnable,
                 null);
     }

@@ -122,6 +122,7 @@ import com.android.wm.shell.desktopai.dagger.DesktopAIModule;
 import com.android.wm.shell.desktopai.dagger.DesktopAiInitializer;
 import com.android.wm.shell.desktopmode.CloseDesktopTaskTransitionHandler;
 import com.android.wm.shell.desktopmode.DesktopActivityOrientationChangeHandler;
+import com.android.wm.shell.desktopmode.DesktopAnimationConfiguration;
 import com.android.wm.shell.desktopmode.DesktopBackNavTransitionObserver;
 import com.android.wm.shell.desktopmode.DesktopDisplayEventHandler;
 import com.android.wm.shell.desktopmode.DesktopImeHandler;
@@ -1019,6 +1020,7 @@ public abstract class WMShellModule {
     @DynamicOverride
     static DesktopTasksController provideDesktopTasksController(
             Context context,
+            DesktopAnimationConfiguration desktopAnimationConfiguration,
             ShellInit shellInit,
             ShellCommandHandler shellCommandHandler,
             ShellController shellController,
@@ -1082,6 +1084,7 @@ public abstract class WMShellModule {
             DesktopModeEnterExitTransitionListener desktopModeEnterExitTransitionListener) {
         return new DesktopTasksController(
                 context,
+                desktopAnimationConfiguration,
                 shellInit,
                 shellCommandHandler,
                 shellController,
@@ -1302,11 +1305,12 @@ public abstract class WMShellModule {
             InteractionJankMonitor interactionJankMonitor,
             Optional<BubbleController> bubbleController,
             DesktopState desktopState,
-            DesktopConfig desktopConfig) {
+            DesktopConfig desktopConfig,
+            DisplayController displayController) {
         return new SpringDragToDesktopTransitionHandler(
                 context, transitions, rootTaskDisplayAreaOrganizer, desksOrganizer,
                 desktopUserRepositories, interactionJankMonitor, bubbleController, desktopState,
-                desktopConfig);
+                desktopConfig, displayController);
     }
 
     @WMSingleton

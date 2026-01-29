@@ -68,8 +68,7 @@
     <string name="permission_media_routing_control" msgid="5498639511586715253">"เปลี่ยนเอาต์พุตสื่อ"</string>
     <string name="permission_storage" msgid="6831099350839392343">"รูปภาพและสื่อ"</string>
     <string name="permission_notifications" msgid="4099418516590632909">"การแจ้งเตือน"</string>
-    <!-- no translation found for permission_app_streaming (4488910074894929222) -->
-    <skip />
+    <string name="permission_app_streaming" msgid="4488910074894929222">"มิเรอร์หน้าจอและสตรีมแอป"</string>
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"สตรีมข้อมูลไปยัง<xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"มิเรอร์หน้าจอ"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"สตรีมแอป"</string>
@@ -84,11 +83,9 @@
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"ค้นหา เชื่อมต่อ และระบุตำแหน่งซึ่งสัมพันธ์กับอุปกรณ์ที่อยู่ใกล้เคียง"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"อ่านการแจ้งเตือนทั้งหมด รวมถึงข้อมูลอย่างรายชื่อติดต่อ ข้อความ และรูปภาพ"</string>
     <string name="permission_notifications_summary" msgid="6819393427371255636">"• อ่านการแจ้งเตือนทั้งหมด รวมถึงข้อมูลอย่างรายชื่อติดต่อ ข้อความ และรูปภาพ&lt;br/&gt;• ส่งการแจ้งเตือนถึงคุณ&lt;br/&gt;&lt;br/&gt;คุณจัดการความสามารถในการอ่านและส่งการแจ้งเตือนของแอปนี้ได้ทุกเมื่อในการตั้งค่า &gt; การแจ้งเตือน"</string>
-    <!-- no translation found for permission_storage_summary (3779040306012319942) -->
-    <skip />
+    <string name="permission_storage_summary" msgid="3779040306012319942">"แชร์รูปภาพและสื่อในโทรศัพท์กับอุปกรณ์อื่นๆ"</string>
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"ส่งการแจ้งเตือนถึงคุณ"</string>
-    <!-- no translation found for permission_app_streaming_summary (4114223538437344105) -->
-    <skip />
+    <string name="permission_app_streaming_summary" msgid="4114223538437344105">"แชร์หน้าจอโทรศัพท์ รวมถึงแอป ไปยังอุปกรณ์ของคุณ อุปกรณ์ของคุณจะมีสิทธิ์เข้าถึงทุกอย่างที่ปรากฏบนโทรศัพท์ ซึ่งรวมถึงเสียง รูปภาพ ข้อมูลการชำระเงิน รหัสผ่าน และข้อความ แม้ในขณะที่โทรศัพท์ล็อกอยู่&lt;br/&gt;&lt;br/&gt;ส่งข้อมูลไมโครโฟน กล้อง และเซ็นเซอร์อื่นๆ จากอุปกรณ์กลับไปยังโทรศัพท์ ซึ่งรวมถึงการโต้ตอบต่างๆ เช่น การแตะและการคลิกเมาส์"</string>
     <string name="permission_create_virtual_device_summary" msgid="3570256456647725172">"สตรีมไมโครโฟน กล้อง และข้อมูลเซ็นเซอร์อื่นๆ จาก &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; ไปยัง<xliff:g id="DEVICE_TYPE">%2$s</xliff:g>"</string>
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"บันทึก แคสต์ หรือแชร์หน้าจอของ<xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g>ไปยัง &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> จะมีสิทธิ์เข้าถึงทุกอย่างที่ปรากฏหรือเล่นใน<xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g> ซึ่งรวมถึงเสียง รูปภาพ ข้อมูลการชำระเงิน รหัสผ่าน และข้อความ"</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"สตรีมแอป <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> ของคุณไปยัง &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> จะมีสิทธิ์เข้าถึงทุกอย่างที่ปรากฏหรือเล่นใน <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g> ซึ่งรวมถึงเสียง รูปภาพ ข้อมูลการชำระเงิน รหัสผ่าน และข้อความ แม้ในขณะที่ <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> ถูกล็อกอยู่ก็ตาม"</string>

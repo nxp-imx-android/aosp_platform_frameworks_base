@@ -30,6 +30,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
+import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -47,9 +48,23 @@ class PreferenceScreenRegistryTest {
     private val notAScreenKey = "not_a_screen_key"
     private val mockScreen = mock<PreferenceScreenMetadata>()
 
+    private lateinit var originalProvider: CatalystFlagProvider
+
     @Before
     fun setUp() {
+        originalProvider = CatalystFlagProviderFactory.getInstance()
         PreferenceScreenRegistry.preferenceScreenMetadataFactories = FixedArrayMap()
+    }
+
+    @After
+    fun tearDown() {
+        CatalystFlagProviderFactory.setProvider(originalProvider)
+    }
+
+    private fun setCatalystUseKeyParameters(value: Boolean) {
+        CatalystFlagProviderFactory.setProvider(object : CatalystFlagProvider {
+            override fun catalystUseKeyParameters() = value
+        })
     }
 
     private fun setMetadataFactory(screenKey: String, factory: PreferenceScreenMetadataFactory) {
@@ -126,8 +141,8 @@ class PreferenceScreenRegistryTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_CATALYST_USE_KEY_PARAMETERS)
     fun create_withKeyParameters_flagEnabled() {
+        setCatalystUseKeyParameters(true)
         val schema = KeyParametersSchema { parameter("id", R.string.required_param_purpose) }
         val keyParams = schema.prepare("id" to "123")
         setMetadataFactory(screenKey, object : TestParameterizedFactory {
@@ -135,6 +150,7 @@ class PreferenceScreenRegistryTest {
                 assertThat(keyParameters).isEqualTo(keyParams)
                 return mockScreen
             }
+            override val parametersSchema = schema
         })
 
         val result = PreferenceScreenRegistry.createWithKeyParameters(context, screenKey, keyParams)
@@ -142,8 +158,8 @@ class PreferenceScreenRegistryTest {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_CATALYST_USE_KEY_PARAMETERS)
     fun create_withBundle_flagDisabled() {
+        setCatalystUseKeyParameters(false)
         val args = Bundle().apply { putString("id", "123") }
         setMetadataFactory(screenKey, object : TestParameterizedFactory {
             override fun create(context: Context, args: Bundle): PreferenceScreenMetadata {
@@ -157,8 +173,8 @@ class PreferenceScreenRegistryTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_CATALYST_USE_KEY_PARAMETERS)
     fun create_fromCoordinate_flagEnabled() {
+        setCatalystUseKeyParameters(true)
         val schema = KeyParametersSchema { parameter("id", R.string.required_param_purpose) }
         val keyParams = schema.prepare("id" to "123")
         val coordinate = PreferenceScreenCoordinate(screenKey, keyParams)
@@ -167,6 +183,7 @@ class PreferenceScreenRegistryTest {
                 assertThat(keyParameters).isEqualTo(keyParams)
                 return mockScreen
             }
+            override val parametersSchema = schema
         })
 
         val result = PreferenceScreenRegistry.create(context, coordinate)
@@ -174,8 +191,8 @@ class PreferenceScreenRegistryTest {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_CATALYST_USE_KEY_PARAMETERS)
     fun create_fromCoordinate_flagDisabled() {
+        setCatalystUseKeyParameters(false)
         val args = Bundle().apply { putString("id", "123") }
         val coordinate = PreferenceScreenCoordinate(screenKey, args)
         setMetadataFactory(screenKey, object : TestParameterizedFactory {

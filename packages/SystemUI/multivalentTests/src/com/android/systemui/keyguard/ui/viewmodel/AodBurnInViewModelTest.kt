@@ -16,8 +16,6 @@
 
 package com.android.systemui.keyguard.ui.viewmodel
 
-import android.platform.test.annotations.DisableFlags
-import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
@@ -68,7 +66,7 @@ class AodBurnInViewModelTest : SysuiTestCase() {
         kosmos.aodBurnInViewModel.apply { updateBurnInParams(burnInParameters) }
     }
     // assign a smaller value to minViewY to avoid overflow
-    private var burnInParameters = BurnInParameters(minViewY = Int.MAX_VALUE / 2)
+    private var burnInParameters = BurnInParameters(minViewY = { Int.MAX_VALUE / 2 })
     private val burnInFlow: MutableStateFlow<BurnInModel> by lazy {
         MutableStateFlow(BurnInModel())
     }
@@ -175,7 +173,7 @@ class AodBurnInViewModelTest : SysuiTestCase() {
     @Test
     fun translationAndScale_whenFullyDozing() =
         testScope.runTest {
-            underTest.updateBurnInParams(burnInParameters.copy(minViewY = 100))
+            underTest.updateBurnInParams(burnInParameters.copy(minViewY = { 100 }))
             val movement by collectLastValue(underTest.movement)
             assertThat(movement?.translationX).isEqualTo(0)
 
@@ -216,7 +214,9 @@ class AodBurnInViewModelTest : SysuiTestCase() {
     @Test
     fun translationAndScale_whenFullyDozing_MigrationFlagOn_staysOutOfTopInset() =
         testScope.runTest {
-            underTest.updateBurnInParams(burnInParameters.copy(minViewY = 100, topInset = 80))
+            underTest.updateBurnInParams(
+                burnInParameters.copy(minViewY = { 100 }, topInset = { 80 })
+            )
             val movement by collectLastValue(underTest.movement)
             assertThat(movement?.translationX).isEqualTo(0)
 

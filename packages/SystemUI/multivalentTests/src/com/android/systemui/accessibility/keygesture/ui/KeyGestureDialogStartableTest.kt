@@ -25,14 +25,12 @@ import android.content.pm.ResolveInfo
 import android.content.pm.ServiceInfo
 import android.hardware.input.KeyGestureEvent
 import android.os.Build
-import android.platform.test.annotations.EnableFlags
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.Display.INVALID_DISPLAY
 import android.view.KeyEvent
 import android.view.accessibility.accessibilityManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
-import com.android.hardware.input.Flags
 import com.android.internal.accessibility.common.KeyGestureEventConstants
 import com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType
 import com.android.systemui.SysuiTestCase
@@ -62,7 +60,6 @@ import org.mockito.kotlin.whenever
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@EnableFlags(Flags.FLAG_ENABLE_TALKBACK_AND_MAGNIFIER_KEY_GESTURES)
 class KeyGestureDialogStartableTest : SysuiTestCase() {
     private companion object {
         const val MAGNIFICATION_TARGET_NAME =

@@ -44,14 +44,9 @@ import static com.android.server.accessibility.AccessibilityUserState.doesShortc
 
 import static com.google.common.truth.Truth.assertThat;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertNull;
-import static junit.framework.Assert.assertTrue;
-
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -92,6 +87,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -210,32 +206,33 @@ public class AccessibilityUserStateTest {
         mUserState.onSwitchToAnotherUserLocked();
 
         verify(mMockConnection).unbindLocked();
-        assertTrue(mUserState.getBoundServicesLocked().isEmpty());
-        assertTrue(mUserState.getBindingServicesLocked().isEmpty());
-        assertEquals(-1, mUserState.getLastSentClientStateLocked());
-        assertEquals(0, mUserState.getNonInteractiveUiTimeoutLocked());
-        assertEquals(0, mUserState.getInteractiveUiTimeoutLocked());
-        assertTrue(mUserState.mEnabledServices.isEmpty());
-        assertTrue(mUserState.mTouchExplorationGrantedServices.isEmpty());
-        assertTrue(mUserState.getShortcutTargetsLocked(HARDWARE).isEmpty());
-        assertTrue(mUserState.getShortcutTargetsLocked(SOFTWARE).isEmpty());
-        assertTrue(mUserState.getShortcutTargetsLocked(GESTURE).isEmpty());
-        assertTrue(mUserState.getShortcutTargetsLocked(QUICK_SETTINGS).isEmpty());
-        assertTrue(mUserState.getShortcutTargetsLocked(KEY_GESTURE).isEmpty());
-        assertTrue(mUserState.getShortcutTargetsLocked(TOP_ROW_KEY).isEmpty());
-        assertTrue(mUserState.getA11yQsTilesInQsPanel().isEmpty());
-        assertNull(mUserState.getTargetAssignedToAccessibilityButton());
-        assertFalse(mUserState.isTouchExplorationEnabledLocked());
-        assertFalse(mUserState.isMagnificationSingleFingerTripleTapEnabledLocked());
-        assertFalse(mUserState.isAutoclickEnabledLocked());
-        assertEquals(0, mUserState.getUserNonInteractiveUiTimeoutLocked());
-        assertEquals(0, mUserState.getUserInteractiveUiTimeoutLocked());
-        assertEquals(ACCESSIBILITY_MAGNIFICATION_MODE_FULLSCREEN,
-                mUserState.getMagnificationModeLocked(TEST_DISPLAY));
-        assertEquals(mFocusStrokeWidthDefaultValue, mUserState.getFocusStrokeWidthLocked());
-        assertEquals(mFocusColorDefaultValue, mUserState.getFocusColorLocked());
-        assertTrue(mUserState.isMagnificationFollowTypingEnabled());
-        assertFalse(mUserState.isAlwaysOnMagnificationEnabled());
+        assertThat(mUserState.getBoundServicesLocked()).isEmpty();
+        assertThat(mUserState.getBindingServicesLocked()).isEmpty();
+        assertThat(mUserState.getLastSentClientStateLocked()).isEqualTo(-1);
+        assertThat(mUserState.getNonInteractiveUiTimeoutLocked()).isEqualTo(0);
+        assertThat(mUserState.getInteractiveUiTimeoutLocked()).isEqualTo(0);
+        assertThat(mUserState.mEnabledServices).isEmpty();
+        assertThat(mUserState.mTouchExplorationGrantedServices).isEmpty();
+        assertThat(mUserState.getShortcutTargetsLocked(HARDWARE)).isEmpty();
+        assertThat(mUserState.getShortcutTargetsLocked(SOFTWARE)).isEmpty();
+        assertThat(mUserState.getShortcutTargetsLocked(GESTURE)).isEmpty();
+        assertThat(mUserState.getShortcutTargetsLocked(QUICK_SETTINGS)).isEmpty();
+        assertThat(mUserState.getShortcutTargetsLocked(KEY_GESTURE)).isEmpty();
+        assertThat(mUserState.getShortcutTargetsLocked(TOP_ROW_KEY)).isEmpty();
+        assertThat(mUserState.getA11yQsTilesInQsPanel()).isEmpty();
+        assertThat(mUserState.getTargetAssignedToAccessibilityButton()).isNull();
+        assertThat(mUserState.isTouchExplorationEnabledLocked()).isFalse();
+        assertThat(mUserState.isMagnificationSingleFingerTripleTapEnabledLocked()).isFalse();
+        assertThat(mUserState.isAutoclickEnabledLocked()).isFalse();
+        assertThat(mUserState.getUserNonInteractiveUiTimeoutLocked()).isEqualTo(0);
+        assertThat(mUserState.getUserInteractiveUiTimeoutLocked()).isEqualTo(0);
+        assertThat(mUserState.getMagnificationModeLocked(TEST_DISPLAY))
+                .isEqualTo(ACCESSIBILITY_MAGNIFICATION_MODE_FULLSCREEN);
+        assertThat(mUserState.getFocusStrokeWidthLocked())
+                .isEqualTo(mFocusStrokeWidthDefaultValue);
+        assertThat(mUserState.getFocusColorLocked()).isEqualTo(mFocusColorDefaultValue);
+        assertThat(mUserState.isMagnificationFollowTypingEnabled()).isTrue();
+        assertThat(mUserState.isAlwaysOnMagnificationEnabled()).isFalse();
     }
 
     @Test
@@ -253,8 +250,9 @@ public class AccessibilityUserStateTest {
 
         mUserState.addServiceLocked(mMockConnection);
 
-        assertTrue(mUserState.getBoundServicesLocked().contains(mMockConnection));
-        assertEquals(mMockConnection, mUserState.mComponentNameToServiceMap.get(COMPONENT_NAME));
+        assertThat(mUserState.getBoundServicesLocked()).contains(mMockConnection);
+        assertThat(mUserState.mComponentNameToServiceMap.get(COMPONENT_NAME))
+                .isEqualTo(mMockConnection);
         verify(mMockListener).onServiceInfoChangedLocked(eq(mUserState));
     }
 
@@ -266,10 +264,11 @@ public class AccessibilityUserStateTest {
 
         mUserState.reconcileSoftKeyboardModeWithSettingsLocked();
 
-        assertEquals(SHOW_MODE_AUTO, mUserState.getSoftKeyboardShowModeLocked());
-        assertEquals(SHOW_MODE_AUTO, getSecureIntForUser(
-                Settings.Secure.ACCESSIBILITY_SOFT_KEYBOARD_MODE, USER_ID));
-        assertNull(mUserState.getServiceChangingSoftKeyboardModeLocked());
+        assertThat(mUserState.getSoftKeyboardShowModeLocked()).isEqualTo(SHOW_MODE_AUTO);
+        assertThat(getSecureIntForUser(
+                Settings.Secure.ACCESSIBILITY_SOFT_KEYBOARD_MODE, USER_ID))
+                .isEqualTo(SHOW_MODE_AUTO);
+        assertThat(mUserState.getServiceChangingSoftKeyboardModeLocked()).isNull();
     }
 
     @Test
@@ -285,9 +284,9 @@ public class AccessibilityUserStateTest {
 
         mUserState.reconcileSoftKeyboardModeWithSettingsLocked();
 
-        assertEquals(SHOW_MODE_AUTO | SHOW_MODE_HARD_KEYBOARD_OVERRIDDEN,
-                getSecureIntForUser(Settings.Secure.ACCESSIBILITY_SOFT_KEYBOARD_MODE, USER_ID));
-        assertNull(mUserState.getServiceChangingSoftKeyboardModeLocked());
+        assertThat(getSecureIntForUser(Settings.Secure.ACCESSIBILITY_SOFT_KEYBOARD_MODE, USER_ID))
+                .isEqualTo(SHOW_MODE_AUTO | SHOW_MODE_HARD_KEYBOARD_OVERRIDDEN);
+        assertThat(mUserState.getServiceChangingSoftKeyboardModeLocked()).isNull();
     }
 
     @Test
@@ -298,10 +297,10 @@ public class AccessibilityUserStateTest {
 
         mUserState.removeServiceLocked(mMockConnection);
 
-        assertFalse(mUserState.getBoundServicesLocked().contains(mMockConnection));
+        assertThat(mUserState.getBoundServicesLocked()).doesNotContain(mMockConnection);
         verify(mMockConnection).onRemoved();
-        assertEquals(SHOW_MODE_AUTO, mUserState.getSoftKeyboardShowModeLocked());
-        assertNull(mUserState.mComponentNameToServiceMap.get(COMPONENT_NAME));
+        assertThat(mUserState.getSoftKeyboardShowModeLocked()).isEqualTo(SHOW_MODE_AUTO);
+        assertThat(mUserState.mComponentNameToServiceMap.get(COMPONENT_NAME)).isNull();
         verify(mMockListener).onServiceInfoChangedLocked(eq(mUserState));
     }
 
@@ -312,17 +311,17 @@ public class AccessibilityUserStateTest {
 
         mUserState.serviceDisconnectedLocked(mMockConnection);
 
-        assertFalse(mUserState.getBoundServicesLocked().contains(mMockConnection));
-        assertTrue(mUserState.getCrashedServicesLocked().contains(COMPONENT_NAME));
+        assertThat(mUserState.getBoundServicesLocked()).doesNotContain(mMockConnection);
+        assertThat(mUserState.getCrashedServicesLocked()).contains(COMPONENT_NAME);
     }
 
     @Test
     public void setSoftKeyboardMode_withInvalidShowMode_shouldKeepDefaultAuto() {
         final int invalidShowMode = SHOW_MODE_HIDDEN | SHOW_MODE_HARD_KEYBOARD_ORIGINAL_VALUE;
 
-        assertFalse(mUserState.setSoftKeyboardModeLocked(invalidShowMode, null));
+        assertThat(mUserState.setSoftKeyboardModeLocked(invalidShowMode, null)).isFalse();
 
-        assertEquals(SHOW_MODE_AUTO, mUserState.getSoftKeyboardShowModeLocked());
+        assertThat(mUserState.getSoftKeyboardShowModeLocked()).isEqualTo(SHOW_MODE_AUTO);
     }
 
     @Test
@@ -330,7 +329,7 @@ public class AccessibilityUserStateTest {
         when(mMockConnection.getComponentName()).thenReturn(COMPONENT_NAME);
         mUserState.addServiceLocked(mMockConnection);
 
-        assertTrue(mUserState.setSoftKeyboardModeLocked(SHOW_MODE_AUTO, null));
+        assertThat(mUserState.setSoftKeyboardModeLocked(SHOW_MODE_AUTO, null)).isTrue();
     }
 
     @Test
@@ -338,9 +337,10 @@ public class AccessibilityUserStateTest {
         putSecureIntForUser(Settings.Secure.ACCESSIBILITY_SOFT_KEYBOARD_MODE,
                 SHOW_MODE_AUTO | SHOW_MODE_HARD_KEYBOARD_OVERRIDDEN, USER_ID);
 
-        assertFalse(mUserState.setSoftKeyboardModeLocked(SHOW_MODE_IGNORE_HARD_KEYBOARD, null));
+        assertThat(mUserState.setSoftKeyboardModeLocked(SHOW_MODE_IGNORE_HARD_KEYBOARD, null))
+                .isFalse();
 
-        assertEquals(SHOW_MODE_AUTO, mUserState.getSoftKeyboardShowModeLocked());
+        assertThat(mUserState.getSoftKeyboardShowModeLocked()).isEqualTo(SHOW_MODE_AUTO);
     }
 
     @Test
@@ -348,10 +348,11 @@ public class AccessibilityUserStateTest {
             setSoftKeyboardMode_withIgnoreHardKb_whenShowImeWithHardKb_setOriginalHardKbValue() {
         putSecureIntForUser(Settings.Secure.SHOW_IME_WITH_HARD_KEYBOARD, STATE_SHOW_IME, USER_ID);
 
-        assertTrue(mUserState.setSoftKeyboardModeLocked(SHOW_MODE_IGNORE_HARD_KEYBOARD, null));
+        assertThat(mUserState.setSoftKeyboardModeLocked(SHOW_MODE_IGNORE_HARD_KEYBOARD, null))
+                .isTrue();
 
-        assertEquals(SHOW_MODE_IGNORE_HARD_KEYBOARD | SHOW_MODE_HARD_KEYBOARD_ORIGINAL_VALUE,
-                getSecureIntForUser(Settings.Secure.ACCESSIBILITY_SOFT_KEYBOARD_MODE, USER_ID));
+        assertThat(getSecureIntForUser(Settings.Secure.ACCESSIBILITY_SOFT_KEYBOARD_MODE, USER_ID))
+                .isEqualTo(SHOW_MODE_IGNORE_HARD_KEYBOARD | SHOW_MODE_HARD_KEYBOARD_ORIGINAL_VALUE);
     }
 
     @Test
@@ -361,42 +362,46 @@ public class AccessibilityUserStateTest {
         putSecureIntForUser(Settings.Secure.ACCESSIBILITY_SOFT_KEYBOARD_MODE,
                 SHOW_MODE_IGNORE_HARD_KEYBOARD | SHOW_MODE_HARD_KEYBOARD_ORIGINAL_VALUE, USER_ID);
 
-        assertTrue(mUserState.setSoftKeyboardModeLocked(SHOW_MODE_AUTO, null));
+        assertThat(mUserState.setSoftKeyboardModeLocked(SHOW_MODE_AUTO, null)).isTrue();
 
-        assertEquals(STATE_SHOW_IME, getSecureIntForUser(
-                Settings.Secure.SHOW_IME_WITH_HARD_KEYBOARD, USER_ID));
+        assertThat(getSecureIntForUser(
+                Settings.Secure.SHOW_IME_WITH_HARD_KEYBOARD, USER_ID)).isEqualTo(STATE_SHOW_IME);
     }
 
     @Test
     public void setSoftKeyboardMode_withRequester_shouldUpdateInternalStateAndSettingsAsIs() {
-        assertTrue(mUserState.setSoftKeyboardModeLocked(SHOW_MODE_HIDDEN, COMPONENT_NAME));
+        assertThat(mUserState.setSoftKeyboardModeLocked(SHOW_MODE_HIDDEN, COMPONENT_NAME))
+                .isTrue();
 
-        assertEquals(SHOW_MODE_HIDDEN, mUserState.getSoftKeyboardShowModeLocked());
-        assertEquals(SHOW_MODE_HIDDEN, getSecureIntForUser(
-                Settings.Secure.ACCESSIBILITY_SOFT_KEYBOARD_MODE, USER_ID));
-        assertEquals(COMPONENT_NAME, mUserState.getServiceChangingSoftKeyboardModeLocked());
+        assertThat(mUserState.getSoftKeyboardShowModeLocked()).isEqualTo(SHOW_MODE_HIDDEN);
+        assertThat(getSecureIntForUser(
+                Settings.Secure.ACCESSIBILITY_SOFT_KEYBOARD_MODE, USER_ID))
+                .isEqualTo(SHOW_MODE_HIDDEN);
+        assertThat(mUserState.getServiceChangingSoftKeyboardModeLocked())
+                .isEqualTo(COMPONENT_NAME);
     }
 
     @Test
     public void setSoftKeyboardMode_shouldNotifyBoundService() {
         mUserState.addServiceLocked(mMockConnection);
 
-        assertTrue(mUserState.setSoftKeyboardModeLocked(SHOW_MODE_HIDDEN, COMPONENT_NAME));
+        assertThat(mUserState.setSoftKeyboardModeLocked(SHOW_MODE_HIDDEN, COMPONENT_NAME))
+                .isTrue();
 
         verify(mMockConnection).notifySoftKeyboardShowModeChangedLocked(eq(SHOW_MODE_HIDDEN));
     }
 
     @Test
     public void doesShortcutTargetsStringContain_returnFalse() {
-        assertFalse(doesShortcutTargetsStringContain(null, null));
-        assertFalse(doesShortcutTargetsStringContain(null,
-                COMPONENT_NAME.flattenToShortString()));
-        assertFalse(doesShortcutTargetsStringContain(new ArraySet<>(), null));
+        assertThat(doesShortcutTargetsStringContain(null, null)).isFalse();
+        assertThat(doesShortcutTargetsStringContain(null,
+                COMPONENT_NAME.flattenToShortString())).isFalse();
+        assertThat(doesShortcutTargetsStringContain(new ArraySet<>(), null)).isFalse();
 
         final ArraySet<String> shortcutTargets = new ArraySet<>();
         shortcutTargets.add(COMPONENT_NAME.flattenToString());
-        assertFalse(doesShortcutTargetsStringContain(shortcutTargets,
-                COMPONENT_NAME1.flattenToString()));
+        assertThat(doesShortcutTargetsStringContain(shortcutTargets,
+                COMPONENT_NAME1.flattenToString())).isFalse();
     }
 
     @Test
@@ -405,10 +410,10 @@ public class AccessibilityUserStateTest {
         shortcutTargets.add(COMPONENT_NAME1.flattenToShortString());
         shortcutTargets.add(COMPONENT_NAME2.flattenToString());
 
-        assertTrue(doesShortcutTargetsStringContain(shortcutTargets,
-                COMPONENT_NAME1.flattenToString()));
-        assertTrue(doesShortcutTargetsStringContain(shortcutTargets,
-                COMPONENT_NAME2.flattenToShortString()));
+        assertThat(doesShortcutTargetsStringContain(shortcutTargets,
+                COMPONENT_NAME1.flattenToString())).isTrue();
+        assertThat(doesShortcutTargetsStringContain(shortcutTargets,
+                COMPONENT_NAME2.flattenToShortString())).isTrue();
     }
 
     @Test
@@ -417,7 +422,8 @@ public class AccessibilityUserStateTest {
                 mUserState.getInstalledServices());
         installedServices.add(mMockServiceInfo);
         mUserState.buildInstalledServicesMapLocked(installedServices);
-        assertTrue(mUserState.isShortcutTargetInstalledLocked(COMPONENT_NAME.flattenToString()));
+        assertThat(mUserState.isShortcutTargetInstalledLocked(COMPONENT_NAME.flattenToString()))
+                .isTrue();
     }
 
     @Test
@@ -427,12 +433,12 @@ public class AccessibilityUserStateTest {
                 mUserState.getInstalledServices());
         installedServices.add(mMockServiceInfo);
         mUserState.buildInstalledServicesMapLocked(installedServices);
-        when(mMockDevicePolicyManager.getPermittedAccessibilityServices(anyInt())).thenReturn(null);
+        mUserState.setPermittedAccessibilityServicesLocked(null);
 
         boolean isShortcutTargetPermitted = mUserState.isShortcutTargetPermittedLocked(
-                COMPONENT_NAME.flattenToString(), USER_ID);
+                COMPONENT_NAME.flattenToString());
 
-        assertTrue(isShortcutTargetPermitted);
+        assertThat(isShortcutTargetPermitted).isTrue();
     }
 
     @Test
@@ -442,32 +448,43 @@ public class AccessibilityUserStateTest {
                 mUserState.getInstalledServices());
         installedServices.add(mMockServiceInfo);
         mUserState.buildInstalledServicesMapLocked(installedServices);
-        when(mMockDevicePolicyManager.getPermittedAccessibilityServices(anyInt())).thenReturn(
-                new ArrayList<>());
+        mUserState.setPermittedAccessibilityServicesLocked(new HashSet<>());
 
         boolean isShortcutTargetPermitted = mUserState.isShortcutTargetPermittedLocked(
-                COMPONENT_NAME.flattenToString(), USER_ID);
+                COMPONENT_NAME.flattenToString());
 
-        assertFalse(isShortcutTargetPermitted);
+        assertThat(isShortcutTargetPermitted).isFalse();
     }
 
     @Test
     @EnableFlags(android.security.Flags.FLAG_EXTEND_AAPM_TO_A11Y_SERVICES)
-    public void isShortcutTargetPermittedLocked_nullDpm_returnsFalse() {
+    public void isShortcutTargetPermittedLocked_apmOn_permittedService_returnTrue() {
         // Setup: Add an installed service to the user state.
         List<AccessibilityServiceInfo> installedServices = new ArrayList<>(
                 mUserState.getInstalledServices());
         installedServices.add(mMockServiceInfo);
         mUserState.buildInstalledServicesMapLocked(installedServices);
-        // Setup: DevicePolicyManager is not available.
-        when(mMockContext.getSystemService(Context.DEVICE_POLICY_SERVICE)).thenReturn(null);
+
+        Set<String> permitted = new HashSet<>();
+        permitted.add(COMPONENT_NAME.getPackageName());
+        mUserState.setPermittedAccessibilityServicesLocked(permitted);
 
         // Action: Check if the service is permitted as a shortcut target.
         boolean isShortcutTargetPermitted = mUserState.isShortcutTargetPermittedLocked(
-                COMPONENT_NAME.flattenToString(), USER_ID);
+                COMPONENT_NAME.flattenToString());
 
-        // Assertion: Should be false, as a null DPM is treated as an empty permitted list.
-        assertFalse(isShortcutTargetPermitted);
+        // Assertion: Should be true.
+        assertThat(isShortcutTargetPermitted).isTrue();
+    }
+
+    @Test
+    public void isShortcutTargetPermittedLocked_builtInFeature_returnsTrue() {
+        // Block everything
+        mUserState.setPermittedAccessibilityServicesLocked(new HashSet<>());
+
+        // Magnification controller is a built-in feature and should be permitted
+        assertThat(mUserState.isShortcutTargetPermittedLocked(MAGNIFICATION_CONTROLLER_NAME))
+                .isTrue();
     }
 
 
@@ -475,20 +492,36 @@ public class AccessibilityUserStateTest {
     public void isShortcutTargetInstalledLocked_invalidTarget_returnFalse() {
         final ComponentName invalidTarget =
                 new ComponentName("com.android.server.accessibility", "InvalidTarget");
-        assertFalse(
-                mUserState.isShortcutTargetInstalledLocked(invalidTarget.flattenToString()));
+        assertThat(
+                mUserState.isShortcutTargetInstalledLocked(invalidTarget.flattenToString()))
+                .isFalse();
+    }
+
+    @Test
+    public void isShortcutTargetPermittedLocked_spoofedFrameworkFeature_returnFalse() {
+        ComponentName spoofedComponent =
+                AccessibilityShortcutController.COLOR_INVERSION_COMPONENT_NAME;
+        AccessibilityServiceInfo spoofedServiceInfo = mock(AccessibilityServiceInfo.class);
+        when(spoofedServiceInfo.getComponentName()).thenReturn(spoofedComponent);
+
+        List<AccessibilityServiceInfo> installedServices = new ArrayList<>();
+        installedServices.add(spoofedServiceInfo);
+        mUserState.buildInstalledServicesMapLocked(installedServices);
+
+        assertThat(mUserState.isShortcutTargetPermittedLocked(spoofedComponent.flattenToString()))
+                .isFalse();
     }
 
     @Test
     public void setWindowMagnificationMode_returnExpectedMagnificationMode() {
-        assertEquals(ACCESSIBILITY_MAGNIFICATION_MODE_FULLSCREEN,
-                mUserState.getMagnificationModeLocked(TEST_DISPLAY));
+        assertThat(mUserState.getMagnificationModeLocked(TEST_DISPLAY))
+                .isEqualTo(ACCESSIBILITY_MAGNIFICATION_MODE_FULLSCREEN);
 
         mUserState.setMagnificationModeLocked(TEST_DISPLAY,
                 ACCESSIBILITY_MAGNIFICATION_MODE_WINDOW);
 
-        assertEquals(ACCESSIBILITY_MAGNIFICATION_MODE_WINDOW,
-                mUserState.getMagnificationModeLocked(TEST_DISPLAY));
+        assertThat(mUserState.getMagnificationModeLocked(TEST_DISPLAY))
+                .isEqualTo(ACCESSIBILITY_MAGNIFICATION_MODE_WINDOW);
     }
 
     @Test
@@ -498,54 +531,52 @@ public class AccessibilityUserStateTest {
 
         // If there is no cached magnification mode on TEST_DISPLAY, then it will retrieve the
         // cached mode on default display.
-        assertEquals(
-                ACCESSIBILITY_MAGNIFICATION_MODE_WINDOW,
-                mUserState.getMagnificationModeLocked(TEST_DISPLAY));
+        assertThat(mUserState.getMagnificationModeLocked(TEST_DISPLAY))
+                .isEqualTo(ACCESSIBILITY_MAGNIFICATION_MODE_WINDOW);
     }
 
     @Test
     public void getMagnificationModeLocked_returnFullScreenMagnificationModeByDefault() {
         // If there is no cached magnification mode on TEST_DISPLAY and on default display, then it
         // will return full screen mode.
-        assertEquals(
-                ACCESSIBILITY_MAGNIFICATION_MODE_FULLSCREEN,
-                mUserState.getMagnificationModeLocked(TEST_DISPLAY));
+        assertThat(mUserState.getMagnificationModeLocked(TEST_DISPLAY))
+                .isEqualTo(ACCESSIBILITY_MAGNIFICATION_MODE_FULLSCREEN);
     }
 
     @Test
     public void setCursorFollowingMode_returnExpectedCursorFollowingMode() {
-        assertEquals(ACCESSIBILITY_MAGNIFICATION_CURSOR_FOLLOWING_MODE_CONTINUOUS,
-                mUserState.getMagnificationCursorFollowingMode());
+        assertThat(mUserState.getMagnificationCursorFollowingMode())
+                .isEqualTo(ACCESSIBILITY_MAGNIFICATION_CURSOR_FOLLOWING_MODE_CONTINUOUS);
 
         mUserState.setMagnificationCursorFollowingMode(
                 ACCESSIBILITY_MAGNIFICATION_CURSOR_FOLLOWING_MODE_CENTER);
 
-        assertEquals(ACCESSIBILITY_MAGNIFICATION_CURSOR_FOLLOWING_MODE_CENTER,
-                mUserState.getMagnificationCursorFollowingMode());
+        assertThat(mUserState.getMagnificationCursorFollowingMode())
+                .isEqualTo(ACCESSIBILITY_MAGNIFICATION_CURSOR_FOLLOWING_MODE_CENTER);
 
         mUserState.setMagnificationCursorFollowingMode(
                 ACCESSIBILITY_MAGNIFICATION_CURSOR_FOLLOWING_MODE_EDGE);
 
-        assertEquals(ACCESSIBILITY_MAGNIFICATION_CURSOR_FOLLOWING_MODE_EDGE,
-                mUserState.getMagnificationCursorFollowingMode());
+        assertThat(mUserState.getMagnificationCursorFollowingMode())
+                .isEqualTo(ACCESSIBILITY_MAGNIFICATION_CURSOR_FOLLOWING_MODE_EDGE);
     }
 
     @Test
     public void setMagnificationFollowTypingEnabled_defaultTrueAndThenDisable_returnFalse() {
-        assertTrue(mUserState.isMagnificationFollowTypingEnabled());
+        assertThat(mUserState.isMagnificationFollowTypingEnabled()).isTrue();
 
         mUserState.setMagnificationFollowTypingEnabled(false);
 
-        assertFalse(mUserState.isMagnificationFollowTypingEnabled());
+        assertThat(mUserState.isMagnificationFollowTypingEnabled()).isFalse();
     }
 
     @Test
     public void setAlwaysOnMagnificationEnabled_defaultFalseAndSetTrue_returnTrue() {
-        assertFalse(mUserState.isAlwaysOnMagnificationEnabled());
+        assertThat(mUserState.isAlwaysOnMagnificationEnabled()).isFalse();
 
         mUserState.setAlwaysOnMagnificationEnabled(true);
 
-        assertTrue(mUserState.isAlwaysOnMagnificationEnabled());
+        assertThat(mUserState.isAlwaysOnMagnificationEnabled()).isTrue();
     }
 
     @Test
@@ -553,13 +584,14 @@ public class AccessibilityUserStateTest {
         final int focusStrokeWidthValue = 100;
         final int focusColorValue = Color.BLUE;
 
-        assertEquals(mFocusStrokeWidthDefaultValue, mUserState.getFocusStrokeWidthLocked());
-        assertEquals(mFocusColorDefaultValue, mUserState.getFocusColorLocked());
+        assertThat(mUserState.getFocusStrokeWidthLocked())
+                .isEqualTo(mFocusStrokeWidthDefaultValue);
+        assertThat(mUserState.getFocusColorLocked()).isEqualTo(mFocusColorDefaultValue);
 
         mUserState.setFocusAppearanceLocked(focusStrokeWidthValue, focusColorValue);
 
-        assertEquals(focusStrokeWidthValue, mUserState.getFocusStrokeWidthLocked());
-        assertEquals(focusColorValue, mUserState.getFocusColorLocked());
+        assertThat(mUserState.getFocusStrokeWidthLocked()).isEqualTo(focusStrokeWidthValue);
+        assertThat(mUserState.getFocusColorLocked()).isEqualTo(focusColorValue);
     }
 
     @Test

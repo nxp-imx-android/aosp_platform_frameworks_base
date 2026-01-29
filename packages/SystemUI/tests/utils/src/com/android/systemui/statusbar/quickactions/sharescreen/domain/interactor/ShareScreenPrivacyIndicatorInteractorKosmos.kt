@@ -16,7 +16,9 @@
 
 package com.android.systemui.statusbar.quickactions.sharescreen.domain.interactor
 
+import android.content.applicationContext
 import android.content.res.mainResources
+import android.view.accessibility.accessibilityManager
 import com.android.systemui.common.ui.data.repository.configurationRepository
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.testScope
@@ -29,5 +31,7 @@ val Kosmos.shareScreenPrivacyIndicatorInteractor: ShareScreenPrivacyIndicatorInt
             configurationRepository,
             scope = testScope.backgroundScope,
             fakeMediaProjectionRepository,
+            accessibilityManager,
+            applicationContext,
         )
     }

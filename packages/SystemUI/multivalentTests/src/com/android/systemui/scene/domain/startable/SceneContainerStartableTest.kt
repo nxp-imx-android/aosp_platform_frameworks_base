@@ -716,7 +716,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
             underTest.start()
 
             // Authenticate using a passive auth method like face auth while bypass is disabled.
-            fakeDeviceEntryFaceAuthRepository.isAuthenticated.value = true
+            fakeDeviceEntryFaceAuthRepository.isCurrentUserAuthenticated.value = true
 
             assertThat(currentSceneKey).isEqualTo(Scenes.Lockscreen)
         }
@@ -881,16 +881,15 @@ class SceneContainerStartableTest : SysuiTestCase() {
             fakePowerRepository.updateWakefulness(
                 rawState = WakefulnessState.STARTING_TO_SLEEP,
                 lastSleepReason = WakeSleepReason.POWER_BUTTON,
-                powerButtonLaunchGestureTriggered = false,
+                powerButtonLaunchGestureTriggered = true,
+                asleepOrWakingFromPreviouslyEnteredDevice = true,
             )
+
             transitionStateFlow.value = Transition(from = Scenes.Gone, to = Scenes.Lockscreen)
             assertThat(currentSceneKey).isEqualTo(Scenes.Lockscreen)
 
-            fakePowerRepository.updateWakefulness(
-                rawState = WakefulnessState.STARTING_TO_WAKE,
-                lastSleepReason = WakeSleepReason.POWER_BUTTON,
-                powerButtonLaunchGestureTriggered = true,
-            )
+            kosmos.powerInteractor.onCameraLaunchGestureDetected()
+
             assertThat(currentSceneKey).isEqualTo(Scenes.Gone)
             assertThat(isUnlocked).isTrue()
         }
@@ -925,6 +924,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
                 reason = PowerManager.WAKE_REASON_POWER_BUTTON,
                 powerButtonGestureTriggered = true,
             )
+            kosmos.powerInteractor.onCameraLaunchGestureDetected()
             runCurrent()
 
             assertThat(currentSceneKey).isEqualTo(Scenes.Occluded)
@@ -3602,7 +3602,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
 
     private fun Kosmos.updateFaceAuthStatus(isSuccess: Boolean) {
         with(fakeDeviceEntryFaceAuthRepository) {
-            isAuthenticated.value = isSuccess
+            isCurrentUserAuthenticated.value = isSuccess
             setAuthenticationStatus(
                 if (isSuccess) {
                     kosmos.biometricUnlockInteractor.setBiometricUnlockState(

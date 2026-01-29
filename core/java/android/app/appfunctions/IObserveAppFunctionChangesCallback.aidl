@@ -23,5 +23,4 @@ import android.os.ParcelableException;
 oneway interface IObserveAppFunctionChangesCallback {
     void onAppFunctionsChanged(in List<AppFunctionName> changedFunctionNames);
     void onPackagesChanged(in List<String> changedPackageNames);
-    void onRegistrationError(in ParcelableException exception);
 }

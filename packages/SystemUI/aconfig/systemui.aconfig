@@ -123,13 +123,6 @@ flag {
 }
 
 flag {
-    name: "cast_controller_media_router_in_bg"
-    namespace: "systemui"
-    description: "Moves MediaRouter Binder operations onto background thread."
-    bug: "466293987"
-}
-
-flag {
     name: "check_desktop_mode_for_spacial_model_app_pushback"
     namespace: "systemui"
     description: "Checks desktop mode for disabling spacial model as opposed to just checking if the screen is large"
@@ -181,6 +174,16 @@ flag {
     namespace: "systemui"
     description: "Allows users to resize communal hub widgets by single-point actions."
     bug: "431683508"
+}
+
+flag {
+  name: "communal_hub_cancel_add_widget"
+  namespace: "systemui"
+  description: "Enable cancel button to cancel adding a new widget to the communal hub"
+  bug: "424268360"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
 }
 
 flag {

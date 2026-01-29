@@ -54,9 +54,6 @@ import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.UserHandle;
-import android.platform.test.annotations.DisableFlags;
-import android.platform.test.annotations.EnableFlags;
-import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.Settings;
 import android.provider.settings.validators.SettingsValidators;
 import android.provider.settings.validators.Validator;
@@ -127,8 +124,6 @@ public class SettingsBackupAgentTest extends BaseSettingsProviderTest {
         TEST_VALUES_VALIDATORS.put(PRESERVED_TEST_SETTING, SettingsValidators.ANY_STRING_VALIDATOR);
     }
 
-    @Rule
-    public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
     @Rule
     public final MockitoRule mockito = MockitoJUnit.rule();
 
@@ -332,22 +327,6 @@ public class SettingsBackupAgentTest extends BaseSettingsProviderTest {
     }
 
     @Test
-    @DisableFlags(android.view.accessibility.Flags.FLAG_TEXT_CURSOR_BLINK_INTERVAL)
-    public void testFindEqualOrNextLargestTextCursorBlinkInterval_flagOff() {
-        final Function<String, String> testedMethod =
-                getFindEqualOrNextLargestTextCursorBlinkInterval();
-
-        // Always return default if flag is off.
-        assertEquals("500", testedMethod.apply("0"));
-        assertEquals("500", testedMethod.apply("333"));
-        assertEquals("500", testedMethod.apply("385"));
-        assertEquals("500", testedMethod.apply("500"));
-        assertEquals("500", testedMethod.apply("625"));
-        assertEquals("500", testedMethod.apply("1000"));
-    }
-
-    @Test
-    @EnableFlags(android.view.accessibility.Flags.FLAG_TEXT_CURSOR_BLINK_INTERVAL)
     public void testFindEqualOrNextLargestTextCursorBlinkInterval() {
         final Function<String, String> testedMethod =
                 getFindEqualOrNextLargestTextCursorBlinkInterval();
@@ -374,7 +353,6 @@ public class SettingsBackupAgentTest extends BaseSettingsProviderTest {
     }
 
     @Test
-    @EnableFlags(android.view.accessibility.Flags.FLAG_TEXT_CURSOR_BLINK_INTERVAL)
     public void testFindEqualOrNextLargestTextCursorBlinkInterval_numberFormatException() {
         final Function<String, String> testedMethod =
                 getFindEqualOrNextLargestTextCursorBlinkInterval();

@@ -121,7 +121,7 @@ public class HubEndpoint {
     @NonNull private final Executor mLifecycleCallbackExecutor;
     @NonNull private final Executor mMessageCallbackExecutor;
     @NonNull private final Executor mDataFlowCallbackExecutor;
-    @NonNull private final Looper mLooper;
+    @NonNull private final Looper mEpollLooper;
 
     @GuardedBy("mLock")
     private final SparseArray<HubEndpointSession> mActiveSessions = new SparseArray<>();
@@ -530,11 +530,46 @@ public class HubEndpoint {
                     mSinks.put(context.id.id, sink);
 
                     Log.d(TAG, "onDataFlowHostSinkRegistered: sink = " + sink);
-                    mDataFlowCallbackExecutor.execute(
-                            () -> {
-                                mDataFlowCallback.onReceivedDataFlowSink(
-                                        sink, source, getActiveSession(sessionId), msg);
-                            });
+
+                    if (Flags.fmcqShareDataFlowMessageFix()) {
+                        HubEndpointSession activeSession = null;
+                        if (sessionId != IContextHubEndpoint.SESSION_ID_INVALID) {
+                            activeSession = getActiveSession(sessionId);
+                            if (activeSession == null) {
+                                Log.w(
+                                        TAG,
+                                        "onDataFlowHostSinkRegistered: session not active, id="
+                                                + sessionId);
+                                return;
+                            }
+                            if (msg == null) {
+                                Log.w(
+                                        TAG,
+                                        "onDataFlowHostSinkRegistered: message is null for"
+                                                + " session"
+                                                + " id="
+                                                + sessionId);
+                                return;
+                            }
+                        } else {
+                            msg = null;
+                        }
+
+                        final HubEndpointSession finalActiveSession = activeSession;
+                        final HubMessage finalMsg = msg;
+                        mDataFlowCallbackExecutor.execute(
+                                () -> {
+                                    mDataFlowCallback.onReceivedDataFlowSink(
+                                            sink, source, finalActiveSession, finalMsg);
+                                });
+                    } else {
+                        final HubMessage finalMsg = msg;
+                        mDataFlowCallbackExecutor.execute(
+                                () -> {
+                                    mDataFlowCallback.onReceivedDataFlowSink(
+                                            sink, source, getActiveSession(sessionId), finalMsg);
+                                });
+                    }
                 }
 
                 @Override
@@ -585,12 +620,6 @@ public class HubEndpoint {
                                                 sink, DataFlowCallback.SINK_EVENT_STOPPED);
                                     });
                         }
-                    }
-                }
-
-                private HubEndpointSession getActiveSession(int sessionId) {
-                    synchronized (mLock) {
-                        return mActiveSessions.get(sessionId);
                     }
                 }
 
@@ -721,7 +750,7 @@ public class HubEndpoint {
         mMessageCallbackExecutor = messageCallbackExecutor;
         mDataFlowCallback = endpointDataFlowCallback;
         mDataFlowCallbackExecutor = dataFlowCallbackExecutor;
-        mLooper = looper;
+        mEpollLooper = looper;
     }
 
     /** @hide */
@@ -739,7 +768,7 @@ public class HubEndpoint {
             if (Flags.fmcqImplementation()) {
                 mNativeHandle =
                         native_init(
-                                mLooper.getQueue(),
+                                mEpollLooper.getQueue(),
                                 mJniCallback,
                                 mAssignedHubEndpointInfo.getIdentifier().getHub());
             } else {
@@ -1004,8 +1033,8 @@ public class HubEndpoint {
     /** Returns the {@link android.os.Looper} for epoll relating to data flow alerts. */
     @FlaggedApi(Flags.FLAG_FMCQ_API)
     @NonNull
-    public Looper getLooper() {
-        return mLooper;
+    public Looper getEpollLooper() {
+        return mEpollLooper;
     }
 
     /** Builder for a {@link HubEndpoint} object. */
@@ -1021,7 +1050,7 @@ public class HubEndpoint {
         @Nullable private DataFlowCallback mDataFlowCallback;
         @Nullable private Executor mDataFlowCallbackExecutor;
 
-        @Nullable private Looper mLooper;
+        @Nullable private Looper mEpollLooper;
 
         @NonNull private final Executor mMainExecutor;
 
@@ -1163,9 +1192,9 @@ public class HubEndpoint {
          */
         @FlaggedApi(Flags.FLAG_FMCQ_API)
         @NonNull
-        public Builder setLooper(@NonNull Looper looper) {
+        public Builder setEpollLooper(@NonNull Looper looper) {
             Objects.requireNonNull(looper);
-            mLooper = looper;
+            mEpollLooper = looper;
             return this;
         }
 
@@ -1180,7 +1209,7 @@ public class HubEndpoint {
                     mMessageCallbackExecutor != null ? mMessageCallbackExecutor : mMainExecutor,
                     mDataFlowCallback,
                     mDataFlowCallbackExecutor != null ? mDataFlowCallbackExecutor : mMainExecutor,
-                    mLooper != null ? mLooper : Looper.getMainLooper());
+                    mEpollLooper != null ? mEpollLooper : Looper.getMainLooper());
         }
     }
 
@@ -1209,6 +1238,14 @@ public class HubEndpoint {
         } else if (offloadSinkValues.length != NATIVE_ADD_OFFLOAD_SINK_ARRAY_SIZE) {
             throw new IllegalStateException(
                     "Incorrect offload sink values length: " + offloadSinkValues.length);
+        } else if (Flags.fmcqShareDataFlowMessageFix() && ((session == null) != (msg == null))) {
+            throw new IllegalArgumentException(
+                    "Session and message must either be both null or both non-null.");
+        } else if (Flags.fmcqShareDataFlowMessageFix()
+                && session != null
+                && getActiveSession(session.getId()) == null) {
+            throw new IllegalArgumentException(
+                    "Session with ID: " + session.getId() + " is not active.");
         }
 
         DataFlowSinkContext context = new DataFlowSinkContext();
@@ -1431,5 +1468,11 @@ public class HubEndpoint {
     /** package */
     Executor getDataFlowCallbackExecutor() {
         return mDataFlowCallbackExecutor;
+    }
+
+    private HubEndpointSession getActiveSession(int sessionId) {
+        synchronized (mLock) {
+            return mActiveSessions.get(sessionId);
+        }
     }
 }

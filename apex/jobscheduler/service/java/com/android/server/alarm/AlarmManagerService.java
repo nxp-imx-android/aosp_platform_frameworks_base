@@ -81,6 +81,7 @@ import android.app.ActivityOptions;
 import android.app.AlarmManager;
 import android.app.AppOpsManager;
 import android.app.BroadcastOptions;
+import android.app.Flags;
 import android.app.IAlarmCompleteListener;
 import android.app.IAlarmListener;
 import android.app.IAlarmManager;
@@ -2367,7 +2368,8 @@ public class AlarmManagerService extends SystemService {
         }
 
         final long batterySaverPolicyElapsed;
-        if ((alarm.flags & (FLAG_ALLOW_WHILE_IDLE_UNRESTRICTED)) != 0) {
+        if ((alarm.flags & (FLAG_ALLOW_WHILE_IDLE_UNRESTRICTED)) != 0
+                || ignoreDeviceIdleForListeners(alarm)) {
             // Unrestricted.
             batterySaverPolicyElapsed = nowElapsed;
         } else if (isAllowedWhileIdleRestricted(alarm)) {
@@ -2407,13 +2409,24 @@ public class AlarmManagerService extends SystemService {
     }
 
     /**
+     * Returns {@code true} if the given alarm is a listener variant and has the flag
+     * {@link AlarmManager#FLAG_ALLOW_WHILE_IDLE}
+     */
+    private static boolean ignoreDeviceIdleForListeners(Alarm a) {
+        return Flags.allowAlarmsWithRelaxedQuota() && a.listener != null
+                && (a.flags & FLAG_ALLOW_WHILE_IDLE) != 0;
+    }
+
+    /**
      * Returns {@code true} if the given alarm has the flag
      * {@link AlarmManager#FLAG_ALLOW_WHILE_IDLE} or
      * {@link AlarmManager#FLAG_ALLOW_WHILE_IDLE_COMPAT}
-     *
+     * and it is not a listener-based alarm for which device idle restrictions are ignored
+     * (as determined by {@link #ignoreDeviceIdleForListeners(Alarm)}).
      */
     private static boolean isAllowedWhileIdleRestricted(Alarm a) {
-        return (a.flags & (FLAG_ALLOW_WHILE_IDLE | FLAG_ALLOW_WHILE_IDLE_COMPAT)) != 0;
+        return !ignoreDeviceIdleForListeners(a)
+                && (a.flags & (FLAG_ALLOW_WHILE_IDLE | FLAG_ALLOW_WHILE_IDLE_COMPAT)) != 0;
     }
 
     /**
@@ -2429,7 +2442,8 @@ public class AlarmManagerService extends SystemService {
         }
 
         final long deviceIdlePolicyTime;
-        if ((alarm.flags & (FLAG_ALLOW_WHILE_IDLE_UNRESTRICTED | FLAG_WAKE_FROM_IDLE)) != 0) {
+        if ((alarm.flags & (FLAG_ALLOW_WHILE_IDLE_UNRESTRICTED | FLAG_WAKE_FROM_IDLE)) != 0
+                || ignoreDeviceIdleForListeners(alarm)) {
             // Unrestricted.
             deviceIdlePolicyTime = nowElapsed;
         } else if (isAllowedWhileIdleRestricted(alarm)) {
@@ -2783,7 +2797,11 @@ public class AlarmManagerService extends SystemService {
                         lowerQuota = !exact;
                     } else {
                         needsPermission = false;
-                        lowerQuota = allowWhileIdle;
+                        if (Flags.allowAlarmsWithRelaxedQuota()) {
+                            lowerQuota = false;
+                        } else {
+                            lowerQuota = allowWhileIdle;
+                        }
                         if (exact) {
                             exactAllowReason = EXACT_ALLOW_REASON_LISTENER;
                         }
@@ -3014,6 +3032,10 @@ public class AlarmManagerService extends SystemService {
 
             pw.println("Feature Flags:");
             pw.increaseIndent();
+            pw.print(Flags.FLAG_ALLOW_LISTENERS_WHILE_IDLE, Flags.allowListenersWhileIdle());
+            pw.println();
+            pw.print(Flags.FLAG_ALLOW_ALARMS_WITH_RELAXED_QUOTA,
+                    Flags.allowAlarmsWithRelaxedQuota());
             pw.decreaseIndent();
             pw.println();
 
@@ -4348,7 +4370,30 @@ public class AlarmManagerService extends SystemService {
     @VisibleForTesting
     static boolean isExemptFromAppStandby(Alarm a) {
         return a.alarmClock != null || UserHandle.isCore(a.creatorUid)
-                || (a.flags & (FLAG_ALLOW_WHILE_IDLE_UNRESTRICTED | FLAG_ALLOW_WHILE_IDLE)) != 0;
+                || (a.flags & (FLAG_ALLOW_WHILE_IDLE_UNRESTRICTED)) != 0
+                || isAllowWhileIdleAlarmExemptFromAppStandby(a);
+    }
+
+    /**
+     * Helper function to determine if an alarm with FLAG_ALLOW_WHILE_IDLE
+     * should be exempt from App Standby, considering the feature flag.
+     * TODO(b/473768453): Revisit app-standby quota for AWI alarms
+     */
+    private static boolean isAllowWhileIdleAlarmExemptFromAppStandby(Alarm a) {
+        if ((a.flags & FLAG_ALLOW_WHILE_IDLE) == 0) {
+            return false;
+        }
+
+        if (Flags.allowAlarmsWithRelaxedQuota()) {
+            // When the flag is enabled, listener-based allow-while-idle alarms are subject to
+            // App Standby restrictions. This is to encourage apps to use listener-based alarms,
+            // which are more efficient. PendingIntent-based AWI alarms remain exempt to preserve
+            // existing behavior.
+            return a.listener == null;
+        } else {
+            // All alarms with FLAG_ALLOW_WHILE_IDLE are exempt from App Standby.
+            return true;
+        }
     }
 
     @VisibleForTesting

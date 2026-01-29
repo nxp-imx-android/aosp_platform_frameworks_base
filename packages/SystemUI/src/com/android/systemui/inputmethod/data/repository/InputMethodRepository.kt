@@ -22,6 +22,7 @@ import android.provider.Settings
 import android.view.inputmethod.Flags
 import android.view.inputmethod.InputMethodInfo
 import android.view.inputmethod.InputMethodManager
+import android.view.inputmethod.InputMethodManager.IMPickerEntryPoint
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.inputmethod.data.model.InputMethodModel
@@ -72,12 +73,17 @@ interface InputMethodRepository {
     /**
      * Shows the system's input method picker dialog.
      *
-     * @param displayId The display ID on which to show the dialog.
      * @param showAuxiliarySubtypes Whether to show auxiliary input method subtypes in the list of
      *   enabled IMEs.
+     * @param entryPoint The entry point where the dialog was requested from.
+     * @param displayId The display ID on which to show the dialog.
      * @see InputMethodManager.showInputMethodPickerFromSystem
      */
-    suspend fun showInputMethodPicker(displayId: Int, showAuxiliarySubtypes: Boolean)
+    suspend fun showInputMethodPicker(
+        showAuxiliarySubtypes: Boolean,
+        @IMPickerEntryPoint entryPoint: Int,
+        displayId: Int,
+    )
 }
 
 @SysUISingleton
@@ -157,9 +163,17 @@ constructor(
     }
 
     @SuppressLint("MissingPermission")
-    override suspend fun showInputMethodPicker(displayId: Int, showAuxiliarySubtypes: Boolean) {
+    override suspend fun showInputMethodPicker(
+        showAuxiliarySubtypes: Boolean,
+        @IMPickerEntryPoint entryPoint: Int,
+        displayId: Int,
+    ) {
         withContext(backgroundDispatcher) {
-            inputMethodManager.showInputMethodPickerFromSystem(showAuxiliarySubtypes, displayId)
+            inputMethodManager.showInputMethodPickerFromSystem(
+                showAuxiliarySubtypes,
+                entryPoint,
+                displayId,
+            )
         }
     }
 

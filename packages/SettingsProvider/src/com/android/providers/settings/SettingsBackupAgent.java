@@ -1176,37 +1176,34 @@ public class SettingsBackupAgent extends BackupAgentHelper {
             @NonNull int[] blinkIntervals,
             int noBlinkInterval,
             int defaultBlinkInterval) {
-        if (android.view.accessibility.Flags.textCursorBlinkInterval()) {
-            int requestedValue;
-            try {
-                requestedValue = Integer.parseInt(requestedBlinkInterval);
-            } catch (NumberFormatException exception) {
-                Log.d(TAG, "Encountered NumberFormatException when parsing setting for blink "
-                        + "interval. Restoring to default blink interval value.");
-                return String.valueOf(defaultBlinkInterval);
-            }
-
-            if (requestedValue <= noBlinkInterval) {
-                return String.valueOf(noBlinkInterval);
-            }
-
-            // Whatever is the requested value, we search for the value in the array that is equal
-            // or next largest.
-            int candidate = -1;
-            boolean blinkIntervalFound = false;
-            for (int i = 0; !blinkIntervalFound && i < blinkIntervals.length; i++) {
-                final int blinkInterval = blinkIntervals[i];
-                if (blinkInterval >= requestedValue) {
-                    candidate = blinkInterval;
-                    blinkIntervalFound = true;
-                }
-            }
-            // If the current value is greater than all the allowed ones, we return the
-            // largest possible.
-            return blinkIntervalFound ? String.valueOf(candidate) : String.valueOf(
-                    blinkIntervals[blinkIntervals.length - 1]);
+        int requestedValue;
+        try {
+            requestedValue = Integer.parseInt(requestedBlinkInterval);
+        } catch (NumberFormatException exception) {
+            Log.d(TAG, "Encountered NumberFormatException when parsing setting for blink "
+                    + "interval. Restoring to default blink interval value.");
+            return String.valueOf(defaultBlinkInterval);
         }
-        return String.valueOf(defaultBlinkInterval);
+
+        if (requestedValue <= noBlinkInterval) {
+            return String.valueOf(noBlinkInterval);
+        }
+
+        // Whatever is the requested value, we search for the value in the array that is equal
+        // or next largest.
+        int candidate = -1;
+        boolean blinkIntervalFound = false;
+        for (int i = 0; !blinkIntervalFound && i < blinkIntervals.length; i++) {
+            final int blinkInterval = blinkIntervals[i];
+            if (blinkInterval >= requestedValue) {
+                candidate = blinkInterval;
+                blinkIntervalFound = true;
+            }
+        }
+        // If the current value is greater than all the allowed ones, we return the
+        // largest possible.
+        return blinkIntervalFound ? String.valueOf(candidate) : String.valueOf(
+                blinkIntervals[blinkIntervals.length - 1]);
     }
 
     @VisibleForTesting

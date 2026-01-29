@@ -23,10 +23,13 @@ import android.annotation.RequiresNoPermission;
 import android.annotation.UserIdInt;
 import android.app.ActivityManagerInternal;
 import android.content.Context;
+import android.content.Intent;
+import android.database.ContentObserver;
 import android.os.Binder;
 import android.os.ParcelUuid;
 import android.os.Process;
 import android.os.UserHandle;
+import android.provider.Settings;
 import android.service.notification.StatusBarNotification;
 import android.service.personalcontext.IPersonalContextManager;
 import android.service.personalcontext.PersonalContextManager;
@@ -73,6 +76,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -100,6 +104,33 @@ public class PersonalContextManagerService extends SystemService {
         HINT_SIGNING_KEY = new SecretKeySpec(key, ContextHintWithSignature.HMAC_ALGORITHM);
     }
 
+    private static class SettingObserver extends ContentObserver {
+        private final Context mContext;
+
+        SettingObserver(@NonNull Context context, @Nullable Executor executor, int unused) {
+            super(executor, unused);
+            mContext = context;
+        }
+
+        @Override
+        public void onChange(boolean selfChange) {
+            mContext.sendBroadcastAsUser(
+                    new Intent(PersonalContextManager.ACTION_PERSONAL_CONTEXT_ENABLED_CHANGED)
+                            .addFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY),
+                    UserHandle.ALL);
+        }
+
+        public void register() {
+            mContext.getContentResolver().registerContentObserver(
+                    Settings.Secure.getUriFor(Settings.Secure.PERSONAL_CONTEXT_ENABLED), false,
+                    this, UserHandle.USER_ALL);
+        }
+
+        public void unregister() {
+            mContext.getContentResolver().unregisterContentObserver(this);
+        }
+    }
+
     /** Encapsulates all state associated with a specific user. */
     private record UserState(
             @NonNull ContextComponentManager componentManager,
@@ -107,10 +138,12 @@ public class PersonalContextManagerService extends SystemService {
             @NonNull HintInvalidationUnderstander hintInvalidationUnderstander,
             @NonNull NotificationActionRenderer notificationActionRenderer,
             @NonNull EmbeddedInsightRenderer embeddedInsightRenderer,
-            @Nullable TextClassificationActionRenderer textClassificationActionRenderer) {
-        /** Unregisters the monitor, cleaning up the user state. */
+            @Nullable TextClassificationActionRenderer textClassificationActionRenderer,
+            @NonNull SettingObserver observer) {
+        /** Unregisters the monitor and setting observer, cleaning up the user state. */
         void cleanup() {
             monitor.unregister();
+            observer.unregister();
         }
     }
 
@@ -153,6 +186,7 @@ public class PersonalContextManagerService extends SystemService {
             final HintInvalidationUnderstander hintInvalidationUnderstander =
                     new HintInvalidationUnderstander(
                             insight -> startInsightWorkflow(userId, Set.of(insight)));
+            final SettingObserver observer = new SettingObserver(userContext, mExecutor, 0);
             final NotificationActionRenderer notificationActionRenderer =
                     new NotificationActionRenderer(
                             getLocalService(NotificationManagerInternal.class),
@@ -185,7 +219,8 @@ public class PersonalContextManagerService extends SystemService {
                             hintInvalidationUnderstander,
                             notificationActionRenderer,
                             embeddedInsightRenderer,
-                            textClassificationActionRenderer));
+                            textClassificationActionRenderer,
+                            observer));
         }
     }
 
@@ -233,6 +268,11 @@ public class PersonalContextManagerService extends SystemService {
                         /* looper= */ null,
                         user.getUserHandle(),
                         /* externalStorage= */ false);
+
+        if (Log.isLoggable(TAG, Log.DEBUG)) {
+            Slog.d(TAG, "Registering setting observer for user " + userId);
+        }
+        userState.observer().register();
     }
 
     @Override

@@ -76,6 +76,7 @@ import com.android.systemui.statusbar.pipeline.mobile.data.repository.mobileConn
 import com.android.systemui.testKosmos
 import com.android.systemui.user.data.model.SelectionStatus
 import com.android.systemui.user.data.repository.fakeUserRepository
+import com.android.systemui.user.domain.interactor.selectedUserInteractor
 import com.android.systemui.util.mockito.eq
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -123,6 +124,7 @@ class DeviceEntryFaceAuthInteractorTest : SysuiTestCase() {
                     deviceEntryFaceAuthStatusInteractor,
                     cameraSensorPrivacyInteractor,
                     mobileConnectionsRepository,
+                    selectedUserInteractor,
                 )
             }
     }
@@ -408,11 +410,12 @@ class DeviceEntryFaceAuthInteractorTest : SysuiTestCase() {
 
     @Test
     @DisableSceneContainer
-    fun faceAuthIsRequestedWhenPrimaryBouncerIsAboutToShow() =
+    fun faceAuthIsRequestedOnPrimaryBouncerShowingSoon() =
         kosmos.runTest {
             underTest.start()
 
             fakeKeyguardBouncerRepository.setPrimaryShowingSoon(false)
+            fakeKeyguardBouncerRepository.setPrimaryShow(false)
             runCurrent()
 
             fakeKeyguardBouncerRepository.setPrimaryShowingSoon(true)
@@ -429,9 +432,27 @@ class DeviceEntryFaceAuthInteractorTest : SysuiTestCase() {
 
     @Test
     @DisableSceneContainer
-    fun faceAuthIsOnlyRequestedWhenPrimaryBouncerIsAboutToShow() =
+    fun faceAuthIsNotRequestedOnPrimaryBouncerShow() =
         kosmos.runTest {
             underTest.start()
+
+            fakeKeyguardBouncerRepository.setPrimaryShowingSoon(false)
+            fakeKeyguardBouncerRepository.setPrimaryShow(false)
+            runCurrent()
+
+            fakeKeyguardBouncerRepository.setPrimaryShow(true)
+            runCurrent()
+
+            // no auth request (it should only happen on showing soon)
+            assertThat(faceAuthRepository.runningAuthRequest.value).isNull()
+        }
+
+    @Test
+    @DisableSceneContainer
+    fun faceAuthIsOnlyNotRequestedWhenPrimaryBouncerIsAboutToShow_duringUserSwitch() =
+        kosmos.runTest {
+            underTest.start()
+            fakeUserRepository.setMainUserIsUserSwitching()
 
             fakeKeyguardBouncerRepository.setPrimaryShowingSoon(false)
             fakeKeyguardBouncerRepository.setPrimaryShow(false)
@@ -440,16 +461,8 @@ class DeviceEntryFaceAuthInteractorTest : SysuiTestCase() {
             fakeKeyguardBouncerRepository.setPrimaryShowingSoon(true)
             runCurrent()
 
-            fakeKeyguardBouncerRepository.setPrimaryShow(true)
-            runCurrent()
-
-            assertThat(faceAuthRepository.runningAuthRequest.value)
-                .isEqualTo(
-                    Pair(
-                        FaceAuthUiEvent.FACE_AUTH_UPDATED_PRIMARY_BOUNCER_SHOWN_OR_WILL_BE_SHOWN,
-                        false,
-                    )
-                )
+            // Since we're userSwitching, face auth should not be requested
+            assertThat(faceAuthRepository.runningAuthRequest.value).isNull()
         }
 
     @Test
@@ -840,12 +853,12 @@ class DeviceEntryFaceAuthInteractorTest : SysuiTestCase() {
         kosmos.runTest {
             underTest.start()
 
-            faceAuthRepository.isAuthenticated.value = true
+            faceAuthRepository.isCurrentUserAuthenticated.value = true
             runCurrent()
             verify(trustManager, never())
                 .clearAllBiometricRecognized(eq(BiometricSourceType.FACE), anyInt())
 
-            faceAuthRepository.isAuthenticated.value = false
+            faceAuthRepository.isCurrentUserAuthenticated.value = false
             runCurrent()
 
             verify(trustManager).clearAllBiometricRecognized(eq(BiometricSourceType.FACE), anyInt())
@@ -941,7 +954,7 @@ class DeviceEntryFaceAuthInteractorTest : SysuiTestCase() {
     fun authenticated_providesSameValueFromRepository() =
         kosmos.runTest {
             assertThat(underTest.isAuthenticated)
-                .isSameInstanceAs(faceAuthRepository.isAuthenticated)
+                .isSameInstanceAs(faceAuthRepository.isCurrentUserAuthenticated)
         }
 
     @Test

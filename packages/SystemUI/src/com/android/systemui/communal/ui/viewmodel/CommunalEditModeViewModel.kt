@@ -146,6 +146,9 @@ constructor(
     override val reorderingWidgets: StateFlow<Boolean>
         get() = _reorderingWidgets
 
+    override val addingWidgetDragAction: StateFlow<Boolean>
+        get() = _addingWidgetDragAction
+
     override fun onAddWidget(
         componentName: ComponentName,
         user: UserHandle,
@@ -203,6 +206,14 @@ constructor(
         if (!_reorderingWidgets.value && firstVisibleItemScroll != savedFirstScrollOffset) {
             setSelectedKey(null)
         }
+    }
+
+    override fun onAddWidgetDragAndDropStart() {
+        _addingWidgetDragAction.value = true
+    }
+
+    override fun onAddWidgetDragAndDropEnd() {
+        _addingWidgetDragAction.value = false
     }
 
     val isIdleOnCommunal: StateFlow<Boolean> = communalInteractor.isIdleOnCommunal

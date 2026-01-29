@@ -12122,6 +12122,18 @@ public class AudioService extends IAudioService.Stub
         }
     }
 
+    @Override
+    @android.annotation.EnforcePermission(android.Manifest.permission.MODIFY_PHONE_STATE)
+    public android.media.audio.IAudioModeSession createAudioModeSession(
+            android.media.audio.AudioModeSessionRequest request,
+            android.media.audio.IAudioModeSessionCallback callback) {
+        super.createAudioModeSession_enforcePermission();
+        Objects.requireNonNull(request);
+        Objects.requireNonNull(callback);
+
+        return new AudioModeSession(this, request, callback);
+    }
+
     /** only public for mocking/spying, do not call outside of AudioService */
     @VisibleForTesting
     public void checkMusicActive(int deviceType, String caller) {

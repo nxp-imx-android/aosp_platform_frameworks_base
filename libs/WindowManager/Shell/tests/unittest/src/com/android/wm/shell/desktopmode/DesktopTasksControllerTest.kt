@@ -332,6 +332,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @Mock private lateinit var fullscreenDisconnectHandler: FullscreenDisconnectHandler
     @Mock private lateinit var pinnedLayerController: PinnedLayerController
     @Mock private lateinit var desktopTasksTransitionObserver: DesktopTasksTransitionObserver
+    @Mock private lateinit var desktopAnimationConfiguration: DesktopAnimationConfiguration
 
     private lateinit var controller: DesktopTasksController
     private lateinit var shellInit: ShellInit
@@ -403,6 +404,9 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                     UserInfo(DEFAULT_USER_WORK_PROFILE_ID, "default_work", FLAG_PROFILE),
                 )
             )
+        whenever(desktopAnimationConfiguration.toDesktopAnimationDurationMs)
+            .thenReturn(TO_DESKTOP_ANIM_DURATION)
+
         userRepositories =
             DesktopUserRepositories(
                 shellInit,
@@ -544,6 +548,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     private fun createController() =
         DesktopTasksController(
             context,
+            desktopAnimationConfiguration,
             shellInit,
             shellCommandHandler,
             shellController,

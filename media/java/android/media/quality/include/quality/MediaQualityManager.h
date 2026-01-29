@@ -8,6 +8,20 @@ namespace quality {
 
 // TODO: implement writeToParcel and readFromParcel
 
+class SoundProfileHandle : public Parcelable {
+    public:
+        SoundProfileHandle() {}
+        status_t writeToParcel(android::Parcel*) const override {
+            return 0;
+        }
+        status_t readFromParcel(const android::Parcel*) override {
+            return 0;
+        }
+        std::string toString() const {
+            return "";
+        }
+};
+
 class PictureProfileHandle : public Parcelable {
     public:
         PictureProfileHandle() {}

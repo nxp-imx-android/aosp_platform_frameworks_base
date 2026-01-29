@@ -1354,6 +1354,10 @@ public class AccessibilityInputFilter extends InputFilter implements EventStream
         @Override
         final public void reset() {
             super.reset();
+            resetSequenceState();
+        }
+
+        private void resetSequenceState() {
             mTouchSequenceStarted = false;
             mHoverSequenceStarted = false;
         }
@@ -1372,7 +1376,7 @@ public class AccessibilityInputFilter extends InputFilter implements EventStream
                 // Allow the cancel event to pass if it is cancelling a sequence.
                 if (event.getActionMasked() == MotionEvent.ACTION_CANCEL) {
                     if (mTouchSequenceStarted || mHoverSequenceStarted) {
-                        reset();
+                        resetSequenceState();
                         return true;
                     }
                     return false;
@@ -1396,7 +1400,7 @@ public class AccessibilityInputFilter extends InputFilter implements EventStream
                 final int action = event.getActionMasked();
                 if (Flags.sendA11yActionCancelOnReset()
                         && action == MotionEvent.ACTION_UP) {
-                    reset();
+                    resetSequenceState();
                 }
                 return true;
             }
@@ -1412,7 +1416,7 @@ public class AccessibilityInputFilter extends InputFilter implements EventStream
                 // Reset on gesture completion only if the flag is enabled.
                 if (Flags.sendA11yActionCancelOnReset()
                         && action == MotionEvent.ACTION_HOVER_EXIT) {
-                    reset();
+                    resetSequenceState();
                 }
                 return true;
             }

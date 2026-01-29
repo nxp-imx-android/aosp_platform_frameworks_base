@@ -30,6 +30,7 @@ import android.os.ResultReceiver;
 import android.os.ShellCallback;
 import android.os.ShellCommand;
 import android.os.UserHandle;
+import android.sysprop.PccProperties;
 import android.util.Log;
 
 import com.android.internal.annotations.GuardedBy;
@@ -50,6 +51,7 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
 
     private final Context mContext;
     private final PackageManagerInternal mPackageManagerInternal;
+    private final Injector mInjector;
 
     // Only instantiated when audit mode is enabled.
     @GuardedBy("mAuditLogLock")
@@ -63,6 +65,14 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
     public PccSandboxManagerServiceImpl(Context context) {
         mContext = context;
         mPackageManagerInternal = LocalServices.getService(PackageManagerInternal.class);
+        mInjector = new Injector();
+    }
+
+    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
+    public PccSandboxManagerServiceImpl(Context context, Injector injector) {
+        mContext = context;
+        mPackageManagerInternal = LocalServices.getService(PackageManagerInternal.class);
+        mInjector = injector;
     }
 
     public void setPccSandboxManagerInternal(PccSandboxManagerInternal internal) {
@@ -71,6 +81,13 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
 
     public ExecutorService getExecutorService() {
         return mExecutorService;
+    }
+
+    @VisibleForTesting
+    static class Injector {
+        boolean auditModeEnabled() {
+            return PccProperties.audit_mode_enabled().orElse(false);
+        }
     }
 
     @Override
@@ -110,9 +127,10 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
         }
     }
 
-    /** Internal method with feedback to the caller, for testing. */
+    /** Internal method with feedback to the caller, for testing. Returns true if the write was
+     * successfully scheduled.*/
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
-    void writeToAuditLogInternal(@NonNull PersistableBundle bundle, @NonNull String packageName)
+    boolean writeToAuditLogInternal(@NonNull PersistableBundle bundle, @NonNull String packageName)
             throws SecurityException {
         final int callingUid = Binder.getCallingUid();
         if (!mPackageManagerInternal.isSameApp(
@@ -132,21 +150,20 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
         */
 
         synchronized (mAuditModeLock) {
-            // TODO: introduce a system property to toggle audit mode on/off.
-            boolean auditModeEnabled = true;
-            if (!auditModeEnabled) {
+            if (!mInjector.auditModeEnabled()) {
                 // If audit mode was toggled off, clean up, including writing pending data to disk.
                 if (mAuditModeContext != null) {
                     mAuditModeContext.stopAuditing();
                     mAuditModeContext = null;
                 }
-                return;
+                return false;
             }
             if (mAuditModeContext == null) {
                 mAuditModeContext = AuditModeContext.create();
             }
             mAuditModeContext.writeToAuditLog(bundle, packageName);
         }
+        return true;
     }
 
     @Override

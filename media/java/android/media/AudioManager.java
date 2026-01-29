@@ -16,6 +16,7 @@
 
 package android.media;
 
+import static android.annotation.SystemApi.Client.MODULE_LIBRARIES;
 import static android.companion.virtual.VirtualDeviceParams.DEVICE_POLICY_CUSTOM;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_AUDIO;
 import static android.content.Context.DEVICE_ID_DEFAULT;
@@ -29,6 +30,7 @@ import static android.media.audio.Flags.FLAG_FOCUS_FREEZE_TEST_API;
 import static android.media.audio.Flags.FLAG_REGISTER_VOLUME_CALLBACK_API_HARDENING;
 import static android.media.audio.Flags.FLAG_AMSCO_AVAILABLE_API;
 import static android.media.audio.Flags.FLAG_BT_DEVICE_CATEGORY_API;
+import static android.media.audio.Flags.FLAG_FUSED_TELECOM_ROUTE_API;
 import static android.media.audio.Flags.FLAG_STREAM_ASSISTANT_PUBLIC;
 import static android.media.audio.Flags.FLAG_SUPPORTED_DEVICE_TYPES_API;
 import static android.media.audio.Flags.FLAG_UNIFY_ABSOLUTE_VOLUME_MANAGEMENT;
@@ -72,6 +74,10 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.media.AudioAttributes.AttributeSystemUsage;
 import android.media.CallbackUtil.ListenerInfo;
+import android.media.audio.AudioModeSessionRequest;
+import android.media.audio.Flags;
+import android.media.audio.IAudioModeSession;
+import android.media.audio.IAudioModeSessionCallback;
 import android.media.audiopolicy.AudioPolicy;
 import android.media.audiopolicy.AudioPolicy.AudioPolicyFocusListener;
 import android.media.audiopolicy.AudioProductStrategy;
@@ -9632,6 +9638,92 @@ public class AudioManager {
         return hwSyncId;
     }
 
+    /**
+     * Creates and initializes a new {@link AudioModeSession}.
+     *
+     * This session allows a client to manage global routing/volume control (as-if via {@link
+     * setMode}) and control routing preference overrides.
+     *
+     * The caller must provide a callback to receive updates on route availability and changes. The
+     * session is active upon successful creation.
+     *
+     * @param request The initial configuration for the session.
+     * @param executor The {@link Executor} on which the callback methods will be invoked.
+     * @param callback The {@link AudioModeSession.Callback} to receive session events.
+     * @return A new {@link AudioModeSession} instance. The caller is responsible for
+     *         calling {@link AudioModeSession#close()} to clean up the audio stack state
+     *         state when their use-case is completed.
+     * @throws IllegalArgumentException if any of the initial values in the request are
+     * malformed.
+     * @throws SecurityException if the caller does not have the required permissions.
+     * @hide
+     */
+    @NonNull
+    @SystemApi(client = MODULE_LIBRARIES)
+    @RequiresPermission(Manifest.permission.MODIFY_PHONE_STATE)
+    @FlaggedApi(FLAG_FUSED_TELECOM_ROUTE_API)
+    public AudioModeSession createAudioModeSession(
+            @NonNull AudioModeSession.Request request,
+            @NonNull @CallbackExecutor Executor executor,
+            @NonNull AudioModeSession.Callback callback) {
+        Objects.requireNonNull(executor);
+        Objects.requireNonNull(callback);
+
+        AudioModeSessionRequest parcelable = request.getParcelable();
+        parcelable.attributionSource = getContext().getAttributionSource().asState();
+
+        IAudioModeSessionCallback cb = new IAudioModeSessionCallback.Stub() {
+            @Override
+            public void onAvailableRoutesChanged(List<IAudioModeSession.Route> availableRoutes) {
+                executor.execute(() -> callback.onAvailableRoutesChanged(
+                    availableRoutes.stream()
+                        .map(AudioModeSession.AudioRoute::new)
+                        .toList()
+                ));
+            }
+
+            @Override
+            public void onExternalRequestedRouteChanged(
+                    IAudioModeSession.Route newRoute, int requestId) {
+                var audioRoute = newRoute == null ? null
+                                               : new AudioModeSession.AudioRoute(newRoute);
+                executor.execute(() ->
+                        callback.onExternalRequestedRouteChanged(audioRoute, requestId));
+            }
+
+            @Override
+            public void onPaused() {
+                executor.execute(() -> callback.onPaused());
+            }
+
+            @Override
+            public void onResumed(int requestId) {
+                executor.execute(() -> callback.onResumed(requestId));
+            }
+
+            @Override
+            public void onClosed() {
+                executor.execute(() -> callback.onClosed());
+            }
+
+            @Override
+            public void onRoutingResult(int requestId, IAudioModeSession.Route route,
+                    int status) {
+                var audioRoute = route == null ? null
+                                               : new AudioModeSession.AudioRoute(route);
+                executor.execute(() -> callback.onRoutingResult(requestId, audioRoute, status));
+            }
+        };
+
+        try {
+            IAudioModeSession session = getService().createAudioModeSession(
+                    parcelable,
+                    cb);
+            return new AudioModeSession(session);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
     /**
      * Selects the audio device that should be used for communication use cases, for instance voice
      * or video calls. This method can be used by voice or video chat applications to select a

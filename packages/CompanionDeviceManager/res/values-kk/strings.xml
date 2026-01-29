@@ -68,8 +68,7 @@
     <string name="permission_media_routing_control" msgid="5498639511586715253">"Мультимедиа шығысын өзгерту"</string>
     <string name="permission_storage" msgid="6831099350839392343">"Фотосуреттер мен медиафайлдар"</string>
     <string name="permission_notifications" msgid="4099418516590632909">"Хабарландырулар"</string>
-    <!-- no translation found for permission_app_streaming (4488910074894929222) -->
-    <skip />
+    <string name="permission_app_streaming" msgid="4488910074894929222">"Экран көшірмесі, трансляция"</string>
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"Деректерді <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> құрылғысына трансляциялау"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"Экранды синхрондау"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"Қолданбаларды трансляциялау"</string>
@@ -84,11 +83,9 @@
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"Маңайдағы құрылғыларды тауып, олармен байланысып, бір-біріне қатысты локациясын анықтайды."</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"Барлық хабарландыруды, соның ішінде контактілер, хабарлар және фотосуреттер сияқты ақпаратты оқиды."</string>
     <string name="permission_notifications_summary" msgid="6819393427371255636">"• Барлық хабарландыруды, соның ішінде контактілер, хабарлар және фотосуреттер сияқты ақпаратты оқиды&lt;br/&gt;• Сізге хабарландырулар жібереді&lt;br/&gt;&lt;br/&gt;Бұл қолданбаның хабарландыруларды оқу және жіберу мүмкіндігін \"Параметрлер &gt; Хабарландырулар\" тармағында кез келген уақытта басқара аласыз."</string>
-    <!-- no translation found for permission_storage_summary (3779040306012319942) -->
-    <skip />
+    <string name="permission_storage_summary" msgid="3779040306012319942">"Телефоныңыздағы фотосуреттер мен медиафайлдарды басқа құрылғылармен бөлісіңіз."</string>
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"Сізге хабарландырулар жібереді."</string>
-    <!-- no translation found for permission_app_streaming_summary (4114223538437344105) -->
-    <skip />
+    <string name="permission_app_streaming_summary" msgid="4114223538437344105">"Қолданбаларды қоса алғанда, телефон экранын құрылғылармен бөлісіңіз. Телефон құлыптаулы болса да, құрылғыларыңыз онда көрінетін барлық контентті, соның ішінде аудионы, фотосуреттерді, төлем туралы ақпаратты, құпия сөздер мен хабарларды пайдалана алады.&lt;br/&gt;&lt;br/&gt;Құрылғыларыңыздағы микрофон, камера және басқа датчик деректерін, соның ішінде сенсорлық қимылдар мен тінтуірді басу сияқты әрекеттестіктерді телефонға қайта жіберіңіз."</string>
     <string name="permission_create_virtual_device_summary" msgid="3570256456647725172">"&lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; құрылғысындағы микрофон, камера мен басқа датчик деректерін <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> құрылғысына трансляциялау."</string>
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"<xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> экранын &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; құрылғысына жазуға, трансляциялауға немесе бөлісуге болады.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> қолданбасы <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g> құрылғысында көрінетін немесе ойнайтын кез келген нәрсеге, соның ішінде аудиоға, фотосуреттерге, төлем туралы ақпаратқа, құпия сөздер мен хабарларға қол жеткізе алады."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"<xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> қолданбаларын &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt; құрылғысына трансляциялаңыз.&lt;br/&gt;&lt;br/&gt;<xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> құлыптаулы болса да, <xliff:g id="APP_NAME">%1$s</xliff:g> қолданбасы <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g> құрылғысында көрінетін немесе ойнайтын кез келген нәрсеге, соның ішінде аудиоға, фотосуреттерге, төлем туралы ақпаратқа, құпия сөздер мен хабарларға қол жеткізе алады."</string>

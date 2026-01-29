@@ -4602,8 +4602,12 @@ public class StageCoordinator extends StageCoordinatorAbstract {
                 true /* reparentLeafTaskIfRelaunch */);
     }
 
-    /** Call this when the animation from split screen to desktop is started. */
-    public void onSplitToDesktop() {
+    /**
+     * Call this when the animation to exit split is started and handled by another
+     * transition handler.
+     */
+    @Override
+    public void onExitingSplit() {
         setSplitsVisible(false);
     }
 

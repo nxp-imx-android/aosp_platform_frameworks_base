@@ -267,6 +267,7 @@ java_library_static {
         "android.bpfprogs.flags-aconfig-java",
         "services.signal-collector-manager-internal",
         "android.content.flags-aconfig-java",
+        "trust_token",
     ],
     javac_shard_size: 50,
     javacflags: [

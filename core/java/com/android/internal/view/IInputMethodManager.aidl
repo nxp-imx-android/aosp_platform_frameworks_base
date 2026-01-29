@@ -99,7 +99,8 @@ interface IInputMethodManager {
     @EnforcePermission(allOf = {"WRITE_SECURE_SETTINGS", "INTERACT_ACROSS_USERS_FULL"})
     @JavaPassthrough(annotation="@android.annotation.RequiresPermission(allOf = {android.Manifest."
     + "permission.WRITE_SECURE_SETTINGS, android.Manifest.permission.INTERACT_ACROSS_USERS_FULL})")
-    oneway void showInputMethodPickerFromSystem(int auxiliarySubtypeMode, int displayId);
+    oneway void showInputMethodPickerFromSystem(int auxiliarySubtypeMode, int entryPoint,
+            int displayId);
 
     /**
      * A test API for CTS to make sure that the input method menu is showing for the given user.

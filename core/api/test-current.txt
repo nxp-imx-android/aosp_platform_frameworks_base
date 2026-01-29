@@ -1141,7 +1141,6 @@ package android.content {
     method public void setContentCaptureOptions(@Nullable android.content.ContentCaptureOptions);
     method public void updateDeviceId(int);
     method public abstract void updateDisplay(int);
-    field public static final String ATTENTION_SERVICE = "attention";
     field public static final String CONTENT_CAPTURE_MANAGER_SERVICE = "content_capture";
     field public static final String DEVICE_IDLE_CONTROLLER = "deviceidle";
     field public static final String DREAM_SERVICE = "dream";
@@ -1198,6 +1197,7 @@ package android.content.pm {
     field public static final long OVERRIDE_ENABLE_COMPAT_FAKE_FOCUS = 263259275L; // 0xfb1048bL
     field @FlaggedApi("com.android.window.flags.app_compat_properties_api") public static final long OVERRIDE_ENABLE_COMPAT_IGNORE_ORIENTATION_REQUEST_WHEN_LOOP_DETECTED = 273509367L; // 0x104d6bf7L
     field public static final long OVERRIDE_ENABLE_COMPAT_IGNORE_REQUESTED_ORIENTATION = 254631730L; // 0xf2d5f32L
+    field @FlaggedApi("com.android.window.flags.exclude_caption_insets_opt_out_api") public static final long OVERRIDE_EXCLUDE_CAPTION_INSETS_FROM_APP_BOUNDS = 388014743L; // 0x1720a297L
     field public static final long OVERRIDE_LANDSCAPE_ORIENTATION_TO_REVERSE_LANDSCAPE = 266124927L; // 0xfdcbe7fL
     field public static final long OVERRIDE_MIN_ASPECT_RATIO = 174042980L; // 0xa5faf64L
     field public static final long OVERRIDE_MIN_ASPECT_RATIO_EXCLUDE_PORTRAIT_FULLSCREEN = 218959984L; // 0xd0d1070L
@@ -3531,6 +3531,17 @@ package android.service.dreams {
 }
 
 package android.service.notification {
+
+  public final class Adjustment implements android.os.Parcelable {
+    method @FlaggedApi("android.app.nm_contextual_display_launch") public int getOriginatingRuleId();
+    method @FlaggedApi("android.app.nm_contextual_display_launch") public int getOriginatingRuleOrder();
+    method @FlaggedApi("android.app.nm_contextual_display_launch") public void setOriginatingRuleId(int);
+    method @FlaggedApi("android.app.nm_contextual_display_launch") public void setOriginatingRuleOrder(int);
+    field @FlaggedApi("android.app.nm_contextual_display_launch") public static final String KEY_HIGHLIGHT = "highlight";
+    field @FlaggedApi("android.app.nm_contextual_display_launch") public static final String KEY_LIGHT = "light";
+    field @FlaggedApi("android.app.nm_contextual_display_launch") public static final String KEY_MODE_BREAKTHROUGHS = "mode_breakthrough";
+    field @FlaggedApi("android.app.nm_contextual_display_launch") public static final String KEY_SOUND = "sound";
+  }
 
   @Deprecated public abstract class ConditionProviderService extends android.app.Service {
     method @Deprecated public boolean isBound();

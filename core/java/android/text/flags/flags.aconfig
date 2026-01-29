@@ -281,3 +281,10 @@ flag {
     bug: "417951523"
     is_exported: true
 }
+
+flag {
+  name: "lazy_hyphenator_init"
+  namespace: "text"
+  description: "Initialize hyphenator lazily"
+  bug: "473856914"
+}

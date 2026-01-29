@@ -342,7 +342,7 @@
     <string name="managed_profile_label" msgid="7316778766973512382">"కార్యాలయ ప్రొఫైల్‌కి మార్చు"</string>
     <string name="user_owner_app_label" msgid="1553595155465750298">"వ్యక్తిగత <xliff:g id="APP_NAME">%1$s</xliff:g>‌కు మార్చండి"</string>
     <string name="managed_profile_app_label" msgid="367401088383965725">"వర్క్ <xliff:g id="APP_NAME">%1$s</xliff:g>‌కు మార్చండి"</string>
-    <string name="permgrouplab_contacts" msgid="7443702399615347952">"కాంటాక్ట్‌లు, ఖాతాలు"</string>
+    <string name="permgrouplab_contacts" msgid="7443702399615347952">"కాంటాక్ట్‌లు &amp; ఖాతాలు"</string>
     <string name="permgroupdesc_contacts" msgid="2001771388402758264">"మీ కాంటాక్ట్‌లను యాక్సెస్ చేయండి, ఈ డివైజ్‌లో కాంటాక్ట్‌లను సేవ్ చేయగల మీ ఖాతాలకు సంబంధించిన లిస్ట్‌ను చూడండి"</string>
     <string name="permgrouplab_location" msgid="1858277002233964394">"లొకేషన్"</string>
     <string name="permgroupdesc_location" msgid="1995955142118450685">"ఈ పరికర లొకేషన్‌ను యాక్సెస్ చేయడానికి"</string>
@@ -362,7 +362,7 @@
     <string name="permgroupdesc_activityRecognition" msgid="4725624819457670704">"ఫిజికల్ యాక్టివిటీని యాక్సెస్ చేయండి"</string>
     <string name="permgrouplab_camera" msgid="9090413408963547706">"కెమెరా"</string>
     <string name="permgroupdesc_camera" msgid="7585150538459320326">"చిత్రాలను తీయడానికి మరియు వీడియోను రికార్డ్ చేయడానికి"</string>
-    <string name="permgrouplab_nearby_devices" msgid="5529147543651181991">"\'సమీపంలోని డివైజ్‌ల\'"</string>
+    <string name="permgrouplab_nearby_devices" msgid="5529147543651181991">"\'సమీపంలోని డివైజ్‌లు\'"</string>
     <string name="permgroupdesc_nearby_devices" msgid="3213561597116913508">"సమీప పరికరాలను కనుగొనండి అలాగే కనెక్ట్ చేయండి"</string>
     <string name="permgrouplab_calllog" msgid="7926834372073550288">"కాల్ లాగ్స్‌"</string>
     <string name="permgroupdesc_calllog" msgid="2026996642917801803">"ఫోన్ కాల్ లాగ్‌ని చదవండి మరియు రాయండి"</string>
@@ -1511,7 +1511,7 @@
     <string name="select_keyboard_layout_notification_message" msgid="8835158247369158154">"భాషను, లేఅవుట్‌ను ఎంచుకోవడానికి ట్యాప్ చేయండి"</string>
     <string name="fast_scroll_alphabet" msgid="8854435958703888376">" ABCDEFGHIJKLMNOPQRSTUVWXYZ"</string>
     <string name="fast_scroll_numeric_alphabet" msgid="2529539945421557329">" 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"</string>
-    <string name="alert_windows_notification_channel_group_name" msgid="6063891141815714246">"ఇతర యాప్‌ల ఎగువన ప్రదర్శన"</string>
+    <string name="alert_windows_notification_channel_group_name" msgid="6063891141815714246">"ఇతర యాప్‌ల పైన డిస్‌ప్లే"</string>
     <string name="alert_windows_notification_channel_name" msgid="3437528564303192620">"<xliff:g id="NAME">%s</xliff:g> ఇతర యాప్‌లలో చూపబడుతోంది"</string>
     <string name="alert_windows_notification_title" msgid="6331662751095228536">"<xliff:g id="NAME">%s</xliff:g> ఇతర యాప్‌లలో చూపబడుతోంది"</string>
     <string name="alert_windows_notification_message" msgid="6538171456970725333">"<xliff:g id="NAME">%s</xliff:g> ఈ లక్షణాన్ని ఉపయోగించకూడదు అని మీరు అనుకుంటే, సెట్టింగ్‌లను తెరవడానికి ట్యాప్ చేసి, దీన్ని ఆఫ్ చేయండి."</string>
@@ -2114,50 +2114,29 @@
     <string name="app_lock_add_screen_lock_button_text" msgid="9209013414563206600">"స్క్రీన్ లాక్‌ను జోడించండి"</string>
     <string name="app_lock_add_screen_lock_message" msgid="6107009360675769892">"మీ స్క్రీన్ లాక్ PIN, ఆకృతి లేదా పాస్‌వర్డ్ కావచ్చు. మీ డివైజ్‌ను అన్‌లాక్ చేయడానికి, లాక్ చేసిన యాప్‌లను యాక్సెస్ చేయడానికి మీరు దీన్ని ఉపయోగిస్తారు."</string>
     <string name="app_lock_add_screen_lock_title" msgid="6905612843620128689">"ముందుగా, స్క్రీన్ లాక్‌ను జోడించండి"</string>
-    <!-- no translation found for enable_app_lock_success_toast_message (3339622779190529987) -->
-    <skip />
-    <!-- no translation found for enable_app_lock_failure_toast_message (1055838896510445566) -->
-    <skip />
-    <!-- no translation found for disable_app_lock_success_toast_message (70733620589071266) -->
-    <skip />
+    <string name="enable_app_lock_success_toast_message" msgid="3339622779190529987">"<xliff:g id="APP_NAME">%1$s</xliff:g> లాక్ చేయబడింది"</string>
+    <string name="enable_app_lock_failure_toast_message" msgid="1055838896510445566">"<xliff:g id="APP_NAME">%1$s</xliff:g>‌ను లాక్ చేయడం సాధ్యపడదు"</string>
+    <string name="disable_app_lock_success_toast_message" msgid="70733620589071266">"<xliff:g id="APP_NAME">%1$s</xliff:g> నుండి యాప్ లాక్ తీసివేయబడింది"</string>
     <string name="locked_app_biometric_prompt_description" msgid="6853122652400451464">"<xliff:g id="APP_NAME">%1$s</xliff:g> లాక్ అయ్యింది"</string>
     <string name="locked_app_external_display_message" msgid="5483884799685545338">"ఈ డిస్‌ప్లేలో యాప్‌ను యాక్సెస్ చేయడానికి, ముందుగా మీ ఇతర డివైజ్‌లో అది మీరేనని వెరిఫై చేయండి"</string>
-    <!-- no translation found for app_lock_edu_dialog_enable_app_lock_title (283314042336592322) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_description (8176807243219769518) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_description_template (8563718120753342530) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_description_template_no_biometrics (7122017109150633691) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_info_header (5876120209204270990) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_info_notifications (1124438392204873305) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_info_widgets (8809009414650740872) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_button_lock (3914687128135704801) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_face (1348151645996748654) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_fingerprint (5206107469561561455) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_fingerprint_and_face (7895807411323811641) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_lockscreen_password_name (8487096457702445059) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_lockscreen_pattern_name (991436996281983547) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_lockscreen_pin_name (6458607126966304795) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_dialog_title (5030286398974840579) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_dialog_sub_title (310758587817184145) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_expand_app_list_button (3214809707125223273) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_continue_button (4045066724173414043) -->
-    <skip />
+    <string name="app_lock_edu_dialog_enable_app_lock_title" msgid="283314042336592322">"<xliff:g id="APP_NAME">%1$s</xliff:g>‌కు యాప్ లాక్‌ను జోడించాలా?"</string>
+    <string name="app_lock_edu_dialog_description" msgid="8176807243219769518">"మీ సెక్యూరిటీ కోసం, వేలిముద్ర, ఫేస్ అన్‌లాక్ లేదా మీ PINతో, మీరు మాత్రమే ఈ యాప్‌ను యాక్సెస్ చేయగలరు"</string>
+    <string name="app_lock_edu_dialog_description_template" msgid="8563718120753342530">"మీ సెక్యూరిటీ కోసం, %1$s లేదా మీ %2$sతో, మీరు మాత్రమే ఈ యాప్‌ను యాక్సెస్ చేయగలరు"</string>
+    <string name="app_lock_edu_dialog_description_template_no_biometrics" msgid="7122017109150633691">"మీ సెక్యూరిటీ కోసం, మీ %1$sతో మీరు మాత్రమే ఈ యాప్‌ను యాక్సెస్ చేయగలరు"</string>
+    <string name="app_lock_edu_dialog_info_header" msgid="5876120209204270990">"యాప్ లాక్‌తో"</string>
+    <string name="app_lock_edu_dialog_info_notifications" msgid="1124438392204873305">"నోటిఫికేషన్ కంటెంట్ దాచబడుతుంది"</string>
+    <string name="app_lock_edu_dialog_info_widgets" msgid="8809009414650740872">"విడ్జెట్‌లు, షార్ట్‌కట్‌లు తీసివేయబడతాయి"</string>
+    <string name="app_lock_edu_dialog_button_lock" msgid="3914687128135704801">"యాప్ లాక్ జోడించండి"</string>
+    <string name="app_lock_edu_dialog_biometric_description_has_face" msgid="1348151645996748654">"ఫేస్ అన్‌లాక్"</string>
+    <string name="app_lock_edu_dialog_biometric_description_has_fingerprint" msgid="5206107469561561455">"వేలిముద్ర అన్‌లాక్"</string>
+    <string name="app_lock_edu_dialog_biometric_description_has_fingerprint_and_face" msgid="7895807411323811641">"వేలిముద్ర లేదా ఫేస్ అన్‌లాక్"</string>
+    <string name="app_lock_edu_dialog_lockscreen_password_name" msgid="8487096457702445059">"పాస్‌వర్డ్"</string>
+    <string name="app_lock_edu_dialog_lockscreen_pattern_name" msgid="991436996281983547">"ఆకృతి"</string>
+    <string name="app_lock_edu_dialog_lockscreen_pin_name" msgid="6458607126966304795">"PIN"</string>
+    <string name="app_lock_permission_review_dialog_title" msgid="5030286398974840579">"మీ ఫోటోలు ఇప్పటికీ ఇతర యాప్‌లలో చూపబడవచ్చు"</string>
+    <string name="app_lock_permission_review_dialog_sub_title" msgid="310758587817184145">"మీ ఫోటోలకు యాక్సెస్ ఉన్న యాప్‌లు"</string>
+    <string name="app_lock_permission_review_expand_app_list_button" msgid="3214809707125223273">"అన్నింటినీ చూడండి"</string>
+    <string name="app_lock_permission_review_continue_button" msgid="4045066724173414043">"కొనసాగించండి"</string>
     <string name="work_mode_off_title" msgid="6367463960165135829">"వర్క్ యాప్స్ అన్‌పాజ్ చేయాలా?"</string>
     <string name="work_mode_turn_on" msgid="5316648862401307800">"అన్‌పాజ్ చేయండి"</string>
     <string name="work_mode_emergency_call_button" msgid="6818855962881612322">"ఎమర్జెన్సీ"</string>

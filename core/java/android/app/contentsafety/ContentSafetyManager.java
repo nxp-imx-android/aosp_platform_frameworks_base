@@ -394,23 +394,6 @@ public final class ContentSafetyManager {
     }
 
     /**
-     * Synchronous call to get the supported input types that can be provided to the
-     * API {@link ContentSafetyManager#checkContent}.
-     *
-     * @param featureType returning a list of the supported file types for the provided feature
-     *                   type
-     */
-    @RequiresPermission(Manifest.permission.CHECK_CONTENT_SAFETY)
-    public @NonNull SupportedTypesResult getSupportedInputTypes(@FeatureType int featureType) {
-
-        try {
-            return mService.getSupportedInputTypes(featureType);
-        } catch (RemoteException e) {
-            throw e.rethrowFromSystemServer();
-        }
-    }
-
-    /**
      * ParcelFileDescriptors annotated with this type will be validated that they are
      * in-effect read-only when passed via Binder IPC for example
      *  {@link android.os.ParcelFileDescriptor#MODE_READ_ONLY}

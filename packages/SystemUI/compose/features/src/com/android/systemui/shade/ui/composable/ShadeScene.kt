@@ -30,7 +30,6 @@ import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -78,6 +77,7 @@ import com.android.compose.gesture.effect.rememberOffsetOverscrollEffect
 import com.android.compose.gesture.gesturesDisabled
 import com.android.compose.lifecycle.LaunchedEffectWithLifecycle
 import com.android.compose.modifiers.animateContentSizeNoClip
+import com.android.compose.modifiers.height
 import com.android.compose.modifiers.padding
 import com.android.compose.modifiers.thenIf
 import com.android.internal.jank.InteractionJankMonitor
@@ -272,7 +272,9 @@ private fun ContentScope.SingleShade(
             layoutState.isTransitioning(from = Scenes.Lockscreen, to = Scenes.Shade)
     val mediaInRow = viewModel.showMediaInRow
     val notificationStackPadding = dimensionResource(id = R.dimen.notification_side_paddings)
-    val navBarHeight = WindowInsets.systemBars.asPaddingValues().calculateBottomPadding()
+
+    val systemBarsPadding = WindowInsets.systemBars.asPaddingValues()
+    val navBarHeight = { systemBarsPadding.calculateBottomPadding() }
 
     val shadeHorizontalPadding =
         dimensionResource(id = R.dimen.notification_panel_margin_horizontal)
@@ -423,7 +425,7 @@ private fun ContentScope.SingleShade(
         Box(
             modifier =
                 Modifier.align(Alignment.BottomCenter)
-                    .height(navBarHeight)
+                    .height { navBarHeight().roundToPx() }
                     // Intercepts touches, prevents the scrollable container behind from scrolling.
                     .clickable(interactionSource = null, indication = null) { /* do nothing */ }
         )
@@ -626,7 +628,7 @@ private fun ContentScope.SplitShade(
                     viewModel = notificationsPlaceholderViewModel,
                     jankMonitor = jankMonitor,
                     stackTopPadding = notificationStackPadding,
-                    stackBottomPadding = notificationStackPadding,
+                    stackBottomPadding = { notificationStackPadding },
                     shouldFillMaxHeight = true,
                     shouldPunchHoleBehindScrim = false,
                     isTransparencyEnabled = viewModel.isTransparencyEnabled,

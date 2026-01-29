@@ -184,13 +184,17 @@
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"Partilhe a janela da app"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"Partilhe o separador"</string>
     <string name="screen_share_entire_screen_sharing_title" msgid="9093580141248337998">"Partilhe o ecrã inteiro"</string>
-    <!-- no translation found for screen_share_disclaimer_app_sharing (1839029004749224549) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer_tab_sharing (3811486274577713101) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer_full_screen_sharing (5173795016606926338) -->
-    <skip />
+    <string name="screen_share_disclaimer_app_sharing" msgid="1839029004749224549">"Quando está a partilhar uma app, tudo o que é mostrado ou reproduzido nessa app é visível para a app <xliff:g id="APP_NAME">%1$s</xliff:g>. Por isso, tenha cuidado com informações confidenciais."</string>
+    <string name="screen_share_disclaimer_tab_sharing" msgid="3811486274577713101">"Quando está a partilhar um separador, tudo o que estiver no separador é visível para a app <xliff:g id="APP_NAME">%1$s</xliff:g>. Por isso, tenha cuidado com informações confidenciais."</string>
+    <string name="screen_share_disclaimer_full_screen_sharing" msgid="5173795016606926338">"Quando está a partilhar o ecrã inteiro, tudo o que estiver no ecrã é visível para a app <xliff:g id="APP_NAME">%1$s</xliff:g>. Por isso, tenha cuidado com informações confidenciais."</string>
     <string name="screen_share_a11y_announcement" msgid="8938007210094494367">"Escolha o que partilhar. Selecione o separador, a app ou o ecrã inteiro. Em seguida, prima Partilhar."</string>
+    <string name="screen_share_cancel_announcement" msgid="5940879227647436383">"A iniciação da partilha de ecrã terminou. O ecrã não é partilhado com ninguém."</string>
+    <!-- no translation found for screen_share_a11y_sharing_app (3445421300603336524) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_sharing_tab (2963542572740628746) -->
+    <skip />
+    <!-- no translation found for screen_share_a11y_sharing_display (5919924998949424031) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Fazer captura de ecrã da janela"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Gravar janela"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Fazer captura de ecrã da área selecionada"</string>
@@ -1792,10 +1796,13 @@
     <string name="accessibility_close_overlay_action" msgid="3581095146209387670">"retroceder"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"preencher automaticamente"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"expandir"</string>
-    <string name="location_button_text_share_precise_location" msgid="5341882050169860712">"Partilhar localização exata"</string>
-    <string name="location_button_text_use_precise_location" msgid="3499475231656390476">"Usar localização exata"</string>
-    <string name="location_button_text_near_precise_location" msgid="3607275724182981412">"Perto da localização exata"</string>
     <string name="location_button_text_precise_location" msgid="4441259889842542799">"Localização exata"</string>
+    <string name="location_button_text_use_precise_location" msgid="3499475231656390476">"Usar localização exata"</string>
+    <string name="location_button_text_share_precise_location" msgid="5341882050169860712">"Partilhar localização exata"</string>
+    <!-- no translation found for location_button_text_near_my_precise_location (7590342799002942963) -->
+    <skip />
+    <!-- no translation found for location_button_text_near_your_precise_location (3792598666253599055) -->
+    <skip />
     <string name="privacy_chip_use_string" msgid="979159484631969073">"<xliff:g id="SENSOR">%1$s</xliff:g> em utilização"</string>
     <string name="privacy_chip_use_string_with_app" msgid="6807216002072346877">"<xliff:g id="SENSOR">%1$s</xliff:g> em utilização pela app <xliff:g id="APP">%2$s</xliff:g>"</string>
     <string name="privacy_chip_camera_and_mic_text" msgid="6254449489859255607">"Câmara e microfone"</string>
@@ -1819,10 +1826,16 @@
     <string name="av_camera_blur_light" msgid="5666055368940059418">"Claro"</string>
     <string name="av_camera_blur_full" msgid="3276351992811619332">"Completo"</string>
     <string name="av_camera_improve_lighting" msgid="1540549414296669133">"Melhorar iluminação"</string>
+    <string name="av_camera_face_retouch" msgid="45890971969486224">"Melhorar retrato"</string>
     <string name="av_camera_framing" msgid="5108462267843042492">"Enquadramento da câmara"</string>
     <string name="av_studio_mic" msgid="2614843492629357766">"Microfone de estúdio"</string>
     <string name="av_studio_look" msgid="621893522645557619">"Visual de estúdio"</string>
     <string name="av_studio_look_effects" msgid="4105109585851068415">"%d efeitos"</string>
     <string name="av_blur" msgid="405131343487260171">"Esbater"</string>
     <string name="av_live_captions" msgid="7819416886586903077">"Legendas instantâneas"</string>
+    <string name="accessibility_hearing_device_battery_level" msgid="1032601787487328432">"Bateria: %s"</string>
+    <string name="accessibility_hearing_device_left_right_battery_level" msgid="5327672450604052979">"Bateria do E: %1$s    Bateria do D: %2$s"</string>
+    <string name="accessibility_hearing_device_left_battery_level" msgid="327961080394238636">"Bateria do E: %1$s"</string>
+    <string name="accessibility_hearing_device_right_battery_level" msgid="7598843215226414563">"Bateria do D: %1$s"</string>
+    <string name="accessibility_hearing_device_notification_channel_name" msgid="7365020777623709400">"Estado do dispositivo auditivo"</string>
 </resources>

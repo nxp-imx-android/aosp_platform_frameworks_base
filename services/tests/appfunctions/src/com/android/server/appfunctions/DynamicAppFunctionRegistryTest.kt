@@ -24,35 +24,39 @@ import android.app.appfunctions.SafeOneTimeExecuteAppFunctionCallback
 import android.os.IBinder
 import android.os.ICancellationSignal
 import android.os.RemoteException
+import android.os.UserHandle
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.Assert.assertThrows
-import org.mockito.kotlin.any
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.whenever
-import org.mockito.kotlin.argumentCaptor
-import org.mockito.kotlin.doThrow
-import org.mockito.kotlin.verify
-import org.mockito.kotlin.eq
-import org.mockito.Mockito.anyInt
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+import org.junit.Assert.assertThrows
 import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.mockito.Mockito.anyInt
+import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.doThrow
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.times
-
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoInteractions
+import org.mockito.kotlin.verifyNoMoreInteractions
+import org.mockito.kotlin.whenever
 
 @RunWith(AndroidJUnit4::class)
 class DynamicAppFunctionRegistryTest {
     private lateinit var registry: DynamicAppFunctionRegistry
+    private lateinit var mockMetadataObserver: AppFunctionMetadataObserver
 
     @Before
     fun setUp() {
-        registry = DynamicAppFunctionRegistry()
+        mockMetadataObserver = mock<AppFunctionMetadataObserver>()
+        registry = DynamicAppFunctionRegistry(mockMetadataObserver, mock<UserHandle>())
     }
 
     @Test
@@ -170,9 +174,15 @@ class DynamicAppFunctionRegistryTest {
                     val functionName = "function_" + i + "_" + j
                     try {
                         registry.registerAppFunctions(TEST_PACKAGE, listOf(functionName), executor)
-                        assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, functionName)).isTrue()
-                        registry.unregisterAppFunctions(TEST_PACKAGE, listOf(functionName), executor)
-                        assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, functionName)).isFalse()
+                        assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, functionName))
+                            .isTrue()
+                        registry.unregisterAppFunctions(
+                            TEST_PACKAGE,
+                            listOf(functionName),
+                            executor,
+                        )
+                        assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, functionName))
+                            .isFalse()
                     } catch (e: Exception) {
                         // Fail the test if any exception occurs
                         throw e
@@ -198,6 +208,9 @@ class DynamicAppFunctionRegistryTest {
         assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION)).isTrue()
         deathRecipientCaptor.lastValue.binderDied(binder)
         assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION)).isFalse()
+
+        verify(mockMetadataObserver, times(1))
+            .onEnabledStateChanged(any(), eq(TEST_PACKAGE), eq(TEST_FUNCTION))
     }
 
     @Test
@@ -211,6 +224,12 @@ class DynamicAppFunctionRegistryTest {
         deathRecipientCaptor.lastValue.binderDied(binder)
         assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION)).isFalse()
         assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION2)).isFalse()
+
+        verify(mockMetadataObserver)
+            .onEnabledStateChanged(any(), eq(TEST_PACKAGE), eq(TEST_FUNCTION))
+        verify(mockMetadataObserver)
+            .onEnabledStateChanged(any(), eq(TEST_PACKAGE), eq(TEST_FUNCTION2))
+        verifyNoMoreInteractions(mockMetadataObserver)
     }
 
     @Test
@@ -224,6 +243,8 @@ class DynamicAppFunctionRegistryTest {
         verify(binder).linkToDeath(deathRecipientCaptor.capture(), anyInt())
         deathRecipientCaptor.lastValue.binderDied(binder)
         assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION)).isFalse()
+
+        verifyNoInteractions(mockMetadataObserver)
     }
 
     @Test
@@ -260,6 +281,12 @@ class DynamicAppFunctionRegistryTest {
 
         assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION)).isFalse()
         assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION2)).isFalse()
+
+        verify(mockMetadataObserver)
+            .onEnabledStateChanged(any(), eq(TEST_PACKAGE), eq(TEST_FUNCTION))
+        verify(mockMetadataObserver)
+            .onEnabledStateChanged(any(), eq(TEST_PACKAGE), eq(TEST_FUNCTION2))
+        verifyNoMoreInteractions(mockMetadataObserver)
     }
 
     @Test
@@ -275,7 +302,8 @@ class DynamicAppFunctionRegistryTest {
         val request = createMockExecutionRequest(TEST_PACKAGE, TEST_FUNCTION)
         val safeCallback = mock<SafeOneTimeExecuteAppFunctionCallback>()
         val executionCallback = mock<IExecuteAppFunctionCallback>()
-        whenever<IExecuteAppFunctionCallback>(safeCallback.wrapToExecutionCallback()).thenReturn(executionCallback)
+        whenever<IExecuteAppFunctionCallback>(safeCallback.wrapToExecutionCallback())
+            .thenReturn(executionCallback)
         val cancellationSignal = mock<ICancellationSignal>()
 
         registry.executeAppFunction(request, safeCallback, cancellationSignal)
@@ -343,7 +371,8 @@ class DynamicAppFunctionRegistryTest {
 
         val request = createMockExecutionRequest(TEST_PACKAGE, TEST_FUNCTION)
         val safeCallback = mock<SafeOneTimeExecuteAppFunctionCallback>()
-        whenever(safeCallback.wrapToExecutionCallback()).thenReturn(mock<IExecuteAppFunctionCallback>())
+        whenever(safeCallback.wrapToExecutionCallback())
+            .thenReturn(mock<IExecuteAppFunctionCallback>())
         whenever(safeCallback.attachOnDeathListener(binder)).doThrow(RemoteException("Binder died"))
         registry.executeAppFunction(request, safeCallback, mock<ICancellationSignal>())
 
@@ -360,9 +389,8 @@ class DynamicAppFunctionRegistryTest {
         registry.registerAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executor)
 
         val request = createMockExecutionRequest(TEST_PACKAGE, TEST_FUNCTION)
-        val safeCallback = SafeOneTimeExecuteAppFunctionCallback(
-            mock<IExecuteAppFunctionCallback>()
-        )
+        val safeCallback =
+            SafeOneTimeExecuteAppFunctionCallback(mock<IExecuteAppFunctionCallback>())
 
         registry.executeAppFunction(request, safeCallback, mock<ICancellationSignal>())
 
@@ -389,9 +417,8 @@ class DynamicAppFunctionRegistryTest {
         registry.registerAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executor)
 
         val request = createMockExecutionRequest(TEST_PACKAGE, TEST_FUNCTION)
-        val safeCallback = SafeOneTimeExecuteAppFunctionCallback(
-            mock<IExecuteAppFunctionCallback>()
-        )
+        val safeCallback =
+            SafeOneTimeExecuteAppFunctionCallback(mock<IExecuteAppFunctionCallback>())
 
         registry.executeAppFunction(request, safeCallback, mock<ICancellationSignal>())
 
@@ -419,7 +446,7 @@ class DynamicAppFunctionRegistryTest {
 
     private fun createMockExecutionRequest(
         packageName: String,
-        functionId: String
+        functionId: String,
     ): ExecuteAppFunctionRequest {
         val request = mock<ExecuteAppFunctionRequest>()
         whenever(request.functionIdentifier).doReturn(functionId)

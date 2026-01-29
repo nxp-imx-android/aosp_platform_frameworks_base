@@ -16,6 +16,7 @@
 
 package com.android.server.location.contexthub;
 
+import android.chre.flags.Flags;
 import android.hardware.contexthub.IEndpointCommunication;
 import android.hardware.contexthub.Message;
 import android.hardware.location.ContextHubTransaction;
@@ -44,6 +45,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiConsumer;
 
 /**
  * Manages transactions at the Context Hub Service.
@@ -150,6 +152,11 @@ import java.util.concurrent.atomic.AtomicInteger;
          * Context Hub.
          */
         boolean acceptTransaction(ContextHubServiceTransaction transaction);
+    }
+
+    /** An interface for sending a message through a session. */
+    /* package */ interface SessionMessageSender {
+        void sendMessage(int sessionId, Message message) throws RemoteException;
     }
 
     /* package */ ContextHubTransactionManager(
@@ -432,18 +439,25 @@ import java.util.concurrent.atomic.AtomicInteger;
     /**
      * Creates a transaction to send a message through a session.
      *
-     * @param hubInterface Interface for interacting with other endpoint hubs.
+     * @param messageSender The function to send the message to the endpoint. This function is
+     *     passed the session ID and the message.
      * @param sessionId The ID of the endpoint session the message should be sent through.
      * @param message The message to send.
      * @param transactionCallback The callback of the transactions.
      * @return The generated transaction.
      */
     /* package */ ContextHubServiceTransaction createSessionMessageTransaction(
-            IEndpointCommunication hubInterface,
+            SessionMessageSender messageSender,
             int sessionId,
             Message message,
             String packageName,
             IContextHubTransactionCallback transactionCallback) {
+        if (Flags.fmcqShareDataFlowMessageFix()
+                && ((message.flags & Message.FLAG_REQUIRES_DELIVERY_STATUS) == 0)) {
+            throw new IllegalArgumentException(
+                    "createSessionMessageTransaction called with a non-reliable message.");
+        }
+
         return new ContextHubServiceTransaction(
                 mNextAvailableId.getAndIncrement(),
                 ContextHubTransaction.TYPE_HUB_MESSAGE_REQUIRES_RESPONSE,
@@ -454,7 +468,7 @@ import java.util.concurrent.atomic.AtomicInteger;
             /* package */ int onTransact() {
                 try {
                     message.sequenceNumber = getMessageSequenceNumber();
-                    hubInterface.sendMessageToEndpoint(sessionId, message);
+                    messageSender.sendMessage(sessionId, message);
                     return ContextHubTransaction.RESULT_SUCCESS;
                 } catch (RemoteException e) {
                     Log.e(TAG, "RemoteException while trying to send a session message", e);

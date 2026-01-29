@@ -44,12 +44,12 @@ class FakeAccessibilityShortcutsRepository(
     @param:Main private val handler: Handler,
 ) : AccessibilityShortcutsRepository {
     companion object {
-        const val FAKE_COLOR_INVERSION_TARGET_NAME = "com.android.test/.FakeColorInversion"
-        const val FAKE_MAGNIFICATION_TARGET_NAME = "com.android.test/.FakeMagnification"
         const val FAKE_TALKBACK_TARGET_NAME = "com.android.test/.FakeTalkBack"
+        const val FAKE_MAGNIFICATION_TARGET_NAME = "com.android.test/.FakeMagnification"
         const val FAKE_SELECT_TO_SPEAK_TARGET_NAME = "com.android.test/.FakeSelectToSpeak"
         const val FAKE_VOICE_ACCESS_TARGET_NAME = "com.android.test/.FakeVoiceAccess"
         const val FAKE_UNTRUSTED_SERVICE_TARGET_NAME = "com.android.test/.FakeUntrustedService"
+        const val FAKE_HSU_EXCLUDED_TARGET_NAME = "com.android.test/.FakeHsuExcludedTarget"
     }
 
     private data class TargetInfo(
@@ -65,6 +65,7 @@ class FakeAccessibilityShortcutsRepository(
             TargetInfo(FAKE_SELECT_TO_SPEAK_TARGET_NAME, "Select to Speak", false),
             TargetInfo(FAKE_VOICE_ACCESS_TARGET_NAME, "Voice Access", true),
             TargetInfo(FAKE_UNTRUSTED_SERVICE_TARGET_NAME, "Untrusted Service", true),
+            TargetInfo(FAKE_HSU_EXCLUDED_TARGET_NAME, "HSU Excluded Service", true),
         )
 
     // Target names existing in the set means they are assigned to that shortcut type.
@@ -83,6 +84,8 @@ class FakeAccessibilityShortcutsRepository(
             KeyGestureEvent.KEY_GESTURE_TYPE_ACTIVATE_SELECT_TO_SPEAK to "Select to Speak",
             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS to "Voice Access",
         )
+
+    override val hsuExcludedTargets = listOf(FAKE_HSU_EXCLUDED_TARGET_NAME)
 
     var ttsPrompt: TtsPrompt? = null
     var ttsText: CharSequence = ""

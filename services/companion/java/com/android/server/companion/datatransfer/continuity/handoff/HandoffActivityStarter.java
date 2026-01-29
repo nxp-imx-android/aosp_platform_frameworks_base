@@ -22,6 +22,7 @@ import android.app.ActivityManager;
 import android.app.ActivityOptions;
 import android.app.HandoffActivityData;
 import android.content.ActivityNotFoundException;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -160,21 +161,23 @@ final class HandoffActivityStarter {
 
         Objects.requireNonNull(handoffActivityData);
 
+        ComponentName componentName = handoffActivityData.getComponentName();
+        if (componentName == null) {
+            Slog.w(TAG, "No component name specified.");
+            return null;
+        }
+
         // Check if the package is installed on this device.
         PackageManager packageManager = Objects.requireNonNull(context).getPackageManager();
         try {
-            packageManager.getActivityInfo(
-                    handoffActivityData.getComponentName(), PackageManager.MATCH_DEFAULT_ONLY);
+            packageManager.getActivityInfo(componentName, PackageManager.MATCH_DEFAULT_ONLY);
         } catch (PackageManager.NameNotFoundException e) {
-            Slog.w(
-                    TAG,
-                    "Package not installed on device: "
-                            + handoffActivityData.getComponentName().getPackageName());
+            Slog.w(TAG, "Package not installed on device: " + componentName.getPackageName());
             return null;
         }
 
         Intent intent = new Intent();
-        intent.setComponent(handoffActivityData.getComponentName());
+        intent.setComponent(componentName);
         intent.putExtras(new Bundle(handoffActivityData.getExtras()));
         return intent;
     }

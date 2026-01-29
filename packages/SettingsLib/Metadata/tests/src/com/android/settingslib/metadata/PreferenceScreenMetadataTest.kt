@@ -18,13 +18,10 @@ package com.android.settingslib.metadata
 
 import android.content.Context
 import android.os.Bundle
-import android.platform.test.annotations.DisableFlags
-import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.SetFlagsRule
 import androidx.fragment.app.Fragment
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.android.settingslib.catalyst.flags.Flags
 import com.android.settingslib.metadata.test.R
 import com.android.settingslib.metadata.PreferenceScreenMetadata.Companion.EXTRA_FRAGMENT_ARG_KEY
 import com.android.settingslib.metadata.PreferenceScreenMetadata.Companion.EXTRA_SCREEN_ARGS
@@ -38,6 +35,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import org.junit.After
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -48,6 +47,24 @@ class PreferenceScreenMetadataTest {
     val mSetFlagsRule = SetFlagsRule()
 
     private val context: Context = ApplicationProvider.getApplicationContext()
+
+    private lateinit var originalProvider: CatalystFlagProvider
+
+    @Before
+    fun setUp() {
+        originalProvider = CatalystFlagProviderFactory.getInstance()
+    }
+
+    @After
+    fun tearDown() {
+        CatalystFlagProviderFactory.setProvider(originalProvider)
+    }
+
+    private fun setCatalystUseKeyParameters(value: Boolean) {
+        CatalystFlagProviderFactory.setProvider(object : CatalystFlagProvider {
+            override fun catalystUseKeyParameters() = value
+        })
+    }
 
     @Test
     fun isContainer_isEntryPoint() {
@@ -77,8 +94,8 @@ class PreferenceScreenMetadataTest {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_CATALYST_USE_KEY_PARAMETERS)
     fun isContainer_isEntryPoint_parameterizedScreen_flagDisabled() {
+        setCatalystUseKeyParameters(false)
         val innerScreen =
             object : Screen("Screen2", 0.toArgument()) {
                 override val bindingKey
@@ -122,8 +139,8 @@ class PreferenceScreenMetadataTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_CATALYST_USE_KEY_PARAMETERS)
     fun isContainer_isEntryPoint_parameterizedScreen_flagEnabled() {
+        setCatalystUseKeyParameters(true)
         val schema = KeyParametersSchema { parameter("id", R.string.required_param_purpose) }
         val keyParams = schema.prepare("id" to "0")
         val innerScreen =

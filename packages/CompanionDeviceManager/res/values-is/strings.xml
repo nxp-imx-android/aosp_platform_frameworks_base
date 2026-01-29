@@ -68,8 +68,7 @@
     <string name="permission_media_routing_control" msgid="5498639511586715253">"Breyta margmiðlunarúttaki"</string>
     <string name="permission_storage" msgid="6831099350839392343">"Myndir og efni"</string>
     <string name="permission_notifications" msgid="4099418516590632909">"Tilkynningar"</string>
-    <!-- no translation found for permission_app_streaming (4488910074894929222) -->
-    <skip />
+    <string name="permission_app_streaming" msgid="4488910074894929222">"Spegla skjá og streyma forrit"</string>
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"Streyma gögnum í <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"Spegla skjáinn"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"Streyma forrit"</string>
@@ -84,11 +83,9 @@
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"Finna, tengjast og áætla staðsetningu nálægra tækja"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"Lesa allar tilkynningar, þar á meðal upplýsingar á borð við tengiliði, skilaboð og myndir"</string>
     <string name="permission_notifications_summary" msgid="6819393427371255636">"• Lesa allar tilkynningar, þ.m.t. upplýsingar um tengiliði, skilaboð og myndir&lt;br/&gt;• Senda þér tilkynningar&lt;br/&gt;&lt;br/&gt;Þú getur stjórnað getu forritsins til að lesa og senda tilkynningar hvenær sem er með því að fara í „Stillingar &gt; Tilkynningar“."</string>
-    <!-- no translation found for permission_storage_summary (3779040306012319942) -->
-    <skip />
+    <string name="permission_storage_summary" msgid="3779040306012319942">"Deildu myndum og margmiðlunarefni símans með öðrum tækjum."</string>
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"Senda þér tilkynningar"</string>
-    <!-- no translation found for permission_app_streaming_summary (4114223538437344105) -->
-    <skip />
+    <string name="permission_app_streaming_summary" msgid="4114223538437344105">"Deildu skjá símans, þar á meðal forritum, með tækjunum þínum. Tækin þín fá aðgang að öllu sem er sýnilegt í símanum þínum, þ.m.t. hljóði, myndum, greiðsluupplýsingum, aðgangsorðum og skilaboðum, jafnvel þótt síminn sé læstur.&lt;br/&gt;&lt;br/&gt;Veittu símanum þínum aðgang að hljóðnema-, myndavélar- og öðrum skynjaragögnum úr tækjunum þínum, þ.m.t. gagnvirkni á borð við snertihreyfingar og músarsmelli."</string>
     <string name="permission_create_virtual_device_summary" msgid="3570256456647725172">"Streymdu hljóðnema- og myndavélargögnum og öðrum skynjaragögnum úr &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; í <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>."</string>
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"Taktu upp, varpaðu eða deildu skjánum á <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> með &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> fær aðgang að öllu sem er sýnilegt eða spilað í <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g>, þ.m.t. hljóði, myndum, greiðsluupplýsingum, aðgangsorðum og skilaboðum."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"Streymdu forritunum í <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> í &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> fær aðgang að öllu sem er sýnilegt eða spilað í <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g>, þ.m.t. hljóði, myndum, greiðsluupplýsingum, aðgangsorðum og skilaboðum, jafnvel þegar <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> er læst(ur)."</string>

@@ -16,6 +16,6 @@
 
 package com.android.server.security.talisman;
 
-final class TrustConfigurationUnavailableException extends Exception {
+final class TrustConfigurationUnavailableException extends IllegalStateException {
     TrustConfigurationUnavailableException() {}
 }

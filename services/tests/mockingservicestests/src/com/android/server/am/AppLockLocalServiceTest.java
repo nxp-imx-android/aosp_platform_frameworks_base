@@ -134,8 +134,8 @@ public class AppLockLocalServiceTest {
     private final Context mContext = getInstrumentation().getTargetContext();
     private final TestPackageLockedStateListener mListener = new TestPackageLockedStateListener();
     private final List<UserInfo> mUserInfos = new ArrayList<>();
-    private final List<ApplicationInfo> mInstalledApplications1 = new ArrayList<>();
-    private final List<ApplicationInfo> mInstalledApplications2 = new ArrayList<>();
+    private final List<String> mInstalledPackagesWithAppLockEnabled1 = new ArrayList<>();
+    private final List<String> mInstalledPackagesWithAppLockEnabled2 = new ArrayList<>();
     private AppLockLocalService mAppLockLocalService;
     private TestHandler mTestHandler;
     private ActivityManagerService mAms;
@@ -213,13 +213,13 @@ public class AppLockLocalServiceTest {
         mUserInfos.add(TEST_USER_FULL_1);
         mUserInfos.add(TEST_USER_FULL_2);
         mUserInfos.add(TEST_USER_PROFILE_1);
-        mInstalledApplications1.add(createAppInfo(TEST_PACKAGE_1, /* appLockEnabled= */ true));
-        when(mPackageManagerInternal.getInstalledApplications(anyLong(), eq(TEST_USER_ID_1),
-                anyInt())).thenReturn(mInstalledApplications1);
-        mInstalledApplications2.add(createAppInfo(TEST_PACKAGE_1, /* appLockEnabled= */ true));
-        mInstalledApplications2.add(createAppInfo(TEST_PACKAGE_2, /* appLockEnabled= */ true));
-        when(mPackageManagerInternal.getInstalledApplications(anyLong(), eq(TEST_USER_ID_2),
-                anyInt())).thenReturn(mInstalledApplications2);
+        mInstalledPackagesWithAppLockEnabled1.add(TEST_PACKAGE_1);
+        when(mPackageManagerInternal.getAppLockEnabledPackagesForUser(
+                eq(TEST_USER_ID_1))).thenReturn(mInstalledPackagesWithAppLockEnabled1);
+        mInstalledPackagesWithAppLockEnabled2.add(TEST_PACKAGE_1);
+        mInstalledPackagesWithAppLockEnabled2.add(TEST_PACKAGE_2);
+        when(mPackageManagerInternal.getAppLockEnabledPackagesForUser(
+                eq(TEST_USER_ID_2))).thenReturn(mInstalledPackagesWithAppLockEnabled2);
         when(mUserManagerInternal.getUsers(
                 eq(UserManagerInternal.USER_FILTER_WITH_ALL_COMPLETE_USERS))).thenReturn(
                 mUserInfos);

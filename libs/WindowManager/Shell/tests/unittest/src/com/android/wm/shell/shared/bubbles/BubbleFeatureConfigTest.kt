@@ -1,0 +1,66 @@
+/*
+ * Copyright (C) 2026 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.android.wm.shell.shared.bubbles
+
+import android.app.ActivityManager
+import android.content.Context
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
+import android.testing.AndroidTestingRunner
+import androidx.test.filters.SmallTest
+import com.android.wm.shell.Flags
+import com.android.wm.shell.ShellTestCase
+import com.google.common.truth.Truth.assertThat
+import kotlin.test.Test
+import org.junit.Before
+import org.junit.runner.RunWith
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
+
+@SmallTest
+@RunWith(AndroidTestingRunner::class)
+class BubbleFeatureConfigTest : ShellTestCase() {
+
+    private val context = mock<Context>()
+    private val activityManager = mock<ActivityManager>()
+
+    @Before
+    fun setup() {
+        whenever(context.getSystemService(Context.ACTIVITY_SERVICE)).thenReturn(activityManager)
+    }
+
+    @EnableFlags(Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE)
+    @Test
+    fun areAppBubblesSupported_lowRam() {
+        whenever(activityManager.isLowRamDevice).thenReturn(true)
+        assertThat(BubbleFeatureConfig.areAppBubblesSupported(context)).isFalse()
+    }
+
+    @DisableFlags(Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE)
+    @Test
+    fun areAppBubblesSupported_noFlag() {
+        whenever(activityManager.isLowRamDevice).thenReturn(false)
+        assertThat(BubbleFeatureConfig.areAppBubblesSupported(context)).isFalse()
+    }
+
+    @EnableFlags(Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE)
+    @Test
+    fun areAppBubblesSupported() {
+        whenever(activityManager.isLowRamDevice).thenReturn(false)
+        assertThat(BubbleFeatureConfig.areAppBubblesSupported(context)).isTrue()
+    }
+}

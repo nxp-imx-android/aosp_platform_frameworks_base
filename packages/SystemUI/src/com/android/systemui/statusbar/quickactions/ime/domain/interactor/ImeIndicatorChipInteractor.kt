@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.quickactions.ime.domain.interactor
 
+import android.view.inputmethod.InputMethodManager
 import com.android.systemui.Flags
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
@@ -68,8 +69,9 @@ constructor(
     fun showInputMethodPicker(displayId: Int) {
         scope.launch {
             inputMethodRepository.showInputMethodPicker(
-                displayId = displayId,
                 showAuxiliarySubtypes = true,
+                entryPoint = InputMethodManager.IM_PICKER_ENTRY_POINT_STATUS_BAR_CHIP,
+                displayId = displayId,
             )
         }
     }

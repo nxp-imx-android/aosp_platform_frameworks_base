@@ -21,6 +21,7 @@ import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
+import android.annotation.SdkConstant;
 import android.annotation.SystemApi;
 import android.app.Flags;
 import android.app.Service;
@@ -69,6 +70,14 @@ public abstract class MotionCuesService extends Service {
     @SystemApi
     @FlaggedApi(Flags.FLAG_ENABLE_MOTION_CUES)
     public static final String EXTRA_API_CALLBACK = "android.app.motioncues.extra.API_CALLBACK";
+
+    /**
+     * The Intent action must be provided when binding to this service.
+     * This is used by the system to properly bind to the service and to
+     * verify that the service is a valid MotionCuesService.
+     */
+    @SdkConstant(SdkConstant.SdkConstantType.SERVICE_ACTION)
+    public static final String SERVICE_INTERFACE = "android.app.motioncues.MotionCuesService";
 
     private IMotionCuesCallback mCallback;
     private final IBinder mBinder = new Binder();

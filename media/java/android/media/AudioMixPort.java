@@ -40,8 +40,15 @@ public class AudioMixPort extends AudioPort {
     AudioMixPort(AudioHandle handle, int ioHandle, int role, String deviceName,
             int[] samplingRates, int[] channelMasks, int[] channelIndexMasks,
             int[] formats, AudioGain[] gains) {
-        super(handle, role, deviceName, samplingRates, channelMasks, channelIndexMasks,
+        this(handle, ioHandle, role, deviceName, samplingRates,
+                new AudioFormat.ChannelMasksArray(channelMasks, channelIndexMasks),
                 formats, gains);
+    }
+
+    AudioMixPort(AudioHandle handle, int ioHandle, int role, String deviceName,
+            int[] samplingRates, AudioFormat.ChannelMasksArray channelMasks,
+            int[] formats, AudioGain[] gains) {
+        super(handle, role, deviceName, samplingRates, channelMasks, formats, gains);
         mIoHandle = ioHandle;
     }
 

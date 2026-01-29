@@ -201,6 +201,14 @@ public final class TrustTokenDatabaseTest {
                         .build();
         mDatabase.updateTrustConfiguration(config);
         assertThat(mDatabase.getTrustConfiguration()).isEqualTo(config);
+        var otherConfig =
+                new TrustConfiguration.Builder()
+                        .addRootKey("some-other-key".getBytes())
+                        .addIntermediateCertificate("some-other-cert".getBytes())
+                        .setUpdatedAt(Instant.ofEpochMilli(23334))
+                        .build();
+        mDatabase.updateTrustConfiguration(otherConfig);
+        assertThat(mDatabase.getTrustConfiguration()).isEqualTo(otherConfig);
     }
 
     private TrustTokenKey buildKey(String publicKey, String privateKey) {

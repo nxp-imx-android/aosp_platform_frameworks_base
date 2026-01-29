@@ -31,8 +31,6 @@ import android.annotation.SystemApi;
 import android.annotation.TestApi;
 import android.app.Service;
 import android.app.contentsafety.ContentSafetyManager;
-import android.app.contentsafety.ContentSafetyManager.FeatureType;
-import android.app.contentsafety.SupportedTypesResult;
 import android.content.Intent;
 import android.os.CancellationSignal;
 import android.os.Handler;
@@ -50,9 +48,7 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * Abstract class for performing content safety checks. Basically implements the function
- * {@link ContentSafetyService#onGetSupportedInputTypes} which maps to the API function
- * {@link ContentSafetyManager#getSupportedInputTypes}. Also, this class should implement
+ * Abstract class for performing content safety checks. Basically implements
  * {@link ContentSafetyService#onGetFeature} that should be called internally by the system service
  * before calling the remote API {@link ContentSafetySandboxedService#onCheckContent}.
  *
@@ -128,12 +124,6 @@ public abstract class ContentSafetyService extends Service {
                                     featureType,
                                     CancellationSignal.fromTransport(transport),
                                     wrapGetFeatureCallback(callback)));
-                }
-
-                @Override
-                @RequiresPermission(android.Manifest.permission.CHECK_CONTENT_SAFETY)
-                public @NonNull SupportedTypesResult getSupportedInputTypes(int featureType) {
-                    return onGetSupportedInputTypes(featureType);
                 }
 
                 @Override
@@ -253,9 +243,4 @@ public abstract class ContentSafetyService extends Service {
     /** Invoked when an instance of the remote settings service is disconnected. */
     public abstract void onNotifySettingsServiceDisconnected();
 
-    /** Provide a list of the supported file types that can be used as input to the
-     * {@link ContentSafetyManager#checkContent} API
-     */
-    public abstract @NonNull SupportedTypesResult onGetSupportedInputTypes(
-            @FeatureType int featureType);
 }

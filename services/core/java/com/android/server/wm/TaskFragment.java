@@ -1806,36 +1806,15 @@ class TaskFragment extends WindowContainer<WindowContainer> {
         mAtmService.updateCpuStats();
 
         boolean pauseImmediately = false;
-        boolean shouldAutoPip = false;
-        if (resuming != null) {
-            // We do not want to trigger auto-PiP upon launch of a translucent activity.
-            final boolean resumingOccludesParent = resuming.occludesParent();
-
-            if (ActivityTaskManagerService.isPip2ExperimentEnabled()) {
-                // If a new task is being launched, then mark the existing top activity as
-                // supporting picture-in-picture while pausing only if the starting activity
-                // would not be considered an overlay on top of the current activity
-                // (eg. not fullscreen, or the assistant)
-                Task.enableEnterPipOnTaskSwitch(prev, resuming.getTask(),
-                        resuming, resuming.getOptions());
-            }
-
-            // Resuming the new resume activity only if the previous activity can't go into Pip
-            // since we want to give Pip activities a chance to enter Pip before resuming the
-            // next activity.
-            final boolean lastResumedCanPip = prev.checkEnterPictureInPictureState(
-                    "shouldAutoPipWhilePausing", userLeaving);
-            if (prev.supportsEnterPipOnTaskSwitch && userLeaving
-                    && resumingOccludesParent && lastResumedCanPip
-                    && prev.pictureInPictureArgs.isAutoEnterEnabled()) {
-                shouldAutoPip = true;
-            } else if (!lastResumedCanPip) {
-                // If the flag RESUME_WHILE_PAUSING is set, then continue to schedule the previous
-                // activity to be paused.
-                pauseImmediately = (resuming.info.flags & FLAG_RESUME_WHILE_PAUSING) != 0;
-            } else {
-                // The previous activity may still enter PIP even though it did not allow auto-PIP.
-            }
+        final boolean shouldAutoPip = shouldAutoPip(resuming, prev, userLeaving);
+        final boolean lastResumedCanPip = prev.checkEnterPictureInPictureState(
+                "shouldAutoPipWhilePausing", userLeaving);
+        if (!shouldAutoPip && !lastResumedCanPip && resuming != null) {
+            // If the flag RESUME_WHILE_PAUSING is set, then continue to schedule the previous
+            // activity to be paused.
+            pauseImmediately = (resuming.info.flags & FLAG_RESUME_WHILE_PAUSING) != 0;
+        } else {
+            // The previous activity may still enter PIP even though it did not allow auto-PIP.
         }
 
         if (prev.attachedToProcess()) {
@@ -1903,6 +1882,33 @@ class TaskFragment extends WindowContainer<WindowContainer> {
             }
             return false;
         }
+    }
+
+    private boolean shouldAutoPip(@Nullable ActivityRecord resuming, @NonNull ActivityRecord prev,
+            boolean userLeaving) {
+        // We do not want to trigger auto-PiP upon launch of a translucent activity.
+        final boolean prevIsGettingOccluded = (resuming != null)
+                ? resuming.occludesParent()
+                : !this.shouldBeVisible(null /* starting */);
+
+        if (ActivityTaskManagerService.isPip2ExperimentEnabled() && resuming != null) {
+            // If a new task is being launched, then mark the existing top activity as
+            // supporting picture-in-picture while pausing only if the starting activity
+            // would not be considered an overlay on top of the current activity
+            // (eg. not fullscreen, or the assistant)
+            Task.enableEnterPipOnTaskSwitch(prev, resuming.getTask(),
+                    resuming, resuming.getOptions());
+        }
+
+        // Resuming the new resume activity only if the previous activity can't go into Pip
+        // since we want to give Pip activities a chance to enter Pip before resuming the
+        // next activity.
+        final boolean lastResumedCanPip = prev.checkEnterPictureInPictureState(
+                "shouldAutoPipWhilePausing", userLeaving);
+
+        return prev.supportsEnterPipOnTaskSwitch && userLeaving
+                && prevIsGettingOccluded && lastResumedCanPip
+                && prev.pictureInPictureArgs.isAutoEnterEnabled();
     }
 
     void schedulePauseActivity(ActivityRecord prev, boolean userLeaving,

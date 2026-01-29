@@ -84,3 +84,5 @@ var Kosmos.shadeController: ShadeController by
             shadeControllerImpl
         }
     }
+
+val Kosmos.fakeShadeController: ShadeController by Kosmos.Fixture { mock() }

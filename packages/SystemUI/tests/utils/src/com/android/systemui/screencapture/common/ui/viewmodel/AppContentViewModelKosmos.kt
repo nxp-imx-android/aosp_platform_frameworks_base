@@ -16,6 +16,7 @@
 
 package com.android.systemui.screencapture.common.ui.viewmodel
 
+import android.content.applicationContext
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.screencapture.common.domain.model.ScreenCaptureAppContent
 
@@ -23,6 +24,6 @@ var Kosmos.appContentViewModelFactory: AppContentViewModel.Factory by
     Kosmos.Fixture {
         object : AppContentViewModel.Factory {
             override fun create(model: ScreenCaptureAppContent): AppContentViewModel =
-                AppContentViewModel(model)
+                AppContentViewModel(model, applicationContext)
         }
     }

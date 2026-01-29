@@ -18,7 +18,9 @@ package com.android.server.usb;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.SuppressLint;
 import android.app.PendingIntent;
+import android.app.admin.DevicePolicyManager;
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Context;
@@ -55,6 +57,7 @@ import com.android.internal.util.dump.DualDumpOutputStream;
 import com.android.modules.utils.TypedXmlPullParser;
 import com.android.modules.utils.TypedXmlSerializer;
 import com.android.server.LocalServices;
+import com.android.server.usb.flags.Flags;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -115,6 +118,7 @@ class UsbUserPermissionManager {
     private final Context mContext;
     private final UserHandle mUser;
     private final UsbUserSettingsManager mUsbUserSettingsManager;
+    private final DevicePolicyManager mDevicePolicyManager;
     private final boolean mDisablePermissionDialogs;
 
     private final @NonNull AtomicFile mPermissionsFile;
@@ -150,6 +154,7 @@ class UsbUserPermissionManager {
         mContext = context;
         mUser = context.getUser();
         mUsbUserSettingsManager = usbUserSettingsManager;
+        mDevicePolicyManager = LocalServices.getService(DevicePolicyManager.class);
         mSensorPrivacyMgrInternal = LocalServices.getService(SensorPrivacyManagerInternal.class);
         mDisablePermissionDialogs = context.getResources().getBoolean(
                 com.android.internal.R.bool.config_disableUsbPermissionDialogs);
@@ -391,15 +396,29 @@ class UsbUserPermissionManager {
      * @param uid to check permission for
      * @return {@code true} if package with uid has permission
      */
+    @SuppressLint("AndroidFrameworkRequiresPermission")
     boolean hasPermission(@NonNull UsbDevice device, UsbDeviceFingerprint fingerprint,
             @NonNull String packageName, int pid, int uid) {
         if (device.getHasVideoCapture()) {
             boolean isCameraPrivacyEnabled = mSensorPrivacyMgrInternal.isSensorPrivacyEnabled(
                     UserHandle.getUserId(uid), Sensors.CAMERA);
+
+            boolean isCameraDisabled = false;
+            if (Flags.enableCameraPolicyCheck()) {
+                try {
+                    isCameraDisabled = mDevicePolicyManager.getCameraDisabled(null);
+                } catch (Exception e) {
+                    Slog.e(TAG, "Failed to check camera disabled policy", e);
+                }
+            }
+
             if (DEBUG) {
                 Slog.d(TAG, "isCameraPrivacyEnabled: " + isCameraPrivacyEnabled);
+                Slog.d(TAG, "isCameraDisabled: " + isCameraDisabled);
             }
-            if (isCameraPrivacyEnabled || !isCameraPermissionGranted(packageName, pid, uid)) {
+
+            if (isCameraPrivacyEnabled || isCameraDisabled
+                    || !isCameraPermissionGranted(packageName, pid, uid)) {
                 return false;
             }
         }

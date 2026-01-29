@@ -2114,50 +2114,29 @@
     <string name="app_lock_add_screen_lock_button_text" msgid="9209013414563206600">"ಸ್ಕ್ರೀನ್ ಲಾಕ್ ಅನ್ನು ಸೇರಿಸಿ"</string>
     <string name="app_lock_add_screen_lock_message" msgid="6107009360675769892">"ನೀವು ನಿಮ್ಮ ಸ್ಕ್ರೀನ್ ಲಾಕ್ ಆಗಿ ಪಿನ್, ಪ್ಯಾಟರ್ನ್ ಅಥವಾ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಆಯ್ಕೆಮಾಡಬಹುದು. ನಿಮ್ಮ ಸಾಧನವನ್ನು ಅನ್‌ಲಾಕ್ ಮಾಡಲು ಮತ್ತು ಲಾಕ್ ಮಾಡಲಾದ ಆ್ಯಪ್‌ಗಳನ್ನು ಆ್ಯಕ್ಸೆಸ್ ಮಾಡಲು ನೀವು ಇದನ್ನು ಬಳಸಬಹುದು."</string>
     <string name="app_lock_add_screen_lock_title" msgid="6905612843620128689">"ಮೊದಲು, ಸ್ಕ್ರೀನ್ ಲಾಕ್ ಅನ್ನು ಸೇರಿಸಿ"</string>
-    <!-- no translation found for enable_app_lock_success_toast_message (3339622779190529987) -->
-    <skip />
-    <!-- no translation found for enable_app_lock_failure_toast_message (1055838896510445566) -->
-    <skip />
-    <!-- no translation found for disable_app_lock_success_toast_message (70733620589071266) -->
-    <skip />
+    <string name="enable_app_lock_success_toast_message" msgid="3339622779190529987">"<xliff:g id="APP_NAME">%1$s</xliff:g> ಅನ್ನು ಲಾಕ್ ಮಾಡಲಾಗಿದೆ"</string>
+    <string name="enable_app_lock_failure_toast_message" msgid="1055838896510445566">"<xliff:g id="APP_NAME">%1$s</xliff:g> ಅನ್ನು ಲಾಕ್ ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ"</string>
+    <string name="disable_app_lock_success_toast_message" msgid="70733620589071266">"ಆ್ಯಪ್ ಲಾಕ್ ಅನ್ನು <xliff:g id="APP_NAME">%1$s</xliff:g> ನಿಂದ ತೆಗೆದುಹಾಕಲಾಗಿದೆ"</string>
     <string name="locked_app_biometric_prompt_description" msgid="6853122652400451464">"<xliff:g id="APP_NAME">%1$s</xliff:g> ಅನ್ನು ಲಾಕ್ ಮಾಡಲಾಗಿದೆ"</string>
     <string name="locked_app_external_display_message" msgid="5483884799685545338">"ಈ ಡಿಸ್‌ಪ್ಲೇಯಲ್ಲಿ ಆ್ಯಪ್ ಅನ್ನು ಆ್ಯಕ್ಸೆಸ್ ಮಾಡಲು, ಮೊದಲು ನಿಮ್ಮ ಇತರ ಸಾಧನದಲ್ಲಿ ಅದು ನೀವೇ ಎಂದು ದೃಢೀಕರಿಸಿ"</string>
-    <!-- no translation found for app_lock_edu_dialog_enable_app_lock_title (283314042336592322) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_description (8176807243219769518) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_description_template (8563718120753342530) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_description_template_no_biometrics (7122017109150633691) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_info_header (5876120209204270990) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_info_notifications (1124438392204873305) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_info_widgets (8809009414650740872) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_button_lock (3914687128135704801) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_face (1348151645996748654) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_fingerprint (5206107469561561455) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_fingerprint_and_face (7895807411323811641) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_lockscreen_password_name (8487096457702445059) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_lockscreen_pattern_name (991436996281983547) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_lockscreen_pin_name (6458607126966304795) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_dialog_title (5030286398974840579) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_dialog_sub_title (310758587817184145) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_expand_app_list_button (3214809707125223273) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_continue_button (4045066724173414043) -->
-    <skip />
+    <string name="app_lock_edu_dialog_enable_app_lock_title" msgid="283314042336592322">"<xliff:g id="APP_NAME">%1$s</xliff:g> ಗೆ ಆ್ಯಪ್ ಲಾಕ್ ಅನ್ನು ಸೇರಿಸಬೇಕೇ?"</string>
+    <string name="app_lock_edu_dialog_description" msgid="8176807243219769518">"ನಿಮ್ಮ ಭದ್ರತೆಗಾಗಿ, ಫಿಂಗರ್‌ಪ್ರಿಂಟ್ ಮತ್ತು ಫೇಸ್ ಅನ್‌ಲಾಕ್ ಅಥವಾ ನಿಮ್ಮ ಪಿನ್ ಮೂಲಕ ಮಾತ್ರ ನೀವು ಈ ಆ್ಯಪ್ ಅನ್ನು ಆ್ಯಕ್ಸೆಸ್ ಮಾಡಬಹುದು"</string>
+    <string name="app_lock_edu_dialog_description_template" msgid="8563718120753342530">"ನಿಮ್ಮ ಭದ್ರತೆಗಾಗಿ, %1$s ಅಥವಾ ನಿಮ್ಮ %2$s ಮೂಲಕ ನೀವು ಮಾತ್ರ ಈ ಆ್ಯಪ್ ಅನ್ನು ಆ್ಯಕ್ಸೆಸ್ ಮಾಡಬಹುದು"</string>
+    <string name="app_lock_edu_dialog_description_template_no_biometrics" msgid="7122017109150633691">"ನಿಮ್ಮ ಭದ್ರತೆಗಾಗಿ, ನಿಮ್ಮ %1$s ಮೂಲಕ ನೀವು ಮಾತ್ರ ಈ ಆ್ಯಪ್ ಅನ್ನು ಆ್ಯಕ್ಸೆಸ್ ಮಾಡಬಹುದು"</string>
+    <string name="app_lock_edu_dialog_info_header" msgid="5876120209204270990">"ಆ್ಯಪ್ ಲಾಕ್ ಮೂಲಕ"</string>
+    <string name="app_lock_edu_dialog_info_notifications" msgid="1124438392204873305">"ನೋಟಿಫಿಕೇಶನ್ ಕಂಟೆಂಟ್ ಅನ್ನು ಮರೆಮಾಡಲಾಗುತ್ತದೆ"</string>
+    <string name="app_lock_edu_dialog_info_widgets" msgid="8809009414650740872">"ವಿಜೆಟ್‌ಗಳು ಮತ್ತು ಶಾರ್ಟ್‌ಕಟ್‌ಗಳನ್ನು ತೆಗೆದುಹಾಕಲಾಗುತ್ತದೆ"</string>
+    <string name="app_lock_edu_dialog_button_lock" msgid="3914687128135704801">"ಆ್ಯಪ್ ಲಾಕ್ ಸೇರಿಸಿ"</string>
+    <string name="app_lock_edu_dialog_biometric_description_has_face" msgid="1348151645996748654">"ಫೇಸ್ ಅನ್‌ಲಾಕ್"</string>
+    <string name="app_lock_edu_dialog_biometric_description_has_fingerprint" msgid="5206107469561561455">"ಫಿಂಗರ್‌ಪ್ರಿಂಟ್ ಅನ್‌ಲಾಕ್"</string>
+    <string name="app_lock_edu_dialog_biometric_description_has_fingerprint_and_face" msgid="7895807411323811641">"ಫಿಂಗರ್‌ಪ್ರಿಂಟ್ ಅಥವಾ ಫೇಸ್ ಅನ್‌ಲಾಕ್"</string>
+    <string name="app_lock_edu_dialog_lockscreen_password_name" msgid="8487096457702445059">"ಪಾಸ್‌ವರ್ಡ್"</string>
+    <string name="app_lock_edu_dialog_lockscreen_pattern_name" msgid="991436996281983547">"ಪ್ಯಾಟರ್ನ್"</string>
+    <string name="app_lock_edu_dialog_lockscreen_pin_name" msgid="6458607126966304795">"ಪಿನ್"</string>
+    <string name="app_lock_permission_review_dialog_title" msgid="5030286398974840579">"ನಿಮ್ಮ ಫೋಟೋಗಳು ಇತರ ಆ್ಯಪ್‌ಗಳಲ್ಲಿ ಈಗಲೂ ಕಾಣಿಸಬಹುದು"</string>
+    <string name="app_lock_permission_review_dialog_sub_title" msgid="310758587817184145">"ನಿಮ್ಮ ಫೋಟೋಗಳಿಗೆ ಆ್ಯಕ್ಸೆಸ್ ಇರುವ ಆ್ಯಪ್‌ಗಳು"</string>
+    <string name="app_lock_permission_review_expand_app_list_button" msgid="3214809707125223273">"ಎಲ್ಲವನ್ನೂ ವೀಕ್ಷಿಸಿ"</string>
+    <string name="app_lock_permission_review_continue_button" msgid="4045066724173414043">"ಮುಂದುವರಿಸಿ"</string>
     <string name="work_mode_off_title" msgid="6367463960165135829">"ಕೆಲಸದ ಆ್ಯಪ್ ವಿರಾಮ ರದ್ದುಮಾಡಬೇಕೇ"</string>
     <string name="work_mode_turn_on" msgid="5316648862401307800">"ವಿರಾಮವನ್ನು ರದ್ದುಗೊಳಿಸಿ"</string>
     <string name="work_mode_emergency_call_button" msgid="6818855962881612322">"ತುರ್ತು"</string>

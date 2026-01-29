@@ -17,6 +17,7 @@
 package com.android.server.security.talisman;
 
 import android.annotation.IntDef;
+import android.annotation.NonNull;
 import android.security.talisman.TrustToken;
 import android.security.talisman.TrustTokenIdentitySet;
 
@@ -141,8 +142,12 @@ class TrustTokenSet {
      *
      * @return A {@link TrustToken} instance.
      */
+    @NonNull
     TrustToken asVerifiedDeviceToken() {
-        throw new UnsupportedOperationException("TODO");
+        if (getType() != TYPE_VERIFIED_DEVICE) {
+            throw new IllegalStateException("not a verified device token");
+        }
+        return new TrustToken(mTokenSet);
     }
 
     /**
@@ -152,28 +157,6 @@ class TrustTokenSet {
      * @return A {@link TrustTokenIdentitySet} instance.
      */
     TrustTokenIdentitySet asTrustTokenIdentitySet() {
-        throw new UnsupportedOperationException("TODO");
-    }
-
-    /**
-     * Creates a {@link TrustTokenSet} from a {@link TrustToken}. The type will be {@link
-     * #TYPE_VERIFIED_DEVICE}.
-     *
-     * @param token The {@link TrustToken} to convert.
-     * @return A new {@link TrustTokenSet}.
-     */
-    static TrustTokenSet fromVerifiedDeviceToken(TrustToken token) {
-        throw new UnsupportedOperationException("TODO");
-    }
-
-    /**
-     * Creates a {@link TrustTokenSet} from a {@link TrustTokenIdentitySet}. The type will be {@link
-     * #TYPE_VERIFIED_IDENTITIES}.
-     *
-     * @param identitySet The {@link TrustTokenIdentitySet} to convert.
-     * @return A new {@link TrustTokenSet}.
-     */
-    static TrustTokenSet fromTrustTokenIdentitySet(TrustTokenIdentitySet identitySet) {
         throw new UnsupportedOperationException("TODO");
     }
 

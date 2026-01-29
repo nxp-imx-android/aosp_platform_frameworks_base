@@ -201,4 +201,7 @@ interface ICompanionDeviceManager {
 
     @EnforcePermission("USE_COMPANION_TRANSPORTS")
     void setRequestActionAllowList(in List<String> allowList);
+
+    @EnforcePermission("MANAGE_COMPANION_DEVICES")
+    boolean isDevicePresent(in int associationId);
 }

@@ -64,6 +64,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
@@ -1001,7 +1002,11 @@ private fun ContentScope.Navigation(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = modifier,
             ) {
-                if (!isLeftActionVisible || viewModel.left is MediaSecondaryActionViewModel.None) {
+                if (viewModel.isScrubbing) {
+                    TimestampText(viewModel.progressText)
+                } else if (
+                    !isLeftActionVisible || viewModel.left is MediaSecondaryActionViewModel.None
+                ) {
                     Spacer(Modifier.size(width = 16.dp, height = 48.dp))
                 } else {
                     SecondaryAction(
@@ -1137,7 +1142,9 @@ private fun ContentScope.Navigation(
                     }
                 }
 
-                if (
+                if (viewModel.isScrubbing) {
+                    TimestampText(viewModel.durationText)
+                } else if (
                     !isRightActionVisible || viewModel.right is MediaSecondaryActionViewModel.None
                 ) {
                     Spacer(Modifier.size(width = 16.dp, height = 48.dp))
@@ -1695,6 +1702,19 @@ private fun SecondaryActionContent(
 
         is MediaSecondaryActionViewModel.None -> Unit
     }
+}
+
+@Composable
+private fun TimestampText(text: String) {
+    Text(
+        text = text,
+        modifier = Modifier.widthIn(min = 48.dp).padding(4.dp),
+        color = Color.White,
+        style = MaterialTheme.typography.labelMedium,
+        fontSize = 12.sp,
+        textAlign = TextAlign.Center,
+        maxLines = 1,
+    )
 }
 
 /**

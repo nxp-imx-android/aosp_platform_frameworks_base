@@ -28,6 +28,7 @@ class ProtoLogIssueRegistry : IssueRegistry() {
             ProtoLogFormatDetector.ISSUE_NON_CONSTANT_FORMAT,
             ProtoLogFormatDetector.ISSUE_ARG_COUNT,
             ProtoLogFormatDetector.ISSUE_ARG_TYPE,
+            ProtoLogFormatDetector.ISSUE_TOO_MANY_ARGS,
         )
 
     override val api

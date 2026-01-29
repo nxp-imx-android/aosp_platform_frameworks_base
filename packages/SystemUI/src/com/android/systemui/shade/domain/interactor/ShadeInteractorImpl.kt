@@ -16,6 +16,7 @@
 
 package com.android.systemui.shade.domain.interactor
 
+import android.util.Log
 import com.android.app.tracing.coroutines.flow.flowName
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
@@ -106,6 +107,10 @@ constructor(
             keyguardTransitionInteractor.isInTransition(Edge.create(to = KeyguardState.AOD)),
             keyguardRepository.dozeTransitionModel.map { it.to == DozeStateModel.DOZE_PULSING },
         ) { isAsleep, isTransitioningToAod, isPulsing ->
+            Log.d(
+                TAG,
+                "isShadeTouchable - isAsleep: $isAsleep, isTransitioningToAod: $isTransitioningToAod, isPulsing: $isPulsing",
+            )
             when {
                 // If the device is transitioning to AOD, only accept touches if still animating.
                 isTransitioningToAod -> dozeParams.shouldControlScreenOff()
@@ -131,4 +136,8 @@ constructor(
                 disableFlags.isQuickSettingsEnabled() &&
                 !isDozing
         }
+
+    companion object {
+        private const val TAG = "ShadeInteractorImpl"
+    }
 }

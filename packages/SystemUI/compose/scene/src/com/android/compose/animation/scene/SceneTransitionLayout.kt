@@ -226,8 +226,6 @@ interface BaseContentScope : ElementStateScope {
      * @see ElementWithValues
      * @see MovableElement
      */
-    // TODO(b/389985793): Does replacing this by Element have a noticeable impact on performance and
-    // should we deprecate it?
     @Stable fun Modifier.element(key: ElementKey): Modifier
 
     /**

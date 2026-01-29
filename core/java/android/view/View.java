@@ -23016,7 +23016,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
     }
 
     /**
-     * A listener that is notiied when certain View APIs are called from the wrong thread.
+     * A listener that is notified when certain View APIs are called from the wrong thread.
      *
      * <p>Example use case:
      * <pre><code>
@@ -23049,9 +23049,6 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
      * then an exception may not be thrown, subject to App Compatibility settings. Instead,
      * applications may be notified when a call to such an API is made from the wrong thread by
      * registering a {@link CalledFromWrongThreadListener} using this method.
-     *
-     * <p>Since {@link android.os.Build.VERSION_CODES#CINNAMON_BUN} this listener may be notified
-     * for calls to {@link #invalidate()} that are made on the wrong thread.
      *
      * @param listener The listener to register.
      *
@@ -31510,8 +31507,8 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
      * MotionEvent#AXIS_RELATIVE_X} and {@link MotionEvent#AXIS_RELATIVE_Y}. If the touchpad
      * supports them, touch dimension information may be available through the {@link
      * MotionEvent#AXIS_PRESSURE}, {@link MotionEvent#AXIS_TOUCH_MAJOR}, {@link
-     * MotionEvent#AXIS_TOUCH_MINOR}, {@link MotionEvent#AXIS_TOOL_MAJOR}, and {@link
-     * MotionEvent#AXIS_TOOL_MINOR} axes.
+     * MotionEvent#AXIS_TOUCH_MINOR}, {@link MotionEvent#AXIS_TOOL_MAJOR}, {@link
+     * MotionEvent#AXIS_TOOL_MINOR}, and {@link MotionEvent#AXIS_ORIENTATION} axes.
      * <p>
      * Events from mice are always reported in the same way regardless of capture mode.
      *

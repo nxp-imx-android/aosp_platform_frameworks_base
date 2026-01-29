@@ -91,7 +91,7 @@
     <string name="kg_primary_auth_duplicate_guess_password" msgid="3153406042812407458">"இந்தக் கடவுச்சொல்லை ஏற்கெனவே முயன்றுவிட்டீர்கள். வேறொன்றை முயலவும்."</string>
     <string name="kg_primary_auth_locked_out_pattern" msgid="8266214607346180952">"தவறான பேட்டர்ன் மூலம் பலமுறை முயன்றுவிட்டீர்கள்"</string>
     <string name="kg_primary_auth_locked_out_password" msgid="6170245108400198659">"தவறான கடவுச்சொல் மூலம் பலமுறை முயன்றுவிட்டீர்கள்"</string>
-    <string name="kg_primary_auth_locked_out_pin_shortlink" msgid="1294871994741389848">"தவறான பின் மூலம் பலமுறை முயன்றுவிட்டீர்கள்\n<xliff:g id="SHORTLINK">{shortlink}</xliff:g> இல் மேலும் அறிக"</string>
+    <string name="kg_primary_auth_locked_out_pin_shortlink" msgid="1294871994741389848">"தவறான பின் மூலம் பலமுறை முயன்றுவிட்டீர்கள்\n<xliff:g id="SHORTLINK">{shortlink}</xliff:g> பக்கத்தில் மேலும் அறிக"</string>
     <string name="kg_primary_auth_locked_out_pattern_shortlink" msgid="5998598232858156495">"தவறான பேட்டர்ன் மூலம் பலமுறை முயன்றுவிட்டீர்கள்\n<xliff:g id="SHORTLINK">{shortlink}</xliff:g> இல் மேலும் அறிக"</string>
     <string name="kg_primary_auth_locked_out_password_shortlink" msgid="7035847891707609104">"தவறான கடவுச்சொல் மூலம் பலமுறை முயன்றுவிட்டீர்கள்\n<xliff:g id="SHORTLINK">{shortlink}</xliff:g> இல் மேலும் அறிக"</string>
     <string name="kg_too_many_failed_attempts_countdown" msgid="2038195171919795529">"{count,plural, =1{# வினாடியில் மீண்டும் முயலவும்.}other{# வினாடிகளில் மீண்டும் முயலவும்.}}"</string>

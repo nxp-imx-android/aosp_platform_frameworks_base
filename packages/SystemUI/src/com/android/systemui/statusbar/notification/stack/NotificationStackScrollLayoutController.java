@@ -138,6 +138,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -197,6 +198,10 @@ public class NotificationStackScrollLayoutController implements Dumpable {
     private NotificationSwipeHelper mSwipeHelper;
     @Nullable
     private Boolean mHistoryEnabled;
+
+    /**
+     * Current status bar state
+     */
     private int mBarState;
     private HeadsUpAppearanceController mHeadsUpAppearanceController;
 
@@ -1485,7 +1490,7 @@ public class NotificationStackScrollLayoutController implements Dumpable {
      */
     public void setBlurRadius(float blurRadius) {
         if (blurRadius > 0.0f) {
-            debugLog(
+            debugLog(() ->
                     "Setting blur RenderEffect for NotificationStackScrollLayoutController with "
                             + "radius " + blurRadius);
             mView.setRenderEffect(RenderEffect.createBlurEffect(
@@ -1493,7 +1498,8 @@ public class NotificationStackScrollLayoutController implements Dumpable {
                     blurRadius,
                     Shader.TileMode.CLAMP));
         } else {
-            debugLog("Resetting blur RenderEffect for NotificationStackScrollLayoutController");
+            debugLog(() ->
+                    "Resetting blur RenderEffect for NotificationStackScrollLayoutController");
             mView.setRenderEffect(null);
         }
     }
@@ -2323,8 +2329,13 @@ public class NotificationStackScrollLayoutController implements Dumpable {
             }
         }
 
+        /**
+         * @return Whether the mLockscreenShadeTransitionController should handle the touch.
+         */
         private boolean shouldLockscreenExpandHandleTouch() {
-            return SceneContainerFlag.isEnabled() && mLongPressedView == null
+            return SceneContainerFlag.isEnabled()
+                    && isOnLockscreen()
+                    && mLongPressedView == null
                     && !mSwipeHelper.isSwiping();
         }
 
@@ -2334,9 +2345,14 @@ public class NotificationStackScrollLayoutController implements Dumpable {
         }
     }
 
-    private void debugLog(String msg) {
+    @VisibleForTesting
+    boolean isOnLockscreen() {
+        return mView.isOnLockscreen();
+    }
+
+    private void debugLog(@NonNull Supplier<String> msgSupplier) {
         if (DEBUG) {
-            Log.d(TAG, msg);
+            Log.d(TAG, msgSupplier.get());
         }
     }
 }

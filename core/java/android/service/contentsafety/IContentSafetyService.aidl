@@ -17,7 +17,6 @@
 package android.service.contentsafety;
 
 import android.os.Bundle;
-import android.app.contentsafety.SupportedTypesResult;
 import com.android.internal.infra.AndroidFuture;
 import android.service.contentsafety.IGetFeatureCallback;
 
@@ -38,8 +37,6 @@ import android.service.contentsafety.IGetFeatureCallback;
   oneway void notifySettingsServiceConnected() = 5;
   oneway void notifySettingsServiceDisconnected() = 6;
 
-  @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.CHECK_CONTENT_SAFETY)")
-  SupportedTypesResult getSupportedInputTypes(in int featureType) = 7;
 
  }
 

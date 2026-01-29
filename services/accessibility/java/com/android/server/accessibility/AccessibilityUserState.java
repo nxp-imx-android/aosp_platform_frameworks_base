@@ -42,8 +42,6 @@ import android.accessibilityservice.AccessibilityServiceInfo;
 import android.accessibilityservice.AccessibilityShortcutInfo;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
-import android.annotation.RequiresNoPermission;
-import android.app.admin.DevicePolicyManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -109,6 +107,8 @@ public class AccessibilityUserState {
     final Set<ComponentName> mCrashedServices = new HashSet<>();
 
     final Set<ComponentName> mEnabledServices = new HashSet<>();
+
+    private Set<String> mPermittedAccessibilityServices = null;
 
     final Set<ComponentName> mTouchExplorationGrantedServices = new HashSet<>();
 
@@ -895,6 +895,18 @@ public class AccessibilityUserState {
     }
 
     /**
+     * Sets the permitted accessibility services for this user according to
+     * {@link android.app.admin.DevicePolicyManager}.
+     *
+     * <p>This set should be updated whenever installed packages or device policy changes.</p>
+     *
+     * @param permittedServices The set of permitted package names.
+     */
+    public void setPermittedAccessibilityServicesLocked(Set<String> permittedServices) {
+        mPermittedAccessibilityServices = permittedServices;
+    }
+
+    /**
      * Whether or not the given shortcut target is installed in device.
      *
      * @param name The shortcut target name
@@ -926,12 +938,21 @@ public class AccessibilityUserState {
      * target,
      *
      * @param name   The flattened ComponentName string of the service or feature.
-     * @param userId The user ID.
      * @return true if the service/feature is permitted as a shortcut target, false otherwise.
      */
-    @RequiresNoPermission
-    @VisibleForTesting
-    public boolean isShortcutTargetPermittedLocked(String name, int userId) {
+    public boolean isShortcutTargetPermittedLocked(String name) {
+        return isShortcutTargetPermittedLocked(name, mPermittedAccessibilityServices);
+    }
+
+    /**
+     * Returns whether the shortcut target is permitted for this user.
+     *
+     * @param name The name of the shortcut target.
+     * @param permittedPackageNameSet The set of permitted package names.
+     * @return true if the shortcut target is permitted, false otherwise.
+     */
+    public boolean isShortcutTargetPermittedLocked(String name,
+            Set<String> permittedPackageNameSet) {
         BuiltInCheckResult checkResult = checkIsBuiltInFeature(name);
         if (checkResult == BuiltInCheckResult.VALID) {
             return true;
@@ -940,20 +961,6 @@ public class AccessibilityUserState {
             return false;
         }
         final ComponentName componentName = ComponentName.unflattenFromString(name);
-
-        final DevicePolicyManager dpm = mContext.getSystemService(
-                DevicePolicyManager.class);
-        final List<String> permittedPackageNames;
-        final long identity = Binder.clearCallingIdentity();
-        try {
-            permittedPackageNames = dpm != null ? dpm.getPermittedAccessibilityServices(userId)
-                    : new ArrayList<>();
-        } finally {
-            Binder.restoreCallingIdentity(identity);
-        }
-
-        Set<String> permittedPackageNameSet = permittedPackageNames == null ? null : new HashSet<>(
-                permittedPackageNames);
 
         // a null return means all services are allowed
         // (no restrictions in place from the DPM side for installable services).
@@ -991,6 +998,9 @@ public class AccessibilityUserState {
         }
         if (AccessibilityShortcutController.getFrameworkShortcutFeaturesMap()
                 .containsKey(componentName)) {
+            if (getInstalledServiceInfoLocked(componentName) != null) {
+                return BuiltInCheckResult.INVALID;
+            }
             return BuiltInCheckResult.VALID;
         }
 

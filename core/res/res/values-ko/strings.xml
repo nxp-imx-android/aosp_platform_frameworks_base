@@ -2114,50 +2114,29 @@
     <string name="app_lock_add_screen_lock_button_text" msgid="9209013414563206600">"화면 잠금 추가"</string>
     <string name="app_lock_add_screen_lock_message" msgid="6107009360675769892">"화면 잠금은 PIN, 패턴 또는 비밀번호일 수 있습니다. 화면 잠금을 사용하여 기기 잠금을 해제하고 잠긴 앱에 액세스할 수 있습니다."</string>
     <string name="app_lock_add_screen_lock_title" msgid="6905612843620128689">"먼저 화면 잠금을 추가하세요"</string>
-    <!-- no translation found for enable_app_lock_success_toast_message (3339622779190529987) -->
-    <skip />
-    <!-- no translation found for enable_app_lock_failure_toast_message (1055838896510445566) -->
-    <skip />
-    <!-- no translation found for disable_app_lock_success_toast_message (70733620589071266) -->
-    <skip />
+    <string name="enable_app_lock_success_toast_message" msgid="3339622779190529987">"<xliff:g id="APP_NAME">%1$s</xliff:g> 잠김"</string>
+    <string name="enable_app_lock_failure_toast_message" msgid="1055838896510445566">"<xliff:g id="APP_NAME">%1$s</xliff:g> 앱을 잠글 수 없습니다."</string>
+    <string name="disable_app_lock_success_toast_message" msgid="70733620589071266">"<xliff:g id="APP_NAME">%1$s</xliff:g>에서 앱 잠금이 삭제되었습니다."</string>
     <string name="locked_app_biometric_prompt_description" msgid="6853122652400451464">"<xliff:g id="APP_NAME">%1$s</xliff:g> 잠김"</string>
     <string name="locked_app_external_display_message" msgid="5483884799685545338">"이 디스플레이에서 앱에 액세스하려면 먼저 다른 기기에서 본인 인증을 하세요."</string>
-    <!-- no translation found for app_lock_edu_dialog_enable_app_lock_title (283314042336592322) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_description (8176807243219769518) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_description_template (8563718120753342530) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_description_template_no_biometrics (7122017109150633691) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_info_header (5876120209204270990) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_info_notifications (1124438392204873305) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_info_widgets (8809009414650740872) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_button_lock (3914687128135704801) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_face (1348151645996748654) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_fingerprint (5206107469561561455) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_fingerprint_and_face (7895807411323811641) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_lockscreen_password_name (8487096457702445059) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_lockscreen_pattern_name (991436996281983547) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_lockscreen_pin_name (6458607126966304795) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_dialog_title (5030286398974840579) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_dialog_sub_title (310758587817184145) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_expand_app_list_button (3214809707125223273) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_continue_button (4045066724173414043) -->
-    <skip />
+    <string name="app_lock_edu_dialog_enable_app_lock_title" msgid="283314042336592322">"<xliff:g id="APP_NAME">%1$s</xliff:g> 앱에 앱 잠금을 추가하시겠습니까?"</string>
+    <string name="app_lock_edu_dialog_description" msgid="8176807243219769518">"보안을 위해 지문 및 얼굴 인식 잠금 해제 또는 PIN으로만 이 앱에 액세스할 수 있습니다"</string>
+    <string name="app_lock_edu_dialog_description_template" msgid="8563718120753342530">"보안을 위해 %1$s 또는 %2$s(으)로만 이 앱에 액세스할 수 있습니다"</string>
+    <string name="app_lock_edu_dialog_description_template_no_biometrics" msgid="7122017109150633691">"보안을 위해 %1$s(으)로만 이 앱에 액세스할 수 있습니다"</string>
+    <string name="app_lock_edu_dialog_info_header" msgid="5876120209204270990">"앱 잠금 사용"</string>
+    <string name="app_lock_edu_dialog_info_notifications" msgid="1124438392204873305">"알림 내용은 숨겨집니다"</string>
+    <string name="app_lock_edu_dialog_info_widgets" msgid="8809009414650740872">"위젯 및 바로가기가 삭제됩니다"</string>
+    <string name="app_lock_edu_dialog_button_lock" msgid="3914687128135704801">"앱 잠금 추가"</string>
+    <string name="app_lock_edu_dialog_biometric_description_has_face" msgid="1348151645996748654">"얼굴 인식 잠금 해제"</string>
+    <string name="app_lock_edu_dialog_biometric_description_has_fingerprint" msgid="5206107469561561455">"지문 잠금 해제"</string>
+    <string name="app_lock_edu_dialog_biometric_description_has_fingerprint_and_face" msgid="7895807411323811641">"지문 또는 얼굴 인식 잠금 해제"</string>
+    <string name="app_lock_edu_dialog_lockscreen_password_name" msgid="8487096457702445059">"비밀번호"</string>
+    <string name="app_lock_edu_dialog_lockscreen_pattern_name" msgid="991436996281983547">"패턴"</string>
+    <string name="app_lock_edu_dialog_lockscreen_pin_name" msgid="6458607126966304795">"PIN"</string>
+    <string name="app_lock_permission_review_dialog_title" msgid="5030286398974840579">"다른 앱에서 사진이 계속 표시될 수 있습니다"</string>
+    <string name="app_lock_permission_review_dialog_sub_title" msgid="310758587817184145">"내 사진에 액세스할 수 있는 앱"</string>
+    <string name="app_lock_permission_review_expand_app_list_button" msgid="3214809707125223273">"모두 보기"</string>
+    <string name="app_lock_permission_review_continue_button" msgid="4045066724173414043">"계속"</string>
     <string name="work_mode_off_title" msgid="6367463960165135829">"직장 앱 일시중지를 해제하시겠습니까?"</string>
     <string name="work_mode_turn_on" msgid="5316648862401307800">"일시중지 해제"</string>
     <string name="work_mode_emergency_call_button" msgid="6818855962881612322">"긴급 전화"</string>

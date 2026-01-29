@@ -68,8 +68,7 @@
     <string name="permission_media_routing_control" msgid="5498639511586715253">"Cambiar salida multimedia"</string>
     <string name="permission_storage" msgid="6831099350839392343">"Fotos y elementos multimedia"</string>
     <string name="permission_notifications" msgid="4099418516590632909">"Notificaciones"</string>
-    <!-- no translation found for permission_app_streaming (4488910074894929222) -->
-    <skip />
+    <string name="permission_app_streaming" msgid="4488910074894929222">"Replicar pantalla y emitir apps"</string>
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"Emitir datos a tu <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"Replicar pantalla"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"Emitir apps"</string>
@@ -84,11 +83,9 @@
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"Buscar, conectarse y determinar la posición relativa de dispositivos cercanos"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"Leer todas las notificaciones, incluida información como contactos, mensajes y fotos"</string>
     <string name="permission_notifications_summary" msgid="6819393427371255636">"• Leer todas las notificaciones, incluida información como contactos, mensajes y fotos&lt;br/&gt;• Enviarte notificaciones&lt;br/&gt;&lt;br/&gt;Puedes gestionar los permisos de esta aplicación para leer y enviar notificaciones cuando quieras en Ajustes &gt; Notificaciones."</string>
-    <!-- no translation found for permission_storage_summary (3779040306012319942) -->
-    <skip />
+    <string name="permission_storage_summary" msgid="3779040306012319942">"Comparte las fotos y el contenido multimedia de tu teléfono con tus otros dispositivos."</string>
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"Enviarte notificaciones"</string>
-    <!-- no translation found for permission_app_streaming_summary (4114223538437344105) -->
-    <skip />
+    <string name="permission_app_streaming_summary" msgid="4114223538437344105">"Comparte la pantalla de tu teléfono, incluidas las aplicaciones, en tus dispositivos. Tus dispositivos tendrán acceso a todo lo que se vea en tu teléfono, incluidos el audio, las fotos, la información para pagos, las contraseñas y los mensajes, incluso cuando tu teléfono esté bloqueado.&lt;br/&gt;&lt;br/&gt;Envía datos de micrófono, cámara y otros sensores de tus dispositivos a tu teléfono, incluidas las interacciones como los gestos táctiles y los clics del ratón."</string>
     <string name="permission_create_virtual_device_summary" msgid="3570256456647725172">"Emite datos de micrófono, cámara y otros sensores de &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; a tu <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>."</string>
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"Graba, envía o comparte la pantalla de tu <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> en &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> tendrá acceso a todo lo que se vea o se reproduzca en tu <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g>, incluidos el audio, las fotos, la información para pagos, las contraseñas y los mensajes."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"Emite las apps de tu <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> en &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> tendrá acceso a todo lo que se vea o se reproduzca en <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g>, incluidos el audio, las fotos, la información para pagos, las contraseñas y los mensajes, incluso cuando tu <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> esté bloqueado."</string>

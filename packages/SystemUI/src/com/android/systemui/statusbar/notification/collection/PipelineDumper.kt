@@ -34,7 +34,7 @@ class PipelineDumper(pw: PrintWriter) {
     }
 
     private fun dump(value: Any?) = when (value) {
-        null, is String, is Int -> ipw.println(value)
+        null, is String, is Number, is Boolean -> ipw.println(value)
         is Collection<*> -> dumpCollection(value)
         else -> {
             ipw.println(value.fullPipelineName)

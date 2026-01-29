@@ -68,8 +68,7 @@
     <string name="permission_media_routing_control" msgid="5498639511586715253">"মিডিয়া আউটপুট সলনি কৰক"</string>
     <string name="permission_storage" msgid="6831099350839392343">"ফট’ আৰু মিডিয়া"</string>
     <string name="permission_notifications" msgid="4099418516590632909">"জাননী"</string>
-    <!-- no translation found for permission_app_streaming (4488910074894929222) -->
-    <skip />
+    <string name="permission_app_streaming" msgid="4488910074894929222">"স্ক্ৰীন প্ৰতিবিম্বিত কৰক আৰু এপ্‌ ষ্ট্ৰীম কৰক"</string>
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"আপোনাৰ <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>ত ডেটা ষ্ট্ৰীম কৰক"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"আপোনাৰ স্ক্ৰীন মিৰ’ৰ কৰক"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"এপ্‌ ষ্ট্ৰীম কৰক"</string>
@@ -84,11 +83,9 @@
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"নিকটৱৰ্তী ডিভাইচসমূহ বিচাৰক, সেইসমূহৰ সৈতে সংযোগ কৰক আৰু সেইসমূহৰ প্ৰাসংগিক অৱস্থান নিৰ্ধাৰণ কৰক"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"সম্পৰ্কসূচী, বাৰ্তা আৰু ফট’ৰ দৰে তথ্যকে ধৰি আটাইবোৰ জাননী পঢ়ক"</string>
     <string name="permission_notifications_summary" msgid="6819393427371255636">"• সম্পৰ্কসূচী, বাৰ্তা আৰু ফট’ৰ দৰে তথ্যকে ধৰি আটাইবোৰ জাননী পঢ়ক&lt;br/&gt;• আপোনালৈ জাননী পঠিয়াওক&lt;br/&gt;&lt;br/&gt;আপুনি যিকোনো সময়তে ছেটিং &gt; জাননীলৈ গৈ এই এপ্‌টোৰ জাননী পঢ়া আৰু পঠিওৱাৰ সক্ষমতা পৰিচালনা কৰিব পাৰে।"</string>
-    <!-- no translation found for permission_storage_summary (3779040306012319942) -->
-    <skip />
+    <string name="permission_storage_summary" msgid="3779040306012319942">"আপোনাৰ ফ’নৰ ফট’ আৰু মিডিয়া আপোনাৰ অন্য ডিভাইচসমূহৰ সৈতে শ্বেয়াৰ কৰক।"</string>
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"আপোনালৈ জাননী প্ৰেৰণ কৰা"</string>
-    <!-- no translation found for permission_app_streaming_summary (4114223538437344105) -->
-    <skip />
+    <string name="permission_app_streaming_summary" msgid="4114223538437344105">"আপোনাৰ ডিভাইচসমূহৰ সৈতে এপ্‌সমূহকে ধৰি আপোনাৰ ফ’নৰ স্ক্ৰীন শ্বেয়াৰ কৰক। আপোনাৰ ফ’নটো লক হৈ থকাৰ সময়তো আপোনাৰ ডিভাইচসমূহে অডিঅ’, ফট’, পৰিশোধৰ তথ্য, পাছৱৰ্ড আৰু বাৰ্তাকে ধৰি আপোনাৰ ফ’নত দৃশ্যমান হোৱা যিকোনো বস্তু এক্সেছ কৰিব পাৰিব।&lt;br/&gt;&lt;br/&gt;স্পৰ্শৰ ইংগিত আৰু মাউছ ক্লিকৰ দৰে ভাব-বিনিময়কে ধৰি আপোনাৰ ডিভাইচসমূহৰ পৰা মাইক্ৰ’ফ’ন, কেমেৰা আৰু অন্যান্য ছেন্সৰৰ ডেটা আপোনাৰ ফ’নলৈ ঘূৰাই দিয়ক।"</string>
     <string name="permission_create_virtual_device_summary" msgid="3570256456647725172">"&lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;ৰ মাইক্ৰ’ফ’ন, কেমেৰা আৰু অন্য ছেন্সৰৰ ডেটা আপোনাৰ <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>ত ষ্ট্ৰীম কৰক।"</string>
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"আপোনাৰ <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g>ৰ স্ক্ৰীন &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;ত ৰেকৰ্ড, কাষ্ট বা শ্বেয়াৰ কৰক।&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>এ আপোনাৰ <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g>ত দৃশ্যমান বা প্লে’ কৰা যিকোনো সমল এক্সেছ কৰিব পাৰিব, য’ত অডিঅ’, ফট’, পৰিশোধৰ তথ্য, পাছৱৰ্ড আৰু বাৰ্তা অন্তৰ্ভুক্ত।"</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"আপোনাৰ <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g>ৰ এপ্‌ &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt;ত ষ্ট্ৰীম কৰক।&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>এ <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g>ত দৃশ্যমান বা প্লে’ কৰা হোৱা যিকোনো সমল আপোনাৰ <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g>লক কৰি থোৱা থাকিলেও এক্সেছ কৰিব পাৰিব, য’ত অডিঅ’, ফট’, পৰিশোধৰ তথ্য, পাছৱৰ্ড আৰু বাৰ্তা অন্তৰ্ভুক্ত।"</string>

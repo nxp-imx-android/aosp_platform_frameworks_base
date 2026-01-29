@@ -68,8 +68,7 @@
     <string name="permission_media_routing_control" msgid="5498639511586715253">"Medya çıkışını değiştir"</string>
     <string name="permission_storage" msgid="6831099350839392343">"Fotoğraflar ve medya"</string>
     <string name="permission_notifications" msgid="4099418516590632909">"Bildirimler"</string>
-    <!-- no translation found for permission_app_streaming (4488910074894929222) -->
-    <skip />
+    <string name="permission_app_streaming" msgid="4488910074894929222">"Ekran ve uygulamaları yansıtın"</string>
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"Verileri <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> cihazınıza yayınlayın"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"Ekranınızı yansıtın"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"Uygulamaları yayınla"</string>
@@ -84,11 +83,9 @@
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"Yakındaki cihazları keşfedip bağlanma ve bu cihazların göreli konumunu belirleme"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"Kişiler, mesajlar ve fotoğraflar da dahil olmak üzere tüm bildirimleri okuma"</string>
     <string name="permission_notifications_summary" msgid="6819393427371255636">"• Kişiler, mesajlar ve fotoğraflar gibi bilgiler dahil tüm bildirimleri okuma&lt;br/&gt;• Bildirim gönderme&lt;br/&gt;&lt;br/&gt;Dilediğiniz zaman bu uygulamanın bildirim okuma ve gönderme iznini Ayarlar &gt; Bildirimler bölümünden yönetebilirsiniz."</string>
-    <!-- no translation found for permission_storage_summary (3779040306012319942) -->
-    <skip />
+    <string name="permission_storage_summary" msgid="3779040306012319942">"Telefonunuzdaki fotoğraf ve medya içeriklerini diğer cihazlarınızla paylaşın."</string>
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"Size bildirim gönderme"</string>
-    <!-- no translation found for permission_app_streaming_summary (4114223538437344105) -->
-    <skip />
+    <string name="permission_app_streaming_summary" msgid="4114223538437344105">"Uygulamalar da dahil olmak üzere telefonunuzun ekranını cihazlarınızla paylaşın. Cihazlarınız, telefonunuz kilitliyken bile ses, fotoğraflar, ödeme bilgileri, şifreler ve mesajlar da dahil olmak üzere telefonunuzda görünen her şeye erişebilir.&lt;br/&gt;&lt;br/&gt;Dokunma hareketleri ve fare tıklamaları gibi etkileşimler de dahil olmak üzere cihazlarınızdaki mikrofon, kamera ve diğer sensör verileri telefonunuza geri gönderilir."</string>
     <string name="permission_create_virtual_device_summary" msgid="3570256456647725172">"&lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; cihazındaki mikrofon, kamera ve diğer sensör verilerini <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> cihazınıza yayınlayın."</string>
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"<xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> cihazınızın ekranını &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; cihazına kaydedin, yayınlayın veya paylaşın.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>; ses, fotoğraflar, ödeme bilgileri, şifreler ve mesajlar da dahil olmak üzere <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g> cihazınızda görünen veya oynatılan her şeye erişebilecek."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"<xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> cihazınızdaki uygulamaları &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt; cihazına yayınlayın.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>; <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> kilitliyken bile ses, fotoğraflar, ödeme bilgileri, şifreler ve mesajlar da dahil olmak üzere <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g> cihazında görünen veya oynatılan her şeye erişebilecek."</string>

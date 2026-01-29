@@ -115,17 +115,6 @@ public final class ActionableInsight extends ContextInsight {
         return mActionDetails;
     }
 
-    /**
-     * Returns the intent to be invoked when the actionable insight triggers, or null if the action
-     * details does not contain an intent.
-     * @deprecated get the intent from {@link InsightActionDetails}
-     */
-    @Deprecated
-    @Nullable
-    public Intent createActionIntent() {
-        return mActionDetails.createActionIntent();
-    }
-
     /** @hide */
     @Override
     @InsightType

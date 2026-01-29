@@ -144,23 +144,21 @@ class BouncerOverlayLayoutTest : SysuiTestCase() {
                     LaptopScreen to
                         Expected(
                             whenNaturallyHeld = BESIDE_USER_SWITCHER,
-                            containerizedWhenNaturallyHeld = Containerized.LOWER_BREAKPOINT,
                             whenUnnaturallyHeld = BELOW_USER_SWITCHER,
-                            containerizedWhenUnnaturallyHeld = Containerized.NEVER,
                         ),
                     ExternalScreen to
                         Expected(
                             whenNaturallyHeld = BESIDE_USER_SWITCHER,
-                            containerizedWhenNaturallyHeld = Containerized.ALWAYS,
+                            containerizedWhenNaturallyHeld = true,
                             whenUnnaturallyHeld = BESIDE_USER_SWITCHER,
-                            containerizedWhenUnnaturallyHeld = Containerized.NEVER,
+                            containerizedWhenUnnaturallyHeld = false,
                         ),
                     ExtraHighExternalScreen to
                         Expected(
                             whenNaturallyHeld = BESIDE_USER_SWITCHER,
-                            containerizedWhenNaturallyHeld = Containerized.ALWAYS,
+                            containerizedWhenNaturallyHeld = true,
                             whenUnnaturallyHeld = BESIDE_USER_SWITCHER,
-                            containerizedWhenUnnaturallyHeld = Containerized.ALWAYS,
+                            containerizedWhenUnnaturallyHeld = true,
                         ),
                 )
                 .flatMap { (device, expected) ->
@@ -229,23 +227,8 @@ class BouncerOverlayLayoutTest : SysuiTestCase() {
                         )
                     )
                     .isEqualTo(expectedLayout)
-                assertThat(
-                        shouldBeContainerizedInternal(
-                            windowSizeClass = windowSizeClass,
-                            useLowerBreakpoint = true,
-                        )
-                    )
-                    .isEqualTo(
-                        expectedContainerized == Containerized.LOWER_BREAKPOINT ||
-                            expectedContainerized == Containerized.ALWAYS
-                    )
-                assertThat(
-                        shouldBeContainerizedInternal(
-                            windowSizeClass = windowSizeClass,
-                            useLowerBreakpoint = false,
-                        )
-                    )
-                    .isEqualTo(expectedContainerized == Containerized.ALWAYS)
+                assertThat(shouldBeContainerizedInternal(windowSizeClass = windowSizeClass))
+                    .isEqualTo(expectedContainerized)
             }
         }
     }
@@ -254,7 +237,7 @@ class BouncerOverlayLayoutTest : SysuiTestCase() {
         val device: Device,
         val held: Held,
         val expectedLayout: BouncerOverlayLayout,
-        val expectedContainerized: Containerized,
+        val expectedContainerized: Boolean,
         val isOneHandedModeSupported: Boolean = true,
     ) {
         override fun toString(): String {
@@ -273,8 +256,8 @@ class BouncerOverlayLayoutTest : SysuiTestCase() {
     data class Expected(
         val whenNaturallyHeld: BouncerOverlayLayout,
         val whenUnnaturallyHeld: BouncerOverlayLayout,
-        val containerizedWhenNaturallyHeld: Containerized = Containerized.NEVER,
-        val containerizedWhenUnnaturallyHeld: Containerized = Containerized.NEVER,
+        val containerizedWhenNaturallyHeld: Boolean = false,
+        val containerizedWhenUnnaturallyHeld: Boolean = false,
     ) {
         fun layout(heldNaturally: Boolean): BouncerOverlayLayout {
             return if (heldNaturally) {
@@ -284,7 +267,7 @@ class BouncerOverlayLayoutTest : SysuiTestCase() {
             }
         }
 
-        fun containerized(heldNaturally: Boolean): Containerized {
+        fun containerized(heldNaturally: Boolean): Boolean {
             return if (heldNaturally) {
                 containerizedWhenNaturallyHeld
             } else {
@@ -340,11 +323,5 @@ class BouncerOverlayLayoutTest : SysuiTestCase() {
         const val LARGE_WIDTH_EXPANDED_HEIGHT = WindowSizeClass.WIDTH_DP_LARGE_LOWER_BOUND
         const val EXTRA_LARGE_WIDTH_EXPANDED_HEIGHT =
             WindowSizeClass.WIDTH_DP_EXTRA_LARGE_LOWER_BOUND
-    }
-
-    enum class Containerized {
-        NEVER,
-        LOWER_BREAKPOINT,
-        ALWAYS,
     }
 }

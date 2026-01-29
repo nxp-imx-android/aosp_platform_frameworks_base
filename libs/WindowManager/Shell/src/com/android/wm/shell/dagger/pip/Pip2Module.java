@@ -143,6 +143,7 @@ public abstract class Pip2Module {
             TabletopModeController tabletopModeController,
             PhonePipKeepClearAlgorithm pipKeepClearAlgorithm,
             PipSurfaceTransactionHelper pipSurfaceTransactionHelper,
+            PipDesktopState pipDesktopState,
             @ShellMainThread ShellExecutor mainExecutor) {
         if (!PipFlags.isPip2ExperimentEnabled()) {
             return Optional.empty();
@@ -153,7 +154,8 @@ public abstract class Pip2Module {
                     pipDisplayLayoutState, pipScheduler, taskStackListener, shellTaskOrganizer,
                     pipTransitionState, pipTouchHandler, pipAppOpsListener, pipMenuController,
                     pipUiEventLogger, pipMediaController, tabletopModeController,
-                    pipKeepClearAlgorithm, pipSurfaceTransactionHelper, mainExecutor));
+                    pipKeepClearAlgorithm, pipSurfaceTransactionHelper, pipDesktopState,
+                    mainExecutor));
         }
     }
 
@@ -231,11 +233,12 @@ public abstract class Pip2Module {
             PipScheduler pipScheduler, RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer,
             PipBoundsState pipBoundsState, DisplayController displayController,
             PipDisplayLayoutState pipDisplayLayoutState, PipBoundsAlgorithm pipBoundsAlgorithm,
-            PipSurfaceTransactionHelper pipSurfaceTransactionHelper
+            PipSurfaceTransactionHelper pipSurfaceTransactionHelper, PipDesktopState pipDesktopState
     ) {
         return new PipDisplayTransferHandler(context, pipTransitionState, pipScheduler,
                 rootTaskDisplayAreaOrganizer, pipBoundsState, displayController,
-                pipDisplayLayoutState, pipBoundsAlgorithm, pipSurfaceTransactionHelper);
+                pipDisplayLayoutState, pipBoundsAlgorithm, pipSurfaceTransactionHelper,
+                pipDesktopState);
     }
 
     @WMSingleton

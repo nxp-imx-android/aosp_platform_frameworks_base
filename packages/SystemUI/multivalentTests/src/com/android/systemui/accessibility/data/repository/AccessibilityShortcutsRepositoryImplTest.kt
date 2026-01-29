@@ -635,6 +635,12 @@ class AccessibilityShortcutsRepositoryImplTest : SysuiTestCase() {
             assertThat(result).isNull()
         }
 
+    @Test
+    fun hsuExcludedTargets_accessingValue_doesNotThrowException() =
+        kosmos.runTest {
+            val unused = underTest.hsuExcludedTargets
+        }
+
     private fun createAccessibilityTargetModel(targetName: String) =
         AccessibilityTargetModel(
             shortcutType = UserShortcutType.HARDWARE,

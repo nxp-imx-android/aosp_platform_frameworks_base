@@ -15,6 +15,8 @@
  */
 package com.android.internal.widget.remotecompose.core.operations;
 
+import static com.android.internal.widget.remotecompose.core.documentation.DocumentedOperation.FLOAT;
+import static com.android.internal.widget.remotecompose.core.documentation.DocumentedOperation.INT;
 import static com.android.internal.widget.remotecompose.core.operations.Utils.floatToString;
 
 import android.annotation.NonNull;
@@ -25,6 +27,7 @@ import com.android.internal.widget.remotecompose.core.RemoteComposeState;
 import com.android.internal.widget.remotecompose.core.RemoteContext;
 import com.android.internal.widget.remotecompose.core.VariableSupport;
 import com.android.internal.widget.remotecompose.core.WireBuffer;
+import com.android.internal.widget.remotecompose.core.documentation.DocumentationBuilder;
 import com.android.internal.widget.remotecompose.core.serialize.MapSerializer;
 import com.android.internal.widget.remotecompose.core.serialize.Serializable;
 
@@ -33,7 +36,8 @@ import java.util.List;
 /** Base class for commands that take 3 float */
 public class UpdateDynamicFloatList extends Operation implements VariableSupport, Serializable {
     private static final int OP_CODE = Operations.UPDATE_DYNAMIC_FLOAT_LIST;
-    @NonNull protected String mName = "UpdateDynamicFloatList";
+    @NonNull
+    protected String mName = "UpdateDynamicFloatList";
     int mArrayId;
     float mIndex;
     float mIndexOut;
@@ -90,16 +94,28 @@ public class UpdateDynamicFloatList extends Operation implements VariableSupport
 
     /**
      * Write the operation to the buffer
-     * @param buffer
-     * @param id
-     * @param index
-     * @param value
      */
     public static void apply(@NonNull WireBuffer buffer, int id, float index, float value) {
         buffer.start(OP_CODE);
         buffer.writeInt(id);
         buffer.writeFloat(index);
         buffer.writeFloat(value);
+    }
+
+    /**
+     * Populate the documentation with a description of this operation
+     *
+     * @param doc to append the description to.
+     */
+    public static void documentation(@NonNull DocumentationBuilder doc) {
+        doc.operation("Data Operations", OP_CODE, "UpdateDynamicFloatList")
+                .description("Update a value in a dynamic float list")
+                .field(INT,
+                        "arrayId", "The ID of the array")
+                .field(FLOAT,
+                        "index", "The index to update")
+                .field(FLOAT,
+                        "value", "The new value");
     }
 
     @Override
@@ -121,7 +137,7 @@ public class UpdateDynamicFloatList extends Operation implements VariableSupport
     /**
      * Read this operation and add it to the list of operations
      *
-     * @param buffer the buffer to read
+     * @param buffer     the buffer to read
      * @param operations the list of operations to add to
      */
     public static void read(

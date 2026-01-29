@@ -17,6 +17,7 @@
 package com.android.systemui.inputmethod.shared.model
 
 import android.content.Intent
+import android.view.inputmethod.InputMethodManager.IMPickerEntryPoint
 import com.android.internal.inputmethod.IImeSwitcherMenu
 
 /**
@@ -29,6 +30,7 @@ import com.android.internal.inputmethod.IImeSwitcherMenu
  * @param selectedImeSettingsIntent the intent for the settings activity of the selected IME, or
  *   `null` if no IME is selected, or the selected IME does not have a settings activity.
  * @param isScreenLocked whether the screen is currently locked.
+ * @param entryPoint the entry point where the menu was requested from.
  * @param displayId the ID of the display where the menu was requested.
  */
 data class ImeSwitcherMenuModel(
@@ -37,6 +39,7 @@ data class ImeSwitcherMenuModel(
     val selectedSubtypeIndex: Int,
     val selectedImeSettingsIntent: Intent?,
     val isScreenLocked: Boolean,
+    @param:IMPickerEntryPoint val entryPoint: Int,
     val displayId: Int,
 ) {
 

@@ -63,8 +63,15 @@ interface IAppFunctionManager {
     );
 
     @JavaPassthrough(annotation="@android.annotation.RequiresPermission(value = android.Manifest.permission.EXECUTE_APP_FUNCTIONS, conditional = true)")
-    void registerAppFunctionObserverCallback(
+    void observeAppFunctions(
         in AppFunctionAidlSearchSpec aidlSearchSpec,
+        in IObserveAppFunctionChangesCallback callback
+    );
+
+    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(value = android.Manifest.permission.EXECUTE_APP_FUNCTIONS, conditional = true)")
+    void unregisterAppFunctionObserver(
+        in String callingPackage,
+        in UserHandle userHandle,
         in IObserveAppFunctionChangesCallback callback
     );
 

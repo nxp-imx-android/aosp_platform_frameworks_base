@@ -27,10 +27,13 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.pm.UserInfo;
+import android.database.ContentObserver;
 import android.os.UserHandle;
+import android.provider.Settings;
 import android.service.personalcontext.hint.BundleHint;
 import android.service.personalcontext.hint.ContextHint;
 import android.service.personalcontext.hint.ContextHintWrapper;
@@ -63,6 +66,7 @@ public class PersonalContextManagerServiceTest {
 
     @Mock private Context mMockContext;
     @Mock private PackageManager mPackageManager;
+    @Mock private ContentResolver mContentResolver;
 
     private PersonalContextManagerService mService;
     private PersonalContextManagerInternal mLocalService;
@@ -94,6 +98,18 @@ public class PersonalContextManagerServiceTest {
         mService.onUserStarting(mUser1);
 
         assertThat(mService.getComponentManagerForUser(USER_ID_1)).isNotNull();
+    }
+
+    @Test
+    public void testOnUserStarting_registersSettingContentObserver() {
+        mService.onUserStarting(mUser1);
+        mService.onUserUnlocked(mUser1);
+
+        verify(mContentResolver).registerContentObserver(
+                eq(Settings.Secure.getUriFor(Settings.Secure.PERSONAL_CONTEXT_ENABLED)),
+                eq(false),
+                any(ContentObserver.class),
+                eq(UserHandle.USER_ALL));
     }
 
     @Test
@@ -138,6 +154,7 @@ public class PersonalContextManagerServiceTest {
         mService.onUserStopping(mUser1);
 
         assertThat(mService.getComponentManagerForUser(USER_ID_1)).isNull();
+        verify(mContentResolver).unregisterContentObserver(any(ContentObserver.class));
     }
 
     @Test
@@ -210,6 +227,7 @@ public class PersonalContextManagerServiceTest {
         Context userContext = mock(Context.class);
         when(mMockContext.createContextAsUser(eq(userHandle), anyInt())).thenReturn(userContext);
         when(userContext.getPackageManager()).thenReturn(mPackageManager);
+        when(userContext.getContentResolver()).thenReturn(mContentResolver);
         when(userContext.getUser()).thenReturn(userHandle);
     }
 }

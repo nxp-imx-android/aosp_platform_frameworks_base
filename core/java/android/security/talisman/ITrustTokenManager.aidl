@@ -25,8 +25,11 @@ import android.security.talisman.TrustTokenWithChallenge;
  * @hide
  */
 interface ITrustTokenManager {
+    // TODO(b/418280383): Replace with correct permissions
+    @EnforcePermission(allOf = {"ACQUIRE_VERIFIED_DEVICE_TOKEN", "SIGN_WITH_TRUST_TOKEN"})
     TrustTokenWithChallenge acquireVerifiedDeviceToken(in byte[] challenge);
     TrustTokenIdentitySet acquirePreparedIdentitySet(in byte[] challenge);
+    @EnforcePermission("ACQUIRE_VERIFIED_DEVICE_TOKEN")
     int verifyTrustTokenAndChallenge(in TrustToken token, in byte[] remoteResponse,
             in byte[] expectedChallenge);
     int[] verifyIdentityTokens(in TrustToken verifiedDeviceToken, in TrustToken[] identityTokens);

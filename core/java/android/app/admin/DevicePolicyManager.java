@@ -8919,6 +8919,10 @@ public class DevicePolicyManager {
      * device, for this user. After setting this, no applications running as this user will be able
      * to access any cameras on the device.
      * <p>
+     * Starting with Android {@link android.os.Build.VERSION_CODES#CINNAMON_BUN}, this method also
+     * blocks application access to external USB cameras that connect directly via the
+     * {@link android.hardware.usb.UsbConstants#USB_CLASS_VIDEO} interface.
+     * <p>
      * This method can be called on the {@link DevicePolicyManager} instance,
      * returned by {@link #getParentProfileInstance(ComponentName)}, where the caller must be
      * the profile owner of an organization-owned managed profile.
@@ -8980,6 +8984,10 @@ public class DevicePolicyManager {
     /**
      * Determine whether or not the device's cameras have been disabled for this user,
      * either by the calling admin, if specified, or all admins.
+     * <p>
+     * Starting with Android {@link android.os.Build.VERSION_CODES#CINNAMON_BUN}, this
+     * method also checks for external USB cameras that connect directly via the
+     * {@link android.hardware.usb.UsbConstants#USB_CLASS_VIDEO} interface.
      * <p>
      * This method can be called on the {@link DevicePolicyManager} instance,
      * returned by {@link #getParentProfileInstance(ComponentName)}, where the caller must be

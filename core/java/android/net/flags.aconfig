@@ -119,3 +119,13 @@ flag {
   description: "Enable pairing API hardening changes for Android Bluetooth from 26Q2"
   bug: "461869367"
 }
+
+flag {
+    name: "use_netstats_per_query_flags"
+    namespace: "android_core_networking"
+    description: "Use NetworkStatsManager APIs with query flags"
+    bug: "453909242"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}

@@ -29,6 +29,7 @@ import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.RequiresPermission;
 import android.annotation.TestApi;
+import android.media.audio.DeviceIdentity;
 import android.media.audio.Flags;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import android.util.SparseIntArray;
@@ -39,7 +40,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.List;
 import java.util.Objects;
-import java.util.TreeSet;
 
 /**
  * Provides information about an audio device.
@@ -565,26 +565,7 @@ public final class AudioDeviceInfo {
      * Note: an empty array indicates that the device supports arbitrary channel counts.
      */
     public @NonNull int[] getChannelCounts() {
-        TreeSet<Integer> countSet = new TreeSet<Integer>();
-
-        // Channel Masks
-        for (int mask : getChannelMasks()) {
-            countSet.add(isSink() ?
-                    AudioFormat.channelCountFromOutChannelMask(mask)
-                    : AudioFormat.channelCountFromInChannelMask(mask));
-        }
-
-        // Index Masks
-        for (int index_mask : getChannelIndexMasks()) {
-            countSet.add(Integer.bitCount(index_mask));
-        }
-
-        int[] counts = new int[countSet.size()];
-        int index = 0;
-        for (int count : countSet) {
-            counts[index++] = count;
-        }
-        return counts;
+        return mPort.getChannelMasks().getChannelCounts(isSource() /*isInput*/);
     }
 
     /** @hide */

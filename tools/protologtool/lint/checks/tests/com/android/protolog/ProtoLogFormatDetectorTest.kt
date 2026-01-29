@@ -35,6 +35,7 @@ class ProtoLogFormatDetectorTest : LintDetectorTest() {
             ProtoLogFormatDetector.ISSUE_INVALID_FORMAT_SPECIFIER,
             ProtoLogFormatDetector.ISSUE_CONSTANT_ARGUMENT,
             ProtoLogFormatDetector.ISSUE_NO_TEXT_CONTEXT,
+            ProtoLogFormatDetector.ISSUE_TOO_MANY_ARGS,
         )
 
     override fun lint(): TestLintTask {
@@ -897,6 +898,36 @@ class ProtoLogFormatDetectorTest : LintDetectorTest() {
                         ProtoLog.d(ProtoLogGroup.TEST_GROUP, "%d %s", x, s)
                                                              ~~~~~~~
                 0 errors, 4 warnings
+                """.addLineContinuation()
+            )
+    }
+
+    @Test
+    fun testTooManyArguments() {
+        lint()
+            .files(
+                java(
+                    """
+                    package test.pkg;
+                    import com.android.internal.protolog.ProtoLog;
+                    import com.android.internal.protolog.ProtoLogGroup;
+                    class TestClass {
+                        void bad(int i) {
+                            ProtoLog.d(ProtoLogGroup.TEST_GROUP, "Test %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d",
+                                i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i);
+                        }
+                    }
+                    """.addLineContinuation()
+                ).indented(),
+                *protologApi
+            )
+            .run()
+            .expect(
+                """
+                src/test/pkg/TestClass.java:6: Error: ProtoLog method has too many arguments 33 (limit is 32) [ProtoLogTooManyArgs]
+                        ProtoLog.d(ProtoLogGroup.TEST_GROUP, "Test %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d",
+                        ^
+                1 errors, 0 warnings
                 """.addLineContinuation()
             )
     }

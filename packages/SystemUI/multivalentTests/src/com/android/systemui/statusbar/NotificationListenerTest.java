@@ -37,6 +37,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
 import com.android.systemui.SysuiTestCase;
+import com.android.systemui.dump.DumpManager;
 import com.android.systemui.plugins.PluginManager;
 import com.android.systemui.statusbar.NotificationListener.NotificationHandler;
 import com.android.systemui.statusbar.data.repository.NotificationListenerSettingsRepository;
@@ -58,6 +59,7 @@ public class NotificationListenerTest extends SysuiTestCase {
 
     @Mock private NotificationHandler mNotificationHandler;
     @Mock private NotificationManager mNotificationManager;
+    @Mock private DumpManager mDumpManager;
     @Mock private PluginManager mPluginManager;
 
     private final FakeSystemClock mFakeSystemClock = new FakeSystemClock();
@@ -76,6 +78,7 @@ public class NotificationListenerTest extends SysuiTestCase {
                         new NotificationListenerSettingsRepository()),
                 mFakeSystemClock,
                 mFakeExecutor,
+                mDumpManager,
                 mPluginManager);
         mSbn = new StatusBarNotification(TEST_PACKAGE_NAME, TEST_PACKAGE_NAME, 0, null, TEST_UID, 0,
                 new Notification(), UserHandle.CURRENT, null, 0);

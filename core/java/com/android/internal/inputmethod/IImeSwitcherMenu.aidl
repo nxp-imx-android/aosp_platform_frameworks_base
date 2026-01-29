@@ -65,12 +65,13 @@ oneway interface IImeSwitcherMenu {
      *                                  {@code null} if no IME is selected, or the selected IME does
      *                                  not have a settings activity.
      * @param isScreenLocked            whether the screen is currently locked.
+     * @param entryPoint                the entry point where the menu was requested from.
      * @param displayId                 the ID of the display where the menu was requested.
      * @param userId                    the ID of the user that requested the menu.
      */
     void show(in ImeSwitcherMenuItemSafeList items, in @nullable String selectedImeId,
             int selectedSubtypeIndex, in @nullable Intent selectedImeSettingsIntent,
-            boolean isScreenLocked, int displayId, int userId);
+            boolean isScreenLocked, int entryPoint, int displayId, int userId);
 
     /**
      * Hides the IME Switcher Menu.

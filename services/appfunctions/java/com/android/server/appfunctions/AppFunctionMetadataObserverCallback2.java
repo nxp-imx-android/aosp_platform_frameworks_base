@@ -22,6 +22,7 @@ import static java.util.Objects.requireNonNull;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.app.appfunctions.AppFunctionObserver;
 import android.app.appfunctions.AppFunctionStaticMetadataHelper;
 import android.app.appsearch.observer.DocumentChangeInfo;
 import android.app.appsearch.observer.ObserverCallback;
@@ -36,10 +37,9 @@ import android.util.Slog;
  * between static and runtime app function metadata sources. When static metadata changes, it
  * triggers a metadata sync request to unify these data sources.
  *
- * <p>Upon completion, it dispatches updates to {@link
- * android.app.appfunctions.AppFunctionMetadataChangeCallback} listeners. This sequencing ensures
- * that by the time a client receives a notification, the metadata is fully indexed and available
- * for subsequent queries via {@link
+ * <p>Upon completion, it dispatches updates to {@link AppFunctionObserver} listeners. This
+ * sequencing ensures that by the time a client receives a notification, the metadata is fully
+ * indexed and available for subsequent queries via {@link
  * android.app.appfunctions.AppFunctionManager#searchAppFunctions}.
  */
 public class AppFunctionMetadataObserverCallback2 implements ObserverCallback {

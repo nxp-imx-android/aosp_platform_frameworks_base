@@ -26,8 +26,6 @@ import android.content.res.Configuration;
 import android.graphics.Insets;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.os.SystemProperties;
 import android.os.UserHandle;
 import android.util.TypedValue;
@@ -40,6 +38,7 @@ import android.view.WindowInsets.Type;
 import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
 
+import androidx.annotation.MainThread;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StyleRes;
@@ -50,11 +49,13 @@ import com.android.systemui.animation.DialogTransitionAnimator;
 import com.android.systemui.broadcast.BroadcastDispatcher;
 import com.android.systemui.dagger.qualifiers.Application;
 import com.android.systemui.res.R;
+import com.android.systemui.util.Assert;
 import com.android.systemui.util.DialogKt;
 import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteractor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import javax.inject.Inject;
 
@@ -86,7 +87,6 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
     private final DialogDelegate<SystemUIDialog> mDelegate;
     @Nullable
     private final DismissReceiver mDismissReceiver;
-    private final Handler mHandler = new Handler();
     private final SystemUIDialogManager mDialogManager;
     /**
      * Whether the dialog background should be refreshed when the theme changes between light and
@@ -164,7 +164,8 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
          */
         public SystemUIDialog create() {
             return create(new DialogDelegate<>() {
-            }, mContext, DEFAULT_THEME, true /* shouldAcsdDismissDialog */);
+            }, mContext, DEFAULT_THEME, DEFAULT_DISMISS_ON_DEVICE_LOCK,
+                    true /* shouldAcsdDismissDialog */);
         }
 
         /**
@@ -174,7 +175,8 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
          */
         public SystemUIDialog create(Context context) {
             return create(new DialogDelegate<>() {
-            }, context, DEFAULT_THEME, true /* shouldAcsdDismissDialog */);
+            }, context, DEFAULT_THEME, DEFAULT_DISMISS_ON_DEVICE_LOCK,
+                    true /* shouldAcsdDismissDialog */);
         }
 
         /**
@@ -196,24 +198,26 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
          */
         public SystemUIDialog create(Delegate delegate, Context context,
                 boolean shouldAcsdDismissDialog) {
-            return create(delegate, context, DEFAULT_THEME, shouldAcsdDismissDialog);
+            return create(delegate, context, DEFAULT_THEME, DEFAULT_DISMISS_ON_DEVICE_LOCK,
+                    shouldAcsdDismissDialog);
         }
 
         public SystemUIDialog create(Delegate delegate, Context context, @StyleRes int theme) {
             return create((DialogDelegate<SystemUIDialog>) delegate, context, theme,
-                    true /* shouldAcsdDismissDialog */);
+                    DEFAULT_DISMISS_ON_DEVICE_LOCK, true /* shouldAcsdDismissDialog */);
         }
 
         public SystemUIDialog create(Delegate delegate) {
             return create(delegate, mContext);
         }
 
-        private SystemUIDialog create(DialogDelegate<SystemUIDialog> dialogDelegate,
-                Context context, @StyleRes int theme, boolean shouldAcsdDismissDialog) {
+        public SystemUIDialog create(DialogDelegate<SystemUIDialog> dialogDelegate,
+                Context context, @StyleRes int theme, boolean dismissOnDeviceLock,
+                boolean shouldAcsdDismissDialog) {
             return new SystemUIDialog(
                     context,
                     theme,
-                    DEFAULT_DISMISS_ON_DEVICE_LOCK,
+                    dismissOnDeviceLock,
                     false /* refreshBackgroundOnThemeChange */,
                     mSystemUIDialogManager,
                     mBroadcastDispatcher,
@@ -314,12 +318,13 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
         Configuration config = getContext().getResources().getConfiguration();
         mLastConfigurationWidthDp = config.screenWidthDp;
         mLastConfigurationHeightDp = config.screenHeightDp;
-        updateWindowSize();
+        final Window window = getWindow();
+        updateWindowSize(window);
 
         for (int i = 0; i < mOnCreateRunnables.size(); i++) {
             mOnCreateRunnables.get(i).run();
         }
-        View targetView = getWindow().getDecorView();
+        View targetView = window.getDecorView();
         DialogKt.registerAnimationOnBackInvoked(
                 /* dialog = */ this,
                 /* targetView = */ targetView,
@@ -328,13 +333,14 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
         );
     }
 
-    private void updateWindowSize() {
-        // Only the thread that created this dialog can update its window size.
-        if (Looper.myLooper() != mHandler.getLooper()) {
-            mHandler.post(this::updateWindowSize);
-            return;
-        }
-
+    /**
+     * Updates the size of the given window.
+     *
+     * @param window the window whose size to update.
+     */
+    @MainThread
+    private void updateWindowSize(@NonNull Window window) {
+        Assert.isMainThread();
         int width = getWidth();
         int height = getHeight();
         if (width == mLastWidth && height == mLastHeight) {
@@ -343,17 +349,27 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
 
         mLastWidth = width;
         mLastHeight = height;
-        getWindow().setLayout(width, height);
+        window.setLayout(width, height);
     }
 
     @Override
     public void onConfigurationChanged(Configuration configuration) {
+        if (!isShowing()) {
+            // Dialog was already dismissed. Any further changes on the DecorView would throw an
+            // exception.
+            return;
+        }
+        final Window window = getWindow();
+        if (window == null) {
+            return;
+        }
+
         if (mLastConfigurationWidthDp != configuration.screenWidthDp
                 || mLastConfigurationHeightDp != configuration.screenHeightDp) {
             mLastConfigurationWidthDp = configuration.screenWidthDp;
             mLastConfigurationHeightDp = configuration.screenHeightDp;
 
-            updateWindowSize();
+            updateWindowSize(window);
         }
         if (Flags.dialogBackgroundRefresh()) {
             int nightMode = configuration.uiMode & Configuration.UI_MODE_NIGHT_MASK;
@@ -361,7 +377,7 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
                 mLastNightMode = nightMode;
 
                 if (mRefreshBackgroundOnThemeChange) {
-                    refreshBackground();
+                    refreshBackground(window);
                 }
             }
         }
@@ -457,6 +473,14 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
         }
     }
 
+    @Deprecated
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+
+        mDelegate.onBackPressed(this);
+    }
+
     public void setShowForAllUsers(boolean show) {
         setShowForAllUsers(this, show);
     }
@@ -529,6 +553,14 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
     }
 
     @Override
+    public boolean dispatchTouchEvent(@NonNull MotionEvent ev) {
+        if (mDelegate.dispatchTouchEvent(this, ev)) {
+            return true;
+        }
+        return super.dispatchTouchEvent(ev);
+    }
+
+    @Override
     public boolean onTouchEvent(@NonNull MotionEvent motionEvent) {
         if (mDelegate.onTouchEvent(this, motionEvent)) {
             return true;
@@ -553,7 +585,7 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
     }
 
     @Nullable
-    WindowRootViewBlurInteractor getBlurInteractor() {
+    public WindowRootViewBlurInteractor getBlurInteractor() {
         return mBlurInteractor;
     }
 
@@ -691,12 +723,12 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
     /**
      * Refreshes the background of the dialog, applying the theme change between light and dark
      * mode.
+     *
+     * @param window the dialog window to refresh the background of.
      */
-    private void refreshBackground() {
-        final Window window = getWindow();
-        if (window == null) {
-            return;
-        }
+    @MainThread
+    private void refreshBackground(@NonNull Window window) {
+        Assert.isMainThread();
         final View viewWithBackground = getViewWithBackground(this);
         if (viewWithBackground == null) {
             return;
@@ -724,9 +756,7 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
             return null;
         }
         final View decorView = window.getDecorView();
-        if (decorView == null) {
-            return null;
-        }
+        Objects.requireNonNull(decorView, "DecorView should not be null");
         // We first look for the background on the dialogContentWithBackground added by
         // DialogTransitionAnimator. If it's not there, we use the background of the DecorView.
         final View viewWithBackground = decorView.findViewByPredicate(

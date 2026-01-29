@@ -20,12 +20,14 @@ import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresNoPermission;
+import android.annotation.SdkConstant;
 import android.annotation.SystemApi;
 import android.annotation.SystemService;
 import android.annotation.UserHandleAware;
 import android.content.Context;
 import android.os.ParcelUuid;
 import android.os.RemoteException;
+import android.provider.Settings;
 import android.service.personalcontext.embedded.InsightSurfaceClientInfo;
 import android.service.personalcontext.hint.ContextHint;
 import android.service.personalcontext.hint.ContextHintWithSignature;
@@ -52,6 +54,14 @@ public final class PersonalContextManager {
 
     private static final String TAG = "PersonalContextManager";
 
+    /**
+     * Intent that is broadcast when the state of {@link #isEnabled()} changes.
+     * This broadcast is only sent to registered receivers.
+     */
+    @SdkConstant(SdkConstant.SdkConstantType.BROADCAST_INTENT_ACTION)
+    public static final String ACTION_PERSONAL_CONTEXT_ENABLED_CHANGED =
+            "android.service.personalcontext.action.PERSONAL_CONTEXT_ENABLED_CHANGED";
+
     private final Context mContext;
     private final IPersonalContextManager mService;
 
@@ -63,6 +73,37 @@ public final class PersonalContextManager {
         if (Log.isLoggable(TAG, Log.DEBUG)) {
             Log.d(TAG, "Set up service: " + mService);
         }
+    }
+
+    /**
+     * Returns whether the Personal Context service is enabled.
+     * @hide
+     */
+    @SystemApi
+    @UserHandleAware(
+            requiresPermissionIfNotCaller = android.Manifest.permission.INTERACT_ACROSS_USERS)
+    public boolean isEnabled() {
+        // TODO(b/477958468): Correctly handle enabling/disabling the service and then make the
+        // default "disabled".
+        return Settings.Secure.getIntForUser(
+                mContext.getContentResolver(),
+                Settings.Secure.PERSONAL_CONTEXT_ENABLED,
+                1, mContext.getUserId()) == 1;
+    }
+
+    /**
+     * Set whether the Personal Context service is enabled.
+     * @param enable whether to enable or disable the service
+     * @hide
+     */
+    @SystemApi
+    @UserHandleAware(
+            requiresPermissionIfNotCaller = android.Manifest.permission.INTERACT_ACROSS_USERS)
+    public void setEnabled(boolean enable) {
+        Settings.Secure.putIntForUser(
+                mContext.getContentResolver(),
+                Settings.Secure.PERSONAL_CONTEXT_ENABLED,
+                enable ? 1 : 0, mContext.getUserId());
     }
 
     /**

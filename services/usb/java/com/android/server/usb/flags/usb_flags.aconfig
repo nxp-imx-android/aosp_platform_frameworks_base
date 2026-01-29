@@ -68,3 +68,10 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "enable_camera_policy_check"
+    namespace: "usb"
+    description: "This flag enables checking DevicePolicyManager for DisallowCamera policy"
+    bug: "408983482"
+}

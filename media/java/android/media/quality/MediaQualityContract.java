@@ -38,7 +38,8 @@ public class MediaQualityContract {
             LEVEL_LOW,
             LEVEL_MEDIUM,
             LEVEL_HIGH,
-            LEVEL_OFF
+            LEVEL_OFF,
+            LEVEL_USER
     })
     public @interface Level {}
 
@@ -72,6 +73,14 @@ public class MediaQualityContract {
      * <p>This level represents that the corresponding feature is turned off.
      */
     public static final String LEVEL_OFF = "level_off";
+
+    /**
+     * User level option for a parameter.
+     *
+     * <p>This level represents that the corresponding feature is controlled by the user.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String LEVEL_USER = "level_user";
 
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
@@ -732,6 +741,53 @@ public class MediaQualityContract {
      */
     @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
     public static final String SOUND_STYLE_AUTO = "AUTO";
+
+    /**
+     * Defines the allowed values for the 3D mode parameter.
+     * <p>
+     * 3D mode specifies the format of the incoming stereoscopic video signal,
+     * allowing the display to correctly interpret and render the separate images
+     * intended for the left and right eyes. The mode typically corresponds to
+     * common 3D formats such as Side-by-Side, Top-and-Bottom, or Frame Packing.
+     *
+     * @hide
+     */
+    @Retention(RetentionPolicy.SOURCE)
+    @StringDef(prefix = "THREE_D_MODE_", value = {
+            THREE_D_MODE_OFF,
+            THREE_D_MODE_SIDE_BY_SIDE,
+            THREE_D_MODE_TOP_AND_BOTTOM,
+            THREE_D_MODE_FRAME_PACKING,
+    })
+    public @interface ThreeDModeValue {}
+
+    /**
+     * Disables 3D mode.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String THREE_D_MODE_OFF = "off";
+
+    /**
+     * Side-by-side 3D mode, where the left and right views are in the same
+     * frame, placed horizontally next to each other.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String THREE_D_MODE_SIDE_BY_SIDE = "side_by_side";
+
+    /**
+     * Top-and-bottom 3D mode, where the left and right views are in the same
+     * frame, placed vertically on top of each other.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String THREE_D_MODE_TOP_AND_BOTTOM = "top_and_bottom";
+
+    /**
+     * Frame packing 3D mode, where left and right eye views are packed into
+     * a single frame. This format typically provides full resolution for
+     * each eye.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String THREE_D_MODE_FRAME_PACKING = "frame_packing";
 
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
@@ -2053,6 +2109,61 @@ public class MediaQualityContract {
         public static final String PARAMETER_STREAM_STATUS =
                 "stream_status";
 
+        /**
+         * Adjusts the 'MEMC' (Motion Estimation, Motion Compensation) effect.
+         *
+         * <p>Possible values:
+         * <ul>
+         * <li>{@link #LEVEL_OFF}
+         * <li>{@link #LEVEL_LOW}
+         * <li>{@link #LEVEL_MEDIUM}
+         * <li>{@link #LEVEL_HIGH}
+         * <li>{@link #LEVEL_USER}
+         * </ul>
+         *
+         * <p>The default value is {@link #LEVEL_OFF}.
+         *
+         * <p>Type: STRING
+         */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+        public static final String PARAMETER_MEMC_EFFECT = "memc_effect";
+
+        /**
+         * Adjusts the 'Deblur' component of MEMC. The range is from 0 to 10.
+         * <p>Type: INTEGER
+         */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+        public static final String PARAMETER_MEMC_DEBLUR = "memc_deblur";
+
+        /**
+         * Adjusts the 'De-judder' component of MEMC. The range is from 0 to 10.
+         * <p>Type: INTEGER
+         */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+        public static final String PARAMETER_MEMC_DEJUDDER = "memc_dejudder";
+
+        /**
+         * Enables a mode to play content at its original frame rate.
+         * <p>Type: BOOLEAN
+         */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+        public static final String PARAMETER_ORIGINAL_FRAMERATE = "original_framerate";
+
+        /**
+         * Selects the 3D display mode based on the source format.
+         * <p>Type: STRING
+         * <p>See {@link ThreeDModeValue} for possible values.
+         */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+        public static final String PARAMETER_3D_MODE = "3d_mode";
+
+        /**
+         * Controls the conversion from a 3D source to a 2D image.
+         * <p>Type: STRING
+         * <p>See {@link ThreeDModeValue} for possible values.
+         */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+        public static final String PARAMETER_3D_TO_2D = "3d_to_2d";
 
         private PictureQuality() {
         }
@@ -2409,6 +2520,46 @@ public class MediaQualityContract {
          */
         @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_SOUND_STYLE = "sound_style";
+
+        /**
+         * Adjusts the left/right audio balance for the built-in speakers.
+         * The range is -50 (left) to 50 (right), with 0 being centered.
+         * <p>Type: INTEGER
+         */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+        public static final String PARAMETER_BALANCE_SPEAKER = "balance_speaker";
+
+        /**
+         * Adjusts the left/right audio balance for a connected Bluetooth device.
+         * The range is -50 (left) to 50 (right), with 0 being centered.
+         * <p>Type: INTEGER
+         */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+        public static final String PARAMETER_BALANCE_BLUETOOTH = "balance_bluetooth";
+
+        /**
+         * Adjusts the left/right audio balance for a connected headphone.
+         * The range is -50 (left) to 50 (right), with 0 being centered.
+         * <p>Type: INTEGER
+         */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+        public static final String PARAMETER_BALANCE_HEADPHONES = "balance_headphones";
+
+        /**
+         * Toggles the High-Resolution Audio path, which offers better-than-CD quality
+         * playback with higher sampling rates and/or bit depth.
+         * <p>Type: BOOLEAN
+         */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+        public static final String PARAMETER_HI_RES_AUDIO = "hi_res_audio";
+
+        /**
+         * Reports the audio latency of the connected Bluetooth (BT) media device in microseconds.
+         * This value can be used by A/V sync logic to maintain lip-sync.
+         * <p>Type: INTEGER
+         */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+        public static final String PARAMETER_BT_LATENCY_US = "bt_latency_us";
 
         /**
          * Controls the output routing of the Audio Description track to the internal speakers.

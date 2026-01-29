@@ -436,6 +436,14 @@
     <string name="screen_capture_toolbar_screenshot_button">Screenshot</string>
     <!-- Button text in the toolbar for choosing the screen recording type. [CHAR LIMIT=35] -->
     <string name="screen_capture_toolbar_record_button">Record</string>
+    <!-- Content description for the top-left handle of the region box. [CHAR_LIMIT=NONE] -->
+    <string name="screen_capture_region_box_top_left_handle_description">Top-left handle - Use arrow keys to resize</string>
+    <!-- Content description for the top-right handle of the region box. [CHAR_LIMIT=NONE] -->
+    <string name="screen_capture_region_box_top_right_handle_description">Top-right handle - Use arrow keys to resize</string>
+    <!-- Content description for the bottom-right handle of the region box. [CHAR_LIMIT=NONE] -->
+    <string name="screen_capture_region_box_bottom_right_handle_description">Bottom-right handle - Use arrow keys to resize</string>
+    <!-- Content description for the bottom-left handle of the region box. [CHAR_LIMIT=NONE] -->
+    <string name="screen_capture_region_box_bottom_left_handle_description">Bottom-left handle - Use arrow keys to resize</string>
     <!-- Button text for screen sharing [CHAR LIMIT=35] -->
     <string name="screen_share_toolbar_share_button">Share</string>
     <!-- Text for app screen sharing thumbnail when no app is selected. [CHAR LIMIT=35] -->
@@ -464,6 +472,12 @@
     <string name="screen_share_a11y_sharing_tab">Now sharing tab: <xliff:g id="tab_title">%1$s</xliff:g>. Use privacy indicator to end sharing.</string>
     <!-- Accessibility announcement when sharing a display [CHAR LIMIT=NONE] -->
     <string name="screen_share_a11y_sharing_display">Now sharing display: <xliff:g id="display_name">%1$s</xliff:g>. Use privacy indicator to end sharing.</string>
+    <!-- Accessibility announcement when stopping sharing an app [CHAR LIMIT=NONE] -->
+    <string name="screen_share_a11y_stopped_sharing_app">Stopped sharing app: <xliff:g id="app_name">%1$s</xliff:g>. Screen not shared with anyone.</string>
+    <!-- Accessibility announcement when stopping sharing a tab [CHAR LIMIT=NONE] -->
+    <string name="screen_share_a11y_stopped_sharing_tab">Stopped sharing tab: <xliff:g id="tab_title">%1$s</xliff:g>. Screen not shared with anyone.</string>
+    <!-- Accessibility announcement when stopping sharing a display [CHAR LIMIT=NONE] -->
+    <string name="screen_share_a11y_stopped_sharing_display">Stopped sharing display: <xliff:g id="display_name">%1$s</xliff:g>. Screen not shared with anyone.</string>
     <!-- Content description for the app window screenshot button in the toolbar, when the capture mode is set to "screenshot". [CHAR LIMIT=NONE] -->
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y">Take screenshot of window</string>
     <!-- Content description for the app window screenshot button in the toolbar, when the capture mode is set to "record". [CHAR LIMIT=NONE] -->
@@ -501,6 +515,9 @@
 
     <!-- Text of the button popup on the share screen privacy indicator to stop screen sharing. -->
     <string name="screen_share_privacy_indicator_stop_sharing">Stop sharing</string>
+
+    <!-- Accessibility label for the share screen privacy indicator on large screens. [CHAR LIMIT=NONE] -->
+    <string name="share_screen_privacy_indicator_accessibility_label">Screen sharing is on. Use privacy indicator to end sharing.</string>
 
     <!-- Content description for the status bar chip shown to the user when they're sharing their screen to another app on the device [CHAR LIMIT=NONE] -->
     <string name="share_to_app_chip_accessibility_label">Sharing screen</string>

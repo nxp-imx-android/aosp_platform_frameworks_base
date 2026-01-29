@@ -79,13 +79,19 @@ object BouncerMessageStrings {
             }
         }
 
-        return when (securityMode) {
-            Pattern -> Pair(patternDefaultMessage(fpAuthIsAllowed), 0)
-            Password -> Pair(passwordDefaultMessage(fpAuthIsAllowed), 0)
-            Pin -> Pair(pinDefaultMessage(fpAuthIsAllowed), 0)
-            else -> EmptyMessage
-        }
+        return Pair(defaultPrimaryMessage(securityMode, fpAuthIsAllowed), 0)
     }
+
+    private fun defaultPrimaryMessage(
+        securityMode: AuthenticationMethodModel,
+        fpAuthIsAllowed: Boolean,
+    ): Int =
+        when (securityMode) {
+            Pattern -> patternDefaultMessage(fpAuthIsAllowed)
+            Password -> passwordDefaultMessage(fpAuthIsAllowed)
+            Pin -> pinDefaultMessage(fpAuthIsAllowed)
+            else -> 0
+        }
 
     fun incorrectSecurityInput(
         securityMode: AuthenticationMethodModel,
@@ -93,33 +99,40 @@ object BouncerMessageStrings {
         secureLockDeviceEnabled: Boolean = false,
         isDuplicate: Boolean = false,
     ): BouncerMessagePair {
-        val wrongInputMessage =
-            if (isDuplicate) {
-                when (securityMode) {
-                    Pattern -> R.string.kg_primary_auth_duplicate_guess_pattern
-                    Password -> R.string.kg_primary_auth_duplicate_guess_password
-                    Pin -> R.string.kg_primary_auth_duplicate_guess_pin
-                    else -> 0
-                }
+        if (isDuplicate) {
+            val defaultPrimaryMessage = defaultPrimaryMessage(securityMode, fpAuthIsAllowed)
+            val duplicateMessage = duplicateGuessMessage(securityMode)
+            return if (secureLockDevice() && secureLockDeviceEnabled) {
+                Pair(R.string.kg_prompt_title_after_secure_lock_device, duplicateMessage)
             } else {
-                when (securityMode) {
-                    Pattern -> R.string.kg_wrong_pattern_try_again
-                    Password -> R.string.kg_wrong_password_try_again
-                    Pin -> R.string.kg_wrong_pin_try_again
-                    else -> 0
-                }
+                Pair(defaultPrimaryMessage, duplicateMessage)
             }
-        if (secureLockDevice() && secureLockDeviceEnabled) {
-            return Pair(R.string.kg_prompt_title_after_secure_lock_device, wrongInputMessage)
         }
-
-        val secondaryMessage = incorrectSecurityInputSecondaryMessage(fpAuthIsAllowed)
-        return if (wrongInputMessage == 0) {
-            EmptyMessage
-        } else {
-            Pair(wrongInputMessage, secondaryMessage)
+        val wrongInputMessage = wrongInputMessage(securityMode)
+        return when {
+            secureLockDevice() && secureLockDeviceEnabled ->
+                Pair(R.string.kg_prompt_title_after_secure_lock_device, wrongInputMessage)
+            wrongInputMessage != 0 ->
+                Pair(wrongInputMessage, incorrectSecurityInputSecondaryMessage(fpAuthIsAllowed))
+            else -> EmptyMessage
         }
     }
+
+    private fun wrongInputMessage(securityMode: AuthenticationMethodModel): Int =
+        when (securityMode) {
+            Pattern -> R.string.kg_wrong_pattern_try_again
+            Password -> R.string.kg_wrong_password_try_again
+            Pin -> R.string.kg_wrong_pin_try_again
+            else -> 0
+        }
+
+    private fun duplicateGuessMessage(securityMode: AuthenticationMethodModel): Int =
+        when (securityMode) {
+            Pattern -> R.string.kg_primary_auth_duplicate_guess_pattern
+            Password -> R.string.kg_primary_auth_duplicate_guess_password
+            Pin -> R.string.kg_primary_auth_duplicate_guess_pin
+            else -> 0
+        }
 
     private fun incorrectSecurityInputSecondaryMessage(fpAuthIsAllowed: Boolean): Int {
         return if (fpAuthIsAllowed) R.string.kg_wrong_input_try_fp_suggestion else 0

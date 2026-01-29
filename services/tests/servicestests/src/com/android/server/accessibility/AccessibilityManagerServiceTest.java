@@ -304,6 +304,7 @@ public class AccessibilityManagerServiceTest {
         mFakePermissionEnforcer = new FakePermissionEnforcer();
         mFakePermissionEnforcer.grant(Manifest.permission.QUERY_ADVANCED_PROTECTION_MODE);
         mFakePermissionEnforcer.grant(Manifest.permission.MANAGE_USERS);
+        mFakePermissionEnforcer.grant(Manifest.permission.START_ACTIVITIES_FROM_BACKGROUND);
         AdvancedProtectionManager advancedProtectionManager =
                 new AdvancedProtectionManager(
                         mMockAdvancedProtectionServiceBinder); // Assuming constructor signature
@@ -2163,8 +2164,7 @@ public class AccessibilityManagerServiceTest {
     }
 
     @Test
-    @EnableFlags({com.android.hardware.input.Flags.FLAG_ENABLE_TALKBACK_AND_MAGNIFIER_KEY_GESTURES,
-            Flags.FLAG_MANAGER_LIFECYCLE_USER_CHANGE})
+    @EnableFlags(Flags.FLAG_MANAGER_LIFECYCLE_USER_CHANGE)
     public void handleKeyGestureEvent_toggleMagnifier() {
         mFakePermissionEnforcer.grant(Manifest.permission.MANAGE_ACCESSIBILITY);
         assertThat(ShortcutUtils.getShortcutTargetsFromSettings(mTestableContext, KEY_GESTURE,
@@ -2841,6 +2841,7 @@ public class AccessibilityManagerServiceTest {
         doNothing().when(spyAms).onUserStateChangedLocked(any(AccessibilityUserState.class));
 
         spyAms.handleAdvancedProtectionModeStateChanged(true);
+        mTestableLooper.processAllMessages();
 
         verify(mDevicePolicyManager).addUserRestrictionGlobally(
                 eq(ADVANCED_PROTECTION_SYSTEM_ENTITY),
@@ -3316,7 +3317,7 @@ public class AccessibilityManagerServiceTest {
         for (String target : targets) {
             doReturn(true).when(userState).isShortcutTargetInstalledLocked(target);
             for (Integer user : users) {
-                doReturn(true).when(userState).isShortcutTargetPermittedLocked(target, user);
+                doReturn(true).when(userState).isShortcutTargetPermittedLocked(target);
             }
         }
         mA11yms.mUserStates.put(userId, userState);

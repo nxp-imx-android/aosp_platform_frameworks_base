@@ -44,7 +44,9 @@ import android.app.admin.DevicePolicyManagerInternal;
 import android.app.role.OnRoleHoldersChangedListener;
 import android.app.role.RoleManager;
 import android.compat.annotation.ChangeId;
+import android.compat.annotation.Disabled;
 import android.compat.annotation.EnabledSince;
+import android.compat.annotation.NoLogging;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -182,6 +184,16 @@ public class VoiceInteractionManagerService extends SystemService {
     @ChangeId
     @EnabledSince(targetSdkVersion = android.os.Build.VERSION_CODES.CINNAMON_BUN)
     static final long ENABLE_RESTRICT_ASSIST_STRUCTURE = 437416500L;
+
+    /**
+     * Change ID to allow the Voice Interaction Service to bypass the background self-trigger
+     * restriction. This is intended solely for CTS tests to validate legacy behavior or specific
+     * test cases that require programmatic session triggering from the background.
+     */
+    @ChangeId
+    @Disabled
+    @NoLogging
+    static final long BYPASS_SELF_TRIGGER_ASSIST_RESTRICTION = 454889405L;
 
     /**
      * Length of time in milliseconds where the current VIS service can trigger a new session in
@@ -1310,6 +1322,10 @@ public class VoiceInteractionManagerService extends SystemService {
          * @param callingUid The UID of the triggering caller.
          * @return {@code true} if the self-trigger is allowed, {@code false} otherwise.
          */
+        @RequiresPermission(allOf = {
+                Manifest.permission.LOG_COMPAT_CHANGE,
+                Manifest.permission.READ_COMPAT_CHANGE_CONFIG
+        })
         private boolean isSelfTriggerAllowed(int callingUid) {
 
             if (mImpl == null) {
@@ -1329,6 +1345,21 @@ public class VoiceInteractionManagerService extends SystemService {
                 Slog.d(TAG, "Self-trigger check: not from VIS");
                 // Current caller is not the VIS, so this is not considered a self-trigger.
                 return true;
+            }
+
+            // Allow self-triggering if the caller has enabled the bypass compat change.
+            // This allows CTS tests to proceed by enabling this change for the test app / helper.
+            if (mImpl.mInfo != null) {
+                try {
+                    if (mPlatformCompat.isChangeEnabled(BYPASS_SELF_TRIGGER_ASSIST_RESTRICTION,
+                            mImpl.getApplicationInfo())) {
+                        Slog.d(TAG, "Self-trigger check: bypass enabled for "
+                                + mImpl.mInfo.getServiceInfo().packageName);
+                        return true;
+                    }
+                } catch (RemoteException e) {
+                    Slog.w(TAG, "RemoteException while calling isChangeEnabled", e);
+                }
             }
 
             // Condition 1: There has been a hotword trigger inside the allowable window.

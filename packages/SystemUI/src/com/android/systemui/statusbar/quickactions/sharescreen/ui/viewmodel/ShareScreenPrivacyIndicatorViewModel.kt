@@ -17,6 +17,7 @@
 package com.android.systemui.statusbar.quickactions.sharescreen.ui.viewmodel
 
 import androidx.compose.runtime.getValue
+import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.res.R
@@ -58,6 +59,10 @@ constructor(
                 chipContent = null,
                 // TODO(b/444293568) Finalize and update the colors of this chip.
                 colors = ChipColors.AvControlsTheme,
+                contentDescription =
+                    ContentDescription.Resource(
+                        R.string.share_screen_privacy_indicator_accessibility_label
+                    ),
                 popupViewModelFactory = popupViewModelFactory,
             )
         } else {

@@ -298,66 +298,6 @@ public class BatteryStatsImpl extends BatteryStats {
     private final CustomEnergyConsumerPowerStatsCollector mCustomEnergyConsumerPowerStatsCollector;
     private final SparseBooleanArray mPowerStatsCollectorEnabled = new SparseBooleanArray();
 
-    static class BatteryStatsSession {
-        private final BatteryStatsHistory mHistory;
-        private final long mMonotonicStartTime;
-        private final long mStartClockTime;
-        private final long mEstimatedBatteryCapacityMah;
-        private final long mBatteryTimeRemainingMs;
-        private final long mChargeTimeRemainingMs;
-        private final String[] mCustomEnergyConsumerNames;
-        private final BatteryStatsImpl mBatteryStats;
-
-        BatteryStatsSession(BatteryStatsHistory history, long monotonicStartTime,
-                long startClockTime, long batteryTimeRemainingMs, long chargeTimeRemainingMs,
-                long estimatedBatteryCapacityMah, String[] customEnergyConsumerNames,
-                BatteryStatsImpl batteryStats) {
-            mHistory = history;
-            mMonotonicStartTime = monotonicStartTime;
-            mStartClockTime = startClockTime;
-            mEstimatedBatteryCapacityMah = estimatedBatteryCapacityMah;
-            mBatteryTimeRemainingMs = batteryTimeRemainingMs;
-            mChargeTimeRemainingMs = chargeTimeRemainingMs;
-            mCustomEnergyConsumerNames = customEnergyConsumerNames;
-            mBatteryStats = batteryStats;
-        }
-
-        BatteryStatsHistory getHistory() {
-            return mHistory;
-        }
-
-        long getMonotonicStartTime() {
-            return mMonotonicStartTime;
-        }
-
-        long getStartClockTime() {
-            return mStartClockTime;
-        }
-
-        long getBatteryTimeRemainingMs() {
-            return mBatteryTimeRemainingMs;
-        }
-
-        long getChargeTimeRemainingMs() {
-            return mChargeTimeRemainingMs;
-        }
-
-        long getEstimatedBatteryCapacity() {
-            return mEstimatedBatteryCapacityMah;
-        }
-
-        String[] getCustomEnergyConsumerNames() {
-            return mCustomEnergyConsumerNames;
-        }
-
-        /** @deprecated This method will be removed once PowerCalculators are removed from the
-         * code base. */
-        @Deprecated
-        public BatteryStatsImpl getBatteryStats() {
-            return mBatteryStats;
-        }
-    }
-
     BatteryStatsSession getBatteryStatsSession() {
         synchronized (this) {
             long elapsedTimeUs = mClock.elapsedRealtime() * 1000;
@@ -369,7 +309,7 @@ public class BatteryStatsImpl extends BatteryStats {
                     chargeTimeRemainingUs >= 0 ? chargeTimeRemainingUs / 1000 : -1;
             return new BatteryStatsSession(mHistory, getMonotonicStartTime(), getStartClockTime(),
                     batteryTimeRemainingMs, chargeTimeRemainingMs, getEstimatedBatteryCapacity(),
-                    getCustomEnergyConsumerNames(), this);
+                    getCustomEnergyConsumerNames());
         }
     }
 

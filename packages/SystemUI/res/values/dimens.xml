@@ -413,7 +413,6 @@
 
     <dimen name="notification_2025_min_tap_target_size">48dp</dimen>
 
-    <dimen name="notification_importance_toggle_size">48dp</dimen>
     <dimen name="notification_importance_button_separation">8dp</dimen>
     <dimen name="notification_importance_drawable_padding">8dp</dimen>
     <dimen name="notification_importance_header_text">12sp</dimen>

@@ -2114,52 +2114,31 @@
     <string name="app_suspended_more_details" msgid="211260942831587014">"Več o tem"</string>
     <string name="app_suspended_unsuspend_message" msgid="1665438589450555459">"Prekliči začasno zaustavitev aplikacije"</string>
     <string name="app_lock_add_screen_lock_button_text" msgid="9209013414563206600">"Dodaj zaklepanje zaslona"</string>
-    <string name="app_lock_add_screen_lock_message" msgid="6107009360675769892">"Zaklepanje zaslona je lahko koda PIN, vzorec ali geslo. To boste uporabljali za odklepanje naprave in dostop do zaklenjenih aplikacij."</string>
+    <string name="app_lock_add_screen_lock_message" msgid="6107009360675769892">"Način zaklepanja zaslona je lahko koda PIN, vzorec ali geslo. Uporabljali ga boste za odklepanje naprave in dostop do zaklenjenih aplikacij."</string>
     <string name="app_lock_add_screen_lock_title" msgid="6905612843620128689">"Najprej dodajte zaklepanje zaslona"</string>
-    <!-- no translation found for enable_app_lock_success_toast_message (3339622779190529987) -->
-    <skip />
-    <!-- no translation found for enable_app_lock_failure_toast_message (1055838896510445566) -->
-    <skip />
-    <!-- no translation found for disable_app_lock_success_toast_message (70733620589071266) -->
-    <skip />
+    <string name="enable_app_lock_success_toast_message" msgid="3339622779190529987">"Aplikacija <xliff:g id="APP_NAME">%1$s</xliff:g> je zaklenjena"</string>
+    <string name="enable_app_lock_failure_toast_message" msgid="1055838896510445566">"Aplikacije <xliff:g id="APP_NAME">%1$s</xliff:g> ni mogoče zakleniti"</string>
+    <string name="disable_app_lock_success_toast_message" msgid="70733620589071266">"Zaklepanje aplikacije <xliff:g id="APP_NAME">%1$s</xliff:g> je izklopljeno"</string>
     <string name="locked_app_biometric_prompt_description" msgid="6853122652400451464">"Aplikacija <xliff:g id="APP_NAME">%1$s</xliff:g> je zaklenjena"</string>
     <string name="locked_app_external_display_message" msgid="5483884799685545338">"Če želite dostopati do aplikacije na tem zaslonu, najprej v drugi napravi potrdite svojo identiteto"</string>
-    <!-- no translation found for app_lock_edu_dialog_enable_app_lock_title (283314042336592322) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_description (8176807243219769518) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_description_template (8563718120753342530) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_description_template_no_biometrics (7122017109150633691) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_info_header (5876120209204270990) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_info_notifications (1124438392204873305) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_info_widgets (8809009414650740872) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_button_lock (3914687128135704801) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_face (1348151645996748654) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_fingerprint (5206107469561561455) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_fingerprint_and_face (7895807411323811641) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_lockscreen_password_name (8487096457702445059) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_lockscreen_pattern_name (991436996281983547) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_lockscreen_pin_name (6458607126966304795) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_dialog_title (5030286398974840579) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_dialog_sub_title (310758587817184145) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_expand_app_list_button (3214809707125223273) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_continue_button (4045066724173414043) -->
-    <skip />
+    <string name="app_lock_edu_dialog_enable_app_lock_title" msgid="283314042336592322">"Želite vklopiti zaklepanje aplikacije <xliff:g id="APP_NAME">%1$s</xliff:g>?"</string>
+    <string name="app_lock_edu_dialog_description" msgid="8176807243219769518">"Zaradi varnosti lahko do te aplikacije dostopate samo vi s prstnim odtisom in odklepanjem z obrazom ali kodo PIN"</string>
+    <string name="app_lock_edu_dialog_description_template" msgid="8563718120753342530">"Zaradi vaše varnosti lahko do te aplikacije dostopate samo vi z naslednjim: %1$s ali %2$s"</string>
+    <string name="app_lock_edu_dialog_description_template_no_biometrics" msgid="7122017109150633691">"Zaradi vaše varnosti lahko do te aplikacije dostopate samo vi z naslednjim: %1$s"</string>
+    <string name="app_lock_edu_dialog_info_header" msgid="5876120209204270990">"Z zaklepanjem aplikacije"</string>
+    <string name="app_lock_edu_dialog_info_notifications" msgid="1124438392204873305">"Vsebina obvestil bo skrita"</string>
+    <string name="app_lock_edu_dialog_info_widgets" msgid="8809009414650740872">"Pripomočki in bližnjice bodo odstranjeni"</string>
+    <string name="app_lock_edu_dialog_button_lock" msgid="3914687128135704801">"Dodajanje zaklepanja aplikacije"</string>
+    <string name="app_lock_edu_dialog_biometric_description_has_face" msgid="1348151645996748654">"Odklepanje z obrazom"</string>
+    <string name="app_lock_edu_dialog_biometric_description_has_fingerprint" msgid="5206107469561561455">"Odklepanje s prstnim odtisom"</string>
+    <string name="app_lock_edu_dialog_biometric_description_has_fingerprint_and_face" msgid="7895807411323811641">"Odklepanje s prstnim odtisom ali obrazom"</string>
+    <string name="app_lock_edu_dialog_lockscreen_password_name" msgid="8487096457702445059">"geslom"</string>
+    <string name="app_lock_edu_dialog_lockscreen_pattern_name" msgid="991436996281983547">"vzorcem"</string>
+    <string name="app_lock_edu_dialog_lockscreen_pin_name" msgid="6458607126966304795">"kodo PIN"</string>
+    <string name="app_lock_permission_review_dialog_title" msgid="5030286398974840579">"Fotografije bodo morda še vedno prikazane v drugih aplikacijah"</string>
+    <string name="app_lock_permission_review_dialog_sub_title" msgid="310758587817184145">"Aplikacije z dostopom do fotografij"</string>
+    <string name="app_lock_permission_review_expand_app_list_button" msgid="3214809707125223273">"Prikaži vse"</string>
+    <string name="app_lock_permission_review_continue_button" msgid="4045066724173414043">"Naprej"</string>
     <string name="work_mode_off_title" msgid="6367463960165135829">"Želite znova aktivirati delovne aplikacije?"</string>
     <string name="work_mode_turn_on" msgid="5316648862401307800">"Znova aktiviraj"</string>
     <string name="work_mode_emergency_call_button" msgid="6818855962881612322">"Nujni primer"</string>

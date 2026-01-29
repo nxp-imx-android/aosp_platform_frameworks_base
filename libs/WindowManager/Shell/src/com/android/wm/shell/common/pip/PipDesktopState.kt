@@ -112,7 +112,8 @@ class PipDesktopState(
     fun isFreeFloatingPipEnabled(): Boolean {
         val displayId = pipDisplayLayoutState.displayId
         logD(
-            "isFreeFloatingPipEnabled flag=%b isDisplayDesktopFirst=%b",
+            "isFreeFloatingPipEnabled displayId=%d flag=%b isDisplayDesktopFirst=%b",
+            displayId,
             Flags.enableDesktopWindowingFreeFloatingPip(),
             isDisplayDesktopFirst(displayId),
         )

@@ -46,8 +46,6 @@ public class StatusBarWindowView extends FrameLayout {
     private int mRightInset = 0;
     private int mTopInset = 0;
 
-    private float mTouchDownY = 0;
-
     @Nullable private StatusBarConfigurationController mConfigurationController;
 
     public StatusBarWindowView(Context context, AttributeSet attrs) {

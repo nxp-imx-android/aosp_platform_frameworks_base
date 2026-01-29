@@ -84,8 +84,8 @@ final class WakeLockLog {
     private static final int LOG_SIZE = 1024 * 3;
     private static final int LOG_SIZE_MIN = MAX_LOG_ENTRY_BYTE_SIZE + 1;
 
-    private static final int TAG_DATABASE_SIZE = 64;
-    private static final int TAG_DATABASE_SIZE_MAX = 128;
+    private static final int TAG_DATABASE_SIZE = 128;
+    private static final int TAG_DATABASE_SIZE_MAX = 256;
     private static final int TAG_DATABASE_STARTING_SIZE = 16;
 
     private static final int LEVEL_SCREEN_TIMEOUT_OVERRIDE_WAKE_LOCK = 0;
@@ -1289,6 +1289,8 @@ final class WakeLockLog {
                     System.arraycopy(mArray, 0, newArray, 0, oldSize);
                     mArray = newArray;
                     firstAvailable = oldSize;
+                    Slog.i(TAG, "Changing the tag database size from " + oldSize + " to  "
+                            + newSize);
                 }
             }
 

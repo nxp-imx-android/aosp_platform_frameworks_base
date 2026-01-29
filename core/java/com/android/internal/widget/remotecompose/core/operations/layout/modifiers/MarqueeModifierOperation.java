@@ -16,6 +16,7 @@
 package com.android.internal.widget.remotecompose.core.operations.layout.modifiers;
 
 import static com.android.internal.widget.remotecompose.core.documentation.DocumentedOperation.FLOAT;
+import static com.android.internal.widget.remotecompose.core.documentation.DocumentedOperation.INT;
 
 import android.annotation.NonNull;
 
@@ -265,8 +266,13 @@ public class MarqueeModifierOperation extends DecoratorModifierOperation impleme
      */
     public static void documentation(@NonNull DocumentationBuilder doc) {
         doc.operation("Modifier Operations", OP_CODE, CLASS_NAME)
-                .description("specify a Marquee Modifier")
-                .field(FLOAT, "value", "");
+                .description("Define a scrolling marquee effect for a component")
+                .field(INT, "iterations", "Number of iterations")
+                .field(INT, "animationMode", "Animation mode")
+                .field(FLOAT, "repeatDelayMillis", "Repeat delay in ms")
+                .field(FLOAT, "initialDelayMillis", "Initial delay in ms")
+                .field(FLOAT, "spacing", "Spacing between marquee iterations")
+                .field(FLOAT, "velocity", "Velocity of the marquee animation");
     }
 
     @Override

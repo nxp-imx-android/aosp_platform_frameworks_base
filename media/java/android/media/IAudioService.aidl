@@ -19,6 +19,9 @@ package android.media;
 import android.bluetooth.BluetoothDevice;
 import android.content.ComponentName;
 import android.content.AttributionSource;
+import android.media.audio.IAudioModeSession;
+import android.media.audio.IAudioModeSessionCallback;
+import android.media.audio.AudioModeSessionRequest;
 import android.media.AudioAttributes;
 import android.media.AudioDeviceAttributes;
 import android.media.AudioFormat;
@@ -877,4 +880,8 @@ interface IAudioService {
     int getZoneIdForAudioVolumeGroupId(int groupId);
 
     int getDirectPlaybackSupport(in AudioFormat format, in AudioAttributes attributes);
+
+    @EnforcePermission("MODIFY_PHONE_STATE")
+    IAudioModeSession createAudioModeSession(in AudioModeSessionRequest request,
+            in IAudioModeSessionCallback callback);
 }

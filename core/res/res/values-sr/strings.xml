@@ -2115,50 +2115,29 @@
     <string name="app_lock_add_screen_lock_button_text" msgid="9209013414563206600">"Додај откључавање екрана"</string>
     <string name="app_lock_add_screen_lock_message" msgid="6107009360675769892">"Екран може да се откључа помоћу PIN-а, шаблона или лозинке. Њих користите за откључавање уређаја и приступ закључаним апликацијама."</string>
     <string name="app_lock_add_screen_lock_title" msgid="6905612843620128689">"Прво додајте откључавање екрана"</string>
-    <!-- no translation found for enable_app_lock_success_toast_message (3339622779190529987) -->
-    <skip />
-    <!-- no translation found for enable_app_lock_failure_toast_message (1055838896510445566) -->
-    <skip />
-    <!-- no translation found for disable_app_lock_success_toast_message (70733620589071266) -->
-    <skip />
+    <string name="enable_app_lock_success_toast_message" msgid="3339622779190529987">"Апликација <xliff:g id="APP_NAME">%1$s</xliff:g> је закључана"</string>
+    <string name="enable_app_lock_failure_toast_message" msgid="1055838896510445566">"Не можете да закључате апликацију <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
+    <string name="disable_app_lock_success_toast_message" msgid="70733620589071266">"Закључавање апликација је уклоњено из апликације <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="locked_app_biometric_prompt_description" msgid="6853122652400451464">"Апликација <xliff:g id="APP_NAME">%1$s</xliff:g> је закључана"</string>
     <string name="locked_app_external_display_message" msgid="5483884799685545338">"Да бисте приступили апликацији на овом екрану, прво потврдите идентитет на другом уређају"</string>
-    <!-- no translation found for app_lock_edu_dialog_enable_app_lock_title (283314042336592322) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_description (8176807243219769518) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_description_template (8563718120753342530) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_description_template_no_biometrics (7122017109150633691) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_info_header (5876120209204270990) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_info_notifications (1124438392204873305) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_info_widgets (8809009414650740872) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_button_lock (3914687128135704801) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_face (1348151645996748654) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_fingerprint (5206107469561561455) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_fingerprint_and_face (7895807411323811641) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_lockscreen_password_name (8487096457702445059) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_lockscreen_pattern_name (991436996281983547) -->
-    <skip />
-    <!-- no translation found for app_lock_edu_dialog_lockscreen_pin_name (6458607126966304795) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_dialog_title (5030286398974840579) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_dialog_sub_title (310758587817184145) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_expand_app_list_button (3214809707125223273) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_continue_button (4045066724173414043) -->
-    <skip />
+    <string name="app_lock_edu_dialog_enable_app_lock_title" msgid="283314042336592322">"Желите да додате закључавање апликације за апликацију <xliff:g id="APP_NAME">%1$s</xliff:g>?"</string>
+    <string name="app_lock_edu_dialog_description" msgid="8176807243219769518">"Ради ваше безбедности, само ви можете да приступите овој апликацији помоћу откључавања отиском прста и лицем или помоћу PIN-а"</string>
+    <string name="app_lock_edu_dialog_description_template" msgid="8563718120753342530">"Ради ваше безбедности, само ви можете да приступите овој апликацији помоћу %1$s или %2$s-а"</string>
+    <string name="app_lock_edu_dialog_description_template_no_biometrics" msgid="7122017109150633691">"Ради ваше безбедности, само ви можете да приступите овој апликацији уз %1$s"</string>
+    <string name="app_lock_edu_dialog_info_header" msgid="5876120209204270990">"Са закључавањем апликација"</string>
+    <string name="app_lock_edu_dialog_info_notifications" msgid="1124438392204873305">"Садржај обавештења ће бити скривен"</string>
+    <string name="app_lock_edu_dialog_info_widgets" msgid="8809009414650740872">"Виџети и пречице ће бити уклоњени"</string>
+    <string name="app_lock_edu_dialog_button_lock" msgid="3914687128135704801">"Додај закључавање апликација"</string>
+    <string name="app_lock_edu_dialog_biometric_description_has_face" msgid="1348151645996748654">"Откључавање лицем"</string>
+    <string name="app_lock_edu_dialog_biometric_description_has_fingerprint" msgid="5206107469561561455">"Откључавање отиском прста"</string>
+    <string name="app_lock_edu_dialog_biometric_description_has_fingerprint_and_face" msgid="7895807411323811641">"Откључавање отиском прста или лицем"</string>
+    <string name="app_lock_edu_dialog_lockscreen_password_name" msgid="8487096457702445059">"Лозинка"</string>
+    <string name="app_lock_edu_dialog_lockscreen_pattern_name" msgid="991436996281983547">"Шаблон"</string>
+    <string name="app_lock_edu_dialog_lockscreen_pin_name" msgid="6458607126966304795">"PIN"</string>
+    <string name="app_lock_permission_review_dialog_title" msgid="5030286398974840579">"Слике могу и даље да се приказују у другим апликацијама"</string>
+    <string name="app_lock_permission_review_dialog_sub_title" msgid="310758587817184145">"Апликације са приступом сликама"</string>
+    <string name="app_lock_permission_review_expand_app_list_button" msgid="3214809707125223273">"Прикажи све"</string>
+    <string name="app_lock_permission_review_continue_button" msgid="4045066724173414043">"Настави"</string>
     <string name="work_mode_off_title" msgid="6367463960165135829">"Укључити пословне апликације?"</string>
     <string name="work_mode_turn_on" msgid="5316648862401307800">"Поново активирај"</string>
     <string name="work_mode_emergency_call_button" msgid="6818855962881612322">"Хитан случај"</string>

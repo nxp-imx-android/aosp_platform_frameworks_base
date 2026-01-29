@@ -17,12 +17,15 @@
 package android.media.audio;
 
 import android.content.AttributionSourceState;
+import android.media.audio.IAudioModeSession;
 
 /**
  * {@hide}
  */
 parcelable AudioModeSessionRequest {
     int mode;
-    boolean isHandsFreeUseCase;
+    boolean isDisplayActiveUseCase;
     AttributionSourceState attributionSource;
+    AttributionSourceState clientAttribution;
+    int[] noFocusModes;
 }

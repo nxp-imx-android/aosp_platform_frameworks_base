@@ -86,12 +86,12 @@
     <string name="kg_fp_locked_out" msgid="6228277682396768830">"ಫಿಂಗರ್‌ ಪ್ರಿಂಟ್‌ನೊಂದಿಗೆ ಅನ್‌ಲಾಕ್ ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ. ಹಲವು ಬಾರಿ ಪ್ರಯತ್ನಿಸಿದ್ದೀರಿ."</string>
     <string name="kg_trust_agent_disabled" msgid="5400691179958727891">"ವಿಶ್ವಾಸಾರ್ಹ ಏಜೆಂಟ್ ಲಭ್ಯವಿಲ್ಲ"</string>
     <string name="kg_primary_auth_locked_out_pin" msgid="5492230176361601475">"ತಪ್ಪಾದ ಪಿನ್‌ನೊಂದಿಗೆ ಹಲವು ಬಾರಿ ಪ್ರಯತ್ನಿಸಿರುವಿರಿ"</string>
-    <string name="kg_primary_auth_duplicate_guess_pin" msgid="5834891656916692329">"ಆ ಪಿನ್ ಅನ್ನು ಈಗಾಗಲೇ ಪ್ರಯತ್ನಿಸಿದ್ದೇನೆ. ಮತ್ತೊಂದನ್ನು ಬಳಸಿ ನೋಡಿ."</string>
+    <string name="kg_primary_auth_duplicate_guess_pin" msgid="5834891656916692329">"ಈಗಾಗಲೇ ಆ ಪಿನ್ ಬಳಸಲಾಗಿದೆ. ಬೇರೊಂದನ್ನು ಬಳಸಿ."</string>
     <string name="kg_primary_auth_duplicate_guess_pattern" msgid="3827593245962385968">"ಆ ಪ್ಯಾಟರ್ನ್ ಅನ್ನು ಈಗಾಗಲೇ ಬಳಸಿದ್ದೇನೆ. ಮತ್ತೊಂದನ್ನು ಬಳಸಿ ನೋಡಿ."</string>
     <string name="kg_primary_auth_duplicate_guess_password" msgid="3153406042812407458">"ಆ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಈಗಾಗಲೇ ಬಳಸಿದ್ದೇನೆ. ಮತ್ತೊಂದನ್ನು ಬಳಸಿ ನೋಡಿ."</string>
     <string name="kg_primary_auth_locked_out_pattern" msgid="8266214607346180952">"ತಪ್ಪಾದ ಪ್ಯಾಟರ್ನ್‌ನೊಂದಿಗೆ ಹಲವು ಬಾರಿ ಪ್ರಯತ್ನಿಸಿರುವಿರಿ"</string>
     <string name="kg_primary_auth_locked_out_password" msgid="6170245108400198659">"ತಪ್ಪಾದ ಪಾಸ್‌ವರ್ಡ್‌ನೊಂದಿಗೆ ಹಲವು ಬಾರಿ ಪ್ರಯತ್ನಿಸಿರುವಿರಿ"</string>
-    <string name="kg_primary_auth_locked_out_pin_shortlink" msgid="1294871994741389848">"ತಪ್ಪಾದ ಪಿನ್‌ನೊಂದಿಗೆ ಹಲವಾರು ಪ್ರಯತ್ನಗಳು \n<xliff:g id="SHORTLINK">{shortlink}</xliff:g> ನಲ್ಲಿ ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ"</string>
+    <string name="kg_primary_auth_locked_out_pin_shortlink" msgid="1294871994741389848">"ತಪ್ಪಾದ ಪಿನ್‌ ಬಳಸಿ ಹಲವಾರು ಬಾರಿ ಪ್ರಯತ್ನಿಸಲಾಗಿದೆ\n<xliff:g id="SHORTLINK">{shortlink}</xliff:g> ನಲ್ಲಿ ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ"</string>
     <string name="kg_primary_auth_locked_out_pattern_shortlink" msgid="5998598232858156495">"ತಪ್ಪಾದ ಮಾದರಿಯೊಂದಿಗೆ ಹಲವಾರು ಪ್ರಯತ್ನಗಳು\n<xliff:g id="SHORTLINK">{shortlink}</xliff:g> ನಲ್ಲಿ ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ"</string>
     <string name="kg_primary_auth_locked_out_password_shortlink" msgid="7035847891707609104">"ತಪ್ಪಾದ ಪಾಸ್‌ವರ್ಡ್‌ನೊಂದಿಗೆ ಹಲವಾರು ಪ್ರಯತ್ನಗಳು\n<xliff:g id="SHORTLINK">{shortlink}</xliff:g> ನಲ್ಲಿ ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ"</string>
     <string name="kg_too_many_failed_attempts_countdown" msgid="2038195171919795529">"{count,plural, =1{# ಸೆಕೆಂಡಿನ ನಂತರ ಪುನಃ ಪ್ರಯತ್ನಿಸಿ.}one{# ಸೆಕೆಂಡುಗಳ ನಂತರ ಪುನಃ ಪ್ರಯತ್ನಿಸಿ.}other{# ಸೆಕೆಂಡುಗಳ ನಂತರ ಪುನಃ ಪ್ರಯತ್ನಿಸಿ.}}"</string>

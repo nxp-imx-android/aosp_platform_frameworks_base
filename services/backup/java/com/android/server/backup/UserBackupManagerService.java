@@ -49,6 +49,7 @@ import android.app.backup.BackupAnnotations.BackupDestination;
 import android.app.backup.BackupManager;
 import android.app.backup.BackupManagerMonitor;
 import android.app.backup.BackupRestoreEventLogger;
+import android.app.backup.DelayedRestoreRequest;
 import android.app.backup.FullBackup;
 import android.app.backup.IBackupManager;
 import android.app.backup.IBackupManagerMonitor;
@@ -2834,6 +2835,33 @@ public class UserBackupManagerService {
                         transportConnection, /* caller */ "BMS.reportDelayedRestoreResult");
             }
         }
+    }
+
+    /**
+     * Schedules a restore request that is not yet possible due to some external dependency (for
+     * example, an app install).
+     *
+     * @param request The DelayedRestoreRequest to schedule
+     * @return boolean indicating the success of the scheduling request.
+     */
+    public boolean scheduleDelayedRestore(DelayedRestoreRequest request) {
+        return scheduleDelayedRestore(request, mContext.getOpPackageName());
+    }
+
+    private boolean scheduleDelayedRestore(DelayedRestoreRequest request,
+            String requesterPackageName) {
+        // TODO: Add implementation in followup
+        return false;
+    }
+
+
+    /**
+     * Triggers any previously scheduled delayed restore requests whose conditions are met.
+     *
+     * @param request The DelayedRestoreRequest to trigger.
+     */
+    public void onDelayedRestoreConditionMet(DelayedRestoreRequest request) {
+        // TODO: Add implementation in followup
     }
 
     @SuppressWarnings("AndroidFrameworkRequiresPermission")

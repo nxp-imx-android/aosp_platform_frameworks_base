@@ -27,7 +27,5 @@ object KeyguardTransitionKeys {
      */
     val WithAnimationOverLockscreen = TransitionKey("WithNotificationLaunchAnimation")
 
-    val GoneToAodEnterFromTop = TransitionKey("GoneToAodEnterFromTop")
-
     val AodToGoneTransition = TransitionKey("AodToGoneTransition")
 }

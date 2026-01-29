@@ -32,6 +32,7 @@ public abstract class PaintContext {
     public static final int TEXT_MEASURE_AUTOSIZE = 0x10;
     protected @NonNull RemoteContext mContext;
     private boolean mNeedsRepaint = false;
+    private int mMeasureVersion;
 
     @NonNull
     public RemoteContext getContext() {
@@ -556,4 +557,20 @@ public abstract class PaintContext {
      * @param color set the initial color of the bitmap
      */
     public abstract void drawToBitmap(int bitmapId, int mode, int color);
+
+    /**
+     * Set the measure version
+     * @param measureVersion
+     */
+    public void setMeasureVersion(int measureVersion) {
+        mMeasureVersion = measureVersion;
+    }
+
+    /**
+     * Get the measure version
+     * @return
+     */
+    public int getMeasureVersion() {
+        return mMeasureVersion;
+    }
 }

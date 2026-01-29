@@ -308,7 +308,7 @@ private fun ContentScope.QuickSettingsScene(
              * that the notification stack is entirely "below" the entire screen.
              */
             val minNotificationStackTop = screenHeight.roundToInt() + 1
-
+            val navigationBarPadding = WindowInsets.navigationBars.asPaddingValues()
             // TODO(b/436646848): remove ScrollingNotificationPanel from QuickSettings
             ScrollingNotificationPanel(
                 tag = "QSScene",
@@ -320,8 +320,7 @@ private fun ContentScope.QuickSettingsScene(
                 shouldFillMaxHeight = true,
                 isTransparencyEnabled = viewModel.isTransparencyEnabled,
                 stackTopPadding = dimensionResource(id = R.dimen.notification_side_paddings),
-                stackBottomPadding =
-                    WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding(),
+                stackBottomPadding = { navigationBarPadding.calculateBottomPadding() },
                 shouldIncludeHeadsUpSpace = false,
                 isActivated = false,
                 modifier =
