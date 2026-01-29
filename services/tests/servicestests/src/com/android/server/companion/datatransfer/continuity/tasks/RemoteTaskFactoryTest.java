@@ -17,66 +17,46 @@
 package com.android.server.companion.datatransfer.continuity.tasks;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 import android.companion.datatransfer.continuity.RemoteTask;
 import android.content.pm.ActivityInfo;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.platform.test.annotations.Presubmit;
-import android.testing.AndroidTestingRunner;
-import androidx.test.InstrumentationRegistry;
+import com.android.server.companion.datatransfer.continuity.TaskContinuityTest;
 import com.android.server.companion.datatransfer.continuity.messages.HandoffOptions;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskInfo;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
 @Presubmit
-@RunWith(AndroidTestingRunner.class)
-public class RemoteTaskFactoryTest {
+public class RemoteTaskFactoryTest extends TaskContinuityTest {
 
-    @Mock private PackageManager mockPackageManager;
     @Mock private ActivityInfo mockBrowserActivityInfo;
-
-    private RemoteTaskFactory remoteTaskFactory;
 
     private final String BROWSER_PACKAGE_NAME = "com.android.browser";
     private final String BROWSER_LABEL = "Browser";
+    private final int ASSOCIATION_ID = 1;
+    private final String ASSOCIATION_DISPLAY_NAME = "test_device";
 
     @Before
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
-        when(mockPackageManager.getDefaultBrowserPackageNameAsUser(0))
+        when(mMockPackageManager.getDefaultBrowserPackageNameAsUser(USER_ID))
                 .thenReturn(BROWSER_PACKAGE_NAME);
-        setupMockApplicationInfo(BROWSER_PACKAGE_NAME, BROWSER_LABEL);
-
-        remoteTaskFactory =
-                new RemoteTaskFactory(
-                        0,
-                        InstrumentationRegistry.getInstrumentation().getTargetContext(),
-                        mockPackageManager);
+        setApplicationInfo(BROWSER_PACKAGE_NAME, BROWSER_LABEL);
     }
 
     @Test
     public void testCreate_packageInstalled_returnsRemoteTask() {
-        int associationId = 1;
-        String associationDisplayName = "test_device";
         String packageName = "com.example.app";
         String label = "label";
-        setupMockApplicationInfo(packageName, label);
-        HandoffOptions handoffOptions = new HandoffOptions(true, false);
-        RemoteTaskInfo remoteTaskInfo =
-                new RemoteTaskInfo(1, packageName, true, 100, handoffOptions);
-
+        setApplicationInfo(packageName, label);
         RemoteTask remoteTask =
-                remoteTaskFactory.create(associationId, associationDisplayName, remoteTaskInfo);
+                tryCreate(
+                        new RemoteTaskInfo(
+                                1, packageName, true, 100, new HandoffOptions(true, false)));
 
-        assertThat(remoteTask.getAssociationDisplayName()).isEqualTo(associationDisplayName);
+        assertThat(remoteTask.getAssociationDisplayName()).isEqualTo(ASSOCIATION_DISPLAY_NAME);
         assertThat(remoteTask.getPackageName()).isEqualTo(packageName);
         assertThat(remoteTask.getLabel()).isEqualTo(label);
         assertThat(remoteTask.isHandoffEnabled()).isTrue();
@@ -85,68 +65,55 @@ public class RemoteTaskFactoryTest {
 
     @Test
     public void testCreate_handoffDisabled_returnsNull() {
-        int associationId = 1;
-        String associationDisplayName = "test_device";
         String packageName = "com.example.app";
         String label = "label";
-        setupMockApplicationInfo(packageName, label);
-        HandoffOptions handoffOptions = new HandoffOptions(false, false);
-        RemoteTaskInfo remoteTaskInfo =
-                new RemoteTaskInfo(1, packageName, true, 100, handoffOptions);
-
-        RemoteTask remoteTask =
-                remoteTaskFactory.create(associationId, associationDisplayName, remoteTaskInfo);
-
-        assertThat(remoteTask).isNull();
+        setApplicationInfo(packageName, label);
+        assertThat(
+                        tryCreate(
+                                new RemoteTaskInfo(
+                                        1,
+                                        packageName,
+                                        true,
+                                        100,
+                                        new HandoffOptions(false, false))))
+                .isNull();
     }
 
     @Test
     public void testCreate_packageNotInstalledAndWebHandoffDisabled_returnsNull() {
-        int associationId = 1;
-        String associationDisplayName = "test_device";
-        String packageName = "com.example.uninstalled_app";
-        HandoffOptions handoffOptions = new HandoffOptions(true, true);
-        RemoteTaskInfo remoteTaskInfo =
-                new RemoteTaskInfo(1, packageName, true, 100, handoffOptions);
-
-        RemoteTask remoteTask =
-                remoteTaskFactory.create(associationId, associationDisplayName, remoteTaskInfo);
-
-        assertThat(remoteTask).isNull();
+        assertThat(
+                        tryCreate(
+                                new RemoteTaskInfo(
+                                        1,
+                                        "com.example.uninstalled_app",
+                                        true,
+                                        100,
+                                        new HandoffOptions(true, true))))
+                .isNull();
     }
 
     @Test
     public void testCreate_packageNotInstalledButHandoffAllowedWithoutPackage_returnsRemoteTask() {
-        int associationId = 1;
-        String associationDisplayName = "test_device";
         String packageName = "com.example.uninstalled_app";
-        HandoffOptions handoffOptions = new HandoffOptions(true, false);
-        RemoteTaskInfo remoteTaskInfo =
-                new RemoteTaskInfo(1, packageName, true, 100, handoffOptions);
-
         RemoteTask remoteTask =
-                remoteTaskFactory.create(associationId, associationDisplayName, remoteTaskInfo);
+                tryCreate(
+                        new RemoteTaskInfo(
+                                1, packageName, true, 100, new HandoffOptions(true, false)));
 
         assertThat(remoteTask).isNotNull();
-        assertThat(remoteTask.getAssociationDisplayName()).isEqualTo(associationDisplayName);
+        assertThat(remoteTask.getAssociationDisplayName()).isEqualTo(ASSOCIATION_DISPLAY_NAME);
         assertThat(remoteTask.getPackageName()).isEqualTo(BROWSER_PACKAGE_NAME);
         assertThat(remoteTask.getLabel()).isEqualTo(BROWSER_LABEL);
         assertThat(remoteTask.isHandoffEnabled()).isTrue();
         assertThat(remoteTask.isTaskInForeground()).isTrue();
     }
 
-    private void setupMockApplicationInfo(String packageName, String label) {
-        PackageInfo packageInfo = new PackageInfo();
-        packageInfo.packageName = packageName;
-        packageInfo.applicationInfo = new ApplicationInfo();
-        packageInfo.applicationInfo.name = packageName;
-        try {
-            when(mockPackageManager.getPackageInfo(
-                            eq(packageName), eq(PackageManager.GET_META_DATA)))
-                    .thenReturn(packageInfo);
-        } catch (PackageManager.NameNotFoundException e) {
-        }
-        when(mockPackageManager.getApplicationLabel(eq(packageInfo.applicationInfo)))
-                .thenReturn(label);
+    private RemoteTask tryCreate(RemoteTaskInfo remoteTaskInfo) {
+        return RemoteTaskFactory.create(
+                mMockPackageManager,
+                USER_ID,
+                ASSOCIATION_ID,
+                ASSOCIATION_DISPLAY_NAME,
+                remoteTaskInfo);
     }
 }

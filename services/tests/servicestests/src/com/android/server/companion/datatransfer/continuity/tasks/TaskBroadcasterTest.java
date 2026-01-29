@@ -23,60 +23,34 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.app.ActivityManager.RunningTaskInfo;
-import android.app.ActivityTaskManager;
 import android.app.AppOpsManager;
 import android.app.HandoffActivityParams;
 import android.content.ComponentName;
-import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.RemoteException;
 import android.platform.test.annotations.Presubmit;
-import android.testing.AndroidTestingRunner;
-import android.testing.TestableLooper;
-import com.android.server.companion.datatransfer.continuity.connectivity.TaskContinuityMessenger;
+import com.android.server.companion.datatransfer.continuity.TaskContinuityTest;
 import com.android.server.companion.datatransfer.continuity.messages.HandoffOptions;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskInfo;
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
 import com.android.server.companion.datatransfer.continuity.messages.TaskStackBroadcastMessage;
-import com.android.server.wm.ActivityTaskManagerInternal;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
 @Presubmit
-@RunWith(AndroidTestingRunner.class)
-@TestableLooper.RunWithLooper(setAsMainLooper = true)
-public class TaskBroadcasterTest {
-    private static final int USER_ID = 0;
-
-    @Mock private ActivityTaskManager mockActivityTaskManager;
-    @Mock private ActivityTaskManagerInternal mockActivityTaskManagerInternal;
-    @Mock private TaskContinuityMessenger mMockTaskContinuityMessenger;
-    @Mock private AppOpsManager mockAppOps;
-    @Mock private PackageManager mockPackageManager;
+public class TaskBroadcasterTest extends TaskContinuityTest {
 
     private TaskBroadcaster mTaskBroadcaster;
 
     @Before
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
-        mTaskBroadcaster =
-                new TaskBroadcaster(
-                        USER_ID,
-                        mMockTaskContinuityMessenger,
-                        mockActivityTaskManager,
-                        mockActivityTaskManagerInternal,
-                        mockAppOps,
-                        mockPackageManager);
+        mTaskBroadcaster = new TaskBroadcaster(USER_ID, mMockContext, mMockTaskContinuityMessenger);
     }
 
     @Test
     public void testOnDeviceConnected_sendsMessageToDevice() throws RemoteException {
-        int associationId = 100;
         FakeTask[] tasks = {
             new FakeTask(
                     1,
@@ -101,7 +75,7 @@ public class TaskBroadcasterTest {
                     AppOpsManager.MODE_IGNORED),
         };
         setupRunningTasks(tasks);
-        mTaskBroadcaster.onDeviceConnected(associationId);
+        mTaskBroadcaster.onDeviceConnected();
         verify(mMockTaskContinuityMessenger, times(1))
                 .sendMessage(eq(createExpectedTaskContinuityMessage(tasks[0])));
     }
@@ -251,7 +225,7 @@ public class TaskBroadcasterTest {
             runningTaskInfos.add(setupTask(task));
         }
 
-        doReturn(runningTaskInfos).when(mockActivityTaskManager).getTasks(Integer.MAX_VALUE, true);
+        doReturn(runningTaskInfos).when(mMockActivityTaskManager).getTasks(Integer.MAX_VALUE, true);
     }
 
     private RunningTaskInfo setupTask(FakeTask task) {
@@ -261,21 +235,21 @@ public class TaskBroadcasterTest {
         taskInfo.baseActivity = new ComponentName(task.packageName, "com.example.app.MainActivity");
         taskInfo.lastActiveTime = task.lastActiveTime;
         taskInfo.isFocused = true;
-        when(mockActivityTaskManagerInternal.isHandoffEnabledForTask(task.taskId))
+        when(mMockActivityTaskManagerInternal.isHandoffEnabledForTask(task.taskId))
                 .thenReturn(task.handoffOptions.isHandoffEnabled());
-        when(mockActivityTaskManagerInternal.getHandoffActivityParamsForTask(task.taskId))
+        when(mMockActivityTaskManagerInternal.getHandoffActivityParamsForTask(task.taskId))
                 .thenReturn(
                         new HandoffActivityParams.Builder()
                                 .setAllowHandoffWithoutPackageInstalled(true)
                                 .build());
         int uid = 10000 + task.taskId;
         try {
-            when(mockPackageManager.getPackageUid(task.packageName, 0)).thenReturn(uid);
+            when(mMockPackageManager.getPackageUid(task.packageName, 0)).thenReturn(uid);
         } catch (NameNotFoundException e) {
             // Do nothing.
         }
 
-        when(mockAppOps.checkOpNoThrow(
+        when(mMockAppOpsManager.checkOpNoThrow(
                         AppOpsManager.OP_CONTINUE_ACROSS_DEVICES, uid, task.packageName))
                 .thenReturn(task.continueAcrossDevicesOpMode);
         return taskInfo;

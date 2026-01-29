@@ -35,47 +35,24 @@ import static org.mockito.Mockito.verify;
 import android.app.HandoffActivityData;
 import android.content.ComponentName;
 import android.platform.test.annotations.Presubmit;
-import android.testing.AndroidTestingRunner;
-import android.testing.TestableLooper;
-import com.android.server.LocalServices;
-import com.android.server.companion.datatransfer.continuity.connectivity.TaskContinuityMessenger;
+import com.android.server.companion.datatransfer.continuity.TaskContinuityTest;
 import com.android.server.companion.datatransfer.continuity.messages.HandoffActivityDataMessage;
 import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestMessage;
 import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestResultMessage;
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
-import com.android.server.wm.ActivityTaskManagerInternal;
 import java.util.List;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
 @Presubmit
-@RunWith(AndroidTestingRunner.class)
-@TestableLooper.RunWithLooper(setAsMainLooper = true)
-public class InboundHandoffRequestHandlerTest {
-
-    @Mock private TaskContinuityMessenger mMockTaskContinuityMessenger;
-    @Mock private ActivityTaskManagerInternal mMockActivityTaskManagerInternal;
+public class InboundHandoffRequestHandlerTest extends TaskContinuityTest {
 
     private InboundHandoffRequestHandler mInboundHandoffRequestHandler;
 
     @Before
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
-
-        LocalServices.addService(
-                ActivityTaskManagerInternal.class, mMockActivityTaskManagerInternal);
-
         mInboundHandoffRequestHandler =
                 new InboundHandoffRequestHandler(mMockTaskContinuityMessenger);
-    }
-
-    @After
-    public void unregisterLocalServices() throws Exception {
-        LocalServices.removeServiceForTest(ActivityTaskManagerInternal.class);
     }
 
     @Test

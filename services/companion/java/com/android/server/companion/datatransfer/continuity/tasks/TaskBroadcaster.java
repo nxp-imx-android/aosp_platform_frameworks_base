@@ -23,11 +23,12 @@ import android.app.ActivityTaskManager;
 import android.app.AppOpsManager;
 import android.app.HandoffActivityParams;
 import android.app.TaskStackListener;
-import android.content.pm.PackageManager;
+import android.content.Context;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.RemoteException;
 import android.os.Trace;
 import android.util.Slog;
+import com.android.server.LocalServices;
 import com.android.server.companion.datatransfer.continuity.connectivity.TaskContinuityMessenger;
 import com.android.server.companion.datatransfer.continuity.messages.HandoffOptions;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskInfo;
@@ -49,30 +50,20 @@ public class TaskBroadcaster extends TaskStackListener
 
     private final int mUserId;
     private final TaskContinuityMessenger mTaskContinuityMessenger;
-    private final ActivityTaskManager mActivityTaskManager;
-    private final ActivityTaskManagerInternal mActivityTaskManagerInternal;
-    private final AppOpsManager mAppOps;
-    private final PackageManager mPackageManager;
+    private final Context mContext;
 
     public TaskBroadcaster(
             int userId,
-            @NonNull TaskContinuityMessenger taskContinuityMessenger,
-            @NonNull ActivityTaskManager activityTaskManager,
-            @NonNull ActivityTaskManagerInternal activityTaskManagerInternal,
-            @NonNull AppOpsManager appOps,
-            @NonNull PackageManager packageManager) {
+            @NonNull Context context,
+            @NonNull TaskContinuityMessenger taskContinuityMessenger) {
 
         mUserId = userId;
         mTaskContinuityMessenger = Objects.requireNonNull(taskContinuityMessenger);
-        mActivityTaskManager = Objects.requireNonNull(activityTaskManager);
-        mActivityTaskManagerInternal = Objects.requireNonNull(activityTaskManagerInternal);
-        mAppOps = Objects.requireNonNull(appOps);
-        mPackageManager = Objects.requireNonNull(packageManager);
+        mContext = Objects.requireNonNull(context);
     }
 
-    public void onDeviceConnected(int associationId) {
+    public void onDeviceConnected() {
         Trace.traceBegin(Trace.TRACE_TAG_SYSTEM_SERVER, "onDeviceConnected");
-        Slog.v(TAG, "Transport connected for association id: " + associationId);
         broadcastTaskStack();
         Trace.traceEnd(Trace.TRACE_TAG_SYSTEM_SERVER);
     }
@@ -99,7 +90,8 @@ public class TaskBroadcaster extends TaskStackListener
         TaskStackBroadcastMessage.Builder taskStackBroadcastMessageBuilder =
                 new TaskStackBroadcastMessage.Builder();
         List<RunningTaskInfo> runningTaskInfos =
-                mActivityTaskManager.getTasks(Integer.MAX_VALUE, true);
+                ((ActivityTaskManager) mContext.getSystemService(Context.ACTIVITY_TASK_SERVICE))
+                        .getTasks(Integer.MAX_VALUE, true);
         if (runningTaskInfos != null) {
             for (RunningTaskInfo taskInfo : runningTaskInfos) {
                 RemoteTaskInfo remoteTaskInfo = createRemoteTaskInfo(taskInfo);
@@ -139,7 +131,9 @@ public class TaskBroadcaster extends TaskStackListener
             return null;
         }
 
-        if (!mActivityTaskManagerInternal.isHandoffEnabledForTask(taskInfo.taskId)) {
+        ActivityTaskManagerInternal activityTaskManagerInternal =
+                LocalServices.getService(ActivityTaskManagerInternal.class);
+        if (!activityTaskManagerInternal.isHandoffEnabledForTask(taskInfo.taskId)) {
             return null;
         }
 
@@ -153,7 +147,7 @@ public class TaskBroadcaster extends TaskStackListener
         HandoffOptions.Builder handoffOptionsBuilder =
                 new HandoffOptions.Builder().setHandoffEnabled(true);
         HandoffActivityParams params =
-                mActivityTaskManagerInternal.getHandoffActivityParamsForTask(taskInfo.taskId);
+                activityTaskManagerInternal.getHandoffActivityParamsForTask(taskInfo.taskId);
         if (params != null) {
             handoffOptionsBuilder.setRequirePackageInstalled(
                     params.isAllowHandoffWithoutPackageInstalled());
@@ -164,10 +158,11 @@ public class TaskBroadcaster extends TaskStackListener
 
     private boolean isContinueAcrossDevicesAllowedForPackage(@NonNull String packageName) {
         try {
-            return mAppOps.checkOpNoThrow(
-                            AppOpsManager.OP_CONTINUE_ACROSS_DEVICES,
-                            mPackageManager.getPackageUid(packageName, 0),
-                            packageName)
+            return ((AppOpsManager) mContext.getSystemService(Context.APP_OPS_SERVICE))
+                            .checkOpNoThrow(
+                                    AppOpsManager.OP_CONTINUE_ACROSS_DEVICES,
+                                    mContext.getPackageManager().getPackageUid(packageName, 0),
+                                    packageName)
                     != AppOpsManager.MODE_IGNORED;
         } catch (NameNotFoundException e) {
             Slog.w(TAG, "Failed to note op for package: " + packageName, e);
