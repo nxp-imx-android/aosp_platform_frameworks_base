@@ -22,6 +22,7 @@ import static android.content.IntentFilter.SYSTEM_HIGH_PRIORITY;
 import static android.os.Trace.TRACE_TAG_WINDOW_MANAGER;
 
 import static com.android.internal.util.function.pooled.PooledLambda.obtainMessage;
+import static com.android.server.accessibility.Flags.keyEventDispatcherFixFlushRaceCondition;
 
 import android.Manifest;
 import android.accessibilityservice.AccessibilityService;
@@ -512,6 +513,9 @@ class AccessibilityServiceConnection extends AbstractAccessibilityServiceConnect
             AccessibilityUserState userState = mUserStateWeakReference.get();
             if (userState != null) {
                 userState.serviceDisconnectedLocked(this);
+            }
+            if (keyEventDispatcherFixFlushRaceCondition()) {
+                mSystemSupport.getKeyEventDispatcher().flush(this);
             }
             resetLocked();
             mSystemSupport.getMagnificationProcessor().resetAllIfNeeded(mId);
