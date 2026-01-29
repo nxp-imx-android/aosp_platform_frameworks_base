@@ -1208,9 +1208,13 @@ public class VibrationThreadTest {
                         expectedPwle(0.0f, 100f, 0),
                         expectedPwle(0.8f, 100f, 30),
                         expectedPwle(0.0f, 100f, 30),
-                        expectedPwle(0.9f, 100f, 0),
+                        // Second batch
+                        expectedPwle(0.0f, 100f, 0),
+                        expectedPwle(0.9f, 100f, 30),
                         expectedPwle(0.4f, 100f, 30),
-                        expectedPwle(0.6f, 100f, 0),
+                        // Third batch
+                        expectedPwle(0.4f, 100f, 0),
+                        expectedPwle(0.6f, 100f, 30),
                         expectedPwle(0.7f, 100f, 30))
                 .inOrder();
     }
@@ -1315,6 +1319,47 @@ public class VibrationThreadTest {
         verify(mHalCallbacks, times(3))
                 .onVibrationStepComplete(eq(VIBRATOR_ID), eq(vibration.id), anyLong());
         assertThat(vibratorHelper.getEffectSegments()).hasSize(6);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_NORMALIZED_PWLE_EFFECTS)
+    public void vibrate_singleVibratorComposedPwleAndPrimitives_runsVibration() {
+        HalVibratorHelper vibratorHelper = mVibratorHelpers.get(VIBRATOR_ID);
+        vibratorHelper.setCapabilities(IVibrator.CAP_GET_RESONANT_FREQUENCY,
+                IVibrator.CAP_FREQUENCY_CONTROL, IVibrator.CAP_COMPOSE_PWLE_EFFECTS_V2,
+                IVibrator.CAP_COMPOSE_EFFECTS);
+        vibratorHelper.setSupportedPrimitives(PRIMITIVE_CLICK);
+        vibratorHelper.setResonantFrequency(150);
+        vibratorHelper.setFrequenciesHz(new float[]{30f, 50f, 100f, 120f, 150f});
+        vibratorHelper.setOutputAccelerationsGs(new float[]{0.3f, 0.5f, 1.0f, 0.8f, 0.6f});
+        vibratorHelper.setMaxEnvelopeEffectSize(10);
+        vibratorHelper.setMinEnvelopeEffectControlPointDurationMillis(20);
+
+        VibrationEffect pwle = new VibrationEffect.WaveformEnvelopeBuilder()
+                .addControlPoint(/*amplitude=*/ 0.8f, /*frequencyHz=*/ 100f, /*durationMillis=*/ 30)
+                .build();
+        VibrationEffect effect = VibrationEffect.startComposition()
+                .addEffect(pwle)
+                .addPrimitive(PRIMITIVE_CLICK, 1f, 100)
+                .compose();
+
+        HalVibration vibration = startThreadAndDispatcher(effect);
+        waitForCompletion();
+
+        verifyCallbacksTriggered(vibration, Status.FINISHED);
+
+        // 1 PWLE call + 1 primitive call.
+        verify(mHalCallbacks, times(2))
+                .onVibrationStepComplete(eq(VIBRATOR_ID), eq(vibration.id), anyLong());
+        assertThat(mVibrators.get(VIBRATOR_ID).isVibrating()).isFalse();
+
+        assertThat(vibratorHelper.getEffectPwlePoints())
+                .containsExactly(
+                        expectedPwle(0.0f, 100f, 0),
+                        expectedPwle(0.8f, 100f, 30))
+                .inOrder();
+        assertThat(vibratorHelper.getEffectSegments())
+                .contains(expectedPrimitive(PRIMITIVE_CLICK, 1, 100));
     }
 
     @Test
