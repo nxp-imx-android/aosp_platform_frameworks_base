@@ -1877,13 +1877,13 @@ public final class MediaFormat {
     public static final String KEY_HDR10_PLUS_INFO = "hdr10-plus-info";
 
     /**
-     * An optional key describing the eclipsa video metadata of the video content.
+     * An optional key describing the SMPTE ST 2094-50 metadata of the video content.
      *
-     * The associated value is a ByteBuffer containing eclipsa video metadata conforming to
-     * the user_data_registered_itu_t_t35() syntax of SEI message for ST 2094-50.
+     * The associated value is a ByteBuffer containing SMPTE ST 2094-50 metadata conforming to
+     * the user_data_registered_itu_t_t35() syntax of SEI message.
      */
     @FlaggedApi(FLAG_AGTM_METADATA)
-    public static final String KEY_HDR_ECLIPSA_VIDEO_INFO = "hdr-eclipsa-video-info";
+    public static final String KEY_HDR_ST2094_50_INFO = "hdr-st2094-50-info";
 
     /**
      * An optional key describing the opto-electronic transfer function
