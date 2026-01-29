@@ -24,7 +24,6 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 import static com.android.server.pm.GenericAllowlist.AllowlistStatus;
 import static com.android.server.pm.UserActivitiesAllowlist.ALLOWLIST_MODE_ENABLED;
 import static com.android.server.pm.UserActivitiesAllowlist.ALLOWLIST_MODE_DISABLED;
-import static com.android.server.pm.UserActivitiesAllowlist.ALLOWLIST_MODE_LOG_ONLY;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -207,18 +206,6 @@ public final class UserHelperTest {
     }
 
     @Test
-    public void testCheckRequest_notAllowlisted_successWhenLogOnlyMode() {
-        mockHsuActivityAllowlistMode(ALLOWLIST_MODE_LOG_ONLY);
-        var userHelper = createUserHelper();
-
-        expect.withMessage("checkRequest()")
-                .that(userHelper.checkRequest(mRequest))
-                .isEqualTo(START_SUCCESS);
-
-        verifyUmiLogDefaultActivityLaunchStatusForHsu(STATUS_DISALLOWED);
-    }
-
-    @Test
     public void testCheckRequest_whenAllowlistModeChangedFromDisabledToEnabled() {
         mockHsuActivityAllowlistMode(ALLOWLIST_MODE_ENABLED);
         expect.withMessage("checkRequest() after mode set to enabled")
@@ -397,23 +384,6 @@ public final class UserHelperTest {
     }
 
     @Test
-    public void testDump_logOnly() throws Exception {
-        mockHsuActivityAllowlistMode(ALLOWLIST_MODE_LOG_ONLY);
-        var userHelper = createUserHelper();
-
-        String dump = dump(userHelper, "...");
-
-        expect.withMessage("dump()").that(dump)
-                .isEqualTo("""
-                      ...UserHelper:
-                      ...  TAG=ActivityTaskManager
-                      ...  mIsHeadlessSystemUserMode=true
-                      ...  activityLaunchIntegrationStatus=-4 (DISABLED_LOG_ONLY)
-                      ...  mHsuActivitiesAllowlist=Schindler's
-                      """);
-    }
-
-    @Test
     public void testDump_invalidMode() throws Exception {
         mockHsuActivityAllowlistMode(INVALID_ALLOWLIST_MODE);
         var userHelper = createUserHelper();
@@ -425,7 +395,7 @@ public final class UserHelperTest {
                       ...UserHelper:
                       ...  TAG=ActivityTaskManager
                       ...  mIsHeadlessSystemUserMode=true
-                      ...  activityLaunchIntegrationStatus=-5 (DISABLED_INVALID_MODE)
+                      ...  activityLaunchIntegrationStatus=-4 (DISABLED_INVALID_MODE)
                       ...  mHsuActivitiesAllowlist=Schindler's
                       """);
     }
