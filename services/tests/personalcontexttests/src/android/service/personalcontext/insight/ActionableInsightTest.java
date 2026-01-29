@@ -20,6 +20,8 @@ import static com.google.common.truth.Truth.assertThat;
 
 import android.content.Intent;
 import android.net.Uri;
+import android.service.personalcontext.hint.ContextHintTestUtils;
+import android.service.personalcontext.hint.InsightReferenceHint;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
@@ -55,4 +57,24 @@ public class ActionableInsightTest {
                 .isEqualTo(originalInsight.getActionDetails());
     }
 
+    @Test
+    public void testReturnHintReportHasCorrectInsightId() {
+        final InsightActionDetails actionDetails =
+                new InsightActionDetails.Builder().setIntent(
+                                new Intent(Intent.ACTION_VIEW, Uri.parse("content://test")))
+                        .build();
+        final InsightDisplayDetails displayDetails =
+                new InsightDisplayDetails.Builder("title")
+                        .setContentDescription("content description")
+                        .setSubtitle("subtitle")
+                        .build();
+
+        final ActionableInsight insight =
+                new ActionableInsight.Builder(actionDetails, displayDetails).build();
+
+        InsightReferenceHint hint = ContextHintTestUtils.assertParcelUnparcel(
+                insight.createReturnHintReport().getInsightReferenceHint());
+
+        assertThat(hint.getInsightId()).isEqualTo(insight.getInsightId());
+    }
 }

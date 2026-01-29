@@ -72,6 +72,7 @@ public abstract class ContextHint {
                 HINT_TYPE_AUTOFILL_INLINE_REQUEST,
                 HINT_TYPE_CALL,
                 HINT_TYPE_HINT_INVALIDATION,
+                HINT_TYPE_INSIGHT_REFERENCE,
             })
     @Retention(RetentionPolicy.SOURCE)
     public @interface HintType {}
@@ -111,6 +112,9 @@ public abstract class ContextHint {
 
     /** Hint type for {@link HintInvalidationHint}. */
     static final int HINT_TYPE_HINT_INVALIDATION = 9;
+
+    /** Hint type for {@link InsightReferenceHint}. */
+    static final int HINT_TYPE_INSIGHT_REFERENCE = 10;
 
     /**
      * Object returned when there is an unparceling error.
@@ -265,6 +269,8 @@ public abstract class ContextHint {
                 case HINT_TYPE_CALL ->  new CallHint(constructorParams, data);
                 case HINT_TYPE_HINT_INVALIDATION -> new HintInvalidationHint(
                         constructorParams, data);
+                case HINT_TYPE_INSIGHT_REFERENCE ->
+                        new InsightReferenceHint(constructorParams, data);
                 default -> ERROR_HINT;
             };
         } catch (Exception e) {
