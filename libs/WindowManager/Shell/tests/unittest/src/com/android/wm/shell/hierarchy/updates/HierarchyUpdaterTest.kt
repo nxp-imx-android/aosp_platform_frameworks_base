@@ -59,10 +59,12 @@ import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
+import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.inOrder
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.spy
+import org.mockito.kotlin.stub
 
 /**
  * Tests for [HierarchyUpdater].
@@ -80,7 +82,7 @@ class HierarchyUpdaterTest : ShellTestCase() {
     private val formFactorModes = mock<FormFactorModes>()
     private val shellInit = mock<ShellInit>()
     private val hierarchy = ContainerHierarchy().apply {
-        // Create a hierarchy with two nested container
+        // Create a hierarchy with two nested containers
         root.mode = StubMode()
         val info1 = ActivityManager.RunningTaskInfo().apply {
             taskId = 1
@@ -123,7 +125,6 @@ class HierarchyUpdaterTest : ShellTestCase() {
             mock<IBinder>(),
             info,
             mock<SurfaceControl.Transaction>(),
-            mock<SurfaceControl.Transaction>()
         )
 
         // Ensure that a container was added
@@ -150,7 +151,6 @@ class HierarchyUpdaterTest : ShellTestCase() {
             mock<IBinder>(),
             info,
             mock<SurfaceControl.Transaction>(),
-            mock<SurfaceControl.Transaction>()
         )
 
         // Ensure that a container was removed
@@ -182,7 +182,6 @@ class HierarchyUpdaterTest : ShellTestCase() {
             mock<IBinder>(),
             info,
             mock<SurfaceControl.Transaction>(),
-            mock<SurfaceControl.Transaction>()
         )
 
         // Verify 1 moved to top
@@ -217,7 +216,6 @@ class HierarchyUpdaterTest : ShellTestCase() {
             mock<IBinder>(),
             info,
             mock<SurfaceControl.Transaction>(),
-            mock<SurfaceControl.Transaction>()
         )
 
         // Verify 2 moved to back
@@ -248,7 +246,6 @@ class HierarchyUpdaterTest : ShellTestCase() {
             mock<IBinder>(),
             info,
             mock<SurfaceControl.Transaction>(),
-            mock<SurfaceControl.Transaction>()
         )
 
         // Verify the container was attached to the associated ancestor modes in order
@@ -280,7 +277,6 @@ class HierarchyUpdaterTest : ShellTestCase() {
             mock<IBinder>(),
             info,
             mock<SurfaceControl.Transaction>(),
-            mock<SurfaceControl.Transaction>()
         )
 
         // Verify the container was detached from the associated ancestor modes in order
@@ -383,6 +379,8 @@ class HierarchyUpdaterTest : ShellTestCase() {
         var hookCalled = false
         updater.updaterTestHook = object : HierarchyUpdater.UpdaterTestHook {
             override fun onHierarchyUpdated() {
+                // Reset once hit
+                updater.updaterTestHook = null
                 hookCalled = true
                 // Verify transient containers exist
                 val wallpaper = hierarchy.getContainer(wallpaperToken)
@@ -394,12 +392,19 @@ class HierarchyUpdaterTest : ShellTestCase() {
             }
         }
 
+        // Have the transition complete immediately after the update
+        transitions.stub {
+            on { runOnIdle(any()) } doAnswer {
+                val callback = it.getArgument<Runnable>(0)
+                callback.run()
+            }
+        }
+
         // Notify the transition
         updater.handleTransition(
             mock<IBinder>(),
             info,
             mock<SurfaceControl.Transaction>(),
-            mock<SurfaceControl.Transaction>()
         )
 
         // Verify the hook above was called and the transitions ran
@@ -433,7 +438,6 @@ class HierarchyUpdaterTest : ShellTestCase() {
             mock<IBinder>(),
             info,
             mock<SurfaceControl.Transaction>(),
-            mock<SurfaceControl.Transaction>()
         )
 
         // Verify the root container's focus state is updated
@@ -475,7 +479,6 @@ class HierarchyUpdaterTest : ShellTestCase() {
             mock<IBinder>(),
             info,
             mock<SurfaceControl.Transaction>(),
-            mock<SurfaceControl.Transaction>()
         )
 
         // Verify that child2 mode is updated (because ancestor changed)

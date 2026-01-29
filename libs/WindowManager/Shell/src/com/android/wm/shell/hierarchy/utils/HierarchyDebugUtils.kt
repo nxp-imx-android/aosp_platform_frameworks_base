@@ -16,9 +16,12 @@
 package com.android.wm.shell.hierarchy.utils
 
 import android.window.WindowContainerToken
+import com.android.internal.protolog.ProtoLog
+import com.android.wm.shell.hierarchy.ContainerHierarchy
 import com.android.wm.shell.hierarchy.containers.Container
-import com.android.wm.shell.hierarchy.updates.HierarchySnapshot
 import com.android.wm.shell.hierarchy.updates.EMPTY_SNAPSHOT
+import com.android.wm.shell.hierarchy.updates.HierarchySnapshot
+import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_MODES
 
 /**
  * Utility functions to support debugging the hierarchy.
@@ -32,6 +35,19 @@ class HierarchyDebugUtils {
         val PURPLE = "\u001b[35m"
         val WHITE = "\u001b[37m"
         val NONE = "\u001b[0m"
+
+        /**
+         * Dumps the hierarchy to protolog.
+         */
+        fun dumpHierarchy(
+            hierarchy: ContainerHierarchy,
+            snapshot: HierarchySnapshot
+        ) {
+            ProtoLog.v(WM_SHELL_MODES, "=======================================================")
+            @SuppressWarnings("ProtoLogNoContext")
+            ProtoLog.v(WM_SHELL_MODES, "%s", dumpToString(hierarchy.root, "", snapshot, WHITE))
+            ProtoLog.v(WM_SHELL_MODES, "=======================================================")
+        }
 
         /**
          * Returns a string representation of a hierarchy rooted at the given container.

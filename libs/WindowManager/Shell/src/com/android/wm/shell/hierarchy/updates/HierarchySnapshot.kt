@@ -48,6 +48,8 @@ class HierarchyChangeFlags(vararg flags: Int) : BitSet() {
  */
 class HierarchySnapshot {
 
+    // Do not use containers in this list for parent relationships, use the parent token in the
+    // ContainerSnapshot
     val preUpdateContainers: List<Container>
     val snapshots = mutableMapOf<Container, ContainerSnapshot>()
 

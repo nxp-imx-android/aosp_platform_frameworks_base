@@ -62,6 +62,31 @@ class HierarchyUtils {
         }
 
         /**
+         * Returns the container in the list with the given token.
+         */
+        fun getContainer(containers: List<Container>, token: WindowContainerToken): Container? {
+            for (container in containers) {
+                if (container.token == token) {
+                    return container
+                }
+            }
+            return null
+        }
+
+        /**
+         * Returns the index of a container with the given token in the given list, or -1 if it
+         * doesn't exist in the list.
+         */
+        fun findContainer(containers: List<Container>, token: WindowContainerToken): Int {
+            for ((i, container) in containers.withIndex()) {
+                if (container.token == token) {
+                    return i
+                }
+            }
+            return -1
+        }
+
+        /**
          * Returns a display container that is a descendant of root with the given display id.
          */
         fun getDisplay(root: Container, displayId: Int): Container? {
@@ -125,6 +150,20 @@ class HierarchyUtils {
         }
 
         /**
+         * Returns the mode that is directly or indirectly associated with this container.
+         */
+        fun getMode(container: Container): Mode? {
+            var c: Container? = container
+            while (c != null) {
+                if (c.mode != null) {
+                    return c.mode
+                }
+                c = c.parent
+            }
+            return null
+        }
+
+        /**
          * Returns a list of all ancestor & directly assigned modes that are associated with the
          * given container. The returned list is in ancestor-first order.
          */
@@ -159,9 +198,23 @@ class HierarchyUtils {
         }
 
         /**
-         * Removes all transient containers from the container hierarchy under the given container.
+         * Returns whether there are any temporary animating containers in the hierarchy under the
+         * given container.
          */
-        fun removeAllTransientContainers(container: Container) {
+        fun hasTemporaryAnimatingContainers(container: Container): Boolean {
+            val containers = toContainersList(container)
+            for (c in containers) {
+                if (c.isTemporaryAnimatingContainer) {
+                    return true
+                }
+            }
+            return false
+        }
+
+        /**
+         * Removes all temporary animating containers from the hierarchy under the given container.
+         */
+        fun removeAllTemporaryAnimatingContainers(container: Container) {
             val containers = toContainersList(container)
             for (c in containers) {
                 if (c.isTemporaryAnimatingContainer) {
