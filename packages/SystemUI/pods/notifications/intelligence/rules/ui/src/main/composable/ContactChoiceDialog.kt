@@ -37,13 +37,14 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ContactChoiceDialog(
+    initialSearchQuery: String,
     viewModel: NotificationRuleEditViewModel,
     scope: CoroutineScope,
     context: Context,
 ) {
     var currentSearchResults by remember { mutableStateOf(emptyList<String>()) }
-    var currentQuery by remember { mutableStateOf("") }
-    var expanded by rememberSaveable { mutableStateOf(false) }
+    var currentQuery by remember { mutableStateOf(initialSearchQuery) }
+    var expanded by rememberSaveable { mutableStateOf(true) }
 
     val onQueryChange: (String) -> Unit = { query: String ->
         scope.launch {

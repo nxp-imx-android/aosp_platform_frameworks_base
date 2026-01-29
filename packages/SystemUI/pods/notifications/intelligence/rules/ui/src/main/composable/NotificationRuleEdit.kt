@@ -17,7 +17,6 @@
 package com.android.systemui.notifications.intelligence.rules.ui.composable
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -42,7 +41,9 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withLink
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.ActionModel
-import com.android.systemui.notifications.intelligence.rules.shared.model.RuleModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.ContactsModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.DraftRuleModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.RuleValue
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.NotificationRuleEditViewModel
 
 /**
@@ -54,44 +55,45 @@ import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.Notifi
 @Composable
 fun NotificationRuleEdit(
     viewModelFactory: NotificationRuleEditViewModel.Factory,
-    rule: RuleModel,
+    rule: DraftRuleModel,
     modifier: Modifier = Modifier,
 ) {
     val viewModel = rememberViewModel("NotificationRuleEditViewModel") { viewModelFactory.create() }
     val scope = rememberCoroutineScope()
 
-    var editDialogShowing: EditDialogType? by remember { mutableStateOf(null) }
-    var selectedAction by remember { mutableStateOf(rule.action) }
+    var shownDialogType: EditDialogType by remember(rule) { mutableStateOf(EditDialogType.None) }
+    var selectedAction by remember(rule) { mutableStateOf(rule.action) }
+    val selectedContacts by remember(rule) { mutableStateOf(rule.contacts) }
 
     val text =
-        remember(selectedAction, editDialogShowing) {
+        remember(selectedAction, selectedContacts, shownDialogType) {
             buildAnnotatedText(
                 selectedAction = selectedAction,
-                editDialogShowing = editDialogShowing,
-                changeEditDialog = { editDialogShowing = it },
+                selectedContacts = selectedContacts,
+                shownDialogType = shownDialogType,
+                changeEditDialog = { shownDialogType = it },
             )
         }
 
     Column(modifier = modifier) {
-        Row { Text(text = text, style = MaterialTheme.typography.bodyLargeEmphasized) }
+        Text(text = text, style = MaterialTheme.typography.titleLargeEmphasized)
 
-        Row {
-            when (editDialogShowing) {
-                EditDialogType.Action -> {
-                    ActionChoiceDialog(
-                        onDismissRequest = { editDialogShowing = null },
-                        onActionSelected = { action -> selectedAction = action },
-                    )
-                }
-                EditDialogType.Contact -> {
-                    ContactChoiceDialog(
-                        viewModel = viewModel,
-                        scope = scope,
-                        context = LocalContext.current,
-                    )
-                }
-                null -> {}
+        when (val dialogShowing = shownDialogType) {
+            is EditDialogType.Action -> {
+                ActionChoiceDialog(
+                    onDismissRequest = { shownDialogType = EditDialogType.None },
+                    onActionSelected = { action -> selectedAction = action },
+                )
             }
+            is EditDialogType.Contact -> {
+                ContactChoiceDialog(
+                    initialSearchQuery = dialogShowing.initialQuery,
+                    viewModel = viewModel,
+                    scope = scope,
+                    context = LocalContext.current,
+                )
+            }
+            is EditDialogType.None -> {}
         }
     }
 }
@@ -105,31 +107,34 @@ fun NotificationRuleEdit(
  */
 private fun buildAnnotatedText(
     selectedAction: ActionModel,
-    editDialogShowing: EditDialogType?,
-    changeEditDialog: (EditDialogType?) -> Unit,
+    selectedContacts: RuleValue<ContactsModel>?,
+    shownDialogType: EditDialogType,
+    changeEditDialog: (EditDialogType) -> Unit,
 ): AnnotatedString {
     return buildAnnotatedString {
         clickableText(
             text = selectedAction.name,
+            isAmbiguous = false,
             onClick = {
                 toggleEditDialogShown(
                     desiredType = EditDialogType.Action,
-                    currentEditDialogShowing = editDialogShowing,
+                    currentEditDialogShowing = shownDialogType,
                     changeEditDialog = changeEditDialog,
                 )
             },
         )
-        append(" all Conversation notifications from ")
-        clickableText(
-            text = "{contact click placeholder}",
-            onClick = {
-                toggleEditDialogShown(
-                    desiredType = EditDialogType.Contact,
-                    currentEditDialogShowing = editDialogShowing,
-                    changeEditDialog = changeEditDialog,
-                )
-            },
-        )
+
+        append(" all Conversation notifications")
+
+        selectedContacts?.let {
+            append(" from ")
+            createContactsText(
+                selectedContacts = it,
+                editDialogShowing = shownDialogType,
+                changeEditDialog = changeEditDialog,
+            )
+        }
+
         append(" on weekdays")
     }
 }
@@ -137,19 +142,31 @@ private fun buildAnnotatedText(
 /** Shows/hides the [desiredType] edit dialog, depending on whether it's currently open or not. */
 private fun toggleEditDialogShown(
     desiredType: EditDialogType,
-    currentEditDialogShowing: EditDialogType?,
-    changeEditDialog: (EditDialogType?) -> Unit,
+    currentEditDialogShowing: EditDialogType,
+    changeEditDialog: (EditDialogType) -> Unit,
 ) {
     if (currentEditDialogShowing == desiredType) {
-        changeEditDialog.invoke(null)
+        changeEditDialog.invoke(EditDialogType.None)
     } else {
         changeEditDialog.invoke(desiredType)
     }
 }
 
-private enum class EditDialogType {
-    Action,
-    Contact,
+/** The type of value being edited in the edit dialog. */
+private sealed interface EditDialogType {
+    /** No edit dialog is showing. */
+    data object None : EditDialogType
+
+    /** The action is being edited. See [DraftRuleModel.action]. */
+    data object Action : EditDialogType
+
+    /**
+     * The contact list is being edited. See [DraftRuleModel.contacts].
+     *
+     * @param initialQuery the text to use as the beginning contact search query.
+     */
+    data class Contact(val initialQuery: String = "") : EditDialogType
+
     // TODO: b/478225883 - Add more edit types.
 }
 
@@ -179,11 +196,59 @@ private fun ActionChoiceDialog(
     }
 }
 
-private fun AnnotatedString.Builder.clickableText(text: String, onClick: () -> Unit) {
+/** Creates annotated text for the contacts filter field. */
+private fun AnnotatedString.Builder.createContactsText(
+    selectedContacts: RuleValue<ContactsModel>,
+    editDialogShowing: EditDialogType,
+    changeEditDialog: (EditDialogType) -> Unit,
+) {
+    val text =
+        when (selectedContacts) {
+            is RuleValue.Specified -> {
+                val contacts = selectedContacts.value.contacts
+                check(contacts.isNotEmpty()) { "ContactsModel.contacts must be non-empty" }
+                val first = contacts[0].name
+                if (contacts.size > 1) {
+                    "$first +${contacts.size - 1} more"
+                } else {
+                    first
+                }
+            }
+            is RuleValue.Ambiguous -> {
+                selectedContacts.placeholderText
+            }
+        }
+    clickableText(
+        text = text,
+        isAmbiguous = selectedContacts is RuleValue.Ambiguous,
+        onClick = {
+            toggleEditDialogShown(
+                desiredType = EditDialogType.Contact(initialQuery = text),
+                currentEditDialogShowing = editDialogShowing,
+                changeEditDialog = changeEditDialog,
+            )
+        },
+    )
+}
+
+/**
+ * Renders the given text as a clickable element.
+ *
+ * @param isAmbiguous true if the text represents an underspecified value. See
+ *   [RuleValue.Ambiguous].
+ */
+private fun AnnotatedString.Builder.clickableText(
+    text: String,
+    isAmbiguous: Boolean,
+    onClick: () -> Unit,
+) {
     withLink(
         LinkAnnotation.Clickable(
             tag = text,
-            styles = TextLinkStyles(style = CLICKABLE_SPAN_STYLE),
+            styles =
+                TextLinkStyles(
+                    style = if (isAmbiguous) AMBIGUOUS_CLICKABLE_STYLE else CLICKABLE_STYLE
+                ),
             linkInteractionListener = { onClick.invoke() },
         )
     ) {
@@ -191,10 +256,16 @@ private fun AnnotatedString.Builder.clickableText(text: String, onClick: () -> U
     }
 }
 
-private val CLICKABLE_SPAN_STYLE =
+private val CLICKABLE_STYLE =
     SpanStyle(
-        // TODO: b/478225883 - Use theme colors, and a different color for errors.
-        color = Color.Magenta,
+        // TODO: b/478225883 - Use theme colors.
+        color = Color.Blue,
         textDecoration = TextDecoration.Underline,
         fontWeight = FontWeight.Bold,
+    )
+
+private val AMBIGUOUS_CLICKABLE_STYLE =
+    CLICKABLE_STYLE.copy(
+        // TODO: b/478225883 - Use theme colors.
+        color = Color.Red
     )
