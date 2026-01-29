@@ -22,33 +22,46 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.companion.AssociationInfo;
 import android.companion.CompanionDeviceManager;
+import android.content.Context;
+import android.content.pm.PackageManagerInternal;
+import android.util.ArrayMap;
 import android.util.ArraySet;
 import android.util.Slog;
 import com.android.internal.annotations.GuardedBy;
+import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.FrameworkStatsLog;
+import com.android.server.LocalServices;
 import com.android.server.companion.datatransfer.continuity.messages.Proto;
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.Executor;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 /**
  * Facilitates communication between devices, including sending and receiving messages between
  * devices. Internally, it uses the {@link CompanionDeviceManager} to send and receive messages.
  */
-public class TaskContinuityMessenger implements ConnectedAssociationStore.Listener {
+public class TaskContinuityMessenger {
 
     private static final String TAG = TaskContinuityMessenger.class.getSimpleName();
 
-    private final CompanionDeviceManager mCompanionDeviceManager;
-    private final ConnectedAssociationStore mConnectedAssociationStore;
-    private final Executor mExecutor;
+    private final int mUserId;
+    private final Context mContext;
 
     @GuardedBy("mListeners")
     private final ArraySet<Listener> mListeners = new ArraySet<>(0);
 
+    @GuardedBy("mConnectedAssociations")
+    private final ArrayMap<Integer, AssociationInfo> mConnectedAssociations = new ArrayMap<>(0);
+
+    @GuardedBy("this")
     private BiConsumer<Integer, byte[]> mIncomingMessageConsumer;
+
+    @GuardedBy("this")
+    private Consumer<List<AssociationInfo>> mAssociationInfoConsumer;
 
     public interface Listener {
         void onAssociationConnected(@NonNull AssociationInfo associationInfo);
@@ -58,79 +71,65 @@ public class TaskContinuityMessenger implements ConnectedAssociationStore.Listen
         void onMessageReceived(int associationId, @NonNull TaskContinuityMessage message);
     }
 
-    public TaskContinuityMessenger(
-            int userId,
-            @NonNull CompanionDeviceManager companionDeviceManager,
-            @NonNull Executor executor,
-            @NonNull AssociationProfileManager associationProfileManager) {
-
-        mCompanionDeviceManager = Objects.requireNonNull(companionDeviceManager);
-        mExecutor = Objects.requireNonNull(executor);
-        mConnectedAssociationStore =
-                new ConnectedAssociationStore(
-                        userId,
-                        mCompanionDeviceManager,
-                        mExecutor,
-                        this,
-                        Objects.requireNonNull(associationProfileManager));
+    public TaskContinuityMessenger(int userId, @NonNull Context context) {
+        mUserId = userId;
+        mContext = Objects.requireNonNull(context);
     }
 
     public void addListener(@NonNull Listener listener) {
-        synchronized (mListeners) {
-            boolean shouldEnable = mListeners.isEmpty();
+        synchronized (this) {
             mListeners.add(Objects.requireNonNull(listener));
-            if (shouldEnable) {
-                enable();
+            if (mListeners.size() == 1) {
+                CompanionDeviceManager companionDeviceManager =
+                        (CompanionDeviceManager)
+                                mContext.getSystemService(Context.COMPANION_DEVICE_SERVICE);
+                if (mIncomingMessageConsumer == null) {
+                    mIncomingMessageConsumer = this::onMessageReceived;
+                    companionDeviceManager.addOnMessageReceivedListener(
+                            mContext.getMainExecutor(),
+                            MESSAGE_ONEWAY_TASK_CONTINUITY,
+                            mIncomingMessageConsumer);
+                }
+
+                if (mAssociationInfoConsumer == null) {
+                    mAssociationInfoConsumer = this::onTransportsChanged;
+                    companionDeviceManager.addOnTransportsChangedListener(
+                            mContext.getMainExecutor(), mAssociationInfoConsumer);
+                }
             }
         }
     }
 
     public void removeListener(@NonNull Listener listener) {
-        synchronized (mListeners) {
-            boolean shouldDisable = mListeners.size() == 1;
+        synchronized (this) {
             mListeners.remove(Objects.requireNonNull(listener));
-            if (shouldDisable) {
-                disable();
+            if (mListeners.isEmpty()) {
+                CompanionDeviceManager companionDeviceManager =
+                        (CompanionDeviceManager)
+                                mContext.getSystemService(Context.COMPANION_DEVICE_SERVICE);
+                if (mIncomingMessageConsumer != null) {
+                    companionDeviceManager.removeOnMessageReceivedListener(
+                            MESSAGE_ONEWAY_TASK_CONTINUITY, mIncomingMessageConsumer);
+                    mIncomingMessageConsumer = null;
+                }
+
+                if (mAssociationInfoConsumer != null) {
+                    companionDeviceManager.removeOnTransportsChangedListener(
+                            mAssociationInfoConsumer);
+                    mAssociationInfoConsumer = null;
+                }
             }
         }
-    }
-
-    public void enable() {
-        synchronized (this) {
-            if (mIncomingMessageConsumer != null) {
-                Slog.i(TAG, "TaskContinuityMessenger is already enabled.");
-                return;
-            }
-            mIncomingMessageConsumer = this::onMessageReceived;
-            mCompanionDeviceManager.addOnMessageReceivedListener(
-                    mExecutor, MESSAGE_ONEWAY_TASK_CONTINUITY, mIncomingMessageConsumer);
-        }
-
-        mConnectedAssociationStore.enable();
-    }
-
-    public void disable() {
-        synchronized (this) {
-            if (mIncomingMessageConsumer == null) {
-                Slog.i(TAG, "TaskContinuityMessenger is already disabled.");
-                return;
-            }
-            mCompanionDeviceManager.removeOnMessageReceivedListener(
-                    MESSAGE_ONEWAY_TASK_CONTINUITY, mIncomingMessageConsumer);
-            mIncomingMessageConsumer = null;
-        }
-
-        mConnectedAssociationStore.disable();
     }
 
     @NonNull
-    public ConnectedAssociationStore getConnectedAssociationStore() {
-        return mConnectedAssociationStore;
+    public Collection<AssociationInfo> getConnectedAssociations() {
+        return mConnectedAssociations.values();
     }
 
     @Nullable
     public AssociationInfo getAssociationInfo(int associationId) {
-        return mConnectedAssociationStore.getConnectedAssociationById(associationId);
+        return mConnectedAssociations.get(associationId);
     }
 
     public enum SendMessageResult {
@@ -157,47 +156,46 @@ public class TaskContinuityMessenger implements ConnectedAssociationStore.Listen
             serializedMessage = Proto.toBytes(message);
         } catch (IOException e) {
             Slog.e(TAG, "Failed to serialize message: " + message, e);
-            FrameworkStatsLog.write(
-                    FrameworkStatsLog.TASK_CONTINUITY_MESSAGE_SENT,
-                    message.getTypeForMetrics(),
+            recordMessageSentEventForLogging(
                     associationIds.length,
+                    message,
                     FrameworkStatsLog
                             .TASK_CONTINUITY_MESSAGE_SENT__RESULT__TASK_CONTINUITY_MESSAGE_SENT_RESULT_FAILURE_MESSAGE_SERIALIZATION_FAILED);
             return SendMessageResult.FAILURE_MESSAGE_SERIALIZATION_FAILED;
         }
 
         for (int associationId : associationIds) {
-            if (mConnectedAssociationStore.getConnectedAssociationById(associationId) == null) {
+            if (getAssociationInfo(associationId) == null) {
                 Slog.w(TAG, "Association " + associationId + " is not connected.");
-                FrameworkStatsLog.write(
-                        FrameworkStatsLog.TASK_CONTINUITY_MESSAGE_SENT,
-                        message.getTypeForMetrics(),
+                recordMessageSentEventForLogging(
                         associationIds.length,
+                        message,
                         FrameworkStatsLog
                                 .TASK_CONTINUITY_MESSAGE_SENT__RESULT__TASK_CONTINUITY_MESSAGE_SENT_RESULT_FAILURE_ASSOCIATION_NOT_FOUND);
                 return SendMessageResult.FAILURE_ASSOCIATION_NOT_FOUND;
             }
         }
 
+        CompanionDeviceManager companionDeviceManager =
+                (CompanionDeviceManager)
+                        mContext.getSystemService(Context.COMPANION_DEVICE_SERVICE);
         try {
-            mCompanionDeviceManager.sendMessage(
+            companionDeviceManager.sendMessage(
                     CompanionDeviceManager.MESSAGE_ONEWAY_TASK_CONTINUITY,
                     serializedMessage,
                     associationIds);
             Slog.i(TAG, "Sending message to " + associationIds.length + " associations.");
-            FrameworkStatsLog.write(
-                    FrameworkStatsLog.TASK_CONTINUITY_MESSAGE_SENT,
-                    message.getTypeForMetrics(),
+            recordMessageSentEventForLogging(
                     associationIds.length,
+                    message,
                     FrameworkStatsLog
                             .TASK_CONTINUITY_MESSAGE_SENT__RESULT__TASK_CONTINUITY_MESSAGE_SENT_RESULT_SUCCESS);
             return SendMessageResult.SUCCESS;
         } catch (Exception e) {
             Slog.e(TAG, "Failed to send message to associations", e);
-            FrameworkStatsLog.write(
-                    FrameworkStatsLog.TASK_CONTINUITY_MESSAGE_SENT,
-                    message.getTypeForMetrics(),
+            recordMessageSentEventForLogging(
                     associationIds.length,
+                    message,
                     FrameworkStatsLog
                             .TASK_CONTINUITY_MESSAGE_SENT__RESULT__TASK_CONTINUITY_MESSAGE_SENT_RESULT_FAILURE_INTERNAL_ERROR);
             return SendMessageResult.FAILURE_INTERNAL_ERROR;
@@ -205,30 +203,51 @@ public class TaskContinuityMessenger implements ConnectedAssociationStore.Listen
     }
 
     public SendMessageResult sendMessage(@NonNull TaskContinuityMessage message) {
-        int[] connectedAssociations =
-                mConnectedAssociationStore.getConnectedAssociations().stream()
-                        .mapToInt(AssociationInfo::getId)
-                        .toArray();
+        int[] connectedAssociations = new int[mConnectedAssociations.size()];
+        for (int i = 0; i < mConnectedAssociations.size(); i++) {
+            connectedAssociations[i] = mConnectedAssociations.keyAt(i);
+        }
 
         return sendMessage(connectedAssociations, Objects.requireNonNull(message));
     }
 
-    @Override
-    public void onTransportConnected(@NonNull AssociationInfo associationInfo) {
-        Objects.requireNonNull(associationInfo);
+    @VisibleForTesting
+    void onTransportsChanged(List<AssociationInfo> associationInfos) {
+        synchronized (this) {
+            ArraySet<Integer> oldAssociationIds = new ArraySet<>(mConnectedAssociations.keySet());
+            for (AssociationInfo associationInfo : associationInfos) {
+                boolean isTaskContinuityEnabled =
+                        (associationInfo.getSystemDataSyncFlags()
+                                        & CompanionDeviceManager.FLAG_TASK_CONTINUITY)
+                                != 0;
 
-        synchronized (mListeners) {
-            for (Listener listener : mListeners) {
-                listener.onAssociationConnected(associationInfo);
+                boolean isAssociationAvailableToUser =
+                        LocalServices.getService(PackageManagerInternal.class)
+                                        .getPackageUid(associationInfo.getPackageName(), 0, mUserId)
+                                >= 0;
+
+                if (isTaskContinuityEnabled && isAssociationAvailableToUser) {
+                    // Only notify listeners of a new association if it was not already connected.
+                    if (!oldAssociationIds.remove(associationInfo.getId())) {
+                        mConnectedAssociations.put(associationInfo.getId(), associationInfo);
+                        Slog.i(
+                                TAG,
+                                "Transport connected for association: " + associationInfo.getId());
+                        for (Listener listener : mListeners) {
+                            listener.onAssociationConnected(associationInfo);
+                        }
+                    }
+                }
             }
-        }
-    }
 
-    @Override
-    public void onTransportDisconnected(int associationId) {
-        synchronized (mListeners) {
-            for (Listener listener : mListeners) {
-                listener.onAssociationDisconnected(associationId);
+            // Any remaining associations in oldAssociationIds are no longer connected.
+            for (Integer associationId : oldAssociationIds) {
+                Slog.i(TAG, "Transport disconnected for association: " + associationId);
+
+                mConnectedAssociations.remove(associationId);
+                for (Listener listener : mListeners) {
+                    listener.onAssociationDisconnected(associationId);
+                }
             }
         }
     }
@@ -249,5 +268,14 @@ public class TaskContinuityMessenger implements ConnectedAssociationStore.Listen
         } catch (IOException e) {
             Slog.e(TAG, "Failed to parse task continuity message", e);
         }
+    }
+
+    private void recordMessageSentEventForLogging(
+            int targetAssociationCount, @NonNull TaskContinuityMessage message, int result) {
+        FrameworkStatsLog.write(
+                FrameworkStatsLog.TASK_CONTINUITY_MESSAGE_SENT,
+                Objects.requireNonNull(message).getTypeForMetrics(),
+                targetAssociationCount,
+                result);
     }
 }

@@ -125,10 +125,7 @@ public class TaskSyncController extends FeatureController {
         }
 
         synchronized (this) {
-            if (mTaskContinuityMessenger
-                    .getConnectedAssociationStore()
-                    .getConnectedAssociations()
-                    .isEmpty()) {
+            if (mTaskContinuityMessenger.getConnectedAssociations().isEmpty()) {
                 unlistenFromActivityTaskManager();
             }
         }
@@ -165,11 +162,7 @@ public class TaskSyncController extends FeatureController {
 
     private void maybeListenToActivityTaskManager() {
         synchronized (this) {
-            if (!mIsRegistered
-                    && !mTaskContinuityMessenger
-                            .getConnectedAssociationStore()
-                            .getConnectedAssociations()
-                            .isEmpty()) {
+            if (!mIsRegistered && !mTaskContinuityMessenger.getConnectedAssociations().isEmpty()) {
                 mActivityTaskManager.registerTaskStackListener(mTaskBroadcaster);
                 mActivityTaskManagerInternal.registerHandoffEnablementListener(mTaskBroadcaster);
                 mIsRegistered = true;

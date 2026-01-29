@@ -32,16 +32,19 @@ import android.companion.ICompanionDeviceManager;
 import android.companion.IOnMessageReceivedListener;
 import android.companion.IOnTransportsChangedListener;
 import android.content.Context;
+import android.content.pm.PackageManagerInternal;
 import android.os.RemoteException;
 import android.platform.test.annotations.Presubmit;
 import android.testing.AndroidTestingRunner;
 import android.testing.TestableLooper;
+import com.android.server.LocalServices;
 import com.android.server.companion.datatransfer.continuity.messages.Proto;
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executor;
-import java.util.stream.Collectors;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -57,11 +60,10 @@ public class TaskContinuityMessengerTest {
 
     private static final int USER_ID = 1;
 
-    private Context mMockContext;
+    @Mock private Context mMockContext;
     @Mock private ICompanionDeviceManager mMockCompanionDeviceManagerService;
-    private CompanionDeviceManager mCompanionDeviceManager;
     @Mock private TaskContinuityMessenger.Listener mMockListener;
-    @Mock private AssociationProfileManager mMockAssociationProfileManager;
+    @Mock private PackageManagerInternal mMockPackageManagerInternal;
 
     private final Executor mExecutor = Runnable::run;
 
@@ -73,18 +75,18 @@ public class TaskContinuityMessengerTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        LocalServices.addService(PackageManagerInternal.class, mMockPackageManagerInternal);
+        when(mMockContext.getSystemService(Context.COMPANION_DEVICE_SERVICE))
+                .thenReturn(
+                        new CompanionDeviceManager(
+                                mMockCompanionDeviceManagerService, mMockContext));
+        when(mMockContext.getMainExecutor()).thenReturn(mExecutor);
+        mTaskContinuityMessenger = new TaskContinuityMessenger(USER_ID, mMockContext);
+    }
 
-        // Setup fake services.
-        mCompanionDeviceManager =
-                new CompanionDeviceManager(mMockCompanionDeviceManagerService, mMockContext);
-
-        // Create TaskContinuityMessenger.
-        mTaskContinuityMessenger =
-                new TaskContinuityMessenger(
-                        USER_ID,
-                        mCompanionDeviceManager,
-                        mExecutor,
-                        mMockAssociationProfileManager);
+    @After
+    public void tearDown() {
+        LocalServices.removeServiceForTest(PackageManagerInternal.class);
     }
 
     @Test
@@ -101,8 +103,9 @@ public class TaskContinuityMessengerTest {
 
         // Send a message to the listener.
         int expectedAssociationId = 1;
-        connectAssociations(
-                List.of(expectedAssociationId), CompanionDeviceManager.FLAG_TASK_CONTINUITY);
+        notifyAssociationsChanged(
+                createAssociationInfo(
+                        expectedAssociationId, CompanionDeviceManager.FLAG_TASK_CONTINUITY, true));
         listener.onMessageReceived(expectedAssociationId, Proto.toBytes(TEST_MESSAGE));
         TestableLooper.get(this).processAllMessages();
         verify(mMockListener, times(1))
@@ -140,9 +143,10 @@ public class TaskContinuityMessengerTest {
     public void testSendMessage_associationSupportsTaskContinuity_sendsMessageToAssociation()
             throws RemoteException, IOException {
         int associationId = 1;
-
         mTaskContinuityMessenger.addListener(mMockListener);
-        connectAssociations(List.of(associationId), CompanionDeviceManager.FLAG_TASK_CONTINUITY);
+        notifyAssociationsChanged(
+                createAssociationInfo(
+                        associationId, CompanionDeviceManager.FLAG_TASK_CONTINUITY, true));
         TaskContinuityMessenger.SendMessageResult result =
                 mTaskContinuityMessenger.sendMessage(associationId, TEST_MESSAGE);
         verify(mMockCompanionDeviceManagerService, times(1))
@@ -157,9 +161,8 @@ public class TaskContinuityMessengerTest {
     public void testSendMessage_associationDoesNotSupportTaskContinuity_sendsMessageToAssociation()
             throws RemoteException, IOException {
         int associationId = 1;
-
         mTaskContinuityMessenger.addListener(mMockListener);
-        connectAssociations(List.of(associationId), 0);
+        notifyAssociationsChanged(createAssociationInfo(associationId, 0, false));
         TaskContinuityMessenger.SendMessageResult result =
                 mTaskContinuityMessenger.sendMessage(associationId, TEST_MESSAGE);
         verify(mMockCompanionDeviceManagerService, never())
@@ -174,7 +177,6 @@ public class TaskContinuityMessengerTest {
     @Test
     public void testSendMessage_associationNotFound_returnsFailure()
             throws RemoteException, IOException {
-
         int associationId = 1;
         TaskContinuityMessenger.SendMessageResult result =
                 mTaskContinuityMessenger.sendMessage(associationId, TEST_MESSAGE);
@@ -187,7 +189,117 @@ public class TaskContinuityMessengerTest {
                 .isEqualTo(TaskContinuityMessenger.SendMessageResult.FAILURE_ASSOCIATION_NOT_FOUND);
     }
 
-    private void connectAssociations(List<Integer> associationIds, int systemDataSyncFlags) {
+    @Test
+    public void testOnTransportsChanged_associationConnectedAndDisconnected_notifiesObserver()
+            throws RemoteException {
+        // Connect an association, verifying it notifies listeners.
+        AssociationInfo associationInfo =
+                createAssociationInfo(1, CompanionDeviceManager.FLAG_TASK_CONTINUITY, true);
+        mTaskContinuityMessenger.addListener(mMockListener);
+        notifyAssociationsChanged(associationInfo);
+        verify(mMockListener, times(1)).onAssociationConnected(eq(associationInfo));
+
+        // Disconnect the association, verifying it notifies listeners.
+        notifyAssociationsChanged();
+        verify(mMockListener, times(1)).onAssociationDisconnected(eq(associationInfo.getId()));
+    }
+
+    @Test
+    public void testOnTransportChanged_taskContinuityDisabled_notifiesObserver()
+            throws RemoteException {
+        // Connect an association
+        AssociationInfo associationInfo =
+                createAssociationInfo(1, CompanionDeviceManager.FLAG_TASK_CONTINUITY, true);
+        mTaskContinuityMessenger.addListener(mMockListener);
+        notifyAssociationsChanged(associationInfo);
+        verify(mMockListener, times(1)).onAssociationConnected(eq(associationInfo));
+
+        // Remove FLAG_TASK_CONTINUITY from the association.
+        notifyAssociationsChanged(createAssociationInfo(associationInfo.getId(), 0, true));
+
+        // Verify the listener was notified of the disconnection
+        verify(mMockListener, times(1)).onAssociationDisconnected(eq(associationInfo.getId()));
+    }
+
+    @Test
+    public void testOnTransportChanged_notifiedTwiceForSameAssociation_onlyNotifiesListenerOnce()
+            throws RemoteException {
+        // Register a listener.
+        mTaskContinuityMessenger.addListener(mMockListener);
+
+        // Connect an association twice.
+        AssociationInfo associationInfo =
+                createAssociationInfo(1, CompanionDeviceManager.FLAG_TASK_CONTINUITY, true);
+        notifyAssociationsChanged(associationInfo);
+        notifyAssociationsChanged(associationInfo);
+
+        // Verify the observer is only notified once for the initial connection.
+        verify(mMockListener, times(1)).onAssociationConnected(eq(associationInfo));
+        verify(mMockListener, never()).onAssociationDisconnected(eq(associationInfo.getId()));
+    }
+
+    @Test
+    public void testGetConnectedAssociations() throws RemoteException {
+        mTaskContinuityMessenger.addListener(mMockListener);
+
+        // Connect two associations.
+        AssociationInfo associationInfo1 =
+                createAssociationInfo(1, CompanionDeviceManager.FLAG_TASK_CONTINUITY, true);
+        AssociationInfo associationInfo2 =
+                createAssociationInfo(2, CompanionDeviceManager.FLAG_TASK_CONTINUITY, true);
+        notifyAssociationsChanged(associationInfo1, associationInfo2);
+
+        // Verify that getConnectedAssociations returns the correct set.
+        assertThat(mTaskContinuityMessenger.getConnectedAssociations())
+                .containsExactly(associationInfo1, associationInfo2);
+
+        // Verify that getConnectedAssociationById returns the correct association.
+        AssociationInfo result = mTaskContinuityMessenger.getAssociationInfo(1);
+        assertThat(result).isEqualTo(associationInfo1);
+
+        // Disconnect one association.
+        mTaskContinuityMessenger.onTransportsChanged(Collections.singletonList(associationInfo2));
+
+        // Verify that getConnectedAssociations returns the updated set.
+        assertThat(mTaskContinuityMessenger.getConnectedAssociations())
+                .containsExactly(associationInfo2);
+    }
+
+    @Test
+    public void testGetConnectedAssociations_excludesAssociationsIfFromOtherUsers()
+            throws RemoteException {
+        mTaskContinuityMessenger.addListener(mMockListener);
+
+        AssociationInfo availableAssociation =
+                createAssociationInfo(1, CompanionDeviceManager.FLAG_TASK_CONTINUITY, true);
+        AssociationInfo unavailableAssociation =
+                createAssociationInfo(2, CompanionDeviceManager.FLAG_TASK_CONTINUITY, false);
+
+        notifyAssociationsChanged(availableAssociation, unavailableAssociation);
+
+        // Verify that getConnectedAssociations returns the correct set.
+        assertThat(mTaskContinuityMessenger.getConnectedAssociations())
+                .containsExactly(availableAssociation);
+    }
+
+    private AssociationInfo createAssociationInfo(
+            int associationId, int systemDataSyncFlags, boolean isAssociationAvailableForUser) {
+        String deviceName = "name" + associationId;
+        String packageName = "com.android.test." + associationId;
+        if (isAssociationAvailableForUser) {
+            when(mMockPackageManagerInternal.getPackageUid(packageName, 0, USER_ID))
+                    .thenReturn(100);
+        } else {
+            when(mMockPackageManagerInternal.getPackageUid(packageName, 0, USER_ID)).thenReturn(-1);
+        }
+
+        return new AssociationInfo.Builder(associationId, USER_ID, packageName)
+                .setDisplayName(deviceName)
+                .setSystemDataSyncFlags(systemDataSyncFlags)
+                .build();
+    }
+
+    private void notifyAssociationsChanged(AssociationInfo... associationInfos) {
         ArgumentCaptor<IOnTransportsChangedListener> listenerCaptor =
                 ArgumentCaptor.forClass(IOnTransportsChangedListener.class);
         try {
@@ -197,21 +309,8 @@ public class TaskContinuityMessengerTest {
             throw new RuntimeException(e);
         }
 
-        List<AssociationInfo> associationInfos =
-                associationIds.stream()
-                        .map(
-                                id ->
-                                        new AssociationInfo.Builder(id, USER_ID, "com.android.test")
-                                                .setDisplayName("name")
-                                                .setSystemDataSyncFlags(systemDataSyncFlags)
-                                                .build())
-                        .collect(Collectors.toList());
-        when(mMockAssociationProfileManager.isAssociationAvailableForUser(
-                        eq(USER_ID), any(AssociationInfo.class)))
-                .thenReturn(true);
-
         try {
-            listenerCaptor.getValue().onTransportsChanged(associationInfos);
+            listenerCaptor.getValue().onTransportsChanged(List.of(associationInfos));
         } catch (RemoteException e) {
             throw new RuntimeException(e);
         }
