@@ -75,7 +75,7 @@ fun ShareContentList(modifier: Modifier = Modifier, viewModel: TargetsViewModel)
                     val selectedModel by viewModel.selectedTarget
                     SelectorItem(
                         targetViewModel = targetViewModel,
-                        isSelected = targetViewModel.model == selectedModel,
+                        isSelected = targetViewModel.model == selectedModel?.model,
                         onItemSelected = { viewModel.setSelectedTarget(targetViewModel) },
                     )
                 }
