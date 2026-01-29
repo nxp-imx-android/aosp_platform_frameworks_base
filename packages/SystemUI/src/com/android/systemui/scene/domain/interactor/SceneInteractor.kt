@@ -44,8 +44,11 @@ import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.SceneFamilies
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
+import com.android.systemui.util.asIndenting
 import com.android.systemui.util.kotlin.pairwise
+import com.android.systemui.util.println
 import dagger.Lazy
+import java.io.PrintWriter
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -525,6 +528,19 @@ constructor(
             logger.logVisibilityRejection(
                 to = oldIsVisible,
                 reason = isVisibleWithLoggingReason.loggingReason,
+            )
+        }
+    }
+
+    fun dump(printWriter: PrintWriter) {
+        with(printWriter.asIndenting()) {
+            with(isVisibleWithLoggingReason()) {
+                println("isVisible", "$value (reason=\"$loggingReason\")")
+            }
+            println("currentScene", transitionState.currentScene.debugName)
+            println(
+                "currentOverlays",
+                transitionState.currentOverlays.joinToString { it.debugName },
             )
         }
     }
