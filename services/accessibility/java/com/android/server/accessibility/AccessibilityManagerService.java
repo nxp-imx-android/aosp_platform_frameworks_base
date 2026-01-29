@@ -43,6 +43,7 @@ import static android.security.advancedprotection.AdvancedProtectionManager.ADVA
 import static android.view.Display.INVALID_DISPLAY;
 import static android.view.WindowManagerPolicyConstants.NAV_BAR_MODE_GESTURAL;
 import static android.view.accessibility.AccessibilityManager.FlashNotificationReason;
+import static android.view.accessibility.Flags.allowA11yButtonOnLargeScreen;
 import static android.view.accessibility.Flags.enableA11yTopRowShortcut;
 
 import static com.android.hardware.input.Flags.enableColorInversionKeyGestures;
@@ -2670,7 +2671,15 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
                     gestureTargets.addAll(softwareTargets);
                     softwareTargets.clear();
                 }
-                buttonMode = ACCESSIBILITY_BUTTON_MODE_FLOATING_MENU;
+
+                // Conditions to force floating menu mode:
+                // 1. Flag is off (original behavior): Always use floating menu in gestural nav.
+                // 2. Flag is on: Only use floating menu if nav bar can move (i.e. not persistent).
+                final boolean navBarCanMove = mContext.getResources().getBoolean(
+                        com.android.internal.R.bool.config_navBarCanMove);
+                if (!allowA11yButtonOnLargeScreen() || navBarCanMove) {
+                    buttonMode = ACCESSIBILITY_BUTTON_MODE_FLOATING_MENU;
+                }
             } else {
                 // Only change the current button mode if there are gesture targets
                 // (indicating the user came from gesture mode or is migrating)
