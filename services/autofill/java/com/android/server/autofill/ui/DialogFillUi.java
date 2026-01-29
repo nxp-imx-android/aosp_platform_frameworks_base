@@ -40,6 +40,7 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.accessibility.AccessibilityManager;
@@ -107,6 +108,8 @@ final class DialogFillUi {
     private final @Nullable ListView mListView;
     private final @Nullable ItemsAdapter mAdapter;
     private final int mVisibleDatasetsMaxCount;
+    private final ViewTreeObserver.OnGlobalLayoutListener mOnGlobalLayoutListener;
+    private final ViewTreeObserver.OnScrollChangedListener mOnScrollChangedListener;
 
     private @Nullable String mFilterText;
     private @Nullable AnnounceFilterResult mAnnounceFilterResult;
@@ -135,7 +138,18 @@ final class DialogFillUi {
             final View headerContainer = inflater.inflate(R.layout.autofill_fill_dialog_header,
                     null);
             mListView.addHeaderView(headerContainer, null, false);
-            decor.setOnClickListener(v -> mCallback.onCanceled());
+            View closeButton = decor.findViewById(R.id.closeButton);
+            closeButton.setOnClickListener(v -> mCallback.onDismissed());
+
+            // Adjust the elevation of the close button based on the scrolling position.
+            mOnGlobalLayoutListener = () -> adjustCloseButtonElevation(mListView, closeButton);
+            mOnScrollChangedListener = () -> adjustCloseButtonElevation(mListView, closeButton);
+            ViewTreeObserver observer = mListView.getViewTreeObserver();
+            observer.addOnGlobalLayoutListener(mOnGlobalLayoutListener);
+            observer.addOnScrollChangedListener(mOnScrollChangedListener);
+        } else {
+            mOnGlobalLayoutListener = null;
+            mOnScrollChangedListener = null;
         }
 
         if (response.getShowFillDialogIcon()) {
@@ -263,7 +277,13 @@ final class DialogFillUi {
             // set "No thanks" by default
             noButton.setText(R.string.autofill_save_no);
         }
-        noButton.setOnClickListener((v) -> mCallback.onDismissed());
+        noButton.setOnClickListener((v) -> {
+            if (Flags.expressiveFillDialog()) {
+                mCallback.onCanceled();
+            } else {
+                mCallback.onDismissed();
+            }
+        });
     }
 
     private void setContinueButton(View decor, View.OnClickListener listener) {
@@ -388,21 +408,13 @@ final class DialogFillUi {
         }
 
         if (mAdapter.getCount() == 1) {
-            // Just single item, set up continue button.
-            setContinueButton(decor, (v) -> {
-                // For expressive fill dialog, onItemClickListener is not involved, so trigger
-                // the callback directly.
-                if (Flags.expressiveFillDialog()) {
-                    final ViewItem viewItem = mAdapter.getItem(0);
-                    mCallback.onDatasetPicked(viewItem.dataset);
-                } else {
-                    onItemClickListener.onItemClick(
-                            /* parent= */ null,
-                            /* view= */ null,
-                            /* position= */ 0,
-                            /* id= */ 0);
-                }
-            });
+            // Do not show continue button for expressive fill dialog.
+            if (!Flags.expressiveFillDialog()) {
+                // Just single item, set up continue button.
+                setContinueButton(decor,
+                        (v) -> onItemClickListener.onItemClick(/* parent= */ null, /* view= */
+                                null, /* position= */ 0, /* id= */ 0));
+            }
         }
 
         if (filterText == null) {
@@ -423,8 +435,8 @@ final class DialogFillUi {
                 }
                 mCallback.onCanceled();
             } else {
-
-                if (mAdapter.getCount() > mVisibleDatasetsMaxCount) {
+                if (Flags.expressiveFillDialog()
+                        || mAdapter.getCount() > mVisibleDatasetsMaxCount) {
                     mListView.setVerticalScrollBarEnabled(true);
                     mListView.onVisibilityAggregated(true);
                 } else {
@@ -460,7 +472,13 @@ final class DialogFillUi {
         try {
             if (sDebug) Slog.d(TAG, "destroy()");
             throwIfDestroyed();
-
+            if (Flags.expressiveFillDialog() && mListView != null) {
+                ViewTreeObserver observer = mListView.getViewTreeObserver();
+                if (observer.isAlive()) {
+                    observer.removeOnGlobalLayoutListener(mOnGlobalLayoutListener);
+                    observer.removeOnScrollChangedListener(mOnScrollChangedListener);
+                }
+            }
             mDialog.dismiss();
             mDestroyed = true;
         } finally {
@@ -492,6 +510,15 @@ final class DialogFillUi {
             return nightMode ? THEME_ID_EXPRESSIVE_DARK : THEME_ID_EXPRESSIVE_LIGHT;
         }
         return nightMode ? THEME_ID_DARK : THEME_ID_LIGHT;
+    }
+
+    private void adjustCloseButtonElevation(ListView listView, View closeButton) {
+        // If the ListView is scrollable and begins scrolling, the elevation of the close button is
+        // 3dp, otherwise, 0.
+        boolean canScrollUp = listView.canScrollVertically(-1); // -1 to check scrolling up
+        final float elevation =
+                canScrollUp ? 3 * mContext.getResources().getDisplayMetrics().density : 0f;
+        closeButton.setElevation(elevation);
     }
 
     void dump(PrintWriter pw, String prefix) {

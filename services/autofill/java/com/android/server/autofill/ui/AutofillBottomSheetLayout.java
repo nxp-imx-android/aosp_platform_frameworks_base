@@ -26,12 +26,12 @@ import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.Slog;
 import android.view.WindowInsets;
-import android.widget.LinearLayout;
+import android.widget.FrameLayout;
 
 import com.android.internal.R;
 
-/** {@link LinearLayout} that displays content of autofill dialogs. */
-public class AutofillBottomSheetLayout extends LinearLayout {
+/** {@link FrameLayout} that displays content of autofill dialogs. */
+public class AutofillBottomSheetLayout extends FrameLayout {
 
     private static final String TAG = "AutofillBottomSheetLayout";
 
@@ -53,10 +53,6 @@ public class AutofillBottomSheetLayout extends LinearLayout {
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
-        this.setOnTouchListener((v, event) -> {
-            // Consume the event and prevent it from falling through
-            return true;
-        });
         this.setOnApplyWindowInsetsListener((v, windowInsets) -> {
             Insets insets = windowInsets.getInsets(
                     WindowInsets.Type.systemBars() | WindowInsets.Type.displayCutout());
