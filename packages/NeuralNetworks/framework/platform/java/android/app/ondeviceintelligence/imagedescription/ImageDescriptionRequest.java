@@ -20,12 +20,17 @@ import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.SystemApi;
+import android.app.ondeviceintelligence.Content;
+import android.app.ondeviceintelligence.Part;
 import android.app.ondeviceintelligence.flags.Flags;
 import android.graphics.Bitmap;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
+import java.util.Locale;
 
 /**
  * Represents a request to generate a description for an image.
@@ -38,34 +43,53 @@ import java.util.Objects;
 @SystemApi
 @FlaggedApi(Flags.FLAG_ON_DEVICE_INTELLIGENCE_26Q2)
 public final class ImageDescriptionRequest implements Parcelable {
-    private final Bitmap mImage;
-    private final String mPrompt;
+    private final Content mContent;
+    @Nullable
+    private final Locale mLocale;
+
+    /**
+     * Constructs a new {@link ImageDescriptionRequest}.
+     *
+     * @param image The image for which a description is requested.
+     * @param prompt An optional prompt to guide the description generation.
+     */
+    public ImageDescriptionRequest(@NonNull Bitmap image, @Nullable String prompt) {
+        this(image, prompt, null);
+    }
 
     /**
      * Constructs a new {@link ImageDescriptionRequest}.
      *
      * @param image The input image for which a description is requested.
      * @param prompt An optional prompt to contextually guide the description generation.
+     * @param locale An optional local with language tag for the description generation.
      */
-    public ImageDescriptionRequest(@NonNull Bitmap image, @Nullable String prompt) {
-        mImage = Objects.requireNonNull(image).asShared();
-        mPrompt = prompt;
+    public ImageDescriptionRequest(@NonNull Bitmap image, @Nullable String prompt,
+            @Nullable Locale locale) {
+        Objects.requireNonNull(image);
+        List<Part> parts = new ArrayList<>();
+        parts.add(Part.createImage(image.asShared()));
+        if (prompt != null) {
+            parts.add(Part.createText(prompt));
+        }
+        mContent = new Content(parts);
+        mLocale = locale;
     }
 
     /**
-     * Returns the input image for which description is to be requested.
+     * Returns the input content for which description is to be requested.
      */
     @NonNull
-    public Bitmap getImage() {
-        return mImage;
+    public Content getContent() {
+        return mContent;
     }
 
     /**
      * Returns the optional prompt.
      */
     @Nullable
-    public String getPrompt() {
-        return mPrompt;
+    public Locale getLocale() {
+        return mLocale;
     }
 
     @Override
@@ -75,8 +99,8 @@ public final class ImageDescriptionRequest implements Parcelable {
 
     @Override
     public void writeToParcel(@NonNull Parcel dest, int flags) {
-        dest.writeTypedObject(mImage, flags);
-        dest.writeString8(mPrompt);
+        dest.writeTypedObject(mContent, flags);
+        dest.writeString8(mLocale != null ? mLocale.toLanguageTag() : null);
     }
 
     public static final @NonNull Creator<ImageDescriptionRequest> CREATOR =
@@ -93,7 +117,8 @@ public final class ImageDescriptionRequest implements Parcelable {
             };
 
     private ImageDescriptionRequest(Parcel in) {
-        mImage = in.readTypedObject(Bitmap.CREATOR);
-        mPrompt = in.readString8();
+        mContent = in.readTypedObject(Content.CREATOR);
+        String languageTag = in.readString8();
+        mLocale = languageTag != null ? Locale.forLanguageTag(languageTag) : null;
     }
 }

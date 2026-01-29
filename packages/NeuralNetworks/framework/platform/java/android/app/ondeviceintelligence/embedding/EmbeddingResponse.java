@@ -30,8 +30,8 @@ import java.util.Objects;
 /**
  * Represents the response for the corresponding {@link EmbeddingRequest}.
  *
- * <p>This class contains a list of {@link EmbeddingVector} objects, each representing an embedding
- * generated from the input data.
+ * <p>This class contains a list of {@link EmbeddingVector} objects, one for each {@link Content}
+ * input supplied in the {@link EmbeddingRequest}.
  *
  * @hide
  */

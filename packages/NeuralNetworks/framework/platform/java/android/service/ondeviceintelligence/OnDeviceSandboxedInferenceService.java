@@ -44,12 +44,14 @@ import android.app.ondeviceintelligence.OnDeviceIntelligenceManager;
 import android.app.ondeviceintelligence.OnDeviceIntelligenceManager.InferenceParams;
 import android.app.ondeviceintelligence.OnDeviceIntelligenceManager.StateParams;
 import android.app.ondeviceintelligence.ProcessingCallback;
+import android.app.ondeviceintelligence.Content;
 import android.app.ondeviceintelligence.ProcessingSignal;
 import android.app.ondeviceintelligence.StreamingProcessingCallback;
 import android.app.ondeviceintelligence.TokenInfo;
 import android.app.ondeviceintelligence.embedding.EmbeddingRequest;
 import android.app.ondeviceintelligence.embedding.EmbeddingResponse;
 import android.app.ondeviceintelligence.embedding.IEmbeddingCallback;
+import android.app.ondeviceintelligence.imagedescription.ImageDescriptionCallback;
 import android.app.ondeviceintelligence.imagedescription.ImageDescriptionRequest;
 import android.app.ondeviceintelligence.imagedescription.ImageDescriptionResponse;
 import android.app.ondeviceintelligence.imagedescription.IImageDescriptionCallback;
@@ -79,6 +81,7 @@ import java.io.FileNotFoundException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
@@ -413,6 +416,29 @@ public abstract class OnDeviceSandboxedInferenceService extends Service {
                                             : null,
                                     wrapImageDescriptionCallback(callback)));
                 }
+
+                @Override
+                public void requestTokenInfoWithContent(int callerUid, Feature feature,
+                        Content request,
+                        AndroidFuture cancellationSignalFuture,
+                        ITokenInfoCallback tokenInfoCallback) {
+                    Objects.requireNonNull(feature);
+                    Objects.requireNonNull(tokenInfoCallback);
+                    ICancellationSignal transport = null;
+                    if (cancellationSignalFuture != null) {
+                        transport = CancellationSignal.createTransport();
+                        cancellationSignalFuture.complete(transport);
+                    }
+
+                    mHandler.executeOrSendMessage(
+                            obtainMessage(
+                                    OnDeviceSandboxedInferenceService::onTokenInfoRequest,
+                                    OnDeviceSandboxedInferenceService.this,
+                                    callerUid, feature,
+                                    request,
+                                    CancellationSignal.fromTransport(transport),
+                                    wrapTokenInfoCallback(tokenInfoCallback)));
+                }
             };
         }
         Slog.w(TAG, "Incorrect service interface, returning null.");
@@ -439,6 +465,28 @@ public abstract class OnDeviceSandboxedInferenceService extends Service {
             @NonNull @InferenceParams Bundle request,
             @Nullable CancellationSignal cancellationSignal,
             @NonNull OutcomeReceiver<TokenInfo, OnDeviceIntelligenceException> callback);
+
+    /**
+     * Invoked when caller  wants to obtain token info related to the payload in the passed
+     * content, associated with the provided feature.
+     * The expectation from the implementation is that when processing is complete, it
+     * should provide the token info in the {@link OutcomeReceiver#onResult}.
+     *
+     * @param callerUid          UID of the caller that initiated this call chain.
+     * @param feature            feature which is associated with the request.
+     * @param request            request that requires processing.
+     * @param cancellationSignal Cancellation Signal to receive cancellation events from client and
+     *                           configure a listener to.
+     * @param callback           callback to populate failure or the token info for the provided
+     *                           request.
+     */
+    @FlaggedApi(FLAG_ON_DEVICE_INTELLIGENCE_26Q2)
+    public void onTokenInfoRequest(
+            int callerUid, @NonNull Feature feature,
+            @NonNull Content request,
+            @Nullable CancellationSignal cancellationSignal,
+            @NonNull OutcomeReceiver<TokenInfo, OnDeviceIntelligenceException> callback) {
+    }
 
     /**
      * Invoked when caller provides a request for a particular feature to be processed in a
@@ -553,7 +601,7 @@ public abstract class OnDeviceSandboxedInferenceService extends Service {
      * Invoked when a caller provides a request to generate an image description for a particular
      * feature. The expectation from the implementation is to process the
      * {@link ImageDescriptionRequest} and provide the result via the provided
-     * {@link OutcomeReceiver}.
+     * {@link ImageDescriptionCallback}.
      *
      * @param callerUid          UID of the caller that initiated this call chain.
      * @param feature            The feature associated with the request.
@@ -568,14 +616,47 @@ public abstract class OnDeviceSandboxedInferenceService extends Service {
             @NonNull Feature feature,
             @NonNull ImageDescriptionRequest request,
             @Nullable CancellationSignal cancellationSignal,
-            @NonNull
-                    OutcomeReceiver<ImageDescriptionResponse, OnDeviceIntelligenceException>
-                            callback) {
+            @NonNull ImageDescriptionCallback callback) {
         // The default implementation is to return an error, as the remote service can choose to not
         // implement this method or the device is still containing an old version of the APK.
         callback.onError(new OnDeviceIntelligenceException(
                 OnDeviceIntelligenceException.PROCESSING_ERROR_SERVICE_UNAVAILABLE,
                 "onGenerateImageDescription is not implemented."));
+    }
+
+    private ImageDescriptionCallback wrapImageDescriptionCallback(
+            IImageDescriptionCallback callback) {
+        return new ImageDescriptionCallback() {
+            @Override
+            public void onNewText(@NonNull String text) {
+                try {
+                    callback.onNewText(text);
+                } catch (RemoteException e) {
+                    Slog.e(TAG, "Error sending result: " + e);
+                }
+            }
+
+            @Override
+            public void onResult(@NonNull ImageDescriptionResponse result) {
+                try {
+                    callback.onSuccess(result);
+                } catch (RemoteException e) {
+                    Slog.e(TAG, "Error sending result: " + e);
+                }
+            }
+
+            @Override
+            public void onError(@NonNull OnDeviceIntelligenceException exception) {
+                try {
+                    callback.onFailure(
+                            exception.getErrorCode(),
+                            exception.getMessage(),
+                            exception.getErrorParams());
+                } catch (RemoteException e) {
+                    Slog.e(TAG, "Error sending failure: " + e);
+                }
+            }
+        };
     }
 
     private OutcomeReceiver<EmbeddingResponse, OnDeviceIntelligenceException> wrapEmbeddingCallback(
@@ -604,31 +685,7 @@ public abstract class OnDeviceSandboxedInferenceService extends Service {
         };
     }
 
-    private OutcomeReceiver<ImageDescriptionResponse, OnDeviceIntelligenceException>
-            wrapImageDescriptionCallback(IImageDescriptionCallback callback) {
-        return new OutcomeReceiver<>() {
-            @Override
-            public void onResult(ImageDescriptionResponse result) {
-                try {
-                    callback.onSuccess(result);
-                } catch (RemoteException e) {
-                    Slog.e(TAG, "Error sending result: " + e);
-                }
-            }
 
-            @Override
-            public void onError(OnDeviceIntelligenceException exception) {
-                try {
-                    callback.onFailure(
-                            exception.getErrorCode(),
-                            exception.getMessage(),
-                            exception.getErrorParams());
-                } catch (RemoteException e) {
-                    Slog.e(TAG, "Error sending failure: " + e);
-                }
-            }
-        };
-    }
     /**
      * Overrides {@link Context#openFileInput} to read files with the given file names under the
      * internal app storage of the {@link OnDeviceIntelligenceService}, i.e., only files stored in
