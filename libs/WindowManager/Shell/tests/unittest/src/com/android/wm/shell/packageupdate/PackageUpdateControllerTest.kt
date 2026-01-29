@@ -92,7 +92,7 @@ class PackageUpdateControllerTest : ShellTestCase() {
     }
 
     @Test
-    fun onPackageUpdateRequested_visibleTask_launchesPlaceholder() {
+    fun onPackageUpdateRequested_launchesPlaceholder() {
         runTest(testDispatcher) {
             val task = createTaskInfo(1)
 
@@ -111,21 +111,7 @@ class PackageUpdateControllerTest : ShellTestCase() {
     }
 
     @Test
-    fun onPackageUpdateRequested_invisibleTask_doesNotLaunchPlaceholder() {
-        runTest(testDispatcher) {
-            val task = createTaskInfo(id = 1, visible = false)
-            packageUpdateController.onPackageUpdateRequested(listOf(task))
-            testScope.testScheduler.advanceUntilIdle()
-
-            val wct = getLatestWct(type = TRANSIT_OPEN)
-            assertThat(wct.hierarchyOps.map { it.type })
-                .containsExactly(HIERARCHY_OP_TYPE_CONTINUE_PACKAGE_UPDATE)
-            wct.assertContinuePackageUpdate(task)
-        }
-    }
-
-    @Test
-    fun onPackageUpdateFinished_visibleTask_launchesBaseIntent() {
+    fun onPackageUpdateFinished_launchesBaseIntent() {
         val task = createTaskInfo(1)
         packageUpdateController.onPackageUpdateRequested(listOf(task))
 
@@ -135,20 +121,6 @@ class PackageUpdateControllerTest : ShellTestCase() {
         assertThat(wct.hierarchyOps.map { it.type })
             .containsExactly(HIERARCHY_OP_TYPE_PENDING_INTENT)
         wct.assertPendingIntent(task.baseIntent)
-    }
-
-    @Test
-    fun onPackageUpdateFinished_invisibleTask_removesTaskAndKeepsInRecents() {
-        val task = createTaskInfo(1, visible = true)
-        packageUpdateController.onPackageUpdateRequested(listOf(task))
-        task.isVisible = false
-        task.isVisibleRequested = false
-
-        packageUpdateController.onPackageUpdateFinished(listOf(task))
-
-        val wct = getLatestWct(type = TRANSIT_CHANGE)
-        assertThat(wct.hierarchyOps.map { it.type }).containsExactly(HIERARCHY_OP_TYPE_REMOVE_TASK)
-        wct.assertRemoveTask(task, removeFromRecents = false)
     }
 
     @Test
