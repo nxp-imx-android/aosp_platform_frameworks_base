@@ -852,12 +852,16 @@ public final class AppFunctionManager {
      * @throws IllegalStateException if any function in the {@code requests} list has an ID that is
      *     already registered by this app.
      * @throws IllegalArgumentException if any function ID in the {@code requests} list is not
-     *     declared in the app's application-level XML resources.
+     *     declared in the app's application-level XML resources or the {@code requests} list is
+     *     empty.
      */
     @NonNull
     @FlaggedApi(FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS)
     public AppFunctionRegistration registerAppFunctions(
             @NonNull List<RegisterAppFunctionRequest> requests) {
+        if (requests.isEmpty()) {
+            throw new IllegalArgumentException("No functions provided.");
+        }
         return mRegistry.register(requests);
     }
 

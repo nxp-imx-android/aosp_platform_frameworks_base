@@ -26,7 +26,7 @@ import android.os.ICancellationSignal
 import android.os.UserHandle
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.server.SystemService.TargetUser
-import com.android.server.appfunctions.MultiUserDynamicAppFunctionRegistry.ActivitySourceId
+import com.android.server.appfunctions.MultiUserDynamicAppFunctionRegistry.RegistrationScopeId
 import com.google.common.truth.Truth.assertThat
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
@@ -45,7 +45,7 @@ class MultiUserDynamicAppFunctionRegistryTest {
     private lateinit var registry: MultiUserDynamicAppFunctionRegistry
     private val mockMetadataObserver = mock<AppFunctionMetadataObserver>()
 
-    private val globalScope: List<ActivitySourceId> = listOf(ActivitySourceId(null))
+    private val globalScope: List<RegistrationScopeId> = listOf(RegistrationScopeId(null))
 
     @Before
     fun setUp() {

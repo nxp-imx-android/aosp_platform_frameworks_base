@@ -106,7 +106,7 @@ public final class MultiUserDynamicAppFunctionRegistry {
      * @param executor The client's executor, an {@link IAppFunctionExecutor} binder used to invoke
      *     the function implementation in the client's process.
      * @param userHandle The user for whom the app functions are being registered.
-     * @param activityTokens Identifiers of the source activities corresponding to each
+     * @param scopeIds Identifiers of the registration source corresponding to each
      *     functionIdentifier.
      * @throws IllegalStateException if any of the function identifiers are already registered for
      *     this package and user, or if the specified user has not been unlocked. No function
@@ -117,10 +117,10 @@ public final class MultiUserDynamicAppFunctionRegistry {
             @NonNull List<String> functionIdentifiers,
             @NonNull IAppFunctionExecutor executor,
             @NonNull UserHandle userHandle,
-            @NonNull List<ActivitySourceId> activityTokens) {
+            @NonNull List<RegistrationScopeId> scopeIds) {
         maybePrintDebugLog("registerAppFunction for " + packageName + " :", functionIdentifiers);
         getPerUserRegistry(userHandle)
-                .registerAppFunctions(packageName, functionIdentifiers, executor, activityTokens);
+                .registerAppFunctions(packageName, functionIdentifiers, executor, scopeIds);
     }
 
     /**
@@ -135,7 +135,7 @@ public final class MultiUserDynamicAppFunctionRegistry {
      * @param executor The client's executor that was used for registration. The system verifies
      *     this to ensure that only the original registrant can unregister the function.
      * @param userHandle The user for whom the app functions should be unregistered.
-     * @param activityTokens Identifiers of the source activities corresponding to each
+     * @param scopeIds Identifiers of the registration source corresponding to each
      *     functionIdentifier.
      * @throws IllegalStateException if the specified {@code userHandle} has not been unlocked.
      */
@@ -144,10 +144,10 @@ public final class MultiUserDynamicAppFunctionRegistry {
             @NonNull List<String> functionIdentifiers,
             @NonNull IAppFunctionExecutor executor,
             @NonNull UserHandle userHandle,
-            @NonNull List<ActivitySourceId> activityTokens) {
+            @NonNull List<RegistrationScopeId> scopeIds) {
         maybePrintDebugLog("unregisterAppFunction " + packageName + ": ", functionIdentifiers);
         getPerUserRegistry(userHandle)
-                .unregisterAppFunctions(packageName, functionIdentifiers, executor, activityTokens);
+                .unregisterAppFunctions(packageName, functionIdentifiers, executor, scopeIds);
     }
 
     /**
@@ -184,10 +184,10 @@ public final class MultiUserDynamicAppFunctionRegistry {
                         cancellationTransport);
     }
 
-    public static class ActivitySourceId {
+    public static class RegistrationScopeId {
         @Nullable private final AppFunctionActivityId mAppFunctionActivityId;
 
-        ActivitySourceId(@Nullable AppFunctionActivityId appFunctionActivityId) {
+        RegistrationScopeId(@Nullable AppFunctionActivityId appFunctionActivityId) {
             mAppFunctionActivityId = appFunctionActivityId;
         }
 
@@ -206,11 +206,11 @@ public final class MultiUserDynamicAppFunctionRegistry {
             if (this == obj) {
                 return true;
             }
-            if (!(obj instanceof ActivitySourceId)) {
+            if (!(obj instanceof RegistrationScopeId)) {
                 return false;
             }
             return Objects.equals(
-                    mAppFunctionActivityId, ((ActivitySourceId) obj).mAppFunctionActivityId);
+                    mAppFunctionActivityId, ((RegistrationScopeId) obj).mAppFunctionActivityId);
         }
     }
 

@@ -35,7 +35,7 @@ import android.util.ArraySet;
 import android.util.Log;
 
 import com.android.internal.annotations.GuardedBy;
-import com.android.server.appfunctions.MultiUserDynamicAppFunctionRegistry.ActivitySourceId;
+import com.android.server.appfunctions.MultiUserDynamicAppFunctionRegistry.RegistrationScopeId;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,7 +53,7 @@ final class DynamicAppFunctionRegistry {
     private final Object mLock = new Object();
 
     @GuardedBy("mLock")
-    private final ArrayMap<AppFunctionName, ArrayMap<ActivitySourceId, IAppFunctionExecutor>>
+    private final ArrayMap<AppFunctionName, ArrayMap<RegistrationScopeId, IAppFunctionExecutor>>
             mRegistrations = new ArrayMap<>();
 
     @GuardedBy("mLock")
@@ -113,18 +113,19 @@ final class DynamicAppFunctionRegistry {
      * @param packageName Name of the package containing the app function.
      * @param functionIdentifiers A list of identifiers of the app functions.
      * @param executor Executor of the app function.
-     * @param activityTokens Identifiers of the source activities corresponding to each
-     *     functionIdentifier. Null for global scoped functions.
-     * @throws IllegalStateException If the app function is already registered.
+     * @param scopeIds Identifiers of the source corresponding to each
+     *     functionIdentifier. Activity identifier for activity scoped functions, empty class for
+     *     global scoped functions.
+     * @throws IllegalStateException If any of the provided app functions is already registered.
      */
     public void registerAppFunctions(
             @NonNull String packageName,
             @NonNull List<String> functionIdentifiers,
             @NonNull IAppFunctionExecutor executor,
-            @NonNull List<ActivitySourceId> activityTokens) {
-        if (functionIdentifiers.size() != activityTokens.size()) {
+            @NonNull List<RegistrationScopeId> scopeIds) {
+        if (functionIdentifiers.size() != scopeIds.size()) {
             throw new IllegalArgumentException(
-                    "Activity identifiers list must be same size as function identifiers");
+                    "Scope identifiers list must be same size as function identifiers");
         }
         synchronized (mLock) {
             ArrayList<AppFunctionRegistrationId> registrationIds =
@@ -132,7 +133,7 @@ final class DynamicAppFunctionRegistry {
             for (int index = 0; index < functionIdentifiers.size(); index++) {
                 AppFunctionName name =
                         new AppFunctionName(packageName, functionIdentifiers.get(index));
-                ActivitySourceId source = activityTokens.get(index);
+                RegistrationScopeId source = scopeIds.get(index);
                 if (mRegistrations.containsKey(name)
                         && Objects.requireNonNull(mRegistrations.get(name)).containsKey(source)) {
                     throw new IllegalStateException(
@@ -151,7 +152,7 @@ final class DynamicAppFunctionRegistry {
 
                 if (!mExecutorToRegistrations.containsKey(executor.asBinder())) {
                     mExecutorToRegistrations.put(
-                            executor.asBinder(), new ArraySet<>(registrationIds));
+                            executor.asBinder(), new ArraySet<>());
                     mCallbacks.register(executor);
                 }
                 Objects.requireNonNull(mExecutorToRegistrations.get(executor.asBinder()))
@@ -174,23 +175,24 @@ final class DynamicAppFunctionRegistry {
      * @param packageName Name of the package containing the app function.
      * @param functionIdentifiers List of identifier of the app functions.
      * @param executor Executor of the app function.
-     * @param activityTokens Identifiers of the source activities corresponding to each
-     *     functionIdentifier. Null for global scoped functions.
+     * @param scopeIds Identifiers of the registration source corresponding to each
+     *     functionIdentifier. Activity identifier for activity scoped functions, empty class for
+     *     global scoped functions, empty class for global scoped functions.
      */
     public void unregisterAppFunctions(
             @NonNull String packageName,
             @NonNull List<String> functionIdentifiers,
             @NonNull IAppFunctionExecutor executor,
-            @NonNull List<ActivitySourceId> activityTokens) {
-        if (functionIdentifiers.size() != activityTokens.size()) {
+            @NonNull List<RegistrationScopeId> scopeIds) {
+        if (functionIdentifiers.size() != scopeIds.size()) {
             throw new IllegalArgumentException(
-                    "Activity identifiers list must be same size as function identifiers");
+                    "Scope identifiers list must be same size as function identifiers");
         }
         synchronized (mLock) {
             for (int index = 0; index < functionIdentifiers.size(); index++) {
                 AppFunctionName name =
                         new AppFunctionName(packageName, functionIdentifiers.get(index));
-                ActivitySourceId activityToken = activityTokens.get(index);
+                RegistrationScopeId activityToken = scopeIds.get(index);
                 AppFunctionRegistrationId registrationId =
                         new AppFunctionRegistrationId(name, activityToken);
 
@@ -251,7 +253,7 @@ final class DynamicAppFunctionRegistry {
                 new AppFunctionName(
                         request.getTargetPackageName(), request.getFunctionIdentifier());
         // TODO(b/478873466): support execute with activityId
-        ActivitySourceId sourceId = new ActivitySourceId(null);
+        RegistrationScopeId sourceId = new RegistrationScopeId(null);
         if (DEBUG) {
             Log.d(TAG, "executeAppFunction with ID:" + name + " with activity token: " + sourceId);
         }
@@ -300,22 +302,14 @@ final class DynamicAppFunctionRegistry {
     }
 
     static class AppFunctionRegistrationId {
-        @Nullable private final ActivitySourceId mActivityToken;
+        @Nullable private final RegistrationScopeId mActivityToken;
 
         @NonNull private final AppFunctionName mName;
 
         AppFunctionRegistrationId(
-                @NonNull AppFunctionName name, @Nullable ActivitySourceId activityToken) {
+                @NonNull AppFunctionName name, @Nullable RegistrationScopeId activityToken) {
             mName = name;
             mActivityToken = activityToken;
-        }
-
-        AppFunctionRegistrationId(
-                @NonNull String packageName,
-                @NonNull String functionIdentifier,
-                @Nullable ActivitySourceId activityToken) {
-            mActivityToken = activityToken;
-            mName = new AppFunctionName(packageName, functionIdentifier);
         }
 
         @NonNull
@@ -324,7 +318,7 @@ final class DynamicAppFunctionRegistry {
         }
 
         @Nullable
-        ActivitySourceId getActivityToken() {
+        RegistrationScopeId getActivityToken() {
             return mActivityToken;
         }
 

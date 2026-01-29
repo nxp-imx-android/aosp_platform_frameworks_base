@@ -132,6 +132,23 @@ final class AppFunctionMetadataReader {
     }
 
     /**
+     * Returns whether the function is activity scoped dynamic app function.
+     * Activity scoped dynamic app functions must be registered within the activity context and
+     * support multiregistration (so the same app function can be registered by multiple
+     * activities).
+     *
+     * See {@link android.app.appfunctions.AppFunctionActivityId}.
+     *
+     * @param packageName The package name of the application containing the function.
+     * @param functionIdentifier The unique identifier for the function within the package.
+     * @return {boolean} Whether app function is activity scoped dynamic.
+     */
+    public boolean isActivityScopedDynamicFunction(
+            String packageName, String functionIdentifier, UserHandle user) {
+        return mCache.isActivityScopedDynamicFunction(packageName, functionIdentifier, user);
+    }
+
+    /**
      * Checks if the {@code targetAppFunction} is enabled or not.
      *
      * @param futureGlobalSearchSession The session to search AppFunctions.

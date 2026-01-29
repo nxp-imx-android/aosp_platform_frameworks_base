@@ -27,7 +27,7 @@ import android.os.ICancellationSignal
 import android.os.RemoteException
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
-import com.android.server.appfunctions.MultiUserDynamicAppFunctionRegistry.ActivitySourceId
+import com.android.server.appfunctions.MultiUserDynamicAppFunctionRegistry.RegistrationScopeId
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -55,12 +55,10 @@ class DynamicAppFunctionRegistryTest {
     private lateinit var mMockOnBinderDeathCleanupCallback:
         DynamicAppFunctionRegistry.OnBinderDeathCleanupCallback
 
-    private val globalScope: List<ActivitySourceId> = listOf(ActivitySourceId(null))
+    private val globalScope: List<RegistrationScopeId> = listOf(RegistrationScopeId(null))
 
-    private val batchedGlobalScope: List<ActivitySourceId> =
-        listOf(ActivitySourceId(null), ActivitySourceId(null))
-
-    private val mockActivityToken: IBinder = mock()
+    private val batchedGlobalScope: List<RegistrationScopeId> =
+        listOf(RegistrationScopeId(null), RegistrationScopeId(null))
 
     @Before
     fun setUp() {
@@ -71,10 +69,11 @@ class DynamicAppFunctionRegistryTest {
 
     @Test
     fun createRegistrationId_equalsPackageAndFunction() {
-        val id1 = DynamicAppFunctionRegistry.AppFunctionRegistrationId(TEST_PACKAGE, TEST_FUNCTION,
-            ActivitySourceId(null))
-        val id2 = DynamicAppFunctionRegistry.AppFunctionRegistrationId(TEST_PACKAGE, TEST_FUNCTION,
-            ActivitySourceId(null))
+        val name = AppFunctionName(TEST_PACKAGE, TEST_FUNCTION)
+        val id1 = DynamicAppFunctionRegistry.AppFunctionRegistrationId(name,
+            RegistrationScopeId(null))
+        val id2 = DynamicAppFunctionRegistry.AppFunctionRegistrationId(name,
+            RegistrationScopeId(null))
 
         assertThat(id1).isEqualTo(id2)
         assertThat(id1.hashCode()).isEqualTo(id2.hashCode())
@@ -82,13 +81,16 @@ class DynamicAppFunctionRegistryTest {
 
     @Test
     fun createRegistrationId_notEqualConstructorArguments_notEqualAndNotEqualHashCode() {
-        val globalScopeId = ActivitySourceId(null)
-        val activityScopeId = ActivitySourceId(mock())
-        val id1 = DynamicAppFunctionRegistry.AppFunctionRegistrationId(TEST_PACKAGE, TEST_FUNCTION, globalScopeId)
-        val id2 = DynamicAppFunctionRegistry.AppFunctionRegistrationId(TEST_PACKAGE, TEST_FUNCTION2, globalScopeId)
-        val id3 = DynamicAppFunctionRegistry.AppFunctionRegistrationId(TEST_PACKAGE2, TEST_FUNCTION, globalScopeId)
-        val id4 = DynamicAppFunctionRegistry.AppFunctionRegistrationId(TEST_PACKAGE, TEST_FUNCTION,
-            activityScopeId)
+        val globalScopeId = RegistrationScopeId(null)
+        val activityScopeId = RegistrationScopeId(mock())
+        val id1 = DynamicAppFunctionRegistry.AppFunctionRegistrationId(
+            AppFunctionName(TEST_PACKAGE, TEST_FUNCTION), globalScopeId)
+        val id2 = DynamicAppFunctionRegistry.AppFunctionRegistrationId(
+            AppFunctionName(TEST_PACKAGE, TEST_FUNCTION2), globalScopeId)
+        val id3 = DynamicAppFunctionRegistry.AppFunctionRegistrationId(
+            AppFunctionName(TEST_PACKAGE2, TEST_FUNCTION), globalScopeId)
+        val id4 = DynamicAppFunctionRegistry.AppFunctionRegistrationId(
+            AppFunctionName(TEST_PACKAGE, TEST_FUNCTION), activityScopeId)
 
         assertThat(id1).isNotEqualTo(id2)
         assertThat(id1.hashCode()).isNotEqualTo(id2.hashCode())
@@ -168,7 +170,7 @@ class DynamicAppFunctionRegistryTest {
     @Test
     fun register_sameFunctionWithDifferentToken_success() {
         val activityExecutor = createExecutorMock()
-        val mockActivitySourceId = listOf(ActivitySourceId(mock()))
+        val mockActivitySourceId = listOf(RegistrationScopeId(mock()))
 
         val mockActivityToken: IBinder = mock()
         registry.registerAppFunctions(
@@ -178,7 +180,7 @@ class DynamicAppFunctionRegistryTest {
             mockActivitySourceId
         )
 
-        val mockActivitySourceId2 = listOf(ActivitySourceId(mock()))
+        val mockActivitySourceId2 = listOf(RegistrationScopeId(mock()))
         registry.registerAppFunctions(
             TEST_PACKAGE,
             listOf(TEST_FUNCTION),
@@ -189,7 +191,7 @@ class DynamicAppFunctionRegistryTest {
     @Test
     fun register_alreadyRegisteredWithTheSameActivityToken_throwsException() {
         val activityExecutor = createExecutorMock()
-        val mockActivitySourceId = listOf(ActivitySourceId(mock()))
+        val mockActivitySourceId = listOf(RegistrationScopeId(mock()))
 
         val mockActivityToken: IBinder = mock()
         registry.registerAppFunctions(
@@ -210,7 +212,7 @@ class DynamicAppFunctionRegistryTest {
     @Test
     fun register_withActivityToken_countsRegistration() {
         val activityExecutor = createExecutorMock()
-        val activitySourceId = listOf(ActivitySourceId(mock()))
+        val activitySourceId = listOf(RegistrationScopeId(mock()))
         registry.registerAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), activityExecutor, globalScope)
         registry.registerAppFunctions(
             TEST_PACKAGE,
@@ -235,7 +237,7 @@ class DynamicAppFunctionRegistryTest {
     fun unregister_wrongActivityToken_noOp() {
         val activityExecutor = createExecutorMock()
 
-        val mockActivitySourceId = listOf(ActivitySourceId(mock()))
+        val mockActivitySourceId = listOf(RegistrationScopeId(mock()))
         val mockActivityToken: IBinder = mock()
         registry.registerAppFunctions(
             TEST_PACKAGE,
@@ -244,7 +246,7 @@ class DynamicAppFunctionRegistryTest {
             mockActivitySourceId
         )
 
-        val mockActivitySourceId2 = listOf(ActivitySourceId(mock()))
+        val mockActivitySourceId2 = listOf(RegistrationScopeId(mock()))
         registry.unregisterAppFunctions(
             TEST_PACKAGE,
             listOf(TEST_FUNCTION),
