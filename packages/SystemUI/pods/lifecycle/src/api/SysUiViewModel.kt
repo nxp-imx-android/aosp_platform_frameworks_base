@@ -47,7 +47,7 @@ import kotlinx.coroutines.CoroutineScope
  * over the [WithConfiguredRememberViewModels] one.
  */
 @Composable
-fun <T> rememberViewModel(
+public fun <T> rememberViewModel(
     traceName: String,
     key: Any = Unit,
     coroutineContext: CoroutineContext = LocalCoroutineContext.current,
@@ -72,7 +72,7 @@ fun <T> rememberViewModel(
  * override this behavior by passing a different [CoroutineContext].
  */
 @Composable
-fun WithConfiguredRememberViewModels(
+public fun WithConfiguredRememberViewModels(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     block: @Composable () -> Unit,
 ) {
@@ -89,7 +89,7 @@ fun WithConfiguredRememberViewModels(
  * performance findings with actual code. One recommendation: prefer whole string literals instead
  * of some complex concatenation or templating scheme.
  */
-suspend fun <T> View.viewModel(
+public suspend fun <T> View.viewModel(
     traceName: String,
     minWindowLifecycleState: WindowLifecycleState,
     factory: () -> T,
