@@ -85,7 +85,7 @@ public class ComputerControlExtensionsTest {
     @Test
     public void testGetVersion() {
         assertThat(ComputerControlExtensions.getVersion())
-                .isEqualTo(ComputerControlExtensions.EXTENSIONS_VERSION);
+                .isEqualTo(VirtualDeviceManager.COMPUTER_CONTROL_VERSION);
     }
 
     @Test

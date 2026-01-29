@@ -133,6 +133,9 @@ public final class VirtualDeviceManager {
     private static final String TAG = "VirtualDeviceManager";
 
     /** @hide */
+    public static final int COMPUTER_CONTROL_VERSION = 4;
+
+    /** @hide */
     @Retention(RetentionPolicy.SOURCE)
     @IntDef(
             prefix = "LAUNCH_",
