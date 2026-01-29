@@ -388,17 +388,19 @@ class MobileConnectionRepositoryImpl(
                 val receiver =
                     object : BroadcastReceiver() {
                         override fun onReceive(context: Context, intent: Intent) {
-                            if (
+                            val intentSubId =
                                 intent.getIntExtra(
                                     EXTRA_SUBSCRIPTION_INDEX,
                                     INVALID_SUBSCRIPTION_ID,
-                                ) == subId
-                            ) {
+                                )
+                            if (intentSubId == subId) {
                                 logger.logServiceProvidersUpdatedBroadcast(intent)
                                 trySend(
                                     intent.toNetworkNameModel(networkNameSeparator)
                                         ?: defaultNetworkName
                                 )
+                            } else {
+                                logger.logServiceProvidersUpdatedBroadcastSkipped(subId, intent)
                             }
                         }
                     }
