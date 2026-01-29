@@ -57,6 +57,7 @@ import com.android.systemui.settings.UserTracker
 import com.android.systemui.shade.ShadeViewController
 import com.android.systemui.shade.display.StatusBarTouchShadeDisplayPolicy
 import com.android.systemui.shade.display.domain.interactor.ShadeExpansionTargetDisplayInteractor
+import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.shared.recents.ILauncherProxy
 import com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_NAVIGATION_BAR_DISABLED
 import com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_WAKEFULNESS_MASK
@@ -155,6 +156,7 @@ class LauncherProxyServiceTest : SysuiTestCase() {
     @Mock private lateinit var backAnimation: Optional<BackAnimation>
     private lateinit var desktopState: FakeDesktopState
     private val fakeHeadlessSystemUserMode = HeadlessSystemUserModeFake()
+    @Mock private lateinit var shadeModeInteractor: ShadeModeInteractor
 
     @Before
     fun setUp() {
@@ -500,6 +502,7 @@ class LauncherProxyServiceTest : SysuiTestCase() {
             kosmos.displayRepository,
             desktopState,
             fakeHeadlessSystemUserMode,
+            shadeModeInteractor,
         )
     }
 }
