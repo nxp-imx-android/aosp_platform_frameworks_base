@@ -30,7 +30,6 @@ import android.os.IBinder;
 import android.os.ICancellationSignal;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
-import android.os.UserHandle;
 import android.util.ArrayMap;
 import android.util.ArraySet;
 import android.util.Log;
@@ -39,6 +38,7 @@ import com.android.internal.annotations.GuardedBy;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Manages the lifecycle of app functions registered at runtime for a single user. Unregisters
@@ -62,10 +62,7 @@ final class DynamicAppFunctionRegistry {
      */
     private final RemoteCallbackList<IAppFunctionExecutor> mCallbacks;
 
-    // TODO(b/478843950): Decouple AppFunctionMetadataObserver from registry. Pass an onDeath
-    // callback instead.
-    DynamicAppFunctionRegistry(
-            @NonNull AppFunctionMetadataObserver metadataObserver, @NonNull UserHandle userHandle) {
+    DynamicAppFunctionRegistry(@NonNull OnBinderDeathCleanupCallback onBinderDeathCleanupCallback) {
         mCallbacks =
                 new RemoteCallbackList<>() {
                     @Override
@@ -86,12 +83,12 @@ final class DynamicAppFunctionRegistry {
                                 mRegistrations.remove(id);
                             }
                         }
+                        Set<AppFunctionName> unregisteredFunctionNames = new ArraySet<>();
                         for (String id : registrationIds) {
-                            AppFunctionName appFunctionName = AppFunctionName.fromQualifiedId(id);
-                            metadataObserver.onEnabledStateChanged(
-                                    userHandle,
-                                    appFunctionName.getPackageName(),
-                                    appFunctionName.getFunctionId());
+                            unregisteredFunctionNames.add(AppFunctionName.fromQualifiedId(id));
+                        }
+                        if (!unregisteredFunctionNames.isEmpty()) {
+                            onBinderDeathCleanupCallback.run(unregisteredFunctionNames);
                         }
                     }
                 };
@@ -261,5 +258,13 @@ final class DynamicAppFunctionRegistry {
                     }
                 };
         return cancellationCallback;
+    }
+
+    /**
+     * A callback interface to be invoked when dynamic app functions are unregistered due to the
+     * process being killed.
+     */
+    interface OnBinderDeathCleanupCallback {
+        void run(Set<AppFunctionName> unregisteredFunctionNames);
     }
 }
