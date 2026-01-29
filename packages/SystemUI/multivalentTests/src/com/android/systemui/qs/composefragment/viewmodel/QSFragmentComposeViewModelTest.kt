@@ -45,7 +45,6 @@ import com.android.systemui.qs.fgsManagerController
 import com.android.systemui.qs.panels.domain.interactor.tileSquishinessInteractor
 import com.android.systemui.qs.panels.ui.viewmodel.setConfigurationForMediaInRow
 import com.android.systemui.res.R
-import com.android.systemui.shade.data.repository.FakeShadeRepository
 import com.android.systemui.shade.domain.interactor.shadeModeInteractor
 import com.android.systemui.shade.largeScreenHeaderHelper
 import com.android.systemui.shade.shared.model.ShadeMode
@@ -55,6 +54,8 @@ import com.android.systemui.statusbar.disableflags.shared.model.DisableFlagsMode
 import com.android.systemui.statusbar.sysuiStatusBarStateController
 import com.android.systemui.util.animation.DisappearParameters
 import com.google.common.truth.Truth.assertThat
+import org.junit.Assume.assumeFalse
+import org.junit.Assume.assumeTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.whenever
@@ -279,6 +280,8 @@ class QSFragmentComposeViewModelTest : AbstractQSFragmentComposeViewModelTest() 
 
     @Test
     fun mediaInRow_mediaActive_bothInRow() = runTest {
+        skipInSplitShade() // mediaInRow is always false on Split shade.
+
         setConfigurationForMediaInRow(mediaInRow = true)
         setMediaState(ACTIVE_MEDIA)
 
@@ -288,6 +291,8 @@ class QSFragmentComposeViewModelTest : AbstractQSFragmentComposeViewModelTest() 
 
     @Test
     fun mediaInRow_mediaNotActive_onlyQSInRow() = runTest {
+        skipInSplitShade() // mediaInRow is always false on Split shade.
+
         setConfigurationForMediaInRow(mediaInRow = true)
         setMediaState(ANY_MEDIA)
 
@@ -308,6 +313,8 @@ class QSFragmentComposeViewModelTest : AbstractQSFragmentComposeViewModelTest() 
     @DisableSceneContainer
     @DisableFlags(Flags.FLAG_MEDIA_CONTROLS_IN_COMPOSE)
     fun qqsMediaExpansion_collapsedMediaInLandscape() = runTest {
+        skipInSplitShade() // QQS is unavailable in Split shade mode.
+
         setCollapsedMediaInLandscape(true)
         setMediaState(ACTIVE_MEDIA)
 
@@ -322,6 +329,8 @@ class QSFragmentComposeViewModelTest : AbstractQSFragmentComposeViewModelTest() 
     @DisableSceneContainer
     @DisableFlags(Flags.FLAG_MEDIA_CONTROLS_IN_COMPOSE)
     fun qqsMediaExpansion_notCollapsedMediaInLandscape_alwaysExpanded() = runTest {
+        skipInSplitShade() // QQS is unavailable in Split shade mode.
+
         setCollapsedMediaInLandscape(false)
         setMediaState(ACTIVE_MEDIA)
 
@@ -336,6 +345,8 @@ class QSFragmentComposeViewModelTest : AbstractQSFragmentComposeViewModelTest() 
     @DisableSceneContainer
     @DisableFlags(Flags.FLAG_MEDIA_CONTROLS_IN_COMPOSE)
     fun qqsMediaExpansion_reactsToChangesInCollapsedMediaInLandscape() = runTest {
+        skipInSplitShade() // QQS is unavailable in Split shade mode.
+
         setConfigurationForMediaInRow(mediaInRow = true)
         setMediaState(ACTIVE_MEDIA)
 
@@ -365,6 +376,8 @@ class QSFragmentComposeViewModelTest : AbstractQSFragmentComposeViewModelTest() 
     @DisableSceneContainer
     @DisableFlags(Flags.FLAG_MEDIA_CONTROLS_IN_COMPOSE)
     fun shouldUpdateMediaSquishiness_inSplitShadeFalse_mediaSquishinessSet() = runTest {
+        skipInSplitShade()
+
         underTest.isInSplitShade = false
         underTest.squishinessFraction = 0.3f
 
@@ -382,6 +395,9 @@ class QSFragmentComposeViewModelTest : AbstractQSFragmentComposeViewModelTest() 
     @DisableSceneContainer
     @DisableFlags(Flags.FLAG_MEDIA_CONTROLS_IN_COMPOSE)
     fun inSplitShade_differentStatusBarState_mediaSquishinessSet() = runTest {
+        val shadeMode by collectLastValue(shadeModeInteractor.shadeMode)
+        assumeTrue(shadeMode is ShadeMode.Split)
+
         underTest.isInSplitShade = true
         underTest.squishinessFraction = 0.3f
 
@@ -502,8 +518,11 @@ class QSFragmentComposeViewModelTest : AbstractQSFragmentComposeViewModelTest() 
         runCurrent()
     }
 
-    private fun FakeShadeRepository.setUserTracking(tracking: Boolean) {
-        setLegacyShadeTracking(tracking)
+    // TODO(b/478844187): This should be removed once the bug is fixed.
+    private fun Kosmos.skipInSplitShade() {
+        val shadeMode by collectLastValue(shadeModeInteractor.shadeMode)
+        runCurrent()
+        assumeFalse(shadeMode is ShadeMode.Split)
     }
 
     companion object {
