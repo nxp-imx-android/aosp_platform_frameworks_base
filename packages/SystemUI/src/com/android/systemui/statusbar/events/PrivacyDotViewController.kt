@@ -795,7 +795,7 @@ object PrivacyDotViewControllerModule {
         configurationController: ConfigurationController,
         perDisplaySubcomponentRepo: PerDisplayRepository<SystemUIDisplaySubcomponent>,
         @Default defaultAnimationSchedulerLazy: Lazy<SystemStatusAnimationScheduler>,
-        defaultAvControlsChipInteractor: AvControlsChipInteractor,
+        @Default defaultAvControlsChipInteractor: AvControlsChipInteractor,
     ): PrivacyDotViewController {
         val displaySubcomponent = perDisplaySubcomponentRepo[Display.DEFAULT_DISPLAY]!!
         val animationScheduler =

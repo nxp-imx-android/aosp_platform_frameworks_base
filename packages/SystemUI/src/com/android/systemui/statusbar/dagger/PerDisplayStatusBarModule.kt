@@ -293,7 +293,7 @@ interface PerDisplayStatusBarModule {
         @DisplayAware
         fun avControlsChipInteractor(
             avControlsChipNotSupported: Provider<NoOpAvControlsChipInteractor>,
-            defaultInteractorLazy: Lazy<AvControlsChipInteractor>,
+            @Default defaultInteractorLazy: Lazy<AvControlsChipInteractor>,
             factory: AvControlsChipInteractorImpl.Factory,
             @DisplayAware scope: CoroutineScope,
             @DisplayAware displayId: Int,
