@@ -149,15 +149,21 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
             childPreferences.remove(preference)
             updateCollapsedItemCount()
             updateVisibilities()
-            addDismissedPreference(preference)
-            return super.addPreference(preference)
+            if (showDismissedPreferences) {
+                addDismissedPreference(preference)
+                return super.addPreference(preference)
+            }
+            return true
         }
 
         if (subsectionCategory?.removePreference(preference) == true) {
             updateCollapsedItemCount()
             updateVisibilities()
-            addDismissedPreference(preference)
-            return super.addPreference(preference)
+            if (showDismissedPreferences) {
+                addDismissedPreference(preference)
+                return super.addPreference(preference)
+            }
+            return true
         }
 
         return false
@@ -171,13 +177,15 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
         childPreferences.clear()
         updateCollapsedItemCount()
         updateVisibilities()
-        for (i in 0..<dismissedPreferences.size) {
-            val child = dismissedPreferences[i]
-            super.removePreference(child)
+        if (showDismissedPreferences) {
+            for (i in 0..<dismissedPreferences.size) {
+                val child = dismissedPreferences[i]
+                super.removePreference(child)
+            }
+            dismissedPreferences.clear()
+            expandDismissedPreference?.let { it.count = dismissedPreferences.size }
+            updateDismissedChildrenVisibility()
         }
-        dismissedPreferences.clear()
-        expandDismissedPreference?.let { it.count = dismissedPreferences.size }
-        updateDismissedChildrenVisibility()
     }
 
     /** Sets the title of the expand button shown when this group is collapsed. */
@@ -250,8 +258,10 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
             childPreferences.remove(preference)
             updateCollapsedItemCount()
             updateVisibilities()
-            addDismissedPreference(preference)
-            wasRemoved = super.addPreference(preference)
+            if (showDismissedPreferences) {
+                addDismissedPreference(preference)
+                wasRemoved = super.addPreference(preference)
+            }
         }
         return wasRemoved
     }
