@@ -5624,6 +5624,15 @@ public abstract class PackageManager {
     public static final int FLAG_PERMISSION_SELECTED_LOCATION_ACCURACY =  1 << 19;
 
     /**
+     * Permission flag: The user has seen trusted system component once in the application.
+     *
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(android.permission.flags.Flags.FLAG_LOCATION_BUTTON_ENABLED)
+    public static final int FLAG_PERMISSION_TRUSTED_UI_SHOWN =  1 << 20;
+
+    /**
      * Permission flag: The user has consented to using a trusted system component in the
      * application. When set, the system doesn't show the consent dialog for future
      * interactions.
@@ -5632,7 +5641,7 @@ public abstract class PackageManager {
      */
     @SystemApi
     @FlaggedApi(android.permission.flags.Flags.FLAG_LOCATION_BUTTON_ENABLED)
-    public static final int FLAG_PERMISSION_CONSENTED_FOR_TRUSTED_UI =  1 << 20;
+    public static final int FLAG_PERMISSION_TRUSTED_UI_CONSENTED =  1 << 21;
 
     /**
      * Permission flags: Reserved for use by the permission controller. The platform and any
@@ -5689,7 +5698,8 @@ public abstract class PackageManager {
             | FLAG_PERMISSION_ONE_TIME
             | FLAG_PERMISSION_AUTO_REVOKED
             | FLAG_PERMISSION_SELECTED_LOCATION_ACCURACY
-            | FLAG_PERMISSION_CONSENTED_FOR_TRUSTED_UI;
+            | FLAG_PERMISSION_TRUSTED_UI_SHOWN
+            | FLAG_PERMISSION_TRUSTED_UI_CONSENTED;
 
     /**
      * Injected activity in app that forwards user to setting activity of that app.
@@ -7036,7 +7046,8 @@ public abstract class PackageManager {
             FLAG_PERMISSION_ONE_TIME,
             FLAG_PERMISSION_AUTO_REVOKED,
             FLAG_PERMISSION_SELECTED_LOCATION_ACCURACY,
-            FLAG_PERMISSION_CONSENTED_FOR_TRUSTED_UI
+            FLAG_PERMISSION_TRUSTED_UI_SHOWN,
+            FLAG_PERMISSION_TRUSTED_UI_CONSENTED,
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface PermissionFlags {}
@@ -11127,7 +11138,8 @@ public abstract class PackageManager {
             case FLAG_PERMISSION_ONE_TIME: return "ONE_TIME";
             case FLAG_PERMISSION_AUTO_REVOKED: return "AUTO_REVOKED";
             case FLAG_PERMISSION_SELECTED_LOCATION_ACCURACY: return "SELECTED_LOCATION_ACCURACY";
-            case FLAG_PERMISSION_CONSENTED_FOR_TRUSTED_UI: return "CONSENTED_FOR_TRUSTED_UI";
+            case FLAG_PERMISSION_TRUSTED_UI_SHOWN: return "TRUSTED_UI_SHOWN";
+            case FLAG_PERMISSION_TRUSTED_UI_CONSENTED: return "TRUSTED_UI_CONSENTED";
             default: return Integer.toString(flag);
         }
     }
