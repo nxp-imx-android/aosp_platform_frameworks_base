@@ -33,6 +33,7 @@ filegroup {
         "//frameworks/base:__subpackages__",
         "//packages/modules/Telephony/telecom:__subpackages__",
         "//packages/services/Telecomm",
+        "//packages/services/Telephony:__subpackages__",
     ],
 }
 
@@ -46,6 +47,7 @@ filegroup {
         "//frameworks/base:__subpackages__",
         "//packages/modules/Telephony/telecom:__subpackages__",
         "//packages/services/Telecomm",
+        "//packages/services/Telephony:__subpackages__",
     ],
 }
 
@@ -60,6 +62,7 @@ filegroup {
         "//frameworks/base:__subpackages__",
         "//packages/modules/Telephony/telecom:__subpackages__",
         "//packages/services/Telecomm",
+        "//packages/services/Telephony:__subpackages__",
     ],
 }
 
