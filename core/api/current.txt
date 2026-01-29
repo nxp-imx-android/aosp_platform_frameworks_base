@@ -28431,6 +28431,41 @@ package android.media.quality {
     field public static final int SOURCE_VIDEO = 2; // 0x2
   }
 
+  @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public final class EqualizerBand implements android.os.Parcelable {
+    ctor public EqualizerBand(@IntRange(from=1) int, int, @FloatRange(from=0.0, fromInclusive=false) float);
+    method public int describeContents();
+    method @IntRange(from=1) public int getFrequencyHz();
+    method public int getGainDb();
+    method @FloatRange(from=0.0, fromInclusive=false) public float getQFactor();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.media.quality.EqualizerBand> CREATOR;
+  }
+
+  @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public final class EqualizerCapabilities implements android.os.Parcelable {
+    ctor public EqualizerCapabilities(int, int, @NonNull java.util.List<java.lang.Integer>, boolean);
+    method public int describeContents();
+    method public int getMaxLevelDb();
+    method public int getMinLevelDb();
+    method @NonNull public java.util.List<java.lang.Integer> getSupportedFrequenciesHz();
+    method public boolean hasAdjustableQ();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.media.quality.EqualizerCapabilities> CREATOR;
+  }
+
+  @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public final class EqualizerSettings implements android.os.Parcelable {
+    method public int describeContents();
+    method @NonNull public java.util.List<android.media.quality.EqualizerBand> getBands();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.media.quality.EqualizerSettings> CREATOR;
+  }
+
+  public static final class EqualizerSettings.Builder {
+    ctor public EqualizerSettings.Builder();
+    method @NonNull public android.media.quality.EqualizerSettings.Builder addBand(@NonNull android.media.quality.EqualizerBand);
+    method @NonNull public android.media.quality.EqualizerSettings build();
+    method @NonNull public android.media.quality.EqualizerSettings.Builder setBands(@NonNull java.util.List<android.media.quality.EqualizerBand>);
+  }
+
   @FlaggedApi("android.media.tv.flags.media_quality_fw") public class MediaQualityContract {
     field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String COLOR_SPACE_ADOBE_RGB = "ADOBE_RGB";
     field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String COLOR_SPACE_AUTO = "AUTO";
@@ -28637,6 +28672,7 @@ package android.media.quality {
     field public static final String PARAMETER_DTS_VIRTUAL_X_TRU_SURROUND_X = "dts_virtual_x_tru_surround_x";
     field public static final String PARAMETER_DTS_VIRTUAL_X_TRU_VOLUME_HD = "dts_virtual_x_tru_volume_hd";
     field public static final String PARAMETER_EARC = "earc";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String PARAMETER_EQUALIZER_SETTINGS = "equalizer_settings";
     field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String PARAMETER_HI_RES_AUDIO = "hi_res_audio";
     field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String PARAMETER_PAN_FADE_ENABLE = "pan_fade_enable";
     field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String PARAMETER_SOUND_STYLE = "sound_style";
@@ -28652,6 +28688,8 @@ package android.media.quality {
     method public void createSoundProfile(@NonNull android.media.quality.SoundProfile);
     method @NonNull public java.util.List<android.media.quality.PictureProfile> getAvailablePictureProfiles(@Nullable android.media.quality.MediaQualityManager.ProfileQueryParams);
     method @NonNull public java.util.List<android.media.quality.SoundProfile> getAvailableSoundProfiles(@Nullable android.media.quality.MediaQualityManager.ProfileQueryParams);
+    method @FlaggedApi("android.media.tv.flags.media_quality_fw_c") @Nullable public android.media.quality.EqualizerCapabilities getEqualizerCapabilities();
+    method @FlaggedApi("android.media.tv.flags.media_quality_fw_c") @Nullable public android.media.quality.EqualizerSettings getEqualizerSettings();
     method @NonNull public java.util.List<android.media.quality.ParameterCapability> getParameterCapabilities(@NonNull java.util.List<java.lang.String>);
     method @Nullable public android.media.quality.PictureProfile getPictureProfile(int, @NonNull String, @Nullable android.media.quality.MediaQualityManager.ProfileQueryParams);
     method @Nullable public android.media.quality.SoundProfile getSoundProfile(int, @NonNull String, @Nullable android.media.quality.MediaQualityManager.ProfileQueryParams);
@@ -28668,6 +28706,7 @@ package android.media.quality {
     method public void setAmbientBacklightEnabled(boolean);
     method public void setAmbientBacklightSettings(@NonNull android.media.quality.AmbientBacklightSettings);
     method @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public void setColorMuteEnabled(boolean);
+    method @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public void setEqualizerSettings(@Nullable android.media.quality.EqualizerSettings);
     method @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public void setMutedColor(@ColorInt int);
     method public void unregisterAmbientBacklightCallback(@NonNull android.media.quality.MediaQualityManager.AmbientBacklightCallback);
     method public void unregisterPictureProfileCallback(@NonNull android.media.quality.MediaQualityManager.PictureProfileCallback);

@@ -134,6 +134,34 @@ class ParameterCapability : public Parcelable {
         }
 };
 
+class EqualizerCapabilities : public Parcelable {
+    public:
+        EqualizerCapabilities() {}
+        status_t writeToParcel(android::Parcel*) const override {
+            return 0;
+        }
+        status_t readFromParcel(const android::Parcel*) override {
+            return 0;
+        }
+        std::string toString() const {
+            return "";
+        }
+};
+
+class EqualizerSettings : public Parcelable {
+    public:
+        EqualizerSettings() {}
+        status_t writeToParcel(android::Parcel*) const override {
+            return 0;
+        }
+        status_t readFromParcel(const android::Parcel*) override {
+            return 0;
+        }
+        std::string toString() const {
+            return "";
+        }
+};
+
 } // namespace quality
 } // namespace media
 } // namespace android
