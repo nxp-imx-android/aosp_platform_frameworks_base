@@ -18,7 +18,6 @@ package com.android.wm.shell.shared.bubbles
 
 import android.content.Context
 import android.content.res.Configuration
-import android.content.res.Configuration.ORIENTATION_LANDSCAPE
 import android.graphics.Insets
 import android.graphics.Rect
 import android.view.View.LAYOUT_DIRECTION_RTL
@@ -51,8 +50,13 @@ data class DeviceConfig(
                         WindowInsets.Type.displayCutout()
                 )
             val windowBounds = windowMetrics.bounds
+            return create(context, windowBounds, insets)
+        }
+
+        @JvmStatic
+        fun create(context: Context, windowBounds: Rect, insets: Insets): DeviceConfig {
             val config: Configuration = context.resources.configuration
-            val isLandscape = context.resources.configuration.orientation == ORIENTATION_LANDSCAPE
+            val isLandscape = windowBounds.width() > windowBounds.height()
             val isRtl = context.resources.configuration.layoutDirection == LAYOUT_DIRECTION_RTL
             return DeviceConfig(
                 isLargeScreen = isLargeScreen(config),
