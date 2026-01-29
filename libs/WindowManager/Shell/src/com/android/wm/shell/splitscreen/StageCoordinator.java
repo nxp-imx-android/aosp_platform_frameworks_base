@@ -154,13 +154,13 @@ import com.android.wm.shell.common.DisplayInsetsController;
 import com.android.wm.shell.common.LaunchAdjacentController;
 import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.common.SyncTransactionQueue;
+import com.android.wm.shell.common.TouchInterceptLayer;
 import com.android.wm.shell.common.split.OffscreenTouchZone;
 import com.android.wm.shell.common.split.SplitDecorManager;
 import com.android.wm.shell.common.split.SplitLayout;
 import com.android.wm.shell.common.split.SplitState;
 import com.android.wm.shell.common.split.SplitTransitionUtils;
 import com.android.wm.shell.common.split.SplitWindowManager;
-import com.android.wm.shell.common.split.TouchInterceptLayer;
 import com.android.wm.shell.desktopmode.DesktopTasksController;
 import com.android.wm.shell.desktopmode.DesktopUserRepositories;
 import com.android.wm.shell.desktopmode.data.DesktopRepository;
@@ -1607,9 +1607,8 @@ public class StageCoordinator extends StageCoordinatorAbstract {
         }
 
         final TouchInterceptLayer touchInterceptLayer = new TouchInterceptLayer();
-        touchInterceptLayer.inflate(
-                mRootTaskLeash,
-                mSplitRootTaskInfo);
+        touchInterceptLayer.inflate(mRootTaskLeash, mSplitRootTaskInfo.displayId);
+        touchInterceptLayer.show(SplitLayout.RESTING_TOUCH_LAYER);
 
         // Remove touch layers, since offscreen apps coming onscreen will not need their touch
         // layers anymore. populateTouchZones() is called in the end callback to inflate new touch
