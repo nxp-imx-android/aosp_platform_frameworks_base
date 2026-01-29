@@ -19,6 +19,8 @@ package android.telephony;
 import static android.net.NetworkPolicyManager.SUBSCRIPTION_OVERRIDE_CONGESTED;
 import static android.net.NetworkPolicyManager.SUBSCRIPTION_OVERRIDE_UNMETERED;
 
+import static java.util.Objects.requireNonNull;
+
 import android.Manifest;
 import android.annotation.BroadcastBehavior;
 import android.annotation.CallbackExecutor;
@@ -606,24 +608,32 @@ public class SubscriptionManager {
      * The name_source is unknown. (for initialization)
      * @hide
      */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_ENABLE_NEW_DISPLAY_NAME_APIS)
     public static final int NAME_SOURCE_UNKNOWN = SimInfo.NAME_SOURCE_UNKNOWN;
 
     /**
      * The name_source is from the carrier id.
      * @hide
      */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_ENABLE_NEW_DISPLAY_NAME_APIS)
     public static final int NAME_SOURCE_CARRIER_ID = SimInfo.NAME_SOURCE_CARRIER_ID;
 
     /**
      * The name_source is from SIM EF_SPN.
      * @hide
      */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_ENABLE_NEW_DISPLAY_NAME_APIS)
     public static final int NAME_SOURCE_SIM_SPN = SimInfo.NAME_SOURCE_SIM_SPN;
 
     /**
      * The name_source is from user input
      * @hide
      */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_ENABLE_NEW_DISPLAY_NAME_APIS)
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023)
     public static final int NAME_SOURCE_USER_INPUT = SimInfo.NAME_SOURCE_USER_INPUT;
 
@@ -631,12 +641,16 @@ public class SubscriptionManager {
      * The name_source is carrier (carrier app, carrier config, etc.)
      * @hide
      */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_ENABLE_NEW_DISPLAY_NAME_APIS)
     public static final int NAME_SOURCE_CARRIER = SimInfo.NAME_SOURCE_CARRIER;
 
     /**
      * The name_source is from SIM EF_PNN.
      * @hide
      */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_ENABLE_NEW_DISPLAY_NAME_APIS)
     public static final int NAME_SOURCE_SIM_PNN = SimInfo.NAME_SOURCE_SIM_PNN;
 
     /** @hide */
@@ -2647,10 +2661,11 @@ public class SubscriptionManager {
 
     /**
      * Set the display name for a subscription ID
-     * @param displayName the display name of SIM card
-     * @param subId the unique Subscritpion ID in database
+     * @param displayName the display name of SIM card. Must be a non-null string.
+     * @param subId the unique Subscription ID in database
      * @param nameSource SIM display name source
      * @return the number of records updated or < 0 if invalid subId
+     * @throws NullPointerException if {@code displayName} is {@code null}.
      * @hide
      */
     @RequiresPermission(Manifest.permission.MODIFY_PHONE_STATE)
@@ -2663,6 +2678,58 @@ public class SubscriptionManager {
         return setSubscriptionPropertyHelper(subId, "setDisplayName",
                 (iSub)-> iSub.setDisplayNameUsingSrc(displayName, subId, nameSource)
         );
+    }
+
+    /**
+     * Set the display name for a subscription.
+     *
+     * @param subId the unique Subscription ID in database
+     * @param displayName the display name of SIM card. Must be a non-null string.
+     * @param nameSource SIM display name source
+     *
+     * @throws NullPointerException if {@code displayName} is {@code null}.
+     * @throws IllegalArgumentException if {@code subId} is invalid.
+     * @throws UnsupportedOperationException If the device does not have
+     *          {@link PackageManager#FEATURE_TELEPHONY_SUBSCRIPTION}.
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_ENABLE_NEW_DISPLAY_NAME_APIS)
+    @RequiresPermission(Manifest.permission.MODIFY_PHONE_STATE)
+    public void setDisplayName(int subId, @NonNull String displayName,
+            @SimDisplayNameSource int nameSource) {
+        requireNonNull(displayName, "displayName");
+        if (VDBG) {
+            logd("[setDisplayName]+  displayName:" + displayName + " subId:" + subId
+                    + " nameSource:" + nameSource);
+        }
+        int result = setSubscriptionPropertyHelper(subId, "setDisplayName",
+                (iSub)-> iSub.setDisplayNameUsingSrc(displayName, subId, nameSource));
+        if (result < 0) {
+            throw new IllegalArgumentException("Invalid subscriptionId: " + subId);
+        }
+    }
+
+    /**
+     * Clear the display name for a subscription, resetting it to the default.
+     *
+     * @param subId the unique Subscription ID in database
+     * @param nameSource SIM display name source
+     *
+     * @throws IllegalArgumentException if {@code subId} is invalid.
+     * @throws UnsupportedOperationException If the device does not have
+     *          {@link PackageManager#FEATURE_TELEPHONY_SUBSCRIPTION}.
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_ENABLE_NEW_DISPLAY_NAME_APIS)
+    @RequiresPermission(Manifest.permission.MODIFY_PHONE_STATE)
+    public void clearDisplayName(int subId, @SimDisplayNameSource int nameSource) {
+        int result = setDisplayName("", subId, nameSource);
+
+        if (result < 0) {
+            throw new IllegalArgumentException("Invalid subscriptionId: " + subId);
+        }
     }
 
     /**
