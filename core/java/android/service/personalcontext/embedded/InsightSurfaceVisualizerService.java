@@ -240,7 +240,7 @@ public abstract class InsightSurfaceVisualizerService extends Service {
      * @param context a {@link Context} suitable for creating {@link View}s in the current display
      * @param insight the {@link ContextInsight} that subclasses can use to create the
      *                 embedded {@link View}
-     * @paran renderToken the {@link RenderToken} associated with the insight
+     * @param renderToken the {@link RenderToken} associated with the insight
      * @param info the {@link InsightSurfaceClientInfo} containing information about the client
      * @return the {@link View} that will be passed to the client
      */
