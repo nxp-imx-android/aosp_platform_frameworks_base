@@ -91,7 +91,8 @@ final class InputGestureManager {
             createKeyTrigger(KeyEvent.KEYCODE_V, KeyEvent.META_CTRL_ON),
             createKeyTrigger(KeyEvent.KEYCODE_X, KeyEvent.META_CTRL_ON),
             createKeyTrigger(KeyEvent.KEYCODE_Z, KeyEvent.META_CTRL_ON),
-            createKeyTrigger(KeyEvent.KEYCODE_Y, KeyEvent.META_CTRL_ON)
+            createKeyTrigger(KeyEvent.KEYCODE_Y, KeyEvent.META_CTRL_ON),
+            createKeyTrigger(KeyEvent.KEYCODE_LANGUAGE_SWITCH, KeyEvent.META_SHIFT_ON)
     ));
 
     public InputGestureManager(Context context) {
