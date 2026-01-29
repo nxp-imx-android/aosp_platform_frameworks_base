@@ -278,8 +278,18 @@ flag {
 flag {
     name: "disable_bubble_scrim_large_screens"
     namespace: "multitasking"
-    description: "Disable the transparent scrim when a bubble is expanded on large screen devices."
+    description: "Disable the transparent scrim when a bubble is expanded on large screen devices that are eligible for Desktop Windowing."
     bug: "463292965"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "disable_bubble_anything_desktop_windowing"
+    namespace: "multitasking"
+    description: "Disable Bubble Anything on large screen devices that are eligible for Desktop Windowing."
+    bug: "469240263"
     metadata {
         purpose: PURPOSE_BUGFIX
     }
