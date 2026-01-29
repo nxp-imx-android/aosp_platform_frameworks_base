@@ -91,6 +91,7 @@ cc_library_shared {
         "libutils",
         "libbinder",
         "libbinder_ndk",
+        "libcom.android.npumanager",
         "libui",
         "libgui",
         "libharfbuzz_ng", // Only for including hb.h via minikin
@@ -123,9 +124,15 @@ cc_library_shared {
         "libandroid_headers_private",
     ],
 
-    whole_static_libs: ["libnativewindow"],
+    whole_static_libs: [
+        "libandroid_com.android.npumanager",
+        "libnativewindow",
+    ],
 
-    export_static_lib_headers: ["libarect"],
+    export_static_lib_headers: [
+        "libarect",
+        "libandroid_com.android.npumanager",
+    ],
 
     include_dirs: ["bionic/libc/dns/include"],
 
