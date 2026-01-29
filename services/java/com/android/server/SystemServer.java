@@ -2432,10 +2432,12 @@ public final class SystemServer implements Dumpable {
                 Slog.i(TAG, "Wallpaper service disabled by config");
             }
 
-            if (!isWatch && android.server.Flags.enableThemeService()) {
-                t.traceBegin("StartThemeService");
-                mSystemServiceManager.startService(ThemeManagerService.class);
-                t.traceEnd();
+            if (android.server.Flags.enableThemeService()) {
+                if (!isWatch || android.server.Flags.enableWearThemeService()) {
+                    t.traceBegin("StartThemeService");
+                    mSystemServiceManager.startService(ThemeManagerService.class);
+                    t.traceEnd();
+                }
             }
 
             // WallpaperEffectsGeneration manager service

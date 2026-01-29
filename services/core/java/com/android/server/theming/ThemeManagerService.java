@@ -31,6 +31,7 @@ import android.util.Slog;
 
 import androidx.annotation.VisibleForTesting;
 
+import com.android.internal.pm.RoSystemFeatures;
 import com.android.server.LocalServices;
 import com.android.server.SystemService;
 import com.android.server.UiModeManagerInternal;
@@ -38,6 +39,11 @@ import com.android.server.om.OverlayManagerInternal;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.wallpaper.WallpaperManagerInternal;
 
+import com.google.ux.material.libmonet.dynamiccolor.ColorSpec.SpecVersion;
+import com.google.ux.material.libmonet.dynamiccolor.DynamicScheme;
+import com.google.ux.material.libmonet.dynamiccolor.DynamicScheme.Platform;
+
+import java.util.Arrays;
 import java.util.Objects;
 
 /**
@@ -78,10 +84,33 @@ public class ThemeManagerService extends SystemService {
     private final ThemeWallpaperManager mThemeWallpaperManager;
 
 
+    private static boolean isWatch(Context context) {
+        return RoSystemFeatures.hasFeatureWatch(context);
+    }
+
+    /**
+     * Detects the device platform to ensure accurate color generation by `libmonet`.
+     * <p>
+     * Watch devices (Wear OS) require distinct color palette logic compared to phones or tablets.
+     * Since `libmonet` is platform-agnostic and does not automatically detect the running
+     * environment, we must explicitly provide the {@link Platform} signal here.
+     */
+    private static Platform getPlatform(Context context) {
+        return isWatch(context) ? Platform.WATCH : DynamicScheme.DEFAULT_PLATFORM;
+    }
+
+    private static SpecVersion getSpecVersion(Context context) {
+        boolean hasNewSpec = context.getResources().getIdentifier("system_primary_dim_light",
+                "color", "android") != 0;
+        return hasNewSpec ? SpecVersion.SPEC_2025 : SpecVersion.SPEC_2021;
+    }
+
     public ThemeManagerService(@NonNull Context context) {
-        this(context, SystemProperties::get, new ThemeStateManager(context),
+        this(context, SystemProperties::get,
+                new ThemeStateManager(context, getPlatform(context), getSpecVersion(context)),
                 LocalServices.getService(WallpaperManagerInternal.class),
-                LocalServices.getService(OverlayManagerInternal.class), null, null);
+                LocalServices.getService(OverlayManagerInternal.class), null, null,
+                getPlatform(context), getSpecVersion(context));
     }
 
     @VisibleForTesting
@@ -89,8 +118,8 @@ public class ThemeManagerService extends SystemService {
             @NonNull SystemPropertiesReader systemPropertiesReader,
             ThemeStateManager themeStateManager, WallpaperManagerInternal wallpaperManagerInternal,
             OverlayManagerInternal overlayManagerInternal,
-            @Nullable ThemeUserLifecycle userLifecycle,
-            @Nullable ThemeEventObserver eventObserver) {
+            @Nullable ThemeUserLifecycle userLifecycle, @Nullable ThemeEventObserver eventObserver,
+            Platform platform, SpecVersion specVersion) {
         super(context);
         mContext = context;
         mStateManager = themeStateManager;
@@ -100,7 +129,7 @@ public class ThemeManagerService extends SystemService {
         mOverlayHelper = new ThemeOverlayHelper(overlayManagerInternal);
 
         mInternal = new ThemeManagerInternal(mContext, mThemeSettingsManager,
-                mSystemPropertiesReader, mStateManager, mOverlayHelper);
+                mSystemPropertiesReader, mStateManager, mOverlayHelper, platform, specVersion);
         mPublic = new ThemeBinderService(mContext, mInternal);
 
         mUserLifecycle = userLifecycle != null ? userLifecycle : new ThemeUserLifecycle(mContext,
@@ -121,6 +150,9 @@ public class ThemeManagerService extends SystemService {
         Slog.d(TAG, "onBootPhase: " + phase);
         if (phase == SystemService.PHASE_SYSTEM_SERVICES_READY) {
             mStateManager.onServicesReady();
+            String[] legacyOverlays = mContext.getResources().getStringArray(
+                    com.android.internal.R.array.theming_legacy_overlays);
+            mOverlayHelper.cleanupLegacyOverlays(Arrays.asList(legacyOverlays));
             mUserLifecycle.onServicesReady(LocalServices.getService(UserManagerInternal.class),
                     LocalServices.getService(UiModeManagerInternal.class), mThemeWallpaperManager);
             mUserLifecycle.onBootCompleteLoadUsers();

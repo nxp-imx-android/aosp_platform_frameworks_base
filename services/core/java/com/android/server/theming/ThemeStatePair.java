@@ -28,6 +28,9 @@ import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
 import com.android.systemui.monet.ColorScheme;
 
+import com.google.ux.material.libmonet.dynamiccolor.ColorSpec.SpecVersion;
+import com.google.ux.material.libmonet.dynamiccolor.DynamicScheme.Platform;
+
 import java.io.PrintWriter;
 import java.util.Collections;
 import java.util.HashSet;
@@ -58,6 +61,9 @@ class ThemeStatePair {
 
     public final int userId;
 
+    private final SpecVersion mSpecVersion;
+    private final Platform mPlatform;
+
     private final Object mLock = new Object();
 
     @GuardedBy("mLock")
@@ -85,16 +91,24 @@ class ThemeStatePair {
      * @param style     The initial style for the user's theme.
      */
     @SuppressLint("WrongConstant")
-    protected ThemeStatePair(int userId, boolean isSetup, int seedColor, float contrast,
-            @ThemeStyle.Type Integer style) {
+    protected ThemeStatePair(
+            int userId,
+            boolean isSetup,
+            int seedColor,
+            float contrast,
+            @ThemeStyle.Type Integer style,
+            SpecVersion specVersion,
+            Platform platform) {
 
         this.userId = userId;
+        this.mSpecVersion = specVersion;
+        this.mPlatform = platform;
 
         ThemeState initialState = new ThemeState(userId, isSetup, seedColor, contrast, style,
                 Collections.unmodifiableSet(new HashSet<>()), 0);
 
-        mDarkScheme = new ColorScheme(seedColor, true, style, contrast);
-        mLightScheme = new ColorScheme(seedColor, false, style, contrast);
+        mDarkScheme = new ColorScheme(seedColor, true, style, contrast, mSpecVersion, mPlatform);
+        mLightScheme = new ColorScheme(seedColor, false, style, contrast, mSpecVersion, mPlatform);
 
         mPending = initialState;
         mCurrent = initialState;
@@ -290,9 +304,9 @@ class ThemeStatePair {
         }
 
         ColorScheme newDarkScheme = new ColorScheme(stateToCommit.seedColor(), true,
-                stateToCommit.style(), stateToCommit.contrast());
+                stateToCommit.style(), stateToCommit.contrast(), mSpecVersion, mPlatform);
         ColorScheme newLightScheme = new ColorScheme(stateToCommit.seedColor(), false,
-                stateToCommit.style(), stateToCommit.contrast());
+                stateToCommit.style(), stateToCommit.contrast(), mSpecVersion, mPlatform);
 
         synchronized (mLock) {
             // If the pending state has changed while we were calculating, our calculated schemes

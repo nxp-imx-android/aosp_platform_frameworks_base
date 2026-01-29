@@ -9,6 +9,13 @@ flag {
 }
 
 flag {
+     namespace: "system_performance"
+     name: "enable_wear_theme_service"
+     description: "Controls whether the Theme Service should be enabled on Wear."
+     bug: "394565651"
+}
+
+flag {
      name: "remove_app_integrity_manager_service"
      namespace: "package_manager_service"
      description: "Remove AppIntegrityManagerService"

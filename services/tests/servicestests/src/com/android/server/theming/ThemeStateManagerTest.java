@@ -48,6 +48,8 @@ import com.android.server.om.OverlayManagerInternal;
 import com.android.server.pm.UserManagerInternal;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.ux.material.libmonet.dynamiccolor.ColorSpec.SpecVersion;
+import com.google.ux.material.libmonet.dynamiccolor.DynamicScheme.Platform;
 
 import org.junit.After;
 import org.junit.Before;
@@ -137,7 +139,8 @@ public class ThemeStateManagerTest {
         });
 
         mSchedulerExecutor = new FakeScheduledExecutorService();
-        mThemeStateManager = new ThemeStateManager(mMainContext, mSchedulerExecutor);
+        mThemeStateManager = new ThemeStateManager(mMainContext, mSchedulerExecutor,
+                Platform.PHONE, SpecVersion.SPEC_2025);
         mThemeStateManager.setThemeOverlayHelper(mThemeOverlayHelper);
         mThemeStateManager.onServicesReady();
         mThemeStateManager.onBootAnimationDismissing();
