@@ -84,6 +84,7 @@ java_library {
     static_libs: [
         "com.android.systemui-api",
         "com.android.systemui.brightness_api",
+        "com.android.systemui.flags_api",
         "com.android.systemui.lifecycle_api",
         "com.android.systemui.log-api",
         "com.android.systemui.log.table-api",

@@ -41,7 +41,7 @@ import android.util.Log
  * ```
  */
 @Suppress("NOTHING_TO_INLINE")
-object RefactorFlagUtils {
+public object RefactorFlagUtils {
     /**
      * Called to ensure code is only run when the flag is enabled. This protects users from the
      * unintended behaviors caused by accidentally running new logic, while also crashing on an eng
@@ -55,7 +55,7 @@ object RefactorFlagUtils {
      * }
      * ```
      */
-    inline fun isUnexpectedlyInLegacyMode(isEnabled: Boolean, flagName: Any): Boolean {
+    public inline fun isUnexpectedlyInLegacyMode(isEnabled: Boolean, flagName: Any): Boolean {
         val inLegacyMode = !isEnabled
         if (inLegacyMode) {
             assertOnEngBuild("New code path expects $flagName to be enabled.")
@@ -75,7 +75,7 @@ object RefactorFlagUtils {
      * }
      * ````
      */
-    inline fun assertInLegacyMode(isEnabled: Boolean, flagName: Any) =
+    public inline fun assertInLegacyMode(isEnabled: Boolean, flagName: Any): Unit =
         check(!isEnabled) { "Legacy code path not supported when $flagName is enabled." }
 
     /**
@@ -92,7 +92,7 @@ object RefactorFlagUtils {
      * ````
      */
     @Deprecated("Avoid crashing.", ReplaceWith("if (this.isUnexpectedlyInLegacyMode()) return"))
-    inline fun unsafeAssertInNewMode(isEnabled: Boolean, flagName: Any) =
+    public inline fun unsafeAssertInNewMode(isEnabled: Boolean, flagName: Any): Unit =
         check(isEnabled) { "New code path not supported when $flagName is disabled." }
 
     /**
@@ -102,7 +102,7 @@ object RefactorFlagUtils {
      * adb shell setprop log.tag.RefactorFlagAssert silent
      * ```
      */
-    fun assertOnEngBuild(message: String) {
+    public fun assertOnEngBuild(message: String) {
         if (Log.isLoggable(ASSERT_TAG, Log.ASSERT)) {
             val exception = if (Build.isDebuggable()) IllegalStateException(message) else null
             Log.wtf(ASSERT_TAG, message, exception)
@@ -125,6 +125,6 @@ object RefactorFlagUtils {
 }
 
 /** An object which allows dependency tracking */
-data class FlagToken(val name: String, val isEnabled: Boolean) {
+public data class FlagToken(val name: String, val isEnabled: Boolean) {
     override fun toString(): String = "$name (${if (isEnabled) "enabled" else "disabled"})"
 }
