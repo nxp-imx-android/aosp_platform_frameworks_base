@@ -43,6 +43,7 @@ import android.os.storage.StorageManager;
 import android.ravenwood.annotation.RavenwoodIgnore;
 import android.util.ArrayMap;
 import android.util.ArraySet;
+import android.util.Log;
 import android.util.Printer;
 import android.util.SparseArray;
 import android.util.proto.ProtoOutputStream;
@@ -73,6 +74,7 @@ import java.util.UUID;
  */
 @android.ravenwood.annotation.RavenwoodKeepWholeClass
 public class ApplicationInfo extends PackageItemInfo implements Parcelable {
+    private static final String TAG = ApplicationInfo.class.getSimpleName();
     private static final ForBoolean sForBoolean = Parcelling.Cache.getOrCreate(ForBoolean.class);
     private static final Parcelling.BuiltIn.ForStringSet sForStringSet =
             Parcelling.Cache.getOrCreate(Parcelling.BuiltIn.ForStringSet.class);
@@ -2232,6 +2234,7 @@ public class ApplicationInfo extends PackageItemInfo implements Parcelable {
         if (dest.maybeWriteSquashed(this)) {
             return;
         }
+        final int preWriteSize = dest.dataSize();
         super.writeToParcel(dest, parcelableFlags);
         dest.writeString8(taskAffinity);
         dest.writeString8(permission);
@@ -2329,6 +2332,23 @@ public class ApplicationInfo extends PackageItemInfo implements Parcelable {
         dest.writeTypedArray(unalignedNativeLibraries, parcelableFlags);
 
         sForStringSet.parcel(mKnownActivityEmbeddingCerts, dest, flags);
+
+        final int elmSize = dest.dataSize() - preWriteSize;
+        // The warning threshold is consistent with BaseParceledListSlice implementation
+        if (elmSize > 16 * 1024) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("Large ApplicationInfo parcel: size=").append(elmSize)
+                    .append(" package=").append(packageName);
+
+            if (splitSourceDirs != null) sb.append(" splits=").append(splitSourceDirs.length);
+            if (sharedLibraryFiles != null) {
+                sb.append(" sharedLibs=").append(sharedLibraryFiles.length);
+            }
+            if (resourceDirs != null) sb.append(" resDirs=").append(resourceDirs.length);
+            if (overlayPaths != null) sb.append(" overlayPaths=").append(resourceDirs.length);
+
+            Log.w(TAG, sb.toString());
+        }
     }
 
     public static final @android.annotation.NonNull Parcelable.Creator<ApplicationInfo> CREATOR
