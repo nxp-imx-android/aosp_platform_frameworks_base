@@ -4870,6 +4870,33 @@ public class CarrierConfigManager {
             "data_stall_recovery_timers_long_array";
 
     /**
+     * A long type timer array specifying the max milliseconds to add as a random offset to
+     * each corresponding timer in {@link #KEY_DATA_STALL_RECOVERY_TIMERS_LONG_ARRAY}.
+     *
+     * <p>The array has a fixed size of 4. Each index corresponds to a specific data stall
+     * recovery action stage defined by {@link #KEY_DATA_STALL_RECOVERY_TIMERS_LONG_ARRAY}:
+     *
+     * <ul>
+     *     <li>Index 0: Max random offset for timer between RECOVERY_ACTION GET_DATA_CALL_LIST
+     *     and CLEANUP.</li>
+     *     <li>Index 1: Max random offset for timer between RECOVERY_ACTION CLEANUP and
+     *     RE-REGISTER.</li>
+     *     <li>Index 2: Max random offset for timer between RECOVERY_ACTION RE-REGISTER and
+     *     RADIO_RESTART.</li>
+     *     <li>Index 3: Max random offset for timer between RECOVERY_ACTION RADIO_RESTART
+     *     and RESET_MODEM.</li>
+     * </ul>
+     *
+     * <p>The size of this array MUST match {@link #KEY_DATA_STALL_RECOVERY_TIMERS_LONG_ARRAY}.
+     * If a value is 0, no randomization is added for that step.
+     * @see #KEY_DATA_STALL_RECOVERY_TIMERS_LONG_ARRAY
+     *
+     * @hide
+     */
+    public static final String KEY_DATA_STALL_RECOVERY_TIMERS_RANDOMIZATION_MILLIS_LONG_ARRAY =
+            "data_stall_recovery_timers_randomization_millis_long_array";
+
+    /**
      * The data stall recovery action boolean array, we use this array to determine if the
      * data stall recovery action needs to be skipped.
      *
@@ -12442,6 +12469,9 @@ public class CarrierConfigManager {
         // Default data stall recovery configurations.
         sDefaults.putLongArray(KEY_DATA_STALL_RECOVERY_TIMERS_LONG_ARRAY,
                 new long[] {180000, 180000, 180000, 180000});
+        // Default data stall recovery randomization.
+        sDefaults.putLongArray(KEY_DATA_STALL_RECOVERY_TIMERS_RANDOMIZATION_MILLIS_LONG_ARRAY,
+                new long[] {0, 0, 0, 0});
         sDefaults.putBooleanArray(KEY_DATA_STALL_RECOVERY_SHOULD_SKIP_BOOL_ARRAY,
                 new boolean[] {false, false, true, false, false});
         sDefaults.putStringArray(KEY_CARRIER_SERVICE_NAME_STRING_ARRAY, new String[0]);
