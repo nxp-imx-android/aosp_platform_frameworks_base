@@ -113,9 +113,9 @@ static jobject getSourceInteractions(JNIEnv* env, jobject thiz) {
                     env->GetLongField(thiz, gNativeInteractionProviderClassInfo.mNativePtr));
 
     const auto interactions = interactionProvider->getSourceInteractions();
-    ScopedLocalRef<jobject> jInteractions(env,
-                                          env->NewObject(gArrayListClassInfo.clazz,
-                                                         gArrayListClassInfo.constructor));
+
+    jobject jInteractions =
+            env->NewObject(gArrayListClassInfo.clazz, gArrayListClassInfo.constructor);
 
     for (const auto& interactionState : interactions) {
         ScopedLocalRef<jobject> interactionObj(env,
@@ -127,9 +127,9 @@ static jobject getSourceInteractions(JNIEnv* env, jobject thiz) {
         env->SetLongField(interactionObj.get(), gInteractionStateClassInfo.interactionTimeMillis,
                           interactionState.interactionTimeMillis);
 
-        env->CallBooleanMethod(jInteractions.get(), gArrayListClassInfo.add, interactionObj.get());
+        env->CallBooleanMethod(jInteractions, gArrayListClassInfo.add, interactionObj.get());
     }
-    return jInteractions.get();
+    return jInteractions;
 }
 
 static const JNINativeMethod gNativeInteractionProviderMethods[] = {
