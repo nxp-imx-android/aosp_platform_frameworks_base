@@ -321,7 +321,10 @@ public final class PersonalContextManager {
     /**
      * Returns the {@link AssistStructure.ViewNode} for the node focused by autofill in the given
      * {@link AutofillInlineRequestHint}.
+     *
+     * @hide
      */
+    @SystemApi
     @NonNull
     public AssistStructure.ViewNode getFocusedViewNode(@NonNull AutofillInlineRequestHint hint) {
         return hint.getAugmentedAutofillProxy().getFocusedViewNode(hint.getFocusedId());
@@ -330,7 +333,10 @@ public final class PersonalContextManager {
     /**
      * Returns the coordinates of the input field view that autofill suggestions are being generated
      * for in the given {@link AutofillInlineRequestHint}.
+     *
+     * @hide
      */
+    @SystemApi
     @NonNull
     public Rect getViewCoordinates(@NonNull AutofillInlineRequestHint hint) {
         return hint.getAugmentedAutofillProxy().getViewCoordinates(hint.getFocusedId());
