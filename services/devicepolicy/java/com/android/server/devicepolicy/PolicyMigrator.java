@@ -31,6 +31,7 @@ import android.app.admin.IntegerPolicyValue;
 import android.app.admin.LockTaskPolicy;
 import android.app.admin.LongPolicyValue;
 import android.app.admin.PackageSetPolicyValue;
+import android.app.admin.PolicyIdentifier;
 import android.app.admin.StringPolicyValue;
 import android.content.ComponentName;
 import android.content.Context;
@@ -76,6 +77,10 @@ public class PolicyMigrator {
         int getPermissionGrantStateForUser(
                 String packageName, String permission, String adminPackage, int userId)
                 throws RemoteException;
+
+        @NonNull
+        <T> PolicyDefinition<T> getPolicyDefinitionForIdentifier(
+                @NonNull PolicyIdentifier<T> policyIdentifier);
     }
 
     private final Injector mInjector;
@@ -630,7 +635,7 @@ public class PolicyMigrator {
             );
 
             final CompletableFuture<Integer> unused = mDevicePolicyEngine.setGlobalPolicy(
-                    PolicyDefinition.LOCKSCREEN_MESSAGE,
+                    mDelegate.getPolicyDefinitionForIdentifier(PolicyIdentifier.LOCKSCREEN_MESSAGE),
                     enforcingAdmin,
                     new StringPolicyValue(lockScreenInfo)
             );

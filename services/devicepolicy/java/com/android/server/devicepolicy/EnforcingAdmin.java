@@ -53,15 +53,15 @@ import java.util.Set;
  * </ul>
  *
  */
-final class EnforcingAdmin {
+public final class EnforcingAdmin {
 
     static final String TAG = "EnforcingAdmin";
 
-    static final String ROLE_AUTHORITY_PREFIX = "role:";
-    static final String SYSTEM_AUTHORITY_PREFIX = "system:";
-    static final String DPC_AUTHORITY = "enterprise";
-    static final String DEVICE_ADMIN_AUTHORITY = "device_admin";
-    static final String DEFAULT_AUTHORITY = "default";
+    public static final String ROLE_AUTHORITY_PREFIX = "role:";
+    public static final String SYSTEM_AUTHORITY_PREFIX = "system:";
+    public static final String DPC_AUTHORITY = "enterprise";
+    public static final String DEVICE_ADMIN_AUTHORITY = "device_admin";
+    public static final String DEFAULT_AUTHORITY = "default";
 
     private static final String ATTR_PACKAGE_NAME = "package-name";
     private static final String ATTR_SYSTEM_ENTITY = "system-entity";
@@ -139,7 +139,7 @@ final class EnforcingAdmin {
         throw new IllegalArgumentException("Unknown admin type: " + admin);
     }
 
-    static String getRoleAuthorityOf(String roleName) {
+    public static String getRoleAuthorityOf(String roleName) {
         return ROLE_AUTHORITY_PREFIX + roleName;
     }
 

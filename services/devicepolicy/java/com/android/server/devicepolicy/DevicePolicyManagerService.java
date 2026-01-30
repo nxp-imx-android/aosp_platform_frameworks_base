@@ -1017,8 +1017,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
     private final DevicePolicyEngine mDevicePolicyEngine;
 
     // {@link PolicyHandler}s, keyed by their policy name ({@link PolicyIdentifier}).
-    // Lazily initialized by calling `maybeInitializePolicyHandlers()` when the code needs them.
-    private Map<String, PolicyHandler<?>> mPolicyHandlers = null;
+    private Map<String, PolicyHandler<?>> mPolicyHandlers;
 
     /**
      * Pair of magic hash and package name strings used as an enterprise management marker in the
@@ -1703,7 +1702,10 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
         mContext = Objects.requireNonNull(injector.mContext);
         mPermissions = new PermissionChecker(mContext, new PermissionCheckerDelegate());
         mHandler = new Handler(Objects.requireNonNull(injector.getMyLooper()));
-        mPolicyDefinitionMap = new PolicyDefinitionMap();
+
+        mPolicyHandlers = createPolicyHandlers(this);
+        mPolicyDefinitionMap =
+                new PolicyDefinitionMap(getPolicyDefinitionsCreatedByPolicyHandlers());
 
         mConstantsObserver = new DevicePolicyConstantsObserver(mHandler);
         mConstantsObserver.register();
@@ -1979,36 +1981,34 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
     /**
      * Initializes the policy handlers by collecting them from the hard coded list(s), setting their
      * delegate and combining them in a map keyed by the policy identifier string.
-     *
-     * <p>A no-op if the policy handlers have already been initialized.
-     *
-     * <p>After this function finishes, {@link mPolicyHandlers} is guaranteed to be not null.
-     *
-     * TODO(445663366): Actually track the impact of this method on the boot time, so we can
-     * intervene if it ever becomes a problem.
      */
-    void maybeInitializePolicyHandlers() {
-        if (mPolicyHandlers != null) {
-            return;
-        }
-
-        var delegate = new PolicyHandlerDelegate();
+    static Map<String, PolicyHandler<?>> createPolicyHandlers(DevicePolicyManagerService dpms) {
+        var delegate = dpms.new PolicyHandlerDelegate();
         var allHandlers =
                 Stream.concat(
                         PolicyHandler.HANDLERS.stream(),
-                        createPolicyHandlersDependingOnDpms(this).stream());
-        mPolicyHandlers =
-                allHandlers
-                        .peek(
-                                (handler) -> {
-                                    handler.setDelegate(delegate);
-                                })
-                        .collect(
-                                // `toMap` will throw an IllegalStateException when encountering
-                                // duplicate keys, which nicely prevents mistakes.
-                                Collectors.toMap(
-                                        (handler) -> handler.getKey().getId(),
-                                        (handler) -> handler));
+                        createPolicyHandlersDependingOnDpms(dpms).stream());
+        return allHandlers
+                .peek(
+                        (handler) -> {
+                            handler.setDelegate(delegate);
+                        })
+                .collect(
+                        // `toMap` will throw an IllegalStateException when encountering
+                        // duplicate keys, which nicely prevents mistakes.
+                        Collectors.toMap(
+                                (handler) -> handler.getKey().getId(), (handler) -> handler));
+    }
+
+    /**
+     * Returns the {@link PolicyDefinition}s that are created by the {@link PolicyHandler}s based on
+     * the information in the policy definition annotations.
+     */
+    private Set<PolicyDefinition<?>> getPolicyDefinitionsCreatedByPolicyHandlers() {
+        return mPolicyHandlers.values().stream()
+                .filter((h) -> { return h.hasPolicyDefinition(); })
+                .map((h) -> { return h.getPolicyDefinition(); })
+                .collect(Collectors.toSet());
     }
 
     /**
@@ -2472,6 +2472,20 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
                 am.set(AlarmManager.RTC, alarmTime, pi);
             }
         });
+    }
+
+    @Override
+    @NonNull
+    public <T> PolicyDefinition<T> getPolicyDefinitionForIdentifier(
+            @NonNull PolicyIdentifier<T> policyIdentifier) {
+        // This cast is safe since the type of the PolicyIdentifier is checked when creating the
+        // PolicyHandler.
+        var handler = (PolicyHandler<T>) mPolicyHandlers.get(policyIdentifier.getId());
+        if (handler == null) {
+            throw new IllegalArgumentException("Unknown policy " + policyIdentifier);
+        }
+
+        return handler.getPolicyDefinition();
     }
 
     @NonNull ActiveAdmin getParentOfAdminIfRequired(ActiveAdmin admin, boolean parent) {
@@ -8361,7 +8375,8 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
                 IntegerPolicyValue.createIfNotDefault(
                      policy, DevicePolicyManager.AUTO_TIME_NOT_CONTROLLED_BY_POLICY);
         mDevicePolicyEngine.setOrRemoveGlobalPolicy(
-                PolicyDefinition.AUTO_TIME, enforcingAdmin, value);
+                getPolicyDefinitionForIdentifier(PolicyIdentifier.AUTO_TIME),
+                enforcingAdmin, value);
         if (value != null) {
             DevicePolicyEventLogger.createEvent(DevicePolicyEnums.SET_AUTO_TIME)
                     .setAdmin(caller.getPackageName())
@@ -8384,7 +8399,8 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
         mPermissions.enforce(SET_TIME, caller, UserHandle.USER_ALL);
         EnforcingAdmin enforcingAdmin = getEnforcingAdmin(caller);
         Integer state = mDevicePolicyEngine.getGlobalPolicySetByAdmin(
-                PolicyDefinition.AUTO_TIME, enforcingAdmin);
+                getPolicyDefinitionForIdentifier(PolicyIdentifier.AUTO_TIME),
+                enforcingAdmin);
         return state != null ? state : DevicePolicyManager.AUTO_TIME_NOT_CONTROLLED_BY_POLICY;
     }
 
@@ -9542,17 +9558,11 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
 
         synchronized (getLockObject()) {
             final EnforcingAdmin admin = getEnforcingAdmin(caller);
-            if (info != null && !info.isEmpty()) {
-                final CompletableFuture<Integer> unused = mDevicePolicyEngine.setGlobalPolicy(
-                        PolicyDefinition.LOCKSCREEN_MESSAGE,
-                        admin,
-                        new StringPolicyValue(info.toString())
-                );
-            } else {
-                final CompletableFuture<Integer> unused = mDevicePolicyEngine.removeGlobalPolicy(
-                        PolicyDefinition.LOCKSCREEN_MESSAGE,
-                        admin);
-            }
+            final CompletableFuture<Integer> unused = mDevicePolicyEngine.setOrRemoveGlobalPolicy(
+                    getPolicyDefinitionForIdentifier(PolicyIdentifier.LOCKSCREEN_MESSAGE),
+                    admin,
+                    StringPolicyValue.createIfNotNullOrEmpty(info)
+            );
         }
     }
 
@@ -9573,7 +9583,8 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
         final CallerIdentity caller = getCallerIdentity();
         mPermissions.enforce(MANAGE_DEVICE_POLICY_LOCKSCREEN_MESSAGE, caller, UserHandle.USER_ALL);
         return mDevicePolicyEngine.getResolvedPolicy(
-                PolicyDefinition.LOCKSCREEN_MESSAGE, UserHandle.USER_ALL);
+                getPolicyDefinitionForIdentifier(PolicyIdentifier.LOCKSCREEN_MESSAGE),
+                UserHandle.USER_ALL);
     }
 
     private void clearUserPoliciesLocked(int userId) {
@@ -15519,7 +15530,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
 
         long ident = mInjector.binderClearCallingIdentity();
         try {
-            final PolicyDefinition<V> policyDefinition = getPolicyDefinitionForIdentifier(
+            final PolicyDefinition<V> policyDefinition = getPolicyDefinitionForIdentifierLegacy(
                     identifier);
             V value = mDevicePolicyEngine.getResolvedPolicy(policyDefinition, userId);
             if (value == null) {
@@ -15558,8 +15569,8 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
         } else {
             long ident = mInjector.binderClearCallingIdentity();
             try {
-                PolicyDefinition<Boolean> policyDefinition = getPolicyDefinitionForRestriction(
-                        restriction);
+                PolicyDefinition<Boolean> policyDefinition =
+                    getPolicyDefinitionForRestrictionLegacy(restriction);
                 Boolean value = mDevicePolicyEngine.getResolvedPolicy(policyDefinition, userId);
                 if (value != null && value) {
                     Map<EnforcingAdmin, PolicyValue<Boolean>> globalPolicies =
@@ -15589,7 +15600,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
         return admins;
     }
 
-    private PolicyDefinition<Boolean> getPolicyDefinitionForRestriction(
+    private PolicyDefinition<Boolean> getPolicyDefinitionForRestrictionLegacy(
             @NonNull String restriction) {
         Objects.requireNonNull(restriction);
         if (DevicePolicyManager.POLICY_DISABLE_CAMERA.equals(restriction)) {
@@ -15602,13 +15613,13 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
         }
     }
 
-    private <V> PolicyDefinition<V> getPolicyDefinitionForIdentifier(
+    private <V> PolicyDefinition<V> getPolicyDefinitionForIdentifierLegacy(
             @NonNull String identifier) {
         Objects.requireNonNull(identifier);
         if (MEMORY_TAGGING_POLICY.equals(identifier)) {
             return (PolicyDefinition<V>) PolicyDefinition.MEMORY_TAGGING;
         } else {
-            return (PolicyDefinition<V>) getPolicyDefinitionForRestriction(identifier);
+            return (PolicyDefinition<V>) getPolicyDefinitionForRestrictionLegacy(identifier);
         }
     }
 
@@ -23557,7 +23568,6 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
         requirePolicyScopeIsOneOf(scope, POLICY_SCOPE_USER, POLICY_SCOPE_DEVICE,
                 POLICY_SCOPE_PARENT_USER);
 
-        maybeInitializePolicyHandlers();
         PolicyHandler<?> handler = mPolicyHandlers.get(id);
         if (handler == null) {
             throw new IllegalArgumentException("Unknown policy " + id);
@@ -23588,7 +23598,6 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
         requirePolicyScopeIsOneOf(scope, POLICY_SCOPE_USER, POLICY_SCOPE_DEVICE,
                 POLICY_SCOPE_PARENT_USER);
 
-        maybeInitializePolicyHandlers();
         PolicyHandler<?> handler = mPolicyHandlers.get(id);
         if (handler == null) {
             throw new IllegalArgumentException("Unknown policy " + id);
@@ -23614,7 +23623,6 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
             );
         }
 
-        maybeInitializePolicyHandlers();
         PolicyHandler<?> handler = mPolicyHandlers.get(id);
         if (handler == null) {
             throw new IllegalArgumentException("Unknown policy " + id);
@@ -23647,7 +23655,6 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
             );
         }
 
-        maybeInitializePolicyHandlers();
         PolicyHandler<?> handler = mPolicyHandlers.get(id);
         if (handler == null) {
             throw new IllegalArgumentException("Unknown policy " + id);
