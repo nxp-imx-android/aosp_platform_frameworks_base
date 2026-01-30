@@ -36,7 +36,7 @@ import android.app.IApplicationThread;
 import android.app.KeyguardManager;
 import android.app.PendingIntent;
 import android.app.admin.DevicePolicyManagerInternal;
-import android.companion.virtual.VirtualDeviceManager.VirtualDevice;
+import android.companion.virtual.VirtualDeviceManager;
 import android.companion.virtual.VirtualDeviceParams;
 import android.companion.virtual.computercontrol.ComputerControlSession;
 import android.companion.virtual.computercontrol.ComputerControlSessionParams;
@@ -396,6 +396,8 @@ public final class ComputerControlSessionProcessor {
     public void dump(@NonNull FileDescriptor fd, @NonNull PrintWriter fout,
             @Nullable String[] args) {
         String indent = "    ";
+        fout.println(indent + "Computer Control Version: " +
+                VirtualDeviceManager.COMPUTER_CONTROL_VERSION);
         fout.println(indent + "Maximum Concurrent Sessions: " + MAXIMUM_CONCURRENT_SESSIONS);
         fout.println(indent + "Active computer control sessions: ");
         synchronized (mSessions) {
@@ -494,7 +496,7 @@ public final class ComputerControlSessionProcessor {
         /**
          * Creates a new virtual device.
          */
-        VirtualDevice createVirtualDevice(
+        VirtualDeviceManager.VirtualDevice createVirtualDevice(
                 IBinder token,
                 AttributionSource attributionSource,
                 VirtualDeviceParams params);
