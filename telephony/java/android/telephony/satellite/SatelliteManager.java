@@ -860,6 +860,110 @@ public final class SatelliteManager {
     public @interface SatelliteDataSupportMode {}
 
     /**
+     * The carrier roaming satellite emergency messaging provider is unknown.
+     * @hide
+     */
+    public static final int CARRIER_ROAMING_SATELLITE_EMERGENCY_MESSAGING_PROVIDER_UNKNOWN = 0;
+
+    /**
+     * Indicates that the carrier does not support emergency messaging via satellite.
+     *
+     * <p>When the emergency messaging provider is set to this state, the following
+     * logic is enforced:
+     * <ul>
+     * <li><b>Trigger:</b> The user initiates an emergency (e911) call.</li>
+     * <li><b>Condition:</b> The call fails to establish a connection within the
+     * predefined timeout.</li>
+     * <li><b>Behavior:</b>
+     * <ul>
+     * <li>The <b>T911 button</b> is not shown, as the carrier does not support
+     * emergency messaging in the current country.</li>
+     * <li>If the device supports <b>Satellite SOS</b>, SOS button is displayed to the user.</li>
+     * <li>If <b>Satellite SOS</b> is not supported, handover button will not be shown to user.</li>
+     * </ul>
+     * </li>
+     * </ul>
+     * @hide
+     */
+    public static final int CARRIER_ROAMING_SATELLITE_EMERGENCY_MESSAGING_PROVIDER_UNSUPPORTED = 1;
+
+    /**
+     * Indicates whether the carrier supports satellite emergency messaging via a local
+     * Public Safety Answering Point (PSAP).
+     *
+     * <p>A local PSAP is the call center responsible for answering emergency calls
+     * (e.g., 911, 112, 999) for a specific geographic area.
+     *
+     *<p>When the emergency messaging provider is set to this state, the following
+     * logic is enforced:
+     * <ul>
+     * <li><b>Trigger:</b> The user initiates an emergency (e911) call.</li>
+     * <li><b>Condition:</b> The call fails to establish a connection within the
+     * predefined timeout.</li>
+     * <li><b>Behavior:</b>
+     * <ul>
+     * <li>The <b>T911 button</b> is displayed to the user.</li>
+     * <li>Upon clicking T911 button, user is redirected to the Messages app to send a text to
+     * dialed emergency number.</li>
+     * </ul>
+     * </li>
+     * </ul>
+     *
+     * @hide
+     */
+    public static final int CARRIER_ROAMING_SATELLITE_EMERGENCY_MESSAGING_PROVIDER_LOCAL_PSAP = 2;
+
+    /**
+     * Indicates that the carrier supports emergency messaging via a satellite-based
+     * concierge service.
+     *
+     * <p>A <b>concierge service</b> is a specialized center typically managed by the
+     * home carrier that intercepts emergency messages from internationally roaming users.
+     * It acts as an intermediary, coordinating with local emergency responders in the
+     * foreign jurisdiction.
+     *
+     *<p>When the emergency messaging provider is set to this state, the following
+     * logic is enforced:
+     * <ul>
+     * <li><b>Trigger:</b> The user initiates an emergency (e911) call.</li>
+     * <li><b>Condition:</b> The call fails to establish a connection within the
+     * predefined timeout.</li>
+     * <li><b>Behavior:</b>
+     * <ul>
+     * <li>The <b>T911 button</b> is displayed to the user.</li>
+     * <li>Upon clicking T911 button, user is redirected to the Messages app.</li>
+     * <li>The message is addressed to the destination defined in
+     * {@link CarrierConfigManager
+     * #KEY_CARRIER_ROAMING_SATELLITE_EMERGENCY_MESSAGING_REDIRECTION_DESTINATION_STRING}.</li>
+     * <li>If no specific destination is configured, the message is sent directly to the user-dialed
+     * emergency number.</li>
+     * </ul>
+     * </li>
+     * </ul>
+     *
+     * @hide
+     */
+    public static final int CARRIER_ROAMING_SATELLITE_EMERGENCY_MESSAGING_PROVIDER_CONCIERGE = 3;
+
+    /** @hide */
+    @IntDef(
+            prefix = {"CARRIER_ROAMING_SATELLITE_EMERGENCY_MESSAGING_PROVIDER_"},
+            value = {
+                CARRIER_ROAMING_SATELLITE_EMERGENCY_MESSAGING_PROVIDER_UNKNOWN,
+                CARRIER_ROAMING_SATELLITE_EMERGENCY_MESSAGING_PROVIDER_UNSUPPORTED,
+                CARRIER_ROAMING_SATELLITE_EMERGENCY_MESSAGING_PROVIDER_LOCAL_PSAP,
+                CARRIER_ROAMING_SATELLITE_EMERGENCY_MESSAGING_PROVIDER_CONCIERGE
+            })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface CarrierRoamingSatelliteEmergencyMessagingProvider {}
+
+    /**
+     * Emergency call to satellite handover type is unknown.
+     * @hide
+     */
+    public static final int EMERGENCY_CALL_TO_SATELLITE_HANDOVER_TYPE_UNKNOWN = 0;
+
+    /**
      * The emergency call is handed over to oem-enabled satellite SOS messaging. SOS messages are
      * sent to SOS providers, which will then forward the messages to emergency providers.
      * @hide
@@ -874,6 +978,17 @@ public final class SatelliteManager {
      */
     @SystemApi
     public static final int EMERGENCY_CALL_TO_SATELLITE_HANDOVER_TYPE_T911 = 2;
+
+    /** @hide */
+    @IntDef(
+        prefix = {"EMERGENCY_CALL_TO_SATELLITE_HANDOVER_TYPE_"},
+        value = {
+            EMERGENCY_CALL_TO_SATELLITE_HANDOVER_TYPE_UNKNOWN,
+            EMERGENCY_CALL_TO_SATELLITE_HANDOVER_TYPE_SOS,
+            EMERGENCY_CALL_TO_SATELLITE_HANDOVER_TYPE_T911
+        })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface EmergencyCallToSatelliteHandoverType {}
 
     /**
      * This intent will be broadcasted if there are any change to list of subscriber information.

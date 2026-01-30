@@ -10496,6 +10496,60 @@ public class CarrierConfigManager {
             "emergency_messaging_supported_bool";
 
     /**
+     * A persistable bundle that contains a list of key-value pairs, where the keys are MCC and
+     * the values are integers that indicate supported emergency messaging provider type in
+     * that country.
+     *
+     * <p>The values are:
+     *
+     * <ul>
+     *   <li>0 = {@link
+     *       SatelliteManager#CARRIER_ROAMING_SATELLITE_EMERGENCY_MESSAGING_PROVIDER_UNKNOWN}
+     *   <li>1 = {@link
+     *       SatelliteManager#CARRIER_ROAMING_SATELLITE_EMERGENCY_MESSAGING_PROVIDER_UNSUPPORTED}
+     *   <li>2 = {@link
+     *       SatelliteManager#CARRIER_ROAMING_SATELLITE_EMERGENCY_MESSAGING_PROVIDER_LOCAL_PSAP}
+     *   <li>3 = {@link
+     *       SatelliteManager#CARRIER_ROAMING_SATELLITE_EMERGENCY_MESSAGING_PROVIDER_CONCIERGE}
+     * </ul>
+     *
+     * <p>An example config for two countries "us" and "ca":
+     *
+     * <pre>{@code
+     * <carrier_config>
+     *   <pbundle_as_map
+     *      name="carrier_roaming_satellite_emergency_messaging_provider_per_country_bundle">
+     *     <int name="310" value="2"/>
+     *     <int name="302" value="3"/>
+     *   </pbundle_as_map>
+     * </carrier_config>
+     * }</pre>
+     *
+     * <p>This config is empty by default.
+     * @hide
+     */
+    public static final String
+            KEY_CARRIER_ROAMING_SATELLITE_EMERGENCY_MESSAGING_PROVIDER_PER_COUNTRY_BUNDLE =
+                    "carrier_roaming_satellite_emergency_messaging_provider_per_country_bundle";
+
+    /**
+     * A string containing the concierge number configured by the carrier. This number will be used
+     * for emergency messaging when the device is roaming on a satellite network.
+     *
+     * <p>A user places an emergency call and if the call did not connect within timeout, T911
+     * button will be displayed to the user if the device is connected or was connected within
+     * hysteresis time to satellite network. Upon clicking T911 button, user will be redirected to
+     * text with the concierge number if this key is set otherwise user will be redirected to text
+     * with the dialed emergency number.
+     *
+     * <p>The default value is empty.
+     * @hide
+     */
+    public static final String
+            KEY_CARRIER_ROAMING_SATELLITE_EMERGENCY_MESSAGING_REDIRECTION_DESTINATION_STRING =
+                    "carrier_roaming_satellite_emergency_messaging_redirection_destination_string";
+
+    /**
      * An integer key holds the timeout duration in milliseconds used to determine whether to hand
      * over an emergency call to satellite T911.
      *
@@ -10675,11 +10729,18 @@ public class CarrierConfigManager {
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({
+            CARRIER_ROAMING_NTN_CONNECT_UNKNOWN,
             CARRIER_ROAMING_NTN_CONNECT_AUTOMATIC,
             CARRIER_ROAMING_NTN_CONNECT_MANUAL,
-            CARRIER_ROAMING_NTN_CONNECT_HYBRID
+            CARRIER_ROAMING_NTN_CONNECT_HYBRID,
     })
     public @interface CARRIER_ROAMING_NTN_CONNECT_TYPE {}
+
+    /**
+     * Carrier roaming ntn connect type is unknown.
+     * @hide
+     */
+    public static final int CARRIER_ROAMING_NTN_CONNECT_UNKNOWN = -1;
 
     /**
      * Device can connect to carrier roaming non-terrestrial network automatically.
@@ -12350,6 +12411,12 @@ public class CarrierConfigManager {
                 "com.google.android.apps.messaging"});
         sDefaults.putBoolean(KEY_DISABLE_DUN_APN_WHILE_ROAMING_WITH_PRESET_APN_BOOL, false);
         sDefaults.putBoolean(KEY_EMERGENCY_MESSAGING_SUPPORTED_BOOL, false);
+        sDefaults.putPersistableBundle(
+                KEY_CARRIER_ROAMING_SATELLITE_EMERGENCY_MESSAGING_PROVIDER_PER_COUNTRY_BUNDLE,
+                PersistableBundle.EMPTY);
+        sDefaults.putString(
+                KEY_CARRIER_ROAMING_SATELLITE_EMERGENCY_MESSAGING_REDIRECTION_DESTINATION_STRING,
+            "");
         sDefaults.putInt(KEY_EMERGENCY_CALL_TO_SATELLITE_T911_HANDOVER_TIMEOUT_MILLIS_INT,
                 (int) TimeUnit.SECONDS.toMillis(30));
         sDefaults.putString(KEY_SATELLITE_DISPLAY_NAME_STRING, "");
