@@ -48,15 +48,19 @@ public class ConversationHintTest {
     private static final String CONTENT_DESCRIPTION = "content description";
     private static final Instant REFERENCE_TIME = Instant.now().truncatedTo(ChronoUnit.MILLIS);
     private static final Instant CLIENT_EVENT_TIMESTAMP = REFERENCE_TIME.minusSeconds(1);
+    private static final ChatMessageContentCaptureData CHAT_MESSAGE_CONTENT_CAPTURE_DATA =
+            new ChatMessageContentCaptureData.Builder()
+                    .setAutofillId(AUTOFILL_ID)
+                    .setRawParsedTimeString("12:00 PM")
+                    .setRawParsedDateString("Today")
+                    .build();
     private static final ChatMessageData CHAT_MESSAGE_DATA =
             new ChatMessageData.Builder()
                     .setOutgoingMessage(true)
                     .setText("text")
                     .setAuthor("author")
                     .setReferenceTime(REFERENCE_TIME)
-                    .setAutofillId(AUTOFILL_ID)
-                    .setTimeText("12:00 PM")
-                    .setDateText("Today")
+                    .setContentCaptureData(CHAT_MESSAGE_CONTENT_CAPTURE_DATA)
                     .setContentDescription(CONTENT_DESCRIPTION)
                     .build();
 

@@ -73,6 +73,7 @@ public abstract class ContextHint {
                 HINT_TYPE_CALL,
                 HINT_TYPE_HINT_INVALIDATION,
                 HINT_TYPE_INSIGHT_REFERENCE,
+                HINT_TYPE_MESSAGE
             })
     @Retention(RetentionPolicy.SOURCE)
     public @interface HintType {}
@@ -115,6 +116,9 @@ public abstract class ContextHint {
 
     /** Hint type for {@link InsightReferenceHint}. */
     static final int HINT_TYPE_INSIGHT_REFERENCE = 10;
+
+    /** Hint type for {@link MessagesHint}. */
+    static final int HINT_TYPE_MESSAGE = 11;
 
     /**
      * Object returned when there is an unparceling error.
@@ -271,6 +275,7 @@ public abstract class ContextHint {
                         constructorParams, data);
                 case HINT_TYPE_INSIGHT_REFERENCE ->
                         new InsightReferenceHint(constructorParams, data);
+                case HINT_TYPE_MESSAGE -> new MessagesHint(constructorParams, data);
                 default -> ERROR_HINT;
             };
         } catch (Exception e) {
