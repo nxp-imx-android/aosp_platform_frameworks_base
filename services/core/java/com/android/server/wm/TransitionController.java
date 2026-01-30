@@ -350,13 +350,12 @@ class TransitionController {
         // Temporarily clear so that nothing gets started/queued while flushing
         final ArrayList<TransitionPlayerRecord> temp = new ArrayList<>(mTransitionPlayers);
         mTransitionPlayers.clear();
-        final ArrayList<Transition> playing = new ArrayList<>(mPlayingTransitions);
-        mPlayingTransitions.clear();
         final ArrayList<Transition> waiting = new ArrayList<>(mWaitingTransitions);
         mWaitingTransitions.clear();
         final ArrayList<QueuedTransition> queued = new ArrayList<>(mQueuedTransitions);
         mQueuedTransitions.clear();
 
+        final ArrayList<Transition> playing = new ArrayList<>(mPlayingTransitions);
         // Clean-up/finish any playing transitions. Backwards since they can remove themselves.
         for (int i = playing.size() - 1; i >= 0; --i) {
             try {
@@ -365,6 +364,9 @@ class TransitionController {
                 Slog.wtf(TAG, "Exception during flush: cleanup playing transition #"
                         + playing.get(i).getSyncId(), e);
             }
+        }
+        if (!mPlayingTransitions.isEmpty()) {
+            Slog.e(TAG, "Unexpected playing transitions during flush: " + mPlayingTransitions);
         }
         // Clean up waiting transitions first since they technically started first.
         for (int i = waiting.size() - 1; i >= 0; --i) {
