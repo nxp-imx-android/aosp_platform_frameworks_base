@@ -34,6 +34,4 @@ interface ContextData {
      * "context.location".
      */
     val id: String
-
-    // TODO(b/477202336): Add fun toProto(): ByteArray when you generate your protos
 }
