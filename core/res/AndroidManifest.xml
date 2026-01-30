@@ -861,6 +861,8 @@
     <protected-broadcast android:name="android.intent.action.STOP_VOICE_COMMAND" />
 
     <!-- Added in 26Q2 -->
+    <protected-broadcast android:name="android.app.action.ALLOWED_NAS_ADJUSTMENT_KEYS_CHANGED" />
+    <protected-broadcast android:name="android.app.action.SUPPORTED_NAS_ADJUSTMENT_KEYS_CHANGED" />
     <protected-broadcast android:name="android.telephony.action.STK_SETUP_EVENT_LIST" />
 
     <!-- Added in 26Q4 -->
