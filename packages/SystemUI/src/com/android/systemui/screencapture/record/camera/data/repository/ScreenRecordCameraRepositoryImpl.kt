@@ -20,6 +20,7 @@ import android.graphics.Region
 import android.util.Size
 import android.view.Surface
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.screencapture.record.camera.data.model.StreamConfiguration
 import com.android.systemui.screencapture.record.camera.shared.model.CameraState
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
@@ -47,7 +48,7 @@ class ScreenRecordCameraRepositoryImpl @Inject constructor() : ScreenRecordCamer
     override suspend fun prepareStream(
         displayUniqueId: String?,
         @Surface.Rotation displayRotation: Int,
-    ): Size? = null
+    ): StreamConfiguration? = null
 
     override suspend fun setBackgroundColor(color: Int) {}
 
