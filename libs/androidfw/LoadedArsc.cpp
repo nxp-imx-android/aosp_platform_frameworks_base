@@ -331,11 +331,7 @@ base::expected<uint32_t, NullOrIOError> LoadedPackage::GetEntryOffset(
 base::expected<incfs::verified_map_ptr<ResTable_entry>, NullOrIOError>
 LoadedPackage::GetEntryFromOffset(incfs::verified_map_ptr<ResTable_type> type_chunk,
                                   uint32_t offset) {
-  auto valid = VerifyResTableEntry(type_chunk, offset);
-  if (UNLIKELY(!valid.has_value())) {
-    return base::unexpected(valid.error());
-  }
-  return valid;
+  return VerifyResTableEntry(type_chunk, offset);
 }
 
 base::expected<std::monostate, IOError> LoadedPackage::CollectConfigurations(
@@ -442,12 +438,16 @@ base::expected<uint32_t, NullOrIOError> LoadedPackage::FindEntryByName(
       }
 
       if (offset != ResTable_type::NO_ENTRY) {
-        auto entry = type.offset(dtohl(type->entriesStart) + offset).convert<ResTable_entry>();
-        if (!entry) {
-          return base::unexpected(IOError::PAGES_MISSING);
+        // Make sure to validate the entry offset, as we only validate the type
+        auto entry = GetEntryFromOffset(type, offset);
+        if (!entry.has_value()) {
+          if (IsIOError(entry)) {
+            return base::unexpected(entry.error());
+          }
+          continue;
         }
 
-        if (entry->key() == static_cast<uint32_t>(*key_idx)) {
+        if (entry.value()->key() == static_cast<uint32_t>(*key_idx)) {
           // The package ID will be overridden by the caller (due to runtime assignment of package
           // IDs for shared libraries).
           return make_resid(0x00, *type_idx + type_id_offset_ + 1, res_idx);
