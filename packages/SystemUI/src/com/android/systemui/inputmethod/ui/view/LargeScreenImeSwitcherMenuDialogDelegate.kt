@@ -83,6 +83,9 @@ constructor(
                         WindowInsets.Type.navigationBars() or
                         WindowInsets.Type.displayCutout()
             }
+            if (entryPoint == InputMethodManager.IM_PICKER_ENTRY_POINT_STATUS_BAR_CHIP) {
+                it.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
+            }
             it.setHideOverlayWindows(true)
         }
         dialog.lifecycle.addObserver(
