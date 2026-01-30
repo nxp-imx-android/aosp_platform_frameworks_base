@@ -166,6 +166,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 
 import javax.inject.Inject;
@@ -307,6 +308,12 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
     private int mSmallestScreenWidthDp;
     private int mOrientation;
     private int mGlobalActionDialogTimeout;
+    /**
+     * Latch used in testing to wait for the delegate to be dismissed. This will be unset after it
+     * is notified.
+     */
+    @Nullable
+    private CountDownLatch mDismissLatchForTesting;
 
     private final UserTracker.Callback mOnUserSwitched = new UserTracker.Callback() {
         @Override
@@ -463,6 +470,10 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
                             }
                             mDelegate = null;
                         }
+                        if (mDismissLatchForTesting != null) {
+                            mDismissLatchForTesting.countDown();
+                            mDismissLatchForTesting = null;
+                        }
                         break;
                     case MESSAGE_REFRESH:
                         refreshSilentMode();
@@ -545,6 +556,10 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
             mWindowManagerFuncs.onGlobalActionsShown();
             mDelegate.dismiss();
             mDelegate = null;
+            if (mDismissLatchForTesting != null) {
+                mDismissLatchForTesting.countDown();
+                mDismissLatchForTesting = null;
+            }
         } else {
             handleShow(expandable, displayId);
         }
@@ -600,8 +615,7 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
         rescheduleBurnInTimeout(mGlobalActionDialogTimeout);
     }
 
-    @VisibleForTesting
-    boolean shouldShowAction(Action action) {
+    private boolean shouldShowAction(Action action) {
         if (mKeyguardShowing && !action.showDuringKeyguard()) {
             return false;
         }
@@ -873,14 +887,12 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
                 || state == SOME_AUTH_REQUIRED_AFTER_USER_REQUEST);
     }
 
-    @VisibleForTesting
-    boolean shouldDisplayEmergency() {
+    private boolean shouldDisplayEmergency() {
         // Emergency calling requires a telephony radio with voice calling capabilities.
         return mHasTelephonyCalling;
     }
 
-    @VisibleForTesting
-    boolean shouldDisplayBugReport(@Nullable UserInfo user) {
+    private boolean shouldDisplayBugReport(@Nullable UserInfo user) {
         return user != null && user.isAdmin()
                 && mSecureSettings.getIntForUser(Settings.Secure.BUGREPORT_IN_POWER_MENU, 0,
                 user.id) != 0;
@@ -1577,6 +1589,10 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
     public void onDismiss(DialogInterface dialog) {
         if (mDelegate != null && mDelegate.mCurrentDialog == dialog) {
             mDelegate = null;
+        }
+        if (mDismissLatchForTesting != null) {
+            mDismissLatchForTesting.countDown();
+            mDismissLatchForTesting = null;
         }
         mUiEventLogger.log(GlobalActionsEvent.GA_POWER_MENU_CLOSE);
         mWindowManagerFuncs.onGlobalActionsHidden();
@@ -2447,6 +2463,17 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
         mDialogPressDelay = 0; // ms
     }
 
+    /**
+     * Sets a latch used to wait for the delegate to be dismissed. It will be unset after it is
+     * notified.
+     *
+     * @param latch the latch to set.
+     */
+    @VisibleForTesting
+    void setDismissLatchForTesting(@NonNull CountDownLatch latch) {
+        mDismissLatchForTesting = latch;
+    }
+
     private void onAirplaneModeChanged() {
         // Let the service state callbacks handle the state.
         if (mHasTelephonyCalling || mAirplaneModeOn == null) return;
@@ -2865,7 +2892,6 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
             mColorExtractor.removeOnColorsChangedListener(this);
             dialog.getOnBackInvokedDispatcher()
                     .unregisterOnBackInvokedCallback(mOnBackInvokedCallback);
-            mCurrentDialog = null;
             if (DEBUG) Log.d(TAG, "OnBackInvokedCallback handler unregistered");
         }
 
