@@ -2259,11 +2259,11 @@
     <!-- Tile Details entry end -->
 
     <!-- Bouncer containerization on large screens -->
-    <dimen name="bouncer_container_min_width">1280dp</dimen>
-    <dimen name="bouncer_container_max_width">1440dp</dimen>
-    <dimen name="bouncer_container_min_height">720dp</dimen>
-    <dimen name="bouncer_container_max_height">810dp</dimen>
-    <item name="bouncer_container_size_percentage" format="float" type="dimen">0.72</item>
+    <dimen name="bouncer_container_min_long_edge">1280dp</dimen>
+    <dimen name="bouncer_container_max_long_edge">1440dp</dimen>
+    <dimen name="bouncer_container_min_short_edge">720dp</dimen>
+    <dimen name="bouncer_container_max_short_edge">810dp</dimen>
+    <item name="bouncer_container_size_fraction" format="float" type="dimen">0.72</item>
     <!-- Bouncer containerization on large screens end -->
 
     <!-- Lockscreen blur values -->
