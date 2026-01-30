@@ -46,7 +46,9 @@ import org.json.JSONObject;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Manages the loading, saving, and caching of theme settings.
@@ -82,6 +84,12 @@ class ThemeSettingsManager {
 
     @GuardedBy("mLock")
     private final SparseArray<ThemeSettings> mSettingsCache = new SparseArray<>();
+
+    // Keeps track of all users that needed migration of the settings.
+    // This will be used in the "color update on boot deadline", aka when boot animation closes, to
+    // write updated settings to disk, avoiding having to verify settings again.
+    @GuardedBy("mLock")
+    private final Set<Integer> mMigratedUserIds = new HashSet<>();
 
     ThemeSettingsManager(ThemeWallpaperManager wallpaperManager) {
         mWallpaperManager = wallpaperManager;
@@ -147,12 +155,32 @@ class ThemeSettingsManager {
         }
     }
 
+    /**
+     * Writes any pending migrated settings to disk.
+     */
+    void updateMigratedSettings(ContentResolver contentResolver) {
+        final Set<Integer> usersToSave;
+        synchronized (mLock) {
+            if (mMigratedUserIds.isEmpty()) return;
+            usersToSave = new HashSet<>(mMigratedUserIds);
+            mMigratedUserIds.clear();
+        }
+
+        for (int userId : usersToSave) {
+            ThemeSettings settings = getSettings(userId, contentResolver);
+            if (settings != null) {
+                writeToDisk(userId, contentResolver, settings);
+                Slog.d(TAG, "Persisted migrated theme settings for user " + userId);
+            }
+        }
+    }
+
     @Nullable
     private ThemeSettings readFromDisk(@UserIdInt int userId, ContentResolver contentResolver) {
         try {
             final String jsonString = Settings.Secure.getStringForUser(contentResolver,
                     Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES, userId);
-            return fromJson(jsonString);
+            return fromJson(jsonString, userId);
         } catch (Exception e) {
             Slog.w(TAG, "Error loading theme settings for user " + userId + ": " + e);
             return null;
@@ -280,7 +308,7 @@ class ThemeSettingsManager {
     }
 
     @Nullable
-    private ThemeSettings fromJson(@Nullable String jsonString)
+    private ThemeSettings fromJson(@Nullable String jsonString, @UserIdInt int userId)
             throws JSONException {
         if (TextUtils.isEmpty(jsonString)) {
             return null;
@@ -300,6 +328,20 @@ class ThemeSettingsManager {
         String colorSource = parseAndValidate(json, OVERLAY_COLOR_SOURCE, VALUE_HOME_WALLPAPER);
 
         Color systemPalette = parseAndValidate(json, OVERLAY_CATEGORY_SYSTEM_PALETTE, null);
+
+        if (systemPalette == null && VALUE_HOME_WALLPAPER.equals(colorSource)) {
+            Integer seed = mWallpaperManager.getSeedColor(userId);
+            if (seed != null) {
+                systemPalette = Color.valueOf(seed);
+            } else {
+                systemPalette = HARDCODED_FALLBACK.systemPalette();
+                Slog.d(TAG, "Legacy settings for user " + userId + " missing palette. "
+                        + "Wallpaper color missing, using fallback.");
+            }
+            synchronized (mLock) {
+                mMigratedUserIds.add(userId);
+            }
+        }
 
         return new ThemeSettings.Builder()
                 .setAppliedTimestamp(timestamp)

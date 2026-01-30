@@ -114,6 +114,8 @@ public class ThemeEventObserverTest {
 
         when(mActivityManagerInternal.getCurrentUserId()).thenReturn(USER_ID);
         when(mThemeUserLifecycle.loadUserStateAndNotifyStateManager(anyInt())).thenReturn(true);
+        when(mThemeUserLifecycle.loadUserStateAndNotifyStateManager(USER_ID)).thenReturn(true);
+        when(mThemeStateManager.parentOf(USER_ID)).thenReturn(null);
 
         org.mockito.Mockito.doAnswer(invocation -> {
             mWallpaperListener = invocation.getArgument(0);
