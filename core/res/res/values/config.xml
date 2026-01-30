@@ -7988,4 +7988,7 @@
 
     <!-- Whether Airplane Mode sync is supported by this device. -->
     <bool name="config_supportAirplaneModeSync">true</bool>
+
+    <!-- Whether to allow content restriction device policy bypassing. -->
+    <bool name="config_allowContentRestrictionDevicePolicyBypassing">false</bool>
 </resources>
