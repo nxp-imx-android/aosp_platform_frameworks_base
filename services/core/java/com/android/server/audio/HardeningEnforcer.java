@@ -138,11 +138,11 @@ public class HardeningEnforcer {
      * @return false if the method call is allowed, true if it should be a no-op
      */
     protected boolean blockVolumeMethod(int volumeMethod, String packageName, int uid) {
-        // Regardless of flag state, always permit callers with MODIFY_AUDIO_SETTINGS_PRIVILEGED
+        // Regardless of flag state, always permit callers with privileged audio permissions
         // Prevent them from showing up in metrics as well
-        if (mContext.checkCallingOrSelfPermission(
-                Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED)
-                == PackageManager.PERMISSION_GRANTED) {
+        if (holdsPermission(Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED) ||
+                holdsPermission(Manifest.permission.MODIFY_AUDIO_ROUTING) ||
+                holdsPermission(Manifest.permission.MODIFY_PHONE_STATE)) {
             return false;
         }
         // for Auto, volume methods require MODIFY_AUDIO_SETTINGS_PRIVILEGED
@@ -329,5 +329,10 @@ public class HardeningEnforcer {
             return false;
         }
         return true;
+    }
+
+    private boolean holdsPermission(String permission) {
+        return mContext.checkCallingOrSelfPermission(permission)
+            == PackageManager.PERMISSION_GRANTED;
     }
 }
