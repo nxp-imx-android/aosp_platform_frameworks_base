@@ -16,7 +16,7 @@
 package com.android.systemui.communal.domain.definition
 
 import android.content.ComponentName
-import android.util.Dumpable
+import com.android.systemui.Dumpable
 import kotlinx.coroutines.flow.Flow
 
 interface ContextualSetupDefinition : Dumpable {
