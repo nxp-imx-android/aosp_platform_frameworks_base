@@ -72,12 +72,7 @@ class SwitchToOverflowBubbleTest(navBar: NavBar) :
                     clickOverflowIcon()
                     waitAndAssertBubbleAppInCollapseState(testApp, wmHelper)
                 },
-                tearDownAfterTransition = {
-                    // TODO(b/474233763): killing the testApp with overflow expanded results a bad
-                    // state
-                    tapl.pressBack()
-                    testApp.exit()
-                },
+                tearDownAfterTransition = { testApp.exit() },
             )
 
         @Parameters(name = "{0}") @JvmStatic fun data(): List<NavBar> = NavBar.entries

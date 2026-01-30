@@ -28,6 +28,7 @@ import androidx.core.content.ContextCompat
 import com.android.launcher3.icons.BubbleIconFactory
 import com.android.wm.shell.R
 import com.android.wm.shell.bubbles.bar.BubbleBarExpandedView
+import com.android.wm.shell.bubbles.bar.BubbleBarLayerView
 import com.android.wm.shell.bubbles.model.BubbleIcon
 
 class BubbleOverflow(private val context: Context, private val positioner: BubblePositioner) :
@@ -81,9 +82,17 @@ class BubbleOverflow(private val context: Context, private val positioner: Bubbl
     }
 
     fun cleanUpExpandedState() {
-        expandedView?.cleanUpExpandedState()
+        // Detach overflow from BubbleStackView
+        expandedView?.apply {
+            (parent as? BubbleStackView)?.removeView(this)
+            cleanUpExpandedState()
+        }
         expandedView = null
-        bubbleBarExpandedView?.cleanUpExpandedState()
+        // Detach overflow from BubbleBarLayerView
+        bubbleBarExpandedView?.apply {
+            (parent as? BubbleBarLayerView)?.removeView(this)
+            cleanUpExpandedState()
+        }
         bubbleBarExpandedView = null
     }
 
