@@ -21,6 +21,7 @@
     android:id="@+id/entity_header"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:paddingBottom="@dimen/settingslib_expressive_space_none"
     style="@style/SettingsLibEntityHeader">
 
     <LinearLayout
@@ -59,6 +60,12 @@
             android:gravity="center"
             android:minLines="1"
             app:isCollapsable="false"/>
+
+        <Space
+            android:id="@+id/entity_header_bottom_spacer"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/settingslib_expressive_space_small1"
+            android:visibility="gone"/>
 
     </LinearLayout>
 
