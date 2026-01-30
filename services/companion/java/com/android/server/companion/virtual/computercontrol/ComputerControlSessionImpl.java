@@ -196,7 +196,11 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
 
         fout.print("ComupterControlSession {");
         fout.print(" mDeviceId=" + mVirtualDeviceId);
+        fout.print(" mName=" + mParams.getName());
+        fout.print(" mTargetExtensionVersion=" + mParams.getTargetExtensionVersion());
         fout.print(" mOwnerPackageName=" + mOwnerPackageName);
+        fout.print(" mTargetPackageNames=" + mParams.getTargetPackageNames());
+        fout.print(" mAppInteractionAttribution=" + mParams.getAppInteractionAttribution());
         fout.print("}");
         fout.print("\n");
     }
@@ -1124,7 +1128,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                             mAppInteractionService.noteAppInteraction(
                                     mOwnerPackageName,
                                     componentName.getPackageName(),
-                                    null, // TODO(b/454891648): get attribution from agent
+                                    mParams.getAppInteractionAttribution(),
                                     now,
                                     userId);
                         });

@@ -33,6 +33,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.app.Activity;
+import android.app.AppInteractionAttribution;
 import android.app.AppOpsManager;
 import android.app.IApplicationThread;
 import android.app.KeyguardManager;
@@ -45,6 +46,7 @@ import android.companion.virtual.computercontrol.ComputerControlSession;
 import android.companion.virtual.computercontrol.ComputerControlSessionParams;
 import android.companion.virtual.computercontrol.IComputerControlSession;
 import android.companion.virtual.computercontrol.IComputerControlSessionCallback;
+
 import android.content.AttributionSource;
 import android.content.Context;
 import android.content.ContextWrapper;
@@ -66,6 +68,7 @@ import com.android.server.wm.WindowManagerInternal;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -88,10 +91,14 @@ public class ComputerControlSessionProcessorTest {
     private static final String OWNER_PACKAGE_NAME = "com.package";
     private static final AttributionSource ATTRIBUTION_SOURCE = new AttributionSource(
             UserHandle.getUid(CALLING_USER_ID, 0), OWNER_PACKAGE_NAME, "tag");
+    private static final AppInteractionAttribution APP_INTERACTION_ATTRIBUTION =
+            new AppInteractionAttribution.Builder(
+                    AppInteractionAttribution.INTERACTION_TYPE_USER_QUERY).build();
     private static final ComputerControlSessionParams PARAMS =
             new ComputerControlSessionParams.Builder()
                     .setName(ComputerControlSessionImplTest.class.getSimpleName())
                     .setTargetPackageNames(List.of(TARGET_PACKAGE))
+                    .setAppInteractionAttribution(APP_INTERACTION_ATTRIBUTION)
                     .build();
 
     @Mock
@@ -257,6 +264,7 @@ public class ComputerControlSessionProcessorTest {
         ComputerControlSessionParams params = new ComputerControlSessionParams.Builder()
                 .setName(ComputerControlSessionImplTest.class.getSimpleName())
                 .setTargetPackageNames(List.of(TARGET_PACKAGE, ANOTHER_TARGET_PACKAGE))
+                .setAppInteractionAttribution(APP_INTERACTION_ATTRIBUTION)
                 .build();
         mProcessor.processNewSessionRequest(
                 mAppThread, ATTRIBUTION_SOURCE, params, mComputerControlSessionCallback);
@@ -470,10 +478,25 @@ public class ComputerControlSessionProcessorTest {
         verify(mVirtualDevice, never()).close();
     }
 
+    @Test
+    public void appInterActionAttribution_notProvided_notEnforced() throws Exception {
+        ComputerControlSessionParams params = new ComputerControlSessionParams.Builder()
+                .setName(PARAMS.getName())
+                .setTargetPackageNames(PARAMS.getTargetPackageNames())
+                .build();
+
+        mProcessor.processNewSessionRequest(
+                mAppThread, ATTRIBUTION_SOURCE, params, mComputerControlSessionCallback);
+
+        verify(mComputerControlSessionCallback, timeout(CALLBACK_TIMEOUT_MS))
+                .onSessionCreated(anyInt(), any());
+    }
+
     private ComputerControlSessionParams generateUniqueParams(int index) {
         return new ComputerControlSessionParams.Builder()
                 .setName(PARAMS.getName() + index)
                 .setTargetPackageNames(PARAMS.getTargetPackageNames())
+                .setAppInteractionAttribution(PARAMS.getAppInteractionAttribution())
                 .build();
     }
 }
