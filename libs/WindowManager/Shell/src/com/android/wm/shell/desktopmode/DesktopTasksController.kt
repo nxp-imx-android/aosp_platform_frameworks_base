@@ -50,6 +50,7 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.RemoteException
 import android.os.ServiceManager
+import android.os.SystemProperties
 import android.os.Trace
 import android.os.UserHandle
 import android.os.UserManager
@@ -304,6 +305,8 @@ class DesktopTasksController(
     private val wallpaperService: IWallpaperManager =
         IWallpaperManager.Stub.asInterface(ServiceManager.getService(Context.WALLPAPER_SERVICE))
     private lateinit var mPipScheduler: PipScheduler
+
+    private val wallpaperDimAmount: Float
     private val dragToDesktopStateListener =
         object : DragToDesktopStateListener {
             override fun onCommitToDesktopAnimationStart() {
@@ -395,6 +398,8 @@ class DesktopTasksController(
                     )
                 }
         }
+        wallpaperDimAmount =
+            SystemProperties.getInt("persist.wm.debug.wallpaper_dim_amount", 100).toFloat() / 100
     }
 
     private fun onInit() {
@@ -6863,7 +6868,7 @@ class DesktopTasksController(
     private fun updateTaskBarAndWallpaperDim(displayId: Int, shouldApplyEffect: Boolean) {
         taskbarDesktopTaskListener?.onTaskbarCornerRoundingUpdate(shouldApplyEffect, displayId)
         wallpaperService.setWallpaperDimAmount(
-            if (shouldApplyEffect) 0.7f else 0f,
+            if (shouldApplyEffect) wallpaperDimAmount else 0f,
             displayId,
             true, /* temporary */
         )
