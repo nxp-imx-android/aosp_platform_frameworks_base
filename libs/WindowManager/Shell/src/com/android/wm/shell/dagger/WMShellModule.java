@@ -101,6 +101,7 @@ import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.common.SyncTransactionQueue;
 import com.android.wm.shell.common.TaskStackListenerImpl;
 import com.android.wm.shell.common.UserProfileContexts;
+import com.android.wm.shell.common.pip.PipBoundsState;
 import com.android.wm.shell.common.split.SplitState;
 import com.android.wm.shell.common.suppliers.TransactionSupplier;
 import com.android.wm.shell.common.transition.TransitionStateHolder;
@@ -201,6 +202,8 @@ import com.android.wm.shell.pinnedlayer.phone.PinnedLayerFlags;
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerHandler;
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerUiState;
 import com.android.wm.shell.pip.PipTransitionController;
+import com.android.wm.shell.pip2.phone.PipDisplayDisconnectHandler;
+import com.android.wm.shell.pip2.phone.PipDisplayTransferHandler;
 import com.android.wm.shell.pip2.phone.PipScheduler;
 import com.android.wm.shell.pip2.phone.PipTransitionState;
 import com.android.wm.shell.recents.RecentTasksController;
@@ -1336,14 +1339,44 @@ public abstract class WMShellModule {
             Optional<SplitScreenController> splitScreenOptional,
             Optional<DesktopTasksController> desktopTasksController,
             Optional<FullscreenDisconnectHandler> fullscreenDisconnectHandler,
-            Optional<PinnedLayerController> pinnedLayerController) {
+            Optional<PinnedLayerController> pinnedLayerController,
+            Optional<PipDisplayDisconnectHandler> pipDisplayDisconnectHandler) {
         if (!DesktopExperienceFlags.ENABLE_DISPLAY_DISCONNECT_INTERACTION.isTrue()) {
             return Optional.empty();
         } else {
             return Optional.of(
                     new DisplayDisconnectTransitionHandler(transitions, shellInit,
                             splitScreenOptional, desktopTasksController,
-                            fullscreenDisconnectHandler, pinnedLayerController)
+                            fullscreenDisconnectHandler, pinnedLayerController,
+                            pipDisplayDisconnectHandler
+                    )
+            );
+        }
+    }
+
+    @WMSingleton
+    @Provides
+    static Optional<PipDisplayDisconnectHandler> providePipDisplayDisconnectHandler(
+            PipScheduler pipScheduler,
+            PipTransitionState pipTransitionState,
+            PipBoundsState pipBoundsState,
+            ShellDesktopState desktopState,
+            RootTaskDisplayAreaOrganizer taskDisplayAreaOrganizer,
+            PipDisplayTransferHandler pipDisplayTransferHandler
+    ) {
+        if (!com.android.window.flags.Flags.enableDisplayDisconnectPip()
+                || !PipFlags.isPip2ExperimentEnabled()) {
+            return Optional.empty();
+        } else {
+            return Optional.of(
+                    new PipDisplayDisconnectHandler(
+                            pipScheduler,
+                            pipTransitionState,
+                            pipBoundsState,
+                            desktopState,
+                            taskDisplayAreaOrganizer,
+                            pipDisplayTransferHandler
+                    )
             );
         }
     }

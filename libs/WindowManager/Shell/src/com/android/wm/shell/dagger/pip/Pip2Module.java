@@ -309,13 +309,15 @@ public abstract class Pip2Module {
             Context context, ShellTaskOrganizer shellTaskOrganizer,
             Optional<DesktopTasksController> desktopTasksControllerOptional,
             Optional<DesktopUserRepositories> desktopUserRepositoriesOptional,
-            PipDesktopState pipDesktopState, DesktopState desktopState
+            PipDesktopState pipDesktopState, DesktopState desktopState,
+            DisplayController displayController
     ) {
         if (desktopState.canEnterDesktopMode()) {
             return Optional.of(
                     new DesktopPipTransitionController(shellTaskOrganizer,
                             desktopTasksControllerOptional.get(),
-                            desktopUserRepositoriesOptional.get(), pipDesktopState));
+                            desktopUserRepositoriesOptional.get(), pipDesktopState,
+                            displayController));
         }
         return Optional.empty();
     }
