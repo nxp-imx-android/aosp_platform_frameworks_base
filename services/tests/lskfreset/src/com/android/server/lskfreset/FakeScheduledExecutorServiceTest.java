@@ -313,6 +313,109 @@ public class FakeScheduledExecutorServiceTest {
     }
 
     @Test
+    public void testScheduleFixedRate() {
+        AtomicInteger fastExecutions = new AtomicInteger(0);
+        AtomicInteger slowExecutions = new AtomicInteger(0);
+        ScheduledFuture<?> futureFast =
+                mExecutor.scheduleAtFixedRate(
+                        () -> {
+                            fastExecutions.incrementAndGet();
+                        },
+                        1,
+                        1,
+                        TimeUnit.SECONDS);
+        ScheduledFuture<?> futureSlow =
+                mExecutor.scheduleAtFixedRate(
+                        () -> {
+                            slowExecutions.incrementAndGet();
+                        },
+                        1,
+                        2,
+                        TimeUnit.SECONDS);
+        assertFalse(futureFast.isDone());
+        assertFalse(futureSlow.isDone());
+        assertEquals(0, fastExecutions.get());
+        assertEquals(0, slowExecutions.get());
+        assertEquals(2, mExecutor.fastForwardMillis(1000));
+        assertFalse(futureFast.isDone());
+        assertFalse(futureSlow.isDone());
+        assertEquals(1, fastExecutions.get());
+        assertEquals(1, slowExecutions.get());
+        assertEquals(1, mExecutor.fastForwardMillis(1500));
+        assertFalse(futureFast.isDone());
+        assertFalse(futureSlow.isDone());
+        assertEquals(2, fastExecutions.get());
+        assertEquals(1, slowExecutions.get());
+        assertEquals(2, mExecutor.fastForwardMillis(500));
+        assertFalse(futureFast.isDone());
+        assertFalse(futureSlow.isDone());
+        assertEquals(3, fastExecutions.get());
+        assertEquals(2, slowExecutions.get());
+
+        assertEquals(2, mExecutor.shutdownNow().size());
+        assertTrue(futureFast.isDone());
+        assertTrue(futureSlow.isDone());
+        assertEquals(0, mExecutor.fastForwardMillis(1000));
+        assertEquals(0, mExecutor.fastForwardMillis(1000));
+        assertEquals(3, fastExecutions.get());
+        assertEquals(2, slowExecutions.get());
+    }
+
+    @Test
+    public void testScheduleFixedDelay() {
+        AtomicInteger fastExecutions = new AtomicInteger(0);
+        AtomicInteger slowExecutions = new AtomicInteger(0);
+        ScheduledFuture<?> futureFast =
+                mExecutor.scheduleWithFixedDelay(
+                        () -> {
+                            fastExecutions.incrementAndGet();
+                        },
+                        1,
+                        1,
+                        TimeUnit.SECONDS);
+        ScheduledFuture<?> futureSlow =
+                mExecutor.scheduleWithFixedDelay(
+                        () -> {
+                            slowExecutions.incrementAndGet();
+                        },
+                        1,
+                        2,
+                        TimeUnit.SECONDS);
+        assertFalse(futureFast.isDone());
+        assertFalse(futureSlow.isDone());
+        assertEquals(0, fastExecutions.get());
+        assertEquals(0, slowExecutions.get());
+        assertEquals(2, mExecutor.fastForwardMillis(1000));
+        assertFalse(futureFast.isDone());
+        assertFalse(futureSlow.isDone());
+        assertEquals(1, fastExecutions.get());
+        assertEquals(1, slowExecutions.get());
+        assertEquals(1, mExecutor.fastForwardMillis(1500));
+        assertFalse(futureFast.isDone());
+        assertFalse(futureSlow.isDone());
+        assertEquals(2, fastExecutions.get());
+        assertEquals(1, slowExecutions.get());
+        assertEquals(1, mExecutor.fastForwardMillis(500));
+        assertFalse(futureFast.isDone());
+        assertFalse(futureSlow.isDone());
+        assertEquals(2, fastExecutions.get());
+        assertEquals(2, slowExecutions.get());
+        assertEquals(1, mExecutor.fastForwardMillis(500));
+        assertFalse(futureFast.isDone());
+        assertFalse(futureSlow.isDone());
+        assertEquals(3, fastExecutions.get());
+        assertEquals(2, slowExecutions.get());
+
+        assertEquals(2, mExecutor.shutdownNow().size());
+        assertTrue(futureFast.isDone());
+        assertTrue(futureSlow.isDone());
+        assertEquals(0, mExecutor.fastForwardMillis(1000));
+        assertEquals(0, mExecutor.fastForwardMillis(1000));
+        assertEquals(3, fastExecutions.get());
+        assertEquals(2, slowExecutions.get());
+    }
+
+    @Test
     public void testExecute() {
         AtomicInteger executions = new AtomicInteger(0);
         mExecutor.execute(() -> executions.incrementAndGet());

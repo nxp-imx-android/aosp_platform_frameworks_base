@@ -35,6 +35,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Fake implementation of ScheduledExecutorService for use in testing. Implementation only covers
@@ -42,7 +43,10 @@ import java.util.concurrent.TimeoutException;
  * synchronously when time is advanced.
  */
 class FakeScheduledExecutorService implements ScheduledExecutorService {
-    private long mElapsedMillis = 0;
+    // The "current time" from the point of view of the executor. This is only ever modified by
+    // fastForwardMillis which only runs on the execution thread but any thread could implicitly
+    // read this and do it is defined as an atomic.
+    private final AtomicLong mElapsedMillis = new AtomicLong(0);
 
     // Helper wrapper that combines queuing of futures with a semaphore. For tracking futures and
     // future timeouts we mostly just need a DelayQueue, but adding in the semaphore functionality
@@ -121,7 +125,7 @@ class FakeScheduledExecutorService implements ScheduledExecutorService {
     // A dummy future that will get run when the executor is terminated. This can be used to
     // implement blocking on termination via get().
     private final FakeScheduledFuture<?> mTerminationFuture =
-            new FakeScheduledFuture<>(() -> {}, 0);
+            new FakeScheduledFuture<>(() -> {}, 0, 0, 0);
 
     // The thread that can run fastForwardMillis.
     private final Thread mExecutionThread;
@@ -191,7 +195,7 @@ class FakeScheduledExecutorService implements ScheduledExecutorService {
      */
     int fastForwardMillis(long millis) {
         assertExecutionThread();
-        mElapsedMillis += millis;
+        mElapsedMillis.getAndAdd(millis);
 
         // Execute all futures that are ready to run.
         List<FakeScheduledFuture<?>> readyFutures = mFutureQueue.drain();
@@ -216,7 +220,8 @@ class FakeScheduledExecutorService implements ScheduledExecutorService {
 
     @Override
     public ScheduledFuture<?> schedule(Runnable command, long delay, TimeUnit unit) {
-        FakeScheduledFuture<?> future = new FakeScheduledFuture<>(command, unit.toMillis(delay));
+        FakeScheduledFuture<?> future =
+                new FakeScheduledFuture<>(command, unit.toMillis(delay), 0, 0);
         mFutureQueue.put(future);
         return future;
     }
@@ -231,13 +236,27 @@ class FakeScheduledExecutorService implements ScheduledExecutorService {
     @Override
     public ScheduledFuture<?> scheduleAtFixedRate(
             Runnable command, long initialDelay, long period, TimeUnit unit) {
-        throw new UnsupportedOperationException();
+        if (period <= 0) {
+            throw new IllegalArgumentException("Period must be positive");
+        }
+        FakeScheduledFuture<?> future =
+                new FakeScheduledFuture<>(
+                        command, unit.toMillis(initialDelay), unit.toMillis(period), 0);
+        mFutureQueue.put(future);
+        return future;
     }
 
     @Override
     public ScheduledFuture<?> scheduleWithFixedDelay(
             Runnable command, long initialDelay, long delay, TimeUnit unit) {
-        throw new UnsupportedOperationException();
+        if (delay <= 0) {
+            throw new IllegalArgumentException("Delay must be positive");
+        }
+        FakeScheduledFuture<?> future =
+                new FakeScheduledFuture<>(
+                        command, unit.toMillis(initialDelay), 0, unit.toMillis(delay));
+        mFutureQueue.put(future);
+        return future;
     }
 
     @Override
@@ -400,7 +419,17 @@ class FakeScheduledExecutorService implements ScheduledExecutorService {
         // will be non-null.
         private final Runnable mRunnable;
         private final Callable<V> mCallable;
-        private final long mTimeToExecuteAt;
+
+        // The interval in milliseconds at which the future should be scheduled to re-run after it
+        // is executed. The first value is the interval for fixed rate scheduling, the second value
+        // is for fixed delay scheduling. Only one of these will be non-zero. If both are zero then
+        // future should only be run once.
+        private final long mFixedRateInterval;
+        private final long mFixedDelayInterval;
+
+        // The time at which the future should be next run. This is an atomic because while it is
+        // only ever modified by the (single) execution thread it may be read by other threads.
+        private final AtomicLong mTimeToExecuteAt;
 
         private final Object mStateLock = new Object();
 
@@ -443,12 +472,12 @@ class FakeScheduledExecutorService implements ScheduledExecutorService {
             private final CountDownLatch mTimeoutLatch = new CountDownLatch(1);
 
             WaitForTimeout(long timeout, TimeUnit unit) {
-                mTimeoutAt = mElapsedMillis + unit.toMillis(timeout);
+                mTimeoutAt = mElapsedMillis.get() + unit.toMillis(timeout);
             }
 
             @Override
             public long getDelay(TimeUnit unit) {
-                long delayInMs = mTimeoutAt - mElapsedMillis;
+                long delayInMs = mTimeoutAt - mElapsedMillis.get();
                 return unit.convert(delayInMs, TimeUnit.MILLISECONDS);
             }
 
@@ -471,28 +500,48 @@ class FakeScheduledExecutorService implements ScheduledExecutorService {
             }
         }
 
-        private FakeScheduledFuture(Runnable runnable, long delay) {
+        private FakeScheduledFuture(
+                Runnable runnable, long delay, long fixedRateInterval, long fixedDelayInterval) {
             mRunnable = runnable;
             mCallable = null;
-            mTimeToExecuteAt = mElapsedMillis + delay;
+            mFixedRateInterval = fixedRateInterval;
+            mFixedDelayInterval = fixedDelayInterval;
+            mTimeToExecuteAt = new AtomicLong(mElapsedMillis.get() + delay);
         }
 
         private FakeScheduledFuture(Callable<V> callable, long delay) {
             mRunnable = null;
             mCallable = callable;
-            mTimeToExecuteAt = mElapsedMillis + delay;
+            // Callable futures do not support repeated execution.
+            mFixedRateInterval = 0;
+            mFixedDelayInterval = 0;
+            mTimeToExecuteAt = new AtomicLong(mElapsedMillis.get() + delay);
         }
 
         /** Executes the task if it is still pending. */
         private void execute() {
+            assertExecutionThread();
             try {
                 synchronized (mStateLock) {
                     if (mState != State.PENDING) {
                         return;
                     }
+                    State nextState = State.COMPLETED;
                     try {
                         if (mRunnable != null) {
                             mRunnable.run();
+                            // If the future is repeating then reschedule it.
+                            if (mFixedRateInterval > 0) {
+                                nextState = State.CANCELLED;
+                                mTimeToExecuteAt.getAndAdd(mFixedRateInterval);
+                                mFutureQueue.put(this);
+                                nextState = State.PENDING;
+                            } else if (mFixedDelayInterval > 0) {
+                                nextState = State.CANCELLED;
+                                mTimeToExecuteAt.set(mElapsedMillis.get() + mFixedDelayInterval);
+                                mFutureQueue.put(this);
+                                nextState = State.PENDING;
+                            }
                         } else {
                             try {
                                 mResult = mCallable.call();
@@ -501,7 +550,7 @@ class FakeScheduledExecutorService implements ScheduledExecutorService {
                             }
                         }
                     } finally {
-                        mState = State.COMPLETED;
+                        mState = nextState;
                     }
                 }
             } finally {
@@ -526,7 +575,7 @@ class FakeScheduledExecutorService implements ScheduledExecutorService {
 
         @Override
         public long getDelay(TimeUnit unit) {
-            long delayInMs = mTimeToExecuteAt - mElapsedMillis;
+            long delayInMs = mTimeToExecuteAt.get() - mElapsedMillis.get();
             return unit.convert(delayInMs, TimeUnit.MILLISECONDS);
         }
 
