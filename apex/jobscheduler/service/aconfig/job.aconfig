@@ -38,3 +38,10 @@ flag {
     description: "Enforce a limit on the number of proxied jobs that can be scheduled indirectly (e.g. via SyncManager)"
     bug: "299930087"
 }
+
+flag {
+    name: "limit_per_uid_cumulative_workitem_size"
+    namespace: "backstage_power"
+    description: "Limit the total amount of memory consumption ab app can impose on the system via JobWorkItems"
+    bug: "434194137"
+}

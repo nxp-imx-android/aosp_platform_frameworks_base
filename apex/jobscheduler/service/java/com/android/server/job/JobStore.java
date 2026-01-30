@@ -38,10 +38,12 @@ import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.util.ArraySet;
 import android.util.AtomicFile;
+import android.util.IndentingPrintWriter;
 import android.util.Pair;
 import android.util.Slog;
 import android.util.SparseArray;
 import android.util.SparseBooleanArray;
+import android.util.SparseIntArray;
 import android.util.SystemConfigFileCommitEventLogger;
 import android.util.Xml;
 
@@ -98,6 +100,9 @@ public final class JobStore {
     private static final String TAG = "JobStore";
     private static final boolean DEBUG = JobSchedulerService.DEBUG;
 
+    /** Limit on the total JobWorkItem size (in bytes) an app can enqueue to system. */
+    @VisibleForTesting
+    static final int TOTAL_JOB_WORK_ITEM_SIZE_LIMIT = 1 << 20; // 1 MiB
     /** Threshold to adjust how often we want to write to the db. */
     private static final long JOB_PERSIST_DELAY = 2000L;
     private static final long SCHEDULED_JOB_HIGH_WATER_MARK_PERIOD_MS = 30 * 60_000L;
@@ -1059,6 +1064,9 @@ public final class JobStore {
                     continue;
                 }
                 out.startTag(null, XML_TAG_JOB_WORK_ITEM);
+                if (item.getEstimatedSizeBytes() != JobWorkItem.SIZE_BYTES_UNKNOWN) {
+                    out.attributeInt(null, "estimated-size-bytes", item.getEstimatedSizeBytes());
+                }
                 out.attributeInt(null, "delivery-count", item.getDeliveryCount());
                 if (item.getEstimatedNetworkDownloadBytes() != JobInfo.NETWORK_BYTES_UNKNOWN) {
                     out.attributeLong(null, "estimated-download-bytes",
@@ -1177,7 +1185,14 @@ public final class JobStore {
                                 }
                                 js.prepareLocked();
                                 js.enqueueTime = nowElapsed;
-                                this.jobSet.add(js);
+                                try {
+                                    this.jobSet.add(js);
+                                } catch (IllegalStateException ise) {
+                                    // Failed to add the job. Drop it and continue.
+                                    Slog.wtf(TAG,
+                                            "Failed to restore persisted job due to:\n" + ise);
+                                    continue;
+                                }
 
                                 numJobs++;
                                 if (js.getUid() == Process.SYSTEM_UID) {
@@ -1749,6 +1764,8 @@ public final class JobStore {
             JobWorkItem.Builder jwiBuilder = new JobWorkItem.Builder();
 
             jwiBuilder
+                    .setEstimatedSizeBytes(parser.getAttributeInt(null,
+                            "estimated-size-bytes", JobWorkItem.SIZE_BYTES_UNKNOWN))
                     .setDeliveryCount(parser.getAttributeInt(null, "delivery-count"))
                     .setEstimatedNetworkBytes(
                             parser.getAttributeLong(null,
@@ -1804,7 +1821,7 @@ public final class JobStore {
 
     /** Set of all tracked jobs. */
     @VisibleForTesting
-    public static final class JobSet {
+    public static final class JobSet implements JobStatus.JobWorkItemChangeListener {
         private static final int MAX_JOBS_TO_REPORT_IN_DEBUG_STRING = 5;
 
         @VisibleForTesting // Key is the getUid() originator of the jobs in each sheaf
@@ -1812,6 +1829,8 @@ public final class JobStore {
 
         @VisibleForTesting // Same data but with the key as getSourceUid() of the jobs in each sheaf
         final SparseArray<ArraySet<JobStatus>> mJobsPerSourceUid;
+
+        private final SparseIntArray mUidCumulativeJobWorkItemSize = new SparseIntArray();
 
         public JobSet() {
             mJobs = new SparseArray<ArraySet<JobStatus>>();
@@ -1848,6 +1867,26 @@ public final class JobStore {
         public boolean add(JobStatus job) {
             final int uid = job.getUid();
             final int sourceUid = job.getSourceUid();
+
+            if (Flags.limitPerUidCumulativeWorkitemSize()) {
+                // Accumulate any existing JobWorkItems attached to the Job
+                if (job.pendingWork != null) {
+                    for (JobWorkItem work : job.pendingWork) {
+                        incrementWorkItemSize(uid, work);
+                    }
+                }
+                // There is probably zero executing work on this newly added Job, but might as
+                // well check.
+                if (job.executingWork != null) {
+                    for (JobWorkItem work : job.executingWork) {
+                        incrementWorkItemSize(uid, work);
+                    }
+                }
+                // Now that all existing JobWorkItems are accounted for, listen to all future
+                // JobWorkItem adds and removes.
+                job.setJobWorkItemChangeListener(this);
+            }
+
             ArraySet<JobStatus> jobs = mJobs.get(uid);
             if (jobs == null) {
                 jobs = new ArraySet<JobStatus>();
@@ -1874,6 +1913,22 @@ public final class JobStore {
             final ArraySet<JobStatus> jobsForSourceUid = mJobsPerSourceUid.get(sourceUid);
             final boolean didRemove = jobs != null && jobs.remove(job);
             final boolean sourceRemove = jobsForSourceUid != null && jobsForSourceUid.remove(job);
+
+            if (Flags.limitPerUidCumulativeWorkitemSize()) {
+                // Subtract the impact of any existing JobWorkItems attached to the Job.
+                if (job.pendingWork != null) {
+                    for (JobWorkItem work : job.pendingWork) {
+                        decrementWorkItemSize(uid, work);
+                    }
+                }
+                if (job.executingWork != null) {
+                    for (JobWorkItem work : job.executingWork) {
+                        decrementWorkItemSize(uid, work);
+                    }
+                }
+                job.setJobWorkItemChangeListener(null);
+            }
+
             if (didRemove != sourceRemove) {
                 Slog.wtf(TAG, "Job presence mismatch; caller=" + didRemove
                         + " source=" + sourceRemove);
@@ -2063,6 +2118,105 @@ public final class JobStore {
             }
 
             return sb.toString();
+        }
+
+        @Override
+        public void onJobWorkItemAdd(int uid, JobWorkItem work) {
+            incrementWorkItemSize(uid, work);
+        }
+
+        @Override
+        public void onJobWorkItemRemoved(int uid, JobWorkItem work) {
+            decrementWorkItemSize(uid, work);
+
+        }
+
+        @GuardedBy("mLock")
+        private void incrementWorkItemSize(int uid, JobWorkItem work) {
+            if (!Flags.limitPerUidCumulativeWorkitemSize()) return;
+            if (work == null) return;
+            final int size = work.getEstimatedSizeBytes();
+            if (size < 0) {
+                // Per JobWorkItem#getByteSizeEstimate, this object must be from the system_server
+                // process. It would be expensive to evaluate the size of this JobWorkItem, and
+                // it is probably not a good idea to limit system_server, so move on.
+                return;
+            }
+            if (size > TOTAL_JOB_WORK_ITEM_SIZE_LIMIT) {
+                throw new IllegalStateException(
+                        "JobWorkItem size from uid" + uid + " exceeds the "
+                                + TOTAL_JOB_WORK_ITEM_SIZE_LIMIT + "B limit.");
+            }
+            int index = mUidCumulativeJobWorkItemSize.indexOfKey(uid);
+            if (index < 0) {
+                // first JobWorkItem and it alone does not exceed the limit, add it and move on.
+                mUidCumulativeJobWorkItemSize.put(uid, size);
+                return;
+            }
+            int totalSize = size + mUidCumulativeJobWorkItemSize.valueAt(index);
+            if (totalSize > TOTAL_JOB_WORK_ITEM_SIZE_LIMIT) {
+                throw new IllegalStateException(
+                        "Cumulative JobWorkItem size from uid " + uid + " exceeds the "
+                                + TOTAL_JOB_WORK_ITEM_SIZE_LIMIT + "B limit.");
+            }
+            mUidCumulativeJobWorkItemSize.setValueAt(index, totalSize);
+        }
+
+        @GuardedBy("mLock")
+        private void decrementWorkItemSize(int uid, JobWorkItem work) {
+            if (!Flags.limitPerUidCumulativeWorkitemSize()) return;
+            if (work == null) return;
+            final int size = work.getEstimatedSizeBytes();
+            if (size < 0) {
+                // Per JobWorkItem#getByteSizeEstimate, this object must be from the system_server
+                // process. It would be expensive to evaluate the size of this JobWorkItem, and
+                // it is probably not a good idea to limit system_server, so move on.
+                return;
+            }
+            int index = mUidCumulativeJobWorkItemSize.indexOfKey(uid);
+            if (index < 0) {
+                Slog.wtfStack(TAG, "Attempted to decrement cumulative work item size for an "
+                        + "untracked uid!");
+                return;
+            }
+            int totalSize = mUidCumulativeJobWorkItemSize.valueAt(index) - size;
+            if (totalSize < 0) {
+                Slog.wtfStack(TAG, "Attempted to decrement cumulative work item size results in a "
+                        + " negative total size!");
+                // Attempt to repair...
+                totalSize = 0;
+            }
+            mUidCumulativeJobWorkItemSize.setValueAt(index, totalSize);
+        }
+
+        /**
+         * Dump stats about memory held for JobWorkItems from apps.
+         */
+        public void dumpCumulativeJobWorkItemSizes(IndentingPrintWriter ipw) {
+            if (!Flags.limitPerUidCumulativeWorkitemSize()) return;
+            ipw.println("Cumulative JobWorkItem sizes:");
+            ipw.increaseIndent();
+            ipw.print("Limit: ");
+            ipw.print(TOTAL_JOB_WORK_ITEM_SIZE_LIMIT);
+            ipw.println(" bytes");
+            boolean anyPrinted = false;
+            for (int i = 0, size = mUidCumulativeJobWorkItemSize.size(); i < size; i++) {
+                final int uid = mUidCumulativeJobWorkItemSize.keyAt(i);
+                final int jwiSize = mUidCumulativeJobWorkItemSize.valueAt(i);
+
+                if (jwiSize == 0) continue;
+                anyPrinted = true;
+
+                ipw.print("uid:");
+                ipw.print(uid);
+                ipw.print(" size:");
+                ipw.print(jwiSize);
+                ipw.println(" bytes");
+            }
+            if (!anyPrinted) {
+                ipw.println("(none)");
+            }
+            ipw.decreaseIndent();
         }
     }
 }

@@ -36,6 +36,7 @@ import static com.android.server.job.JobSchedulerService.ACTIVE_INDEX;
 import static com.android.server.job.JobSchedulerService.RARE_INDEX;
 import static com.android.server.job.JobSchedulerService.sElapsedRealtimeClock;
 import static com.android.server.job.JobSchedulerService.sUptimeMillisClock;
+import static com.android.server.job.JobStore.TOTAL_JOB_WORK_ITEM_SIZE_LIMIT;
 import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_BACK_OFF_POLICY_TYPE;
 import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_DEADLINE_MS;
 import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_DELAY_MS;
@@ -107,7 +108,9 @@ import android.os.BatteryManager;
 import android.os.BatteryManagerInternal;
 import android.os.BatteryManagerInternal.ChargingPolicyChangeListener;
 import android.os.Looper;
+import android.os.Parcel;
 import android.os.ParcelDuration;
+import android.os.PersistableBundle;
 import android.os.Process;
 import android.os.RemoteException;
 import android.os.ServiceManager;
@@ -153,6 +156,7 @@ import org.mockito.quality.Strictness;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.ZoneOffset;
+import java.util.Arrays;
 import java.util.Map;
 
 public class JobSchedulerServiceTest {
@@ -3144,4 +3148,70 @@ public class JobSchedulerServiceTest {
         }
     }
 
+    @Test
+    @EnableFlags(com.android.server.job.Flags.FLAG_LIMIT_PER_UID_CUMULATIVE_WORKITEM_SIZE)
+    public void testTotalJobWorkItemSizeLimit_scheduleJobWorkItems() {
+        final int divisor = 5;
+        final int largeStringSize = TOTAL_JOB_WORK_ITEM_SIZE_LIMIT / divisor;
+
+        final JobInfo job = createJobInfo().setPersisted(false).build();
+        // Create a JobWorkItem with a really long string.
+        final PersistableBundle extras = new PersistableBundle();
+        extras.putString("really_long_string", largeString(largeStringSize));
+        final JobWorkItem item = new JobWorkItem.Builder()
+                .setExtras(extras)
+                .build();
+        // Simulate a transaction by parcelling and unparcelling the JobWorkItem
+        Parcel p = Parcel.obtain();
+        item.writeToParcel(p, 0);
+        p.setDataPosition(0);
+        final JobWorkItem transactedItem = JobWorkItem.CREATOR.createFromParcel(p);
+        try {
+            // Strings can be encoded down to 8 bits per character, guarantee hitting the total
+            // size limit be scheduling N + 1 Jobs with JobWorkItems of size >= limit / N.
+            for (int i = 0; i < divisor + 1; ++i) {
+                mService.scheduleAsPackage(job, transactedItem, TEST_UID,
+                        job.getService().getPackageName(),
+                        0, "JSSTest", "");
+            }
+            fail("Excessive JobWorkItem scheduling should have triggered an "
+                    + "IllegalStateException.");
+        } catch (IllegalStateException ise) {
+            // Success
+        }
+    }
+
+    @Test
+    @EnableFlags(com.android.server.job.Flags.FLAG_LIMIT_PER_UID_CUMULATIVE_WORKITEM_SIZE)
+    public void testTotalJobWorkItemSizeLimit_multipleApps() {
+        final int divisor = 5;
+        final int largeStringSize = TOTAL_JOB_WORK_ITEM_SIZE_LIMIT / divisor;
+
+        final JobInfo job = createJobInfo().setPersisted(false).build();
+        // Create a JobWorkItem with a really long string.
+        final PersistableBundle extras = new PersistableBundle();
+        extras.putString("really_long_string", largeString(largeStringSize));
+        final JobWorkItem item = new JobWorkItem.Builder()
+                .setExtras(extras)
+                .build();
+        // Simulate a transaction by parcelling and unparcelling the JobWorkItem
+        Parcel p = Parcel.obtain();
+        item.writeToParcel(p, 0);
+        p.setDataPosition(0);
+        final JobWorkItem transactedItem = JobWorkItem.CREATOR.createFromParcel(p);
+
+        // Schedule several large JobWorkItems from different apps. None should hit the size limit.
+        for (int i = 0; i < divisor + 1; ++i) {
+            assertEquals(JobScheduler.RESULT_SUCCESS,
+                    mService.scheduleAsPackage(job, transactedItem, TEST_UID + i,
+                            job.getService().getPackageName(),
+                            0, "JSSTest", ""));
+        }
+    }
+
+    String largeString(int length) {
+        char[] manyChars = new char[length];
+        Arrays.fill(manyChars, 'A');
+        return new String(manyChars);
+    }
 }

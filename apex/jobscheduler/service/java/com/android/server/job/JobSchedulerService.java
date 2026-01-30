@@ -6371,6 +6371,8 @@ public class JobSchedulerService extends com.android.server.SystemService
             }
             pw.decreaseIndent();
 
+            mJobs.mJobSet.dumpCumulativeJobWorkItemSizes(pw);
+
             for (int i = 0; i < mControllers.size(); i++) {
                 pw.println();
                 pw.println(mControllers.get(i).getClass().getSimpleName() + ":");
