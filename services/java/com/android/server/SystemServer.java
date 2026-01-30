@@ -125,6 +125,7 @@ import com.android.internal.widget.ILockSettings;
 import com.android.server.accessibility.AccessibilityManagerService;
 import com.android.server.accounts.AccountManagerService;
 import com.android.server.adb.AdbService;
+import com.android.server.aiseal.AiSealSystemService;
 import com.android.server.alarm.AlarmManagerService;
 import com.android.server.am.ActivityManagerService;
 import com.android.server.ambientcontext.AmbientContextManagerService;
@@ -3001,6 +3002,16 @@ public final class SystemServer implements Dumpable {
             t.traceBegin("StartOnDevicePersonalizationSystemService");
             mSystemServiceManager.startService(ON_DEVICE_PERSONALIZATION_SYSTEM_SERVICE_CLASS);
             t.traceEnd();
+        }
+
+        // AiSeal
+        if (mPackageManager.hasSystemFeature(PackageManager.FEATURE_AISEAL)) {
+            t.traceBegin("StartAiSealSystemService");
+            try {
+                mSystemServiceManager.startService(AiSealSystemService.class);
+            } finally {
+                t.traceEnd();
+            }
         }
 
         // Profiling
