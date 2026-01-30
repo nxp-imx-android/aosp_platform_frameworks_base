@@ -876,7 +876,7 @@ android_app {
         "platform_app_defaults",
         "SystemUI_optimized_defaults",
     ],
-    package_name: "com.android.systemui.tests.robo",
+    manifest: "AndroidManifest-robo.xml",
 
     static_libs: [
         "//frameworks/libs/systemui:compilelib",
