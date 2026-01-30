@@ -39,6 +39,11 @@ import static android.media.AudioSystem.isBluetoothScoOutDevice;
 import static com.android.media.audio.Flags.equalScoHaVcIndexRange;
 import static com.android.media.audio.Flags.equalScoLeaVcIndexRange;
 import static com.android.media.audio.Flags.optimizeBtDeviceSwitch;
+import static com.android.media.audio.metrics.AudioAtomsLog.HFP_AUDIO_DISCONNECT_REPORTED__REASON__HFP_AUDIO_DISCONNECT_REASON_CODEC_NEGOTIATION_FAILED;
+import static com.android.media.audio.metrics.AudioAtomsLog.HFP_AUDIO_DISCONNECT_REPORTED__REASON__HFP_AUDIO_DISCONNECT_REASON_INTERNAL_ERROR;
+import static com.android.media.audio.metrics.AudioAtomsLog.HFP_AUDIO_DISCONNECT_REPORTED__REASON__HFP_AUDIO_DISCONNECT_REASON_PRECONDITION_FAILED;
+import static com.android.media.audio.metrics.AudioAtomsLog.HFP_AUDIO_DISCONNECT_REPORTED__REASON__HFP_AUDIO_DISCONNECT_REASON_REMOTE_INITIATED;
+import static com.android.media.audio.metrics.AudioAtomsLog.HFP_AUDIO_DISCONNECT_REPORTED__REASON__HFP_AUDIO_DISCONNECT_REASON_UNKNOWN;
 import static com.android.server.audio.AudioService.BT_COMM_DEVICE_ACTIVE_BLE_HEADSET;
 import static com.android.server.audio.AudioService.BT_COMM_DEVICE_ACTIVE_BLE_SPEAKER;
 import static com.android.server.audio.AudioService.BT_COMM_DEVICE_ACTIVE_HA;
@@ -94,6 +99,7 @@ import android.util.PrintWriterPrinter;
 import android.util.Slog;
 
 import com.android.internal.annotations.GuardedBy;
+import com.android.media.audio.metrics.AudioAtomsLog;
 import com.android.server.audio.AudioService.BtCommDeviceActiveType;
 import com.android.server.utils.EventLogger;
 
@@ -2721,7 +2727,22 @@ public class AudioDeviceBroker {
 
     @GuardedBy("mDeviceStateLock")
     private void onHfpAudioDisconnected(BluetoothDevice device, int reason) {
-        // TODO: reason metrics
+        int protoReason = switch (reason) {
+            case AudioManager.HFP_AUDIO_DISCONNECT_REMOTE_INITIATED ->
+                HFP_AUDIO_DISCONNECT_REPORTED__REASON__HFP_AUDIO_DISCONNECT_REASON_REMOTE_INITIATED;
+            case AudioManager.HFP_AUDIO_DISCONNECT_CODEC_NEGOTIATION_FAILED ->
+                HFP_AUDIO_DISCONNECT_REPORTED__REASON__HFP_AUDIO_DISCONNECT_REASON_CODEC_NEGOTIATION_FAILED;
+            case AudioManager.HFP_AUDIO_DISCONNECT_PRECONDITION_FAILED ->
+                HFP_AUDIO_DISCONNECT_REPORTED__REASON__HFP_AUDIO_DISCONNECT_REASON_PRECONDITION_FAILED;
+            case AudioManager.HFP_AUDIO_DISCONNECT_INTERNAL_ERROR ->
+                HFP_AUDIO_DISCONNECT_REPORTED__REASON__HFP_AUDIO_DISCONNECT_REASON_INTERNAL_ERROR;
+            default -> HFP_AUDIO_DISCONNECT_REPORTED__REASON__HFP_AUDIO_DISCONNECT_REASON_UNKNOWN;
+        };
+
+        AudioAtomsLog.write(AudioAtomsLog.HFP_AUDIO_DISCONNECT_REPORTED,
+                safeUidFromAttributionSource(bluetoothScoRequestOwnerAttributionSource()),
+                protoReason,
+                isBluetoothScoRequested());
         // Since we currently operate on device types within the stack for BT,
         // unconditionally remove any preference for a SCO device
         final AttributionSource previousBtScoRequesterAS =
