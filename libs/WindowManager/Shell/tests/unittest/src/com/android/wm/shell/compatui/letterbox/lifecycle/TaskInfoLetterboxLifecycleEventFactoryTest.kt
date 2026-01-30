@@ -51,7 +51,6 @@ import org.mockito.kotlin.mock
  */
 @RunWith(AndroidTestingRunner::class)
 @SmallTest
-@EnableFlags(Flags.FLAG_APP_COMPAT_REFACTORING)
 class TaskInfoLetterboxLifecycleEventFactoryTest : ShellTestCase() {
 
     @Test

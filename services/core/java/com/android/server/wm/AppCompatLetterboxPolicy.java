@@ -40,7 +40,6 @@ import android.view.SurfaceControl;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.statusbar.LetterboxDetails;
 import com.android.server.wm.AppCompatConfiguration.LetterboxBackgroundType;
-import com.android.window.flags.Flags;
 
 import java.io.PrintWriter;
 
@@ -74,8 +73,7 @@ class AppCompatLetterboxPolicy {
     AppCompatLetterboxPolicy(@NonNull ActivityRecord  activityRecord,
             @NonNull AppCompatConfiguration appCompatConfiguration) {
         mActivityRecord = activityRecord;
-        mLetterboxPolicyState = Flags.appCompatRefactoring() ? new ShellLetterboxPolicyState()
-                : new LegacyLetterboxPolicyState();
+        mLetterboxPolicyState = new ShellLetterboxPolicyState();
         mAppCompatRoundedCorners = new AppCompatRoundedCorners(mActivityRecord,
                 this::ieEligibleForRoundedCorners);
         mAppCompatConfiguration = appCompatConfiguration;
