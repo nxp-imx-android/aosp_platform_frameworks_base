@@ -2986,8 +2986,20 @@ public class WindowManagerService extends IWindowManager.Stub
                         "Set animatingExit: reason=startExitingAnimation/%s win=%s", reason, win);
             }
         }
-        if (!win.mAnimatingExit) {
-            boolean stopped = win.mActivityRecord == null || win.mActivityRecord.mAppStopped;
+
+        final ActivityRecord activity = win.mActivityRecord;
+        // Do not mark as destroying if the activity is requested to be visible. This prevents a
+        // late "relayout to invisible" request from making the window invisible when the app is
+        // already being brought back to the foreground.
+        final boolean isReappearing = Flags.avoidIntermediateDestroyingState() && activity != null
+                && activity.isVisibleRequested() && !activity.isVisible()
+                && win.mAttrs.type == WindowManager.LayoutParams.TYPE_BASE_APPLICATION
+                && win.mTransitionController.isCollecting(activity);
+        if (isReappearing) {
+            ProtoLog.d(WM_DEBUG_ANIM, "tryStartExitingAnimation: reappearing %s", win);
+        }
+        if (!isReappearing && !win.mAnimatingExit) {
+            final boolean stopped = activity == null || activity.mAppStopped;
             // We set mDestroying=true so ActivityRecord#notifyAppStopped in-to destroy surfaces
             // will later actually destroy the surface if we do not do so here. Normally we leave
             // this to the exit animation.
