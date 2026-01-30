@@ -1301,6 +1301,16 @@ flag {
 }
 
 flag {
+    name: "skip_kill_process_for_desktop_task_core_close_transition"
+    namespace: "lse_desktop_experience"
+    description: "Don't force-kill processes of Desktop tasks closed through core transitions."
+    bug: "438483836"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "toggle_fullscreen_state_via_fullscreen_key"
     namespace: "lse_desktop_experience"
     description: "Toggles the focused task's fullscreen state when the fullscreen key is pressed."

@@ -1247,6 +1247,7 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
             case HIERARCHY_OP_TYPE_REMOVE_TASK: {
                 final WindowContainer wc = WindowContainer.fromBinder(hop.getContainer());
                 final boolean removeFromRecents = hop.getRemoveFromRecents();
+                final boolean killProcess = hop.getKillProcess();
                 if (wc == null || wc.asTask() == null || !wc.isAttached()) {
                     Slog.e(TAG, "Attempt to remove invalid task: " + wc);
                     break;
@@ -1257,7 +1258,8 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                 }
                 if (task.isLeafTask()) {
                     mService.mTaskSupervisor
-                            .removeTask(task, true, /* removeFromRecents= */ removeFromRecents,
+                            .removeTask(task, killProcess,
+                                    /* removeFromRecents= */ removeFromRecents,
                                     "remove-task-through-hierarchyOp");
                 } else {
                     mService.mTaskSupervisor.removeRootTask(task);
