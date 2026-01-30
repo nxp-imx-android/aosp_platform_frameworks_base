@@ -16,8 +16,8 @@
 
 package com.android.wm.shell.bubbles.user.data
 
+import com.android.users.UserType
 import com.android.wm.shell.bubbles.user.model.BubbleUserInfo
-import com.android.wm.shell.shared.bubbles.UserType
 
 /** A fake implementation of [BubbleUserResolver]. */
 class FakeBubbleUserResolver : BubbleUserResolver {
