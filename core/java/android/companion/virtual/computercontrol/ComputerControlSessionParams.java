@@ -19,6 +19,7 @@ package android.companion.virtual.computercontrol;
 import android.annotation.Nullable;
 import android.annotation.NonNull;
 import android.app.PendingIntent;
+import android.app.AppInteractionAttribution;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -35,13 +36,17 @@ public final class ComputerControlSessionParams implements Parcelable {
     private final String mName;
     private final List<String> mTargetPackageNames;
     private final PendingIntent mPreviewIntent;
+    private final AppInteractionAttribution mAppInteractionAttribution;
 
     private ComputerControlSessionParams(
-            @NonNull String name, @NonNull List<String> targetPackageNames,
-            @Nullable PendingIntent previewIntent) {
+            @NonNull String name,
+            @NonNull List<String> targetPackageNames,
+            @Nullable PendingIntent previewIntent,
+            @Nullable AppInteractionAttribution appInteractionAttribution) {
         mName = name;
         mTargetPackageNames = targetPackageNames;
         mPreviewIntent = previewIntent;
+        mAppInteractionAttribution = appInteractionAttribution;
     }
 
     private ComputerControlSessionParams(Parcel parcel) {
@@ -49,6 +54,7 @@ public final class ComputerControlSessionParams implements Parcelable {
         mTargetPackageNames = new ArrayList<>();
         parcel.readStringList(mTargetPackageNames);
         mPreviewIntent = parcel.readTypedObject(PendingIntent.CREATOR);
+        mAppInteractionAttribution = parcel.readTypedObject(AppInteractionAttribution.CREATOR);
     }
 
     /** Returns the name of this computer control session. */
@@ -72,6 +78,14 @@ public final class ComputerControlSessionParams implements Parcelable {
         return mPreviewIntent;
     }
 
+    /**
+     * Returns the attribution for the app interaction that triggered the creation of this session.
+     */
+    @Nullable
+    public AppInteractionAttribution getAppInteractionAttribution() {
+        return mAppInteractionAttribution;
+    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -82,28 +96,31 @@ public final class ComputerControlSessionParams implements Parcelable {
         dest.writeString8(mName);
         dest.writeStringList(mTargetPackageNames);
         dest.writeTypedObject(mPreviewIntent, flags);
+        dest.writeTypedObject(mAppInteractionAttribution, flags);
     }
 
     @NonNull
-    public static final Creator<ComputerControlSessionParams> CREATOR = new Creator<>() {
-        @Override
-        @NonNull
-        public ComputerControlSessionParams createFromParcel(@NonNull Parcel in) {
-            return new ComputerControlSessionParams(in);
-        }
+    public static final Creator<ComputerControlSessionParams> CREATOR =
+            new Creator<>() {
+                @Override
+                @NonNull
+                public ComputerControlSessionParams createFromParcel(@NonNull Parcel in) {
+                    return new ComputerControlSessionParams(in);
+                }
 
-        @Override
-        @NonNull
-        public ComputerControlSessionParams[] newArray(int size) {
-            return new ComputerControlSessionParams[size];
-        }
-    };
+                @Override
+                @NonNull
+                public ComputerControlSessionParams[] newArray(int size) {
+                    return new ComputerControlSessionParams[size];
+                }
+            };
 
     /** Builder for {@link ComputerControlSessionParams}. */
     public static final class Builder {
         private String mName;
         private List<String> mTargetPackageNames;
         private PendingIntent mPreviewIntent;
+        private AppInteractionAttribution mAppInteractionAttribution;
 
         /**
          * Sets the name of this computer control session.
@@ -124,9 +141,10 @@ public final class ComputerControlSessionParams implements Parcelable {
          * Set the package names of all applications that may be automated during this session.
          *
          * <p>All package names specified in the list must meet the following requirements:
+         *
          * <ol>
-         *     <li>The package name has a valid launcher Intent.</li>
-         *     <li>The package name is not the device permission controller.</li>
+         *   <li>The package name has a valid launcher Intent.
+         *   <li>The package name is not the device permission controller.
          * </ol>
          */
         @NonNull
@@ -151,6 +169,19 @@ public final class ComputerControlSessionParams implements Parcelable {
         }
 
         /**
+         * Sets the attribution for the app interaction that triggered the creation of this session.
+         *
+         * @param appInteractionAttribution The attribution for the app interaction.
+         * @return This builder.
+         */
+        @NonNull
+        public Builder setAppInteractionAttribution(
+                @Nullable AppInteractionAttribution appInteractionAttribution) {
+            mAppInteractionAttribution = appInteractionAttribution;
+            return this;
+        }
+
+        /**
          * Builds the {@link ComputerControlSessionParams} instance.
          *
          * @return The built {@link ComputerControlSessionParams}.
@@ -164,7 +195,8 @@ public final class ComputerControlSessionParams implements Parcelable {
             if (mTargetPackageNames == null || mTargetPackageNames.isEmpty()) {
                 throw new IllegalArgumentException("Target package names must be set");
             }
-            return new ComputerControlSessionParams(mName, mTargetPackageNames, mPreviewIntent);
+            return new ComputerControlSessionParams(
+                    mName, mTargetPackageNames, mPreviewIntent, mAppInteractionAttribution);
         }
     }
 }

@@ -59,6 +59,7 @@ import static org.mockito.Mockito.when;
 
 import android.annotation.SuppressLint;
 import android.app.ActivityOptions;
+import android.app.AppInteractionAttribution;
 import android.app.AppOpsManager;
 import android.app.IApplicationThread;
 import android.companion.virtual.ActivityPolicyExemption;
@@ -164,6 +165,11 @@ public class ComputerControlSessionImplTest {
             TARGET_CLASS);
     private static final ComponentName BLOCKED_COMPONENT = new ComponentName(
             UNDECLARED_TARGET_PACKAGE, ".Activity");
+    private static final AppInteractionAttribution APP_INTERACTION_ATTRIBUTION =
+            new AppInteractionAttribution.Builder(
+                            AppInteractionAttribution.INTERACTION_TYPE_USER_QUERY)
+                    .build();
+
     @FunctionalInterface
     private interface Interactor {
         void interact(ComputerControlSessionImpl t) throws Exception;
@@ -263,6 +269,7 @@ public class ComputerControlSessionImplTest {
             new ComputerControlSessionParams.Builder()
                     .setName(ComputerControlSessionImplTest.class.getSimpleName())
                     .setTargetPackageNames(TARGET_PACKAGE_NAMES)
+                    .setAppInteractionAttribution(APP_INTERACTION_ATTRIBUTION)
                     .build();
     private final Context mContext =
             spy(new ContextWrapper(
@@ -938,7 +945,7 @@ public class ComputerControlSessionImplTest {
                 .noteAppInteraction(
                         eq(AGENT_PACKAGE),
                         eq(TEST_COMPONENT.getPackageName()),
-                        isNull(),
+                        eq(APP_INTERACTION_ATTRIBUTION),
                         anyLong(),
                         eq(USER_ID));
     }

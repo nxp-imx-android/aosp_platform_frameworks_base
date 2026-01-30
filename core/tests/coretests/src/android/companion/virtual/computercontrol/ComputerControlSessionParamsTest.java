@@ -21,6 +21,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import static org.junit.Assert.assertThrows;
 
+import android.app.AppInteractionAttribution;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.os.Parcel;
@@ -44,13 +45,23 @@ public class ComputerControlSessionParamsTest {
 
     @Test
     public void parcelable_shouldRecreateSuccessfully() {
-        PendingIntent previewIntent = PendingIntent.getActivity(
-                getApplicationContext(), 0, new Intent("PREVIEW"), PendingIntent.FLAG_IMMUTABLE);
-        ComputerControlSessionParams originalParams = new ComputerControlSessionParams.Builder()
-                .setName(SESSION_NAME)
-                .setTargetPackageNames(TARGET_PACKAGE_NAMES)
-                .setPreviewIntent(previewIntent)
-                .build();
+        PendingIntent previewIntent =
+                PendingIntent.getActivity(
+                        getApplicationContext(),
+                        0,
+                        new Intent("PREVIEW"),
+                        PendingIntent.FLAG_IMMUTABLE);
+        AppInteractionAttribution appInteractionAttribution =
+                new AppInteractionAttribution.Builder(
+                                AppInteractionAttribution.INTERACTION_TYPE_USER_QUERY)
+                        .build();
+        ComputerControlSessionParams originalParams =
+                new ComputerControlSessionParams.Builder()
+                        .setName(SESSION_NAME)
+                        .setTargetPackageNames(TARGET_PACKAGE_NAMES)
+                        .setPreviewIntent(previewIntent)
+                        .setAppInteractionAttribution(appInteractionAttribution)
+                        .build();
         Parcel parcel = Parcel.obtain();
         originalParams.writeToParcel(parcel, 0);
         parcel.setDataPosition(0);
@@ -60,14 +71,16 @@ public class ComputerControlSessionParamsTest {
         assertThat(params.getName()).isEqualTo(SESSION_NAME);
         assertThat(params.getTargetPackageNames()).containsExactlyElementsIn(TARGET_PACKAGE_NAMES);
         assertThat(params.getPreviewIntent()).isEqualTo(previewIntent);
+        assertThat(params.getAppInteractionAttribution()).isEqualTo(appInteractionAttribution);
     }
 
     @Test
     public void parcelable_unsetPreviewIntent_shouldRecreateSuccessfully() {
-        ComputerControlSessionParams originalParams = new ComputerControlSessionParams.Builder()
-                .setName(SESSION_NAME)
-                .setTargetPackageNames(TARGET_PACKAGE_NAMES)
-                .build();
+        ComputerControlSessionParams originalParams =
+                new ComputerControlSessionParams.Builder()
+                        .setName(SESSION_NAME)
+                        .setTargetPackageNames(TARGET_PACKAGE_NAMES)
+                        .build();
         Parcel parcel = Parcel.obtain();
         originalParams.writeToParcel(parcel, 0);
         parcel.setDataPosition(0);
@@ -80,29 +93,71 @@ public class ComputerControlSessionParamsTest {
     }
 
     @Test
-    public void build_unsetName_throwsException() {
-        assertThrows(IllegalArgumentException.class,
-                () -> new ComputerControlSessionParams.Builder()
+    public void parcelable_unsetAppInteractionAttribution_shouldRecreateSuccessfully() {
+        PendingIntent previewIntent =
+                PendingIntent.getActivity(
+                        getApplicationContext(),
+                        0,
+                        new Intent("PREVIEW"),
+                        PendingIntent.FLAG_IMMUTABLE);
+        ComputerControlSessionParams originalParams =
+                new ComputerControlSessionParams.Builder()
+                        .setName(SESSION_NAME)
                         .setTargetPackageNames(TARGET_PACKAGE_NAMES)
-                        .build());
+                        .setPreviewIntent(previewIntent)
+                        .setAppInteractionAttribution(null)
+                        .build();
+        Parcel parcel = Parcel.obtain();
+        originalParams.writeToParcel(parcel, 0);
+        parcel.setDataPosition(0);
+
+        ComputerControlSessionParams params =
+                ComputerControlSessionParams.CREATOR.createFromParcel(parcel);
+        assertThat(params.getName()).isEqualTo(SESSION_NAME);
+        assertThat(params.getTargetPackageNames()).containsExactlyElementsIn(TARGET_PACKAGE_NAMES);
+        assertThat(params.getPreviewIntent()).isEqualTo(previewIntent);
+        assertThat(params.getAppInteractionAttribution()).isNull();
+    }
+
+    @Test
+    public void build_unsetName_throwsException() {
+        assertThrows(
+                IllegalArgumentException.class,
+                () ->
+                        new ComputerControlSessionParams.Builder()
+                                .setTargetPackageNames(TARGET_PACKAGE_NAMES)
+                                .build());
     }
 
     @Test
     public void build_unsetTargetPackageNames_throwsException() {
-        assertThrows(IllegalArgumentException.class,
-                () -> new ComputerControlSessionParams.Builder()
-                        .setName(SESSION_NAME)
-                        .build());
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> new ComputerControlSessionParams.Builder().setName(SESSION_NAME).build());
     }
 
     @Test
     public void build_withNullPreviewIntent_setsPreviewIntentToNull() {
-        ComputerControlSessionParams params = new ComputerControlSessionParams.Builder()
-                .setName(SESSION_NAME)
-                .setTargetPackageNames(TARGET_PACKAGE_NAMES)
-                .setPreviewIntent(null)
-                .build();
+        ComputerControlSessionParams params =
+                new ComputerControlSessionParams.Builder()
+                        .setName(SESSION_NAME)
+                        .setTargetPackageNames(TARGET_PACKAGE_NAMES)
+                        .setPreviewIntent(null)
+                        .build();
 
         assertThat(params.getPreviewIntent()).isNull();
+    }
+
+    @Test
+    public void build_withNullAppInteractionAttribution_setsAppInteractionAttributionToNull() {
+        ComputerControlSessionParams params =
+                new ComputerControlSessionParams.Builder()
+                        .setName(SESSION_NAME)
+                        .setTargetPackageNames(TARGET_PACKAGE_NAMES)
+                        .setAppInteractionAttribution(null)
+                        .build();
+
+        // Ensure this doesn't throw for backwards compatibility.
+        assertThat(params.getAppInteractionAttribution()).isNull();
     }
 }

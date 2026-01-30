@@ -94,6 +94,7 @@ public class ComputerControlExtensions {
                         .setName(params.getName())
                         .setTargetPackageNames(params.getTargetPackageNames())
                         .setPreviewIntent(params.getPreviewIntent())
+                        .setAppInteractionAttribution(params.getAppInteractionAttribution())
                         .build();
 
         var sessionCallback =
