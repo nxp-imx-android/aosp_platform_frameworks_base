@@ -2040,8 +2040,7 @@ public final class DisplayManagerService extends SystemService {
         }
 
         if ((flags & VIRTUAL_DISPLAY_FLAG_ALLOWS_CONTENT_MODE_SWITCH) != 0) {
-            // TODO(b/474207070): Support VDM displays
-            if (virtualDevice != null) {
+            if (virtualDevice != null && !Flags.virtualDisplaysSupportDesktopMode()) {
                 Slog.d(TAG, "Virtual displays associated with virtual device currently don't "
                         + "support content mode switch, hence ignoring "
                         + "VIRTUAL_DISPLAY_FLAG_ALLOWS_CONTENT_MODE_SWITCH");
