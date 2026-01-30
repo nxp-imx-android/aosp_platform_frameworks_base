@@ -132,7 +132,6 @@ import com.android.server.UiThread;
 import com.android.server.inputmethod.InputMethodManagerInternal;
 import com.android.server.notification.NotificationDelegate;
 import com.android.server.pm.UserManagerInternal;
-import com.android.server.pm.UserManagerService;
 import com.android.server.policy.GlobalActionsProvider;
 import com.android.server.power.ShutdownCheckPoints;
 import com.android.server.power.ShutdownThread;
@@ -229,7 +228,6 @@ public class StatusBarManagerService extends IStatusBarService.Stub implements D
     private IOverlayManager mOverlayManager;
 
     private final boolean mVisibleBackgroundUsersEnabled;
-    private final UserManagerService mUserManager;
 
     private class DeathRecipient implements IBinder.DeathRecipient {
         public void binderDied() {
@@ -366,7 +364,6 @@ public class StatusBarManagerService extends IStatusBarService.Stub implements D
         mSessionMonitor = new SessionMonitor(mContext);
 
         mVisibleBackgroundUsersEnabled = isVisibleBackgroundUsersEnabled();
-        mUserManager = UserManagerService.getInstance();
     }
 
     /**
