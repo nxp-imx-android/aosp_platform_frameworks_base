@@ -7387,6 +7387,8 @@ public abstract class Context {
     @CheckResult(suggest="#enforcePermission(String,int,int,String)")
     @PackageManager.PermissionResult
     @PermissionMethod
+    @RavenwoodSupported(type = SupportType.SUBCLASS, subclass = "ContextImpl",
+            comment = "Returns PERMISSION_DENIED by default on Ravenwood")
     public abstract int checkPermission(
             @NonNull @PermissionName String permission, int pid, int uid);
 
@@ -7394,6 +7396,8 @@ public abstract class Context {
     @SuppressWarnings("HiddenAbstractMethod")
     @PackageManager.PermissionResult
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
+    @RavenwoodSupported(type = SupportType.SUBCLASS, subclass = "ContextImpl",
+            comment = "Returns PERMISSION_DENIED by default on Ravenwood")
     public abstract int checkPermission(@NonNull String permission, int pid, int uid,
             IBinder callerToken);
 
@@ -7421,6 +7425,8 @@ public abstract class Context {
     @CheckResult(suggest="#enforceCallingPermission(String,String)")
     @PackageManager.PermissionResult
     @PermissionMethod
+    @RavenwoodSupported(type = SupportType.SUBCLASS, subclass = "ContextImpl",
+            comment = "Returns PERMISSION_DENIED by default on Ravenwood")
     public abstract int checkCallingPermission(@NonNull @PermissionName String permission);
 
     /**
@@ -7442,6 +7448,8 @@ public abstract class Context {
     @CheckResult(suggest="#enforceCallingOrSelfPermission(String,String)")
     @PackageManager.PermissionResult
     @PermissionMethod(orSelf = true)
+    @RavenwoodSupported(type = SupportType.SUBCLASS, subclass = "ContextImpl",
+            comment = "Returns PERMISSION_DENIED by default on Ravenwood")
     public abstract int checkCallingOrSelfPermission(@NonNull @PermissionName String permission);
 
     /**
@@ -7456,6 +7464,8 @@ public abstract class Context {
      * @see #checkCallingPermission(String)
      */
     @PackageManager.PermissionResult
+    @RavenwoodSupported(type = SupportType.SUBCLASS, subclass = "ContextImpl",
+            comment = "Returns PERMISSION_DENIED by default on Ravenwood")
     public abstract int checkSelfPermission(@NonNull String permission);
 
     /**
@@ -7471,6 +7481,8 @@ public abstract class Context {
      * @see #checkPermission(String, int, int)
      */
     @PermissionMethod
+    @RavenwoodSupported(type = SupportType.SUBCLASS, subclass = "ContextImpl",
+            comment = "Returns PERMISSION_DENIED by default on Ravenwood")
     public abstract void enforcePermission(
             @NonNull @PermissionName String permission, int pid, int uid, @Nullable String message);
 
@@ -7493,6 +7505,8 @@ public abstract class Context {
      * @see #checkCallingPermission(String)
      */
     @PermissionMethod
+    @RavenwoodSupported(type = SupportType.SUBCLASS, subclass = "ContextImpl",
+            comment = "Returns PERMISSION_DENIED by default on Ravenwood")
     public abstract void enforceCallingPermission(
             @NonNull @PermissionName String permission, @Nullable String message);
 
@@ -7510,6 +7524,8 @@ public abstract class Context {
      * @see #checkCallingOrSelfPermission(String)
      */
     @PermissionMethod(orSelf = true)
+    @RavenwoodSupported(type = SupportType.SUBCLASS, subclass = "ContextImpl",
+            comment = "Returns PERMISSION_DENIED by default on Ravenwood")
     public abstract void enforceCallingOrSelfPermission(
             @NonNull @PermissionName String permission, @Nullable String message);
 
@@ -8192,6 +8208,7 @@ public abstract class Context {
      *
      * @return A {@link Context} with the given configuration override.
      */
+    @RavenwoodSupported(type = SupportType.SUBCLASS, subclass = "ContextImpl")
     public abstract Context createConfigurationContext(
             @NonNull Configuration overrideConfiguration);
 
@@ -8518,6 +8535,7 @@ public abstract class Context {
      * @hide
      */
     @SuppressWarnings("HiddenAbstractMethod")
+    @RavenwoodSupported(type = SupportType.SUBCLASS, subclass = "ContextImpl")
     public abstract DisplayAdjustments getDisplayAdjustments(int displayId);
 
     /**
@@ -8541,6 +8559,8 @@ public abstract class Context {
      * @hide
      */
     @Nullable
+    @RavenwoodSupported(type = SupportType.SUBCLASS, subclass = "ContextImpl",
+            comment = "Always returns null for now, until we fully support Display")
     public Display getDisplayNoVerify() {
         throw new RuntimeException("Not implemented. Must override in a subclass.");
     }
@@ -8554,6 +8574,8 @@ public abstract class Context {
      */
     @SuppressWarnings("HiddenAbstractMethod")
     @TestApi
+    @RavenwoodSupported(type = SupportType.SUBCLASS, subclass = "ContextImpl",
+            comment = "Always returns DEFAULT_DISPLAY for now, until we fully support Display")
     public abstract int getDisplayId();
 
     /**

@@ -20,17 +20,12 @@ import static android.os.Process.FIRST_APPLICATION_UID;
 import static com.android.ravenwood.common.RavenwoodInternalUtils.parseNullableInt;
 import static com.android.ravenwood.common.RavenwoodInternalUtils.withDefault;
 
-import static org.junit.Assert.assertNotNull;
-
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityThread;
 import android.app.LoadedApk;
 import android.app.RavenwoodAppDriver;
-import android.app.ResourcesManager;
-import android.content.res.Resources;
 import android.os.Build;
-import android.view.DisplayAdjustments;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.ravenwood.RavenwoodVmState;
@@ -124,9 +119,6 @@ public final class RavenwoodEnvironment {
 
     @GuardedBy("mLock")
     private final Map<String, File> mAppDataDirs = new HashMap<>();
-
-    @GuardedBy("mLock")
-    private final Map<String, Resources> mPackagesToResources = new HashMap<>();
 
     /**
      * Constructor. There should be only simple initialization here. More complicated
@@ -303,41 +295,6 @@ public final class RavenwoodEnvironment {
 
     public static RuntimeException makeUnknownPackageException(@Nullable String packageName) {
         return new RuntimeException("Unknown package name: " + packageName);
-    }
-
-    /**
-     * Get the resources for a given package's resources.
-     *
-     * @param packageName package name, or "android" to load the system resources.
-     */
-    public Resources loadResources(@NonNull String packageName) {
-        synchronized (mLock) {
-            final var cached = mPackagesToResources.get(packageName);
-            if (cached != null) {
-                return cached;
-            }
-            final var loaded = loadResourcesInnerLocked(packageName);
-            mPackagesToResources.put(packageName, loaded);
-            return loaded;
-        }
-    }
-
-    @GuardedBy("mLock")
-    private Resources loadResourcesInnerLocked(@NonNull String packageName) {
-        final var apk = getResourcesApkFile(packageName);
-        final var emptyPaths = new String[0];
-
-        ResourcesManager.getInstance().initializeApplicationPaths(
-                apk.getAbsolutePath(), emptyPaths);
-
-        final var ret = ResourcesManager.getInstance().getResources(null, apk.getAbsolutePath(),
-                emptyPaths, emptyPaths, emptyPaths,
-                emptyPaths, null, null,
-                new DisplayAdjustments().getCompatibilityInfo(),
-                RavenwoodDriver.class.getClassLoader(), null);
-
-        assertNotNull(ret);
-        return ret;
     }
 
     /**
