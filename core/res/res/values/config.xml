@@ -5278,6 +5278,9 @@
     -->
     <bool name="config_systemCaptionsServiceCallsEnabled" translatable="false"></bool>
 
+    <!-- Indicates whether the device supports easy reader caption settings. -->
+    <bool name="config_easyReaderCaptionsSupported">false</bool>
+
     <!-- The package name for the incident report approver app.
         This app is usually PermissionController or an app that replaces it.  When
         a bugreport or incident report with EXPLICT-level sharing flags is going to be

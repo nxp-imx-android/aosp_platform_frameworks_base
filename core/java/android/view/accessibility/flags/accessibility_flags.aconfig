@@ -163,6 +163,13 @@ flag {
 }
 
 flag {
+    name: "enable_captions_easy_reader"
+    namespace: "tv_os"
+    description: "Adds easy reader (simplified language) support to caption settings."
+    bug: "478309695"
+}
+
+flag {
     name: "enable_refresh_window_info"
     namespace: "accessibility"
     is_exported: true

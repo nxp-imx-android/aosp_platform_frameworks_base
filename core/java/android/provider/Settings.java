@@ -9549,6 +9549,7 @@ public final class Settings {
          * the following settings:
          * <ul>
          * <li>{@link #ACCESSIBILITY_CAPTIONING_LOCALE}
+         * <li>{@link #ACCESSIBILITY_CAPTIONING_EASY_READER_ENABLED}
          * <li>{@link #ACCESSIBILITY_CAPTIONING_BACKGROUND_COLOR}
          * <li>{@link #ACCESSIBILITY_CAPTIONING_FOREGROUND_COLOR}
          * <li>{@link #ACCESSIBILITY_CAPTIONING_EDGE_COLOR}
@@ -9575,6 +9576,16 @@ public final class Settings {
                 "accessibility_captioning_locale";
 
         /**
+         * Setting that specifies whether simplified language captions should be shown if possible,
+         * i.e. Easy Reader is enabled.
+         *
+         * @hide
+         */
+        @Readable
+        public static final String ACCESSIBILITY_CAPTIONING_EASY_READER_ENABLED =
+                "accessibility_captioning_easy_reader_enabled";
+
+        /**
          * Integer property that specifies the preset style for captions, one
          * of:
          * <ul>
@@ -9582,7 +9593,6 @@ public final class Settings {
          * <li>a valid index of {@link android.view.accessibility.CaptioningManager.CaptionStyle#PRESETS}
          * </ul>
          *
-         * @see java.util.Locale#toString
          * @hide
          */
         @Readable
