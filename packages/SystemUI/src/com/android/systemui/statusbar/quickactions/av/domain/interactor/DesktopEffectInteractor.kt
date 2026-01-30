@@ -17,11 +17,13 @@
 package com.android.systemui.statusbar.quickactions.av.domain.interactor
 
 import androidx.annotation.VisibleForTesting
+import com.android.systemui.accessibility.domain.interactor.CaptioningInteractor
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.statusbar.quickactions.av.shared.model.BlurLevel
 import com.android.systemui.statusbar.quickactions.av.shared.model.DesktopEffectModel
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor
+import com.android.systemui.util.kotlin.combine
 import com.android.systemui.util.settings.repository.SecureSettingsForUserRepository
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
@@ -29,9 +31,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.withContext
 
@@ -51,6 +53,7 @@ constructor(
     @Background private val bgDispatcher: CoroutineDispatcher,
     private val selectedUserInteractor: SelectedUserInteractor,
     private val secureSettingsForUserRepository: SecureSettingsForUserRepository,
+    private val captioningInteractor: CaptioningInteractor,
 ) {
     /** The current state of the desktop effects. */
     val model: StateFlow<DesktopEffectModel> =
@@ -127,6 +130,34 @@ constructor(
         }
 
     /**
+     * Sets the value of the camera framing effect.
+     *
+     * @param newValue The new value of the effect.
+     * @param userId The ID of the user for which to set the effect. If `null`, the effect is set
+     *   for the currently selected user.
+     */
+    suspend fun setCameraFraming(newValue: Boolean, userId: Int? = null) =
+        withContext(bgDispatcher) {
+            secureSettingsForUserRepository.setBoolForUser(
+                userId.asValidUserId(),
+                DESKTOP_EFFECTS_CAMERA_FRAMING_KEY,
+                newValue,
+            )
+        }
+
+    /**
+     * Sets the value of the live captions effect.
+     *
+     * @param newValue The new value of the effect.
+     * @param userId The ID of the user for which to set the effect. If `null`, the effect is set
+     *   for the currently selected user.
+     */
+    suspend fun setLiveCaptions(newValue: Boolean, userId: Int? = null) =
+        withContext(bgDispatcher) {
+            captioningInteractor.setIsSystemAudioCaptioningEnabled(newValue)
+        }
+
+    /**
      * Returns a [Flow] of [DesktopEffectModel] for the given user.
      *
      * @param userId The ID of the user for which to get the effects.
@@ -137,12 +168,22 @@ constructor(
             faceRetouchFlowForUser(userId),
             studioMicFlowForUser(userId),
             blurLevelFlowForUser(userId),
-        ) { portraitRelight, faceRetouch, studioMic, blurLevel ->
+            liveCaptionsFlowForUser(userId),
+            cameraFramingFlowForUser(userId),
+        ) {
+            portraitRelight: Boolean,
+            faceRetouch: Boolean,
+            studioMic: Boolean,
+            blurLevel: BlurLevel,
+            liveCaptions: Boolean,
+            cameraFraming: Boolean ->
             DesktopEffectModel(
                 portraitRelight = portraitRelight,
                 faceRetouch = faceRetouch,
                 studioMic = studioMic,
                 blurLevel = blurLevel,
+                liveCaptions = liveCaptions,
+                cameraFraming = cameraFraming,
             )
         }
 
@@ -176,6 +217,19 @@ constructor(
             .intSettingForUser(userId, DESKTOP_EFFECTS_BLUR_LEVEL_KEY, 0)
             .map { blurLevel -> BlurLevel.entries.find { it.code == blurLevel } ?: BlurLevel.OFF }
 
+    private fun cameraFramingFlowForUser(userId: Int): Flow<Boolean> =
+        secureSettingsForUserRepository.boolSettingForUser(
+            userId,
+            DESKTOP_EFFECTS_CAMERA_FRAMING_KEY,
+            false,
+        )
+
+    private fun liveCaptionsFlowForUser(userId: Int): Flow<Boolean> =
+        captioningInteractor.isSystemAudioCaptioningEnabled.onStart {
+            // Emitting the initial default value.
+            emit(false)
+        }
+
     companion object {
         @VisibleForTesting
         const val DESKTOP_EFFECTS_PORTRAIT_RELIGHT_KEY = "desktop-effects-portrait-relight"
@@ -183,5 +237,7 @@ constructor(
         const val DESKTOP_EFFECTS_FACE_RETOUCH_KEY = "desktop-effects-face-retouch"
         @VisibleForTesting const val DESKTOP_EFFECTS_STUDIO_MIC_KEY = "desktop-effects-studio-mic"
         @VisibleForTesting const val DESKTOP_EFFECTS_BLUR_LEVEL_KEY = "desktop-effects-blur-level"
+        @VisibleForTesting
+        const val DESKTOP_EFFECTS_CAMERA_FRAMING_KEY = "desktop-effects-camera-framing"
     }
 }
