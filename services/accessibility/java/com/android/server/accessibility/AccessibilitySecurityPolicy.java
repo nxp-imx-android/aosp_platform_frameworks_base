@@ -65,7 +65,7 @@ import java.util.Set;
  */
 public class AccessibilitySecurityPolicy {
     private static final int OWN_PROCESS_ID = android.os.Process.myPid();
-    private static final String LOG_TAG = "AccessibilitySecurityPolicy";
+    private static final String LOG_TAG = AccessibilitySecurityPolicy.class.getSimpleName();
 
     private static final int KEEP_SOURCE_EVENT_TYPES = AccessibilityEvent.TYPE_VIEW_CLICKED
             | AccessibilityEvent.TYPE_VIEW_FOCUSED

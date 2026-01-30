@@ -66,7 +66,7 @@ import java.util.function.Supplier;
  *             the predefined system actions.
  */
 public class SystemActionPerformer {
-    private static final String TAG = "SystemActionPerformer";
+    private static final String TAG = SystemActionPerformer.class.getSimpleName();
 
     interface SystemActionsChangedListener {
         void onSystemActionsChanged();

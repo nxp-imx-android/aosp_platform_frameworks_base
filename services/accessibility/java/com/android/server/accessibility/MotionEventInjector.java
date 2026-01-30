@@ -48,7 +48,7 @@ import java.util.List;
  * All methods except {@code injectEvents} must be called only from the main thread.
  */
 public class MotionEventInjector extends BaseEventStreamTransformation implements Handler.Callback {
-    private static final String LOG_TAG = "MotionEventInjector";
+    private static final String LOG_TAG = MotionEventInjector.class.getSimpleName();
     private static final int MESSAGE_SEND_MOTION_EVENT = 1;
     private static final int MESSAGE_INJECT_EVENTS = 2;
 

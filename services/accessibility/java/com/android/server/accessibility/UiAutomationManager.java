@@ -54,7 +54,7 @@ import java.io.PrintWriter;
 class UiAutomationManager {
     private static final ComponentName COMPONENT_NAME =
             new ComponentName("com.android.server.accessibility", "UiAutomation");
-    private static final String LOG_TAG = "UiAutomationManager";
+    private static final String LOG_TAG = UiAutomationManager.class.getSimpleName();
 
     private final Object mLock;
 

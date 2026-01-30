@@ -407,7 +407,7 @@ public class AutoclickController extends BaseEventStreamTransformation implement
         // Try to get the SystemUI context which has dynamic colors properly themed.
         // Fall back to the regular context if it's not available (in tests).
         Context baseContext;
-        if (!mContext.getClass().getSimpleName().contains("Testable")) {
+        if (!mContext.getClass().getName().contains("Testable")) {
             // Use SystemUI context in production.
             baseContext = ActivityThread.currentActivityThread().getSystemUiContext();
         } else {
@@ -430,7 +430,7 @@ public class AutoclickController extends BaseEventStreamTransformation implement
         final Context displayContext = getDisplayContext();
 
         mAutoclickIndicatorScheduler = new AutoclickIndicatorScheduler(handler);
-        if (!mContext.getClass().getSimpleName().contains("Testable")) {
+        if (!mContext.getClass().getName().contains("Testable")) {
             // Production: Get WindowManager for the specific display.
             mWindowManager = displayContext.getSystemService(WindowManager.class);
         } else {

@@ -43,7 +43,6 @@ import android.content.Context;
 import android.graphics.Region;
 import android.os.Handler;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.util.Slog;
 import android.view.Display;
 import android.view.InputDevice;
@@ -53,6 +52,7 @@ import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.server.accessibility.AccessibilityLogUtil;
 import com.android.server.accessibility.AccessibilityManagerService;
 import com.android.server.accessibility.BaseEventStreamTransformation;
 import com.android.server.accessibility.EventStreamTransformation;
@@ -85,10 +85,9 @@ public class TouchExplorer extends BaseEventStreamTransformation
         implements GestureManifold.Listener {
 
     // Tag for logging received events.
-    private static final String LOG_TAG = "TouchExplorer";
+    private static final String LOG_TAG = TouchExplorer.class.getSimpleName();
 
-    // To enable these logs, run: 'adb shell setprop log.tag.TouchExplorer DEBUG' (requires restart)
-    static final boolean DEBUG = Log.isLoggable(LOG_TAG, Log.DEBUG);
+    static final boolean DEBUG = AccessibilityLogUtil.isDebugEnabled(LOG_TAG);
 
     // The maximum of the cosine between the vectors of two moving
     // pointers so they can be considered moving in the same direction.

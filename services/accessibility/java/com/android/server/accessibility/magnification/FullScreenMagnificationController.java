@@ -89,10 +89,10 @@ import java.util.function.Supplier;
  */
 public class FullScreenMagnificationController implements
         WindowManagerInternal.AccessibilityControllerInternal.UiChangesForAccessibilityCallbacks {
-    private static final String LOG_TAG = "FullScreenMagnificationController";
+    private static final String LOG_TAG = FullScreenMagnificationController.class.getSimpleName();
     private static final boolean DEBUG = AccessibilityLogUtil.isDebugEnabled(LOG_TAG);
 
-    private static final boolean DEBUG_SET_MAGNIFICATION_SPEC = false;
+    private static final boolean DEBUG_SET_MAGNIFICATION_SPEC = false | DEBUG;
 
     private final Object mLock;
     private final Supplier<Scroller> mScrollerSupplier;

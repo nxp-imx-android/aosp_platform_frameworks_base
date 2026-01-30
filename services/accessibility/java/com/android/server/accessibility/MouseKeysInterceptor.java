@@ -72,10 +72,8 @@ import java.util.Objects;
  */
 public class MouseKeysInterceptor extends BaseEventStreamTransformation
         implements Handler.Callback, InputManager.InputDeviceListener {
-    private static final String LOG_TAG = "MouseKeysInterceptor";
+    private static final String LOG_TAG = MouseKeysInterceptor.class.getSimpleName();
 
-    // To enable these logs, run: 'adb shell setprop log.tag.MouseKeysInterceptor DEBUG'
-    // (requires restart)
     private static final boolean DEBUG = AccessibilityLogUtil.isDebugEnabled(LOG_TAG);
 
     /** @hide */

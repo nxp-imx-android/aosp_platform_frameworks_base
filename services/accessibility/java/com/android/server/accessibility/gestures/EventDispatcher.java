@@ -50,7 +50,7 @@ public class EventDispatcher {
      */
     public static final int VIRTUAL_TOUCHSCREEN_DEVICE_ID = -1;
 
-    private static final String LOG_TAG = "EventDispatcher";
+    private static final String LOG_TAG = EventDispatcher.class.getSimpleName();
     private static final int CLICK_LOCATION_NONE = 0;
     private static final int CLICK_LOCATION_ACCESSIBILITY_FOCUS = 1;
     private static final int CLICK_LOCATION_LAST_TOUCH_EXPLORED = 2;
