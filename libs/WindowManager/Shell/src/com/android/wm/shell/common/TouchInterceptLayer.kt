@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.wm.shell.common.split
+package com.android.wm.shell.common
 
-import android.app.TaskInfo
 import android.os.Binder
 import android.os.IBinder
 import android.os.Looper
@@ -51,7 +50,7 @@ class TouchInterceptLayer(val name: String = TAG) {
     var dragListener: View.OnDragListener? = null
 
     /** Creates a touch zone. */
-    fun inflate(rootLeash: SurfaceControl, rootTaskInfo: TaskInfo) {
+    fun inflate(rootLeash: SurfaceControl, displayId: Int) {
         clientToken = Binder()
 
         // Create a new leash under our stage leash.
@@ -69,7 +68,7 @@ class TouchInterceptLayer(val name: String = TAG) {
         val inputTransferToken = InputTransferToken()
         inputChannel =
             windowSession.grantInputChannel(
-                rootTaskInfo.displayId,
+                displayId,
                 layer,
                 clientToken,
                 null, /* hostInputToken */
@@ -113,17 +112,24 @@ class TouchInterceptLayer(val name: String = TAG) {
                     dragListener?.onDrag(null, dragEvent)
                 }
             }
+    }
 
-        // Create a transaction so that we can activate and reposition our surface.
-        val t = SurfaceControl.Transaction()
-        // Set layer to maximum. We want this surface to be above the app layer, or else touches
-        // will be blocked.
-        t.setLayer(layer, SplitLayout.RESTING_TOUCH_LAYER)
-        // Crop to parent surface
-        t.setCrop(layer, null)
-        // Leash starts off hidden, show it.
-        t.show(layer)
-        t.apply()
+    /** Shows the `layerLeash` with a given zOrder. */
+    fun show(zOrder: Int) {
+        if (layerLeash != null) {
+            SurfaceControl.Transaction()
+                .setLayer(layerLeash!!, zOrder)
+                .setCrop(layerLeash!!, null)
+                .show(layerLeash!!)
+                .apply()
+        }
+    }
+
+    /** Hides the `layerLeash`. */
+    fun hide() {
+        if (layerLeash != null) {
+            SurfaceControl.Transaction().hide(layerLeash!!).apply()
+        }
     }
 
     /** Releases the touch zone when it's no longer needed. */
