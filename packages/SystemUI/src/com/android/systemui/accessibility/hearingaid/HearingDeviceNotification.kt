@@ -22,7 +22,6 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothProfile
-import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
@@ -37,11 +36,16 @@ import com.android.systemui.CoreStartable
 import com.android.systemui.Flags
 import com.android.systemui.broadcast.BroadcastDispatcher
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.res.R
-import com.android.systemui.statusbar.policy.BluetoothController
+import com.android.systemui.statusbar.policy.bluetooth.data.repository.BluetoothRepository
 import java.util.concurrent.Executor
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 
 /** Monitor hearing devices status and show notifications. */
 @SysUISingleton
@@ -49,25 +53,15 @@ class HearingDeviceNotification
 @Inject
 constructor(
     private val context: Context,
-    private val bluetoothController: BluetoothController,
+    private val bluetoothRepository: BluetoothRepository,
     private val broadcastDispatcher: BroadcastDispatcher,
     private val notificationManager: NotificationManager,
     private val dismissController: HearingDeviceNotificationDismissController,
     @Main private val mainExecutor: Executor,
-) : CoreStartable, BluetoothController.Callback, CachedBluetoothDevice.Callback {
+    @Application private val applicationScope: CoroutineScope,
+) : CoreStartable, CachedBluetoothDevice.Callback {
 
     private val trackedDevices = mutableSetOf<CachedBluetoothDevice>()
-
-    private val notificationReceiver =
-        object : BroadcastReceiver() {
-            override fun onReceive(context: Context, intent: Intent) {
-                if (intent.action == ACTION_DISMISS_NOTIFICATION) {
-                    intent.getStringExtra(KEY_BLUETOOTH_ADDRESS)?.let {
-                        dismissController.dismissNotification(it)
-                    }
-                }
-            }
-        }
 
     override fun start() {
         if (!Flags.hearingDeviceStatusNotification()) {
@@ -75,37 +69,36 @@ constructor(
             return
         }
         createNotificationChannel()
-        broadcastDispatcher.registerReceiver(
-            notificationReceiver,
-            IntentFilter(ACTION_DISMISS_NOTIFICATION),
-            mainExecutor,
-            UserHandle.ALL,
-            Context.RECEIVER_NOT_EXPORTED,
-        )
-        bluetoothController.addCallback(this)
-        checkConnectedDevices()
-    }
 
-    override fun onBluetoothStateChange(enabled: Boolean) {
-        if (!enabled) {
-            clearTrackedDevices()
-            cancelNotification()
-        } else {
-            checkConnectedDevices()
+        applicationScope.launch {
+            val dismissalFlow =
+                broadcastDispatcher
+                    .broadcastFlow(
+                        IntentFilter(ACTION_DISMISS_NOTIFICATION),
+                        UserHandle.ALL,
+                        Context.RECEIVER_NOT_EXPORTED,
+                    ) { intent, _ ->
+                        intent
+                    }
+                    .onEach { intent ->
+                        intent.getStringExtra(KEY_BLUETOOTH_ADDRESS)?.let {
+                            dismissController.dismissNotification(it)
+                        }
+                    }
+
+            merge(dismissalFlow, bluetoothRepository.connectedDevices).collect {
+                checkConnectedDevices(bluetoothRepository.connectedDevices.value)
+            }
         }
     }
 
-    override fun onBluetoothDevicesChanged() {
-        checkConnectedDevices()
-    }
-
     override fun onDeviceAttributesChanged() {
-        checkConnectedDevices()
+        checkConnectedDevices(bluetoothRepository.connectedDevices.value)
     }
 
     @MainThread
-    private fun checkConnectedDevices() {
-        val targetDevice = findTargetHearingDevice()
+    private fun checkConnectedDevices(devices: List<CachedBluetoothDevice>) {
+        val targetDevice = findTargetHearingDevice(devices)
         if (targetDevice != null) {
             updateTrackedDevices(targetDevice)
             updateNotification(targetDevice)
@@ -115,8 +108,10 @@ constructor(
         }
     }
 
-    private fun findTargetHearingDevice(): CachedBluetoothDevice? {
-        val hearingDevices = bluetoothController.connectedDevices.filter { it.isHearingDevice }
+    private fun findTargetHearingDevice(
+        devices: List<CachedBluetoothDevice>
+    ): CachedBluetoothDevice? {
+        val hearingDevices = devices.filter { it.isHearingDevice }
         // Prefer the active device, otherwise take the first connected hearing device.
         return hearingDevices.firstOrNull {
             it.isActiveDevice(BluetoothProfile.HEARING_AID) ||

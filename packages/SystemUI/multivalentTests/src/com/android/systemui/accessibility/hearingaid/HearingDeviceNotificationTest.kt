@@ -17,7 +17,7 @@
 package com.android.systemui.accessibility.hearingaid
 
 import android.app.Notification
-import android.app.NotificationManager
+import android.app.notificationManager
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothProfile
 import android.content.Intent
@@ -29,42 +29,44 @@ import com.android.settingslib.bluetooth.BatteryLevelsInfo
 import com.android.settingslib.bluetooth.CachedBluetoothDevice
 import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.broadcast.FakeBroadcastDispatcher
-import com.android.systemui.broadcast.logging.BroadcastDispatcherLogger
-import com.android.systemui.dump.DumpManager
+import com.android.systemui.broadcast.broadcastDispatcher
+import com.android.systemui.concurrency.fakeExecutor
+import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.runCurrent
+import com.android.systemui.kosmos.runTest
 import com.android.systemui.res.R
-import com.android.systemui.settings.UserTracker
-import com.android.systemui.statusbar.policy.BluetoothController
-import com.android.systemui.util.concurrency.FakeExecutor
-import com.android.systemui.util.time.FakeSystemClock
+import com.android.systemui.statusbar.policy.bluetooth.data.repository.bluetoothRepository
+import com.android.systemui.testKosmosNew
 import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
-import org.mockito.kotlin.reset
 import org.mockito.kotlin.stub
+import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(AndroidJUnit4::class)
 @TestableLooper.RunWithLooper(setAsMainLooper = true)
 @SmallTest
 class HearingDeviceNotificationTest : SysuiTestCase() {
-    private val bluetoothController = mock<BluetoothController>()
-    private val notificationManager = mock<NotificationManager>()
+
+    private val kosmos = testKosmosNew()
+    private val notificationManager by lazy { kosmos.notificationManager }
+    private val dismissController by lazy { kosmos.hearingDeviceNotificationDismissController }
+    private val bluetoothRepository by lazy { kosmos.bluetoothRepository }
+    private val underTest by lazy { kosmos.hearingDeviceNotification }
+
     private val cachedDevice = mock<CachedBluetoothDevice>()
     private val device = mock<BluetoothDevice>()
-
-    private val mainExecutor = FakeExecutor(FakeSystemClock())
-    private lateinit var broadcastDispatcher: FakeBroadcastDispatcher
-    private lateinit var underTest: HearingDeviceNotification
-    private val dismissController = mock<HearingDeviceNotificationDismissController>()
 
     @Before
     fun setUp() {
@@ -76,319 +78,300 @@ class HearingDeviceNotificationTest : SysuiTestCase() {
             on { isHearingDevice } doReturn true
             on { batteryLevel } doReturn 50
         }
-        bluetoothController.stub { on { connectedDevices } doReturn listOf(cachedDevice) }
+        bluetoothRepository.setConnectedDevices(listOf(cachedDevice))
         dismissController.stub {
             on { updateAndCheckNotification(anyString(), anyInt()) } doReturn true
         }
-
-        broadcastDispatcher =
-            FakeBroadcastDispatcher(
-                context,
-                mainExecutor,
-                TestableLooper.get(this).looper,
-                mainExecutor,
-                mock<DumpManager>(),
-                mock<BroadcastDispatcherLogger>(),
-                mock<UserTracker>(),
-                false,
-            )
-
-        underTest =
-            HearingDeviceNotification(
-                context,
-                bluetoothController,
-                broadcastDispatcher,
-                notificationManager,
-                dismissController,
-                mainExecutor,
-            )
     }
 
     @Test
     @EnableFlags(Flags.FLAG_HEARING_DEVICE_STATUS_NOTIFICATION)
-    fun updateNotification_fastPairDevice_cancelNotification() {
-        device.stub {
-            on { getMetadata(BluetoothDevice.METADATA_IS_UNTETHERED_HEADSET) } doReturn
-                "true".toByteArray()
+    fun updateNotification_fastPairDevice_cancelNotification() =
+        kosmos.runTest {
+            device.stub {
+                on { getMetadata(BluetoothDevice.METADATA_IS_UNTETHERED_HEADSET) } doReturn
+                    "true".toByteArray()
+            }
+
+            underTest.start()
+            runAllReady()
+
+            verify(notificationManager).cancel(anyString(), anyInt())
         }
 
-        underTest.start()
-        mainExecutor.runAllReady()
-
-        verify(notificationManager).cancel(anyString(), anyInt())
-    }
-
     @Test
     @EnableFlags(Flags.FLAG_HEARING_DEVICE_STATUS_NOTIFICATION)
-    fun updateNotification_batteryInfoAvailable_showLeftRightBattery() {
-        val batteryInfo = BatteryLevelsInfo(50, 60, -1, -1)
-        cachedDevice.stub { on { batteryLevelsInfo } doReturn batteryInfo }
+    fun updateNotification_batteryInfoAvailable_showLeftRightBattery() =
+        kosmos.runTest {
+            val batteryInfo = BatteryLevelsInfo(50, 60, -1, -1)
+            cachedDevice.stub { on { batteryLevelsInfo } doReturn batteryInfo }
 
-        underTest.start()
-        mainExecutor.runAllReady()
+            underTest.start()
+            runAllReady()
 
-        val notificationCaptor = ArgumentCaptor.forClass(Notification::class.java)
-        verify(notificationManager).notify(anyString(), anyInt(), notificationCaptor.capture())
-
-        val notification = notificationCaptor.value
-        val expectedMessage =
-            context.getString(
-                R.string.accessibility_hearing_device_left_right_battery_level,
-                "50%",
-                "60%",
-            )
-        assertThat(notification.extras.getString(Notification.EXTRA_TEXT))
-            .isEqualTo(expectedMessage)
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_HEARING_DEVICE_STATUS_NOTIFICATION)
-    fun updateNotification_leftBatteryInfoAvailable_showLeftBattery() {
-        val batteryInfo = BatteryLevelsInfo(50, BluetoothDevice.BATTERY_LEVEL_UNKNOWN, -1, -1)
-        cachedDevice.stub { on { batteryLevelsInfo } doReturn batteryInfo }
-
-        underTest.start()
-        mainExecutor.runAllReady()
-
-        val notificationCaptor = ArgumentCaptor.forClass(Notification::class.java)
-        verify(notificationManager).notify(anyString(), anyInt(), notificationCaptor.capture())
-
-        val notification = notificationCaptor.value
-        val expectedMessage =
-            context.getString(R.string.accessibility_hearing_device_left_battery_level, "50%")
-        assertThat(notification.extras.getString(Notification.EXTRA_TEXT))
-            .isEqualTo(expectedMessage)
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_HEARING_DEVICE_STATUS_NOTIFICATION)
-    fun updateNotification_rightBatteryInfoAvailable_showRightBattery() {
-        val batteryInfo = BatteryLevelsInfo(BluetoothDevice.BATTERY_LEVEL_UNKNOWN, 60, -1, -1)
-        cachedDevice.stub { on { batteryLevelsInfo } doReturn batteryInfo }
-
-        underTest.start()
-        mainExecutor.runAllReady()
-
-        val notificationCaptor = ArgumentCaptor.forClass(Notification::class.java)
-        verify(notificationManager).notify(anyString(), anyInt(), notificationCaptor.capture())
-
-        val notification = notificationCaptor.value
-        val expectedMessage =
-            context.getString(R.string.accessibility_hearing_device_right_battery_level, "60%")
-        assertThat(notification.extras.getString(Notification.EXTRA_TEXT))
-            .isEqualTo(expectedMessage)
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_HEARING_DEVICE_STATUS_NOTIFICATION)
-    fun updateNotification_shouldNotShowNotification_noNotification() {
-        dismissController.stub {
-            on { updateAndCheckNotification(anyString(), anyInt()) } doReturn false
+            val notificationCaptor = argumentCaptor<Notification>()
+            verify(notificationManager).notify(anyString(), anyInt(), notificationCaptor.capture())
+            val notification = notificationCaptor.firstValue
+            val expectedMessage =
+                context.getString(
+                    R.string.accessibility_hearing_device_left_right_battery_level,
+                    "50%",
+                    "60%",
+                )
+            assertThat(notification.extras.getString(Notification.EXTRA_TEXT))
+                .isEqualTo(expectedMessage)
         }
 
-        underTest.start()
-        mainExecutor.runAllReady()
-
-        verify(notificationManager, never()).notify(anyString(), anyInt(), any())
-    }
-
     @Test
     @EnableFlags(Flags.FLAG_HEARING_DEVICE_STATUS_NOTIFICATION)
-    fun updateNotification_deviceActive_showActiveSubtext() {
-        cachedDevice.stub {
-            on { isActiveDevice(BluetoothProfile.HEARING_AID) } doReturn true
-            on { isActiveDevice(BluetoothProfile.LE_AUDIO) } doReturn false
+    fun updateNotification_leftBatteryInfoAvailable_showLeftBattery() =
+        kosmos.runTest {
+            val batteryInfo = BatteryLevelsInfo(50, BluetoothDevice.BATTERY_LEVEL_UNKNOWN, -1, -1)
+            cachedDevice.stub { on { batteryLevelsInfo } doReturn batteryInfo }
+
+            underTest.start()
+            runAllReady()
+
+            val notificationCaptor = argumentCaptor<Notification>()
+            verify(notificationManager).notify(anyString(), anyInt(), notificationCaptor.capture())
+            val notification = notificationCaptor.firstValue
+            val expectedMessage =
+                context.getString(R.string.accessibility_hearing_device_left_battery_level, "50%")
+            assertThat(notification.extras.getString(Notification.EXTRA_TEXT))
+                .isEqualTo(expectedMessage)
         }
 
-        underTest.start()
-        mainExecutor.runAllReady()
-
-        val notificationCaptor = ArgumentCaptor.forClass(Notification::class.java)
-        verify(notificationManager).notify(anyString(), anyInt(), notificationCaptor.capture())
-        assertThat(notificationCaptor.value.extras.getString(Notification.EXTRA_SUB_TEXT))
-            .isEqualTo(context.getString(R.string.quick_settings_hearing_devices_connected))
-    }
-
     @Test
     @EnableFlags(Flags.FLAG_HEARING_DEVICE_STATUS_NOTIFICATION)
-    fun updateNotification_deviceConnectedNotActive_showConnectedSubtext() {
-        cachedDevice.stub {
-            on { isActiveDevice(BluetoothProfile.HEARING_AID) } doReturn false
-            on { isActiveDevice(BluetoothProfile.LE_AUDIO) } doReturn false
+    fun updateNotification_rightBatteryInfoAvailable_showRightBattery() =
+        kosmos.runTest {
+            val batteryInfo = BatteryLevelsInfo(BluetoothDevice.BATTERY_LEVEL_UNKNOWN, 60, -1, -1)
+            cachedDevice.stub { on { batteryLevelsInfo } doReturn batteryInfo }
+
+            underTest.start()
+            runAllReady()
+
+            val notificationCaptor = argumentCaptor<Notification>()
+            verify(notificationManager).notify(anyString(), anyInt(), notificationCaptor.capture())
+            val notification = notificationCaptor.firstValue
+            val expectedMessage =
+                context.getString(R.string.accessibility_hearing_device_right_battery_level, "60%")
+            assertThat(notification.extras.getString(Notification.EXTRA_TEXT))
+                .isEqualTo(expectedMessage)
         }
 
-        underTest.start()
-        mainExecutor.runAllReady()
-
-        val notificationCaptor = ArgumentCaptor.forClass(Notification::class.java)
-        verify(notificationManager).notify(anyString(), anyInt(), notificationCaptor.capture())
-        assertThat(notificationCaptor.value.extras.getString(Notification.EXTRA_SUB_TEXT))
-            .isEqualTo(context.getString(R.string.quick_settings_bluetooth_device_connected))
-    }
-
     @Test
     @EnableFlags(Flags.FLAG_HEARING_DEVICE_STATUS_NOTIFICATION)
-    fun updateNotification_verifyVisibilityAndLabel() {
-        underTest.start()
-        mainExecutor.runAllReady()
+    fun updateNotification_shouldNotShowNotification_noNotification() =
+        kosmos.runTest {
+            dismissController.stub {
+                on { updateAndCheckNotification(anyString(), anyInt()) } doReturn false
+            }
 
-        val notificationCaptor = ArgumentCaptor.forClass(Notification::class.java)
-        verify(notificationManager).notify(anyString(), anyInt(), notificationCaptor.capture())
+            underTest.start()
+            runAllReady()
 
-        val notification = notificationCaptor.value
-        assertThat(notification.visibility).isEqualTo(Notification.VISIBILITY_PRIVATE)
-        assertThat(notification.extras.getString(Notification.EXTRA_SUBSTITUTE_APP_NAME))
-            .isEqualTo(context.getString(com.android.internal.R.string.android_system_label))
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_HEARING_DEVICE_STATUS_NOTIFICATION)
-    fun checkConnectedDevices_isActive_showActiveHearingDeviceStatus() {
-        val activeDevice =
-            cachedDevice.stub { on { isActiveDevice(BluetoothProfile.HEARING_AID) } doReturn true }
-        val otherDevice = mock<CachedBluetoothDevice>()
-        bluetoothController.stub {
-            on { connectedDevices } doReturn listOf(otherDevice, activeDevice)
+            verify(notificationManager, never()).notify(anyString(), anyInt(), any())
         }
 
-        underTest.start()
-        mainExecutor.runAllReady()
-
-        val notificationCaptor = ArgumentCaptor.forClass(Notification::class.java)
-        verify(notificationManager).notify(anyString(), anyInt(), notificationCaptor.capture())
-        assertThat(notificationCaptor.value.extras.getString(Notification.EXTRA_TITLE))
-            .isEqualTo(activeDevice.name)
-    }
-
     @Test
     @EnableFlags(Flags.FLAG_HEARING_DEVICE_STATUS_NOTIFICATION)
-    fun checkConnectedDevices_isNotActive_showConnectedHearingDeviceStatus() {
-        val connectedDevice =
-            cachedDevice.stub { on { isActiveDevice(BluetoothProfile.HEARING_AID) } doReturn false }
-        val otherDevice = mock<CachedBluetoothDevice>()
-        bluetoothController.stub {
-            on { connectedDevices } doReturn listOf(otherDevice, connectedDevice)
+    fun updateNotification_deviceActive_showActiveSubtext() =
+        kosmos.runTest {
+            cachedDevice.stub {
+                on { isActiveDevice(BluetoothProfile.HEARING_AID) } doReturn true
+                on { isActiveDevice(BluetoothProfile.LE_AUDIO) } doReturn false
+            }
+
+            underTest.start()
+            runAllReady()
+
+            val notificationCaptor = argumentCaptor<Notification>()
+            verify(notificationManager).notify(anyString(), anyInt(), notificationCaptor.capture())
+            val notification = notificationCaptor.firstValue
+            assertThat(notification.extras.getString(Notification.EXTRA_SUB_TEXT))
+                .isEqualTo(context.getString(R.string.quick_settings_hearing_devices_connected))
         }
 
-        underTest.start()
-        mainExecutor.runAllReady()
+    @Test
+    @EnableFlags(Flags.FLAG_HEARING_DEVICE_STATUS_NOTIFICATION)
+    fun updateNotification_deviceConnectedNotActive_showConnectedSubtext() =
+        kosmos.runTest {
+            cachedDevice.stub {
+                on { isActiveDevice(BluetoothProfile.HEARING_AID) } doReturn false
+                on { isActiveDevice(BluetoothProfile.LE_AUDIO) } doReturn false
+            }
 
-        val notificationCaptor = ArgumentCaptor.forClass(Notification::class.java)
-        verify(notificationManager).notify(anyString(), anyInt(), notificationCaptor.capture())
-        assertThat(notificationCaptor.value.extras.getString(Notification.EXTRA_TITLE))
-            .isEqualTo(connectedDevice.name)
-    }
+            underTest.start()
+            runAllReady()
+
+            val notificationCaptor = argumentCaptor<Notification>()
+            verify(notificationManager).notify(anyString(), anyInt(), notificationCaptor.capture())
+            val notification = notificationCaptor.firstValue
+            assertThat(notification.extras.getString(Notification.EXTRA_SUB_TEXT))
+                .isEqualTo(context.getString(R.string.quick_settings_bluetooth_device_connected))
+        }
 
     @Test
     @EnableFlags(Flags.FLAG_HEARING_DEVICE_STATUS_NOTIFICATION)
-    fun checkConnectedDevices_noHearingDevices_cancelNotification() {
-        bluetoothController.stub { on { connectedDevices } doReturn emptyList() }
+    fun checkConnectedDevices_isActive_showActiveHearingDeviceStatus() =
+        kosmos.runTest {
+            val activeDevice =
+                cachedDevice.stub {
+                    on { isActiveDevice(BluetoothProfile.HEARING_AID) } doReturn true
+                }
+            val otherDevice = mock<CachedBluetoothDevice>()
+            bluetoothRepository.setConnectedDevices(listOf(otherDevice, activeDevice))
 
-        underTest.start()
-        mainExecutor.runAllReady()
+            underTest.start()
+            runAllReady()
 
-        verify(notificationManager).cancel(anyString(), anyInt())
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_HEARING_DEVICE_STATUS_NOTIFICATION)
-    fun checkConnectedDevices_registerCallbackForMemberDevices() {
-        val mockMemberDevice = getMemberDevice()
-        val mockMainDevice =
-            cachedDevice.stub { on { memberDevice } doReturn setOf(mockMemberDevice) }
-
-        underTest.start()
-        mainExecutor.runAllReady()
-
-        verify(mockMainDevice).registerCallback(any(), any())
-        verify(mockMemberDevice).registerCallback(any(), any())
-    }
+            val notificationCaptor = argumentCaptor<Notification>()
+            verify(notificationManager).notify(anyString(), anyInt(), notificationCaptor.capture())
+            val notification = notificationCaptor.firstValue
+            assertThat(notification.extras.getString(Notification.EXTRA_TITLE))
+                .isEqualTo(activeDevice.name)
+        }
 
     @Test
     @EnableFlags(Flags.FLAG_HEARING_DEVICE_STATUS_NOTIFICATION)
-    fun checkConnectedDevices_registerCallbackForSubDevice() {
-        val mockSubDevice = getMemberDevice()
-        val mockMainDevice = cachedDevice.stub { on { subDevice } doReturn mockSubDevice }
+    fun checkConnectedDevices_isNotActive_showConnectedHearingDeviceStatus() =
+        kosmos.runTest {
+            val connectedDevice =
+                cachedDevice.stub {
+                    on { isActiveDevice(BluetoothProfile.HEARING_AID) } doReturn false
+                }
+            val otherDevice = mock<CachedBluetoothDevice>()
+            bluetoothRepository.setConnectedDevices(listOf(otherDevice, cachedDevice))
 
-        underTest.start()
-        mainExecutor.runAllReady()
+            underTest.start()
+            runAllReady()
 
-        verify(mockMainDevice).registerCallback(any(), any())
-        verify(mockSubDevice).registerCallback(any(), any())
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_HEARING_DEVICE_STATUS_NOTIFICATION)
-    fun onDeviceAttributesChanged_updateNotification() {
-        underTest.start()
-        mainExecutor.runAllReady()
-        reset(notificationManager)
-        underTest.onDeviceAttributesChanged()
-        mainExecutor.runAllReady()
-
-        verify(notificationManager).notify(anyString(), anyInt(), any())
-    }
+            val notificationCaptor = argumentCaptor<Notification>()
+            verify(notificationManager).notify(anyString(), anyInt(), notificationCaptor.capture())
+            val notification = notificationCaptor.firstValue
+            assertThat(notification.extras.getString(Notification.EXTRA_TITLE))
+                .isEqualTo(connectedDevice.name)
+        }
 
     @Test
     @EnableFlags(Flags.FLAG_HEARING_DEVICE_STATUS_NOTIFICATION)
-    fun onBluetoothStateChange_disabled_cancelNotification() {
-        underTest.start()
-        mainExecutor.runAllReady()
-        underTest.onBluetoothStateChange(false)
-        mainExecutor.runAllReady()
+    fun checkConnectedDevices_noHearingDevices_cancelNotification() =
+        kosmos.runTest {
+            bluetoothRepository.setConnectedDevices(emptyList())
 
-        verify(notificationManager).cancel(anyString(), anyInt())
-    }
+            underTest.start()
+            runAllReady()
 
-    @Test
-    @EnableFlags(Flags.FLAG_HEARING_DEVICE_STATUS_NOTIFICATION)
-    fun start_verifyChannelVisibility() {
-        underTest.start()
-        mainExecutor.runAllReady()
-
-        val channelCaptor = ArgumentCaptor.forClass(android.app.NotificationChannel::class.java)
-        verify(notificationManager).createNotificationChannel(channelCaptor.capture())
-
-        val channel = channelCaptor.value
-        assertThat(channel.lockscreenVisibility).isEqualTo(Notification.VISIBILITY_PRIVATE)
-    }
+            verify(notificationManager).cancel(anyString(), anyInt())
+        }
 
     @Test
     @EnableFlags(Flags.FLAG_HEARING_DEVICE_STATUS_NOTIFICATION)
-    fun dismissalBroadcast_callDismissOnController() {
-        underTest.start()
-        mainExecutor.runAllReady()
-        broadcastDispatcher.sendIntentToMatchingReceiversOnly(context, getDismissIntent())
-        mainExecutor.runAllReady()
+    fun checkConnectedDevices_registerCallbackForMemberDevices() =
+        kosmos.runTest {
+            val mockMemberDevice = getMemberDevice()
+            val mockMainDevice =
+                cachedDevice.stub { on { memberDevice } doReturn setOf(mockMemberDevice) }
 
-        verify(dismissController).dismissNotification(TEST_DEVICE_ADDRESS)
-    }
+            underTest.start()
+            runAllReady()
 
-    @Test
-    @EnableFlags(Flags.FLAG_HEARING_DEVICE_STATUS_NOTIFICATION)
-    fun onBluetoothDevicesChanged_disconnect_resetController() {
-        bluetoothController.stub { on { connectedDevices } doReturn listOf(cachedDevice) }
-
-        underTest.start()
-        mainExecutor.runAllReady()
-        // Simulates cachedDevice disconnects
-        bluetoothController.stub { on { connectedDevices } doReturn listOf() }
-        underTest.onBluetoothDevicesChanged()
-        mainExecutor.runAllReady()
-
-        verify(dismissController).reset()
-    }
+            verify(mockMainDevice).registerCallback(any(), any())
+            verify(mockMemberDevice).registerCallback(any(), any())
+        }
 
     @Test
     @EnableFlags(Flags.FLAG_HEARING_DEVICE_STATUS_NOTIFICATION)
-    fun onBluetoothStateChange_disabled_resetController() {
-        underTest.start()
-        mainExecutor.runAllReady()
-        underTest.onBluetoothStateChange(false)
-        mainExecutor.runAllReady()
+    fun checkConnectedDevices_registerCallbackForSubDevice() =
+        kosmos.runTest {
+            val mockSubDevice = getMemberDevice()
+            val mockMainDevice = cachedDevice.stub { on { subDevice } doReturn mockSubDevice }
 
-        verify(dismissController).reset()
-    }
+            underTest.start()
+            runAllReady()
+
+            verify(mockMainDevice).registerCallback(any(), any())
+            verify(mockSubDevice).registerCallback(any(), any())
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_HEARING_DEVICE_STATUS_NOTIFICATION)
+    fun onDeviceAttributesChanged_updateNotification() =
+        kosmos.runTest {
+            underTest.start()
+            runAllReady()
+            underTest.onDeviceAttributesChanged()
+            runAllReady()
+
+            // notify called twice: once in start(), once in onDeviceAttributesChanged()
+            verify(notificationManager, times(2)).notify(anyString(), anyInt(), any())
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_HEARING_DEVICE_STATUS_NOTIFICATION)
+    fun updateNotification_verifyVisibilityAndLabel() =
+        kosmos.runTest {
+            underTest.start()
+            runAllReady()
+
+            val notificationCaptor = argumentCaptor<Notification>()
+            verify(notificationManager).notify(anyString(), anyInt(), notificationCaptor.capture())
+            val notification = notificationCaptor.firstValue
+            assertThat(notification.visibility).isEqualTo(Notification.VISIBILITY_PRIVATE)
+            assertThat(notification.extras.getString(Notification.EXTRA_SUBSTITUTE_APP_NAME))
+                .isEqualTo(context.getString(com.android.internal.R.string.android_system_label))
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_HEARING_DEVICE_STATUS_NOTIFICATION)
+    fun start_verifyChannelVisibility() =
+        kosmos.runTest {
+            underTest.start()
+            runAllReady()
+
+            val channelCaptor = argumentCaptor<android.app.NotificationChannel>()
+            verify(notificationManager).createNotificationChannel(channelCaptor.capture())
+            val channel = channelCaptor.firstValue
+            assertThat(channel.lockscreenVisibility).isEqualTo(Notification.VISIBILITY_PRIVATE)
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_HEARING_DEVICE_STATUS_NOTIFICATION)
+    fun dismissalBroadcast_callDismissOnController() =
+        kosmos.runTest {
+            underTest.start()
+            runAllReady()
+            broadcastDispatcher.sendIntentToMatchingReceiversOnly(context, getDismissIntent())
+            runAllReady()
+
+            verify(dismissController).dismissNotification(TEST_DEVICE_ADDRESS)
+        }
+
+    fun connectedDevicesFlow_removeOneDevice_callRemoveDeviceOnController() =
+        kosmos.runTest {
+            val otherDevice = mock<CachedBluetoothDevice> { on { isHearingDevice } doReturn true }
+            bluetoothRepository.setConnectedDevices(listOf(cachedDevice, otherDevice))
+
+            underTest.start()
+            runAllReady()
+            bluetoothRepository.setConnectedDevices(listOf(otherDevice))
+            runAllReady()
+
+            verify(dismissController).removeDevice(TEST_DEVICE_ADDRESS)
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_HEARING_DEVICE_STATUS_NOTIFICATION)
+    fun connectedDevicesFlow_disconnectAll_callResetOnController() =
+        kosmos.runTest {
+            underTest.start()
+            runAllReady()
+            bluetoothRepository.setConnectedDevices(emptyList())
+            runAllReady()
+
+            verify(dismissController).reset()
+        }
 
     private fun getMemberDevice(): CachedBluetoothDevice {
         return mock<CachedBluetoothDevice> {
@@ -404,6 +387,11 @@ class HearingDeviceNotificationTest : SysuiTestCase() {
         return Intent("com.android.systemui.accessibility.hearingaid.DISMISS_NOTIFICATION").apply {
             putExtra("device_address", TEST_DEVICE_ADDRESS)
         }
+    }
+
+    private fun Kosmos.runAllReady() {
+        runCurrent()
+        fakeExecutor.runAllReady()
     }
 
     companion object {
