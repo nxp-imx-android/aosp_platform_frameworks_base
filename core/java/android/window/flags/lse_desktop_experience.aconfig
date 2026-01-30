@@ -770,6 +770,7 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Prevent activity recreation on less supported config changes."
     bug: "454795633"
+    is_exported: true
 }
 
 flag {
