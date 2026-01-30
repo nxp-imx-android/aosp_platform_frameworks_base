@@ -644,7 +644,8 @@ final class DeletePackageHelper {
                     PackageManager.USER_MIN_ASPECT_RATIO_UNSET,
                     archiveState,
                     false /*appLockEnabled*/,
-                    PackageManager.VIRTUAL_GAMEPAD_USER_OPTION_UNSET);
+                    PackageManager.VIRTUAL_GAMEPAD_USER_OPTION_UNSET,
+                    PackageManager.PERSONAL_CONTEXT_MODE_UNSET);
         }
         mPm.mSettings.writeKernelMappingLPr(ps);
     }
