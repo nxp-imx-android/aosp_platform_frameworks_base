@@ -44,6 +44,8 @@ import android.util.Log;
 import android.util.TimeUtils;
 import android.view.animation.AnimationUtils;
 
+import com.android.internal.annotations.VisibleForTesting;
+
 import java.io.PrintWriter;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -1453,6 +1455,16 @@ public final class Choreographer {
 
         FrameData() {
             allocateFrameTimelines(DisplayEventReceiver.VsyncEventData.FRAME_TIMELINES_CAPACITY);
+        }
+
+        /**
+         * @hide
+         */
+        @VisibleForTesting
+        public FrameData(long frameTimeNanos) {
+            this();
+            mFrameTimeNanos = frameTimeNanos;
+            setInCallback(true);
         }
 
         /** The time in nanoseconds when the frame started being rendered. */
