@@ -16,17 +16,28 @@
 
 package android.service.personalcontext.hint;
 
+import static java.util.Objects.requireNonNull;
+
 import android.annotation.FlaggedApi;
 import android.annotation.Nullable;
+import android.annotation.SuppressLint;
+import android.annotation.TestApi;
+import android.app.assist.AssistStructure;
 import android.content.ComponentName;
+import android.graphics.Rect;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.os.Parcel;
+import android.os.RemoteException;
 import android.service.autofill.FillEventHistory;
+import android.service.autofill.augmented.AugmentedAutofillService;
 import android.service.autofill.augmented.FillRequest;
 import android.service.personalcontext.Flags;
+import android.service.personalcontext.PersonalContextManager;
 import android.service.personalcontext.Token;
 import android.view.autofill.AutofillId;
 import android.view.autofill.AutofillValue;
+import android.view.autofill.IAugmentedAutofillManagerClient;
 import android.view.inputmethod.InlineSuggestionsRequest;
 
 import androidx.annotation.NonNull;
@@ -37,6 +48,11 @@ import java.util.Objects;
 /**
  * A hint representing an incoming request from the autofill framework for inline suggestions for
  * use by augmented autofill.
+ *
+ * <p>When regular autofill falls back to augmented autofill, the personal context system and the
+ * registered {@link AugmentedAutofillService} both receive requests in parallel. This hint provides
+ * the same information as the request to {@link AugmentedAutofillService#handleOnFillRequest} so
+ * that personal context can also generate suggestions.
  */
 @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
 public class AutofillInlineRequestHint extends ContextHint {
@@ -47,6 +63,8 @@ public class AutofillInlineRequestHint extends ContextHint {
     private static final String KEY_FOCUSED_ID = "focused_id";
     private static final String KEY_AUTOFILL_VALUE = "autofill_value";
     private static final String KEY_INLINE_SUGGESTIONS_REQUEST = "inline_suggestions_request";
+    private static final String KEY_AUGMENTED_AUTOFILL_MANAGER_CLIENT =
+            "augmented_autofill_manager_client";
     private static final String KEY_FILL_EVENT_HISTORY = "fill_event_history";
 
     private final int mSessionId;
@@ -56,6 +74,8 @@ public class AutofillInlineRequestHint extends ContextHint {
     private final AutofillId mFocusedId;
     private final AutofillValue mAutofillValue;
     private final InlineSuggestionsRequest mInlineSuggestionsRequest;
+    private final AugmentedAutofillProxy mAugmentedAutofillProxy;
+
     @Nullable private final FillEventHistory mFillEventHistory;
 
     /** Internal constructor only for use by {@link Builder}. */
@@ -68,15 +88,17 @@ public class AutofillInlineRequestHint extends ContextHint {
             @NonNull AutofillId focusedId,
             @NonNull AutofillValue autofillValue,
             @NonNull InlineSuggestionsRequest inlineSuggestionsRequest,
+            @NonNull AugmentedAutofillProxy augmentedAutofillProxy,
             @Nullable FillEventHistory fillEventHistory) {
         super(baseParams);
         mSessionId = sessionId;
         mTaskId = taskId;
-        mRequestTimestamp = Objects.requireNonNull(requestTimestamp);
-        mActivityComponent = Objects.requireNonNull(activityComponent);
-        mFocusedId = Objects.requireNonNull(focusedId);
-        mAutofillValue = Objects.requireNonNull(autofillValue);
-        mInlineSuggestionsRequest = Objects.requireNonNull(inlineSuggestionsRequest);
+        mRequestTimestamp = requireNonNull(requestTimestamp);
+        mActivityComponent = requireNonNull(activityComponent);
+        mFocusedId = requireNonNull(focusedId);
+        mAutofillValue = requireNonNull(autofillValue);
+        mInlineSuggestionsRequest = requireNonNull(inlineSuggestionsRequest);
+        mAugmentedAutofillProxy = requireNonNull(augmentedAutofillProxy);
         mFillEventHistory = fillEventHistory;
     }
 
@@ -90,19 +112,19 @@ public class AutofillInlineRequestHint extends ContextHint {
         mSessionId = bundle.getInt(KEY_SESSION_ID);
         mTaskId = bundle.getInt(KEY_TASK_ID);
         mRequestTimestamp =
-                Objects.requireNonNull(
-                        bundle.getSerializable(KEY_REQUEST_TIMESTAMP, Instant.class));
+                requireNonNull(bundle.getSerializable(KEY_REQUEST_TIMESTAMP, Instant.class));
         mActivityComponent =
-                Objects.requireNonNull(
-                        bundle.getParcelable(KEY_ACTIVITY_COMPONENT, ComponentName.class));
-        mFocusedId = Objects.requireNonNull(bundle.getParcelable(KEY_FOCUSED_ID, AutofillId.class));
+                requireNonNull(bundle.getParcelable(KEY_ACTIVITY_COMPONENT, ComponentName.class));
+        mFocusedId = requireNonNull(bundle.getParcelable(KEY_FOCUSED_ID, AutofillId.class));
         mAutofillValue =
-                Objects.requireNonNull(
-                        bundle.getParcelable(KEY_AUTOFILL_VALUE, AutofillValue.class));
+                requireNonNull(bundle.getParcelable(KEY_AUTOFILL_VALUE, AutofillValue.class));
         mInlineSuggestionsRequest =
-                Objects.requireNonNull(
+                requireNonNull(
                         bundle.getParcelable(
                                 KEY_INLINE_SUGGESTIONS_REQUEST, InlineSuggestionsRequest.class));
+        mAugmentedAutofillProxy =
+                new AugmentedAutofillProxyImpl(
+                        requireNonNull(bundle.getBinder(KEY_AUGMENTED_AUTOFILL_MANAGER_CLIENT)));
         mFillEventHistory = bundle.getParcelable(KEY_FILL_EVENT_HISTORY, FillEventHistory.class);
     }
 
@@ -162,6 +184,17 @@ public class AutofillInlineRequestHint extends ContextHint {
     }
 
     /**
+     * Returns a {@link AugmentedAutofillProxyImpl} used to request additional autofill information
+     * from the augmented autofill service.
+     *
+     * @hide
+     */
+    @NonNull
+    public AugmentedAutofillProxy getAugmentedAutofillProxy() {
+        return mAugmentedAutofillProxy;
+    }
+
+    /**
      * Returns the {@link FillEventHistory} for the most recent fill request that personal context
      * was used to fulfill, if any.
      */
@@ -184,6 +217,7 @@ public class AutofillInlineRequestHint extends ContextHint {
         dest.writeString(mInlineSuggestionsRequest.getHostPackageName());
         dest.writeInt(mInlineSuggestionsRequest.getHostDisplayId());
         dest.writeParcelableList(mInlineSuggestionsRequest.getInlinePresentationSpecs(), 0);
+        // IAugmentedAutofillManagerClient is omitted as binders cannot be marshalled.
     }
 
     @Override
@@ -197,7 +231,10 @@ public class AutofillInlineRequestHint extends ContextHint {
                 && Objects.equals(mActivityComponent, that.mActivityComponent)
                 && Objects.equals(mFocusedId, that.mFocusedId)
                 && Objects.equals(mAutofillValue, that.mAutofillValue)
-                && Objects.equals(mInlineSuggestionsRequest, that.mInlineSuggestionsRequest);
+                && Objects.equals(mInlineSuggestionsRequest, that.mInlineSuggestionsRequest)
+                && Objects.equals(
+                        mAugmentedAutofillProxy.asBinder(),
+                        that.mAugmentedAutofillProxy.asBinder());
     }
 
     @Override
@@ -211,7 +248,8 @@ public class AutofillInlineRequestHint extends ContextHint {
                 mActivityComponent,
                 mFocusedId,
                 mAutofillValue,
-                mInlineSuggestionsRequest);
+                mInlineSuggestionsRequest,
+                mAugmentedAutofillProxy.asBinder());
     }
 
     @Override
@@ -231,6 +269,8 @@ public class AutofillInlineRequestHint extends ContextHint {
                 + mAutofillValue
                 + ", mInlineSuggestionsRequest="
                 + mInlineSuggestionsRequest
+                + ", mAugmentedAutofillProxy="
+                + mAugmentedAutofillProxy
                 + ", mFillEventHistory="
                 + mFillEventHistory
                 + '}';
@@ -247,8 +287,86 @@ public class AutofillInlineRequestHint extends ContextHint {
         bundle.putParcelable(KEY_FOCUSED_ID, mFocusedId);
         bundle.putParcelable(KEY_AUTOFILL_VALUE, mAutofillValue);
         bundle.putParcelable(KEY_INLINE_SUGGESTIONS_REQUEST, mInlineSuggestionsRequest);
+        bundle.putBinder(KEY_AUGMENTED_AUTOFILL_MANAGER_CLIENT, mAugmentedAutofillProxy.asBinder());
         bundle.putParcelable(KEY_FILL_EVENT_HISTORY, mFillEventHistory);
         return bundle;
+    }
+
+    /**
+     * Interface that abstracts the communication with the augmented autofill service.
+     *
+     * @hide
+     */
+    @TestApi
+    public interface AugmentedAutofillProxy {
+        /** Returns the {@link AssistStructure.ViewNode} for the node focused by autofill. */
+        @NonNull
+        AssistStructure.ViewNode getFocusedViewNode(@NonNull AutofillId focusedId);
+
+        /** Returns the coordinates of the input field view focused by autofill. */
+        @NonNull
+        Rect getViewCoordinates(@NonNull AutofillId focusedId);
+
+        /** Returns the binder for the client. */
+        @NonNull
+        IBinder asBinder();
+    }
+
+    /**
+     * Proxy for requesting information from the augmented autofill service.
+     *
+     * <p>This class wraps the {@link IAugmentedAutofillManagerClient} binder, which is provided to
+     * the main {@link AugmentedAutofillService} directly when an augmented autofill request is
+     * sent. This proxy is used by {@link PersonalContextManager} to fetch additional autofill
+     * information.
+     *
+     * @see PersonalContextManager#getFocusedViewNode(AutofillInlineRequestHint)
+     * @see PersonalContextManager#getViewCoordinates(AutofillInlineRequestHint)
+     */
+    private static final class AugmentedAutofillProxyImpl implements AugmentedAutofillProxy {
+        private final IAugmentedAutofillManagerClient mClient;
+
+        /**
+         * Creates an instance of {@link AugmentedAutofillProxyImpl} with a raw {@link IBinder} of a
+         * {@link IAugmentedAutofillManagerClient}.
+         */
+        private AugmentedAutofillProxyImpl(@NonNull IBinder binder) {
+            mClient = IAugmentedAutofillManagerClient.Stub.asInterface(binder);
+        }
+
+        /**
+         * @see PersonalContextManager#getFocusedViewNode(AutofillInlineRequestHint)
+         */
+        @NonNull
+        @Override
+        public AssistStructure.ViewNode getFocusedViewNode(@NonNull AutofillId focusedId) {
+            try {
+                final AssistStructure.ViewNodeParcelable viewNodeParcelable =
+                        mClient.getViewNodeParcelable(focusedId);
+                return viewNodeParcelable.getViewNode();
+            } catch (RemoteException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        /**
+         * @see PersonalContextManager#getViewCoordinates(AutofillInlineRequestHint)
+         */
+        @NonNull
+        @Override
+        public Rect getViewCoordinates(@NonNull AutofillId focusedId) {
+            try {
+                return mClient.getViewCoordinates(focusedId);
+            } catch (RemoteException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        @NonNull
+        @Override
+        public IBinder asBinder() {
+            return mClient.asBinder();
+        }
     }
 
     /** Builder used to create a {@link AutofillInlineRequestHint}. */
@@ -261,6 +379,7 @@ public class AutofillInlineRequestHint extends ContextHint {
         private AutofillId mFocusedId;
         private AutofillValue mAutofillValue;
         private InlineSuggestionsRequest mInlineSuggestionsRequest;
+        private AugmentedAutofillProxy mAugmentedAutofillProxy;
         private FillEventHistory mFillEventHistory;
 
         /** Creates an instance of {@link AutofillInlineRequestHint.Builder}. */
@@ -348,6 +467,45 @@ public class AutofillInlineRequestHint extends ContextHint {
         }
 
         /**
+         * Sets the {@link IAugmentedAutofillManagerClient} used for requesting information from the
+         * augmented autofill service.
+         *
+         * <p>Provide this hint to {@link PersonalContextManager} to fetch information.
+         *
+         * @param binder binder interface for communication with augmented autofill service
+         * @see PersonalContextManager#getFocusedViewNode(AutofillInlineRequestHint)
+         * @see PersonalContextManager#getViewCoordinates(AutofillInlineRequestHint)
+         */
+        // The binder is wrapped in a AugmentedAutofillProxyImpl and is not useful for a public user
+        // of the API.
+        @SuppressLint("MissingGetterMatchingBuilder")
+        @NonNull
+        public Builder setAugmentedAutofillManagerClient(@NonNull IBinder binder) {
+            mAugmentedAutofillProxy = new AugmentedAutofillProxyImpl(binder);
+            return this;
+        }
+
+        /**
+         * Sets the {@link AugmentedAutofillProxy} used for requesting information from the
+         * augmented autofill service.
+         *
+         * <p>Allows providing a custom implementation of the interface for testing purposes.
+         *
+         * @param augmentedAutofillProxy proxy for communication with augmented autofill service
+         * @hide
+         */
+        // The AugmentedAutofillProxy object is not useful for a public user of the API. There is a
+        // package-private getter for testing.
+        @SuppressLint("MissingGetterMatchingBuilder")
+        @TestApi
+        @NonNull
+        public Builder setAugmentedAutofillProxy(
+                @NonNull AugmentedAutofillProxy augmentedAutofillProxy) {
+            mAugmentedAutofillProxy = augmentedAutofillProxy;
+            return this;
+        }
+
+        /**
          * Sets the {@link FillEventHistory} for the most recent fill request that personal context
          * was used to fulfill.
          *
@@ -377,11 +535,12 @@ public class AutofillInlineRequestHint extends ContextHint {
                     mBaseBuilder.build(),
                     mSessionId,
                     mTaskId,
-                    Objects.requireNonNull(mRequestTimestamp),
-                    Objects.requireNonNull(mActivityComponent),
-                    Objects.requireNonNull(mFocusedId),
-                    Objects.requireNonNull(mAutofillValue),
-                    Objects.requireNonNull(mInlineSuggestionsRequest),
+                    requireNonNull(mRequestTimestamp),
+                    requireNonNull(mActivityComponent),
+                    requireNonNull(mFocusedId),
+                    requireNonNull(mAutofillValue),
+                    requireNonNull(mInlineSuggestionsRequest),
+                    requireNonNull(mAugmentedAutofillProxy),
                     mFillEventHistory);
         }
     }
