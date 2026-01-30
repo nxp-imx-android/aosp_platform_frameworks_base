@@ -467,9 +467,9 @@ public final class SurfaceControl implements Parcelable {
      * Jank information to be fed back via {@link OnJankDataListener}.
      * <p>
      * Apps may register a {@link OnJankDataListener} to get periodic batches of jank classification
-     * data from the (<a
-     * href="https://source.android.com/docs/core/graphics/surfaceflinger-windowmanagersystem">
-     * composer</a> regarding rendered frames. A frame is considered janky if it did not reach the
+     * data from the
+     * <a href="https://source.android.com/docs/core/graphics/surfaceflinger-windowmanager">composer</a>
+     * regarding rendered frames. A frame is considered janky if it did not reach the
      * display at the intended time, typically due to missing a rendering deadline. This API
      * provides information that can be used to identify the root cause of the scheduling misses
      * and provides overall frame scheduling statistics.
@@ -642,7 +642,7 @@ public final class SurfaceControl implements Parcelable {
      * surface.
      *
      * @see JankData
-     * @see #addOnJankDataListener
+     * @see AttachedSurfaceControl#registerOnJankDataListener
      */
     @FlaggedApi(Flags.FLAG_JANK_API)
     public interface OnJankDataListener {
