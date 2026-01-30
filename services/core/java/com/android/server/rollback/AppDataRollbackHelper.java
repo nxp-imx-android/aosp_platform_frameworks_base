@@ -163,7 +163,7 @@ public class AppDataRollbackHelper {
                 switch (packageRollbackInfo.getRollbackDataPolicy()) {
                     case PackageManager.ROLLBACK_DATA_POLICY_WIPE:
                         mInstaller.clearAppData(null, packageRollbackInfo.getPackageName(),
-                                userId, flags, 0);
+                                userId, flags, /* ceDataInode= */ 0, /* pccCeDataInode= */ 0);
                         break;
                     case PackageManager.ROLLBACK_DATA_POLICY_RESTORE:
 
