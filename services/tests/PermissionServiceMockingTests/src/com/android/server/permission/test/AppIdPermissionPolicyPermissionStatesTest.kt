@@ -21,6 +21,7 @@ import android.content.pm.PermissionInfo
 import android.os.Build
 import android.permission.flags.Flags
 import android.platform.test.annotations.RequiresFlagsEnabled
+import com.android.internal.pm.pkg.component.ParsedUsesPermission
 import com.android.server.permission.access.MutableAccessState
 import com.android.server.permission.access.MutateStateScope
 import com.android.server.permission.access.immutable.IndexedListSet
@@ -1046,6 +1047,88 @@ class AppIdPermissionPolicyPermissionStatesTest : BasePermissionPolicyTest() {
             assertWithMessage("User flags for $permissionName should be cleared")
                 .that(userFlags).isEqualTo(0)
         }
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_LOCATION_BUTTON_ENABLED)
+    fun testUpgradePackageState_locationButtonRevokesPreciseLocation() {
+        val packageState = mockPackageState(
+            APP_ID_0, mockAndroidPackage(
+                PACKAGE_NAME_0,
+                requestedPermissions = setOf(Manifest.permission.ACCESS_FINE_LOCATION)
+            )
+        )
+        addPackageState(packageState)
+        setPermissionFlags(
+            APP_ID_0,
+            USER_ID_0,
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            PermissionFlags.RUNTIME_GRANTED
+        )
+        val parsedUsesPermission = mockParsedUsesPermission(
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            ParsedUsesPermission.FLAG_ONLY_FOR_LOCATION_BUTTON
+        )
+        val newPackageState = mockPackageState(
+            APP_ID_0, mockAndroidPackage(
+                PACKAGE_NAME_0,
+                requestedPermissions = setOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                usesPermissionMapping =
+                    mapOf(Manifest.permission.ACCESS_FINE_LOCATION to parsedUsesPermission)
+            )
+        )
+
+        mutateState {
+            addPackageState(newPackageState, newState)
+            with(appIdPermissionPolicy) {
+                upgradePackageState(newPackageState, USER_ID_0, 18)
+            }
+        }
+
+        val actualFlags = getPermissionFlags(APP_ID_0, USER_ID_0,
+            Manifest.permission.ACCESS_FINE_LOCATION)
+        assertWithMessage("ACCESS_FINE_LOCATION should be revoked")
+            .that(PermissionFlags.isAppOpGranted(actualFlags)).isFalse()
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_LOCATION_BUTTON_ENABLED)
+    fun testOnPackageAdded_locationButtonRevokesPreciseLocation() {
+        val oldPackage = mockAndroidPackage(
+            PACKAGE_NAME_0,
+            requestedPermissions = setOf(Manifest.permission.ACCESS_FINE_LOCATION)
+        )
+        addPackageState(mockPackageState(APP_ID_0, oldPackage), oldState)
+
+        setPermissionFlags(
+            APP_ID_0,
+            USER_ID_0,
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            PermissionFlags.RUNTIME_GRANTED
+        )
+
+        val parsedUsesPermission = mockParsedUsesPermission(
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            ParsedUsesPermission.FLAG_ONLY_FOR_LOCATION_BUTTON
+        )
+        val newPackageState = mockPackageState(APP_ID_0, mockAndroidPackage(
+            PACKAGE_NAME_0,
+            requestedPermissions = setOf(Manifest.permission.ACCESS_FINE_LOCATION),
+            usesPermissionMapping =
+                mapOf(Manifest.permission.ACCESS_FINE_LOCATION to parsedUsesPermission)
+        ))
+
+        mutateState {
+            addPackageState(newPackageState, newState)
+            with(appIdPermissionPolicy) {
+                onPackageAdded(newPackageState)
+            }
+        }
+
+        val actualFlags = getPermissionFlags(APP_ID_0, USER_ID_0,
+            Manifest.permission.ACCESS_FINE_LOCATION)
+        assertWithMessage("ACCESS_FINE_LOCATION should be revoked")
+            .that(PermissionFlags.isAppOpGranted(actualFlags)).isFalse()
     }
 
     @Test

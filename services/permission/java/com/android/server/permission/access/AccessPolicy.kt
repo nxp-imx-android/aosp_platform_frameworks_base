@@ -464,7 +464,10 @@ private constructor(
         private val LOG_TAG = AccessPolicy::class.java.simpleName
 
         internal val VERSION_LATEST =
-            if (Flags.accessLocalNetworkPermissionEnabled()) {
+            // accessLocalNetworkPermissionEnabled flag is already in nextfood.
+            if (Flags.locationButtonEnabled() && Flags.accessLocalNetworkPermissionEnabled()) {
+                20
+            } else if (Flags.accessLocalNetworkPermissionEnabled()) {
                 // Version 18 is skipped because it was taken by a rolled back launch for app
                 // function.
                 19
