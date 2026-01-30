@@ -359,6 +359,7 @@ public abstract class WallpaperService extends Service {
         @GuardedBy("mLock")
         private EngineWindowPage[] mWindowPages = new EngineWindowPage[0];
         private Bitmap mLastScreenshot;
+        private boolean mEnableWallpaperLocalColorExtraction;
         private boolean mResetWindowPages;
 
         MotionEvent mPendingMove;
@@ -1683,6 +1684,9 @@ public abstract class WallpaperService extends Service {
             mSurfaceHolder.setSizeFromLayout();
             mInitializing = true;
             mSession = WindowManagerGlobal.getWindowSession();
+            mEnableWallpaperLocalColorExtraction =
+                    getResources().getBoolean(
+                            R.bool.config_enableWallpaperLocalColorExtraction);
 
             mWindow.setSession(mSession);
 
@@ -1897,6 +1901,12 @@ public abstract class WallpaperService extends Service {
          * {@link #PROCESS_LOCAL_COLORS_INTERVAL_MS} between two calls.
          */
         private void processLocalColors() {
+            if (!mEnableWallpaperLocalColorExtraction) {
+                if (DEBUG) {
+                    Log.d(TAG, "Local color extraction is not enabled. Returning early");
+                }
+                return;
+            }
             if (mProcessLocalColorsPending.compareAndSet(false, true)) {
                 final long now = mClockFunction.get();
                 final long timeSinceLastColorProcess = now - mLastProcessLocalColorsTimestamp;
@@ -2016,7 +2026,6 @@ public abstract class WallpaperService extends Service {
 
         void updatePage(EngineWindowPage currentPage, Set<RectF> areas, int pageIndx, int numPages,
                 float wallpaperDimAmount) {
-
             // in case the clock is zero, we start with negative time
             long current = SystemClock.elapsedRealtime() - DEFAULT_UPDATE_SCREENSHOT_DURATION;
             long lapsed = current - currentPage.getLastUpdateTime();
