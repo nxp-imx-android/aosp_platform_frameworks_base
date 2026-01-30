@@ -36,6 +36,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.Icon;
+import android.os.Trace;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.SparseArray;
@@ -74,6 +75,9 @@ public final class RemoteFloatingToolbarPopup implements FloatingToolbarPopup {
 
     private static final boolean DEBUG =
             Log.isLoggable(FloatingToolbar.FLOATING_TOOLBAR_TAG, Log.VERBOSE);
+    public static final String TRACE_TRACK_NAME = "RemoteFloatingToolbarPopup";
+
+    private final int mTraceCookie = System.identityHashCode(this);
 
     @NonNull
     private final Context mContext;
@@ -89,6 +93,8 @@ public final class RemoteFloatingToolbarPopup implements FloatingToolbarPopup {
     // The callback to handle remote rendered selection toolbar.
     @NonNull
     private final SelectionToolbarCallbackImpl mSelectionToolbarCallback;
+
+    private boolean mHasShowToolbarBeenTraced;
 
     // Tracks this toolbar popup state.
     private @ToolbarState int mState = TOOLBAR_STATE_DISMISSED;
@@ -204,6 +210,11 @@ public final class RemoteFloatingToolbarPopup implements FloatingToolbarPopup {
         mPendingMenuItems.put(sequenceNumber, menuItems);
         mPendingShowInfos.put(sequenceNumber, showInfo);
 
+        if (!mHasShowToolbarBeenTraced && sequenceNumber == 0) {
+            // We only start a trace for the first show() call that this instance sends to the
+            // render service.
+            Trace.asyncTraceForTrackBegin(TRACE_TRACK_NAME, "showToolbar", mTraceCookie);
+        }
         mSelectionToolbarManager.showToolbar(showInfo, mSelectionToolbarCallback);
 
         mState = TOOLBAR_STATE_SHOWN;
@@ -473,6 +484,10 @@ public final class RemoteFloatingToolbarPopup implements FloatingToolbarPopup {
             mPopupWindow.setWidth(contentRect.width());
             mPopupWindow.setHeight(contentRect.height());
             final Point coords = getCoordinatesInWindow(contentRect.left, contentRect.top);
+            if (!mHasShowToolbarBeenTraced) {
+                Trace.asyncTraceForTrackEnd(TRACE_TRACK_NAME, mTraceCookie);
+                mHasShowToolbarBeenTraced = true;
+            }
             mPopupWindow.showAtLocation(mParent, Gravity.NO_GRAVITY, coords.x, coords.y);
 
             WindowManager.LayoutParams layoutParams = (WindowManager.LayoutParams)
