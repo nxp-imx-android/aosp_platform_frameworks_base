@@ -14,13 +14,13 @@
 // limitations under the License.
 
 use anyhow::{bail, Context, Result};
+use libc::{dlclose, dlopen, dlsym, RTLD_GLOBAL, RTLD_LOCAL, RTLD_NOW};
 use log::debug;
 use native_activity_thread_bindgen::{
     android_create_namespace, android_dlextinfo, android_dlopen_ext,
-    android_get_exported_namespace, android_link_namespaces, android_namespace_t, dlclose, dlopen,
-    dlsym, ANDROID_DLEXT_USE_NAMESPACE, ANDROID_NAMESPACE_TYPE_EXEMPT_LIST_ENABLED,
-    ANDROID_NAMESPACE_TYPE_ISOLATED, ANDROID_NAMESPACE_TYPE_SHARED, RTLD_GLOBAL, RTLD_LOCAL,
-    RTLD_NOW,
+    android_get_exported_namespace, android_link_namespaces, android_namespace_t,
+    ANDROID_DLEXT_USE_NAMESPACE, ANDROID_NAMESPACE_TYPE_EXEMPT_LIST_ENABLED,
+    ANDROID_NAMESPACE_TYPE_ISOLATED, ANDROID_NAMESPACE_TYPE_SHARED,
 };
 use std::{
     ffi::{c_void, CString},
@@ -286,10 +286,7 @@ impl NamespaceFactory {
             // SAFETY: `libandroid_native_denylist.so` is a system library, and
             //         remains loaded for the lifetime of the process.
             let library_handle = unsafe {
-                dlopen(
-                    c"libandroid_native_denylist.so".as_ptr(),
-                    RTLD_GLOBAL as i32 | RTLD_NOW as i32,
-                )
+                dlopen(c"libandroid_native_denylist.so".as_ptr(), RTLD_GLOBAL | RTLD_NOW)
             };
             if library_handle.is_null() {
                 panic!("Failed to preload the denylist library");
@@ -422,11 +419,7 @@ impl LoadedLibrary {
         // SAFETY: `library` and `dlextinfo` are valid pointers. The caller ensured that the
         // library is safe to be loaded.
         let library_handle = unsafe {
-            android_dlopen_ext(
-                library.as_ptr(),
-                RTLD_LOCAL as i32,
-                &dlextinfo as *const android_dlextinfo,
-            )
+            android_dlopen_ext(library.as_ptr(), RTLD_LOCAL, &dlextinfo as *const android_dlextinfo)
         };
         if library_handle.is_null() {
             bail_with_dlerror!("Failed to open the library {}", library_name);
