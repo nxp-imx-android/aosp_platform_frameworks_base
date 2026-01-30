@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.windowdecor;
 
+import static android.os.statsd.desktopmode.DesktopModeEnums.UNKNOWN_INPUT_METHOD;
 import static android.view.InputDevice.SOURCE_TOUCHSCREEN;
 import static android.view.MotionEvent.ACTION_CANCEL;
 import static android.view.MotionEvent.ACTION_HOVER_ENTER;
@@ -23,6 +24,7 @@ import static android.view.MotionEvent.ACTION_HOVER_EXIT;
 import static android.view.MotionEvent.ACTION_MOVE;
 import static android.view.MotionEvent.ACTION_UP;
 
+import static com.android.wm.shell.desktopmode.DesktopModeEventLogger.getInputMethodType;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_WINDOW_DECORATION;
 import static com.android.wm.shell.windowdecor.DragPositioningCallbackUtility.getInputMethodFromMotionEvent;
 
@@ -122,7 +124,8 @@ public class DesktopModeTouchEventListener
     private boolean mDragInterrupted;
     private boolean mLongClickDisabled;
     private int mDragPointerId = -1;
-    private MotionEvent mMotionEvent;
+    private DesktopModeEventLogger.Companion.InputMethod mInputMethod =
+            getInputMethodType(UNKNOWN_INPUT_METHOD);
     private int mCurrentPointerIconType = PointerIcon.TYPE_ARROW;
 
     public DesktopModeTouchEventListener(
@@ -236,8 +239,7 @@ public class DesktopModeTouchEventListener
             } else {
                 // Just toggle between maximize/restore states.
                 mWindowDecorationActions.onMaximizeOrRestore(decoration.getTaskInfo().taskId,
-                        ToggleTaskSizeInteraction.AmbiguousSource.HEADER_BUTTON,
-                        getInputMethod(mMotionEvent));
+                        ToggleTaskSizeInteraction.AmbiguousSource.HEADER_BUTTON, mInputMethod);
             }
         } else if (id == R.id.minimize_window) {
             mWindowDecorationActions.onMinimize(decoration.getTaskInfo());
@@ -246,7 +248,7 @@ public class DesktopModeTouchEventListener
 
     @Override
     public boolean onTouch(View v, MotionEvent e) {
-        mMotionEvent = e;
+        mInputMethod = getInputMethod(e);
         final String viewName = getResourceName(v);
         debugLogD("onTouch(%s) action=%s", viewName, MotionEvent.actionToString(e.getAction()));
         final int id = v.getId();
@@ -382,7 +384,7 @@ public class DesktopModeTouchEventListener
      */
     @Override
     public boolean onGenericMotion(View v, MotionEvent ev) {
-        mMotionEvent = ev;
+        mInputMethod = getInputMethod(ev);
         final WindowDecorationWrapper decoration = mWindowDecorationFinder.apply(mTaskId);
         if (decoration == null) {
             return false;
@@ -760,8 +762,7 @@ public class DesktopModeTouchEventListener
             return false;
         }
         mWindowDecorationActions.onMaximizeOrRestore(mTaskId,
-                ToggleTaskSizeInteraction.AmbiguousSource.DOUBLE_TAP,
-                getInputMethod(mMotionEvent));
+                ToggleTaskSizeInteraction.AmbiguousSource.DOUBLE_TAP, mInputMethod);
         return true;
     }
 
