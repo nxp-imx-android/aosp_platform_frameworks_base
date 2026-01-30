@@ -2189,6 +2189,14 @@ public final class DisplayManagerService extends SystemService {
             }
         }
 
+        if (callingUid != Process.SYSTEM_UID
+                && virtualDisplayConfig.getUniqueId() != null) {
+            if (!checkCallingPermission(ADD_TRUSTED_DISPLAY, "createVirtualDisplay()")) {
+                throw new SecurityException("Requires ADD_TRUSTED_DISPLAY permission to "
+                        + "create a virtual display with a uniqueId.");
+            }
+        }
+
         if ((flags & VIRTUAL_DISPLAY_FLAG_ALWAYS_UNLOCKED) != 0
                 && (flags & VIRTUAL_DISPLAY_FLAG_OWN_DISPLAY_GROUP) == 0
                 && (flags & VIRTUAL_DISPLAY_FLAG_DEVICE_DISPLAY_GROUP) == 0) {

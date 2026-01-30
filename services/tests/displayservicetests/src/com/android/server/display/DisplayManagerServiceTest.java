@@ -544,6 +544,8 @@ public class DisplayManagerServiceTest {
         mLooperManagers.add(InstrumentationRegistry.getInstrumentation().acquireLooperManager(
                 UiThread.getHandler().getLooper()));
         manageDisplaysPermission(/* granted= */ false);
+        doReturn(PackageManager.PERMISSION_GRANTED).when(mContext)
+                .checkCallingPermission(eq(ADD_TRUSTED_DISPLAY));
         when(mContext.getResources()).thenReturn(mResources);
         mUserManager = Mockito.spy(mContext.getSystemService(UserManager.class));
         when(mMockDisplayDeviceConfig.getTempSensor()).thenReturn(
@@ -1584,6 +1586,48 @@ public class DisplayManagerServiceTest {
                         + " group.",
                 displayGroupId1,
                 displayGroupId2);
+    }
+
+    @Test
+    public void createVirtualDisplay_uniqueIdProvidedWithoutTrustedPermission_throwsException() {
+        mDisplayManager = new DisplayManagerService(mContext, mBasicInjector);
+        DisplayManagerService.BinderService binderService = mDisplayManager.new BinderService();
+
+        registerDefaultDisplays(mDisplayManager);
+        when(mMockAppToken.asBinder()).thenReturn(mMockAppToken);
+
+        final VirtualDisplayConfig.Builder builder = new VirtualDisplayConfig.Builder(
+                VIRTUAL_DISPLAY_NAME, 600, 800, 320);
+        builder.setUniqueId("uniqueId");
+
+        doReturn(PackageManager.PERMISSION_DENIED).when(mContext)
+                .checkCallingPermission(eq(ADD_TRUSTED_DISPLAY));
+
+        assertThrows(SecurityException.class, () -> {
+            binderService.createVirtualDisplay(builder.build(), mMockAppToken /* callback */,
+                    null /* projection */, PACKAGE_NAME);
+        });
+    }
+
+    @Test
+    public void createVirtualDisplay_uniqueIdProvidedWithTrustedPermission_success() {
+        mDisplayManager = new DisplayManagerService(mContext, mBasicInjector);
+        DisplayManagerService.BinderService binderService = mDisplayManager.new BinderService();
+
+        registerDefaultDisplays(mDisplayManager);
+        when(mMockAppToken.asBinder()).thenReturn(mMockAppToken);
+
+        final VirtualDisplayConfig.Builder builder = new VirtualDisplayConfig.Builder(
+                VIRTUAL_DISPLAY_NAME, 600, 800, 320);
+        builder.setUniqueId("uniqueId");
+
+        doReturn(PackageManager.PERMISSION_GRANTED).when(mContext)
+                .checkCallingPermission(eq(ADD_TRUSTED_DISPLAY));
+
+        int displayId = binderService.createVirtualDisplay(builder.build(),
+                mMockAppToken /* callback */, null /* projection */, PACKAGE_NAME);
+
+        assertThat(displayId).isNotEqualTo(Display.INVALID_DISPLAY);
     }
 
     @Test
