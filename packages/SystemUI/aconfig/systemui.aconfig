@@ -1898,13 +1898,6 @@ flag {
 }
 
 flag {
-    name: "use_systemui_views_for_system_toolbar"
-    namespace: "permissions"
-    description: "Use the views moved into system ui from the framework for the system selection toolbar."
-    bug: "450977221"
-}
-
-flag {
     name: "wakefulness_for_animations"
     namespace: "systemui"
     description: "Changes the signal used for animation wakefulness on keyguard"
