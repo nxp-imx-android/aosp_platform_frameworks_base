@@ -18,6 +18,7 @@ package android.service.personalcontext.embedded;
 
 import static android.annotation.SystemApi.Client.PRIVILEGED_APPS;
 
+import android.Manifest;
 import android.annotation.FlaggedApi;
 import android.annotation.SdkConstant;
 import android.annotation.SystemApi;
@@ -29,6 +30,7 @@ import android.os.Handler;
 import android.os.HandlerExecutor;
 import android.os.IBinder;
 import android.os.Looper;
+import android.os.OutcomeReceiver;
 import android.os.RemoteException;
 import android.os.ResultReceiver;
 import android.service.personalcontext.Flags;
@@ -39,7 +41,6 @@ import android.util.Log;
 import android.view.Display;
 import android.view.SurfaceControlViewHost;
 import android.view.View;
-import android.view.View.MeasureSpec;
 import android.view.WindowManager;
 import android.window.InputTransferToken;
 
@@ -62,7 +63,7 @@ import java.util.function.Consumer;
  * disconnected via the {@link #onClientConnected} and {@link #onClientDisconnected} methods.
  *
  * <p>You must declare the service in the AndroidManifest of the app hosting the service with the
- * {@link android.Manifest.permission#BIND_INSIGHT_SURFACE_VISUALIZER_SERVICE} permission,
+ * {@link Manifest.permission#BIND_INSIGHT_SURFACE_VISUALIZER_SERVICE} permission,
  * and include an intent filter with the necessary action indicating that it is an
  * {@link InsightSurfaceVisualizerService} ({@link #SERVICE_INTERFACE}).
  *
@@ -254,7 +255,7 @@ public abstract class InsightSurfaceVisualizerService extends Service {
     /**
      * An insight surface client has been updated. Subclasses that wish to handled updates should
      * override this method and return whether the update was accepted. The return value will be
-     * sent back to the client via an {@link android.os.OutcomeReceiver} callback (see
+     * sent back to the client via an {@link OutcomeReceiver} callback (see
      * {@link InsightSurfaceSession#update} for more details).
      *
      * @param oldClientInfo the old {@link InsightSurfaceClientInfo} for the client
@@ -330,10 +331,19 @@ public abstract class InsightSurfaceVisualizerService extends Service {
                                 mContext, mDisplay, null);
                 mSurfaceControlViewHostsByClient.put(clientInfo.getId(), surfaceControlViewHost);
 
-                surfaceControlViewHost.setView(
-                        view,
-                        MeasureSpec.getSize(clientInfo.getMeasureSpecWidth()),
-                        MeasureSpec.getSize(clientInfo.getMeasureSpecHeight()));
+                // TODO(b/479575802): Just a temporary fix for setting the view dimensions.
+                view.addOnLayoutChangeListener(
+                        (v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
+                            view.measure(
+                                    clientInfo.getMeasureSpecWidth(),
+                                    clientInfo.getMeasureSpecHeight());
+                            final int measuredWidth = view.getMeasuredWidth();
+                            final int measuredHeight = view.getMeasuredHeight();
+                            surfaceControlViewHost.relayout(measuredWidth, measuredHeight);
+                            clientInfo.onSizeChanged(measuredWidth, measuredHeight);
+                        });
+                surfaceControlViewHost.setView(view, 0, 0);
+
                 clientInfo.onSurfaceCreated(
                         surfaceControlViewHost.getSurfacePackage(),
                         new IInsightSurfaceSession.Stub() {
