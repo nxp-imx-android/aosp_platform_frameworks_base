@@ -362,3 +362,12 @@ flag {
     }
 }
 
+flag {
+    name: "psc_auto_update_broadcast_state"
+    namespace: "backstage_power"
+    description: "Automatically trigger OomAdjuster updates from ProcessStateController on Broadcast state changes."
+    bug: "450079190"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

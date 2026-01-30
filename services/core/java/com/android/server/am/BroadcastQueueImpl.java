@@ -587,10 +587,12 @@ class BroadcastQueueImpl extends BroadcastQueue {
             queue = nextQueue;
         }
 
-        // TODO: We need to update oomAdj early as this currently doesn't guarantee that the
-        // procState is updated correctly when the app is handling a broadcast.
-        if (updateOomAdj) {
-            mService.updateOomAdjPendingTargetsLocked(OOM_ADJ_REASON_START_RECEIVER);
+        if (Flags.pscAutoUpdateBroadcastState()) {
+            // No need to manually trigger an update.
+        } else {
+            if (updateOomAdj) {
+                mService.updateOomAdjPendingTargetsLocked(OOM_ADJ_REASON_START_RECEIVER);
+            }
         }
 
         checkPendingColdStartValidityLocked();
@@ -694,7 +696,11 @@ class BroadcastQueueImpl extends BroadcastQueue {
             // Now that we're running warm, we can finally request that OOM
             // adjust we've been waiting for
             notifyStartedRunning(queue);
-            mService.updateOomAdjPendingTargetsLocked(OOM_ADJ_REASON_START_RECEIVER);
+            if (Flags.pscAutoUpdateBroadcastState()) {
+                // No need to manually trigger an update.
+            } else {
+                mService.updateOomAdjPendingTargetsLocked(OOM_ADJ_REASON_START_RECEIVER);
+            }
 
             queue.traceProcessEnd();
             queue.traceProcessRunningBegin();
@@ -1571,9 +1577,11 @@ class BroadcastQueueImpl extends BroadcastQueue {
         // Emit all trace events for this process into a consistent track
         queue.runningTraceTrackName = TAG + ".mRunning[" + queueIndex + "]";
         queue.runningIndex = queueIndex;
-        queue.runningOomAdjusted = queue.isPendingManifest()
-                || queue.isPendingOrdered()
-                || queue.isPendingResultTo();
+        if (!Flags.pscAutoUpdateBroadcastState()) {
+            queue.runningOomAdjusted = queue.isPendingManifest()
+                    || queue.isPendingOrdered()
+                    || queue.isPendingResultTo();
+        }
 
         // If already warm, we can make OOM adjust request immediately;
         // otherwise we need to wait until process becomes warm
@@ -2209,15 +2217,25 @@ class BroadcastQueueImpl extends BroadcastQueue {
                 mService.updateLruProcessLocked(queue.app, false, null);
             }
 
-            mService.unfreezeTemporarily(queue.app,
-                    CachedAppOptimizer.UNFREEZE_REASON_START_RECEIVER);
+            if (Flags.pscAutoUpdateBroadcastState()) {
+                // No need to manually unfreeze, the update triggered in
+                // noteBroadcastDeliveryStarted should handle it.
+            } else {
+                mService.unfreezeTemporarily(queue.app,
+                        CachedAppOptimizer.UNFREEZE_REASON_START_RECEIVER);
+            }
 
             mService.mProcessStateController.noteBroadcastDeliveryStarted(queue.app,
                     queue.getPreferredSchedulingGroupLocked());
-            if (queue.runningOomAdjusted) {
-                mService.mProcessStateController.forceProcessStateUpTo(queue.app,
-                        ActivityManager.PROCESS_STATE_RECEIVER);
-                mService.enqueueOomAdjTargetLocked(queue.app);
+            if (Flags.pscAutoUpdateBroadcastState()) {
+                // No need to force the ProcState or enqueue, the update triggered in
+                // noteBroadcastDeliveryStarted should handle it.
+            } else {
+                if (queue.runningOomAdjusted) {
+                    mService.mProcessStateController.forceProcessStateUpTo(queue.app,
+                            ActivityManager.PROCESS_STATE_RECEIVER);
+                    mService.enqueueOomAdjTargetLocked(queue.app);
+                }
             }
         }
     }
@@ -2230,8 +2248,14 @@ class BroadcastQueueImpl extends BroadcastQueue {
     private void notifyStoppedRunning(@NonNull BroadcastProcessQueue queue) {
         if (queue.app != null) {
             mService.mProcessStateController.noteBroadcastDeliveryEnded(queue.app);
-            if (queue.runningOomAdjusted) {
-                mService.enqueueOomAdjTargetLocked(queue.app);
+
+            if (Flags.pscAutoUpdateBroadcastState()) {
+                // No need to enqueue, the update triggered in noteBroadcastDeliveryEnded should
+                // handle it.
+            } else {
+                if (queue.runningOomAdjusted) {
+                    mService.enqueueOomAdjTargetLocked(queue.app);
+                }
             }
         }
     }
