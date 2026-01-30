@@ -43,6 +43,7 @@ import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.ActionModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.ContactsModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.DraftRuleModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.IncludedAppsModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.RuleValue
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.NotificationRuleEditViewModel
 
@@ -58,18 +59,21 @@ fun NotificationRuleEdit(
     rule: DraftRuleModel,
     modifier: Modifier = Modifier,
 ) {
+    val context = LocalContext.current
     val viewModel = rememberViewModel("NotificationRuleEditViewModel") { viewModelFactory.create() }
     val scope = rememberCoroutineScope()
 
     var shownDialogType: EditDialogType by remember(rule) { mutableStateOf(EditDialogType.None) }
     var selectedAction by remember(rule) { mutableStateOf(rule.action) }
     val selectedContacts by remember(rule) { mutableStateOf(rule.contacts) }
+    val selectedIncludedApps by remember(rule) { mutableStateOf(rule.includedApps) }
 
     val text =
-        remember(selectedAction, selectedContacts, shownDialogType) {
+        remember(selectedAction, selectedContacts, selectedIncludedApps, shownDialogType) {
             buildAnnotatedText(
                 selectedAction = selectedAction,
                 selectedContacts = selectedContacts,
+                selectedIncludedApps = selectedIncludedApps,
                 shownDialogType = shownDialogType,
                 changeEditDialog = { shownDialogType = it },
             )
@@ -93,6 +97,9 @@ fun NotificationRuleEdit(
                     context = LocalContext.current,
                 )
             }
+            is EditDialogType.IncludedApps -> {
+                AppChoiceDialog(viewModel = viewModel)
+            }
             is EditDialogType.None -> {}
         }
     }
@@ -108,6 +115,7 @@ fun NotificationRuleEdit(
 private fun buildAnnotatedText(
     selectedAction: ActionModel,
     selectedContacts: RuleValue<ContactsModel>?,
+    selectedIncludedApps: RuleValue<IncludedAppsModel>?,
     shownDialogType: EditDialogType,
     changeEditDialog: (EditDialogType) -> Unit,
 ): AnnotatedString {
@@ -125,6 +133,15 @@ private fun buildAnnotatedText(
         )
 
         append(" all Conversation notifications")
+
+        selectedIncludedApps?.let {
+            append(" from ")
+            createIncludedAppsText(
+                selectedIncludedApps = selectedIncludedApps,
+                editDialogShowing = shownDialogType,
+                changeEditDialog = changeEditDialog,
+            )
+        }
 
         selectedContacts?.let {
             append(" from ")
@@ -167,6 +184,7 @@ private sealed interface EditDialogType {
      */
     data class Contact(val initialQuery: String = "") : EditDialogType
 
+    data object IncludedApps : EditDialogType
     // TODO: b/478225883 - Add more edit types.
 }
 
@@ -194,6 +212,41 @@ private fun ActionChoiceDialog(
             )
         }
     }
+}
+
+/** Creates annotated text for the included apps filter field. */
+private fun AnnotatedString.Builder.createIncludedAppsText(
+    selectedIncludedApps: RuleValue<IncludedAppsModel>,
+    editDialogShowing: EditDialogType,
+    changeEditDialog: (EditDialogType) -> Unit,
+) {
+    val text =
+        when (selectedIncludedApps) {
+            is RuleValue.Specified -> {
+                val apps = selectedIncludedApps.value.apps
+                check(apps.isNotEmpty()) { "IncludedAppsModel.apps must be non-empty" }
+                val first = apps[0].label
+                if (apps.size > 1) {
+                    "$first +${apps.size - 1} more"
+                } else {
+                    first
+                }
+            }
+            is RuleValue.Ambiguous -> {
+                selectedIncludedApps.placeholderText
+            }
+        }
+    clickableText(
+        text = text,
+        isAmbiguous = selectedIncludedApps is RuleValue.Ambiguous,
+        onClick = {
+            toggleEditDialogShown(
+                desiredType = EditDialogType.IncludedApps,
+                currentEditDialogShowing = editDialogShowing,
+                changeEditDialog = changeEditDialog,
+            )
+        },
+    )
 }
 
 /** Creates annotated text for the contacts filter field. */

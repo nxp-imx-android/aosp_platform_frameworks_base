@@ -35,6 +35,11 @@ public data class DraftRuleModel(
      * [android.app.NotificationRule.Filter.getContacts].
      */
     val contacts: RuleValue<ContactsModel>?,
+    /**
+     * The apps that this rule applies to. Null if included apps are not part of the rule filter.
+     * [android.app.NotificationRule.Filter.getIncludedPackageUids].
+     */
+    val includedApps: RuleValue<IncludedAppsModel>?,
 )
 
 /** Represents various actions that a rule can apply to a notification. */

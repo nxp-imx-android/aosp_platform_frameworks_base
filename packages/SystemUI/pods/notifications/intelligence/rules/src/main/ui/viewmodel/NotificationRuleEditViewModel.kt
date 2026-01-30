@@ -18,7 +18,9 @@ package com.android.systemui.notifications.intelligence.rules.ui.viewmodel
 
 import android.content.ContentResolver
 import com.android.systemui.notifications.intelligence.rules.domain.interactor.ContactsInteractor
+import com.android.systemui.notifications.intelligence.rules.domain.interactor.InstalledAppsInteractor
 import com.android.systemui.notifications.intelligence.rules.shared.NmContextualDisplayLaunch
+import com.android.systemui.notifications.intelligence.rules.shared.model.AppModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.ContactModel
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -26,7 +28,10 @@ import dagger.assisted.AssistedInject
 /** A view model for editing a specific notification rule. Work-in-progress. */
 class NotificationRuleEditViewModel
 @AssistedInject
-constructor(private val contactsInteractor: ContactsInteractor) {
+constructor(
+    private val contactsInteractor: ContactsInteractor,
+    private val installedAppsInteractor: InstalledAppsInteractor,
+) {
     /**
      * Fetches all contacts whose name matches [searchQuery].
      *
@@ -40,6 +45,11 @@ constructor(private val contactsInteractor: ContactsInteractor) {
             return emptyList()
         }
         return contactsInteractor.fetchContacts(searchQuery, contentResolver)
+    }
+
+    /** Fetches all apps installed on the device. */
+    suspend fun fetchInstalledApps(): List<AppModel> {
+        return installedAppsInteractor.fetchInstalledApps()
     }
 
     @AssistedFactory
