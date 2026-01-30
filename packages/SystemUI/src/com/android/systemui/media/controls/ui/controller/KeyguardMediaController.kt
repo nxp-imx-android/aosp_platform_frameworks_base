@@ -18,10 +18,17 @@ package com.android.systemui.media.controls.ui.controller
 
 import android.content.Context
 import android.content.res.Configuration
+import android.util.MathUtils
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.VisibleForTesting
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.ComposeView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -45,6 +52,7 @@ import com.android.systemui.media.remedia.ui.viewmodel.MediaCarouselVisibility
 import com.android.systemui.media.remedia.ui.viewmodel.MediaFalsingSystem
 import com.android.systemui.media.remedia.ui.viewmodel.MediaViewModel
 import com.android.systemui.plugins.statusbar.StatusBarStateController
+import com.android.systemui.res.R
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.statusbar.StatusBarState
@@ -86,6 +94,13 @@ constructor(
     private val falsingSystem: MediaFalsingSystem,
 ) : Dumpable {
     private var lastUsedStatusBarState = -1
+
+    /** Is the media player visible? */
+    var visible by mutableStateOf(false)
+        private set
+
+    private var distanceForFullShadeTransition = 0
+    private var fullShadeTransitionProgress: Float by mutableStateOf(0.0f)
 
     private val composeView =
         ComposeView(context).apply {
@@ -162,6 +177,12 @@ constructor(
 
     private fun setComposeContent(composeView: ComposeView) {
         composeView.setContent {
+            val transitionAlpha by remember {
+                derivedStateOf {
+                    // This maps the 0.0 -> 0.25 progress to 1.0 -> 0.0 Alpha
+                    (1f - (fullShadeTransitionProgress / 0.25f)).coerceIn(0f, 1f)
+                }
+            }
             Media(
                 viewModelFactory = mediaViewModelFactory,
                 presentationStyle = MediaPresentationStyle.Default,
@@ -173,13 +194,18 @@ constructor(
                         },
                     ),
                 onDismissed = { mediaCarouselInteractor.onSwipeToDismiss() },
-                visible = { isMediaVisibleOnLockscreen },
+                modifier = Modifier.graphicsLayer { alpha = transitionAlpha },
+                visible = { visible },
                 location = Media.Location.LOCKSCREEN,
             )
         }
     }
 
     private fun updateResources() {
+        distanceForFullShadeTransition =
+            context.resources.getDimensionPixelSize(
+                R.dimen.lockscreen_shade_media_transition_distance
+            )
         useSplitShade = splitShadeStateController.shouldUseSplitNotificationShade(context.resources)
     }
 
@@ -193,10 +219,6 @@ constructor(
             reattachHostView()
             refreshMediaPosition(reason = "useSplitShade changed")
         }
-
-    /** Is the media player visible? */
-    var visible = false
-        private set
 
     var visibilityChangedListener: ((Boolean) -> Unit)? = null
 
@@ -339,6 +361,13 @@ constructor(
         logger.logActiveMediaContainer("after refreshMediaPosition", currActiveContainer)
 
         lastUsedStatusBarState = currentState
+    }
+
+    fun setTransitionToFullShadeAmount(transitionAmount: Float) {
+        val progress = MathUtils.saturate(transitionAmount / distanceForFullShadeTransition)
+        if (progress <= 1.0f || progress >= 0.0f) {
+            fullShadeTransitionProgress = progress
+        }
     }
 
     private fun shouldBeVisibleForSplitShade(): Boolean {

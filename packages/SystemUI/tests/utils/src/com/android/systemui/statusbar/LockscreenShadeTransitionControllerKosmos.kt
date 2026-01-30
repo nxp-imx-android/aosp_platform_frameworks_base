@@ -25,6 +25,7 @@ import com.android.systemui.keyguard.domain.interactor.naturalScrollingSettingOb
 import com.android.systemui.keyguard.wakefulnessLifecycle
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
+import com.android.systemui.media.controls.controller.keyguardMediaController
 import com.android.systemui.media.controls.ui.controller.mediaHierarchyManager
 import com.android.systemui.plugins.activityStarter
 import com.android.systemui.shade.data.repository.shadeRepository
@@ -46,6 +47,7 @@ var Kosmos.lockscreenShadeTransitionController by Fixture {
         falsingCollector = falsingCollector,
         ambientState = ambientState,
         mediaHierarchyManager = mediaHierarchyManager,
+        keyguardMediaController = keyguardMediaController,
         scrimTransitionController = lockscreenShadeScrimTransitionController,
         keyguardTransitionControllerFactory = lockscreenShadeKeyguardTransitionControllerFactory,
         depthController = notificationShadeDepthController,

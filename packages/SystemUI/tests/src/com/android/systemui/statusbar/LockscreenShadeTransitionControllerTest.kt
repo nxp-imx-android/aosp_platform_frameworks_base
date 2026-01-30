@@ -19,6 +19,7 @@ import com.android.systemui.flags.Flags
 import com.android.systemui.flags.fakeFeatureFlagsClassic
 import com.android.systemui.keyguard.domain.interactor.NaturalScrollingSettingObserver
 import com.android.systemui.kosmos.testScope
+import com.android.systemui.media.controls.ui.controller.KeyguardMediaController
 import com.android.systemui.media.controls.ui.controller.MediaHierarchyManager
 import com.android.systemui.plugins.qs.QS
 import com.android.systemui.res.R
@@ -93,6 +94,7 @@ class LockscreenShadeTransitionControllerTest : SysuiTestCase() {
     @Mock lateinit var keyguardBypassController: KeyguardBypassController
     @Mock lateinit var lockScreenUserManager: NotificationLockscreenUserManager
     @Mock lateinit var mediaHierarchyManager: MediaHierarchyManager
+    @Mock lateinit var keyguardMediaController: KeyguardMediaController
     @Mock lateinit var nsslController: NotificationStackScrollLayoutController
     @Mock lateinit var qS: QS
     @Mock lateinit var qsTransitionController: LockscreenShadeQsTransitionController
@@ -138,6 +140,7 @@ class LockscreenShadeTransitionControllerTest : SysuiTestCase() {
                 falsingCollector = FalsingCollectorFake(),
                 ambientState = mock(),
                 mediaHierarchyManager = mediaHierarchyManager,
+                keyguardMediaController = keyguardMediaController,
                 scrimTransitionController =
                     LockscreenShadeScrimTransitionController(
                         scrimController = { scrimController },
