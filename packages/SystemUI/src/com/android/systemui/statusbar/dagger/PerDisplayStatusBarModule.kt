@@ -50,6 +50,7 @@ import com.android.systemui.statusbar.events.domain.interactor.SystemStatusEvent
 import com.android.systemui.statusbar.gesture.SwipeStatusBarAwayGestureHandler
 import com.android.systemui.statusbar.layout.StatusBarContentInsetsProvider
 import com.android.systemui.statusbar.layout.StatusBarContentInsetsProviderImpl
+import com.android.systemui.statusbar.layout.ui.viewmodel.StatusBarContentInsetsViewModel
 import com.android.systemui.statusbar.phone.ConfigurationControllerImpl
 import com.android.systemui.statusbar.pipeline.shared.domain.interactor.HomeStatusBarInteractor
 import com.android.systemui.statusbar.quickactions.av.domain.interactor.AvControlsChipInteractor
@@ -115,6 +116,10 @@ interface PerDisplayStatusBarModule {
     @Binds
     @DisplayAware
     fun homeStatusBarInteractor(interactor: HomeStatusBarInteractor): HomeStatusBarInteractor
+
+    @Binds
+    @DisplayAware
+    fun contentInsetsViewModel(vm: StatusBarContentInsetsViewModel): StatusBarContentInsetsViewModel
 
     @Binds
     @DisplayAware
