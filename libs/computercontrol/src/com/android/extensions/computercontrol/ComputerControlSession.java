@@ -592,6 +592,7 @@ public final class ComputerControlSession implements AutoCloseable {
     public static class Params {
         @NonNull private final Context mContext;
         @NonNull private final String mName;
+        private final int mTargetExtensionVersion;
         @NonNull private final List<String> mTargetPackageNames;
         @Nullable private final PendingIntent mPreviewIntent;
         @Nullable private final AppInteractionAttribution mAppInteractionAttribution;
@@ -599,11 +600,13 @@ public final class ComputerControlSession implements AutoCloseable {
         private Params(
                 @NonNull Context context,
                 @NonNull String name,
+                int targetExtensionVersion,
                 @NonNull List<String> targetPackageNames,
                 @Nullable PendingIntent previewIntent,
                 @Nullable AppInteractionAttribution appInteractionAttribution) {
             mContext = context;
             mName = name;
+            mTargetExtensionVersion = targetExtensionVersion;
             mTargetPackageNames = targetPackageNames;
             mPreviewIntent = previewIntent;
             mAppInteractionAttribution = appInteractionAttribution;
@@ -624,6 +627,13 @@ public final class ComputerControlSession implements AutoCloseable {
         @NonNull
         public String getName() {
             return mName;
+        }
+
+        /**
+         * Returns the target extension version of the computer control session.
+         */
+        public int getTargetExtensionVersion() {
+            return mTargetExtensionVersion;
         }
 
         /**
@@ -665,6 +675,7 @@ public final class ComputerControlSession implements AutoCloseable {
         public static class Builder {
             @NonNull private final Context mContext;
             private String mName;
+            private int mTargetExtensionVersion = 0;
             private List<String> mTargetPackageNames = Collections.emptyList();
             private PendingIntent mPreviewIntent;
             private AppInteractionAttribution mAppInteractionAttribution;
@@ -682,6 +693,15 @@ public final class ComputerControlSession implements AutoCloseable {
             @NonNull
             public Builder setName(@NonNull String name) {
                 mName = name;
+                return this;
+            }
+
+            /**
+             * Set the target extension version of the computer control session.
+             */
+            @NonNull
+            public Builder setTargetExtensionVersion(int targetExtensionVersion) {
+                mTargetExtensionVersion = targetExtensionVersion;
                 return this;
             }
 
@@ -727,6 +747,7 @@ public final class ComputerControlSession implements AutoCloseable {
                 return new Params(
                         mContext,
                         mName,
+                        mTargetExtensionVersion,
                         mTargetPackageNames,
                         mPreviewIntent,
                         mAppInteractionAttribution);

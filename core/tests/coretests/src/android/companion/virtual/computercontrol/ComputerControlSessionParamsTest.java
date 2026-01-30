@@ -38,6 +38,7 @@ import java.util.List;
 public class ComputerControlSessionParamsTest {
 
     private static final String SESSION_NAME = "ComputerControlSessionName";
+    private static final int TARGET_EXTENSION_VERSION = 1;
     private static final String TARGET_PACKAGE_1 = "com.android.foo";
     private static final String TARGET_PACKAGE_2 = "com.android.bar";
     private static final List<String> TARGET_PACKAGE_NAMES =
@@ -58,6 +59,7 @@ public class ComputerControlSessionParamsTest {
         ComputerControlSessionParams originalParams =
                 new ComputerControlSessionParams.Builder()
                         .setName(SESSION_NAME)
+                        .setTargetExtensionVersion(TARGET_EXTENSION_VERSION)
                         .setTargetPackageNames(TARGET_PACKAGE_NAMES)
                         .setPreviewIntent(previewIntent)
                         .setAppInteractionAttribution(appInteractionAttribution)
@@ -69,6 +71,7 @@ public class ComputerControlSessionParamsTest {
         ComputerControlSessionParams params =
                 ComputerControlSessionParams.CREATOR.createFromParcel(parcel);
         assertThat(params.getName()).isEqualTo(SESSION_NAME);
+        assertThat(params.getTargetExtensionVersion()).isEqualTo(TARGET_EXTENSION_VERSION);
         assertThat(params.getTargetPackageNames()).containsExactlyElementsIn(TARGET_PACKAGE_NAMES);
         assertThat(params.getPreviewIntent()).isEqualTo(previewIntent);
         assertThat(params.getAppInteractionAttribution()).isEqualTo(appInteractionAttribution);
@@ -141,6 +144,7 @@ public class ComputerControlSessionParamsTest {
         ComputerControlSessionParams params =
                 new ComputerControlSessionParams.Builder()
                         .setName(SESSION_NAME)
+                        .setTargetExtensionVersion(TARGET_EXTENSION_VERSION)
                         .setTargetPackageNames(TARGET_PACKAGE_NAMES)
                         .setPreviewIntent(null)
                         .build();
@@ -153,11 +157,24 @@ public class ComputerControlSessionParamsTest {
         ComputerControlSessionParams params =
                 new ComputerControlSessionParams.Builder()
                         .setName(SESSION_NAME)
+                        .setTargetExtensionVersion(TARGET_EXTENSION_VERSION)
                         .setTargetPackageNames(TARGET_PACKAGE_NAMES)
                         .setAppInteractionAttribution(null)
                         .build();
 
         // Ensure this doesn't throw for backwards compatibility.
         assertThat(params.getAppInteractionAttribution()).isNull();
+    }
+
+    @Test
+    public void build_withTargetExtensionVersion5_unsetAppInteractionAttribution_throwsException() {
+        assertThrows(
+                IllegalArgumentException.class,
+                () ->
+                        new ComputerControlSessionParams.Builder()
+                                .setName(SESSION_NAME)
+                                .setTargetPackageNames(TARGET_PACKAGE_NAMES)
+                                .setTargetExtensionVersion(5)
+                                .build());
     }
 }

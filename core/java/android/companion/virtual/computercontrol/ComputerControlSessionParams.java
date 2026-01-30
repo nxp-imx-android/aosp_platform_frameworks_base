@@ -34,16 +34,19 @@ import java.util.List;
 public final class ComputerControlSessionParams implements Parcelable {
 
     private final String mName;
+    private final int mTargetExtensionVersion;
     private final List<String> mTargetPackageNames;
     private final PendingIntent mPreviewIntent;
     private final AppInteractionAttribution mAppInteractionAttribution;
 
     private ComputerControlSessionParams(
             @NonNull String name,
+            int targetExtensionVersion,
             @NonNull List<String> targetPackageNames,
             @Nullable PendingIntent previewIntent,
             @Nullable AppInteractionAttribution appInteractionAttribution) {
         mName = name;
+        mTargetExtensionVersion = targetExtensionVersion;
         mTargetPackageNames = targetPackageNames;
         mPreviewIntent = previewIntent;
         mAppInteractionAttribution = appInteractionAttribution;
@@ -55,12 +58,18 @@ public final class ComputerControlSessionParams implements Parcelable {
         parcel.readStringList(mTargetPackageNames);
         mPreviewIntent = parcel.readTypedObject(PendingIntent.CREATOR);
         mAppInteractionAttribution = parcel.readTypedObject(AppInteractionAttribution.CREATOR);
+        mTargetExtensionVersion = parcel.readInt();
     }
 
     /** Returns the name of this computer control session. */
     @NonNull
     public String getName() {
         return mName;
+    }
+
+    /** Returns the target extension version of the computer control session. */
+    public int getTargetExtensionVersion() {
+        return mTargetExtensionVersion;
     }
 
     /** Returns the package names of the applications that can be automated during this session. */
@@ -97,6 +106,7 @@ public final class ComputerControlSessionParams implements Parcelable {
         dest.writeStringList(mTargetPackageNames);
         dest.writeTypedObject(mPreviewIntent, flags);
         dest.writeTypedObject(mAppInteractionAttribution, flags);
+        dest.writeInt(mTargetExtensionVersion);
     }
 
     @NonNull
@@ -118,6 +128,7 @@ public final class ComputerControlSessionParams implements Parcelable {
     /** Builder for {@link ComputerControlSessionParams}. */
     public static final class Builder {
         private String mName;
+        private int mTargetExtensionVersion = 0;
         private List<String> mTargetPackageNames;
         private PendingIntent mPreviewIntent;
         private AppInteractionAttribution mAppInteractionAttribution;
@@ -182,6 +193,18 @@ public final class ComputerControlSessionParams implements Parcelable {
         }
 
         /**
+         * Sets the target extension version of the computer control session.
+         *
+         * @param targetExtensionVersion The target extension version.
+         * @return This builder.
+         */
+        @NonNull
+        public Builder setTargetExtensionVersion(int targetExtensionVersion) {
+            mTargetExtensionVersion = targetExtensionVersion;
+            return this;
+        }
+
+        /**
          * Builds the {@link ComputerControlSessionParams} instance.
          *
          * @return The built {@link ComputerControlSessionParams}.
@@ -195,8 +218,19 @@ public final class ComputerControlSessionParams implements Parcelable {
             if (mTargetPackageNames == null || mTargetPackageNames.isEmpty()) {
                 throw new IllegalArgumentException("Target package names must be set");
             }
+
+            if (mTargetExtensionVersion >= 5
+                    && android.app.appfunctions.flags.Flags.enableAppInteractionApi()
+                    && mAppInteractionAttribution == null) {
+                throw new IllegalArgumentException("App interaction attribution must be set");
+            }
+
             return new ComputerControlSessionParams(
-                    mName, mTargetPackageNames, mPreviewIntent, mAppInteractionAttribution);
+                    mName,
+                    mTargetExtensionVersion,
+                    mTargetPackageNames,
+                    mPreviewIntent,
+                    mAppInteractionAttribution);
         }
     }
 }

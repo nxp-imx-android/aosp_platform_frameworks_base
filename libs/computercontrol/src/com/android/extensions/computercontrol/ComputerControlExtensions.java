@@ -92,6 +92,7 @@ public class ComputerControlExtensions {
         ComputerControlSessionParams sessionParams =
                 new ComputerControlSessionParams.Builder()
                         .setName(params.getName())
+                        .setTargetExtensionVersion(params.getTargetExtensionVersion())
                         .setTargetPackageNames(params.getTargetPackageNames())
                         .setPreviewIntent(params.getPreviewIntent())
                         .setAppInteractionAttribution(params.getAppInteractionAttribution())

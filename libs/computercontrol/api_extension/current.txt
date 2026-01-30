@@ -61,6 +61,7 @@ package com.android.extensions.computercontrol {
     method @Nullable public android.app.AppInteractionAttribution getAppInteractionAttribution();
     method @NonNull public android.content.Context getContext();
     method @NonNull public String getName();
+    method public int getTargetExtensionVersion();
     method @NonNull public java.util.List<java.lang.String> getTargetPackageNames();
   }
 
@@ -70,6 +71,7 @@ package com.android.extensions.computercontrol {
     method @NonNull public com.android.extensions.computercontrol.ComputerControlSession.Params.Builder setAppInteractionAttribution(@Nullable android.app.AppInteractionAttribution);
     method @NonNull public com.android.extensions.computercontrol.ComputerControlSession.Params.Builder setName(@NonNull String);
     method @NonNull public com.android.extensions.computercontrol.ComputerControlSession.Params.Builder setPreviewIntent(@Nullable android.app.PendingIntent);
+    method @NonNull public com.android.extensions.computercontrol.ComputerControlSession.Params.Builder setTargetExtensionVersion(int);
     method @NonNull public com.android.extensions.computercontrol.ComputerControlSession.Params.Builder setTargetPackageNames(@NonNull java.util.List<java.lang.String>);
   }
 
