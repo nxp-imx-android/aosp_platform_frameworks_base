@@ -1727,4 +1727,100 @@ TEST_F(ManifestFixerTest, PermissionPurposeTagsAreAllowed) {
     </manifest>)";
   EXPECT_THAT(Verify(input), IsNull());
 }
+// --- Allow Component Access Tests ---
+
+// Verifies that an empty <allow-component-access> block is syntactically valid
+TEST_F(ManifestFixerTest, AllowComponentAccessEmptyPasses) {
+  std::string input = R"(
+    <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="android">
+      <allow-component-access />
+    </manifest>)";
+  ASSERT_TRUE(Verify(input));
+}
+
+// Verifies that unknown tags are not allowed inside <allow-component-access>
+TEST_F(ManifestFixerTest, AllowComponentAccessInvalidChildTagFails) {
+  std::string input = R"(
+    <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="android">
+      <allow-component-access>
+        <unknown android:name="com.android.test" />
+      </allow-component-access>
+    </manifest>)";
+  ASSERT_FALSE(Verify(input));
+}
+
+// Verifies that a standard Java package name is accepted
+TEST_F(ManifestFixerTest, AllowComponentAccessPackageValidNamePasses) {
+  std::string input = R"(
+    <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="android">
+      <allow-component-access>
+        <package android:name="com.android.test.allowed_app" />
+      </allow-component-access>
+    </manifest>)";
+  ASSERT_TRUE(Verify(input));
+}
+
+// Verifies rejection of illegal characters (dashes) in the package name
+TEST_F(ManifestFixerTest, AllowComponentAccessPackageInvalidNameFails) {
+  std::string input = R"(
+    <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="android">
+      <allow-component-access>
+        <package android:name="com.android.test.invalid-name" />
+      </allow-component-access>
+    </manifest>)";
+  ASSERT_FALSE(Verify(input));
+}
+
+// Verifies that android:name is MANDATORY for the <package> tag
+TEST_F(ManifestFixerTest, AllowComponentAccessPackageMissingNameFails) {
+  std::string input = R"(
+    <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="android">
+      <allow-component-access>
+        <package />
+      </allow-component-access>
+    </manifest>)";
+  ASSERT_FALSE(Verify(input));
+}
+
+// Verifies that <additional-certificate> is a valid child of <package> within the
+// <allow-component-access> block.
+TEST_F(ManifestFixerTest, AllowComponentAccessWithAdditionalCertificate) {
+  std::string input = R"(
+    <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="android">
+      <allow-component-access>
+        <package android:name="com.android.test">
+          <additional-certificate android:certDigest="6cecc50e34ae31bfb5678986d6d6d3736c571ded2f2459527793e1f054eb0c9b" />
+        </package>
+      </allow-component-access>
+    </manifest>)";
+  ASSERT_TRUE(Verify(input));
+}
+
+// Verifies that multiple <additional-certificate> tags can be nested under a single <package> tag.
+TEST_F(ManifestFixerTest, AllowComponentAccessMultipleAdditionalCertificates) {
+  std::string input = R"(
+    <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="android">
+      <allow-component-access>
+        <package android:name="com.android.test">
+          <additional-certificate android:certDigest="digest1" />
+          <additional-certificate android:certDigest="digest2" />
+        </package>
+      </allow-component-access>
+    </manifest>)";
+  ASSERT_TRUE(Verify(input));
+}
+
+// Verifies that the ManifestFixer rejects unknown or invalid child tags nested inside the
+// <package> element.
+TEST_F(ManifestFixerTest, AllowComponentAccessWithInvalidChildFails) {
+  std::string input = R"(
+    <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="android">
+      <allow-component-access>
+        <package android:name="com.android.test">
+          <invalid-child-tag />
+        </package>
+      </allow-component-access>
+    </manifest>)";
+  ASSERT_FALSE(Verify(input));
+}
 }  // namespace aapt
