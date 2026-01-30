@@ -63,6 +63,7 @@ import com.android.systemui.log.SessionTracker;
 import com.android.systemui.media.NotificationMediaManager;
 import com.android.systemui.plugins.statusbar.StatusBarStateController;
 import com.android.systemui.res.R;
+import com.android.systemui.scene.shared.flag.SceneContainerFlag;
 import com.android.systemui.scene.shared.model.Scenes;
 import com.android.systemui.securelockdevice.domain.interactor.SecureLockDeviceInteractor;
 import com.android.systemui.statusbar.NotificationShadeWindowController;
@@ -463,7 +464,7 @@ public class BiometricUnlockController extends KeyguardUpdateMonitorCallback imp
                             BiometricUiEvent.SUCCESS_EVENT_BY_SOURCE_TYPE.get(biometricSourceType))
                     .ifPresent(event -> UI_EVENT_LOGGER.log(event, getSessionId()));
 
-            boolean unlockAllowed =
+            boolean unlockWithBypassAllowed =
                     mKeyguardStateController.isOccluded()
                             || mKeyguardBypassController.onBiometricAuthenticated(
                             biometricSourceType, isStrongBiometric);
@@ -474,10 +475,18 @@ public class BiometricUnlockController extends KeyguardUpdateMonitorCallback imp
                 mLogger.d("Delaying face authenticated signal until user confirmation on the "
                         + "Secure Lock Device UI.");
                 return;
-            } else if (unlockAllowed) {
+            } else if (unlockWithBypassAllowed) {
                 mKeyguardViewMediator.userActivity();
                 startWakeAndUnlock(biometricSourceType, isStrongBiometric);
             } else {
+                if (SceneContainerFlag.isEnabled()) {
+                    // Always unlock with scene container enabled. device unlock state should always
+                    // be consistent with auth success event, whether lockscreen gets dismissed or
+                    // not is determined later by DeviceEntryInteractor.
+                    startWakeAndUnlock(MODE_NONE_UNLOCKED,
+                            BiometricUnlockSource.Companion.fromBiometricSourceType(
+                                    biometricSourceType));
+                }
                 mLogger.d("onBiometricUnlocked aborted by bypass controller");
             }
         } finally {
