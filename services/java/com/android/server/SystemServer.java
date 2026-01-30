@@ -1621,6 +1621,12 @@ public final class SystemServer implements Dumpable {
             ServiceManager.addService("scheduling_policy", new SchedulingPolicyService());
             t.traceEnd();
 
+            if (com.android.server.ui_latency_stats.Flags.uiLatencyStatsService()) {
+                t.traceBegin("StartUiLatencyStatsService");
+                mSystemServiceManager.startService(
+                        com.android.server.uilatencystats.UiLatencyStatsService.class);
+                t.traceEnd();
+            }
 
             // TelecomLoader hooks into classes with defined HFP logic,
             // so check for either telephony or microphone.

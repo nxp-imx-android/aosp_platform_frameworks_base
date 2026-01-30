@@ -4944,6 +4944,17 @@ public abstract class Context {
     public static final String POWER_STATS_SERVICE = "powerstats";
 
     /**
+     * Use with {@link #getSystemService(String)} to retrieve a {@link
+     * android.uilatencystats.UiLatencyStatsManager} for accessing UI latency stats
+     * service.
+     *
+     * @hide
+     * @see #getSystemService(String)
+     */
+    @FlaggedApi(com.android.server.ui_latency_stats.Flags.FLAG_UI_LATENCY_STATS_SERVICE)
+    public static final String UI_LATENCY_STATS_SERVICE = "ui_latency_stats";
+
+    /**
      * Use with {@link #getSystemService(String)} to retrieve a
      * {@link android.os.RecoverySystem} for accessing the recovery system
      * service.
