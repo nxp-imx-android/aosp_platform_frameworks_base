@@ -72,6 +72,7 @@ import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.util.ArraySet;
 import android.util.AtomicFile;
+import android.util.SizeF;
 import android.util.SparseArray;
 import android.util.Xml;
 import android.view.Display;
@@ -88,6 +89,7 @@ import com.android.modules.utils.TypedXmlPullParser;
 import com.android.modules.utils.TypedXmlSerializer;
 import com.android.server.LocalServices;
 import com.android.server.ServiceThread;
+import com.android.server.appwidget.AppWidgetServiceImpl.Host;
 import com.android.server.appwidget.AppWidgetServiceImpl.Provider;
 import com.android.server.appwidget.AppWidgetServiceImpl.Widget;
 
@@ -100,6 +102,8 @@ import org.mockito.ArgumentCaptor;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -713,6 +717,59 @@ public class AppWidgetServiceImplTest {
         assertThrows(IllegalArgumentException.class, () -> {
             mService.ensureWidgetViewsMemoryLimitLocked(widget);
         });
+    }
+
+    @EnableFlags(Flags.FLAG_WIDGET_DISPLAY_CHANGES)
+    @Test
+    public void testSerializeAppWidgetOptions() throws Exception {
+        int minWidth = 50;
+        int minHeight = 50;
+        int maxWidth = 50;
+        int maxHeight = 50;
+        ArrayList<SizeF> sizes = new ArrayList<>(List.of(new SizeF(50, 50), new SizeF(100, 100)));
+        int category = AppWidgetProviderInfo.WIDGET_CATEGORY_KEYGUARD;
+        int displayId = 3;
+        boolean restoreCompleted = true;
+
+        Widget widget = new Widget();
+        widget.host = new Host();
+        Bundle options = new Bundle();
+        options.putInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, minWidth);
+        options.putInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT, minHeight);
+        options.putInt(AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH, maxWidth);
+        options.putInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT, maxHeight);
+        options.putParcelableArrayList(AppWidgetManager.OPTION_APPWIDGET_SIZES, sizes);
+        options.putInt(AppWidgetManager.OPTION_APPWIDGET_HOST_CATEGORY, category);
+        options.putInt(AppWidgetManager.OPTION_APPWIDGET_DISPLAY_ID, displayId);
+        options.putBoolean(AppWidgetManager.OPTION_APPWIDGET_RESTORE_COMPLETED, restoreCompleted);
+        widget.options = options;
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        TypedXmlSerializer serializer = Xml.resolveSerializer(out);
+        serializer.startDocument(null, true);
+        mService.serializeAppWidget(serializer, widget, /* saveRestoreCompleted= */ true);
+        serializer.endDocument();
+        ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
+        TypedXmlPullParser parser = Xml.resolvePullParser(in);
+        assertThat(parser.next()).isEqualTo(XmlPullParser.START_TAG);
+        assertThat(parser.getName()).isEqualTo("g");
+        Bundle bundle = mService.parseWidgetIdOptions(parser);
+        assertThat(bundle.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH))
+                .isEqualTo(minWidth);
+        assertThat(bundle.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT))
+                .isEqualTo(minHeight);
+        assertThat(bundle.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH))
+                .isEqualTo(maxWidth);
+        assertThat(bundle.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT))
+                .isEqualTo(maxHeight);
+        assertThat(bundle.getParcelableArrayList(AppWidgetManager.OPTION_APPWIDGET_SIZES,
+                SizeF.class)).containsExactlyElementsIn(sizes);
+        assertThat(bundle.getInt(AppWidgetManager.OPTION_APPWIDGET_HOST_CATEGORY))
+                .isEqualTo(category);
+        assertThat(bundle.getInt(AppWidgetManager.OPTION_APPWIDGET_DISPLAY_ID))
+                .isEqualTo(displayId);
+        assertThat(bundle.getBoolean(AppWidgetManager.OPTION_APPWIDGET_RESTORE_COMPLETED))
+                .isEqualTo(restoreCompleted);
     }
 
     /**
