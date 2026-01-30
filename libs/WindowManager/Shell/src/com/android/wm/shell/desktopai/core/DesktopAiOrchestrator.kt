@@ -18,7 +18,6 @@ package com.android.wm.shell.desktopai.core
 
 import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.desktopai.api.ITriggerManager
-import com.android.wm.shell.desktopai.api.IUserContextService
 import com.android.wm.shell.desktopai.api.TriggerEvent
 import com.android.wm.shell.desktopai.api.config.CujConfiguration
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_AI
@@ -33,7 +32,7 @@ import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_AI
  */
 class DesktopAiOrchestrator(
     private val triggerManager: ITriggerManager,
-    private val contextService: IUserContextService,
+    private val cujHandlerRegistry: CujHandlerRegistry,
 ) {
 
     /**
@@ -56,10 +55,15 @@ class DesktopAiOrchestrator(
      */
     private fun onTriggerReceived(config: CujConfiguration, triggerEvent: TriggerEvent) {
         ProtoLog.v(WM_SHELL_DESKTOP_AI, "$TAG: Processing triggerEvent: %s", triggerEvent)
-        // Context collection phase
-        val contextQuery = config.contextQueryFactory.create(triggerEvent)
-        val contextData = contextService.getContext(contextQuery)
-        // TODO(b/477202336): Use context Data
+        // Iterate through all registered handlers for this CUJ and execute them.
+        config.handlerIds.forEach { handlerId ->
+            val handler = cujHandlerRegistry.get(handlerId)
+            if (handler != null) {
+                handler.handle(config, triggerEvent)
+            } else {
+                ProtoLog.w(WM_SHELL_DESKTOP_AI, "No CujHandler registered for ID: %s", handlerId.id)
+            }
+        }
     }
 
     companion object {
