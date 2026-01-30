@@ -1586,7 +1586,8 @@ public final class DisplayManagerService extends SystemService {
             CachedDisplayInfo info = mDisplayInfoCache.get(displayId);
             if (info == null) {
                 if (displayId != Display.DEFAULT_DISPLAY) {
-                    Slog.e(TAG, "Display info not found in cache for display " + displayId);
+                    Slog.w(TAG, "Display info not found in cache for display " + displayId
+                            + ", callingUid " + callingUid);
                     return null;
                 }
                 Slog.w(TAG, "Default display not found in cache");
