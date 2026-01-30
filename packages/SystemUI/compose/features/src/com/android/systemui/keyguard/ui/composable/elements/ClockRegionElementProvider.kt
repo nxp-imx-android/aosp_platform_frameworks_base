@@ -75,23 +75,19 @@ constructor(
                 keyguardClockViewModel.clockEventController.smallClockBounds
                     .collectAsStateWithLifecycle()
 
+            val clockXPadding = dimensionResource(clocksR.dimen.small_clock_horizontal_padding)
+            val smartspaceXPadding = dimensionResource(R.dimen.smartspace_padding_horizontal)
+            val clockTopPadding = dimensionResource(R.dimen.keyguard_clock_top_margin)
+
             Column {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier =
-                        Modifier.padding(top = dimensionResource(R.dimen.keyguard_clock_top_margin)),
+                    modifier = Modifier.padding(top = clockTopPadding),
                 ) {
                     with(LocalDensity.current) {
                         LockscreenElement(
                             Clock.Small,
-                            // The small clock has internal horizontal padding. Here we add an
-                            // extra horizontal padding to match the specs.
-                            Modifier.padding(
-                                    horizontal =
-                                        dimensionResource(
-                                            clocksR.dimen.small_clock_horizontal_padding
-                                        )
-                                )
+                            Modifier.padding(horizontal = clockXPadding)
                                 .widthIn(min = clockBounds.width.toDp())
                                 .heightIn(
                                     min = clockBounds.height.toDp(),
@@ -103,16 +99,16 @@ constructor(
                     if (!shouldDateWeatherBeBelowSmallClock) {
                         LockscreenElement(
                             Smartspace.DWA.SmallClock.Column,
-                            Modifier.padding(
-                                horizontal =
-                                    dimensionResource(R.dimen.smartspace_padding_horizontal)
-                            ),
+                            Modifier.padding(horizontal = smartspaceXPadding),
                         )
                     }
                 }
 
                 if (shouldDateWeatherBeBelowSmallClock) {
-                    LockscreenElement(Smartspace.DWA.SmallClock.Row)
+                    LockscreenElement(
+                        Smartspace.DWA.SmallClock.Row,
+                        Modifier.padding(horizontal = smartspaceXPadding),
+                    )
                 }
 
                 LockscreenElement(Smartspace.Cards)

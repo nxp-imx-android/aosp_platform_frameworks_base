@@ -103,6 +103,12 @@ constructor(
     }
 
     abstract inner class RegionLayout(val viewModel: LockscreenUpperRegionViewModel) {
+        @Composable
+        fun widePadding() = dimensionResource(R.dimen.upper_region_wide_horizontal_padding)
+
+        @Composable
+        fun narrowPadding() = dimensionResource(R.dimen.upper_region_narrow_horizontal_padding)
+
         @Composable abstract fun LockscreenScope<ContentScope>.Layout(modifier: Modifier = Modifier)
 
         @Composable
@@ -228,15 +234,7 @@ constructor(
                         )
                     }
                 },
-                modifier =
-                    Modifier.padding(
-                            horizontal =
-                                dimensionResource(
-                                    R.dimen
-                                        .lockscreen_upper_region_horizontal_padding_narrow_screens
-                                )
-                        )
-                        .then(modifier),
+                modifier = Modifier.padding(horizontal = narrowPadding()).then(modifier),
                 debugName = "NarrowLayout - Clocks",
             ) {
                 scene(NarrowScenes.LargeClock) { LockscreenElement(Region.Clock.Large) }
@@ -271,8 +269,13 @@ constructor(
                 logDecision("WideLayout: TwoColumn") {
                     when {
                         clockSize == ClockSize.SMALL -> Decision(true, "clockSize == SMALL")
-                        !viewModel.isDozing && (viewModel.isNotificationStackActive || viewModel.isMediaVisible) ->
-                            Decision(true, "!isDozing && (isNotificationStackActive || isMediaVisible)")
+                        !viewModel.isDozing &&
+                            (viewModel.isNotificationStackActive || viewModel.isMediaVisible) -> {
+                            Decision(
+                                true,
+                                "!isDozing && (isNotificationStackActive || isMediaVisible)",
+                            )
+                        }
                         viewModel.isDozing && viewModel.isHeadsUpNotificationActive ->
                             Decision(true, "isDozing && isHeadsUpNotificationActive")
                         viewModel.isDozing && viewModel.isPromotedNotificationActive ->
@@ -326,14 +329,7 @@ constructor(
                         )
                     }
                 },
-                modifier =
-                    Modifier.padding(
-                            horizontal =
-                                dimensionResource(
-                                    R.dimen.lockscreen_upper_region_horizontal_padding_wide_screens
-                                )
-                        )
-                        .then(modifier),
+                modifier = Modifier.padding(horizontal = widePadding()).then(modifier),
                 debugName = "WideLayout - Clocks",
             ) {
                 scene(WideScenes.CenteredClock) {
@@ -492,30 +488,20 @@ constructor(
             startContent: @Composable BoxScope.() -> Unit = {},
             endContent: @Composable BoxScope.() -> Unit = {},
         ) {
-            // The spec dictates that each column should get internal paddings that match the ones
-            // used for narrow layouts. It is like two narrow layouts side by side.
-            val narrowPadding =
-                Modifier.padding(
-                    horizontal =
-                        dimensionResource(
-                            R.dimen.lockscreen_upper_region_horizontal_padding_narrow_screens
-                        )
-                )
-
             Row(modifier) {
                 Box(
                     content = startContent,
                     modifier =
-                        Modifier.fillMaxWidth(0.5f)
-                            .then(narrowPadding)
+                        Modifier.padding(horizontal = narrowPadding())
+                            .fillMaxWidth(0.5f)
                             .fillMaxHeight()
                             .graphicsLayer { translationX = viewModel.unfoldTranslations.start },
                 )
                 Box(
                     content = endContent,
                     modifier =
-                        Modifier.fillMaxWidth(1f)
-                            .then(narrowPadding)
+                        Modifier.padding(horizontal = narrowPadding())
+                            .fillMaxWidth(1f)
                             .fillMaxHeight()
                             .graphicsLayer { translationX = viewModel.unfoldTranslations.end },
                 )
