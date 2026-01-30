@@ -22,6 +22,7 @@
 // LINT.ThenChange(/services/core/java/com/android/server/am/MemoryLimiter.java:traceTrack)
 
 #include <android-base/file.h>
+#include <android-base/stringprintf.h>
 #include <android-base/unique_fd.h>
 #include <core_jni_helpers.h>
 #include <cutils/misc.h>
@@ -30,6 +31,7 @@
 #include <jni.h>
 #include <nativehelper/JNIHelp.h>
 #include <nativehelper/ScopedUtfChars.h>
+#include <private/android_filesystem_config.h>
 #include <processgroup/processgroup.h>
 #include <pthread.h>
 #include <string.h>
@@ -44,12 +46,20 @@
 #include <utils/Trace.h>
 
 #include <map>
+#include <mutex>
 #include <optional>
 #include <string>
 
 namespace android {
 
 namespace {
+
+// Enable debug messages.  Do not commit a true value.
+const bool DEBUG = false;
+
+// The timeout for the process scrub poll.  It is elevated to this point in the file because we
+// like to see constants near the top.  Units are milliseconds.  The value is 60s.
+const int POLL_PERIOD_MS = 60 * 1000;
 
 /**
  * The different limits that this process monitors.
@@ -93,26 +103,12 @@ public:
     // The move constructor takes ownership of the pid fd for this process.  The watch
     // descriptor is not owned by the Process, but it is copied over and then reset on the
     // right-hand side.
-    Process(Process&& r) noexcept
-          : mPid(r.mPid), mUid(r.mUid), mPidFd(std::move(r.mPidFd)), mMemoryWd(r.mMemoryWd) {
+    Process(Process&& r) noexcept : mPid(r.mPid), mUid(r.mUid), mMemoryWd(r.mMemoryWd) {
         r.mMemoryWd = UNSET;
     }
 
     // File descriptors are closed in the destructor if they are open.
     ~Process() {}
-
-    // Connect the pidfd file descriptor.  Return false on failure.  This does not create the
-    // watch descriptors because there seems to be a delay between process creation and cgroup
-    // file creation.
-    bool init() {
-        int pfd = syscall(SYS_pidfd_open, mPid, 0);
-        if (pfd < 0) {
-            ALOGE_IF(errno != ESRCH, "pidfd_open(%d) failed: %s", mPid, strerror(errno));
-            return false;
-        }
-        mPidFd.reset(pfd);
-        return true;
-    }
 
     // Watch the events files.  This cannot be called immediately after a process starts because
     // the threads that move the process into its cgroup may take tens of microseconds to
@@ -121,12 +117,9 @@ public:
         // If the process has been initialized, do nothing.
         if (mInitialized) return;
 
-        constexpr char const* fmt = "/sys/fs/cgroup/%s/uid_%d/pid_%d/%s";
-        char const* category = (mUid >= FIRST_APPLICATION_UID) ? "apps" : "system";
-
         char path[PATH_MAX];
+        watchPath(path, sizeof(path));
         struct stat sbuff;
-        snprintf(path, sizeof(path), fmt, category, mUid, mPid, "memory.events");
         if (stat(path, &sbuff) != 0) {
             ALOGE("path %s not found: %s", path, strerror(errno));
             return;
@@ -151,8 +144,23 @@ public:
         mMemoryWd = UNSET;
     }
 
-    base::borrowed_fd getPidFd() const {
-        return mPidFd;
+    // Return a string that identifies this process.
+    std::string toString() const {
+        return android::base::StringPrintf("pid=%d uid=%d wd=%d", mPid, mUid, mMemoryWd);
+    }
+
+    // Return true if the process is alive.  If the process is privileged (meaning, it's
+    // system_server, use the kill() strategy because it is very fast.  Otherwise, test the
+    // cgroup path. This is (relatively) expensive but it only occurs in test code.  It is also
+    // definitive, since if the cgroup path cannot be seen then watching cannot occur.
+    bool isAlive(bool privileged) const {
+        if (privileged) {
+            return kill(mPid, 0) == 0;
+        } else {
+            char path[PATH_MAX];
+            struct stat sbuff;
+            return stat(watchPath(path, sizeof(path)), &sbuff) == 0;
+        }
     }
 
     // Return the limit type that corresponds to the watch descriptor.
@@ -173,13 +181,18 @@ private:
     // attempts to configure the process.
     bool mInitialized = false;
 
-    // The pidfd used to detect process exits.
-    base::unique_fd mPidFd;
-
     // The memory event watch descriptor.  This is remembered by Process but is not managed
     // autonmously by the Process.  It is created inside the watch() method and is destroyed
     // inside the unwatch() method.
     int mMemoryWd = UNSET;
+
+    // Construct the watch path.  Return a pointer to the path.
+    char* watchPath(char* buffer, size_t length) const {
+        constexpr char const* fmt = "/sys/fs/cgroup/%s/uid_%d/pid_%d/%s";
+        char const* category = (mUid >= FIRST_APPLICATION_UID) ? "apps" : "system";
+        snprintf(buffer, length, fmt, category, mUid, mPid, "memory.events");
+        return buffer;
+    }
 };
 
 // The JVM information that supports callback notifications.  This class is valid in a single
@@ -243,7 +256,7 @@ public:
 
 class Monitor {
     // A mutex to guard access to targets.
-    mutable Mutex mLock;
+    mutable std::mutex mLock;
 
     // The callback
     Callback mCallback;
@@ -275,9 +288,16 @@ class Monitor {
     };
 
 public:
-    Monitor(JNIEnv* env, jobject jlimiter) : mLock(0), mCallback(env, jlimiter) {
+    Monitor(JNIEnv* env, jobject jlimiter, bool privileged, bool monitor)
+          : mCallback(env, jlimiter), mSystem(privileged), mMonitor(monitor) {
         if (env->ExceptionCheck()) {
             // The callback has probably failed in its constructor.  Exit immediately.
+            return;
+        }
+
+        if (!monitor) {
+            // This is not an error.  The monitoring feature has been disabled, so do not create
+            // the inotify object, epoll object, or monitoring thread.
             return;
         }
 
@@ -333,10 +353,12 @@ public:
     Monitor(Monitor const&) = delete;
 
     ~Monitor() {
-        if (sendCommand(Cmd::Stop)) {
-            pthread_join(mPoller, nullptr);
-        } else {
-            ALOGE("failed to send stop command: %s", strerror(errno));
+        if (mMonitor) {
+            if (sendCommand(Cmd::Stop)) {
+                pthread_join(mPoller, nullptr);
+            } else {
+                ALOGE("failed to send stop command: %s", strerror(errno));
+            }
         }
     }
 
@@ -349,43 +371,28 @@ public:
         }
     }
 
-    // Add a process to the list of monitored processes.  The process and its file descriptors
-    // is owned by the monitor.
-    bool start(int pid, int uid) {
-        Process p(pid, uid);
-        if (!p.init()) return false;
-        base::borrowed_fd pfd = p.getPidFd();
-
-        AutoMutex _l(mLock);
-        if (auto [it, inserted] = mTargets.try_emplace(pid, std::move(p)); !inserted) {
-            mTargets.erase(pid);
-            mTargets.emplace(pid, std::move(p));
-        }
-        struct epoll_event p_event = {.events = EPOLLIN, .data.u64 = static_cast<uint64_t>(pid)};
-        if (epoll_ctl(mEpollFd, EPOLL_CTL_ADD, pfd.get(), &p_event) != 0) {
-            ALOGE("epoll add(pid) failed pid=%d uid=%d: %s", pid, uid, strerror(errno));
-        }
-        return true;
-    }
-
     // Ensure the process is being watched.
     void watch(int pid, int uid) {
-        AutoMutex _l(mLock);
+        if (!mMonitor) return;
+        std::lock_guard _l(mLock);
         auto i = mTargets.find(pid);
-        if (i != mTargets.end()) {
-            i->second.watch(mInotifyFd, mWdMap);
+        if (i == mTargets.end()) {
+            Process p(pid, uid);
+            if (auto [j, inserted] = mTargets.emplace(pid, std::move(p)); !inserted) {
+                return;
+            } else {
+                i = j;
+            }
         }
+        i->second.watch(mInotifyFd, mWdMap);
     }
 
-    // Forget about a monitored process.
+    // Forget about a monitored process, if it exists.
     void forget(pid_t pid) {
-        AutoMutex _l(mLock);
+        if (!mMonitor) return;
+        std::lock_guard _l(mLock);
         auto i = mTargets.find(pid);
         if (i != mTargets.end()) {
-            base::borrowed_fd pfd = i->second.getPidFd();
-            if (epoll_ctl(mEpollFd, EPOLL_CTL_DEL, pfd.get(), nullptr) < 0) {
-                ALOGE("epoll del(pid) failed: %s", strerror(errno));
-            }
             i->second.unwatch(mInotifyFd, mWdMap);
             mTargets.erase(i);
         }
@@ -411,18 +418,40 @@ private:
         struct epoll_event events[event_size];
         memset(events, 0, sizeof(events));
 
-        // For testing, set this to a positive value.  Setting it to -1 means "wait forever".
-        static const int timeout = -1;
+        // The timeout governs how frequently the thread will scrub non-existent processes.  The
+        // units are milliseconds.  The scrub occurs every minute in normal operation.  If DEBUG
+        // is true, the timeout occurs every second.
+        static const int timeout = (DEBUG) ? 1000 : POLL_PERIOD_MS;
 
         int ready;
         while ((ready = epoll_wait(mEpollFd, events, event_size, timeout)) >= 0) {
-            if (!handle_poll(events, ready)) {
+            if (ready == 0) {
+                handle_timeout();
+            } else if (!handle_poll(events, ready)) {
                 break;
             }
         }
         mVm->DetachCurrentThread();
         ALOGI("end monitoring");
         return nullptr;
+    }
+
+    // Handle a poll timeout.  This scrubs non-existent processes from the target list.
+    void handle_timeout() {
+        const std::lock_guard _l(mLock);
+        int count = 0;
+        for (auto i = mTargets.begin(); i != mTargets.end();) {
+            Process& p = i->second;
+            if (!p.isAlive(mSystem)) {
+                ALOGI_IF(DEBUG, "scrubbing %s", p.toString().c_str());
+                p.unwatch(mInotifyFd, mWdMap);
+                i = mTargets.erase(i);
+                count++;
+            } else {
+                ++i;
+            }
+        }
+        ALOGI_IF(DEBUG && count > 0, "scrubbed %d processes", count);
     }
 
     // Handle a single poll event.  Return true if the enclosing loop should continue and false
@@ -441,7 +470,7 @@ private:
                     handle_inotify();
                     break;
                 default:
-                    handle_pidfd(static_cast<pid_t>(datum));
+                    ALOGE("unexpected poll datum: %" PRIu64, datum);
                     break;
             }
         }
@@ -491,18 +520,19 @@ private:
             // inotify events often arrive when a process is deleted and its cgroup files go
             // away.  In that case, lookup() will return null, and the event should be ignored.
             int wd = data.event.wd;
+            uint32_t mask = data.event.mask;
             pid_t pid = 0;
             uid_t uid = 0;
             MonitoredLimit type = MonitoredLimit::kUnknown;
-            {
-                AutoMutex _l(mLock);
+            if ((mask & IN_MODIFY) != 0) {
+                std::lock_guard _l(mLock);
                 pid = lookup(wd);
                 auto i = mTargets.find(pid);
                 if (i != mTargets.end()) {
-                    Process* p = &i->second;
-                    uid = p->mUid;
-                    type = p->getLimitType(wd);
-                    p->unwatch(mInotifyFd, mWdMap);
+                    Process& p = i->second;
+                    uid = p.mUid;
+                    type = p.getLimitType(wd);
+                    p.unwatch(mInotifyFd, mWdMap);
                 }
             }
             if (pid != 0) {
@@ -527,11 +557,12 @@ private:
         }
     }
 
-    // A pidfd event means a process has exited.
-    void handle_pidfd(pid_t pid) {
-        // Find the process and delete it from the targets
-        forget(pid);
-    }
+    // True if this is system_server, which is a privileged process.  If this is not
+    // system_server then it is most likely a test process.
+    const bool mSystem;
+
+    // True if monitoring is enabled.
+    const bool mMonitor;
 };
 
 // Convert a long from the java layer into a Monitor*.
@@ -540,8 +571,9 @@ Monitor* getMonitor(jlong service) {
 }
 
 // Create a new Monitor object and returns its address.
-jlong initLimiter(JNIEnv* env, jclass, jobject jlimiter) {
-    std::unique_ptr<Monitor> m(new Monitor(env, jlimiter));
+jlong initLimiter(JNIEnv* env, jclass, jobject jlimiter, jboolean monitor) {
+    const bool system = (getuid() == AID_SYSTEM);
+    std::unique_ptr<Monitor> m(new Monitor(env, jlimiter, system, monitor));
     if (env->ExceptionCheck()) {
         return 0;
     }
@@ -554,10 +586,11 @@ void closeLimiter(JNIEnv* env, jclass, jlong service) {
     delete m;
 }
 
-// A process has started.
-jboolean startProcess(JNIEnv* env, jclass, jlong service, jint pid, jint uid) {
+// A process has started.  This call just ensures that the process list does not contain a
+// stale references to the pid.
+void startProcess(JNIEnv* env, jclass, jlong service, jint pid, jint /* uid */) {
     Monitor* m = getMonitor(service);
-    return m->start(pid, uid);
+    m->forget(pid);
 }
 
 // A tiny class that emits a trace in its destructor.
@@ -578,7 +611,7 @@ bool writeString(std::string text, std::string& path) {
 }
 
 // A process is being configured with a memory.high limit.  A negative limit means "max".
-jboolean configureLimit(JNIEnv*, jclass, jlong service, jint pid, jint uid, jlong limit) {
+void configureLimit(JNIEnv*, jclass, jlong service, jint pid, jint uid, jlong limit) {
     Monitor* m = getMonitor(service);
 
     // The Java layer started a slice.  Ensure it is terminated, regardless of how this method
@@ -593,20 +626,19 @@ jboolean configureLimit(JNIEnv*, jclass, jlong service, jint pid, jint uid, jlon
     std::string path;
     if (!CgroupGetAttributePathForProcess(name, uid, pid, path)) {
         ALOGE("failed to get memory.high path for pid=%d uid=%d", pid, uid);
-        return false;
+        return;
     }
     if (!writeString((limit < 0) ? "max" : std::to_string(limit), path)) {
         ALOGE("failed to write memory.high (pid=%d uid=%d): %s", pid, uid, strerror(errno));
-        return false;
+        return;
     }
-    return true;
 }
 
 const JNINativeMethod sMethods[] = {
+        {"initLimiter", "(Lcom/android/server/am/MemoryLimiter$Controller;Z)J", (void*)initLimiter},
         {"closeLimiter", "(J)V", (void*)closeLimiter},
-        {"onProcessStarted", "(JII)Z", (void*)startProcess},
-        {"configureLimit", "(JIIJ)Z", (void*)configureLimit},
-        {"initLimiter", "(Lcom/android/server/am/MemoryLimiter$Controller;)J", (void*)initLimiter},
+        {"onProcessStarted", "(JII)V", (void*)startProcess},
+        {"configureLimit", "(JIIJ)V", (void*)configureLimit},
 };
 
 } // namespace
