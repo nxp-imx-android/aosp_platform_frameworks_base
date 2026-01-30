@@ -53,12 +53,12 @@ import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.shade.data.repository.ShadeConfigRepository
 import com.android.systemui.shade.data.repository.ShadeRepository
-import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.util.kotlin.sample
 import com.android.systemui.wallpapers.domain.interactor.WallpaperFocalAreaInteractor
 import javax.inject.Inject
 import javax.inject.Provider
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -86,6 +86,7 @@ import kotlinx.coroutines.flow.transform
 /**
  * Encapsulates business-logic related to the keyguard but not to a more specific part within it.
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 @SysUISingleton
 class KeyguardInteractor
 @Inject
@@ -105,7 +106,6 @@ constructor(
     private val fromAlternateBouncerTransitionInteractor:
         Provider<FromAlternateBouncerTransitionInteractor>,
     private val lockPatternUtils: LockPatternUtils,
-    private val shadeInteractor: Provider<ShadeInteractor>,
     @Application applicationScope: CoroutineScope,
 ) {
     // TODO(b/296118689): move to a repository
@@ -166,11 +166,7 @@ constructor(
      */
     val dozeAmount: Flow<Float> =
         isAodAvailable.flatMapLatest { isAodAvailable ->
-            if (isAodAvailable) {
-                keyguardTransitionInteractor.transitionValue(AOD)
-            } else {
-                keyguardTransitionInteractor.transitionValue(DOZING)
-            }
+            keyguardTransitionInteractor.transitionValue(if (isAodAvailable) AOD else DOZING)
         }
 
     /** Doze transition information. */
