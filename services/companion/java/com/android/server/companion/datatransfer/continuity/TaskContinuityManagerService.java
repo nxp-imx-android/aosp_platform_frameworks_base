@@ -24,7 +24,6 @@ import static com.android.server.companion.utils.PermissionsUtils.enforceCallerI
 
 import android.annotation.EnforcePermission;
 import android.annotation.NonNull;
-import android.companion.CompanionDeviceManager;
 import android.companion.datatransfer.continuity.IHandoffFeatureStateListener;
 import android.companion.datatransfer.continuity.IHandoffRequestCallback;
 import android.companion.datatransfer.continuity.IRemoteTaskListener;
@@ -63,11 +62,7 @@ public final class TaskContinuityManagerService extends SystemService {
 
         mHandoffPreferenceStore = new HandoffPreferenceStore();
         mHandoffSettingsManager = new HandoffSettingsManager(mHandoffPreferenceStore);
-        mTaskContinuityMessengerCache =
-                new TaskContinuityMessengerCache(
-                        Objects.requireNonNull(
-                                context.getSystemService(CompanionDeviceManager.class)),
-                        Objects.requireNonNull(context.getMainExecutor()));
+        mTaskContinuityMessengerCache = new TaskContinuityMessengerCache(context);
         mTaskSyncControllerCache =
                 new TaskSyncControllerCache(context, mTaskContinuityMessengerCache);
         mHandoffControllerCache =

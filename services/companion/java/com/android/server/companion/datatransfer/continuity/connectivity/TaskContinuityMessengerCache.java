@@ -17,13 +17,9 @@
 package com.android.server.companion.datatransfer.continuity.connectivity;
 
 import android.annotation.NonNull;
-import android.companion.CompanionDeviceManager;
 import android.content.Context;
-import android.content.pm.PackageManagerInternal;
-import com.android.server.LocalServices;
 import com.android.server.companion.datatransfer.continuity.MultiUserResourceCache;
 import java.util.Objects;
-import java.util.concurrent.Executor;
 
 /**
  * Maintains a cache of user-specific {@link TaskContinuityMessenger} instances, lazily
@@ -31,23 +27,14 @@ import java.util.concurrent.Executor;
  */
 public class TaskContinuityMessengerCache extends MultiUserResourceCache<TaskContinuityMessenger> {
 
-    private final AssociationProfileManager mAssociationProfileManager;
-    private final CompanionDeviceManager mCompanionDeviceManager;
-    private final Executor mExecutor;
+    private final Context mContext;
 
-    public TaskContinuityMessengerCache(
-            @NonNull CompanionDeviceManager companionDeviceManager, @NonNull Executor executor) {
-        mAssociationProfileManager =
-                new AssociationProfileManager(
-                        Objects.requireNonNull(
-                                LocalServices.getService(PackageManagerInternal.class)));
-        mCompanionDeviceManager = Objects.requireNonNull(companionDeviceManager);
-        mExecutor = Objects.requireNonNull(executor);
+    public TaskContinuityMessengerCache(@NonNull Context context) {
+        mContext = Objects.requireNonNull(context);
     }
 
     @Override
     protected TaskContinuityMessenger createResourceForUser(int userId) {
-        return new TaskContinuityMessenger(userId, mCompanionDeviceManager, mExecutor,
-                mAssociationProfileManager);
+        return new TaskContinuityMessenger(userId, mContext);
     }
 }
