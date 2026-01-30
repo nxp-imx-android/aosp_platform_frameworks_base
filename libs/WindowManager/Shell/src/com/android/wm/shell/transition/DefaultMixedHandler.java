@@ -59,6 +59,7 @@ import com.android.wm.shell.bubbles.transitions.BubbleTransitions;
 import com.android.wm.shell.common.ComponentUtils;
 import com.android.wm.shell.desktopmode.DesktopTasksController;
 import com.android.wm.shell.desktopmode.NormalAppLayerHandler;
+import com.android.wm.shell.desktopmode.desktoptaskshandlers.DesktopTasksTransitionHandler;
 import com.android.wm.shell.keyguard.KeyguardTransitionHandler;
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerHandler;
 import com.android.wm.shell.pip.PipTransitionController;
@@ -100,6 +101,9 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
     private @Nullable StageCoordinator mSplitHandler;
     private final KeyguardTransitionHandler mKeyguardHandler;
     private DesktopTasksController mDesktopTasksController;
+    // Depend on DesktopTasksTransitionHandler to make sure that handler executes after
+    // DefaultMixedHandler.
+    private DesktopTasksTransitionHandler mDesktopTasksTransitionHandler;
     private BubbleTransitions mBubbleTransitions;
     private BubbleHelper mBubbleHelper;
     private UnfoldTransitionHandler mUnfoldHandler;
@@ -371,6 +375,7 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
             Optional<RecentsTransitionHandler> recentsHandlerOptional,
             KeyguardTransitionHandler keyguardHandler,
             Optional<DesktopTasksController> desktopTasksControllerOptional,
+            DesktopTasksTransitionHandler desktopTasksTransitionHandler,
             Optional<UnfoldTransitionHandler> unfoldHandler,
             Optional<ActivityEmbeddingController> activityEmbeddingController,
             BubbleTransitions bubbleTransitions,
@@ -396,6 +401,7 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
                 mRecentsHandler.addMixer(this);
             }
             mDesktopTasksController = desktopTasksControllerOptional.orElse(null);
+            mDesktopTasksTransitionHandler = desktopTasksTransitionHandler;
             mUnfoldHandler = unfoldHandler.orElse(null);
             mActivityEmbeddingController = activityEmbeddingController.orElse(null);
             mBubbleTransitions = bubbleTransitions;

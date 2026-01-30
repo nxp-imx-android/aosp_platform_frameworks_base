@@ -170,6 +170,7 @@ import com.android.wm.shell.desktopmode.data.DesktopRepositoryInitializerImpl;
 import com.android.wm.shell.desktopmode.data.persistence.DesktopPersistentRepository;
 import com.android.wm.shell.desktopmode.desktopfirst.DesktopDisplayModeController;
 import com.android.wm.shell.desktopmode.desktopfirst.DesktopFirstListenerManager;
+import com.android.wm.shell.desktopmode.desktoptaskshandlers.DesktopTasksTransitionHandler;
 import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpaperActivityTokenProvider;
 import com.android.wm.shell.desktopmode.education.AppHandleEducationController;
 import com.android.wm.shell.desktopmode.education.AppHandleEducationFilter;
@@ -840,6 +841,7 @@ public abstract class WMShellModule {
             Optional<RecentsTransitionHandler> recentsTransitionHandler,
             KeyguardTransitionHandler keyguardTransitionHandler,
             Optional<DesktopTasksController> desktopTasksController,
+            DesktopTasksTransitionHandler desktopTasksTransitionHandler,
             Optional<UnfoldTransitionHandler> unfoldHandler,
             Optional<ActivityEmbeddingController> activityEmbeddingController,
             BubbleTransitions bubbleTransitions,
@@ -856,6 +858,7 @@ public abstract class WMShellModule {
                 recentsTransitionHandler,
                 keyguardTransitionHandler,
                 desktopTasksController,
+                desktopTasksTransitionHandler,
                 unfoldHandler,
                 activityEmbeddingController,
                 bubbleTransitions,
@@ -2399,7 +2402,8 @@ public abstract class WMShellModule {
             QuitFocusedAppKeyGestureHandler quitFocusedAppKeyGestureHandler,
             Optional<DesktopAiInitializer> desktopAiInitializer,
             BubbleRootTask bubbleRootTask,
-            IDesktopModeProvider desktopModeProvider) {
+            IDesktopModeProvider desktopModeProvider,
+            DesktopTasksTransitionHandler desktopTasksTransitionHandler) {
         return new Object();
     }
 
@@ -2463,5 +2467,4 @@ public abstract class WMShellModule {
     static HomeIntentProvider provideHomeIntentProvider(Context context) {
         return new HomeIntentProvider(context);
     }
-
 }
