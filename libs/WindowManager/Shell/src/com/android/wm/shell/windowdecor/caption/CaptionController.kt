@@ -69,6 +69,7 @@ abstract class CaptionController<T>(
     protected lateinit var captionLayoutResult: CaptionRelayoutResult
     private lateinit var decorWindowContext: Context
     private var windowDecorationInsets: WindowDecorationInsets? = null
+    protected lateinit var display: Display
 
     protected var isCaptionVisible = false
     var isRecentsTransitionRunning = false
@@ -126,6 +127,7 @@ abstract class CaptionController<T>(
             traceTag = Trace.TRACE_TAG_WINDOW_MANAGER,
             name = "CaptionController#relayout",
         ) {
+            this.display = display
             taskInfo = params.runningTaskInfo
             hasGlobalFocus = params.hasGlobalFocus
             this.decorWindowContext = decorWindowContext
