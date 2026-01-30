@@ -147,13 +147,6 @@ public final class InputChannel implements Parcelable {
     }
 
     /**
-     * Release the Java objects hold over the native InputChannel. If other references
-     * still exist in native-land, then the channel may continue to exist.
-     */
-    public void release() {
-    }
-
-    /**
      * Creates a copy of this instance to the outParameter. This is used to pass an input channel
      * as an out parameter in a binder call.
      * @param other The other input channel instance.
