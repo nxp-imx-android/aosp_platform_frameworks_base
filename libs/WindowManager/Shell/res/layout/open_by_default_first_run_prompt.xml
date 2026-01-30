@@ -16,7 +16,6 @@
 
 <com.android.wm.shell.apptoweb.OpenByDefaultFirstRunPromptView
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:androidprv="http://schemas.android.com/apk/prv/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     style="@style/LetterboxDialog">
@@ -74,7 +73,7 @@
                     android:layout_marginTop="24dp"
                     android:textSize="14sp"
                     android:minHeight="40dp"
-                    android:textColor="@androidprv:color/materialColorOnPrimary"
+                    android:textColor="@color/materialColorOnPrimary"
                     android:background="@drawable/open_by_default_settings_dialog_confirm_button_background"/>
 
                 <Button
@@ -86,7 +85,7 @@
                     android:layout_marginTop="16dp"
                     android:textSize="14sp"
                     android:minHeight="40dp"
-                    android:textColor="@androidprv:color/materialColorOnPrimary"
+                    android:textColor="@color/materialColorOnPrimary"
                     android:background="@drawable/open_by_default_settings_dialog_confirm_button_background"/>
 
                 <Button
@@ -98,10 +97,9 @@
                     android:layout_marginTop="16dp"
                     android:textSize="14sp"
                     android:minHeight="40dp"
-                    android:textColor="@androidprv:color/materialColorPrimary"
+                    android:textColor="@color/materialColorPrimary"
                     android:background="@android:color/transparent"/>
             </LinearLayout>
         </ScrollView>
     </FrameLayout>
 </com.android.wm.shell.apptoweb.OpenByDefaultFirstRunPromptView>
-

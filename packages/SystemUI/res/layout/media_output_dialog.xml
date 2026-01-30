@@ -17,7 +17,6 @@
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:androidprv="http://schemas.android.com/apk/prv/res/android"
     android:id="@+id/media_output_dialog"
     android:layout_width="@dimen/large_dialog_width"
     android:layout_height="wrap_content"
@@ -151,7 +150,7 @@
         <ImageView
             android:id="@+id/ic_info_outline"
             android:src="@drawable/ic_info_outline"
-            android:tint="@androidprv:color/materialColorError"
+            android:tint="@color/materialColorError"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="8dp"
@@ -163,7 +162,7 @@
             android:layout_marginHorizontal="8dp"
             android:paddingTop="4dp"
             android:text="@string/media_output_dialog_missing_permissions_warning"
-            android:textColor="@androidprv:color/materialColorError" />
+            android:textColor="@color/materialColorError" />
         <com.google.android.material.button.MaterialButton
             android:id="@+id/warning_fix_button"
             android:layout_width="wrap_content"

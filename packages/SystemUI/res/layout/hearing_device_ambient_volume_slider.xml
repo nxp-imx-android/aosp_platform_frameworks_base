@@ -17,7 +17,6 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:androidprv="http://schemas.android.com/apk/prv/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginTop="4dp"
@@ -64,7 +63,7 @@
                 android:layout_gravity="center"
                 android:adjustViewBounds="true"
                 android:focusable="false"
-                android:tint="@androidprv:color/materialColorOnSurface"
+                android:tint="@color/materialColorOnSurface"
                 android:tintMode="src_in" />
         </FrameLayout>
 

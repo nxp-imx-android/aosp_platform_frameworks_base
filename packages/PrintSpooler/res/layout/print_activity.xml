@@ -16,7 +16,6 @@
 
 <com.android.printspooler.widget.PrintContentView
         xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:androidprv="http://schemas.android.com/apk/prv/res/android"
     android:id="@+id/options_content"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent">
@@ -142,7 +141,7 @@
             android:paddingBottom="12dip"
             android:elevation="@dimen/preview_controls_elevation"
             android:background="@drawable/cancel_button"
-            android:textColor="@androidprv:color/materialColorPrimary"
+            android:textColor="@color/materialColorPrimary"
             android:text="@string/cancel"
             android:featureFlag="com.android.printspooler.flags.updated_button_layout">
         </Button>
