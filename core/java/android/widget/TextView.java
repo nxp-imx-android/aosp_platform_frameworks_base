@@ -5579,12 +5579,11 @@ public class TextView extends View implements ViewTreeObserver.OnPreDrawListener
                             Math.clamp(400 + mFontWeightAdjustment,
                                     FontStyle.FONT_WEIGHT_MIN, FontStyle.FONT_WEIGHT_MAX)));
                 }
-                mTextPaint.setFontVariationSettings(
+                effective = mTextPaint.setFontVariationSettings(
                         FontVariationAxis.toFontVariationSettings(axes));
             } else {
-                mTextPaint.setFontVariationSettings(fontVariationSettings);
+                effective = mTextPaint.setFontVariationSettings(fontVariationSettings);
             }
-            effective = true;
         } else {
             effective = mTextPaint.setFontVariationSettings(fontVariationSettings);
         }

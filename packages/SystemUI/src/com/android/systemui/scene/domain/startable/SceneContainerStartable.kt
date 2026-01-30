@@ -302,83 +302,40 @@ constructor(
         }
     }
 
-    /** Updates the visibility of the scene container. */
+    private fun <T> CoroutineScope.reportEvents(
+        from: Flow<T>,
+        eventBuilder: (T) -> SceneInteractor.Event,
+    ) {
+        launch { from.collect { sceneInteractor.handleEvent(eventBuilder(it)) } }
+    }
+
+    /**
+     * Updates states in [SceneInteractor] that it needs to calculate the visibility of the scene
+     * container.
+     */
     private fun hydrateVisibility() {
         applicationScope.launch {
-            combine(
-                    deviceProvisioningInteractor.isDeviceProvisioned,
-                    deviceUnlockedInteractor.deviceUnlockStatus,
-                ) { isProvisioned, unlockStatus ->
-                    isProvisioned || !unlockStatus.isUnlocked
+            coroutineScope {
+                reportEvents(deviceProvisioningInteractor.isDeviceProvisioned) {
+                    SceneInteractor.Event.DeviceProvisioningChange(it)
                 }
-                .distinctUntilChanged()
-                .flatMapLatest { isAllowedToBeVisible ->
-                    if (isAllowedToBeVisible) {
-                        combine(
-                                sceneInteractor.transitionStateFlow,
-                                headsUpInteractor.isHeadsUpOrAnimatingAway,
-                                alternateBouncerInteractor.isVisible,
-                                surfaceBehindInteractor.isAnimatingSurface,
-                            ) {
-                                transitionState,
-                                isHeadsUpOrAnimatingAway,
-                                isAlternateBouncerVisible,
-                                isAnimatingSurface ->
-                                val isCommunalShowing =
-                                    transitionState.isTransitioningFromOrTo(Scenes.Communal) ||
-                                        transitionState.isIdle(Scenes.Communal)
 
-                                val inTransition =
-                                    transitionState is ObservableTransitionState.Transition
-                                val visibilityForTransitionState =
-                                    when (transitionState) {
-                                        is ObservableTransitionState.Idle -> {
-                                            if (
-                                                transitionState.currentScene != Scenes.Gone &&
-                                                    transitionState.currentScene !=
-                                                        Scenes.Occluded &&
-                                                    transitionState.currentScene != Scenes.Dream
-                                            ) {
-                                                true to "scene is not Gone, Occluded, or Dream"
-                                            } else if (
-                                                transitionState.currentOverlays.isNotEmpty()
-                                            ) {
-                                                true to "overlay is shown"
-                                            } else if (
-                                                transitionState.currentScene == Scenes.Occluded
-                                            ) {
-                                                false to "occluded"
-                                            } else {
-                                                false to "scene is Gone and no overlays are shown"
-                                            }
-                                        }
-                                        is ObservableTransitionState.Transition -> {
-                                            true to "in transition"
-                                        }
-                                    }
+                reportEvents(deviceUnlockedInteractor.deviceUnlockStatus) {
+                    SceneInteractor.Event.DeviceUnlockChange(it.isUnlocked)
+                }
 
-                                when {
-                                    isCommunalShowing ->
-                                        true to "on or transitioning to/from communal"
-                                    isAnimatingSurface -> true to "animating surface behind"
-                                    isHeadsUpOrAnimatingAway -> true to "showing a HUN"
-                                    isAlternateBouncerVisible -> true to "showing alternate bouncer"
-                                    // We need to be visible during transitions, even if occlusion
-                                    // would otherwise result in being invisible, so that all
-                                    // transitions get a chance to complete.
-                                    inTransition && visibilityForTransitionState.first ->
-                                        true to visibilityForTransitionState.second
-                                    else -> visibilityForTransitionState
-                                }
-                            }
-                            .distinctUntilChanged()
-                    } else {
-                        flowOf(false to "Device not provisioned and unlocked")
-                    }
+                reportEvents(headsUpInteractor.isHeadsUpOrAnimatingAway) {
+                    SceneInteractor.Event.HeadsUpNotificationVisibilityChange(it)
                 }
-                .collect { (isVisible, loggingReason) ->
-                    sceneInteractor.setVisible(isVisible, loggingReason)
+
+                reportEvents(alternateBouncerInteractor.isVisible) {
+                    SceneInteractor.Event.AlternateBouncerVisibilityChange(it)
                 }
+
+                reportEvents(surfaceBehindInteractor.isAnimatingSurface) {
+                    SceneInteractor.Event.SurfaceBehindAnimationChange(it)
+                }
+            }
         }
     }
 

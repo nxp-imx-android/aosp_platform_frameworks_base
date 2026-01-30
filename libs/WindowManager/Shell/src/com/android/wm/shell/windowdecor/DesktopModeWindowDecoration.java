@@ -155,7 +155,7 @@ import java.util.function.Supplier;
  */
 @Deprecated
 public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLinearLayout>
-        implements HandleMenuController, ManageWindowsMenuController, MaximizeMenuController {
+        implements HandleMenuController, ManageWindowsMenuController, LayoutMenuController {
     private static final String TAG = "DesktopModeWindowDecoration";
 
     @VisibleForTesting
@@ -195,7 +195,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     private boolean mMinimumInstancesFound;
     private ManageWindowsViewContainer mManageWindowsMenu;
 
-    private MaximizeMenu mMaximizeMenu;
+    private LayoutMenu mLayoutMenu;
 
     private OpenByDefaultDialog mOpenByDefaultDialog;
 
@@ -211,21 +211,21 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     private final AppHeaderViewHolder.Factory mAppHeaderViewHolderFactory;
     private final AppHandleViewHolder.Factory mAppHandleViewHolderFactory;
     private final RootTaskDisplayAreaOrganizer mRootTaskDisplayAreaOrganizer;
-    private final MaximizeMenuFactory mMaximizeMenuFactory;
+    private final LayoutMenuFactory mLayoutMenuFactory;
     private final HandleMenu.HandleMenuFactory mHandleMenuFactory;
     private final AppToWebGenericLinksParser mGenericLinksParser;
     private final AssistContentRequester mAssistContentRequester;
     private final DesktopModeCompatPolicy mDesktopModeCompatPolicy;
     private final FocusTransitionObserver mFocusTransitionObserver;
 
-    // Hover state for the maximize menu and button. The menu will remain open as long as either of
+    // Hover state for the layout menu and button. The menu will remain open as long as either of
     // these is true. See {@link #onMaximizeHoverStateChanged()}.
     private boolean mIsAppHeaderMaximizeButtonHovered = false;
-    private boolean mIsMaximizeMenuHovered = false;
-    // Used to schedule the closing of the maximize menu when neither of the button or menu are
+    private boolean mIsLayoutMenuHovered = false;
+    // Used to schedule the closing of the layout menu when neither of the button or menu are
     // being hovered. There's a small delay after stopping the hover, to allow a quick reentry
     // to cancel the close.
-    private final Runnable mCloseMaximizeWindowRunnable = this::closeMaximizeMenu;
+    private final Runnable mCloseMaximizeWindowRunnable = this::closeLayoutMenu;
     private final MultiInstanceHelper mMultiInstanceHelper;
     private final WindowDecorCaptionRepository mWindowDecorCaptionRepository;
     private final DesktopUserRepositories mDesktopUserRepositories;
@@ -235,8 +235,8 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     /** The last calculated valid drag area of the task. */
     private Rect mLastValidDragArea = null;
 
-    private final Function0<Unit> mCloseMaximizeMenuFunction = () -> {
-        closeMaximizeMenu();
+    private final Function0<Unit> mCloseLayoutMenuFunction = () -> {
+        closeLayoutMenu();
         return Unit.INSTANCE;
     };
 
@@ -290,7 +290,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                         context.getSystemService(WindowManager.class)),
                 new SurfaceControlViewHostFactory() {},
                 windowDecorViewHostSupplier,
-                DefaultMaximizeMenuFactory.INSTANCE,
+                DefaultLayoutMenuFactory.INSTANCE,
                 HandleMenu.HandleMenuFactory.INSTANCE, multiInstanceHelper,
                 windowDecorCaptionRepository, desktopModeEventLogger,
                 desktopModeUiEventLogger, desktopModeCompatPolicy,
@@ -329,7 +329,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             WindowManagerWrapper windowManagerWrapper,
             SurfaceControlViewHostFactory surfaceControlViewHostFactory,
             @NonNull WindowDecorViewHostSupplier<WindowDecorViewHost> windowDecorViewHostSupplier,
-            MaximizeMenuFactory maximizeMenuFactory,
+            LayoutMenuFactory layoutMenuFactory,
             HandleMenu.HandleMenuFactory handleMenuFactory,
             MultiInstanceHelper multiInstanceHelper,
             WindowDecorCaptionRepository windowDecorCaptionRepository,
@@ -360,7 +360,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         mRootTaskDisplayAreaOrganizer = rootTaskDisplayAreaOrganizer;
         mGenericLinksParser = genericLinksParser;
         mAssistContentRequester = assistContentRequester;
-        mMaximizeMenuFactory = maximizeMenuFactory;
+        mLayoutMenuFactory = layoutMenuFactory;
         mHandleMenuFactory = handleMenuFactory;
         mMultiInstanceHelper = multiInstanceHelper;
         mWindowManagerWrapper = windowManagerWrapper;
@@ -497,7 +497,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         // in this case).
         if (!taskInfo.isFocused && mIsAppHeaderMaximizeButtonHovered) {
             setAppHeaderMaximizeButtonHovered(false);
-            onMaximizeButtonHoverExit();
+            onLayoutButtonHoverExit();
         }
 
         if (isHandleMenuActive()) {
@@ -616,13 +616,13 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         if (!hasGlobalFocus) {
             closeHandleMenu();
             closeManageWindowsMenu();
-            closeMaximizeMenu();
+            closeLayoutMenu();
             if (!DesktopExperienceFlags.ENABLE_APP_HANDLE_POSITION_REPORTING.isTrue()) {
                 notifyNoCaptionHandle();
             }
         }
         updateDragResizeListenerIfNeeded(oldDecorationSurface, inFullImmersive);
-        updateMaximizeMenu(startT, inFullImmersive);
+        updateLayoutMenu(startT, inFullImmersive);
         Trace.endSection(); // DesktopModeWindowDecoration#relayout
     }
 
@@ -939,14 +939,14 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                 + "that does not have an app handle");
     }
 
-    private void updateMaximizeMenu(SurfaceControl.Transaction startT, boolean inFullImmersive) {
-        if (!isDragResizable(mTaskInfo, inFullImmersive) || !isMaximizeMenuActive()) {
+    private void updateLayoutMenu(SurfaceControl.Transaction startT, boolean inFullImmersive) {
+        if (!isDragResizable(mTaskInfo, inFullImmersive) || !isLayoutMenuActive()) {
             return;
         }
         if (!mTaskInfo.isVisible()) {
-            closeMaximizeMenu();
+            closeLayoutMenu();
         } else {
-            mMaximizeMenu.positionMenu(startT);
+            mLayoutMenu.positionMenu(startT);
         }
     }
 
@@ -1006,7 +1006,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                 DesktopModeUtils.isTaskMaximized(mTaskInfo, displayLayout),
                 inFullImmersive,
                 hasGlobalFocus,
-                /* maximizeHoverEnabled= */ canOpenMaximizeMenu(
+                /* maximizeHoverEnabled= */ canOpenLayoutMenu(
                     /* animatingTaskResizeOrReposition= */ false),
                 isCaptionVisible()
         ));
@@ -1032,7 +1032,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                     mOnCaptionLongClickListener,
                     mOnCaptionGenericMotionListener,
                     /* onMaximizeHoverAnimationFinishedListener= */ () -> {
-                        createMaximizeMenu();
+                        createLayoutMenu();
                         return Unit.INSTANCE;
                     },
                     mDesktopModeUiEventLogger,
@@ -1503,19 +1503,19 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
 
 
     /**
-     * Create and display maximize menu window
+     * Create and display layout menu window
      */
     @Override
-    public void createMaximizeMenu() {
-        if (isMaximizeMenuActive()) return;
+    public void createLayoutMenu() {
+        if (isLayoutMenuActive()) return;
         mDesktopModeUiEventLogger.log(mTaskInfo,
                 DesktopUiEventEnum.DESKTOP_WINDOW_MAXIMIZE_BUTTON_REVEAL_MENU);
-        mMaximizeMenu = mMaximizeMenuFactory.create(mSyncQueue, mRootTaskDisplayAreaOrganizer,
+        mLayoutMenu = mLayoutMenuFactory.create(mSyncQueue, mRootTaskDisplayAreaOrganizer,
                 mDisplayController, mWindowDecorationActions, mTaskInfo, mDecorWindowContext,
                 (width, height) -> calculateMaximizeMenuPosition(width, height),
                 mSurfaceControlTransactionSupplier, mDesktopModeUiEventLogger);
 
-        mMaximizeMenu.show(
+        mLayoutMenu.show(
                 /* isTaskInImmersiveMode= */
                 mDesktopUserRepositories.getProfile(mTaskInfo.userId)
                             .isTaskInFullImmersiveState(mTaskInfo.taskId),
@@ -1523,12 +1523,12 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                 TaskInfoKt.getRequestingImmersive(mTaskInfo),
                 /* showSnapOptions= */ mTaskInfo.isResizeable,
                 hovered -> {
-                    mIsMaximizeMenuHovered = hovered;
-                    onMaximizeHoverStateChanged();
+                    mIsLayoutMenuHovered = hovered;
+                    onLayoutButtonHoverStateChanged();
                     return null;
                 },
-                /* onOutsideTouchListener= */ mCloseMaximizeMenuFunction,
-                /* onMaximizeMenuClickedListener= */ mCloseMaximizeMenuFunction
+                /* onOutsideTouchListener= */ mCloseLayoutMenuFunction,
+                /* onMaximizeMenuClickedListener= */ mCloseLayoutMenuFunction
         );
     }
 
@@ -1536,18 +1536,18 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     @Override
     public void setAppHeaderMaximizeButtonHovered(boolean hovered) {
         mIsAppHeaderMaximizeButtonHovered = hovered;
-        onMaximizeHoverStateChanged();
+        onLayoutButtonHoverStateChanged();
     }
 
     /**
-     * Called when either one of the maximize button in the app header or the maximize menu has
+     * Called when either one of the maximize button in the app header or the layout menu has
      * changed its hover state.
      */
     @Override
-    public void onMaximizeHoverStateChanged() {
-        if (!mIsMaximizeMenuHovered && !mIsAppHeaderMaximizeButtonHovered) {
+    public void onLayoutButtonHoverStateChanged() {
+        if (!mIsLayoutMenuHovered && !mIsAppHeaderMaximizeButtonHovered) {
             // Neither is hovered, close the menu.
-            if (isMaximizeMenuActive()) {
+            if (isLayoutMenuActive()) {
                 mHandler.postDelayed(mCloseMaximizeWindowRunnable, CLOSE_MAXIMIZE_MENU_DELAY_MS);
             }
             return;
@@ -1557,18 +1557,18 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     }
 
     /**
-     * Close the maximize menu window
+     * Close the layout menu window
      */
     @Override
-    public void closeMaximizeMenu() {
-        if (!isMaximizeMenuActive()) return;
-        mMaximizeMenu.close(() -> {
+    public void closeLayoutMenu() {
+        if (!isLayoutMenuActive()) return;
+        mLayoutMenu.close(() -> {
             // Request the accessibility service to refocus on the maximize button after closing
             // the menu.
             a11yFocusMaximizeButton();
             return Unit.INSTANCE;
         });
-        mMaximizeMenu = null;
+        mLayoutMenu = null;
     }
 
     /**
@@ -1582,8 +1582,8 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     }
 
     @Override
-    public boolean isMaximizeMenuActive() {
-        return mMaximizeMenu != null;
+    public boolean isLayoutMenuActive() {
+        return mLayoutMenu != null;
     }
 
     /**
@@ -1775,7 +1775,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     void releaseViews(WindowContainerTransaction wct) {
         closeHandleMenu();
         closeManageWindowsMenu();
-        closeMaximizeMenu();
+        closeLayoutMenu();
         super.releaseViews(wct);
     }
 
@@ -2045,7 +2045,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                 DesktopModeUtils.isTaskMaximized(mTaskInfo, displayLayout),
                 inFullImmersive,
                 isFocused(),
-                /* maximizeHoverEnabled= */ canOpenMaximizeMenu(animatingTaskResizeOrReposition),
+                /* maximizeHoverEnabled= */ canOpenLayoutMenu(animatingTaskResizeOrReposition),
                 isCaptionVisible()));
     }
 
@@ -2090,7 +2090,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
      * Called when there is a {@link MotionEvent#ACTION_HOVER_EXIT} on the maximize window button.
      */
     @Override
-    public void onMaximizeButtonHoverExit() {
+    public void onLayoutButtonHoverExit() {
         final AppHeaderViewHolder appHeader = asAppHeader(mWindowDecorViewHolder);
         if (appHeader != null) {
             appHeader.onMaximizeWindowHoverExit();
@@ -2101,12 +2101,12 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
      * Called when there is a {@link MotionEvent#ACTION_HOVER_ENTER} on the maximize window button.
      */
     @Override
-    public void onMaximizeButtonHoverEnter() {
+    public void onLayoutButtonHoverEnter() {
         if (!mTaskInfo.isFocused) return;
         asAppHeader(mWindowDecorViewHolder).onMaximizeWindowHoverEnter();
     }
 
-    private boolean canOpenMaximizeMenu(boolean animatingTaskResizeOrReposition) {
+    private boolean canOpenLayoutMenu(boolean animatingTaskResizeOrReposition) {
         final boolean inImmersiveAndRequesting =
                 mDesktopUserRepositories.getProfile(mTaskInfo.userId)
                         .isTaskInFullImmersiveState(mTaskInfo.taskId)

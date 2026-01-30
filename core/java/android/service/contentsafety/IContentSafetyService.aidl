@@ -29,7 +29,7 @@ import android.service.contentsafety.IGetFeatureCallback;
  interface IContentSafetyService {
 
   @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.CHECK_CONTENT_SAFETY)")
-  oneway void getFeature(in int featureType, in AndroidFuture cancellationSignal, in IGetFeatureCallback callback) = 1;
+  oneway void requestGetFeature(in int featureType, in AndroidFuture cancellationSignal, in IGetFeatureCallback callback) = 1;
 
   oneway void notifySandboxedServiceConnected() = 2;
   oneway void notifySandboxedServiceDisconnected() = 3;

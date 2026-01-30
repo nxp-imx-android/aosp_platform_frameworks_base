@@ -28,9 +28,11 @@ import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.RequiresPermission;
 import android.annotation.SystemApi;
 import android.app.compat.CompatChanges;
 import android.compat.annotation.ChangeId;
+import android.Manifest;
 import android.compat.annotation.EnabledSince;
 import android.os.Build;
 import android.os.Parcel;
@@ -733,6 +735,16 @@ public final class NetworkRegistrationInfo implements Parcelable {
     }
 
     /**
+     * Set satellite technology type
+     *
+     * @param satelliteTechnology {@link NTRadioTechnology} satellite technology type
+     * @hide
+     */
+    public void setSatelliteTechnology(@NTRadioTechnology int satelliteTechnology) {
+        mSatelliteTech = satelliteTechnology;
+    }
+
+    /**
      * Get whether the network is a non-terrestrial network.
      *
      * @return {@code true} if network is a non-terrestrial network else {@code false}.
@@ -742,12 +754,19 @@ public final class NetworkRegistrationInfo implements Parcelable {
     }
 
     /**
-     * Get SatelliteTechnology type
+     * Returns the satellite technology (such as NB-IoT NTN, LTE DTC, or NR NTN) of the registered
+     * network.
      *
-     * @return {@link NTRadioTechnology} satellite technology type
+     * <p>Returns {@link NTRadioTechnology#NT_RADIO_TECHNOLOGY_UNKNOWN} if the registered
+     * network is terrestrial or if the satellite technology is not specified by the network.
+     *
+     * @return The satellite technology.
      * @hide
      */
-    public int getSatelliteTechnology() {
+    @SystemApi
+    @RequiresPermission(Manifest.permission.SATELLITE_COMMUNICATION)
+    @FlaggedApi(Flags.FLAG_SYSTEM_SELECTION_SPECIFIER_ENHANCEMENT)
+    @NTRadioTechnology public int getSatelliteTechnology() {
         return mSatelliteTech;
     }
 

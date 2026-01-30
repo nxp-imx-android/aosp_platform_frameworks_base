@@ -25,7 +25,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.service.personalcontext.RenderToken;
+import android.service.personalcontext.insight.BundleInsight;
 import android.service.personalcontext.insight.ContextInsight;
+import android.service.personalcontext.insight.ContextInsightWrapper;
 import android.view.Display;
 import android.view.SurfaceControlViewHost;
 import android.view.View;
@@ -40,7 +43,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.Executor;
 
 @SmallTest
@@ -51,6 +54,9 @@ public class InsightSurfaceVisualizerServiceTest {
     @Mock private IVisualizationResult mResult;
     @Mock private Context mContext;
     @Mock private Display mDisplay;
+    private final ContextInsightWrapper mInsight =
+            new ContextInsightWrapper(new BundleInsight.Builder().build());
+    private final RenderToken mRenderToken = new RenderToken(UUID.randomUUID());
 
     private final InsightSurfaceVisualizerService.Injector mInjector =
             new InsightSurfaceVisualizerService.Injector() {
@@ -111,7 +117,8 @@ public class InsightSurfaceVisualizerServiceTest {
         @Override
         public View onCreateEmbeddedView(
                 @NonNull Context context,
-                @NonNull List<ContextInsight> insights,
+                @NonNull ContextInsight insights,
+                @NonNull RenderToken renderToken,
                 @NonNull InsightSurfaceClientInfo client) {
             mMonitor.onCreateEmbeddedView(client);
             return mView;
@@ -140,14 +147,14 @@ public class InsightSurfaceVisualizerServiceTest {
     @Test
     public void testOnClientConnectedCalled() throws RemoteException {
         final IInsightSurfaceVisualizer visualizer = createVisualizer(mock(View.class));
-        visualizer.createVisualizationForClient(List.of(), mClientInfo, mResult);
+        visualizer.createVisualizationForClient(mInsight, mClientInfo, mRenderToken, mResult);
         verify(mMonitor).onClientConnected(mClientInfo);
     }
 
     @Test
     public void testOnClientDisconnectedCalled() throws RemoteException {
         final IInsightSurfaceVisualizer visualizer = createVisualizer(mock(View.class));
-        visualizer.createVisualizationForClient(List.of(), mClientInfo, mResult);
+        visualizer.createVisualizationForClient(mInsight, mClientInfo, mRenderToken, mResult);
         visualizer.onClientDisconnected(mClientInfo);
         verify(mMonitor).onClientDisconnected(mClientInfo);
     }
@@ -156,7 +163,7 @@ public class InsightSurfaceVisualizerServiceTest {
     public void testOnCreateEmbeddedView() throws RemoteException {
         final IInsightSurfaceVisualizer visualizer = createVisualizer();
 
-        visualizer.createVisualizationForClient(List.of(), mClientInfo, mResult);
+        visualizer.createVisualizationForClient(mInsight, mClientInfo, mRenderToken, mResult);
         verify(mMonitor).onCreateEmbeddedView(mClientInfo);
     }
 
@@ -166,7 +173,7 @@ public class InsightSurfaceVisualizerServiceTest {
         // "false" (because it has now View to return).
         final IInsightSurfaceVisualizer visualizer = createVisualizer();
 
-        visualizer.createVisualizationForClient(List.of(), mClientInfo, mResult);
+        visualizer.createVisualizationForClient(mInsight, mClientInfo, mRenderToken, mResult);
         verify(mMonitor).onCreateEmbeddedView(mClientInfo);
         // Since the visualizer was created without a View to create, it will call the callback
         // with "false" to indicate that View creation failed.
@@ -179,7 +186,7 @@ public class InsightSurfaceVisualizerServiceTest {
         // (because it has a View to return).
         final IInsightSurfaceVisualizer visualizer = createVisualizer(mock(View.class));
 
-        visualizer.createVisualizationForClient(List.of(), mClientInfo, mResult);
+        visualizer.createVisualizationForClient(mInsight, mClientInfo, mRenderToken, mResult);
         verify(mMonitor).onCreateEmbeddedView(mClientInfo);
         // Since the visualizer was created with a View to create, it will call the callback
         // with "true" to indicate that View creation succeeded.

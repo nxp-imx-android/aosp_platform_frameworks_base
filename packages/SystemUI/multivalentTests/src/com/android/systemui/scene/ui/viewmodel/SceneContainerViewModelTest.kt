@@ -43,6 +43,7 @@ import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.power.data.repository.fakePowerRepository
+import com.android.systemui.scene.data.repository.unlockDevice
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.fakeOverlaysByKeys
 import com.android.systemui.scene.sceneContainerConfig
@@ -110,10 +111,15 @@ class SceneContainerViewModelTest : SysuiTestCase() {
         kosmos.runTest {
             assertThat(underTest.isVisible).isTrue()
 
-            sceneInteractor.setVisible(false, "reason")
+            unlockDevice()
+            sceneInteractor.changeScene(Scenes.Gone, "Switch to Gone to make isVisible be false.")
             assertThat(underTest.isVisible).isFalse()
 
-            sceneInteractor.setVisible(true, "reason")
+            unlockDevice()
+            sceneInteractor.changeScene(
+                Scenes.Lockscreen,
+                "Switch to Lockscreen to make isVisible be false.",
+            )
             assertThat(underTest.isVisible).isTrue()
         }
 
@@ -121,23 +127,21 @@ class SceneContainerViewModelTest : SysuiTestCase() {
     fun sceneTransition() =
         kosmos.runTest {
             enableSingleShade()
-            val currentScene by collectLastValue(underTest.currentScene)
-            assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
+            assertThat(underTest.currentScene).isEqualTo(Scenes.Lockscreen)
 
             fakeSceneDataSource.changeScene(Scenes.Shade)
 
-            assertThat(currentScene).isEqualTo(Scenes.Shade)
+            assertThat(underTest.currentScene).isEqualTo(Scenes.Shade)
         }
 
     @Test
     fun canChangeScene_whenAllowed_switchingFromGone_returnsTrue() =
         kosmos.runTest {
-            val currentScene by collectLastValue(underTest.currentScene)
             fakeSceneDataSource.changeScene(toScene = Scenes.Gone)
-            assertThat(currentScene).isEqualTo(Scenes.Gone)
+            assertThat(underTest.currentScene).isEqualTo(Scenes.Gone)
 
             sceneContainerConfig.sceneKeys
-                .filter { it != currentScene }
+                .filter { it != underTest.currentScene }
                 .forEach { toScene ->
                     assertWithMessage("Scene $toScene incorrectly protected when allowed")
                         .that(underTest.canChangeScene(toScene = toScene))
@@ -148,12 +152,11 @@ class SceneContainerViewModelTest : SysuiTestCase() {
     @Test
     fun canChangeScene_whenAllowed_switchingFromLockscreen_returnsTrue() =
         kosmos.runTest {
-            val currentScene by collectLastValue(underTest.currentScene)
             fakeSceneDataSource.changeScene(toScene = Scenes.Lockscreen)
-            assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
+            assertThat(underTest.currentScene).isEqualTo(Scenes.Lockscreen)
 
             sceneContainerConfig.sceneKeys
-                .filter { it != currentScene && it != Scenes.Gone }
+                .filter { it != underTest.currentScene && it != Scenes.Gone }
                 .forEach { toScene ->
                     assertWithMessage("Scene $toScene incorrectly protected when allowed")
                         .that(underTest.canChangeScene(toScene = toScene))
@@ -165,12 +168,11 @@ class SceneContainerViewModelTest : SysuiTestCase() {
     fun canChangeScene_whenNotAllowed_fromLockscreen_toFalsingProtectedScenes_returnsFalse() =
         kosmos.runTest {
             fakeFalsingManager.setIsFalseTouch(true) // not allowed by falsing
-            val currentScene by collectLastValue(underTest.currentScene)
             fakeSceneDataSource.changeScene(toScene = Scenes.Lockscreen)
-            assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
+            assertThat(underTest.currentScene).isEqualTo(Scenes.Lockscreen)
 
             sceneContainerConfig.sceneKeys
-                .filter { it != currentScene }
+                .filter { it != underTest.currentScene }
                 .filter {
                     // These scenes are not currently falsing protected.
                     it != Scenes.Dream && it != Scenes.Occluded
@@ -209,9 +211,8 @@ class SceneContainerViewModelTest : SysuiTestCase() {
     fun canChangeScene_whenNotAllowed_fromLockscreen_toFalsingUnprotectedScenes_returnsTrue() =
         kosmos.runTest {
             fakeFalsingManager.setIsFalseTouch(true) // not allowed by falsing
-            val currentScene by collectLastValue(underTest.currentScene)
             fakeSceneDataSource.changeScene(toScene = Scenes.Lockscreen)
-            assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
+            assertThat(underTest.currentScene).isEqualTo(Scenes.Lockscreen)
 
             sceneContainerConfig.sceneKeys
                 .filter {
@@ -245,12 +246,11 @@ class SceneContainerViewModelTest : SysuiTestCase() {
     fun canChangeScene_whenNotAllowed_fromGone_toAnyOtherScene_returnsTrue() =
         kosmos.runTest {
             fakeFalsingManager.setIsFalseTouch(true) // not allowed by falsing
-            val currentScene by collectLastValue(underTest.currentScene)
             fakeSceneDataSource.changeScene(toScene = Scenes.Gone)
-            assertThat(currentScene).isEqualTo(Scenes.Gone)
+            assertThat(underTest.currentScene).isEqualTo(Scenes.Gone)
 
             sceneContainerConfig.sceneKeys
-                .filter { it != currentScene }
+                .filter { it != underTest.currentScene }
                 .forEach { toScene ->
                     // Gone => toScene, initiatedByUserInput=true
                     sceneInteractor.setTransitionState(
@@ -279,8 +279,7 @@ class SceneContainerViewModelTest : SysuiTestCase() {
         kosmos.runTest {
             assertThat(currentValue(deviceUnlockedInteractor.deviceUnlockStatus).isUnlocked)
                 .isFalse()
-            val currentScene by collectLastValue(underTest.currentScene)
-            assertThat(currentScene).isNotEqualTo(Scenes.Gone)
+            assertThat(underTest.currentScene).isNotEqualTo(Scenes.Gone)
 
             assertThat(underTest.canChangeScene(toScene = Scenes.Gone)).isFalse()
         }
@@ -294,8 +293,7 @@ class SceneContainerViewModelTest : SysuiTestCase() {
             )
             assertThat(currentValue(deviceUnlockedInteractor.deviceUnlockStatus).isUnlocked)
                 .isTrue()
-            val currentScene by collectLastValue(underTest.currentScene)
-            assertThat(currentScene).isNotEqualTo(Scenes.Gone)
+            assertThat(underTest.currentScene).isNotEqualTo(Scenes.Gone)
 
             assertThat(underTest.canChangeScene(toScene = Scenes.Gone)).isTrue()
         }
@@ -303,9 +301,8 @@ class SceneContainerViewModelTest : SysuiTestCase() {
     @Test
     fun canShowOrReplaceOverlay_whenAllowed_showingWhileOnGone_returnsTrue() =
         kosmos.runTest {
-            val currentScene by collectLastValue(underTest.currentScene)
             fakeSceneDataSource.changeScene(toScene = Scenes.Gone)
-            assertThat(currentScene).isEqualTo(Scenes.Gone)
+            assertThat(underTest.currentScene).isEqualTo(Scenes.Gone)
 
             sceneContainerConfig.overlayKeys.forEach { overlay ->
                 assertWithMessage("Overlay $overlay incorrectly protected when allowed")
@@ -317,9 +314,8 @@ class SceneContainerViewModelTest : SysuiTestCase() {
     @Test
     fun canShowOrReplaceOverlay_whenAllowed_showingWhileOnLockscreen_returnsTrue() =
         kosmos.runTest {
-            val currentScene by collectLastValue(underTest.currentScene)
             fakeSceneDataSource.changeScene(toScene = Scenes.Lockscreen)
-            assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
+            assertThat(underTest.currentScene).isEqualTo(Scenes.Lockscreen)
 
             sceneContainerConfig.overlayKeys.forEach { overlay ->
                 assertWithMessage("Overlay $overlay incorrectly protected when allowed")
@@ -332,9 +328,8 @@ class SceneContainerViewModelTest : SysuiTestCase() {
     fun canShowOrReplaceOverlay_whenNotAllowed_whileOnLockscreen_returnsFalse() =
         kosmos.runTest {
             fakeFalsingManager.setIsFalseTouch(true) // not allowed by falsing
-            val currentScene by collectLastValue(underTest.currentScene)
             fakeSceneDataSource.changeScene(toScene = Scenes.Lockscreen)
-            assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
+            assertThat(underTest.currentScene).isEqualTo(Scenes.Lockscreen)
 
             sceneContainerConfig.overlayKeys.forEach { overlay ->
                 // Lockscreen => showOverlay(overlay), isInitiatedByUserInput=true
@@ -363,9 +358,8 @@ class SceneContainerViewModelTest : SysuiTestCase() {
     fun canShowOrReplaceOverlay_whenNotAllowed_whileOnGone_returnsTrue() =
         kosmos.runTest {
             fakeFalsingManager.setIsFalseTouch(true) // not allowed by falsing
-            val currentScene by collectLastValue(underTest.currentScene)
             fakeSceneDataSource.changeScene(toScene = Scenes.Gone)
-            assertThat(currentScene).isEqualTo(Scenes.Gone)
+            assertThat(underTest.currentScene).isEqualTo(Scenes.Gone)
 
             sceneContainerConfig.overlayKeys.forEach { overlay ->
                 // Gone => showOverlay(overlay), isInitiatedByUserInput=true
@@ -430,8 +424,10 @@ class SceneContainerViewModelTest : SysuiTestCase() {
     @Test
     fun remoteUserInteraction_keepsContainerVisible() =
         kosmos.runTest {
-            sceneInteractor.setVisible(false, "reason")
+            unlockDevice()
+            sceneInteractor.changeScene(Scenes.Gone, "Switch to Gone to make isVisible be false.")
             assertThat(underTest.isVisible).isFalse()
+
             sceneInteractor.onRemoteUserInputStarted("reason")
             assertThat(underTest.isVisible).isTrue()
 
@@ -443,14 +439,13 @@ class SceneContainerViewModelTest : SysuiTestCase() {
     @Test
     fun getActionableContentKey_noOverlays_returnsCurrentScene() =
         kosmos.runTest {
-            val currentScene by collectLastValue(underTest.currentScene)
             val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
-            assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
+            assertThat(underTest.currentScene).isEqualTo(Scenes.Lockscreen)
             assertThat(currentOverlays).isEmpty()
 
             val actionableContentKey =
                 underTest.getActionableContentKey(
-                    currentScene = checkNotNull(currentScene),
+                    currentScene = checkNotNull(underTest.currentScene),
                     currentOverlays = checkNotNull(currentOverlays),
                     overlayByKey = fakeOverlaysByKeys,
                 )
@@ -463,17 +458,16 @@ class SceneContainerViewModelTest : SysuiTestCase() {
     fun getActionableContentKey_multipleOverlays_returnsTopOverlay() =
         kosmos.runTest {
             enableDualShade()
-            val currentScene by collectLastValue(underTest.currentScene)
             val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
             fakeSceneDataSource.showOverlay(Overlays.QuickSettingsShade)
             fakeSceneDataSource.showOverlay(Overlays.NotificationsShade)
-            assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
+            assertThat(underTest.currentScene).isEqualTo(Scenes.Lockscreen)
             assertThat(currentOverlays)
                 .containsExactly(Overlays.QuickSettingsShade, Overlays.NotificationsShade)
 
             val actionableContentKey =
                 underTest.getActionableContentKey(
-                    currentScene = checkNotNull(currentScene),
+                    currentScene = checkNotNull(underTest.currentScene),
                     currentOverlays = checkNotNull(currentOverlays),
                     overlayByKey = fakeOverlaysByKeys,
                 )

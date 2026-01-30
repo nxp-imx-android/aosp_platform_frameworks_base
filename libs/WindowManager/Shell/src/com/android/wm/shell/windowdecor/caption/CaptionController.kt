@@ -35,8 +35,8 @@ import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_WINDOW_DECORATION
 import com.android.wm.shell.shared.annotations.ShellBackgroundThread
 import com.android.wm.shell.windowdecor.HandleMenuController
+import com.android.wm.shell.windowdecor.LayoutMenuController
 import com.android.wm.shell.windowdecor.ManageWindowsMenuController
-import com.android.wm.shell.windowdecor.MaximizeMenuController
 import com.android.wm.shell.windowdecor.TaskFocusStateConsumer
 import com.android.wm.shell.windowdecor.WindowDecoration2.RelayoutParams
 import com.android.wm.shell.windowdecor.WindowDecorationInsets
@@ -76,8 +76,8 @@ abstract class CaptionController<T>(
     var isDragging = false
     var setExcludeLayerJob: Job? = null
 
-    /** Controller for maximize menu or null if caption does not implement a maximize menu. */
-    open val maximizeMenuController: MaximizeMenuController? = null
+    /** Controller for layout menu or null if caption does not implement a layout menu. */
+    open val layoutMenuController: LayoutMenuController? = null
     /** Controller for handle menu or null if caption does not implement a handle menu. */
     open val handleMenuController: HandleMenuController? = null
     /**

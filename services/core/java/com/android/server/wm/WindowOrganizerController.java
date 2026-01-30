@@ -1547,8 +1547,8 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                     // schedulePauseActivity() call uses this flag when entering PiP after Recents
                     // swipe-up TO_FRONT transition. In this case the state of the activity is
                     // RESUMED until ActivityRecord#makeActiveIfNeeded() makes it PAUSING followed
-                    // by the scheduling for PAUSE. See moveActivityToPinnedRootTask()'s call into
-                    // resumeFocusedTasksTopActivities().
+                    // by the scheduling for PAUSE.
+                    // This flag would be reset in ActivityRecord#makeActiveIfNeeded().
                     pipActivity.mAutoEnteringPip =
                             pipActivity.pictureInPictureArgs.isAutoEnterEnabled();
                 }
@@ -1567,8 +1567,6 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                             pipActivity, false /* userLeaving */,
                             false /* pauseImmediately */, true /* autoEnteringPip */, "auto-pip");
                 }
-                // Reset auto-entering PiP info since any internal state updates are finished.
-                pipActivity.mAutoEnteringPip = false;
 
                 effects |= TRANSACT_EFFECTS_LIFECYCLE;
                 break;

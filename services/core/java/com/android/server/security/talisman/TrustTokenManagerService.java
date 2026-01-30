@@ -59,6 +59,7 @@ public class TrustTokenManagerService extends SystemService {
     private static final String TAG = "TrustTokenManagerService";
     private static final String DATABASE_NAME = "trust_token";
     private static final String MASTER_KEY_PREFIX = "trust_token_";
+    private static final int MAX_TOKEN_NUM_PER_TYPE = 20000;
 
     @VisibleForTesting
     static final long SYSTEM_UP_TO_DATE_THRESHOLD_MILLIS = Duration.ofDays(183).toMillis();
@@ -66,9 +67,12 @@ public class TrustTokenManagerService extends SystemService {
     private final Context mContext;
     private final TrustTokenDatabase mDatabase;
     private final Clock mClock;
+    private final TrustTokenRefreshService.Scheduler mRefreshScheduler;
+    private final TrustTokenCleanUpService.Scheduler mCleanUpScheduler;
     private final TrustTokenMasterKey mMasterKey;
     private final AtomicReference<TrustAnchor> mTrustAnchor = new AtomicReference<>();
     private final Stub mBinder;
+    private final boolean mHasProvider;
 
     /**
      * Creates a new instance of {@link TrustTokenManagerService}.
@@ -98,6 +102,9 @@ public class TrustTokenManagerService extends SystemService {
         mClock = clock;
         mContext = context;
         mBinder = new Stub(context);
+        mRefreshScheduler = new TrustTokenRefreshService.Scheduler(context);
+        mCleanUpScheduler = new TrustTokenCleanUpService.Scheduler(context);
+        mHasProvider = TrustTokenProvider.getServiceProvider(context) != null;
 
         try {
             updateTrustAnchor();
@@ -114,6 +121,10 @@ public class TrustTokenManagerService extends SystemService {
         Slog.i(TAG, "Starting TrustTokenManagerService");
         publishBinderService(Context.TRUST_TOKEN_SERVICE, mBinder);
         publishLocalService(TrustTokenManagerInternal.class, mInternal);
+        if (mHasProvider) {
+            mRefreshScheduler.scheduleRegularRefresh();
+            mCleanUpScheduler.scheduleRegularCleanUp();
+        }
     }
 
     private void updateTrustAnchor() throws TrustConfigurationUnavailableException {
@@ -197,8 +208,15 @@ public class TrustTokenManagerService extends SystemService {
                 })
         public TrustTokenWithChallenge acquireVerifiedDeviceToken(byte[] challenge) {
             acquireVerifiedDeviceToken_enforcePermission();
-            TrustTokenSetWithKey setWithKey =
-                    mDatabase.getTrustTokenSet(TrustTokenSet.TYPE_VERIFIED_DEVICE);
+            TrustTokenSetWithKey setWithKey;
+            try {
+                setWithKey = mDatabase.getTrustTokenSet(TrustTokenSet.TYPE_VERIFIED_DEVICE);
+            } catch (TrustTokenExhaustedException e) {
+                if (mHasProvider) {
+                    mRefreshScheduler.scheduleUrgentRefresh();
+                }
+                throw e;
+            }
             try (var token =
                     new com.google.android.security.trusttoken.TrustToken(
                             getTrustAnchor(), setWithKey.getTokenSet().getTokenSet())) {
@@ -256,6 +274,11 @@ public class TrustTokenManagerService extends SystemService {
             } catch (IllegalArgumentException e) {
                 Slog.e(TAG, "Failed to verify the trust token: " + e.toString());
                 return VERIFICATION_FAILURE_UNKNOWN;
+            } catch (TrustConfigurationUnavailableException e) {
+                if (mHasProvider) {
+                    mRefreshScheduler.scheduleUrgentRefresh();
+                }
+                throw e;
             }
         }
 
@@ -282,6 +305,20 @@ public class TrustTokenManagerService extends SystemService {
 
     private final TrustTokenManagerInternal mInternal =
             new TrustTokenManagerInternal() {
+                @Override
+                public List<TrustTokenKey> generateKeys(int num) {
+                    var keys = new ArrayList<TrustTokenKey>(num);
+                    for (int i = 0; i < num; ++i) {
+                        keys.add(mMasterKey.generatePerTokenKey());
+                    }
+                    return keys;
+                }
+
+                @Override
+                public TrustTokenBatchAttestation attestKeys(List<TrustTokenKey> keys) {
+                    return mMasterKey.attest(keys);
+                }
+
                 @Override
                 public void addTrustTokens(
                         @NonNull List<TrustTokenKey> keys, @NonNull List<byte[]> tokens)
@@ -336,6 +373,24 @@ public class TrustTokenManagerService extends SystemService {
                 public void updateTrustConfiguration(@NonNull TrustConfiguration configuration) {
                     mDatabase.updateTrustConfiguration(configuration);
                     updateTrustAnchor();
+                }
+
+                @Override
+                public void cleanUpDatabase() {
+                    TrustAnchor anchor = getTrustAnchor();
+                    mDatabase.cleanUpTrustTokenSets(
+                            TrustTokenSet.TYPE_VERIFIED_DEVICE,
+                            MAX_TOKEN_NUM_PER_TYPE,
+                            (tokenSet) -> {
+                                try (var token =
+                                        new com.google.android.security.trusttoken.TrustToken(
+                                                anchor, tokenSet.getTokenSet())) {
+
+                                    return true;
+                                } catch (IllegalArgumentException e) {
+                                    return false;
+                                }
+                            });
                 }
             };
 }

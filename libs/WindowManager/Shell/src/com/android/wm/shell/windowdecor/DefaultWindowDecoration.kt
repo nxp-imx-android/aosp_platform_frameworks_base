@@ -204,8 +204,8 @@ constructor(
     private val captionType
         get() = captionController?.captionType ?: CaptionController.CaptionType.NO_CAPTION
 
-    val maximizeMenuController: MaximizeMenuController?
-        get() = captionController?.maximizeMenuController
+    val layoutMenuController: LayoutMenuController?
+        get() = captionController?.layoutMenuController
 
     val handleMenuController: HandleMenuController?
         get() = captionController?.handleMenuController
@@ -225,9 +225,9 @@ constructor(
     var isDragging = false
         set(value) {
             field = value
-            // If we are dragging, close the maximize menu if it's open
+            // If we are dragging, close the layout menu if it's open
             if (value) {
-                maximizeMenuController?.closeMaximizeMenu()
+                layoutMenuController?.closeLayoutMenu()
             }
         }
 

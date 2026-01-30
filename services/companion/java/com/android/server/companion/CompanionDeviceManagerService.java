@@ -38,13 +38,13 @@ import static com.android.server.companion.association.DisassociationProcessor.R
 import static com.android.server.companion.association.DisassociationProcessor.REASON_REVOKED;
 import static com.android.server.companion.utils.PackageUtils.enforceUsesCompanionDeviceFeature;
 import static com.android.server.companion.utils.PackageUtils.isRestrictedSettingsAllowed;
-import static com.android.server.companion.utils.PermissionsUtils.checkPccPermissionAndTrustedAssociations;
+import static com.android.server.companion.utils.PermissionsUtils.checkCallerCanUseSystemDataTransports;
 import static com.android.server.companion.utils.PermissionsUtils.enforceCallerCanInteractWithSystemDataSyncFlags;
 import static com.android.server.companion.utils.PermissionsUtils.enforceCallerCanManageAssociationsForPackage;
 import static com.android.server.companion.utils.PermissionsUtils.enforceCallerIsSystemOr;
 import static com.android.server.companion.utils.PermissionsUtils.enforceCallerIsSystemOrCanInteractWithUserId;
 import static com.android.server.companion.utils.PermissionsUtils.enforceMessagePermissions;
-import static com.android.server.companion.utils.PermissionsUtils.enforceRequestActionPermissions;
+import static com.android.server.companion.utils.PermissionsUtils.enforceValidServiceName;
 
 import static java.util.Objects.requireNonNull;
 
@@ -132,7 +132,6 @@ import com.android.server.wm.ActivityTaskManagerInternal;
 
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -769,17 +768,14 @@ public class CompanionDeviceManagerService extends SystemService {
                 @NonNull String callingPackageName, int[] associationIds) {
             requestAction_enforcePermission();
 
-            final List<AssociationInfo> associations = new ArrayList<>();
-            for (int associationId : associationIds) {
-                AssociationInfo associationInfo = mAssociationStore.getAssociationById(
-                        associationId);
-                if (associationInfo != null) {
-                    associations.add(associationInfo);
+            // If caller doesn't have the blanket permissions to use transports,
+            // enforce that the caller can manage every association.
+            if (!checkCallerCanUseSystemDataTransports(getContext())) {
+                enforceValidServiceName(serviceName, callingPackageName);
+                for (int associationId : associationIds) {
+                    mAssociationStore.getAssociationWithCallerChecks(associationId);
                 }
             }
-
-            enforceRequestActionPermissions(
-                    getContext(), associations, serviceName, callingPackageName);
 
             android.os.Trace.asyncTraceForTrackBegin(
                     Trace.TRACE_TAG_SYSTEM_SERVER,
@@ -972,17 +968,14 @@ public class CompanionDeviceManagerService extends SystemService {
                 IOnActionResultListener listener) {
             setOnActionResultListener_enforcePermission();
 
-            final List<AssociationInfo> associations = new ArrayList<>();
-            for (int associationId : associationIds) {
-                AssociationInfo associationInfo = mAssociationStore.getAssociationById(
-                        associationId);
-                if (associationInfo != null) {
-                    associations.add(associationInfo);
+            // If caller doesn't have the blanket permissions to use transports,
+            // enforce that the caller can manage every association.
+            if (!checkCallerCanUseSystemDataTransports(getContext())) {
+                enforceValidServiceName(serviceName, callingPackageName);
+                for (int associationId : associationIds) {
+                    mAssociationStore.getAssociationWithCallerChecks(associationId);
                 }
             }
-
-            enforceRequestActionPermissions(getContext(), associations,
-                    serviceName, callingPackageName);
 
             mActionRequestProcessor.setOnActionResultListener(
                     associationIds, serviceName, listener);
@@ -994,8 +987,11 @@ public class CompanionDeviceManagerService extends SystemService {
                 @NonNull String callingPackageName) {
             clearOnActionResultListener_enforcePermission();
 
-            enforceRequestActionPermissions(getContext(),
-                    new ArrayList<>(), serviceName, callingPackageName);
+            // If caller doesn't have the blanket permissions to use transports,
+            // enforce that the caller can use the serviceName.
+            if (!checkCallerCanUseSystemDataTransports(getContext())) {
+                enforceValidServiceName(serviceName, callingPackageName);
+            }
 
             mActionRequestProcessor.clearOnActionResultListener(serviceName);
         }
@@ -1003,22 +999,8 @@ public class CompanionDeviceManagerService extends SystemService {
         @Override
         @PermissionManuallyEnforced
         public boolean isSystemDataTransportAttached(int associationId) {
-            final List<AssociationInfo> associations = new ArrayList<>();
-            AssociationInfo associationInfo = mAssociationStore.getAssociationById(
-                    associationId);
-            if (associationInfo != null) {
-                associations.add(associationInfo);
-            }
-
-            if (!checkPccPermissionAndTrustedAssociations(getContext(), associations)) {
-                mAssociationStore.getAssociationWithCallerChecks(associationId);
-            }
-
-            List<AssociationInfo> associationInfos =
-                    mTransportManager.getAssociationsWithTransport();
-
-            return associationInfos.stream()
-                    .anyMatch(association -> association.getId() == associationId);
+            mAssociationStore.getAssociationWithCallerChecks(associationId);
+            return mTransportManager.getTransport(associationId) != null;
         }
 
         @Override

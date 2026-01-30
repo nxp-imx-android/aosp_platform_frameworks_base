@@ -524,35 +524,35 @@
     <!-- The default minimum allowed window height when resizing a window in desktop mode. -->
     <dimen name="desktop_mode_minimum_window_height">352dp</dimen>
 
-    <!-- The padding of the maximize menu in desktop mode. -->
+    <!-- The padding of the layout menu in desktop mode. -->
     <dimen name="desktop_mode_menu_padding">16dp</dimen>
 
-    <!-- The height of the buttons in the maximize menu. -->
-    <dimen name="desktop_mode_maximize_menu_button_height">52dp</dimen>
+    <!-- The height of the buttons in the layout menu. -->
+    <dimen name="desktop_mode_layout_menu_button_height">52dp</dimen>
 
-    <!-- The radius of the maximize menu buttons. -->
-    <dimen name="desktop_mode_maximize_menu_buttons_radius">4dp</dimen>
+    <!-- The radius of the layout menu buttons. -->
+    <dimen name="desktop_mode_layout_menu_buttons_radius">4dp</dimen>
 
-    <!-- The radius of the layout outline around the maximize menu buttons. -->
-    <dimen name="desktop_mode_maximize_menu_buttons_outline_radius">6dp</dimen>
-    <!-- The stroke width of the outline around the maximize menu buttons. -->
-    <dimen name="desktop_mode_maximize_menu_buttons_outline_stroke">1dp</dimen>
-    <!-- The radius of the inner fill of the maximize menu buttons. -->
-    <dimen name="desktop_mode_maximize_menu_buttons_fill_radius">4dp</dimen>
-    <!-- The padding between the outline and fill of the maximize menu snap and maximize buttons. -->
-    <dimen name="desktop_mode_maximize_menu_snap_and_maximize_buttons_fill_padding">4dp</dimen>
-    <!-- The vertical padding between the outline and fill of the maximize menu restore button. -->
-    <dimen name="desktop_mode_maximize_menu_restore_button_fill_vertical_padding">13dp</dimen>
-    <!-- The horizontal padding between the outline and fill of the maximize menu restore button. -->
-    <dimen name="desktop_mode_maximize_menu_restore_button_fill_horizontal_padding">15dp</dimen>
-    <!-- The padding between the outline and fill of the maximize menu immersive button. -->
-    <dimen name="desktop_mode_maximize_menu_immersive_button_fill_padding">0dp</dimen>
+    <!-- The radius of the layout outline around the layout menu buttons. -->
+    <dimen name="desktop_mode_layout_menu_buttons_outline_radius">6dp</dimen>
+    <!-- The stroke width of the outline around the layout menu buttons. -->
+    <dimen name="desktop_mode_layout_menu_buttons_outline_stroke">1dp</dimen>
+    <!-- The radius of the inner fill of the layout menu buttons. -->
+    <dimen name="desktop_mode_layout_menu_buttons_fill_radius">4dp</dimen>
+    <!-- The padding between the outline and fill of the layout menu snap and maximize buttons. -->
+    <dimen name="desktop_mode_layout_menu_snap_and_maximize_buttons_fill_padding">4dp</dimen>
+    <!-- The vertical padding between the outline and fill of the layout menu restore button. -->
+    <dimen name="desktop_mode_layout_menu_restore_button_fill_vertical_padding">13dp</dimen>
+    <!-- The horizontal padding between the outline and fill of the layout menu restore button. -->
+    <dimen name="desktop_mode_layout_menu_restore_button_fill_horizontal_padding">15dp</dimen>
+    <!-- The padding between the outline and fill of the layout menu immersive button. -->
+    <dimen name="desktop_mode_layout_menu_immersive_button_fill_padding">0dp</dimen>
 
-    <!-- The corner radius of the maximize menu. -->
-    <dimen name="desktop_mode_maximize_menu_corner_radius">16dp</dimen>
+    <!-- The corner radius of the layout menu. -->
+    <dimen name="desktop_mode_layout_menu_corner_radius">16dp</dimen>
 
-    <!-- The radius of the Maximize menu shadow. -->
-    <dimen name="desktop_mode_maximize_menu_shadow_radius">8dp</dimen>
+    <!-- The radius of the layout menu shadow. -->
+    <dimen name="desktop_mode_layout_menu_shadow_radius">8dp</dimen>
 
     <!-- The width of the handle menu in desktop mode plus the 2dp added for padding to account for
          pill elevation. -->

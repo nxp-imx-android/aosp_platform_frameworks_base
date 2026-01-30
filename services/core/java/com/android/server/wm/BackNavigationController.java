@@ -264,15 +264,6 @@ class BackNavigationController {
             if (embeddedWindows != null) {
                 for (int i = embeddedWindows.size() - 1; i >= 0; --i) {
                     transferGestureToEmbedded |= embeddedWindows.get(i).mGestureToEmbedded;
-                    if (transferGestureToEmbedded
-                            && !com.android.window.flags.Flags
-                            .enableBackCallbackForFocusedSurfaceControlViewHost()) {
-                        break;
-                    }
-                    if (!com.android.window.flags.Flags
-                            .enableBackCallbackForFocusedSurfaceControlViewHost()) {
-                        continue;
-                    }
                     final OnBackInvokedCallbackInfo tmpCallbackInfo = embeddedWindows.get(i)
                             .getOnBackInvokedCallbackInfo();
                     // The embedded window must not register for system animation.

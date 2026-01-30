@@ -2467,11 +2467,11 @@ package android.app.compat {
 package android.app.contentsafety {
 
   @FlaggedApi("android.app.contentsafety.flags.enable_contentsafety") public final class ContentSafetyManager {
-    method @RequiresPermission(android.Manifest.permission.CHECK_CONTENT_SAFETY) public void checkContent(int, @NonNull java.util.Map<java.lang.Integer,java.util.List<android.os.ParcelFileDescriptor>>, @Nullable android.os.CancellationSignal, @NonNull java.util.concurrent.Executor, @NonNull java.util.function.Consumer<java.util.Map<java.lang.Integer,java.util.List<java.lang.Integer>>>);
     method @NonNull @RequiresPermission(android.Manifest.permission.CHECK_CONTENT_SAFETY) public String getRemoteSandboxedServicePackageName();
     method @NonNull @RequiresPermission(android.Manifest.permission.CHECK_CONTENT_SAFETY) public String getRemoteServicePackageName();
     method @NonNull @RequiresPermission(android.Manifest.permission.CHECK_CONTENT_SAFETY) public String getRemoteSettingsServicePackageName();
-    method @RequiresPermission(android.Manifest.permission.CHECK_CONTENT_SAFETY) public void isFeatureEnabled(int, @Nullable android.os.CancellationSignal, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.lang.Boolean,android.app.contentsafety.FeatureException>);
+    method @RequiresPermission(android.Manifest.permission.CHECK_CONTENT_SAFETY) public void requestCheckContent(int, @NonNull java.util.Map<java.lang.Integer,java.util.List<android.os.ParcelFileDescriptor>>, @Nullable android.os.CancellationSignal, @NonNull java.util.concurrent.Executor, @NonNull java.util.function.Consumer<java.util.Map<java.lang.Integer,java.util.List<java.lang.Integer>>>);
+    method @RequiresPermission(android.Manifest.permission.CHECK_CONTENT_SAFETY) public void requestIsFeatureEnabled(int, @Nullable android.os.CancellationSignal, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.lang.Boolean,android.app.contentsafety.FeatureException>);
     field public static final int CONTENT_SAFETY_UNKNOWN = 0; // 0x0
   }
 
@@ -2876,6 +2876,7 @@ package android.app.search {
     method @NonNull public String getLayoutType();
     method @NonNull public String getPackageName();
     method @NonNull public String getParentId();
+    method @FlaggedApi("android.app.search.flags.remote_views") @Nullable public android.widget.RemoteViews getRemoteViews();
     method public int getResultType();
     method public float getScore();
     method @Nullable public android.app.search.SearchAction getSearchAction();
@@ -2902,6 +2903,7 @@ package android.app.search {
     method @NonNull public android.app.search.SearchTarget.Builder setHidden(boolean);
     method @NonNull public android.app.search.SearchTarget.Builder setPackageName(@NonNull String);
     method @NonNull public android.app.search.SearchTarget.Builder setParentId(@NonNull String);
+    method @FlaggedApi("android.app.search.flags.remote_views") @NonNull public android.app.search.SearchTarget.Builder setRemoteViews(@NonNull android.widget.RemoteViews);
     method @NonNull public android.app.search.SearchTarget.Builder setScore(@FloatRange(from=0.0f, to=1.0f) float);
     method @NonNull public android.app.search.SearchTarget.Builder setSearchAction(@Nullable android.app.search.SearchAction);
     method @NonNull public android.app.search.SearchTarget.Builder setShortcutInfo(@NonNull android.content.pm.ShortcutInfo);
@@ -4990,7 +4992,6 @@ package android.content.pm {
     field public static final int FLAGS_PERMISSION_RESERVED_PERMISSION_CONTROLLER = -268435456; // 0xf0000000
     field public static final int FLAG_PERMISSION_APPLY_RESTRICTION = 16384; // 0x4000
     field public static final int FLAG_PERMISSION_AUTO_REVOKED = 131072; // 0x20000
-    field @FlaggedApi("android.permission.flags.location_button_enabled") public static final int FLAG_PERMISSION_CONSENTED_FOR_TRUSTED_UI = 1048576; // 0x100000
     field public static final int FLAG_PERMISSION_GRANTED_BY_DEFAULT = 32; // 0x20
     field public static final int FLAG_PERMISSION_GRANTED_BY_ROLE = 32768; // 0x8000
     field public static final int FLAG_PERMISSION_ONE_TIME = 65536; // 0x10000
@@ -5004,6 +5005,8 @@ package android.content.pm {
     field public static final int FLAG_PERMISSION_REVOKE_WHEN_REQUESTED = 128; // 0x80
     field public static final int FLAG_PERMISSION_SELECTED_LOCATION_ACCURACY = 524288; // 0x80000
     field public static final int FLAG_PERMISSION_SYSTEM_FIXED = 16; // 0x10
+    field @FlaggedApi("android.permission.flags.location_button_enabled") public static final int FLAG_PERMISSION_TRUSTED_UI_CONSENTED = 2097152; // 0x200000
+    field @FlaggedApi("android.permission.flags.location_button_enabled") public static final int FLAG_PERMISSION_TRUSTED_UI_SHOWN = 1048576; // 0x100000
     field public static final int FLAG_PERMISSION_USER_FIXED = 2; // 0x2
     field public static final int FLAG_PERMISSION_USER_SENSITIVE_WHEN_DENIED = 512; // 0x200
     field public static final int FLAG_PERMISSION_USER_SENSITIVE_WHEN_GRANTED = 256; // 0x100
@@ -14454,15 +14457,15 @@ package android.service.contentsafety {
   @FlaggedApi("android.app.contentsafety.flags.enable_contentsafety") public abstract class ContentSafetySandboxedService extends android.app.Service {
     ctor public ContentSafetySandboxedService();
     method @Nullable public final android.os.IBinder onBind(@Nullable android.content.Intent);
-    method @RequiresPermission(android.Manifest.permission.CHECK_CONTENT_SAFETY) public abstract void onCheckContent(int, @NonNull java.util.Map<java.lang.Integer,java.util.List<android.os.ParcelFileDescriptor>>, @Nullable android.os.CancellationSignal, @NonNull java.util.function.Consumer<java.util.Map<java.lang.String,java.util.List<java.lang.Integer>>>);
-    method @RequiresPermission(android.Manifest.permission.CHECK_CONTENT_SAFETY) public abstract void onLoadFeature(@NonNull java.util.Map<java.lang.String,android.os.ParcelFileDescriptor>, @Nullable android.os.CancellationSignal, @NonNull android.os.OutcomeReceiver<java.lang.Void,android.service.contentsafety.ContentSafetyException>);
+    method @RequiresPermission(android.Manifest.permission.CHECK_CONTENT_SAFETY) public abstract void onCheckContentRequest(int, @NonNull java.util.Map<java.lang.Integer,java.util.List<android.os.ParcelFileDescriptor>>, @Nullable android.os.CancellationSignal, @NonNull java.util.function.Consumer<java.util.Map<java.lang.String,java.util.List<java.lang.Integer>>>);
+    method @RequiresPermission(android.Manifest.permission.CHECK_CONTENT_SAFETY) public abstract void onLoadFeatureRequest(@NonNull java.util.Map<java.lang.String,android.os.ParcelFileDescriptor>, @Nullable android.os.CancellationSignal, @NonNull android.os.OutcomeReceiver<java.lang.Void,android.service.contentsafety.ContentSafetyException>);
     field public static final String SERVICE_INTERFACE = "android.service.contentsafety.ContentSafetySandboxedService";
   }
 
   @FlaggedApi("android.app.contentsafety.flags.enable_contentsafety") public abstract class ContentSafetyService extends android.app.Service {
     ctor public ContentSafetyService();
     method @Nullable public final android.os.IBinder onBind(@Nullable android.content.Intent);
-    method public abstract void onGetFeature(int, @Nullable android.os.CancellationSignal, @NonNull android.os.OutcomeReceiver<java.util.Map<java.lang.String,android.os.ParcelFileDescriptor>,android.service.contentsafety.ContentSafetyException>);
+    method public abstract void onGetFeatureRequest(int, @Nullable android.os.CancellationSignal, @NonNull android.os.OutcomeReceiver<java.util.Map<java.lang.String,android.os.ParcelFileDescriptor>,android.service.contentsafety.ContentSafetyException>);
     method public abstract void onNotifySandboxedServiceConnected();
     method public abstract void onNotifySandboxedServiceDisconnected();
     method public abstract void onNotifySettingsServiceConnected();
@@ -14473,7 +14476,7 @@ package android.service.contentsafety {
   @FlaggedApi("android.app.contentsafety.flags.enable_contentsafety") public abstract class ContentSafetySettingsService extends android.app.Service {
     ctor public ContentSafetySettingsService();
     method @Nullable public final android.os.IBinder onBind(@Nullable android.content.Intent);
-    method @RequiresPermission(android.Manifest.permission.CHECK_CONTENT_SAFETY) public abstract void onIsFeatureEnabled(int, @NonNull android.os.UserHandle, @Nullable android.os.CancellationSignal, @NonNull android.os.OutcomeReceiver<java.lang.Boolean,android.app.contentsafety.FeatureException>);
+    method @RequiresPermission(android.Manifest.permission.CHECK_CONTENT_SAFETY) public abstract void onIsFeatureEnabledRequest(int, @NonNull android.os.UserHandle, @Nullable android.os.CancellationSignal, @NonNull android.os.OutcomeReceiver<java.lang.Boolean,android.app.contentsafety.FeatureException>);
     field public static final String SERVICE_INTERFACE = "android.service.contentsafety.ContentSafetySettingsService";
   }
 
@@ -14929,8 +14932,6 @@ package android.service.personalcontext {
     method public void publishTriggeringHint(@NonNull java.util.List<android.service.personalcontext.hint.ContextHint>, @Nullable java.util.List<android.service.personalcontext.RenderToken>, @Nullable java.util.List<android.service.personalcontext.hint.ContextHint>);
     method public void setEnabled(boolean);
     method @NonNull public android.service.personalcontext.hint.ContextHintWithSignature signHint(@NonNull android.service.personalcontext.hint.ContextHint, @Nullable java.util.List<android.service.personalcontext.hint.ContextHint>);
-    field public static final String ACTION_PERSONAL_CONTEXT_ENABLED_CHANGED = "android.service.personalcontext.action.PERSONAL_CONTEXT_ENABLED_CHANGED";
-    field public static final String PERSONAL_CONTEXT_SERVICE = "personal_context";
   }
 
 }
@@ -15059,7 +15060,7 @@ package android.service.personalcontext.embedded {
     method public abstract void onClientConnected(@NonNull android.service.personalcontext.embedded.InsightSurfaceClientInfo);
     method public abstract void onClientDisconnected(@NonNull android.service.personalcontext.embedded.InsightSurfaceClientInfo);
     method public boolean onClientUpdated(@NonNull android.service.personalcontext.embedded.InsightSurfaceClientInfo, @NonNull android.service.personalcontext.embedded.InsightSurfaceClientInfo);
-    method @Nullable public abstract android.view.View onCreateEmbeddedView(@NonNull android.content.Context, @NonNull java.util.List<android.service.personalcontext.insight.ContextInsight>, @NonNull android.service.personalcontext.embedded.InsightSurfaceClientInfo);
+    method @Nullable public abstract android.view.View onCreateEmbeddedView(@NonNull android.content.Context, @NonNull android.service.personalcontext.insight.ContextInsight, @Nullable android.service.personalcontext.RenderToken, @NonNull android.service.personalcontext.embedded.InsightSurfaceClientInfo);
     field public static final String SERVICE_INTERFACE = "android.service.personalcontext.embedded.InsightSurfaceVisualizerService";
   }
 
@@ -16425,6 +16426,7 @@ package android.telephony {
     method public int getNetworkRegistrationState();
     method @Deprecated public int getRegistrationState();
     method public int getRoamingType();
+    method @FlaggedApi("com.android.internal.telephony.flags.system_selection_specifier_enhancement") @RequiresPermission(android.Manifest.permission.SATELLITE_COMMUNICATION) public int getSatelliteTechnology();
     method public boolean isEmergencyEnabled();
     method public void writeToParcel(android.os.Parcel, int);
     field public static final int REGISTRATION_STATE_DENIED = 3; // 0x3
@@ -19829,6 +19831,16 @@ package android.telephony.satellite {
     field @NonNull public static final android.os.Parcelable.Creator<android.telephony.satellite.PointingInfo> CREATOR;
   }
 
+  @FlaggedApi("com.android.internal.telephony.flags.system_selection_specifier_enhancement") public final class PointingUiAppLaunchIntentAttributes implements android.os.Parcelable {
+    ctor public PointingUiAppLaunchIntentAttributes(boolean, boolean, boolean);
+    method public int describeContents();
+    method public boolean isDemoMode();
+    method public boolean isEmergencyMode();
+    method public boolean isFullScreen();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.telephony.satellite.PointingUiAppLaunchIntentAttributes> CREATOR;
+  }
+
   @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") public final class SatelliteAccessConfiguration implements android.os.Parcelable {
     method public int describeContents();
     method @NonNull public java.util.List<android.telephony.satellite.SatelliteInfo> getSatelliteInfos();
@@ -19919,6 +19931,7 @@ package android.telephony.satellite {
     method @RequiresPermission(android.Manifest.permission.SATELLITE_COMMUNICATION) public void requestIsProvisioned(@NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.lang.Boolean,android.telephony.satellite.SatelliteManager.SatelliteException>);
     method public void requestIsSupported(@NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.lang.Boolean,android.telephony.satellite.SatelliteManager.SatelliteException>);
     method @RequiresPermission(android.Manifest.permission.SATELLITE_COMMUNICATION) public void requestNtnSignalStrength(@NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<android.telephony.satellite.NtnSignalStrength,android.telephony.satellite.SatelliteManager.SatelliteException>);
+    method @FlaggedApi("com.android.internal.telephony.flags.system_selection_specifier_enhancement") @RequiresPermission(android.Manifest.permission.SATELLITE_COMMUNICATION) public void requestPointingUiAppLaunchIntent(@NonNull android.telephony.satellite.PointingUiAppLaunchIntentAttributes, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<android.app.PendingIntent,android.telephony.satellite.SatelliteManager.SatelliteException>);
     method @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") @RequiresPermission(android.Manifest.permission.SATELLITE_COMMUNICATION) public void requestSatelliteAccessConfigurationForCurrentLocation(@NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<android.telephony.satellite.SatelliteAccessConfiguration,android.telephony.satellite.SatelliteManager.SatelliteException>);
     method @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") @RequiresPermission(android.Manifest.permission.SATELLITE_COMMUNICATION) public void requestSatelliteSubscriberProvisionStatus(@NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.util.List<android.telephony.satellite.SatelliteSubscriberProvisionStatus>,android.telephony.satellite.SatelliteManager.SatelliteException>);
     method @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") @RequiresPermission(android.Manifest.permission.SATELLITE_COMMUNICATION) public void requestSelectedNbIotSatelliteSubscriptionId(@NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.lang.Integer,android.telephony.satellite.SatelliteManager.SatelliteException>);

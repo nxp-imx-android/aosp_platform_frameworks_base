@@ -152,7 +152,7 @@ object SceneWindowRootViewBinder {
                                         viewModel.startTransitionImmediately(
                                             DelegatingTransition.ShowOrHideOverlay(
                                                 delegate = transition,
-                                                fromOrToScene = viewModel.currentSceneAsState,
+                                                fromOrToScene = viewModel.currentScene,
                                                 overlay = Overlays.Bouncer,
                                             )
                                         )

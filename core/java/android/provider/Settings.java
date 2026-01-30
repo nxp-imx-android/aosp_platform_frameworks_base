@@ -14124,6 +14124,13 @@ public final class Settings {
         @Readable
         @FlaggedApi(android.service.personalcontext.Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
         public static final String PERSONAL_CONTEXT_ENABLED = "personal_context_enabled";
+
+       /**
+         * Setting to determine if the wallet service is available.
+         * 1 = available, 0 = unavailable
+         * @hide
+         */
+        public static final String IS_WALLET_SERVICE_AVAILABLE = "is_wallet_service_available";
     }
 
     /**

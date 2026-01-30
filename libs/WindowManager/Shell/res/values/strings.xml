@@ -319,10 +319,10 @@
     <string name="collapse_menu_text">Close Menu</string>
     <!-- Accessibility text for the App Header's App Chip [CHAR LIMIT=NONE] -->
     <string name="desktop_mode_app_header_chip_text"><xliff:g id="app_name" example="Chrome">%1$s</xliff:g> (Desktop windowing)</string>
-    <!-- Maximize menu maximize button string. -->
-    <string name="desktop_mode_maximize_menu_maximize_text">Maximize Screen</string>
-    <!-- Maximize menu snap buttons string. -->
-    <string name="desktop_mode_maximize_menu_snap_text">Resize</string>
+    <!-- Layout menu maximize button string. -->
+    <string name="desktop_mode_layout_menu_maximize_text">Maximize Screen</string>
+    <!-- Layout menu snap buttons string. -->
+    <string name="desktop_mode_layout_menu_snap_text">Resize</string>
     <!-- Snap resizing non-resizable string. -->
     <string name="desktop_mode_non_resizable_snap_text">App can\'t be moved here</string>
 
@@ -337,35 +337,35 @@
     <!-- State description for app window losing focus. -->
     <string name="desktop_mode_talkback_state_not_focused"><xliff:g id="app_name" example="Chrome">%1$s</xliff:g> (Not Focused)</string>
 
-    <!-- Accessibility text for the Maximize Menu's immersive button [CHAR LIMIT=NONE] -->
-    <string name="desktop_mode_maximize_menu_immersive_button_text">Immersive</string>
-    <!-- Accessibility text for the Maximize Menu's immersive restore button [CHAR LIMIT=NONE] -->
-    <string name="desktop_mode_maximize_menu_immersive_restore_button_text">Restore</string>
-    <string name="desktop_mode_maximize_menu_maximize_button_text">Maximize</string>
-    <!-- Accessibility text for the Maximize Menu's restore button [CHAR LIMIT=NONE] -->
-    <string name="desktop_mode_maximize_menu_restore_button_text">Restore</string>
-    <!-- Accessibility text for the Maximize Menu's snap left button [CHAR LIMIT=NONE] -->
-    <string name="desktop_mode_maximize_menu_snap_left_button_text">Snap left</string>
-    <!-- Accessibility text for the Maximize Menu's snap right button [CHAR LIMIT=NONE] -->
-    <string name="desktop_mode_maximize_menu_snap_right_button_text">Snap right</string>
+    <!-- Accessibility text for the Layout Menu's immersive button [CHAR LIMIT=NONE] -->
+    <string name="desktop_mode_layout_menu_immersive_button_text">Immersive</string>
+    <!-- Accessibility text for the Layout Menu's immersive restore button [CHAR LIMIT=NONE] -->
+    <string name="desktop_mode_layout_menu_immersive_restore_button_text">Restore</string>
+    <string name="desktop_mode_layout_menu_maximize_button_text">Maximize</string>
+    <!-- Accessibility text for the Layout Menu's restore button [CHAR LIMIT=NONE] -->
+    <string name="desktop_mode_layout_menu_restore_button_text">Restore</string>
+    <!-- Accessibility text for the Layout Menu's snap left button [CHAR LIMIT=NONE] -->
+    <string name="desktop_mode_layout_menu_snap_left_button_text">Snap left</string>
+    <!-- Accessibility text for the Layout Menu's snap right button [CHAR LIMIT=NONE] -->
+    <string name="desktop_mode_layout_menu_snap_right_button_text">Snap right</string>
 
-    <!-- Accessibility text for the Maximize Menu's snap left button [CHAR LIMIT=NONE] -->
+    <!-- Accessibility text for the Layout Menu's snap left button [CHAR LIMIT=NONE] -->
     <string name="desktop_mode_a11y_action_snap_left">Resize app window left</string>
-    <!-- Accessibility text for the Maximize Menu's snap right button [CHAR LIMIT=NONE] -->
+    <!-- Accessibility text for the Layout Menu's snap right button [CHAR LIMIT=NONE] -->
     <string name="desktop_mode_a11y_action_snap_right">Resize app window right</string>
-    <!-- Accessibility text for the Maximize Menu's snap maximize/restore [CHAR LIMIT=NONE] -->
+    <!-- Accessibility text for the Layout Menu's snap maximize/restore [CHAR LIMIT=NONE] -->
     <string name="desktop_mode_a11y_action_maximize_restore">Maximize or restore window size</string>
 
     <!-- Accessibility action replacement for caption handle app chip buttons [CHAR LIMIT=NONE] -->
     <string name="app_handle_chip_accessibility_announce">Open Menu</string>
     <!-- Accessibility action replacement for caption handle menu buttons [CHAR LIMIT=NONE] -->
     <string name="app_handle_menu_accessibility_announce">Enter <xliff:g id="windowing_mode" example="Desktop windowing">%1$s</xliff:g></string>
-    <!-- Accessibility action replacement for maximize menu enter snap left button [CHAR LIMIT=NONE] -->
-    <string name="maximize_menu_talkback_action_snap_left_text">Resize window to left</string>
-    <!-- Accessibility action replacement for maximize menu enter snap right button [CHAR LIMIT=NONE] -->
-    <string name="maximize_menu_talkback_action_snap_right_text">Resize window to right</string>
-    <!-- Accessibility action replacement for maximize menu enter maximize/restore button [CHAR LIMIT=NONE] -->
-    <string name="maximize_menu_talkback_action_maximize_restore_text">Maximize or restore window size</string>
+    <!-- Accessibility action replacement for layout menu enter snap left button [CHAR LIMIT=NONE] -->
+    <string name="layout_menu_talkback_action_snap_left_text">Resize window to left</string>
+    <!-- Accessibility action replacement for layout menu enter snap right button [CHAR LIMIT=NONE] -->
+    <string name="layout_menu_talkback_action_snap_right_text">Resize window to right</string>
+    <!-- Accessibility action replacement for layout menu enter maximize/restore button [CHAR LIMIT=NONE] -->
+    <string name="layout_menu_talkback_action_maximize_restore_text">Maximize or restore window size</string>
     <!-- Accessibility action replacement for app header maximize button [CHAR LIMIT=NONE] -->
     <string name="app_header_talkback_action_maximize_button_text">Maximize app window size</string>
     <!-- Accessibility action replacement for app header restore button [CHAR LIMIT=NONE] -->

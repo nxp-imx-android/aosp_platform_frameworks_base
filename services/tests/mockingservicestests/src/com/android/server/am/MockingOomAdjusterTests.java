@@ -101,7 +101,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyBoolean;
 import static org.mockito.Mockito.anyInt;
-import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.doNothing;
@@ -223,7 +222,7 @@ public class MockingOomAdjusterTests {
     private final Handler mUpdateHandler = mock(Handler.class);
     // A limiter that does nothing, because it is created with no arguments, outside
     // system_server.
-    private final MemoryLimiter mMemoryLimiter = new MemoryLimiter();
+    private final MemoryLimiter mMemoryLimiter = MemoryLimiter.getDefaultMemoryLimiter(null);
 
     private HandlerThread mActivityStateHandlerThread;
     private Handler mActivityStateHandler;
@@ -347,7 +346,7 @@ public class MockingOomAdjusterTests {
                 mActivityStateHandlerThread.getLooper());
         mService.mAtmInternal = spy(mService.mActivityTaskManager.getAtmInternal());
         // Ensure clients can get a valid memory limiter.  The limiter will do nothing.
-        when(mService.newMemoryLimiter(anyString())).thenReturn(mMemoryLimiter.newLimiter(""));
+        when(mService.newMemoryLimiter()).thenReturn(mMemoryLimiter.newLimiter());
     }
 
     @SuppressWarnings("GuardedBy")

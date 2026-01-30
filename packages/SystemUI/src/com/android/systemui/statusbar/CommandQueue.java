@@ -193,6 +193,8 @@ public class CommandQueue extends IStatusBar.Stub implements
     private static final int MSG_SHOW_GLOBAL_ACTIONS = 87 << MSG_SHIFT;
     private static final int MSG_START_MOTION_CUES = 88 << MSG_SHIFT;
     private static final int MSG_END_MOTION_CUES = 89 << MSG_SHIFT;
+    private static final int MSG_ON_DISPLAY_INFO_CHANGED = 90 << MSG_SHIFT;
+    private static final int MSG_ON_CONFIGURATION_CHANGED = 91 << MSG_SHIFT;
 
     public static final int FLAG_EXCLUDE_NONE = 0;
     public static final int FLAG_EXCLUDE_SEARCH_PANEL = 1 << 0;
@@ -611,6 +613,16 @@ public class CommandQueue extends IStatusBar.Stub implements
          * @see IStatusBar#endMotionCuesSession()
          */
         default void endMotionCuesSession() {}
+
+        /**
+         * @see IStatusBar#onDisplayInfoChanged()
+         */
+        default void onDisplayInfoChanged() {}
+
+        /**
+         * @see IStatusBar#onConfigurationChanged()
+         */
+        default void onConfigurationChanged() {}
     }
 
     @VisibleForTesting
@@ -1592,6 +1604,16 @@ public class CommandQueue extends IStatusBar.Stub implements
         mHandler.obtainMessage(MSG_END_MOTION_CUES).sendToTarget();
     }
 
+    @Override
+    public void onDisplayInfoChanged() throws RemoteException {
+        mHandler.obtainMessage(MSG_ON_DISPLAY_INFO_CHANGED).sendToTarget();
+    }
+
+    @Override
+    public void onConfigurationChanged() throws RemoteException {
+        mHandler.obtainMessage(MSG_ON_CONFIGURATION_CHANGED).sendToTarget();
+    }
+
     private final class H extends Handler {
         private H(Looper l) {
             super(l);
@@ -2153,6 +2175,16 @@ public class CommandQueue extends IStatusBar.Stub implements
                 case MSG_END_MOTION_CUES:
                     for (Callbacks callback : mCallbacks) {
                         callback.endMotionCuesSession();
+                    }
+                    break;
+                case MSG_ON_DISPLAY_INFO_CHANGED:
+                    for (Callbacks callback : mCallbacks) {
+                        callback.onDisplayInfoChanged();
+                    }
+                    break;
+                case MSG_ON_CONFIGURATION_CHANGED:
+                    for (Callbacks callback : mCallbacks) {
+                        callback.onConfigurationChanged();
                     }
                     break;
             }

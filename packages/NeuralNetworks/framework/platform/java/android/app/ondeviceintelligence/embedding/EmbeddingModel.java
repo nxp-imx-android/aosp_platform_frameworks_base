@@ -24,15 +24,21 @@ import android.annotation.IntDef;
 import android.annotation.IntRange;
 import android.annotation.RequiresPermission;
 import android.annotation.SystemApi;
+import android.app.ondeviceintelligence.Content;
 import android.app.ondeviceintelligence.DownloadCallback;
+import android.app.ondeviceintelligence.ModelDownloadCallback;
 import android.app.ondeviceintelligence.Feature;
 import android.app.ondeviceintelligence.OnDeviceIntelligenceException;
 import android.app.ondeviceintelligence.OnDeviceIntelligenceManager;
 import android.app.ondeviceintelligence.OnDeviceModel;
 import android.app.ondeviceintelligence.FeatureDetails;
+import android.app.ondeviceintelligence.TokenInfo;
 import android.app.ondeviceintelligence.flags.Flags;
+import android.os.Bundle;
 import android.os.CancellationSignal;
+import android.os.LocaleList;
 import android.os.OutcomeReceiver;
+import android.os.PersistableBundle;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -80,6 +86,8 @@ public final class EmbeddingModel implements OnDeviceModel, Parcelable {
     private final String mModelSignature;
     private final int mDimension;
     private final int[] mSupportedModalities;
+    private final int mMaxTokenLimit;
+    private final LocaleList mSupportedLocales;
 
     /**
      * Constructs a new {@link EmbeddingModel}.
@@ -93,12 +101,16 @@ public final class EmbeddingModel implements OnDeviceModel, Parcelable {
             @NonNull Feature feature,
             @NonNull String modelSignature,
             @IntRange(from = 1) int dimension,
-            @NonNull List<@Modality Integer> supportedModalities) {
+            @NonNull List<@Modality Integer> supportedModalities,
+            @IntRange(from = 1) int maxTokenLimit,
+            @NonNull LocaleList supportedLocales) {
         mFeature = Objects.requireNonNull(feature);
         mModelSignature = Objects.requireNonNull(modelSignature);
         mDimension = dimension;
         mSupportedModalities =
                 Objects.requireNonNull(supportedModalities).stream().mapToInt(i -> i).toArray();
+        mMaxTokenLimit = maxTokenLimit;
+        mSupportedLocales = Objects.requireNonNull(supportedLocales);
     }
 
     /**
@@ -130,6 +142,23 @@ public final class EmbeddingModel implements OnDeviceModel, Parcelable {
         return mDimension;
     }
 
+    /**
+     * Returns the maximum token limit (number of tokens) supported by the model.
+     */
+    @IntRange(from = 1)
+    public long getMaxTokenLimit() {
+        return mMaxTokenLimit;
+    }
+
+    /**
+     * Returns the list of supported locales.
+     */
+    @NonNull
+    public LocaleList getSupportedLocales() {
+        return mSupportedLocales;
+    }
+
+
     /** Returns the list of supported modalities for this model. */
     @NonNull
     public List<@Modality Integer> getSupportedModalities() {
@@ -147,22 +176,29 @@ public final class EmbeddingModel implements OnDeviceModel, Parcelable {
     public void getStatus(
             @NonNull Executor executor,
             @NonNull OutcomeReceiver<Integer, OnDeviceIntelligenceException> callback) {
+        try {
         Objects.requireNonNull(
                 mManager, "OnDeviceIntelligenceManager instance not attached to this Model.");
         mManager.getFeatureDetails(
-                mFeature,
-                executor,
-                new OutcomeReceiver<>() {
-                    @Override
-                    public void onResult(FeatureDetails result) {
-                        callback.onResult(result.getFeatureStatus());
-                    }
+                    mFeature,
+                    executor,
+                    new OutcomeReceiver<>() {
+                        @Override
+                        public void onResult(FeatureDetails result) {
+                            callback.onResult(result.getFeatureStatus());
+                        }
 
-                    @Override
-                    public void onError(OnDeviceIntelligenceException error) {
-                        callback.onError(error);
-                    }
-                });
+                        @Override
+                        public void onError(OnDeviceIntelligenceException error) {
+                            callback.onError(error);
+                        }
+                    });
+        } catch (IllegalStateException e) {
+            callback.onError(
+                    new OnDeviceIntelligenceException(
+                            OnDeviceIntelligenceException
+                                    .PROCESSING_ERROR_SERVICE_NOT_CONFIGURED));
+        }
     }
 
     /**
@@ -177,30 +213,108 @@ public final class EmbeddingModel implements OnDeviceModel, Parcelable {
     public void download(
             @Nullable CancellationSignal signal,
             @NonNull Executor executor,
-            @NonNull DownloadCallback callback) {
+            @NonNull ModelDownloadCallback callback) {
         Objects.requireNonNull(
                 mManager, "OnDeviceIntelligenceManager instance not attached to this Model.");
-        mManager.requestFeatureDownload(mFeature, signal, executor, callback);
+        try {
+            mManager.requestFeatureDownload(
+                    mFeature,
+                    signal,
+                    executor,
+                    new DownloadCallback() {
+                        @Override
+                        public void onDownloadStarted(long bytesToDownload) {
+                            callback.onDownloadStarted(bytesToDownload);
+                        }
+
+                        @Override
+                        public void onDownloadProgress(long totalBytesDownloaded) {
+                            callback.onDownloadProgress(totalBytesDownloaded);
+                        }
+
+                        @Override
+                        public void onDownloadFailed(
+                                int failureStatus,
+                                @Nullable String errorMessage,
+                                @NonNull PersistableBundle errorParams) {
+                            callback.onDownloadFailed(failureStatus, errorMessage);
+                        }
+
+                        @Override
+                        public void onDownloadCompleted(@NonNull PersistableBundle downloadParams) {
+                            callback.onDownloadCompleted();
+                        }
+                    });
+        } catch (IllegalStateException e) {
+            callback.onDownloadFailed(
+                    DownloadCallback.DOWNLOAD_FAILURE_STATUS_UNAVAILABLE,
+                    "Service not configured.");
+        }
+    }
+
+    @RequiresPermission(Manifest.permission.USE_ON_DEVICE_INTELLIGENCE)
+    public void countTokens(
+            @NonNull Content requestContent,
+            @NonNull Executor executor,
+            @NonNull OutcomeReceiver<Long, OnDeviceIntelligenceException> callback) {
+        try {
+            mManager.requestTokenInfo(
+                    mFeature,
+                    requestContent,
+                    null,
+                    executor,
+                    new OutcomeReceiver<TokenInfo, OnDeviceIntelligenceException>() {
+                        @Override
+                        public void onResult(TokenInfo result) {
+                            callback.onResult(result.getCount());
+                        }
+
+                        @Override
+                        public void onError(OnDeviceIntelligenceException error) {
+                            callback.onError(error);
+                        }
+                    });
+        } catch (IllegalStateException e) {
+            callback.onError(
+                    new OnDeviceIntelligenceException(
+                            OnDeviceIntelligenceException
+                                    .PROCESSING_ERROR_SERVICE_NOT_CONFIGURED));
+        }
     }
 
     /**
-     * Generates embeddings for the provided text.
+     * Generates embeddings for the provided content in the request.
      *
-     * @param text The text input to generate embeddings for.
+     * @param request The embedding request containing the list of content.
      * @param signal A {@link CancellationSignal} to cancel the operation.
      * @param executor The executor on which to invoke the callback.
      * @param callback The callback to receive the generated {@link EmbeddingResponse} or an error.
      */
     @RequiresPermission(Manifest.permission.USE_ON_DEVICE_INTELLIGENCE)
     public void generateEmbeddings(
-            @NonNull String text,
+            @NonNull EmbeddingRequest request,
             @Nullable CancellationSignal signal,
             @NonNull Executor executor,
             @NonNull OutcomeReceiver<EmbeddingResponse, OnDeviceIntelligenceException> callback) {
         Objects.requireNonNull(
                 mManager, "OnDeviceIntelligenceManager instance not attached to this Model.");
-        EmbeddingRequest request = new EmbeddingRequest(text);
+        try {
         mManager.generateEmbeddings(mFeature, request, signal, executor, callback);
+        } catch (IllegalStateException e) {
+            callback.onError(
+                    new OnDeviceIntelligenceException(
+                            OnDeviceIntelligenceException
+                                    .PROCESSING_ERROR_SERVICE_NOT_CONFIGURED));
+        } catch (RuntimeException e) {
+            if (e.getCause() instanceof android.os.TransactionTooLargeException) {
+                callback.onError(
+                        new OnDeviceIntelligenceException(
+                                OnDeviceIntelligenceException
+                                        .PROCESSING_ERROR_REQUEST_TOO_LARGE));
+            } else {
+                throw e;
+            }
+        }
     }
 
     @Override
@@ -214,6 +328,8 @@ public final class EmbeddingModel implements OnDeviceModel, Parcelable {
         dest.writeString8(mModelSignature);
         dest.writeInt(mDimension);
         dest.writeIntArray(mSupportedModalities);
+        dest.writeInt(mMaxTokenLimit);
+        dest.writeTypedObject(mSupportedLocales, flags);
     }
 
     public static final @NonNull Creator<EmbeddingModel> CREATOR =
@@ -234,5 +350,7 @@ public final class EmbeddingModel implements OnDeviceModel, Parcelable {
         mModelSignature = in.readString8();
         mDimension = in.readInt();
         mSupportedModalities = in.createIntArray();
+        mMaxTokenLimit = in.readInt();
+        mSupportedLocales = in.readTypedObject(LocaleList.CREATOR);
     }
 }

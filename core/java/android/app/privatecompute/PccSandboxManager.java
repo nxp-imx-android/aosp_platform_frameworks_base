@@ -16,6 +16,7 @@
 
 package android.app.privatecompute;
 
+import android.annotation.CallbackExecutor;
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.RequiresNoPermission;
@@ -24,6 +25,8 @@ import android.annotation.SystemService;
 import android.content.Context;
 import android.os.PersistableBundle;
 import android.os.RemoteException;
+
+import java.util.concurrent.Executor;
 
 /**
  * Manager for interacting with the Private Compute Core (PCC) sandbox.
@@ -79,5 +82,48 @@ public final class PccSandboxManager {
             throw e.rethrowFromSystemServer();
         }
     }
+
+    /**
+     * Requests the framework to start the non-PCC migration service of the calling application.
+     *
+     * <p>This is intended for PCC components to trigger a process outside the PCC sandbox
+     * to perform tasks like data migration. The system will look for a service extending
+     * {@link DataMigrationToPccService} in the application's manifest that is <b>not</b>
+     * marked as a PCC component. If found, the non-PCC process is started and the
+     * service is invoked.</p>
+     *
+     * <p>If the non-PCC process is already running, this ensures the migration service
+     * is triggered. System unbinds from the service either when the service indicates it has
+     * accepted/rejected the request, or failing that, after a timeout of
+     * {@link DataMigrationToPccService#MIGRATION_TIMEOUT_MS}.</p>
+     *
+     * @param executor The executor on which the callback will be invoked.
+     * @param callback The callback to receive the result of the migration request.
+     */
+    @FlaggedApi(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    @SuppressLint("RequiresPermission")
+    public void startNonPccProcessForDataMigration(
+            @NonNull @CallbackExecutor Executor executor,
+            @NonNull MigrationRequestResultReceiver callback) {
+        try {
+            mService.startNonPccProcessForDataMigration(new IMigrationRequestResultReceiver.Stub() {
+                @Override
+                public void onResult(MigrationRequestResult result) {
+                    executor.execute(() -> callback.onResult(result));
+                }
+
+                @Override
+                public void onError(int errorCode, String errorMessage) {
+                    executor.execute(() -> callback.onError(errorCode, errorMessage));
+                }
+            });
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
 }
+
+
+
+
 

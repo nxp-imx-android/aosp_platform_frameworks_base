@@ -49,8 +49,8 @@ import java.util.Objects;
 /**
  * Abstract base class for performing isFeatureEnabled in the remote Settings process.
  * The remote service should implement the function
- * {@link ContentSafetySettingsService#onIsFeatureEnabled} that corresponds to the API
- * methods {@link ContentSafetyManager#isFeatureEnabled}.
+ * {@link ContentSafetySettingsService#onIsFeatureEnabledRequest} that corresponds to the API
+ * methods {@link ContentSafetyManager#onIsFeatureEnabledRequest}.
  *
  * <pre>
  *     {@literal
@@ -100,7 +100,7 @@ public abstract class ContentSafetySettingsService extends Service {
             return new IContentSafetySettingsService.Stub() {
 
                 @Override
-                public void isFeatureEnabled(
+                public void requestIsFeatureEnabled(
                         int featureType,
                         UserHandle userId,
                         AndroidFuture cancellationSignalFuture,
@@ -115,7 +115,7 @@ public abstract class ContentSafetySettingsService extends Service {
 
                     mHandler.executeOrSendMessage(
                             obtainMessage(
-                                    ContentSafetySettingsService::onIsFeatureEnabled,
+                                    ContentSafetySettingsService::onIsFeatureEnabledRequest,
                                     ContentSafetySettingsService.this,
                                     featureType,
                                     userId,
@@ -167,7 +167,7 @@ public abstract class ContentSafetySettingsService extends Service {
      *     success case or failure status at Failure case.
      */
     @RequiresPermission(android.Manifest.permission.CHECK_CONTENT_SAFETY)
-    public abstract void onIsFeatureEnabled(
+    public abstract void onIsFeatureEnabledRequest(
             int featureType,
             @NonNull UserHandle userId,
             @Nullable CancellationSignal cancellationSignal,

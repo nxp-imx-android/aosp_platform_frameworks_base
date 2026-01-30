@@ -24,6 +24,7 @@ import android.os.PersistableBundle;
  * @hide
  */
 oneway interface IImageDescriptionCallback {
-    void onSuccess(in ImageDescriptionResponse result);
-    void onFailure(int errorCode, in String errorMessage, in PersistableBundle errorParams);
+    void onSuccess(in ImageDescriptionResponse result) = 1;
+    void onFailure(int errorCode, in String errorMessage, in PersistableBundle errorParams) = 2;
+    void onNewText(in String text) = 3;
 }

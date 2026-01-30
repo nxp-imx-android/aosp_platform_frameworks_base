@@ -122,10 +122,10 @@ public:
 
     // Watch the events files.  This cannot be called immediately after a process starts because
     // the threads that move the process into its cgroup may take tens of microseconds to
-    // complete.
-    bool watch(int inotify_fd, wdmap_t& wdmap) {
+    // complete.  Once the call succeeds, further calls quietly do nothing.
+    void watch(int inotify_fd, wdmap_t& wdmap) {
         // If the process has been initialized, do nothing.
-        if (mInitialized) return true;
+        if (mInitialized) return;
 
         constexpr char const* fmt = "/sys/fs/cgroup/%s/uid_%d/pid_%d/%s";
         char const* category = (mUid >= FIRST_APPLICATION_UID) ? "apps" : "system";
@@ -135,17 +135,16 @@ public:
         snprintf(path, sizeof(path), fmt, category, mUid, mPid, "memory.events");
         if (stat(path, &sbuff) != 0) {
             ALOGE("path %s not found: %s", path, strerror(errno));
-            return false;
+            return;
         }
         mMemoryWd = inotify_add_watch(inotify_fd, path, IN_MODIFY);
         if (mMemoryWd < 0) {
             ALOGE("add_watch(%s) failed: %s", path, strerror(errno));
-            return false;
+            return;
         }
         wdmap[mMemoryWd] = mPid;
 
         mInitialized = true;
-        return true;
     }
 
     // Stop watching.  This does not change the initialized flag but it does remove the watch
@@ -381,13 +380,12 @@ public:
     }
 
     // Ensure the process is being watched.
-    bool watch(int pid, int uid) {
+    void watch(int pid, int uid) {
         AutoMutex _l(mLock);
         auto i = mTargets.find(pid);
         if (i != mTargets.end()) {
-            return i->second.watch(mInotifyFd, mWdMap);
+            i->second.watch(mInotifyFd, mWdMap);
         }
-        return false;
     }
 
     // Forget about a monitored process.
@@ -606,7 +604,10 @@ jboolean configureLimit(JNIEnv*, jclass, jlong service, jint pid, jint uid, jlon
     // exits.
     EndTracer _tracer(TRACE_TRACK, pid);
 
-    if (!m->watch(pid, uid)) return false;
+    // Start watching for over-limit events, if possible.  The call is idempotent.  Once it
+    // succeeds further invocations do nothing.
+    m->watch(pid, uid);
+
     std::string name = "MemHigh";
     std::string path;
     if (!CgroupGetAttributePathForProcess(name, uid, pid, path)) {

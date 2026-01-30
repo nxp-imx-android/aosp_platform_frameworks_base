@@ -301,6 +301,7 @@ enum  {
 #define AUDIO_FORMAT_HAS_PROPERTY_SAMPLE_RATE 0x2
 #define AUDIO_FORMAT_HAS_PROPERTY_CHANNEL_MASK 0x4
 #define AUDIO_FORMAT_HAS_PROPERTY_CHANNEL_INDEX_MASK 0x8
+#define AUDIO_FORMAT_HAS_PROPERTY_CHANNEL_ACN_MASK 0x10
 
 // ----------------------------------------------------------------------------
 // ref-counted object for audio port callbacks
@@ -2100,6 +2101,7 @@ jobject nativeAudioConfigBaseToJavaAudioFormat(JNIEnv *env, const audio_config_b
     int propertyMask = AUDIO_FORMAT_HAS_PROPERTY_ENCODING | AUDIO_FORMAT_HAS_PROPERTY_SAMPLE_RATE;
     int channelMask = 0;
     int channelIndexMask = 0;
+    int channelAcnMask = 0;
     switch (audio_channel_mask_get_representation(nConfigBase->channel_mask)) {
         case AUDIO_CHANNEL_REPRESENTATION_POSITION:
             channelMask = isInput ? inChannelMaskFromNative(nConfigBase->channel_mask)
@@ -2110,13 +2112,17 @@ jobject nativeAudioConfigBaseToJavaAudioFormat(JNIEnv *env, const audio_config_b
             channelIndexMask = audio_channel_mask_get_bits(nConfigBase->channel_mask);
             propertyMask |= AUDIO_FORMAT_HAS_PROPERTY_CHANNEL_INDEX_MASK;
             break;
+        case AUDIO_CHANNEL_REPRESENTATION_ACN:
+            channelAcnMask = audio_channel_mask_get_bits(nConfigBase->channel_mask);
+            propertyMask |= AUDIO_FORMAT_HAS_PROPERTY_CHANNEL_ACN_MASK;
+            break;
         default:
             // This must not happen
             break;
     }
     return env->NewObject(gAudioFormatClass, gAudioFormatCstor, propertyMask,
                           audioFormatFromNative(nConfigBase->format), nConfigBase->sample_rate,
-                          channelMask, channelIndexMask);
+                          channelMask, channelIndexMask, channelAcnMask);
 }
 
 jint nativeAudioConfigToJavaAudioFormat(JNIEnv *env, const audio_config_t *nConfigBase,
@@ -2127,6 +2133,7 @@ jint nativeAudioConfigToJavaAudioFormat(JNIEnv *env, const audio_config_t *nConf
     int propertyMask = AUDIO_FORMAT_HAS_PROPERTY_ENCODING | AUDIO_FORMAT_HAS_PROPERTY_SAMPLE_RATE;
     int channelMask = 0;
     int channelIndexMask = 0;
+    int channelAcnMask = 0;
     switch (audio_channel_mask_get_representation(nConfigBase->channel_mask)) {
         case AUDIO_CHANNEL_REPRESENTATION_POSITION:
             channelMask = isInput ? inChannelMaskFromNative(nConfigBase->channel_mask)
@@ -2137,14 +2144,19 @@ jint nativeAudioConfigToJavaAudioFormat(JNIEnv *env, const audio_config_t *nConf
             channelIndexMask = audio_channel_mask_get_bits(nConfigBase->channel_mask);
             propertyMask |= AUDIO_FORMAT_HAS_PROPERTY_CHANNEL_INDEX_MASK;
             break;
+        case AUDIO_CHANNEL_REPRESENTATION_ACN:
+            channelAcnMask = audio_channel_mask_get_bits(nConfigBase->channel_mask);
+            propertyMask |= AUDIO_FORMAT_HAS_PROPERTY_CHANNEL_ACN_MASK;
+            break;
         default:
             // This must not happen
             break;
     }
 
-    *jAudioFormat = env->NewObject(gAudioFormatClass, gAudioFormatCstor, propertyMask,
-                                   audioFormatFromNative(nConfigBase->format),
-                                   nConfigBase->sample_rate, channelMask, channelIndexMask);
+    *jAudioFormat =
+            env->NewObject(gAudioFormatClass, gAudioFormatCstor, propertyMask,
+                           audioFormatFromNative(nConfigBase->format), nConfigBase->sample_rate,
+                           channelMask, channelIndexMask, channelAcnMask);
     return AUDIO_JAVA_SUCCESS;
 }
 
@@ -3855,7 +3867,7 @@ int register_android_media_AudioSystem(JNIEnv *env)
 
     jclass audioFormatClass = FindClassOrDie(env, "android/media/AudioFormat");
     gAudioFormatClass = MakeGlobalRefOrDie(env, audioFormatClass);
-    gAudioFormatCstor = GetMethodIDOrDie(env, audioFormatClass, "<init>", "(IIIII)V");
+    gAudioFormatCstor = GetMethodIDOrDie(env, audioFormatClass, "<init>", "(IIIIII)V");
     gAudioFormatFields.mEncoding = GetFieldIDOrDie(env, audioFormatClass, "mEncoding", "I");
     gAudioFormatFields.mSampleRate = GetFieldIDOrDie(env, audioFormatClass, "mSampleRate", "I");
     gAudioFormatFields.mChannelMasks = GetFieldIDOrDie(env, audioFormatClass, "mChannelMasks",

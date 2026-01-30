@@ -257,6 +257,15 @@ public abstract class DevicePolicyManagerInternal {
             String packageName, @UserIdInt int userId, boolean hidden);
 
     /**
+     * Clears all hidden applications for the given role.
+     *
+     * @param roleName The name of the role whose holders' policies should be cleared.
+     * @param targetUser The user for which to clear the policies.
+     */
+    public abstract void clearHiddenApplicationsForRole(
+            @NonNull String roleName, @UserIdInt int targetUser);
+
+    /**
      * Sends the {@code intent} to the package holding the
      * {@link android.app.role.RoleManager#ROLE_DEVICE_MANAGER} role and packages with cross
      * profile capabilities, meaning the application must have the {@code crossProfile}

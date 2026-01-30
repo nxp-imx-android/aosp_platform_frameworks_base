@@ -18,6 +18,7 @@ package com.android.systemui.statusbar.quickactions.av.ui.viewmodel
 
 import android.graphics.drawable.Drawable
 import androidx.compose.runtime.getValue
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.quickactions.av.domain.interactor.AvControlsChipInteractor
@@ -44,7 +45,7 @@ sealed interface SensorAccessSummary {
 class SensorActivityViewModel
 @AssistedInject
 constructor(
-    private val avControlsChipInteractor: AvControlsChipInteractor,
+    @DisplayAware private val avControlsChipInteractor: AvControlsChipInteractor,
     @Assisted private val setCurrentPage: (PageType) -> Unit,
 ) : HydratedActivatable() {
 

@@ -25,6 +25,7 @@ import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
 import android.os.Bundle;
 import android.os.UserHandle;
+import android.service.personalcontext.RenderToken;
 import android.service.personalcontext.embedded.InsightSurfaceClientInfo;
 import android.service.personalcontext.embedded.InsightSurfaceVisualizerService;
 import android.service.personalcontext.insight.ContextInsight;
@@ -207,9 +208,12 @@ public class VisualizerRegistry {
      * a visualizer that can accept the given insights.
      */
     public void createVisualizationForClient(
-            List<ContextInsight> insights, InsightSurfaceClientInfo client) {
+            ContextInsight insight,
+            InsightSurfaceClientInfo client,
+            RenderToken renderToken) {
         mInjector.queueAction(() ->
-                createVisualizationForClient(insights, client, mVisualizers.values().iterator()));
+                createVisualizationForClient(
+                        insight, client, renderToken, mVisualizers.values().iterator()));
     }
 
     private void registerVisualizers(@Nullable String packageName) {
@@ -246,8 +250,9 @@ public class VisualizerRegistry {
     }
 
     private void createVisualizationForClient(
-            List<ContextInsight> insights,
+            ContextInsight insight,
             InsightSurfaceClientInfo client,
+            RenderToken renderToken,
             Iterator<VisualizerConnection> visualizers) {
         if (!visualizers.hasNext()) {
             return;
@@ -255,11 +260,12 @@ public class VisualizerRegistry {
 
         final VisualizerConnection nextVisualizer = visualizers.next();
         nextVisualizer.createVisualizationForClient(
-                insights,
+                insight,
                 client,
+                renderToken,
                 (success) -> {
                     if (!success) {
-                        createVisualizationForClient(insights, client, visualizers);
+                        createVisualizationForClient(insight, client, renderToken, visualizers);
                     }
                 });
     }

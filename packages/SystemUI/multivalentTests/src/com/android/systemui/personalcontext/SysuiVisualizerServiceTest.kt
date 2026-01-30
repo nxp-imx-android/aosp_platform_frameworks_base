@@ -18,8 +18,9 @@ package com.android.systemui.personalcontext
 
 import android.content.Context
 import android.content.res.Resources
+import android.service.personalcontext.RenderToken
 import android.service.personalcontext.embedded.InsightSurfaceClientInfo
-import android.service.personalcontext.insight.ContextInsight
+import android.service.personalcontext.insight.BundleInsight
 import android.util.DisplayMetrics
 import androidx.compose.ui.platform.ComposeView
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -71,9 +72,10 @@ class SysuiVisualizerServiceTest : SysuiTestCase() {
         kosmos.runTest {
             val clientId = UUID.randomUUID()
             val clientInfo = createClient(clientId)
-            val insights = emptyList<ContextInsight>()
+            val insight = BundleInsight.Builder().build()
+            val renderToken = RenderToken(UUID.randomUUID())
 
-            val view = underTest.onCreateEmbeddedView(context, insights, clientInfo)
+            val view = underTest.onCreateEmbeddedView(context, insight, renderToken, clientInfo)
             assertThat(view).isEqualTo(composeView)
         }
     }
@@ -83,9 +85,10 @@ class SysuiVisualizerServiceTest : SysuiTestCase() {
         kosmos.runTest {
             val clientId = UUID.randomUUID()
             val clientInfo = createClient(clientId)
-            val insights = emptyList<ContextInsight>()
+            val insight = BundleInsight.Builder().build()
+            val renderToken = RenderToken(UUID.randomUUID())
 
-            underTest.onCreateEmbeddedView(context, insights, clientInfo)
+            underTest.onCreateEmbeddedView(context, insight, renderToken, clientInfo)
             assertThat(underTest.sessions.size).isEqualTo(0)
             underTest.onClientConnected(clientInfo)
             assertThat(underTest.sessions.size).isEqualTo(1)
@@ -98,9 +101,10 @@ class SysuiVisualizerServiceTest : SysuiTestCase() {
         kosmos.runTest {
             val clientId = UUID.randomUUID()
             val clientInfo = createClient(clientId)
-            val insights = emptyList<ContextInsight>()
+            val insight = BundleInsight.Builder().build()
+            val renderToken = RenderToken(UUID.randomUUID())
 
-            underTest.onCreateEmbeddedView(context, insights, clientInfo)
+            underTest.onCreateEmbeddedView(context, insight, renderToken, clientInfo)
             underTest.onClientConnected(clientInfo)
             assertThat(underTest.sessions.size).isEqualTo(1)
             underTest.onClientDisconnected(clientInfo)

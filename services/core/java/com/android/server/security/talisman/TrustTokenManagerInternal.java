@@ -23,6 +23,22 @@ import java.util.List;
 /** The internal interface for TrustTokenManagerService. */
 interface TrustTokenManagerInternal {
     /**
+     * Generates new trust token keys.
+     *
+     * @param num The number of keys to generate.
+     * @hide
+     */
+    List<TrustTokenKey> generateKeys(int num);
+
+    /**
+     * Attests to the trust token keys.
+     *
+     * @param keys the keys to attest.
+     * @hide
+     */
+    TrustTokenBatchAttestation attestKeys(List<TrustTokenKey> keys);
+
+    /**
      * Adds pre-fetched trust tokens to the system.
      *
      * <p>This method can add both verified device tokens and verified identities tokens.
@@ -42,4 +58,10 @@ interface TrustTokenManagerInternal {
      * @param configuration The updated configuration.
      */
     void updateTrustConfiguration(TrustConfiguration configuration);
+
+    /**
+     * Cleans up the internal database.
+     * @hide
+     */
+    void cleanUpDatabase();
 }

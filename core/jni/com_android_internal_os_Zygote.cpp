@@ -354,7 +354,6 @@ enum RuntimeFlags : uint32_t {
     PROFILEABLE = 1 << 24,
     DEBUG_ENABLE_PTRACE = 1 << 25,
     ENABLE_PAGE_SIZE_APP_COMPAT = 1 << 26,
-    ENABLE_EXECUTE_ONLY_MEMORY = 1 << 27,
 };
 
 enum UnsolicitedZygoteMessageTypes : uint32_t {
@@ -1839,10 +1838,19 @@ static void ReloadBuildJavaConstants(JNIEnv* env) {
 }
 
 static void BindMountSyspropOverride(fail_fn_t fail_fn, JNIEnv* env) {
-    // Reload the system properties file, to ensure new values are read into memory
-    __system_properties_zygote_reload();
-    // android.os.Build constants are pulled from system properties, so they must be reloaded, too
-    ReloadBuildJavaConstants(env);
+  std::string source = "/dev/__properties__/appcompat_override";
+  std::string target = "/dev/__properties__";
+  if (access(source.c_str(), F_OK) != 0) {
+      return;
+  }
+  if (access(target.c_str(), F_OK) != 0) {
+      return;
+  }
+  BindMount(source, target, fail_fn);
+  // Reload the system properties file, to ensure new values are read into memory
+  __system_properties_zygote_reload();
+  // android.os.Build constants are pulled from system properties, so they must be reloaded, too
+  ReloadBuildJavaConstants(env);
 }
 
 static void MountInitOverride(fail_fn_t fail_fn, JNIEnv* env) {
@@ -2123,19 +2131,6 @@ static void SpecializeCommon(JNIEnv* env, uid_t uid, gid_t gid, jintArray gids, 
     // Now that we've used the flag, clear it so that we don't pass unknown flags to the ART
     // runtime.
     runtime_flags &= ~RuntimeFlags::NATIVE_HEAP_ZERO_INIT_ENABLED;
-
-    // If the app does not support execute-only memory, then iterate through
-    // the shared objects and mark them readable.
-#ifdef BUILD_EXECUTE_ONLY_MEMORY
-    if (!(runtime_flags & RuntimeFlags::ENABLE_EXECUTE_ONLY_MEMORY)) {
-        ZYGOTE_TRACE_BEGIN("disable_execute_only");
-        dl_iterate_phdr(disable_execute_only, nullptr);
-        ZYGOTE_TRACE_END("disable_execute_only");
-    }
-#endif
-    // Now that we've used the flag, clear it so that we don't pass unknown flags to the ART
-    // runtime.
-    runtime_flags &= ~RuntimeFlags::ENABLE_EXECUTE_ONLY_MEMORY;
 
     const char* nice_name_ptr = nice_name.has_value() ? nice_name.value().c_str() : nullptr;
     android_mallopt_gwp_asan_options_t gwp_asan_options;
@@ -2902,6 +2897,15 @@ static void com_android_internal_os_Zygote_nativeInitNativeState(JNIEnv* env, jc
   gIsSecurityEnforced = security_getenforce();
 
   selinux_android_seapp_context_init();
+
+#ifdef BUILD_EXECUTE_ONLY_MEMORY
+  /*
+   * disable XOM for all libraries already loaded by the zygote for app compatibility
+   */
+  ZYGOTE_TRACE_BEGIN("disable_execute_only");
+  dl_iterate_phdr(disable_execute_only, nullptr);
+  ZYGOTE_TRACE_END("disable_execute_only");
+#endif
 
   /*
    * Storage Initialization

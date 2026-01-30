@@ -37,7 +37,7 @@ import android.os.UserHandle;
     * @param remoteCallback The callback to receive the result.
     */
   @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.CHECK_CONTENT_SAFETY)")
-  void isFeatureEnabled(in int featureType, in UserHandle userId, in AndroidFuture cancellationSignal, in IIsFeatureEnabledCallback remoteCallback) = 1;
+  void requestIsFeatureEnabled(in int featureType, in UserHandle userId, in AndroidFuture cancellationSignal, in IIsFeatureEnabledCallback remoteCallback) = 1;
 
  }
 

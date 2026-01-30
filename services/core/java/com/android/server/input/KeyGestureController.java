@@ -1134,7 +1134,7 @@ final class KeyGestureController {
                 }
                 return true;
             case KeyEvent.KEYCODE_LANGUAGE_SWITCH:
-                if (firstDown && !hasModifiers) {
+                if (firstDown && (metaState & ~KeyEvent.META_SHIFT_ON) == 0) {
                     handleKeyGesture(deviceId, new int[]{keyCode},
                             event.isShiftPressed() ? KeyEvent.META_SHIFT_ON : 0,
                             KeyGestureEvent.KEY_GESTURE_TYPE_LANGUAGE_SWITCH,

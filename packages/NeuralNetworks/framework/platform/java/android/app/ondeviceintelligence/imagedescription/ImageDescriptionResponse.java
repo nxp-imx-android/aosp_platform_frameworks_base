@@ -24,10 +24,12 @@ import android.app.ondeviceintelligence.flags.Flags;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
- * Represents the response from an image description generation request.
+ * Represents the response from an image descriptions generation request.
  *
  * <p>This class contains the generated {@link ImageDescription} for the input image.
  *
@@ -36,23 +38,23 @@ import java.util.Objects;
 @SystemApi
 @FlaggedApi(Flags.FLAG_ON_DEVICE_INTELLIGENCE_26Q2)
 public final class ImageDescriptionResponse implements Parcelable {
-    private final ImageDescription mImageDescription;
+    private final List<ImageDescription> mImageDescriptions;
 
     /**
      * Constructs a new {@link ImageDescriptionResponse}.
      *
-     * @param imageDescription The generated description.
+     * @param imageDescriptions The list of generated descriptions.
      */
-    public ImageDescriptionResponse(@NonNull ImageDescription imageDescription) {
-        mImageDescription = Objects.requireNonNull(imageDescription);
+    public ImageDescriptionResponse(@NonNull List<ImageDescription> imageDescriptions) {
+        mImageDescriptions = Objects.requireNonNull(imageDescriptions);
     }
 
     /**
      * Returns the generated description.
      */
     @NonNull
-    public ImageDescription getImageDescription() {
-        return mImageDescription;
+    public List<ImageDescription> getImageDescriptions() {
+        return mImageDescriptions;
     }
 
     @Override
@@ -62,7 +64,7 @@ public final class ImageDescriptionResponse implements Parcelable {
 
     @Override
     public void writeToParcel(@NonNull Parcel dest, int flags) {
-        dest.writeTypedObject(mImageDescription, flags);
+        dest.writeTypedList(mImageDescriptions);
     }
 
     public static final @NonNull Creator<ImageDescriptionResponse> CREATOR =
@@ -79,7 +81,7 @@ public final class ImageDescriptionResponse implements Parcelable {
             };
 
     private ImageDescriptionResponse(Parcel in) {
-        mImageDescription = in.readTypedObject(ImageDescription.CREATOR);
+        mImageDescriptions = in.createTypedArrayList(ImageDescription.CREATOR);
     }
 
     /**

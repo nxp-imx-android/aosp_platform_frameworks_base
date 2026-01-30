@@ -44,6 +44,7 @@ package android {
     field @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final String BIND_CONTEXT_COMPONENT_SERVICE = "android.permission.BIND_CONTEXT_COMPONENT_SERVICE";
     field public static final String BIND_CONTROLS = "android.permission.BIND_CONTROLS";
     field public static final String BIND_CREDENTIAL_PROVIDER_SERVICE = "android.permission.BIND_CREDENTIAL_PROVIDER_SERVICE";
+    field @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public static final String BIND_DATA_MIGRATION_FOR_PRIVATECOMPUTE = "android.permission.BIND_DATA_MIGRATION_FOR_PRIVATECOMPUTE";
     field public static final String BIND_DEVICE_ADMIN = "android.permission.BIND_DEVICE_ADMIN";
     field public static final String BIND_DREAM_SERVICE = "android.permission.BIND_DREAM_SERVICE";
     field public static final String BIND_INCALL_SERVICE = "android.permission.BIND_INCALL_SERVICE";
@@ -10179,6 +10180,36 @@ package android.app.permissionui {
 
 package android.app.privatecompute {
 
+  @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public abstract class DataMigrationToPccService extends android.app.Service {
+    ctor public DataMigrationToPccService();
+    method @Nullable public final android.os.IBinder onBind(@Nullable android.content.Intent);
+    method public abstract void onMigrationRequested(@NonNull android.app.privatecompute.MigrationRequestResultSender);
+    field public static final long MIGRATION_TIMEOUT_MS = 60000L; // 0xea60L
+    field public static final String SERVICE_INTERFACE = "android.app.privatecompute.DataMigrationToPccService";
+  }
+
+  @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public final class MigrationRequestResult implements android.os.Parcelable {
+    ctor public MigrationRequestResult(int, @Nullable android.os.PersistableBundle);
+    method public int describeContents();
+    method @NonNull public android.os.PersistableBundle getExtras();
+    method public int getStatus();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.app.privatecompute.MigrationRequestResult> CREATOR;
+    field public static final int MIGRATION_REQUEST_ACCEPTED = 1; // 0x1
+    field public static final int MIGRATION_REQUEST_REJECTED = 2; // 0x2
+  }
+
+  @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public interface MigrationRequestResultReceiver {
+    method public void onError(int, @Nullable String);
+    method public void onResult(@NonNull android.app.privatecompute.MigrationRequestResult);
+    field public static final int ERROR_INVOCATION_FAILED = 1; // 0x1
+    field public static final int ERROR_TIMEOUT = 2; // 0x2
+  }
+
+  @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public final class MigrationRequestResultSender {
+    method public void sendResult(@NonNull android.app.privatecompute.MigrationRequestResult);
+  }
+
   @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public class PccClient {
     method @NonNull public static android.app.privatecompute.PccClient createInstance(@NonNull android.content.Context, @NonNull android.os.IBinder);
     method public void sendData(@NonNull android.os.Bundle);
@@ -10186,6 +10217,7 @@ package android.app.privatecompute {
 
   @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public final class PccSandboxManager {
     method public boolean isPrivateComputeServicesUid(int);
+    method @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public void startNonPccProcessForDataMigration(@NonNull java.util.concurrent.Executor, @NonNull android.app.privatecompute.MigrationRequestResultReceiver);
     method public void writeToAuditLog(@NonNull android.os.PersistableBundle);
   }
 
@@ -22689,6 +22721,7 @@ package android.media {
 
   public final class AudioFormat implements android.os.Parcelable {
     method public int describeContents();
+    method @FlaggedApi("android.media.audio.ambisonics_support_api") public int getChannelAcnMask();
     method public int getChannelCount();
     method public int getChannelIndexMask();
     method public int getChannelMask();
@@ -22696,6 +22729,37 @@ package android.media {
     method @IntRange(from=1) public int getFrameSizeInBytes();
     method public int getSampleRate();
     method public void writeToParcel(android.os.Parcel, int);
+    field @FlaggedApi("android.media.audio.ambisonics_support_api") public static final int CHANNEL_ACN_HORIZONTAL = 512; // 0x200
+    field @FlaggedApi("android.media.audio.ambisonics_support_api") public static final int CHANNEL_ACN_ORDER_0 = 1; // 0x1
+    field @FlaggedApi("android.media.audio.ambisonics_support_api") public static final int CHANNEL_ACN_ORDER_0_HRZ = 513; // 0x201
+    field @FlaggedApi("android.media.audio.ambisonics_support_api") public static final int CHANNEL_ACN_ORDER_1 = 4; // 0x4
+    field @FlaggedApi("android.media.audio.ambisonics_support_api") public static final int CHANNEL_ACN_ORDER_10 = 121; // 0x79
+    field @FlaggedApi("android.media.audio.ambisonics_support_api") public static final int CHANNEL_ACN_ORDER_10_HRZ = 533; // 0x215
+    field @FlaggedApi("android.media.audio.ambisonics_support_api") public static final int CHANNEL_ACN_ORDER_11 = 144; // 0x90
+    field @FlaggedApi("android.media.audio.ambisonics_support_api") public static final int CHANNEL_ACN_ORDER_11_HRZ = 535; // 0x217
+    field @FlaggedApi("android.media.audio.ambisonics_support_api") public static final int CHANNEL_ACN_ORDER_12 = 169; // 0xa9
+    field @FlaggedApi("android.media.audio.ambisonics_support_api") public static final int CHANNEL_ACN_ORDER_12_HRZ = 537; // 0x219
+    field @FlaggedApi("android.media.audio.ambisonics_support_api") public static final int CHANNEL_ACN_ORDER_13 = 196; // 0xc4
+    field @FlaggedApi("android.media.audio.ambisonics_support_api") public static final int CHANNEL_ACN_ORDER_13_HRZ = 539; // 0x21b
+    field @FlaggedApi("android.media.audio.ambisonics_support_api") public static final int CHANNEL_ACN_ORDER_14 = 225; // 0xe1
+    field @FlaggedApi("android.media.audio.ambisonics_support_api") public static final int CHANNEL_ACN_ORDER_14_HRZ = 541; // 0x21d
+    field @FlaggedApi("android.media.audio.ambisonics_support_api") public static final int CHANNEL_ACN_ORDER_1_HRZ = 515; // 0x203
+    field @FlaggedApi("android.media.audio.ambisonics_support_api") public static final int CHANNEL_ACN_ORDER_2 = 9; // 0x9
+    field @FlaggedApi("android.media.audio.ambisonics_support_api") public static final int CHANNEL_ACN_ORDER_2_HRZ = 517; // 0x205
+    field @FlaggedApi("android.media.audio.ambisonics_support_api") public static final int CHANNEL_ACN_ORDER_3 = 16; // 0x10
+    field @FlaggedApi("android.media.audio.ambisonics_support_api") public static final int CHANNEL_ACN_ORDER_3_HRZ = 519; // 0x207
+    field @FlaggedApi("android.media.audio.ambisonics_support_api") public static final int CHANNEL_ACN_ORDER_4 = 25; // 0x19
+    field @FlaggedApi("android.media.audio.ambisonics_support_api") public static final int CHANNEL_ACN_ORDER_4_HRZ = 521; // 0x209
+    field @FlaggedApi("android.media.audio.ambisonics_support_api") public static final int CHANNEL_ACN_ORDER_5 = 36; // 0x24
+    field @FlaggedApi("android.media.audio.ambisonics_support_api") public static final int CHANNEL_ACN_ORDER_5_HRZ = 523; // 0x20b
+    field @FlaggedApi("android.media.audio.ambisonics_support_api") public static final int CHANNEL_ACN_ORDER_6 = 49; // 0x31
+    field @FlaggedApi("android.media.audio.ambisonics_support_api") public static final int CHANNEL_ACN_ORDER_6_HRZ = 525; // 0x20d
+    field @FlaggedApi("android.media.audio.ambisonics_support_api") public static final int CHANNEL_ACN_ORDER_7 = 64; // 0x40
+    field @FlaggedApi("android.media.audio.ambisonics_support_api") public static final int CHANNEL_ACN_ORDER_7_HRZ = 527; // 0x20f
+    field @FlaggedApi("android.media.audio.ambisonics_support_api") public static final int CHANNEL_ACN_ORDER_8 = 81; // 0x51
+    field @FlaggedApi("android.media.audio.ambisonics_support_api") public static final int CHANNEL_ACN_ORDER_8_HRZ = 529; // 0x211
+    field @FlaggedApi("android.media.audio.ambisonics_support_api") public static final int CHANNEL_ACN_ORDER_9 = 100; // 0x64
+    field @FlaggedApi("android.media.audio.ambisonics_support_api") public static final int CHANNEL_ACN_ORDER_9_HRZ = 531; // 0x213
     field @Deprecated public static final int CHANNEL_CONFIGURATION_DEFAULT = 1; // 0x1
     field @Deprecated public static final int CHANNEL_CONFIGURATION_INVALID = 0; // 0x0
     field @Deprecated public static final int CHANNEL_CONFIGURATION_MONO = 2; // 0x2
@@ -22814,6 +22878,7 @@ package android.media {
     ctor public AudioFormat.Builder();
     ctor public AudioFormat.Builder(android.media.AudioFormat);
     method public android.media.AudioFormat build();
+    method @FlaggedApi("android.media.audio.ambisonics_support_api") @NonNull public android.media.AudioFormat.Builder setChannelAcnMask(int);
     method @NonNull public android.media.AudioFormat.Builder setChannelIndexMask(int);
     method @NonNull public android.media.AudioFormat.Builder setChannelMask(int);
     method public android.media.AudioFormat.Builder setEncoding(int) throws java.lang.IllegalArgumentException;
@@ -25257,7 +25322,7 @@ package android.media {
     field public static final String KEY_HAPTIC_CHANNEL_COUNT = "haptic-channel-count";
     field public static final String KEY_HARDWARE_AV_SYNC_ID = "hw-av-sync-id";
     field public static final String KEY_HDR10_PLUS_INFO = "hdr10-plus-info";
-    field @FlaggedApi("android.media.codec.agtm_metadata") public static final String KEY_HDR_ECLIPSA_VIDEO_INFO = "hdr-eclipsa-video-info";
+    field @FlaggedApi("android.media.codec.agtm_metadata") public static final String KEY_HDR_ST2094_50_INFO = "hdr-st2094-50-info";
     field public static final String KEY_HDR_STATIC_INFO = "hdr-static-info";
     field public static final String KEY_HEIGHT = "height";
     field @FlaggedApi("android.media.codec.flip_support") public static final String KEY_HORIZONTAL_FLIP = "horizontal-flip";
@@ -28398,6 +28463,41 @@ package android.media.quality {
     field public static final int SOURCE_VIDEO = 2; // 0x2
   }
 
+  @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public final class EqualizerBand implements android.os.Parcelable {
+    ctor public EqualizerBand(@IntRange(from=1) int, int, @FloatRange(from=0.0, fromInclusive=false) float);
+    method public int describeContents();
+    method @IntRange(from=1) public int getFrequencyHz();
+    method public int getGainDb();
+    method @FloatRange(from=0.0, fromInclusive=false) public float getQFactor();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.media.quality.EqualizerBand> CREATOR;
+  }
+
+  @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public final class EqualizerCapabilities implements android.os.Parcelable {
+    ctor public EqualizerCapabilities(int, int, @NonNull java.util.List<java.lang.Integer>, boolean);
+    method public int describeContents();
+    method public int getMaxLevelDb();
+    method public int getMinLevelDb();
+    method @NonNull public java.util.List<java.lang.Integer> getSupportedFrequenciesHz();
+    method public boolean hasAdjustableQ();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.media.quality.EqualizerCapabilities> CREATOR;
+  }
+
+  @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public final class EqualizerSettings implements android.os.Parcelable {
+    method public int describeContents();
+    method @NonNull public java.util.List<android.media.quality.EqualizerBand> getBands();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.media.quality.EqualizerSettings> CREATOR;
+  }
+
+  public static final class EqualizerSettings.Builder {
+    ctor public EqualizerSettings.Builder();
+    method @NonNull public android.media.quality.EqualizerSettings.Builder addBand(@NonNull android.media.quality.EqualizerBand);
+    method @NonNull public android.media.quality.EqualizerSettings build();
+    method @NonNull public android.media.quality.EqualizerSettings.Builder setBands(@NonNull java.util.List<android.media.quality.EqualizerBand>);
+  }
+
   @FlaggedApi("android.media.tv.flags.media_quality_fw") public class MediaQualityContract {
     field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String COLOR_SPACE_ADOBE_RGB = "ADOBE_RGB";
     field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String COLOR_SPACE_AUTO = "AUTO";
@@ -28604,6 +28704,7 @@ package android.media.quality {
     field public static final String PARAMETER_DTS_VIRTUAL_X_TRU_SURROUND_X = "dts_virtual_x_tru_surround_x";
     field public static final String PARAMETER_DTS_VIRTUAL_X_TRU_VOLUME_HD = "dts_virtual_x_tru_volume_hd";
     field public static final String PARAMETER_EARC = "earc";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String PARAMETER_EQUALIZER_SETTINGS = "equalizer_settings";
     field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String PARAMETER_HI_RES_AUDIO = "hi_res_audio";
     field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String PARAMETER_PAN_FADE_ENABLE = "pan_fade_enable";
     field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String PARAMETER_SOUND_STYLE = "sound_style";
@@ -28619,6 +28720,8 @@ package android.media.quality {
     method public void createSoundProfile(@NonNull android.media.quality.SoundProfile);
     method @NonNull public java.util.List<android.media.quality.PictureProfile> getAvailablePictureProfiles(@Nullable android.media.quality.MediaQualityManager.ProfileQueryParams);
     method @NonNull public java.util.List<android.media.quality.SoundProfile> getAvailableSoundProfiles(@Nullable android.media.quality.MediaQualityManager.ProfileQueryParams);
+    method @FlaggedApi("android.media.tv.flags.media_quality_fw_c") @Nullable public android.media.quality.EqualizerCapabilities getEqualizerCapabilities();
+    method @FlaggedApi("android.media.tv.flags.media_quality_fw_c") @Nullable public android.media.quality.EqualizerSettings getEqualizerSettings();
     method @NonNull public java.util.List<android.media.quality.ParameterCapability> getParameterCapabilities(@NonNull java.util.List<java.lang.String>);
     method @Nullable public android.media.quality.PictureProfile getPictureProfile(int, @NonNull String, @Nullable android.media.quality.MediaQualityManager.ProfileQueryParams);
     method @Nullable public android.media.quality.SoundProfile getSoundProfile(int, @NonNull String, @Nullable android.media.quality.MediaQualityManager.ProfileQueryParams);
@@ -28635,6 +28738,7 @@ package android.media.quality {
     method public void setAmbientBacklightEnabled(boolean);
     method public void setAmbientBacklightSettings(@NonNull android.media.quality.AmbientBacklightSettings);
     method @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public void setColorMuteEnabled(boolean);
+    method @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public void setEqualizerSettings(@Nullable android.media.quality.EqualizerSettings);
     method @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public void setMutedColor(@ColorInt int);
     method public void unregisterAmbientBacklightCallback(@NonNull android.media.quality.MediaQualityManager.AmbientBacklightCallback);
     method public void unregisterPictureProfileCallback(@NonNull android.media.quality.MediaQualityManager.PictureProfileCallback);
@@ -43931,6 +44035,12 @@ package android.service.personalcontext {
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public interface ComponentIdProvider {
   }
 
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class PersonalContextManager {
+    method public void publishTriggeringHint(@NonNull android.service.personalcontext.insight.interaction.ReturnHintReport, @NonNull java.util.List<android.service.personalcontext.hint.ContextHint>);
+    field public static final String ACTION_PERSONAL_CONTEXT_ENABLED_CHANGED = "android.service.personalcontext.action.PERSONAL_CONTEXT_ENABLED_CHANGED";
+    field public static final String PERSONAL_CONTEXT_SERVICE = "personal_context";
+  }
+
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class RenderToken implements java.lang.Comparable<android.service.personalcontext.RenderToken> android.os.Parcelable {
     ctor public RenderToken(@NonNull java.util.UUID);
     method public int compareTo(@NonNull android.service.personalcontext.RenderToken);
@@ -44146,6 +44256,10 @@ package android.service.personalcontext.hint {
     method @NonNull public android.service.personalcontext.hint.HintInvalidationHint build();
   }
 
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class InsightReferenceHint extends android.service.personalcontext.hint.ContextHint {
+    method @NonNull public java.util.UUID getInsightId();
+  }
+
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public abstract class NotificationEvent {
   }
 
@@ -44243,6 +44357,7 @@ package android.service.personalcontext.hint {
 package android.service.personalcontext.insight {
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class ActionableInsight extends android.service.personalcontext.insight.ContextInsight {
+    method @NonNull public android.service.personalcontext.insight.interaction.ReturnHintReport createReturnHintReport();
     method @NonNull public android.service.personalcontext.insight.InsightActionDetails getActionDetails();
     method @NonNull public android.service.personalcontext.insight.InsightDisplayDetails getDisplayDetails();
   }
@@ -44340,6 +44455,16 @@ package android.service.personalcontext.insight {
     method @NonNull public android.service.personalcontext.insight.InsightDisplayDetails build();
     method @NonNull public android.service.personalcontext.insight.InsightDisplayDetails.Builder setContentDescription(@Nullable CharSequence);
     method @NonNull public android.service.personalcontext.insight.InsightDisplayDetails.Builder setSubtitle(@Nullable CharSequence);
+  }
+
+}
+
+package android.service.personalcontext.insight.interaction {
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class ReturnHintReport implements android.os.Parcelable {
+    method public int describeContents();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.service.personalcontext.insight.interaction.ReturnHintReport> CREATOR;
   }
 
 }
@@ -54871,6 +54996,7 @@ package android.view {
     method protected void dispatchRestoreInstanceState(android.util.SparseArray<android.os.Parcelable>);
     method protected void dispatchSaveInstanceState(android.util.SparseArray<android.os.Parcelable>);
     method public void dispatchScrollCaptureSearch(@NonNull android.graphics.Rect, @NonNull android.graphics.Point, @NonNull java.util.function.Consumer<android.view.ScrollCaptureTarget>);
+    method @FlaggedApi("android.view.flags.scroll_to_top") public boolean dispatchScrollToTop(int);
     method protected void dispatchSetActivated(boolean);
     method protected void dispatchSetPressed(boolean);
     method protected void dispatchSetSelected(boolean);

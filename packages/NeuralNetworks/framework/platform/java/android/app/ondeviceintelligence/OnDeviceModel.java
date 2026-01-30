@@ -20,11 +20,13 @@ import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.SystemApi;
+import android.app.ondeviceintelligence.Content;
 import android.app.ondeviceintelligence.FeatureDetails.Status;
 import android.app.ondeviceintelligence.flags.Flags;
 import android.os.CancellationSignal;
 import android.os.OutcomeReceiver;
 
+import java.util.List;
 import java.util.concurrent.Executor;
 
 /**
@@ -74,5 +76,24 @@ public interface OnDeviceModel {
     void download(
             @Nullable CancellationSignal signal,
             @NonNull Executor executor,
-            @NonNull DownloadCallback callback);
+            @NonNull ModelDownloadCallback callback);
+
+    /**
+     * Returns the maximum context length (in tokens) supported by the model.
+     *
+     * @return The maximum context length.
+     */
+    long getMaxTokenLimit();
+
+    /**
+     * Counts the number of tokens in the given content using the model's tokenizer.
+     *
+     * @param requestContent The content payload to tokenize.
+     * @param executor The executor to run the callback on.
+     * @param callback The callback to receive the token count.
+     */
+    void countTokens(
+            @NonNull Content requestContent,
+            @NonNull Executor executor,
+            @NonNull OutcomeReceiver<Long, OnDeviceIntelligenceException> callback);
 }

@@ -17,7 +17,15 @@
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="com.android.server.security.talisman">
-    <application android:debuggable="true"/>
+    <application android:debuggable="true">
+        <service
+            android:name=".MockTrustTokenService"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.security.trusttoken.TrustTokenService" />
+            </intent-filter>
+        </service>
+    </application>
     <instrumentation android:name="androidx.test.runner.AndroidJUnitRunner"
          android:targetPackage="com.android.server.security.talisman"
          android:label="TrustToken Tests"/>

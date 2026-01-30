@@ -137,7 +137,8 @@ public class HearingAidAudioRoutingHelper {
                 status &= setDeviceAsNonDefaultForStrategies(strategies, deviceAttributes);
                 return status;
             }
-            default -> throw new IllegalStateException("Unexpected value: " + routingValue);
+            default -> throw new IllegalArgumentException(
+                    "Unexpected routingValue: " + routingValue);
         }
     }
 

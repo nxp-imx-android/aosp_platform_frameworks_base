@@ -696,7 +696,7 @@ public class AdbDebuggingManager {
             } else {
                 mAdbNetworkMonitor = new AdbBroadcastReceiver(mContext, mAdbConnectionInfo);
             }
-            mAdbdServicesManager = new AdbdServicesManager(mContext);
+            mAdbdServicesManager = new AdbdServicesManager(mContext, "comm");
         }
 
         // Show when at least one device is connected.

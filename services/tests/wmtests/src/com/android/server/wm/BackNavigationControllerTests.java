@@ -793,7 +793,6 @@ public class BackNavigationControllerTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_BACK_CALLBACK_FOR_FOCUSED_SURFACE_CONTROL_VIEW_HOST)
     public void registerCallbackFromEmbeddedWindow() {
         final WindowState window = newWindowBuilder("TestWindow", TYPE_APPLICATION).build();
         addToWindowMap(window, true);

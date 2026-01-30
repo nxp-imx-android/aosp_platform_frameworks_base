@@ -973,9 +973,6 @@ class Session extends IWindowSession.Stub implements IBinder.DeathRecipient {
     @Override
     public void setOnBackInvokedCallbackInfoToEmbedded(InputTransferToken targetInputToken,
             OnBackInvokedCallbackInfo callbackInfo) {
-        if (!Flags.enableBackCallbackForFocusedSurfaceControlViewHost()) {
-            return;
-        }
         final long identity = Binder.clearCallingIdentity();
         if (!mCanAddInternalSystemWindow) {
             // Callers without INTERNAL_SYSTEM_WINDOW permission cannot register

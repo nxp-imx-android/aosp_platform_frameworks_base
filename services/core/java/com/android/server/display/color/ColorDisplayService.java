@@ -1176,7 +1176,7 @@ public final class ColorDisplayService extends SystemService {
     private LocalDateTime getNightDisplayLastActivatedTimeSetting() {
         final ContentResolver cr = getContext().getContentResolver();
         final String lastActivatedTime = Secure.getStringForUser(
-                cr, Secure.NIGHT_DISPLAY_LAST_ACTIVATED_TIME, getContext().getUserId());
+                cr, Secure.NIGHT_DISPLAY_LAST_ACTIVATED_TIME, mCurrentUser);
         if (lastActivatedTime != null) {
             try {
                 return LocalDateTime.parse(lastActivatedTime);

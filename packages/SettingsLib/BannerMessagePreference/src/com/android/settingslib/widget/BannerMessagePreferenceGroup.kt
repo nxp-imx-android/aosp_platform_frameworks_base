@@ -56,6 +56,17 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
     private var collapseKey: String? = null
     private var collapseTitle: CharSequence? = null
     private var collapseIcon: Drawable? = null
+    // Add dismissed preferences
+    private var showDismissedPreferences = false
+    private var isDismissedExpanded = false
+    private var dismissedPreferences = mutableListOf<BannerMessagePreference>()
+    private var expandDismissedPreference: NumberButtonPreference? = null
+    private var collapseDismissedPreference: SectionButtonPreference? = null
+    private var expandDismissedKey: String? = null
+    private var expandDismissedTitle: String? = null
+    private var collapseDismissedKey: String? = null
+    private var collapseDismissedTitle: String? = null
+    private var collapseDismissedIcon: Drawable? = null
 
     /**
      * Number of preferences to always show at the top, even when collapsed.
@@ -67,8 +78,12 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
             updateVisibilities()
             updateCollapsedItemCount()
         }
+
     private val collapsiblePreferenceCount
-        get() = max(childPreferences.size - visiblePreferencesWhenCollapsedCount, 0) + subsectionPreferenceCount
+        get() =
+            max(childPreferences.size - visiblePreferencesWhenCollapsedCount, 0) +
+                subsectionPreferenceCount
+
     private val subsectionPreferenceCount
         get() = subsectionCategory?.preferenceCount ?: 0
 
@@ -78,11 +93,33 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
             expandPreference?.btnContentDescription = expandContentDescription
         }
 
+    var expandDismissedContentDescription: Int = 0
+        set(value) {
+            field = value
+            expandDismissedPreference?.btnContentDescription = expandDismissedContentDescription
+        }
+
     init {
         isPersistent = false // This group doesn't store data
         layoutResource = R.layout.settingslib_banner_message_preference_group
 
         initAttributes(context, attrs, defStyleAttr)
+    }
+
+    // Add preference to the group. If showDismissedPreferences is true and isDismissed is true, add
+    // the preference to the dismissedPreferences list.
+    fun addPreference(preference: Preference, isDismissed: Boolean): Boolean {
+        if (preference !is BannerMessagePreference) {
+            return false
+        }
+        var result: Boolean
+        if (showDismissedPreferences && isDismissed) {
+            addDismissedPreference(preference)
+            result = super.addPreference(preference)
+        } else {
+            result = addPreference(preference)
+        }
+        return result
     }
 
     override fun addPreference(preference: Preference): Boolean {
@@ -112,13 +149,15 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
             childPreferences.remove(preference)
             updateCollapsedItemCount()
             updateVisibilities()
-            return true
+            addDismissedPreference(preference)
+            return super.addPreference(preference)
         }
 
         if (subsectionCategory?.removePreference(preference) == true) {
             updateCollapsedItemCount()
             updateVisibilities()
-            return true
+            addDismissedPreference(preference)
+            return super.addPreference(preference)
         }
 
         return false
@@ -132,6 +171,13 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
         childPreferences.clear()
         updateCollapsedItemCount()
         updateVisibilities()
+        for (i in 0..<dismissedPreferences.size) {
+            val child = dismissedPreferences[i]
+            super.removePreference(child)
+        }
+        dismissedPreferences.clear()
+        expandDismissedPreference?.let { it.count = dismissedPreferences.size }
+        updateDismissedChildrenVisibility()
     }
 
     /** Sets the title of the expand button shown when this group is collapsed. */
@@ -199,11 +245,13 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
             return false
         }
 
-        val wasRemoved = super.removePreferenceRecursively(key)
+        var wasRemoved = super.removePreferenceRecursively(key)
         if (wasRemoved) {
             childPreferences.remove(preference)
             updateCollapsedItemCount()
             updateVisibilities()
+            addDismissedPreference(preference)
+            wasRemoved = super.addPreference(preference)
         }
         return wasRemoved
     }
@@ -213,6 +261,24 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
 
         maybeCreateExpandCollapsePreference()
         updateVisibilities()
+
+        // Add dismissed preferences
+        if (showDismissedPreferences) {
+            maybeCreateExpandCollapseDismissedPreference()
+            updateDismissedChildrenVisibility()
+        }
+    }
+
+    /** Add dismissed preferences if showDismissedPreferences is true. */
+    private fun addDismissedPreference(preference: BannerMessagePreference) {
+        if (!showDismissedPreferences) {
+            return
+        }
+        preference.order = EXPAND_DISMISSED_ORDER + dismissedPreferences.size
+        dismissedPreferences.add(preference)
+        maybeCreateExpandCollapseDismissedPreference()
+        expandDismissedPreference?.let { it.count = dismissedPreferences.size }
+        updateDismissedChildrenVisibility()
     }
 
     private fun maybeCreateExpandCollapsePreference() {
@@ -244,6 +310,38 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
         }
     }
 
+    private fun maybeCreateExpandCollapseDismissedPreference() {
+        if (dismissedPreferences.size > 0) {
+            if (expandDismissedPreference == null) {
+                expandDismissedPreference =
+                    NumberButtonPreference(context).apply {
+                        key = expandDismissedKey
+                        title = expandDismissedTitle
+                        count = dismissedPreferences.size
+                        btnContentDescription = expandDismissedContentDescription
+                        order = EXPAND_DISMISSED_ORDER
+                        clickListener = View.OnClickListener { toggleDismissedExpansion() }
+                    }
+                super.addPreference(expandDismissedPreference!!)
+            }
+            if (collapseDismissedPreference == null) {
+                collapseDismissedPreference =
+                    SectionButtonPreference(context).apply {
+                        key = collapseDismissedKey
+                        title =
+                            if (collapseDismissedTitle == null) collapseTitle
+                            else collapseDismissedTitle
+                        icon =
+                            if (collapseDismissedIcon == null) collapseIcon
+                            else collapseDismissedIcon
+                        order = COLLAPSE_DISMISSED_ORDER
+                        setOnClickListener { toggleDismissedExpansion() }
+                    }
+                super.addPreference(collapseDismissedPreference!!)
+            }
+        }
+    }
+
     private fun updateVisibilities() {
         childPreferences.sortBy { it.order }
         childPreferences.forEachIndexed { i, childBanner ->
@@ -261,9 +359,25 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
         }
     }
 
+    private fun updateDismissedChildrenVisibility() {
+        for (i in 0..<dismissedPreferences.size) {
+            val child = dismissedPreferences[i]
+            child.isVisible = isDismissedExpanded
+        }
+
+        expandDismissedPreference?.isVisible = !isDismissedExpanded && dismissedPreferences.size > 0
+        collapseDismissedPreference?.isVisible =
+            isDismissedExpanded && dismissedPreferences.size > 0
+    }
+
     private fun toggleExpansion() {
         isExpanded = !isExpanded
         updateVisibilities()
+    }
+
+    private fun toggleDismissedExpansion() {
+        isDismissedExpanded = !isDismissedExpanded
+        updateDismissedChildrenVisibility()
     }
 
     private fun initAttributes(context: Context, attrs: AttributeSet?, defStyleAttr: Int) {
@@ -276,6 +390,17 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
             collapseKey = getString(R.styleable.BannerMessagePreferenceGroup_collapseKey)
             collapseTitle = getString(R.styleable.BannerMessagePreferenceGroup_collapseTitle)
             collapseIcon = getDrawable(R.styleable.BannerMessagePreferenceGroup_collapseIcon)
+            showDismissedPreferences =
+                getBoolean(R.styleable.BannerMessagePreferenceGroup_showDismissedPreferences, false)
+            expandDismissedKey = getString(R.styleable.BannerMessagePreferenceGroup_expandDismissedKey)
+            expandDismissedTitle =
+                getString(R.styleable.BannerMessagePreferenceGroup_expandDismissedTitle)
+            collapseDismissedKey =
+                getString(R.styleable.BannerMessagePreferenceGroup_collapseDismissedKey)
+            collapseDismissedTitle =
+                getString(R.styleable.BannerMessagePreferenceGroup_collapseDismissedTitle)
+            collapseDismissedIcon =
+                getDrawable(R.styleable.BannerMessagePreferenceGroup_collapseDismissedIcon)
             recycle()
         }
     }
@@ -286,8 +411,10 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
 
         // Arbitrary large order numbers for the three preferences
         // needed to make sure any Banners are added above them
-        private const val SUBSECTION_ORDER = 98
-        private const val EXPAND_ORDER = 99
-        private const val COLLAPSE_ORDER = 100
+        private const val SUBSECTION_ORDER = 999
+        private const val EXPAND_ORDER = 1000
+        private const val COLLAPSE_ORDER = 2000
+        private const val EXPAND_DISMISSED_ORDER = 10000
+        private const val COLLAPSE_DISMISSED_ORDER = 20000
     }
 }

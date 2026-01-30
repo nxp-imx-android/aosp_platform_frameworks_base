@@ -23,6 +23,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.service.personalcontext.RenderToken;
 import android.service.personalcontext.embedded.IInsightSurfaceVisualizer;
 import android.service.personalcontext.embedded.IVisualizationResult;
 import android.service.personalcontext.embedded.InsightSurfaceClientInfo;
@@ -158,8 +159,9 @@ public class VisualizerConnection {
 
     /** Create a visualization for the given client using the given insights. */
     public void createVisualizationForClient(
-            List<ContextInsight> insights,
+            ContextInsight insight,
             InsightSurfaceClientInfo client,
+            RenderToken renderToken,
             Consumer<Boolean> callback) {
         executeOrDeferAction(() -> {
             if (mVisualizer == null) {
@@ -170,8 +172,9 @@ public class VisualizerConnection {
             }
             try {
                 mVisualizer.createVisualizationForClient(
-                        ContextInsightWrapper.wrapList(insights),
+                        new ContextInsightWrapper(insight),
                         client,
+                        renderToken,
                         new IVisualizationResult.Stub() {
                             @RequiresNoPermission
                             @Override

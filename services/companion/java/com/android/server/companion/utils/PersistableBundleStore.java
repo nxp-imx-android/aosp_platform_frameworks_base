@@ -149,7 +149,7 @@ public abstract class PersistableBundleStore {
     @NonNull
     private PersistableBundle readDataFromDisk(@UserIdInt int userId) {
         final AtomicFile file = getStorageFileForUser(userId);
-        Slog.i(getTag(), "Reading data for user " + userId + " from "
+        Slog.d(getTag(), "Reading data for user " + userId + " from "
                 + "file=" + file.getBaseFile().getPath());
 
         synchronized (file) {
@@ -169,7 +169,7 @@ public abstract class PersistableBundleStore {
     @GuardedBy("mLock")
     private void writeDataToDisk(@UserIdInt int userId, @NonNull PersistableBundle data) {
         final AtomicFile file = getStorageFileForUser(userId);
-        Slog.i(getTag(), "Writing data for user " + userId + " to file="
+        Slog.d(getTag(), "Writing data for user " + userId + " to file="
                 + file.getBaseFile().getPath());
 
         synchronized (file) {

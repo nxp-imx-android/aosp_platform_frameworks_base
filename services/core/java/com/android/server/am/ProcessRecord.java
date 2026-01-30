@@ -624,7 +624,7 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
         mErrorState = new ProcessErrorStateRecord(this);
         mWindowProcessController = new WindowProcessController(
                 mService.mActivityTaskManager, info, processName, uid, userId, this, this);
-        mMemoryLimiter = mService.newMemoryLimiter(getPackageName());
+        mMemoryLimiter = mService.newMemoryLimiter();
 
         mOptRecord = new ProcessCachedOptimizerRecord(this);
         final long now = SystemClock.uptimeMillis();

@@ -20,6 +20,7 @@ import android.annotation.CallbackExecutor;
 import android.annotation.DurationMillisLong;
 import android.annotation.IntDef;
 import android.annotation.IntRange;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Notification;
 import android.app.PendingIntent;
@@ -360,6 +361,7 @@ public final class ComputerControlSession implements AutoCloseable {
      *
      * @see ScreenshotException
      */
+    @SuppressLint("SamShouldBeLast")
     public void requestScreenshot(@NonNull @CallbackExecutor Executor executor,
             @NonNull OutcomeReceiver<Image, ScreenshotException> receiver,
             @Nullable CancellationSignal cancellationSignal) {
@@ -439,6 +441,8 @@ public final class ComputerControlSession implements AutoCloseable {
 
     /**
      * Returns an {@link InteractiveMirror} which mirrors this {@link ComputerControlSession}.
+     *
+     * @hide
      */
     public InteractiveMirror createInteractiveMirror() {
         return mSession.createInteractiveMirror();
@@ -630,6 +634,7 @@ public final class ComputerControlSession implements AutoCloseable {
          * none is set.
          *
          * @see Builder#setPreviewIntent(PendingIntent)
+         * @hide
          */
         @Nullable
         public PendingIntent getPreviewIntent() {

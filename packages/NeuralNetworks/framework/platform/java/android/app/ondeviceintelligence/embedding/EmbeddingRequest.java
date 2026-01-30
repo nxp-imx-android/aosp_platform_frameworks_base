@@ -23,6 +23,11 @@ import android.app.ondeviceintelligence.flags.Flags;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import android.app.ondeviceintelligence.Content;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -33,23 +38,23 @@ import java.util.Objects;
 @SystemApi
 @FlaggedApi(Flags.FLAG_ON_DEVICE_INTELLIGENCE_26Q2)
 public final class EmbeddingRequest implements Parcelable {
-    private final String mText;
+    private final List<Content> mContent;
 
     /**
      * Constructs a new {@link EmbeddingRequest} with the given payload.
      *
-     * @param text The input text to generate embeddings for.
+     * @param content The input list of content to generate embeddings for.
      */
-    public EmbeddingRequest(@NonNull String text) {
-        mText = Objects.requireNonNull(text);
+    public EmbeddingRequest(@NonNull List<Content> content) {
+        mContent = Collections.unmodifiableList(new ArrayList<>(Objects.requireNonNull(content)));
     }
 
     /**
-     * Returns the text input associated with this request.
+     * Returns the list of content for which embeddings are requested.
      */
     @NonNull
-    public String getText() {
-        return mText;
+    public List<Content> getContent() {
+        return mContent;
     }
 
     @Override
@@ -59,7 +64,7 @@ public final class EmbeddingRequest implements Parcelable {
 
     @Override
     public void writeToParcel(@NonNull Parcel dest, int flags) {
-        dest.writeString8(mText);
+        dest.writeTypedList(mContent);
     }
 
     public static final @NonNull Creator<EmbeddingRequest> CREATOR =
@@ -76,6 +81,6 @@ public final class EmbeddingRequest implements Parcelable {
             };
 
     private EmbeddingRequest(Parcel in) {
-        mText = in.readString8();
+        mContent = in.createTypedArrayList(Content.CREATOR);
     }
 }

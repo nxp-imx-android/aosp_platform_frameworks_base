@@ -155,7 +155,7 @@ public class MemoryLimiterTest {
         // file is parsed.  To simplify life, this method accepts the basename of the
         // configuration file.  It quietly prepends the path component.
         EventCounter(int expected, String config) {
-            super((config != null) ? DATA_DIR + config : null);
+            super((config != null) ? DATA_DIR + config : null, null);
             mLatch = new CountDownLatch(expected);
         }
 
@@ -177,12 +177,11 @@ public class MemoryLimiterTest {
         }
 
         // Match the n'th event.  Fail the test if there is no match.
-        void expect(int index, int pid, int uid, int limit, String pkg) {
+        void expect(int index, int pid, int uid, int limit) {
             final Event event = mEvents.get(index);
             assertThat(event.pid).isEqualTo(pid);
             assertThat(event.uid).isEqualTo(uid);
             assertThat(event.limit).isEqualTo(limit);
-            assertThat(event.pkg).isEqualTo(pkg);
         }
 
         // Get the memory limit for the process state.  Use one of the process states above.
@@ -328,7 +327,7 @@ public class MemoryLimiterTest {
     public void testLimiter() throws Exception {
         try (EventCounter counter = new EventCounter(1)) {
             try (MemoryLimiter controller = new MemoryLimiter(counter)) {
-                MemoryLimiter.Limiter limiter = controller.newLimiter(HELPER);
+                MemoryLimiter.Limiter limiter = controller.newLimiter();
 
                 int pid = prepareHelper(mUid);
                 limiter.setUid(mUid);
@@ -341,7 +340,7 @@ public class MemoryLimiterTest {
 
                 // There should be exactly one event in the counter.
                 assertThat(counter.eventCount()).isEqualTo(1);
-                counter.expect(0, pid, mUid, MemoryLimiter.MEMORY_LIMIT_TYPE, HELPER);
+                counter.expect(0, pid, mUid, MemoryLimiter.MEMORY_LIMIT_TYPE);
             }
         }
     }
@@ -351,7 +350,7 @@ public class MemoryLimiterTest {
     public void testLimiterAfter() throws Exception {
         try (EventCounter counter = new EventCounter(1)) {
             try (MemoryLimiter controller = new MemoryLimiter(counter)) {
-                MemoryLimiter.Limiter limiter = controller.newLimiter(HELPER);
+                MemoryLimiter.Limiter limiter = controller.newLimiter();
 
                 int pid = prepareHelper(mUid);
                 limiter.setUid(mUid);
@@ -364,7 +363,7 @@ public class MemoryLimiterTest {
 
                 // There should be exactly one event in the counter.
                 assertThat(counter.eventCount()).isEqualTo(1);
-                counter.expect(0, pid, mUid, MemoryLimiter.MEMORY_LIMIT_TYPE, HELPER);
+                counter.expect(0, pid, mUid, MemoryLimiter.MEMORY_LIMIT_TYPE);
             }
         }
     }
@@ -374,7 +373,7 @@ public class MemoryLimiterTest {
     public void testNullPackage() throws Exception {
         try (EventCounter counter = new EventCounter(1)) {
             try (MemoryLimiter controller = new MemoryLimiter(counter)) {
-                MemoryLimiter.Limiter limiter = controller.newLimiter(null);
+                MemoryLimiter.Limiter limiter = controller.newLimiter();
 
                 int pid = prepareHelper(mUid);
                 limiter.setUid(mUid);
@@ -387,7 +386,7 @@ public class MemoryLimiterTest {
 
                 // There should be exactly one event in the counter.
                 assertThat(counter.eventCount()).isEqualTo(1);
-                counter.expect(0, pid, mUid, MemoryLimiter.MEMORY_LIMIT_TYPE, null);
+                counter.expect(0, pid, mUid, MemoryLimiter.MEMORY_LIMIT_TYPE);
             }
         }
     }
@@ -397,7 +396,7 @@ public class MemoryLimiterTest {
     public void testEmptyPackage() throws Exception {
         try (EventCounter counter = new EventCounter(1)) {
             try (MemoryLimiter controller = new MemoryLimiter(counter)) {
-                MemoryLimiter.Limiter limiter = controller.newLimiter("");
+                MemoryLimiter.Limiter limiter = controller.newLimiter();
 
                 int pid = prepareHelper(mUid);
                 limiter.setUid(mUid);
@@ -410,7 +409,7 @@ public class MemoryLimiterTest {
 
                 // There should be exactly one event in the counter.
                 assertThat(counter.eventCount()).isEqualTo(1);
-                counter.expect(0, pid, mUid, MemoryLimiter.MEMORY_LIMIT_TYPE, "");
+                counter.expect(0, pid, mUid, MemoryLimiter.MEMORY_LIMIT_TYPE);
             }
         }
     }
@@ -466,14 +465,13 @@ public class MemoryLimiterTest {
      * checked.
      */
     @RequiresFlagsEnabled({Flags.FLAG_MEMORY_LIMITER_ENABLE,
-            Flags.FLAG_MEMORY_LIMITER_DEFAULT_APP_LIMITS,
-            Flags.FLAG_MEMORY_LIMITER_TRIGGER})
+            Flags.FLAG_MEMORY_LIMITER_DEFAULT_APP_LIMITS})
     @Test
     public void testOperation() throws Exception {
         // Use the default "enabled" controller to fetch the limit.  There is no need for a full
         // MemoryLimiter.
         final long expectedLimit;
-        try (MemoryLimiter.Controller controller = new MemoryLimiter.ControllerEnabled()) {
+        try (MemoryLimiter.Controller controller = new MemoryLimiter.ControllerEnabled(null)) {
             expectedLimit = controller.getStateLimit(ActivityManager.PROCESS_STATE_TOP);
         }
 
@@ -504,7 +502,7 @@ public class MemoryLimiterTest {
 
         try (EventCounter counter = new EventCounter(1)) {
             try (MemoryLimiter controller = new MemoryLimiter(counter)) {
-                MemoryLimiter.Limiter limiter = controller.newLimiter("");
+                MemoryLimiter.Limiter limiter = controller.newLimiter();
 
                 int pid = prepareHelper(mUid);
                 limiter.setUid(mUid);
@@ -528,7 +526,7 @@ public class MemoryLimiterTest {
 
                 // There should be exactly one event in the counter.
                 assertThat(counter.eventCount()).isEqualTo(1);
-                counter.expect(0, pid, mUid, MemoryLimiter.MEMORY_LIMIT_TYPE, "");
+                counter.expect(0, pid, mUid, MemoryLimiter.MEMORY_LIMIT_TYPE);
             }
         }
     }

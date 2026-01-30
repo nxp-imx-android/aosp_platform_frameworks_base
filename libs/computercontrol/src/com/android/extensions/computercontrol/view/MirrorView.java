@@ -193,6 +193,7 @@ public class MirrorView extends FrameLayout {
         mMirrorSurface.setCornerRadius(cornerRadius);
     }
 
+    /** @hide */
     @Override
     public void onMovedToDisplay(int displayId, Configuration config) {
         if (mIsMirrorSurfaceCreated) {

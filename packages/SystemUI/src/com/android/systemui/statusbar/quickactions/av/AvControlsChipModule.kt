@@ -20,6 +20,7 @@ import android.view.Display
 import com.android.systemui.Flags
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
+import com.android.systemui.dagger.qualifiers.Default
 import com.android.systemui.statusbar.quickactions.av.domain.interactor.AvControlsChipInteractor
 import com.android.systemui.statusbar.quickactions.av.domain.interactor.AvControlsChipInteractorImpl
 import com.android.systemui.statusbar.quickactions.av.domain.interactor.NoOpAvControlsChipInteractor
@@ -33,7 +34,9 @@ import kotlinx.coroutines.CoroutineScope
 class AvControlsChipModule {
 
     /** Provides an [AvControlsChipInteractor] based on whether is is enabled by a flag */
+    @Deprecated("Don't use this dependency directly. Annotate your dependency with @DisplayAware")
     @Provides
+    @Default
     @SysUISingleton
     fun provideAvControlsChipInteractor(
         @Background backgroundScope: CoroutineScope,

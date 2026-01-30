@@ -17,27 +17,50 @@
 package com.android.server.privatecompute;
 
 import static android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT;
+
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import android.app.privatecompute.DataMigrationToPccService;
+import android.app.privatecompute.IDataMigrationToPccService;
+import android.app.privatecompute.IMigrationRequestResultReceiver;
+import android.app.privatecompute.IMigrationRequestResultSender;
+import android.app.privatecompute.MigrationRequestResult;
+import android.app.privatecompute.MigrationRequestResultReceiver;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManagerInternal;
+import android.content.pm.ResolveInfo;
+import android.content.pm.ServiceInfo;
+import android.os.Handler;
 import android.os.PersistableBundle;
 import android.os.Process;
 import android.os.UserHandle;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
+
 import androidx.test.runner.AndroidJUnit4;
+
 import com.android.server.LocalServices;
 import com.android.server.privatecompute.PccSandboxManagerServiceImpl.Injector;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
@@ -49,6 +72,7 @@ public class PccSandboxManagerServiceImplTest {
     private static final int TEST_UID = 10123;
     private static final String TEST_PACKAGE_NAME = "com.example.foo";
     private static final String ANOTHER_PACKAGE_NAME = "com.example.bar";
+    private static final String TEST_SERVICE_CLASS = "com.example.foo.MigrationService";
 
     @Rule
     public final CheckFlagsRule mCheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule();
@@ -59,6 +83,10 @@ public class PccSandboxManagerServiceImplTest {
     @Mock private PackageManager mPackageManager;
 
     @Mock private PackageManagerInternal mPackageManagerInternal;
+    @Mock
+    private Handler mHandler;
+    @Mock
+    private IMigrationRequestResultReceiver mCallback;
 
     @Mock private Injector mInjector;
 
@@ -69,6 +97,8 @@ public class PccSandboxManagerServiceImplTest {
         when(mContext.getPackageManager()).thenReturn(mPackageManager);
         LocalServices.removeServiceForTest(PackageManagerInternal.class);
         LocalServices.addService(PackageManagerInternal.class, mPackageManagerInternal);
+        when(mInjector.getCallingUid()).thenReturn(TEST_UID);
+        when(mInjector.getHandler(any())).thenReturn(mHandler);
         mService = new PccSandboxManagerServiceImpl(mContext, mInjector);
     }
 
@@ -199,5 +229,132 @@ public class PccSandboxManagerServiceImplTest {
                 .thenReturn(true);
 
         assertTrue(mService.writeToAuditLogInternal(new PersistableBundle(), TEST_PACKAGE_NAME));
+    }
+
+    @Test
+    public void testStartNonPccProcessForDataMigration_success() throws Exception {
+        setupMigrationService(true);
+
+        // Mock the binder interface
+        IDataMigrationToPccService.Stub mockBinder = mock(IDataMigrationToPccService.Stub.class);
+        IDataMigrationToPccService mockInterface = mock(IDataMigrationToPccService.class);
+        when(mockBinder.queryLocalInterface(any())).thenReturn(mockInterface);
+
+        // Capture the ServiceConnection
+        ArgumentCaptor<ServiceConnection> connectionCaptor =
+                ArgumentCaptor.forClass(ServiceConnection.class);
+        when(mContext.bindServiceAsUser(any(), connectionCaptor.capture(), anyInt(), any()))
+                .thenReturn(true);
+
+        mService.startNonPccProcessForDataMigration(mCallback);
+
+        // Verify bind
+        verify(mContext).bindServiceAsUser(any(), any(), eq(Context.BIND_AUTO_CREATE),
+                eq(UserHandle.getUserHandleForUid(TEST_UID)));
+
+        // Simulate connection
+        connectionCaptor.getValue().onServiceConnected(new ComponentName(TEST_PACKAGE_NAME,
+                TEST_SERVICE_CLASS), mockBinder);
+
+        // Capture the completion callback passed to the service
+        ArgumentCaptor<IMigrationRequestResultSender> completionCallbackCaptor =
+                ArgumentCaptor.forClass(IMigrationRequestResultSender.class);
+        verify(mockInterface).onMigrationRequested(completionCallbackCaptor.capture());
+
+        // Simulate completion
+        MigrationRequestResult result = new MigrationRequestResult(
+                MigrationRequestResult.MIGRATION_REQUEST_ACCEPTED, PersistableBundle.EMPTY);
+        completionCallbackCaptor.getValue().sendResult(result);
+
+        // Verify callback called
+        verify(mCallback).onResult(result);
+
+        // Verify unbind
+        verify(mContext).unbindService(connectionCaptor.getValue());
+    }
+
+    @Test
+    public void testStartNonPccProcessForDataMigration_noPackageForUid() throws Exception {
+        when(mPackageManager.getPackagesForUid(TEST_UID)).thenReturn(null);
+
+        mService.startNonPccProcessForDataMigration(mCallback);
+
+        verify(mCallback).onError(eq(MigrationRequestResultReceiver.ERROR_INVOCATION_FAILED),
+                anyString());
+    }
+
+    @Test
+    public void testStartNonPccProcessForDataMigration_noService() throws Exception {
+        when(mPackageManager.getPackagesForUid(TEST_UID)).thenReturn(
+                new String[]{TEST_PACKAGE_NAME});
+        when(mPackageManager.resolveService(any(), anyInt())).thenReturn(null);
+
+        mService.startNonPccProcessForDataMigration(mCallback);
+
+        verify(mCallback).onError(eq(MigrationRequestResultReceiver.ERROR_INVOCATION_FAILED),
+                anyString());
+        verify(mContext, never()).bindServiceAsUser(any(), any(), anyInt(), any());
+    }
+
+    @Test
+    public void testStartNonPccProcessForDataMigration_missingPermission() throws Exception {
+        setupMigrationService(false);
+
+        mService.startNonPccProcessForDataMigration(mCallback);
+
+        verify(mCallback).onError(eq(MigrationRequestResultReceiver.ERROR_INVOCATION_FAILED),
+                anyString());
+    }
+
+    @Test
+    public void testStartNonPccProcessForDataMigration_timeout() throws Exception {
+        setupMigrationService(true);
+
+        // Mock the binder interface
+        IDataMigrationToPccService.Stub mockBinder = mock(IDataMigrationToPccService.Stub.class);
+        IDataMigrationToPccService mockInterface = mock(IDataMigrationToPccService.class);
+        when(mockBinder.queryLocalInterface(any())).thenReturn(mockInterface);
+
+        // Capture the ServiceConnection
+        ArgumentCaptor<ServiceConnection> connectionCaptor =
+                ArgumentCaptor.forClass(ServiceConnection.class);
+        when(mContext.bindServiceAsUser(any(), connectionCaptor.capture(), anyInt(), any()))
+                .thenReturn(true);
+
+        // Capture the runnable passed to postDelayed
+        ArgumentCaptor<Runnable> runnableCaptor = ArgumentCaptor.forClass(Runnable.class);
+        when(mHandler.postDelayed(runnableCaptor.capture(),
+                eq(DataMigrationToPccService.MIGRATION_TIMEOUT_MS))).thenReturn(true);
+
+        mService.startNonPccProcessForDataMigration(mCallback);
+
+        // Simulate connection
+        connectionCaptor.getValue().onServiceConnected(new ComponentName(TEST_PACKAGE_NAME,
+                TEST_SERVICE_CLASS), mockBinder);
+
+        // Run the timeout runnable
+        runnableCaptor.getValue().run();
+
+        // Verify onError called
+        verify(mCallback).onError(eq(MigrationRequestResultReceiver.ERROR_TIMEOUT), anyString());
+
+        // Verify unbind
+        verify(mContext).unbindService(connectionCaptor.getValue());
+    }
+
+    private void setupMigrationService(boolean hasPermission) {
+        when(mPackageManager.getPackagesForUid(TEST_UID)).thenReturn(
+                new String[]{TEST_PACKAGE_NAME});
+
+        ResolveInfo resolveInfo = new ResolveInfo();
+        resolveInfo.serviceInfo = new ServiceInfo();
+        resolveInfo.serviceInfo.packageName = TEST_PACKAGE_NAME;
+        resolveInfo.serviceInfo.name = TEST_SERVICE_CLASS;
+        if (hasPermission) {
+            resolveInfo.serviceInfo.permission =
+                    "android.permission.BIND_DATA_MIGRATION_FOR_PRIVATECOMPUTE";
+        }
+
+        when(mPackageManager.resolveService(any(), anyInt())).thenReturn(resolveInfo);
     }
 }

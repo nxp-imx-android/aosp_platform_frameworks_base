@@ -75,6 +75,8 @@ public class BrightnessPowerModifierTest {
     @Mock
     private IBinder mMockBinder;
     @Mock
+    private IThermalService mMockThermalService;
+    @Mock
     private BrightnessClamperController.ClamperChangeListener mMockClamperChangeListener;
     private final FakeDeviceConfigInterface mFakeDeviceConfigInterface =
             new FakeDeviceConfigInterface();
@@ -177,7 +179,6 @@ public class BrightnessPowerModifierTest {
         onDisplayChanged(
                 List.of(new ThrottlingLevel(PowerManager.THERMAL_STATUS_LIGHT, powerQuota)));
         mTestInjector.mCapturedPmicMonitor.setAvgPowerConsumed(avgPowerConsumed);
-
 
         float expectedBrightnessCap = (powerQuota / avgPowerConsumed) * DEFAULT_BRIGHTNESS;
         mTestHandler.flush();
@@ -304,6 +305,11 @@ public class BrightnessPowerModifierTest {
             mCapturedPmicMonitor = new TestPmicMonitor(listener, thermalService,
                     maxPollingTimeMillis, minPollingTimeMillis);
             return mCapturedPmicMonitor;
+        }
+
+        @Override
+        IThermalService getThermalService() {
+            return mMockThermalService;
         }
 
         @Override

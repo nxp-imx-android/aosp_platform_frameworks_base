@@ -15,6 +15,9 @@
  */
 package com.android.server.pm;
 
+import static android.content.pm.SigningDetails.SignatureSchemeMinorVersion.MINOR_VERSION_32_HYBRID;
+import static android.content.pm.SigningDetails.SignatureSchemeMinorVersion.MINOR_VERSION_DEFAULT;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -372,6 +375,20 @@ public class PackageSignaturesTest {
         }
     }
 
+    @Test
+    public void testReadXmlWithSigningLineageAndHybridMinorScheme() throws Exception {
+        // Verifies a package signed with the hybrid signature scheme returns the expected signers
+        // in the lineage as well as the v3.2 major / minor scheme version.
+        // Note, this test modifies the existing three-signers-in-lineage.xml file to include the
+        // additional schemeMinorVersion tag used in a v3.2 sigs tag; a real hybrid signed package
+        // can't use two classical signatures, but the DER encoding of an ML-DSA X.509 is
+        // prohibitively large to store in a test class.
+        verifyReadXmlReturnsExpectedSignaturesAndLineage(
+                "xml/three-signers-in-lineage-hybrid-minor-scheme-version.xml", 3,
+                MINOR_VERSION_32_HYBRID, FIRST_EXPECTED_SIGNATURE, SECOND_EXPECTED_SIGNATURE,
+                THIRD_EXPECTED_SIGNATURE);
+    }
+
     /**
      * Verifies reading the sigs tag of the provided XML file returns the specified signature scheme
      * version and the provided signatures.
@@ -395,6 +412,18 @@ public class PackageSignaturesTest {
      */
     private void verifyReadXmlReturnsExpectedSignaturesAndLineage(String xmlFile,
             int schemeVersion, String... expectedSignatureValues) throws Exception {
+        verifyReadXmlReturnsExpectedSignaturesAndLineage(xmlFile, schemeVersion,
+                MINOR_VERSION_DEFAULT, expectedSignatureValues);
+    }
+
+    /**
+     * Verifies reading the sigs tag of the provided XML file returns the specified signature {@code
+     * schemeVersion} and {@code schemeMinorVersion}, the provided {@code expectedSignatures}, and
+     * the previous signers have the expected capabilities as defined in {@link
+     * #SIGNATURE_TO_CAPABILITY_MAP}.
+     */
+    private void verifyReadXmlReturnsExpectedSignaturesAndLineage(String xmlFile, int schemeVersion,
+            int schemeMinorVersion, String... expectedSignatureValues) throws Exception {
         TypedXmlPullParser parser = getXMLFromResources(xmlFile);
         ArrayList<Signature> signatures = new ArrayList<>();
         mPackageSetting.getSignatures().readXml(parser, signatures);
@@ -402,6 +431,9 @@ public class PackageSignaturesTest {
         verifySignaturesContainExpectedValues(signatures, expectedSignatures);
         assertEquals("The returned signature scheme is not the expected value", schemeVersion,
                 mPackageSetting.getSigningDetails().getSignatureSchemeVersion());
+        assertEquals("The returned signature scheme minor version is not the expected value",
+                schemeMinorVersion,
+                mPackageSetting.getSigningDetails().getSignatureSchemeMinorVersion());
         for (Signature signature : signatures) {
             String signatureValue = HexDump.toHexString(signature.toByteArray(), false);
             int expectedCapabilities = SIGNATURE_TO_CAPABILITY_MAP.get(signatureValue);

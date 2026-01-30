@@ -58,13 +58,14 @@ import java.util.function.Consumer;
 
 /**
  * Abstract base class for performing check content in a sandboxed process. It should implement
- * the function {@link ContentSafetySandboxedService#onLoadFeature}, and
- * {@link ContentSafetySandboxedService#onCheckContent}.
+ * the function {@link ContentSafetySandboxedService#onLoadFeatureRequest}, and
+ * {@link ContentSafetySandboxedService#onCheckContentRequest}.
  *
- * When an app calls the API {@link  ContentSafetyManager#checkContent}, the system service will
- * call the following methods respectively:
- *  {@link ContentSafetyService#onGetFeature}, {@link ContentSafetySandboxedService#onLoadFeature},
- *  and then {@link ContentSafetySandboxedService#onCheckContent}.
+ * When an app calls the API {@link  ContentSafetyManager#requestCheckContent}, the system service
+ * will call the following methods respectively:
+ *  {@link ContentSafetyService#requestOnGetFeature},
+ *  {@link ContentSafetySandboxedService#onLoadFeatureRequest},
+ *  and then {@link ContentSafetySandboxedService#onCheckContentRequest}.
  *
  * <pre>
  *     {@literal
@@ -110,7 +111,7 @@ public abstract class ContentSafetySandboxedService extends Service {
         if (SERVICE_INTERFACE.equals(intent.getAction())) {
             return new IContentSafetySandboxedService.Stub() {
                 @Override
-                public void checkContent(
+                public void requestCheckContent(
                         int featureType,
                         Bundle input,
                         AndroidFuture cancellationSignalFuture,
@@ -125,7 +126,7 @@ public abstract class ContentSafetySandboxedService extends Service {
 
                     mHandler.executeOrSendMessage(
                             obtainMessage(
-                                    ContentSafetySandboxedService::onCheckContent,
+                                    ContentSafetySandboxedService::onCheckContentRequest,
                                     ContentSafetySandboxedService.this,
                                     featureType,
                                     unpackMapFromPayloadBundle(input),
@@ -141,7 +142,7 @@ public abstract class ContentSafetySandboxedService extends Service {
                 }
 
                 @Override
-                public void loadFeature(
+                public void requestLoadFeature(
                         Bundle feature,
                         AndroidFuture cancellationSignalFuture,
                         ILoadFeatureCallback callback) {
@@ -156,7 +157,7 @@ public abstract class ContentSafetySandboxedService extends Service {
 
                     mHandler.executeOrSendMessage(
                             obtainMessage(
-                                    ContentSafetySandboxedService::onLoadFeature,
+                                    ContentSafetySandboxedService::onLoadFeatureRequest,
                                     ContentSafetySandboxedService.this,
                                     unpackMapFromFeatureBundle(feature),
                                     CancellationSignal.fromTransport(transport),
@@ -204,7 +205,7 @@ public abstract class ContentSafetySandboxedService extends Service {
 
 
     /**
-     * Invoked by {@link ContentSafetyManager#checkContent}.
+     * Invoked by {@link ContentSafetyManager#requestCheckContent}.
      * The caller wants to check the provided content input against
      * featureType to ensure content is safe.
      *
@@ -220,7 +221,7 @@ public abstract class ContentSafetySandboxedService extends Service {
      *      the order of the input files.
      */
     @RequiresPermission(android.Manifest.permission.CHECK_CONTENT_SAFETY)
-    public abstract void onCheckContent(
+    public abstract void onCheckContentRequest(
             int featureType,
             @NonNull @CheckContentParams Map<Integer, List<ParcelFileDescriptor>> contentPayloadMap,
             @Nullable CancellationSignal cancellationSignal,
@@ -237,7 +238,7 @@ public abstract class ContentSafetySandboxedService extends Service {
      * @param callback callback to populate if LoadFeature is succeeded or failed.
      */
     @RequiresPermission(android.Manifest.permission.CHECK_CONTENT_SAFETY)
-    public abstract void onLoadFeature(
+    public abstract void onLoadFeatureRequest(
             @NonNull @CheckLoadFeatureParams Map<String, ParcelFileDescriptor> features,
             @Nullable CancellationSignal cancellationSignal,
             @NonNull OutcomeReceiver<Void, ContentSafetyException> callback);

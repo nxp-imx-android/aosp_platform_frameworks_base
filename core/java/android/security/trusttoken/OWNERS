@@ -1,3 +1,9 @@
 # Bug component: 1769055
 
-include /core/java/android/security/talisman/OWNERS
+dkrahn@google.com
+dlm@google.com
+nwadih@google.com
+yukl@google.com
+rosswu@google.com
+crccw@google.com
+lukelee@google.com

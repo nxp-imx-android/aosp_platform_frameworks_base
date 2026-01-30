@@ -40,6 +40,9 @@ import android.hardware.tv.mediaquality.SoundStyle;
 import android.hardware.tv.mediaquality.StreamStatus;
 import android.hardware.tv.mediaquality.ThreeDMode;
 import android.hardware.tv.mediaquality.VendorParamCapability;
+import android.media.quality.EqualizerBand;
+import android.media.quality.EqualizerCapabilities;
+import android.media.quality.EqualizerSettings;
 import android.media.quality.MediaQualityContract;
 import android.media.quality.MediaQualityContract.BaseParameters;
 import android.media.quality.MediaQualityContract.PictureQuality;
@@ -173,7 +176,7 @@ public final class MediaQualityUtils {
             SoundQuality.PARAMETER_BASS,
             SoundQuality.PARAMETER_TREBLE,
             SoundQuality.PARAMETER_SURROUND_SOUND,
-            SoundQuality.PARAMETER_EQUALIZER_DETAIL,
+            SoundQuality.PARAMETER_EQUALIZER_SETTINGS,
             SoundQuality.PARAMETER_SPEAKERS,
             SoundQuality.PARAMETER_SPEAKERS_DELAY_MILLIS,
             SoundQuality.PARAMETER_EARC,
@@ -2429,7 +2432,7 @@ public final class MediaQualityUtils {
         if (nameMap.contains(SoundQuality.PARAMETER_SURROUND_SOUND)) {
             bytes.add(ParameterName.SURROUND_SOUND_ENABLED);
         }
-        if (nameMap.contains(SoundQuality.PARAMETER_EQUALIZER_DETAIL)) {
+        if (nameMap.contains(SoundQuality.PARAMETER_EQUALIZER_SETTINGS)) {
             bytes.add(ParameterName.EQUALIZER_DETAIL);
         }
         if (nameMap.contains(SoundQuality.PARAMETER_SPEAKERS)) {
@@ -2677,7 +2680,7 @@ public final class MediaQualityUtils {
         parameterNameMap.put(ParameterName.SURROUND_SOUND_ENABLED,
                 SoundQuality.PARAMETER_SURROUND_SOUND);
         parameterNameMap.put(ParameterName.EQUALIZER_DETAIL,
-                SoundQuality.PARAMETER_EQUALIZER_DETAIL);
+                SoundQuality.PARAMETER_EQUALIZER_SETTINGS);
         parameterNameMap.put(ParameterName.SPEAKERS_ENABLED, SoundQuality.PARAMETER_SPEAKERS);
         parameterNameMap.put(ParameterName.SPEAKERS_DELAY_MS,
                 SoundQuality.PARAMETER_SPEAKERS_DELAY_MILLIS);
@@ -2731,6 +2734,93 @@ public final class MediaQualityUtils {
         String name = vendorParamNameParcel.readString();
         vendorParamNameParcel.recycle();
         return name;
+    }
+
+    /**
+     * Converts HAL EqualizerCapabilities to framework EqualizerCapabilities.
+     */
+    public static EqualizerCapabilities convertToFrameworkEqualizerCapabilities(
+            android.hardware.tv.mediaquality.EqualizerCapabilities halCaps) {
+        if (halCaps == null) {
+            return null;
+        }
+        // convert int array to list
+        List<Integer> freqList = new ArrayList<>();
+        if (halCaps.supportedFrequenciesHz != null) {
+            for (int freq : halCaps.supportedFrequenciesHz) {
+                freqList.add(freq);
+            }
+        }
+        return new EqualizerCapabilities(
+                halCaps.minLevelDb,
+                halCaps.maxLevelDb,
+                freqList,
+                halCaps.hasAdjustableQ);
+    }
+
+    /**
+     * Converts HAL EqualizerDetail to framework EqualizerSettings.
+     */
+    public static EqualizerSettings convertToFrameworkEqualizerSettings(
+            android.hardware.tv.mediaquality.EqualizerDetail halDetail) {
+        if (halDetail == null) {
+            return null;
+        }
+
+        List<EqualizerBand> frameworkBands = new ArrayList<>();
+        if (halDetail.bands != null) {
+            for (android.hardware.tv.mediaquality.EqualizerBand halBand : halDetail.bands) {
+                if (halBand != null) {
+                    frameworkBands.add(new EqualizerBand(
+                            halBand.frequencyHz,
+                            halBand.gainDb,
+                            halBand.qFactor
+                    ));
+                }
+            }
+        }
+
+        //TODO: add the pre-defined band
+        return new EqualizerSettings.Builder()
+                .setBands(frameworkBands)
+                .build();
+    }
+
+    /**
+     * Converts framework EqualizerSettings to HAL EqualizerDetail.
+     */
+    public static android.hardware.tv.mediaquality.EqualizerDetail convertToHalEqualizerDetail(
+            EqualizerSettings frameworkSettings) {
+        if (frameworkSettings == null) {
+            return null;
+        }
+
+        android.hardware.tv.mediaquality.EqualizerDetail halDetail =
+                new android.hardware.tv.mediaquality.EqualizerDetail();
+
+        //TODO: map pre-defined bands
+        List<EqualizerBand> frameworkBands = frameworkSettings.getBands();
+        if (!frameworkBands.isEmpty()) {
+            int size = frameworkBands.size();
+            halDetail.bands = new android.hardware.tv.mediaquality.EqualizerBand[size];
+
+            for (int i = 0; i < size; i++) {
+                EqualizerBand fBand = frameworkBands.get(i);
+                android.hardware.tv.mediaquality.EqualizerBand hBand =
+                        new android.hardware.tv.mediaquality.EqualizerBand();
+
+                if (fBand != null) {
+                    hBand.frequencyHz = fBand.getFrequencyHz();
+                    hBand.gainDb = fBand.getGainDb();
+                    hBand.qFactor = fBand.getQFactor();
+                }
+                halDetail.bands[i] = hBand;
+            }
+        } else {
+            halDetail.bands = new android.hardware.tv.mediaquality.EqualizerBand[0];
+        }
+
+        return halDetail;
     }
 
     /**

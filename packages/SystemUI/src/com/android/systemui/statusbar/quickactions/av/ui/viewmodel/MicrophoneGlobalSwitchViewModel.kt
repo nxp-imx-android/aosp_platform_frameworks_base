@@ -16,7 +16,7 @@
 
 package com.android.systemui.statusbar.quickactions.av.ui.viewmodel
 
-import androidx.compose.runtime.getValue
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.statusbar.quickactions.av.domain.interactor.AvControlsChipInteractor
 import dagger.assisted.AssistedFactory
@@ -25,7 +25,7 @@ import kotlinx.coroutines.flow.map
 
 class MicrophoneGlobalSwitchViewModel
 @AssistedInject
-constructor(private val avControlsChipInteractor: AvControlsChipInteractor) :
+constructor(@DisplayAware private val avControlsChipInteractor: AvControlsChipInteractor) :
     ButtonViewModel, HydratedActivatable() {
 
     override val state by

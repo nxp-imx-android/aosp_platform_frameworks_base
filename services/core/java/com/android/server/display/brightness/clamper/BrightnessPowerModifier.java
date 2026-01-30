@@ -124,7 +124,7 @@ class BrightnessPowerModifier implements BrightnessStateModifier,
         if (mPowerThrottlingConfigData != null) {
             mCustomAnimationRateDeviceConfig = mPowerThrottlingConfigData.customAnimationRate;
         }
-        mThermalLevelListener = new ThermalLevelListener(handler);
+        mThermalLevelListener = new ThermalLevelListener(handler, injector.getThermalService());
         mPmicMonitor =
             injector.getPmicMonitor(this::recalculatePowerQuotaChange,
                     mThermalLevelListener.getThermalService(),
@@ -388,11 +388,10 @@ class BrightnessPowerModifier implements BrightnessStateModifier,
         private IThermalService mThermalService;
         private boolean mStarted;
 
-        ThermalLevelListener(Handler handler) {
+        ThermalLevelListener(Handler handler, IThermalService thermalService) {
             mHandler = handler;
             mStarted = false;
-            mThermalService = IThermalService.Stub.asInterface(
-                    ServiceManager.getService(Context.THERMAL_SERVICE));
+            mThermalService = thermalService;
         }
 
         IThermalService getThermalService() {
@@ -483,6 +482,11 @@ class BrightnessPowerModifier implements BrightnessStateModifier,
                                    int pollingMinTimeMillis) {
             return new PmicMonitor(powerChangeListener, thermalService, pollingMaxTimeMillis,
                                         pollingMinTimeMillis);
+        }
+
+        IThermalService getThermalService() {
+            return IThermalService.Stub.asInterface(
+                    ServiceManager.getService(Context.THERMAL_SERVICE));
         }
 
         DeviceConfigParameterProvider getDeviceConfigParameterProvider() {

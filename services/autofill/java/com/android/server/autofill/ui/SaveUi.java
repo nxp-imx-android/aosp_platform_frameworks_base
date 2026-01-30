@@ -183,6 +183,8 @@ final class SaveUi {
     private final boolean mCompatMode;
     private final int mThemeId;
     private final int mType;
+    private final ViewTreeObserver.OnGlobalLayoutListener mOnGlobalLayoutListener;
+    private final ViewTreeObserver.OnScrollChangedListener mOnScrollChangedListener;
 
     private boolean mDestroyed;
 
@@ -258,7 +260,8 @@ final class SaveUi {
         final LayoutInflater inflater = LayoutInflater.from(context);
         final View view = inflater.inflate(getLayoutResId(context), null);
         if (showExpressiveSaveDialog(context)) {
-            view.setOnClickListener(v -> mListener.onCancel(null));
+            View closeButton = view.findViewById(R.id.closeButton);
+            closeButton.setOnClickListener(v -> mListener.onCancel(null));
         }
 
         final TextView titleView = view.findViewById(R.id.autofill_save_title);
@@ -394,11 +397,12 @@ final class SaveUi {
 
         View divider = view.findViewById(R.id.autofill_sheet_divider);
 
+        mOnGlobalLayoutListener = () -> adjustDividerVisibility(scrollView, divider);
+        mOnScrollChangedListener = () -> adjustDividerVisibility(scrollView, divider);
         ViewTreeObserver observer = scrollView.getViewTreeObserver();
-        observer.addOnGlobalLayoutListener(() -> adjustDividerVisibility(scrollView, divider));
+        observer.addOnGlobalLayoutListener(mOnGlobalLayoutListener);
+        observer.addOnScrollChangedListener(mOnScrollChangedListener);
 
-        scrollView.getViewTreeObserver()
-                .addOnScrollChangedListener(() -> adjustDividerVisibility(scrollView, divider));
         show();
     }
 
@@ -694,6 +698,16 @@ final class SaveUi {
         try {
             if (sDebug) Slog.d(TAG, "destroy()");
             throwIfDestroyed();
+            if (Flags.expressiveSaveDialog()) {
+                ScrollView scrollView = mDialog.findViewById(R.id.autofill_sheet_scroll_view);
+                if (scrollView != null) {
+                    ViewTreeObserver observer = scrollView.getViewTreeObserver();
+                    if (observer.isAlive()) {
+                        observer.removeOnGlobalLayoutListener(mOnGlobalLayoutListener);
+                        observer.removeOnScrollChangedListener(mOnScrollChangedListener);
+                    }
+                }
+            }
             mListener.onDestroy();
             mHandler.removeCallbacksAndMessages(mListener);
             mDialog.dismiss();

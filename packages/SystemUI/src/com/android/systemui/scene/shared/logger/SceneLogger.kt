@@ -20,6 +20,7 @@ import com.android.compose.animation.scene.ContentKey
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.animation.scene.OverlayKey
 import com.android.compose.animation.scene.SceneKey
+import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.internal.logging.UiEvent
 import com.android.internal.logging.UiEventLogger
 import com.android.internal.logging.UiEventLogger.UiEventEnum
@@ -28,6 +29,7 @@ import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.core.LogLevel
 import com.android.systemui.log.dagger.SceneFrameworkLog
 import com.android.systemui.scene.data.model.SceneStack
+import com.android.systemui.scene.domain.interactor.SceneInteractor
 import javax.inject.Inject
 
 class SceneLogger
@@ -221,6 +223,15 @@ constructor(
         )
     }
 
+    fun logEvent(event: SceneInteractor.Event) {
+        logBuffer.log(
+            tag = TAG,
+            level = LogLevel.INFO,
+            messageInitializer = { str1 = "Event: $event" },
+            messagePrinter = { "$str1" },
+        )
+    }
+
     fun logVisibilityChange(from: Boolean, to: Boolean, reason: String) {
         fun asWord(isVisible: Boolean): String {
             return if (isVisible) "visible" else "invisible"
@@ -263,9 +274,9 @@ constructor(
         )
     }
 
-    fun logUserInputFinished(transitionState: ObservableTransitionState) {
+    fun logUserInputFinished(transitionState: TransitionState) {
         when (transitionState) {
-            is ObservableTransitionState.Transition -> {
+            is TransitionState.Transition -> {
                 logBuffer.log(
                     tag = TAG,
                     level = LogLevel.INFO,
@@ -276,7 +287,7 @@ constructor(
                     messagePrinter = { "User interaction finished during: $str1 → $str2" },
                 )
             }
-            is ObservableTransitionState.Idle -> {
+            is TransitionState.Idle -> {
                 logBuffer.log(
                     tag = TAG,
                     level = LogLevel.INFO,

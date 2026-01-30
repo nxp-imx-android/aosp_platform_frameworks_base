@@ -19,7 +19,6 @@ package com.android.systemui.util.kotlin
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.Flags
 import com.android.systemui.util.time.SystemClock
-import java.util.concurrent.atomic.AtomicReference
 import kotlin.math.max
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
@@ -50,10 +49,9 @@ import kotlinx.coroutines.sync.withLock
  * Useful for code that needs to compare the current value to the previous value.
  */
 public fun <T, R> Flow<T>.pairwiseBy(transform: suspend (old: T, new: T) -> R): Flow<R> = flow {
-    val noVal = Any()
-    var previousValue: Any? = noVal
+    var previousValue: Any? = NoValue
     collect { newVal ->
-        if (previousValue != noVal) {
+        if (previousValue != NoValue) {
             @Suppress("UNCHECKED_CAST") emit(transform(previousValue as T, newVal))
         }
         previousValue = newVal
@@ -174,13 +172,16 @@ public data class SetChanges<T>(
 public fun <A, B, C> Flow<A>.sample(other: Flow<B>, transform: suspend (A, B) -> C): Flow<C> =
     flow {
         coroutineScope {
-            val noVal = Any()
-            val sampledRef = AtomicReference(noVal)
+            // NOTE: This is automatically made @Volatile by the compiler because it is captured
+            // in at least one lambda.
+            var sampledRef: Any? = NoValue
             val job =
-                launch(context = Dispatchers.Unconfined) { other.collect { sampledRef.set(it) } }
+                launch(context = Dispatchers.Unconfined, start = CoroutineStart.UNDISPATCHED) {
+                    other.collect { sampledRef = it }
+                }
             collect {
-                val sampled = sampledRef.get()
-                if (sampled != noVal) {
+                val sampled = sampledRef
+                if (sampled !== NoValue) {
                     @Suppress("UNCHECKED_CAST") emit(transform(it, sampled as B))
                 }
             }
@@ -518,3 +519,5 @@ public inline fun <T, R> Flow<T>.mapDirect(noinline transform: (value: T) -> R):
         this.mapLatest(transform)
     }
 }
+
+private data object NoValue

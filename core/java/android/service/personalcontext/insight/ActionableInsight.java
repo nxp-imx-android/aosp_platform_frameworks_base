@@ -27,6 +27,7 @@ import android.service.personalcontext.Flags;
 import android.service.personalcontext.Token;
 import android.service.personalcontext.hint.ContextHint;
 import android.service.personalcontext.hint.ContextHintWithSignature;
+import android.service.personalcontext.insight.interaction.ReturnHintReport;
 
 import com.android.internal.util.Preconditions;
 
@@ -129,8 +130,20 @@ public final class ActionableInsight extends ContextInsight {
     }
 
     /**
-     * Builder for {@link ActionableInsight}.
+     * Creates a new {@link ReturnHintReport}  based on this insight.
+     *
+     * <p>A ReturnHintReport can be handed off to other code. It encapsulates information about
+     * this insight and the information necessary to route an insight based on it back to the same
+     * renderers that received this insight.
+     *
+     * @see ReturnHintReport
      */
+    @NonNull
+    public ReturnHintReport createReturnHintReport() {
+        return new ReturnHintReport(this);
+    }
+
+    /** Builder for {@link ActionableInsight}. */
     @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
     public static final class Builder {
         private final ConstructorParams.Builder mBaseBuilder = new ConstructorParams.Builder();

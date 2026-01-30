@@ -67,7 +67,7 @@ class AdbPairingThread extends Thread implements AdbdServicesManager.Registratio
 
     @Override
     public void run() {
-        AdbdServicesManager servicesManager = new AdbdServicesManager(mContext);
+        AdbdServicesManager servicesManager = new AdbdServicesManager(mContext, "pair");
         int port = native_pairing_get_port();
         if (port <= 0) {
             Slog.e(TAG, "Pairing server has invalid port");

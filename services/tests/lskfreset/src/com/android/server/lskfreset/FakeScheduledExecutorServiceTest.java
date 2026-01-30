@@ -796,6 +796,9 @@ public class FakeScheduledExecutorServiceTest {
         assertFalse(mExecutor.isTerminated());
         mExecutor.shutdown();
         assertTrue(mExecutor.isShutdown());
+        assertFalse(mExecutor.isTerminated());
+        assertEquals(0, mExecutor.fastForwardMillis(0));
+        assertTrue(mExecutor.isShutdown());
         assertTrue(mExecutor.isTerminated());
     }
 
@@ -856,6 +859,86 @@ public class FakeScheduledExecutorServiceTest {
     }
 
     @Test
+    public void testShutdownWithAwait() throws InterruptedException {
+        AtomicInteger executions = new AtomicInteger(0);
+        ScheduledFuture<?> future1 =
+                mExecutor.schedule(
+                        () -> {
+                            executions.incrementAndGet();
+                        },
+                        1,
+                        TimeUnit.SECONDS);
+        ScheduledFuture<?> future2 =
+                mExecutor.schedule(
+                        () -> {
+                            executions.incrementAndGet();
+                        },
+                        2,
+                        TimeUnit.SECONDS);
+
+        Thread awaitAndTimeoutThread =
+                new Thread(
+                        () -> {
+                            try {
+                                assertFalse(mExecutor.awaitTermination(1, TimeUnit.SECONDS));
+                            } catch (Exception e) {
+                                fail("awaitTermination(1s) threw unexpected exception: " + e);
+                            }
+                        });
+        awaitAndTimeoutThread.start();
+        Thread awaitAndSucceedThread =
+                new Thread(
+                        () -> {
+                            try {
+                                assertTrue(mExecutor.awaitTermination(2, TimeUnit.SECONDS));
+                            } catch (Exception e) {
+                                fail("awaitTermination(2s) threw unexpected exception: " + e);
+                            }
+                        });
+        awaitAndSucceedThread.start();
+        mExecutor.waitForNumTimeoutWaiters(2);
+
+        assertFalse(mExecutor.isShutdown());
+        assertFalse(mExecutor.isTerminated());
+        assertFalse(future1.isDone());
+        assertFalse(future1.isCancelled());
+        assertFalse(future2.isDone());
+        assertFalse(future2.isCancelled());
+        assertEquals(0, executions.get());
+
+        mExecutor.shutdown();
+        assertTrue(mExecutor.isShutdown());
+        assertFalse(mExecutor.isTerminated());
+        assertFalse(future1.isDone());
+        assertFalse(future1.isCancelled());
+        assertFalse(future2.isDone());
+        assertFalse(future2.isCancelled());
+        assertEquals(0, executions.get());
+
+        assertEquals(1, mExecutor.fastForwardMillis(1000));
+        assertTrue(mExecutor.isShutdown());
+        assertFalse(mExecutor.isTerminated());
+        assertTrue(future1.isDone());
+        assertFalse(future1.isCancelled());
+        assertFalse(future2.isDone());
+        assertFalse(future2.isCancelled());
+        assertEquals(1, executions.get());
+        awaitAndTimeoutThread.join();
+
+        assertEquals(1, mExecutor.fastForwardMillis(1000));
+        assertTrue(mExecutor.isShutdown());
+        assertTrue(mExecutor.isTerminated());
+        assertTrue(future1.isDone());
+        assertFalse(future1.isCancelled());
+        assertTrue(future2.isDone());
+        assertFalse(future2.isCancelled());
+        assertEquals(2, executions.get());
+        awaitAndSucceedThread.join();
+
+        assertEquals(0, mExecutor.fastForwardMillis(1000));
+    }
+
+    @Test
     public void testShutdownNowWithTasks() {
         AtomicInteger executions = new AtomicInteger(0);
         ScheduledFuture<?> future1 =
@@ -884,7 +967,7 @@ public class FakeScheduledExecutorServiceTest {
         List<Runnable> cancelled = mExecutor.shutdownNow();
         assertEquals(2, cancelled.size());
         assertTrue(mExecutor.isShutdown());
-        assertTrue(mExecutor.isTerminated());
+        assertFalse(mExecutor.isTerminated());
         assertTrue(future1.isDone());
         assertTrue(future1.isCancelled());
         assertTrue(future2.isDone());
@@ -892,6 +975,8 @@ public class FakeScheduledExecutorServiceTest {
         assertEquals(0, executions.get());
 
         assertEquals(0, mExecutor.fastForwardMillis(3000));
+        assertTrue(mExecutor.isShutdown());
+        assertTrue(mExecutor.isTerminated());
         assertEquals(0, executions.get());
         for (Runnable runnable : cancelled) {
             runnable.run();

@@ -27,6 +27,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.Log;
 
 import com.android.internal.util.CollectionUtils;
 
@@ -39,6 +40,8 @@ import java.util.Map;
  */
 @android.ravenwood.annotation.RavenwoodKeepWholeClass
 public class PackageInfo implements Parcelable {
+    private static final String TAG = PackageInfo.class.getSimpleName();
+
     /**
      * The name of this package.  From the &lt;manifest&gt; tag's "name"
      * attribute.
@@ -627,6 +630,7 @@ public class PackageInfo implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int parcelableFlags) {
+        final int preWriteSize = dest.dataSize();
         // Allow ApplicationInfo to be squashed.
         final boolean prevAllowSquashing = dest.allowSquashing();
         dest.writeString8(packageName);
@@ -690,6 +694,26 @@ public class PackageInfo implements Parcelable {
         }
         dest.writeBoolean(mIsAppMetadataVerified);
         dest.restoreAllowSquashing(prevAllowSquashing);
+
+        final int elmSize = dest.dataSize() - preWriteSize;
+        // The warning threshold is consistent with BaseParceledListSlice implementation
+        if (elmSize > 16 * 1024) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("Large PackageInfo parcel: size=").append(elmSize)
+                    .append(" package=").append(packageName);
+
+            if (activities != null) sb.append(" activities=").append(activities.length);
+            if (receivers != null) sb.append(" receivers=").append(receivers.length);
+            if (services != null) sb.append(" services=").append(services.length);
+            if (providers != null) sb.append(" providers=").append(providers.length);
+            if (permissions != null) sb.append(" permissions=").append(permissions.length);
+            if (requestedPermissions != null) {
+                sb.append(" reqPermissions=").append(requestedPermissions.length);
+            }
+            if (attributions != null) sb.append(" attributions=").append(attributions.length);
+
+            Log.w(TAG, sb.toString());
+        }
     }
 
     private void writeRequestedPermissionsPurposes(@NonNull Parcel dest) {

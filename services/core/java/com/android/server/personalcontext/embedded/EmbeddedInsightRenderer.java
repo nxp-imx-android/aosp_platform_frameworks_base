@@ -150,7 +150,7 @@ public class EmbeddedInsightRenderer implements Renderer {
                 logDebug("no client found for insight [" + insight + "]");
             }
 
-            mVisualizerRegistry.createVisualizationForClient(List.of(insight), client);
+            mVisualizerRegistry.createVisualizationForClient(insight, client, renderToken);
         });
     }
 

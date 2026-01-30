@@ -32,6 +32,7 @@ import android.os.Looper;
 import android.os.RemoteException;
 import android.os.ResultReceiver;
 import android.service.personalcontext.Flags;
+import android.service.personalcontext.RenderToken;
 import android.service.personalcontext.insight.ContextInsight;
 import android.service.personalcontext.insight.ContextInsightWrapper;
 import android.util.Log;
@@ -49,7 +50,6 @@ import com.android.internal.annotations.VisibleForTesting;
 
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Executor;
@@ -238,15 +238,17 @@ public abstract class InsightSurfaceVisualizerService extends Service {
      * list of {@link ContextInsight}s.
      *
      * @param context a {@link Context} suitable for creating {@link View}s in the current display
-     * @param insights the list of {@link ContextInsight}s that subclasses can use to create the
+     * @param insight the {@link ContextInsight} that subclasses can use to create the
      *                 embedded {@link View}
+     * @param renderToken the {@link RenderToken} associated with the insight
      * @param info the {@link InsightSurfaceClientInfo} containing information about the client
      * @return the {@link View} that will be passed to the client
      */
     @Nullable
     public abstract View onCreateEmbeddedView(
             @NonNull Context context,
-            @NonNull List<ContextInsight> insights,
+            @NonNull ContextInsight insight,
+            @Nullable RenderToken renderToken,
             @NonNull InsightSurfaceClientInfo info);
 
     /**
@@ -304,13 +306,14 @@ public abstract class InsightSurfaceVisualizerService extends Service {
 
         @Override
         public void createVisualizationForClient(
-                List<ContextInsightWrapper> insights,
+                ContextInsightWrapper insight,
                 InsightSurfaceClientInfo clientInfo,
+                RenderToken renderToken,
                 IVisualizationResult result) {
             post(service -> {
 
                 final View view = service.onCreateEmbeddedView(
-                        mContext, ContextInsightWrapper.unwrapList(insights), clientInfo);
+                        mContext, insight.getContextInsight(), renderToken, clientInfo);
                 if (view == null) {
                     Log.e(TAG, "onCreateEmbeddedView returned null for client: " + clientInfo);
                     sendResult(/*visualizationCreated= */ false, result);

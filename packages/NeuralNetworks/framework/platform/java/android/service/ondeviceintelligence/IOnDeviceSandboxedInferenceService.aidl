@@ -31,6 +31,7 @@ import android.service.ondeviceintelligence.IRemoteStorageService;
 import android.service.ondeviceintelligence.IProcessingUpdateStatusCallback;
 import android.app.ondeviceintelligence.embedding.IEmbeddingCallback;
 import android.app.ondeviceintelligence.embedding.EmbeddingRequest;
+import android.app.ondeviceintelligence.Content;
 import android.app.ondeviceintelligence.imagedescription.IImageDescriptionCallback;
 import android.app.ondeviceintelligence.imagedescription.ImageDescriptionRequest;
 
@@ -58,4 +59,7 @@ oneway interface IOnDeviceSandboxedInferenceService {
     void registerInferenceServiceLifecycleListener(in ILifecycleListener listener) = 5;
     void generateEmbeddings(int callerUid, in Feature feature, in EmbeddingRequest request, in AndroidFuture cancellationSignal, in IEmbeddingCallback callback) = 6;
     void generateImageDescription(int callerUid, in Feature feature, in ImageDescriptionRequest request, in AndroidFuture cancellationSignal, in IImageDescriptionCallback callback) = 7;
+    void requestTokenInfoWithContent(int callerUid, in Feature feature, in Content request,
+                            in AndroidFuture cancellationSignal,
+                            in ITokenInfoCallback tokenInfoCallback) = 8;
 }

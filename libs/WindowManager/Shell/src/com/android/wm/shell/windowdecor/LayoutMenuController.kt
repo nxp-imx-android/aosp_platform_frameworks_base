@@ -16,25 +16,25 @@
 
 package com.android.wm.shell.windowdecor
 
-/** Interface to create, check status of, and update hover status of maximize menu. */
-interface MaximizeMenuController {
-    /** Returns whether the maximize menu is currently open. */
-    val isMaximizeMenuActive: Boolean
+/** Interface to create, check status of, and update hover status of layout menu. */
+interface LayoutMenuController {
+    /** Returns whether the layout menu is currently open. */
+    val isLayoutMenuActive: Boolean
 
-    /** Updates whether the maximize button is being hovered over. */
-    fun onMaximizeHoverStateChanged()
+    /** Updates whether the layout button is being hovered over. */
+    fun onLayoutButtonHoverStateChanged()
 
-    /** Notifies that the maximize button has received a [ACTION_HOVER_ENTER] event. */
-    fun onMaximizeButtonHoverExit()
+    /** Notifies that the layout button has received a [ACTION_HOVER_ENTER] event. */
+    fun onLayoutButtonHoverExit()
 
-    /** Notifies that the maximize button has received a [ACTION_HOVER_ENTER] event. */
-    fun onMaximizeButtonHoverEnter()
+    /** Notifies that the layout button has received a [ACTION_HOVER_ENTER] event. */
+    fun onLayoutButtonHoverEnter()
 
-    /** Creates the maximize menu if supported by caption. */
-    fun createMaximizeMenu()
+    /** Creates the layout menu if supported by caption. */
+    fun createLayoutMenu()
 
-    /** Closes the maximize menu. */
-    fun closeMaximizeMenu()
+    /** Closes the layout menu. */
+    fun closeLayoutMenu()
 
     /** Updates on whether the maximize button is being hovered over. */
     fun setAppHeaderMaximizeButtonHovered(hovered: Boolean)
