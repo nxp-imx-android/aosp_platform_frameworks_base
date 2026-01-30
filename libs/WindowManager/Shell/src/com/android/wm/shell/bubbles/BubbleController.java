@@ -3115,6 +3115,8 @@ public class BubbleController implements ConfigurationChangeListener,
         pw.print(prefix); pw.println("  mOnImeHidden= " + mOnImeHidden);
         final boolean isScrimEnabled = mFeatureConfig.isScrimEnabled(mContext.getDisplayId());
         pw.print(prefix); pw.println("  isScrimEnabled= " + isScrimEnabled);
+        pw.print(prefix);
+        pw.println("  areAppBubblesSupported= " + mFeatureConfig.areAppBubblesSupported());
         pw.println();
 
         mBubbleData.dump(pw);
