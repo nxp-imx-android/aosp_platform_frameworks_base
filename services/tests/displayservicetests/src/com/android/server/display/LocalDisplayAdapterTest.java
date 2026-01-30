@@ -1730,7 +1730,7 @@ public class LocalDisplayAdapterTest {
                 new SurfaceControl.DisplayMode[]{displayMode1, displayMode2, displayMode3};
         FakeDisplay display = new FakeDisplay(PORT_A, modes, 0, 1);
         setUpDisplay(display);
-        display.info.isInternal = false;
+        display.info.isInternal = true;
         display.dynamicInfo.hasArrSupport = true;
         updateAvailableDisplays();
         mAdapter.registerLocked();
