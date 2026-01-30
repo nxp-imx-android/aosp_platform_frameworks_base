@@ -328,10 +328,8 @@ public class WindowManagerServiceTests extends WindowTestsBase {
         final WindowState win = newWindowBuilder("appWin", TYPE_BASE_APPLICATION).build();
         win.mWinAnimator.mDrawState = WindowStateAnimator.HAS_DRAWN;
         win.mWinAnimator.mSurfaceControl = mock(SurfaceControl.class);
-        spyOn(win.mTransitionController);
-        doReturn(true).when(win.mTransitionController).isShellTransitionsEnabled();
-        doReturn(true).when(win.mTransitionController).inTransition(
-                eq(win.mActivityRecord));
+        spyOn(win);
+        doReturn(true).when(win).isSelfAnimating(anyInt(), anyInt());
         win.mViewVisibility = View.VISIBLE;
         win.mHasSurface = true;
         win.mActivityRecord.mAppStopped = true;
@@ -350,11 +348,11 @@ public class WindowManagerServiceTests extends WindowTestsBase {
                 outConfig, outInsetsState, outControls);
         mWm.relayoutWindow(win.mSession, win.mClient, win.mAttrs, w, h, View.GONE, 0, 0, 0,
                 outRelayoutResult, outSurfaceControl);
-        // The window is in transition, so its destruction is deferred.
+        // The window is animating, so its destruction is deferred.
         assertTrue(win.mAnimatingExit);
         assertFalse(win.mDestroying);
-        assertTrue(win.mTransitionController.mAnimatingExitWindows.contains(win));
 
+        doReturn(false).when(win).isSelfAnimating(anyInt(), anyInt());
         win.mAnimatingExit = false;
         win.mViewVisibility = View.VISIBLE;
         win.mActivityRecord.setVisibleRequested(false);
