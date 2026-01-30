@@ -217,6 +217,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
                 bubbleLogger,
                 bubblePositioner,
                 eduController,
+                bubbleAppInfoProvider,
                 mainExecutor,
                 bgExecutor,
             )

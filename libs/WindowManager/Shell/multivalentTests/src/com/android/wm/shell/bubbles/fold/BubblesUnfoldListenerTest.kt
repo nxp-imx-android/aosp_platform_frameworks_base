@@ -26,6 +26,7 @@ import com.android.internal.logging.testing.UiEventLoggerFake
 import com.android.wm.shell.bubbles.BubbleData
 import com.android.wm.shell.bubbles.BubbleEducationController
 import com.android.wm.shell.bubbles.BubblePositioner
+import com.android.wm.shell.bubbles.FakeBubbleAppInfoProvider
 import com.android.wm.shell.bubbles.FakeBubbleFactory
 import com.android.wm.shell.bubbles.logging.BubbleLogger
 import com.android.wm.shell.common.TestShellExecutor
@@ -72,6 +73,7 @@ class BubblesUnfoldListenerTest {
                 bubbleLogger,
                 bubblePositioner,
                 BubbleEducationController(context),
+                FakeBubbleAppInfoProvider(),
                 mainExecutor,
                 backgroundExecutor,
             )
