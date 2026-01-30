@@ -21,6 +21,7 @@ import static com.android.providers.settings.SettingsBackupRestoreKeys.KEY_GLOBA
 import static com.android.providers.settings.SettingsBackupRestoreKeys.KEY_LOCALE;
 import static com.android.providers.settings.SettingsBackupRestoreKeys.KEY_LOCK_SETTINGS;
 import static com.android.providers.settings.SettingsBackupRestoreKeys.KEY_NETWORK_POLICIES;
+import static com.android.providers.settings.SettingsBackupRestoreKeys.KEY_PLATFORM_MANAGED_SIM_PINS;
 import static com.android.providers.settings.SettingsBackupRestoreKeys.KEY_SECURE;
 import static com.android.providers.settings.SettingsBackupRestoreKeys.KEY_SIM_SPECIFIC_SETTINGS;
 import static com.android.providers.settings.SettingsBackupRestoreKeys.KEY_SIM_SPECIFIC_SETTINGS_2;
@@ -135,8 +136,9 @@ public class SettingsBackupAgent extends BackupAgentHelper {
     private static final int STATE_DEVICE_CONFIG         = 10;
     private static final int STATE_SIM_SPECIFIC_SETTINGS = 11;
     private static final int STATE_WIFI_SETTINGS         = 12;
+    private static final int STATE_PLATFORM_MANAGED_SIM_PINS = 13;
 
-    private static final int STATE_SIZE                  = 13; // The current number of state items
+    private static final int STATE_SIZE                  = 14; // The current number of state items
 
     // Number of entries in the checksum array at various version numbers
     private static final int STATE_SIZES[] = {
@@ -150,7 +152,8 @@ public class SettingsBackupAgent extends BackupAgentHelper {
             10,             // version 7 added STATE_WIFI_NEW_CONFIG
             11,             // version 8 added STATE_DEVICE_CONFIG
             12,             // version 9 added STATE_SIM_SPECIFIC_SETTINGS
-            STATE_SIZE      // version 10 added STATE_WIFI_SETTINGS
+            13,             // version 10 added STATE_WIFI_SETTINGS
+            STATE_SIZE,     // version 11 added STATE_PLATFORM_MANAGED_SIM_PINS
     };
 
     private static final int FULL_BACKUP_ADDED_GLOBAL = 2;  // added the "global" entry
@@ -226,7 +229,8 @@ public class SettingsBackupAgent extends BackupAgentHelper {
         "failed_to_retrieve_wifi_settings_backup_data";
     private static final String ERROR_FAILED_TO_RESTORE_WIFI_SETTINGS_BACKUP_DATA =
         "failed_to_restore_wifi_settings_backup_data";
-
+    private static final String ERROR_FAILED_TO_RESTORE_PLATFORM_MANAGED_SIM_PINS =
+            "failed_to_restore_platform_managed_sim_pins";
 
     // Name of the temporary file we use during full backup/restore.  This is
     // stored in the full-backup tarfile as well, so should not be changed.
@@ -308,6 +312,9 @@ public class SettingsBackupAgent extends BackupAgentHelper {
         byte[] deviceSpecificInformation = getDeviceSpecificConfiguration();
         byte[] simSpecificSettingsData = getSimSpecificSettingsData();
         byte[] wifiSettingsData = getWifiSettingsBackupData();
+        byte[] platformManagedSimPins = getPlatformManagedSimPinsData(
+                (data.getTransportFlags() & (FLAG_DEVICE_TO_DEVICE_TRANSFER
+                        | FLAG_CLIENT_SIDE_ENCRYPTION_ENABLED)) != 0);
 
         long[] stateChecksums = readOldChecksums(oldState);
 
@@ -346,6 +353,9 @@ public class SettingsBackupAgent extends BackupAgentHelper {
         stateChecksums[STATE_WIFI_SETTINGS] =
                 writeIfChanged(stateChecksums[STATE_WIFI_SETTINGS],
                         KEY_WIFI_SETTINGS_BACKUP_DATA, wifiSettingsData, data);
+        stateChecksums[STATE_PLATFORM_MANAGED_SIM_PINS] =
+                writeIfChanged(stateChecksums[STATE_PLATFORM_MANAGED_SIM_PINS],
+                        KEY_PLATFORM_MANAGED_SIM_PINS, platformManagedSimPins, data);
 
         writeNewChecksums(stateChecksums, newState);
     }
@@ -503,6 +513,11 @@ public class SettingsBackupAgent extends BackupAgentHelper {
                     if (!isWatch()) {
                         restoreWifiData(restoredWifiData);
                     }
+                    break;
+                case KEY_PLATFORM_MANAGED_SIM_PINS:
+                    byte[] restoredPlatformManagedPins = new byte[size];
+                    data.readEntityData(restoredPlatformManagedPins, 0, size);
+                    restorePlatformManagedSimPins(restoredPlatformManagedPins);
                     break;
                 default :
                     data.skipEntityData();
@@ -974,7 +989,7 @@ public class SettingsBackupAgent extends BackupAgentHelper {
             boolean isSettingPreserved = settingsToPreserve.contains(
                     getQualifiedKeyForSetting(key, contentUri));
             if (isSettingPreserved && !Settings.Secure.NAVIGATION_MODE.equals(key)) {
-                Log.i(TAG, "Skipping restore for setting " + key + " as it is marked as "
+                Log.w(TAG, "Skipping restore for setting " + key + " as it is marked as "
                         + "preserved");
                 mBackupRestoreEventLogger.logItemsRestoreFailed(
                         settingsKey, /* count= */ 1, ERROR_SKIPPED_PRESERVED);
@@ -1701,6 +1716,31 @@ public class SettingsBackupAgent extends BackupAgentHelper {
     }
 
     @VisibleForTesting
+    byte[] getPlatformManagedSimPinsData(boolean isEncryptedOrDeviceToDevice) {
+        PackageManager packageManager = getBaseContext().getPackageManager();
+        if (!packageManager.hasSystemFeature(PackageManager.FEATURE_TELEPHONY)
+                || !packageManager.hasSystemFeature(
+                PackageManager.FEATURE_TELEPHONY_SUBSCRIPTION)) {
+            return new byte[0];
+        }
+
+        if (!android.security.Flags.autoSimPinManagement()) {
+            return new byte[0];
+        }
+
+        if (!isEncryptedOrDeviceToDevice) {
+            Log.w(TAG, "Refusing to back up PINs to unencrypted backup");
+            return new byte[0];
+        }
+
+        SubscriptionManager subManager = getBaseContext().getSystemService(
+                SubscriptionManager.class);
+        byte[] platformManagedPins = subManager.getAllPlatformManagedPins();
+        numberOfSettingsPerKey.put(KEY_PLATFORM_MANAGED_SIM_PINS, 1);
+        return platformManagedPins;
+    }
+
+    @VisibleForTesting
     void restoreSimSpecificSettings(byte[] data) {
         PackageManager packageManager = getBaseContext().getPackageManager();
         boolean hasTelephony = packageManager.hasSystemFeature(PackageManager.FEATURE_TELEPHONY);
@@ -1717,6 +1757,35 @@ public class SettingsBackupAgent extends BackupAgentHelper {
                         /* count= */ 1,
                         ERROR_FAILED_TO_RESTORE_SIM_SPECIFIC_SETTINGS);
             }
+        }
+    }
+
+    @VisibleForTesting
+    void restorePlatformManagedSimPins(byte[] data) {
+        PackageManager packageManager = getBaseContext().getPackageManager();
+        if (!packageManager.hasSystemFeature(PackageManager.FEATURE_TELEPHONY)
+                || !packageManager.hasSystemFeature(
+                PackageManager.FEATURE_TELEPHONY_SUBSCRIPTION)) {
+            Log.i(TAG, "Skipping restoring platform-managed PINs; no telephony feature.");
+            return;
+        }
+
+        if (!android.security.Flags.autoSimPinManagement()) {
+            return;
+        }
+
+        SubscriptionManager subManager = getBaseContext().getSystemService(
+                SubscriptionManager.class);
+        try {
+            subManager.restorePlatformManagedSimPinsFromBackup(data);
+            mBackupRestoreEventLogger
+                    .logItemsRestored(KEY_PLATFORM_MANAGED_SIM_PINS, /* count= */ 1);
+        } catch (Exception e) {
+            mBackupRestoreEventLogger
+                    .logItemsRestoreFailed(
+                            KEY_PLATFORM_MANAGED_SIM_PINS,
+                            /* count= */ 1,
+                            ERROR_FAILED_TO_RESTORE_PLATFORM_MANAGED_SIM_PINS);
         }
     }
 
