@@ -23,8 +23,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.swipe
+import androidx.compose.ui.test.swipeWithVelocity
+import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
 import com.android.compose.animation.scene.ObservableTransitionState
@@ -58,6 +61,7 @@ import com.android.systemui.statusbar.notification.stack.ui.view.notificationScr
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.notificationsPlaceholderViewModelFactory
 import com.android.systemui.statusbar.phone.ui.tintedIconManagerFactory
 import com.android.systemui.testKosmos
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -67,9 +71,11 @@ import org.junit.runner.RunWith
 import platform.test.motion.compose.ComposeRecordingSpec
 import platform.test.motion.compose.MotionControl
 import platform.test.motion.compose.asDataPoint
+import platform.test.motion.compose.feature
 import platform.test.motion.compose.recordMotion
 import platform.test.motion.compose.runTest
 import platform.test.motion.golden.DataPoint
+import platform.test.motion.golden.asDataPoint
 import platform.test.screenshot.DeviceEmulationSpec
 import platform.test.screenshot.Displays.Phone
 
@@ -78,6 +84,7 @@ import platform.test.screenshot.Displays.Phone
 @LargeTest
 @RunWithLooper
 @EnableSceneContainer
+@DisableFlags(Flags.FLAG_DUAL_SHADE)
 class QuickSettingsElementTransitionTest : SysuiTestCase() {
     private val kosmos = testKosmos()
     private val deviceSpec = DeviceEmulationSpec(Phone)
@@ -157,6 +164,54 @@ class QuickSettingsElementTransitionTest : SysuiTestCase() {
                                     DataPoint.notFound<Int>()
                                 }
                             }
+                        },
+                )
+            assertThat(motion).timeSeriesMatchesGolden()
+        }
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_STATUS_BAR_MOBILE_ICON_KAIROS)
+    fun swipeLeftInQSTilePanel_QSTileXCoordinateOnOverscroll() {
+        motionTestRule.runTest(60.seconds) {
+            kosmos.enableSingleShade()
+            kosmos.usingMediaInComposeFragment = true
+            kosmos.populateQuickSettings(tileCount = 20)
+            val motion =
+                recordMotion(
+                    content = {
+                        QSSceneContentTransitionContainer(transitionState = transitionState)
+                    },
+                    recordingSpec =
+                        ComposeRecordingSpec(
+                            MotionControl(
+                                delayRecording = {
+                                    awaitCondition {
+                                        kosmos.sceneInteractor.transitionStateFlow.value.isIdle()
+                                    }
+                                }
+                            ) {
+                                performTouchInputAsync(onRoot()) {
+                                    swipeWithVelocity(
+                                        start = centerLeft,
+                                        end = centerRight,
+                                        durationMillis = 200,
+                                        endVelocity = 3000.dp.toPx(),
+                                    )
+                                }
+                                // await some time for the animation to settle
+                                // TODO replace this with waitForIdle until ComposeToolkitV2 lands
+                                awaitDelay(450.milliseconds)
+                            }
+                        ) {
+                            val firstTileXCoordinate =
+                                motionTestRule.toolkit.composeContentTestRule
+                                    .onAllNodesWithTag(resIdToTestTag("qs_tile_small"), true)
+                                    .onFirst()
+                                    .fetchSemanticsNode()
+                                    .positionInRoot
+                                    .x
+                            feature("first_tile_position.x") { firstTileXCoordinate.asDataPoint() }
                         },
                 )
             assertThat(motion).timeSeriesMatchesGolden()
