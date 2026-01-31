@@ -91,7 +91,6 @@ cc_library_shared {
         "libutils",
         "libbinder",
         "libbinder_ndk",
-        "libcom.android.npumanager",
         "libui",
         "libgui",
         "libharfbuzz_ng", // Only for including hb.h via minikin
