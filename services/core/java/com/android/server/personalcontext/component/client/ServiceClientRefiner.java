@@ -23,6 +23,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.os.ParcelUuid;
 import android.os.RemoteException;
+import android.os.UserHandle;
 import android.service.personalcontext.hint.ContextHint;
 import android.service.personalcontext.hint.ContextHintWithSignature;
 import android.service.personalcontext.hint.ContextHintWithSignatureWrapper;
@@ -54,8 +55,9 @@ import java.util.function.Consumer;
 public class ServiceClientRefiner extends BaseServiceClientComponent<IRefiner> implements Refiner {
     private HintFilter mFilter = null;
 
-    public ServiceClientRefiner(Context context, UUID componentId, ServiceInfo serviceInfo) {
-        super(context, componentId, serviceInfo);
+    public ServiceClientRefiner(Context context, UUID componentId, ServiceInfo serviceInfo,
+            UserHandle userHandle) {
+        super(context, componentId, serviceInfo, userHandle);
 
         runWithBinder(binder -> {
             try {

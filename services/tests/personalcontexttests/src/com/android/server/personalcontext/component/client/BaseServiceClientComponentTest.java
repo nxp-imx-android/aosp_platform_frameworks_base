@@ -20,12 +20,14 @@ import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ServiceInfo;
 import android.os.IBinder;
+import android.os.UserHandle;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
@@ -50,6 +52,9 @@ public class BaseServiceClientComponentTest {
     private Context mContext;
     private final FakeExecutor mFakeExecutor = new FakeExecutor();
 
+    @Mock
+    private UserHandle mUserHandle;
+
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
@@ -62,7 +67,7 @@ public class BaseServiceClientComponentTest {
         serviceInfo.name = "baz";
         BaseServiceClientComponent<IBinder> component =
                 new BaseServiceClientComponent<>(mContext, UUID.randomUUID(), serviceInfo,
-                        mFakeExecutor) {
+                        mUserHandle, mFakeExecutor) {
                     @Override
                     protected IBinder getServiceWrapper(IBinder binder) {
                         return null;
@@ -77,7 +82,8 @@ public class BaseServiceClientComponentTest {
         component.start();
         mFakeExecutor.runAll();
         ArgumentCaptor<Intent> intentArgumentCaptor = ArgumentCaptor.forClass(Intent.class);
-        verify(mContext).bindService(intentArgumentCaptor.capture(), any(), anyInt());
+        verify(mContext).bindServiceAsUser(intentArgumentCaptor.capture(), any(), anyInt(),
+                eq(mUserHandle));
         assertThat(intentArgumentCaptor.getValue().getComponent())
                 .isEqualTo(serviceInfo.getComponentName());
     }

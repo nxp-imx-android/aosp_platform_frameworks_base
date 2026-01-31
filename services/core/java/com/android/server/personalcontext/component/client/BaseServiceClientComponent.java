@@ -23,6 +23,7 @@ import android.content.ServiceConnection;
 import android.content.pm.ServiceInfo;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.os.UserHandle;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.Slog;
@@ -44,6 +45,9 @@ import java.util.concurrent.Executors;
 public abstract class BaseServiceClientComponent<C> implements Component {
     protected static final String TAG = "PersonalContextClient";
     private final Executor mExecutor;
+
+    private final UserHandle mUserHandle;
+
     private final Context mContext;
     private final UUID mComponentId;
     private final Intent mServiceIntent;
@@ -80,13 +84,15 @@ public abstract class BaseServiceClientComponent<C> implements Component {
         }
     };
 
-    public BaseServiceClientComponent(Context context, UUID componentId, ServiceInfo serviceInfo) {
-        this(context, componentId, serviceInfo, Executors.newSingleThreadExecutor());
+    public BaseServiceClientComponent(Context context, UUID componentId, ServiceInfo serviceInfo,
+            UserHandle userHandle) {
+        this(context, componentId, serviceInfo, userHandle, Executors.newSingleThreadExecutor());
     }
     protected BaseServiceClientComponent(Context context, UUID componentId, ServiceInfo serviceInfo,
-            Executor executor) {
+            UserHandle userHandle, Executor executor) {
         mExecutor = executor;
         mContext = context;
+        mUserHandle = userHandle;
         mComponentId = componentId;
         mComponentName = new ComponentName(serviceInfo.packageName, serviceInfo.name);
         mServiceIntent = new Intent();
@@ -132,10 +138,12 @@ public abstract class BaseServiceClientComponent<C> implements Component {
             if (Log.isLoggable(TAG, Log.DEBUG)) {
                 Slog.d(TAG, this + " service is starting");
             }
-            mContext.bindService(
+
+            mContext.bindServiceAsUser(
                     mServiceIntent,
                     mServiceConnection,
-                    Context.BIND_AUTO_CREATE | Context.BIND_ALLOW_ACTIVITY_STARTS);
+                    Context.BIND_AUTO_CREATE | Context.BIND_ALLOW_ACTIVITY_STARTS,
+                    mUserHandle);
         });
     }
 
