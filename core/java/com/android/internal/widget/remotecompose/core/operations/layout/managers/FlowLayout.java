@@ -23,16 +23,23 @@ import com.android.internal.widget.remotecompose.core.Operation;
 import com.android.internal.widget.remotecompose.core.Operations;
 import com.android.internal.widget.remotecompose.core.PaintContext;
 import com.android.internal.widget.remotecompose.core.WireBuffer;
+import com.android.internal.widget.remotecompose.core.documentation.DocumentationBuilder;
+import com.android.internal.widget.remotecompose.core.documentation.DocumentedOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.Component;
 import com.android.internal.widget.remotecompose.core.operations.layout.LayoutComponent;
 import com.android.internal.widget.remotecompose.core.operations.layout.measure.ComponentMeasure;
 import com.android.internal.widget.remotecompose.core.operations.layout.measure.MeasurePass;
 import com.android.internal.widget.remotecompose.core.operations.layout.measure.Size;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.WidthInModifierOperation;
+import com.android.internal.widget.remotecompose.core.operations.layout.utils.DebugLog;
 
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Flow layout implementation. Positions components one after the other horizontally and wraps to
+ * the next line if space is exhausted.
+ */
 public class FlowLayout extends RowLayout {
 
     public FlowLayout(
@@ -47,6 +54,12 @@ public class FlowLayout extends RowLayout {
             int horizontalPositioning, int verticalPositioning, float spacedBy) {
         super(parent, componentId, animationId, horizontalPositioning, verticalPositioning,
                 spacedBy);
+    }
+
+    @NonNull
+    @Override
+    protected String getSerializedName() {
+        return "FLOW";
     }
 
     /**
@@ -155,6 +168,8 @@ public class FlowLayout extends RowLayout {
             currentRow.add(c);
             currentWidth += componentWidth;
         }
+        DebugLog.s(() -> "COMPUTED " + rows.size() + " SEGMENTS OF ROWS for " + this + " ("
+                + mComponentId + ")");
         return rows;
     }
 
@@ -167,6 +182,12 @@ public class FlowLayout extends RowLayout {
             boolean verticalWrap,
             @NonNull MeasurePass measure,
             @NonNull Size size) {
+        DebugLog.s(() -> "COMPUTE WRAP SIZE in " + this + " (" + mComponentId + ")");
+        for (Component c : mChildrenComponents) {
+            if (c.needsMeasure()) {
+                c.measure(context, 0f, maxWidth, 0f, maxHeight, measure);
+            }
+        }
         ArrayList<ArrayList<Component>> rows = segmentComponents(context, maxWidth, maxHeight,
                 measure);
         Size rowSize = new Size(0f, 0f);
@@ -192,6 +213,7 @@ public class FlowLayout extends RowLayout {
             float minHeight,
             float maxHeight,
             @NonNull MeasurePass measure) {
+        DebugLog.s(() -> "COMPUTE SIZE in " + this + " (" + mComponentId + ")");
         ArrayList<ArrayList<Component>> rows = segmentComponents(context, maxWidth,
                 maxHeight, measure);
         for (ArrayList<Component> row : rows) {
@@ -208,6 +230,7 @@ public class FlowLayout extends RowLayout {
 
     @Override
     public void internalLayoutMeasure(@NonNull PaintContext context, @NonNull MeasurePass measure) {
+        DebugLog.s(() -> "INTERNAL LAYOUT MEASURE in " + this + " (" + mComponentId + ")");
         if (mChildrenComponents.isEmpty()) {
             return;
         }
@@ -249,4 +272,23 @@ public class FlowLayout extends RowLayout {
             positionY += rowSize.getHeight();
         }
     }
+
+
+    /**
+     * Populate the documentation with a description of this operation
+     *
+     * @param doc to append the description to.
+     */
+    public static void documentation(@NonNull DocumentationBuilder doc) {
+        doc.operation("Layout Operations", id(), "FlowLayout")
+                .description("Flow layout implementation. Positions components one after the"
+                        + " other horizontally and wraps to the next line if space is exhausted.")
+                .field(DocumentedOperation.INT, "componentId", "Unique ID for this component")
+                .field(DocumentedOperation.INT, "animationId", "ID for animation purposes")
+                .field(DocumentedOperation.INT, "horizontalPositioning",
+                        "Horizontal positioning value")
+                .field(DocumentedOperation.INT, "verticalPositioning", "Vertical positioning value")
+                .field(DocumentedOperation.FLOAT, "spacedBy", "Spacing between components");
+    }
+
 }

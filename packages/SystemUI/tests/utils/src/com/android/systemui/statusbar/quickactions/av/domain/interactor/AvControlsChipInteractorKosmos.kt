@@ -21,12 +21,13 @@ import android.app.activityManagerInterface
 import android.content.packageManager
 import android.content.testableContext
 import android.permission.PermissionManager
+import com.android.systemui.display.data.repository.displaySubcomponentPerDisplayRepository
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.backgroundScope
 import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.plugins.activityStarter
 import com.android.systemui.shade.data.repository.privacyChipRepository
-import com.android.systemui.statusbar.data.repository.statusBarModeRepository
+import com.android.systemui.statusbar.data.repository.fakeStatusBarModePerDisplayRepository
 import com.android.systemui.statusbar.notification.row.icon.appIconProvider
 import com.android.systemui.statusbar.policy.FakeIndividualSensorPrivacyController
 import com.android.systemui.statusbar.quickactions.av.AvControlsChipModule
@@ -45,6 +46,7 @@ val Kosmos.avControlsChipInteractor: AvControlsChipInteractor by
                     AvControlsChipInteractorImpl.Factory { _, _ -> avControlsChipInteractorImpl }
                 },
                 avControlsChipNotSupported = { noOpAvControlsChipInteractor },
+                displaySubcomponentRepo = displaySubcomponentPerDisplayRepository,
             )
     }
 
@@ -54,19 +56,14 @@ val Kosmos.sensorPrivacyController: FakeIndividualSensorPrivacyController by
 val Kosmos.appOpsManagerMock: AppOpsManager by Kosmos.Fixture { mock(AppOpsManager::class.java) }
 
 val Kosmos.avControlsChipInteractorImpl: AvControlsChipInteractorImpl by
-    Kosmos.Fixture {
-        createAvControlsChipInteractorImplForDisplay(displayId = testableContext.displayId)
-    }
+    Kosmos.Fixture { createAvControlsChipInteractorImpl() }
 
-fun Kosmos.createAvControlsChipInteractorImplForDisplay(
-    displayId: Int
-): AvControlsChipInteractorImpl =
+fun Kosmos.createAvControlsChipInteractorImpl(): AvControlsChipInteractorImpl =
     AvControlsChipInteractorImpl(
-        displayId = displayId,
         backgroundScope = backgroundScope,
         privacyChipRepository = privacyChipRepository,
         bgDispatcher = testDispatcher,
-        statusBarModeRepositoryStore = statusBarModeRepository,
+        statusBarModePerDisplayRepository = fakeStatusBarModePerDisplayRepository,
         sensorPrivacyController = sensorPrivacyController,
         permissionManager = PermissionManager(testableContext),
         packageManager = packageManager,

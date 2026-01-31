@@ -20,6 +20,14 @@ filegroup {
 }
 
 filegroup {
+    name: "ravenwood-aidl-policies",
+    srcs: [
+        "texts/ravenwood-aidl-policies.txt",
+    ],
+    visibility: [":__subpackages__"],
+}
+
+filegroup {
     name: "ravenwood-services-policies",
     srcs: [
         "texts/ravenwood-services-policies.txt",

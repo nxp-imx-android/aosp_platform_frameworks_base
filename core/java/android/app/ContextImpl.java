@@ -460,13 +460,17 @@ class ContextImpl extends Context {
         return mPackageManager;
     }
 
-    @RavenwoodRedirect
+    @RavenwoodReplace
     private PackageManager getPackageManagerInner() {
         final IPackageManager pm = ActivityThread.getPackageManager();
         if (pm != null) {
             return new ApplicationPackageManager(this, pm);
         }
         return null;
+    }
+
+    private PackageManager getPackageManagerInner$ravenwood() {
+        return new ApplicationPackageManager(this, null);
     }
 
     @Override
@@ -2488,6 +2492,7 @@ class ContextImpl extends Context {
     }
 
     @Override
+    @RavenwoodRedirect(comment = "Returns PERMISSION_DENIED by default on Ravenwood")
     public int checkPermission(String permission, int pid, int uid) {
         if (permission == null) {
             throw new IllegalArgumentException("permission is null");
@@ -2504,6 +2509,7 @@ class ContextImpl extends Context {
 
     /** @hide */
     @Override
+    @RavenwoodKeep
     public int checkPermission(String permission, int pid, int uid, IBinder callerToken) {
         if (permission == null) {
             throw new IllegalArgumentException("permission is null");
@@ -2523,6 +2529,7 @@ class ContextImpl extends Context {
     }
 
     @Override
+    @RavenwoodKeep
     public int checkCallingPermission(String permission) {
         if (permission == null) {
             throw new IllegalArgumentException("permission is null");
@@ -2536,6 +2543,7 @@ class ContextImpl extends Context {
     }
 
     @Override
+    @RavenwoodKeep
     public int checkCallingOrSelfPermission(String permission) {
         if (permission == null) {
             throw new IllegalArgumentException("permission is null");
@@ -2546,6 +2554,7 @@ class ContextImpl extends Context {
     }
 
     @Override
+    @RavenwoodKeep
     public int checkSelfPermission(String permission) {
         if (permission == null) {
             throw new IllegalArgumentException("permission is null");
@@ -2558,6 +2567,7 @@ class ContextImpl extends Context {
         return checkPermission(permission, Process.myPid(), Process.myUid());
     }
 
+    @RavenwoodKeep
     private void enforce(
             String permission, int resultOfCheck,
             boolean selfToo, int uid, String message) {
@@ -2573,6 +2583,7 @@ class ContextImpl extends Context {
     }
 
     @Override
+    @RavenwoodKeep
     public void enforcePermission(
             String permission, int pid, int uid, String message) {
         enforce(permission,
@@ -2583,6 +2594,7 @@ class ContextImpl extends Context {
     }
 
     @Override
+    @RavenwoodKeep
     public void enforceCallingPermission(String permission, String message) {
         enforce(permission,
                 checkCallingPermission(permission),
@@ -2592,6 +2604,7 @@ class ContextImpl extends Context {
     }
 
     @Override
+    @RavenwoodKeep
     public void enforceCallingOrSelfPermission(
             String permission, String message) {
         enforce(permission,
@@ -2849,6 +2862,7 @@ class ContextImpl extends Context {
         }
     }
 
+    @RavenwoodKeep
     private static Resources createResources(IBinder activityToken, LoadedApk pi, String splitName,
             @Nullable Integer overrideDisplayId, Configuration overrideConfig,
             CompatibilityInfo compatInfo, List<ResourcesLoader> resourcesLoader) {
@@ -3004,6 +3018,7 @@ class ContextImpl extends Context {
     }
 
     @Override
+    @RavenwoodKeep
     public Context createConfigurationContext(Configuration overrideConfiguration) {
         if (overrideConfiguration == null) {
             throw new IllegalArgumentException("overrideConfiguration must not be null");
@@ -3331,6 +3346,7 @@ class ContextImpl extends Context {
     }
 
     @Override
+    @RavenwoodIgnore
     public Display getDisplayNoVerify() {
         if (mDisplay == null) {
             return mResourcesManager.getAdjustedDisplay(Display.DEFAULT_DISPLAY,
@@ -3341,6 +3357,7 @@ class ContextImpl extends Context {
     }
 
     @Override
+    @RavenwoodKeep
     public int getDisplayId() {
         final Display display = getDisplayNoVerify();
         return display != null ? display.getDisplayId() : Display.DEFAULT_DISPLAY;
@@ -3477,6 +3494,7 @@ class ContextImpl extends Context {
     }
 
     @Override
+    @RavenwoodKeep
     public DisplayAdjustments getDisplayAdjustments(int displayId) {
         return mResources.getDisplayAdjustments();
     }

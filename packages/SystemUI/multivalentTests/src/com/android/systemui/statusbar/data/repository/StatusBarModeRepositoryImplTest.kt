@@ -31,6 +31,7 @@ import com.android.internal.statusbar.LetterboxDetails
 import com.android.internal.view.AppearanceRegion
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.coroutines.collectLastValue
+import com.android.systemui.dump.dumpManager
 import com.android.systemui.statusbar.CommandQueue
 import com.android.systemui.statusbar.StatusBarAlwaysUseRegionSampling
 import com.android.systemui.statusbar.StatusBarRegionSampling
@@ -74,6 +75,7 @@ class StatusBarModeRepositoryImplTest : SysuiTestCase() {
             DISPLAY_ID,
             commandQueue,
             letterboxAppearanceCalculator,
+            kosmos.dumpManager,
         )
     }
 
@@ -109,6 +111,18 @@ class StatusBarModeRepositoryImplTest : SysuiTestCase() {
         underTest.stop()
 
         verify(statusBarBoundsProvider).stop()
+    }
+
+    @Test
+    fun start_registersDumpable() {
+        verify(kosmos.dumpManager).registerCriticalDumpable(any(), eq(underTest))
+    }
+
+    @Test
+    fun stop_unregistersDumpable() {
+        underTest.stop()
+
+        verify(kosmos.dumpManager).unregisterDumpable(any())
     }
 
     @Test

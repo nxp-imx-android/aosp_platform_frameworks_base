@@ -546,6 +546,14 @@ public final class Parcel {
         public String readString16(Parcel p) {
             return p.readString16NoHelper();
         }
+
+        public void writeStrongBinder(Parcel p, IBinder val) {
+            p.writeStrongBinderNoHelper(val);
+        }
+
+        public IBinder readStrongBinder(Parcel p) {
+            return p.readStrongBinderNoHelper();
+        }
     }
 
     private ReadWriteHelper mReadWriteHelper = ReadWriteHelper.DEFAULT;
@@ -1350,6 +1358,11 @@ public final class Parcel {
         nativeWriteString16(mNativePtr, val);
     }
 
+    /** @hide */
+    public void writeStrongBinderNoHelper(IBinder val) {
+        nativeWriteStrongBinder(mNativePtr, val);
+    }
+
     /**
      * Write a boolean value into the parcel at the current dataPosition(),
      * growing dataCapacity() if needed.
@@ -1376,7 +1389,7 @@ public final class Parcel {
      * growing dataCapacity() if needed.
      */
     public final void writeStrongBinder(IBinder val) {
-        nativeWriteStrongBinder(mNativePtr, val);
+        mReadWriteHelper.writeStrongBinder(this, val);
     }
 
     /**
@@ -3456,6 +3469,21 @@ public final class Parcel {
         return nativeReadString16(mNativePtr);
     }
 
+    /** @hide */
+    public IBinder readStrongBinderNoHelper() {
+        final IBinder result = nativeReadStrongBinder(mNativePtr);
+
+        // If it's a reply from a method with @PropagateAllowBlocking, then inherit allow-blocking
+        // from the object that returned it.
+        if (result != null
+                && hasFlags(
+                        FLAG_IS_REPLY_FROM_BLOCKING_ALLOWED_OBJECT
+                                | FLAG_PROPAGATE_ALLOW_BLOCKING)) {
+            Binder.allowBlocking(result);
+        }
+        return result;
+    }
+
     /**
      * Read a boolean value from the parcel at the current dataPosition().
      */
@@ -3477,15 +3505,7 @@ public final class Parcel {
      * Read an object from the parcel at the current dataPosition().
      */
     public final IBinder readStrongBinder() {
-        final IBinder result = nativeReadStrongBinder(mNativePtr);
-
-        // If it's a reply from a method with @PropagateAllowBlocking, then inherit allow-blocking
-        // from the object that returned it.
-        if (result != null && hasFlags(
-                FLAG_IS_REPLY_FROM_BLOCKING_ALLOWED_OBJECT | FLAG_PROPAGATE_ALLOW_BLOCKING)) {
-            Binder.allowBlocking(result);
-        }
-        return result;
+        return mReadWriteHelper.readStrongBinder(this);
     }
 
     /**

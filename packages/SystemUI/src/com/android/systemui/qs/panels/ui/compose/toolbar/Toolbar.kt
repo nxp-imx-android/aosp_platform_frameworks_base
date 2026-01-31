@@ -28,6 +28,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -254,6 +255,7 @@ private fun PowerMenuToggleButton(
             modifier
                 .borderOnFocus(MaterialTheme.colorScheme.secondary, CornerSize(percent = 50))
                 .clip(shape)
+                .focusable()
                 .clickable(onClick = viewModel.onClick)
                 .background(bgColor)
                 .padding(

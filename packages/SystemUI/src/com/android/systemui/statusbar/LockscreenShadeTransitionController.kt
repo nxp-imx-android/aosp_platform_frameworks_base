@@ -23,6 +23,7 @@ import com.android.systemui.deviceentry.domain.interactor.DeviceEntryInteractor
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.keyguard.WakefulnessLifecycle
 import com.android.systemui.keyguard.domain.interactor.NaturalScrollingSettingObserver
+import com.android.systemui.media.controls.ui.controller.KeyguardMediaController
 import com.android.systemui.media.controls.ui.controller.MediaHierarchyManager
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.plugins.ActivityStarter.OnDismissAction
@@ -67,6 +68,7 @@ constructor(
     private val falsingCollector: FalsingCollector,
     private val ambientState: AmbientState,
     private val mediaHierarchyManager: MediaHierarchyManager,
+    private val keyguardMediaController: KeyguardMediaController,
     private val scrimTransitionController: LockscreenShadeScrimTransitionController,
     private val keyguardTransitionControllerFactory:
         LockscreenShadeKeyguardTransitionController.Factory,
@@ -463,6 +465,7 @@ constructor(
                         )
                     }
 
+                    keyguardMediaController.setTransitionToFullShadeAmount(field)
                     mediaHierarchyManager.setTransitionToFullShadeAmount(field)
                     scrimTransitionController.dragDownAmount = value
                     transitionToShadeAmountCommon(field)

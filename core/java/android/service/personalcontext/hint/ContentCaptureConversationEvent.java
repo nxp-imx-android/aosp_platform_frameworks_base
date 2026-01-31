@@ -7,7 +7,7 @@
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law of or agreed to in writing, software
+ * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
@@ -30,10 +30,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.time.Instant;
 import java.util.Objects;
 
-/** Base class for conversation-related events. */
+/** Base class for conversation-related events from the Content Capture API. */
 @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
-public abstract class ConversationEvent {
-    private static final String TAG = "ConversationEvent";
+public abstract class ContentCaptureConversationEvent {
+    private static final String TAG = "ContentCaptureConversationEvent";
 
     private static final String KEY_EVENT_TYPE = "key_event_type";
     private static final String KEY_CONVERSATION_SESSION_ID = "key_conversation_session_id";
@@ -85,7 +85,7 @@ public abstract class ConversationEvent {
      */
     private final @NonNull Instant mClientEventTimestamp;
 
-    ConversationEvent(
+    ContentCaptureConversationEvent(
             @NonNull String conversationSessionId, @NonNull Instant clientEventTimestamp) {
         mConversationSessionId = conversationSessionId;
         mClientEventTimestamp = clientEventTimestamp;
@@ -123,9 +123,9 @@ public abstract class ConversationEvent {
     }
 
     /**
-     * Writes this event to a bundle for use by {@link ConversationHint#toBundle()}, minus the event
-     * data itself, which might contain binders or file descriptors that aren't desired in {@link
-     * #writeToSignatureParcel(Parcel)}.
+     * Writes this event to a bundle for use by {@link ContentCaptureConversationHint#toBundle()},
+     * minus the event data itself, which might contain binders or file descriptors that aren't
+     * desired in {@link #writeToSignatureParcel(Parcel)}.
      */
     private Bundle toBundleBase() {
         final Bundle bundle = new Bundle();
@@ -158,7 +158,7 @@ public abstract class ConversationEvent {
      * @hide
      */
     @NonNull
-    public static ConversationEvent fromBundle(@NonNull Bundle bundle) {
+    public static ContentCaptureConversationEvent fromBundle(@NonNull Bundle bundle) {
         final int eventType = bundle.getInt(KEY_EVENT_TYPE);
         final String conversationSessionId = bundle.getString(KEY_CONVERSATION_SESSION_ID);
         final Instant clientEventTimestamp =
@@ -183,7 +183,8 @@ public abstract class ConversationEvent {
                             conversationSessionId, clientEventTimestamp, eventData);
             default -> {
                 Log.wtf(TAG, "Unknown event type: " + eventType);
-                yield new ConversationEvent(conversationSessionId, clientEventTimestamp) {
+                yield new ContentCaptureConversationEvent(
+                        conversationSessionId, clientEventTimestamp) {
                     @Override
                     int getEventType() {
                         return EVENT_TYPE_UNKNOWN;
@@ -201,7 +202,7 @@ public abstract class ConversationEvent {
 
     /** An event representing a new conversation being visible on the screen. */
     @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
-    public static final class ConversationEnterEvent extends ConversationEvent {
+    public static final class ConversationEnterEvent extends ContentCaptureConversationEvent {
         private static final String KEY_ENTER_TIMESTAMP = "key_enter_timestamp";
 
         /**
@@ -292,7 +293,7 @@ public abstract class ConversationEvent {
 
     /** An event representing a conversation not being visible on the screen anymore. */
     @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
-    public static final class ConversationExitEvent extends ConversationEvent {
+    public static final class ConversationExitEvent extends ContentCaptureConversationEvent {
         private static final String KEY_EXIT_TIMESTAMP = "key_exit_timestamp";
 
         /**
@@ -325,8 +326,7 @@ public abstract class ConversationEvent {
                 @NonNull Instant clientEventTimestamp,
                 @NonNull Bundle bundle) {
             super(conversationSessionId, clientEventTimestamp);
-            mConversationExitTimestamp =
-                    Instant.ofEpochMilli(bundle.getLong(KEY_EXIT_TIMESTAMP));
+            mConversationExitTimestamp = Instant.ofEpochMilli(bundle.getLong(KEY_EXIT_TIMESTAMP));
         }
 
         @Override
@@ -383,7 +383,7 @@ public abstract class ConversationEvent {
 
     /** An event representing a message from a conversation on screen being processed. */
     @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
-    public static final class ConversationProcessingEvent extends ConversationEvent {
+    public static final class ConversationProcessingEvent extends ContentCaptureConversationEvent {
         private static final String KEY_START_TIMESTAMP = "key_start_timestamp";
         private static final String KEY_MESSAGE_AUTOFILL_ID = "key_message_autofill_id";
 
@@ -394,6 +394,7 @@ public abstract class ConversationEvent {
          * detected the conversation was being processed.
          */
         private final @NonNull Instant mStartProcessingTimestamp;
+
         private final @NonNull AutofillId mMessageAutofillId;
 
         /**
@@ -490,7 +491,7 @@ public abstract class ConversationEvent {
 
     /** An event representing an update to the data of a conversation visible on the screen. */
     @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
-    public static final class ConversationUpdateEvent extends ConversationEvent {
+    public static final class ConversationUpdateEvent extends ContentCaptureConversationEvent {
         private static final String KEY_CONVERSATION_DATA = "key_conversation_data";
         private static final String KEY_CONVERSATION_UPDATE_TIMESTAMP =
                 "key_conversation_update_timestamp";

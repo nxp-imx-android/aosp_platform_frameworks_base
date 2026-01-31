@@ -63,6 +63,7 @@ class SystemUIIssueRegistry : IssueRegistry() {
                 TestFunctionNameViolationDetector.ISSUE,
                 UseNoMetricInFunctionalDetector.ISSUE_BEFORE,
                 UseNoMetricInFunctionalDetector.ISSUE_AFTER,
+                ViewModelCoroutineScopeBanDetector.ISSUE,
             )
 
     override val api: Int

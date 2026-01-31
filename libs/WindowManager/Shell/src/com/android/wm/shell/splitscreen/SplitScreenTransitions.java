@@ -30,6 +30,7 @@ import static com.android.wm.shell.shared.split.SplitScreenConstants.FLAG_IS_DIV
 import static com.android.wm.shell.splitscreen.SplitScreen.stageTypeToString;
 import static com.android.wm.shell.splitscreen.SplitScreenController.EXIT_REASON_DRAG_DIVIDER;
 import static com.android.wm.shell.splitscreen.SplitScreenController.exitReasonToString;
+import static com.android.wm.shell.transition.Transitions.TRANSIT_SPLIT_CANCEL;
 import static com.android.wm.shell.transition.Transitions.TRANSIT_SPLIT_DISMISS;
 import static com.android.wm.shell.transition.Transitions.TRANSIT_SPLIT_DISMISS_SNAP;
 
@@ -554,11 +555,14 @@ class SplitScreenTransitions {
         mAnimatingTransition = null;
 
         mOnFinish.run();
-         if (mFinishCallback != null) {
-             Transitions.TransitionFinishCallback currentFinishCallback = mFinishCallback;
-             mFinishCallback = null;
-             currentFinishCallback.onTransitionFinished(wct /* wct */);
-         }
+        if (mFinishCallback != null) {
+            Transitions.TransitionFinishCallback currentFinishCallback = mFinishCallback;
+            mFinishCallback = null;
+            currentFinishCallback.onTransitionFinished(null /* wct */);
+        }
+        if (!wct.isEmpty()) {
+            mTransitions.startTransition(TRANSIT_SPLIT_CANCEL, wct, mStageCoordinator);
+        }
     }
 
     private void startFadeAnimation(@NonNull SurfaceControl leash, boolean show) {

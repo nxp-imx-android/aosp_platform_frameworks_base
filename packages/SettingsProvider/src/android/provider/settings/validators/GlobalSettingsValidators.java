@@ -505,6 +505,8 @@ public class GlobalSettingsValidators {
                 new InclusiveIntegerRangeValidator(
                         Global.Wearable.GESTURE_CUSTOMIZE_ALARM_PRIMARY_ACTION_SNOOZE,
                         Global.Wearable.GESTURE_CUSTOMIZE_ALARM_PRIMARY_ACTION_DISMISS));
+        VALIDATORS.put(Global.Wearable.REMOTE_GESTURES_ENABLED, BOOLEAN_VALIDATOR);
+        VALIDATORS.put(Global.Wearable.ALWAYS_ROUTE_GESTURES_TO_REMOTE_CLIENTS, BOOLEAN_VALIDATOR);
         VALIDATORS.put(Global.GLOBAL_ACTIONS_TIMEOUT_MILLIS, NON_NEGATIVE_INTEGER_VALIDATOR);
         VALIDATORS.put(Global.WATCH_RANGING_SUPPORTED_BY_PRIMARY_DEVICE,
                 new InclusiveIntegerRangeValidator(0, 1));

@@ -9294,6 +9294,7 @@ package android.app.appfunctions {
     method @FlaggedApi("android.permission.flags.app_function_access_ui_enabled") @NonNull public android.content.Intent createRequestAccessIntent(@NonNull String);
     method @FlaggedApi("android.app.appfunctions.flags.enable_app_function_permission_v2") @RequiresPermission(anyOf={android.Manifest.permission.EXECUTE_APP_FUNCTIONS, "android.permission.EXECUTE_APP_FUNCTIONS_SYSTEM"}, conditional=true) public void executeAppFunction(@NonNull android.app.appfunctions.ExecuteAppFunctionRequest, @NonNull java.util.concurrent.Executor, @NonNull android.os.CancellationSignal, @NonNull android.os.OutcomeReceiver<android.app.appfunctions.ExecuteAppFunctionResponse,android.app.appfunctions.AppFunctionException>);
     method @FlaggedApi("android.permission.flags.app_function_access_api_enabled") public int getAccessRequestState(@NonNull String);
+    method @FlaggedApi("android.app.appfunctions.flags.enable_dynamic_app_functions") @RequiresPermission(anyOf={android.Manifest.permission.EXECUTE_APP_FUNCTIONS, "android.permission.DISCOVER_APP_FUNCTIONS", "android.permission.EXECUTE_APP_FUNCTIONS_SYSTEM"}, conditional=true) public void getAppFunctionStates(@NonNull java.util.List<android.app.appfunctions.AppFunctionName>, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.util.List<android.app.appfunctions.AppFunctionState>,java.lang.Exception>);
     method @FlaggedApi("android.app.appfunctions.flags.enable_app_function_permission_v2") @RequiresPermission(anyOf={android.Manifest.permission.EXECUTE_APP_FUNCTIONS, "android.permission.DISCOVER_APP_FUNCTIONS", "android.permission.EXECUTE_APP_FUNCTIONS_SYSTEM"}, conditional=true) public void isAppFunctionEnabled(@NonNull String, @NonNull String, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.lang.Boolean,java.lang.Exception>);
     method public void isAppFunctionEnabled(@NonNull String, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.lang.Boolean,java.lang.Exception>);
     method @FlaggedApi("android.app.appfunctions.flags.enable_dynamic_app_functions") @NonNull @RequiresPermission(anyOf={android.Manifest.permission.EXECUTE_APP_FUNCTIONS, "android.permission.DISCOVER_APP_FUNCTIONS", "android.permission.EXECUTE_APP_FUNCTIONS_SYSTEM"}, conditional=true) public android.app.appfunctions.AppFunctionObservation observeAppFunctions(@NonNull android.app.appfunctions.AppFunctionSearchSpec, @NonNull java.util.concurrent.Executor, @NonNull android.app.appfunctions.AppFunctionObserver);
@@ -9319,7 +9320,6 @@ package android.app.appfunctions {
     method @NonNull public android.app.appfunctions.AppFunctionName getName();
     method @NonNull public android.app.appfunctions.AppFunctionPackageMetadata getPackageMetadata();
     method @Nullable public android.app.appfunctions.AppFunctionSchemaMetadata getSchemaMetadata();
-    method public boolean isEnabled();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.app.appfunctions.AppFunctionMetadata> CREATOR;
     field public static final String PROPERTY_ENABLED_BY_DEFAULT = "enabledByDefault";
@@ -9396,6 +9396,14 @@ package android.app.appfunctions {
     method @NonNull public final android.os.IBinder onBind(@Nullable android.content.Intent);
     method @MainThread public abstract void onExecuteFunction(@NonNull android.app.appfunctions.ExecuteAppFunctionRequest, @NonNull String, @NonNull android.content.pm.SigningInfo, @NonNull android.os.CancellationSignal, @NonNull android.os.OutcomeReceiver<android.app.appfunctions.ExecuteAppFunctionResponse,android.app.appfunctions.AppFunctionException>);
     field @NonNull public static final String SERVICE_INTERFACE = "android.app.appfunctions.AppFunctionService";
+  }
+
+  @FlaggedApi("android.app.appfunctions.flags.enable_dynamic_app_functions") public final class AppFunctionState implements android.os.Parcelable {
+    method public int describeContents();
+    method @NonNull public android.app.appfunctions.AppFunctionName getFunctionName();
+    method public boolean isEnabled();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.app.appfunctions.AppFunctionState> CREATOR;
   }
 
   @FlaggedApi("android.app.appfunctions.flags.enable_app_function_permission_v2") public final class AppFunctionUriGrant implements android.os.Parcelable {
@@ -10135,13 +10143,10 @@ package android.app.permissionui {
   }
 
   public static final class LocationButtonRequest.Builder {
-    ctor public LocationButtonRequest.Builder();
-    ctor public LocationButtonRequest.Builder(@NonNull android.app.permissionui.LocationButtonRequest);
+    ctor public LocationButtonRequest.Builder(int, int, @NonNull android.content.res.Configuration);
     method @NonNull public android.app.permissionui.LocationButtonRequest build();
     method @NonNull public android.app.permissionui.LocationButtonRequest.Builder setBackgroundColor(@ColorInt int);
-    method @NonNull public android.app.permissionui.LocationButtonRequest.Builder setConfiguration(@NonNull android.content.res.Configuration);
     method @NonNull public android.app.permissionui.LocationButtonRequest.Builder setCornerRadius(float);
-    method @NonNull public android.app.permissionui.LocationButtonRequest.Builder setHeight(int);
     method @NonNull public android.app.permissionui.LocationButtonRequest.Builder setIconTint(@ColorInt int);
     method @NonNull public android.app.permissionui.LocationButtonRequest.Builder setPaddingBottom(int);
     method @NonNull public android.app.permissionui.LocationButtonRequest.Builder setPaddingLeft(int);
@@ -10152,7 +10157,6 @@ package android.app.permissionui {
     method @NonNull public android.app.permissionui.LocationButtonRequest.Builder setStrokeWidth(int);
     method @NonNull public android.app.permissionui.LocationButtonRequest.Builder setTextColor(@ColorInt int);
     method @NonNull public android.app.permissionui.LocationButtonRequest.Builder setTextType(int);
-    method @NonNull public android.app.permissionui.LocationButtonRequest.Builder setWidth(int);
   }
 
   @FlaggedApi("android.permission.flags.location_button_enabled") public interface LocationButtonSession extends java.lang.AutoCloseable {
@@ -44181,6 +44185,43 @@ package android.service.personalcontext.hint {
     method @NonNull public android.service.personalcontext.hint.ChatMessageData.Builder setText(@NonNull String);
   }
 
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public abstract class ContentCaptureConversationEvent {
+    method @NonNull public java.time.Instant getClientEventTimestamp();
+    method @NonNull public String getConversationSessionId();
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class ContentCaptureConversationEvent.ConversationEnterEvent extends android.service.personalcontext.hint.ContentCaptureConversationEvent {
+    ctor public ContentCaptureConversationEvent.ConversationEnterEvent(@NonNull String, @NonNull java.time.Instant, @NonNull java.time.Instant);
+    method @NonNull public java.time.Instant getConversationEnterTimestamp();
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class ContentCaptureConversationEvent.ConversationExitEvent extends android.service.personalcontext.hint.ContentCaptureConversationEvent {
+    ctor public ContentCaptureConversationEvent.ConversationExitEvent(@NonNull String, @NonNull java.time.Instant, @NonNull java.time.Instant);
+    method @NonNull public java.time.Instant getConversationExitTimestamp();
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class ContentCaptureConversationEvent.ConversationProcessingEvent extends android.service.personalcontext.hint.ContentCaptureConversationEvent {
+    ctor public ContentCaptureConversationEvent.ConversationProcessingEvent(@NonNull String, @NonNull java.time.Instant, @NonNull java.time.Instant, @NonNull android.view.autofill.AutofillId);
+    method @NonNull public android.view.autofill.AutofillId getMessageAutofillId();
+    method @NonNull public java.time.Instant getStartProcessingTimestamp();
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class ContentCaptureConversationEvent.ConversationUpdateEvent extends android.service.personalcontext.hint.ContentCaptureConversationEvent {
+    ctor public ContentCaptureConversationEvent.ConversationUpdateEvent(@NonNull String, @NonNull java.time.Instant, @NonNull java.time.Instant, @NonNull android.service.personalcontext.hint.ConversationData);
+    method @NonNull public android.service.personalcontext.hint.ConversationData getConversationData();
+    method @NonNull public java.time.Instant getConversationUpdateTimestamp();
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class ContentCaptureConversationHint extends android.service.personalcontext.hint.ContextHint {
+    method @NonNull public android.service.personalcontext.hint.ContentCaptureConversationEvent getConversationEvent();
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class ContentCaptureConversationHint.Builder {
+    ctor public ContentCaptureConversationHint.Builder(@NonNull android.service.personalcontext.hint.ContentCaptureConversationEvent);
+    method @NonNull public android.service.personalcontext.hint.ContentCaptureConversationHint.Builder addToken(@NonNull android.service.personalcontext.Token);
+    method @NonNull public android.service.personalcontext.hint.ContentCaptureConversationHint build();
+  }
+
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public abstract class ContextHint {
     method @NonNull public final java.time.Instant getCreationTime();
     method @NonNull public final java.util.UUID getHintId();
@@ -44224,43 +44265,6 @@ package android.service.personalcontext.hint {
     method @NonNull public android.service.personalcontext.hint.ConversationData.Builder setLastMessageFromTheUser(boolean);
     method @NonNull public android.service.personalcontext.hint.ConversationData.Builder setProcessingEndTimestamp(@NonNull java.time.Instant);
     method @NonNull public android.service.personalcontext.hint.ConversationData.Builder setProcessingStartTimestamp(@NonNull java.time.Instant);
-  }
-
-  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public abstract class ConversationEvent {
-    method @NonNull public java.time.Instant getClientEventTimestamp();
-    method @NonNull public String getConversationSessionId();
-  }
-
-  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class ConversationEvent.ConversationEnterEvent extends android.service.personalcontext.hint.ConversationEvent {
-    ctor public ConversationEvent.ConversationEnterEvent(@NonNull String, @NonNull java.time.Instant, @NonNull java.time.Instant);
-    method @NonNull public java.time.Instant getConversationEnterTimestamp();
-  }
-
-  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class ConversationEvent.ConversationExitEvent extends android.service.personalcontext.hint.ConversationEvent {
-    ctor public ConversationEvent.ConversationExitEvent(@NonNull String, @NonNull java.time.Instant, @NonNull java.time.Instant);
-    method @NonNull public java.time.Instant getConversationExitTimestamp();
-  }
-
-  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class ConversationEvent.ConversationProcessingEvent extends android.service.personalcontext.hint.ConversationEvent {
-    ctor public ConversationEvent.ConversationProcessingEvent(@NonNull String, @NonNull java.time.Instant, @NonNull java.time.Instant, @NonNull android.view.autofill.AutofillId);
-    method @NonNull public android.view.autofill.AutofillId getMessageAutofillId();
-    method @NonNull public java.time.Instant getStartProcessingTimestamp();
-  }
-
-  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class ConversationEvent.ConversationUpdateEvent extends android.service.personalcontext.hint.ConversationEvent {
-    ctor public ConversationEvent.ConversationUpdateEvent(@NonNull String, @NonNull java.time.Instant, @NonNull java.time.Instant, @NonNull android.service.personalcontext.hint.ConversationData);
-    method @NonNull public android.service.personalcontext.hint.ConversationData getConversationData();
-    method @NonNull public java.time.Instant getConversationUpdateTimestamp();
-  }
-
-  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class ConversationHint extends android.service.personalcontext.hint.ContextHint {
-    method @NonNull public android.service.personalcontext.hint.ConversationEvent getConversationEvent();
-  }
-
-  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class ConversationHint.Builder {
-    ctor public ConversationHint.Builder(@NonNull android.service.personalcontext.hint.ConversationEvent);
-    method @NonNull public android.service.personalcontext.hint.ConversationHint.Builder addToken(@NonNull android.service.personalcontext.Token);
-    method @NonNull public android.service.personalcontext.hint.ConversationHint build();
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class HintInvalidationHint extends android.service.personalcontext.hint.ContextHint {

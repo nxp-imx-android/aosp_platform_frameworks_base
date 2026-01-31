@@ -96,7 +96,6 @@ class android.app.admin.DevicePolicyManager throw
 # set "exp" to individual classes and methods.
 
 class android.app.ContextImpl exp
-    method checkPermission redirect
     method registerReceiverInternal ignore
     method unregisterReceiver ignore
 

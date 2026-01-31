@@ -11136,8 +11136,8 @@ public final class ViewRootImpl implements ViewParent,
         // scheduling it again.
         if (!mConsumeBatchedInputScheduled && !mConsumeBatchedInputImmediatelyScheduled) {
             mConsumeBatchedInputScheduled = true;
-            mChoreographer.postCallback(Choreographer.CALLBACK_INPUT,
-                    mConsumedBatchedInputRunnable, null);
+            mChoreographer.postVsyncCallback(Choreographer.CALLBACK_INPUT,
+                    mConsumedBatchedInputCallback);
             if (mAttachInfo.mThreadedRenderer != null) {
                 mAttachInfo.mThreadedRenderer.notifyCallbackPending();
             }
@@ -11147,8 +11147,8 @@ public final class ViewRootImpl implements ViewParent,
     void unscheduleConsumeBatchedInput() {
         if (mConsumeBatchedInputScheduled) {
             mConsumeBatchedInputScheduled = false;
-            mChoreographer.removeCallbacks(Choreographer.CALLBACK_INPUT,
-                    mConsumedBatchedInputRunnable, null);
+            mChoreographer.removeVsyncCallback(Choreographer.CALLBACK_INPUT,
+                    mConsumedBatchedInputCallback);
         }
     }
 
@@ -11251,13 +11251,13 @@ public final class ViewRootImpl implements ViewParent,
 
     HardwareRendererObserver mHardwareRendererObserver;
 
-    final class ConsumeBatchedInputRunnable implements Runnable {
+    final class ConsumeBatchedInputCallback implements Choreographer.VsyncCallback {
         @Override
-        public void run() {
+        public void onVsync(Choreographer.FrameData frameData) {
             Trace.traceBegin(TRACE_TAG_VIEW, mTag);
             try {
                 mConsumeBatchedInputScheduled = false;
-                if (doConsumeBatchedInput(mChoreographer.getFrameTimeNanos())) {
+                if (doConsumeBatchedInput(frameData.getFrameTimeNanos())) {
                     // If we consumed a batch here, we want to go ahead and schedule the
                     // consumption of batched input events on the next frame. Otherwise, we would
                     // wait until we have more input events pending and might get starved by other
@@ -11269,8 +11269,8 @@ public final class ViewRootImpl implements ViewParent,
             }
         }
     }
-    final ConsumeBatchedInputRunnable mConsumedBatchedInputRunnable =
-            new ConsumeBatchedInputRunnable();
+    final ConsumeBatchedInputCallback mConsumedBatchedInputCallback =
+            new ConsumeBatchedInputCallback();
     boolean mConsumeBatchedInputScheduled;
 
     final class ConsumeBatchedInputImmediatelyRunnable implements Runnable {

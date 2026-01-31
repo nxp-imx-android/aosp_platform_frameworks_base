@@ -9549,6 +9549,7 @@ public final class Settings {
          * the following settings:
          * <ul>
          * <li>{@link #ACCESSIBILITY_CAPTIONING_LOCALE}
+         * <li>{@link #ACCESSIBILITY_CAPTIONING_EASY_READER_ENABLED}
          * <li>{@link #ACCESSIBILITY_CAPTIONING_BACKGROUND_COLOR}
          * <li>{@link #ACCESSIBILITY_CAPTIONING_FOREGROUND_COLOR}
          * <li>{@link #ACCESSIBILITY_CAPTIONING_EDGE_COLOR}
@@ -9575,6 +9576,16 @@ public final class Settings {
                 "accessibility_captioning_locale";
 
         /**
+         * Setting that specifies whether simplified language captions should be shown if possible,
+         * i.e. Easy Reader is enabled.
+         *
+         * @hide
+         */
+        @Readable
+        public static final String ACCESSIBILITY_CAPTIONING_EASY_READER_ENABLED =
+                "accessibility_captioning_easy_reader_enabled";
+
+        /**
          * Integer property that specifies the preset style for captions, one
          * of:
          * <ul>
@@ -9582,7 +9593,6 @@ public final class Settings {
          * <li>a valid index of {@link android.view.accessibility.CaptioningManager.CaptionStyle#PRESETS}
          * </ul>
          *
-         * @see java.util.Locale#toString
          * @hide
          */
         @Readable
@@ -21764,6 +21774,22 @@ public final class Settings {
              * @hide
              */
             public static final int GESTURE_CUSTOMIZE_ALARM_PRIMARY_ACTION_DISMISS = 1;
+
+            /**
+             * A boolean that tracks whether remote gestures are enabled.
+             *
+             * @hide
+             */
+            public static final String REMOTE_GESTURES_ENABLED = "remote_gestures_enabled";
+
+            /**
+             * A boolean that tracks whether all gestures are routed to remote clients when remote
+             * clients are connected.
+             *
+             * @hide
+             */
+            public static final String ALWAYS_ROUTE_GESTURES_TO_REMOTE_CLIENTS =
+                    "always_route_gestures_to_remote_clients";
 
             /** Whether Wear Power Anomaly Service is enabled.
              *

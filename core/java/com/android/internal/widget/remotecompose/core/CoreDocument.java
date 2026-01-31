@@ -78,7 +78,7 @@ public class CoreDocument implements Serializable {
 
     // We also keep a more fine-grained BUILD number, exposed as
     // ID_API_LEVEL = DOCUMENT_API_LEVEL + BUILD
-    static final float BUILD = 0.63f;
+    static final float BUILD = 0.64f;
 
     private static final boolean UPDATE_VARIABLES_BEFORE_LAYOUT = false;
 
@@ -1283,6 +1283,9 @@ public class CoreDocument implements Serializable {
      * listeners.
      */
     public void onClick(@NonNull RemoteContext context, float x, float y) {
+        if (context.isBasicDebug()) {
+            System.out.println("[RC] Click at " + x + ", " + y);
+        }
         for (ClickAreaRepresentation clickArea : mClickAreas) {
             if (clickArea.contains(x, y)) {
                 warnClickListeners(clickArea);
@@ -1301,6 +1304,9 @@ public class CoreDocument implements Serializable {
      * @param metadata the metadata of the click event
      */
     public void performClick(@NonNull RemoteContext context, int id, @NonNull String metadata) {
+        if (context.isBasicDebug()) {
+            System.out.println("[RC] performClick for " + id);
+        }
         for (ClickAreaRepresentation clickArea : mClickAreas) {
             if (clickArea.mId == id) {
                 warnClickListeners(clickArea);

@@ -22,7 +22,7 @@ import androidx.test.filters.SmallTest
 import com.android.systemui.Flags.FLAG_EXPANDED_PRIVACY_INDICATORS_ON_LARGE_SCREEN
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.shade.data.repository.fakePrivacyChipRepository
-import com.android.systemui.statusbar.data.repository.fakeStatusBarModeRepository
+import com.android.systemui.statusbar.data.repository.fakeStatusBarModePerDisplayRepository
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.Test
 import kotlinx.coroutines.flow.first
@@ -68,7 +68,7 @@ class NoOpAvControlsChipInteractorTest() : AvControlsChipInteractorTestBase() {
     fun cameraActive_noFullscreen_shouldNotSuppressDot() =
         kosmos.runTest {
             fakePrivacyChipRepository.setPrivacyItems(listOf(cameraItem))
-            fakeStatusBarModeRepository.defaultDisplay.isInFullscreenMode.value = false
+            fakeStatusBarModePerDisplayRepository.isInFullscreenMode.value = false
             assertThat(underTest.isShowingAvChip.first()).isEqualTo(false)
         }
 
@@ -77,7 +77,7 @@ class NoOpAvControlsChipInteractorTest() : AvControlsChipInteractorTestBase() {
     fun cameraActive_fullscreen_shouldNotSuppressDot() =
         kosmos.runTest {
             fakePrivacyChipRepository.setPrivacyItems(listOf(cameraItem))
-            fakeStatusBarModeRepository.defaultDisplay.isInFullscreenMode.value = true
+            fakeStatusBarModePerDisplayRepository.isInFullscreenMode.value = true
             assertThat(underTest.isShowingAvChip.first()).isEqualTo(false)
         }
 }
