@@ -578,9 +578,7 @@ interface IWindowManager
     /**
      * Create an input consumer by name and display id.
      */
-    @UnsupportedAppUsage
-    void createInputConsumer(IBinder token, String name, int displayId,
-        out InputChannel inputChannel);
+    InputChannel createInputConsumer(IBinder token, String name, int displayId);
 
     /**
      * Destroy an input consumer by token and display id.
