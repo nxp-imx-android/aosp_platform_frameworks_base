@@ -408,7 +408,20 @@ public final class ProfcollectForwardingService extends SystemService {
         if (Utils.withFrequency("dex2oat_trace_freq", 75)) {
             // Dex2oat could take a while before it starts. Add a short delay before start tracing.
             Utils.traceSystem(sIProfcollect, "dex2oat", /* durationMs */ 0, /* delayMs */ 1000);
+            scheduleDex2oatPeriodicTrace();
         }
+    }
+
+    private void scheduleDex2oatPeriodicTrace() {
+        mScheduledExecutorService.schedule(() -> {
+            // https://source.android.com/docs/core/runtime/configure/art-service#determine_whether_background_dexopt_is_running
+            JobScheduler js = getContext().getSystemService(JobScheduler.class);
+            int reason = js.getPendingJobReason(27873780);
+            if (reason == JobScheduler.PENDING_JOB_REASON_EXECUTING) {
+                Utils.traceSystem(sIProfcollect, "dex2oatP", /* durationMs */ 0);
+                scheduleDex2oatPeriodicTrace();
+            }
+        }, 5, TimeUnit.MINUTES);
     }
 
     private void registerOTAObserver() {
