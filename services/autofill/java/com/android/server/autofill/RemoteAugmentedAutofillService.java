@@ -33,6 +33,7 @@ import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.content.pm.ServiceInfo;
+import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -445,6 +446,8 @@ final class RemoteAugmentedAutofillService {
                         .setFocusedId(focusedId)
                         .setAutofillValue(focusedValue)
                         .setInlineSuggestionsRequest(inlineSuggestionsRequest)
+                        // TODO(b/475318851): attach a real binder
+                        .setAugmentedAutofillManagerClient(new Binder())
                         .build();
         mAutofillHint = hint;
         mPersonalContextManagerInternal.publishTriggeringHint(
