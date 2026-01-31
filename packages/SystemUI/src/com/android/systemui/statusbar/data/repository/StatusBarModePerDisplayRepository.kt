@@ -27,7 +27,11 @@ import android.view.WindowInsetsController.APPEARANCE_SEMI_TRANSPARENT_STATUS_BA
 import android.view.WindowInsetsController.Appearance
 import com.android.internal.statusbar.LetterboxDetails
 import com.android.internal.view.AppearanceRegion
-import com.android.systemui.CoreStartable
+import com.android.systemui.Dumpable
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.PerDisplaySingleton
+import com.android.systemui.dump.DumpManager
 import com.android.systemui.statusbar.CommandQueue
 import com.android.systemui.statusbar.StatusBarAlwaysUseRegionSampling
 import com.android.systemui.statusbar.core.StatusBarInitializer.StatusBarViewLifecycleListener
@@ -37,10 +41,8 @@ import com.android.systemui.statusbar.layout.BoundsPair
 import com.android.systemui.statusbar.layout.LetterboxAppearanceCalculator
 import com.android.systemui.statusbar.layout.StatusBarBoundsProvider
 import com.android.systemui.statusbar.phone.fragment.dagger.HomeStatusBarComponent
-import dagger.assisted.Assisted
-import dagger.assisted.AssistedFactory
-import dagger.assisted.AssistedInject
 import java.io.PrintWriter
+import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -57,7 +59,7 @@ import kotlinx.coroutines.flow.stateIn
  * Note: These status bar modes are status bar *window* states that are sent to us from
  * WindowManager, not determined internally.
  */
-interface StatusBarModePerDisplayRepository : StatusBarViewLifecycleListener, CoreStartable {
+interface StatusBarModePerDisplayRepository : StatusBarViewLifecycleListener {
     /**
      * True if the status bar window is showing transiently and will disappear soon, and false
      * otherwise. ("Otherwise" in this case means the status bar is persistently hidden OR
@@ -99,12 +101,6 @@ interface StatusBarModePerDisplayRepository : StatusBarViewLifecycleListener, Co
     fun showTransient()
 
     /**
-     * Called when the [StatusBarModePerDisplayRepository] should stop doing any work and clean up
-     * if needed.
-     */
-    fun stop()
-
-    /**
      * Called when an ongoing process needs to prevent the status bar from being hidden in any
      * state.
      */
@@ -117,14 +113,16 @@ interface StatusBarModePerDisplayRepository : StatusBarViewLifecycleListener, Co
     fun setSampledAppearanceRegions(appearanceRegions: List<AppearanceRegion>)
 }
 
+@PerDisplaySingleton
 class StatusBarModePerDisplayRepositoryImpl
-@AssistedInject
+@Inject
 constructor(
-    @Assisted scope: CoroutineScope,
-    @Assisted("displayId") thisDisplayId: Int,
+    @DisplayAware scope: CoroutineScope,
+    @DisplayAware thisDisplayId: Int,
     private val commandQueue: CommandQueue,
     private val letterboxAppearanceCalculator: LetterboxAppearanceCalculator,
-) : StatusBarModePerDisplayRepository {
+    private val dumpManager: DumpManager,
+) : StatusBarModePerDisplayRepository, SystemUIDisplaySubcomponent.LifecycleListener, Dumpable {
 
     private val commandQueueCallback =
         object : CommandQueue.Callbacks {
@@ -176,16 +174,20 @@ constructor(
     private var statusBarBoundsProvider: StatusBarBoundsProvider? = null
     private var isStarted = false
 
+    private val dumpableName = "StatusBarModePerDisplayRepository(displayId=$thisDisplayId)"
+
     override fun start() {
         isStarted = true
         statusBarBoundsProvider?.start()
         commandQueue.addCallback(commandQueueCallback)
+        dumpManager.registerCriticalDumpable(dumpableName, this)
     }
 
     override fun stop() {
         isStarted = false
         statusBarBoundsProvider?.stop()
         commandQueue.removeCallback(commandQueueCallback)
+        dumpManager.unregisterDumpable(dumpableName)
     }
 
     private val _isTransientShown = MutableStateFlow(false)
@@ -414,11 +416,3 @@ private fun @receiver:Appearance Int.toAppearanceString() =
     } else {
         ViewDebug.flagsToString(InsetsFlags::class.java, "appearance", this)
     }
-
-@AssistedFactory
-interface StatusBarModePerDisplayRepositoryFactory {
-    fun create(
-        scope: CoroutineScope,
-        @Assisted("displayId") displayId: Int,
-    ): StatusBarModePerDisplayRepositoryImpl
-}

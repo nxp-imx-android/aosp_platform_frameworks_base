@@ -16,7 +16,9 @@
 
 package com.android.systemui.statusbar.notification.row
 
-import com.android.systemui.statusbar.data.repository.StatusBarModeRepositoryStore
+import android.view.Display
+import com.android.app.displaylib.PerDisplayRepository
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
 import com.android.systemui.statusbar.notification.shared.HeadlinePrototypes
 import javax.inject.Inject
 
@@ -30,17 +32,17 @@ interface HeadsUpStyleProvider {
 
 class HeadsUpStyleProviderImpl
 @Inject
-constructor(private val statusBarModeRepositoryStore: StatusBarModeRepositoryStore) :
-    HeadsUpStyleProvider {
+constructor(
+    private val displaySubcomponentRepo: PerDisplayRepository<SystemUIDisplaySubcomponent>
+) : HeadsUpStyleProvider {
 
     override fun shouldApplyCompactStyle(displayId: Int): Boolean {
         return isInImmersiveMode(displayId) || HeadlinePrototypes.alwaysShowMinimalHun()
     }
 
     private fun isInImmersiveMode(displayId: Int): Boolean {
-        val statusBarModePerDisplayRepository =
-            statusBarModeRepositoryStore.forDisplay(displayId)
-                ?: statusBarModeRepositoryStore.defaultDisplay
-        return statusBarModePerDisplayRepository.isInFullscreenMode.value
+        val displaySubcomponent =
+            displaySubcomponentRepo[displayId] ?: displaySubcomponentRepo[Display.DEFAULT_DISPLAY]!!
+        return displaySubcomponent.statusBarModeRepo.isInFullscreenMode.value
     }
 }

@@ -32,7 +32,6 @@ import com.android.systemui.statusbar.core.StatusBarInitializerImpl
 import com.android.systemui.statusbar.core.StatusBarInitializerStore
 import com.android.systemui.statusbar.data.repository.PrivacyDotViewControllerStoreModule
 import com.android.systemui.statusbar.data.repository.PrivacyDotWindowControllerStoreModule
-import com.android.systemui.statusbar.data.repository.StatusBarModeRepositoryStore
 import com.android.systemui.statusbar.domain.interactor.StatusBarIconRefreshInteractor
 import com.android.systemui.statusbar.domain.interactor.StatusBarIconRefreshPerDisplayInstanceProvider
 import com.android.systemui.statusbar.events.PrivacyDotViewControllerModule
@@ -125,14 +124,13 @@ interface StatusBarPhoneModule {
         fun statusBarInitializerImpl(
             implFactory: StatusBarInitializerImpl.Factory,
             statusBarWindowControllerStore: StatusBarWindowControllerStore,
-            statusBarModeRepositoryStore: StatusBarModeRepositoryStore,
             displayComponentRepo: PerDisplayRepository<ReferenceSysUIDisplaySubcomponent>,
         ): StatusBarInitializerImpl {
             val systemUIDisplaySubcomponent = displayComponentRepo[Display.DEFAULT_DISPLAY]!!
             return implFactory.create(
                 Display.DEFAULT_DISPLAY,
                 statusBarWindowControllerStore.defaultDisplay,
-                statusBarModeRepositoryStore.defaultDisplay,
+                systemUIDisplaySubcomponent.statusBarModeRepo,
                 systemUIDisplaySubcomponent.statusBarRootFactory,
                 systemUIDisplaySubcomponent.homeStatusBarComponentFactory,
             )

@@ -24,6 +24,7 @@ import com.android.systemui.display.domain.interactor.DisplayStateInteractor
 import com.android.systemui.plugins.DarkIconDispatcher
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipsViewModel
 import com.android.systemui.statusbar.data.repository.StatusBarConfigurationController
+import com.android.systemui.statusbar.data.repository.StatusBarModePerDisplayRepository
 import com.android.systemui.statusbar.disableflags.domain.interactor.DisableFlagsInteractor
 import com.android.systemui.statusbar.domain.interactor.StatusBarIconRefreshInteractor
 import com.android.systemui.statusbar.events.SystemStatusAnimationScheduler
@@ -78,6 +79,8 @@ interface SystemUIDisplaySubcomponent {
     @get:DisplayAware val sysuiDarkIconDispatcher: SysuiDarkIconDispatcher
 
     @get:DisplayAware val systemBarUtilsState: SystemBarUtilsState
+
+    @get:DisplayAware val statusBarModeRepo: StatusBarModePerDisplayRepository
 
     @get:DisplayAware val statusBarConfigurationController: StatusBarConfigurationController
 

@@ -17,7 +17,6 @@
 package com.android.systemui.statusbar.phone;
 
 import static android.app.StatusBarManager.SESSION_KEYGUARD;
-import static android.app.StatusBarManager.WINDOW_STATE_HIDDEN;
 import static android.app.StatusBarManager.WINDOW_STATE_SHOWING;
 import static android.app.StatusBarManager.WindowVisibleState;
 import static android.service.quickaccesswallet.Flags.launchWalletOptionOnPowerDoubleTap;
@@ -176,8 +175,6 @@ import com.android.systemui.statusbar.PowerButtonReveal;
 import com.android.systemui.statusbar.PulseExpansionHandler;
 import com.android.systemui.statusbar.StatusBarState;
 import com.android.systemui.statusbar.SysuiStatusBarStateController;
-import com.android.systemui.statusbar.data.model.StatusBarMode;
-import com.android.systemui.statusbar.data.repository.StatusBarModeRepositoryStore;
 import com.android.systemui.statusbar.notification.NotificationActivityStarter;
 import com.android.systemui.statusbar.notification.NotificationLaunchAnimatorControllerProvider;
 import com.android.systemui.statusbar.notification.NotificationWakeUpCoordinator;
@@ -344,7 +341,6 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
     @WindowVisibleState private int mStatusBarWindowState = WINDOW_STATE_SHOWING;
     private final NotificationShadeWindowController mNotificationShadeWindowController;
     private final TopUiController mTopUiController;
-    private final StatusBarModeRepositoryStore mStatusBarModeRepository;
     private final KeyguardUpdateMonitor mKeyguardUpdateMonitor;
     @VisibleForTesting
     DozeServiceHost mDozeServiceHost;
@@ -525,7 +521,6 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
             FragmentService fragmentService,
             LightBarController lightBarController,
             AutoHideController autoHideController,
-            StatusBarModeRepositoryStore statusBarModeRepository,
             KeyguardUpdateMonitor keyguardUpdateMonitor,
             PulseExpansionHandler pulseExpansionHandler,
             NotificationWakeUpCoordinator notificationWakeUpCoordinator,
@@ -625,7 +620,6 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
         mFragmentService = fragmentService;
         mLightBarController = lightBarController;
         mAutoHideController = autoHideController;
-        mStatusBarModeRepository = statusBarModeRepository;
         mKeyguardUpdateMonitor = keyguardUpdateMonitor;
         mPulseExpansionHandler = pulseExpansionHandler;
         mWakeUpCoordinator = notificationWakeUpCoordinator;
@@ -1396,17 +1390,6 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
     public void checkBarModes() {
         if (mDemoModeController.isInDemoMode()) return;
         mNavigationBarController.checkNavBarModes(mDisplayId);
-    }
-
-    /** Temporarily hides Bubbles if the status bar is hidden. */
-    @Override
-    public void updateBubblesVisibility() {
-        StatusBarMode mode =
-                mStatusBarModeRepository.getDefaultDisplay().getStatusBarMode().getValue();
-        mBubblesOptional.ifPresent(bubbles -> bubbles.onStatusBarVisibilityChanged(
-                mode != StatusBarMode.LIGHTS_OUT
-                        && mode != StatusBarMode.LIGHTS_OUT_TRANSPARENT
-                        && mStatusBarWindowState != WINDOW_STATE_HIDDEN));
     }
 
     private void finishBarAnimations() {
@@ -2525,10 +2508,6 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
     }
 
     // End Extra BaseStatusBarMethods.
-
-    boolean isTransientShown() {
-        return mStatusBarModeRepository.getDefaultDisplay().isTransientShown().getValue();
-    }
 
     private final KeyguardUpdateMonitorCallback mUpdateCallback =
             new KeyguardUpdateMonitorCallback() {

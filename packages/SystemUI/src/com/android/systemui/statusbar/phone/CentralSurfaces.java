@@ -119,8 +119,6 @@ public interface CentralSurfaces extends Dumpable, LifecycleOwner, CoreStartable
 
     void checkBarModes();
 
-    void updateBubblesVisibility();
-
     void setInteracting(int barWindow, boolean interacting);
 
     /** @deprecated Use {@link DisplayMetricsRepository} instead. */

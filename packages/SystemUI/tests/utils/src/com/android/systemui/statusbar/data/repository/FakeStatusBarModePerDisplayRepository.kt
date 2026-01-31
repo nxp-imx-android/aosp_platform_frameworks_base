@@ -16,32 +16,11 @@
 
 package com.android.systemui.statusbar.data.repository
 
-import android.view.Display
 import com.android.internal.view.AppearanceRegion
-import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.statusbar.data.model.StatusBarAppearance
 import com.android.systemui.statusbar.data.model.StatusBarMode
 import com.android.systemui.statusbar.phone.fragment.dagger.HomeStatusBarComponent
-import dagger.Binds
-import dagger.Module
-import java.io.PrintWriter
-import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
-
-@SysUISingleton
-class FakeStatusBarModeRepository @Inject constructor() : StatusBarModeRepositoryStore {
-
-    companion object {
-        const val DISPLAY_ID = Display.DEFAULT_DISPLAY
-    }
-
-    private val perDisplayRepos = mutableMapOf<Int, FakeStatusBarModePerDisplayRepository>()
-
-    override val defaultDisplay: FakeStatusBarModePerDisplayRepository = forDisplay(DISPLAY_ID)
-
-    override fun forDisplay(displayId: Int): FakeStatusBarModePerDisplayRepository =
-        perDisplayRepos.computeIfAbsent(displayId) { FakeStatusBarModePerDisplayRepository() }
-}
 
 class FakeStatusBarModePerDisplayRepository : StatusBarModePerDisplayRepository {
     override val isTransientShown = MutableStateFlow(false)
@@ -59,10 +38,6 @@ class FakeStatusBarModePerDisplayRepository : StatusBarModePerDisplayRepository 
         isTransientShown.value = false
     }
 
-    override fun start() {}
-
-    override fun stop() {}
-
     override fun setOngoingProcessRequiresStatusBarVisible(requiredVisible: Boolean) {
         ongoingProcessRequiresStatusBarVisible.value = requiredVisible
     }
@@ -72,11 +47,4 @@ class FakeStatusBarModePerDisplayRepository : StatusBarModePerDisplayRepository 
     }
 
     override fun onStatusBarViewInitialized(component: HomeStatusBarComponent) {}
-
-    override fun dump(pw: PrintWriter, args: Array<out String>) {}
-}
-
-@Module
-interface FakeStatusBarModeRepositoryModule {
-    @Binds fun bindFake(fake: FakeStatusBarModeRepository): StatusBarModeRepositoryStore
 }

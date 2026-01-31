@@ -16,7 +16,6 @@
 
 package com.android.systemui.statusbar.phone.ongoingcall.domain.interactor
 
-import android.content.applicationContext
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -30,7 +29,7 @@ import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
-import com.android.systemui.statusbar.data.repository.fakeStatusBarModeRepository
+import com.android.systemui.statusbar.data.repository.fakeStatusBarModePerDisplayRepository
 import com.android.systemui.statusbar.gesture.swipeStatusBarAwayGestureHandler
 import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCallModel
 import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCallTestHelper.addOngoingCallState
@@ -51,8 +50,7 @@ import org.mockito.kotlin.verify
 class OngoingCallStatusBarInteractorTest : SysuiTestCase() {
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
     private val Kosmos.underTest by Kosmos.Fixture { kosmos.ongoingCallStatusBarInteractor }
-    private val Kosmos.statusBarModeRepository by
-        Kosmos.Fixture { fakeStatusBarModeRepository.forDisplay(applicationContext.displayId) }
+    private val statusBarModeRepository = kosmos.fakeStatusBarModePerDisplayRepository
 
     @Before
     fun setUp() {
@@ -133,7 +131,7 @@ class OngoingCallStatusBarInteractorTest : SysuiTestCase() {
 
             clearInvocations(kosmos.swipeStatusBarAwayGestureHandler)
             // Set up notification but not in fullscreen
-            kosmos.fakeStatusBarModeRepository.defaultDisplay.isInFullscreenMode.value = false
+            statusBarModeRepository.isInFullscreenMode.value = false
             addOngoingCallState()
 
             assertThat(ongoingCallState).isInstanceOf(OngoingCallModel.InCall::class.java)

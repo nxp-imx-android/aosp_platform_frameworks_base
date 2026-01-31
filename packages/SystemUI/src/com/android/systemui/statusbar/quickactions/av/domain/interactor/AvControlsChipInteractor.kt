@@ -25,13 +25,11 @@ import android.graphics.drawable.Drawable
 import android.hardware.SensorPrivacyManager
 import android.os.UserHandle
 import android.permission.PermissionManager
-import com.android.systemui.Flags
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.privacy.PrivacyType
 import com.android.systemui.shade.data.repository.PrivacyChipRepository
 import com.android.systemui.statusbar.data.repository.StatusBarModePerDisplayRepository
-import com.android.systemui.statusbar.data.repository.StatusBarModeRepositoryStore
 import com.android.systemui.statusbar.notification.row.icon.AppIconProvider
 import com.android.systemui.statusbar.policy.IndividualSensorPrivacyController
 import com.android.systemui.statusbar.quickactions.av.shared.model.AvControlsChipModel
@@ -119,10 +117,9 @@ class AvControlsChipInteractorImpl
 @AssistedInject
 constructor(
     @Assisted private val backgroundScope: CoroutineScope,
-    @Assisted private val displayId: Int,
     @Background private val bgDispatcher: CoroutineDispatcher,
     privacyChipRepository: PrivacyChipRepository,
-    statusBarModeRepositoryStore: StatusBarModeRepositoryStore,
+    @Assisted statusBarModePerDisplayRepository: StatusBarModePerDisplayRepository,
     private val sensorPrivacyController: IndividualSensorPrivacyController,
     private val permissionManager: PermissionManager,
     private val packageManager: PackageManager,
@@ -135,7 +132,10 @@ constructor(
 
     @AssistedFactory
     fun interface Factory {
-        fun create(backgroundScope: CoroutineScope, displayId: Int): AvControlsChipInteractorImpl
+        fun create(
+            backgroundScope: CoroutineScope,
+            statusBarModeRepository: StatusBarModePerDisplayRepository,
+        ): AvControlsChipInteractorImpl
     }
 
     private data class BlockedSensorInfo(
@@ -313,13 +313,6 @@ constructor(
                 initialValue =
                     AvControlsChipModel(sensorActivityModel = SensorActivityModel.Inactive),
             )
-
-    private val statusBarModePerDisplayRepository: StatusBarModePerDisplayRepository? =
-        if (Flags.avControlsChipPerDisplay()) {
-            statusBarModeRepositoryStore.forDisplay(displayId)
-        } else {
-            statusBarModeRepositoryStore.defaultDisplay
-        }
 
     private val isStatusBarModeFullScreen: Flow<Boolean> =
         statusBarModePerDisplayRepository?.isInFullscreenMode ?: flowOf(false)

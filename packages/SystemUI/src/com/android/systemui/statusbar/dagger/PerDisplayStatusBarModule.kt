@@ -34,6 +34,8 @@ import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.PerDispla
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipsViewModel
 import com.android.systemui.statusbar.data.repository.StatusBarConfigurationController
+import com.android.systemui.statusbar.data.repository.StatusBarModePerDisplayRepository
+import com.android.systemui.statusbar.data.repository.StatusBarModePerDisplayRepositoryImpl
 import com.android.systemui.statusbar.disableflags.data.repository.DisableFlagsRepository
 import com.android.systemui.statusbar.disableflags.data.repository.DisableFlagsRepositoryImpl
 import com.android.systemui.statusbar.disableflags.domain.interactor.DisableFlagsInteractor
@@ -129,6 +131,17 @@ interface PerDisplayStatusBarModule {
     @Binds
     @DisplayAware
     fun disableFlagsInteractor(impl: DisableFlagsInteractor): DisableFlagsInteractor
+
+    @Binds
+    @DisplayAware
+    fun modeRepo(impl: StatusBarModePerDisplayRepositoryImpl): StatusBarModePerDisplayRepository
+
+    @Binds
+    @IntoSet
+    @DisplayAware
+    fun modeRepoAsLifecycleListener(
+        impl: StatusBarModePerDisplayRepositoryImpl
+    ): SystemUIDisplaySubcomponent.LifecycleListener
 
     companion object {
 
@@ -297,10 +310,11 @@ interface PerDisplayStatusBarModule {
             factory: AvControlsChipInteractorImpl.Factory,
             @DisplayAware scope: CoroutineScope,
             @DisplayAware displayId: Int,
+            @DisplayAware statusBarModeRepo: StatusBarModePerDisplayRepository,
         ): AvControlsChipInteractor {
             return if (Flags.expandedPrivacyIndicatorsOnLargeScreen()) {
                 if (Flags.avControlsChipPerDisplay()) {
-                    factory.create(scope, displayId)
+                    factory.create(scope, statusBarModeRepo)
                 } else {
                     defaultInteractorLazy.get()
                 }
