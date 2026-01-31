@@ -38,4 +38,12 @@ public final class UserActivitiesAllowlist extends GenericAllowlist<ComponentNam
     protected String toNormalizedName(ComponentName element) {
         return element.flattenToShortString();
     }
+
+    @Override
+    protected boolean isOverridingDisallowedStatus(int status) {
+        return switch (status) {
+            case STATUS_ALLOWED_ALLOWLISTING_DISABLED_BY_SHELL_CMD -> true;
+            default -> false;
+        };
+    }
 }

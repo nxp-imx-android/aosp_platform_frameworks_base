@@ -14926,6 +14926,8 @@ package android.service.persistentdata {
 package android.service.personalcontext {
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class PersonalContextManager {
+    method @NonNull public android.app.assist.AssistStructure.ViewNode getFocusedViewNode(@NonNull android.service.personalcontext.hint.AutofillInlineRequestHint);
+    method @NonNull public android.graphics.Rect getViewCoordinates(@NonNull android.service.personalcontext.hint.AutofillInlineRequestHint);
     method public boolean isEnabled();
     method @NonNull public android.service.personalcontext.Token mintToken();
     method public void publishTriggeringHint(@NonNull java.util.List<android.service.personalcontext.hint.ContextHint>, @Nullable java.util.List<android.service.personalcontext.RenderToken>);
@@ -17010,6 +17012,7 @@ package android.telephony {
   public class SubscriptionManager {
     method @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE) public boolean canDisablePhysicalSubscription();
     method public boolean canManageSubscription(@NonNull android.telephony.SubscriptionInfo, @NonNull String);
+    method @FlaggedApi("com.android.internal.telephony.flags.enable_new_display_name_apis") @RequiresPermission(android.Manifest.permission.MODIFY_PHONE_STATE) public void clearDisplayName(int, int);
     method @NonNull @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE) public int[] getActiveSubscriptionIdList();
     method @Nullable @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE) public android.telephony.SubscriptionInfo getActiveSubscriptionInfoForIcc(@NonNull String);
     method @NonNull @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE) public byte[] getAllSimSpecificSettingsForBackup();
@@ -17025,6 +17028,7 @@ package android.telephony {
     method @RequiresPermission(android.Manifest.permission.MODIFY_PHONE_STATE) public void setDefaultDataSubId(int);
     method @RequiresPermission(android.Manifest.permission.MODIFY_PHONE_STATE) public void setDefaultSmsSubId(int);
     method @RequiresPermission(android.Manifest.permission.MODIFY_PHONE_STATE) public void setDefaultVoiceSubscriptionId(int);
+    method @FlaggedApi("com.android.internal.telephony.flags.enable_new_display_name_apis") @RequiresPermission(android.Manifest.permission.MODIFY_PHONE_STATE) public void setDisplayName(int, @NonNull String, int);
     method @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_enhancement") @RequiresPermission(anyOf={android.Manifest.permission.MANAGE_SUBSCRIPTION_PLANS, "carrier privileges"}) public void setEnrollableSubscriptionPlans(int, @NonNull java.util.List<android.telephony.SubscriptionPlan>, long);
     method @RequiresPermission(android.Manifest.permission.MODIFY_PHONE_STATE) public void setPreferredDataSubscriptionId(int, boolean, @Nullable java.util.concurrent.Executor, @Nullable java.util.function.Consumer<java.lang.Integer>);
     method @RequiresPermission(android.Manifest.permission.MODIFY_PHONE_STATE) public boolean setSubscriptionEnabled(int, boolean);
@@ -17038,6 +17042,12 @@ package android.telephony {
     field @NonNull public static final android.net.Uri CROSS_SIM_ENABLED_CONTENT_URI;
     field @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_enhancement") public static final String EXTRA_PLAN_TYPES = "android.telephony.extra.PLAN_TYPES";
     field @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_enhancement") public static final String EXTRA_REFRESH_PLANS = "android.telephony.extra.REFRESH_PLANS";
+    field @FlaggedApi("com.android.internal.telephony.flags.enable_new_display_name_apis") public static final int NAME_SOURCE_CARRIER = 3; // 0x3
+    field @FlaggedApi("com.android.internal.telephony.flags.enable_new_display_name_apis") public static final int NAME_SOURCE_CARRIER_ID = 0; // 0x0
+    field @FlaggedApi("com.android.internal.telephony.flags.enable_new_display_name_apis") public static final int NAME_SOURCE_SIM_PNN = 4; // 0x4
+    field @FlaggedApi("com.android.internal.telephony.flags.enable_new_display_name_apis") public static final int NAME_SOURCE_SIM_SPN = 1; // 0x1
+    field @FlaggedApi("com.android.internal.telephony.flags.enable_new_display_name_apis") public static final int NAME_SOURCE_UNKNOWN = -1; // 0xffffffff
+    field @FlaggedApi("com.android.internal.telephony.flags.enable_new_display_name_apis") public static final int NAME_SOURCE_USER_INPUT = 2; // 0x2
     field @Deprecated public static final int PROFILE_CLASS_DEFAULT = -1; // 0xffffffff
     field public static final int PROFILE_CLASS_OPERATIONAL = 2; // 0x2
     field public static final int PROFILE_CLASS_PROVISIONING = 1; // 0x1

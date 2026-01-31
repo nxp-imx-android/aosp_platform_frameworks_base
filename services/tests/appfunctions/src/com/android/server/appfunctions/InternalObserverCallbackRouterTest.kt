@@ -563,7 +563,7 @@ class InternalObserverCallbackRouterTest {
         assertThat(callback1.changedFunctionNames).isNull()
     }
 
-    fun onEnabledStateChanged_packageMatch_routesToMatchingCallbacks() {
+    fun onEnabledStatesChanged_packageMatch_routesToMatchingCallbacks() {
         val callback1 = TestInternalCallback()
         val searchSpec1 = createMockSearchSpec(setOf("testPackage1"), null)
         val callback2 = TestInternalCallback()
@@ -573,14 +573,14 @@ class InternalObserverCallbackRouterTest {
         callbacksRouter.addCallback(callback1, searchSpec1)
         callbacksRouter.addCallback(callback2, searchSpec2)
 
-        callbacksRouter.onEnabledStateChanged(AppFunctionName("testPackage1", "id1"))
+        callbacksRouter.onEnabledStatesChanged(setOf(AppFunctionName("testPackage1", "id1")))
 
         assertThat(callback1.changedFunctionNames)
             .isEqualTo(listOf(AppFunctionName("testPackage1", "id1")))
         assertThat(callback2.changedFunctionNames).isNull()
     }
 
-    fun onEnabledStateChanged_functionMatch_routesToMatchingCallbacks() {
+    fun onEnabledStatesChanged_functionMatch_routesToMatchingCallbacks() {
         val callback1 = TestInternalCallback()
         val searchSpec1 =
             createMockSearchSpec(
@@ -597,14 +597,14 @@ class InternalObserverCallbackRouterTest {
         callbacksRouter.addCallback(callback1, searchSpec1)
         callbacksRouter.addCallback(callback2, searchSpec2)
 
-        callbacksRouter.onEnabledStateChanged(AppFunctionName("testPackage1", "id1"))
+        callbacksRouter.onEnabledStatesChanged(setOf(AppFunctionName("testPackage1", "id1")))
 
         assertThat(callback1.changedFunctionNames)
             .isEqualTo(listOf(AppFunctionName("testPackage1", "id1")))
         assertThat(callback2.changedFunctionNames).isNull()
     }
 
-    fun onEnabledStateChanged_noMatch_doesNotRoute() {
+    fun onEnabledStatesChanged_noMatch_doesNotRoute() {
         val callback1 = TestInternalCallback()
         val searchSpec1 =
             createMockSearchSpec(
@@ -621,7 +621,7 @@ class InternalObserverCallbackRouterTest {
         callbacksRouter.addCallback(callback1, searchSpec1)
         callbacksRouter.addCallback(callback2, searchSpec2)
 
-        callbacksRouter.onEnabledStateChanged(AppFunctionName("testPackage3", "id3"))
+        callbacksRouter.onEnabledStatesChanged(setOf(AppFunctionName("testPackage3", "id3")))
 
         assertThat(callback1.changedFunctionNames).isNull()
         assertThat(callback2.changedFunctionNames).isNull()

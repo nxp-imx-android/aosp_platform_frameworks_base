@@ -33,6 +33,7 @@ import com.android.window.flags.Flags.FLAG_ENABLE_DISPLAY_DISCONNECT_INTERACTION
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.fullscreen.FullscreenDisconnectHandler
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController
+import com.android.wm.shell.pip2.phone.PipDisplayDisconnectHandler
 import com.android.wm.shell.splitscreen.SplitMultiDisplayProvider
 import com.android.wm.shell.splitscreen.SplitScreenController
 import com.android.wm.shell.sysui.ShellInit
@@ -67,12 +68,14 @@ class DisplayDisconnectTransitionHandlerTest() : ShellTestCase() {
     private val desktopTasksController = mock(DesktopTasksController::class.java)
     private val fullscreenDisconnectHandler = mock(FullscreenDisconnectHandler::class.java)
     private val pinnedLayerController = mock(PinnedLayerController::class.java)
+    private val pipDisconnectHandler = mock(PipDisplayDisconnectHandler::class.java)
 
     private lateinit var disconnectTransitionHandler: DisplayDisconnectTransitionHandler
     private lateinit var splitScreenControllerOptional: Optional<SplitScreenController>
     private lateinit var desktopTasksControllerOptional: Optional<DesktopTasksController>
     private lateinit var fullscreenDisconnectHandlerOptional: Optional<FullscreenDisconnectHandler>
     private lateinit var pinnedLayerControllerOptional: Optional<PinnedLayerController>
+    private lateinit var pipDisconnectHandlerOptional: Optional<PipDisplayDisconnectHandler>
     private val transition = Binder()
 
     @Before
@@ -81,6 +84,7 @@ class DisplayDisconnectTransitionHandlerTest() : ShellTestCase() {
         desktopTasksControllerOptional = spy(Optional.of(desktopTasksController))
         fullscreenDisconnectHandlerOptional = spy(Optional.of(fullscreenDisconnectHandler))
         pinnedLayerControllerOptional = spy(Optional.of(pinnedLayerController))
+        pipDisconnectHandlerOptional = spy(Optional.of(pipDisconnectHandler))
         disconnectTransitionHandler =
             DisplayDisconnectTransitionHandler(
                 transitions,
@@ -89,6 +93,7 @@ class DisplayDisconnectTransitionHandlerTest() : ShellTestCase() {
                 desktopTasksControllerOptional,
                 fullscreenDisconnectHandlerOptional,
                 pinnedLayerControllerOptional,
+                pipDisconnectHandlerOptional,
             )
         whenever(splitScreenController.multiDisplayProvider)
             .thenReturn(FakeSplitMultiDisplayProvider())
@@ -148,6 +153,7 @@ class DisplayDisconnectTransitionHandlerTest() : ShellTestCase() {
         whenever(splitScreenControllerOptional.isPresent).thenReturn(false)
         whenever(desktopTasksControllerOptional.isPresent).thenReturn(true)
         whenever(fullscreenDisconnectHandlerOptional.isPresent).thenReturn(true)
+        whenever(pipDisconnectHandlerOptional.isPresent).thenReturn(true)
         val finalWct =
             WindowContainerTransaction().apply {
                 setBounds(mock(WindowContainerToken::class.java), Rect())
@@ -155,6 +161,8 @@ class DisplayDisconnectTransitionHandlerTest() : ShellTestCase() {
         whenever(desktopTasksController.onDisplayDisconnect(anyInt(), anyInt(), any()))
             .thenReturn(finalWct)
         whenever(fullscreenDisconnectHandler.onDisplayDisconnect(anyInt(), anyInt()))
+            .thenReturn(WindowContainerTransaction())
+        whenever(pipDisconnectHandler.onDisplayDisconnect(anyInt(), anyInt()))
             .thenReturn(WindowContainerTransaction())
 
         disconnectTransitionHandler.handleRequest(transition, transitionRequestInfo)
@@ -191,6 +199,7 @@ class DisplayDisconnectTransitionHandlerTest() : ShellTestCase() {
                 Optional.empty(), // No DesktopTasksController
                 Optional.empty(), // No FullscreenDisconnectHandler
                 Optional.empty(), // No PinnedLayerController
+                Optional.empty(), // No PipDisplayDisconnectHandler
             )
 
         val displayChange = TransitionRequestInfo.DisplayChange(SECOND_DISPLAY)
@@ -275,6 +284,7 @@ class DisplayDisconnectTransitionHandlerTest() : ShellTestCase() {
         whenever(splitScreenControllerOptional.isPresent).thenReturn(false)
         whenever(desktopTasksControllerOptional.isPresent).thenReturn(false)
         whenever(fullscreenDisconnectHandlerOptional.isPresent).thenReturn(false)
+        whenever(pipDisconnectHandlerOptional.isPresent).thenReturn(false)
         spyHandler.handleRequest(transition = transition, request = transitionRequestInfo)
         verify(spyHandler).addPendingTransition((transition))
     }
@@ -295,6 +305,7 @@ class DisplayDisconnectTransitionHandlerTest() : ShellTestCase() {
         whenever(splitScreenControllerOptional.isPresent).thenReturn(false)
         whenever(desktopTasksControllerOptional.isPresent).thenReturn(true)
         whenever(fullscreenDisconnectHandlerOptional.isPresent).thenReturn(false)
+        whenever(pipDisconnectHandlerOptional.isPresent).thenReturn(false)
         val desktopWct = WindowContainerTransaction()
         desktopWct.reparent(
             mock(WindowContainerToken::class.java),
@@ -323,6 +334,8 @@ class DisplayDisconnectTransitionHandlerTest() : ShellTestCase() {
         whenever(splitScreenControllerOptional.isPresent).thenReturn(true)
         whenever(desktopTasksControllerOptional.isPresent).thenReturn(false)
         whenever(fullscreenDisconnectHandlerOptional.isPresent).thenReturn(false)
+        whenever(pinnedLayerControllerOptional.isPresent).thenReturn(false)
+        whenever(pipDisconnectHandlerOptional.isPresent).thenReturn(false)
         pinnedLayerControllerOptional.stub { on { isPresent } doReturn false }
         val wct = spyHandler.handleRequest(transition = transition, request = transitionRequestInfo)
         assertNotNull(wct, "wct should not be null if handled by splitscreen")
@@ -349,6 +362,7 @@ class DisplayDisconnectTransitionHandlerTest() : ShellTestCase() {
             on { getDisplayDisconnectChanges(transition, SECOND_DISPLAY, DEFAULT_DISPLAY) } doReturn
                 WindowContainerTransaction()
         }
+        pipDisconnectHandlerOptional.stub { on { isPresent } doReturn false }
 
         val wct = spyHandler.handleRequest(transition = transition, request = transitionRequestInfo)
         assertNotNull(wct, "wct should not be null if handled by pinned layer")

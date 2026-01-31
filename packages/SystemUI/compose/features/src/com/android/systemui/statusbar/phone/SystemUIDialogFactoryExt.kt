@@ -74,6 +74,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.theme.LocalAndroidColorScheme
 import com.android.compose.theme.PlatformTheme
 import com.android.internal.graphics.ColorUtils
+import com.android.internal.graphics.drawable.BackgroundBlurDrawable
 import com.android.systemui.Flags
 import com.android.systemui.keyboard.shortcut.ui.composable.hasCompactWindowSize
 import com.android.systemui.res.R
@@ -206,18 +207,14 @@ fun SystemUIDialogFactory.createBottomSheet(
                         val bottomsheetBlurRadius =
                             dimensionResource(R.dimen.bottomsheet_blur_radius)
                         val cornerRadius = dimensionResource(R.dimen.bottom_sheet_corner_radius)
-                        val drawable = remember {
-                            dialog.window!!
-                                .decorView
-                                .getViewRootImpl()
-                                .createBackgroundBlurDrawable()
-                        }
-                        Modifier.drawBehind {
-                            drawable.apply {
-                                setBlurRadius(bottomsheetBlurRadius.roundToPx())
-                                setCornerRadius(cornerRadius.toPx())
-                            }
-                            if (isBlurSupported) {
+                        val drawable = remember { createBackgroundBlurDrawable(dialog) }
+
+                        if (isBlurSupported) {
+                            Modifier.drawBehind {
+                                drawable.apply {
+                                    setBlurRadius(bottomsheetBlurRadius.roundToPx())
+                                    setCornerRadius(cornerRadius.toPx())
+                                }
                                 drawIntoCanvas { canvas ->
                                     drawable.setBounds(
                                         0,
@@ -228,6 +225,13 @@ fun SystemUIDialogFactory.createBottomSheet(
                                     drawable.draw(canvas.nativeCanvas)
                                 }
                             }
+                        } else {
+                            drawable.apply {
+                                // Stop BackgroundBlurDrawable from dispatching blur regions
+                                // to SF since now blur radius is set to 0.
+                                setBlurRadius(0)
+                            }
+                            null
                         }
                     } else {
                         null
@@ -284,6 +288,15 @@ fun SystemUIDialogFactory.createBottomSheet(
             }
         },
     )
+}
+
+private fun createBackgroundBlurDrawable(dialog: Dialog) : BackgroundBlurDrawable {
+    val blurDrawable = dialog.window!!
+        .decorView
+        .getViewRootImpl()
+        .createBackgroundBlurDrawable()
+    blurDrawable.setBlurRadius(0)
+    return blurDrawable
 }
 
 private enum class DragAnchors(val fraction: Float) {

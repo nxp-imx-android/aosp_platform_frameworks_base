@@ -599,7 +599,7 @@ public class UserManagerService extends IUserManager.Stub {
      * services don't fully clear out in-memory user state upon user removal; this behavior is
      * intended to mitigate such issues by limiting user ID reuse.  This array applies to any type
      * of user (including pre-created users) when they are removed.  Use {@link
-     * #addRemovingUserIdLocked(int)} to add elements to this array.
+     * #addRemovingUserIdLU(int)} to add elements to this array.
      */
     @GuardedBy("mUsersLock")
     private final SparseBooleanArray mRemovingUserIds = new SparseBooleanArray();
@@ -1317,7 +1317,7 @@ public class UserManagerService extends IUserManager.Stub {
             return;
         }
         // Mark the user for removal.
-        addRemovingUserIdLocked(ui.id);
+        addRemovingUserIdLU(ui.id);
         ui.partial = true;
         addUserInfoFlags(ui, UserInfo.FLAG_DISABLED);
     }
@@ -1332,7 +1332,7 @@ public class UserManagerService extends IUserManager.Stub {
                 if ((ui.partial || ui.guestToRemove) && ui.id != UserHandle.USER_SYSTEM) {
                     partials.add(ui);
                     if (!mRemovingUserIds.get(ui.id)) {
-                        addRemovingUserIdLocked(ui.id);
+                        addRemovingUserIdLU(ui.id);
                     }
                     ui.partial = true;
                 }
@@ -1360,7 +1360,7 @@ public class UserManagerService extends IUserManager.Stub {
                 UserInfo ui = mUsers.valueAt(i).info;
                 if (ui.preCreated) {
                     preCreatedUsers.add(ui);
-                    addRemovingUserIdLocked(ui.id);
+                    addRemovingUserIdLU(ui.id);
                     addUserInfoFlags(ui, UserInfo.FLAG_DISABLED);
                     ui.partial = true;
                 }
@@ -7129,7 +7129,7 @@ public class UserManagerService extends IUserManager.Stub {
                     }
                     userData = mUsers.get(userId);
                     Slog.i(LOG_TAG, "Removing user " + userId);
-                    addRemovingUserIdLocked(userId);
+                    addRemovingUserIdLU(userId);
                 }
                 // Set this to a partially created user, so that the user will be purged
                 // on next startup, in case the runtime stops now before stopping and
@@ -7200,12 +7200,12 @@ public class UserManagerService extends IUserManager.Stub {
     @VisibleForTesting
     void addRemovingUserId(@UserIdInt int userId) {
         synchronized (mUsersLock) {
-            addRemovingUserIdLocked(userId);
+            addRemovingUserIdLU(userId);
         }
     }
 
     @GuardedBy("mUsersLock")
-    void addRemovingUserIdLocked(@UserIdInt int userId) {
+    void addRemovingUserIdLU(@UserIdInt int userId) {
         // We remember deleted user IDs to prevent them from being
         // reused during the current boot; they can still be reused
         // after a reboot or recycling of userIds.
@@ -7963,7 +7963,7 @@ public class UserManagerService extends IUserManager.Stub {
     int getNextAvailableId() {
         int nextId;
         synchronized (mUsersLock) {
-            nextId = scanNextAvailableIdLocked();
+            nextId = scanNextAvailableIdLU();
             if (nextId >= 0) {
                 return nextId;
             }
@@ -7975,7 +7975,7 @@ public class UserManagerService extends IUserManager.Stub {
                 for (Integer recentlyRemovedId : mRecentlyRemovedIds) {
                     mRemovingUserIds.put(recentlyRemovedId, true);
                 }
-                nextId = scanNextAvailableIdLocked();
+                nextId = scanNextAvailableIdLU();
             }
         }
         // If we got here, we probably recycled user ids, so invalidate any caches.
@@ -7988,7 +7988,7 @@ public class UserManagerService extends IUserManager.Stub {
     }
 
     @GuardedBy("mUsersLock")
-    private int scanNextAvailableIdLocked() {
+    private int scanNextAvailableIdLU() {
         for (int i = MIN_USER_ID; i < MAX_USER_ID; i++) {
             if (mUsers.indexOfKey(i) < 0 && !mRemovingUserIds.get(i)) {
                 return i;
@@ -8201,7 +8201,7 @@ public class UserManagerService extends IUserManager.Stub {
                     if (userData == null) {
                         continue;
                     }
-                    dumpUserLocked(pw, userData, sb, now, nowRealtime);
+                    dumpUserLU(pw, userData, sb, now, nowRealtime);
                 }
             }
 
@@ -8375,12 +8375,12 @@ public class UserManagerService extends IUserManager.Stub {
                 pw.println("User " + userId + " not found");
                 return;
             }
-            dumpUserLocked(pw, userData, sb, now, nowRealtime);
+            dumpUserLU(pw, userData, sb, now, nowRealtime);
         }
     }
 
     @GuardedBy("mUsersLock")
-    private void dumpUserLocked(PrintWriter pw, UserData userData, StringBuilder tempStringBuilder,
+    private void dumpUserLU(PrintWriter pw, UserData userData, StringBuilder tempStringBuilder,
             long now, long nowRealtime) {
         final UserInfo userInfo = userData.info;
         final int userId = userInfo.id;
@@ -9088,7 +9088,7 @@ public class UserManagerService extends IUserManager.Stub {
             if (userId != UserHandle.USER_SYSTEM) {
                 Slogf.w(LOG_TAG, "logActivityLaunchStatus(%s, %d, %s): only supported for "
                         + "USER_SYSTEM", ComponentName.flattenToShortString(activity), userId,
-                        GenericAllowlist.statusToString(status));
+                        GenericAllowlist.allowlistStatusToString(status));
                 return;
             }
             if (GenericAllowlist.isAllowed(status)) {
@@ -9104,13 +9104,14 @@ public class UserManagerService extends IUserManager.Stub {
             // TODO(b/414326600): proper implementation once metrics is designed
             if (userId != UserHandle.USER_SYSTEM) {
                 Slogf.w(LOG_TAG, "logNotificationShownStatus(%s, %d, %s): only supported for "
-                        + "USER_SYSTEM", sbn, userId, GenericAllowlist.statusToString(status));
+                        + "USER_SYSTEM", sbn, userId,
+                        GenericAllowlist.allowlistStatusToString(status));
                 return;
             }
             if (!GenericAllowlist.isAllowed(status)) {
                 Slogf.w(LOG_TAG, "logNotificationShownStatus(%s, %d, %s): only supported for "
                         + "allowed statuses", sbn,
-                        userId, GenericAllowlist.statusToString(status));
+                        userId, GenericAllowlist.allowlistStatusToString(status));
                 return;
             }
             mNonComplianceLogger.logShownHsuNotification(sbn);

@@ -19,6 +19,9 @@ package com.android.wm.shell.desktopai.core
 import android.testing.AndroidTestingRunner
 import androidx.test.filters.SmallTest
 import com.android.wm.shell.ShellTestCase
+import com.android.wm.shell.desktopai.api.ContextQuery
+import com.android.wm.shell.desktopai.api.CujHandler
+import com.android.wm.shell.desktopai.api.CujHandlerId
 import com.android.wm.shell.desktopai.api.ITriggerManager
 import com.android.wm.shell.desktopai.api.TriggerEvent
 import com.android.wm.shell.desktopai.api.TriggerEventType
@@ -32,6 +35,7 @@ import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 
 /**
  * Tests for [DesktopAiOrchestrator].
@@ -43,17 +47,24 @@ import org.mockito.kotlin.verify
 class DesktopAiOrchestratorTest : ShellTestCase() {
 
     private val triggerManager = mock<ITriggerManager>()
+    private val cujHandlerRegistry = mock<CujHandlerRegistry>()
     private lateinit var orchestrator: DesktopAiOrchestrator
 
     @Before
     fun setUp() {
-        orchestrator = DesktopAiOrchestrator(triggerManager)
+        orchestrator = DesktopAiOrchestrator(triggerManager, cujHandlerRegistry)
     }
 
     @Test
     fun registerCuj_callsTriggerManager() {
         val strategy = TriggerStrategy.SystemEvent("TEST_EVENT")
-        val config = CujConfiguration("TEST_CUJ", strategy)
+        val config =
+            CujConfiguration(
+                cujId = "TEST_CUJ",
+                triggerStrategy = strategy,
+                contextQueryFactory = { ContextQuery() },
+                handlerIds = emptyList(),
+            )
 
         orchestrator.registerCuj(config)
 
@@ -61,16 +72,27 @@ class DesktopAiOrchestratorTest : ShellTestCase() {
     }
 
     @Test
-    fun onTriggerReceived_executesWithoutError() {
+    fun onTriggerReceived_invokesHandlers() {
         val strategy = TriggerStrategy.SystemEvent("TEST_EVENT")
-        val config = CujConfiguration("TEST_CUJ", strategy)
+        val handlerId = CujHandlerId.ProcessShellContext
+        val config =
+            CujConfiguration(
+                cujId = "TEST_CUJ",
+                triggerStrategy = strategy,
+                contextQueryFactory = { ContextQuery() },
+                handlerIds = listOf(handlerId),
+            )
         val callbackCaptor = argumentCaptor<(TriggerEvent) -> Unit>()
 
         orchestrator.registerCuj(config)
         verify(triggerManager).registerTrigger(eq(strategy), callbackCaptor.capture())
 
+        val mockHandler = mock<CujHandler>()
+        whenever(cujHandlerRegistry.get(handlerId)).thenReturn(mockHandler)
+
         val event = TriggerEvent(TriggerEventType.SYSTEM, "TEST_EVENT")
-        // Invoking the captured callback to ensure it processes the event (currently just logs)
         callbackCaptor.firstValue.invoke(event)
+
+        verify(mockHandler).handle(eq(config), eq(event))
     }
 }

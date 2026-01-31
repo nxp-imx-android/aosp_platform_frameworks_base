@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -59,8 +60,9 @@ public abstract class GenericAllowlist<E> {
     static final boolean DEBUG = Log.isLoggable(GenericAllowlist.class.getSimpleName(), Log.DEBUG);
 
     @VisibleForTesting
-    static final String ALLOWED_BY_LOG_ONLY_MESSAGE_TEMPLATE =
-            "isAllowed(%s): returning true only because mode is %s";
+    static final String ALLOWED_BY_OVERRIDDEN_STATUS_MESSAGE_TEMPLATE =
+            "getAllowlistStatus(%s): should return %d (%s), but returning %d (%s) as set by "
+            + "overrideDisallowedStatus()";
 
     /** Allowlist is disabled because it was set with an invalid mode. */
     public static final int ALLOWLIST_MODE_INVALID = -1;
@@ -68,16 +70,11 @@ public abstract class GenericAllowlist<E> {
     public static final int ALLOWLIST_MODE_DISABLED = 0;
     /** Allowlist is enabled. */
     public static final int ALLOWLIST_MODE_ENABLED = 1;
-    /**
-     * Allowlist is disabled, but {@link #isAllowed(Object)} will log when it returns {@code false}.
-     */
-    public static final int ALLOWLIST_MODE_LOG_ONLY = 2;
 
     @IntDef(prefix = { "ALLOWLIST_MODE_" }, value = {
             ALLOWLIST_MODE_INVALID,
             ALLOWLIST_MODE_DISABLED,
             ALLOWLIST_MODE_ENABLED,
-            ALLOWLIST_MODE_LOG_ONLY,
             })
     public @interface AllowlistMode {}
 
@@ -113,24 +110,18 @@ public abstract class GenericAllowlist<E> {
     public static final int STATUS_ALLOWED_TEMPORARY_LIST_EMPTY = 3;
     /** Element is allowed because the temporary allowlist is set and it's in it. */
     public static final int STATUS_ALLOWED_BY_TEMPORARY_LIST = 4;
-    /**
-     * Element is allowed because the temporary allowlist and it's not in it, but the allowlist mode
-     * is logging only.
-     */
-    public static final int STATUS_ALLOWED_NOT_IN_TEMPORARY_LIST_BUT_LOG_ONLY_MODE = 5;
 
     /** Element is allowed because the permanent allowlist is empty. */
-    public static final int STATUS_ALLOWED_PERMANENT_LIST_EMPTY = 6;
+    public static final int STATUS_ALLOWED_PERMANENT_LIST_EMPTY = 5;
     /** Element is allowed because the it's in the permanent allowlist. */
-    public static final int STATUS_ALLOWED_BY_PERMANENT_LIST = 7;
-    /**
-     * Element is allowed because it's not in the permanent allowlist, but the allowlist mode is
-     * logging only.
-     */
-    public static final int STATUS_ALLOWED_NOT_IN_PERMANENT_LIST_BUT_LOG_ONLY_MODE = 8;
+    public static final int STATUS_ALLOWED_BY_PERMANENT_LIST = 6;
 
-    private static final int LAST_STATUS_ALLOWED =
-            STATUS_ALLOWED_NOT_IN_PERMANENT_LIST_BUT_LOG_ONLY_MODE;
+    /** Element is allowed because allowlisting was temporary disabled by cmd user. */
+    public static final int STATUS_ALLOWED_ALLOWLISTING_DISABLED_BY_SHELL_CMD = 7;
+
+    @VisibleForTesting
+    static final int LAST_STATUS_ALLOWED =
+            STATUS_ALLOWED_ALLOWLISTING_DISABLED_BY_SHELL_CMD;
 
     // TODO(b/414326600): this class is public because WM uses @AllowlistStatus. It might be cleaner
     // to create a new class for it.
@@ -140,12 +131,11 @@ public abstract class GenericAllowlist<E> {
             STATUS_ALLOWED_DISABLED_MODE,
             STATUS_ALLOWED_TEMPORARY_LIST_EMPTY,
             STATUS_ALLOWED_BY_TEMPORARY_LIST,
-            STATUS_ALLOWED_NOT_IN_TEMPORARY_LIST_BUT_LOG_ONLY_MODE,
             STATUS_DISALLOWED_NOT_IN_TEMPORARY_LIST,
             STATUS_ALLOWED_PERMANENT_LIST_EMPTY,
             STATUS_ALLOWED_BY_PERMANENT_LIST,
-            STATUS_ALLOWED_NOT_IN_PERMANENT_LIST_BUT_LOG_ONLY_MODE,
-            STATUS_DISALLOWED_NOT_IN_PERMANENT_LIST
+            STATUS_DISALLOWED_NOT_IN_PERMANENT_LIST,
+            STATUS_ALLOWED_ALLOWLISTING_DISABLED_BY_SHELL_CMD
             })
     public @interface AllowlistStatus {}
 
@@ -174,6 +164,9 @@ public abstract class GenericAllowlist<E> {
 
     /** Mode of the allowlist - see {@link AllowlistMode} */
     private final @AllowlistMode AtomicInteger mMode;
+
+    // Content is null when not overridden
+    private final AtomicReference<Integer> mOverriddenDisallowedStatus = new AtomicReference<>();
 
     /**
      * List of elements that are temporarily allowed (i.e., until reboot or set back to
@@ -224,6 +217,53 @@ public abstract class GenericAllowlist<E> {
         }
     }
 
+    /**
+     * Used to temporarily disable allowlisting.
+     *
+     * @param status status to be returned when an activity is not allowed, or {@code null} to reset
+     * this behavior.
+     *
+     * @throws IllegalArgumentException if the {@code status} is not one of those that starts with
+     * {@code STATUS_ALLOWED_ALLOWLISTING_DISABLED_BY}.
+     */
+    final void overrideDisallowedStatus(@Nullable @AllowlistStatus Integer status) {
+        if (status == null) {
+            resetOverriddenDisallowedStatus();
+            return;
+        }
+        if (!isOverridingDisallowedStatus(status)) {
+            throw new IllegalArgumentException("Invalid overriding status: " + status + "("
+                    + allowlistStatusToString(status) + ")");
+        }
+        setOverriddenDisallowedStatus(status);
+    }
+
+    /**
+     * Returns whether the given {@code status} is a valid value for
+     * {@link #overrideDisallowedStatus(Integer)}.
+     */
+    protected abstract boolean isOverridingDisallowedStatus(@AllowlistStatus int status);
+
+    private void resetOverriddenDisallowedStatus() {
+        Integer previousStatus = mOverriddenDisallowedStatus.getAndSet(null);
+        if (previousStatus != null) {
+            Slogf.i(mTag, "overrideDisallowedStatus(): reset from %d (%s)", previousStatus,
+                    allowlistStatusToString(previousStatus));
+        }
+    }
+
+    private void setOverriddenDisallowedStatus(@AllowlistStatus int status) {
+        Integer previousStatus = mOverriddenDisallowedStatus.getAndSet(status);
+        if (previousStatus == null) {
+            Slogf.i(mTag, "overrideDisallowedStatus(): set to %d (%s)", status,
+                    allowlistStatusToString(status));
+            return;
+        }
+        Slogf.i(mTag, "overrideDisallowedStatus(): changed from %d (%s) to %d (%s)",
+                previousStatus, allowlistStatusToString(previousStatus),
+                status, allowlistStatusToString(status));
+    }
+
     // NOTE: only called by 'cmd user' (which needs to "build" the temporary allowlist based on
     // incremental actions, like add or remove an element) and unit tests, so we don't have to
     // worry about performance (like caching the result or not using streams)
@@ -268,7 +308,7 @@ public abstract class GenericAllowlist<E> {
                     : STATUS_ALLOWED_INVALID_MODE;
             if (DEBUG) {
                 Slogf.d(mTag, "getAllowlistStatus(%s): returning %d (%s) because mode is (%d) %s",
-                        normalizedName, status, statusToString(status), mode,
+                        normalizedName, status, allowlistStatusToString(status), mode,
                         allowlistModeToString(mode));
             }
             return status;
@@ -322,24 +362,26 @@ public abstract class GenericAllowlist<E> {
                     : STATUS_ALLOWED_BY_TEMPORARY_LIST;
             if (DEBUG) {
                 Slogf.d(mTag, "getAllowlistStatus(%s, allowed=%b): returning %s", normalizedName,
-                        allowed, statusToString(status));
+                        allowed, allowlistStatusToString(status));
             }
             return status;
-        }
-        int mode = mMode.get();
-        if (mode == ALLOWLIST_MODE_LOG_ONLY) {
-            Slogf.w(mTag, ALLOWED_BY_LOG_ONLY_MESSAGE_TEMPLATE, normalizedName,
-                    allowlistModeToString(mode));
-            return permanentAllowlist
-                    ? STATUS_ALLOWED_NOT_IN_PERMANENT_LIST_BUT_LOG_ONLY_MODE
-                    : STATUS_ALLOWED_NOT_IN_TEMPORARY_LIST_BUT_LOG_ONLY_MODE;
         }
         int status = permanentAllowlist
                 ? STATUS_DISALLOWED_NOT_IN_PERMANENT_LIST
                 : STATUS_DISALLOWED_NOT_IN_TEMPORARY_LIST;
+        Integer overriddenDisallowedStatus = mOverriddenDisallowedStatus.get();
+        if (overriddenDisallowedStatus != null) {
+            Slogf.w(mTag, ALLOWED_BY_OVERRIDDEN_STATUS_MESSAGE_TEMPLATE, normalizedName,
+                    status,
+                    allowlistStatusToString(status),
+                    overriddenDisallowedStatus,
+                    allowlistStatusToString(overriddenDisallowedStatus));
+            return overriddenDisallowedStatus;
+        }
+
         if (DEBUG) {
             Slogf.d(mTag, "getAllowlistStatus(%s, allowed=%b): returning %s", normalizedName,
-                    allowed, statusToString(status));
+                    allowed, allowlistStatusToString(status));
         }
         return status;
     }
@@ -375,7 +417,7 @@ public abstract class GenericAllowlist<E> {
     }
 
     /** Gets a user-friendly representation of the given {@code status}. */
-    public static String statusToString(@AllowlistStatus int status) {
+    public static String allowlistStatusToString(@AllowlistStatus int status) {
         return DebugUtils.constantToString(GenericAllowlist.class, "STATUS_", status);
     }
 
@@ -392,14 +434,15 @@ public abstract class GenericAllowlist<E> {
         writer.printf("mode: %d (%s)\n", mode, allowlistModeToString(mode));
         writer.printf("DEBUG: %b\n", DEBUG);
 
-        dumpAllowlistStatus(writer, mode);
+        dumpEffectiveAllowlistStatus(writer, mode);
         dumpPermanentAllowlist(writer);
         dumpTemporaryAllowlist(writer);
 
         writer.decreaseIndent();
     }
 
-    private void dumpAllowlistStatus(IndentingPrintWriter writer, @AllowlistMode int mode) {
+    private void dumpEffectiveAllowlistStatus(IndentingPrintWriter writer,
+            @AllowlistMode int mode) {
         writer.printf("%s allowlist status: ", mPluralName);
 
         switch (mode) {
@@ -407,10 +450,13 @@ public abstract class GenericAllowlist<E> {
                 writer.println("disabled (by config)");
                 return;
             }
-            case ALLOWLIST_MODE_LOG_ONLY-> {
-                writer.println("disabled (log-only)");
-                return;
-            }
+        }
+
+        Integer overriddenDisallowedStatus = mOverriddenDisallowedStatus.get();
+        if (overriddenDisallowedStatus != null) {
+            writer.printf("temporarily disabled (reason: %s)\n",
+                    allowlistStatusToString(overriddenDisallowedStatus));
+            return;
         }
 
         CopyOnWriteArrayList<String> temporaryList = mTemporaryAllowlist;
@@ -501,7 +547,7 @@ public abstract class GenericAllowlist<E> {
 
     private static @AllowlistMode int validateMode(@AllowlistMode int mode) {
         return switch (mode) {
-            case ALLOWLIST_MODE_ENABLED, ALLOWLIST_MODE_DISABLED, ALLOWLIST_MODE_LOG_ONLY -> mode;
+            case ALLOWLIST_MODE_ENABLED, ALLOWLIST_MODE_DISABLED -> mode;
             default -> throw new IllegalArgumentException("invalid mode: " + mode);
         };
     }

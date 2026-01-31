@@ -202,15 +202,22 @@ public abstract class BaseBroadcastQueueTest {
         doReturn(mPermissionManager).when(spyContext).getSystemService(PermissionManager.class);
         final ActivityManagerService realAms = new ActivityManagerService(
                 new TestInjector(spyContext), mServiceThreadRule.getThread());
+        realAms.mProcessStateController = spy(realAms.mProcessStateController);
         realAms.mActivityTaskManager = new ActivityTaskManagerService(mContext);
         realAms.mActivityTaskManager.initialize(null, null, realAms.mProcessStateController,
                 mContext.getMainLooper());
         realAms.mAtmInternal = spy(realAms.mActivityTaskManager.getAtmInternal());
         realAms.setCachedAppOptimizer(mock(CachedAppOptimizer.class));
         realAms.mOomAdjuster = spy(realAms.mOomAdjuster);
+        realAms.mPhantomProcessList = spy(realAms.mPhantomProcessList);
+        doNothing().when(realAms.mPhantomProcessList).setProcessGroupForPhantomProcessOfApp(any(),
+                anyInt());
         doNothing().when(() -> ProcessList.setOomAdj(anyInt(), anyInt(), anyInt()));
+        doNothing().when(() -> ProcessList.batchSetOomAdj(any()));
         realAms.mPackageManagerInt = mPackageManagerInt;
         realAms.mUsageStatsService = mUsageStatsManagerInt;
+        realAms.mAppProfiler = spy(realAms.mAppProfiler);
+        doNothing().when(realAms.mAppProfiler).updateLowMemStateLSP(anyInt(), anyInt(), anyLong());
         realAms.mProcessesReady = true;
         mAms = spy(realAms);
 

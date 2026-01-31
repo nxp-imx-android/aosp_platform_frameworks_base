@@ -30,7 +30,10 @@ import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_AI
  * not contain hardcoded logic for specific features (like "Coding Mode" vs "Research Mode").
  * Instead, it follows the instructions in the [CujConfiguration] to route data.
  */
-class DesktopAiOrchestrator(private val triggerManager: ITriggerManager) {
+class DesktopAiOrchestrator(
+    private val triggerManager: ITriggerManager,
+    private val cujHandlerRegistry: CujHandlerRegistry,
+) {
 
     /**
      * Registers a Critical User Journey with the system. This uses the [TriggerStrategy] to set up
@@ -52,6 +55,15 @@ class DesktopAiOrchestrator(private val triggerManager: ITriggerManager) {
      */
     private fun onTriggerReceived(config: CujConfiguration, triggerEvent: TriggerEvent) {
         ProtoLog.v(WM_SHELL_DESKTOP_AI, "$TAG: Processing triggerEvent: %s", triggerEvent)
+        // Iterate through all registered handlers for this CUJ and execute them.
+        config.handlerIds.forEach { handlerId ->
+            val handler = cujHandlerRegistry.get(handlerId)
+            if (handler != null) {
+                handler.handle(config, triggerEvent)
+            } else {
+                ProtoLog.w(WM_SHELL_DESKTOP_AI, "No CujHandler registered for ID: %s", handlerId.id)
+            }
+        }
     }
 
     companion object {

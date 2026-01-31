@@ -16,10 +16,17 @@
 
 package android.app.contentrestriction;
 
+import static android.Manifest.permission.INTERACT_ACROSS_USERS;
+
 import android.annotation.CallbackExecutor;
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
+import android.annotation.SuppressLint;
+import android.annotation.SystemApi;
 import android.annotation.SystemService;
+import android.annotation.TestApi;
+import android.annotation.UserHandleAware;
+import android.annotation.UserIdInt;
 import android.app.contentrestriction.flags.Flags;
 import android.content.Context;
 import android.os.Binder;
@@ -101,5 +108,42 @@ public class ContentRestrictionManager {
             }
         }
         return false;
+    }
+
+    /**
+     * Returns whether content restriction device policy bypassing is allowed.
+     *
+     * @hide
+     */
+    @TestApi
+    @FlaggedApi(Flags.FLAG_CONTENT_RESTRICTION_API)
+    @UserHandleAware(requiresPermissionIfNotCaller = INTERACT_ACROSS_USERS)
+    public boolean isDevicePolicyBypassingEnabledForUser(@UserIdInt int userId) {
+        if (mService != null) {
+            try {
+                return mService.isDevicePolicyBypassingEnabledForUser(userId);
+            } catch (RemoteException e) {
+                throw e.rethrowFromSystemServer();
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Sets whether content restriction device policy bypassing is allowed.
+     *
+     * @hide
+     */
+    @TestApi
+    @FlaggedApi(Flags.FLAG_CONTENT_RESTRICTION_API)
+    @UserHandleAware(requiresPermissionIfNotCaller = INTERACT_ACROSS_USERS)
+    public void setDevicePolicyBypassingEnabledForUser(@UserIdInt int userId, boolean enabled) {
+        if (mService != null) {
+            try {
+                mService.setDevicePolicyBypassingEnabledForUser(userId, enabled);
+            } catch (RemoteException e) {
+                throw e.rethrowFromSystemServer();
+            }
+        }
     }
 }

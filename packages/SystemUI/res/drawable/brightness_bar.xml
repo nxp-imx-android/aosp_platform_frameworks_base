@@ -1,6 +1,6 @@
 <!--
   ~ Copyright (C) 2024 The Android Open Source Project
-  ~
+
   ~ Licensed under the Apache License, Version 2.0 (the "License");
   ~ you may not use this file except in compliance with the License.
   ~ You may obtain a copy of the License at
@@ -14,14 +14,13 @@
   ~ limitations under the License.
   -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:androidprv="http://schemas.android.com/apk/prv/res/android"
         android:width="200dp"
         android:height="32dp"
         android:viewportWidth="304"
         android:viewportHeight="48">
 <path
     android:pathData="M2,22L302,22A2,2 0,0 1,304 24L304,24A2,2 0,0 1,302 26L2,26A2,2 0,0 1,0 24L0,24A2,2 0,0 1,2 22z"
-    android:fillColor="@androidprv:color/customColorShadeInactive"/>
+    android:fillColor="@color/customColorShadeInactive"/>
 <path
     android:pathData="M24,0L205.71,0A24,24 0,0 1,229.71 24L229.71,24A24,24 0,0 1,205.71 48L24,48A24,24 0,0 1,0 24L0,24A24,24 0,0 1,24 0z"
     android:fillColor="?attr/shadeActive"/>

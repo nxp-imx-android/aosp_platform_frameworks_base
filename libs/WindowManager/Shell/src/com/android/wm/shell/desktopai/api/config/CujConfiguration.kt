@@ -16,6 +16,9 @@
 
 package com.android.wm.shell.desktopai.api.config
 
+import com.android.wm.shell.desktopai.api.ContextQueryFactory
+import com.android.wm.shell.desktopai.api.CujHandlerId
+
 /**
  * Configuration for a Critical User Journey (CUJ) in the Desktop AI framework.
  *
@@ -25,5 +28,13 @@ package com.android.wm.shell.desktopai.api.config
  * @property cujId A unique identifier for the CUJ (e.g., "DESKTOP_AI_OVERVIEW").
  * @property triggerStrategy The strategy that defines the conditions under which this CUJ is
  *   triggered.
+ * @property contextQueryFactory The factory for the query that defines what information about the
+ *   user are needed for this CUJ.
+ * @property handlerIds The identifiers of the component responsible for executing the CUJ's flow.
  */
-data class CujConfiguration(val cujId: String, val triggerStrategy: TriggerStrategy)
+data class CujConfiguration(
+    val cujId: String,
+    val triggerStrategy: TriggerStrategy,
+    val contextQueryFactory: ContextQueryFactory,
+    val handlerIds: List<CujHandlerId>,
+)

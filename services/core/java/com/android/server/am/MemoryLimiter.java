@@ -165,7 +165,7 @@ class MemoryLimiter implements AutoCloseable {
         boolean isEnabled();
 
         // The pid or uid of the object has changed.  Push the update to the native layer.
-        void setPidUid(int pid, int uid, @Nullable String pkg);
+        void setPidUid(int pid, int uid);
 
         // The process limit has changed.  Push the update to the native layer.
         void setLimit(int pid, int uid, Long limit);
@@ -175,7 +175,7 @@ class MemoryLimiter implements AutoCloseable {
 
         // The callback when an over-limit event occurs.
         @UsedByNative
-        void onLimitExceeded(int pid, int uid, int type, long limit, @Nullable String pkg);
+        void onLimitExceeded(int pid, int uid, int type, long limit);
 
         // Block or unblock the limiter from monitoring/configuring the UID.
         void ignoreUid(int uid, boolean ignore);
@@ -194,7 +194,7 @@ class MemoryLimiter implements AutoCloseable {
         }
 
         @Override
-        public void setPidUid(int pid, int uid, @Nullable String pkg) {
+        public void setPidUid(int pid, int uid) {
         }
 
         @Override
@@ -207,7 +207,7 @@ class MemoryLimiter implements AutoCloseable {
         }
 
         @Override
-        public void onLimitExceeded(int pid, int uid, int type, long limit, @Nullable String pkg) {
+        public void onLimitExceeded(int pid, int uid, int type, long limit) {
         }
 
         @Override
@@ -278,7 +278,8 @@ class MemoryLimiter implements AutoCloseable {
                     private boolean mOpen = true;
 
                     // The native handler.
-                    private final long mNative = initLimiter(ControllerEnabled.this);
+                    private final long mNative = initLimiter(ControllerEnabled.this,
+                            enableMonitoring());
 
                     @Override
                     public void handleMessage(Message msg) {
@@ -295,8 +296,7 @@ class MemoryLimiter implements AutoCloseable {
                             switch (op) {
                                 case MESSAGE_START -> {
                                     if (enableMonitoring() && (uid != mIgnoredUid)) {
-                                        String pkg = (String) msg.obj;
-                                        onProcessStarted(mNative, pid, uid, pkg);
+                                        onProcessStarted(mNative, pid, uid);
                                     }
                                 }
 
@@ -379,8 +379,8 @@ class MemoryLimiter implements AutoCloseable {
         }
 
         @Override
-        public void setPidUid(int pid, int uid, @Nullable String pkg) {
-            sendCommand(MESSAGE_START, pid, uid, pkg);
+        public void setPidUid(int pid, int uid) {
+            sendCommand(MESSAGE_START, pid, uid, null);
         }
 
         @Override
@@ -454,10 +454,8 @@ class MemoryLimiter implements AutoCloseable {
 
         @UsedByNative
         @Override
-        public void onLimitExceeded(int pid, int uid, int type, long limit, @Nullable String pkg) {
-            if (mAm != null) {
-                pkg = mAm.mInternal.getPackageNameByPid(pid);
-            }
+        public void onLimitExceeded(int pid, int uid, int type, long limit) {
+            final String pkg = (mAm != null) ? mAm.mInternal.getPackageNameByPid(pid) : null;
 
             Slog.i(TAG, formatSimple("onLimitExceeded: pid=%d uid=%d type=%s limit=%d pkg=%s",
                     pid, uid, limitTypeToString(type), limit, pkg));
@@ -622,7 +620,7 @@ class MemoryLimiter implements AutoCloseable {
         private void maybeStart() {
             if (!shouldMonitor()) return;
             mLimit = null;
-            mController.setPidUid(mPid, mUid, null);
+            mController.setPidUid(mPid, mUid);
         }
 
         /**
@@ -728,9 +726,14 @@ class MemoryLimiter implements AutoCloseable {
 
     /**
      * Initialize the native layer and return a pointer to the native handler.  The controller
-     * receives any over-limit events.
+     * receives any over-limit events.  The method will throw an exception if initialization
+     * fails.
+     *
+     * @param controller is the Controller that receives over-limit events.
+     * @param monitor is true if limit monitoring is enabled.
+     * @return the native service.
      */
-    private static native long initLimiter(Controller controller);
+    private static native long initLimiter(Controller controller, boolean monitor);
 
     /**
      * Release the native handler.
@@ -739,15 +742,14 @@ class MemoryLimiter implements AutoCloseable {
 
     /**
      * Inform the native layer that a process has started.  No profile is assigned to the process
-     * but monitoring starts.  The function returns true on success.
+     * but the native service prepares to monitor the process, if monitoring was enabled when the
+     * native service was initialized.
      */
-    private static native boolean onProcessStarted(long servicePtr, int pid, int uid,
-            @Nullable String pkg);
+    private static native void onProcessStarted(long servicePtr, int pid, int uid);
 
     /**
      * Request that a process's memory.high be configured to limit.  Negative values for the limit
-     * mean "maximum memory".  The function returns true on success.  If the process has not been
-     * started, or the process has exited since the last start, the function returns false.
+     * mean "maximum memory".
      */
-    private static native boolean configureLimit(long servicePtr, int pid, int uid, long limit);
+    private static native void configureLimit(long servicePtr, int pid, int uid, long limit);
 }

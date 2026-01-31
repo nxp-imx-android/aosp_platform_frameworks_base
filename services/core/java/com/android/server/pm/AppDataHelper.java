@@ -455,7 +455,8 @@ public class AppDataHelper {
                     logCriticalInfo(Log.WARN, "Destroying " + file + " due to: " + e);
                     try {
                         mInstaller.destroyAppData(volumeUuid, packageName, userId,
-                                StorageManager.FLAG_STORAGE_CE, 0);
+                                StorageManager.FLAG_STORAGE_CE, /* ceDataInode= */ 0,
+                                /* pccCeDataInode= */ 0);
                     } catch (Installer.InstallerException e2) {
                         logCriticalInfo(Log.WARN, "Failed to destroy: " + e2);
                     }
@@ -477,7 +478,8 @@ public class AppDataHelper {
                     logCriticalInfo(Log.WARN, "Destroying " + file + " due to: " + e);
                     try {
                         mInstaller.destroyAppData(volumeUuid, packageName, userId,
-                                StorageManager.FLAG_STORAGE_DE, 0);
+                                StorageManager.FLAG_STORAGE_DE, /* ceDataInode= */ 0,
+                                /* pccCeDataInode= */ 0);
                     } catch (Installer.InstallerException e2) {
                         logCriticalInfo(Log.WARN, "Failed to destroy: " + e2);
                     }
@@ -624,9 +626,12 @@ public class AppDataHelper {
         for (int realUserId : mPm.resolveUserIds(userId)) {
             final long ceDataInode = (packageStateInternal != null)
                     ? packageStateInternal.getUserStateOrDefault(realUserId).getCeDataInode() : 0;
+            final long pccCeDataInode = (packageStateInternal != null)
+                    ? packageStateInternal.getUserStateOrDefault(realUserId).getPccCeDataInode()
+                    : 0;
             try {
                 mInstaller.clearAppData(volumeUuid, packageName, realUserId,
-                        flags, ceDataInode);
+                        flags, ceDataInode, pccCeDataInode);
             } catch (Installer.InstallerException e) {
                 Slog.w(TAG, String.valueOf(e));
             }
@@ -657,9 +662,12 @@ public class AppDataHelper {
         for (int realUserId : mPm.resolveUserIds(userId)) {
             final long ceDataInode = (packageStateInternal != null)
                     ? packageStateInternal.getUserStateOrDefault(realUserId).getCeDataInode() : 0;
+            final long pccCeDataInode = (packageStateInternal != null)
+                    ? packageStateInternal.getUserStateOrDefault(realUserId).getPccCeDataInode()
+                    : 0;
             try {
                 mInstaller.destroyAppData(volumeUuid, packageName, realUserId,
-                        flags, ceDataInode);
+                        flags, ceDataInode, pccCeDataInode);
             } catch (Installer.InstallerException e) {
                 Slog.w(TAG, String.valueOf(e));
             }

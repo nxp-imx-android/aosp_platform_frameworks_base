@@ -2726,17 +2726,6 @@ public class WindowManagerService extends IWindowManager.Stub
                             "Relayout invis " + win + ": mAnimatingExit=" + win.mAnimatingExit);
                 }
                 result |= RELAYOUT_RES_SURFACE_CHANGED;
-                // When FLAG_SHOW_WALLPAPER flag is removed from a window, we usually set a flag
-                // in DC#pendingLayoutChanges and update the wallpaper target later.
-                // However it's possible that FLAG_SHOW_WALLPAPER flag is removed from a window
-                // when the window is about to exit, so we update the wallpaper target
-                // immediately here. Otherwise this window will be stuck in exiting and its
-                // surface remains on the screen.
-                // TODO(b/189856716): Allow destroying surface even if it belongs to the
-                //  keyguard target.
-                if (wallpaperMayMove) {
-                    displayContent.mWallpaperController.adjustWallpaperWindows();
-                }
                 tryStartExitingAnimation(win, winAnimator);
             }
 
@@ -8838,14 +8827,16 @@ public class WindowManagerService extends IWindowManager.Stub
 
         @Override
         public void enableClientRenderingLimitationsOnDisplay(int displayId, boolean enable) {
-            final DisplayContent dc = mRoot.getDisplayContent(displayId);
-            if (dc == null) {
-                Slog.e(TAG, "Failed to change client rendering limitations"
-                        + " for display: " + displayId
-                        + " - DisplayContent not found.");
-                return;
+            synchronized (mGlobalLock) {
+                final DisplayContent dc = mRoot.getDisplayContent(displayId);
+                if (dc == null) {
+                    Slog.e(TAG, "Failed to change client rendering limitations"
+                            + " for display: " + displayId
+                            + " - DisplayContent not found.");
+                    return;
+                }
+                dc.enableClientRenderingLimitations(enable);
             }
-            dc.enableClientRenderingLimitations(enable);
         }
 
         @Override

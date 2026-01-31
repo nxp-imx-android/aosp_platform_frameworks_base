@@ -21,6 +21,9 @@ import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
 import static android.os.Process.SYSTEM_UID;
 import static android.provider.Settings.Global.DEVELOPMENT_FORCE_DESKTOP_MODE_ON_EXTERNAL_DISPLAYS;
 import static android.view.Display.FLAG_SHOULD_SHOW_SYSTEM_DECORATIONS;
+import static android.view.Surface.ROTATION_180;
+
+import static java.lang.Math.max;
 
 import android.annotation.IntDef;
 import android.annotation.NonNull;
@@ -105,6 +108,25 @@ public class DisplayLayout {
                 && mRotation == other.mRotation
                 && mDensityDpi == other.mDensityDpi
                 && Objects.equals(mCutout, other.mCutout);
+    }
+
+    /**
+     * @return {@code true} if the given {@link DisplayLayout} is identical geometry wise but
+     * differs in its rotation.
+     */
+    public boolean isSameRotatedGeometry(@NonNull DisplayLayout other) {
+        if (mRotation == other.mRotation || mDensityDpi != other.mDensityDpi) return false;
+        DisplayCutout cutoutRotated = mCutout.getRotated(
+                mWidth, mHeight, mRotation, other.mRotation);
+        if (mRotation == ROTATION_180) {
+            return mWidth == other.mWidth
+                    && mHeight == other.mHeight
+                    && Objects.equals(cutoutRotated, other.mCutout);
+        } else {
+            return mWidth == other.mHeight
+                    && mHeight == other.mWidth
+                    && Objects.equals(cutoutRotated, other.mCutout);
+        }
     }
 
     @Override
@@ -376,7 +398,7 @@ public class DisplayLayout {
         if (displayHardwareIsLandscape) {
             return mReverseDefaultRotation ? Surface.ROTATION_270 : Surface.ROTATION_90;
         }
-        return Surface.ROTATION_180;
+        return ROTATION_180;
     }
 
     /** Gets the orientation of this layout */
@@ -416,7 +438,7 @@ public class DisplayLayout {
             return;
         }
         int statusBarHeight = SystemBarUtils.getStatusBarHeight(res, cutout);
-        inOutInsets.top = Math.max(inOutInsets.top, statusBarHeight);
+        inOutInsets.top = max(inOutInsets.top, statusBarHeight);
     }
 
     /**

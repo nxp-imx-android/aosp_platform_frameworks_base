@@ -233,14 +233,7 @@ constructor(
                 }
 
                 printSection("Framework state") {
-                    println("isVisible", sceneInteractor.isVisibleFlow.value)
-                    println("currentScene", sceneInteractor.currentScene.value.debugName)
-                    println(
-                        "currentOverlays",
-                        sceneInteractor.currentOverlays.value.joinToString(", ") { overlay ->
-                            overlay.debugName
-                        },
-                    )
+                    sceneInteractor.dump(this)
                     println("backStack", sceneBackInteractor.backStack.value)
                     println("shadeMode", shadeModeInteractor.shadeMode.value)
                 }

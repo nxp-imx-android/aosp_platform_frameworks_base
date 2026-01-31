@@ -18,16 +18,11 @@ package com.android.server.companion.datatransfer.continuity.connectivity;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import android.companion.CompanionDeviceManager;
-import android.companion.ICompanionDeviceManager;
+import android.content.Context;
+import android.content.pm.PackageManagerInternal;
 import android.platform.test.annotations.Presubmit;
 import android.testing.AndroidTestingRunner;
-import android.content.pm.PackageManagerInternal;
-
 import com.android.server.LocalServices;
-
-import androidx.test.core.app.ApplicationProvider;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,29 +30,18 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.util.concurrent.Executor;
-
 @Presubmit
 @RunWith(AndroidTestingRunner.class)
 public class TaskContinuityMessengerCacheTest {
 
-    @Mock
-    private ICompanionDeviceManager mMockCompanionDeviceManagerService;
-    @Mock
-    private PackageManagerInternal mMockPackageManagerInternal;
-
-    private final Executor mExecutor = Runnable::run;
+    @Mock private Context mMockContext;
 
     private TaskContinuityMessengerCache mTaskContinuityMessengerCache;
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        LocalServices.addService(PackageManagerInternal.class, mMockPackageManagerInternal);
-        CompanionDeviceManager companionDeviceManager = new CompanionDeviceManager(
-                mMockCompanionDeviceManagerService, ApplicationProvider.getApplicationContext());
-        mTaskContinuityMessengerCache =
-                new TaskContinuityMessengerCache(companionDeviceManager, mExecutor);
+        mTaskContinuityMessengerCache = new TaskContinuityMessengerCache(mMockContext);
     }
 
     @After

@@ -28,6 +28,7 @@ import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
 import android.annotation.RestrictedForEnvironment;
 import android.annotation.SdkConstant;
+import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
 import android.annotation.UserIdInt;
 import android.app.Activity;
@@ -638,7 +639,7 @@ public class VpnManager {
      * <p>If an app in the set of excluded apps is not installed for the given user, it will be
      * skipped in the list of app exclusions. If apps are installed or removed, any active VPN will
      * have its UID set updated automatically. If the caller is not {@code userId},
-     * {@link android.Manifest.permission.INTERACT_ACROSS_USERS_FULL} permission is required.
+     * {@link android.Manifest.permission#INTERACT_ACROSS_USERS_FULL} permission is required.
      *
      * <p>This will ONLY affect VpnManager profiles. As such, the NETWORK_SETTINGS provider MUST NOT
      * allow configuration of these options if the application has not provided a VPN profile.
@@ -655,6 +656,8 @@ public class VpnManager {
             android.Manifest.permission.NETWORK_SETTINGS,
             NetworkStack.PERMISSION_MAINLINE_NETWORK_STACK,
             android.Manifest.permission.NETWORK_STACK})
+    @SystemApi(client = MODULE_LIBRARIES)
+    @FlaggedApi(android.provider.Flags.FLAG_EXPOSE_VPN_APP_EXCLUSION_SETTINGS)
     public boolean setAppExclusionList(int userId, @NonNull String vpnPackage,
             @NonNull List<String> excludedApps) {
         try {
@@ -666,7 +669,7 @@ public class VpnManager {
 
     /**
      * Gets the application exclusion list for the specified VPN profile. If the caller is not
-     * {@code userId}, {@link android.Manifest.permission.INTERACT_ACROSS_USERS_FULL} permission
+     * {@code userId}, {@link android.Manifest.permission#INTERACT_ACROSS_USERS_FULL} permission
      * is required.
      *
      * @param userId the identifier of the user to set app exclusion list
@@ -680,6 +683,10 @@ public class VpnManager {
             android.Manifest.permission.NETWORK_SETTINGS,
             NetworkStack.PERMISSION_MAINLINE_NETWORK_STACK,
             android.Manifest.permission.NETWORK_STACK})
+    @SystemApi(client = MODULE_LIBRARIES)
+    @FlaggedApi(android.provider.Flags.FLAG_EXPOSE_VPN_APP_EXCLUSION_SETTINGS)
+    // SuppressLint: Distinguish empty exclusion list from corresponding VPN not configured.
+    @SuppressLint("NullableCollection")
     @Nullable
     public List<String> getAppExclusionList(int userId, @NonNull String vpnPackage) {
         try {

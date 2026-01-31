@@ -2727,6 +2727,18 @@
         <item>*|TONAL_SPOT|home_wallpaper</item>
     </string-array>
 
+    <!-- A list of legacy theme overlays that ThemeManagerService removes during the boot process.
+         Previously, these overlays were managed SystemUI but, because their ownership has moved to
+         the Android System, cleaning previous overlays up is necessary to prevent duplicate or
+         conflicting overlays from being active at the same time. If not removed, the system might
+         try to apply both the old and new overlays, leading to undefined color behavior.
+         Each item should be in the format "packageName|overlayName". -->
+    <string-array name="theming_legacy_overlays">
+        <item>com.android.systemui|neutral</item>
+        <item>com.android.systemui|accent</item>
+        <item>com.android.systemui|dynamic</item>
+    </string-array>
+
     <!-- National Language Identifier codes for the following two config items.
          (from 3GPP TS 23.038 V9.1.1 Table 6.2.1.2.4.1):
           0  - reserved
@@ -3402,10 +3414,8 @@
          This config has no effect if the device is not in HSUM.
          0 (Default): disabled
          1: enabled (allowlist read from arrays/hsu_allowlist_activities)
-         2: log-only (disabled, but logs what would be blocked if enabled)
     -->
     <integer name="config_hsuActivitiesAllowlistMode">0</integer>
-
 
     <!-- Whether multiple admins are allowed on the device. If set to true, new users can be created
          with admin privileges and admin privileges can be granted/revoked from existing users. -->
@@ -7978,4 +7988,7 @@
 
     <!-- Whether Airplane Mode sync is supported by this device. -->
     <bool name="config_supportAirplaneModeSync">true</bool>
+
+    <!-- Whether to allow content restriction device policy bypassing. -->
+    <bool name="config_allowContentRestrictionDevicePolicyBypassing">false</bool>
 </resources>

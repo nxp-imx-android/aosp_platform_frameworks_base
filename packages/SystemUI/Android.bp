@@ -429,6 +429,7 @@ android_library {
         "androidx.leanback_leanback",
         "androidx.slice_slice-core",
         "androidx.slice_slice-view",
+        "dynamiccolors",
     ],
     manifest: "AndroidManifest-res.xml",
     flags_packages: [
@@ -876,7 +877,7 @@ android_app {
         "platform_app_defaults",
         "SystemUI_optimized_defaults",
     ],
-    package_name: "com.android.systemui.tests.robo",
+    manifest: "AndroidManifest-robo.xml",
 
     static_libs: [
         "//frameworks/libs/systemui:compilelib",

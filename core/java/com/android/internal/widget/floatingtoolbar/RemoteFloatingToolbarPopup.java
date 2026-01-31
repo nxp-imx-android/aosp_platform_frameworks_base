@@ -31,6 +31,7 @@ import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.graphics.Region;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -44,6 +45,7 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewRootImpl;
+import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 import android.view.selectiontoolbar.ISelectionToolbarCallback;
 import android.view.selectiontoolbar.SelectionToolbarManager;
@@ -98,6 +100,15 @@ public final class RemoteFloatingToolbarPopup implements FloatingToolbarPopup {
 
     // To be updated in onShow
     private final Rect mContentRect = new Rect();
+    private final Region mTouchableRegion = new Region();
+    private final ViewTreeObserver.OnComputeInternalInsetsListener mInsetsComputer =
+            info -> {
+                info.contentInsets.setEmpty();
+                info.visibleInsets.setEmpty();
+                info.touchableRegion.set(mTouchableRegion);
+                info.setTouchableInsets(
+                        ViewTreeObserver.InternalInsetsInfo.TOUCHABLE_INSETS_REGION);
+            };
     private List<MenuItem> mMenuItems;
     private MenuItem.OnMenuItemClickListener mMenuItemClickListener;
 
@@ -116,6 +127,21 @@ public final class RemoteFloatingToolbarPopup implements FloatingToolbarPopup {
         mSelectionToolbarManager = context.getSystemService(SelectionToolbarManager.class);
         mSelectionToolbarCallback = new SelectionToolbarCallbackImpl(this);
         mIsLightTheme = isLightTheme(context);
+        mPopupWindow.getContentView().addOnAttachStateChangeListener(
+                new View.OnAttachStateChangeListener() {
+                    @Override
+                    public void onViewAttachedToWindow(View v) {
+                        v.getViewTreeObserver().removeOnComputeInternalInsetsListener(
+                                mInsetsComputer);
+                        v.getViewTreeObserver().addOnComputeInternalInsetsListener(mInsetsComputer);
+                    }
+
+                    @Override
+                    public void onViewDetachedFromWindow(View v) {
+                        v.getViewTreeObserver().removeOnComputeInternalInsetsListener(
+                                mInsetsComputer);
+                    }
+                });
     }
 
     private boolean isLightTheme(Context context) {
@@ -280,6 +306,7 @@ public final class RemoteFloatingToolbarPopup implements FloatingToolbarPopup {
         return ret;
     }
 
+    @UiThread
     private void updateForWidgetInfo(WidgetInfo info) {
         int sequenceNumber = info.sequenceNumber;
         if (mPendingShowInfos.contains(sequenceNumber)) {
@@ -296,7 +323,9 @@ public final class RemoteFloatingToolbarPopup implements FloatingToolbarPopup {
         updatePopupWindowContent(info);
     }
 
+    @UiThread
     private void updatePopupWindowContent(WidgetInfo widgetInfo) {
+        updateTouchableRegion(widgetInfo);
         if (!mIsNewSurfaceViewNeeded) {
             return;
         }
@@ -308,6 +337,13 @@ public final class RemoteFloatingToolbarPopup implements FloatingToolbarPopup {
         surfaceView.getHolder().setFormat(PixelFormat.TRANSPARENT);
         surfaceView.setChildSurfacePackage(widgetInfo.surfacePackage);
         contentContainer.addView(surfaceView);
+    }
+
+    @UiThread
+    private void updateTouchableRegion(WidgetInfo widgetInfo) {
+        Rect contentRect = widgetInfo.contentRect;
+        mTouchableRegion.set(widgetInfo.touchableRegion);
+        mTouchableRegion.translate(-contentRect.left, -contentRect.top);
     }
 
     private Point getCoordinatesInWindow(int x, int y) {

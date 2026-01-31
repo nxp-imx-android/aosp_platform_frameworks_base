@@ -956,7 +956,7 @@ public class ActivityManagerService extends IActivityManager.Stub
      * The list of phantom processes.
      * @see PhantomProcessRecord
      */
-    final PhantomProcessList mPhantomProcessList;
+    PhantomProcessList mPhantomProcessList;
 
     /**
      * Tracking long-term execution of processes to look for abuse and other
@@ -3887,7 +3887,7 @@ public class ActivityManagerService extends IActivityManager.Stub
             }
             app.killProcessGroupIfNecessaryLocked(true, reason);
             synchronized (mProcLock) {
-                app.setKilled(true);
+                mProcessStateController.setKilled(app, true);
             }
         }
 
@@ -5090,8 +5090,8 @@ public class ActivityManagerService extends IActivityManager.Stub
             mProcessStateController.setAttachingProcessStatesLSP(app);
             clearProcessForegroundLocked(app);
             app.setDebugging(false);
-            app.setKilledByAm(false);
-            app.setKilled(false);
+            mProcessStateController.setKilledByAm(app, false);
+            mProcessStateController.setKilled(app, false);
             // We carefully use the same state that PackageManager uses for
             // filtering, since we use this flag to decide if we need to install
             // providers when user is unlocked later

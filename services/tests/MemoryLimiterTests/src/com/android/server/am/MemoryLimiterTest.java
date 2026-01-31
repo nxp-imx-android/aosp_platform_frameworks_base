@@ -134,7 +134,7 @@ public class MemoryLimiterTest {
         private final CountDownLatch mLatch;
 
         // A single over-limit event.
-        record Event(int pid, int uid, int limit, String pkg) {}
+        record Event(int pid, int uid, int limit) {}
 
         // The events received by this counter.
         final ArrayList<Event> mEvents = new ArrayList<>();
@@ -200,10 +200,10 @@ public class MemoryLimiterTest {
 
         // Capture an actual event.
         @Override
-        public void onLimitExceeded(int pid, int uid, int type, long limit, String pkg) {
+        public void onLimitExceeded(int pid, int uid, int type, long limit) {
             synchronized (mLock) {
                 mLatch.countDown();
-                mEvents.add(new Event(pid, uid, type, pkg));
+                mEvents.add(new Event(pid, uid, type));
             }
         }
     }
@@ -359,52 +359,6 @@ public class MemoryLimiterTest {
                 // Grow the app by 100M, set the limit, and wait for the over-limit event.
                 appCommand(100);
                 limiter.onProcStateUpdated(PROCESS_STATE_100M);
-                assertTrue(counter.await(10));
-
-                // There should be exactly one event in the counter.
-                assertThat(counter.eventCount()).isEqualTo(1);
-                counter.expect(0, pid, mUid, MemoryLimiter.MEMORY_LIMIT_TYPE);
-            }
-        }
-    }
-
-    @RequiresFlagsEnabled(Flags.FLAG_MEMORY_LIMITER_ENABLE)
-    @Test
-    public void testNullPackage() throws Exception {
-        try (EventCounter counter = new EventCounter(1)) {
-            try (MemoryLimiter controller = new MemoryLimiter(counter)) {
-                MemoryLimiter.Limiter limiter = controller.newLimiter();
-
-                int pid = prepareHelper(mUid);
-                limiter.setUid(mUid);
-                limiter.setPid(pid);
-
-                // Set the limit, grow the app, and wait for the over-limit event.
-                limiter.onProcStateUpdated(PROCESS_STATE_100M);
-                appCommand(100);
-                assertTrue(counter.await(10));
-
-                // There should be exactly one event in the counter.
-                assertThat(counter.eventCount()).isEqualTo(1);
-                counter.expect(0, pid, mUid, MemoryLimiter.MEMORY_LIMIT_TYPE);
-            }
-        }
-    }
-
-    @RequiresFlagsEnabled(Flags.FLAG_MEMORY_LIMITER_ENABLE)
-    @Test
-    public void testEmptyPackage() throws Exception {
-        try (EventCounter counter = new EventCounter(1)) {
-            try (MemoryLimiter controller = new MemoryLimiter(counter)) {
-                MemoryLimiter.Limiter limiter = controller.newLimiter();
-
-                int pid = prepareHelper(mUid);
-                limiter.setUid(mUid);
-                limiter.setPid(pid);
-
-                // Set the limit, grow the app, and wait for the over-limit event.
-                limiter.onProcStateUpdated(PROCESS_STATE_100M);
-                appCommand(100);
                 assertTrue(counter.await(10));
 
                 // There should be exactly one event in the counter.

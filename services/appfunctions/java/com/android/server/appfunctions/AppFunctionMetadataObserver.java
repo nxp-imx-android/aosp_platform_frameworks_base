@@ -35,6 +35,7 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.server.SystemService;
 
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.Executors;
 
 /**
@@ -168,13 +169,10 @@ public class AppFunctionMetadataObserver {
     }
 
     /** Notifies observers of a change to an app function's enabled state. */
-    void onEnabledStateChanged(
-            @NonNull UserHandle userHandle,
-            @NonNull String packageName,
-            @NonNull String functionIdentifier) {
+    void onEnabledStatesChanged(
+            @NonNull UserHandle userHandle, @NonNull Set<AppFunctionName> functionNames) {
         requireNonNull(userHandle);
-        requireNonNull(packageName);
-        requireNonNull(functionIdentifier);
+        requireNonNull(functionNames);
 
         InternalObserverCallbackRouter router;
 
@@ -183,7 +181,7 @@ public class AppFunctionMetadataObserver {
         }
 
         if (router != null) {
-            router.onEnabledStateChanged(new AppFunctionName(packageName, functionIdentifier));
+            router.onEnabledStatesChanged(functionNames);
         }
     }
 }

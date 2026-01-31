@@ -606,7 +606,11 @@ public class MockingOomAdjusterTests {
 
         setWakefulness(PowerManagerInternal.WAKEFULNESS_AWAKE);
         setIsReceivingBroadcast(app, true, SCHED_GROUP_BACKGROUND);
-        updateOomAdj(app);
+        if (Flags.pscAutoUpdateBroadcastState()) {
+            // No need to manually trigger an update.
+        } else {
+            updateOomAdj(app);
+        }
 
         assertProcStates(app, PROCESS_STATE_RECEIVER, FOREGROUND_APP_ADJ, SCHED_GROUP_BACKGROUND);
         assertThatProcess(app).hasImplicitCpuTimeCapability();
@@ -627,7 +631,11 @@ public class MockingOomAdjusterTests {
         assertTrue(app.getHasForegroundActivities());
 
         setIsReceivingBroadcast(app, true, SCHED_GROUP_BACKGROUND);
-        updateOomAdj(app);
+        if (Flags.pscAutoUpdateBroadcastState()) {
+            // No need to manually trigger an update.
+        } else {
+            updateOomAdj(app);
+        }
 
         assertProcStates(app, PROCESS_STATE_RECEIVER, FOREGROUND_APP_ADJ, SCHED_GROUP_BACKGROUND);
         assertThatProcess(app).hasImplicitCpuTimeCapability();
@@ -1167,11 +1175,19 @@ public class MockingOomAdjusterTests {
         assertThatProcess(app).notHasCpuTimeCapability();
 
         mProcessStateController.noteBroadcastDeliveryStarted(app, SCHED_GROUP_BACKGROUND);
-        updateOomAdj(app);
+        if (Flags.pscAutoUpdateBroadcastState()) {
+            // No need to manually trigger an update.
+        } else {
+            updateOomAdj(app);
+        }
         assertThatProcess(app).hasCpuTimeCapability();
 
         mProcessStateController.noteBroadcastDeliveryEnded(app);
-        updateOomAdj(app);
+        if (Flags.pscAutoUpdateBroadcastState()) {
+            // No need to manually trigger an update.
+        } else {
+            updateOomAdj(app);
+        }
         assertThatProcess(app).notHasCpuTimeCapability();
     }
 
@@ -1908,7 +1924,7 @@ public class MockingOomAdjusterTests {
         ProcessRecord client = makeDefaultProcessRecord(MOCKAPP2_PID, MOCKAPP2_UID,
                 MOCKAPP2_PROCESSNAME, MOCKAPP2_PACKAGENAME, false);
         bindService(app, client, null, null, Context.BIND_FOREGROUND_SERVICE, mock(IBinder.class));
-        client.setMaxAdj(PERSISTENT_PROC_ADJ);
+        mProcessStateController.setMaxAdj(client, PERSISTENT_PROC_ADJ);
         setWakefulness(PowerManagerInternal.WAKEFULNESS_ASLEEP);
         updateOomAdj(client, app);
         setWakefulness(PowerManagerInternal.WAKEFULNESS_AWAKE);
@@ -4974,7 +4990,7 @@ public class MockingOomAdjusterTests {
             final ProcessProviderRecord providers = app.mProviders;
             app.makeActive(mock(ApplicationThreadDeferred.class), mService.mProcessStats);
             app.setLastActivityTime(mLastActivityTime);
-            app.setKilledByAm(mKilledByAm);
+            mProcessStateController.setKilledByAm(app, mKilledByAm);
             app.setIsolatedEntryPoint(mIsolatedEntryPoint);
             final WindowProcessController wpc = spy(app.getWindowProcessController());
             setFieldValue(ProcessRecord.class, app, "mWindowProcessController", wpc);
@@ -4984,7 +5000,7 @@ public class MockingOomAdjusterTests {
             profile.setLastPssTime(mLastPssTime);
             profile.setNextPssTime(mNextPssTime);
             profile.setLastPss(mLastPss);
-            state.setMaxAdj(mMaxAdj);
+            mProcessStateController.setMaxAdj(state, mMaxAdj);
             state.setSetRawAdj(mSetRawAdj);
             state.setCurAdj(mCurAdj);
             state.setSetAdj(mSetAdj);
@@ -4999,11 +5015,11 @@ public class MockingOomAdjusterTests {
             state.setHasForegroundActivities(mHasForegroundActivities);
             state.setSystemNoUi(mSystemNoUi);
             state.setHasShownUi(mHasShownUi);
-            state.setHasTopUi(mHasTopUi);
-            state.setIsRunningRemoteAnimation(mRunningRemoteAnimation);
-            state.setHasOverlayUi(mHasOverlayUi);
+            mProcessStateController.setHasTopUi(state, mHasTopUi);
+            mProcessStateController.setRunningRemoteAnimation(state, mRunningRemoteAnimation);
+            mProcessStateController.setHasOverlayUi(state, mHasOverlayUi);
             state.setLastTopTime(mLastTopTime);
-            state.setForcingToImportant(mForcingToImportant);
+            mProcessStateController.setForcingToImportant(state, mForcingToImportant);
             services.setConnectionGroup(mConnectionGroup);
             services.setConnectionImportance(mConnectionImportance);
             services.setHasClientActivities(mHasClientActivities);

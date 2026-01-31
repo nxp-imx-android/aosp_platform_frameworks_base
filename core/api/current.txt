@@ -8463,7 +8463,6 @@ package android.app.admin {
     field @FlaggedApi("android.view.contentprotection.flags.manage_device_policy_enabled") public static final String CONTENT_PROTECTION_POLICY = "contentProtection";
     field @FlaggedApi("android.app.admin.flags.cross_profile_widget_provider_bulk_apis") public static final String CROSS_PROFILE_WIDGET_PROVIDER_POLICY = "crossProfileWidgetProvider";
     field public static final String KEYGUARD_DISABLED_FEATURES_POLICY = "keyguardDisabledFeatures";
-    field @FlaggedApi("android.app.admin.flags.lockscreen_info_coexistence") public static final String LOCKSCREEN_MESSAGE_POLICY = "lockscreenMessage";
     field public static final String LOCK_TASK_POLICY = "lockTask";
     field @FlaggedApi("android.app.admin.flags.set_mte_policy_coexistence") public static final String MEMORY_TAGGING_POLICY = "memoryTagging";
     field public static final String PACKAGES_SUSPENDED_POLICY = "packagesSuspended";
@@ -10690,6 +10689,7 @@ package android.appwidget {
     field public static final String EXTRA_HOST_ID = "hostId";
     field public static final int INVALID_APPWIDGET_ID = 0; // 0x0
     field public static final String META_DATA_APPWIDGET_PROVIDER = "android.appwidget.provider";
+    field @FlaggedApi("android.appwidget.flags.widget_display_changes") public static final String OPTION_APPWIDGET_DISPLAY_ID = "appWidgetDisplayId";
     field public static final String OPTION_APPWIDGET_HOST_CATEGORY = "appWidgetCategory";
     field public static final String OPTION_APPWIDGET_MAX_HEIGHT = "appWidgetMaxHeight";
     field public static final String OPTION_APPWIDGET_MAX_WIDTH = "appWidgetMaxWidth";
@@ -26030,6 +26030,8 @@ package android.media {
     method public int getConnectionState();
     method @NonNull public java.util.Set<java.lang.String> getDeduplicationIds();
     method @Nullable public CharSequence getDescription();
+    method @FlaggedApi("com.android.media.flags.enable_device_manufacturer_and_model_info") @NonNull public String getDeviceManufacturer();
+    method @FlaggedApi("com.android.media.flags.enable_device_manufacturer_and_model_info") @NonNull public String getDeviceModel();
     method @Nullable public android.os.Bundle getExtras();
     method @NonNull public java.util.List<java.lang.String> getFeatures();
     method @Nullable public android.net.Uri getIconUri();
@@ -26103,6 +26105,8 @@ package android.media {
     method @NonNull public android.media.MediaRoute2Info.Builder setConnectionState(int);
     method @NonNull public android.media.MediaRoute2Info.Builder setDeduplicationIds(@NonNull java.util.Set<java.lang.String>);
     method @NonNull public android.media.MediaRoute2Info.Builder setDescription(@Nullable CharSequence);
+    method @FlaggedApi("com.android.media.flags.enable_device_manufacturer_and_model_info") @NonNull public android.media.MediaRoute2Info.Builder setDeviceManufacturer(@NonNull String);
+    method @FlaggedApi("com.android.media.flags.enable_device_manufacturer_and_model_info") @NonNull public android.media.MediaRoute2Info.Builder setDeviceModel(@NonNull String);
     method @NonNull public android.media.MediaRoute2Info.Builder setExtras(@Nullable android.os.Bundle);
     method @NonNull public android.media.MediaRoute2Info.Builder setIconUri(@Nullable android.net.Uri);
     method @FlaggedApi("com.android.media.flags.enable_route_visibility_control_api") @NonNull public android.media.MediaRoute2Info.Builder setRequiredPermissions(@NonNull java.util.Set<java.lang.String>);
@@ -44077,6 +44081,7 @@ package android.service.personalcontext.hint {
     method @NonNull public android.service.personalcontext.hint.AutofillInlineRequestHint.Builder addToken(@NonNull android.service.personalcontext.Token);
     method @NonNull public android.service.personalcontext.hint.AutofillInlineRequestHint build();
     method @NonNull public android.service.personalcontext.hint.AutofillInlineRequestHint.Builder setActivityComponent(@NonNull android.content.ComponentName);
+    method @NonNull public android.service.personalcontext.hint.AutofillInlineRequestHint.Builder setAugmentedAutofillManagerClient(@NonNull android.os.IBinder);
     method @NonNull public android.service.personalcontext.hint.AutofillInlineRequestHint.Builder setAutofillValue(@NonNull android.view.autofill.AutofillValue);
     method @NonNull public android.service.personalcontext.hint.AutofillInlineRequestHint.Builder setFillEventHistory(@Nullable android.service.autofill.FillEventHistory);
     method @NonNull public android.service.personalcontext.hint.AutofillInlineRequestHint.Builder setFocusedId(@NonNull android.view.autofill.AutofillId);
@@ -44136,15 +44141,30 @@ package android.service.personalcontext.hint {
     method @NonNull public android.service.personalcontext.hint.CapturedText.Builder setViewNodeText(@NonNull String);
   }
 
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class ChatMessageContentCaptureData implements android.os.Parcelable {
+    method public int describeContents();
+    method @NonNull public android.view.autofill.AutofillId getAutofillId();
+    method @NonNull public String getRawParsedDateString();
+    method @NonNull public String getRawParsedTimeString();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.service.personalcontext.hint.ChatMessageContentCaptureData> CREATOR;
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class ChatMessageContentCaptureData.Builder {
+    ctor public ChatMessageContentCaptureData.Builder();
+    method @NonNull public android.service.personalcontext.hint.ChatMessageContentCaptureData build();
+    method @NonNull public android.service.personalcontext.hint.ChatMessageContentCaptureData.Builder setAutofillId(@NonNull android.view.autofill.AutofillId);
+    method @NonNull public android.service.personalcontext.hint.ChatMessageContentCaptureData.Builder setRawParsedDateString(@NonNull String);
+    method @NonNull public android.service.personalcontext.hint.ChatMessageContentCaptureData.Builder setRawParsedTimeString(@NonNull String);
+  }
+
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class ChatMessageData implements android.os.Parcelable {
     method public int describeContents();
     method @NonNull public String getAuthor();
-    method @NonNull public android.view.autofill.AutofillId getAutofillId();
+    method @Nullable public android.service.personalcontext.hint.ChatMessageContentCaptureData getContentCaptureData();
     method @Nullable public String getContentDescription();
-    method @NonNull public String getDateText();
     method @NonNull public java.time.Instant getReferenceTime();
     method @NonNull public String getText();
-    method @NonNull public String getTimeText();
     method public boolean isOutgoingMessage();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.service.personalcontext.hint.ChatMessageData> CREATOR;
@@ -44154,13 +44174,11 @@ package android.service.personalcontext.hint {
     ctor public ChatMessageData.Builder();
     method @NonNull public android.service.personalcontext.hint.ChatMessageData build();
     method @NonNull public android.service.personalcontext.hint.ChatMessageData.Builder setAuthor(@NonNull String);
-    method @NonNull public android.service.personalcontext.hint.ChatMessageData.Builder setAutofillId(@NonNull android.view.autofill.AutofillId);
-    method @NonNull public android.service.personalcontext.hint.ChatMessageData.Builder setContentDescription(@Nullable String);
-    method @NonNull public android.service.personalcontext.hint.ChatMessageData.Builder setDateText(@NonNull String);
+    method @NonNull public android.service.personalcontext.hint.ChatMessageData.Builder setContentCaptureData(@NonNull android.service.personalcontext.hint.ChatMessageContentCaptureData);
+    method @NonNull public android.service.personalcontext.hint.ChatMessageData.Builder setContentDescription(@NonNull String);
     method @NonNull public android.service.personalcontext.hint.ChatMessageData.Builder setOutgoingMessage(boolean);
     method @NonNull public android.service.personalcontext.hint.ChatMessageData.Builder setReferenceTime(@NonNull java.time.Instant);
     method @NonNull public android.service.personalcontext.hint.ChatMessageData.Builder setText(@NonNull String);
-    method @NonNull public android.service.personalcontext.hint.ChatMessageData.Builder setTimeText(@NonNull String);
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public abstract class ContextHint {
@@ -44170,7 +44188,7 @@ package android.service.personalcontext.hint {
     method @NonNull public final java.util.Set<android.service.personalcontext.Token> getTokens();
   }
 
-  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class ContextHintWithSignature {
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public class ContextHintWithSignature {
     method @NonNull public java.util.List<android.service.personalcontext.hint.ContextHintWithSignature> getAttributionHints();
     method @NonNull public android.service.personalcontext.hint.ContextHint getContextHint();
     method @Nullable public String getOriginatingPackage();
@@ -44258,6 +44276,18 @@ package android.service.personalcontext.hint {
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class InsightReferenceHint extends android.service.personalcontext.hint.ContextHint {
     method @NonNull public java.util.UUID getInsightId();
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class MessagesHint extends android.service.personalcontext.hint.ContextHint {
+    method @NonNull public java.util.List<android.service.personalcontext.hint.ChatMessageData> getChatMessages();
+    method @NonNull public String getPackageName();
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class MessagesHint.Builder {
+    ctor public MessagesHint.Builder(@NonNull String);
+    method @NonNull public android.service.personalcontext.hint.MessagesHint.Builder addToken(@NonNull android.service.personalcontext.Token);
+    method @NonNull public android.service.personalcontext.hint.MessagesHint build();
+    method @NonNull public android.service.personalcontext.hint.MessagesHint.Builder setChatMessages(@NonNull java.util.List<android.service.personalcontext.hint.ChatMessageData>);
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public abstract class NotificationEvent {
@@ -54748,8 +54778,10 @@ package android.view {
   @FlaggedApi("com.android.window.flags.scvh_set_focusable_api") public static class SurfaceControlViewHost.LayoutParams {
     ctor @FlaggedApi("com.android.window.flags.scvh_set_focusable_api") public SurfaceControlViewHost.LayoutParams(int, int, boolean);
     method @FlaggedApi("com.android.window.flags.scvh_set_focusable_api") public int getHeight();
+    method @FlaggedApi("com.android.window.flags.scvh_set_focusable_api") @NonNull public String getTitle();
     method @FlaggedApi("com.android.window.flags.scvh_set_focusable_api") public int getWidth();
     method @FlaggedApi("com.android.window.flags.scvh_set_focusable_api") public boolean isFocusable();
+    method @FlaggedApi("com.android.window.flags.scvh_set_focusable_api") public void setTitle(@NonNull String);
   }
 
   public static final class SurfaceControlViewHost.SurfacePackage implements android.os.Parcelable {

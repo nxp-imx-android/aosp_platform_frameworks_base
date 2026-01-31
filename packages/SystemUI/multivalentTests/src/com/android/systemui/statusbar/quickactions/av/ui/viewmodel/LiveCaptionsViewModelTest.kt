@@ -19,6 +19,7 @@ package com.android.systemui.statusbar.quickactions.av.ui.viewmodel
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.accessibility.data.repository.fakeCaptioningRepository
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
@@ -52,11 +53,24 @@ class LiveCaptionsViewModelTest : SysuiTestCase() {
     fun initialState_disabled() = kosmos.runTest { assertThat(underTest.state.isEnabled).isFalse() }
 
     @Test
-    fun onClick_doesNothing() =
+    fun liveCaptionsEnabled_stateEnabled() =
         kosmos.runTest {
+            fakeCaptioningRepository.setIsSystemAudioCaptioningEnabled(true)
+            assertThat(underTest.state.isEnabled).isTrue()
+        }
+
+    @Test
+    fun onClick_togglesLiveCaptions() =
+        kosmos.runTest {
+            // Initial state: disabled
+            assertThat(underTest.state.isEnabled).isFalse()
+
+            // Click to enable
             underTest.onClick()
-            // No state change expected as it is not implemented
-            // TODO(b/467631817): Add the test after the backend is connected.
+            assertThat(underTest.state.isEnabled).isTrue()
+
+            // Click to disable
+            underTest.onClick()
             assertThat(underTest.state.isEnabled).isFalse()
         }
 }

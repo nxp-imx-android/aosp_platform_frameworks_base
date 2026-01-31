@@ -18,7 +18,6 @@
 <!-- In (hopefully very rare) case dialog is too high: allow scrolling -->
 <ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:androidprv="http://schemas.android.com/apk/prv/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:scrollbars="none"
@@ -49,7 +48,7 @@
                 android:layout_height="@dimen/usb_device_dialog_icon_size"
                 android:layout_marginBottom="@dimen/usb_device_dialog_space_small1"
                 android:layout_gravity="center_horizontal"
-                android:tint="@androidprv:color/materialColorPrimary"
+                android:tint="@color/materialColorPrimary"
                 android:scaleType="fitCenter"/>
 
             <TextView
@@ -99,7 +98,7 @@
                 android:paddingHorizontal="@dimen/usb_device_dialog_space_small1"
                 android:paddingVertical="@dimen/usb_device_dialog_button_padding_vertical"
                 android:background="@drawable/usb_device_dialog_button_background_outline"
-                android:textColor="@androidprv:color/materialColorPrimary"
+                android:textColor="@color/materialColorPrimary"
                 android:text="@string/usb_device_dialog_allow_only_this_time_button"/>
 
             <Space
@@ -115,7 +114,7 @@
                 android:paddingHorizontal="@dimen/usb_device_dialog_space_small1"
                 android:paddingVertical="@dimen/usb_device_dialog_button_padding_vertical"
                 android:background="@android:color/transparent"
-                android:textColor="@androidprv:color/materialColorPrimary"
+                android:textColor="@color/materialColorPrimary"
                 android:text="@string/usb_device_dialog_cancel_button"/>
 
         </LinearLayout>

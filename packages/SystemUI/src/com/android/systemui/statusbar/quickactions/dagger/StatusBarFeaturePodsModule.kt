@@ -16,13 +16,17 @@
 
 package com.android.systemui.statusbar.quickactions.dagger
 
+import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.statusbar.quickactions.assistant.data.repository.AssistantRepository
 import com.android.systemui.statusbar.quickactions.assistant.data.repository.AssistantRepositoryImpl
 import com.android.systemui.statusbar.quickactions.assistant.domain.interactor.AssistantIconInteractor
 import com.android.systemui.statusbar.quickactions.assistant.domain.interactor.AssistantIconInteractorImpl
+import com.android.systemui.statusbar.quickactions.sharescreen.domain.interactor.ShareScreenPrivacyIndicatorInteractor
 import dagger.Binds
 import dagger.Module
+import dagger.multibindings.ClassKey
+import dagger.multibindings.IntoMap
 
 /** Similar in purpose to [StatusBarModule], but scoped only to feature pods. */
 @Module
@@ -34,4 +38,11 @@ interface StatusBarFeaturePodsModule {
     @Binds
     @SysUISingleton
     fun bindAssistantIconInteractor(impl: AssistantIconInteractorImpl): AssistantIconInteractor
+
+    @Binds
+    @IntoMap
+    @ClassKey(ShareScreenPrivacyIndicatorInteractor::class)
+    fun bindShareScreenPrivacyIndicatorInteractor(
+        impl: ShareScreenPrivacyIndicatorInteractor
+    ): CoreStartable
 }

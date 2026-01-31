@@ -368,6 +368,8 @@ package android.net {
   }
 
   @RestrictedForEnvironment(environments=android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME, from=android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) public class VpnManager {
+    method @FlaggedApi("android.provider.expose_vpn_app_exclusion_settings") @Nullable @RequiresPermission(anyOf={android.Manifest.permission.NETWORK_SETTINGS, android.net.NetworkStack.PERMISSION_MAINLINE_NETWORK_STACK, android.Manifest.permission.NETWORK_STACK}) public java.util.List<java.lang.String> getAppExclusionList(int, @NonNull String);
+    method @FlaggedApi("android.provider.expose_vpn_app_exclusion_settings") @RequiresPermission(anyOf={android.Manifest.permission.NETWORK_SETTINGS, android.net.NetworkStack.PERMISSION_MAINLINE_NETWORK_STACK, android.Manifest.permission.NETWORK_STACK}) public boolean setAppExclusionList(int, @NonNull String, @NonNull java.util.List<java.lang.String>);
     field public static final int TYPE_VPN_LEGACY = 3; // 0x3
     field public static final int TYPE_VPN_NONE = -1; // 0xffffffff
     field public static final int TYPE_VPN_OEM = 4; // 0x4

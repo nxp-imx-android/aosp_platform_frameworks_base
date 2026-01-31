@@ -207,15 +207,15 @@ public interface AttachedSurfaceControl {
     }
 
     /**
-     * Registers a {@link OnJankDataListener} to receive jank classification data about rendered
-     * frames.
+     * Registers a {@link SurfaceControl.OnJankDataListener} to receive jank classification data
+     * about rendered frames.
      * <p>
      * Use {@link SurfaceControl.OnJankDataListenerRegistration#removeAfter} to unregister the
      * listener.
      *
      * @param executor The executor on which the listener will be invoked.
      * @param listener The listener to add.
-     * @return The {@link OnJankDataListenerRegistration} for the listener.
+     * @return The {@link SurfaceControl.OnJankDataListenerRegistration} for the listener.
      */
     @NonNull
     @FlaggedApi(Flags.FLAG_JANK_API)

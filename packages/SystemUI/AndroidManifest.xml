@@ -826,6 +826,14 @@
             android:windowDisablePreview="true"
             android:theme="@android:style/Theme.Translucent.NoTitleBar.Fullscreen" />
 
+        <!-- AppFunctions -->
+        <activity android:name=".appfunctions.trampoline.AppFunctionExecutorProxy"
+            android:exported="true"
+            android:permission="android.permission.EXECUTE_APP_FUNCTIONS"
+            android:excludeFromRecents="true"
+            android:theme="@android:style/Theme.NoDisplay">
+        </activity >
+
         <!-- People Space Widget -->
         <receiver
             android:name=".people.widget.PeopleSpaceWidgetProvider"

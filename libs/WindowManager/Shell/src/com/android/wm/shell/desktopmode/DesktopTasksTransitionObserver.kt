@@ -192,12 +192,14 @@ class DesktopTasksTransitionObserver(
      */
     private fun removeClosingTasks(info: TransitionInfo) {
         val wct = WindowContainerTransaction()
+        // Keeping processes alive allows for faster (warm) future launches of the same apps.
+        val killProcess = !Flags.skipKillProcessForDesktopTaskCoreCloseTransition()
         info.changes
             .filter { it.mode == TRANSIT_CLOSE }
             .mapNotNull { it.taskInfo }
             .forEach { taskInfo ->
                 if (taskInfo.windowingMode != WINDOWING_MODE_FREEFORM) return@forEach
-                wct.removeTask(taskInfo.token)
+                wct.removeTask(taskInfo.token, /* removeFromRecents= */ true, killProcess)
                 ProtoLog.d(
                     WM_SHELL_DESKTOP_MODE,
                     "DesktopTasksTransitionObserver: removing closing task=%d fully",

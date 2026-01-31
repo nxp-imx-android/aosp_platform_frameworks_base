@@ -76,6 +76,16 @@ flag {
 }
 
 flag {
+   name: "desktop_overview_rotation_task_resize_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Does not resize task due to rotation only display changes when in overview."
+    bug: "452131033"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "dimming_wallpaper_for_maximized_and_tiled"
     namespace: "lse_desktop_experience"
     description: "Dim the wallpaper to make maximized and tiled window looks immersive."
@@ -746,13 +756,6 @@ flag {
 }
 
 flag {
-    name: "enable_key_gesture_handler_for_sysui"
-    namespace: "lse_desktop_experience"
-    description: "Enables the key gesture handler for listening to SysUi interested key events."
-    bug: "406740557"
-}
-
-flag {
     name: "enable_launcher_handle_go_home_keyboard_shortcut"
     namespace: "lse_desktop_experience"
     description: "Enables handling the go home keyboard shortcut on the Launcher side."
@@ -767,6 +770,7 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Prevent activity recreation on less supported config changes."
     bug: "454795633"
+    is_exported: true
 }
 
 flag {
@@ -1292,6 +1296,16 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Keep the desk active on TO_BACK transitions without nothing else in front"
     bug: "421124396"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "skip_kill_process_for_desktop_task_core_close_transition"
+    namespace: "lse_desktop_experience"
+    description: "Don't force-kill processes of Desktop tasks closed through core transitions."
+    bug: "438483836"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

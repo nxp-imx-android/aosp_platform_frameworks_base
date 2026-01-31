@@ -16,6 +16,7 @@
 
 package com.android.providers.settings;
 
+import static com.android.providers.settings.SettingsBackupRestoreKeys.KEY_PLATFORM_MANAGED_SIM_PINS;
 import static com.android.providers.settings.SettingsBackupRestoreKeys.KEY_SIM_SPECIFIC_SETTINGS_2;
 import static com.android.providers.settings.SettingsBackupRestoreKeys.KEY_SOFTAP_CONFIG;
 import static com.android.providers.settings.SettingsBackupRestoreKeys.KEY_WIFI_NEW_CONFIG;
@@ -54,9 +55,12 @@ import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.UserHandle;
+import android.platform.test.annotations.EnableFlags;
+import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.Settings;
 import android.provider.settings.validators.SettingsValidators;
 import android.provider.settings.validators.Validator;
+import android.security.Flags;
 import android.telephony.SubscriptionManager;
 import android.test.mock.MockContentProvider;
 import android.test.mock.MockContentResolver;
@@ -124,6 +128,8 @@ public class SettingsBackupAgentTest extends BaseSettingsProviderTest {
         TEST_VALUES_VALIDATORS.put(PRESERVED_TEST_SETTING, SettingsValidators.ANY_STRING_VALIDATOR);
     }
 
+    @Rule
+    public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
     @Rule
     public final MockitoRule mockito = MockitoJUnit.rule();
 
@@ -815,6 +821,65 @@ public class SettingsBackupAgentTest extends BaseSettingsProviderTest {
 
         DataTypeResult loggingResult =
             getLoggingResultForDatatype(KEY_WIFI_SETTINGS_BACKUP_DATA, mAgentUnderTest);
+        assertNotNull(loggingResult);
+        assertEquals(loggingResult.getFailCount(), 1);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_AUTO_SIM_PIN_MANAGEMENT)
+    public void getPlatformManagedSimPinsData_numberOfSettingsInKeyAreRecordedIfBackedUp() {
+        mAgentUnderTest.onCreate(
+                UserHandle.SYSTEM, BackupDestination.CLOUD, OperationType.BACKUP);
+        byte[] fromSubManager = new byte[]{0, 1, 2};
+        when(mSubscriptionManager.getAllPlatformManagedPins()).thenReturn(fromSubManager);
+
+        byte[] toBackUp = mAgentUnderTest.getPlatformManagedSimPinsData(true);
+
+        assertEquals(mAgentUnderTest.getNumberOfSettingsPerKey(KEY_PLATFORM_MANAGED_SIM_PINS), 1);
+        assertArrayEquals(toBackUp, fromSubManager);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_AUTO_SIM_PIN_MANAGEMENT)
+    public void getPlatformManagedSimPinsData_doesNotBackupIfNotEncrypted() {
+        mAgentUnderTest.onCreate(
+                UserHandle.SYSTEM, BackupDestination.DEVICE_TRANSFER, OperationType.BACKUP);
+        when(mSubscriptionManager.getAllPlatformManagedPins()).thenReturn(new byte[] {0, 1, 2});
+
+        byte[] toBackUp = mAgentUnderTest.getPlatformManagedSimPinsData(false);
+
+        assertEquals(mAgentUnderTest.getNumberOfSettingsPerKey(KEY_PLATFORM_MANAGED_SIM_PINS), 0);
+        assertEquals(toBackUp.length, 0);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_AUTO_SIM_PIN_MANAGEMENT)
+    public void restorePlatformManagedSimPins_restoreIsSuccessful_successMetricsAreLogged() {
+        mAgentUnderTest.onCreate(
+                UserHandle.SYSTEM, BackupDestination.CLOUD, OperationType.RESTORE);
+        doNothing().when(mSubscriptionManager).restorePlatformManagedSimPinsFromBackup(any());
+
+        mAgentUnderTest.restorePlatformManagedSimPins(new byte[0]);
+
+        DataTypeResult loggingResult =
+                getLoggingResultForDatatype(KEY_PLATFORM_MANAGED_SIM_PINS, mAgentUnderTest);
+        assertNotNull(loggingResult);
+        assertEquals(loggingResult.getSuccessCount(), 1);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_AUTO_SIM_PIN_MANAGEMENT)
+    public void restorePlatformManagedSimPins_restoreIsNotSuccessful_failureMetricsAreLogged() {
+        mAgentUnderTest.onCreate(
+                UserHandle.SYSTEM, BackupDestination.CLOUD, OperationType.RESTORE);
+        doThrow(new RuntimeException())
+                .when(mSubscriptionManager)
+                .restorePlatformManagedSimPinsFromBackup(any());
+
+        mAgentUnderTest.restorePlatformManagedSimPins(new byte[0]);
+
+        DataTypeResult loggingResult =
+                getLoggingResultForDatatype(KEY_PLATFORM_MANAGED_SIM_PINS, mAgentUnderTest);
         assertNotNull(loggingResult);
         assertEquals(loggingResult.getFailCount(), 1);
     }

@@ -46,6 +46,8 @@ import com.android.server.pm.UserManagerInternal;
 import com.android.server.wallpaper.WallpaperManagerInternal;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.ux.material.libmonet.dynamiccolor.ColorSpec.SpecVersion;
+import com.google.ux.material.libmonet.dynamiccolor.DynamicScheme.Platform;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -132,6 +134,8 @@ public class ThemeManagerServiceTests {
         // create main testable resources and apply overrides
         TestableResources mainResources = mMainContext.getOrCreateTestableResources();
         mainResources.addOverride(R.array.theming_defaults, mHardwareColorRule.options);
+        // We're just providing an empty array for this test to avoid ResourceNotFoundException
+        mainResources.addOverride(R.array.theming_legacy_overlays, new String[0]);
 
         // create user testable resources and apply overrides
         TestableResources userResources = mUserContext.getOrCreateTestableResources();
@@ -147,7 +151,8 @@ public class ThemeManagerServiceTests {
         when(mUserManager.getUserIds()).thenReturn(new int[]{DEFAULT_USER_ID});
 
         FakeScheduledExecutorService schedulerExecutor = new FakeScheduledExecutorService();
-        mThemeStateManager = new ThemeStateManager(mMainContext, schedulerExecutor);
+        mThemeStateManager = new ThemeStateManager(mMainContext, schedulerExecutor,
+                Platform.PHONE, SpecVersion.SPEC_2025);
         mThemeStateManager.onServicesReady();
     }
 
@@ -204,6 +209,6 @@ public class ThemeManagerServiceTests {
         // The context used here should match the one used for resource overrides.
         return new ThemeManagerService(mMainContext, mHardwareColorRule.sysPropReader,
                 mThemeStateManager, mWallpaperManager, mOverlayManager, mThemeUserLifecycle,
-                mThemeEventObserver);
+                mThemeEventObserver, Platform.PHONE, SpecVersion.SPEC_2025);
     }
 }

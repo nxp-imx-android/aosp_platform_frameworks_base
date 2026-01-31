@@ -408,7 +408,7 @@ public class SurfaceControlViewHost {
             @Nullable InputTransferToken hostToken, @NonNull String callsite) {
         mSurfaceControl = new SurfaceControl.Builder()
                 .setContainerLayer()
-                .setName("SurfaceControlViewHost")
+                .setName("SurfaceControlViewHost[" + context.getPackageName() + "]")
                 .setCallsite("SurfaceControlViewHost[" + callsite + "]")
                 .build();
         mOwnsSurfaceControl = true;
@@ -675,6 +675,7 @@ public class SurfaceControlViewHost {
         private final boolean mFocusable;
         private final int mWidth;
         private final int mHeight;
+        private String mTitle = new String();
 
         /**
          * Creates a new set of layout parameters. If {@code focusable} is set to false,
@@ -718,6 +719,25 @@ public class SurfaceControlViewHost {
         }
 
         /**
+         * Sets the title for the SurfaceControlViewHost.
+         * This is used for debugging purposes to identify the SurfaceControl in tools.
+         *
+         * @param title The title to set.
+         */
+        @FlaggedApi(Flags.FLAG_SCVH_SET_FOCUSABLE_API)
+        public void setTitle(@NonNull String title) {
+            mTitle = title;
+        }
+
+        /**
+         * @return The title for the SurfaceControlViewHost.
+         */
+        @FlaggedApi(Flags.FLAG_SCVH_SET_FOCUSABLE_API)
+        public @NonNull String getTitle() {
+            return mTitle;
+        }
+
+        /**
          * Converts these layout params to {@link WindowManager.LayoutParams} adding some defaults
          * set for SCVH.
          *
@@ -735,6 +755,7 @@ public class SurfaceControlViewHost {
             if (!mFocusable) {
                 wmLayoutParams.flags |= WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
             }
+            wmLayoutParams.setTitle(mTitle);
             return wmLayoutParams;
         }
 
@@ -748,6 +769,7 @@ public class SurfaceControlViewHost {
                     (wmLayoutParams.flags & WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE) == 0;
             final LayoutParams layoutParams =
                     new LayoutParams(wmLayoutParams.width, wmLayoutParams.height, focusable);
+            layoutParams.mTitle = wmLayoutParams.getTitle().toString();
             return layoutParams;
         }
     }

@@ -47,6 +47,7 @@ import static com.android.server.wm.BackgroundActivityStartController.BalVerdict
 import static com.android.window.flags.Flags.FLAG_ENABLE_WINDOW_REPOSITIONING_API;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
@@ -56,6 +57,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.testng.AssertJUnit.assertNotNull;
 
+import android.app.ActivityManager;
 import android.app.AppOpsManager;
 import android.app.TaskWindowingLayerRequestHandler;
 import android.graphics.Rect;
@@ -403,6 +405,20 @@ public class AppTaskImplTests extends WindowTestsBase {
         assertThrows(
                 SecurityException.class,
                 () -> appTask.moveTaskTo(dc.mDisplayId, bounds, mMockCallback, PACKAGE_NAME));
+    }
+
+    @Test
+    public void testGetTaskInfo_returnsNullForNonExistentTask() {
+        // Use a task ID that is guaranteed not to exist.
+        final int nonExistentTaskId = 9999;
+        final AppTaskImpl appTask = getAppTask(nonExistentTaskId);
+
+        // Calling getTaskInfo for a non-existent task should return null.
+        final ActivityManager.RecentTaskInfo taskInfo = appTask.getTaskInfo();
+
+        // Verify that the result is null, as per the updated implementation,
+        // instead of throwing an exception.
+        assertNull(taskInfo);
     }
 
     private AppTaskImpl getAppTask(int taskId) {

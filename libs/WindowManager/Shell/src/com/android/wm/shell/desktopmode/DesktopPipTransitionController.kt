@@ -28,6 +28,7 @@ import android.window.WindowContainerTransaction
 import androidx.annotation.VisibleForTesting
 import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.ShellTaskOrganizer
+import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.pip.PipDesktopState
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.EnterReason
 import com.android.wm.shell.desktopmode.data.DesktopRepository
@@ -39,6 +40,7 @@ class DesktopPipTransitionController(
     val desktopTasksController: DesktopTasksController,
     private val desktopUserRepositories: DesktopUserRepositories,
     private val pipDesktopState: PipDesktopState,
+    private val displayController: DisplayController,
 ) {
     /**
      * This is called by [PipScheduler#scheduleExitPipViaExpand] before starting an expand PiP
@@ -289,6 +291,15 @@ class DesktopPipTransitionController(
     fun handleRemovePipTransition(wct: WindowContainerTransaction, token: WindowContainerToken) {
         if (!pipDesktopState.isPipInDesktopMode()) {
             logD("handleRemovePipTransition: PiP transition is not in Desktop session")
+            return
+        }
+        if (displayController.getDisplay(pipDesktopState.getCurrentDisplayId()) == null) {
+            // Rather than remove the task, PipDisplayDisconnectHandler will reparent the task
+            // so it is available on the internal display if the display was disconnected.
+            logD(
+                "handleRemovePipTransition: In Desktop session on recently disconnected" +
+                    " display, will not remove PiP task entirely"
+            )
             return
         }
         logD("handleRemovePipTransition: In Desktop session, removing PiP task entirely")

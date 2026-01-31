@@ -30,7 +30,6 @@ import android.util.ArrayMap;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.VisibleForTesting;
 
 import java.util.List;
 import java.util.Objects;
@@ -44,8 +43,6 @@ import java.util.concurrent.Executor;
  * that enable inputs and outputs for computer control features.
  */
 public class ComputerControlExtensions {
-    @VisibleForTesting static final int EXTENSIONS_VERSION = 4;
-
     private final ArrayMap<AutomatedPackageListener,
             android.companion.virtual.computercontrol.AutomatedPackageListener> mListeners =
             new ArrayMap<>();
@@ -56,7 +53,7 @@ public class ComputerControlExtensions {
      * Retrieve the current version of the extensions.
      */
     public static int getVersion() {
-        return EXTENSIONS_VERSION;
+        return VirtualDeviceManager.COMPUTER_CONTROL_VERSION;
     }
 
     /**
@@ -95,8 +92,10 @@ public class ComputerControlExtensions {
         ComputerControlSessionParams sessionParams =
                 new ComputerControlSessionParams.Builder()
                         .setName(params.getName())
+                        .setTargetExtensionVersion(params.getTargetExtensionVersion())
                         .setTargetPackageNames(params.getTargetPackageNames())
                         .setPreviewIntent(params.getPreviewIntent())
+                        .setAppInteractionAttribution(params.getAppInteractionAttribution())
                         .build();
 
         var sessionCallback =

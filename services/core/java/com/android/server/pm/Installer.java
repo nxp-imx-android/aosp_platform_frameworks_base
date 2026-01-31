@@ -363,10 +363,10 @@ public class Installer extends SystemService {
     }
 
     public void clearAppData(String uuid, String packageName, int userId, int flags,
-            long ceDataInode) throws InstallerException {
+            long ceDataInode, long pccCeDataInode) throws InstallerException {
         if (!checkBeforeRemote()) return;
         try {
-            mInstalld.clearAppData(uuid, packageName, userId, flags, ceDataInode);
+            mInstalld.clearAppData(uuid, packageName, userId, flags, ceDataInode, pccCeDataInode);
 
             final StackTraceElement[] elements = Thread.currentThread().getStackTrace();
             String className;
@@ -393,10 +393,10 @@ public class Installer extends SystemService {
     }
 
     public void destroyAppData(String uuid, String packageName, int userId, int flags,
-            long ceDataInode) throws InstallerException {
+            long ceDataInode, long pccCeDataInode) throws InstallerException {
         if (!checkBeforeRemote()) return;
         try {
-            mInstalld.destroyAppData(uuid, packageName, userId, flags, ceDataInode);
+            mInstalld.destroyAppData(uuid, packageName, userId, flags, ceDataInode, pccCeDataInode);
         } catch (Exception e) {
             throw InstallerException.from(e);
         }

@@ -66,9 +66,12 @@ class FloatingToolbarRoot(
             }
             // TODO(b/215497659): Check FLAG_WINDOW_IS_PARTIALLY_OBSCURED
             if (!contentRect.contains(lastDownX, lastDownY)) {
-                if (DEBUG) {
-                    Log.d(TAG, "Transfer touch focus to application.")
-                }
+                Log.e(
+                    TAG,
+                    "Region that shouldn't be touched has been." +
+                        " lastDown=($lastDownX,$lastDownY). Transferring touch to" +
+                        " host application.",
+                )
                 transferTouchListener.onTransferTouch(
                     getViewRootImpl().getInputToken(),
                     targetInputToken,

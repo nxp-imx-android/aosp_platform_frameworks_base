@@ -18,21 +18,20 @@ package com.android.server.pm;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
 import static com.android.server.pm.GenericAllowlist.allowlistModeToString;
-import static com.android.server.pm.GenericAllowlist.statusToString;
+import static com.android.server.pm.GenericAllowlist.allowlistStatusToString;
 import static com.android.server.pm.GenericAllowlist.isAllowed;
 import static com.android.server.pm.GenericAllowlist.AllowlistMode;
-import static com.android.server.pm.GenericAllowlist.ALLOWED_BY_LOG_ONLY_MESSAGE_TEMPLATE;
 import static com.android.server.pm.GenericAllowlist.DEBUG;
+import static com.android.server.pm.GenericAllowlist.ALLOWED_BY_OVERRIDDEN_STATUS_MESSAGE_TEMPLATE;
 import static com.android.server.pm.GenericAllowlist.ALLOWLIST_MODE_DISABLED;
-import static com.android.server.pm.GenericAllowlist.ALLOWLIST_MODE_LOG_ONLY;
 import static com.android.server.pm.GenericAllowlist.ALLOWLIST_MODE_ENABLED;
 import static com.android.server.pm.GenericAllowlist.ALLOWLIST_MODE_INVALID;
+import static com.android.server.pm.GenericAllowlist.LAST_STATUS_ALLOWED;
+import static com.android.server.pm.GenericAllowlist.STATUS_ALLOWED_ALLOWLISTING_DISABLED_BY_SHELL_CMD;
 import static com.android.server.pm.GenericAllowlist.STATUS_ALLOWED_BY_PERMANENT_LIST;
 import static com.android.server.pm.GenericAllowlist.STATUS_ALLOWED_BY_TEMPORARY_LIST;
 import static com.android.server.pm.GenericAllowlist.STATUS_ALLOWED_DISABLED_MODE;
 import static com.android.server.pm.GenericAllowlist.STATUS_ALLOWED_INVALID_MODE;
-import static com.android.server.pm.GenericAllowlist.STATUS_ALLOWED_NOT_IN_PERMANENT_LIST_BUT_LOG_ONLY_MODE;
-import static com.android.server.pm.GenericAllowlist.STATUS_ALLOWED_NOT_IN_TEMPORARY_LIST_BUT_LOG_ONLY_MODE;
 import static com.android.server.pm.GenericAllowlist.STATUS_ALLOWED_PERMANENT_LIST_EMPTY;
 import static com.android.server.pm.GenericAllowlist.STATUS_ALLOWED_TEMPORARY_LIST_EMPTY;
 import static com.android.server.pm.GenericAllowlist.STATUS_DISALLOWED_NOT_IN_PERMANENT_LIST;
@@ -40,9 +39,7 @@ import static com.android.server.pm.GenericAllowlist.STATUS_DISALLOWED_NOT_IN_TE
 import static com.android.server.pm.GenericAllowlist.STATUS_UNKNOWN;
 
 import static org.junit.Assert.assertThrows;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -56,6 +53,8 @@ import com.android.modules.utils.testing.ExtendedMockitoRule.SpyStatic;
 import com.android.server.ExpectableTestCase;
 import com.android.server.pm.GenericAllowlist.AllowlistMode;
 import com.android.server.pm.GenericAllowlist.AllowlistStatus;
+
+import com.google.common.collect.ImmutableSet;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -103,6 +102,9 @@ abstract class GenericAllowlistTestCase<A extends GenericAllowlist<E>, E>
     }
 
     protected abstract A createAllowlist(@AllowlistMode int mode, String... configAllowlist);
+
+    /** Gets the statuses that can be passed to {@code overrideDisallowedStatus()}. */
+    protected abstract ImmutableSet<Integer> getOverridingStatuses();
 
     protected abstract String getPermanentName1();
     protected abstract String getPermanentName2();
@@ -215,23 +217,6 @@ abstract class GenericAllowlistTestCase<A extends GenericAllowlist<E>, E>
                 getNotAllowlistedElement(), getPermanentElement1(),
                 getPermanentElement2(), getPermanentElement3());
         expectEffectiveAllowlist(allowlist, getPermanentElement1());
-    }
-
-    @Test
-    @SpyStatic(Slog.class)
-    public final void testIsAllowed_modeLogOnly() throws Exception {
-        var allowlist = createAllowlist(ALLOWLIST_MODE_LOG_ONLY, getPermanentName1());
-
-        expectAllowed(allowlist, STATUS_ALLOWED_BY_PERMANENT_LIST, getPermanentElement1());
-        expectAllowed(allowlist, STATUS_ALLOWED_NOT_IN_PERMANENT_LIST_BUT_LOG_ONLY_MODE,
-                getNotAllowlistedElement(), getPermanentElement2(), getPermanentElement3());
-        expectEffectiveAllowlist(allowlist, getPermanentElement1());
-        // Make sure it was logged
-        verifyLogged(allowlist, getNotAllowlistedName());
-        verifyLogged(allowlist, getPermanentName2());
-        verifyLogged(allowlist, getPermanentName3());
-        // getPermanentName1() is not logged because it's allowlisted
-        verifyNotLogged(allowlist, getPermanentName1());
     }
 
     @Test
@@ -406,6 +391,28 @@ abstract class GenericAllowlistTestCase<A extends GenericAllowlist<E>, E>
     }
 
     @Test
+    public final void testDump_configWithOneElement_overrideDisallowedStatus() throws Exception {
+        var name1 = getPermanentName1();
+        var allowlist = createAllowlist(name1);
+        allowlist.overrideDisallowedStatus(STATUS_ALLOWED_ALLOWLISTING_DISABLED_BY_SHELL_CMD);
+
+        String dump = dump(allowlist);
+
+        expectWithMessage("dump()").that(dump)
+                .isEqualTo(String.format("""
+                      Dumpo:
+                        id: %s
+                        mode: 1 (ENABLED)
+                        DEBUG: %b
+                        %s allowlist status: temporarily disabled (reason: ALLOWED_ALLOWLISTING_DISABLED_BY_SHELL_CMD)
+                        permanent %s allowlist has 1 %s:
+                          %s
+                        temporary %s allowlist is not set.
+                           """,
+                           allowlist, DEBUG, mPlural, mPlural, mSingular, name1, mPlural));
+    }
+
+    @Test
     public final void testDump_configWithOneElement_disabled() throws Exception {
         var name1 = getPermanentName1();
         var allowlist = createAllowlist(ALLOWLIST_MODE_DISABLED, name1);
@@ -425,28 +432,6 @@ abstract class GenericAllowlistTestCase<A extends GenericAllowlist<E>, E>
                            """,
                            allowlist, DEBUG, mPlural, mPlural, mSingular, name1, mPlural));
     }
-
-    @Test
-    public final void testDump_configWithOneElement_logOnly() throws Exception {
-        var name1 = getPermanentName1();
-        var allowlist = createAllowlist(ALLOWLIST_MODE_LOG_ONLY, name1);
-
-        String dump = dump(allowlist);
-
-        expectWithMessage("dump()").that(dump)
-                .isEqualTo(String.format("""
-                      Dumpo:
-                        id: %s
-                        mode: 2 (LOG_ONLY)
-                        DEBUG: %b
-                        %s allowlist status: disabled (log-only)
-                        permanent %s allowlist has 1 %s:
-                          %s
-                        temporary %s allowlist is not set.
-                           """,
-                           allowlist, DEBUG, mPlural, mPlural, mSingular, name1, mPlural));
-    }
-
 
     @Test
     public final void testDump_configWithMultipleElements() throws Exception {
@@ -687,8 +672,6 @@ abstract class GenericAllowlistTestCase<A extends GenericAllowlist<E>, E>
                 .that(allowlistModeToString(ALLOWLIST_MODE_DISABLED)).isEqualTo("DISABLED");
         expectWithMessage("allowlistModeToString(ALLOWLIST_MODE_ENABLED)")
                 .that(allowlistModeToString(ALLOWLIST_MODE_ENABLED)).isEqualTo("ENABLED");
-        expectWithMessage("allowlistModeToString(ALLOWLIST_MODE_LOG_ONLY)")
-                .that(allowlistModeToString(ALLOWLIST_MODE_LOG_ONLY)).isEqualTo("LOG_ONLY");
         expectWithMessage("allowlistModeToString(ALLOWLIST_MODE_INVALID)")
                 .that(allowlistModeToString(ALLOWLIST_MODE_INVALID)).isEqualTo("INVALID");
         expectWithMessage("allowlistModeToString(%s, which is an unknown value)", UNKNOWN_MODE)
@@ -707,58 +690,53 @@ abstract class GenericAllowlistTestCase<A extends GenericAllowlist<E>, E>
         expectStatusAllowed(STATUS_ALLOWED_DISABLED_MODE);
         expectStatusAllowed(STATUS_ALLOWED_TEMPORARY_LIST_EMPTY);
         expectStatusAllowed(STATUS_ALLOWED_BY_TEMPORARY_LIST);
-        expectStatusAllowed(STATUS_ALLOWED_NOT_IN_TEMPORARY_LIST_BUT_LOG_ONLY_MODE);
         expectStatusAllowed(STATUS_ALLOWED_PERMANENT_LIST_EMPTY);
         expectStatusAllowed(STATUS_ALLOWED_BY_PERMANENT_LIST);
-        expectStatusAllowed(STATUS_ALLOWED_NOT_IN_PERMANENT_LIST_BUT_LOG_ONLY_MODE);
     }
 
     private void expectStatusAllowed(@AllowlistStatus int status) {
-        expectWithMessage("GenericAllowlist.isAllowed(%s)", statusToString(status))
+        expectWithMessage("GenericAllowlist.isAllowed(%s)", allowlistStatusToString(status))
                 .that(isAllowed(status))
                 .isTrue();
     }
 
     private void expectStatusNotAllowed(@AllowlistStatus int status) {
-        expectWithMessage("GenericAllowlist.isAllowed(%s)", statusToString(status))
+        expectWithMessage("GenericAllowlist.isAllowed(%s)", allowlistStatusToString(status))
                 .that(isAllowed(status))
                 .isFalse();
     }
 
     @Test
-    public final void testStatusToString() {
-        expectWithMessage("statusToString(DISALLOWED_NOT_IN_TEMPORARY_LIST)")
-                .that(statusToString(STATUS_DISALLOWED_NOT_IN_TEMPORARY_LIST))
+    public final void testAllowlistStatusToString() {
+        expectWithMessage("allowlistStatusToString(DISALLOWED_NOT_IN_TEMPORARY_LIST)")
+                .that(allowlistStatusToString(STATUS_DISALLOWED_NOT_IN_TEMPORARY_LIST))
                 .isEqualTo("DISALLOWED_NOT_IN_TEMPORARY_LIST");
-        expectWithMessage("statusToString(DISALLOWED_NOT_IN_PERMANENT_LIST)")
-                .that(statusToString(STATUS_DISALLOWED_NOT_IN_PERMANENT_LIST))
+        expectWithMessage("allowlistStatusToString(DISALLOWED_NOT_IN_PERMANENT_LIST)")
+                .that(allowlistStatusToString(STATUS_DISALLOWED_NOT_IN_PERMANENT_LIST))
                 .isEqualTo("DISALLOWED_NOT_IN_PERMANENT_LIST");
-        expectWithMessage("statusToString(ALLOWED_INVALID_MODE)")
-                .that(statusToString(STATUS_ALLOWED_INVALID_MODE))
+        expectWithMessage("allowlistStatusToString(ALLOWED_INVALID_MODE)")
+                .that(allowlistStatusToString(STATUS_ALLOWED_INVALID_MODE))
                 .isEqualTo("ALLOWED_INVALID_MODE");
-        expectWithMessage("statusToString(ALLOWED_DISABLED_MODE)")
-                .that(statusToString(STATUS_ALLOWED_DISABLED_MODE))
+        expectWithMessage("allowlistStatusToString(ALLOWED_DISABLED_MODE)")
+                .that(allowlistStatusToString(STATUS_ALLOWED_DISABLED_MODE))
                 .isEqualTo("ALLOWED_DISABLED_MODE");
-        expectWithMessage("statusToString(ALLOWED_TEMPORARY_LIST_EMPTY)")
-                .that(statusToString(STATUS_ALLOWED_TEMPORARY_LIST_EMPTY))
+        expectWithMessage("allowlistStatusToString(ALLOWED_TEMPORARY_LIST_EMPTY)")
+                .that(allowlistStatusToString(STATUS_ALLOWED_TEMPORARY_LIST_EMPTY))
                 .isEqualTo("ALLOWED_TEMPORARY_LIST_EMPTY");
-        expectWithMessage("statusToString(ALLOWED_BY_TEMPORARY_LIST)")
-                .that(statusToString(STATUS_ALLOWED_BY_TEMPORARY_LIST))
+        expectWithMessage("allowlistStatusToString(ALLOWED_BY_TEMPORARY_LIST)")
+                .that(allowlistStatusToString(STATUS_ALLOWED_BY_TEMPORARY_LIST))
                 .isEqualTo("ALLOWED_BY_TEMPORARY_LIST");
-        expectWithMessage("statusToString(ALLOWED_NOT_IN_TEMPORARY_LIST_BUT_LOG_ONLY_MODE)")
-                .that(statusToString(STATUS_ALLOWED_NOT_IN_TEMPORARY_LIST_BUT_LOG_ONLY_MODE))
-                .isEqualTo("ALLOWED_NOT_IN_TEMPORARY_LIST_BUT_LOG_ONLY_MODE");
-        expectWithMessage("statusToString(ALLOWED_PERMANENT_LIST_EMPTY)")
-                .that(statusToString(STATUS_ALLOWED_PERMANENT_LIST_EMPTY))
+        expectWithMessage("allowlistStatusToString(ALLOWED_PERMANENT_LIST_EMPTY)")
+                .that(allowlistStatusToString(STATUS_ALLOWED_PERMANENT_LIST_EMPTY))
                 .isEqualTo("ALLOWED_PERMANENT_LIST_EMPTY");
-        expectWithMessage("statusToString(ALLOWED_BY_PERMANENT_LIST)")
-                .that(statusToString(STATUS_ALLOWED_BY_PERMANENT_LIST))
+        expectWithMessage("allowlistStatusToString(ALLOWED_BY_PERMANENT_LIST)")
+                .that(allowlistStatusToString(STATUS_ALLOWED_BY_PERMANENT_LIST))
                 .isEqualTo("ALLOWED_BY_PERMANENT_LIST");
-        expectWithMessage("statusToString(ALLOWED_NOT_IN_PERMANENT_LIST_BUT_LOG_ONLY_MODE)")
-                .that(statusToString(STATUS_ALLOWED_NOT_IN_PERMANENT_LIST_BUT_LOG_ONLY_MODE))
-                .isEqualTo("ALLOWED_NOT_IN_PERMANENT_LIST_BUT_LOG_ONLY_MODE");
-        expectWithMessage("statusToString(666)")
-                .that(statusToString(666))
+        expectWithMessage("allowlistStatusToString(ALLOWED_ALLOWLISTING_DISABLED_BY_SHELL_CMD)")
+                .that(allowlistStatusToString(STATUS_ALLOWED_ALLOWLISTING_DISABLED_BY_SHELL_CMD))
+                .isEqualTo("ALLOWED_ALLOWLISTING_DISABLED_BY_SHELL_CMD");
+        expectWithMessage("allowlistStatusToString(666)")
+                .that(allowlistStatusToString(666))
                 .isEqualTo("STATUS_666");
     }
 
@@ -771,7 +749,6 @@ abstract class GenericAllowlistTestCase<A extends GenericAllowlist<E>, E>
 
         setAndAssertMode(allowlist, ALLOWLIST_MODE_DISABLED);
         setAndAssertMode(allowlist, ALLOWLIST_MODE_ENABLED);
-        setAndAssertMode(allowlist, ALLOWLIST_MODE_LOG_ONLY);
     }
 
     private void setAndAssertMode(A allowlist, @AllowlistMode int mode) {
@@ -790,6 +767,52 @@ abstract class GenericAllowlistTestCase<A extends GenericAllowlist<E>, E>
         expectWithMessage("getMode() after setMode() with invalid value")
                 .that(allowlist.getMode())
                 .isEqualTo(ALLOWLIST_MODE_ENABLED);
+    }
+
+    @Test
+    public final void testOverrideDisallowedStatus_invalidStatus() {
+        var allowlist = createAllowlist(ALLOWLIST_MODE_ENABLED);
+        var overridableStatuses = getOverridingStatuses();
+
+        for (int status = STATUS_UNKNOWN; status <= LAST_STATUS_ALLOWED; status++) {
+            if (overridableStatuses.contains(status)) {
+                continue;
+            }
+            testOverrideDisallowedStatusWithInvalidStatus(allowlist, status);
+        }
+    }
+
+    private void testOverrideDisallowedStatusWithInvalidStatus(A allowlist,
+            @AllowlistStatus int status) {
+        var thrown = assertThrows(IllegalArgumentException.class,
+                () -> allowlist.overrideDisallowedStatus(status));
+
+        expectWithMessage("exception message").that(thrown)
+                .hasMessageThat()
+                .contains(status + "(" + allowlistStatusToString(status) + ")");
+    }
+
+    @Test
+    @SpyStatic(Slog.class)
+    public final void testOverrideDisallowedStatus_validStatus() {
+        var allowlist = createAllowlist(getPermanentName1());
+        var overridableStatuses = getOverridingStatuses();
+        var originalStatus = STATUS_DISALLOWED_NOT_IN_PERMANENT_LIST;
+        var element = getNotAllowlistedElement();
+
+        for (var overriddenStatus : overridableStatuses) {
+            allowlist.overrideDisallowedStatus(overriddenStatus);
+            expectGetallowlistStatus(allowlist,
+                    " after calling overrideDisallowedStatus(" + overriddenStatus + ") ", element,
+                    overriddenStatus);
+
+            verifyLogged(allowlist, originalStatus, overriddenStatus, getNotAllowlistedName());
+
+            allowlist.overrideDisallowedStatus(null);
+            expectGetallowlistStatus(allowlist,
+                    " after calling overrideDisallowedStatus(null) ", element,
+                    originalStatus);
+        }
     }
 
     // Asserts that originalElement is converted into expectedConvertedName (and returns the latter)
@@ -864,10 +887,15 @@ abstract class GenericAllowlistTestCase<A extends GenericAllowlist<E>, E>
     }
 
     private void expectGetallowlistStatus(A allowlist, E element, @AllowlistStatus int expected) {
+        expectGetallowlistStatus(allowlist, /* when= */ "", element, expected);
+    }
+
+    private void expectGetallowlistStatus(A allowlist, String when, E element,
+            @AllowlistStatus int expected) {
         int actual = allowlist.getAllowlistStatus(element);
-        expectWithMessage("getAllowlistStatus(%s) (where %s=%s and %s=%s)", element,
-                expected, statusToString(expected),
-                actual, statusToString(actual))
+        expectWithMessage("getAllowlistStatus(%s)%s(where %s=%s and %s=%s)", element, when,
+                expected, allowlistStatusToString(expected),
+                actual, allowlistStatusToString(actual))
                 .that(actual)
                 .isEqualTo(expected);
     }
@@ -912,22 +940,13 @@ abstract class GenericAllowlistTestCase<A extends GenericAllowlist<E>, E>
     }
 
     // NOTE: caller must be annotated with: @SpyStatic(Slog.class)
-    private void verifyLogged(A allowlist, String elementName) {
-        String mode = allowlistModeToString(ALLOWLIST_MODE_LOG_ONLY);
-        String message = String.format(ALLOWED_BY_LOG_ONLY_MESSAGE_TEMPLATE, elementName, mode);
+    private void verifyLogged(A allowlist, @AllowlistStatus int originalStatus,
+            @AllowlistStatus int overriddenStatus, String elementName) {
+        String message = String.format(ALLOWED_BY_OVERRIDDEN_STATUS_MESSAGE_TEMPLATE, elementName,
+                originalStatus, allowlistStatusToString(originalStatus),
+                overriddenStatus, allowlistStatusToString(overriddenStatus));
 
-        // Slog is called twice because helper methods called by tests calls both isAllowed() and
-        // getAllowlistStatus() (as the expected value of the former is derived from the value of
-        // the latter).
-        verify(() -> Slog.w(allowlist.mTag, message), times(2));
-    }
-
-    // NOTE: caller must be annotated with: @SpyStatic(Slog.class)
-    private void verifyNotLogged(A allowlist, String elementName) {
-        String mode = allowlistModeToString(ALLOWLIST_MODE_LOG_ONLY);
-        String message = String.format(ALLOWED_BY_LOG_ONLY_MESSAGE_TEMPLATE, elementName, mode);
-
-        verify(() -> Slog.w(allowlist.mTag, message), never());
+        verify(() -> Slog.w(allowlist.mTag, message));
     }
 
     private String dump(A allowlist) throws IOException {

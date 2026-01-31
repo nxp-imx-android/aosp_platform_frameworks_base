@@ -26,7 +26,9 @@ import android.app.TaskInfo;
 import android.content.Context;
 import android.content.Intent;
 import android.content.LocusId;
+import android.content.pm.PackageManager;
 import android.content.pm.ShortcutInfo;
+import android.graphics.drawable.Icon;
 import android.os.UserHandle;
 import android.util.ArrayMap;
 import android.util.ArraySet;
@@ -38,8 +40,10 @@ import androidx.annotation.Nullable;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.FrameworkStatsLog;
+import com.android.wm.shell.Flags;
 import com.android.wm.shell.R;
 import com.android.wm.shell.bubbles.Bubbles.DismissReason;
+import com.android.wm.shell.bubbles.appinfo.BubbleAppInfoProvider;
 import com.android.wm.shell.bubbles.logging.BubbleLogger;
 import com.android.wm.shell.shared.annotations.ShellBackgroundThread;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
@@ -245,6 +249,7 @@ public class BubbleData {
 
     private BubbleViewProvider mSelectedBubble;
     private final BubbleOverflow mOverflow;
+    private BubbleAppInfoProvider mAppInfoProvider;
     private boolean mShowingOverflow;
     private boolean mExpanded;
     private int mMaxBubbles;
@@ -282,14 +287,15 @@ public class BubbleData {
     private HashMap<String, String> mSuppressedGroupKeys = new HashMap<>();
 
     public BubbleData(Context context, BubbleLogger bubbleLogger, BubblePositioner positioner,
-            BubbleEducationController educationController, @ShellMainThread Executor mainExecutor,
-            @ShellBackgroundThread Executor bgExecutor) {
+            BubbleEducationController educationController, BubbleAppInfoProvider appInfoProvider,
+            @ShellMainThread Executor mainExecutor, @ShellBackgroundThread Executor bgExecutor) {
         mContext = context;
         mLogger = bubbleLogger;
         mPositioner = positioner;
         mEducationController = educationController;
         mMainExecutor = mainExecutor;
         mBgExecutor = bgExecutor;
+        mAppInfoProvider = appInfoProvider;
         mOverflow = new BubbleOverflow(context, positioner);
         mBubbles = new ArrayList<>();
         mOverflowBubbles = new ArrayList<>();
@@ -529,7 +535,13 @@ public class BubbleData {
         String bubbleKey = Bubble.getAppBubbleKeyForApp(intent.getPackage(), user);
         Bubble bubbleToReturn = findAndRemoveBubbleFromOverflow(bubbleKey);
         if (bubbleToReturn == null) {
-            bubbleToReturn = Bubble.createAppBubble(intent, user, null);
+            Icon icon = null;
+            if (Flags.useBubbleIconFromActivityInfo()) {
+                final PackageManager pm =
+                        BubbleController.getPackageManagerForUser(mContext, user.getIdentifier());
+                icon = mAppInfoProvider.getActivityInfoIcon(pm, intent);
+            }
+            bubbleToReturn = Bubble.createAppBubble(intent, user, icon);
         }
         return bubbleToReturn;
     }
@@ -548,7 +560,13 @@ public class BubbleData {
         String bubbleKey = Bubble.getAppBubbleKeyForTask(taskInfo);
         Bubble bubbleToReturn = findAndRemoveBubbleFromOverflow(bubbleKey);
         if (bubbleToReturn == null) {
-            bubbleToReturn = Bubble.createTaskBubble(taskInfo, user, null);
+            Icon icon = null;
+            if (Flags.useBubbleIconFromActivityInfo()) {
+                final PackageManager pm =
+                        BubbleController.getPackageManagerForUser(mContext, user.getIdentifier());
+                icon = mAppInfoProvider.getActivityInfoIcon(pm, taskInfo.baseIntent);
+            }
+            bubbleToReturn = Bubble.createTaskBubble(taskInfo, user, icon);
         }
         return bubbleToReturn;
     }

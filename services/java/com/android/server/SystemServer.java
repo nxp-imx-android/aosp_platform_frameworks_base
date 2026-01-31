@@ -125,6 +125,7 @@ import com.android.internal.widget.ILockSettings;
 import com.android.server.accessibility.AccessibilityManagerService;
 import com.android.server.accounts.AccountManagerService;
 import com.android.server.adb.AdbService;
+import com.android.server.aiseal.AiSealSystemService;
 import com.android.server.alarm.AlarmManagerService;
 import com.android.server.am.ActivityManagerService;
 import com.android.server.ambientcontext.AmbientContextManagerService;
@@ -2432,10 +2433,12 @@ public final class SystemServer implements Dumpable {
                 Slog.i(TAG, "Wallpaper service disabled by config");
             }
 
-            if (!isWatch && android.server.Flags.enableThemeService()) {
-                t.traceBegin("StartThemeService");
-                mSystemServiceManager.startService(ThemeManagerService.class);
-                t.traceEnd();
+            if (android.server.Flags.enableThemeService()) {
+                if (!isWatch || android.server.Flags.enableWearThemeService()) {
+                    t.traceBegin("StartThemeService");
+                    mSystemServiceManager.startService(ThemeManagerService.class);
+                    t.traceEnd();
+                }
             }
 
             // WallpaperEffectsGeneration manager service
@@ -2999,6 +3002,16 @@ public final class SystemServer implements Dumpable {
             t.traceBegin("StartOnDevicePersonalizationSystemService");
             mSystemServiceManager.startService(ON_DEVICE_PERSONALIZATION_SYSTEM_SERVICE_CLASS);
             t.traceEnd();
+        }
+
+        // AiSeal
+        if (mPackageManager.hasSystemFeature(PackageManager.FEATURE_AISEAL)) {
+            t.traceBegin("StartAiSealSystemService");
+            try {
+                mSystemServiceManager.startService(AiSealSystemService.class);
+            } finally {
+                t.traceEnd();
+            }
         }
 
         // Profiling
@@ -3747,18 +3760,24 @@ public final class SystemServer implements Dumpable {
     private void startAttentionService(@NonNull Context context, @NonNull TimingsTraceAndSlog t) {
         // We start service only if either AttentionManager service is configured on the device or
         // InteractionProviderService is enabled.
-        if (!com.android.input.flags.Flags.enableAttentionServiceApis()
-                && !AttentionManagerService.isServiceConfigured(context)) {
+        boolean startService = false;
+        if (AttentionManagerService.isServiceConfigured(context)) {
+            startService = true;
+        } else {
             Slog.d(TAG, "AttentionService is not configured on this device");
-            return;
-        } else if (!AttentionManagerService.isInteractionProviderServiceEnabled(context)) {
+        }
+        if (com.android.input.flags.Flags.enableAttentionServiceApis()
+                && AttentionManagerService.isInteractionProviderServiceEnabled(context)) {
+            startService = true;
+        } else {
             Slog.d(TAG, "InteractionProviderService is not enabled on this device");
-            return;
         }
 
-        t.traceBegin("StartAttentionManagerService");
-        mSystemServiceManager.startService(AttentionManagerService.class);
-        t.traceEnd();
+        if (startService) {
+            t.traceBegin("StartAttentionManagerService");
+            mSystemServiceManager.startService(AttentionManagerService.class);
+            t.traceEnd();
+        }
     }
 
     private void startRotationResolverService(@NonNull Context context,

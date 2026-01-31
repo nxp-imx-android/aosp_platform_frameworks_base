@@ -33,6 +33,7 @@ import com.android.launcher3.icons.BubbleIconFactory
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.TestShellExecutor
+import com.android.wm.shell.bubbles.appinfo.BubbleAppInfoProvider
 import com.android.wm.shell.bubbles.appinfo.PackageManagerBubbleAppInfoProvider
 import com.android.wm.shell.bubbles.bar.BubbleBarLayerView
 import com.android.wm.shell.bubbles.logging.BubbleLogger
@@ -82,7 +83,7 @@ class BubbleViewInfoTest : ShellTestCase() {
     private lateinit var bubbleStackView: BubbleStackView
     private lateinit var bubbleBarLayerView: BubbleBarLayerView
     private lateinit var bubblePositioner: BubblePositioner
-    private lateinit var bubbleAppInfoProvider: PackageManagerBubbleAppInfoProvider
+    private lateinit var bubbleAppInfoProvider: BubbleAppInfoProvider
     private lateinit var userResolver: BubbleUserResolver
 
     private val bubbleTaskViewFactory = BubbleTaskViewFactory {
@@ -119,17 +120,18 @@ class BubbleViewInfoTest : ShellTestCase() {
             )
         bubblePositioner = BubblePositioner(context, windowManager)
         val bubbleLogger = mock<BubbleLogger>()
+        bubbleAppInfoProvider = PackageManagerBubbleAppInfoProvider()
         val bubbleData =
             BubbleData(
                 context,
                 bubbleLogger,
                 bubblePositioner,
                 BubbleEducationController(context),
+                bubbleAppInfoProvider,
                 mainExecutor,
                 bgExecutor,
             )
         val surfaceSynchronizer = { obj: Runnable -> obj.run() }
-        bubbleAppInfoProvider = PackageManagerBubbleAppInfoProvider()
         userResolver = BubbleUserResolver { userId -> BubbleUserInfo(userId, userType) }
 
         val bubbleSessionTracker = mock<BubbleSessionTracker>()

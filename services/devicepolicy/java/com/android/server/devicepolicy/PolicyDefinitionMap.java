@@ -18,7 +18,6 @@ package com.android.server.devicepolicy;
 
 import static com.android.server.devicepolicy.PolicyDefinition.APP_FUNCTIONS;
 import static com.android.server.devicepolicy.PolicyDefinition.AUDIT_LOGGING;
-import static com.android.server.devicepolicy.PolicyDefinition.AUTO_TIME;
 import static com.android.server.devicepolicy.PolicyDefinition.AUTO_TIME_ZONE;
 import static com.android.server.devicepolicy.PolicyDefinition.COMMON_CRITERIA_MODE;
 import static com.android.server.devicepolicy.PolicyDefinition.CONTENT_PROTECTION;
@@ -31,7 +30,6 @@ import static com.android.server.devicepolicy.PolicyDefinition.GENERIC_PERMISSIO
 import static com.android.server.devicepolicy.PolicyDefinition.GENERIC_PERSISTENT_PREFERRED_ACTIVITY;
 import static com.android.server.devicepolicy.PolicyDefinition.KEYGUARD_DISABLED_FEATURES;
 import static com.android.server.devicepolicy.PolicyDefinition.LOCK_TASK;
-import static com.android.server.devicepolicy.PolicyDefinition.LOCKSCREEN_MESSAGE;
 import static com.android.server.devicepolicy.PolicyDefinition.MEMORY_TAGGING;
 import static com.android.server.devicepolicy.PolicyDefinition.PACKAGES_SUSPENDED;
 import static com.android.server.devicepolicy.PolicyDefinition.PASSWORD_COMPLEXITY;
@@ -84,9 +82,21 @@ public class PolicyDefinitionMap {
 
     /**
      * Create the PolicyDefinitionMap with all supported policy definitions.
+     *
+     * The resulting map will contain both the policy definitions passed in plus
+     * the policy definitions hard-coded in this class.
+     */
+    PolicyDefinitionMap(Set<PolicyDefinition<?>> extraPolicyDefinitions) {
+        this(merge(loadPolicyDefinitions(), extraPolicyDefinitions), loadGenericPolicies());
+    }
+
+    /**
+     * Create the PolicyDefinitionMap with all supported policy definitions.
+     *
+     * The resulting map will contain both the policy definitions hard-coded in this class.
      */
     PolicyDefinitionMap() {
-        this(loadPolicyDefinitions(), loadGenericPolicies());
+        this(Set.of());
     }
 
     /**
@@ -178,14 +188,11 @@ public class PolicyDefinitionMap {
         policyDefinitions.put(
                 DevicePolicyIdentifiers.PACKAGES_SUSPENDED_POLICY, PACKAGES_SUSPENDED);
         policyDefinitions.put(DevicePolicyIdentifiers.MEMORY_TAGGING_POLICY, MEMORY_TAGGING);
-        policyDefinitions.put(DevicePolicyIdentifiers.AUTO_TIME_POLICY, AUTO_TIME);
         policyDefinitions.put(
                 DevicePolicyIdentifiers.CROSS_PROFILE_WIDGET_PROVIDER_POLICY,
                 CROSS_PROFILE_WIDGET_PROVIDER);
         policyDefinitions.put(
                 DevicePolicyIdentifiers.COMMON_CRITERIA_MODE_POLICY, COMMON_CRITERIA_MODE);
-        policyDefinitions.put(
-                DevicePolicyIdentifiers.LOCKSCREEN_MESSAGE_POLICY, LOCKSCREEN_MESSAGE);
 
         // User Restriction Policies
         Map<String, Integer> userRestrictionFlags = new HashMap<>();
@@ -308,6 +315,26 @@ public class PolicyDefinitionMap {
                 });
 
         return policyDefinitions;
+    }
+
+    /**
+     * Merges the policies inside {@code right} into the map {@code left}.
+     * @throws {@link IllegalStateException} if a naming conflict is encountered.
+     */
+    private static Map<String, PolicyDefinition<?>> merge(
+            Map<String, PolicyDefinition<?>> left, Set<PolicyDefinition<?>> right) {
+        for (PolicyDefinition<?> definition : right) {
+            String identifier = definition.getPolicyKey().getIdentifier();
+
+            if (left.containsKey(identifier)) {
+                throw new IllegalStateException(
+                        "Multiple PolicyDefinition instances found with key " + identifier);
+            }
+
+            left.put(identifier, definition);
+        }
+
+        return left;
     }
 
     private static Set<String> loadGenericPolicies() {

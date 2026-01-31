@@ -22,7 +22,10 @@ import com.android.window.flags.Flags;
 import com.android.wm.shell.dagger.WMSingleton;
 import com.android.wm.shell.desktopai.api.ITriggerManager;
 import com.android.wm.shell.desktopai.api.ITriggerSource;
+import com.android.wm.shell.desktopai.api.IUserContextService;
+import com.android.wm.shell.desktopai.core.CujHandlerRegistry;
 import com.android.wm.shell.desktopai.core.DesktopAiOrchestrator;
+import com.android.wm.shell.desktopai.core.MockUserContextService;
 import com.android.wm.shell.desktopai.core.OverviewTriggerSource;
 import com.android.wm.shell.desktopai.core.TriggerManager;
 import com.android.wm.shell.sysui.ShellController;
@@ -70,8 +73,16 @@ public class DesktopAIModule {
 
     @WMSingleton
     @Provides
-    static DesktopAiOrchestrator provideDesktopAIOrchestrator(
+    static IUserContextService provideUserContextService(
             @NonNull ITriggerManager triggerManager) {
-        return new DesktopAiOrchestrator(triggerManager);
+        return new MockUserContextService();
+    }
+
+    @WMSingleton
+    @Provides
+    static DesktopAiOrchestrator provideDesktopAIOrchestrator(
+            @NonNull ITriggerManager triggerManager,
+            @NonNull CujHandlerRegistry cujHandlerRegistry) {
+        return new DesktopAiOrchestrator(triggerManager, cujHandlerRegistry);
     }
 }

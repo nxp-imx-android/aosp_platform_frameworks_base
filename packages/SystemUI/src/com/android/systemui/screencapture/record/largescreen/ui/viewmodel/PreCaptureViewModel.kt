@@ -313,7 +313,7 @@ constructor(
     private fun startFullscreenRecording() {
         require(captureTypeSource.value == ScreenCaptureType.RECORDING)
         require(captureRegionSource.value == ScreenCaptureRegion.FULLSCREEN)
-
+        uiEventLogger.log(ScreenCaptureEvent.SCREEN_CAPTURE_LARGE_SCREEN_TOOK_FULLSCREEN_RECORDING)
         beginRecording(recordingTarget = null)
     }
 
@@ -321,6 +321,7 @@ constructor(
         require(captureTypeSource.value == ScreenCaptureType.RECORDING)
         require(captureRegionSource.value == ScreenCaptureRegion.APP_WINDOW)
 
+        uiEventLogger.log(ScreenCaptureEvent.SCREEN_CAPTURE_LARGE_SCREEN_TOOK_APP_WINDOW_RECORDING)
         beginRecording(
             recordingTarget =
                 MediaProjectionCaptureTarget(LaunchCookie("media_projection_launch_token"), taskId)

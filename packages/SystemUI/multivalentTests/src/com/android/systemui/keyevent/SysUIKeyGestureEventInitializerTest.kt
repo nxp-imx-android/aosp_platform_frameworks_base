@@ -29,7 +29,6 @@ import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TAKE_PARTIAL_SCRE
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_QUICK_SETTINGS_PANEL
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_TASKBAR
-import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -101,7 +100,6 @@ class SysUIKeyGestureEventInitializerTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(
-        com.android.window.flags.Flags.FLAG_ENABLE_KEY_GESTURE_HANDLER_FOR_SYSUI,
         com.android.hardware.input.Flags.FLAG_ENABLE_QUICK_SETTINGS_PANEL_SHORTCUT,
         com.android.hardware.input.Flags.FLAG_ENABLE_PARTIAL_SCREENSHOT_KEYBOARD_SHORTCUT,
         com.android.hardware.input.Flags.FLAG_ENABLE_CONTEXTUAL_SEARCH_DESKTOP_ENTRYPOINTS,
@@ -123,20 +121,6 @@ class SysUIKeyGestureEventInitializerTest : SysuiTestCase() {
     }
 
     @Test
-    @DisableFlags(
-        com.android.window.flags.Flags.FLAG_ENABLE_KEY_GESTURE_HANDLER_FOR_SYSUI,
-        com.android.hardware.input.Flags.FLAG_ENABLE_QUICK_SETTINGS_PANEL_SHORTCUT,
-        com.android.hardware.input.Flags.FLAG_ENABLE_PARTIAL_SCREENSHOT_KEYBOARD_SHORTCUT,
-        com.android.hardware.input.Flags.FLAG_ENABLE_CONTEXTUAL_SEARCH_DESKTOP_ENTRYPOINTS,
-    )
-    fun start_flagDisabled_noRegisterKeyGestureEvents() {
-        underTest.start()
-
-        verifyNoInteractions(inputManager)
-    }
-
-    @Test
-    @EnableFlags(com.android.window.flags.Flags.FLAG_ENABLE_KEY_GESTURE_HANDLER_FOR_SYSUI)
     fun handleKeyGestureEvent_eventTypeToggleNotificationPanel_toggleNotificationPanel() {
         underTest.start()
         verify(inputManager)
@@ -154,7 +138,6 @@ class SysUIKeyGestureEventInitializerTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(com.android.window.flags.Flags.FLAG_ENABLE_KEY_GESTURE_HANDLER_FOR_SYSUI)
     fun handleKeyGestureEvent_eventTypeToggleNotificationPanel_shadeNotMoved() {
         desktopState.canEnterDesktopMode = false
         underTest.start()
@@ -265,7 +248,6 @@ class SysUIKeyGestureEventInitializerTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(com.android.window.flags.Flags.FLAG_ENABLE_KEY_GESTURE_HANDLER_FOR_SYSUI)
     fun handleKeyGestureEvent_otherEventTypeToggleNotificationPanel_noInteraction() {
         underTest.start()
         verify(inputManager)

@@ -136,6 +136,7 @@ class BubbleControllerBubbleBarTest {
                 bubbleLogger,
                 bubblePositioner,
                 BubbleEducationController(context),
+                FakeBubbleAppInfoProvider(),
                 mainExecutor,
                 bgExecutor,
             )

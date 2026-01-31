@@ -39,6 +39,7 @@ import com.android.internal.util.mockScreenshotHelper
 import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.kosmos.advanceTimeBy
+import com.android.systemui.kosmos.advanceUntilIdle
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
@@ -522,6 +523,44 @@ class PreCaptureViewModelTest : SysuiTestCase() {
             viewModel.closeUi()
 
             assertUiClosed()
+        }
+
+    @Test
+    fun beginCapture_forFullScreenRecording_logFullscreenRecordingIsTaken() =
+        kosmos.runTest {
+            setupViewModel(
+                LargeScreenCaptureUiParameters(
+                    defaultCaptureType = ScreenCaptureType.RECORDING,
+                    defaultCaptureRegion = ScreenCaptureRegion.FULLSCREEN,
+                )
+            )
+
+            viewModel.beginCapture()
+            advanceUntilIdle()
+
+            val logs = uiEventLoggerFake.logs
+            assertThat(logs).isNotEmpty()
+            assertThat(logs).hasSize(1)
+        }
+
+    @Test
+    fun beginCapture_forAppWindowRecording_logAppWindowRecordingIsTaken() =
+        kosmos.runTest {
+            val topTask = createRunningTaskInfo(taskId = 1, bounds = Rect(0, 0, 50, 50))
+            whenever(appWindowInteractor.getAppWindowTasks(any<Int>())).thenReturn(listOf(topTask))
+            setupViewModel(
+                LargeScreenCaptureUiParameters(
+                    defaultCaptureType = ScreenCaptureType.RECORDING,
+                    defaultCaptureRegion = ScreenCaptureRegion.APP_WINDOW,
+                )
+            )
+
+            viewModel.captureTaskAtPosition(Point(25, 25))
+            runCurrent()
+
+            val logs = uiEventLoggerFake.logs
+            assertThat(logs).isNotEmpty()
+            assertThat(logs).hasSize(1)
         }
 
     @Test

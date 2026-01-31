@@ -50,6 +50,7 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.RemoteException
 import android.os.ServiceManager
+import android.os.SystemProperties
 import android.os.Trace
 import android.os.UserHandle
 import android.os.UserManager
@@ -285,7 +286,6 @@ class DesktopTasksController(
     private val desktopModeEnterExitTransitionListener: DesktopModeEnterExitTransitionListener,
 ) :
     RemoteCallable<DesktopTasksController>,
-    TransitionHandler,
     DragAndDropController.DragAndDropListener,
     UserChangeListener {
 
@@ -304,6 +304,8 @@ class DesktopTasksController(
     private val wallpaperService: IWallpaperManager =
         IWallpaperManager.Stub.asInterface(ServiceManager.getService(Context.WALLPAPER_SERVICE))
     private lateinit var mPipScheduler: PipScheduler
+
+    private val wallpaperDimAmount: Float
     private val dragToDesktopStateListener =
         object : DragToDesktopStateListener {
             override fun onCommitToDesktopAnimationStart() {
@@ -395,6 +397,8 @@ class DesktopTasksController(
                     )
                 }
         }
+        wallpaperDimAmount =
+            SystemProperties.getInt("persist.wm.debug.wallpaper_dim_amount", 100).toFloat() / 100
     }
 
     private fun onInit() {
@@ -409,7 +413,6 @@ class DesktopTasksController(
         shellController.addUserChangeListener(this)
         // Update the current user id again because it might be updated between init and onInit().
         updateCurrentUser(ActivityManager.getCurrentUser())
-        transitions.addHandler(this)
         desktopFullscreenRequestHandler.desktopTasksController = this
         dragToDesktopTransitionHandler.dragToDesktopStateListener = dragToDesktopStateListener
         recentsTransitionHandler.addTransitionStateListener(
@@ -1056,6 +1059,11 @@ class DesktopTasksController(
         if (!DesktopExperienceFlags.ENABLE_DISPLAY_DISCONNECT_INTERACTION.isTrue) return
         val newDisplayLayout = displayController.getDisplayLayout(displayId) ?: return
         if (oldDisplayLayout == null) return
+        if (
+            Flags.desktopOverviewRotationTaskResizeBugfix() &&
+                newDisplayLayout.isSameRotatedGeometry(oldDisplayLayout)
+        )
+            return
         val oldStableBounds = Rect()
         oldDisplayLayout.getStableBounds(oldStableBounds)
         val newToOldDpiRatio =
@@ -3742,21 +3750,13 @@ class DesktopTasksController(
 
     override fun getRemoteCallExecutor(): ShellExecutor = mainExecutor
 
-    override fun startAnimation(
-        transition: IBinder,
-        info: TransitionInfo,
-        startTransaction: Transaction,
-        finishTransaction: Transaction,
-        finishCallback: TransitionFinishCallback,
-    ): Boolean {
-        // This handler should never be the sole handler, so should not animate anything.
-        return false
-    }
-
     private fun taskDisplaySupportDesktopMode(triggerTask: RunningTaskInfo) =
         desktopState.isDesktopModeSupportedOnDisplay(triggerTask.displayId)
 
-    override fun handleRequest(
+    // TODO b/457313894: this class is no longer a TransitionHandler - move this method to
+    // DesktopTasksTransitionHandler.
+    /** Handles transition requests related to Desktop tasks. */
+    fun handleRequest(
         transition: IBinder,
         request: TransitionRequestInfo,
     ): WindowContainerTransaction? {
@@ -6863,7 +6863,7 @@ class DesktopTasksController(
     private fun updateTaskBarAndWallpaperDim(displayId: Int, shouldApplyEffect: Boolean) {
         taskbarDesktopTaskListener?.onTaskbarCornerRoundingUpdate(shouldApplyEffect, displayId)
         wallpaperService.setWallpaperDimAmount(
-            if (shouldApplyEffect) 0.7f else 0f,
+            if (shouldApplyEffect) wallpaperDimAmount else 0f,
             displayId,
             true, /* temporary */
         )

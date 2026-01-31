@@ -32,6 +32,9 @@ import com.android.server.LocalServices;
 import com.android.server.om.OverlayManagerInternal;
 import com.android.server.pm.UserManagerInternal;
 
+import com.google.ux.material.libmonet.dynamiccolor.ColorSpec.SpecVersion;
+import com.google.ux.material.libmonet.dynamiccolor.DynamicScheme.Platform;
+
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
@@ -89,19 +92,24 @@ public class ThemeStateManager {
 
     private final Context mContext;
     private final ScheduledExecutorService mSchedulerExecutor;
+    private final SpecVersion mSpecVersion;
+    private final Platform mPlatform;
 
     private UserManagerInternal mUserManager;
     private KeyguardManager mKeyguardManager;
     private ThemeOverlayHelper mThemeOverlayHelper;
 
-    ThemeStateManager(Context context) {
-        this(context, Executors.newSingleThreadScheduledExecutor());
+    ThemeStateManager(Context context, Platform platform, SpecVersion specVersion) {
+        this(context, Executors.newSingleThreadScheduledExecutor(), platform, specVersion);
     }
 
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
-    ThemeStateManager(Context context, ScheduledExecutorService schedulerExecutor) {
+    ThemeStateManager(Context context, ScheduledExecutorService schedulerExecutor,
+            Platform platform, SpecVersion specVersion) {
         mSchedulerExecutor = schedulerExecutor;
         mContext = context;
+        mPlatform = platform;
+        mSpecVersion = specVersion;
     }
 
     // HANDLERS
@@ -280,7 +288,7 @@ public class ThemeStateManager {
             } else {
                 // CASE 3: userId is a new user
                 ThemeStatePair newState = new ThemeStatePair(userId, isSetup, seedColor, contrast,
-                        style);
+                        style, mSpecVersion, mPlatform);
                 int[] profiles = Objects.requireNonNullElse(
                         mUserManager.getProfileIds(userId, false), new int[0]);
 
@@ -409,6 +417,18 @@ public class ThemeStateManager {
                     Slog.d(TAG, "Snapshot aborted for user " + statePair.userId);
                     statePair.clearTimer();
                     return;
+                }
+
+                // TODO: b/477901630 (Move this color spec to MCU)
+                ThemeStatePair.OverlaySnapshot effectiveSnapshot = overlaySnapshot;
+                if (mPlatform == Platform.WATCH) {
+                    effectiveSnapshot = new ThemeStatePair.OverlaySnapshot(
+                            overlaySnapshot.userId(),
+                            overlaySnapshot.profiles(),
+                            overlaySnapshot.darkScheme(),
+                            overlaySnapshot.darkScheme(),
+                            overlaySnapshot.contentChanged()
+                    );
                 }
 
                 int currentUserId;

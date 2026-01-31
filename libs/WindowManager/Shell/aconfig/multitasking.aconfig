@@ -304,3 +304,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "use_bubble_icon_from_activity_info"
+    namespace: "multitasking"
+    description: "Load Bubble app icon from specific ActivityInfo rather than just the ApplicationInfo."
+    bug: "462281202"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

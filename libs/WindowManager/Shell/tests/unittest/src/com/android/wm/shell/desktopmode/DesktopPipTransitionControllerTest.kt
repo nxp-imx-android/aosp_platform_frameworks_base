@@ -22,15 +22,18 @@ import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
 import android.os.Binder
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
+import android.view.Display
 import android.window.WindowContainerToken
 import android.window.WindowContainerTransaction
 import android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_REMOVE_TASK
 import android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_REORDER
+import androidx.compose.ui.input.key.type
 import androidx.test.filters.SmallTest
 import com.android.window.flags.Flags
 import com.android.window.flags.Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase
+import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.pip.PipDesktopState
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.EnterReason
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFreeformTask
@@ -63,6 +66,7 @@ class DesktopPipTransitionControllerTest(flags: FlagsParameterization) : ShellTe
     private val mockDesktopUserRepositories = mock<DesktopUserRepositories>()
     private val mockDesktopRepository = mock<DesktopRepository>()
     private val mockPipDesktopState = mock<PipDesktopState>()
+    private val mockDisplayController = mock<DisplayController>()
 
     private lateinit var controller: DesktopPipTransitionController
 
@@ -102,6 +106,7 @@ class DesktopPipTransitionControllerTest(flags: FlagsParameterization) : ShellTe
                 mockDesktopTasksController,
                 mockDesktopUserRepositories,
                 mockPipDesktopState,
+                mockDisplayController,
             )
     }
 
@@ -321,6 +326,7 @@ class DesktopPipTransitionControllerTest(flags: FlagsParameterization) : ShellTe
     @Test
     fun handleRemovePipTransition_notInDesktop_wctEmpty() {
         whenever(mockPipDesktopState.isPipInDesktopMode()).thenReturn(false)
+        whenever(mockDisplayController.getDisplay(taskInfo.displayId)).thenReturn(mock<Display>())
 
         controller.handleRemovePipTransition(wct = wct, token = taskInfo.token)
 
@@ -329,6 +335,8 @@ class DesktopPipTransitionControllerTest(flags: FlagsParameterization) : ShellTe
 
     @Test
     fun handleRemovePipTransition_inDesktop_wctRemoveTask() {
+        whenever(mockDisplayController.getDisplay(taskInfo.displayId)).thenReturn(mock<Display>())
+
         controller.handleRemovePipTransition(wct = wct, token = taskInfo.token)
 
         assertThat(wct.hierarchyOps).hasSize(1)
@@ -347,6 +355,25 @@ class DesktopPipTransitionControllerTest(flags: FlagsParameterization) : ShellTe
         assertThat(op.type).isEqualTo(HIERARCHY_OP_TYPE_REORDER)
         assertThat(op.container).isEqualTo(token.asBinder())
         assertThat(op.toTop).isEqualTo(toTop)
+    }
+
+    @Test
+    fun handleRemovePipTransition_displayIsNull_doesNotRemoveTask() {
+        val displayId = 10
+        val wct = WindowContainerTransaction()
+        whenever(mockPipDesktopState.isPipInDesktopMode()).thenReturn(true)
+        whenever(mockPipDesktopState.getCurrentDisplayId()).thenReturn(displayId)
+        whenever(mockDisplayController.getDisplay(displayId)).thenReturn(null)
+
+        controller.handleRemovePipTransition(wct, taskInfo.token)
+
+        val hasRemoveTaskOp =
+            wct.hierarchyOps.any { op ->
+                op.type == HIERARCHY_OP_TYPE_REMOVE_TASK &&
+                    op.container == taskInfo.token.asBinder()
+            }
+
+        assertThat(hasRemoveTaskOp).isFalse()
     }
 
     private companion object {

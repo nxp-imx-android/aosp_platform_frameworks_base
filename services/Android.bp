@@ -342,6 +342,7 @@ java_library {
     static_libs: [
         "services.core",
         "services.accessibility",
+        "services.aiseal",
         "services.appprediction",
         "services.appwidget",
         "services.autofill",

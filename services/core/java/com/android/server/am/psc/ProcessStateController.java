@@ -17,7 +17,9 @@ package com.android.server.am.psc;
 
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_ACTIVITY;
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_BACKUP;
+import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_FINISH_RECEIVER;
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_SERVICE_BINDER_CALL;
+import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_START_RECEIVER;
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_UI_VISIBILITY;
 import static android.app.ProcessMemoryState.HOSTING_COMPONENT_TYPE_BROADCAST_RECEIVER;
 
@@ -601,6 +603,22 @@ public class ProcessStateController {
 
     /*********************** Process Miscellaneous Events **********************/
     /**
+     * Note whether the given process has been killed.
+     */
+    @GuardedBy({"mLock", "mProcLock"})
+    public void setKilled(@NonNull ProcessRecordInternal proc, boolean killed) {
+        proc.setKilled(killed);
+    }
+
+    /**
+     * Note whether the given process was killed by the activity manager.
+     */
+    @GuardedBy({"mLock", "mProcLock"})
+    public void setKilledByAm(@NonNull ProcessRecordInternal proc, boolean killedByAm) {
+        proc.setKilledByAm(killedByAm);
+    }
+
+    /**
      * Set the maximum adj score a process can be assigned.
      */
     @GuardedBy("mLock")
@@ -1077,10 +1095,20 @@ public class ProcessStateController {
      */
     @GuardedBy("mLock")
     public void noteBroadcastDeliveryStarted(@NonNull ProcessRecordInternal proc, int schedGroup) {
+        final boolean prevReceivingState = proc.getReceivers().isReceivingBroadcast();
+        final int prevSchedGroup = proc.getReceivers().getBroadcastReceiverSchedGroup();
+        if (prevReceivingState && prevSchedGroup == schedGroup) {
+            // isReceiveBroadcast is already true and the schedGroup is not changing, skip.
+            return;
+        }
         proc.getReceivers().setIsReceivingBroadcast(true);
         proc.getReceivers().setBroadcastReceiverSchedGroup(schedGroup);
 
         proc.addHostingComponentType(HOSTING_COMPONENT_TYPE_BROADCAST_RECEIVER);
+
+        if (Flags.pscAutoUpdateBroadcastState()) {
+            runUpdate(proc, OOM_ADJ_REASON_START_RECEIVER);
+        }
     }
 
     /**
@@ -1088,10 +1116,20 @@ public class ProcessStateController {
      */
     @GuardedBy("mLock")
     public void noteBroadcastDeliveryEnded(@NonNull ProcessRecordInternal proc) {
+        final boolean prevReceivingState = proc.getReceivers().isReceivingBroadcast();
+        final int prevSchedGroup = proc.getReceivers().getBroadcastReceiverSchedGroup();
+        if (!prevReceivingState && prevSchedGroup == SCHED_GROUP_UNDEFINED) {
+            // isReceiveBroadcast is already false and the schedGroup is already undefined, skip.
+            return;
+        }
         proc.getReceivers().setIsReceivingBroadcast(false);
         proc.getReceivers().setBroadcastReceiverSchedGroup(SCHED_GROUP_UNDEFINED);
 
         proc.clearHostingComponentType(HOSTING_COMPONENT_TYPE_BROADCAST_RECEIVER);
+
+        if (Flags.pscAutoUpdateBroadcastState()) {
+            runUpdate(proc, OOM_ADJ_REASON_FINISH_RECEIVER);
+        }
     }
 
     /**

@@ -28,7 +28,7 @@ import android.service.personalcontext.Token;
 import java.util.Objects;
 
 /**
- * A hint that contains a conversation-related event.
+ * A hint that contains a conversation-related event from the Android Content Capture API.
  *
  * <p>The data encapsulated in this hint originates from the Android Content Capture API and
  * represents the state of a conversation from on-screen content, primarily from messaging

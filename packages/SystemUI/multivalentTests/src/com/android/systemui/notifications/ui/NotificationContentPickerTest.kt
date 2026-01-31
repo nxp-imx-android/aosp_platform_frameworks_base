@@ -53,32 +53,53 @@ class NotificationContentPickerTest : SysuiTestCase() {
         )
     }
 
-    private val picker = HeadsUpPlaceholderContentPicker(kosmos.sceneContainerConfig)
+    private val hunPicker = HeadsUpPlaceholderContentPicker(kosmos.sceneContainerConfig)
+    private val stackPicker = StackPlaceholderContentPicker(kosmos.sceneContainerConfig)
 
     @Test
-    fun pickContentFrom_lockscreenAndShade_picksShade() {
+    fun hunPicker_lockscreenAndShade_pickShade() {
         val keys = setOf(Scenes.Lockscreen, Scenes.Shade)
 
-        val result = picker.pickContentFrom(keys)
+        val result = hunPicker.pickContentFrom(keys)
 
         assertThat(result).isEqualTo(Scenes.Shade)
     }
 
     @Test
-    fun pickContentFrom_otherAndShade_picksLowestZ() {
+    fun hunPicker_otherAndShade_pickLowestZ() {
         val keys = setOf(other, Scenes.Shade)
 
-        val result = picker.pickContentFrom(keys)
+        val result = hunPicker.pickContentFrom(keys)
 
         assertThat(result).isEqualTo(other)
     }
 
     @Test
-    fun pickContentFrom_lockscreenAndOther_picksLowestZ() {
+    fun hunPicker_lockscreenAndOther_pickLowestZ() {
         val keys = setOf(Scenes.Lockscreen, other)
 
-        val result = picker.pickContentFrom(keys)
+        val result = hunPicker.pickContentFrom(keys)
 
         assertThat(result).isEqualTo(Scenes.Lockscreen)
+    }
+
+    @Test
+    fun stackPicker_lockscreenAndShade_pickHighestZ() {
+        // Lockscreen (Z=0) vs Shade (Z=2) -> Pick Shade
+        val keys = setOf(Scenes.Lockscreen, Scenes.Shade)
+
+        val result = stackPicker.pickContentFrom(keys)
+
+        assertThat(result).isEqualTo(Scenes.Shade)
+    }
+
+    @Test
+    fun stackPicker_lockscreenAndOther_pickHighestZ() {
+        // Lockscreen (Z=0) vs other (Z=1) -> Pick other
+        val keys = setOf(Scenes.Lockscreen, other)
+
+        val result = stackPicker.pickContentFrom(keys)
+
+        assertThat(result).isEqualTo(other)
     }
 }

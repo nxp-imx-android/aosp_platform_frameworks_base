@@ -567,7 +567,7 @@ final class RemovePackageHelper {
             for (int userId : userIds) {
                 try {
                     mPm.mInstaller.destroyAppData(volumeUuid, packageName, userId, flags,
-                            0);
+                            /* ceDataInode= */ 0, /* pccCeDataInode= */ 0);
                 } catch (Installer.InstallerException e) {
                     Slog.w(TAG, String.valueOf(e));
                 }

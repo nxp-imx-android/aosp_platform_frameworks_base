@@ -71,7 +71,10 @@ public final class MultiUserDynamicAppFunctionRegistry {
             if (!mPerUserRegistrations.contains(user.getUserIdentifier())) {
                 mPerUserRegistrations.put(
                         user.getUserIdentifier(),
-                        new DynamicAppFunctionRegistry(metadataObserver, user.getUserHandle()));
+                        new DynamicAppFunctionRegistry(
+                                unregisteredFunctionNames ->
+                                        metadataObserver.onEnabledStatesChanged(
+                                                user.getUserHandle(), unregisteredFunctionNames)));
             }
         }
     }

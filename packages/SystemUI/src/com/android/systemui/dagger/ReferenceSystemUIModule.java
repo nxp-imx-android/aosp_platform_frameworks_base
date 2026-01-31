@@ -44,7 +44,7 @@ import com.android.systemui.dreams.suppression.dagger.NoOpActivityRecognitionMod
 import com.android.systemui.education.dagger.ContextualEducationModule;
 import com.android.systemui.emergency.EmergencyGestureModule;
 import com.android.systemui.inputdevice.tutorial.KeyboardTouchpadTutorialModule;
-import com.android.systemui.inputmethod.DefaultImeSwitcherMenuModule;
+import com.android.systemui.inputmethod.ImeSwitcherMenuModule;
 import com.android.systemui.keyboard.shortcut.ShortcutHelperModule;
 import com.android.systemui.keyguard.dagger.KeyguardModule;
 import com.android.systemui.keyguard.ui.view.layout.blueprints.KeyguardBlueprintModule;
@@ -140,7 +140,7 @@ import javax.inject.Provider;
         CentralSurfacesModule.class,
         ClipboardOverlayOverrideModule.class,
         ConnectingDisplayViewModel.StartableModule.class,
-        DefaultImeSwitcherMenuModule.class,
+        ImeSwitcherMenuModule.class,
         DisplayPhoneModule.class,
         EmergencyGestureModule.class,
         GestureModule.class,

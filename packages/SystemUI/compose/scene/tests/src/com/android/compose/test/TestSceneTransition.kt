@@ -18,6 +18,7 @@ package com.android.compose.test
 
 import com.android.compose.animation.scene.SceneKey
 import com.android.compose.animation.scene.SceneTransitionLayoutImpl
+import com.android.compose.animation.scene.TransitionKey
 import com.android.compose.animation.scene.content.state.TransitionState.Transition
 import com.android.mechanics.GestureContext
 import kotlinx.coroutines.CompletableDeferred
@@ -56,6 +57,7 @@ fun transition(
     onFreezeAndAnimate: ((TestSceneTransition) -> Unit)? = null,
     replacedTransition: Transition? = null,
     gestureContext: (GestureContext?) -> GestureContext? = { it }, // This keep the superclass value
+    key: TransitionKey? = null,
 ): TestSceneTransition {
     return object : TestSceneTransition(from, to, replacedTransition) {
         override val currentScene: SceneKey
@@ -83,6 +85,8 @@ fun transition(
 
         override val gestureContext: GestureContext?
             get() = gestureContext(super.gestureContext)
+
+        override val key: TransitionKey? = key
 
         override fun freezeAndAnimateToCurrentState() {
             if (onFreezeAndAnimate != null) {
