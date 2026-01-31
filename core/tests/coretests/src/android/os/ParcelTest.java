@@ -427,4 +427,53 @@ public class ParcelTest {
         int binderEndPos = pA.dataPosition();
         assertTrue(pA.hasBinders(binderStartPos, binderEndPos - binderStartPos));
     }
+
+   @Test
+    public void testReadWriteHelper_withBinders() {
+        Binder binder = new Binder();
+        final int[] writeCount = {0};
+        final int[] readCount = {0};
+
+        Parcel.ReadWriteHelper helper = new Parcel.ReadWriteHelper() {
+            @Override
+            public void writeStrongBinder(Parcel p, IBinder val) {
+                writeCount[0]++;
+                super.writeStrongBinder(p, val);
+            }
+
+            @Override
+            public IBinder readStrongBinder(Parcel p) {
+                readCount[0]++;
+                return super.readStrongBinder(p);
+            }
+        };
+
+        Parcel p = Parcel.obtain();
+        try {
+            p.setReadWriteHelper(helper);
+            assertTrue(p.hasReadWriteHelper());
+
+            p.writeStrongBinder(binder);
+            assertEquals(1, writeCount[0]);
+            assertEquals(0, readCount[0]);
+
+            p.setDataPosition(0);
+            IBinder readBinder = p.readStrongBinder();
+
+            assertEquals(1, writeCount[0]);
+            assertEquals(1, readCount[0]);
+            assertEquals(binder, readBinder);
+
+            p.setReadWriteHelper(null);
+            assertFalse(p.hasReadWriteHelper());
+
+            p.setDataPosition(0);
+            p.readStrongBinder();
+            assertEquals(1, writeCount[0]);
+            assertEquals(1, readCount[0]);
+
+        } finally {
+            p.recycle();
+        }
+    }
 }
