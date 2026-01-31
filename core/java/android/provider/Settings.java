@@ -21775,6 +21775,22 @@ public final class Settings {
              */
             public static final int GESTURE_CUSTOMIZE_ALARM_PRIMARY_ACTION_DISMISS = 1;
 
+            /**
+             * A boolean that tracks whether remote gestures are enabled.
+             *
+             * @hide
+             */
+            public static final String REMOTE_GESTURES_ENABLED = "remote_gestures_enabled";
+
+            /**
+             * A boolean that tracks whether all gestures are routed to remote clients when remote
+             * clients are connected.
+             *
+             * @hide
+             */
+            public static final String ALWAYS_ROUTE_GESTURES_TO_REMOTE_CLIENTS =
+                    "always_route_gestures_to_remote_clients";
+
             /** Whether Wear Power Anomaly Service is enabled.
              *
              * (0 = false, 1 = true)
