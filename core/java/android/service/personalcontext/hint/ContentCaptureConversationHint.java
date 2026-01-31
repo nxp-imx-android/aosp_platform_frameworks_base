@@ -35,12 +35,13 @@ import java.util.Objects;
  * applications. It captures messages and metadata at a specific moment.
  */
 @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
-public final class ConversationHint extends ContextHint {
+public final class ContentCaptureConversationHint extends ContextHint {
     private static final String KEY_CONVERSATION_EVENT = "key_conversation_event";
-    private final ConversationEvent mConversationEvent;
+    private final ContentCaptureConversationEvent mConversationEvent;
 
-    private ConversationHint(
-            @NonNull ConstructorParams baseParams, @NonNull ConversationEvent conversationEvent) {
+    private ContentCaptureConversationHint(
+            @NonNull ConstructorParams baseParams,
+            @NonNull ContentCaptureConversationEvent conversationEvent) {
         super(baseParams);
         mConversationEvent = requireNonNull(conversationEvent);
     }
@@ -50,11 +51,11 @@ public final class ConversationHint extends ContextHint {
      *
      * @hide
      */
-    ConversationHint(@NonNull ConstructorParams baseParams, @NonNull Bundle bundle) {
+    ContentCaptureConversationHint(@NonNull ConstructorParams baseParams, @NonNull Bundle bundle) {
         this(
                 baseParams,
                 requireNonNull(
-                        ConversationEvent.fromBundle(
+                        ContentCaptureConversationEvent.fromBundle(
                                 requireNonNull(bundle.getBundle(KEY_CONVERSATION_EVENT))),
                         "Bundle must contain conversation event"));
     }
@@ -66,9 +67,9 @@ public final class ConversationHint extends ContextHint {
         return HINT_TYPE_CONVERSATION;
     }
 
-    /** Returns the {@link ConversationEvent} contained in this hint. */
+    /** Returns the {@link ContentCaptureConversationEvent} contained in this hint. */
     @NonNull
-    public ConversationEvent getConversationEvent() {
+    public ContentCaptureConversationEvent getConversationEvent() {
         return mConversationEvent;
     }
 
@@ -91,13 +92,13 @@ public final class ConversationHint extends ContextHint {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof ConversationHint)) {
+        if (!(o instanceof ContentCaptureConversationHint)) {
             return false;
         }
         if (!super.equals(o)) {
             return false;
         }
-        final ConversationHint that = (ConversationHint) o;
+        final ContentCaptureConversationHint that = (ContentCaptureConversationHint) o;
         return Objects.equals(mConversationEvent, that.mConversationEvent);
     }
 
@@ -108,7 +109,7 @@ public final class ConversationHint extends ContextHint {
 
     @Override
     public String toString() {
-        return "ConversationHint{"
+        return "ContentCaptureConversationHint{"
                 + "mId="
                 + getHintId()
                 + ", mConversationEvent="
@@ -116,22 +117,22 @@ public final class ConversationHint extends ContextHint {
                 + "}";
     }
 
-    /** Builder for {@link ConversationHint}. */
+    /** Builder for {@link ContentCaptureConversationHint}. */
     @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
     public static final class Builder {
         private final ConstructorParams.Builder mBaseBuilder = new ConstructorParams.Builder();
-        private final ConversationEvent mConversationEvent;
+        private final ContentCaptureConversationEvent mConversationEvent;
 
         /**
-         * Creates an instance of {@link Builder} with the {@link ConversationEvent} contained in
-         * the hint.
+         * Creates an instance of {@link Builder} with the {@link ContentCaptureConversationEvent}
+         * contained in the hint.
          */
-        public Builder(@NonNull ConversationEvent conversationEvent) {
+        public Builder(@NonNull ContentCaptureConversationEvent conversationEvent) {
             mConversationEvent = requireNonNull(conversationEvent);
         }
 
         /**
-         * Adds a token to the resulting {@link ConversationHint}.
+         * Adds a token to the resulting {@link ContentCaptureConversationHint}.
          *
          * @param token the token to add
          */
@@ -141,10 +142,10 @@ public final class ConversationHint extends ContextHint {
             return this;
         }
 
-        /** Creates the {@link ConversationHint}. */
+        /** Creates the {@link ContentCaptureConversationHint}. */
         @NonNull
-        public ConversationHint build() {
-            return new ConversationHint(mBaseBuilder.build(), mConversationEvent);
+        public ContentCaptureConversationHint build() {
+            return new ContentCaptureConversationHint(mBaseBuilder.build(), mConversationEvent);
         }
     }
 }
