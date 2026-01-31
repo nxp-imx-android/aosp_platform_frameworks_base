@@ -16,7 +16,11 @@
 package com.android.server.audio;
 
 import static android.media.AudioDeviceInfo.TYPE_BUILTIN_MIC;
+import static android.media.AudioManager.ADJUST_RAISE;
+import static android.media.AudioManager.FLAG_ABSOLUTE_VOLUME;
+import static android.media.AudioManager.FLAG_BLUETOOTH_ABS_VOLUME;
 import static android.media.AudioManager.GET_DEVICES_INPUTS;
+import static android.media.AudioSystem.STREAM_MUSIC;
 import static android.media.audiopolicy.AudioProductStrategy.DEFAULT_ZONE_ID;
 
 import static org.mockito.ArgumentMatchers.anyBoolean;
@@ -353,5 +357,68 @@ public class AudioServiceTest {
 
         Assert.assertEquals("Status for reset zone for unset user",
                 AudioSystem.AUDIO_STATUS_ERROR, status);
+    }
+
+    @Test
+    public void adjustStreamVolume_withAbsVolFlagOnNonAbsDevice_volumeUnchanged() {
+        final int stream = STREAM_MUSIC;
+        final int testVolume = 5;
+        mAudioService.setStreamVolume(stream, testVolume, 0, "test");
+        mTestLooper.dispatchAll();
+        Assert.assertEquals("Failed to set initial volume",
+                testVolume, mAudioService.getStreamVolume(stream));
+
+        // Call adjustStreamVolume with FLAG_ABSOLUTE_VOLUME, which should be ignored for a
+        // non-absolute volume device.
+        mAudioService.adjustStreamVolumeWithAttribution(
+                stream, ADJUST_RAISE, FLAG_ABSOLUTE_VOLUME, "test", null);
+        mTestLooper.dispatchAll();
+
+        // Verify volume did not change.
+        Assert.assertEquals(
+                "Volume should not change for non-abs device with FLAG_ABSOLUTE_VOLUME",
+                testVolume, mAudioService.getStreamVolume(stream));
+
+        // Call adjustStreamVolume with FLAG_BLUETOOTH_ABS_VOLUME, which should also be ignored.
+        mAudioService.adjustStreamVolumeWithAttribution(
+                stream, ADJUST_RAISE, FLAG_BLUETOOTH_ABS_VOLUME, "test", null);
+        mTestLooper.dispatchAll();
+
+        // Verify volume did not change.
+        Assert.assertEquals(
+                "Volume should not change for non-abs device with FLAG_BLUETOOTH_ABS_VOLUME",
+                testVolume, mAudioService.getStreamVolume(stream));
+    }
+
+    @Test
+    public void setStreamVolume_withAbsVolFlagOnNonAbsDevice_volumeUnchanged() {
+        final int stream = STREAM_MUSIC;
+        final int initialVolume = 5;
+        final int targetVolume = 10;
+        mAudioService.setStreamVolume(stream, initialVolume, 0, "test");
+        mTestLooper.dispatchAll();
+        Assert.assertEquals("Failed to set initial volume",
+                initialVolume, mAudioService.getStreamVolume(stream));
+
+        // Call setStreamVolume with FLAG_ABSOLUTE_VOLUME, which should be ignored for a
+        // non-absolute volume device.
+        mAudioService.setStreamVolumeWithAttribution(
+                stream, targetVolume, FLAG_ABSOLUTE_VOLUME, "test", null);
+        mTestLooper.dispatchAll();
+
+        // Verify volume did not change.
+        Assert.assertEquals(
+                "Volume should not change for non-abs device with FLAG_ABSOLUTE_VOLUME",
+                initialVolume, mAudioService.getStreamVolume(stream));
+
+        // Call setStreamVolume with FLAG_BLUETOOTH_ABS_VOLUME, which should also be ignored.
+        mAudioService.setStreamVolumeWithAttribution(
+                stream, targetVolume, FLAG_BLUETOOTH_ABS_VOLUME, "test", null);
+        mTestLooper.dispatchAll();
+
+        // Verify volume did not change.
+        Assert.assertEquals(
+                "Volume should not change for non-abs device with FLAG_BLUETOOTH_ABS_VOLUME",
+                initialVolume, mAudioService.getStreamVolume(stream));
     }
 }
