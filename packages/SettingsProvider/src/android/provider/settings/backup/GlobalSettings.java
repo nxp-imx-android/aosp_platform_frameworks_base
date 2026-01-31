@@ -129,6 +129,8 @@ public class GlobalSettings {
         Settings.Global.Wearable.GESTURE_CUSTOMIZE_MEDIA_CONTROLS_PRIMARY_ACTION,
         Settings.Global.Wearable.GESTURE_CUSTOMIZE_WORKOUT_CONTROLS_PRIMARY_ACTION,
         Settings.Global.Wearable.GESTURE_CUSTOMIZE_ALARM_PRIMARY_ACTION,
+        Settings.Global.Wearable.REMOTE_GESTURES_ENABLED,
+        Settings.Global.Wearable.ALWAYS_ROUTE_GESTURES_TO_REMOTE_CLIENTS,
         Settings.Global.FORCE_ENABLE_PSS_PROFILING,
         Settings.Global.Wearable.ACCESSIBILITY_VIBRATION_WATCH_ENABLED,
         Settings.Global.Wearable.ACCESSIBILITY_VIBRATION_WATCH_TYPE,
