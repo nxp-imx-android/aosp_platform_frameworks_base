@@ -9320,6 +9320,7 @@ package android.app.appfunctions {
     method @NonNull public android.app.appfunctions.AppFunctionName getName();
     method @NonNull public android.app.appfunctions.AppFunctionPackageMetadata getPackageMetadata();
     method @Nullable public android.app.appfunctions.AppFunctionSchemaMetadata getSchemaMetadata();
+    method public int getScope();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.app.appfunctions.AppFunctionMetadata> CREATOR;
     field public static final String PROPERTY_ENABLED_BY_DEFAULT = "enabledByDefault";
@@ -9327,6 +9328,11 @@ package android.app.appfunctions {
     field public static final String PROPERTY_SCHEMA_CATEGORY = "schemaCategory";
     field public static final String PROPERTY_SCHEMA_NAME = "schemaName";
     field public static final String PROPERTY_SCHEMA_VERSION = "schemaVersion";
+    field public static final String PROPERTY_SCOPE = "scope";
+    field public static final String PROPERTY_VALUE_SCOPE_ACTIVITY = "activity";
+    field public static final String PROPERTY_VALUE_SCOPE_GLOBAL = "global";
+    field public static final int SCOPE_ACTIVITY = 1; // 0x1
+    field public static final int SCOPE_GLOBAL = 0; // 0x0
   }
 
   @FlaggedApi("android.app.appfunctions.flags.enable_dynamic_app_functions") public final class AppFunctionName implements android.os.Parcelable {
@@ -9377,6 +9383,7 @@ package android.app.appfunctions {
     method @Nullable public java.util.List<java.lang.String> getPackageNames();
     method @Nullable public String getSchemaCategory();
     method @Nullable public String getSchemaName();
+    method @Nullable public java.util.List<java.lang.Integer> getScopes();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.app.appfunctions.AppFunctionSearchSpec> CREATOR;
   }
@@ -9389,6 +9396,7 @@ package android.app.appfunctions {
     method @NonNull public android.app.appfunctions.AppFunctionSearchSpec.Builder setPackageNames(@Nullable java.util.List<java.lang.String>);
     method @NonNull public android.app.appfunctions.AppFunctionSearchSpec.Builder setSchemaCategory(@Nullable String);
     method @NonNull public android.app.appfunctions.AppFunctionSearchSpec.Builder setSchemaName(@Nullable String);
+    method @NonNull public android.app.appfunctions.AppFunctionSearchSpec.Builder setScopes(@Nullable java.util.List<java.lang.Integer>);
   }
 
   @FlaggedApi("android.app.appfunctions.flags.enable_app_function_manager") public abstract class AppFunctionService extends android.app.Service {
