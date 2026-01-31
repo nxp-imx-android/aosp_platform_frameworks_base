@@ -21,12 +21,14 @@
 
 ravenwood_common_options = "@$(location :ravenwood-standard-options) " +
     "@$(location :ravenwood-common-options) " +
-    "--policy-override-file $(location :ravenwood-common-policies) "
+    "--policy-override-file $(location :ravenwood-common-policies) " +
+    "--policy-override-file $(location :ravenwood-aidl-policies) "
 
 genrule_defaults {
     name: "ravenwood_hsg_defaults",
     srcs: [
         ":ravenwood-common-policies",
+        ":ravenwood-aidl-policies",
         ":ravenwood-standard-options",
         ":ravenwood-common-options",
         ":ravenwood-annotation-allowed-classes",
