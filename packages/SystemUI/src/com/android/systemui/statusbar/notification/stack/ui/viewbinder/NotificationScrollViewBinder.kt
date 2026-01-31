@@ -97,6 +97,8 @@ constructor(
             launch { viewModel.qsExpandFraction.collectTraced { view.setQsExpandFraction(it) } }
             if (Flags.notificationShadeBlur()) {
                 launch { viewModel.blurRadius(maxBlurRadius).collect(view::setBlurRadius) }
+            }
+            if (Flags.notificationShadeBlur() || Flags.fixNsslBlockingQs()) {
                 launch { viewModel.interactive.collectTraced(view::setInteractive) }
             }
             launch { viewModel.isSplitShade.collectTraced { view.setSplitShade(it) } }
