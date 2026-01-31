@@ -33,7 +33,7 @@ public final class RoundedRectBlurRegion extends BlurRegion {
     @NonNull
     private RectF mRect;
     @NonNull
-    private float[] mCornerRadius;
+    private float[] mCornerRadii;
 
     /**
      * Constructs a new {@code RoundedRectBlurRegion} with the default parameters.
@@ -45,32 +45,32 @@ public final class RoundedRectBlurRegion extends BlurRegion {
     public RoundedRectBlurRegion() {
         super();
         this.mRect = new RectF();
-        this.mCornerRadius = new float[8];
+        this.mCornerRadii = new float[8];
     }
 
     /**
      * Constructs a new {@code RoundedRectBlurRegion} with the specified rounded rectangle
      * coordinates and corner radii.
      *
-     * <p>The {@code cornerRadius} values are ordered [topLeftX, topLeftY, topRightX, topRightY,
+     * <p>The {@code cornerRadii} values are ordered [topLeftX, topLeftY, topRightX, topRightY,
      * bottomLeftX, bottomLeftY, bottomRightX, bottomRightY].
      *
      * @param rect bounds of the blur region
-     * @param cornerRadius array of 8 floats representing the corner radii
+     * @param cornerRadii array of 8 floats representing the corner radii
      * @param alpha alpha value of the region [0.0 - 1.0]
      * @param blurRadius the blur radius in pixels
-     * @throws IllegalArgumentException if {@code cornerRadius} is {@code null} or
+     * @throws IllegalArgumentException if {@code cornerRadii} is {@code null} or
      * its length is not 8 or {@code rect} is {@code null}
      */
-    public RoundedRectBlurRegion(@NonNull RectF rect, @NonNull float[] cornerRadius,
+    public RoundedRectBlurRegion(@NonNull RectF rect, @NonNull float[] cornerRadii,
             @FloatRange(from = 0.0, to = 1.0) float alpha, float blurRadius) {
         super(alpha, blurRadius);
-        if (cornerRadius == null || cornerRadius.length != 8 || rect == null) {
-            throw new IllegalArgumentException("cornerRadius must contain exactly 8 values "
+        if (cornerRadii == null || cornerRadii.length != 8 || rect == null) {
+            throw new IllegalArgumentException("cornerRadii must contain exactly 8 values "
                     + " and rect must not be null");
         }
         this.mRect = new RectF(rect);
-        this.mCornerRadius = Arrays.copyOf(cornerRadius, 8);
+        this.mCornerRadii = Arrays.copyOf(cornerRadii, 8);
     }
 
     /**
@@ -85,7 +85,7 @@ public final class RoundedRectBlurRegion extends BlurRegion {
             throw new IllegalArgumentException("RoundedRectBlurRegion is null");
         }
         this.mRect = new RectF(other.mRect);
-        this.mCornerRadius = Arrays.copyOf(other.mCornerRadius, 8);
+        this.mCornerRadii = Arrays.copyOf(other.mCornerRadii, 8);
     }
 
     @Override
@@ -101,14 +101,14 @@ public final class RoundedRectBlurRegion extends BlurRegion {
         if (!super.equals(o)) return false;
         RoundedRectBlurRegion that = (RoundedRectBlurRegion) o;
         if (!mRect.equals(that.mRect)) return false;
-        return Arrays.equals(mCornerRadius, that.mCornerRadius);
+        return Arrays.equals(mCornerRadii, that.mCornerRadii);
     }
 
     @Override
     public int hashCode() {
         int result = super.hashCode();
         result = 31 * result + mRect.hashCode();
-        result = 31 * result + Arrays.hashCode(mCornerRadius);
+        result = 31 * result + Arrays.hashCode(mCornerRadii);
         return result;
     }
 
@@ -133,14 +133,14 @@ public final class RoundedRectBlurRegion extends BlurRegion {
         floatArray[3] = mRect.top * scaleY + offsetY;
         floatArray[4] = mRect.right * scaleX + offsetX;
         floatArray[5] = mRect.bottom * scaleY + offsetY;
-        floatArray[6] = mCornerRadius[0] * scaleX;
-        floatArray[7] = mCornerRadius[1] * scaleY;
-        floatArray[8] = mCornerRadius[2] * scaleX;
-        floatArray[9] = mCornerRadius[3] * scaleY;
-        floatArray[10] = mCornerRadius[4] * scaleX;
-        floatArray[11] = mCornerRadius[5] * scaleY;
-        floatArray[12] = mCornerRadius[6] * scaleX;
-        floatArray[13] = mCornerRadius[7] * scaleY;
+        floatArray[6] = mCornerRadii[0] * scaleX;
+        floatArray[7] = mCornerRadii[1] * scaleY;
+        floatArray[8] = mCornerRadii[2] * scaleX;
+        floatArray[9] = mCornerRadii[3] * scaleY;
+        floatArray[10] = mCornerRadii[4] * scaleX;
+        floatArray[11] = mCornerRadii[5] * scaleY;
+        floatArray[12] = mCornerRadii[6] * scaleX;
+        floatArray[13] = mCornerRadii[7] * scaleY;
         return floatArray;
     }
 
@@ -176,28 +176,28 @@ public final class RoundedRectBlurRegion extends BlurRegion {
      * @return array of 8 floats representing the corner radii
      */
     @NonNull
-    public float[] getCornerRadius() {
-        return mCornerRadius;
+    public float[] getCornerRadii() {
+        return mCornerRadii;
     }
 
 
     /**
      * Sets the corner radii for the blur region.
      *
-     * <p>The {@code cornerRadius} values are ordered [topLeftX, topLeftY, topRightX, topRightY,
+     * <p>The {@code cornerRadii} values are ordered [topLeftX, topLeftY, topRightX, topRightY,
      * bottomLeftX, bottomLeftY, bottomRightX, bottomRightY].
      *
      * <p>The default value is all zeros.
      *
-     * @param cornerRadius array of 8 floats representing the corner radii
-     * @throws IllegalArgumentException if {@code cornerRadius} is {@code null} or its length
+     * @param cornerRadii array of 8 floats representing the corner radii
+     * @throws IllegalArgumentException if {@code cornerRadii} is {@code null} or its length
      * is not 8
      */
-    public void setCornerRadius(@NonNull float[] cornerRadius) {
-        if (cornerRadius == null || cornerRadius.length != 8) {
-            throw new IllegalArgumentException("cornerRadius must contain exactly 8 values");
+    public void setCornerRadii(@NonNull float[] cornerRadii) {
+        if (cornerRadii == null || cornerRadii.length != 8) {
+            throw new IllegalArgumentException("cornerRadii must contain exactly 8 values");
         }
-        System.arraycopy(cornerRadius, 0, mCornerRadius, 0, 8);
+        System.arraycopy(cornerRadii, 0, mCornerRadii, 0, 8);
     }
 
     /**
@@ -205,7 +205,7 @@ public final class RoundedRectBlurRegion extends BlurRegion {
      *
      * @param cornerRadius radius in pixels.
      */
-    public void setCornerRadius(float cornerRadius) {
-        Arrays.fill(mCornerRadius, cornerRadius);
+    public void setCornerRadii(float cornerRadius) {
+        Arrays.fill(mCornerRadii, cornerRadius);
     }
 }
