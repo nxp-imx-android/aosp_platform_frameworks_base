@@ -475,6 +475,74 @@ public final class AppFunctionManager {
     }
 
     /**
+     * Retrieves the runtime state of the specified app functions.
+     *
+     * <p>This method returns the runtime state of the functions, such as whether they are currently
+     * enabled or disabled.
+     *
+     * <p>Functions that do not exist or are not visible to the calling application will be silently
+     * omitted from the result list.
+     *
+     * <p>This differs from {@link #searchAppFunctions}, which returns {@link AppFunctionMetadata}
+     * containing static properties that only change when the app package is updated.
+     *
+     * @param appFunctionNames The names of the app functions to request the state for.
+     * @param executor The executor to run the callback.
+     * @param callback The callback to receive the function state result.
+     * @see android.app.appfunctions.AppFunctionState
+     */
+    @FlaggedApi(FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS)
+    @RequiresPermission(
+            anyOf = {
+                Manifest.permission.EXECUTE_APP_FUNCTIONS,
+                Manifest.permission.DISCOVER_APP_FUNCTIONS,
+                Manifest.permission.EXECUTE_APP_FUNCTIONS_SYSTEM,
+            },
+            conditional = true)
+    @UserHandleAware
+    public void getAppFunctionStates(
+            @NonNull List<AppFunctionName> appFunctionNames,
+            @NonNull @CallbackExecutor Executor executor,
+            @NonNull OutcomeReceiver<List<AppFunctionState>, Exception> callback) {
+        Objects.requireNonNull(appFunctionNames);
+        Objects.requireNonNull(executor);
+        Objects.requireNonNull(callback);
+
+        try {
+            mService.getAppFunctionStates(
+                    appFunctionNames,
+                    mContext.getPackageName(),
+                    mContext.getUserId(),
+                    new IGetAppFunctionStatesCallback.Stub() {
+                        @Override
+                        public void onSuccess(List<AppFunctionState> states) {
+                            executor.execute(
+                                    () -> {
+                                        callback.onResult(states);
+                                    });
+                        }
+
+                        @Override
+                        public void onError(ParcelableException exception) {
+                            executor.execute(
+                                    () -> {
+                                        if (exception.getCause() == null) {
+                                            callback.onError(
+                                                    new RuntimeException(
+                                                            "Unknown remote failure."));
+                                        } else {
+                                            callback.onError(
+                                                    new RuntimeException(exception.getCause()));
+                                        }
+                                    });
+                        }
+                    });
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
      * Performs a one-time search for {@link AppFunctionMetadata} with the given {@link
      * AppFunctionSearchSpec} and notifies the given callback of the result.
      *

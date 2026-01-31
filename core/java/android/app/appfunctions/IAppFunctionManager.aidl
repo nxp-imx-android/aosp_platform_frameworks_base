@@ -25,6 +25,8 @@ import android.app.appfunctions.IOnAppFunctionAccessChangeListener;
 import android.app.appfunctions.IAppFunctionExecutor;
 import android.app.appfunctions.IObserveAppFunctionChangesCallback;
 import android.app.appfunctions.ISearchAppFunctionsCallback;
+import android.app.appfunctions.IGetAppFunctionStatesCallback;
+import android.app.appfunctions.AppFunctionName;
 import android.os.ICancellationSignal;
 import android.os.UserHandle;
 import android.content.Intent;
@@ -137,4 +139,10 @@ interface IAppFunctionManager {
     void addOnAccessChangedListener(IOnAppFunctionAccessChangeListener listener, int userId);
 
     void removeOnAccessChangedListener(IOnAppFunctionAccessChangeListener listener, int userId);
+
+    void getAppFunctionStates(
+        in List<AppFunctionName> appFunctionNames,
+        in String callingPackageName,
+        int targetUserId,
+        in IGetAppFunctionStatesCallback callback);
 }

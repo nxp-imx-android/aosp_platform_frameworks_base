@@ -149,20 +149,17 @@ public final class AppFunctionMetadata implements AbstractAppFunctionMetadata, P
     @NonNull private final AppFunctionName mAppFunctionName;
     @Nullable private final AppFunctionSchemaMetadata mAppFunctionSchemaMetadata;
     @NonNull private final AppFunctionPackageMetadata mAppFunctionPackageMetadata;
-    private final boolean mIsEnabled;
 
     private AppFunctionMetadata(
             @NonNull AppFunctionName appFunctionName,
             @Nullable AppFunctionSchemaMetadata appFunctionSchemaMetadata,
             @NonNull AppFunctionPackageMetadata appFunctionPackageMetadata,
-            @NonNull GenericDocument appFunctionMetadataDocument,
-            boolean isEnabled) {
+            @NonNull GenericDocument appFunctionMetadataDocument) {
         mAppFunctionName = appFunctionName;
         mAppFunctionSchemaMetadata = appFunctionSchemaMetadata;
         mAppFunctionPackageMetadata = appFunctionPackageMetadata;
         mAppFunctionMetadataDocumentWrapper =
                 new GenericDocumentWrapper(appFunctionMetadataDocument);
-        mIsEnabled = isEnabled;
     }
 
     private AppFunctionMetadata(Parcel in) {
@@ -172,7 +169,6 @@ public final class AppFunctionMetadata implements AbstractAppFunctionMetadata, P
                 Objects.requireNonNull(AppFunctionPackageMetadata.CREATOR.createFromParcel(in));
         mAppFunctionMetadataDocumentWrapper =
                 Objects.requireNonNull(GenericDocumentWrapper.CREATOR.createFromParcel(in));
-        mIsEnabled = in.readBoolean();
     }
 
     /**
@@ -202,17 +198,6 @@ public final class AppFunctionMetadata implements AbstractAppFunctionMetadata, P
     @NonNull
     public AppFunctionPackageMetadata getPackageMetadata() {
         return mAppFunctionPackageMetadata;
-    }
-
-    /**
-     * Whether the app function is enabled.
-     *
-     * <p>The default enabled status is specified by the {@link PROPERTY_ENABLED_BY_DEFAULT} tag in
-     * the app function XML. Apps can change this status at runtime using {@link
-     * AppFunctionManager#setAppFunctionEnabled}.
-     */
-    public boolean isEnabled() {
-        return mIsEnabled;
     }
 
     /**
@@ -266,7 +251,6 @@ public final class AppFunctionMetadata implements AbstractAppFunctionMetadata, P
         dest.writeTypedObject(mAppFunctionSchemaMetadata, flags);
         mAppFunctionPackageMetadata.writeToParcel(dest, flags);
         mAppFunctionMetadataDocumentWrapper.writeToParcel(dest, flags);
-        dest.writeBoolean(mIsEnabled);
     }
 
     @Override
@@ -293,20 +277,12 @@ public final class AppFunctionMetadata implements AbstractAppFunctionMetadata, P
         private final GenericDocument mStaticDocument;
         private final AppFunctionPackageMetadata mPackageMetadata;
 
-        private boolean mIsEnabled;
-
         /** The builder to create {@link AppFunctionMetadata}. */
         public Builder(
                 @NonNull GenericDocument staticDocument,
                 @NonNull AppFunctionPackageMetadata packageMetadata) {
             mStaticDocument = Objects.requireNonNull(staticDocument);
             mPackageMetadata = Objects.requireNonNull(packageMetadata);
-        }
-
-        /** Sets the enabled state of the given {@link AppFunctionMetadata}. */
-        public Builder setEnabled(boolean isEnabled) {
-            mIsEnabled = isEnabled;
-            return this;
         }
 
         /**
@@ -323,7 +299,7 @@ public final class AppFunctionMetadata implements AbstractAppFunctionMetadata, P
             AppFunctionSchemaMetadata schemaMetadata =
                     getAppFunctionSchemaMetadataOrNull(mStaticDocument);
             return new AppFunctionMetadata(
-                    appFunctionName, schemaMetadata, mPackageMetadata, mStaticDocument, mIsEnabled);
+                    appFunctionName, schemaMetadata, mPackageMetadata, mStaticDocument);
         }
     }
 }

@@ -42,21 +42,18 @@ class AppFunctionMetadataTest {
                     TEST_AF_STATIC_METADATA_GD_BUILDER.build(),
                     TEST_PACKAGE_METADATA,
                 )
-                .setEnabled(true)
                 .build()
         val metadata2 =
             AppFunctionMetadata.Builder(
                     TEST_AF_STATIC_METADATA_GD_BUILDER.build(),
                     TEST_PACKAGE_METADATA,
                 )
-                .setEnabled(true)
                 .build()
         val metadata3 =
             AppFunctionMetadata.Builder(
                     TEST_AF_STATIC_METADATA_GD_BUILDER.setId("testPackage/testFunctionId2").build(),
                     TEST_PACKAGE_METADATA,
                 )
-                .setEnabled(true)
                 .build()
         val metadata4 =
             AppFunctionMetadata.Builder(
@@ -80,7 +77,6 @@ class AppFunctionMetadataTest {
                     TEST_AF_STATIC_METADATA_GD_BUILDER.build(),
                     TEST_PACKAGE_METADATA,
                 )
-                .setEnabled(true)
                 .build()
 
         assertThat(appFunctionMetadata.name)
@@ -90,7 +86,6 @@ class AppFunctionMetadataTest {
         assertThat(appFunctionMetadata.packageMetadata).isEqualTo(TEST_PACKAGE_METADATA)
         assertThat(appFunctionMetadata.metadataDocument)
             .isEqualTo(TEST_AF_STATIC_METADATA_GD_BUILDER.build())
-        assertThat(appFunctionMetadata.isEnabled).isTrue()
     }
 
     @Test
@@ -100,14 +95,12 @@ class AppFunctionMetadataTest {
                     TEST_AF_STATIC_METADATA_GD_BUILDER.build(),
                     TEST_PACKAGE_METADATA,
                 )
-                .setEnabled(false)
                 .build()
 
         val restoredMetadata = parcelAndUnparcel(originalMetadata)
 
         assertThat(restoredMetadata.name).isEqualTo(originalMetadata.name)
         assertThat(restoredMetadata.schemaMetadata).isEqualTo(originalMetadata.schemaMetadata)
-        assertThat(restoredMetadata.isEnabled).isEqualTo(originalMetadata.isEnabled)
         assertThat(restoredMetadata.metadataDocument).isEqualTo(originalMetadata.metadataDocument)
         assertThat(restoredMetadata.packageMetadata).isEqualTo(originalMetadata.packageMetadata)
     }
@@ -119,14 +112,12 @@ class AppFunctionMetadataTest {
                     TEST_AF_STATIC_METADATA_GD_BUILDER_NO_SCHEMA.build(),
                     TEST_PACKAGE_METADATA,
                 )
-                .setEnabled(true)
                 .build()
 
         val restoredMetadata = parcelAndUnparcel(originalMetadata)
 
         assertThat(restoredMetadata.name).isEqualTo(originalMetadata.name)
         assertThat(restoredMetadata.schemaMetadata).isEqualTo(originalMetadata.schemaMetadata)
-        assertThat(restoredMetadata.isEnabled).isEqualTo(originalMetadata.isEnabled)
         assertThat(restoredMetadata.metadataDocument).isEqualTo(originalMetadata.metadataDocument)
         assertThat(restoredMetadata.packageMetadata).isEqualTo(originalMetadata.packageMetadata)
     }
