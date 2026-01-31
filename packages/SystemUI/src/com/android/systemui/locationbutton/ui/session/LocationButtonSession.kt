@@ -101,6 +101,7 @@ class LocationButtonSession(
         if (DEBUG) {
             Slog.d(TAG, "Creating new location button session $sessionId for request: $request")
         }
+        // TODO handle default values for optional properties in the request
         interactor.setButtonState(sessionId, request.toButtonModel())
         surfaceControlViewHost = setupSurfaceControlViewHost(hostToken, displayId)
         setupComposeView(request)

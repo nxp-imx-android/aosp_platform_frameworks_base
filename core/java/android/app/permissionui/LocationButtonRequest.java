@@ -37,6 +37,20 @@ import java.util.Objects;
  */
 @FlaggedApi(Flags.FLAG_LOCATION_BUTTON_ENABLED)
 public final class LocationButtonRequest implements Parcelable {
+    // Bitmask flags for tracking which properties were explicitly set
+    private static final int PROPERTY_PADDING_LEFT = 1 << 0;
+    private static final int PROPERTY_PADDING_TOP = 1 << 1;
+    private static final int PROPERTY_PADDING_RIGHT = 1 << 2;
+    private static final int PROPERTY_PADDING_BOTTOM = 1 << 3;
+    private static final int PROPERTY_BACKGROUND_COLOR = 1 << 4;
+    private static final int PROPERTY_STROKE_COLOR = 1 << 5;
+    private static final int PROPERTY_STROKE_WIDTH = 1 << 6;
+    private static final int PROPERTY_CORNER_RADIUS = 1 << 7;
+    private static final int PROPERTY_PRESSED_CORNER_RADIUS = 1 << 8;
+    private static final int PROPERTY_ICON_TINT = 1 << 9;
+    private static final int PROPERTY_TEXT_TYPE = 1 << 10;
+    private static final int PROPERTY_TEXT_COLOR = 1 << 11;
+
     private final int mWidth;
     private final int mHeight;
     private final int mPaddingLeft;
@@ -57,6 +71,8 @@ public final class LocationButtonRequest implements Parcelable {
     private final int mTextColor;
     private final Configuration mConfiguration;
 
+    private final int mPropertiesSet;
+
     /**
      * Creates a new {@link LocationButtonRequest} instance.
      * Use {@link Builder} to create instances.
@@ -66,7 +82,8 @@ public final class LocationButtonRequest implements Parcelable {
             @ColorInt int strokeColor, int strokeWidth, float cornerRadius,
             float pressedCornerRadius, @ColorInt int iconTint,
             @LocationButtonSession.TextType int textType,
-            @ColorInt int textColor, @NonNull Configuration configuration) {
+            @ColorInt int textColor, @NonNull Configuration configuration,
+            int propertiesSet) {
         this.mWidth = width;
         this.mHeight = height;
         this.mPaddingLeft = paddingLeft;
@@ -82,6 +99,7 @@ public final class LocationButtonRequest implements Parcelable {
         this.mTextType = textType;
         this.mTextColor = textColor;
         this.mConfiguration = configuration;
+        this.mPropertiesSet = propertiesSet;
     }
 
     /** Returns the width of the button. */
@@ -99,9 +117,25 @@ public final class LocationButtonRequest implements Parcelable {
         return mPaddingLeft;
     }
 
+    /**
+     * Returns true if the left padding was explicitly set.
+     * @hide
+     */
+    public boolean hasPaddingLeft() {
+        return (mPropertiesSet & PROPERTY_PADDING_LEFT) != 0;
+    }
+
     /** Returns the right padding of the button. */
     public int getPaddingRight() {
         return mPaddingRight;
+    }
+
+    /**
+     * Returns true if the right padding was explicitly set.
+     * @hide
+     */
+    public boolean hasPaddingRight() {
+        return (mPropertiesSet & PROPERTY_PADDING_RIGHT) != 0;
     }
 
     /** Returns the top padding of the button. */
@@ -109,9 +143,25 @@ public final class LocationButtonRequest implements Parcelable {
         return mPaddingTop;
     }
 
+    /**
+     * Returns true if the top padding was explicitly set.
+     * @hide
+     */
+    public boolean hasPaddingTop() {
+        return (mPropertiesSet & PROPERTY_PADDING_TOP) != 0;
+    }
+
     /** Returns the bottom padding of the button. */
     public int getPaddingBottom() {
         return mPaddingBottom;
+    }
+
+    /**
+     * Returns true if the bottom padding was explicitly set.
+     * @hide
+     */
+    public boolean hasPaddingBottom() {
+        return (mPropertiesSet & PROPERTY_PADDING_BOTTOM) != 0;
     }
 
     /** Returns the background color of the button as a {@link ColorInt}. */
@@ -120,10 +170,26 @@ public final class LocationButtonRequest implements Parcelable {
         return mBackgroundColor;
     }
 
+    /**
+     * Returns true if the background color was explicitly set.
+     * @hide
+     */
+    public boolean hasBackgroundColor() {
+        return (mPropertiesSet & PROPERTY_BACKGROUND_COLOR) != 0;
+    }
+
     /** Returns the button outline/border color as a {@link ColorInt}. */
     @ColorInt
     public int getStrokeColor() {
         return mStrokeColor;
+    }
+
+    /**
+     * Returns true if the stroke color was explicitly set.
+     * @hide
+     */
+    public boolean hasStrokeColor() {
+        return (mPropertiesSet & PROPERTY_STROKE_COLOR) != 0;
     }
 
     /** Returns the button outline/border width. */
@@ -131,14 +197,38 @@ public final class LocationButtonRequest implements Parcelable {
         return mStrokeWidth;
     }
 
+    /**
+     * Returns true if the stroke width was explicitly set.
+     * @hide
+     */
+    public boolean hasStrokeWidth() {
+        return (mPropertiesSet & PROPERTY_STROKE_WIDTH) != 0;
+    }
+
     /** Returns the corner radius of the button in pixels. */
     public float getCornerRadius() {
         return mCornerRadius;
     }
 
+    /**
+     * Returns true if the corner radius was explicitly set.
+     * @hide
+     */
+    public boolean hasCornerRadius() {
+        return (mPropertiesSet & PROPERTY_CORNER_RADIUS) != 0;
+    }
+
     /** Returns the corner radius of the button when pressed. */
     public float getPressedCornerRadius() {
         return mPressedCornerRadius;
+    }
+
+    /**
+     * Returns true if the pressed corner radius was explicitly set.
+     * @hide
+     */
+    public boolean hasPressedCornerRadius() {
+        return (mPropertiesSet & PROPERTY_PRESSED_CORNER_RADIUS) != 0;
     }
 
     /** Returns the icon tint color as a {@link ColorInt}. */
@@ -147,15 +237,39 @@ public final class LocationButtonRequest implements Parcelable {
         return mIconTint;
     }
 
+    /**
+     * Returns true if the icon tint was explicitly set.
+     * @hide
+     */
+    public boolean hasIconTint() {
+        return (mPropertiesSet & PROPERTY_ICON_TINT) != 0;
+    }
+
     /** Returns the text type displayed on the button. */
     public @LocationButtonSession.TextType int getTextType() {
         return mTextType;
+    }
+
+    /**
+     * Returns true if the text type was explicitly set.
+     * @hide
+     */
+    public boolean hasTextType() {
+        return (mPropertiesSet & PROPERTY_TEXT_TYPE) != 0;
     }
 
     /** Returns the color of the button's text as a {@link ColorInt}. */
     @ColorInt
     public int getTextColor() {
         return mTextColor;
+    }
+
+    /**
+     * Returns true if the text color was explicitly set.
+     * @hide
+     */
+    public boolean hasTextColor() {
+        return (mPropertiesSet & PROPERTY_TEXT_COLOR) != 0;
     }
 
     /** Returns the configuration of the button. */
@@ -182,6 +296,7 @@ public final class LocationButtonRequest implements Parcelable {
                 + ", mTextType=" + mTextType
                 + ", mTextColor=" + mTextColor
                 + ", mConfiguration=" + mConfiguration
+                + ", mPropertiesSet=0x" + Integer.toHexString(mPropertiesSet)
                 + "}";
     }
 
@@ -207,17 +322,35 @@ public final class LocationButtonRequest implements Parcelable {
         dest.writeInt(mTextType);
         dest.writeInt(mTextColor);
         dest.writeTypedObject(mConfiguration, flags);
+        dest.writeInt(mPropertiesSet);
     }
 
     public static final @NonNull Creator<LocationButtonRequest> CREATOR =
             new Creator<LocationButtonRequest>() {
                 @Override
                 public LocationButtonRequest createFromParcel(Parcel in) {
-                    return new LocationButtonRequest(in.readInt(), in.readInt(), in.readInt(),
-                            in.readInt(), in.readInt(), in.readInt(), in.readInt(), in.readInt(),
-                            in.readInt(), in.readFloat(), in.readFloat(), in.readInt(),
-                            in.readInt(), in.readInt(),
-                            Objects.requireNonNull(in.readTypedObject(Configuration.CREATOR)));
+                    int width = in.readInt();
+                    int height = in.readInt();
+                    int paddingLeft = in.readInt();
+                    int paddingTop = in.readInt();
+                    int paddingRight = in.readInt();
+                    int paddingBottom = in.readInt();
+                    int backgroundColor = in.readInt();
+                    int strokeColor = in.readInt();
+                    int strokeWidth = in.readInt();
+                    float cornerRadius = in.readFloat();
+                    float pressedCornerRadius = in.readFloat();
+                    int iconTint = in.readInt();
+                    int textType = in.readInt();
+                    int textColor = in.readInt();
+                    Configuration configuration = Objects.requireNonNull(
+                            in.readTypedObject(Configuration.CREATOR));
+                    int propertiesSet = in.readInt();
+
+                    return new LocationButtonRequest(width, height, paddingLeft, paddingTop,
+                            paddingRight, paddingBottom, backgroundColor, strokeColor, strokeWidth,
+                            cornerRadius, pressedCornerRadius, iconTint, textType, textColor,
+                            configuration, propertiesSet);
                 }
 
                 @Override
@@ -228,112 +361,55 @@ public final class LocationButtonRequest implements Parcelable {
 
     /**
      * Builder for {@link LocationButtonRequest}.
-     *
-     * <p>This builder enforces strict validation: <b>all properties must be set explicitly</b>.
-     * Attempting to call {@link #build()} without setting every property will result
-     * in an {@link IllegalStateException}.
      */
     public static final class Builder {
-        // Bit flags for tracking which fields have been set
-        private static final int PROPERTY_WIDTH = 1 << 0;
-        private static final int PROPERTY_HEIGHT = 1 << 1;
-        private static final int PROPERTY_PADDING_LEFT = 1 << 2;
-        private static final int PROPERTY_PADDING_TOP = 1 << 3;
-        private static final int PROPERTY_PADDING_RIGHT = 1 << 4;
-        private static final int PROPERTY_PADDING_BOTTOM = 1 << 5;
-        private static final int PROPERTY_BACKGROUND_COLOR = 1 << 6;
-        private static final int PROPERTY_STROKE_COLOR = 1 << 7;
-        private static final int PROPERTY_STROKE_WIDTH = 1 << 8;
-        private static final int PROPERTY_CORNER_RADIUS = 1 << 9;
-        private static final int PROPERTY_ICON_TINT = 1 << 10;
-        private static final int PROPERTY_TEXT_TYPE = 1 << 11;
-        private static final int PROPERTY_TEXT_COLOR = 1 << 12;
-        private static final int PROPERTY_CONFIGURATION = 1 << 13;
-        private static final int PROPERTY_PRESSED_CORNER_RADIUS = 1 << 14;
+        private final int mWidth;
+        private final int mHeight;
+        private final Configuration mConfiguration;
 
+        // Tracks which setters have been called
+        private int mPropertiesSet = 0;
 
-        private static final int MASK_ALL_PROPERTIES_SET =
-                PROPERTY_WIDTH | PROPERTY_HEIGHT | PROPERTY_PADDING_LEFT | PROPERTY_PADDING_TOP
-                        | PROPERTY_PADDING_RIGHT | PROPERTY_PADDING_BOTTOM
-                        | PROPERTY_BACKGROUND_COLOR
-                        | PROPERTY_STROKE_COLOR | PROPERTY_STROKE_WIDTH | PROPERTY_CORNER_RADIUS
-                        | PROPERTY_ICON_TINT | PROPERTY_TEXT_TYPE | PROPERTY_TEXT_COLOR
-                        | PROPERTY_CONFIGURATION | PROPERTY_PRESSED_CORNER_RADIUS;
-
-        private int mBuilderFieldsSet = 0;
-
-        private int mWidth;
-        private int mHeight;
         private int mPaddingLeft;
         private int mPaddingRight;
         private int mPaddingTop;
         private int mPaddingBottom;
+
         @ColorInt
         private int mBackgroundColor;
         @ColorInt
         private int mStrokeColor;
+
         private int mStrokeWidth;
         private float mCornerRadius;
         private float mPressedCornerRadius;
+
         @ColorInt
         private int mIconTint;
+
         private @LocationButtonSession.TextType int mTextType;
+
         @ColorInt
         private int mTextColor;
-        private Configuration mConfiguration;
 
         /**
-         * Creates a new Builder.
-         */
-        public Builder() {
-        }
-
-        /**
-         * Creates a new Builder from an existing {@link LocationButtonRequest}.
+         * Creates a new Builder with mandatory arguments.
          *
-         * @param original The original request to copy properties from.
+         * @param width         The width of the button.
+         * @param height        The height of the button.
+         * @param configuration The configuration of the button.
          */
-        public Builder(@NonNull LocationButtonRequest original) {
-            mWidth = original.mWidth;
-            mHeight = original.mHeight;
-            mPaddingLeft = original.mPaddingLeft;
-            mPaddingTop = original.mPaddingTop;
-            mPaddingRight = original.mPaddingRight;
-            mPaddingBottom = original.mPaddingBottom;
-            mBackgroundColor = original.mBackgroundColor;
-            mStrokeColor = original.mStrokeColor;
-            mStrokeWidth = original.mStrokeWidth;
-            mCornerRadius = original.mCornerRadius;
-            mPressedCornerRadius = original.mPressedCornerRadius;
-            mIconTint = original.mIconTint;
-            mTextType = original.mTextType;
-            mTextColor = original.mTextColor;
-            mConfiguration = original.mConfiguration;
-            // Since we are copying a valid object, we know all properties are set.
-            mBuilderFieldsSet = MASK_ALL_PROPERTIES_SET;
-        }
-
-        /** Sets the width of the button. */
-        @NonNull
-        public Builder setWidth(int width) {
+        public Builder(int width, int height, @NonNull Configuration configuration) {
             mWidth = width;
-            mBuilderFieldsSet |= PROPERTY_WIDTH;
-            return this;
-        }
-
-        /** Sets the height of the button. */
-        @NonNull
-        public Builder setHeight(int height) {
             mHeight = height;
-            mBuilderFieldsSet |= PROPERTY_HEIGHT;
-            return this;
+            mConfiguration = Objects.requireNonNull(configuration);
         }
 
         /** Sets the left padding of the button. */
         @NonNull
         public Builder setPaddingLeft(int paddingLeft) {
             mPaddingLeft = paddingLeft;
-            mBuilderFieldsSet |= PROPERTY_PADDING_LEFT;
+            mPropertiesSet |= PROPERTY_PADDING_LEFT;
             return this;
         }
 
@@ -341,7 +417,7 @@ public final class LocationButtonRequest implements Parcelable {
         @NonNull
         public Builder setPaddingTop(int paddingTop) {
             mPaddingTop = paddingTop;
-            mBuilderFieldsSet |= PROPERTY_PADDING_TOP;
+            mPropertiesSet |= PROPERTY_PADDING_TOP;
             return this;
         }
 
@@ -349,7 +425,7 @@ public final class LocationButtonRequest implements Parcelable {
         @NonNull
         public Builder setPaddingRight(int paddingRight) {
             mPaddingRight = paddingRight;
-            mBuilderFieldsSet |= PROPERTY_PADDING_RIGHT;
+            mPropertiesSet |= PROPERTY_PADDING_RIGHT;
             return this;
         }
 
@@ -357,7 +433,7 @@ public final class LocationButtonRequest implements Parcelable {
         @NonNull
         public Builder setPaddingBottom(int paddingBottom) {
             mPaddingBottom = paddingBottom;
-            mBuilderFieldsSet |= PROPERTY_PADDING_BOTTOM;
+            mPropertiesSet |= PROPERTY_PADDING_BOTTOM;
             return this;
         }
 
@@ -365,7 +441,7 @@ public final class LocationButtonRequest implements Parcelable {
         @NonNull
         public Builder setBackgroundColor(@ColorInt int backgroundColor) {
             mBackgroundColor = backgroundColor;
-            mBuilderFieldsSet |= PROPERTY_BACKGROUND_COLOR;
+            mPropertiesSet |= PROPERTY_BACKGROUND_COLOR;
             return this;
         }
 
@@ -373,7 +449,7 @@ public final class LocationButtonRequest implements Parcelable {
         @NonNull
         public Builder setStrokeColor(@ColorInt int strokeColor) {
             mStrokeColor = strokeColor;
-            mBuilderFieldsSet |= PROPERTY_STROKE_COLOR;
+            mPropertiesSet |= PROPERTY_STROKE_COLOR;
             return this;
         }
 
@@ -381,7 +457,7 @@ public final class LocationButtonRequest implements Parcelable {
         @NonNull
         public Builder setStrokeWidth(int strokeWidth) {
             mStrokeWidth = strokeWidth;
-            mBuilderFieldsSet |= PROPERTY_STROKE_WIDTH;
+            mPropertiesSet |= PROPERTY_STROKE_WIDTH;
             return this;
         }
 
@@ -389,7 +465,7 @@ public final class LocationButtonRequest implements Parcelable {
         @NonNull
         public Builder setCornerRadius(float cornerRadius) {
             mCornerRadius = cornerRadius;
-            mBuilderFieldsSet |= PROPERTY_CORNER_RADIUS;
+            mPropertiesSet |= PROPERTY_CORNER_RADIUS;
             return this;
         }
 
@@ -397,7 +473,7 @@ public final class LocationButtonRequest implements Parcelable {
         @NonNull
         public Builder setPressedCornerRadius(float cornerRadius) {
             mPressedCornerRadius = cornerRadius;
-            mBuilderFieldsSet |= PROPERTY_PRESSED_CORNER_RADIUS;
+            mPropertiesSet |= PROPERTY_PRESSED_CORNER_RADIUS;
             return this;
         }
 
@@ -405,7 +481,7 @@ public final class LocationButtonRequest implements Parcelable {
         @NonNull
         public Builder setIconTint(@ColorInt int iconTint) {
             mIconTint = iconTint;
-            mBuilderFieldsSet |= PROPERTY_ICON_TINT;
+            mPropertiesSet |= PROPERTY_ICON_TINT;
             return this;
         }
 
@@ -413,7 +489,7 @@ public final class LocationButtonRequest implements Parcelable {
         @NonNull
         public Builder setTextType(@LocationButtonSession.TextType int textType) {
             mTextType = textType;
-            mBuilderFieldsSet |= PROPERTY_TEXT_TYPE;
+            mPropertiesSet |= PROPERTY_TEXT_TYPE;
             return this;
         }
 
@@ -421,34 +497,19 @@ public final class LocationButtonRequest implements Parcelable {
         @NonNull
         public Builder setTextColor(@ColorInt int textColor) {
             mTextColor = textColor;
-            mBuilderFieldsSet |= PROPERTY_TEXT_COLOR;
-            return this;
-        }
-
-        /** Sets the configuration of the button. */
-        @NonNull
-        public Builder setConfiguration(@NonNull Configuration configuration) {
-            mConfiguration = Objects.requireNonNull(configuration);
-            mBuilderFieldsSet |= PROPERTY_CONFIGURATION;
+            mPropertiesSet |= PROPERTY_TEXT_COLOR;
             return this;
         }
 
         /**
          * Builds a {@link LocationButtonRequest} instance.
-         *
-         * @throws IllegalStateException if any required properties have not been set.
          */
         @NonNull
         public LocationButtonRequest build() {
-            if (mBuilderFieldsSet != MASK_ALL_PROPERTIES_SET) {
-                throw new IllegalStateException("Missing required properties. "
-                        + "All fields must be set explicitly.");
-            }
-
             return new LocationButtonRequest(mWidth, mHeight, mPaddingLeft, mPaddingTop,
                     mPaddingRight, mPaddingBottom, mBackgroundColor, mStrokeColor, mStrokeWidth,
                     mCornerRadius, mPressedCornerRadius, mIconTint, mTextType, mTextColor,
-                    mConfiguration);
+                    mConfiguration, mPropertiesSet);
         }
     }
 }
