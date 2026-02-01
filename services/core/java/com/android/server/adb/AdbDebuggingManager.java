@@ -557,7 +557,7 @@ public class AdbDebuggingManager {
 
         private static final String ADB_NOTIFICATION_CHANNEL_ID_TV = "usbdevicemanager.adb.tv";
 
-        private final AdbdServicesManager mAdbdServicesManager;
+        private final AdbdIServicesManager mAdbdServicesManager;
 
         private boolean isTv() {
             return mContext.getPackageManager().hasSystemFeature(PackageManager.FEATURE_LEANBACK);
@@ -696,7 +696,15 @@ public class AdbDebuggingManager {
             } else {
                 mAdbNetworkMonitor = new AdbBroadcastReceiver(mContext, mAdbConnectionInfo);
             }
-            mAdbdServicesManager = new AdbdServicesManager(mContext, "comm");
+
+            // On system without wifi, we can't register anything or take the multicast wakelock
+            // TODO(b/373819573): Consider how to handle Ethernet for wireless debugging,
+            // as AdbdServicesManager currently depends on Wi-Fi features.
+            if (mContext.getPackageManager().hasSystemFeature(PackageManager.FEATURE_WIFI)) {
+                mAdbdServicesManager = new AdbdServicesManager(mContext, "comm");
+            } else {
+                mAdbdServicesManager = new AdbdServicesManagerNoop();
+            }
         }
 
         // Show when at least one device is connected.
