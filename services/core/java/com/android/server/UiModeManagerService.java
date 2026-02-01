@@ -1547,16 +1547,6 @@ final class UiModeManagerService extends SystemService {
         }
     }
 
-    /** Legacy method, TODO(b/362682063) remove */
-    @GuardedBy("mLock")
-    @ForceInvertType
-    private int getForceInvertStateLocked() {
-        if (mForceInvertStates.indexOfKey(mCurrentUser) < 0 && mSystemReady) {
-            updateForceInvertStateLocked();
-        }
-        return mForceInvertStates.get(mCurrentUser, FORCE_INVERT_TYPE_OFF);
-    }
-
     /**
      * Return the force invert for the current user. If not cached, fetch it from the settings.
      */
@@ -1567,17 +1557,6 @@ final class UiModeManagerService extends SystemService {
             updateForceInvertStateLocked(userId);
         }
         return mForceInvertStates.get(userId, FORCE_INVERT_TYPE_OFF);
-    }
-
-    /** Legacy method, TODO(b/362682063) remove */
-    @GuardedBy("mLock")
-    private boolean updateForceInvertStateLocked() {
-        int forceInvertState = getForceInvertStateInternal();
-        if (mForceInvertStates.get(mCurrentUser, Integer.MIN_VALUE) != forceInvertState) {
-            mForceInvertStates.put(mCurrentUser, forceInvertState);
-            return true;
-        }
-        return false;
     }
 
     /**
@@ -1592,24 +1571,6 @@ final class UiModeManagerService extends SystemService {
             return true;
         }
         return false;
-    }
-
-    /** Legacy method, TODO(b/362682063) remove */
-    @VisibleForTesting
-    int getForceInvertStateInternal() {
-        if (!android.view.accessibility.Flags.forceInvertColor()) {
-            return FORCE_INVERT_TYPE_OFF;
-        }
-
-        if (!mComputedNightMode) {
-            return FORCE_INVERT_TYPE_OFF;
-        }
-
-        if (!isForceInvert()) {
-            return FORCE_INVERT_TYPE_OFF;
-        }
-
-        return FORCE_INVERT_TYPE_DARK;
     }
 
     /**
@@ -1641,14 +1602,6 @@ final class UiModeManagerService extends SystemService {
         }
 
         return FORCE_INVERT_TYPE_DARK;
-    }
-
-    /** Legacy method, TODO(b/362682063) remove */
-    private boolean isForceInvert() {
-        return Settings.Secure.getIntForUser(
-                getContext().getContentResolver(),
-                Settings.Secure.ACCESSIBILITY_FORCE_INVERT_COLOR_ENABLED,
-                /* def= */ 0, mCurrentUser) == 1;
     }
 
     private boolean isForceInvert(int userId) {
@@ -1700,13 +1653,6 @@ final class UiModeManagerService extends SystemService {
         }
     }
 
-    /** Legacy method, TODO(b/362682063) remove */
-    @GuardedBy("mLock")
-    private float getContrastLocked() {
-        if (!mContrasts.contains(mCurrentUser)) updateContrastLocked();
-        return mContrasts.get(mCurrentUser);
-    }
-
     /**
      * Return the contrast for the current user. If not cached, fetch it from the settings.
      */
@@ -1714,18 +1660,6 @@ final class UiModeManagerService extends SystemService {
     private float getContrastLocked(int userId) {
         if (!mContrasts.contains(userId)) updateContrastLocked(userId);
         return mContrasts.get(userId);
-    }
-
-    /** Legacy method, TODO(b/362682063) remove */
-    @GuardedBy("mLock")
-    private boolean updateContrastLocked() {
-        float contrast = Settings.Secure.getFloatForUser(getContext().getContentResolver(),
-                CONTRAST_LEVEL, CONTRAST_DEFAULT_VALUE, mCurrentUser);
-        if (Math.abs(mContrasts.get(mCurrentUser, Float.MAX_VALUE) - contrast) >= 1e-10) {
-            mContrasts.put(mCurrentUser, contrast);
-            return true;
-        }
-        return false;
     }
 
     /**
