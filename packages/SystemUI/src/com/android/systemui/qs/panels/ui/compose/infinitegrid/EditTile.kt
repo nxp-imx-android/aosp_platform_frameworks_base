@@ -1201,6 +1201,7 @@ private fun AvailableTileGridCell(
                 icon = Icons.Default.Add,
                 contentDescription = clickLabel,
                 enabled = !cell.isCurrent,
+                onClick = onClick,
             )
         }
         Box(Modifier.fillMaxSize()) {
