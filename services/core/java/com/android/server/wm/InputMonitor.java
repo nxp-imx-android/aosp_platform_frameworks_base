@@ -219,7 +219,7 @@ final class InputMonitor {
         }
     }
 
-    void createInputConsumer(IBinder token, String name, InputChannel inputChannel, int clientPid,
+    InputChannel createInputConsumer(IBinder token, String name, int clientPid,
             UserHandle clientUser) {
         final InputConsumerImpl existingConsumer = getInputConsumer(name);
         if (existingConsumer != null && existingConsumer.mClientUser.equals(clientUser)) {
@@ -228,8 +228,9 @@ final class InputMonitor {
                     + ", display: " + mDisplayId + ", user: " + clientUser);
         }
 
+        final InputChannel inputChannel = mService.mInputManager.createInputChannel(name);
         final InputConsumerImpl consumer = new InputConsumerImpl(mService, token, name,
-                inputChannel, clientPid, clientUser, mDisplayId, mInputTransaction);
+                inputChannel.getToken(), clientPid, clientUser, mDisplayId, mInputTransaction);
         switch (name) {
             case INPUT_CONSUMER_WALLPAPER:
                 consumer.mWindowHandle.inputConfig |= InputConfig.DUPLICATE_TOUCH_TO_WALLPAPER;
@@ -245,6 +246,7 @@ final class InputMonitor {
                         + ", display: " + mDisplayId);
         }
         addInputConsumer(consumer);
+        return inputChannel;
     }
 
     @VisibleForTesting

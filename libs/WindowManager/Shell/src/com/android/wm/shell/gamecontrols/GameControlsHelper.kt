@@ -70,10 +70,10 @@ object GameControlsHelper {
         }
         ProtoLog.i(
             WM_SHELL_WINDOW_DECORATION,
-            "GameControlsHelper: Sending the game controls intent %s to %s with task id %s",
+            "GameControlsHelper: Sending the game controls intent %s to %s with task id %d",
             intent,
             intent.getPackage(),
-            intent.getStringExtra(Intent.EXTRA_TASK_ID),
+            intent.getIntExtra(Intent.EXTRA_TASK_ID, -1),
         )
         context.sendBroadcast(intent)
     }

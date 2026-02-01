@@ -67,7 +67,7 @@ import com.android.systemui.statusbar.events.domain.interactor.SystemStatusEvent
 import com.android.systemui.statusbar.events.shared.model.SystemEventAnimationState.Idle
 import com.android.systemui.statusbar.layout.ui.viewmodel.AppHandlesViewModel
 import com.android.systemui.statusbar.layout.ui.viewmodel.StatusBarBoundsViewModel
-import com.android.systemui.statusbar.layout.ui.viewmodel.StatusBarContentInsetsViewModelStore
+import com.android.systemui.statusbar.layout.ui.viewmodel.StatusBarContentInsetsViewModel
 import com.android.systemui.statusbar.notification.domain.interactor.ActiveNotificationsInteractor
 import com.android.systemui.statusbar.notification.icon.domain.interactor.StatusBarNotificationIconsInteractor
 import com.android.systemui.statusbar.phone.domain.interactor.DarkIconInteractor
@@ -285,7 +285,7 @@ constructor(
     @DisplayAware private val ongoingActivityChipsViewModel: OngoingActivityChipsViewModel,
     statusBarPopupChipsViewModelFactory: StatusBarPopupChipsViewModel.Factory,
     @DisplayAware animations: SystemStatusEventAnimationInteractor,
-    statusBarContentInsetsViewModelStore: StatusBarContentInsetsViewModelStore,
+    @DisplayAware statusBarContentInsetsViewModel: StatusBarContentInsetsViewModel,
     @DisplayAware bgDisplayScope: CoroutineScope,
     @Background bgDispatcher: CoroutineDispatcher,
     shadeDisplaysInteractor: Provider<ShadeDisplaysInteractor>,
@@ -745,8 +745,7 @@ constructor(
         homeStatusBarIconBlockListInteractor.iconBlockList.flowOn(bgDispatcher)
 
     override val contentArea: Flow<Rect> =
-        statusBarContentInsetsViewModelStore.forDisplay(thisDisplayId)?.contentArea
-            ?: flowOf(Rect(0, 0, 0, 0)).flowOn(bgDispatcher)
+        statusBarContentInsetsViewModel.contentArea.flowOn(bgDispatcher)
 
     override val isSignOutButtonVisible: Boolean by
         if (
