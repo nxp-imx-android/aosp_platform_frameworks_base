@@ -132,7 +132,8 @@ public class ProcessServiceRecordInternal {
         mTreatLikeActivity = treatLikeActivity;
     }
 
-    public boolean isHasAboveClient() {
+    /** Returns whether this process has any connections with the BIND_ABOVE_CLIENT flag. */
+    public boolean hasBindAboveClient() {
         return mHasAboveClient;
     }
 

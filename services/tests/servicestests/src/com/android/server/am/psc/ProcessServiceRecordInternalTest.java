@@ -96,24 +96,24 @@ public class ProcessServiceRecordInternalTest {
                 /* isSelf= */ false, /* bindAboveClient= */ true);
 
         // 1. Initially false
-        assertFalse(mPsr.isHasAboveClient());
+        assertFalse(mPsr.hasBindAboveClient());
 
         // 2. addConnection (without bind above flag connection) -> remains false
         mPsr.addConnection(normalConn);
-        assertFalse(mPsr.isHasAboveClient());
+        assertFalse(mPsr.hasBindAboveClient());
 
         // 3. addConnection (with bind above flag connection) -> true
         mPsr.addConnection(aboveConn);
-        assertTrue(mPsr.isHasAboveClient());
+        assertTrue(mPsr.hasBindAboveClient());
 
         // 4. removeConnection (without bind above flag) -> remains true
         mPsr.removeConnection(normalConn);
         assertTrue("Flag should remain true while bindAboveClient connection is active",
-                mPsr.isHasAboveClient());
+                mPsr.hasBindAboveClient());
 
         // 5. another removeConnection (with bind above flag) -> false
         mPsr.removeConnection(aboveConn);
-        assertFalse(mPsr.isHasAboveClient());
+        assertFalse(mPsr.hasBindAboveClient());
     }
 
     @Test
@@ -124,7 +124,7 @@ public class ProcessServiceRecordInternalTest {
         mPsr.addConnection(selfAboveConn);
 
         assertFalse("Should be false for a self-binding even with BIND_ABOVE_CLIENT",
-                mPsr.isHasAboveClient());
+                mPsr.hasBindAboveClient());
     }
 
     private ConnectionRecordInternal createMockConnectionRecord() {

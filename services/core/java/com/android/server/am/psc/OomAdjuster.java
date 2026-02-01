@@ -1266,7 +1266,7 @@ public abstract class OomAdjuster {
                         final int rawAdj = curCachedAdj + curCachedImpAdj;
                         app.setCurRawAdj(rawAdj);
                         app.setCurAdj(
-                                applyBindAboveClientToAdj(psr.isHasAboveClient(), rawAdj));
+                                applyBindAboveClientToAdj(psr.hasBindAboveClient(), rawAdj));
                         if (DEBUG_LRU) {
                             Slog.d(TAG_LRU, "Assigning activity LRU #" + i
                                     + " adj: " + app.getCurAdj()
@@ -1293,7 +1293,7 @@ public abstract class OomAdjuster {
                         // cached level will be treated as empty (since their process
                         // state is still as a service), which is what we want.
                         app.setCurRawAdj(curEmptyAdj);
-                        app.setCurAdj(applyBindAboveClientToAdj(psr.isHasAboveClient(),
+                        app.setCurAdj(applyBindAboveClientToAdj(psr.hasBindAboveClient(),
                                 curEmptyAdj));
                         if (DEBUG_LRU) {
                             Slog.d(TAG_LRU, "Assigning empty LRU #" + i
@@ -1980,7 +1980,7 @@ public abstract class OomAdjuster {
             @SchedGroup int schedGroup) {
         app.setCurRawAdj(adj);
 
-        adj = applyBindAboveClientToAdj(app.getServices().isHasAboveClient(), adj);
+        adj = applyBindAboveClientToAdj(app.getServices().hasBindAboveClient(), adj);
         if (adj > app.getMaxAdj()) {
             adj = app.getMaxAdj();
             if (adj <= PERCEPTIBLE_LOW_APP_ADJ) {
