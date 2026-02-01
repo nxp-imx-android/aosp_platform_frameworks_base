@@ -37,7 +37,7 @@ class AppInteractionSQLiteHistoryTest {
     @Before
     fun setUp() {
         context = ApplicationProvider.getApplicationContext<Context>()
-        interactionHistory = AppInteractionSQLiteHistory(context)
+        interactionHistory = AppInteractionSQLiteHistory(context, "appinteraction.db")
     }
 
     @After
