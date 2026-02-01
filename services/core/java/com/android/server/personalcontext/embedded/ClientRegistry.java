@@ -95,4 +95,17 @@ class ClientRegistry {
             return mRenderTokensByClientId.get(clientInfo.getId());
         }
     }
+
+    /**
+     * Update the client with new {@link InsightSurfaceClientInfo}.
+     *
+     * @param oldClient the old {@link InsightSurfaceClientInfo} being updated
+     * @param newClient the new {@link InsightSurfaceClientInfo} replacing the old client
+     */
+    public void updateClient(
+            InsightSurfaceClientInfo oldClient, InsightSurfaceClientInfo newClient) {
+        synchronized (mClients) {
+            mClients.replace(oldClient.getId(), newClient);
+        }
+    }
 }

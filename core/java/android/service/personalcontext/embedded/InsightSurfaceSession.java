@@ -20,11 +20,13 @@ import static android.service.personalcontext.embedded.ClientUpdateException.UPD
 
 import android.annotation.FlaggedApi;
 import android.annotation.SystemApi;
+import android.content.Context;
 import android.os.Bundle;
 import android.os.OutcomeReceiver;
 import android.os.RemoteException;
 import android.os.ResultReceiver;
 import android.service.personalcontext.Flags;
+import android.service.personalcontext.PersonalContextManager;
 import android.service.personalcontext.hint.ContextHint;
 import android.util.Log;
 import android.view.SurfaceControlViewHost;
@@ -51,6 +53,7 @@ import java.util.function.Consumer;
 public class InsightSurfaceSession implements AutoCloseable {
     private static final String TAG = "InsightSurfaceSession";
 
+    private final Context mContext;
     private final WeakReference<InsightSurfaceClient> mClient;
     private SurfaceControlViewHost.SurfacePackage mSurfacePackage;
     private final IInsightSurfaceSession mSession;
@@ -61,9 +64,11 @@ public class InsightSurfaceSession implements AutoCloseable {
      */
     @VisibleForTesting
     public InsightSurfaceSession(
+            Context context,
             InsightSurfaceClient client,
             SurfaceControlViewHost.SurfacePackage surfacePackage,
             IInsightSurfaceSession session) {
+        mContext = context;
         mClient = new WeakReference<>(client);
         mSurfacePackage = surfacePackage;
         mSession = session;
@@ -102,6 +107,14 @@ public class InsightSurfaceSession implements AutoCloseable {
             @Nullable OutcomeReceiver<InsightSurfaceClientUpdate, ClientUpdateException> callback) {
         performActionOnClient(client -> {
             final InsightSurfaceClientInfo oldClientInfo = client.updateClientInfo(update);
+            final InsightSurfaceClientInfo newClientInfo = client.getClientInfo();
+
+            final PersonalContextManager personalContextManager =
+                    mContext.getSystemService(PersonalContextManager.class);
+
+            // Tell the embedded renderer that the client has been updated.
+            personalContextManager.updateEmbeddedClientInfo(oldClientInfo, newClientInfo);
+
             // Tell the session (visualizer) that the client has been updated.
             try {
                 final ResultReceiver receiver =
@@ -120,9 +133,16 @@ public class InsightSurfaceSession implements AutoCloseable {
                                     }
                                 }
                             } : null;
-                mSession.onClientUpdated(oldClientInfo, client.getClientInfo(), receiver);
+
+                mSession.onClientUpdated(oldClientInfo, newClientInfo, receiver);
             } catch (RemoteException e) {
                 Log.e(TAG, "Error updating session client", e);
+            }
+
+            // If there are hints in the update, publish them.
+            if (!update.getHints().isEmpty()) {
+                personalContextManager.publishInsightSurfaceHints(
+                        update.getHints(), newClientInfo);
             }
         });
     }

@@ -125,6 +125,12 @@ public class EmbeddedInsightRenderer implements Renderer {
         return mClientRegistry.getRenderTokenForClient(clientInfo);
     }
 
+    /** Update the client info of an embedded client. */
+    public void updateClientInfo(
+            InsightSurfaceClientInfo oldClientInfo, InsightSurfaceClientInfo newClientInfo) {
+        mClientRegistry.updateClient(oldClientInfo, newClientInfo);
+    }
+
     @Override
     public boolean isInterestedInInsight(ContextInsight insight) {
         // Embedded insights should be rendered due to a RenderToken, which bypasses this filter.
