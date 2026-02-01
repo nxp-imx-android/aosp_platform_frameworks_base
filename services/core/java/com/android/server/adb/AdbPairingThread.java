@@ -17,6 +17,7 @@
 package com.android.server.adb;
 
 import android.content.Context;
+import android.net.nsd.NsdManager;
 import android.net.nsd.NsdServiceInfo;
 import android.os.Handler;
 import android.os.Message;
@@ -29,7 +30,7 @@ import com.android.server.adb.AdbDebuggingManager.AdbDebuggingHandler;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 
-class AdbPairingThread extends Thread implements AdbdServicesManager.RegistrationCallback {
+class AdbPairingThread extends Thread implements NsdManager.RegistrationListener {
     private static final String TAG = AdbPairingThread.class.getSimpleName();
     private static final long NULL_HANDLE = 0;
     // Each AdbPairingThread instance will have a unique id associated with it. The id,
@@ -183,9 +184,13 @@ class AdbPairingThread extends Thread implements AdbdServicesManager.Registratio
     }
 
     @Override
-    public void onServiceRegistered(NsdServiceInfo serviceInfo) {
-        // nothing to do, pairing is in progress.
-    }
+    public void onUnregistrationFailed(NsdServiceInfo serviceInfo, int errorCode) {}
+
+    @Override
+    public void onServiceRegistered(NsdServiceInfo serviceInfo) {}
+
+    @Override
+    public void onServiceUnregistered(NsdServiceInfo serviceInfo) {}
 
     /** Base class for messages sent from AdbPairingThread. */
     public interface AdbPairingMessage {

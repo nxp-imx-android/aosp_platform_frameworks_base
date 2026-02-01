@@ -46,28 +46,21 @@ public class AdbdServicesManager implements AdbdIServicesManager {
     // To make sure the device keep on responding to mDNS probes even if the screen is off.
     private final WifiManager.MulticastLock mAdbMulticastLock;
 
-    /** Callback for service registration results. */
-    interface RegistrationCallback {
-        /** A RegistrationCallback that does nothing. */
-        RegistrationCallback NO_OP =
-                new RegistrationCallback() {
-                    @Override
-                    public void onRegistrationFailed(NsdServiceInfo serviceInfo, int errorCode) {
-                        // No-op
-                    }
+    /** A RegistrationCallback that does nothing. */
+    private static final NsdManager.RegistrationListener NO_OP =
+            new NsdManager.RegistrationListener() {
+                @Override
+                public void onRegistrationFailed(NsdServiceInfo serviceInfo, int errorCode) {}
 
-                    @Override
-                    public void onServiceRegistered(NsdServiceInfo serviceInfo) {
-                        // No-op
-                    }
-                };
+                @Override
+                public void onUnregistrationFailed(NsdServiceInfo serviceInfo, int errorCode) {}
 
-        /** Called when service registration fails. */
-        void onRegistrationFailed(NsdServiceInfo serviceInfo, int errorCode);
+                @Override
+                public void onServiceRegistered(NsdServiceInfo serviceInfo) {}
 
-        /** Called when service is successfully registered. */
-        void onServiceRegistered(NsdServiceInfo serviceInfo);
-    }
+                @Override
+                public void onServiceUnregistered(NsdServiceInfo serviceInfo) {}
+            };
 
     AdbdServicesManager(Context context, String purpose) {
         mNsdManager = context.getSystemService(NsdManager.class);
@@ -84,7 +77,7 @@ public class AdbdServicesManager implements AdbdIServicesManager {
 
     @Override
     public void registerService(String instanceName, String serviceType, int port) {
-        registerService(instanceName, serviceType, port, RegistrationCallback.NO_OP);
+        registerService(instanceName, serviceType, port, NO_OP);
     }
 
     @Override
@@ -92,7 +85,7 @@ public class AdbdServicesManager implements AdbdIServicesManager {
             String instanceName,
             String serviceType,
             int port,
-            RegistrationCallback registrationCallback) {
+            NsdManager.RegistrationListener registrationCallback) {
         String key = keyForService(instanceName, serviceType);
         if (mRegisteredServices.containsKey(key)) {
             AdbdRegistrationListener listener = mRegisteredServices.get(key);
@@ -182,13 +175,13 @@ public class AdbdServicesManager implements AdbdIServicesManager {
         final String mInstanceName;
         final String mServiceType;
         final int mPort;
-        final RegistrationCallback mRegistrationCallback;
+        final NsdManager.RegistrationListener mRegistrationCallback;
 
         private AdbdRegistrationListener(
                 String instanceName,
                 String serviceType,
                 int port,
-                RegistrationCallback registrationCallback) {
+                NsdManager.RegistrationListener registrationCallback) {
             mInstanceName = instanceName;
             mServiceType = serviceType;
             mPort = port;
@@ -204,6 +197,7 @@ public class AdbdServicesManager implements AdbdIServicesManager {
         @Override
         public void onUnregistrationFailed(NsdServiceInfo serviceInfo, int errorCode) {
             Slog.e(TAG, "Failed to unregister service (err=" + errorCode + "): " + serviceInfo);
+            mRegistrationCallback.onRegistrationFailed(serviceInfo, errorCode);
         }
 
         @Override
@@ -215,6 +209,7 @@ public class AdbdServicesManager implements AdbdIServicesManager {
         @Override
         public void onServiceUnregistered(NsdServiceInfo serviceInfo) {
             Slog.i(TAG, "Unregistered service '" + serviceInfo + "'");
+            mRegistrationCallback.onServiceUnregistered(serviceInfo);
         }
     }
 }
