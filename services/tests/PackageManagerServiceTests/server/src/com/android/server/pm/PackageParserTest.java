@@ -112,6 +112,7 @@ import com.android.internal.pm.pkg.component.ParsedUsesPermissionImpl;
 import com.android.internal.pm.pkg.parsing.ParsingPackage;
 import com.android.internal.pm.pkg.parsing.ParsingPackageUtils;
 import com.android.internal.util.ArrayUtils;
+import com.android.internal.util.HexDump;
 import com.android.server.pm.parsing.PackageCacher;
 import com.android.server.pm.parsing.PackageInfoUtils;
 import com.android.server.pm.parsing.PackageParserUtils;
@@ -178,6 +179,8 @@ public class PackageParserTest {
             "PackageParserTestPccAndIsolatedService.apk";
     private static final String TEST_APP_ALLOW_ACCESS_APK =
             "PackageParserTestAllowComponentAccess.apk";
+    private static final String TEST_APP_ALLOW_ACCESS_MULTI_CERT_APK =
+            "PackageParserAppAllowComponentAccessMultiCert.apk";
     private static final String TEST_APP_BACKUP_AGENT_PROCESS_PCC_APK =
             "PackageParserTestBackupAgentProcessPcc.apk";
     private static final String TEST_APP_BACKUP_AGENT_PROCESS_PCC_NO_PCC_COMPONENTS_APK =
@@ -187,6 +190,14 @@ public class PackageParserTest {
     private static final String TEST_APP_BACKUP_AGENT_PROCESS_NOT_SPECIFIED_APK =
             "PackageParserTestBackupAgentProcessNotSpecified.apk";
     private static final String PACKAGE_NAME = "com.android.servicestests.apps.packageparserapp";
+
+    private static final String DUMMY_CERT_PRIMARY =
+            "635e6f8c317c93f40d97ff40af0baccd32fd60f1abde2caf1b9c1f972195703b";
+    private static final String DUMMY_CERT_ADDITIONAL_1 =
+            "aabbaabbaabbaabbaabbaabbaabbaabbaabbaabbaabbaabbaabbaabbaabbaabb";
+    private static final String DUMMY_CERT_ADDITIONAL_2 =
+            "ccddccddccddccddccddccddccddccddccddccddccddccddccddccddccddccdd";
+
 
     @Before
     public void setUp() throws IOException {
@@ -1229,6 +1240,40 @@ public class PackageParserTest {
                     expectedCert,
                     rule2.getCertificateDigest());
 
+        } finally {
+            testFile.delete();
+        }
+    }
+
+    @Test
+    @RequiresFlagsEnabled(android.app.privatecompute.flags.Flags.FLAG_ENABLE_ALLOW_COMPONENT_ACCESS)
+    public void testParseAllowComponentAccess_MultiCert() throws Exception {
+        final File testFile = extractFile(TEST_APP_ALLOW_ACCESS_MULTI_CERT_APK);
+        try {
+            final ParsedPackage pkg = new TestPackageParser2().parsePackage(testFile, 0, false);
+            ParsedAllowComponentAccessPolicy policy = pkg.getParsedAllowComponentAccessPolicy();
+            assertNotNull("Policy should be parsed", policy);
+
+            // Expect 3 entries: 1 primary + 2 additional
+            List<SignedPackage> rules = policy.getParsedAllowlistedSignedPackages();
+            assertEquals("Should have parsed 3 certificate entries", 3, rules.size());
+
+            Set<String> seenDigests = new HashSet<>();
+            for (int i = 0; i < rules.size(); i++) {
+                SignedPackage rule = rules.get(i);
+                assertEquals("com.example.target", rule.getPackageName());
+                String hexDigest = HexDump.toHexString(rule.getCertificateDigest()).toLowerCase();
+                seenDigests.add(hexDigest);
+            }
+
+            Set<String> expectedDigests = Set.of(
+                    DUMMY_CERT_PRIMARY,
+                    DUMMY_CERT_ADDITIONAL_1,
+                    DUMMY_CERT_ADDITIONAL_2
+            );
+
+            assertEquals("The policy must contain all unique certificates defined in the XML",
+                    expectedDigests, seenDigests);
         } finally {
             testFile.delete();
         }

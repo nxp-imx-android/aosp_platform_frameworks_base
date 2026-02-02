@@ -222,6 +222,22 @@ android_test_helper_app {
 }
 
 android_test_helper_app {
+    name: "PackageParserAppAllowComponentAccessMultiCert",
+    sdk_version: "current",
+    srcs: ["**/*.java"],
+    dex_preopt: {
+        enabled: false,
+    },
+    optimize: {
+        enabled: false,
+    },
+    flags_packages: [
+        "android.app.privatecompute.flags-aconfig",
+    ],
+    manifest: "AndroidManifestAllowComponentAccessMultiCert.xml",
+}
+
+android_test_helper_app {
     name: "PackageParserTestBackupAgentProcessPcc",
     sdk_version: "current",
     srcs: ["**/*.java"],

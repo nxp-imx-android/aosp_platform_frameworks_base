@@ -114,6 +114,7 @@ android_test {
         ":PackageParserTestPcc",
         ":PackageParserTestPccAndIsolatedService",
         ":PackageParserTestAllowComponentAccess",
+        ":PackageParserAppAllowComponentAccessMultiCert",
         ":PackageParserTestBackupAgentProcessPcc",
         ":PackageParserTestBackupAgentProcessPccNoPccComponents",
         ":PackageParserTestBackupAgentProcessMain",
