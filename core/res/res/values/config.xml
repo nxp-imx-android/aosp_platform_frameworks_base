@@ -3310,6 +3310,10 @@
          away from them. -->
     <bool name="config_multiuserSkipKeyguardWhenSwitchingToUnlockedUsers">false</bool>
 
+    <!-- Whether the bouncer screen during initial user sign-in on desktop platforms should indicate
+         a neutral space (e.g. system instead of user's lockscreen wallpaper). -->
+    <bool name="config_multiuserNeutralSpace">false</bool>
+
     <!-- Whether to automatically switch to the designated Dock User (the user chosen for
          displaying dreams, etc.) after a timeout when the device is docked.  -->
     <bool name="config_enableTimeoutToDockUserWhenDocked">false</bool>
