@@ -10169,6 +10169,7 @@
     <declare-styleable name="KeyGlyph">
         <attr name="keycode" />
         <attr name="glyphDrawable" format="reference" />
+        <attr name="displayName" format="string" />
     </declare-styleable>
 
     <!-- @hide -->
