@@ -63,6 +63,7 @@ import com.android.systemui.keyguard.WindowManagerOcclusionManager;
 import com.android.systemui.keyguard.data.quickaffordance.KeyguardDataQuickAffordanceModule;
 import com.android.systemui.keyguard.data.repository.DeviceEntryFaceAuthModule;
 import com.android.systemui.keyguard.data.repository.KeyguardRepositoryModule;
+import com.android.systemui.keyguard.domain.interactor.KeyguardEnabledInteractor;
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor;
 import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionBootInteractor;
 import com.android.systemui.keyguard.domain.interactor.StartKeyguardTransitionModule;
@@ -114,22 +115,25 @@ import java.util.concurrent.Executor;
         KeyguardQsUserSwitchComponent.class,
         KeyguardStatusBarViewComponent.class},
         includes = {
-            DeviceEntryIconTransitionModule.class,
-            FalsingModule.class,
-            GlanceableHubTransitionModule.class,
-            GlanceableHubTransitionImplModule.class,
-            PrimaryBouncerTransitionModule.class,
-            PrimaryBouncerTransitionImplModule.class,
-            KeyguardDataQuickAffordanceModule.class,
-            KeyguardQuickAffordancesCombinedViewModelModule.class,
-            KeyguardRepositoryModule.class,
-            DeviceEntryFaceAuthModule.class,
-            KeyguardDisplayModule.class,
-            StartKeyguardTransitionModule.class,
-            ResourceTrimmerModule.class,
+            // go/keep-sorted start
             BouncerLoggerModule.class,
             CameraSensorPrivacyModule.class,
+            DeviceEntryFaceAuthModule.class,
+            DeviceEntryIconTransitionModule.class,
+            FalsingModule.class,
+            GlanceableHubTransitionImplModule.class,
+            GlanceableHubTransitionModule.class,
             KeyguardConnectedDisplaysModule.class,
+            KeyguardDataQuickAffordanceModule.class,
+            KeyguardDisplayModule.class,
+            KeyguardEnabledInteractor.Module.class,
+            KeyguardQuickAffordancesCombinedViewModelModule.class,
+            KeyguardRepositoryModule.class,
+            PrimaryBouncerTransitionImplModule.class,
+            PrimaryBouncerTransitionModule.class,
+            ResourceTrimmerModule.class,
+            StartKeyguardTransitionModule.class,
+            // go/keep-sorted end
         })
 public interface KeyguardModule {
     /**
