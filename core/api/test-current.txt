@@ -951,6 +951,7 @@ package android.app.supervision {
   }
 
   @FlaggedApi("android.app.supervision.flags.supervision_manager_apis") public class SupervisionManager {
+    method @FlaggedApi("android.app.supervision.flags.enable_supervision_manager_policy_apis") @RequiresPermission(android.Manifest.permission.BYPASS_ROLE_QUALIFICATION) public void setShouldAllowBypassingSupervisionRoleQualification(boolean);
     method public void setSupervisionEnabled(boolean);
   }
 
