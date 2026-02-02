@@ -447,7 +447,7 @@ class MouseKeysInterceptorTest {
                 KeyEvent.ACTION_DOWN,
                 keyCodeScrollToggle,
                 0,
-                0,
+                KeyEvent.META_NUM_LOCK_ON,
                 NUMPAD_DEVICE_ID,
                 0,
             )
@@ -458,7 +458,7 @@ class MouseKeysInterceptorTest {
                 KeyEvent.ACTION_DOWN,
                 keyCodeScroll,
                 0,
-                0,
+                KeyEvent.META_NUM_LOCK_ON,
                 NUMPAD_DEVICE_ID,
                 0,
             )
@@ -504,7 +504,16 @@ class MouseKeysInterceptorTest {
         val keyCode =
             MouseKeysInterceptor.MouseKeyEvent.UP_MOVE_OR_SCROLL.getKeyCodeValue(USE_NUMPAD_KEYS)
         val downEvent =
-            KeyEvent(downTime, downTime, KeyEvent.ACTION_DOWN, keyCode, 0, 0, NUMPAD_DEVICE_ID, 0)
+            KeyEvent(
+                downTime,
+                downTime,
+                KeyEvent.ACTION_DOWN,
+                keyCode,
+                0,
+                KeyEvent.META_NUM_LOCK_ON,
+                NUMPAD_DEVICE_ID,
+                0,
+            )
         mouseKeysInterceptor.onKeyEvent(downEvent, 0)
         testLooper.dispatchAll()
 
@@ -697,7 +706,7 @@ class MouseKeysInterceptorTest {
                 KeyEvent.ACTION_DOWN,
                 numpadKeycode,
                 0,
-                0,
+                KeyEvent.META_NUM_LOCK_ON,
                 NUMPAD_DEVICE_ID,
                 0,
             )
@@ -713,7 +722,7 @@ class MouseKeysInterceptorTest {
                 KeyEvent.ACTION_UP,
                 numpadKeycode,
                 0,
-                0,
+                KeyEvent.META_NUM_LOCK_ON,
                 NUMPAD_DEVICE_ID,
                 0,
             )
@@ -772,7 +781,7 @@ class MouseKeysInterceptorTest {
                 KeyEvent.ACTION_DOWN,
                 numpadKeycode,
                 0,
-                0,
+                KeyEvent.META_NUM_LOCK_ON,
                 NUMPAD_DEVICE_ID,
                 0,
             )
@@ -796,7 +805,7 @@ class MouseKeysInterceptorTest {
                 KeyEvent.ACTION_UP,
                 numpadKeycode,
                 0,
-                0,
+                KeyEvent.META_NUM_LOCK_ON,
                 NUMPAD_DEVICE_ID,
                 0,
             )
@@ -832,6 +841,103 @@ class MouseKeysInterceptorTest {
             expectedY = floatArrayOf(0f),
         )
         assertThat(nextInterceptor.events).isEmpty()
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_MOUSE_KEY_ENHANCEMENT)
+    fun whenUsePrimaryKeysDisabled_allNumpadKeysWork() {
+        setupMouseKeysInterceptor(usePrimaryKeys = false)
+
+        for (mouseKeyEvent in MouseKeysInterceptor.MouseKeyEvent.entries) {
+            Mockito.reset(mockVirtualMouse)
+            val keyCode = mouseKeyEvent.getKeyCodeValue(USE_NUMPAD_KEYS)
+            val downTime = clock.now() - KEYBOARD_POST_EVENT_DELAY_MILLIS_FOR_MOUSE_POINTER
+            val downEvent =
+                KeyEvent(
+                    downTime,
+                    downTime,
+                    KeyEvent.ACTION_DOWN,
+                    keyCode,
+                    0,
+                    KeyEvent.META_NUM_LOCK_ON,
+                    NUMPAD_DEVICE_ID,
+                    0,
+                )
+
+            mouseKeysInterceptor.onKeyEvent(downEvent, 0)
+            testLooper.dispatchAll()
+
+            when (mouseKeyEvent) {
+                MouseKeysInterceptor.MouseKeyEvent.LEFT_CLICK ->
+                    verifyButtonEvents(
+                        actions =
+                            intArrayOf(
+                                VirtualMouseButtonEvent.ACTION_BUTTON_PRESS,
+                                VirtualMouseButtonEvent.ACTION_BUTTON_RELEASE,
+                            ),
+                        buttons =
+                            intArrayOf(
+                                VirtualMouseButtonEvent.BUTTON_PRIMARY,
+                                VirtualMouseButtonEvent.BUTTON_PRIMARY,
+                            ),
+                    )
+                MouseKeysInterceptor.MouseKeyEvent.RIGHT_CLICK ->
+                    verifyButtonEvents(
+                        actions =
+                            intArrayOf(
+                                VirtualMouseButtonEvent.ACTION_BUTTON_PRESS,
+                                VirtualMouseButtonEvent.ACTION_BUTTON_RELEASE,
+                            ),
+                        buttons =
+                            intArrayOf(
+                                VirtualMouseButtonEvent.BUTTON_SECONDARY,
+                                VirtualMouseButtonEvent.BUTTON_SECONDARY,
+                            ),
+                    )
+                MouseKeysInterceptor.MouseKeyEvent.HOLD ->
+                    verifyButtonEvents(
+                        actions = intArrayOf(VirtualMouseButtonEvent.ACTION_BUTTON_PRESS),
+                        buttons = intArrayOf(VirtualMouseButtonEvent.BUTTON_PRIMARY),
+                    )
+                MouseKeysInterceptor.MouseKeyEvent.RELEASE ->
+                    verifyButtonEvents(
+                        actions = intArrayOf(VirtualMouseButtonEvent.ACTION_BUTTON_RELEASE),
+                        buttons = intArrayOf(VirtualMouseButtonEvent.BUTTON_PRIMARY),
+                    )
+                MouseKeysInterceptor.MouseKeyEvent.SCROLL_TOGGLE -> {
+                    // Verify the toggle doesn't send mouse events directly.
+                    Mockito.verifyNoInteractions(mockVirtualMouse)
+                }
+                else -> {
+                    // Directional move or scroll.
+                    Mockito.verify(mockVirtualMouse).sendRelativeEvent(Mockito.any())
+                }
+            }
+
+            // Release the key that was pressed.
+            val upTime = clock.now()
+            val upEvent =
+                KeyEvent(
+                    downTime,
+                    upTime,
+                    KeyEvent.ACTION_UP,
+                    keyCode,
+                    0,
+                    KeyEvent.META_NUM_LOCK_ON,
+                    NUMPAD_DEVICE_ID,
+                    0,
+                )
+            mouseKeysInterceptor.onKeyEvent(upEvent, 0)
+            testLooper.dispatchAll()
+
+            // If the key was to toggle scroll mode, turn scroll mode off.
+            if (mouseKeyEvent == MouseKeysInterceptor.MouseKeyEvent.SCROLL_TOGGLE) {
+                mouseKeysInterceptor.onKeyEvent(downEvent, 0)
+                testLooper.dispatchAll()
+                mouseKeysInterceptor.onKeyEvent(upEvent, 0)
+                testLooper.dispatchAll()
+            }
+        }
     }
 
     @Test
@@ -887,8 +993,14 @@ class MouseKeysInterceptorTest {
     @Test
     fun onKeyEvent_mapClearedDuringMovement_doesNotCrash() {
         setupMouseKeysInterceptor(usePrimaryKeys = true)
-        // There should be some delay between the downTime of the key event and calling onKeyEvent
-        val downTime = clock.now() - KEYBOARD_POST_EVENT_DELAY_MILLIS
+        // There should be some delay between the downTime of the key event and calling onKeyEvent.
+        val delayMillis =
+            if (DeviceFlagsValueProvider().getBoolean(Flags.FLAG_ENABLE_MOUSE_KEY_ENHANCEMENT)) {
+                KEYBOARD_POST_EVENT_DELAY_MILLIS_FOR_MOUSE_POINTER
+            } else {
+                KEYBOARD_POST_EVENT_DELAY_MILLIS
+            }
+        val downTime = clock.now() - delayMillis
         val keyCode =
             MouseKeysInterceptor.MouseKeyEvent.DIAGONAL_DOWN_LEFT_MOVE.getKeyCodeValue(
                 USE_PRIMARY_KEYS
