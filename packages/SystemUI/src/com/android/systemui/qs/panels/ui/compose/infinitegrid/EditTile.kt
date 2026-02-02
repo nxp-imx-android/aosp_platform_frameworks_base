@@ -90,7 +90,6 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -554,26 +553,6 @@ private fun TopBarSubtitle(
             }
         Text(text = text, style = MaterialTheme.typography.bodyMedium)
     }
-}
-
-@Composable
-private fun EditGridHeader(
-    modifier: Modifier = Modifier,
-    content: @Composable BoxScope.() -> Unit,
-) {
-    CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurface) {
-        Box(contentAlignment = Alignment.Center, modifier = modifier.fillMaxWidth()) { content() }
-    }
-}
-
-@Composable
-private fun EditGridCenteredText(text: String, modifier: Modifier = Modifier) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.titleSmall,
-        textAlign = TextAlign.Center,
-        modifier = modifier,
-    )
 }
 
 @Composable
