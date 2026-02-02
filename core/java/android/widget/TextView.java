@@ -9495,8 +9495,15 @@ public class TextView extends View implements ViewTreeObserver.OnPreDrawListener
             paddingTop += getVerticalOffset(false);
         }
         r.offset(paddingLeft, paddingTop);
-        int paddingBottom = getExtendedPaddingBottom();
-        r.bottom += paddingBottom;
+
+        int lineStart = mLayout.getLineForOffset(selStart >= 0 ? selStart : selEnd);
+        int lineEnd = mLayout.getLineForOffset(selEnd);
+        if (lineStart == 0) {
+            r.top -= getExtendedPaddingTop();
+        }
+        if (lineEnd == mLayout.getLineCount() - 1) {
+            r.bottom += getExtendedPaddingBottom();
+        }
     }
 
     /**
