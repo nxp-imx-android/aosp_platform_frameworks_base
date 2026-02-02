@@ -23,7 +23,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.logging.testing.UiEventLoggerFake
 import com.android.internal.logging.uiEventLoggerFake
-import com.android.systemui.Flags.FLAG_COMMUNAL_EDIT_MODE_ACCESSIBILITY_RESIZE
+import com.android.systemui.Flags.FLAG_COMMUNAL_ACCESSIBILITY_RESIZE
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.communal.ui.metrics.CommunalUiEvent
 import com.android.systemui.compose.runTestWithSnapshots
@@ -259,7 +259,7 @@ class ResizeableItemFrameViewModelTest : SysuiTestCase() {
 
     @Test
     @OptIn(ExperimentalCoroutinesApi::class)
-    @EnableFlags(FLAG_COMMUNAL_EDIT_MODE_ACCESSIBILITY_RESIZE)
+    @EnableFlags(FLAG_COMMUNAL_ACCESSIBILITY_RESIZE)
     fun testRepeatedResizeOperations_emitsCorrectly() =
         testScope.runTestWithSnapshots {
             val collectedResizeInfo = mutableListOf<ResizeInfo>()
@@ -620,7 +620,7 @@ class ResizeableItemFrameViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(FLAG_COMMUNAL_EDIT_MODE_ACCESSIBILITY_RESIZE)
+    @EnableFlags(FLAG_COMMUNAL_ACCESSIBILITY_RESIZE)
     fun toggleAccessibilityResizeHandle_togglesState() {
         assertThat(underTest.visibleAccessibilityResizeHandle.value).isNull()
 
@@ -638,7 +638,7 @@ class ResizeableItemFrameViewModelTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(FLAG_COMMUNAL_EDIT_MODE_ACCESSIBILITY_RESIZE)
+    @EnableFlags(FLAG_COMMUNAL_ACCESSIBILITY_RESIZE)
     fun clearAccessibilityResizeHandle_clearsState() {
         underTest.toggleAccessibilityResizeHandle(ResizeHandle.TOP)
         assertThat(underTest.visibleAccessibilityResizeHandle.value).isEqualTo(ResizeHandle.TOP)
@@ -648,7 +648,7 @@ class ResizeableItemFrameViewModelTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(FLAG_COMMUNAL_EDIT_MODE_ACCESSIBILITY_RESIZE)
+    @EnableFlags(FLAG_COMMUNAL_ACCESSIBILITY_RESIZE)
     fun toggleAccessibilityResizeHandle_logsShowAndHide() {
         val componentName = ComponentName("pkg", "cls")
 
@@ -668,7 +668,7 @@ class ResizeableItemFrameViewModelTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(FLAG_COMMUNAL_EDIT_MODE_ACCESSIBILITY_RESIZE)
+    @EnableFlags(FLAG_COMMUNAL_ACCESSIBILITY_RESIZE)
     fun clearAccessibilityResizeHandle_logsHide() {
         val componentName = ComponentName("pkg", "cls")
         underTest.toggleAccessibilityResizeHandle(ResizeHandle.BOTTOM) // make it visible

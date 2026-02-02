@@ -160,6 +160,16 @@ flag {
 }
 
 flag {
+    name: "communal_accessibility_resize"
+    namespace: "systemui"
+    description: "Allows users to resize communal hub widgets by single-point actions."
+    bug: "431683508"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
   name: "communal_bouncer_do_not_modify_plugin_open"
   namespace: "systemui"
   description: "do not modify notification shade when handling bouncer expansion."
@@ -167,13 +177,6 @@ flag {
   metadata {
     purpose: PURPOSE_BUGFIX
   }
-}
-
-flag {
-    name: "communal_edit_mode_accessibility_resize"
-    namespace: "systemui"
-    description: "Allows users to resize communal hub widgets by single-point actions."
-    bug: "431683508"
 }
 
 flag {
