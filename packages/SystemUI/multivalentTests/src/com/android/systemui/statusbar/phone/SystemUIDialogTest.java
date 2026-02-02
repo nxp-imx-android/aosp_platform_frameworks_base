@@ -105,7 +105,6 @@ public class SystemUIDialogTest extends SysuiTestCase {
     public void setup() {
         MockitoAnnotations.initMocks(this);
         KosmosJavaAdapter kosmos = new KosmosJavaAdapter(this);
-        allowTestableLooperAsMainThread();
         mSysUiState = kosmos.getSysuiState();
         mDisplayRepository = kosmos.getDisplayRepository();
         mStateRepository = kosmos.getFakeSysUIStatePerDisplayRepository();
