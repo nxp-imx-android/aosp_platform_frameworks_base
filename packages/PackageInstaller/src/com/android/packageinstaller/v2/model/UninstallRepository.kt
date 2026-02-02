@@ -457,6 +457,14 @@ class UninstallRepository(private val context: Context) {
     }
 
     fun initiateUninstall(keepData: Boolean) {
+        if (!this::targetAppLabel.isInitialized) {
+            Log.e(LOG_TAG, "targetAppLabel not initialized")
+            handleUninstallResult(
+                PackageInstaller.STATUS_FAILURE,
+                PackageManager.DELETE_FAILED_INTERNAL_ERROR, null, 0
+            )
+            return
+        }
         // Get an uninstallId to track results and show a notification on non-TV devices.
         uninstallId = try {
             UninstallEventReceiver.addObserver(
@@ -507,6 +515,16 @@ class UninstallRepository(private val context: Context) {
         serviceId: Int,
         hasDeveloperVerificationFailure: Boolean = false
     ) {
+        if (!this::intent.isInitialized) {
+            Log.e(LOG_TAG, "intent not initialized")
+            uninstallResult.value = UninstallAborted(UninstallAborted.ABORT_REASON_GENERIC_ERROR)
+            return
+        }
+        if (!this::targetAppLabel.isInitialized) {
+            Log.e(LOG_TAG, "targetAppLabel not initialized")
+            uninstallResult.value = UninstallAborted(UninstallAborted.ABORT_REASON_GENERIC_ERROR)
+            return
+        }
         if (callback != null) {
             // The caller will be informed about the result via a callback
             callback!!.onUninstallComplete(targetPackageName!!, legacyStatus, message)
