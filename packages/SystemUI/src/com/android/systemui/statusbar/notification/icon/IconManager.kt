@@ -36,7 +36,6 @@ import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.res.R
 import com.android.systemui.shade.ShadeDisplayAware
-import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
 import com.android.systemui.statusbar.StatusBarIconView
 import com.android.systemui.statusbar.notification.InflationException
 import com.android.systemui.statusbar.notification.collection.BundleEntry
@@ -162,12 +161,7 @@ constructor(
             sbIcon.scaleType = ImageView.ScaleType.CENTER_INSIDE
 
             // Construct the shelf icon view.
-            val shelfIcon =
-                if (ShadeWindowGoesAround.isEnabled) {
-                    iconBuilder.createIconView(entry, shadeContext)
-                } else {
-                    iconBuilder.createIconView(entry)
-                }
+            val shelfIcon = iconBuilder.createIconView(entry, shadeContext)
             shelfIcon.scaleType = ImageView.ScaleType.CENTER_INSIDE
             shelfIcon.visibility = View.INVISIBLE
 
@@ -278,12 +272,7 @@ constructor(
             sbIcon.scaleType = ImageView.ScaleType.CENTER_INSIDE
 
             // Construct the shelf icon view.
-            val shelfIcon =
-                if (ShadeWindowGoesAround.isEnabled) {
-                    iconBuilder.createIconView(entry, context)
-                } else {
-                    iconBuilder.createIconView(entry)
-                }
+            val shelfIcon = iconBuilder.createIconView(entry, context)
             shelfIcon.scaleType = ImageView.ScaleType.CENTER_INSIDE
             shelfIcon.visibility = View.INVISIBLE
 

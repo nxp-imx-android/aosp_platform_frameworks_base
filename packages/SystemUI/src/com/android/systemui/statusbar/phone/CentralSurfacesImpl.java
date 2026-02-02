@@ -160,7 +160,6 @@ import com.android.systemui.shade.ShadeExpansionStateManager;
 import com.android.systemui.shade.ShadeLogger;
 import com.android.systemui.shade.ShadeSurface;
 import com.android.systemui.shade.ShadeViewController;
-import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround;
 import com.android.systemui.statusbar.CommandQueue;
 import com.android.systemui.statusbar.GestureRecorder;
 import com.android.systemui.statusbar.KeyguardIndicationController;
@@ -1582,13 +1581,6 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
      * meantime, just update the things that we know change.
      */
     void updateResources() {
-        if (!ShadeWindowGoesAround.isEnabled()) {
-            // Each class now subscribes to configuration changes by themselves.
-
-            if (mShadeSurface != null) {
-                mShadeSurface.updateResources();
-            }
-        }
         if (mStatusBarKeyguardViewManager != null) {
             mStatusBarKeyguardViewManager.updateResources();
         }

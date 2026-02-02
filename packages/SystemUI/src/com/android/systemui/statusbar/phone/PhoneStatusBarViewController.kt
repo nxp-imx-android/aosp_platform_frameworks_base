@@ -40,7 +40,6 @@ import com.android.systemui.shade.display.StatusBarTouchShadeDisplayPolicy
 import com.android.systemui.shade.display.domain.interactor.ShadeExpansionTargetDisplayInteractor
 import com.android.systemui.shade.domain.interactor.PanelExpansionInteractor
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
-import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
 import com.android.systemui.statusbar.core.StatusBarEventForwardingModernization
 import com.android.systemui.statusbar.data.repository.StatusBarConfigurationController
 import com.android.systemui.statusbar.layout.StatusBarContentInsetsProvider
@@ -154,29 +153,23 @@ private constructor(
     }
 
     private fun dispatchEventToShadeDisplayPolicy(event: MotionEvent) {
-        if (ShadeWindowGoesAround.isEnabled) {
-            // Notify the shade display policy that the status bar was touched. This may cause
-            // the shade to change display if the touch was in a display different than the shade
-            // one.
-            val isRtl = resources.configuration.layoutDirection == View.LAYOUT_DIRECTION_RTL
-            shadeExpansionTargetDisplayInteractor.setExpansionIntentFromStatusBarEvent(
-                event.x,
-                event.displayId,
-                mView.width,
-                shadeInvocationSplitRatio,
-                isRtl,
-            )
-        }
+        // Notify the shade display policy that the status bar was touched. This may cause
+        // the shade to change display if the touch was in a display different than the shade
+        // one.
+        val isRtl = resources.configuration.layoutDirection == View.LAYOUT_DIRECTION_RTL
+        shadeExpansionTargetDisplayInteractor.setExpansionIntentFromStatusBarEvent(
+            event.x,
+            event.displayId,
+            mView.width,
+            shadeInvocationSplitRatio,
+            isRtl,
+        )
     }
 
     private val configurationListener =
         object : ConfigurationController.ConfigurationListener {
             override fun onDensityOrFontScaleChanged() {
                 reloadDimens()
-                if (!ShadeWindowGoesAround.isEnabled) {
-                    // With the flag on, the clock handles the config change itself.
-                    clock.onDensityOrFontScaleChanged()
-                }
             }
         }
 
@@ -194,10 +187,7 @@ private constructor(
             // With the StatusBarConnectedDisplays changes, external status bar elements are not
             // interactive when the shade window can't change displays.
             mView.setIsStatusBarInteractiveSupplier {
-                val shadeDisplayPolicy =
-                    if (ShadeWindowGoesAround.isEnabled) {
-                        lazyShadeDisplaysRepository.get().currentPolicy
-                    } else null
+                val shadeDisplayPolicy = lazyShadeDisplaysRepository.get().currentPolicy
                 shadeDisplayPolicy is StatusBarTouchShadeDisplayPolicy
             }
         }

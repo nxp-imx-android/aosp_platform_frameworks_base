@@ -16,7 +16,6 @@
 package com.android.keyguard
 
 import android.hardware.display.DisplayManagerGlobal
-import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper.RunWithLooper
 import android.view.Display
 import android.view.DisplayAdjustments
@@ -25,7 +24,6 @@ import android.view.View
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.keyguard.KeyguardDisplayManager.DeviceStateHelper
-import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.display.data.repository.displayRepository
 import com.android.systemui.kosmos.testScope
@@ -190,7 +188,6 @@ class KeyguardDisplayManagerTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_SHADE_WINDOW_GOES_AROUND)
     fun show_shadeMovesDisplay_newPresentationCreated() {
         displayTracker.allDisplays = arrayOf(defaultDisplay, secondaryDisplay)
         // Shade in the default display, we expect the presentation to be in the secondary only
@@ -220,7 +217,6 @@ class KeyguardDisplayManagerTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_SHADE_WINDOW_GOES_AROUND)
     fun show_shadeInSecondaryDisplay_defaultOneHasPresentation() {
         displayTracker.allDisplays = arrayOf(defaultDisplay, secondaryDisplay)
         shadePositionRepository.setPendingDisplayId(secondaryDisplay.displayId)
@@ -231,7 +227,6 @@ class KeyguardDisplayManagerTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_SHADE_WINDOW_GOES_AROUND)
     fun show_shadeInDefaultDisplay_secondaryOneHasPresentation() {
         displayTracker.allDisplays = arrayOf(defaultDisplay, secondaryDisplay)
         shadePositionRepository.setPendingDisplayId(defaultDisplay.displayId)

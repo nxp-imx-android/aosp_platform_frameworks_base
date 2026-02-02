@@ -79,7 +79,6 @@ import com.android.systemui.scene.shared.flag.SceneContainerFlag;
 import com.android.systemui.screenrecord.ScreenRecordUxController;
 import com.android.systemui.shade.data.repository.ShadeRepository;
 import com.android.systemui.shade.domain.interactor.ShadeInteractor;
-import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround;
 import com.android.systemui.shared.system.QuickStepContract;
 import com.android.systemui.statusbar.LockscreenShadeTransitionController;
 import com.android.systemui.statusbar.NotificationRemoteInputManager;
@@ -2235,7 +2234,7 @@ public class QuickSettingsControllerImpl implements QuickSettingsController, Dum
                 }
                 boolean shouldSkipAnimation = false;
 
-                if (ShadeWindowGoesAround.isEnabled() && mLastDisplayIdWithMediaVisibilityChange
+                if (mLastDisplayIdWithMediaVisibilityChange
                         != getDisplayId()) {
                     // Let's not animate the bounds if the visibility change is due to the
                     // display being changed, otherwise we'll see some animation after the
