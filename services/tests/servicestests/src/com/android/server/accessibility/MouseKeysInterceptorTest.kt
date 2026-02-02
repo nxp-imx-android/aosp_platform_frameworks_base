@@ -1050,54 +1050,9 @@ class MouseKeysInterceptorTest {
 
     @Test
     @RequiresFlagsEnabled(Flags.FLAG_ENABLE_MOUSE_KEY_ENHANCEMENT)
-    fun whenUsePrimaryKeysDisabled_respondsToNumpadKeysAndIgnoresPrimaryKeys() {
+    fun whenUsePrimaryKeysOff_ignoresPrimaryKeys() {
         setupMouseKeysInterceptor(usePrimaryKeys = false)
-        // Send the left key on the numpad and verify the mouse responds.
-        val numpadDownTime = clock.now() - KEYBOARD_POST_EVENT_DELAY_MILLIS_FOR_MOUSE_POINTER
-        val numpadKeycode =
-            MouseKeysInterceptor.MouseKeyEvent.LEFT_MOVE_OR_SCROLL.getKeyCodeValue(USE_NUMPAD_KEYS)
-        val numpadKeyDownEvent =
-            KeyEvent(
-                numpadDownTime,
-                numpadDownTime,
-                KeyEvent.ACTION_DOWN,
-                numpadKeycode,
-                0,
-                KeyEvent.META_NUM_LOCK_ON,
-                NUMPAD_DEVICE_ID,
-                0,
-            )
-        mouseKeysInterceptor.onKeyEvent(numpadKeyDownEvent, 0)
-        testLooper.dispatchAll()
 
-        // Release the left key.
-        val upEventTime = clock.now()
-        val upEvent =
-            KeyEvent(
-                numpadDownTime,
-                upEventTime,
-                KeyEvent.ACTION_UP,
-                numpadKeycode,
-                0,
-                KeyEvent.META_NUM_LOCK_ON,
-                NUMPAD_DEVICE_ID,
-                0,
-            )
-        mouseKeysInterceptor.onKeyEvent(upEvent, 0)
-        testLooper.dispatchAll()
-
-        val expectedStepValue =
-            INITIAL_STEP_BEFORE_ACCEL * (1.0f + mouseKeysInterceptor.mAcceleration)
-        verifyRelativeEvents(
-            expectedX = floatArrayOf(-expectedStepValue),
-            expectedY = floatArrayOf(0f),
-        )
-        assertThat(nextInterceptor.events).isEmpty()
-
-        Mockito.clearInvocations(mockVirtualMouse)
-        nextInterceptor.events.clear()
-
-        // Send the primary key 'U', which also corresponds to moving left.
         var primaryDownTime = clock.now() - KEYBOARD_POST_EVENT_DELAY_MILLIS_FOR_MOUSE_POINTER
         val primaryKeyDownEvent =
             KeyEvent(
@@ -1115,19 +1070,19 @@ class MouseKeysInterceptorTest {
         mouseKeysInterceptor.onKeyEvent(primaryKeyDownEvent, 0)
         testLooper.dispatchAll()
 
-        // Verify the corresponding primary key is ignored
+        // Verify the corresponding primary key is ignored.
         assertThat(nextInterceptor.events).hasSize(1)
         Mockito.verify(mockVirtualMouse, Mockito.never()).sendRelativeEvent(Mockito.any())
 
-        // Verify that the received event is the same as the primary key that was pressed
+        // Verify that the received event is the same as the primary key that was pressed.
         verifyKeyEventsEqual(primaryKeyDownEvent, nextInterceptor.events.poll()!!)
     }
 
     @Test
     @RequiresFlagsEnabled(Flags.FLAG_ENABLE_MOUSE_KEY_ENHANCEMENT)
-    fun whenUsePrimaryKeysEnabled_respondsToPrimaryAndNumpadKeys() {
+    fun whenUsePrimaryKeysOn_andNumLockOff_ignoresNumpad() {
         setupMouseKeysInterceptor(usePrimaryKeys = true)
-        // Send the left key on the numpad and verify the mouse responds.
+
         val numpadDownTime = clock.now() - KEYBOARD_POST_EVENT_DELAY_MILLIS_FOR_MOUSE_POINTER
         val numpadKeycode =
             MouseKeysInterceptor.MouseKeyEvent.LEFT_MOVE_OR_SCROLL.getKeyCodeValue(USE_NUMPAD_KEYS)
@@ -1138,66 +1093,49 @@ class MouseKeysInterceptorTest {
                 KeyEvent.ACTION_DOWN,
                 numpadKeycode,
                 0,
-                KeyEvent.META_NUM_LOCK_ON,
+                0,
                 NUMPAD_DEVICE_ID,
                 0,
             )
         mouseKeysInterceptor.onKeyEvent(numpadKeyDownEvent, 0)
         testLooper.dispatchAll()
 
-        val expectedStepValue =
-            INITIAL_STEP_BEFORE_ACCEL * (1.0f + mouseKeysInterceptor.mAcceleration)
-        verifyRelativeEvents(
-            expectedX = floatArrayOf(-expectedStepValue),
-            expectedY = floatArrayOf(0f),
-        )
-        assertThat(nextInterceptor.events).isEmpty()
+        // Verify the corresponding numpad key is ignored.
+        assertThat(nextInterceptor.events).hasSize(1)
+        Mockito.verify(mockVirtualMouse, Mockito.never()).sendRelativeEvent(Mockito.any())
 
-        // Release the left key.
-        val upEventTime = clock.now()
-        val upEvent =
+        // Verify that the received event is the same as the numpad key that was pressed.
+        verifyKeyEventsEqual(numpadKeyDownEvent, nextInterceptor.events.poll()!!)
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_MOUSE_KEY_ENHANCEMENT)
+    fun whenUsePrimaryKeysOff_andNumLockOff_ignoresNumpad() {
+        setupMouseKeysInterceptor(usePrimaryKeys = false)
+
+        val numpadDownTime = clock.now() - KEYBOARD_POST_EVENT_DELAY_MILLIS_FOR_MOUSE_POINTER
+        val numpadKeycode =
+            MouseKeysInterceptor.MouseKeyEvent.LEFT_MOVE_OR_SCROLL.getKeyCodeValue(USE_NUMPAD_KEYS)
+        val numpadKeyDownEvent =
             KeyEvent(
                 numpadDownTime,
-                upEventTime,
-                KeyEvent.ACTION_UP,
+                numpadDownTime,
+                KeyEvent.ACTION_DOWN,
                 numpadKeycode,
                 0,
-                KeyEvent.META_NUM_LOCK_ON,
+                0,
                 NUMPAD_DEVICE_ID,
                 0,
             )
-        mouseKeysInterceptor.onKeyEvent(upEvent, 0)
+        mouseKeysInterceptor.onKeyEvent(numpadKeyDownEvent, 0)
         testLooper.dispatchAll()
 
-        Mockito.clearInvocations(mockVirtualMouse)
-        nextInterceptor.events.clear()
+        // Verify the corresponding numpad key is ignored.
+        assertThat(nextInterceptor.events).hasSize(1)
+        Mockito.verify(mockVirtualMouse, Mockito.never()).sendRelativeEvent(Mockito.any())
 
-        // Send the primary key 'U', which also corresponds to moving left.
-        var primaryDownTime = clock.now() - KEYBOARD_POST_EVENT_DELAY_MILLIS_FOR_MOUSE_POINTER
-        val primaryKeyDownEvent =
-            KeyEvent(
-                primaryDownTime,
-                primaryDownTime,
-                KeyEvent.ACTION_DOWN,
-                MouseKeysInterceptor.MouseKeyEvent.LEFT_MOVE_OR_SCROLL.getKeyCodeValue(
-                    USE_PRIMARY_KEYS
-                ),
-                0,
-                0,
-                DEVICE_ID,
-                0,
-            )
-        mouseKeysInterceptor.onKeyEvent(primaryKeyDownEvent, 0)
-        testLooper.dispatchAll()
-
-        val expectedStepValue2 =
-            INITIAL_STEP_BEFORE_ACCEL * (1.0f + mouseKeysInterceptor.mAcceleration)
-        // Verify the corresponding primary key moves the mouse as well.
-        verifyRelativeEvents(
-            expectedX = floatArrayOf(-expectedStepValue2),
-            expectedY = floatArrayOf(0f),
-        )
-        assertThat(nextInterceptor.events).isEmpty()
+        // Verify that the received event is the same as the numpad key that was pressed.
+        verifyKeyEventsEqual(numpadKeyDownEvent, nextInterceptor.events.poll()!!)
     }
 
     @Test
