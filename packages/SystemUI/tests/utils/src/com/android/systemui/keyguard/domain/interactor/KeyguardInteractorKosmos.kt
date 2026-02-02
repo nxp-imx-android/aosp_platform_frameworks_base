@@ -25,7 +25,6 @@ import com.android.systemui.kosmos.testScope
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.shade.data.repository.shadeConfigRepository
 import com.android.systemui.shade.data.repository.shadeRepository
-import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.wallpapers.domain.interactor.wallpaperFocalAreaInteractor
 
 val Kosmos.keyguardInteractor: KeyguardInteractor by
@@ -46,6 +45,5 @@ val Kosmos.keyguardInteractor: KeyguardInteractor by
             applicationScope = testScope.backgroundScope,
             wallpaperFocalAreaInteractor = wallpaperFocalAreaInteractor,
             lockPatternUtils = lockPatternUtils,
-            shadeInteractor = { shadeInteractor },
         )
     }
