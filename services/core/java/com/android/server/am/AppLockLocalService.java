@@ -30,6 +30,7 @@ import android.content.pm.UserInfo;
 import android.os.Binder;
 import android.os.Build;
 import android.os.Handler;
+import android.os.Process;
 import android.os.Trace;
 import android.os.UserHandle;
 import android.util.ArrayMap;
@@ -289,7 +290,7 @@ public final class AppLockLocalService implements AppLockInternal,
                     // package is unlocked. showWhenLocked indicates that the activity should be
                     // shown even if the device is locked, so those activities should still be
                     // shown if the app is locked.
-                    final int callingUid = Binder.getCallingUid();
+                    final int callingUid = mInjector.getCallingUid();
                     for (ActivityAssistInfo aaInfo : visibleAaInfoList) {
                         final ActivityInfo info = getPackageManagerInternal().getActivityInfo(
                                 aaInfo.getComponentName(), PackageManager.MATCH_DIRECT_BOOT_AWARE
@@ -332,7 +333,8 @@ public final class AppLockLocalService implements AppLockInternal,
         final long lastSuccessfulAuth = getLastSuccessfulAuthTimeForLockedPackage(packageName,
                 userId);
         return lastSuccessfulAuth + DEFAULT_APP_LOCK_GRACE_PERIOD_MS.toMillis()
-                > System.currentTimeMillis();
+                > System.currentTimeMillis()
+                && lastSuccessfulAuth != AppLockLockedState.INVALID_AUTH_TIME_MS;
     }
 
     @GuardedBy("mAmService")
@@ -593,6 +595,8 @@ public final class AppLockLocalService implements AppLockInternal,
                                 Slog.d(TAG, entry.getKey()
                                         + " has become locked due to the device locking");
                             }
+                            state.mLastAuthTimeSinceDeviceUnlock =
+                                    AppLockLockedState.INVALID_AUTH_TIME_MS;
                             handleLockedStateLocked(entry.getKey(), userId, /* lockImmediately= */
                                     true);
                         }
@@ -610,6 +614,12 @@ public final class AppLockLocalService implements AppLockInternal,
         Trace.beginSection(TAG + ".setAppLockEnabledPackageSuccessfullyAuthenticated");
         try {
             Objects.requireNonNull(packageName);
+            if (!UserHandle.isSameApp(mInjector.getCallingUid(), Process.SYSTEM_UID)
+                    && !UserHandle.isSameApp(mInjector.getCallingUid(), Process.ROOT_UID)) {
+                throw new SecurityException(
+                        "setAppLockEnabledPackageSuccessfullyAuthenticated can only be called by "
+                                + "the system");
+            }
 
             if (DEBUG) {
                 Slog.d(TAG, "setAppLockEnabledPackageSuccessfullyAuthenticated for " + packageName
@@ -650,7 +660,7 @@ public final class AppLockLocalService implements AppLockInternal,
                     }
                     final AppLockLockedState state = getOrCreateAppLockLockedStateLocked(
                             packageToAuthenticate, userId);
-                    state.mLastSuccessfulAuthTimeSinceBoot = authTime;
+                    state.mLastAuthTimeSinceDeviceUnlock = authTime;
                     handleUnlockedStateLocked(packageToAuthenticate, userId);
                 }
             }
@@ -659,11 +669,12 @@ public final class AppLockLocalService implements AppLockInternal,
         }
     }
 
-    private long getLastSuccessfulAuthTimeForLockedPackage(String packageName, int userId) {
+    @VisibleForTesting
+    long getLastSuccessfulAuthTimeForLockedPackage(String packageName, int userId) {
         synchronized (mLock) {
             final AppLockLockedState state = getOrCreateAppLockLockedStateLocked(packageName,
                     userId);
-            return state.mLastSuccessfulAuthTimeSinceBoot;
+            return state.mLastAuthTimeSinceDeviceUnlock;
         }
     }
 
@@ -705,6 +716,8 @@ public final class AppLockLocalService implements AppLockInternal,
     @VisibleForTesting
     interface Injector {
         Handler getHandler();
+
+        int getCallingUid();
     }
 
     /**
@@ -716,10 +729,11 @@ public final class AppLockLocalService implements AppLockInternal,
      * state change notifications.
      */
     static final class AppLockLockedState {
-        private static final long DEFAULT_LAST_AUTH_TIME_SINCE_BOOT_MS = 0L;
+        private static final long INVALID_AUTH_TIME_MS = -1L;
         // Last successful authentication timestamp, which is required to calculate grace period
-        // expiration.
-        private long mLastSuccessfulAuthTimeSinceBoot;
+        // expiration. This gets reset to {@link #INVALID_AUTH_TIME_MS} when the device becomes
+        // locked.
+        private long mLastAuthTimeSinceDeviceUnlock;
         // A runnable to inform listeners that the package has become locked after the grace period
         // has expired. If the package moves back to PROCESS_STATE_TOP, the runnable should be
         // canceled. If this runnable exists for this package and user combination, the package
@@ -729,7 +743,7 @@ public final class AppLockLocalService implements AppLockInternal,
         private Boolean mLastSentLockedState;
 
         AppLockLockedState() {
-            mLastSuccessfulAuthTimeSinceBoot = DEFAULT_LAST_AUTH_TIME_SINCE_BOOT_MS;
+            mLastAuthTimeSinceDeviceUnlock = INVALID_AUTH_TIME_MS;
             mLockedUpdateRunnable = null;
             mLastSentLockedState = null;
         }
@@ -829,6 +843,11 @@ public final class AppLockLocalService implements AppLockInternal,
         @Override
         public Handler getHandler() {
             return BackgroundThread.getHandler();
+        }
+
+        @Override
+        public int getCallingUid() {
+            return Binder.getCallingUid();
         }
     }
 }
