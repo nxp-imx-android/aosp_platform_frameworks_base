@@ -18,8 +18,19 @@ package com.android.systemui.inputmethod.ui.composable
 
 import android.content.Context
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -30,6 +41,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import com.android.compose.theme.PlatformTheme
 import com.android.internal.R
 import com.android.systemui.Flags
@@ -79,6 +92,15 @@ fun LargeScreenImeSwitcherMenuContent(
                     .testTag("container"),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
+            Header(
+                settingsButtonAction =
+                    viewModel.settingsButtonAction.value?.let { action ->
+                        {
+                            action()
+                            dismissAction()
+                        }
+                    }
+            )
             Column(
                 modifier =
                     Modifier.weight(weight = 1f, fill = false)
@@ -88,4 +110,62 @@ fun LargeScreenImeSwitcherMenuContent(
             }
         }
     }
+}
+
+/**
+ * The header of the large-screen IME switcher menu, which contains the title and the settings
+ * button.
+ *
+ * @param settingsButtonAction the action to invoke when the settings button is clicked. This action
+ *   should also dismiss the UI.
+ */
+@Composable
+private fun Header(settingsButtonAction: (() -> Unit)?) {
+    val title =
+        stringResource(com.android.systemui.res.R.string.input_method_switcher_title_large_screen)
+    val settingsButtonDescription = stringResource(R.string.input_method_language_settings)
+    Row(
+        modifier =
+            Modifier.fillMaxWidth()
+                .padding(
+                    start = HeaderDimensions.PaddingStart,
+                    top = HeaderDimensions.PaddingTop,
+                    end = HeaderDimensions.PaddingEnd,
+                    bottom = HeaderDimensions.PaddingBottom,
+                ),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Spacer(modifier = Modifier.size(HeaderDimensions.ButtonSize))
+        Text(
+            text = title,
+            modifier = Modifier.align(Alignment.CenterVertically),
+            textAlign = TextAlign.Center,
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
+        val endContentModifier = Modifier.size(HeaderDimensions.ButtonSize)
+        if (settingsButtonAction != null) {
+            IconButton(
+                modifier = endContentModifier.testTag("button1"),
+                onClick = settingsButtonAction,
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Settings,
+                    contentDescription = settingsButtonDescription,
+                    tint = MaterialTheme.colorScheme.onSurface,
+                )
+            }
+        } else {
+            Spacer(modifier = endContentModifier)
+        }
+    }
+}
+
+private object HeaderDimensions {
+    val PaddingStart = 14.dp
+    val PaddingTop = 14.dp
+    val PaddingEnd = 14.dp
+    val PaddingBottom = 2.dp
+    val ButtonSize = 36.dp
 }
