@@ -19,6 +19,7 @@ package com.android.server.am;
 import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_PROVIDER;
 import static com.android.server.am.ActivityManagerDebugConfig.TAG_AM;
 
+import android.annotation.NonNull;
 import android.annotation.UserIdInt;
 import android.os.Binder;
 import android.os.SystemClock;
@@ -36,7 +37,7 @@ import com.android.server.am.psc.ContentProviderConnectionInternal;
 public final class ContentProviderConnection extends Binder implements
         ContentProviderConnectionInternal {
     public final ContentProviderRecord provider;
-    public final ProcessRecord client;
+    public final @NonNull ProcessRecord client;
     public final String clientPackage;
     public AssociationState.SourceState association;
     public final long createTime;
@@ -66,8 +67,8 @@ public final class ContentProviderConnection extends Binder implements
     private int mNumStableIncs;
     private int mNumUnstableIncs;
 
-    public ContentProviderConnection(ContentProviderRecord _provider, ProcessRecord _client,
-            String _clientPackage, @UserIdInt int _expectedUserId) {
+    public ContentProviderConnection(ContentProviderRecord _provider,
+            @NonNull ProcessRecord _client, String _clientPackage, @UserIdInt int _expectedUserId) {
         provider = _provider;
         client = _client;
         clientPackage = _clientPackage;
@@ -122,7 +123,7 @@ public final class ContentProviderConnection extends Binder implements
     }
 
     @Override
-    public ProcessRecord getClient() {
+    public @NonNull ProcessRecord getClient() {
         return client;
     }
 

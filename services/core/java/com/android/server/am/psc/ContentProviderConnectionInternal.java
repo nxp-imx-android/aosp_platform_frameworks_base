@@ -16,6 +16,8 @@
 
 package com.android.server.am.psc;
 
+import android.annotation.NonNull;
+
 /**
  * An interface encapsulating common internal properties for a link between a content provider and
  * client.
@@ -28,6 +30,7 @@ public interface ContentProviderConnectionInternal extends OomAdjusterImpl.Conne
     ContentProviderRecordInternal getProvider();
 
     /** Returns the client process that initiated this content provider connection. */
+    @NonNull
     ProcessRecordInternal getClient();
 
     @Override
