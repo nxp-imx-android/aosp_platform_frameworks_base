@@ -3492,6 +3492,9 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener, CoreSt
      * Handle (@line #MSG_TIMEZONE_UPDATE}
      */
     private void handleTimeZoneUpdate(String timeZone) {
+        if (timeZone == null) {
+            return;
+        }
         Assert.isMainThread();
         mLogger.d("handleTimeZoneUpdate");
         for (int i = 0; i < mCallbacks.size(); i++) {
